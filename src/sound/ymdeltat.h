@@ -68,6 +68,7 @@ typedef struct deltat_adpcm_state {     /* AT: rearranged and tightened structur
 }YM_DELTAT;
 
 
+void YM_DELTAT_ADPCM_Init(YM_DELTAT *DELTAT,int emulation_mode,int portshift,INT32* output_ptr,int output_range);
 UINT8 YM_DELTAT_ADPCM_Read(YM_DELTAT *DELTAT);
 void YM_DELTAT_ADPCM_Write(YM_DELTAT *DELTAT,int r,int v);
 void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan);

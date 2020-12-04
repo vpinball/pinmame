@@ -608,7 +608,7 @@ int cli_frontend_init (int argc, char **argv)
                         i = 0;
                         while (drivers[i]) i++; /* count available drivers */
 
-                        srand(time(0));
+                        srand((unsigned int)time(0));
                         /* call rand() once to get away from the seed */
                         rand();
                         game_index = rand() % i;

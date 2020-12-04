@@ -2,6 +2,7 @@
 #define __VGMWRITE_H__
 
 #include "driver.h"
+
 #define int8_t   signed char
 #define uint8_t  unsigned char
 #define uint16_t unsigned short
