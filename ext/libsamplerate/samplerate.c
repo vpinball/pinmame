@@ -120,9 +120,9 @@ src_delete (SRC_STATE *state)
 	if (psrc)
 	{	if (psrc->private_data)
 			free (psrc->private_data) ;
-		memset (psrc, 0, sizeof (SRC_PRIVATE)) ;
+		//memset (psrc, 0, sizeof (SRC_PRIVATE)) ;
 		free (psrc) ;
-		} ;
+	} ;
 
 	return NULL ;
 } /* src_state */
