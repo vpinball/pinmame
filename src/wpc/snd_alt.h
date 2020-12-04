@@ -205,7 +205,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			size_t PATH_LEN;
 			char* PATH;
 
-			srand(time(NULL)); // randomize random number generator seed
+			srand((unsigned int)time(NULL)); // randomize random number generator seed
 
 			cached_machine_name = (char*)malloc(strlen(g_szGameName) + 1);
 			strcpy(cached_machine_name, g_szGameName);

@@ -89,7 +89,7 @@ static int ss_current_tag;
 
 static unsigned char *ss_dump_array;
 static mame_file *ss_dump_file;
-static unsigned int ss_dump_size;
+static size_t ss_dump_size;
 
 
 static UINT32 ss_get_signature(void)

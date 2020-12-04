@@ -192,9 +192,9 @@ static size_t str2utf16(gd3char_t* dststr, const char* srcstr, size_t max)
 	size_t srclen;
 	size_t wlen;
 	wchar_t* wstr;
-	
+
 	srclen = strlen(srcstr);
-	wstr = (wchar_t*)calloc(srclen, sizeof(wchar_t));
+	wstr = (wchar_t*)calloc(srclen + 1, sizeof(wchar_t));
 	
 	mbstowcs(wstr, srcstr, srclen + 1);
 	wlen = wcs2utf16(dststr, wstr, max);
@@ -271,7 +271,7 @@ void vgm_start(struct RunningMachine *machine)
 	wchar_t vgmNotes[0x50];
 	
 	LOG_VGM_FILE = pmoptions.vgmwrite;
-	logerror("VGM logging mode: %02X\n", LOG_VGM_FILE);
+	logerror("VGM logging mode: %02hhX\n", LOG_VGM_FILE);
 	
 	// Reset all files
 	for (curvgm = 0x00; curvgm < MAX_VGM_FILES; curvgm ++)
@@ -720,7 +720,7 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 
 	int clock = (int)(clockd + 0.5);
 	
-	logerror("vgm_open - Chip Type %02X, Clock %u\n", chip_type, clock);
+	logerror("vgm_open - Chip Type %02hhX, Clock %u\n", chip_type, clock);
 	if (! LOG_VGM_FILE || chip_type == 0xFF)
 		return 0xFFFF;
 	
@@ -1302,7 +1302,7 @@ void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data)
 		case 0x10:	// Resistor Loads
 		case 0x11:
 		case 0x12:
-			logerror("AY8910: Resistor Load %hu = %u\n", attr & 0x0F, data);
+			logerror("AY8910: Resistor Load %c = %u\n", attr & 0x0F, data);
 			break;
 		}
 		break;
@@ -2329,7 +2329,7 @@ void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uin
 		return;
 	
 	if (data == NULL)
-		logerror("ROM Data %02X: (0x%X bytes) is NULL!\n", blk_type, datasize);
+		logerror("ROM Data %02hhX: (0x%X bytes) is NULL!\n", blk_type, datasize);
 	
 	vgm_write_delay(VgmChip[chip_id].VgmID);
 	
@@ -2602,7 +2602,7 @@ void vgm_change_rom_data(uint32_t oldsize, const void* olddata, uint32_t newsize
 			VR = &VI->DataBlk[curdblk];
 			if ((VR->DataSize & 0x7FFFFFFF) == oldsize && VR->Data == olddata)
 			{
-				logerror("Match found in VGM %02hX, Block Type %02X\n", curvgm, VR->Type);
+				logerror("Match found in VGM %02hX, Block Type %02hhX\n", curvgm, VR->Type);
 				VR->DataSize &= 0x80000000;	// keep "chip select" bit
 				VR->DataSize |= newsize;
 				VR->Data = newdata;

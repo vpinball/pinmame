@@ -764,7 +764,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
 #ifdef strtof
             x = strtof(arg, &end);
 #else
-            x = strtod(arg, &end);
+            x = (float)strtod(arg, &end);
 #endif
             if (*end || rc_verify(option, x))
             {
