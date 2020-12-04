@@ -669,8 +669,6 @@ void alt_sound_handle(int boardNo, int cmd)
 					cmd_counter = 1;
 			}
 
-			//!! stern should work out of the box, check elvis&LOTR again for special commands (stop,etc) though
-
 			if ((core_gameData->gen == GEN_DEDMD16) || // remaps everything to 16bit, a bit stupid maybe
 				(core_gameData->gen == GEN_DEDMD32) ||
 				(core_gameData->gen == GEN_DEDMD64))
@@ -694,6 +692,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				(core_gameData->gen == GEN_WS_1) || 
 				(core_gameData->gen == GEN_WS_2))
 			{
+				//!! so far tested only with LOTR, SWTR, Elvis
 				if ((cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x26 && (cmd & 0xF0) == 0xF0) || 
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x25 && (cmd & 0xF0) == 0xF0) || 
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x01 && (cmd & 0xF0) == 0xF0))
