@@ -1617,12 +1617,9 @@ MACHINE_DRIVER_END
      of the foreground are set.
 --*/
 static PINMAME_VIDEO_UPDATE(samdmd_update) {
-	static const UINT8 hew[16] =
-	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-	//	{ 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
+	//static const UINT8 hew[16] = { 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
 
 	int ii;
-
 	for( ii = 0; ii < 32; ii++ )
 	{
 		UINT8 *line = &coreGlobals.dotCol[ii+1][0];
@@ -1633,10 +1630,11 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 		{
 			const UINT8 RAM1 = offs1[jj];
 			const UINT8 RAM2 = offs2[jj];
-			const UINT8 temp = ((RAM1 & 0xF0) == 0xF0) ? RAM2 : RAM1; //!! check if there are also other cases where (RAM1 & 0xF0) != 0 (e.g. only few bits set -> then mix more finegrained??)
-			if (((RAM1 & 0xF0) != 0xF0) && ((RAM1 & 0xF0) != 0x00))
-				LOG(("DMD Bitmask %01x",(*RAM1 & 0xF0)>>4));
-			*line = hew[temp];
+			const UINT8 mix = RAM1 >> 4;
+			if ((mix != 0xF) && (mix != 0x0)) //!! happens e.g. in POTC in extra ball explosion animation: RAM1 values triggering this: 223, 190, 175, 31, 25, 19, 17 with RAM2 being always 0. But is this just wrong game data (as its a converted animation)?!
+				LOG(("Special DMD Bitmask %01X",mix));
+			const UINT8 temp = (RAM2 & mix) | (RAM1 & (mix^0xF)); //!! is this correct or is mix rather a multiplier/ratio/alphavalue??
+			*line = /*hew[*/temp/*]*/;
 			line++;
 		}
 	}
