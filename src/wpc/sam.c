@@ -1631,9 +1631,9 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 			const UINT8 RAM1 = offs1[jj];
 			const UINT8 RAM2 = offs2[jj];
 			const UINT8 mix = RAM1 >> 4;
+			const UINT8 temp = (RAM2 & mix) | (RAM1 & (mix^0xF)); //!! is this correct or is mix rather a multiplier/ratio/alphavalue??
 			if ((mix != 0xF) && (mix != 0x0)) //!! happens e.g. in POTC in extra ball explosion animation: RAM1 values triggering this: 223, 190, 175, 31, 25, 19, 17 with RAM2 being always 0. But is this just wrong game data (as its a converted animation)?!
 				LOG(("Special DMD Bitmask %01X",mix));
-			const UINT8 temp = (RAM2 & mix) | (RAM1 & (mix^0xF)); //!! is this correct or is mix rather a multiplier/ratio/alphavalue??
 			*line = /*hew[*/temp/*]*/;
 			line++;
 		}
