@@ -323,8 +323,9 @@ DRIVERNV(motrdomg)      //6803-0E69:07/86 MotorDome (German)
 DRIVERNV(blackblt)      //6803-0E52:07/86 Black Belt
 DRIVERNV(blackbl2)      //6803      07/86 Black Belt (Squawk & Talk)
 DRIVERNV(specforc)      //6803-0E47:08/86 Special Force
-DRIVERNV(strngsci)      //6803-0E35:10/86 Strange Science
+DRIVERNV(strngsci)      //6803-0E35:10/86 Strange Science (rev. A)
 DRIVERNV(strngscg)      //6803      10/86 Strange Science (German)
+DRIVERNV(strngscc)      //6803      12/86 Strange Science (rev. C)
 DRIVERNV(cityslck)      //6803-0E79:03/87 City Slicker
 DRIVERNV(hardbody)      //6803-0E94:02/87 Hardbody
 DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)

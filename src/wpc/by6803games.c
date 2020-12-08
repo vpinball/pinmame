@@ -151,21 +151,30 @@ CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803_SDS,0)
 /*------------------------------------
 / Strange Science (6803-0E35: 10/86)
 /------------------------------------*/
+INITGAME6803(strngscc,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
+BY6803_ROMSTART44(strngscc, "strange_science_u2_rev-c.128.bin",CRC(0a0ebf25) SHA1(6b120e5b3aa13d1650c4ee8c4c98996b13be167e),
+                            "strange_science_u3_rev-c.128.bin",CRC(c5b17b07) SHA1(823eb1e2ceb33f221b69c11eb71cb53c48d0f716))
+BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742acee2d13580a461063018a11))
+BY6803_ROMEND
+#define input_ports_strngscc input_ports_by6803
+CORE_GAMEDEFNV(strngscc,"Strange Science (rev. C)",1986,"Bally",by_mBY6803_TCSS,0)
+
 INITGAME6803(strngsci,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(strngsci, "cpu_u2.128",  CRC(2ffcf284) SHA1(27d66806708c983092bab4ed6965c2e91e69acdc),
                             "cpu_u3.128",  CRC(35257931) SHA1(d3d6b84e50677a4c5f9d5c13c9522ad6d3a1358d))
 BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742acee2d13580a461063018a11))
 BY6803_ROMEND
-#define input_ports_strngsci input_ports_by6803
-CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
+#define init_strngsci init_strngscc
+#define input_ports_strngsci input_ports_strngscc
+CORE_CLONEDEFNV(strngsci,strngscc,"Strange Science (rev. A)",1986,"Bally",by_mBY6803_TCSS,0)
 
 BY6803_ROMSTART44(strngscg, "cpub_u2.128", CRC(48ef1052) SHA1(afcb0520ab834c0d6ef4a73f615c48653ccedc24),
                             "cpub_u3.128", CRC(da5b4b3b) SHA1(ff9babf2efc6622803db9ba8712dd8b76c8412b8))
 BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742acee2d13580a461063018a11))
 BY6803_ROMEND
-#define init_strngscg init_strngsci
-#define input_ports_strngscg input_ports_strngsci
-CORE_CLONEDEFNV(strngscg,strngsci,"Strange Science (German)",1986,"Bally",by_mBY6803_TCSS,0)
+#define init_strngscg init_strngscc
+#define input_ports_strngscg input_ports_strngscc
+CORE_CLONEDEFNV(strngscg,strngscc,"Strange Science (German)",1986,"Bally",by_mBY6803_TCSS,0)
 
 /*------------------------------------
 / City Slicker (6803-0E79: 03/87)
