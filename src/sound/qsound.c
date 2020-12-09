@@ -76,9 +76,9 @@ static int qsound_stream;				/* Audio stream */
 static struct QSOUND_CHANNEL qsound_channel[QSOUND_CHANNELS];
 static int qsound_data;					/* register latch data */
 QSOUND_SRC_SAMPLE *qsound_sample_rom;	/* Q sound sample ROM */
+static unsigned int qsound_sample_rom_length;
 
 static int qsound_pan_table[33];		/* Pan volume table */
-static double qsound_frq_ratio;			/* Frequency ratio */
 
 #if LOG_WAVE
 static FILE *fpRawDataL;
@@ -96,10 +96,9 @@ int qsound_sh_start(const struct MachineSound *msound)
 	intf = msound->sound_interface;
 
 	qsound_sample_rom = (QSOUND_SRC_SAMPLE *)memory_region(intf->region);
+	qsound_sample_rom_length = memory_region_length(intf->region);
 
 	memset(qsound_channel, 0, sizeof(qsound_channel));
-
-	qsound_frq_ratio = 16.0;
 
 	/* Create pan table */
 	for (i=0; i<33; i++)
@@ -300,7 +299,6 @@ void qsound_update( int num, INT16 **buffer, int length )
 	int i,j;
 	int rvol, lvol, count;
 	struct QSOUND_CHANNEL *pC=&qsound_channel[0];
-	QSOUND_SRC_SAMPLE * pST;
 	QSOUND_SAMPLE  *datap[2];
 
 	datap[0] = buffer[0];
@@ -314,7 +312,6 @@ void qsound_update( int num, INT16 **buffer, int length )
 		{
 			QSOUND_SAMPLE *pOutL=datap[0];
 			QSOUND_SAMPLE *pOutR=datap[1];
-			pST=qsound_sample_rom+pC->bank;
 			rvol=(pC->rvol*pC->vol)>>8;
 			lvol=(pC->lvol*pC->vol)>>8;
 
@@ -336,7 +333,7 @@ void qsound_update( int num, INT16 **buffer, int length )
 						/* Reached the end, restart the loop */
 						pC->address = (pC->end - pC->loop) & 0xffff;
 					}
-					pC->lastdt=pST[pC->address];
+					pC->lastdt=qsound_sample_rom[(pC->bank+pC->address)%(qsound_sample_rom_length)];
 				}
 
 				(*pOutL) += ((pC->lastdt * lvol) >> 6);
