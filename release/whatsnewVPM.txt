@@ -12,7 +12,10 @@ Version 3.3 (X X, 2020) - ""
    myacdc,acd_170hc
   This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
 
-- fix the additional .raw/non-averaged file output dumping of GTS3 DMDs
+- Fix the additional .raw/non-averaged file output dumping of GTS3 DMDs
+
+- Add Data East alphanumeric support to the builtin alternate sound file support (Sound Mode 1)
+  (only briefly tested though, please report non-working machines)
 
 Version 3.2 (October 6th, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
