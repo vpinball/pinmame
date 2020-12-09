@@ -103,7 +103,6 @@ static struct {
   int sda;				//SDA line
   UINT8 from_8752;		//Data from the 8752
   UINT8 to_8752;		//Data to the 8752
-  int romstarCh;
 #if TEST_FROM_ROM
   void *buffTimer;
   int curr[2];			//Current position we've read from the rom
@@ -685,11 +684,32 @@ static void capcoms_init(struct sndbrdData *brdData) {
 
 WRITE_HANDLER(capcoms_sndCmd_w)
 {
+  UINT16 start = data & 1 ? 0x8000 : 0;
   if (!locals_cap.brdData.subType) {
     send_data_to_8752(data);
   } else {
-    data &= 0x7f;
-    mixer_play_sample_16(locals.romstarCh, (INT16 *)(memory_region(CAPCOMS_ROMREGION) + (data << 15)), 0x8000, 11025, 0);
+    // for testing Goofy Hoops' Q-Sound chip
+    qsound_data_h_w(0, 0);
+    qsound_data_l_w(0, (data & 0x7f) >> 1);
+    qsound_cmd_w(0, 0x78); // channel and bank
+    qsound_data_h_w(0, start / 256);
+    qsound_data_l_w(0, start % 256);
+    qsound_cmd_w(0, 1); // start address
+    qsound_data_h_w(0, 4000 / 256);
+    qsound_data_l_w(0, 4000 % 256);
+    qsound_cmd_w(0, 2); // pitch
+    qsound_data_h_w(0, 0);
+    qsound_data_l_w(0, 0);
+    qsound_cmd_w(0, 4); // no loop
+    qsound_data_h_w(0, (start + 0x7fff) / 256);
+    qsound_data_l_w(0, (start + 0x7fff) % 256);
+    qsound_cmd_w(0, 5); // end address
+    qsound_data_h_w(0, 0);
+    qsound_data_l_w(0, data & 0x80 ? (data & 1 ? 48 : 16) : 32);
+    qsound_cmd_w(0, 0x80); // pan
+    qsound_data_h_w(0, 0x20);
+    qsound_data_l_w(0, 0x00);
+    qsound_cmd_w(0, 6); // volume (and play sample)
   }
 }
 
@@ -766,19 +786,3 @@ void cap_FillBuff(int dummy) {
 }
 
 #endif
-
-static int romstar_sh_start(const struct MachineSound *msound) {
-  if (Machine->gamedrv->flags & GAME_NO_SOUND) {
-    return -1;
-  }
-
-  locals.romstarCh = mixer_allocate_channel(50);
-  mixer_set_name(locals.romstarCh, "Samples");
-  return 0;
-}
-static struct CustomSound_interface romstar_custInt = { romstar_sh_start, NULL, NULL, NULL };
-
-MACHINE_DRIVER_START(romstar)
-  MDRV_IMPORT_FROM(cc)
-  MDRV_SOUND_ADD(CUSTOM, romstar_custInt)
-MACHINE_DRIVER_END

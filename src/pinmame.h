@@ -93,6 +93,7 @@
 #define HAS_YMF262     1
 #define HAS_MEA8000    1
 #define HAS_SAA1099    1
+#define HAS_QSOUND     1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

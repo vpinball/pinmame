@@ -20,7 +20,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 
 // inverted switches for each game (by game number)
 // sw. row number:  0   1     2     3     4     5     6     7     8
-#define capInvSw0  {0}
+#define capInvSw0  {0, 0xf2, 0x7f}
 #define capInvSw1  {0, 0x00, 0x3f, 0x04, 0x00, 0x00, 0x08, 0x00, 0x0e}
 #define capInvSw2  {0, 0x00, 0x3f, 0x04, 0x00, 0x00, 0x08, 0x00, 0x0e}
 #define capInvSw3  {0, 0x00, 0x70, 0x40, 0x78, 0x00, 0x40, 0x80, 0x03}
@@ -75,8 +75,30 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 /*-------------------------------------------------------------------
 / Goofy Hoops (Romstar game) (04/94)
 /-------------------------------------------------------------------*/
-//Might have different hardware mappings as a quick peek of the code looked different than the pins
-INITGAME(ghv101, 0, cc_dispDMD256x64, 3, SNDBRD_ROMSTAR, 0)
+const core_tLCDLayout romstar_dispDMD256x64[] = {
+  {0,0,64,256,CORE_DMD,(genf *)cc_dmd256x64,NULL}, {0}
+};
+static core_tGameData ghvGameData = {0,romstar_dispDMD256x64,{FLIP_SWNO(17,18),0,0,0,SNDBRD_ROMSTAR,0,0},NULL,{"", capInvSw0}};
+static void init_ghv101(void) {
+	core_gameData = &ghvGameData;
+}
+INPUT_PORTS_START(ghv101)
+  CORE_PORTS
+  SIM_PORTS(4)
+  PORT_START
+    COREPORT_BIT(0x0004, "Start",       KEYCODE_1)
+    COREPORT_BIT(0x0008, "Play All",    KEYCODE_2)
+    COREPORT_BIT(0x1000, "Coin #1",     KEYCODE_3)
+    COREPORT_BIT(0x2000, "Coin #2",     KEYCODE_4)
+    COREPORT_BIT(0x4000, "Coin #3",     KEYCODE_5)
+    COREPORT_BIT(0x8000, "Coin #4",     KEYCODE_6)
+    COREPORT_BIT(0x0100, "Diagnostics", KEYCODE_7)
+    COREPORT_BIT(0x0400, "Volume down", KEYCODE_8)
+    COREPORT_BIT(0x0200, "Volume up",   KEYCODE_9)
+    COREPORT_BIT(0x0800, "Free Credit", KEYCODE_0)
+    COREPORT_BIT(0x0040, "Tilt",        KEYCODE_DEL)
+    COREPORT_BIT(0x0080, "Slam",        KEYCODE_HOME)
+INPUT_PORTS_END
 CC_ROMSTART_4(ghv101, "u06_v11.bin", CRC(3b6ab802) SHA1(8c43234ce2af3ba7dc8ab2cd6e2e352b5caa9acc),
                       "u23_v11.bin", CRC(f6cac3aa) SHA1(eb2018f21fdfb27b1e5ca83a09202614fd865b05),
                       "u13_v10.bin", CRC(1712f21f) SHA1(7c0c9d8c28c1c4888f0e6220f3a23d0eb25e218f),
@@ -87,7 +109,7 @@ ROMSTAR_SOUNDROM5("u32_v10.bin", CRC(73ee0ecc) SHA1(48aed6f76c0b506bd39430c7f1ea
                   "u19_v10.bin", CRC(550c1c52) SHA1(f97cceb552a6bffe55c85fc01120ad99d3b7f19b),
                   "u15_v10.bin", CRC(a77c884c) SHA1(10e7e242876fe197f582f1574ed47c4682b87db5))
 CC_ROMEND
-CORE_GAMEDEFNV(ghv101,"Goofy Hoops (Redemption)",1994,"Romstar",romstar,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(ghv101,"Goofy Hoops (Redemption)",1994,"Romstar",romstar,0)
 
 /*-------------------------------------------------------------------
 / Pinball Magic (10/95)

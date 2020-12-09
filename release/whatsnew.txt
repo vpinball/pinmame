@@ -62,6 +62,7 @@ Slightly improve overall YM2203, YM3526, YM3812, Y8950 emulation (older Alvin G.
 Improve SAA1099 emulation (E.F.O.)
 Switch Votrax/SC01 emulation over to real simulation core (some GTS80(A)s and Taitos)
 Correct handling of Gottlieb System 1 displays (thanks to bontango)
+Got Goofy Hoops working when some schematics showed up, illustrating how useful such documents are!
 
 *** SIMULATOR ***
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button

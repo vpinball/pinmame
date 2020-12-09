@@ -555,6 +555,9 @@
     <ClCompile Include="src\sound\msm5205.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
+    <ClCompile Include="src\sound\qsound.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
     <ClCompile Include="src\sound\s14001a.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -1566,6 +1569,9 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\msm5205.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\qsound.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\s14001a.h">
