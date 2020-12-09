@@ -1,3 +1,6 @@
+// license:BSD-3-Clause
+// copyright-holders:Carsten Wächter
+
 #include <time.h>
 #include <dirent.h>
 #include <unistd.h>
@@ -671,7 +674,8 @@ void alt_sound_handle(int boardNo, int cmd)
 
 			if ((core_gameData->gen == GEN_DEDMD16) || // remaps everything to 16bit, a bit stupid maybe
 				(core_gameData->gen == GEN_DEDMD32) ||
-				(core_gameData->gen == GEN_DEDMD64))
+				(core_gameData->gen == GEN_DEDMD64) ||
+				(core_gameData->gen == GEN_DE))        // this one just tested with BTTF so far
 			{
 				if (cmd != 0xFF && cmd != 0x00) // 8 bit command
 				{
