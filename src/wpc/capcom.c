@@ -796,3 +796,163 @@ PINMAME_VIDEO_UPDATE(cc_lamp16x8) {
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
+
+
+// Goofy Hoops - using Q-Sound chip and different memory / port mapping on 68306 MPU 
+
+static data16_t *rom_base2;
+
+static void romstar_irq1(int data) {
+  cpu_set_irq_line(0, MC68306_IRQ_1, PULSE_LINE);
+}
+
+static MACHINE_INIT(romstar) {
+  // Q-Sound emulation in early MAME was not complete - sound may keep playing after reset, so force-mute it
+  int ch;
+  qsound_data_h_w(0, 0);
+  qsound_data_l_w(0, 0);
+  for (ch = 0; ch < 16; ch++) {
+    qsound_cmd_w(0, (ch << 3) | 6); // mute channel
+  }
+
+  memset(&locals, 0, sizeof(locals));
+
+  //Copy roms into correct location (ie. starting at 0x10000000 / 0x20000000 where they are mapped)
+  memcpy(rom_base, memory_region(REGION_USER1), 0x100000);
+  memcpy(rom_base2, memory_region(REGION_USER1) + 0x400000, 0x100000);
+  //Copy 1st 0x400 bytes of rom into RAM for vector table
+  memcpy(ramptr, memory_region(REGION_USER1), 0x400);
+
+  //Init soundboard (needed for sound commander to work)
+  sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
+
+  //IRQ1 clock - trying to come as near as possible to the real thing
+  timer_pulse(TIME_IN_HZ(970), 0, romstar_irq1);
+
+  //IRQ4 clock - might be unused, still pulse it because we don't know what that U8 chip does...
+  timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4);
+}
+
+static INTERRUPT_GEN(romstar_vblank) {
+  coreGlobals.solenoids = locals.solenoids;
+  locals.solenoids = 0;
+
+  core_updateSw(TRUE);
+}
+
+static SWITCH_UPDATE(romstar) {
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xcc, 3);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xff, 4);
+  }
+}
+
+static READ16_HANDLER(sw_r) {
+  if (offset) {
+    return coreGlobals.swMatrix[1] | (coreGlobals.swMatrix[3] << 8);
+  }
+  return coreGlobals.swMatrix[2] | (coreGlobals.swMatrix[4] << 8);
+}
+
+static READ16_HANDLER(snd_r) {
+  return qsound_status_r(0);
+}
+
+static WRITE16_HANDLER(snd_w) {
+  static UINT8 cmd;
+  if (offset) {
+    qsound_data_h_w(0, data >> 8);
+    qsound_data_l_w(0, data & 0xff);
+    qsound_cmd_w(0, cmd);
+  } else {
+    cmd = data & 0xff;
+  }
+}
+
+static WRITE16_HANDLER(vol_w) {
+  if (data == 0x82 && locals.vset) locals.vset--;
+  if (data == 0xaa && locals.vset < 100) locals.vset++;
+  mixer_set_volume(0, locals.vset);
+  mixer_set_volume(1, locals.vset);
+}
+
+static WRITE16_HANDLER(disp_w) {
+  if (!offset) locals.visible_page = 0x70 | data;
+}
+
+static WRITE16_HANDLER(sol_w) {
+  locals.solenoids |= data << (offset * 8);
+  coreGlobals.solenoids = locals.solenoids;
+}
+
+static WRITE16_HANDLER(lamp_w) {
+  if (locals.swCol >= 0) {
+    coreGlobals.tmpLampMatrix[locals.swCol] |= core_revbyte(data & 0xff);
+    coreGlobals.lampMatrix[locals.swCol] = coreGlobals.tmpLampMatrix[locals.swCol];
+  }
+}
+
+static WRITE16_HANDLER(col_w) {
+  if (!data) {
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+  }
+  locals.swCol = data ? 7 - core_BitColToNum(data & 0xff) : -1;
+}
+
+static MEMORY_READ16_START(romstar_readmem)
+  { 0x00000000, 0x0007ffff, MRA16_RAM },
+  { 0x10000000, 0x100fffff, MRA16_ROM },
+  { 0x20000000, 0x200fffff, MRA16_ROM },
+  { 0x30000000, 0x3000ffff, MRA16_RAM },
+  { 0x50000008, 0x50000009, snd_r },
+  { 0x60000000, 0x60000003, sw_r },
+MEMORY_END
+
+static MEMORY_WRITE16_START(romstar_writemem)
+  { 0x00000000, 0x0007ffff, MWA16_RAM, &ramptr },
+  { 0x10000000, 0x100fffff, MWA16_ROM, &rom_base },
+  { 0x20000000, 0x200fffff, MWA16_ROM, &rom_base2 },
+  { 0x30000000, 0x3000ffff, MWA16_RAM, &CMOS },
+  { 0x40000000, 0x4000ffff, disp_w },
+  { 0x50000008, 0x5000000b, snd_w },
+  { 0x5000000c, 0x5000000d, vol_w },
+  { 0x60000004, 0x60000009, sol_w },
+  { 0x6000000a, 0x6000000b, lamp_w },
+  { 0x6000000c, 0x6000000d, col_w },
+MEMORY_END
+
+static READ16_HANDLER(romstar_port_r) {
+  return 0xffff; // no idea, schematics show all-pullup resistors
+}
+
+static WRITE16_HANDLER(romstar_port_w) {
+  coreGlobals.diagnosticLed = data & 8 ? 0 : 1;
+}
+
+static PORT_READ16_START(romstar_readport)
+  {0, 1, romstar_port_r},
+PORT_END
+
+static PORT_WRITE16_START(romstar_writeport)
+  {0, 1, romstar_port_w},
+PORT_END
+
+static struct QSound_interface romstar_qsoundInt = {
+  QSOUND_CLOCK,
+  CAPCOMS_ROMREGION,
+  {MIXER(100,MIXER_PAN_LEFT), MIXER(100,MIXER_PAN_RIGHT)}
+};
+
+MACHINE_DRIVER_START(romstar)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(romstar, NULL, NULL)
+  MDRV_CPU_ADD(M68306, CPU_CLOCK)
+  MDRV_CPU_MEMORY(romstar_readmem, romstar_writemem)
+  MDRV_CPU_PORTS(romstar_readport, romstar_writeport)
+  MDRV_CPU_VBLANK_INT(romstar_vblank, 1)
+  MDRV_NVRAM_HANDLER(cc)
+  MDRV_SWITCH_UPDATE(romstar)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_ADD(QSOUND, romstar_qsoundInt)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END

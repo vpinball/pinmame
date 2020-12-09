@@ -2351,6 +2351,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\qsound.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\qsound.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\s14001a.c"
 						>
 					</File>
