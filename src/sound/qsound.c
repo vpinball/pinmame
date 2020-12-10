@@ -1,8 +1,6 @@
 // license:BSD-3-Clause
 // copyright-holders:superctr, Valley Bell
 
-//!! wire up VGM output support
-
 /***************************************************************************
 
   Capcom QSound DL-1425 (HLE)
@@ -18,6 +16,7 @@
 ***************************************************************************/
 
 #include "driver.h"
+#include "../ext/vgm/vgmwrite.h"
 
 #include "qsound_dl-1425.h"
 
@@ -39,6 +38,8 @@ Debug defines
 static const uint8_t *qsound_sample_rom; // QSound sample ROM
 static unsigned int qsound_sample_rom_length;
 static unsigned int qsound_sample_rom_mask;
+
+static uint16_t m_vgm_idx;
 
 //
 
@@ -184,6 +185,9 @@ int qsound_sh_start(const struct MachineSound *msound)
 	qsound_sample_rom_length = memory_region_length(intf->region);
 	qsound_sample_rom_mask = pow2_mask(qsound_sample_rom_length);
 
+	m_vgm_idx = vgm_open(VGMC_QSOUND, intf->clock);
+	vgm_dump_sample_rom(m_vgm_idx, 0x01, intf->region);
+
 	//!! init all stuff incl. structs with 0? should not be necessary as STATE_BOOT will init all
 
 	m_data_latch = 0;
@@ -262,6 +266,8 @@ WRITE_HANDLER( qsound_data_l_w )
 
 WRITE_HANDLER( qsound_cmd_w )
 {
+	vgm_write(m_vgm_idx, 0x00, m_data_latch, data);
+
 	stream_update(m_stream, 0);
 	qsound_write_data(data, m_data_latch);
 }
