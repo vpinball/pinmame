@@ -1013,7 +1013,7 @@ struct snd_interface sndintf[] =
 		qsound_sh_start,
 		qsound_sh_stop,
 		0,
-		0
+		qsound_sh_reset
 	},
 #endif
 #if (HAS_SAA1099)

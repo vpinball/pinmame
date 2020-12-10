@@ -807,14 +807,6 @@ static void romstar_irq1(int data) {
 }
 
 static MACHINE_INIT(romstar) {
-  // Q-Sound emulation in early MAME was not complete - sound may keep playing after reset, so force-mute it
-  int ch;
-  qsound_data_h_w(0, 0);
-  qsound_data_l_w(0, 0);
-  for (ch = 0; ch < 16; ch++) {
-    qsound_cmd_w(0, (ch << 3) | 6); // mute channel
-  }
-
   memset(&locals, 0, sizeof(locals));
 
   //Copy roms into correct location (ie. starting at 0x10000000 / 0x20000000 where they are mapped)
