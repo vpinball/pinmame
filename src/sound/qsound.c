@@ -1,10 +1,15 @@
 // license:BSD-3-Clause
 // copyright-holders:Paul Leaman, Miguel Angel Horna
 
+//!! wire up VGM output support
+
+//!! use latest MAME HLE core
+//!! or use ctr version in libvgm/vgmplay (which seems to be roughly the same as the new MAME HLE though)
+
 /***************************************************************************
 
-  Capcom System QSound(tm)
-  ========================
+  Capcom System QSound™ (HLE)
+  ===========================
 
   Driver by Paul Leaman and Miguel Angel Horna
 
@@ -37,25 +42,18 @@ Debug defines
 #define LOG_QSOUND  0
 
 /* 8 bit source ROM samples */
-typedef signed char QSOUND_SRC_SAMPLE;
+typedef unsigned char QSOUND_SRC_SAMPLE;
 
-#define QSOUND_CLOCKDIV (2*1248)  /* /2/1248 clock divider */
+#define QSOUND_CLOCKDIV (2*1248)  // DSP program uses 1248 machine cycles per iteration
 #define QSOUND_CHANNELS 16
 
 typedef struct QSOUND_CHANNEL
 {
-	UINT32 bank;        // bank
-	UINT32 address;     // start/cur address
-	UINT16 loop;        // loop address
-	UINT16 end;         // end address
-	UINT32 freq;        // frequency
-	UINT16 vol;         // master volume
+	unsigned short reg[8]; // channel control registers
 
 	// work variables
-	UINT8 enabled;      // key on / key off
 	int lvol;           // left volume
 	int rvol;           // right volume
-	UINT32 step_ptr;    // current offset counter
 } qsound_channel;
 
 
@@ -63,7 +61,7 @@ typedef struct QSOUND_CHANNEL
 static struct QSound_interface *intf;	/* Interface  */
 static int qsound_stream;				/* Audio stream */
 static qsound_channel channel[QSOUND_CHANNELS];
-static unsigned short qsound_data;					/* register latch data */
+static unsigned short qsound_data;		/* register latch data */
 QSOUND_SRC_SAMPLE *qsound_sample_rom;	/* Q sound sample ROM */
 static unsigned int qsound_sample_rom_length;
 static unsigned int qsound_sample_rom_mask;
@@ -92,9 +90,14 @@ INLINE UINT32 pow2_mask(UINT32 v)
 	return v;
 }
 
+INLINE unsigned int saturate(long long val)
+{
+	return (int)min(max(val, (long long)INT_MIN), (long long)INT_MAX);
+}
+
 int qsound_sh_start(const struct MachineSound *msound)
 {
-	int i;
+	int i,adr;
 
 	intf = msound->sound_interface;
 
@@ -134,6 +137,9 @@ int qsound_sh_start(const struct MachineSound *msound)
 			qsound_update );
 	}
 
+	for (adr = 0x80; adr < 0x90; adr++)
+		qsound_write_data(adr, 0x120);
+
 #if LOG_WAVE
 	fpRawDataR=fopen("qsoundr.raw", "w+b");
 	fpRawDataL=fopen("qsoundl.raw", "w+b");
@@ -162,29 +168,25 @@ void qsound_sh_stop (void)
 
 void qsound_sh_reset(void)
 {
-	int adr;
-
-	// init sound regs
-	memset(channel, 0, sizeof(channel));
-
-	for (adr = 0x7f; adr >= 0; adr--)
-		qsound_write_data(adr, 0);
-	for (adr = 0x80; adr < 0x90; adr++)
-		qsound_write_data(adr, 0x120);
+	int i,j;
+	for (i = 0; i < QSOUND_CHANNELS; ++i)
+		for (j = 0; j < 8; ++j)
+			channel[i].reg[j] = 0;
 }
 
 WRITE_HANDLER( qsound_data_h_w )
 {
-	qsound_data=(qsound_data&0xff)|(data<<8);
+	qsound_data = (qsound_data & 0x00ff) | (data << 8);
 }
 
 WRITE_HANDLER( qsound_data_l_w )
 {
-	qsound_data=(qsound_data&0xff00)|data;
+	qsound_data = (qsound_data & 0xff00) | data;
 }
 
 WRITE_HANDLER( qsound_cmd_w )
 {
+	stream_update(qsound_stream, 0);
 	qsound_write_data(data, qsound_data);
 }
 
@@ -196,16 +198,13 @@ READ_HANDLER( qsound_status_r )
 
 static void qsound_write_data(UINT8 address, UINT16 data)
 {
-	int ch = 0, reg = 0;
+	int ch = 0, reg;
 
-	// direct sound reg
 	if (address < 0x80)
 	{
 		ch = address >> 3;
 		reg = address & 7;
 	}
-
-	// >= 0x80 is probably for the dsp?
 	else if (address < 0x90)
 	{
 		ch = address & 0xf;
@@ -224,133 +223,76 @@ static void qsound_write_data(UINT8 address, UINT16 data)
 
 	switch (reg)
 	{
-		case 0:
-			// bank, high bits unknown
-			ch = (ch + 1) & 0xf; // strange ...
-			channel[ch].bank = data << 16;
-			break;
+	case 0: // bank
+	case 1: // current sample
+	case 2: // playback rate
+	case 3: // sample interval counter
+	case 4: // loop offset
+	case 5: // end sample
+	case 6: // channel volume
+	case 7: // unused
+		channel[ch].reg[reg] = data;
+		break;
 
-		case 1:
-			// start/cur address
-			channel[ch].address = data;
-			break;
+	case 8:
+	{
+		// panning (left=0x0110, centre=0x0120, right=0x0130)
+		// looks like it doesn't write other values than that
+		int pan = (data & 0x3f) - 0x10;
+		if (pan > 0x20)
+			pan = 0x20;
+		if (pan < 0)
+			pan = 0;
 
-		case 2:
-			// frequency
-			channel[ch].freq = data;
-#if 0
-			if (data == 0)
-			{
-				// key off
-				channel[ch].enabled = 0;
-			}
-#endif
-			break;
+		channel[ch].rvol = qsound_pan_table[pan];
+		channel[ch].lvol = qsound_pan_table[0x20 - pan];
+		break;
+	}
 
-		case 3:
-			// key on (does the value matter? it always writes 0x8000)
-			channel[ch].enabled = (data & 0x8000) >> 15;
-			channel[ch].step_ptr = 0;
-			break;
+	case 9:
+		// unknown
+		break;
 
-		case 4:
-			// loop address
-			channel[ch].loop = data;
-			break;
-
-		case 5:
-			// end address
-			channel[ch].end = data;
-			break;
-
-		case 6:
-			// master volume
-			channel[ch].vol = data;
-			break;
-
-		case 7:
-			// unused?
-			break;
-
-		case 8:
-		{
-			// panning (left=0x0110, centre=0x0120, right=0x0130)
-			// looks like it doesn't write other values than that
-			int pan = (data & 0x3f) - 0x10;
-			if (pan > 0x20)
-				pan = 0x20;
-			if (pan < 0)
-				pan = 0;
-			
-			channel[ch].rvol = qsound_pan_table[pan];
-			channel[ch].lvol = qsound_pan_table[0x20 - pan];
-			break;
-		}
-
-		case 9:
-			// unknown
-			break;
-
-		default:
-			//logerror("%s: write_data %02x = %04x\n", machine().describe_context(), address, data);
-			break;
+	default:
+		//logerror("%s: write_data %02x = %04x\n", machine().describe_context(), address, data);
+		break;
 	}
 }
 
-
 void qsound_update( int num, INT16 **buffer, int length )
 {
-	unsigned int j;
+	unsigned int n;
 
 	memset(buffer[0], 0, length * sizeof(INT16));
 	memset(buffer[1], 0, length * sizeof(INT16));
 	if (! qsound_sample_rom_length)
 		return;
 
-	for (j = 0; j < QSOUND_CHANNELS; j++)
+	for (n = 0; n < QSOUND_CHANNELS; ++n)
 	{
-		qsound_channel *pC = &channel[j];
-		if (pC->enabled)
+		qsound_channel *pC = &channel[n];
+
+		// Go through the buffer and add voice contributions
+		const unsigned int bank = channel[(n + QSOUND_CHANNELS - 1) & (QSOUND_CHANNELS - 1)].reg[0] & 0x7fff;
+		int i;
+		for (i = 0; i < length; i++)
 		{
-			unsigned int i;
-			// Go through the buffer and add voice contributions
-			for (i = 0; i < length; i++)
-			{
-				unsigned int offset;
-				signed char sample;
+			// current sample address (bank comes from previous channel)
+			const unsigned int addr = pC->reg[1] | (bank << 16);
 
-				pC->address += (pC->step_ptr >> 12);
-				pC->step_ptr &= 0xfff;
-				pC->step_ptr += pC->freq;
+			// update based on playback rate
+			long long updated = (int)((unsigned int)pC->reg[2] << 4) + (int)(((unsigned int)pC->reg[1] << 16) | pC->reg[3]);
+			pC->reg[3] = (unsigned short)saturate(updated);
+			if (updated >= (int)((unsigned int)pC->reg[5] << 16))
+				updated -= (int)((unsigned int)pC->reg[4] << 16);
+			pC->reg[1] = (unsigned short)(saturate(updated) >> 16);
 
-				if (pC->address >= pC->end)
-				{
-					if (pC->loop)
-					{
-						// Reached the end, restart the loop
-						pC->address -= pC->loop;
+			// get the scaled sample
+			const int scaled = (int)((signed short)pC->reg[6]) * (signed short)((unsigned short)qsound_sample_rom[addr & qsound_sample_rom_mask] << 8);
 
-						// Make sure we don't overflow (what does the real chip do in this case?)
-						if (pC->address >= pC->end)
-							pC->address = pC->end - pC->loop;
-
-						pC->address &= 0xffff;
-					}
-					else
-					{
-						// Reached the end of a non-looped sample
-						//pC->enabled = 0;
-						pC->address --;	// ensure that old ripped VGMs still work
-						pC->step_ptr += 0x1000;
-						break;
-					}
-				}
-
-				offset = pC->bank | pC->address;
-				sample = qsound_sample_rom[offset & qsound_sample_rom_mask];
-				buffer[0][i] += (((int)sample * pC->lvol * (int)pC->vol) >> 14);
-				buffer[1][i] += (((int)sample * pC->rvol * (int)pC->vol) >> 14);
-			}
+			// apply simple panning
+			buffer[0][i] += ((scaled >> 8) * pC->lvol) >> 14;
+			buffer[1][i] += ((scaled >> 8) * pC->rvol) >> 14;
 		}
 	}
 
