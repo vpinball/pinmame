@@ -1,33 +1,29 @@
+// license:BSD-3-Clause
+// copyright-holders:Paul Leaman, Miguel Angel Horna
+
 /***************************************************************************
 
   Capcom System QSound(tm)
   ========================
 
-  Driver by Paul Leaman (paul@vortexcomputing.demon.co.uk)
-        and Miguel Angel Horna (mahorna@teleline.es)
+  Driver by Paul Leaman and Miguel Angel Horna
 
   A 16 channel stereo sample player.
 
   QSpace position is simulated by panning the sound in the stereo space.
 
-  Register
-  0  xxbb   xx = unknown bb = start high address
-  1  ssss   ssss = sample start address
-  2  pitch
-  3  unknown (always 0x8000)
-  4  loop offset from end address
-  5  end
-  6  master channel volume
-  7  not used
-  8  Balance (left=0x0110  centre=0x0120 right=0x0130)
-  9  unknown (most fixed samples use 0 for this register)
-
   Many thanks to CAB (the author of Amuse), without whom this probably would
   never have been finished.
 
-  If anybody has some information about this hardware, please send it to me
-  to mahorna@teleline.es or 432937@cepsz.unizar.es.
-  http://teleline.terra.es/personal/mahorna
+  TODO:
+  - hook up the DSP!
+  - is master volume really linear?
+  - understand higher bits of reg 0
+  - understand reg 9
+  - understand other writes to $90-$ff area
+
+  Links:
+  https://siliconpr0n.org/map/capcom/dl-1425
 
 ***************************************************************************/
 
@@ -43,40 +39,34 @@ Debug defines
 /* 8 bit source ROM samples */
 typedef signed char QSOUND_SRC_SAMPLE;
 
-
-#define QSOUND_CLOCKDIV 166			 /* Clock divider */
+#define QSOUND_CLOCKDIV (2*1248)  /* /2/1248 clock divider */
 #define QSOUND_CHANNELS 16
-typedef INT16 QSOUND_SAMPLE;
 
-struct QSOUND_CHANNEL
+typedef struct QSOUND_CHANNEL
 {
-	int bank;	   /* bank (x16)	*/
-	int address;	/* start address */
-	int pitch;	  /* pitch */
-	int reg3;	   /* unknown (always 0x8000) */
-	int loop;	   /* loop address */
-	int end;		/* end address */
-	int vol;		/* master volume */
-	int pan;		/* Pan value */
-	int reg9;	   /* unknown */
+	UINT32 bank;        // bank
+	UINT32 address;     // start/cur address
+	UINT16 loop;        // loop address
+	UINT16 end;         // end address
+	UINT32 freq;        // frequency
+	UINT16 vol;         // master volume
 
-	/* Work variables */
-	int key;		/* Key on / key off */
-
-	int lvol;	   /* left volume */
-	int rvol;	   /* right volume */
-	int lastdt;	 /* last sample value */
-	int offset;	 /* current offset counter */
-};
+	// work variables
+	UINT8 enabled;      // key on / key off
+	int lvol;           // left volume
+	int rvol;           // right volume
+	UINT32 step_ptr;    // current offset counter
+} qsound_channel;
 
 
 /* Private variables */
 static struct QSound_interface *intf;	/* Interface  */
 static int qsound_stream;				/* Audio stream */
-static struct QSOUND_CHANNEL qsound_channel[QSOUND_CHANNELS];
-static int qsound_data;					/* register latch data */
+static qsound_channel channel[QSOUND_CHANNELS];
+static unsigned short qsound_data;					/* register latch data */
 QSOUND_SRC_SAMPLE *qsound_sample_rom;	/* Q sound sample ROM */
 static unsigned int qsound_sample_rom_length;
+static unsigned int qsound_sample_rom_mask;
 
 static int qsound_pan_table[33];		/* Pan volume table */
 
@@ -87,7 +77,20 @@ static FILE *fpRawDataR;
 
 /* Function prototypes */
 void qsound_update( int num, INT16 **buffer, int length );
-void qsound_set_command(int data, int value);
+void qsound_write_data(UINT8 address, UINT16 data);
+
+INLINE UINT32 pow2_mask(UINT32 v)
+{
+	if (v == 0)
+		return 0;
+	v --;
+	v |= (v >>  1);
+	v |= (v >>  2);
+	v |= (v >>  4);
+	v |= (v >>  8);
+	v |= (v >> 16);
+	return v;
+}
 
 int qsound_sh_start(const struct MachineSound *msound)
 {
@@ -97,14 +100,13 @@ int qsound_sh_start(const struct MachineSound *msound)
 
 	qsound_sample_rom = (QSOUND_SRC_SAMPLE *)memory_region(intf->region);
 	qsound_sample_rom_length = memory_region_length(intf->region);
+	qsound_sample_rom_mask = pow2_mask(qsound_sample_rom_length);
 
-	memset(qsound_channel, 0, sizeof(qsound_channel));
+	memset(channel, 0, sizeof(channel));
 
-	/* Create pan table */
-	for (i=0; i<33; i++)
-	{
-		qsound_pan_table[i]=(int)((256./sqrt(32.)) * sqrt(i));
-	}
+	// create pan table
+	for (i = 0; i < 33; i++)
+		qsound_pan_table[i] = (int)((256 / sqrt(32.0)) * sqrt((double)i));
 
 #if LOG_QSOUND
 	logerror("Pan table\n");
@@ -113,7 +115,7 @@ int qsound_sh_start(const struct MachineSound *msound)
 #endif
 	{
 		/* Allocate stream */
-#define CHANNELS ( 2 )
+#define CHANNELS 2
 		char buf[CHANNELS][40];
 		const char *name[CHANNELS];
 		int  vol[2];
@@ -121,8 +123,8 @@ int qsound_sh_start(const struct MachineSound *msound)
 		name[1] = buf[1];
 		sprintf( buf[0], "%s L", sound_name(msound) );
 		sprintf( buf[1], "%s R", sound_name(msound) );
-		vol[0]=MIXER(intf->mixing_level[0], MIXER_PAN_LEFT);
-		vol[1]=MIXER(intf->mixing_level[1], MIXER_PAN_RIGHT);
+		vol[0] = MIXER(intf->mixing_level[0], MIXER_PAN_LEFT);
+		vol[1] = MIXER(intf->mixing_level[1], MIXER_PAN_RIGHT);
 		qsound_stream = stream_init_multi(
 			CHANNELS,
 			name,
@@ -141,7 +143,7 @@ int qsound_sh_start(const struct MachineSound *msound)
 	}
 #endif
 
-	return 0;
+	return 0x00;
 }
 
 void qsound_sh_stop (void)
@@ -158,6 +160,19 @@ void qsound_sh_stop (void)
 #endif
 }
 
+void qsound_sh_reset(void)
+{
+	int adr;
+
+	// init sound regs
+	memset(channel, 0, sizeof(channel));
+
+	for (adr = 0x7f; adr >= 0; adr--)
+		qsound_write_data(adr, 0);
+	for (adr = 0x80; adr < 0x90; adr++)
+		qsound_write_data(adr, 0x120);
+}
+
 WRITE_HANDLER( qsound_data_h_w )
 {
 	qsound_data=(qsound_data&0xff)|(data<<8);
@@ -170,7 +185,7 @@ WRITE_HANDLER( qsound_data_l_w )
 
 WRITE_HANDLER( qsound_cmd_w )
 {
-	qsound_set_command(data, qsound_data);
+	qsound_write_data(data, qsound_data);
 }
 
 READ_HANDLER( qsound_status_r )
@@ -179,178 +194,168 @@ READ_HANDLER( qsound_status_r )
 	return 0x80;
 }
 
-void qsound_set_command(int data, int value)
+static void qsound_write_data(UINT8 address, UINT16 data)
 {
-	int ch=0,reg=0;
-	if (data < 0x80)
+	int ch = 0, reg = 0;
+
+	// direct sound reg
+	if (address < 0x80)
 	{
-		ch=data>>3;
-		reg=data & 0x07;
+		ch = address >> 3;
+		reg = address & 7;
+	}
+
+	// >= 0x80 is probably for the dsp?
+	else if (address < 0x90)
+	{
+		ch = address & 0xf;
+		reg = 8;
+	}
+	else if (address >= 0xba && address < 0xca)
+	{
+		ch = address - 0xba;
+		reg = 9;
 	}
 	else
 	{
-		if (data < 0x90)
-		{
-			ch=data-0x80;
-			reg=8;
-		}
-		else
-		{
-			if (data >= 0xba && data < 0xca)
-			{
-				ch=data-0xba;
-				reg=9;
-			}
-			else
-			{
-				/* Unknown registers */
-				ch=99;
-				reg=99;
-			}
-		}
+		// unknown
+		reg = address;
 	}
 
 	switch (reg)
 	{
-		case 0: /* Bank */
-			ch=(ch+1)&0x0f;	/* strange ... */
-			qsound_channel[ch].bank=(value&0x7f)<<16;
-#ifdef MAME_DEBUG
-			if (!value & 0x8000)
-				usrintf_showmessage("Register3=%04x",value);
-#endif
-
-			break;
-		case 1: /* start */
-			qsound_channel[ch].address=value;
-			break;
-		case 2: /* pitch */
-			qsound_channel[ch].pitch=value * 16;
-			if (!value)
-			{
-				/* Key off */
-				qsound_channel[ch].key=0;
-			}
-			break;
-		case 3: /* unknown */
-			qsound_channel[ch].reg3=value;
-#ifdef MAME_DEBUG
-			if (value != 0x8000)
-				usrintf_showmessage("Register3=%04x",value);
-#endif
-			break;
-		case 4: /* loop offset */
-			qsound_channel[ch].loop=value;
-			break;
-		case 5: /* end */
-			qsound_channel[ch].end=value;
-			break;
-		case 6: /* master volume */
-			if (value==0)
-			{
-				/* Key off */
-				qsound_channel[ch].key=0;
-			}
-			else if (qsound_channel[ch].key==0)
-			{
-				/* Key on */
-				qsound_channel[ch].key=1;
-				qsound_channel[ch].offset=0;
-				qsound_channel[ch].lastdt=0;
-			}
-			qsound_channel[ch].vol=value;
+		case 0:
+			// bank, high bits unknown
+			ch = (ch + 1) & 0xf; // strange ...
+			channel[ch].bank = data << 16;
 			break;
 
-		case 7:  /* unused */
-#ifdef MAME_DEBUG
-				usrintf_showmessage("UNUSED QSOUND REG 7=%04x",value);
-#endif
-
+		case 1:
+			// start/cur address
+			channel[ch].address = data;
 			break;
+
+		case 2:
+			// frequency
+			channel[ch].freq = data;
+#if 0
+			if (data == 0)
+			{
+				// key off
+				channel[ch].enabled = 0;
+			}
+#endif
+			break;
+
+		case 3:
+			// key on (does the value matter? it always writes 0x8000)
+			channel[ch].enabled = (data & 0x8000) >> 15;
+			channel[ch].step_ptr = 0;
+			break;
+
+		case 4:
+			// loop address
+			channel[ch].loop = data;
+			break;
+
+		case 5:
+			// end address
+			channel[ch].end = data;
+			break;
+
+		case 6:
+			// master volume
+			channel[ch].vol = data;
+			break;
+
+		case 7:
+			// unused?
+			break;
+
 		case 8:
-			{
-			   int pandata=(value-0x10)&0x3f;
-			   if (pandata > 32)
-			   {
-					pandata=32;
-			   }
-			   qsound_channel[ch].rvol=qsound_pan_table[pandata];
-			   qsound_channel[ch].lvol=qsound_pan_table[32-pandata];
-			   qsound_channel[ch].pan = value;
-			}
+		{
+			// panning (left=0x0110, centre=0x0120, right=0x0130)
+			// looks like it doesn't write other values than that
+			int pan = (data & 0x3f) - 0x10;
+			if (pan > 0x20)
+				pan = 0x20;
+			if (pan < 0)
+				pan = 0;
+			
+			channel[ch].rvol = qsound_pan_table[pan];
+			channel[ch].lvol = qsound_pan_table[0x20 - pan];
 			break;
-		 case 9:
-			qsound_channel[ch].reg9=value;
-/*
-#ifdef MAME_DEBUG
-			usrintf_showmessage("QSOUND REG 9=%04x",value);
-#endif
-*/
+		}
+
+		case 9:
+			// unknown
+			break;
+
+		default:
+			//logerror("%s: write_data %02x = %04x\n", machine().describe_context(), address, data);
 			break;
 	}
-#if LOG_QSOUND
-	logerror("QSOUND WRITE %02x CH%02d-R%02d =%04x\n", data, ch, reg, value);
-#endif
 }
 
 
 void qsound_update( int num, INT16 **buffer, int length )
 {
-	int i,j;
-	int rvol, lvol, count;
-	struct QSOUND_CHANNEL *pC=&qsound_channel[0];
-	QSOUND_SAMPLE  *datap[2];
+	unsigned int j;
 
-	datap[0] = buffer[0];
-	datap[1] = buffer[1];
-	memset( datap[0], 0x00, length * sizeof(QSOUND_SAMPLE) );
-	memset( datap[1], 0x00, length * sizeof(QSOUND_SAMPLE) );
+	memset(buffer[0], 0, length * sizeof(INT16));
+	memset(buffer[1], 0, length * sizeof(INT16));
+	if (! qsound_sample_rom_length)
+		return;
 
-	for (i=0; i<QSOUND_CHANNELS; i++)
+	for (j = 0; j < QSOUND_CHANNELS; j++)
 	{
-		if (pC->key)
+		qsound_channel *pC = &channel[j];
+		if (pC->enabled)
 		{
-			QSOUND_SAMPLE *pOutL=datap[0];
-			QSOUND_SAMPLE *pOutR=datap[1];
-			rvol=(pC->rvol*pC->vol)>>8;
-			lvol=(pC->lvol*pC->vol)>>8;
-
-			for (j=length-1; j>=0; j--)
+			unsigned int i;
+			// Go through the buffer and add voice contributions
+			for (i = 0; i < length; i++)
 			{
-				count=(pC->offset)>>16;
-				pC->offset &= 0xffff;
-				if (count)
+				unsigned int offset;
+				signed char sample;
+
+				pC->address += (pC->step_ptr >> 12);
+				pC->step_ptr &= 0xfff;
+				pC->step_ptr += pC->freq;
+
+				if (pC->address >= pC->end)
 				{
-					pC->address += count;
-					if (pC->address >= pC->end)
+					if (pC->loop)
 					{
-						if (!pC->loop)
-						{
-							/* Reached the end of a non-looped sample */
-							pC->key=0;
-							break;
-						}
-						/* Reached the end, restart the loop */
-						pC->address = (pC->end - pC->loop) & 0xffff;
+						// Reached the end, restart the loop
+						pC->address -= pC->loop;
+
+						// Make sure we don't overflow (what does the real chip do in this case?)
+						if (pC->address >= pC->end)
+							pC->address = pC->end - pC->loop;
+
+						pC->address &= 0xffff;
 					}
-					pC->lastdt=qsound_sample_rom[(pC->bank+pC->address)%(qsound_sample_rom_length)];
+					else
+					{
+						// Reached the end of a non-looped sample
+						//pC->enabled = 0;
+						pC->address --;	// ensure that old ripped VGMs still work
+						pC->step_ptr += 0x1000;
+						break;
+					}
 				}
 
-				(*pOutL) += ((pC->lastdt * lvol) >> 6);
-				(*pOutR) += ((pC->lastdt * rvol) >> 6);
-				pOutL++;
-				pOutR++;
-				pC->offset += pC->pitch;
+				offset = pC->bank | pC->address;
+				sample = qsound_sample_rom[offset & qsound_sample_rom_mask];
+				buffer[0][i] += (((int)sample * pC->lvol * (int)pC->vol) >> 14);
+				buffer[1][i] += (((int)sample * pC->rvol * (int)pC->vol) >> 14);
 			}
 		}
-		pC++;
 	}
 
 #if LOG_WAVE
-	fwrite(datap[0], length*sizeof(QSOUND_SAMPLE), 1, fpRawDataL);
-	fwrite(datap[1], length*sizeof(QSOUND_SAMPLE), 1, fpRawDataR);
+	fwrite(buffer[0], length*sizeof(INT16), 1, fpRawDataL);
+	fwrite(buffer[1], length*sizeof(INT16), 1, fpRawDataR);
 #endif
 }
-
-
-/**************** end of file ****************/
