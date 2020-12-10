@@ -108,7 +108,11 @@
 #if defined(_DEBUG)
  #define INLINE static
 #else
- #define INLINE static __forceinline
+ #if defined __LP64__ || defined _WIN64 // at least VC2015s 64bit linker gets stuck
+  #define INLINE static __inline
+ #else
+  #define INLINE static __forceinline
+ #endif
 #endif
 //#pragma warning(disable:4018)		// "signed/unsigned mismatch"
 //#pragma warning(disable:4146)		// "unary minus operator applied to unsigned type"
