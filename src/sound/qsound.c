@@ -14,6 +14,10 @@
   https://siliconpr0n.org/map/capcom/dl-1425
 
 ***************************************************************************/
+#if (!defined _MSC_VER)
+#define min(x,y) ((x)<(y)?(x):(y))
+#define max(x,y) ((x)>(y)?(x):(y))
+#endif
 
 #include "driver.h"
 #include "../ext/vgm/vgmwrite.h"
@@ -343,8 +347,7 @@ static void init_register_map()
 
 INLINE int16_t read_sample(uint16_t bank, uint16_t address)
 {
-	bank &= 0x7FFF;
-	const uint32_t rom_addr = (bank << 16) | (address << 0);
+	const uint32_t rom_addr = ((bank & 0x7FFF) << 16) | (address << 0);
 	const uint8_t sample_data = qsound_sample_rom[rom_addr & qsound_sample_rom_mask];
 	return (int16_t)(sample_data << 8); // bit0-7 is tied to ground
 }
@@ -493,13 +496,14 @@ static void state_refresh_filter_2()
 // with full rate and volume control.
 INLINE int16_t qsound_voice_update(qsound_voice* qv, int32_t *echo_out)
 {
+	int32_t new_phase;
 	// Read sample from rom and apply volume
 	const int16_t output = (qv->m_volume * read_sample(qv->m_bank, qv->m_addr)) >> 14;
 
 	*echo_out += (output * qv->m_echo) << 2;
 
 	// Add delta to the phase and loop back if required
-	int32_t new_phase = qv->m_rate + ((qv->m_addr << 12) | (qv->m_phase >> 4));
+	new_phase = qv->m_rate + ((qv->m_addr << 12) | (qv->m_phase >> 4));
 
 	if ((new_phase >> 12) >= qv->m_end_addr)
 		new_phase -= (qv->m_loop_len << 12);
@@ -520,6 +524,7 @@ INLINE int16_t qsound_voice_update(qsound_voice* qv, int32_t *echo_out)
 INLINE int16_t qsound_adpcm_update(qsound_adpcm *qa, int16_t curr_sample, int nibble)
 {
 	int8_t step;
+	int32_t delta;
 	if (!nibble)
 	{
 		// Mute voice when it reaches the end address.
@@ -549,7 +554,7 @@ INLINE int16_t qsound_adpcm_update(qsound_adpcm *qa, int16_t curr_sample, int ni
 	step >>= 4;
 
 	// delta = (0.5 + abs(step)) * m_step_size
-	int32_t delta = ((1 + abs(step << 1)) * qa->m_step_size) >> 1;
+	delta = ((1 + abs(step << 1)) * qa->m_step_size) >> 1;
 	if (step <= 0)
 		delta = -delta;
 	delta += curr_sample;
@@ -565,6 +570,7 @@ INLINE int16_t qsound_adpcm_update(qsound_adpcm *qa, int16_t curr_sample, int ni
 // the output from the delay line to smooth samples over time.
 INLINE int16_t qsound_echo_apply(qsound_echo *qe, int32_t input)
 {
+	int32_t new_sample;
 	// get average of last 2 samples from the delay line
 	int32_t old_sample = qe->m_delay_line[qe->m_delay_pos];
 	const int32_t last_sample = qe->m_last_sample;
@@ -572,7 +578,7 @@ INLINE int16_t qsound_echo_apply(qsound_echo *qe, int32_t input)
 	old_sample = (old_sample + last_sample) >> 1;
 
 	// add current sample to the delay line
-	int32_t new_sample = input + ((old_sample * qe->m_feedback) << 2);
+	new_sample = input + ((old_sample * qe->m_feedback) << 2);
 	qe->m_delay_line[qe->m_delay_pos++] = new_sample >> 16;
 
 	if (qe->m_delay_pos >= qe->m_length)
@@ -585,6 +591,9 @@ INLINE int16_t qsound_echo_apply(qsound_echo *qe, int32_t input)
 static void state_normal_update()
 {
 	int i,ch;
+	int32_t echo_input;
+	int16_t echo_output;
+	const int adpcm_voice = m_state_counter % 3;
 
 	m_ready_flag = 0x80;
 
@@ -597,19 +606,19 @@ static void state_normal_update()
 	m_echo.m_length = min(max(m_echo.m_length, (int16_t)0), (int16_t)1024);
 
 	// update PCM voices
-	int32_t echo_input = 0;
+	echo_input = 0;
 	for (i = 0; i < 16; i++)
 		m_voice_output[i] = qsound_voice_update(m_voice+i, &echo_input);
 
 	// update ADPCM voices (one every third sample)
-	const int adpcm_voice = m_state_counter % 3;
 	m_voice_output[16 + adpcm_voice] = qsound_adpcm_update(m_adpcm+adpcm_voice, m_voice_output[16 + adpcm_voice], m_state_counter / 3);
 
-	int16_t echo_output = qsound_echo_apply(&m_echo,echo_input);
+	echo_output = qsound_echo_apply(&m_echo,echo_input);
 
 	// now, we do the magic stuff
 	for (ch = 0; ch < 2; ch++)
 	{
+		int32_t output;
 		// Echo is output on the unfiltered component of the left channel and
 		// the filtered component of the right channel.
 		int32_t wet = (ch == 1) ? echo_output << 14 : 0;
@@ -635,7 +644,7 @@ static void state_normal_update()
 			dry = qsound_fir_apply(m_alt_filter+ch,dry >> 16);
 
 		// output goes through a delay line and attenuation
-		int32_t output = (qsound_delay_apply(m_wet+ch,wet) + qsound_delay_apply(m_dry+ch,dry));
+		output = (qsound_delay_apply(m_wet+ch,wet) + qsound_delay_apply(m_dry+ch,dry));
 
 		// DSP round function
 		output = (output + 0x2000) & ~0x3fff;
@@ -683,11 +692,11 @@ static int32_t qsound_fir_apply(qsound_fir *qf, int16_t input)
 // Apply delay line and component volume
 INLINE int32_t qsound_delay_apply(qsound_delay *qd, const int32_t input)
 {
+	const int32_t output = qd->m_delay_line[qd->m_read_pos++] * qd->m_volume;
 	qd->m_delay_line[qd->m_write_pos++] = input >> 16;
 	if (qd->m_write_pos >= 51)
 		qd->m_write_pos = 0;
 
-	const int32_t output = qd->m_delay_line[qd->m_read_pos++] * qd->m_volume;
 	if (qd->m_read_pos >= 51)
 		qd->m_read_pos = 0;
 
