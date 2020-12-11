@@ -515,7 +515,7 @@ byte *jit_store_native(struct jit_ctl *jit, const byte *code, int len)
 	return dst;
 }
 
-void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int len, struct jit_page *pg, const byte *dst)
+void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int len, struct jit_page *pg, byte *dst)
 {
 	// copy the data, if any
 	if (len != 0)
@@ -553,7 +553,7 @@ static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
 	// Note: the factor of 17 was an attempt to fix a jit crash bug, but it
 	// unfortunately didn't help.  There's a mysterious crash that shows up on
 	// some people's machines in specific configurations.  It's so configuration-
-	// dependent that none of the developers have been unable to reproduce so far.
+	// dependent that none of the developers have been able to reproduce so far.
 	// The bug remains a mystery as of this writing (8/2019).  In my estimation
 	// it's some kind of stray pointer error, but beyond that I don't have any
 	// more specific theory.  I'm leaving the factor of 17 in place for now,
@@ -625,6 +625,7 @@ static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
 	//
 	// --mjr]
 	min_siz += sizeof(struct jit_page);
+	//!! Make code page (artifically by *17) larger, was resolved by https://sourceforge.net/p/pinmame/code/4514 so this hack is not needed at all anymore, but see above!
 	siz = 128*1024*17;
 	if (siz < min_siz)
 		siz = min_siz;

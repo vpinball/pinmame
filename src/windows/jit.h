@@ -733,7 +733,7 @@ byte *jit_store_native(struct jit_ctl *jit, const byte *code, int len);
 
 /* Same as jit_store_native but does not try to find a new location for code. Needed for blocks of code with relative jumps */
 
-void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int len, struct jit_page *pg, const byte *dst);
+void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int len, struct jit_page *pg, byte *dst);
 
 
 /*
