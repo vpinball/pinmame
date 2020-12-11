@@ -1262,7 +1262,6 @@ static int verify_memory(void)
 					bankdata[bank].used = 1;
 					bankdata[bank].cpunum = -1;
 				}
-				mwa++;
 		}
 	}
 	return 1;

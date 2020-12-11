@@ -88,9 +88,9 @@ STDMETHODIMP CController::InterfaceSupportsErrorInfo(REFIID riid)
 }
 
 
-/****************************************/
-/*Get product version from the resource *
-/****************************************/
+/***************************************
+ * Get product version from the resource
+ ***************************************/
 void CController::GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVersionNo2, int *nVersionNo3)
 {
 	DWORD   dwVerHandle; 

@@ -602,10 +602,10 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 	    }
 
 	    if (regindex == REG_RIGHTVOL)
-	        chip->right_volume_set = 1;
+		    chip->right_volume_set = 1;
 
-		if (regindex == REG_CURRPOS)
-			voice->fraction = 0;
+	    if (regindex == REG_CURRPOS)
+		    voice->fraction = 0;
 #endif
     }
     else if(chip->adpcm) /* update parameters for compressed voice */

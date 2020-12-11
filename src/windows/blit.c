@@ -197,6 +197,7 @@ static int					use_mmx = -1;
 static int					use_sse = -1;
 static int					use_sse2 = -1;
 
+#ifndef _WIN64
 // register index to size table
 static const UINT8 regoffset_regsize[32] =
 {
@@ -316,6 +317,7 @@ static struct rgb_descriptor sharp_desc =
 		{ RGB,RGB,RGB,RGB,RGB,RGB,RGB,RGB, RGB,RGB,RGB,RGB,RGB,RGB,RGB,RGB }
 	}
 };
+#endif
 
 
 //============================================================
@@ -727,6 +729,7 @@ static int blit_vectors(const struct win_blit_params *blit)
 //	snippet_length
 //============================================================
 
+#ifndef _WIN64
 static int snippet_length(void *snippet)
 {
 	UINT8 *current = snippet;
@@ -738,12 +741,10 @@ static int snippet_length(void *snippet)
 }
 
 
-
 //============================================================
 //	emit_snippet_pair
 //============================================================
 
-#ifndef _WIN64
 static void emit_snippet(void *snippet, UINT8 **dest)
 {
 	// emit a snippet as-is
@@ -751,7 +752,6 @@ static void emit_snippet(void *snippet, UINT8 **dest)
 	memcpy(*dest, snippet, length);
 	*dest += length;
 }
-#endif
 
 
 //============================================================
@@ -1242,7 +1242,7 @@ static void emit_expansion(int count, const UINT8 *reglist, const UINT32 *offsli
 		}
 	}
 }
-
+#endif
 
 
 //============================================================

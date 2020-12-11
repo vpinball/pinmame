@@ -699,7 +699,7 @@ void by45_p21_w(int data)
 }
 
 static READ_HANDLER(cs_port2_r) {
-	static int last = 0xff;
+	//static int last = 0xff;
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
 	if (cslocals.p21) data |= 0x02;
 #if 0

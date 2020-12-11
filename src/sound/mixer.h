@@ -90,14 +90,14 @@ const char *mixer_get_name(const int channel);
 */
 void mixer_set_volume(const int channel, const int volume);
 
-void mixer_play_sample(const int channel, INT8 *data, const int len, const double freq, const UINT8 loop);
-void mixer_play_sample_16(const int channel, INT16 *data, const int len, const double freq, const UINT8 loop);
+void mixer_play_sample(const int channel, const INT8 *data, const int len, const double freq, const UINT8 loop);
+void mixer_play_sample_16(const int channel, const INT16 *data, const int len, const double freq, const UINT8 loop);
 void mixer_stop_sample(const int channel);
 int mixer_is_sample_playing(const int channel);
 void mixer_set_sample_frequency(const int channel, const double freq);
 void mixer_sound_enable_global_w(const UINT8 enable);
 
-void mixer_play_streamed_sample_16(const int channel, INT16 *data, int len, const double freq);
+void mixer_play_streamed_sample_16(const int channel, const INT16 *data, int len, const double freq);
 int mixer_samples_this_frame(void);
 int mixer_need_samples_this_frame(const int channel, const double freq);
 

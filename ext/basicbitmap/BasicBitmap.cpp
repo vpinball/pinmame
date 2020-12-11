@@ -1612,7 +1612,7 @@ BasicBitmap::BasicBitmap(const BasicBitmap &src)
 // move constructor
 //---------------------------------------------------------------------
 #if __cplusplus >= 201103 || (defined(_MSC_VER) && _MSC_VER >= 1900)
-BasicBitmap::BasicBitmap(BasicBitmap &&src)
+BasicBitmap::BasicBitmap(BasicBitmap &&src) noexcept
 {
 	_bits = src._bits;
 	_lines = src._lines;

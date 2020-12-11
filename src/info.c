@@ -691,7 +691,7 @@ static void print_game_micro(int OUTPUT_XML, FILE* out, const struct GameDriver*
 			print_statement_string(OUTPUT_XML, out, cputype_name(cpu[j].cpu_type));
 			fprintf(out, "%s", SELECT(L2N, "\""));
 
-			fprintf(out, SELECT(L2P "clock %d" L2N, " clock=\"%d\""), cpu[j].cpu_clock);
+			fprintf(out, SELECT(L2P "clock %.2f" L2N, " clock=\"%.2f\""), cpu[j].cpu_clock);
 			fprintf(out, SELECT(L2E L1N, "/>\n"));
 		}
 	}
@@ -713,7 +713,7 @@ static void print_game_micro(int OUTPUT_XML, FILE* out, const struct GameDriver*
 				print_statement_string(OUTPUT_XML, out, sound_name(&sound[j]));
 				fprintf(out, "%s", SELECT(L2N, "\""));
 				if (sound_clock(&sound[j]))
-					fprintf(out, SELECT(L2P "clock %d" L2N, " clock=\"%d\""), sound_clock(&sound[j]));
+					fprintf(out, SELECT(L2P "clock %.2f" L2N, " clock=\"%.2f\""), sound_clock(&sound[j]));
 				fprintf(out, SELECT(L2E L1N, "/>\n"));
 			}
 		}
