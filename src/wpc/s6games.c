@@ -83,9 +83,6 @@ S6_ROMEND
 #define input_ports_lzbal input_ports_s6
 CORE_GAMEDEF(lzbal,l2,"Laser Ball (L-2)",1979,"Williams",s6_mS6S,0)
 
-static core_tGameData lzbal_l2spGameData = { GEN_S6, s6_6digit_disp, {FLIP_SWNO(0,0),0,0,0,SNDBRD_S3S}, \
- NULL, {{0}},{0,{45,46,47,44,0,13}}};
-static void init_lzbal_l2sp(void) { core_gameData = &lzbal_l2spGameData; }
 S6_ROMSTART(lzbal,l2sp, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
