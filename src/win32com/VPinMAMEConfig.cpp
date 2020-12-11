@@ -473,7 +473,7 @@ bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* pszDefault, char* pszValue)
 			fNew = true;
 		}
 		else
-			sprintf(szValue, "%i", dwValue);
+			sprintf(szValue, "%u", dwValue);
 		break;
 
 	case rc_bool:

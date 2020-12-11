@@ -184,7 +184,7 @@ int qsound_sh_start(const struct MachineSound *msound)
 	const struct QSound_interface *intf = msound->sound_interface;
 
 	qsound_sample_rom = (uint8_t *)memory_region(intf->region);
-	qsound_sample_rom_length = memory_region_length(intf->region);
+	qsound_sample_rom_length = (unsigned int)memory_region_length(intf->region);
 	qsound_sample_rom_mask = pow2_mask(qsound_sample_rom_length);
 
 	m_vgm_idx = vgm_open(VGMC_QSOUND, intf->clock);

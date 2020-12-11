@@ -120,7 +120,7 @@ static void mech_update(int mechNo) {
         int sol = 0;
         for (ii = 0; ii < 4; ii++)
         {
-           sol = (sol << 1) | (core_getPulsedSol(md->sol1 + ii) != 0) ^ md->solinv;
+           sol = (sol << 1) | ((core_getPulsedSol(md->sol1 + ii) != 0) ^ md->solinv);
         }
 
         if (sol)

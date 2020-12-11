@@ -564,7 +564,7 @@ public:
 
 	// move constructor
 	#if __cplusplus >= 201103 || (defined(_MSC_VER) && _MSC_VER >= 1900)
-	BasicBitmap(BasicBitmap &&src);
+	BasicBitmap(BasicBitmap &&src) noexcept;
 	#endif
 
 private:

@@ -268,17 +268,16 @@ static sim_tState dd_stateDef[] = {
 static int dd_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
-
 	/* Ball in Shooter Lane */
-    	case stBallLane:
+		case stBallLane:
 		if (ball->speed < 15)
 			return setState(stNotEnough,40);	/*Ball not plunged hard enough*/
 		if (ball->speed < 30)
 			return setState(stRLoopFall,60);	/*Ball falls from Right Loop*/
 		if (ball->speed < 51)
 			return setState(stRLoop,40);		/*Ball Hits I Test Target*/
-			break;
-       }
+		break;
+	}
     return 0;
   }
 

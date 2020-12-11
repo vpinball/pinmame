@@ -613,6 +613,6 @@ static const char* showbigfootpos(void)
 */
   if(locals.bigfootPos != 56 && locals.bigfootPos != 60 &&
      locals.bigfootPos != 64 && !core_getSol(sMotor))
-	return " Unknown ";
-	return " Unknown ";
+     return " Unknown ";
+  return " Unknown ";
 }

@@ -4,7 +4,7 @@
 #include <Windows.h>
 
 // Helper methods
-void CopyString(char** dest, char* src)
+void CopyString(char** dest, const char* src)
 {
 	if (src == NULL)
 	{
