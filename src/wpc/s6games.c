@@ -25,21 +25,54 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 S6_INPUT_PORTS_START(s6, 1) S6_INPUT_PORTS_END
 
 /*--------------------------------
+/ Flash - Sys.4&6 (Game #486)
+/-------------------------------*/
+// Reportedly, later production units had System 6 CPU boards:
+//  Towards the end of the run, some Flash machines shipped with a system 6 MPU. These used green flipper ROMs and only one version of the game ROMs were done for Flash with sys 6 boards. If you turn the game on and go into adjustments, it will say “1486 1”.
+// https://pinside.com/pinball/forum/topic/williams-flash-system-4-rom-question#post-430260
+//  0486 1 = system 4, four ROM chips (IC17, IC20, IC21, IC22 populated.) // originally shipped one
+//  0486 2 = system 4, five ROM chips (IC17, IC20, IC21, IC22, IC26 populated.) // yellow
+//  1486 1 = system 4 & 6, three ROM chips (IC14, IC17, IC20 populated.) // available s4/s6 ones
+// System 4 machines generally had yellow flipper ROMs and system 6 generally used green flipper ROMs. You then had to have the specific game ROM(s) for that machine that had the rules, sounds, lights, etc. that matched that color flipper ROM.
+//  Flash was a unique game because they made so many the run started with the system 4 boardset and by the end they were putting the newer system 6 boardset in it. In previous posts I outlined the differences in the versions.
+//  Functionality-wise, the green ROMs in Flash changed some of the audits and adjustments. Some people also reported that the sounds of the game changed as well but others said this is not the case. Other than the different audits and adjustments,
+//  I cannot tell you what other functional differences there are between the green flipper ROM set and the yellow ROM set.
+//  Bottom line is this: if your machine says 1486 1 when you go into adjustments, you have the latest version ROM set that's available from Planetary and that's known to exist.
+
+// The older ROM revisions are in s4games.c
+
+INITGAMEFULL(flash,s6_6digit_disp,0,0,19,18,20,42,41,0)
+S6_ROMSTART(flash,l1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecadbd9cc8552bd6934),
+                     "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(     "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+#define input_ports_flash input_ports_s6
+CORE_GAMEDEF(flash,l1,"Flash (Sys.6 L-1)",1978,"Williams",s6_mS6S,0) // Green Flippers // 1486 1
+
+S6_ROMSTART(flash,t1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecadbd9cc8552bd6934),
+                     "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2a.716", CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(     "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+CORE_CLONEDEF(flash,t1,l1,"Flash (Sys.6 T-1 Ted Estes)",1978,"Williams",s6_mS6S,0) // Green Flippers // 1486 1
+
+/*--------------------------------
 / Tri Zone - Sys.6 (Game #487)
 /-------------------------------*/
 INITGAMEFULL(trizn,s6_6digit_disp,0,0,13,14,15,26,24,0)
-S6_ROMSTART(trizn,l1,"gamerom.716", CRC(757091c5) SHA1(00dac6c19b08d2528ea293619c4a39499a1a02c2),
+S6_ROMSTART(trizn,l1,"gamerom.716",CRC(757091c5) SHA1(00dac6c19b08d2528ea293619c4a39499a1a02c2),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                      "green2.716", CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8(     "sound1.716", CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 #define input_ports_trizn input_ports_s6
 CORE_GAMEDEF(trizn,l1,"Tri Zone (L-1)",1979,"Williams",s6_mS6S,0)
 
-S6_ROMSTART(trizn,t1,"gamerom.716", CRC(757091c5) SHA1(00dac6c19b08d2528ea293619c4a39499a1a02c2),
+S6_ROMSTART(trizn,t1,"gamerom.716",CRC(757091c5) SHA1(00dac6c19b08d2528ea293619c4a39499a1a02c2),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                     "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+                     "green2a.716",CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(     "sound1.716", CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 CORE_CLONEDEF(trizn,t1,l1,"Tri Zone (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
 
@@ -48,26 +81,26 @@ CORE_CLONEDEF(trizn,t1,l1,"Tri Zone (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
 /-------------------------------*/
 // unofficial "L9" exists: Background sound bug fix, 7 digit scoring, cascading drop bank values on completion (allentownpinball)
 INITGAMEFULL(tmwrp,s6_6digit_disp,0,0,19,20,21,22,23,0)
-S6_ROMSTART(tmwrp,l3,"twarp_l3.716", CRC(1234710a) SHA1(a33e9edb79b6ea4c5982d28a55289897f82b7b3c),
-                     "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                     "green2.716", CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMSTART(tmwrp,l3,"twarp_l3.716",CRC(1234710a) SHA1(a33e9edb79b6ea4c5982d28a55289897f82b7b3c),
+                     "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(     "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 #define input_ports_tmwrp input_ports_s6
 CORE_GAMEDEF(tmwrp,l3,"Time Warp (L-3)",1979,"Williams",s6_mS6S,0)
 // L-3: Fixes bug with background sound cutting out when no score/duplicate outhole entry (is this just an unofficial MOD?)
 
-S6_ROMSTART(tmwrp,l2,"gamerom.716", CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
+S6_ROMSTART(tmwrp,l2,"gamerom.716",CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                      "green2.716", CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8(     "sound1.716", CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 CORE_CLONEDEF(tmwrp,l2,l3,"Time Warp (L-2)",1979,"Williams",s6_mS6S,0)
 
-S6_ROMSTART(tmwrp,t2,"gamerom.716", CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
+S6_ROMSTART(tmwrp,t2,"gamerom.716",CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                     "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+                     "green2a.716",CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(     "sound1.716", CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 CORE_CLONEDEF(tmwrp,t2,l3,"Time Warp (T-2 Ted Estes)",1979,"Williams",s6_mS6S,0)
 
@@ -78,22 +111,22 @@ INITGAMEFULL(lzbal,s6_6digit_disp,0,0,45,46,47,44,0,13)
 S6_ROMSTART(lzbal,l2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(	  "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S67S_SOUNDROMS8(      "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S6_ROMEND
 #define input_ports_lzbal input_ports_s6
 CORE_GAMEDEF(lzbal,l2,"Laser Ball (L-2)",1979,"Williams",s6_mS6S,0)
 
-S6_ROMSTART(lzbal,l2sp, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
-                      "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                      "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S6_ROMSTART(lzbal,l2sp,  "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
+                         "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                         "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
 S67S_SOUNDROMS8("493_s0_laser_ball.716",CRC(726c06eb) SHA1(33bbf6ce3629e933863ac85eac03fd3a906d9de5))
 S6_ROMEND
 CORE_CLONEDEF(lzbal,l2sp,l2,"Laser Ball (L-2, PROM Sound)",1979,"Williams",s6_mS6S,0)
 
 S6_ROMSTART(lzbal,t2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                      "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
-S67S_SOUNDROMS8(	  "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+                      "green2a.716", CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(      "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S6_ROMEND
 CORE_CLONEDEF(lzbal,t2,l2,"Laser Ball (T-2 Ted Estes)",1980,"Williams",s6_mS6S,0)
 
@@ -111,7 +144,7 @@ CORE_GAMEDEF(scrpn,l1,"Scorpion (L-1)",1980,"Williams",s6_mS6S,0)
 
 S6_ROMSTART(scrpn,t1,  "gamerom.716", CRC(881109a9) SHA1(53d4275c76b47b68a74209fe660d943a51e90eca),
                        "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+                       "green2a.716", CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(       "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 #define input_ports_scrpn_t1 input_ports_s6
@@ -145,7 +178,7 @@ CORE_CLONEDEF(blkou,f1,l1,"Blackout (L-1, French Speech)",1980,"Williams",s6_mS6
 
 S6_ROMSTART(blkou,t1,  "gamerom.716", CRC(4b407ae2) SHA1(46a2afcfc2d969c5acae18b57a678265257a6102),
                        "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+                       "green2a.716", CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(87864071) SHA1(d03c71efc0431f30a07c8194c0614c96fb683710),
                        "v_ic5.532" ,  CRC(046a96d8) SHA1(879127a88b3640bbb202c64cbf8678869c964177),
@@ -209,7 +242,7 @@ CORE_GAMEDEFNV(frpwr_l6,"Firepower (L-6)",1980,"Williams",s6_mS6S,0)
 INITGAMEFULL(frpwr_t6,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTPROM(frpwr_t6, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
                           "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-		                  "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98),
+		                  "green2a.716", CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98),
                           "prom1_6.474", CRC(af6eb0b9) SHA1(28f8366737e09ffd60cb5ea55a5734143cdb9663),
                           "prom2.474",   CRC(f75ade1a) SHA1(a5572c5c721dbcb82988b709f4ef2119118e37c2),
                           "prom3.474",   CRC(242ec687) SHA1(c3366c898a66c78034687e6a6000193d52be4141))
@@ -238,8 +271,8 @@ CORE_CLONEDEFNV(frpwr_l2,frpwr_l6,"Firepower (L-2)",1980,"Williams",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_a6,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_a6, "fire6614.732", CRC(5b404f71) SHA1(bd740e921d704014e487d87d2b06c9f663c18b5a),
-                          "fire6620.716",  CRC(2e6ded2f) SHA1(87fadd13f8b4221024347d0fce529974f4136e25),
-                          "fire6617.716",  CRC(a1ab005e) SHA1(01a1c94550aebf5d4a2abc6723ac8d51405af9a6))
+                          "fire6620.716",CRC(2e6ded2f) SHA1(87fadd13f8b4221024347d0fce529974f4136e25),
+                          "fire6617.716",CRC(a1ab005e) SHA1(01a1c94550aebf5d4a2abc6723ac8d51405af9a6))
 S67S_SOUNDROMS8(          "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
                           "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
@@ -250,8 +283,8 @@ CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-digit conversion rev. 31)"
 
 INITGAMEFULL(frpwr_d6,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_d6, "fir6d614.732", CRC(b9274332) SHA1(53dd65dcda566b2b000928ff32a8256e6054ebb5),
-                          "fir6d620.716",  CRC(1cd598f8) SHA1(9b613a629cc83843f2d0c6091a0a45ea70f240fa),
-                          "fir6d617.716",  CRC(77b832e8) SHA1(784171ff4636a616b0a2424fcc28d388f140814e))
+                          "fir6d620.716",CRC(1cd598f8) SHA1(9b613a629cc83843f2d0c6091a0a45ea70f240fa),
+                          "fir6d617.716",CRC(77b832e8) SHA1(784171ff4636a616b0a2424fcc28d388f140814e))
 S67S_SOUNDROMS8(          "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
                           "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
@@ -282,8 +315,8 @@ CORE_CLONEDEFNV(frpwr_b6,frpwr_l6,"Firepower (Sys.6/7-digit conversion)",2003,"W
 
 INITGAMEFULL(frpwr_c6,fp_7digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_c6, "fire7614.732", CRC(5cf2fd3f) SHA1(5efd5389d9281b8f9ce0c62deda3b9ac7665f390),
-                          "fire7620.716",  CRC(1cd598f8) SHA1(9b613a629cc83843f2d0c6091a0a45ea70f240fa),
-                          "fire7617.716",  CRC(d5cb930d) SHA1(29827beab73564089dfeab2b8f0bbf9376c4f4ca))
+                          "fire7620.716",CRC(1cd598f8) SHA1(9b613a629cc83843f2d0c6091a0a45ea70f240fa),
+                          "fire7617.716",CRC(d5cb930d) SHA1(29827beab73564089dfeab2b8f0bbf9376c4f4ca))
 S67S_SOUNDROMS8(          "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
                           "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
