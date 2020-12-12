@@ -26,39 +26,30 @@ S4_ROMEND
 CORE_GAMEDEF(phnix,l1,"Phoenix (L-1)",1978,"Williams",s4_mS3S,0)
 
 /*--------------------------------
-/ Flash - Sys.4 (Game #486)
+/ Flash - Sys.4&6 (Game #486)
 /-------------------------------*/
 // tournament MODs exist (allentownpinball)
+
+// Sys.4 L-1 also exists
+
+// The later ROM revisions are in s6games.c
+
 INITGAMEFULL(flash,s4_disp,SNDBRD_S67S,0,0,19,18,20,42,41,0)
-S4_ROMSTART(flash,l2,"gamerom2.716", CRC(b7c2e4c7) SHA1(00ea34900af679b1b7e2698f4aa2fc9703d54cf2),
+S4_ROMSTART(flash,l2,"gamerom2.716",CRC(b7c2e4c7) SHA1(00ea34900af679b1b7e2698f4aa2fc9703d54cf2),
                      "yellow1.716", CRC(d251738c) SHA1(65ddbf5c36e429243331a4c5d2339df87a8a7f64),
                      "yellow2.716", CRC(5049326d) SHA1(3b2f4ea054962bf4ba41d46663b7d3d9a77590ef))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8(     "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
 #define input_ports_flash input_ports_s4
-CORE_GAMEDEF(flash,l2,"Flash (L-2)",1978,"Williams",s4_mS4S,0)
-
-S4_ROMSTART(flash,l1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecadbd9cc8552bd6934),
-                     "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                     "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
-S4_ROMEND
-CORE_CLONEDEF(flash,l1,l2,"Flash (L-1)",1978,"Williams",s4_mS4S,0)
-
-S4_ROMSTART(flash,t1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecadbd9cc8552bd6934),
-                     "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                     "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
-S4_ROMEND
-CORE_CLONEDEF(flash,t1,l2,"Flash (T-1 Ted Estes)",1978,"Williams",s4_mS4S,0)
+CORE_CLONEDEF(flash,l2,l1,"Flash (Sys.4 L-2)",1978,"Williams",s4_mS4S,0) // Yellow Flippers // 0486 2
 
 /*--------------------------------
 / Pokerino - Sys.4 (Game #488)
 /-------------------------------*/
 INITGAMEFULL(pkrno,s4_disp,SNDBRD_S3S,0,0,38,39,40,30,0,28)
-S4_ROMSTART(pkrno,l1,"gamerom.716", CRC(9b4d01a8) SHA1(1bd51745f38381ffc66fde4b28b76aab33b573ca),
-                     "white1.716", CRC(9bbbf14f) SHA1(b0542ffdd683fa0ea4a9819576f3789cd5a4b2eb),
-                     "white2.716", CRC(4d4010dd) SHA1(11221124fef3b7bf82d353d65ce851495f6946a7))
+S4_ROMSTART(pkrno,l1,"gamerom.716",   CRC(9b4d01a8) SHA1(1bd51745f38381ffc66fde4b28b76aab33b573ca),
+                     "white1.716",    CRC(9bbbf14f) SHA1(b0542ffdd683fa0ea4a9819576f3789cd5a4b2eb),
+                     "white2.716",    CRC(4d4010dd) SHA1(11221124fef3b7bf82d353d65ce851495f6946a7))
 S67S_SOUNDROMS8("488_s0_pokerino.716",CRC(5de02e62) SHA1(f838439a731511a264e508a576ae7193d9fed1af))
 S4_ROMEND
 #define input_ports_pkrno input_ports_s4
@@ -71,7 +62,7 @@ INITGAMEFULL(stlwr,s4_disp,SNDBRD_S67S,0,0,14,13,45,46,40,44)
 S4_ROMSTART(stlwr,l2,"gamerom.716", CRC(874e7ef7) SHA1(271aeac2a0e61cb195811ae2e8d908cb1ab45874),
                      "yellow1.716", CRC(d251738c) SHA1(65ddbf5c36e429243331a4c5d2339df87a8a7f64),
                      "yellow2.716", CRC(5049326d) SHA1(3b2f4ea054962bf4ba41d46663b7d3d9a77590ef))
-S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8(     "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
 #define input_ports_stlwr input_ports_s4
 CORE_GAMEDEF(stlwr,l2,"Stellar Wars (L-2)",1979,"Williams",s4_mS4S,0)
