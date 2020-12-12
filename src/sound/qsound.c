@@ -593,7 +593,7 @@ static void state_normal_update()
 	int i,ch;
 	int32_t echo_input;
 	int16_t echo_output;
-	const int adpcm_voice = m_state_counter % 3;
+	int adpcm_voice;
 
 	m_ready_flag = 0x80;
 
@@ -611,6 +611,7 @@ static void state_normal_update()
 		m_voice_output[i] = qsound_voice_update(m_voice+i, &echo_input);
 
 	// update ADPCM voices (one every third sample)
+	adpcm_voice = m_state_counter % 3;
 	m_voice_output[16 + adpcm_voice] = qsound_adpcm_update(m_adpcm+adpcm_voice, m_voice_output[16 + adpcm_voice], m_state_counter / 3);
 
 	echo_output = qsound_echo_apply(&m_echo,echo_input);
@@ -692,11 +693,13 @@ static int32_t qsound_fir_apply(qsound_fir *qf, int16_t input)
 // Apply delay line and component volume
 INLINE int32_t qsound_delay_apply(qsound_delay *qd, const int32_t input)
 {
-	const int32_t output = qd->m_delay_line[qd->m_read_pos++] * qd->m_volume;
+	int32_t output;
+
 	qd->m_delay_line[qd->m_write_pos++] = input >> 16;
 	if (qd->m_write_pos >= 51)
 		qd->m_write_pos = 0;
 
+	output = qd->m_delay_line[qd->m_read_pos++] * qd->m_volume;
 	if (qd->m_read_pos >= 51)
 		qd->m_read_pos = 0;
 
