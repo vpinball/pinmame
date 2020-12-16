@@ -48,14 +48,12 @@
  //#define WIN32_LEAN_AND_MEAN
  #endif
  #include <windows.h>
- #ifdef VPINMAME
- static DWORD timeGetTime2(void) {
-   return timeGetTime();
- }
+ #if !defined(__MINGW32__) || defined(VPINMAME)
+  #define timeGetTime2 timeGetTime
  #else // VPINMAME
- static DWORD timeGetTime2(void) {
-   return timer_get_time();
- }
+  static DWORD timeGetTime2(void) {
+    return (DWORD)(timer_get_time()*1000.); //!! meh!
+  }
  #endif
 #endif
 
