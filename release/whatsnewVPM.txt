@@ -3,6 +3,9 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
+Version 3.4 (X X, 2021) - ""
+------------------------------------------------------------------------------
+
 Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------
 - New logos by tictox

@@ -72,7 +72,7 @@ BEGIN
             VALUE "FileDescription", "InstallVPinMAME"
             VALUE "FileVersion", "1.42"
             VALUE "InternalName", "InstallVPinMAME"
-            VALUE "LegalCopyright", "Copyright © 2001-2020 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn"
+            VALUE "LegalCopyright", "Copyright © 2001-2021 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn"
             VALUE "OriginalFilename", "InstallVPinMAME.exe"
             VALUE "ProductName", "Visual PinMAME Installer"
             VALUE "ProductVersion", "1.42"

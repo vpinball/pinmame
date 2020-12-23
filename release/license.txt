@@ -106,7 +106,7 @@ VII. Derivative Works
 
 The 3-Clause BSD License:
 
-Copyright (C) 1999-2020 PinMAME development team and contributors
+Copyright (C) 1999-2021 PinMAME development team and contributors
                         (unless specifically noted differently in a respective source file)
 
 Redistribution and use in source and binary forms, with or without modification,

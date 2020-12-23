@@ -122,7 +122,7 @@ BEGIN
         MENUITEM "&Troubleshooting",            ID_HELP_TROUBLE
         MENUITEM SEPARATOR
         MENUITEM "&New Game Changes",           ID_HELP_WHATS_NEW32
-        MENUITEM "&PinMame Release Notes",      ID_HELP_WHATS_NEW
+        MENUITEM "&PinMAME Release Notes",      ID_HELP_WHATS_NEW
         MENUITEM SEPARATOR
         MENUITEM "&About",                      ID_HELP_ABOUT
     END
@@ -235,8 +235,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,3,0,0
- PRODUCTVERSION 3,3,0,0
+ FILEVERSION 3,4,0,0
+ PRODUCTVERSION 3,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -255,12 +255,12 @@ BEGIN
             VALUE "Comments", "Based on MAME32 by Christopher Kirmse and Michael Soderstrom"
             VALUE "CompanyName", "PinMAME Team"
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32"
-            VALUE "FileVersion", "3, 3, 0, 0"
+            VALUE "FileVersion", "3, 4, 0, 0"
             VALUE "InternalName", "PinMAME32"
-            VALUE "LegalCopyright", "Copyright 2001-2020 by the PinMAME team"
+            VALUE "LegalCopyright", "Copyright 2001-2021 by the PinMAME team"
             VALUE "OriginalFilename", "PinMAME32.exe"
             VALUE "ProductName", "PinMAME32"
-            VALUE "ProductVersion", "3.3"
+            VALUE "ProductVersion", "3.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -319,7 +319,7 @@ BEGIN
     CTEXT           "Multiple Pinball Machine Emulator",IDC_STATIC,147,7,142,
                     11,NOT WS_GROUP
     CTEXT           "Version 0",IDC_VERSION,147,18,142,11,NOT WS_GROUP
-    CTEXT           "Copyright (C) 2001-2020 PinMAME Team",IDC_STATIC,147,29,
+    CTEXT           "Copyright (C) 2001-2021 PinMAME Team",IDC_STATIC,147,29,
                     142,10,NOT WS_GROUP
     CTEXT           "PinMAME32 version by Martin Adrian",IDC_STATIC,147,51,
                     142,10,NOT WS_GROUP

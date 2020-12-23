@@ -3,6 +3,11 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
+Version 3.4 (X X, 2021) - ""
+------------------------------------------------------------------------------
+
+
+
 Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------
 
