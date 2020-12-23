@@ -1,4 +1,4 @@
-******  As of Version Version 3.3 (X X, 2020) ******
+****** As of Version Version 3.3 (December 24th, 2020) ******
 
 Bugs in PinMAME that we are aware of:
 -------------------------------------
@@ -26,9 +26,9 @@ Bugs in PinMAME that we are aware of:
      (~24 and above, for example on Nascar and Grand Prix, or even ~20 on LOTR, so avoid this)
      This seems to happen on real machines (verified on 2 different Grand Prix pinballs), too.
 
- #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate.
+ #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate on all machines.
 
- #8) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
+ #8) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally.
 
  #9) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h(c)).
      Alternately, check the "skip pinball startup test" in vpm.
@@ -36,13 +36,13 @@ Bugs in PinMAME that we are aware of:
 #10) GTS80S DAC sound is off for most of the sound effects.
 
 #11) Some setups crash when using the AT91 JIT compiled code (e.g. Whitestar II and SAM), disable AT91 JIT
-     by setting "at91jit" to 0
+     by setting "at91jit" to 0.
 
 #12) AT91 JIT is 32-bit only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
      ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
      but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
 
 #13) x64 compilation will turn off all DirectX 7 usage via the DISABLE_DX7 define, e.g. this would all need to be rewritten for a newer DirectX version
-     to be able to regain DirectDraw and Direct3D functionalities
+     to be able to regain DirectDraw and Direct3D functionalities.
 
 #14) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for some machines like BOP, etc.

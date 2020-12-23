@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.3 (X X, 2020) - "20 years already?"
+Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------
 
 Compiling for iOS is now possible.
@@ -13,7 +13,7 @@ Fix -listxml for strings that contain embedded tags
 pinPROC : updated library;  VS2019 build
 YAML-cpp: updated to 0.6.3; VS2019 build
 
-Updated LISY support to 5.26-26 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.26-41 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 Added VGM file output support for AY8910, OKI6295, OKI6376, QSound, SAA1099, YM2151, YM2203, YMF262(OPL3), YM3526, YM3812, Y8950, and SN7648/9X (unsure about the mappings for these latter ones though!) sound chips
  Either use -vgmwrite on the commmand line (PinMAME)
@@ -62,7 +62,7 @@ Slightly improve overall YM2203, YM3526, YM3812, Y8950 emulation (older Alvin G.
 Improve SAA1099 emulation (E.F.O.)
 Switch Votrax/SC01 emulation over to real simulation core (some GTS80(A)s and Taitos)
 Correct handling of Gottlieb System 1 displays (thanks to bontango)
-Got Goofy Hoops working when some schematics showed up, illustrating how useful such documents are!
+Got Goofy Hoops working as some schematics showed up, illustrating how useful such documents are!
 Make Williams Flash L-1 and T-1 use the Sys6 board (as these are newer than the yellow flipper based L-2)
 
 *** SIMULATOR ***
