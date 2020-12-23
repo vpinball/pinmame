@@ -2,8 +2,8 @@
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
                              Version 3.3
-                         (X X, 2020)
-                        http://www.pinmame.com
+                        (December 24th, 2020)
+               https://sourceforge.net/projects/pinmame/
 **************************************************************************************
 
 Latest Info
@@ -25,7 +25,8 @@ What is it?
   Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
   Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
   Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
-  Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco, Sport Matic, Regama.
+  Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
+  Sport Matic, Regama, Illinois Pinball.
 
   *Note: Emulation is not 100% working and correct for all hardware.
 
