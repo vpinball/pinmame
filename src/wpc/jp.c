@@ -57,11 +57,9 @@ static INTERRUPT_GEN(JP_vblank) {
   if ((locals.vblankCount % JP_LAMPSMOOTH) == 0)
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
-  //coreGlobals.solenoids = locals.solenoids;
-  if ((++locals.solCount % JP_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = locals.solenoids;
+  coreGlobals.solenoids = locals.solenoids;
+  if ((++locals.solCount % JP_SOLSMOOTH) == 0)
     locals.solenoids = 0;
-  }
   /*-- display --*/
   if ((locals.vblankCount % JP_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
