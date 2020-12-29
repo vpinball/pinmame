@@ -6,6 +6,9 @@ What's new in PinMAME:
 Version 3.4 (X X, 2021) - ""
 ------------------------------------------------------------------------------
 
+*** CORE/CPU ***
+Fix regression in solenoid emulation for Juegos Populares
+
 
 
 Version 3.3 (December 24th, 2020) - "20 years already?"
