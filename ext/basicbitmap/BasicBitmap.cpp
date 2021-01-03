@@ -4899,7 +4899,7 @@ BasicBitmap *BasicBitmap::LoadBmpFromMemory(const void *buffer, long size, Basic
 	BasicBitmap *bmp = new BasicBitmap(width, height, fmt);
 	int y;
 
-	if (bmp == NULL) return NULL;
+	//if (bmp == NULL) return NULL;
 
 	switch (depth) {
 	case 8:
@@ -4951,7 +4951,7 @@ BasicBitmap *BasicBitmap::LoadBmp(const char *filename, PixelFmt fmt, BasicColor
 
 	BasicBitmap *cvt = new BasicBitmap(bmp->Width(), bmp->Height(), fmt);
 
-	if (cvt) {
+	/*if (cvt)*/ {
 		cvt->Convert(0, 0, bmp, 0, 0, bmp->Width(), bmp->Height());
 	}
 
@@ -5112,10 +5112,10 @@ int BasicBitmap::SavePPM(const char *filename) const
 
 	if (fmt != A8R8G8B8 || fmt != X8R8G8B8) {
 		tmp = new BasicBitmap(_w, _h, A8R8G8B8);
-		if (tmp == NULL) {
+		/*if (tmp == NULL) {
 			fclose(fp);
 			return -1;
-		}
+		}*/
 		tmp->Convert(0, 0, this, 0, 0, _w, _h, 0);
 		dst = tmp;
 	}
@@ -5299,9 +5299,9 @@ BasicBitmap *BasicBitmap::LoadTgaFromMemory(const void *buffer, long size, Basic
 	PixelFmt fmt = Bpp2Fmt(bpp);
 	bmp = new BasicBitmap(image_width, image_height, fmt);
 
-	if (!bmp) {
+	/*if (!bmp) {
 		return NULL;
-	}
+	}*/
 
 	for (y = 0; y < (IUINT32)bmp->Height(); y++) {
 		memset(bmp->Line(y), 0, bmp->Pitch());
@@ -5358,7 +5358,7 @@ BasicBitmap *BasicBitmap::LoadTga(const char *filename, PixelFmt fmt, BasicColor
 
 	BasicBitmap *cvt = new BasicBitmap(bmp->Width(), bmp->Height(), fmt);
 
-	if (cvt) {
+	/*if (cvt)*/ {
 		cvt->Convert(0, 0, bmp, 0, 0, bmp->Width(), bmp->Height());
 	}
 
@@ -5972,11 +5972,11 @@ BasicBitmap *BasicBitmap::GdiPlusLoadImageFromMemory(const void *data, long size
 
 	BasicBitmap *bmp = new BasicBitmap(cx, cy, fmt);
 
-	if (bmp == NULL) {
+	/*if (bmp == NULL) {
 		if (err) err[0] = -21;
 		free(bits);
 		return NULL;
-	}
+	}*/
 
 	for (int j = 0; j < bmp->Height(); j++) {
 		void *dst = bmp->Line(j);
@@ -6008,7 +6008,7 @@ BasicBitmap *BasicBitmap::GdiPlusLoadImage(const char *filename, PixelFmt fmt)
 
 	BasicBitmap *cvt = new BasicBitmap(bmp->Width(), bmp->Height(), fmt);
 
-	if (cvt) {
+	/*if (cvt)*/ {
 		cvt->Convert(0, 0, bmp, 0, 0, bmp->Width(), bmp->Height());
 	}
 
@@ -6086,10 +6086,10 @@ BasicBitmap *BasicBitmap::CreateBitmapInDIB(void *hDC, int w, int h, PixelFmt fm
 	int pixelsize = (Fmt2Bpp(fmt) + 7) / 8;
 	int pitch = (pixelsize * w + 3) & (~3);
 	bmp = new BasicBitmap(w, h, fmt, bits, pitch);
-	if (bmp == NULL) {
+	/*if (bmp == NULL) {
 		DeleteObject(hBitmap);
 		return NULL;
-	}
+	}*/
 	if (hbitmap) hbitmap[0] = (void*)hBitmap;
 	return bmp;
 }
@@ -6151,7 +6151,7 @@ BasicBitmap *BasicBitmap::LoadFile(const char *filename, PixelFmt fmt, BasicColo
 
 	BasicBitmap *cvt = new BasicBitmap(bmp->Width(), bmp->Height(), fmt);
 
-	if (cvt) {
+	/*if (cvt)*/ {
 		cvt->Convert(0, 0, bmp, 0, 0, bmp->Width(), bmp->Height());
 	}
 
@@ -6597,7 +6597,7 @@ BasicBitmap *BasicBitmap::Resample(int NewWidth, int NewHeight, ResampleFilter f
 {
 	if (NewWidth <= 0 || NewHeight <= 0) return NULL;
 	BasicBitmap *bmp = new BasicBitmap(NewWidth, NewHeight, _fmt);
-	if (bmp == NULL) return NULL;
+	//if (bmp == NULL) return NULL;
 	bmp->Resample(0, 0, NewWidth, NewHeight, this, 0, 0, _w, _h, filter);
 	return bmp;
 }
@@ -6865,7 +6865,7 @@ int BasicBitmap_ResampleSmooth(IUINT8 *dstpix, const IUINT8 *srcpix, int dstwidt
 	long imagesize = ((long)srcwidth) * dstheight * 4;
 
 	IUINT8 *temp = new IUINT8[imagesize + worksize];
-	if (temp == NULL) return -1;
+	//if (temp == NULL) return -1;
 
 	IUINT8 *workmem = temp + imagesize;
 
@@ -6976,7 +6976,7 @@ int BasicBitmap_ResampleAvg(BasicBitmap *dst, int dx, int dy, int dw, int dh,
 
 	if (src->Bpp() == 32) {
 		BasicBitmap *bmp = new BasicBitmap(dstwidth, dstheight, BasicBitmap::A8R8G8B8);
-		if (bmp == NULL) return -1;
+		//if (bmp == NULL) return -1;
 		int hr = BasicBitmap_ResampleSmooth(bmp->Address8(0, 0), 
 					(const IUINT8*)src->Address32(sx, sy),
 					dstwidth, srcwidth, dstheight, srcheight, 
@@ -6995,7 +6995,7 @@ int BasicBitmap_ResampleAvg(BasicBitmap *dst, int dx, int dy, int dw, int dh,
 
 	if (dst->Bpp() == 32) {
 		BasicBitmap *bmp = new BasicBitmap(srcwidth, srcheight, BasicBitmap::A8R8G8B8);
-		if (bmp == NULL) return -3;
+		//if (bmp == NULL) return -3;
 		bmp->Convert(0, 0, src, 0, 0, srcwidth, srcheight);
 		int hr = BasicBitmap_ResampleSmooth((IUINT8*)dst->Address32(dx, dy),
 			(const IUINT8*)bmp->Address32(0, 0),
@@ -7008,26 +7008,17 @@ int BasicBitmap_ResampleAvg(BasicBitmap *dst, int dx, int dy, int dw, int dh,
 		return 0;
 	}
 
-	BasicBitmap *bs = new BasicBitmap(sw, sh, BasicBitmap::A8R8G8B8);
-	BasicBitmap *bd = new BasicBitmap(dw, dh, BasicBitmap::A8R8G8B8);
+	BasicBitmap bs(sw, sh, BasicBitmap::A8R8G8B8);
+	BasicBitmap bd(dw, dh, BasicBitmap::A8R8G8B8);
 
-	if (bs == NULL || bd == NULL) {
-		if (bs) delete bs;
-		if (bd) delete bd;
-		return -5;
-	}
+	bs.Convert(0, 0, src, 0, 0, srcwidth, srcheight);
 
-	bs->Convert(0, 0, src, 0, 0, srcwidth, srcheight);
-
-	int hr = BasicBitmap_ResampleSmooth(bs->Address8(0, 0), bd->Address8(0, 0),
-		dstwidth, srcwidth, dstheight, srcheight, bd->Pitch(), bs->Pitch());
+	int hr = BasicBitmap_ResampleSmooth(bs.Address8(0, 0), bd.Address8(0, 0),
+		dstwidth, srcwidth, dstheight, srcheight, bd.Pitch(), bs.Pitch());
 
 	if (hr == 0) {
-		dst->Convert(dx, dy, bd, 0, 0, dstwidth, dstheight);
+		dst->Convert(dx, dy, &bd, 0, 0, dstwidth, dstheight);
 	}
-
-	delete bs;
-	delete bd;
 
 	return (hr == 0)? 0 : -6;
 }
