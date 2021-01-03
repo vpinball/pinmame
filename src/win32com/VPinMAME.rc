@@ -182,21 +182,21 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,204,167,50,14
     CONTROL         100,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
     CTEXT           "Visual PinMAME\n",IDC_STATIC,148,6,160,8
-    CTEXT           "Version %s",IDC_VERSION,150,16,160,8
+    CTEXT           "Version %s",IDC_VERSION,148,16,160,8
     CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,94,160,8
     CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,103,160,8
-    CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
+    CTEXT           "Visual PinMAME written by",IDC_STATIC,148,42,160,8
     CTEXT           "Copyright © 1997-2021 by the authors of MAME, MAME32, MAMEW and PinMAME",IDC_STATIC,148,116,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",IDC_STATIC,7,135,134,24
-    CTEXT           "Copyright © 2001-2021 by the authors.",IDC_STATIC,150,78,160,8
-    CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",IDC_STATIC,149,139,160,24
-    CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
+    CTEXT           "Copyright © 2001-2021 by the authors.",IDC_STATIC,148,78,160,8
+    CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",IDC_STATIC,148,139,160,24
+    CTEXT           "Build Date %s",IDC_BUILDDATE,148,27,160,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,162,1
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,90,162,1
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,136,162,1
-    CONTROL         "For the latest info:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP,8,168,55,9
-    CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
-    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, Matthias Bücher and Carsten Wächter",IDC_STATIC,152,51,154,24
+    CONTROL         "For the latest info:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP,8,162,55,9
+    CONTROL         "https://sourceforge.net/projects/pinmame/",IDC_HOMEPAGELINK,"Static",SS_LEFTNOWORDWRAP | SS_NOTIFY,8,171,136,9
+    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, Matthias Bücher and Carsten Wächter",IDC_STATIC,148,51,154,24
 END
 
 IDD_DISCLAIMERDLG DIALOG 0, 0, 218, 158
@@ -374,7 +374,7 @@ STRINGTABLE
 BEGIN
     IDS_PROJNAME            "VPinMAME"
     IDS_CONTROLLER_DESC     "Controller Class"
-    IDS_EXPIRED             "Sorry, this beta version of Visual PinMAME has expired.\nPlease download the newest copy from\nhttp://www.pinmame.com"
+    IDS_EXPIRED             "Sorry, this beta version of Visual PinMAME has expired.\nPlease download the newest copy from\nhttps://sourceforge.net/projects/pinmame/"
     IDS_EXPIREDTITLE        "This version has expired..."
 END
 

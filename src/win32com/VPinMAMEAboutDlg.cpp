@@ -32,11 +32,11 @@ public:
 private:
 	int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPTSTR lpszBuffer, WORD wMaxSize) {
 		DWORD   dwVerHandle; 
-		DWORD	dwInfoSize;
+		DWORD   dwInfoSize;
 		HANDLE  hVersionInfo;
 		LPVOID  lpEntryInfo;
 		LPVOID  lpEntry;
-		UINT	wEntrySize;
+		UINT    wEntrySize;
 		LPDWORD lpdwVar;
 		UINT    wVarSize;
 		DWORD   dwTranslation;
@@ -155,10 +155,10 @@ private:
 
 	/*HOMEPAGELINK CLICKED*/
 	LRESULT OnHomePageLink(WORD, UINT, HWND, BOOL&) {
-		ShellExecute(GetActiveWindow(),"open","http://www.pinmame.com",NULL,NULL,SW_SHOW);
+		ShellExecute(GetActiveWindow(),"open","https://sourceforge.net/projects/pinmame/",NULL,NULL,SW_SHOW);
 		return 0;
 	}
-	
+
 	/*Dialog Destroy*/
 	LRESULT OnDestroyDialog(UINT, WPARAM, LPARAM, BOOL&) {
 		DeleteObject(hLinkBrush);
@@ -188,7 +188,7 @@ void ShowAboutDlg(HWND hParent)
 
 char * GetBuildDateString(void)
 {
-    static char tmp[120];
-    wsprintf(tmp,"%s",__DATE__);
-    return tmp;
+	static char tmp[120];
+	wsprintf(tmp,"%s",__DATE__);
+	return tmp;
 }
