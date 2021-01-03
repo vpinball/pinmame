@@ -367,9 +367,7 @@ static INT16 sineWaveext[32000]; // wave triggered by external clock, very rough
 
 /*-- m6840 interface --*/
 static struct {
-  int c0;
   int ax[9];
-  int axb[9];	
   UINT16 timer1,timer2,timer3;
 } m6840d;
 
@@ -671,10 +669,10 @@ static void softreset (int param) {
 
 static WRITE_HANDLER(m6840_w ) {
   int w;
-  long int w1;
 //  logerror("M6840: offset %d = %02x\n", offset, data);
   m6840d.ax[offset]=data;
   if (offset == 3) {
+	long int w1;
 	gps_locals.timlat1 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
 	m6840d.timer1 = gps_locals.timlat1;
 	w1 = MSU1_INTCLOCK / (2 * (m6840d.timer1 + 1));
