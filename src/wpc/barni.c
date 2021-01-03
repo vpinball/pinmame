@@ -128,15 +128,16 @@ static void showSegment(int num, UINT8 data) {
   }
 }
 
-static int countBits(UINT8 data) {
-  int cnt = 0;
-  int i;
-  for (i = 0; i < 8; i++) {
-    if (data & (1 << i)) {
-      cnt++;
-    }
-  }
-  return cnt;
+/*static int countBits2(UINT8 b) {
+    int cnt;
+    for (cnt = 0; b != 0; cnt++)
+        b &= b - 1;
+
+    return cnt;
+}*/
+
+static int singleBitSet(UINT8 b) {
+  return (b!=0) && ((b & (b-1))==0);
 }
 
 static WRITE_HANDLER(via0b_w) {
@@ -170,7 +171,7 @@ static WRITE_HANDLER(via0b_w) {
           break;
         case 2:
           lampRow = ~data;
-          if (countBits(lampRow) == 1) {
+          if (singleBitSet(lampRow)) {
             colNum = core_BitColToNum(lampRow);
             coreGlobals.lampMatrix[colNum] = lampData;
             // column 4 is additionally fed with all 0 on champion, so buffer the previous value a while
