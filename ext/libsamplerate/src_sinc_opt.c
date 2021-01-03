@@ -643,9 +643,8 @@ calc_output_stereo (SINC_FILTER *filter, increment_t increment, increment_t star
 static enum SRC_ERR
 sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
-	double		input_index, src_ratio, count, float_increment, terminate, rem ;
-	increment_t	increment, start_filter_index ;
-	int			half_filter_chan_len, samples_in_hand ;
+	double		input_index, src_ratio, count, terminate, rem ;
+	int			half_filter_chan_len ;
 
 	if (psrc->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
@@ -684,8 +683,11 @@ sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	/* Main processing loop. */
 	while (filter->out_gen < filter->out_count)
 	{
+		double float_increment;
+		increment_t	increment,start_filter_index;
+
 		/* Need to reload buffer? */
-		samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
+		int samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
 
 		if (samples_in_hand <= half_filter_chan_len)
 		{	if ((psrc->error = prepare_data (filter, data, half_filter_chan_len)) != 0)
@@ -798,9 +800,8 @@ calc_output_quad (SINC_FILTER *filter, increment_t increment, increment_t start_
 static enum SRC_ERR
 sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
-	double		input_index, src_ratio, count, float_increment, terminate, rem ;
-	increment_t	increment, start_filter_index ;
-	int			half_filter_chan_len, samples_in_hand ;
+	double		input_index, src_ratio, count, terminate, rem ;
+	int			half_filter_chan_len ;
 
 	if (psrc->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
@@ -839,8 +840,11 @@ sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	/* Main processing loop. */
 	while (filter->out_gen < filter->out_count)
 	{
+		double float_increment;
+		increment_t	increment, start_filter_index;
+
 		/* Need to reload buffer? */
-		samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
+		int samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
 
 		if (samples_in_hand <= half_filter_chan_len)
 		{	if ((psrc->error = prepare_data (filter, data, half_filter_chan_len)) != 0)
@@ -953,9 +957,8 @@ calc_output_hex (SINC_FILTER *filter, increment_t increment, increment_t start_f
 static enum SRC_ERR
 sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
-	double		input_index, src_ratio, count, float_increment, terminate, rem ;
-	increment_t	increment, start_filter_index ;
-	int			half_filter_chan_len, samples_in_hand ;
+	double		input_index, src_ratio, count, terminate, rem ;
+	int			half_filter_chan_len ;
 
 	if (psrc->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
@@ -994,8 +997,11 @@ sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	/* Main processing loop. */
 	while (filter->out_gen < filter->out_count)
 	{
+		double float_increment;
+		increment_t	increment, start_filter_index;
+
 		/* Need to reload buffer? */
-		samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
+		int samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
 
 		if (samples_in_hand <= half_filter_chan_len)
 		{	if ((psrc->error = prepare_data (filter, data, half_filter_chan_len)) != 0)
@@ -1118,9 +1124,8 @@ calc_output_multi (SINC_FILTER *filter, increment_t increment, increment_t start
 static enum SRC_ERR
 sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
-	double		input_index, src_ratio, count, float_increment, terminate, rem ;
-	increment_t	increment, start_filter_index ;
-	int			half_filter_chan_len, samples_in_hand ;
+	double		input_index, src_ratio, count, terminate, rem ;
+	int			half_filter_chan_len ;
 
 	if (psrc->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
@@ -1159,8 +1164,11 @@ sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	/* Main processing loop. */
 	while (filter->out_gen < filter->out_count)
 	{
+		double float_increment;
+		increment_t	increment, start_filter_index;
+
 		/* Need to reload buffer? */
-		samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
+		int samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
 
 		if (samples_in_hand <= half_filter_chan_len)
 		{	if ((psrc->error = prepare_data (filter, data, half_filter_chan_len)) != 0)

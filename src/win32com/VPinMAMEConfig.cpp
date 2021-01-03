@@ -435,6 +435,8 @@ bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* pszDefault, char* pszValue)
 	char szValue[4096];
 	DWORD dwValue;
 
+	szValue[0] = '\0';
+
 	switch ( pOpt->type ) {
 	case rc_string:
 	case rc_float:
@@ -796,7 +798,7 @@ void DeleteGameSettings(const char * const pszGameName)
 
 BOOL GetSetting(const char* const pszGameName, const char* const pszName, VARIANT *pVal)
 {
-	if ( !pszName && !*pszName )
+	if ( !pszName || !*pszName )
 		return FALSE;
 
 	if ( (pszGameName && IsGlobalSetting(pszName)) || IgnoreSetting(pszName) )
@@ -805,7 +807,7 @@ BOOL GetSetting(const char* const pszGameName, const char* const pszName, VARIAN
 	struct rc_option *option;
 	if(!(option = rc_get_option2(opts, pszName)))
 		return FALSE;
-	
+
 	HKEY hKey = 0;
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -871,7 +873,7 @@ BOOL GetSetting(const char* const pszGameName, const char* const pszName, VARIAN
 
 BOOL PutSetting(const char* const pszGameName, const char* const pszName, VARIANT vValue)
 {
-	if ( !pszName && !*pszName )
+	if ( !pszName || !*pszName )
 		return FALSE;
 
 	if ( (pszGameName && IsGlobalSetting(pszName)) || IgnoreSetting(pszName) )

@@ -349,8 +349,8 @@ static WRITE_HANDLER(sts_ctrl_w)
 struct sndbrdst300 snddatst300;
 
 static struct {
-	UINT16	timlat1,timlat2,timlat3,timer1,timer2,timer3,t4562c;
-	UINT16	timlats1,timlats2,timlats3;
+	UINT16	timlat1,timlat2,timlat3,timer1,timer2,timer3;
+	UINT16	timlats1,timlats2;
 	int		cr1,cr2,cr3,channel,timp1,timp2,timp3,tfre1,tfre2,tfre3,noise,conx,altx,dir;
 	int		volnr,reset,extfreq,voiceSw;
 } st300loc;
@@ -695,8 +695,8 @@ static WRITE_HANDLER(st300_ctrl_w) {
 
 static WRITE_HANDLER(st300_data_w) {
 	int w;
-	long int w1;
 	if (data == 3) {
+		long int w1;
 		st300loc.timlat1 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
 		snddatst300.timer1 = st300loc.timlat1;
 		w1 = ST300_INTCLOCK / (2 * (snddatst300.timer1 + 1));

@@ -74,7 +74,7 @@ void streams_sh_update(void)
 				int i;
 				if (buflen > 0)
 				{
-					const void *buf[MIXER_MAX_CHANNELS];
+					void *buf[MIXER_MAX_CHANNELS];
 
 					for (i = 0;i < stream_joined_channels[channel];i++)
 					{
@@ -232,7 +232,7 @@ void stream_update(int channel,int min_interval)
 	{
 		if (stream_joined_channels[channel] > 1)
 		{
-			const void *buf[MIXER_MAX_CHANNELS];
+			void *buf[MIXER_MAX_CHANNELS];
 			int i;
 			for (i = 0;i < stream_joined_channels[channel];i++)
 				buf[i] = (UINT8*)(stream_buffer[channel+i]) + stream_buffer_pos[channel+i] * (stream_is_float[channel+i] ? sizeof(float) : sizeof(INT16));

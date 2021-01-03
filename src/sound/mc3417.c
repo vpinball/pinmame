@@ -99,8 +99,9 @@ int mc3417_sh_start(const struct MachineSound *msound)
 	{
 		struct mc3417_data *chip = &mc3417[i];
 		char name[40];
+#ifdef SALLEN_KEY
 		int ii,fi;
-
+#endif
 		/* reset the channel */
 		memset(chip, 0, sizeof(*chip));
 

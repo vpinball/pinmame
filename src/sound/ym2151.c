@@ -556,17 +556,16 @@ static FILE *sample[9];
 
 static void init_tables(void)
 {
-	signed int i,x,n;
-	double o,m;
+	signed int i,x;
 
 	for (x=0; x<TL_RES_LEN; x++)
 	{
-		m = floor((1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0)); // = 2^((4095.-x)/256.)
+		double m = floor((1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0)); // = 2^((4095.-x)/256.)
 
 		/* we never reach (1<<16) here due to the (x+1) */
 		/* result fits within 16 bits at maximum */
 
-		n = (int)m;		/* 16 bits here */
+		int n = (int)m;	/* 16 bits here */
 		n >>= 4;		/* 12 bits here */
 		if (n&1)		/* round to closest */
 			n = (n>>1)+1;
@@ -594,12 +593,14 @@ static void init_tables(void)
 
 	for (i=0; i<SIN_LEN; i++)
 	{
+		int n;
+
 		/* non-standard sinus */
-		m = sin( ((i*2)+1) * (M_PI / SIN_LEN) ); /* verified on the real chip */
+		double m = sin( ((i*2)+1) * (M_PI / SIN_LEN) ); /* verified on the real chip */
 
 		/* we never reach zero here due to ((i*2)+1) */
 
-		o = 8.0*log(1.0/fabs(m))/log(2.0);  /* convert to 'decibels' */
+		double o = 8.0*log(1.0/fabs(m))/log(2.0);  /* convert to 'decibels' */
 
 		o = o / (ENV_STEP/4.);
 
@@ -1932,20 +1933,17 @@ rate 11 1         |
 
 INLINE void advance_eg(YM2151 *PSG)
 {
-	YM2151Operator *op;
-	unsigned int i;
-
 	PSG->eg_timer += PSG->eg_timer_add;
 
 	while (PSG->eg_timer >= PSG->eg_timer_overflow)
 	{
-		PSG->eg_timer -= PSG->eg_timer_overflow;
+		/* envelope generator */
+		YM2151Operator* op = &PSG->oper[0];	/* CH 0 M1 */
+		unsigned int i = 32;
 
+		PSG->eg_timer -= PSG->eg_timer_overflow;
 		PSG->eg_cnt++;
 
-		/* envelope generator */
-		op = &PSG->oper[0];	/* CH 0 M1 */
-		i = 32;
 		do
 		{
 			switch(op->state)
@@ -2298,17 +2296,16 @@ INLINE signed int acc_calc(signed int value)
 void YM2151UpdateOne(int num, INT16 **buffers, int length)
 {
 	int i;
-	signed int outl,outr;
-	SAMP *bufL, *bufR;
-	YM2151 *PSG;
 
-	bufL = buffers[0];
-	bufR = buffers[1];
+	SAMP* const bufL = buffers[0];
+	SAMP* const bufR = buffers[1];
 
-	PSG = &YMPSG[num];
+	YM2151* const PSG = &YMPSG[num];
 
 	for (i=0; i<length; i++)
 	{
+		signed int outl, outr;
+
 		advance_eg(PSG);
 
 		PSG->chanout[0] = 0;
@@ -2381,7 +2378,6 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 		}
 		}
 #endif
-
 		advance(PSG);
 	}
 }

@@ -88,10 +88,9 @@ static void playSound(void) {
   }
   if (atarilocals.sound & 0x01) { // wave on
     int i;
-    UINT8 byte;
     mixer_set_volume(atarilocals.channel, atarilocals.volume*4);
     for (i=0; i < 32; i++) { // copy in the correct waveform from the sound PROM
-      byte = memory_region(REGION_SOUND1)[32 * atarilocals.waveform + i] & 0x0f;
+      const UINT8 byte = memory_region(REGION_SOUND1)[32 * atarilocals.waveform + i] & 0x0f;
       romWave[i] = 0x80 + (byte | (byte << 4));
     }
     if (mixer_is_sample_playing(atarilocals.channel)) {
