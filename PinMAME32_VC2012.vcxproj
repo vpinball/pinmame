@@ -503,6 +503,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ext\vgm\vgmwrite.c" />
     <ClCompile Include="src\artwork.c" />
     <ClCompile Include="src\audit.c" />
     <ClCompile Include="src\cheat.c" />
@@ -1435,9 +1436,9 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\ui\splitters.c" />
     <ClCompile Include="src\ui\treeview.c" />
     <ClCompile Include="src\ui\win32ui.c" />
-    <ClInclude Include="ext\vgm\vgmwrite.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\vgm\vgmwrite.h" />
     <ClInclude Include="src\artwork.h" />
     <ClInclude Include="src\audit.h" />
     <ClInclude Include="src\cheat.h" />
@@ -1676,7 +1677,6 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\ui\splitters.h" />
     <ClInclude Include="src\ui\treeview.h" />
     <ClInclude Include="src\ui\win32ui.h" />
-    <ClInclude Include="ext\vgm\vgmwrite.h" />
     <ClInclude Include="ext\zlib\include\zconf.h" />
     <ClInclude Include="ext\zlib\include\zlib.h" />
   </ItemGroup>
