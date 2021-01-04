@@ -252,6 +252,8 @@ void vpm_frontend_init(void) {
 }
 
 void vpm_frontend_exit(void) {
+  if (logfile) // don't know if this is legit to do here, but just be safe
+  { fclose(logfile); logfile = NULL; }
 }
 
 extern "C" {
@@ -358,8 +360,8 @@ void vpm_game_exit(int game_index) {
   /* close open files */
   if (options.language_file) /* this seems to never be opened in Win32 version */
     { mame_fclose(options.language_file); options.language_file = NULL; }
-  if (logfile)
-    { fclose(logfile); logfile = NULL; }
+  //if (logfile) // cannot close this here, as we did not open the file ourselves
+  //  { fclose(logfile); logfile = NULL; }
 }
 
 #if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
