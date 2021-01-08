@@ -9,6 +9,10 @@ Version 3.4 (X X, 2021) - ""
 *** CORE/CPU ***
 Fix regression in solenoid emulation for Juegos Populares
 
+*** ROM SUPPORT *** Thanks to Brent Walker
+Clones:
+Lucky Draw (alternate version - only different #3 ROM)
+
 
 
 Version 3.3 (December 24th, 2020) - "20 years already?"

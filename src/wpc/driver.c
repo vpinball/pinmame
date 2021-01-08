@@ -1053,6 +1053,7 @@ DRIVERNV(rotation)      //Rotation VIII (v. 1.17, 1978?)
 // ----------------
 DRIVERNV(spirit76)      //Spirit of 76 (1975)
 DRIVERNV(lckydraw)      //Lucky Draw (1978)
+DRIVERNV(lckydraa)      //Lucky Draw (alternate version)
 
 // ----------------
 // MONROE BOWLING CO.
