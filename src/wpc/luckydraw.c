@@ -14,7 +14,7 @@ static struct {
 
 static INTERRUPT_GEN(mirco_vblank) {
   locals.vblankCount++;
-  if (!(locals.vblankCount % 2)) {
+  if (!(locals.vblankCount % core_gameData->hw.gameSpecific1)) {
     coreGlobals.solenoids = locals.solenoids;
   }
   core_updateSw(TRUE); // flippers are directly driven by solenoids
@@ -191,8 +191,6 @@ static const core_tLCDLayout disp[] = {
   {3,14,32,2,CORE_SEG7}, {3,22,36,2,CORE_SEG7},
   {0}
 };
-static core_tGameData mircoGameData = {0,disp,{FLIP_SWNO(32,31),0,1}};
-static void init_lckydraw(void) { core_gameData = &mircoGameData; }
 INPUT_PORTS_START(lckydraw)
   CORE_PORTS
   SIM_PORTS(1)
@@ -276,6 +274,8 @@ INPUT_PORTS_START(lckydraw)
       COREPORT_DIPSET(0x0080, "1" ) \
 INPUT_PORTS_END
 
+static core_tGameData lckydrawGameData = {0,disp,{FLIP_SWNO(32,31),0,1,0,0,0,2}};
+static void init_lckydraw(void) { core_gameData = &lckydrawGameData; }
 ROM_START(lckydraw)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("lckydrw1.rom", 0x0000, 0x0400, CRC(58ebb50f) SHA1(016ed66b4ee9979aa109c0ce085597a62d33bf8d))
@@ -283,3 +283,14 @@ ROM_START(lckydraw)
     ROM_LOAD("lckydrw3.rom", 0x0800, 0x0400, CRC(464155bb) SHA1(5bbf784dba9149575444e6b1250ac9b5c2bced87))
 ROM_END
 CORE_GAMEDEFNV(lckydraw,"Lucky Draw",1978,"Mirco",mirco,GAME_USES_CHIMES)
+
+static core_tGameData lckydraaGameData = {0,disp,{FLIP_SWNO(32,31),0,1,0,0,0,3}};
+static void init_lckydraa(void) { core_gameData = &lckydraaGameData; }
+#define input_ports_lckydraa input_ports_lckydraw
+ROM_START(lckydraa)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("lckydrw1.rom", 0x0000, 0x0400, CRC(58ebb50f) SHA1(016ed66b4ee9979aa109c0ce085597a62d33bf8d))
+    ROM_LOAD("lckydrw2.rom", 0x0400, 0x0400, CRC(816b9e20) SHA1(0dd8acc633336f250960ebe89cc707fd115afeee))
+    ROM_LOAD("lckydrw3b.rom",0x0800, 0x0400, CRC(810de93e) SHA1(0740241f437657f04fbc103a90d25ff6b6db0af5))
+ROM_END
+CORE_CLONEDEFNV(lckydraa,lckydraw,"Lucky Draw (alternate version)",1978,"Mirco",mirco,GAME_USES_CHIMES)
