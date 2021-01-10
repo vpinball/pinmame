@@ -213,7 +213,7 @@ UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP
 		uDeltaAdrP2 ^= 0x03; // count backwards
 
 	// emulate 8 to 2 mux to obtain delta from byte (bigendian)
-	switch (uDeltaAdrP2)
+	switch (uDeltaAdrP2 & 0x03)
 	{
 	case 0x00:
 		return (uRomDataP2 & 0xC0) >> 6;
@@ -223,8 +223,6 @@ UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP
 		return (uRomDataP2 & 0x0C) >> 2;
 	case 0x03:
 		return (uRomDataP2 & 0x03) >> 0;
-	default:
-		return 0xFF;
 	}
 }
 
