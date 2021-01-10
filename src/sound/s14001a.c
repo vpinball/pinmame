@@ -213,17 +213,7 @@ UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP
 		uDeltaAdrP2 ^= 0x03; // count backwards
 
 	// emulate 8 to 2 mux to obtain delta from byte (bigendian)
-	switch (uDeltaAdrP2 & 0x03)
-	{
-	case 0x00:
-		return (uRomDataP2 & 0xC0) >> 6;
-	case 0x01:
-		return (uRomDataP2 & 0x30) >> 4;
-	case 0x02:
-		return (uRomDataP2 & 0x0C) >> 2;
-	case 0x03:
-		return (uRomDataP2 & 0x03) >> 0;
-	}
+	return uRomDataP2 >> (~uDeltaAdrP2 << 1 & 0x06) & 0x03;
 }
 
 void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDelta, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2)
