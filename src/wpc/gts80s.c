@@ -701,11 +701,11 @@ MACHINE_DRIVER_END
 /  Local variables
 /-----------------*/
 static struct {
-  int    cpuNo;             // # of the fist sound CPU
+  int    cpuNo;				// # of the fist sound CPU
   int    ay_latch;			// Data Latch to AY-8913 chips
-  int    ym2151_port;		// Bit determines if Registor or Data is written to YM2151
   int    nmi_rate;			// Programmable NMI rate
   void   *nmi_timer;		// Timer for NMI
+  data8_t ym2151_port;		// Bit determines if Register or Data is written to YM2151
   UINT8  dac_volume, dac2_volume;
   UINT8  dac_data, dac2_data;
   UINT8  speechboard_drq;	// Gen 1 Only
@@ -911,16 +911,13 @@ static WRITE_HANDLER( s80bs3_sound_control_w )
 {
 	common_sound_control_w(offset, data);
 	/* Bit 7 selects YM2151 register or data port */
-	GTS80BS_locals.ym2151_port = data & 0x80;
+	GTS80BS_locals.ym2151_port = (data & 0x80) ? 1 : 0;
 }
 
 //Determine whether to write data to YM2151 Registers or Data Port
 static WRITE_HANDLER( s80bs_ym2151_w )
 {
-	if (GTS80BS_locals.ym2151_port)
-		YM2151_data_port_0_w(offset, data);
-	else
-		YM2151_register_port_0_w(offset, data);
+	YM2151_word_0_w(GTS80BS_locals.ym2151_port, data);
 }
 
 //DAC Handling.. Set volume
@@ -1401,7 +1398,7 @@ MACHINE_DRIVER_START(gts80s_s3_no)
 
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(DAC, GTS3_dacInt)
-  MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
+  MDRV_SOUND_ADD(YM2151, GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_DIAGNOSTIC_LEDH(3)
 MACHINE_DRIVER_END
@@ -1418,7 +1415,7 @@ MACHINE_DRIVER_START(gts80s_s3)
 
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(DAC, GTS3_dacInt)
-  MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
+  MDRV_SOUND_ADD(YM2151, GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295, GTS3_okim6295_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END

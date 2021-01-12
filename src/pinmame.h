@@ -65,6 +65,7 @@
 // Sound
 #define HAS_DAC        1
 #define HAS_YM2151_ALT 1
+//#define HAS_YM2151_NUKED 1
 #define HAS_HC55516    1
 #define HAS_MC3417     1
 #define HAS_SAMPLES    1
