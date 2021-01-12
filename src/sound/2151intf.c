@@ -8,7 +8,9 @@
 
 #include "driver.h"
 //#include "fm.h"
-#include "ym2151.h"
+#if (HAS_YM2151_ALT)
+ #include "ym2151.h"
+#endif
 #if (HAS_YM2151_NUKED)
  #include "ym2151_opm.h"
  #include "ym2151_opm.c"
@@ -180,7 +182,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 			stream[i] = stream_init_multi_float(YM2151_NUMBUF,
 				name,vol,rate,i,YM2151UpdateNuked,1);
 
-			OPM_Reset(&chip[i], rate+0.5, intf->baseclock);
+			OPM_Reset(&chip[i], intf->baseclock);
 
 			has_handler |= (intf->irqhandler[i] != 0) | (intf->portwritehandler[i] != 0);
 
@@ -271,7 +273,7 @@ void YM2151_sh_reset(void)
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(i);
-		OPM_Reset(&chip[i], 0, 0);
+		OPM_Reset(&chip[i], 0);
 		break;
 #endif
 	}
