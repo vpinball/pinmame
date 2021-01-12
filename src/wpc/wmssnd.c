@@ -661,8 +661,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(s11cs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
-  { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
+  { 0x2000, 0x2001, YM2151_word_0_w },              /* 2000-2ffe even *//* 2001-2fff odd */
   { 0x4000, 0x4003, pia_w(S11CS_PIA0) },            /* 4000-4fff */
   { 0x6000, 0x6000, hc55516_0_digit_clock_clear_w },/* 6000-67ff */
   { 0x6800, 0x6800, hc55516_0_clock_set_w },        /* 6800-6fff */
@@ -817,8 +816,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(s11js_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
-  { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
+  { 0x2000, 0x2001, YM2151_word_0_w },              /* 2000-2ffe even *//* 2001-2fff odd */
   { 0x2800, 0x2800, s11js_reply_w },
   { 0x3000, 0x3000, s11js_dac_w },
   { 0x3800, 0x3800, s11js_rombank_w },
@@ -989,8 +987,7 @@ MEMORY_END
 static MEMORY_WRITE_START(wpcs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, wpcs_rombank_w }, /* 2000-23ff */
-  { 0x2400, 0x2400, YM2151_register_port_0_w }, /* 2400-27fe even */
-  { 0x2401, 0x2401, YM2151_data_port_0_w },     /* 2401-27ff odd */
+  { 0x2400, 0x2401, YM2151_word_0_w }, /* 2400-27fe even *//* 2401-27ff odd */
   { 0x2800, 0x2800, DAC_0_data_w }, /* 2800-2bff */
   { 0x2c00, 0x2c00, hc55516_0_clock_set_w },  /* 2c00-2fff */
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */

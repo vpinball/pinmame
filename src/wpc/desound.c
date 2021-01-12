@@ -65,8 +65,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(de1s_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2000, YM2151_register_port_0_w },
-  { 0x2001, 0x2001, YM2151_data_port_0_w },
+  { 0x2000, 0x2001, YM2151_word_0_w },
   { 0x2800, 0x2800, de1s_chipsel_w },
   { 0x2c00, 0x2c00, de1s_4052_w },
   { 0x3000, 0x3000, de1s_MSM5025_w },
