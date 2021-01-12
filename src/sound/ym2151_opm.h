@@ -1,3 +1,6 @@
+// license:LGPL
+// copyright-holders:Nuke.YKT
+
 /* Nuked OPM
  * Copyright (C) 2020 Nuke.YKT
  *
@@ -30,6 +33,19 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifdef PINMAME
+// from VGM port
+#define RSM_FRAC 10
+#define OPN_WRITEBUF_SIZE 2048
+#define OPN_WRITEBUF_DELAY 36
+
+typedef struct {
+    uint64_t time;
+    uint8_t port;
+    uint8_t data;
+} opm_writebuf;
 #endif
 
 typedef struct {
@@ -251,6 +267,27 @@ typedef struct {
     uint8_t dac_osh1, dac_osh2;
     uint16_t dac_bits;
     int32_t dac_output[2];
+
+#ifdef PINMAME
+    // from VGM port
+    int32_t rateratio;
+    int32_t samplecnt;
+    int32_t oldsamples[2];
+    int32_t samples[2];
+
+    uint64_t writebuf_samplecnt;
+    uint32_t writebuf_cur;
+    uint32_t writebuf_last;
+    uint64_t writebuf_lasttime;
+    opm_writebuf writebuf[OPN_WRITEBUF_SIZE];
+
+    // PinMAME specific
+    uint8_t old_timer_irq;
+    void(*irqhandler)(int irq);		/* IRQ function handler */
+    mem_write_handler porthandler;	/* port write function handler */
+
+    unsigned short vgm_idx;
+#endif
 } opm_t;
 
 void OPM_Clock(opm_t *chip, int32_t *output, uint8_t *sh1, uint8_t *sh2, uint8_t *so);
@@ -260,7 +297,13 @@ uint8_t OPM_ReadIRQ(opm_t *chip);
 uint8_t OPM_ReadCT1(opm_t *chip);
 uint8_t OPM_ReadCT2(opm_t *chip);
 void OPM_SetIC(opm_t *chip, uint8_t ic);
-void OPM_Reset(opm_t *chip);
+void OPM_Reset(opm_t *chip, uint32_t rate, uint32_t clock);
+#ifdef PINMAME
+void OPM_WriteBuffered(opm_t *chip, uint32_t port, uint8_t data);
+void OPM_GenerateStream(opm_t *chip, float **sndptr, uint32_t numsamples);
+void OPM_SetPortWriteHandler(opm_t *chip, mem_write_handler handler);
+void OPM_SetIrqHandler(opm_t *chip, void(*handler)(int irq));
+#endif
 
 #ifdef __cplusplus
 } // extern "C"
