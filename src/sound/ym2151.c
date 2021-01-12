@@ -228,7 +228,7 @@ typedef struct
 	double clock;						/* chip clock in Hz (passed from 2151intf.c) */
 	unsigned int sampfreq;				/* sampling frequency in Hz (passed from 2151intf.c) */
 
-#ifdef PINMAME
+#ifdef PREDCS_FIRQ_HACK
 	int output;							/* Flag indicating if the 2151 is outputting sound */
 #endif
 
@@ -2362,7 +2362,7 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 
 		SAVE_ALL_CHANNELS
 
-#ifdef PINMAME
+#ifdef PREDCS_FIRQ_HACK
 		//Flag if any output coming out of the 2151
 		{
 		static int buffer = 0;
@@ -2392,7 +2392,7 @@ void YM2151SetPortWriteHandler(int n, mem_write_handler handler)
 	YMPSG[n].porthandler = handler;
 }
 
-#ifdef PINMAME
+#ifdef PREDCS_FIRQ_HACK
 /*return 1 if 2151 is outputting any data*/
 int YM2151ReadOutputFlag(int n)
 {

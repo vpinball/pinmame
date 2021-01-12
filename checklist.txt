@@ -41,7 +41,7 @@ If anything of the above fails, forget about a release and correct the errors fi
 If it worked out ok, however, do a release!
 
 #5 Release
-- Upload the zips to pinmame.com and sourceforge.net, update the news & download pages.
+- Upload the zips to sourceforge.net
 - Release it to VPForums' upload page, and tell all the forum people what has happened!
 - Shut down your computer! Go and have a drink. You deserve one now!
 - 12 hours later, check back the forum for the first terrible errors we forgot to fix!
