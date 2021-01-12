@@ -183,8 +183,17 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 		double sample_rate,
 		int param,void (*callback)(int param,INT16 **buffer,int length))
 {
+	return stream_init_multi_float(channels, names, default_mixing_levels,
+		sample_rate,
+		param, callback, 0);
+}
+
+int stream_init_multi_float(int channels,const char **names,const int *default_mixing_levels,
+		double sample_rate,
+		int param,void (*callback)(int param,INT16 **buffer,int length),int is_float)
+{
 	int i;
-	const int channel = mixer_allocate_channels(channels,default_mixing_levels);
+	const int channel = mixer_allocate_channels_float(channels,default_mixing_levels,is_float);
 
 	stream_joined_channels[channel] = channels;
 
@@ -194,10 +203,10 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 
 		mixer_set_name(channel+i,names[i]);
 
-		if ((stream_buffer[channel+i] = malloc(sizeof(INT16)*BUFFER_LEN)) == 0)
+		if ((stream_buffer[channel+i] = malloc((is_float ? sizeof(float) : sizeof(INT16))*BUFFER_LEN)) == 0)
 			return -1;
 
-		stream_is_float[channel] = 0;
+		stream_is_float[channel] = is_float;
 
 		stream_sample_rate[channel+i] = sample_rate;
 		stream_buffer_pos[channel+i] = 0;

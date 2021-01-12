@@ -9,7 +9,12 @@
 #include "driver.h"
 //#include "fm.h"
 #include "ym2151.h"
-
+#if (HAS_YM2151_NUKED)
+ #include "ym2151_opm.h"
+ #include "ym2151_opm.c"
+ static opm_t chip[MAX_2151];
+ static mame_timer * update_timer;
+#endif
 
 /* for stream system */
 static int stream[MAX_2151];
@@ -19,12 +24,11 @@ static const struct YM2151interface *intf;
 static int FMMode;
 #define CHIP_YM2151_DAC 4	/* use Tatsuyuki's FM.C */
 #define CHIP_YM2151_ALT 5	/* use Jarek's YM2151.C */
-
+#define CHIP_YM2151_NUKED 6	/* use Nuked-OPM */
 
 #define YM2151_NUMBUF 2
 
 #if (HAS_YM2151)
-
 static void *Timer[MAX_2151][2];
 
 /* IRQ Handler */
@@ -46,25 +50,39 @@ static void TimerHandler(int n,int c,int count,double stepTime)
 {
 	if( count == 0 )
 	{	/* Reset FM Timer */
-	 	timer_enable (Timer[n][c], 0);
+		timer_enable (Timer[n][c], 0);
 	}
 	else
 	{	/* Start FM Timer */
 		double timeSec = (double)count * stepTime;
 		if (!timer_enable(Timer[n][c], 1))
-		 	timer_adjust (Timer[n][c], timeSec, (c<<7)|n, 0);
+			timer_adjust (Timer[n][c], timeSec, (c<<7)|n, 0);
 	}
 }
-
 #endif
 
 /* update request from fm.c */
-void YM2151UpdateRequest(int chip)
+static void YM2151UpdateRequest(int chip)
 {
 	stream_update(stream[chip],0);
 }
 
-static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
+#if (HAS_YM2151_NUKED)
+static void YM2151UpdateNuked(int num, INT16 **buffers, int length)
+{
+	OPM_GenerateStream(&chip[num], (float**)buffers, length);
+}
+
+// to keep up with the CPU emulation (i.e. IRQ and port callbacks), trigger the sound updates on a regular basis
+static void update_timer_func(int timer_num)
+{
+	int i;
+	for (i = 0; i < intf->num; i++)
+		YM2151UpdateRequest(i);
+}
+#endif
+
+static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 {
 	int i,j;
 	double rate;// = Machine->sample_rate;
@@ -75,8 +93,9 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 	intf = msound->sound_interface;
 	rate = intf->baseclock/64.;
 
-	if( mode ) FMMode = CHIP_YM2151_ALT;
-	else       FMMode = CHIP_YM2151_DAC;
+	if ( mode == 1 ) FMMode = CHIP_YM2151_ALT;
+	else if ( mode == 2 ) FMMode = CHIP_YM2151_NUKED;
+	else FMMode = CHIP_YM2151_DAC;
 
 	switch(FMMode)
 	{
@@ -142,6 +161,45 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 		}
 		return 1;
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+	{
+		UINT8 has_handler = 0;
+		/* stream system initialize */
+		for (i = 0;i < intf->num;i++)
+		{
+			/* stream setup */
+			mixed_vol = intf->volume[i];
+			for (j = 0 ; j < YM2151_NUMBUF ; j++)
+			{
+				name[j]=buf[j];
+				vol[j] = mixed_vol & 0xffff;
+				mixed_vol>>=16;
+				sprintf(buf[j],"%s #%d Ch%d",sound_name(msound),i,j+1);
+			}
+			stream[i] = stream_init_multi_float(YM2151_NUMBUF,
+				name,vol,rate,i,YM2151UpdateNuked,1);
+
+			OPM_Reset(&chip[i], rate+0.5, intf->baseclock);
+
+			has_handler |= (intf->irqhandler[i] != 0) | (intf->portwritehandler[i] != 0);
+
+			OPM_SetIrqHandler(&chip[i], intf->irqhandler[i]); // DE & WMS needs this
+			OPM_SetPortWriteHandler(&chip[i], intf->portwritehandler[i]); // DE needs this
+		}
+
+		// to keep up with the CPU emulation (i.e. IRQ and port callbacks), trigger the sound updates on a regular basis
+		if (has_handler) // only stress the emulation with this timer if any external handler needed
+		{
+			update_timer = timer_alloc(update_timer_func);
+			timer_adjust(update_timer, TIME_IN_HZ(rate), 0, TIME_IN_HZ(rate));
+		}
+		else
+			update_timer = NULL;
+
+		return 0;
+	}
+#endif
 	}
 	return 1;
 }
@@ -164,6 +222,12 @@ int YM2151_sh_start(const struct MachineSound *msound)
 	return my_YM2151_sh_start(msound,1);
 }
 #endif
+#if (HAS_YM2151_NUKED)
+int YM2151_sh_start(const struct MachineSound *msound)
+{
+	return my_YM2151_sh_start(msound,2);
+}
+#endif
 
 void YM2151_sh_stop(void)
 {
@@ -179,13 +243,18 @@ void YM2151_sh_stop(void)
 		YM2151Shutdown();
 		break;
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		if(update_timer)
+			timer_remove(update_timer);
+		break;
+#endif
 	}
 }
 
 void YM2151_sh_reset(void)
 {
 	int i;
-
 	for (i = 0;i < intf->num;i++)
 	switch(FMMode)
 	{
@@ -199,11 +268,14 @@ void YM2151_sh_reset(void)
 		YM2151ResetChip(i);
 		break;
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(i);
+		OPM_Reset(&chip[i], 0, 0);
+		break;
+#endif
 	}
-
 }
-
-static int lastreg0,lastreg1,lastreg2;
 
 READ_HANDLER( YM2151_status_port_0_r )
 {
@@ -216,6 +288,11 @@ READ_HANDLER( YM2151_status_port_0_r )
 #if (HAS_YM2151_ALT)
 	case CHIP_YM2151_ALT:
 		return YM2151ReadStatus(0);
+#endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(0);
+		return OPM_Read(&chip[0],1);
 #endif
 	}
 	return 0;
@@ -233,6 +310,11 @@ READ_HANDLER( YM2151_status_port_1_r )
 	case CHIP_YM2151_ALT:
 		return YM2151ReadStatus(1);
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(1);
+		return OPM_Read(&chip[1],1);
+#endif
 	}
 	return 0;
 }
@@ -249,9 +331,16 @@ READ_HANDLER( YM2151_status_port_2_r )
 	case CHIP_YM2151_ALT:
 		return YM2151ReadStatus(2);
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(2);
+		return OPM_Read(&chip[2],1);
+#endif
 	}
 	return 0;
 }
+
+static int lastreg0, lastreg1, lastreg2;
 
 WRITE_HANDLER( YM2151_register_port_0_w )
 {
@@ -282,6 +371,12 @@ WRITE_HANDLER( YM2151_data_port_0_w )
 		YM2151WriteReg(0,lastreg0,data);
 		break;
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(0);
+		OPM_Write/*Buffered*/(&chip[0], lastreg0, data);
+		break;
+#endif
 	}
 }
 
@@ -299,6 +394,12 @@ WRITE_HANDLER( YM2151_data_port_1_w )
 	case CHIP_YM2151_ALT:
 		YM2151UpdateRequest(1);
 		YM2151WriteReg(1,lastreg1,data);
+		break;
+#endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(1);
+		OPM_Write/*Buffered*/(&chip[1], lastreg1, data);
 		break;
 #endif
 	}
@@ -320,23 +421,55 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 		YM2151WriteReg(2,lastreg2,data);
 		break;
 #endif
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(2);
+		OPM_Write/*Buffered*/(&chip[2], lastreg2, data);
+		break;
+#endif
 	}
 }
 
 WRITE_HANDLER( YM2151_word_0_w )
 {
-	if (offset)
-		YM2151_data_port_0_w(0,data);
-	else
-		YM2151_register_port_0_w(0,data);
+	switch(FMMode)
+	{
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(0);
+		OPM_WriteBuffered(&chip[0], offset, data);
+		break;
+#endif
+#if (HAS_YM2151 || HAS_YM2151_ALT)
+	default:
+		if (offset)
+			YM2151_data_port_0_w(0,data);
+		else
+			YM2151_register_port_0_w(0,data);
+		break;
+#endif
+	}
 }
 
 WRITE_HANDLER( YM2151_word_1_w )
 {
-	if (offset)
-		YM2151_data_port_1_w(0,data);
-	else
-		YM2151_register_port_1_w(0,data);
+	switch(FMMode)
+	{
+#if (HAS_YM2151_NUKED)
+	case CHIP_YM2151_NUKED:
+		YM2151UpdateRequest(1);
+		OPM_WriteBuffered(&chip[1], offset, data);
+		break;
+#endif
+#if (HAS_YM2151 || HAS_YM2151_ALT)
+	default:
+		if (offset)
+			YM2151_data_port_1_w(0,data);
+		else
+			YM2151_register_port_1_w(0,data);
+		break;
+#endif
+	}
 }
 
 READ16_HANDLER( YM2151_status_port_0_lsb_r )
