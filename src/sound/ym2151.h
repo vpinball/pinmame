@@ -83,12 +83,9 @@ void YM2151SetIrqHandler(int n, void (*handler)(int irq));
 /* set port write handler on YM2151 chip number 'n'*/
 void YM2151SetPortWriteHandler(int n, mem_write_handler handler);
 
-/* set the mixing volume (percentage values 0..100) */
-void YM2151SetMixingLevels(int n, int l, int r);
-
-#ifdef PINMAME
+#ifdef PREDCS_FIRQ_HACK
 /*return 1 if 2151 is outputting any data*/
-	int YM2151ReadOutputFlag(int n);
+int YM2151ReadOutputFlag(int n);
 #endif
 
 #endif /*_H_YM2151_*/
