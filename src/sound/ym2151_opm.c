@@ -28,7 +28,7 @@
  */
 #include <string.h>
 #include <stdint.h>
-#include "opm.h"
+#include "ym2151_opm.h"
 
 #ifdef PINMAME
  #include "../ext/vgm/vgmwrite.h"
@@ -2012,12 +2012,11 @@ void OPM_SetIC(opm_t *chip, uint8_t ic)
     }
 }
 
-void OPM_Reset(opm_t *chip, uint32_t rate, uint32_t clock)
+void OPM_Reset(opm_t *chip, uint32_t clock)
 {
 #ifdef PINMAME
     void(*irqhandler)(int irq) = chip->irqhandler;
     mem_write_handler porthandler = chip->porthandler;
-    int32_t rateratio = chip->rateratio;
 #endif
     uint32_t i;
     memset(chip, 0, sizeof(opm_t));
@@ -2028,17 +2027,12 @@ void OPM_Reset(opm_t *chip, uint32_t rate, uint32_t clock)
     }
     OPM_SetIC(chip, 0);
 #ifdef PINMAME
-    if (rate != 0)
+    if (clock != 0) // init?
     {
-        chip->rateratio = (uint32_t)((((uint64_t)64 * rate) << RSM_FRAC) / clock);
-        if (abs(chip->rateratio - (1 << RSM_FRAC)) <= 1)
-            chip->rateratio = (1 << RSM_FRAC);
-
         chip->vgm_idx = vgm_open(VGMC_YM2151, clock);
     }
-    else
+    else // or 'real' reset?
     {
-        chip->rateratio = rateratio;
         chip->porthandler = porthandler;
         chip->irqhandler = irqhandler;
     }
@@ -2086,42 +2080,27 @@ void OPM_WriteBuffered(opm_t *chip, uint32_t port, uint8_t data)
 static void OPM_GenerateResampled(opm_t *chip, int32_t *buf)
 {
     uint32_t i;
-    int32_t buffer[2];
 
-    while (chip->samplecnt >= chip->rateratio)
+    buf[0] = chip->samples[0];
+    buf[1] = chip->samples[1];
+
+    for (i = 0; i < 32; i++)
     {
-        chip->oldsamples[0] = chip->samples[0];
-        chip->oldsamples[1] = chip->samples[1];
-        chip->samples[0] = chip->samples[1] = 0;
-        for (i = 0; i < 32; i++)
-        {
-            OPM_Clock(chip, buffer, NULL, NULL, NULL);
-            if (i == 0)
-            {
-                chip->samples[0] += buffer[0];
-                chip->samples[1] += buffer[1];
-            }
+        OPM_Clock(chip, (i == 0) ? chip->samples : NULL, NULL, NULL, NULL);
 
-            while (chip->writebuf[chip->writebuf_cur].time <= chip->writebuf_samplecnt)
+        while (chip->writebuf[chip->writebuf_cur].time <= chip->writebuf_samplecnt)
+        {
+            if (!(chip->writebuf[chip->writebuf_cur].port & 0x02))
             {
-                if (!(chip->writebuf[chip->writebuf_cur].port & 0x02))
-                {
-                    break;
-                }
-                chip->writebuf[chip->writebuf_cur].port &= 0x01;
-                OPM_Write(chip, chip->writebuf[chip->writebuf_cur].port,
-                              chip->writebuf[chip->writebuf_cur].data);
-                chip->writebuf_cur = (chip->writebuf_cur + 1) % OPN_WRITEBUF_SIZE;
+                break;
             }
-            chip->writebuf_samplecnt++;
+            chip->writebuf[chip->writebuf_cur].port &= 0x01;
+            OPM_Write(chip, chip->writebuf[chip->writebuf_cur].port,
+                            chip->writebuf[chip->writebuf_cur].data);
+            chip->writebuf_cur = (chip->writebuf_cur + 1) % OPN_WRITEBUF_SIZE;
         }
-        chip->samplecnt -= chip->rateratio;
+        chip->writebuf_samplecnt++;
     }
-    buf[0] = (int32_t)((chip->oldsamples[0] * (chip->rateratio - chip->samplecnt)
-                     + chip->samples[0] * chip->samplecnt) / chip->rateratio);
-    buf[1] = (int32_t)((chip->oldsamples[1] * (chip->rateratio - chip->samplecnt)
-                     + chip->samples[1] * chip->samplecnt) / chip->rateratio);
-    chip->samplecnt += 1 << RSM_FRAC;
 }
 
 // PinMAME specific

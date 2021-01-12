@@ -37,7 +37,6 @@ extern "C" {
 
 #ifdef PINMAME
 // from VGM port
-#define RSM_FRAC 10
 #define OPN_WRITEBUF_SIZE 2048
 #define OPN_WRITEBUF_DELAY 36
 
@@ -270,9 +269,6 @@ typedef struct {
 
 #ifdef PINMAME
     // from VGM port
-    int32_t rateratio;
-    int32_t samplecnt;
-    int32_t oldsamples[2];
     int32_t samples[2];
 
     uint64_t writebuf_samplecnt;
@@ -297,7 +293,7 @@ uint8_t OPM_ReadIRQ(opm_t *chip);
 uint8_t OPM_ReadCT1(opm_t *chip);
 uint8_t OPM_ReadCT2(opm_t *chip);
 void OPM_SetIC(opm_t *chip, uint8_t ic);
-void OPM_Reset(opm_t *chip, uint32_t rate, uint32_t clock);
+void OPM_Reset(opm_t *chip, uint32_t clock);
 #ifdef PINMAME
 void OPM_WriteBuffered(opm_t *chip, uint32_t port, uint8_t data);
 void OPM_GenerateStream(opm_t *chip, float **sndptr, uint32_t numsamples);
