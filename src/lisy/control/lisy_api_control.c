@@ -11,6 +11,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h> 
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
@@ -35,7 +37,7 @@
 
 //the version
 #define LISYAPIcontrol_SOFTWARE_MAIN    0
-#define LISYAPIcontrol_SOFTWARE_SUB     5
+#define LISYAPIcontrol_SOFTWARE_SUB     6
 
 //fake definiton needed in lisy_w
 void core_setSw(int myswitch, unsigned char action) {  };
@@ -187,6 +189,50 @@ void do_updatepath_set( char *buffer)
  printf("update path: %s\n",&buffer[2]);
 
 }
+
+//do an update of lisy, local file
+void do_update_local( int sockfd, char *what)
+{
+
+ char *real_name,*tmp_name;
+ char *line;
+ char buffer[255];
+
+ //we trust ASCII values
+ //the format here is 'Y'
+ line = &what[1];
+
+ real_name = strtok(line, ";");
+ tmp_name = strtok(NULL, ";");
+
+ sprintf(buffer,"<a href=\"./index.php\">Back to LISY Homepage</a><br><br>");
+ sendit( sockfd, buffer);
+
+ sprintf(buffer,"WE WILL NOW do the System update<br><br>\n");
+ sendit( sockfd, buffer);
+
+ //set mode to read - write
+ sprintf(buffer,"setting system mode to read/write<br><br>\n");
+ sendit( sockfd, buffer);
+ system("/bin/mount -o remount,rw /boot");
+ system("/bin/mount -o remount,rw /");
+
+ //just unpack the lisy_update.tgz and execute install.sh from within
+ sprintf(buffer,"try to get extract the update file<br><br>\n");
+ sendit( sockfd, buffer);
+ sprintf(buffer,"/bin/tar -xzf %s -C /home/pi/update",tmp_name);
+ system(buffer);
+
+ sprintf(buffer,"try to execute install.sh from within update pack<br><br>\n");
+ sendit( sockfd, buffer);
+ sprintf(buffer,"/bin/bash /home/pi/update/install.sh");
+ system(buffer);
+
+ sprintf(buffer,"update done, you may want to reboot now<br><br>\n");
+ sendit( sockfd, buffer);
+
+}
+
 
 //set the hostname of the system and reboot
 void do_hostname_set( char *buffer)
@@ -1177,7 +1223,9 @@ void send_home_infos( int sockfd )
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./hostname.php\">Set the hostname of the system</a><br><br> \n");
    sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./update.php\">initiate update of the system</a><br><br> \n");
+   sprintf(buffer,"<p>\n<a href=\"./update.php\">update system via internet</a><br><br> \n");
+   sendit( sockfd, buffer);
+   sprintf(buffer,"<p>\n<a href=\"./update_local.html\">update System with local tgz file</a><br><br> \n");
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./upload_35.html\">upload new lamp, coil or switch configuration files</a><br><br> \n");
    sendit( sockfd, buffer);
@@ -1400,7 +1448,7 @@ void do_upload( int sockfd, char *what)
 
 int main(int argc, char *argv[])
 {
-     int sockfd, newsockfd, portno;
+     int sockfd, newsockfd, portno, file;
      socklen_t clilen;
      char buffer[256];
      char ip_interface[10];
@@ -1429,12 +1477,27 @@ int main(int argc, char *argv[])
 
      //check which pinball we are going to control
      //this will also call lisy_hw_init
-     strcpy(lisy_variant,"lisy_m");
+
+   //could still be LISY_Mini via USB or Raspberry sitting on a APC
+   //we check for serial USB device, if it exists we assume a LISY_MIni
+   //otherwise we assume a LISY/Pi on an APC via serial
+
+   file = open("/dev/ttyACM0", O_RDWR);
+   if ( file < 0 )
+   {
+    //no USB device
+    strcpy(lisy_variant,"lisy_apc");
+   }
+   else
+   {
+    strcpy(lisy_variant,"lisy_m");
+   }
+
      if ( (res = lisy_set_gamename(lisy_variant, lisy_gamename)) != 0)
- 	   {
+     {
              fprintf(stderr,"LISYMINI: no matching game or other error\n\r");
              return (-1);
-           }
+     }
 
     //use the init functions from lisy.c
     lisy_init();
@@ -1592,6 +1655,8 @@ int main(int argc, char *argv[])
      else if (buffer[0] == 'U') do_updatepath_set(buffer);
      //with an uppercase 'X' we do try to initiate upload of csv files
      else if (buffer[0] == 'X') { do_upload(newsockfd,buffer);close(newsockfd); }
+     //with an uppercase 'Y' we do update the system with clientfile
+     else if (buffer[0] == 'Y') { do_update_local(newsockfd,buffer);close(newsockfd); }
      //as default we print out what we got
      else fprintf(stderr,"Message: %s\n",buffer);
 

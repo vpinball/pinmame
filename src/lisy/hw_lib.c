@@ -243,10 +243,6 @@ void lisyapc_hwlib_init( void )
  //lisy_K3_value = lisymini_get_dip("K3");
  lisy_K3_value = 3;
 
- //now get debug options
- //fix to 0 athe moment, RTH todo
- //K1_debug_values = lisymini_get_dip("K1");
- K1_debug_values = 0;
 
  //init usb serial
  fd_api = lisy_serial_init();
@@ -264,6 +260,30 @@ void lisyapc_hwlib_init( void )
  //make sure  connected hardware ID is APC
  ret = lisy_api_check_con_hw( "APC" );
  fprintf(stderr,"Info: check ID for 'APC' returns %d\n",ret);
+
+ //now get debug options
+ if (ls80dbg.bitv.basic)
+ { 
+   K1_debug_values = lisyapc_get_dip("K1");
+
+   sprintf(debugbuf,"LISY APC basic DEBUG activ, APC optionbyte is: %d",K1_debug_values);
+   lisy80_debug(debugbuf);
+
+   //debug options are coming from switch APC, adaption needed
+   ls80dbg.bitv.displays = CHECK_BIT( K1_debug_values, 0);
+   ls80dbg.bitv.switches = CHECK_BIT( K1_debug_values, 1);
+   ls80dbg.bitv.lamps = CHECK_BIT( K1_debug_values, 2);
+   ls80dbg.bitv.coils = CHECK_BIT( K1_debug_values, 3);
+   ls80dbg.bitv.sound = CHECK_BIT( K1_debug_values, 4);
+
+
+   if ( ls80dbg.bitv.displays ) lisy80_debug("LISY80 DEBUG activ for displays");
+   if ( ls80dbg.bitv.switches ) lisy80_debug("LISY80 DEBUG activ for switches");
+   if ( ls80dbg.bitv.lamps ) lisy80_debug("LISY80 DEBUG activ for lamps");
+   if ( ls80dbg.bitv.coils ) lisy80_debug("LISY80 DEBUG activ for coils");
+   if ( ls80dbg.bitv.sound ) lisy80_debug("LISY80 DEBUG activ for sound");
+   }
+   else ls80dbg.byte = 0; 
 
  //do some debug output if requested
  //number of displays
@@ -1216,21 +1236,16 @@ typedef union {
 static bitfield_t S1,S2,K1,K2,K3;
 static unsigned char first = 1;
 
-//only one time to read
- if(first)
- {
-  S1.byte = S2.byte = K1.byte = K2.byte = K3.byte = 0;
-
-
- }
-
+//- Setting 2 -> Alle Options DIP Schalter als Wert von 0 - 255
+//- Setting 3 -> Alle Game DIP Schalter (S2) als Wert von 0 - 255 (Nummer des PinMame Spiels)
+//- Settings 4 -> Alle Debug Jumper K1, K2 und K3 als Wert von 0 - 255 (K1 stellt dann die Bits 0-4, K2 Bit 5 / 6 und K3 ist Bit 7)
 
  //give back value wanted
- if(strcmp(wantdip,"S1") == 0) return S1.byte;
- else if(strcmp(wantdip,"S2") == 0) return lisy_api_get_dip_switch(3); //S2 i setting 3
- else if(strcmp(wantdip,"K1") == 0) return K1.byte;
- else if(strcmp(wantdip,"K2") == 0) return K2.byte;
- else if(strcmp(wantdip,"K3") == 0) return K3.byte;
+ if(strcmp(wantdip,"S1") == 0) return lisy_api_get_dip_switch(2);
+ else if(strcmp(wantdip,"S2") == 0) return lisy_api_get_dip_switch(3); //S2 is gamenumber
+ else if(strcmp(wantdip,"K1") == 0) return ( 0x1F & lisy_api_get_dip_switch(4)); //debug options
+ else if(strcmp(wantdip,"K2") == 0) return ( 0x60 & lisy_api_get_dip_switch(4));
+ else if(strcmp(wantdip,"K3") == 0) return ( 0x80 & lisy_api_get_dip_switch(4));
  else return 0;
 
 
