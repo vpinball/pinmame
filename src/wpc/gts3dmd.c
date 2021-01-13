@@ -13,11 +13,6 @@ extern GTS3_DMDlocals GTS3_dmdlocals[2];
 extern int crtc6845_start_addr;
 #endif
 
-static unsigned char lookup[16] = {
-0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
-0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf, };
-
-
 //static int level4_a[9]  = { 0, 1, 5, 5, 5, 5, 5, 5, 15 }; // mapping for 4 color roms, mode a
 //static int level4_b[16] = { 0, 1, 1, 1, 5, 5, 5, 10, 10, 10, 15, 15, 15, 15, 15, 15 }; // mapping for 4 color roms, mode b
 //static int level4_a[16] = { 0, 3, 3, 3, 6, 6, 6, 8, 8, 9, 10, 11, 12, 13, 14, 15 };
@@ -32,6 +27,10 @@ static int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 c
 extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
 extern UINT32 g_raw_gtswpc_dmdframes;
 #endif
+
+static const unsigned char lookup[16] = {
+0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf, };
 
 INLINE UINT8 reverse(UINT8 n) {
   // Reverse the top and bottom nibble then swap them.
