@@ -41,8 +41,8 @@ int lisy_api_write( unsigned char *data, int count, int debug  )
     lisy_api_counter += count;
 
 
-   if ( debug != 0)
-    {
+   if ( debug == 63 ) //only with full debug
+   {
      sprintf(debugbuf,"API_write(%d bytes):",count);
      for(i=0; i<count; i++)
      {
@@ -90,7 +90,7 @@ int lisy_api_read_string(unsigned char cmd, char *content)
         return -1;
     }
   content[i] = nextbyte;
-  if(ls80dbg.bitv.basic)
+  if ( ls80dbg.byte >= 63 ) //only with full debug
   {
     sprintf(debugbuf,"API_read_string: Byte no %d is (0x%02x)\"%c\"",i,nextbyte,nextbyte);
     lisy80_debug(debugbuf);
@@ -99,7 +99,7 @@ int lisy_api_read_string(unsigned char cmd, char *content)
   } while ( nextbyte != '\0');
 
   //USB debug?
-  if(ls80dbg.bitv.basic)
+  if ( ls80dbg.byte >= 63 ) //only with full debug
   {
     sprintf(debugbuf,"API_read_string: %s",content);
     lisy80_debug(debugbuf);
@@ -123,7 +123,7 @@ unsigned char lisy_api_read_byte(unsigned char cmd, unsigned char *data)
  if ( read(fd_api,data,1) != 1) return (-1);
 
   //USB debug?
-  if(ls80dbg.bitv.basic)
+  if ( ls80dbg.byte >= 63 ) //only with full debug
   {
     sprintf(debugbuf,"API_read_byte: 0x%02x",*data);
     lisy80_debug(debugbuf);
@@ -132,6 +132,55 @@ unsigned char lisy_api_read_byte(unsigned char cmd, unsigned char *data)
  return(0);
 
 }
+
+//read one byte, and return data into *data
+//blocking version, we wait 5 seconds before send error back
+//return -2 in case we had problems to send  cmd
+//return -1 in case we had problems to receive byte
+//return 0 otherwise
+unsigned char lisy_api_read_byte_wblock(unsigned char cmd, unsigned char *data)
+{
+ uint8_t tries = 0;
+ int ret;
+
+ //send command
+ if ( lisy_api_write( &cmd,1,ls80dbg.bitv.basic) != 1) return (-2);
+
+ //receive answer ; 50 tries with 100msec driver timeout
+ while ( tries < 50)
+ {
+  ret = read(fd_api,data,1);
+  if ( ret == 0) tries++;
+  else if ( ret == 1)
+   {
+     //USB debug?
+     if ( ls80dbg.byte >= 63 ) //only with full debug
+     {
+       sprintf(debugbuf,"API_read_byte: 0x%02x",*data);
+       lisy80_debug(debugbuf);
+     }
+     return(0);
+   }
+  else
+   {
+     //USB debug?
+     if ( ls80dbg.byte >= 63 ) //only with full debug
+     {
+       sprintf(debugbuf,"API_read_byte_wblock returned %d",ret);
+       lisy80_debug(debugbuf);
+     }
+     return(-1);
+   }
+  } //while tries < 50
+
+   //USB debug?
+     if ( ls80dbg.byte >= 63 ) //only with full debug
+     {
+       sprintf(debugbuf,"API_read_byte_wblock timeout occured after %d tries",tries);
+       lisy80_debug(debugbuf);
+     }
+     return(-1);
+ }
 
 //this command has an option
 //read answer of two byte, and return data into *data1 and *data2
@@ -152,7 +201,7 @@ unsigned char lisy_api_read_2bytes(unsigned char cmd, unsigned char option, unsi
  if ( read(fd_api,data2,1) != 1) return (-1);
 
   //USB debug?
-  if(ls80dbg.bitv.basic)
+  if ( ls80dbg.byte >= 63 ) //only with full debug
   {
     sprintf(debugbuf,"API_read_2bytes: 0x%02x 0x%02x",*data1,*data2);
     lisy80_debug(debugbuf);
@@ -623,6 +672,8 @@ void lisy_api_display_set_prot(uint8_t display_no,uint8_t protocol)
 void lisy_api_sound_play_index( unsigned char board, unsigned char index )
 {
         uint8_t cmd;
+        uint8_t data;
+        int ret;
         unsigned char cmd_data[3];
 
  if ( ls80dbg.bitv.sound )
@@ -642,15 +693,36 @@ void lisy_api_sound_play_index( unsigned char board, unsigned char index )
 
      if ( lisy_api_write( cmd_data,3,ls80dbg.bitv.sound) != 3)
         fprintf(stderr,"sound play file error writing to serial\n");
+
+     //check if remote side is ready to receive next command
+    ret = lisy_api_read_byte_wblock(LISY_BACK_WHEN_READY, &data);
+    if ( ret < 0)
+     {
+  	if(ls80dbg.bitv.basic)
+  	{ 
+    	  sprintf(debugbuf,"Error: LISY_BACK_WHEN_READY: returned %d",ret);
+    	  lisy80_debug(debugbuf);
+  	}
+     }
+    else
+     {
+  	if( ls80dbg.bitv.basic & ( data != 0) )
+  	{
+    	 sprintf(debugbuf,"Error: LISY_BACK_WHEN_READY: returned 0x%02x",data);
+    	 lisy80_debug(debugbuf);
+  	}
+
+     }
+
 }
 
 
 //play soundfile API 0x34
 void lisy_api_sound_play_file( unsigned char board, char *filename )
 {
-	uint8_t cmd;
-	int i,len;
-        unsigned char cmd_data[80];
+	uint8_t cmd,data;
+	int i,len,ret;
+	unsigned char cmd_data[80];
 
  if ( ls80dbg.bitv.sound )
   {
@@ -673,6 +745,36 @@ void lisy_api_sound_play_file( unsigned char board, char *filename )
 
      if ( lisy_api_write( cmd_data,len+4,ls80dbg.bitv.sound) != len+4)
         fprintf(stderr,"sound play file error writing to serial\n");
+
+
+     //check if remote side is ready to receive next command
+    ret = lisy_api_read_byte_wblock(LISY_BACK_WHEN_READY, &data);
+    if ( ret <= 0)
+     {
+        if(ls80dbg.bitv.basic)
+        {
+         if (ret == 0)
+         {
+          sprintf(debugbuf,"Error: LISY_BACK_WHEN_READY: timeout occured");
+          lisy80_debug(debugbuf);
+         }
+         else
+         {
+          sprintf(debugbuf,"Error: LISY_BACK_WHEN_READY: returned %d",ret);
+          lisy80_debug(debugbuf);
+         }
+        }
+     }
+    else
+     {
+        if( ls80dbg.bitv.basic & ( data != 0) )
+        {
+         sprintf(debugbuf,"LISY_BACK_WHEN_READY: returned 0x%02x",data);
+         lisy80_debug(debugbuf);
+        }
+
+     }
+
 }
 
 
@@ -811,7 +913,7 @@ int lisy_api_check_con_hw( char *idstr )
         return -1;
     }
   content[i] = nextbyte;
-  if(ls80dbg.bitv.basic)
+  if ( ls80dbg.byte >= 63 ) //only with full debug
   {
     sprintf(debugbuf,"API_read_string: Byte no %d is (0x%02x)\"%c\"",i,nextbyte,nextbyte);
     lisy80_debug(debugbuf);

@@ -1,7 +1,7 @@
 #ifndef LISY_API_H
 #define LISY_API_H
 
-#define LISY_API_VERSION_STR	"0.10"
+#define LISY_API_VERSION_STR	"0.11"
 
 //info, parameter none
 #define	LISY_G_HW		0	//get connected LISY hardware -	return "LISY1" or "LISY80"
@@ -61,5 +61,6 @@
 //general, parameter none
 #define	LISY_INIT		100	//init/reset LISY - return byte 0=OK, >0 Errornumber Errornumbers TBD
 #define	LISY_WATCHDOG		101	//watchdog - return byte 0=OK, >0 Errornumber Errornumbers TBD
+#define LISY_BACK_WHEN_READY    102     //get back when ready, call blocks until answer received - if Arduino needs more time (e.g. for sound) - return byte 0=OK(continue), >0 Errornumber Errornumbers TBD 
 
 #endif  /* LISY_API_H */
