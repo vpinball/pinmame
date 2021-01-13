@@ -285,6 +285,15 @@ static INTERRUPT_GEN(dmd32_firq) {
 	}
 }
 
+static const unsigned char lookup[16] = {
+0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf, };
+
+INLINE UINT8 reverse(UINT8 n) {
+	// Reverse the top and bottom nibble then swap them.
+	return (lookup[n & 0x0f] << 4) | lookup[n >> 4];
+}
+
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 #ifdef MAME_DEBUG
   static int offset = 0;
@@ -342,17 +351,15 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 
 static void pistol_poker__mystery_castle_dmd(void) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
-  int ii,jj;
+  int ii,jj,i;
   RAM += dmdlocals.vid_page << 11;
 
 #ifdef VPINMAME
   g_raw_gtswpc_dmdframes = 4;
+  i = 0;
 #endif
 
   if (dmdlocals.planenable) {
-#ifdef VPINMAME
-	  memcpy (g_raw_gtswpc_dmd, RAM, 0x800);
-#endif
 
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &coreGlobals.dotCol[ii][0];
@@ -365,18 +372,18 @@ static void pistol_poker__mystery_castle_dmd(void) {
 		  *line++ = level[((RAM[0] >> 2 & 0x01) + (RAM[0x200] >> 2 & 0x01) + (RAM[0x400] >> 2 & 0x01) + (RAM[0x600] >> 2 & 0x01))];
 		  *line++ = level[((RAM[0] >> 1 & 0x01) + (RAM[0x200] >> 1 & 0x01) + (RAM[0x400] >> 1 & 0x01) + (RAM[0x600] >> 1 & 0x01))];
 		  *line++ = level[((RAM[0]/*>>0*/&0x01) + (RAM[0x200]/*>>0*/&0x01) + (RAM[0x400]/*>>0*/&0x01) + (RAM[0x600]/*>>0*/&0x01))];
+#ifdef VPINMAME
+		  g_raw_gtswpc_dmd[        i] = reverse(RAM[0]);
+		  g_raw_gtswpc_dmd[0x200 + i] = reverse(RAM[0x200]);
+		  g_raw_gtswpc_dmd[0x400 + i] = reverse(RAM[0x400]);
+		  g_raw_gtswpc_dmd[0x600 + i] = reverse(RAM[0x600]);
+		  i++;
+#endif
 		  RAM += 1;
 		}
 		*line = 0;
 	  }
   } else {
-#ifdef VPINMAME
-	  memcpy (g_raw_gtswpc_dmd, RAM, 0x200);
-	  memcpy (g_raw_gtswpc_dmd+0x200, RAM, 0x200);
-	  memcpy (g_raw_gtswpc_dmd+0x400, RAM, 0x200);
-	  memcpy (g_raw_gtswpc_dmd+0x600, RAM, 0x200);
-#endif
-
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &coreGlobals.dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
@@ -388,6 +395,13 @@ static void pistol_poker__mystery_castle_dmd(void) {
 		  *line++ = level[(RAM[0]/*>>0*/&0x04)];
 		  *line++ = level[(RAM[0] << 1 & 0x04)];
 		  *line++ = level[(RAM[0] << 2 & 0x04)];
+#ifdef VPINMAME
+		  g_raw_gtswpc_dmd[        i] =
+		  g_raw_gtswpc_dmd[0x200 + i] =
+		  g_raw_gtswpc_dmd[0x400 + i] =
+		  g_raw_gtswpc_dmd[0x600 + i] = reverse(RAM[0]);
+		  i++;
+#endif
 		  RAM += 1;
 		}
 		*line = 0;
