@@ -5,6 +5,7 @@ What's new in Visual PinMAME:
 
 Version 3.4 (X X, 2021) - ""
 ------------------------------------------------------------------------------
+- Fix the additional .raw/non-averaged file output dumping of Alvin G. DMDs
 
 Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------
