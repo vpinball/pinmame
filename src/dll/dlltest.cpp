@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <conio.h>
+#include <algorithm>
 
 void DisplayDMD();
 
@@ -31,6 +32,7 @@ int main()
 		{
 			int* cl = new int[GetMaxLamps() * 2];
 			int nb = GetChangedLamps(cl);
+			delete [] cl;
 		}
 
 		if (c == 'r')
@@ -59,7 +61,7 @@ void DisplayDMD()
 	printf("copied %d\n", copied);
 	for (int j = 0; j < h; j++)
 	{
-		for (int i = 0; i < 100;i++)//g_raw_dmdx; i++)
+		for (int i = 0; i < std::min(100,w); i++)
 			printf("%s", (rawDmd[j * w + i] > 20 ? "X" : " "));
 		printf("\n");
 	}
