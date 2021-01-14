@@ -181,4 +181,3 @@ void src_float_to_int_array(const float * const __restrict in, int * const __res
 #endif	/* __cplusplus */
 
 #endif	/* SAMPLERATE_H */
-

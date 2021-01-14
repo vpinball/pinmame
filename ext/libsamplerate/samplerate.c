@@ -37,7 +37,7 @@ src_new (int converter_type, int channels, int *error)
 		return NULL ;
 		} ;
 
-	if ((psrc = calloc (1, sizeof (*psrc))) == NULL)
+	if ((psrc = (SRC_PRIVATE*)calloc (1, sizeof (*psrc))) == NULL)
 	{	if (error)
 			*error = SRC_ERR_MALLOC_FAILED ;
 		return NULL ;
@@ -68,7 +68,7 @@ src_clone (SRC_STATE* orig, int *error)
 	if (error)
 		*error = SRC_ERR_NO_ERROR ;
 
-	if ((psrc = calloc (1, sizeof (*psrc))) == NULL)
+	if ((psrc = (SRC_PRIVATE*)calloc (1, sizeof (*psrc))) == NULL)
 	{	if (error)
 			*error = SRC_ERR_MALLOC_FAILED ;
 		return NULL ;

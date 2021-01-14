@@ -110,7 +110,7 @@ static const int skiptable[FRAMESKIP_LEVELS][FRAMESKIP_LEVELS] =
 	{ 0,1,1,1,1,1,1,1,1,1,1,1 }
 };
 
-static const int waittable[FRAMESKIP_LEVELS][FRAMESKIP_LEVELS] =
+/*static const int waittable[FRAMESKIP_LEVELS][FRAMESKIP_LEVELS] =
 {
 	{ 1,1,1,1,1,1,1,1,1,1,1,1 },
 	{ 2,1,1,1,1,1,1,1,1,1,1,0 },
@@ -124,7 +124,7 @@ static const int waittable[FRAMESKIP_LEVELS][FRAMESKIP_LEVELS] =
 	{ 4,0,0,0,4,0,0,0,4,0,0,0 },
 	{ 6,0,0,0,0,0,6,0,0,0,0,0 },
 	{ 12,0,0,0,0,0,0,0,0,0,0,0 }
-};
+};*/
 
 
 
@@ -133,10 +133,10 @@ static const int waittable[FRAMESKIP_LEVELS][FRAMESKIP_LEVELS] =
 //============================================================
 
 // internal variables
-static char *cleanstretch;
-static char *resolution;
-static char *effect;
-static char *aspect;
+//static char *cleanstretch;
+//static char *resolution;
+//static char *effect;
+//static char *aspect;
 
 // options struct
 struct rc_option video_opts[] =

@@ -452,7 +452,11 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 	data.end_of_input = 0;
 	data.src_ratio = channel->to_frequency / channel->from_frequency;
 
-	src_process(src_state, &data);
+	if (src_process(src_state, &data) != SRC_ERR_NO_ERROR)
+	{
+		assert(!"src_process");
+		return (dst_pos - dst_base) & ACCUMULATOR_MASK;
+	}
 
 	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
 	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.

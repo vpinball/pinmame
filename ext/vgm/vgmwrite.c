@@ -328,9 +328,9 @@ void vgm_start(struct RunningMachine *machine)
 	{
 #endif
 		wcs2utf16(VgmTag.strSystemNameE, L"Arcade Machine", 0x30);
-		str2utf16(VgmTag.strGameNameE, gamedrv->description, 0x70);
-		str2utf16(VgmTag.strAuthorNameE, gamedrv->manufacturer, 0x30);
-		str2utf16(VgmTag.strReleaseDate, gamedrv->year, 0x10);
+		str2utf16(VgmTag.strGameNameE, gamedrv ? gamedrv->description : "", 0x70);
+		str2utf16(VgmTag.strAuthorNameE, gamedrv ? gamedrv->manufacturer : "", 0x30);
+		str2utf16(VgmTag.strReleaseDate, gamedrv ? gamedrv->year : "", 0x10);
 #ifdef MESS
 	}
 	else

@@ -24,9 +24,13 @@
  UINT32 g_raw_dmdy = ~0u;
 
  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
+#ifdef VPINMAME
  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
+#endif
  static UINT8 *currbuffer = buffer1;
+#ifdef VPINMAME
  static UINT8 *oldbuffer = NULL;
+#endif
  static UINT32 raw_dmdoffs = 0;
 
  #include "gts3dmd.h"
@@ -2010,7 +2014,7 @@ static const unsigned char core_bits_set_table256[256] =
     B6(0), B6(1), B6(1), B6(2)
 };
 
-UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level)
+UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *prev_level)
 {
 	//UINT8 outputlevel;
 	UINT32 targetlevel;

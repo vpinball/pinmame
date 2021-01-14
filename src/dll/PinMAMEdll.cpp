@@ -111,7 +111,7 @@ int GetGameNumFromString(char *name)
 		return gamenum;
 }
 
-char* composePath(char* path, char* file)
+char* composePath(const char* path, const char* file)
 {
 	size_t pathl = strlen(path);
 	size_t filel = strlen(file);
@@ -135,7 +135,7 @@ void gameThread(int game_index=-1)
 {
 	if (game_index == -1)
 		return;
-	int res = run_game(game_index);
+	/*int res =*/ run_game(game_index);
 }
 
 

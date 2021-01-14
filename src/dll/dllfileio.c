@@ -6,7 +6,7 @@
 
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h> //!! use osdepend.h, etc
+#include <Windows.h> //!! use osdepend.h, etc
 
 #include <ctype.h>
 #include <tchar.h>
@@ -206,7 +206,7 @@ INLINE int is_variablechar(char c)
 
 static const char *parse_variable(const char **start, const char *end)
 {
-	const char *src = *start, *var;
+	const char *src, *var;
 	char variable[1024];
 	char *dest = variable;
 

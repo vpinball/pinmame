@@ -26,7 +26,6 @@ static int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 c
 #ifdef VPINMAME
 extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
 extern UINT32 g_raw_gtswpc_dmdframes;
-#endif
 
 static const unsigned char lookup[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
@@ -36,6 +35,7 @@ INLINE UINT8 reverse(UINT8 n) {
   // Reverse the top and bottom nibble then swap them.
   return (lookup[n & 0x0f] << 4) | lookup[n >> 4];
 }
+#endif
 
 //DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {

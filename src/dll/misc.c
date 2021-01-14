@@ -33,6 +33,7 @@ Version 0.2, May 2000
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #ifndef _MSC_VER
 #include <sys/time.h>

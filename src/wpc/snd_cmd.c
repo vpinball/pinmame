@@ -897,7 +897,7 @@ static void wave_handle(void) {
 }
 
 static void wave_next(void) {
-  FILE *csv = NULL;
+  FILE *csv;
   char csvName[120];
   struct stat stat_buffer;
 
@@ -911,7 +911,7 @@ static void wave_next(void) {
   sprintf(csvName, "wave\\altsound-%s.csv", Machine->gamedrv->name);
 
   // check if this filename is not already used
-  if (csv = fopen(csvName, "r")) {
+  if ((csv = fopen(csvName, "r"))) {
     fclose(csv);
     csv = fopen(csvName, "a");
   }

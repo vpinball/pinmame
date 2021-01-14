@@ -1821,7 +1821,7 @@ static UINT16 readCRU(int CRUAddr, int Number)
 
 static UINT16 fetch(void)
 {
-	register UINT16 value = readword(I.PC);
+	UINT16 value = readword(I.PC);
 	I.PC += 2;
 	return value;
 }
@@ -1854,8 +1854,8 @@ static void contextswitch(UINT16 addr)
  */
 static UINT16 decipheraddr(UINT16 opcode)
 {
-	register UINT16 ts = opcode & 0x30;
-	register UINT16 reg = opcode & 0xF;
+	UINT16 ts = opcode & 0x30;
+	UINT16 reg = opcode & 0xF;
 
 	reg += reg;
 
@@ -1869,7 +1869,7 @@ static UINT16 decipheraddr(UINT16 opcode)
 	}
 	else if (ts == 0x20)
 	{
-		register UINT16 imm;
+		UINT16 imm;
 
 		imm = fetch();
 
@@ -1886,7 +1886,7 @@ static UINT16 decipheraddr(UINT16 opcode)
 	}
 	else /*if (ts == 0x30)*/
 	{	/* *Rx+ */
-		register UINT16 response;
+		UINT16 response;
 
 		reg += I.WP;    /* reg now contains effective address */
 
@@ -1901,8 +1901,8 @@ static UINT16 decipheraddr(UINT16 opcode)
 /* decipheraddrbyte : compute and return the effective adress in byte instructions. */
 static UINT16 decipheraddrbyte(UINT16 opcode)
 {
-	register UINT16 ts = opcode & 0x30;
-	register UINT16 reg = opcode & 0xF;
+	UINT16 ts = opcode & 0x30;
+	UINT16 reg = opcode & 0xF;
 
 	reg += reg;
 
@@ -1916,7 +1916,7 @@ static UINT16 decipheraddrbyte(UINT16 opcode)
 	}
 	else if (ts == 0x20)
 	{
-		register UINT16 imm;
+		UINT16 imm;
 
 		imm = fetch();
 
@@ -1933,7 +1933,7 @@ static UINT16 decipheraddrbyte(UINT16 opcode)
 	}
 	else /*if (ts == 0x30)*/
 	{	/* *Rx+ */
-		register UINT16 response;
+		UINT16 response;
 
 		reg += I.WP;    /* reg now contains effective address */
 
@@ -2083,7 +2083,7 @@ tms99xxx : BLSK
 ============================================================================*/
 static void h0040(UINT16 opcode)
 {
-	register UINT16 addr;
+	UINT16 addr;
 
 	addr = opcode & 0xF;
 	addr = ((addr + addr) + I.WP) & ~1;
@@ -2155,7 +2155,7 @@ tms99xxx : BIND
 ============================================================================*/
 static void h0100(UINT16 opcode)
 {
-	register UINT16 src;
+	UINT16 src;
 
 	src = decipheraddr(opcode) & ~1;
 
@@ -2241,8 +2241,8 @@ static void h0100(UINT16 opcode)
 ============================================================================*/
 static void h0200(UINT16 opcode)
 {
-	register UINT16 addr;
-	register UINT16 value;	/* used for anything */
+	UINT16 addr;
+	UINT16 value;	/* used for anything */
 
 	addr = opcode & 0xF;
 	addr = ((addr + addr) + I.WP) & ~1;
@@ -2424,8 +2424,8 @@ tms99xxx : LDD, LDS
 ============================================================================*/
 static void h0400(UINT16 opcode)
 {
-	register UINT16 addr = decipheraddr(opcode) & ~1;
-	register UINT16 value;  /* used for anything */
+	UINT16 addr = decipheraddr(opcode) & ~1;
+	UINT16 value;  /* used for anything */
 
 	switch ((opcode & 0x3C0) >> 6)
 	{
@@ -2616,9 +2616,9 @@ static void h0400(UINT16 opcode)
 ============================================================================*/
 static void h0800(UINT16 opcode)
 {
-	register UINT16 addr;
-	register UINT16 cnt = (opcode & 0xF0) >> 4;
-	register UINT16 value;
+	UINT16 addr;
+	UINT16 cnt = (opcode & 0xF0) >> 4;
+	UINT16 value;
 
 	addr = (opcode & 0xF);
 	addr = ((addr+addr) + I.WP) & ~1;
@@ -2787,7 +2787,7 @@ tms99110a : AR, CIR, SR, MR, DR, LR, STR
 ============================================================================*/
 static void h0c40(UINT16 opcode)
 {
-	register UINT16 src;
+	UINT16 src;
 
 	src = decipheraddr(opcode) & ~1;
 
@@ -2848,7 +2848,7 @@ static void h0c40(UINT16 opcode)
 static void h1000(UINT16 opcode)
 {
 	/* we convert 8 bit signed word offset to a 16 bit effective word offset. */
-	register INT16 offset = ((INT8) opcode);
+	INT16 offset = ((INT8) opcode);
 
 
 	switch ((opcode & 0xF00) >> 8)
@@ -3052,9 +3052,9 @@ tms9940 : DCA, DCS, LIIM
 /* xop, ldcr and stcr are handled elsewhere */
 static void h2000(UINT16 opcode)
 {
-	register UINT16 dest = (opcode & 0x3C0) >> 6;
-	register UINT16 src;
-	register UINT16 value;
+	UINT16 dest = (opcode & 0x3C0) >> 6;
+	UINT16 src;
+	UINT16 value;
 
 	src = decipheraddr(opcode) & ~1;
 
@@ -3136,8 +3136,8 @@ static void xop(UINT16 opcode)
 	/* New R11=S */
 	/* Xop bit set */
 
-	register UINT16 immediate = (opcode & 0x3C0) >> 6;
-	register UINT16 operand;
+	UINT16 immediate = (opcode & 0x3C0) >> 6;
+	UINT16 operand;
 
 #if (TMS99XX_MODEL == TMS9940_ID)
 		switch (immediate)
@@ -3231,9 +3231,9 @@ static void xop(UINT16 opcode)
 /* LDCR and STCR */
 static void ldcr_stcr(UINT16 opcode)
 {
-	register UINT16 cnt = (opcode & 0x3C0) >> 6;
-	register UINT16 addr;
-	register UINT16 value;
+	UINT16 cnt = (opcode & 0x3C0) >> 6;
+	UINT16 addr;
+	UINT16 value;
 
 	if (cnt == 0)
 		cnt = 16;
@@ -3331,9 +3331,9 @@ static void ldcr_stcr(UINT16 opcode)
 /* word instructions */
 static void h4000w(UINT16 opcode)
 {
-	register UINT16 src;
-	register UINT16 dest;
-	register UINT16 value;
+	UINT16 src;
+	UINT16 dest;
+	UINT16 value;
 	int a,b;
 
 	src = decipheraddr(opcode) & ~1;
@@ -3401,9 +3401,9 @@ static void h4000w(UINT16 opcode)
 /* byte instruction */
 static void h4000b(UINT16 opcode)
 {
-	register UINT16 src;
-	register UINT16 dest;
-	register UINT16 value;
+	UINT16 src;
+	UINT16 dest;
+	UINT16 value;
 
 	src = decipheraddrbyte(opcode);
 	dest = decipheraddrbyte(opcode >> 6);
