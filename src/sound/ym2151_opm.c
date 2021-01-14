@@ -245,9 +245,10 @@ static int32_t OPM_KCToFNum(int32_t kcode)
 {
     int32_t kcode_h = (kcode >> 4) & 63;
     int32_t kcode_l = kcode & 15;
-    int32_t i, slope, sum = 0;
+    int32_t sum = 0;
     if (pg_freqtable[kcode_h].approxtype)
     {
+        int32_t i;
         for (i = 0; i < 4; i++)
         {
             if (kcode_l & (1 << i))
@@ -258,7 +259,7 @@ static int32_t OPM_KCToFNum(int32_t kcode)
     }
     else
     {
-        slope = pg_freqtable[kcode_h].slope | 1;
+        int32_t slope = pg_freqtable[kcode_h].slope | 1;
         if (kcode_l & 1)
         {
             sum += (slope >> 3) + 2;
@@ -422,7 +423,7 @@ static void OPM_PhaseCalcFNumBlock(opm_t *chip)
 static void OPM_PhaseCalcIncrement(opm_t *chip)
 {
     uint32_t slot = chip->cycles;
-    uint32_t channel = slot & 7;
+    //uint32_t channel = slot & 7;
     uint32_t dt = chip->sl_dt1[slot];
     uint32_t dt_l = dt & 3;
     uint32_t detune = 0;
@@ -431,10 +432,11 @@ static void OPM_PhaseCalcIncrement(opm_t *chip)
     uint32_t fnum = chip->pg_fnum[slot];
     uint32_t block = kcode >> 2;
     uint32_t basefreq = (fnum << block) >> 2;
-    uint32_t note, sum, sum_h, sum_l, inc;
+    uint32_t inc;
     /* Apply detune */
     if (dt_l)
     {
+        uint32_t note, sum, sum_h, sum_l;
         if (kcode > 0x1c)
         {
             kcode = 0x1c;
@@ -769,7 +771,7 @@ static void OPM_EnvelopePhase5(opm_t *chip)
 
 static void OPM_EnvelopePhase6(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 28) & 31;
+    //uint32_t slot = (chip->cycles + 28) & 31;
     chip->eg_serial_bit = (chip->eg_serial >> 9) & 1;
     if (chip->cycles == 3)
     {
@@ -873,13 +875,13 @@ static void OPM_OperatorPhase1(opm_t *chip)
 
 static void OPM_OperatorPhase2(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 31) & 31;
+    //uint32_t slot = (chip->cycles + 31) & 31;
     chip->op_phase = (chip->op_phase_in + chip->op_mod_in) & 1023;
 }
 
 static void OPM_OperatorPhase3(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 30) & 31;
+    //uint32_t slot = (chip->cycles + 30) & 31;
     uint16_t phase = chip->op_phase & 255;
     if (chip->op_phase & 256)
     {
@@ -892,19 +894,19 @@ static void OPM_OperatorPhase3(opm_t *chip)
 
 static void OPM_OperatorPhase4(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 29) & 31;
+    //uint32_t slot = (chip->cycles + 29) & 31;
     chip->op_logsin[1] = chip->op_logsin[0];
 }
 
 static void OPM_OperatorPhase5(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 28) & 31;
+    //uint32_t slot = (chip->cycles + 28) & 31;
     chip->op_logsin[2] = chip->op_logsin[1];
 }
 
 static void OPM_OperatorPhase6(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 27) & 31;
+    //uint32_t slot = (chip->cycles + 27) & 31;
     chip->op_atten = chip->op_logsin[2] + (chip->eg_out[1] << 2);
     if (chip->op_atten & 4096)
     {
@@ -914,21 +916,21 @@ static void OPM_OperatorPhase6(opm_t *chip)
 
 static void OPM_OperatorPhase7(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 26) & 31;
+    //uint32_t slot = (chip->cycles + 26) & 31;
     chip->op_exp[0] = exprom[chip->op_atten & 255];
     chip->op_pow[0] = chip->op_atten >> 8;
 }
 
 static void OPM_OperatorPhase8(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 25) & 31;
+    //uint32_t slot = (chip->cycles + 25) & 31;
     chip->op_exp[1] = chip->op_exp[0];
     chip->op_pow[1] = chip->op_pow[0];
 }
 
 static void OPM_OperatorPhase9(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 24) & 31;
+    //uint32_t slot = (chip->cycles + 24) & 31;
     int16_t out = (chip->op_exp[1] << 2) >> (chip->op_pow[1]);
     if (chip->op_sign & 32)
     {
@@ -939,19 +941,19 @@ static void OPM_OperatorPhase9(opm_t *chip)
 
 static void OPM_OperatorPhase10(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 23) & 31;
+    //uint32_t slot = (chip->cycles + 23) & 31;
     chip->op_out[1] = chip->op_out[0];
 }
 
 static void OPM_OperatorPhase11(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 22) & 31;
+    //uint32_t slot = (chip->cycles + 22) & 31;
     chip->op_out[2] = chip->op_out[1];
 }
 
 static void OPM_OperatorPhase12(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 21) & 31;
+    //uint32_t slot = (chip->cycles + 21) & 31;
     chip->op_out[3] = chip->op_out[2];
 }
 
@@ -1045,7 +1047,6 @@ static void OPM_Mixer2(opm_t *chip)
 {
     uint32_t cycles = (chip->cycles + 30) & 31;
     uint8_t bit;
-    uint8_t top, ex;
     if (cycles < 16)
     {
         bit = chip->mix_serial[0] & 1;
@@ -1063,7 +1064,8 @@ static void OPM_Mixer2(opm_t *chip)
     chip->mix_bits |= bit << 20;
     if ((chip->cycles & 15) == 10)
     {
-        top = chip->mix_top_bits_lock;
+        uint8_t top = chip->mix_top_bits_lock;
+        uint8_t ex;
         if (chip->mix_sign_lock)
         {
             top ^= 63;
@@ -1156,8 +1158,8 @@ static void OPM_DAC(opm_t *chip)
 
 static void OPM_Mixer(opm_t *chip)
 {
-    uint32_t slot = (chip->cycles + 18) & 31;
-    uint32_t channel = (slot & 7);
+    //uint32_t slot = (chip->cycles + 18) & 31;
+    //uint32_t channel = (slot & 7);
     // Right channel
     chip->mix_serial[1] >>= 1;
     if (chip->cycles == 13)
@@ -1965,10 +1967,9 @@ void OPM_Write(opm_t *chip, uint32_t port, uint8_t data)
 
 uint8_t OPM_Read(opm_t *chip, uint32_t port)
 {
-    uint16_t testdata;
     if (chip->mode_test[6])
     {
-        testdata = chip->op_out[5] | ((chip->eg_serial_bit ^ 1) << 14) | ((chip->pg_serial & 1) << 15);
+        uint16_t testdata = chip->op_out[5] | ((chip->eg_serial_bit ^ 1) << 14) | ((chip->pg_serial & 1) << 15);
         if (chip->mode_test[7])
         {
             return testdata & 255;
@@ -2077,16 +2078,12 @@ void OPM_WriteBuffered(opm_t *chip, uint32_t port, uint8_t data)
     chip->writebuf_last = (chip->writebuf_last + 1) % OPN_WRITEBUF_SIZE;
 }
 
-static void OPM_GenerateResampled(opm_t *chip, int32_t *buf)
+INLINE void OPM_GenerateOne(opm_t *chip, int32_t buf[2])
 {
     uint32_t i;
-
-    buf[0] = chip->samples[0];
-    buf[1] = chip->samples[1];
-
-    for (i = 0; i < 32; i++)
+    for (i = 0; i < 32; i++) // inbetween every 32 cycles a stereo sample is created
     {
-        OPM_Clock(chip, (i == 0) ? chip->samples : NULL, NULL, NULL, NULL);
+        OPM_Clock(chip, (i == 31) ? buf : NULL, NULL, NULL, NULL); // so grab that at some point
 
         while (chip->writebuf[chip->writebuf_cur].time <= chip->writebuf_samplecnt)
         {
@@ -2110,7 +2107,7 @@ void OPM_GenerateStream(opm_t *chip, float **sndptr, uint32_t numsamples)
     for (i = 0; i < numsamples; i++)
     {
         int32_t buffer[2];
-        OPM_GenerateResampled(chip, buffer);
+        OPM_GenerateOne(chip, buffer);
         sndptr[0][i] = (float)buffer[0]*(float)(1.0/32768.0);
         sndptr[1][i] = (float)buffer[1]*(float)(1.0/32768.0);
     }

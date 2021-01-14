@@ -269,8 +269,6 @@ typedef struct {
 
 #ifdef PINMAME
     // from VGM port
-    int32_t samples[2];
-
     uint64_t writebuf_samplecnt;
     uint32_t writebuf_cur;
     uint32_t writebuf_last;
