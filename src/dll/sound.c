@@ -38,11 +38,6 @@ extern int g_fPause;
 // buffer
 int channels = 1;
 
-// buffer over/underflow counts
-static int					total_frames;
-static int					buffer_underflows;
-static int					buffer_overflows;
-
 // global sample tracking
 static double				samples_per_frame;
 static double				samples_left_over;
@@ -54,9 +49,6 @@ static int					writing_advance = 0;
 static int					audio_latency;
 static int					lower_thresh;
 static int					upper_thresh;
-
-// enabled state
-static int					is_enabled = 1;
 
 // sound options (none at this time)
 struct rc_option sound_opts[] =
@@ -107,7 +99,7 @@ static int writingToStreamDiff = 0;
 
 int osd_start_audio_stream(int stereo)
 {
-	printf("osd_start_audio_stream SampleRate:%d stereo:%d fps:%.2f\n", Machine->sample_rate,stereo, Machine->drv->frames_per_second);
+	printf("osd_start_audio_stream SampleRate:%.2f stereo:%d fps:%.2f\n", Machine->sample_rate,stereo, Machine->drv->frames_per_second);
 	channels = stereo ? 2 : 1;
 
 	// compute the buffer sizes
@@ -126,7 +118,7 @@ int osd_start_audio_stream(int stereo)
 
 	// determine the number of samples per frame
 	samples_per_frame = (double)Machine->sample_rate / (double)Machine->drv->frames_per_second;
-	printf("sample_rate: %d frames_per_second: %.1f samples_per_frame: %.1f\n", Machine->sample_rate, Machine->drv->frames_per_second, samples_per_frame);
+	printf("sample_rate: %.2f frames_per_second: %.1f samples_per_frame: %.1f\n", Machine->sample_rate, Machine->drv->frames_per_second, samples_per_frame);
 	// compute how many samples to generate the first frame
 	samples_left_over = samples_per_frame;
 	samples_this_frame = (UINT32)samples_left_over;

@@ -490,7 +490,7 @@ INLINE void core_update_modulated_light(UINT32 *light, int bit){
 		(*light) |= 0x01;
 }
 
-extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level);
+extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *prev_level);
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
 /*-- nvram handling --*/

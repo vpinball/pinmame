@@ -285,6 +285,7 @@ static INTERRUPT_GEN(dmd32_firq) {
 	}
 }
 
+#ifdef VPINMAME
 static const unsigned char lookup[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf, };
@@ -293,6 +294,7 @@ INLINE UINT8 reverse(UINT8 n) {
 	// Reverse the top and bottom nibble then swap them.
 	return (lookup[n & 0x0f] << 4) | lookup[n >> 4];
 }
+#endif
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 #ifdef MAME_DEBUG

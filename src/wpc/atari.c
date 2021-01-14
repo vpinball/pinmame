@@ -263,10 +263,10 @@ static READ_HANDLER(ram_r) {
 	return ram[offset];
 }
 
-static READ_HANDLER(test_r) {
+/*static READ_HANDLER(test_r) {
 	logerror("read 0x%04x\n", offset);
 	return 0xFF;
-}
+}*/
 
 // Gen 2
 static WRITE_HANDLER(disp0_w) {

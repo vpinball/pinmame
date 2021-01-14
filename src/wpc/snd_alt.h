@@ -1023,7 +1023,8 @@ static int fgetline(char* const buff, const int nchars, FILE* const file)
 
 static int parse_line(CsvReader* const c, char* line, const int header) {
 	char* p = line;
-	char* d, *f;
+	char* d = NULL;
+	char* f = NULL;
 	int capacity = 0;
 	int field_number = 0;
 	int enclosed_in_quotes = 0;
@@ -1095,6 +1096,9 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 
 		p++;
 	}
+
+	if (!d || !f)
+		return CSV_ERROR_LINE_FORMAT;
 
 	*d = 0;
 	trim(f, d);

@@ -64,6 +64,8 @@ typedef	long	int32_t ;
 
 #include "samplerate.h"
 
+#include <math.h>
+
 enum
 {	SRC_FALSE	= 0,
 	SRC_TRUE	= 1,
