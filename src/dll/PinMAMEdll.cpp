@@ -283,9 +283,10 @@ PINMAMEDLL_API int GetRawDMDHeight()
 
 PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer)
 {
-	if (g_raw_dmdx < 0 || g_raw_dmdy < 0)
+	if (g_raw_dmdx == ~0u || g_raw_dmdy == ~0u)
 		return -1;
 	memcpy(buffer, g_raw_dmdbuffer, g_raw_dmdx*g_raw_dmdy * sizeof(unsigned char));
+	g_needs_DMD_update = 0;
 	return g_raw_dmdx*g_raw_dmdy;
 }
 
@@ -317,7 +318,7 @@ PINMAMEDLL_API void SetSwitch(int slot, bool state)
 
 // Lamps related functions
 // -----------------------
-PINMAMEDLL_API int GetMaxLamps() {	return CORE_MAXLAMPCOL * 8; }
+PINMAMEDLL_API int GetMaxLamps() { return CORE_MAXLAMPCOL * 8; }
 
 PINMAMEDLL_API int GetChangedLamps(int* changedStates)
 {
