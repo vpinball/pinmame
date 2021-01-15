@@ -16,6 +16,8 @@ bool g_useConsole = false;
 
 void ShowConsole()
 {
+	if (g_useConsole)
+		return;
 	g_useConsole = true;
 	FILE* pConsole;
 	AllocConsole();
@@ -26,6 +28,7 @@ void CloseConsole()
 {
 	if (g_useConsole)
 		FreeConsole();
+	g_useConsole = false;
 }
 #endif
 #else
@@ -65,14 +68,14 @@ extern "C"
 	volatile int g_fPause = 0;
 	volatile int g_fDumpFrames = 0;
 
-	char g_szGameName[256] = "";			// String containing requested game name (may be different from ROM if aliased)
+	char g_szGameName[256] = { 0 };			// String containing requested game name (may be different from ROM if aliased)
 
 	extern int channels;
 
 	struct rc_struct *rc;
 }
 
-char g_vpmPath[MAX_PATH];
+char g_vpmPath[MAX_PATH] = { 0 };
 int g_sampleRate = 48000;
 bool g_isGameReady = false;
 static std::thread* pRunningGame = nullptr;
@@ -148,7 +151,7 @@ void gameThread(int game_index=-1)
 
 PINMAMEDLL_API void SetVPMPath(char* path)
 {
-	strcpy(g_vpmPath, path);
+	strcpy_s(g_vpmPath, path);
 }
 
 PINMAMEDLL_API void SetSampleRate(int sampleRate)
@@ -166,6 +169,8 @@ PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 	if (showConsole)
 		ShowConsole();
 #endif
+	trying_to_quit = 0;
+
 	rc = cli_rc_create();
 
 	strcpy_s(g_szGameName, gameNameOrg);
@@ -219,6 +224,11 @@ void StopThreadedGame(bool locking)
 
 	delete(pRunningGame);
 	pRunningGame = nullptr;
+
+	//rc_unregister(rc, opts);
+	rc_destroy(rc);
+
+	g_szGameName[0] = '\0';
 
 #ifdef ENABLE_CONSOLE_DEBUG
 	CloseConsole();
