@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include "driver.h"
 #include "rc.h"
