@@ -5,6 +5,7 @@
 #include <algorithm>
 
 void DisplayDMD();
+unsigned char* rawDMD = nullptr;
 
 int main()
 {
@@ -25,7 +26,11 @@ int main()
 			StartThreadedGame("taf_l7", true);
 
 		if (c == 'k')
+		{
 			StopThreadedGame(true);
+			delete [] rawDMD;
+			rawDMD = nullptr;
+		}
 
 		if (c == 'l')
 		//if(IsGameReady())
@@ -33,6 +38,21 @@ int main()
 			int* cl = new int[GetMaxLamps() * 2];
 			int nb = GetChangedLamps(cl);
 			delete [] cl;
+
+			cl = new int[GetMaxSolenoids() * 2];
+			nb = GetChangedSolenoids(cl);
+			delete [] cl;
+
+			cl = new int[GetMaxGIStrings() * 2];
+			nb = GetChangedGIs(cl);
+			delete [] cl;
+		}
+
+		if (c == 'a')
+		{
+			float* ca = new float[2 * 1000];
+			GetPendingAudioSamples(ca,2,1000);
+			delete [] ca;
 		}
 
 		if (c == 'r')
@@ -40,29 +60,29 @@ int main()
 	}
 	
 	StopThreadedGame(true);
-}
 
-unsigned char* rawDmd = nullptr;
+	return 0;
+}
 
 void DisplayDMD()
 {
 	int w = GetRawDMDWidth();
 	int h = GetRawDMDHeight();
-	//printf("g_needs_DMD_update:%d\n", g_needs_DMD_update);
+	//printf("NeedsDMDUpdate(): %d\n", NeedsDMDUpdate());
 
 	if (w < 0 || h < 0)
 		return;
 
-	if (rawDmd == nullptr)
-		rawDmd = new unsigned char[w*h];
+	if (rawDMD == nullptr)
+		rawDMD = new unsigned char[w*h];
 
-	printf("osd_update_video_and_audio: %dx%d \n", w, h);
-	int copied = GetRawDMDPixels(rawDmd);
+	printf("osd_update_video_and_audio: %dx%d\n", w, h);
+	int copied = GetRawDMDPixels(rawDMD);
 	printf("copied %d\n", copied);
 	for (int j = 0; j < h; j++)
 	{
 		for (int i = 0; i < std::min(100,w); i++)
-			printf("%s", (rawDmd[j * w + i] > 20 ? "X" : " "));
+			printf("%s", (rawDMD[j * w + i] > 20 ? "X" : " "));
 		printf("\n");
 	}
 	//printf("\n");
