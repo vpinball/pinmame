@@ -1292,7 +1292,7 @@ int frontend_help (const char *gamename)
 				if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
 				{
 					const struct RomModule *region, *rom, *chunk;
-					int romtotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
+					unsigned int romtotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
 
 					for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
 					{
@@ -1323,7 +1323,7 @@ int frontend_help (const char *gamename)
 
 				for (year = YEAR_BEGIN;year <= YEAR_END;year++)
 				{
-					int gamestotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
+					unsigned int gamestotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
 
 					for (i = 0; drivers[i]; i++)
 					{
