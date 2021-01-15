@@ -46,6 +46,8 @@ copy /V /-Y "PinMAMEdllTest_VC2015.vcxproj.filters" "PinMAMEdllTest_VC2019.vcxpr
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"v140_xp" /replace:"v142" /in:"PinMAMEdllTest_VC2019.vcxproj" /out:"PinMAMEdllTest_VC2019.vcxproj"
 @if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"PinMAMEdllTest_VC2019.vcxproj" /out:"PinMAMEdllTest_VC2019.vcxproj"
+@if errorlevel 1 goto manual
 
 @goto end
 
