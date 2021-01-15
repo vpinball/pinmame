@@ -2013,7 +2013,7 @@ void OPM_SetIC(opm_t *chip, uint8_t ic)
     }
 }
 
-void OPM_Reset(opm_t *chip, uint32_t clock)
+void OPM_Reset(opm_t *chip, double clock)
 {
 #ifdef PINMAME
     void(*irqhandler)(int irq) = chip->irqhandler;
@@ -2028,7 +2028,7 @@ void OPM_Reset(opm_t *chip, uint32_t clock)
     }
     OPM_SetIC(chip, 0);
 #ifdef PINMAME
-    if (clock != 0) // init?
+    if (clock != 0.) // init?
     {
         chip->vgm_idx = vgm_open(VGMC_YM2151, clock);
     }
