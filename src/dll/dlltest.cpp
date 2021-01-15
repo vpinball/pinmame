@@ -50,8 +50,8 @@ int main()
 
 		if (c == 'a')
 		{
-			float* ca = new float[2 * 1000];
-			GetPendingAudioSamples(ca,2,1000);
+			float* ca = new float[2 * 10000];
+			GetPendingAudioSamples(ca,2,10000);
 			delete [] ca;
 		}
 

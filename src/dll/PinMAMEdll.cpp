@@ -67,8 +67,10 @@ extern "C"
 	UINT8 win_trying_to_quit;
 	volatile int g_fPause = 0;
 	volatile int g_fDumpFrames = 0;
+	char g_fShowWinDMD = 0;
+	char g_fShowPinDMD = 0; /* pinDMD */
 
-	char g_szGameName[256] = { 0 };			// String containing requested game name (may be different from ROM if aliased)
+	char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
 
 	extern int channels;
 
@@ -165,6 +167,9 @@ PINMAMEDLL_API void SetSampleRate(int sampleRate)
 
 PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 {
+	if (pRunningGame)
+		return -1;
+
 #ifdef ENABLE_CONSOLE_DEBUG
 	if (showConsole)
 		ShowConsole();
@@ -213,6 +218,7 @@ void StopThreadedGame(bool locking)
 {
 	if (pRunningGame == nullptr)
 		return;
+
 	trying_to_quit = 1;
 	OnStateChange(1);
 
