@@ -150,12 +150,12 @@ int osd_update_audio_stream(INT16 *buf)
 	{
 		streamingBuf[currentWritingBufferPos] = buf[i];
 		currentWritingBufferPos++;
-		if (currentWritingBufferPos >  stream_buffer_size)
+		if (currentWritingBufferPos >= stream_buffer_size)
 			currentWritingBufferPos = 0;
 		writingToStreamDiff++;
 	}
 
-	// Adjustement
+	// Adjustment
 	{
 		int potentialDiff = writingToStreamDiff - writing_advance;
 		
@@ -176,7 +176,7 @@ int osd_update_audio_stream(INT16 *buf)
 	samples_left_over -= (double)samples_this_frame;
 
 	samples_this_frame += current_adjustment;
-	
+
 	//if (streamingBufSize >= 0)
 	//	samples_this_frame = streamingBufSize;
 
@@ -186,15 +186,16 @@ int osd_update_audio_stream(INT16 *buf)
 
 void osd_stop_audio_stream(void)
 {
-    free(streamingBuf);
-    streamingBuf = NULL;
-    streamingBufferInitialized = 0;
-    writingToStreamDiff = 0;
-    currentWritingBufferPos = 0;
-    currentStreamingBufferPos = -1; // -1 means not ready
-    streamingBufSize = -1; // Hold the data to be out using get pending
-    current_adjustment = 0;
-    writing_advance = 0;
+	if(streamingBuf)
+		free(streamingBuf);
+	streamingBuf = NULL;
+	streamingBufferInitialized = 0;
+	writingToStreamDiff = 0;
+	currentWritingBufferPos = 0;
+	currentStreamingBufferPos = -1; // -1 means not ready
+	streamingBufSize = -1; // Hold the data to be out using get pending
+	current_adjustment = 0;
+	writing_advance = 0;
 }
 
 void forceResync()
@@ -236,7 +237,7 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 		{
 			dest[i] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
 			currentStreamingBufferPos++;
-			if (currentStreamingBufferPos > stream_buffer_size)
+			if (currentStreamingBufferPos >= stream_buffer_size)
 				currentStreamingBufferPos = 0;
 			//writingToStreamDiff--;
 		}
@@ -255,7 +256,7 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 			dest[outPos + 1] = dest[outPos]; // Copy the mono on both out left and right
 			outPos += 2;
 			currentStreamingBufferPos++;
-			if (currentStreamingBufferPos > stream_buffer_size)
+			if (currentStreamingBufferPos >= stream_buffer_size)
 				currentStreamingBufferPos = 0;
 			//writingToStreamDiff--;
 		}
@@ -267,7 +268,7 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 		assert(0);
 		//!! TODO
 	}
-	
+
 	if (writingToStreamDiff > writing_advance*2 || writingToStreamDiff < 0)
 		forceResync();
 
