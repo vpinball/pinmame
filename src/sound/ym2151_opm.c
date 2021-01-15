@@ -657,7 +657,7 @@ static void OPM_EnvelopePhase4(opm_t *chip)
 
     kon = chip->kon[slot] && !chip->kon2[slot];
     chip->pg_reset[slot] = kon;
-    chip->eg_instantattack = chip->eg_ratemax[1] && (kon || !chip->eg_ratemax[1]);
+    chip->eg_instantattack = chip->eg_ratemax[1] && (kon || !chip->eg_ratemax[1]); // apparently correct as-is
 
     eg_off = (chip->eg_level[slot] & 0x3f0) == 0x3f0;
     slreach = (chip->eg_level[slot] >> 5) == chip->eg_sl[1];
