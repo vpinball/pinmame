@@ -24,13 +24,9 @@
  UINT32 g_raw_dmdy = ~0u;
 
  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
-#ifdef VPINMAME
  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
-#endif
  static UINT8 *currbuffer = buffer1;
-#ifdef VPINMAME
  static UINT8 *oldbuffer = NULL;
-#endif
  static UINT32 raw_dmdoffs = 0;
 
  #include "gts3dmd.h"
@@ -922,7 +918,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
 
   if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
 
@@ -1149,7 +1145,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     }
   }
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   //alpha frame
   if(g_fShowPinDMD)
     renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, total_disp, disp_num_segs);
@@ -1874,7 +1870,7 @@ static MACHINE_INIT(core) {
 /* TOM: this causes to draw the static sim text */
   schedule_full_refresh();
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
 	pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
@@ -1884,7 +1880,7 @@ static MACHINE_INIT(core) {
 static MACHINE_STOP(core) {
   int ii;
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
 	pindmdDeInit();
@@ -1897,7 +1893,7 @@ static MACHINE_STOP(core) {
   raw_dmdoffs = 0;
 
   g_raw_gtswpc_dmdframes = 0;
-  
+
   g_needs_DMD_update = 1;
 #endif
 

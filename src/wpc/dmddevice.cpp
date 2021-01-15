@@ -93,9 +93,19 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	bool	DmdDev = false;
 
 #ifndef _WIN64
+#ifdef VPINMAME
 	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME.dll");
+#endif
+#ifdef PINMAME_DLL
+	const HINSTANCE hVpmDLL = GetModuleHandle("PinMAMEdll.dll");
+#endif
 #else
+#ifdef VPINMAME
 	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME64.dll");
+#endif
+#ifdef PINMAME_DLL
+	const HINSTANCE hVpmDLL = GetModuleHandle("PinMAMEdll64.dll");
+#endif
 #endif
 
 	GetModuleFileName(hVpmDLL,DmdDev_filename,MAX_PATH);
