@@ -9,7 +9,7 @@
 //============================================================
 
 // global parameters
-int							attenuation = 0;
+int attenuation = 0; //!! unused
 
 extern int g_fPause;
 
@@ -185,12 +185,21 @@ int osd_update_audio_stream(INT16 *buf)
 
 void osd_stop_audio_stream(void)
 {
+    free(streamingBuf);
+    streamingBuf = NULL;
+    streamingBufferInitialized = 0;
+    writingToStreamDiff = 0;
+    currentWritingBufferPos = 0;
+    currentStreamingBufferPos = -1; // -1 means not ready
+    streamingBufSize = -1; // Hold the data to be out using get pending
+    current_adjustment = 0;
+    writing_advance = 0;
 }
 
 void forceResync()
 {
 	currentStreamingBufferPos = (int)((long)(currentWritingBufferPos - writing_advance) % (long)stream_buffer_size);
-	printf("Resync %d (dropped:%d samples)\n", writingToStreamDiff, (writingToStreamDiff- writing_advance));
+	printf("Resync %d (dropped:%d samples)\n", writingToStreamDiff, (writingToStreamDiff - writing_advance));
 	writingToStreamDiff = writing_advance;
 }
 
@@ -238,6 +247,7 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 		const int nbToRead = nbOut / 2;
 		int outPos = 0;
 		int i;
+		assert((nbOut % 2) == 0);
 		for (i = 0; i < nbToRead; i++)
 		{
 			dest[outPos    ] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
@@ -250,9 +260,14 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 		}
 		writingToStreamDiff -= nbToRead;
 	}
-	// TODO: stereo to mono
+	else
+	if(channels == 2 && outChannels == 1) // Stereo to mono
+	{
+		assert(0);
+		//!! TODO
+	}
 	
-	if (writingToStreamDiff > writing_advance *2 || writingToStreamDiff <0)
+	if (writingToStreamDiff > writing_advance*2 || writingToStreamDiff < 0)
 		forceResync();
 
 	return nbOut;
