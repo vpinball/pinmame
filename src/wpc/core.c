@@ -12,10 +12,9 @@
 #ifdef PROC_SUPPORT
  #include "p-roc/p-roc.h"
 #endif
-#ifdef VPINMAME
- #include <windows.h>
-#endif
+
 #if defined(VPINMAME) || defined(PINMAME_DLL)
+ #include <Windows.h>
  #include "dmddevice.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
@@ -1028,7 +1027,7 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos)
 {
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   static UINT16 seg_data[CORE_SEGCOUNT]; // use static, in case a dmddevice.dll keeps the pointers around
   static char seg_dim[CORE_SEGCOUNT];
   static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
@@ -1038,7 +1037,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   memset(seg_data, 0, CORE_SEGCOUNT*sizeof(UINT16));
   memset(seg_dim, 0, CORE_SEGCOUNT*sizeof(char));
   disp_num_segs[0] = 0;
@@ -1057,7 +1056,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
       disp_num_segs[total_disp++] = ii;
 #endif
 
@@ -1102,7 +1101,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
           seg_dim[seg_idx] = coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos];
           seg_data[seg_idx++] = tmpSeg;
 #endif
@@ -1134,11 +1133,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         seg += step; lastSeg += step;
       }
 #ifdef PROC_SUPPORT
-        		if (coreGlobals.p_rocEn) {
+			if (coreGlobals.p_rocEn) {
 				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
 				    (!pmoptions.alpha_on_dmd)) {
 					procUpdateAlphaDisplay(proc_top, proc_bottom);
-
 				}
 			}
 #endif 
