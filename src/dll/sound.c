@@ -17,8 +17,6 @@ extern int g_fPause;
 //	PARAMETERS
 //============================================================
 
-#define INGORE_UNDERFLOW_FRAMES	100
-
 // the local buffer is what the stream buffer feeds from
 // note that this needs to be large enough to buffer at frameskip 11
 // for 30fps games like Tapper; we will scale the value down based
@@ -103,8 +101,8 @@ int osd_start_audio_stream(int stereo)
 	channels = stereo ? 2 : 1;
 
 	// compute the buffer sizes
-	stream_buffer_size = ((UINT64)MAX_BUFFER_SIZE * (UINT64)(Machine->sample_rate)) / 44100; //!! 44100 ?!
-	stream_buffer_size = (int)((double)(stream_buffer_size * 30) / Machine->drv->frames_per_second);
+	stream_buffer_size = ((UINT64)MAX_BUFFER_SIZE * (UINT64)(Machine->sample_rate+0.5)) / 44100; //!! 44100 ?!
+	stream_buffer_size = (int)((double)(stream_buffer_size * 30) / Machine->drv->frames_per_second + 0.5);
 	stream_buffer_size = (stream_buffer_size / 1024) * 1024;
 	stream_buffer_size *= channels;
 	// compute the upper/lower thresholds
@@ -117,7 +115,7 @@ int osd_start_audio_stream(int stereo)
 	currentWritingBufferPos = 0;
 
 	// determine the number of samples per frame
-	samples_per_frame = (double)Machine->sample_rate / (double)Machine->drv->frames_per_second;
+	samples_per_frame = Machine->sample_rate / Machine->drv->frames_per_second;
 	printf("sample_rate: %.2f frames_per_second: %.1f samples_per_frame: %.1f\n", Machine->sample_rate, Machine->drv->frames_per_second, samples_per_frame);
 	// compute how many samples to generate the first frame
 	samples_left_over = samples_per_frame;
