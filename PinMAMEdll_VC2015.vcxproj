@@ -310,7 +310,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>bass.lib;zlibstatmtd.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(ProjectName)_VC2015vcd.exe</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\bass;ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
