@@ -868,12 +868,10 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
 		return S_FALSE;
 	}
 
-  vp_tChgLamps chgLamps;
-
   if (!pVal) return S_FALSE;
 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
-    { pVal = 0; return S_OK; }
+    { *pVal = 0; return S_OK; }
 
   /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
   if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
@@ -882,10 +880,11 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
 	  uSleep(-synclevel*1000);
 
   /*-- Count changes --*/
+  vp_tChgLamps chgLamps;
   int uCount = vp_getChangedLamps(chgLamps);
 
   if (uCount == 0)
-    { pVal = 0; return S_OK; }
+    { *pVal = 0; return S_OK; }
 
   /*-- add changed lamps to array --*/
   int *dst = reinterpret_cast<int*>(buf);
@@ -941,12 +940,10 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 		return S_FALSE;
 	}
 
-	vp_tChgSols chgSol;
-
 	if (!pVal) return S_FALSE;
 
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
-	{ pVal = 0; return S_OK; }
+	{ *pVal = 0; return S_OK; }
 
 	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
 	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
@@ -955,10 +952,11 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 		uSleep(-synclevel*1000);
 
 	/*-- Count changes --*/
+	vp_tChgSols chgSol;
 	int uCount = vp_getChangedSolenoids(chgSol);
 
 	if (uCount == 0)
-	{ pVal = 0; return S_OK; }
+	{ *pVal = 0; return S_OK; }
 
 	/*-- add changed lamps to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
@@ -1020,7 +1018,7 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 	if (!pVal) return S_FALSE;
 
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
-	{ pVal = 0; return S_OK; }
+	{ *pVal = 0; return S_OK; }
 
 	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
 	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
@@ -1032,7 +1030,7 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 	int uCount = vp_getChangedGI(chgGI);
 
 	if (uCount == 0)
-	{ pVal = 0; return S_OK; }
+	{ *pVal = 0; return S_OK; }
 
 	/*-- add changed lamps to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
@@ -1369,9 +1367,8 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
 		return S_FALSE;
 	}
 
-
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
-    { pVal = 0; return S_OK; }
+    { *pVal = 0; return S_OK; }
 
   /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
   if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
@@ -1383,7 +1380,7 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
 
   if (uCount == 0)
-    { pVal = 0; return S_OK; }
+    { *pVal = 0; return S_OK; }
 
   /*-- add changed LEDs to array --*/
   int *dst = reinterpret_cast<int*>(buf);

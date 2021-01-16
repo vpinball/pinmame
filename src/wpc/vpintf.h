@@ -64,19 +64,19 @@ INLINE int vp_getGI(int giNo) { return coreGlobals.gi[giNo]; }
 
 /*-------------------------------------------
 /  get all lamps changed since last call
-/  returns number of canged lamps
+/  returns number of changed lamps
 /-------------------------------------*/
 int vp_getChangedLamps(vp_tChgLamps chgStat);
 
 /*-------------------------------------------
 /  get all solenoids changed since last call
-/  returns number of canged solenoids
+/  returns number of changed solenoids
 /-------------------------------------*/
 int vp_getChangedSolenoids(vp_tChgSols chgStat);
 
 /*-------------------------------------------
 /  get all GIstrings changed since last call
-/  returns number of canged GIstrings
+/  returns number of changed GIstrings
 /-------------------------------------*/
 int vp_getChangedGI(vp_tChgGIs chgStat);
 
