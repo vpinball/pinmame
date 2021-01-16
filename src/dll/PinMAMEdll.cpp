@@ -208,6 +208,8 @@ PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 	setPath(FILETYPE_MEMCARD, composePath(g_vpmPath, "memcard"));
 	setPath(FILETYPE_STATE, composePath(g_vpmPath, "sta"));
 
+	vp_init();
+
 	printf("GameIndex: %d\n", game_index);
 	pRunningGame = new std::thread(gameThread, game_index);
 
@@ -250,7 +252,8 @@ PINMAMEDLL_API bool IsGameReady()
 // -----------------------
 PINMAMEDLL_API void ResetGame()
 {
-	machine_reset();
+	if (g_isGameReady)
+		machine_reset();
 }
 
 PINMAMEDLL_API void Pause()
@@ -274,22 +277,22 @@ PINMAMEDLL_API bool IsPaused()
 
 PINMAMEDLL_API bool NeedsDMDUpdate()
 {
-	return !!g_needs_DMD_update;
+	return g_isGameReady && !!g_needs_DMD_update;
 }
 
 PINMAMEDLL_API int GetRawDMDWidth()
 {
-	return g_raw_dmdx;
+	return g_isGameReady ? g_raw_dmdx : ~0u;
 }
 
 PINMAMEDLL_API int GetRawDMDHeight()
 {
-	return g_raw_dmdy;
+	return g_isGameReady ? g_raw_dmdy : ~0u;
 }
 
 PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer)
 {
-	if (g_raw_dmdx == ~0u || g_raw_dmdy == ~0u)
+	if (!g_isGameReady || g_raw_dmdx == ~0u || g_raw_dmdy == ~0u)
 		return -1;
 	memcpy(buffer, g_raw_dmdbuffer, g_raw_dmdx*g_raw_dmdy * sizeof(unsigned char));
 	g_needs_DMD_update = 0;
@@ -301,12 +304,12 @@ PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer)
 // -----------------------
 PINMAMEDLL_API int GetAudioChannels()
 {
-	return channels;
+	return g_isGameReady ? channels : -1;
 }
 
 PINMAMEDLL_API int GetPendingAudioSamples(float* buffer,int outChannels, int maxNumber)
 {
-	return fillAudioBuffer(buffer, outChannels, maxNumber);
+	return g_isGameReady ? fillAudioBuffer(buffer, outChannels, maxNumber) : -1;
 }
 
 
@@ -314,11 +317,13 @@ PINMAMEDLL_API int GetPendingAudioSamples(float* buffer,int outChannels, int max
 // ------------------------
 PINMAMEDLL_API bool GetSwitch(int slot)
 {
-	return vp_getSwitch(slot) != 0;
+	return g_isGameReady ? (vp_getSwitch(slot) != 0) : false;
 }
 
 PINMAMEDLL_API void SetSwitch(int slot, bool state)
 {
+	if (!g_isGameReady)
+		return;
 	vp_putSwitch(slot, state ? 1 : 0);
 }
 
@@ -328,6 +333,9 @@ PINMAMEDLL_API int GetMaxLamps() { return CORE_MAXLAMPCOL * 8; }
 
 PINMAMEDLL_API int GetChangedLamps(int* changedStates)
 {
+	if (!g_isGameReady)
+		return -1;
+
 	vp_tChgLamps chgLamps;
 	const int uCount = vp_getChangedLamps(chgLamps);
 	if (uCount == 0)
@@ -348,6 +356,9 @@ PINMAMEDLL_API int GetMaxSolenoids() { return 64; }
 
 PINMAMEDLL_API int GetChangedSolenoids(int* changedStates)
 {
+	if (!g_isGameReady)
+		return -1;
+
 	vp_tChgSols chgSols;
 	const int uCount = vp_getChangedSolenoids(chgSols);
 	if (uCount == 0)
@@ -368,6 +379,9 @@ PINMAMEDLL_API int GetMaxGIStrings() { return CORE_MAXGI; }
 
 PINMAMEDLL_API int GetChangedGIs(int* changedStates)
 {
+	if (!g_isGameReady)
+		return -1;
+
 	vp_tChgGIs chgGIs;
 	const int uCount = vp_getChangedGI(chgGIs);
 	if (uCount == 0)
