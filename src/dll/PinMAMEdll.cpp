@@ -220,7 +220,7 @@ void StopThreadedGame(bool locking)
 		return;
 
 	trying_to_quit = 1;
-	OnStateChange(1);
+	OnStateChange(0);
 
 	if (locking)
 	{
@@ -330,6 +330,8 @@ PINMAMEDLL_API int GetChangedLamps(int* changedStates)
 {
 	vp_tChgLamps chgLamps;
 	const int uCount = vp_getChangedLamps(chgLamps);
+	if (uCount == 0)
+		return 0;
 
 	int* out = changedStates;
 	for (int i = 0; i < uCount; i++)
@@ -348,6 +350,8 @@ PINMAMEDLL_API int GetChangedSolenoids(int* changedStates)
 {
 	vp_tChgSols chgSols;
 	const int uCount = vp_getChangedSolenoids(chgSols);
+	if (uCount == 0)
+		return 0;
 
 	int* out = changedStates;
 	for (int i = 0; i < uCount; i++)
@@ -366,6 +370,8 @@ PINMAMEDLL_API int GetChangedGIs(int* changedStates)
 {
 	vp_tChgGIs chgGIs;
 	const int uCount = vp_getChangedGI(chgGIs);
+	if (uCount == 0)
+		return 0;
 
 	int* out = changedStates;
 	for (int i = 0; i < uCount; i++)
