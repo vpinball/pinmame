@@ -207,7 +207,7 @@ void forceResync()
 
 //static cycles_t last = 0;
 
-int fillAudioBuffer(float *const __restrict dest, const int outChannels, const int maxSamples)
+int fillAudioBuffer(void *const dest, const int outChannels, const int maxSamples, const int is_float)
 {
 	int nbOut = streamingBufSize;
 
@@ -235,7 +235,10 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 		int i;
 		for (i = 0; i < nbOut; i++)
 		{
-			dest[i] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
+			if (is_float)
+				((float*)dest)[i] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
+			else
+				((INT16*)dest)[i] = streamingBuf[currentStreamingBufferPos];
 			currentStreamingBufferPos++;
 			if (currentStreamingBufferPos >= stream_buffer_size)
 				currentStreamingBufferPos = 0;
@@ -252,8 +255,11 @@ int fillAudioBuffer(float *const __restrict dest, const int outChannels, const i
 		assert((nbOut % 2) == 0);
 		for (i = 0; i < nbToRead; i++)
 		{
-			dest[outPos    ] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
-			dest[outPos + 1] = dest[outPos]; // Copy the mono on both out left and right
+			// Copy the mono on both out left and right
+			if (is_float)
+				((float*)dest)[outPos] = ((float*)dest)[outPos+1] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
+			else
+				((INT16*)dest)[outPos] = ((INT16*)dest)[outPos+1] = streamingBuf[currentStreamingBufferPos];
 			outPos += 2;
 			currentStreamingBufferPos++;
 			if (currentStreamingBufferPos >= stream_buffer_size)

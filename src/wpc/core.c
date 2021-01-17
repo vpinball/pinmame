@@ -1863,16 +1863,17 @@ static MACHINE_INIT(core) {
   /*-- now reset everything --*/
   if (coreData->reset) coreData->reset();
   mech_emuInit();
-  OnStateChange(1); /* We have a lift-off */
-
-/* TOM: this causes to draw the static sim text */
-  schedule_full_refresh();
 
 #if defined(VPINMAME) || defined(PINMAME_DLL)
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
 	pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
 #endif
+
+  OnStateChange(1); /* We have a lift-off */
+
+/* TOM: this causes to draw the static sim text */
+  schedule_full_refresh();
 }
 
 static MACHINE_STOP(core) {
