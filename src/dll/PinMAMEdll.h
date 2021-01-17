@@ -19,7 +19,10 @@
 	PINMAMEDLL_API void StopThreadedGame(bool locking = true);
 	//PINMAMEDLL_API void KillThreadedGame(char* gameName);
 	PINMAMEDLL_API void ResetGame();
+	// IsGameReady will only be true after a 'while', i.e. after calling StartThreadedGame plus X msecs!
 	PINMAMEDLL_API bool IsGameReady();
+
+	// ALL THE FOLLOWING FUNCTIONS WILL ONLY HAVE A MEANINGFUL EFFECT IF IsGameReady() IS TRUE!
 
 	// Pause related functions
 	// -----------------------
