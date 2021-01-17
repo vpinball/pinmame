@@ -1155,6 +1155,14 @@ else
 SOUNDDEFS += -DHAS_YM2151_ALT=0
 endif
 
+SOUND=$(strip $(findstring YM2151_NUKED@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_YM2151_NUKED=1
+SOUNDOBJS += $(OBJ)/sound/2151intf.o $(OBJ)/sound/ym2151.o
+else
+SOUNDDEFS += -DHAS_YM2151_NUKED=0
+endif
+
 SOUND=$(strip $(findstring YM2608@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_YM2608=1
