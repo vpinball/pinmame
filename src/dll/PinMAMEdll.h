@@ -9,6 +9,7 @@
 
 	// Setup related functions
 	// -----------------------
+	// Call these before doing anything else
 	PINMAMEDLL_API void SetVPMPath(char* path);
 	PINMAMEDLL_API void SetSampleRate(int sampleRate);
 
@@ -25,7 +26,6 @@
 	PINMAMEDLL_API void Pause();
 	PINMAMEDLL_API void Continue();
 	PINMAMEDLL_API bool IsPaused();
-
 
 	// DMD related functions
 	// ---------------------
@@ -44,12 +44,15 @@
 	// needs pre-allocated maxNumber*sizeof(float) buffer
 	// returns actually processed samples (note that this is pre-multiplied by the requested outChannels (1=mono,2=stereo), same as maxNumber)
 	PINMAMEDLL_API int GetPendingAudioSamples(float* buffer, int outChannels, int maxNumber);
+	PINMAMEDLL_API int GetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber);
 
 	// Switch related functions
 	// ------------------------
 	PINMAMEDLL_API bool GetSwitch(int slot);
 	PINMAMEDLL_API void SetSwitch(int slot, bool state);
-
+	// Set all/a list of switches: For each switch, 2 ints are passed in: slot and state (0 or 1)
+	// As an exception, this call will also set switches to an initial state, i.e. even if IsGameReady() is still false
+	PINMAMEDLL_API void SetSwitches(int* states, int numSwitches);
 
 	// Lamps related functions
 	// -----------------------

@@ -6,6 +6,10 @@ What's new in PinMAME:
 Version 3.4 (X X, 2021) - ""
 ------------------------------------------------------------------------------
 
+Fix multiple issues in the new PinMAMEdll library and extend API (see PinMAMEdll.h)
+
+Updated LISY support to 5.27-7 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+
 *** CORE/CPU ***
 Fix regression in solenoid emulation for Juegos Populares
 
