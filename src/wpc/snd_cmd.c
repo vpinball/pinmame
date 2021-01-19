@@ -50,7 +50,7 @@
  #include <windows.h>
  #if !defined(__MINGW32__) || defined(VPINMAME)
   #define timeGetTime2 timeGetTime
- #else // VPINMAME
+ #else
   static DWORD timeGetTime2(void) {
     return (DWORD)(timer_get_time()*1000.); //!! meh!
   }
@@ -122,8 +122,8 @@ static struct {
   int dumping;
   int spinner;
   int nextWaveFileNo;
-  DWORD startTick;
-  DWORD silence;
+  UINT32 startTick;
+  UINT32 silence;
   int silentsamples;
 } wavelocals;
 
@@ -252,7 +252,7 @@ static HANDLE makeReadSlot(const LPTSTR slotName)
 
 static BOOL readSlot(const HANDLE hFile, char * msg)
 {
-	DWORD   msgSize;
+	DWORD	msgSize;
 	DWORD	numRead;
 	LPTSTR	buffer;
 
@@ -1050,7 +1050,7 @@ int is_silent(const INT16* const buf, int size)
 void pm_wave_record(INT16 *buffer, int samples) {
   int written = 0;
   if (wavelocals.dumping == 1) {
-		const DWORD tick = timeGetTime2();
+		const UINT32 tick = timeGetTime2();
 		if (!is_silent(buffer, samples * CHANNELCOUNT))
 			wavelocals.silence = tick;
 
