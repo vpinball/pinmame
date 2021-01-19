@@ -64,7 +64,7 @@ static void TimerHandler(int n,int c,int count,double stepTime)
 #endif
 
 /* update request from fm.c */
-static void YM2151UpdateRequest(int chip)
+void YM2151UpdateRequest(int chip)
 {
 	stream_update(stream[chip],0);
 }

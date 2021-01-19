@@ -43,6 +43,9 @@
    gettimeofday(&now, NULL);
    return now.tv_usec/1000;
  }
+
+  #include <stdint.h>
+  typedef uint32_t DWORD;
 #else
  #ifndef WIN32_LEAN_AND_MEAN
  //#define WIN32_LEAN_AND_MEAN

@@ -556,7 +556,7 @@ static INTERRUPT_GEN(wpc_vblank) {
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
 /* The DMD firq must be generated via the WPC but I don't how. */
-static void wpc_firq(int set, int src) {
+void wpc_firq(int set, int src) {
   if (set)
     wpclocals.firqSrc |= src;
   else
