@@ -24,7 +24,7 @@
  *      siliconpr0n.org(digshadow, John McMaster):
  *          YM2151 and other FM chip decaps and die shots.
  *
- * version: 0.9.1 beta
+ * version: 0.9.2 beta
  */
 #include <string.h>
 #include <stdint.h>
@@ -1500,7 +1500,7 @@ static void OPM_DoLFO1(opm_t *chip)
 
     lfo_pm_sign = chip->lfo_wave == 2 ? chip->lfo_trig_sign : chip->lfo_saw_sign;
 
-    w[5] = ampm_sel ? chip->lfo_saw_sign : (chip->lfo_wave != 2 || chip->lfo_trig_sign);
+    w[5] = ampm_sel ? chip->lfo_saw_sign : (chip->lfo_wave != 2 || !chip->lfo_trig_sign);
 
     w[1] = !chip->lfo_clock || chip->lfo_wave == 3 || (chip->cycles & 15) != 15;
     w[2] = chip->lfo_wave == 2 && !w[1];

@@ -24,7 +24,7 @@
  *      siliconpr0n.org(digshadow, John McMaster):
  *          YM2151 and other FM chip decaps and die shots.
  *
- * version: 0.9 beta
+ * version: 0.9.2 beta
  */
 #ifndef _OPM_H_
 #define _OPM_H_
@@ -114,7 +114,7 @@ typedef struct {
     uint8_t eg_mute;
     uint16_t eg_outtemp[2];
     uint16_t eg_out[2];
-    uint8_t eg_am;
+    uint16_t eg_am;
     uint8_t eg_ams[2];
     uint8_t eg_timercarry;
     uint32_t eg_timer;
