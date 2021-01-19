@@ -13,8 +13,10 @@
  #include "p-roc/p-roc.h"
 #endif
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
- #include <Windows.h>
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
+ #ifndef LIBPINMAME
+  #include <Windows.h>
+ #endif
  #include "dmddevice.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
@@ -47,7 +49,7 @@ int vp_getDip(int bank) { return 0; }
 void vp_setDIP(int bank, int value) { }
 #endif
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
@@ -797,7 +799,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0) ||
 	  (core_gameData->gen == GEN_ALVG_DMD2));
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
 
   const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
   const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
@@ -888,7 +890,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         const UINT8 col = coreGlobals.dotCol[ii][jj];
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
         const int offs = (ii-1)*layout->length + jj;
         currbuffer[offs] = col;
         if(layout->length >= 128) { // Capcom hack
@@ -917,19 +919,21 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
 
   if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
-
+ #ifndef LIBPINMAME
 	  //external dmd
 	  if (g_fShowPinDMD)
 		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+ #endif
 
 	  if (oldbuffer != NULL) {	  // detect if same frame again
 		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
 		  {
 			  g_needs_DMD_update = 1;
 
+ #ifndef LIBPINMAME
 			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)	// output dump frame to .txt
 			  {
 				  FILE *f;
@@ -995,6 +999,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 					  fclose(f);
 				  }
 			  }
+ #endif
 		  }
 	  }
 
@@ -1027,7 +1032,7 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos)
 {
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
   static UINT16 seg_data[CORE_SEGCOUNT]; // use static, in case a dmddevice.dll keeps the pointers around
   static char seg_dim[CORE_SEGCOUNT];
   static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
@@ -1037,7 +1042,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
   memset(seg_data, 0, CORE_SEGCOUNT*sizeof(UINT16));
   memset(seg_dim, 0, CORE_SEGCOUNT*sizeof(char));
   disp_num_segs[0] = 0;
@@ -1056,7 +1061,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
       disp_num_segs[total_disp++] = ii;
 #endif
 
@@ -1101,7 +1106,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
           seg_dim[seg_idx] = coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos];
           seg_data[seg_idx++] = tmpSeg;
 #endif
@@ -1879,10 +1884,12 @@ static MACHINE_INIT(core) {
 static MACHINE_STOP(core) {
   int ii;
 
-#if defined(VPINMAME) || defined(PINMAME_DLL)
+#if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
+ #ifndef LIBPINMAME
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
 	pindmdDeInit();
+ #endif
 
   g_raw_dmdx = ~0u;
   g_raw_dmdy = ~0u;

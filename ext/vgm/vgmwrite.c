@@ -9,6 +9,8 @@
 
 #include "vgmwrite.h"
 
+#include <wchar.h>
+
 #define DYNAMIC_HEADER_SIZE
 
 typedef uint16_t gd3char_t;	// UTF-16 character, for VGM GD3 tag

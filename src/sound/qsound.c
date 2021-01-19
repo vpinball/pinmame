@@ -160,15 +160,15 @@ static FILE *fpRawDataR;
 
 /* Function prototypes */
 void qsound_update( int num, INT16 **buffer, int length );
-void qsound_write_data(uint8_t address, uint16_t data);
-void init_register_map();
-void state_init();
-void state_refresh_filter_1();
-void state_refresh_filter_2();
-void state_normal_update();
-void qsound_delay_update(qsound_delay *qd);
-int32_t qsound_fir_apply(qsound_fir *qf, int16_t input);
-int32_t qsound_delay_apply(qsound_delay *qd, const int32_t input);
+INLINE void qsound_write_data(uint8_t address, uint16_t data);
+static void init_register_map();
+static void state_init();
+static void state_refresh_filter_1();
+static void state_refresh_filter_2();
+static void state_normal_update();
+INLINE void qsound_delay_update(qsound_delay *qd);
+static int32_t qsound_fir_apply(qsound_fir *qf, int16_t input);
+INLINE int32_t qsound_delay_apply(qsound_delay *qd, const int32_t input);
 
 INLINE UINT32 pow2_mask(UINT32 v)
 {

@@ -121,7 +121,7 @@ int CLIB_DECL mame_fprintf(mame_file *f, const char *fmt, ...)
 int CLIB_DECL mame_fprintf(mame_file *f, const char *fmt, ...);
 #endif /* __GNUC__ */
 
-#ifdef PINMAME_DLL
+#if defined(PINMAME_DLL) || defined(LIBPINMAME)
 void setPath(int type, const char* path); 
 #endif
 
