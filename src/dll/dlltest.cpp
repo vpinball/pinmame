@@ -1,4 +1,4 @@
-#include "PinMAMEdll.h"
+#include "libpinmame.h"
 
 #include <stdio.h>
 #include <conio.h>

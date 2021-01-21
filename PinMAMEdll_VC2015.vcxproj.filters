@@ -1173,7 +1173,7 @@
     <ClCompile Include="src\dll\fileio.c">
       <Filter>Source Files\dll</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\PinMAMEdll.cpp">
+    <ClCompile Include="src\dll\libpinmame.cpp">
       <Filter>Source Files\dll</Filter>
     </ClCompile>
     <ClCompile Include="src\windows\jit.c">
@@ -1800,7 +1800,7 @@
     <ClInclude Include="src\dll\misc.h">
       <Filter>Source Files\dll</Filter>
     </ClInclude>
-    <ClInclude Include="src\dll\PinMAMEdll.h">
+    <ClInclude Include="src\dll\libpinmame.h">
       <Filter>Source Files\dll</Filter>
     </ClInclude>
     <ClInclude Include="src\dll\minimalconfig.h">

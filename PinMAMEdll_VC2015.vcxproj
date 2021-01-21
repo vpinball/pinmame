@@ -526,7 +526,7 @@
     <ClCompile Include="src\dll\keyboard.c" />
     <ClCompile Include="src\dll\minimalconfig.c" />
     <ClCompile Include="src\dll\misc.c" />
-    <ClCompile Include="src\dll\PinMAMEdll.cpp" />
+    <ClCompile Include="src\dll\libpinmame.cpp" />
     <ClCompile Include="src\dll\sound.c" />
     <ClCompile Include="src\dll\video.c" />
     <ClCompile Include="src\drawgfx.c" />
@@ -1120,7 +1120,7 @@
     <ClInclude Include="src\dll\dllsound.h" />
     <ClInclude Include="src\dll\minimalconfig.h" />
     <ClInclude Include="src\dll\misc.h" />
-    <ClInclude Include="src\dll\PinMAMEdll.h" />
+    <ClInclude Include="src\dll\libpinmame.h" />
     <ClInclude Include="src\dll\video.h" />
     <ClInclude Include="src\drawgfx.h" />
     <ClInclude Include="src\driver.h" />
