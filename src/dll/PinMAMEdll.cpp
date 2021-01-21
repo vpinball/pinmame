@@ -49,7 +49,7 @@ extern "C"
 	#include "core.h"
 	#include "vpintf.h"
 	#include "mame.h"
-	#include "dllsound.h"
+	#include "sound.h"
 	#include "cpuexec.h"
 
 	extern unsigned char g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];

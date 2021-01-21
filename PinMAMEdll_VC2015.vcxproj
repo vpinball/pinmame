@@ -521,7 +521,7 @@
     <ClCompile Include="src\cpuint.c" />
     <ClCompile Include="src\cpuintrf.c" />
     <ClCompile Include="src\datafile.c" />
-    <ClCompile Include="src\dll\dllfileio.c" />
+    <ClCompile Include="src\dll\fileio.c" />
     <ClCompile Include="src\dll\joystick.c" />
     <ClCompile Include="src\dll\keyboard.c" />
     <ClCompile Include="src\dll\minimalconfig.c" />

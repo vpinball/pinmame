@@ -1170,7 +1170,7 @@
     <ClCompile Include="src\dll\misc.c">
       <Filter>Source Files\dll</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\dllfileio.c">
+    <ClCompile Include="src\dll\fileio.c">
       <Filter>Source Files\dll</Filter>
     </ClCompile>
     <ClCompile Include="src\dll\PinMAMEdll.cpp">

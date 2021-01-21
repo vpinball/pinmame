@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #pragma once
 
 #if 1
