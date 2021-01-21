@@ -2,10 +2,10 @@
 
 #pragma once
 
-#if 1
+#if defined(_WIN32) || defined(_WIN64)
 #define PINMAMEDLL_API extern "C" __declspec(dllexport) 
 #else
-#define PINMAMEDLL_API extern "C" __declspec(dllimport) 
+#define PINMAMEDLL_API extern "C" //__declspec(dllimport) 
 #endif
 
 
