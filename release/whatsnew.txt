@@ -11,6 +11,7 @@ Fix multiple issues in the new PinMAMEdll library and extend API (see PinMAMEdll
 Updated LISY support to 5.27-7 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 *** CORE/CPU ***
+One more audiophile tweak: add proper dithering after resampling to the final output sample rate
 Fix regression in solenoid emulation for Juegos Populares
 
 *** ROM SUPPORT *** Thanks to Brent Walker

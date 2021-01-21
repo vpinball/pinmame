@@ -156,6 +156,62 @@ static void mixer_apply_reverb_filter(struct mixer_channel_data* const channel, 
 	}
 }
 
+//
+
+typedef struct { unsigned int x, y, z, w; } uint4;
+INLINE float int_as_float(int x) { union { int i; float f; } fi; fi.i = x; return fi.f; }
+
+#if 0
+typedef struct { unsigned int x, y; } uint2;
+INLINE uint4 make_uint4(unsigned int x, unsigned int y, unsigned int z, unsigned int w) { uint4 r; r.x = x; r.y = y; r.z = z; r.w = w; return r; }
+
+static uint4 xorshift_init(const uint2 *const seed) // input simple 32/64bit seed, receive 128bit xorshift state
+{
+    const unsigned int t0 = 1099087573u * (seed->x ^ 0xaad26b49u);
+    const unsigned int t1 = 2591861531u * (seed->y ^ 0xf7dcefddu);
+    return make_uint4(
+     123456789u + t0,
+     362436069u ^ t0,
+     521288629u + t1,
+     88675123u ^ t1);
+    //state.d = 6615241u + t1 + t0;
+}
+#endif
+
+// 4 states, as we need 2(TPDF)*2(stereo) when dithering, init'ed with plain randomness
+static uint4 xorshift_state[4] = { 1260868664u, 251862568u, 674858257u, 1214218489u, 1131520192u, 4290450112u, 432448198u, 2826638483u, 192412538u, 3450217573u, 3001734286u, 580418667u, 200079512u, 80235087u, 3037801790u, 716526505u };
+
+INLINE unsigned int xorshiftu(uint4 *const __restrict state)
+{
+	const unsigned int t = state->x ^ (state->x << 11); //state.x ^ (state.x >> 2);
+	state->x = state->y;
+	state->y = state->z;
+	state->z = state->w;
+	state->w ^= (state->w >> 19) ^ t ^ (t >> 8); //(state.w << 4) ^ t ^ (t << 1);
+	//state.d += 362437;
+	return state->w; //+ state.d;
+}
+
+INLINE float xorshift(uint4 *const __restrict state)
+{
+	return int_as_float(0x3F800000 | (xorshiftu(state)>>9))-1.0f; //!! could use &8388607 instead of >>9
+}
+
+#if 0
+INLINE float triangular(const float r) // from -1..1, c=0 (with random no r=0..1)
+{
+	const float p = 2.f*r;
+	if (p <= 1.f)
+		return -1.f + sqrtf(p); //!! able to use low precision intrinsic!?
+	else
+		return  1.f - sqrtf(2.f - p);
+}
+#endif
+
+//!! for audio: maybe we could also simply use bit reversal (or another halton dim) to have kinda high frequency noise? (similar to noise shaping) 
+//   -> exactly other way round as GFX (where low freq is best)! ear NOT sensitive to high frequencies that much!
+//   -> but then also use triangular() instead of rand()-rand()!
+
 /***************************************************************************
 	mixer_channel_resample
 ***************************************************************************/
@@ -795,12 +851,14 @@ void mixer_sh_update()
 		INT16* __restrict mix = mix_buffer;
 		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
+			const float dither = xorshift(&xorshift_state[0]) - xorshift(&xorshift_state[1]); // add TPDF dither
+
 			/* fetch and clip the sample */
 			INT16 samplei;
 #if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
-			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos]*32768.f + dither), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
 #else
-			const float sample = left_accum[accum_pos] * 32768.f;
+			const float sample = left_accum[accum_pos]*32768.f + dither;
 #ifdef MIXER_USE_CLIPPING
 			if (sample <= -32768.f)
 				samplei = -32768;
@@ -825,12 +883,14 @@ void mixer_sh_update()
 		INT16* __restrict mix = mix_buffer;
 		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
+			float dither = xorshift(&xorshift_state[0]) - xorshift(&xorshift_state[1]); // add TPDF dither
+
 			/* fetch and clip the left sample */
 			INT16 samplei;
 #if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
-			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos]*32768.f + dither), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
 #else
-			float sample = left_accum[accum_pos] * 32768.f;
+			float sample = left_accum[accum_pos]*32768.f + dither;
 #ifdef MIXER_USE_CLIPPING
 			if (sample <= -32768.f)
 				samplei = -32768;
@@ -844,11 +904,13 @@ void mixer_sh_update()
 			*mix++ = samplei;
 			left_accum[accum_pos] = 0;
 
+			dither = xorshift(&xorshift_state[2]) - xorshift(&xorshift_state[3]); // add TPDF dither
+
 			/* fetch and clip the right sample */
 #if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
-			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(right_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(right_accum[accum_pos]*32768.f + dither), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
 #else
-			sample = right_accum[accum_pos] * 32768.f;
+			sample = right_accum[accum_pos]*32768.f + dither;
 #ifdef MIXER_USE_CLIPPING
 			if (sample <= -32768.f)
 				samplei = -32768;
