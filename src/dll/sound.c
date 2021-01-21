@@ -3,7 +3,7 @@
 #include "driver.h"
 #include "rc.h"
 
-#include "dllsound.h"
+#include "sound.h"
 
 //============================================================
 //	GLOBAL VARIABLES
