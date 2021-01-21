@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  * Configuration routines.
  *
@@ -36,11 +38,15 @@ extern struct rc_option sound_opts[];
 extern struct rc_option video_opts[];
 
 #ifdef MESS
-#include "configms.h"
+ #include "configms.h"
 #endif
 
 #ifdef _MSC_VER
-#include "msc.h"
+ #include "msc.h"
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+ #define strcasecmp _stricmp
 #endif
 
 #ifdef PINMAME
@@ -586,7 +592,7 @@ int cli_frontend_init (int argc, char **argv)
         {
                 /* do we have a driver for this? */
                 for (i = 0; drivers[i]; i++)
-                        if (_stricmp(gamename,drivers[i]->name) == 0)
+                        if (strcasecmp(gamename,drivers[i]->name) == 0)
                         {
                                 game_index = i;
                                 break;

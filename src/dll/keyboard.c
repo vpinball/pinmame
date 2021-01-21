@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #include <stdarg.h>
 #include <ctype.h>
 #include <time.h>
