@@ -521,7 +521,16 @@
     <ClCompile Include="src\cpuint.c" />
     <ClCompile Include="src\cpuintrf.c" />
     <ClCompile Include="src\datafile.c" />
-    <ClCompile Include="src\dll\fileio.c" />
+    <ClCompile Include="src\dll\fileio.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)libfileio.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)libfileio.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="src\dll\joystick.c" />
     <ClCompile Include="src\dll\keyboard.c" />
     <ClCompile Include="src\dll\minimalconfig.c" />

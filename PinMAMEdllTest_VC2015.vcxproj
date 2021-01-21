@@ -172,7 +172,7 @@
     <CustomBuildStep>
       <Message>Copying to root and generating gamelist.txt...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
-"$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(ProjectDir)$(TargetName)_gamelist.txt"
+rem "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(ProjectDir)$(TargetName)_gamelist.txt"
 </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
     </CustomBuildStep>
