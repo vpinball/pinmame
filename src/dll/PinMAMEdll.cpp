@@ -1,11 +1,15 @@
-#include "PinMAMEdll.h"
+// license:BSD-3-Clause
+
+#include "libpinmame.h"
 
 //============================================================
 // Console Debugging Section (Optional)
 //============================================================
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
+
 #define ENABLE_CONSOLE_DEBUG
+
 #ifdef ENABLE_CONSOLE_DEBUG
 
 #define WIN32_LEAN_AND_MEAN
@@ -31,19 +35,28 @@ void CloseConsole()
 		FreeConsole();
 }
 #endif
+
+#define strcasecmp _stricmp
+
 #else
+#define strcpy_s strcpy
 #define MAX_PATH          1024
 #endif
 
 #include <thread>
-#include <../win32com/Alias.h> //!! move that one to some platform independent section
+
+#if defined(_WIN32) || defined(_WIN64)
+ #include <../win32com/Alias.h> //!! move that one to some platform independent section
+#endif
 
 extern "C"
 {
 	// MAME headers
 	#include "driver.h"
+#if defined(_WIN32) || defined(_WIN64)
 	#include "window.h"
 	#include "input.h"
+#endif
 	#include "minimalconfig.h"
 	#include "rc.h"
 	#include "core.h"
@@ -64,13 +77,17 @@ extern "C"
 
 	void OnSolenoid(int nSolenoid, int IsActive);
 	void OnStateChange(int nChange);
+#if defined(_WIN32) || defined(_WIN64)
 	extern void win_timer_enable(int enabled);
+#endif
 
 	UINT8 win_trying_to_quit;
 	volatile int g_fPause = 0;
 	volatile int g_fDumpFrames = 0;
+#if defined(_WIN32) || defined(_WIN64)
 	volatile char g_fShowWinDMD = 0;
 	volatile char g_fShowPinDMD = 0; /* pinDMD */
+#endif
 
 	char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
 
@@ -88,6 +105,13 @@ static std::thread* pRunningGame = nullptr;
 
 static int initialSwitches[CORE_MAXSWCOL*8 * 2]; // for each switch: number and state (0 or 1)
 static int initialSwitchesToSet = 0;
+
+#if !defined(_WIN32) && !defined(_WIN64)
+const char* checkGameAlias(const char* aRomName) 
+{
+	return aRomName;
+}
+#endif
 
 //============================================================
 // Callback tests Section
@@ -122,7 +146,7 @@ int GetGameNumFromString(char *name)
 {
 	int gamenum = 0;
 	while (drivers[gamenum]) {
-		if (!_stricmp(drivers[gamenum]->name, name))
+		if (!strcasecmp(drivers[gamenum]->name, name))
 			break;
 		gamenum++;
 	}
@@ -205,7 +229,9 @@ PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 	//options.skip_gameinfo = 1;
 	options.samplerate = sampleRate;
 
+#if defined(_WIN32) || defined(_WIN64)
 	win_timer_enable(1);
+#endif
 	g_fPause = 0;
 
 	set_option("throttle", "1", 0);
@@ -232,6 +258,9 @@ PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 	return game_index;
 }
 
+#if !defined(_WIN32) && !defined(_WIN64)
+PINMAMEDLL_API
+#endif
 void StopThreadedGame(bool locking)
 {
 	if (pRunningGame == nullptr)
