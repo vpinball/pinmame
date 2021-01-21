@@ -1,20 +1,36 @@
+// license:BSD-3-Clause
+
 //============================================================
 //
-//	fileio.c - Win32 file access functions
+//	fileio.c - file access functions
 //
 //============================================================
 
+#if defined(_WIN32) || defined(_WIN64)
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> //!! use osdepend.h, etc
 
 #include <ctype.h>
 #include <tchar.h>
+#endif
 
 // MAME headers
 #include "driver.h"
 #include "unzip.h"
 #include "rc.h"
+
+#if !defined(_WIN32) && !defined(_WIN64)
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <ctype.h>
+#include <stdio.h>
+
+#define INVALID_HANDLE_VALUE  -1
+#define TCHAR char
+#endif
 
 #include "fileio.h"
 
@@ -71,12 +87,20 @@ struct pathdata
 
 struct _osd_file
 {
+#if defined(_WIN32) || defined(_WIN64)
 	HANDLE		handle;
+#else
+	int			handle;
+#endif
 	UINT64		filepos;
 	UINT64		end;
 	UINT64		offset;
 	UINT64		bufferbase;
+#if defined(_WIN32) || defined(_WIN64)
 	DWORD		bufferbytes;
+#else
+	unsigned long bufferbytes;
+#endif
 	UINT8		buffer[FILE_BUFFER_SIZE];
 };
 
@@ -149,7 +173,11 @@ INLINE int is_pathsep(TCHAR c)
 
 static TCHAR *find_reverse_path_sep(TCHAR *name)
 {
+#if defined(_WIN32) || defined(_WIN64)
 	TCHAR *p = name + _tcslen(name) - 1;
+#else
+	char *p = name + strlen(name) - 1;
+#endif
 	while (p >= name && !is_pathsep(*p))
 		p--;
 	return (p >= name) ? p : NULL;
@@ -164,14 +192,22 @@ static TCHAR *find_reverse_path_sep(TCHAR *name)
 static void create_path(TCHAR *path, int has_filename)
 {
 	TCHAR *sep = find_reverse_path_sep(path);
+#if defined(_WIN32) || defined(_WIN64)
 	DWORD attributes;
+#else
+	struct stat st;
+#endif
 
 	/* if there's still a separator, and it's not the root, nuke it and recurse */
 	if (sep && sep > path && !is_pathsep(sep[-1]))
 	{
 		*sep = 0;
 		create_path(path, 0);
+#if defined(_WIN32) || defined(_WIN64)
 		*sep = '\\';
+#else
+		*sep = '/';
+#endif
 	}
 
 	/* if we have a filename, we're done */
@@ -179,12 +215,24 @@ static void create_path(TCHAR *path, int has_filename)
 		return;
 
 	/* if the path already exists, we're done */
+#if defined(_WIN32) || defined(_WIN64)
 	attributes = GetFileAttributes(path);
 	if (attributes != INVALID_FILE_ATTRIBUTES)
+#else
+	if (!stat(path, &st))
+#endif
 		return;
 
+#ifdef VERBOSE
+	printf("create_path(): creating path - path=%s, has_filename=%d", path, has_filename);
+#endif
+
 	/* create the path */
+#if defined(_WIN32) || defined(_WIN64)
 	CreateDirectory(path, NULL);
+#else
+	mkdir(path, 0777);
+#endif
 }
 
 
@@ -345,7 +393,7 @@ out_of_memory:
 //	get_path_for_filetype
 //============================================================
 
-static const char *get_path_for_filetype(int filetype, int pathindex, DWORD *count)
+static const char *get_path_for_filetype(int filetype, int pathindex, UINT32 *count)
 {
 	struct pathdata *list;
 
@@ -408,15 +456,27 @@ static void compose_path(TCHAR *output, int pathtype, int pathindex, const char 
 	/* compose the full path */
 	*output = 0;
 	if (basepath)
+#if defined(_WIN32) || defined(_WIN64)
 		appendstring(output, basepath);
 	if (*output && !is_pathsep(output[_tcslen(output) - 1]))
 		appendstring(output, "\\");
 	appendstring(output, filename);
+#else
+		strcat(output, basepath);
+	if (*output && !is_pathsep(output[strlen(output) - 1]))
+		strcat(output, "/");
+	strcat(output, filename);
+#endif
 
 	/* convert forward slashes to backslashes */
 	for (p = output; *p; p++)
+#if defined(_WIN32) || defined(_WIN64)
 		if (*p == '/')
 			*p = '\\';
+#else
+		if (*p == '\\')
+			*p = '/';
+#endif
 }
 
 
@@ -427,11 +487,11 @@ static void compose_path(TCHAR *output, int pathtype, int pathindex, const char 
 
 int osd_get_path_count(int pathtype)
 {
-	DWORD count;
+	UINT32 count;
 
 	/* get the count and return it */
 	get_path_for_filetype(pathtype, 0, &count);
-	return count;
+	return (int)count;
 }
 
 
@@ -443,16 +503,28 @@ int osd_get_path_count(int pathtype)
 int osd_get_path_info(int pathtype, int pathindex, const char *filename)
 {
 	TCHAR fullpath[1024];
+#if defined(_WIN32) || defined(_WIN64)
 	DWORD attributes;
+#else
+	struct stat st;
+#endif
 
 	/* compose the full path */
 	compose_path(fullpath, pathtype, pathindex, filename);
 
+#if defined(_WIN32) || defined(_WIN64)
 	/* get the file attributes */
 	attributes = GetFileAttributes(fullpath);
 	if (attributes == INVALID_FILE_ATTRIBUTES)
+#else
+	if (stat(fullpath, &st) != 0)
+#endif
 		return PATH_NOT_FOUND;
+#if defined(_WIN32) || defined(_WIN64)
 	else if (attributes & FILE_ATTRIBUTE_DIRECTORY)
+#else
+	else if (S_ISDIR(st.st_mode))
+#endif
 		return PATH_IS_DIRECTORY;
 	else
 		return PATH_IS_FILE;
@@ -466,9 +538,14 @@ int osd_get_path_info(int pathtype, int pathindex, const char *filename)
 
 osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const char *mode)
 {
+#if defined(_WIN32) || defined(_WIN64)
 	DWORD disposition = 0, access = 0, sharemode = 0;
-	TCHAR fullpath[1024];
 	DWORD upperPos = 0;	// adopted from MAME 0.105
+#else
+	UINT32 access;
+	struct stat st;
+#endif
+	TCHAR fullpath[1024];
 	osd_file *file;
 	int i;
 
@@ -485,15 +562,29 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 	/* convert the mode into disposition and access */
 	if (strchr(mode, 'r'))
+#if defined(_WIN32) || defined(_WIN64)
 		disposition = OPEN_EXISTING, access = GENERIC_READ, sharemode = FILE_SHARE_READ;
 	if (strchr(mode, 'w'))
 		disposition = CREATE_ALWAYS, access = GENERIC_WRITE, sharemode = 0;
 	if (strchr(mode, '+'))
 		access = GENERIC_READ | GENERIC_WRITE;
+#else
+		access = O_RDONLY; 
+	else if (strchr(mode, 'w')) {
+		access = O_WRONLY; 
+		access |= (O_CREAT | O_TRUNC);
+	}
+	else if (strchr(mode, '+'))
+		access = O_RDWR;
+#endif
 
 	/* compose the full path */
 	compose_path(fullpath, pathtype, pathindex, filename);
+#ifdef VERBOSE
+	printf("osd_fopen(): access=%08X, fullpath=%s", access, fullpath);
+#endif
 
+#if defined(_WIN32) || defined(_WIN64)
 	/* attempt to open the file */
 	file->handle = CreateFile(fullpath, access, sharemode, NULL, disposition, 0, NULL);
 	if (file->handle == INVALID_HANDLE_VALUE)
@@ -503,19 +594,43 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 		/* if it's read-only, or if the path exists, then that's final */
 		if (!(access & GENERIC_WRITE) || error != ERROR_PATH_NOT_FOUND)
 			return NULL;
+#else
+	stat(fullpath, &st);
+
+	file->handle = open(fullpath, access, 0666);
+
+	if (file->handle == INVALID_HANDLE_VALUE) {
+		if (!(access & O_WRONLY) || errno != ENOENT) {
+			printf("osd_fopen(): unable to open");
+			return NULL;
+		}
+#endif
 
 		/* create the path and try again */
 		create_path(fullpath, 1);
+#if defined(_WIN32) || defined(_WIN64)
 		file->handle = CreateFile(fullpath, access, sharemode, NULL, disposition, 0, NULL);
+#else
+		file->handle = open(fullpath, access, 0666);
+#endif
 
 		/* if that doesn't work, we give up */
-		if (file->handle == INVALID_HANDLE_VALUE)
+		if (file->handle == INVALID_HANDLE_VALUE) {
+#ifdef VERBOSE
+			printf("osd_fopen(): unable to open");
+#endif
 			return NULL;
+		}
 	}
 
 	/* get the file size */
+#if defined(_WIN32) || defined(_WIN64)
 	file->end = GetFileSize(file->handle, &upperPos);
 	file->end |= (UINT64)upperPos << 32;
+#else
+	fstat(file->handle, &st);
+	file->end = st.st_size;
+#endif
 	return file;
 }
 
@@ -572,7 +687,7 @@ int osd_feof(osd_file *file)
 UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 {
 	UINT32 bytes_left = length;
-	DWORD result;
+	UINT32 result;
 
 	// handle data from within the buffer
 	if (file->offset >= file->bufferbase && file->offset < file->bufferbase + file->bufferbytes)
@@ -596,9 +711,13 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 	// attempt to seek to the current location if we're not there already
 	if (file->offset != file->filepos)
 	{
+#if defined(_WIN32) || defined(_WIN64)
 		LONG upperPos = file->offset >> 32;
 		result = SetFilePointer(file->handle, (UINT32)file->offset, &upperPos, FILE_BEGIN);
 		if (result == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR)
+#else
+		if (lseek(file->handle, file->offset, SEEK_SET) == -1)
+#endif
 		{
 			file->filepos = ~0;
 			return length - bytes_left;
@@ -612,8 +731,12 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 		unsigned int bytes_to_copy;
 		// read as much of the buffer as we can
 		file->bufferbase = file->offset;
+#if defined(_WIN32) || defined(_WIN64)
 		file->bufferbytes = 0;
 		ReadFile(file->handle, file->buffer, FILE_BUFFER_SIZE, &file->bufferbytes, NULL);
+#else
+		file->bufferbytes = read(file->handle, file->buffer, FILE_BUFFER_SIZE);
+#endif
 		file->filepos += file->bufferbytes;
 
 		// copy it out
@@ -632,7 +755,11 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 	else
 	{
 		// do the read
+#if defined(_WIN32) || defined(_WIN64)
 		ReadFile(file->handle, buffer, bytes_left, &result, NULL);
+#else
+		result = read(file->handle, buffer, bytes_left);
+#endif
 		file->filepos += result;
 
 		// adjust the pointers and return
@@ -650,20 +777,30 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 
 UINT32 osd_fwrite(osd_file *file, const void *buffer, UINT32 length)
 {
+#if defined(_WIN32) || defined(_WIN64)
 	LONG upperPos;
-	DWORD result;
+#endif
+	UINT32 result;
 
 	// invalidate any buffered data
 	file->bufferbytes = 0;
 
 	// attempt to seek to the current location
+#if defined(_WIN32) || defined(_WIN64)
 	upperPos = file->offset >> 32;
 	result = SetFilePointer(file->handle, (UINT32)file->offset, &upperPos, FILE_BEGIN);
 	if (result == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR)
+#else
+	if (lseek(file->handle, file->offset, SEEK_SET) == -1)
+#endif
 		return 0;
 
 	// do the write
+#if defined(_WIN32) || defined(_WIN64)
 	WriteFile(file->handle, buffer, length, &result, NULL);
+#else
+	result = write(file->handle, buffer, length);
+#endif
 	file->filepos += result;
 
 	// adjust the pointers
@@ -683,7 +820,11 @@ void osd_fclose(osd_file *file)
 {
 	// close the handle and clear it out
 	if (file->handle)
+#if defined(_WIN32) || defined(_WIN64)
 		CloseHandle(file->handle);
+#else
+		close(file->handle);
+#endif
 	file->handle = NULL;
 }
 
@@ -700,9 +841,9 @@ void osd_fclose(osd_file *file)
 int osd_display_loading_rom_message(const char *name,struct rom_load_data *romdata)
 {
 	if (name)
-		fprintf(stdout, "loading %-12s\r", name);
+		fprintf(stdout, "osd_display_loading_rom_message(): loading %-12s...", name);
 	else
-		fprintf(stdout, "                    \r");
+		fprintf(stdout, "osd_display_loading_rom_message():");
 	fflush(stdout);
 
 	return 0;
@@ -711,7 +852,7 @@ int osd_display_loading_rom_message(const char *name,struct rom_load_data *romda
 
 
 
-#ifdef WINUI
+#if defined(WINUI) || !(defined(_WIN32) || defined(_WIN64))
 //============================================================
 //	set_pathlist
 //============================================================
@@ -735,6 +876,5 @@ void set_pathlist(int file_type, const char *new_rawpath)
 	list->pathcount = 0;
 
 	list->rawpath = new_rawpath;
-
 }
 #endif
