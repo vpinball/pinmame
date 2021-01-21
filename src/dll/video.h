@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 //============================================================
 //
 //	video.h - Win32 implementation of MAME video routines

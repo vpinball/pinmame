@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 //============================================================
 //
 //	video.c - Win32 video handling
@@ -13,7 +15,7 @@
 #include "video.h"
 //#include "window.h"
 #include "rc.h"
-
+#include <unistd.h>
 #ifdef MESS
 #include "menu.h"
 #endif
@@ -382,6 +384,51 @@ void SetThrottleAdj(int adj)
 	g_iThrottleAdj = adj;
 }
 
+
+#if !defined(_WIN32) && !defined(_WIN64)
+
+static void throttle_speed(void) {
+	static double ticks_per_sleep_msec = 0;
+	cycles_t target;
+	cycles_t curr;
+	cycles_t cps;
+
+	profiler_mark(PROFILER_IDLE);
+
+	curr = osd_cycles();
+	cps = osd_cycles_per_second();
+	target = this_frame_base + (int)((double)frameskip_counter * (double)cps / video_fps);
+
+	if (curr - target < 0) {
+		if (ticks_per_sleep_msec == 0) {
+			ticks_per_sleep_msec = (double)(cps / 1000);
+	}
+
+		while (curr - target < 0) {
+			if (allow_sleep && (!autoframeskip || frameskip == 0) &&
+				(target - curr) > (cycles_t)(ticks_per_sleep_msec * 1.1)) {
+				cycles_t next;
+
+				usleep(1000);
+				next = osd_cycles();
+				ticks_per_sleep_msec = (ticks_per_sleep_msec * 0.90) + ((double)(next - curr) * 0.10);
+				curr = next;
+			}
+			else {
+				curr = osd_cycles();
+			}
+		}
+	}
+
+	profiler_mark(PROFILER_END);
+}
+
+void throttle_speed_part(int part, int totalparts)
+{
+}
+
+#else
+
 static void throttle_speed()
 {
 	throttle_speed_part(1, 1);
@@ -516,6 +563,8 @@ void throttle_speed_part(int part, int totalparts)
 	// idle time done
 	profiler_mark(PROFILER_END);
 }
+
+#endif
 
 //============================================================
 //	update_autoframeskip
