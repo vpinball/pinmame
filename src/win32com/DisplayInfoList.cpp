@@ -126,7 +126,7 @@ BOOL CDisplayInfoList::Enumerate()
 	// Indicate Success
 	return TRUE;
 #else
-	MessageBox(NULL, "Direct Draw not supported", NULL, MB_OK);
+	MessageBox(NULL, "This build does not support enumerating displays (yet)", NULL, MB_OK);
 
 	return FALSE;
 #endif
