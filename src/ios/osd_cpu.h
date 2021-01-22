@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
 *																			   *
 *	Define size independent data types and operations.						   *
