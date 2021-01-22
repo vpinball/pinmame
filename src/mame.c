@@ -126,7 +126,7 @@
  #include "lisy/utils.h"
 #endif /* PINMAME && LISY_SUPPORT */
 #include "../ext/vgm/vgmwrite.h"
-#if !defined(_MSC_VER) //!! as not included in makefile build
+#if !defined(_MSC_VER) && !defined(LIBPINMAME) //!! as not included in PinMAMEs standard makefile build yet
  #include "../ext/vgm/vgmwrite.c"
 #endif
 /***************************************************************************
