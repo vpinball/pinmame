@@ -14,9 +14,11 @@ Updated LISY support to 5.27-7 (Linux for Gottlieb System1 & System80, Bally, At
 One more audiophile tweak: add proper dithering after resampling to the final output sample rate
 Fix regression in solenoid emulation for Juegos Populares
 
-*** ROM SUPPORT *** Thanks to Brent Walker
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org
 Clones:
+Bad Cats LG-4
 Lucky Draw (alternate version - only different #3 ROM)
+No Fear 0.8X
 
 
 
