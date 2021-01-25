@@ -310,7 +310,7 @@ DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c7
 WPC_ROMEND
 
 WPC_ROMSTART(nf,08x,"nofe0_8x.rom",0x80000,CRC(64871e6a) SHA1(0e116104b06446b0d435f715c33535080cdd2378))
-DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c77c),
+DCS_SOUNDROM6x("SND-U2.SL1",CRC(84f48e27) SHA1(cdf0ff55c1493ea5ac7cef618c985f41442c6f60), // this was found separate from nofe0_8x.rom, so we just add it to the oldest revision we have
                "nfu3s",CRC(983e5578) SHA1(374b1397abbdde5fd9257fd45fd8613c94fbd02d),
                "nfu4s",CRC(9469cd40) SHA1(8a1dd1088f24018f48b114c0b27f0331263d4eea),
                "nfu5s",CRC(e14d4315) SHA1(63d5ae800cc8a750ea2e3a87c646ab175b60abc7),
@@ -329,7 +329,7 @@ CORE_CLONEDEF(nf,20,23x,"No Fear: Dangerous Sports (2.0)",1995,"Williams",wpc_mS
 CORE_CLONEDEF(nf,11x,23x,"No Fear: Dangerous Sports (1.1X)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,10,23x,"No Fear: Dangerous Sports (1.0)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,101,23x,"No Fear: Dangerous Sports (1.01 LED Ghost Fix)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,08x,23x,"No Fear: Dangerous Sports (0.8X)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,08x,23x,"No Fear: Dangerous Sports (0.8X, SL-1)",1995,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

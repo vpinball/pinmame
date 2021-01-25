@@ -6,7 +6,7 @@ What's new in PinMAME:
 Version 3.4 (X X, 2021) - ""
 ------------------------------------------------------------------------------
 
-Fix multiple issues in the new PinMAMEdll library and extend API (see PinMAMEdll.h)
+Fix multiple issues in the new PinMAMEdll/libPinMAME library and extend API (see libpinmame.h)
 
 Updated LISY support to 5.27-7 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
@@ -18,7 +18,7 @@ Fix regression in solenoid emulation for Juegos Populares
 Clones:
 Bad Cats LG-4
 Lucky Draw (alternate version - only different #3 ROM)
-No Fear 0.8X
+No Fear 0.8X with SL-1 sound
 
 
 
