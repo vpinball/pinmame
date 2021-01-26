@@ -15,10 +15,15 @@ One more audiophile tweak: add proper dithering after resampling to the final ou
 Fix regression in solenoid emulation for Juegos Populares
 
 *** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org
+Correct Dumps:
+Riverboat Gambler PA-7 (using L-1 sound now, might still be too new but better than L-2 anyhow)
+
 Clones:
 Bad Cats LG-4
+Flintstones, The LA-5
 Lucky Draw (alternate version - only different #3 ROM)
 No Fear 0.8X with SL-1 sound
+Theatre of Magic 1.2A
 
 
 

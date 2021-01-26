@@ -2865,6 +2865,7 @@ DRIVER(fs,sp2d)         //                  Flintstones, The (SP-2D) LED Ghost F
 DRIVER(fs,lx3)          //          08/94 W Flintstones, The (LX-3)
 DRIVER(fs,lx4)          //          09/94 W Flintstones, The (LX-4)
 DRIVER(fs,dx4)          //                  Flintstones, The (DX-4) LED Ghost Fix
+DRIVER(fs,la5)          //          11/94 W Flintstones, The (LA-5)
 DRIVER(fs,lx5)          //          11/94 W Flintstones, The (LX-5)
 DRIVER(fs,dx5)          //                  Flintstones, The (DX-5) LED Ghost Fix
 DRIVER(corv,px3)        //WPC-536:  08/94 B Corvette (PX-3 Prototype)
@@ -2918,6 +2919,7 @@ DRIVER(tom,06)          //WPC-539:  03/95 B Theatre of Magic (0.6A)
 DRIVER(tom,061)         //                  Theatre of Magic (0.61A) LED Ghost Fix
 DRIVER(tom,10f)         //          04/95 B Theatre of Magic (1.0 French)
 DRIVER(tom,101f)        //                  Theatre of Magic (1.01 French) LED Ghost Fix
+DRIVER(tom,12a)         //          04/95 B Theatre of Magic (1.2A)
 DRIVER(tom,12)          //          04/95 B Theatre of Magic (1.2X)
 DRIVER(tom,121)         //                  Theatre of Magic (1.21X) LED Ghost Fix
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)

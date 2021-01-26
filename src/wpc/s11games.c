@@ -1348,7 +1348,7 @@ CORE_GAMEDEF(rvrbt, l3, "Riverboat Gambler (L-3)", 1990, "Williams", s11_mS11CS,
 
 S11_ROMSTART48(rvrbt,p7,"gamb_u26.pa7", CRC(594db647) SHA1(914d10755c2a1609d3945554fdd8006f7d294287),
                         "gamb_u27.pa7", CRC(696248c4) SHA1(892ea48121165792d10d64dcfc188e4a100e6371))
-S11CS_SOUNDROM000(      "gamb_u4.l2",  CRC(c0cfa9be) SHA1(352df9a4dcbc131ae249416e9e517137a04627ba),
+S11CS_SOUNDROM000(      "gamb_u4.l1",  CRC(fb3fab22) SHA1(ea0f3431e4185361740840a19c93e249954c4835),
                         "gamb_u19.l1", CRC(04a3a8c8) SHA1(e72ef767f13282d2335cda3288037610d9bfedf2),
                         "gamb_u20.l1", CRC(a60c734d) SHA1(76cfcf96276ca4f6b5eee0e0402fab5ee9685366))
 S11_ROMEND
