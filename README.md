@@ -1,0 +1,391 @@
+# PinMAME
+
+*Pinball Multiple Arcade Machine Emulator*
+
+## Latest Info
+
+See the [whatsnew.txt](release/whatsnew.txt) for latest additions to PinMAME!
+
+## What is it?
+
+PinMAME emulates the hardware found in almost every solid state pinball machine created from
+the mid 1970's through 2014. Currently, the following pinball hardware is emulated:
+
+Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
+Williams System 6, Williams System 4, Williams System 3,
+Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD,
+Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern S.A.M., Stern MPU-100, Stern MPU-200,
+Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
+Gottlieb System 1, 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
+Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
+Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
+Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
+Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
+Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
+Sport Matic, Regama, Illinois Pinball.
+
+*Note: Emulation is not 100% working and correct for all hardware.*
+
+PinMAME is built as an add-on to the [MAME 0.76 Source Code](https://github.com/mamedev/mame). Some of the original code was altered, and fixes from later MAME versions were applied. In addition, it can be compiled on unix platforms and is (hopefully) compatible with 64bit CPU architectures/compiles by now.
+
+All the MAME readme file with all disclaimers, credits and instructions are included for
+info on using MAME related functions.
+
+All standard MAME "functions" do work the same way in PinMAME (profiler, debugger, cheats,
+record/playback, command line switches etc.).
+
+In addition, there is special compile time support for the [P-ROC](http://www.pinballcontrollers.com),
+to drive (at least) real WPC machines with PinMAME/P-ROC and LISY (Linux for Gottlieb System1 &
+System80, Bally, Atari, Williams and 'HOme' Pinballs, to drive real pinball machines via
+PinMAME and special hardware, see http://www.lisy80.com & http://www.lisy.dev, also README.lisy)
+platforms (see PROC and LISY_X defines in makefile.unix).
+
+## What does it do?
+
+Before you start to add the ROMs from your favorite pinball machine please note:
+
+- The PinMAME pinball emulator/simulator itself is not 100% playable. It only emulates the electronic circuit boards and the display(s) found in the pinball machine backbox. There is no playfield and no balls that you will see 'emulated' and displayed!
+- This part can optionally be added by using separate independent program packages, like Visual Pinball or Unit3D Pinball, which take care of simulating physics and the 3D rendering of the playfield and all its parts.
+- Note however, that you can still activate switches with your keyboard, see the display animations,
+and listen to/record the pinball game sounds with the pure PinMAME package itself.
+
+## Games supported (a bit outdated, at least since version 2.1 :/ )
+
+- *Williams/Bally WPC* - All games from Dr. Dude (1990) to Cactus Canyon (1998)
+- *Williams/Bally System 11* - All games from High Speed (1986) to Dr.Dude (1990)
+- *Williams System 9* - All games from Space Shuttle (1984) to Comet (1985)
+- *Williams System 7* - All games from Black Knight (1980) to Star Light (1984)
+- *Williams System 6* - All games from Blackout (1979) to Alien Poker (1980)
+- *Williams System 4* - All games from Phoenix (1978) to Stellar Wars (1979)
+- *Williams System 3* - All games from HotTip (1977) to Disco Fever (1978)
+- *Data East AlphaNumeric System* - All games from Laser War (1987) to The Simpsons (1990)
+- *Data East 128x16 DMD* - All games from Checkpoint (1991) to Hook (1992)
+- *Data East 128x32 DMD* - All games from Lethal Weapon 3 (1992) to Guns 'n Roses (1994)
+- *Sega 192x64 DMD* - All games from Maverick (1994) to Batman Forever (1995)
+- *Sega 256x64 DMD* - Flipper Football (1996)
+- *Sega/Stern Whitestar* - All games from Apollo 13 (1995) to Nascar (2005)
+- *Stern S.A.M.* - All games from World Poker Tour (2006) to Walking Dead (2014)
+- *Stern MPU-100* - All games from Stingray (1977) to Magic (1979)
+- *Stern MPU-200* - All games from Meteor (1979) to Lazer Lord (1984)
+- *Bally MPU-17* - All games from Freedom (1977) to Black Jack (1978)
+- *Bally MPU-35* - All games from Lost World (1978) to Cybernaut (1985)
+- *Bally Video/Pinball* - Baby Pacman (1982) and Granny & The Gators (1984)
+- *Gottlieb System 1* - All games from Cleopatra (1977) to Asteroid Annie and the Aliens (1980)
+- *Gottlieb System 80* - All games from Spiderman (1980) to Haunted House (1982)
+- *Gottlieb System 80a* - All games from Devil's Dare (1982) to Ice Fever (1985)
+- *Gottlieb System 80b* - All games from Triple Play (1985) to BoneBusters (1989)
+- *Gottlieb System 3* - All games from Lights,Camera,Action (1989) to Barb Wire (1996)
+- *Hankin Pinball* - All games from FJ Holden (1978) to Orbit 1 (1981)
+- *Game Plan Pinball* - All games from Rio (1978) to Cyclopes (1985)
+- *Atari Pinball* - All games from Atarians (1976) to Road Runner (1979)
+- *Zaccaria Pinball* - All games from Winter Sports (1978) to New Star's Phoenix (1987)
+- *Taito Pinball* - All that's available... games between 1980 and 1985.
+- *Midway Pinball* - Rotation VIII (1978).
+- *Capcom Pinball* - All games from Pinball Magic (1995) to Kingpin (1996)
+- *Alvin G. and Co* - All games from Soccer Ball (1991) to Pistol Poker (1993)
+- *Tecnoplay* - Scramble, X-Force (both 1987)
+- *Mr. Game* - Dakar, Motor Show (1988), World Cup '90 (1990)
+- *Spinball* - Mach 2 (1995), Jolly Park (1996)
+- *Nuova Bell* - all available Bally clones, also Future Queen (1987), F1 Grand Prix (1987), U-Boat 65 (1988)
+- *Inder* - Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), Atleta (1991), 250cc (1992), Bushido (1993)
+- *Juegos Populares* - Petaco (1984), Faeton (1985), America 1492, Aqualand (both 1987)
+- *LTD* - Atlantis, Black Hole, Zephy, Cowboy Eight Ball, Mr. & Mrs. Pec-Men, Al Capone (1980-1983)
+- *Peyper* - Odisea Paris-Dakar (1987)
+- *Sonic* - Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
+- *Allied Leisure* - All games from Super Picker (1977) to Star Shooter (1979)
+- *Fascination, Int.* - Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)
+- *Sleic*
+- *Playmatic* - Last Lap (1978), Antar (1979), Evil Fight (1980), Mad Race (1982), Meg-Aaton (1983), KZ-26 (1984) (*)
+- *NSM*
+- *Grand Products* - 300/Bullseye (1986)
+- *Jac van Ham* - Escape (1987), Movie Masters
+- *Videodens* - Break (1986)
+- *Astro* - Black Sheep Squadron (1978)
+- *Micropin* - Pentacup (1979)
+- *Christian Tabart* - L'Hexagone (1986)
+- *Jeutel* - Le King (1983), Olympic Games (1984)
+- *Valley Manufacturing*
+- *MAC / CICPlay* - MAC Galaxy (1986), Space Train (1987), Space Panther (1988), New MAC Jungle (1995), NBA MAC (1996), Kidnap (1986), Galaxy Play (1986), Galaxy Play 2 (1987)
+- *Stargame* - Space Ship (1986), Mephisto (1986), White Force (1987), Iron Balls (1987), Slalom Code 0.3 (1988)
+- *Barni* - Red Baron (1985)
+- *Splin Bingo* -  Golden Game
+- *Playbar* - Bloody Roller
+- *Cirsa*
+- *Nondum / CIFA*
+- *Maibesa*
+- *ManilaMatic*
+- *Joctronic*
+- *Mirco*
+- *Sport Matic*
+- *Regama* - Trebol
+- **Prototype games and modifications**
+  - Dave Nutting's Flicker (Sep 1974),
+  - Bally's Bow & Arrow (Jan 1976),
+  - Williams Rat Race (Jan 1983),
+  - Wild Texas (Firepower II Modification),
+  - machinaZOIS,
+  - and many more...
+
+"Supported" usually means that the game loads and the display(s) start up along with lamps etc. All games
+enter attract mode and you can use the Coin Door switches to enter the menus.
+
+### Notes
+
+- Sound may not be supported, or may not work properly for all listed games.
+- A FEW games may not work or be supported correctly due to customizations of the original hardware.
+- Some games may not be fully supported, simply because we could not find full rom sets, so some chips remain undumped.
+
+## Simulation?
+
+For many games there is a ball simulator which you can use to simulate "playing" the game. The simulator allows you to use the keyboard to make shots/hit targets with your virtual/invisible pinball..
+
+Essentially, it triggers the correct switches depending on where the balls are located. You can program a simulator for your own favourite game if you know a bit of programming and a lot about the game. If you are intersted let us know and we'll try to explain how to do it.
+
+For more information, please refer to [simulation.txt](release/simulation.txt) for instructions on using the pinball simulator built into PinMAME! Many games are not fully simulated, but some have at least preliminary simulator support!
+
+
+## Instructions
+
+Only PinMAME specific setting are listed here. Please read the MAME readme file for instructions on using MAME and all it's options.
+
+Some ROM images are double size (i.e. the data appears twice). This is most often done on purpose due to the limited availability of smaller sized EPROMS or to simplify upgrades (all ROM images same size). PinMAME accepts the double sized ROMs but the checksum verification is disabled. The -verifyroms will still report wrong sized ROMs.
+
+
+## Command line switches
+These options can be set on the command line or in mame.cfg:
+
+```
+-[no]dmd_compact   off = Display a more DMD like display (space between dots)
+                   on  = Display a compact DMD display
+
+-[no]dmd_only      off = Display lamps, swithes and simulator
+                   on  = Don't display lamps, switches and simulator
+                         (they still work). Good when creating animations
+                         or screen shots!
+
+-[no]cheat         on  = Speed up WPC game start up by disabling checksum
+                         (does not work with Dr. Dude). Try it on a security
+                         PIC game for an interesting message. The
+                         functionality is present in the roms, PinMAME just
+                         enables it.
+                         Also enables MAME cheats (e.g overclocking)
+                   off = Normal startup
+
+-dmd_antialias n   Antialias the DMD display with intensity 0-100%.
+```  
+
+### Other MAME settings (modified to work with PinMAME)
+
+- The display looks better with `-noscanlines`
+- Display must be forced to 8 bit (-depth 8) if it is not doing so automatically.
+- Printer output will be saved in the MEMCARD directory
+- You may underclock the DCS sound CPU to increase performance but sound will be slightly delayed (not synchronized with the display) and will sometimes be garbled. Use the F8,F9,F11 keys for underclocking. Note that this is not necessary anymore given todays hardware and is also not fully supported anymore.
+
+### PinMAME Specific Command line switches
+
+The following are new command line switches for PinMAME only, and do not
+exist in MAME.
+
+These can be set on the command line or in `mame.cfg`
+
+```
+-dmd_red   0-255 (Controls the amount of red displayed for a DMD Dot when
+                  it's lit at 100%!)
+-dmd_green 0-255 (Controls the amount of green displayed for a DMD Dot when
+                  it's lit at 100%!)
+-dmd_blue  0-255 (Controls the amount of blue displayed for a DMD Dot when
+                  it's lit at 100%!)
+
+-dmd_perc66 0-100 (Sets the Brightness percentage to display a DMD Dot which is lit
+                   at 66%, Default = 67%)
+-dmd_perc33 0-100 (Sets the Brightness percentage to display a DMD Dot which is lit
+                   at 33%, Default = 34%)
+-dmd_perc0  0-100 (Sets the Brightness percentage to display a DMD Dot when NOT lit)
+
+-dmd_antialias 0-100 (Sets the DMD antialiasing intensity)
+-dmd_only         (Don't display lamp/switch/solenoid matrices)
+-dmd_compact      (Display DMD and LED displays in a more compact format)
+
+-dmd_colorize     (Use distinct RGB colors for DMD intensities,
+                   e.g. uses dmd_red, dmd_green and dmd_blue along with the following options)
+-dmd_red66        (Amount of red displayed at 66% intensity)
+-dmd_green66      (Amount of green displayed at 66% intensity)
+-dmd_blue66       (Amount of blue displayed at 66% intensity)
+-dmd_red33        (Amount of red displayed at 33% intensity)
+-dmd_green33      (Amount of green displayed at 33% intensity)
+-dmd_blue33       (Amount of blue displayed at 33% intensity)
+-dmd_red0         (Amount of red displayed for not being lit)
+-dmd_green0       (Amount of green displayed for not being lit)
+-dmd_blue0        (Amount of blue displayed for not being lit)
+```
+
+For more information on the settings above, see "Changing the Look of the DMD".
+
+## VGM sound file dump
+
+VGM file output support does exist for AY8910, OKI6295, SAA1099, YM2151, YM2203, YMF262(OPL3), YM3526, YM3812, Y8950, and SN7648/9X (unsure about the mappings for these latter ones though!) sound chips.  Either use `-vgmwrite` on the commmand line (PinMAME) or select it in the game options (this requires a restart though, as VGM output requires to track everything)
+
+## General Keys
+
+Each Hardware platform supports different keys. See Keys.txt for more info.
+
+### Controlling switches (manually)
+
+The following keys will toggle the state of a switch
+
+|                   | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|-------------------|---|---|---|---|---|---|---|---|
+| Select column 1-8 | Q | W | E | R | T | Y | U | I |
+| Select row 1-8    | A | S | D | F | G | H | J | K |
+
+
+For example, to toggle switch 34 (Col 3, Row 4) press `E` while holding `F`! If the game has a simulator, press "Del" key to toggle between simulator keys and the switch keys.
+
+
+## DIP settings
+
+You can change the country and other settings for the game in the DIP menu. Not all games do support all country settings though.
+
+Each game and the simulator can use some "fake" DIP settings to choose between different hardware options (e.g. number of balls installed).
+
+## Display
+
+The display shows the DMD or the Alphanumeric LEDs and optionally
+(via the `-[no]dmd_only` command line option) three matrices:
+
+- *Top* - Lamp Matrix
+- *Middle* - Switche Matrix
+- *Bottom* - Solenoids/Flasher Matrix
+- *Below* - Diagnostic Lights found on the main hardware board.
+
+PinMAME contains functionality to diplay the lamp matrix laid out similar to the real pinball machine. See TZ for an example.
+
+If you want to do a similar layout for your favorite game which does not yet exist, let us know, and we may be able to help you.
+
+## Changing the Look of the DMD
+
+### Changing Color:
+
+Every dot in the DMD uses an RGB (red, green, blue) color triplet to specify the color of each dot to display. To change colors properly, you must know the appropriate RGB numbers of the color you wish to use.
+
+For example, PinMAME's default is a yellow'ish color: 
+
+> Red = 255, Green = 224, Blue = 32
+
+For an orange color, you could use:
+
+> Red = 255, Green = 64, Blue = 0
+
+For red dots, you could use: 
+
+> Red = 255, Green = 0, Blue = 0
+
+Experiment with the #'s, until you find colors that look good to you!
+
+### Changing the Intensity of the DMD Dots:
+
+The DMD uses 3 levels of intensity (100%, 66%, 33%) plus an "unlit" state to create graphics on the display. 100% are dots that are fully lit, where as 66%, 33%, 0% will each be darker than the fully lit dot, by a certain percentage.
+
+You can control these percentages yourself to change the appearance of the DMD. You can change the intensities, using `dmd_perc66`, `dmd_perc33` and `dmd_perc0`. You cannot change a fully lit dot's intensity. It must always be 100%.
+
+For example, to make the DMD Dots much closer in intensity, you could adjust the settings to (100%, 90%, 80%), by setting `dmd_perc66` to 90 and `dmd_perc33` to 80. This would result in animations where the contrast between each of the 3 intensity levels would be minimal.
+
+To make the contrast even more drastic, you could use (100%, 50%, 20%),
+by setting `dmd_perc66` to 50 and `dmd_perc33` to 20.
+
+These are just examples to demonstrate the functionality. Using these #'s, would probably not look very good! :)
+
+As with the Colors, experiment with the intensity levels, until you find #'s that look good to you!
+
+### 4-color mode:
+
+It is also possible to specify 4 completely different RGB colors, e.g. for each intensity level separately. This allows for simplistic colorizations of the DMD.
+
+## Sound Command Mode
+
+PinMAME has the ability to let you trigger sound commands manually. This will let you play any sound the pinball game can make. Hit the 'F4' key to turn Sound Command Mode on or off. Follow the instructions on screen to generate sounds.
+
+The sound commander work in two modes:
+
+- **Manual mode** - you enter the commands directly using the arrows. Note that not all Sound Command #'s generate a sound. e.g. many games don't have a sound for command `#01`! Most games require two bytes for each command.
+- **Command mode** - sound commands are read from the "sounds.dat" file and you can scroll thru all available commands with the arrow keys. Look in the sounds.dat for details on hw to use it.
+
+For some games the sound command history is displayed. It can be useful to find out how certain sounds are generated by the hardware.
+
+## Recording Sounds to a Wave File
+
+PinMAME can record the sound output to a wave file for you to play back anytime you want. Hit the 'F5' key to begin recording, and hit 'F5' again, to stop recording. The files are created in the `wave` directory. They begin with the name of the game, plus a #, just like screenshots work.
+
+If you're having trouble, make sure your .cfg file points to a valid directory, and that you have enough free disk space to create the wave.
+
+Note that WAV files can become big quickly. These are not compressed like MP3 files, so you can easily end up with 50MB of WAV files for just a few minutes of recording!
+
+There is also an Automatic Sound Dump functionality: Started via 'F6' and skips automatically to the next sound / creates a new file if there is no sound at all anymore (silence) or the length reaches 4mins. The dump stops automatically after soundcommand 0xFF (=max 256 overall generated sounds).
+
+There is also an altsound CSV created with the dumps. This one can be altered with lucky1's Altsound Editor.
+
+## Recording DMD frames to a Text File
+
+By creating a folder called `DmdDump` inside of the PinMAME folder, one can then use the 'F6' key to start recording DMD frames to a text file. The file is created in the `DmdDump` directory and contains the name of the game.
+
+## Accessing Williams/Bally WPC - Hidden Menu
+
+Did you know that all WPC Machines have a hidden menu?
+
+Yes, it's true. To access it, you must leave the bookkeeping menu while holding down `up` [9] and `down` [8] buttons. i.e. press 'Enter' [0] three times, so that *B1. Main Audits* is flashing as the selected choice. Now hold down `up` [9] and `down` [8] and press `escape` [7].
+
+If you did it correctly, you should see a new choice on the menu:
+
+> EXEC LOCKUPS - B.1 01
+
+Using the normal Up/Down keys you can cycle through the other new choices... Try this on your real machine at home too!
+
+## Known Bugs
+
+See [bugs.txt](release/bugs.txt) for a list of known problems with PinMAME.
+
+## The PinMAME Development Team
+
+- Steve Ellenoff (sellenoff at comcast.net)
+- Tom Haukap (Tom.Haukap at t-online.de)
+- Martin Adrian (wpcmame at hotmail.com)
+- Gerrit Volkenborn (gaston at pinmame.de)
+- Brian Smith (destruk at comcast.net)
+- Thomas Behrens (TomB1709 at gmail.com)
+- Oliver Kaegi (okaegi at freesurf.ch)
+- Matthias Buecher (maddes.b at arcor.de)
+- David Rodriguez (netsplits at yahoo.es)
+- Randall Perlow (rperlow at yahoo.com)
+- Carsten Waechter (toxie at ainc.de)
+
+
+## PinMAME Contributors
+
+- Inkochnito (inkochnito at kpnplanet.nl)
+- Marton Larrosa (marton at mail.com)
+- Jarek Parchanski (jpdev at priv6.onet.pl)
+- Jonathan N. Deitch (jdeitch at litz.org)
+- Dave Roberts (daverob at cwcom.net)
+- Dorsola (dorsola at descent2.com)
+- Johan S (arcadepreserv at hotmail.com)
+- Guru (theguru at emuunlim.com)
+- Martin Wiest (Mr.Startrek at gmx.de)
+- Joep (veld2611 at planet.nl)
+- Jim Hernandez (vidpro1 at netzero.net)
+- Douglas Cope (djcope11 at yahoo.co.uk)
+- Silvio Finotti (silviorf at yahoo.com)
+- Yvon Poulin (darkness21 at globetrotter.net)
+- Pascal Janin (PascalPi1 at aol.com)
+- Daniel Dietrich (3d at data-east.de)
+- Kelley (pinballjail at charter.net)
+- Hans Balk (www.flipperwinkel.nl)
+- TecnoPinball (www.tecnopinball.org)
+- Peter Hall (peter.hall at tele2.ch)
+- Basilio Garcia (basi_garcia at hergar.com)
+- Paulo Branco (paulovtec at gmail.com)
+- Mike Roberts/mjr
+- Rob Raper/djrobx
+
+# Note from the PinMAME Development team
+
+We're working hard to improve this great emulator, and welcome your feedback!! Please do not hesitate to contact us with questions, bug reports, suggestions, code patches, whatever!
