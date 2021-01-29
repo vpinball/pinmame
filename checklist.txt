@@ -5,7 +5,7 @@ Important steps to take before a release:
 - Clean up the repository: Update the pinmame folder, remove sticky tags, commit tested changes.
 - check "whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on.
 - check the date, year and version in all .txt files!
-  (bugs.txt, pinmame.txt, visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
+  (bugs.txt, license.txt (and its copy LICENSE), pinmame.txt (and its derived README.md), visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
 - remove the DEBUG define in the makefile (which is probably not there anyway)!
 - edit "src/version.c" for the correct version number
 - edit "src/ui/PinMAME32.rc" for the correct version number and copyright years
@@ -23,25 +23,23 @@ Important steps to take before a release:
 - execute "mingw32-make" to build PinMAME.
 - Make sure to regenerate gamelist and include it (It's regenerated automatically when building PinMAME, for list including all clones use options '-gamelist -sortname' instead)
 - execute "mingw32-make WINUI=1 SUFFIX=32" to build PinMAME32.
-- build VPinMAME.DLL
+- build VPinMAME.DLL (at least)
 - optionally: do revision tests for compilation with all supported environments (MinGW/GCC, etc.)
 
 #3 Tag repository
 - Tag the new version
-  svn copy https://svn.code.sf.net/p/pinmame/code/trunk https://svn.code.sf.net/p/pinmame/code/tags/release_x_y -m "Tag release X.Y"
 
 #4 Create zip packages
 - Pack everything together nicely, using max. compression
 - Make sure all default folders are included in the VPM zip
   (these are: artwork, cfg, hi, ini, inp, memcard, nvram, roms, samples, snap, sta, wave)
-  svn export https://svn.code.sf.net/p/pinmame/code/tags/release_x_y/release
-- Make sure MAME license is in all released zips
+- Make sure license is in all released zips
 
 If anything of the above fails, forget about a release and correct the errors first!
 If it worked out ok, however, do a release!
 
 #5 Release
-- Upload the zips to sourceforge.net
+- Upload the zips to github
 - Release it to VPForums' upload page, and tell all the forum people what has happened!
 - Shut down your computer! Go and have a drink. You deserve one now!
 - 12 hours later, check back the forum for the first terrible errors we forgot to fix!

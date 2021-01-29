@@ -45,7 +45,7 @@ Before you start to add the ROMs from your favorite pinball machine please note:
 - Note however, that you can still activate switches with your keyboard, see the display animations,
 and listen to/record the pinball game sounds with the pure PinMAME package itself.
 
-## Games supported (a bit outdated, at least since version 2.1 :/ )
+## Games supported
 
 - *Williams/Bally WPC* - All games from Dr. Dude (1990) to Cactus Canyon (1998)
 - *Williams/Bally System 11* - All games from High Speed (1986) to Dr.Dude (1990)
