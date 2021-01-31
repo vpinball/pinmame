@@ -34,6 +34,11 @@
 
 #include "fileio.h"
 
+#ifdef UNIX
+FILE *stdout_file;
+FILE *stderr_file;
+#endif
+
 #ifdef MESS
 #include "image.h"
 #endif
@@ -224,7 +229,7 @@ static void create_path(TCHAR *path, int has_filename)
 		return;
 
 #ifdef VERBOSE
-	printf("create_path(): creating path - path=%s, has_filename=%d", path, has_filename);
+	printf("create_path(): creating path - path=%s, has_filename=%d\n", path, has_filename);
 #endif
 
 	/* create the path */
@@ -581,7 +586,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 	/* compose the full path */
 	compose_path(fullpath, pathtype, pathindex, filename);
 #ifdef VERBOSE
-	printf("osd_fopen(): access=%08X, fullpath=%s", access, fullpath);
+	printf("osd_fopen(): access=%08X, fullpath=%s\n", access, fullpath);
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -601,7 +606,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 	if (file->handle == INVALID_HANDLE_VALUE) {
 		if (!(access & O_WRONLY) || errno != ENOENT) {
-			printf("osd_fopen(): unable to open");
+			printf("osd_fopen(): unable to open\n");
 			return NULL;
 		}
 #endif
@@ -617,7 +622,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 		/* if that doesn't work, we give up */
 		if (file->handle == INVALID_HANDLE_VALUE) {
 #ifdef VERBOSE
-			printf("osd_fopen(): unable to open");
+			printf("osd_fopen(): unable to open\n");
 #endif
 			return NULL;
 		}
@@ -841,9 +846,9 @@ void osd_fclose(osd_file *file)
 int osd_display_loading_rom_message(const char *name,struct rom_load_data *romdata)
 {
 	if (name)
-		fprintf(stdout, "osd_display_loading_rom_message(): loading %-12s...", name);
+		fprintf(stdout, "osd_display_loading_rom_message(): loading %-12s...\n", name);
 	else
-		fprintf(stdout, "osd_display_loading_rom_message():");
+		fprintf(stdout, "osd_display_loading_rom_message():\n");
 	fflush(stdout);
 
 	return 0;

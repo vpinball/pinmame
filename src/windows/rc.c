@@ -589,7 +589,7 @@ static void rc_real_print_help(struct rc_option *option, FILE *f)
                (option[i].shortname && (option[i].type == rc_bool))? "[no]":"",
                (option[i].shortname)? option[i].shortname:"",
                type_name[option[i].type]);
-            fprint_colums(f, buf,
+            fprint_columns(f, buf,
                (option[i].help)? option[i].help:"no help available");
       }
    }

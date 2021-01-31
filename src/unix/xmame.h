@@ -192,7 +192,7 @@ extern struct rc_option sound_opts[];
 extern struct rc_option input_opts[];
 extern struct rc_option network_opts[];
 extern struct rc_option fileio_opts[];
-extern struct rc_option frontend_list_opts[];
+extern struct rc_option frontend_opts[];
 extern struct rc_option frontend_ident_opts[];
 
 #undef EXTERN

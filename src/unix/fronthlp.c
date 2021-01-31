@@ -34,7 +34,7 @@ enum {
 /* Mame frontend interface & commandline */
 /* parsing rountines by Maurizio Zanello */
 
-struct rc_option frontend_list_opts[] = {
+struct rc_option frontend_opts[] = {
 	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ "Frontend Related", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "list", "l", rc_set_int, &list, NULL, LIST_LIST, 0, NULL, "List supported games matching gamename, or all, gamename may contain * and ? wildcards" },
@@ -142,7 +142,7 @@ int strwildcmp(const char *sp1, const char *sp2)
 		if (s2[i] == '?' && s1[i] != '?') s2[i] = s1[i];
 	}
 
-	return stricmp(s1, s2);
+	return strcasecmp(s1, s2);
 }
 
 static int myprintf(char *fmt, ...)
@@ -158,6 +158,11 @@ static int myprintf(char *fmt, ...)
 		fflush(stdout_file);
 	}
 	return i;
+}
+
+int frontend_help (const char *gamename)
+{
+	return 0;
 }
 
 static void frontend_verify(int driver, int rom)

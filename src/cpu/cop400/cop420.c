@@ -40,7 +40,7 @@ typedef struct {
 	void (*function) (void);
 }	s_opcode;
 
-static COP420_Regs R;
+COP420_Regs R;
 int    cop420_ICount;
 
 static int InstLen[256];
