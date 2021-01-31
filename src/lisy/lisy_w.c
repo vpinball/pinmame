@@ -156,9 +156,13 @@ unsigned char swMatrixLISY_W[9] = { 0,0,0,0,0,0,0,0,0 };
 
 //internal flag fo AC Relais, default 0 ->not present
 unsigned char lisy_has_AC_Relais = 0;
-//special rouines needed for RoadKings
-unsigned char lisy_is_RoadKings = 0;
+//internal flag fo SS Relais, default 0 ->not present ( RoadKings only)
+unsigned char lisy_has_SS_Relais = 0;
 
+//internal for lisy_w.c
+//to have an delayed nvram write
+//initial to 1 to save nvram in case of not exiting at star ( Factory Reset Message)
+static unsigned char want_to_write_nvram = 1;
 
 //init SW portion of lisy_w
 void lisy_w_init( void )
@@ -180,6 +184,8 @@ else if (strcmp(lisymini_game.type,"SYS9") == 0) lisymini_game.typeno = LISYW_TY
 else if (strcmp(lisymini_game.type,"SYS11") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11;
 else if (strcmp(lisymini_game.type,"SYS11RK") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11RK; //Road Kings;
 else if (strcmp(lisymini_game.type,"SYS11A") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11A;
+else if (strcmp(lisymini_game.type,"SYS11B") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11B;
+else if (strcmp(lisymini_game.type,"SYS11C") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11C;
 else lisymini_game.typeno = LISYW_TYPE_NONE;
 
 //set internal flags based on system type
@@ -193,11 +199,11 @@ switch(lisymini_game.typeno)
 		lisy_has_AC_Relais = 0;	
 		break;
 	case LISYW_TYPE_SYS11RK: 			//Road Kings is first game with AC Relais
-		//lisy_has_AC_Relais = 1;                       //but has different numbering then later SYS11A
-		lisy_is_RoadKings = 1;
-		lisy_has_AC_Relais = 0; //RTH for first test
-		break;
+		lisy_has_SS_Relais = 1;                 //but has different numbering then later SYS11A
+		break;					//it is Sol#12  and is called Solenoid Select Relais
 	case LISYW_TYPE_SYS11A: 
+	case LISYW_TYPE_SYS11B: 
+	case LISYW_TYPE_SYS11C: 
 		lisy_has_AC_Relais = 1;	
 		break;
 	default : 
@@ -252,6 +258,24 @@ if (first)
   //store start time first, which is number of microseconds since wiringPiSetup (wiringPI lib)
   last = micros();
  }
+
+ //do some usefull stuff
+ //do we need to write to nvram?
+ if ( want_to_write_nvram )
+ {
+     if ( lisy_timer( 3000, 0, 3)) //three seconds delay
+      {
+        lisy_timer( 0, 1, 3); //reset timer
+        want_to_write_nvram = 0;
+        lisy_nvram_write_to_file();
+        //debug
+        if ( ls80dbg.bitv.basic )
+        {
+         lisy80_debug("timer experid, nvram delayed write");
+        }
+      }
+ }
+
 
  // if we are faster than throttle value which 
  //is per default 3000 usec (3 msec)
@@ -395,33 +419,31 @@ char my_seg2char( UINT16 segvalue )
 
 //send ASCII characters o display
 //use my_seg2char routine to translate williams 7segment to ASCII
-void send_ASCII_to_display( int no, UINT16 *dispval)
+void send_ASCII_to_display( int no, int len, UINT16 *dispval)
 {
  int i;
- char str[8]; //include null termination
+ char str[20]; //include null termination
 
- if (no) { for(i=0; i<=6; i++) str[i] = my_seg2char( dispval[i]); str[7] = '\0'; }
- else { for(i=0; i<=3; i++) str[i] = my_seg2char( dispval[i]); str[5] = '\0'; } //status display
+ for(i=0; i<=len-1; i++) str[i] = my_seg2char( dispval[i]);
+ str[len] = '\0';
 
  lisy_api_send_str_to_disp(no, str);
 
 }
 
 //send SEG7 data to display
-void send_SEG7_to_display( int no, UINT16 *dispval)
+void send_SEG7_to_display( int no, int len, UINT16 *dispval)
 {
 
- if (no) { lisy_api_send_SEG7_to_disp(no, 7, dispval);  }
- else { lisy_api_send_SEG7_to_disp(no, 4, dispval); } //status display
+ lisy_api_send_SEG7_to_disp(no, len, dispval);
 
 }
 
 //send SEG14 data to display
-void send_SEG14_to_display( int no, UINT16 *dispval)
+void send_SEG14_to_display( int no, int len, UINT16 *dispval)
 {
 
- if (no) { lisy_api_send_SEG14_to_disp(no, 7, dispval);  }
- else { lisy_api_send_SEG14_to_disp(no, 4, dispval); } //status display
+ lisy_api_send_SEG14_to_disp(no, len, dispval);
 
 }
 
@@ -452,10 +474,10 @@ void lisy_w_display_handler_SYS7(void)
     memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
     //check it display per display
     len = sizeof(mysegments.disp.player1);
-    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, tmp_segments.disp.player1);
-    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, tmp_segments.disp.player2);
-    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, tmp_segments.disp.player3);
-    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, tmp_segments.disp.player4);
+    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len, tmp_segments.disp.player1);
+    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len, tmp_segments.disp.player2);
+    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len, tmp_segments.disp.player3);
+    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len, tmp_segments.disp.player4);
     //status display
     sum1 = tmp_segments.disp.balls1 + tmp_segments.disp.balls2 + tmp_segments.disp.credits1 + tmp_segments.disp.credits2;
     sum2 = mysegments.disp.balls1 + mysegments.disp.balls2 + mysegments.disp.credits1 + mysegments.disp.credits2;
@@ -465,7 +487,7 @@ void lisy_w_display_handler_SYS7(void)
 	 status[1]=tmp_segments.disp.credits2;
 	 status[2]=tmp_segments.disp.balls1;
 	 status[3]=tmp_segments.disp.balls2;
-	 send_ASCII_to_display(0, status);
+	 send_ASCII_to_display(0, 4, status);
 	}
     //remember it
     memcpy(mysegments.segments,coreGlobals.segments,sizeof(mysegments));
@@ -541,10 +563,10 @@ void lisy_w_display_handler_SYS9(void)
     memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
     //check it display per display
     len = sizeof(mysegments.disp.player1);
-    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, tmp_segments.disp.player1);
-    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, tmp_segments.disp.player2);
-    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, tmp_segments.disp.player3);
-    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, tmp_segments.disp.player4);
+    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len, tmp_segments.disp.player1);
+    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len, tmp_segments.disp.player2);
+    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len, tmp_segments.disp.player3);
+    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len, tmp_segments.disp.player4);
     //status display
     sum1 = tmp_segments.disp.balls1 + tmp_segments.disp.balls2 + tmp_segments.disp.credits1 + tmp_segments.disp.credits2;
     sum2 = mysegments.disp.balls1 + mysegments.disp.balls2 + mysegments.disp.credits1 + mysegments.disp.credits2;
@@ -554,7 +576,7 @@ void lisy_w_display_handler_SYS9(void)
 	 status[1]=tmp_segments.disp.credits2;
 	 status[2]=tmp_segments.disp.balls1;
 	 status[3]=tmp_segments.disp.balls2;
-	 send_ASCII_to_display(0, status);
+	 send_ASCII_to_display(0, 4, status);
 	}
     //remember it
     memcpy(mysegments.segments,coreGlobals.segments,sizeof(mysegments));
@@ -635,12 +657,10 @@ void lisy_w_display_handler_SYS11A(void)
     memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
     //check it display per display
     len = sizeof(mysegments.disp.player1);
-    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_SEG14_to_display(1, tmp_segments.disp.player1);
-    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_SEG14_to_display(2, tmp_segments.disp.player2);
-    //if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, tmp_segments.disp.player3);
-    //if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, tmp_segments.disp.player4);
-    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_SEG7_to_display(3, tmp_segments.disp.player3);
-    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_SEG7_to_display(4, tmp_segments.disp.player4);
+    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_SEG14_to_display(1, len/2, tmp_segments.disp.player1);
+    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_SEG14_to_display(2, len/2, tmp_segments.disp.player2);
+    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_SEG7_to_display(3, len/2, tmp_segments.disp.player3);
+    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_SEG7_to_display(4, len/2, tmp_segments.disp.player4);
     //status display
     sum1 = tmp_segments.disp.balls1 + tmp_segments.disp.balls2 + tmp_segments.disp.credits1 + tmp_segments.disp.credits2;
     sum2 = mysegments.disp.balls1 + mysegments.disp.balls2 + mysegments.disp.credits1 + mysegments.disp.credits2;
@@ -650,7 +670,7 @@ void lisy_w_display_handler_SYS11A(void)
 	 status[1]=tmp_segments.disp.credits2;
 	 status[2]=tmp_segments.disp.balls1;
 	 status[3]=tmp_segments.disp.balls2;
-	 send_ASCII_to_display(0, status);
+	 send_ASCII_to_display(0, 4, status);
 	}
     //remember it
     memcpy(mysegments.segments,coreGlobals.segments,sizeof(mysegments));
@@ -716,6 +736,112 @@ UINT16 rt;
   }
 }
 
+/*
+********   SYSTEM 11C  *************
+s11.h:#define s11_dispS11c  s11_dispS11b2
+
+const struct core_dispLayout s11_dispS11b2[] = {
+  DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
+};
+
+core.h:#define CORE_SEG16    0 // 16 segments
+core.h:#define DISP_SEG_16(row,type)    {4*row, 0, 20*row, 16, type}
+
+from core.h
+struct core_dispLayout {
+  UINT16 top, left, start, length, type;
+
+results in:
+Row 1: 0
+Row 2: 20
+*/
+
+ typedef union {
+       core_tSeg segments;
+       //assigment accoring to s11games.c & core.c/.h see above
+       struct {
+          UINT16 row1[16]; //0..15
+          UINT16 dum1[4]; //16..19
+          UINT16 row2[16]; //20..35
+          UINT16 dum2[CORE_SEGCOUNT-36]; //the rest
+      } disp;
+  } t_mysegments_s11C;
+
+
+//display handler System11C
+void lisy_w_display_handler_SYS11C(void)
+{
+  static UINT8 first = 1;
+  UINT8 i,k;
+  int len;
+
+
+  static t_mysegments_s11C mysegments;
+  t_mysegments_s11C tmp_segments;
+
+  if(first)
+  {
+        memset(mysegments.segments,0,sizeof(mysegments.segments));
+	//for system11C display 1&2 are SEG14, we keep status display as ASCII
+	lisy_api_display_set_prot(1,4);
+	lisy_api_display_set_prot(2,4);
+	first=0;
+  }
+ 
+  //something changed?
+  if  ( memcmp(mysegments.segments,coreGlobals.segments,sizeof(mysegments)) != 0)
+  {
+    //store it
+    memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
+    //check it display per display
+    len = sizeof(mysegments.disp.row1);
+    if( memcmp( tmp_segments.disp.row1,mysegments.disp.row1,len) != 0) send_SEG14_to_display(1, len/2, tmp_segments.disp.row1);
+    if( memcmp( tmp_segments.disp.row2,mysegments.disp.row2,len) != 0) send_SEG14_to_display(2, len/2, tmp_segments.disp.row2);
+
+    //remember it
+    memcpy(mysegments.segments,coreGlobals.segments,sizeof(mysegments));
+
+    //and print out if debug display
+    if ( ls80dbg.bitv.displays ) 
+    {
+char c;
+UINT16 rt;
+    fprintf(stderr,"\nrow1: ");
+    for(i=0; i<=15; i++) 
+    {
+      rt = mysegments.disp.row1[i];
+      fprintf(stderr,"0x%04x ",rt);
+    }
+//test RTH print chars
+    fprintf(stderr,"\nrow1: ");
+    for(i=0; i<=15; i++)
+    {
+      c=my_seg14_2char(mysegments.disp.row1[i]);
+      fprintf(stderr,"%c",c);
+    }
+
+    fprintf(stderr,"\nrow2: ");
+    for(i=0; i<=15; i++)
+    {
+      rt = mysegments.disp.row2[i];
+      fprintf(stderr,"0x%04x ",rt);
+    }
+//test RTH print chars
+    fprintf(stderr,"\nrow2: ");
+    for(i=0; i<=15; i++)
+    {
+      c=my_seg14_2char(mysegments.disp.row2[i]);
+      fprintf(stderr,"%c",c);
+
+    }
+
+    fprintf(stderr,"\n\n ");
+
+   } //debug
+    //check which line has changed
+  }
+}
+
 
 //display handler
 //we switch here according to system type
@@ -733,7 +859,11 @@ void lisy_w_display_handler(void)
   case LISYW_TYPE_SYS11: 
   case LISYW_TYPE_SYS11A: 
   case LISYW_TYPE_SYS11RK: 
+  case LISYW_TYPE_SYS11B: 
 	lisy_w_display_handler_SYS11A();
+       break;
+  case LISYW_TYPE_SYS11C: 
+	lisy_w_display_handler_SYS11C();
        break;
  }
 }
@@ -768,6 +898,8 @@ if (first)
  		core_setSw( S7_SWUPDN, lisy_api_get_switch_status(73) );
                 break;
         case LISYW_TYPE_SYS11A:
+        case LISYW_TYPE_SYS11B:
+        case LISYW_TYPE_SYS11C:
  		core_setSw( S11_SWADVANCE, lisy_api_get_switch_status(72) );
  		core_setSw( S11_SWUPDN, lisy_api_get_switch_status(73) );
                 break;
@@ -836,6 +968,8 @@ if ( ret == 72) {
         case LISYW_TYPE_SYS11:
         case LISYW_TYPE_SYS11RK:
         case LISYW_TYPE_SYS11A:
+        case LISYW_TYPE_SYS11B:
+        case LISYW_TYPE_SYS11C:
           core_setSw( S11_SWADVANCE, action );
           if ( ls80dbg.bitv.switches )
           {
@@ -862,6 +996,8 @@ if ( ret == 73) {
         case LISYW_TYPE_SYS11:
         case LISYW_TYPE_SYS11RK:
         case LISYW_TYPE_SYS11A:
+        case LISYW_TYPE_SYS11B:
+        case LISYW_TYPE_SYS11C:
           core_setSw( S11_SWUPDN, action );
           if ( ls80dbg.bitv.switches )
           {
@@ -939,7 +1075,7 @@ if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
 void lisy_w_solenoid_handler( void )
 {
 
-int i,j,sol_no;
+int i,j,sol_no,real_sol;
 static UINT32 mysol=0;
 int mux_sol_active = 0;
 uint8_t action;
@@ -947,7 +1083,9 @@ uint8_t action;
 //this is needed as we sometimes in pinmame have a ac select
 //activation too early (see also PROC code in s11.c)
 static uint8_t ac_want_to_change = 0; //1== action 0; 2==action 2
+static uint8_t ss_want_to_change = 0; //1== action 0; 2==action 2
 static uint8_t current_ac_state = 0;
+static uint8_t current_ss_state = 0;
 
 //did something changed?
 if ( mysol != coreGlobals.solenoids)
@@ -963,13 +1101,46 @@ if ( mysol != coreGlobals.solenoids)
 	//sol number starts with 1
         sol_no = i+1;
 
-	//in case of Solenoid 14 (AC Relais)
+	//in case of Solenoid 14 (AC Relais) or Solenoid 12 (SS Relais)
         //check if one of the multiplexed sols are still active
-        // (RTH: TODO need another routine for Road Kings)
+
+	//Sol 12 version (Sys11 Roadkings)
+	if ( ( sol_no == 12) & (lisy_has_SS_Relais == 1) )
+	{
+	  //lets check if any of the muxed solenoids are active now
+	  //in pinmame these are 5,13,14,15 ( SS-relais 0) and 25..28 ( SS-relais 1)
+	  //for checking we have to substract 1 !
+	  if ( CHECK_BIT(coreGlobals.solenoids,4)) mux_sol_active++;
+	  for(j=12; j<=14; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
+	  for(j=24; j<=27; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
+          //no muxed solenoid active, activate ss relais
+	  if (mux_sol_active == 0) 
+	    {
+	      lisy_api_sol_ctrl(12,action);
+	      current_ss_state = action;
+	      if ( ls80dbg.bitv.coils )
+		{
+                  sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: SS-Relais changed to %d",action);
+                  lisy80_debug(debugbuf);
+	        }
+	    }
+	  else //we have active solenoids, ss relais needs to be delayd
+	   {
+	        ss_want_to_change = action + 1; //just remember for next round
+	        if ( ls80dbg.bitv.coils )
+		{
+                  sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: SS-Relais wants change to %d, DELAYED due %d active muxed Solenoids",mux_sol_active,action);
+                  lisy80_debug(debugbuf);
+	        }
+	   }
+	}//sol == 12 and SS_Relais present
+
+	//Sol 14 version (Sys11 after Roadkings)
 	if ( ( sol_no == 14) & (lisy_has_AC_Relais == 1) )
 	{
 	  //lets check if any of the muxed solenoids are active now
-	  //in pinmame these are 1..8 ( AC-relais 0) and 25..33 ( AC-relais 1)
+	  //in pinmame these are 1..8 ( AC-relais 0) and 25..32 ( AC-relais 1)
+	  //for checking we have to substract 1 !
 	  for(j=0; j<=7; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
 	  for(j=24; j<=31; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
           //no muxed solenoid active, activate ac relais
@@ -992,43 +1163,104 @@ if ( mysol != coreGlobals.solenoids)
                   lisy80_debug(debugbuf);
 	        }
 	   }
-	}//sol == 14	
+	}//sol == 14 and AC_Relais present
 
-        //for ac relais (sol 14) we have special routine (see above)
+        //for AC and SS relais (sol 14 and 12) we have special routine (see above)
 	//special solenoids, we with HW rules only by ignoring special switches 65 ... 70
 	//if the pinball (e.g. pinbot) is using special solenoids 'normal' we do it here
 	if (lisy_has_AC_Relais == 1)
 	  {
         	if ( ( sol_no != 14) &( sol_no <= 22 )) lisy_api_sol_ctrl(sol_no,action);
 	  }
+	else if (lisy_has_SS_Relais == 1)
+	  {
+        	if ( ( sol_no != 12) &( sol_no <= 22 )) lisy_api_sol_ctrl(sol_no,action);
+	  }
 	else
 	  {
-		//include sol 14 for systems without AC Relais
+		//include sol 14 and Sol 12  for systems without AC or SS Relais
         	if ( sol_no <= 22 ) lisy_api_sol_ctrl(sol_no,action);
 	  }
 
         //in case we hav solenoid #23, also activate #24 on APC
         //as APC use two solenoids for flipper (left/right)
-        if (sol_no == 23 ) { lisy_api_sol_ctrl(23,action); lisy_api_sol_ctrl(24,action); }
-	//for games without AC Relais Williams use Sol 25 for flipper enable
-        if ( (sol_no == 25 ) & (lisy_has_AC_Relais == 0)) { lisy_api_sol_ctrl(23,action); lisy_api_sol_ctrl(24,action); }
+        if (sol_no == 23 ) { 
+		lisy_api_sol_ctrl(23,action);
+		lisy_api_sol_ctrl(24,action);
+		lisy_nvram_write_to_file();
+			 }
 
-	//with A-C Relais Solenoids 1..8 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..33
+	//for games without AC or SS Relais Williams use Sol 25 for flipper enable
+        if ( (sol_no == 25 ) & (lisy_has_AC_Relais == 0) & (lisy_has_SS_Relais == 0) ) {
+		 lisy_api_sol_ctrl(23,action);
+		 lisy_api_sol_ctrl(24,action);
+		 lisy_nvram_write_to_file();
+			 }
+
+	//with A-C Relais Solenoids 1..8 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..32
         //so we need to substract 24 before sending command to APC
 	if (( sol_no >=25) & (lisy_has_AC_Relais == 1)) { lisy_api_sol_ctrl(sol_no-24,action); }
 
-        //debug?
-        if ( ( ls80dbg.bitv.coils ) & ( sol_no != 14))
+	//with Solenoid Select (SS) Relais Solenoids 5,13,14,15 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..28
+        //so we need to substract before sending command to APC
+	if (( sol_no >=25) & ( lisy_has_SS_Relais == 1))
+	 { 
+                if (sol_no == 25 ) { real_sol = 5; lisy_api_sol_ctrl(real_sol,action); }
+                else if (sol_no == 26 ) { real_sol = 13; lisy_api_sol_ctrl(real_sol,action); }
+                else if (sol_no == 27 ) { real_sol = 14; lisy_api_sol_ctrl(real_sol,action); }
+                else if (sol_no == 28 ) { real_sol = 15; lisy_api_sol_ctrl(real_sol,action); }
+	 }
+
+        //debug? 
+        if ( ls80dbg.bitv.coils )
+	{
+        if ( ( sol_no != 14) & ( lisy_has_AC_Relais == 1))
         {
-	  if ( ( sol_no < 25)& (lisy_has_AC_Relais == 1))
+	  if ( sol_no < 25)
            { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( AC is %d)",sol_no,action,current_ac_state); }
-	  else if ( ( sol_no >=  25)& (lisy_has_AC_Relais == 1))
-          { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d(%d), changed to %d ( AC is %d)",sol_no-24,sol_no,action,current_ac_state); }
-          else
-          { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( no AC Relais) ",sol_no,action); }
+	  else
+           { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d(%d), changed to %d ( AC is %d)",sol_no-24,sol_no,action,current_ac_state); }
 
            lisy80_debug(debugbuf);
          }
+        else if ( ( sol_no != 12) & ( lisy_has_SS_Relais == 1))
+        {
+          if ( sol_no < 25)
+           { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( SS is %d)",sol_no,action,current_ss_state); }
+          else
+           { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d(%d), changed to %d ( SS is %d)",real_sol,sol_no,action,current_ss_state); }
+
+         }
+        else 
+           { 
+		if ( ( lisy_has_AC_Relais == 0) & ( lisy_has_SS_Relais == 0) )
+		sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( no AC or SS  Relais) ",sol_no,action); 
+	   }
+
+        lisy80_debug(debugbuf);
+
+	}
+
+	//do we have a delayd ss activation from last round?
+	if (ss_want_to_change != 0)
+	{
+	      //is it now save to activate?
+              if ( CHECK_BIT(coreGlobals.solenoids,4)) mux_sol_active++;
+              for(j=12; j<=14; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
+              for(j=24; j<=27; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
+	      if (mux_sol_active == 0)
+		{
+	          lisy_api_sol_ctrl(12,ss_want_to_change-1); 
+                  if ( ls80dbg.bitv.coils )
+                  {
+                    sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: SS-Relais DELAYD change to %d",ss_want_to_change-1);
+                    lisy80_debug(debugbuf);
+                  }
+		  current_ss_state = ss_want_to_change-1;
+		  ss_want_to_change = 0; //reset flag
+		}
+	 mux_sol_active = 0; //reset counter
+	}
 
 	//do we have a delayd ac activation from last round?
 	if (ac_want_to_change != 0)
@@ -1049,6 +1281,7 @@ if ( mysol != coreGlobals.solenoids)
 		}
 	 mux_sol_active = 0; //reset counter
 	}
+
       }//something changed
      }//for
    //store it for next call

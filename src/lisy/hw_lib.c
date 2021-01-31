@@ -235,8 +235,8 @@ void lisyapc_hwlib_init( void )
  //lets do debug
  if (ls80dbg.bitv.basic) lisy80_debug("LISY APC Hardware init start");
 
- //fix for LISYmini at the moment
- lisy_hardware_revision = LISY_HW_LISY_W;
+ //set value for Hardware
+ lisy_hardware_revision = LISY_HW_LISY_APC;
 
  //get value of k3 dip;
  //3 == no options active
@@ -260,30 +260,6 @@ void lisyapc_hwlib_init( void )
  //make sure  connected hardware ID is APC
  ret = lisy_api_check_con_hw( "APC" );
  fprintf(stderr,"Info: check ID for 'APC' returns %d\n",ret);
-
- //now get debug options
- if (ls80dbg.bitv.basic)
- { 
-   K1_debug_values = lisyapc_get_dip("K1");
-
-   sprintf(debugbuf,"LISY APC basic DEBUG activ, APC optionbyte is: %d",K1_debug_values);
-   lisy80_debug(debugbuf);
-
-   //debug options are coming from switch APC, adaption needed
-   ls80dbg.bitv.displays = CHECK_BIT( K1_debug_values, 0);
-   ls80dbg.bitv.switches = CHECK_BIT( K1_debug_values, 1);
-   ls80dbg.bitv.lamps = CHECK_BIT( K1_debug_values, 2);
-   ls80dbg.bitv.coils = CHECK_BIT( K1_debug_values, 3);
-   ls80dbg.bitv.sound = CHECK_BIT( K1_debug_values, 4);
-
-
-   if ( ls80dbg.bitv.displays ) lisy80_debug("LISY80 DEBUG activ for displays");
-   if ( ls80dbg.bitv.switches ) lisy80_debug("LISY80 DEBUG activ for switches");
-   if ( ls80dbg.bitv.lamps ) lisy80_debug("LISY80 DEBUG activ for lamps");
-   if ( ls80dbg.bitv.coils ) lisy80_debug("LISY80 DEBUG activ for coils");
-   if ( ls80dbg.bitv.sound ) lisy80_debug("LISY80 DEBUG activ for sound");
-   }
-   else ls80dbg.byte = 0; 
 
  //do some debug output if requested
  //number of displays
@@ -862,9 +838,20 @@ if ( lisy_hardware_revision == 311 )
   ls80opt.bitv.debug = ~digitalRead(LISY80_HW311_DIP1_S7);
   ls80opt.bitv.autostart = ~digitalRead(LISY80_HW311_DIP1_S8);
 }
-else if ( lisy_hardware_revision == 121 )  //lisy mini
+else if ( lisy_hardware_revision == LISY_HW_LISY_W )  //lisy mini
 {
  ls80opt.byte = lisymini_get_dip("S1");
+}
+else if ( lisy_hardware_revision == LISY_HW_LISY_APC )  //lisy integrated on APC
+{
+   K1_debug_values = lisyapc_get_dip("K1");
+
+   //debug options are coming from switch APC, adaption needed
+   if ( CHECK_BIT( K1_debug_values, 0)) ls80dbg.bitv.displays = 1; else ls80dbg.bitv.displays = 0;
+   if ( CHECK_BIT( K1_debug_values, 1)) ls80dbg.bitv.switches = 1; else ls80dbg.bitv.switches = 0;
+   if ( CHECK_BIT( K1_debug_values, 2)) ls80dbg.bitv.lamps = 1; else ls80dbg.bitv.lamps = 0;
+   if ( CHECK_BIT( K1_debug_values, 3)) ls80dbg.bitv.coils = 1; else ls80dbg.bitv.coils = 0;
+   if ( CHECK_BIT( K1_debug_values, 4)) ls80dbg.bitv.sound = 1; else ls80dbg.bitv.sound = 0;
 }
 else
 {
@@ -890,29 +877,32 @@ else
 //in debug mode be verbose
 if (ls80dbg.bitv.basic == 1 )
  {
-  if (ls80opt.bitv.freeplay ) lisy80_debug("LISY80 option: Freeplay");
-  if (ls80opt.bitv.JustBoom_sound ) lisy80_debug("LISY80 option: JustBoom_sound");
-  if (ls80opt.bitv.watchdog ) lisy80_debug("LISY80 option: watchdog");
-  if (ls80opt.bitv.sevendigit ) lisy80_debug("LISY80 option: seven digit");
-  if (ls80opt.bitv.slam ) lisy80_debug("LISY80 option: slam");
-  if (ls80opt.bitv.test ) lisy80_debug("LISY80 option: test");
-  if (ls80opt.bitv.debug ) lisy80_debug("LISY80 option: debug");
-  if (ls80opt.bitv.autostart ) lisy80_debug("LISY80 option: autostart");
+  if (ls80opt.bitv.freeplay ) lisy80_debug("LISY option: Freeplay");
+  if (ls80opt.bitv.JustBoom_sound ) lisy80_debug("LISY option: JustBoom_sound");
+  if (ls80opt.bitv.watchdog ) lisy80_debug("LISY option: watchdog");
+  if (ls80opt.bitv.sevendigit ) lisy80_debug("LISY option: seven digit");
+  if (ls80opt.bitv.slam ) lisy80_debug("LISY option: slam");
+  if (ls80opt.bitv.test ) lisy80_debug("LISY option: test");
+  if (ls80opt.bitv.debug ) lisy80_debug("LISY option: debug");
+  if (ls80opt.bitv.autostart ) lisy80_debug("LISY option: autostart");
  }
 
 
 
 //debug options are coming from switch PIC
-ls80dbg.byte |= K1_debug_values;
+if ( lisy_hardware_revision != LISY_HW_LISY_APC )  //not for lisy integrated on APC
+ {
+   ls80dbg.byte |= K1_debug_values;
+ }
 
 //in debug mode be verbose
 if (ls80dbg.bitv.basic == 1 )
 {
- if ( ls80dbg.bitv.displays ) lisy80_debug("LISY80 DEBUG activ for displays");
- if ( ls80dbg.bitv.switches ) lisy80_debug("LISY80 DEBUG activ for switches");
- if ( ls80dbg.bitv.lamps ) lisy80_debug("LISY80 DEBUG activ for lamps");
- if ( ls80dbg.bitv.coils ) lisy80_debug("LISY80 DEBUG activ for coils");
- if ( ls80dbg.bitv.sound ) lisy80_debug("LISY80 DEBUG activ for sound");
+ if ( ls80dbg.bitv.displays ) lisy80_debug("LISY DEBUG activ for displays");
+ if ( ls80dbg.bitv.switches ) lisy80_debug("LISY DEBUG activ for switches");
+ if ( ls80dbg.bitv.lamps ) lisy80_debug("LISY DEBUG activ for lamps");
+ if ( ls80dbg.bitv.coils ) lisy80_debug("LISY DEBUG activ for coils");
+ if ( ls80dbg.bitv.sound ) lisy80_debug("LISY DEBUG activ for sound");
 }
 else ls80dbg.byte = 0;  //override settings from stiftleiste, in case S2 is set to OFF, no debug
 
@@ -959,7 +949,7 @@ void lisy80_set_red_led( int value )
  if ( status != value)
  {
   if ( lisy_hardware_revision == 311) dum = LISY80_HW311_LED_RED; 
-  else if ( lisy_hardware_revision == LISY_HW_LISY_W) dum = LISY_MINI_LED_RED; 
+  else if (( lisy_hardware_revision == LISY_HW_LISY_W) | ( lisy_hardware_revision == LISY_HW_LISY_APC)) dum = LISY_MINI_LED_RED; 
   else  dum = LISY80_HW320_LED_RED;
 
   digitalWrite (dum, value);
@@ -975,7 +965,7 @@ void lisy80_set_yellow_led( int value )
 void lisy80_set_green_led( int value )
 {
 int dum;
- if ( lisy_hardware_revision == LISY_HW_LISY_W) dum = LISY_MINI_LED_GREEN; 
+ if (( lisy_hardware_revision == LISY_HW_LISY_W) | ( lisy_hardware_revision == LISY_HW_LISY_APC)) dum = LISY_MINI_LED_GREEN; 
  else  dum = LISY80_LED_GREEN;
 
  digitalWrite (dum, value);

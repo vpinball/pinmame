@@ -66,7 +66,7 @@ void lisy_shutdown(void)
     lisy1_shutdown( );
  else if ( lisy_hardware_revision == 350 )
     lisy35_shutdown( );
- else if ( lisy_hardware_revision == LISY_HW_LISY_W )
+ else if ( ( lisy_hardware_revision == LISY_HW_LISY_W ) | ( lisy_hardware_revision == LISY_HW_LISY_APC ))
     lisy_mini_shutdown( );
  else
     lisy80_shutdown( );
@@ -274,7 +274,6 @@ void lisy_sound_handler( unsigned char board, unsigned char data )
 {
 
 //first tests
-if ( lisy_hardware_revision == LISY_HW_LISY_W)
+if ( ( lisy_hardware_revision == LISY_HW_LISY_W) | ( lisy_hardware_revision == LISY_HW_LISY_APC))
   lisy_w_sound_handler(board, data);
 }
-      
