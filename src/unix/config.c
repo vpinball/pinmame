@@ -137,7 +137,7 @@ static struct rc_option opts[] = {
 	{ "debug", "d", rc_bool, &options.mame_debug, NULL, 0, 0, NULL, "Enable/disable debugger" },
 	{ "debug-size", "ds", rc_use_function, NULL, "640x480", 0, 0, config_handle_debug_size, "Specify the resolution/window size to use for the debugger (window) in the form of XRESxYRES (minimum size = 640x480)" },
 #endif
-	{ NULL, NULL, rc_link, frontend_list_opts, NULL, 0, 0, NULL, NULL },
+	{ NULL, NULL, rc_link, frontend_opts, NULL, 0, 0, NULL, NULL },
 	{ NULL, NULL, rc_link, frontend_ident_opts, NULL, 0, 0, NULL, NULL },
 	{ "General Options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "loadconfig", "lcf", rc_bool, &loadconfig, "1", 0, 0, NULL, "Load (don't load) configfiles" },

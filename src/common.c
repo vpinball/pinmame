@@ -1231,6 +1231,7 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 		/* display the result */
 		printf("%s", romdata->errorbuf);
 
+#ifndef LIBPINMAME
 		/* if we're not getting out of here, wait for a keypress */
 		if (!options.gui_host && !bailing)
 		{
@@ -1248,6 +1249,7 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 			if (keyboard_pressed(KEYCODE_LCONTROL) && keyboard_pressed(KEYCODE_C))
 				return 1;
 		}
+#endif
 	}
 
 	/* clean up any regions */

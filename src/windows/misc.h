@@ -31,8 +31,8 @@ uclock_t uclock(void);
 #define UCLOCKS_PER_SEC 1000000
 
 /* print colum stuff */
-void print_colums(const char *text1, const char *text2);
-void fprint_colums(FILE *f, const char *text1, const char *text2);
+void print_columns(const char *text1, const char *text2);
+void fprint_columns(FILE *f, const char *text1, const char *text2);
 
 
 
