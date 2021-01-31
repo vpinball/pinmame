@@ -34,7 +34,4 @@ uclock_t uclock(void);
 void print_columns(const char *text1, const char *text2);
 void fprint_columns(FILE *f, const char *text1, const char *text2);
 
-
-
-
 #endif /* ifndef __MISC_H */

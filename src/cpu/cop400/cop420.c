@@ -40,7 +40,7 @@ typedef struct {
 	void (*function) (void);
 }	s_opcode;
 
-COP420_Regs R;
+COP420_Regs R; // static breaks linux build
 int    cop420_ICount;
 
 static int InstLen[256];
