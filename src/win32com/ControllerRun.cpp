@@ -23,17 +23,17 @@ extern "C" {
 int	g_fHandleKeyboard   = TRUE;		// Signals wpc core to handle the keyboard
 int	g_fHandleMechanics  = FALSE;	// Signals wpc core to handle the mechanics for use
 int g_fMechSamples      = TRUE;		// Signal the common library to load the mech samples
-HANDLE g_hGameRunning	= INVALID_HANDLE_VALUE;
+HANDLE g_hGameRunning   = INVALID_HANDLE_VALUE;
 int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
-char g_fShowPinDMD		= FALSE;	// pinDMD not active by default
-int g_fDumpFrames		= FALSE;	// dump frames
+char g_fShowPinDMD      = FALSE;	// pinDMD not active by default
+int g_fDumpFrames       = FALSE;	// dump frames
 
-char g_fShowWinDMD		= TRUE;	// DMD active by default
+char g_fShowWinDMD      = TRUE;		// DMD active by default
 
-BOOL cabinetMode		= FALSE;
+BOOL cabinetMode        = FALSE;
 
-int    g_iSyncFactor     = 0;
-HANDLE g_hEnterThrottle  = INVALID_HANDLE_VALUE;
+int    g_iSyncFactor    = 0;
+HANDLE g_hEnterThrottle = INVALID_HANDLE_VALUE;
 extern int g_iSyncFactor;
 char g_szGameName[256] = "";			// String containing requested game name (may be different from ROM if aliased)
 }
@@ -237,7 +237,7 @@ extern "C" int osd_init(void)
 	CComVariant vValueX(dmd_pos_x);
 	m_pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_x"), vValueX);
 
-	if (!cabinetMode && dmd_pos_y<0 )
+	if ( !cabinetMode && dmd_pos_y<0 )
 		dmd_pos_y = 0;
 	else if ( dmd_pos_y>maxY )
 		dmd_pos_y = maxY;

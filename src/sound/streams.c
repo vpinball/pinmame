@@ -44,7 +44,8 @@ void streams_sh_stop(void)
 	int i;
 	for (i = 0;i < MIXER_MAX_CHANNELS;i++)
 	{
-		free(stream_buffer[i]);
+		if(stream_buffer[i])
+			free(stream_buffer[i]);
 		stream_buffer[i] = 0;
 	}
 }
@@ -175,7 +176,8 @@ double stream_get_sample_rate(int channel)
 
 void stream_free(int channel)
 {
-	free(stream_buffer[channel]);
+	if(stream_buffer[channel])
+		free(stream_buffer[channel]);
 	stream_buffer[channel] = 0;
 }
 

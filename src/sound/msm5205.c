@@ -24,7 +24,10 @@
 
     Data is streamed from a CPU by means of a clock generated on the chip.
 
-    A reset signal is set high or low to determine whether playback (and interrupts) are occuring.
+    Holding the rate selector lines (S1 and S2) both high places the MSM5205 in an undocumented
+    mode which disables the sampling clock generator and makes VCK an input line.
+
+    A reset signal is set high or low to determine whether playback (and interrupts) are occurring.
 
   MSM6585: is an upgraded MSM5205 voice synth IC.
    Improvements:
@@ -34,15 +37,17 @@
 
    Differences between MSM6585 & MSM5205:
 
-                              MSM6586          MSM5205
-    Master clock frequency    640kHz           384kHz
-    Sampling frequency        4k/8k/16k/32kHz  4k/6k/8kHz
-    ADPCM bit length          4-bit            3-bit/4-bit
-    DA converter              12-bit           10-bit
-    Low-pass filter           -40dB/oct        N/A
-    Overflow prevent circuit  Included         N/A
+                              MSM6585                      MSM5205
+    Master clock frequency    640kHz                       384k/768kHz
+    Sampling frequency        4k/8k/16k/32kHz at 640kHz    4k/6k/8kHz at 384kHz
+    ADPCM bit length          4-bit                        3-bit/4-bit
+    Data capture timing       3µsec at 640kHz              15.6µsec at 384kHz
+    DA converter              12-bit                       10-bit
+    Low-pass filter           -40dB/oct                    N/A
+    Overflow prevent circuit  Included                     N/A
+    Cutoff Frequency          (Sampling Frequency/2.5)kHz  N/A
 
-    Timer callback at VCLK low edge on MSM5205 (at rising edge on MSM6585)
+    Data capture follows VCK falling edge on MSM5205 (VCK rising edge on MSM6585)
 
    TODO:
    - lowpass filter for MSM6585

@@ -134,7 +134,7 @@ static INTERRUPT_GEN(s11_vblank) {
   int ii;
 
 #ifdef PROC_SUPPORT
-  //TODO/PROC: Check implemenatation
+  //TODO/PROC: Check implementation
   UINT64 allSol = core_getAllSol();
   // Keep the P-ROC tickled each time we run around the interrupt
   // so it knows we are still alive

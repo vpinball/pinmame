@@ -903,7 +903,7 @@ S11CS_SOUNDROM888(      "cats_u4.l1",  CRC(18c62813) SHA1(a4fb69cfedd0b92c22b599
 S11_ROMEND
 
 S11_ROMSTART48(bcats,g4,"cats_u26.l5", CRC(32246d12) SHA1(b8aa89d197a6b992501904f5072a10ab1a31db87),
-                        "cats_u27.lg4",CRC(6af8cc3b) SHA1(ac9908dc3fbe1d3b1821c2976aaa5bbffbf24cda))
+                        "cats_u27.lg4",CRC(6af8cc3b) SHA1(ac9908dc3fbe1d3b1821c2976aaa5bbffbf24cda)) // manually patched up from the IPDB version, as that one is faulty
 S11XS_SOUNDROM88(       "cats_u21.l1", CRC(04110d08) SHA1(4b44b26983cb5d14a93c16a19dc2bdbaa665dc69),
                         "cats_u22.l1", CRC(7e152c78) SHA1(b4ab770fdd9420a5d35e55bf8fb84c99ac544b8b))
 S11CS_SOUNDROM888(      "cats_u4.l1",  CRC(18c62813) SHA1(a4fb69cfedd0b92c22b599913df3cdf8b3eef42c),
@@ -1348,7 +1348,7 @@ CORE_GAMEDEF(rvrbt, l3, "Riverboat Gambler (L-3)", 1990, "Williams", s11_mS11CS,
 
 S11_ROMSTART48(rvrbt,p7,"gamb_u26.pa7", CRC(594db647) SHA1(914d10755c2a1609d3945554fdd8006f7d294287),
                         "gamb_u27.pa7", CRC(696248c4) SHA1(892ea48121165792d10d64dcfc188e4a100e6371))
-S11CS_SOUNDROM000(      "gamb_u4.l1",  CRC(fb3fab22) SHA1(ea0f3431e4185361740840a19c93e249954c4835),
+S11CS_SOUNDROM000(      "gamb_u4.l1",  CRC(fb3fab22) SHA1(ea0f3431e4185361740840a19c93e249954c4835), // this one came separate from the pa7's, but its the best match we have
                         "gamb_u19.l1", CRC(04a3a8c8) SHA1(e72ef767f13282d2335cda3288037610d9bfedf2),
                         "gamb_u20.l1", CRC(a60c734d) SHA1(76cfcf96276ca4f6b5eee0e0402fab5ee9685366))
 S11_ROMEND

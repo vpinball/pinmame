@@ -91,8 +91,6 @@
 #define BYVP_PIA1 1
 #define BYVP_PIA2 2
 
-#define BYVP_VBLANKFREQ    60 /* VBLANK frequency */
-
 #define BYVP_IRQFREQ       BY35_IRQFREQ /* IRQ (via PIA) frequency*/
 //#define BYVP_ZCFREQ        BY35_ZCFREQ  /* Zero cross frequency */
 #define BYVP_ZCFREQ        60		/* This is correct based on comparing my real game to the emu SJE 8/23/06 */

@@ -23,7 +23,7 @@ static UINT16 seg_data_old[50] = {};
 usb_dev_handle *DeviceHandle = NULL; 
 
 
-/*void Send_Clear_Screen(void) //!! unused
+/*void Send_Clear_Screen() //!! unused
 {
 	memset(OutputPacketBuffer,0x00, 2052);
 	const UINT8 tmp[4] = {
@@ -94,7 +94,7 @@ DMDDEV int Open()
 }
 
 
-void Send_Logo(void)
+void Send_Logo()
 {
 		FILE *fLogo;
 		char filename[MAX_PATH];

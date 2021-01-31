@@ -22,7 +22,7 @@ static UINT16 seg_data_old[50] = {};
 bool slowUSB = false;
 
 
-void Send_Clear_Screen(void)
+void Send_Clear_Screen()
 {
 	memset(OutputPacketBuffer,0x00, 2052);
 	const UINT8 tmp[4] = {

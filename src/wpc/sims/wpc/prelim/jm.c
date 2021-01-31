@@ -281,7 +281,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(jm,12r,"Johnny Mnemonic (1.2R)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(jm,12b,12r,"Johnny Mnemonic (1.2B Belgian)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(jm,05r,12r,"Johnny Mnemonic (0.5R)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(jm,05r,12r,"Johnny Mnemonic (0.5R Prototype)",1995,"Williams",wpc_mSecurityS,0) // is this actually the 0.4 mentioned in the version history?
 
 static void jm_handleMech(int mech) {
 	static UINT8 twobits_x, twobits_y;

@@ -228,7 +228,7 @@ DE_DMD32ROM8x(    "swsedspa.400",CRC(b9bcbf71) SHA1(036f53e638699de0447ecd02221f
 SWTRI_SND
 SE_ROMEND
 #define input_ports_swtril43 input_ports_se
-CORE_GAMEDEFNV(swtril43,"Star Wars Trilogy (4.03)",1997,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(swtril43,"Star Wars Trilogy Special Edition, The (4.03)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(swtril41,"swcpu.401",CRC(707dce87) SHA1(45fc3ffe646e5be72af9f7f00990ee5f85338f34))
 DE_DMD32ROM8x(    "swsedspa.400",CRC(b9bcbf71) SHA1(036f53e638699de0447ecd02221f673a40f656be))
@@ -236,7 +236,9 @@ SWTRI_SND
 SE_ROMEND
 #define input_ports_swtril41 input_ports_swtril43
 #define init_swtril41 init_swtril43
-CORE_CLONEDEFNV(swtril41,swtril43,"Star Wars Trilogy (4.01)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(swtril41,swtril43,"Star Wars Trilogy Special Edition, The (4.01)",1997,"Sega",de_mSES1,0)
+
+// There were also 6 Horchow and 6 Neiman Marcus machines (Collector's Edition) with (at least) a special screen in the software, displaying the serial number
 
 /*-------------------------------------------------------------------
 / The Lost World: Jurassic Park (2.02)
@@ -303,6 +305,8 @@ DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c5
 SE_ROMEND
 #define input_ports_xfiles20 input_ports_xfiles
 CORE_CLONEDEFNV(xfiles20,xfiles,"X-Files, The (2.00)",1997,"Sega",de_mSES1,0)
+
+// There were also 12 Neiman Marcus machines (Collector's Edition) with (at least) a special screen in the software, displaying the serial number
 
 /*-------------------------------------------------------------------
 / Starship Troopers

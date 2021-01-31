@@ -21,8 +21,6 @@
 #include "sound/3812intf.h"
 #include "sleic.h"
 
-#define SLEIC_VBLANKFREQ   60 /* VBLANK frequency */
-
 /*----------------
 /  Local variables
 /-----------------*/
