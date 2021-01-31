@@ -18,7 +18,7 @@
 #define S4_PIA2 2
 #define S4_PIA3 3
 
-#define S4_IRQFREQ         923 // NE556 Timer with 12 kOhm / 1.8 kOhm / 0.1 uF ~923 Hz
+#define S4_IRQFREQ         923 // NE556 Timer with 12 kOhm / 1.8 kOhm / 0.1 uF ~923 Hz // measured on a Sys3 and Sys4 as ~1110us -> ~901Hz
 
 #define S4_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #ifdef PROC_SUPPORT

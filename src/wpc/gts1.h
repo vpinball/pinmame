@@ -250,7 +250,7 @@ extern MACHINE_DRIVER_EXTERN(GTS1TAB2);
 #define gl_mGTS1C		GTS1C
 #define gl_mGTS1T		GTS1T
 #define gl_mGTS1S		GTS1S80
-#define gl_mGTS1TAB	GTS1TAB
+#define gl_mGTS1TAB		GTS1TAB
 #define gl_mGTS1TAB2	GTS1TAB2
 
 #endif /* INC_GTS1 */
