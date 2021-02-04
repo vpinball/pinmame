@@ -35,9 +35,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>LinPinMAME</ProjectName>
+    <ProjectName>LibPinMAME</ProjectName>
     <ProjectGuid>{5142BD0E-5C78-481E-8A0D-6BA76E80CFC7}</ProjectGuid>
-    <RootNamespace>LinPinMAME</RootNamespace>
+    <RootNamespace>LibPinMAME</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -533,7 +533,16 @@
     </ClCompile>
     <ClCompile Include="src\libpinmame\joystick.c" />
     <ClCompile Include="src\libpinmame\keyboard.c" />
-    <ClCompile Include="src\libpinmame\config.c" />
+    <ClCompile Include="src\libpinmame\config.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)libconfig.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)libconfig.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="src\libpinmame\misc.c" />
     <ClCompile Include="src\libpinmame\libpinmame.cpp" />
     <ClCompile Include="src\libpinmame\sound.c" />
