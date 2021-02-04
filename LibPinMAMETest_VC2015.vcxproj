@@ -35,12 +35,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\dll\dlltest.cpp" />
+    <ClCompile Include="src\libpinmame\test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>PinMAMEdllTest</ProjectName>
+    <ProjectName>LibPinMAMETest</ProjectName>
     <ProjectGuid>{20DB3784-CEFD-43B8-8B62-E1E15854BF18}</ProjectGuid>
-    <RootNamespace>PinMAMEdllTest</RootNamespace>
+    <RootNamespace>LibPinMAMETest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'" Label="Configuration">
@@ -195,10 +195,10 @@ rem "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(Projec
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>PinMAMEdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>LibPinMAME.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2015.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>obj\VC2015\PinMAMEdll\win32\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>obj\VC2015\LibPinMAME\win32\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -234,10 +234,10 @@ rem "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(Projec
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>PinMAMEdll64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>LibPinMAME64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2015.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>obj\VC2015\PinMAMEdll\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>obj\VC2015\LibPinMAME\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>

@@ -130,7 +130,7 @@
     <Filter Include="Source Files\external\zlib">
       <UniqueIdentifier>{3acabe38-a15a-4ea2-bab7-e73115eb7bf9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\dll">
+    <Filter Include="Source Files\libpinmame">
       <UniqueIdentifier>{99ac9afe-7342-49eb-a7c0-2d3cac1de18c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -1140,41 +1140,41 @@
     <ClCompile Include="src\wpc\lancelot.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\minimalconfig.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\config.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
     <ClCompile Include="src\windows\rc.c">
-      <Filter>Source Files\dll</Filter>
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\sound.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\sound.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\video.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\video.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\keyboard.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\keyboard.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\joystick.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\joystick.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
     <ClCompile Include="src\windows\ticker.c">
-      <Filter>Source Files\dll</Filter>
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
     <ClCompile Include="src\fileio.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
     <ClCompile Include="src\windows\fronthlp.c">
-      <Filter>Source Files\dll</Filter>
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\misc.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\misc.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\fileio.c">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\fileio.c">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\dll\libpinmame.cpp">
-      <Filter>Source Files\dll</Filter>
+    <ClCompile Include="src\libpinmame\libpinmame.cpp">
+      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
     <ClCompile Include="src\windows\jit.c">
       <Filter>Source Files</Filter>
@@ -1792,22 +1792,22 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\windows\rc.h">
-      <Filter>Source Files\dll</Filter>
+      <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
-    <ClInclude Include="src\dll\video.h">
-      <Filter>Source Files\dll</Filter>
+    <ClInclude Include="src\libpinmame\video.h">
+      <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
-    <ClInclude Include="src\dll\misc.h">
-      <Filter>Source Files\dll</Filter>
+    <ClInclude Include="src\libpinmame\misc.h">
+      <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
-    <ClInclude Include="src\dll\libpinmame.h">
-      <Filter>Source Files\dll</Filter>
+    <ClInclude Include="src\libpinmame\libpinmame.h">
+      <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
-    <ClInclude Include="src\dll\minimalconfig.h">
-      <Filter>Source Files\dll</Filter>
+    <ClInclude Include="src\libpinmame\config.h">
+      <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
-    <ClInclude Include="src\dll\dllsound.h">
-      <Filter>Source Files\dll</Filter>
+    <ClInclude Include="src\libpinmame\sound.h">
+      <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
     <ClInclude Include="src\windows\jit.h">
       <Filter>Source Files</Filter>

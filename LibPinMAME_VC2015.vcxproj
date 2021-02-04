@@ -35,9 +35,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>PinMAMEdll</ProjectName>
+    <ProjectName>LinPinMAME</ProjectName>
     <ProjectGuid>{5142BD0E-5C78-481E-8A0D-6BA76E80CFC7}</ProjectGuid>
-    <RootNamespace>PinMAMEdll</RootNamespace>
+    <RootNamespace>LinPinMAME</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -481,7 +481,7 @@
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\dll;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\libpinmame;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_DLL;PINMAME_NO_UNUSED;MAME_DEBUG;LOG_LOAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -521,7 +521,7 @@
     <ClCompile Include="src\cpuint.c" />
     <ClCompile Include="src\cpuintrf.c" />
     <ClCompile Include="src\datafile.c" />
-    <ClCompile Include="src\dll\fileio.c">
+    <ClCompile Include="src\libpinmame\fileio.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)libfileio.obj</ObjectFileName>
@@ -531,13 +531,13 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)libfileio.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)libfileio.obj</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="src\dll\joystick.c" />
-    <ClCompile Include="src\dll\keyboard.c" />
-    <ClCompile Include="src\dll\minimalconfig.c" />
-    <ClCompile Include="src\dll\misc.c" />
-    <ClCompile Include="src\dll\libpinmame.cpp" />
-    <ClCompile Include="src\dll\sound.c" />
-    <ClCompile Include="src\dll\video.c" />
+    <ClCompile Include="src\libpinmame\joystick.c" />
+    <ClCompile Include="src\libpinmame\keyboard.c" />
+    <ClCompile Include="src\libpinmame\config.c" />
+    <ClCompile Include="src\libpinmame\misc.c" />
+    <ClCompile Include="src\libpinmame\libpinmame.cpp" />
+    <ClCompile Include="src\libpinmame\sound.c" />
+    <ClCompile Include="src\libpinmame\video.c" />
     <ClCompile Include="src\drawgfx.c" />
     <ClCompile Include="src\fileio.c" />
     <ClCompile Include="src\sound\262intf.c" />
@@ -1126,11 +1126,11 @@
     <ClInclude Include="src\cpuint.h" />
     <ClInclude Include="src\cpuintrf.h" />
     <ClInclude Include="src\datafile.h" />
-    <ClInclude Include="src\dll\dllsound.h" />
-    <ClInclude Include="src\dll\minimalconfig.h" />
-    <ClInclude Include="src\dll\misc.h" />
-    <ClInclude Include="src\dll\libpinmame.h" />
-    <ClInclude Include="src\dll\video.h" />
+    <ClInclude Include="src\libpinmame\sound.h" />
+    <ClInclude Include="src\libpinmame\config.h" />
+    <ClInclude Include="src\libpinmame\misc.h" />
+    <ClInclude Include="src\libpinmame\libpinmame.h" />
+    <ClInclude Include="src\libpinmame\video.h" />
     <ClInclude Include="src\drawgfx.h" />
     <ClInclude Include="src\driver.h" />
     <ClInclude Include="src\fileio.h" />
