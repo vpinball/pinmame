@@ -68,6 +68,7 @@ FILE *stderr_file;
 //	EXTERNALS
 //============================================================
 
+// from config.c
 extern char *rompath_extra;
 
 // from datafile.c
