@@ -57,9 +57,11 @@ DRIVERNV(starshot)      // 12/79 Star Shooter
 // ALVIN G. AND CO.
 // --------------------
 DRIVERNV(agsocc07)      // AG01:   07/92  A.G. Soccer-Ball (R07u)
-DRIVERNV(agsoccer)      //         04/93  A.G. Soccer-Ball (R18u)
+DRIVERNV(agsoccer)      //         04/93  A.G. Soccer-Ball (R18u, 2.1 Sound)
+DRIVERNV(agsoccer25l)   //         04/93  A.G. Soccer-Ball (R18u, 2.5L Sound)
 DRIVERNV(agfoot07)      // AG01:   07/92  A.G. Football (R07u)
-DRIVERNV(agfootbl)      //         04/93  A.G. Football (R18u)
+DRIVERNV(agfootbl)      //         04/93  A.G. Football (R18u, 2.1 Sound)
+DRIVERNV(agfootbl25l)   //         04/93  A.G. Football (R18u, 2.5L Sound)
 DRIVERNV(wrldtou3)      // AG03:   02/93  Al's Garage Band Goes On a World Tour (R06a)
 DRIVERNV(wrldtou2)      //         02/93  Al's Garage Band Goes On a World Tour (R02b)
 DRIVERNV(wrldtour)      //         03/93  Al's Garage Band Goes On a World Tour (R01c)

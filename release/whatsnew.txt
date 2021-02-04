@@ -20,10 +20,11 @@ Riverboat Gambler PA-7 (using L-1 sound now, might still be too new but better t
 Tales of the Arabian Nights 0.4 Prototype (see above)
 
 Clones:
+A.G. Soccer-Ball & Football R18u with 2.5L Sound (only the latter is new, 2.4 revision, inside the ROM it says 2.5L though)
 Bad Cats LG-4
 Flintstones, The LA-5
 Lucky Draw (alternate version - only difference is the #3 ROM)
-No Fear 0.8X with SL-1 sound
+No Fear 0.8X with SL-1 Sound
 Theatre of Magic 1.2A
 
 

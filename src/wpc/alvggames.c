@@ -62,7 +62,14 @@ ALVGROMSTART(agsoccer,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f
 ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
 						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
-CORE_GAMEDEFNV(agsoccer,"A.G. Soccer-Ball (R18u)",1993,"Alvin G",mALVGS1,0)
+CORE_GAMEDEFNV(agsoccer,"A.G. Soccer-Ball (R18u, 2.1 Sound)",1993,"Alvin G",mALVGS1,0)
+
+INITGAME(agsoccer25l, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(agsoccer25l,"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
+ALVGS_SOUNDROM11(		 "ags_snd.v24",  CRC(4ba36e8d) SHA1(330dcb1eea8c311df0e57a3b74146601c26d63c0), // 2.4 sound revision found when fixing a Soccer-Ball machine, inside the ROM it says 2.5L though
+						 "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
+ALVG_ROMEND
+CORE_CLONEDEFNV(agsoccer25l,agsoccer,"A.G. Soccer-Ball (R18u, 2.5L Sound)",1993,"Alvin G",mALVGS1,0)
 
 INITGAME(agsocc07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agsocc07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
@@ -72,14 +79,21 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(agsocc07,agsoccer,"A.G. Soccer-Ball (R07u)",1992,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
-/ A.G. Football (actually the same ROMs as Soccer-Ball sold in Europe)
+/ A.G. Football (actually the exact same ROM sets as Soccer-Ball, sold in Europe)
 /-------------------------------------------------------------------*/
 INITGAME(agfootbl, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agfootbl,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
 ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
 						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
-CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Football (R18u)",1993,"Alvin G",mALVGS1,0)
+CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Football (R18u, 2.1 Sound)",1993,"Alvin G",mALVGS1,0)
+
+INITGAME(agfootbl25l, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(agfootbl25l,"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
+ALVGS_SOUNDROM11(		 "ags_snd.v24",  CRC(4ba36e8d) SHA1(330dcb1eea8c311df0e57a3b74146601c26d63c0),
+						 "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
+ALVG_ROMEND
+CORE_CLONEDEFNV(agfootbl25l,agsoccer,"A.G. Football (R18u, 2.5L Sound)",1993,"Alvin G",mALVGS1,0)
 
 INITGAME(agfoot07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agfoot07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
