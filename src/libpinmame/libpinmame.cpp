@@ -207,12 +207,11 @@ LIBPINMAME_API void SetSampleRate(int sampleRate)
 
 LIBPINMAME_API void GetGames(GameInfoCallback callback)
 {
-	GameInfoStruct gameInfoStruct;
- 
 	int gamenum = 0;
 
 	while (drivers[gamenum])
 	{
+		GameInfoStruct gameInfoStruct;
 		memset(&gameInfoStruct, 0, sizeof(GameInfoStruct));
 
 		gameInfoStruct.name = drivers[gamenum]->name;
