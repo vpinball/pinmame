@@ -57,7 +57,7 @@ extern "C"
 	#include "window.h"
 	#include "input.h"
 #endif
-	#include "minimalconfig.h"
+	#include "config.h"
 	#include "rc.h"
 	#include "core.h"
 	#include "vpintf.h"
@@ -191,12 +191,12 @@ void gameThread(int game_index=-1)
 // Setup Functions
 // ---------------
 
-PINMAMEDLL_API void SetVPMPath(char* path)
+LIBPINMAME_API void SetVPMPath(char* path)
 {
 	strcpy_s(vpmPath, path);
 }
 
-PINMAMEDLL_API void SetSampleRate(int sampleRate)
+LIBPINMAME_API void SetSampleRate(int sampleRate)
 {
 	sampleRate = sampleRate;
 }
@@ -205,7 +205,34 @@ PINMAMEDLL_API void SetSampleRate(int sampleRate)
 // Game related functions
 // ---------------------
 
-PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
+LIBPINMAME_API void GetGames(GameInfoCallback callback)
+{
+	GameInfoStruct gameInfoStruct;
+ 
+	int gamenum = 0;
+
+	while (drivers[gamenum])
+	{
+		memset(&gameInfoStruct, 0, sizeof(GameInfoStruct));
+
+		gameInfoStruct.name = drivers[gamenum]->name;
+
+		if (drivers[gamenum]->clone_of)
+		{
+			gameInfoStruct.clone_of = drivers[gamenum]->clone_of->name;
+		}
+
+		gameInfoStruct.description = drivers[gamenum]->description;
+		gameInfoStruct.year = drivers[gamenum]->year;
+		gameInfoStruct.manufacturer = drivers[gamenum]->manufacturer;
+
+		(*callback)(&gameInfoStruct);
+
+		gamenum++;
+	}
+}
+
+LIBPINMAME_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 {
 	if (pRunningGame)
 		return -1;
@@ -259,7 +286,7 @@ PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 }
 
 #if !defined(_WIN32) && !defined(_WIN64)
-PINMAMEDLL_API
+LIBPINMAME_API
 #endif
 void StopThreadedGame(bool locking)
 {
@@ -288,30 +315,30 @@ void StopThreadedGame(bool locking)
 #endif
 }
 
-PINMAMEDLL_API bool IsGameReady()
+LIBPINMAME_API bool IsGameReady()
 {
 	return isGameReady;
 }
 
 // Pause related functions
 // -----------------------
-PINMAMEDLL_API void ResetGame()
+LIBPINMAME_API void ResetGame()
 {
 	if (isGameReady)
 		machine_reset();
 }
 
-PINMAMEDLL_API void Pause()
+LIBPINMAME_API void Pause()
 {
 	g_fPause = 1;
 }
 
-PINMAMEDLL_API void Continue()
+LIBPINMAME_API void Continue()
 {
 	g_fPause = 0;
 }
 
-PINMAMEDLL_API bool IsPaused()
+LIBPINMAME_API bool IsPaused()
 {
 	return g_fPause > 0;
 }
@@ -320,22 +347,22 @@ PINMAMEDLL_API bool IsPaused()
 // DMD related functions
 // ---------------------
 
-PINMAMEDLL_API bool NeedsDMDUpdate()
+LIBPINMAME_API bool NeedsDMDUpdate()
 {
 	return isGameReady && !!g_needs_DMD_update;
 }
 
-PINMAMEDLL_API int GetRawDMDWidth()
+LIBPINMAME_API int GetRawDMDWidth()
 {
 	return isGameReady ? g_raw_dmdx : ~0u;
 }
 
-PINMAMEDLL_API int GetRawDMDHeight()
+LIBPINMAME_API int GetRawDMDHeight()
 {
 	return isGameReady ? g_raw_dmdy : ~0u;
 }
 
-PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer)
+LIBPINMAME_API int GetRawDMDPixels(unsigned char* buffer)
 {
 	if (!isGameReady || g_raw_dmdx == ~0u || g_raw_dmdy == ~0u)
 		return -1;
@@ -347,36 +374,36 @@ PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer)
 
 // Audio related functions
 // -----------------------
-PINMAMEDLL_API int GetAudioChannels()
+LIBPINMAME_API int GetAudioChannels()
 {
 	return isGameReady ? channels : -1;
 }
 
-PINMAMEDLL_API int GetPendingAudioSamples(float* buffer, int outChannels, int maxNumber)
+LIBPINMAME_API int GetPendingAudioSamples(float* buffer, int outChannels, int maxNumber)
 {
 	return isGameReady ? fillAudioBuffer(buffer, outChannels, maxNumber, 1) : -1;
 }
 
-PINMAMEDLL_API int GetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber)
+LIBPINMAME_API int GetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber)
 {
 	return isGameReady ? fillAudioBuffer(buffer, outChannels, maxNumber, 0) : -1;
 }
 
 // Switch related functions
 // ------------------------
-PINMAMEDLL_API bool GetSwitch(int slot)
+LIBPINMAME_API bool GetSwitch(int slot)
 {
 	return isGameReady ? (vp_getSwitch(slot) != 0) : false;
 }
 
-PINMAMEDLL_API void SetSwitch(int slot, bool state)
+LIBPINMAME_API void SetSwitch(int slot, bool state)
 {
 	if (!isGameReady)
 		return;
 	vp_putSwitch(slot, state ? 1 : 0);
 }
 
-PINMAMEDLL_API void SetSwitches(int* states, int numSwitches)
+LIBPINMAME_API void SetSwitches(int* states, int numSwitches)
 {
 	if (!isGameReady) // initial state, potentially before game was fully initialized, set this under the hood later-on
 	{
@@ -391,9 +418,9 @@ PINMAMEDLL_API void SetSwitches(int* states, int numSwitches)
 
 // Lamps related functions
 // -----------------------
-PINMAMEDLL_API int GetMaxLamps() { return CORE_MAXLAMPCOL * 8; }
+LIBPINMAME_API int GetMaxLamps() { return CORE_MAXLAMPCOL * 8; }
 
-PINMAMEDLL_API int GetChangedLamps(int* changedStates)
+LIBPINMAME_API int GetChangedLamps(int* changedStates)
 {
 	if (!isGameReady)
 		return -1;
@@ -414,9 +441,9 @@ PINMAMEDLL_API int GetChangedLamps(int* changedStates)
 
 // Solenoids related functions
 // ---------------------------
-PINMAMEDLL_API int GetMaxSolenoids() { return 64; }
+LIBPINMAME_API int GetMaxSolenoids() { return 64; }
 
-PINMAMEDLL_API int GetChangedSolenoids(int* changedStates)
+LIBPINMAME_API int GetChangedSolenoids(int* changedStates)
 {
 	if (!isGameReady)
 		return -1;
@@ -437,9 +464,9 @@ PINMAMEDLL_API int GetChangedSolenoids(int* changedStates)
 
 // GI strings related functions
 // ----------------------------
-PINMAMEDLL_API int GetMaxGIStrings() { return CORE_MAXGI; }
+LIBPINMAME_API int GetMaxGIStrings() { return CORE_MAXGI; }
 
-PINMAMEDLL_API int GetChangedGIs(int* changedStates)
+LIBPINMAME_API int GetChangedGIs(int* changedStates)
 {
 	if (!isGameReady)
 		return -1;

@@ -6,7 +6,7 @@
 #include "video.h"
 #ifdef LIBPINMAME
  #include "rc.h"
- #include "../dll/sound.h"
+ #include "../libpinmame/sound.h"
 #endif
 #include <pthread.h>
 #import <AudioToolbox/AudioQueue.h>
