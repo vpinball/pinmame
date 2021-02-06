@@ -1,3 +1,5 @@
+maybe remove/move old MAME txt files?
+
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
@@ -30,12 +32,12 @@ What is it?
 
   *Note: Emulation is not 100% working and correct for all hardware.
 
-  PinMAME is built as an add-on to the MAME 0.76 Source Code.
+  PinMAME is built as an add-on to the historic MAME 0.76 Source Code.
   Some of the original code was altered, and fixes from later MAME versions were applied.
-  In addition, it can be compiled on unix platforms and is (hopefully) compatible
-  with 64bit CPU architectures/compiles by now.
+  In addition, it can be compiled on unix platforms (including macOS) and is (hopefully) 100%
+  compatible with 64bit CPU architectures/compiles by now.
 
-  All the MAME readme file with all disclaimers, credits and instructions are included for
+  All the historic MAME readme files with all disclaimers, credits and instructions are included for
   info on using MAME related functions.
 
   All standard MAME "functions" do work the same way in PinMAME (profiler, debugger, cheats,
