@@ -72,5 +72,5 @@ jobs:
         with:
           token: ${{ secrets.PAT_PINMAME_DOTNET }}
           repository: VisualPinball/pinmame-dotnet
-          event-type: libpinmame-build
+          event-type: update-libpinmame
           client-payload: '{"run_id": "${{ github.run_id }}"}'
