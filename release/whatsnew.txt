@@ -14,8 +14,9 @@ Updated LISY support to 5.27-18 (Linux for Gottlieb System1 & System80, Bally, A
 One more audiophile tweak: add proper dithering after resampling to the final output sample rate
 Fix regression in solenoid emulation for Juegos Populares
 
-*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game)
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75
 Correct Dumps:
+Mac Attack
 Riverboat Gambler PA-7 (using L-1 sound now, might still be too new but better than L-2 anyhow)
 Tales of the Arabian Nights 0.4 Prototype (see above)
 
