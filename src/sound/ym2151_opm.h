@@ -36,6 +36,8 @@ extern "C" {
 #endif
 
 #ifdef PINMAME
+#include "memory.h"
+
 // from VGM port
 #define OPN_WRITEBUF_SIZE 2048
 #define OPN_WRITEBUF_DELAY 36
