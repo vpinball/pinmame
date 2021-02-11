@@ -458,6 +458,7 @@ static const char *lookup_symbol(UINT32 address)
 					strcpy(best_symbol, symbol);
 				}
 
+	fclose(map);
 	// create the final result
 	if (address - best_addr > 0x10000)
 		return "";
@@ -484,8 +485,12 @@ static int get_code_base_size(UINT32 *base, UINT32 *size)
 	while (fgets(line, sizeof(line) - 1, map))
 		if (!strncmp(line, ".text           0x", 18))
 			if (sscanf(line, ".text           0x%08x 0x%x", base, size) == 2)
+			{
+				fclose(map);
 				return 1;
+			}
 
+	fclose(map);
 	return 0;
 }
 
