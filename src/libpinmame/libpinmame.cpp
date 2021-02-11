@@ -30,9 +30,9 @@ void ShowConsole()
 
 void CloseConsole()
 {
-	useConsole = false;
 	if (useConsole)
 		FreeConsole();
+	useConsole = false;
 }
 #endif
 
