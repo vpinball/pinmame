@@ -941,7 +941,7 @@ static int decode_graphics(const struct GfxDecodeInfo *gfxdecodeinfo)
 	/* loop over all elements */
 	for (i = 0; i < MAX_GFX_ELEMENTS && gfxdecodeinfo[i].memory_region != -1; i++)
 	{
-		int region_length = 8 * memory_region_length(gfxdecodeinfo[i].memory_region);
+		size_t region_length = 8 * memory_region_length(gfxdecodeinfo[i].memory_region);
 		UINT8 *region_base = memory_region(gfxdecodeinfo[i].memory_region);
 		struct GfxLayout glcopy;
 		int j;
@@ -951,14 +951,14 @@ static int decode_graphics(const struct GfxDecodeInfo *gfxdecodeinfo)
 
 		/* if the character count is a region fraction, compute the effective total */
 		if (IS_FRAC(glcopy.total))
-			glcopy.total = region_length / glcopy.charincrement * FRAC_NUM(glcopy.total) / FRAC_DEN(glcopy.total);
+			glcopy.total = (UINT32)(region_length / glcopy.charincrement * FRAC_NUM(glcopy.total) / FRAC_DEN(glcopy.total));
 
 		/* loop over all the planes, converting fractions */
 		for (j = 0; j < MAX_GFX_PLANES; j++)
 		{
 			int value = glcopy.planeoffset[j];
 			if (IS_FRAC(value))
-				glcopy.planeoffset[j] = FRAC_OFFSET(value) + region_length * FRAC_NUM(value) / FRAC_DEN(value);
+				glcopy.planeoffset[j] = (UINT32)(FRAC_OFFSET(value) + region_length * FRAC_NUM(value) / FRAC_DEN(value));
 		}
 
 		/* loop over all the X/Y offsets, converting fractions */
@@ -966,11 +966,11 @@ static int decode_graphics(const struct GfxDecodeInfo *gfxdecodeinfo)
 		{
 			int value = glcopy.xoffset[j];
 			if (IS_FRAC(value))
-				glcopy.xoffset[j] = FRAC_OFFSET(value) + region_length * FRAC_NUM(value) / FRAC_DEN(value);
+				glcopy.xoffset[j] = (UINT32)(FRAC_OFFSET(value) + region_length * FRAC_NUM(value) / FRAC_DEN(value));
 
 			value = glcopy.yoffset[j];
 			if (IS_FRAC(value))
-				glcopy.yoffset[j] = FRAC_OFFSET(value) + region_length * FRAC_NUM(value) / FRAC_DEN(value);
+				glcopy.yoffset[j] = (UINT32)(FRAC_OFFSET(value) + region_length * FRAC_NUM(value) / FRAC_DEN(value));
 		}
 
 		/* some games increment on partial tile boundaries; to handle this without reading */
@@ -979,7 +979,7 @@ static int decode_graphics(const struct GfxDecodeInfo *gfxdecodeinfo)
 		if (glcopy.planeoffset[0] == GFX_RAW)
 		{
 			int base = gfxdecodeinfo[i].start;
-			int end = region_length/8;
+			int end = (int)(region_length/8);
 			while (glcopy.total > 0)
 			{
 				int elementbase = base + (glcopy.total - 1) * glcopy.charincrement / 8;

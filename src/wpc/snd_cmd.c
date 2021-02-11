@@ -48,6 +48,7 @@
  //#define WIN32_LEAN_AND_MEAN
  #endif
  #include <windows.h>
+ #include <direct.h>
  #if !defined(__MINGW32__) || defined(VPINMAME)
   #define timeGetTime2 timeGetTime
  #else

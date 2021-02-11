@@ -1296,7 +1296,7 @@ int frontend_help (const char *gamename)
 
 					for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
 					{
-						int type = ROMREGION_GETTYPE(region);
+						size_t type = ROMREGION_GETTYPE(region);
 
 						for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
 						{
@@ -1337,7 +1337,7 @@ int frontend_help (const char *gamename)
 
 								for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
 								{
-									int type = ROMREGION_GETTYPE(region);
+									size_t type = ROMREGION_GETTYPE(region);
 
 									for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
 									{

@@ -897,7 +897,7 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 #ifndef VPINMAME
 			RECT *rect = (RECT *)lparam;
 			if (win_keep_aspect && !(GetAsyncKeyState(VK_CONTROL) & 0x8000))
-				win_constrain_to_aspect_ratio(rect, wparam, 0, COORDINATES_DESKTOP);
+				win_constrain_to_aspect_ratio(rect, (int)wparam, 0, COORDINATES_DESKTOP);
 #endif
 			InvalidateRect(win_video_window, NULL, FALSE);
 			break;
@@ -1377,8 +1377,8 @@ void win_toggle_full_screen(void)
 		PostMessage(win_video_window, RegisterWindowMessage("VPinMAMEAdjustWindowMsg"), 0, 0);
 #else
 		// adjust the style
-		SetWindowLong(win_video_window, GWL_STYLE, WINDOW_STYLE);
-		SetWindowLong(win_video_window, GWL_EXSTYLE, WINDOW_STYLE_EX);
+		SetWindowLongPtr(win_video_window, GWL_STYLE, WINDOW_STYLE);
+		SetWindowLongPtr(win_video_window, GWL_EXSTYLE, WINDOW_STYLE_EX);
 		set_aligned_window_pos(win_video_window, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
 		// force to the bottom, then back on top

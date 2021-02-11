@@ -1233,9 +1233,9 @@ static void init_joylist(void)
 			{
 				// add mouse number to the name
 				if (mouse_count > 1)
-					sprintf(tempname, "Mouse %d %s", mouse + 1, instance.tszName);
+					sprintf_s(tempname, sizeof(tempname), "Mouse %d %s", mouse + 1, instance.tszName);
 				else
-					sprintf(tempname, "Mouse %s", instance.tszName);
+					sprintf_s(tempname, sizeof(tempname), "Mouse %s", instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(mouse, JOYTYPE_MOUSEBUTTON, button), &joycount);
 			}
 		}

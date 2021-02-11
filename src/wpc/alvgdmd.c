@@ -353,13 +353,14 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 
 static void pistol_poker__mystery_castle_dmd(void) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
-  int ii,jj,i;
-  RAM += dmdlocals.vid_page << 11;
+  int ii,jj;
 
 #ifdef VPINMAME
+  int i = 0;
   g_raw_gtswpc_dmdframes = 4;
-  i = 0;
 #endif
+
+  RAM += dmdlocals.vid_page << 11;
 
   if (dmdlocals.planenable) {
 
