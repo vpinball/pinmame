@@ -193,8 +193,8 @@ void InitTree(LPFOLDERDATA lpFolderData, LPFILTER_ITEM lpFilterList)
 
 	/* this will subclass the treeview (where WM_DRAWITEM gets sent for
 	   the header control) */
-	g_lpTreeWndProc = (WNDPROC)(LONG)(int)GetWindowLong(GetTreeView(), GWL_WNDPROC);
-	SetWindowLong(GetTreeView(), GWL_WNDPROC, (LONG)TreeWndProc);
+	g_lpTreeWndProc = (WNDPROC)GetWindowLongPtr(GetTreeView(), GWL_WNDPROC);
+	SetWindowLongPtr(GetTreeView(), GWL_WNDPROC, (LONG_PTR)TreeWndProc);
 }
 
 void DestroyTree(HWND hWnd)
@@ -1308,7 +1308,7 @@ static int InitExtraFolders(void)
 	struct stat     stat_buffer;
 	struct _finddata_t files;
 	int             i, count = 0;
-	long            hLong;
+	intptr_t        hLong;
 	char*           ext;
 	char            buf[256];
 	char            curdir[MAX_PATH];
@@ -1389,7 +1389,7 @@ static int InitExtraFolders(void)
 				}
 				fclose(fp);
 
-				strcpy(buf, files.name);
+				strcpy_s(buf, sizeof(buf), files.name);
 				ext = strrchr(buf, '.');
 
 				if (ext && *(ext + 1) && !_stricmp(ext + 1, "ini"))
@@ -1561,7 +1561,7 @@ BOOL TryAddExtraFolderAndChildren(int parent_index)
         }
     }
 
-    if ( fp )
+    //if ( fp )
     {
         fclose( fp );
     }

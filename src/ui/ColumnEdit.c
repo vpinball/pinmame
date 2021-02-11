@@ -124,7 +124,7 @@ INT_PTR InternalColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 	int         nAvail;
 	int         i, nCount = 0;
 	LV_ITEM     lvi;
-	DWORD dwShowStyle, dwAvailableStyle, dwView;
+	LONG_PTR dwShowStyle, dwAvailableStyle, dwView;
 
 	switch (Msg)
 	{
@@ -132,16 +132,16 @@ INT_PTR InternalColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 		hShown	   = GetDlgItem(hDlg, IDC_LISTSHOWCOLUMNS);
 		hAvailable = GetDlgItem(hDlg, IDC_LISTAVAILABLECOLUMNS);
 		/*Change Style to Always Show Selection */
-		dwShowStyle = GetWindowLong(hShown, GWL_STYLE); 
-		dwAvailableStyle = GetWindowLong(hAvailable, GWL_STYLE); 
+		dwShowStyle = GetWindowLongPtr(hShown, GWL_STYLE); 
+		dwAvailableStyle = GetWindowLongPtr(hAvailable, GWL_STYLE); 
 		dwView = LVS_SHOWSELALWAYS | LVS_LIST;
 
 		/* Only set the window style if the view bits have changed. */
 		if ((dwShowStyle & LVS_TYPEMASK) != dwView) 
-		SetWindowLong(hShown, GWL_STYLE, 
+		SetWindowLongPtr(hShown, GWL_STYLE, 
 			(dwShowStyle & ~LVS_TYPEMASK) | dwView); 
 		if ((dwAvailableStyle & LVS_TYPEMASK) != dwView) 
-		SetWindowLong(hAvailable, GWL_STYLE, 
+		SetWindowLongPtr(hAvailable, GWL_STYLE, 
 			(dwAvailableStyle & ~LVS_TYPEMASK) | dwView); 
 
 		pfnGetColumnInfo(order, shown);

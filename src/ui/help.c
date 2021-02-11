@@ -48,7 +48,7 @@ static void Help_Load(void);
 
 static HtmlHelpProc g_pHtmlHelp;
 static HMODULE      g_hHelpLib;
-static DWORD        g_dwCookie;
+static DWORD_PTR    g_dwCookie;
 
 /**************************************************************************
  External functions
@@ -60,14 +60,14 @@ int HelpInit(void)
 	g_hHelpLib  = NULL;
 
 	g_dwCookie = 0;
-	HelpFunction(NULL, NULL, HH_INITIALIZE, (DWORD)&g_dwCookie);
+	HelpFunction(NULL, NULL, HH_INITIALIZE, (DWORD_PTR)&g_dwCookie);
 	return 0;
 }
 
 void HelpExit(void)
 {
 	HelpFunction(NULL, NULL, HH_CLOSE_ALL, 0);
-	HelpFunction(NULL, NULL, HH_UNINITIALIZE, (DWORD)g_dwCookie);
+	HelpFunction(NULL, NULL, HH_UNINITIALIZE, (DWORD_PTR)g_dwCookie);
 
 	g_dwCookie  = 0;
 	g_pHtmlHelp = NULL;

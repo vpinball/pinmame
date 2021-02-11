@@ -31,7 +31,7 @@ void    InitPropertyPageToPage(HINSTANCE hInst, HWND hwnd, int game_num, HICON h
 void    InitDefaultPropertyPage(HINSTANCE hInst, HWND hWnd);
 
 /* Get Help ID array for WM_HELP and WM_CONTEXTMENU */
-DWORD   GetHelpIDs(void);
+DWORD_PTR GetHelpIDs(void);
 
 /* Get Game status text string */
 const char *GameInfoStatus(int driver_index);

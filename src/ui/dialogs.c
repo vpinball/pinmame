@@ -379,7 +379,7 @@ INT_PTR CALLBACK AddCustomFileDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPA
 		HIMAGELIST hList;
 
 		// current game passed in using DialogBoxParam()
-		driver_index = lParam;
+		driver_index = (int)lParam;
 
 		hList = TreeView_SetImageList(GetDlgItem(hDlg,IDC_CUSTOM_TREE), treeview_icons, LVSIL_NORMAL);
 

@@ -921,7 +921,7 @@ int Mame32Main(HINSTANCE    hInstance,
 			if (!PumpMessage())
 			{
 				Win32UI_exit();
-				return msg.wParam;
+				return (int)msg.wParam;
 			}
 
 		}
@@ -1152,7 +1152,7 @@ static void ResizeTreeAndListViews(BOOL bResizeHidden)
 
 	for (i = 0; g_splitterInfo[i].nSplitterWindow; i++)
 	{
-		bVisible = GetWindowLong(GetDlgItem(hMain, g_splitterInfo[i].nLeftWindow), GWL_STYLE) & WS_VISIBLE ? TRUE : FALSE;
+		bVisible = GetWindowLongPtr(GetDlgItem(hMain, g_splitterInfo[i].nLeftWindow), GWL_STYLE) & WS_VISIBLE ? TRUE : FALSE;
 		if (bResizeHidden || bVisible)
 		{
 			nLeftWindowWidth = nSplitterOffset[i] - SPLITTER_WIDTH/2 - nLastWidth;
@@ -1233,8 +1233,8 @@ void UpdateScreenShot(void)
 
 	if (GetShowScreenShot())
 	{
-		DWORD dwStyle;
-		DWORD dwStyleEx;
+		DWORD_PTR dwStyle;
+		DWORD_PTR dwStyleEx;
 		BOOL showing_history;
 
 		ClientToScreen(hMain, &p);
@@ -1249,10 +1249,10 @@ void UpdateScreenShot(void)
 						   GetShowTab(TAB_HISTORY) == FALSE);
 		CalculateBestScreenShotRect(GetDlgItem(hMain, IDC_SSFRAME), &rect,showing_history);
 
-		dwStyle   = GetWindowLong(GetDlgItem(hMain, IDC_SSPICTURE), GWL_STYLE);
-		dwStyleEx = GetWindowLong(GetDlgItem(hMain, IDC_SSPICTURE), GWL_EXSTYLE);
+		dwStyle   = GetWindowLongPtr(GetDlgItem(hMain, IDC_SSPICTURE), GWL_STYLE);
+		dwStyleEx = GetWindowLongPtr(GetDlgItem(hMain, IDC_SSPICTURE), GWL_EXSTYLE);
 
-		AdjustWindowRectEx(&rect, dwStyle, FALSE, dwStyleEx);
+		AdjustWindowRectEx(&rect, (DWORD)dwStyle, FALSE, (DWORD)dwStyleEx);
 		MoveWindow(GetDlgItem(hMain, IDC_SSPICTURE),
 				   fRect.left  + rect.left,
 				   fRect.top   + rect.top,
@@ -1496,7 +1496,7 @@ static void ResetBackground(char *szFile)
 static void RandomSelectBackground(void)
 {
 	struct _finddata_t c_file;
-	long hFile;
+	intptr_t hFile;
 	char szFile[MAX_PATH];
 	int count=0;
 	const char *szDir=GetBgDir();
@@ -1632,16 +1632,16 @@ static BOOL Win32UI_init(HINSTANCE hInstance, LPSTR lpCmdLine, int nCmdShow)
 	ResetTabControl();
 
 	/* subclass history window */
-	g_lpHistoryWndProc = (WNDPROC)(LONG)(int)GetWindowLong(GetDlgItem(hMain, IDC_HISTORY), GWL_WNDPROC);
-	SetWindowLong(GetDlgItem(hMain, IDC_HISTORY), GWL_WNDPROC, (LONG)HistoryWndProc);
+	g_lpHistoryWndProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hMain, IDC_HISTORY), GWL_WNDPROC);
+	SetWindowLongPtr(GetDlgItem(hMain, IDC_HISTORY), GWL_WNDPROC, (LONG_PTR)HistoryWndProc);
 
 	/* subclass picture frame area */
-	g_lpPictureFrameWndProc = (WNDPROC)(LONG)(int)GetWindowLong(GetDlgItem(hMain, IDC_SSFRAME), GWL_WNDPROC);
-	SetWindowLong(GetDlgItem(hMain, IDC_SSFRAME), GWL_WNDPROC, (LONG)PictureFrameWndProc);
+	g_lpPictureFrameWndProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hMain, IDC_SSFRAME), GWL_WNDPROC);
+	SetWindowLongPtr(GetDlgItem(hMain, IDC_SSFRAME), GWL_WNDPROC, (LONG_PTR)PictureFrameWndProc);
 
 	/* subclass picture area */
-	g_lpPictureWndProc = (WNDPROC)(LONG)(int)GetWindowLong(GetDlgItem(hMain, IDC_SSPICTURE), GWL_WNDPROC);
-	SetWindowLong(GetDlgItem(hMain, IDC_SSPICTURE), GWL_WNDPROC, (LONG)PictureWndProc);
+	g_lpPictureWndProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hMain, IDC_SSPICTURE), GWL_WNDPROC);
+	SetWindowLongPtr(GetDlgItem(hMain, IDC_SSPICTURE), GWL_WNDPROC, (LONG_PTR)PictureWndProc);
 
 	/* Load the pic for the default screenshot. */
 	hMissing_bitmap = LoadBitmap(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_ABOUT));
@@ -1826,15 +1826,15 @@ static BOOL Win32UI_init(HINSTANCE hInstance, LPSTR lpCmdLine, int nCmdShow)
 
 	if (GetRunFullScreen())
 	{
-		LONG lMainStyle;
+		LONG_PTR lMainStyle;
 
 		// Remove menu
 		SetMenu(hMain,NULL);
 
 		// Frameless dialog (fake fullscreen)
-		lMainStyle = GetWindowLong(hMain, GWL_STYLE);
+		lMainStyle = GetWindowLongPtr(hMain, GWL_STYLE);
 		lMainStyle = lMainStyle & (WS_BORDER ^ 0xffffffff);
-		SetWindowLong(hMain, GWL_STYLE, lMainStyle);
+		SetWindowLongPtr(hMain, GWL_STYLE, lMainStyle);
 
 		nCmdShow = SW_MAXIMIZE;
 	}
@@ -1982,7 +1982,7 @@ static LRESULT WINAPI MameWindowProc(HWND hWnd, UINT message, UINT_PTR wParam, L
 		return 0;
 
 	case WM_SIZE:
-		OnSize(hWnd, wParam, LOWORD(lParam), HIWORD(wParam));
+		OnSize(hWnd, (UINT)wParam, LOWORD(lParam), HIWORD(wParam));
 		return TRUE;
 
 	case WM_MENUSELECT:
@@ -2063,8 +2063,8 @@ static LRESULT WINAPI MameWindowProc(HWND hWnd, UINT message, UINT_PTR wParam, L
 			GetColumnWidths(widths);
 
 			// switch the list view to LVS_REPORT style so column widths reported correctly
-			SetWindowLong(hwndList,GWL_STYLE,
-						  (GetWindowLong(hwndList, GWL_STYLE) & ~LVS_TYPEMASK) | LVS_REPORT);
+			SetWindowLongPtr(hwndList,GWL_STYLE,
+						  (GetWindowLongPtr(hwndList, GWL_STYLE) & ~LVS_TYPEMASK) | LVS_REPORT);
 
 			nColumnMax = GetNumColumns(hwndList);
 
@@ -2299,7 +2299,7 @@ static BOOL GameCheck(void)
 	lvfi.lParam = game_index;
 
 	i = ListView_FindItem(hwndList, -1, &lvfi);
-	if (changed && i != -1);
+	if (changed && i != -1)
 		ListView_RedrawItems(hwndList, i, i);
 	if ((game_index % progBarStep) == 0)
 		ProgressBarStep();
@@ -2548,7 +2548,7 @@ static HWND InitProgressBar(HWND hParent)
 static void CopyToolTipText(LPTOOLTIPTEXT lpttt)
 {
 	int   i;
-	int   iButton = lpttt->hdr.idFrom;
+	int   iButton = (int)lpttt->hdr.idFrom;
 	const char *pString;
 	LPSTR pDest = lpttt->lpszText;
 
@@ -2710,7 +2710,7 @@ static void DisableSelection()
 	mmi.fMask	   = MIIM_TYPE;
 	mmi.fType	   = MFT_STRING;
 	mmi.dwTypeData = (char *)"&Play";
-	mmi.cch 	   = strlen(mmi.dwTypeData);
+	mmi.cch 	   = (UINT)strlen(mmi.dwTypeData);
 	SetMenuItemInfo(hMenu, ID_FILE_PLAY, FALSE, &mmi);
 
 	EnableMenuItem(hMenu, ID_FILE_PLAY, 		   MF_GRAYED);
@@ -2739,7 +2739,7 @@ static void EnableSelection(int nGame)
 	mmi.fMask	   = MIIM_TYPE;
 	mmi.fType	   = MFT_STRING;
 	mmi.dwTypeData = buf;
-	mmi.cch 	   = strlen(mmi.dwTypeData);
+	mmi.cch 	   = (UINT)strlen(mmi.dwTypeData);
 	SetMenuItemInfo(hMenu, ID_FILE_PLAY, FALSE, &mmi);
 
 	pText = ModifyThe(drivers[nGame]->description);
@@ -2875,7 +2875,7 @@ static BOOL MamePickerNotify(NMHDR *nm)
 		/* Check here to make sure an item was selected */
 		if (!PickerHitTest(hwndList))
 		{
-			if (nLastItem != -1);
+			if (nLastItem != -1)
 				SetSelectedPickItem(nLastItem);
 			return TRUE;
 		}
@@ -2886,7 +2886,7 @@ static BOOL MamePickerNotify(NMHDR *nm)
 	case LVN_GETDISPINFO:
 		{
 			LV_DISPINFO* pDispInfo = (LV_DISPINFO*)nm;
-			int nItem = pDispInfo->item.lParam;
+			int nItem = (int)pDispInfo->item.lParam;
 
 			if (pDispInfo->item.mask & LVIF_IMAGE)
 			{
@@ -2993,7 +2993,7 @@ static BOOL MamePickerNotify(NMHDR *nm)
 		&&	!(pnmv->uNewState & LVIS_SELECTED))
 		{
 			if (pnmv->lParam != -1)
-				nLastItem = pnmv->lParam;
+				nLastItem = (int)pnmv->lParam;
 			/* leaving item */
 			/* printf("leaving %s\n",drivers[pnmv->lParam]->name); */
 		}
@@ -3009,7 +3009,7 @@ static BOOL MamePickerNotify(NMHDR *nm)
 				GlobalDeleteAtom(a);
 			}
 
-			EnableSelection(pnmv->lParam);
+			EnableSelection((int)pnmv->lParam);
 		}
 		return TRUE;
 
@@ -3363,8 +3363,8 @@ static void SetView(int menu_id, int listview_style)
 	CheckMenuRadioItem(GetMenu(hMain), ID_VIEW_LARGE_ICON, ID_VIEW_GROUPED, menu_id, MF_CHECKED);
 	ToolBar_CheckButton(hToolBar, menu_id, MF_CHECKED);
 
-	SetWindowLong(hwndList, GWL_STYLE,
-				  (GetWindowLong(hwndList, GWL_STYLE) & ~LVS_TYPEMASK) | listview_style );
+	SetWindowLongPtr(hwndList, GWL_STYLE,
+				  (GetWindowLongPtr(hwndList, GWL_STYLE) & ~LVS_TYPEMASK) | listview_style );
 
 	if (current_view_id == ID_VIEW_GROUPED || menu_id == ID_VIEW_GROUPED)
 	{
@@ -3698,9 +3698,7 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 	/* ListView Context Menu */
 	case ID_CONTEXT_ADD_CUSTOM:
 	{
-	    int  nResult;
-
-		nResult = DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_CUSTOM_FILE),
+		INT_PTR  nResult = DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_CUSTOM_FILE),
 								 hMain,AddCustomFileDialogProc,GetSelectedPickItem());
 		SetFocus(hwndList);
 		break;
@@ -3838,7 +3836,7 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 
 	case ID_OPTIONS_DIR:
 		{
-			int  nResult;
+			INT_PTR  nResult;
 			BOOL bUpdateRoms;
 			BOOL bUpdateSamples;
 
@@ -4041,8 +4039,8 @@ static void InitListView()
 	int i;
 
 	/* subclass the list view */
-	g_lpListViewWndProc = (WNDPROC)(LONG)(int)GetWindowLong(hwndList, GWL_WNDPROC);
-	SetWindowLong(hwndList, GWL_WNDPROC, (LONG)ListViewWndProc);
+	g_lpListViewWndProc = (WNDPROC)GetWindowLongPtr(hwndList, GWL_WNDPROC);
+	SetWindowLongPtr(hwndList, GWL_WNDPROC, (LONG_PTR)ListViewWndProc);
 
 	/* Disabled column customize with old Control */
 	if (oldControl)
@@ -4083,11 +4081,11 @@ static void ResetColumnDisplay(BOOL first_time)
 
 	if (!first_time)
 	{
-		DWORD style = GetWindowLong(hwndList, GWL_STYLE);
+		DWORD_PTR style = GetWindowLongPtr(hwndList, GWL_STYLE);
 
 		// switch the list view to LVS_REPORT style so column widths reported correctly
-		SetWindowLong(hwndList,GWL_STYLE,
-					  (GetWindowLong(hwndList, GWL_STYLE) & ~LVS_TYPEMASK) | LVS_REPORT);
+		SetWindowLongPtr(hwndList,GWL_STYLE,
+					  (GetWindowLongPtr(hwndList, GWL_STYLE) & ~LVS_TYPEMASK) | LVS_REPORT);
 
 		nColumn = GetNumColumns(hwndList);
 		// The first time thru this won't happen, on purpose
@@ -4100,7 +4098,7 @@ static void ResetColumnDisplay(BOOL first_time)
 
 		SetColumnWidths(widths);
 
-		SetWindowLong(hwndList,GWL_STYLE,style);
+		SetWindowLongPtr(hwndList,GWL_STYLE,style);
 
 		for (i = nColumn; i > 0; i--)
 		{
@@ -4301,7 +4299,7 @@ static void CreateIcons(void)
 	DWORD dwLargeIconSize = GetShellLargeIconSize();
 	HICON hIcon;
 	int icon_count;
-	DWORD dwStyle;
+	DWORD_PTR dwStyle;
 	HIMAGELIST hList;
 
 	icon_count = 0;
@@ -4316,8 +4314,8 @@ static void CreateIcons(void)
 	// full refresh, which seems odd (it should recreate the scrollbar when
 	// set back to report mode, for example, but it doesn't).
 
-	dwStyle = GetWindowLong(hwndList,GWL_STYLE);
-	SetWindowLong(hwndList,GWL_STYLE,(dwStyle & ~LVS_TYPEMASK) | LVS_ICON);
+	dwStyle = GetWindowLongPtr(hwndList,GWL_STYLE);
+	SetWindowLongPtr(hwndList,GWL_STYLE,(dwStyle & ~LVS_TYPEMASK) | LVS_ICON);
 
 	hSmall = ImageList_Create(GetShellSmallIconSize(),GetShellSmallIconSize(),
 							  ILC_COLORDDB | ILC_MASK, icon_count, 500);
@@ -4331,7 +4329,7 @@ static void CreateIcons(void)
 	hList = ListView_SetImageList(hwndList, hLarge, LVSIL_NORMAL);
 
 	// restore our view
-	SetWindowLong(hwndList,GWL_STYLE,dwStyle);
+	SetWindowLongPtr(hwndList,GWL_STYLE,dwStyle);
 
 	hHeaderImages = ImageList_Create(8,8,ILC_COLORDDB | ILC_MASK,2,2);
 	hIcon = LoadIcon(hInst,MAKEINTRESOURCE(IDI_HEADER_UP));
@@ -4352,14 +4350,14 @@ static int CALLBACK ListCompareFunc(LPARAM index1, LPARAM index2, int sort_subit
 
 	/* do our fancy compare, with clones grouped under parents
 	 * if games are both parents, basic sort on that
-     */
-	if (DriverIsClone(index1) == FALSE && DriverIsClone(index2) == FALSE)
+	 */
+	if (DriverIsClone((int)index1) == FALSE && DriverIsClone((int)index2) == FALSE)
 	{
 		return BasicCompareFunc(index1,index2,sort_subitem);
 	}
 
 	/* if both are clones */
-	if (DriverIsClone(index1) && DriverIsClone(index2))
+	if (DriverIsClone((int)index1) && DriverIsClone((int)index2))
 	{
 		/* same parent? sort on children */
 		if (drivers[index1]->clone_of == drivers[index2]->clone_of)
@@ -4373,7 +4371,7 @@ static int CALLBACK ListCompareFunc(LPARAM index1, LPARAM index2, int sort_subit
 	}
 
 	/* one clone, one non-clone */
-	if (DriverIsClone(index1))
+	if (DriverIsClone((int)index1))
 	{
 		/* first one is the clone */
 
@@ -4422,8 +4420,8 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		break;
 
 	case COLUMN_ROMS:
-		nTemp1 = GetRomAuditResults(index1);
-		nTemp2 = GetRomAuditResults(index2);
+		nTemp1 = GetRomAuditResults((int)index1);
+		nTemp2 = GetRomAuditResults((int)index2);
 
 		if (IsAuditResultKnown(nTemp1) == FALSE && IsAuditResultKnown(nTemp2) == FALSE)
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
@@ -4456,9 +4454,9 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 
 	case COLUMN_SAMPLES:
 		nTemp1 = -1;
-		if (DriverUsesSamples(index1))
+		if (DriverUsesSamples((int)index1))
 		{
-			int audit_result = GetSampleAuditResults(index1);
+			int audit_result = GetSampleAuditResults((int)index1);
 			if (IsAuditResultKnown(audit_result))
 			{
 				if (IsAuditResultYes(audit_result))
@@ -4471,9 +4469,9 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		}
 
 		nTemp2 = -1;
-		if (DriverUsesSamples(index2))
+		if (DriverUsesSamples((int)index2))
 		{
-			int audit_result = GetSampleAuditResults(index1);
+			int audit_result = GetSampleAuditResults((int)index1);
 			if (IsAuditResultKnown(audit_result))
 			{
 				if (IsAuditResultYes(audit_result))
@@ -4502,7 +4500,7 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		value = _stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12);
 		break;
 	case COLUMN_PLAYTIME:
-	   value = GetPlayTime(index1) - GetPlayTime(index2);
+	   value = GetPlayTime((int)index1) - GetPlayTime((int)index2);
 	   if (value == 0)
 		  return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
@@ -4523,14 +4521,14 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		break;
     }
 	case COLUMN_TRACKBALL:
-		if (DriverUsesTrackball(index1) == DriverUsesTrackball(index2))
+		if (DriverUsesTrackball((int)index1) == DriverUsesTrackball((int)index2))
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-		value = DriverUsesTrackball(index1) - DriverUsesTrackball(index2);
+		value = DriverUsesTrackball((int)index1) - DriverUsesTrackball((int)index2);
 		break;
 
 	case COLUMN_PLAYED:
-	   value = GetPlayCount(index1) - GetPlayCount(index2);
+	   value = GetPlayCount((int)index1) - GetPlayCount((int)index2);
 	   if (value == 0)
 		  return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
@@ -4551,8 +4549,8 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		break;
 
 	case COLUMN_CLONE:
-		name1 = GetCloneParentName(index1);
-		name2 = GetCloneParentName(index2);
+		name1 = GetCloneParentName((int)index1);
+		name2 = GetCloneParentName((int)index2);
 
 		if (*name1 == '\0')
 			name1 = NULL;
@@ -4606,7 +4604,7 @@ static int GetSelectedPickItem()
 	lvi.mask	 = LVIF_PARAM;
 	ListView_GetItem(hwndList, &lvi);
 
-	return lvi.lParam;
+	return (int)lvi.lParam;
 }
 
 static HICON GetSelectedPickItemIcon()
@@ -4690,7 +4688,7 @@ static BOOL CommonFileDialog(common_file_dialog_proc cfd, char *filename, BOOL b
 	of.nFileOffset       = 0;
 	of.nFileExtension    = 0;
 	of.lpstrDefExt       = "inp";
-	of.lpstrDefExt       = NULL;
+	of.lpstrDefExt       = NULL; //!! ?
 	of.lCustData         = 0;
 	of.lpfnHook          = NULL;
 	of.lpTemplateName    = NULL;
@@ -4763,11 +4761,11 @@ static INT_PTR CALLBACK LanguageDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, L
 		}
 
 	case WM_HELP:
-		HelpFunction(((LPHELPINFO)lParam)->hItemHandle, MAME32CONTEXTHELP, HH_TP_HELP_WM_HELP, (DWORD)dwHelpIDs);
+		HelpFunction(((LPHELPINFO)lParam)->hItemHandle, MAME32CONTEXTHELP, HH_TP_HELP_WM_HELP, (DWORD_PTR)dwHelpIDs);
 		break;
 
 	case WM_CONTEXTMENU:
-		HelpFunction((HWND)wParam, MAME32CONTEXTHELP, HH_TP_HELP_CONTEXTMENU, (DWORD)dwHelpIDs);
+		HelpFunction((HWND)wParam, MAME32CONTEXTHELP, HH_TP_HELP_CONTEXTMENU, (DWORD_PTR)dwHelpIDs);
 		break;
 
 	case WM_COMMAND:
@@ -4827,7 +4825,7 @@ static void MamePlayBackGame()
 		_splitpath(filename, drive, dir, bare_fname, ext);
 
 		sprintf(path,"%s%s",drive,dir);
-		sprintf(fname,"%s%s",bare_fname,ext);
+		sprintf_s(fname,sizeof(fname),"%s%s",bare_fname,ext);
 		if (path[strlen(path)-1] == '\\')
 			path[strlen(path)-1] = 0; // take off trailing back slash
 
@@ -4840,9 +4838,8 @@ static void MamePlayBackGame()
 			MessageBox(NULL, buf, MAME32NAME, MB_OK | MB_ICONERROR);
 			return;
 		}
-
 		// check for game name embedded in .inp header
-		if (pPlayBack)
+		else
 		{
 			INP_HEADER inp_header;
 
@@ -5202,7 +5199,7 @@ static void UpdateMenu(HMENU hMenu)
 		mItem.fMask 	 = MIIM_TYPE;
 		mItem.fType 	 = MFT_STRING;
 		mItem.dwTypeData = buf;
-		mItem.cch		 = strlen(mItem.dwTypeData);
+		mItem.cch		 = (UINT)strlen(mItem.dwTypeData);
 
 		SetMenuItemInfo(hMenu, ID_FILE_PLAY, FALSE, &mItem);
 
@@ -5304,7 +5301,7 @@ void InitTreeContextMenu(HMENU hTreeMenu)
 		mii.fMask = MIIM_TYPE | MIIM_ID;
 		mii.fType = MFT_STRING;
 		mii.dwTypeData = (char *)g_folderData[i].m_lpTitle;
-		mii.cch = strlen(mii.dwTypeData);
+		mii.cch = (UINT)strlen(mii.dwTypeData);
 		mii.wID = ID_CONTEXT_SHOW_FOLDER_START + g_folderData[i].m_nFolderId;
 
 
@@ -5613,10 +5610,10 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	ListView_GetItem(hwndList, &lvi);
 
 	bSelected = ((lvi.state & LVIS_DROPHILITED) || ( (lvi.state & LVIS_SELECTED)
-		&& ((bFocus) || (GetWindowLong(hwndList, GWL_STYLE) & LVS_SHOWSELALWAYS))));
+		&& ((bFocus) || (GetWindowLongPtr(hwndList, GWL_STYLE) & LVS_SHOWSELALWAYS))));
 
 	/* figure out if we indent and draw grayed */
-	draw_as_clone = (GetViewMode() == VIEW_GROUPED && DriverIsClone(lvi.lParam));
+	draw_as_clone = (GetViewMode() == VIEW_GROUPED && DriverIsClone((int)lvi.lParam));
 
 	ListView_GetItemRect(hwndList, nItem, rcAllLabelsaddr, LVIR_BOUNDS);
 
@@ -5938,7 +5935,7 @@ static BOOL ListCtrlOnErase(HWND hWnd, HDC hDC)
 	GetDCOrgEx(hDC, &ptOrigin);
 	ptOrigin.x -= pt.x;
 	ptOrigin.y -= pt.y;
-	ptOrigin.x = -GetScrollPos(hWnd, SB_HORZ);
+	ptOrigin.x = -GetScrollPos(hWnd, SB_HORZ); //!! ?
 	ptOrigin.y = -GetScrollPos(hWnd, SB_VERT);
 
 	for (i = ptOrigin.x; i < rcClient.right; i += bmDesc.bmWidth)
@@ -6344,7 +6341,7 @@ void BeginListViewDrag(NM_LISTVIEW *pnmv)
 	lvi.mask	 = LVIF_PARAM;
 	ListView_GetItem(hwndList, &lvi);
 
-	game_dragged = lvi.lParam;
+	game_dragged = (int)lvi.lParam;
 
 	pt.x = 0;
 	pt.y = 0;
@@ -6601,7 +6598,7 @@ void CalculateBestScreenShotRect(HWND hWnd, RECT *pRect, BOOL restrict_height)
 
 void SwitchFullScreenMode(void)
 {
-	LONG lMainStyle;
+	LONG_PTR lMainStyle;
 
 	if (GetRunFullScreen())
 	{
@@ -6617,9 +6614,9 @@ void SwitchFullScreenMode(void)
 		CheckMenuItem(GetMenu(hMain), ID_VIEW_PAGETAB, GetShowTabCtrl() ? MF_CHECKED : MF_UNCHECKED);
 
 		// Add frame to dialog again
-		lMainStyle = GetWindowLong(hMain, GWL_STYLE);
+		lMainStyle = GetWindowLongPtr(hMain, GWL_STYLE);
 		lMainStyle = lMainStyle | WS_BORDER;
-		SetWindowLong(hMain, GWL_STYLE, lMainStyle);
+		SetWindowLongPtr(hMain, GWL_STYLE, lMainStyle);
 
 		// Show the window maximized
 		ShowWindow(hMain, SW_RESTORE);
@@ -6634,9 +6631,9 @@ void SwitchFullScreenMode(void)
 		SetMenu(hMain,NULL);
 
 		// Frameless dialog (fake fullscreen)
-		lMainStyle = GetWindowLong(hMain, GWL_STYLE);
+		lMainStyle = GetWindowLongPtr(hMain, GWL_STYLE);
 		lMainStyle = lMainStyle & (WS_BORDER ^ 0xffffffff);
-		SetWindowLong(hMain, GWL_STYLE, lMainStyle);
+		SetWindowLongPtr(hMain, GWL_STYLE, lMainStyle);
 
 		ShowWindow(hMain, SW_MAXIMIZE);
 

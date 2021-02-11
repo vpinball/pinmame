@@ -321,9 +321,9 @@ static struct ComboBoxEffect
  * Public functions
  ***************************************************************/
 
-DWORD GetHelpIDs(void)
+DWORD_PTR GetHelpIDs(void)
 {
-	return (DWORD) (LPSTR) dwHelpIDs;
+	return (DWORD_PTR)dwHelpIDs;
 }
 
 #ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
@@ -976,7 +976,7 @@ INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 			EnableWindow(GetDlgItem(hDlg, IDC_USE_DEFAULT), (g_bUseDefaults) ? FALSE : TRUE);
 			g_bReset = FALSE;
 			PropSheet_UnChanged(GetParent(hDlg), hDlg);
-			SetWindowLong(hDlg, DWL_MSGRESULT, TRUE);
+			SetWindowLongPtr(hDlg, DWL_MSGRESULT, TRUE);
 			return PSNRET_NOERROR;
 
 		case PSN_KILLACTIVE:
@@ -986,7 +986,7 @@ INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 			ResetDataMap();
 			if (g_nGame != -1)
 				SetGameUsesDefaults(g_nGame,g_bUseDefaults);
-			SetWindowLong(hDlg, DWL_MSGRESULT, FALSE);
+			SetWindowLongPtr(hDlg, DWL_MSGRESULT, FALSE);
 			return 1;
 
 		case PSN_RESET:
@@ -995,7 +995,7 @@ INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 			CopyGameOptions(&origGameOpts,pGameOpts);
 			if (g_nGame != -1)
 				SetGameUsesDefaults(g_nGame,orig_uses_defaults);
-			SetWindowLong(hDlg, DWL_MSGRESULT, FALSE);
+			SetWindowLongPtr(hDlg, DWL_MSGRESULT, FALSE);
 			break;
 
 		case PSN_HELP:
@@ -1070,7 +1070,7 @@ static void PropToOptions(HWND hWnd, options_type *o)
 		hCtrl = GetDlgItem(hWnd, IDC_RESDEPTH);
 		if (hCtrl)
 		{
-			int nResDepth = 0;
+			LRESULT nResDepth = 0;
 
 			nIndex = ComboBox_GetCurSel(hCtrl);
 			if (nIndex != CB_ERR)
@@ -1097,7 +1097,7 @@ static void PropToOptions(HWND hWnd, options_type *o)
 	{
 		nIndex = ComboBox_GetCurSel(hCtrl);
 		
-		pGameOpts->gfx_refresh = ComboBox_GetItemData(hCtrl, nIndex);
+		pGameOpts->gfx_refresh = (int)ComboBox_GetItemData(hCtrl, nIndex);
 	}
 
 	/* aspect ratio */
@@ -1224,7 +1224,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 				int nDepth;
 
 				/* Get the screen depth */
-				nDepth = ComboBox_GetItemData(hCtrl, nCount);
+				nDepth = (int)ComboBox_GetItemData(hCtrl, nCount);
 
 				/* If we match, set nSelection to the right value */
 				if (d == nDepth)
@@ -1260,7 +1260,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 				int nRefresh;
 
 				/* Get the screen depth */
-				nRefresh = ComboBox_GetItemData(hCtrl, nCount);
+				nRefresh = (int)ComboBox_GetItemData(hCtrl, nCount);
 
 				/* If we match, set nSelection to the right value */
 				if (o->gfx_refresh == nRefresh)
@@ -2275,7 +2275,7 @@ static void BeamSelectionChange(HWND hwnd)
 	double dBeam;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_BEAM), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_BEAM), TBM_GETPOS, 0, 0);
 
 	dBeam = nValue / 20.0 + 1.0;
 
@@ -2292,7 +2292,7 @@ static void FlickerSelectionChange(HWND hwnd)
 	double dFlicker;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_FLICKER), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_FLICKER), TBM_GETPOS, 0, 0);
 
 	dFlicker = nValue;
 
@@ -2309,7 +2309,7 @@ static void GammaSelectionChange(HWND hwnd)
 	double dGamma;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_GAMMA), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_GAMMA), TBM_GETPOS, 0, 0);
 
 	dGamma = nValue / 20.0 + 0.5;
 
@@ -2326,7 +2326,7 @@ static void BrightCorrectSelectionChange(HWND hwnd)
 	double dValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_BRIGHTCORRECT), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_BRIGHTCORRECT), TBM_GETPOS, 0, 0);
 
 	dValue = nValue / 20.0 + 0.5;
 
@@ -2343,7 +2343,7 @@ static void PauseBrightSelectionChange(HWND hwnd)
 	double dValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_PAUSEBRIGHT), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_PAUSEBRIGHT), TBM_GETPOS, 0, 0);
 
 	dValue = nValue / 20.0 + 0.5;
 
@@ -2360,7 +2360,7 @@ static void BrightnessSelectionChange(HWND hwnd)
 	double dBrightness;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_BRIGHTNESS), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_BRIGHTNESS), TBM_GETPOS, 0, 0);
 
 	dBrightness = nValue / 20.0 + 0.1;
 
@@ -2377,7 +2377,7 @@ static void IntensitySelectionChange(HWND hwnd)
 	double dIntensity;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_INTENSITY), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_INTENSITY), TBM_GETPOS, 0, 0);
 
 	dIntensity = nValue / 20.0 + 0.5;
 
@@ -2394,7 +2394,7 @@ static void A2DSelectionChange(HWND hwnd)
 	double dA2D;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_A2D), TBM_GETPOS, 0, 0);
+	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_A2D), TBM_GETPOS, 0, 0);
 
 	dA2D = nValue / 20.0;
 
@@ -2412,17 +2412,17 @@ static void ResDepthSelectionChange(HWND hWnd, HWND hWndCtrl)
 	if (nCurSelection != CB_ERR)
 	{
 		HWND hRefreshCtrl;
-		int nResDepth = 0;
-		int nRefresh  = 0;
+		DWORD nResDepth = 0;
+		DWORD nRefresh  = 0;
 
-		nResDepth = ComboBox_GetItemData(hWndCtrl, nCurSelection);
+		nResDepth = (DWORD)ComboBox_GetItemData(hWndCtrl, nCurSelection);
 
 		hRefreshCtrl = GetDlgItem(hWnd, IDC_REFRESH);
 		if (hRefreshCtrl)
 		{
 			nCurSelection = ComboBox_GetCurSel(hRefreshCtrl);
 			if (nCurSelection != CB_ERR)
-				nRefresh = ComboBox_GetItemData(hRefreshCtrl, nCurSelection);
+				nRefresh = (DWORD)ComboBox_GetItemData(hRefreshCtrl, nCurSelection);
 		}
 
 		UpdateDisplayModeUI(hWnd, nResDepth, nRefresh);
@@ -2438,17 +2438,17 @@ static void RefreshSelectionChange(HWND hWnd, HWND hWndCtrl)
 	if (nCurSelection != CB_ERR)
 	{
 		HWND hResDepthCtrl;
-		int nResDepth = 0;
-		int nRefresh  = 0;
+		DWORD nResDepth = 0;
+		DWORD nRefresh  = 0;
 
-		nRefresh = ComboBox_GetItemData(hWndCtrl, nCurSelection);
+		nRefresh = (DWORD)ComboBox_GetItemData(hWndCtrl, nCurSelection);
 
 		hResDepthCtrl = GetDlgItem(hWnd, IDC_RESDEPTH);
 		if (hResDepthCtrl)
 		{
 			nCurSelection = ComboBox_GetCurSel(hResDepthCtrl);
 			if (nCurSelection != CB_ERR)
-				nResDepth = ComboBox_GetItemData(hResDepthCtrl, nCurSelection);
+				nResDepth = (DWORD)ComboBox_GetItemData(hResDepthCtrl, nCurSelection);
 		}
 
 		UpdateDisplayModeUI(hWnd, nResDepth, nRefresh);
@@ -2462,7 +2462,7 @@ static void VolumeSelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_VOLUME), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_VOLUME), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	snprintf(buf,sizeof(buf), "%ddB", nValue - 32);
@@ -2475,7 +2475,7 @@ static void AudioLatencySelectionChange(HWND hwnd)
 	int value;
 
 	// Get the current value of the control
-	value = SendMessage(GetDlgItem(hwnd,IDC_AUDIO_LATENCY), TBM_GETPOS, 0, 0);
+	value = (int)SendMessage(GetDlgItem(hwnd,IDC_AUDIO_LATENCY), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	snprintf(buffer,sizeof(buffer),"%i/5",value);
@@ -2489,7 +2489,7 @@ static void D3DScanlinesSelectionChange(HWND hwnd)
 	int value;
 
 	// Get the current value of the control
-	value = SendMessage(GetDlgItem(hwnd,IDC_D3D_SCANLINES), TBM_GETPOS, 0, 0);
+	value = (int)SendMessage(GetDlgItem(hwnd,IDC_D3D_SCANLINES), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	snprintf(buffer,sizeof(buffer),"%i",value);
@@ -2503,7 +2503,7 @@ static void D3DFeedbackSelectionChange(HWND hwnd)
 	int value;
 
 	// Get the current value of the control
-	value = SendMessage(GetDlgItem(hwnd,IDC_D3D_FEEDBACK), TBM_GETPOS, 0, 0);
+	value = (int)SendMessage(GetDlgItem(hwnd,IDC_D3D_FEEDBACK), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	snprintf(buffer,sizeof(buffer),"%i",value);
@@ -2517,7 +2517,7 @@ static void ZoomSelectionChange(HWND hwnd)
 	int value;
 
 	// Get the current value of the control
-	value = SendMessage(GetDlgItem(hwnd,IDC_ZOOM), TBM_GETPOS, 0, 0);
+	value = (int)SendMessage(GetDlgItem(hwnd,IDC_ZOOM), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	snprintf(buffer,sizeof(buffer),"%i",value);
@@ -2532,7 +2532,7 @@ static void DMDREDSelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_RED), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_RED), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d", nValue);
@@ -2544,7 +2544,7 @@ static void DMDGREENSelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_GREEN), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_GREEN), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d", nValue);
@@ -2556,7 +2556,7 @@ static void DMDBLUESelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_BLUE), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_BLUE), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d", nValue);
@@ -2568,7 +2568,7 @@ static void DMDPERC0SelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC0), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC0), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d%%", nValue);
@@ -2580,7 +2580,7 @@ static void DMDPERC33SelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC33), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC33), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d%%", nValue);
@@ -2592,7 +2592,7 @@ static void DMDPERC66SelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC66), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC66), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d%%", nValue);
@@ -2604,7 +2604,7 @@ static void DMDANTIALIASSelectionChange(HWND hwnd)
 	int  nValue;
 
 	/* Get the current value of the control */
-	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_ANTIALIAS), TBM_GETPOS, 0, 0);
+	nValue = (int)SendMessage(GetDlgItem(hwnd, IDC_DMD_ANTIALIAS), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
 	sprintf(buf, "%d%%", nValue);
@@ -2844,7 +2844,7 @@ static void InitializeDefaultInputUI(HWND hwnd)
 					strcmp (FindFileData.cFileName,"..") != 0)
 				{
 					// copy the filename
-					strcpy (root,FindFileData.cFileName);
+					strcpy_s (root,sizeof(root),FindFileData.cFileName);
 
 					// assume it's not a zip file
 					isZipFile = 0;
