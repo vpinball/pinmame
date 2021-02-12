@@ -21,7 +21,7 @@
 /  Local variables
 /-----------------*/
 static struct {
-  UINT16 dispData[4];
+  UINT8 dispData[4];
   int dispCol;
   int dispRow;
   core_tSeg segments;
