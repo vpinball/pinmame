@@ -28,6 +28,7 @@ void lisy_sound_handler( unsigned char board, unsigned char data );
 #define LISY_HW_LISY80  320             //LISY80 HW320 & LISY_Home
 #define LISY_HW_LISY_W  121             //LISYx_W (Williams) based on LISY_MINI1
 #define LISY_HW_LISY_APC 122            //LISYx_APC (Williams) APC with integrated LISY
+#define LISY_HW_LISY_H_SS 200           //LISY_Home Starship special
 
 //the LISY HW ID, one revision can have multiple hw IDS
 #define LISY_HW_ID_NONE 0  //old lisy versions without HW ID

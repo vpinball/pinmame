@@ -77,6 +77,7 @@ int lisy_get_hardware_revision(int disp_sw_ver, int *hw_ID)
  *    31 LISY80_LED
  * 41 .. 80 LISY1
  * 81 .. 120 LISY35
+ * 200 LISY_Home Starship
  * with that, siftware version of PIC has to be is >= 4
  *
  *  otherwise try to open eeprom via i2c in order to detect hardware revision
@@ -112,6 +113,8 @@ int lisy_get_hardware_revision(int disp_sw_ver, int *hw_ID)
 	case 41 ... 80: return(100);
 		       break;
 	case 81 ... 120: return(350);
+		       break;
+	case 200: return(200);
 		       break;
 	default: return(-1);
 		       break;

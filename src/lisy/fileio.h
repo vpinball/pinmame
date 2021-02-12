@@ -88,6 +88,7 @@ int  lisy35_file_get_soundopts(void);
 
 int lisymini_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
 int lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
+int  lisy_m_file_get_hwrules(void);
 
 int  lisy_file_get_welcome_msg(char *message);
 
@@ -139,6 +140,10 @@ int  lisy_file_get_home_mappings(void);
 
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"
+
+/* APC stuff */
+#define APC_HW_RULES_PATH "/boot/lisy/lisy_m/coils/"
+#define APC_HW_RULES_FILE "_APC_hw_rules.csv"
 
 /* generalLISY stuff */
 #define LISY_WELCOME_MSG_FILE "/boot/lisy/lisy/Welcome.msg"

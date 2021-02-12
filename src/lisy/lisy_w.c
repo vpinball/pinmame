@@ -77,6 +77,9 @@ Credits: 20 28 Balls: 0 8
   } t_mysegments_s11;
 
 /*
+
+
+/*
 ********   SYSTEM 7  *************
 from core.h
 struct core_dispLayout {
@@ -164,6 +167,12 @@ unsigned char lisy_has_SS_Relais = 0;
 //initial to 1 to save nvram in case of not exiting at star ( Factory Reset Message)
 static unsigned char want_to_write_nvram = 1;
 
+//global var for additional coil hw rules with APC
+int lisy_m_APC_coil_HW_rule[32] = { 0,0,0,0,0,0,0,0,
+				    0,0,0,0,0,0,0,0,
+				    0,0,0,0,0,0,0,0,
+				    0,0,0,0,0,0,0,0};
+
 //init SW portion of lisy_w
 void lisy_w_init( void )
 {
@@ -180,6 +189,10 @@ void lisy_w_init( void )
 
 //set the internal type
 if (strcmp(lisymini_game.type,"SYS7") == 0) lisymini_game.typeno = LISYW_TYPE_SYS7;
+else if (strcmp(lisymini_game.type,"SYS3") == 0) lisymini_game.typeno = LISYW_TYPE_SYS3;
+else if (strcmp(lisymini_game.type,"SYS4") == 0) lisymini_game.typeno = LISYW_TYPE_SYS4;
+else if (strcmp(lisymini_game.type,"SYS6") == 0) lisymini_game.typeno = LISYW_TYPE_SYS6;
+else if (strcmp(lisymini_game.type,"SYS6A") == 0) lisymini_game.typeno = LISYW_TYPE_SYS6A;
 else if (strcmp(lisymini_game.type,"SYS9") == 0) lisymini_game.typeno = LISYW_TYPE_SYS9;
 else if (strcmp(lisymini_game.type,"SYS11") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11;
 else if (strcmp(lisymini_game.type,"SYS11RK") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11RK; //Road Kings;
@@ -191,6 +204,10 @@ else lisymini_game.typeno = LISYW_TYPE_NONE;
 //set internal flags based on system type
 switch(lisymini_game.typeno)
 {
+	case LISYW_TYPE_SYS3: 
+	case LISYW_TYPE_SYS4: 
+	case LISYW_TYPE_SYS6: 
+	case LISYW_TYPE_SYS6A: 
 	case LISYW_TYPE_SYS7: 
 	case LISYW_TYPE_SYS9: 
 		lisy_has_AC_Relais = 0;	
@@ -224,14 +241,38 @@ for(i=0; i<strlen(lisymini_game.long_name); i++) lisymini_game.long_name[i] = to
  lisy_api_show_boot_message(s_lisy_software_version,lisymini_game.type,lisymini_game.gamenr,lisymini_game.long_name);
   
  //set HW rules for solenoids, let do APC this (faster)
- //we do it per default for all 6 special solenoids
- //and ignore 'special switches' for pinmamem in switch_handler
- lisy_api_sol_set_hwrule( 17, 65 ); 
- lisy_api_sol_set_hwrule( 18, 66 );
- lisy_api_sol_set_hwrule( 19, 67 ); 
- lisy_api_sol_set_hwrule( 20, 68 ); 
- lisy_api_sol_set_hwrule( 21, 69 ); 
- lisy_api_sol_set_hwrule( 22, 70 ); 
+ if ( lisy_m_file_get_hwrules() < 0)
+ { 
+  //no special file found
+  //we do it per default for all 6 special solenoids
+  //and ignore 'special switches' for pinmamem in switch_handler
+  if ( ls80dbg.bitv.basic )
+  {
+    sprintf(debugbuf,"LISY_Mini: no special hw rules found for game %d, setting defaults",lisymini_game.gamenr);
+    lisy80_debug(debugbuf);
+  }
+  lisy_api_sol_set_hwrule( 17, 65 ); 
+  lisy_api_sol_set_hwrule( 18, 66 );
+  lisy_api_sol_set_hwrule( 19, 67 ); 
+  lisy_api_sol_set_hwrule( 20, 68 ); 
+  lisy_api_sol_set_hwrule( 21, 69 ); 
+  lisy_api_sol_set_hwrule( 22, 70 ); 
+ }
+ else
+ {
+  //special file found
+  //setting hw rules accordently
+  if ( ls80dbg.bitv.basic )
+  {
+    sprintf(debugbuf,"LISY_Mini: FOUND special hw rules for game %d",lisymini_game.gamenr);
+    lisy80_debug(debugbuf);
+  }
+   for(i=0; i<31; i++) 
+	{
+	  if ( lisy_m_APC_coil_HW_rule[i] > 0 )
+  		lisy_api_sol_set_hwrule( i, lisy_m_APC_coil_HW_rule[i] ); 
+	}
+ }
 
  //show green ligth for now, lisy mini is running
  lisy80_set_red_led(0);
@@ -448,6 +489,133 @@ void send_SEG14_to_display( int no, int len, UINT16 *dispval)
 }
 
 
+/* System 6 ******/
+/* from s6.c
+  6 Digit Structure, Alpha Position, and Layout
+  ----------------------------------------------
+  (00)(01)(02)(03)(04)(05) (08)(09)(10)(11)(12)(13)
+
+  (16)(17)(18((19)(20)(21) (24)(25)(26)(27)(28)(29)
+
+           (14)(15)   (06)(07)
+
+  0-5 =         Player 1
+  6-7 =         Right Side (ball in play)
+  8-13 =        Player 2
+  14-15 =       Left side (credits)
+  16-21 =       Player 3
+  24-29 =       Player 4
+*/
+
+ typedef union {
+       core_tSeg segments;
+       //assigment accoring to s7games.c & core.c/.h see above
+       struct {
+          UINT16 player1[6]; //0..5
+          UINT16 balls1; //6
+          UINT16 balls2;  //7
+          UINT16 player2[6]; //8..13
+          UINT16 credits1; //14
+          UINT16 credits2; //15
+          UINT16 player3[6]; //16..21
+	  UINT16 dum1[2]; // 22,23
+          UINT16 player4[6]; //24..29
+          UINT16 dum2[CORE_SEGCOUNT-30]; //the rest
+      } disp;
+  } t_mysegments_s6;
+
+
+
+//display handler System6
+void lisy_w_display_handler_SYS6(void)
+{
+  static UINT8 first = 1;
+  UINT8 i,k;
+  UINT16 status[4];
+  UINT16 sum1,sum2;
+  int len;
+
+
+  static t_mysegments_s6 mysegments;
+  t_mysegments_s6 tmp_segments;
+
+  if(first)
+  {
+        memset(mysegments.segments,0,sizeof(mysegments.segments));
+	first=0;
+  }
+ 
+  //something changed?
+  if  ( memcmp(mysegments.segments,coreGlobals.segments,sizeof(mysegments)) != 0)
+  {
+    //store it
+    memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
+    //check it display per display
+    len = sizeof(mysegments.disp.player1);
+    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len/2, tmp_segments.disp.player1);
+    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len/2, tmp_segments.disp.player2);
+    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len/2, tmp_segments.disp.player3);
+    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len/2, tmp_segments.disp.player4);
+    //status display
+    sum1 = tmp_segments.disp.balls1 + tmp_segments.disp.balls2 + tmp_segments.disp.credits1 + tmp_segments.disp.credits2;
+    sum2 = mysegments.disp.balls1 + mysegments.disp.balls2 + mysegments.disp.credits1 + mysegments.disp.credits2;
+    if (sum1 != sum2 )
+	{
+	 status[0]=tmp_segments.disp.credits1;
+	 status[1]=tmp_segments.disp.credits2;
+	 status[2]=tmp_segments.disp.balls1;
+	 status[3]=tmp_segments.disp.balls2;
+	 send_ASCII_to_display(0, 4, status);
+	}
+    //remember it
+    memcpy(mysegments.segments,coreGlobals.segments,sizeof(mysegments));
+
+    //and print out if debug display
+    if ( ls80dbg.bitv.displays ) 
+    {
+    char c;
+    lisy80_debug("display change detected");
+    fprintf(stderr,"\nPlayer1: ");
+    for(i=0; i<=5; i++) 
+    {
+      c=my_seg2char(mysegments.disp.player1[i]); 
+      if ( c>=0x80 ) { c=c-0x80; fprintf(stderr,"%c",c); fprintf(stderr,"."); }
+      else fprintf(stderr,"%c",c);
+    }
+    fprintf(stderr,"\nPlayer2: ");
+    for(i=0; i<=5; i++) 
+    {
+      c=my_seg2char(mysegments.disp.player2[i]); 
+      if ( c>=0x80 ) { c=c-0x80; fprintf(stderr,"%c",c); fprintf(stderr,"."); }
+      else fprintf(stderr,"%c",c);
+    }
+
+    fprintf(stderr,"\nPlayer3: ");
+    for(i=0; i<=5; i++) 
+    {
+      c=my_seg2char(mysegments.disp.player3[i]); 
+      if ( c>=0x80 ) { c=c-0x80; fprintf(stderr,"%c",c); fprintf(stderr,"."); }
+      else fprintf(stderr,"%c",c);
+    }
+    fprintf(stderr,"\nPlayer4: ");
+    for(i=0; i<=5; i++) 
+    {
+      c=my_seg2char(mysegments.disp.player4[i]); 
+      if ( c>=0x80 ) { c=c-0x80; fprintf(stderr,"%c",c); fprintf(stderr,"."); }
+      else fprintf(stderr,"%c",c);
+    }
+
+    fprintf(stderr,"\nCredits: %c%c",my_seg2char(mysegments.disp.credits1),my_seg2char(mysegments.disp.credits2));
+    fprintf(stderr,"\nBalls: %c%c",my_seg2char(mysegments.disp.balls1),my_seg2char(mysegments.disp.balls2));
+    fprintf(stderr,"\n\n ");
+    }
+
+    //check which line has changed
+
+  }
+}
+
+
 //display handler System7
 void lisy_w_display_handler_SYS7(void)
 {
@@ -474,10 +642,10 @@ void lisy_w_display_handler_SYS7(void)
     memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
     //check it display per display
     len = sizeof(mysegments.disp.player1);
-    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len, tmp_segments.disp.player1);
-    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len, tmp_segments.disp.player2);
-    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len, tmp_segments.disp.player3);
-    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len, tmp_segments.disp.player4);
+    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len/2, tmp_segments.disp.player1);
+    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len/2, tmp_segments.disp.player2);
+    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len/2, tmp_segments.disp.player3);
+    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len/2, tmp_segments.disp.player4);
     //status display
     sum1 = tmp_segments.disp.balls1 + tmp_segments.disp.balls2 + tmp_segments.disp.credits1 + tmp_segments.disp.credits2;
     sum2 = mysegments.disp.balls1 + mysegments.disp.balls2 + mysegments.disp.credits1 + mysegments.disp.credits2;
@@ -563,10 +731,10 @@ void lisy_w_display_handler_SYS9(void)
     memcpy(tmp_segments.segments,coreGlobals.segments,sizeof(mysegments));
     //check it display per display
     len = sizeof(mysegments.disp.player1);
-    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len, tmp_segments.disp.player1);
-    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len, tmp_segments.disp.player2);
-    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len, tmp_segments.disp.player3);
-    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len, tmp_segments.disp.player4);
+    if( memcmp( tmp_segments.disp.player1,mysegments.disp.player1,len) != 0) send_ASCII_to_display(1, len/2, tmp_segments.disp.player1);
+    if( memcmp( tmp_segments.disp.player2,mysegments.disp.player2,len) != 0) send_ASCII_to_display(2, len/2, tmp_segments.disp.player2);
+    if( memcmp( tmp_segments.disp.player3,mysegments.disp.player3,len) != 0) send_ASCII_to_display(3, len/2, tmp_segments.disp.player3);
+    if( memcmp( tmp_segments.disp.player4,mysegments.disp.player4,len) != 0) send_ASCII_to_display(4, len/2, tmp_segments.disp.player4);
     //status display
     sum1 = tmp_segments.disp.balls1 + tmp_segments.disp.balls2 + tmp_segments.disp.credits1 + tmp_segments.disp.credits2;
     sum2 = mysegments.disp.balls1 + mysegments.disp.balls2 + mysegments.disp.credits1 + mysegments.disp.credits2;
@@ -850,6 +1018,12 @@ void lisy_w_display_handler(void)
 
  switch(lisymini_game.typeno)
  {
+  case LISYW_TYPE_SYS3: 
+  case LISYW_TYPE_SYS4: 
+  case LISYW_TYPE_SYS6: 
+	lisy_w_display_handler_SYS6();
+       break;
+  case LISYW_TYPE_SYS6A: 
   case LISYW_TYPE_SYS7: 
 	lisy_w_display_handler_SYS7();
        break;
@@ -864,6 +1038,9 @@ void lisy_w_display_handler(void)
        break;
   case LISYW_TYPE_SYS11C: 
 	lisy_w_display_handler_SYS11C();
+       break;
+  default:
+	fprintf(stderr,"\nERROR\nunknown lisymini_game.typeno %d\n",lisymini_game.typeno);
        break;
  }
 }
@@ -1096,6 +1273,9 @@ if ( mysol != coreGlobals.solenoids)
       //send to APC in case something changed
       if( CHECK_BIT(mysol,i) != CHECK_BIT(coreGlobals.solenoids,i) )
       {
+	//ignore coil activations for coils we have a hw rule set
+	if ( lisy_m_APC_coil_HW_rule[i] != 0 ) return;
+
 	//do we activate or do we deactivate
         if ( CHECK_BIT(coreGlobals.solenoids,i)) action = 1; else action = 0;
 	//sol number starts with 1

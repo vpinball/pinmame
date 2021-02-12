@@ -1518,3 +1518,39 @@ int  lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game)
   //give back the name and the number of the game
   if (found) return(line_no); else return(-1);
 }
+
+//read the csv file hardware rules on /lisy partition for lisy_ (APC)
+//give -1 in case we had an error
+//fill global variable
+int  lisy_m_file_get_hwrules(void)
+{
+
+ char buffer[1024];
+ char *line;
+ char hwrule_file_name[80];
+ int coil_no;
+ int first_line = 1;
+ FILE *fstream;
+
+ //construct the filename; using global var lisymini_gamenr
+ sprintf(hwrule_file_name,"%s%03d%s",APC_HW_RULES_PATH,lisymini_game.gamenr,APC_HW_RULES_FILE);
+
+ fstream = fopen(hwrule_file_name,"r");
+   if(fstream == NULL)
+   {
+      //fprintf(stderr,"\n LISY-Mini: opening %s failed ",hwrule_file_name);
+      return -1;
+   }
+
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     coil_no = atoi(strtok(line, ";"));         //coil number
+     //range check
+     if ( coil_no <= 31)
+        lisy_m_APC_coil_HW_rule[coil_no] = atoi(strtok(NULL, ";"));
+   } //while
+   fclose(fstream);
+
+  return 0;
+}

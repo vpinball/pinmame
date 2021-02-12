@@ -25,6 +25,8 @@ extern t_lisy_lamp_to_led_map lisy_lamp_to_led_map[52];
 extern t_lisy_home_lamp_map lisy_home_lamp_map[49];
 extern t_lisy_home_coil_map lisy_home_coil_map[10];
 
+extern int lisy_m_APC_coil_HW_rule[32];
+
 extern int fd_api;  //file descriptor for lisy api ( eg APC )
 
 extern t_stru_lisy80_games_csv lisy80_game;
