@@ -1,0 +1,43 @@
+name: pinmame
+on:
+  push:
+
+jobs:
+  build-win-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          cd cmake/pinmame
+          copy CMakeLists_win-x64.txt CMakeLists.txt
+          cmake -G "Visual Studio 16 2019" -A x64 .
+          cmake --build . --config Release
+      - uses: svenstaro/upx-action@v2
+        with:
+          file: cmake/pinmame/bin/PinMAME.exe
+          args: --best --lzma
+      - uses: actions/upload-artifact@v2
+        with:
+          name: PinMAME-win-x64
+          path: cmake/pinmame/bin/PinMAME.exe
+
+  build-win-x86:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/setup-nasm@v1
+      - name: Build
+        run: |
+          cd cmake/pinmame
+          copy CMakeLists_win-x86.txt CMakeLists.txt
+          cmake -G "Visual Studio 16 2019" -A Win32 .
+          cmake --build . --config Release
+      - uses: svenstaro/upx-action@v2
+        with:
+          file: cmake/pinmame/bin/PinMAME.exe
+          args: --best --lzma
+      - uses: actions/upload-artifact@v2
+        with:
+          name: PinMAME-win-x86
+          path: cmake/pinmame/bin/PinMAME.exe
