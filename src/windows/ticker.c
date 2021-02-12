@@ -105,10 +105,20 @@ static cycles_t rdtsc_cycle_counter(void)
 	return result;
 }
 #else
+#if defined(_M_ARM64)
+// See https://docs.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=vs-2019
+// and https://reviews.llvm.org/D53115
+static cycles_t rdtsc_cycle_counter(void)
+{
+	const int64_t virtual_timer_value = _ReadStatusReg(ARM64_CNTVCT);
+	return virtual_timer_value;
+}
+#else
 static cycles_t rdtsc_cycle_counter(void)
 {
 	return __rdtsc();
 }
+#endif
 #endif
 
 #else

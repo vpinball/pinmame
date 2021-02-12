@@ -345,6 +345,9 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 			(UINT32)info->ContextRecord->Ebp,
 			(UINT32)info->ContextRecord->Esp);
 #else
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU state debug output implemented yet" )
+#else
 	// print the state of the CPU
 	fprintf(stderr, "-----------------------------------------------------\n");
 	fprintf(stderr, "RAX=%16X RBX=%16X RCX=%16X RDX=%16X\n",
@@ -358,6 +361,7 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 			(UINT64)info->ContextRecord->Rbp,
 			(UINT64)info->ContextRecord->Rsp);
 #endif
+#endif
 
 	// crawl the stack for a while
 	if (get_code_base_size(&code_start, &code_size))
@@ -365,7 +369,12 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 		char prev_symbol[1024], curr_symbol[1024];
 		UINT32 last_call = (UINT32)info->ExceptionRecord->ExceptionAddress;
 #ifdef __LP64__
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU state debug output implemented yet" )
+		UINT64 esp_start = 0;
+#else
 		UINT64 esp_start = info->ContextRecord->Rsp;
+#endif
 		UINT64 esp_end = (esp_start | 0xffff) + 1;
 		UINT64 esp;
 #else
