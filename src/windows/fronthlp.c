@@ -469,8 +469,16 @@ int frontend_help (const char *gamename)
 	{
 		#ifndef MESS
 #ifdef PINMAME
-		printf("PinMAME v%s\n Pinball's Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 2000-2021 by the PinMAME Team\n\n",build_version);
+		char tmp[80];
+
+#if defined(__LP64__) || defined(_WIN64)
+		snprintf(tmp,sizeof(tmp), "%s (x64)", build_version);
+#else 
+		snprintf(tmp,sizeof(tmp), "%s", build_version);
+#endif
+	
+		printf("PinMAME v%s\nPinball's Multiple Arcade Machine Emulator\n"
+				"Copyright (C) 2000-2021 by the PinMAME Team\n\n",tmp);
 		showdisclaimer();
 		printf("Usage:  PINMAME gamename [options]\n\n"
 				"        -list         for a brief list of supported games\n"
