@@ -8,6 +8,10 @@
 #include "wmssnd.h"
 #include "s6.h"
 
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+ #include "lisy/lisy_w.h"
+#endif /* PINMAME && LISY_SUPPORT */
+
 #define S6_PIA0 0
 #define S6_PIA1 1
 #define S6_PIA2 2
@@ -131,8 +135,20 @@ static READ_HANDLER(s6_dips_r) {
 /********************/
 /*SWITCH MATRIX     */
 /********************/
-static READ_HANDLER(s6_swrow_r) { return core_getSwCol(s6locals.swCol); }
-static WRITE_HANDLER(s6_swcol_w) { s6locals.swCol = data; }
+static READ_HANDLER(s6_swrow_r) {
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+#endif
+ return core_getSwCol(s6locals.swCol);
+}
+
+static WRITE_HANDLER(s6_swcol_w) {
+ s6locals.swCol = data;
+#if defined(LISY_SUPPORT)
+ lisy_w_throttle();
+#endif
+}
 
 /*****************/
 /*DISPLAY ALPHA  */
@@ -244,6 +260,9 @@ static INTERRUPT_GEN(s6_vblank) {
   /*-- lamps --*/
   if ((s6locals.vblankCount % S6_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+#if defined(LISY_SUPPORT)
+    lisy_w_lamp_handler();
+#endif
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
@@ -251,21 +270,31 @@ static INTERRUPT_GEN(s6_vblank) {
     int ii;
     s6locals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
     /*-- special solenoids updated based on switches --*/
+    /*-- but only when no LISY, otherwise special solenoids -- */
+    /*-- lock on when controlled by direct switches         -- */
+#ifndef LISY_SUPPORT
     for (ii = 0; ii < 6; ii++) {
       if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
         s6locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
+#endif
   }
   s6locals.solsmooth[s6locals.vblankCount % S6_SOLSMOOTH] = s6locals.solenoids;
 #if S6_SOLSMOOTH != 2
 #  error "Need to update smooth formula"
 #endif
   coreGlobals.solenoids = s6locals.solsmooth[0] | s6locals.solsmooth[1];
+#if defined(LISY_SUPPORT)
+  lisy_w_solenoid_handler();
+#endif
   s6locals.solenoids = coreGlobals.pulsedSolState;
   
   /*-- display --*/
   if ((s6locals.vblankCount % S6_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s6locals.segments, sizeof(coreGlobals.segments));
+#if defined(LISY_SUPPORT)
+    lisy_w_display_handler();
+#endif
     memcpy(s6locals.segments, s6locals.pseg, sizeof(s6locals.segments));
 
     /*update leds*/
@@ -277,10 +306,13 @@ static INTERRUPT_GEN(s6_vblank) {
 }
 
 static SWITCH_UPDATE(s6) {
+#ifndef LISY_SUPPORT
+//if we have LISY, all switches come from LISY (Matrix[0] has e.g. ADVANCE Button!
   if (inports) {
     coreGlobals.swMatrix[1] = inports[S6_COMINPORT] & 0x00ff;
     coreGlobals.swMatrix[0] = (inports[S6_COMINPORT] & 0xff00)>>8;
   }
+#endif
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(S6_SWCPUDIAG)) {    cpu_set_nmi_line(0, ASSERT_LINE);    memset(&s6locals.pseg,0,sizeof(s6locals.pseg));  }  else    cpu_set_nmi_line(0, CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S6_SWSOUNDDIAG));
