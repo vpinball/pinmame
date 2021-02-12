@@ -113,6 +113,7 @@ static struct {
   int sndstb;
   int sndcmd;
   int gameOn;
+  int pout2;
 } locals;
 
 static data8_t *mrgame_videoram;
@@ -385,7 +386,7 @@ static WRITE16_HANDLER(row_w) {
 //NVRAM
 static UINT16 *NVRAM;
 static NVRAM_HANDLER(mrgame_nvram) {
-  core_nvram(file, read_or_write, NVRAM, 0x10000, 0x00);
+  core_nvram(file, read_or_write, NVRAM, 0x4000, 0x00);
 #if FIX_CMOSINIT
   if (*NVRAM==0) *NVRAM=0xFFFF;
 #endif
@@ -453,8 +454,9 @@ static WRITE_HANDLER(vid_registers_w) {
 			locals.vid_a13 = bitval;
 			break;
 
-		//?? - POUT2 on schems for Generation #2 board
+		//POUT2 on schems for Generation #2 board - blanks screen if hi
 		case 5:
+			locals.pout2 = bitval;
 			break;
 
 		//Not used?
@@ -465,7 +467,7 @@ static WRITE_HANDLER(vid_registers_w) {
 	}
 
 #ifdef MAME_DEBUG
-	if(offset != 1)
+	if (offset > 4)
 		LOG(("vid_register[%02x]_w=%x\n",offset,data));
 #endif
 
@@ -757,7 +759,8 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 
 			tile = mrgame_videoram[offs]+
                    (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
-			drawgfx(tmpbitmap,Machine->gfx[0],
+			if (!locals.pout2)
+				drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
 					0,			//Always color 0 because there's no color data used
 					0,0,
@@ -780,7 +783,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 		tile = (mrgame_objectram[offs - 2] & 0x3f) +
 				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8) + (locals.vid_a14<<9);
 		//Draw it
-		if (sx != 1) // seems like sprites rendered at an X offset of 1 should not be rendered?!
+		if (!locals.pout2 && sx != 1) // seems like sprites rendered at an X offset of 1 should not be rendered?!
 			drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
 				0,			//Always color 0 because there's no color data used
@@ -799,13 +802,13 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 /***********************/
 static MEMORY_READ16_START(readmem)
   { 0x000000, 0x01ffff, MRA16_ROM },
-  { 0x020000, 0x02ffff, MRA16_RAM },
+  { 0x020000, 0x023fff, MRA16_RAM },
   { 0x030000, 0x030001, rsw_ack_r },
   { 0x03000c, 0x03000d, col_r },
 MEMORY_END
 static MEMORY_WRITE16_START(writemem)
   { 0x000000, 0x01ffff, MWA16_ROM },
-  { 0x020000, 0x02ffff, MWA16_RAM, &NVRAM },
+  { 0x020000, 0x023fff, MWA16_RAM, &NVRAM },
   { 0x030002, 0x030003, sound_w },
   { 0x030004, 0x030005, video_w },
   { 0x030006, 0x030007, ic35b_w },
