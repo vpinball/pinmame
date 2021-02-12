@@ -75,15 +75,17 @@ add_compile_definitions(
    HAS_MEA8000=1
    HAS_SAA1099=1
    HAS_QSOUND=1
+
    MAMEVER=7300
-   INLINE=static __inline__
-   LSB_FIRST
-   PI=M_PI
-   UNIX
    PINMAME
    PINMAME_NO_UNUSED
    LIBPINMAME
    NAME="LIBPINMAME"
+
+   LSB_FIRST
+   INLINE=static __inline__
+   PI=M_PI
+   UNIX
 )
 
 add_library(pinmame SHARED
@@ -597,7 +599,7 @@ target_link_libraries(pinmame
    pthread
 )
 
-set_target_properties(pinmame
-   PROPERTIES VERSION ${PROJECT_VERSION}
+set_target_properties(pinmame PROPERTIES
+   VERSION ${PROJECT_VERSION}
    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )

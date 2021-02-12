@@ -3,8 +3,20 @@ on:
   push:
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: version
+        run: |
+          VERSION=$(grep -o "[0-9\.]\+" src/version.c | head -1)
+          echo "::set-output name=version::${VERSION}"
+
   build-win-x64:
     runs-on: windows-latest
+    needs: [ version ]
     steps:
       - uses: actions/checkout@v2
       - name: Build
@@ -13,13 +25,18 @@ jobs:
           copy CMakeLists_win-x64.txt CMakeLists.txt
           cmake -G "Visual Studio 16 2019" -A x64 .
           cmake --build . --config Release
+      - uses: svenstaro/upx-action@v2
+        with:
+          file: cmake/libpinmame/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
-          name: win-x64
-          path: cmake/libpinmame/lib/libpinmame-*.dll
+          name: libpinmame-win-x64
+          path: cmake/libpinmame/lib/libpinmame-${{ needs.version.outputs.version }}.dll
           
   build-win-x86:
     runs-on: windows-latest
+    needs: [ version ]
     steps:
       - uses: actions/checkout@v2
       - name: Build
@@ -28,13 +45,18 @@ jobs:
           copy CMakeLists_win-x86.txt CMakeLists.txt
           cmake -G "Visual Studio 16 2019" -A Win32 .
           cmake --build . --config Release
+      - uses: svenstaro/upx-action@v2
+        with:
+          file: cmake/libpinmame/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
-          name: win-x86
-          path: cmake/libpinmame/lib/libpinmame-*.dll
+          name: libpinmame-win-x86
+          path: cmake/libpinmame/lib/libpinmame-${{ needs.version.outputs.version }}.dll
         
   build-osx-x64:
     runs-on: macos-latest
+    needs: [ version ]
     steps:
       - uses: actions/checkout@v2
       - name: Build
@@ -45,11 +67,12 @@ jobs:
           cmake --build . 
       - uses: actions/upload-artifact@v2
         with:
-          name: osx-x64
-          path: cmake/libpinmame/lib/libpinmame.*.dylib
+          name: libpinmame-osx-x64
+          path: cmake/libpinmame/lib/libpinmame.${{ needs.version.outputs.version }}.dylib
 
   build-linux-x64:
     runs-on: ubuntu-latest
+    needs: [ version ]
     steps:
       - uses: actions/checkout@v2
       - name: Build
@@ -58,10 +81,14 @@ jobs:
           cp CMakeLists_linux-x64.txt CMakeLists.txt
           cmake -DCMAKE_BUILD_TYPE=Release . 
           cmake --build .
+      - uses: svenstaro/upx-action@v2
+        with:
+          file: cmake/libpinmame/lib/libpinmame.so.${{ needs.version.outputs.version }}
+          args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
-          name: linux-x64
-          path: cmake/libpinmame/lib/libpinmame.so.*
+          name: libpinmame-linux-x64
+          path: cmake/libpinmame/lib/libpinmame.so.${{ needs.version.outputs.version }}
 
   dispatch:
     runs-on: ubuntu-latest

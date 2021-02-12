@@ -75,16 +75,18 @@ add_compile_definitions(
    HAS_MEA8000=1
    HAS_SAA1099=1
    HAS_QSOUND=1
+
    MAMEVER=7300
-   LSB_FIRST
-   _CRT_SECURE_NO_WARNINGS
-   __LP64__
-   WIN32
-   _MBCS
-   ZLIB_WINAPI
    PINMAME
    PINMAME_NO_UNUSED
    LIBPINMAME
+
+   LSB_FIRST
+   _CRT_SECURE_NO_WARNINGS
+   _MBCS
+   __LP64__
+   WIN32
+   ZLIB_WINAPI
 )
 
 add_library(pinmame SHARED
@@ -608,8 +610,8 @@ target_link_libraries(pinmame
    winmm.lib
 )
 
-set_target_properties(pinmame
-   PROPERTIES VERSION ${PROJECT_VERSION}
+set_target_properties(pinmame PROPERTIES 
+   VERSION ${PROJECT_VERSION}
    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/lib"
    RUNTIME_OUTPUT_NAME "libpinmame-${PROJECT_VERSION}"
 )
