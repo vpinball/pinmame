@@ -13,6 +13,10 @@
 #include "p-roc/p-roc.h"
 #endif
 
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+ #include "lisy/lisy_w.h"
+#endif /* PINMAME && LISY_SUPPORT */
+
 #define S4_PIA0 0
 #define S4_PIA1 1
 #define S4_PIA2 2
@@ -121,8 +125,20 @@ static READ_HANDLER(s4_dips_r) {
 /* SWITCHES */
 /************/
 /* SWITCH MATRIX */
-static READ_HANDLER(s4_swrow_r) { return core_getSwCol(s4locals.swCol); }
-static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
+static READ_HANDLER(s4_swrow_r) {
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+#endif
+ return core_getSwCol(s4locals.swCol);
+}
+
+static WRITE_HANDLER(s4_swcol_w) {
+ s4locals.swCol = data;
+#if defined(LISY_SUPPORT)
+ lisy_w_throttle();
+#endif
+}
 
 /*****************/
 /*DISPLAY ALPHA  */
@@ -335,6 +351,9 @@ static INTERRUPT_GEN(s4_vblank) {
     }
 #endif
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+#if defined(LISY_SUPPORT)
+    lisy_w_lamp_handler();
+#endif
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
@@ -348,21 +367,31 @@ static INTERRUPT_GEN(s4_vblank) {
     // lock on when controlled by direct switches
 #endif
     /*-- special solenoids updated based on switches --*/
+    /*-- but only when no LISY, otherwise special solenoids -- */
+    /*-- lock on when controlled by direct switches         -- */
+#ifndef LISY_SUPPORT
     for (ii = 0; ii < 6; ii++) {
       if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
         s4locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
+#endif
   }
   s4locals.solsmooth[s4locals.vblankCount % S4_SOLSMOOTH] = s4locals.solenoids;
 #if S4_SOLSMOOTH != 2
 #  error "Need to update smooth formula"
 #endif
   coreGlobals.solenoids = s4locals.solsmooth[0] | s4locals.solsmooth[1];
+#if defined(LISY_SUPPORT)
+  lisy_w_solenoid_handler();
+#endif
   s4locals.solenoids = coreGlobals.pulsedSolState;
 
   /*-- display --*/
   if ((s4locals.vblankCount % S4_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s4locals.segments, sizeof(coreGlobals.segments));
+#if defined(LISY_SUPPORT)
+    lisy_w_display_handler();
+#endif
     memset(s4locals.segments,0,sizeof(s4locals.segments));
 
 #ifdef PROC_SUPPORT
@@ -388,6 +417,8 @@ static SWITCH_UPDATE(s4) {
   if (coreGlobals.p_rocEn) 
     procGetSwitchEvents();
 #endif
+#ifndef LISY_SUPPORT
+//if we have LISY, all switches come from LISY (Matrix[0] has e.g. ADVANCE Button!
   if (inports) {
 #ifndef PROC_SUPPORT
     // All the matrix switches come from the P-ROC, so we only want to read
@@ -396,6 +427,7 @@ static SWITCH_UPDATE(s4) {
 #endif
     coreGlobals.swMatrix[0] = (inports[S4_COMINPORT] & 0xff00)>>8;
   }
+#endif
   /*-- Diagnostic buttons on CPU board --*/
   cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
