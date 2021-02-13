@@ -742,6 +742,8 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	int sx=0;
 	int sy=0;
 
+	if (locals.pout2) return 0;
+
 	/* for every character in the Video RAM, check if it has been modified */
 	/* since last time and update it accordingly. */
 	for (offs = 0; offs < videoram_size; offs++)
@@ -759,8 +761,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 
 			tile = mrgame_videoram[offs]+
                    (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
-			if (!locals.pout2)
-				drawgfx(tmpbitmap,Machine->gfx[0],
+			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
 					0,			//Always color 0 because there's no color data used
 					0,0,
@@ -783,7 +784,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 		tile = (mrgame_objectram[offs - 2] & 0x3f) +
 				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8) + (locals.vid_a14<<9);
 		//Draw it
-		if (!locals.pout2 && sx != 1) // seems like sprites rendered at an X offset of 1 should not be rendered?!
+		if (sx != 1) // seems like sprites rendered at an X offset of 1 should not be rendered?!
 			drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
 				0,			//Always color 0 because there's no color data used
