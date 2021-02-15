@@ -93,7 +93,7 @@ static char *d3d_rc_effect;
 static char *d3d_rc_custom;
 static char *d3d_rc_expert;
 static int d3d_rc_scan;
-static int d3d_rc_prescale;
+static char *d3d_rc_prescale;
 static int d3d_rc_feedback;
 static int d3d_rc_rotate;
 
@@ -190,7 +190,6 @@ struct rc_option win_d3d_opts[] =
 	{ "d3deffect", NULL, rc_string, &d3d_rc_effect, "none", 0, 0, win_d3d_decode_effect, "specify the blitting effects" },
 	{ "d3dcustom", NULL, rc_string, &d3d_rc_custom, NULL, 0, 0, win_d3d_decode_custom, "customised blitting effects preset" },
 	{ "d3dexpert", NULL, rc_string, &d3d_rc_expert, NULL, 0, 0, win_d3d_decode_expert, "additional customised settings (undocumented)" },
-
 
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };

@@ -577,9 +577,9 @@ add_library(vpinmame SHARED
 
    ${SOURCE_DIR}/src/windows/blit.c
    ${SOURCE_DIR}/src/windows/blit.h
+   ${SOURCE_DIR}/src/windows/config.c
    ${SOURCE_DIR}/src/windows/d3d_extra.h
    ${SOURCE_DIR}/src/windows/dirty.h
-   ${SOURCE_DIR}/src/windows/config.c
    ${SOURCE_DIR}/src/windows/fileio.c
    ${SOURCE_DIR}/src/windows/fronthlp.c
    ${SOURCE_DIR}/src/windows/input.c
@@ -649,7 +649,6 @@ add_library(vpinmame SHARED
    ${SOURCE_DIR}/src/win32com/WSHDlgCtrl.h
    ${SOURCE_DIR}/src/win32com/WSHDlgCtrls.cpp
    ${SOURCE_DIR}/src/win32com/WSHDlgCtrls.h
-
    ${SOURCE_DIR}/src/win32com/VPinMAME.rc
    ${SOURCE_DIR}/src/win32com/VPinMAME.idl
    ${SOURCE_DIR}/src/win32com/VPinMAME64.def
@@ -687,13 +686,13 @@ target_link_directories(vpinmame PUBLIC
 
 target_link_libraries(vpinmame 
    winmm.lib
+   ddraw.lib
+   dxguid.lib
+   dsound.lib
+   dinput64.lib
    odbc32.lib
    odbccp32.lib
    version.lib
-   dxguid.lib
-   dsound.lib
-   ddraw.lib
-   dinput64.lib
    zlibstatmt64.lib
    bass.lib
 )
