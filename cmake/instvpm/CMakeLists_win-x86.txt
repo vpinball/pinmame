@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.14)
+
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+
+file(READ ${SOURCE_DIR}/src/version.c version)
+string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
+
+project(instvpm VERSION ${PROJECT_VERSION})
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
+
+add_compile_definitions(
+   WIN32
+   _CRT_SECURE_NO_WARNINGS
+)
+
+set_source_files_properties(
+   ${SOURCE_DIR}/src/instvpm/InstallVPinMAME.rc LANGUAGE RC
+)
+
+add_executable(instvpm WIN32
+   ${SOURCE_DIR}/src/instvpm/Globals.cpp
+   ${SOURCE_DIR}/src/instvpm/Globals.h
+   ${SOURCE_DIR}/src/instvpm/resource.h
+   ${SOURCE_DIR}/src/instvpm/InstallVPinMAME.cpp
+   ${SOURCE_DIR}/src/instvpm/TestVPinMAME.cpp
+   ${SOURCE_DIR}/src/instvpm/TestVPinMAME.h
+   ${SOURCE_DIR}/src/instvpm/Utils.cpp
+   ${SOURCE_DIR}/src/instvpm/Utils.h
+
+   ${SOURCE_DIR}/src/instvpm/InstallVPinMAME.rc
+   ${SOURCE_DIR}/src/win32com/VPinMAME.idl
+)
+
+target_include_directories(instvpm PUBLIC
+   ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+)
+
+target_link_libraries(instvpm 
+   odbc32.lib
+   odbccp32.lib
+   version.lib
+)
+
+set_target_properties(instvpm PROPERTIES
+   LINK_FLAGS "/MANIFESTUAC:\"level='highestAvailable' uiAccess='false'\""
+   RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin"
+   RUNTIME_OUTPUT_NAME "Setup"
+)

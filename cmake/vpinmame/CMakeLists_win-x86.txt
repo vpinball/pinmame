@@ -580,9 +580,9 @@ add_library(vpinmame SHARED
 
    ${SOURCE_DIR}/src/windows/blit.c
    ${SOURCE_DIR}/src/windows/blit.h
+   ${SOURCE_DIR}/src/windows/config.c
    ${SOURCE_DIR}/src/windows/d3d_extra.h
    ${SOURCE_DIR}/src/windows/dirty.h
-   ${SOURCE_DIR}/src/windows/config.c
    ${SOURCE_DIR}/src/windows/fileio.c
    ${SOURCE_DIR}/src/windows/fronthlp.c
    ${SOURCE_DIR}/src/windows/input.c
@@ -610,7 +610,6 @@ add_library(vpinmame SHARED
    ${SOURCE_DIR}/src/windows/window.c
    ${SOURCE_DIR}/src/windows/window.h
    ${SOURCE_DIR}/src/windows/winprefix.h
-
    ${SOURCE_DIR}/src/windows/asmblit.asm
    ${SOURCE_DIR}/src/windows/asmtile.asm
 
@@ -655,7 +654,6 @@ add_library(vpinmame SHARED
    ${SOURCE_DIR}/src/win32com/WSHDlgCtrl.h
    ${SOURCE_DIR}/src/win32com/WSHDlgCtrls.cpp
    ${SOURCE_DIR}/src/win32com/WSHDlgCtrls.h
-
    ${SOURCE_DIR}/src/win32com/VPinMAME.rc
    ${SOURCE_DIR}/src/win32com/VPinMAME.idl
    ${SOURCE_DIR}/src/win32com/VPinMAME.def
@@ -691,21 +689,21 @@ target_link_directories(vpinmame PUBLIC
    ${SOURCE_DIR}/ext/bass
 )
 
-target_link_options(vpinmame PUBLIC
-   /SAFESEH:NO
-)
-
 target_link_libraries(vpinmame 
    winmm.lib
+   ddraw.lib
+   dxguid.lib
+   dsound.lib
+   dinput.lib
    odbc32.lib
    odbccp32.lib
    version.lib
-   dxguid.lib
-   dsound.lib
-   ddraw.lib
-   dinput.lib
    zlibstatmt.lib
    bass.lib
+)
+
+target_link_options(vpinmame PUBLIC
+   /SAFESEH:NO
 )
 
 set_target_properties(vpinmame PROPERTIES

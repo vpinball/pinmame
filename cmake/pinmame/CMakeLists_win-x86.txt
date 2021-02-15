@@ -574,39 +574,60 @@ add_executable(pinmame WIN32
    ${SOURCE_DIR}/src/wpc/zacsnd.c
    ${SOURCE_DIR}/src/wpc/zacsnd.h
 
-   ${SOURCE_DIR}/ext/vgm/vgmwrite.c
-   ${SOURCE_DIR}/ext/vgm/vgmwrite.h
-
    ${SOURCE_DIR}/src/vc/dirent.c
+   ${SOURCE_DIR}/src/vc/dirent.h
+   ${SOURCE_DIR}/src/vc/unistd.h
 
    ${SOURCE_DIR}/src/windows/blit.c
+   ${SOURCE_DIR}/src/windows/blit.h
    ${SOURCE_DIR}/src/windows/config.c
+   ${SOURCE_DIR}/src/windows/d3d_extra.h
+   ${SOURCE_DIR}/src/windows/dirty.h
    ${SOURCE_DIR}/src/windows/fileio.c
    ${SOURCE_DIR}/src/windows/fronthlp.c
    ${SOURCE_DIR}/src/windows/input.c
    ${SOURCE_DIR}/src/windows/jit.c
+   ${SOURCE_DIR}/src/windows/jit.h
    ${SOURCE_DIR}/src/windows/jitemit.c
+   ${SOURCE_DIR}/src/windows/jitemit.h
    ${SOURCE_DIR}/src/windows/misc.c
+   ${SOURCE_DIR}/src/windows/misc.h
+   ${SOURCE_DIR}/src/windows/msc.h
+   ${SOURCE_DIR}/src/windows/osd_cpu.h
+   ${SOURCE_DIR}/src/windows/osinline.h
+   ${SOURCE_DIR}/src/windows/pattern.h
    ${SOURCE_DIR}/src/windows/rc.c
+   ${SOURCE_DIR}/src/windows/rc.h
    ${SOURCE_DIR}/src/windows/sound.c
    ${SOURCE_DIR}/src/windows/ticker.c
    ${SOURCE_DIR}/src/windows/video.c
+   ${SOURCE_DIR}/src/windows/video.h
    ${SOURCE_DIR}/src/windows/wind3d.c
+   ${SOURCE_DIR}/src/windows/wind3d.h
    ${SOURCE_DIR}/src/windows/wind3dfx.c
+   ${SOURCE_DIR}/src/windows/wind3dfx.h
    ${SOURCE_DIR}/src/windows/winddraw.c
+   ${SOURCE_DIR}/src/windows/winddraw.h
    ${SOURCE_DIR}/src/windows/window.c
-   ${SOURCE_DIR}/src/windows/winmain.c 
-
+   ${SOURCE_DIR}/src/windows/window.h
+   ${SOURCE_DIR}/src/windows/winmain.c
+   ${SOURCE_DIR}/src/windows/winprefix.h
    ${SOURCE_DIR}/src/windows/asmblit.asm
    ${SOURCE_DIR}/src/windows/asmtile.asm
+
+   ${SOURCE_DIR}/ext/vgm/vgmwrite.c
+   ${SOURCE_DIR}/ext/vgm/vgmwrite.h
+
+   ${SOURCE_DIR}/ext/zlib/include/zconf.h
+   ${SOURCE_DIR}/ext/zlib/include/zlib.h
 )
 
 target_include_directories(pinmame PUBLIC
    ${SOURCE_DIR}/src
    ${SOURCE_DIR}/src/cpu/m68000/generated_by_m68kmake
    ${SOURCE_DIR}/src/wpc
-   ${SOURCE_DIR}/src/windows
    ${SOURCE_DIR}/src/vc
+   ${SOURCE_DIR}/src/windows
    ${SOURCE_DIR}/ext/zlib/include
    ${SOURCE_DIR}/ext/dinput
 )
@@ -618,8 +639,8 @@ target_link_directories(pinmame PUBLIC
 
 target_link_libraries(pinmame 
    winmm.lib
-   dxguid.lib
    ddraw.lib
+   dxguid.lib
    dsound.lib
    dinput.lib
    zlibstatmt.lib

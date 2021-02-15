@@ -557,9 +557,6 @@ add_library(pinmame SHARED
    ${SOURCE_DIR}/src/wpc/zacsnd.c
    ${SOURCE_DIR}/src/wpc/zacsnd.h
 
-   ${SOURCE_DIR}/ext/vgm/vgmwrite.c
-   ${SOURCE_DIR}/ext/vgm/vgmwrite.h
-
    ${SOURCE_DIR}/src/ios/fronthlp.c
    ${SOURCE_DIR}/src/ios/rc.c
    ${SOURCE_DIR}/src/ios/rc.h
@@ -578,6 +575,9 @@ add_library(pinmame SHARED
    ${SOURCE_DIR}/src/libpinmame/ticker.c
    ${SOURCE_DIR}/src/libpinmame/libpinmame.cpp
    ${SOURCE_DIR}/src/libpinmame/libpinmame.h
+
+   ${SOURCE_DIR}/ext/vgm/vgmwrite.c
+   ${SOURCE_DIR}/ext/vgm/vgmwrite.h
 )
 
 target_include_directories(pinmame PUBLIC

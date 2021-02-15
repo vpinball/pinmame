@@ -561,12 +561,9 @@ add_library(pinmame SHARED
    ${SOURCE_DIR}/src/wpc/zacsnd.c
    ${SOURCE_DIR}/src/wpc/zacsnd.h
 
-   ${SOURCE_DIR}/ext/vgm/vgmwrite.c
-   ${SOURCE_DIR}/ext/vgm/vgmwrite.h
-
    ${SOURCE_DIR}/src/vc/dirent.c
-
-   ${SOURCE_DIR}/src/win32com/Alias.cpp
+   ${SOURCE_DIR}/src/vc/dirent.h
+   ${SOURCE_DIR}/src/vc/unistd.h
 
    ${SOURCE_DIR}/src/windows/fronthlp.c
    ${SOURCE_DIR}/src/windows/jit.c
@@ -576,6 +573,8 @@ add_library(pinmame SHARED
    ${SOURCE_DIR}/src/windows/rc.c
    ${SOURCE_DIR}/src/windows/rc.h
    ${SOURCE_DIR}/src/windows/ticker.c
+
+   ${SOURCE_DIR}/src/win32com/Alias.cpp
 
    ${SOURCE_DIR}/src/libpinmame/video.c
    ${SOURCE_DIR}/src/libpinmame/video.h
@@ -590,13 +589,16 @@ add_library(pinmame SHARED
    ${SOURCE_DIR}/src/libpinmame/misc.h
    ${SOURCE_DIR}/src/libpinmame/libpinmame.cpp
    ${SOURCE_DIR}/src/libpinmame/libpinmame.h
+
+   ${SOURCE_DIR}/ext/vgm/vgmwrite.c
+   ${SOURCE_DIR}/ext/vgm/vgmwrite.h
 )
 
 target_include_directories(pinmame PUBLIC
    ${SOURCE_DIR}/src
    ${SOURCE_DIR}/src/wpc
-   ${SOURCE_DIR}/src/windows
    ${SOURCE_DIR}/src/vc
+   ${SOURCE_DIR}/src/windows
    ${SOURCE_DIR}/src/cpu/m68000/generated_by_m68kmake
    ${SOURCE_DIR}/ext/zlib/include
 )
