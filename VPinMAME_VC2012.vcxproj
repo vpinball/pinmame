@@ -192,6 +192,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -260,6 +261,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -327,6 +329,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -380,6 +383,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -434,6 +438,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -495,6 +500,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -547,6 +553,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>
@@ -600,6 +607,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
       <OutputDirectory>$(IntDir)MIDL</OutputDirectory>
     </Midl>
     <ClCompile>

@@ -1,6 +1,6 @@
 // ControllerRom.cpp : Implementation of CRom
 #include "StdAfx.h"
-#include "VPinMAME_h.h"
+#include "VPinMAME.h"
 #include "ControllerRom.h"
 
 extern "C" {

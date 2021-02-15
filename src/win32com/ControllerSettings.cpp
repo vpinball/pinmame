@@ -7,7 +7,7 @@
  #endif
 #endif
 
-#include "VPinMAME_h.h"
+#include "VPinMAME.h"
 #include "ControllerSettings.h"
 #include "VPinMAMEConfig.h"
 #include "VPinMAMEAboutDlg.h"

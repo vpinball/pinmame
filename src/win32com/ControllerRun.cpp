@@ -9,7 +9,7 @@ extern "C" {
 #include "./windows/window.h"
 }
 
-#include "VPinMAME_h.h"
+#include "VPinMAME.h"
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
 
