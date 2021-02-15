@@ -1,6 +1,6 @@
 // ControllerGame.cpp : Implementation of CGame
 #include "StdAfx.h"
-#include "VPinMAME_h.h"
+#include "VPinMAME.h"
 #include "ControllerGame.h"
 #include "ControllerGameSettings.h"
 

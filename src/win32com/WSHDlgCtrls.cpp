@@ -1,6 +1,6 @@
 // WSHDlgCtrls.cpp : Implementation of WSHDlgCtrls
 #include "StdAfx.h"
-#include "VPinMAME_h.h"
+#include "VPinMAME.h"
 #include "WSHDlgCtrls.h"
 
 /////////////////////////////////////////////////////////////////////////////

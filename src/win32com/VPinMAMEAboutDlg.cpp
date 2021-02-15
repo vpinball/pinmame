@@ -97,6 +97,10 @@ private:
 		GetDlgItemText(IDC_VERSION, szFormat, sizeof szVersionText);
 		wsprintf(szVersionText, szFormat, szVersion);
 
+#if defined(__LP64__) || defined(_WIN64)
+		wsprintf(szVersionText, "%s (x64)", szVersionText);
+#endif
+
 		//Add compile time specific strings to version string
 		char szAdjust[MAX_PATH];
 		wsprintf(szAdjust,"%s","");

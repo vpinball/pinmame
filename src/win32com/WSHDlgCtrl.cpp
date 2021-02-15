@@ -1,6 +1,6 @@
 // WSHDlgCtrl.cpp : Implementation of CWSHDlgCtrl
 #include "StdAfx.h"
-#include "VPinMAME_h.h"
+#include "VPinMAME.h"
 #include "WSHDlgCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
