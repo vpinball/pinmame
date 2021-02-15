@@ -106,16 +106,6 @@ private:
 		wsprintf(szAdjust,"%s","");
 #ifdef MAME_DEBUG
 		wsprintf(szAdjust,"%s","DEBUG");
-#else
-	#ifdef TEST_NEW_STERN
-		wsprintf(szAdjust,"%s","STERN");
-	#endif
-	#ifdef NO_EXPIRATION_DATE
-		if(strcmp(szAdjust,"STERN")==0)
-			wsprintf(szAdjust,"%s","DEV");
-		else
-			wsprintf(szAdjust,"%s%s",szAdjust,"NO EXPIRE");
-	#endif
 #endif
 		if(strlen(szAdjust)) wsprintf(szVersionText, "%s (%s)",szVersionText,szAdjust);
 		//

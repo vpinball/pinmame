@@ -27,11 +27,6 @@
 #include "VPinMAME.h"
 #include "dlldatax.h"
 
-#define NO_EXPIRATION_DATE 1
-#define EXP_YEAR 2108
-#define EXP_MONTH   8
-#define EXP_DAY     1
-
 #include "VPinMAME_i.c"
 #include "Controller.h"
 #include "WSHDlg.h"
@@ -126,24 +121,6 @@ STDAPI DllCanUnloadNow(void)
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
-	#ifndef NO_EXPIRATION_DATE
-
-	// check if we are outdated
-	// delete this for an official release
-	SYSTEMTIME SystemTime;
-	GetSystemTime(&SystemTime);
-	if ((SystemTime.wYear * 500 + SystemTime.wMonth * 35 + SystemTime.wDay) >
-		(EXP_YEAR         * 500 + EXP_MONTH         * 35 + EXP_DAY)) {
-		char szTitle[256];
-		LoadString(_Module.m_hInst, IDS_EXPIREDTITLE, szTitle, sizeof szTitle);
-		char szText[256];
-		LoadString(_Module.m_hInst, IDS_EXPIRED, szText, sizeof szText);
-		MessageBox(0, szText, szTitle, MB_ICONINFORMATION|MB_OK);
-		return CLASS_E_CLASSNOTAVAILABLE;
-	}
-
-	#endif
-
 /*
 	if ( !IsSingleThreadedApartment() ) {
 		MessageBox(0, "Wrong threading model, please reinstall VPinMAME!", "Unable to run", MB_ICONINFORMATION|MB_OK);
