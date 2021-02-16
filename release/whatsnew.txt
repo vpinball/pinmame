@@ -8,6 +8,7 @@ Version 3.4 (X X, 2021) - ""
 
 Fix multiple issues in the new libPinMAME (previously known as PinMAMEdll) library and extend API (see libpinmame.h)
 Fix 64bit version of PinMAME32
+Reenable DirectDraw support for 64bit windows compiles of PinMAME, PinMAME32 and VPinMAME
 
 Updated LISY support to 5.27-18 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 

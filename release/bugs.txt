@@ -42,7 +42,4 @@ Bugs in PinMAME that we are aware of:
      ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
      but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
 
-#13) x64 compilation will turn off all DirectX 7 usage via the DISABLE_DX7 define, e.g. this would all need to be rewritten for a newer DirectX version
-     to be able to regain DirectDraw and Direct3D functionalities.
-
-#14) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for some machines like BOP, etc.
+#13) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for some machines like BOP, etc.
