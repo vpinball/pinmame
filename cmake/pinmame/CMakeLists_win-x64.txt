@@ -92,6 +92,21 @@ add_compile_definitions(
    ZLIB_WINAPI
 )
 
+add_compile_options(
+   $<$<CONFIG:RELEASE>:/Ob2>
+   $<$<CONFIG:RELEASE>:/O2>
+   $<$<CONFIG:RELEASE>:/Oi>
+   $<$<CONFIG:RELEASE>:/fp:fast>
+   $<$<CONFIG:RELEASE>:/fp:except->
+   $<$<CONFIG:RELEASE>:/Ot>
+   $<$<CONFIG:RELEASE>:/GF>
+   $<$<CONFIG:RELEASE>:/GS->
+   $<$<CONFIG:RELEASE>:/Gy>
+   $<$<CONFIG:RELEASE>:/GR->
+   $<$<CONFIG:RELEASE>:/Oy>
+   $<$<CONFIG:RELEASE>:/GT>
+)
+
 add_executable(pinmame WIN32
    ${SOURCE_DIR}/src/artwork.c 
    ${SOURCE_DIR}/src/artwork.h 
@@ -634,8 +649,11 @@ target_link_libraries(pinmame
    zlibstatmt64.lib
 )
 
+target_link_options(pinmame PUBLIC
+   /SUBSYSTEM:CONSOLE
+)
+
 set_target_properties(pinmame PROPERTIES
-   LINK_FLAGS /SUBSYSTEM:CONSOLE
    RUNTIME_OUTPUT_NAME "PinMAME"
    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin"
 )
