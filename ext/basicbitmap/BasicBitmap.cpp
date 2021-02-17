@@ -3,6 +3,9 @@
 // BasicBitmap.cpp - Simple Bitmap Library
 // https://github.com/skywind3000/BasicBitmap
 //
+// Created by: skywind, 2011, 2012, 2015, 2018
+// Last Modified: 2018/03/15 14:54
+//
 // As the purpose of providing a simple, high-performance and platform
 // independent Bitmap library, this file is created based on a subset
 // of my vector graphic library: https://code.google.com/p/pixellib
@@ -7013,7 +7016,7 @@ int BasicBitmap_ResampleAvg(BasicBitmap *dst, int dx, int dy, int dw, int dh,
 
 	bs.Convert(0, 0, src, 0, 0, srcwidth, srcheight);
 
-	int hr = BasicBitmap_ResampleSmooth(bs.Address8(0, 0), bd.Address8(0, 0),
+	int hr = BasicBitmap_ResampleSmooth(bd.Address8(0, 0), bs.Address8(0, 0),
 		dstwidth, srcwidth, dstheight, srcheight, bd.Pitch(), bs.Pitch());
 
 	if (hr == 0) {
