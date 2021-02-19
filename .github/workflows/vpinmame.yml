@@ -17,10 +17,20 @@ jobs:
         with:
           file: cmake/vpinmame/lib/VPinMAME64.dll
           args: --best --lzma
+      - name: Build Installer
+        run: |
+          cd cmake/instvpm
+          copy CMakeLists_win-x64.txt CMakeLists.txt
+          cmake -G "Visual Studio 16 2019" -A x64 .
+          cmake --build . --config Release
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x64
           path: cmake/vpinmame/lib/VPinMAME64.dll
+      - uses: actions/upload-artifact@v2
+        with:
+          name: VPinMAME-win-x64
+          path: cmake/instvpm/bin/Setup64.exe
 
   build-win-x86:
     runs-on: windows-latest
@@ -37,7 +47,17 @@ jobs:
         with:
           file: cmake/vpinmame/lib/VPinMAME.dll
           args: --best --lzma
+      - name: Build Installer
+        run: |
+          cd cmake/instvpm
+          copy CMakeLists_win-x86.txt CMakeLists.txt
+          cmake -G "Visual Studio 16 2019" -A Win32 .
+          cmake --build . --config Release
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x86
           path: cmake/vpinmame/lib/VPinMAME.dll
+      - uses: actions/upload-artifact@v2
+        with:
+          name: VPinMAME-win-x86
+          path: cmake/instvpm/bin/Setup.exe
