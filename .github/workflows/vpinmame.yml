@@ -31,6 +31,10 @@ jobs:
         with:
           name: VPinMAME-win-x64
           path: cmake/instvpm/bin/Setup64.exe
+      - uses: actions/upload-artifact@v2
+        with:
+          name: VPinMAME-win-x64
+          path: ext/bass/x64/Bass64.dll
 
   build-win-x86:
     runs-on: windows-latest
@@ -61,3 +65,7 @@ jobs:
         with:
           name: VPinMAME-win-x86
           path: cmake/instvpm/bin/Setup.exe
+      - uses: actions/upload-artifact@v2
+        with:
+          name: VPinMAME-win-x86
+          path: ext/bass/Bass.dll
