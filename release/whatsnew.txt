@@ -10,11 +10,14 @@ Fix multiple issues in the new libPinMAME (previously known as PinMAMEdll) libra
 Fix 64bit version of PinMAME32
 Reenable DirectDraw support for 64bit windows compiles of PinMAME, PinMAME32 and VPinMAME
 
-Updated LISY support to 5.27-18 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Added support to compile for Windows ARM64 (not all features/variants though, as some external libs do not feature ARM64 support yet)
+
+Updated LISY support to 5.27-24 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 *** CORE/CPU ***
 One more audiophile tweak: add proper dithering after resampling to the final output sample rate
 Fix regression in solenoid emulation for Juegos Populares
+Correct NVRAM size for Mr. Game
 
 *** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75
 Correct Dumps:
@@ -36,7 +39,7 @@ Theatre of Magic 1.2A
 Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------
 
-Compiling for iOS is now possible.
+Compiling for mac/iOS is now possible.
 Also a new platform independent lib/dll is now available with a new, simple interface to request (some of) the internal data.
 Fix -listxml for strings that contain embedded tags
 
