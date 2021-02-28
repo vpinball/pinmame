@@ -39,21 +39,21 @@
 #define GEN_BY35        U64(0x0000000400000)
 #define GEN_STMPU100    U64(0x0000000800000) /* Stern MPU - 100*/
 #define GEN_STMPU200    U64(0x0000001000000) /* Stern MPU - 200*/
-#define GEN_ASTRO       U64(0x0000002000000) /* Black Sheep Squadron, Stern hardware */
+#define GEN_ASTRO       U64(0x0000002000000) /* Unknown Astro game, Stern hardware */
 #define GEN_HNK	        U64(0x0000004000000) /* Hankin */
 #define GEN_BYPROTO     U64(0x0000008000000) /* Bally Bow & Arrow prototype */
 #define GEN_BY6803      U64(0x0000010000000)
 #define GEN_BY6803A     U64(0x0000020000000)
 #define GEN_BOWLING     U64(0x0000040000000) /* Big Ball Bowling, Stern hardware */
 
-#define GEN_GTS1		U64(0x0000100000000) /* GTS1 */
+#define GEN_GTS1        U64(0x0000100000000) /* GTS1 */
 #define GEN_GTS80       U64(0x0000200000000) /* GTS80 */
 #define GEN_GTS80A      GEN_GTS80
 #define GEN_GTS80B      U64(0x0000400000000) /* GTS80B */
 #define GEN_WS          U64(0x0004000000000) /* Whitestar */
 #define GEN_WS_1        U64(0x0008000000000) /* Whitestar with extra RAM */
 #define GEN_WS_2        U64(0x0010000000000) /* Whitestar with extra DMD */
-#define GEN_GTS3        U64(0x0020000000000)
+#define GEN_GTS3        U64(0x0020000000000) /* GTS3 */
 
 #define GEN_ZAC1        U64(0x0040000000000)
 #define GEN_ZAC2        U64(0x0080000000000)
@@ -62,14 +62,16 @@
 
 #define GEN_ALVG        U64(0x0200000000000) /* Alvin G Hardware */
 #define GEN_ALVG_DMD2   U64(0x0400000000000) /* Alvin G Hardware, with more shades */
-#define GEN_MRGAME		U64(0x0800000000000) /* Mr.Game Hardware */
-#define GEN_SLEIC		U64(0x1000000000000) /* Sleic Hardware */
-#define GEN_WICO		U64(0x2000000000000) /* Wico Hardware */
+#define GEN_MRGAME      U64(0x0800000000000) /* Mr.Game Hardware */
+#define GEN_SLEIC       U64(0x1000000000000) /* Sleic Hardware */
+#define GEN_WICO        U64(0x2000000000000) /* Wico Hardware */
 
-#define GEN_ALLWPC      U64(0x00000000000ff)
-#define GEN_ALLS11      U64(0x000008000ff00)
-#define GEN_ALLBY35     U64(0x0000047e00000)
-#define GEN_ALLS80      U64(0x0000600000000)
-#define GEN_ALLWS       U64(0x001c000000000)
+#define GEN_SPA         U64(0x4000000000000) /* Stern PA */ //!! can be removed again as soon as SPIKE is emulated
+
+#define GEN_ALLWPC      U64(0x00000000000ff) /* All WPC */
+#define GEN_ALLS11      U64(0x000008000ff00) /* All Sys11 */
+#define GEN_ALLBY35     U64(0x0000047e00000) /* All Bally35 and derivatives */
+#define GEN_ALLS80      U64(0x0000600000000) /* All GTS80 */
+#define GEN_ALLWS       U64(0x001c000000000) /* All Whitestar */
 
 #endif /* INC_GEN */

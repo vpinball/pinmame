@@ -794,10 +794,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int ii, jj;
 
   // prepare all brightness & color/palette tables for mappings from internal DMD representation:
-  const int shade_16_enabled = ((core_gameData->gen == GEN_SAM) ||
+  const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
 	  // extended handling also for some GTS3 games (SMB, SMBMW and CBW):
-	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0) ||
-	  (core_gameData->gen == GEN_ALVG_DMD2));
+	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
 
 #if defined(VPINMAME) || defined(PINMAME_DLL) || defined(LIBPINMAME)
 
@@ -809,7 +808,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   static const int levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
   static const int levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
 
-  const int * const level = (core_gameData->gen == GEN_SAM) ? levelsam : levelgts3;
+  const int * const level = (core_gameData->gen & (GEN_SAM|GEN_SPA)) ? levelsam : levelgts3;
 
   const UINT8 raw_4[4]   = {perc0,perc1,perc2,perc3};
   const UINT8 raw_16[16] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15]};
@@ -1158,7 +1157,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 VIDEO_UPDATE(core_gen) {
   int count = 0;
 #ifdef PROC_SUPPORT
-	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2 || core_gameData->gen & GEN_ALLS11;
+	int alpha = (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_ALLS11)) != 0;
 	if (coreGlobals.p_rocEn) {
 		if (pmoptions.alpha_on_dmd && alpha) {
 			procClearDMD();
@@ -1186,7 +1185,7 @@ VIDEO_UPDATE(core_gen) {
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   const int flip = core_gameData->hw.flippers;
-  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2 | GEN_WICO)) ? 15 : CORE_FLIPPERSWCOL;
+  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_WICO)) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
   UINT8 swFlip;
   int ii;
@@ -1673,7 +1672,7 @@ UINT64 core_getAllSol(void) {
     UINT64 tmp = coreGlobals.solenoids & 0xf0000000;
     sol |= (tmp<<12)|(tmp<<8);
   }
-  if (core_gameData->gen & (GEN_ALLS11|GEN_SAM)) // 37-44 S11, SAM extra
+  if (core_gameData->gen & (GEN_ALLS11|GEN_SAM|GEN_SPA)) // 37-44 S11, SAM extra
     sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00))<<28;
   { // 33-36, 45-48 flipper solenoids
     UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
