@@ -34,6 +34,11 @@ UINT8 DMDFrames2[GTS3DMD_FRAMES_5C][0x200]; //2nd DMD Display for Strikes N Spar
 #define GTS3_IRQFREQ       1500 /* IRQ Frequency (Guessed)*/
 #define GTS3_ALPHANMIFREQ  1000 /* Alpha NMI Frequency (Guessed)*/
 
+#ifdef GTS3_MODSOL // unfinished
+ #define GTS3_MODSOL_SAMPLE 4
+ #define GTS3_MODSOL_SMOOTH 31
+#endif
+
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
 #define GTS3_SCPUNO 2
@@ -73,6 +78,10 @@ struct {
   core_tSeg segments, pseg;
   int    vblankCount;
   UINT32 solenoids;
+#ifdef GTS3_MODSOL
+  UINT32 solenoid_seen_pulses;
+  UINT32 solenoidbits[32];
+#endif
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    diagnosticLeds1;
@@ -80,7 +89,7 @@ struct {
   int    swCol;
   int    ssEn;
   int    mainIrq;
-  int	 swDiag;
+  int    swDiag;
   int    swTilt;
   int    swSlam;
   int    swPrin;
@@ -517,6 +526,9 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.DISPLAY_CONTROL = alpha_display;
   GTS3locals.UPDATE_DISPLAY = alpha_update;
   GTS3locals.AUX_W = alpha_aux;
+#ifdef GTS3_MODSOL
+  GTS3locals.solenoid_seen_pulses = 0;
+#endif
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
@@ -633,16 +645,31 @@ static WRITE_HANDLER(solenoid_w)
 			break;
 		case 1:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
-            break;
+			break;
 		case 2:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
-            break;
+#ifdef GTS3_MODSOL
+			/*{static FILE* fout = NULL; static int cnt = 0; static int lst = 0;
+			if (!fout) fout = fopen("gtssol24.txt", "a");
+			if (core_getPulsedSol(24) != lst)
+			{
+				fprintf(fout, "sol 24 write %d %d\n", cnt, core_getPulsedSol(24));
+				lst = core_getPulsedSol(24);
+				cnt = 0;
+			}
+			else cnt++;
+			}*/
+#endif
+			break;
 		case 3:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
 			break;
 		default:
 			logerror1("Solenoid_W Logic Error\n");
 	}
+#ifdef GTS3_MODSOL
+	GTS3locals.solenoid_seen_pulses |= coreGlobals.pulsedSolState;
+#endif
 }
 
 /*DMD Bankswitching - can handle two DMD displays*/
@@ -881,6 +908,23 @@ static READ_HANDLER(aux1_r) {
 }
 
 static INTERRUPT_GEN(alphanmi) {
+#ifdef GTS3_MODSOL
+	if (options.usemodsol)
+	{
+		static int modsol_rate_counter = 0;
+		if (++modsol_rate_counter == GTS3_MODSOL_SAMPLE)
+		{
+			int i;
+			modsol_rate_counter = 0;
+			for (i = 0; i < 32; i++)
+			{
+				core_update_modulated_light(&GTS3locals.solenoidbits[i], GTS3locals.solenoid_seen_pulses & (1 << i));
+				coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(GTS3locals.solenoidbits[i], GTS3_MODSOL_SMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);
+			}
+			GTS3locals.solenoid_seen_pulses = coreGlobals.pulsedSolState;
+		}
+	}
+#endif
 	xvia_0_cb2_w(0,0);
 }
 
