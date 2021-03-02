@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - id: version
         run: |
-          VERSION=$(grep -o "[0-9\.]\+" src/version.c | head -1)
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
           echo "::set-output name=version::${VERSION}"
 
   build-win-x64:
@@ -26,12 +26,12 @@ jobs:
           cmake --build build --config Release
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          file: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
           args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
           name: libpinmame-win-x64
-          path: build/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          path: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
           
   build-win-x86:
     runs-on: windows-latest
@@ -45,12 +45,12 @@ jobs:
           cmake --build build --config Release
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          file: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
           args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
           name: libpinmame-win-x86
-          path: build/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          path: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
 
   build-win-arm64:
     runs-on: windows-latest
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: libpinmame-win-arm64
-          path: build/lib/libpinmame-${{ needs.version.outputs.version }}.dll
+          path: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
         
   build-osx-x64:
     runs-on: macos-latest
@@ -80,7 +80,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: libpinmame-osx-x64
-          path: build/lib/libpinmame.${{ needs.version.outputs.version }}.dylib
+          path: build/libpinmame.${{ needs.version.outputs.version }}.dylib
 
   build-linux-x64:
     runs-on: ubuntu-latest
@@ -94,12 +94,12 @@ jobs:
           cmake --build build 
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/lib/libpinmame.so.${{ needs.version.outputs.version }}
+          file: build/libpinmame.so.${{ needs.version.outputs.version }}
           args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
           name: libpinmame-linux-x64
-          path: build/lib/libpinmame.so.${{ needs.version.outputs.version }}
+          path: build/libpinmame.so.${{ needs.version.outputs.version }}
 
   dispatch:
     runs-on: ubuntu-latest

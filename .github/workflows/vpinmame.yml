@@ -14,7 +14,7 @@ jobs:
           cmake --build build/vpinmame --config Release
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/vpinmame/lib/VPinMAME64.dll
+          file: build/vpinmame/Release/VPinMAME64.dll
           args: --best --lzma
       - name: Build Installer
         run: |
@@ -24,11 +24,11 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x64
-          path: build/vpinmame/lib/VPinMAME64.dll
+          path: build/vpinmame/Release/VPinMAME64.dll
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x64
-          path: build/instvpm/bin/Setup64.exe
+          path: build/instvpm/Release/Setup64.exe
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x64
@@ -46,7 +46,7 @@ jobs:
           cmake --build build/vpinmame --config Release
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/vpinmame/lib/VPinMAME.dll
+          file: build/vpinmame/Release/VPinMAME.dll
           args: --best --lzma
       - name: Build Installer
         run: |
@@ -56,11 +56,11 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x86
-          path: build/vpinmame/lib/VPinMAME.dll
+          path: build/vpinmame/Release/VPinMAME.dll
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x86
-          path: build/instvpm/bin/Setup.exe
+          path: build/instvpm/Release/Setup.exe
       - uses: actions/upload-artifact@v2
         with:
           name: VPinMAME-win-x86
