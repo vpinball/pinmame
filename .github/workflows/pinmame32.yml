@@ -14,12 +14,12 @@ jobs:
           cmake --build build --config Release
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/bin/PinMAME32.exe
+          file: build/Release/PinMAME32.exe
           args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
           name: PinMAME32-win-x64
-          path: build/bin/PinMAME32.exe
+          path: build/Release/PinMAME32.exe
 
   build-win-x86:
     runs-on: windows-latest
@@ -33,9 +33,9 @@ jobs:
           cmake --build build --config Release
       - uses: svenstaro/upx-action@v2
         with:
-          file: build/bin/PinMAME32.exe
+          file: build/Release/PinMAME32.exe
           args: --best --lzma
       - uses: actions/upload-artifact@v2
         with:
           name: PinMAME32-win-x86
-          path: build/bin/PinMAME32.exe
+          path: build/Release/PinMAME32.exe

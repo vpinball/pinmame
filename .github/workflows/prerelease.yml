@@ -27,7 +27,7 @@ jobs:
           ref: ${{ steps.sha.outputs.sha }}
       - id: version
         run: |
-          VERSION=$(grep -o "[0-9\.]\+" src/version.c | head -1)
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
           echo "::set-output name=version::${VERSION}"
 
   prerelease:

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 file(READ src/version.c version)
 string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
@@ -628,6 +628,5 @@ target_link_libraries(pinmame
 
 set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
-   RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/lib"
    RUNTIME_OUTPUT_NAME "libpinmame-${PROJECT_VERSION}"
 )
