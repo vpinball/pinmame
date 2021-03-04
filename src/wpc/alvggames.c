@@ -55,7 +55,7 @@ static const core_tLCDLayout alvg_alpha1[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ A.G. Soccer-Ball
+/ A.G. Soccer-Ball (AG01)
 /-------------------------------------------------------------------*/
 INITGAME(agsoccer, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agsoccer,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
@@ -103,7 +103,7 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(agfoot07,agsoccer,"A.G. Football (R07u)",1992,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
-/ Al's Garage Band Goes On a World Tour
+/ Al's Garage Band Goes On a World Tour (AG03)
 /-------------------------------------------------------------------*/
 INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtour,	"cpu27c.512", CRC(c9572fb5) SHA1(47a3e8943ef4207011a33f4a03a6e722c937cc48))
@@ -147,7 +147,7 @@ CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On a World Tour (R06a P
 // even earlier alpha AG03/R01A 1/15/93 exists
 
 /*-------------------------------------------------------------------
-/ U.S.A. Football
+/ U.S.A. Football (AG05)
 /-------------------------------------------------------------------*/
 INITGAME(usafootb, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(usafootb,	"usa_cpu.bin", CRC(53b00873) SHA1(96812c4722026554a830c62eca64f09d25a0de82))
@@ -164,7 +164,7 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(usafoota,usafootb,"U.S.A. Football (R01u)",1992,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
-/ Mystery Castle
+/ Mystery Castle (AG08)
 /-------------------------------------------------------------------*/
 INITGAME2(mystcast, DMD3, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcast,	"mcastle.cpu", CRC(936e6799) SHA1(aa29fb5f12f34c695d1556232744f65cd576a2b1))
@@ -178,6 +178,7 @@ ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396d
 ALVG_ROMEND
 CORE_GAMEDEFNV(mystcast,"Mystery Castle (R02)",1993,"Alvin G",mALVGS2DMD3,0)
 
+// R03 has game ID EPC081
 INITGAME2(mystcasa, DMD3, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcasa,	"cpu_103.bin", CRC(70ab8ece) SHA1(2bf8cd042450968b7500552419a9af5df2589c13))
 ALVGS_SOUNDROM(			"mcastle.103", CRC(bd4849ac) SHA1(f477ea369539a65c0960be1f1c3b4c5503dd6b75),
@@ -192,7 +193,7 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (R03)",199?,"Alvin G",mALVGS2DMD3,0)
 
 /*-------------------------------------------------------------------
-/ Pistol Poker
+/ Pistol Poker (AG10)
 /-------------------------------------------------------------------*/
 INITGAME2(pstlpkr, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
 ALVGROMSTART(pstlpkr,	"p_peteu2.512", CRC(490a1e2d) SHA1(907dd858ed948681e7366a64a0e7537ebe301d6b))
@@ -221,7 +222,7 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker (R01)",1993,"Alvin G",mALVGS2DMD2,0)
 
 /*-------------------------------------------------------------------
-/ Punchy The Clown
+/ Punchy The Clown (EPC061)
 /-------------------------------------------------------------------*/
 INITGAME(punchy, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(punchy,	"epc061.r02", CRC(732fca88) SHA1(dff0aa4b856bafb95b08dae675dd2ad59e1860e1))
@@ -238,7 +239,7 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(punchy3,punchy,"Punchy The Clown (R03)",1993,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
-/ Dinosaur Eggs
+/ Dinosaur Eggs (EPC071)
 /-------------------------------------------------------------------*/
 INITGAME(dinoeggs, alvg_alpha1, FLIP78, 3/*?*/, SNDBRD_ALVGS2, 0, 0)
 ALVGROMSTART(dinoeggs,	"dinoeggs.512", CRC(4712f97f) SHA1(593351dcfd475e685c1e5eb2c1006769d3325c8b))
@@ -246,6 +247,17 @@ ALVGS_SOUNDROM11(		"eps071.r02",   CRC(288f116c) SHA1(5d03ce66bffe39ec0217352507
 						"eps072.r02",   CRC(780a4364) SHA1(d8a972debee669f0fe66c7407fbed5ef9cd2ce01))
 ALVG_ROMEND
 CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs (R02)",1993,"Alvin G",mALVGS2,0)
+
+/*-------------------------------------------------------------------
+/ U.S.A. Football Redemption (EPC111)
+/-------------------------------------------------------------------*/
+INITGAME(usafootr, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS2, 0, 0)
+ALVGROMSTART(usafootr, "usafootb-redem-CPU.BIN",  CRC(bdcee108) SHA1(5f241e3d56620cd7464889c9f0032416c190f0c8))
+ALVGS_SOUNDROM12("usafootb-redem-SOUND-U102.BIN", CRC(330a7974) SHA1(0fc041a826403167e9c05046304cb4be30e89aaa),
+                 "usafootb-redem-SOUND-AROM0.BIN",CRC(577509bb) SHA1(2d7705aaa5cf42f4fcffa259a325cec2018d0085),
+                 "usafootb-redem-SOUND-AROM1.BIN",CRC(d71553bd) SHA1(4d1e1ca252a07e2c4f0e0fe68900b6c2438cc933))
+ALVG_ROMEND
+CORE_GAMEDEFNV(usafootr,"U.S.A. Football (Redemption, P08)",1994,"Alvin G",mALVGS2,0)
 
 
 //Use only for testing the 8031 core emulation

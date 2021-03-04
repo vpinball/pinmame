@@ -20,6 +20,9 @@ Fix regression in solenoid emulation for Juegos Populares
 Correct NVRAM size for Mr. Game
 
 *** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75
+New:
+Alvin G.: U.S.A. Football (Redemption, P08)
+
 Correct Dumps:
 Mac Attack
 Riverboat Gambler PA-7 (using L-1 sound now, might still be too new but better than L-2 anyhow)

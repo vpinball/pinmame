@@ -76,6 +76,7 @@ DRIVERNV(pstlpkr1)      // AG10:   11/93  Pistol Poker (R01)
 DRIVERNV(pstlpkr)       //         11/93  Pistol Poker (R02)
                         //         ??/93  Dual-Pool - proto
                         //         ??/93  Slam 'N Jam - proto
+DRIVERNV(usafootr)      // EPC111: 02/94  U.S.A. Football Redemption (P08)
                         //         ??/94  A-MAZE-ING Baseball - proto
 #ifdef MAME_DEBUG
 DRIVERNV(test8031)      //Test 8031 cpu core
