@@ -31,15 +31,15 @@
 #include <math.h>
 #include <driver.h>
 
-#include "screenshot.h"
-#include "bitmask.h"
-#include "mame32.h"
-#include "m32util.h"
+#include "Screenshot.h"
+#include "Bitmask.h"
+#include "MAME32.h"
+#include "M32Util.h"
 #include "resource.h"
-#include "treeview.h"
+#include "TreeView.h"
 #include "file.h"
-#include "splitters.h"
-#include "dijoystick.h"
+#include "Splitters.h"
+#include "DIJoystick.h"
 #include "audit.h"
 #include "options.h"
 

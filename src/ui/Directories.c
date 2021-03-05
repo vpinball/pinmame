@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 
-#include "screenshot.h"
+#include "Screenshot.h"
 #include "MAME32.h"
 #include "Directories.h"
 #include "resource.h"

@@ -179,7 +179,7 @@ static uint4 xorshift_init(const uint2 *const seed) // input simple 32/64bit see
 #endif
 
 // 4 states, as we need 2(TPDF)*2(stereo) when dithering, init'ed with plain randomness
-static uint4 xorshift_state[4] = { 1260868664u, 251862568u, 674858257u, 1214218489u, 1131520192u, 4290450112u, 432448198u, 2826638483u, 192412538u, 3450217573u, 3001734286u, 580418667u, 200079512u, 80235087u, 3037801790u, 716526505u };
+static uint4 xorshift_state[4] = { {1260868664u, 251862568u, 674858257u, 1214218489u}, {1131520192u, 4290450112u, 432448198u, 2826638483u}, {192412538u, 3450217573u, 3001734286u, 580418667u}, {200079512u, 80235087u, 3037801790u, 716526505u} };
 
 INLINE unsigned int xorshiftu(uint4 *const __restrict state)
 {

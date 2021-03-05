@@ -28,11 +28,11 @@
 #include <driver.h>
 #include <png.h>
 #include <osdepend.h>
-#include "screenshot.h"
+#include "Screenshot.h"
 #include "file.h"
-#include "bitmask.h"
+#include "Bitmask.h"
 #include "options.h"
-#include "m32util.h"
+#include "M32Util.h"
 #include "win32ui.h"
 
 /***************************************************************************

@@ -25,18 +25,18 @@
 #include <commctrl.h>
 #include <string.h>
 
-#include "bitmask.h"
+#include "Bitmask.h"
 #include "TreeView.h"
 #include "M32Util.h"
 #include "resource.h"
-#include "directories.h"
+#include "Directories.h"
 #include "options.h"
-#include "splitters.h"
+#include "Splitters.h"
 #include "help.h"
 #include "audit32.h"
-#include "screenshot.h"
-#include "mame32.h"
-#include "properties.h"
+#include "Screenshot.h"
+#include "MAME32.h"
+#include "Properties.h"
 #include "dialogs.h"
 
 #ifdef _MSC_VER

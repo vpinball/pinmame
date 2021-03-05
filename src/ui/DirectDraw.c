@@ -29,10 +29,10 @@
 #include <ddraw.h>
 
 #include "M32Util.h"
-#include "screenshot.h"
-#include "mame32.h"
+#include "Screenshot.h"
+#include "MAME32.h"
 #include "dxdecode.h"
-#include "DirectDraw.h"
+#include "directdraw.h"
 
 /***************************************************************************
 	function prototypes

@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 #include "unzip.h"
-#include "screenshot.h"
+#include "Screenshot.h"
 #include "MAME32.h"
 #include "M32Util.h"
 

@@ -3,7 +3,7 @@
 #define _WIN32_DCOM
 
 #include "Windows.h"
-#include "Resource.h"
+#include "resource.h"
 #include "Globals.h"
 
 #include "Utils.h"

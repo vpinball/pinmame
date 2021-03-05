@@ -24,8 +24,7 @@ extern "C" {
   extern struct rc_struct *rc;
   extern FILE *config_get_logfile(void);
   // Global options
-  int verbose	= 0;
-  char *rompath_extra;
+  int verbose = 0;
   /* pinDMD */
   extern char g_fShowPinDMD;
   extern char g_fShowWinDMD;

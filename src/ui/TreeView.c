@@ -35,12 +35,12 @@
 #include <io.h>
 #include <driver.h>
 #include "M32Util.h"
-#include "bitmask.h"
-#include "screenshot.h"
-#include "mame32.h"
+#include "Bitmask.h"
+#include "Screenshot.h"
+#include "MAME32.h"
 #include "TreeView.h"
 #include "resource.h"
-#include "properties.h"
+#include "Properties.h"
 #include "options.h"
 #include "help.h"
 #include "dialogs.h"

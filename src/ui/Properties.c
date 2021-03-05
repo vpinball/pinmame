@@ -37,17 +37,17 @@
 #include <info.h>
 #include "audit.h"
 #include "audit32.h"
-#include "bitmask.h"
+#include "Bitmask.h"
 #include "options.h"
 #include "file.h"
 #include "resource.h"
 #include "DIJoystick.h"     /* For DIJoystick avalibility. */
-#include "m32util.h"
+#include "M32Util.h"
 #include "directdraw.h"
-#include "properties.h"
+#include "Properties.h"
 
-#include "screenshot.h"
-#include "Mame32.h"
+#include "Screenshot.h"
+#include "MAME32.h"
 #include "DataMap.h"
 #include "help.h"
 #include "resource.hm"

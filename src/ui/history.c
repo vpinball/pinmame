@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 #include <driver.h>
-#include "m32util.h"
+#include "M32Util.h"
 
 #include "history.h"
 

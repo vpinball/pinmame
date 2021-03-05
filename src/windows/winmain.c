@@ -68,6 +68,7 @@ static DWORD profiler_thread_id;
 static volatile UINT8 profiler_thread_exit;
 #endif
 
+#ifndef WINUI
 #ifndef MESS
 #ifdef PINMAME
 static const char helpfile[] = "pinmame.txt";
@@ -77,7 +78,7 @@ static const char helpfile[] = "docs\\windows.txt";
 #else
 static const char helpfile[] = "mess.chm";
 #endif
-
+#endif
 
 
 //============================================================

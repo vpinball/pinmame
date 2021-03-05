@@ -26,9 +26,9 @@
 #include <commdlg.h>
 
 #include "resource.h"
-#include "bitmask.h"
+#include "Bitmask.h"
 #include "options.h"
-#include "screenshot.h"
+#include "Screenshot.h"
 #include "win32ui.h"
 
 // Returns TRUE if successful

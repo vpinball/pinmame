@@ -13,7 +13,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "screenshot.h"
+#include "Screenshot.h"
 #include "win32ui.h"
 
 int WINAPI WinMain(HINSTANCE    hInstance,

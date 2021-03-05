@@ -44,7 +44,7 @@
 #include <wingdi.h>
 #include <time.h>
 
-#include "DirectDraw.h"
+#include "directdraw.h"
 #include "DirectInput.h"
 #include "DIJoystick.h"     /* For DIJoystick avalibility. */
 
@@ -54,15 +54,15 @@
 
 #include "resource.h"
 #include "resource.hm"
-#include "screenshot.h"
-#include "mame32.h"
+#include "Screenshot.h"
+#include "MAME32.h"
 #include "M32Util.h"
 #include "file.h"
 #include "audit32.h"
 #include "Directories.h"
 #include "Properties.h"
 #include "ColumnEdit.h"
-#include "bitmask.h"
+#include "Bitmask.h"
 #include "TreeView.h"
 #include "Splitters.h"
 #include "help.h"
@@ -3693,12 +3693,12 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 		}
 		/* Just in case the toggle MMX on/off */
 		UpdateStatusBar();
-	   break;
+		break;
 
 	/* ListView Context Menu */
 	case ID_CONTEXT_ADD_CUSTOM:
 	{
-		INT_PTR  nResult = DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_CUSTOM_FILE),
+		/*INT_PTR  nResult =*/ DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_CUSTOM_FILE),
 								 hMain,AddCustomFileDialogProc,GetSelectedPickItem());
 		SetFocus(hwndList);
 		break;
@@ -3706,7 +3706,7 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 
 	case ID_CONTEXT_REMOVE_CUSTOM:
 	{
-	    RemoveCurrentGameCustomFolder();
+		RemoveCurrentGameCustomFolder();
 		break;
 	}
 

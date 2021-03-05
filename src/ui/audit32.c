@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <richedit.h>
 
-#include "screenshot.h"
+#include "Screenshot.h"
 #include "win32ui.h"
 
 #include <audit.h>
@@ -33,9 +33,9 @@
 
 #include "resource.h"
 
-#include "bitmask.h"
+#include "Bitmask.h"
 #include "options.h"
-#include "m32util.h"
+#include "M32Util.h"
 #include "audit32.h"
 #include "Properties.h"
 
