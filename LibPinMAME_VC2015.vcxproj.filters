@@ -1185,7 +1185,9 @@
     <ClCompile Include="src\win32com\Alias.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ext\vgm\vgmwrite.c" />
+    <ClCompile Include="ext\vgm\vgmwrite.c">
+      <Filter>Source Files\external\vgm</Filter>
+    </ClCompile>
     <ClCompile Include="src\wpc\dmddevice.cpp">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
