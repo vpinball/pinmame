@@ -1634,7 +1634,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\wpc\zacsnd.h" />
     <ClInclude Include="src\vc\dirent.h" />
     <ClInclude Include="src\vc\unistd.h" />
-    <ClCompile Include="ext\vgm\vgmwrite.h" />
+    <ClInclude Include="ext\vgm\vgmwrite.h" />
     <ClInclude Include="ext\zlib\include\zconf.h" />
     <ClInclude Include="ext\zlib\include\zlib.h" />
   </ItemGroup>
