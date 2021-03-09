@@ -74,12 +74,13 @@ void sndbrd_diag(int board, int button) {
 }
 
 void sndbrd_data_w(int board, int data) {
-#if defined(LISY_SUPPORT)
-  lisy_sound_handler( board, data );
-#endif
   const struct sndbrdIntf *b = intf[board].brdIntf;
-  if(b && (b->flags & SNDBRD_NOTSOUND)==0)
+  if(b && (b->flags & SNDBRD_NOTSOUND)==0) {
 	snd_cmd_log(board, data);
+#if defined(LISY_SUPPORT)
+	lisy_sound_handler( board, data );
+#endif
+  }
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
 #if 0
     if((b->flags & SNDBRD_NOTSOUND)==0)
