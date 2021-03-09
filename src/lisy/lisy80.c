@@ -244,8 +244,8 @@ void lisy80_init( void )
    fprintf(stderr,"info: sound init done\n");
  }
   
- //init LISY_Home if we are running on it
- if ( lisy_hardware_ID == LISY_HW_ID_HOME) 
+ //init LISY_Home Tom and Jerry if we are running on it
+ if ( lisy_hardware_revision == LISY_HW_LISY_H_TuJ) 
    {
      if ( lisy_home_init_event() < 0)
        fprintf(stderr,"LISY HOME init failed, sound emulation disabled\n");

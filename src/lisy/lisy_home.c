@@ -123,7 +123,8 @@ int real_coil;
 int mycoil;
 int org_is_coil = 0; //is the org deivce a coil?
 int map_is_coil = 0; //is the lamp/coil mapped to a coil?
-static unsigned int current_status = LISYH_EXT_CMD_FIRST_SOLBOARD; //RTH we need to add second board
+//static unsigned int current_status = LISYH_EXT_CMD_FIRST_SOLBOARD; //RTH we need to add second board
+static unsigned int current_status = LISY35_EXT_CMD_AUX_BOARD_1; //RTH we need to add second board
 
 union two {
     unsigned char byte;
@@ -176,19 +177,19 @@ union two {
  if (!map_is_coil) //the mapped device is a lamp
   {
     //do we talk to the lampdriver currently?
-    if (  current_status != LISYH_EXT_CMD_LED_ROW_1)
+    if (  current_status != LISY35_EXT_CMD_AUX_BOARD_1)
     {  //RTH need to be extended
-      lisyh_coil_select_lamp_driver();
-      current_status = LISYH_EXT_CMD_LED_ROW_1;
+      //RTH need to be lisyh_coil_select_lamp_driver();
+      current_status = LISY35_EXT_CMD_AUX_BOARD_1;
     }
    }
  else //the mapped device is a coil
   {
     //do we talk to the solenoiddriver currently?
-    if (  current_status != LISYH_EXT_CMD_FIRST_SOLBOARD)
+    if (  current_status != LISY35_EXT_CMD_AUX_BOARD_1)
     {  //RTH need to be extended
-      lisyh_coil_select_solenoid_driver();
-      current_status = LISYH_EXT_CMD_FIRST_SOLBOARD;
+      //RTH need to be lisyh_coil_select_solenoid_driver();
+      current_status = LISY35_EXT_CMD_AUX_BOARD_1;
     }
   }
 

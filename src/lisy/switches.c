@@ -14,6 +14,7 @@
 #include "fadecandy.h"
 #include "lisy_home.h"
 #include "externals.h"
+#include "lisy.h"
 
 
 void lisy80_debug_switches (unsigned char data)
@@ -39,8 +40,13 @@ if( ls80dbg.bitv.switches )
 	switch_no = returnval * 10 + strobe;
         sprintf(debugbuf,"LISY1 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
         lisy80_debug(debugbuf);
-
    } 
+   else if ( ( lisy_hardware_revision == 350 ) || ( lisy_hardware_revision == LISY_HW_LISY_H_SS ))  //switch numbering for Bally
+   {
+        switch_no = 1 + returnval + strobe * 8;
+        sprintf(debugbuf,"LISY35 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
+        lisy80_debug(debugbuf);
+   }
    else  //switch numbering for System80
    {
 	switch_no = returnval + strobe *10;

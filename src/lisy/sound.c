@@ -467,21 +467,6 @@ int lisy_adjust_volume(void)
   //no poti for hardware 3.11
   if ( lisy_hardware_revision == 311) return(0);
 
-  //hardware 3.20 plus hardware_ID == 2 fix setting
-  if ( ( lisy_hardware_revision == 320) & ( lisy_hardware_ID == 2) )
-  {
-
-     system("/usr/bin/amixer sset PCM 180");
-
-     if ( ls80dbg.bitv.sound)
-     {
-      lisy80_debug("LISY80 with HW_ID 2: fix volume set to 180(71%)");
-     }
-
-    return(180);
-  }
-
-
   //read position
   position = lisy_get_position();
 

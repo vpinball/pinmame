@@ -40,6 +40,9 @@ void lisyh_coil_select_solenoid_driver(void);
 void lisyh_coil_select_lamp_driver(void);
 void lisy35_coil_set_sound_raw( unsigned char value);
 
+void lisyh_coil_set( int coil, int action);
+void lisyh_led_set( int led, int line, int action);
+
 /* pulse time for coils in milli sec */
 #define COIL_PULSE_TIME 150
 
@@ -73,14 +76,8 @@ void lisy35_coil_set_sound_raw( unsigned char value);
 #define LISY35_READ_DIP_SWITCHES 14  //read dip switches and buffer value
 #define LISY35_GET_DIP_SWITCHES 15  //dip switches 1...4, need to be called four times
 
-#define LISYH_EXT_CMD_FIRST_SOLBOARD 2 //first solenoidboard (default))
-#define LISYH_EXT_CMD_SECOND_SOLBOARD 3 //second solenoidboard
-#define LISYH_EXT_CMD_LED_ROW_1 4
-#define LISYH_EXT_CMD_LED_ROW_2 5
-#define LISYH_EXT_CMD_LED_ROW_3 6
-#define LISYH_EXT_CMD_LED_ROW_4 7
-#define LISYH_EXT_CMD_LED_ROW_5 8
-#define LISYH_EXT_CMD_LED_ROW_6 9
+#define LISYH_COILCMD_SEL_SOLBOARD_NO 3 //first solenoidboard (default))
+#define LISYH_COILCMD_SEL_LED_LINE 4
 
 //special coil numbers
 #define LISY35_COIL_GREEN_LED 60

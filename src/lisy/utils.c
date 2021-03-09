@@ -117,6 +117,7 @@ void lisy_init( void )
   else if ( lisy_hardware_revision == 350 ) system=35;
   else if ( lisy_hardware_revision == LISY_HW_LISY_W ) system=121; // lise W <-> mini
   else if ( lisy_hardware_revision == LISY_HW_LISY_APC ) system=122; // integrated with APC
+  else if ( lisy_hardware_revision == LISY_HW_LISY_H_SS ) system=200; // LISY_Home Starship
      else system=80;
 
  //init the fadecandy HW ( if told present via K3 )
@@ -140,6 +141,7 @@ void lisy_init( void )
   else if ( lisy_hardware_revision == 350 ) lisy35_init( );
   else if ( lisy_hardware_revision == 121 ) lisy_w_init();
   else if ( lisy_hardware_revision == 122 ) lisy_w_init();
+  else if ( lisy_hardware_revision == 200 ) lisy35_init( ); //LISY_Home Starship
      else lisy80_init( );
 }
 

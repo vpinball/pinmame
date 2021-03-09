@@ -49,6 +49,10 @@ union five {
     //done from green_led routine
     unsigned char lisy35_bally_hw_check_finished = 0;
 
+    //store values lisy_h board to minimize changes
+    unsigned char lisyh_solboard_selected = 1;
+    unsigned char lisyh_ledboard_line_selected = 0;
+
 /*
   send command to coil PIC, no answer expected
 */
@@ -183,13 +187,13 @@ void lisy80_coil_sound_set( int sound)
 void coil_coil_set( int coil, int action)
 {
 
-   //eventhandler for LISY_HOME?
-   if ( lisy_hardware_ID == LISY_HW_ID_HOME)
-         {
+   //eventhandler for LISY_HOME Tom and Jerry?
+   if ( lisy_hardware_revision == LISY_HW_LISY_H_TuJ)
+   {
 		lisy_home_event_handler( LISY_HOME_EVENT_COIL, coil, action, NULL);
-	 }
+   }
    else
-     {
+   {
         //now do the setting
 	--coil;	//we have only 6 bit, so we start at zero for coil 1
 
@@ -200,8 +204,7 @@ void coil_coil_set( int coil, int action)
 
         //write to PIC
         lisy80_write_byte_coil_pic(  mydata_coil.byte );
-     }
-
+   }
 }
 
 /*
@@ -1023,23 +1026,101 @@ void lisyh_coil_select_solenoid_driver(void)
 {
 
     mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
-    mydata_coil.bitv5.COMMAND = LS80COILCMD_EXT_CMD_ID;
-    mydata_coil.bitv5.EXT_CMD = LISYH_EXT_CMD_FIRST_SOLBOARD;
+    mydata_coil.bitv5.COMMAND = LISYH_COILCMD_SEL_SOLBOARD_NO;
+    mydata_coil.bitv5.EXT_CMD = 0; //RTH need to be extended to two boards
 
     //write to PIC
     lisy80_write_byte_coil_pic(  mydata_coil.byte );
 
+    //debug?
+    if ((  ls80dbg.bitv.coils ) || (  ls80dbg.bitv.lamps ))
+    {
+     lisy80_debug("LISY_home solenoid driver selected");
+    }
 }
 
-//lisy home, select lampdriver
-void lisyh_coil_select_lamp_driver(void)
+//lisy home, select lampdriver and line ( 1..3)
+void lisyh_coil_select_led_driver_line(unsigned char line)
 {
 
     mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
-    mydata_coil.bitv5.COMMAND = LS80COILCMD_EXT_CMD_ID;
-    mydata_coil.bitv5.EXT_CMD = LISYH_EXT_CMD_LED_ROW_1;
+    mydata_coil.bitv5.COMMAND = LISYH_COILCMD_SEL_LED_LINE;
+    mydata_coil.bitv5.EXT_CMD = line;
 
     //write to PIC
     lisy80_write_byte_coil_pic(  mydata_coil.byte );
 
+    //debug?
+    if ((  ls80dbg.bitv.coils ) || (  ls80dbg.bitv.lamps ))
+    {
+     sprintf(debugbuf,"LISY_home LED driver line %d selected",line);
+     lisy80_debug(debugbuf);
+    }//debug
+}
+
+//set solenoid on LISY_Home solenoid driver board
+void lisyh_coil_set( int coil, int action)
+{
+
+	//do we have already the right selection?
+	if ( lisyh_solboard_selected == 0)
+	{
+	  lisyh_coil_select_solenoid_driver();
+	  //remember
+	  lisyh_solboard_selected = 1;
+	  lisyh_ledboard_line_selected = 0;
+	}
+
+        --coil; //we have only 6 bit, so we start at zero for coil 1
+
+        // build control byte
+        mydata_coil.bitv.COIL = coil;
+        mydata_coil.bitv.ACTION = action;
+        mydata_coil.bitv.IS_CMD = 0;        //this is a coil setting
+
+    //debug?
+    if (  ls80dbg.bitv.coils )
+    {
+     sprintf(debugbuf,"set LISY_home coil %d to %d",coil+1,action);
+     lisy80_debug(debugbuf);
+    }//debug
+
+
+        //write to PIC
+        lisy80_write_byte_coil_pic(  mydata_coil.byte );
+}
+
+//set LED on LISY_Home solenoid driver board
+//3 lines with 32 LEDs each
+void lisyh_led_set( int led, int line, int action)
+{
+
+
+	//do we have already the right selection?
+	if (( lisyh_solboard_selected == 1) || ( lisyh_ledboard_line_selected != line))
+	{
+	  lisyh_coil_select_led_driver_line(line); // select the line
+	  //remember
+	  lisyh_solboard_selected = 0;
+	  lisyh_ledboard_line_selected = line;
+	}
+
+        --led; //we have only 6 bit, so we start at zero for coil 1
+
+        // build control byte
+        mydata_coil.bitv.COIL = led;
+        mydata_coil.bitv.ACTION = action;
+        mydata_coil.bitv.IS_CMD = 0;        //this is a coil setting
+
+
+    //debug?
+    if (  ls80dbg.bitv.lamps )
+    {
+     sprintf(debugbuf,"set LISY_home led %d (line %d)  to %d",led+1,line,action);
+     lisy80_debug(debugbuf);
+    }//debug
+
+
+        //write to PIC
+        lisy80_write_byte_coil_pic(  mydata_coil.byte );
 }

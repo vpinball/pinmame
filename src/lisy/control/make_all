@@ -1,5 +1,6 @@
 make -f makefile.lisy1
 make -f makefile.lisy35
 make -f makefile.lisy80
+make -f makefile.lisy200
 make -f makefile.picpgm
 make -f makefile.lisy_api

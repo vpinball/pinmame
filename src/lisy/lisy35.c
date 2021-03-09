@@ -430,9 +430,25 @@ if ( lisy35_has_soundcard )
  {
     //simulate coin insert for 50 millisecs via timer 2
     // chute#1 is switch10; strobe 1 ret 2, so matrix is 2,2 to set
+    // chute#1 Stern is switch1; strobe 0 ret 0, so matrix is 1,0 to set
     //def lisy_timer( unsigned int duration, int command, int index)
-     SET_BIT(swMatrixLISY35[2],2);
-     if ( lisy_timer( 50, 0, 2)) { CLEAR_BIT(swMatrixLISY35[2],2); simulate_coin_flag = 0; }
+    if (core_gameData->gen & (GEN_STMPU200|GEN_STMPU100))
+         SET_BIT(swMatrixLISY35[1],0);
+    else 
+         SET_BIT(swMatrixLISY35[2],2);
+    if ( lisy_timer( 50, 0, 2)) { 
+    if (core_gameData->gen & (GEN_STMPU200|GEN_STMPU100))
+	{
+	CLEAR_BIT(swMatrixLISY35[2],2);
+	if ( ls80dbg.bitv.basic) lisy80_debug("Stern coin simulated due to push&hold REPLAY Switch");
+	}
+    else
+	{
+	CLEAR_BIT(swMatrixLISY35[2],2);
+	if ( ls80dbg.bitv.basic) lisy80_debug("Bally coin simulated due to push&hold REPLAY Switch");
+	}
+	simulate_coin_flag = 0;
+	}
  }
  else // bit is zero, reset timer index 0
  {

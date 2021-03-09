@@ -279,6 +279,7 @@ void lisy_hwlib_init( void )
 {
 
  int disp_sw_ver,coil_sw_ver,switch_sw_ver;
+ int lisy_hardware_ID; //only internal use in lisy_hwlib_init
 
 
  //open the I2C bus

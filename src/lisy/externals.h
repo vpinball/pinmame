@@ -7,7 +7,6 @@
 
 extern int lisy_has24c04;
 extern int lisy_hardware_revision;
-extern int lisy_hardware_ID;
 extern unsigned char lisy_K3_value;
 extern t_stru_lisy80_sounds_csv lisy80_sound_stru[64];
 extern t_stru_lisy35_sounds_csv lisy35_sound_stru[256];

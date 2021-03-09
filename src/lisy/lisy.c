@@ -25,7 +25,6 @@ t_stru_lisy_env lisy_env;
 //global var for handling different hardware revisions
 //set in lisy_hwlib_init
 int lisy_hardware_revision;
-int lisy_hardware_ID; //only for Software PIC >= 4
 unsigned char lisy_K3_value = 3;  //default no jumpers
 
 //global var for handling different eeprom handling
@@ -64,9 +63,9 @@ void lisy_shutdown(void)
 {
  if ( lisy_hardware_revision == 100 )
     lisy1_shutdown( );
- else if ( lisy_hardware_revision == 350 )
+ else if ( ( lisy_hardware_revision == 350 ) || ( lisy_hardware_revision == LISY_HW_LISY_H_SS ))
     lisy35_shutdown( );
- else if ( ( lisy_hardware_revision == LISY_HW_LISY_W ) | ( lisy_hardware_revision == LISY_HW_LISY_APC ))
+ else if ( ( lisy_hardware_revision == LISY_HW_LISY_W ) || ( lisy_hardware_revision == LISY_HW_LISY_APC ))
     lisy_mini_shutdown( );
  else
     lisy80_shutdown( );
