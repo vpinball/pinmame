@@ -1446,7 +1446,7 @@ GTS80BSSOUND888(             "drom1.snd",  CRC(1a53ac15) SHA1(f2751664a09431e908
 GTS80_ROMEND
 #define init_mntecrlg init_mntecrlo
 #define input_ports_mntecrlg input_ports_mntecrlo
-CORE_CLONEDEFNV(mntecrlg,mntecrlo, "Monte Carlo (German)",1987,"Gottlieb",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(mntecrlg,mntecrlo, "Monte Carlo (German)",1987,"Gottlieb",gl_mGTS80BS1,0) // derived from rev. 1
 
 GTS80B_2K_ROMSTART(mntcrgfp, "prom2g.cpu",   CRC(2a5e0c4f) SHA1(b386168bd911b9977104c47da962d0248f22614b),
                              "prom1g_fp.cpu",CRC(bcf93933) SHA1(846c7d7c1da7516dbe0d19b4fc87eecfb69b13c1))
@@ -1458,6 +1458,16 @@ GTS80_ROMEND
 #define input_ports_mntcrgfp input_ports_mntecrlo
 CORE_CLONEDEFNV(mntcrgfp,mntecrlo, "Monte Carlo (German Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
+GTS80B_2K_ROMSTART(mntcrgmfp,"prom2g_mfp.cpu",CRC(4c01707e) SHA1(71b9f3edecf4e04ed7891b966e645018df8baee1),
+                             "prom1g_mfp.cpu",CRC(14ed10c7) SHA1(9a753e306ad8430a53daa4368f4a7f16d8b839f9))
+GTS80BSSOUND888(             "drom1.snd",     CRC(1a53ac15) SHA1(f2751664a09431e908873580ddf4f44df9b4eda7),
+                             "yrom1.snd",     CRC(6e234c49) SHA1(fdb4126ecdaac378d144e9dd3c29b4e79290da2a),
+                             "yrom2.snd",     CRC(a95d1a6b) SHA1(91946ef7af0e4dd96db6d2d6f4f2e9a3a7279b81))
+GTS80_ROMEND
+#define init_mntcrgmfp init_mntecrlo
+#define input_ports_mntcrgmfp input_ports_mntecrlo
+CORE_CLONEDEFNV(mntcrgmfp,mntecrlo, "Monte Carlo (German Millions option, Free Play)",2021,"Flipprojets",gl_mGTS80BS1,0)
+
 // #708X
 GTS80B_2K_ROMSTART(mntecrlf, "prom2f.cpu", CRC(f6842631) SHA1(7447994d2055c7fa12aaf35e93436ee829f5b7ae),
                              "prom1f.cpu", CRC(33a8dbc9) SHA1(5ef586e2b1ba7f245723584bc14c60c2860d19fc))
@@ -1467,7 +1477,7 @@ GTS80BSSOUND888(             "drom1.snd",  CRC(1a53ac15) SHA1(f2751664a09431e908
 GTS80_ROMEND
 #define init_mntecrlf init_mntecrlo
 #define input_ports_mntecrlf input_ports_mntecrlo
-CORE_CLONEDEFNV(mntecrlf,mntecrlo, "Monte Carlo (French)",1987,"Gottlieb",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(mntecrlf,mntecrlo, "Monte Carlo (French)",1987,"Gottlieb",gl_mGTS80BS1,0) // derived from rev. 1
 
 GTS80B_2K_ROMSTART(mntcrffp, "prom2f.cpu",   CRC(f6842631) SHA1(7447994d2055c7fa12aaf35e93436ee829f5b7ae),
                              "prom1f_fp.cpu",CRC(dbe0f749) SHA1(2a1fc7606dbc99ac534901ed91943d6dd49bd4e2))
@@ -1478,6 +1488,16 @@ GTS80_ROMEND
 #define init_mntcrffp init_mntecrlo
 #define input_ports_mntcrffp input_ports_mntecrlo
 CORE_CLONEDEFNV(mntcrffp,mntecrlo, "Monte Carlo (French Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+
+GTS80B_2K_ROMSTART(mntcrfmfp,"prom2f_mfp.cpu",CRC(05ce337f) SHA1(8fd1f42066e41e4d10d3218fb3a24f656f62c090),
+                             "prom1f_mfp.cpu",CRC(73f4debd) SHA1(9505cd8edd7aace603972ca751eb4675f3139850))
+GTS80BSSOUND888(             "drom1.snd",     CRC(1a53ac15) SHA1(f2751664a09431e908873580ddf4f44df9b4eda7),
+                             "yrom1.snd",     CRC(6e234c49) SHA1(fdb4126ecdaac378d144e9dd3c29b4e79290da2a),
+                             "yrom2.snd",     CRC(a95d1a6b) SHA1(91946ef7af0e4dd96db6d2d6f4f2e9a3a7279b81))
+GTS80_ROMEND
+#define init_mntcrfmfp init_mntecrlo
+#define input_ports_mntcrfmfp input_ports_mntecrlo
+CORE_CLONEDEFNV(mntcrfmfp,mntecrlo, "Monte Carlo (French Millions option, Free Play)",2021,"Flipprojets",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(mntecrla, "prom2a.cpu", CRC(5dd75c06) SHA1(911f7e56b7602c9bc9b51dde7719d3e0562f0702),
                              "prom1a.cpu", CRC(de980755) SHA1(0df99526a432e26fb73288b529dc0f4f49623e81))
@@ -1518,6 +1538,22 @@ GTS80_ROMEND
 #define init_mntcr2fp init_mntecrlo
 #define input_ports_mntcr2fp input_ports_mntecrlo
 CORE_CLONEDEFNV(mntcr2fp, mntecrlo, "Monte Carlo (rev. 2 Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+
+/*On the original game, if you go through the ramp while it flashes, it earns 10,000,000 points.
+  Many players complain about this behavior, because it is too much and it literally "kills" the game.
+  We have corrected this rule and implemented the "millions" option, which is configured with the DIP-8:
+    ON:  Turn on the ramp every 40 contacts and give 1,000,000 when passing.
+    OFF: Turn on the ramp randomly and more rarely, but pay double (2,000,000) when passing.
+*/
+GTS80B_2K_ROMSTART(mntcrmfp, "prom2_2_mfp.cpu",CRC(5a9a824f) SHA1(77f115b2d80bfdaded67801bff3adb38f26400a9),
+                             "prom1_2_mfp.cpu",CRC(a9652127) SHA1(6c27a8450ef9b4e2d15f8af96f085bf470e95f2a))
+GTS80BSSOUND888(             "drom1.snd",      CRC(1a53ac15) SHA1(f2751664a09431e908873580ddf4f44df9b4eda7),
+                             "yrom1.snd",      CRC(6e234c49) SHA1(fdb4126ecdaac378d144e9dd3c29b4e79290da2a),
+                             "yrom2.snd",      CRC(a95d1a6b) SHA1(91946ef7af0e4dd96db6d2d6f4f2e9a3a7279b81))
+GTS80_ROMEND
+#define init_mntcrmfp init_mntecrlo
+#define input_ports_mntcrmfp input_ports_mntecrlo
+CORE_CLONEDEFNV(mntcrmfp, mntecrlo, "Monte Carlo (rev. 2 Millions option, Free Play)",2021,"Flipprojets",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Spring Break (#706)
@@ -1612,7 +1648,7 @@ GTS80BSSOUND888(             "drom1.snd", CRC(97d3f9ba) SHA1(1b34c7e51373c26d29d
 GTS80_ROMEND
 #define init_sprbrks init_sprbreak
 #define input_ports_sprbrks input_ports_sprbreak
-CORE_CLONEDEFNV(sprbrks, sprbreak, "Spring Break (single ball game)",1987,"Gottlieb",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(sprbrks, sprbreak, "Spring Break (Single ball game)",1987,"Gottlieb",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(sprbrsfp, "prom2.rv2",    CRC(911cd14f) SHA1(2bc3ff6a3889da69b97f8ec318f93208e3d42cfe),
                              "prom1_fp.rv2", CRC(dc956db7) SHA1(8bdb357c0a4c78967b4bb053f9d807897a28ad88))
@@ -1622,7 +1658,7 @@ GTS80BSSOUND888(             "drom1.snd",    CRC(97d3f9ba) SHA1(1b34c7e51373c26d
 GTS80_ROMEND
 #define init_sprbrsfp init_sprbreak
 #define input_ports_sprbrsfp input_ports_sprbreak
-CORE_CLONEDEFNV(sprbrsfp, sprbreak, "Spring Break (single ball game, Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(sprbrsfp, sprbreak, "Spring Break (Single ball game, Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Amazon Hunt II (#684C)
