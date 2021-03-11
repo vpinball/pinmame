@@ -145,14 +145,16 @@ static WRITE_HANDLER(data_from_dmd)
 /*Solenoids - Need to verify correct solenoid # here!*/
 static WRITE_HANDLER(solenoid_w)
 {
-	switch(offset){
+	switch(offset) {
 		case 0:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
 			break;
 		case 1:
+			alvglocals.swAvail2 = (data & 0x40) ? 1 : 0;
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
             break;
 		case 2:
+			alvglocals.swAvail1 = data ? 1 : 0;
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
             break;
 		case 3:
@@ -161,7 +163,7 @@ static WRITE_HANDLER(solenoid_w)
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
 	}
-   alvglocals.solenoids |= coreGlobals.pulsedSolState;
+	alvglocals.solenoids |= coreGlobals.pulsedSolState;
 }
 
 //See U7-PB Read for more info
@@ -180,7 +182,7 @@ READ_HANDLER(CoinDoorSwitches_Read)
 //as this input is also connected to a flasher lamp test!
 	int data = 0;
 	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)				(8)
-	data |= (alvglocals.swTicket << 5);	 //Ticket Sw.	(Not Inverted)	(6)
+	data |= ((alvglocals.swTicket | alvglocals.swAvail1) << 5);	 //Ticket Sw.	(Not Inverted)	(6)
 	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)	(5)
 	data |= (alvglocals.swAvail2 << 3);  //Avail2		(Not Inverted)	(4)
 	data |= (alvglocals.swTest   << 2);	 //Test Sw.		(Not Inverted)	(3)
@@ -558,17 +560,6 @@ static SWITCH_UPDATE(alvg) {
   alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
   alvglocals.swTicket = (core_getSw(ALVG_SWTICKET)?1:0);
-
-  //Update Flasher Relay
-  {
-  int relay=(coreGlobals.solenoids & 0x4000)>>14;
-  alvglocals.swAvail1 = relay;
-  alvglocals.swAvail2 = relay;
-  }
-
-  //Not necessary it seems..
-  //Force VIA to see the coin door switch values
-  //via_0_portb_w(0,CoinDoorSwitches_Read(0));
 }
 
 //Send a sound command to the sound board
