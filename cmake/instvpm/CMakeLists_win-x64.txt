@@ -52,8 +52,6 @@ target_include_directories(instvpm PUBLIC
 )
 
 target_link_libraries(instvpm
-   odbc32.lib
-   odbccp32.lib
    version.lib
 )
 
