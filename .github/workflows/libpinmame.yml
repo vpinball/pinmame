@@ -14,101 +14,81 @@ jobs:
           VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
           echo "::set-output name=version::${VERSION}"
 
-  build-win-x64:
-    runs-on: windows-latest
+  build:
+    name: Build libpinmame-${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
     needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win-x64
+            platform-name: x64
+            lib: libpinmame-${{ needs.version.outputs.version }}.dll
+          - os: windows-latest
+            platform: win-x86
+            platform-name: Win32
+            lib: libpinmame-${{ needs.version.outputs.version }}.dll
+          - os: windows-latest
+            platform: win-arm64
+            platform-name: ARM64
+            lib: libpinmame-${{ needs.version.outputs.version }}.dll
+          - os: macos-latest
+            platform: osx-x64
+            lib: libpinmame.${{ needs.version.outputs.version }}.dylib
+          - os: ubuntu-latest
+            platform: linux-x64
+            lib: libpinmame.so.${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v2
-      - name: Build
+      - run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946159/zip -o upx.zip
+            7z x upx.zip -oupx
+            rm upx.zip
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946156/zip -o upx.zip
+            7z x upx.zip -oupx
+            chmod 755 upx/upx
+            rm upx.zip
+          fi
+        shell: bash
+      - name: Build libpinmame-${{ matrix.platform }}
         run: |
-          copy cmake/libpinmame/CMakeLists_win-x64.txt CMakeLists.txt
-          cmake -G "Visual Studio 16 2019" -A x64 -B build
-          cmake --build build --config Release
-      - uses: svenstaro/upx-action@v2
-        with:
-          file: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
-          args: --best --lzma
+          cp cmake/libpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
+            cmake --build build --config Release
+            if [[ "${{ matrix.platform }}" != "win-arm64" ]]; then 
+              ./upx/upx.exe build/Release/${{ matrix.lib }}
+            fi
+          else
+            cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+            cmake --build build/Release
+            if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+              ./upx/upx build/Release/${{ matrix.lib }}
+            fi
+          fi
+        shell: bash
+      - run: |
+          mkdir tmp
+          cp build/Release/${{ matrix.lib }} tmp
+          cp release/license.txt tmp
+        shell: bash
       - uses: actions/upload-artifact@v2
         with:
-          name: libpinmame-win-x64
-          path: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
+          name: libpinmame-${{ matrix.platform }}
+          path: build/Release/${{ matrix.lib }}
           
-  build-win-x86:
-    runs-on: windows-latest
-    needs: [ version ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: |
-          copy cmake/libpinmame/CMakeLists_win-x86.txt CMakeLists.txt
-          cmake -G "Visual Studio 16 2019" -A Win32 -B build
-          cmake --build build --config Release
-      - uses: svenstaro/upx-action@v2
-        with:
-          file: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
-          args: --best --lzma
-      - uses: actions/upload-artifact@v2
-        with:
-          name: libpinmame-win-x86
-          path: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
-
-  build-win-arm64:
-    runs-on: windows-latest
-    needs: [ version ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: |
-          copy cmake/libpinmame/CMakeLists_win-arm64.txt CMakeLists.txt
-          cmake -G "Visual Studio 16 2019" -A ARM64 -B build
-          cmake --build build --config Release
-      - uses: actions/upload-artifact@v2
-        with:
-          name: libpinmame-win-arm64
-          path: build/Release/libpinmame-${{ needs.version.outputs.version }}.dll
-        
-  build-osx-x64:
-    runs-on: macos-latest
-    needs: [ version ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: |
-          cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
-          cmake -DCMAKE_BUILD_TYPE=Release -B build
-          cmake --build build 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: libpinmame-osx-x64
-          path: build/libpinmame.${{ needs.version.outputs.version }}.dylib
-
-  build-linux-x64:
-    runs-on: ubuntu-latest
-    needs: [ version ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: |
-          cp cmake/libpinmame/CMakeLists_linux-x64.txt CMakeLists.txt
-          cmake -DCMAKE_BUILD_TYPE=Release -B build
-          cmake --build build 
-      - uses: svenstaro/upx-action@v2
-        with:
-          file: build/libpinmame.so.${{ needs.version.outputs.version }}
-          args: --best --lzma
-      - uses: actions/upload-artifact@v2
-        with:
-          name: libpinmame-linux-x64
-          path: build/libpinmame.so.${{ needs.version.outputs.version }}
-
   dispatch:
     runs-on: ubuntu-latest
-    needs: [ build-win-x64, build-win-x86, build-win-arm64, build-osx-x64, build-linux-x64 ]
+    needs: [ build ]
     if: github.repository == 'vpinball/pinmame' && github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.PAT_PINMAME_DOTNET }}
+          token: ${{ secrets.GH_PAT }}
           repository: VisualPinball/pinmame-dotnet
           event-type: update-libpinmame
           client-payload: '{"run_id": "${{ github.run_id }}"}'

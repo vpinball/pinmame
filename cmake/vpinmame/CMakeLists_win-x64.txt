@@ -705,8 +705,6 @@ target_link_libraries(vpinmame
    dxguid.lib
    dsound.lib
    dinput64.lib
-   odbc32.lib
-   odbccp32.lib
    version.lib
    zlibstatmt64.lib
    bass.lib
