@@ -2,38 +2,63 @@ name: vpinmame
 on:
   push:
 
+env:
+  VERSION_START_SHA: 06fbe2826c1563f10576ae68984672dcffa481ac
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "::set-output name=tag::${TAG}"
+
   build:
-    name: Build VPinMAME${{ matrix.artifact-suffix }}-win-${{ matrix.platform }}
+    name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
     runs-on: windows-latest
+    needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: win-x64
             platform-name: x64
-            dll: VPinMAME64.dll
+            vpinmame: VPinMAME64.dll
             setup: Setup64.exe
-            bass: x64\Bass64.dll
-          - platform: win-x86
-            platform-name: Win32
-            dll: VPinMAME.dll
-            setup: Setup.exe
-            bass: Bass.dll
+            bass: x64/Bass64.dll
           - platform: win-x64
             platform-name: x64
-            dll: VPinMAME64.dll
+            vpinmame: VPinMAME64.dll
             setup: Setup64.exe
-            bass: x64\Bass64.dll
+            bass: x64/Bass64.dll
             artifact-suffix: -sc
-            extra-flags: -D CMAKE_CXX_FLAGS=/DSAM_INCLUDE_COLORED
+            extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
           - platform: win-x86
             platform-name: Win32
-            dll: VPinMAME.dll
+            vpinmame: VPinMAME.dll
+            setup: Setup.exe
+            bass: Bass.dll
+          - platform: win-x86
+            platform-name: Win32
+            vpinmame: VPinMAME.dll
             setup: Setup.exe
             bass: Bass.dll
             artifact-suffix: -sc
-            extra-flags: -D CMAKE_CXX_FLAGS=/DSAM_INCLUDE_COLORED
+            extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
     steps:
       - uses: actions/checkout@v2
       - uses: ilammy/setup-nasm@v1
@@ -41,25 +66,24 @@ jobs:
           curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946159/zip -o upx.zip
           7z x upx.zip -oupx
           rm upx.zip
-        shell: bash 
       - name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
-          copy cmake\vpinmame\CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
-          cmake ${{ matrix.extra-flags }} -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build\vpinmame
-          cmake --build build\vpinmame --config Release
-          .\upx\upx.exe --best --lzma --best --lzma build\vpinmame\Release\${{ matrix.dll }}
-          copy cmake\instvpm\CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
-          cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build\instvpm
-          cmake --build build\instvpm --config Release
+          cp cmake/vpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          cmake ${{ matrix.extra-flags }} -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/vpinmame
+          cmake --build build/vpinmame --config Release
+          ./upx/upx.exe --best --lzma --best --lzma build/vpinmame/Release/${{ matrix.vpinmame }}
+          cp cmake/instvpm/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/instvpm
+          cmake --build build/instvpm --config Release
       - run: |
           mkdir tmp
-          copy build\vpinmame\Release\${{ matrix.dll }} tmp
-          copy build\instvpm\Release\${{ matrix.setup }} tmp
-          copy ext\bass\${{ matrix.bass }} tmp
-          copy release\VPMAlias.txt tmp
-          copy release\license.txt tmp
-          copy release\whatsnewVPM.txt tmp
+          cp build/vpinmame/Release/${{ matrix.vpinmame }} tmp
+          cp build/instvpm/Release/${{ matrix.setup }} tmp
+          cp ext/bass/${{ matrix.bass }} tmp
+          cp release/VPMAlias.txt tmp
+          cp release/license.txt tmp
+          cp release/whatsnewVPM.txt tmp
       - uses: actions/upload-artifact@v2
         with:
-          name: VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
+          name: VPinMAME${{ matrix.artifact-suffix }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp

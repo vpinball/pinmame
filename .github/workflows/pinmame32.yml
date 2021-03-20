@@ -2,26 +2,51 @@ name: pinmame32
 on:
   push:
 
+env:
+  VERSION_START_SHA: 06fbe2826c1563f10576ae68984672dcffa481ac
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "::set-output name=tag::${TAG}"
+
   build:
     name: Build PinMAME32${{ matrix.artifact-suffix }}-${{ matrix.platform }}
     runs-on: windows-latest
+    needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: win-x64
             platform-name: x64
-          - platform: win-x86
-            platform-name: Win32
           - platform: win-x64
             platform-name: x64
             artifact-suffix: -sc
-            extra-flags: -D CMAKE_CXX_FLAGS=/DSAM_INCLUDE_COLORED
+            extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
+          - platform: win-x86
+            platform-name: Win32
           - platform: win-x86
             platform-name: Win32
             artifact-suffix: -sc
-            extra-flags: -D CMAKE_CXX_FLAGS=/DSAM_INCLUDE_COLORED
+            extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
     steps:
       - uses: actions/checkout@v2
       - uses: ilammy/setup-nasm@v1
@@ -29,19 +54,18 @@ jobs:
           curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946159/zip -o upx.zip
           7z x upx.zip -oupx
           rm upx.zip
-        shell: bash
       - name: Build PinMAME32${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
-          copy cmake\pinmame32\CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          cp cmake/pinmame32/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake ${{ matrix.extra-flags }} -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config Release
-          .\upx\upx.exe --best --lzma --best --lzma build\Release\PinMAME32.exe
+          ./upx/upx.exe --best --lzma --best --lzma build/Release/PinMAME32.exe
       - run: |
           mkdir tmp
-          copy build\Release\PinMAME32.exe tmp
-          copy release\license.txt tmp
-          copy release\whatsnew.txt tmp
+          cp build/Release/PinMAME32.exe tmp
+          cp release/license.txt tmp
+          cp release/whatsnew.txt tmp
       - uses: actions/upload-artifact@v2
         with:
-          name: PinMAME32${{ matrix.artifact-suffix }}-${{ matrix.platform }}
+          name: PinMAME32${{ matrix.artifact-suffix }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp
