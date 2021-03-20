@@ -3,32 +3,35 @@ on:
   workflow_dispatch:
     inputs:
       sha:
-        description: 'SHA (leave blank for HEAD)'     
+        description: "SHA (leave blank for HEAD)"
         required: false
 
 env:
-  ACTIONS_API_URL: "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions" 
+  ACTIONS_API_URL: https://api.github.com/repos/${GITHUB_REPOSITORY}/actions
+  VERSION_START_SHA: 06fbe2826c1563f10576ae68984672dcffa481ac
 
 jobs:
   version:
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.sha.outputs.sha }}
-      sha8: ${{ steps.sha.outputs.sha8 }}
-      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - id: sha
         run: |
            SHA=$(if [[ "${{ github.event.inputs.sha }}" ]]; then echo "${{ github.event.inputs.sha }}"; else echo "${GITHUB_SHA}"; fi)
+           SHA7="${SHA::7}"
            echo "::set-output name=sha::${SHA}"
-           echo "::set-output name=sha8::${SHA::8}"
+           echo "::set-output name=sha7::${SHA7}"
       - uses: actions/checkout@v2
         with:
           ref: ${{ steps.sha.outputs.sha }}
+          fetch-depth: 0
       - id: version
         run: |
           VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
-          echo "::set-output name=version::${VERSION}"
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..${{ steps.sha.outputs.sha }} --count)
+          echo "::set-output name=tag::${VERSION}-${REVISION}-${{ steps.sha.outputs.sha7 }}"
 
   prerelease:
     runs-on: ubuntu-latest
@@ -54,8 +57,8 @@ jobs:
       - id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ needs.version.outputs.version }}-${{ needs.version.outputs.sha8 }}" 
-          release_name: "v${{ needs.version.outputs.version }}-${{ needs.version.outputs.sha8 }}"
+          tag_name: "v${{ needs.version.outputs.tag }}"
+          release_name: "v${{ needs.version.outputs.tag }}"
           prerelease: true
           commitish: ${{ needs.version.outputs.sha }}
         env:
