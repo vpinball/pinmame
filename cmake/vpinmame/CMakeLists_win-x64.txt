@@ -713,4 +713,5 @@ target_link_libraries(vpinmame
 set_target_properties(vpinmame PROPERTIES
    VS_DPI_AWARE "On"
    RUNTIME_OUTPUT_NAME "VPinMAME64"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )

@@ -664,4 +664,5 @@ target_link_options(pinmame PUBLIC
 set_target_properties(pinmame PROPERTIES
    LINKER_LANGUAGE CXX
    RUNTIME_OUTPUT_NAME "PinMAME"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )

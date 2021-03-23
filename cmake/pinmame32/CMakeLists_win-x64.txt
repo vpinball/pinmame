@@ -681,4 +681,5 @@ target_link_libraries(pinmame32
 
 set_target_properties(pinmame32 PROPERTIES
    RUNTIME_OUTPUT_NAME "PinMAME32"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
