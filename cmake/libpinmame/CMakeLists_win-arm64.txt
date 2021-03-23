@@ -626,4 +626,5 @@ target_link_libraries(pinmame
 set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
    RUNTIME_OUTPUT_NAME "libpinmame-${PROJECT_VERSION}"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )

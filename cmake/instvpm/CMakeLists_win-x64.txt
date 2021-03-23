@@ -63,4 +63,5 @@ target_link_options(instvpm PUBLIC
 set_target_properties(instvpm PROPERTIES
    VS_DPI_AWARE "On"
    RUNTIME_OUTPUT_NAME "Setup64"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
