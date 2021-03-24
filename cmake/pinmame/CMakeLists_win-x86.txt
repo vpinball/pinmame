@@ -105,6 +105,7 @@ add_compile_options(
    $<$<CONFIG:RELEASE>:/GR->
    $<$<CONFIG:RELEASE>:/Oy>
    $<$<CONFIG:RELEASE>:/GT>
+   $<$<CONFIG:RELEASE>:/GL>
 )
 
 set_source_files_properties(
@@ -659,6 +660,7 @@ target_link_libraries(pinmame
 target_link_options(pinmame PUBLIC
    /SUBSYSTEM:CONSOLE
    /SAFESEH:NO
+   $<$<CONFIG:RELEASE>:/LTCG>
 )
 
 set_target_properties(pinmame PROPERTIES
