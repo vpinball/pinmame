@@ -106,6 +106,7 @@ add_compile_options(
    $<$<CONFIG:RELEASE>:/GR->
    $<$<CONFIG:RELEASE>:/Oy>
    $<$<CONFIG:RELEASE>:/GT>
+   $<$<CONFIG:RELEASE>:/GL>
 )
 
 set_source_files_properties(
@@ -718,6 +719,7 @@ target_link_libraries(vpinmame
 
 target_link_options(vpinmame PUBLIC
    /SAFESEH:NO
+   $<$<CONFIG:RELEASE>:/LTCG>
 )
 
 set_target_properties(vpinmame PROPERTIES
