@@ -45,11 +45,11 @@ struct mame_bitmap
 
 struct RomModule
 {
-	const char *_name;	/* name of the file to load */
-	UINT32 _offset;		/* offset to load it to */
-	UINT32 _length;		/* length of the file */
-	UINT32 _flags;		/* flags */
-	const char *_hashdata; /* hashing informations (checksums) */
+	const char *_name;			/* name of the file to load */
+	UINT32 _offset;				/* offset to load it to */
+	UINT32 _length;				/* length of the file */
+	UINT32 _flags;				/* flags */
+	const char *_hashdata;		/* hashing informations (checksums) */
 };
 
 
@@ -58,14 +58,14 @@ struct GameSample
 	int length;
 	int smpfreq;
 	int resolution;
-	signed char data[1];	/* extendable */
+	signed char data[1];		/* extendable */
 };
 
 
 struct SystemBios
 {
-	int value;			/* value of mask to apply to ROM_BIOSFLAGS is chosen */
-	const char *_name;	/* name of the bios, e.g "default","japan" */
+	int value;					/* value of mask to apply to ROM_BIOSFLAGS is chosen */
+	const char *_name;			/* name of the bios, e.g "default","japan" */
 	const char *_description;	/* long name of the bios, e.g "Europe MVS (Ver. 2)" */
 };
 
@@ -73,7 +73,7 @@ struct SystemBios
 struct rom_load_data
 {
 	int warnings;				/* warning count during processing */
-	int errors;				/* error count during processing */
+	int errors;					/* error count during processing */
 
 	int romsloaded;				/* current ROMs loaded count */
 	int romstotal;				/* total number of ROMs to read */
@@ -81,16 +81,16 @@ struct rom_load_data
 	void * file;				/* current file */
 
 	UINT8 *	regionbase;			/* base of current region */
-	UINT32 regionlength;			/* length of current region */
+	UINT32 regionlength;		/* length of current region */
 
-	char errorbuf[4096];			/* accumulated errors */
-	UINT8 tempbuf[65536];			/* temporary buffer */
+	char errorbuf[4096];		/* accumulated errors */
+	UINT8 tempbuf[65536];		/* temporary buffer */
 };
 
 
 struct GameSamples
 {
-	int total;	/* total number of samples */
+	int total;						/* total number of samples */
 	struct GameSample *sample[1];	/* extendable */
 };
 
@@ -155,12 +155,12 @@ enum
 ***************************************************************************/
 
 /* ----- per-entry constants ----- */
-#define ROMENTRYTYPE_REGION			1					/* this entry marks the start of a region */
-#define ROMENTRYTYPE_END			2					/* this entry marks the end of a region */
-#define ROMENTRYTYPE_RELOAD			3					/* this entry reloads the previous ROM */
-#define ROMENTRYTYPE_CONTINUE		4					/* this entry continues loading the previous ROM */
-#define ROMENTRYTYPE_FILL			5					/* this entry fills an area with a constant value */
-#define ROMENTRYTYPE_COPY			6					/* this entry copies data from another region/offset */
+#define ROMENTRYTYPE_REGION			1	/* this entry marks the start of a region */
+#define ROMENTRYTYPE_END			2	/* this entry marks the end of a region */
+#define ROMENTRYTYPE_RELOAD			3	/* this entry reloads the previous ROM */
+#define ROMENTRYTYPE_CONTINUE		4	/* this entry continues loading the previous ROM */
+#define ROMENTRYTYPE_FILL			5	/* this entry fills an area with a constant value */
+#define ROMENTRYTYPE_COPY			6	/* this entry copies data from another region/offset */
 #define ROMENTRYTYPE_COUNT			7
 
 #define ROMENTRY_REGION				((const char *)ROMENTRYTYPE_REGION)
@@ -285,7 +285,7 @@ enum
 #define ROM_GETOFFSET(r)			((r)->_offset)
 #define ROM_GETLENGTH(r)			((r)->_length)
 #define ROM_GETFLAGS(r)				((r)->_flags)
-#define ROM_GETHASHDATA(r)          ((r)->_hashdata)
+#define ROM_GETHASHDATA(r)			((r)->_hashdata)
 #define ROM_ISOPTIONAL(r)			((ROM_GETFLAGS(r) & ROM_OPTIONALMASK) == ROM_OPTIONAL)
 #define ROM_GETGROUPSIZE(r)			(((ROM_GETFLAGS(r) & ROM_GROUPMASK) >> 12) + 1)
 #define ROM_GETSKIPCOUNT(r)			((ROM_GETFLAGS(r) & ROM_SKIPMASK) >> 16)
@@ -308,23 +308,23 @@ enum
 ***************************************************************************/
 
 /* ----- start/stop macros ----- */
-#define ROM_START(name)								static const struct RomModule rom_##name[] = {
+#define ROM_START(name)                              static const struct RomModule rom_##name[] = {
 #define ROM_END                                      { ROMENTRY_END, 0, 0, 0, NULL } };
 
 /* ----- ROM region macros ----- */
 #define ROM_REGION(length,type,flags)                { ROMENTRY_REGION, 0, length, flags, (const char*)type },
-#define ROM_REGION16_LE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_16BIT | ROMREGION_LE)
-#define ROM_REGION16_BE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_16BIT | ROMREGION_BE)
-#define ROM_REGION32_LE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_32BIT | ROMREGION_LE)
-#define ROM_REGION32_BE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_32BIT | ROMREGION_BE)
+#define ROM_REGION16_LE(length,type,flags)           ROM_REGION(length, type, (flags) | ROMREGION_16BIT | ROMREGION_LE)
+#define ROM_REGION16_BE(length,type,flags)           ROM_REGION(length, type, (flags) | ROMREGION_16BIT | ROMREGION_BE)
+#define ROM_REGION32_LE(length,type,flags)           ROM_REGION(length, type, (flags) | ROMREGION_32BIT | ROMREGION_LE)
+#define ROM_REGION32_BE(length,type,flags)           ROM_REGION(length, type, (flags) | ROMREGION_32BIT | ROMREGION_BE)
 
 /* ----- core ROM loading macros ----- */
 #define ROMMD5_LOAD(name,offset,length,hash,flags)   { name, offset, length, flags, hash },
 #define ROMX_LOAD(name,offset,length,hash,flags)     { name, offset, length, flags, hash },
 #define ROM_LOAD(name,offset,length,hash)            ROMX_LOAD(name, offset, length, hash, 0)
 #define ROM_LOAD_OPTIONAL(name,offset,length,hash)   ROMX_LOAD(name, offset, length, hash, ROM_OPTIONAL)
-#define ROM_CONTINUE(offset,length)					ROMX_LOAD(ROMENTRY_CONTINUE, offset, length, 0, ROM_INHERITFLAGS)
-#define ROM_RELOAD(offset,length)					ROMX_LOAD(ROMENTRY_RELOAD, offset, length, 0, ROM_INHERITFLAGS)
+#define ROM_CONTINUE(offset,length)                  ROMX_LOAD(ROMENTRY_CONTINUE, offset, length, 0, ROM_INHERITFLAGS)
+#define ROM_RELOAD(offset,length)                    ROMX_LOAD(ROMENTRY_RELOAD, offset, length, 0, ROM_INHERITFLAGS)
 #define ROM_FILL(offset,length,value)                ROM_LOAD(ROMENTRY_FILL, offset, length, (const char*)value)
 #define ROM_COPY(rgn,srcoffset,offset,length)        ROMX_LOAD(ROMENTRY_COPY, offset, length, (const char*)srcoffset, (rgn) << 24)
 
@@ -344,7 +344,7 @@ enum
 #define ROM_LOAD32_DWORD(name,offset,length,hash)    ROMX_LOAD(name, offset, length, hash, ROM_GROUPDWORD)
 
 /* ----- disk loading macros ----- */
-#define DISK_REGION(type)							ROM_REGION(1, type, ROMREGION_DATATYPEDISK)
+#define DISK_REGION(type)                            ROM_REGION(1, type, ROMREGION_DATATYPEDISK)
 #define DISK_IMAGE(name,idx,hash)                    ROMMD5_LOAD(name, idx, 0, hash, 0)
 
 /* ----- hash macros ----- */
@@ -353,10 +353,6 @@ enum
 #define MD5(x)                                       "m:" #x "#"
 #define NO_DUMP                                      "$ND$"
 #define BAD_DUMP                                     "$BD$"
-
-// @@@ FF: Remove this when we use the final SHA1Merger
-#define NOT_DUMPED NO_DUMP
-#define BADROM BAD_DUMP
 
 /***************************************************************************
 
