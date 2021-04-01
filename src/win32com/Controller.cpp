@@ -1735,7 +1735,6 @@ STDMETHODIMP CController::get_Games(IGames* *pVal)
 	return m_pGames->QueryInterface(IID_IGames, (void**) pVal);
 }
 
-
 /******************************************************************************
  * IController.Games (read-only): hands out a pointer to a ControllerSettings-
  * object
@@ -1748,112 +1747,9 @@ STDMETHODIMP CController::get_Settings(IControllerSettings **pVal)
 	return m_pControllerSettings->QueryInterface(IID_IControllerSettings, (void**) pVal);
 }
 
-/* ---------------------------------------------------------------------------------------------*/
-/* ------------------ deprecated properties and methods ----------------------------------------*/
-/* ---------------------------------------------------------------------------------------------*/
-
-/**************************************************************************
- * IController.BorderSizeX: gets/sets the x value of the space between the
- * window border and the display inself
- *
- * Deprecated:
- * Will be deleted in the next version, actually it does nothing anymore
- **************************************************************************/
-STDMETHODIMP CController::get_BorderSizeX(int *pVal)
-{
-	if (pVal)
-		*pVal = 0;
-	return S_OK;
-}
-
-STDMETHODIMP CController::put_BorderSizeX(int newVal)
-{
-	if ( newVal<0 )
-		return S_FALSE;
-
-	return S_OK;
-}
-
-/**************************************************************************
- * IController.BorderSizeY: gets/sets the y value of the space between the
- * window border and the display inself
- *
- * Deprecated:
- * Will be deleted in the next version, actually it does nothing anymore
- **************************************************************************/
-STDMETHODIMP CController::get_BorderSizeY(int *pVal)
-{
-	if (pVal)
-		*pVal = 0;
-	return S_OK;
-}
-
-STDMETHODIMP CController::put_BorderSizeY(int newVal)
-{
-	if ( newVal<0 )
-		return S_FALSE;
-	
-	return S_OK;
-}
-
-/********************************************************************
- * IController.WindowPosX property: gets/sets the x position of the 
- * video window
- *
- * Deprecated:
- * use Controller.Games("name").Settings.DisplayPosX(hwnd) instead
- ********************************************************************/
-STDMETHODIMP CController::get_WindowPosX(int *pVal)
-{
-	if ( !pVal )
-		return E_POINTER;
-
-	VARIANT vValue;
-	VariantInit(&vValue);
-
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("dmd_pos_x"), &vValue);
-	*pVal = vValue.lVal;
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_WindowPosX(int newVal)
-{
-	return m_pGameSettings->put_Value(CComBSTR("dmd_pos_x"), CComVariant(newVal));
-}
-
-/********************************************************************
- * IController.WindowPosY property: gets/sets the y position of the 
- * video window
- *
- * Deprecated:
- * use Controller.Games("name").Settings.DisplayPosY(hwnd) instead
- ********************************************************************/
-STDMETHODIMP CController::get_WindowPosY(int *pVal)
-{
-	if ( !pVal )
-		return E_POINTER;
-
-	VARIANT vValue;
-	VariantInit(&vValue);
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("dmd_pos_y"), &vValue);
-
-	*pVal = vValue.lVal;
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_WindowPosY(int newVal)
-{
-	return m_pGameSettings->put_Value(CComBSTR("dmd_pos_y"), CComVariant(newVal));
-}
-
 /*************************************************************************
  * IController.NewSoundCommands property (read-only): returns a list of 
  * latest sound commands for the sound board
- *
- * Deprecated:
- * will be deleted in the next version
  *************************************************************************/
 STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
 {
@@ -1891,25 +1787,11 @@ STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
   return S_OK;
 }
 
-/*******************************************************
- * IController.InstallDir property: gets the install dir
- *
- * Deprecated:
- * use Controller.Settings.InstallDir instead
- *******************************************************/
-STDMETHODIMP CController::get_InstallDir(BSTR *pVal)
-{
-	return m_pControllerSettings->get_InstallDir(pVal);
-}
-
 /****************************************************************
  * IController:SetDisplayPosition: The set position of the video
  * window relative to the client area of the parent window
  *
- * Deprecated:
- * use 
- *   Controller.Games("name").Settings.SetDisplayPosition(x,y,hwnd)
- * instead
+ * outdated, use Controller.Games("name").Settings.SetDisplayPosition(x,y,hwnd) instead
  ***************************************************************/
 STDMETHODIMP CController::SetDisplayPosition(int x, int y, LONG_PTR hParentWindow)
 {
@@ -1928,121 +1810,10 @@ STDMETHODIMP CController::SetDisplayPosition(int x, int y, LONG_PTR hParentWindo
 	return hr;
 }
 
-/************************************************
- * IController.RomDirs property: get/set ROM dirs
- *
- * Deprecated:
- * use Controller.Settings.RomPath instead
- ************************************************/
-STDMETHODIMP CController::get_RomDirs(BSTR *pVal)
-{
-	if ( !pVal ) return E_POINTER;
-
-	CComVariant vValue;
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("rompath"), &vValue);
-	*pVal = SysAllocString(vValue.bstrVal);
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_RomDirs(BSTR newVal)
-{
-	return m_pControllerSettings->put_Value(CComBSTR("rompath"), CComVariant(newVal));
-}
-
-/*********************************************
- * IController.CfgDir property: get/set CfgDir
- *
- * Deprecated:
- * use Controller.Settings.CfgPath instead
- *********************************************/
-STDMETHODIMP CController::get_CfgDir(BSTR *pVal)
-{
-	if ( !pVal ) return E_POINTER;
-
-	CComVariant vValue;
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("cfg_directory"), &vValue);
-	*pVal = SysAllocString(vValue.bstrVal);
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_CfgDir(BSTR newVal)
-{
-	return m_pControllerSettings->put_Value(CComBSTR("cfg_directory"), CComVariant(newVal));
-}
-
-/****************************************************
- * IController.NVRamDirs property: get/set NVRAM dirs
- *
- * Deprecated:
- * use Controller.Settings.NVRamPath instead
- ****************************************************/
-STDMETHODIMP CController::get_NVRamDir(BSTR *pVal)
-{
-	if ( !pVal ) return E_POINTER;
-
-	CComVariant vValue;
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("nvram_directory"), &vValue);
-	*pVal = SysAllocString(vValue.bstrVal);
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_NVRamDir(BSTR newVal)
-{
-	return m_pControllerSettings->put_Value(CComBSTR("nvram_directory"), CComVariant(newVal));
-}
-
-/*****************************************************
- * IController.SamplesDir property: get/set SamplesDir
- *
- * Deprecated:
- * use Controller.Settings.SamplesPath instead
- *****************************************************/
-STDMETHODIMP CController::get_SamplesDir(BSTR *pVal)
-{
-	if ( !pVal ) return E_POINTER;
-
-	CComVariant vValue;
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("samplepath"), &vValue);
-	*pVal = SysAllocString(vValue.bstrVal);
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_SamplesDir(BSTR newVal)
-{
-	return m_pControllerSettings->put_Value(CComBSTR("samplepath"), CComVariant(newVal));
-}
-
-/*********************************************
- * IController.ImgDir property: get/set ImgDir
- *
- * Deprecated:
- * use Controller.Settings.SnapshotPath instead
- *********************************************/
-STDMETHODIMP CController::get_ImgDir(BSTR *pVal)
-{
-	if ( !pVal ) return E_POINTER;
-
-	CComVariant vValue;
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("snapshot_directory"), &vValue);
-	*pVal = SysAllocString(vValue.bstrVal);
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_ImgDir(BSTR newVal)
-{
-	return m_pControllerSettings->put_Value(CComBSTR("snapshot_directory"), CComVariant(newVal));
-}
-
 /*****************************************************************
  * IController.ShowOptsDialog: shows the options dialog
  *
- * Deprecated:
- * use Controller.Games("name").Settings.ShowSettingsDlg instead
+ * outdated, use Controller.Games("name").Settings.ShowSettingsDlg instead
  *****************************************************************/
 STDMETHODIMP CController::ShowOptsDialog(LONG_PTR hParentWnd)
 {
@@ -2050,10 +1821,9 @@ STDMETHODIMP CController::ShowOptsDialog(LONG_PTR hParentWnd)
 }
 
 /************************************************************
- * IController.ShowDMDOnly property: get/set UseLamps
+ * IController.ShowDMDOnly property
  *
- * Deprecated:
- * use Controller.Games("name").Settings.DisplayOnly instead
+ * outdated, use Controller.Games("name").Settings.DisplayOnly instead
  ************************************************************/
 STDMETHODIMP CController::get_ShowDMDOnly(VARIANT_BOOL *pVal)
 {
@@ -2075,36 +1845,10 @@ STDMETHODIMP CController::put_ShowDMDOnly(VARIANT_BOOL newVal)
 	return m_pGameSettings->put_Value(CComBSTR("dmd_only"), vValue);
 }
 
-/***********************************************************
- * IController.UseSamples property: get/set UseSamples
- *
- * Deprecated:
- * use Controller.Games("name").Settings.UseSamples instead
- ***********************************************************/
-STDMETHODIMP CController::get_UseSamples(VARIANT_BOOL *pVal)
-{
-	if (!pVal)
-		return E_POINTER;
-
-	VARIANT vValue;
-	VariantInit(&vValue);
-
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("samples"), &vValue);
-	*pVal = vValue.boolVal;
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_UseSamples(VARIANT_BOOL newVal)
-{
-	return m_pGameSettings->put_Value(CComBSTR("samples"), CComVariant(newVal));
-}
-
 /******************************************************
  * IController.ShowTitle property: get/set ShowTitle
  *
- * Deprecated: 
- * use Controller.Games("name").Settings.Title instead
+ * outdated, use Controller.Games("name").Settings.Title instead
  ******************************************************/
 STDMETHODIMP CController::get_ShowTitle(VARIANT_BOOL *pVal)
 {
@@ -2128,8 +1872,7 @@ STDMETHODIMP CController::put_ShowTitle(VARIANT_BOOL newVal)
 /*******************************************************
  * IController.ShowFrame property: get/set the border
  *
- * Deprecated:
- * use Controller.Games("name").Settings.Border instead
+ * outdated, use Controller.Games("name").Settings.Border instead
  *******************************************************/
 STDMETHODIMP CController::get_ShowFrame(VARIANT_BOOL *pVal)
 {
@@ -2151,36 +1894,10 @@ STDMETHODIMP CController::put_ShowFrame(VARIANT_BOOL newVal)
 }
 
 /***********************************************************
- * IController.SampleRate property: get/set the sample rate
- *
- * Deprecated:
- * use Controller.Games("name").Settings.SampleRate instead
- ************************************************************/
-STDMETHODIMP CController::get_SampleRate(int *pVal)
-{
-	if ( !pVal )
-		return E_POINTER;
-
-	VARIANT vValue;
-	VariantInit(&vValue);
-
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("samplerate"), &vValue);
-	*pVal = vValue.lVal;
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_SampleRate(int newVal)
-{
-	return m_pGameSettings->put_Value(CComBSTR("samplerate"), CComVariant(newVal));
-}
-
-/***********************************************************
  * IController.DoubleSize property: display the video window
  * double sized or not
  *
- * Deprecated:
- * use Controller.Games("name").Settings.DoubleSize instead
+ * outdated, use Controller.Games("name").Settings.DoubleSize instead
  ************************************************************/
 STDMETHODIMP CController::get_DoubleSize(VARIANT_BOOL *pVal)
 {
@@ -2199,79 +1916,6 @@ STDMETHODIMP CController::get_DoubleSize(VARIANT_BOOL *pVal)
 STDMETHODIMP CController::put_DoubleSize(VARIANT_BOOL newVal)
 {
 	return m_pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant(newVal));
-}
-
-/***********************************************************
- * IController.DoubleSize property: display the video window
- * in compact size or not
- *
- * Deprecated:
- * use Controller.Games("name").Settings.CompactDisplay instead
- ************************************************************/
-STDMETHODIMP CController::get_Antialias(VARIANT_BOOL *pVal)
-{
-	if ( !pVal )
-		return E_POINTER;
-
-	VARIANT vValue;
-	VariantInit(&vValue);
-
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("dmd_compact"), &vValue);
-	*pVal = vValue.boolVal;
-
-	return hr;
-}
-
-STDMETHODIMP CController::put_Antialias(VARIANT_BOOL newVal)
-{
-	return m_pGameSettings->put_Value(CComBSTR("dmd_compact"), CComVariant(newVal));
-}
-
-/*********************************************************************
- * IController.CheckROMS: returns TRUE if ROMS are ok
- *
- * Deprecated:
- * use Controller.Games("name").ShowInfoDlg instead
- *********************************************************************/
-STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
-{
-	if ( !pVal )
-		return S_FALSE;
-
-	int fResult;
-	HRESULT hr = m_pGame->ShowInfoDlg(nShowOptions, hParentWnd, &fResult);
-
-	*pVal = (fResult==IDOK)?VARIANT_TRUE:VARIANT_FALSE;
-
-	return hr;
-}
-
-/****************************************************************************
- * IController:ShowPathesDialog: Display a dialog to set up the paths
- *
- * Deprecated:
- * use Controller.Settings.ShowSettingsDlg instead
- ****************************************************************************/
-STDMETHODIMP CController::ShowPathesDialog(LONG_PTR hParentWnd)
-{
-	switch ( hParentWnd ) {
-	case 0:
-		break;
-
-	case 1:
-		hParentWnd = (LONG_PTR) ::GetActiveWindow();
-		if ( !hParentWnd )
-			hParentWnd = (LONG_PTR) GetForegroundWindow();
-		break;
-
-	default:
-		if ( !IsWindow((HWND) hParentWnd) )
-			hParentWnd = 0;
-	}
-
-	m_pControllerSettings->ShowSettingsDlg(hParentWnd);
-
-	return S_OK;
 }
 
 /****************************************************************************
@@ -2293,7 +1937,7 @@ STDMETHODIMP CController::put_Hidden(VARIANT_BOOL newVal)
 	m_fWindowHidden = newVal;
 
 	if ( IsWindow(win_video_window) ) 
-		ShowWindow(win_video_window, newVal || !g_fShowWinDMD ?SW_HIDE:SW_SHOW);
+		ShowWindow(win_video_window, newVal || !g_fShowWinDMD ? SW_HIDE:SW_SHOW);
 
 	return S_OK;
 }
