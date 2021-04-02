@@ -177,24 +177,10 @@ public:
 
 /* deprecated methods/properties */
 	STDMETHOD(get_NewSoundCommands)(/*[out, retval]*/ VARIANT *pVal);
-	STDMETHOD(get_ImgDir)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_ImgDir)(/*[in]*/ BSTR newVal);
 	STDMETHOD(ShowPathesDialog)(/*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd);
-	STDMETHOD(get_Antialias)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Antialias)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(SetDisplayPosition)(/*[in]*/ int x, /*[in]*/ int y, /*[in]*/ LONG_PTR hParentWindow);
 	STDMETHOD(get_DoubleSize)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_DoubleSize)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_SampleRate)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_SampleRate)(/*[in]*/ int newVal);
-	STDMETHOD(get_WindowPosY)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_WindowPosY)(/*[in]*/ int newVal);
-	STDMETHOD(get_WindowPosX)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_WindowPosX)(/*[in]*/ int newVal);
-	STDMETHOD(get_BorderSizeY)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_BorderSizeY)(/*[in]*/ int newVal);
-	STDMETHOD(get_BorderSizeX)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_BorderSizeX)(/*[in]*/ int newVal);
 	STDMETHOD(get_ShowFrame)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_ShowFrame)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_ShowDMDOnly)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -202,17 +188,6 @@ public:
 	STDMETHOD(CheckROMS)(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(get_ShowTitle)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_ShowTitle)(/*[in]*/ VARIANT_BOOL newpVal);
-	STDMETHOD(get_UseSamples)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_UseSamples)(/*[int]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_InstallDir)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(get_CfgDir)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_CfgDir)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_SamplesDir)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_SamplesDir)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_NVRamDir)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_NVRamDir)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_RomDirs)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_RomDirs)(/*[in]*/ BSTR newVal);
 	STDMETHOD(ShowOptsDialog)(/*[in]*/ LONG_PTR hParentWnd=0);
 	STDMETHOD(get_FastFrames)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_FastFrames)(/*[in]*/ int newVal);

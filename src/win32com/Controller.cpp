@@ -1918,6 +1918,53 @@ STDMETHODIMP CController::put_DoubleSize(VARIANT_BOOL newVal)
 	return m_pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant(newVal));
 }
 
+/*********************************************************************
+ * IController.CheckROMS: returns TRUE if ROMS are ok
+ *
+ * Deprecated:
+ * use Controller.Games("name").ShowInfoDlg instead
+ *********************************************************************/
+STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return S_FALSE;
+
+	int fResult;
+	HRESULT hr = m_pGame->ShowInfoDlg(nShowOptions, hParentWnd, &fResult);
+
+	*pVal = (fResult==IDOK)?VARIANT_TRUE:VARIANT_FALSE;
+
+	return hr;
+}
+
+/****************************************************************************
+ * IController:ShowPathesDialog: Display a dialog to set up the paths
+ *
+ * Deprecated:
+ * use Controller.Settings.ShowSettingsDlg instead
+ ****************************************************************************/
+STDMETHODIMP CController::ShowPathesDialog(LONG_PTR hParentWnd)
+{
+	switch ( hParentWnd ) {
+	case 0:
+		break;
+
+	case 1:
+		hParentWnd = (LONG_PTR) ::GetActiveWindow();
+		if ( !hParentWnd )
+			hParentWnd = (LONG_PTR) GetForegroundWindow();
+		break;
+
+	default:
+		if ( !IsWindow((HWND) hParentWnd) )
+			hParentWnd = 0;
+	}
+
+	m_pControllerSettings->ShowSettingsDlg(hParentWnd);
+
+	return S_OK;
+}
+
 /****************************************************************************
  * IController.Hidden property: Hides/Shows the display to the user
  ****************************************************************************/
