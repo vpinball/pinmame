@@ -720,6 +720,7 @@ target_link_libraries(vpinmame
 target_link_options(vpinmame PUBLIC
    /SAFESEH:NO
    $<$<CONFIG:RELEASE>:/LTCG>
+   $<$<CONFIG:RELEASE>:/DYNAMICBASE:NO>
 )
 
 set_target_properties(vpinmame PROPERTIES
