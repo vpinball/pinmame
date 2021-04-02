@@ -1231,7 +1231,7 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 		/* display the result */
 		printf("%s", romdata->errorbuf);
 
-#if !defined(LIBPINMAME) && !defined(PINMAME_DLL)
+#ifndef LIBPINMAME
 		/* if we're not getting out of here, wait for a keypress */
 		if (!options.gui_host && !bailing)
 		{
