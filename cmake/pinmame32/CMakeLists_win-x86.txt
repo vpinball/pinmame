@@ -689,6 +689,7 @@ target_link_libraries(pinmame32
 target_link_options(pinmame32 PUBLIC
    /SAFESEH:NO
    $<$<CONFIG:RELEASE>:/LTCG>
+   $<$<CONFIG:RELEASE>:/DYNAMICBASE:NO>
 )
 
 set_target_properties(pinmame32 PROPERTIES
