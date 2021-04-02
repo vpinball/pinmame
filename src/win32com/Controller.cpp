@@ -1921,8 +1921,7 @@ STDMETHODIMP CController::put_DoubleSize(VARIANT_BOOL newVal)
 /*********************************************************************
  * IController.CheckROMS: returns TRUE if ROMS are ok
  *
- * Deprecated:
- * use Controller.Games("name").ShowInfoDlg instead
+ * outdated, use Controller.Games("name").ShowInfoDlg instead
  *********************************************************************/
 STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
 {
@@ -1940,8 +1939,7 @@ STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /
 /****************************************************************************
  * IController:ShowPathesDialog: Display a dialog to set up the paths
  *
- * Deprecated:
- * use Controller.Settings.ShowSettingsDlg instead
+ * outdated, use Controller.Settings.ShowSettingsDlg instead
  ****************************************************************************/
 STDMETHODIMP CController::ShowPathesDialog(LONG_PTR hParentWnd)
 {
