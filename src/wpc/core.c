@@ -49,18 +49,21 @@ int vp_getDip(int bank) { return 0; }
 void vp_setDIP(int bank, int value) { }
 #endif
 
+#if defined(VPINMAME)
+  extern char g_szGameName[256];
+#endif
+
 #if defined(VPINMAME) || defined(LIBPINMAME)
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
   extern char g_fShowWinDMD;
   extern char g_fShowPinDMD; /* pinDMD */
-  extern char g_szGameName[256];
   extern int time_to_reset;  /* pinDMD */
   extern int g_fDumpFrames;
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
-#else /* VPINMAME */
+#else /* VPINMAME LIBPINMAME */
   int g_fHandleKeyboard = 1;
   int g_fHandleMechanics = 0xff;
   #define OnSolenoid(nSolenoid, IsActive)
@@ -68,7 +71,7 @@ void vp_setDIP(int bank, int value) { }
   #define vp_getSolMask64() ((UINT64)(-1))
   #define vp_updateMech()
   #define vp_setDIP(x,y)
-#endif /* VPINMAME */
+#endif /* VPINMAME LIBPINMAME */
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);

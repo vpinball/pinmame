@@ -8,7 +8,7 @@ Version 3.4 (X X, 2021) - ""
 - Fix the additional .raw/non-averaged file output dumping of Alvin G. DMDs
 
 - Remove some of the marked-as-deprecated functions (only some very very few VP8/VP9 tables actually used a few of these):
-  BorderSizeX/Y, WindowPosX/Y, InstallDir, RomDirs, CfgDir, NVRamDir, SamplesDir, ImgDir, UseSamples, SampleRate, Antialias 
+  BorderSizeX/Y, WindowPosX/Y, InstallDir, RomDirs, CfgDir, NVRamDir, SamplesDir, ImgDir, UseSamples, SampleRate, Antialias
 
 Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------

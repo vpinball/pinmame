@@ -4,18 +4,18 @@
 #define LIBPINMAME_H
 
 #if defined(_WIN32) || defined(_WIN64)
-#define LIBPINMAME_API extern "C" __declspec(dllexport) 
+#define LIBPINMAME_API extern "C" __declspec(dllexport)
 #define CALLBACK __stdcall
 #define strcasecmp _stricmp
 #else
-#define LIBPINMAME_API extern "C" //__declspec(dllimport) 
+#define LIBPINMAME_API extern "C" //__declspec(dllimport)
 #define CALLBACK
 #endif
 
-typedef enum { 
+typedef enum {
 	OK = 0,
 	GAME_NOT_FOUND = 1,
-	GAME_ALREADY_RUNNING = 2, 
+	GAME_ALREADY_RUNNING = 2,
 	EMULATOR_NOT_RUNNING = 3
 } PINMAME_STATUS;
 

@@ -102,7 +102,7 @@ int osd_start_audio_stream(int stereo)
 	channels = stereo ? 2 : 1;
 
 	// compute the buffer sizes
-	stream_buffer_size = ((UINT64)MAX_BUFFER_SIZE * (UINT64)(Machine->sample_rate+0.5)) / 44100; //!! 48000
+	stream_buffer_size = (int)(((UINT64)MAX_BUFFER_SIZE * (UINT64)(Machine->sample_rate+0.5)) / 44100); //!! 48000
 	stream_buffer_size = (int)((stream_buffer_size * 30) / Machine->drv->frames_per_second + 0.5);
 	stream_buffer_size = (stream_buffer_size / 1024) * 1024;
 	stream_buffer_size *= channels;

@@ -15,7 +15,7 @@
 #endif
 
 typedef unsigned short UINT16;
-void* _p_displayBuffer = nullptr;
+static void* _p_displayBuffer = nullptr;
 
 void DumpDmd(unsigned char* p_displayBuffer, PinmameDisplayLayout* p_displayLayout) {
 	for (int y = 0; y < p_displayLayout->height; y++) {
@@ -56,9 +56,9 @@ void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLa
 	};
 
 	for (int index = 0; index < p_displayLayout->length; index++) {
-		UINT16 value = *(p_displayBuffer++);
+		const UINT16 value = *(p_displayBuffer++);
 
-		char segments[8][10] = { 
+		char segments[8][10] = {
 			{ " AAAAA   " },
 			{ "FI J KB  " },
 			{ "F IJK B  " },
@@ -68,7 +68,7 @@ void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLa
 			{ " DDDDD  H" },
 			{ "       H " },
 		};
-	
+
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 9; column++) {
 				for (UINT16 bit = 0; bit < 16; bit++) {
@@ -78,7 +78,7 @@ void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLa
 					break;
 				}
 			}
-      
+
 			strcat(output[row], segments[row]);
 			strcat(output[row], " "); 
 		}
@@ -90,8 +90,8 @@ void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLa
 }
 
 void CALLBACK Game(PinmameGame* game) {
-	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s\n", 
-		game->name, game->description, game->manufacturer, game->year); 
+	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s\n",
+		game->name, game->description, game->manufacturer, game->year);
 }
 
 void CALLBACK DisplayLayout(int index, PinmameDisplayLayout* p_displayLayout) {
@@ -106,7 +106,7 @@ void CALLBACK DisplayLayout(int index, PinmameDisplayLayout* p_displayLayout) {
 }
 
 void CALLBACK Display(int index, PinmameDisplayLayout* p_displayLayout) {
-	printf("Display(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, length=%d\n", 
+	printf("Display(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, length=%d\n",
 		index,
 		p_displayLayout->type,
 		p_displayLayout->top,
@@ -114,15 +114,15 @@ void CALLBACK Display(int index, PinmameDisplayLayout* p_displayLayout) {
 		p_displayLayout->width,
 		p_displayLayout->height,
 		p_displayLayout->length);
-		
+
 	if (p_displayLayout->type == DMD) {
-		DumpDmd((unsigned char*)_p_displayBuffer, p_displayLayout);     
+		DumpDmd((unsigned char*)_p_displayBuffer, p_displayLayout);
 	}
 	else {
 		DumpAlphanumeric((UINT16*)_p_displayBuffer, p_displayLayout);
 	}
 }
-  
+
 void CALLBACK OnStateChange(int state) {
 	if (state) {
 		PinmameGetDisplayLayouts(&DisplayLayout);
@@ -132,7 +132,7 @@ void CALLBACK OnStateChange(int state) {
 	else {
 		if (_p_displayBuffer) {
 			free(_p_displayBuffer);
-        	}
+		}
 
 		exit(1);
 	}
@@ -146,12 +146,12 @@ int main(int, char**) {
 	system(CLEAR_SCREEN);
 
 	PinmameGetGames(&Game);
-    
+
 	PinmameConfig config = {
 		48000,
 		VPM_PATH,
 		&OnStateChange,
-		&OnSolenoid     
+		&OnSolenoid
 	};
 
 	PinmameSetConfig(&config);
@@ -159,11 +159,12 @@ int main(int, char**) {
 	//PinmameRun("mm_109c");
 	//PinmameRun("fh_906h");
 	//PinmameRun("hh7");
+	//PinmameRun("rescu911");
 
 	if (PinmameRun("mm_109c") != OK) {
 		exit(1);
 	}
-    
+
 	while (1) {
 		if (_p_displayBuffer) {
 			PinmameGetDisplays(_p_displayBuffer, &Display);

@@ -25,18 +25,22 @@ int g_fHandleKeyboard = 0;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
+
+#ifdef VPINMAME_ALTSOUND
+char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
+#endif
 }
 
-PinmameConfig _config = {
+static PinmameConfig _config = {
 	48000,
 	0,
 	0,
 	0
 };
 
-int _isRunning = 0;
-int _timeToQuit = 0;
-std::thread* _p_gameThread = nullptr;
+static int _isRunning = 0;
+static int _timeToQuit = 0;
+static std::thread* _p_gameThread = nullptr;
 
 /******************************************************
  * osd_init
@@ -101,9 +105,9 @@ char* ComposePath(const char* path, const char* file) {
  * GetGameNumFromString
  ******************************************************/
 
- int GetGameNumFromString(const char* const name) {
+int GetGameNumFromString(const char* const name) {
 	int gameNum = 0;
-	
+
 	while (drivers[gameNum]) {
 		if (!strcasecmp(drivers[gameNum]->name, name)) {
 			break;
@@ -167,12 +171,12 @@ void GetDisplays(void* p_displayBuffer, PinmameDisplayCallback callback, const s
 			displayLayout.left = p_layout->left;
 
 			if (p_layout->type == CORE_DMD) {
-				if(g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) { 
+				if(g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) {
 					displayLayout.height = g_raw_dmdy;
 					displayLayout.width = g_raw_dmdx;
-					
+
 					memcpy(p_displayBuffer, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
- 
+
 					(*callback)(*p_index, &displayLayout);
 
 					g_needs_DMD_update = 0; 
@@ -187,7 +191,7 @@ void GetDisplays(void* p_displayBuffer, PinmameDisplayCallback callback, const s
 				memcpy(p_displayBuffer, p_drawSeg, p_layout->length * sizeof(UINT16));
 
 				*(p_lastOffset) += p_layout->length;
- 
+
 				(*callback)(*p_index, &displayLayout);
 			}
 
@@ -288,6 +292,10 @@ LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
 		return GAME_NOT_FOUND;
 	}
 
+#ifdef VPINMAME_ALTSOUND
+	strcpy_s(g_szGameName, p_name);
+#endif
+
 	rc = cli_rc_create();
 
 	rc_set_option(rc, "throttle", "1", 0);
@@ -358,8 +366,12 @@ LIBPINMAME_API void PinmameStop() {
 
 		_p_gameThread->join();
 
-		delete(_p_gameThread); 
+		delete(_p_gameThread);
 		_p_gameThread = nullptr;
+
+#ifdef VPINMAME_ALTSOUND
+		g_szGameName[0] = '\0';
+#endif
 
 		_timeToQuit = 0;
 	}
