@@ -1188,9 +1188,6 @@
     <ClCompile Include="ext\vgm\vgmwrite.c">
       <Filter>Source Files\external\vgm</Filter>
     </ClCompile>
-    <ClCompile Include="src\wpc\dmddevice.cpp">
-      <Filter>Source Files\PinMAME</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
