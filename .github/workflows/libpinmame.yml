@@ -61,7 +61,7 @@ jobs:
             platform: osx-x64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
             pinmame-test: pinmame_test
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             platform: linux-x64
             libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
             pinmame-test: pinmame_test
