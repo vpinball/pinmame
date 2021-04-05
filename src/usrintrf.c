@@ -67,6 +67,10 @@ extern void neogeo_memcard_eject(void);
 extern int neogeo_memcard_create(int);
 /* MARTINEZ.F 990207 Memory Card End */
 
+#if defined(LIBPINMAME)
+extern int libpinmame_time_to_quit(void);
+#endif
+
 
 
 /***************************************************************************
@@ -4051,6 +4055,9 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	    || code_pressed(PROC_ESC_SEQ)
 #endif /* PINMAME && PROC_SUPPORT */
+#if defined(LIBPINMAME)
+	    || libpinmame_time_to_quit()
+#endif /* LIBPINMAME_SUPPORT */
 #if defined(LISY_SUPPORT)
         //check in lisy for SIGUSR1
         //and quit if we received it

@@ -1,504 +1,514 @@
 // license:BSD-3-Clause
 
 #include "libpinmame.h"
-
-//============================================================
-// Console Debugging Section (Optional)
-//============================================================
-
-#if defined(_WIN32) || defined(_WIN64)
-
-#define ENABLE_CONSOLE_DEBUG
-
-#ifdef ENABLE_CONSOLE_DEBUG
-
-#define WIN32_LEAN_AND_MEAN
-#include <stdio.h>
-#include <windows.h>
-
-static bool useConsole = false;
-
-void ShowConsole()
-{
-	if (useConsole)
-		return;
-	FILE* pConsole;
-	AllocConsole();
-	freopen_s(&pConsole, "CONOUT$", "wb", stdout);
-	useConsole = true;
-}
-
-void CloseConsole()
-{
-	if (useConsole)
-		FreeConsole();
-	useConsole = false;
-}
-#endif
-
-#define strcasecmp _stricmp
-
-#else
-#define strcpy_s strcpy
-#define MAX_PATH          1024
-#endif
-
 #include <thread>
 
-#if defined(_WIN32) || defined(_WIN64)
- #include <../win32com/Alias.h> //!! move that one to some platform independent section
-#endif
+extern "C" {
+#include "stdio.h"
+#include "driver.h"
+#include "core.h"
+#include "vpintf.h"
+#include "mame.h"
+#include "video.h"
+#include "sound.h"
+#include "config.h"
+#include "rc.h"
 
-extern "C"
-{
-	// MAME headers
-	#include "driver.h"
-#if defined(_WIN32) || defined(_WIN64)
-	#include "window.h"
-	#include "input.h"
-#endif
-	#include "config.h"
-	#include "rc.h"
-	#include "core.h"
-	#include "vpintf.h"
-	#include "mame.h"
-	#include "sound.h"
-	#include "cpuexec.h"
+extern UINT32 g_raw_dmdx;
+extern UINT32 g_raw_dmdy;
+extern UINT32 g_needs_DMD_update;
+extern unsigned char g_raw_dmdbuffer[DMD_MAXY * DMD_MAXX];
+extern int channels;
+struct rc_struct *rc;
 
-	extern unsigned char g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
-	extern unsigned int g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
-	extern unsigned int g_raw_dmdx;
-	extern unsigned int g_raw_dmdy;
-	extern unsigned int g_needs_DMD_update;
-
-	volatile int g_fHandleKeyboard = 0;
-	volatile int g_fHandleMechanics = 0;
-	extern int trying_to_quit;
-
-	void OnSolenoid(int nSolenoid, int IsActive);
-	void OnStateChange(int nChange);
-#if defined(_WIN32) || defined(_WIN64)
-	extern void win_timer_enable(int enabled);
-#endif
-
-	UINT8 win_trying_to_quit;
-	volatile int g_fPause = 0;
-	volatile int g_fDumpFrames = 0;
-#if defined(_WIN32) || defined(_WIN64)
-	volatile char g_fShowWinDMD = 0;
-	volatile char g_fShowPinDMD = 0; /* pinDMD */
-#endif
-
-	char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
-
-	extern int channels;
-
-	struct rc_struct *rc;
+int g_fHandleKeyboard = 0;
+int g_fHandleMechanics = 0;
+int g_fDumpFrames = 0;
+int g_fPause = 0;
 }
 
-static char vpmPath[MAX_PATH] = { 0 };
-static int sampleRate = 48000;
-
-static volatile bool isGameReady = false;
-
-static std::thread* pRunningGame = nullptr;
-
-static int initialSwitches[CORE_MAXSWCOL*8 * 2]; // for each switch: number and state (0 or 1)
-static int initialSwitchesToSet = 0;
-
-#if !defined(_WIN32) && !defined(_WIN64)
-const char* checkGameAlias(const char* aRomName) 
-{
-	return aRomName;
-}
-#endif
-
-//============================================================
-// Callback tests Section
-//============================================================
-
-void OnSolenoid(int nSolenoid, int IsActive)
-{
-	printf("Solenoid: %d %s\n", nSolenoid, (IsActive > 0 ? "ON" : "OFF"));
-}
-
-void OnStateChange(int nChange)
-{
-	printf("OnStateChange : %d\n", nChange);
-
-	// if game is ready to go, set the switches that may have been set to an initial state before game startup via SetSwitches
-	if (nChange > 0)
-	{
-		for (int i = 0; i < initialSwitchesToSet; ++i)
-			vp_putSwitch(initialSwitches[i*2], initialSwitches[i*2+1] ? 1 : 0);
-		initialSwitchesToSet = 0;
-	}
-
-	isGameReady = (nChange > 0);
-}
-
-
-//============================================================
-//	Game related Section
-//============================================================
-
-int GetGameNumFromString(char *name)
-{
-	int gamenum = 0;
-	while (drivers[gamenum]) {
-		if (!strcasecmp(drivers[gamenum]->name, name))
-			break;
-		gamenum++;
-	}
-	if (!drivers[gamenum])
-		return -1;
-	else
-		return gamenum;
-}
-
-char* composePath(const char* path, const char* file)
-{
-	size_t pathl = strlen(path);
-	size_t filel = strlen(file);
-	char *r = (char*)malloc(pathl + filel + 4);
-
-	strcpy(r, path);
-	strcpy(r+pathl, file);
-	return r;
-}
-
-int set_option(const char *name, const char *arg, int priority)
-{
-	return rc_set_option(rc, name, arg, priority);
-}
-
-
-//============================================================
-//	Running game thread
-//============================================================
-void gameThread(int game_index=-1)
-{
-	if (game_index == -1)
-		return;
-	/*int res =*/ run_game(game_index);
-}
-
-
-//============================================================
-//	Dll Exported Functions Section
-//============================================================
-
-// Setup Functions
-// ---------------
-
-LIBPINMAME_API void SetVPMPath(char* path)
-{
-	strcpy_s(vpmPath, path);
-}
-
-LIBPINMAME_API void SetSampleRate(int sampleRate)
-{
-	sampleRate = sampleRate;
-}
-
-
-// Game related functions
-// ---------------------
-
-LIBPINMAME_API void GetGames(GameInfoCallback callback)
-{
-	int gamenum = 0;
-
-	while (drivers[gamenum])
-	{
-		GameInfoStruct gameInfoStruct;
-		memset(&gameInfoStruct, 0, sizeof(GameInfoStruct));
-
-		gameInfoStruct.name = drivers[gamenum]->name;
-
-		if (drivers[gamenum]->clone_of)
-		{
-			gameInfoStruct.clone_of = drivers[gamenum]->clone_of->name;
-		}
-
-		gameInfoStruct.description = drivers[gamenum]->description;
-		gameInfoStruct.year = drivers[gamenum]->year;
-		gameInfoStruct.manufacturer = drivers[gamenum]->manufacturer;
-
-		(*callback)(&gameInfoStruct);
-
-		gamenum++;
-	}
-}
-
-LIBPINMAME_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
-{
-	if (pRunningGame)
-		return -1;
-
-#ifdef ENABLE_CONSOLE_DEBUG
-	if (showConsole)
-		ShowConsole();
-#endif
-	trying_to_quit = 0;
-
-	rc = cli_rc_create();
-
-	strcpy_s(g_szGameName, gameNameOrg);
-	const char* const gameName = checkGameAlias(g_szGameName);
-
-	const int game_index = GetGameNumFromString(const_cast<char*>(gameName));
-	if (game_index < 0)
-		return -1;
-
-	//options.skip_disclaimer = 1;
-	//options.skip_gameinfo = 1;
-	options.samplerate = sampleRate;
-
-#if defined(_WIN32) || defined(_WIN64)
-	win_timer_enable(1);
-#endif
-	g_fPause = 0;
-
-	set_option("throttle", "1", 0);
-	set_option("sleep", "1", 0);
-	set_option("autoframeskip", "0", 0);
-	set_option("skip_gameinfo", "1", 0);
-	set_option("skip_disclaimer", "1", 0);
-
-	printf("VPM path: %s\n", vpmPath);
-	setPath(FILETYPE_ROM, composePath(vpmPath, "roms"));
-	setPath(FILETYPE_NVRAM, composePath(vpmPath, "nvram"));
-	setPath(FILETYPE_SAMPLE, composePath(vpmPath, "samples"));
-	setPath(FILETYPE_CONFIG, composePath(vpmPath, "cfg"));
-	setPath(FILETYPE_HIGHSCORE, composePath(vpmPath, "hi"));
-	setPath(FILETYPE_INPUTLOG, composePath(vpmPath, "inp"));
-	setPath(FILETYPE_MEMCARD, composePath(vpmPath, "memcard"));
-	setPath(FILETYPE_STATE, composePath(vpmPath, "sta"));
-
-	vp_init();
-
-	printf("GameIndex: %d\n", game_index);
-	pRunningGame = new std::thread(gameThread, game_index);
-
-	return game_index;
-}
-
-#if !defined(_WIN32) && !defined(_WIN64)
-LIBPINMAME_API
-#endif
-void StopThreadedGame(bool locking)
-{
-	if (pRunningGame == nullptr)
-		return;
-
-	trying_to_quit = 1;
-	OnStateChange(0);
-
-	if (locking)
-	{
-		printf("Waiting for clean exit...\n");
-		pRunningGame->join();
-	}
-
-	delete(pRunningGame);
-	pRunningGame = nullptr;
-
-	//rc_unregister(rc, opts);
-	rc_destroy(rc);
-
-	g_szGameName[0] = '\0';
-
-#ifdef ENABLE_CONSOLE_DEBUG
-	CloseConsole();
-#endif
-}
-
-LIBPINMAME_API bool IsGameReady()
-{
-	return isGameReady;
-}
-
-// Pause related functions
-// -----------------------
-LIBPINMAME_API void ResetGame()
-{
-	if (isGameReady)
-		machine_reset();
-}
-
-LIBPINMAME_API void Pause()
-{
-	g_fPause = 1;
-}
-
-LIBPINMAME_API void Continue()
-{
-	g_fPause = 0;
-}
-
-LIBPINMAME_API bool IsPaused()
-{
-	return g_fPause > 0;
-}
-
-
-// DMD related functions
-// ---------------------
-
-LIBPINMAME_API bool NeedsDMDUpdate()
-{
-	return isGameReady && !!g_needs_DMD_update;
-}
-
-LIBPINMAME_API int GetRawDMDWidth()
-{
-	return isGameReady ? g_raw_dmdx : ~0u;
-}
-
-LIBPINMAME_API int GetRawDMDHeight()
-{
-	return isGameReady ? g_raw_dmdy : ~0u;
-}
-
-LIBPINMAME_API int GetRawDMDPixels(unsigned char* buffer)
-{
-	if (!isGameReady || g_raw_dmdx == ~0u || g_raw_dmdy == ~0u)
-		return -1;
-	memcpy(buffer, g_raw_dmdbuffer, g_raw_dmdx*g_raw_dmdy * sizeof(unsigned char));
-	g_needs_DMD_update = 0;
-	return g_raw_dmdx*g_raw_dmdy;
-}
-
-
-// Audio related functions
-// -----------------------
-LIBPINMAME_API int GetAudioChannels()
-{
-	return isGameReady ? channels : -1;
-}
-
-LIBPINMAME_API int GetPendingAudioSamples(float* buffer, int outChannels, int maxNumber)
-{
-	return isGameReady ? fillAudioBuffer(buffer, outChannels, maxNumber, 1) : -1;
-}
-
-LIBPINMAME_API int GetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber)
-{
-	return isGameReady ? fillAudioBuffer(buffer, outChannels, maxNumber, 0) : -1;
-}
-
-// Switch related functions
-// ------------------------
-LIBPINMAME_API bool GetSwitch(int slot)
-{
-	return isGameReady ? (vp_getSwitch(slot) != 0) : false;
-}
-
-LIBPINMAME_API void SetSwitch(int slot, bool state)
-{
-	if (!isGameReady)
-		return;
-	vp_putSwitch(slot, state ? 1 : 0);
-}
-
-LIBPINMAME_API void SetSwitches(int* states, int numSwitches)
-{
-	if (!isGameReady) // initial state, potentially before game was fully initialized, set this under the hood later-on
-	{
-		for (int i = 0; i < numSwitches*2; ++i)
-			initialSwitches[i] = states[i];
-		initialSwitchesToSet = numSwitches;
-	}
-	else
-		for(int i = 0; i < numSwitches; ++i)
-			vp_putSwitch(states[i*2], states[i*2+1] ? 1 : 0);
-}
-
-// Lamps related functions
-// -----------------------
-LIBPINMAME_API int GetMaxLamps() { return CORE_MAXLAMPCOL * 8; }
-
-LIBPINMAME_API int GetChangedLamps(int* changedStates)
-{
-	if (!isGameReady)
-		return -1;
-
-	vp_tChgLamps chgLamps;
-	const int uCount = vp_getChangedLamps(chgLamps);
-	if (uCount == 0)
-		return 0;
-
-	int* out = changedStates;
-	for (int i = 0; i < uCount; i++)
-	{
-		*(out++) = chgLamps[i].lampNo;
-		*(out++) = chgLamps[i].currStat;
-	}
-	return uCount;
-}
-
-// Solenoids related functions
-// ---------------------------
-LIBPINMAME_API int GetMaxSolenoids() { return 64; }
-
-LIBPINMAME_API int GetChangedSolenoids(int* changedStates)
-{
-	if (!isGameReady)
-		return -1;
-
-	vp_tChgSols chgSols;
-	const int uCount = vp_getChangedSolenoids(chgSols);
-	if (uCount == 0)
-		return 0;
-
-	int* out = changedStates;
-	for (int i = 0; i < uCount; i++)
-	{
-		*(out++) = chgSols[i].solNo;
-		*(out++) = chgSols[i].currStat;
-	}
-	return uCount;
-}
-
-// GI strings related functions
-// ----------------------------
-LIBPINMAME_API int GetMaxGIStrings() { return CORE_MAXGI; }
-
-LIBPINMAME_API int GetChangedGIs(int* changedStates)
-{
-	if (!isGameReady)
-		return -1;
-
-	vp_tChgGIs chgGIs;
-	const int uCount = vp_getChangedGI(chgGIs);
-	if (uCount == 0)
-		return 0;
-
-	int* out = changedStates;
-	for (int i = 0; i < uCount; i++)
-	{
-		*(out++) = chgGIs[i].giNo;
-		*(out++) = chgGIs[i].currStat;
-	}
-	return uCount;
-}
-
-//============================================================
-//	osd_init
-//============================================================
-
-int osd_init(void)
-{
-	printf("osd_init\n");
+PinmameConfig _config = {
+	48000,
+	0,
+	0,
+	0
+};
+
+int _isRunning = 0;
+int _timeToQuit = 0;
+std::thread* _p_gameThread = nullptr;
+
+/******************************************************
+ * osd_init
+ ******************************************************/
+
+extern "C" int osd_init(void) {
 	return 0;
 }
 
-//============================================================
-//	osd_exit
-//============================================================
+/******************************************************
+ * osd_exit
+ ******************************************************/
 
-void osd_exit(void)
-{
-	printf("osd_exit\n");
+extern "C" void osd_exit(void) {
+}
+
+/******************************************************
+ * libpinmame_time_to_quit
+ ******************************************************/
+
+extern "C" int libpinmame_time_to_quit(void) {
+	return _timeToQuit;
+}
+
+/******************************************************
+ * OnStateChange
+ ******************************************************/
+
+extern "C" void OnStateChange(int state) {
+	_isRunning = state;
+
+	if (_config.cb_OnStateChange) {
+		(*(_config.cb_OnStateChange))(state);
+	}
+}
+
+/******************************************************
+ * OnSolenoid
+ ******************************************************/
+
+extern "C" void OnSolenoid(int solenoid, int isActive) {
+	if (_config.cb_OnSolenoid) {
+		(*(_config.cb_OnSolenoid))(solenoid, isActive);
+	}
+}
+
+/******************************************************
+ * ComposePath
+ ******************************************************/
+
+char* ComposePath(const char* path, const char* file) {
+	size_t pathLength = strlen(path);
+	size_t fileLength = strlen(file);
+	char* newPath = (char*)malloc(pathLength + fileLength + 4);
+
+	strcpy(newPath, path);
+	strcpy(newPath + pathLength, file);
+	return newPath;
+}
+
+/******************************************************
+ * GetGameNumFromString
+ ******************************************************/
+
+ int GetGameNumFromString(const char* const name) {
+	int gameNum = 0;
+	
+	while (drivers[gameNum]) {
+		if (!strcasecmp(drivers[gameNum]->name, name)) {
+			break;
+		}
+		gameNum++;
+	}
+
+	if (!drivers[gameNum]) {
+		return -1;
+	}
+
+	return gameNum;
+}
+
+/******************************************************
+ * GetDisplayLayouts
+ ******************************************************/
+
+void GetDisplayLayouts(PinmameDisplayLayoutCallback callback, const struct core_dispLayout* p_layout, UINT16* p_index) {
+	for (; p_layout->length; p_layout += 1) {
+		if (p_layout->type == CORE_IMPORT) {
+			GetDisplayLayouts(callback, p_layout->lptr, p_index);
+			continue;
+		}
+		else {
+			PinmameDisplayLayout displayLayout;
+			memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+
+			displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
+			displayLayout.top = p_layout->top;
+			displayLayout.left = p_layout->left;
+
+			if (p_layout->type != CORE_DMD) {
+				displayLayout.height = p_layout->start;
+				displayLayout.width = p_layout->length;
+			}
+			else {
+				displayLayout.length = p_layout->length;
+			}
+
+			(*callback)((*p_index)++, &displayLayout);
+		}
+	}
+}
+
+/******************************************************
+ * GetDisplays
+ ******************************************************/
+
+void GetDisplays(void* p_displayBuffer, PinmameDisplayCallback callback, const struct core_dispLayout* p_layout, UINT16* p_index, UINT16* p_lastOffset) {
+	for (; p_layout->length; p_layout += 1) {
+		if (p_layout->type == CORE_IMPORT) {
+			GetDisplays(p_displayBuffer, callback, p_layout->lptr, p_index, p_lastOffset);
+			continue;
+		}
+		else {
+			PinmameDisplayLayout displayLayout;
+			memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+			displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
+			displayLayout.top = p_layout->top;
+			displayLayout.left = p_layout->left;
+
+			if (p_layout->type == CORE_DMD) {
+				if(g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) { 
+					displayLayout.height = g_raw_dmdy;
+					displayLayout.width = g_raw_dmdx;
+					
+					memcpy(p_displayBuffer, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
+ 
+					(*callback)(*p_index, &displayLayout);
+
+					g_needs_DMD_update = 0; 
+				}
+			}
+			else {
+				displayLayout.length = p_layout->length;
+
+				UINT16* p_drawSeg = coreGlobals.drawSeg;
+				p_drawSeg += *p_lastOffset;
+
+				memcpy(p_displayBuffer, p_drawSeg, p_layout->length * sizeof(UINT16));
+
+				*(p_lastOffset) += p_layout->length;
+ 
+				(*callback)(*p_index, &displayLayout);
+			}
+
+			(*p_index)++;
+		}
+	}
+}
+
+/******************************************************
+ * StartGame
+ ******************************************************/
+
+void StartGame(int gameNum) {
+	run_game(gameNum);
+
+	OnStateChange(0);
+}
+
+/******************************************************
+ * PinmameGetGames
+ ******************************************************/
+
+LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback) {
+	int gameNum = 0;
+
+	while (drivers[gameNum]) {
+		PinmameGame game;
+		memset(&game, 0, sizeof(PinmameGame));
+
+		game.name = drivers[gameNum]->name;
+		if (drivers[gameNum]->clone_of) {
+			game.clone_of = drivers[gameNum]->clone_of->name;
+		}
+
+		game.description = drivers[gameNum]->description;
+		game.year = drivers[gameNum]->year;
+		game.manufacturer = drivers[gameNum]->manufacturer;
+
+		if (callback) {
+			(*callback)(&game);
+		}
+
+		gameNum++;
+	}
+}
+
+/******************************************************
+ * PinmameSetConfig
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config) {
+	memcpy(&_config, p_config, sizeof(PinmameConfig));
+}
+
+/******************************************************
+ * PinmameGetDisplayLayouts
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_STATUS PinmameGetDisplayLayouts(PinmameDisplayLayoutCallback callback) {
+	if (!_isRunning) {
+		return EMULATOR_NOT_RUNNING;
+	}
+
+	UINT16 index = 0;
+	GetDisplayLayouts(callback, core_gameData->lcdLayout, &index);
+
+	return OK;
+}
+
+/******************************************************
+ * PinMameGetDisplays
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_STATUS PinmameGetDisplays(void* p_buffer, PinmameDisplayCallback callback) {
+	if (!_isRunning) {
+		return EMULATOR_NOT_RUNNING;
+	}
+
+	UINT16 index = 0;
+	UINT16 lastOffset = 0;
+	GetDisplays(p_buffer, callback, core_gameData->lcdLayout, &index, &lastOffset);
+
+	return OK;
+}
+
+/******************************************************
+ * PinmameRun
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
+	if (_isRunning) {
+		return GAME_ALREADY_RUNNING;
+	}
+
+	int gameNum = GetGameNumFromString(p_name);
+
+	if (gameNum < 0) {
+		return GAME_NOT_FOUND;
+	}
+
+	rc = cli_rc_create();
+
+	rc_set_option(rc, "throttle", "1", 0);
+	rc_set_option(rc, "sleep", "1", 0);
+	rc_set_option(rc, "autoframeskip", "0", 0);
+	rc_set_option(rc, "skip_gameinfo", "1", 0);
+	rc_set_option(rc, "skip_disclaimer", "1", 0);
+
+	setPath(FILETYPE_ROM, ComposePath(_config.p_vpmPath, "roms"));
+	setPath(FILETYPE_NVRAM, ComposePath(_config.p_vpmPath, "nvram"));
+	setPath(FILETYPE_SAMPLE, ComposePath(_config.p_vpmPath, "samples"));
+	setPath(FILETYPE_CONFIG, ComposePath(_config.p_vpmPath, "cfg"));
+	setPath(FILETYPE_HIGHSCORE, ComposePath(_config.p_vpmPath, "hi"));
+	setPath(FILETYPE_INPUTLOG, ComposePath(_config.p_vpmPath, "inp"));
+	setPath(FILETYPE_MEMCARD, ComposePath(_config.p_vpmPath, "memcard"));
+	setPath(FILETYPE_STATE, ComposePath(_config.p_vpmPath, "sta"));
+
+	vp_init();
+
+	_p_gameThread = new std::thread(StartGame, gameNum);
+
+	return OK;
+}
+
+/******************************************************
+ * PinmameIsRunning
+ ******************************************************/
+
+LIBPINMAME_API int PinmameIsRunning() {
+	return _isRunning;
+}
+
+/******************************************************
+ * PinmameReset
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_STATUS PinmameReset() {
+	if (_isRunning) {
+		machine_reset();
+
+		return OK;
+	}
+
+	return EMULATOR_NOT_RUNNING;
+}
+
+/******************************************************
+ * PinmamePause
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_STATUS PinmamePause(int pause) {
+	if (_isRunning) {
+		g_fPause = pause;
+
+		return OK;
+	}
+
+	return EMULATOR_NOT_RUNNING;
+}
+
+/******************************************************
+ * PinmameStop
+ ******************************************************/
+
+LIBPINMAME_API void PinmameStop() {
+	if (_p_gameThread) {
+		_timeToQuit = 1;
+
+		_p_gameThread->join();
+
+		delete(_p_gameThread); 
+		_p_gameThread = nullptr;
+
+		_timeToQuit = 0;
+	}
+}
+
+/******************************************************
+ * PinmameGetSwitch
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetSwitch(int slot) {
+	return (_isRunning) ? vp_getSwitch(slot) : 0;
+}
+
+/******************************************************
+ * PinmameSetSwitch
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetSwitch(int slot, int state) {
+	if (_isRunning) {
+		 vp_putSwitch(slot, state ? 1 : 0);
+	}
+}
+
+/******************************************************
+ * PinmameSetSwitches
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetSwitches(int* p_states, int numSwitches) {
+	if (_isRunning) {
+		for (int i = 0; i < numSwitches; ++i) {
+			vp_putSwitch(p_states[i*2], p_states[i*2+1] ? 1 : 0);
+		}
+	}
+}
+
+/******************************************************
+ * PinmameGetMaxLamps
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetMaxLamps() {
+	return CORE_MAXLAMPCOL * 8;
+}
+
+/******************************************************
+ * PinmameGetChangedLamps
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetChangedLamps(int* p_changedStates) {
+	if (!_isRunning) {
+		return -1;
+	}
+
+	vp_tChgLamps chgLamps;
+	const int count = vp_getChangedLamps(chgLamps);
+	if (count == 0) {
+		return 0;
+	}
+
+	int* p_out = p_changedStates;
+	for (int i = 0; i < count; i++) {
+		*(p_out++) = chgLamps[i].lampNo;
+		*(p_out++) = chgLamps[i].currStat;
+	}
+
+	return count;
+}
+
+/******************************************************
+ * PinmameGetMaxSolenoids
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetMaxSolenoids() {
+	return CORE_MAXSOL;
+}
+
+/******************************************************
+ * PinmameGetChangedSolenoids
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetChangedSolenoids(int* p_changedStates) {
+	if (!_isRunning) {
+		return -1;
+	}
+
+	vp_tChgSols chgSols;
+	const int count = vp_getChangedSolenoids(chgSols);
+	if (count == 0) {
+		return 0;
+	}
+
+	int* p_out = p_changedStates;
+	for (int i = 0; i < count; i++) {
+		*(p_out++) = chgSols[i].solNo;
+		*(p_out++) = chgSols[i].currStat;
+	}
+	return count;
+}
+
+/******************************************************
+ * PinmameGetMaxGIs
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetMaxGIs() {
+	return CORE_MAXGI;
+}
+
+/******************************************************
+ * PinmameGetChangedGIs
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetChangedGIs(int* p_changedStates) {
+	if (!_isRunning) {
+		return -1;
+	}
+
+	vp_tChgGIs chgGIs;
+	const int count = vp_getChangedGI(chgGIs);
+	if (count == 0) {
+		return 0;
+	}
+
+	int* out = p_changedStates;
+	for (int i = 0; i < count; i++) {
+		*(out++) = chgGIs[i].giNo;
+		*(out++) = chgGIs[i].currStat;
+	}
+	return count;
+}
+
+/******************************************************
+ * PinmameGetAudioChannels
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetAudioChannels() {
+	return (_isRunning) ? channels : -1;
+}
+
+/******************************************************
+ * PinmameGetAudioChannels
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetPendingAudioSamples(float* buffer, int outChannels, int maxNumber) {
+	return (_isRunning) ? fillAudioBuffer(buffer, outChannels, maxNumber, 1) : -1;
+}
+
+/******************************************************
+ * GetPendingAudioSamples16bit
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber) {
+	return (_isRunning) ? fillAudioBuffer(buffer, outChannels, maxNumber, 0) : -1;
 }

@@ -636,3 +636,11 @@ set_target_properties(pinmame PROPERTIES
    RUNTIME_OUTPUT_NAME "libpinmame-${PROJECT_VERSION}"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
+
+add_executable(pinmame_test
+   src/libpinmame/test.cpp
+)
+
+target_link_libraries(pinmame_test LINK_PUBLIC
+   pinmame
+)

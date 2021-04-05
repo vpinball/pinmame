@@ -1,101 +1,95 @@
 // license:BSD-3-Clause
 
-#pragma once
+#ifndef LIBPINMAME_H
+#define LIBPINMAME_H
 
 #if defined(_WIN32) || defined(_WIN64)
 #define LIBPINMAME_API extern "C" __declspec(dllexport) 
 #define CALLBACK __stdcall
+#define strcasecmp _stricmp
 #else
 #define LIBPINMAME_API extern "C" //__declspec(dllimport) 
 #define CALLBACK
 #endif
 
+typedef enum { 
+	OK = 0,
+	GAME_NOT_FOUND = 1,
+	GAME_ALREADY_RUNNING = 2, 
+	EMULATOR_NOT_RUNNING = 3
+} PINMAME_STATUS;
+
+typedef enum {
+	SEG16 = 0,    // 16 segments
+	SEG16R = 1,   // 16 segments with comma and period reversed
+	SEG10 = 2,    // 9  segments and comma
+	SEG9 = 3,     // 9  segments
+	SEG8 = 4,     // 7  segments and comma
+	SEG8D = 5,    // 7  segments and period
+	SEG7 = 6,     // 7  segments
+	SEG87 = 7,    // 7  segments, comma every three
+	SEG87F = 8,   // 7  segments, forced comma every three
+	SEG98 = 9,    // 9  segments, comma every three
+	SEG98F = 10,  // 9  segments, forced comma every three
+	SEG7S = 11,   // 7  segments, small
+	SEG7SC = 12,  // 7  segments, small, with comma
+	SEG16S = 13,  // 16 segments with split top and bottom line
+	DMD = 14,     // DMD Display
+	VIDEO = 15,   // VIDEO Display
+	SEG16N = 16,  // 16 segments without commas
+	SEG16D = 17   // 16 segments with periods only
+} PINMAME_DISPLAY_TYPE;
+
 typedef struct {
-   const char* name;
-   const char* clone_of;
-   const char* description;
-   const char* year;
-   const char* manufacturer;
-} GameInfoStruct;
+	const char* name;
+	const char* clone_of;
+	const char* description;
+	const char* year;
+	const char* manufacturer;
+} PinmameGame;
 
-typedef void (CALLBACK *GameInfoCallback)(GameInfoStruct* gameInfoStruct);
+typedef struct {
+	PINMAME_DISPLAY_TYPE type;
+	int top;
+	int left;
+	int length;
+	int width;
+	int height;
+} PinmameDisplayLayout;
 
-// Setup related functions
-// -----------------------
-// Call these before doing anything else
+typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
+typedef void (CALLBACK *PinmameOnStateChangeCallback)(int state);
+typedef void (CALLBACK *PinmameOnSolenoidCallback)(int solenoid, int isActive);
+typedef void (CALLBACK *PinmameDisplayLayoutCallback)(int index, PinmameDisplayLayout* p_displayLayout);
+typedef void (CALLBACK *PinmameDisplayCallback)(int index, PinmameDisplayLayout* p_displayLayout);
 
-LIBPINMAME_API void SetVPMPath(char* path);
-LIBPINMAME_API void SetSampleRate(int sampleRate);
+typedef struct {
+	int sampleRate;
+	const char* p_vpmPath;
+	PinmameOnStateChangeCallback cb_OnStateChange;
+	PinmameOnSolenoidCallback cb_OnSolenoid;
+} PinmameConfig;
 
-// Game related functions
-// ----------------------
+LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback);
+LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config);
+LIBPINMAME_API PINMAME_STATUS PinmameGetDisplayLayouts(PinmameDisplayLayoutCallback callback);
+LIBPINMAME_API PINMAME_STATUS PinmameGetDisplays(void* p_buffer, PinmameDisplayCallback callback);
+LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name);
+LIBPINMAME_API int PinmameIsRunning();
+LIBPINMAME_API PINMAME_STATUS PinmamePause(int pause);
+LIBPINMAME_API PINMAME_STATUS PinmameReset();
+LIBPINMAME_API void PinmameStop();
+LIBPINMAME_API int PinmameGetSwitch(int slot);
+LIBPINMAME_API void PinmameSetSwitch(int slot, int state);
+LIBPINMAME_API void PinmameSetSwitches(int* p_states, int numSwitches);
+LIBPINMAME_API int PinmameGetMaxLamps();
+LIBPINMAME_API int PinmameGetChangedLamps(int* p_changedStates);
+LIBPINMAME_API int PinmameGetMaxSolenoids();
+LIBPINMAME_API int PinmameGetChangedSolenoids(int* p_changedStates);
+LIBPINMAME_API int PinmameGetMaxGIs();
+LIBPINMAME_API int PinmameGetChangedGIs(int* p_changedStates);
+LIBPINMAME_API int PinmameGetAudioChannels();
+LIBPINMAME_API int PinmameGetPendingAudioSamples(float* p_buffer, int outChannels, int maxNumber);
+LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* p_buffer, int outChannels, int maxNumber);
 
-LIBPINMAME_API void GetGames(GameInfoCallback callback);
-LIBPINMAME_API int StartThreadedGame(char* gameName, bool showConsole = false);
-LIBPINMAME_API void StopThreadedGame(bool locking = true);
-//LIBPINMAME_API void KillThreadedGame(char* gameName);
-LIBPINMAME_API void ResetGame();
-// IsGameReady will only be true after a 'while', i.e. after calling StartThreadedGame plus X msecs!
-LIBPINMAME_API bool IsGameReady();
-
-// ALL THE FOLLOWING FUNCTIONS WILL ONLY HAVE A MEANINGFUL EFFECT IF IsGameReady() IS TRUE!
-
-// Pause related functions
-// -----------------------
-
-LIBPINMAME_API void Pause();
-LIBPINMAME_API void Continue();
-LIBPINMAME_API bool IsPaused();
-
-// DMD related functions
-// ---------------------
-
-LIBPINMAME_API bool NeedsDMDUpdate();
-LIBPINMAME_API int GetRawDMDWidth();
-LIBPINMAME_API int GetRawDMDHeight();
-// needs pre-allocated GetRawDMDWidth()*GetRawDMDHeight()*sizeof(unsigned char) buffer
-// returns GetRawDMDWidth()*GetRawDMDHeight()
-LIBPINMAME_API int GetRawDMDPixels(unsigned char* buffer);
-
-// Audio related functions
-// -----------------------
-// returns internally used channels by the game (1=mono,2=stereo)
-
-LIBPINMAME_API int GetAudioChannels();
-// needs pre-allocated maxNumber*sizeof(float) buffer
-// returns actually processed samples (note that this is pre-multiplied by the requested outChannels (1=mono,2=stereo), same as maxNumber)
-LIBPINMAME_API int GetPendingAudioSamples(float* buffer, int outChannels, int maxNumber);
-LIBPINMAME_API int GetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber);
-
-// Switch related functions
-// ------------------------
-
-LIBPINMAME_API bool GetSwitch(int slot);
-LIBPINMAME_API void SetSwitch(int slot, bool state);
-// Set all/a list of switches: For each switch, 2 ints are passed in: slot and state (0 or 1)
-// As an exception, this call will also set switches to an initial state, i.e. even if IsGameReady() is still false
-LIBPINMAME_API void SetSwitches(int* states, int numSwitches);
-
-// Lamps related functions
-// -----------------------
-
-LIBPINMAME_API int GetMaxLamps();
-// needs pre-allocated GetMaxLamps()*sizeof(int)*2 buffer (i.e. for each lamp: lampNo and currStat)
-// returns actually changed lamps
-LIBPINMAME_API int GetChangedLamps(int* changedStates);
-
-// Solenoids related functions
-// ---------------------------
-
-LIBPINMAME_API int GetMaxSolenoids();
-// needs pre-allocated GetMaxSolenoids()*sizeof(int)*2 buffer (i.e. for each solenoid: solNo and currStat)
-// returns actually changed solenoids
-LIBPINMAME_API int GetChangedSolenoids(int* changedStates);
-
-// GI strings related functions
-// ----------------------------
-
-LIBPINMAME_API int GetMaxGIStrings();
-// needs pre-allocated GetMaxGIStrings()*sizeof(int)*2 buffer (i.e. for each GI: giNo and currStat)
-// returns actually changed GI strings
-LIBPINMAME_API int GetChangedGIs(int* changedStates);
+#endif
