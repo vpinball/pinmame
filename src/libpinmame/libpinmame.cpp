@@ -33,7 +33,7 @@ char g_szGameName[256] = { 0 }; // String containing requested game name (may be
 
 static PinmameConfig _config = {
 	48000,
-	0,
+	"\0",
 	0,
 	0
 };
@@ -304,14 +304,14 @@ LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
 	rc_set_option(rc, "skip_gameinfo", "1", 0);
 	rc_set_option(rc, "skip_disclaimer", "1", 0);
 
-	setPath(FILETYPE_ROM, ComposePath(_config.p_vpmPath, "roms"));
-	setPath(FILETYPE_NVRAM, ComposePath(_config.p_vpmPath, "nvram"));
-	setPath(FILETYPE_SAMPLE, ComposePath(_config.p_vpmPath, "samples"));
-	setPath(FILETYPE_CONFIG, ComposePath(_config.p_vpmPath, "cfg"));
-	setPath(FILETYPE_HIGHSCORE, ComposePath(_config.p_vpmPath, "hi"));
-	setPath(FILETYPE_INPUTLOG, ComposePath(_config.p_vpmPath, "inp"));
-	setPath(FILETYPE_MEMCARD, ComposePath(_config.p_vpmPath, "memcard"));
-	setPath(FILETYPE_STATE, ComposePath(_config.p_vpmPath, "sta"));
+	setPath(FILETYPE_ROM, ComposePath(_config.vpmPath, "roms"));
+	setPath(FILETYPE_NVRAM, ComposePath(_config.vpmPath, "nvram"));
+	setPath(FILETYPE_SAMPLE, ComposePath(_config.vpmPath, "samples"));
+	setPath(FILETYPE_CONFIG, ComposePath(_config.vpmPath, "cfg"));
+	setPath(FILETYPE_HIGHSCORE, ComposePath(_config.vpmPath, "hi"));
+	setPath(FILETYPE_INPUTLOG, ComposePath(_config.vpmPath, "inp"));
+	setPath(FILETYPE_MEMCARD, ComposePath(_config.vpmPath, "memcard"));
+	setPath(FILETYPE_STATE, ComposePath(_config.vpmPath, "sta"));
 
 	vp_init();
 

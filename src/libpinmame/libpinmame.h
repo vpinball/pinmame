@@ -12,6 +12,8 @@
 #define CALLBACK
 #endif
 
+#define MAX_PATH 512
+
 typedef enum {
 	OK = 0,
 	GAME_NOT_FOUND = 1,
@@ -65,7 +67,7 @@ typedef void (CALLBACK *PinmameDisplayCallback)(int index, PinmameDisplayLayout*
 
 typedef struct {
 	int sampleRate;
-	const char* p_vpmPath;
+	const char vpmPath[MAX_PATH];
 	PinmameOnStateChangeCallback cb_OnStateChange;
 	PinmameOnSolenoidCallback cb_OnSolenoid;
 } PinmameConfig;
