@@ -72,11 +72,6 @@ jobs:
             curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946159/zip -o upx.zip
             7z x upx.zip -oupx
             rm upx.zip
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946156/zip -o upx.zip
-            7z x upx.zip -oupx
-            chmod 755 upx/upx
-            rm upx.zip
           fi
       - name: Build libpinmame-${{ matrix.platform }}
         run: |
@@ -91,7 +86,7 @@ jobs:
             cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
             cmake --build build/Release
             if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-              ./upx/upx build/Release/${{ matrix.libpinmame }}
+              upx build/Release/${{ matrix.libpinmame }}
             fi
           fi
       - run: |
