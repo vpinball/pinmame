@@ -25,9 +25,6 @@
 //	IMPORTS
 //============================================================
 
-// from input.c
-extern UINT8 win_trying_to_quit;
-
 // from ticker.c
 extern void uSleep(const UINT64 u);
 extern void uOverSleep(const UINT64 u);
@@ -650,8 +647,6 @@ static void update_timing()
 	else
 	{
 		frames_displayed++;
-		if (frames_displayed + 1 == frames_to_display)
-			win_trying_to_quit = 1;
 		end_time = curr;
 	}
 

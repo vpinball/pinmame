@@ -46,20 +46,25 @@ jobs:
             platform: win-x64
             platform-name: x64
             libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
+            pinmame-test: pinmame_test.exe
           - os: windows-latest
             platform: win-x86
             platform-name: Win32
             libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
+            pinmame-test: pinmame_test.exe
           - os: windows-latest
             platform: win-arm64
             platform-name: ARM64
             libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
+            pinmame-test: pinmame_test.exe
           - os: macos-latest
             platform: osx-x64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
+            pinmame-test: pinmame_test
           - os: ubuntu-latest
             platform: linux-x64
             libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
+            pinmame-test: pinmame_test
     steps:
       - uses: actions/checkout@v2
       - run: |
@@ -92,11 +97,12 @@ jobs:
       - run: |
           mkdir tmp
           cp build/Release/${{ matrix.libpinmame }} tmp
+          cp build/Release/${{ matrix.pinmame-test }} tmp
           cp release/license.txt tmp
       - uses: actions/upload-artifact@v2
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
-          path: build/Release/${{ matrix.libpinmame }}
+          path: tmp
           
   dispatch:
     runs-on: ubuntu-latest
