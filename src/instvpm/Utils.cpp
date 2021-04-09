@@ -7,16 +7,16 @@ extern char g_szCaption[256];
 
 void DisplayError(HWND hWnd, HRESULT hr, char* szReason, char* szAdvice)
 {
-	char szMsg[512];
+	TCHAR szMsg[512];
 
 	char *pszErrorMsg = NULL;
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS, 
 		NULL, hr, 0, (LPTSTR) &pszErrorMsg, 0, NULL);
 
 	if ( szAdvice )
-		wsprintf(szMsg, "%s\n\nError 0x%08x: %s\n%s", szReason, hr, pszErrorMsg, szAdvice);
+		wsprintf(szMsg, TEXT("%s\n\nError 0x%08x: %s\n%s"), szReason, hr, pszErrorMsg, szAdvice);
 	else
-		wsprintf(szMsg, "%s\n\nError 0x%08x: %s", szReason, hr, pszErrorMsg);
+		wsprintf(szMsg, TEXT("%s\n\nError 0x%08x: %s"), szReason, hr, pszErrorMsg);
 
 	MessageBox(hWnd, szMsg, g_szCaption, MB_ICONEXCLAMATION|MB_OK);
 	LocalFree(pszErrorMsg);
@@ -110,7 +110,7 @@ int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPT
 	
 	dwTranslation = (*lpdwVar/65536) + (*lpdwVar%65536)*65536;
 
-	wsprintf(szEntry, "StringFileInfo\\%0.8x\\%s", dwTranslation, lpszResourceEntry);
+	wsprintf(szEntry, TEXT("StringFileInfo\\%0.8x\\%s"), dwTranslation, lpszResourceEntry);
 
 	if ( !VerQueryValue(lpEntryInfo, szEntry, &lpEntry, &wEntrySize) )
 		return 0;

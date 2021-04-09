@@ -1714,8 +1714,8 @@ STDMETHODIMP CController::get_Version(BSTR *pVal)
 	int nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3;
 	GetProductVersion(&nVersionNo0, &nVersionNo1, &nVersionNo2, &nVersionNo3);
 
-	char szVersion[9];
-	wsprintf(szVersion, "%02i%02i%02i%02i", nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
+	TCHAR szVersion[9];
+	wsprintf(szVersion, _T("%02i%02i%02i%02i"), nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
 
 	CComBSTR bstrVersion(szVersion);
 

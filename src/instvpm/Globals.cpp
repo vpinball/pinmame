@@ -1,4 +1,4 @@
 #include "Windows.h"
 
 HINSTANCE	g_hInstance = 0;
-char		g_szCaption[256];
+TCHAR		g_szCaption[256];

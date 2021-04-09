@@ -276,7 +276,7 @@ private:
 		if ( !m_pGame )
 			return 1;
 
-		char szTitle[256];
+		TCHAR szTitle[256];
 
 		CComBSTR sDescription;
 		m_pGame->get_Description(&sDescription);
@@ -288,9 +288,9 @@ private:
 		WideCharToMultiByte(CP_ACP, 0, sROM, -1, m_szROM, sizeof m_szROM, NULL, NULL);
 		
 		if ( m_szROM[0] )
-			wsprintf(szTitle, "%s (%s)", szDescription, m_szROM);
+			wsprintf(szTitle, TEXT("%s (%s)"), szDescription, m_szROM);
 		else
-			lstrcpy(szTitle, "Default Options");
+			lstrcpy(szTitle, TEXT("Default Options"));
 
 		SetWindowText(szTitle);
 

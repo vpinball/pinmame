@@ -412,16 +412,16 @@ void EnableButtons(HWND hWnd, IController *pController) {
 	VARIANT_BOOL fRunning;
 	pController->get_Running(&fRunning);
 
-	char szState[256];
+	TCHAR szState[256];
 	if ( fRunning==VARIANT_TRUE ) {
 		char szGameName[256];
 		BSTR sGameName;
 		pController->get_GameName(&sGameName);
 		WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sGameName, -1, szGameName, sizeof szGameName, NULL, NULL);
-		wsprintf(szState, "'%s' is running", szGameName);
+		wsprintf(szState, TEXT("'%s' is running"), szGameName);
 	}
 	else
-		lstrcpy(szState, "No game is running.");
+		lstrcpy(szState, TEXT("No game is running."));
 
 	SendDlgItemMessage(hWnd, IDC_STATE, WM_SETTEXT, 0, (WPARAM) &szState);
 

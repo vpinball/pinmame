@@ -67,7 +67,7 @@ private:
 		
 		dwTranslation = (*lpdwVar/65536) + (*lpdwVar%65536)*65536;
 
-		wsprintf(szEntry, "StringFileInfo\\%0.8x\\%s", dwTranslation, lpszResourceEntry);
+		wsprintf(szEntry, TEXT("StringFileInfo\\%0.8x\\%s"), dwTranslation, lpszResourceEntry);
 
 		if ( !VerQueryValue(lpEntryInfo, szEntry, &lpEntry, &wEntrySize) )
 			return 0;
@@ -93,21 +93,23 @@ private:
 		char szVersion[256];
 		GetVersionResourceEntry(szFilename, TEXT("ProductVersion"), szVersion, sizeof szVersion);
 
-		char szVersionText[256], szBuildDateText[256], szFormat[256];  
+		TCHAR szVersionText[256], szBuildDateText[256], szFormat[256];
 		GetDlgItemText(IDC_VERSION, szFormat, sizeof szVersionText);
 		wsprintf(szVersionText, szFormat, szVersion);
 
 #if defined(__LP64__) || defined(_WIN64)
-		wsprintf(szVersionText, "%s (x64)", szVersionText);
+		wsprintf(szVersionText, TEXT("%s (x64)"), szVersionText);
 #endif
 
 		//Add compile time specific strings to version string
-		char szAdjust[MAX_PATH];
-		wsprintf(szAdjust,"%s","");
+		TCHAR szAdjust[MAX_PATH];
 #ifdef MAME_DEBUG
-		wsprintf(szAdjust,"%s","DEBUG");
+		wsprintf(szAdjust,TEXT("%s"),TEXT("DEBUG"));
+#else
+		wsprintf(szAdjust,TEXT("%s"),TEXT(""));
 #endif
-		if(strlen(szAdjust)) wsprintf(szVersionText, "%s (%s)",szVersionText,szAdjust);
+		if(strlen(szAdjust))
+			wsprintf(szVersionText, TEXT("%s (%s)"),szVersionText,szAdjust);
 		//
 		SetDlgItemText(IDC_VERSION, szVersionText);
 		wsprintf(szBuildDateText,GetBuildDateString());
@@ -182,7 +184,7 @@ void ShowAboutDlg(HWND hParent)
 
 char * GetBuildDateString(void)
 {
-	static char tmp[120];
-	wsprintf(tmp,"%s",__DATE__);
+	static TCHAR tmp[120];
+	wsprintf(tmp,TEXT("%s"),__DATE__);
 	return tmp;
 }

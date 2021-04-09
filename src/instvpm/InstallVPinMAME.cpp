@@ -33,11 +33,11 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 	char szVersion[256];
 	GetVersionResourceEntry(szModuleFilename, TEXT("ProductVersion"), szVersion, sizeof szVersion);
 
-	char szMsg[256];
+	TCHAR szMsg[256];
 	if ( fRegister )
-		wsprintf(szMsg, "You have selected to install version %s of Visual PinMAME! \nAre you ready to proceed?", szVersion);
+		wsprintf(szMsg, TEXT("You have selected to install version %s of Visual PinMAME! \nAre you ready to proceed?"), szVersion);
 	else
-		wsprintf(szMsg, "You have selected to uninstall version %s of Visual PinMAME! \nAre you ready to proceed?", szVersion);	
+		wsprintf(szMsg, TEXT("You have selected to uninstall version %s of Visual PinMAME! \nAre you ready to proceed?"), szVersion);	
 
 	if ( MessageBox(hWnd, szMsg, g_szCaption, MB_ICONQUESTION|MB_YESNO)==IDNO ) {
 		if ( fRegister )
@@ -196,11 +196,11 @@ void DisplayInstalledVersion(HWND hWnd)
 	char szInstalledVersion[256];
 	GetInstalledVersion(szInstalledVersion, sizeof szInstalledVersion);
 
-	char szVersionText[256];
+	TCHAR szVersionText[256];
 	if(strlen(szInstalledVersion) > 0)
-		wsprintf(szVersionText, "* Visual PinMAME Version %s is currently installed on your computer *", szInstalledVersion);
+		wsprintf(szVersionText, TEXT("* Visual PinMAME Version %s is currently installed on your computer *"), szInstalledVersion);
 	else
-		wsprintf(szVersionText, "* Visual PinMAME is not currently installed on your computer *");
+		wsprintf(szVersionText, TEXT("* Visual PinMAME is not currently installed on your computer *"));
 	SendMessage(GetDlgItem(hWnd, IDC_INSTALLEDVERSION), WM_SETTEXT, 0, (LPARAM) szVersionText);
 }
 
@@ -227,7 +227,7 @@ INT_PTR PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		char szModuleFilename[MAX_PATH];
 		GetModuleFileName(g_hInstance, szModuleFilename, sizeof szModuleFilename);
 
-		char szVersion[256];
+		TCHAR szVersion[256];
 		GetVersionResourceEntry(szModuleFilename, TEXT("ProductVersion"), szVersion, sizeof szVersion);
 
 		GetWindowText(hWnd, szHelp, sizeof szHelp);
