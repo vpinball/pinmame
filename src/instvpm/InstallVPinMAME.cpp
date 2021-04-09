@@ -17,11 +17,8 @@
 
 int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 {
-	HRESULT hr;
-	HMODULE hModule;
-
 	// so now let's see if we can load vpinmame.dll
-	hModule = LoadLibrary(VPMDLLNAME);
+	HMODULE hModule = LoadLibrary(VPMDLLNAME);
 	if ( !hModule ) {
 		DisplayError(hWnd, GetLastError(), "The '" VPMDLLNAME "' file can't be loaded.", "Be sure to have this file in the current directory!");
 		return 0;
@@ -58,7 +55,7 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 			return 0;
 		}
 
-		hr = (*DllRegisterServer)();
+		HRESULT hr = (*DllRegisterServer)();
 		if ( FAILED(hr) ) {
 			DisplayError(hWnd, hr, "Unable to register the class object!", "Please check if you have a valid " VPMDLLNAME "!");
 			FreeLibrary(hModule);
@@ -94,7 +91,7 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 			return 0;
 		}
 
-		hr = (*DllUnregisterServer)();
+		HRESULT hr = (*DllUnregisterServer)();
 		if ( FAILED(hr) ) {
 			DisplayError(hWnd, hr, "Unable to unregister the class object!", "Please check if you have a valid " VPMDLLNAME "!");
 			FreeLibrary(hModule);
@@ -180,9 +177,8 @@ int DisplayDialogs(HWND hWnd, int nDialog)
 
 void EnabledButtons(HWND hWnd)
 {
-	HRESULT hr;
 	CLSID ClsID;
-	hr = CLSIDFromProgID(OLESTR("VPinMAME.Controller"), &ClsID);
+	const HRESULT hr = CLSIDFromProgID(OLESTR("VPinMAME.Controller"), &ClsID);
 
 	EnableWindow(GetDlgItem(hWnd, IDC_UNREGISTER), !FAILED(hr));
 	EnableWindow(GetDlgItem(hWnd, IDC_DISPLAYPATHESDLG), !FAILED(hr));
@@ -207,7 +203,7 @@ void DisplayInstalledVersion(HWND hWnd)
 INT_PTR PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HICON m_hIcon = 0;
-	char szHelp[256];
+	TCHAR szHelp[256];
 
 	switch ( uMsg ) {
 	case WM_INITDIALOG:
@@ -284,12 +280,12 @@ INT_PTR PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
-                     LPSTR     lpCmdLine,
+                     PSTR      lpCmdLine,
                      int       nCmdShow)
 {
 	g_hInstance = hInstance;
 
-	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	const HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	if ( FAILED(hr) ) {
 		DisplayError(0, hr, "Failed to initialize the COM subsystem.", "Please check your system!");
 		return 0;
@@ -300,4 +296,3 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	return 1;
 }
-

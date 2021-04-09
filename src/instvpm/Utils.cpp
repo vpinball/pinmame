@@ -3,7 +3,7 @@
 
 #include "Utils.h"
 
-extern char g_szCaption[256];
+extern TCHAR g_szCaption[256];
 
 void DisplayError(HWND hWnd, HRESULT hr, char* szReason, char* szAdvice)
 {
@@ -27,10 +27,9 @@ void DisplayCOMError(IUnknown *pUnknown, REFIID riid)
 	if ( !pUnknown )
 		return;
 
-	HRESULT hr;
 	ISupportErrorInfo *pSupportErrorInfo;
 
-	hr = pUnknown->QueryInterface(IID_ISupportErrorInfo, (void**) &pSupportErrorInfo);
+	HRESULT hr = pUnknown->QueryInterface(IID_ISupportErrorInfo, (void**) &pSupportErrorInfo);
 	if ( FAILED(hr) )
 		return;
 
@@ -73,17 +72,15 @@ LONG RegDeleteKeyEx(HKEY hKey, LPCTSTR lpszSubKey)
 	return lResult;
 }
 
-int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPTSTR lpszBuffer, WORD wMaxSize) {
-	DWORD   dwVerHandle; 
+int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPTSTR lpszBuffer, WORD wMaxSize)
+{
+	DWORD	dwVerHandle;
 	DWORD	dwInfoSize;
-	HANDLE  hVersionInfo;
-	LPVOID  lpEntryInfo;
-	LPVOID  lpEntry;
+	LPVOID	lpEntry;
 	UINT	wEntrySize;
-	LPDWORD lpdwVar;
-	UINT    wVarSize;
-	DWORD   dwTranslation;
-	TCHAR   szEntry[256];
+	LPDWORD	lpdwVar;
+	UINT	wVarSize;
+	TCHAR	szEntry[256];
 
 	if ( !lpszFilename || !lpszBuffer || !wMaxSize )
 		return 0;
@@ -93,12 +90,12 @@ int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPT
 	if ( !(dwInfoSize = GetFileVersionInfoSize((LPSTR) lpszFilename, &dwVerHandle)) ) {
 		return 1;
 	}
-	
-	hVersionInfo = GlobalAlloc(GPTR, dwInfoSize);
+
+	HANDLE hVersionInfo = GlobalAlloc(GPTR, dwInfoSize);
 	if ( !hVersionInfo )
 		return 0;
 
-	lpEntryInfo = GlobalLock(hVersionInfo);
+	LPVOID lpEntryInfo = GlobalLock(hVersionInfo);
 	if ( !lpEntryInfo )
 		return 0;
 
@@ -107,8 +104,8 @@ int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPT
 
 	if ( !VerQueryValue(lpEntryInfo, "VarFileInfo\\Translation", (void**) &lpdwVar, &wVarSize) )
 		return 0;
-	
-	dwTranslation = (*lpdwVar/65536) + (*lpdwVar%65536)*65536;
+
+	DWORD dwTranslation = (*lpdwVar/65536) + (*lpdwVar%65536)*65536;
 
 	wsprintf(szEntry, TEXT("StringFileInfo\\%0.8x\\%s"), dwTranslation, lpszResourceEntry);
 
@@ -125,4 +122,3 @@ int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPT
 
 	return 1;
 }
-

@@ -148,60 +148,6 @@ void DeleteListContent(HWND hWnd)
 
 /***********************************************************/
 /* Pulls all Machine Names and populates to Control Passed */
-/* uses the .Machines safearray                            */
-/***********************************************************/
-BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
-{
-	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
-
-	VARIANT varArrayNames;
-	BSTR sCompatibleMachines = SysAllocString(L"");
-	if ( FAILED(pController->get_Machines(sCompatibleMachines,&varArrayNames)) )
-		return FALSE;
-	SysFreeString(sCompatibleMachines);
-
-	/* PROCESS THE MACHINE NAMES ARRAY AND POPULATE LISTBOX */
-	LONG lstart, lend;
-    VARIANT HUGEP *pbstr;
-
-	SAFEARRAY *psa = varArrayNames.parray;
-	if ( SUCCEEDED(SafeArrayAccessData(psa, (void HUGEP**) &pbstr)) ) {
-		// Get the lower and upper bound
-		if (FAILED(SafeArrayGetLBound(psa, 1, &lstart))) 
-			lstart=0;
-		if (FAILED(SafeArrayGetUBound(psa, 1, &lend))) 
-			lend=0;
-		
-		// Grab each machine name and populate the control
-		for(long idx=lstart; idx <= lend; idx++)
-		{		
-			BSTR sGameName;
-			char szGameName[256];
-			char szListEntry[256];
-			sGameName = pbstr[idx].bstrVal;
-			if ( sGameName ) {
-				WideCharToMultiByte(CP_ACP, 0, sGameName, -1, szGameName, sizeof szGameName, NULL, NULL);
-				
-				lstrcpy(szListEntry, szGameName); // for future versions here we can add the full game name 
-				size_t nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
-				
-				PGAMEINFO pGameInfo = new GAMEINFO;
-				lstrcpy(pGameInfo->szGameName, szGameName);
-				lstrcpy(pGameInfo->szGameDescription, szGameName);
-				pGameInfo->fROMAvailable = true;
-				SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (LPARAM) pGameInfo);
-			}
-		}
-	}
-	SafeArrayUnaccessData(psa);
-	SafeArrayDestroy(psa);
-
-	SendMessage(hGamesList, LB_SETCURSEL, 0, 0);
-	return TRUE;
-}
-
-/***********************************************************/
-/* Pulls all Machine Names and populates to Control Passed */
 /* uses .Games collection                                  */
 /***********************************************************/
 BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
@@ -215,16 +161,12 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 
 	/* first, get a pointer to the games interface */
 	HRESULT hr = pController->get_Games(&pGames);
-	if ( FAILED(hr) ) /* upps, fallback to the old style */
-		PopulateListV1_10andLower(hWnd, pController);
 
 	/* now we need a pointer to an enumeration object */
 	IUnknown *pUnk;
 	hr = pGames->get__NewEnum((IUnknown**) &pUnk);
-	if ( FAILED(hr) ) { /* upps, fallback to the old style */
+	if ( FAILED(hr) )
 		pGames->Release();
-		PopulateListV1_10andLower(hWnd, pController);
-	}
 	
 	/* we got an IUnknow interface, but we need IEnumGames */
 	IEnumGames* pEnumGames;
@@ -233,10 +175,8 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 	pUnk->Release();
 
 	/* in case we can't get the IEnumGame interface for some reason */
-	if ( FAILED(hr) ) { /* upps, fallback to the old style */
+	if ( FAILED(hr) )
 		pGames->Release();
-		PopulateListV1_10andLower(hWnd, pController);
-	}
 
 	VARIANT vGame;
 	unsigned long uFetched;
@@ -314,17 +254,7 @@ BOOL PopulateList(HWND hWnd, IController *pController)
 	if ( !pController )
 		return false;
 
-	/* grab the description of the pin if version > V1.10 */
-	BSTR sVersion;
-	pController->get_Version(&sVersion);
-
-	char szVersion[256];
-	WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sVersion, -1, szVersion, sizeof szVersion, NULL, NULL);
-
-	if ( lstrcmp(szVersion, "01010000")<=0 )
-		return PopulateListV1_10andLower(hWnd, pController);
-	else
-		return PopulateListGreaterV1_10(hWnd, pController);
+	return PopulateListGreaterV1_10(hWnd, pController);
 }
 
 /***************************************************************************************/
@@ -408,7 +338,8 @@ void GameOptions(HWND hWnd, IController *pController)
 	SysFreeString(sGameName);
 }
 
-void EnableButtons(HWND hWnd, IController *pController) {
+void EnableButtons(HWND hWnd, IController *pController)
+{
 	VARIANT_BOOL fRunning;
 	pController->get_Running(&fRunning);
 
