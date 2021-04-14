@@ -8,34 +8,91 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #define CLEAR_SCREEN "cls"
-#define VPM_PATH "C:\\.pinmame\\"
 #elif defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #define CLEAR_SCREEN "clear"
-#define VPM_PATH "~/.pinmame/"
 #endif
 
+typedef unsigned char UINT8;
 typedef unsigned short UINT16;
-static void* _p_displayBuffer = nullptr;
 
-void DumpDmd(unsigned char* p_displayBuffer, PinmameDisplayLayout* p_displayLayout) {
+void DumpDmd(int index, UINT8* p_frame, PinmameDisplayLayout* p_displayLayout) {
 	for (int y = 0; y < p_displayLayout->height; y++) {
 		for (int x = 0; x < p_displayLayout->width; x++) {
-			switch (p_displayBuffer[y * p_displayLayout->width + x]) {
-				case 0x00:
-					printf(" ");
-					break;
-				case 0x14:
-					printf("░");
-					break;
-				case 0x21:
-					printf("▒");
-					break;
-				case 0x43:
-					printf("▓");
-					break;
-				case 0x64:
-					printf("▓");
-					break;
+			UINT8 value = p_frame[y * p_displayLayout->width + x];
+			
+			if (p_displayLayout->depth == 2) {
+				switch(value) {
+					case 0x14:
+						printf("░");
+						break;
+					case 0x21:
+						printf("▒");
+						break;
+					case 0x43:
+						printf("▓");
+						break;
+					case 0x64:
+						printf("▓");
+						break;
+				}
+			}
+			else {
+				if (PinmameGetHardwareGen() & (SAM | SPA)) {
+					switch(value) {
+						case 0x00:
+						case 0x14:
+						case 0x19:
+						case 0x1E:
+							printf("░");
+							break;
+						case 0x23:
+						case 0x28:
+						case 0x2D:
+						case 0x32:
+							printf("▒");
+							break;
+						case 0x37:
+						case 0x3C:
+						case 0x41:
+						case 0x46:
+							printf("▓");
+							break;
+						case 0x4B:
+						case 0x50:
+						case 0x5A:
+						case 0x64:
+							printf("▓");
+							break;
+					}
+				}
+				else {
+					switch(value) {
+						case 0x00:
+						case 0x1E:
+						case 0x23:
+						case 0x28:
+							printf("░");
+							break;
+						case 0x2D:
+						case 0x32:
+						case 0x37:
+						case 0x3C:
+							printf("▒");
+							break;
+						case 0x41:
+						case 0x46:
+						case 0x4B:
+						case 0x50:
+							printf("▓");
+							break;
+						case 0x55:
+						case 0x5A:
+						case 0x5F:
+						case 0x64:
+							printf("▓");
+							break;
+					}
+				}
 			}
 		}
 
@@ -43,7 +100,7 @@ void DumpDmd(unsigned char* p_displayBuffer, PinmameDisplayLayout* p_displayLayo
 	}
 }
 
-void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLayout) {
+void DumpAlphanumeric(int index, UINT16* p_frame, PinmameDisplayLayout* p_displayLayout) {
 	char output[8][512] = {
 		{ '\0' },
 		{ '\0' },
@@ -55,8 +112,8 @@ void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLa
 		{ '\0' }
 	};
 
-	for (int index = 0; index < p_displayLayout->length; index++) {
-		const UINT16 value = *(p_displayBuffer++);
+	for (int pos = 0; pos < p_displayLayout->length; pos++) {
+		const UINT16 value = *(p_frame++);
 
 		char segments[8][10] = {
 			{ " AAAAA   " },
@@ -74,8 +131,8 @@ void DumpAlphanumeric(UINT16* p_displayBuffer, PinmameDisplayLayout* p_displayLa
 				for (UINT16 bit = 0; bit < 16; bit++) {
 					if (segments[row][column] == ('A' + bit)) {
 						segments[row][column] = (value & (1 << bit)) ? '*' : ' ';
+						break;
 					}
-					break;
 				}
 			}
 
@@ -94,47 +151,28 @@ void CALLBACK Game(PinmameGame* game) {
 		game->name, game->description, game->manufacturer, game->year);
 }
 
-void CALLBACK DisplayLayout(int index, PinmameDisplayLayout* p_displayLayout) {
-	printf("DisplayLayout(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, length=%d\n", 
-		index,
-		p_displayLayout->type,
-		p_displayLayout->top,
-		p_displayLayout->left,
-		p_displayLayout->width,
-		p_displayLayout->height,
-		p_displayLayout->length);
-}
-
-void CALLBACK Display(int index, PinmameDisplayLayout* p_displayLayout) {
-	printf("Display(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, length=%d\n",
-		index,
-		p_displayLayout->type,
-		p_displayLayout->top,
-		p_displayLayout->left,
-		p_displayLayout->width,
-		p_displayLayout->height,
-		p_displayLayout->length);
-
-	if (p_displayLayout->type == DMD) {
-		DumpDmd((unsigned char*)_p_displayBuffer, p_displayLayout);
-	}
-	else {
-		DumpAlphanumeric((UINT16*)_p_displayBuffer, p_displayLayout);
-	}
-}
-
 void CALLBACK OnStateChange(int state) {
-	if (state) {
-		PinmameGetDisplayLayouts(&DisplayLayout);
+	if (!state) {
+		exit(1);
+	}
+}
 
-		_p_displayBuffer = malloc(256 * 64);
+void CALLBACK OnDisplayUpdate(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout) {
+	printf("OnDisplayUpdate(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
+		index,
+		p_displayLayout->type,
+		p_displayLayout->top,
+		p_displayLayout->left,
+		p_displayLayout->width,
+		p_displayLayout->height,
+		p_displayLayout->depth,
+		p_displayLayout->length);
+
+	if (p_displayLayout->type & DMD) {
+		DumpDmd(index, (UINT8*)p_frame, p_displayLayout);
 	}
 	else {
-		if (_p_displayBuffer) {
-			free(_p_displayBuffer);
-		}
-
-		exit(1);
+		DumpAlphanumeric(index, (UINT16*)p_frame, p_displayLayout);
 	}
 }
 
@@ -149,10 +187,17 @@ int main(int, char**) {
 
 	PinmameConfig config = {
 		48000,
-		VPM_PATH,
+		"",
 		&OnStateChange,
+		&OnDisplayUpdate,
 		&OnSolenoid
 	};
+
+	#if defined(_WIN32) || defined(_WIN64)
+		snprintf((char*)config.vpmPath, MAX_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
+	#else
+		snprintf((char*)config.vpmPath, MAX_PATH, "%s/.pinmame/", getenv("HOME"));
+	#endif
 
 	PinmameSetConfig(&config);
 
@@ -161,16 +206,10 @@ int main(int, char**) {
 	//PinmameRun("hh7");
 	//PinmameRun("rescu911");
 
-	if (PinmameRun("mm_109c") != OK) {
-		exit(1);
-	}
-
-	while (1) {
-		if (_p_displayBuffer) {
-			PinmameGetDisplays(_p_displayBuffer, &Display);
+	if (PinmameRun("tf_180h") == OK) {
+		while (1) {
+			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
-
-		std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
 
 	return 0;

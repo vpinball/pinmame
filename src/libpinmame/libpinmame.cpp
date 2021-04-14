@@ -33,13 +33,16 @@ char g_szGameName[256] = { 0 }; // String containing requested game name (may be
 
 static PinmameConfig _config = {
 	48000,
-	"\0",
+	"",
+	0,
 	0,
 	0
 };
 
 static int _isRunning = 0;
 static int _timeToQuit = 0;
+static UINT8 _frame[DMD_MAXY * DMD_MAXX];
+
 static std::thread* _p_gameThread = nullptr;
 
 /******************************************************
@@ -66,24 +69,58 @@ extern "C" int libpinmame_time_to_quit(void) {
 }
 
 /******************************************************
- * OnStateChange
+ * libpinmame_update_displays
  ******************************************************/
 
-extern "C" void OnStateChange(int state) {
-	_isRunning = state;
-
-	if (_config.cb_OnStateChange) {
-		(*(_config.cb_OnStateChange))(state);
+extern "C" void libpinmame_update_displays(const struct core_dispLayout* p_layout, int* p_index, int* p_lastOffset) {
+	if (!_config.cb_OnDisplayUpdate) {
+		return;	
 	}
-}
 
-/******************************************************
- * OnSolenoid
- ******************************************************/
+	for (; p_layout->length; p_layout += 1) {
+		if (p_layout->type == CORE_IMPORT) {
+			libpinmame_update_displays(p_layout->lptr, p_index, p_lastOffset);
+			continue;
+		}
+		else {
+			PinmameDisplayLayout displayLayout;
+			memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+			displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
+			displayLayout.top = p_layout->top;
+			displayLayout.left = p_layout->left;
 
-extern "C" void OnSolenoid(int solenoid, int isActive) {
-	if (_config.cb_OnSolenoid) {
-		(*(_config.cb_OnSolenoid))(solenoid, isActive);
+			if (p_layout->type & CORE_DMD) {
+				if(g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) {
+					displayLayout.height = g_raw_dmdy;
+					displayLayout.width = g_raw_dmdx;
+
+					const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
+					  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
+
+					displayLayout.depth = shade_16_enabled ? 4 : 2;
+
+					memcpy(_frame, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
+
+					(*(_config.cb_OnDisplayUpdate))(*p_index, _frame, &displayLayout);
+
+					g_needs_DMD_update = 0; 
+				}
+			}
+			else {
+				displayLayout.length = p_layout->length;
+
+				UINT16* p_drawSeg = coreGlobals.drawSeg;
+				p_drawSeg += *p_lastOffset;
+
+				memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
+
+				*(p_lastOffset) += p_layout->length;
+
+				(*(_config.cb_OnDisplayUpdate))(*p_index, _frame, &displayLayout);
+			}
+
+			(*p_index)++;
+		}
 	}
 }
 
@@ -123,80 +160,24 @@ int GetGameNumFromString(const char* const name) {
 }
 
 /******************************************************
- * GetDisplayLayouts
+ * OnStateChange
  ******************************************************/
 
-void GetDisplayLayouts(PinmameDisplayLayoutCallback callback, const struct core_dispLayout* p_layout, UINT16* p_index) {
-	for (; p_layout->length; p_layout += 1) {
-		if (p_layout->type == CORE_IMPORT) {
-			GetDisplayLayouts(callback, p_layout->lptr, p_index);
-			continue;
-		}
-		else {
-			PinmameDisplayLayout displayLayout;
-			memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+extern "C" void OnStateChange(int state) {
+	_isRunning = state;
 
-			displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
-			displayLayout.top = p_layout->top;
-			displayLayout.left = p_layout->left;
-
-			if (p_layout->type != CORE_DMD) {
-				displayLayout.height = p_layout->start;
-				displayLayout.width = p_layout->length;
-			}
-			else {
-				displayLayout.length = p_layout->length;
-			}
-
-			(*callback)((*p_index)++, &displayLayout);
-		}
+	if (_config.cb_OnStateChange) {
+		(*(_config.cb_OnStateChange))(state);
 	}
 }
 
 /******************************************************
- * GetDisplays
+ * OnSolenoid
  ******************************************************/
 
-void GetDisplays(void* p_displayBuffer, PinmameDisplayCallback callback, const struct core_dispLayout* p_layout, UINT16* p_index, UINT16* p_lastOffset) {
-	for (; p_layout->length; p_layout += 1) {
-		if (p_layout->type == CORE_IMPORT) {
-			GetDisplays(p_displayBuffer, callback, p_layout->lptr, p_index, p_lastOffset);
-			continue;
-		}
-		else {
-			PinmameDisplayLayout displayLayout;
-			memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
-			displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
-			displayLayout.top = p_layout->top;
-			displayLayout.left = p_layout->left;
-
-			if (p_layout->type == CORE_DMD) {
-				if(g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) {
-					displayLayout.height = g_raw_dmdy;
-					displayLayout.width = g_raw_dmdx;
-
-					memcpy(p_displayBuffer, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
-
-					(*callback)(*p_index, &displayLayout);
-
-					g_needs_DMD_update = 0; 
-				}
-			}
-			else {
-				displayLayout.length = p_layout->length;
-
-				UINT16* p_drawSeg = coreGlobals.drawSeg;
-				p_drawSeg += *p_lastOffset;
-
-				memcpy(p_displayBuffer, p_drawSeg, p_layout->length * sizeof(UINT16));
-
-				*(p_lastOffset) += p_layout->length;
-
-				(*callback)(*p_index, &displayLayout);
-			}
-
-			(*p_index)++;
-		}
+extern "C" void OnSolenoid(int solenoid, int isActive) {
+	if (_config.cb_OnSolenoid) {
+		(*(_config.cb_OnSolenoid))(solenoid, isActive);
 	}
 }
 
@@ -244,37 +225,8 @@ LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback) {
 
 LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config) {
 	memcpy(&_config, p_config, sizeof(PinmameConfig));
-}
 
-/******************************************************
- * PinmameGetDisplayLayouts
- ******************************************************/
-
-LIBPINMAME_API PINMAME_STATUS PinmameGetDisplayLayouts(PinmameDisplayLayoutCallback callback) {
-	if (!_isRunning) {
-		return EMULATOR_NOT_RUNNING;
-	}
-
-	UINT16 index = 0;
-	GetDisplayLayouts(callback, core_gameData->lcdLayout, &index);
-
-	return OK;
-}
-
-/******************************************************
- * PinMameGetDisplays
- ******************************************************/
-
-LIBPINMAME_API PINMAME_STATUS PinmameGetDisplays(void* p_buffer, PinmameDisplayCallback callback) {
-	if (!_isRunning) {
-		return EMULATOR_NOT_RUNNING;
-	}
-
-	UINT16 index = 0;
-	UINT16 lastOffset = 0;
-	GetDisplays(p_buffer, callback, core_gameData->lcdLayout, &index, &lastOffset);
-
-	return OK;
+	fprintf(stdout, "PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _config.sampleRate, _config.vpmPath);
 }
 
 /******************************************************
@@ -378,6 +330,15 @@ LIBPINMAME_API void PinmameStop() {
 }
 
 /******************************************************
+ * PinmameGetHardwareGen
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
+	UINT64 hardwareGen = (_isRunning) ? core_gameData->gen : 0;
+	return (PINMAME_HARDWARE_GEN)hardwareGen;
+}
+
+/******************************************************
  * PinmameGetSwitch
  ******************************************************/
 
@@ -436,37 +397,6 @@ LIBPINMAME_API int PinmameGetChangedLamps(int* p_changedStates) {
 		*(p_out++) = chgLamps[i].currStat;
 	}
 
-	return count;
-}
-
-/******************************************************
- * PinmameGetMaxSolenoids
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetMaxSolenoids() {
-	return CORE_MAXSOL;
-}
-
-/******************************************************
- * PinmameGetChangedSolenoids
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetChangedSolenoids(int* p_changedStates) {
-	if (!_isRunning) {
-		return -1;
-	}
-
-	vp_tChgSols chgSols;
-	const int count = vp_getChangedSolenoids(chgSols);
-	if (count == 0) {
-		return 0;
-	}
-
-	int* p_out = p_changedStates;
-	for (int i = 0; i < count; i++) {
-		*(p_out++) = chgSols[i].solNo;
-		*(p_out++) = chgSols[i].currStat;
-	}
 	return count;
 }
 
