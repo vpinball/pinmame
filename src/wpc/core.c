@@ -73,6 +73,10 @@ void vp_setDIP(int bank, int value) { }
   #define vp_setDIP(x,y)
 #endif /* VPINMAME LIBPINMAME */
 
+#ifdef LIBPINMAME
+  extern void libpinmame_update_displays(const struct core_dispLayout* p_layout, int* p_index, int* p_lastOffset);
+#endif
+
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
 static VIDEO_UPDATE(core_status);
@@ -1179,6 +1183,13 @@ VIDEO_UPDATE(core_gen) {
 		}
 	}
 #endif
+
+#ifdef LIBPINMAME
+	int index = 0;
+	int lastOffset = 0;
+	libpinmame_update_displays(core_gameData->lcdLayout, &index, &lastOffset);
+#endif
+
   video_update_core_status(bitmap,cliprect);
 }
 
