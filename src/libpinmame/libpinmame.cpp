@@ -42,6 +42,7 @@ static PinmameConfig _config = {
 static int _isRunning = 0;
 static int _timeToQuit = 0;
 static UINT8 _frame[DMD_MAXY * DMD_MAXX];
+static UINT16 _lastSeg[MAX_DISPLAYS][CORE_SEGCOUNT];
 
 static std::thread* _p_gameThread = nullptr;
 
@@ -73,7 +74,7 @@ extern "C" int libpinmame_time_to_quit(void) {
  ******************************************************/
 
 extern "C" void libpinmame_update_displays(const struct core_dispLayout* p_layout, int* p_index, int* p_lastOffset) {
-	if (!_config.cb_OnDisplayUpdate) {
+	if (!_config.cb_OnDisplayUpdated) {
 		return;	
 	}
 
@@ -89,8 +90,10 @@ extern "C" void libpinmame_update_displays(const struct core_dispLayout* p_layou
 			displayLayout.top = p_layout->top;
 			displayLayout.left = p_layout->left;
 
-			if (p_layout->type & CORE_DMD) {
-				if(g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) {
+			if (p_layout->type == CORE_DMD
+				|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
+				|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP)) {
+				if (g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) {
 					displayLayout.height = g_raw_dmdy;
 					displayLayout.width = g_raw_dmdx;
 
@@ -101,7 +104,7 @@ extern "C" void libpinmame_update_displays(const struct core_dispLayout* p_layou
 
 					memcpy(_frame, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
 
-					(*(_config.cb_OnDisplayUpdate))(*p_index, _frame, &displayLayout);
+					(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
 
 					g_needs_DMD_update = 0; 
 				}
@@ -112,11 +115,17 @@ extern "C" void libpinmame_update_displays(const struct core_dispLayout* p_layou
 				UINT16* p_drawSeg = coreGlobals.drawSeg;
 				p_drawSeg += *p_lastOffset;
 
-				memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
+				for (int i = 0; i < p_layout->length; i++) {
+					if (_lastSeg[*p_index][i] != p_drawSeg[i]) {
+						memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
+						(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
 
+						break;
+					}
+				}
+
+				memcpy(_lastSeg[*p_index], p_drawSeg, p_layout->length * sizeof(UINT16));
 				*(p_lastOffset) += p_layout->length;
-
-				(*(_config.cb_OnDisplayUpdate))(*p_index, _frame, &displayLayout);
 			}
 
 			(*p_index)++;
@@ -166,8 +175,8 @@ int GetGameNumFromString(const char* const name) {
 extern "C" void OnStateChange(int state) {
 	_isRunning = state;
 
-	if (_config.cb_OnStateChange) {
-		(*(_config.cb_OnStateChange))(state);
+	if (_config.cb_OnStateUpdated) {
+		(*(_config.cb_OnStateUpdated))(state);
 	}
 }
 
@@ -176,8 +185,8 @@ extern "C" void OnStateChange(int state) {
  ******************************************************/
 
 extern "C" void OnSolenoid(int solenoid, int isActive) {
-	if (_config.cb_OnSolenoid) {
-		(*(_config.cb_OnSolenoid))(solenoid, isActive);
+	if (_config.cb_OnSolenoidUpdated) {
+		(*(_config.cb_OnSolenoidUpdated))(solenoid, isActive);
 	}
 }
 

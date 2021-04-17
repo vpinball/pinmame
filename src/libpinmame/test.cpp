@@ -151,14 +151,14 @@ void CALLBACK Game(PinmameGame* game) {
 		game->name, game->description, game->manufacturer, game->year);
 }
 
-void CALLBACK OnStateChange(int state) {
+void CALLBACK OnStateUpdated(int state) {
 	if (!state) {
 		exit(1);
 	}
 }
 
-void CALLBACK OnDisplayUpdate(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout) {
-	printf("OnDisplayUpdate(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
+void CALLBACK OnDisplayUpdated(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout) {
+	printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
 		p_displayLayout->type,
 		p_displayLayout->top,
@@ -168,7 +168,9 @@ void CALLBACK OnDisplayUpdate(int index, void* p_frame, PinmameDisplayLayout* p_
 		p_displayLayout->depth,
 		p_displayLayout->length);
 
-	if (p_displayLayout->type & DMD) {
+	if (p_displayLayout->type == DMD
+		|| p_displayLayout->type == (DMD | DMDNOAA)
+		|| p_displayLayout->type == (DMD | DMDNOAA | NODISP)) {
 		DumpDmd(index, (UINT8*)p_frame, p_displayLayout);
 	}
 	else {
@@ -176,8 +178,8 @@ void CALLBACK OnDisplayUpdate(int index, void* p_frame, PinmameDisplayLayout* p_
 	}
 }
 
-void CALLBACK OnSolenoid(int solenoid, int isActive) {
-	printf("OnSolenoid: solenoid=%d, isActive=%d\n", solenoid, isActive);
+void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
+	printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
 }
 
 int main(int, char**) {
@@ -188,9 +190,9 @@ int main(int, char**) {
 	PinmameConfig config = {
 		48000,
 		"",
-		&OnStateChange,
-		&OnDisplayUpdate,
-		&OnSolenoid
+		&OnStateUpdated,
+		&OnDisplayUpdated,
+		&OnSolenoidUpdated
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)
@@ -205,8 +207,10 @@ int main(int, char**) {
 	//PinmameRun("fh_906h");
 	//PinmameRun("hh7");
 	//PinmameRun("rescu911");
+	//PinmameRun("tf_180h");
+	//PinmameRun("flashgdn");
 
-	if (PinmameRun("tf_180h") == OK) {
+	if (PinmameRun("fh_906h") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
