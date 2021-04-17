@@ -13,6 +13,7 @@
 #endif
 
 #define MAX_PATH 512
+#define MAX_DISPLAYS 15
 
 typedef enum {
 	OK = 0,
@@ -22,24 +23,37 @@ typedef enum {
 } PINMAME_STATUS;
 
 typedef enum {
-	SEG16 = 0,   // 16 segments
-	SEG16R = 1,  // 16 segments with comma and period reversed
-	SEG10 = 2,   // 9 segments and comma
-	SEG9 = 3,    // 9 segments
-	SEG8 = 4,    // 7 segments and comma
-	SEG8D = 5,   // 7 segments and period
-	SEG7 = 6,    // 7 segments
-	SEG87 = 7,   // 7 segments, comma every three
-	SEG87F = 8,  // 7 segments, forced comma every three
-	SEG98 = 9,   // 9 segments, comma every three
-	SEG98F = 10, // 9 segments, forced comma every three
-	SEG7S = 11,  // 7 segments, small
-	SEG7SC = 12, // 7 segments, small, with comma
-	SEG16S = 13, // 16 segments with split top and bottom line
-	DMD = 14,    // DMD Display
-	VIDEO = 15,  // VIDEO Display
-	SEG16N = 16, // 16 segments without commas
-	SEG16D = 17  // 16 segments with periods only
+	SEG16 = 0,                  // 16 segments
+	SEG16R = 1,                 // 16 segments with comma and period reversed
+	SEG10 = 2,                  // 9 segments and comma
+	SEG9 = 3,                   // 9 segments
+	SEG8 = 4,                   // 7 segments and comma
+	SEG8D = 5,                  // 7 segments and period
+	SEG7 = 6,                   // 7 segments
+	SEG87 = 7,                  // 7 segments, comma every three
+	SEG87F = 8,                 // 7 segments, forced comma every three
+	SEG98 = 9,                  // 9 segments, comma every three
+	SEG98F = 10,                // 9 segments, forced comma every three
+	SEG7S = 11,                 // 7 segments, small
+	SEG7SC = 12,                // 7 segments, small, with comma
+	SEG16S = 13,                // 16 segments with split top and bottom line
+	DMD = 14,                   // DMD Display
+	VIDEO = 15,                 // VIDEO Display
+	SEG16N = 16,                // 16 segments without commas
+	SEG16D = 17,                // 16 segments with periods only
+	SEGALL = 0x1f,              // maximum segment definition number
+	IMPORT = 0x20,              // Link to another display layout
+	SEGMASK = 0x3f,             // Note that CORE_IMPORT must be part of the segmask as well!
+	SEGHIBIT = 0x40,
+	SEGREV = 0x80,
+	DMDNOAA = 0x100,
+	NODISP = 0x200,
+	SEG8H = SEG8 | SEGHIBIT,
+	SEG7H = SEG7 | SEGHIBIT,
+	SEG87H = SEG87 | SEGHIBIT,
+	SEG87FH = SEG87F| SEGHIBIT,
+	SEG7SH = SEG7S | SEGHIBIT,
+	SEG7SCH = SEG7SC| SEGHIBIT
 } PINMAME_DISPLAY_TYPE;
 
 typedef enum {
@@ -120,16 +134,16 @@ typedef struct {
 } PinmameDisplayLayout;
 
 typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
-typedef void (CALLBACK *PinmameOnStateChangeCallback)(int state);
-typedef void (CALLBACK *PinmameOnDisplayUpdateCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
-typedef void (CALLBACK *PinmameOnSolenoidCallback)(int solenoid, int isActive);
+typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
+typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
+typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
 
 typedef struct {
 	int sampleRate;
 	const char vpmPath[MAX_PATH];
-	PinmameOnStateChangeCallback cb_OnStateChange;
-	PinmameOnDisplayUpdateCallback cb_OnDisplayUpdate;
-	PinmameOnSolenoidCallback cb_OnSolenoid;
+	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
+	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
+	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 } PinmameConfig;
 
 LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback);
