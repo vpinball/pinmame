@@ -152,7 +152,12 @@ void CALLBACK Game(PinmameGame* game) {
 }
 
 void CALLBACK OnStateUpdated(int state) {
-	if (!state) {
+	printf("OnStateUpdated(): state=%d\n", state);
+
+	if (state) {
+		printf("OnStateUpdated(): %d display(s) found\n", PinmameGetDisplayCount());
+	}
+	else {
 		exit(1);
 	}
 }
@@ -210,7 +215,7 @@ int main(int, char**) {
 	//PinmameRun("tf_180h");
 	//PinmameRun("flashgdn");
 
-	if (PinmameRun("fh_906h") == OK) {
+	if (PinmameRun("mm_109c") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}

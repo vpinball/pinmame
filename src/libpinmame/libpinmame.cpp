@@ -169,6 +169,21 @@ int GetGameNumFromString(const char* const name) {
 }
 
 /******************************************************
+ * GetDisplayCount
+ ******************************************************/
+
+int GetDisplayCount(const struct core_dispLayout* p_layout, int* p_index) {
+	for (; p_layout->length; p_layout += 1) {
+		if (p_layout->type == CORE_IMPORT) {
+			GetDisplayCount(p_layout->lptr, p_index);
+			continue;
+		}
+		(*p_index)++;
+	}
+	return *p_index;
+}
+
+/******************************************************
  * OnStateChange
  ******************************************************/
 
@@ -345,6 +360,15 @@ LIBPINMAME_API void PinmameStop() {
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
 	UINT64 hardwareGen = (_isRunning) ? core_gameData->gen : 0;
 	return (PINMAME_HARDWARE_GEN)hardwareGen;
+}
+
+/******************************************************
+ * PinmameGetDisplayCount
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetDisplayCount() {
+	int index = 0;
+	return (_isRunning) ? GetDisplayCount(core_gameData->lcdLayout, &index) : 0;
 }
 
 /******************************************************

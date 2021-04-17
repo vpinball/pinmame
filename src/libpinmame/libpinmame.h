@@ -154,6 +154,7 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(int pause);
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
+LIBPINMAME_API int PinmameGetDisplayCount();
 LIBPINMAME_API int PinmameGetSwitch(int slot);
 LIBPINMAME_API void PinmameSetSwitch(int slot, int state);
 LIBPINMAME_API void PinmameSetSwitches(int* p_states, int numSwitches);
