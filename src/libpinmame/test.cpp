@@ -154,12 +154,22 @@ void CALLBACK Game(PinmameGame* game) {
 void CALLBACK OnStateUpdated(int state) {
 	printf("OnStateUpdated(): state=%d\n", state);
 
-	if (state) {
-		printf("OnStateUpdated(): %d display(s) found\n", PinmameGetDisplayCount());
-	}
-	else {
+	if (!state) {
 		exit(1);
 	}
+}
+
+void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout) {
+	printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
+		index,
+		displayCount,
+		p_displayLayout->type,
+		p_displayLayout->top,
+		p_displayLayout->left,
+		p_displayLayout->width,
+		p_displayLayout->height,
+		p_displayLayout->depth,
+		p_displayLayout->length);
 }
 
 void CALLBACK OnDisplayUpdated(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout) {
@@ -196,6 +206,7 @@ int main(int, char**) {
 		48000,
 		"",
 		&OnStateUpdated,
+		&OnDisplayAvailable,
 		&OnDisplayUpdated,
 		&OnSolenoidUpdated
 	};
@@ -215,7 +226,7 @@ int main(int, char**) {
 	//PinmameRun("tf_180h");
 	//PinmameRun("flashgdn");
 
-	if (PinmameRun("mm_109c") == OK) {
+	if (PinmameRun("fh_906h") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
