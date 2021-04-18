@@ -135,6 +135,7 @@ typedef struct {
 
 typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
 typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
+typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
 typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
 
@@ -142,6 +143,7 @@ typedef struct {
 	int sampleRate;
 	const char vpmPath[MAX_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
+	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;
 	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 } PinmameConfig;
@@ -154,7 +156,6 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(int pause);
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
-LIBPINMAME_API int PinmameGetDisplayCount();
 LIBPINMAME_API int PinmameGetSwitch(int slot);
 LIBPINMAME_API void PinmameSetSwitch(int slot, int state);
 LIBPINMAME_API void PinmameSetSwitches(int* p_states, int numSwitches);

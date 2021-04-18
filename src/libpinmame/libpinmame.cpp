@@ -36,102 +36,17 @@ static PinmameConfig _config = {
 	"",
 	0,
 	0,
+	0,
 	0
 };
 
 static int _isRunning = 0;
 static int _timeToQuit = 0;
+static int _firstFrame = 0;
 static UINT8 _frame[DMD_MAXY * DMD_MAXX];
 static UINT16 _lastSeg[MAX_DISPLAYS][CORE_SEGCOUNT];
 
 static std::thread* _p_gameThread = nullptr;
-
-/******************************************************
- * osd_init
- ******************************************************/
-
-extern "C" int osd_init(void) {
-	return 0;
-}
-
-/******************************************************
- * osd_exit
- ******************************************************/
-
-extern "C" void osd_exit(void) {
-}
-
-/******************************************************
- * libpinmame_time_to_quit
- ******************************************************/
-
-extern "C" int libpinmame_time_to_quit(void) {
-	return _timeToQuit;
-}
-
-/******************************************************
- * libpinmame_update_displays
- ******************************************************/
-
-extern "C" void libpinmame_update_displays(const struct core_dispLayout* p_layout, int* p_index, int* p_lastOffset) {
-	if (!_config.cb_OnDisplayUpdated) {
-		return;	
-	}
-
-	for (; p_layout->length; p_layout += 1) {
-		if (p_layout->type == CORE_IMPORT) {
-			libpinmame_update_displays(p_layout->lptr, p_index, p_lastOffset);
-			continue;
-		}
-		else {
-			PinmameDisplayLayout displayLayout;
-			memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
-			displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
-			displayLayout.top = p_layout->top;
-			displayLayout.left = p_layout->left;
-
-			if (p_layout->type == CORE_DMD
-				|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
-				|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP)) {
-				if (g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0) {
-					displayLayout.height = g_raw_dmdy;
-					displayLayout.width = g_raw_dmdx;
-
-					const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
-					  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
-
-					displayLayout.depth = shade_16_enabled ? 4 : 2;
-
-					memcpy(_frame, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
-
-					(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
-
-					g_needs_DMD_update = 0; 
-				}
-			}
-			else {
-				displayLayout.length = p_layout->length;
-
-				UINT16* p_drawSeg = coreGlobals.drawSeg;
-				p_drawSeg += *p_lastOffset;
-
-				for (int i = 0; i < p_layout->length; i++) {
-					if (_lastSeg[*p_index][i] != p_drawSeg[i]) {
-						memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
-						(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
-
-						break;
-					}
-				}
-
-				memcpy(_lastSeg[*p_index], p_drawSeg, p_layout->length * sizeof(UINT16));
-				*(p_lastOffset) += p_layout->length;
-			}
-
-			(*p_index)++;
-		}
-	}
-}
 
 /******************************************************
  * ComposePath
@@ -178,9 +93,155 @@ int GetDisplayCount(const struct core_dispLayout* p_layout, int* p_index) {
 			GetDisplayCount(p_layout->lptr, p_index);
 			continue;
 		}
+		
 		(*p_index)++;
 	}
 	return *p_index;
+}
+
+/******************************************************
+ * GetDisplays
+ ******************************************************/
+
+void GetDisplays(const struct core_dispLayout* p_layout, int displayCount, int* p_index) {
+	for (; p_layout->length; p_layout += 1) {
+		if (p_layout->type == CORE_IMPORT) {
+			GetDisplays(p_layout->lptr, displayCount, p_index);
+			continue;
+		}
+		PinmameDisplayLayout displayLayout;
+		memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+		displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
+		displayLayout.top = p_layout->top;
+		displayLayout.left = p_layout->left;
+
+		if (p_layout->type == CORE_DMD
+			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
+			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP)) {
+				displayLayout.height = g_raw_dmdy;
+				displayLayout.width = g_raw_dmdx;
+
+				const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) 
+					|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) 
+					|| (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
+
+				displayLayout.depth = shade_16_enabled ? 4 : 2;
+		}
+		else {
+			displayLayout.length = p_layout->length;
+		}
+
+		(*(_config.cb_OnDisplayAvailable))(*p_index, displayCount, &displayLayout);
+
+		(*p_index)++;
+	}
+}
+
+/******************************************************
+ * UpdateDisplays
+ ******************************************************/
+
+void UpdateDisplays(const struct core_dispLayout* p_layout, int* p_index, int* p_lastOffset) {
+	for (; p_layout->length; p_layout += 1) {
+		if (p_layout->type == CORE_IMPORT) {
+			UpdateDisplays(p_layout->lptr, p_index, p_lastOffset);
+			continue;
+		}
+
+		PinmameDisplayLayout displayLayout;
+		memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+		displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
+		displayLayout.top = p_layout->top;
+		displayLayout.left = p_layout->left;
+
+		if (p_layout->type == CORE_DMD
+			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
+			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP)) {
+			if (g_needs_DMD_update) {
+				displayLayout.height = g_raw_dmdy;
+				displayLayout.width = g_raw_dmdx;
+
+				const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) 
+					|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) 
+					|| (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
+
+				displayLayout.depth = shade_16_enabled ? 4 : 2;
+
+				memcpy(_frame, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
+
+				(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
+
+				g_needs_DMD_update = 0; 
+			}
+		}
+		else {
+			displayLayout.length = p_layout->length;
+
+			UINT16* p_drawSeg = coreGlobals.drawSeg;
+			p_drawSeg += *p_lastOffset;
+
+			for (int i = 0; i < p_layout->length; i++) {
+				if (_lastSeg[*p_index][i] != p_drawSeg[i]) {
+					memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
+					(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
+
+					break;
+				}
+			}
+
+			memcpy(_lastSeg[*p_index], p_drawSeg, p_layout->length * sizeof(UINT16));
+			*(p_lastOffset) += p_layout->length;
+		}
+
+		(*p_index)++;
+	}
+}
+
+/******************************************************
+ * osd_init
+ ******************************************************/
+
+extern "C" int osd_init(void) {
+	return 0;
+}
+
+/******************************************************
+ * osd_exit
+ ******************************************************/
+
+extern "C" void osd_exit(void) {
+}
+
+/******************************************************
+ * libpinmame_time_to_quit
+ ******************************************************/
+
+extern "C" int libpinmame_time_to_quit(void) {
+	return _timeToQuit;
+}
+
+/******************************************************
+ * libpinmame_update_displays
+ ******************************************************/
+
+extern "C" void libpinmame_update_displays() {
+	if (!_firstFrame) {
+		if (_config.cb_OnDisplayUpdated) {
+			int index = 0;
+			int lastOffset = 0;
+			UpdateDisplays(core_gameData->lcdLayout, &index, &lastOffset);
+		}
+	}
+	else {
+		if (_config.cb_OnDisplayAvailable) {
+			int index = 0;
+			int displayCount = GetDisplayCount(core_gameData->lcdLayout, &index);
+
+			index = 0;
+			GetDisplays(core_gameData->lcdLayout, displayCount, &index);
+		}
+		_firstFrame = 0;
+	}
 }
 
 /******************************************************
@@ -210,6 +271,8 @@ extern "C" void OnSolenoid(int solenoid, int isActive) {
  ******************************************************/
 
 void StartGame(int gameNum) {
+	_firstFrame = 1;
+	
 	run_game(gameNum);
 
 	OnStateChange(0);
@@ -360,15 +423,6 @@ LIBPINMAME_API void PinmameStop() {
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
 	UINT64 hardwareGen = (_isRunning) ? core_gameData->gen : 0;
 	return (PINMAME_HARDWARE_GEN)hardwareGen;
-}
-
-/******************************************************
- * PinmameGetDisplayCount
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetDisplayCount() {
-	int index = 0;
-	return (_isRunning) ? GetDisplayCount(core_gameData->lcdLayout, &index) : 0;
 }
 
 /******************************************************
