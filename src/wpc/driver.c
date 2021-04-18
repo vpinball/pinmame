@@ -879,6 +879,7 @@ DRIVERNV(snspares)      //S3-N111:  10/95 Strikes N' Spares (rev.6)
 DRIVERNV(snspare1)      //                Strikes N' Spares (rev.1)
 DRIVERNV(snspare2)      //                Strikes N' Spares (rev.2)
 DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld (rev.3)
+DRIVERNV(waterwl5)      //                Waterworld (rev.5)
 DRIVERNV(waterwl2)      //                Waterworld (rev.2)
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(andrett4)      //                Mario Andretti (rev.T4)

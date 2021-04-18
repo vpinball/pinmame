@@ -350,6 +350,8 @@ GTS3SOUND32256(			"yrom1.bin",CRC(c22f5cc5) SHA1(a5bfbc1824bc483eecc961851bd411c
 GTS3_ROMEND
 CORE_CLONEDEFNV(cueball3, cueball,"Cue Ball Wizard (rev. 3)",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
+//rev 4 exists? see http://tiltforums.com/t/list-of-games-with-their-current-code-number-wiki/3615
+
 /************************************************/
 /* ALL GAMES BELOW HAD IMPROVED DIAGNOSTIC TEST */
 /************************************************/
@@ -467,7 +469,7 @@ GTS3SOUND32256(         "yrom1.bin",CRC(8b2795b0) SHA1(b838d4e410c815421099c65b0
                         "arom1.bin",CRC(ece4eebf) SHA1(78f882668967194bd547ace5d22083faeb29ef5e),
                         "arom2.bin",CRC(4e466500) SHA1(78c4b41a174d82a7e0e7775713c76e679c8a7e89))
 GTS3_ROMEND
-CORE_CLONEDEFNV(wcsoccd2,wcsoccer,"World Challenge Soccer (display rev. 2)",1994,"Gottlieb",mGTS3DMDS_4C_a, 0)
+CORE_CLONEDEFNV(wcsoccd2,wcsoccer,"World Challenge Soccer (rev. 1, display rev. 2)",1994,"Gottlieb",mGTS3DMDS_4C_a, 0)
 
 /*-------------------------------------------------------------------
 / Rescue 911
@@ -481,6 +483,8 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(14f86b56) SHA1(2364c284412eba719f88d50dcf47d
 						"arom2.bin",CRC(59374104) SHA1(8ad7f5f0109771dd5cebe13e80f8e1a9420f4447))
 GTS3_ROMEND
 CORE_GAMEDEFNV(rescu911,"Rescue 911 (rev. 1)",1994,"Gottlieb",mGTS3DMDS_4C_a, 0)
+
+//rev 2 exists?
 
 /*-------------------------------------------------------------------
 / Freddy: A Nightmare on Elm Street
@@ -612,22 +616,34 @@ CORE_GAMEDEFNV(bighurt,"Big Hurt (rev. 3)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 INITGAME2(waterwld, DMD, FLIP4142, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(waterwld,	"gprom.bin", CRC(db1fd197) SHA1(caa22f7e3f52be85da496375115933722a414ee0))
 GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(79164099) SHA1(fa048fb7aa91cadd6c0758c570a4c74337bd7cd5))
-GTS3SOUND32512(			"yrom1.bin",CRC(6dddce0a) SHA1(6ad9b023ba8632dda0a4e04a4f66aac52ddd3b09),
-						"drom1.bin",CRC(2a8c5d04) SHA1(1a6a698fc05a199923721e91e68aaaa8d3c6a3c2),
-						"arom1.bin",CRC(3ee37668) SHA1(9ced05b4f060568bf686974bc2472ff7c05a87c6),
-						"arom2.bin",CRC(a631bf12) SHA1(4784da1fabd2858b2c47af71784eb475cbbb4ab5))
+GTS3SOUND32512(			"yrom1.bin", CRC(6dddce0a) SHA1(6ad9b023ba8632dda0a4e04a4f66aac52ddd3b09),
+						"drom1.bin", CRC(2a8c5d04) SHA1(1a6a698fc05a199923721e91e68aaaa8d3c6a3c2),
+						"arom1.bin", CRC(3ee37668) SHA1(9ced05b4f060568bf686974bc2472ff7c05a87c6),
+						"arom2.bin", CRC(a631bf12) SHA1(4784da1fabd2858b2c47af71784eb475cbbb4ab5))
 GTS3_ROMEND
 CORE_GAMEDEFNV(waterwld,"Waterworld (rev. 3)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
 INITGAME2(waterwl2, DMD, FLIP4142, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(waterwl2,	"gprom2.bin",CRC(c3d64cd7) SHA1(63bfd26fdc7082c2bb60c978508820442ac90f14))
 GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(79164099) SHA1(fa048fb7aa91cadd6c0758c570a4c74337bd7cd5))
-GTS3SOUND32512(			"yrom1.bin",CRC(6dddce0a) SHA1(6ad9b023ba8632dda0a4e04a4f66aac52ddd3b09),
-						"drom1.bin",CRC(2a8c5d04) SHA1(1a6a698fc05a199923721e91e68aaaa8d3c6a3c2),
-						"arom1.bin",CRC(3ee37668) SHA1(9ced05b4f060568bf686974bc2472ff7c05a87c6),
-						"arom2.bin",CRC(a631bf12) SHA1(4784da1fabd2858b2c47af71784eb475cbbb4ab5))
+GTS3SOUND32512(			"yrom1.bin", CRC(6dddce0a) SHA1(6ad9b023ba8632dda0a4e04a4f66aac52ddd3b09),
+						"drom1.bin", CRC(2a8c5d04) SHA1(1a6a698fc05a199923721e91e68aaaa8d3c6a3c2),
+						"arom1.bin", CRC(3ee37668) SHA1(9ced05b4f060568bf686974bc2472ff7c05a87c6),
+						"arom2.bin", CRC(a631bf12) SHA1(4784da1fabd2858b2c47af71784eb475cbbb4ab5))
 GTS3_ROMEND
 CORE_CLONEDEFNV(waterwl2,waterwld,"Waterworld (rev. 2)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
+
+INITGAME2(waterwl5, DMD, FLIP4142, 4, SNDBRD_GTS3, 5)
+GTS3ROMSTART(waterwl5,	"wwldcpu5.512",CRC(2eaa9ed4) SHA1(b1f653079b2042eb15c2cb2feda13c14f4d4df2e))
+GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(79164099) SHA1(fa048fb7aa91cadd6c0758c570a4c74337bd7cd5))
+GTS3SOUND32512(			"yrom1.bin", CRC(6dddce0a) SHA1(6ad9b023ba8632dda0a4e04a4f66aac52ddd3b09),
+						"drom1.bin", CRC(2a8c5d04) SHA1(1a6a698fc05a199923721e91e68aaaa8d3c6a3c2),
+						"arom1.bin", CRC(3ee37668) SHA1(9ced05b4f060568bf686974bc2472ff7c05a87c6),
+						"arom2.bin", CRC(a631bf12) SHA1(4784da1fabd2858b2c47af71784eb475cbbb4ab5))
+GTS3_ROMEND
+CORE_CLONEDEFNV(waterwl5,waterwld,"Waterworld (rev. 5)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
+
+//rev 6 exists?
 
 /*-------------------------------------------------------------------
 / Mario Andretti

@@ -6,13 +6,13 @@ What's new in PinMAME:
 Version 3.4 (X X, 2021) - ""
 ------------------------------------------------------------------------------
 
-Fixed multiple issues in the new libPinMAME (previously known as PinMAMEdll) library and extend API (see libpinmame.h)
+Fixed multiple issues in the new libPinMAME (previously known as PinMAMEdll) library and completely revamp API (see libpinmame.h)
 Fixed 64bit version of PinMAME32
 Reenabled DirectDraw support for 64bit windows compiles of PinMAME, PinMAME32 and VPinMAME
 
 Added support to compile for Windows ARM64 (not all features/variants though, as some external libs do not feature ARM64 support yet)
 
-Updated LISY support to 5.27-24 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.27-39 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 *** CORE/CPU ***
 One more audiophile tweak: added proper dithering after resampling to the final output sample rate
@@ -20,7 +20,7 @@ Fixed regression in solenoid emulation for Juegos Populares
 Corrected NVRAM size for Mr. Game
 Fixed flasher sense for Pistol Poker (and maybe other Alvin G. games?)
 
-*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell
 New:
 Alvin G.: U.S.A. Football (Redemption, P08)
 
@@ -40,6 +40,7 @@ Monte Carlo (German Millions option, Free Play)
 Monte Carlo (rev. 2 Millions option, Free Play)
 No Fear 0.8X with SL-1 Sound
 Theatre of Magic 1.2A
+Waterworld (rev. 5) (which makes this the newest we have :))
 
 
 
