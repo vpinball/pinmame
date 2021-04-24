@@ -147,8 +147,8 @@ void DumpAlphanumeric(int index, UINT16* p_frame, PinmameDisplayLayout* p_displa
 }
 
 void CALLBACK Game(PinmameGame* game) {
-	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s\n",
-		game->name, game->description, game->manufacturer, game->year);
+	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, found=%d\n",
+		game->name, game->description, game->manufacturer, game->year, game->found);
 }
 
 void CALLBACK OnStateUpdated(int state) {
@@ -200,8 +200,6 @@ void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
 int main(int, char**) {
 	system(CLEAR_SCREEN);
 
-	PinmameGetGames(&Game);
-
 	PinmameConfig config = {
 		48000,
 		"",
@@ -218,6 +216,7 @@ int main(int, char**) {
 	#endif
 
 	PinmameSetConfig(&config);
+	PinmameGetGames(&Game);
 
 	//PinmameRun("mm_109c");
 	//PinmameRun("fh_906h");

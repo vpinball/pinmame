@@ -17,9 +17,10 @@
 
 typedef enum {
 	OK = 0,
-	GAME_NOT_FOUND = 1,
-	GAME_ALREADY_RUNNING = 2,
-	EMULATOR_NOT_RUNNING = 3
+	CONFIG_NOT_SET = 1,
+	GAME_NOT_FOUND = 2,
+	GAME_ALREADY_RUNNING = 3,
+	EMULATOR_NOT_RUNNING = 4
 } PINMAME_STATUS;
 
 typedef enum {
@@ -121,6 +122,7 @@ typedef struct {
 	const char* description;
 	const char* year;
 	const char* manufacturer;
+	int found;
 } PinmameGame;
 
 typedef struct {
@@ -148,7 +150,7 @@ typedef struct {
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 } PinmameConfig;
 
-LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback);
+LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback);
 LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config);
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name);
 LIBPINMAME_API int PinmameIsRunning();
