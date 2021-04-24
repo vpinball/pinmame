@@ -13,18 +13,19 @@ extern "C" {
 #include "sound.h"
 #include "config.h"
 #include "rc.h"
+#include "audit.h"
 
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
 extern UINT32 g_needs_DMD_update;
 extern unsigned char g_raw_dmdbuffer[DMD_MAXY * DMD_MAXX];
 extern int channels;
-struct rc_struct *rc;
 
 int g_fHandleKeyboard = 0;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
+struct rc_struct* rc = nullptr;
 
 #ifdef VPINMAME_ALTSOUND
 char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
@@ -282,7 +283,11 @@ void StartGame(int gameNum) {
  * PinmameGetGames
  ******************************************************/
 
-LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback) {
+LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
+	if (rc == nullptr) {
+		return CONFIG_NOT_SET;
+	}
+
 	int gameNum = 0;
 
 	while (drivers[gameNum]) {
@@ -297,6 +302,7 @@ LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback) {
 		game.description = drivers[gameNum]->description;
 		game.year = drivers[gameNum]->year;
 		game.manufacturer = drivers[gameNum]->manufacturer;
+		game.found = RomsetMissing(gameNum) == 0;
 
 		if (callback) {
 			(*callback)(&game);
@@ -304,6 +310,8 @@ LIBPINMAME_API void PinmameGetGames(PinmameGameCallback callback) {
 
 		gameNum++;
 	}
+
+	return OK;
 }
 
 /******************************************************
@@ -314,6 +322,25 @@ LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config) {
 	memcpy(&_config, p_config, sizeof(PinmameConfig));
 
 	fprintf(stdout, "PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _config.sampleRate, _config.vpmPath);
+
+	if (rc == nullptr) {
+		rc = cli_rc_create();
+
+		rc_set_option(rc, "throttle", "1", 0);
+		rc_set_option(rc, "sleep", "1", 0);
+		rc_set_option(rc, "autoframeskip", "0", 0);
+		rc_set_option(rc, "skip_gameinfo", "1", 0);
+		rc_set_option(rc, "skip_disclaimer", "1", 0);
+	}
+
+	setPath(FILETYPE_ROM, ComposePath(_config.vpmPath, "roms"));
+	setPath(FILETYPE_NVRAM, ComposePath(_config.vpmPath, "nvram"));
+	setPath(FILETYPE_SAMPLE, ComposePath(_config.vpmPath, "samples"));
+	setPath(FILETYPE_CONFIG, ComposePath(_config.vpmPath, "cfg"));
+	setPath(FILETYPE_HIGHSCORE, ComposePath(_config.vpmPath, "hi"));
+	setPath(FILETYPE_INPUTLOG, ComposePath(_config.vpmPath, "inp"));
+	setPath(FILETYPE_MEMCARD, ComposePath(_config.vpmPath, "memcard"));
+	setPath(FILETYPE_STATE, ComposePath(_config.vpmPath, "sta"));
 }
 
 /******************************************************
@@ -321,6 +348,10 @@ LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config) {
  ******************************************************/
 
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
+	if (rc == nullptr) {
+		return CONFIG_NOT_SET;
+	}
+
 	if (_isRunning) {
 		return GAME_ALREADY_RUNNING;
 	}
@@ -334,23 +365,6 @@ LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
 #ifdef VPINMAME_ALTSOUND
 	strcpy_s(g_szGameName, p_name);
 #endif
-
-	rc = cli_rc_create();
-
-	rc_set_option(rc, "throttle", "1", 0);
-	rc_set_option(rc, "sleep", "1", 0);
-	rc_set_option(rc, "autoframeskip", "0", 0);
-	rc_set_option(rc, "skip_gameinfo", "1", 0);
-	rc_set_option(rc, "skip_disclaimer", "1", 0);
-
-	setPath(FILETYPE_ROM, ComposePath(_config.vpmPath, "roms"));
-	setPath(FILETYPE_NVRAM, ComposePath(_config.vpmPath, "nvram"));
-	setPath(FILETYPE_SAMPLE, ComposePath(_config.vpmPath, "samples"));
-	setPath(FILETYPE_CONFIG, ComposePath(_config.vpmPath, "cfg"));
-	setPath(FILETYPE_HIGHSCORE, ComposePath(_config.vpmPath, "hi"));
-	setPath(FILETYPE_INPUTLOG, ComposePath(_config.vpmPath, "inp"));
-	setPath(FILETYPE_MEMCARD, ComposePath(_config.vpmPath, "memcard"));
-	setPath(FILETYPE_STATE, ComposePath(_config.vpmPath, "sta"));
 
 	vp_init();
 
