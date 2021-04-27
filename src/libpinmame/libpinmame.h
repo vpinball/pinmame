@@ -3,6 +3,8 @@
 #ifndef LIBPINMAME_H
 #define LIBPINMAME_H
 
+#include <stdint.h>
+
 #if defined(_WIN32) || defined(_WIN64)
 #define LIBPINMAME_API extern "C" __declspec(dllexport)
 #define CALLBACK __stdcall
@@ -116,12 +118,29 @@ typedef enum {
 	ALLWS = 0x001c000000000,       // All Whitestar
 } PINMAME_HARDWARE_GEN;
 
+typedef enum {
+	ORIENTATION_MASK = 0x0007,
+	ORIENTATION_FLIP_X = 0x0001,          // mirror everything in the X direction
+	ORIENTATION_FLIP_Y = 0x0002,          // mirror everything in the Y direction
+	ORIENTATION_SWAP_XY = 0x0004,         // mirror along the top-left/bottom-right diagonal
+	GAME_NOT_WORKING = 0x0008,
+	GAME_UNEMULATED_PROTECTION = 0x0010,  // game's protection not fully emulated
+	GAME_WRONG_COLORS = 0x0020,           // colors are totally wrong
+	GAME_IMPERFECT_COLORS = 0x0040,       // colors are not 100% accurate, but close
+	GAME_IMPERFECT_GRAPHICS = 0x0080,     // graphics are wrong/incomplete
+	GAME_NO_COCKTAIL = 0x0100,            // screen flip support is missing
+	GAME_NO_SOUND = 0x0200,               // sound is missing
+	GAME_IMPERFECT_SOUND = 0x0400,        // sound is known to be wrong
+	NOT_A_DRIVER = 0x4000,                // set by the fake "root" driver_0 and by "containers"
+} PINMAME_GAME_DRIVER_FLAGS;
+
 typedef struct {
 	const char* name;
 	const char* clone_of;
 	const char* description;
 	const char* year;
 	const char* manufacturer;
+	uint32_t flags;
 	int found;
 } PinmameGame;
 
@@ -150,6 +169,7 @@ typedef struct {
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 } PinmameConfig;
 
+LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* p_name, PinmameGameCallback callback);
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback);
 LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config);
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name);

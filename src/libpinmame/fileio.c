@@ -229,10 +229,6 @@ static void create_path(TCHAR *path, int has_filename)
 #endif
 		return;
 
-#ifdef VERBOSE
-	printf("create_path(): creating path - path=%s, has_filename=%d\n", path, has_filename);
-#endif
-
 	/* create the path */
 #if defined(_WIN32) || defined(_WIN64)
 	CreateDirectory(path, NULL);
@@ -336,7 +332,7 @@ static void expand_pathlist(struct pathdata *list)
 	const char *token;
 
 #if VERBOSE
-	printf("Expanding: %s\n", rawpath);
+	fprintf(stdout, "Expanding: %s\n", rawpath);
 #endif
 
 	// free any existing paths
@@ -369,7 +365,7 @@ static void expand_pathlist(struct pathdata *list)
 		// copy the path in
 		list->path[list->pathcount++] = copy_and_expand_variables(rawpath, (int)(token - rawpath));
 #if VERBOSE
-		printf("  %s\n", list->path[list->pathcount - 1]);
+		fprintf(stdout, "  %s\n", list->path[list->pathcount - 1]);
 #endif
 
 		// if this was the end, break
@@ -586,9 +582,6 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 	/* compose the full path */
 	compose_path(fullpath, pathtype, pathindex, filename);
-#ifdef VERBOSE
-	printf("osd_fopen(): access=%08X, fullpath=%s\n", access, fullpath);
-#endif
 
 #if defined(_WIN32) || defined(_WIN64)
 	/* attempt to open the file */
@@ -607,7 +600,6 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 	if (file->handle == INVALID_HANDLE_VALUE) {
 		if (!(access & O_WRONLY) || errno != ENOENT) {
-			printf("osd_fopen(): unable to open\n");
 			return NULL;
 		}
 #endif
@@ -622,9 +614,6 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 		/* if that doesn't work, we give up */
 		if (file->handle == INVALID_HANDLE_VALUE) {
-#ifdef VERBOSE
-			printf("osd_fopen(): unable to open\n");
-#endif
 			return NULL;
 		}
 	}
