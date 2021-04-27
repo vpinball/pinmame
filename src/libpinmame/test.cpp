@@ -147,8 +147,8 @@ void DumpAlphanumeric(int index, UINT16* p_frame, PinmameDisplayLayout* p_displa
 }
 
 void CALLBACK Game(PinmameGame* game) {
-	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, found=%d\n",
-		game->name, game->description, game->manufacturer, game->year, game->found);
+	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
+		game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
 void CALLBACK OnStateUpdated(int state) {
@@ -216,7 +216,9 @@ int main(int, char**) {
 	#endif
 
 	PinmameSetConfig(&config);
+
 	PinmameGetGames(&Game);
+	PinmameGetGame("fourx4", &Game);
 
 	//PinmameRun("mm_109c");
 	//PinmameRun("fh_906h");
@@ -224,8 +226,9 @@ int main(int, char**) {
 	//PinmameRun("rescu911");
 	//PinmameRun("tf_180h");
 	//PinmameRun("flashgdn");
+	//PinmameRun("fourx4");
 
-	if (PinmameRun("fh_906h") == OK) {
+	if (PinmameRun("mm_109c") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}

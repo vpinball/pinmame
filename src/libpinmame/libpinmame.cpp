@@ -280,6 +280,41 @@ void StartGame(int gameNum) {
 }
 
 /******************************************************
+ * PinmameGetGame
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* p_name, PinmameGameCallback callback) {
+	if (rc == nullptr) {
+		return CONFIG_NOT_SET;
+	}
+
+	int gameNum = GetGameNumFromString(p_name);
+
+	if (gameNum < 0) {
+		return GAME_NOT_FOUND;
+	}
+
+	PinmameGame game;
+	memset(&game, 0, sizeof(PinmameGame));
+
+	game.name = drivers[gameNum]->name;
+	if (drivers[gameNum]->clone_of) {
+		game.clone_of = drivers[gameNum]->clone_of->name;
+	}
+	game.description = drivers[gameNum]->description;
+	game.year = drivers[gameNum]->year;
+	game.manufacturer = drivers[gameNum]->manufacturer;
+	game.flags = drivers[gameNum]->flags;
+	game.found = RomsetMissing(gameNum) == 0;
+
+	if (callback) {
+		(*callback)(&game);
+	}
+
+	return OK;
+}
+
+/******************************************************
  * PinmameGetGames
  ******************************************************/
 
@@ -298,10 +333,10 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
 		if (drivers[gameNum]->clone_of) {
 			game.clone_of = drivers[gameNum]->clone_of->name;
 		}
-
 		game.description = drivers[gameNum]->description;
 		game.year = drivers[gameNum]->year;
 		game.manufacturer = drivers[gameNum]->manufacturer;
+		game.flags = drivers[gameNum]->flags;
 		game.found = RomsetMissing(gameNum) == 0;
 
 		if (callback) {
