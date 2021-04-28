@@ -107,7 +107,7 @@ jobs:
       - uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.GH_PAT }}
-          repository: VisualPinball/pinmame-dotnet
+          repository: vpinball/pinmame-dotnet
           event-type: update-libpinmame
           client-payload: '{ "run_id": "${{ github.run_id }}",
             "version": "${{ needs.version.outputs.version }}",
