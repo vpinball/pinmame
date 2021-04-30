@@ -59,7 +59,7 @@ typedef enum {
 	SEG7SCH = SEG7SC| SEGHIBIT
 } PINMAME_DISPLAY_TYPE;
 
-typedef enum {
+typedef enum : unsigned __int64 {
 	WPCALPHA_1 = 0x0000000000001,  // Alpha-numeric display S11 sound, Dr Dude 10/90
 	WPCALPHA_2 = 0x0000000000002,  // Alpha-numeric display,  - The Machine BOP 4/91
 	WPCDMD = 0x0000000000004,      // Dot Matrix Display, Terminator 2 7/91 - Party Zone 10/91
@@ -141,17 +141,17 @@ typedef struct {
 	const char* year;
 	const char* manufacturer;
 	uint32_t flags;
-	int found;
+	int32_t found;
 } PinmameGame;
 
 typedef struct {
 	PINMAME_DISPLAY_TYPE type;
-	int top;
-	int left;
-	int length;
-	int width;
-	int height;
-	int depth;
+	int32_t top;
+	int32_t left;
+	int32_t length;
+	int32_t width;
+	int32_t height;
+	int32_t depth;
 } PinmameDisplayLayout;
 
 typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
@@ -161,7 +161,7 @@ typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_fram
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
 
 typedef struct {
-	int sampleRate;
+	int32_t sampleRate;
 	const char vpmPath[MAX_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
 	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;
@@ -169,25 +169,24 @@ typedef struct {
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 } PinmameConfig;
 
-LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* p_name, PinmameGameCallback callback);
+LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback);
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback);
-LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config);
-LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name);
+LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config);
+LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name);
 LIBPINMAME_API int PinmameIsRunning();
-LIBPINMAME_API PINMAME_STATUS PinmamePause(int pause);
+LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
-LIBPINMAME_API int PinmameGetSwitch(int slot);
-LIBPINMAME_API void PinmameSetSwitch(int slot, int state);
-LIBPINMAME_API void PinmameSetSwitches(int* p_states, int numSwitches);
+LIBPINMAME_API int PinmameGetSwitch(const int slot);
+LIBPINMAME_API void PinmameSetSwitch(const int slot, const int state);
+LIBPINMAME_API void PinmameSetSwitches(const int* const p_states, const int numSwitches);
 LIBPINMAME_API int PinmameGetMaxLamps();
-LIBPINMAME_API int PinmameGetChangedLamps(int* p_changedStates);
-LIBPINMAME_API int PinmameGetMaxSolenoids();
+LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
-LIBPINMAME_API int PinmameGetChangedGIs(int* p_changedStates);
+LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates);
 LIBPINMAME_API int PinmameGetAudioChannels();
-LIBPINMAME_API int PinmameGetPendingAudioSamples(float* p_buffer, int outChannels, int maxNumber);
-LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* p_buffer, int outChannels, int maxNumber);
+LIBPINMAME_API int PinmameGetPendingAudioSamples(float* const p_buffer, const int outChannels, const int maxNumber);
+LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* const p_buffer, const int outChannels, const int maxNumber);
 
 #endif

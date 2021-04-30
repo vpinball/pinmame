@@ -53,10 +53,10 @@ static std::thread* _p_gameThread = nullptr;
  * ComposePath
  ******************************************************/
 
-char* ComposePath(const char* path, const char* file) {
-	size_t pathLength = strlen(path);
-	size_t fileLength = strlen(file);
-	char* newPath = (char*)malloc(pathLength + fileLength + 4);
+char* ComposePath(const char* const path, const char* const file) {
+	const size_t pathLength = strlen(path);
+	const size_t fileLength = strlen(file);
+	char* const newPath = (char*)malloc(pathLength + fileLength + 4);
 
 	strcpy(newPath, path);
 	strcpy(newPath + pathLength, file);
@@ -88,7 +88,7 @@ int GetGameNumFromString(const char* const name) {
  * GetDisplayCount
  ******************************************************/
 
-int GetDisplayCount(const struct core_dispLayout* p_layout, int* p_index) {
+int GetDisplayCount(const struct core_dispLayout* p_layout, int* const p_index) {
 	for (; p_layout->length; p_layout += 1) {
 		if (p_layout->type == CORE_IMPORT) {
 			GetDisplayCount(p_layout->lptr, p_index);
@@ -104,7 +104,7 @@ int GetDisplayCount(const struct core_dispLayout* p_layout, int* p_index) {
  * GetDisplays
  ******************************************************/
 
-void GetDisplays(const struct core_dispLayout* p_layout, int displayCount, int* p_index) {
+void GetDisplays(const struct core_dispLayout* p_layout, const int displayCount, int* const p_index) {
 	for (; p_layout->length; p_layout += 1) {
 		if (p_layout->type == CORE_IMPORT) {
 			GetDisplays(p_layout->lptr, displayCount, p_index);
@@ -142,7 +142,7 @@ void GetDisplays(const struct core_dispLayout* p_layout, int displayCount, int* 
  * UpdateDisplays
  ******************************************************/
 
-void UpdateDisplays(const struct core_dispLayout* p_layout, int* p_index, int* p_lastOffset) {
+void UpdateDisplays(const struct core_dispLayout* p_layout, int* const p_index, int* const p_lastOffset) {
 	for (; p_layout->length; p_layout += 1) {
 		if (p_layout->type == CORE_IMPORT) {
 			UpdateDisplays(p_layout->lptr, p_index, p_lastOffset);
@@ -178,10 +178,9 @@ void UpdateDisplays(const struct core_dispLayout* p_layout, int* p_index, int* p
 		else {
 			displayLayout.length = p_layout->length;
 
-			UINT16* p_drawSeg = coreGlobals.drawSeg;
-			p_drawSeg += *p_lastOffset;
+			const UINT16* const p_drawSeg = coreGlobals.drawSeg + *p_lastOffset;
 
-			for (int i = 0; i < p_layout->length; i++) {
+			for (unsigned int i = 0; i < p_layout->length; i++) {
 				if (_lastSeg[*p_index][i] != p_drawSeg[i]) {
 					memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
 					(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
@@ -236,7 +235,7 @@ extern "C" void libpinmame_update_displays() {
 	else {
 		if (_config.cb_OnDisplayAvailable) {
 			int index = 0;
-			int displayCount = GetDisplayCount(core_gameData->lcdLayout, &index);
+			const int displayCount = GetDisplayCount(core_gameData->lcdLayout, &index);
 
 			index = 0;
 			GetDisplays(core_gameData->lcdLayout, displayCount, &index);
@@ -249,7 +248,7 @@ extern "C" void libpinmame_update_displays() {
  * OnStateChange
  ******************************************************/
 
-extern "C" void OnStateChange(int state) {
+extern "C" void OnStateChange(const int state) {
 	_isRunning = state;
 
 	if (_config.cb_OnStateUpdated) {
@@ -261,7 +260,7 @@ extern "C" void OnStateChange(int state) {
  * OnSolenoid
  ******************************************************/
 
-extern "C" void OnSolenoid(int solenoid, int isActive) {
+extern "C" void OnSolenoid(const int solenoid, const int isActive) {
 	if (_config.cb_OnSolenoidUpdated) {
 		(*(_config.cb_OnSolenoidUpdated))(solenoid, isActive);
 	}
@@ -271,9 +270,9 @@ extern "C" void OnSolenoid(int solenoid, int isActive) {
  * StartGame
  ******************************************************/
 
-void StartGame(int gameNum) {
+void StartGame(const int gameNum) {
 	_firstFrame = 1;
-	
+
 	run_game(gameNum);
 
 	OnStateChange(0);
@@ -283,7 +282,7 @@ void StartGame(int gameNum) {
  * PinmameGetGame
  ******************************************************/
 
-LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* p_name, PinmameGameCallback callback) {
+LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback) {
 	if (rc == nullptr) {
 		return CONFIG_NOT_SET;
 	}
@@ -353,7 +352,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
  * PinmameSetConfig
  ******************************************************/
 
-LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config) {
+LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
 	memcpy(&_config, p_config, sizeof(PinmameConfig));
 
 	fprintf(stdout, "PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _config.sampleRate, _config.vpmPath);
@@ -382,7 +381,7 @@ LIBPINMAME_API void PinmameSetConfig(PinmameConfig* p_config) {
  * PinmameRun
  ******************************************************/
 
-LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
+LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name) {
 	if (rc == nullptr) {
 		return CONFIG_NOT_SET;
 	}
@@ -391,7 +390,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* p_name) {
 		return GAME_ALREADY_RUNNING;
 	}
 
-	int gameNum = GetGameNumFromString(p_name);
+	const int gameNum = GetGameNumFromString(p_name);
 
 	if (gameNum < 0) {
 		return GAME_NOT_FOUND;
@@ -434,7 +433,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameReset() {
  * PinmamePause
  ******************************************************/
 
-LIBPINMAME_API PINMAME_STATUS PinmamePause(int pause) {
+LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause) {
 	if (_isRunning) {
 		g_fPause = pause;
 
@@ -470,7 +469,7 @@ LIBPINMAME_API void PinmameStop() {
  ******************************************************/
 
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
-	UINT64 hardwareGen = (_isRunning) ? core_gameData->gen : 0;
+	const UINT64 hardwareGen = (_isRunning) ? core_gameData->gen : 0;
 	return (PINMAME_HARDWARE_GEN)hardwareGen;
 }
 
@@ -478,7 +477,7 @@ LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
  * PinmameGetSwitch
  ******************************************************/
 
-LIBPINMAME_API int PinmameGetSwitch(int slot) {
+LIBPINMAME_API int PinmameGetSwitch(const int slot) {
 	return (_isRunning) ? vp_getSwitch(slot) : 0;
 }
 
@@ -486,7 +485,7 @@ LIBPINMAME_API int PinmameGetSwitch(int slot) {
  * PinmameSetSwitch
  ******************************************************/
 
-LIBPINMAME_API void PinmameSetSwitch(int slot, int state) {
+LIBPINMAME_API void PinmameSetSwitch(const int slot, const int state) {
 	if (_isRunning) {
 		 vp_putSwitch(slot, state ? 1 : 0);
 	}
@@ -496,7 +495,7 @@ LIBPINMAME_API void PinmameSetSwitch(int slot, int state) {
  * PinmameSetSwitches
  ******************************************************/
 
-LIBPINMAME_API void PinmameSetSwitches(int* p_states, int numSwitches) {
+LIBPINMAME_API void PinmameSetSwitches(const int* const p_states, const int numSwitches) {
 	if (_isRunning) {
 		for (int i = 0; i < numSwitches; ++i) {
 			vp_putSwitch(p_states[i*2], p_states[i*2+1] ? 1 : 0);
@@ -516,7 +515,7 @@ LIBPINMAME_API int PinmameGetMaxLamps() {
  * PinmameGetChangedLamps
  ******************************************************/
 
-LIBPINMAME_API int PinmameGetChangedLamps(int* p_changedStates) {
+LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates) {
 	if (!_isRunning) {
 		return -1;
 	}
@@ -548,7 +547,7 @@ LIBPINMAME_API int PinmameGetMaxGIs() {
  * PinmameGetChangedGIs
  ******************************************************/
 
-LIBPINMAME_API int PinmameGetChangedGIs(int* p_changedStates) {
+LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates) {
 	if (!_isRunning) {
 		return -1;
 	}
@@ -564,6 +563,7 @@ LIBPINMAME_API int PinmameGetChangedGIs(int* p_changedStates) {
 		*(out++) = chgGIs[i].giNo;
 		*(out++) = chgGIs[i].currStat;
 	}
+
 	return count;
 }
 
@@ -579,7 +579,7 @@ LIBPINMAME_API int PinmameGetAudioChannels() {
  * PinmameGetAudioChannels
  ******************************************************/
 
-LIBPINMAME_API int PinmameGetPendingAudioSamples(float* buffer, int outChannels, int maxNumber) {
+LIBPINMAME_API int PinmameGetPendingAudioSamples(float* const buffer, const int outChannels, const int maxNumber) {
 	return (_isRunning) ? fillAudioBuffer(buffer, outChannels, maxNumber, 1) : -1;
 }
 
@@ -587,6 +587,6 @@ LIBPINMAME_API int PinmameGetPendingAudioSamples(float* buffer, int outChannels,
  * GetPendingAudioSamples16bit
  ******************************************************/
 
-LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* buffer, int outChannels, int maxNumber) {
+LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* const buffer, const int outChannels, const int maxNumber) {
 	return (_isRunning) ? fillAudioBuffer(buffer, outChannels, maxNumber, 0) : -1;
 }
