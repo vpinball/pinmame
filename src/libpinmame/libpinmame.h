@@ -7,10 +7,12 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #define LIBPINMAME_API extern "C" __declspec(dllexport)
+#define UINT64_ENUM unsigned __int64
 #define CALLBACK __stdcall
 #define strcasecmp _stricmp
 #else
-#define LIBPINMAME_API extern "C" //__declspec(dllimport)
+#define LIBPINMAME_API extern "C"
+#define UINT64_ENUM uint64_t
 #define CALLBACK
 #endif
 
@@ -59,7 +61,7 @@ typedef enum {
 	SEG7SCH = SEG7SC| SEGHIBIT
 } PINMAME_DISPLAY_TYPE;
 
-typedef enum : unsigned __int64 {
+typedef enum : UINT64_ENUM {
 	WPCALPHA_1 = 0x0000000000001,  // Alpha-numeric display S11 sound, Dr Dude 10/90
 	WPCALPHA_2 = 0x0000000000002,  // Alpha-numeric display,  - The Machine BOP 4/91
 	WPCDMD = 0x0000000000004,      // Dot Matrix Display, Terminator 2 7/91 - Party Zone 10/91
