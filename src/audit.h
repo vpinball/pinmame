@@ -33,7 +33,7 @@
 
 typedef struct
 {
-	char rom[35];				/* name of rom file */
+	char rom[75];				/* name of rom file */
 	unsigned int explength;		/* expected length of rom file */
 	unsigned int length;		/* actual length of rom file */
 	const char* exphash;        /* expected hash data */
