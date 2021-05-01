@@ -1,4 +1,3 @@
-
 #ifndef AUDIT_H
 #define AUDIT_H
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
@@ -6,11 +5,11 @@
 #endif
 
 /* return values from VerifyRomSet and VerifySampleSet */
-#define CORRECT   		0
-#define NOTFOUND  		1
-#define INCORRECT 		2
-#define CLONE_NOTFOUND	3
-#define BEST_AVAILABLE	4
+#define CORRECT				0
+#define NOTFOUND			1
+#define INCORRECT			2
+#define CLONE_NOTFOUND		3
+#define BEST_AVAILABLE		4
 #define MISSING_OPTIONAL	5
 
 /* rom status values for tAuditRecord.status */
@@ -33,17 +32,17 @@
 
 typedef struct
 {
-	char rom[75];				/* name of rom file */
+	char rom[128];				/* name of rom file */
 	unsigned int explength;		/* expected length of rom file */
 	unsigned int length;		/* actual length of rom file */
-	const char* exphash;        /* expected hash data */
-	char hash[256];             /* computed hash informations */
+	const char* exphash;		/* expected hash data */
+	char hash[256];				/* computed hash informations */
 	int status;					/* status of rom file */
 } tAuditRecord;
 
 typedef struct
 {
-	char	name[20];		/* name of missing sample file */
+	char name[128];				/* name of missing sample file */
 } tMissingSample;
 
 typedef void (CLIB_DECL *verify_printf_proc)(const char *fmt,...);
@@ -54,6 +53,5 @@ int AuditSampleSet (int game, tMissingSample **audit);
 int VerifySampleSet(int game,verify_printf_proc verify_printf);
 int RomInSet (const struct GameDriver *gamedrv, const char* hash);
 int RomsetMissing (int game);
-
 
 #endif
