@@ -38,7 +38,8 @@ static PinmameConfig _config = {
 	0,
 	0,
 	0,
-	0
+	0,
+	0,
 };
 
 static int _isRunning = 0;
@@ -46,6 +47,114 @@ static int _timeToQuit = 0;
 static int _firstFrame = 0;
 static UINT8 _frame[DMD_MAXY * DMD_MAXX];
 static UINT16 _lastSeg[MAX_DISPLAYS][CORE_SEGCOUNT];
+
+static PinmameKeyboardInfo _keyboardInfo[] = {
+	{ "A", A, KEYCODE_A },
+	{ "B", B, KEYCODE_B },
+	{ "C", C, KEYCODE_C },
+	{ "D", D, KEYCODE_D },
+	{ "E", E, KEYCODE_E },
+	{ "F", F, KEYCODE_F },
+	{ "G", G, KEYCODE_G },
+	{ "H", H, KEYCODE_H },
+	{ "I", I, KEYCODE_I },
+	{ "J", J, KEYCODE_J },
+	{ "K", K, KEYCODE_K },
+	{ "L", L, KEYCODE_L },
+	{ "M", M, KEYCODE_M },
+	{ "N", N, KEYCODE_N },
+	{ "O", O, KEYCODE_O },
+	{ "P", P, KEYCODE_P },
+	{ "Q", Q, KEYCODE_Q },
+	{ "R", R, KEYCODE_R },
+	{ "S", S, KEYCODE_S },
+	{ "T", T, KEYCODE_T },
+	{ "U", U, KEYCODE_U },
+	{ "V", V, KEYCODE_V },
+	{ "W", W, KEYCODE_W },
+	{ "X", X, KEYCODE_X },
+	{ "Y", Y, KEYCODE_Y },
+	{ "Z", Z, KEYCODE_Z },
+	{ "0", NUM_0, KEYCODE_0 },
+	{ "1", NUM_1, KEYCODE_1 },
+	{ "2", NUM_2, KEYCODE_2 },
+	{ "3", NUM_3, KEYCODE_3 },
+	{ "4", NUM_4, KEYCODE_4 },
+	{ "5", NUM_5, KEYCODE_5 },
+	{ "6", NUM_6, KEYCODE_6 },
+	{ "7", NUM_7, KEYCODE_7 },
+	{ "8", NUM_8, KEYCODE_8 },
+	{ "9", NUM_9, KEYCODE_9 },
+	{ "PAD_0", PAD_0, KEYCODE_0_PAD },
+	{ "PAD_1", PAD_1, KEYCODE_1_PAD },
+	{ "PAD_2", PAD_2, KEYCODE_2_PAD },
+	{ "PAD_3", PAD_3, KEYCODE_3_PAD },
+	{ "PAD_4", PAD_4, KEYCODE_4_PAD },
+	{ "PAD_5", PAD_5, KEYCODE_5_PAD },
+	{ "PAD_6", PAD_6, KEYCODE_6_PAD },
+	{ "PAD_7", PAD_7, KEYCODE_7_PAD },
+	{ "PAD_8", PAD_8, KEYCODE_8_PAD },
+	{ "PAD_9", PAD_9, KEYCODE_9_PAD },
+	{ "F1", F1, KEYCODE_F1 },
+	{ "F2", F2, KEYCODE_F2 },
+	{ "F3", F3, KEYCODE_F3 },
+	{ "F4", F4, KEYCODE_F4 },
+	{ "F5", F5, KEYCODE_F5 },
+	{ "F6", F6, KEYCODE_F6 },
+	{ "F7", F7, KEYCODE_F7 },
+	{ "F8", F8, KEYCODE_F8 },
+	{ "F9", F9, KEYCODE_F9 },
+	{ "F10", F10, KEYCODE_F10 },
+	{ "F11", F11, KEYCODE_F11 },
+	{ "F12", F12, KEYCODE_F12 },
+	{ "ESC", ESC, KEYCODE_ESC },
+	{ "TILDE", TILDE, KEYCODE_TILDE },
+	{ "MINUS", MINUS, KEYCODE_MINUS },
+	{ "EQUALS", EQUALS, KEYCODE_EQUALS },
+	{ "BACKSPACE", BACKSPACE, KEYCODE_BACKSPACE },
+	{ "TAB", TAB, KEYCODE_TAB },
+	{ "OPENBRACE", OPENBRACE, KEYCODE_OPENBRACE },
+	{ "CLOSEBRACE", CLOSEBRACE, KEYCODE_CLOSEBRACE },
+	{ "ENTER", ENTER, KEYCODE_ENTER },
+	{ "COLON", COLON, KEYCODE_COLON },
+	{ "QUOTE", QUOTE, KEYCODE_QUOTE },
+	{ "BACKSLASH", BACKSLASH, KEYCODE_BACKSLASH },
+	{ "BACKSLASH2", BACKSLASH2, KEYCODE_BACKSLASH2 },
+	{ "COMMA", COMMA, KEYCODE_COMMA },
+	{ "STOP", STOP, KEYCODE_STOP },
+	{ "SLASH", SLASH, KEYCODE_SLASH },
+	{ "SPACE", SPACE, KEYCODE_SPACE },
+	{ "INSERT", INSERT, KEYCODE_INSERT },
+	{ "DEL", DEL, KEYCODE_DEL },
+	{ "HOME", HOME, KEYCODE_HOME },
+	{ "END", END, KEYCODE_END },
+	{ "PGUP", PGUP, KEYCODE_PGUP },
+	{ "PGDN", PGDN, KEYCODE_PGDN },
+	{ "LEFT", LEFT, KEYCODE_LEFT },
+	{ "RIGHT", RIGHT, KEYCODE_RIGHT },
+	{ "UP", UP, KEYCODE_UP },
+	{ "DOWN", DOWN, KEYCODE_DOWN },
+	{ "SLASH_PAD", SLASH_PAD, KEYCODE_SLASH_PAD },
+	{ "ASTERISK", ASTERISK, KEYCODE_ASTERISK },
+	{ "MINUS_PAD", MINUS_PAD, KEYCODE_MINUS_PAD },
+	{ "PLUS_PAD", PLUS_PAD, KEYCODE_PLUS_PAD },
+	{ "DEL_PAD", DEL_PAD, KEYCODE_DEL_PAD },
+	{ "ENTER_PAD", ENTER_PAD, KEYCODE_ENTER_PAD },
+	{ "PRTSCR", PRTSCR, KEYCODE_PRTSCR },
+	{ "PAUSE", PAUSE, KEYCODE_PAUSE },
+	{ "LSHIFT", LSHIFT, KEYCODE_LSHIFT },
+	{ "RSHIFT", RSHIFT, KEYCODE_RSHIFT },
+	{ "LCONTROL", LCONTROL, KEYCODE_LCONTROL },
+	{ "RCONTROL", RCONTROL, KEYCODE_RCONTROL },
+	{ "LALT", LALT, KEYCODE_LALT },
+	{ "RALT", RALT, KEYCODE_RALT },
+	{ "SCRLOCK", SCRLOCK, KEYCODE_SCRLOCK },
+	{ "NUMLOCK", NUMLOCK, KEYCODE_NUMLOCK },
+	{ "CAPSLOCK", CAPSLOCK, KEYCODE_CAPSLOCK },
+	{ "LWIN", LWIN, KEYCODE_LWIN },
+	{ "RWIN", RWIN, KEYCODE_RWIN },
+	{ "MENU", MENU, KEYCODE_MENU }
+};
 
 static std::thread* _p_gameThread = nullptr;
 
@@ -202,6 +311,33 @@ void UpdateDisplays(const struct core_dispLayout* p_layout, int* const p_index, 
  ******************************************************/
 
 extern "C" int osd_init(void) {
+	return 0;
+}
+
+/******************************************************
+ * osd_is_key_pressed
+ ******************************************************/
+
+extern "C" int osd_is_key_pressed(int keycode) {
+	if (_config.fn_IsKeyPressed) {
+		return (*(_config.fn_IsKeyPressed))((PINMAME_KEYCODE)keycode);
+	}
+	return 0;
+}
+
+/******************************************************
+ * osd_get_key_list
+ ******************************************************/
+
+extern "C" const struct KeyboardInfo* osd_get_key_list(void) {
+	return (const struct KeyboardInfo*)_keyboardInfo;
+}
+
+/******************************************************
+ * osd_readkey_unicode
+ ******************************************************/
+
+extern "C" int osd_readkey_unicode(int flush) {
 	return 0;
 }
 

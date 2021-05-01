@@ -593,7 +593,6 @@ add_library(pinmame SHARED
    src/libpinmame/video.c
    src/libpinmame/video.h
    src/libpinmame/joystick.c
-   src/libpinmame/keyboard.c
    src/libpinmame/fileio.c
    src/libpinmame/sound.c
    src/libpinmame/sound.h
