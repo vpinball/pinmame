@@ -197,6 +197,10 @@ void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
 	printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
 }
 
+int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode) {
+	return 0;
+}
+
 int main(int, char**) {
 	system(CLEAR_SCREEN);
 
@@ -206,7 +210,8 @@ int main(int, char**) {
 		&OnStateUpdated,
 		&OnDisplayAvailable,
 		&OnDisplayUpdated,
-		&OnSolenoidUpdated
+		&OnSolenoidUpdated,
+		&IsKeyPressed
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)

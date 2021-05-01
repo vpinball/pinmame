@@ -134,6 +134,114 @@ typedef enum {
 	NOT_A_DRIVER = 0x4000,                // set by the fake "root" driver_0 and by "containers"
 } PINMAME_GAME_DRIVER_FLAGS;
 
+typedef enum : unsigned int {
+	A = 0,
+	B = 1,
+	C = 2,
+	D = 3,
+	E = 4,
+	F = 5,
+	G = 6,
+	H = 7,
+	I = 8,
+	J = 9,
+	K = 10,
+	L = 11,
+	M = 12,
+	N = 13,
+	O = 14,
+	P = 15,
+	Q = 16,
+	R = 17,
+	S = 18,
+	T = 19,
+	U = 20,
+	V = 21,
+	W = 22,
+	X = 23,
+	Y = 24,
+	Z = 25,
+	NUM_0 = 26,
+	NUM_1 = 27,
+	NUM_2 = 28,
+	NUM_3 = 29,
+	NUM_4 = 30,
+	NUM_5 = 31,
+	NUM_6 = 32,
+	NUM_7 = 33,
+	NUM_8 = 34,
+	NUM_9 = 35,
+	PAD_0 = 36,
+	PAD_1 = 37,
+	PAD_2 = 38,
+	PAD_3 = 39,
+	PAD_4 = 40,
+	PAD_5 = 41,
+	PAD_6 = 42,
+	PAD_7 = 43,
+	PAD_8 = 44,
+	PAD_9 = 45,
+	F1 = 46,
+	F2 = 47,
+	F3 = 48,
+	F4 = 49,
+	F5 = 50,
+	F6 = 51,
+	F7 = 52,
+	F8 = 53,
+	F9 = 54,
+	F10 = 55,
+	F11 = 56,
+	F12 = 57,
+	ESC = 58,
+	TILDE = 59,
+	MINUS = 60,
+	EQUALS = 61,
+	BACKSPACE = 62,
+	TAB = 63,
+	OPENBRACE = 64,
+	CLOSEBRACE = 65,
+	ENTER = 66,
+	COLON = 67,
+	QUOTE = 68,
+	BACKSLASH = 69,
+	BACKSLASH2 = 70,
+	COMMA = 71,
+	STOP = 72,
+	SLASH = 73,
+	SPACE = 74,
+	INSERT = 75,
+	DEL = 76,
+	HOME = 77,
+	END = 78,
+	PGUP = 79,
+	PGDN = 80,
+	LEFT = 81,
+	RIGHT = 82,
+	UP = 83,
+	DOWN = 84,
+	SLASH_PAD = 85,
+	ASTERISK = 86,
+	MINUS_PAD = 87,
+	PLUS_PAD = 88,
+	DEL_PAD = 89,
+	ENTER_PAD = 90,
+	PRTSCR = 91,
+	PAUSE = 92,
+	LSHIFT = 93,
+	RSHIFT = 94,
+	LCONTROL = 95,
+	RCONTROL = 96,
+	LALT = 97,
+	RALT = 98,
+	SCRLOCK = 99,
+	NUMLOCK = 100,
+	CAPSLOCK = 101,
+	LWIN = 102,
+	RWIN = 103,
+	MENU = 104
+} PINMAME_KEYCODE;
+
 typedef struct {
 	const char* name;
 	const char* clone_of;
@@ -154,11 +262,18 @@ typedef struct {
 	int32_t depth;
 } PinmameDisplayLayout;
 
+typedef struct {
+	const char* name;
+	PINMAME_KEYCODE code;
+	unsigned int standardcode;
+} PinmameKeyboardInfo;
+
 typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
 typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
 typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
 typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
+typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
 	int32_t sampleRate;
@@ -167,6 +282,7 @@ typedef struct {
 	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;
 	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
+	PinmameIsKeyPressedFunction fn_IsKeyPressed;
 } PinmameConfig;
 
 LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback);
