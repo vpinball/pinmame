@@ -1152,9 +1152,6 @@
     <ClCompile Include="src\libpinmame\video.c">
       <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\libpinmame\keyboard.c">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClCompile>
     <ClCompile Include="src\libpinmame\joystick.c">
       <Filter>Source Files\libpinmame</Filter>
     </ClCompile>

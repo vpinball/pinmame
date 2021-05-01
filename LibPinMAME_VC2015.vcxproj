@@ -531,7 +531,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)libfileio.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="src\libpinmame\joystick.c" />
-    <ClCompile Include="src\libpinmame\keyboard.c" />
     <ClCompile Include="src\libpinmame\config.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
