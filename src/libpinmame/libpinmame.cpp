@@ -10,7 +10,6 @@ extern "C" {
 #include "vpintf.h"
 #include "mame.h"
 #include "video.h"
-#include "sound.h"
 #include "config.h"
 #include "rc.h"
 #include "audit.h"
@@ -33,13 +32,14 @@ char g_szGameName[256] = { 0 }; // String containing requested game name (may be
 }
 
 static PinmameConfig _config = {
-	48000,
 	"",
 	0,
 	0,
 	0,
 	0,
 	0,
+	0,
+	0
 };
 
 static int _isRunning = 0;
@@ -313,6 +313,14 @@ extern "C" int osd_init(void) {
 }
 
 /******************************************************
+ * osd_get_key_list
+ ******************************************************/
+
+extern "C" const struct KeyboardInfo* osd_get_key_list(void) {
+	return (const struct KeyboardInfo*)_keyboardInfo;
+}
+
+/******************************************************
  * osd_is_key_pressed
  ******************************************************/
 
@@ -324,18 +332,72 @@ extern "C" int osd_is_key_pressed(const int keycode) {
 }
 
 /******************************************************
- * osd_get_key_list
- ******************************************************/
-
-extern "C" const struct KeyboardInfo* osd_get_key_list(void) {
-	return (const struct KeyboardInfo*)_keyboardInfo;
-}
-
-/******************************************************
  * osd_readkey_unicode
  ******************************************************/
 
 extern "C" int osd_readkey_unicode(const int flush) {
+	return 0;
+}
+
+/******************************************************
+ * osd_start_audio_stream
+ ******************************************************/
+
+extern "C" int osd_start_audio_stream(const int stereo) {
+	if (_config.cb_OnAudioAvailable) {
+		PinmameAudioInfo audioInfo;
+		memset(&audioInfo, 0, sizeof(PinmameAudioInfo));
+		audioInfo.channels = stereo ? 2 : 1;
+		audioInfo.sampleRate = Machine->sample_rate;
+		audioInfo.framesPerSecond = Machine->drv->frames_per_second;
+		audioInfo.samplesPerFrame = Machine->sample_rate / Machine->drv->frames_per_second;
+		audioInfo.bufferSize = ACCUMULATOR_SAMPLES * 2;
+
+		return (*(_config.cb_OnAudioAvailable))(&audioInfo);
+	}
+	return 0;
+}
+
+/******************************************************
+ * osd_update_audio_stream
+ ******************************************************/
+
+extern "C" int osd_update_audio_stream(INT16* p_buffer) {
+	if (_config.cb_OnAudioUpdated) {
+		return (*(_config.cb_OnAudioUpdated))((void*)p_buffer, mixer_samples_this_frame());
+	}
+	return 0;
+}
+
+/******************************************************
+ * osd_stop_audio_stream
+ ******************************************************/
+
+extern "C" void osd_stop_audio_stream(void) {
+}
+
+/******************************************************
+ * osd_sound_enable
+ ******************************************************/
+
+extern "C" void osd_sound_enable(int enable)
+{
+}
+
+/******************************************************
+ * osd_set_mastervolume
+ ******************************************************/
+
+extern "C" void osd_set_mastervolume(int attenuation)
+{
+}
+
+/******************************************************
+ * osd_get_mastervolume
+ ******************************************************/
+
+extern "C" int osd_get_mastervolume(void)
+{
 	return 0;
 }
 
@@ -489,7 +551,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
 	memcpy(&_config, p_config, sizeof(PinmameConfig));
 
-	fprintf(stdout, "PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _config.sampleRate, _config.vpmPath);
+	fprintf(stdout, "PinmameSetConfig(): vpmPath=%s\n", _config.vpmPath);
 
 	if (rc == nullptr) {
 		rc = cli_rc_create();
@@ -699,28 +761,4 @@ LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates) {
 	}
 
 	return count;
-}
-
-/******************************************************
- * PinmameGetAudioChannels
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetAudioChannels() {
-	return (_isRunning) ? channels : -1;
-}
-
-/******************************************************
- * PinmameGetAudioChannels
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetPendingAudioSamples(float* const buffer, const int outChannels, const int maxNumber) {
-	return (_isRunning) ? fillAudioBuffer(buffer, outChannels, maxNumber, 1) : -1;
-}
-
-/******************************************************
- * GetPendingAudioSamples16bit
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* const buffer, const int outChannels, const int maxNumber) {
-	return (_isRunning) ? fillAudioBuffer(buffer, outChannels, maxNumber, 0) : -1;
 }

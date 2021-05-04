@@ -193,6 +193,20 @@ void CALLBACK OnDisplayUpdated(int index, void* p_frame, PinmameDisplayLayout* p
 	}
 }
 
+int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
+	printf("OnAudioAvailable(): channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
+		p_audioInfo->channels,
+		p_audioInfo->sampleRate,
+		p_audioInfo->framesPerSecond,
+		p_audioInfo->samplesPerFrame,
+		p_audioInfo->bufferSize);
+	return p_audioInfo->samplesPerFrame;
+}
+
+int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
+	return samples;
+}
+
 void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
 	printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
 }
@@ -205,11 +219,12 @@ int main(int, char**) {
 	system(CLEAR_SCREEN);
 
 	PinmameConfig config = {
-		48000,
 		"",
 		&OnStateUpdated,
 		&OnDisplayAvailable,
 		&OnDisplayUpdated,
+		&OnAudioAvailable,
+		&OnAudioUpdated,
 		&OnSolenoidUpdated,
 		&IsKeyPressed
 	};

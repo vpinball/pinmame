@@ -34,7 +34,6 @@
 extern struct rc_option frontend_opts[];
 extern struct rc_option fileio_opts[];
 extern struct rc_option input_opts[];
-extern struct rc_option sound_opts[];
 extern struct rc_option video_opts[];
 
 #ifdef MESS
@@ -111,7 +110,7 @@ struct rc_struct *rc;
 
 /* fix me - need to have the core call osd_set_mastervolume with this value */
 /* instead of relying on the name of an osd variable */
-extern int attenuation;
+static int attenuation = 0;
 
 static char *debugres;
 static char *playbackname;
@@ -206,8 +205,18 @@ static int init_errorlog(struct rc_option *option, const char *arg, int priority
         return 0;
 }
 
-
 /* struct definitions */
+
+static int audio_latency;
+
+struct rc_option sound_opts[] =
+{
+	// name, shortname, type, dest, deflt, min, max, func, help
+	{ "Windows sound options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
+	{ "audio_latency", NULL, rc_int, &audio_latency, "1", 1, 4, NULL, "set audio latency (increase to reduce glitches)" },
+	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
+};
+
 static struct rc_option opts[] = {
         /* name, shortname, type, dest, deflt, min, max, func, help */
         { NULL, NULL, rc_link, frontend_opts, NULL, 0, 0, NULL, NULL },

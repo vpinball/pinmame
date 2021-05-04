@@ -16,6 +16,7 @@
 
 #define MAX_PATH 512
 #define MAX_DISPLAYS 15
+#define ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
 	OK = 0,
@@ -261,6 +262,14 @@ typedef struct {
 } PinmameDisplayLayout;
 
 typedef struct {
+	int channels;
+	double sampleRate;
+	double framesPerSecond;
+	int samplesPerFrame;
+	int bufferSize;
+} PinmameAudioInfo;
+
+typedef struct {
 	const char* name;
 	PINMAME_KEYCODE code;
 	unsigned int standardcode;
@@ -270,15 +279,18 @@ typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
 typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
 typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
 typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
+typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
+typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
-	int32_t sampleRate;
 	const char vpmPath[MAX_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
 	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;
 	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
+	PinmameOnAudioAvailableCallback cb_OnAudioAvailable;
+	PinmameOnAudioUpdatedCallback cb_OnAudioUpdated;
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 	PinmameIsKeyPressedFunction fn_IsKeyPressed;
 } PinmameConfig;
@@ -299,8 +311,5 @@ LIBPINMAME_API int PinmameGetMaxLamps();
 LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
 LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates);
-LIBPINMAME_API int PinmameGetAudioChannels();
-LIBPINMAME_API int PinmameGetPendingAudioSamples(float* const p_buffer, const int outChannels, const int maxNumber);
-LIBPINMAME_API int PinmameGetPendingAudioSamples16bit(signed short* const p_buffer, const int outChannels, const int maxNumber);
 
 #endif

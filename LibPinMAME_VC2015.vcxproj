@@ -543,7 +543,6 @@
     </ClCompile>
     <ClCompile Include="src\libpinmame\misc.c" />
     <ClCompile Include="src\libpinmame\libpinmame.cpp" />
-    <ClCompile Include="src\libpinmame\sound.c" />
     <ClCompile Include="src\libpinmame\video.c" />
     <ClCompile Include="src\drawgfx.c" />
     <ClCompile Include="src\fileio.c" />
@@ -1133,7 +1132,6 @@
     <ClInclude Include="src\cpuint.h" />
     <ClInclude Include="src\cpuintrf.h" />
     <ClInclude Include="src\datafile.h" />
-    <ClInclude Include="src\libpinmame\sound.h" />
     <ClInclude Include="src\libpinmame\config.h" />
     <ClInclude Include="src\libpinmame\misc.h" />
     <ClInclude Include="src\libpinmame\libpinmame.h" />
