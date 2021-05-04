@@ -16,6 +16,7 @@
 
 #include <sys/stat.h>
 #include <ctype.h>
+#include <limits.h>
 #include "driver.h"
 #include "core.h"
 #include "wmssnd.h"
