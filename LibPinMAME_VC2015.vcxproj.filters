@@ -1146,9 +1146,6 @@
     <ClCompile Include="src\windows\rc.c">
       <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
-    <ClCompile Include="src\libpinmame\sound.c">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClCompile>
     <ClCompile Include="src\libpinmame\video.c">
       <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
@@ -1800,9 +1797,6 @@
       <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
     <ClInclude Include="src\libpinmame\config.h">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libpinmame\sound.h">
       <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
     <ClInclude Include="src\windows\jit.h">
