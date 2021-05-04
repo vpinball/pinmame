@@ -1039,12 +1039,24 @@ static void wave_close(void) {
 /*--------------------*/
 /* called from mixer.c */
 
-int is_silent(const INT16* const buf, int size)
+static int is_silent(const INT16* const buf, const int size)
 {
   int i;
+
+  static int old_value = INT_MAX;
+  if (old_value == INT_MAX && size > 0)
+    old_value = buf[0];
+
   for (i = 0; i < size; i++)
-    if (buf[i] > 9)
+  {
+    if (abs((int)buf[i]-old_value) > 32767/1000) //!! magic value, do not just check for 0 due to dithering and other side effects of some sound cores
+    {
+      old_value = buf[size-1];
       return 0;
+    }
+    old_value = buf[i];
+  }
+
   return 1;
 }
 

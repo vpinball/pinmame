@@ -48,7 +48,7 @@ static int _firstFrame = 0;
 static UINT8 _frame[DMD_MAXY * DMD_MAXX];
 static UINT16 _lastSeg[MAX_DISPLAYS][CORE_SEGCOUNT];
 
-static PinmameKeyboardInfo _keyboardInfo[] = {
+static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "A", A, KEYCODE_A },
 	{ "B", B, KEYCODE_B },
 	{ "C", C, KEYCODE_C },
@@ -316,7 +316,7 @@ extern "C" int osd_init(void) {
  * osd_is_key_pressed
  ******************************************************/
 
-extern "C" int osd_is_key_pressed(int keycode) {
+extern "C" int osd_is_key_pressed(const int keycode) {
 	if (_config.fn_IsKeyPressed) {
 		return (*(_config.fn_IsKeyPressed))((PINMAME_KEYCODE)keycode);
 	}
@@ -335,7 +335,7 @@ extern "C" const struct KeyboardInfo* osd_get_key_list(void) {
  * osd_readkey_unicode
  ******************************************************/
 
-extern "C" int osd_readkey_unicode(int flush) {
+extern "C" int osd_readkey_unicode(const int flush) {
 	return 0;
 }
 
