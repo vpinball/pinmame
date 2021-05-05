@@ -10,43 +10,33 @@ extern "C" {
 #include "vpintf.h"
 #include "mame.h"
 #include "video.h"
-#include "config.h"
-#include "rc.h"
 #include "audit.h"
 
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
 extern UINT32 g_needs_DMD_update;
 extern unsigned char g_raw_dmdbuffer[DMD_MAXY * DMD_MAXX];
-extern int channels;
+
+extern int throttle;
+extern int autoframeskip;
+extern int allow_sleep;
 
 int g_fHandleKeyboard = 1;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
-struct rc_struct* rc = nullptr;
 
 #ifdef VPINMAME_ALTSOUND
 char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
 #endif
 }
 
-static PinmameConfig _config = {
-	"",
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0
-};
-
 static int _isRunning = 0;
 static int _timeToQuit = 0;
 static int _firstFrame = 0;
 static UINT8 _frame[DMD_MAXY * DMD_MAXX];
 static UINT16 _lastSeg[MAX_DISPLAYS][CORE_SEGCOUNT];
+static PinmameConfig* _p_Config = nullptr;
 
 static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "A", A, KEYCODE_A },
@@ -239,7 +229,7 @@ void GetDisplays(const struct core_dispLayout* p_layout, const int displayCount,
 			displayLayout.length = p_layout->length;
 		}
 
-		(*(_config.cb_OnDisplayAvailable))(*p_index, displayCount, &displayLayout);
+		(*(_p_Config->cb_OnDisplayAvailable))(*p_index, displayCount, &displayLayout);
 
 		(*p_index)++;
 	}
@@ -277,7 +267,7 @@ void UpdateDisplays(const struct core_dispLayout* p_layout, int* const p_index, 
 
 				memcpy(_frame, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
 
-				(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
+				(*(_p_Config->cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
 
 				g_needs_DMD_update = 0; 
 			}
@@ -290,7 +280,7 @@ void UpdateDisplays(const struct core_dispLayout* p_layout, int* const p_index, 
 			for (unsigned int i = 0; i < p_layout->length; i++) {
 				if (_lastSeg[*p_index][i] != p_drawSeg[i]) {
 					memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
-					(*(_config.cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
+					(*(_p_Config->cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
 
 					break;
 				}
@@ -325,8 +315,8 @@ extern "C" const struct KeyboardInfo* osd_get_key_list(void) {
  ******************************************************/
 
 extern "C" int osd_is_key_pressed(const int keycode) {
-	if (_config.fn_IsKeyPressed) {
-		return (*(_config.fn_IsKeyPressed))((PINMAME_KEYCODE)keycode);
+	if (_p_Config->fn_IsKeyPressed) {
+		return (*(_p_Config->fn_IsKeyPressed))((PINMAME_KEYCODE)keycode);
 	}
 	return 0;
 }
@@ -344,7 +334,7 @@ extern "C" int osd_readkey_unicode(const int flush) {
  ******************************************************/
 
 extern "C" int osd_start_audio_stream(const int stereo) {
-	if (_config.cb_OnAudioAvailable) {
+	if (_p_Config->cb_OnAudioAvailable) {
 		PinmameAudioInfo audioInfo;
 		memset(&audioInfo, 0, sizeof(PinmameAudioInfo));
 		audioInfo.channels = stereo ? 2 : 1;
@@ -353,7 +343,7 @@ extern "C" int osd_start_audio_stream(const int stereo) {
 		audioInfo.samplesPerFrame = Machine->sample_rate / Machine->drv->frames_per_second;
 		audioInfo.bufferSize = ACCUMULATOR_SAMPLES * 2;
 
-		return (*(_config.cb_OnAudioAvailable))(&audioInfo);
+		return (*(_p_Config->cb_OnAudioAvailable))(&audioInfo);
 	}
 	return 0;
 }
@@ -363,8 +353,8 @@ extern "C" int osd_start_audio_stream(const int stereo) {
  ******************************************************/
 
 extern "C" int osd_update_audio_stream(INT16* p_buffer) {
-	if (_config.cb_OnAudioUpdated) {
-		return (*(_config.cb_OnAudioUpdated))((void*)p_buffer, mixer_samples_this_frame());
+	if (_p_Config->cb_OnAudioUpdated) {
+		return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, mixer_samples_this_frame());
 	}
 	return 0;
 }
@@ -422,14 +412,14 @@ extern "C" int libpinmame_time_to_quit(void) {
 
 extern "C" void libpinmame_update_displays() {
 	if (!_firstFrame) {
-		if (_config.cb_OnDisplayUpdated) {
+		if (_p_Config->cb_OnDisplayUpdated) {
 			int index = 0;
 			int lastOffset = 0;
 			UpdateDisplays(core_gameData->lcdLayout, &index, &lastOffset);
 		}
 	}
 	else {
-		if (_config.cb_OnDisplayAvailable) {
+		if (_p_Config->cb_OnDisplayAvailable) {
 			int index = 0;
 			const int displayCount = GetDisplayCount(core_gameData->lcdLayout, &index);
 
@@ -447,8 +437,8 @@ extern "C" void libpinmame_update_displays() {
 extern "C" void OnStateChange(const int state) {
 	_isRunning = state;
 
-	if (_config.cb_OnStateUpdated) {
-		(*(_config.cb_OnStateUpdated))(state);
+	if (_p_Config->cb_OnStateUpdated) {
+		(*(_p_Config->cb_OnStateUpdated))(state);
 	}
 }
 
@@ -457,8 +447,8 @@ extern "C" void OnStateChange(const int state) {
  ******************************************************/
 
 extern "C" void OnSolenoid(const int solenoid, const int isActive) {
-	if (_config.cb_OnSolenoidUpdated) {
-		(*(_config.cb_OnSolenoidUpdated))(solenoid, isActive);
+	if (_p_Config->cb_OnSolenoidUpdated) {
+		(*(_p_Config->cb_OnSolenoidUpdated))(solenoid, isActive);
 	}
 }
 
@@ -479,7 +469,7 @@ void StartGame(const int gameNum) {
  ******************************************************/
 
 LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback) {
-	if (rc == nullptr) {
+	if (_p_Config == nullptr) {
 		return CONFIG_NOT_SET;
 	}
 
@@ -514,7 +504,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
  ******************************************************/
 
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
-	if (rc == nullptr) {
+	if (_p_Config == nullptr) {
 		return CONFIG_NOT_SET;
 	}
 
@@ -549,28 +539,32 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
  ******************************************************/
 
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
-	memcpy(&_config, p_config, sizeof(PinmameConfig));
-
-	fprintf(stdout, "PinmameSetConfig(): vpmPath=%s\n", _config.vpmPath);
-
-	if (rc == nullptr) {
-		rc = cli_rc_create();
-
-		rc_set_option(rc, "throttle", "1", 0);
-		rc_set_option(rc, "sleep", "1", 0);
-		rc_set_option(rc, "autoframeskip", "0", 0);
-		rc_set_option(rc, "skip_gameinfo", "1", 0);
-		rc_set_option(rc, "skip_disclaimer", "1", 0);
+	if (_p_Config == nullptr) {
+		_p_Config = (PinmameConfig*)malloc(sizeof(PinmameConfig));
 	}
 
-	setPath(FILETYPE_ROM, ComposePath(_config.vpmPath, "roms"));
-	setPath(FILETYPE_NVRAM, ComposePath(_config.vpmPath, "nvram"));
-	setPath(FILETYPE_SAMPLE, ComposePath(_config.vpmPath, "samples"));
-	setPath(FILETYPE_CONFIG, ComposePath(_config.vpmPath, "cfg"));
-	setPath(FILETYPE_HIGHSCORE, ComposePath(_config.vpmPath, "hi"));
-	setPath(FILETYPE_INPUTLOG, ComposePath(_config.vpmPath, "inp"));
-	setPath(FILETYPE_MEMCARD, ComposePath(_config.vpmPath, "memcard"));
-	setPath(FILETYPE_STATE, ComposePath(_config.vpmPath, "sta"));
+	memcpy(_p_Config, p_config, sizeof(PinmameConfig));
+
+	fprintf(stdout, "PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _p_Config->sampleRate, _p_Config->vpmPath);
+
+	memset(&options, 0, sizeof(options));
+
+	options.samplerate = _p_Config->sampleRate;
+	options.skip_gameinfo = 1;
+	options.skip_disclaimer = 1;
+
+	setPath(FILETYPE_ROM, ComposePath(_p_Config->vpmPath, "roms"));
+	setPath(FILETYPE_NVRAM, ComposePath(_p_Config->vpmPath, "nvram"));
+	setPath(FILETYPE_SAMPLE, ComposePath(_p_Config->vpmPath, "samples"));
+	setPath(FILETYPE_CONFIG, ComposePath(_p_Config->vpmPath, "cfg"));
+	setPath(FILETYPE_HIGHSCORE, ComposePath(_p_Config->vpmPath, "hi"));
+	setPath(FILETYPE_INPUTLOG, ComposePath(_p_Config->vpmPath, "inp"));
+	setPath(FILETYPE_MEMCARD, ComposePath(_p_Config->vpmPath, "memcard"));
+	setPath(FILETYPE_STATE, ComposePath(_p_Config->vpmPath, "sta"));
+
+	throttle = 1;
+	autoframeskip = 0;
+	allow_sleep = 1;
 }
 
 /******************************************************
@@ -578,7 +572,7 @@ LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
  ******************************************************/
 
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name) {
-	if (rc == nullptr) {
+	if (_p_Config == nullptr) {
 		return CONFIG_NOT_SET;
 	}
 

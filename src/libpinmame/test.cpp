@@ -219,6 +219,7 @@ int main(int, char**) {
 	system(CLEAR_SCREEN);
 
 	PinmameConfig config = {
+		44100,
 		"",
 		&OnStateUpdated,
 		&OnDisplayAvailable,

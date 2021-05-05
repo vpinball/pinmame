@@ -582,21 +582,16 @@ add_library(pinmame SHARED
 
    src/win32com/Alias.cpp
 
-   src/windows/fronthlp.c
    src/windows/jit.c
    src/windows/jit.h
    src/windows/jitemit.c
    src/windows/jitemit.h
-   src/windows/rc.c
-   src/windows/rc.h
    src/windows/ticker.c
 
    src/libpinmame/video.c
    src/libpinmame/video.h
    src/libpinmame/joystick.c
    src/libpinmame/fileio.c
-   src/libpinmame/config.c
-   src/libpinmame/config.h
    src/libpinmame/misc.c
    src/libpinmame/misc.h
    src/libpinmame/libpinmame.cpp

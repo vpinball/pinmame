@@ -69,7 +69,7 @@ FILE *stderr_file;
 //============================================================
 
 // from config.c
-extern char *rompath_extra;
+char *rompath_extra = NULL;
 
 // from datafile.c
 extern const char *history_filename;
