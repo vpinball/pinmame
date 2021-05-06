@@ -531,16 +531,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)libfileio.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="src\libpinmame\joystick.c" />
-    <ClCompile Include="src\libpinmame\config.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)libconfig.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)libconfig.obj</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="src\libpinmame\misc.c" />
     <ClCompile Include="src\libpinmame\libpinmame.cpp" />
     <ClCompile Include="src\libpinmame\video.c" />
@@ -943,10 +933,8 @@
     <ClCompile Include="src\vidhrdw\generic.c" />
     <ClCompile Include="src\vidhrdw\tms9928a.c" />
     <ClCompile Include="src\vidhrdw\vector.c" />
-    <ClCompile Include="src\windows\fronthlp.c" />
     <ClCompile Include="src\windows\jit.c" />
     <ClCompile Include="src\windows\jitemit.c" />
-    <ClCompile Include="src\windows\rc.c" />
     <ClCompile Include="src\windows\ticker.c" />
     <ClCompile Include="src\wpc\allied.c" />
     <ClCompile Include="src\wpc\alvg.c" />
@@ -1132,7 +1120,6 @@
     <ClInclude Include="src\cpuint.h" />
     <ClInclude Include="src\cpuintrf.h" />
     <ClInclude Include="src\datafile.h" />
-    <ClInclude Include="src\libpinmame\config.h" />
     <ClInclude Include="src\libpinmame\misc.h" />
     <ClInclude Include="src\libpinmame\libpinmame.h" />
     <ClInclude Include="src\libpinmame\video.h" />
@@ -1275,7 +1262,6 @@
     <ClInclude Include="src\vidhrdw\vector.h" />
     <ClInclude Include="src\windows\jit.h" />
     <ClInclude Include="src\windows\jitemit.h" />
-    <ClInclude Include="src\windows\rc.h" />
     <ClInclude Include="src\wpc\alvg.h" />
     <ClInclude Include="src\wpc\alvgdmd.h" />
     <ClInclude Include="src\wpc\alvgs.h" />

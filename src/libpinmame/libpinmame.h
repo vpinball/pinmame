@@ -285,6 +285,7 @@ typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isAc
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
+	const int sampleRate;
 	const char vpmPath[MAX_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
 	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;

@@ -558,16 +558,10 @@ add_library(pinmame SHARED
    src/wpc/zacsnd.c
    src/wpc/zacsnd.h
 
-   src/unix/fronthlp.c
-   src/unix/sysdep/rc.c
-   src/unix/sysdep/rc.h
-
    src/libpinmame/video.c
    src/libpinmame/video.h
    src/libpinmame/joystick.c
    src/libpinmame/fileio.c
-   src/libpinmame/config.c
-   src/libpinmame/config.h
    src/libpinmame/misc.c
    src/libpinmame/misc.h
    src/libpinmame/ticker.c

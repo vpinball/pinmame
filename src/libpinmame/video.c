@@ -75,7 +75,7 @@ static int warming_up;
 // timing measurements for throttling
 static cycles_t last_skipcount0_time;
 static cycles_t this_frame_base;
-static int allow_sleep;
+int allow_sleep;
 
 // average FPS calculation
 static cycles_t start_time;

@@ -1140,12 +1140,6 @@
     <ClCompile Include="src\wpc\lancelot.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
-    <ClCompile Include="src\libpinmame\config.c">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClCompile>
-    <ClCompile Include="src\windows\rc.c">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClCompile>
     <ClCompile Include="src\libpinmame\video.c">
       <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
@@ -1157,9 +1151,6 @@
     </ClCompile>
     <ClCompile Include="src\fileio.c">
       <Filter>Source Files\MAME</Filter>
-    </ClCompile>
-    <ClCompile Include="src\windows\fronthlp.c">
-      <Filter>Source Files\libpinmame</Filter>
     </ClCompile>
     <ClCompile Include="src\libpinmame\misc.c">
       <Filter>Source Files\libpinmame</Filter>
@@ -1784,9 +1775,6 @@
     <ClInclude Include="src\sound\ymf262.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
-    <ClInclude Include="src\windows\rc.h">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClInclude>
     <ClInclude Include="src\libpinmame\video.h">
       <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
@@ -1794,9 +1782,6 @@
       <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
     <ClInclude Include="src\libpinmame\libpinmame.h">
-      <Filter>Source Files\libpinmame</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libpinmame\config.h">
       <Filter>Source Files\libpinmame</Filter>
     </ClInclude>
     <ClInclude Include="src\windows\jit.h">
