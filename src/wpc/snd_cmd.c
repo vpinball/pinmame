@@ -1091,7 +1091,7 @@ void pm_wave_record(INT16 *buffer, int samples) {
 				wavelocals.silentsamples++;
 			}
 		}
-		else if (wavelocals.offs == 44 && wavelocals.silence != tick) {
+		else if (wavelocals.offs == 44 /*&& wavelocals.silence != tick*/) { //!! the latter lead to problems with the detection directly at the beginning of some sounds, thus disabled for now
 			written = mame_fwrite_lsbfirst(wavelocals.file, buffer, samples * 2 * CHANNELCOUNT);
 			wavelocals.offs += written;
 			if (written < samples * 2) {
