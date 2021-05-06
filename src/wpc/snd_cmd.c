@@ -1074,7 +1074,7 @@ void pm_wave_record(INT16 *buffer, int samples) {
 					int i = 0;
 					INT16 * const silentBuffer = malloc(samples * 2 * CHANNELCOUNT);
 					memset(silentBuffer, 0x00, samples * 2 * CHANNELCOUNT);
-					for (i = 0; i < wavelocals.silentsamples; i++) {
+					for (i = 0; i < (wavelocals.silentsamples - 1); i++) {
 						written = mame_fwrite_lsbfirst(wavelocals.file, silentBuffer, samples * 2 * CHANNELCOUNT);
 						wavelocals.offs += written;
 					}
@@ -1089,9 +1089,13 @@ void pm_wave_record(INT16 *buffer, int samples) {
 			}
 			else {
 				wavelocals.silentsamples++;
+				if (wavelocals.silentsamples == 1) {
+					written = mame_fwrite_lsbfirst(wavelocals.file, buffer, samples * 2 * CHANNELCOUNT);
+					wavelocals.offs += written;
+				}
 			}
 		}
-		else if (wavelocals.offs == 44 /*&& wavelocals.silence != tick*/) { //!! the latter lead to problems with the detection directly at the beginning of some sounds, thus disabled for now
+		else if (wavelocals.offs == 44) {
 			written = mame_fwrite_lsbfirst(wavelocals.file, buffer, samples * 2 * CHANNELCOUNT);
 			wavelocals.offs += written;
 			if (written < samples * 2) {
