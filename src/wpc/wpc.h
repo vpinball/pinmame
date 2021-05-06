@@ -111,6 +111,13 @@ extern const core_tLCDLayout wpc_dispDMD[];
        ROM_LOAD(n1, 0x00000, size, chk1)
 #define WPC_ROMEND ROM_END
 
+#define WPC_ROMSTARTNV(name, n1, size, chk1) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, WPC_CPUREGION) \
+     NORMALREGION(0x2000,  WPC_DMDREGION) \
+     NORMALREGION(size,    WPC_ROMREGION) \
+       ROM_LOAD(n1, 0x00000, size, chk1)
+
 /*----------------------------------
 /  Start address for the WPC chip
 /-----------------------------------*/

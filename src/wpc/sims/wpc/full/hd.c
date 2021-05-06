@@ -92,70 +92,70 @@ WPC_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swStart      	13
-#define swTilt       	14
-#define	swOutHole	15
-#define	swRTrough	16
-#define	swCTrough	17
-#define	swLTrough	18
-#define swSlamTilt	21
-#define swCoinDoor	22
-#define swTicket     	23
-#define swLeftJet	25
-#define swRightJet	26
-#define swBottomJet	27
-#define swLREject	28
-#define swBike		31
-#define swbIke		32
-#define swbiKe		33
-#define swbikE		34
-#define swTREject	35
-#define swTLEject	36
-#define swLeftSling	37
-#define swRightSling	38
-#define swUsa		41
-#define swuSa		42
-#define swusA		43
-#define swHarley	51
-#define swhArley	52
-#define swhaRley	53
-#define swharLey	54
-#define swharlEy	55
-#define swharleY	56
-#define swDavidson	57
-#define swdAvidson	58
-#define swdaVidson	61
-#define swdavIdson	62
-#define swdaviDson	63
-#define swdavidSon	64
-#define swdavidsOn	65
-#define swdavidsoN	66
-#define swRSpinner	67
-#define swLSpinner	68
-#define swLLoop		71
-#define swRLoop		72
-#define swLeftOutlane	73
-#define swRightOutlane	74
-#define swShooter	75
+#define swStart     13
+#define swTilt      14
+#define	swOutHole   15
+#define	swRTrough   16
+#define	swCTrough   17
+#define	swLTrough   18
+#define swSlamTilt  21
+#define swCoinDoor  22
+#define swTicket    23
+#define swLeftJet   25
+#define swRightJet  26
+#define swBottomJet 27
+#define swLREject   28
+#define swBike      31
+#define swbIke      32
+#define swbiKe      33
+#define swbikE      34
+#define swTREject   35
+#define swTLEject   36
+#define swLeftSling 37
+#define swRightSling 38
+#define swUsa       41
+#define swuSa       42
+#define swusA       43
+#define swHarley    51
+#define swhArley    52
+#define swhaRley    53
+#define swharLey    54
+#define swharlEy    55
+#define swharleY    56
+#define swDavidson  57
+#define swdAvidson  58
+#define swdaVidson  61
+#define swdavIdson  62
+#define swdaviDson  63
+#define swdavidSon  64
+#define swdavidsOn  65
+#define swdavidsoN  66
+#define swRSpinner  67
+#define swLSpinner  68
+#define swLLoop     71
+#define swRLoop     72
+#define swLeftOutlane 73
+#define swRightOutlane 74
+#define swShooter   75
 
 /*---------------------
 / Solenoid definitions
 /----------------------*/
-#define sOutHole	1
-#define sTrough		2
-#define sLDrop		3
-#define sCDrop		4
-#define sLeftJet	5
-#define sRightJet	6
-#define sKnocker	7
-#define sBottomJet	8
-#define sLREject	9
-#define sTREject	10
-#define sTLEject	11
-#define sRGate		12
-#define sLGate		13
-#define sLeftSling	15
-#define sRightSling	16
+#define sOutHole    1
+#define sTrough     2
+#define sLDrop      3
+#define sCDrop      4
+#define sLeftJet    5
+#define sRightJet   6
+#define sKnocker    7
+#define sBottomJet  8
+#define sLREject    9
+#define sTREject    10
+#define sTLEject    11
+#define sRGate      12
+#define sLGate      13
+#define sLeftSling  15
+#define sRightSling 16
 
 /*---------------------
 /  Ball state handling
@@ -381,6 +381,11 @@ WPCS_SOUNDROM22x("u18-sp1.rom",CRC(708aa419) SHA1(cfc2692fb3bcbacceb85021e282bfb
 		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
+WPC_ROMSTARTNV(che_cho,"che_cho.rom",0x020000,CRC(1e35a683) SHA1(58a9fc6d803d3817dc471de6a9bf7668dd4f2936))
+WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
+		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -396,6 +401,10 @@ CORE_CLONEDEF(hd,l2,l3,"Harley-Davidson (L-2)",1991,"Bally", hd, 0)
 CORE_CLONEDEF(hd,d2,l3,"Harley-Davidson (D-2 LED Ghost Fix)",1991,"Bally", hd, 0)
 CORE_CLONEDEF(hd,l1,l3,"Harley-Davidson (L-1)",1991,"Bally", hd, 0)
 CORE_CLONEDEF(hd,d1,l3,"Harley-Davidson (D-1 LED Ghost Fix)",1991,"Bally", hd, 0)
+
+#define init_che_cho init_hd
+#define input_ports_che_cho input_ports_hd
+CORE_GAMEDEFNV(che_cho,"Cheech & Chong (Harley-Davidson unofficial MOD)",2021,"Bally/watacaractr", hd, 0)
 
 /*-----------------------
 / Simulation Definitions
@@ -458,4 +467,3 @@ static void hd_handleMech(int mech) {
     { core_setSw(swharLey,0) ; core_setSw(swharlEy,0) ; core_setSw(swharleY,0); }
 
 }
-

@@ -2600,12 +2600,13 @@ DRIVER(bop,l7)          //          12/92 W Machine: Bride of Pinbot, The (L-7) 
 DRIVER(bop,d7)          //                  Machine: Bride of Pinbot, The (D-7) LED Ghost Fix
 DRIVER(bop,l8)          //                  Machine: Bride of Pinbot, The (L-8) fixes billionaire crash multiplayer bug
 DRIVER(bop,d8)          //                  Machine: Bride of Pinbot, The (D-8) LED Ghost Fix
-DRIVER(hd,l1)           //WPC-201:  02/91 B Harley Davidson (L-1)
-DRIVER(hd,d1)           //                  Harley Davidson (D-1) LED Ghost Fix
-DRIVER(hd,l2)           //          02/91 B Harley Davidson (L-2)
-DRIVER(hd,d2)           //                  Harley Davidson (D-2) LED Ghost Fix
-DRIVER(hd,l3)           //          04/91 B Harley Davidson (L-3)
-DRIVER(hd,d3)           //                  Harley Davidson (D-3) LED Ghost Fix
+DRIVER(hd,l1)           //WPC-201:  02/91 B Harley-Davidson (L-1)
+DRIVER(hd,d1)           //                  Harley-Davidson (D-1) LED Ghost Fix
+DRIVER(hd,l2)           //          02/91 B Harley-Davidson (L-2)
+DRIVER(hd,d2)           //                  Harley-Davidson (D-2) LED Ghost Fix
+DRIVER(hd,l3)           //          04/91 B Harley-Davidson (L-3)
+DRIVER(hd,d3)           //                  Harley-Davidson (D-3) LED Ghost Fix
+DRIVERNV(che_cho)       //          05/21   Cheech & Chong (Harley-Davidson unofficial MOD)
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
 DRIVER(sf,d1)           //                  SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)

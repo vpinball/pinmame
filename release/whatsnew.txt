@@ -23,7 +23,7 @@ Fixed regression in solenoid emulation for Juegos Populares
 Corrected NVRAM size for Mr. Game
 Fixed flasher sense for Pistol Poker (and maybe other Alvin G. games?)
 
-*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr
 New:
 Alvin G.: U.S.A. Football (Redemption, P08)
 
@@ -35,6 +35,7 @@ Tales of the Arabian Nights 0.4 Prototype (see above)
 Clones:
 A.G. Soccer-Ball & Football R18u with 2.5L Sound (only the latter is new, 2.4 revision, inside the ROM it says 2.5L though)
 Bad Cats LG-4
+Cheech & Chong (Harley-Davidson unofficial MOD)
 Flintstones, The LA-5
 Lucky Draw (alternate version - only difference is the #3 ROM)
 Mach 2 (alternate set)
