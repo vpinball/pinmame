@@ -2606,7 +2606,7 @@ DRIVER(hd,l2)           //          02/91 B Harley-Davidson (L-2)
 DRIVER(hd,d2)           //                  Harley-Davidson (D-2) LED Ghost Fix
 DRIVER(hd,l3)           //          04/91 B Harley-Davidson (L-3)
 DRIVER(hd,d3)           //                  Harley-Davidson (D-3) LED Ghost Fix
-DRIVERNV(che_cho)       //          05/21   Cheech & Chong (Harley-Davidson unofficial MOD)
+DRIVERNV(che_cho)       //          05/21   Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD)
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
 DRIVER(sf,d1)           //                  SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)

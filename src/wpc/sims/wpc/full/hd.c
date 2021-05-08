@@ -404,7 +404,7 @@ CORE_CLONEDEF(hd,d1,l3,"Harley-Davidson (D-1 LED Ghost Fix)",1991,"Bally", hd, 0
 
 #define init_che_cho init_hd
 #define input_ports_che_cho input_ports_hd
-CORE_GAMEDEFNV(che_cho,"Cheech & Chong (Harley-Davidson unofficial MOD)",2021,"Bally/watacaractr", hd, 0)
+CORE_GAMEDEFNV(che_cho,"Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD)",2021,"Bally/watacaractr", hd, 0)
 
 /*-----------------------
 / Simulation Definitions
