@@ -96,18 +96,18 @@ CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,0
 / Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
 INITGAME(lca, ALPHA, FLIP6061, 3 /*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART32(lca,	"gprom.bin",CRC(52957d70) SHA1(0c24d824b1aa966eb3af3db3ff02870ba463dcd6))
-GTS3SOUND3232(		"yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
-					"drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
+GTS3ROMSTART32(lca, "gprom.bin",CRC(52957d70) SHA1(0c24d824b1aa966eb3af3db3ff02870ba463dcd6))
+GTS3SOUND3232(      "yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
+                    "drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
 GTS3_ROMEND
 CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S80B3,0)
 
 //62c0beda Rev 1?
 
 INITGAME(lca2, ALPHA, FLIP6061, 3 /*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART32(lca2,"gprom2.bin",CRC(937a8426) SHA1(6bc2d1b0c3dc273577376654ba72b60febe32529))
-GTS3SOUND3232(		"yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
-					"drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
+GTS3ROMSTART32(lca2, "gprom2.bin",CRC(937a8426) SHA1(6bc2d1b0c3dc273577376654ba72b60febe32529))
+GTS3SOUND3232(       "yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
+                     "drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
 GTS3_ROMEND
 CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev. 2)",1989,"Gottlieb",mGTS3S80B3,0)
 
@@ -115,9 +115,9 @@ CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev. 2)",1989,"Gottlieb",mGTS3
 / Bell Ringer
 /-------------------------------------------------------------------*/
 INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(bellring,	"br_gprom.bin",CRC(a9a59b36) SHA1(ca6d0e54a5c85ef72485975c632660831a3b8c82))
-GTS3SOUND3232(			"br_yrom1.bin",CRC(d5aab379) SHA1(b3995f8aa2e54f91f2a0fd010c807fbfbf9ae847),
-						"br_drom1.bin",CRC(99f38229) SHA1(f63d743e63e88728e8d53320b21b2fda1b6385f8))
+GTS3ROMSTART(bellring, "br_gprom.bin",CRC(a9a59b36) SHA1(ca6d0e54a5c85ef72485975c632660831a3b8c82))
+GTS3SOUND3232(         "br_yrom1.bin",CRC(d5aab379) SHA1(b3995f8aa2e54f91f2a0fd010c807fbfbf9ae847),
+                       "br_drom1.bin",CRC(99f38229) SHA1(f63d743e63e88728e8d53320b21b2fda1b6385f8))
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3S80B3,0)
 
@@ -125,9 +125,9 @@ CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3S80B3,0)
 / Silver Slugger (#722)
 /-------------------------------------------------------------------*/
 INITGAME(silvslug, ALPHA_LED, FLIP67, 3/*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(silvslug,	"gprom.bin",CRC(a6c524e2) SHA1(dc12dd8e814a37aada021f84c58475efe72cb846))
-GTS3SOUND3232(			"yrom1.bin",CRC(20bc9797) SHA1(5d17b5f0423d8854fb7c4816d53a223ecc7c50c6),
-						"drom1.bin",CRC(eac3e1cc) SHA1(2725457231854e4f3d54fbba745b8fc6f55b1688))
+GTS3ROMSTART(silvslug, "gprom.bin",CRC(a6c524e2) SHA1(dc12dd8e814a37aada021f84c58475efe72cb846))
+GTS3SOUND3232(         "yrom1.bin",CRC(20bc9797) SHA1(5d17b5f0423d8854fb7c4816d53a223ecc7c50c6),
+                       "drom1.bin",CRC(eac3e1cc) SHA1(2725457231854e4f3d54fbba745b8fc6f55b1688))
 GTS3_ROMEND
 CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S80B3,0)
 
@@ -140,9 +140,9 @@ static struct core_dispLayout dispVegas[] = {
   {5,16,40,1,CORE_SEG16}, {5,19,41,1,CORE_SEG16}, {5,22,42,1,CORE_SEG16}, {0}
 };
 INITGAME(vegas, dispVegas, FLIP5051, 3/*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(vegas,	"gprom.bin",CRC(48189981) SHA1(95144af4b222158becd4d5748d15b7b6c6021bd2))
-GTS3SOUND3232(		"yrom1.bin",CRC(af1095f1) SHA1(06609085cd74b969e4f2ec962c427c5c42ebc6ff),
-					"drom1.bin",CRC(46eb5755) SHA1(94ec2d0cf41f68a8c3d7505186b11b4abb4803db))
+GTS3ROMSTART(vegas, "gprom.bin",CRC(48189981) SHA1(95144af4b222158becd4d5748d15b7b6c6021bd2))
+GTS3SOUND3232(      "yrom1.bin",CRC(af1095f1) SHA1(06609085cd74b969e4f2ec962c427c5c42ebc6ff),
+                    "drom1.bin",CRC(46eb5755) SHA1(94ec2d0cf41f68a8c3d7505186b11b4abb4803db))
 GTS3_ROMEND
 CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S80B3,0)
 
@@ -150,9 +150,9 @@ CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S80B3,0)
 / Deadly Weapon (#724)
 /-------------------------------------------------------------------*/
 INITGAME(deadweap, ALPHA_LED, FLIP67, 3/*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(deadweap,	"gprom.bin",CRC(07d84b32) SHA1(25d8772a5c8655b3406df94563076719b07129cd))
-GTS3SOUND3232(			"yrom1.bin",CRC(93369ed3) SHA1(3340478ffc00cf9991beabd4f0ecd89d0c88965e),
-						"drom1.bin",CRC(f55dd7ec) SHA1(fe306c40bf3d98e4076d0d8a935c3671469d4cff))
+GTS3ROMSTART(deadweap, "gprom.bin",CRC(07d84b32) SHA1(25d8772a5c8655b3406df94563076719b07129cd))
+GTS3SOUND3232(         "yrom1.bin",CRC(93369ed3) SHA1(3340478ffc00cf9991beabd4f0ecd89d0c88965e),
+                       "drom1.bin",CRC(f55dd7ec) SHA1(fe306c40bf3d98e4076d0d8a935c3671469d4cff))
 GTS3_ROMEND
 CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S80B3,0)
 
@@ -160,9 +160,9 @@ CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S80B3,0)
 / Title Fight (#726)
 /-------------------------------------------------------------------*/
 INITGAME(tfight, ALPHA_LED, FLIP67, 3/*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(tfight,	"gprom.bin",CRC(43b3193a) SHA1(bd185fe67c147a6acca8e78da4b77c384124fc46))
-GTS3SOUND3232(			"yrom1.bin",CRC(8591d421) SHA1(74402cf8b419e0cb05069851b0d5616e66b2f0a9),
-						"drom1.bin",CRC(9514739f) SHA1(2794549f549d68e064a9a962a4e91fff7dcf0160))
+GTS3ROMSTART(tfight, "gprom.bin",CRC(43b3193a) SHA1(bd185fe67c147a6acca8e78da4b77c384124fc46))
+GTS3SOUND3232(       "yrom1.bin",CRC(8591d421) SHA1(74402cf8b419e0cb05069851b0d5616e66b2f0a9),
+                     "drom1.bin",CRC(9514739f) SHA1(2794549f549d68e064a9a962a4e91fff7dcf0160))
 GTS3_ROMEND
 CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S80B3,0)
 
@@ -170,9 +170,9 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S80B3,0)
 / Nudge It (N102)
 /-------------------------------------------------------------------*/
 INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(nudgeit,	"gprom.bin",CRC(3d9e0309) SHA1(caaa28482e7f260668aa05b39b551acb8e4cc41a))
-GTS3SOUND3232(			"yrom1.bin",CRC(65fc2e60) SHA1(6377c220753d9e4b5c76d445056409526d95772f),
-						"drom1.bin",CRC(ae0c4b1d) SHA1(c8aa409c9b54fd8ecf70eb2926f4e98fc5eb11fe))
+GTS3ROMSTART(nudgeit, "gprom.bin",CRC(3d9e0309) SHA1(caaa28482e7f260668aa05b39b551acb8e4cc41a))
+GTS3SOUND3232(        "yrom1.bin",CRC(65fc2e60) SHA1(6377c220753d9e4b5c76d445056409526d95772f),
+                      "drom1.bin",CRC(ae0c4b1d) SHA1(c8aa409c9b54fd8ecf70eb2926f4e98fc5eb11fe))
 GTS3_ROMEND
 CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3S80B2,0)
 
@@ -180,9 +180,9 @@ CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3S80B2,0)
 / Car Hop (#725)
 /-------------------------------------------------------------------*/
 INITGAME(carhop, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(carhop,	"gprom.bin",CRC(164b2c9c) SHA1(49cf7e3a3acb5de8dbfd2ad22f8bd9a352ff2899))
-GTS3SOUND3232(			"yrom1.bin",CRC(831ee812) SHA1(57056cde36b17cb7d7f34275b1bb5dc3d52bde4e),
-						"drom1.bin",CRC(9dec74e7) SHA1(8234bdca5536d30dc1eabcb3a5505d2fd824ce0f))
+GTS3ROMSTART(carhop, "gprom.bin",CRC(164b2c9c) SHA1(49cf7e3a3acb5de8dbfd2ad22f8bd9a352ff2899))
+GTS3SOUND3232(       "yrom1.bin",CRC(831ee812) SHA1(57056cde36b17cb7d7f34275b1bb5dc3d52bde4e),
+                     "drom1.bin",CRC(9dec74e7) SHA1(8234bdca5536d30dc1eabcb3a5505d2fd824ce0f))
 GTS3_ROMEND
 CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S80B3,0)
 
@@ -195,9 +195,9 @@ static struct core_dispLayout dispHoops[] = {
   {5, 0,40,3,CORE_SEG7}, {5,11,43,3,CORE_SEG7}, {5,23,46,3,CORE_SEG7}, {5,34,49,3,CORE_SEG7}, {0}
 };
 INITGAME(hoops, dispHoops, FLIP67, 3/*?*/, SNDBRD_GTS80B, 4)
-GTS3ROMSTART(hoops,		"gprom.bin",CRC(78391273) SHA1(dbf91597ce2910e526fb5e82355ad862706b4975))
-GTS3SOUND3232(			"yrom1.bin",CRC(9718b958) SHA1(bac806267bab4852c0f3fdb48f8d872992f61ace),
-						"drom1.bin",CRC(e72c00eb) SHA1(5b9f85083b38d916afb0f9b72b061501504725ff))
+GTS3ROMSTART(hoops, "gprom.bin",CRC(78391273) SHA1(dbf91597ce2910e526fb5e82355ad862706b4975))
+GTS3SOUND3232(      "yrom1.bin",CRC(9718b958) SHA1(bac806267bab4852c0f3fdb48f8d872992f61ace),
+                    "drom1.bin",CRC(e72c00eb) SHA1(5b9f85083b38d916afb0f9b72b061501504725ff))
 GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3S80B3,0)
 
@@ -205,11 +205,11 @@ CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3S80B3,0)
 / Cactus Jack's (#729)
 /-------------------------------------------------------------------*/
 INITGAME(cactjack, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
-GTS3ROMSTART(cactjack,	"gprom.bin",CRC(5661ab06) SHA1(12b7066110feab0aef36ff7bdc74690fc8da4ed3))
-GTS3SOUND32128(			"yrom1.bin",CRC(4554ed0d) SHA1(df0a9225f961e0ee876c3e63ad54c6e4eac080ae),
-						"drom1.bin",CRC(78c099e1) SHA1(953111237fdc3e20562d823eb2b6430e5a4afe4d),
-						"arom1.bin",CRC(c890475f) SHA1(1cf6ed0dbd003a76a5cf889f62b489c0a62e9d25),
-						"arom2.bin",CRC(aba8fd98) SHA1(81b8af4d2d8e40b5b44f114c095371afe5539549))
+GTS3ROMSTART(cactjack, "gprom.bin",CRC(5661ab06) SHA1(12b7066110feab0aef36ff7bdc74690fc8da4ed3))
+GTS3SOUND32128(        "yrom1.bin",CRC(4554ed0d) SHA1(df0a9225f961e0ee876c3e63ad54c6e4eac080ae),
+                       "drom1.bin",CRC(78c099e1) SHA1(953111237fdc3e20562d823eb2b6430e5a4afe4d),
+                       "arom1.bin",CRC(c890475f) SHA1(1cf6ed0dbd003a76a5cf889f62b489c0a62e9d25),
+                       "arom2.bin",CRC(aba8fd98) SHA1(81b8af4d2d8e40b5b44f114c095371afe5539549))
 
 GTS3_ROMEND
 CORE_GAMEDEFNV(cactjack,"Cactus Jack's",1991,"Gottlieb",mGTS3S,0)
@@ -218,11 +218,11 @@ CORE_GAMEDEFNV(cactjack,"Cactus Jack's",1991,"Gottlieb",mGTS3S,0)
 / Class of 1812 (#730)
 /-------------------------------------------------------------------*/
 INITGAME(clas1812, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
-GTS3ROMSTART(clas1812,	"gprom.bin",CRC(564349bf) SHA1(458eb2ece924a20d309dce7117c94e75b4a21fd7))
-GTS3SOUND32128(			"yrom1.bin",CRC(4ecf6ecb) SHA1(92469ccdedcc8e61edcddaedd688ef990a9ad5ad),
-						"drom1.bin",CRC(3863a9df) SHA1(1759abbfcb127a6909f70845f41daf3ac8e80cef),
- 						"arom1.bin",CRC(357b0069) SHA1(870b0b84c6b3754f89b4e4e0b4594613ef589204),
-						"arom2.bin",CRC(5be02ff7) SHA1(51af73a26bbed0915ec57cde8f9cac552978b2dc))
+GTS3ROMSTART(clas1812, "gprom.bin",CRC(564349bf) SHA1(458eb2ece924a20d309dce7117c94e75b4a21fd7))
+GTS3SOUND32128(        "yrom1.bin",CRC(4ecf6ecb) SHA1(92469ccdedcc8e61edcddaedd688ef990a9ad5ad),
+                       "drom1.bin",CRC(3863a9df) SHA1(1759abbfcb127a6909f70845f41daf3ac8e80cef),
+                       "arom1.bin",CRC(357b0069) SHA1(870b0b84c6b3754f89b4e4e0b4594613ef589204),
+                       "arom2.bin",CRC(5be02ff7) SHA1(51af73a26bbed0915ec57cde8f9cac552978b2dc))
 GTS3_ROMEND
 CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,0)
 
@@ -234,11 +234,11 @@ CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,0)
 / Surf 'n Safari (#731)
 /-------------------------------------------------------------------*/
 INITGAME1(surfnsaf, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
-GTS3ROMSTART(surfnsaf,	"gprom.bin",CRC(ac3393bd) SHA1(f9c533b937b5ca5698b805ed6ed573cb22383d9d))
-GTS3SOUND32256A(		"yrom1.bin",CRC(a0480418) SHA1(a982564d5dbf52275c2e7223687b07cf4ca0a115),
-						"drom1.bin",CRC(ec8fc963) SHA1(247e76d87beb3339e7d55292f9eadd2351621cfa),
-						"arom1.bin",CRC(38b569b2) SHA1(93be47916a92541d097233b60a42eb7ca587ce52),
-						"arom2.bin",CRC(224c2021) SHA1(6b426097a2870b3b32d786be6e66ba6be9f54c29))
+GTS3ROMSTART(surfnsaf, "gprom.bin",CRC(ac3393bd) SHA1(f9c533b937b5ca5698b805ed6ed573cb22383d9d))
+GTS3SOUND32256A(       "yrom1.bin",CRC(a0480418) SHA1(a982564d5dbf52275c2e7223687b07cf4ca0a115),
+                       "drom1.bin",CRC(ec8fc963) SHA1(247e76d87beb3339e7d55292f9eadd2351621cfa),
+                       "arom1.bin",CRC(38b569b2) SHA1(93be47916a92541d097233b60a42eb7ca587ce52),
+                       "arom2.bin",CRC(224c2021) SHA1(6b426097a2870b3b32d786be6e66ba6be9f54c29))
 GTS3_ROMEND
 CORE_GAMEDEFNV(surfnsaf,"Surf 'n Safari",1991,"Gottlieb",mGTS3BS,0)
 
@@ -246,11 +246,11 @@ CORE_GAMEDEFNV(surfnsaf,"Surf 'n Safari",1991,"Gottlieb",mGTS3BS,0)
 / Operation Thunder (#732)
 /-------------------------------------------------------------------*/
 INITGAME1(opthund, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 5)
-GTS3ROMSTART(opthund,	"gprom.bin",CRC(96a128c2) SHA1(4032c5191b167a0498371207666a1f73155b7a74))
-GTS3SOUND32256A(		"yrom1.bin",CRC(169816d1) SHA1(d23b1d8d1b841ca065a485e80805ecc6342ce57b),
-						"drom1.bin",CRC(db28be69) SHA1(6c505c34c8bdccc43dd8f310f01dd3a6b49e8059),
-						"arom1.bin",CRC(0fbb130a) SHA1(a171c20f861dac5918c5b410e2a2bdd6e7c0553b),
-						"arom2.bin",CRC(0f7632b3) SHA1(a122a062448139d5c1a9daa7d827c3073aa194f7))
+GTS3ROMSTART(opthund, "gprom.bin",CRC(96a128c2) SHA1(4032c5191b167a0498371207666a1f73155b7a74))
+GTS3SOUND32256A(      "yrom1.bin",CRC(169816d1) SHA1(d23b1d8d1b841ca065a485e80805ecc6342ce57b),
+                      "drom1.bin",CRC(db28be69) SHA1(6c505c34c8bdccc43dd8f310f01dd3a6b49e8059),
+                      "arom1.bin",CRC(0fbb130a) SHA1(a171c20f861dac5918c5b410e2a2bdd6e7c0553b),
+                      "arom2.bin",CRC(0f7632b3) SHA1(a122a062448139d5c1a9daa7d827c3073aa194f7))
 GTS3_ROMEND
 CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,0)
 
@@ -580,7 +580,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(stargat3,stargate,"Stargate (rev. 3)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
 INITGAME2(stargat4, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
-GTS3ROMSTART(stargat4,	"gprom4.bin", CRC(7b8f6920) SHA1(f354593e13c30e15c25580387ef2eb9b23622c89))
+GTS3ROMSTART(stargat4,	"gprom4.bin", CRC(7b8f6920) SHA1(f354593e13c30e15c25580387ef2eb9b23622c89)) // fixes at least the 'Beeping and Garbled DMD' issue
 GTS3_DMD512_ROMSTART(	"dsprom3.bin",CRC(db483524) SHA1(ea14e8b04c32fc403ce2ff060caed5562104a862))
 GTS3SOUND32512A(		"yrom1.bin",CRC(53123fd4) SHA1(77fd183a10eea2e04a07edf9da14ef7aadb65f91),
 						"drom1.bin",CRC(781b2b27) SHA1(06decd22b9064ee4859618a043055e0b3e3b9e04),
@@ -663,12 +663,12 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(andretti,"Mario Andretti",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
 INITGAME2(andrett4, dispAndretti, FLIP8283, 4, SNDBRD_GTS3, 4)
-GTS3ROMSTART(andrett4,  "gpromt4.bin", CRC(c6f6a23b) SHA1(01ea23a830be1e86f5ecd27d6d56c1c6d5ff3176))
-GTS3_DMD512_ROMSTART(   "dsprom.bin",CRC(1f70baae) SHA1(cf07bb057093b2bd18e6ee45009245ea62094e53))
-GTS3SOUND32512256(      "yrom1.bin",CRC(4ffb15b0) SHA1(de4e9b2ccca865deb2595320015a149246795260),
-                        "drom1.bin",CRC(d472210c) SHA1(4607e6f928cb9a5f41175210ba0427b6cd50fb83),
-                        "arom1.bin",CRC(918c3270) SHA1(aa57d3bfba01e701b02ca7e4f0946144cfb7d4b1),
-                        "arom2.bin",CRC(3c61a2f7) SHA1(65cfb5d1261a1b0c219e1786b6635d7b0a188040))
+GTS3ROMSTART(andrett4, "gpromt4.bin", CRC(c6f6a23b) SHA1(01ea23a830be1e86f5ecd27d6d56c1c6d5ff3176))
+GTS3_DMD512_ROMSTART(  "dsprom.bin",CRC(1f70baae) SHA1(cf07bb057093b2bd18e6ee45009245ea62094e53))
+GTS3SOUND32512256(     "yrom1.bin",CRC(4ffb15b0) SHA1(de4e9b2ccca865deb2595320015a149246795260),
+                       "drom1.bin",CRC(d472210c) SHA1(4607e6f928cb9a5f41175210ba0427b6cd50fb83),
+                       "arom1.bin",CRC(918c3270) SHA1(aa57d3bfba01e701b02ca7e4f0946144cfb7d4b1),
+                       "arom2.bin",CRC(3c61a2f7) SHA1(65cfb5d1261a1b0c219e1786b6635d7b0a188040))
 GTS3_ROMEND
 CORE_CLONEDEFNV(andrett4,andretti,"Mario Andretti (rev. T4)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
@@ -689,12 +689,12 @@ CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA_4C_b, 0)
 / Brooks & Dunn (#749)
 /-------------------------------------------------------------------*/
 INITGAME2(brooks, DMD, FLIP4243, 4/*?*/, SNDBRD_GTS3, 4)
-GTS3ROMSTART(brooks,	"gprom.bin", CRC(26cebf07) SHA1(14741e2d216528f176dc35ade856baffab0f99a0))
-GTS3_DMD512_ROMSTART(   "dsprom.bin",NO_DUMP)
-GTS3SOUND32512256(      "yrom1.bin",NO_DUMP,
-						"drom1.bin",NO_DUMP,
-						"arom1.bin",NO_DUMP,
-						"arom2.bin",NO_DUMP)
+GTS3ROMSTART(brooks,  "gprom.bin", CRC(26cebf07) SHA1(14741e2d216528f176dc35ade856baffab0f99a0))
+GTS3_DMD512_ROMSTART( "dsprom.bin",NO_DUMP)
+GTS3SOUND32512256(    "yrom1.bin", NO_DUMP,
+                      "drom1.bin", NO_DUMP,
+                      "arom1.bin", NO_DUMP,
+                      "arom2.bin", NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(brooks,"Brooks & Dunn (rev. T1)",1996,"Gottlieb",mGTS3DMDSA_4C_b, 0) //!! check colors again if available (4_a, 4_b or 5?)
 
@@ -704,11 +704,11 @@ CORE_GAMEDEFNV(brooks,"Brooks & Dunn (rev. T1)",1996,"Gottlieb",mGTS3DMDSA_4C_b,
 / machinaZOIS by www.aksioma.org (Shaq Attaq conversion)
 /-------------------------------------------------------------------*/
 INITGAME2(mac_zois, dispShaq, FLIP8182, 4, SNDBRD_GTS3, 4)
-GTS3ROMSTART(mac_zois,	"gprom.bin", CRC(7a967fd1) SHA1(c06e2aad9452150d92cfd3ba37b8e4a932cf4324))
-GTS3_DMD512_ROMSTART(	"dsprommz.bin",CRC(3b63f9c6) SHA1(b06ea3b8f7d3c4b22a8bbc687698654366c35f22))
-GTS3SOUND32512256(		"yrom1.bin",CRC(e81e2928) SHA1(4bfe57efa99bb762e4de6c7e88e79b8c5ff57626),
-						"drom1.bin",CRC(16a03261) SHA1(25f5a3d32d2ec80766381106445fd624360fea78),
-						"arom1mz.bin",CRC(68ceeb43) SHA1(debe5a0683b1806c9813ba89a6438afb3eecb188),
-						"arom2mz.bin",CRC(7dabc8ca) SHA1(ca6dc59891222f8534b0a2de8cd29c52e5b33efc))
+GTS3ROMSTART(mac_zois, "gprom.bin",    CRC(7a967fd1) SHA1(c06e2aad9452150d92cfd3ba37b8e4a932cf4324))
+GTS3_DMD512_ROMSTART(  "dsprommz.bin", CRC(3b63f9c6) SHA1(b06ea3b8f7d3c4b22a8bbc687698654366c35f22))
+GTS3SOUND32512256(     "yrom1.bin",    CRC(e81e2928) SHA1(4bfe57efa99bb762e4de6c7e88e79b8c5ff57626),
+                       "drom1.bin",    CRC(16a03261) SHA1(25f5a3d32d2ec80766381106445fd624360fea78),
+                       "arom1mz.bin",  CRC(68ceeb43) SHA1(debe5a0683b1806c9813ba89a6438afb3eecb188),
+                       "arom2mz.bin",  CRC(7dabc8ca) SHA1(ca6dc59891222f8534b0a2de8cd29c52e5b33efc))
 GTS3_ROMEND
 CORE_CLONEDEFNV(mac_zois,shaqattq,"machinaZOIS Virtual Training Center",2003,"Aksioma",mGTS3DMDS_4C_a, 0)

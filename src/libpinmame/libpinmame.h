@@ -55,9 +55,9 @@ typedef enum {
 	SEG8H = SEG8 | SEGHIBIT,
 	SEG7H = SEG7 | SEGHIBIT,
 	SEG87H = SEG87 | SEGHIBIT,
-	SEG87FH = SEG87F| SEGHIBIT,
+	SEG87FH = SEG87F | SEGHIBIT,
 	SEG7SH = SEG7S | SEGHIBIT,
-	SEG7SCH = SEG7SC| SEGHIBIT
+	SEG7SCH = SEG7SC | SEGHIBIT
 } PINMAME_DISPLAY_TYPE;
 
 typedef enum : uint64_t {
@@ -279,10 +279,10 @@ typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
 typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
 typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
 typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
-typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
-typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
+typedef int  (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
+typedef int  (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
-typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
+typedef int  (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
 	const int sampleRate;

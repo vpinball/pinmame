@@ -6,7 +6,7 @@
 
 #include "harddisk.h"
 #include "md5.h"
-#include "zlib.h"
+#include <zlib.h>
 #include <time.h>
 
 

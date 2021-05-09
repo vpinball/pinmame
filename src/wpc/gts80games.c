@@ -2445,7 +2445,7 @@ ROM_START(mmmaster)
   NORMALREGION(0x10000, GTS80_MEMREG_CPU)
     ROM_LOAD("gprom.cpu", 0x0000, 0x8000, CRC(0ffacb1d) SHA1(c609f49e0933ceb3d7eb1725a3ba0f1486978bd6))
       ROM_RELOAD         (0x8000, 0x8000) // reset vector
-  GTS80BSSOUND888(           "drom.snd",  CRC(758e1743) SHA1(6df3011c044796afcd88e52d1ca69692cb489ff4),
+  GTS80BSSOUND888(           "drom.snd",  CRC(758e1743) SHA1(6df3011c044796afcd88e52d1ca69692cb489ff4), // Genesis sound roms
                              "yrom1.snd", CRC(4869b0ec) SHA1(b8a56753257205af56e06105515b8a700bb1935b),
                              "yrom2.snd", CRC(0528c024) SHA1(d24ff7e088b08c1f35b54be3c806f8a8757d96c7))
 GTS80_ROMEND

@@ -75,8 +75,8 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Game Plan Pinball* - All games from Rio (1978) to Cyclopes (1985)
 - *Atari Pinball* - All games from Atarians (1976) to Road Runner (1979)
 - *Zaccaria Pinball* - All games from Winter Sports (1978) to New Star's Phoenix (1987)
-- *Taito Pinball* - All that's available... games between 1980 and 1985.
-- *Midway Pinball* - Rotation VIII (1978).
+- *Taito Pinball* - All that's available... games between 1980 and 1985
+- *Midway Pinball* - Rotation VIII (1978)
 - *Capcom Pinball* - All games from Pinball Magic (1995) to Kingpin (1996)
 - *Alvin G. and Co* - All games from Soccer Ball (1991) to Pistol Poker (1993)
 - *Tecnoplay* - Scramble, X-Force (both 1987)
@@ -115,11 +115,11 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Sport Matic*
 - *Regama* - Trebol
 - **Prototype games and modifications**
-  - Dave Nutting's Flicker (Sep 1974),
-  - Bally's Bow & Arrow (Jan 1976),
-  - Williams Rat Race (Jan 1983),
-  - Wild Texas (Firepower II Modification),
-  - machinaZOIS,
+  - Dave Nutting's Flicker (Sep 1974)
+  - Bally's Bow & Arrow (Jan 1976)
+  - Williams Rat Race (Jan 1983)
+  - Wild Texas (Firepower II Modification)
+  - machinaZOIS
   - and many more...
 
 "Supported" usually means that the game loads and the display(s) start up along with lamps etc. All games

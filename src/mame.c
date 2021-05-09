@@ -1714,7 +1714,9 @@ static int validitychecks(void)
 			if ((drivers[i]->clone_of->clone_of->flags & NOT_A_DRIVER) == 0)
 			{
 				printf("%s: %s is a clone of a clone\n",drivers[i]->source_file,drivers[i]->name);
-				error = 1; //!! fails for the color roms
+#ifndef SAM_INCLUDE_COLORED //!! fails for the color roms
+				error = 1;
+#endif
 			}
 		}
 

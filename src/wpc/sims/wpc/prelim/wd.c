@@ -337,15 +337,15 @@ CORE_CLONEDEF(wd,048r,12,"WHO Dunnit (0.48R Prototype)",1995,"Bally",wpc_m95DCSS
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData wdSimData = {
-  2,    				/* 2 game specific input ports */
-  wd_stateDef,				/* Definition of all states */
-  wd_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  wd_stateDef,			/* Definition of all states */
+  wd_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
-  NULL, 				/* no init */
-  wd_handleBallState,			/*Function to handle ball state changes*/
-  wd_drawStatic,			/*Function to handle mechanical state changes*/
-  TRUE, 				/* Simulate manual shooter? */
-  NULL  				/* Custom key conditions? */
+  NULL,					/* no init */
+  wd_handleBallState,	/*Function to handle ball state changes*/
+  wd_drawStatic,		/*Function to handle mechanical state changes*/
+  TRUE,					/* Simulate manual shooter? */
+  NULL					/* Custom key conditions? */
 };
 
 /*----------------------

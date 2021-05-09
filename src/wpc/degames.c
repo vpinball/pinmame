@@ -1194,6 +1194,9 @@ CORE_CLONEDEF(gnr,300d,300,"Guns N' Roses (3.00 Dutch)",1994,"Data East",de_mDED
 /*-------------------------------------------------------------
 / Maverick - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
+
+// Prototype game featured a widebody playfield and a "normal" 128x32 display
+
 INITGAMES11(mav, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64, S11_PRINTERLINE)
 DE_ROMSTARTx0(mav_402, "mavcpua.404",CRC(9f06bd8d) SHA1(3b931af5455ed9c40f2b6c884427a326bba8f75a))
 DE_DMD64ROM88(   "mavdisp0.402",CRC(4e643525) SHA1(30b91c91c2f1295cdd018023c5ac783570a0aeea),
@@ -1223,14 +1226,14 @@ DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca6
 DE_ROMEND
 CORE_CLONEDEF(mav,400,402,"Maverick (4.00)",1994,"Sega",de_mDEDMD64S2A,0)
 
-DE_ROMSTARTx0(mav_100, "mavcpu.100",CRC(13fdc959) SHA1(f8155f0fe5d4c3fe55000ab3b57f298fd9229fef))
+DE_ROMSTARTx0(mav_100, "mavcpu.100",CRC(13fdc959) SHA1(f8155f0fe5d4c3fe55000ab3b57f298fd9229fef)) // "Data East code"
 DE_DMD64ROM88(   "mavdsp0.100", CRC(3e01f5c8) SHA1(8e40f399c77aa17bebbefe04742ff2ff95508323),
                  "mavdsp3.100", CRC(e2b623f2) SHA1(7b5a6d0db30f3deedb8fe0e1731c81ec836a66f5))
-DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca667f797f29b1),
+DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca667f797f29b1), //!! are there matching, old Data East sound roms as well?
                  "mavu17.dat" , CRC(cba377b8) SHA1(b7551b6cb64357cdacf1a96cedfccbabf4bd070a),
                  "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
 DE_ROMEND
-CORE_CLONEDEF(mav,100,402,"Maverick (1.00)",1994,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEF(mav,100,402,"Maverick (1.00)",1994,"Data East",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Mary Shelley's Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom

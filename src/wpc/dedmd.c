@@ -30,7 +30,7 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
 #define DMD32_BANK0    2
-#define DMD32_FIRQFREQ_HACK 86.20689655172414 // real DE HW 78.07 (measured on LW3), Whitestar 77.77, but this leads to (at least?) LW3 and R&B and SW glitching, thus use the old/working 80Hz * the changes to IRQ freq in Sys11 for these (and Aaron Spelling)
+#define DMD32_FIRQFREQ_HACK 86.20689655172414 // real DE HW 78.07 (measured on LW3), Whitestar 77.77, but this leads to (at least?) LW3 and R&B and SW glitching, thus use the old/working 80Hz * the changes to IRQ freq in Sys11 for these (and Aaron Spelling & Michael Jordan, //!! although (at least) these 2 show the display version screen from time to time)
 #define DMD32_FIRQFREQ_DE 78.07 // real DE HW (measured on LW3)
 #define DMD32_FIRQFREQ_SE 77.77 // real Whitestar HW
 

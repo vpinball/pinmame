@@ -94,8 +94,8 @@ Games supported (a bit outdated, at least since version 2.1 :/ )
   Game Plan Pinball: All games from Rio (1978) to Cyclopes (1985)
   Atari Pinball: All games from Atarians (1976) to Road Runner (1979)
   Zaccaria Pinball: All games from Winter Sports (1978) to New Star's Phoenix (1987)
-  Taito Pinball: All that's available... games between 1980 and 1985.
-  Midway Pinball: Rotation VIII (1978).
+  Taito Pinball: All that's available... games between 1980 and 1985
+  Midway Pinball: Rotation VIII (1978)
   Capcom Pinball: All games from Pinball Magic (1995) to Kingpin (1996)
   Alvin G. and Co: All games from Soccer Ball (1991) to Pistol Poker (1993)
   Tecnoplay: Scramble, X-Force (both 1987)

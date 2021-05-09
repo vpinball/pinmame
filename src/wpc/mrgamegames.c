@@ -80,15 +80,15 @@ CORE_CLONEDEFNV(motrshwa,motrshow,"Motor Show (alternate set)",1988,"Mr. Game (I
 / Mac Attack (1990)
 /-------------------------------------------------------------------*/
 INITGAME(macattck, mrgame_disp_g2, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
-MRGAME_ROMSTART(macattck,	"cpu_ic13.rom", CRC(35cabad1) SHA1(01279df881b0d7d6586c1b8570b12bdc1fb9ff21),
-							"cpu_ic14.rom", CRC(6a4d7b89) SHA1(090e1a6c069cb6e5efd26a0260df613375f0b063))
+MRGAME_ROMSTART(macattck,"cpu_ic13.rom",CRC(35cabad1) SHA1(01279df881b0d7d6586c1b8570b12bdc1fb9ff21),
+						"cpu_ic14.rom", CRC(6a4d7b89) SHA1(090e1a6c069cb6e5efd26a0260df613375f0b063))
 MRGAME_VIDEOROM2(		"vid_ic91.rom", CRC(42d2ba01) SHA1(c13d38c2798575760461912cef65dde57dfd938c),
 						"vid_ic14.rom", CRC(f6e047fb) SHA1(6be712dda60257b9e7014315c8fee19812622bf6),
 						"vid_ic15.rom", CRC(405a8f54) SHA1(4d58915763db3c3be2bfc166be1a12285ff2c38b),
 						"vid_ic16.rom", CRC(063ea783) SHA1(385dbfcc8ecd3a784f9a8752d00e060b48d70d6a),
 						"vid_ic17.rom", CRC(7494e44e) SHA1(c7c062508e81b9fd818f36f80d4a6da02c3bda40),
 						"vid_ic18.rom", CRC(83ef25f8) SHA1(bab482badb8646b099dbb197ca9af3a126b274e3),
-						"vid_ic61.rom", CRC(538c72ae) SHA1(f704492568257fcc4a4f1189207c6fb6526eb81c))
+						"vid_ic61.rom", CRC(538c72ae) SHA1(f704492568257fcc4a4f1189207c6fb6526eb81c)) // Gaston: i assume that IC61 is the same as wcup90
 MRGAME_SOUNDROM14(		"snd_ic06.rom", CRC(4ab94d16) SHA1(4c3755489f699c751d664f420b9852ef16bb3aa6),
 						"snd_ic22.rom", CRC(9d3546c5) SHA1(cc6e91288692b927f7d046e192b1fd128c126d0d),
 						"snd_ic35.rom", CRC(52e9811c) SHA1(52223cf14a185b4dab14143d797000baf6d618cc),
