@@ -1073,7 +1073,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int ii    = layout->length;
       UINT16 *seg     = &coreGlobals.segments[layout->start].w;
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
-      int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
+      const int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
       disp_num_segs[total_disp++] = ii;
@@ -1165,7 +1165,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     libpinmame_update_display(g_display_index, layout, seg_data);
     g_display_index++;
 #endif
-}
+  }
 
 #ifdef VPINMAME
   //alpha frame
@@ -1374,11 +1374,11 @@ void core_updateSw(int flipEn) {
 /---------------------------*/
 void core_textOut(char *buf, int length, int x, int y, int color) {
   if (y < locals.maxSimRows) {
-    int ii, l;
+    int ii;
 
-    l = (int)strlen(buf);
+    const int l = (int)strlen(buf);
     for (ii = 0; ii < length; ii++) {
-      char c = (ii >= l) ? ' ' : buf[ii];
+      const char c = (ii >= l) ? ' ' : buf[ii];
 
       drawgfx(Machine->scrbitmap, Machine->uifont, c, color-1, 0, 0,
               x + ii * Machine->uifont->width, y+locals.firstSimRow, 0,
@@ -1452,7 +1452,7 @@ static VIDEO_UPDATE(core_status) {
     startRow += startx + drawData->size.x;
     if (starty + drawData->size.y > nextCol) nextCol = starty + drawData->size.y;
   }
-  /*-- Defult square lamp matrix layout --*/
+  /*-- Default square lamp matrix layout --*/
   else {
     for (ii = 0; ii < CORE_CUSTLAMPCOL + core_gameData->hw.lampCol; ii++) {
       BMTYPE **line = &lines[locals.firstSimRow + startRow];
@@ -1586,7 +1586,7 @@ int core_getSwCol(int colEn) {
   if (colEn) {
     while ((colEn & 0x01) == 0) {
       colEn >>= 1;
-      ii += 1;
+      ii++;
     }
   }
   return coreGlobals.swMatrix[ii];
@@ -2046,7 +2046,7 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *p
 {
 	//UINT8 outputlevel;
 	UINT32 targetlevel;
-	UINT32 mask = (1 << bit_count) - 1;
+	const UINT32 mask = (1 << bit_count) - 1;
 
 	bits &= mask;
 	targetlevel = ((UINT32)core_bits_set_table256[bits & 0xff] +
@@ -2063,12 +2063,7 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *p
 
 void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate)
 {
-	int delta;
-
-	if (sIn >= *sOut)
-		delta = sIn - *sOut;
-	else
-		delta = sIn + buffersize - *sOut;
+	const int delta = (sIn >= *sOut) ? (sIn - *sOut) : (sIn + buffersize - *sOut);
 
 #ifdef DEBUG_SOUND
 	{
