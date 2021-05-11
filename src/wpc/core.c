@@ -24,6 +24,10 @@
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 
+#ifdef LIBPINMAME
+ int g_display_index = 0;
+#endif
+
  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
  static UINT8 *currbuffer = buffer1;
@@ -74,7 +78,7 @@ void vp_setDIP(int bank, int value) { }
 #endif /* VPINMAME LIBPINMAME */
 
 #ifdef LIBPINMAME
-  extern void libpinmame_update_displays();
+  extern void libpinmame_update_display(const int index, const struct core_dispLayout* p_layout, const void* p_data);
 #endif
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
@@ -793,7 +797,6 @@ static PALETTE_INIT(core) {
 /    Generic DMD display handler
 /------------------------------------*/
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout) {
-
   UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
   UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
@@ -899,10 +902,14 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 #if defined(VPINMAME) || defined(LIBPINMAME)
         const int offs = (ii-1)*layout->length + jj;
         currbuffer[offs] = col;
+#ifdef LIBPINMAME
+        g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
+#else
         if(layout->length >= 128) { // Capcom hack
           g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
           g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
         }
+#endif
 #endif
         *line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
@@ -925,21 +932,17 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
-#if defined(VPINMAME) || defined(LIBPINMAME)
-
+#ifdef VPINMAME
   if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
- #ifndef LIBPINMAME
 	  //external dmd
 	  if (g_fShowPinDMD)
 		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
- #endif
 
 	  if (oldbuffer != NULL) {	  // detect if same frame again
 		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
 		  {
 			  g_needs_DMD_update = 1;
 
- #ifndef LIBPINMAME
 			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)	// output dump frame to .txt
 			  {
 				  FILE *f;
@@ -1005,7 +1008,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 					  fclose(f);
 				  }
 			  }
- #endif
 		  }
 	  }
 
@@ -1022,7 +1024,13 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  }
   }
 #endif
+
+#ifdef LIBPINMAME
+  libpinmame_update_display(g_display_index, layout, g_raw_dmdbuffer);
+  g_display_index++;
+#endif
 }
+
 #ifdef VPINMAME
 #  define inRect(r,l,t,w,h) FALSE
 #else /* VPINMAME */
@@ -1152,7 +1160,12 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 			}
 #endif 
     }
-  }
+
+#ifdef LIBPINMAME
+    libpinmame_update_display(g_display_index, layout, seg_data);
+    g_display_index++;
+#endif
+}
 
 #ifdef VPINMAME
   //alpha frame
@@ -1163,6 +1176,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
 VIDEO_UPDATE(core_gen) {
   int count = 0;
+
 #ifdef PROC_SUPPORT
 	int alpha = (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_ALLS11)) != 0;
 	if (coreGlobals.p_rocEn) {
@@ -1173,6 +1187,11 @@ VIDEO_UPDATE(core_gen) {
 	// If we don't want the DMD displayed on the screen, skip this code
 	if (pmoptions.virtual_dmd) {
 #endif
+
+#ifdef LIBPINMAME
+   g_display_index = 0;
+#endif
+
   updateDisplay(bitmap, cliprect, core_gameData->lcdLayout, &count);
   memcpy(locals.lastSeg, coreGlobals.segments, sizeof(locals.lastSeg));
 #ifdef PROC_SUPPORT
@@ -1182,10 +1201,6 @@ VIDEO_UPDATE(core_gen) {
 			procUpdateDMD();
 		}
 	}
-#endif
-
-#ifdef LIBPINMAME
-	libpinmame_update_displays();
 #endif
 
   video_update_core_status(bitmap,cliprect);

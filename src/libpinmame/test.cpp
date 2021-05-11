@@ -15,10 +15,10 @@
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
 
-void DumpDmd(int index, UINT8* p_frame, PinmameDisplayLayout* p_displayLayout) {
+void DumpDmd(int index, UINT8* p_displayData, PinmameDisplayLayout* p_displayLayout) {
 	for (int y = 0; y < p_displayLayout->height; y++) {
 		for (int x = 0; x < p_displayLayout->width; x++) {
-			UINT8 value = p_frame[y * p_displayLayout->width + x];
+			UINT8 value = p_displayData[y * p_displayLayout->width + x];
 			
 			if (p_displayLayout->depth == 2) {
 				switch(value) {
@@ -100,7 +100,7 @@ void DumpDmd(int index, UINT8* p_frame, PinmameDisplayLayout* p_displayLayout) {
 	}
 }
 
-void DumpAlphanumeric(int index, UINT16* p_frame, PinmameDisplayLayout* p_displayLayout) {
+void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_displayLayout) {
 	char output[8][512] = {
 		{ '\0' },
 		{ '\0' },
@@ -113,7 +113,7 @@ void DumpAlphanumeric(int index, UINT16* p_frame, PinmameDisplayLayout* p_displa
 	};
 
 	for (int pos = 0; pos < p_displayLayout->length; pos++) {
-		const UINT16 value = *(p_frame++);
+		const UINT16 value = *(p_displayData++);
 
 		char segments[8][10] = {
 			{ " AAAAA   " },
@@ -172,7 +172,7 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
 		p_displayLayout->length);
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout) {
+void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout) {
 	printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
 		p_displayLayout->type,
@@ -185,11 +185,12 @@ void CALLBACK OnDisplayUpdated(int index, void* p_frame, PinmameDisplayLayout* p
 
 	if (p_displayLayout->type == DMD
 		|| p_displayLayout->type == (DMD | DMDNOAA)
+		|| p_displayLayout->type == (DMD | NODISP)
 		|| p_displayLayout->type == (DMD | DMDNOAA | NODISP)) {
-		DumpDmd(index, (UINT8*)p_frame, p_displayLayout);
+		DumpDmd(index, (UINT8*)p_displayData, p_displayLayout);
 	}
 	else {
-		DumpAlphanumeric(index, (UINT16*)p_frame, p_displayLayout);
+		DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
 	}
 }
 
@@ -248,8 +249,9 @@ int main(int, char**) {
 	//PinmameRun("tf_180h");
 	//PinmameRun("flashgdn");
 	//PinmameRun("fourx4");
+	//PinmameRun("ripleys");
 
-	if (PinmameRun("mm_109c") == OK) {
+	if (PinmameRun("ripleys") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
