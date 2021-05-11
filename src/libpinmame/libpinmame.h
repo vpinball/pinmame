@@ -15,7 +15,7 @@
 #endif
 
 #define MAX_PATH 512
-#define MAX_DISPLAYS 15
+#define MAX_DISPLAYS 25
 #define ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
@@ -278,11 +278,11 @@ typedef struct {
 typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
 typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
 typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
-typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_frame, PinmameDisplayLayout* p_displayLayout);
-typedef int  (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
-typedef int  (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
+typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout);
+typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
+typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
-typedef int  (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
+typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
 	const int sampleRate;

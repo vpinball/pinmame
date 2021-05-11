@@ -12,11 +12,6 @@ extern "C" {
 #include "video.h"
 #include "audit.h"
 
-extern UINT32 g_raw_dmdx;
-extern UINT32 g_raw_dmdy;
-extern UINT32 g_needs_DMD_update;
-extern unsigned char g_raw_dmdbuffer[DMD_MAXY * DMD_MAXX];
-
 extern int throttle;
 extern int autoframeskip;
 extern int allow_sleep;
@@ -33,10 +28,11 @@ char g_szGameName[256] = { 0 }; // String containing requested game name (may be
 
 static int _isRunning = 0;
 static int _timeToQuit = 0;
-static int _firstFrame = 0;
-static UINT8 _frame[DMD_MAXY * DMD_MAXX];
-static UINT16 _lastSeg[MAX_DISPLAYS][CORE_SEGCOUNT];
+static int _firstPass = 0;
 static PinmameConfig* _p_Config = nullptr;
+static std::thread* _p_gameThread = nullptr;
+
+static UINT8 _displayData[MAX_DISPLAYS][DMD_MAXX * DMD_MAXY];
 
 static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "A", A, KEYCODE_A },
@@ -144,8 +140,6 @@ static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "MENU", MENU, KEYCODE_MENU }
 };
 
-static std::thread* _p_gameThread = nullptr;
-
 /******************************************************
  * ComposePath
  ******************************************************/
@@ -195,103 +189,6 @@ int GetDisplayCount(const struct core_dispLayout* p_layout, int* const p_index) 
 		(*p_index)++;
 	}
 	return *p_index;
-}
-
-/******************************************************
- * GetDisplays
- ******************************************************/
-
-void GetDisplays(const struct core_dispLayout* p_layout, const int displayCount, int* const p_index) {
-	for (; p_layout->length; p_layout += 1) {
-		if (p_layout->type == CORE_IMPORT) {
-			GetDisplays(p_layout->lptr, displayCount, p_index);
-			continue;
-		}
-		PinmameDisplayLayout displayLayout;
-		memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
-		displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
-		displayLayout.top = p_layout->top;
-		displayLayout.left = p_layout->left;
-
-		if (p_layout->type == CORE_DMD
-			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
-			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP)) {
-				displayLayout.height = g_raw_dmdy;
-				displayLayout.width = g_raw_dmdx;
-
-				const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) 
-					|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) 
-					|| (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
-
-				displayLayout.depth = shade_16_enabled ? 4 : 2;
-		}
-		else {
-			displayLayout.length = p_layout->length;
-		}
-
-		(*(_p_Config->cb_OnDisplayAvailable))(*p_index, displayCount, &displayLayout);
-
-		(*p_index)++;
-	}
-}
-
-/******************************************************
- * UpdateDisplays
- ******************************************************/
-
-void UpdateDisplays(const struct core_dispLayout* p_layout, int* const p_index, int* const p_lastOffset) {
-	for (; p_layout->length; p_layout += 1) {
-		if (p_layout->type == CORE_IMPORT) {
-			UpdateDisplays(p_layout->lptr, p_index, p_lastOffset);
-			continue;
-		}
-
-		PinmameDisplayLayout displayLayout;
-		memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
-		displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
-		displayLayout.top = p_layout->top;
-		displayLayout.left = p_layout->left;
-
-		if (p_layout->type == CORE_DMD
-			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
-			|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP)) {
-			if (g_needs_DMD_update) {
-				displayLayout.height = g_raw_dmdy;
-				displayLayout.width = g_raw_dmdx;
-
-				const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) 
-					|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) 
-					|| (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
-
-				displayLayout.depth = shade_16_enabled ? 4 : 2;
-
-				memcpy(_frame, g_raw_dmdbuffer, (g_raw_dmdx * g_raw_dmdy) * sizeof(unsigned char));
-
-				(*(_p_Config->cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
-
-				g_needs_DMD_update = 0; 
-			}
-		}
-		else {
-			displayLayout.length = p_layout->length;
-
-			const UINT16* const p_drawSeg = coreGlobals.drawSeg + *p_lastOffset;
-
-			for (unsigned int i = 0; i < p_layout->length; i++) {
-				if (_lastSeg[*p_index][i] != p_drawSeg[i]) {
-					memcpy(_frame, p_drawSeg, p_layout->length * sizeof(UINT16));
-					(*(_p_Config->cb_OnDisplayUpdated))(*p_index, _frame, &displayLayout);
-
-					break;
-				}
-			}
-
-			memcpy(_lastSeg[*p_index], p_drawSeg, p_layout->length * sizeof(UINT16));
-			*(p_lastOffset) += p_layout->length;
-		}
-
-		(*p_index)++;
-	}
 }
 
 /******************************************************
@@ -407,26 +304,62 @@ extern "C" int libpinmame_time_to_quit(void) {
 }
 
 /******************************************************
- * libpinmame_update_displays
+ * libpinmame_update_display
  ******************************************************/
 
-extern "C" void libpinmame_update_displays() {
-	if (!_firstFrame) {
+extern "C" void libpinmame_update_display(const int index, const struct core_dispLayout* p_layout, void* p_data) {
+	PinmameDisplayLayout displayLayout;
+	memset(&displayLayout, 0, sizeof(PinmameDisplayLayout));
+	displayLayout.type = (PINMAME_DISPLAY_TYPE)p_layout->type;
+	displayLayout.top = p_layout->top;
+	displayLayout.left = p_layout->left;
+
+	int dmd = (p_layout->type == CORE_DMD
+		|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
+		|| p_layout->type == (CORE_DMD | CORE_NODISP)
+		|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP));
+
+	if (dmd) {
+		displayLayout.width = p_layout->length;
+		displayLayout.height = p_layout->start;
+
+		const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2))
+			|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0)
+			|| (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
+
+		displayLayout.depth = shade_16_enabled ? 4 : 2;
+	}
+	else {
+		displayLayout.length = p_layout->length;
+	}
+
+	if (!_firstPass) {
 		if (_p_Config->cb_OnDisplayUpdated) {
-			int index = 0;
-			int lastOffset = 0;
-			UpdateDisplays(core_gameData->lcdLayout, &index, &lastOffset);
+			if (dmd) {
+				if (memcmp(_displayData[index], p_data, (displayLayout.width * displayLayout.height) * sizeof(UINT8))) {
+					memcpy(_displayData[index], p_data, (displayLayout.width * displayLayout.height) * sizeof(UINT8));
+					(*(_p_Config->cb_OnDisplayUpdated))(index, _displayData[index], &displayLayout);
+				}
+			}
+			else {
+				if (memcmp(_displayData[index], p_data, displayLayout.length * sizeof(UINT16))) {
+					memcpy(_displayData[index], p_data, displayLayout.length * sizeof(UINT16));
+					(*(_p_Config->cb_OnDisplayUpdated))(index, _displayData[index], &displayLayout);
+				}
+			}
 		}
 	}
 	else {
-		if (_p_Config->cb_OnDisplayAvailable) {
-			int index = 0;
-			const int displayCount = GetDisplayCount(core_gameData->lcdLayout, &index);
+		int displayCountIndex = 0;
+		const int displayCount = GetDisplayCount(core_gameData->lcdLayout, &displayCountIndex);
 
-			index = 0;
-			GetDisplays(core_gameData->lcdLayout, displayCount, &index);
+		if (_p_Config->cb_OnDisplayAvailable) {
+			(*(_p_Config->cb_OnDisplayAvailable))(index, displayCount, &displayLayout);
 		}
-		_firstFrame = 0;
+
+		if (index == displayCount - 1) {
+			_firstPass = 0;
+		}
 	}
 }
 
@@ -457,7 +390,7 @@ extern "C" void OnSolenoid(const int solenoid, const int isActive) {
  ******************************************************/
 
 void StartGame(const int gameNum) {
-	_firstFrame = 1;
+	_firstPass = 1;
 
 	run_game(gameNum);
 

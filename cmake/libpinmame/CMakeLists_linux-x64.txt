@@ -78,6 +78,7 @@ add_compile_definitions(
    PINMAME
    PINMAME_NO_UNUSED
    LIBPINMAME
+   SAM_INCLUDE_COLORED
    NAME="LIBPINMAME"
 
    LSB_FIRST
