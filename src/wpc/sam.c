@@ -1383,6 +1383,10 @@ static void sam_LED_hack(int usartno)
 // then a 65 byte long array of bytes that represent the LEDs. 
 // Walking Dead seems to use a different format, two strings (83, 88 but with only 0x23 leds).
 
+#ifdef LIBPINMAME
+extern void libpinmame_forward_console_data(void* data, int size);
+#endif
+
 static void sam_transmit_serial(int usartno, data8_t *data, int size)
 {
 #if 0//def _DEBUG
@@ -1403,6 +1407,9 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			//console messages
 			while(size--)
 				FwdConsoleData((*(data++)));
+#endif
+#ifdef LIBPINMAME
+                        libpinmame_forward_console_data(data, size);
 #endif
 			return;
 		}

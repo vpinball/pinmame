@@ -282,6 +282,7 @@ typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_disp
 typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
 typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
+typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
@@ -293,6 +294,7 @@ typedef struct {
 	PinmameOnAudioAvailableCallback cb_OnAudioAvailable;
 	PinmameOnAudioUpdatedCallback cb_OnAudioUpdated;
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
+	PinmameOnConsoleDataUpdatedCallback cb_OnConsoleDataUpdated;
 	PinmameIsKeyPressedFunction fn_IsKeyPressed;
 } PinmameConfig;
 

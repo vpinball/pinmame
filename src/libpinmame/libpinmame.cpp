@@ -314,10 +314,7 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 	displayLayout.top = p_layout->top;
 	displayLayout.left = p_layout->left;
 
-	int dmd = (p_layout->type == CORE_DMD
-		|| p_layout->type == (CORE_DMD | CORE_DMDNOAA)
-		|| p_layout->type == (CORE_DMD | CORE_NODISP)
-		|| p_layout->type == (CORE_DMD | CORE_DMDNOAA | CORE_NODISP));
+	int dmd = ((p_layout->type & CORE_DMD) == CORE_DMD);
 
 	if (dmd) {
 		displayLayout.width = p_layout->length;
@@ -360,6 +357,16 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 		if (index == displayCount - 1) {
 			_firstPass = 0;
 		}
+	}
+}
+
+/******************************************************
+ * libpinmame_forward_console_data
+ ******************************************************/
+
+extern "C" void libpinmame_forward_console_data(void* p_data, int size) {
+	if (_p_Config->cb_OnConsoleDataUpdated) {
+		(*(_p_Config->cb_OnConsoleDataUpdated))(p_data, size);
 	}
 }
 
