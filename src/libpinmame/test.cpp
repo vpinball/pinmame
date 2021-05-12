@@ -183,10 +183,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 		p_displayLayout->depth,
 		p_displayLayout->length);
 
-	if (p_displayLayout->type == DMD
-		|| p_displayLayout->type == (DMD | DMDNOAA)
-		|| p_displayLayout->type == (DMD | NODISP)
-		|| p_displayLayout->type == (DMD | DMDNOAA | NODISP)) {
+	if ((p_displayLayout->type & DMD) == DMD) {
 		DumpDmd(index, (UINT8*)p_displayData, p_displayLayout);
 	}
 	else {
@@ -212,6 +209,10 @@ void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
 	printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
 }
 
+void CALLBACK OnConsoleDataUpdated(void* p_data, int size) {
+	printf("OnConsoleDataUpdated: size=%d\n", size);
+}
+
 int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode) {
 	return 0;
 }
@@ -228,6 +229,7 @@ int main(int, char**) {
 		&OnAudioAvailable,
 		&OnAudioUpdated,
 		&OnSolenoidUpdated,
+		&OnConsoleDataUpdated,
 		&IsKeyPressed
 	};
 
@@ -250,8 +252,10 @@ int main(int, char**) {
 	//PinmameRun("flashgdn");
 	//PinmameRun("fourx4");
 	//PinmameRun("ripleys");
+	//PinmameRun("fh_l9");
+	//PinmameRun("acd_168hc");
 
-	if (PinmameRun("ripleys") == OK) {
+	if (PinmameRun("acd_168hc") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
