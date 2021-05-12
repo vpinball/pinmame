@@ -51,13 +51,13 @@ core_tLCDLayout atari_disp2[] = {
 // 07028-01.bin : last 256 bytes zero // apparently okay though, as 'the games don't use the waveforms from the upper half'
 // 20252-01.bin : first 256 bytes exactly the same as 07028-01.bin
 
-//!! 82s130.bin (Pascal/dumped from a Superman) and 20967-01.bin (nuatari) differ in 4 bits "only"! (note: the upper 4bits of each byte in these ROMs must be ignored before comparing them!)
-//   So we need to find out which one is really proper or if both are, and are just different revisions
+//!! 20967-01.j3 (previously called 82s130.bin, dumped via Pascal & also confirmed later-on by Gerald(COY), both being dumped from a Superman) and 20967-01.bin (nuatari) differ in 4 bits "only"! (note: the upper 4bits of each byte in these ROMs must be ignored before comparing them!)
+//   It seems like the nuatari dump is just bad, BUT of course could also be still just different revisions
 //   ATARI_SNDSTART("20967-01.bin", CRC(08a1c881) SHA1(9422add065aab8a2edc01f11db0916200903f960))
-//!! Comparing the waves from 82s130.bin and 20967-01.bin, one can find differences in 3 curves, BUT only one of these differences looks odd (weird spike found in wave 7 of 20967-01.bin), maybe that one was a bug?
-//   So maybe 20967-01.bin is an earlier version and 82s130.bin the final?
+//!! Comparing the waves from 20967-01.j3 and nuatari's 20967-01.bin, one can find differences in 3 curves, BUT only one of these differences looks odd (weird spike found in wave 7 of 20967-01.bin), maybe that one was a bug?
+//   So could be that nuatari's 20967-01.bin is an earlier version and 20967-01.j3 the final?
 //   Note though for the differences in wave 3:
-//    82s130.bin and 20252-01.bin show the same curve there, which may be another indication that 20967-01.bin is just a bad dump, as in there wave 3 has 2 slightly differing values
+//    20967-01.j3 and 20252-01.bin show the same curve there, which is another indication that nuatari's 20967-01.bin is just a bad dump, as in there wave 3 has 2 slightly differing values
 
 //Triangle (1976?) never existed as a complete machine, only parts
 
@@ -130,7 +130,7 @@ CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Ata
 INITGAME1(spcrider, atari_disp1, FLIPSW6667, 1, 2)
 ATARI_2_ROMSTART(spcrider,	"spacel.bin",	CRC(66ffb04e) SHA1(42d8b7fb7206b30478f631d0e947c0908dcf5419),
 							"spacer.bin",	CRC(3cf1cd73) SHA1(c46044fb815b439f12fb3e21c470c8b93ebdfd55))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 // nuatari lists 20967-01 (and claims that all the SR boards (5) he has feature that one), manual schematics and parts list 20252-01 though
+ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 // nuatari lists 20967-01 (and claims that all the SR boards (5) he has feature that one), manual schematics and parts list 20252-01 though
 ATARI_ROMEND
 CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,0)
 
@@ -141,7 +141,7 @@ INITGAME2(superman, atari_disp2, FLIPSW6667, 1)
 ATARI_3_ROMSTART(superman,	"supmn_k.rom",	CRC(a28091c2) SHA1(9f5e47db408da96a31cb2f3be0fa9fb1e79f8d85), // nuatari has exact same 3 roms on webpage
 							"atari_m.rom",	CRC(1bb6b72c) SHA1(dd24ed54de275aadf8dc0810a6af3ac97aea4026),
 							"atari_j.rom",	CRC(26521779) SHA1(2cf1c66441aee99b9d01859d495c12025b5ef094))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 //!! 82s130.bin has 4 bits set to 0 instead of 1 like the nuatari dump, so which one is "more correct"?
+ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01
 ATARI_ROMEND
 CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
 
@@ -154,7 +154,7 @@ INITGAME2(hercules, atari_disp2, FLIPSW6667, 1)
 ATARI_3_ROMSTART(hercules,	"herc_k.rom",	CRC(65e099b1) SHA1(83a06bc82e0f8f4c0655886c6a9962bb28d00c5e), // nuatari has exact same 3 roms on webpage
 							"atari_m.rom",	CRC(1bb6b72c) SHA1(dd24ed54de275aadf8dc0810a6af3ac97aea4026),
 							"atari_j.rom",	CRC(26521779) SHA1(2cf1c66441aee99b9d01859d495c12025b5ef094))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 //!! 82s130.bin has 4 bits set to 0 instead of 1 like the nuatari dump, so which one is "more correct"?
+ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01
 ATARI_ROMEND
 CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
 
@@ -165,7 +165,7 @@ INITGAME3(roadrunr, atari_disp2, FLIPSW6667, 1)
 ATARI_3_ROMSTART(roadrunr,	"0000.716",	CRC(62f5f394) SHA1(ff91066d43d788119e3337788abd86e5c0bf2d92),
 							"3000.716",	CRC(2fc01359) SHA1(d3df20c764bb68a5316367bb18d34a03293e7fa6),
 							"3800.716",	CRC(77262408) SHA1(3045a732c39c96002f495f64ed752279f7d43ee7))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 //!! 82s130.bin has 4 bits set to 0 instead of 1 like the nuatari dump, so which one is "more correct"? //!! unknown so far if using the 20967-01 is correct for Road Runner, but sounds good
+ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 //!! unknown so far though if using the 20967-01 is correct for Road Runner, but at least sounds good
 ATARI_ROMEND
 CORE_GAMEDEFNV(roadrunr,"Road Runner (Prototype)",1979,"Atari",gl_mATARI3,0)
 
