@@ -252,6 +252,8 @@ int main(int, char**) {
 	//PinmameRun("flashgdn");
 	//PinmameRun("fourx4");
 	//PinmameRun("ripleys");
+	//PinmameRun("fh_l9");
+	//PinmameRun("acd_168hc");
 
 	if (PinmameRun("acd_168hc") == OK) {
 		while (1) {

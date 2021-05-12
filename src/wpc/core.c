@@ -1051,6 +1051,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   static char seg_dim[CORE_SEGCOUNT];
   static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
   int seg_idx=0;
+  UINT16* last_seg_data_ptr = seg_data;
   int total_disp=0;
 #endif
 
@@ -1162,7 +1163,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     }
 
 #ifdef LIBPINMAME
-    libpinmame_update_display(g_display_index, layout, seg_data);
+    libpinmame_update_display(g_display_index, layout, last_seg_data_ptr);
+    last_seg_data_ptr += layout->length;
     g_display_index++;
 #endif
   }
