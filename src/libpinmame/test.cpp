@@ -254,8 +254,9 @@ int main(int, char**) {
 	//PinmameRun("ripleys");
 	//PinmameRun("fh_l9");
 	//PinmameRun("acd_168hc");
+	//PinmameRun("snspares");
 
-	if (PinmameRun("acd_168hc") == OK) {
+	if (PinmameRun("snspares") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
