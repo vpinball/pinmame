@@ -115,7 +115,7 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 	for (int pos = 0; pos < p_displayLayout->length; pos++) {
 		const UINT16 value = *(p_displayData++);
 
-		char segments[8][10] = {
+		char segments_16c[8][10] = {
 			{ " AAAAA   " },
 			{ "FI J KB  " },
 			{ "F IJK B  " },
@@ -125,6 +125,19 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 			{ " DDDDD  H" },
 			{ "       H " },
 		};
+
+		char segments_16s[8][10] = {
+			{ " AA BB   " },
+			{ "HI J KC  " },
+			{ "H IJK C  " },
+			{ " PP LL   " },
+			{ "G ONM D  " },
+			{ "GO N MD  " },
+			{ " FF EE   " },
+			{ "         " },
+		};
+
+		char (*segments)[10] = (p_displayLayout->type == SEG16S) ? segments_16s : segments_16c;
 
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 9; column++) {
@@ -256,7 +269,7 @@ int main(int, char**) {
 	//PinmameRun("acd_168hc");
 	//PinmameRun("snspares");
 
-	if (PinmameRun("snspares") == OK) {
+	if (PinmameRun("f1gp") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
