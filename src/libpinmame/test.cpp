@@ -254,6 +254,8 @@ int main(int, char**) {
 
 	PinmameSetConfig(&config);
 
+	PinmameSetHandleKeyboard(1);
+
 	PinmameGetGames(&Game);
 	PinmameGetGame("fourx4", &Game);
 

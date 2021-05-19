@@ -67,7 +67,7 @@ void vp_setDIP(int bank, int value) { }
   extern int g_fDumpFrames;
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
-#else /* VPINMAME LIBPINMAME */
+#else
   int g_fHandleKeyboard = 1;
   int g_fHandleMechanics = 0xff;
   #define OnSolenoid(nSolenoid, IsActive)
@@ -75,7 +75,7 @@ void vp_setDIP(int bank, int value) { }
   #define vp_getSolMask64() ((UINT64)(-1))
   #define vp_updateMech()
   #define vp_setDIP(x,y)
-#endif /* VPINMAME LIBPINMAME */
+#endif
 
 #ifdef LIBPINMAME
   extern void libpinmame_update_display(const int index, const struct core_dispLayout* p_layout, const void* p_data);

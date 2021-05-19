@@ -16,8 +16,8 @@ extern int throttle;
 extern int autoframeskip;
 extern int allow_sleep;
 
-int g_fHandleKeyboard = 1;
-int g_fHandleMechanics = 0;
+int g_fHandleKeyboard = 0;
+int g_fHandleMechanics = 1;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
 
@@ -508,6 +508,38 @@ LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
 }
 
 /******************************************************
+ * PinmameGetHandleKeyboard
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetHandleKeyboard() {
+	return g_fHandleKeyboard;
+}
+
+/******************************************************
+ * PinmameSetHandleKeyboard
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard) {
+	g_fHandleKeyboard = handleKeyboard ? 1 : 0;
+}
+
+/******************************************************
+ * PinmameGetHandleMechanics
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetHandleMechanics() {
+	return g_fHandleMechanics;
+}
+
+/******************************************************
+ * PinmameSetHandleMechanics
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetHandleMechanics(const int handleMechanics) {
+	g_fHandleMechanics = handleMechanics ? 1 : 0;
+}
+
+/******************************************************
  * PinmameRun
  ******************************************************/
 
@@ -695,4 +727,22 @@ LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates) {
 	}
 
 	return count;
+}
+
+/******************************************************
+ * PinmameGetMech
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetMech(const int mechNo) {
+	return (_isRunning) ? vp_getMech(mechNo) : 0;
+}
+
+/******************************************************
+ * PinmameSetMech
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetMech(const int mechNo, const int value) {
+	if (_isRunning) {
+		 vp_setMechData(mechNo, value);
+	}
 }
