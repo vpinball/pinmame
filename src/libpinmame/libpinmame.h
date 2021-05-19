@@ -15,7 +15,7 @@
 #endif
 
 #define MAX_PATH 512
-#define MAX_DISPLAYS 25
+#define MAX_DISPLAYS 50
 #define ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
@@ -301,6 +301,10 @@ typedef struct {
 LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback);
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback);
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config);
+LIBPINMAME_API int PinmameGetHandleKeyboard();
+LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard);
+LIBPINMAME_API int PinmameGetHandleMechanics();
+LIBPINMAME_API void PinmameSetHandleMechanics(const int handleMechanics);
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name);
 LIBPINMAME_API int PinmameIsRunning();
 LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
@@ -314,5 +318,7 @@ LIBPINMAME_API int PinmameGetMaxLamps();
 LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
 LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates);
+LIBPINMAME_API int PinmameGetMech(const int mechNo);
+LIBPINMAME_API void PinmameSetMech(const int mechNo, const int value);
 
 #endif
