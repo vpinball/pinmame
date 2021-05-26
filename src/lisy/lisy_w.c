@@ -20,6 +20,7 @@
 #include "fileio.h"
 #include "hw_lib.h"
 #include "displays.h"
+#include "lisy_home.h"
 #include "coils.h"
 #include "switches.h"
 #include "utils.h"
@@ -204,27 +205,27 @@ else lisymini_game.typeno = LISYW_TYPE_NONE;
 //set internal flags based on system type
 switch(lisymini_game.typeno)
 {
-	case LISYW_TYPE_SYS3: 
-	case LISYW_TYPE_SYS4: 
-	case LISYW_TYPE_SYS6: 
-	case LISYW_TYPE_SYS6A: 
-	case LISYW_TYPE_SYS7: 
-	case LISYW_TYPE_SYS9: 
-		lisy_has_AC_Relais = 0;	
+	case LISYW_TYPE_SYS3:
+	case LISYW_TYPE_SYS4:
+	case LISYW_TYPE_SYS6:
+	case LISYW_TYPE_SYS6A:
+	case LISYW_TYPE_SYS7:
+	case LISYW_TYPE_SYS9:
+		lisy_has_AC_Relais = 0;
 		break;
-	case LISYW_TYPE_SYS11: 
-		lisy_has_AC_Relais = 0;	
+	case LISYW_TYPE_SYS11:
+		lisy_has_AC_Relais = 0;
 		break;
 	case LISYW_TYPE_SYS11RK: 			//Road Kings is first game with AC Relais
-		lisy_has_SS_Relais = 1;                 //but has different numbering then later SYS11A
+		lisy_has_SS_Relais = 1;			//but has different numbering then later SYS11A
 		break;					//it is Sol#12  and is called Solenoid Select Relais
-	case LISYW_TYPE_SYS11A: 
-	case LISYW_TYPE_SYS11B: 
-	case LISYW_TYPE_SYS11C: 
-		lisy_has_AC_Relais = 1;	
+	case LISYW_TYPE_SYS11A:
+	case LISYW_TYPE_SYS11B:
+	case LISYW_TYPE_SYS11C:
+		lisy_has_AC_Relais = 1;
 		break;
 	default : 
-		lisy_has_AC_Relais = 0;	
+		lisy_has_AC_Relais = 0;
 }
 
  //show up on calling terminal
@@ -1052,7 +1053,7 @@ void lisy_w_display_handler(void)
 	lisy_w_display_handler_SYS11C();
        break;
   default:
-	fprintf(stderr,"\nERROR\nunknown lisymini_game.typeno %d\n",lisymini_game.typeno);
+       fprintf(stderr,"\nERROR\nunknown lisymini_game.typeno %d\n",lisymini_game.typeno);
        break;
  }
 }

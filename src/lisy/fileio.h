@@ -95,7 +95,11 @@ int  lisy_file_get_welcome_msg(char *message);
 //fadecandy stuff
 int  lisy_file_get_led_mappings(unsigned char system);
 
+//lisy home stuff
 int  lisy_file_get_home_mappings(void);
+int lisy_file_get_home_ss_lamp_mappings(void);
+int  lisy_file_get_home_ss_coil_mappings(void);
+
 
 /* LISY80 stuff */
 #define LISY80_GAMES_CSV "/boot/lisy/lisy80/cfg/lisy80games.csv"
@@ -137,6 +141,8 @@ int  lisy_file_get_home_mappings(void);
 #define LISYH_MAPPING_PATH "/boot/lisy/lisyH/mapping/"
 #define LISYH_LAMP_MAPPING_FILE "lamps.csv"
 #define LISYH_COIL_MAPPING_FILE "coils.csv"
+#define LISYH_SS_LAMP_MAPPING_FILE "ss_lamps.csv"
+#define LISYH_SS_COIL_MAPPING_FILE "ss_coils.csv"
 
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"
@@ -149,4 +155,3 @@ int  lisy_file_get_home_mappings(void);
 #define LISY_WELCOME_MSG_FILE "/boot/lisy/lisy/Welcome.msg"
 
 #endif  // _FILEIO_H
-

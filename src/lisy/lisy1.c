@@ -18,6 +18,7 @@
 #include "fileio.h"
 #include "hw_lib.h"
 #include "displays.h"
+#include "lisy_home.h"
 #include "coils.h"
 #include "switches.h"
 #include "utils.h"

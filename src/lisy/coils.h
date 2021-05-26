@@ -37,11 +37,16 @@ int lisy35_coil_get_mpu_dip(int dip_number);
 void lisy35_coil_read_mpu_dips(void);
 
 void lisyh_coil_select_solenoid_driver(void);
+void lisyh_coil_select_led_driver_line(unsigned char line);
 void lisyh_coil_select_lamp_driver(void);
 void lisy35_coil_set_sound_raw( unsigned char value);
 
 void lisyh_coil_set( int coil, int action);
 void lisyh_led_set( int led, int line, int action);
+void lisyh_led_set_GI_color(int *color);
+void lisyh_led_set_LED_color(unsigned char line, unsigned char led,
+                             unsigned char red, unsigned char green,unsigned char blue,unsigned char white);
+
 
 /* pulse time for coils in milli sec */
 #define COIL_PULSE_TIME 150
@@ -60,6 +65,7 @@ void lisyh_led_set( int led, int line, int action);
 
 #define LISY_EXT_CMD_EEPROM_READ 0
 #define LISY_EXT_CMD_EEPROM_WRITE 1
+#define LISY_EXT_CMD_NEXT_DIRECT 2
 
 #define LISY35_EXT_CMD_AUX_BOARD_0 2  // no aux board
 #define LISY35_EXT_CMD_AUX_BOARD_1 3  // AS-2518-43 12 lamps
@@ -78,6 +84,16 @@ void lisyh_led_set( int led, int line, int action);
 
 #define LISYH_COILCMD_SEL_SOLBOARD_NO 3 //first solenoidboard (default))
 #define LISYH_COILCMD_SEL_LED_LINE 4
+//defines for the LED board
+#define LED_REC_COLOR_DATA 4
+#define LED_LINE5_GI_COLORS 5
+#define LED_LINE6_GI_COLORS 6
+/*
+#define RED 1
+#define GREEN 2
+#define BLUE 3
+#define WHITE 4
+*/
 
 //special coil numbers
 #define LISY35_COIL_GREEN_LED 60

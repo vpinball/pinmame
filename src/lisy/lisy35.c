@@ -19,6 +19,7 @@
 #include "fileio.h"
 #include "hw_lib.h"
 #include "displays.h"
+#include "lisy_home.h"
 #include "coils.h"
 #include "switches.h"
 #include "utils.h"
@@ -58,6 +59,121 @@ extern unsigned char lisy35_bally_hw_check_finished;
 static unsigned char want_to_write_nvram = 0;
 // switch to sound raw mode ( for special cfg 8 )
 static unsigned char lisy35_sound_raw = 0;
+
+//init SW portion of lisy35 Starship special
+void lisy35_ss_init( void )
+{
+ int i,sb;
+ char s_lisy_software_version[16];
+ unsigned char sw_main,sw_sub,commit;
+
+ //set signal handler
+ lisy80_set_sighandler();
+
+ //show up on calling terminal
+ lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+ sprintf(s_lisy_software_version,"%d%02d %02d",sw_main,sw_sub,commit);
+ fprintf(stderr,"This is LISY (Lisy35 Starship) by bontango, Version %s\n",s_lisy_software_version);
+
+ //show the 'boot' message
+ display_show_boot_message_lisy35(s_lisy_software_version);
+
+ //check sound options
+ if ( ls80opt.bitv.JustBoom_sound )
+   {
+     lisy35_has_soundcard = 1;
+     if ( ls80dbg.bitv.sound) lisy80_debug("internal soundcard to be activated");
+     //do we want to use pinamme sounds?
+     if ( ls80opt.bitv.test )
+      {
+       if ( ls80dbg.bitv.sound) lisy80_debug("we try to use pinmame sounds");
+      }
+      else
+      {
+        lisy35_has_own_sounds = 1;
+        if ( ls80dbg.bitv.sound) lisy80_debug("we try to use our own sounds");
+      }
+   }
+
+ // try say something about LISY35 if soundcard is installed
+ if ( lisy35_has_soundcard )
+ {
+  char message[200];
+
+  //set volume according to poti
+  lisy_adjust_volume();
+  //try to read welcome message from file
+  if ( lisy_file_get_welcome_msg(message) >= 0)
+  {
+    if ( ls80dbg.bitv.basic )
+    {
+      sprintf(debugbuf,"Info: welcome Message is: %s",message);
+      lisy80_debug(debugbuf);
+    }
+  sprintf(debugbuf,"/bin/echo \"%s\" | /usr/bin/festival --tts",message);
+  system(debugbuf);
+  }
+ }
+
+ //show green ligth for now, lisy35 is running
+ lisy80_set_red_led(0);
+ lisy80_set_yellow_led(0);
+ lisy80_set_green_led(1);
+
+ //init own sounds if requested
+ if ( lisy35_has_own_sounds )
+ {
+  //first try to read sound opts, as we NEED them
+  if ( lisy35_file_get_soundopts() < 0 )
+   {
+     fprintf(stderr,"no sound opts file; sound init failed, sound emulation disabled\n");
+     lisy35_has_own_sounds = 0;
+   }
+  else
+   {
+     fprintf(stderr,"info: sound opt file read OK\n");
+
+     if ( ls80dbg.bitv.sound) {
+     int i;
+     for(i=1; i<=255; i++)
+     {
+       if ( lisy35_sound_stru[i].soundnumber != 0 )
+       fprintf(stderr,"Sound[%d]: %s %s %d \n",i,lisy35_sound_stru[i].path,
+                        lisy35_sound_stru[i].name,
+                        lisy35_sound_stru[i].option);
+     }
+    }
+   }
+ }
+
+ if ( lisy35_has_own_sounds )
+ {
+  //now open soundcard, and init soundstream
+  if ( lisy35_sound_stream_init() < 0 )
+   {
+     fprintf(stderr,"sound init failed, sound emulation disabled\n");
+     lisy35_has_own_sounds = 0;
+   }
+ else
+   fprintf(stderr,"info: sound init done\n");
+ }
+
+ //Starship mspecific inits
+ // do the mapping
+ lisy_file_get_home_ss_lamp_mappings();
+ lisy_file_get_home_ss_coil_mappings();
+ //select solenoidboard by default
+ lisyh_coil_select_solenoid_driver();
+ lisyh_coil_select_led_driver_line(1);
+ // send colorcodes to LED driver
+ lisy_home_ss_send_led_colors();
+
+ //collect latest informations and start the lisy logger
+ lisy_env.has_soundcard = lisy35_has_soundcard;
+ lisy_env.has_own_sounds = lisy35_has_own_sounds;
+ lisy_logger();
+
+}
 
 //init SW portion of lisy35
 void lisy35_init( void )
@@ -697,7 +813,8 @@ if (first)
   //store start time first, which is number of microseconds since wiringPiSetup (wiringPI lib)
   last = micros();
   //now we have core data so let us set internal soundboard type
-  lisy35_set_soundboard_variant();
+  if ( lisy_hardware_revision != 200 ) //not fo starship
+     lisy35_set_soundboard_variant();
  }
 
  //if hw_check is not finished run with full speed, will reduce booting time

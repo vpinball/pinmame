@@ -14,6 +14,7 @@
 #include "fileio.h"
 #include "hw_lib.h"
 #include "displays.h"
+#include "lisy_home.h"
 #include "coils.h"
 #include "switches.h"
 #include "utils.h"
@@ -231,4 +232,73 @@ void lisy_home_event_handler( int id, int arg1, int arg2, char *str)
 	//case LISY_HOME_EVENT_DISPLAY: sprintf(str_event_id,"LISY_HOME_EVENT_DISPLAY"); break;
      }
 
+}
+
+
+//do the led setting on starship
+//aware of mapping
+void lisy_home_ss_lamp_set( int lamp, int action)
+{
+  int i;
+
+  //how many mappings?
+  for ( i=0; i<lisy_home_ss_lamp_map[lamp].no_of_maps; i++)
+  {
+   lisyh_led_set( lisy_home_ss_lamp_map[lamp].mapped_to_led[i], lisy_home_ss_lamp_map[lamp].mapped_to_line[i], action);
+  }
+}
+
+//map momentary solenoids to lisy home
+void lisy_home_ss_mom_coil_set( unsigned char value)
+{
+  static unsigned char old_coil_active[15] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+  unsigned char current_coil_active[15];
+  int i;
+
+  //value is 0..14 for Solenoids 1..15, 15 for all OFF
+  memset(current_coil_active, 0, sizeof(current_coil_active));
+  if ( value < 15 ) current_coil_active[value] = 1;
+
+  for( i=0; i<=14; i++)
+	{
+	 if ( old_coil_active[i] != current_coil_active[i])
+	  {
+	   lisyh_coil_set( lisy_home_ss_coil_map[i+1].mapped_to_coil, current_coil_active[i]);
+	   old_coil_active[i] = current_coil_active[i];
+	  } 
+	}
+}
+
+//map continous solenoids to lisy home
+//coils 16,17,18,19
+void lisy_home_ss_cont_coil_set( unsigned char cont_data)
+{
+printf("cont data is %d\n",cont_data);
+	//PB4 cont.2
+   	lisyh_coil_set( lisy_home_ss_coil_map[17].mapped_to_coil, !CHECK_BIT( cont_data, 0));
+	//PB5 cont.4 (coin lockout)
+   	lisyh_coil_set( lisy_home_ss_coil_map[19].mapped_to_coil, !CHECK_BIT( cont_data, 1));
+	//PB6 cont.1 (flipper enable)
+   	lisyh_coil_set( lisy_home_ss_coil_map[16].mapped_to_coil, !CHECK_BIT( cont_data, 2));
+	//PB7 cont.3
+   	lisyh_coil_set( lisy_home_ss_coil_map[18].mapped_to_coil, !CHECK_BIT( cont_data, 3));
+}
+
+//send LED colorcodes  mappings to led driver
+void lisy_home_ss_send_led_colors( void)
+{
+
+ int ledline,led;
+
+ for (ledline=0; ledline <=5; ledline++)
+ {
+	for (led=0; led <=47; led++)
+	{
+			lisyh_led_set_LED_color(ledline, led, 
+			led_rgbw_color[ledline][led].red,
+			led_rgbw_color[ledline][led].green,
+			led_rgbw_color[ledline][led].blue,
+			led_rgbw_color[ledline][led].white);
+	}
+ }
 }

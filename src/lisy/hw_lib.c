@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "displays.h"
 #include "switches.h"
+#include "lisy_home.h"
 #include "coils.h"
 #include "fileio.h"
 #include "eeprom.h"
@@ -314,7 +315,7 @@ void lisy_hwlib_init( void )
  lisy_hardware_revision = lisy_get_hardware_revision(disp_sw_ver, &lisy_hardware_ID);
  if ( lisy_hardware_revision < 0)  lisy80_error(11);
  //print info about hw_revision
- if (ls80dbg.bitv.basic == 1 ) fprintf(stderr,"Info: LISY80 Hardware:  Revision %d ; HW ID is %d \n",lisy_hardware_revision,lisy_hardware_ID);
+ if (ls80dbg.bitv.basic == 1 ) fprintf(stderr,"Info: LISY Hardware:  Revision %d ; HW ID is %d \n",lisy_hardware_revision,lisy_hardware_ID);
 
  //show what version this pic is using
  display_show_pic_sw_version(1,disp_sw_ver);

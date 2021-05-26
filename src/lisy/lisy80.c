@@ -18,6 +18,7 @@
 #include "fileio.h"
 #include "hw_lib.h"
 #include "displays.h"
+#include "lisy_home.h"
 #include "coils.h"
 #include "switches.h"
 #include "utils.h"
@@ -305,7 +306,7 @@ void lisy80TickleWatchdog( void )
 	    if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM write DONE");
 	    nvram_delayed_write--;
 	    break;
-   default: nvram_delayed_write--;
+    default: nvram_delayed_write--;
 	    break;
   }
 }//watchdog

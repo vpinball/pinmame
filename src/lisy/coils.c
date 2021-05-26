@@ -13,10 +13,10 @@
 #include "fileio.h"
 #include "hw_lib.h"
 #include "utils.h"
-#include "coils.h"
 #include "displays.h"
 #include "fadecandy.h"
 #include "lisy_home.h"
+#include "coils.h"
 #include "externals.h"
 #include "lisy.h"
 
@@ -50,7 +50,7 @@ union five {
     unsigned char lisy35_bally_hw_check_finished = 0;
 
     //store values lisy_h board to minimize changes
-    unsigned char lisyh_solboard_selected = 1;
+    unsigned char lisyh_solboard_selected = 0;
     unsigned char lisyh_ledboard_line_selected = 0;
 
 /*
@@ -195,7 +195,7 @@ void coil_coil_set( int coil, int action)
    else
    {
         //now do the setting
-	--coil;	//we have only 6 bit, so we start at zero for coil 1
+        --coil; //we have only 6 bit, so we start at zero for coil 1
 
         // build control byte 
         mydata_coil.bitv.COIL = coil;
@@ -402,25 +402,6 @@ void coil_set_str ( char *str, int action)
 
 }
 
-/*
-//control the LED  set via PIC I2C com
-//not needed anymore
-void coil_led_set( int action)
-{
-
-        // build control byte 
-	if (action)
-           mydata_coil.bitv2.COMMAND = LS80COILCMD_LED_ON;
-	else
-           mydata_coil.bitv2.COMMAND = LS80COILCMD_LED_OFF;
-        mydata_coil.bitv2.IS_CMD = 1;        //we are sending a command here
-
-        //write to PIC
-        lisy80_write_byte_coil_pic(  mydata_coil.byte );
-
-}
-*/
-
 //control the green (Bally) LED set via PIC I2C com
 //only 8 times at boot time, as same line is strobe#2 for lamps afterwards
 void coil_bally_led_set( int action)
@@ -459,14 +440,6 @@ void coil_bally_led_set( int action)
 //set continous  solenoid on LISY35
 void lisy35_cont_coil_set( unsigned char value )
 {
-        /* build control byte */
-        mydata_coil.bitv4.COMMAND = LS35COIL_CONT_SOL;
-        mydata_coil.bitv4.COILS = value;
-        mydata_coil.bitv4.IS_CMD = 1;   //we are sending a command here
-
-        //write to PIC
-        lisy80_write_byte_coil_pic( mydata_coil.byte );
-
     //debug?
     if (  ls80dbg.bitv.coils )
     {
@@ -475,11 +448,27 @@ void lisy35_cont_coil_set( unsigned char value )
      sprintf(debugbuf,"set cont sol (PB4..7): %s",str);
      lisy80_debug(debugbuf);
     }//debug
+
+    if ( lisy_hardware_revision == 200 )
+    	lisy_home_ss_cont_coil_set(value);
+    else {
+        /* build control byte */
+        mydata_coil.bitv4.COMMAND = LS35COIL_CONT_SOL;
+        mydata_coil.bitv4.COILS = value;
+        mydata_coil.bitv4.IS_CMD = 1;   //we are sending a command here
+
+        //write to PIC
+        lisy80_write_byte_coil_pic( mydata_coil.byte );
+
+ }
 }
 
 //set momentary solenoid on LISY35
 void lisy35_mom_coil_set( unsigned char value )
 {
+    if ( lisy_hardware_revision == 200 )
+    	lisy_home_ss_mom_coil_set(value);
+    else {
         /* build control byte */
         mydata_coil.bitv4.COMMAND = LS35COIL_MOM_SOL;
         mydata_coil.bitv4.COILS = value;
@@ -487,6 +476,7 @@ void lisy35_mom_coil_set( unsigned char value )
 
         //write to PIC
         lisy80_write_byte_coil_pic( mydata_coil.byte );
+    }
 }
 
 
@@ -787,13 +777,21 @@ lisy35_lamp_set
 	board 0 or 1
         lamp -> nr of lamp:  0..59
         action -> 0-off, 1-on
+
+	in case of lisy_home variant
+	we call the mapping setting in lisy_home.c
 */
 
 void lisy35_lamp_set ( int board, int lamp, int action)
 {
 
  static unsigned char active_lampboard = 0;
-
+ if ( lisy_hardware_revision == 200 )
+ {
+   lisy_home_ss_lamp_set( lamp, action);
+ }
+ else
+ {
  //check for which board the lamp setting is
  if(board == 0) //board0 main board
  {
@@ -820,6 +818,7 @@ void lisy35_lamp_set ( int board, int lamp, int action)
 
         //write to PIC
         lisy80_write_byte_coil_pic(  mydata_coil.byte );
+ }//not lisy_home variant
 }
 
 
@@ -1037,6 +1036,10 @@ void lisyh_coil_select_solenoid_driver(void)
     {
      lisy80_debug("LISY_home solenoid driver selected");
     }
+
+  //remember
+  lisyh_solboard_selected = 1;
+  lisyh_ledboard_line_selected = 0;
 }
 
 //lisy home, select lampdriver and line ( 1..3)
@@ -1056,6 +1059,12 @@ void lisyh_coil_select_led_driver_line(unsigned char line)
      sprintf(debugbuf,"LISY_home LED driver line %d selected",line);
      lisy80_debug(debugbuf);
     }//debug
+
+  //remember
+  lisyh_solboard_selected = 0;
+  lisyh_ledboard_line_selected = line;
+
+
 }
 
 //set solenoid on LISY_Home solenoid driver board
@@ -1066,9 +1075,6 @@ void lisyh_coil_set( int coil, int action)
 	if ( lisyh_solboard_selected == 0)
 	{
 	  lisyh_coil_select_solenoid_driver();
-	  //remember
-	  lisyh_solboard_selected = 1;
-	  lisyh_ledboard_line_selected = 0;
 	}
 
         --coil; //we have only 6 bit, so we start at zero for coil 1
@@ -1091,7 +1097,7 @@ void lisyh_coil_set( int coil, int action)
 }
 
 //set LED on LISY_Home solenoid driver board
-//3 lines with 32 LEDs each
+//4 lines with 48 LEDs each
 void lisyh_led_set( int led, int line, int action)
 {
 
@@ -1100,9 +1106,6 @@ void lisyh_led_set( int led, int line, int action)
 	if (( lisyh_solboard_selected == 1) || ( lisyh_ledboard_line_selected != line))
 	{
 	  lisyh_coil_select_led_driver_line(line); // select the line
-	  //remember
-	  lisyh_solboard_selected = 0;
-	  lisyh_ledboard_line_selected = line;
 	}
 
         --led; //we have only 6 bit, so we start at zero for coil 1
@@ -1123,4 +1126,98 @@ void lisyh_led_set( int led, int line, int action)
 
         //write to PIC
         lisy80_write_byte_coil_pic(  mydata_coil.byte );
+}
+
+#define LED_COLOR_WAIT_TIME 10 //ms
+//send a byte direct to the LED driver waittime included
+void lisyh_send_to_LED_driver(unsigned char mybyte)
+{
+
+    mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LS80COILCMD_EXT_CMD_ID;
+    mydata_coil.bitv5.EXT_CMD = LISY_EXT_CMD_NEXT_DIRECT;
+    //write to PIC
+    lisy80_write_byte_coil_pic(  mydata_coil.byte );
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+    //now send the byte which will send directly to the LED driver by the solenoid PIC
+    lisy80_write_byte_coil_pic( mybyte );
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+}
+
+//send color values to sk6812 driver for GI
+void lisyh_led_set_GI_color(int *color)
+{
+
+    mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LED_LINE5_GI_COLORS;
+    //write to PIC
+    lisyh_send_to_LED_driver(  mydata_coil.byte );
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+    //now send colorcodes RGB
+    lisyh_send_to_LED_driver( color[0] );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( color[1] );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( color[2] );
+    usleep(LED_COLOR_WAIT_TIME);
+
+    mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LED_LINE6_GI_COLORS;
+    //write to PIC
+    lisyh_send_to_LED_driver(  mydata_coil.byte );
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+    //now send colorcodes RGB
+    lisyh_send_to_LED_driver( color[3] );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( color[4] );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( color[5] );
+    usleep(LED_COLOR_WAIT_TIME);
+
+}
+
+//send color values to sk6812
+//6 bytes in sum
+//first line and led number
+//the rgbw data
+void lisyh_led_set_LED_color(unsigned char line, unsigned char led,
+			unsigned char red, unsigned char green,unsigned char blue,unsigned char white)
+{
+
+    mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LED_REC_COLOR_DATA;
+    //write to PIC
+    lisyh_send_to_LED_driver(  mydata_coil.byte );
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+
+    //first send line
+    lisyh_send_to_LED_driver( line );
+    usleep(LED_COLOR_WAIT_TIME);
+    //second send led
+    lisyh_send_to_LED_driver( led );
+    usleep(LED_COLOR_WAIT_TIME);
+
+    //now send colorcodes RGBW
+    lisyh_send_to_LED_driver( red );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( green );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( blue );
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver( white );
+    usleep(LED_COLOR_WAIT_TIME);
+
+    //debug?
+    if (  ls80dbg.bitv.lamps )
+    {
+     sprintf(debugbuf,"lisyh_led_set_LED_color LED %d (line %d)  to (RGBW) %d %d %d %d",
+	led,line,red, green,blue,white);
+     lisy80_debug(debugbuf);
+    }//debug
+
 }
