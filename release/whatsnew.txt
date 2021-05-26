@@ -13,7 +13,7 @@ Fixed some problems with the ROM audit
 
 Added support to compile for Windows ARM64 (not all features/variants though, as some external libs do not feature ARM64 support yet)
 
-Updated LISY support to 5.27-39 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.27-49 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 Make Automatic Sound Dump functionality of PinMAME(32) more robust in its silence detection
 
