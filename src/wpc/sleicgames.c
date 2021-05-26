@@ -19,7 +19,7 @@ static struct core_dispLayout sleic_dispDMD[] = {
 / Bike Race (1992)
 /-------------------------------------------------------------------*/
 INITGAME(bikerace, sleic_dispDMD, 1)
-SLEIC_ROMSTART7(bikerace,	"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
+SLEIC_ROMSTART7(bikerace,"bkdsp01.bin",CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
 						"bksnd02.bin", CRC(d67b3883) SHA1(712022b9b24c6ab559d020ab8e2106f68b4d7896),
 						"bksnd03.bin", CRC(b6d00245) SHA1(f7da6f2ca681fbe62ea9cab7f92d3e501b7e867d),
 						"bkcpu04.bin", CRC(ce745e89) SHA1(04ba97a9ef1e60a7609c87cf6d8fcae2d0e32621),
@@ -30,7 +30,7 @@ SLEIC_ROMEND
 CORE_GAMEDEFNV(bikerace,"Bike Race",1992,"Sleic (Spain)",gl_mSLEIC3,GAME_NOT_WORKING)
 
 INITGAME(bikerac2, sleic_dispDMD, 1)
-SLEIC_ROMSTART7(bikerac2,	"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
+SLEIC_ROMSTART7(bikerac2,"bkdsp01.bin",CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
 						"bksnd02.bin", CRC(d67b3883) SHA1(712022b9b24c6ab559d020ab8e2106f68b4d7896),
 						"bksnd03.bin", CRC(b6d00245) SHA1(f7da6f2ca681fbe62ea9cab7f92d3e501b7e867d),
 						"04.bin",      CRC(aaaa4a8a) SHA1(ff579041575da4060615da2ff634f3aa91537751),
@@ -44,7 +44,7 @@ CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)"
 / Pin-Ball (1993)
 /-------------------------------------------------------------------*/
 INITGAME(sleicpin, sleic_dispDMD, 1)
-SLEIC_ROMSTART4(sleicpin,	"sp01-1_1.rom", CRC(240015bb) SHA1(0e647718173ad59dafbf3b5bc84bef3c33886e23),
+SLEIC_ROMSTART4(sleicpin,"sp01-1_1.rom",CRC(240015bb) SHA1(0e647718173ad59dafbf3b5bc84bef3c33886e23),
 						"sp02-1_1.rom", CRC(0e4851a0) SHA1(0692ee2df0b560e2013db9c03fd27c6eb12e618d),
 						"sp03-1_1.rom", CRC(261b0ae4) SHA1(e7d9d1c2cab7776afb732701b0b8697b62a8d990),
 						"sp04-1_1.rom", CRC(84514cfa) SHA1(6aa87b86892afa534cf963821f08286c126b4245))
