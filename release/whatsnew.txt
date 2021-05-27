@@ -20,7 +20,7 @@ Make Automatic Sound Dump functionality of PinMAME(32) more robust in its silenc
 *** CORE/CPU ***
 One more audiophile tweak: added proper dithering after resampling to the final output sample rate
 Fixed regression in solenoid emulation for Juegos Populares
-Corrected NVRAM size for Mr. Game
+Corrected NVRAM size for Mr. Game (NOTE: this means you need to delete your .nvram files for these machines!)
 Fixed flasher sense for Pistol Poker (and maybe other Alvin G. games?)
 
 *** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr
