@@ -1244,31 +1244,32 @@ DRIVER  (harl,l13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03 Spanish)
 // ----------------
 // SLEIC
 // ----------------
-DRIVERNV(bikerace)      // Bike Race (1992)
-DRIVERNV(bikerac2)      // Bike Race (2-ball play, 1992)
-DRIVERNV(sleicpin)      // Pin-Ball (1993)
-DRIVERNV(iomoon)        // Io Moon (1994)
-                        // Dona Elvira 2 (1996)
+DRIVERNV(bikerace)      // 1992 - Bike Race
+DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
+DRIVERNV(sleicpin)      // 1993 - Pin-Ball
+DRIVERNV(iomoon)        // 1994 - Io Moon
+                        // 1996 - Dona Elvira 2
 
 // ----------------
 // SONIC
 // ----------------
-DRIVERNV(thrdwrld)      // Third World (1978)
-DRIVERNV(ngtfever)      // Night Fever (1979)
-DRIVERNV(storm)         // Storm (1979) - Williams "Flash" clone
-DRIVERNV(odin_dlx)      // Odin De Luxe (1985)
-DRIVERNV(gamatros)      // Gamatron (1986)
-DRIVERNV(solarwar)      // Solar Wars (1986)
-DRIVERNV(sonstwar)      // Star Wars (1987)
-DRIVERNV(sonstwr2)      // Star Wars (1987, alternate set)
-DRIVERNV(poleposn)      // Pole Position (1987)
-DRIVERNV(hangon)        // Hang-On (1988)
+DRIVERNV(thrdwrld)      // 1978 - Third World
+DRIVERNV(ngtfever)      // 1979 - Night Fever
+DRIVERNV(storm)         // 1979 - Storm - Williams "Flash" clone
+DRIVERNV(odin_dlx)      // 1985 - Odin De Luxe
+DRIVERNV(gamatros)      // 1986 - Gamatron
+DRIVERNV(solarwar)      // 1986 - Solar Wars
+DRIVERNV(sonstwar)      // 1987 - Star Wars
+DRIVERNV(sonstwr2)      // 1987 - Star Wars (alternate set)
+DRIVERNV(poleposn)      // 1987 - Pole Position
+DRIVERNV(hangon)        // 1988 - Hang-On
 
 // ---------------
 // SPINBALL GAMES
 // ---------------
 DRIVERNV(bushido)       //1993 - Bushido (Last game by Inder before becoming Spinball - but same hardware)
-DRIVERNV(bushidoa)      //1993 - Bushido (alternate set)
+DRIVERNV(bushidoa)      //1993 - Bushido (alternate set A)
+DRIVERNV(bushidob)      //1993 - Bushido (alternate set B)
 DRIVERNV(mach2)         //1995 - Mach 2 // or Mach 2.0 Two ?
 DRIVERNV(mach2a)        //1995 - Mach 2 (alternate set)
 DRIVERNV(jolypark)      //1996 - Jolly Park
