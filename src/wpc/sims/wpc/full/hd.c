@@ -353,37 +353,37 @@ static wpc_tSamSolMap hd_samsolmap[] = {
 /------------------*/
 WPC_ROMSTART(hd,l3,"harly_l3.rom",0x020000,CRC(65f2e0b4) SHA1(a44216c13b9f9adf4161ff6f9eeceba28ef37963))
 WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
 WPC_ROMSTART(hd,d3,"harly_d3.rom",0x020000,CRC(ecf9da82) SHA1(f86214cd4a2823085445bcbd3fcd37761bc111ab))
 WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
 WPC_ROMSTART(hd,l2,"harly_l2.rom",0x020000,CRC(8b8b19ac) SHA1(5edba59e3260e33dc2ce65274a1ed8d7413e472a))
 WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
 WPC_ROMSTART(hd,d2,"harly_d2.rom",0x020000,CRC(e67b0908) SHA1(2047098eed096a10c3e37e17be9216783120b7f7))
 WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
 WPC_ROMSTART(hd,l1,"u6-l1.rom",0x020000,CRC(a0bdcfbf) SHA1(f906ffa2d4d04e87225bf711a07dd3bee1655a40))
 WPCS_SOUNDROM22x("u18-sp1.rom",CRC(708aa419) SHA1(cfc2692fb3bcbacceb85021e282bfbc8dcdf8fcc),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
 WPC_ROMSTART(hd,d1,"u6-d1.rom",0x020000,CRC(b4f6169e) SHA1(750fe0a5ab7cc6ee9f07aae2301140a1c8c38a64))
 WPCS_SOUNDROM22x("u18-sp1.rom",CRC(708aa419) SHA1(cfc2692fb3bcbacceb85021e282bfbc8dcdf8fcc),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
-WPC_ROMSTARTNV(che_cho,"che_cho.rom",0x020000,CRC(1e35a683) SHA1(58a9fc6d803d3817dc471de6a9bf7668dd4f2936))
+WPC_ROMSTARTNV(che_cho,"che_cho.rom",0x020000,CRC(08aff6e4) SHA1(4d2e8957983ec64e43649396ee13b20ad23fb2af))
 WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
-		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+                 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
 /*--------------
