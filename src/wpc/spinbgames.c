@@ -28,8 +28,9 @@ static struct core_dispLayout spinb_dispDMD[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ Bushido (1993) - ( Last game by Inder - before becomming Spinball - but same hardware)
+/ Bushido (1993) - (Last game by Inder - before becomming Spinball - but same hardware)
 /-------------------------------------------------------------------*/
+// Note that bushido has (at least) different Trough-Switches compared to bushidoa and bushidob
 INITGAME(bushido, spinb_dispDMD, FLIP_SWNO(0,0), 3, SNDBRD_SPINB, SPINB_DSP1, SPINB_GS1(0x11,0x0C,0,FALSE), 175)
 SPINB_ROMSTART(bushido,	"0-z80.bin",    CRC(3ea1eb1d) SHA1(cceb6c68e481f36a5646ff4f38d3dfc4275b0c79),
 						"1-z80.old",    CRC(648da72b) SHA1(1005a13b4746e302d979c8b1da300e943cdcab3d))   // more code in it than alternate set A and B
@@ -57,6 +58,9 @@ SPINB_ROMEND
 #define input_ports_bushidoa input_ports_bushido
 CORE_CLONEDEFNV(bushidoa,bushido,"Bushido (alternate set A)",1993,"Inder/Spinball (Spain)",mSPINBS,0)
 
+// "On the real pinball, bushidob locks when you lost the final match sequence after a game,
+//  but works fine if we use the older MAME romset (we've been playing it for longer before returning it back)."
+// -> Bad dump? Bitrot? But works fine in PinMAME as-is. So maybe a machine issue?!
 SPINB_ROMSTART(bushidob,"inder_sa_m-17_pb-in_a-1954-93_b4_cpu rom_0_06-a.bin", CRC(7c8561f7) SHA1(d81338160f6eb8898a7b779f57e327d2db3f7dab),
 						"inder_sa_m-17_pb-in_a-1954-93_b4_cpu rom_1_06-a.bin", CRC(4a41865c) SHA1(f597d5dd42b804ab637408b90d05bdb234559a48)) // more code in it than alternate set A
 SPINB_DMDROM1(			"g-disply.bin", CRC(9a1df82f) SHA1(4ad6a12ae36ec898b8ac5243da6dec3abcd9dc33))
