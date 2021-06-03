@@ -251,16 +251,17 @@ void mame_fclose(mame_file *file)
 
 int mame_faccess(const char *filename, int filetype)
 {
+	const char *extension = get_extension_for_filetype(filetype);
+	char modified_filename[256];
+	int pathindex, pathcount;
+
 	if (strlen(filename) == 0) 
 	{
 		LOG(("mame_faccess: filename is empty"));
 		return 0;
 	}
 
-	const char *extension = get_extension_for_filetype(filetype);
-	int pathcount = osd_get_path_count(filetype);
-	char modified_filename[256];
-	int pathindex;
+	pathcount = osd_get_path_count(filetype);
 
 	/* copy the filename and add an extension */
 	strcpy(modified_filename, filename);

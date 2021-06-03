@@ -27,9 +27,11 @@
 #define LTD4_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 2 */ \
+    COREPORT_BITDEF(  0x0010, IPT_COIN1,          IP_KEY_DEFAULT) \
     COREPORT_BIT   (  0x0001, "A7 - Diagnostics", KEYCODE_7) \
     COREPORT_BIT   (  0x0002, "A8 - Enter",       KEYCODE_8) \
-    COREPORT_BITDEF(  0x0010, IPT_COIN1,          IP_KEY_DEFAULT) \
+    /* switch column 0 */ \
+    COREPORT_BIT   (  0x0200, "General Tilt",     KEYCODE_HOME)
 
 /*-- Standard input ports --*/
 #define LTD_INPUT_PORTS_START(name,balls) \

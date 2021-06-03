@@ -962,7 +962,8 @@ DRIVERNV(ridersrf)      //Rider's Surf (1986)
 // JOCTRONIC
 // ----------------
 DRIVERNV(punkywil)      //Punky Willy (1986)
-DRIVERNV(walkyria)      //Walkyria (198?)
+DRIVERNV(walkyria)      //Walkyria (1986)
+DRIVERNV(jpinball)      //Pin Ball (198?)
 
 // ----------------
 // JUEGOS POPULARES

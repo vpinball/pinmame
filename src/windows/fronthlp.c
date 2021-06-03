@@ -10,6 +10,9 @@
 #include <dirent.h>
 #include <unzip.h>
 #include <zlib.h>
+#ifndef snprintf
+#include "snprintf.c"
+#endif
 
 #ifndef MESS
 enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,

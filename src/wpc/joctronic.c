@@ -71,7 +71,7 @@ static MACHINE_RESET(JOCTRONIC) {
 static MACHINE_STOP(JOCTRONIC) {
   int i;
   cpu_set_nmi_line(0, PULSE_LINE); // NMI routine makes sure the NVRAM is valid!
-  for (i = 0; i < 70; i++) { // run some timeslices before shutdown so the NMI routine can finish
+  for (i = 0; i < 300; i++) { // run lots of timeslices before shutdown so the NMI routine can finish
     run_one_timeslice();
   }
 }
@@ -79,7 +79,7 @@ static MACHINE_STOP(JOCTRONIC) {
 static SWITCH_UPDATE(JOCTRONIC) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x80, 0);
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x3b, 11);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x3f, 11);
   }
 }
 
@@ -254,6 +254,9 @@ static MACHINE_DRIVER_START(joctronic)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
 
 static MACHINE_DRIVER_START(joctronicS1)
@@ -284,24 +287,21 @@ const struct sndbrdIntf joctronicIntf = {
   "JOCTRONIC", NULL, NULL, NULL, snd_data_w, snd_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
-// dips and display
-
-static core_tLCDLayout dispAlpha[] = {
-  {0, 0,41,7,CORE_SEG7},
-  {3,13, 1,7,CORE_SEG7S},
-  {5,13, 9,7,CORE_SEG7S},
-  {7,13,17,7,CORE_SEG7S},
-  {9,13,25,7,CORE_SEG7S},
-  {8, 0,33,2,CORE_SEG7S},{8, 5,36,1,CORE_SEG7S},{8, 8,38,2,CORE_SEG7S},
-  {0}
-};
-
 // games
 
 /*-------------------------------------------------------------------
 / Punky Willy (1986)
 /-------------------------------------------------------------------*/
-static core_tGameData punkywilGameData = {0,dispAlpha,{FLIP_SWNO(88,87),0,0,0,SNDBRD_JOCTRONIC}};
+static core_tLCDLayout dispPunky[] = {
+  {0, 0,41,7,CORE_SEG7},
+  {3,36, 1,7,CORE_SEG7S},
+  {5,36, 9,7,CORE_SEG7S},
+  {7,36,17,7,CORE_SEG7S},
+  {9,36,25,7,CORE_SEG7S},
+  {8,22,33,2,CORE_SEG7S},{8,27,36,1,CORE_SEG7S},{8,30,38,2,CORE_SEG7S},
+  {0}
+};
+static core_tGameData punkywilGameData = {0,dispPunky,{FLIP_SWNO(88,87),0,0,0,SNDBRD_JOCTRONIC}};
 static void init_punkywil(void) { core_gameData = &punkywilGameData; }
 ROM_START(punkywil)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -316,7 +316,8 @@ PORT_START /* 0 */
   COREPORT_BIT   (0x0008, "Game start",     KEYCODE_1)
   COREPORT_BIT   (0x0001, "Coin 1",         KEYCODE_3)
   COREPORT_BIT   (0x0002, "Coin 2",         KEYCODE_4)
-  COREPORT_BIT   (0x0010, "Service credit", KEYCODE_5)
+//COREPORT_BIT   (0x0004, "Coin 3",         KEYCODE_5) // The manual lists this contact as JP5 but game halts with "Err 6" when used!
+  COREPORT_BIT   (0x0010, "Service credit", KEYCODE_6)
   COREPORT_BIT   (0x0020, "Tilt",           KEYCODE_INSERT)
   COREPORT_BIT   (0x8000, "Test",           KEYCODE_7)
 PORT_START /* 1 */
@@ -324,8 +325,13 @@ PORT_START /* 1 */
     COREPORT_DIPSET(0x0000, DEF_STR(Off))
     COREPORT_DIPSET(0x0080, DEF_STR(On))
   COREPORT_DIPNAME( 0x0040, 0x0040, "Attract tune")
-    COREPORT_DIPSET(0x0000, DEF_STR(Off))
-    COREPORT_DIPSET(0x0040, DEF_STR(On))
+    COREPORT_DIPSET(0x0000, DEF_STR(No))
+    COREPORT_DIPSET(0x0040, DEF_STR(Yes))
+  COREPORT_DIPNAME( 0xc000, 0x0000, "Max. Extra Balls")
+    COREPORT_DIPSET(0xc000, "1" )
+    COREPORT_DIPSET(0x8000, "2" )
+    COREPORT_DIPSET(0x4000, "4" )
+    COREPORT_DIPSET(0x0000, "9" )
   COREPORT_DIPNAME( 0x000f, 0x000f, "Slot #1 pricing (cred./coins)")
     COREPORT_DIPSET(0x000f, "1/1" )
     COREPORT_DIPSET(0x000e, "2/1" )
@@ -370,13 +376,29 @@ PORT_START /* 1 */
     COREPORT_DIPSET(0x2000, "2" )
     COREPORT_DIPSET(0x1000, "3" )
     COREPORT_DIPSET(0x0000, "4" )
-  COREPORT_DIPNAME( 0x4000, 0x0000, "S15")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x4000, "1" )
-  COREPORT_DIPNAME( 0x8000, 0x0000, "S16")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x8000, "1" )
 PORT_START /* 2 */
+  COREPORT_DIPNAME( 0x000f, 0x0009, "Slot #3 pricing (cred./coins)")
+    COREPORT_DIPSET(0x000f, "1/1" )
+    COREPORT_DIPSET(0x000e, "2/1" )
+    COREPORT_DIPSET(0x000d, "3/1" )
+    COREPORT_DIPSET(0x000c, "4/1" )
+    COREPORT_DIPSET(0x000b, "5/1" )
+    COREPORT_DIPSET(0x000a, "6/1" )
+    COREPORT_DIPSET(0x0009, "8/1" )
+    COREPORT_DIPSET(0x0007, "1/2" )
+    COREPORT_DIPSET(0x0006, "2/2" )
+    COREPORT_DIPSET(0x0005, "3/2" )
+    COREPORT_DIPSET(0x0004, "1/3" )
+    COREPORT_DIPSET(0x0003, "2/3" )
+    COREPORT_DIPSET(0x0002, "1/4" )
+    COREPORT_DIPSET(0x0001, "1/5" )
+    COREPORT_DIPSET(0x0008, "0")
+    COREPORT_DIPSET(0x0000, "0")
+  COREPORT_DIPNAME( 0x0030, 0x0030, "Bonus credits for x coins #3")
+    COREPORT_DIPSET(0x0030, DEF_STR(Off))
+    COREPORT_DIPSET(0x0020, "2" )
+    COREPORT_DIPSET(0x0010, "3" )
+    COREPORT_DIPSET(0x0000, "4" )
   COREPORT_DIPNAME( 0x0700, 0x0500, "Balls per game")
     COREPORT_DIPSET(0x0700, "1" )
     COREPORT_DIPSET(0x0600, "2" )
@@ -386,42 +408,23 @@ PORT_START /* 2 */
     COREPORT_DIPSET(0x0200, "6" )
     COREPORT_DIPSET(0x0100, "8" )
     COREPORT_DIPSET(0x0000, "10" )
-  COREPORT_DIPNAME( 0x0001, 0x0000, "S17")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0001, "1" )
-  COREPORT_DIPNAME( 0x0002, 0x0000, "S18")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0002, "1" )
-  COREPORT_DIPNAME( 0x0004, 0x0000, "S19")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0004, "1" )
-  COREPORT_DIPNAME( 0x0008, 0x0000, "S20")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0008, "1" )
-  COREPORT_DIPNAME( 0x0010, 0x0000, "S21")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0010, "1" )
-  COREPORT_DIPNAME( 0x0020, 0x0000, "S22")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0020, "1" )
+  COREPORT_DIPNAME( 0x1800, 0x1000, "Replay for")
+    COREPORT_DIPSET(0x1800, "1M / 1.3M" )
+    COREPORT_DIPSET(0x1000, "1.3M / 1.7M" )
+    COREPORT_DIPSET(0x0800, "1.7M / 2.1M" )
+    COREPORT_DIPSET(0x0000, "2.1M / 2.5M" )
+  COREPORT_DIPNAME( 0x4000, 0x0000, "Memorize settings")
+    COREPORT_DIPSET(0x4000, DEF_STR(No) )
+    COREPORT_DIPSET(0x0000, DEF_STR(Yes) )
+  COREPORT_DIPNAME( 0x2000, 0x2000, "Extra Ball on middle target")
+    COREPORT_DIPSET(0x0000, DEF_STR(No) )
+    COREPORT_DIPSET(0x2000, DEF_STR(Yes) )
   COREPORT_DIPNAME( 0x0040, 0x0000, "S23")
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x0040, "1" )
   COREPORT_DIPNAME( 0x0080, 0x0000, "S24")
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x0080, "1" )
-  COREPORT_DIPNAME( 0x0800, 0x0000, "S28")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0800, "1" )
-  COREPORT_DIPNAME( 0x1000, 0x0000, "S29")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x1000, "1" )
-  COREPORT_DIPNAME( 0x2000, 0x0000, "S30")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x2000, "1" )
-  COREPORT_DIPNAME( 0x4000, 0x0000, "S31")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x4000, "1" )
   COREPORT_DIPNAME( 0x8000, 0x0000, "S32")
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x8000, "1" )
@@ -431,7 +434,16 @@ CORE_GAMEDEFNV(punkywil, "Punky Willy", 1986, "Joctronic", joctronicS2, 0)
 /*-------------------------------------------------------------------
 / Walkyria (1986)
 /-------------------------------------------------------------------*/
-static core_tGameData walkyriaGameData = {0,dispAlpha,{FLIP_SWNO(88,87),0,0,0,SNDBRD_JOCTRONIC}};
+static core_tLCDLayout dispWalkyria[] = {
+  {4, 0,41,7,CORE_SEG7},
+  {0,36, 1,7,CORE_SEG7S},
+  {2,36, 9,7,CORE_SEG7S},
+  {4,36,17,7,CORE_SEG7S},
+  {6,36,25,7,CORE_SEG7S},
+  {5,22,33,2,CORE_SEG7S},{5,27,36,1,CORE_SEG7S},{5,30,38,2,CORE_SEG7S},
+  {0}
+};
+static core_tGameData walkyriaGameData = {0,dispWalkyria,{FLIP_SWNO(88,87),0,0,0,SNDBRD_JOCTRONIC}};
 static void init_walkyria(void) { core_gameData = &walkyriaGameData; }
 ROM_START(walkyria)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -446,7 +458,7 @@ PORT_START /* 0 */
   COREPORT_BIT   (0x0008, "Game start",     KEYCODE_1)
   COREPORT_BIT   (0x0001, "Coin 1",         KEYCODE_3)
   COREPORT_BIT   (0x0002, "Coin 2",         KEYCODE_4)
-  COREPORT_BIT   (0x0010, "Service credit", KEYCODE_5)
+  COREPORT_BIT   (0x0010, "Service credit", KEYCODE_6)
   COREPORT_BIT   (0x0020, "Tilt",           KEYCODE_INSERT)
   COREPORT_BIT   (0x8000, "Test",           KEYCODE_7)
 PORT_START /* 1 */
@@ -454,8 +466,13 @@ PORT_START /* 1 */
     COREPORT_DIPSET(0x0000, DEF_STR(Off))
     COREPORT_DIPSET(0x0080, DEF_STR(On))
   COREPORT_DIPNAME( 0x0040, 0x0040, "Attract tune")
-    COREPORT_DIPSET(0x0000, DEF_STR(Off))
-    COREPORT_DIPSET(0x0040, DEF_STR(On))
+    COREPORT_DIPSET(0x0000, DEF_STR(No))
+    COREPORT_DIPSET(0x0040, DEF_STR(Yes))
+  COREPORT_DIPNAME( 0xc000, 0x0000, "Max. Extra Balls")
+    COREPORT_DIPSET(0xc000, "1" )
+    COREPORT_DIPSET(0x8000, "2" )
+    COREPORT_DIPSET(0x4000, "4" )
+    COREPORT_DIPSET(0x0000, "9" )
   COREPORT_DIPNAME( 0x000f, 0x000f, "Slot #1 pricing (cred./coins)")
     COREPORT_DIPSET(0x000f, "1/1" )
     COREPORT_DIPSET(0x000e, "2/1" )
@@ -500,12 +517,6 @@ PORT_START /* 1 */
     COREPORT_DIPSET(0x2000, "2" )
     COREPORT_DIPSET(0x1000, "3" )
     COREPORT_DIPSET(0x0000, "4" )
-  COREPORT_DIPNAME( 0x4000, 0x0000, "S15")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x4000, "1" )
-  COREPORT_DIPNAME( 0x8000, 0x0000, "S16")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x8000, "1" )
 PORT_START /* 2 */
   COREPORT_DIPNAME( 0x0070, 0x0050, "Balls per game")
     COREPORT_DIPSET(0x0070, "1" )
@@ -516,46 +527,194 @@ PORT_START /* 2 */
     COREPORT_DIPSET(0x0020, "6" )
     COREPORT_DIPSET(0x0010, "8" )
     COREPORT_DIPSET(0x0000, "10" )
-  COREPORT_DIPNAME( 0x0001, 0x0000, "S17")
+  COREPORT_DIPNAME( 0x000f, 0x000e, "Replay for")
+    COREPORT_DIPSET(0x000f, "1M / 1.3M" )
+    COREPORT_DIPSET(0x000e, "1.3M / 1.7M" )
+    COREPORT_DIPSET(0x000d, "1.7M / 2.1M" )
+    COREPORT_DIPSET(0x000c, "2.1M / 2.5M" )
+    COREPORT_DIPSET(0x000b, "2.5M / 3M" )
+    COREPORT_DIPSET(0x000a, "3M / 3.5M" )
+    COREPORT_DIPSET(0x0009, "3.5M / 4M" )
+    COREPORT_DIPSET(0x0008, "4M / 4.5M" )
+    COREPORT_DIPSET(0x0007, "4.5M / 5M" )
+    COREPORT_DIPSET(0x0006, "5M / 5.5M" )
+    COREPORT_DIPSET(0x0005, "5.5M / 6M" )
+    COREPORT_DIPSET(0x0004, "6M / 6.5M" )
+    COREPORT_DIPSET(0x0003, "6.5M / 7M" )
+    COREPORT_DIPSET(0x0002, "7M / 8M" )
+    COREPORT_DIPSET(0x0001, "8M / 9M" )
+    COREPORT_DIPSET(0x0000, "9M / 10M" )
+  COREPORT_DIPNAME( 0x0080, 0x0000, "Memorize settings")
+    COREPORT_DIPSET(0x0080, DEF_STR(No) )
+    COREPORT_DIPSET(0x0000, DEF_STR(Yes) )
+  COREPORT_DIPNAME( 0x0300, 0x0200, "Match percentage")
+    COREPORT_DIPSET(0x0300, "5%" )
+    COREPORT_DIPSET(0x0200, "10%" )
+    COREPORT_DIPSET(0x0100, "15%" )
+    COREPORT_DIPSET(0x0000, "20%" )
+  COREPORT_DIPNAME( 0x0400, 0x0000, "Upper targets difficulty")
+    COREPORT_DIPSET(0x0400, "easy" )
+    COREPORT_DIPSET(0x0000, "hard" )
+  COREPORT_DIPNAME( 0x0800, 0x0000, "Lower targets difficulty")
+    COREPORT_DIPSET(0x0800, "easy" )
+    COREPORT_DIPSET(0x0000, "hard" )
+  COREPORT_DIPNAME( 0x1000, 0x1000, "Start with x2 bonus multiplier")
+    COREPORT_DIPSET(0x1000, DEF_STR(No) )
+    COREPORT_DIPSET(0x0000, DEF_STR(Yes) )
+  COREPORT_DIPNAME( 0x6000, 0x2000, "Horseshoe lamps difficulty")
+    COREPORT_DIPSET(0x6000, "v. easy" )
+    COREPORT_DIPSET(0x4000, "   easy" )
+    COREPORT_DIPSET(0x2000, "   hard" )
+    COREPORT_DIPSET(0x0000, "v. hard" )
+  COREPORT_DIPNAME( 0x8000, 0x8000, "Frontal lamps during game")
+    COREPORT_DIPSET(0x0000, DEF_STR(Off) )
+    COREPORT_DIPSET(0x8000, DEF_STR(On) )
+INPUT_PORTS_END
+CORE_GAMEDEFNV(walkyria, "Walkyria", 1986, "Joctronic", joctronicS1, 0)
+
+/*-------------------------------------------------------------------
+/ Pin Ball
+/-------------------------------------------------------------------*/
+static core_tLCDLayout dispPinball[] = {
+  {0,14, 1,7,CORE_SEG7S},
+  {2,14, 9,7,CORE_SEG7S},
+  {4,14,17,7,CORE_SEG7S},
+  {6,14,25,7,CORE_SEG7S},
+  {5, 0,33,2,CORE_SEG7S},{5, 5,36,1,CORE_SEG7S},{5, 8,38,2,CORE_SEG7S},
+  {0}
+};
+
+static core_tGameData jpinballGameData = {0,dispPinball,{FLIP_SWNO(88,87),0,0,0,SNDBRD_JOCTRONIC}};
+static void init_jpinball(void) { core_gameData = &jpinballGameData; }
+ROM_START(jpinball)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("pb.ic6",  0x0000, 0x4000, CRC(5a1415a7) SHA1(cdf036bd1816907b7bb905189482c56bde38c228))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("pb.ic8s", 0x0000, 0x4000, CRC(34a08640) SHA1(0b01eaea262d4d3bb168264e58ebde804452060e))
+ROM_END
+INPUT_PORTS_START(jpinball)
+CORE_PORTS
+SIM_PORTS(1)
+PORT_START /* 0 */
+  COREPORT_BIT   (0x0008, "Game start",     KEYCODE_1)
+  COREPORT_BIT   (0x0001, "Coin 1",         KEYCODE_3)
+  COREPORT_BIT   (0x0002, "Coin 2",         KEYCODE_4)
+  COREPORT_BIT   (0x0004, "Coin 3",         KEYCODE_5)
+  COREPORT_BIT   (0x0010, "Service credit", KEYCODE_6)
+  COREPORT_BIT   (0x0020, "Tilt",           KEYCODE_INSERT)
+  COREPORT_BIT   (0x8000, "Test",           KEYCODE_7)
+PORT_START /* 1 */
+  COREPORT_DIPNAME( 0x0080, 0x0000, "Test mode")
+    COREPORT_DIPSET(0x0000, DEF_STR(Off))
+    COREPORT_DIPSET(0x0080, DEF_STR(On))
+  COREPORT_DIPNAME( 0x0040, 0x0040, "Attract tune")
+    COREPORT_DIPSET(0x0000, DEF_STR(No))
+    COREPORT_DIPSET(0x0040, DEF_STR(Yes))
+  COREPORT_DIPNAME( 0xc000, 0x0000, "Max. Extra Balls")
+    COREPORT_DIPSET(0xc000, "1" )
+    COREPORT_DIPSET(0x8000, "2" )
+    COREPORT_DIPSET(0x4000, "4" )
+    COREPORT_DIPSET(0x0000, "9" )
+  COREPORT_DIPNAME( 0x000f, 0x000f, "Slot #1 pricing (cred./coins)")
+    COREPORT_DIPSET(0x000f, "1/1" )
+    COREPORT_DIPSET(0x000e, "2/1" )
+    COREPORT_DIPSET(0x000d, "3/1" )
+    COREPORT_DIPSET(0x000c, "4/1" )
+    COREPORT_DIPSET(0x000b, "5/1" )
+    COREPORT_DIPSET(0x000a, "6/1" )
+    COREPORT_DIPSET(0x0009, "7/1" )
+    COREPORT_DIPSET(0x0007, "1/2" )
+    COREPORT_DIPSET(0x0006, "2/2" )
+    COREPORT_DIPSET(0x0005, "3/2" )
+    COREPORT_DIPSET(0x0004, "1/3" )
+    COREPORT_DIPSET(0x0003, "2/3" )
+    COREPORT_DIPSET(0x0002, "1/4" )
+    COREPORT_DIPSET(0x0001, "1/5" )
+    COREPORT_DIPSET(0x0008, "0")
+    COREPORT_DIPSET(0x0000, "0")
+  COREPORT_DIPNAME( 0x0030, 0x0020, "Bonus credits for x coins #1")
+    COREPORT_DIPSET(0x0030, DEF_STR(Off))
+    COREPORT_DIPSET(0x0020, "2" )
+    COREPORT_DIPSET(0x0010, "3" )
+    COREPORT_DIPSET(0x0000, "4" )
+  COREPORT_DIPNAME( 0x0f00, 0x0d00, "Slot #2 pricing (cred./coins)")
+    COREPORT_DIPSET(0x0f00, "1/1" )
+    COREPORT_DIPSET(0x0e00, "2/1" )
+    COREPORT_DIPSET(0x0d00, "3/1" )
+    COREPORT_DIPSET(0x0c00, "4/1" )
+    COREPORT_DIPSET(0x0b00, "5/1" )
+    COREPORT_DIPSET(0x0a00, "6/1" )
+    COREPORT_DIPSET(0x0900, "7/1" )
+    COREPORT_DIPSET(0x0700, "1/2" )
+    COREPORT_DIPSET(0x0600, "2/2" )
+    COREPORT_DIPSET(0x0500, "3/2" )
+    COREPORT_DIPSET(0x0400, "1/3" )
+    COREPORT_DIPSET(0x0300, "2/3" )
+    COREPORT_DIPSET(0x0200, "1/4" )
+    COREPORT_DIPSET(0x0100, "1/5" )
+    COREPORT_DIPSET(0x0800, "0")
+    COREPORT_DIPSET(0x0000, "0")
+  COREPORT_DIPNAME( 0x3000, 0x3000, "Bonus credits for x coins #2")
+    COREPORT_DIPSET(0x3000, DEF_STR(Off))
+    COREPORT_DIPSET(0x2000, "2" )
+    COREPORT_DIPSET(0x1000, "3" )
+    COREPORT_DIPSET(0x0000, "4" )
+PORT_START /* 2 */
+  COREPORT_DIPNAME( 0x000f, 0x0009, "Slot #3 pricing (cred./coins)")
+    COREPORT_DIPSET(0x000f, "1/1" )
+    COREPORT_DIPSET(0x000e, "2/1" )
+    COREPORT_DIPSET(0x000d, "3/1" )
+    COREPORT_DIPSET(0x000c, "4/1" )
+    COREPORT_DIPSET(0x000b, "5/1" )
+    COREPORT_DIPSET(0x000a, "6/1" )
+    COREPORT_DIPSET(0x0009, "7/1" )
+    COREPORT_DIPSET(0x0007, "1/2" )
+    COREPORT_DIPSET(0x0006, "2/2" )
+    COREPORT_DIPSET(0x0005, "3/2" )
+    COREPORT_DIPSET(0x0004, "1/3" )
+    COREPORT_DIPSET(0x0003, "2/3" )
+    COREPORT_DIPSET(0x0002, "1/4" )
+    COREPORT_DIPSET(0x0001, "1/5" )
+    COREPORT_DIPSET(0x0008, "0")
+    COREPORT_DIPSET(0x0000, "0")
+  COREPORT_DIPNAME( 0x0030, 0x0030, "Bonus credits for x coins #3")
+    COREPORT_DIPSET(0x0030, DEF_STR(Off))
+    COREPORT_DIPSET(0x0020, "2" )
+    COREPORT_DIPSET(0x0010, "3" )
+    COREPORT_DIPSET(0x0000, "4" )
+  COREPORT_DIPNAME( 0xc000, 0x8000, "Balls per game")
+    COREPORT_DIPSET(0xc000, "2" )
+    COREPORT_DIPSET(0x8000, "3" )
+    COREPORT_DIPSET(0x4000, "4" )
+    COREPORT_DIPSET(0x0000, "5" )
+  COREPORT_DIPNAME( 0x3c00, 0x3800, "Replay for")
+    COREPORT_DIPSET(0x3c00, "1M / 1.3M" )
+    COREPORT_DIPSET(0x3800, "1.3M / 1.7M" )
+    COREPORT_DIPSET(0x3400, "1.7M / 2.3M" )
+    COREPORT_DIPSET(0x3000, "2.3M / 3M" )
+    COREPORT_DIPSET(0x2c00, "3M / 4M" )
+    COREPORT_DIPSET(0x2800, "4M / 5M ?" )
+    COREPORT_DIPSET(0x2400, "5M / 6M ?" )
+    COREPORT_DIPSET(0x2000, "6M / 7M ?" )
+    COREPORT_DIPSET(0x1c00, "7M / 8M ?" )
+    COREPORT_DIPSET(0x1800, "8M / 9M ?" )
+    COREPORT_DIPSET(0x1400, "9M / 10M ?" )
+    COREPORT_DIPSET(0x1000, "10M / 11M ?" )
+    COREPORT_DIPSET(0x0c00, "11M / 12M ?" )
+    COREPORT_DIPSET(0x0800, "12M / 13M ?" )
+    COREPORT_DIPSET(0x0400, "13M / 14M ?" )
+    COREPORT_DIPSET(0x0000, "14M / 15M ?" )
+  COREPORT_DIPNAME( 0x0080, 0x0080, "Memorize settings")
+    COREPORT_DIPSET(0x0000, DEF_STR(No))
+    COREPORT_DIPSET(0x0080, DEF_STR(Yes))
+  COREPORT_DIPNAME( 0x0040, 0x0000, "S23")
     COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0001, "1" )
-  COREPORT_DIPNAME( 0x0002, 0x0000, "S18")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0002, "1" )
-  COREPORT_DIPNAME( 0x0004, 0x0000, "S19")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0004, "1" )
-  COREPORT_DIPNAME( 0x0008, 0x0000, "S20")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0008, "1" )
-  COREPORT_DIPNAME( 0x0080, 0x0000, "S24")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0080, "1" )
+    COREPORT_DIPSET(0x0040, "1" )
   COREPORT_DIPNAME( 0x0100, 0x0000, "S25")
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x0100, "1" )
   COREPORT_DIPNAME( 0x0200, 0x0000, "S26")
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x0200, "1" )
-  COREPORT_DIPNAME( 0x0400, 0x0000, "S27")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0400, "1" )
-  COREPORT_DIPNAME( 0x0800, 0x0000, "S28")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0800, "1" )
-  COREPORT_DIPNAME( 0x1000, 0x0000, "S29")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x1000, "1" )
-  COREPORT_DIPNAME( 0x2000, 0x0000, "S30")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x2000, "1" )
-  COREPORT_DIPNAME( 0x4000, 0x0000, "S31")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x4000, "1" )
-  COREPORT_DIPNAME( 0x8000, 0x0000, "S32")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x8000, "1" )
 INPUT_PORTS_END
-CORE_GAMEDEFNV(walkyria, "Walkyria", 1986, "Joctronic", joctronicS1, 0)
-
-// Pin Ball (1987)
+CORE_GAMEDEFNV(jpinball, "Pin Ball", 198?, "Joctronic", joctronicS1, 0)

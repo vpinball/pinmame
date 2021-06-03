@@ -305,6 +305,7 @@ static INTERRUPT_GEN(LTD4_vblank) {
 static SWITCH_UPDATE(LTD4) {
   if (inports) {
     CORE_SETKEYSW(inports[LTD_COMINPORT], 0x13, 2);
+    CORE_SETKEYSW(inports[LTD_COMINPORT]>>8, 0xff, 0);
   }
 }
 
@@ -351,8 +352,8 @@ static WRITE_HANDLER(peri4_w) {
   }
 }
 
-static READ_HANDLER(unknown_r) {
-  return locals.port2;
+static READ_HANDLER(tilt_r) {
+  return coreGlobals.swMatrix[0];
 }
 
 static WRITE_HANDLER(cycle_w) {
@@ -388,7 +389,7 @@ MEMORY_END
 
 static PORT_READ_START(LTD4_readport)
   { M6803_PORT1, M6803_PORT1, sw4_r },
-  { M6803_PORT2, M6803_PORT2, unknown_r },
+  { M6803_PORT2, M6803_PORT2, tilt_r },
 PORT_END
 
 static PORT_WRITE_START(LTD4_writeport)
