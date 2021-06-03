@@ -509,6 +509,7 @@ DRIVER(rab,103)         //Data East MPU: 02/93 Adventures of Rocky and Bullwinkl
 DRIVER(rab,130)         //Data East MPU: 04/93 Adventures of Rocky and Bullwinkle and Friends, The (1.30)
 DRIVER(rab,320)         //Data East MPU: 08/93 Adventures of Rocky and Bullwinkle and Friends, The (3.20)
 DRIVER(jupk,305)        //Data East MPU: 05/93 Jurassic Park (3.05)
+DRIVER(jupk,307)        //Data East MPU: 06/93 Jurassic Park (3.07)
 DRIVER(jupk,501)        //Data East MPU: 09/93 Jurassic Park (5.01)
 DRIVER(jupk,g51)        //Data East MPU: 09/93 Jurassic Park (5.01 German)
 DRIVER(jupk,513)        //Data East MPU: 09/93 Jurassic Park (5.13)
