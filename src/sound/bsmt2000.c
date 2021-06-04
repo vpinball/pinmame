@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 
 #include "driver.h"
@@ -99,9 +100,9 @@ struct BSMT2000Chip
     INT8 *		region_base;			/* pointer to the base of the region */
     int			total_banks;			/* number of total banks in the region */
     double		clock;					/* original clock on the chip */
-    UINT8		stereo;					/* stereo output? */
+    bool		stereo;					/* stereo output? */
     UINT8		voices;					/* number of voices */
-    UINT8		adpcm;					/* adpcm enabled? */
+    bool		adpcm;					/* adpcm enabled? */
     UINT8		last_register;			/* remember last register written before rest */
     UINT8		mode;					/* current mode */
     INT32		adpcm_current;			/* current ADPCM sample */
@@ -111,9 +112,9 @@ struct BSMT2000Chip
 
 #ifdef PINMAME
     UINT16      adpcm_77;
-    int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
+    bool        use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
     //int         shift_data;             /* Shift integer to apply to samples for changing volume - this is most likely done external to the bsmt chip in the real hardware */
-    UINT8       right_volume_set;       /* Monopoly, RCT do never set right volume although its supposed to be stereo */
+    bool        right_volume_set;       /* Monopoly, RCT do never set right volume although its supposed to be stereo */
 #endif
 };
 
@@ -132,7 +133,7 @@ static INT64 *scratch;
      reset_compression_flags -- reset decompression flags to halt processing of the compressed data
 
 ****************************************************************************************************/
-static void reset_compression_flags(struct BSMT2000Chip *chip)
+static void reset_compression_flags(struct BSMT2000Chip * const chip)
 {
     struct BSMT2000Voice *voice = &chip->voice[ADPCM_VOICE];
     voice->reg[REG_RATE] = 0;
@@ -142,7 +143,7 @@ static void reset_compression_flags(struct BSMT2000Chip *chip)
 /**************************************************
     set_mode - set the mode after reset
 ***************************************************/
-static void set_mode(struct BSMT2000Chip *chip, int i)
+static void set_mode(struct BSMT2000Chip * const chip, int i)
 {
     /* force an update */
     stream_update(chip->stream,0);
@@ -218,20 +219,18 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
 ***********************************************************************************************/
 
-static void bsmt2000_update(int num, INT16 **buffer, int length)
+static void bsmt2000_update(int num, INT16 **buffer, int _length)
 {
-	struct BSMT2000Chip *chip = &bsmt2000[num];
-	INT64 *left, *right;
-	INT16 *ldest = buffer[0];
-	INT16 *rdest = buffer[1];
-    struct BSMT2000Voice *voice;
-    int samp, voicenum;
-
-    length = (length > MAX_SAMPLE_CHUNK) ? MAX_SAMPLE_CHUNK : length;
+	const int length = (_length > MAX_SAMPLE_CHUNK) ? MAX_SAMPLE_CHUNK : _length;
+	struct BSMT2000Chip * const chip = &bsmt2000[num];
 	/* determine left/right source data */
-	left = scratch;
-	right = scratch + length;
-				
+	INT64 * const left  = scratch;
+	INT64 * const right = scratch + length;
+	INT16 * const ldest = buffer[0];
+	INT16 * const rdest = buffer[1];
+	struct BSMT2000Voice *voice;
+	int samp, voicenum;
+
 	/* clear out the accumulator */
 	memset(left, 0, length * sizeof(left[0]));
 	memset(right, 0, length * sizeof(right[0]));
@@ -446,12 +445,12 @@ INLINE void init_voice(struct BSMT2000Voice *voice)
 }
 
 
-INLINE void init_all_voices(struct BSMT2000Chip *chip)
- {
- 	int i;
- 	/* init the voices */
+INLINE void init_all_voices(struct BSMT2000Chip * const chip)
+{
+	int i;
+	/* init the voices */
     for (i = 0; i < MAX_VOICES; i++)
- 		init_voice(&chip->voice[i]);
+		init_voice(&chip->voice[i]);
 }
 
 int BSMT2000_sh_start(const struct MachineSound *msound)
@@ -559,7 +558,7 @@ void BSMT2000_sh_reset(void)
 
 ***********************************************************************************************/
 
-static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_t data, data16_t mem_mask)
+static void bsmt2000_reg_write(struct BSMT2000Chip * const chip, offs_t offset, data16_t data, data16_t mem_mask)
 {
     struct BSMT2000Voice *voice;
 
