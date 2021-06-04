@@ -1409,7 +1409,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 				FwdConsoleData((*(data++)));
 #endif
 #ifdef LIBPINMAME
-                        libpinmame_forward_console_data(data, size);
+			libpinmame_forward_console_data(data, size);
 #endif
 			return;
 		}

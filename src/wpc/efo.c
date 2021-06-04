@@ -131,7 +131,7 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(out_w) {
-	static UINT8 printdata[] = { 0 };
+  static UINT8 printdata[] = { 0 };
   if (data & 0x0f) locals.outSet = data & 0x0f;
   if (data & 0x04) {
     sndbrd_0_data_w(0, locals.latch);
@@ -339,4 +339,3 @@ ROM_START(comeback)
 ROM_END
 EFO_COMPORTS(comeback, 1)
 CORE_GAMEDEFNV(comeback, "Come Back", 1988, "Nondum / CIFA", comeback, GAME_IMPERFECT_SOUND)
-

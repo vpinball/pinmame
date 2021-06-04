@@ -11,7 +11,7 @@
 		DISPLAY: DMD
 		SOUND:	 YM3812 @ ???,
 				 DAC,
-		         OKI6376 @ 2 or 4 MHz for speech / FX
+				 OKI6376 @ 2 or 4 MHz for speech / FX
  ************************************************************************************************/
 
 #include "driver.h"

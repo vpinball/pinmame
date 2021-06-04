@@ -288,11 +288,11 @@ Display
   (via the -[no]dmd_only command line option) three matrices:
 
   Top:      Lamp Matrix
-  Middle:   Switche Matrix
+  Middle:   Switch Matrix
   Bottom:   Solenoids/Flasher Matrix
   Below:    Diagnostic Lights found on the main hardware board.
 
-  PinMAME contains functionality to diplay the lamp matrix laid out similar
+  PinMAME contains functionality to display the lamp matrix laid out similar
   to the real pinball machine. See TZ for an example.
 
   If you want to do a similar layout for your favorite game which does not
