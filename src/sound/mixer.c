@@ -13,6 +13,7 @@
 #include <math.h>
 #include <limits.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #ifndef FLT_MAX
  #define FLT_MAX         3.402823466e+38F        /* max value */
@@ -85,20 +86,20 @@ struct mixer_channel_data
 	double from_frequency; // current source frequency
 	double to_frequency;   // current destination frequency
 
-	int lr_silent_value[2];  // detect complete silence of a channel
+	int lr_silent_value[2];// detect complete silence of a channel
 	float lr_silent_value_f[2]; // detect complete silence of a float channel
-	UINT8 lr_silence[2];
+	bool lr_silence[2];
 
-	UINT8 legacy_resample;   // fallback to old legacy samples playback
+	bool legacy_resample;  // fallback to old legacy samples playback
 
-	UINT8 is_reset_requested;// resample state reset requested
+	bool is_reset_requested; // resample state reset requested
 
 	/* state of non-streamed playback */
-	UINT8 is_stream;
-	UINT8 is_playing;
-	UINT8 is_looping;
-	UINT8 is_16bit;
-	UINT8 is_float;
+	bool is_stream;
+	bool is_playing;
+	bool is_looping;
+	bool is_16bit;
+	bool is_float;
 	void* data_start;
 	void* data_end;
 	void* data_current;
@@ -220,7 +221,7 @@ INLINE float triangular(const float r) // from -1..1, c=0 (with random no r=0..1
 	from_frequency - input frequency
 	restart - restart the resample state
 */
-static void mixer_channel_resample_set(struct mixer_channel_data *channel, const double from_frequency, const int restart)
+static void mixer_channel_resample_set(struct mixer_channel_data * const channel, const double from_frequency, const int restart)
 {
 	const double to_frequency = Machine->sample_rate;
 
@@ -251,7 +252,7 @@ static void mixer_channel_resample_set(struct mixer_channel_data *channel, const
 	src - source vector, (updated at the exit)
 	src_len - max number of source samples
 */
-static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SRC_STATE* src_state,	const float volume, float* const __restrict dst, const unsigned dst_len, const INT16** psrc, unsigned src_len, unsigned left_right)
+static unsigned mixer_channel_resample_16(struct mixer_channel_data* const channel, SRC_STATE* const src_state, const float volume, float* const __restrict dst, const unsigned dst_len, const INT16** psrc, unsigned src_len, unsigned left_right)
 {
 	const unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
@@ -424,7 +425,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
 }
 
-static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC_STATE* src_state, const float volume, float* const __restrict dst, const unsigned dst_len, const INT8** psrc, unsigned src_len, const unsigned left_right)
+static unsigned mixer_channel_resample_8(struct mixer_channel_data * const channel, SRC_STATE* const src_state, const float volume, float* const __restrict dst, const unsigned dst_len, const INT8** psrc, unsigned src_len, const unsigned left_right)
 {
 	const unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
@@ -530,12 +531,12 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 }
 
 /* Mix a 8 bit channel */
-static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel, const float* const volume, const unsigned dst_len, const INT8** src, const unsigned src_len)
+static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data * const channel, const float* const volume, const unsigned dst_len, const INT8** src, const unsigned src_len)
 {
 	unsigned count;
 
-	SRC_STATE *cl = channel->src_left;
-	SRC_STATE *cr = channel->src_right;
+	SRC_STATE * const cl = channel->src_left;
+	SRC_STATE * const cr = channel->src_right;
 
 	if (!is_stereo || channel->pan == MIXER_PAN_LEFT) {
 		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
@@ -557,12 +558,12 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 }
 
 /* Mix a 16 bit channel */
-static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel, const float* const volume, const unsigned dst_len, const INT16** src, const unsigned src_len)
+static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data * const channel, const float* const volume, const unsigned dst_len, const INT16** src, const unsigned src_len)
 {
 	unsigned count;
 
-	SRC_STATE *cl = channel->src_left;
-	SRC_STATE *cr = channel->src_right;
+	SRC_STATE * const cl = channel->src_left;
+	SRC_STATE * const cr = channel->src_right;
 
 	if (!is_stereo || channel->pan == MIXER_PAN_LEFT) {
 		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
@@ -587,9 +588,11 @@ static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel
 	mix_sample_8
 ***************************************************************************/
 
-void mix_sample_8(struct mixer_channel_data *channel, int samples_to_generate)
+void mix_sample_8(struct mixer_channel_data * const channel, int samples_to_generate)
 {
-	const INT8 *source, *source_end;
+	/* get the initial state */
+	const INT8* source = channel->data_current;
+	const INT8* const source_end = channel->data_end;
 	float mixing_volume[2];
 
 	/* compute the overall mixing volume */
@@ -601,9 +604,6 @@ void mix_sample_8(struct mixer_channel_data *channel, int samples_to_generate)
 		mixing_volume[0] = 0.f;
 		mixing_volume[1] = 0.f;
 	}
-	/* get the initial state */
-	source = channel->data_current;
-	source_end = channel->data_end;
 
 	/* an outer loop to handle looping samples */
 	while (samples_to_generate > 0)
@@ -636,9 +636,11 @@ void mix_sample_8(struct mixer_channel_data *channel, int samples_to_generate)
 	mix_sample_16
 ***************************************************************************/
 
-void mix_sample_16(struct mixer_channel_data *channel, int samples_to_generate)
+void mix_sample_16(struct mixer_channel_data * const channel, int samples_to_generate)
 {
-	const INT16 *source, *source_end;
+	/* get the initial state */
+	const INT16* source = channel->data_current;
+	const INT16* const source_end = channel->data_end;
 	float mixing_volume[2];
 
 	/* compute the overall mixing volume */
@@ -650,9 +652,6 @@ void mix_sample_16(struct mixer_channel_data *channel, int samples_to_generate)
 		mixing_volume[0] = 0.f;
 		mixing_volume[1] = 0.f;
 	}
-	/* get the initial state */
-	source = channel->data_current;
-	source_end = channel->data_end;
 
 	/* an outer loop to handle looping samples */
 	while (samples_to_generate > 0)
@@ -692,27 +691,19 @@ void mix_sample_16(struct mixer_channel_data *channel, int samples_to_generate)
 static INT8 silence_data[FILTER_FLUSH];
 
 /* Flush the state of the filter playing some 0 samples */
-static void mixer_flush(struct mixer_channel_data *channel)
+static void mixer_flush(struct mixer_channel_data * const channel)
 {
-	const INT8 *source_begin, *source_end;
-	float mixing_volume[2];
-	unsigned save_available;
+	/* null data */
+	const INT8* source_begin = silence_data;
+	const INT8* const source_end = silence_data + FILTER_FLUSH;
+	float mixing_volume[2] = { 0.f,0.f };
+	/* save the number of samples availables */
+	const unsigned save_available = channel->samples_available;
 
 	mixerlogerror(("Mixer:mixer_flush(%s)\n",channel->name));
 
 	/* filter reset request */
 	channel->is_reset_requested = 1;
-
-	/* null volume */
-	mixing_volume[0] = 0.f;
-	mixing_volume[1] = 0.f;
-
-	/* null data */
-	source_begin = silence_data;
-	source_end = silence_data + FILTER_FLUSH;
-
-	/* save the number of samples availables */
-	save_available = channel->samples_available;
 
 	/* mix the silence */
 	mixer_channel_resample_8_pan(channel,mixing_volume,ACCUMULATOR_MASK,&source_begin,(unsigned int)(source_end - source_begin));
@@ -796,7 +787,7 @@ void mixer_sh_stop()
 	mixer_update_channel
 ***************************************************************************/
 
-void mixer_update_channel(struct mixer_channel_data *channel, const int total_sample_count)
+void mixer_update_channel(struct mixer_channel_data * const channel, const int total_sample_count)
 {
 	const int samples_to_generate = total_sample_count - channel->samples_available;
 
@@ -964,7 +955,7 @@ int mixer_allocate_channel(const int default_mixing_level)
 	mixer_allocate_channels
 ***************************************************************************/
 
-int mixer_allocate_channels_float(const int channels, const int *default_mixing_levels, const UINT8 is_float)
+int mixer_allocate_channels_float(const int channels, const int * const default_mixing_levels, const UINT8 is_float)
 {
 	int i;
 
@@ -1023,7 +1014,7 @@ int mixer_allocate_channels_float(const int channels, const int *default_mixing_
 	return first_free_channel - channels;
 }
 
-int mixer_allocate_channels(const int channels, const int *default_mixing_levels)
+int mixer_allocate_channels(const int channels, const int * const default_mixing_levels)
 {
 	return mixer_allocate_channels_float(channels, default_mixing_levels, 0);
 }
@@ -1034,7 +1025,7 @@ int mixer_allocate_channels(const int channels, const int *default_mixing_levels
 
 void mixer_set_name(const int ch, const char *name)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	/* either copy the name or create a default one */
 	if (name != NULL)
@@ -1072,7 +1063,7 @@ const char *mixer_get_name(const int ch)
 
 void mixer_set_volume(const int ch, const int volume)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	if (channel->left_volume == volume && channel->right_volume == volume)
 		return;
@@ -1089,7 +1080,7 @@ void mixer_set_volume(const int ch, const int volume)
 
 void mixer_set_mixing_level(const int ch, const int level)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	if (channel->mixing_level == level)
 		return;
@@ -1104,7 +1095,7 @@ void mixer_set_mixing_level(const int ch, const int level)
 ***************************************************************************/
 void mixer_set_stereo_volume(const int ch, const int l_vol, const int r_vol )
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	if (channel->left_volume == l_vol && channel->right_volume == r_vol)
 		return;
@@ -1120,7 +1111,7 @@ void mixer_set_stereo_volume(const int ch, const int l_vol, const int r_vol )
 
 int mixer_get_mixing_level(const int ch)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 	return channel->mixing_level;
 }
 
@@ -1131,7 +1122,7 @@ int mixer_get_mixing_level(const int ch)
 
 int mixer_get_default_mixing_level(const int ch)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 	return channel->default_mixing_level;
 }
 
@@ -1206,7 +1197,7 @@ void mixer_write_config(mame_file *f)
 
 void mixer_play_streamed_sample_16(const int ch, const INT16 *data, int len, const double freq)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 	float mixing_volume[2];
 
 	mixerlogerror(("Mixer:mixer_play_streamed_sample_16(%s,%d,%.2f)\n",channel->name,len,freq));
@@ -1263,9 +1254,9 @@ int mixer_need_samples_this_frame(const int channel,const double freq)
 	mixer_play_sample
 ***************************************************************************/
 
-void mixer_play_sample(const int ch, const INT8 *data, const int len, const double freq, const UINT8 loop)
+void mixer_play_sample(const int ch, const INT8 * const data, const int len, const double freq, const UINT8 loop)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	mixerlogerror(("Mixer:mixer_play_sample_8(%s,%d,%.2f,%s)\n",channel->name,len,freq,loop ? "loop" : "single"));
 
@@ -1292,9 +1283,9 @@ void mixer_play_sample(const int ch, const INT8 *data, const int len, const doub
 	mixer_play_sample_16
 ***************************************************************************/
 
-void mixer_play_sample_16(const int ch, const INT16 *data, const int len, const double freq, const UINT8 loop)
+void mixer_play_sample_16(const int ch, const INT16 * const data, const int len, const double freq, const UINT8 loop)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	mixerlogerror(("Mixer:mixer_play_sample_16(%s,%d,%.2f,%s)\n",channel->name,len/2,freq,loop ? "loop" : "single"));
 
@@ -1323,7 +1314,7 @@ void mixer_play_sample_16(const int ch, const INT16 *data, const int len, const 
 
 void mixer_stop_sample(const int ch)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	mixerlogerror(("Mixer:mixer_stop_sample(%s)\n",channel->name));
 
@@ -1341,7 +1332,7 @@ void mixer_stop_sample(const int ch)
 
 int mixer_is_sample_playing(const int ch)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	mixer_update_channel(channel, sound_scalebufferpos(samples_this_frame));
 	return channel->is_playing;
@@ -1354,7 +1345,7 @@ int mixer_is_sample_playing(const int ch)
 
 void mixer_set_sample_frequency(const int ch, const double freq)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	assert( !channel->is_stream );
 
@@ -1391,7 +1382,7 @@ void mixer_sound_enable_global_w(const UINT8 enable)
 
 void mixer_set_reverb_filter(const int ch, const float delay, const float force)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	channel->reverbPos[0] = channel->reverbPos[1] = 0;
 	channel->reverbDelay[0] = channel->reverbDelay[1] = delay;
@@ -1401,7 +1392,7 @@ void mixer_set_reverb_filter(const int ch, const float delay, const float force)
 
 void mixer_set_channel_legacy_resample(const int ch, const UINT8 enable)
 {
-	struct mixer_channel_data *channel = &mixer_channel[ch];
+	struct mixer_channel_data * const channel = &mixer_channel[ch];
 
 	channel->legacy_resample = enable;
 }

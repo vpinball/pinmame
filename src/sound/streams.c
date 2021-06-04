@@ -10,6 +10,7 @@
 
 #include "driver.h"
 #include <assert.h>
+#include <stdbool.h>
 
 #define BUFFER_LEN 16384
 
@@ -22,7 +23,7 @@ static double stream_sample_rate[MIXER_MAX_CHANNELS];
 static int stream_buffer_pos[MIXER_MAX_CHANNELS];
 static int stream_sample_length[MIXER_MAX_CHANNELS];	/* in usec */
 static int stream_param[MIXER_MAX_CHANNELS];
-static UINT8 stream_is_float[MIXER_MAX_CHANNELS];
+static bool stream_is_float[MIXER_MAX_CHANNELS];
 static void (*stream_callback[MIXER_MAX_CHANNELS])(int param,INT16 *buffer,int length);
 static void (*stream_callback_multi[MIXER_MAX_CHANNELS])(int param,INT16 **buffer,int length);
 
