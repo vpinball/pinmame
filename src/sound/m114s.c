@@ -32,6 +32,7 @@
 
 #include "driver.h"
 #include "m114s.h"
+#include <stdbool.h>
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1500)
  #define llabs _abs64
@@ -100,8 +101,8 @@ struct M114SChannelRegs
 		UINT8			table_len;						/* Table Length Register */
 		UINT8			read_meth;						/* Read Method Register */
 		UINT8			interp;							/* Interpolation Register */
-		UINT8			env_enable;						/* Envelope Enable Register */
-		UINT8			oct_divisor;					/* Octave Divisor Register */
+		bool			env_enable;						/* Envelope Enable Register */
+		bool			oct_divisor;					/* Octave Divisor Register */
 		UINT8			frequency;						/* Frequency Register */
 };
 
@@ -111,7 +112,7 @@ struct M114SChannel
 	/* registers */
 		struct M114SChannelRegs regs;					/* register data for the channel */
 	/* internal state */
-		UINT8			active;							/* is the channel active */
+		bool			active;							/* is the channel active */
 		INT16			output[4096];					/* Holds output samples mixed from table 1 & 2 */
 		UINT32			outpos;							/* Index into output samples */
 		int				prev_volume;					/* Holds the last volume code set for the channel */
@@ -139,7 +140,7 @@ struct M114SChip
 	struct M114Sinterface*		intf;						/* Pointer to the interface */
 	double						reset_cycles;				/* # of cycles that must pass between programming bytes to auto reset the chip */
 	int							cpu_num;					/* # of the cpu controlling the M114S */
-	int 						is_M114A;					/* M114A 4MHz or M114AF 6MHz */
+	bool 						is_M114A;					/* M114A 4MHz or M114AF 6MHz */
 };
 
 
@@ -320,7 +321,7 @@ static const double freqtable4Mhz[256] = {
 	 as necessary to match the Machine driver's output sample rate.
 
 ***********************************************************************************************/
-static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
+static INT16 read_sample(struct M114SChannel * const channel, const UINT32 length)
 {
 	const UINT32 pos = channel->outpos >> FRAC_BITS;
 	if (pos < length)
@@ -353,7 +354,7 @@ static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
 	 Note: Eventually this should flag an End of Table, and should process new table data
 
 ***********************************************************************************************/
-static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // get rid of this and write directly to output buffer?!
+static void read_table(struct M114SChip * const chip, struct M114SChannel * const channel) // get rid of this and write directly to output buffer?!
 {
 	int i;
 #ifndef USE_LERP_FOR_REPEATED_SAMPLES
@@ -474,7 +475,7 @@ static void m114s_update(int num,
 #endif
 	int samples)
 {
-	struct M114SChip *chip = &m114schip[num];
+	struct M114SChip * const chip = &m114schip[num];
 
 	while (samples > 0)
 	{
@@ -494,7 +495,7 @@ static void m114s_update(int num,
 		/* loop over channels */
 		for (c = 0; c < M114S_CHANNELS; c++)
 		{
-			struct M114SChannel *channel = &chip->channels[c];
+			struct M114SChannel * const channel = &chip->channels[c];
 			/* Grab the next sample from the table data if the channel is active */
 			if (channel->active)
 			{
@@ -535,7 +536,7 @@ static void m114s_update(int num,
 
 ***********************************************************************************************/
 
-INLINE void init_channel(struct M114SChannel *channel)
+INLINE void init_channel(struct M114SChannel * const channel)
 {
 	//set all internal registers to 0!
 	channel->active = 0;
@@ -548,7 +549,7 @@ INLINE void init_channel(struct M114SChannel *channel)
 }
 
 
-INLINE void init_all_channels(struct M114SChip *chip)
+INLINE void init_all_channels(struct M114SChip * const chip)
 {
 	int i;
 
@@ -658,10 +659,10 @@ void M114S_sh_reset(void)
      process_freq_codes -- There are up to 16 special values for frequency that signify a code
 
 ***********************************************************************************************/
-static void process_freq_codes(struct M114SChip *chip)
+static void process_freq_codes(struct M114SChip * const chip)
 {
 	//Grab pointer to channel being programmed
-	struct M114SChannel *channel = &chip->channels[chip->channel];
+	struct M114SChannel * const channel = &chip->channels[chip->channel];
 	switch(channel->regs.frequency)
 	{
 		//ROMID - ROM Identification  (Are you kidding me?)
@@ -704,10 +705,10 @@ static void process_freq_codes(struct M114SChip *chip)
 
 ***********************************************************************************************/
 
-static void process_channel_data(struct M114SChip *chip)
+static void process_channel_data(struct M114SChip * const chip)
 {
 	//Grab pointer to channel being programmed
-	struct M114SChannel *channel = &chip->channels[chip->channel];
+	struct M114SChannel * const channel = &chip->channels[chip->channel];
 
 	/* Force stream to update */
 	stream_update(chip->stream, 0);
@@ -834,7 +835,7 @@ if(channel->regs.outputs == 2) {
 	 - thus 48 bits of programming! All data must be fed in order, so we make a few assumptions.
 
 ***********************************************************************************************/
-static void m114s_data_write(struct M114SChip *chip, data8_t data)
+static void m114s_data_write(struct M114SChip * const chip, data8_t data)
 {
 	/* Check if the chip needs to 'auto-reset' - this occurs if during the programming sequence (ie before all 8 bytes read)
 	   a certain amount of time elapses without receiving another byte of programming...
@@ -895,7 +896,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		Bits 2-5: Interpolation Value (0-15) */
 		case 6:
 			chip->tempch_regs.oct_divisor = (data & 0x01);
-			chip->tempch_regs.env_enable = (data & 0x02)>>1;
+			chip->tempch_regs.env_enable = (data & 0x02);
 			chip->tempch_regs.interp = (data & 0x3c)>>2;
 			break;
 
