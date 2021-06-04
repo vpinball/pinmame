@@ -182,6 +182,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 			stream[i] = stream_init_multi_float(YM2151_NUMBUF,
 				name,vol,rate,i,YM2151UpdateNuked,1);
 
+			//OPM_FlushBuffer(&chip[i]);
 			OPM_Reset(&chip[i], intf->baseclock);
 
 			has_handler |= (intf->irqhandler[i] != 0) | (intf->portwritehandler[i] != 0);
@@ -273,6 +274,7 @@ void YM2151_sh_reset(void)
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(i);
+		OPM_FlushBuffer(&chip[i]);
 		OPM_Reset(&chip[i], 0);
 		break;
 #endif
@@ -342,6 +344,7 @@ READ_HANDLER( YM2151_status_port_2_r )
 	return 0;
 }
 
+#ifdef UNUSED
 static int lastreg0, lastreg1, lastreg2;
 
 WRITE_HANDLER( YM2151_register_port_0_w )
@@ -431,6 +434,7 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 #endif
 	}
 }
+#endif
 
 WRITE_HANDLER( YM2151_word_0_w )
 {
@@ -474,6 +478,7 @@ WRITE_HANDLER( YM2151_word_1_w )
 	}
 }
 
+#ifdef UNUSED
 READ16_HANDLER( YM2151_status_port_0_lsb_r )
 {
 	return YM2151_status_port_0_r(0);
@@ -525,3 +530,4 @@ WRITE16_HANDLER( YM2151_data_port_2_lsb_w )
 	if (ACCESSING_LSB)
 		YM2151_data_port_2_w(0, data & 0xff);
 }
+#endif
