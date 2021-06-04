@@ -51,6 +51,7 @@ tp1 = phi clock (tied to f2q rom access)
 #endif
 #include "math.h"
 
+#include <stdbool.h>
 typedef unsigned char byte;
 
 #define VERBOSE 0
@@ -104,15 +105,15 @@ static struct {
 
 	// Outputs
 	//!! devcb_write_line m_ar_cb;                   // Callback for ar
-	int ar_state;                                    // Current ar state bool
+	bool ar_state;                                   // Current ar state
 
 	// "Unpacked" current rom values
 	UINT8 rom_duration;                              // Duration in 5KHz units (main/144) of one tick, 16 ticks per phone, 7 bits
 	UINT8 rom_vd, rom_cld;                           // Duration in ticks of the "voice" and "closure" delays, 4 bits
 	UINT8 rom_fa, rom_fc, rom_va;                    // Analog parameters, noise volume, noise freq cutoff and voice volume, 4 bits each
 	UINT8 rom_f1, rom_f2, rom_f2q, rom_f3;           // Analog parameters, formant frequencies and Q, 4 bits each
-	int rom_closure;                                 // Closure bit, true = silence at cld bool
-	int rom_pause;                                   // Pause bit bool
+	bool rom_closure;                                // Closure bit, true = silence at cld
+	bool rom_pause;                                  // Pause bit
 
 	// Current interpolated values (8 bits each)
 	UINT8 cur_fa, cur_fc, cur_va;
@@ -130,9 +131,9 @@ static struct {
 	UINT8  update_counter;                           // 6-bits counter for the 625Hz (main/1152) and 208Hz (main/3456) update timing generators
 
 	// Internal state
-	int cur_closure;                                 // Current internal closure state bool
+	bool cur_closure;                                // Current internal closure state
 	UINT16 noise;                                    // 15-bit noise shift register
-	int cur_noise;                                   // Current noise output bool
+	bool cur_noise;                                  // Current noise output
 
 	// Filter coefficients and level histories
 	double voice_1[4];
@@ -669,8 +670,16 @@ static void build_standard_filter(double * const a, double * const b,
 	// Estimate the filter cutoff frequency
 	const double fpeak = sqrt(fabs(k0*k1 - k2))/((2.*M_PI)*k2);
 
+	// figure radians from frequency
+	double w0 = fpeak * (2.0 * M_PI);
+
+	// keep it in -PI/T .. PI/T
+	const double wdMax = M_PI * votraxsc01_locals.sclock;
+	if (w0 > wdMax)
+		w0 -= 2.0 * wdMax;
+
 	// Turn that into a warp multiplier
-	const double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	const double zc = w0/tan(w0 / (2.0*votraxsc01_locals.sclock));
 
 	// Finally compute the result of the z-transform
 	const double m0 = zc*k0;
@@ -718,8 +727,16 @@ static void build_lowpass_filter(double * const a, double * const b,
 	// Compute the filter cutoff frequency
 	const double fpeak = 1./((2.*M_PI)*k);
 
+	// figure radians from frequency
+	double w0 = fpeak * (2.0 * M_PI);
+
+	// keep it in -PI/T .. PI/T
+	const double wdMax = M_PI * votraxsc01_locals.sclock;
+	if (w0 > wdMax)
+		w0 -= 2.0 * wdMax;
+
 	// Turn that into a warp multiplier
-	const double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	const double zc = w0/tan(w0 / (2.0*votraxsc01_locals.sclock));
 
 	// Finally compute the result of the z-transform
 	const double m = zc*k;
@@ -773,8 +790,16 @@ static void build_noise_shaper_filter(double * const a, double * const b,
 	// Estimate the filter cutoff frequency
 	const double fpeak = sqrt(1./k2)/(2.*M_PI);
 
+	// figure radians from frequency
+	double w0 = fpeak * (2.0 * M_PI);
+
+	// keep it in -PI/T .. PI/T
+	const double wdMax = M_PI * votraxsc01_locals.sclock;
+	if (w0 > wdMax)
+		w0 -= 2.0 * wdMax;
+
 	// Turn that into a warp multiplier
-	const double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	const double zc = w0/tan(w0 / (2.0*votraxsc01_locals.sclock));
 
 	// Finally compute the result of the z-transform
 	const double m0 = zc*k0;
