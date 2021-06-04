@@ -105,15 +105,16 @@ and off as it normally does during speech). Once START has gone low-high-low, th
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include "driver.h"
 #include "sndintrf.h"
 #include "s14001a.h"
 #include "streams.h"
 
-#define BOOL int
-#define FALSE 0
-#define TRUE 1
+#define BOOL bool
+#define FALSE false
+#define TRUE true
 
 UINT8 *m_SpeechRom;
 int stream;
