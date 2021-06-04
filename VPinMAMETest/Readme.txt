@@ -4,3 +4,4 @@ For the poor soul that at some point will try to recompile this:
 3) Make sure that all files in this directory are formatted with windows line endings, otherwise VB6 will be screwed opening them.
 4a) Test the compile by pressing the play button and select a game in the dropdown.
 4b) File -> Make "XXX.exe" (this may fail, but doing it multiple times worked at some point for me).
+5) Make sure to have msstdfmt.dll installed/registered somewhere
