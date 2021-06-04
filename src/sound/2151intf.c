@@ -344,7 +344,7 @@ READ_HANDLER( YM2151_status_port_2_r )
 	return 0;
 }
 
-#ifdef UNUSED
+#if (HAS_YM2151_ALT)
 static int lastreg0, lastreg1, lastreg2;
 
 WRITE_HANDLER( YM2151_register_port_0_w )
@@ -478,7 +478,7 @@ WRITE_HANDLER( YM2151_word_1_w )
 	}
 }
 
-#ifdef UNUSED
+#if (HAS_YM2151_ALT)
 READ16_HANDLER( YM2151_status_port_0_lsb_r )
 {
 	return YM2151_status_port_0_r(0);
