@@ -673,10 +673,12 @@ static void build_standard_filter(double * const a, double * const b,
 	// figure radians from frequency
 	double w0 = fpeak * (2.0 * M_PI);
 
+#if !defined(_MSC_VER) || (_MSC_VER > 1500)
 	// keep it in -PI/T .. PI/T
 	const double wdMax = M_PI * votraxsc01_locals.sclock;
 	if (w0 > wdMax)
 		w0 -= 2.0 * wdMax;
+#endif
 
 	// Turn that into a warp multiplier
 	const double zc = w0/tan(w0 / (2.0*votraxsc01_locals.sclock));
@@ -730,10 +732,12 @@ static void build_lowpass_filter(double * const a, double * const b,
 	// figure radians from frequency
 	double w0 = fpeak * (2.0 * M_PI);
 
+#if !defined(_MSC_VER) || (_MSC_VER > 1500)
 	// keep it in -PI/T .. PI/T
 	const double wdMax = M_PI * votraxsc01_locals.sclock;
 	if (w0 > wdMax)
 		w0 -= 2.0 * wdMax;
+#endif
 
 	// Turn that into a warp multiplier
 	const double zc = w0/tan(w0 / (2.0*votraxsc01_locals.sclock));
@@ -793,10 +797,12 @@ static void build_noise_shaper_filter(double * const a, double * const b,
 	// figure radians from frequency
 	double w0 = fpeak * (2.0 * M_PI);
 
+#if !defined(_MSC_VER) || (_MSC_VER > 1500)
 	// keep it in -PI/T .. PI/T
 	const double wdMax = M_PI * votraxsc01_locals.sclock;
 	if (w0 > wdMax)
 		w0 -= 2.0 * wdMax;
+#endif
 
 	// Turn that into a warp multiplier
 	const double zc = w0/tan(w0 / (2.0*votraxsc01_locals.sclock));
