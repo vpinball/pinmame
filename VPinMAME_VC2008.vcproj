@@ -49,6 +49,7 @@
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
 				OutputDirectory="$(IntDir)\MIDL"
+				HeaderFileName="$(InputName).h"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
