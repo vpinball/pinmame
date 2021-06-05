@@ -1817,7 +1817,7 @@ UINT32 dcs_speedup(UINT32 pc) {
 			/* 2B68       DO $2B79 UNTIL CE */
 
       for (jj = 0; jj < mem63d; jj++) {
-        INT16 mx0, mx1, my0, my1;
+        INT16 mx0, my0, my1;
 			/* 2B6A         MY0 = DM(I4,M5) */
         my0 = *i4++;
 			/* 2B6B         MY1 = DM(I5,M5) */
@@ -1827,7 +1827,7 @@ UINT32 dcs_speedup(UINT32 pc) {
 			/* 2B69         CNTR = DM($15EF) (063f) */
 			/* 2B6D         DO $2B76 UNTIL CE */
         for (kk = 0; kk < mem63f; kk++) {
-          INT16 ax0, ay0, ay1, ar;
+          INT16 mx1, ax0, ay0, ay1, ar;
           INT32 tmp, mr;
 			/* 2B6E           MR = MX0 * MY0 (SS), MX1 = DM(I1,M1) */
           mx1 = *i1++;
@@ -2644,7 +2644,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             /* 0115   DO $126 UNTIL CE (loop WORD PTR [$621] times) */
             for (jj = 0 ; jj < mem621 ; ++jj)
             {
-                INT16 mx0, mx1, my0, my1;
+                INT16 mx0, my0, my1;
 
                 /* 0117   MY0 = DM(I4,M5) (program ROM location -> shift right by 8 for data) */
                 my0 = (*i4++) >> 8;
@@ -2659,7 +2659,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
                 /* 011A   DO $123 UNTIL CE (loop WORD PTR [$623] times) */
                 for (kk = 0 ; kk < mem623 ; ++kk)
                 {
-                    INT16 ax0, ay0, ay1, ar;
+                    INT16 mx1, ax0, ay0, ay1, ar;
                     INT32 tmp, mr;
                     
                     /* 011B   MR = (MX0 * MY0) << 1, MX1 = DM(I1,M1) */
@@ -2740,7 +2740,6 @@ UINT32 dcs_speedup_1993(UINT32 pc)
         UINT16 i1;
         INT16 mx0;
         UINT16 my0;
-        UINT32 mr;
 
         /* 012E   M0 = 0 */
         /* 0130   M2 = $0020 */
@@ -2764,7 +2763,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
         for (ii = 0 ; ii < 0x100 ; ii++)
         {
             /* 0138   MR = (MX0 * MY0) << 1, MX0 = DM(reverse i1,m2) */
-            mr = ((INT32)mx0 * my0); // << 1; // see shift below
+            UINT32 mr = ((INT32)mx0 * my0); // << 1; // see shift below
             mx0 = ram[reverse_bits(i1)];
             i1 += 0x20;
 
