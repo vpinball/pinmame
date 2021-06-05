@@ -75,9 +75,9 @@ int mixer_sh_start(void);
 void mixer_sh_stop(void);
 void mixer_sh_update(void);
 int mixer_allocate_channel(const int default_mixing_level);
-int mixer_allocate_channels(const int channels,const int *default_mixing_levels);
+int mixer_allocate_channels(const int channels,const int * const default_mixing_levels);
 int mixer_allocate_channel_float(const int default_mixing_level, const UINT8 is_float);
-int mixer_allocate_channels_float(const int channels, const int *default_mixing_levels, const UINT8 is_float);
+int mixer_allocate_channels_float(const int channels, const int * const default_mixing_levels, const UINT8 is_float);
 void mixer_set_name(const int channel, const char *name);
 const char *mixer_get_name(const int channel);
 
@@ -90,8 +90,8 @@ const char *mixer_get_name(const int channel);
 */
 void mixer_set_volume(const int channel, const int volume);
 
-void mixer_play_sample(const int channel, const INT8 *data, const int len, const double freq, const UINT8 loop);
-void mixer_play_sample_16(const int channel, const INT16 *data, const int len, const double freq, const UINT8 loop);
+void mixer_play_sample(const int channel, const INT8 * const data, const int len, const double freq, const UINT8 loop);
+void mixer_play_sample_16(const int channel, const INT16 * const data, const int len, const double freq, const UINT8 loop);
 void mixer_stop_sample(const int channel);
 int mixer_is_sample_playing(const int channel);
 void mixer_set_sample_frequency(const int channel, const double freq);
