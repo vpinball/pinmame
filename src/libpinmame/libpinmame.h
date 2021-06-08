@@ -10,7 +10,7 @@
 #define CALLBACK __stdcall
 #define strcasecmp _stricmp
 #else
-#define LIBPINMAME_API extern "C"
+#define LIBPINMAME_API extern "C" __attribute__((visibility("default")))
 #define CALLBACK
 #endif
 
