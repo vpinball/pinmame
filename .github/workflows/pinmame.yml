@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ilammy/setup-nasm@v1
       - run: |
-          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/48193575/zip -o upx.zip
+          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/55802596/zip -o upx.zip
           7z x upx.zip -oupx
           rm upx.zip
       - name: Build PinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
