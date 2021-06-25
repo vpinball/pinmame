@@ -479,6 +479,7 @@ DRIVER(trek,300)        //Data East MPU: 04/20 Star Trek 25th Anniversary (3.00 
 DRIVER(hook,401p)       //Data East MPU: 11/91 Hook (4.01 with Prototype Sound)
 DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
+DRIVER(hook,e406)       //Data East MPU: 01/92 Hook (4.06 English)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
 DRIVER(hook,500)        //Data East MPU: 12/16 Hook (5.00 unofficial MOD)
 DRIVER(hook,501)        //Data East MPU: 03/18 Hook (5.01 unofficial MOD)

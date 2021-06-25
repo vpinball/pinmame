@@ -579,7 +579,8 @@ CORE_CLONEDEF(trek,300,201,"Star Trek 25th Anniversary (3.00 unofficial MOD)",20
 /*-------------------------------------------------------------
 / Hook - CPU Rev 3 /DMD  Type 1 128K Rom - CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(hook,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16, 0)
+// hook is using the same light chaser board as trek!
+static void init_hook(void) { core_gameData = &trekGameData; }
 DE_ROMSTARTx0(hook_408,"hokcpua.408",CRC(46477fc7) SHA1(ce6228fd9ab4b6c774e128d291f50695746da358))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
 DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
@@ -628,6 +629,14 @@ DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a5965473849062
                     "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
 DE_ROMEND
 CORE_CLONEDEF(hook,404,408,"Hook (4.04)",1992,"Data East",de_mDEDMD16S2A,0)
+
+DE_ROMSTARTx0(hook_e406,"hokcpue.406",CRC(0e2893e2) SHA1(fb13f34a45ec75d9cc1439c90b10c0b1ad38d1f6))
+DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
+DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
+                    "hook-voi.u17" ,CRC(6ea9fcd2) SHA1(bffc66df542e06dedddaa403b5513446d9d6fc8c),
+                    "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
+DE_ROMEND
+CORE_CLONEDEF(hook,e406,408,"Hook (4.06 English)",1992,"Data East",de_mDEDMD16S2A,0)
 
 
 /***********************************************************************/
