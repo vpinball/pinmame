@@ -320,8 +320,9 @@ DRIVERNV(eballch2)      //6803      08/85 Eight Ball Champ (cheap squeak)
 DRIVERNV(beatclck)      //6803-0C70:10/85 Beat the Clock
 DRIVERNV(beatclc2)      //          11/85 Beat the Clock (with flasher support)
 DRIVERNV(ladyluck)      //6803-0E34:02/86 Lady Luck
-DRIVERNV(motrdome)      //6803-0E14:05/86 MotorDome
-DRIVERNV(motrdomg)      //6803-0E69:07/86 MotorDome (German)
+DRIVERNV(motrdomb)      //6803-0E14:05/86 MotorDome (rev. B)
+DRIVERNV(motrdome)      //6803      06/86 MotorDome (rev. D)
+DRIVERNV(motrdomg)      //6803-0E69:07/86 MotorDome (German rev. B)
                         //6803-????:06/86 Karate Fight (Prototype for Black Belt?)
 DRIVERNV(blackblt)      //6803-0E52:07/86 Black Belt
 DRIVERNV(blackbl2)      //6803      07/86 Black Belt (Squawk & Talk)
@@ -330,8 +331,9 @@ DRIVERNV(strngsci)      //6803-0E35:10/86 Strange Science (rev. A)
 DRIVERNV(strngscg)      //6803      10/86 Strange Science (German)
 DRIVERNV(strngscc)      //6803      12/86 Strange Science (rev. C)
 DRIVERNV(cityslck)      //6803-0E79:03/87 City Slicker
-DRIVERNV(hardbody)      //6803-0E94:02/87 Hardbody
-DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)
+DRIVERNV(hardbody)      //6803-0E94:02/87 Hardbody (rev. C)
+DRIVERNV(hardbdyd)      //6803      03/87 Hardbody (rev. D)
+DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German rev. B)
 DRIVERNV(prtyanim)      //6803-0H01:05/87 Party Animal
 DRIVERNV(prtyanig)      //6803      05/87 Party Animal (German)
 DRIVERNV(hvymetal)      //6803-0H03:08/87 Heavy Metal Meltdown

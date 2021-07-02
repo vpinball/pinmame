@@ -97,7 +97,15 @@ BY6803_ROMSTART44(motrdome,"modm_u2.dat",CRC(820ca073) SHA1(0b50712f7d65f629af93
 BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34abd678db7e031bde074b))
 BY6803_ROMEND
 #define input_ports_motrdome input_ports_by6803
-CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803_TCSS,0)
+CORE_GAMEDEFNV(motrdome,"MotorDome (rev. D)",1986,"Bally",by_mBY6803_TCSS,0)
+
+BY6803_ROMSTART44(motrdomb,"md_cpu_u2.bin",CRC(72c84e3b) SHA1(cf8d890a574e7f5299abde6fd38be2f3e63b3a54),
+                           "md_cpu_u3.bin",CRC(3ae93465) SHA1(5b5ecee0c631131201bf4c52f297f87d143d0fcf))
+BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34abd678db7e031bde074b))
+BY6803_ROMEND
+#define init_motrdomb init_motrdome
+#define input_ports_motrdomb input_ports_motrdome
+CORE_CLONEDEFNV(motrdomb,motrdome,"MotorDome (rev. B)",1986,"Bally",by_mBY6803_TCSS,0)
 
 // german version claims to be game #E69!?
 BY6803_ROMSTART44(motrdomg,"u2_11_de.bin",CRC(8a4bafd3) SHA1(d764d2e38be2df27ab982cfbedddb79f89ca2359),
@@ -106,7 +114,7 @@ BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34
 BY6803_ROMEND
 #define init_motrdomg init_motrdome
 #define input_ports_motrdomg input_ports_motrdome
-CORE_CLONEDEFNV(motrdomg,motrdome,"MotorDome (German)",1986,"Bally",by_mBY6803_TCSS,0)
+CORE_CLONEDEFNV(motrdomg,motrdome,"MotorDome (German rev. B)",1986,"Bally",by_mBY6803_TCSS,0)
 
 /*------------------------------------
 / Karate Fight (6803-????: 06/86) - European version of Black Belt
@@ -195,7 +203,15 @@ BY6803_ROMSTART44(hardbody,"cpu_u2.128",  CRC(c9248b47) SHA1(54239bd7d15574ebbb7
 BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c68710f55c245d9c675b06f))
 BY6803_ROMEND
 #define input_ports_hardbody input_ports_by6803
-CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803_TCS2S,0)
+CORE_GAMEDEFNV(hardbody,"Hardbody (rev. C)",1987,"Bally",by_mBY6803_TCS2S,0)
+
+BY6803_ROMSTART44(hardbdyd,"hb_cpu2.bin", CRC(03975ea9) SHA1(8a4ba6bb5e6ab8da5fffaead283e26edd297e637),
+                           "hb_cpu3.bin", CRC(10c10380) SHA1(98207c16b6d2a9990eb36b2629bfd668e45ca58e))
+BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c68710f55c245d9c675b06f))
+BY6803_ROMEND
+#define init_hardbdyd init_hardbody
+#define input_ports_hardbdyd input_ports_hardbody
+CORE_CLONEDEFNV(hardbdyd,hardbody,"Hardbody (rev. D)",1987,"Bally",by_mBY6803_TCS2S,0)
 
 BY6803_ROMSTART44(hardbdyg,"hrdbdy-g.u2", CRC(fce357cc) SHA1(f7d13c12aabcb3c5bb5826b1911817bd359f1941),
                            "hrdbdy-g.u3", CRC(ccac74b5) SHA1(d55cfc8ee866a9af4567d56890f5a9ecb9c3c02f))
@@ -203,7 +219,7 @@ BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c6
 BY6803_ROMEND
 #define init_hardbdyg init_hardbody
 #define input_ports_hardbdyg input_ports_hardbody
-CORE_CLONEDEFNV(hardbdyg,hardbody,"Hardbody (German)",1987,"Bally",by_mBY6803_TCS2S,0)
+CORE_CLONEDEFNV(hardbdyg,hardbody,"Hardbody (German rev. B)",1987,"Bally",by_mBY6803_TCS2S,0)
 
 // Games below use Sounds Deluxe Sound Hardware
 
