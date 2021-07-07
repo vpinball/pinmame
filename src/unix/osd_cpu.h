@@ -23,6 +23,10 @@
 #ifndef OSD_CPU_H 
 #define OSD_CPU_H
 
+#ifdef PINMAME
+#include "pinmame.h"
+#endif /* PINMAME */
+
 /* fixup some clock() related issues */
 #include <time.h>
 /* this is cut and pasted from sysdep/misc.c ,check sysdep/misc.c for

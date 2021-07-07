@@ -1,0 +1,65 @@
+name: xpinmame
+on:
+  push:
+
+env:
+  VERSION_START_SHA: 06fbe2826c1563f10576ae68984672dcffa481ac
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      revision: ${{ steps.version.outputs.revision }}
+      sha: ${{ steps.version.outputs.sha }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA="${GITHUB_SHA}"
+          SHA7="${SHA::7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "::set-output name=version::${VERSION}"
+          echo "::set-output name=revision::${REVISION}"
+          echo "::set-output name=sha::${SHA}"
+          echo "::set-output name=tag::${TAG}"
+
+  build:
+    name: Build xpinmame-${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: osx-x64
+            exe: xpinmame
+    steps:
+      - uses: actions/checkout@v2
+      - if: matrix.os == 'macos-latest'
+        run: |
+          brew install xquartz
+      - name: Build xpinmame-${{ matrix.platform }}
+        run: |
+          cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+          cmake --build build/Release
+      - run: |
+          mkdir tmp
+          cp build/Release/${{ matrix.exe }} tmp
+          cp release/license.txt tmp
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
+          path: tmp
