@@ -39,7 +39,7 @@ jobs:
     steps:
       - id: download
         run: |
-           WORKFLOWS=("pinmame" "pinmame32" "vpinmame" "libpinmame")
+           WORKFLOWS=("pinmame" "pinmame32" "vpinmame" "libpinmame" "xpinmame")
            curl -s "${{ env.ACTIONS_API_URL }}/runs" --output runs.json
            for name in "${WORKFLOWS[@]}"
            do 

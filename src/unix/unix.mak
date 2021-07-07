@@ -119,10 +119,11 @@ endif
 # these are the object subdirectories that need to be created.
 ##############################################################################
 OBJ     = $(NAME).obj
+VGM_OBJ = $(NAME).obj/vgm
 PROC_OBJ = $(NAME).obj/p-roc
 LISY_OBJ = $(NAME).obj/lisy
 
-CORE_OBJDIRS = $(OBJ) \
+CORE_OBJDIRS = $(OBJ) $(VGM_OBJ) \
 	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
 	$(OBJ)/cpu $(OBJ)/sound \
 	$(OBJ)/mess $(OBJ)/mess/cpu $(OBJ)/mess/formats $(OBJ)/mess/systems \
@@ -172,6 +173,8 @@ include src/rules.mak
 ifeq ($(TARGET), mess)
 include mess/rules_ms.mak
 endif
+
+VGMOBJS = $(VGM_OBJ)/vgmwrite.o
 
 ifdef PROC
 include src/p-roc/p-roc.mak
@@ -320,9 +323,9 @@ MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 ##############################################################################
 # Begin of the real makefile.
 ##############################################################################
-$(NAME).$(DISPLAY_METHOD): $(OBJS) $(PROCOBJS) $(LISYOBJS)
+$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS) 
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS) 
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
@@ -368,6 +371,10 @@ $(OBJ)/mess/%.o: mess/%.c
 endif
 
 $(OBJ)/%.o: src/%.c
+	$(CC_COMMENT) @echo 'Compiling $< ...'
+	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
+
+$(VGM_OBJ)/%.o: ext/vgm/%.c
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
 

@@ -86,8 +86,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Set the title, now auto build from defines from the makefile */
-	sprintf(title,"%s (%s) version %s", NAME, DISPLAY_METHOD,
-			build_version);
+	snprintf(title, sizeof(title), "%s (%s) version %s", NAME, DISPLAY_METHOD, build_version);
 
 	/* parse configuration file and environment */
 	if ((res = config_init(argc, argv)) != 1234 || res2 == OSD_NOT_OK)
