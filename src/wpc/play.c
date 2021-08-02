@@ -280,7 +280,8 @@ static WRITE_HANDLER(out2_n) {
         sndbrd_0_ctrl_w(0, data & 0x70);
       } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY3) {
         if (locals.cpuType < 2) {
-          if (!enable) sndbrd_0_data_w(0, (data & 0x70) >> 4);
+          sndbrd_0_data_w(0, (data & 0x70) >> 4);
+          sndbrd_0_ctrl_w(0, !locals.enX);
         } else { // ENSN is never triggered on spain82, only why not? m8020_w used to fix sound for now
           if (locals.enSn) sndbrd_0_data_w(0, locals.lampCol);
         }
@@ -365,6 +366,7 @@ static MACHINE_INIT(PLAYMATIC2) {
 // HACK to make sound work on Spain 82!
 static WRITE_HANDLER(m8020_w) {
   sndbrd_0_data_w(0, data);
+  sndbrd_0_ctrl_w(0, 0);
 }
 
 static MACHINE_INIT(PLAYMATIC3) {

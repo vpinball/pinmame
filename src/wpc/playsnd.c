@@ -124,7 +124,10 @@ static void play3s_init(struct sndbrdData *brdData) {
 
 static WRITE_HANDLER(play3s_data_w) {
   sndlocals.sndCmd = data;
-  sndlocals.ef[2] = 0;
+}
+
+static WRITE_HANDLER(play3s_ctrl_w) {
+  sndlocals.ef[2] = data & 1;
 }
 
 static void delay(int x) {
@@ -135,17 +138,20 @@ static void delay(int x) {
 
 static WRITE_HANDLER(play3s_man_w) {
   if (!strncasecmp(Machine->gamedrv->name, "cerberus", 8)) {
-    cpu_boost_interleave(TIME_IN_USEC(40), TIME_IN_USEC(1000));
+    cpu_boost_interleave(TIME_IN_USEC(40), TIME_IN_USEC(5000));
     play3s_data_w(offset, data >> 4);
-    delay(3);
+    delay(20);
     play3s_data_w(offset, 0);
-    delay(3);
+    delay(10);
     play3s_data_w(offset, data & 0x0f);
-    delay(12);
+    delay(10);
     play3s_data_w(offset, 0);
   } else {
     play3s_data_w(offset, data);
+    play3s_ctrl_w(offset, 0);
   }
+  delay(20);
+  play3s_ctrl_w(offset, 1);
 }
 
 static void play4s_timer_callback(int n) {
@@ -184,7 +190,7 @@ const struct sndbrdIntf play2sIntf = {
   "PLAY2", play2s_init, NULL, NULL, play2s_man_w, play2s_data_w, NULL, play2s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play3sIntf = {
-  "PLAY3", play3s_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "PLAY3", play3s_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play4sIntf = {
   "PLAY4", play4s_init, NULL, NULL, play4s_man_w, play4s_data_w, NULL, play4s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
@@ -233,8 +239,7 @@ MACHINE_DRIVER_END
 /* E.F.O. Sound-3, used by Cerberus and Spain 82 */
 
 static UINT8 snd_ef3(void) {
-  UINT8 val;
-  val = tms5220_status_r(0);
+  UINT8 val = tms5220_status_r(0);
   sndlocals.ef[1] = !tms5220_ready_r();
   sndlocals.ef[3] = ((val & 0x40) >> 6);
   sndlocals.ef[4] = ((val & 0x80) >> 7);
@@ -246,7 +251,6 @@ static void snd_q(int data) {
 }
 
 static READ_HANDLER(in_snd_3) {
-  sndlocals.ef[2] = 1;
   return sndlocals.sndCmd;
 }
 
@@ -286,7 +290,7 @@ static void play_5220Irq(int state) {
 }
 static struct TMS5220interface play3s_5220Int = {
   640000,
-  100,
+  75,
   play_5220Irq
 };
 
