@@ -23,6 +23,7 @@ Bypassed E.F.O. Z-Pinball system protection PAL chip, games are working now (Mai
 Prolonged pre-shutdown time for Joctronic so NVRAM is saved correctly
 Found general tilt sense on LTD system 4
 Added light chaser outputs for Hook (exactly the same as on Star Trek 25th Anniversary)
+Prevented credits from being added repeatedly on Spain 82
 
 *** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu
 New:

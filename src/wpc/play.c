@@ -310,7 +310,7 @@ static READ_HANDLER(in2_n) {
     case DIAG:
       if (locals.cpuType > 1) {
         if (locals.digitSel == 1)
-          return coreGlobals.swMatrix[0] ^ 0x0f;
+          return ((coreGlobals.swMatrix[1] & 0x0f) | coreGlobals.swMatrix[0]) ^ 0x0f;
         else
           return coreGlobals.swMatrix[1] ^ 0x0f;
       } else
