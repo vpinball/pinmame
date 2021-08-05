@@ -25,7 +25,7 @@ Found general tilt sense on LTD system 4
 Added light chaser outputs for Hook (exactly the same as on Star Trek 25th Anniversary)
 Prevented credits from being added repeatedly on Spain 82
 
-*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu, Jordi & Orlando
 New:
 Alvin G.: U.S.A. Football (Redemption, P08)
 Joctronic: Pin Ball
@@ -42,6 +42,7 @@ A.G. Soccer-Ball & Football R18u with 2.5L Sound (only the latter is new, 2.4 re
 Bad Cats LG-4
 Bushido (alternate set B)
 Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD)
+Faeton (6 digits)
 Flintstones, The LA-5
 Hardbody (rev. D) (the newest we have, only a few diagnostic lamp / switch names were corrected compared to rev. C)
 Hook 4.06 English

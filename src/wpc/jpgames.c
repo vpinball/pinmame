@@ -137,7 +137,12 @@ CORE_CLONEDEFNV(petacona,petacon,"Petaco (new hardware, alternate set)",1985,"Ju
 INITGAME(faeton, jpDisp7, 1)
 JP_ROMSTART1(faeton,	"faeton.cpu", CRC(ef7e6915) SHA1(5d3d86549606b3d9134bb3f6d3026d6f3e07d4cd))
 JP_ROMEND
-CORE_GAMEDEFNV(faeton,"Faeton",1985,"Juegos Populares",gl_mJP,0)
+CORE_GAMEDEFNV(faeton,"Faeton (7 digits)",1985,"Juegos Populares",gl_mJP,0)
+
+INITGAME(faeton6d, jpDisp6a, 1)
+JP_ROMSTART1(faeton6d, "faeton6d.bin", CRC(e7c45ba4) SHA1(c0f82271ef44841c599f0e7b9a1ed9cd16f0580a))
+JP_ROMEND
+CORE_CLONEDEFNV(faeton6d,faeton,"Faeton (6 digits)",1985,"Juegos Populares",gl_mJP1,0)
 
 /*-------------------------------------------------------------------
 / Halley Comet (#1104)
