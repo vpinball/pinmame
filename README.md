@@ -5,7 +5,8 @@
 ## What is it?
 
 PinMAME emulates the hardware found in almost every solid state pinball machine created from
-the mid 1970's through 2014. Currently, the following pinball hardware is emulated:
+the mid 1970's through 2014 (around 750 unique Pinball machines and many more clones/revisions, overall more than 2500 sets).
+Currently, the following pinball hardware is emulated:
 
 Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
 Williams System 6, Williams System 4, Williams System 3,
