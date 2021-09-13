@@ -457,7 +457,7 @@ int config_read_default_ports(config_file *cfg, struct ipd *input_ports_default)
 int config_read_coin_and_ticket_counters(config_file *cfg, unsigned int *coins, unsigned int *lastcoin,
 	unsigned int *coinlockedout, unsigned int *dispensed_tickets)
 {
-	int coin_counters;
+	//int coin_counters;
 	int i;
 
 	if (cfg->is_write)
@@ -465,7 +465,7 @@ int config_read_coin_and_ticket_counters(config_file *cfg, unsigned int *coins, 
 	if (cfg->position != POSITION_AFTER_PORTS)
 		return CONFIG_ERROR_BADPOSITION;
 
-	coin_counters = cfg->format->coin_counters;
+	//coin_counters = cfg->format->coin_counters;
 
 	/* Clear the coin & ticket counters/flags - LBO 042898 */
 	for (i = 0; i < COIN_COUNTERS; i ++)

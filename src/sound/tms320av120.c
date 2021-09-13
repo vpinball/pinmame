@@ -408,13 +408,13 @@ long sbSamples[3][32];			// Three sets/groups of subband samples for each of the
 int scaleFactor[3][32];			// Scale factors for each of the 3 groups of 32 Subbands
 int sblimit=0;					// One past highest subband with non-empty allocation
 int sb, sf, gp;
-int scale_factor = 0;			//Current scale factor index
-long levels = 0;				//Quantization level
+int scale_factor;				//Current scale factor index
+long levels;					//Quantization level
 Layer2BitAllocationTableEntry *allocationMap;
 
 //Reset bits flag
 tms320av120[num].bitsRemaining = 8;
-   
+
 // Select which allocation map to use
 allocationMap = Layer2AllocationB2d;
 

@@ -440,8 +440,8 @@ static void fmtint (char *buffer, size_t *currlen, size_t maxlen,
   unsigned long uvalue;
   char convert[20];
   int place = 0;
-  int spadlen = 0; /* amount to space pad */
-  int zpadlen = 0; /* amount to zero pad */
+  int spadlen; /* amount to space pad */
+  int zpadlen; /* amount to zero pad */
   int caps = 0;
 
   if (max < 0)
@@ -567,8 +567,8 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   char fconvert[20];
   int iplace = 0;
   int fplace = 0;
-  int padlen = 0; /* amount to pad */
-  int zpadlen = 0;
+  int padlen; /* amount to pad */
+  int zpadlen;
   int caps = 0;
   long intpart;
   long fracpart;

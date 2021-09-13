@@ -14,7 +14,7 @@
 	It must be called before reading the ST register.
 */
 
-void setstat(void)
+INLINE void setstat(void)
 {
 	int i;
 	UINT8 a;
@@ -38,7 +38,7 @@ void setstat(void)
 	It must be called on interrupt return, or when, for some reason,
 	the emulated program sets the STATUS register directly.
 */
-void getstat(void)
+INLINE void getstat(void)
 {
 	if (I.STATUS & ST_P)
 		lastparity = 1;
@@ -589,8 +589,8 @@ INLINE UINT16 setst_sla_laeco(UINT16 a, UINT16 c)
 	if (c != 0)
 	{
 		{
-			register UINT16 mask;
-			register UINT16 ousted_bits;
+			UINT16 mask;
+			UINT16 ousted_bits;
 
 			mask = 0xFFFF << (16-c-1);
 			ousted_bits = a & mask;

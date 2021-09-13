@@ -1062,7 +1062,7 @@ static int is_silent(const INT16* const buf, const int size)
 }
 
 void pm_wave_record(INT16 *buffer, int samples) {
-  int written = 0;
+  int written;
   if (wavelocals.dumping == 1) {
 		const UINT32 tick = timeGetTime2();
 		if (!is_silent(buffer, samples * CHANNELCOUNT))
@@ -1071,7 +1071,7 @@ void pm_wave_record(INT16 *buffer, int samples) {
 		if (wavelocals.offs > 44) {
 			if (wavelocals.silence == tick) {
 				if (wavelocals.silentsamples > 0) {
-					int i = 0;
+					int i;
 					INT16 * const silentBuffer = malloc(samples * 2 * CHANNELCOUNT);
 					memset(silentBuffer, 0x00, samples * 2 * CHANNELCOUNT);
 					for (i = 0; i < (wavelocals.silentsamples - 1); i++) {

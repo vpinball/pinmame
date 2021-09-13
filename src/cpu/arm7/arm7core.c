@@ -140,7 +140,7 @@ INLINE void arm7_cpu_write8( int addr, data8_t data )
 
 INLINE data32_t arm7_cpu_read32( int addr )
 {
-	data32_t result = 0;
+	data32_t result;
 
 	//Handle through normal 32 bit handler
 	result = cpu_readmem32ledw_dword(addr);
@@ -1236,7 +1236,7 @@ static void HandleHalfWordDT(data32_t insn)
 		//Signed?
 		if(insn & 0x40)
 		{
-			data32_t newval = 0;
+			data32_t newval;
 
 			//Signed Half Word?
 			if(insn & 0x20) {
@@ -1527,7 +1527,7 @@ static void HandlePSRTransfer( data32_t insn )
 	//MSR ( bit 21 set ) - Copy value to CPSR/SPSR
 	if( (insn & 0x00200000) )
 	{
-		data32_t val = 0;
+		data32_t val;
 
 		//Immediate Value?
 		if(insn & INSN_I) {
@@ -1805,7 +1805,7 @@ static void HandleSMulLong( data32_t insn)
 {
 	INT32 rm, rs;
 	data32_t rhi,rlo;
-	INT64 res=0;
+	INT64 res;
 
 	// MULL takes 1S + (m+1)I and MLAL 1S + (m+2)I cycles to execute, where m is the
 	// number of 8 bit multiplier array cycles required to complete the multiply, which is
@@ -1857,7 +1857,7 @@ static void HandleUMulLong( data32_t insn)
 {
 	UINT32 rm, rs;
 	data32_t rhi,rlo;
-	UINT64 res=0;
+	UINT64 res;
 
 	// MULL takes 1S + (m+1)I and MLAL 1S + (m+2)I cycles to execute, where m is the
 	// number of 8 bit multiplier array cycles required to complete the multiply, which is

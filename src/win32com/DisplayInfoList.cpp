@@ -71,7 +71,7 @@ BOOL CDisplayInfoList::Enumerate()
 {
 #ifndef DISABLE_DX7
 	// Get to DirectDraw
-	HINSTANCE hDDraw = LoadLibrary("ddraw.dll");;
+	HINSTANCE hDDraw = LoadLibrary("ddraw.dll");
 
 	// If ddraw.dll doesn't exist in the search path,
 	// then DirectX probably isn't installed, so fail.
@@ -83,7 +83,7 @@ BOOL CDisplayInfoList::Enumerate()
 	LPDIRECTDRAWENUMERATEEX lpDDEnumEx = (LPDIRECTDRAWENUMERATEEX) GetProcAddress(hDDraw,"DirectDrawEnumerateExA");
 
 	// Enumeration results placeholder
-	HRESULT result = DD_OK;
+	HRESULT result;
 
 	// If the function is there, call it to enumerate all display
 	// devices attached to the desktop, and any non-display DirectDraw

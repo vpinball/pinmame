@@ -306,7 +306,7 @@ int cop420_execute(int cycles)
 
 		if (skipLBI == 1)
 		{
-			int is_lbi = 0;
+			int is_lbi;
 
 			if (opcode == 0x33)
 			{

@@ -183,9 +183,9 @@ private:
 	BOOL BrowseForDirectory(char* pResult) 
 	{
 		BOOL        bResult = FALSE;
-		LPMALLOC	piMalloc;
+		LPMALLOC    piMalloc;
 		BROWSEINFO  Info;
-		LPITEMIDLIST pItemIDList = NULL;
+		LPITEMIDLIST pItemIDList;
 		char        buf[MAX_PATH];
 
 		if (!SUCCEEDED(SHGetMalloc(&piMalloc)))

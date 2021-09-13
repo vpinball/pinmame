@@ -649,13 +649,13 @@ static const struct rectangle screen_visible_area =
 
 //Video Update - Generation #1
 PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
-    static int scrollers[32];
-	size_t offs = 0;
-	int color = 0;
+	static int scrollers[32];
+	size_t offs;
+	int color;
 	int colorindex = 0;
-	int tile = 0;
-	int flipx=0;
-	int flipy=0;
+	int tile;
+	int flipx;
+	int flipy;
 
 #ifdef MAME_DEBUG
 
@@ -736,11 +736,11 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	static int scrollers[32];
 	size_t offs;
 	int colorindex = 0;
-	int tile = 0;
-	int flipx=0;
-	int flipy=0;
-	int sx=0;
-	int sy=0;
+	int tile;
+	int flipx;
+	int flipy;
+	int sx;
+	int sy;
 
 	if (locals.pout2) return 0;
 

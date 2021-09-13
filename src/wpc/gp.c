@@ -91,7 +91,7 @@ static void GP_lampStrobe2(int lampadr, int lampdata) {
 
 static void GP_UpdateSolenoids (int bank, int data) {
   static UINT32 mask = 0xC0008000;
-  UINT32 sols = 0;
+  UINT32 sols;
   int soldata = data & 0x0f;
   if (bank == 0) { // solenoids 1-15
     if (soldata != 0x0f) {
@@ -102,7 +102,7 @@ static void GP_UpdateSolenoids (int bank, int data) {
       locals.solenoids |= sols;
       coreGlobals.solenoids = locals.solenoids;
     } else { // until we find another way to turn the solenoids back off...
-	  if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1) sndbrd_0_data_w(0, soldata);
+      if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1) sndbrd_0_data_w(0, soldata);
       coreGlobals.pulsedSolState &= mask;
       locals.solenoids &= mask;
     }

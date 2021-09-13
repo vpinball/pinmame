@@ -61,7 +61,7 @@ END_COM_MAP()
 public:
 	STDMETHODIMP Next(ULONG celt,VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched)
 	{
-		HRESULT hr = S_FALSE;
+		HRESULT hr;
 
 		if ( pCeltFetched )
 			*pCeltFetched = 0;

@@ -2937,7 +2937,7 @@ void input_port_free(struct InputPort* dst)
 void seq_set_string(InputSeq* a, const char *buf)
 {
 	char *lbuf;
-	char *arg = NULL;
+	char *arg;
 	int j;
 	struct ik *pik;
 

@@ -2084,7 +2084,7 @@ INLINE void update_timer(int cyc)
 		//Determine Mode
 		int mode = (GET_M0_1<<1) | GET_M0_0;
 		int overflow;
-		UINT16 count = 0;
+		UINT16 count;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
 			case 1:			//16 Bit Timer Mode
@@ -2099,7 +2099,7 @@ INLINE void update_timer(int cyc)
 					//Any overflow from cycles?
 					cyc-= (overflow-count)*12;
 					count = 0;
-                    SET_TF0(1);
+					SET_TF0(1);
 				}
 				//Update the timer
 				if(cyc) {
@@ -2172,7 +2172,7 @@ INLINE void update_timer(int cyc)
 		//Determine Mode
 		int mode = (GET_M1_1<<1) | GET_M1_0;
 		int overflow;
-		UINT16 count = 0;
+		UINT16 count;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
 			case 1:			//16 Bit Timer Mode
@@ -2190,7 +2190,7 @@ INLINE void update_timer(int cyc)
 					//Any overflow from cycles?
 					cyc-= (overflow-count)*12;
 					count = 0;
-                    SET_TF1(1);
+					SET_TF1(1);
 				}
 				//Update the timer
 				if(cyc) {
@@ -2234,9 +2234,9 @@ INLINE void update_timer(int cyc)
 #if (HAS_I8052 || HAS_I8752)
 	//Update Timer 2
 	if(GET_TR2) {
-		int timerinc, overflow, isoverflow;
+		int timerinc, overflow;
 		UINT16 count = ((R_TH2<<8) | R_TL2);
-		timerinc = overflow = isoverflow = 0;
+		timerinc = overflow = 0;
 
 		//Are we in counter mode?
 		if(GET_CT2)		{

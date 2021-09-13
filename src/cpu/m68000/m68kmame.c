@@ -1699,7 +1699,7 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 static void m68306_tx_byte_sent(int which)
 {
 	int check_cts = (m68306duartreg[dirDUMR2A+(which*0x10)]&0x10)>>4;
-	int get_rts = 0;
+	int get_rts;
 
 	//Are we clear to send the byte? ..check CTS if configured to check it first and if it's 1, try again!
 	if(check_cts) {
@@ -1910,8 +1910,8 @@ static void m68306_duart_set_duisr(int data)
 //Set DUSR status register
 static void m68306_duart_set_dusr(int which,int data)
 {
-	int txRDY=0;
-	int rxRDY=0;
+	int txRDY;
+	int rxRDY;
 	m68306duartreg[dirDUSRA+(which*0x10)] = data;
 	//txRDY is duplicated in DUISR
 	txRDY = (m68306duartreg[dirDUSRA+(which*0x10)] & 0x04)>>2;	//TxRDY in DUSR is bit 2)
@@ -1969,7 +1969,7 @@ static void trigger_duart_int(int which)
 /* DUART COMMAND REGISTER WRITE */
 static void duart_command_register_w(int which, int data)
 {
-	int cmd = 0;
+	int cmd;
 	//Bit 7   = 0
 	//Bit 6-4 = MISC Commands
 	//Bit 3-2 = TC Command (Transmitter Channel)

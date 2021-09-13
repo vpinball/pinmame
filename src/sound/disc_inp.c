@@ -187,7 +187,7 @@ int dss_adjustment_init(struct node_description *node)
 int  discrete_sh_adjuster_count(struct discrete_sound_block *dsintf)
 {
 	int node_counter=0;
-	int count=0;
+	int count;
 	int sanity_abort=0;
 
 	if(dss_adjustment_map!=NULL) free(dss_adjustment_map);
@@ -212,7 +212,7 @@ int  discrete_sh_adjuster_count(struct discrete_sound_block *dsintf)
 
 int  discrete_sh_adjuster_get(int arg,struct discrete_sh_adjuster *adjuster)
 {
-	int node=0;
+	int node;
 	if(adjuster==NULL) return -1;
 
 	/* Reference our node in the running list */
@@ -233,7 +233,7 @@ int  discrete_sh_adjuster_get(int arg,struct discrete_sh_adjuster *adjuster)
 
 int discrete_sh_adjuster_set(int arg,struct discrete_sh_adjuster *adjuster)
 {
-	int node=0;
+	int node;
 	if(adjuster==NULL) return -1;
 
 	/* Reference our node in the running list */
@@ -244,7 +244,7 @@ int discrete_sh_adjuster_set(int arg,struct discrete_sh_adjuster *adjuster)
 
 	/* Only allow output value to be set */
 
-   /* Only allow value to be set */
+	/* Only allow value to be set */
 /*	node_list[node].name=adjuster->name; */
 /*	node_list[node].input[3]=adjuster->initial; */
 /*	node_list[node].input[1]=adjuster->min; */

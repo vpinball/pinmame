@@ -57,9 +57,9 @@
 
 unsigned Dasm8085(char *buff, unsigned pc)
 {
-	UINT8 op;
+	//UINT8 op;
 	unsigned PC = pc;
-	switch (op = OP(pc++))
+	switch (/*op =*/ OP(pc++))
 	{
 #ifdef  Z80_MNEMONICS
 		case 0x00: sprintf (buff,"nop");                             break;

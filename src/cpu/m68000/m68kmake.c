@@ -1156,7 +1156,7 @@ void read_insert(char* insert)
 	char* ptr = insert;
 	char* overflow = insert + MAX_INSERT_LENGTH - MAX_LINE_LENGTH;
 	int length;
-	char* first_blank = NULL;
+	char* first_blank;
 
 	first_blank = NULL;
 
