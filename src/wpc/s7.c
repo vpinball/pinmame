@@ -240,9 +240,8 @@ static WRITE_HANDLER(pia1b_w) {
     s7locals.solBits2 = data;
     updsol();
   }
-  if (s7locals.s6sound) {
-    sndbrd_0_data_w(0, ~data); data &= 0xe0; /* mask of sound command bits */
-  }
+  if (s7locals.s6sound)
+    sndbrd_0_data_w(0, ~data);
 }
 
 static WRITE_HANDLER(pia1a_w) {
