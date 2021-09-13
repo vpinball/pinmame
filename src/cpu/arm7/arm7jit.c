@@ -52,6 +52,8 @@
 #include "arm7core.h"
 #include "windows/jitemit.h"
 
+#include <assert.h>
+
 // forward definitions
 static int xlat(struct jit_ctl *jit, data32_t addr);
 static int xlat_recursive(struct jit_ctl *jit, data32_t addr);
@@ -553,7 +555,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	int siz, sx;
 	data32_t immOfs;
 	int ddinstr;
-	int non_priv_access_mode;   // flag: the memory transfer uses non-privileged memory mode (documentary only)
+	//int non_priv_access_mode;   // flag: the memory transfer uses non-privileged memory mode (documentary only)
 
 	// Decode the instruction fields
 	ld = (insn & INSN_SDT_L);
@@ -574,6 +576,8 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	// NOTE!  These instructions aren't exercised in any Whitestar code.
 	if (ddinstr)
 	{
+		assert(false); // if this happens, test following code
+
 		// the load/store status isn't in the usual place - it's in !(bit 6)
 		ld = ((insn & 0x60) == 0x40);
 
@@ -586,7 +590,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	// emulator doesn't appear to make any provisions for this case, and we don't
 	// do anything with it here, but I'm noting it explicitly in case it becomes
 	// important in the future.
-	non_priv_access_mode = wrt && !preIdx;
+	//non_priv_access_mode = wrt && !preIdx;
 
 	// Because of the special meaning of the W bit in post-indexing mode, post-indexing
 	// ALWAYS uses write-back.
@@ -840,6 +844,10 @@ static int genShift(data32_t insn, data32_t addr, int carry_out)
 			// 3 = ROR (rotate right)
 			// Same effect as intel ROR (augmented as above).
 			iop = imROR;
+			break;
+
+		default:
+			assert(false);
 			break;
 		}
 
@@ -1354,14 +1362,14 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	int pre = insn & (1 << 24);     // pre/post bit (true -> pre, add offset before transfer)
 	int oty = insn & (1 << 25);     // offset type: 0=immediate offset, 1=register with shift
 	data32_t ofs = (oty == 0 ? insn & 0xfff : 0);    // immediate offset, if oty == 0
-	int non_priv_access_mode;       // the memory transfer uses non-privileged memory mode (documentary only)
+	//int non_priv_access_mode;       // the memory transfer uses non-privileged memory mode (documentary only)
 
 	// The W bit has a special meaning in post-indexing mode: it sets non-privileged
 	// memory access if the CPU is running in a privileged mode.  The MAME ARM7
 	// emulator doesn't appear to make any provisions for this case, and we don't
 	// do anything with it here, but I'm noting it explicitly in case it becomes
 	// important in the future.
-	non_priv_access_mode = wrt && !pre;
+	//non_priv_access_mode = wrt && !pre;
 
 	// Because of the special meaning of the W bit in post-indexing mode, post-indexing
 	// ALWAYS uses write-back.
@@ -1492,6 +1500,8 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 // that the emulator SWAP code hasn't been exercised either, for the same reason.)
 static int SWAP(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 {
+	assert(false); // if this happens: test following code
+
 	//According to manual - swap is an LDR followed by an STR and all endian rules apply
 	//Process: Read original data from address pointed by Rn then store data from address
 	//         pointed by Rm to Rn address, and store original data from Rn to Rd.
@@ -1981,7 +1991,7 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 	{
 		void *pn;
 		// assume there's no conditional label
-		struct jit_label *condLabel = 0, *condLabel2 = 0;
+		struct jit_label *condLabel = 0;
 		
 		// most instructions takes 3 cycles; we'll adjust this as needed
 		// for instructions that have different timing
@@ -2077,6 +2087,8 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 			emit(JNZ, Label, condLabel);
 			break;
 		case COND_LS:
+			{
+			struct jit_label* condLabel2;
 			// LS = !C | Z
 			// first, jump TO the code if !C, otherwise fall through...
 			condJumpIfNot(C_MASK);
@@ -2089,11 +2101,12 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 			// set the label for the "TO the code" jump above
 			jit_resolve_label(condLabel2);
 			break;
+			}
 		case COND_GE:
 			// GE - N==V.  This is complex to test, so use the native jump test
 			// by loading the N and V flags from CPSR into the real Intel flags,
 			// then jumping past the code with JL if the condition is false.
-		    condJumpOnFlags(JL);
+			condJumpOnFlags(JL);
 			break;
 		case COND_LT:
 			condJumpOnFlags(JGE);

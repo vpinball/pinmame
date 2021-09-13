@@ -1509,7 +1509,7 @@ INLINE void at91_cpu_write8( int addr, data8_t data )
 
 INLINE data32_t at91_cpu_read32( int addr )
 {
-	data32_t result = 0;
+	data32_t result;
 
 	//Atmel AT91 CPU On Chip Periperhals Mapped here
 	if(addr >= 0xFFC00000)
