@@ -22,6 +22,7 @@ UINT16  seg_data2[CORE_SEGCOUNT] = {};
 UINT16  dmd_width = 128;
 UINT16  dmd_height = 32;
 bool    dmd_hasDMD = false;
+bool    hasExtraData = false;
 
 HMODULE DmdDev_hModule;
 HMODULE DmdScr_hModule;
@@ -186,6 +187,7 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	dmd_width = 128; // set default DMD size
 	dmd_height = 32;
 	dmd_hasDMD = false;
+	hasExtraData = false;
 	memset(seg_data2, 0, CORE_SEGCOUNT * sizeof(UINT16));
 
 	rgb24 color0, color33, color66, color100;
@@ -331,8 +333,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		return;
 
 	layout_t layout = None;
-	bool hasExtraData = false;
-	
+
 	// Medusa fix
 	if((gen == GEN_BY35) && (disp_num_segs[0] == 2))
 	{
