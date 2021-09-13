@@ -10,8 +10,11 @@ Fixed multiple issues in the new libPinMAME (previously known as PinMAMEdll) lib
 Fixed 64bit version of PinMAME32
 Reenabled DirectDraw support for 64bit windows compiles of PinMAME, PinMAME32 and VPinMAME
 Fixed some problems with the ROM audit
+
 Added support to compile for Windows ARM64 (not all features/variants though, as some external libs do not feature ARM64 support yet)
+
 Updated LISY support to 5.27-49 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+
 Make Automatic Sound Dump functionality of PinMAME(32) more robust in its silence detection
 One more audiophile tweak: added proper dithering after resampling to the final output sample rate
 
@@ -45,7 +48,7 @@ Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD)
 Faeton (6 digits)
 Flintstones, The LA-5
 Hardbody (rev. D) (the newest we have, only a few diagnostic lamp / switch names were corrected compared to rev. C)
-Hook 4.06 English
+Hook 4.06 (English)
 Jurassic Park 3.07
 Lucky Draw (alternate version - only difference is the #3 ROM)
 Mach 2 (alternate set)

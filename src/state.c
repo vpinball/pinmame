@@ -213,7 +213,7 @@ static ss_entry *ss_register_entry(const char *module, int instance, const char 
 {
 	ss_module *m = ss_get_module(module);
 	ss_entry **ep = &(m->instances[instance]);
-	ss_entry *e = *ep;
+	ss_entry *e;
 	while((e = *ep) != 0) {
 		int pos = strcmp(e->name, name);
 		if(!pos) {
@@ -482,7 +482,7 @@ void state_save_save_finish(void)
 int state_save_load_begin(mame_file *file)
 {
 	ss_module *m;
-	unsigned int offset = 0;
+	unsigned int offset;
 	UINT32 signature, file_sig;
 
 	TRACE(logerror("Beginning load\n"));

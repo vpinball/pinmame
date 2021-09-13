@@ -1193,7 +1193,7 @@ void *(*_internal_hook_memcpy)(void *dst, const void *src, size_t n) = NULL;
 // allocate aligned memory
 static void *internal_align_malloc(size_t size, size_t n) {
 	size_t need = size + n + sizeof(void*);
-	char *ptr = NULL;
+	char *ptr;
 	char *dst;
 	if (_internal_hook_malloc) {
 		ptr = (char*)_internal_hook_malloc(need);
@@ -2473,7 +2473,7 @@ IUINT32 BasicBitmap::GetColor(int x, int y) const
 	if ((unsigned int)x >= (unsigned int)_w) return 0;
 	if ((unsigned int)y >= (unsigned int)_h) return 0;
 	const IUINT8 *bits = (const IUINT8*)Line(y);
-	IUINT32 cc = 0, r = 0, g = 0, b = 0, a = 0;
+	IUINT32 cc = 0, r, g, b, a;
 	switch (_fmt) {
 	case G8:
 		cc = _pixel_fetch(8, bits, x);
@@ -2665,7 +2665,7 @@ IUINT32 BasicBitmap::Raw2ARGB(IUINT32 color)
 //---------------------------------------------------------------------
 IUINT32 BasicBitmap::ARGB2Raw(IUINT32 argb)
 {
-	IUINT32 a = 255, r = 0, g = 0, b = 0, c = 0;
+	IUINT32 a, r, g, b, c = 0;
 	_pixel_disasm_8888(argb, a, r, g, b);
 	switch (_fmt) {
 	case G8:
@@ -5389,7 +5389,7 @@ void BasicBitmap::InitDIBInfo(void *ptr, int width, int height, PixelFmt fmt)
 	int bpp = Fmt2Bpp(fmt);
 	int pixelsize = (bpp + 7) >> 3;
 	int pitch = (width * pixelsize) & (~3);
-	LPRGBQUAD palette = NULL;
+	LPRGBQUAD palette;
 
 	info->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	info->bmiHeader.biWidth = width;
@@ -5637,14 +5637,14 @@ void *BasicBitmap::GdiPlusLoadCore(const void *data, long size, int *cx, int *cy
 
 	static HINSTANCE hGdiPlusDLL = NULL;
 	LPSTREAM ppstm = NULL;
-	HGLOBAL hg = NULL;
-	LPVOID pg = NULL;
+	HGLOBAL hg;
+	LPVOID pg;
 	LPVOID bitmap = NULL;
 	void *bits = NULL;
-	int retval = 0;
+	int retval;
 	int gpixfmt = 0;
-	int fmt = 0;
-	int nbytes = 0;
+	int fmt;
+	int nbytes;
 	UINT width;
 	UINT height;
 	long stride;
@@ -5940,14 +5940,14 @@ finalizing:
 // use GdiPlus to load JPEG/PNG file
 BasicBitmap *BasicBitmap::GdiPlusLoadImageFromMemory(const void *data, long size, int *err)
 {
-	void *bits = NULL;
+	void *bits;
 	int cx = -1;
 	int cy = -1;
 	long pitch = -1;
 	int pfmt = -1;
 	int bpp = -1;
 	int errorcode = 0;
-	PixelFmt fmt = UNKNOW;
+	PixelFmt fmt;
 
 	bits = GdiPlusLoadCore(data, size, &cx, &cy, &pitch, &pfmt, &bpp, &errorcode);
 
@@ -6074,8 +6074,8 @@ bool BasicBitmap::TransparentBlt(void *hdcDst, int nXOriginDest, int nYOriginDes
 // DeleteObject((HBITMAP)hbitmap) must be invoked to dispose DIB after bitmap destruction
 BasicBitmap *BasicBitmap::CreateBitmapInDIB(void *hDC, int w, int h, PixelFmt fmt, void **hbitmap)
 {
-	BasicBitmap *bmp = NULL;
-	HBITMAP hBitmap = NULL;
+	BasicBitmap *bmp;
+	HBITMAP hBitmap;
 	void *bits = NULL;
 	if (hbitmap) hbitmap[0] = NULL;
 	hBitmap = (HBITMAP)CreateDIB(hDC, w, h, fmt, &bits);
@@ -6636,7 +6636,7 @@ static int BasicBitmap_ResampleShrinkX_C(IUINT8 *dstpix, const IUINT8 *srcpix,
 	IINT32 dstdiff = dstpitch - (dstwidth * 4);
 	IINT32 x, y;
 	IINT32 xspace = 0x10000 * srcwidth / dstwidth;
-	IINT32 xrecip = 0;
+	IINT32 xrecip;
 	IINT64 zrecip = 1;
 
 	zrecip <<= 32;
@@ -6686,7 +6686,7 @@ static int BasicBitmap_ResampleShrinkY_C(IUINT8 *dstpix, const IUINT8 *srcpix,
 	IINT32 dstdiff = dstpitch - (width * 4);
 	IINT32 x, y;
 	IINT32 yspace = 0x10000 * srcheight / dstheight;
-	IINT32 yrecip = 0;
+	IINT32 yrecip;
 	IINT32 ycounter = yspace;
 	IUINT32 *templine;
 
@@ -7090,7 +7090,7 @@ int BasicBitmap::Resample(int dx, int dy, int dw, int dh, const BasicBitmap *src
 				float y = (float)sy + j * incy + 0.5f;
 				float x = (float)sx + 0.5f;
 				for (int i = 0; i < dw; i++) {
-					IUINT32 color = 0;
+					IUINT32 color;
 					color = src->SampleBicubic(x, y, true);
 					SetColor(dx + i, dy + j, color);
 					x += incx;

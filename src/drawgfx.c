@@ -867,7 +867,7 @@ INLINE void common_drawgfx(struct mame_bitmap *dest,const struct GfxElement *gfx
 
 	if (gfx->pen_usage && (transparency == TRANSPARENCY_PEN || transparency == TRANSPARENCY_PENS))
 	{
-		int transmask = 0;
+		int transmask;
 
 		if (transparency == TRANSPARENCY_PEN)
 		{

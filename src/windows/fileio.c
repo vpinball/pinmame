@@ -196,7 +196,7 @@ INLINE int is_variablechar(char c)
 
 static const char *parse_variable(const char **start, const char *end)
 {
-	const char *src = *start, *var;
+	const char *src, *var;
 	char variable[1024];
 	char *dest = variable;
 

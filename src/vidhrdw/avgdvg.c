@@ -572,7 +572,7 @@ static int avg_generate_vector_list(void)
 
 	int firstwd, secondwd = 0;
 	int opcode;
-	int x, y, z = 0, b, l, d, a;
+	int x, y, z, b, l, d, a;
 	int deltax, deltay;
 
 	/* check for zeroed vector RAM */

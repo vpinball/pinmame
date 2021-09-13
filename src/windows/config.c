@@ -300,7 +300,7 @@ struct rc_option core_opts[] = {
 int penalty_compare (const char *s, const char *l)
 {
         int gaps = 0;
-        int match = 0;
+        int match;
         int last = 1;
 
         for (; *s && *l; l++)

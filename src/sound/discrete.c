@@ -296,7 +296,7 @@ void discrete_sh_reset(void)
 int discrete_sh_start (const struct MachineSound *msound)
 {
 	struct discrete_sound_block *intf;
-	int loop=0,loop2=0,search=0,failed=0;
+	int loop,loop2,search,failed;
 
 #ifdef DISCRETE_WAVELOG
 	wav_file = wav_open("discrete.wav", (int)(Machine->sample_rate+0.5), ((Machine->drv->sound_attributes&SOUND_SUPPORTS_STEREO) == SOUND_SUPPORTS_STEREO) ? 2: 1);
@@ -501,7 +501,7 @@ int discrete_sh_start (const struct MachineSound *msound)
 
 void discrete_sh_stop (void)
 {
-	int loop=0;
+	int loop;
 	if(!init_ok) return;
 
 #ifdef DISCRETE_WAVELOG
