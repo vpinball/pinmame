@@ -415,6 +415,15 @@ BY35_ROMEND
 #define input_ports_meteorf input_ports_st
 CORE_CLONEDEFNV(meteorf,meteor,"Meteor (Bonus Count Fix, MOD, Free Play rev. 65)",2020,"Stern / Idleman",by35_mST200,0)
 
+INITGAME(meteorg,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteorg,"meteor-v66-u1.716", CRC(55c6bee9) SHA1(8f7a132de597770f245622243c5b462f7553a138),
+                           "meteor-v66-u5.716", CRC(7e803d1f) SHA1(62c7f31a0aafe4f9795b77f6a17d7bccd4cd8cdd),
+                           "meteor-v66-u2.716", CRC(3fe2b858) SHA1(23937813f3e89bc7481e45a5e45cdf47b5fb308d),
+                           "meteor-v66-u6.716", CRC(d79faaca) SHA1(c9c62da064aa81a3c342d7fcde7f8c0185870a72))
+BY35_ROMEND
+#define input_ports_meteorg input_ports_st
+CORE_CLONEDEFNV(meteorg,meteor,"Meteor (Bonus Count Fix, MOD, Free Play rev. 66)",2021,"Stern / Idleman",by35_mST200,0)
+
 /*--------------------------------
 / Meteor (7-digit conversion)
 /-------------------------------*/
@@ -462,6 +471,15 @@ ST200_ROMSTART8888(meteorf7,"meteor75-u1.716",CRC(7b7ee764) SHA1(860edb5870a4f0c
 BY35_ROMEND
 #define input_ports_meteorf7 input_ports_st
 CORE_CLONEDEFNV(meteorf7,meteor,"Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 75)",2020,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(meteorg7,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteorg7,"meteor-v76-u1.716",CRC(b2757ae2) SHA1(f786e4431e5fa353dd7f0c359b56e5d16deff258),
+                            "meteor-v76-u5.716",CRC(c118cb50) SHA1(a525f1b250727238b87279788c68579238adbbc4),
+                            "meteor-v76-u2.716",CRC(40fdcd36) SHA1(4edb6a3d1998f5d817e13e04739667fcbc57b692),
+                            "meteor-v76-u6.716",CRC(9a38cd43) SHA1(f35f8f2ffa390d2485cb51ecab3829fe8ab410ca))
+BY35_ROMEND
+#define input_ports_meteorg7 input_ports_st
+CORE_CLONEDEFNV(meteorg7,meteor,"Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 76)",2021,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Galaxy
@@ -668,13 +686,22 @@ BY35_ROMEND
 CORE_GAMEDEFNV(quicksil,"Quicksilver",1980,"Stern",by35_mST200,0)
 
 INITGAME(quicksfp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(quicksfp,"cpu_u1.716",CRC(fc1bd20a) SHA1(e3c547f996dfc5d1567223d234443cf31d648ef6),
-                            "cpu_u5.716",CRC(0bcaceb4) SHA1(461d2fe5772a5ac84d31a4a186b9f639c683ca8a),
-                            "cpu_u2.716",CRC(8cb01165) SHA1(b42e2ccce2c20ad570cdcdb63c9d12e414f9b255),
+ST200_ROMSTART8888(quicksfp,"cpu_u1.716", CRC(fc1bd20a) SHA1(e3c547f996dfc5d1567223d234443cf31d648ef6),
+                            "cpu_u5.716", CRC(0bcaceb4) SHA1(461d2fe5772a5ac84d31a4a186b9f639c683ca8a),
+                            "cpu_u2.716", CRC(8cb01165) SHA1(b42e2ccce2c20ad570cdcdb63c9d12e414f9b255),
                             "fpqs_u6.716",CRC(0514d8c3) SHA1(4ebbc5a76ac25d38ec97a2fd443b492ea5335ae2))
 BY35_ROMEND
 #define input_ports_quicksfp input_ports_st
 CORE_CLONEDEFNV(quicksfp,quicksil,"Quicksilver (Free Play)",1980,"Stern",by35_mST200,0)
+
+INITGAME(quicksib,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(quicksib,"QS-V07D_u1.716",CRC(69bbe180) SHA1(e69d8affc98f8993553697f6be702f86583f6f87),
+                            "QS-V07D_u5.716",CRC(bdb8af82) SHA1(5222355e99f0dc28fd3c8df18c4cb04407702084),
+                            "QS-V07D_u2.716",CRC(015d4f59) SHA1(d3481bb922415992471d0a37e8e316bef4cf91c7),
+                            "QS-V07D_u6.716",CRC(586c3d09) SHA1(03a9f88e4cca6adc1979559228ea05ae59471044))
+BY35_ROMEND
+#define input_ports_quicksib input_ports_st
+CORE_CLONEDEFNV(quicksib,quicksil,"Quicksilver (Free Play & modified rules rev. 07D)",2021,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Star Gazer
@@ -840,15 +867,26 @@ BY35_ROMEND
 CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200v,0)
 
 INITGAME(lightnfp,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
-ST200_ROMSTART8888(lightnfp,"cpu_u1.716",CRC(d3469d0a) SHA1(18565f5c85694da8eaf850146d3d9a90a17b7816),
+ST200_ROMSTART8888(lightnfp,"cpu_u1.716",  CRC(d3469d0a) SHA1(18565f5c85694da8eaf850146d3d9a90a17b7816),
                             "fpltg_u5.716",CRC(696b8f87) SHA1(becb662f8c5b160eff968079706dee957f5cfb83),
-                            "cpu_u2.716",CRC(e0933419) SHA1(1f7cad915496f34473dffde7e320d51838acd0fd),
+                            "cpu_u2.716",  CRC(e0933419) SHA1(1f7cad915496f34473dffde7e320d51838acd0fd),
                             "fpltg_u6.716",CRC(2a652b4e) SHA1(25d048afc42e31373a3b957bb7fce4c3acfe9668))
-VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(00ffa77c) SHA1(242efd800731a7f84369c6ce54298d0a227dd8ba),
-                           "snd_u10.716",CRC(80fe9158) SHA1(20fcdb4c09b25e494f02bbfb20c07ff2870d5798))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",  CRC(00ffa77c) SHA1(242efd800731a7f84369c6ce54298d0a227dd8ba),
+                            "snd_u10.716", CRC(80fe9158) SHA1(20fcdb4c09b25e494f02bbfb20c07ff2870d5798))
 BY35_ROMEND
 #define input_ports_lightnfp input_ports_st
 CORE_CLONEDEFNV(lightnfp,lightnin,"Lightning (Free Play)",1981,"Stern",by35_mST200v,0)
+
+INITGAME(lightnib,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(lightnib,"light_19-u1.716",CRC(3e653df7) SHA1(c05970e793069cb713486a43908d2f320db6db56),
+                            "light_19-u5.716",CRC(917d5c00) SHA1(4b64ab925f7e54be836d58826eaa3a71e75689e9),
+                            "light_19-u2.716",CRC(d8eedf05) SHA1(f137ab00b53bd7860776488407f625ce3110a677),
+                            "light_19-u6.716",CRC(3956ff8b) SHA1(269912df7976f1ab9a06493aa5e8e87deb3aa75e))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",     CRC(00ffa77c) SHA1(242efd800731a7f84369c6ce54298d0a227dd8ba),
+                            "snd_u10.716",    CRC(80fe9158) SHA1(20fcdb4c09b25e494f02bbfb20c07ff2870d5798))
+BY35_ROMEND
+#define input_ports_lightnib input_ports_st
+CORE_CLONEDEFNV(lightnib,lightnin,"Lightning (Free Play & MOD rev. 19)",2021,"Stern / Idleman",by35_mST200v,0)
 
 /*--------------------------------
 / Split Second

@@ -201,6 +201,8 @@ DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversio
 DRIVERNV(ngndshkm)      //BY35      07/19 Nitro Ground Shaker (7-digit conversion with siren patch)
 DRIVERNV(slbmania)      //BY35-786: 02/80 Silverball Mania
 DRIVERNV(slbmanib)      //BY35      11/02 Silverball Mania (7-digit conversion)
+DRIVERNV(slbmanic)      //BY35      12/13 Silverball Mania (Horseshoe Spot MOD rev. 13)
+DRIVERNV(slbmanid)      //BY35      12/13 Silverball Mania (Horseshoe No Spotting MOD rev. 13)
 DRIVERNV(spaceinv)      //BY35-792: 04/80 Space Invaders
 DRIVERNV(spaceinb)      //BY35      11/02 Space Invaders (7-digit conversion)
 DRIVERNV(rollston)      //BY35-796: 05/80 Rolling Stones
@@ -1348,6 +1350,8 @@ DRIVERNV(meteore)       //MPU-200: 12/19 Meteor (Bonus Count Fix, MOD, Free Play
 DRIVERNV(meteore7)      //MPU-200: 12/19 Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 74)
 DRIVERNV(meteorf)       //MPU-200: 09/20 Meteor (Bonus Count Fix, MOD, Free Play rev. 65)
 DRIVERNV(meteorf7)      //MPU-200: 09/20 Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 75)
+DRIVERNV(meteorg)       //MPU-200: 06/21 Meteor (Bonus Count Fix, MOD, Free Play rev. 66)
+DRIVERNV(meteorg7)      //MPU-200: 06/21 Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 76)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(galaxyps)      //MPU-200: 08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
@@ -1368,6 +1372,7 @@ DRIVERNV(cheetah2)      //MPU-200: 03/11 Cheetah (Black cabinet Bonus shot 1/bal
 DRIVERNV(cheetahb2)     //MPU-200: 06/18 Cheetah (Blue cabinet Bonus shot 1/ball)
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
 DRIVERNV(quicksfp)      //MPU-200: 06/80 Quicksilver (Free Play)
+DRIVERNV(quicksib)      //MPU-200: 05/21 Quicksilver (Free Play & modified rules rev. 07D)
 DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
 DRIVERNV(stargzfp)      //MPU-200: 08/80 Star Gazer (Free Play)
 DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev. 9)
@@ -1383,6 +1388,7 @@ DRIVERNV(freefall)      //MPU-200: 01/81 Freefall
 DRIVERNV(freefafp)      //MPU-200: 01/81 Freefall (Free Play)
 DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(lightnfp)      //MPU-200: 03/81 Lightning (Free Play)
+DRIVERNV(lightnib)      //MPU-200: 09/21 Lightning (Free Play & MOD rev. 19)
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
 DRIVERNV(splitsfp)      //MPU-200: 08/81 Split Second (Free Play)
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb

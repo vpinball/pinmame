@@ -709,6 +709,24 @@ BY35_ROMEND
 #define input_ports_slbmanib input_ports_slbmania
 CORE_CLONEDEFNV(slbmanib,slbmania,"Silverball Mania (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
+INITGAME(slbmanic,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTART888(slbmanic,"SBM-PATCH-U1.716",CRC(694fe1bb) SHA1(bf13957a2d552051f8d20a53d8aacae6ccd352e8),
+                          "786-17_2.716",    CRC(94af0298) SHA1(579eb0290283194d92b172f787d8a9ff54f16a07),
+                          "720-35_6.716",    CRC(78d6d289) SHA1(47c3005790119294309f12ea68b7e573f360b9ef))
+BY51_SOUNDROM8(           "786-11_4.716",    CRC(2a3641e6) SHA1(64693d424277e2aaf5fd4af33b2d348a8a455448))
+BY35_ROMEND
+#define input_ports_slbmanic input_ports_by35
+CORE_CLONEDEFNV(slbmanic,slbmania,"Silverball Mania (Horseshoe Spot MOD rev. 13)",2013,"Bally / Idleman",by35_mBY35_51S,0)
+
+INITGAME(slbmanid,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTART888(slbmanid,"SBM_Remove_Spot_Letter_From_Carousel_786-16_1.716",CRC(4f7861a2) SHA1(f836da5ff6af8fb11dd558754f78a981959f3c5b),
+                          "786-17_2.716",                                     CRC(94af0298) SHA1(579eb0290283194d92b172f787d8a9ff54f16a07),
+                          "720-35_6.716",                                     CRC(78d6d289) SHA1(47c3005790119294309f12ea68b7e573f360b9ef))
+BY51_SOUNDROM8(           "786-11_4.716",                                     CRC(2a3641e6) SHA1(64693d424277e2aaf5fd4af33b2d348a8a455448))
+BY35_ROMEND
+#define input_ports_slbmanid input_ports_by35
+CORE_CLONEDEFNV(slbmanid,slbmania,"Silverball Mania (Horseshoe No Spotting MOD rev. 13)",2013,"Bally / Idleman",by35_mBY35_51S,0)
+
 /*--------------------------------
 / Rolling Stones
 /-------------------------------*/
