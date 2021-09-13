@@ -463,11 +463,11 @@ READ_HANDLER(ci20_portb_r) { LOG(("UNDOCUMENTED: ci20_portb_r\n")); return 0; }
 
 //Switch Returns
 READ_HANDLER(ci20_portc_r) {
-	UINT8 data = 0;
+	UINT8 data;
 	if (SPINBlocals.swCol > 2)	//Switch Column Strobe
 		data = coreGlobals.swMatrix[SPINBlocals.swCol-2];	//so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 	else	//Dip Column Strobe
- 		data = core_getDip(SPINBlocals.swCol);
+		data = core_getDip(SPINBlocals.swCol);
 
 	return data; //(data & 0xf0) | (core_revnyb(data & 0x0f));	//Lower nibble is reversed according to schematic, but not IRL!
 }

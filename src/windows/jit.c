@@ -97,7 +97,7 @@ void jit_reset(struct jit_ctl *jit)
 // initialize the code page list
 static void init_code_pages(struct jit_ctl *jit)
 {
-	byte *res, *p;
+	byte *res;
 	int reslen;
 	byte retn[] = { 0xC3 };  // RETN instruction
 	
@@ -105,7 +105,7 @@ static void init_code_pages(struct jit_ctl *jit)
 	jit_add_page(jit, 0);
 
 	// reserve space for the boilerplate code
-	p = res = jit_reserve_native(jit, reslen = 16, 0);
+	res = jit_reserve_native(jit, reslen = 16, 0);
 
 	// Create the special 'pending' and 'emulate' pointers.  Native code
 	// can jump to any address in the mapping array, so every entry must
@@ -117,8 +117,8 @@ static void init_code_pages(struct jit_ctl *jit)
 	// uses the two values to determine whether or not to attempt
 	// translation when it encounters an untranslated opcode.  So we
 	// need to set up a separate RETN instruction for each one.
-	jit->pPending = p = jit_store_native(jit, retn, 1) + 1;
-	jit->pEmulate = p = jit_store_native(jit, retn, 1) + 1;
+	jit->pPending = jit_store_native(jit, retn, 1) + 1;
+	jit->pEmulate = jit_store_native(jit, retn, 1) + 1;
 
 	// Generate a similar special location for the 'working' state.  This is
 	// really just a distinguished pointer value; the code at the other end
@@ -126,7 +126,7 @@ static void init_code_pages(struct jit_ctl *jit)
 	// working state can only exist while the translator is running, and that
 	// has to complete before we resume execution of any emulated or translated
 	// code.
-	jit->pWorking = p = jit_store_native(jit, retn, 1) + 1;
+	jit->pWorking = jit_store_native(jit, retn, 1) + 1;
 
 	// close the reserved space
 	jit_close_native(jit, res, reslen);

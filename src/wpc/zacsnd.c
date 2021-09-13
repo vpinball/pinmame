@@ -710,7 +710,7 @@ static const UINT8 sawtoothWave[] = {
 static UINT8 sawtoothWaver[64];
 
 static int sns_sh_start(const struct MachineSound *msound) {
-  UINT8 i = 0;
+  UINT8 i;
   int mixing_levels[4] = {25,25,25,25};
   for (i=0; i < 64; i++) {  // reverse waves
     triangleWaver[63-i]=triangleWave[i];

@@ -891,7 +891,7 @@ cant_create_clipper:
 static void erase_surfaces(void)
 {
 	DDBLTFX blitfx = { sizeof(DDBLTFX) };
-	HRESULT result = DD_OK;
+	HRESULT result;
 	int i;
 
 	// erase the blit surface

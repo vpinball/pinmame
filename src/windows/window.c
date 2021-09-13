@@ -835,7 +835,7 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 {
 	extern void win_timer_enable(int enabled);
 #ifdef VPINMAME
-	LRESULT lresult = 0;
+	LRESULT lresult;
 	BOOL    fhandled = FALSE;
 #endif
 
@@ -1651,7 +1651,6 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	video_dib_info->bmiHeader.biHeight = -(client.bottom - client.top);
 #endif
 	video_dib_info->bmiHeader.biBitCount = depth;
-
 
 	// compute the center position
 #ifndef VPINMAME // The old code prevents the DMD window from scaling-to-fit, so remove that in the VPM case.

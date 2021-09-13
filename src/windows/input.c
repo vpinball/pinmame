@@ -584,7 +584,7 @@ out_of_mice:
 static BOOL CALLBACK enum_joystick_callback(LPCDIDEVICEINSTANCE instance, LPVOID ref)
 {
 	DIPROPDWORD value;
-	HRESULT result = DI_OK;
+	HRESULT result;
 	DWORD flags;
 
 	// if we're not out of mice, log this one
@@ -2113,7 +2113,7 @@ void start_led(void)
 
 void stop_led(void)
 {
-	int error_number = 0;
+	int error_number;
 
 	if (!use_keyboard_leds)
 		return;

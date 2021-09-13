@@ -499,7 +499,7 @@ WRITE_HANDLER(bankswitch)
 void calc_rombase(int data)
 {
 	int activerom = (~data&0x0f);
-	int chipnum = 0;
+	int chipnum;
 	if(activerom) {
 		//got to be an easier way than this hack?
 		if(activerom==8)	chipnum = 3;

@@ -61,7 +61,7 @@ static struct {
    The very first time, 0x88 is skipped, since an IRQ is only triggered from a 1->0 transition */
 static int tecno_irq_callback(int x)
 {
-	int vector_num = 0;
+	int vector_num;
 	if(locals.irq_count < 0x08)
 		vector_num = 0x88+locals.irq_count;
 	else

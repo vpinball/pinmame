@@ -200,7 +200,7 @@ static void cc_u16irq4(int data) {
 //PA6   - VSET(output only)
 //PA7   - GRESET(output only)
 static READ16_HANDLER(cc_porta_r) {
-	int data = 0;
+	int data;
 
 #ifdef TEST50V_TRY2
 	static int tot=0;
@@ -251,7 +251,7 @@ static READ16_HANDLER(cc_portb_r) {
 //PA6   - VSET
 //PA7   - GRESET (to soundboard - Inverted?)
 static WRITE16_HANDLER(cc_porta_w) {
-  int reset = 0;
+  int reset;
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
 	DBGLOG(("Port A write %04x\n",data));
 

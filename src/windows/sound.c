@@ -468,8 +468,8 @@ int current_audio_device = -1;
 BOOL CALLBACK EnumCallBack (LPGUID guid, LPCSTR desc,
 	LPCSTR mod, LPVOID list)
 {
-	AudioDevice *ad = NULL;
-	
+	AudioDevice *ad;
+
 	if(audio_devices_number>=MAX_HANDLED_DEVICES-1)
 		return FALSE;	// Hardcoded Max reached (TODO: realloc)
 
@@ -480,7 +480,7 @@ BOOL CALLBACK EnumCallBack (LPGUID guid, LPCSTR desc,
 		ad->guid = (LPGUID)malloc(sizeof (GUID));
 		memcpy (ad->guid, guid, sizeof (GUID));
 	}
-	
+
 	strcpy(ad->description,desc);
 	strcpy(ad->module,mod);
 

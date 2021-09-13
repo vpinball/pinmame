@@ -124,7 +124,7 @@ static void rc_free_stuff(struct rc_option *option)
 /* public methods (in rc.h) */
 struct rc_struct *rc_create(void)
 {
-   struct rc_struct *rc = NULL;
+   struct rc_struct *rc;
 
    if(!(rc = calloc(1, sizeof(struct rc_struct))))
    {
@@ -234,7 +234,7 @@ int osd_rc_read(struct rc_struct *rc, mame_file *f, const char *description,
    while(mame_fgets(buf, BUF_SIZE, f))
    {
       struct rc_option *option;
-      char *name, *tmp, *arg = NULL;
+      char *name, *tmp, *arg;
 
       line ++;
 
@@ -298,7 +298,7 @@ int rc_read(struct rc_struct *rc, FILE *f, const char *description,
    while(fgets(buf, BUF_SIZE, f))
    {
       struct rc_option *option;
-      char *name, *tmp, *arg = NULL;
+      char *name, *tmp, *arg;
 
       line ++;
 

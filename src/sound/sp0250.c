@@ -126,8 +126,8 @@ static void sp0250_update(int num, INT16 *output, int length)
 {
 	int i;
 	for(i=0; i<length; i++) {
-      if (sp0250.playing) {
-		INT16 z0 = 0;
+	  if (sp0250.playing) {
+		INT16 z0;
 		int f;
 
 		if(sp0250.voiced)
