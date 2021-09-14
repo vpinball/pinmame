@@ -115,8 +115,8 @@ WPC_INPUT_PORTS_END
 /--------------------*/
 #define swLFire			11
 #define swRFire			12
-#define swStart      	13
-#define swTilt       	14
+#define swStart			13
+#define swTilt			14
 #define swLShooter		15
 #define swLOut			16
 #define swLIn			17
@@ -124,7 +124,7 @@ WPC_INPUT_PORTS_END
 
 #define swSlamTilt		21
 #define swCoinDoor		22
-#define swTicket     	23
+#define swTicket		23
 #define swAlwaysClosed	24
 #define swTRPost		25		//Right EB Target
 #define swCapBall1		26
@@ -194,7 +194,7 @@ WPC_INPUT_PORTS_END
 #define sKnocker		7
 #define sRShooter		8
 #define sLShooter		9
-#define sTripDropTarget		10		//Pull "D" Drop Target Down
+#define sTripDropTarget	10		//Pull "D" Drop Target Down
 #define sDiverter		11		//Left Ramp Diverter to Planet
 /*12 - Not Used*/
 #define sTrough			13
@@ -224,34 +224,34 @@ enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTr
       };
 
 static sim_tState jd_stateDef[] =  {
-  {"Not Installed",    0,0,           0,        stDrain,     0,0,0,SIM_STNOTEXCL},
+  {"Not Installed",		0,0,           0,        stDrain,     0,0,0,SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",               0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
+  {"Playfield",			0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
 
   /*Line 1*/
-  {"Trough 1",          1,swTrough1,    sTrough,	stRShooter,  1},
-  {"Trough 2",			1,swTrough2,	0,			stTrough1,   1},
-  {"Trough 3",			1,swTrough3,	0,			stTrough2,   1},
-  {"Trough 4",			1,swTrough4,	0,			stTrough3,   1},
-  {"Trough 5",			1,swTrough5,	0,			stTrough4,   1},
-  {"Trough 6",			1,swTrough6,	0,			stTrough5,   1},
-  {"Trough Up",			1,swTroughTop,  0,          stRShooter,  1},
+  {"Trough 1",			1,swTrough1,	sTrough,	stRShooter,	1},
+  {"Trough 2",			1,swTrough2,	0,			stTrough1,	1},
+  {"Trough 3",			1,swTrough3,	0,			stTrough2,	1},
+  {"Trough 4",			1,swTrough4,	0,			stTrough3,	1},
+  {"Trough 5",			1,swTrough5,	0,			stTrough4,	1},
+  {"Trough 6",			1,swTrough6,	0,			stTrough5,	1},
+  {"Trough Up",			1,swTroughTop,	0,			stRShooter,	1},
 
   /*Line 2*/
-  {"R.Shooter",	    	1,swRShooter,   sRShooter,  stBallLane,  1},
+  {"R.Shooter",			1,swRShooter,	sRShooter,	stBallLane,	1},
   {"Ball Lane",			1,0,			0,			stLLoopDn,	10},
-  {"L. Shooter",		1,swLShooter,	sLShooter,  stJu_dge,    10}, //Assume it hits the Middle of the Judge targets everytime!
-  {"Drain",				1,0,            0,          stTrough6,   0,0,0,SIM_STNOTEXCL},
-  {"Left Ramp",         1,swLRampEnt,   0,          stLRampExit, 5, sDiverter, stLRamp2},
+  {"L. Shooter",		1,swLShooter,	sLShooter,	stJu_dge,	10}, //Assume it hits the Middle of the Judge targets everytime!
+  {"Drain",				1,0,			0,			stTrough6,	0,0,0,SIM_STNOTEXCL},
+  {"Left Ramp",			1,swLRampEnt,	0,			stLRampExit,5, sDiverter, stLRamp2},
   {"Right Ramp",		1,swRRampExit,	0,			stIRIn,		10},
-  {"Center Ramp",		1,swCRampExit,		0,			stFree,		10},
-  {"Left Ramp Exit",	1,swLRampExit,  0,			stRIn,	    10},
+  {"Center Ramp",		1,swCRampExit,	0,			stFree,		10},
+  {"Left Ramp Exit",	1,swLRampExit,	0,			stRIn,		10},
 
   /*Line 3*/
-  {"Left Outlane",      1,swLOut,       0,			stDrain,   10},
-  {"Right Outlane",     1,swROut,       0,			stDrain,   10},
-  {"Left  Inlane",		1,swLIn,        0,			stFree,     5},
-  {"Right Inlane",		1,swRIn,        0,			stFree,     5},
+  {"Left Outlane",		1,swLOut,		0,			stDrain,	10},
+  {"Right Outlane",		1,swROut,		0,			stDrain,	10},
+  {"Left  Inlane",		1,swLIn,		0,			stFree,		5},
+  {"Right Inlane",		1,swRIn,		0,			stFree,		5},
   {"Left Orbit Loop",	1,swTCRollOver,	0,			stRLoopDn,	5}, /*Loop Going Up*/
   {"Left Orbit Loop",	1,swTCRollOver,	0,			stFree,		5}, /*Loop Coming Down*/
   {"Right Orbit Loop",	1,swTROpto,		0,			stLLoopDn,	5}, /*Loop Going Up*/
@@ -261,19 +261,19 @@ static sim_tState jd_stateDef[] =  {
   {"I. Right Inlane",	1,swIRIn,		0,			stFree,		5},
   {"Small Loop",		1,swSLoopC,		0,			stRLoopDn,	5},
   {"Sniper",			1,swRPopper,	sRPopper,	stSniper2,	1},
-  {"Sniper Habitrail",  1,0,			0,			stLIn,		10},
+  {"Sniper Habitrail",	1,0,			0,			stLIn,		10},
   {"Subway",			1,swSubway,		0,			stSubway2,	5},
-  {"Subway",			1,swSubway2,		0,			stSubway3,	5},
+  {"Subway",			1,swSubway2,	0,			stSubway3,	5},
   {"Subway Popper",		1,swLPopper,	sLPopper,	stSubway4,	1},
   {"Subway Habitrail",	1,0,			0,			stFree,		10},
 
   /*Line 5*/
   {"Air Raid Ramp",		1,swTRRampExit,	0,			stAHabit,	3},
-  {"Air Raid Habitrail",1,0,			0,			stLShooter, 15},
-  {"Towards Planet",	1,swLRampToLock,	0,			stPlanet,	5},
-  {"Planet",		1,swGlobe1,		sArmMagnet,		stPlanet2,	5},	//Keep ball here, till Arm Magnet picks it up!
-  {"In Claw",		1,0,			sFakeSol1,		stPlanet3,	1},
-  {"Dropped",		1,swGlobeExit,  0,			stFree,		5},	//Dropped by Claw!
+  {"Air Raid Habitrail",1,0,			0,			stLShooter,	15},
+  {"Towards Planet",	1,swLRampToLock,0,			stPlanet,	5},
+  {"Planet",			1,swGlobe1,		sArmMagnet,	stPlanet2,	5},	//Keep ball here, till Arm Magnet picks it up!
+  {"In Claw",			1,0,			sFakeSol1,	stPlanet3,	1},
+  {"Dropped",			1,swGlobeExit,	0,			stFree,		5},	//Dropped by Claw!
 
   /*Line 6*/
   {"EB Left Target",	1,swLPost,		0,			stFree,		5},
@@ -284,16 +284,16 @@ static sim_tState jd_stateDef[] =  {
   {"'?' Target",		1,swLLTarget,	0,			stFree,		5},
 
   /*Line 7*/
-  {"'J'udge Target",	1,0,			0,			0,		5},
-  {"J'u'dge Target",	1,0,			0,			0,		5},
-  {"Ju'd'ge Target",    1,0,                    0,                      0,		5},
-  {"Jud'g'e Target",	1,0,			0,			0,		5},
-  {"Judg'e' Target",	1,0,			0,			0,		5},
+  {"'J'udge Target",	1,0,			0,			0,			5},
+  {"J'u'dge Target",	1,0,			0,			0,			5},
+  {"Ju'd'ge Target",	1,0,			0,			0,			5},
+  {"Jud'g'e Target",	1,0,			0,			0,			5},
+  {"Judg'e' Target",	1,0,			0,			0,			5},
 
   /*Line 8*/
   {"'J'udge Target",	1,sw_Judge,		0,			stFree,		5, 0, 0, SIM_STSWKEEP},
   {"J'u'dge Target",	1,swJ_udge,		0,			stFree,		5, 0, 0, SIM_STSWKEEP},
-  {"Ju'd'ge Target",    1,swJu_dge,             0,                      stFree,		5, 0, 0, SIM_STSWKEEP},
+  {"Ju'd'ge Target",	1,swJu_dge,		0,			stFree,		5, 0, 0, SIM_STSWKEEP},
   {"Jud'g'e Target",	1,swJud_ge,		0,			stFree,		5, 0, 0, SIM_STSWKEEP},
   {"Judg'e' Target",	1,swJudg_e,		0,			stFree,		5, 0, 0, SIM_STSWKEEP},
 
@@ -339,7 +339,7 @@ static int  jd_handleBallState(sim_tBallStatus *ball, int *inports) {
 		else
 			return setState(stFree,5);
 		break;
-  	}
+	}
   return 0;
 }
 
@@ -477,6 +477,8 @@ CORE_GAMEDEF(jd,l7,"Judge Dredd (L-7)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d7,l7,"Judge Dredd (D-7 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l1,l7,"Judge Dredd (L-1)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d1,l7,"Judge Dredd (D-1 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
+// L-1AT additional MOD for the aftermarket Deadworld HW-MOD exists
+// MOD of that L-1AT by KoP also exists with gameplay tweaks
 CORE_CLONEDEF(jd,l4,l7,"Judge Dredd (L-4)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d4,l7,"Judge Dredd (D-4 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l5,l7,"Judge Dredd (L-5)",1993,"Bally",wpc_mDCSS,0)
@@ -488,14 +490,14 @@ CORE_CLONEDEF(jd,d6,l7,"Judge Dredd (D-6 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData jdSimData = {
-  2,	    				/* 2 game specific input ports */
+  2,						/* 2 game specific input ports */
   jd_stateDef,				/* Definition of all states */
   jd_inportData,			/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stDrain },
-  NULL,					/* no init */
-  jd_handleBallState,			/*Function to handle ball state changes*/
+  NULL,						/* no init */
+  jd_handleBallState,		/*Function to handle ball state changes*/
   jd_drawStatic,			/*Function to handle mechanical state changes*/
-  FALSE,				/* Do not simulate manual shooter */
+  FALSE,					/* Do not simulate manual shooter */
   jd_keyCond				/* advanced key conditions */
 };
 

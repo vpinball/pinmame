@@ -92,14 +92,14 @@ CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803_45S,0)
 / MotorDome (6803-0E14: 05/86)
 /-------------------------------*/
 INITGAME6803(motrdome,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(motrdome,"modm_u2.dat",CRC(820ca073) SHA1(0b50712f7d65f629af934deccc52d588f390a05b),
+BY6803_ROMSTART44(motrdome,"modm_u2.dat",CRC(820ca073) SHA1(0b50712f7d65f629af934deccc52d588f390a05b), // E14D 42AAE BX4D U2 12JUN86
                            "modm_u3.dat",CRC(aae7c418) SHA1(9d3ea83ffff0b9696f5113043475c6e9b9a464ae))
 BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34abd678db7e031bde074b))
 BY6803_ROMEND
 #define input_ports_motrdome input_ports_by6803
 CORE_GAMEDEFNV(motrdome,"MotorDome (rev. D)",1986,"Bally",by_mBY6803_TCSS,0)
 
-BY6803_ROMSTART44(motrdomb,"md_cpu_u2.bin",CRC(72c84e3b) SHA1(cf8d890a574e7f5299abde6fd38be2f3e63b3a54),
+BY6803_ROMSTART44(motrdomb,"md_cpu_u2.bin",CRC(72c84e3b) SHA1(cf8d890a574e7f5299abde6fd38be2f3e63b3a54), // E14B 42AAE BX4D U2 12MAY86 rev. B
                            "md_cpu_u3.bin",CRC(3ae93465) SHA1(5b5ecee0c631131201bf4c52f297f87d143d0fcf))
 BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34abd678db7e031bde074b))
 BY6803_ROMEND
@@ -198,14 +198,14 @@ CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCS2S,0)
 / Hardbody (6803-0E94: 03/87)
 /------------------------------------*/
 INITGAME6803(hardbody,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(hardbody,"cpu_u2.128",  CRC(c9248b47) SHA1(54239bd7d15574ebbb70ed306a804b7b32ed516a),
+BY6803_ROMSTART44(hardbody,"cpu_u2.128",  CRC(c9248b47) SHA1(54239bd7d15574ebbb70ed306a804b7b32ed516a), // E94C 12601 0000 U2 27FEB87, rev. C
                            "cpu_u3.128",  CRC(31c255d0) SHA1(b6ffa2616ae9a4a121585cc402080ec6f26f8472))
 BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c68710f55c245d9c675b06f))
 BY6803_ROMEND
 #define input_ports_hardbody input_ports_by6803
 CORE_GAMEDEFNV(hardbody,"Hardbody (rev. C)",1987,"Bally",by_mBY6803_TCS2S,0)
 
-BY6803_ROMSTART44(hardbdyd,"hb_cpu2.bin", CRC(03975ea9) SHA1(8a4ba6bb5e6ab8da5fffaead283e26edd297e637),
+BY6803_ROMSTART44(hardbdyd,"hb_cpu2.bin", CRC(03975ea9) SHA1(8a4ba6bb5e6ab8da5fffaead283e26edd297e637), // E94D 12601 0000 U2 05MAR87, rev. D
                            "hb_cpu3.bin", CRC(10c10380) SHA1(98207c16b6d2a9990eb36b2629bfd668e45ca58e))
 BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c68710f55c245d9c675b06f))
 BY6803_ROMEND
@@ -213,7 +213,7 @@ BY6803_ROMEND
 #define input_ports_hardbdyd input_ports_hardbody
 CORE_CLONEDEFNV(hardbdyd,hardbody,"Hardbody (rev. D)",1987,"Bally",by_mBY6803_TCS2S,0)
 
-BY6803_ROMSTART44(hardbdyg,"hrdbdy-g.u2", CRC(fce357cc) SHA1(f7d13c12aabcb3c5bb5826b1911817bd359f1941),
+BY6803_ROMSTART44(hardbdyg,"hrdbdy-g.u2", CRC(fce357cc) SHA1(f7d13c12aabcb3c5bb5826b1911817bd359f1941), // E94B 12601 0001 U2 11MAR87, newer but labeled rev. B ?
                            "hrdbdy-g.u3", CRC(ccac74b5) SHA1(d55cfc8ee866a9af4567d56890f5a9ecb9c3c02f))
 BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c68710f55c245d9c675b06f))
 BY6803_ROMEND

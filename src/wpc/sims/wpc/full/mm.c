@@ -479,6 +479,7 @@ CORE_CLONEDEF(mm,10pfx,10,"Medieval Madness (1.0 Pinball FX)",2018,"Zen Studios"
 CORE_CLONEDEF(mm,109,10,"Medieval Madness (1.09)",1999,"Williams",wpc_m95S,0) // Home version
 CORE_CLONEDEF(mm,109b,10,"Medieval Madness (1.09B)",1999,"Williams",wpc_m95S,0) // Home version Coin Play
 CORE_CLONEDEF(mm,109c,10,"Medieval Madness (1.09C Profanity)",1999,"Williams",wpc_m95S,0) // Home version w/ profanity speech
+// 0.99 Prototype also exists (15 'home machine' prototypes for the designers, etc)
 CORE_CLONEDEF(mm,05,10,"Medieval Madness (0.50 Prototype)",1997,"Williams",wpc_m95S,0)
 
 /*-----------------------
