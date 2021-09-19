@@ -595,6 +595,15 @@ BY35_ROMEND
 #define input_ports_biggamec input_ports_st
 CORE_CLONEDEFNV(biggamec,biggame,"Big Game (MOD rev. 8)",2020,"Stern / Idleman",by35_mST200,0)
 
+INITGAME(biggamed,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(biggamed,"bigV09_u1.716",CRC(97a7a525) SHA1(c5cf03ef6b7f57dcb82de0479564d13b83abb6bc),
+                            "bigV09_u5.716",CRC(fff35283) SHA1(3a2f2a40ff62aaed9dc8cc580fdbd55391448ec9),
+                            "bigV09_u2.716",CRC(5389867f) SHA1(fd4cc8d7ccd7cff72fa883c962567e21117507b9),
+                            "bigV09_u6.716",CRC(16a72b30) SHA1(2e429f4b29d41df230fbc2baf7e20f758a314093))
+BY35_ROMEND
+#define input_ports_biggamed input_ports_st
+CORE_CLONEDEFNV(biggamed,biggame,"Big Game (MOD rev. 9)",2021,"Stern / Idleman",by35_mST200,0)
+
 /*--------------------------------
 / Seawitch
 /-------------------------------*/
@@ -1023,6 +1032,15 @@ ST200_ROMSTART8888(dragfis3b,"df-1109-u1.716",CRC(696e0ca1) SHA1(21c3c8963283eec
 BY35_ROMEND
 #define input_ports_dragfis3b input_ports_st
 CORE_CLONEDEFNV(dragfis3b,dragfist,"Dragonfist (MOD 3 rev. 1109)",2020,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(dragfis14,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(dragfis14,"fisted_VB14-u1.716",CRC(92c3e3d6) SHA1(9b09b9685b34d93c804acd0d1693d7803360bd4f),
+                             "fisted_VB14-u5.716",CRC(9b0f6210) SHA1(62dd7dbe1f714e58aaa927bb798bfee80f241635),
+                             "fisted_VB14-u2.716",CRC(07f06e31) SHA1(edf63c8dc25381a5d204e1da13eb0a556c1a1d27),
+                             "fisted_VB14-u6.716",CRC(e0799fca) SHA1(876311a9ecbcddaf4b0aeeba81857a2f0f1fdd2e))
+BY35_ROMEND
+#define input_ports_dragfis14 input_ports_st
+CORE_CLONEDEFNV(dragfis14,dragfist,"Dragonfist (MOD 14)",2021,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Dragonfist (bootleg - modified to match instruction card/manual)

@@ -1362,6 +1362,7 @@ DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
 DRIVERNV(biggameb)      //MPU-200: 11/19 Big Game (MOD rev. 7)
 DRIVERNV(biggamec)      //MPU-200: 10/20 Big Game (MOD rev. 8)
+DRIVERNV(biggamed)      //MPU-200: 09/21 Big Game (MOD rev. 9)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah (Black cabinet)
@@ -1403,6 +1404,7 @@ DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (MOD - modified to match ins
 DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (MOD 2 - modified to match instruction card/manual)
 DRIVERNV(dragfis3)      //MPU-200: 03/20 Dragonfist (MOD 3 rev. 1105)
 DRIVERNV(dragfis3b)     //MPU-200: 06/20 Dragonfist (MOD 3 rev. 1109)
+DRIVERNV(dragfis14)     //MPU-200: 09/21 Dragonfist (MOD 14)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor 1 (Free Play)
 DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (MOD)

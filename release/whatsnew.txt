@@ -44,8 +44,10 @@ Tales of the Arabian Nights 0.4 Prototype (see above)
 Clones:
 A.G. Soccer-Ball & Football R18u with 2.5L Sound (only the latter is new, 2.4 revision, inside the ROM it says 2.5L though)
 Bad Cats LG-4
+Big Game (MOD rev. 9)
 Bushido (alternate set B)
 Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD)
+Dragonfist (MOD 14)
 Faeton (6 digits)
 Flintstones, The LA-5
 Hardbody (rev. D) (the newest we have, only a few diagnostic lamp / switch names were corrected compared to rev. C)
