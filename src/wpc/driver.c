@@ -1394,6 +1394,7 @@ DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
 DRIVERNV(splitsfp)      //MPU-200: 08/81 Split Second (Free Play)
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
 DRIVERNV(catacofp)      //MPU-200: 10/81 Catacomb (Free Play)
+DRIVERNV(cataconb)      //MPU-200: 09/21 Catacomb (No Bagatelle)
 DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
 DRIVERNV(ironmafp)      //MPU-200: 10/81 Iron Maiden (Free Play)
 DRIVERNV(viper)         //MPU-200: 12/81 Viper

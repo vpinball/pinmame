@@ -947,6 +947,17 @@ BY35_ROMEND
 #define input_ports_catacofp input_ports_st
 CORE_CLONEDEFNV(catacofp,catacomb,"Catacomb (Free Play)",1981,"Stern",by35_mST200v,0)
 
+INITGAME(cataconb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(cataconb,"cat_NOBAGATELLE-u1.716",CRC(bf674561) SHA1(e66fdf9f8a0d5f51cb45550f46f936f4377e34da),
+                            "cat_NOBAGATELLE-u5.716",CRC(721f3cbe) SHA1(96b21157874e645d7ea26ddacba36ccf38ecf206),
+                            "cat_NOBAGATELLE-u2.716",CRC(c76a58e4) SHA1(1ae74f7edabc4a8996dde101e82341393b5fa002),
+                            "cat_NOBAGATELLE-u6.716",CRC(9f2ca810) SHA1(4de16d9ed1a5bef74d9450a54f8441343b0cb66f))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(a13cb591) SHA1(b64a2dc3429803095dc05cdd1718db2404b13eb8),
+                           "snd_u10.716",CRC(2b31f8be) SHA1(05b394bd8b6c04e34fe2bab19cbd0f06d9e4b90d))
+BY35_ROMEND
+#define input_ports_cataconb input_ports_st
+CORE_CLONEDEFNV(cataconb,catacomb,"Catacomb (No Bagatelle)",2021,"Stern / Idleman",by35_mST200v,0)
+
 /*--------------------------------
 / Iron Maiden
 /-------------------------------*/
