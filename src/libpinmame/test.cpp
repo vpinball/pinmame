@@ -222,6 +222,26 @@ void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
 	printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
 }
 
+void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
+	printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
+		mechNo,
+		p_mechInfo->type,
+		p_mechInfo->length,
+		p_mechInfo->steps,
+		p_mechInfo->pos,
+		p_mechInfo->speed);
+}
+
+void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo) {
+	printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
+		mechNo,
+		p_mechInfo->type,
+		p_mechInfo->length,
+		p_mechInfo->steps,
+		p_mechInfo->pos,
+		p_mechInfo->speed);
+}
+
 void CALLBACK OnConsoleDataUpdated(void* p_data, int size) {
 	printf("OnConsoleDataUpdated: size=%d\n", size);
 }
@@ -241,6 +261,8 @@ int main(int, char**) {
 		&OnDisplayUpdated,
 		&OnAudioAvailable,
 		&OnAudioUpdated,
+		&OnMechAvailable,
+		&OnMechUpdated,
 		&OnSolenoidUpdated,
 		&OnConsoleDataUpdated,
 		&IsKeyPressed
@@ -255,6 +277,7 @@ int main(int, char**) {
 	PinmameSetConfig(&config);
 
 	PinmameSetHandleKeyboard(1);
+	PinmameSetHandleMechanics(0);
 
 	PinmameGetGames(&Game);
 	PinmameGetGame("fourx4", &Game);
@@ -271,7 +294,7 @@ int main(int, char**) {
 	//PinmameRun("acd_168hc");
 	//PinmameRun("snspares");
 
-	if (PinmameRun("f1gp") == OK) {
+	if (PinmameRun("t2_l8") == OK) {
 		while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}

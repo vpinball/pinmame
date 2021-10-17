@@ -547,6 +547,9 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  Update switches every vblank; or on every pass when using P-ROC
   /-------------------------------*/
   if (
+#ifdef LIBPINMAME
+      1 ||
+#endif
 #ifdef PROC_SUPPORT
       coreGlobals.p_rocEn || 
 #endif

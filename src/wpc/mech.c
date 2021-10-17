@@ -8,30 +8,19 @@
 #endif /* M_PI */
 #define MECH_STEP       60
 #define MECH_FASTPULSES  8
-typedef struct {
-  int fast;       /* running fast */
-  int sol1, sol2; /* Controlling solenoids */
-  int solinv;     /* inverted solenoids (active low) */
-  int length;     /* Length to move from one end to the other in VBLANKS 1/60s */
-  int steps;      /* steps returned */
-  int type;       /* type */
-  int acc;        /* acceleration */
-  int ret;
-  mech_tSwData swPos[20]; /* switches activated */
-  int pos;      /* current position */
-  int speed;    /* current speed -acc -> acc */
-  int anglePos;
-  int last;
-} tMechData, *ptMechData;
 
 static struct {
-  tMechData mechData[MECH_MAXMECH];
+  mech_tMechData mechData[MECH_MAXMECH];
   void *mechTimer;
   int mechCounter;
   int emuRunning;
 } locals;
 static void mech_updateAll(int param);
 static void mech_update(int mechNo);
+
+#ifdef LIBPINMAME
+  extern void libpinmame_update_mech(const int mechNo, mech_tMechData* mechData);
+#endif
 
 void mech_init(void) {
   memset(&locals,0,sizeof(locals));
@@ -114,6 +103,8 @@ static void mech_update(int mechNo) {
   int dir = 0;
   int currPos, ii;
 
+
+
   { /*-- check power direction -1, 0, 1 --*/
      if ((md->type & 0x70) == MECH_FOURSTEPSOL)
      {
@@ -192,6 +183,10 @@ static void mech_update(int mechNo) {
         core_setSw(md->swPos[ii].swNo, TRUE);
     }
   }
+
+#ifdef LIBPINMAME
+    libpinmame_update_mech(mechNo, md);
+#endif
 }
 
 void mech_nv(void *file, int write) {

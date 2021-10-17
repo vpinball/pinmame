@@ -11,13 +11,14 @@ extern "C" {
 #include "mame.h"
 #include "video.h"
 #include "audit.h"
+#include "mech.h"
 
 extern int throttle;
 extern int autoframeskip;
 extern int allow_sleep;
 
 int g_fHandleKeyboard = 0;
-int g_fHandleMechanics = 1;
+int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
 
@@ -28,11 +29,14 @@ char g_szGameName[256] = { 0 }; // String containing requested game name (may be
 
 static int _isRunning = 0;
 static int _timeToQuit = 0;
-static int _firstPass = 0;
 static PinmameConfig* _p_Config = nullptr;
 static std::thread* _p_gameThread = nullptr;
 
+static int _displaysInit;
 static UINT8 _displayData[MAX_DISPLAYS][DMD_MAXX * DMD_MAXY];
+
+static int _mechInit[MAX_MECHS];
+static PinmameMechInfo _mechInfo[MAX_MECHS];
 
 static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "A", A, KEYCODE_A },
@@ -330,7 +334,7 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 		displayLayout.length = p_layout->length;
 	}
 
-	if (!_firstPass) {
+	if (_displaysInit) {
 		if (_p_Config->cb_OnDisplayUpdated) {
 			if (dmd) {
 				if (memcmp(_displayData[index], p_data, (displayLayout.width * displayLayout.height) * sizeof(UINT8))) {
@@ -355,7 +359,7 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 		}
 
 		if (index == displayCount - 1) {
-			_firstPass = 0;
+			_displaysInit = 1;
 		}
 	}
 }
@@ -393,11 +397,47 @@ extern "C" void OnSolenoid(const int solenoid, const int isActive) {
 }
 
 /******************************************************
+ * libpinmame_update_mech
+ ******************************************************/
+
+extern "C" void libpinmame_update_mech(const int mechNo, mech_tMechData* p_mechData) {
+	int speed = p_mechData->speed / p_mechData->ret;
+
+	if (_mechInit[mechNo]) {
+		if (_mechInfo[mechNo].pos != p_mechData->pos || _mechInfo[mechNo].speed != speed) {
+			_mechInfo[mechNo].pos = p_mechData->pos;
+			_mechInfo[mechNo].speed = speed;
+
+			if (_p_Config->cb_OnMechUpdated) {
+				(*(_p_Config->cb_OnMechUpdated))(mechNo, &_mechInfo[mechNo]);
+			}
+		}
+	}
+	else {
+		_mechInit[mechNo] = 1;
+
+		_mechInfo[mechNo].type = p_mechData->type;
+		_mechInfo[mechNo].length = p_mechData->length;
+		_mechInfo[mechNo].steps = p_mechData->steps;
+		
+		_mechInfo[mechNo].pos = p_mechData->pos;
+		_mechInfo[mechNo].speed = speed;
+
+		if (_p_Config->cb_OnMechAvailable) {
+			(*(_p_Config->cb_OnMechAvailable))(mechNo, &_mechInfo[mechNo]);
+		}
+	}
+}
+
+/******************************************************
  * StartGame
  ******************************************************/
 
 void StartGame(const int gameNum) {
-	_firstPass = 1;
+	_displaysInit = 0;
+
+	memset(_mechInit, 0, sizeof(_mechInit));
+	memset(_mechInfo, 0, sizeof(_mechInfo));
 
 	run_game(gameNum);
 
@@ -639,17 +679,17 @@ LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
  * PinmameGetSwitch
  ******************************************************/
 
-LIBPINMAME_API int PinmameGetSwitch(const int slot) {
-	return (_isRunning) ? vp_getSwitch(slot) : 0;
+LIBPINMAME_API int PinmameGetSwitch(const int swNo) {
+	return (_isRunning) ? vp_getSwitch(swNo) : 0;
 }
 
 /******************************************************
  * PinmameSetSwitch
  ******************************************************/
 
-LIBPINMAME_API void PinmameSetSwitch(const int slot, const int state) {
+LIBPINMAME_API void PinmameSetSwitch(const int swNo, const int state) {
 	if (_isRunning) {
-		 vp_putSwitch(slot, state ? 1 : 0);
+		 vp_putSwitch(swNo, state ? 1 : 0);
 	}
 }
 
@@ -730,19 +770,40 @@ LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates) {
 }
 
 /******************************************************
- * PinmameGetMech
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetMech(const int mechNo) {
-	return (_isRunning) ? vp_getMech(mechNo) : 0;
-}
-
-/******************************************************
  * PinmameSetMech
  ******************************************************/
 
-LIBPINMAME_API void PinmameSetMech(const int mechNo, const int value) {
-	if (_isRunning) {
-		 vp_setMechData(mechNo, value);
+LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig) {
+	if (!_isRunning) {
+		return EMULATOR_NOT_RUNNING;
 	}
+	
+	if (mechNo >= MAX_MECHS) {
+		return INVALID_MECH_NO;
+	}
+
+	mech_tInitData mechInitData;
+	memset(&mechInitData, 0, sizeof(mech_tInitData));
+
+	if (p_mechConfig != nullptr) {
+		mechInitData.sol1 = p_mechConfig->sol1;
+		mechInitData.sol2 = p_mechConfig->sol2;
+		mechInitData.type = p_mechConfig->type;
+		mechInitData.length = p_mechConfig->length;
+		mechInitData.steps = p_mechConfig->steps;
+		mechInitData.initialpos = p_mechConfig->initialPos;
+		
+		for (int index = 0; index < MAX_MECH_SWITCHES; index++) {
+			mechInitData.sw[index].swNo = p_mechConfig->sw[index].swNo;
+			mechInitData.sw[index].startPos = p_mechConfig->sw[index].startPos;
+			mechInitData.sw[index].endPos = p_mechConfig->sw[index].endPos;
+			mechInitData.sw[index].pulse = p_mechConfig->sw[index].pulse;
+		}
+	}
+
+	_mechInit[mechNo] = 0;
+
+	mech_add(mechNo, &mechInitData);
+
+	return OK;
 }

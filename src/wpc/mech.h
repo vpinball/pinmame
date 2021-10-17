@@ -52,6 +52,22 @@ typedef struct {
   int initialpos; 
 } mech_tInitData, *mech_ptInitData;
 
+typedef struct {
+  int fast;       /* running fast */
+  int sol1, sol2; /* Controlling solenoids */
+  int solinv;     /* inverted solenoids (active low) */
+  int length;     /* Length to move from one end to the other in VBLANKS 1/60s */
+  int steps;      /* steps returned */
+  int type;       /* type */
+  int acc;        /* acceleration */
+  int ret;
+  mech_tSwData swPos[20]; /* switches activated */
+  int pos;      /* current position */
+  int speed;    /* current speed -acc -> acc */
+  int anglePos;
+  int last;
+} mech_tMechData, *ptMechData;
+
 extern void mech_init(void);
 extern void mech_emuInit(void);
 extern void mech_emuExit(void);
