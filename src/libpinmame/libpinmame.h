@@ -16,6 +16,9 @@
 
 #define MAX_PATH 512
 #define MAX_DISPLAYS 50
+#define MAX_MECHS 10
+#define MAX_MECH_SWITCHES 20
+
 #define ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
@@ -23,7 +26,8 @@ typedef enum {
 	CONFIG_NOT_SET = 1,
 	GAME_NOT_FOUND = 2,
 	GAME_ALREADY_RUNNING = 3,
-	EMULATOR_NOT_RUNNING = 4
+	EMULATOR_NOT_RUNNING = 4,
+	INVALID_MECH_NO = 5
 } PINMAME_STATUS;
 
 typedef enum {
@@ -134,6 +138,21 @@ typedef enum {
 	GAME_IMPERFECT_SOUND = 0x0400,        // sound is known to be wrong
 	NOT_A_DRIVER = 0x4000,                // set by the fake "root" driver_0 and by "containers"
 } PINMAME_GAME_DRIVER_FLAGS;
+
+typedef enum {
+	LINEAR = 0x00, 
+	NONLINEAR = 0x01,
+	CIRCLE = 0x00,
+	STOPEND = 0x02,
+	REVERSE = 0x04,
+	ONESOL = 0x00,
+	ONEDIRSOL = 0x10,
+	TWODIRSOL = 0x20,
+	TWOSTEPSOL = 0x40,
+	FOURSTEPSOL = (TWODIRSOL | TWOSTEPSOL),
+	SLOW = 0x00,
+	FAST = 0x80
+} PINMAME_MECH_FLAGS;
 
 typedef enum : unsigned int {
 	A = 0,
@@ -270,6 +289,31 @@ typedef struct {
 } PinmameAudioInfo;
 
 typedef struct {
+	int swNo;
+	int startPos;
+	int endPos;
+	int pulse;
+} PinmameMechSwitchConfig;
+
+typedef struct {
+	int sol1;
+	int sol2;
+	int type;
+	int length;
+	int steps;
+	int initialPos;
+	PinmameMechSwitchConfig sw[MAX_MECH_SWITCHES];
+} PinmameMechConfig;
+
+typedef struct {
+	int type;
+	int length;
+	int steps;
+	int pos;
+	int speed;
+} PinmameMechInfo;
+	
+typedef struct {
 	const char* name;
 	PINMAME_KEYCODE code;
 	unsigned int standardcode;
@@ -281,6 +325,8 @@ typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displa
 typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout);
 typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
 typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
+typedef void (CALLBACK *PinmameOnMechAvailableCallback)(int mechNo, PinmameMechInfo* p_mechInfo);
+typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInfo* p_mechInfo);
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
 typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
@@ -293,6 +339,8 @@ typedef struct {
 	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
 	PinmameOnAudioAvailableCallback cb_OnAudioAvailable;
 	PinmameOnAudioUpdatedCallback cb_OnAudioUpdated;
+	PinmameOnMechAvailableCallback cb_OnMechAvailable;
+	PinmameOnMechUpdatedCallback cb_OnMechUpdated;
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 	PinmameOnConsoleDataUpdatedCallback cb_OnConsoleDataUpdated;
 	PinmameIsKeyPressedFunction fn_IsKeyPressed;
@@ -311,14 +359,13 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
-LIBPINMAME_API int PinmameGetSwitch(const int slot);
-LIBPINMAME_API void PinmameSetSwitch(const int slot, const int state);
+LIBPINMAME_API int PinmameGetSwitch(const int swNo);
+LIBPINMAME_API void PinmameSetSwitch(const int swNo, const int state);
 LIBPINMAME_API void PinmameSetSwitches(const int* const p_states, const int numSwitches);
 LIBPINMAME_API int PinmameGetMaxLamps();
 LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
 LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates);
-LIBPINMAME_API int PinmameGetMech(const int mechNo);
-LIBPINMAME_API void PinmameSetMech(const int mechNo, const int value);
+LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
 
 #endif
