@@ -464,6 +464,7 @@ DRIVER(simp,a20)        //Data East MPU: 09/90 Simpsons, The (2.0)
 DRIVER(simp,a27)        //Data East MPU: 09/90 Simpsons, The (2.7)
 //DMD 128 x 16
 DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
+DRIVER(tmnt,101)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.01)
 DRIVER(tmnt,103)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.03)
 DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.04)
 DRIVER(tmnt,104g)       //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.04 German)

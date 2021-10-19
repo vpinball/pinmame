@@ -443,6 +443,15 @@ DE1S_SOUNDROM288(  "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e
 DE_ROMEND
 CORE_CLONEDEF(tmnt,103,104,"Teenage Mutant Ninja Turtles (1.03)",1991,"Data East",de_mDEDMD16S1,0)
 
+DE_ROMSTART48(tmnt_101,"tmntb5a.101", CRC(42ae083d) SHA1(0dd62dd7e3cd5db1729cec30e1831093bc63ce6e),
+                       "tmntc5a.101", CRC(24ba0267) SHA1(8e157faa1ade6a1d9f9b6d395d708cfa521597b3))
+DE_DMD16ROM1(          "tmntdspa.103",CRC(d52a7d49) SHA1(9249aafe272a052d19f1dd461708e8152516f79f))
+DE1S_SOUNDROM288(      "tmntf7.rom",  CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),
+                       "tmntf6.rom",  CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),
+                       "tmntf4.rom",  CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))
+DE_ROMEND
+CORE_CLONEDEF(tmnt,101,104,"Teenage Mutant Ninja Turtles (1.01)",1991,"Data East",de_mDEDMD16S1,0)
+
 /***************************************************************************/
 /** ALL FOLLOWING GAMES BELOW STARTED USING NEW SOUND BOARD WITH BSMT2000 **/
 /***************************************************************************/
