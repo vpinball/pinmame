@@ -416,30 +416,30 @@ CORE_GAMEDEF(ckpt,a17,"Checkpoint (1.7)",1991,"Data East",de_mDEDMD16S1,0)
 /-----------------------------------------------------------------------------*/
 INITGAMES11(tmnt,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE1S, SNDBRD_DEDMD16, 0)
 DE_ROMSTART48(tmnt_104,"tmntb5a.104",CRC(f508eeee) SHA1(5e67fde49f6e7d5d563645df9036d5691be076cf),
-                   "tmntc5a.104",CRC(a33d18d4) SHA1(41cf815c1f3d117efe0ddd14ad84076dcb80318a))
-DE_DMD16ROM1(      "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
-DE1S_SOUNDROM288(  "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
-                   "tmntf6.rom",CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
-                   "tmntf4.rom",CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
+                       "tmntc5a.104",CRC(a33d18d4) SHA1(41cf815c1f3d117efe0ddd14ad84076dcb80318a))
+DE_DMD16ROM1(          "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
+DE1S_SOUNDROM288(      "tmntf7.rom" ,CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
+                       "tmntf6.rom" ,CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
+                       "tmntf4.rom" ,CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
 DE_ROMEND
 #define input_ports_tmnt input_ports_des11
 CORE_GAMEDEF(tmnt,104,"Teenage Mutant Ninja Turtles (1.04)",1991,"Data East",de_mDEDMD16S1,0)
 
 DE_ROMSTART48(tmnt_104g,"tmntb5a.104",CRC(f508eeee) SHA1(5e67fde49f6e7d5d563645df9036d5691be076cf),
-                  "tmntc5g.104",CRC(d7f2fd8b) SHA1(b80f6201ca2981ec4a3869688963884948a6bd72))
-DE_DMD16ROM1(     "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
-DE1S_SOUNDROM288(  "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
-                   "tmntf6.rom",CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
-                   "tmntf4.rom",CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
+                        "tmntc5g.104",CRC(d7f2fd8b) SHA1(b80f6201ca2981ec4a3869688963884948a6bd72))
+DE_DMD16ROM1(           "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
+DE1S_SOUNDROM288(       "tmntf7.rom" ,CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
+                        "tmntf6.rom" ,CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
+                        "tmntf4.rom" ,CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
 DE_ROMEND
 CORE_CLONEDEF(tmnt,104g,104,"Teenage Mutant Ninja Turtles (1.04 German)",1991,"Data East",de_mDEDMD16S1,0)
 
 DE_ROMSTART48(tmnt_103,"tmntb5.103",CRC(fcc6c5b0) SHA1(062bbc93de0f8bb1921da4d756a13923f23cf5d9),
-                   "tmntc5.103",CRC(46b68ecc) SHA1(cb94041017c0856f1e15de05c70369cb4f8756cd))
-DE_DMD16ROM1(     "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
-DE1S_SOUNDROM288(  "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
-                   "tmntf6.rom",CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
-                   "tmntf4.rom",CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
+                       "tmntc5.103",CRC(46b68ecc) SHA1(cb94041017c0856f1e15de05c70369cb4f8756cd))
+DE_DMD16ROM1(         "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
+DE1S_SOUNDROM288(      "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
+                       "tmntf6.rom",CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
+                       "tmntf4.rom",CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
 DE_ROMEND
 CORE_CLONEDEF(tmnt,103,104,"Teenage Mutant Ninja Turtles (1.03)",1991,"Data East",de_mDEDMD16S1,0)
 
@@ -451,6 +451,17 @@ DE1S_SOUNDROM288(      "tmntf7.rom",  CRC(59ba0153) SHA1(e7b02a656c67a0d866020a6
                        "tmntf4.rom",  CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))
 DE_ROMEND
 CORE_CLONEDEF(tmnt,101,104,"Teenage Mutant Ninja Turtles (1.01)",1991,"Data East",de_mDEDMD16S1,0)
+
+/* Old readme:
+Location	Chip		ChkSum		Notes
+U2			27010		34E3		Sound
+U1			27010		DEC1		Sound
+F-7			27256		1530		Sound
+C5			27C256		5AFF		MPU A1.01
+B5			27128		1DFF		MPU A1.01
+DMD			27512		CDD6		DMD A1.04
+
+According to this, CPU 1.01 could already work with Display 1.04. So the question is if we should use 1.03 or rather 1.04 with CPU 1.01 */
 
 /***************************************************************************/
 /** ALL FOLLOWING GAMES BELOW STARTED USING NEW SOUND BOARD WITH BSMT2000 **/
@@ -647,6 +658,8 @@ DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a5965473849062
 DE_ROMEND
 CORE_CLONEDEF(hook,e406,408,"Hook (4.06 English)",1992,"Data East",de_mDEDMD16S2A,0)
 
+// There exists also a Display-ROM 4.00, but we do not have a CPU-Version < 4.01 yet
+// DE_DMD16ROM2("hook_dspl_4.00.bin",CRC(14d2387c) SHA1(b3e78ffa7e9bdd4bc7fe08e3a0a8631178a5fc09))
 
 /***********************************************************************/
 /*************** GAMES USING 128X32 DMD DISPLAY ************************/
