@@ -1453,6 +1453,28 @@ for(i=1; i<=9;i++)
  return 0;
 }
 
+//read the volume level for LISY from  file
+//give back level or -1 if file does not exist
+//fill structure stru_lisymini_games_csv
+int  lisy_file_get_volume_level(void)
+{
+ char level[20];
+
+ FILE *fstream = fopen(LISY_VOLUME_LEVEL,"r");
+   if(fstream == NULL)
+   {
+      return -1 ;
+   }
+
+   if ( fgets(level,20,fstream)!=NULL)
+        return ( atoi(level));
+   else
+        return -2;
+
+fclose(fstream);
+
+}
+
 //read the text file on /lisy partition
 //give back string for welcome message
 //fill structure stru_lisymini_games_csv
@@ -1561,7 +1583,7 @@ int  lisy_m_file_get_hwrules(void)
 //give -1 in case we had an error
 //fill structure 
 //reads also led colorcodes
-int  lisy_file_get_home_ss_lamp_mappings(void)
+int  lisy_file_get_home_ss_lamp_mappings(int variant)
 {
  char buffer[1024];
  char *line;
@@ -1592,6 +1614,9 @@ for(i=0; i<=5;i++)
 //LAMPS construct the filename
 //Lamp ;Line of LED;LED Number;Comment
 sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_SS_LAMP_MAPPING_FILE);
+//do we use a variant for testing?
+if (variant > 0)
+sprintf(file_name,"%s%s_%02d",LISYH_MAPPING_PATH,LISYH_SS_LAMP_MAPPING_FILE,variant);
 
  fstream = fopen(file_name,"r");
   if(fstream == NULL)
@@ -1607,19 +1632,18 @@ sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_SS_LAMP_MAPPING_FILE);
      no = atoi(strtok(line, ";")); 	//lamp number
      if ( no > 59 ) continue; //skip line if lamp number is out of range
      lisy_home_ss_lamp_map[no].no_of_maps = lisy_home_ss_lamp_map[no].no_of_maps +1;
-     if ( lisy_home_ss_lamp_map[no].no_of_maps > 6 ) continue; //6 mappings in maximum
-     led = lisy_home_ss_lamp_map[no].mapped_to_line[lisy_home_ss_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));  //line of led
-     ledline = lisy_home_ss_lamp_map[no].mapped_to_led[lisy_home_ss_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));	  //led number in this line
+     if ( lisy_home_ss_lamp_map[no].no_of_maps > 8 ) continue; //8 mappings in maximum
+     ledline = lisy_home_ss_lamp_map[no].mapped_to_line[lisy_home_ss_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));  //line of led
+     led = lisy_home_ss_lamp_map[no].mapped_to_led[lisy_home_ss_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));	  //led number in this line
      //now read colorcodes
      //sanity check
-     led--; ledline--;
-     if (( ledline <6 ) & ( led < 48))
+     if (( ledline <=6 ) & ( led <= 48))
      {
 	 led_rgbw_color[ledline][led].red = atoi(strtok(NULL, ";"));
-	 printf("RTH:%d\n",led_rgbw_color[ledline][led].red);
 	 led_rgbw_color[ledline][led].green = atoi(strtok(NULL, ";"));
 	 led_rgbw_color[ledline][led].blue = atoi(strtok(NULL, ";"));
 	 led_rgbw_color[ledline][led].white = atoi(strtok(NULL, ";"));
+	 printf("RTH: read line:%d led:%d %d %d %d %d\n",ledline,led,led_rgbw_color[ledline][led].red,led_rgbw_color[ledline][led].green,led_rgbw_color[ledline][led].blue,led_rgbw_color[ledline][led].white);
      }
    } //while
    fclose(fstream);
@@ -1631,7 +1655,7 @@ sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_SS_LAMP_MAPPING_FILE);
 //read the csv file for lisy Home Starship coil to coil mapping /lisy partition
 //give -1 in case we had an error
 //fill structure 
-int  lisy_file_get_home_ss_coil_mappings(void)
+int  lisy_file_get_home_ss_coil_mappings(int variant)
 {
  char buffer[1024];
  char *line;
@@ -1651,6 +1675,9 @@ for(i=0; i<20;i++)
 //COILS construct the filename
 //coil ;coil Number;Comment
 sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_SS_COIL_MAPPING_FILE);
+//do we use a variant for testing?
+if (variant > 0)
+sprintf(file_name,"%s%s_%02d",LISYH_MAPPING_PATH,LISYH_SS_COIL_MAPPING_FILE,variant);
 
  fstream = fopen(file_name,"r");
   if(fstream == NULL)
@@ -1670,6 +1697,66 @@ sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_SS_COIL_MAPPING_FILE);
   if ( ls80dbg.bitv.lamps | ls80dbg.bitv.coils )
   {
     sprintf(debugbuf,"LISY HOME:  map coil %d to number:%d",no,lisy_home_ss_coil_map[no].mapped_to_coil);
+    lisy80_debug(debugbuf);
+  }
+
+   } //while
+   fclose(fstream);
+  }
+
+ return 0;
+}
+
+
+//read the csv file for lisy Home Starship special coil to coil mapping /lisy partition
+//give -1 in case we had an error
+//fill structure 
+int  lisy_file_get_home_ss_special_coil_mappings(int variant)
+{
+ char buffer[1024];
+ char *line;
+ char file_name[80];
+ int no;
+ int is_coil;
+ int first_line = 1;
+ FILE *fstream;
+ int i,dum;
+
+//map to default no mapping / no activation
+for(i=0; i<20;i++) 
+  { 
+     lisy_home_ss_special_coil_map[i].mapped_to_coil = 0;
+  }
+
+//COILS construct the filename
+//coil ;coil Number;Comment
+sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_SS_SPECIAL_COIL_MAPPING_FILE);
+//do we use a variant for testing?
+if (variant > 0)
+sprintf(file_name,"%s%s_%02d",LISYH_MAPPING_PATH,LISYH_SS_SPECIAL_COIL_MAPPING_FILE,variant);
+
+ fstream = fopen(file_name,"r");
+  if(fstream == NULL)
+  {
+      fprintf(stderr,"LISY_Home: opening %s failed, using defaults for coils\n",file_name);
+  }
+  else
+  {
+   first_line = 1;
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     no = atoi(strtok(line, ";")); 	//coil number
+     if ( no > 19 ) continue; //skip line if coil number is out of range
+     lisy_home_ss_special_coil_map[no].pulsetime = atoi(strtok(NULL, ";")); 
+     lisy_home_ss_special_coil_map[no].mapped_to_coil = atoi(strtok(NULL, ";")); 
+     //third field is comment
+     strcpy( lisy_home_ss_special_coil_map[no].comment,strtok(NULL, ";"));
+  //debug
+  if ( ls80dbg.bitv.lamps | ls80dbg.bitv.coils )
+  {
+    sprintf(debugbuf,"LISY HOME:  map special coil %d to number:%d (%s) pulsetime:%dms",
+		no,lisy_home_ss_special_coil_map[no].mapped_to_coil, lisy_home_ss_special_coil_map[no].comment ,lisy_home_ss_special_coil_map[no].pulsetime);
     lisy80_debug(debugbuf);
   }
 

@@ -63,7 +63,7 @@ static unsigned char lisy35_sound_raw = 0;
 //init SW portion of lisy35 Starship special
 void lisy35_ss_init( void )
 {
- int i,sb;
+ int i,sb,dip_value;
  char s_lisy_software_version[16];
  unsigned char sw_main,sw_sub,commit;
 
@@ -159,9 +159,16 @@ void lisy35_ss_init( void )
  }
 
  //Starship mspecific inits
+ //read the dip setting
+ dip_value = display_get_ss_dipsw_value();
+ fprintf(stderr,"Info: Starship: Dip setting is %d\n",dip_value);
+ //prepare value for mapping (0..3)
+ dip_value = dip_value /4;
+
  // do the mapping
- lisy_file_get_home_ss_lamp_mappings();
- lisy_file_get_home_ss_coil_mappings();
+ lisy_file_get_home_ss_lamp_mappings(dip_value);
+ lisy_file_get_home_ss_coil_mappings(dip_value);
+ lisy_file_get_home_ss_special_coil_mappings(dip_value);
  //select solenoidboard by default
  lisyh_coil_select_solenoid_driver();
  lisyh_coil_select_led_driver_line(1);

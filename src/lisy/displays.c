@@ -550,6 +550,14 @@ int display_get_dipsw_value()
 return( display_cmd2pic(LS80DPCMD_GET_DIPSW_VALUE));
 }
 
+//get the DIP Switch value read by the PIC
+//Starship version
+int display_get_ss_dipsw_value()
+{
+return( display_cmd2pic(LSH_SS_DPCMD_GET_DIPSW_VALUE));
+}
+
+
 //let display pic do a reset; needed if we want to switch between 80 & 80B
 void display_init()
 {

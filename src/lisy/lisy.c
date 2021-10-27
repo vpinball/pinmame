@@ -43,6 +43,7 @@ t_lisy_home_lamp_map lisy_home_lamp_map[49];
 t_lisy_home_ss_lamp_map lisy_home_ss_lamp_map[60];
 //table for coil mapping Starship fileio
 t_lisy_home_ss_coil_map lisy_home_ss_coil_map[20];
+t_lisy_home_ss_special_coil_map lisy_home_ss_special_coil_map[20];
 //colortable for leds Starship array with line & led
 t_rgbw_color led_rgbw_color[6][48];
 

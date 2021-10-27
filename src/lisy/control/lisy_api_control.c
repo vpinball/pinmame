@@ -61,9 +61,10 @@ typedef struct
 } t_coreGlobals;
 t_coreGlobals coreGlobals;
 void lisy_nvram_write_to_file( void ) {  }
-void sound_stream_update(int *dum ) {  };
+void sound_stream_update(int *dum ) {  }
 unsigned char sound_stream = 0;
 unsigned char  sound_enabled = 0;
+const char* sndbrd_typestr(int board) {  }
 
 
 //global vars
@@ -1153,6 +1154,9 @@ void send_switch_infos( int sockfd )
 
  do
     {
+     delay(1); // 1 millisecond delay from wiringpi library
+               // for giving PIC some time to send switchcodes
+
       //any switchupdates?
       ret = lisy_w_switch_reader( &action );
       if (ret < 80) switch_LISYAPI[ret] = action;

@@ -60,9 +60,10 @@ typedef struct
 } t_coreGlobals;
 t_coreGlobals coreGlobals;
 void lisy_nvram_write_to_file( void ) {  }
-void sound_stream_update(int *dum ) {  };
+void sound_stream_update(int *dum ) {  }
 unsigned char sound_stream = 0;
 unsigned char  sound_enabled = 0;
+const char* sndbrd_typestr(int board) {  }
 
 
 //48 switches, keep it easy by using 49 elements
@@ -1556,6 +1557,9 @@ void send_switch_infos( int sockfd )
   //swMatrix[7] is  'special switches' bit7:Test; bit6:S33;
  do
     {
+     delay(1); // 1 millisecond delay from wiringpi library
+               // for giving PIC some time to send switchcodes
+
      ret = lisy35_switch_reader( &action );
 
      //we need to add 1, as 0 is switch one(1)

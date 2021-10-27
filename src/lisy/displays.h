@@ -6,6 +6,7 @@ void display_show_char( int display, int digit, char data);
 void display_show_str( int display, char *data);
 int display_get_sw_version(void);
 int display_get_dipsw_value(void);
+int display_get_ss_dipsw_value(void);
 int display_get_hw_revision(void);
 void display_show_pic_sw_version(int pic_no, int sw_version);
 //System1
@@ -39,6 +40,7 @@ void lisy35_display_set_variant( unsigned char variant);
 #define LS80DPCMD_GET_SW_VERSION_SUB 3
 #define LS80DPCMD_GET_DIPSW_VALUE 4
 #define LS80DPCMD_RESET 5
+#define LSH_SS_DPCMD_GET_DIPSW_VALUE 5    //Starship, get real value
 #define LS80DPCMD_NEXT20_ROW1 6
 #define LS80DPCMD_NEXT20_ROW2 7
 

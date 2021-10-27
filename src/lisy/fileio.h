@@ -91,14 +91,16 @@ int lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
 int  lisy_m_file_get_hwrules(void);
 
 int  lisy_file_get_welcome_msg(char *message);
+int  lisy_file_get_volume_level(void);
 
 //fadecandy stuff
 int  lisy_file_get_led_mappings(unsigned char system);
 
 //lisy home stuff
 int  lisy_file_get_home_mappings(void);
-int lisy_file_get_home_ss_lamp_mappings(void);
-int  lisy_file_get_home_ss_coil_mappings(void);
+int  lisy_file_get_home_ss_lamp_mappings(int variant);
+int  lisy_file_get_home_ss_coil_mappings(int variant);
+int  lisy_file_get_home_ss_special_coil_mappings(int variant);
 
 
 /* LISY80 stuff */
@@ -143,6 +145,7 @@ int  lisy_file_get_home_ss_coil_mappings(void);
 #define LISYH_COIL_MAPPING_FILE "coils.csv"
 #define LISYH_SS_LAMP_MAPPING_FILE "ss_lamps.csv"
 #define LISYH_SS_COIL_MAPPING_FILE "ss_coils.csv"
+#define LISYH_SS_SPECIAL_COIL_MAPPING_FILE "ss_special_coils.csv"
 
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"
@@ -153,5 +156,6 @@ int  lisy_file_get_home_ss_coil_mappings(void);
 
 /* generalLISY stuff */
 #define LISY_WELCOME_MSG_FILE "/boot/lisy/lisy/Welcome.msg"
+#define LISY_VOLUME_LEVEL "/boot/lisy/lisy/volume_level"
 
 #endif  // _FILEIO_H

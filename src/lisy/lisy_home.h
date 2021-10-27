@@ -38,8 +38,8 @@ void lisy_home_event_handler( int id, int arg1, int arg2, char *str);
 typedef struct
 {
   unsigned char no_of_maps;
-  unsigned char mapped_to_line[6];
-  unsigned char mapped_to_led[6];
+  unsigned char mapped_to_line[8];
+  unsigned char mapped_to_led[8];
 }
 t_lisy_home_ss_lamp_map;
 
@@ -51,6 +51,15 @@ typedef struct
   int mapped_to_coil;
 }
 t_lisy_home_ss_coil_map;
+
+//starship special solenoids ( counters and bells)
+typedef struct
+{
+  int mapped_to_coil;
+  int pulsetime;
+  char comment[30];
+}
+t_lisy_home_ss_special_coil_map;
 
 
 void lisy_home_ss_mom_coil_set( unsigned char value);

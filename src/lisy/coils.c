@@ -308,6 +308,23 @@ for (i=1; i<=64; i++)
 }
 
 
+/* lisyH_special_coil_pulse
+	coil -> nr of coil
+
+	this routine respect pulsetime and mapping
+	from config file LisyH (Starship)
+*/
+void lisyH_special_coil_pulse ( int coil )
+{
+
+ if ( lisy_home_ss_special_coil_map[coil].mapped_to_coil != 0)
+ {
+  lisyh_coil_set(  lisy_home_ss_special_coil_map[coil].mapped_to_coil, 1);
+  delay (lisy_home_ss_special_coil_map[coil].pulsetime); // milliseconds delay from wiringpi library
+  lisyh_coil_set(  lisy_home_ss_special_coil_map[coil].mapped_to_coil, 0);
+ }
+
+}
 
 /*
 lisy35_coil_set, FOR TEST ROUTINE ONLY
@@ -1195,11 +1212,11 @@ void lisyh_led_set_LED_color(unsigned char line, unsigned char led,
     //wait ten millisecond to give PIC time
     usleep(LED_COLOR_WAIT_TIME);
 
-    //first send line
-    lisyh_send_to_LED_driver( line );
+    //first send line (-1)
+    lisyh_send_to_LED_driver( line-1 );
     usleep(LED_COLOR_WAIT_TIME);
-    //second send led
-    lisyh_send_to_LED_driver( led );
+    //second send led (-1)
+    lisyh_send_to_LED_driver( led-1 );
     usleep(LED_COLOR_WAIT_TIME);
 
     //now send colorcodes RGBW
@@ -1215,9 +1232,12 @@ void lisyh_led_set_LED_color(unsigned char line, unsigned char led,
     //debug?
     if (  ls80dbg.bitv.lamps )
     {
-     sprintf(debugbuf,"lisyh_led_set_LED_color LED %d (line %d)  to (RGBW) %d %d %d %d",
-	led,line,red, green,blue,white);
+     if(( red + green + blue + white) > 0)
+     {
+     sprintf(debugbuf,"setting color of LED %d (line %d)  to (RGBW) %d %d %d %d",
+     led,line,red, green,blue,white);
      lisy80_debug(debugbuf);
+     }
     }//debug
 
 }
