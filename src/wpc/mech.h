@@ -40,6 +40,7 @@
 #define MECH_LENGTHSW   0x100
 
 #define MECH_MAXMECH 10
+#define MECH_MAXMECHSW 20
 
 typedef struct {
   int swNo, startPos, endPos, pulse;
@@ -48,7 +49,7 @@ typedef struct {
   int sol1, sol2;
   int type;
   int length, steps;
-  mech_tSwData sw[20];
+  mech_tSwData sw[MECH_MAXMECHSW];
   int initialpos; 
 } mech_tInitData, *mech_ptInitData;
 
@@ -61,7 +62,7 @@ typedef struct {
   int type;       /* type */
   int acc;        /* acceleration */
   int ret;
-  mech_tSwData swPos[20]; /* switches activated */
+  mech_tSwData swPos[MECH_MAXMECHSW]; /* switches activated */
   int pos;      /* current position */
   int speed;    /* current speed -acc -> acc */
   int anglePos;
