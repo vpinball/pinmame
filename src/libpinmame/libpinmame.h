@@ -16,8 +16,7 @@
 
 #define MAX_PATH 512
 #define MAX_DISPLAYS 50
-#define MAX_MECHS 10
-#define MAX_MECH_SWITCHES 20
+#define MAX_MECHSW 20
 
 #define ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
@@ -27,7 +26,8 @@ typedef enum {
 	GAME_NOT_FOUND = 2,
 	GAME_ALREADY_RUNNING = 3,
 	EMULATOR_NOT_RUNNING = 4,
-	INVALID_MECH_NO = 5
+	MECH_HANDLE_MECHANICS = 5,
+	MECH_NO_INVALID = 6
 } PINMAME_STATUS;
 
 typedef enum {
@@ -302,7 +302,7 @@ typedef struct {
 	int length;
 	int steps;
 	int initialPos;
-	PinmameMechSwitchConfig sw[MAX_MECH_SWITCHES];
+	PinmameMechSwitchConfig sw[MAX_MECHSW];
 } PinmameMechConfig;
 
 typedef struct {
@@ -366,6 +366,7 @@ LIBPINMAME_API int PinmameGetMaxLamps();
 LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
 LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates);
+LIBPINMAME_API int PinmameGetMaxMechs();
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
 
 #endif

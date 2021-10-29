@@ -78,7 +78,7 @@ static void mech_updateAll(int param) {
   int mech = -1, ii;
   locals.mechCounter = (locals.mechCounter + 1) % MECH_FASTPULSES;
   //printf("updateAll %d\n",locals.mechCounter);
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   { extern int g_fHandleMechanics; mech = g_fHandleMechanics; }
   //printf("updateAll %d\n",locals.mechCounter);
   if (mech == 0) {
@@ -174,9 +174,9 @@ static void mech_update(int mechNo) {
     /*-- update switches --*/
     currPos = (md->type & MECH_LENGTHSW) ? currPos / MECH_STEP : md->pos;
 
-    for (ii = 0; md->swPos[ii].swNo > 0; ii++)
+    for (ii = 0; ii < MECH_MAXMECHSW && md->swPos[ii].swNo > 0; ii++)
       core_setSw(md->swPos[ii].swNo, FALSE);
-    for (ii = 0; md->swPos[ii].swNo > 0; ii++) {
+    for (ii = 0; ii < MECH_MAXMECHSW && md->swPos[ii].swNo > 0; ii++) {
       if (md->swPos[ii].pulse) currPos %= md->swPos[ii].pulse;
       if ((currPos >= md->swPos[ii].startPos) &&
           (currPos <= md->swPos[ii].endPos))

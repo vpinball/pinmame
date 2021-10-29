@@ -170,6 +170,20 @@ void CALLBACK OnStateUpdated(int state) {
 	if (!state) {
 		exit(1);
 	}
+	else {
+		PinmameMechConfig mechConfig;
+		memset(&mechConfig, 0, sizeof(mechConfig));
+
+		mechConfig.sol1 = 11;
+		mechConfig.length = 240;
+		mechConfig.steps = 240;
+		mechConfig.type = NONLINEAR | REVERSE | ONESOL;
+		mechConfig.sw[0].swNo = 32;
+		mechConfig.sw[0].startPos = 0;
+		mechConfig.sw[0].endPos = 5;
+
+		PinmameSetMech(0, &mechConfig);
+	}
 }
 
 void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout) {
@@ -276,7 +290,7 @@ int main(int, char**) {
 
 	PinmameSetConfig(&config);
 
-	PinmameSetHandleKeyboard(1);
+	PinmameSetHandleKeyboard(0);
 	PinmameSetHandleMechanics(0);
 
 	PinmameGetGames(&Game);
