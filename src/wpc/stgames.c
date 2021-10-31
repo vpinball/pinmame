@@ -619,11 +619,20 @@ CORE_GAMEDEFNV(seawitch,"Seawitch",1980,"Stern",by35_mST200,0)
 INITGAME(seawitfp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(seawitfp,"fpsw_u1.716",CRC(058aa5d4) SHA1(a6aafbcb7c720f1c02ee98a170d2985eda58076c),
                             "fpsw_u5.716",CRC(d3072929) SHA1(6dcc2fdc334d3f3f39355570346406d6eea3ca89),
-                            "cpu_u2.716",CRC(b8844174) SHA1(6e01321196fd6fce7b5526efc402044c87fe96a6),
-                            "cpu_u6.716",CRC(6c296d8f) SHA1(8cdb77f382ef1214ef45579213cf8f19141366ad))
+                            "cpu_u2.716", CRC(b8844174) SHA1(6e01321196fd6fce7b5526efc402044c87fe96a6),
+                            "cpu_u6.716", CRC(6c296d8f) SHA1(8cdb77f382ef1214ef45579213cf8f19141366ad))
 BY35_ROMEND
 #define input_ports_seawitfp input_ports_st
 CORE_CLONEDEFNV(seawitfp,seawitch,"Seawitch (Free Play)",1980,"Stern",by35_mST200,0)
+
+INITGAME(seawitcha,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(seawitcha,"seawitch_05-u1.716",CRC(4b4d9927) SHA1(e31f297a83a96af964b713fe944c7c40ef10dcdf),
+                             "seawitch_05-u5.716",CRC(afc10bfe) SHA1(a58c8a4e00272d54dfcb9cb815a816b46a16ee25),
+                             "seawitch_05-u2.716",CRC(d85701af) SHA1(86314f0c348de7f75802eb844c6cde9aa32c93e6),
+                             "seawitch_05-u6.716",CRC(51644c70) SHA1(916dd5df4ba506afd1d0fad9c52345110072633a))
+BY35_ROMEND
+#define input_ports_seawitcha input_ports_st
+CORE_CLONEDEFNV(seawitcha,seawitch,"Seawitch (MOD rev. 5)",2021,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Cheetah

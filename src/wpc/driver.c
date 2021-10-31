@@ -1366,6 +1366,7 @@ DRIVERNV(biggamec)      //MPU-200: 10/20 Big Game (MOD rev. 8)
 DRIVERNV(biggamed)      //MPU-200: 09/21 Big Game (MOD rev. 9)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
+DRIVERNV(seawitcha)     //MPU-200: 10/21 Seawitch (MOD rev. 5)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah (Black cabinet)
 DRIVERNV(cheetahb)      //MPU-200: 06/80 Cheetah (Blue cabinet)
 DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Black cabinet Free Play)
