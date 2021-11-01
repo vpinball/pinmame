@@ -38,6 +38,9 @@ static UINT8 _displayData[MAX_DISPLAYS][DMD_MAXX * DMD_MAXY];
 static int _mechInit[MECH_MAXMECH / 2];
 static PinmameMechInfo _mechInfo[MECH_MAXMECH / 2];
 
+static PinmameAudioInfo _audioInfo;
+static float _audioData[ACCUMULATOR_SAMPLES * 2];
+
 static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "A", A, KEYCODE_A },
 	{ "B", B, KEYCODE_B },
@@ -236,15 +239,15 @@ extern "C" int osd_readkey_unicode(const int flush) {
 
 extern "C" int osd_start_audio_stream(const int stereo) {
 	if (_p_Config->cb_OnAudioAvailable) {
-		PinmameAudioInfo audioInfo;
-		memset(&audioInfo, 0, sizeof(PinmameAudioInfo));
-		audioInfo.channels = stereo ? 2 : 1;
-		audioInfo.sampleRate = Machine->sample_rate;
-		audioInfo.framesPerSecond = Machine->drv->frames_per_second;
-		audioInfo.samplesPerFrame = Machine->sample_rate / Machine->drv->frames_per_second;
-		audioInfo.bufferSize = ACCUMULATOR_SAMPLES * 2;
+		memset(&_audioInfo, 0, sizeof(PinmameAudioInfo));
+		_audioInfo.format = _p_Config->audioFormat;
+		_audioInfo.channels = stereo ? 2 : 1;
+		_audioInfo.sampleRate = Machine->sample_rate;
+		_audioInfo.framesPerSecond = Machine->drv->frames_per_second;
+		_audioInfo.samplesPerFrame = Machine->sample_rate / Machine->drv->frames_per_second;
+		_audioInfo.bufferSize = ACCUMULATOR_SAMPLES * 2;
 
-		return (*(_p_Config->cb_OnAudioAvailable))(&audioInfo);
+		return (*(_p_Config->cb_OnAudioAvailable))(&_audioInfo);
 	}
 	return 0;
 }
@@ -255,7 +258,17 @@ extern "C" int osd_start_audio_stream(const int stereo) {
 
 extern "C" int osd_update_audio_stream(INT16* p_buffer) {
 	if (_p_Config->cb_OnAudioUpdated) {
-		return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, mixer_samples_this_frame());
+		int samplesThisFrame = mixer_samples_this_frame();
+
+		if (_p_Config->audioFormat == AUDIO_FORMAT_INT16) {
+			return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame);
+		}
+
+		for (int i = 0; i < samplesThisFrame * _audioInfo.channels; i++) {
+			_audioData[i] = ((float)p_buffer[i]) / 32768.0;
+		}
+
+		return (*(_p_Config->cb_OnAudioUpdated))((void*)_audioData, samplesThisFrame);
 	}
 	return 0;
 }
@@ -800,13 +813,18 @@ LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMech
 	memset(&mechInitData, 0, sizeof(mech_tInitData));
 
 	if (p_mechConfig != nullptr) {
+		mechInitData.type = p_mechConfig->type;
+
 		mechInitData.sol1 = p_mechConfig->sol1;
 		mechInitData.sol2 = p_mechConfig->sol2;
-		mechInitData.type = p_mechConfig->type;
+
 		mechInitData.length = p_mechConfig->length;
 		mechInitData.steps = p_mechConfig->steps;
 		mechInitData.initialpos = p_mechConfig->initialPos;
-		
+
+		mechInitData.type = (mechInitData.type & 0xff0001ff) | MECH_ACC(p_mechConfig->acc);
+		mechInitData.type = (mechInitData.type & 0x00ffffff) | MECH_RET(p_mechConfig->ret);
+
 		for (int index = 0; index < MAX_MECHSW; index++) {
 			mechInitData.sw[index].swNo = p_mechConfig->sw[index].swNo;
 			mechInitData.sw[index].startPos = p_mechConfig->sw[index].startPos;
