@@ -30,6 +30,11 @@ typedef enum {
 	MECH_NO_INVALID = 6
 } PINMAME_STATUS;
 
+typedef enum : int {
+	AUDIO_FORMAT_INT16 = 0,
+	AUDIO_FORMAT_FLOAT = 1
+} PINMAME_AUDIO_FORMAT;
+
 typedef enum {
 	SEG16 = 0,                  // 16 segments
 	SEG16R = 1,                 // 16 segments with comma and period reversed
@@ -151,7 +156,9 @@ typedef enum {
 	TWOSTEPSOL = 0x40,
 	FOURSTEPSOL = (TWODIRSOL | TWOSTEPSOL),
 	SLOW = 0x00,
-	FAST = 0x80
+	FAST = 0x80,
+	STEPSW = 0x00,
+	LENGTHSW = 0x100
 } PINMAME_MECH_FLAGS;
 
 typedef enum : unsigned int {
@@ -281,6 +288,7 @@ typedef struct {
 } PinmameDisplayLayout;
 
 typedef struct {
+	PINMAME_AUDIO_FORMAT format;
 	int channels;
 	double sampleRate;
 	double framesPerSecond;
@@ -296,12 +304,14 @@ typedef struct {
 } PinmameMechSwitchConfig;
 
 typedef struct {
+	int type;
 	int sol1;
 	int sol2;
-	int type;
 	int length;
 	int steps;
 	int initialPos;
+	int acc;
+	int ret;
 	PinmameMechSwitchConfig sw[MAX_MECHSW];
 } PinmameMechConfig;
 
@@ -332,6 +342,7 @@ typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int s
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
+	const PINMAME_AUDIO_FORMAT audioFormat;
 	const int sampleRate;
 	const char vpmPath[MAX_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;

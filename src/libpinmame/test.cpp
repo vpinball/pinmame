@@ -219,7 +219,8 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 }
 
 int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
-	printf("OnAudioAvailable(): channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
+	printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
+		p_audioInfo->format,
 		p_audioInfo->channels,
 		p_audioInfo->sampleRate,
 		p_audioInfo->framesPerSecond,
@@ -268,6 +269,7 @@ int main(int, char**) {
 	system(CLEAR_SCREEN);
 
 	PinmameConfig config = {
+		AUDIO_FORMAT_FLOAT,
 		44100,
 		"",
 		&OnStateUpdated,
