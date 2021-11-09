@@ -634,6 +634,15 @@ BY35_ROMEND
 #define input_ports_seawitcha input_ports_st
 CORE_CLONEDEFNV(seawitcha,seawitch,"Seawitch (MOD rev. 5)",2021,"Stern / Idleman",by35_mST200,0)
 
+INITGAME(seawitchb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(seawitchb,"seawitch_V06-u1.716",CRC(394b14ae) SHA1(754c463922d6b5385397ed54b21730e31d156d9a),
+                             "seawitch_V06-u5.716",CRC(9684dcda) SHA1(74ae76101b84e29e4776f398bc70c9d579357932),
+                             "seawitch_V06-u2.716",CRC(1cfabb92) SHA1(a5122abec43d3e7df916e516ca26b0fd788d9ba9),
+                             "seawitch_V06-u6.716",CRC(9c1bc88d) SHA1(27de8f3c5295a362d544bb5c992d99451b1ef0a4))
+BY35_ROMEND
+#define input_ports_seawitchb input_ports_st
+CORE_CLONEDEFNV(seawitchb,seawitch,"Seawitch (MOD rev. 6)",2021,"Stern / Idleman",by35_mST200,0)
+
 /*--------------------------------
 / Cheetah
 /-------------------------------*/
