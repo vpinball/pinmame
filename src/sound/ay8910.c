@@ -622,9 +622,9 @@ struct AY8910
 	read8_handler PortBread;
 	write8_handler PortAwrite;
 	write8_handler PortBwrite;
-	INT32 register_latch;
+	UINT8 register_latch;
 	UINT8 Regs[16];
-	INT32 lastEnable;
+	INT16 lastEnable;
 	INT32 PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
 	INT32 CountA,CountB,CountC,CountN,CountE;
 	UINT32 VolA,VolB,VolC,VolE;
@@ -632,7 +632,7 @@ struct AY8910
 	UINT8 OutputA,OutputB,OutputC,OutputN;
 	INT8 CountEnv;
 	UINT8 Hold,Alternate,Attack,Holding;
-	INT32 RNG;
+	UINT32 RNG;
 	unsigned int VolTable[32];
 #ifdef SINGLE_CHANNEL_MIXER
 	unsigned int mix_vol[3];
@@ -1449,9 +1449,9 @@ static void AY8910_statesave(int chip)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
-	state_save_register_INT32("AY8910",  chip, "register_latch", &PSG->register_latch, 1);
+	state_save_register_UINT8("AY8910",  chip, "register_latch", &PSG->register_latch, 1);
 	state_save_register_UINT8("AY8910",  chip, "Regs",           PSG->Regs,            8);
-	state_save_register_INT32("AY8910",  chip, "lastEnable",     &PSG->lastEnable,     1);
+	state_save_register_INT16("AY8910",  chip, "lastEnable",     &PSG->lastEnable,     1);
 
 	state_save_register_INT32("AY8910",  chip, "PeriodA",        &PSG->PeriodA,        1);
 	state_save_register_INT32("AY8910",  chip, "PeriodB",        &PSG->PeriodB,        1);
@@ -1484,7 +1484,7 @@ static void AY8910_statesave(int chip)
 	state_save_register_UINT8("AY8910",  chip, "Alternate",      &PSG->Alternate,      1);
 	state_save_register_UINT8("AY8910",  chip, "Attack",         &PSG->Attack,         1);
 	state_save_register_UINT8("AY8910",  chip, "Holding",        &PSG->Holding,        1);
-	state_save_register_INT32("AY8910",  chip, "RNG",            &PSG->RNG,            1);
+	state_save_register_UINT32("AY8910", chip, "RNG",            &PSG->RNG,            1);
 }
 
 
