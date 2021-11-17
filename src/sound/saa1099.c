@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+// copyright-holders:Juergen Buchmueller, Manuel Abadia
 /***************************************************************************
 
 	Philips SAA1099 Sound driver
@@ -43,7 +45,7 @@
 	0x14 | ---x ---- | Channel 4 frequency enable (0 = off, 1 = on)
 	0x14 | --x- ---- | Channel 5 frequency enable (0 = off, 1 = on)
 		 |			 |
-  	0x15 | ---- ---x | Channel 0 noise enable (0 = off, 1 = on)
+	0x15 | ---- ---x | Channel 0 noise enable (0 = off, 1 = on)
 	0x15 | ---- --x- | Channel 1 noise enable (0 = off, 1 = on)
 	0x15 | ---- -x-- | Channel 2 noise enable (0 = off, 1 = on)
 	0x15 | ---- x--- | Channel 3 noise enable (0 = off, 1 = on)
@@ -61,6 +63,8 @@
 	0x1c | ---- ---x | All channels enable (0 = off, 1 = on)
 	0x1c | ---- --x- | Synch & Reset generators
 
+    Unspecified bits should be written as zero.
+
 ***************************************************************************/
 
 #include "driver.h"
@@ -75,16 +79,16 @@
 /* this structure defines a channel */
 struct saa1099_channel
 {
-	int frequency;			/* frequency (0x00..0xff) */
-	int freq_enable;		/* frequency enable */
-	int noise_enable;		/* noise enable */
-	int octave; 			/* octave (0x00..0x07) */
-	int amplitude[2];		/* amplitude (0x00..0x0f) */
-	int envelope[2];		/* envelope (0x00..0x0f or 0x10 == off) */
+	UINT8 frequency;		/* frequency (0x00..0xff) */
+	BOOL freq_enable;		/* frequency enable */
+	BOOL noise_enable;		/* noise enable */
+	UINT8 octave; 			/* octave (0x00..0x07) */
+	UINT16 amplitude[2];	/* amplitude (0x00..0x0f) */
+	UINT8 envelope[2];		/* envelope (0x00..0x0f or 0x10 == off) */
 
 	/* vars to simulate the square wave */
 	int counter;
-	int level;
+	UINT8 level;
 };
 #define freq(x) ((511 - x.frequency) << (8 - x.octave)) // clock / ((511 - frequency) * 2^(8 - octave))
 
@@ -94,23 +98,23 @@ struct saa1099_noise
 	/* vars to simulate the noise generator output */
 	int counter;
 	int freq;
-	int level;						/* noise polynomal shifter */
+	UINT32 level;					/* noise polynomal shifter */
 };
 
 /* this structure defines a SAA1099 chip */
 struct SAA1099
 {
 	int stream;						/* our stream */
-	int noise_params[2];			/* noise generators parameters */
-	int env_enable[2];				/* envelope generators enable */
-	int env_reverse_right[2];		/* envelope reversed for right channel */
-	int env_mode[2];				/* envelope generators mode */
-	int env_bits[2];				/* non zero = 3 bits resolution */
-	int env_clock[2];				/* envelope clock mode (non-zero external) */
-	int env_step[2];				/* current envelope step */
-	int all_ch_enable;				/* all channels enable */
-	int sync_state;					/* sync all channels */
-	int selected_reg;				/* selected register */
+	UINT8 noise_params[2];			/* noise generators parameters */
+	BOOL env_enable[2];				/* envelope generators enable */
+	BOOL env_reverse_right[2];		/* envelope reversed for right channel */
+	UINT8 env_mode[2];				/* envelope generators mode */
+	BOOL env_bits[2];				/* non zero = 3 bits resolution */
+	BOOL env_clock[2];				/* envelope clock mode (non-zero external) */
+	UINT8 env_step[2];				/* current envelope step */
+	BOOL all_ch_enable;				/* all channels enable */
+	BOOL sync_state;				/* sync all channels */
+	UINT8 selected_reg;				/* selected register */
 	struct saa1099_channel channels[6];	/* channels */
 	struct saa1099_noise noise[2];	/* noise generators */
 	double master_clock;
@@ -121,7 +125,7 @@ struct SAA1099
 /* saa1099 chips */
 static struct SAA1099 saa1099[MAX_SAA1099];
 
-static const int amplitude_lookup[16] = {
+static const UINT16 amplitude_lookup[16] = {
 	 0*32767/16,  1*32767/16,  2*32767/16,  3*32767/16,
 	 4*32767/16,  5*32767/16,  6*32767/16,  7*32767/16,
 	 8*32767/16,  9*32767/16, 10*32767/16, 11*32767/16,
@@ -189,7 +193,7 @@ static void saa1099_envelope(int chip, int ch)
 		saa->channels[ch*3+0].envelope[ LEFT] =
 		saa->channels[ch*3+1].envelope[ LEFT] =
 		saa->channels[ch*3+2].envelope[ LEFT] = envelope[mode][step] & mask;
-		if (saa->env_reverse_right[ch] & 0x01)
+		if (saa->env_reverse_right[ch])
 		{
 			saa->channels[ch*3+0].envelope[RIGHT] =
 			saa->channels[ch*3+1].envelope[RIGHT] =
@@ -253,7 +257,9 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 		/* for each channel */
 		for (ch = 0; ch < 6; ch++)
 		{
-			UINT8 level = 0;
+			UINT8 level = 0; // output level (0...2, 0 = off, 1 = 100%, 2 = 50%)
+			UINT8 noise_out;
+			UINT8 tone_out;
 
 			/* check the actual position in the square wave */
 			while (saa->channels[ch].counter <= 0)
@@ -270,33 +276,47 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 			saa->channels[ch].counter -= 256;
 
 			// if the noise is enabled
+			noise_out = saa->noise[ch/3].level & 1; // noise output (noise 0: chan 0-2, noise 1: chan 3-5)
+			tone_out = saa->channels[ch].level & 1; // tone output
 			if (saa->channels[ch].noise_enable)
 			{
-				// if the noise level is high (noise 0: chan 0-2, noise 1: chan 3-5)
-				level ^= saa->noise[ch/3].level & 1;
+				// if both noise and square wave are enabled, output is tone output
+				if (saa->channels[ch].freq_enable)
+				{
+					// half amplitude if the noise level is high
+					if (noise_out)
+						level = tone_out << 1;
+					else
+						level = tone_out;
+				}
+				else
+				{
+					// output is noise output
+					level = noise_out;
+				}
 			}
-
 			// if the square wave is enabled
-			if (saa->channels[ch].freq_enable)
+			else if (saa->channels[ch].freq_enable)
 			{
-				// if the channel level is high
-				level ^= saa->channels[ch].level & 1;
+				// output is tone output
+				level = tone_out;
 			}
 
-			if (level)
+			// if the output level is high
+			if (level > 0)
 			{
 #if 0
-				output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 16;
-				output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 16;
+				output_l += (int)saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 16 / level;
+				output_r += (int)saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 16 / level;
 #else
 			// Now with bipolar output. -Valley Bell
-				output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
-				output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
+				output_l += (int)saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32 / level;
+				output_r += (int)saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32 / level;
 			}
 			else
 			{
-				output_l -= saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
-				output_r -= saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
+				output_l -= (int)saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32 / level;
+				output_r -= (int)saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32 / level;
 #endif
 			}
 		}
@@ -415,21 +435,21 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 		break;
 	/* channel i frequency enable */
 	case 0x14:
-		saa->channels[0].freq_enable = data & 0x01;
-		saa->channels[1].freq_enable = data & 0x02;
-		saa->channels[2].freq_enable = data & 0x04;
-		saa->channels[3].freq_enable = data & 0x08;
-		saa->channels[4].freq_enable = data & 0x10;
-		saa->channels[5].freq_enable = data & 0x20;
+		saa->channels[0].freq_enable =  data & 0x01;
+		saa->channels[1].freq_enable = (data & 0x02) ? 1 : 0;
+		saa->channels[2].freq_enable = (data & 0x04) ? 1 : 0;
+		saa->channels[3].freq_enable = (data & 0x08) ? 1 : 0;
+		saa->channels[4].freq_enable = (data & 0x10) ? 1 : 0;
+		saa->channels[5].freq_enable = (data & 0x20) ? 1 : 0;
 		break;
 	/* channel i noise enable */
 	case 0x15:
-		saa->channels[0].noise_enable = data & 0x01;
-		saa->channels[1].noise_enable = data & 0x02;
-		saa->channels[2].noise_enable = data & 0x04;
-		saa->channels[3].noise_enable = data & 0x08;
-		saa->channels[4].noise_enable = data & 0x10;
-		saa->channels[5].noise_enable = data & 0x20;
+		saa->channels[0].noise_enable =  data & 0x01;
+		saa->channels[1].noise_enable = (data & 0x02) ? 1 : 0;
+		saa->channels[2].noise_enable = (data & 0x04) ? 1 : 0;
+		saa->channels[3].noise_enable = (data & 0x08) ? 1 : 0;
+		saa->channels[4].noise_enable = (data & 0x10) ? 1 : 0;
+		saa->channels[5].noise_enable = (data & 0x20) ? 1 : 0;
 		break;
 	/* noise generators parameters */
 	case 0x16:
@@ -441,16 +461,16 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 		ch = reg - 0x18;
 		saa->env_reverse_right[ch] = data & 0x01;
 		saa->env_mode[ch] = (data >> 1) & 0x07;
-		saa->env_bits[ch] = data & 0x10;
-		saa->env_clock[ch] = data & 0x20;
-		saa->env_enable[ch] = data & 0x80;
+		saa->env_bits[ch] = (data & 0x10) ? 1 : 0;
+		saa->env_clock[ch] = (data & 0x20) ? 1 : 0;
+		saa->env_enable[ch] = (data & 0x80) ? 1 : 0;
 		/* reset the envelope */
 		saa->env_step[ch] = 0;
 		break;
 	/* channels enable & reset generators */
 	case 0x1c:
 		saa->all_ch_enable = data & 0x01;
-		saa->sync_state = data & 0x02;
+		saa->sync_state = (data & 0x02) ? 1 : 0;
 		if (data & 0x02)
 		{
 			int i;
