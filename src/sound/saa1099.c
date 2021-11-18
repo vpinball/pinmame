@@ -76,6 +76,8 @@
 #define LEFT	0x00
 #define RIGHT	0x01
 
+#define BOOL UINT8
+
 /* this structure defines a channel */
 struct saa1099_channel
 {
