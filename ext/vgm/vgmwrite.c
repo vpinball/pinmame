@@ -663,7 +663,7 @@ static void vgm_header_postwrite(uint16_t vgm_id)
 		{
 			size_t wrtByt = fwrite(VR->Data, 0x01, VR->DataSize, VI->hFile);
 			if (wrtByt != VR->DataSize)
-				print_info("Warning VGM Header_PostWrite: wrote only 0x%X bytes instead of 0x%X!\n", (uint32_t)wrtByt, VR->DataSize);
+				logerror("Warning VGM Header_PostWrite: wrote only 0x%X bytes instead of 0x%X!\n", (uint32_t)wrtByt, VR->DataSize);
 		}
 		VI->BytesWrt += 0x07 + (blocksize & 0x7FFFFFFF);
 	}
