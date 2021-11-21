@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+// copyright-holders:Valley Bell
 /*
     vgmwrite.c
 
@@ -234,12 +236,12 @@ static size_t wcs2utf16(gd3char_t* dststr, const wchar_t* srcstr, size_t max)
 #define HI_SURROGATE_START	0xD800
 #define LO_SURROGATE_START	0xDC00
 				// surrogate conversion from http://unicode.org/faq/utf_bom.html
-				
+
 				X = (gd3char_t)srcstr[idxSrc];
 				W = ((srcstr[idxSrc] >> 16) & 0x1F) - 1;
 				HiSurrogate = HI_SURROGATE_START | (W << 6) | (X >> 10);
 				LoSurrogate = LO_SURROGATE_START | (X & 0x3FF);
-				
+
 				dststr[idxDst] = HiSurrogate;	idxDst ++;
 				dststr[idxDst] = LoSurrogate;	idxDst ++;
 			}
@@ -383,7 +385,27 @@ void vgm_stop(void)
 	
 	if (! LOG_VGM_FILE)
 		return;
-	
+
+	// For all "dual" chips, make sure the first chip's instance is marked as "used".
+	// Else it will incorrectly remove its clock value.
+	for (curchip = 0x00; curchip < MAX_VGM_CHIPS; curchip++)
+	{
+		VC = &VgmChip[curchip];
+		if (VC->ChipType == 0xFF)
+			break;
+
+		if (VC->ChipType & 0x80)
+		{
+			uint16_t curC2;
+			for (curC2 = 0; curC2 < curchip; curC2++)
+			{
+				VGM_CHIP* vc2 = &VgmChip[curC2];
+				if (vc2->ChipType == (VC->ChipType & 0x7F))
+					vc2->HadWrite = 0x01;
+			}
+		}
+	}
+
 	chip_unused = 0x00;
 	for (curchip = 0x00; curchip < MAX_VGM_CHIPS; curchip ++)
 	{
@@ -401,6 +423,9 @@ void vgm_stop(void)
 			
 			switch(VC->ChipType & 0x7F)
 			{
+			case VGMC_T6W28:
+				clock_mask = 0x00000000;
+				// fall through, as it is handled as 2xSN76496
 			case VGMC_SN76496:
 				VH->lngHzPSG &= clock_mask;
 				if (! clock_mask)
@@ -421,6 +446,8 @@ void vgm_stop(void)
 				break;
 			case VGMC_SEGAPCM:
 				VH->lngHzSPCM &= clock_mask;
+				if (! clock_mask)
+					VH->lngSPCMIntf = 0x00;
 				break;
 			case VGMC_RF5C68:
 				VH->lngHzRF5C68 &= clock_mask;
@@ -458,16 +485,6 @@ void vgm_stop(void)
 				break;
 			case VGMC_YMZ280B:
 				VH->lngHz280B &= clock_mask;
-				break;
-			case VGMC_T6W28:
-				clock_mask = 0x00000000;
-				VH->lngHzPSG &= clock_mask;
-				if (! clock_mask)
-				{
-					VH->shtPSG_Feedback = 0x0000;
-					VH->bytPSG_SRWidth = 0x00;
-					VH->bytPSG_Flags = 0x00;
-				}
 				break;
 			case VGMC_RF5C164:
 				VH->lngHzRF5C164 &= clock_mask;
@@ -566,7 +583,7 @@ void vgm_stop(void)
 		//		break;
 			}
 		}
-		if (VC->PCMCache != NULL)
+		if (VC->PCMCache != NULL && VC->PCMCache->CacheData != NULL)
 		{
 			VC->PCMCache->CacheSize = 0x00;
 			free(VC->PCMCache->CacheData);
@@ -643,7 +660,11 @@ static void vgm_header_postwrite(uint16_t vgm_id)
 		templng |= (VR->dstart_msb << 24);
 		fwrite(&templng, 0x04, 0x01, VI->hFile);		// Data Base Address
 		if (VR->Data != NULL)
-			fwrite(VR->Data, 0x01, VR->DataSize, VI->hFile);
+		{
+			size_t wrtByt = fwrite(VR->Data, 0x01, VR->DataSize, VI->hFile);
+			if (wrtByt != VR->DataSize)
+				print_info("Warning VGM Header_PostWrite: wrote only 0x%X bytes instead of 0x%X!\n", (uint32_t)wrtByt, VR->DataSize);
+		}
 		VI->BytesWrt += 0x07 + (blocksize & 0x7FFFFFFF);
 	}
 	for (curcmd = 0x00; curcmd < VI->CmdCount; curcmd ++)
@@ -905,9 +926,11 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 		}
 		else if (use_two)
 		{
+			// _logging == 1 -> log up to 2 instances of the same chip into one VGM
+			// _logging == 2 -> log multiple instances into separate files
 			if (! (chip_val & 0x40000000) && (LOG_VGM_FILE & 0x01))
 			{
-				if (clock != chip_val)
+				if (clock != (chip_val & 0x3FFFFFF))
 					logerror("VGM Log: Warning - 2-chip mode, but chip clocks different!\n");
 				chip_file = curvgm;
 				clock = 0x40000000 | chip_val;
@@ -1159,6 +1182,9 @@ static void vgm_setup_pcmcache(VGM_PCMCACHE* TempPC, uint32_t Size)
 	if (TempPC->CacheData != NULL)
 		free(TempPC->CacheData);
 	TempPC->CacheData = (uint8_t*)malloc(Size);
+	TempPC->Start = 0xFFFFFFFF;
+	TempPC->Pos = 0x00;
+	TempPC->Next = 0x00;
 	
 	return;
 }
@@ -1212,15 +1238,25 @@ void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data)
 			bitcnt = (data == 1) ? 0x01 : 0x00;
 			VH->bytPSG_Flags |= (bitcnt & 0x01) << 3;
 			break;
-		case 0x07:	// Freq 0 is Max
+		case 0x07:	// Freq 0 is Maximum Frequency
 			VH->bytPSG_Flags &= ~(0x01 << 0);
 			VH->bytPSG_Flags |= (data & 0x01) << 0;
+			break;
+		case 0x08:	// NCR mode
+			VH->bytPSG_Flags &= ~(0x10 << 0);
+			VH->bytPSG_Flags |= (data & 0x10) << 0;
 			break;
 		}
 		break;
 	case VGMC_YM2413:
 		break;
 	case VGMC_YM2612:
+		switch(attr)
+		{
+		case 0x00:	// Chip Type (set YM3438 mode)
+			VH->lngHz2612 = (VH->lngHz2612 & 0x7FFFFFFF) | (data << 31);
+			break;
+		}
 		break;
 	case VGMC_YM2151:
 		break;
@@ -1325,6 +1361,9 @@ void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data)
 		{
 		case 0x00:	// Chip Type (set master/slave mode)
 			VH->lngHzUPD7759 = (VH->lngHzUPD7759 & 0x7FFFFFFF) | (data << 31);
+			break;
+		case 0x01:	// uPD7759/56 mode
+			// not stored into VGMs yet
 			break;
 		}
 		break;
@@ -1499,11 +1538,11 @@ static void vgm_write_delay(uint16_t vgm_id)
 	uint16_t delaywrite;
 	
 	VI = &VgmFile[vgm_id];
-	if (! VI->WroteHeader && VI->EvtDelay)
-		vgm_header_postwrite(vgm_id);	// write post-header data
-	
 	if (VI->EvtDelay)
 	{
+		if (! VI->WroteHeader)
+			vgm_header_postwrite(vgm_id);	// write post-header data
+		
 		for (delaywrite = 0x00; delaywrite < MAX_VGM_CHIPS; delaywrite ++)
 		{
 			if (VgmChip[delaywrite].ChipType != 0xFF)
@@ -1872,9 +1911,10 @@ void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v)
 			WriteCmd.CmdLen = 0x03;
 			break;
 		case 0x01:
+			r |= (VC->ChipType & 0x80) << 8;
 			WriteCmd.Data[0x00] = 0xC6;				// Write Memory
-			WriteCmd.Data[0x01] = (r >> 0) & 0xFF;	// offset low
-			WriteCmd.Data[0x02] = (r >> 8) & 0xFF;	// offset high
+			WriteCmd.Data[0x01] = (r >> 8) & 0xFF;	// offset high
+			WriteCmd.Data[0x02] = (r >> 0) & 0xFF;	// offset low
 			WriteCmd.Data[0x03] = v;				// Data
 			WriteCmd.CmdLen = 0x04;
 			break;
@@ -1953,18 +1993,6 @@ void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v)
 		WriteCmd.Data[0x03] = v;
 		WriteCmd.CmdLen = 0x04;
 		break;
-	/*case VGMC_C352:
-		if (port == 0x01)
-		{
-			v = 0x06/2;	// flags register (channel 0)
-			r = 0xFFFF;
-		}
-		WriteCmd.Data[0x00] = 0xC9;
-		WriteCmd.Data[0x01] = v;					// Register
-		WriteCmd.Data[0x02] = (r & 0xFF00) >> 8;	// Data MSB
-		WriteCmd.Data[0x03] = (r & 0x00FF) >> 0;	// Data LSB
-		WriteCmd.CmdLen = 0x04;
-		break;*/
 	case VGMC_C352:
 		port |= (VC->ChipType & 0x80);
 		WriteCmd.Data[0x00] = 0xE1;
@@ -2634,11 +2662,37 @@ void vgm_dump_sample_rom(uint16_t chip_id, uint8_t type, int region)
 //!!
 /*void vgm_dump_sample_rom(uint16_t chip_id, uint8_t type, address_space& space)
 {
+//old:
 	uint32_t dataSize = space.addrmask() + 1;
 	const void* dataPtr = space.get_read_ptr(0);
 	
 	logerror("VGM - Dumping ROM-Space %s: size 0x%X, space-ptr %p\n", space.name(), dataSize, dataPtr);
 	vgm_write_large_data(chip_id, type, dataSize, 0x00, 0x00, dataPtr);
+
+//new:
+	print_info("Space Info: Name %s, Size: 0x%X, Device Name: %s, Device BaseTag: %s\n",
+			space.name(), space.addrmask() + 1, space.device().name(), space.device().basetag());
+	
+	memory_region* rom_region = _machine->root_device().memregion(space.device().basetag());	// get memory region of space's root device
+	if (rom_region)
+	{
+		DumpSampleROM(type, rom_region);
+		return;
+	}
+	
+	uint32_t dataSize = space.addrmask() + 1;
+	const uint8_t* dataPtrA = static_cast<const uint8_t*>(space.get_read_ptr(0));
+	const uint8_t* dataPtrB = static_cast<const uint8_t*>(space.get_read_ptr(space.addrmask()));
+	if ((dataPtrB - dataPtrA) == space.addrmask())
+	{
+		print_info("VGM - Dumping Device-Space %s: size 0x%X, space-ptr %p\n", space.name(), dataSize, dataPtrA);
+		WriteLargeData(type, dataSize, 0x00, 0x00, dataPtrA);
+	}
+	else
+	{
+		print_info("VGM - Device-Space %s: size 0x%X, dumping empty block due to non-continuous memory\n", space.name(), dataSize);
+		WriteLargeData(type, dataSize, 0x00, 0x00, nullptr);
+	}
 	
 	return;
 }*/
