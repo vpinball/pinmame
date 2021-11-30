@@ -976,6 +976,7 @@ S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dd
 S11_ROMEND
 
 CORE_GAMEDEF(mousn,l4,"Mousin' Around! (LA-4)", 1989, "Bally", s11a_one,0)
+// Rev 5.0 by Soren exists, Oct2021
 CORE_CLONEDEF(mousn,l4c,l4,"Mousin' Around! (LA-4C Competition MOD)", 2019, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,l1,l4,"Mousin' Around! (LA-1)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,lu,l4,"Mousin' Around! (LU-1 Europe)", 1989, "Bally", s11a_one,0)

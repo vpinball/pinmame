@@ -1390,6 +1390,8 @@ DRIVERNV(nineball)      //MPU-200: 12/80 Nine Ball
 DRIVERNV(ninebafp)      //MPU-200: 12/80 Nine Ball (Free Play)
 DRIVERNV(ninebala)      //MPU-200: 04/20 Nine Ball (Ball handling MOD beta18)
 DRIVERNV(ninebalb)      //MPU-200: 01/07 Nine Ball (modified rules rev. 85)
+DRIVERNV(ninebalc)      //MPU-200: 11/21 Nine Ball (Ball handling MOD beta19)
+DRIVERNV(ninebald)      //MPU-200: 11/21 Nine Ball (Gameplay MOD beta21)
 DRIVERNV(freefall)      //MPU-200: 01/81 Freefall
 DRIVERNV(freefafp)      //MPU-200: 01/81 Freefall (Free Play)
 DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning

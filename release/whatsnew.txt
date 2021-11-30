@@ -64,6 +64,7 @@ Monte Carlo (French Millions option, Free Play)
 Monte Carlo (German Millions option, Free Play)
 Monte Carlo (rev. 2 Millions option, Free Play)
 MotorDome (rev. B)
+Nine Ball (Ball handling MOD beta19 & Gameplay MOD beta21)
 No Fear 0.8X with SL-1 Sound
 Quicksilver (Free Play & modified rules rev. 07D)
 Seawitch (MOD rev. 5,6,7 & 8)

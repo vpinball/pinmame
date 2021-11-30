@@ -565,6 +565,7 @@ WPC_ROMSTART(tom,061, "u6-061.rom", 0x80000,CRC(b4e8045d) SHA1(f53fc7b8616d3a320
 /---------------*/
 CORE_GAMEDEF (tom,13,     "Theatre of Magic (1.3X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,13f,13, "Theatre of Magic (1.3 French)",2005,"Bally",wpc_mSecurityS,0)
+// Rev 2.0 by Soren exists, Oct2021
 CORE_CLONEDEF(tom,13c,13, "Theatre of Magic (1.3XC Competition MOD)",2019,"Bally",wpc_mSecurityS,0) //based on 1.3X, NOT the "Tiger saw" rev. 1.4H, but it includes Tiger saw support!
 //CORE_CLONEDEF(tom,15c,13,"Theatre of Magic (1.5C Competition MOD)",2016,"Bally",wpc_mSecurityS,0) //based on 1.3X, NOT the "Tiger saw" rev. 1.4H, outdated patch
 CORE_CLONEDEF(tom,14h,13, "Theatre of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)

@@ -718,6 +718,8 @@ BY35_ROMEND
 #define input_ports_cheetahb2 input_ports_st
 CORE_CLONEDEFNV(cheetahb2, cheetah, "Cheetah (Blue cabinet Bonus shot 1/ball)", 2018, "Stern / Idleman", by35_mST200, 0)
 
+// https://zacaj.com/p.php?id=65&title=Stern+Cheetah+Tournament+Rom+V1 exists
+
 /*--------------------------------
 / Quicksilver
 /-------------------------------*/
@@ -866,6 +868,24 @@ ST200_ROMSTART8888(ninebala,"cpu_u1a.716",CRC(52891fc8) SHA1(81a0d9105136d6b5613
 BY35_ROMEND
 #define input_ports_ninebala input_ports_st
 CORE_CLONEDEFNV(ninebala,nineball,"Nine Ball (Ball handling MOD beta18)",2020,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(ninebalc,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(ninebalc,"cpu_u1c.716",CRC(fec7f986) SHA1(b13528000131a29a16b2e4c6f29c2d4d1b16eaf3),
+                            "cpu_u5c.716",CRC(178237db) SHA1(113ee01a7d3891b570910a0ec1e46284a2f145e5),
+                            "cpu_u2c.716",CRC(de915e58) SHA1(f19e3606bb59f703e0ca43521ead02ffbc92ed64),
+                            "cpu_u6c.716",CRC(e8104924) SHA1(801563a66427b73a1c3187eae46de2a8e9922220))
+BY35_ROMEND
+#define input_ports_ninebalc input_ports_st
+CORE_CLONEDEFNV(ninebalc,nineball,"Nine Ball (Ball handling MOD beta19)",2021,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(ninebald,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(ninebald,"cpu_u1d.716",CRC(61e3ca99) SHA1(aac60b9554bc1d245be78c5955b414420a158b8e),
+                            "cpu_u5d.716",CRC(d20be57a) SHA1(2779fd95e642b8a1226b9c9195834b5023f21d02),
+                            "cpu_u2d.716",CRC(f7714f55) SHA1(efaf742dcfc7b79d0de2a01412f86e24044a96b5),
+                            "cpu_u6d.716",CRC(34491b9f) SHA1(ba47dfc72ae4b93fb80b984dec9c77a1bf704f3c))
+BY35_ROMEND
+#define input_ports_ninebald input_ports_st
+CORE_CLONEDEFNV(ninebald,nineball,"Nine Ball (Gameplay MOD beta21)",2021,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Free Fall

@@ -30,6 +30,8 @@ S4_ROMEND
 #define input_ports_httip input_ports_s3
 CORE_GAMEDEF(httip,l1,"Hot Tip (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIMES)
 
+// https://zacaj.com/p.php?id=66 MOD exists
+
 /*---------------------------------
 / Lucky Seven - Sys.3 (Game #480) - No Sound board
 /---------------------------------*/
