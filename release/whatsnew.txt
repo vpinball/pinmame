@@ -30,7 +30,7 @@ Added light chaser outputs for Hook (exactly the same as on Star Trek 25th Anniv
 Prevented credits from being added repeatedly on Spain 82
 Fixed problem with Medusa displays and external dmddevices
 
-*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu, Jordi & Orlando, Idleman
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu, Jordi & Orlando, Idleman, Quench
 New:
 Alvin G.: U.S.A. Football (Redemption, P08)
 Joctronic: Pin Ball
@@ -67,6 +67,7 @@ MotorDome (rev. B)
 Nine Ball (Ball handling MOD beta19 & Gameplay MOD beta21)
 No Fear 0.8X with SL-1 Sound
 Quicksilver (Free Play & modified rules rev. 07D)
+Saturn 2 (Free Play)
 Seawitch (MOD rev. 5,6,7 & 8)
 Silverball Mania (Horseshoe Spot MOD rev. 13)
 Silverball Mania (Horseshoe No Spotting MOD rev. 13)

@@ -367,7 +367,7 @@ DRIVERNV(redbaron)      // Red Baron (1985)
 // ------------------
 // Bell Coin Matics
                         //          ??/78 The King
-                        //BY35      ??/79 Sexy Girl (Bally Playboy clone with image projector)
+                        //          ??/79 Sexy Girl (Bally Playboy clone with image projector)
                         //          ??/80 The Hunter (uses Bally Strikes & Spares ROMs) 
                         //          ??/80 White Shark
                         //          ??/80 Cosmodrome
@@ -378,17 +378,18 @@ DRIVERNV(redbaron)      // Red Baron (1985)
                         //          ??/8? Movie (Zaccaria Pinball Champ clone)
                         //BY35      12/83 Pin Ball Pool (Bally Eight Ball Deluxe clone)
 DRIVERNV(suprbowl)      //BY35      06/84 Super Bowl (Bally X's & O's clone but no-clone driver)
-DRIVERNV(sprbwlfp)      //BY35      03/18 Super Bowl (Free Play)
+DRIVERNV(sprbwlfp)      //          03/18 Super Bowl (Free Play)
 DRIVERNV(tigerrag)      //BY35      ??/84 Tiger Rag (Bally Kings Of Steel clone)
 DRIVERNV(cosflash)      //BY35      ??/85 Cosmic Flash (ROMs almost the same as Bally Flash Gordon)
 DRIVERNV(newwave)       //BY35      04/85 New Wave (Bally Black Pyramid clone)
 DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
+DRIVERNV(saturnfp)      //          11/21 Saturn 2 (Free Play)
                         //          ??/?? World Cup / World Championship (redemption game)
 // Nuova Bell Games
 DRIVERNV(worlddef)      //BY35      11/85 World Defender (Laser Cue clone but no-clone driver)
-DRIVERNV(worlddfp)      //BY35      11/85 World Defender (Free Play)
+DRIVERNV(worlddfp)      //          11/85 World Defender (Free Play)
 DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone but no-clone driver)
-DRIVERNV(spchawfp)      //BY35      04/86 Space Hawks (Free Play - dips 25 & 26 must be on!)
+DRIVERNV(spchawfp)      //          04/86 Space Hawks (Free Play - dips 25 & 26 must be on!)
 DRIVERNV(darkshad)      //BY35      ??/86 Dark Shadow
 DRIVERNV(skflight)      //BY35      09/86 Skill Flight
 DRIVERNV(cobra)         //BY35      02/87 Cobra

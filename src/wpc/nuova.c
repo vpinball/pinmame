@@ -302,6 +302,14 @@ BY35_ROMEND
 BY35_INPUT_PORTS_START(saturn2, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(saturn2,spyhuntr,"Saturn 2",1985,"Bell Games",by35_mBY35_45S,0)
 
+INITGAMENB(saturnfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
+BY35_ROMSTARTx00(saturnfp,"saturn2_freeplay.u2",CRC(422f190e) SHA1(595b0f237c80acd174de44bb0a5ad7b36a60d967),
+                          "saturn2_freeplay.u6",CRC(cae795c1) SHA1(586b7b341e6f0292e7d3c8bb0b4e2c05dd19d2d7))
+BY45_SOUNDROMx2("sat2_snd.764", CRC(6bf15541) SHA1(dcdd4e8f662818584de9b1ed7ae69d57362ebadb))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(saturnfp, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(saturnfp,spyhuntr,"Saturn 2 (Free Play)",2021,"Bell Games / Quench",by35_mBY35_45S,0)
+
 /*--------------------------------
 / New Wave (Black Pyramid Clone)
 /-------------------------------*/
