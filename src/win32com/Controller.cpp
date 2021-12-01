@@ -488,25 +488,20 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 		return S_FALSE;
 	
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 89);
-	
-	VARIANT LampState;
-	LampState.vt = VT_BOOL;
 
-	long ix;
+	VARIANT* pData;
+	SafeArrayAccessData(psa, (void**)&pData);
+	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+	for (int i = timeout ? 11 : 0; i < 89; ++i)
+	{
+		pData[i].vt = VT_BOOL;
+		pData[i].boolVal = timeout ? VARIANT_FALSE : (vp_getLamp(i) ? VARIANT_TRUE : VARIANT_FALSE);
+	}
+	SafeArrayUnaccessData(psa);
 
-	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
-		LampState.boolVal = VARIANT_FALSE;
-		for (ix=11; ix<89; ix++)
-			SafeArrayPutElement(psa, &ix, &LampState);
-	}
-	else {
-		for (ix=0; ix<89; ix++) {
-			LampState.boolVal = vp_getLamp(ix)?VARIANT_TRUE:VARIANT_FALSE;
-			SafeArrayPutElement(psa, &ix, &LampState);
-		};
-	}
 	pVal->vt = VT_ARRAY|VT_VARIANT;
 	pVal->parray = psa;
+
 	return S_OK;
 }
 
@@ -550,14 +545,14 @@ STDMETHODIMP CController::get_NVRAM(VARIANT *pVal)
 
 		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, (ULONG)nvram_file->offset);
 
-		VARIANT NVState;
-		NVState.vt = VT_UI1;
-
-		for (LONG ofs = 0; ofs < nvram_file->offset; ++ofs)
+		VARIANT* pData;
+		SafeArrayAccessData(psa, (void**)&pData);
+		for (int ofs = 0; ofs < (int)nvram_file->offset; ++ofs)
 		{
-			NVState.cVal = nvram_file->data[ofs];
-			SafeArrayPutElement(psa, &ofs, &NVState);
+			pData[ofs].vt = VT_UI1;
+			pData[ofs].cVal = nvram_file->data[ofs];
 		}
+		SafeArrayUnaccessData(psa);
 
 		pVal->vt = VT_ARRAY | VT_VARIANT;
 		pVal->parray = psa;
@@ -694,16 +689,15 @@ STDMETHODIMP CController::get_RawDmdPixels(VARIANT *pVal)
 	{
 		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
 
-		VARIANT DMDState;
-		DMDState.vt = VT_UI1;
-	
-		LONG ofs = 0;
-		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
-		for(unsigned int x = 0; x < g_raw_dmdx; ++x,++ofs)
+		VARIANT* pData;
+		SafeArrayAccessData(psa, (void**)&pData);
+		const UINT32 end = g_raw_dmdx*g_raw_dmdy;
+		for (UINT32 i = 0; i < end; ++i)
 		{
-			DMDState.cVal = g_raw_dmdbuffer[ofs];
-			SafeArrayPutElement(psa, &ofs, &DMDState);
+			pData[i].vt = VT_UI1;
+			pData[i].cVal = g_raw_dmdbuffer[i];
 		}
+		SafeArrayUnaccessData(psa);
 
 		pVal->vt = VT_ARRAY|VT_VARIANT;
 		pVal->parray = psa;
@@ -725,16 +719,15 @@ STDMETHODIMP CController::get_RawDmdColoredPixels(VARIANT *pVal)
 	{
 		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
 
-		VARIANT DMDState;
-		DMDState.vt = VT_UI4;
-
-		LONG ofs = 0;
-		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
-		for(unsigned int x = 0; x < g_raw_dmdx; ++x, ++ofs)
+		VARIANT* pData;
+		SafeArrayAccessData(psa, (void**)&pData);
+		const UINT32 end = g_raw_dmdx*g_raw_dmdy;
+		for (UINT32 i = 0; i < end; ++i)
 		{
-			DMDState.uintVal = g_raw_colordmdbuffer[ofs];
-			SafeArrayPutElement(psa, &ofs, &DMDState);
+			pData[i].vt = VT_UI4;
+			pData[i].uintVal = g_raw_colordmdbuffer[i];
 		}
+		SafeArrayUnaccessData(psa);
 
 		pVal->vt = VT_ARRAY|VT_VARIANT;
 		pVal->parray = psa;
@@ -1060,16 +1053,15 @@ STDMETHODIMP CController::get_Switches(VARIANT *pVal)
 
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 129);
 
-	long ix;
+	VARIANT* pData;
+	SafeArrayAccessData(psa, (void**)&pData);
+	for (int i = 0; i < 129; ++i)
+	{
+		pData[i].vt = VT_BOOL;
+		pData[i].boolVal = vp_getSwitch(i) ? VARIANT_TRUE : VARIANT_FALSE;
+	}
+	SafeArrayUnaccessData(psa);
 
-	VARIANT SwitchState;
-	SwitchState.vt = VT_BOOL;
-
-	for (ix=0; ix<=128; ix++) {
-		SwitchState.boolVal = vp_getSwitch(ix)?VARIANT_TRUE:VARIANT_FALSE;
-		SafeArrayPutElement(psa, &ix, &SwitchState);
-	};
-	
 	pVal->vt = VT_ARRAY|VT_VARIANT;
 	pVal->parray = psa;
 	
@@ -1586,25 +1578,19 @@ STDMETHODIMP CController::get_Solenoids(VARIANT *pVal)
 
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 65);
 
-	VARIANT SolenoidState;
-	SolenoidState.vt = VT_BOOL;
-
-	long ix;
-
-	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
-		SolenoidState.boolVal = VARIANT_FALSE;
-		for (ix=0; ix<65; ix++)
-			SafeArrayPutElement(psa, &ix, &SolenoidState);
+	VARIANT* pData;
+	SafeArrayAccessData(psa, (void**)&pData);
+	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+	for (int i = 0; i < 65; ++i)
+	{
+		pData[i].vt = VT_BOOL;
+		pData[i].boolVal = timeout ? VARIANT_FALSE : (vp_getSolenoid(i) ? VARIANT_TRUE : VARIANT_FALSE);
 	}
-	else {
-		for (ix=0; ix<65; ix++) {
-			SolenoidState.boolVal = vp_getSolenoid(ix)?VARIANT_TRUE:VARIANT_FALSE;
-			SafeArrayPutElement(psa, &ix, &SolenoidState);
-		};
-	}
+	SafeArrayUnaccessData(psa);
 
 	pVal->vt = VT_ARRAY|VT_VARIANT;
 	pVal->parray = psa;
+
 	return S_OK;
 }
 
@@ -1636,26 +1622,21 @@ STDMETHODIMP CController::get_GIStrings(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
-	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 5);
+	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, CORE_MAXGI);
 
-	VARIANT GIStringState;
-	GIStringState.vt = VT_I4;
-
-	long ix;
-
-	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
-		GIStringState.lVal = 0;
-		for (ix=0; ix<5; ix++) 
-			SafeArrayPutElement(psa, &ix, &GIStringState);
+	VARIANT* pData;
+	SafeArrayAccessData(psa, (void**)&pData);
+	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+	for (int i = 0; i < CORE_MAXGI; ++i)
+	{
+		pData[i].vt = VT_I4;
+		pData[i].lVal = timeout ? 0 : vp_getGI(i);
 	}
-	else {
-		for (ix=0; ix<5; ix++) {
-			GIStringState.lVal = vp_getGI(ix);
-			SafeArrayPutElement(psa, &ix, &GIStringState);
-		};
-	}
+	SafeArrayUnaccessData(psa);
+
 	pVal->vt = VT_ARRAY|VT_VARIANT;
 	pVal->parray = psa;
+
 	return S_OK;
 }
 
@@ -2042,7 +2023,7 @@ STDMETHODIMP CController::GetWindowRect(LONG_PTR hWnd, VARIANT *pVal)
 	Value.vt = VT_I4;
 
 	long *pValue = &rect.left;
-	for(long ix=0; ix<=3; ix++)
+	for(long ix=0; ix<4; ix++)
 	{
 		Value.lVal = *pValue++;
 		SafeArrayPutElement(psa, &ix, &Value);
@@ -2081,7 +2062,7 @@ STDMETHODIMP CController::GetClientRect(LONG_PTR hWnd, VARIANT *pVal)
 	Value.vt = VT_I4;
 
 	long *pValue = &rect.left;
-	for(long ix=0; ix<=3; ix++)
+	for(long ix=0; ix<4; ix++)
 	{
 		Value.lVal = *pValue++;
 		SafeArrayPutElement(psa, &ix, &Value);
