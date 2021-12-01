@@ -17,6 +17,7 @@
 #include "dedmd.h"
 #include "desound.h"
 #include "se.h"
+#include "inder.h"
 #include "vpintf.h"
 #include "machine/6821pia.h"
 
@@ -375,6 +376,30 @@ S11S_SOUNDROM88(       "u21snd-2.rv1",CRC(80ddce05) SHA1(9498260e5ccd2fe0eb03ff3
 S11_ROMEND
 S11_INPUT_PORTS_START(shfin, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(shfin, l1, "Shuffle Inn (Shuffle) (L-1)", 1987, "Williams", s11_mS11S,0)
+
+/*-------------------------------------------------------------------
+/ La Rana (1990)
+/-------------------------------------------------------------------*/
+extern MACHINE_DRIVER_EXTERN(INDERS1RANA);
+static core_tLCDLayout inderDispRana[] = {
+  {0, 0, 5,3,CORE_SEG7}, {3, 0, 1,3,CORE_SEG7}, {0, 8,13,3,CORE_SEG7}, {3, 8, 9,3,CORE_SEG7},
+  {1,16,12,1,CORE_SEG7}, {1,18, 4,1,CORE_SEG7},
+  {0}
+};
+INDER_INPUT_PORTS_START(larana, 1) INDER_INPUT_PORTS_END
+static core_tGameData laranaGameData = {0,inderDispRana,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_SPINB}};
+static void init_larana(void) {
+  core_gameData = &laranaGameData;
+}
+ROM_START(larana)
+  NORMALREGION(0x10000, INDER_MEMREG_CPU)
+    ROM_LOAD("game_0_050790.bin", 0x0000,0x2000, CRC(ba94618f) SHA1(0fd6ffe9a6ef514c1dbf8856b881a54bf184e863))
+  NORMALREGION(0x10000, INDER_MEMREG_SND)
+    ROM_LOAD("sound_a_050690.bin",0x0000,0x2000, CRC(1513fd92) SHA1(6ca0723f5d7c86b844476a4830c8fc3744cbf918))
+  NORMALREGION(0x40000, REGION_USER1)
+    ROM_LOAD("sound_b_200690.bin",0x0000,0x10000,CRC(3aaa7c7d) SHA1(4a8531b6859fc1f2a4bb63a51da35e9081b7e88b))
+ROM_END
+CORE_GAMEDEFNV(larana,"La Rana",1990,"Inder (Spain)",INDERS1RANA,0)
 
 /*--------------------
 / Slugfest baseball

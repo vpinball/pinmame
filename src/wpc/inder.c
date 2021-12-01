@@ -938,3 +938,27 @@ MACHINE_DRIVER_START(INDERS2)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, inder_msm5205Int2)
 MACHINE_DRIVER_END
+
+static struct MSM5205interface INDER_msm5205IntRana = {
+  1,
+  640000., // no idea, sounds OK
+  {INDER_msmIrq},
+  {MSM5205_S48_4B},
+  {100}
+};
+
+MACHINE_DRIVER_START(INDERS1RANA)
+  MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(INDERS2_readmem, INDERS2_writemem) // extended NVRAM, see INDERS2 = metalman
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 225) // at this rate, game time is decrementing by one unit per second
+  MDRV_NVRAM_HANDLER(generic_0fill)
+
+  MDRV_CPU_ADD_TAG("scpu", Z80, 2500000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CORE_INIT_RESET_STOP(INDERS1,NULL,INDER2)
+  MDRV_CPU_MEMORY(indersnd_readmem, indersnd_writemem)
+
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(MSM5205, INDER_msm5205IntRana)
+MACHINE_DRIVER_END

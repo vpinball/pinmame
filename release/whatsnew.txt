@@ -30,9 +30,10 @@ Added light chaser outputs for Hook (exactly the same as on Star Trek 25th Anniv
 Prevented credits from being added repeatedly on Spain 82
 Fixed problem with Medusa displays and external dmddevices
 
-*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu, Jordi & Orlando, Idleman, Quench
+*** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu, Jordi & Orlando, Idleman, Quench, Museo del Recreativo
 New:
 Alvin G.: U.S.A. Football (Redemption, P08)
+Inder: La Rana (https://www.recreativas.org/la-rana-1051-inder)
 Joctronic: Pin Ball
 
 Correct Dumps:
