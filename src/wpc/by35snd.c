@@ -465,6 +465,8 @@ static void sp_irq(int state) {
 */
 #define SNT_PIA0 2
 #define SNT_PIA1 3
+#define SNT2_PIA0 4
+#define SNT2_PIA1 5
 
 static void snt_init(struct sndbrdData *brdData);
 static void snt_diag(int button);
@@ -508,23 +510,63 @@ MACHINE_DRIVER_START(by61)
   MDRV_SOUND_ADD(AY8910,  snt_ay8910Int)
 MACHINE_DRIVER_END
 
+static struct DACinterface     snt_dacInt2 = { 2, { 20, 20 }};
+
+static MEMORY_READ_START(snt_readmem2)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x0083, pia_r(SNT2_PIA0) },
+  { 0x0090, 0x0093, pia_r(SNT2_PIA1) },
+  { 0x1000, 0x1000, MRA_NOP },
+  { 0xc000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(snt_writemem2)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0080, 0x0083, pia_w(SNT2_PIA0) },
+  { 0x0090, 0x0093, pia_w(SNT2_PIA1) },
+  { 0x1000, 0x1000, DAC_1_data_w },
+  { 0xc000, 0xffff, MWA_ROM },
+MEMORY_END
+
+MACHINE_DRIVER_START(by61x2)
+  MDRV_CPU_ADD(M6802, 3579545./4.)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snt_readmem, snt_writemem)
+
+  MDRV_CPU_ADD(M6802, 3579545./4.)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snt_readmem2, snt_writemem2)
+  MDRV_INTERLEAVE(500)
+
+  MDRV_SOUND_ADD(TMS5220, snt_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     snt_dacInt2)
+  MDRV_SOUND_ADD(AY8910,  snt_ay8910Int)
+MACHINE_DRIVER_END
+
 static READ_HANDLER(snt_pia0a_r);
 static READ_HANDLER(snt_pia0b_r);
 static WRITE_HANDLER(snt_pia0a_w);
 static WRITE_HANDLER(snt_pia0b_w);
+static WRITE_HANDLER(snt_pia0ca2_w);
+
 static READ_HANDLER(snt_pia1a_r);
 static READ_HANDLER(snt_pia1ca2_r);
 static READ_HANDLER(snt_pia1cb1_r);
 static WRITE_HANDLER(snt_pia1a_w);
 static WRITE_HANDLER(snt_pia1b_w);
-static WRITE_HANDLER(snt_pia0ca2_w);
+
+static READ_HANDLER(snt2_pia0a_r);
+static WRITE_HANDLER(snt2_pia0ca2_w);
+
 static void snt_irq(int state);
+static void snt2_irq(int state);
 
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia1ca2;
   UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
+
 static const struct pia6821_interface snt_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, snt_pia0b_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
@@ -533,6 +575,14 @@ static const struct pia6821_interface snt_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ snt_pia1a_r, 0, PIA_UNUSED_VAL(1), snt_pia1cb1_r, snt_pia1ca2_r, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia1a_w, snt_pia1b_w, 0, 0,
   /*irq: A/B           */ snt_irq, snt_irq
+},{
+  /*i: A/B,CA/B1,CA/B2 */ snt2_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
+  /*o: A/B,CA/B2       */ 0, 0, snt2_pia0ca2_w, 0,
+  /*irq: A/B           */ snt2_irq, snt2_irq
+},{
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
+  /*o: A/B,CA/B2       */ 0, 0, 0, 0,
+  /*irq: A/B           */ snt2_irq, snt2_irq
 }};
 
 static void snt_init(struct sndbrdData *brdData) {
@@ -540,6 +590,10 @@ static void snt_init(struct sndbrdData *brdData) {
   sntlocals.brdData = *brdData;
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
+  if (brdData->subType == 2) { // Mysterian, uses a 2nd board without any AY8910 or TMS speech chip, just the DAC is used
+    pia_config(SNT2_PIA0, PIA_STANDARD_ORDERING, &snt_pia[2]);
+    pia_config(SNT2_PIA1, PIA_STANDARD_ORDERING, &snt_pia[3]);
+  }
   tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5200);
   for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
@@ -552,6 +606,7 @@ static void snt_init(struct sndbrdData *brdData) {
 static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
+
 static READ_HANDLER(snt_pia0a_r) {
   if (sntlocals.brdData.subType) return snt_8910a_r(0); // -61B
   if ((sntlocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
@@ -586,18 +641,31 @@ static READ_HANDLER(snt_pia1cb1_r) {
   return sntlocals.pia1cb1;
 }
 
+static READ_HANDLER(snt2_pia0a_r) {
+  return snt_8910a_r(0);
+}
+
 static WRITE_HANDLER(snt_data_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
 }
 static WRITE_HANDLER(snt_ctrl_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
+  if (sntlocals.brdData.subType == 2) {
+    pia_set_input_cb1(SNT2_PIA0, ~data & 0x01);
+  }
 }
 
 static int manualSoundcmd = 0; // only for sound command mode
 static WRITE_HANDLER(snt_manCmd_w) {
-  manualSoundcmd = 1;  sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
+  manualSoundcmd = 1;
+  sntlocals.lastcmd = data;
+  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
+  if (sntlocals.brdData.subType == 2) {
+    pia_set_input_cb1(SNT2_PIA0, 1); pia_set_input_cb1(SNT2_PIA0, 0);
+  }
 }
+
 static READ_HANDLER(snt_8910a_r) {
   if (!manualSoundcmd)
     return ~sntlocals.lastcmd;
@@ -621,10 +689,15 @@ static READ_HANDLER(snt_8910a_r) {
 }
 
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
+static WRITE_HANDLER(snt2_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo, data << 1); } // diag led of 2nd board
 
 static void snt_irq(int state) {
   cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
+static void snt2_irq(int state) {
+  cpu_set_irq_line(sntlocals.brdData.cpuNo + 1, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
 static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, (sntlocals.pia1cb1 = !state)); }
 static void snt_5220Rdy(int state) { pia_set_input_ca2(SNT_PIA1, (sntlocals.pia1ca2 = state)); }
 

@@ -530,6 +530,10 @@ WRITE_HANDLER(stern100_chm_w) {
   sndbrd_0_ctrl_w(0, ~data & 0x0f);
 }
 
+static WRITE_HANDLER(sb_ctrl_cb) {
+  coreGlobals.diagnosticLed = (locals.diagnosticLed |= (data << 1));
+}
+
 static MACHINE_INIT(by35) {
   int sb = core_gameData->hw.soundBoard;
   memset(&locals, 0, sizeof(locals));
@@ -540,7 +544,7 @@ static MACHINE_INIT(by35) {
   pia_set_input_ca1(BY35_PIA1, 1);
 
 //   if ((sb & 0xff00) != SNDBRD_ST300)		// ok
-  sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+  sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, sb_ctrl_cb);
 
   locals.vblankCount = 1;
   // set up hardware
@@ -654,12 +658,19 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_61S)
   MDRV_IMPORT_FROM(by35)
-//  MDRV_CPU_REPLACE("mcpu", M6800, 525000)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_IMPORT_FROM(by61)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_61S2)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_DIAGNOSTIC_LEDH(3)
+  MDRV_IMPORT_FROM(by61x2)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_45S)
   MDRV_IMPORT_FROM(by35)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_IMPORT_FROM(by45)
 MACHINE_DRIVER_END
 
@@ -668,6 +679,7 @@ MACHINE_DRIVER_START(by6802_61S)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6802, 375000)
   MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 #endif
@@ -676,6 +688,7 @@ MACHINE_DRIVER_START(by6802_45S)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6802, 375000)
   MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_IMPORT_FROM(by45)
 MACHINE_DRIVER_END
 

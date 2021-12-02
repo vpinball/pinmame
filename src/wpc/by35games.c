@@ -1456,6 +1456,24 @@ BY35_ROMEND
 #define input_ports_spectr4a input_ports_spectrum
 CORE_CLONEDEFNV(spectr4a,spectrum,"Spectrum (rev. 4 Free Play)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 
+/*--------------------------------------
+/ Mysterian (BY35-868: 1982)
+/--------------------------------------*/
+INITGAME2(mysteria,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B2,0)
+BY35_ROMSTARTx00(mysteria,"u2game.732",   CRC(fb72a51a) SHA1(d96e8669d3c12dd9578af0af85b5d9e6f7378966),
+                          "720-53_6.732", CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
+BY61_SOUNDROMx000(        "snd-au3.732",  CRC(17b27bd7) SHA1(6f1b3f6059704e65a876849eec4682e3a5e3c874),
+                          "snd-au4.732",  CRC(d229df68) SHA1(7206881ea93d67b15e05e3b59ee5cbe9ba3455f5),
+                          "snd-au5.732",  CRC(44f9a29c) SHA1(d569d19d22472c436ac3f22a1119f95b51c22e73))
+SOUNDREGION(0x10000, REGION_CPU3)
+  ROM_LOAD("snd-bu2.732", 0xc000, 0x1000, CRC(1bc7ebdf) SHA1(0c9555066cf148ae5ba8f1b22c1a8ac927308fde))
+  ROM_LOAD("snd-bu3.732", 0xd000, 0x1000, CRC(a6b372b2) SHA1(9fc86721b73f0352bbc907ad208406d303ace9a7))
+  ROM_LOAD("snd-bu4.732", 0xe000, 0x1000, CRC(43d62e6d) SHA1(2fe305c4415efa6fad689f7683680ea456bae0fe))
+  ROM_LOAD("snd-bu5.732", 0xf000, 0x1000, CRC(9af26fd3) SHA1(5389da006a8fc7d64fa422ff1cf65bb5a569c307))
+BY35_ROMEND
+#define input_ports_mysteria input_ports_by35
+CORE_GAMEDEFNV(mysteria,"Mysterian (Prototype)",1982,"Bally",by35_mBY35_61S2,0)
+
 /*--------------------------------------------------
 / Speakeasy 2 Player - Uses AS2518-51 Sound Board
 /--------------------------------------------------*/

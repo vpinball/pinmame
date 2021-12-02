@@ -33,6 +33,7 @@ Fixed problem with Medusa displays and external dmddevices
 *** ROM SUPPORT *** Thanks to Brent Walker, inkochnito, ipdb.org, Victor Fernandez (City Game), StrangeLeo75, Flipprojets.fr, Clay Harrell, watacaractr, Eduardo Anay, Toussu, Jordi & Orlando, Idleman, Quench, Museo del Recreativo
 New:
 Alvin G.: U.S.A. Football (Redemption, P08)
+Bally: Mysterian (Prototype)
 Inder: La Rana (https://www.recreativas.org/la-rana-1051-inder)
 Joctronic: Pin Ball
 

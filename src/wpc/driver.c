@@ -270,6 +270,7 @@ DRIVERNV(vectora )      //BY35      10/04 Vector (Free Play)
 DRIVERNV(vector4 )      //BY35      04/04 Vector (modified rules rev. 4)
 DRIVERNV(vectorb )      //BY35      10/04 Vector (modified rules rev. 5)
 DRIVERNV(vectorc )      //BY35      02/08 Vector (modified rules rev. 10)
+DRIVERNV(mysteria)      //BY35-868: ??/82 Mysterian (Prototype)
 DRIVERNV(rapidfir)      //BY35-869: 04/82 Rapid Fire
 DRIVERNV(rapidfia)      //BY35      09/05 Rapid Fire (Free Play)
 DRIVERNV(m_mpac  )      //BY35-872: 04/82 Mr. & Mrs. Pac-Man Pinball

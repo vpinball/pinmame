@@ -345,6 +345,7 @@ extern MACHINE_DRIVER_EXTERN(by35_51S);
 extern MACHINE_DRIVER_EXTERN(by35_51NS);
 extern MACHINE_DRIVER_EXTERN(by35_56S);
 extern MACHINE_DRIVER_EXTERN(by35_61S);
+extern MACHINE_DRIVER_EXTERN(by35_61S2);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(by6802_45S);
 extern MACHINE_DRIVER_EXTERN(st100s);
@@ -362,6 +363,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_51NS by35_51NS // Super Bowl
 #define by35_mBY35_61S  by35_61S
 #define by35_mBY35_61BS by35_61S
+#define by35_mBY35_61S2 by35_61S2 // Mysterian, two sound boards
 #define by35_mBY35_56S  by35_56S  // Xenon & early Flash Gordon
 #define by35_mBY35_45S  by35_45S
 #define by35_m6802_45S  by6802_45S
