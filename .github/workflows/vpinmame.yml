@@ -71,7 +71,7 @@ jobs:
           cp cmake/vpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake ${{ matrix.extra-flags }} -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/vpinmame
           cmake --build build/vpinmame --config Release
-          ./upx/upx.exe --best --lzma --best --lzma build/vpinmame/Release/${{ matrix.vpinmame }}
+          ./upx/upx.exe --best --lzma build/vpinmame/Release/${{ matrix.vpinmame }}
           cp cmake/instvpm/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/instvpm
           cmake --build build/instvpm --config Release

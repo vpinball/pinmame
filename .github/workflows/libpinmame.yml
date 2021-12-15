@@ -84,13 +84,13 @@ jobs:
             cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
             cmake --build build --config Release
             if [[ "${{ matrix.platform }}" != "win-arm64" ]]; then 
-              ./upx/upx.exe build/Release/${{ matrix.libpinmame }}
+              ./upx/upx.exe --best --lzma build/Release/${{ matrix.libpinmame }}
             fi
           else
             cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
             cmake --build build/Release
             if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-              upx build/Release/${{ matrix.libpinmame }}
+              upx --best --lzma build/Release/${{ matrix.libpinmame }}
             fi
           fi
       - run: |

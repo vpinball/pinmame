@@ -59,7 +59,7 @@ jobs:
           cp cmake/pinmame32/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake ${{ matrix.extra-flags }} -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config Release
-          ./upx/upx.exe --best --lzma --best --lzma build/Release/PinMAME32.exe
+          ./upx/upx.exe --best --lzma build/Release/PinMAME32.exe
       - run: |
           mkdir tmp
           cp build/Release/PinMAME32.exe tmp
