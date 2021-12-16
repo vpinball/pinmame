@@ -1,11 +1,9 @@
-maybe remove/move old MAME txt files?
-
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
                              Version 3.4
-                             (X X, 2021)
-               https://sourceforge.net/projects/pinmame/
+                        (December 24th, 2021)
+                 https://github.com/vpinball/pinmame/
 **************************************************************************************
 
 Latest Info
@@ -15,7 +13,13 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in almost every solid state pinball machine created from
-  the mid 1970's through 2014. Currently, the following pinball hardware is emulated:
+  the mid 1970's through 2014. It is available in various forms:
+
+  Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
+  COM library (VPinMAME) to steer simulators like Visual Pinball 8/9/X
+  library (libPinMAME) to steer simulators like VPE
+
+  Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
   Williams System 6, Williams System 4, Williams System 3,

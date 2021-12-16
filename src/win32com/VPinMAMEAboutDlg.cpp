@@ -151,7 +151,7 @@ private:
 
 	/*HOMEPAGELINK CLICKED*/
 	LRESULT OnHomePageLink(WORD, UINT, HWND, BOOL&) {
-		ShellExecute(GetActiveWindow(),"open","https://sourceforge.net/projects/pinmame/",NULL,NULL,SW_SHOW);
+		ShellExecute(GetActiveWindow(),"open","https://github.com/vpinball/pinmame/",NULL,NULL,SW_SHOW);
 		return 0;
 	}
 

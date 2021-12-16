@@ -48,7 +48,6 @@ Step 1: Downloads
   a) MinGW 2.0
      Download MinGW-2.0.0-3.exe to the downloads directory.
      Unfortunately it is nomore available at the official MinGW project homepage.
-     Get it from http://sourceforge.net/projects/pinmame/files/mingw/
 
      Mandatory update: newer objcopy and strip executables.
      * binutils-2.19.1-mingw32-bin (later versions should work too)
@@ -57,8 +56,7 @@ Step 1: Downloads
      Recommended updates: Download latest versions of GCC 3.2 and GDB 5 for MinGW.
      * gcc-3.2.3-20030504-1
      * gdb-5.2.1-1.exe
-     Get them from http://sourceforge.net/projects/pinmame/files/mingw/
-               and http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GDB/
+     Get them from http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GDB/
 
   b) More recent MinGW setup
      Download the following binary packages to the downloads directory.
@@ -110,8 +108,7 @@ Step 1: Downloads
      * gcc-3.2.3-20030504-1
      * gdb-5.2.1-1.exe
 
-     Get them from http://sourceforge.net/projects/pinmame/files/mingw/
-               and http://sourceforge.net/downloads/mingw/MinGW/ (BaseSystem and make)
+     Get them from http://sourceforge.net/downloads/mingw/MinGW/ (BaseSystem and make)
 
 - Download the ZLib library (libz) to the downloads directory.
   * libz-1.2.3-1-mingw32-dev

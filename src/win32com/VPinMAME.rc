@@ -380,7 +380,7 @@ STRINGTABLE
 BEGIN
     IDS_PROJNAME            "VPinMAME"
     IDS_CONTROLLER_DESC     "Controller Class"
-    IDS_EXPIRED             "Sorry, this beta version of Visual PinMAME has expired.\nPlease download the newest copy from\nhttps://sourceforge.net/projects/pinmame/"
+    IDS_EXPIRED             "Sorry, this beta version of Visual PinMAME has expired.\nPlease download the newest copy from\nhttps://github.com/vpinball/pinmame/"
     IDS_EXPIREDTITLE        "This version has expired..."
 END
 

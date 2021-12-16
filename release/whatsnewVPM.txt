@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
-Version 3.4 (X X, 2021) - ""
+Version 3.4 (December 24th, 2021) - "Still delivering your christmas present"
 ------------------------------------------------------------------------------
 - Fix the additional .raw/non-averaged file output dumping of Alvin G. DMDs
 

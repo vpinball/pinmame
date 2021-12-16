@@ -1,9 +1,7 @@
-****** As of Version Version 3.4 (X X, 2021) ******
+****** As of Version Version 3.4 (December 24th, 2021) ******
 
-Bugs in PinMAME that we are aware of:
--------------------------------------
-(Note: Many of these bugs have been extremely difficult to track down and fix,
-       so it take be a while before they can be corrected!)
+Major bugs in PinMAME that we are aware of:
+-------------------------------------------
 
  #1) Williams/Bally WPC: DCS sound still has some problems, only on high volume levels.
      (So don't use full volume (29-31) to avoid static noise)
@@ -18,7 +16,7 @@ Bugs in PinMAME that we are aware of:
      The printout will probably not work with other settings.
 
  #4) The name and year for each game were taken from the Internet Pinball Database
-     (http://www.ipdb.org), and may not be 100% accurate!
+     (http://www.ipdb.org) OR from supposedly more accurate personal research/sources, and so may not be 100% accurate!
 
  #5) Occasional pops/clicks on Capcom sound.
 
@@ -26,7 +24,7 @@ Bugs in PinMAME that we are aware of:
      (~24 and above, for example on Nascar and Grand Prix, or even ~20 on LOTR, so avoid this)
      This seems to happen on real machines (verified on 2 different Grand Prix pinballs), too.
 
- #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate on all machines.
+ #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate for all machines.
 
  #8) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally.
 
@@ -36,10 +34,10 @@ Bugs in PinMAME that we are aware of:
 #10) GTS80S DAC sound is off for most of the sound effects.
 
 #11) Some setups crash when using the AT91 JIT compiled code (e.g. Whitestar II and SAM), disable AT91 JIT
-     by setting "at91jit" to 0.
+     by setting "at91jit" to 0 in the registry.
 
 #12) AT91 JIT is 32-bit only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
      ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
      but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
 
-#13) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for some machines like BOP, etc.
+#13) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for certain machines like BOP, etc.

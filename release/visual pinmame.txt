@@ -1,8 +1,8 @@
 **************************************************************************************
                     Visual PinMAME
                      Version 3.4
-                     (X X, 2021)
-       https://sourceforge.net/projects/pinmame/
+                 (December 24th, 2021)
+          https://github.com/vpinball/pinmame/
 **************************************************************************************
 
 Latest Info
