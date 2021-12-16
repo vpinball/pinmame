@@ -6,6 +6,12 @@
 
 PinMAME emulates the hardware found in almost every solid state pinball machine created from
 the mid 1970's through 2014 (around 750 unique Pinball machines and many more clones/revisions, overall more than 2500 sets).
+It is available in various forms:
+
+Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
+COM library (VPinMAME) to steer simulators like [Visual Pinball 8/9/X](https://github.com/vpinball/vpinball)
+library (libPinMAME) to steer simulators like [VPE](https://github.com/freezy/VisualPinball.Engine)
+
 Currently, the following pinball hardware is emulated:
 
 Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
