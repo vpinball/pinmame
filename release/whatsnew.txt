@@ -3,6 +3,11 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
+Version 3.5 (XX XXth, 2022) - ""
+------------------------------------------------------------------------------
+
+
+
 Version 3.4 (December 24th, 2021) - "Still delivering your christmas present"
 ------------------------------------------------------------------------------
 
