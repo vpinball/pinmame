@@ -3,7 +3,7 @@ on:
   push:
 
 env:
-  VERSION_START_SHA: 06fbe2826c1563f10576ae68984672dcffa481ac
+  VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
 
 defaults:
   run:
