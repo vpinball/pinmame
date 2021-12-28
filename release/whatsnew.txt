@@ -6,6 +6,14 @@ What's new in PinMAME:
 Version 3.5 (XX XXth, 2022) - ""
 ------------------------------------------------------------------------------
 
+*** ROM SUPPORT *** Thanks to inkochnito
+New:
+
+Correct Dumps:
+
+Clones:
+World Cup Soccer LX-1
+
 
 
 Version 3.4 (December 24th, 2021) - "Still delivering your christmas present"

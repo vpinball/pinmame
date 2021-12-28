@@ -226,5 +226,3 @@ extern MACHINE_DRIVER_EXTERN(bySD);
     ROM_LOAD16_BYTE(n2, 0x00000, 0x10000, chk2)
 
 #endif /* INC_BY35SND */
-
-

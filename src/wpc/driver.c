@@ -2880,10 +2880,11 @@ DRIVER(tafg,la2)        //          10/94 B Addams Family Special Collectors Edi
 DRIVER(tafg,da2)        //                  Addams Family Special Collectors Edition, The (DA-2) LED Ghost Fix
 DRIVER(tafg,la3)        //          10/94 B Addams Family Special Collectors Edition, The (LA-3)
 DRIVER(tafg,da3)        //                  Addams Family Special Collectors Edition, The (DA-3) LED Ghost Fix
-DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (LX-2)
+DRIVER(wcs,l2)          //WPC-531:  06/94 B World Cup Soccer (LX-2)
 DRIVER(wcs,d2)          //                  World Cup Soccer (DX-2) LED Ghost Fix
 DRIVER(wcs,l3c)         //          06/16 B World Cup Soccer (LX-3C)
 DRIVER(wcs,la2)         //          02/94 B World Cup Soccer (LA-2)
+DRIVER(wcs,l1)          //          05/94 B World Cup Soccer (LX-1)
 DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (PA-2 Prototype)
 DRIVER(wcs,p5)          //                  World Cup Soccer (PA-5) LED Ghost Fix
 DRIVER(wcs,p3)          //          ??/?? B World Cup Soccer (PX-3 Prototype)
