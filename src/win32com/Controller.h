@@ -43,7 +43,7 @@ public:
 	BOOL				m_fDisplayLocked;			// Lock the display window so you can't move it around with the mouse
 	BOOL				m_fWindowHidden;			// visibility of the controller window, not persistent, will be set to false
 													// every time a game name is set
-	BOOL				m_fMechSamples;				// play the samples for the mech sounds, n ot persitent, will be set to false
+	BOOL				m_fMechSamples;				// play the samples for the mech sounds, not persistent, will be set to false
 													// every time a game name is set
 
 	char				m_szROM[256];				// String containing rom name (game name)

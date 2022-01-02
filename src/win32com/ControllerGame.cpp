@@ -34,7 +34,7 @@ public:
 
 private:
 
-	BOOL fROMSetOK;
+	bool fROMSetOK;
 
 	// message handlers
 	LRESULT OnInitDialog(UINT, WPARAM, LPARAM lParam, BOOL&) {
@@ -67,10 +67,6 @@ private:
 
 		fROMSetOK = false;
 
-		int iError = 0;
-		BOOL fOK	  = false;
-		BOOL fMaybeOK = false;
-
 		IRoms *pRoms;
 		if ( FAILED(pGame->get_Roms(&pRoms)) )
 			return 1;
@@ -89,8 +85,8 @@ private:
 
 		int nCount = 0;
 
-		fOK      = true;
-		fMaybeOK = true;
+		bool fOK = true;
+		bool fMaybeOK = true;
 
 		while ( SUCCEEDED(pEnumRoms->Next(1, &vRom, &uFetched)) && uFetched ) {
 			/*HRESULT hr =*/ vRom.pdispVal->QueryInterface(__uuidof(IRom), (void**) &pRom);
@@ -145,6 +141,8 @@ private:
 		}
 
 		pEnumRoms->Release();
+
+		int iError = 0;
 
 		VARIANT_BOOL fAvailable;
 		pRoms->get_Available(&fAvailable);

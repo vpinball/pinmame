@@ -491,7 +491,7 @@ private:
 	}
 
 	LRESULT OnResetToDefault(WORD, UINT, HWND, BOOL&) {
-		BOOL fGameWasNeverStarted = GameWasNeverStarted(m_szROM);
+		bool fGameWasNeverStarted = GameWasNeverStarted(m_szROM);
 
 		/* Delete Game Specific Options from Registry and Reload Defaults */
 		char szKey[MAX_PATH];
@@ -673,7 +673,7 @@ STDMETHODIMP CGameSettings::ShowSettingsDlg(LONG_PTR hParentWnd)
 
 STDMETHODIMP CGameSettings::Clear()
 {
-	BOOL fGameWasNeverStarted = GameWasNeverStarted(m_szROM);
+	bool fGameWasNeverStarted = GameWasNeverStarted(m_szROM);
 
 	DeleteGameSettings(m_szROM);
 

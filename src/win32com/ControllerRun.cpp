@@ -35,7 +35,7 @@ BOOL cabinetMode        = FALSE;
 int    g_iSyncFactor    = 0;
 HANDLE g_hEnterThrottle = INVALID_HANDLE_VALUE;
 extern int g_iSyncFactor;
-char g_szGameName[256] = "";			// String containing requested game name (may be different from ROM if aliased)
+char g_szGameName[256] = "";		// String containing requested game name (may be different from ROM if aliased)
 }
 
 extern int dmd_border;
@@ -259,9 +259,8 @@ extern "C" void osd_exit(void)
 	osd_set_leds(0);
 }
 
-// event window
-
 static BOOL fEventWindowClassCreated = false;
+
 // event window
 
 LRESULT CALLBACK EventWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

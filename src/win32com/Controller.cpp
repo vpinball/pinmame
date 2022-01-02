@@ -177,7 +177,7 @@ CController::CController() {
 	// get a pointer to the settings object for the "default" game
 	CComVariant szROM(m_szROM);
 	m_pGames->get_Item(&szROM, &m_pGame);
-	m_pGame->get_Settings((IGameSettings**) &m_pGameSettings);
+	m_pGame->get_Settings(&m_pGameSettings);
 
 	// these value are not stored to the registry
 	m_fHandleKeyboard = FALSE;
@@ -270,7 +270,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 	VariantInit(&vValue);
 	m_pGameSettings->get_Value(CComBSTR("cabinet_mode"), &vValue);
-	BOOL cabinetMode = (vValue.boolVal==VARIANT_TRUE);
+	bool cabinetMode = (vValue.boolVal==VARIANT_TRUE);
 
 	if ( GameWasNeverStarted(m_szROM) ) {
 		int fFirstTime = GameUsedTheFirstTime(m_szROM);
@@ -295,7 +295,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 			m_pGameSettings->ShowSettingsDlg(0);
 		}
 		}
-	}	
+	}
 
 #ifndef DEBUG
 	if(!cabinetMode) {
@@ -366,7 +366,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 	DestroyEventWindow(this);
 
-	sprintf(szTemp, "Machine '%s' (%s) terminated before intialized, check the rom path or rom file!", m_szROM, drivers[m_nGameNo]->description);
+	sprintf(szTemp, "Machine '%s' (%s) terminated before initialized, check the rom path or rom file!", m_szROM, drivers[m_nGameNo]->description);
 	return Error(TEXT(szTemp));
 }
 
@@ -1142,7 +1142,7 @@ STDMETHODIMP CController::put_GameName(BSTR newVal)
 	// reset set use of mechanical samples to false
 	m_fMechSamples = false;
 
-	// we allways have a pSettings and a pGame object, so this is save
+	// we always have a pSettings and a pGame object, so this is safe
 	m_pGame->Release();
 	m_pGameSettings->Release();
 
@@ -1153,7 +1153,7 @@ STDMETHODIMP CController::put_GameName(BSTR newVal)
 	// get a pointer to the settings object
 	CComVariant szROM(m_szROM);
 	m_pGames->get_Item(&szROM, &m_pGame);
-	m_pGame->get_Settings((IGameSettings**) &m_pGameSettings);
+	m_pGame->get_Settings(&m_pGameSettings);
 
 	return S_OK;
 }

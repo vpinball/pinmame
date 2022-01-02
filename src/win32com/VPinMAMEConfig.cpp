@@ -348,8 +348,7 @@ void vpm_game_init(int game_index) {
 	}
 	if( blit_swapxy )
 	{
-		int temp;
-		temp = options.vector_width;
+		int temp = options.vector_width;
 		options.vector_width = options.vector_height;
 		options.vector_height = temp;
 	}

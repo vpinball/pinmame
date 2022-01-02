@@ -60,8 +60,6 @@ static const char* crcOfGamesNotSupported[] = {
 };
 
 const char* checkGameAlias(const char* aRomName) {
-
-	char *ptr;
 	char AliasFilename[MAX_PATH];
 
 #ifndef _WIN64
@@ -70,7 +68,7 @@ const char* checkGameAlias(const char* aRomName) {
 	const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
 #endif
 	GetModuleFileName(hInst, AliasFilename, MAX_PATH);
-	ptr = strrchr(AliasFilename, '\\');
+	char* ptr = strrchr(AliasFilename, '\\');
 	if (ptr != NULL)
 	{
 		strcpy_s(ptr + 1, 13, "VPMAlias.txt");
