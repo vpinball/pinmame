@@ -58,7 +58,11 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
       for (jj = 0; jj < 8; jj++) {
         if (chgLamp & 0x01) {
           chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
+#ifndef LIBPINMAME
           chgStat[idx].currStat = tmpLamp & 0x01;
+#else
+          chgStat[idx].currStat = tmpLamp & 0x01 ? 255 : 0;
+#endif
           idx += 1;
         }
         chgLamp >>= 1;
