@@ -576,7 +576,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	// NOTE!  These instructions aren't exercised in any Whitestar code.
 	if (ddinstr)
 	{
-		assert(false); // if this happens, test following code
+		assert(0); // if this happens, test following code
 
 		// the load/store status isn't in the usual place - it's in !(bit 6)
 		ld = ((insn & 0x60) == 0x40);
@@ -847,7 +847,7 @@ static int genShift(data32_t insn, data32_t addr, int carry_out)
 			break;
 
 		default:
-			assert(false);
+			assert(0);
 			break;
 		}
 
@@ -1500,7 +1500,7 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 // that the emulator SWAP code hasn't been exercised either, for the same reason.)
 static int SWAP(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 {
-	assert(false); // if this happens: test following code
+	assert(0); // if this happens: test following code
 
 	//According to manual - swap is an LDR followed by an STR and all endian rules apply
 	//Process: Read original data from address pointed by Rn then store data from address
