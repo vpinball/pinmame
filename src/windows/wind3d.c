@@ -1560,7 +1560,7 @@ static void set_brightness(void)
 		// fill the gamma ramp
 		for (i = 0; i < 256; i++)
 		{
-			double val = ((float)i / 255.0) * win_gfx_brightness;
+			double val = ((double)i / 255.0) * (double)win_gfx_brightness;
 			if (val > 1.0)
 				val = 1.0;
 			ramp.red[i] = ramp.green[i] = ramp.blue[i] = (WORD)(val * 65535.0);

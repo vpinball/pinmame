@@ -1878,7 +1878,7 @@ STDMETHODIMP CController::put_ShowFrame(VARIANT_BOOL newVal)
  * IController.DoubleSize property: display the video window
  * double sized or not
  *
- * outdated, use Controller.Games("name").Settings.DoubleSize instead
+ * outdated, use Controller.Games("name").Settings.DoubleSize instead, also does not consider >2x scaling!!!!
  ************************************************************/
 STDMETHODIMP CController::get_DoubleSize(VARIANT_BOOL *pVal)
 {
@@ -1888,15 +1888,15 @@ STDMETHODIMP CController::get_DoubleSize(VARIANT_BOOL *pVal)
 	VARIANT vValue;
 	VariantInit(&vValue);
 
-	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("dmd_doublesize"), &vValue);
-	*pVal = vValue.boolVal;
+	const HRESULT hr = m_pGameSettings->get_Value(CComBSTR("dmd_doublesize"), &vValue);
+	*pVal = vValue.intVal ? VARIANT_TRUE : VARIANT_FALSE;
 
 	return hr;
 }
 
 STDMETHODIMP CController::put_DoubleSize(VARIANT_BOOL newVal)
 {
-	return m_pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant(newVal));
+	return m_pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant(newVal ? (int)2 : (int)0));
 }
 
 /*********************************************************************

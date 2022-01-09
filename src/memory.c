@@ -1751,7 +1751,7 @@ void register_banks(void)
 						if (banksize[HANDLER_TO_BANK(h)] < size)
 							banksize[HANDLER_TO_BANK(h)] = size;
 						bankcpu[HANDLER_TO_BANK(h)] = cpunum;
-						mode = RG_DROP_WRITE;;
+						mode = RG_DROP_WRITE;
 					}
 					else
 						abort();

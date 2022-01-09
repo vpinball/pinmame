@@ -42,7 +42,7 @@ extern int dmd_border;
 extern int dmd_title;
 extern int dmd_pos_x;
 extern int dmd_pos_y;
-extern int dmd_doublesize;
+extern int dmd_scalefactor;
 extern int dmd_width;
 extern int dmd_height;
 
@@ -377,9 +377,11 @@ void SaveWindowPosition(HWND hWnd, CController *pController)
 	pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_y"), vValueY);
 
 	GetClientRect(hWnd, &Rect);
-	if ( dmd_doublesize ) {
-		Rect.right /= 2;
-		Rect.bottom /= 2;
+	if (dmd_scalefactor) {
+		if (dmd_scalefactor == 1)
+			dmd_scalefactor = 2;
+		Rect.right /= dmd_scalefactor;
+		Rect.bottom /= dmd_scalefactor;
 	}
 
 	vValueX = Rect.right;
@@ -443,8 +445,10 @@ void SetWindowStyle(HWND hWnd, int iWindowStyle)
 	if ( dmd_height>0 )
 		iHeight = dmd_height;
 
-	Rect.right = iWidth * (dmd_doublesize?2:1);
-	Rect.bottom = iHeight * (dmd_doublesize?2:1);;
+	if (dmd_scalefactor == 1)
+		dmd_scalefactor = 2;
+	Rect.right = iWidth * (dmd_scalefactor ? dmd_scalefactor : 1);
+	Rect.bottom = iHeight * (dmd_scalefactor ? dmd_scalefactor : 1);
 
 	AdjustWindowRect(&Rect, lNewStyle, FALSE);
 
