@@ -65,6 +65,9 @@ jobs:
             platform: osx-arm64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
             pinmame-test: pinmame_test
+          - os: macos-latest
+            platform: ios-arm64
+            libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
           - os: ubuntu-18.04
             platform: linux-x64
             libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
@@ -96,7 +99,9 @@ jobs:
       - run: |
           mkdir tmp
           cp build/Release/${{ matrix.libpinmame }} tmp
-          cp build/Release/${{ matrix.pinmame-test }} tmp
+          if [[ "${{ matrix.pinmame-test }}" ]]; then
+            cp build/Release/${{ matrix.pinmame-test }} tmp
+          fi
           cp release/license.txt tmp
       - uses: actions/upload-artifact@v2
         with:
