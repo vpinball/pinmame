@@ -6,6 +6,9 @@ What's new in PinMAME:
 Version 3.5 (XX XXth, 2022) - ""
 ------------------------------------------------------------------------------
 
+*** CORE/CPU ***
+Better handle flickering lamps on Sega/Stern Whitestar machines
+
 *** ROM SUPPORT *** Thanks to inkochnito
 New:
 

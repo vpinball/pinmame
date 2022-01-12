@@ -21,7 +21,7 @@
 #define BY35_PIA1 1
 
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKs */
-#define BY35_SOLSMOOTH       2 /* Smooth the solenoids over this numer of VBLANKs */
+#define BY35_SOLSMOOTH       2 /* Smooth the solenoids over this number of VBLANKs */
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKs */
 
 static struct {
@@ -64,7 +64,7 @@ static INTERRUPT_GEN(by35_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY35_LAMPSMOOTH) == 0) {

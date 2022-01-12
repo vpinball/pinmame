@@ -126,7 +126,7 @@ static INTERRUPT_GEN(GP_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % GP_LAMPSMOOTH) == 0) {

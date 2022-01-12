@@ -67,7 +67,7 @@
 
 #define MRGAME_COMINPORT       CORE_COREINPORT
 
-#define MRGAME_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define MRGAME_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define MRGAME_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define MRGAME_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 

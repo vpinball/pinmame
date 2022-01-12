@@ -87,7 +87,7 @@
 #define BY6803_IRQFREQ       317 /* IRQ (via PIA) frequency*/
 #define BY6803_ZCFREQ        120 /* Zero cross frequency (PHASE A equals this value)*/
 
-#define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define BY6803_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
@@ -327,7 +327,7 @@ static void vblank_all(void) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY6803_LAMPSMOOTH) == 0) {

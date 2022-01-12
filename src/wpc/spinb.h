@@ -117,7 +117,7 @@
 
 #define SPINB_COMINPORT       CORE_COREINPORT
 
-#define SPINB_SOLSMOOTH       1 /* Smooth the Solenoids over this numer of VBLANKS */
+#define SPINB_SOLSMOOTH       1 /* Smooth the Solenoids over this number of VBLANKS */
 #define SPINB_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define SPINB_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 

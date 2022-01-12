@@ -8,7 +8,7 @@
 #include "wpcsam.h"
 #include "sim.h"
 
-#define BYVP_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define BYVP_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define BYVP_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 
 /* BABY PACMAN DIP SWITCH SETTINGS:

@@ -50,8 +50,8 @@
 
 #define LTD_COMINPORT       CORE_COREINPORT
 
-#define LTD_SOLSMOOTH       6 /* Smooth the Solenoids over this numer of VBLANKS */
-#define LTD4_SOLSMOOTH      2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define LTD_SOLSMOOTH       6 /* Smooth the Solenoids over this number of VBLANKS */
+#define LTD4_SOLSMOOTH      2 /* Smooth the Solenoids over this number of VBLANKS */
 #define LTD_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define LTD_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 

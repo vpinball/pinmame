@@ -23,7 +23,7 @@
 #define S7_PIA5  5
 #define S7_BANK0 1
 
-#define S7_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S7_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define S7_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S7_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -78,7 +78,7 @@ static INTERRUPT_GEN(s7_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  s7locals.vblankCount += 1;
+  s7locals.vblankCount++;
   /*-- lamps --*/
   if ((s7locals.vblankCount % S7_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));

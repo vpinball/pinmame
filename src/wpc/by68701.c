@@ -75,7 +75,7 @@ static INTERRUPT_GEN(by68701_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY68701_LAMPSMOOTH) == 0) {

@@ -44,11 +44,13 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 
 #ifdef PROC_SUPPORT
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
+#define VBLANK             1
 #define SE_SOLSMOOTH       1 /* Don't smooth values on real hardware */
 #define SE_LAMPSMOOTH      1
 #define SE_DISPLAYSMOOTH   1
 #else
-#define SE_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define VBLANK             2 // (at least) LOTR requires some kind of oversampling of the lamp state, otherwise the flickering lamps during modes are always on!
+#define SE_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define SE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 #endif
@@ -93,7 +95,7 @@ static INTERRUPT_GEN(se_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  selocals.vblankCount = (selocals.vblankCount+1) % 16;
+  selocals.vblankCount++;
 
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
@@ -124,19 +126,41 @@ static INTERRUPT_GEN(se_vblank) {
 				}
 			}
 		}
+	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+#else
+    static UINT8 lampstate[80] = {0};
+    int i;
+    for (i = 0; i < 10; ++i) {
+        int i2;
+        for (i2 = 0; i2 < 8; ++i2)
+            lampstate[i * 8 + i2] += (coreGlobals.tmpLampMatrix[i] >> i2) & 1;
+    }
+    if ((selocals.vblankCount % (VBLANK*SE_LAMPSMOOTH)) == 0)
+    {
+        memcpy(coreGlobals.lampMatrix+10, coreGlobals.tmpLampMatrix+10, sizeof(coreGlobals.tmpLampMatrix)-10);
+        memset(coreGlobals.lampMatrix, 0, 10);
+        for (i = 0; i < 10; ++i) {
+            int i2;
+            for (i2 = 0; i2 < 8; ++i2)
+                coreGlobals.lampMatrix[i] |= lampstate[i * 8 + i2] > 1 ? (1 << i2) : 0; //!! > 1 related to the magic of VBLANK and SE_LAMPSMOOTH, so that LOTR lamps blink
+        }
+        memset(lampstate, 0, 80);
+    }
 #endif
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, 10);
   }
   /*-- solenoids --*/
-  coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xfff0) | selocals.flipsol; selocals.flipsol = selocals.flipsolPulse;
-  if ((selocals.vblankCount % SE_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = selocals.solenoids;
+  if ((selocals.vblankCount % VBLANK) == 0) {
+    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xfff0) | selocals.flipsol;
+    selocals.flipsol = selocals.flipsolPulse;
+  }
+  if ((selocals.vblankCount % (VBLANK*SE_SOLSMOOTH)) == 0) {
+	coreGlobals.solenoids = selocals.solenoids;
 	// Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
 	// unused because it is remapped to VPM flipper constants.  
 	if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr-1] > 0)  
 		coreGlobals.solenoids |= 0x4000;
-    selocals.solenoids = coreGlobals.pulsedSolState;
+	selocals.solenoids = coreGlobals.pulsedSolState;
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
 			UINT64 allSol = core_getAllSol();
@@ -167,11 +191,12 @@ static INTERRUPT_GEN(se_vblank) {
 	}
 #endif
   /*-- display --*/
-  if ((selocals.vblankCount % SE_DISPLAYSMOOTH) == 0) {
+  if ((selocals.vblankCount % (VBLANK*SE_DISPLAYSMOOTH)) == 0) {
     coreGlobals.diagnosticLed = selocals.diagnosticLed;
     selocals.diagnosticLed = 0;
   }
-  core_updateSw(TRUE); /* flippers are CPU controlled */
+  if ((selocals.vblankCount % VBLANK) == 0)
+    core_updateSw(TRUE); /* flippers are CPU controlled */
 }
 
 static SWITCH_UPDATE(se) {
@@ -814,7 +839,7 @@ static MACHINE_DRIVER_START(se)
   MDRV_CPU_ADD(M6809, 2000000) // MC6809E
   MDRV_CORE_INIT_RESET_STOP(se,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
-  MDRV_CPU_VBLANK_INT(se_vblank, 1)
+  MDRV_CPU_VBLANK_INT(se_vblank, VBLANK)
   MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_FIRQFREQ)
   MDRV_NVRAM_HANDLER(se)
   MDRV_DIPS(8)
@@ -852,7 +877,7 @@ MACHINE_DRIVER_START(se3aS)
   MDRV_CPU_ADD(M6809, 2000000)
   MDRV_CORE_INIT_RESET_STOP(se3,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
-  MDRV_CPU_VBLANK_INT(se_vblank, 1)
+  MDRV_CPU_VBLANK_INT(se_vblank, VBLANK)
   MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_FIRQFREQ)
   MDRV_NVRAM_HANDLER(se)
   MDRV_DIPS(8)

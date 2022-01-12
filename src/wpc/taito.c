@@ -48,7 +48,7 @@ static INTERRUPT_GEN(taito_vblank) {
 	//-------------------------------
 	//  copy local data to interface
 	//-------------------------------
-	TAITOlocals.vblankCount += 1;
+	TAITOlocals.vblankCount++;
 
 	// -- solenoids --
 	if ((TAITOlocals.vblankCount % TAITO_SOLSMOOTH) == 0) {

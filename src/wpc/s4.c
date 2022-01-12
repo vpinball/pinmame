@@ -24,7 +24,7 @@
 
 #define S4_IRQFREQ         923 // NE556 Timer with 12 kOhm / 1.8 kOhm / 0.1 uF ~923 Hz // measured on a Sys3 and Sys4 as ~1110us -> ~901Hz
 
-#define S4_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S4_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #ifdef PROC_SUPPORT
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define S4_LAMPSMOOTH      1
@@ -317,7 +317,7 @@ static INTERRUPT_GEN(s4_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  s4locals.vblankCount += 1;
+  s4locals.vblankCount++;
 
   /*-- lamps --*/
   if ((s4locals.vblankCount % S4_LAMPSMOOTH) == 0) {

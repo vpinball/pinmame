@@ -19,7 +19,7 @@
 
 #define S6_IRQFREQ         (3579545./4./(0x380+32)) // CPU clock / (Length of time in cycles between IRQs + length of IRQ)
 
-#define S6_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S6_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define S6_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S6_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -255,7 +255,7 @@ static INTERRUPT_GEN(s6_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  s6locals.vblankCount += 1;
+  s6locals.vblankCount++;
 
   /*-- lamps --*/
   if ((s6locals.vblankCount % S6_LAMPSMOOTH) == 0) {

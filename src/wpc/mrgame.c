@@ -178,7 +178,7 @@ static INTERRUPT_GEN(vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % MRGAME_LAMPSMOOTH) == 0) {
