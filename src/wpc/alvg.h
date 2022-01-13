@@ -67,7 +67,7 @@
    NORMALREGION(0x10000, ALVG_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
-extern void alvg_UpdateSoundLEDS(int num,int data);
+extern void alvg_UpdateSoundLEDS(int num,UINT8 bit);
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(alvg);

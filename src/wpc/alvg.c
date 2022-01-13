@@ -91,21 +91,21 @@ struct {
   UINT32 solenoids;
   UINT16 lampColumn, swColumn;
   int    lampRow, swCol;
-  int    diagnosticLed;
-  int    diagnosticLeds1;
-  int    diagnosticLeds2;
+  UINT8  diagnosticLed;  // bool
+  UINT8  diagnosticLed1; // bool
+  UINT8  diagnosticLed2; // bool
   int    ssEn;
-  int    mainIrq;
-  int    DMDAck;
-  int    DMDClock;
-  int    DMDEnable;
-  int    DMDData;
-  int	 swTest;
-  int    swEnter;
-  int    swAvail1;
-  int    swAvail2;
-  int    swTicket;
-  int	 via_1_b;
+  //int    mainIrq;
+  UINT8  DMDAck;    // bool
+  UINT8  DMDClock;  // bool
+  UINT8  DMDEnable; // bool
+  UINT8  DMDData;   // bool
+  UINT8	 swTest;    // bool
+  UINT8  swEnter;   // bool
+  UINT8  swAvail1;  // bool
+  UINT8  swAvail2;  // bool
+  UINT8  swTicket;  // bool
+  int    via_1_b;
   int    sound_strobe;
   int    dispCol;
 } alvglocals;
@@ -521,7 +521,7 @@ static INTERRUPT_GEN(alvg_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  alvglocals.vblankCount += 1;
+  alvglocals.vblankCount++;
 
   /*-- lamps --*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
@@ -543,7 +543,7 @@ static INTERRUPT_GEN(alvg_vblank) {
   }
 
   /*update leds*/
-  coreGlobals.diagnosticLed = (alvglocals.diagnosticLeds2<<2) | (alvglocals.diagnosticLeds1<<1) |	alvglocals.diagnosticLed;
+  coreGlobals.diagnosticLed = (alvglocals.diagnosticLed2<<2) | (alvglocals.diagnosticLed1<<1) | alvglocals.diagnosticLed;
 
   core_updateSw(core_getSol(27));	//Flipper Enable Relay
 }
@@ -554,8 +554,8 @@ static SWITCH_UPDATE(alvg) {
 
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0700)>>8;								 	    //Column 0 Switches
-	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[ALVG_COMINPORT] & 0x1f);		    //Column 1 Switches
-	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3c) | ((inports[ALVG_COMINPORT] & 0x1860)>>5);	//Column 2 Switches
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[ALVG_COMINPORT] & 0x1f);		    //Column 1 Switches
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3c) | ((inports[ALVG_COMINPORT] & 0x1860)>>5);	//Column 2 Switches
   }
   alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
@@ -643,12 +643,12 @@ static MACHINE_STOP(alvg) {
   sndbrd_1_exit();
 }
 //Show Sound & DMD Diagnostic LEDS
-void alvg_UpdateSoundLEDS(int num,int data)
+void alvg_UpdateSoundLEDS(int num,UINT8 bit)
 {
 	if(num==0)
-		alvglocals.diagnosticLeds1 = data;
+		alvglocals.diagnosticLed1 = bit;
 	else
-		alvglocals.diagnosticLeds2 = data;
+		alvglocals.diagnosticLed2 = bit;
 }
 
 /*-----------------------------------------------

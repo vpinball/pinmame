@@ -83,16 +83,16 @@ struct {
   UINT32 solenoidbits[32];
 #endif
   int    lampRow, lampColumn;
-  int    diagnosticLed;
-  int    diagnosticLeds1;
-  int    diagnosticLeds2;
-  int    swCol;
+  UINT8  diagnosticLed;  // bool
+  UINT8  diagnosticLed1; // bool
+  UINT8  diagnosticLed2; // bool
+  //int    swCol;
   int    ssEn;
-  int    mainIrq;
-  int    swDiag;
-  int    swTilt;
-  int    swSlam;
-  int    swPrin;
+  //int    mainIrq;
+  UINT8  swDiag; // bool
+  UINT8  swTilt; // bool
+  UINT8  swSlam; // bool
+  UINT8  swPrin; // bool
   int    acol;
   int    u4pb;
   WRITE_HANDLER((*U4_PB_W));
@@ -129,7 +129,7 @@ static READ_HANDLER(alpha_u4_pb_r)
 	int data = 0;
 	//Gen 1 checks Slam switch here
 	if(GTS3locals.alphagen==1)
-		data |= (GTS3locals.swSlam <<3);	//Slam Switch (NOT INVERTED!)
+		data |= (GTS3locals.swSlam << 3);	//Slam Switch (NOT INVERTED!)
 	else
 		data |= (GTS3locals.swDiag << 3);	//Diag Switch (NOT INVERTED!)
 	data |= (GTS3locals.swTilt << 4);   //Tilt Switch (NOT INVERTED!)
@@ -360,6 +360,7 @@ static WRITE_HANDLER( xvia_1_ca1_w )
 	logerror1("NOT USED!: via_1_ca1_w %x\n",data);
 }
 #endif
+
 //CPU LED
 static WRITE_HANDLER( xvia_1_ca2_w )
 {
@@ -459,8 +460,8 @@ static INTERRUPT_GEN(GTS3_vblank) {
   }
   /*-- display --*/
   if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) {
-    /*Update alpha or dmd display*/
-    GTS3locals.UPDATE_DISPLAY();
+	/*Update alpha or dmd display*/
+	GTS3locals.UPDATE_DISPLAY();
 
 	/*update leds*/
 
@@ -470,8 +471,8 @@ static INTERRUPT_GEN(GTS3_vblank) {
 									(GTS3_dmdlocals[0].diagnosticLed << 1) |
 									(GTS3_dmdlocals[1].diagnosticLed << 2);
 	} else {
-		coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
-									(GTS3locals.diagnosticLeds1<<2) |
+		coreGlobals.diagnosticLed = (GTS3locals.diagnosticLed2<<3) |
+									(GTS3locals.diagnosticLed1<<2) |
 									(GTS3_dmdlocals[0].diagnosticLed<<1) |
 									GTS3locals.diagnosticLed;
 	}
@@ -481,12 +482,12 @@ static INTERRUPT_GEN(GTS3_vblank) {
 
 static SWITCH_UPDATE(GTS3) {
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x0f00)>>8;
+	coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x0f00)>>8;
 	if (inports[GTS3_COMINPORT] & 0x8000) // DMD games with tournament mode
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[GTS3_COMINPORT] & 0x7f);
-    else if (inports[GTS3_COMINPORT] & 0x4000) // DMD games without tournament mode
+	else if (inports[GTS3_COMINPORT] & 0x4000) // DMD games without tournament mode
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[GTS3_COMINPORT] & 0x1f);
-    else // alpha games
+	else // alpha games
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
   }
   GTS3locals.swPrin = (core_getSw(GTS3_SWPRIN)>0?1:0);
@@ -678,7 +679,7 @@ static void dmdswitchbank(int which)
 	int	addr =	(GTS3_dmdlocals[which].pa0 *0x04000)+
 				(GTS3_dmdlocals[which].pa1 *0x08000)+
 				(GTS3_dmdlocals[which].pa2 *0x10000)+
- 				(GTS3_dmdlocals[which].pa3 *0x20000)+
+				(GTS3_dmdlocals[which].pa3 *0x20000)+
 				(GTS3_dmdlocals[which].a18 *0x40000);
 	cpu_setbank(which ? STATIC_BANK2 : STATIC_BANK1,
 		memory_region(which ? GTS3_MEMREG_DROM2 : GTS3_MEMREG_DROM1) + addr);
@@ -809,7 +810,7 @@ static READ_HANDLER(display_r){ /* logerror("DISPLAY_R\n"); */ return 0;}
 static WRITE_HANDLER(lds_w)
 {
 	//logerror1("LDS Write: Data: %x\n",data);
-    GTS3locals.lampRow = data;
+	GTS3locals.lampRow = data;
 }
 
 //PB0-7 Varies on Alpha or DMD Generation!
@@ -877,7 +878,7 @@ static void dmd_vblank(int which) {
 /* Printer connector */
 static WRITE_HANDLER(aux1_w)
 {
-    static void *printfile;
+	static void *printfile;
 	static UINT8 printdata[] = {0};
 	if (printfile == NULL) {
 		char filename[13];
@@ -929,7 +930,7 @@ static INTERRUPT_GEN(alphanmi) {
 }
 
 static void alpha_update(){
-    /* FORCE The 16 Segment Layout to match the output order expected by core.c */
+	/* FORCE The 16 Segment Layout to match the output order expected by core.c */
 	// There's got to be a better way than this junky code!
 	UINT16 segbits, tempbits;
 	int i,j,k;
@@ -949,15 +950,16 @@ static void alpha_update(){
 	memcpy(coreGlobals.segments, GTS3locals.segments, sizeof(coreGlobals.segments));
     memcpy(GTS3locals.segments, GTS3locals.pseg, sizeof(GTS3locals.segments));
 }
+
 static void dmd_update() {}
 
 //Show Sound Diagnostic LEDS
-void UpdateSoundLEDS(int num,int data)
+void UpdateSoundLEDS(int num,UINT8 bit)
 {
 	if(num==0)
-		GTS3locals.diagnosticLeds1 = data;
+		GTS3locals.diagnosticLed1 = bit;
 	else
-		GTS3locals.diagnosticLeds2 = data;
+		GTS3locals.diagnosticLed2 = bit;
 }
 
 /*-----------------------------------------------

@@ -103,7 +103,7 @@
 
 #define GTS3_COMINPORT       CORE_COREINPORT
 
-#define GTS3_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define GTS3_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS3_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define GTS3_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 
@@ -154,29 +154,29 @@
 /** DMD (128x32) ROM 256K            **/
 /**************************************/
 #define GTS3_DMD256_ROMSTART(n1,chk1) \
-	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
+     NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
      NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
        ROM_LOAD(n1, 0x00000, 0x40000, chk1)\
-	   ROM_RELOAD(  0x40000, 0x40000)
+       ROM_RELOAD(  0x40000, 0x40000)
 
 /**************************************/
 /** DMD (128x32) ROM 256K (2 boards) **/
 /**************************************/
 #define GTS3_DMD256_ROMSTART2(n1,chk1) \
-	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1) \
+     NORMALREGION(0x10000, GTS3_MEMREG_DCPU1) \
      NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
        ROM_LOAD(n1, 0x00000, 0x40000, chk1) \
-	   ROM_RELOAD(  0x40000, 0x40000) \
-	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU2) \
+       ROM_RELOAD(  0x40000, 0x40000) \
+     NORMALREGION(0x10000, GTS3_MEMREG_DCPU2) \
      NORMALREGION(0x80000, GTS3_MEMREG_DROM2) \
        ROM_LOAD(n1, 0x00000, 0x40000, chk1) \
-	   ROM_RELOAD(  0x40000, 0x40000)
+       ROM_RELOAD(  0x40000, 0x40000)
 
 /**************************************/
 /** DMD (128x32) ROM 512K            **/
 /**************************************/
 #define GTS3_DMD512_ROMSTART(n1,chk1) \
-	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
+     NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
      NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
        ROM_LOAD(n1, 0x00000, 0x80000, chk1)
 
@@ -184,11 +184,11 @@
 /** DMD (128x32) unknown ROM         **/
 /**************************************/
 #define GTS3_DMD_ROMSTARTX(n1,chk1) \
-	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
+     NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
      NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
        ROM_LOAD(n1, 0x00000, 0, chk1)
 
-extern void UpdateSoundLEDS(int num,int data);
+extern void UpdateSoundLEDS(int num,UINT8 bit);
 extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32);
 extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32a);
 
