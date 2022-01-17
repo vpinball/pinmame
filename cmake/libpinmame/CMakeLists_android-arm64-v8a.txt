@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 
-set(CMAKE_SYSTEM_NAME iOS)
+set(CMAKE_SYSTEM_NAME Android)
+set(CMAKE_SYSTEM_VERSION 30)
+set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
 
 file(READ src/version.c version)
 string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
@@ -9,12 +11,8 @@ project(pinmame VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_FLAGS -fembed-bitcode)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_C_FLAGS -fembed-bitcode)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
-set(CMAKE_OSX_ARCHITECTURES arm64)
 
 add_compile_definitions(
    HAS_M6809=1
@@ -87,8 +85,11 @@ add_compile_definitions(
    PINMAME_NO_UNUSED
    LIBPINMAME
    SAM_INCLUDE_COLORED
+   NAME="LIBPINMAME"
 
    LSB_FIRST
+   PI=M_PI
+   UNIX
 )
 
 add_definitions( "-DINLINE=static inline __attribute__((always_inline))" )
@@ -583,7 +584,8 @@ target_include_directories(pinmame PUBLIC
    src
    src/wpc
    src/cpu/m68000/generated_by_m68kmake
-   src/ios
+   src/unix
+   src/unix/sysdep
    src/libpinmame
 )
 
@@ -595,4 +597,6 @@ target_link_libraries(pinmame
 
 set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
+   SUFFIX ".${PROJECT_VERSION}.so"
+   LINK_FLAGS_RELEASE -s
 )
