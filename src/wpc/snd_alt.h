@@ -696,9 +696,10 @@ void alt_sound_handle(int boardNo, int cmd)
 				(core_gameData->gen == GEN_WS_1) || 
 				(core_gameData->gen == GEN_WS_2))
 			{
-				//!! so far tested only with LOTR, SWTR, Elvis
+				//!! so far tested only with LOTR, SWTR, Elvis, NFL
 				if ((cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x26 && (cmd & 0xF0) == 0xF0) || 
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x25 && (cmd & 0xF0) == 0xF0) || 
+					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x20 && (cmd & 0xF0) == 0xF0) ||
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x01 && (cmd & 0xF0) == 0xF0))
 				{
 					cmd_storage = 0;
