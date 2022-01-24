@@ -7,14 +7,25 @@ string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
 
 project(pinmame VERSION ${PROJECT_VERSION})
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
+set(CMAKE_OSX_ARCHITECTURES arm64)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_FLAGS -fembed-bitcode)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_C_FLAGS -fembed-bitcode)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
-set(CMAKE_OSX_ARCHITECTURES arm64)
+
+include(ExternalProject)
+
+ExternalProject_Add(zlib
+  URL https://zlib.net/zlib-1.2.11.tar.gz
+  CMAKE_ARGS -DCMAKE_SYSTEM_NAME=iOS
+  CMAKE_ARGS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+  CMAKE_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64
+  CMAKE_ARGS -DCMAKE_C_FLAGS=-fembed-bitcode
+  INSTALL_COMMAND cmake -E echo "Skipping install step."
+)
 
 add_compile_definitions(
    HAS_M6809=1
@@ -93,7 +104,7 @@ add_compile_definitions(
 
 add_definitions( "-DINLINE=static inline __attribute__((always_inline))" )
 
-add_library(pinmame SHARED
+add_library(pinmame STATIC
    src/artwork.c
    src/artwork.h
    src/audit.c
@@ -587,12 +598,7 @@ target_include_directories(pinmame PUBLIC
    src/libpinmame
 )
 
-find_package(ZLIB)
-
-target_link_libraries(pinmame
-   ZLIB::ZLIB
-)
-
 set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
+   SUFFIX ".${PROJECT_VERSION}.a"
 )
