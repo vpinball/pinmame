@@ -410,7 +410,7 @@ static void (*wr_reg[4][16])(INT32) =
 		wr_astat, wr_mstat, wr_inval, wr_imask, wr_icntl, wr_cntr, wr_sb, wr_px,
 		wr_inval, wr_tx0, wr_inval, wr_tx1, wr_ifc, wr_owrctr, wr_inval, wr_topstack
 	}
-}
+};
 
 
 
@@ -491,7 +491,7 @@ static INT32 (*rd_reg[4][16])(void) =
 		rd_astat, rd_mstat, rd_sstat, rd_imask, rd_icntl, rd_cntr, rd_sb, rd_px,
 		rd_rx0, rd_inval, rd_rx1, rd_inval, rd_inval, rd_inval, rd_inval, rd_stacktop
 	}
-}
+};
 
 
 
