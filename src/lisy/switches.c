@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <wiringPi.h>
 #include "fileio.h"
 #include "hw_lib.h"
 #include "switches.h"
@@ -16,6 +17,7 @@
 #include "externals.h"
 #include "lisy.h"
 
+extern unsigned char swMatrixLISY35[9];
 
 void lisy80_debug_switches (unsigned char data)
 {
@@ -135,5 +137,42 @@ void monitor_switches(void)
 
 
 	}while(1);
+}
+
+//update lisy35 switchmatrix
+//used for zero detection in wheels for Starship
+void lisy35_switchmatrix_update(void )
+{
+ int ret;
+ unsigned char strobe,returnval;
+ unsigned char action = 1;
+
+ do
+ {
+     delay(20); // 20 millisecond delay from wiringpi library
+                // for giving PIC some time to send switchcodes
+     ret = lisy35_switch_reader( &action );
+
+     if (ret < 80) {
+         //ret is switchnumber: NOTE: Bally  8*6==48 switches in maximum, counting 01..48
+         //starship is using all 64 switches
+        //Switches_LISY35[ret] = action;
+
+        //calculate strobe & return
+        //Note: this is different from system80
+        strobe = ret / 8;
+        returnval = ret % 8;
+
+        //set the bit in the Matrix var according to action
+        // action 1 means set the bit
+        // any other means delete the bit
+        if (action ) //set bit
+                   SET_BIT(swMatrixLISY35[strobe+1],returnval);
+        else  //delete bit
+                   CLEAR_BIT(swMatrixLISY35[strobe+1],returnval);
+
+        }
+ } while ( ret < 80);
+
 }
 

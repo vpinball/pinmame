@@ -254,6 +254,7 @@ int lisy_set_gamename( char *arg_from_main, char *lisy_gamename)
 }
 
 //get lisyversion ( from GITVERSION in lisyversion.h )
+//attention will cause seg fault if misconfigured
 void lisy_get_sw_version( unsigned char *sw_main, unsigned char *sw_sub, unsigned char *commit)
 {
 

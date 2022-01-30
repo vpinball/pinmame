@@ -57,6 +57,7 @@ typedef struct
 {
   int mapped_to_coil;
   int pulsetime;
+  int delay;
   char comment[30];
 }
 t_lisy_home_ss_special_coil_map;

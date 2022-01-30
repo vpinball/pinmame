@@ -143,9 +143,9 @@ int  lisy_file_get_home_ss_special_coil_mappings(int variant);
 #define LISYH_MAPPING_PATH "/boot/lisy/lisyH/mapping/"
 #define LISYH_LAMP_MAPPING_FILE "lamps.csv"
 #define LISYH_COIL_MAPPING_FILE "coils.csv"
-#define LISYH_SS_LAMP_MAPPING_FILE "ss_lamps.csv"
-#define LISYH_SS_COIL_MAPPING_FILE "ss_coils.csv"
-#define LISYH_SS_SPECIAL_COIL_MAPPING_FILE "ss_special_coils.csv"
+#define LISYH_SS_LAMP_MAPPING_FILE "ss_lamps"
+#define LISYH_SS_COIL_MAPPING_FILE "ss_coils"
+#define LISYH_SS_SPECIAL_COIL_MAPPING_FILE "ss_special_coils"
 
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"

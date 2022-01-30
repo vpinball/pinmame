@@ -26,6 +26,7 @@
 #include "eeprom.h"
 #include "sound.h"
 #include "lisy.h"
+#include "wheels.h"
 #include "lisy_mame.h"
 
 
@@ -44,7 +45,7 @@ t_stru_lisy35_sounds_csv lisy35_sound_stru[256];
 //internal switch Matrix for system1, we need 7 elements
 //as pinmame internal starts with 1
 //swMatrix 6 for SLAM and other special switches
-unsigned char swMatrixLISY35[8] = { 0,0,0,0,0,0,0,0 };
+unsigned char swMatrixLISY35[9] = { 0,0,0,0,0,0,0,0,0 };
 
 //for special cases, where pins are doings strobes
 //we need to be aware and filter out
@@ -53,6 +54,9 @@ unsigned char lisy35_J4PIN8_is_strobe = 0;
 
 //from coils.c
 extern unsigned char lisy35_bally_hw_check_finished;
+
+//store 'flipper disable status globally
+unsigned char lisy35_flipper_disable_status = 1;
 
 //internal for lisy35.c 
 //to have an delayed nvram write
@@ -174,6 +178,8 @@ void lisy35_ss_init( void )
  lisyh_coil_select_led_driver_line(1);
  // send colorcodes to LED driver
  lisy_home_ss_send_led_colors();
+ //start threads for wheels
+ wheels_init();
 
  //collect latest informations and start the lisy logger
  lisy_env.has_soundcard = lisy35_has_soundcard;
@@ -557,7 +563,7 @@ if ( lisy35_has_soundcard )
     //def lisy_timer( unsigned int duration, int command, int index)
     if (core_gameData->gen & (GEN_STMPU200|GEN_STMPU100))
          SET_BIT(swMatrixLISY35[1],0);
-    else 
+    else
          SET_BIT(swMatrixLISY35[2],2);
     if ( lisy_timer( 50, 0, 2)) { 
     if (core_gameData->gen & (GEN_STMPU200|GEN_STMPU100))
@@ -1184,6 +1190,9 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
   //new cont data?
   if (( old_cont_data != cont_data ) & ( lisy35_bally_hw_check_finished ==1))
   {
+    //store 'flipper disable status globally
+    lisy35_flipper_disable_status =  CHECK_BIT( cont_data, 2);
+
     //check for flipper disable
     if( CHECK_BIT( cont_data, 2) && !CHECK_BIT( old_cont_data, 2))
     {
@@ -1196,6 +1205,13 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
          //lisy80_debug("flipper disabled we do ASK for a nvram write");
          lisy80_debug("flipper disabled we do a nvram write");
         }
+    }
+
+    //check for flipper enable for Starship wheels reset at start of game
+    if ( lisy_hardware_revision == 200 )
+    {
+       if( !CHECK_BIT( cont_data, 2) && CHECK_BIT( old_cont_data, 2))
+	wheel_score_reset();
     }
 
     //debug?
@@ -1295,7 +1311,7 @@ unsigned char sound_E;
            if (( last_sound_select == 0) & ( sound_select == 1)) 
              { 
               sound_int_occured = 1;
-              if ((ls80dbg.bitv.sound) | (ls80dbg.bitv.coils)) lisy80_debug("sound interrupt occured");
+              if (ls80dbg.bitv.sound) lisy80_debug("sound interrupt occured");
   	     }
   	   last_sound_select = sound_select;
 	  }//sound_select

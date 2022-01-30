@@ -21,6 +21,7 @@ void display_init(void);
 void display_reset(void);
 void display_send_byte_torow( unsigned char data, int LD1_was_set, int LD2_was_set );
 void display_send_row_torow( char *data, int LD1_was_set, int LD2_was_set );
+void display_send_row_torow_bp( char *buf, int LD1_was_set, int LD2_was_set );
 void display_sendtorow( unsigned char data, int LD1_was_set, int LD2_was_set, int debug );
 //messages
 void display_show_boot_message(char *s_lisy80_software_version,int lisy80_gtb_no,char *lisy80_gamename);

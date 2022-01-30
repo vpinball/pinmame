@@ -26,7 +26,8 @@ LISYOBJS = \
  $(OBJ)/lisy/usbserial.o \
  $(OBJ)/lisy/lisy_api_com.o \
  $(OBJ)/lisy/lisy_mame.o \
- $(OBJ)/lisy/lisy_home.o
+ $(OBJ)/lisy/lisy_home.o \
+ $(OBJ)/lisy/wheels.o
 
 
 # LISY functions

@@ -31,12 +31,13 @@
 #include "../lisy.h"
 #include "../lisyversion.h"
 #include "../fadecandy.h"
+#include "../wheels.h"
 #include "../externals.h"
 
 
 //the version
 #define LISY200control_SOFTWARE_MAIN    0
-#define LISY200control_SOFTWARE_SUB     4
+#define LISY200control_SOFTWARE_SUB     5
 
 //fake definiton needed in lisy_w
 void core_setSw(int myswitch, unsigned char action) {  };
@@ -60,14 +61,16 @@ typedef struct
  unsigned char lampMatrix[2];
 } t_coreGlobals;
 t_coreGlobals coreGlobals;
-void lisy_nvram_write_to_file( void ) {  }
-void sound_stream_update(int *dum ) {  }
+void lisy_nvram_write_to_file( void ) {  };
+void sound_stream_update(int *dum ) {  };
 unsigned char sound_stream = 0;
 unsigned char  sound_enabled = 0;
-const char* sndbrd_typestr(int board) {  }
+const char* sndbrd_typestr(int board) {  };
 
 
 //48 switches, keep it easy by using 49 elements
+extern unsigned char swMatrixLISY35[9];
+/*
 unsigned char Switches_LISY35[64] = { 0,0,0,0,0,0,0,0,
 				      0,0,0,0,0,0,0,0,
 				      0,0,0,0,0,0,0,0,
@@ -77,6 +80,7 @@ unsigned char Switches_LISY35[64] = { 0,0,0,0,0,0,0,0,
 				      0,0,0,0,0,0,0,0,
 				      0,0,0,0,0,0,0,0,0 };
 
+*/
 //global vars
 char switch_description_line1[80][80];
 char switch_description_line2[80][80];
@@ -371,86 +375,24 @@ void do_display_set( char *buffer)
  //we trust ASCII values
  display_no = buffer[1]-48;
 
- //the format here is 'Dx_' 'DxA_'
- if (buffer[2] == '_') //6-digit
- {
   switch( display_no )
   {
-   case 0: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 0, display_str);
-	        strcpy(display_D0,display_str);
-		break;
    case 1: 
 		sprintf(display_str,"%-6s",&buffer[3]);
  		display35_show_str( 1, display_str);
+ 		wheel_score( 1, display_str);  //wheelscore in paralell
 	        strcpy(display_D1,display_str);
 		break;
    case 2: 
 		sprintf(display_str,"%-6s",&buffer[3]);
  		display35_show_str( 2, display_str);
+ 		//wheel_score( 1, display_str);  //wheelscore in paralell
 	        strcpy(display_D2,display_str);
 		break;
-   case 3: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 3, display_str);
-	        strcpy(display_D3,display_str);
-		break;
-   case 4: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 4, display_str);
-	        strcpy(display_D4,display_str);
-		break;
-   case 5: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 5, display_str);
-	        strcpy(display_D5,display_str);
-		break;
-   case 6: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 6, display_str);
-	        strcpy(display_D6,display_str);
-		break;
   }
- }//6-digit
- else if (buffer[2] == 'A') //7-digit
- {
-  switch( display_no )
-  {
-   case 0:
-                sprintf(display_str,"%-7s",&buffer[4]);
-                display35_show_str( 0, display_str);
-                strcpy(display_D0A,display_str);
-                break;
-   case 1:
-                sprintf(display_str,"%-7s",&buffer[4]);
-                display35_show_str( 1, display_str);
-                strcpy(display_D1A,display_str);
-                break;
-   case 2:
-                sprintf(display_str,"%-7s",&buffer[4]);
-                display35_show_str( 2, display_str);
-                strcpy(display_D2A,display_str);
-                break;
-   case 3:
-                sprintf(display_str,"%-7s",&buffer[4]);
-                display35_show_str( 3, display_str);
-                strcpy(display_D3A,display_str);
-                break;
-   case 4:
-                sprintf(display_str,"%-7s",&buffer[4]);
-                display35_show_str( 4, display_str);
-                strcpy(display_D4A,display_str);
-                break;
-   case 5:
-                sprintf(display_str,"%-7s",&buffer[4]);
-                display35_show_str( 5, display_str);
-                strcpy(display_D5A,display_str);
-                break;
-  }
- }//7-digit
 printf("buffer is %s\n",buffer);
 }
+
 
 
 //pulse specific momentary solenoid
@@ -477,7 +419,8 @@ void do_ss_solenoid_set( char *buffer)
  solenoid = (10 * (buffer[1]-48)) + buffer[2]-48;
 
  //pulse the coil
- lisyH_special_coil_pulse( solenoid );
+ wheel_pulse( solenoid );
+
 }
 
 //set specific continous solenoid
@@ -1831,86 +1774,73 @@ void send_ss_GI_infos( int sockfd )
 void send_display_infos( int sockfd )
 {
   char buffer[256];
+//colorcodes
+  //char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
 
   //start with some header
    send_basic_infos(sockfd);
 
- //see how many display we have
- switch ( lisy35_game.special_cfg)
- {
-  case 0:     //6-digit
-   sprintf(buffer,"This game has 5 display with 6 digits<br>\n");
+   sprintf(buffer,"This game has 2 display with 5 digits each<br>\n");
    sendit( sockfd, buffer);
    //send 
-   sprintf(buffer,"<p>  Status Display: <input type=\"text\" name=\"D0\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D0);
-   sendit( sockfd, buffer);
    sprintf(buffer,"<p>Display Player 1: <input type=\"text\" name=\"D1\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D1);
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>Display Player 2: <input type=\"text\" name=\"D2\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D2);
    sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 3: <input type=\"text\" name=\"D3\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D3);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 4: <input type=\"text\" name=\"D4\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D4);
-   sendit( sockfd, buffer);
-	break;
-  case 1:     //7-digit
-  case 3:
-  case 7:
-   sprintf(buffer,"This game has 5 display with 7 digits<br>\n");
-   sendit( sockfd, buffer);
-   //send 
-   sprintf(buffer,"<p>  Status Display: <input type=\"text\" name=\"D0A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D0A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 1: <input type=\"text\" name=\"D1A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D1A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 2: <input type=\"text\" name=\"D2A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D2A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 3: <input type=\"text\" name=\"D3A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D3A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 4: <input type=\"text\" name=\"D4A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D4A);
-   sendit( sockfd, buffer);
-	break;
-  case 2:     //6-digit 6-players
-   sprintf(buffer,"This game has 7 display with 6 digits<br>\n");
-   sendit( sockfd, buffer);
-   //send 
-   sprintf(buffer,"<p>  Status Display: <input type=\"text\" name=\"D0\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D0);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 1: <input type=\"text\" name=\"D1\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D1);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 2: <input type=\"text\" name=\"D2\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D2);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 3: <input type=\"text\" name=\"D3\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D3);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 4: <input type=\"text\" name=\"D4\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D4);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 5: <input type=\"text\" name=\"D5\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D5);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 6: <input type=\"text\" name=\"D6\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D6);
-   sendit( sockfd, buffer);
-	break;
-  case 4:     //7-digit 5 players (extra status)
-  case 5:
-  case 6:
-   sprintf(buffer,"This game has 6 display with 7 digits<br>\n");
-   sendit( sockfd, buffer);
-   //send 
-   sprintf(buffer,"<p>  Status Display: <input type=\"text\" name=\"D0A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D0A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 1: <input type=\"text\" name=\"D1A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D1A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 2: <input type=\"text\" name=\"D2A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D2A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 3: <input type=\"text\" name=\"D3A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D3A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 4: <input type=\"text\" name=\"D4A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D4A);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Extra Status: <input type=\"text\" name=\"D5A\" size=\"7\" maxlength=\"7\" value=\"%s\" /></p>",display_D5A);
-   sendit( sockfd, buffer);
-	break;
- }
+
+   //reset buttons for Displays
+/*
+   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
+        ,"D0_res",code_blue,"reset Displ 1","");
+     sendit( sockfd, buffer);
+   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
+        ,"D1_res",code_blue,"reset Displ 2","");
+     sendit( sockfd, buffer);
+*/
 }
 
+//thread fpr update the switchmatrix 
+void *do_switchmatrix_update(void *myarg)
+{
+ int i,nu,ret;
+ unsigned char strobe,returnval;
+ unsigned char action = 1;
+
+ pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
+ pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+ nu = (int *)myarg;
+
+ while(1) //run untilmainfunction send cancel
+ {
+     delay(20); // 20 millisecond delay from wiringpi library
+                // for giving PIC some time to send switchcodes
+     ret = lisy35_switch_reader( &action );
+
+     if (ret < 80) {
+         //ret is switchnumber: NOTE: Bally  8*6==48 switches in maximum, counting 01..48
+	 //starship is using all 64 switches
+        //Switches_LISY35[ret] = action;
+
+	//calculate strobe & return
+        //Note: this is different from system80
+        strobe = ret / 8;
+        returnval = ret % 8;
+
+        //set the bit in the Matrix var according to action
+        // action 1 means set the bit
+        // any other means delete the bit
+        if (action ) //set bit
+                   SET_BIT(swMatrixLISY35[strobe+1],returnval);
+        else  //delete bit
+                   CLEAR_BIT(swMatrixLISY35[strobe+1],returnval);
+
+        }
+ }
+ return NULL;
+
+}
 
 
 void send_switch_infos( int sockfd )
@@ -1924,22 +1854,9 @@ void send_switch_infos( int sockfd )
   char *code_green = "<td align=center>";
 
   //update internal switch matrix with buffer from switch pic
- do
-    {
-     delay(1); // 1 millisecond delay from wiringpi library
-     // for giving PIC some time to send switchcodes
-     ret = lisy35_switch_reader( &action );
+  //is done that in a seperate thread
 
-     //we need to add 1, as 0 is switch one(1)
-     ret++;
-
-     if (ret < 80) {
-         //ret is switchnumber: NOTE: Bally  8*6==48 switches in maximum, counting 01..48
-        Switches_LISY35[ret] = action;
-     }
-     }while( ret < 80);
-
-     //now send whole matrix back together with some header
+   //send whole matrix back together with some header
    send_basic_infos(sockfd);
 
 
@@ -1948,14 +1865,15 @@ void send_switch_infos( int sockfd )
      {
       sprintf(buffer,"<tr style=\"background-color:lawngreen;\" border=\"1\">\n");
       sendit( sockfd, buffer);
-       for(j=1; j<=8; j++) //this is the switch, we start with 1 
+       for(j=0; j<=7; j++) //this is the switch 
        { 
-	switch_no = i*8 + j;
+	switch_no = 1 + j + i*8;
  	//assign color, red is closed, green is open, default fo table is green
-	if ( !Switches_LISY35[switch_no]) strcpy(colorcode,code_green); else  strcpy(colorcode,code_red);
-        sprintf(buffer,"%sSwitch %02d<br>%s<br>%s</td>\n",colorcode,switch_no,switch_description_line1[switch_no],switch_description_line2[switch_no]);
-
-        sendit( sockfd, buffer);
+	//if ( !Switches_LISY35[switch_no]) strcpy(colorcode,code_green); else  strcpy(colorcode,code_red);
+	//we start with switch #1
+	  if (  !CHECK_BIT(swMatrixLISY35[i+1],j)) strcpy(colorcode,code_green); else  strcpy(colorcode,code_red);
+          sprintf(buffer,"%sSwitch %02d<br>%s<br>%s</td>\n",colorcode,switch_no,switch_description_line1[switch_no],switch_description_line2[switch_no]);
+          sendit( sockfd, buffer);
 	}
       sprintf(buffer,"</tr>\n");
       sendit( sockfd, buffer);
@@ -1990,7 +1908,7 @@ void send_home_infos( int sockfd )
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./lisyH_special_solenoids.php\">Starship special Solenoids</a><br><br> \n");
    sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_displays.php\">Displays</a><br><br> \n");
+   sprintf(buffer,"<p>\n<a href=\"./ss_displays.php\">Displays</a><br><br> \n");
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./lisy35_dipswitches.php\">DIP Switches</a><br><br> \n");
    sendit( sockfd, buffer);
@@ -2309,6 +2227,9 @@ int main(int argc, char *argv[])
     //read the descriptions for the coils
     get_coil_descriptions();
 
+    //init threads for wheels
+    wheels_init();
+
 
  // try say something about LISY80 if sound is requested
  if ( ls80opt.bitv.JustBoom_sound )
@@ -2386,6 +2307,13 @@ int main(int argc, char *argv[])
               error("ERROR on binding");
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
+
+     //start pthread for switchmatrix update
+    pthread_t p;
+    int myarg;
+    if ( pthread_create (&p, NULL, do_switchmatrix_update, (void *)myarg) != 0)
+      fprintf(stderr," could not creat do_switchmatrix_update thread\n");
+
 
      //wait and listen
     do {

@@ -212,6 +212,7 @@ MY_LIBS += -lSDL2
 MY_LIBS += -lSDL2_mixer
 MY_LIBS += -lwiringPi
 MY_LIBS += -li2c
+MY_LIBS += -lpthread
 endif
 
 ifdef SEPARATE_LIBM

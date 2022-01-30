@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <wiringPi.h>
 #include "lisy35.h"
 #include "fileio.h"
 #include "hw_lib.h"
@@ -273,7 +274,6 @@ void lisy_home_ss_mom_coil_set( unsigned char value)
 //coils 16,17,18,19
 void lisy_home_ss_cont_coil_set( unsigned char cont_data)
 {
-printf("cont data is %d\n",cont_data);
 	//PB4 cont.2
    	lisyh_coil_set( lisy_home_ss_coil_map[17].mapped_to_coil, !CHECK_BIT( cont_data, 0));
 	//PB5 cont.4 (coin lockout)

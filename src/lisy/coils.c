@@ -308,20 +308,26 @@ for (i=1; i<=64; i++)
 }
 
 
-/* lisyH_special_coil_pulse
+/* lisyH_special_coil_set
 	coil -> nr of coil
+	action -> 0-off, 1-on
 
-	this routine respect pulsetime and mapping
+	this routine respect mapping
 	from config file LisyH (Starship)
 */
-void lisyH_special_coil_pulse ( int coil )
+void lisyH_special_coil_set ( int coil, int action )
 {
 
  if ( lisy_home_ss_special_coil_map[coil].mapped_to_coil != 0)
  {
-  lisyh_coil_set(  lisy_home_ss_special_coil_map[coil].mapped_to_coil, 1);
-  delay (lisy_home_ss_special_coil_map[coil].pulsetime); // milliseconds delay from wiringpi library
-  lisyh_coil_set(  lisy_home_ss_special_coil_map[coil].mapped_to_coil, 0);
+   if (  ls80dbg.bitv.coils )
+   {
+    	sprintf(debugbuf,"set special solenoid: %d(org:%d) to %d",lisy_home_ss_special_coil_map[coil].mapped_to_coil,coil,action);
+    	lisy80_debug(debugbuf);
+   }
+  lisyh_coil_set(  lisy_home_ss_special_coil_map[coil].mapped_to_coil, action);
+  //delay (lisy_home_ss_special_coil_map[coil].pulsetime); // milliseconds delay from wiringpi library
+  //lisyh_coil_set(  lisy_home_ss_special_coil_map[coil].mapped_to_coil, 0);
  }
 
 }
@@ -806,6 +812,11 @@ void lisy35_lamp_set ( int board, int lamp, int action)
  if ( lisy_hardware_revision == 200 )
  {
    lisy_home_ss_lamp_set( lamp, action);
+   if (ls80dbg.bitv.lamps)
+     {
+       sprintf(debugbuf,"lisy_home_ss_lamp_set lamp %d to %d",lamp,action);
+       lisy80_debug(debugbuf);
+     }
  }
  else
  {
@@ -1071,7 +1082,8 @@ void lisyh_coil_select_led_driver_line(unsigned char line)
     lisy80_write_byte_coil_pic(  mydata_coil.byte );
 
     //debug?
-    if ((  ls80dbg.bitv.coils ) || (  ls80dbg.bitv.lamps ))
+    //if ((  ls80dbg.bitv.coils ) || (  ls80dbg.bitv.lamps ))
+    if (  ls80dbg.bitv.lamps )
     {
      sprintf(debugbuf,"LISY_home LED driver line %d selected",line);
      lisy80_debug(debugbuf);
@@ -1136,7 +1148,9 @@ void lisyh_led_set( int led, int line, int action)
     //debug?
     if (  ls80dbg.bitv.lamps )
     {
-     sprintf(debugbuf,"set LISY_home led %d (line %d)  to %d",led+1,line,action);
+     sprintf(debugbuf,"set LISY_home led %d (line %d)  to %d color rgbw is %d %d %d %d"
+       ,led+1,line,action, led_rgbw_color[line][led+1].red,led_rgbw_color[line][led+1].green,
+        led_rgbw_color[line][led+1].blue,led_rgbw_color[line][led+1].white);
      lisy80_debug(debugbuf);
     }//debug
 
@@ -1145,7 +1159,7 @@ void lisyh_led_set( int led, int line, int action)
         lisy80_write_byte_coil_pic(  mydata_coil.byte );
 }
 
-#define LED_COLOR_WAIT_TIME 10 //ms
+#define LED_COLOR_WAIT_TIME 100 //us
 //send a byte direct to the LED driver waittime included
 void lisyh_send_to_LED_driver(unsigned char mybyte)
 {
