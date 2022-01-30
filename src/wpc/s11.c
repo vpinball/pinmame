@@ -41,13 +41,13 @@
 // Ed Cheung: The IRQ on System 3-11 fires every 928 usec, which perfectly matches MAMEs 0x380+32!
 #define S11_IRQFREQ     (1000000.0/928.0)
 /*-- Smoothing values --*/
-#ifdef PROC_SUPPORT
+#if defined(PROC_SUPPORT) || defined(LISY_SUPPORT)
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define S11_SOLSMOOTH      1 /* Don't smooth values on real hardware */
 #define S11_LAMPSMOOTH     1
 #define S11_DISPLAYSMOOTH  1
 #else
-#define S11_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S11_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define S11_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S11_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 #endif
@@ -212,7 +212,7 @@ static INTERRUPT_GEN(s11_vblank) {
   }
 #endif
   locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
-#ifndef PROC_SUPPORT 
+#if !defined(PROC_SUPPORT) && !defined(LISY_SUPPORT)
  #if S11_SOLSMOOTH != 2
  #  error "Need to update smooth formula"
  #endif
