@@ -63,7 +63,7 @@ static WRITE_HANDLER(snd300_wex) {
 }
 
 static struct {
-  int a0, a1, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
+  int a0, a1, b0, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
   int swData;
   int bcd[7], lastbcd;
   const int *bcd2seg;
@@ -726,9 +726,9 @@ MACHINE_DRIVER_END
 
 
 // Stern S.A.M. (Service Assistance Module)
-// note: I did not find out what feeds all the PIA's A/B inputs, so I worked around it
+// note: I did not find out what feeds PIA #2 port A, so I worked around it
 
-static int sam2acnt, sam3acnt, sam3bcnt, sam4acnt, sam4bcnt, sam5bcnt, sam6acnt;
+static int sam2acnt;
 
 static READ_HANDLER(sam0b_r) {
   logerror("0B %04x %02x\n", activecpu_get_pc(), pia_0_portb_r(0)); 
@@ -738,14 +738,17 @@ static READ_HANDLER(sam0b_r) {
   if (locals.cb20) return core_getDip(3);
   return pia_0_portb_r(0);
 }
-
+static WRITE_HANDLER(sam0b_w) {
+  logerror("0B:%02x\n", data);
+  locals.b0 = data;
+  pia_set_input_b(0, data);
+}
 static WRITE_HANDLER(sam0cb2_w) {
   logerror("0CB2:%x\n", data);
   locals.cb20 = data;
   pia_set_input_cb2(0, data);
   pia_set_input_cb1(2, data); // J1-11
 }
-
 static WRITE_HANDLER(sam1ca2_w) {
   logerror("1CA2:%x\n", data);
   locals.ca21 = data;
@@ -753,15 +756,13 @@ static WRITE_HANDLER(sam1ca2_w) {
   pia_set_input_cb1(2, data); // J1-08
   cpu_set_irq_line(0, 0, data ? ASSERT_LINE : CLEAR_LINE); // J5-34 (deactivate)
 }
-
 static WRITE_HANDLER(sam1cb2_w) {
   logerror("1CB2:%x\n", data);
   locals.cb21 = data;
   pia_set_input_cb2(1, data);
   pia_set_input_cb1(4, data); // J4-10
 }
-
-static READ_HANDLER (sam2a_r) {
+static READ_HANDLER(sam2a_r) {
   static UINT8 values[10] = { 0x80, 0x80, 0x9f, 0x80, 0x8f, 0x97, 0x9b, 0x9d, 0x9e, 0xff };
   logerror("2A %04x %d %02x:%02x\n", activecpu_get_pc(), sam2acnt, pia_2_porta_r(0), values[sam2acnt]);
   if (activecpu_get_pc() == 0x361d || activecpu_get_pc() == 0x3630) return 0;
@@ -772,15 +773,13 @@ static WRITE_HANDLER(sam2b_w) {
   pia_set_input_b(0, data);
   pia_set_input_b(2, data);
 }
-static READ_HANDLER (sam3a_r) {
-  static UINT8 values[16] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0xff, 0x00 };
-  logerror("3A %04x %d %02x:%02x\n", activecpu_get_pc(), sam3acnt, pia_3_porta_r(0), values[sam3acnt]);
-  return values[sam3acnt++];
+static READ_HANDLER(sam3a_r) {
+  logerror("3A %04x %02x\n", activecpu_get_pc(), locals.a1);
+  return locals.a1;
 }
-static READ_HANDLER (sam3b_r) {
-  static UINT8 values[18] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0x01, 0xfe, 0xff, 0x00 };
-  logerror("3B %04x %d %02x:%02x\n", activecpu_get_pc(), sam3bcnt, pia_3_portb_r(0), values[sam3bcnt]);
-  return values[sam3bcnt++];
+static READ_HANDLER(sam3b_r) {
+  logerror("3B %04x %02x\n", activecpu_get_pc(), locals.b0);
+  return locals.b0;
 }
 static WRITE_HANDLER(sam3ca2_w) {
   logerror("3CA2:%x\n", data);
@@ -792,26 +791,24 @@ static WRITE_HANDLER(sam3cb2_w) {
   pia_set_input_cb2(3, data);
   pia_set_input_cb1(1, data); // J5-32
 }
-static READ_HANDLER (sam4a_r) {
-  static UINT8 values[18] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0x01, 0xfe, 0xff, 0x00 };
-  logerror("4A %04x %d %02x:%02x\n", activecpu_get_pc(), sam4acnt, pia_4_porta_r(0), values[sam4acnt]);
-  return values[sam4acnt++];
+static READ_HANDLER(sam4a_r) {
+  logerror("4A %04x %02x\n", activecpu_get_pc(), locals.b1);
+  return locals.b1;
 }
-static READ_HANDLER (sam4b_r) {
-  static UINT8 values[18] = { 0x21, 0x5e, 0x42, 0x3d, 0x04, 0x7b, 0x08, 0x77, 0x10, 0x6f, 0x7f, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 };
-  logerror("4B %04x %d %02x:%02x\n", activecpu_get_pc(), sam4bcnt, pia_4_portb_r(0), values[sam4bcnt]);
-  return values[sam4bcnt++];
+static READ_HANDLER(sam4b_r) {
+  UINT8 retVal = locals.a0 & 0x7f;
+  if (retVal == 0x1e || retVal == 0x1d || retVal == 0x1b || retVal == 0x17 || retVal == 0x0f) retVal = 0xff;
+  logerror("4B %04x %02x:%02x\n", activecpu_get_pc(), locals.a0, retVal);
+  return retVal;
 }
 static void samirq4b(int state) {
   logerror("-- IRQ4B %x --\n", state);
   cpu_set_irq_line(0, 0, state ? ASSERT_LINE : CLEAR_LINE); // J5-34 (activate)
-  if (!state) sam2acnt = sam3acnt = sam3bcnt = sam4acnt = sam4bcnt = sam5bcnt = sam6acnt = 0;
+  if (!state) sam2acnt = 0;
 }
-static READ_HANDLER (sam5b_r) {
-  static UINT8 values[6] = { 0x80, 0x40, 0x20, 0x10, 0x00, 0xf0 };
-  logerror("5B %04x %d %02x:%02x\n", activecpu_get_pc(), sam5bcnt, pia_5_portb_r(0), values[sam5bcnt]);
-  if (activecpu_get_pc() != 0x356b) return 0;
-  return values[sam5bcnt++];
+static READ_HANDLER(sam5b_r) {
+  logerror("5B %04x %02x\n", activecpu_get_pc(), locals.a0);
+  return locals.a0;
 }
 static WRITE_HANDLER(sam5a_w) {
   pia_set_input_a(5, data);
@@ -820,10 +817,9 @@ static WRITE_HANDLER(sam5b_w) {
   pia_set_input_b(5, data);
   if (data) locals.pseg[43 - core_BitColToNum(data)].w = locals.segments[43 - core_BitColToNum(data)].w = pia_5_porta_r(0);
 }
-static READ_HANDLER (sam6a_r) {
-  static UINT8 values[18] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0x01, 0xfe, 0xff, 0x00 };
-  logerror("6A %04x %d %02x:%02x\n", activecpu_get_pc(), sam6acnt, pia_6_porta_r(0), values[sam6acnt]);
-  return values[sam6acnt++];
+static READ_HANDLER(sam6a_r) {
+  logerror("6A %04x %02x\n", activecpu_get_pc(), locals.a0);
+  return locals.a0;
 }
 static WRITE_HANDLER(sam6b_w) {
   logerror("6B:%02x\n", data);
@@ -833,14 +829,14 @@ static WRITE_HANDLER(sam6b_w) {
 
 static struct pia6821_interface sam_pia[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, sam0b_r, PIA_UNUSED_VAL(1), pia0cb1_r, pia0ca2_r, 0,
-/* O:  A/B,CA2/B2        */  pia0a_w, 0, pia0ca2_w, sam0cb2_w,
+/* O:  A/B,CA2/B2        */  pia0a_w, sam0b_w, pia0ca2_w, sam0cb2_w,
 /* IRQ: A/B              */  piaIrq0, piaIrq1
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, 0, pia1ca1_r, PIA_UNUSED_VAL(0), 0, 0,
 /* O:  A/B,CA2/B2        */  pia1a_w, pia1b_w, sam1ca2_w, sam1cb2_w,
 /* IRQ: A/B              */  piaIrq2, piaIrq3
 },{
-/* I:  A/B,CA1/B1,CA2/B2 */  sam2a_r, 0, 0, 0, 0, 0,
+/* I:  A/B,CA1/B1,CA2/B2 */  sam2a_r, PIA_UNUSED_VAL(0xff), 0, 0, 0, 0,
 /* O:  A/B               */  0, sam2b_w
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  sam3a_r, sam3b_r, 0, 0, 0, 0,
@@ -863,7 +859,7 @@ static INTERRUPT_GEN(sam_display_irq) {
 }
 
 static MACHINE_INIT(sam) {
-  sam2acnt = sam3acnt = sam3bcnt = sam4acnt = sam4bcnt = sam5bcnt = sam6acnt = 0;
+  sam2acnt = 0;
   pia_config(0, PIA_STANDARD_ORDERING, &sam_pia[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &sam_pia[1]);
   pia_config(2, PIA_STANDARD_ORDERING, &sam_pia[2]);
