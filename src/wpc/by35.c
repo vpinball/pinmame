@@ -63,7 +63,7 @@ static WRITE_HANDLER(snd300_wex) {
 }
 
 static struct {
-  int a0, a1, b0, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
+  int a0, a1, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
   int swData;
   int bcd[7], lastbcd;
   const int *bcd2seg;
@@ -255,7 +255,7 @@ static READ_HANDLER(pia0cb1_r) {
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
 static WRITE_HANDLER(pia0cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
-  if (locals.cb20 & ~data) locals.lampadr1 = locals.a0 & 0x0f;
+  if (locals.cb20 && ~data) locals.lampadr1 = locals.a0 & 0x0f;
   locals.cb20 = data;
 // ok
   if (sb == SNDBRD_ST300V) {
@@ -270,7 +270,7 @@ static WRITE_HANDLER(pia0cb2_w) {
 /* PIA1:CA2-W Lamp Strobe #2 */
 static WRITE_HANDLER(pia1ca2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
-  if (locals.ca21 & ~data) {
+  if (locals.ca21 && ~data) {
     locals.lampadr2 = locals.a0 & 0x0f;
     if (core_gameData->hw.display & 0x01)
       { locals.bcd[6] = locals.a0>>4; by35_dispStrobe(0x40); }
@@ -424,7 +424,6 @@ static SWITCH_UPDATE(by35) {
     }
     else if (core_gameData->gen & GEN_ASTRO) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
-      CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x03,1);
       CORE_SETKEYSW((inports[BY35_COMINPORT]&0x20)<<2,0x80,5);
     }
     else if (core_gameData->gen & GEN_BOWLING) {
@@ -447,6 +446,10 @@ static SWITCH_UPDATE(by35) {
 #else
   pia_set_input_ca1(BY35_PIA0, !lisy35_get_SW_Selftest());
 #endif
+}
+
+static READ_HANDLER(pia0ca2_r) {
+  return locals.ca20;
 }
 
 /* PIA 0 (U10)
@@ -473,15 +476,15 @@ PB0-3: (o) Momentary Solenoid/Sound Data
 PB4-7: (o) Continuous Solenoid
 CA1:   (i) Display Interrupt Generator
 CA2:   (o) Diag LED + Lamp Strobe #2/Sound select
-CB1:   ?
+CB1:   (i) Lamp Interrupt on Stern boards, tested by sam_iv, pulled to GND by default
 CB2:   (o) Solenoid/Sound Bank Select
 */
 static struct pia6821_interface by35_pia[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1), pia0cb1_r, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1), pia0cb1_r, pia0ca2_r,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq0,piaIrq1
 },{
-/* I:  A/B,CA1/B1,CA2/B2 */  0,0, pia1ca1_r, PIA_UNUSED_VAL(1), 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0,0, pia1ca1_r, PIA_UNUSED_VAL(0), 0,0,
 /* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,pia1ca2_w,pia1cb2_w,
 /* IRQ: A/B              */  piaIrq2,piaIrq3
 }};
@@ -610,6 +613,7 @@ static MEMORY_WRITE_START(by35_writemem)
   { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
+  { 0x1000, 0xffff, MWA_NOP },
 MEMORY_END
 
 MACHINE_DRIVER_START(by35)
@@ -718,4 +722,206 @@ MACHINE_DRIVER_START(hnk)
   MDRV_CPU_PERIODIC_INT(NULL, 0) // no irq
   MDRV_DIPS(24)
   MDRV_IMPORT_FROM(hnks)
+MACHINE_DRIVER_END
+
+
+// Stern S.A.M. (Service Assistance Module)
+// note: I did not find out what feeds all the PIA's A/B inputs, so I worked around it
+
+static int sam2acnt, sam3acnt, sam3bcnt, sam4acnt, sam4bcnt, sam5bcnt, sam6acnt;
+
+static READ_HANDLER(sam0b_r) {
+  logerror("0B %04x %02x\n", activecpu_get_pc(), pia_0_portb_r(0)); 
+  if (locals.a0 & 0x20) return core_getDip(0);
+  if (locals.a0 & 0x40) return core_getDip(1);
+  if (locals.a0 & 0x80) return core_getDip(2);
+  if (locals.cb20) return core_getDip(3);
+  return pia_0_portb_r(0);
+}
+
+static WRITE_HANDLER(sam0cb2_w) {
+  logerror("0CB2:%x\n", data);
+  locals.cb20 = data;
+  pia_set_input_cb2(0, data);
+  pia_set_input_cb1(2, data); // J1-11
+}
+
+static WRITE_HANDLER(sam1ca2_w) {
+  logerror("1CA2:%x\n", data);
+  locals.ca21 = data;
+  pia_set_input_ca2(1, data);
+  pia_set_input_cb1(2, data); // J1-08
+  cpu_set_irq_line(0, 0, data ? ASSERT_LINE : CLEAR_LINE); // J5-34 (deactivate)
+}
+
+static WRITE_HANDLER(sam1cb2_w) {
+  logerror("1CB2:%x\n", data);
+  locals.cb21 = data;
+  pia_set_input_cb2(1, data);
+  pia_set_input_cb1(4, data); // J4-10
+}
+
+static READ_HANDLER (sam2a_r) {
+  static UINT8 values[10] = { 0x80, 0x80, 0x9f, 0x80, 0x8f, 0x97, 0x9b, 0x9d, 0x9e, 0xff };
+  logerror("2A %04x %d %02x:%02x\n", activecpu_get_pc(), sam2acnt, pia_2_porta_r(0), values[sam2acnt]);
+  if (activecpu_get_pc() == 0x361d || activecpu_get_pc() == 0x3630) return 0;
+  return values[sam2acnt++];
+}
+static WRITE_HANDLER(sam2b_w) {
+  logerror("2B:%02x\n", data);
+  pia_set_input_b(0, data);
+  pia_set_input_b(2, data);
+}
+static READ_HANDLER (sam3a_r) {
+  static UINT8 values[16] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0xff, 0x00 };
+  logerror("3A %04x %d %02x:%02x\n", activecpu_get_pc(), sam3acnt, pia_3_porta_r(0), values[sam3acnt]);
+  return values[sam3acnt++];
+}
+static READ_HANDLER (sam3b_r) {
+  static UINT8 values[18] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0x01, 0xfe, 0xff, 0x00 };
+  logerror("3B %04x %d %02x:%02x\n", activecpu_get_pc(), sam3bcnt, pia_3_portb_r(0), values[sam3bcnt]);
+  return values[sam3bcnt++];
+}
+static WRITE_HANDLER(sam3ca2_w) {
+  logerror("3CA2:%x\n", data);
+  pia_set_input_ca2(3, data);
+  pia_set_input_ca1(0, data); // J3-01
+}
+static WRITE_HANDLER(sam3cb2_w) {
+  logerror("3CB2:%x\n", data);
+  pia_set_input_cb2(3, data);
+  pia_set_input_cb1(1, data); // J5-32
+}
+static READ_HANDLER (sam4a_r) {
+  static UINT8 values[18] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0x01, 0xfe, 0xff, 0x00 };
+  logerror("4A %04x %d %02x:%02x\n", activecpu_get_pc(), sam4acnt, pia_4_porta_r(0), values[sam4acnt]);
+  return values[sam4acnt++];
+}
+static READ_HANDLER (sam4b_r) {
+  static UINT8 values[18] = { 0x21, 0x5e, 0x42, 0x3d, 0x04, 0x7b, 0x08, 0x77, 0x10, 0x6f, 0x7f, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 };
+  logerror("4B %04x %d %02x:%02x\n", activecpu_get_pc(), sam4bcnt, pia_4_portb_r(0), values[sam4bcnt]);
+  return values[sam4bcnt++];
+}
+static void samirq4b(int state) {
+  logerror("-- IRQ4B %x --\n", state);
+  cpu_set_irq_line(0, 0, state ? ASSERT_LINE : CLEAR_LINE); // J5-34 (activate)
+  if (!state) sam2acnt = sam3acnt = sam3bcnt = sam4acnt = sam4bcnt = sam5bcnt = sam6acnt = 0;
+}
+static READ_HANDLER (sam5b_r) {
+  static UINT8 values[6] = { 0x80, 0x40, 0x20, 0x10, 0x00, 0xf0 };
+  logerror("5B %04x %d %02x:%02x\n", activecpu_get_pc(), sam5bcnt, pia_5_portb_r(0), values[sam5bcnt]);
+  if (activecpu_get_pc() != 0x356b) return 0;
+  return values[sam5bcnt++];
+}
+static WRITE_HANDLER(sam5a_w) {
+  pia_set_input_a(5, data);
+}
+static WRITE_HANDLER(sam5b_w) {
+  pia_set_input_b(5, data);
+  if (data) locals.pseg[43 - core_BitColToNum(data)].w = locals.segments[43 - core_BitColToNum(data)].w = pia_5_porta_r(0);
+}
+static READ_HANDLER (sam6a_r) {
+  static UINT8 values[18] = { 0x80, 0x7f, 0x40, 0xbf, 0x20, 0xdf, 0x10, 0xef, 0x08, 0xf7, 0x04, 0xfb, 0x02, 0xfd, 0x01, 0xfe, 0xff, 0x00 };
+  logerror("6A %04x %d %02x:%02x\n", activecpu_get_pc(), sam6acnt, pia_6_porta_r(0), values[sam6acnt]);
+  return values[sam6acnt++];
+}
+static WRITE_HANDLER(sam6b_w) {
+  logerror("6B:%02x\n", data);
+  pia_set_input_b(6, data);
+  cpu_set_nmi_line(0, data != 0xff ? PULSE_LINE : CLEAR_LINE); // J3-05
+}
+
+static struct pia6821_interface sam_pia[] = {{
+/* I:  A/B,CA1/B1,CA2/B2 */  0, sam0b_r, PIA_UNUSED_VAL(1), pia0cb1_r, pia0ca2_r, 0,
+/* O:  A/B,CA2/B2        */  pia0a_w, 0, pia0ca2_w, sam0cb2_w,
+/* IRQ: A/B              */  piaIrq0, piaIrq1
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  0, 0, pia1ca1_r, PIA_UNUSED_VAL(0), 0, 0,
+/* O:  A/B,CA2/B2        */  pia1a_w, pia1b_w, sam1ca2_w, sam1cb2_w,
+/* IRQ: A/B              */  piaIrq2, piaIrq3
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  sam2a_r, 0, 0, 0, 0, 0,
+/* O:  A/B               */  0, sam2b_w
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  sam3a_r, sam3b_r, 0, 0, 0, 0,
+/* O:  A/B,CA2/B2        */  0, 0, sam3ca2_w, sam3cb2_w
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  sam4a_r, sam4b_r, 0, 0, 0, 0,
+/* O:  A/B,CA2/B2        */  0, 0, 0, 0,
+/* IRQ: A/B              */  0, samirq4b
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  0, sam5b_r, 0, 0, 0, 0,
+/* O:  A/B               */  sam5a_w, sam5b_w
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  sam6a_r, 0, 0, 0, 0, 0,
+/* O:  A/B               */  0, sam6b_w
+}};
+
+static INTERRUPT_GEN(sam_display_irq) {
+  pia_set_input_ca1(1, locals.ca11 = !locals.ca11);
+  pia_set_input_cb1(5, !core_getSw(BY35_SWSELFTEST));
+}
+
+static MACHINE_INIT(sam) {
+  sam2acnt = sam3acnt = sam3bcnt = sam4acnt = sam4bcnt = sam5bcnt = sam6acnt = 0;
+  pia_config(0, PIA_STANDARD_ORDERING, &sam_pia[0]);
+  pia_config(1, PIA_STANDARD_ORDERING, &sam_pia[1]);
+  pia_config(2, PIA_STANDARD_ORDERING, &sam_pia[2]);
+  pia_config(3, PIA_STANDARD_ORDERING, &sam_pia[3]);
+  pia_config(4, PIA_STANDARD_ORDERING, &sam_pia[4]);
+  pia_config(5, PIA_STANDARD_ORDERING, &sam_pia[5]);
+  pia_config(6, PIA_STANDARD_ORDERING, &sam_pia[6]);
+  pia_set_input_cb1(0, 1);
+  pia_set_input_ca1(1, 1);
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, sb_ctrl_cb);
+  locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
+  locals.bcd2seg = core_bcd2seg;
+  install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);
+  install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);
+  install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);
+}
+
+static MEMORY_READ_START(sam_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0088, 0x008b, pia_0_r },
+  { 0x0090, 0x0093, pia_1_r },
+  { 0x0200, 0x02ff, MRA_RAM },
+  { 0x1000, 0x1fff, MRA_ROM },
+  { 0x2000, 0x207f, MRA_RAM },
+  { 0x2104, 0x2107, pia_2_r },
+  { 0x2108, 0x210b, pia_3_r },
+  { 0x2110, 0x2113, pia_4_r },
+  { 0x2120, 0x2123, pia_5_r },
+  { 0x2140, 0x2143, pia_6_r },
+  { 0x2800, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(sam_writemem)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0088, 0x008b, pia_0_w },
+  { 0x0090, 0x0093, pia_1_w },
+  { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS },
+  { 0x1000, 0x1fff, MWA_NOP },
+  { 0x2000, 0x207f, MWA_RAM },
+  { 0x2104, 0x2107, pia_2_w },
+  { 0x2108, 0x210b, pia_3_w },
+  { 0x2110, 0x2113, pia_4_w },
+  { 0x2120, 0x2123, pia_5_w },
+  { 0x2140, 0x2143, pia_6_w },
+  { 0x2800, 0xffff, MWA_NOP },
+MEMORY_END
+
+MACHINE_DRIVER_START(st200sam)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(sam,by35,by35)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 530000)
+  MDRV_CPU_MEMORY(sam_readmem, sam_writemem)
+  MDRV_CPU_VBLANK_INT(by35_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(sam_display_irq, BY35_IRQFREQ*2)
+  MDRV_TIMER_ADD(by35_zeroCross, BY35_ZCFREQ*2)
+  MDRV_SWITCH_UPDATE(by35)
+  MDRV_NVRAM_HANDLER(by35)
+  MDRV_DIPS(32)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_IMPORT_FROM(st300)
 MACHINE_DRIVER_END

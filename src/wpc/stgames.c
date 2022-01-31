@@ -31,21 +31,6 @@ BY17_ROMEND
 #define input_ports_blkshpsq input_ports_st
 CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1978,"Astro",by35_mST100,GAME_USES_CHIMES)
 
-/*----------------------------------
-/ Unknown game and manufacturer
-/---------------------------------*/
-static const core_tLCDLayout dispUnknown[] = {
-  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 0,33,7,CORE_SEG87}, {0}
-};
-INITGAME(st_game,GEN_ASTRO,dispUnknown,FLIP_SW(FLIP_L),0,SNDBRD_ASTRO,0)
-ASTRO_ROMSTART88(st_game, "cpu_u2.716",CRC(b9ac5204) SHA1(1ac4e336eb62c091e61e9b6b21a858e70ac9ab38),
-                          "cpu_u6.716",CRC(e16fbde1) SHA1(f7fe2f2ef9251792af1227f82dcc95239dd8baa1))
-BY35_ROMEND
-#define input_ports_st_game input_ports_st
-CORE_GAMEDEFNV(st_game,"Unknown Game (Unknown)",198?,"Unknown Manufacturer",by35_mAstro,GAME_NOT_WORKING)
-
 /*--------------------------------
 / Gamatron (Pinstar game, 1985)
 /-------------------------------*/
@@ -1221,3 +1206,49 @@ ST200_ROMSTART8888(lazrlord,"cpu_u1.716",CRC(32a6f341) SHA1(75922c6831463d240fe0
 BY35_ROMEND
 #define input_ports_lazrlord input_ports_st
 CORE_GAMEDEFNV(lazrlord,"Lazer Lord (Prototype)",1984,"Stern",by35_mST200,0)
+
+/*----------------------------------
+/ SAM (Service Assistance Module) Test Bench
+/---------------------------------*/
+static const core_tLCDLayout dispBench[] = {
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 0,33,7,CORE_SEG87}, {4,16,40,4,CORE_SEG7},  {0}
+};
+static core_tLampDisplay benchLamps = {
+  { 0, 0 }, /* top left */
+  {13, 17}, /* size */
+  {
+    {1,{{12,2,YELLOW}}},{1,{{8,2,YELLOW}}},  {1,{{10,2,YELLOW}}}, {1,{{0,2,YELLOW}}},  {1,{{2,2,YELLOW}}}, {1,{{4,2,YELLOW}}},  {1,{{6,2,YELLOW}}},  {1,{{6,0,YELLOW}}},
+    {1,{{0,0,YELLOW}}}, {1,{{2,0,YELLOW}}},  {1,{{4,0,YELLOW}}},  {1,{{12,0,YELLOW}}}, {1,{{2,4,YELLOW}}}, {1,{{8,0,YELLOW}}},  {1,{{10,0,YELLOW}}}, {0},
+    {1,{{6,8,YELLOW}}}, {1,{{10,6,YELLOW}}}, {1,{{12,6,YELLOW}}}, {1,{{4,10,YELLOW}}}, {1,{{2,10,YELLOW}}},{1,{{0,6,YELLOW}}},  {1,{{8,6,YELLOW}}},  {1,{{6,6,YELLOW}}},
+    {1,{{4,6,YELLOW}}}, {1,{{4,4,YELLOW}}},  {1,{{2,6,YELLOW}}},  {1,{{12,4,YELLOW}}}, {1,{{0,4,YELLOW}}}, {1,{{6,4,YELLOW}}},  {1,{{8,4,YELLOW}}},  {0},
+    {1,{{6,10,YELLOW}}},{1,{{10,10,YELLOW}}},{1,{{8,12,YELLOW}}}, {1,{{4,14,YELLOW}}}, {1,{{2,14,YELLOW}}},{1,{{8,10,YELLOW}}}, {1,{{12,8,YELLOW}}}, {1,{{10,4,YELLOW}}},
+    {1,{{4,12,YELLOW}}},{1,{{2,12,YELLOW}}}, {1,{{0,12,YELLOW}}}, {1,{{12,10,YELLOW}}},{1,{{0,10,YELLOW}}},{1,{{8,8,YELLOW}}},  {1,{{10,8,YELLOW}}}, {0},
+    {1,{{6,16,YELLOW}}},{1,{{6,14,YELLOW}}}, {1,{{8,14,YELLOW}}}, {1,{{0,16,YELLOW}}}, {1,{{2,16,YELLOW}}},{1,{{12,16,YELLOW}}},{1,{{10,16,YELLOW}}},{1,{{8,16,YELLOW}}},
+    {1,{{4,16,YELLOW}}},{1,{{12,12,YELLOW}}},{1,{{10,14,YELLOW}}},{1,{{12,14,YELLOW}}},{1,{{0,14,YELLOW}}},{1,{{6,12,YELLOW}}}, {1,{{10,12,YELLOW}}}
+  }
+};
+static core_tGameData benchGameData = {GEN_ASTRO,dispBench,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ASTRO,0,0,0,NULL,NULL,NULL,NULL,&benchLamps}};
+static void init_sam_iii(void) { core_gameData = &benchGameData; }
+ASTRO_ROMSTART88(sam_iii, "sam_iii_rev_c5.u2",CRC(b9ac5204) SHA1(1ac4e336eb62c091e61e9b6b21a858e70ac9ab38),
+                          "sam_iii_rev_c5.u6",CRC(e16fbde1) SHA1(f7fe2f2ef9251792af1227f82dcc95239dd8baa1))
+BY35_ROMEND
+#define input_ports_sam_iii input_ports_st
+CORE_GAMEDEFNV(sam_iii,"S.A.M. III Board Tester (on-board)",19??,"Stern",by35_mST200,0)
+
+static void init_sam_iv(void) { core_gameData = &benchGameData; }
+ROM_START(sam_iv)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("sam_iv_r_c5.u1", 0x3c00, 0x400, CRC(5fc44fc9) SHA1(aef3b9dbb0ba1c110b20b8e577168f4c67b6c99d))
+      ROM_RELOAD(0xfc00, 0x400)
+    ROM_LOAD("sam_iii_rev_c5.u2", 0x1000, 0x800, CRC(b9ac5204) SHA1(1ac4e336eb62c091e61e9b6b21a858e70ac9ab38))
+      ROM_RELOAD(0x5000, 0x800)
+    ROM_LOAD("sam_iv_r_c5.u3", 0x3800, 0x400, CRC(121a4db0) SHA1(a6a94fb4e17ca1ebcd009b96de6a3c253c7fb510))
+    ROM_LOAD("sam_iv_r_c5.u5", 0x3400, 0x400, CRC(361af770) SHA1(1d9698bf261e4f34c7304569c3b5c6d31edaa16a))
+    ROM_LOAD("sam_iii_rev_c5.u6", 0x1800, 0x800, CRC(e16fbde1) SHA1(f7fe2f2ef9251792af1227f82dcc95239dd8baa1))
+      ROM_RELOAD(0x5800, 0x800)
+    ROM_LOAD("sam_iv_r_c5.u7", 0x3000, 0x400, CRC(8766c667) SHA1(d6e6d1927016487f1429d084ec6b1abf54c004c5))
+BY35_ROMEND
+#define input_ports_sam_iv input_ports_st
+CORE_CLONEDEFNV(sam_iv,sam_iii,"S.A.M. IV Board Tester (external)",19??,"Stern",by35_mSTSAM,0)

@@ -36,7 +36,6 @@ ROM's with the updated driver code.
 I have also read posts stating that the ghosting issue is more prevalent when Rotten Dog power/driver boards are used.
 */
 
-DRIVERNV(st_game)       // Unknown game running on old Stern hardware
 DRIVERNV(mac_zois)      // 05/03 machinaZOIS Virtual Training Center
 DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 
@@ -1341,6 +1340,8 @@ DRIVERNV(magicfp)       //MPU-100: 08/79 Magic (Free Play)
 DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
 DRIVERNV(princefp)      //MPU-100: 08/79 Cosmic Princess (Free Play)
 // MPU-200 - Sound Board: SB-300
+DRIVERNV(sam_iii)       //               Service Assistance Module - on-board test
+DRIVERNV(sam_iv)        //               Service Assistance Module - external test
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
 DRIVERNV(meteora)       //MPU-200: ??/?? Meteor (Bonus Count Official Fix)
 DRIVERNV(meteorbf)      //MPU-200: 05/09 Meteor (Bonus Count Fix)

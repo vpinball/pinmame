@@ -266,7 +266,11 @@ static WRITE_HANDLER(by68701_m0800_w) {
       if (locals.commas && locals.segments[num].w && (num % 8 == 1 || num % 8 == 4)) locals.segments[num].w |= 0x80;
       break;
     case 10: // BIP / match display data
-      locals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
+      if (core_gameData->hw.gameSpecific1) { // FG, full-sized futaba panel
+        locals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
+      } else { // EBD: small 7-seg alarm clock panel
+        locals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) >> 6) | ((data & 0x80) >> 5);
+      }
       break;
     default:
       logerror("%04x: m08%02x write: %02x\n", activecpu_get_previouspc(), offset, data);
@@ -376,14 +380,20 @@ MACHINE_DRIVER_END
     COREPORT_BIT(   0x0100, "Slam Tilt",    KEYCODE_HOME) \
   INPUT_PORTS_END
 
-static const core_tLCDLayout dispBy7p[] = {
+static const core_tLCDLayout dispFG[] = {
   {0, 0, 1,7,CORE_SEG98},{0,18, 9,7,CORE_SEG98},
   {6, 0,17,7,CORE_SEG98},{6,18,25,7,CORE_SEG98},
-  {3,20,35,2,CORE_SEG9}, {3,26,38,2,CORE_SEG9}, {0}
+  {3,24,35,1,CORE_SEG9}, {3,26,36,1,CORE_SEG10},{3,30,38,2,CORE_SEG9}, {3,20,33,1,CORE_SEG10},{3,22,34,1,CORE_SEG9}, {3,28,37,1,CORE_SEG9}, {0}
 };
 
-#define INITGAMEP(name, flip, sb, gs1) \
-static core_tGameData name##GameData = {GEN_BYPROTO,dispBy7p,{flip,0,7,0,sb,0,gs1}}; \
+static const core_tLCDLayout dispEBD[] = {
+  {0, 0, 1,7,CORE_SEG98},{0,18, 9,7,CORE_SEG98},
+  {6, 0,17,7,CORE_SEG98},{6,18,25,7,CORE_SEG98},
+  {3,30,35,2,CORE_SEG7S},{3,36,38,2,CORE_SEG7S},{0}
+};
+
+#define INITGAMEP(name, flip, sb, gs1, disp) \
+static core_tGameData name##GameData = {GEN_BYPROTO,disp,{flip,0,7,0,sb,0,gs1}}; \
 static void init_##name(void) { core_gameData = &name##GameData; } \
 BY68701_INPUT_PORTS_START(name)
 
@@ -418,7 +428,7 @@ BY68701_INPUT_PORTS_START(name)
 /*------------------
 / Flash Gordon
 /------------------*/
-INITGAMEP(flashgdp,FLIP_SW(FLIP_L),SNDBRD_BY61,1)
+INITGAMEP(flashgdp,FLIP_SW(FLIP_L),SNDBRD_BY61,1,dispFG)
 BY68701_ROMSTART_CA8(flashgdp,"fg6801.bin",CRC(8af7bf77) SHA1(fd65578b2340eb207b2e197765e6721473340565) BAD_DUMP,
                             "xxx-xx.u10",CRC(3e9fb30f) SHA1(173cd9e55e9c954944aa504308564e4842646e55),
                             "xxx-xx.u11",CRC(8b0ae6d8) SHA1(2380bd6d354c204153fd44534d617f7be000e46f),
@@ -442,7 +452,7 @@ CORE_CLONEDEFNV(flashgp2,flashgdn,"Flash Gordon (Prototype rev. 2)",1981,"Bally"
 /*------------------
 / Eight Ball Deluxe
 /------------------*/
-INITGAMEP(eballdp1,FLIP_SW(FLIP_L),SNDBRD_BY61,0)
+INITGAMEP(eballdp1,FLIP_SW(FLIP_L),SNDBRD_BY61,0,dispEBD)
 BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
 // the ebd68701.2 boot rom obviously does not survive a slam tilt
 //BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
