@@ -255,6 +255,7 @@ import "ocidl.idl";
 		[propget, id(85), helpstring("property ChangedNVRAM")] HRESULT ChangedNVRAM([out, retval] VARIANT *pVal);
 		[propget, id(86), helpstring("property SoundMode")] HRESULT SoundMode([out, retval] int *pVal);
 		[propput, id(86), helpstring("property SoundMode")] HRESULT SoundMode([in] int newVal);
+		[propget, id(87), helpstring("property ROMName")] HRESULT ROMName([out, retval] BSTR *pVal);
 	};
 
 	// WSHDlg and related interfaces

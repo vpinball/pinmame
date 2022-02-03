@@ -1158,6 +1158,16 @@ STDMETHODIMP CController::put_GameName(BSTR newVal)
 	return S_OK;
 }
 
+/******************************************************
+ * IController.ROMName property: get the internal game name (may be different from GameName if alias was triggered)
+ ******************************************************/
+STDMETHODIMP CController::get_ROMName(BSTR *pVal)
+{
+	CComBSTR Val(m_szROM);
+	*pVal = Val.Detach();
+	return S_OK;
+}
+
 /*************************************************************
  * IController.HandleKeyboard property: get/set HandleKeyboard
  *************************************************************/
@@ -1299,8 +1309,8 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
 
 STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int nnLow, VARIANT *pVal)
 {
-  UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
-  UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
+  const UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
+  const UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
   vp_tChgLED chgLED;
 
   if (!pVal) return S_FALSE;
@@ -1347,17 +1357,17 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
  *****************************************************************************************/
 STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, int nnLow, int **buf, int *pVal)
 {
-	UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
-	UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
-	vp_tChgLED chgLED;
-	
-	if (!pVal) return S_FALSE;
-	
-	if(!buf)
-	{
-		*pVal = 0;
-		return S_FALSE;
-	}
+  const UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
+  const UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
+  vp_tChgLED chgLED;
+
+  if (!pVal) return S_FALSE;
+
+  if(!buf)
+  {
+	*pVal = 0;
+	return S_FALSE;
+  }
 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
@@ -1366,7 +1376,7 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
 	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
   else if ( synclevel<0 )
-	  uSleep(-synclevel*1000);
+	uSleep(-synclevel*1000);
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
@@ -1377,10 +1387,9 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   /*-- add changed LEDs to array --*/
   int *dst = reinterpret_cast<int*>(buf);
   for (int i = 0; i < uCount; i++) {
-
-	  *(dst++) = chgLED[i].ledNo;
-	  *(dst++) = chgLED[i].chgSeg;
-	  *(dst++) = chgLED[i].currStat;
+	*(dst++) = chgLED[i].ledNo;
+	*(dst++) = chgLED[i].chgSeg;
+	*(dst++) = chgLED[i].currStat;
   }
 
   *pVal = uCount;
@@ -1409,7 +1418,7 @@ STDMETHODIMP CController::ShowAboutDialog(LONG_PTR hParentWnd)
 	}
 
 	ShowAboutDlg((HWND) hParentWnd);
-	
+
 	return S_OK;
 }
 
