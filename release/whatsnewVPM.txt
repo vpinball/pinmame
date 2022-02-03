@@ -7,6 +7,8 @@ Version 3.5 (XX XXth, 2022) - ""
 ------------------------------------------------------------------------------
 - The double size DMD setting was replaced by a more general scaling factor (for legacy reasons the value '1' also means 2x though, so use '0' to disable the scale)
 
+- Add 'ROMName' to COM-API to get the internal game name if an alias is used
+
 Version 3.4 (December 24th, 2021) - "Still delivering your christmas present"
 ------------------------------------------------------------------------------
 - Fix the additional .raw/non-averaged file output dumping of Alvin G. DMDs
