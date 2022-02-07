@@ -696,16 +696,16 @@ void alt_sound_handle(int boardNo, int cmd)
 				(core_gameData->gen == GEN_WS_1) || 
 				(core_gameData->gen == GEN_WS_2))
 			{
-				//!! so far tested only with LOTR, SWTR, Elvis, NFL, AP, HRC, Monopoly, Playboy, RBION, Sharkeys, RCT, TSPP, Striker, T3
+				//!! so far tested only with LOTR, SWTR, Elvis, NFL, AP, HRC, Monopoly, Playboy, RBION, Sharkeys, RCT, TSPP, Striker, T3, Apollo13, Godzilla, HD, ID4, LiS, South Park, Space Jam, StarshipTroopers, JP Lost World, Star Wars Trilogy, X-Files, Twister, ViperNightDrivin
 				if ((cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x26 && (cmd & 0xF0) == 0xF0) || 
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x25 && (cmd & 0xF0) == 0xF0) || 
-					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x20 && (cmd & 0xF0) == 0xF0) || //NFL
+					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x20 && (cmd & 0xF0) == 0xF0) || //NFL, South Park (31, 82, too??)
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x1F && (cmd & 0xF0) == 0xF0) || //Sharkeys (B9, C0, too??), Simpsons, Striker
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x17 && (cmd & 0xF0) == 0xF0) || //Playboy, Sopranos
 					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x16 && (cmd & 0xF0) == 0xF0) || //DaleJr, Ripleys
-					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x11 && (cmd & 0xF0) == 0xF0) || //High Roller Casino (B9, C0, too??)
-					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x10 && (cmd & 0xF0) == 0xF0) || //Austin Powers, Monopoly (A1, B8, too??), RollercoasterTyc (42, 65, too??), T3
-					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x01 && (cmd & 0xF0) == 0xF0))   //Austin Powers, DaleJr, Monopoly, etcetc
+					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x11 && (cmd & 0xF0) == 0xF0) || //High Roller Casino (B9, C0, too??), Godzilla (81, too??), Independence Day, Harley Davidson (8B, CE, too??), Lost in Space, Space Jam (B1, 65, too??), StarshipTroopers (4E, too??), SWTrilogy (A1, A3, too??), X-Files (B4, C6, too??), Twister, ViperNightDrivin (58, 45, 88, too??)
+					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x10 && (cmd & 0xF0) == 0xF0) || //Austin Powers, Monopoly (A1, B8, too??), RollercoasterTyc (42, 65, too??), T3, Apollo13, JPLostWorld (D2, C0, too??)
+					(cmd_buffer[2] == 0xFE && cmd_buffer[1] == 0x01 && (cmd & 0xF0) == 0xF0))   //Austin Powers, DaleJr, Monopoly, StarshipTroopers, ViperNightDrivin, etcetc
 				{
 					cmd_storage = 0;
 					cmd_counter = 0;
