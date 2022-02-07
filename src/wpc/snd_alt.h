@@ -200,13 +200,15 @@ void alt_sound_handle(int boardNo, int cmd)
 			char cwd[1024];
 			char cvpmd[1024];
 			HINSTANCE hInst;
-			char *lpHelp = cvpmd;
-			char *lpSlash = NULL;
+			char* lpHelp = cvpmd;
+			char* lpSlash = NULL;
 			DIR* dir;
 
 			CsvReader* c;
 			size_t PATH_LEN;
 			char* PATH;
+
+			int err = CSV_ERROR_FILE_NOT_FOUND;
 
 			srand((unsigned int)time(NULL)); // randomize random number generator seed
 
@@ -244,9 +246,15 @@ void alt_sound_handle(int boardNo, int cmd)
 			c = csv_open(PATH, ',');
 
 			if (c) {
+				err = csv_read_header(c);
+				if (err != CSV_SUCCESS)
+				{
+					LOG(("failed to read CSV header"));
+				}
+			}
+			if (err == CSV_SUCCESS) {
 				int colID,colCHANNEL,colDUCK,colGAIN,colLOOP,colSTOP,colFNAME;
 				long pos;
-				csv_read_header(c);
 				LOG(("n_headers: %d\n", c->n_header_fields));
 				colID = csv_get_colnumber_for_field(c, "ID");
 				colCHANNEL = csv_get_colnumber_for_field(c, "CHANNEL");
@@ -258,7 +266,7 @@ void alt_sound_handle(int boardNo, int cmd)
 
 				pos = ftell(c->f);
 
-				while (csv_read_record(c) == 0) {
+				while (csv_read_record(c) == CSV_SUCCESS) {
 					int val;
 					csv_get_hex_field(c, colID, &val);
 					csv_get_int_field(c, colCHANNEL, &val);
@@ -289,7 +297,13 @@ void alt_sound_handle(int boardNo, int cmd)
 					char tmpPath[4096];
 
 					int val = 0;
-					csv_read_record(c);
+					const int err = csv_read_record(c);
+					if (err != CSV_SUCCESS)
+					{
+						LOG(("failed to read CSV record %d",i));
+						psd.num_files = i;
+						break;
+					}
 					csv_get_hex_field(c, colID, &val);
 					psd.ID[i] = val;
 					val = 0;
@@ -1043,7 +1057,7 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 		// realloc field array
 		if (field_number == capacity) {
 			int i;
-			int size = (capacity + 10)*sizeof(char*);
+			const int size = (capacity + 10)*sizeof(char*);
 			fields = capacity == 0 ? malloc(size) : realloc(fields, size);
 			capacity += 10;
 			for (i = field_number; i<capacity; i++) fields[i] = NULL;
@@ -1055,16 +1069,13 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 			f = d = fields[field_number];
 		}
 		if (enclosed_in_quotes) {
-			if (*p == '"' && !escaped) {
+			if (*p == '"' && !escaped)
 				enclosed_in_quotes = 0;
-			}
-			else if (*p == '\\' && !escaped) {
+			else if (*p == '\\' && !escaped)
 				escaped = 1;
-			}
 			else {
-				if (justAfterDelim && (*p == ' ' || *p == '\t')) {
+				if (justAfterDelim && (*p == ' ' || *p == '\t'))
 					justAfterDelim = 0;
-				}
 				else {
 					*d++ = *p;	// copy char to target
 					escaped = 0;
@@ -1073,9 +1084,8 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 			}
 		}
 		else { // not in quotes
-			if (*p == '"' && !escaped) {
+			if (*p == '"' && !escaped)
 				enclosed_in_quotes = 1;
-			}
 			else if (*p == c->delimiter && !escaped) {
 				// terminate current field
 				*d = 0;
@@ -1085,13 +1095,11 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 				allocField = 1;
 				justAfterDelim = 1;
 			}
-			else if (*p == '\\' && !escaped) {
+			else if (*p == '\\' && !escaped)
 				escaped = 1;
-			}
 			else {
-				if (justAfterDelim && (*p == ' ' || *p == '\t')) {
+				if (justAfterDelim && (*p == ' ' || *p == '\t'))
 					justAfterDelim = 0;
-				}
 				else {
 					*d++ = *p;	// copy char to target
 					escaped = 0;
@@ -1131,9 +1139,7 @@ static int csv_read_header(CsvReader* const c) {
 		return CSV_ERROR_HEADER_NOT_FOUND;
 
 	// parse line and look for headers
-	parse_line(c, buf, 1);
-
-	return 0;
+	return parse_line(c, buf, 1);
 }
 
 static int csv_get_colnumber_for_field(CsvReader* c, const char* fieldname) {
@@ -1147,9 +1153,9 @@ static int csv_get_colnumber_for_field(CsvReader* c, const char* fieldname) {
 
 static void free_record(CsvReader* const c) {
 	int i;
-	for (i = 0; i < c->n_fields; i++) {
+	for (i = 0; i < c->n_fields; i++)
 		free(c->fields[i]);
-	}
+
 	if (c->n_fields) free(c->fields);
 }
 
@@ -1170,7 +1176,6 @@ static int csv_get_hex_field(CsvReader* const c, const int field_index, int* pVa
 
 	return CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE;
 }
-
 
 static int csv_get_float_field(CsvReader* const c, const int field_index, float* pValue) {
 	if (field_index >= 0 && field_index < c->n_fields) {
@@ -1210,8 +1215,6 @@ static int csv_read_record(CsvReader* const c) {
 		return CSV_ERROR_NO_MORE_RECORDS;
 
 	free_record(c);
-	// parse line and look for headers
-	parse_line(c, buf, 0);
-
-	return 0;
+	// parse line and look for data
+	return parse_line(c, buf, 0);
 }
