@@ -48,12 +48,12 @@ private:
 		char szHelp[256];
 
 		pGame->get_Name(&sHelp);
-		WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, NULL, NULL);
+		WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, nullptr, nullptr);
 		::SetWindowText(GetDlgItem(IDC_ROMSETNAME), szHelp);
 		sHelp.Empty();
 
 		pGame->get_Description(&sHelp);
-		WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, NULL, NULL);
+		WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, nullptr, nullptr);
 		::SetWindowText(GetDlgItem(IDC_GAMENAME), szHelp);
 		sHelp.Empty();
 
@@ -95,7 +95,7 @@ private:
 			CComBSTR sName;
 			char szName[256];
 			pRom->get_Name(&sName);
-			WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, nullptr, nullptr);
 			sName.Empty();
 
 			char szType[8];
@@ -121,7 +121,7 @@ private:
 			sprintf(szLine, "%s\t%s\t%i\t%i\t0x%08X\t0x%08X\t", szName, szType, lExpLength, lLength, lExpChecksum, lChecksum);
 
 			pRom->get_StateDescription(&sHelp);
-			WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, nullptr, nullptr);
 			sHelp.Empty();
 			strcat(szLine, szHelp);
 
@@ -173,15 +173,15 @@ private:
 			}
 			else if ( fMaybeOK ) {
 				IGameSettings *pGameSettings;		// ignore patched/localization/sound/message rom patches
-				VARIANT vValue;				
+				VARIANT vValue;
 				VariantInit(&vValue);
 
-				pGame->get_Settings((IGameSettings**) &pGameSettings);				
+				pGame->get_Settings((IGameSettings**) &pGameSettings);
 				
 				pGameSettings->get_Value(CComBSTR("ignore_rom_crc"), &vValue);
 				pGameSettings->Release();
 
-				if(vValue.lVal != NULL) {
+				if(vValue.lVal != 0) {
 					fROMSetOK = fOK = true;
 				}
 
@@ -259,15 +259,15 @@ STDMETHODIMP CGame::InterfaceSupportsErrorInfo(REFIID riid)
 
 CGame::CGame()
 {
-	m_gamedrv = NULL;
-	m_pRoms = NULL;
+	m_gamedrv = nullptr;
+	m_pRoms = nullptr;
 }
 
 CGame::~CGame()
 {
 	if ( m_pRoms )
 		m_pRoms->Release();
-	m_pRoms = NULL;
+	m_pRoms = nullptr;
 }
 
 HRESULT CGame::Init(const struct GameDriver *gamedrv)
@@ -280,11 +280,11 @@ HRESULT CGame::Init(const struct GameDriver *gamedrv)
 		hr = m_pRoms->Init(m_gamedrv);
 		if ( FAILED(hr) ) {
 			m_pRoms->Release();
-			m_pRoms = NULL;
+			m_pRoms = nullptr;
 		}
 	}
 	else
-		m_pRoms = NULL;
+		m_pRoms = nullptr;
 
 	return hr;
 }
@@ -398,7 +398,7 @@ int GetGameNumFromString(const char * const name)
 char* GetGameRegistryKey(char *pszRegistryKey, const char* const pszROMName)
 {
 	if ( !pszRegistryKey )
-		return NULL;
+		return nullptr;
 
 	lstrcpy(pszRegistryKey, REG_BASEKEY);
 	lstrcat(pszRegistryKey, "\\");
@@ -423,9 +423,9 @@ BOOL GameUsedTheFirstTime(const char* const pszROMName)
 		return false;
 
 	HKEY hKey;
-   	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_QUERY_VALUE, &hKey)!=ERROR_SUCCESS ) {
+	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_QUERY_VALUE, &hKey)!=ERROR_SUCCESS ) {
 		DWORD dwDisposition;
-   		if ( RegCreateKeyEx(HKEY_CURRENT_USER, szKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)==ERROR_SUCCESS )
+		if ( RegCreateKeyEx(HKEY_CURRENT_USER, szKey, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, nullptr, &hKey, &dwDisposition)==ERROR_SUCCESS )
 			RegCloseKey(hKey);
 		return true;
 	}
