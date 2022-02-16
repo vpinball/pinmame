@@ -657,7 +657,22 @@ void alt_sound_handle(int boardNo, int cmd)
 				(core_gameData->gen == GEN_WPCDMD) || // remaps everything to 16bit, a bit stupid maybe
 				(core_gameData->gen == GEN_WPCFLIPTRON))
 			{
-				if (cmd_buffer[1] == 0x7A) // 16bit command second part //!! TZ triggers a 0xFF in the beginning -> check sequence and filter?
+				cmd_filter = 0;
+				if ((cmd_buffer[2] == 0x79) && (cmd_buffer[1] == (cmd_buffer[0]^0xFF))) // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
+				{
+					global_vol = min((float)cmd_buffer[1] / 127.f, 1.0f);
+					if (channel_0 != 0)
+						BASS_ChannelSetAttribute(channel_0, BASS_ATTRIB_VOL, channel_0_vol * global_vol * master_vol);
+
+					LOG(("change volume %.2f\n", global_vol));
+
+					for (i = 0; i < ALT_MAX_CMDS; ++i)
+						cmd_buffer[i] = ~0;
+
+					cmd_counter = 0;
+					cmd_filter = 1;
+				}
+				else if (cmd_buffer[1] == 0x7A) // 16bit command second part //!! TZ triggers a 0xFF in the beginning -> check sequence and filter?
 				{
 					cmd_storage = cmd_buffer[1];
 					cmd_counter = 0;
