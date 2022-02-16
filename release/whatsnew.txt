@@ -12,7 +12,8 @@ Updated LISY support to 5.28-11 (Linux for Gottlieb System1 & System80, Bally, A
 
 *** CORE/CPU ***
 Better handle flickering lamps on Sega/Stern Whitestar machines
-Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these
+Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these, incl. global volume control parsing
+Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
 
 *** ROM SUPPORT *** Thanks to inkochnito, Guru
 New:
