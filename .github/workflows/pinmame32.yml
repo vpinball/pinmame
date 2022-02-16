@@ -57,7 +57,7 @@ jobs:
       - name: Build PinMAME32${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
           cp cmake/pinmame32/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
-          cmake ${{ matrix.extra-flags }} -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
+          cmake ${{ matrix.extra-flags }} -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config Release
           ./upx/upx.exe --best --lzma build/Release/PinMAME32.exe
       - run: |
