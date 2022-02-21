@@ -726,9 +726,6 @@ MACHINE_DRIVER_END
 
 
 // Stern S.A.M. (Service Assistance Module)
-// note: I did not find out what feeds PIA #2 port A, so I worked around it
-
-static int sam2acnt;
 
 static READ_HANDLER(sam0b_r) {
   logerror("0B %04x %02x\n", activecpu_get_pc(), pia_0_portb_r(0)); 
@@ -763,10 +760,14 @@ static WRITE_HANDLER(sam1cb2_w) {
   pia_set_input_cb1(4, data); // J4-10
 }
 static READ_HANDLER(sam2a_r) {
-  static UINT8 values[10] = { 0x80, 0x80, 0x9f, 0x80, 0x8f, 0x97, 0x9b, 0x9d, 0x9e, 0xff };
-  logerror("2A %04x %d %02x:%02x\n", activecpu_get_pc(), sam2acnt, pia_2_porta_r(0), values[sam2acnt]);
-  if (activecpu_get_pc() == 0x361d || activecpu_get_pc() == 0x3630) return 0;
-  return values[sam2acnt++];
+  int lastbcd;
+  logerror("2A %04x %x %02x %02x %02x\n", activecpu_get_pc(), locals.ca20, locals.a0, locals.a1, locals.lastbcd);
+  if (locals.ca20) {
+    lastbcd = locals.lastbcd;
+    locals.lastbcd = 1;
+    return lastbcd ? 0x80 : 0x00;
+  }
+  return 0x80 | (~locals.a0 & 0x0f) | ((~locals.a1 & 0x01) << 4);
 }
 static WRITE_HANDLER(sam2b_w) {
   logerror("2B:%02x\n", data);
@@ -804,7 +805,6 @@ static READ_HANDLER(sam4b_r) {
 static void samirq4b(int state) {
   logerror("-- IRQ4B %x --\n", state);
   cpu_set_irq_line(0, 0, state ? ASSERT_LINE : CLEAR_LINE); // J5-34 (activate)
-  if (!state) sam2acnt = 0;
 }
 static READ_HANDLER(sam5b_r) {
   logerror("5B %04x %02x\n", activecpu_get_pc(), locals.a0);
@@ -859,7 +859,6 @@ static INTERRUPT_GEN(sam_display_irq) {
 }
 
 static MACHINE_INIT(sam) {
-  sam2acnt = 0;
   pia_config(0, PIA_STANDARD_ORDERING, &sam_pia[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &sam_pia[1]);
   pia_config(2, PIA_STANDARD_ORDERING, &sam_pia[2]);
