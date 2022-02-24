@@ -368,6 +368,13 @@ static core_tLCDLayout dispMAC[] = {
   {0}
 };
 
+// Galaxy:
+
+//Old known dump:    "(c) MAC SA 1986VER : M.6"
+//Blue version dump: "(c) MAC SA 1986VER : M.042"
+
+//The label on the blue version ROM says "M5", so I would guess "M.6" is newer.
+
 ROM_START(macgalxy)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("galaxy1.bin", 0x0000, 0x2000, CRC(00c71e67) SHA1(c1ad1dacae2b90f516c732bfdf8244908f67e15a))
