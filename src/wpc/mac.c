@@ -434,6 +434,15 @@ PORT_START /* 1 */
 INPUT_PORTS_END
 CORE_GAMEDEFNV(macgalxy, "MAC's Galaxy", 1986, "MAC S.A.", mac0, 0)
 
+ROM_START(macgalxb)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("macsa_m5.bin", 0x0000, 0x2000, CRC(38319685) SHA1(54e979bba16d79d3589b3ae3f9e8e29071ef5b36))
+    ROM_LOAD("a-01202_macsa_galaxy_05.bin", 0x2000, 0x2000, CRC(c1f40cbf) SHA1(566d962f55367379346155f2078b92b4e1e6a79d))
+ROM_END
+#define init_macgalxb init_macgalxy
+#define input_ports_macgalxb input_ports_macgalxy
+CORE_CLONEDEFNV(macgalxb, macgalxy, "MAC's Galaxy (blue version)", 1986, "MAC S.A.", mac0, 0)
+
 ROM_START(macjungl)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("jungle1.bin", 0x0000, 0x2000, CRC(461a3e1b) SHA1(96981b4d8db0412c474169eaf5e5386be5006ffe))

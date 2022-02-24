@@ -15,13 +15,14 @@ Better handle flickering lamps on Sega/Stern Whitestar machines
 Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these, incl. global volume control parsing
 Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game)
 New:
 Stern S.A.M. IV Board Tester
 
 Correct Dumps:
 
 Clones:
+MAC's Galaxy (blue version)
 World Cup Soccer LX-1
 
 

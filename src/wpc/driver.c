@@ -1033,6 +1033,7 @@ DRIVERNV(tricksht)      //Trick Shooter
 // MAC GAMES
 // ----------------
 DRIVERNV(macgalxy)      //MAC Galaxy (1986)
+DRIVERNV(macgalxb)      //MAC Galaxy (1986, blue version)
 DRIVERNV(macjungl)      //MAC Jungle (1986)
 DRIVERNV(spctrai0)      //Space Train (1987, old hardware)
 DRIVERNV(spctrain)      //Space Train (1987, new hardware)
