@@ -22,6 +22,7 @@ Stern S.A.M. IV Board Tester
 Correct Dumps:
 
 Clones:
+Airborne 1.5
 MAC's Galaxy (blue version)
 World Cup Soccer LX-1
 

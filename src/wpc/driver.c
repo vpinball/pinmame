@@ -404,7 +404,8 @@ DRIVERNV(uboat65)       //BY35ALPHA 04/88 U-Boat 65
 DRIVERNV(ghv101)        // 04/94    Goofy Hoops (Redemption) (Romstar license)
 DRIVERNV(pmv112)        // 10/95    Pinball Magic
 DRIVERNV(pmv112r)       // 10/95    Pinball Magic (Redemption)
-DRIVERNV(abv106)        // 03/96    Airborne
+DRIVERNV(abv105)        // 0X/96    Airborne (1.5)
+DRIVERNV(abv106)        // 03/96    Airborne (1.6)
 DRIVERNV(abv106r)       // 03/96    Airborne (Redemption)
 DRIVERNV(bsv100r)       // 05/96    Breakshot (Redemption, 1.0)
 DRIVERNV(bsv102r)       // 05/96    Breakshot (Redemption, 1.2)

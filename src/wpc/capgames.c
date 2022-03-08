@@ -156,6 +156,20 @@ CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0
 				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21))
 CC_ROMEND
 CORE_GAMEDEFNV(abv106,"Airborne (1.6)",1996,"Capcom",cc2,0)
+
+//Version 1.5
+INITGAME(abv105, 3, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+CC_ROMSTART_4(abv105,  "u1l_v15.bin", CRC(c66e8abc) SHA1(06e5b36dcb98eb33c7239592bb8e2485814789b3),
+                       "u1h_v15.bin", CRC(de642229) SHA1(cb62d966f8088d069d66faec1554c63e504f18d6),
+                       "u2l_v10.bin", CRC(a15b1ec0) SHA1(673a283ddf670109a9728fefac2bcf493d70f23d),
+                       "u2h_v10.bin", CRC(c22e3338) SHA1(1a25c85a1ed59647c40f9a4d417d78cccff7e51c))
+CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),
+				  "u28_v10.bin", CRC(ca3c6954) SHA1(44345c0a720c78c312459425c54180a4c5413c0d),
+				  "u29_v10.bin", CRC(8989d566) SHA1(f1827fb5c1d917a324fffe2035e87fcca77f362f),
+				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21))
+CC_ROMEND
+CORE_CLONEDEFNV(abv105,abv106,"Airborne (1.5)",1996,"Capcom",cc2,0)
+
 //Redemption Version 1.6I
 INITGAME(abv106r, 4, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_4(abv106r, "u1l_v16i.bin",CRC(7d7d2d85) SHA1(5c83022d7c0b61b15455942b3bdd0cf89fc75b57),
