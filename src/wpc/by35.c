@@ -21,7 +21,7 @@
 #define BY35_PIA0 0
 #define BY35_PIA1 1
 
-#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
@@ -349,7 +349,7 @@ static INTERRUPT_GEN(by35_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY35_LAMPSMOOTH) == 0) {

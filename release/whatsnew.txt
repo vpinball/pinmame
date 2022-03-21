@@ -10,6 +10,8 @@ More gracefully handle parsing errors in invalid altsound CSV files to avoid cra
 
 Updated LISY support to 5.28-11 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
+VS2022 build support
+
 *** CORE/CPU ***
 Better handle flickering lamps on Sega/Stern Whitestar machines
 Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these, incl. global volume control parsing
@@ -23,6 +25,7 @@ Correct Dumps:
 
 Clones:
 Airborne 1.5
+Demolition Man 7.0 Vulgar Speech
 MAC's Galaxy (blue version)
 World Cup Soccer LX-1
 

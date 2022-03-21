@@ -507,6 +507,7 @@ WPC_ROMSTART(dm,h6,   "dman_h6.rom", 0x80000, CRC(3a079b80) SHA1(94a7ee94819ec87
 WPC_ROMSTART(dm,h6b,  "dman_h6b.rom",0x80000, CRC(047711de) SHA1(7a62b5862f7b5414e3eabe75f117866e6921efaf)) DM_SOUND_H1 WPC_ROMEND
 //WPC_ROMSTART(dm,h6c,  "dman_h6c.rom",0x80000, CRC(57de32fd) SHA1(b3ec3b3b2e1136989d92347a22ba38a44bf29e24)) DM_SOUND_H1 WPC_ROMEND //L-6H patch 9e24
 WPC_ROMSTART(dm,h6c,  "Demolition Man U6 game ROM rev LH-6 patch 4d2b.rom",0x80000,CRC(19e764a9) SHA1(333e422d2f641952a3e4fddf2a70fdba7268b4e0)) DM_SOUND_H1 WPC_ROMEND //L-6H patch 4d2b
+WPC_ROMSTART(dm,h7,   "DM_V7VULG.BIN",0x80000,CRC(0f0361c3) SHA1(01c76542bd09e89457ea93f444495b4e2b58aa75)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dt099,"dm_dt099.rom",0x100000,CRC(64428b78) SHA1(ac0b0174dcecd1b1cd467c4369cb78c2430e9e4b)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dt101,"dm_dt101.rom",0x100000,CRC(ce36910f) SHA1(45902edd6d8ac2bff95d0c7f65e0f80c4c17b8f2)) DM_SOUND_H1 WPC_ROMEND
 
@@ -525,15 +526,17 @@ CORE_CLONEDEF(dm,da1,  lx4, "Demolition Man (DA-1 LED Ghost Fix)",1994,"Williams
 CORE_CLONEDEF(dm,lx3,  lx4, "Demolition Man (LX-3)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dx3,  lx4, "Demolition Man (DX-3 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h5,   lx4, "Demolition Man (H-5)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,dh5,  lx4, "Demolition Man (DH-5 LED Ghost Fix)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,h5b,  lx4, "Demolition Man (H-5B Coin Play)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,dh5b, lx4, "Demolition Man (DH-5B Coin Play LED Ghost Fix)", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dh5,  lx4, "Demolition Man (DH-5 LED Ghost Fix)",1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h5b,  lx4, "Demolition Man (H-5B Coin Play)",1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dh5b, lx4, "Demolition Man (DH-5B Coin Play LED Ghost Fix)",1995,"Williams",wpc_mDCSS,0)
 //CORE_CLONEDEF(dm,h5c,  lx4, "Demolition Man (H-5C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-5H patch 634e // as there was no newer, updated version released for this variant again, disable it to avoid confusion
-CORE_CLONEDEF(dm,h6,   lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,h6b,  lx4, "Demolition Man (H-6B Coin Play)", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h6,   lx4, "Demolition Man (H-6)",1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h6b,  lx4, "Demolition Man (H-6B Coin Play)",1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2019,"Williams",wpc_mDCSS,0) //L-6H patch 4d2b
-CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)", 2014,"FreeWPC",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)", 2014,"FreeWPC",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h7,   lx4, "Demolition Man (7.0 Vulgar Speech)",2022,"Williams",wpc_mDCSS,0) // 'official' follow up of H-6C
+//7.0 without support for the home-sound/vulgar-speech roms also exists
+CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)",2014,"FreeWPC",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)",2014,"FreeWPC",wpc_mDCSS,0)
 
 
 static void dm_drawMech(BMTYPE** line) {

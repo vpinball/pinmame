@@ -38,7 +38,7 @@
 #define WPC_MODSOLSAMPLE   2 /* Modulated solenoid sampling rate (every n IRQs, depends on WPC_IRQFREQ) */
 #endif
 
-/*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
+/*-- IRQ frequency, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ        (8000000./8192.) /* IRQ Frequency-Timed by JD (976) */
 
 #define GENWPC_HASDMD      (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))
