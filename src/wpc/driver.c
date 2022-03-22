@@ -2873,7 +2873,7 @@ DRIVER(dm,dh5b)         //                  Demolition Man (DH-5) with rude spee
 DRIVER(dm,h6)           //          08/95 W Demolition Man (H-6) with rude speech
 DRIVER(dm,h6b)          //                  Demolition Man (H-6) with rude speech (Coin Play)
 DRIVER(dm,h6c)          //          11/19   Demolition Man (H-6C Competition MOD) with rude speech
-DRIVER(dm,h7)           //          03/22   Demolition Man (7.0) with rude speech
+//DRIVER(dm,h7)           //          03/22   Demolition Man (7.0) with rude speech
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  08/94 B Addams Family Special Collectors Edition, The (Home version)
