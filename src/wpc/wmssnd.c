@@ -879,9 +879,10 @@ static READ_HANDLER(wpcs_latch_r);
 static void wpcs_init(struct sndbrdData *brdData);
 static READ_HANDLER(wpcs_data_r);
 static WRITE_HANDLER(wpcs_data_w);
+static WRITE_HANDLER(wpcs_manCmd_w);
 static READ_HANDLER(wpcs_ctrl_r);
 static WRITE_HANDLER(wpcs_ctrl_w);
-const struct sndbrdIntf wpcsIntf = { "WPCS", wpcs_init, NULL, NULL, wpcs_data_w, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r };
+const struct sndbrdIntf wpcsIntf = { "WPCS", wpcs_init, NULL, NULL, wpcs_manCmd_w, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r, SNDBRD_DOUBLECMD };
 
 /*-- other memory handlers --*/
 static WRITE_HANDLER(wpcs_rombank_w);
@@ -1043,6 +1044,13 @@ static READ_HANDLER(wpcs_data_r) {
 
 static WRITE_HANDLER(wpcs_data_w) {
   soundlatch_w(0, data); cpu_set_irq_line(locals.brdData.cpuNo, M6809_IRQ_LINE, ASSERT_LINE);
+}
+
+static WRITE_HANDLER(wpcs_manCmd_w) {
+  int i;
+  wpcs_data_w(0, offset);
+  for (i = 0; i < 12; i++) run_one_timeslice();
+  wpcs_data_w(0, data);
 }
 
 static READ_HANDLER(wpcs_ctrl_r) {
