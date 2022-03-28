@@ -19,7 +19,7 @@ set(CMAKE_C_FLAGS -fembed-bitcode)
 include(ExternalProject)
 
 ExternalProject_Add(zlib
-  URL https://zlib.net/zlib-1.2.11.tar.gz
+  URL https://zlib.net/zlib-1.2.12.tar.gz
   CMAKE_ARGS -DCMAKE_SYSTEM_NAME=iOS
   CMAKE_ARGS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
   CMAKE_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64
