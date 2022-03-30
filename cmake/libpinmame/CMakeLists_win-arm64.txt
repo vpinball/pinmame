@@ -85,7 +85,6 @@ add_compile_definitions(
    _MBCS
    __LP64__
    WIN32
-   ZLIB_WINAPI
 )
 
 add_compile_options(
@@ -605,15 +604,10 @@ target_include_directories(pinmame PUBLIC
    src/windows
    src/vc
    src/cpu/m68000/generated_by_m68kmake
-   ext/zlib/include
-)
-
-target_link_directories(pinmame PUBLIC
-   ext/zlib/lib_v141arm
+   ext/zlib
 )
 
 target_link_libraries(pinmame
-   zlibstatic64.lib
    winmm.lib
 )
 

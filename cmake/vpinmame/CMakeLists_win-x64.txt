@@ -88,7 +88,6 @@ add_compile_definitions(
    _CRT_SECURE_NO_WARNINGS
    _USRDLL
    __LP64__
-   ZLIB_WINAPI
 )
 
 add_compile_options(
@@ -672,14 +671,27 @@ add_library(vpinmame SHARED
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
 
+   ext/zlib\adler32.c
+   ext/zlib\compress.c
+   ext/zlib\crc32.c
+   ext/zlib\deflate.c
+   ext/zlib\gzclose.c
+   ext/zlib\gzlib.c
+   ext/zlib\gzread.c
+   ext/zlib\gzwrite.c
+   ext/zlib\infback.c
+   ext/zlib\inffast.c
+   ext/zlib\inflate.c
+   ext/zlib\inftrees.c
+   ext/zlib\trees.c
+   ext/zlib\uncompr.c
+   ext/zlib\zutil.c
+
    ext/basicbitmap/BasicBitmap.cpp
    ext/basicbitmap/BasicBitmap.h
 
    ext/basicbitmap/BasicBitmap_SSE2.cpp
    ext/basicbitmap/BasicBitmap_C.h
-
-   ext/zlib/include/zconf.h
-   ext/zlib/include/zlib.h
 )
 
 target_include_directories(vpinmame PUBLIC
@@ -689,13 +701,12 @@ target_include_directories(vpinmame PUBLIC
    src/windows
    src/win32com
    src/vc
-   ext/zlib/include
+   ext/zlib
    ext/dinput
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
 )
 
 target_link_directories(vpinmame PUBLIC
-   ext/zlib/lib_vc9
    ext/dinput
    ext/bass/x64
 )
@@ -707,7 +718,6 @@ target_link_libraries(vpinmame
    dsound.lib
    dinput64.lib
    version.lib
-   zlibstatmt64.lib
    bass.lib
 )
 

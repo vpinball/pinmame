@@ -25,7 +25,6 @@ Info links
 The MAME development homepage is available at http://www.mamedev.org/
 The MinGW homepage is available at http://www.mingw.org/
 The Allegro homepage is available at http://alleg.sourceforge.net/
-The ZLib homepage is available at http://www.zlib.net/
 The NASM homepage is available at http://www.nasm.us/
 The GCC homepage is available at http://gcc.gnu.org/
 The GDB homepage is available at http://www.gnu.org/software/gdb/
@@ -109,15 +108,6 @@ Step 1: Downloads
      * gdb-5.2.1-1.exe
 
      Get them from http://sourceforge.net/downloads/mingw/MinGW/ (BaseSystem and make)
-
-- Download the ZLib library (libz) to the downloads directory.
-  * libz-1.2.3-1-mingw32-dev
-  Get it from http://sourceforge.net/downloads/mingw/MinGW/zlib/
-
-  For a real MinGW 2.0 setup use ZLib 1.1.4. This has to be compiled (explained
-  later in step 3), so download the ZLib source code to the downloads directory.
-  * zlib-1.1.4.tar.gz
-  Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
 
 - Download the latest version of Allegro's DirectX includes for MinGW to the
   downloads directory.
@@ -213,12 +203,6 @@ Step 2: Setup
      * w32api-3.11
      * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
 
-- If the MinGW release of the ZLib library (libz) is used, then extract it to
-  the installation directory.
-  * libz-1.2.3-1-mingw32-dev
-
-  Otherwise follow the instructions later in step 3.
-
 - Extract Allegro's DirectX package to the installation directory.
   Some files are already present ("lib/libd*.a", "include/d*.h") and are
   normally overwritten.
@@ -276,22 +260,6 @@ MinGW batch files).
 -----------------
 Step 3: Libraries
 -----------------
-- This step is only necessary if the MinGW release of the ZLib library (libz) is
-  *not* used.
-
-- Extract the ZLib source code into a temporary directory.
-  Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
-  Type "mingw32-make -f nt\Makefile.gcc test" to check its functionality.
-  Copy the resulting libz.a to the lib folder of the installation, e.g.
-  c:\mingw\lib, and also zlib.h and zconf.h to the include folder of the
-  installation, e.g. c:\mingw\include.
-
-  Notes for ZLib 1.2.3:
-  - The makefile is "win32\makefile.gcc".
-  - The test may fail due to normal slashes inside the makefile.
-    Just replace "./" with ".\" inside of it and it will work.
-  - Copy libzdll.a to the lib folder of the installation, e.g. c:\mingw\lib.
-    (not necessary for PinMAME, but for the sake of completeness)
 
 
 -------------------

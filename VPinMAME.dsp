@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -57,7 +57,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"ext\zlib\lib_vc9"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386
 # Begin Custom Build - Copying and performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\Release
 ProjDir=.
@@ -93,7 +93,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -105,7 +105,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"ext\zlib\lib_vc9"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # Begin Custom Build - Performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\Debug
 TargetPath=.\obj\VC60\VPinMAME\Win32\Debug\VPinMAME.dll
@@ -132,7 +132,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -144,7 +144,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"ext\zlib\lib_vc9"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386
 # Begin Custom Build - Performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD
 TargetPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
@@ -171,7 +171,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -183,7 +183,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"ext\zlib\lib_vc9"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # Begin Custom Build - Performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\DebugMD
 TargetPath=.\obj\VC60\VPinMAME\Win32\DebugMD\VPinMAME.dll
@@ -3067,11 +3067,63 @@ SOURCE=.\ext\vgm\vgmwrite.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\ext\zlib\include\zconf.h
+SOURCE=.\ext\zlib\adler32.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\ext\zlib\include\zlib.h
+SOURCE=.\ext\zlib\compress.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\crc32.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\deflate.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\gzclose.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\gzlib.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\gzread.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\gzwrite.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\infback.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\inffast.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\inflate.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\inftrees.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\trees.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\uncompr.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\zutil.c
 # End Source File
 # End Group
 # End Group

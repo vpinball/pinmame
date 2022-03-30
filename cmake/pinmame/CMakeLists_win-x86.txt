@@ -88,7 +88,6 @@ add_compile_definitions(
    WIN32
    _MBCS
    _CRT_SECURE_NO_WARNINGS
-   ZLIB_WINAPI
 )
 
 add_compile_options(
@@ -629,8 +628,21 @@ add_executable(pinmame WIN32
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
 
-   ext/zlib/include/zconf.h
-   ext/zlib/include/zlib.h
+   ext/zlib\adler32.c
+   ext/zlib\compress.c
+   ext/zlib\crc32.c
+   ext/zlib\deflate.c
+   ext/zlib\gzclose.c
+   ext/zlib\gzlib.c
+   ext/zlib\gzread.c
+   ext/zlib\gzwrite.c
+   ext/zlib\infback.c
+   ext/zlib\inffast.c
+   ext/zlib\inflate.c
+   ext/zlib\inftrees.c
+   ext/zlib\trees.c
+   ext/zlib\uncompr.c
+   ext/zlib\zutil.c
 )
 
 target_include_directories(pinmame PUBLIC
@@ -639,12 +651,11 @@ target_include_directories(pinmame PUBLIC
    src/wpc
    src/vc
    src/windows
-   ext/zlib/include
+   ext/zlib
    ext/dinput
 )
 
 target_link_directories(pinmame PUBLIC
-   ext/zlib/lib_vc9
    ext/dinput
 )
 
@@ -654,7 +665,6 @@ target_link_libraries(pinmame
    dxguid.lib
    dsound.lib
    dinput.lib
-   zlibstatmt.lib
 )
 
 target_link_options(pinmame PUBLIC

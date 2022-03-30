@@ -56,7 +56,6 @@ The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
 The Visual Studio documentation is available at https://msdn.microsoft.com/library/aa187916.aspx
   VS6 documentation is only available in english languages (gone as of 2015-08)
 The NASM homepage is available at http://www.nasm.us/
-The ZLib homepage is available at http://www.zlib.net/
 Additional DirectX information is available at http://www.toymaker.info/Games/html/directx_9_0c.html
 
 
@@ -284,34 +283,3 @@ then you have to exit and restart Visual Studio for the change to take effect.
 
 If the environment variable VS_OUTPUT is not set or empty, then the OBJ folder
 will be inside the project folder as usual.
-
-
--------------------
-Addendum: Libraries
--------------------
-<Outdated>
-
-- The ZLib library for Visual C++ 6.0 is already included in the CVS repository.
-  If you want to compile it yourself then get the following package:
-  a) ZLib source code
-     * zlib-1.1.4.tar.gz
-     Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
-     Note: Newer versions of ZLib work too (currently 1.2.3).
-  b) If you want to test the assembler optimised version you also need MASM from
-     Microsoft. You can use it for free, but not for commercial use.
-     Get the Processor Pack for Visual C++ 6.0:
-     * (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
-     * (non-functional) http://www.infinitefactors.org/jonk/pctools.html
-     Extract it to a temporary directory, for example c:\masm, copy the
-     following files into a separate directory and add it to the bin directories
-     of Visual C++:
-     * H2INC.ERR
-     * H2INC.EXE
-     * ML.ERR
-     * ML.EXE
-     * MASMREF.DOC
-	 Versions:
-	 * 6.14 from Win 98 DDK
-	 * 6.15 from Processor Pack for Visual C++ 6.0
-	 * There's also a 8.0 from Microsoft Downloads
-	   http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=masm&ftapplicableproducts=Developer+Tools&sortby=-availabledate

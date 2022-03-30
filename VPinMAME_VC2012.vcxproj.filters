@@ -1277,6 +1277,51 @@
     <ClCompile Include="ext\vgm\vgmwrite.c">
       <Filter>Source Files\external\vgm</Filter>
     </ClCompile>
+    <ClCompile Include="ext\zlib\adler32.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\compress.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\crc32.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\deflate.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\gzclose.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\gzlib.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\gzread.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\gzwrite.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\infback.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\inffast.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\inflate.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\inftrees.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\trees.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\uncompr.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\zlib\zutil.c">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
@@ -1987,12 +2032,6 @@
     <ClInclude Include="src\win32com\WSHDlgCtrls.h">
       <Filter>Source Files\VPinMAME</Filter>
     </ClInclude>
-    <ClInclude Include="ext\zlib\include\zconf.h">
-      <Filter>Source Files\external\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="ext\zlib\include\zlib.h">
-      <Filter>Source Files\external\zlib</Filter>
-    </ClInclude>
     <ClInclude Include="src\sound\262intf.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
@@ -2010,6 +2049,39 @@
     </ClInclude>
     <ClInclude Include="ext\vgm\vgmwrite.h">
       <Filter>Source Files\external\vgm</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\crc32.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\deflate.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\gzguts.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\inffast.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\inffixed.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\inflate.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\inftrees.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\trees.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\zconf.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\zlib.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\zutil.h">
+      <Filter>Source Files\external\zlib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
