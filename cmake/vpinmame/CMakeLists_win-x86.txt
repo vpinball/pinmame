@@ -677,21 +677,21 @@ add_library(vpinmame SHARED
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
 
-   ext/zlib\adler32.c
-   ext/zlib\compress.c
-   ext/zlib\crc32.c
-   ext/zlib\deflate.c
-   ext/zlib\gzclose.c
-   ext/zlib\gzlib.c
-   ext/zlib\gzread.c
-   ext/zlib\gzwrite.c
-   ext/zlib\infback.c
-   ext/zlib\inffast.c
-   ext/zlib\inflate.c
-   ext/zlib\inftrees.c
-   ext/zlib\trees.c
-   ext/zlib\uncompr.c
-   ext/zlib\zutil.c
+   ext/zlib/adler32.c
+   ext/zlib/compress.c
+   ext/zlib/crc32.c
+   ext/zlib/deflate.c
+   ext/zlib/gzclose.c
+   ext/zlib/gzlib.c
+   ext/zlib/gzread.c
+   ext/zlib/gzwrite.c
+   ext/zlib/infback.c
+   ext/zlib/inffast.c
+   ext/zlib/inflate.c
+   ext/zlib/inftrees.c
+   ext/zlib/trees.c
+   ext/zlib/uncompr.c
+   ext/zlib/zutil.c
 
    ext/basicbitmap/BasicBitmap.cpp
    ext/basicbitmap/BasicBitmap.h
