@@ -575,18 +575,17 @@ add_library(pinmame SHARED
    src/wpc/zacsnd.c
    src/wpc/zacsnd.h
 
-   ext/vgm/vgmwrite.c
-   ext/vgm/vgmwrite.h
-
    src/vc/dirent.c
-
-   src/win32com/Alias.cpp
+   src/vc/dirent.h
+   src/vc/unistd.h
 
    src/windows/jit.c
    src/windows/jit.h
    src/windows/jitemit.c
    src/windows/jitemit.h
    src/windows/ticker.c
+
+   src/win32com/Alias.cpp
 
    src/libpinmame/video.c
    src/libpinmame/video.h
@@ -596,13 +595,32 @@ add_library(pinmame SHARED
    src/libpinmame/misc.h
    src/libpinmame/libpinmame.cpp
    src/libpinmame/libpinmame.h
+
+   ext/vgm/vgmwrite.c
+   ext/vgm/vgmwrite.h
+
+   ext/zlib/adler32.c
+   ext/zlib/compress.c
+   ext/zlib/crc32.c
+   ext/zlib/deflate.c
+   ext/zlib/gzclose.c
+   ext/zlib/gzlib.c
+   ext/zlib/gzread.c
+   ext/zlib/gzwrite.c
+   ext/zlib/infback.c
+   ext/zlib/inffast.c
+   ext/zlib/inflate.c
+   ext/zlib/inftrees.c
+   ext/zlib/trees.c
+   ext/zlib/uncompr.c
+   ext/zlib/zutil.c
 )
 
 target_include_directories(pinmame PUBLIC
    src
    src/wpc
-   src/windows
    src/vc
+   src/windows
    src/cpu/m68000/generated_by_m68kmake
    ext/zlib
 )
