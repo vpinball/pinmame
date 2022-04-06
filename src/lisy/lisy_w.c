@@ -78,9 +78,6 @@ Credits: 20 28 Balls: 0 8
   } t_mysegments_s11;
 
 /*
-
-
-/*
 ********   SYSTEM 7  *************
 from core.h
 struct core_dispLayout {
@@ -160,6 +157,8 @@ unsigned char swMatrixLISY_W[9] = { 0,0,0,0,0,0,0,0,0 };
 
 //internal flag fo AC Relais, default 0 ->not present
 unsigned char lisy_has_AC_Relais = 0;
+//number of AC solenoid, default #12, can be #14 on some games
+unsigned char lisy_AC_Relais_no = 12;
 //internal flag fo SS Relais, default 0 ->not present ( RoadKings only)
 unsigned char lisy_has_SS_Relais = 0;
 
@@ -198,8 +197,12 @@ else if (strcmp(lisymini_game.type,"SYS9") == 0) lisymini_game.typeno = LISYW_TY
 else if (strcmp(lisymini_game.type,"SYS11") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11;
 else if (strcmp(lisymini_game.type,"SYS11RK") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11RK; //Road Kings;
 else if (strcmp(lisymini_game.type,"SYS11A") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11A;
+else if (strcmp(lisymini_game.type,"SYS11A_") == 0)  { lisymini_game.typeno = LISYW_TYPE_SYS11A; lisy_AC_Relais_no = 14;}
 else if (strcmp(lisymini_game.type,"SYS11B") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11B;
+else if (strcmp(lisymini_game.type,"SYS11B_") == 0)  { lisymini_game.typeno = LISYW_TYPE_SYS11B; lisy_AC_Relais_no = 14;}
 else if (strcmp(lisymini_game.type,"SYS11C") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11C;
+else if (strcmp(lisymini_game.type,"SYS11C_") == 0)  { lisymini_game.typeno = LISYW_TYPE_SYS11C; lisy_AC_Relais_no = 14;}
+else if (strcmp(lisymini_game.type,"SYS11RG") == 0) lisymini_game.typeno = LISYW_TYPE_SYS11RG;
 else lisymini_game.typeno = LISYW_TYPE_NONE;
 
 //set internal flags based on system type
@@ -222,6 +225,7 @@ switch(lisymini_game.typeno)
 	case LISYW_TYPE_SYS11A:
 	case LISYW_TYPE_SYS11B:
 	case LISYW_TYPE_SYS11C:
+	case LISYW_TYPE_SYS11RG:
 		lisy_has_AC_Relais = 1;
 		break;
 	default : 
@@ -233,14 +237,34 @@ switch(lisymini_game.typeno)
  sprintf(s_lisy_software_version,"%d%02d %02d",sw_main,sw_sub,commit);
  fprintf(stderr,"This is LISY (Lisy W) by bontango, Version %s\n",s_lisy_software_version);
 
-  
+  //give isome info on screen
+  if ( ls80dbg.bitv.basic )
+  {
+    if ( lisy_has_AC_Relais != 0)
+    {
+    sprintf(debugbuf,"Info: LISYMINI this game has AC Relais on solenoid %d",lisy_AC_Relais_no);
+    lisy80_debug(debugbuf);
+    }
+    else if ( lisy_has_SS_Relais != 0)
+    {
+    sprintf(debugbuf,"Info: LISYMINI this game has SS Relais on solenoid %d",lisy_AC_Relais_no);
+    lisy80_debug(debugbuf);
+    }
+    else
+    {
+    sprintf(debugbuf,"Info: LISYMINI this game has NO SS or AC Relais");
+    lisy80_debug(debugbuf);
+    }
+    }
+
+
  //set displays initial to ASCII with dot (6)  for boot message
  for(i=0; i<5; i++) lisy_api_display_set_prot( i, 6);
 //convert gamename to uppercase for display
 for(i=0; i<strlen(lisymini_game.long_name); i++) lisymini_game.long_name[i] = toupper(lisymini_game.long_name[i]);
  //show the 'boot' message
  lisy_api_show_boot_message(s_lisy_software_version,lisymini_game.type,lisymini_game.gamenr,lisymini_game.long_name);
-  
+
  //set HW rules for solenoids, let do APC this (faster)
  if ( lisy_m_file_get_hwrules() < 0)
  { 
@@ -271,7 +295,7 @@ for(i=0; i<strlen(lisymini_game.long_name); i++) lisymini_game.long_name[i] = to
    for(i=0; i<31; i++) 
 	{
 	  if ( lisy_m_APC_coil_HW_rule[i] > 0 )
-  		lisy_api_sol_set_hwrule( i, lisy_m_APC_coil_HW_rule[i] ); 
+		lisy_api_sol_set_hwrule( i, lisy_m_APC_coil_HW_rule[i] ); 
 	}
  }
 
@@ -1031,25 +1055,26 @@ void lisy_w_display_handler(void)
 
  switch(lisymini_game.typeno)
  {
-  case LISYW_TYPE_SYS3: 
-  case LISYW_TYPE_SYS4: 
-  case LISYW_TYPE_SYS6: 
+  case LISYW_TYPE_SYS3:
+  case LISYW_TYPE_SYS4:
+  case LISYW_TYPE_SYS6:
 	lisy_w_display_handler_SYS6();
        break;
-  case LISYW_TYPE_SYS6A: 
-  case LISYW_TYPE_SYS7: 
+  case LISYW_TYPE_SYS6A:
+  case LISYW_TYPE_SYS7:
 	lisy_w_display_handler_SYS7();
        break;
-  case LISYW_TYPE_SYS9: 
+  case LISYW_TYPE_SYS9:
 	lisy_w_display_handler_SYS9();
        break;
-  case LISYW_TYPE_SYS11: 
-  case LISYW_TYPE_SYS11A: 
-  case LISYW_TYPE_SYS11RK: 
-  case LISYW_TYPE_SYS11B: 
+  case LISYW_TYPE_SYS11:
+  case LISYW_TYPE_SYS11A:
+  case LISYW_TYPE_SYS11RK:
+  case LISYW_TYPE_SYS11B:
 	lisy_w_display_handler_SYS11A();
        break;
-  case LISYW_TYPE_SYS11C: 
+  case LISYW_TYPE_SYS11C:
+  case LISYW_TYPE_SYS11RG:
 	lisy_w_display_handler_SYS11C();
        break;
   default:
@@ -1094,6 +1119,7 @@ if (first)
         case LISYW_TYPE_SYS11A:
         case LISYW_TYPE_SYS11B:
         case LISYW_TYPE_SYS11C:
+        case LISYW_TYPE_SYS11RG:
 		core_setSw( S11_SWADVANCE, lisy_api_get_switch_status(72) );
 		core_setSw( S11_SWUPDN, lisy_api_get_switch_status(73) );
                 break;
@@ -1168,6 +1194,7 @@ if ( ret == 72) {
         case LISYW_TYPE_SYS11A:
         case LISYW_TYPE_SYS11B:
         case LISYW_TYPE_SYS11C:
+        case LISYW_TYPE_SYS11RG:
           core_setSw( S11_SWADVANCE, action );
           if ( ls80dbg.bitv.switches )
           {
@@ -1200,6 +1227,7 @@ if ( ret == 73) {
         case LISYW_TYPE_SYS11A:
         case LISYW_TYPE_SYS11B:
         case LISYW_TYPE_SYS11C:
+        case LISYW_TYPE_SYS11RG:
           core_setSw( S11_SWUPDN, action );
           if ( ls80dbg.bitv.switches )
           {
@@ -1273,11 +1301,71 @@ if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
   return;
 }
 
+//direct solenoid handler based on PIA ports
+//sol14 & 15 for Riverboat gambler only at the moment
+//we may use it for other pins too in the future
+void lisy_w_direct_solenoid_handler( unsigned char data )
+{
+
+ static unsigned char sol_14 = 0;
+ static unsigned char sol_15 = 0;
+ unsigned char new_sol_14, new_sol_15,action;
+
+ //from s11.c PROC: ignore 'FF00' call at game start as we get 'a lot of clunks'
+ if ( data ==  0xff )
+ {
+  if ( ls80dbg.bitv.coils ) lisy80_debug("LISY_W_DIRECT_SOLENOID_HANDLER: FF call: ignored!");
+  return;
+ }
+
+
+ //special case Riverboat Gambler 'wheel' via Sol14 & 15
+ if ( lisymini_game.typeno == LISYW_TYPE_SYS11RG ) 
+ {
+ new_sol_14 = data & 32;
+ new_sol_15 = data & 64;
+
+ if ( new_sol_14 != sol_14)
+ {
+	if (new_sol_14 > 0) action = 1; else action = 0;
+        sol_14 = new_sol_14;
+	lisy_api_sol_ctrl( 14, action );
+
+        if ( ls80dbg.bitv.coils )
+	{
+           sprintf(debugbuf,"LISY_W_DIRECT_SOLENOID_HANDLER: Solenoid:14, changed to %d )", action ); 
+           lisy80_debug(debugbuf);
+	}
+ } //if sol14 changed
+
+/*
+ RTH- Test with sol14 only, sol15 will be handled by APC
+
+ if ( new_sol_15 != sol_15)
+ {
+
+	if (new_sol_15 > 0) action = 1; else action = 0;
+        sol_15 = new_sol_15;
+        lisy_api_sol_ctrl( 15,action);
+
+        if ( ls80dbg.bitv.coils )
+        {
+           sprintf(debugbuf,"LISY_W_DIRECT_SOLENOID_HANDLER: Solenoid:15, changed to %d )", action);
+           lisy80_debug(debugbuf);
+        }
+ } //if sol15 changed
+*/
+ } //if Riverboat gambler
+
+}
+
+
 //solenoid handler
 void lisy_w_solenoid_handler( void )
 {
 
-int i,j,sol_no,real_sol;
+int j,sol_no,real_sol;
+int bitpos; //bit position in mysol
 static UINT32 mysol=0;
 int mux_sol_active = 0;
 uint8_t action;
@@ -1289,22 +1377,47 @@ static uint8_t ss_want_to_change = 0; //1== action 0; 2==action 2
 static uint8_t current_ac_state = 0;
 static uint8_t current_ss_state = 0;
 
+
+//from s11.c PROC: ignore 'FF00' call at game start as we get 'a lot of clunks'
+if ( coreGlobals.solenoids ==  0xff00 )
+{
+  if ( ls80dbg.bitv.coils ) lisy80_debug("LISY_W_SOLENOID_HANDLER: FF00 call: ignored!");
+  return;
+}
+
+
 //did something changed?
 if ( mysol != coreGlobals.solenoids)
 {
    //check all solenoids 
-   for(i=0; i<=31; i++)
+   for(bitpos=0; bitpos<=31; bitpos++)
     {
       //send to APC in case something changed
-      if( CHECK_BIT(mysol,i) != CHECK_BIT(coreGlobals.solenoids,i) )
+      if( CHECK_BIT(mysol,bitpos) != CHECK_BIT(coreGlobals.solenoids,bitpos) )
       {
-	//ignore coil activations for coils we have a hw rule set
-	if ( lisy_m_APC_coil_HW_rule[i] != 0 ) return;
-
 	//do we activate or do we deactivate
-        if ( CHECK_BIT(coreGlobals.solenoids,i)) action = 1; else action = 0;
+        if ( CHECK_BIT(coreGlobals.solenoids,bitpos)) action = 1; else action = 0;
 	//sol number starts with 1
-        sol_no = i+1;
+        sol_no = bitpos+1;
+
+	//ignore coil activations for coils we have a hw rule set
+	if ( ( sol_no < 32) & (lisy_m_APC_coil_HW_rule[sol_no] != 0 ))
+	{
+	      if ( ls80dbg.bitv.coils )
+		{
+                  sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: hardware Rule set for Solenoid %d, action %d ignored",sol_no,action);
+                  lisy80_debug(debugbuf);
+		}
+	   continue;
+	}
+
+	//special case riverboard gambler, ignor sol14 & sol15 in this case ( wheel )
+	//as it is handled directly above
+	//special case Riverboat Gambler 'wheel' via Sol14 & 15
+	if ( ( lisymini_game.typeno == LISYW_TYPE_SYS11RG ) && (( sol_no == 14 ) || (sol_no == 15)) )
+	{
+	   continue;
+	}
 
 	//in case of Solenoid 14 (AC Relais) or Solenoid 12 (SS Relais)
         //check if one of the multiplexed sols are still active
@@ -1338,10 +1451,10 @@ if ( mysol != coreGlobals.solenoids)
                   lisy80_debug(debugbuf);
 	        }
 	   }
-	}//sol == 12 and SS_Relais present
+	}//sol == 12 and SS_Relais present Road Kings version
 
-	//Sol 14 version (Sys11 after Roadkings)
-	if ( ( sol_no == 14) & (lisy_has_AC_Relais == 1) )
+	//Sol #12 or #14 version (Sys11 after Roadkings)
+	if ( ( sol_no == lisy_AC_Relais_no) & (lisy_has_AC_Relais == 1) )
 	{
 	  //lets check if any of the muxed solenoids are active now
 	  //in pinmame these are 1..8 ( AC-relais 0) and 25..32 ( AC-relais 1)
@@ -1351,7 +1464,7 @@ if ( mysol != coreGlobals.solenoids)
           //no muxed solenoid active, activate ac relais
 	  if (mux_sol_active == 0) 
 	    {
-	      lisy_api_sol_ctrl(14,action);
+	      lisy_api_sol_ctrl(lisy_AC_Relais_no,action);
 	      current_ac_state = action;
 	      if ( ls80dbg.bitv.coils )
 		{
@@ -1375,7 +1488,7 @@ if ( mysol != coreGlobals.solenoids)
 	//if the pinball (e.g. pinbot) is using special solenoids 'normal' we do it here
 	if (lisy_has_AC_Relais == 1)
 	  {
-        	if ( ( sol_no != 14) &( sol_no <= 22 )) lisy_api_sol_ctrl(sol_no,action);
+        	if ( ( sol_no != lisy_AC_Relais_no) &( sol_no <= 22 )) lisy_api_sol_ctrl(sol_no,action);
 	  }
 	else if (lisy_has_SS_Relais == 1)
 	  {
@@ -1419,7 +1532,7 @@ if ( mysol != coreGlobals.solenoids)
         //debug? 
         if ( ls80dbg.bitv.coils )
 	{
-        if ( ( sol_no != 14) & ( lisy_has_AC_Relais == 1))
+        if ( ( sol_no != lisy_AC_Relais_no) & ( lisy_has_AC_Relais == 1))
         {
 	  if ( sol_no < 25)
            { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( AC is %d)",sol_no,action,current_ac_state); }
@@ -1435,14 +1548,18 @@ if ( mysol != coreGlobals.solenoids)
           else
            { sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d(%d), changed to %d ( SS is %d)",real_sol,sol_no,action,current_ss_state); }
 
+	   lisy80_debug(debugbuf);
+
          }
         else 
            { 
 		if ( ( lisy_has_AC_Relais == 0) & ( lisy_has_SS_Relais == 0) )
-		sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( no AC or SS  Relais) ",sol_no,action); 
+		{
+		 sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: Solenoid:%d, changed to %d ( no AC or SS  Relais) ",sol_no,action); 
+        	 lisy80_debug(debugbuf);
+		}
 	   }
 
-        lisy80_debug(debugbuf);
 
 	}
 
@@ -1475,7 +1592,7 @@ if ( mysol != coreGlobals.solenoids)
 	      for(j=24; j<=31; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
 	      if (mux_sol_active == 0)
 		{
-	          lisy_api_sol_ctrl(14,ac_want_to_change-1); 
+	          lisy_api_sol_ctrl(lisy_AC_Relais_no,ac_want_to_change-1); 
                   if ( ls80dbg.bitv.coils )
                   {
                     sprintf(debugbuf,"LISY_W_SOLENOID_HANDLER: AC-Relais DELAYD change to %d",ac_want_to_change-1);
@@ -1613,14 +1730,40 @@ void lisy_w_lamp_handler( )
 void lisy_w_sound_handler(unsigned char board, unsigned char data)
 {
   char filename[40];
+  static unsigned char first = 1;
+  static unsigned char old_data;
+  static unsigned char last_was_ignored = TRUE;
+  static unsigned char sys11_patch;
 
-  if ( ls80dbg.bitv.sound )
+  if(first)
   {
-    sprintf(debugbuf,"LISY_W sound_handler: board:%d 0x%x (%d)",board,data,data);
-    lisy80_debug(debugbuf);
-    }
+     //this is how pinsound do it
+     if (!strcmp(sndbrd_typestr(0) ? sndbrd_typestr(0) : sndbrd_typestr(1), "WMSS11C"))
+                        sys11_patch = TRUE;
+                else
+                        sys11_patch = FALSE;
+   first = 0;
+  }
 
+ // skip instruction every 2 instr
+ // if second instruction is same as first
+  if (sys11_patch)
+  {
+    if (last_was_ignored) //did we ignore already the last one?
+     {
+	last_was_ignored = FALSE;
+     }
+    else
+     {
+	if ( old_data == data)
+	{
+	 last_was_ignored = TRUE; //remember do not ignore two times in a row
+	 return;
+	}
+     }
+  }
 
+      old_data = data;
       //use command  play index and let do APC the work ;-)
       lisy_api_sound_play_index(board,data);
 

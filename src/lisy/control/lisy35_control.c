@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <wiringPi.h>
 #include <pthread.h>
+#include "lisy35_control.h"
 #include "../lisy35.h"
 #include "../lisy_home.h"
 #include "../fileio.h"
@@ -37,12 +38,14 @@
 #define LISY35control_SOFTWARE_MAIN    0
 #define LISY35control_SOFTWARE_SUB     102
 
+typedef unsigned short    UINT16;  /* unsigned 16bit */
+
 //fake definiton needed in lisy_w
-void core_setSw(int myswitch, unsigned char action) {  };
+void core_setSw(int myswitch, unsigned char action) {  }
 
 
 //fake definiton needed in lisy1
-void cpunum_set_clockscale(int cpu, float clockscale) {  };
+void cpunum_set_clockscale(int cpu, float clockscale) {  }
 
 //fake definiton needed in lisy80
 typedef struct {
@@ -68,10 +71,10 @@ const char* sndbrd_typestr(int board) {  }
 
 //48 switches, keep it easy by using 49 elements
 unsigned char Switches_LISY35[49] = { 0,0,0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0 };
+                                      0,0,0,0,0,0,0,0,0,0,
+                                      0,0,0,0,0,0,0,0,0,0,
+                                      0,0,0,0,0,0,0,0,0,0,
+                                      0,0,0,0,0,0,0,0 };
 
 //global vars
 char switch_description_line1[80][80];
@@ -137,7 +140,7 @@ void sendit( int sockfd, char *buffer)
 //basic infos, called from many places
 void send_basic_infos( int sockfd)
 {
-     char buffer[256];
+   char buffer[256];
 
    sprintf(buffer,"Selected game is %s, internal number %d<br>\n",lisy35_game.long_name,lisy35_game.gamenr);
    sendit( sockfd, buffer);
@@ -149,7 +152,6 @@ void send_basic_infos( int sockfd)
 //simple soundcard version, second parameter to lisy35_coil_sound_set is 0
 void do_sound_set( char *buffer)
 {
-
  int sound_no,i;
  char wav_file_name[80];
 
@@ -183,7 +185,6 @@ void do_sound_set( char *buffer)
 
  //now set sound
  lisy35_sound_std_sb_set( sound_no );
-
 }
 
 

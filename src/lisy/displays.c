@@ -963,6 +963,9 @@ void lisy35_display_set_variant( unsigned char variant)
         case 2: display_cmd2pic_noansw(LS35DPCMD_VARIANT_2); break;
         case 3: display_cmd2pic_noansw(LS35DPCMD_VARIANT_3); break;
         case 4: display_cmd2pic_noansw(LS35DPCMD_VARIANT_4); break;
-	}
+        default : display_cmd2pic_noansw(variant); break; //default set variant direct
+//#define LS35DPCMD_VARIANT_30 30 //disable Okaegi 6to7digit mod
+//#define LS35DPCMD_VARIANT_31 31 //enable Okaegi 6to7digit mod
+ }
 }
 

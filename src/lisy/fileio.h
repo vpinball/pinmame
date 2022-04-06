@@ -85,6 +85,8 @@ int lisy35_file_get_mpudips( int switch_nr, int debug, char *dip_setting_filenam
 unsigned char lisy35_file_get_onedip( int dip_nr, char *dip_comment, char *dip_setting_filenamee, int re_init );
 int lisy35_file_write_dipfile( int mode, char *line );
 int  lisy35_file_get_soundopts(void);
+int lisy200_file_get_mpudips( int switch_nr, int debug, char *dip_setting_filename );
+unsigned char lisy200_file_get_onedip( int dip_nr, char *dip_comment, char *dip_setting_filenamee, int re_init );
 
 int lisymini_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
 int lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
@@ -101,7 +103,12 @@ int  lisy_file_get_home_mappings(void);
 int  lisy_file_get_home_ss_lamp_mappings(int variant);
 int  lisy_file_get_home_ss_coil_mappings(int variant);
 int  lisy_file_get_home_ss_special_coil_mappings(int variant);
+int  lisy_file_get_home_ss_special_lamp_mappings(int variant);
 
+//lisy200 (Starship) stuff
+int lisy200_file_get_mpudips( int switch_nr, int debug, char *dip_setting_filename );
+unsigned char lisy200_file_get_onedip( int dip_nr, char *dip_comment, char *dip_setting_filenamee, int re_init );
+int  lisy_file_get_home_ss_GI(int variant);
 
 /* LISY80 stuff */
 #define LISY80_GAMES_CSV "/boot/lisy/lisy80/cfg/lisy80games.csv"
@@ -146,6 +153,8 @@ int  lisy_file_get_home_ss_special_coil_mappings(int variant);
 #define LISYH_SS_LAMP_MAPPING_FILE "ss_lamps"
 #define LISYH_SS_COIL_MAPPING_FILE "ss_coils"
 #define LISYH_SS_SPECIAL_COIL_MAPPING_FILE "ss_special_coils"
+#define LISYH_SS_SPECIAL_LAMP_MAPPING_FILE "ss_special_lamps"
+#define LISYH_SS_GI_LIST "ss_GI_list"
 
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"
@@ -157,5 +166,9 @@ int  lisy_file_get_home_ss_special_coil_mappings(int variant);
 /* generalLISY stuff */
 #define LISY_WELCOME_MSG_FILE "/boot/lisy/lisy/Welcome.msg"
 #define LISY_VOLUME_LEVEL "/boot/lisy/lisy/volume_level"
+
+/* LISY200 (Starship) stuff */
+#define LISY200_DIPS_PATH "/boot/lisy/lisyH/dips/"
+#define LISY200_DIPS_FILE "Starship_dips.csv"
 
 #endif  // _FILEIO_H

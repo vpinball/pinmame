@@ -52,11 +52,15 @@ unsigned char swMatrixLISY35[9] = { 0,0,0,0,0,0,0,0,0 };
 unsigned char lisy35_J4PIN5_is_strobe = 0;
 unsigned char lisy35_J4PIN8_is_strobe = 0;
 
+//Okaegi mod ?
+unsigned char lisy35_okaegi_mod = 0;
+
+
+//from lisy.c set in lisy_home.c
+extern unsigned char lisy_home_ss_ignore_credit;
+
 //from coils.c
 extern unsigned char lisy35_bally_hw_check_finished;
-
-//store 'flipper disable status globally
-unsigned char lisy35_flipper_disable_status = 1;
 
 //internal for lisy35.c 
 //to have an delayed nvram write
@@ -173,13 +177,20 @@ void lisy35_ss_init( void )
  lisy_file_get_home_ss_lamp_mappings(dip_value);
  lisy_file_get_home_ss_coil_mappings(dip_value);
  lisy_file_get_home_ss_special_coil_mappings(dip_value);
+ lisy_file_get_home_ss_special_lamp_mappings(dip_value);
+// get LEDs and colourcodes for GI
+ lisy_file_get_home_ss_GI(dip_value);
  //select solenoidboard by default
  lisyh_coil_select_solenoid_driver();
  lisyh_coil_select_led_driver_line(1);
  // send colorcodes to LED driver
  lisy_home_ss_send_led_colors();
- //start threads for wheels
- wheels_init();
+
+ //deactivate all special solenoids with a mapping
+ lisyh_init_special_coils();
+
+ //init ss event handler (will activate i.e. GI)
+ lisy_home_ss_event_handler(LISY_HOME_SS_EVENT_INIT,0,0);
 
  //collect latest informations and start the lisy logger
  lisy_env.has_soundcard = lisy35_has_soundcard;
@@ -336,8 +347,50 @@ int lisy35_get_gamename(char *gamename)
 }
 
 
-//help function
-//we may later delete this
+//help functions
+//for bcd value PIC
+int my_seg2bcd( UINT16 seg )
+{
+ int bcd;
+
+   switch (seg) {
+      case 0x3f: bcd = 0; break;
+      case 0x06: bcd = 1; break;
+      case 0x5b: bcd = 2; break;
+      case 0x4f: bcd = 3; break;
+      case 0x66: bcd = 4; break;
+      case 0x6d: bcd = 5; break;
+      case 0x7d: bcd = 6; break;
+      case 0x07: bcd = 7; break;
+      case 0x7f: bcd = 8; break;
+      case 0x6f: bcd = 9; break;
+      default: bcd = 15; break; //space
+	}
+ return bcd;
+}
+
+
+//for debug
+char by_seg2char( UINT16 seg )
+{
+ char mychar;
+
+   switch (seg) {
+      case 0x3f: mychar = '0'; break;
+      case 0x06: mychar = '1'; break;
+      case 0x5b: mychar = '2'; break;
+      case 0x4f: mychar = '3'; break;
+      case 0x66: mychar = '4'; break;
+      case 0x6d: mychar = '5'; break;
+      case 0x7d: mychar = '6'; break;
+      case 0x07: mychar = '7'; break;
+      case 0x7f: mychar = '8'; break;
+      case 0x6f: mychar = '9'; break;
+      default: mychar = ' '; break; //space
+        }
+ return mychar;
+}
+
 char my_datchar2( int dat)
 {
 char datchar;
@@ -361,34 +414,38 @@ switch (dat) {
 return datchar;
 }
 
-
 //display handler
-void lisy35_display_handler( int index, int value )
+//we use segment value now
+/*
+void lisy35_display_handler( int index, UINT16 seg, int myval )
 {
 
-static int myvalue[56]
-= { 80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
-    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
-    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
-    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
-    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
-    80, 80, 80, 80, 80, 80 };
+static UINT16 myseg[56]
+= { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-int i;
+int i,value;
 int has_changed = 0;
 
 
 if ( index > 55 )
   {
-    fprintf(stderr,"LISY35_DISP_HANDLER: index out of range index:%d  value:%d\n",index,value);
+    fprintf(stderr,"LISY35_DISP_HANDLER: index out of range index:%d  seg:%x\n",index,seg);
     return;
   }
 
-if ( value != myvalue[index] )
+if ( seg != myseg[index] )
   {
     has_changed = 1; //for possible debugging only
     //remember
-    myvalue[index] = value;
+    myseg[index] = seg;
+    //calc bcd value
+    value = my_seg2bcd(seg);
+
 switch(index) //reverse order is handled by switch PIC
    {
      case 1 ... 7: //Bally player 1
@@ -422,6 +479,100 @@ if ( ls80dbg.bitv.displays )
  {
  if ( has_changed )
   {
+    //printf("----- Index %d changed to %d -----\n",index,value);
+    printf("----- Index %d changed to %d (bcd:%d) -----\n",index,value,myval);
+
+    printf("Player1:>");
+    for (i=1; i<=7; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+    printf("Player2:>");
+    for (i=9; i<=15; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+    printf("Player3:>");
+    for (i=17; i<=23; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+    printf("Player4:>");
+    for (i=25; i<=31; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+    printf(" Status:>");
+    for (i=33; i<=39; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+    printf("Player5:>");
+    for (i=41; i<=47; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+    printf("Player6:>");
+    for (i=49; i<=55; i++) printf("%c",by_seg2char(myseg[i]));
+    printf("<\n");
+  }
+ }//if display debug
+}//display_handler
+*/
+
+//display handler
+void lisy35_display_handler( int index, int value )
+{
+
+static int myvalue[56]
+= { 80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+    80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+    80, 80, 80, 80, 80, 80 };
+
+int i;
+int has_changed = 0;
+
+
+if ( index > 55 )
+  {
+    fprintf(stderr,"LISY35_DISP_HANDLER: index out of range index:%d  value:%d\n",index,value);
+    return;
+  }
+
+if ( value != myvalue[index] )
+  {
+    has_changed = 1; //for possible debugging only
+switch(index) //reverse order is handled by switch PIC
+   {
+     case 1 ... 7: //Bally player 1
+        display35_show_int( 1, index, value);
+        break;
+     case 9 ... 15: //Bally player 2
+        display35_show_int( 2, index-8, value);
+        break;
+     case 17 ... 23: //Bally player 3
+        display35_show_int( 3, index-16, value);
+        break;
+     case 25 ... 31: //Bally player 4
+        display35_show_int( 4, index-24, value);
+        break;
+     case 33 ... 39: //Bally staus ( full player display )
+        display35_show_int( 0, index-32, value);
+        break;
+     case 41 ... 47: //Bally player 5
+        display35_show_int( 5, index-40, value);
+        break;
+     case 49 ... 55: //Bally player 6
+        if (value == 15) //special handling (pinmame bug?) (6mill dollar man only)
+		{
+		 value = myvalue[index]; //keep old value
+		 has_changed = 0; //reset debug flag
+		}
+        else display35_show_int( 6, index-48, value);
+        break;
+     default : printf("unknown index:%d (value:%d)\n",index,value);
+        break;
+   }//switch
+    //remember
+    myvalue[index] = value;
+  }
+
+
+if ( ls80dbg.bitv.displays )
+ {
+ if ( has_changed )
+  {
     printf("----- Index %d changed to %d -----\n",index,value);
 
     printf("Player1:>");
@@ -447,6 +598,9 @@ if ( ls80dbg.bitv.displays )
     printf("<\n");
   }
  }//if display debug
+
+
+
 }//display_handler
 
 
@@ -488,6 +642,21 @@ if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
      --ret;
    }
  }
+
+//ignore credit switch if we running on Starship
+//and 2canplay lamp is ON
+if ( ( ret == 5 ) && (action == 1))
+{
+  if ( ( lisy_hardware_revision == 200 ) && ( lisy_home_ss_ignore_credit == 1))
+  {
+        ret = 80;
+
+        if ( ls80dbg.bitv.switches )
+        {
+           lisy80_debug("LISY35_SWITCH_READER: Ball one AND 2canplay activ: credit ignored");
+        }
+  }
+}
 
 //NOTE: system has has 6*8==40 switches in maximum, counting 1...48; ...
 //we use 'internal strobe 6' to handle special switches in the same way ( TEST=49,S33=50 )
@@ -855,6 +1024,9 @@ if (first)
  // we choose 8msec as the throttle routine is placed within the zero-cross interrupt
  //we need to slow down a bit
 
+ //for Starship use the time to update wheels
+ if ( lisy_hardware_revision == 200 ) wheels_refresh();
+
  //see how many micros passed
  now = micros();
  //beware of 'wrap' which happens each 71 minutes
@@ -887,14 +1059,29 @@ void lisy35_set_variant(void)
   lisy35_display_set_variant(0); // * 0 default: 4 player display plus 1 status (6-digit)
   lisy35_J4PIN5_is_strobe = 0;
   lisy35_J4PIN8_is_strobe = 0;
+  lisy35_display_set_variant(30); //Okaegi mod default off
+
+  //inform display PIC (at least v406 needed) about different controlling
+  //in case Okaegi 6to7digit conversion is used
+  //we have added '10' to special cfg in csv in this case
+  if ( lisy35_game.special_cfg > 9) 
+  {
+   if ( ls80dbg.bitv.basic )
+   {
+    	sprintf(debugbuf,"Info: LISY35 Okaegi mod activated (cfg is %d)" ,lisy35_game.special_cfg);
+    	lisy80_debug(debugbuf);
+    	}
+   lisy35_okaegi_mod = 1;
+   lisy35_game.special_cfg = lisy35_game.special_cfg -10;
+   }
 
   switch(lisy35_game.special_cfg)
   {
 	case 1: // 4 player display plus 1 status (7-digit)
-    	  fprintf(stderr,"Info: SPECIAL config for %s\n",lisy35_game.long_name);
-	  //switch matrix default
-	  lisy35_display_set_variant(1);  //7-digit
-	  //all outputs from coil pic to activate
+          fprintf(stderr,"Info: SPECIAL config for %s\n",lisy35_game.long_name);
+          //switch matrix default
+          lisy35_display_set_variant(1);  //7-digit
+          //all outputs from coil pic to activate
           lisy35_coil_set_direction_J4PIN5(LISY35_PIC_PIN_OUTPUT);
           lisy35_coil_set_direction_J4PIN8(LISY35_PIC_PIN_OUTPUT);
           lisy35_coil_set_direction_J1PIN8(LISY35_PIC_PIN_OUTPUT);
@@ -969,6 +1156,10 @@ void lisy35_set_variant(void)
 	  break;
   }
 
+  //Okaegi mod?
+  //this is handled like 7digit in pinmame
+  //but we need to inform display PIC about different handling
+  if ( lisy35_okaegi_mod == 1 ) lisy35_display_set_variant(31); 
 
   //set the right AUX Lampdriverboard variant
   lisy35_coil_set_lampdriver_variant(lisy35_game.aux_lamp_variant);
@@ -1046,13 +1237,16 @@ int lisy35_get_mpudips( int switch_nr )
 
 
  //use function from fileio.c
- ret = lisy35_file_get_mpudips( switch_nr, ls80dbg.bitv.basic, dip_file_name );
+ if ( lisy_hardware_revision == 200 )
+    ret = lisy200_file_get_mpudips( switch_nr, ls80dbg.bitv.basic, dip_file_name );
+ else
+    ret = lisy35_file_get_mpudips( switch_nr, ls80dbg.bitv.basic, dip_file_name );
  //debug?
  if ( first_time)  //only one Info line
-  {
+ {
      fprintf(stderr,"Info: DIP switch settings according to %s\n",dip_file_name);
-    }
-  
+ }
+
   //set back flag
   first_time = 0;
 
@@ -1188,30 +1382,23 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
 
   //handle continous solenois
   //new cont data?
-  if (( old_cont_data != cont_data ) & ( lisy35_bally_hw_check_finished ==1))
+  if (( old_cont_data != cont_data ) && ( lisy35_bally_hw_check_finished == 1))
   {
-    //store 'flipper disable status globally
-    lisy35_flipper_disable_status =  CHECK_BIT( cont_data, 2);
+    //running on Starship?
+    if ( lisy_hardware_revision == 200 ) lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_CONT_SOL, cont_data, 0);
 
     //check for flipper disable
     if( CHECK_BIT( cont_data, 2) && !CHECK_BIT( old_cont_data, 2))
     {
         //lisy35_nvram_handler( 1, NULL);
         //want_to_write_nvram = 1; RTH test no delayd write
-	lisy_nvram_write_to_file();
+        lisy_nvram_write_to_file();
         //debug
         if ( ls80dbg.bitv.basic )
         {
          //lisy80_debug("flipper disabled we do ASK for a nvram write");
          lisy80_debug("flipper disabled we do a nvram write");
         }
-    }
-
-    //check for flipper enable for Starship wheels reset at start of game
-    if ( lisy_hardware_revision == 200 )
-    {
-       if( !CHECK_BIT( cont_data, 2) && CHECK_BIT( old_cont_data, 2))
-	wheel_score_reset();
     }
 
     //debug?
@@ -1258,9 +1445,9 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
      }
 
      //JustBoom Sound? in case of chimes we may want to play wav files here
-     if ( lisy35_has_own_sounds ) 
+     if ( lisy35_has_own_sounds )
 	{
-	 //play sound if solenoids 4 to 7 are activated 
+	 //play sound if solenoids 4 to 7 are activated
 	 if ( ( lisy35_game.soundboard_variant == LISY35_SB_CHIMES ) & ( moment_data >= 4 ) & (moment_data <= 7) )
 		{
 		 //we translate solenoids 4..7 to soun ds 1..4

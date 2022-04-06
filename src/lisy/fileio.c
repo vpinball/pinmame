@@ -1528,12 +1528,12 @@ int  lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game)
      line_no = atoi(strtok(line, ";")); 	//line number
      if ( dip_switch_val == line_no)
      {
-     	  strcpy(lisymini_game->gamename,strtok(NULL, ";"));	//game name short version
-     	  strcpy(lisymini_game->long_name,strtok(NULL, ";"));	//game long name
-     	  strcpy(lisymini_game->type,strtok(NULL, ";"));	//game type
-     	  lisymini_game->throttle = atoi(strtok(NULL, ";"));	//throttle value per Bally game
-     	  strcpy(lisymini_game->comment,strtok(NULL, ";"));	//comment if available
-     	  found = 1; //found it
+          strcpy(lisymini_game->gamename,strtok(NULL, ";"));	//game name short version
+          strcpy(lisymini_game->long_name,strtok(NULL, ";"));	//game long name
+          strcpy(lisymini_game->type,strtok(NULL, ";"));	//game type
+          lisymini_game->throttle = atoi(strtok(NULL, ";"));	//throttle value per Bally game
+          strcpy(lisymini_game->comment,strtok(NULL, ";"));	//comment if available
+          found = 1; //found it
           break;
      }
    } //while
@@ -1579,7 +1579,9 @@ int  lisy_m_file_get_hwrules(void)
   return 0;
 }
 
-//read the csv file for lisy Home Starship lamp to LED mapping /lisy partition
+//read the csv file for lisy Home Starship
+//lamp to LED mapping for lines 1..6
+//lamp to coil mapping for line 7
 //give -1 in case we had an error
 //fill structure 
 //reads also led colorcodes
@@ -1597,12 +1599,14 @@ int  lisy_file_get_home_ss_lamp_mappings(int variant)
 
 //map to default no mapping / no activation / color default off
 for(i=0; i<=59;i++) 
-  { 
+  {
      lisy_home_ss_lamp_map[i].no_of_maps = 0;
   }
+
+//colorcodes default all 0
 for(i=0; i<=5;i++) 
-  { 
-	for(k=0; k<=47;k++) 
+  {
+	for(k=0; k<=47;k++)
 	{
      	led_rgbw_color[i][k].red = 0;
      	led_rgbw_color[i][k].green = 0;
@@ -1639,7 +1643,7 @@ else
      ledline = lisy_home_ss_lamp_map[no].mapped_to_line[lisy_home_ss_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));  //line of led
      led = lisy_home_ss_lamp_map[no].mapped_to_led[lisy_home_ss_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));	  //led number in this line
      //now read colorcodes
-     //sanity check
+     //sanity check (no color mapping for line 7 which is coil map)
      if (( ledline <=6 ) & ( led <= 48))
      {
 	 led_rgbw_color[ledline][led].red = atoi(strtok(NULL, ";"));
@@ -1777,5 +1781,415 @@ else
    fclose(fstream);
   }
 
+ return 0;
+}
+
+//read dipswitchsettings for specific game/mpu
+//and give back settings or -1 in case of error
+//switch_nr is 0..3
+//lisy200 (Starship) version based on lisy35
+int lisy200_file_get_mpudips( int switch_nr, int debug, char *dip_setting_filename )
+{
+
+ typedef union dips {
+    unsigned char byte;
+    struct {
+    unsigned DIP1:1, DIP2:1, DIP3:1, DIP4:1, DIP5:1, DIP6:1, DIP7:1, DIP8:1;
+    //unsigned b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv;
+    }t_dips;
+
+
+ static t_dips lisy35_dip[4];
+ static int first_time = 1;
+ static char dip_file_name[80];
+ static char first_time_debug[4] = { 1,1,1,1 };
+
+ int i;
+ FILE *fstream;
+ unsigned char dip[32];
+ unsigned char dipvalue;
+ char buffer[1024];
+ int dip_nr;
+ char *on_or_off;
+ char *line;
+ int first_line = 1;
+
+//read dip switch settings only once
+ if (first_time)
+ {
+  //reset flag
+  first_time = 0;
+  //set the defaults
+  for (i=0; i<=3; i++) lisy35_dip[i].byte = -1;
+
+  //construct the filename; 
+  sprintf(dip_file_name,"%s%s",LISY200_DIPS_PATH,LISY200_DIPS_FILE);
+  //copy filename where we was successfull to give back to calling routine
+  strcpy( dip_setting_filename, dip_file_name);
+
+  //try to read 
+  fstream = fopen(dip_file_name,"r");
+
+  //check if first or second try where successfull
+  //if it is still NULL both tries where not successfull
+  if(fstream == NULL)
+      {
+        sprintf(dip_file_name,"PINMAME default as no file specified");
+        //copy filename where we was successfull to give back to calling routine
+        strcpy( dip_setting_filename, dip_file_name);
+        return -1;
+        }
+
+   //at this point we have a valid file descriptor
+   do
+   {
+     line=fgets(buffer,sizeof(buffer),fstream);
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     //interpret the line
+     dip_nr = atoi(strtok(line, ";"));
+     on_or_off = strdup(strtok(NULL, ";"));
+     if ( strcmp( on_or_off, "ON") == 0) dipvalue = 1; else dipvalue = 0;
+     //assign dip value to temp var
+     dip[dip_nr-1] = dipvalue;
+   }
+   while((line!=NULL) && (dip_nr!=32)); //make some basic reading checks
+
+   //any error?
+   if((line==NULL) || (dip_nr!=32)) return -1;
+
+   //assign the dip settings
+   for (i=0; i<=3; i++)
+    {
+        lisy35_dip[i].bitv.DIP1 =  dip[i*8 ];
+        lisy35_dip[i].bitv.DIP2 =  dip[i*8 + 1];
+        lisy35_dip[i].bitv.DIP3 =  dip[i*8 + 2];
+        lisy35_dip[i].bitv.DIP4 =  dip[i*8 + 3];
+        lisy35_dip[i].bitv.DIP5 =  dip[i*8 + 4];
+        lisy35_dip[i].bitv.DIP6 =  dip[i*8 + 5];
+        lisy35_dip[i].bitv.DIP7 =  dip[i*8 + 6];
+        lisy35_dip[i].bitv.DIP8 =  dip[i*8 + 7];
+    }
+
+   fclose(fstream);
+
+ } //done only first_time
+
+ //debug?
+ if(debug) 
+  {
+   if( first_time_debug[switch_nr] ) //only one time debug as bally tend to do that too often
+    {
+    fprintf(stderr,"mpudips return: ");
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP1);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP2);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP3);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP4);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP5);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP6);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP7);
+    fprintf(stderr,"%d", lisy35_dip[switch_nr].bitv.DIP8);
+    fprintf(stderr," for switch:%d\n\r",switch_nr);
+    }
+   first_time_debug[switch_nr] = 0;
+   }
+ 
+ //copy filename where we was successfull to give back to calling routine
+ strcpy( dip_setting_filename, dip_file_name);
+
+ //return setting, this will be -1 if 'first_time' failed
+ return lisy35_dip[switch_nr].byte;
+
+}
+
+//read the csv file for lisy Home Starship special lamp to LED mapping /lisy partition
+//lamp to LED mapping for lines 1..6
+//lamp to coil mapping for line 7
+//give -1 in case we had an error
+//fill structure 
+//reads also led colorcodes(init done in ss_lamp_mapping!)
+int  lisy_file_get_home_ss_special_lamp_mappings(int variant)
+{
+ char buffer[1024];
+ char *line;
+ char file_name[80];
+ int no;
+ int is_coil;
+ int first_line = 1;
+ FILE *fstream;
+ int i,dum;
+ unsigned char ledline,led;
+
+ //map to default no mapping / no activation
+ for(i=0; i<=23;i++) 
+  {
+     lisy_home_ss_special_lamp_map[i].no_of_maps = 0;
+  }
+
+ //LAMPS construct the filename
+ //Lamp ;Line of LED;LED Number;Comment
+ //do we use a variant for testing?
+ if (variant > 0)
+  sprintf(file_name,"%s%s_%02d.csv",LISYH_MAPPING_PATH,LISYH_SS_SPECIAL_LAMP_MAPPING_FILE,variant);
+ else
+  sprintf(file_name,"%s%s.csv",LISYH_MAPPING_PATH,LISYH_SS_SPECIAL_LAMP_MAPPING_FILE);
+
+
+  fstream = fopen(file_name,"r");
+  if(fstream == NULL)
+  {
+      fprintf(stderr,"LISY_Home: opening %s failed, using defaults for special lamps\n",file_name);
+  }
+  else
+  {
+   first_line = 1;
+   fprintf(stderr,"LISY_Home: reading %s for special lamp mapping\n",file_name);
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     no = atoi(strtok(line, ";")); 	//lamp number
+     if ( no > 23 ) continue; //skip line if lamp number is out of range
+     lisy_home_ss_special_lamp_map[no].no_of_maps = lisy_home_ss_special_lamp_map[no].no_of_maps +1;
+     if ( lisy_home_ss_special_lamp_map[no].no_of_maps > 8 ) continue; //8 mappings in maximum
+     ledline = lisy_home_ss_special_lamp_map[no].mapped_to_line[lisy_home_ss_special_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));  //line of led
+     led = lisy_home_ss_special_lamp_map[no].mapped_to_led[lisy_home_ss_special_lamp_map[no].no_of_maps -1] = atoi(strtok(NULL, ";"));	  //led number in this line
+     //now read colorcodes
+     //sanity check (no color mapping for line 7 which is coil map)
+     if (( ledline <=6 ) & ( led <= 48))
+     {
+	 led_rgbw_color[ledline][led].red = atoi(strtok(NULL, ";"));
+	 led_rgbw_color[ledline][led].green = atoi(strtok(NULL, ";"));
+	 led_rgbw_color[ledline][led].blue = atoi(strtok(NULL, ";"));
+	 led_rgbw_color[ledline][led].white = atoi(strtok(NULL, ";"));
+     //last field is comment
+     strcpy( lisy_home_ss_special_lamp_map[no].comment,strtok(NULL, ";"));
+
+  //debug
+  if ( ls80dbg.bitv.lamps )
+  {
+    sprintf(debugbuf,"Map Special Lamp %d TO line:%d led:%d %d %d %d %d\n",no,ledline,led,led_rgbw_color[ledline][led].red,led_rgbw_color[ledline][led].green,led_rgbw_color[ledline][led].blue,led_rgbw_color[ledline][led].white);
+    lisy80_debug(debugbuf);
+  }
+     }
+   } //while
+   fclose(fstream);
+  }
+
+ return 0;
+}
+
+
+//handle dip definition file for current 'pin'
+//mode
+//mode == 0 -> set /lisy to rw; open file and prepare header line
+//mode == 1 -> append line to file
+//mode == 2 -> appemnd the line, close file; set /lisy to ro
+int lisy200_file_write_dipfile( int mode, char *line )
+{
+ static FILE *fstream;
+ char dip_file_name[80];
+
+
+// open / init mode
+if ( mode == 0 )
+{
+  //set mode to read - write
+  system("/bin/mount -o remount,rw /boot");
+  //construct the filename; 
+  sprintf(dip_file_name,"%s%s",LISY200_DIPS_PATH,LISY200_DIPS_FILE);
+  //try to open the file with game nr for writing
+  if ( ( fstream = fopen(dip_file_name,"w+")) == NULL ) return -1;
+  //send header line
+  fprintf(fstream,"Switch;ON_or_OFF;comment (Starship)\n");
+  //send first line
+  fprintf(fstream,"%s",line);
+  return 0;
+}
+
+//append mode
+if ( mode == 1 )
+{ 
+  fprintf(fstream,"%s",line);
+  return 0;
+}
+
+//close mode
+if ( mode == 2 )
+{
+  fprintf(fstream,"%s",line);
+  fclose(fstream);
+  system("/bin/mount -o remount,ro /boot");
+  return 0;
+}
+
+ return -2;
+}
+
+
+//read one dipswitch value with comment from definition file
+//dip_nr is 1..32
+// value is 0=off 1=on
+// comment is comment from file
+// *dip_setting_filename is filename with successfull read
+// if re_init is >0 the settings from the file are read again
+unsigned char lisy200_file_get_onedip( int dip_nr, char *dip_comment, char *dip_setting_filename, int re_init )
+{
+
+ int no,i,j,myswitch;
+ static int first_time = 1;
+ static unsigned char value[32];
+ static char comment[32][256];;
+ static char dip_file_name[80];
+
+ FILE *fstream;
+ char buffer[1024];
+ char *on_or_off;
+ char *line;
+ int first_line = 1;
+
+
+ //do we need to read the file again?
+ if ( re_init > 0) first_time = 1;
+
+//read dip switch settings only once
+ if (first_time)
+ {
+  //reset flag
+  first_time = 0;
+
+  //construct the filename; 
+  sprintf(dip_file_name,"%s%s",LISY200_DIPS_PATH,LISY200_DIPS_FILE);
+  //copy filename where we was successfull to give back to calling routine
+  strcpy( dip_setting_filename, dip_file_name);
+
+  //try to read the file with game nr
+  fstream = fopen(dip_file_name,"r");
+
+  //second try: to read the file with default
+  if(fstream == NULL)
+  {
+    //construct the new filename; using 'default'
+    sprintf(dip_file_name,"%sdefault%s",LISY35_DIPS_PATH,LISY35_DIPS_FILE);
+    //copy filename where we was successfull to give back to calling routine
+    strcpy( dip_setting_filename, dip_file_name);
+    fstream = fopen(dip_file_name,"r");
+   }//second try
+
+  //check if first or second try where successfull
+  //if it is still NULL both tries where not successfull
+  //we read dips on LISY35 board
+  if(fstream == NULL)
+      {
+	for( i=0; i<=3; i++)
+	{
+	 //read the whole switch
+	 myswitch = lisy35_file_get_mpudips( i, 0, dip_file_name );
+	   // the get dip on switch
+	   for( j=0; j<=7; j++)
+	   {
+	     value[i*8 + j] = CHECK_BIT( myswitch, j);
+             strcpy( comment[i*8 + j]," ---- comment ---- ");
+	   }
+	    //copy filename where we was successfull to give back to calling routine
+	    strcpy( dip_setting_filename, dip_file_name);
+        }
+      }
+  else
+  {
+   do
+   {
+     line=fgets(buffer,sizeof(buffer),fstream);
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     //interpret the line
+     //first field is the number of the dip
+     no = atoi(strtok(line, ";"));
+     //second field is value ON or OFF
+     on_or_off = strdup(strtok(NULL, ";"));
+     if ( strcmp( on_or_off, "ON") == 0) value[no-1] = 1; else value[no-1] = 0;
+     //third field is comment
+     strcpy( comment[no-1],strtok(NULL, ";"));
+   }
+   while((line!=NULL) && (no!=32)); //make some basic reading checks
+
+   //any error?
+   if((line==NULL) || (no!=32)) return -1;
+
+   fclose(fstream);
+  } //if fstream!=NULL
+ } //done only first_time
+
+ //give back stored values (from first time)
+ strcpy(dip_comment,comment[dip_nr-1]);
+ //copy filename where we was successfull to give back to calling routine
+ strcpy( dip_setting_filename, dip_file_name);
+
+ return value[dip_nr-1];
+}
+
+//read the csv file for lisy Home Starship GI assigment
+//set color and fill structure
+int  lisy_file_get_home_ss_GI(int variant)
+{
+ char buffer[1024];
+ char *line;
+ char file_name[80];
+ int no;
+ int first_line = 1;
+ FILE *fstream;
+ int i,dum;
+ unsigned char ledline,led;
+
+//default no activation (line=0)
+ for(i=0; i<=127;i++)
+  {
+     lisy_home_ss_GI_leds[i].line = 0;
+  }
+
+ //LAMPS construct the filename
+ //Lamp ;Line of LED;LED Number;Comment
+ //do we use a variant for testing?
+ if (variant > 0)
+  sprintf(file_name,"%s%s_%02d.csv",LISYH_MAPPING_PATH,LISYH_SS_GI_LIST,variant);
+ else
+  sprintf(file_name,"%s%s.csv",LISYH_MAPPING_PATH,LISYH_SS_GI_LIST);
+
+
+ fstream = fopen(file_name,"r");
+  if(fstream == NULL)
+  {
+      fprintf(stderr,"LISY_Home: opening %s failed, no GI lamps?\n",file_name);
+  }
+  else
+  {
+   first_line = 1;
+   fprintf(stderr,"LISY_Home: reading %s for GI list\n",file_name);
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { no=0; first_line=0; continue; } //skip first line (Header)
+     ledline = atoi(strtok(line, ";"));  //line of led
+     led = atoi(strtok(NULL, ";"));	  //led number in this line
+     //store it
+     lisy_home_ss_GI_leds[no].line = ledline;
+     lisy_home_ss_GI_leds[no].led = led;
+     if ( no < 126 ) no++; //sanity check
+     //now read colorcodes
+     //sanity check (no color mapping for line 7 which is coil map)
+     if (( ledline <=6 ) & ( led <= 48))
+     {
+	 led_rgbw_color[ledline][led].red = atoi(strtok(NULL, ";"));
+	 led_rgbw_color[ledline][led].green = atoi(strtok(NULL, ";"));
+	 led_rgbw_color[ledline][led].blue = atoi(strtok(NULL, ";"));
+	 led_rgbw_color[ledline][led].white = atoi(strtok(NULL, ";"));
+  	//debug
+  	if ( ls80dbg.bitv.lamps )
+  	{
+    	sprintf(debugbuf," line:%d led:%d %d %d %d %d is GI\n",ledline,led,led_rgbw_color[ledline][led].red,led_rgbw_color[ledline][led].green,led_rgbw_color[ledline][led].blue,led_rgbw_color[ledline][led].white);
+    	lisy80_debug(debugbuf);
+  	}
+     }
+   } //while
+   fclose(fstream);
+  }
+ 
  return 0;
 }

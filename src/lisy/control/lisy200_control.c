@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -18,6 +19,7 @@
 #include <arpa/inet.h>
 #include <wiringPi.h>
 #include <pthread.h>
+#include "lisy200_control.h"
 #include "../lisy35.h"
 #include "../lisy_home.h"
 #include "../fileio.h"
@@ -37,7 +39,7 @@
 
 //the version
 #define LISY200control_SOFTWARE_MAIN    0
-#define LISY200control_SOFTWARE_SUB     5
+#define LISY200control_SOFTWARE_SUB     6
 
 //fake definiton needed in lisy_w
 void core_setSw(int myswitch, unsigned char action) {  };
@@ -103,6 +105,7 @@ unsigned char led[197];
 //global var for all lamps
 unsigned char lamp[80];
 unsigned char lamp2[80];
+unsigned char ss_lamp[24];
 unsigned char active_lampdriver_board = 0;
 //global var for all sounds
 unsigned char sound[32];
@@ -491,18 +494,18 @@ void do_dip_set( char *buffer)
  {
    //dip number 1 ( 0 as we start with 0 ) means we need to open/create the file: mode = 0
    sprintf(line,"%s%s\n",part1[0],part2[0]);
-   if ( lisy35_file_write_dipfile( 0, line ) < 0) syserr( "problems dip setting file", 77, 1);
+   if ( lisy200_file_write_dipfile( 0, line ) < 0) syserr( "problems dip setting file", 77, 1);
 
    //now write settings 2..31 with mode 1
    for ( i=1; i<=30; i++)
     {   
       sprintf(line,"%s%s\n",part1[i],part2[i]);
-      if ( lisy35_file_write_dipfile( 1, line ) < 0) syserr( "problems dip setting file", 77, 1);
+      if ( lisy200_file_write_dipfile( 1, line ) < 0) syserr( "problems dip setting file", 77, 1);
     }
 
    //dip number 32 (31)  means we need to close the file after writing, mode = 2
    sprintf(line,"%s%s\n",part1[31],part2[31]);
-   if ( lisy35_file_write_dipfile( 2, line ) < 0) syserr( "problems dip setting file", 77, 1);
+   if ( lisy200_file_write_dipfile( 2, line ) < 0) syserr( "problems dip setting file", 77, 1);
 
    //reset number of settings
    no_settings = 0;
@@ -649,6 +652,23 @@ void do_led_set( char *buffer)
 
 }
 
+//set special lamp and update internal vars
+void do_ss_lamp_set( char *buffer)
+{
+ int lamp_no;
+ int action;
+ int i,nu;
+
+ //the format here is 'Jxx_on' or 'Jxx_off'
+ //we trust ASCII values
+ lamp_no = (10 * (buffer[1]-48)) + buffer[2]-48;
+
+ //on or off?
+ if ( buffer[5] == 'f') action=0; else  action=1;
+
+ lisy_home_ss_special_lamp_set( lamp_no, action);
+ ss_lamp[lamp_no] = action;
+}
 
 //set lamp and update internal vars
 void do_lamp_set( char *buffer)
@@ -1290,7 +1310,7 @@ void send_dipswitch_infos( int sockfd )
  //basic info, header line
    send_basic_infos(sockfd);
  //dummy read to init read csv routine
- dipvalue = lisy35_file_get_onedip( 1, dip_comment, filename, 1 );
+ dipvalue = lisy200_file_get_onedip( 1, dip_comment, filename, 1 );
  //and the source where it came from
  sprintf(buffer,"DIP switch settings according to %s<br><br>\n",filename);
  sendit( sockfd, buffer);
@@ -1302,7 +1322,7 @@ void send_dipswitch_infos( int sockfd )
 
  for( i=1; i<=32; i++)
   {
-    dipvalue = lisy35_file_get_onedip( i, dip_comment, filename, 0 );
+    dipvalue = lisy200_file_get_onedip( i, dip_comment, filename, 0 );
     sprintf(buffer,"<tr>\nSwitch No:%02d -\n",i);
     sendit( sockfd, buffer);
     if ( dipvalue )
@@ -1502,6 +1522,68 @@ void send_lamp_infos( int sockfd )
 
 }
 
+void send_ss_lamp_infos( int sockfd )
+{
+  int lamp_no;
+  char colorcode[80],buffer[512],name[10];
+
+  //colorcodes
+  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
+
+     //basic info, header line
+     send_basic_infos(sockfd);
+     sprintf(buffer,"push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
+     sendit( sockfd, buffer);
+
+   // we have 24 lamps 0...23
+   // 10 Endzahl
+   // 5 Ball
+   // 4 Scorelight
+   // 4 other ( 2 used)
+
+   //send all the lamps together with the status
+   //code for special lamps is 'J'
+   for(lamp_no=0; lamp_no<=9; lamp_no++)
+   {
+     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
+     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
+     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
+     sendit( sockfd, buffer);
+   }
+   sprintf(buffer,"<br>\n");
+   sendit( sockfd, buffer);
+
+   for(lamp_no=10; lamp_no<=14; lamp_no++)
+   {
+     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
+     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
+         sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
+     sendit( sockfd, buffer);
+   }
+   sprintf(buffer,"<br>\n");
+   sendit( sockfd, buffer);
+
+   for(lamp_no=15; lamp_no<=18; lamp_no++)
+   {
+     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
+     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
+         sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
+     sendit( sockfd, buffer);
+   }
+   sprintf(buffer,"<br>\n");
+   sendit( sockfd, buffer);
+
+   for(lamp_no=19; lamp_no<=21; lamp_no++)
+   {
+     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
+     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
+         sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
+     sendit( sockfd, buffer);
+   }
+   sprintf(buffer,"<br>\n");
+   sendit( sockfd, buffer);
+}
 
 void send_cont_solenoid_infos( int sockfd )
 {
@@ -1908,6 +1990,8 @@ void send_home_infos( int sockfd )
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./lisyH_special_solenoids.php\">Starship special Solenoids</a><br><br> \n");
    sendit( sockfd, buffer);
+   sprintf(buffer,"<p>\n<a href=\"./lisyH_special_lamps.php\">Starship special Lamps</a><br><br> \n");
+   sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./ss_displays.php\">Displays</a><br><br> \n");
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./lisy35_dipswitches.php\">DIP Switches</a><br><br> \n");
@@ -2207,6 +2291,7 @@ int main(int argc, char *argv[])
     //init internal lamp vars as well
     for(i=0; i<=59; i++) lamp[i] = 0;
     for(i=0; i<=59; i++) lamp2[i] = 0;
+    for(i=0; i<=23; i++) ss_lamp[i] = 0;
 
     //init internal continous solenoid vars as well
     for(i=0; i<=4; i++) cont_sol[i] = 0;
@@ -2226,10 +2311,6 @@ int main(int argc, char *argv[])
     get_lamp2_descriptions();
     //read the descriptions for the coils
     get_coil_descriptions();
-
-    //init threads for wheels
-    wheels_init();
-
 
  // try say something about LISY80 if sound is requested
  if ( ls80opt.bitv.JustBoom_sound )
@@ -2346,6 +2427,8 @@ int main(int argc, char *argv[])
      else if ( strcmp( buffer, "mom_solenoids") == 0) { send_mom_solenoid_infos(newsockfd); close(newsockfd); }
      //overview and control Starship special solenoids, send all the infos to teh webserver
      else if ( strcmp( buffer, "ss_solenoids") == 0) { send_ss_solenoid_infos(newsockfd); close(newsockfd); }
+     //overview and control Starship special lamps, send all the infos to teh webserver
+     else if ( strcmp( buffer, "ss_lamps") == 0) { send_ss_lamp_infos(newsockfd); close(newsockfd); }
      //overview and cobtrol sounds, send all the infos to teh webserver
      else if ( strcmp( buffer, "cont_solenoids") == 0) { send_cont_solenoid_infos(newsockfd); close(newsockfd); }
      //overview and cobtrol sounds, send all the infos to teh webserver
@@ -2382,6 +2465,8 @@ int main(int argc, char *argv[])
      else if (buffer[0] == 'C') do_mom_solenoid_set(buffer);
      //we interpret all Messages with an uppercase 'I' as special Starship coil (solenoid) settings
      else if (buffer[0] == 'I') do_ss_solenoid_set(buffer);
+     //we interpret all Messages with an uppercase 'J' as special Starship lamp (LED) settings
+     else if (buffer[0] == 'J') do_ss_lamp_set(buffer);
      //we interpret all Messages with an uppercase 'C' as continuous coil (solenoid) settings
      else if (buffer[0] == 'O') do_cont_solenoid_set(buffer);
      //we interpret all Messages with an uppercase 'D' as display settings
@@ -2399,7 +2484,6 @@ int main(int argc, char *argv[])
      //as default we print out what we got
      else fprintf(stderr,"Message: %s\n",buffer);
 
-
   } while (do_exit == 0);
 
      close(newsockfd);
@@ -2408,4 +2492,3 @@ int main(int argc, char *argv[])
      system("/sbin/reboot");
      return 0; 
 }
-

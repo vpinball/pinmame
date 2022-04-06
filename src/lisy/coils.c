@@ -490,7 +490,7 @@ void lisy35_cont_coil_set( unsigned char value )
 void lisy35_mom_coil_set( unsigned char value )
 {
     if ( lisy_hardware_revision == 200 )
-    	lisy_home_ss_mom_coil_set(value);
+        lisy_home_ss_mom_coil_set(value);
     else {
         /* build control byte */
         mydata_coil.bitv4.COMMAND = LS35COIL_MOM_SOL;
@@ -1120,7 +1120,6 @@ void lisyh_coil_set( int coil, int action)
      lisy80_debug(debugbuf);
     }//debug
 
-
         //write to PIC
         lisy80_write_byte_coil_pic(  mydata_coil.byte );
 }
@@ -1143,7 +1142,6 @@ void lisyh_led_set( int led, int line, int action)
         mydata_coil.bitv.COIL = led;
         mydata_coil.bitv.ACTION = action;
         mydata_coil.bitv.IS_CMD = 0;        //this is a coil setting
-
 
     //debug?
     if (  ls80dbg.bitv.lamps )
@@ -1244,14 +1242,30 @@ void lisyh_led_set_LED_color(unsigned char line, unsigned char led,
     usleep(LED_COLOR_WAIT_TIME);
 
     //debug?
-    if (  ls80dbg.bitv.lamps )
+    if ( ls80dbg.bitv.lamps )
     {
      if(( red + green + blue + white) > 0)
      {
-     sprintf(debugbuf,"setting color of LED %d (line %d)  to (RGBW) %d %d %d %d",
-     led,line,red, green,blue,white);
-     lisy80_debug(debugbuf);
+      sprintf(debugbuf,"setting color of LED %d (line %d)  to (RGBW) %d %d %d %d",
+      led,line,red, green,blue,white);
+      lisy80_debug(debugbuf);
      }
     }//debug
 
+}
+
+//init all special coils
+void lisyh_init_special_coils(void)
+{
+ int i;
+
+ //deactivate all special solenoids with a mapping
+ for ( i=0; i<=19; i++)
+ {
+        if ( lisy_home_ss_special_coil_map[i].mapped_to_coil != 0)
+        {
+         lisyh_coil_set( lisy_home_ss_special_coil_map[i].mapped_to_coil, 0);
+         delay (5); // 5 milliseconds delay from wiringpi library for PIC
+        }
+ }
 }

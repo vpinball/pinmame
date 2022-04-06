@@ -66,8 +66,10 @@ void lisy35_display_set_variant( unsigned char variant);
 #define LS35DPCMD_VARIANT_3 13
 #define LS35DPCMD_VARIANT_4 14
 
-#define LS35_SOUNDE_0 20    
-#define LS35_SOUNDE_1 21    
+#define LS35DPCMD_VARIANT_30 30 //disable Okaegi 6to7digit mod
+#define LS35DPCMD_VARIANT_31 31 //enable Okaegi 6to7digit mod
+
+#define LS35_SOUNDE_0 20
+#define LS35_SOUNDE_1 21
 
 #endif  // DISPLAYS_H_
-

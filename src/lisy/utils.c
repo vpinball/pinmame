@@ -39,7 +39,7 @@ struct stru_lisy80_error
   char message_con[80]; //message for console
 } ;
 
-struct stru_lisy80_error lisy80_error_struct[12] = {
+struct stru_lisy80_error lisy80_error_struct[13] = {
   { 0, 1, 0, 0, "      ", "                 ", "This is just a placeholder as zero is no error" },
   { 1, 1, 0, 0, "      ", "                 ", "Failed to initialize the wiringPi library" },
   { 2, 1, 1, 0, "      ", "                 ", "Failed to open the I2C bus for displays" },
@@ -51,7 +51,8 @@ struct stru_lisy80_error lisy80_error_struct[12] = {
   { 8, 1, 0, 0, "i2cbus", "I2C BUS PROB READ", "Failed to read from the I2C bus display pic" },
   { 9, 1, 0, 1, "i2cbus", "I2C BUS PROB READ", "Failed to read from the I2C bus coil pic" },
   {10, 0, 0, 1, "romiss", "ROM MISSING      ", "Failed to read ROM data for selected game" }, //mame will do exit for us
-  {11, 1, 0, 1, "inv hw", "INVALID HARDWARE ", "Could not determine Hardware revision" } //unable to detect eeprom at valid address
+  {11, 1, 0, 1, "inv hw", "INVALID HARDWARE ", "Could not determine Hardware revision" }, //unable to detect eeprom at valid address
+  {12, 1, 0, 1, "sw ini", "SWITCH PIC INIT  ", "Could not initialize switch PIC" }
  };
 
 

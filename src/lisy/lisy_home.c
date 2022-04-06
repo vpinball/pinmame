@@ -23,6 +23,7 @@
 #include "sound.h"
 #include "lisy_home.h"
 #include "fadecandy.h"
+#include "wheels.h"
 #include "externals.h"
 #include "lisy.h"
 
@@ -242,10 +243,47 @@ void lisy_home_ss_lamp_set( int lamp, int action)
 {
   int i;
 
+  //debug?
+  if (  ls80dbg.bitv.lamps )
+  {
+     sprintf(debugbuf,"lisy_home_ss_lamp_set: lamp:%d action:%d\n",lamp,action);
+     lisy80_debug(debugbuf);
+  }//debug
+
+  //we may set other actions because of lamp status
+  lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_LAMP, lamp, action);
+
   //how many mappings?
   for ( i=0; i<lisy_home_ss_lamp_map[lamp].no_of_maps; i++)
   {
-   lisyh_led_set( lisy_home_ss_lamp_map[lamp].mapped_to_led[i], lisy_home_ss_lamp_map[lamp].mapped_to_line[i], action);
+   if(lisy_home_ss_lamp_map[lamp].mapped_to_line[i] == 7) //coil mapping
+      lisyh_coil_set( lisy_home_ss_lamp_map[lamp].mapped_to_led[i], action);
+   else if(lisy_home_ss_lamp_map[lamp].mapped_to_line[i] <= 6) //LED mapping
+      lisyh_led_set( lisy_home_ss_lamp_map[lamp].mapped_to_led[i], lisy_home_ss_lamp_map[lamp].mapped_to_line[i], action);
+  }
+}
+
+//do the led setting on starship
+//special lamps
+//aware of mapping
+void lisy_home_ss_special_lamp_set( int lamp, int action)
+{
+  int i;
+
+  //debug?
+  if (  ls80dbg.bitv.lamps )
+  {
+     sprintf(debugbuf,"lisy_home_ss_special_lamp_set: lamp:%d action:%d\n",lamp,action);
+     lisy80_debug(debugbuf);
+  }//debug
+
+  //how many mappings?
+  for ( i=0; i<lisy_home_ss_special_lamp_map[lamp].no_of_maps; i++)
+  {
+   if(lisy_home_ss_special_lamp_map[lamp].mapped_to_line[i] == 7) //coil mapping
+      lisyh_coil_set( lisy_home_ss_special_lamp_map[lamp].mapped_to_led[i], action);
+   if(lisy_home_ss_special_lamp_map[lamp].mapped_to_line[i] <= 6) //LED mapping
+      lisyh_led_set( lisy_home_ss_special_lamp_map[lamp].mapped_to_led[i], lisy_home_ss_special_lamp_map[lamp].mapped_to_line[i], action);
   }
 }
 
@@ -294,11 +332,132 @@ void lisy_home_ss_send_led_colors( void)
  {
 	for (led=0; led <=47; led++)
 	{
-			lisyh_led_set_LED_color(ledline, led, 
+			lisyh_led_set_LED_color(ledline, led,
 			led_rgbw_color[ledline][led].red,
 			led_rgbw_color[ledline][led].green,
 			led_rgbw_color[ledline][led].blue,
 			led_rgbw_color[ledline][led].white);
 	}
  }
+}
+
+//vars for event handler actions
+unsigned char lisy_home_ss_lamp_1canplay_status = 0;
+unsigned char lisy_home_ss_lamp_2canplay_status = 0;
+unsigned char lisy_home_ss_digit_ballinplay_status = 80;
+unsigned char lisy35_flipper_disable_status = 1; //default flipper disbaled
+unsigned char want_wheel_score_credits_reset = 0;
+
+
+void lisy_home_ss_cont_sol_event( unsigned char cont_data )
+{
+  lisy35_flipper_disable_status =  CHECK_BIT( cont_data, 2);
+}
+
+void lisy_home_ss_display_event( int digit, int value)
+{
+	static int old_ballinplay_status = -1;
+	static int old_match_status = -1;
+	static int old_credit_status = -1;
+
+	switch(digit)
+	{
+	 //case LISY_HOME_DIGIT_CREDITS10:
+	 //		break;
+	 case LISY_HOME_DIGIT_CREDITS:
+		if ( old_credit_status < 0 )
+		{
+		   old_credit_status = value;
+		   want_wheel_score_credits_reset = 1;
+		}
+		break;
+	 case LISY_HOME_DIGIT_BALLINPLAY:
+		//wheels reset when ballinplay changes from 0 to 1
+		lisy_home_ss_digit_ballinplay_status = value;
+		if (( lisy_home_ss_digit_ballinplay_status == 1) & ( old_ballinplay_status == 0)) wheel_score_reset();
+		//set/unset lamp for ball in play
+		if (( lisy_home_ss_digit_ballinplay_status > 0) & ( lisy_home_ss_digit_ballinplay_status <= 5))
+			 lisy_home_ss_special_lamp_set ( 9+lisy_home_ss_digit_ballinplay_status, 1); //Lamps 10...14
+		if (( old_ballinplay_status > 0)  & ( old_ballinplay_status <= 5 ))
+			 lisy_home_ss_special_lamp_set ( 9+old_ballinplay_status, 0); //Lamps 10...14
+		//store old value
+		old_ballinplay_status = lisy_home_ss_digit_ballinplay_status;
+		break;
+	 case LISY_HOME_DIGIT_MATCH:
+		//set/unset lamp for match
+		if (( value >= 0) & ( value <= 9))
+			 lisy_home_ss_special_lamp_set ( value, 1); //Lamps 0...9
+		if (( old_match_status >= 0) & ( old_match_status <= 9))
+			 lisy_home_ss_special_lamp_set ( old_match_status, 0); //Lamps 0...9
+		old_match_status = value;
+		break;
+	}
+}
+
+void lisy_home_ss_lamp_event( int lamp, int action)
+{
+	switch(lamp)
+	{
+	 case LISY_HOME_SS_LAMP_1CANPLAY: //set light on player1 to ON if 1canplay or 2canplay is ON
+		lisy_home_ss_lamp_1canplay_status = action;
+		if (( lisy_home_ss_lamp_1canplay_status == 1) | ( lisy_home_ss_lamp_2canplay_status ==1))
+		 {
+		 lisy_home_ss_special_lamp_set ( 15, 1); 
+		 lisy_home_ss_special_lamp_set ( 16, 1); 
+		 }
+		else
+		 {
+		 lisy_home_ss_special_lamp_set ( 15, 0); 
+		 lisy_home_ss_special_lamp_set ( 16, 0); 
+		 }
+		break;
+	 case LISY_HOME_SS_LAMP_2CANPLAY: 
+		 lisy_home_ss_lamp_2canplay_status = action;
+		 lisy_home_ss_special_lamp_set ( 17, action); 
+		 lisy_home_ss_special_lamp_set ( 18, action); 
+		break;
+	 case LISY_HOME_SS_LAMP_GAMEOVER: //make sure reset credit wheel does not block solenoid off by waiting for game over
+		 if (( action = 1) &( want_wheel_score_credits_reset = 1))
+			{
+			 want_wheel_score_credits_reset = 0;
+			 wheel_score_credits_reset();
+			}
+		break;
+	}
+}
+
+void lisy_home_ss_init_event(void)
+{
+ int i;
+
+ //activate GI lamps for credit, drop targets 3000 and top rollover
+ for(i=0; i<=127; i++)
+  {
+	if ( lisy_home_ss_GI_leds[i].line != 0) 
+	{
+	 lisyh_led_set( lisy_home_ss_GI_leds[i].led, lisy_home_ss_GI_leds[i].line, 1);
+         if ( ls80dbg.bitv.lamps )
+          {
+          sprintf(debugbuf,"activate GI led:%d line:%d",lisy_home_ss_GI_leds[i].led, lisy_home_ss_GI_leds[i].line);
+          lisy80_debug(debugbuf);
+          }
+	}
+  } //for
+}
+
+
+//the Starship eventhandler
+void lisy_home_ss_event_handler( int id, int arg1, int arg2)
+{
+	switch(id)
+	{
+	 case LISY_HOME_SS_EVENT_INIT: lisy_home_ss_init_event( ); break;
+	 case LISY_HOME_SS_EVENT_LAMP: lisy_home_ss_lamp_event( arg1, arg2); break;
+	 case LISY_HOME_SS_EVENT_DISPLAY: lisy_home_ss_display_event( arg1, arg2); break;
+	 case LISY_HOME_SS_EVENT_CONT_SOL: lisy_home_ss_cont_sol_event( arg1 ); break;
+	}
+
+  //2canplay lamp blocks credit switch when ball in play is 1 ( only 2 players on Starship)
+  if  (( lisy_home_ss_lamp_2canplay_status == 1)  & ( lisy_home_ss_digit_ballinplay_status == 1))
+	lisy_home_ss_ignore_credit = 1; else lisy_home_ss_ignore_credit = 0;
 }

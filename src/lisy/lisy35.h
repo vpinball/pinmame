@@ -4,6 +4,7 @@
 // Generic LISY35 functions.
 void lisy35_shutdown(void);
 int  lisy35_get_gamename(char *gamename);
+//void lisy35_display_handler( int index, UINT16 seg );
 void lisy35_display_handler( int index, int value );
 unsigned char lisy35_switch_handler( int sys35col );
 void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect);
@@ -23,4 +24,3 @@ void lisy35_set_soundboard_variant( void );
 #define LISY35_SOUND_HANDLER_IS_CTRL 1
 
 #endif  /* LISY35_H */
-

@@ -69,6 +69,7 @@ void lisy1_sound_set(int sound);
 //void lisy35_sound_set(int sound);
 
 int lisy80_switch_readycheck( void );
+void lisy80_switch_waitfor_state( unsigned char state );
 int lisy80_switch_pic_init( void );
 int lisy80_switch_reader( unsigned char *action );
 int lisy1_switch_reader( unsigned char *action );
