@@ -8,7 +8,7 @@ Version 3.5 (XX XXth, 2022) - ""
 
 More gracefully handle parsing errors in invalid altsound CSV files to avoid crashes
 
-Updated LISY support to 5.28-11 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.28-41 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 Updated to zlib 1.2.12
 

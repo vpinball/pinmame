@@ -88,10 +88,10 @@ static struct {
   int    digSel;
   int    diagnosticLed;
   int    swCol;
-  int    ssEn;				/* Special solenoids and flippers enabled ? */
+  int    ssEn;		/* Special solenoids and flippers enabled ? */
   int    sndCmd;	/* external sound board cmd */
   int    piaIrq;
-  int	 deGame;	/*Flag to see if it's a Data East game running*/
+  int    deGame;	/*Flag to see if it's a Data East game running*/
 #ifdef FIXMUX
   UINT8  solBits1,solBits2;
   UINT8  solBits2prv;
@@ -101,7 +101,7 @@ static struct {
 static void s11_irqline(int state) {
   if (state) {
     cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
-	/*Set coin door inputs, differs between S11 & DE*/
+    /*Set coin door inputs, differs between S11 & DE*/
     if (locals.deGame) {
       pia_set_input_ca1(S11_PIA2, !core_getSw(DE_SWADVANCE));
       pia_set_input_cb1(S11_PIA2, core_getSw(DE_SWUPDN));
@@ -146,16 +146,16 @@ static INTERRUPT_GEN(s11_vblank) {
   /*-- lamps --*/
   if ((locals.vblankCount % S11_LAMPSMOOTH) == 0) {
 #ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-                    // Loop through the lamp matrix, looking for any which have changed state
-                        int col, row, procLamp;
+    if (coreGlobals.p_rocEn) {
+      // Loop through the lamp matrix, looking for any which have changed state
+      int col, row, procLamp;
 			for(col = 0; col < CORE_STDLAMPCOLS; col++) {
 				UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
 				UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
 				for (row = 0; row < 8; row++) {
                                         procLamp = 80 + (8 * col) + row;
                                         // If lamp (col,row) has changed state, drive the P-ROC with the new value
-					if (chgLamps & 0x01) {
+                                        if (chgLamps & 0x01) {
                                             procDriveLamp(procLamp, tmpLamps & 0x01);
                                         }
                                         // If this lamp was defined in the YAML file as one showng kickback status,
@@ -168,7 +168,7 @@ static INTERRUPT_GEN(s11_vblank) {
 				}
 			}
 			procFlush();
-		}
+    }
 #endif //PROC_SUPPORT
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 #if defined(LISY_SUPPORT)
@@ -239,7 +239,7 @@ static INTERRUPT_GEN(s11_vblank) {
    * going active
 
    */
- 		allSol = (allSol & 0xffffffff00000000) |
+                allSol = (allSol & 0xffffffff00000000) |
 		         (coreGlobals.solenoids);
                 // The Sys11 code fires all coils at once at the start - FF00 - in order
                 // to get the buffers on the MPU to a known state, before the blanking
@@ -248,9 +248,9 @@ static INTERRUPT_GEN(s11_vblank) {
                 // Cannot think of any reason why any valid call for all coils would
                 // be made during the game, so this should be fine.
                 if (coreGlobals.p_rocEn && allSol != 0xff00) {
-			//int ii;
+                        //int ii;
                         UINT64 chgSol1 = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
-			UINT64 tmpSol1 = allSol;
+                        UINT64 tmpSol1 = allSol;
                         UINT64 chgSol2 = chgSol1;
                         UINT64 tmpSol2 = tmpSol1;
                         UINT64 onSol = allSol & chgSol1;
@@ -518,6 +518,9 @@ static WRITE_HANDLER(pia0b_w) {
   }
   if (data != locals.solBits2) {
     locals.solBits2 = data;
+#if defined(LISY_SUPPORT)
+    lisy_w_direct_solenoid_handler(data);
+#endif
     updsol();
   }
 }
