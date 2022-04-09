@@ -4,6 +4,7 @@ on:
 
 env:
   VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
+  UPX_ARTIFACT: 176385880
 
 defaults:
   run:
@@ -16,7 +17,7 @@ jobs:
     outputs:
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - id: version
@@ -48,10 +49,10 @@ jobs:
             artifact-suffix: -sc
             extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ilammy/setup-nasm@v1
       - run: |
-          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/176385880/zip -o upx.zip
+          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
           7z x upx.zip -oupx
           rm upx.zip
       - name: Build PinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
@@ -65,7 +66,7 @@ jobs:
           cp build/Release/PinMAME.exe tmp
           cp release/license.txt tmp
           cp release/whatsnew.txt tmp
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: PinMAME${{ matrix.artifact-suffix }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp

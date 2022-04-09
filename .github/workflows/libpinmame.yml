@@ -4,6 +4,7 @@ on:
 
 env:
   VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
+  UPX_ARTIFACT: 176385880
 
 defaults:
   run:
@@ -19,7 +20,7 @@ jobs:
       sha: ${{ steps.version.outputs.sha }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - id: version
@@ -76,10 +77,10 @@ jobs:
             platform: android-arm64-v8a
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.so
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/176385880/zip -o upx.zip
+            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
             7z x upx.zip -oupx
             rm upx.zip
           fi
@@ -109,14 +110,34 @@ jobs:
             cp build/Release/${{ matrix.pinmame-test }} tmp
           fi
           cp release/license.txt tmp
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
+          path: tmp
+
+  post-build:
+    runs-on: macos-latest
+    needs: [ version, build ]
+    name: Build libpinmame-osx
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: |
+          mkdir tmp
+          cp libpinmame-${{ needs.version.outputs.tag }}-osx-x64/license.txt tmp 
+          lipo -create -output tmp/libpinmame.${{ needs.version.outputs.version }}.dylib \
+             libpinmame-${{ needs.version.outputs.tag }}-osx-x64/libpinmame.${{ needs.version.outputs.version }}.dylib \
+             libpinmame-${{ needs.version.outputs.tag }}-osx-arm64/libpinmame.${{ needs.version.outputs.version }}.dylib 
+          lipo -create -output tmp/pinmame_test \
+             libpinmame-${{ needs.version.outputs.tag }}-osx-x64/pinmame_test \
+             libpinmame-${{ needs.version.outputs.tag }}-osx-arm64/pinmame_test 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libpinmame-${{ needs.version.outputs.tag }}-osx
           path: tmp
           
   dispatch:
     runs-on: ubuntu-latest
-    needs: [ version, build ]
+    needs: [ version, post-build ]
     if: github.repository == 'vpinball/pinmame' && github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - uses: peter-evans/repository-dispatch@v1
