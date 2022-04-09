@@ -599,3 +599,8 @@ add_executable(pinmame_test
 target_link_libraries(pinmame_test LINK_PUBLIC
    pinmame
 )
+
+set_target_properties(pinmame_test PROPERTIES
+   SKIP_BUILD_RPATH TRUE
+   LINK_FLAGS "-Wl,-rpath,@executable_path"
+)

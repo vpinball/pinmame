@@ -19,7 +19,7 @@ jobs:
       sha: ${{ steps.version.outputs.sha }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - id: version
@@ -46,7 +46,7 @@ jobs:
             platform: osx-x64
             exe: xpinmame
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - if: matrix.os == 'macos-latest'
         run: |
           brew install xquartz
@@ -59,7 +59,7 @@ jobs:
           mkdir tmp
           cp build/Release/${{ matrix.exe }} tmp
           cp release/license.txt tmp
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: xpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp

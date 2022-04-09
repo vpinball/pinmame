@@ -23,7 +23,7 @@ jobs:
            SHA7="${SHA::7}"
            echo "::set-output name=sha::${SHA}"
            echo "::set-output name=sha7::${SHA7}"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ steps.sha.outputs.sha }}
           fetch-depth: 0
