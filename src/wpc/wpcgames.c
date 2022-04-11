@@ -25,7 +25,7 @@ static core_tGameData tttGameData = {
   { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L), 0,0,0,0,0,1 },
   NULL,
   {
-    "905  123456 12345 123",
+    "905 123456 12345 123",
     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
     { 0x00, 0x00, 0x00, 0x3f, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
     /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
@@ -40,6 +40,78 @@ DCS_SOUNDROM2m("ttt_s2.rom",CRC(faae93eb) SHA1(672758544b260d7751ac296f5beb2e271
 WPC_ROMEND
 #define input_ports_ttt input_ports_wpc
 CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
+
+/*-------------
+/ Phantom Haus
+/--------------*/
+extern const core_tLCDLayout wpc_dispDMD64[];
+static core_tGameData phGameData = {
+  GEN_WPC95, wpc_dispDMD64,
+  { FLIP_SWNO(0,0), 0,16,0,0,0,0,1 },
+  NULL,
+  {
+    "901 100031 64739 123",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+    /* Cancel Red Blue Super */
+    {  15,    26, 27,  14 }
+  }
+};
+INITGAME(ph)
+WPC_ROMSTART(ph,04,"g11_040.rom",0x80000,CRC(8473f464) SHA1(829f2c0c772639e56f747d4274ad98967290bd43))
+DCS_SOUNDROM4xm("S2_030.rom",CRC(bbeb510c) SHA1(05088b6fa89cd203099189c31d132cd062ab8357),
+               "phs3_02.rom",CRC(710568a7) SHA1(8c7c28bacc2777722a54bee32375240c9a7441d8),
+               "phs4_02.rom",CRC(390df0f2) SHA1(fdf1bb96e26c0245d04be610e1a84cd4e03059ff),
+               "phs5_02.rom",CRC(b524513a) SHA1(5e372e409b4d1fc5bcda55af5dc2cbf1dc66e56b))
+WPC_ROMEND
+INPUT_PORTS_START(ph)
+  CORE_PORTS
+  SIM_PORTS(0)
+  PORT_START /* 0 */
+    COREPORT_BIT   (  0x0001, "Coin Acceptor 1", KEYCODE_1)
+    COREPORT_BIT   (  0x0002, "Coin Acceptor 2", KEYCODE_2)
+    COREPORT_BIT   (  0x0004, "Coin Acceptor 3", KEYCODE_3)
+    COREPORT_BIT   (  0x0010, "Coin Acceptor 4", KEYCODE_4)
+    COREPORT_BIT   (  0x0008, "Coin Acceptor 5", KEYCODE_5)
+    COREPORT_BITTOG(  0x0020, "Left Data Key",   KEYCODE_DEL)
+    COREPORT_BITTOG(  0x0040, "Right Data Key",  KEYCODE_END)
+    COREPORT_BIT   (  0x0080, "Change Language", KEYCODE_INSERT)
+    COREPORT_BIT   (  0x0200, "Cancel Collect",  KEYCODE_7)
+    COREPORT_BIT   (  0x0400, "Red",             KEYCODE_8)
+    COREPORT_BIT   (  0x0800, "Blue",            KEYCODE_9)
+    COREPORT_BIT   (  0x0100, "Super Game",      KEYCODE_0)
+  PORT_START /* 1 */
+    COREPORT_DIPNAME( 0x0001, 0x0001, "SW1")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0001, "1" )
+    COREPORT_DIPNAME( 0x0002, 0x0002, "SW2")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+    COREPORT_DIPNAME( 0x0004, 0x0000, "W20")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0004, "1" )
+    COREPORT_DIPNAME( 0x0008, 0x0000, "W19")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0008, "1" )
+    COREPORT_DIPNAME( 0x00f0, 0x0000, "Country")
+      COREPORT_DIPSET(0x0000, "U.S.A. / Canada 1" ) \
+      COREPORT_DIPSET(0x0010, "France/Coin 6-20F" ) \
+      COREPORT_DIPSET(0x0020, "Germany 1" ) \
+      COREPORT_DIPSET(0x0030, "France 20F Door" ) \
+      COREPORT_DIPSET(0x0040, "Invalid 1" ) \
+      COREPORT_DIPSET(0x0050, "Invalid 2" ) \
+      COREPORT_DIPSET(0x0060, "Invalid 3" ) \
+      COREPORT_DIPSET(0x0070, "Germany 2" ) \
+      COREPORT_DIPSET(0x0080, "Invalid 4" ) \
+      COREPORT_DIPSET(0x0090, "France Coin Setting 6" ) \
+      COREPORT_DIPSET(0x00a0, "Export" ) \
+      COREPORT_DIPSET(0x00b0, "France" ) \
+      COREPORT_DIPSET(0x00c0, "United Kingdom" ) \
+      COREPORT_DIPSET(0x00d0, "Italy" ) \
+      COREPORT_DIPSET(0x00e0, "Spain" ) \
+      COREPORT_DIPSET(0x00f0, "U.S.A. / Canada 2" )
+INPUT_PORTS_END
+CORE_GAMEDEF(ph,04,"Phantom Haus (0.4)",1996,"Williams",wpc_m95S,GAME_NOT_WORKING)
 
 /*--------------
 / Test Fixture DMD generation

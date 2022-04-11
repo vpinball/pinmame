@@ -62,6 +62,7 @@ static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
 PINMAME_VIDEO_UPDATE(wpcdmd_update);
+PINMAME_VIDEO_UPDATE(wpcdmd_update64);
 /*-- protected memory --*/
 static WRITE_HANDLER(wpc_ram_w);
 
@@ -100,6 +101,10 @@ const struct core_dispLayout wpc_dispAlpha[] = {
 };
 const struct core_dispLayout wpc_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update,NULL}, {0}
+};
+const struct core_dispLayout wpc_dispDMD64[] = {
+  {0,0, 0,5,CORE_SEG7},
+  {11,0,64,128,CORE_DMD,(genf *)wpcdmd_update64,NULL}, {0}
 };
 
 /*------------------
@@ -369,6 +374,7 @@ MACHINE_DRIVER_END
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_vblank) {
+  static int lastPage;
 #ifdef PROC_SUPPORT
 	static int gi_last[CORE_MAXGI];
 	int changed_gi[CORE_MAXGI];
@@ -386,7 +392,17 @@ static INTERRUPT_GEN(wpc_vblank) {
       wpc_firq(TRUE, WPC_FIRQ_DMD);
     if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == 0) {
       /*-- This is the real VBLANK interrupt --*/
-      dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
+      if (core_gameData->hw.gameSpecific2) { // PH: DMD needs work
+        if (wpc_data[DMD_VISIBLEPAGE] != lastPage) {
+          dmdlocals.DMDFrames[0] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) / 2 * 2 * 0x200;
+          dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (2 + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) / 2 * 2) * 0x200;
+        } else {
+          dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
+        }
+        lastPage = wpc_data[DMD_VISIBLEPAGE];
+      } else {
+        dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
+      }
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
 				/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
@@ -513,7 +529,7 @@ static INTERRUPT_GEN(wpc_vblank) {
 		}
 #endif
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, 8);
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_DISPLAYSMOOTH)) == 0) {
     if ((core_gameData->gen & GENWPC_HASDMD) == 0) {
@@ -725,8 +741,12 @@ WRITE_HANDLER(wpc_w) {
 #endif
       }
       break;
-    case WPC_FLIPPERCOIL95:
-      if (core_gameData->gen & GENWPC_HASWPC95) {
+    case WPC_FLIPPERCOIL95: /* WPC_EXTBOARD4 */
+      if (core_gameData->hw.gameSpecific2) { // PH: LED digits
+        if (data != 0xff) {
+          coreGlobals.segments[core_BitColToNum(0xff ^ data)].w = wpclocals.alphaSeg[core_BitColToNum(0xff ^ data)].w = core_bcd2seg7[wpc_data[WPC_EXTBOARD1]];
+        }
+      } else if (core_gameData->gen & GENWPC_HASWPC95) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
         wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
@@ -737,8 +757,6 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
-    /* case WPC_EXTBOARD4:
-    case WPC_EXTBOARD5: */
     case WPC_ALPHA2HI:
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
@@ -748,6 +766,10 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_LAMPCOLUMN: /* row and column can be written in any order */
       core_setLamp(coreGlobals.tmpLampMatrix,data,wpc_data[WPC_LAMPROW]);
+      if (core_gameData->hw.gameSpecific2) { // PH uses 192 lamps
+        core_setLamp(coreGlobals.tmpLampMatrix, data << 8,  wpc_data[WPC_EXTBOARD2]);
+        core_setLamp(coreGlobals.tmpLampMatrix, data << 16, wpc_data[WPC_EXTBOARD3]);
+      }
       break;
     case WPC_SWCOLSELECT:
       if (core_gameData->gen & GENWPC_HASPIC)
@@ -791,6 +813,9 @@ WRITE_HANDLER(wpc_w) {
         wpclocals.modsol_seen_aux_pulses |= data;
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
+      if (core_gameData->hw.gameSpecific2) { // PH: lamps 65 .. 128
+        core_setLamp(coreGlobals.tmpLampMatrix, wpc_data[WPC_LAMPCOLUMN] << 8, data);
+      }
       if (wpc_modsol_aux_board == 2)
         wpclocals.modsol_seen_aux_pulses |= data;
 
@@ -798,6 +823,9 @@ WRITE_HANDLER(wpc_w) {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
     case WPC_EXTBOARD3:
+      if (core_gameData->hw.gameSpecific2) { // PH: lamps 129 .. 192
+        core_setLamp(coreGlobals.tmpLampMatrix, wpc_data[WPC_LAMPCOLUMN] << 16, data);
+      }
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.hi |= data;
       break;
@@ -1233,7 +1261,6 @@ static VIDEO_START(wpc_dmd) {
   return 0;
 }
 
-//static VIDEO_UPDATE(wpc_dmd) {
 PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   int ii,kk;
 
@@ -1273,6 +1300,44 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
       kk++;
     }
     *line = 0; /* to simplify antialiasing */
+  }
+  video_update_core_dmd(bitmap, cliprect, layout);
+  return 0;
+}
+
+PINMAME_VIDEO_UPDATE(wpcdmd_update64) {
+  int ii,kk;
+
+#ifdef VPINMAME
+  g_raw_gtswpc_dmdframes = 2;
+#endif
+
+  for (kk = 0, ii = 1; ii < 65; ii++) {
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
+    int jj;
+    for (jj = 0; jj < 16; jj++) {
+      const unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
+                                    (dmdlocals.DMDFrames[1][kk] & 0x55));
+      const unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
+                                    (dmdlocals.DMDFrames[1][kk] & 0xaa));
+
+#ifdef VPINMAME
+      g_raw_gtswpc_dmd[kk]         = dmdlocals.DMDFrames[0][kk];
+      g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
+#endif
+
+      *line++ =  intens1    &3 ?  (intens1    &3) + 1 : 0;
+      *line++ = (intens2>>1)&3 ? ((intens2>>1)&3) + 1 : 0;
+      *line++ = (intens1>>2)&3 ? ((intens1>>2)&3) + 1 : 0;
+      *line++ = (intens2>>3)&3 ? ((intens2>>3)&3) + 1 : 0;
+      *line++ = (intens1>>4)&3 ? ((intens1>>4)&3) + 1 : 0;
+      *line++ = (intens2>>5)&3 ? ((intens2>>5)&3) + 1 : 0;
+      *line++ = (intens1>>6)&3 ? ((intens1>>6)&3) + 1 : 0;
+      *line++ = (intens2>>7)&3 ? ((intens2>>7)&3) + 1 : 0;
+
+      kk++;
+    }
+    *line = 0;
   }
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;

@@ -20,9 +20,10 @@ Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so alts
 Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
 Fix sound commander issues (missing 2nd part of command) for the WPC89 sound board
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game)
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux)
 New:
-Stern S.A.M. IV Board Tester
+Stern: S.A.M. IV Board Tester
+Williams: Phantom Haus (https://flipprojets.fr/PhantomHaus_EN.php)
 
 Correct Dumps:
 

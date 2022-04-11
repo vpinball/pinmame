@@ -3042,6 +3042,7 @@ DRIVER(jy,11)           //          01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //          07/97 W Junk Yard (1.2)
 DRIVER(jy,12c)          //          12/19 W Junk Yard (1.2C Competition MOD)
 //DRIVER(jy,20)         //          11/20 W Junk Yard (2.0) //also done by Soren, but official now
+DRIVER(ph,04)           //WPC-901:  11/96 W Phantom Haus (0.4)
 DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1, Sound S0.4)
 DRIVER(nbaf,11)         //          03/97 B NBA Fastbreak (1.1)
 DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1, Sound S2.0)
