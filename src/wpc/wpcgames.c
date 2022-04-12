@@ -4,6 +4,7 @@
 #include "core.h"
 #include "wmssnd.h"
 #include "wpc.h"
+#include "mech.h"
 
 #define swStart     13
 #define swTilt      14
@@ -45,9 +46,21 @@ CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
 / Phantom Haus
 /--------------*/
 extern const core_tLCDLayout wpc_dispDMD64[];
+static mech_tInitData ph_reelMech[] = {{
+  38,39, MECH_LINEAR | MECH_CIRCLE | MECH_TWOSTEPSOL, 48,48, {{36, 1,47}}
+},{
+  27,37, MECH_LINEAR | MECH_CIRCLE | MECH_TWOSTEPSOL, 48,48, {{34, 1,47}}
+},{
+  25,26, MECH_LINEAR | MECH_CIRCLE | MECH_TWOSTEPSOL, 48,48, {{32, 1,47}}
+},{0}};
+static void ph_drawMech(BMTYPE **line) {
+  core_textOutf(60, 0,BLACK, "Lt. Reel: %2d", mech_getPos(0));
+  core_textOutf(60,10,BLACK, "Cen.Reel: %2d", mech_getPos(1));
+  core_textOutf(60,20,BLACK, "Rt. Reel: %2d", mech_getPos(2));
+}
 static core_tGameData phGameData = {
   GEN_WPC95, wpc_dispDMD64,
-  { FLIP_SWNO(0,0), 0,16,0,0,0,0,1 },
+  { FLIP_SWNO(0,0), 0,16,0,0,0,0,1, NULL, NULL, mech_getPos, ph_drawMech },
   NULL,
   {
     "901 100031 64739 123",
@@ -57,7 +70,12 @@ static core_tGameData phGameData = {
     {  15,    26, 27,  14 }
   }
 };
-INITGAME(ph)
+static void init_ph(void) {
+  core_gameData = &phGameData;
+  mech_add(0, &ph_reelMech[0]);
+  mech_add(1, &ph_reelMech[1]);
+  mech_add(2, &ph_reelMech[2]);
+}
 WPC_ROMSTART(ph,04,"g11_040.rom",0x80000,CRC(8473f464) SHA1(829f2c0c772639e56f747d4274ad98967290bd43))
 DCS_SOUNDROM4xm("S2_030.rom",CRC(bbeb510c) SHA1(05088b6fa89cd203099189c31d132cd062ab8357),
                "phs3_02.rom",CRC(710568a7) SHA1(8c7c28bacc2777722a54bee32375240c9a7441d8),
@@ -111,7 +129,7 @@ INPUT_PORTS_START(ph)
       COREPORT_DIPSET(0x00e0, "Spain" ) \
       COREPORT_DIPSET(0x00f0, "U.S.A. / Canada 2" )
 INPUT_PORTS_END
-CORE_GAMEDEF(ph,04,"Phantom Haus (0.4)",1996,"Williams",wpc_m95S,GAME_NOT_WORKING)
+CORE_GAMEDEF(ph,04,"Phantom Haus (0.4)",1996,"Williams",wpc_m95S,GAME_IMPERFECT_GRAPHICS)
 
 /*--------------
 / Test Fixture DMD generation

@@ -374,7 +374,7 @@ MACHINE_DRIVER_END
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_vblank) {
-  static int lastPage;
+  static int lastPage, frameNo;
 #ifdef PROC_SUPPORT
 	static int gi_last[CORE_MAXGI];
 	int changed_gi[CORE_MAXGI];
@@ -395,9 +395,10 @@ static INTERRUPT_GEN(wpc_vblank) {
       if (core_gameData->hw.gameSpecific2) { // PH: DMD needs work
         if (wpc_data[DMD_VISIBLEPAGE] != lastPage) {
           dmdlocals.DMDFrames[0] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) / 2 * 2 * 0x200;
-          dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (2 + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) / 2 * 2) * 0x200;
+          dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (2 + (lastPage & 0x0f) / 2 * 2) * 0x200;
         } else {
-          dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
+          dmdlocals.DMDFrames[frameNo] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
+          frameNo = 1 - frameNo;
         }
         lastPage = wpc_data[DMD_VISIBLEPAGE];
       } else {
@@ -594,6 +595,9 @@ READ_HANDLER(wpc_r) {
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_FLIPPERSW95:
+      if (core_gameData->hw.gameSpecific2) { // PH: reel switches
+        return ~coreGlobals.swMatrix[3];
+      }
       if (core_gameData->gen & GENWPC_HASWPC95)
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
