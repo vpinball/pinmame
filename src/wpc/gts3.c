@@ -51,7 +51,7 @@ UINT8 DMDFrames2[GTS3DMD_FRAMES_5C][0x200]; //2nd DMD Display for Strikes N Spar
 #endif
 
 /* FORCE The 16 Segment Layout to match the output order expected by core.c */
-static const int alpha_adjust[16] =   {0,1,2,3,4,5,9,10,11,12,13,14,6,8,15,7};
+static const int alpha_adjust[16] = {0,1,2,3,4,5,9,10,11,12,13,14,6,8,15,7};
 
 static WRITE_HANDLER(display_control);
 
@@ -129,10 +129,10 @@ static READ_HANDLER(alpha_u4_pb_r)
 	int data = 0;
 	//Gen 1 checks Slam switch here
 	if(GTS3locals.alphagen==1)
-		data |= (GTS3locals.swSlam << 3);	//Slam Switch (NOT INVERTED!)
+		data |= (GTS3locals.swSlam << 3); //Slam Switch (NOT INVERTED!)
 	else
-		data |= (GTS3locals.swDiag << 3);	//Diag Switch (NOT INVERTED!)
-	data |= (GTS3locals.swTilt << 4);   //Tilt Switch (NOT INVERTED!)
+		data |= (GTS3locals.swDiag << 3); //Diag Switch (NOT INVERTED!)
+	data |= (GTS3locals.swTilt << 4);     //Tilt Switch (NOT INVERTED!)
 	return data;
 }
 
@@ -148,7 +148,7 @@ static READ_HANDLER(alpha_u4_pb_r)
 static READ_HANDLER(dmd_u4_pb_r)
 {
 	int data = 0;
-	data |= (GTS3locals.swDiag << 3);	//Diag Switch (NOT INVERTED!)
+	data |= (GTS3locals.swDiag << 3);   //Diag Switch (NOT INVERTED!)
 	data |= (GTS3locals.swTilt << 4);   //Tilt Switch (NOT INVERTED!)
 	data |= (GTS3_dmdlocals[0].status1 << 5);
 	data |= (GTS3_dmdlocals[0].dstrb << 6);
@@ -327,7 +327,7 @@ static WRITE_HANDLER( xvia_1_a_w )
 	GTS3locals.sound_data = data^0xff;
 
 	//Unless it's Strikes N Spares, send the sound command now!
-    if (GTS3_dmdlocals[0].version != 2)
+	if (GTS3_dmdlocals[0].version != 2)
 		sndbrd_0_data_w(0, GTS3locals.sound_data);
 }
 
@@ -619,7 +619,7 @@ static MACHINE_INIT(gts3dmd2) {
   gts3dmd_init();
   memset(&GTS3_dmdlocals[1], 0, sizeof(GTS3_DMDlocals));
   memset(&DMDFrames2, 0, sizeof(DMDFrames2));
-  GTS3_dmdlocals[0].color_mode = 0;
+  GTS3_dmdlocals[0].color_mode = 1;
   GTS3_dmdlocals[0].version = 2;
 
   //Init 2nd 6845
@@ -948,7 +948,7 @@ static void alpha_update(){
 		}
 	}
 	memcpy(coreGlobals.segments, GTS3locals.segments, sizeof(coreGlobals.segments));
-    memcpy(GTS3locals.segments, GTS3locals.pseg, sizeof(GTS3locals.segments));
+	memcpy(GTS3locals.segments, GTS3locals.pseg, sizeof(GTS3locals.segments));
 }
 
 static void dmd_update() {}
@@ -1031,7 +1031,7 @@ static MEMORY_WRITE_START(GTS3_dmdwritemem2)
 {0x1000,0x1fff, MWA_RAM},    /*DMD Display RAM*/
 {0x2800,0x2800, crtc6845_address_1_w},
 {0x2801,0x2801, crtc6845_register_1_w},
-{0x3800,0x3800, dmdoport2},   /*Output Enable*/
+{0x3800,0x3800, dmdoport2},  /*Output Enable*/
 {0x4000,0x7fff, MWA_BANK2},
 {0x8000,0xffff, MWA_ROM},
 MEMORY_END
@@ -1139,7 +1139,7 @@ MACHINE_DRIVER_START(gts3_22)
   MDRV_IMPORT_FROM(gts3)
   MDRV_CPU_ADD(M65C02, 3579545./2.)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
-  MDRV_CORE_INIT_RESET_STOP(gts3dmd_4c_a,NULL,gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd_4c_b,NULL,gts3)
   MDRV_CPU_ADD(M65C02, 3579545./2.)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem2, GTS3_dmdwritemem2)
   MDRV_CORE_INIT_RESET_STOP(gts3dmd2,NULL,gts3)

@@ -281,21 +281,10 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 				if (DmdDev_Render_16_Shades)
 					DmdDev_Render_16_Shades(width, height, currbuffer);
 			}
-
-			if (DmdScr_Render_16_Shades_with_Raw) {
-				DmdScr_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
-			}
-			else {
-				if (DmdScr_Render_16_Shades)
-					DmdScr_Render_16_Shades(width, height, currbuffer);
-			}
 		}
 		else {
 			if (DmdDev_Render_16_Shades)
 				DmdDev_Render_16_Shades(width, height, currbuffer);
-
-			if (DmdScr_Render_16_Shades)
-				DmdScr_Render_16_Shades(width, height, currbuffer);
 		}
 	} else {
 		if (noOfRawFrames != 0) {
@@ -306,7 +295,39 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 				if (DmdDev_Render_4_Shades)
 					DmdDev_Render_4_Shades(width, height, currbuffer);
 			}
+		}
+		else {
+			if (DmdDev_Render_4_Shades)
+				DmdDev_Render_4_Shades(width, height, currbuffer);
+		}
+	}
+}
 
+void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* currbuffer, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8* rawbuffer) {
+
+	dmd_width = width; // store for DeInit
+	dmd_height = height;
+	dmd_hasDMD = true;
+
+	if ((gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
+		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
+		(strncasecmp(GameName, "smb", 3) == 0) || (strncasecmp(GameName, "cueball", 7) == 0)) {
+		if (noOfRawFrames != 0) {
+			if (DmdScr_Render_16_Shades_with_Raw) {
+				DmdScr_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
+			}
+			else {
+				if (DmdScr_Render_16_Shades)
+					DmdScr_Render_16_Shades(width, height, currbuffer);
+			}
+		}
+		else {
+			if (DmdScr_Render_16_Shades)
+				DmdScr_Render_16_Shades(width, height, currbuffer);
+		}
+	}
+	else {
+		if (noOfRawFrames != 0) {
 			if (DmdScr_Render_4_Shades_with_Raw) {
 				DmdScr_Render_4_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
 			}
@@ -316,9 +337,6 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 			}
 		}
 		else {
-			if (DmdDev_Render_4_Shades)
-				DmdDev_Render_4_Shades(width, height, currbuffer);
-
 			if (DmdScr_Render_4_Shades)
 				DmdScr_Render_4_Shades(width, height, currbuffer);
 		}

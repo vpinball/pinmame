@@ -936,7 +936,18 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
 	  //external dmd
 	  if (g_fShowPinDMD)
-		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+	  {
+          if (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0)
+          {
+              if (layout->top != 0)
+                  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+              else
+                  render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+          } else {
+              renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+              render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+          }
+	  }
 
 	  if (oldbuffer != NULL) {	  // detect if same frame again
 		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
