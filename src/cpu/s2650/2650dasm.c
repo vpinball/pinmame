@@ -1,9 +1,11 @@
+// license:BSD-3-Clause
+// copyright-holders:Juergen Buchmueller
 /***************************************************************************
  *
- *	Portable Signetics 2650 disassembler
+ *  Portable Signetics 2650 disassembler
  *
- *	Written by J. Buchmueller (pullmoll@t-online.de)
- *	for the MAME project
+ *  Written by J. Buchmueller (pullmoll@t-online.de)
+ *  for the MAME project
  *
  **************************************************************************/
 
@@ -17,7 +19,7 @@
 #define MNEMO   1
 
 /* handy table to build relative offsets from HR (holding register) */
-static int rel[0x100] = {
+static const int rel[0x100] = {
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
 	 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 	 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
@@ -718,7 +720,7 @@ int Dasm2650(char * buff, int PC)
 			break;
 		case 0xc8: case 0xc9: case 0xca: case 0xcb:
 #if HJB
-			sprintf(buff, "ld   (%s),r%d", REL(pc), rv);
+			sprintf(buff, "ld   (%2$s),r%1$d", REL(pc), rv);
 #else
             sprintf(buff, "strr,%d %s", rv, REL(pc));
 #endif
@@ -734,7 +736,7 @@ int Dasm2650(char * buff, int PC)
 			break;
 		case 0xd0: case 0xd1: case 0xd2: case 0xd3:
 #if HJB
-			sprintf(buff, "rol  r%d", rv);
+			sprintf(buff, "rlca r%d", rv);
 #else
             sprintf(buff, "rrl,%d", rv);
 #endif
