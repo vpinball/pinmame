@@ -859,8 +859,8 @@ DRIVERNV(smb2)          //                Super Mario Bros. (rev.2)
 DRIVERNV(smb3)          //                Super Mario Bros. (rev.3)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
-DRIVERNV(cueball2)      //S3-734:   10/92 Cue Ball Wizard (rev.2)
-DRIVERNV(cueball3)      //S3-734:   10/92 Cue Ball Wizard (rev.3)
+DRIVERNV(cueball2)      //          10/92 Cue Ball Wizard (rev.2)
+DRIVERNV(cueball3)      //          10/92 Cue Ball Wizard (rev.3)
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
 DRIVERNV(sfight2a)      //                Street Fighter II (rev.1)
 DRIVERNV(sfight2b)      //                Street Fighter II (rev.2)
@@ -868,13 +868,14 @@ DRIVERNV(teedoff)       //S3-736:   05/93 Tee'd Off
 DRIVERNV(teedoff1)      //                Tee'd Off (rev.1)
 DRIVERNV(teedoff3)      //                Tee'd Off (rev.3)
 DRIVERNV(wipeout)       //S3-738:   10/93 Wipe Out (rev.2)
+DRIVERNV(wipeouta)      //          ??/93 Wipe Out (rev.2 alternate set)
 DRIVERNV(gladiatr)      //S3-737:   11/93 Gladiators
 DRIVERNV(wcsoccer)      //S3-741:   02/94 World Challenge Soccer (rev.1)
 DRIVERNV(wcsoccd2)      //                World Challenge Soccer (disp.rev.2)
                         //S3-N???:  04/94 Bullseye (redemption game)
 DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911 (rev.1)
 DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street (rev.3)
-DRIVERNV(freddy4)       //S3-744:   10/94 Freddy: A Nightmare on Elm Street (rev.4)
+DRIVERNV(freddy4)       //          10/94 Freddy: A Nightmare on Elm Street (rev.4)
 DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq (rev.5)
 DRIVERNV(shaqatt2)      //                Shaq Attaq (rev.2)
 DRIVERNV(stargate)      //S3-742:   03/95 Stargate
@@ -1106,22 +1107,22 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
 // ----------------
 // PEYPER
 // ----------------
-DRIVERNV(odin)          // Odin (1985)
-DRIVERNV(nemesis)       // Nemesis (1986)
-DRIVERNV(wolfman)       // Wolf Man (1987)
-DRIVERNV(odisea)        // Odisea Paris-Dakar (1987)
-DRIVERNV(lancelot)      // Sir Lancelot (1994)
+DRIVERNV(odin)          //Odin (1985)
+DRIVERNV(nemesis)       //Nemesis (1986)
+DRIVERNV(wolfman)       //Wolf Man (1987)
+DRIVERNV(odisea)        //Odisea Paris-Dakar (1987)
+DRIVERNV(lancelot)      //Sir Lancelot (1994)
 
 // ---------------
 // PINSTAR GAMES
 // ---------------
-DRIVERNV(gamatron)      // Gamatron (December 85)
+DRIVERNV(gamatron)      //Gamatron (December 85)
 
 // ----------------
 // PLAYBAR
 // ----------------
-DRIVERNV(blroller)      // Bloody Roller (1987)
-DRIVERNV(cobrapb)       // Cobra (1987)
+DRIVERNV(blroller)      //Bloody Roller (1987)
+DRIVERNV(cobrapb)       //Cobra (1987)
 
 // ----------------
 // PLAYMATIC
@@ -1280,35 +1281,35 @@ DRIVERNV(hangon)        // 1988 - Hang-On
 // ---------------
 // SPINBALL GAMES
 // ---------------
-DRIVERNV(bushido)       //1993 - Bushido (Last game by Inder before becoming Spinball - but same hardware)
-DRIVERNV(bushidoa)      //1993 - Bushido (alternate set A)
-DRIVERNV(bushidob)      //1993 - Bushido (alternate set B)
-DRIVERNV(mach2)         //1995 - Mach 2 // or Mach 2.0 Two ?
-DRIVERNV(mach2a)        //1995 - Mach 2 (alternate set)
-DRIVERNV(jolypark)      //1996 - Jolly Park
-DRIVERNV(vrnwrld)       //1996 - Verne's World
+DRIVERNV(bushido)       // 1993 - Bushido (Last game by Inder before becoming Spinball - but same hardware)
+DRIVERNV(bushidoa)      // 1993 - Bushido (alternate set A)
+DRIVERNV(bushidob)      // 1993 - Bushido (alternate set B)
+DRIVERNV(mach2)         // 1995 - Mach 2 // or Mach 2.0 Two ?
+DRIVERNV(mach2a)        // 1995 - Mach 2 (alternate set)
+DRIVERNV(jolypark)      // 1996 - Jolly Park
+DRIVERNV(vrnwrld)       // 1996 - Verne's World
 
 // ---------------
 // SPLIN BINGO
 // ---------------
-DRIVERNV(goldgame)      //19?? - Golden Game
-DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
+DRIVERNV(goldgame)      // 19?? - Golden Game
+DRIVERNV(goldgam2)      // 19?? - Golden Game Stake 6/10
 
 // ---------------
 // SPORT MATIC
 // ---------------
-DRIVERNV(flashman)      //1984 - Flashman
-DRIVERNV(terrlake)      //1987 - Terrific Lake
+DRIVERNV(flashman)      // 1984 - Flashman
+DRIVERNV(terrlake)      // 1987 - Terrific Lake
 
 // ---------------
 // STARGAME GAMES
 // ---------------
-DRIVERNV(spcship)       //1986 - Space Ship
-DRIVERNV(mephist1)      //1986 - Mephisto (rev. 1.1)
-DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
-DRIVERNV(whtforce)      //1987 - White Force
-DRIVERNV(ironball)      //1987 - Iron Balls
-DRIVERNV(slalom03)      //1988 - Slalom Code 0.3
+DRIVERNV(spcship)       // 1986 - Space Ship
+DRIVERNV(mephist1)      // 1986 - Mephisto (rev. 1.1)
+DRIVERNV(mephisto)      // 1986 - Mephisto (rev. 1.2)
+DRIVERNV(whtforce)      // 1987 - White Force
+DRIVERNV(ironball)      // 1987 - Iron Balls
+DRIVERNV(slalom03)      // 1988 - Slalom Code 0.3
 
 // ---------------
 // STERN GAMES
@@ -2449,7 +2450,7 @@ DRIVER(scrzy,l1)        //S8-543:   ??/84 W Still Crazy
 //System 9
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l3)        //S9-535:   12/84 W Space Shuttle (L-3)
-DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle (L-7)
+DRIVER(sshtl,l7)        //          12/84 W Space Shuttle (L-7)
 DRIVER(szone,l2)        //S9-916:   ??/84 W Strike Zone (L-2) (Shuffle)
 DRIVER(szone,l5)        //          ??/84 W Strike Zone (L-5) (Shuffle)
 DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer (L-1)
@@ -2483,7 +2484,7 @@ DRIVER(f14,p4)          //          03/87 W F-14 Tomcat (P-4)
 DRIVER(f14,p5)          //          03/87 W F-14 Tomcat (P-5)
 DRIVER(f14,l1)          //          05/87 W F-14 Tomcat (L-1)
 DRIVER(fire,l2)         //S11-556:  08/87 W Fire! (L-2)
-DRIVER(fire,l3)         //S11-556:  08/87 W Fire! (L-3)
+DRIVER(fire,l3)         //          08/87 W Fire! (L-3)
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1)
 DRIVER(bguns,la)        //          10/87 W Big Guns (L-A)
 DRIVER(bguns,lac)       //          07/19 W Big Guns (L-AC Competition MOD) // patch 7472
@@ -2494,7 +2495,7 @@ DRIVER(gmine,l2)        //S11-920:  ??/87 W Gold Mine (Shuffle)
 DRIVER(tdawg,l1)        //S11-921:  ??/87 W Top Dawg (Shuffle)
 DRIVER(shfin,l1)        //S11-922:  ??/87 W Shuffle Inn (Shuffle)
 DRIVER(cycln,l1)        //S11-564:  02/88 W Cyclone (L-1)
-DRIVER(cycln,l4)        //S11-564:  02/88 W Cyclone (L-4)
+DRIVER(cycln,l4)        //          02/88 W Cyclone (L-4)
 DRIVER(cycln,l5)        //          02/88 W Cyclone (L-5)
 DRIVER(bnzai,pa)        //S11-566:  05/88 W Banzai Run (P-A)
 DRIVER(bnzai,l1)        //          05/88 W Banzai Run (L-1)
@@ -2502,10 +2503,10 @@ DRIVER(bnzai,l3)        //          05/88 W Banzai Run (L-3)
 DRIVER(bnzai,g3)        //          05/88 W Banzai Run (G-3 German)
 DRIVER(bnzai,t3)        //          10/11 W Banzai Run (L-3 Target sound fix)
 DRIVER(swrds,l1)        //S11-559:  06/88 W Swords of Fury (L-1)
-DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury (L-2)
+DRIVER(swrds,l2)        //          06/88 W Swords of Fury (L-2)
 DRIVER(taxi,p5)         //S11-553:  08/88 W Taxi (P-5)
-DRIVER(taxi,lu1)        //S11-553:  08/88 W Taxi (Marilyn LU-1 Europe)
-DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn LG-1 German)
+DRIVER(taxi,lu1)        //          08/88 W Taxi (Marilyn LU-1 Europe)
+DRIVER(taxi,lg1)        //          08/88 W Taxi (Marilyn LG-1 German)
 DRIVER(taxi,l3)         //          08/88 W Taxi (Marilyn)
 DRIVER(taxi,l4)         //          08/88 W Taxi (Lola)
 DRIVER(taxi,l5cm)       //          04/16 W Taxi (Marilyn L-5C Competition MOD)
@@ -2548,7 +2549,7 @@ DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(bcats,g4)        //          11/89 W Bad Cats (LG-4)
 DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
-DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7 Prototype)
+DRIVER(rvrbt,p7)        //          11/89 W Riverboat Gambler (PA-7 Prototype)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (LA-1)
 DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (LA-4)
@@ -2803,7 +2804,7 @@ DRIVER(tz,f86)          //          ??/??   Twilight Zone (FreeWPC 0.86)
 DRIVER(tz,f97)          //          05/10   Twilight Zone (FreeWPC 0.97)
 DRIVER(tz,f100)         //          08/11   Twilight Zone (FreeWPC 1.00)
 DRIVER(ij,p2)           //WPC-517:  07/93 W Indiana Jones: The Pinball Adventure (P-2)
-DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones: The Pinball Adventure (L-3)
+DRIVER(ij,l3)           //          07/93 W Indiana Jones: The Pinball Adventure (L-3)
 DRIVER(ij,d3)           //                  Indiana Jones: The Pinball Adventure (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //          08/93 W Indiana Jones: The Pinball Adventure (L-4)
 DRIVER(ij,d4)           //                  Indiana Jones: The Pinball Adventure (D-4) LED Ghost Fix
@@ -2978,8 +2979,8 @@ DRIVER(nf,23)           //          05/95 W No Fear: Dangerous Sports (2.3)
 DRIVER(nf,23f)          //          05/95 W No Fear: Dangerous Sports (2.3F)
 DRIVER(nf,23x)          //          05/95 W No Fear: Dangerous Sports (2.3 Export)
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500 (1.1)
-DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (1.1 Belgian)
-DRIVER(i500,10r)        //WPC-526:  06/95 B Indianapolis 500 (1.0)
+DRIVER(i500,11b)        //          06/95 B Indianapolis 500 (1.1 Belgian)
+DRIVER(i500,10r)        //          06/95 B Indianapolis 500 (1.0)
 DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot (1.0R)
 DRIVER(jb,101r)         //                  Jack*Bot (1.01R LED Ghost Fix)
 DRIVER(jb,10b)          //          10/95 W Jack*Bot (1.0B Belgish/Canadian)
@@ -3074,9 +3075,9 @@ DRIVER(cp,15)           //WPC-563:  07/98 B Champion Pub, The (1.5)
 DRIVER(cp,16)           //          07/98 B Champion Pub, The (1.6)
 DRIVER(cp,16pfx)        //          03/19 B Champion Pub, The (1.6 Pinball FX)
 DRIVER(mb,05)           //WPC-565:  07/98 W Monster Bash (0.5)
-DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash (1.0)
-DRIVER(mb,106)                            // (1.06 Home version)
-DRIVER(mb,106b)                           // (1.06b Coin Play)
+DRIVER(mb,10)           //          07/98 W Monster Bash (1.0)
+DRIVER(mb,106)          //                               (1.06 Home version)
+DRIVER(mb,106b)         //                               (1.06b Coin Play)
 DRIVER(cc,10)           //WPC-566:  10/98 B Cactus Canyon
 DRIVER(cc,12)           //          02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)

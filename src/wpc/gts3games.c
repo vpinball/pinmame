@@ -435,6 +435,16 @@ GTS3SOUND32256(			"yrom1.bin",CRC(f08e6d7f) SHA1(284214ac80735ddd36933ecd60debc7
 GTS3_ROMEND
 CORE_GAMEDEFNV(wipeout,"Wipe Out (rev. 2)",1993,"Gottlieb",mGTS3DMDSA_4C_a, 0)
 
+INITGAME2(wipeouta, DMD, FLIP8182, 4, SNDBRD_GTS3, 4)
+GTS3ROMSTART(wipeouta,	"wipe_out_738_gprom.bin",CRC(968da1ac) SHA1(7400b7a36926d6bb39349a7654e3c33c5eda1052))
+GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(cbdec3ab) SHA1(2d70d436783830bf074a7a0590d5c48432136595)) // all other ROMs were identical when dumped, only GPROM differed, but reports also as rev.2
+GTS3SOUND32256(			"yrom1.bin",CRC(f08e6d7f) SHA1(284214ac80735ddd36933ecd60debc7aea18403c),
+						"drom1.bin",CRC(98ae6da4) SHA1(3842c2c4e708a5deae6b5d9407694d337b62384f),
+						"arom1.bin",CRC(cccdf23a) SHA1(1b1e31f04cd60d64f0b9b8ab2c6169dacd0bce69),
+						"arom2.bin",CRC(d4cc44a1) SHA1(c68264f00efa9f219fc257061ed39cd789e94126))
+GTS3_ROMEND
+CORE_CLONEDEFNV(wipeouta,wipeout,"Wipe Out (rev. 2 alternate set)",1993,"Gottlieb",mGTS3DMDSA_4C_a, 0)
+
 /*-------------------------------------------------------------------
 / Gladiators
 /-------------------------------------------------------------------*/
