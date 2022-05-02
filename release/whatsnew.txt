@@ -19,11 +19,12 @@ Better handle flickering lamps on Sega/Stern Whitestar machines
 Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these, incl. global volume control parsing
 Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
 Fix sound commander issues (missing 2nd part of command) for the WPC89 sound board
+New WPC95 machine type: Phantom Haus with a special 128x64 DMD! (see https://www.flipprojets.fr/PhantomHaus_EN.php)
 
 *** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux)
 New:
 Stern: S.A.M. IV Board Tester
-Williams: Phantom Haus (https://flipprojets.fr/PhantomHaus_EN.php)
+Williams: Phantom Haus 0.4 (Prototype)
 
 Correct Dumps:
 

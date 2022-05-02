@@ -5,7 +5,8 @@
 ## What is it?
 
 PinMAME emulates the hardware found in almost every solid state pinball machine created from
-the mid 1970's through 2014 (around 750 unique Pinball machines and many more clones/revisions, overall more than 2500 sets).
+the earliest days of CPU-controlled machines (mid 1970's) through 2014 (Stern SAM),
+with around 750 emulated unique Pinball machines and many more clones/revisions (overall more than 2500 sets).
 It is available in various forms:
 
 Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
@@ -27,7 +28,7 @@ Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
 Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
 Sport Matic, Regama, Illinois Pinball.
 
-*Note: Emulation is not 100% working and correct for all hardware.*
+*Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.*
 
 PinMAME is built as an add-on to the historic [MAME 0.76 Source Code](https://github.com/mamedev/historic-mame). Some of the original code was altered, and fixes from later MAME versions were applied. In addition, it can be compiled on unix platforms (including macOS) and is (hopefully) 100% compatible with 64bit CPU architectures/compiles by now.
 
@@ -52,7 +53,7 @@ Before you start to add the ROMs from your favorite pinball machine please note:
 - Note however, that you can still activate switches with your keyboard, see the display animations,
 and listen to/record the pinball game sounds with the pure PinMAME package itself.
 
-## Games supported
+## Games supported (incomplete)
 
 - *Williams/Bally WPC* - All games from Dr. Dude (1990) to Cactus Canyon (1998)
 - *Williams/Bally System 11* - All games from High Speed (1986) to Dr.Dude (1990)

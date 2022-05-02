@@ -13,7 +13,8 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in almost every solid state pinball machine created from
-  the mid 1970's through 2014. It is available in various forms:
+  the earliest days of CPU-controlled machines (mid 1970's) through 2014 (Stern SAM).
+  It is available in various forms:
 
   Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
   COM library (VPinMAME) to steer simulators like Visual Pinball 8/9/X
@@ -34,7 +35,7 @@ What is it?
   Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
   Sport Matic, Regama, Illinois Pinball.
 
-  *Note: Emulation is not 100% working and correct for all hardware.
+  *Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.
 
   PinMAME is built as an add-on to the historic MAME 0.76 Source Code.
   Some of the original code was altered, and fixes from later MAME versions were applied.
