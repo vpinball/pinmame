@@ -463,6 +463,9 @@ WPC_ROMSTART(jd,l7,"jdrd_l7.rom",0x80000,CRC(87b2a5c3) SHA1(e487e9ff78353ee96d5f
 WPC_ROMSTART(jd,d7,"jdrd_d7.rom",0x80000,CRC(75d71d08) SHA1(10e63b8eb57a800fe0eeb89b175d01576d79ee1a)) JD_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(jd,l1,"jd_l1.u6",   0x80000,CRC(09a4b1d8) SHA1(9f941bbeb6e58d918d374694c7ff2a67f1084cc0)) JD_SOUND_L1 WPC_ROMEND
 WPC_ROMSTART(jd,d1,"jd_d1.u6",   0x80000,CRC(307fdfa0) SHA1(0ad083cf1e35334caa0854375406e06672bf587d)) JD_SOUND_L1 WPC_ROMEND
+WPC_ROMSTART(jd,l1at,"jd_l1at.u6",0x80000,CRC(7af2ca76) SHA1(67c5241d6080e4c2bd81aefc61a1220e4c49d25b)) JD_SOUND_L1 WPC_ROMEND
+//older: WPC_ROMSTART(jd,l1d,"jd_l1d.u6", 0x80000,CRC(ad0352de) SHA1(b099437d0c91094e0d259af02f470cce3e866b9d)) JD_SOUND_L1 WPC_ROMEND
+WPC_ROMSTART(jd,l1d,"jd_l1d.u6", 0x80000,CRC(c37d8fed) SHA1(05d85c9c6a59866de4a7a5bb2258b69a1964efa3)) JD_SOUND_L1 WPC_ROMEND
 WPC_ROMSTART(jd,l4,"jd_l4.u6",   0x80000,CRC(cc6f1068) SHA1(aef2a2eeb9110074eebff91318179ce97aba14ba)) JD_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(jd,d4,"jd_d4.u6",   0x80000,CRC(4b7b350f) SHA1(5c827532ffa1e3b102cc6e2ec9446f2d1fc2ef84)) JD_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(jd,l5,"jd_l5.u6",   0x80000,CRC(879b091e) SHA1(eaf1c86c0e72e8cdfa9ac942fc54ef4f70a65175)) JD_SOUND_L3 WPC_ROMEND
@@ -477,8 +480,8 @@ CORE_GAMEDEF(jd,l7,"Judge Dredd (L-7)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d7,l7,"Judge Dredd (D-7 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l1,l7,"Judge Dredd (L-1)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d1,l7,"Judge Dredd (D-1 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
-// L-1AT additional MOD for the aftermarket Deadworld HW-MOD exists
-// MOD of that L-1AT by KoP also exists with gameplay tweaks
+CORE_CLONEDEF(jd,l1at,l7,"Judge Dredd (L-1AT MOD)",1993,"Bally",wpc_mDCSS,0) // additional MOD for the aftermarket Deadworld HW-MOD
+CORE_CLONEDEF(jd,l1d,l7,"Judge Dredd (L-1D MOD)",1993,"Bally",wpc_mDCSS,0) // MOD of L-1AT by KoP
 CORE_CLONEDEF(jd,l4,l7,"Judge Dredd (L-4)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d4,l7,"Judge Dredd (D-4 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l5,l7,"Judge Dredd (L-5)",1993,"Bally",wpc_mDCSS,0)

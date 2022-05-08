@@ -2820,6 +2820,8 @@ DRIVER(ij,h1)           //                  Indiana Jones: The Pinball Adventure
 DRIVER(ij,i1)           //                  Indiana Jones: The Pinball Adventure (I-1) Family no hate LED Ghost Fix
 DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
 DRIVER(jd,d1)           //                  Judge Dredd (D-1) LED Ghost Fix
+DRIVER(jd,l1at)         //                  Judge Dredd (L-1AT MOD)
+DRIVER(jd,l1d)          //                  Judge Dredd (L-1D MOD)
 DRIVER(jd,l4)           //          10/93 B Judge Dredd (L-4)
 DRIVER(jd,d4)           //                  Judge Dredd (D-4) LED Ghost Fix
 DRIVER(jd,l5)           //          10/93 B Judge Dredd (L-5)
@@ -3043,7 +3045,7 @@ DRIVER(jy,11)           //          01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //          07/97 W Junk Yard (1.2)
 DRIVER(jy,12c)          //          12/19 W Junk Yard (1.2C Competition MOD)
 //DRIVER(jy,20)         //          11/20 W Junk Yard (2.0) //also done by Soren, but official now
-DRIVER(ph,04)           //WPC-901:  11/96 W Phantom Haus (0.4)
+DRIVER(ph,04)           //WPC-901:  11/96 W Phantom Haus (0.4 Prototype) Manual: 07/96
 DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1, Sound S0.4)
 DRIVER(nbaf,11)         //          03/97 B NBA Fastbreak (1.1)
 DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1, Sound S2.0)
@@ -3069,7 +3071,7 @@ DRIVER(cv,20h)          //          02/02 B Cirqus Voltaire (Home version)
 DRIVER(cv,20hc)         //                  Cirqus Voltaire (Home version Coin Play)
 DRIVER(ngg,p06)         //WPC-561:  10/97 W No Good Gofers (Prototype 0.6)
 DRIVER(ngg,10)          //          12/97 W No Good Gofers (1.0)
-DRIVER(ngg,12)          //WPC-561:  12/97 W No Good Gofers (1.2)
+DRIVER(ngg,12)          //          12/97 W No Good Gofers (1.2)
 DRIVER(ngg,13)          //          04/98 W No Good Gofers (1.3)
 DRIVER(cp,15)           //WPC-563:  07/98 B Champion Pub, The (1.5)
 DRIVER(cp,16)           //          07/98 B Champion Pub, The (1.6)
