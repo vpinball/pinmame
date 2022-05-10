@@ -1080,7 +1080,7 @@ DE_ROMEND
 CORE_CLONEDEF(tftc,104,303,"Tales from the Crypt (1.04 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
-/ Tommy - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
+/ The Who's Tommy Pinball Wizard - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 //INITGAME(tommy,DE_CPUREV3b, 0, FLIP6364, 3)
 
@@ -1104,7 +1104,7 @@ DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3
                     "tommysnd.u37",CRC(46180085) SHA1(f761c27532180de313f23b41f02341783be8938b))
 DE_ROMEND
 #define input_ports_tomy input_ports_des11
-CORE_GAMEDEF(tomy,400,"Tommy (4.00)",1994,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(tomy,400,"Tommy Pinball Wizard, The Who's (4.00)",1994,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tomy_500,"tomcpua.500", CRC(902cfaa7) SHA1(0f2931d43d8effb7c8ab4e430dcb57a2ea8364c6))
 DE_DMD32ROM8x(      "tommydva.500",CRC(9ade47a0) SHA1(16b5600afc4dd22cf8a04997225cdac9edb685d8))
@@ -1114,7 +1114,7 @@ DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3
                     "tommysnd.u36",CRC(208d7aeb) SHA1(af8af2094d1a91c7b4ef8ac6d4f594728e97450f),
                     "tommysnd.u37",CRC(46180085) SHA1(f761c27532180de313f23b41f02341783be8938b))
 DE_ROMEND
-CORE_CLONEDEF(tomy,500,400,"Tommy (5.00 unofficial MOD)",2016,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tomy,500,400,"Tommy Pinball Wizard, The Who's (5.00 unofficial MOD)",2016,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tomy_h30,"tomcpuh.300", CRC(121b5932) SHA1(e7d7bf8a78baf1c00c8bac908d4646586b8cf1f5))
 DE_DMD32ROM8x(      "tommydva.300",CRC(1f2d0896) SHA1(50c617e30bb843c69a6ca8afeeb751c886f5e6bd))
@@ -1124,7 +1124,7 @@ DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3
                     "tommysnd.u36",CRC(208d7aeb) SHA1(af8af2094d1a91c7b4ef8ac6d4f594728e97450f),
                     "tommysnd.u37",CRC(46180085) SHA1(f761c27532180de313f23b41f02341783be8938b))
 DE_ROMEND
-CORE_CLONEDEF(tomy,h30,400,"Tommy (3.00 Dutch)",1994,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tomy,h30,400,"Tommy Pinball Wizard, The Who's (3.00 Dutch)",1994,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tomy_102,"tomcpua.102", CRC(e470b78e) SHA1(9d358e9d87469cdefb5c373f16c51774bbd390ea))
 DE_DMD32ROM8x(      "tommydva.300",CRC(1f2d0896) SHA1(50c617e30bb843c69a6ca8afeeb751c886f5e6bd))
@@ -1134,7 +1134,7 @@ DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3
                     "tommysnd.u36",CRC(208d7aeb) SHA1(af8af2094d1a91c7b4ef8ac6d4f594728e97450f),
                     "tommysnd.u37",CRC(46180085) SHA1(f761c27532180de313f23b41f02341783be8938b))
 DE_ROMEND
-CORE_CLONEDEF(tomy,102,400,"Tommy (1.02)",1994,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tomy,102,400,"Tommy Pinball Wizard, The Who's (1.02)",1994,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / WWF Royal Rumble - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
