@@ -21,7 +21,7 @@ Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. no
 Fix sound commander issues (missing 2nd part of command) for the WPC89 sound board
 New WPC95 machine type: Phantom Haus with a special 128x64 DMD! (see https://www.flipprojets.fr/PhantomHaus_EN.php)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench
 New:
 Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
@@ -30,8 +30,13 @@ Correct Dumps:
 
 Clones:
 Airborne 1.5
+301/Bullseye (MOD rev. 12 & Normal pinball scoring MOD rev. 13)
+Cosmic Princess (MOD rev. 19)
 Judge Dredd L-1AT & L-1D (Deadworld HW-MODs)
 MAC's Galaxy (blue version)
+Magic (MOD rev. 19)
+Stingray (MOD rev. 14)
+Trident (MOD 2 rev. 19)
 World Cup Soccer LX-1
 Wipe Out rev. 2 (alternate set)
 

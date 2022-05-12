@@ -77,6 +77,13 @@ BY35_ROMEND
 #define input_ports_stingrfp input_ports_st
 CORE_CLONEDEFNV(stingrfp,stingray,"Stingray (Free Play)",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
 
+INITGAME(stingrab,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(stingrab,"Stingray_CPU_U2.2716",CRC(3084977e) SHA1(9956ac1076523e3358f3e381c8ee00d42e88751c),
+                          "Stingray_CPU_U6.2716",CRC(68d18413) SHA1(6f4802a0a3e057bb87f263e0ac61a01184041e41))
+BY35_ROMEND
+#define input_ports_stingrab input_ports_st
+CORE_CLONEDEFNV(stingrab,stingray,"Stingray (MOD rev. 14)",2022,"Stern / Quench",by35_mST100,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Stars
 /-------------------------------*/
@@ -217,7 +224,14 @@ ST200_ROMSTART8888(tridentb,"23ctriu1.716",CRC(5827531d) SHA1(416a469f60227815be
                             "23ctriu6.716",CRC(4cdb117a) SHA1(c702a5eb7c01526c63af163bd2b694afc4c22f81))
 BY35_ROMEND
 #define input_ports_tridentb input_ports_st
-CORE_CLONEDEFNV(tridentb,trident,"Trident (MOD rev. 23c)",2009,"Stern / Idleman",by35_mST100bs,0)
+CORE_CLONEDEFNV(tridentb,trident,"Trident (MOD 1 rev. 23c)",2009,"Stern / Idleman",by35_mST100bs,0)
+
+INITGAME(tridentc,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY35_ROMSTARTx00(tridentc,"Trident_CPU_U2.2732",CRC(de4381c6) SHA1(605c7761999a0b17d8490371f42ad70c0509059e),
+                          "Trident_CPU_U6.2732",CRC(e7f72cdc) SHA1(3cddc0613dd4c6cffc37955816bf1d756dfb1757))
+BY35_ROMEND
+#define input_ports_tridentc input_ports_st
+CORE_CLONEDEFNV(tridentc,trident,"Trident (MOD 2 rev. 19)",2022,"Stern / Quench",by35_mST100bs,0)
 
 /*--------------------------------
 / Hot Hand - uses MPU-200 inports
@@ -254,6 +268,13 @@ BY35_ROMEND
 #define input_ports_magicfp input_ports_st
 CORE_CLONEDEFNV(magicfp,magic,"Magic (Free Play)",1979,"Stern",by35_mST100bs,0)
 
+INITGAME(magicb,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY35_ROMSTARTx00(magicb,"Magic_CPU_U2.2732",CRC(cc3e7fac) SHA1(1653e738e395a6fa397ae78b8e4d2ca2561946da),
+                        "Magic_CPU_U6.2732",CRC(e7f72cdc) SHA1(3cddc0613dd4c6cffc37955816bf1d756dfb1757))
+BY35_ROMEND
+#define input_ports_magicb input_ports_st
+CORE_CLONEDEFNV(magicb,magic,"Magic (MOD rev. 19)",2022,"Stern / Quench",by35_mST100bs,0)
+
 /*-------------------------------------
 / Cosmic Princess (uses same ROMs as Magic)
 /-------------------------------------*/
@@ -270,6 +291,13 @@ BY17_ROMSTARTx88(princefp,"fpmagic2.716",CRC(7b770230) SHA1(f3aa59779a1662d3e7ac
 BY35_ROMEND
 #define input_ports_princefp input_ports_st
 CORE_CLONEDEFNV(princefp,princess,"Cosmic Princess (Free Play)",1979,"Stern",by35_mST100bs,0)
+
+INITGAME(princesb,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY35_ROMSTARTx00(princesb,"CosmicPrincess_CPU_U2.2732",CRC(12138d2e) SHA1(523773843a113faeaa4869541db5a7dcaadfb42c),
+                          "Magic_CPU_U6.2732",         CRC(e7f72cdc) SHA1(3cddc0613dd4c6cffc37955816bf1d756dfb1757))
+BY35_ROMEND
+#define input_ports_princesb input_ports_st
+CORE_CLONEDEFNV(princesb,princess,"Cosmic Princess (MOD rev. 19)",2022,"Stern / Quench",by35_mST100bs,0)
 
 /****************************************************/
 /* STERN MPU-200 (almost identical to Bally MPU-35) */
