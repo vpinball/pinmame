@@ -77,6 +77,9 @@ BY35_ROMEND
 #define input_ports_stingrfp input_ports_st
 CORE_CLONEDEFNV(stingrfp,stingray,"Stingray (Free Play)",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
 
+// One of these MOD updates requires rewiring some lamps/switches to give the game more depth
+// (the game originally has a number of switches and lamps shared making them rather redundant).
+// See https://pinside.com/pinball/forum/topic/stingray-stern-1977-software-update
 INITGAME(stingrab,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
 BY17_ROMSTARTx88(stingrab,"Stingray_CPU_U2.2716",CRC(3084977e) SHA1(9956ac1076523e3358f3e381c8ee00d42e88751c),
                           "Stingray_CPU_U6.2716",CRC(68d18413) SHA1(6f4802a0a3e057bb87f263e0ac61a01184041e41))

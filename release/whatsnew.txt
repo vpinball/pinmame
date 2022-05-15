@@ -33,6 +33,7 @@ Airborne 1.5
 301/Bullseye (MOD rev. 12 & Normal pinball scoring MOD rev. 13)
 Cosmic Princess (MOD rev. 19)
 Judge Dredd L-1AT & L-1D (Deadworld HW-MODs)
+Kiss (7-digit conversion rev. 30 & /10 Scoring Free Play + Sound Fix)
 MAC's Galaxy (blue version)
 Magic (MOD rev. 19)
 Stingray (MOD rev. 14)
