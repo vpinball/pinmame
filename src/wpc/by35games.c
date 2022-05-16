@@ -383,9 +383,9 @@ BY35_ROMEND
 #define input_ports_playboyc input_ports_by35
 CORE_CLONEDEFNV(playboyc,playboy, "Playboy (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
-INITGAME(playboyd,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
+INITGAME(playboyd,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
 BY35_ROMSTARTx00(playboyd,"play2732.u2", CRC(da49e8ce) SHA1(fa2b7731e6ade119b1c18e85e15bdc21ea9e46af),
-                          "strekd.u6",CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
+                          "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_playboyd input_ports_by35
@@ -419,7 +419,7 @@ BY35_ROMEND
 #define input_ports_voltanc input_ports_by35
 CORE_CLONEDEFNV(voltanc,voltan, "Voltan Escapes Cosmic Doom (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
-INITGAME(voltand,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
+INITGAME(voltand,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
 BY35_ROMSTARTx00(voltand, "volt2732.u2", CRC(a4670a54) SHA1(7bb792e388d52bd350e38c02fcde2f8ed9993dc1),
                           "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
@@ -455,7 +455,7 @@ BY35_ROMEND
 #define input_ports_sstc input_ports_by35
 CORE_CLONEDEFNV(sstc,sst, "Supersonic (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
-INITGAME(sstd,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
+INITGAME(sstd,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
 BY35_ROMSTARTx00(sstd,    "surp2732.u2", CRC(4987f46e) SHA1(a32984f29ba41c8c03883cb80797c55b20d1ce42),
                           "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
@@ -494,7 +494,7 @@ BY35_ROMEND
 #define input_ports_startrec input_ports_by35
 CORE_CLONEDEFNV(startrec,startrek, "Star Trek (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
-INITGAME(startred,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
+INITGAME(startred,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(startred,"star2732.u2", CRC(34dd99c3) SHA1(86dd5b46873c1910311504bdbfcd340317109be6),
                           "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
@@ -530,7 +530,7 @@ BY35_ROMEND
 #define input_ports_paragonc input_ports_by35
 CORE_CLONEDEFNV(paragonc,paragon, "Paragon (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
-INITGAME(paragond,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
+INITGAME(paragond,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(paragond,"para2732.u2", CRC(b3c990a1) SHA1(cb90c5fa52fefc29574a86d0f39fd29b2a70b8f2),
                           "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
@@ -598,10 +598,10 @@ BY35_ROMEND
 #define input_ports_kissb input_ports_by35
 CORE_CLONEDEFNV(kissb,kiss,"Kiss (7-digit conversion rev. 20)",2004,"Bally / Oliver",by35_mBY35_50S,0)
 
-// Basically the game stopped producing sound after the first ball when the 10's digit is anything but zero, this one fixes it.
+// Basically the game stopped producing sound on new balls when the 10's digit is 80 or 90, this one fixes it.
 INITGAME(kisse,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
-BY35_ROMSTARTx00(kisse,   "kiss2732_soundfix.u2", CRC(eb0f63cf) SHA1(3d38992f5decd6d2f28663ba87958fdcc3f68696),
-                          "73032d7.bin",          CRC(c0fc5342) SHA1(0511162ac54e1c630c7460cec7311bc928baf656))
+BY35_ROMSTARTx00(kisse,   "kiss2732_soundfix.u2", CRC(eb0f63cf) SHA1(3d38992f5decd6d2f28663ba87958fdcc3f68696), // sound fix
+                          "73032d7.bin",          CRC(497f3245) SHA1(c4512bf3acf6cdb1c1576f801553a4d7e84bd013)) // updated version
 BY50_SOUNDROM(            "729-18_3.123",         CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_kisse input_ports_by35
@@ -615,21 +615,22 @@ BY35_ROMEND
 #define input_ports_kissc input_ports_by35
 CORE_CLONEDEFNV(kissc,kiss,"Kiss (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
-INITGAME(kissd,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
+INITGAME(kissd,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(kissd,   "kiss2732.u2", CRC(716adcfd) SHA1(048e3142cfa307ea4552e6af3812b0d7301b62ad),
                           "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_kissd input_ports_by35
-CORE_CLONEDEFNV(kissd,kiss,"Kiss (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(kissd,kiss,"Kiss (/10 Scoring Free Play rev. 4)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
-INITGAME(kissf,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
-BY35_ROMSTARTx00(kissf,   "kiss2732_soundfix.u2", CRC(eb0f63cf) SHA1(3d38992f5decd6d2f28663ba87958fdcc3f68696),
-                          "strekd.u6",            CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
+// see kisse above
+INITGAME(kissf,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
+BY35_ROMSTARTx00(kissf,   "kiss2732_soundfix.u2", CRC(eb0f63cf) SHA1(3d38992f5decd6d2f28663ba87958fdcc3f68696), // sound fix
+                          "kissf.u6",             CRC(43c49f95) SHA1(cec84ec8097e880a1ada07e80f912a341ba2c179)) // updated version
 BY50_SOUNDROM(            "729-18_3.123",         CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_kissf input_ports_by35
-CORE_CLONEDEFNV(kissf,kiss,"Kiss (/10 Scoring Free Play + Sound Fix)",2022,"Bally / Oliver / Quench",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(kissf,kiss,"Kiss (/10 Scoring Free Play rev. 5)",2022,"Bally / Oliver / Quench",by35_mBY35_50S,0)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -51 */
