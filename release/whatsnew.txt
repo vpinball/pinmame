@@ -78,11 +78,11 @@ Inder: La Rana (https://www.recreativas.org/la-rana-1051-inder)
 Joctronic: Pin Ball
 
 Correct Dumps:
-Come Back
-Jurassic Park 3.05 (using display 4.00 from version 3.07 now)
-Mac Attack
-Riverboat Gambler PA-7 (using L-1 sound now, might still be too new, but better than L-2 anyhow)
-Tales of the Arabian Nights 0.4 Prototype (see above)
+CIFA/Nondum: Come Back
+Data East: Jurassic Park 3.05 (using display 4.00 from version 3.07 now)
+Mr. Game: Mac Attack
+Williams: Riverboat Gambler PA-7 (using L-1 sound now, might still be too new, but better than L-2 anyhow)
+          Tales of the Arabian Nights 0.4 Prototype (see above)
 
 Clones:
 A.G. Soccer-Ball & Football R18u with 2.5L Sound (only the latter is new, 2.4 revision, inside the ROM it says 2.5L though)

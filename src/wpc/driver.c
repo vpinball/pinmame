@@ -903,8 +903,8 @@ DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (rev.T1, never produced)
 // --------------------
 DRIVERNV(bullseye)      //BY35:     04/86 301/Bullseye
 DRIVERNV(bullseyn)      //          ??/?? 301/Bullseye (Normal pinball scoring)
-DRIVERNV(bullsey2)      //          04/22 301/Bullseye (MOD rev. 12)
-DRIVERNV(bullsen2)      //          04/22 301/Bullseye (Normal pinball scoring MOD rev. 13)
+DRIVERNV(bullsey2)      //          11/21 301/Bullseye (MOD rev. 12)
+DRIVERNV(bullsen2)      //          11/21 301/Bullseye (Normal pinball scoring MOD rev. 13)
 
 // ----------------
 // HANKIN GAMES

@@ -1906,18 +1906,24 @@ CORE_CLONEDEFNV(bullseyn, bullseye,"301/Bullseye (Normal pinball scoring)",1986,
 INITGAME(bullsey2,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_GRAND,0)
 BY35_ROMSTARTx00(bullsey2,"BullsEye_DartScoring.U2", CRC(7060ffea) SHA1(17711655afdbd1d07e17fec455ed2257a04c4093),
                           "BullsEye_DartScoring.U6", CRC(f9c95bbe) SHA1(48c9af6654d11cd457b16cb1713dd08d349c2b99))
-BY51_SOUNDROM8(           "bull.snd",                CRC(c0482a2f) SHA1(a6aa698ad517cdc078129d702ee936af576260ed))
+SOUNDREGION(0x10000, BY51_CPUREGION)
+  ROM_LOAD("bull.snd", 0x8000, 0x0800, CRC(c0482a2f) SHA1(a6aa698ad517cdc078129d702ee936af576260ed))
+    ROM_RELOAD(0x8800, 0x0800)
+    ROM_RELOAD(0xf800, 0x0800)
 BY35_ROMEND
 #define input_ports_bullsey2 input_ports_bullseye
-CORE_CLONEDEFNV(bullsey2,bullseye,"301/Bullseye (MOD rev. 12)",2022,"Grand Products Inc. / Quench",by35_GP,0)
+CORE_CLONEDEFNV(bullsey2,bullseye,"301/Bullseye (MOD rev. 12)",2021,"Grand Products Inc. / Quench",by35_GP,0)
 
 INITGAME(bullsen2,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_GRAND,0)
 BY35_ROMSTARTx00(bullsen2,"BullsEye_NormalScoring.U2", CRC(cb72c2f0) SHA1(5524612d2ff831826d001489ed4db269031f49f6),
                           "BullsEye_NormalScoring.U6", CRC(69400e83) SHA1(b11ec1db5088415e40179d47722d80c5f49da370))
-BY51_SOUNDROM8(           "bull.snd",                  CRC(c0482a2f) SHA1(a6aa698ad517cdc078129d702ee936af576260ed))
+SOUNDREGION(0x10000, BY51_CPUREGION)
+  ROM_LOAD("bull.snd", 0x8000, 0x0800, CRC(c0482a2f) SHA1(a6aa698ad517cdc078129d702ee936af576260ed))
+    ROM_RELOAD(0x8800, 0x0800)
+    ROM_RELOAD(0xf800, 0x0800)
 BY35_ROMEND
 #define input_ports_bullsen2 input_ports_bullseye
-CORE_CLONEDEFNV(bullsen2,bullseye,"301/Bullseye (Normal pinball scoring MOD rev. 13)",2022,"Grand Products Inc. / Quench",by35_GP,0)
+CORE_CLONEDEFNV(bullsen2,bullseye,"301/Bullseye (Normal pinball scoring MOD rev. 13)",2021,"Grand Products Inc. / Quench",by35_GP,0)
 
 /*--------------------------------
 / Scott's Test ROM
