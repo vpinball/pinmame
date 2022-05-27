@@ -114,7 +114,7 @@ int lisy35_sound_stream_init(void)
             return(-1);
         }
 
-  // allocate 31 mixing channels
+  // allocate 256 mixing channels
   Mix_AllocateChannels(256);
 
   // set volume to lisy_volume for all allocated channels
@@ -181,7 +181,7 @@ int lisy1_sound_stream_init(void)
  int i,ret;
  //RTH soundfile names for LISY1 are fixed for now
  char lisy1_wav_file_name[6][80]= { "10.wav", "100.wav", "1000.wav", "gameover.wav", "tilt.wav" };
- char wav_file_name[80];
+ char wav_file_name[255];
 
 
  /* Initialize only SDL Audio on default device */
@@ -288,6 +288,47 @@ void lisy80_play_wav(int sound_no)
 
  extended = 0; //set back flag
 }
+
+/*
+ * Starship new sound request
+ * load on demand
+ */
+void StarShip_play_wav(int sound_no)
+{
+  char sound_file_name[312];
+
+  if ( lisy35_sound_stru[sound_no].soundnumber != 0)
+    {
+     //load soundfile if not alredy done	
+     if ( lisy35_sound_stru[sound_no].preload == 0)
+     {
+        //construct the filename, according to options red from csv file
+        sprintf(sound_file_name,"/boot/%s/%s",lisy35_sound_stru[sound_no].path,lisy35_sound_stru[sound_no].name);
+        lisysound[sound_no] = Mix_LoadWAV(sound_file_name);
+        if(lisysound[sound_no] == NULL)
+            {
+                fprintf(stderr,"Unable to dynamic load Sound file: %s - %s\n",sound_file_name, Mix_GetError());
+                return;
+            }
+        else //load successfull
+	  {
+             lisy35_sound_stru[sound_no].preload = 1;
+             lisy35_sound_stru[sound_no].how_many_versions = 1;
+             lisy35_sound_stru[sound_no].last_version_played = 0;
+             if ( ls80dbg.bitv.sound )
+                 {
+                      sprintf(debugbuf,"dynamic loaded file:%s as sound number %d\n",sound_file_name,sound_no);
+                      lisy80_debug(debugbuf);
+                 }
+	   }
+     }
+
+	//now play loaded file
+         lisy35_play_wav(sound_no);
+    }
+}
+
+
 
 /*
  * LISY35 new sound request
@@ -626,7 +667,7 @@ void lisy80_sound_stream_destroy(void)
 }
 
  */
- 
+
 // new sound request
 int mpf_play_mp3(Mix_Music *music)
 {
@@ -641,3 +682,86 @@ int mpf_play_mp3(Mix_Music *music)
 
 }
 
+/*
+ * open sound device and set parameters StarShip Version
+ * no fix .wav format anymore
+ * MIx_LoadWAV can This can load WAVE, AIFF, RIFF, OGG, and VOC files.
+ * RTH fix number of mappings at the moment
+ */
+int StarShip_sound_stream_init(void)
+{
+
+  int audio_rate = 44100;                 //Frequency of audio playback
+  Uint16 audio_format = MIX_DEFAULT_FORMAT;       //Format of the audio we're playing
+  int audio_channels = 2;                 //2 channels = stereo
+  int audio_buffers = 2048;               //Size of the audio buffers in memory
+
+ int i;
+ char sound_file_name[80];
+
+
+ /* Initialize only SDL Audio on default device */
+    if(SDL_Init(SDL_INIT_AUDIO) < 0)
+    {
+        return -1;
+    }
+
+  //Initialize SDL_mixer with our chosen audio settings
+  if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0) {
+            printf("Unable to initialize audio: %s\n", Mix_GetError());
+            return(-1);
+        }
+
+  // allocate 31 mixing channels
+  Mix_AllocateChannels(256);
+
+  // set volume to lisy_volume for all allocated channels
+  Mix_Volume(-1, lisy_volume);
+
+    //try to preload all sounds
+	for( i=1; i<=255; i++)
+	{
+		if ( ( lisy35_sound_stru[i].soundnumber != 0) & ( lisy35_sound_stru[i].preload == 1)) 
+		{
+			//construct the filename, according to options red from csv file
+			sprintf(sound_file_name,"/boot/%s/%s",lisy35_sound_stru[i].path,lisy35_sound_stru[i].name);
+			lisysound[i] = Mix_LoadWAV(sound_file_name);
+			if(lisysound[i] == NULL) 
+			{
+				fprintf(stderr,"Unable to load Sound file: %s - %s\n",sound_file_name, Mix_GetError());
+			}
+			else
+			{
+				lisy35_sound_stru[i].how_many_versions = 1;
+				lisy35_sound_stru[i].last_version_played = 0;
+				if ( ls80dbg.bitv.sound )
+				{
+					sprintf(debugbuf,"preloaded file:%s as sound number %d\n",sound_file_name,i);
+					lisy80_debug(debugbuf);
+				}
+				// see if there are alternative sounds (suffix "-2", "-3", "-4"... at the end of file name, example "sound-3.wav")
+				for ( int alt = 2 ; alt <= LISY35_SOUND_MAX_ALTERNATIVE_FILES + 1; alt++)
+				{
+					sprintf(sound_file_name,"/boot/%s/%s-%d",lisy35_sound_stru[i].path,lisy35_sound_stru[i].name,alt);
+					lisysound_alt[alt - 2][i] = Mix_LoadWAV(sound_file_name);
+					if(lisysound_alt[alt - 2][i] != NULL) 
+					{
+						lisy35_sound_stru[i].how_many_versions++;
+						if (ls80dbg.bitv.sound)
+						{
+							sprintf(debugbuf,"found alternative #%d for sound %d\n",alt,i);
+							lisy80_debug(debugbuf);
+						}
+					}
+					else
+					{
+						break;
+					}
+                                }
+                        }
+                }// if soundnumber != 0
+        } // for i
+
+
+ return 0;
+}

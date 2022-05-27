@@ -1530,9 +1530,9 @@ int  lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game)
      {
           strcpy(lisymini_game->gamename,strtok(NULL, ";"));	//game name short version
           strcpy(lisymini_game->long_name,strtok(NULL, ";"));	//game long name
-          strcpy(lisymini_game->type,strtok(NULL, ";"));	//game type
+          strcpy(lisymini_game->type,strtok(NULL, ";"));		//game type
           lisymini_game->throttle = atoi(strtok(NULL, ";"));	//throttle value per Bally game
-          strcpy(lisymini_game->comment,strtok(NULL, ";"));	//comment if available
+          strcpy(lisymini_game->comment,strtok(NULL, ";"));		//comment if available
           found = 1; //found it
           break;
      }
@@ -2192,4 +2192,52 @@ int  lisy_file_get_home_ss_GI(int variant)
   }
  
  return 0;
+}
+
+
+//read the csv file for sound opts on /lisy partition
+//give -1 in case we had an error
+//fill structure stru_lisy35_sound_csv
+int  lisy200_file_get_soundopts(void)
+{
+ char buffer[1024];
+ char *line;
+ char *str;
+ char sound_file_name[80];
+ int sound_no,i;
+ int first_line = 1;
+ FILE *fstream;
+
+ //construct the filename;
+ sprintf(sound_file_name,"%s%s",LISY200_SOUND_PATH,LISY200_SOUND_FILE);
+
+ fstream = fopen(sound_file_name,"r");
+   if(fstream == NULL)
+   {
+      fprintf(stderr,"\n LISY200: opening %s failed ",sound_file_name);
+      return -1;
+   }
+
+ //init soundnumber to 0
+ for ( i=0; i<=255; i++) lisy35_sound_stru[i].soundnumber = 0;
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     //str = strdup(strtok(line, ";"));   //sound number in hex
+     //sound_no = strtol(str, NULL, 16);  // to be converted
+     sound_no = atoi(strtok(line, ";"));  //sound number
+     lisy35_sound_stru[sound_no].soundnumber = sound_no;   // != 0 if mapped
+     lisy35_sound_stru[sound_no].path = strdup(strtok(NULL, ";"));	//path to soundfile
+     lisy35_sound_stru[sound_no].name = strdup(strtok(NULL, ";"));	//name of soundfile
+     lisy35_sound_stru[sound_no].option = atoi(strtok(NULL, ";"));	//option
+     lisy35_sound_stru[sound_no].preload = atoi(strtok(NULL, ";"));	//preload sound?
+     lisy35_sound_stru[sound_no].trigger = atoi(strtok(NULL, ";"));	//trigger
+     lisy35_sound_stru[sound_no].wait = atoi(strtok(NULL, ";"));	//wait or not
+     lisy35_sound_stru[sound_no].delay = atoi(strtok(NULL, ";"));	//delay after sound start
+     lisy35_sound_stru[sound_no].onlyactiveingame = atoi(strtok(NULL, ";"));	//is switch also active 'outside' game
+     lisy35_sound_stru[sound_no].comment = strdup(strtok(NULL, ";"));	//comment
+   } //while
+   fclose(fstream);
+
+  return 0;
 }

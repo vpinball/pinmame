@@ -40,6 +40,7 @@ int g_lisy35_throttle_val = 5000;
 //global var for sound options
 unsigned char lisy35_has_soundcard = 0;  //there is a pHat soundcard installed
 unsigned char lisy35_has_own_sounds = 0;  //play own sounds rather then usinig piname sound emulation
+unsigned char StarShip_has_own_sounds = 0;  //play StarShip sounds
 t_stru_lisy35_sounds_csv lisy35_sound_stru[256];
 
 //internal switch Matrix for system1, we need 7 elements
@@ -123,6 +124,9 @@ void lisy35_ss_init( void )
   }
  }
 
+ //boot ss event handler (will activate i.e. bootsound )
+ lisy_home_ss_event_handler(LISY_HOME_SS_EVENT_BOOT,lisy35_has_soundcard,0,0);
+
  //show green ligth for now, lisy35 is running
  lisy80_set_red_led(0);
  lisy80_set_yellow_led(0);
@@ -132,7 +136,7 @@ void lisy35_ss_init( void )
  if ( lisy35_has_own_sounds )
  {
   //first try to read sound opts, as we NEED them
-  if ( lisy35_file_get_soundopts() < 0 )
+  if ( lisy200_file_get_soundopts() < 0 )
    {
      fprintf(stderr,"no sound opts file; sound init failed, sound emulation disabled\n");
      lisy35_has_own_sounds = 0;
@@ -146,9 +150,14 @@ void lisy35_ss_init( void )
      for(i=1; i<=255; i++)
      {
        if ( lisy35_sound_stru[i].soundnumber != 0 )
-       fprintf(stderr,"Sound[%d]: %s %s %d \n",i,lisy35_sound_stru[i].path,
-                        lisy35_sound_stru[i].name,
-                        lisy35_sound_stru[i].option);
+       fprintf(stderr,"Switch[%d]: %s %s opt:%d trigger:%d wait:%d delay:%d preload:%d \n",i,
+			lisy35_sound_stru[i].path,
+			lisy35_sound_stru[i].name,
+			lisy35_sound_stru[i].option,
+			lisy35_sound_stru[i].trigger,
+			lisy35_sound_stru[i].wait,
+			lisy35_sound_stru[i].delay,
+			lisy35_sound_stru[i].preload);
      }
     }
    }
@@ -157,16 +166,24 @@ void lisy35_ss_init( void )
  if ( lisy35_has_own_sounds )
  {
   //now open soundcard, and init soundstream
-  if ( lisy35_sound_stream_init() < 0 )
-   {
+  if ( StarShip_sound_stream_init() < 0 )
+  {
      fprintf(stderr,"sound init failed, sound emulation disabled\n");
      lisy35_has_own_sounds = 0;
-   }
- else
+  }
+  else
    fprintf(stderr,"info: sound init done\n");
  }
 
  //Starship mspecific inits
+
+ //RTH temp switch to Starship sounds
+ if ( lisy35_has_own_sounds )
+ {
+  lisy35_has_own_sounds = 0;
+  StarShip_has_own_sounds = 1;
+ }
+
  //read the dip setting
  dip_value = display_get_ss_dipsw_value();
  fprintf(stderr,"Info: Starship: Dip setting is %d\n",dip_value);
@@ -189,12 +206,12 @@ void lisy35_ss_init( void )
  //deactivate all special solenoids with a mapping
  lisyh_init_special_coils();
 
- //init ss event handler (will activate i.e. GI)
- lisy_home_ss_event_handler(LISY_HOME_SS_EVENT_INIT,0,0);
+ //init ss event handler (will activate i.e. GI and reset credit wheels )
+ lisy_home_ss_event_handler(LISY_HOME_SS_EVENT_INIT,0,0,0);
 
  //collect latest informations and start the lisy logger
  lisy_env.has_soundcard = lisy35_has_soundcard;
- lisy_env.has_own_sounds = lisy35_has_own_sounds;
+ lisy_env.has_own_sounds = StarShip_has_own_sounds;
  lisy_logger();
 
 }
@@ -643,6 +660,10 @@ if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
    }
  }
 
+ //running on Starship? switchnumber has to be increased
+ if (( lisy_hardware_revision == 200 ) & ( ret != 80 ))
+		 lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_SWITCH, ret+1, action, 0);
+
 //ignore credit switch if we running on Starship
 //and 2canplay lamp is ON
 if ( ( ret == 5 ) && (action == 1))
@@ -734,7 +755,7 @@ if ( lisy35_has_soundcard )
          SET_BIT(swMatrixLISY35[1],0);
     else
          SET_BIT(swMatrixLISY35[2],2);
-    if ( lisy_timer( 50, 0, 2)) { 
+    if ( lisy_timer( 50, 0, 2)) {
     if (core_gameData->gen & (GEN_STMPU200|GEN_STMPU100))
 	{
 	CLEAR_BIT(swMatrixLISY35[2],2);
@@ -1385,7 +1406,7 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
   if (( old_cont_data != cont_data ) && ( lisy35_bally_hw_check_finished == 1))
   {
     //running on Starship?
-    if ( lisy_hardware_revision == 200 ) lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_CONT_SOL, cont_data, 0);
+    if ( lisy_hardware_revision == 200 ) lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_CONT_SOL, cont_data, 0, 0);
 
     //check for flipper disable
     if( CHECK_BIT( cont_data, 2) && !CHECK_BIT( old_cont_data, 2))
@@ -1443,6 +1464,9 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
        sprintf(debugbuf,"momentary solenoids: %d",moment_data);
        lisy80_debug(debugbuf);
      }
+
+    //running on Starship?
+    if ( lisy_hardware_revision == 200 ) lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_MOM_SOL, moment_data, 0, 0);
 
      //JustBoom Sound? in case of chimes we may want to play wav files here
      if ( lisy35_has_own_sounds )

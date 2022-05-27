@@ -31,8 +31,9 @@
 //for Starship Switches
 extern unsigned char swMatrixLISY35[9];
 
-//from lisy35.c
+//from lisy_home.c
 extern unsigned char lisy35_flipper_disable_status;
+extern unsigned char lisy35_mom_solenoid_status_safe;
 
 //internal to wheels
 int oldpos[2][5];
@@ -86,10 +87,13 @@ void wheels_refresh(void)
         switch(wheel_credits_state)
         {
          case WHEEL_STATE_OFF: //wheel is ready for pulse
+		//only activate if state from mom solenoids is safe
+		if ( lisy35_mom_solenoid_status_safe != 1) break;
+
                 if ( wheel_pulses_credits_needed != 0) //do we need to pulse?
                  {
-   			// wheel_pulse_reset(10); credit UP
-   			// wheel_pulse_reset(11); credit down
+			// wheel_pulse_reset(10); credit UP
+			// wheel_pulse_reset(11); credit down
 		  if ( wheel_pulses_credits_needed < 0) //step down?
 			{
 			 if ( wheel_score_reset_done == 0) break; //step don only after wheel score reset
@@ -131,12 +135,15 @@ void wheels_refresh(void)
 
   //check all 10 wheels
   for(i=0; i<=1; i++) {
-  	for(j=0; j<=4; j++) {
+	for(j=0; j<=4; j++) {
 
 	//state of current digit
 	switch(wheel_state[i][j])
 	{
 	 case WHEEL_STATE_OFF: //wheel is ready for pulse
+		//only activate if state from mom solenoids is safe
+		if ( lisy35_mom_solenoid_status_safe != 1) break;
+
 		if ( wheel_pulses_needed[i][j] > 0) //do we need to pulse?
 		 {
 		  //yes store pulse and delay time for this digit
@@ -233,6 +240,18 @@ void wheel_pulse ( int coil )
 void wheel_score_credits_reset( void )
 {
   int i;
+
+  //only do it once
+  if ( wheel_score_credits_reset_done == 1 )
+   {
+    if ( ls80dbg.bitv.coils )
+    {
+      sprintf(debugbuf,"Wheels: CREDIT wheels already reset at Boot, ignored");
+      lisy80_debug(debugbuf);
+    }
+
+     return;
+   }
 
   if ( ls80dbg.bitv.coils )
   {
@@ -341,6 +360,9 @@ void wheels_show_int( int display, int digit, unsigned char dat)
    int newcredits;
    static int oldcredits = 0;
 
+   //inform the handler
+   lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_DISPLAY, digit, dat, display);
+
    //status display
    //digt 3&4 are credits
    //digit 6 Endzahl
@@ -349,7 +371,6 @@ void wheels_show_int( int display, int digit, unsigned char dat)
 	{
           if ( dat > 9 ) return; //ignore spaces
 
-	  lisy_home_ss_event_handler( LISY_HOME_SS_EVENT_DISPLAY, digit, dat);
 
 
 	  if (digit == 3) //tens changed
@@ -360,17 +381,17 @@ void wheels_show_int( int display, int digit, unsigned char dat)
 	  {
 		 oldpos_credit[0] = dat; //one
 		 //do update
-	  	 //caculate new
+		 //caculate new
 		 newcredits = 10 * oldpos_credit[1] + oldpos_credit[0];
-	  	 pulses = newcredits - oldcredits;
+		 pulses = newcredits - oldcredits;
 		 //set local var for pulses needed
 		 //will becoming active with wheel_refresh via lisy35_throtle
 		 wheel_pulses_credits_needed += pulses;
 		 if ( ls80dbg.bitv.coils )
-  		 {
-	  	  sprintf(debugbuf,"wheels_show_int: Status display old:%d new:%d (%d pulses needed)\n",oldcredits,newcredits, pulses);
-    	  	  lisy80_debug(debugbuf);
-  		 }
+		 {
+		  sprintf(debugbuf,"wheels_show_int: Status display old:%d new:%d (%d pulses needed)\n",oldcredits,newcredits, pulses);
+		  lisy80_debug(debugbuf);
+		 }
 		 //store for next update
 		 oldcredits = newcredits;
 	  }
@@ -390,7 +411,7 @@ void wheels_show_int( int display, int digit, unsigned char dat)
 	display--;
 	digit--; //digit = digit -2
 	digit--;
-        //assign position
+	//assign position
 	pos[display][digit] = dat;
 	//calculate pulses
         pulses = oldpos[display][digit] - pos[display][digit];
@@ -398,10 +419,10 @@ void wheels_show_int( int display, int digit, unsigned char dat)
         if (  pulses < 0 )  pulses = abs( pulses);
 
 	if ( ls80dbg.bitv.displays )
-  	{
+	{
 	  sprintf(debugbuf,"wheels_show_int: display:%d digit:%d dat:%d (old dat%d   %d pulses needed)\n",display,digit,dat, oldpos[display][digit],pulses);
-    	  lisy80_debug(debugbuf);
-  	}
+	  lisy80_debug(debugbuf);
+	}
 
         //store new value
         oldpos[display][digit] = pos[display][digit];
@@ -430,25 +451,25 @@ void wheel_score( int display, char *data)
    if (first)
    {
 	if ( ls80dbg.bitv.displays )
-  	{
+	{
     	  sprintf(debugbuf,"Wheels: first call, set wheels to zero");
     	  lisy80_debug(debugbuf);
-  	}
+	}
 	first = 0;
 	wheel_score_reset();
 	if ( ls80dbg.bitv.displays )
-  	{
+	{
     	  sprintf(debugbuf,"Wheels: set to zero done");
     	  lisy80_debug(debugbuf);
-  	}
+	}
    }
 
 	if ( ls80dbg.bitv.displays )
-  	{
-    	  sprintf(debugbuf,"set display %d to %d%d%d%d%d",display,
+	{
+		sprintf(debugbuf,"set display %d to %d%d%d%d%d",display,
 		pos[display-1][0],pos[display-1][1],pos[display-1][2],pos[display-1][3],pos[display-1][4]);
-    	  lisy80_debug(debugbuf);
-  	}
+		lisy80_debug(debugbuf);
+	}
 
 	//calculate number of pulses needed
 	for(i=0; i<5; i++) 

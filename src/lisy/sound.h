@@ -8,6 +8,8 @@ int lisy1_sound_stream_init(void);
 void lisy1_play_wav(int sound_no);
 int lisy35_sound_stream_init(void);
 void lisy35_play_wav(int sound_no);
+int StarShip_sound_stream_init(void);
+void StarShip_play_wav(int sound_no);
 //for mpf
 int mpf_sound_stream_init(int debug);
 int mpf_play_mp3(Mix_Music *music);
@@ -27,9 +29,3 @@ int mpf_play_mp3(Mix_Music *music);
 #define LISY35_SOUND_OPTION_SPEECH 3
 
 #endif  // _SOUND_H
-
-
-
-
-
-
