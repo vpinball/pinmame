@@ -214,6 +214,26 @@ JP_SNDROM15( "jpaqsds", CRC(ff1e0cd2) SHA1(ef58d2b59929c7250dd30c413a3ba31ebfd7e
 JP_ROMEND
 CORE_GAMEDEFNV(aqualand,"Aqualand",1986,"Juegos Populares",gl_mJPS,0)
 
+INITGAME(aqualana, jpDisp7, 1)
+JP_ROMSTART1(aqualana, "aqualand_cpu_a.bin", CRC(55caa233) SHA1(84dde0bf865f3bfc9a620510a9a816f4792a6610))
+JP_SNDROM15( "jpaqsds", CRC(ff1e0cd2) SHA1(ef58d2b59929c7250dd30c413a3ba31ebfd7e09d),
+			"jpaq-1sd", CRC(7cdf2f7a) SHA1(e00482a6accd11e96fd0d444b3167b7d36332f7b),
+			"jpaq-2sd", CRC(db05c774) SHA1(2d40410b70de6ab0de57e94c6d8ada6e8a4a2050),
+			"jpaq-3sd", CRC(df38304e) SHA1(ec6f0c99764e3c3fe7e1de09b2d9b59d85d168d5),
+			"jpaq-4sd", CRC(8065c03e) SHA1(0731cb76d3be117a82c4ad5b7e23b53e05b3a95a),
+			"jpaq-5sd", CRC(a387a1a6) SHA1(20abee033a33e388a5f2ed3896a650766b62cfa2),
+			"jpaq-6sd", CRC(55076afb) SHA1(68b86e6855b2a80e37d2fb172bb0c4fa107d4aba),
+			"jpaq-7sd", CRC(67675b5b) SHA1(52b7cb310ddeff0bde7f0dfd37f61ab09964a75d),
+			"jpaq-8sd", CRC(c9d2d30e) SHA1(ee504b0e2aa69f541c3f4d245cc6525a7c920fa7),
+			"jpaq-9sd", CRC(3bc45f9f) SHA1(6d838b1ba94087f9a29af016b68125400dcf1fe5),
+			"jpaq10sd", CRC(239cb7f3) SHA1(1abc59bc73cf84ee3b73d500bf57a2a202291fcb),
+			"jpaq11sd", CRC(e5b9e70f) SHA1(7db0a13166120fe20bb76072475b092e942629cf),
+			"jpaq12sd", CRC(9aa37260) SHA1(6eec14f0d7152bf0cfadabe5b3017b9b6b7aa2d3),
+			"jpaq13sd", CRC(5599792e) SHA1(9d844d9f155f299bbe2d512f8ed84410e7a9cfb3),
+			"jpaq14sd", CRC(0bdcbbbd) SHA1(555d8ed846079894cfc60041fb724deeaddc4e89))
+JP_ROMEND
+CORE_CLONEDEFNV(aqualana, aqualand,"Aqualand (alternate set)",1986,"Juegos Populares",gl_mJPS,0)
+
 /*-------------------------------------------------------------------
 / Petaco 2 (#1106?)
 /-------------------------------------------------------------------*/
