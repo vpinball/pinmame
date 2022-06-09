@@ -191,6 +191,28 @@ JP_SNDROM17("hc_sh", CRC(8af15ded) SHA1(2abc199b612df6180dc116f56ec0027dacf30e77
 JP_ROMEND
 CORE_CLONEDEFNV(halleya,halley,"Halley Comet (alternate set)",1986,"Juegos Populares",gl_mJPS,0)
 
+INITGAME(halleyb, jpDisp7, 1)
+JP_ROMSTART1(halleyb,	"halley_alt_cpu.bin", CRC(2ceac07d) SHA1(1b59ebd134f130f0fc88368ab67d4e6d426d97ee))
+JP_SNDROM17("hc_sh", CRC(8af15ded) SHA1(2abc199b612df6180dc116f56ec0027dacf30e77),
+			"hc_s1", CRC(3146b12f) SHA1(9d3974c267e1b2f8d0a8edc78f4013823e4d5e9b),
+			"hc_s2", CRC(8b525f15) SHA1(3ba78a730b11d32fb6ebbcfc52672b9bb5ca5250),
+			"hc_s3", CRC(59a7c53d) SHA1(b1d27f06ff8bd44aa5a4c8fd3b405b67684ae644),
+			"hc_s4", CRC(14149419) SHA1(e39ba211e8784c8f46d89b7ce8a046443ab87f3a),
+			"hc_s5", CRC(9ab8f478) SHA1(116efd8c5524ab8a6a26d4b8187f6559f1940340),
+			"hc_s6", CRC(0fd00c1e) SHA1(1b143bf87541be68a37e133ff5dab5d5cff006b5),
+			"hc_s7", CRC(731b9b5d) SHA1(153cd93d99e386f1b52be5360d4789b53b112e34),
+			"hc_da0", CRC(5172993b) SHA1(4ae8adc59c95efefc48fcf7524b3da6e7d65e9c7),
+			"hc_da1", CRC(e9ddc966) SHA1(9fa2bdbafed8b1c1e190f1f99af54ea1d9c81d26),
+			"hc_da2", CRC(2e1a89a6) SHA1(adf34ce979b254b19abaf824ff656f647df601db),
+			"hc_da3", CRC(00bbabb0) SHA1(2d584c53e32fce1a105bb86aaa91c427bf741f2d),
+			"hc_da4", CRC(402358e8) SHA1(8513b0c0bf40363af323577175dfe569bd6b8686),
+			"hc_da5", CRC(a6bd8ccd) SHA1(128acc73ba2009ffa29f65fd570917ad0dec4142),
+			"hc_da6", CRC(9eba3c37) SHA1(a435cdbeb43f5216f58d6e90522e5a25b3bccaef),
+			"hc_da7", CRC(28249d52) SHA1(43cebbe555cae3a49e91deb3cfe715f743507e4a),
+			"hc_da8", CRC(3f2e81ee) SHA1(648e2b97fa2d6c4dcd16fef5d8c4b9baeee2f290))
+JP_ROMEND
+CORE_CLONEDEFNV(halleyb,halley,"Halley Comet (alternate set 2)",1986,"Juegos Populares",gl_mJPS,0)
+
 /*-------------------------------------------------------------------
 / Aqualand (#1105)
 /-------------------------------------------------------------------*/
