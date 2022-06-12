@@ -6,6 +6,8 @@ What's new in PinMAME:
 Version 3.5 (XX XXth, 2022) - ""
 ------------------------------------------------------------------------------
 
+Saving NVRAM for Juegos Populares
+
 More gracefully handle parsing errors in invalid altsound CSV files to avoid crashes
 
 Updated LISY support to 5.28-41 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
