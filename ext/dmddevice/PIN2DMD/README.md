@@ -3,7 +3,7 @@
 Either use the pin2dmd DmdDevice.dll standalone with a PIN2DMD device or together with DMDExt.dll from Freezy on virtual DMD or other devices. 
 Depending on wether you have VPinMame.dll or VPinMame64.dll installed you need to install the contents of dmddevice or dmddevice64 zip package.
 For installation just copy the contents of the zip file to your vpinmame installation folder. You may be asked to overwrite a previous installation of dmddevice.dll.
-If you previously used freezy DmdDevice.dll and want to keep your settings just copy your DmdDevice.ini to DmdExt.ini.
+If you previously used freezy DmdDevice.dll and want to keep your settings just keep your DmdDevice.ini.
 
 Get installation support here 
 https://vpuniverse.com/forums/topic/7191-new-version-pin2dmd-dmddevicedll-with-dmdext-as-plugin/
