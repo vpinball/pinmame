@@ -374,7 +374,7 @@ MACHINE_DRIVER_END
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_vblank) {
-  static int lastPage, frameNo;
+  static int frameNo;
 #ifdef PROC_SUPPORT
 	static int gi_last[CORE_MAXGI];
 	int changed_gi[CORE_MAXGI];
@@ -392,22 +392,24 @@ static INTERRUPT_GEN(wpc_vblank) {
       wpc_firq(TRUE, WPC_FIRQ_DMD);
     if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == 0) {
       /*-- This is the real VBLANK interrupt --*/
-      if (core_gameData->hw.gameSpecific2) { // PH: DMD needs work
-        if (wpc_data[DMD_VISIBLEPAGE] != lastPage) {
-          dmdlocals.DMDFrames[0] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) / 2 * 2 * 0x200;
-          dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (2 + (lastPage & 0x0f) / 2 * 2) * 0x200;
-        } else {
-          dmdlocals.DMDFrames[frameNo] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
-          frameNo = 1 - frameNo;
+      if (core_gameData->hw.gameSpecific2) { // PH: DMD is toggled between half and full page size using DMD_FIRQLINE register bit
+        if (wpc_data[DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
+          dmdlocals.DMDFrames[0] = dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
+        } else { // full page
+          dmdlocals.DMDFrames[frameNo] = memory_region(WPC_DMDREGION) + wpc_data[DMD_VISIBLEPAGE] * 0x400;
         }
-        lastPage = wpc_data[DMD_VISIBLEPAGE];
+        frameNo = 1 - frameNo;
       } else {
         dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
       }
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
-				/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
-				procFillDMDSubFrame(dmdlocals.nextDMDFrame+1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
+				if (core_gameData->hw.gameSpecific2) { // PH: reasonable guess on how to handle two frames only
+					procFillDMDSubFrame(3 - frameNo, dmdlocals.DMDFrames[1 - frameNo], 0x400);
+				} else {
+					/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
+					procFillDMDSubFrame(dmdlocals.nextDMDFrame+1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
+				}
 			}
 
 			/* Don't explicitly update the DMD from here. The P-ROC code
