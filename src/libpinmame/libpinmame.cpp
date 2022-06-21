@@ -21,7 +21,6 @@ int g_fHandleKeyboard = 0;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
-int vector_updates = 0;
 
 #ifdef VPINMAME_ALTSOUND
 char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
