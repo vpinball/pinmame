@@ -1,0 +1,59 @@
+# Required steps on Jetson target
+# Install BSP (through SD card on devkit, or through SDK Manager on production module or third party systems)
+# Install docker runtime through SDK manager
+
+# Run the next steps on the Jetson itself
+
+# Install base L4T_container from ngc.nvidia.com
+
+sudo docker pull nvcr.io/nvidia/l4t-base:r32.7.1
+
+# Create container
+
+xhost +
+sudo docker run -it --name=pinmame --net=host --runtime nvidia -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix nvcr.io/nvidia/l4t-base:r34.1
+
+# connect to container console (once command is run, following commands are executed from within the container)
+sudo docker attach pinmame
+
+# all following steps are run INSIDE the container
+# Install build components and dependencies
+
+apt update
+apt install build-essential
+apt install git
+apt install ca-certificates
+
+apt install -y software-properties-common lsb-release
+apt clean all
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - |  tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
+apt install cmake
+apt install zlib1g-dev
+apt install unzip
+
+# clone git and build
+
+cd ~
+git clone https://github.com/vpinball/pinmame
+cp cmake/libpinmame/CMakeLists_linux-x64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+cmake --build build/Release
+
+# Create rom folder and copy e.g. t2_l8 rom files, needed (at the time of writing) for pinmame_test
+
+mkdir ~/.pinmame
+cd ~/.pinmame
+mkdir roms
+cd roms
+
+wget http://dl.gametronik.com:8080/161ded27210b672a1c1817fd29b4490b/t2_l8.zip
+unzip t2_l8.zip
+
+# Go back into Pinmame build folder and launch pinmame
+
+cd ~/pinmame/build/Release
+./pinmame_test
+
+# To exit test application, hit Ctl-C
+# To disconnect from container, hit Ctl-P then Ctl-Q
