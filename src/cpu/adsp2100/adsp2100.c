@@ -847,7 +847,7 @@ resume_from_speedup:
 			}
 		}
 		// parse the instruction
-		switch (op >> 16)
+		switch ((op >> 16) & 0xff)
 		{
 			case 0x00:
 				// 00000000 00000000 00000000  NOP
