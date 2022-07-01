@@ -112,7 +112,7 @@
 //     ANDCC $AF   ; IF|II (enable FIRQ + IRQ)
 //
 // As you can see, this section of code runs with the CC "inhibit interrupts"
-// flags set.   They're turning off interrupts beacuse it's absolutely required
+// flags set.   They're turning off interrupts because it's absolutely required
 // that we do these register writes to the YM chip atomically.  We have to make
 // two writes, one to send the register address and one to send the data byte.
 // If we got interrupted in the middle of this, the interrupt handler could
@@ -189,7 +189,7 @@
 // actually intentional.  (My friend the chip designer tells me that it was
 // quite common back in the 8-bit days for software engineers to take this
 // kind of cavalier approach to race conditions, because the hardware back
-// then was so preditable about timing and clocks were relatively slow.
+// then was so predictable about timing and clocks were relatively slow.
 // To modern eyes, accustomed as we are to pipelined architectures with
 // timing that even the designers can't precisely predict, it looks like a
 // blatant race condition bug.  But the 80s were a simpler time.)
@@ -293,7 +293,21 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 }; // The very first Williams speech board used the MC3417 (and not a HC555XX), but should not matter much in practice??
+
+/* THESE (at least) SHOULD BE USING MC3417, i.e. maybe split sys6 and sys7 sound and pick then on case per case basis??
+sys6:
+ gorgar and firepower (have both 55516/C-8228 and MC3417/C-8226 in manual though! -> check what fits better)
+sys6a:
+ alien poker (?)
+sys7:
+ black knight
+ jungle lord
+ pharaoh
+ thunderball (?)
+Bally Vocalizer:
+ Xenon and Flash Gordon (latter has two versions, vocalizer one has MC3417!)
+*/
 
 MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_CPU_ADD(M6808, 3579545./4.)
@@ -419,7 +433,7 @@ static MEMORY_WRITE_START(s9s_writemem)
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
+static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 }; // all boards were using a HC55516
 
 MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -445,7 +459,7 @@ MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
 static struct DACinterface      s11xs_dacInt2     = { 2, { 15, 15 }};
-static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 }; // all boards were using a HC55516
 static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, HC55516_FILTER_SYS11 };
 
 MACHINE_DRIVER_START(wmssnd_s11s)
@@ -703,7 +717,7 @@ MEMORY_END
 // don't sound good for a given game.  See WPCSND_HC55516_LEVELS in wmssnd.h
 // for instructions.
 static struct DACinterface      s11cs_dacInt      = { 1, { 15 }};
-static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 }; // all boards were using a HC55516
 static struct YM2151interface   s11cs_ym2151Int = {
 	1, 3579545, /* Hz */
 	{ YM3012_VOL(8, MIXER_PAN_CENTER, 8, MIXER_PAN_CENTER) },
@@ -1013,7 +1027,7 @@ MEMORY_END
 //
 //[OLD NOTE, before HC55516 rewrite: These volume levels sound really good compared to my own Funhouse and T2: Dac=100%,CVSD=80%,2151=15%]
 static struct DACinterface      wpcs_dacInt     = { 1, { 70 }};
-static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 };
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 }; // all boards were using a HC55516
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
@@ -1124,7 +1138,7 @@ static void dcs_init(struct sndbrdData *brdData);
 #define DCS_DEFAULT_SAMPLE_RATE 31250 // as found in Ask Uncle Willy #3: July 7, 1995
 
 static struct {
- int     status;   // 0 = disabled, 1 playing, > 1 startup silence samples remaining
+ int     status;   // 0 = disabled, 1 playing
  int     sOut, sIn; // positions in sound buffer
  INT16  *buffer;
  int     stream;
@@ -1501,7 +1515,7 @@ static void dcs_init(struct sndbrdData *brdData) {
 /*-- autobuffer SPORT transmission  --*/
 /*-- copy data to transmit into dac buffer --*/
 static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) {
-  const UINT16 * const mem = ((UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
+  const UINT16 * const mem = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET) + start;
   int idx;
 
   // Let the buffer fill naturally, so the throttling mechanism can work.
@@ -1730,17 +1744,14 @@ UINT32 dcs_speedup(UINT32 pc) {
   int ii;
 
   /* DCS and DCS95 uses different buffers */
+  UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
   if (pc > 0x2000) {
-    UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
-
     ram1source = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x1000<<1));
     ram2source = dcslocals.RAMbankPtr;
     volume = ram1source[((volumeOP>>4)&0x3fff)-0x1000];
     /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
   }
   else {
-    UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
-
     ram1source = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x0700<<1));
     ram2source = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x3800<<1));
     volume = ram2source[((volumeOP>>4)&0x3fff)-0x3800];
@@ -1758,7 +1769,7 @@ UINT32 dcs_speedup(UINT32 pc) {
 			/* 2B49     DO $2B53 UNTIL CE */
     /* M0 = 0, M1 = 1, M2 = -1 */
     for (ii = 0; ii < 0x0040; ii++) {
-      INT16 ax0 , ay0, ax1, ay1, ar;
+      INT16 ax0, ay0, ax1, ay1, ar;
 			/* 2B4A       AX0 = DM(I0,M1) */
       ax0 = *i0++;
 			/* 2B4B       AY0 = DM(I2,M0) */
@@ -1905,6 +1916,7 @@ UINT32 dcs_speedup(UINT32 pc) {
       mx0 = *i0;
 			/* 2B87       MR = MX0 * MY0 (SU) */
       mr = ((INT32)mx0 * my0); // <<1; // see shift below
+      assert((UINT32)mr < 0x40000000u || (UINT32)mr >= 0xC0000000u); // check if <<1 above would matter
 			/* 2B88       IF MV SAT MR */
       /* This instruction limits MR to 32 bits */
       /* In reality the volume will never be higher than 0x8000 so */
@@ -2772,6 +2784,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
         {
             /* 0138   MR = (MX0 * MY0) << 1, MX0 = DM(reverse i1,m2) */
             UINT32 mr = ((INT32)mx0 * my0); // << 1; // see shift below
+            assert((UINT32)mr < 0x40000000u || (UINT32)mr >= 0xC0000000u); // check if <<1 above would matter
             mx0 = ram[reverse_bits(i1)];
             i1 += 0x20;
 
