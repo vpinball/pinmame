@@ -10,7 +10,7 @@ Saving NVRAM for Juegos Populares
 
 More gracefully handle parsing errors in invalid altsound CSV files to avoid crashes
 
-Updated LISY support to 5.28-41 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.28-53 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 Updated to zlib 1.2.12
 
@@ -22,8 +22,9 @@ Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so alts
 Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
 Fix sound commander issues (missing 2nd part of command) for the WPC89 sound board
 New WPC95 machine type: Phantom Haus with a special 128x64 DMD! (see https://www.flipprojets.fr/PhantomHaus_EN.php)
+Finally some progress on Zaccaria's 11178 analog sound.
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Averell
 New:
 Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
@@ -41,6 +42,7 @@ Kiss (7-digit conversion rev. 30 & /10 Scoring Free Play + Sound Fix)
 MAC's Galaxy (blue version)
 Magic (MOD rev. 19)
 Stingray (MOD rev. 14)
+Terminator 2 L-8.3 (MOD)
 Trident (MOD 2 rev. 19)
 World Cup Soccer LX-1
 Wipe Out rev. 2 (alternate set)

@@ -2663,6 +2663,7 @@ DRIVER(t2,l8)           //          12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,d8)           //                  Terminator 2: Judgement Day (D-8) LED Ghost Fix
 DRIVER(t2,l81)          //                  Terminator 2: Judgement Day (L-81) Attract Sound Fix
 DRIVER(t2,l82)          //                  Terminator 2: Judgement Day (L-82) Hacked attract routines
+DRIVER(t2,l83)          //          06/22 W Terminator 2: Judgement Day (L-83) Profanity and bugfixes/MOD and LED Ghost Fix
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(t2,p2g)          //                  Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
 DRIVER(t2,f19)          //          ??/??   Terminator 2: Judgement Day (FreeWPC 0.19)

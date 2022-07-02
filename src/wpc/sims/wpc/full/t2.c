@@ -549,13 +549,20 @@ WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
 
-/* Profanity speech ROM. Don't know if the sound rom works with L8 */
+/* Profanity speech ROM support. Sound rom does not work with plain L8 */
 WPC_ROMSTART(t2,p2f,"u6-nasty.rom",0x40000,CRC(add685a4) SHA1(d1ee7eb620864b017495e52ea8fe8db18508c3eb))
 WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                     "t2_u15.l3",   CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                     "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
 WPC_ROMEND
 WPC_ROMSTART(t2,p2g,"u6-nastd.rom",0x40000,CRC(64790c37) SHA1(d22bd060f71c7021d2ebbd70834430b19cac287c))
+WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                    "t2_u15.l3",   CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                    "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
+WPC_ROMEND
+
+/* L-8.3 MOD that supports Profanity, and more */
+WPC_ROMSTART(t2,l83,"T2_l83_7308.rom",0x40000,CRC(6780657f) SHA1(0eed3187bf9d10bdfdad7ede65a1cc6cbeb56284))
 WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                     "t2_u15.l3",   CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                     "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
@@ -618,11 +625,12 @@ WPC_ROMEND
 CORE_GAMEDEF(t2,l8,"Terminator 2: Judgement Day (L-8)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d8,l8,"Terminator 2: Judgement Day (D-8 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l81,l8,"Terminator 2: Judgement Day (L-81 Attract Sound patch)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l82,l8,"Terminator 2: Judgement Day (L-82 Attract Routines patch)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l82,l8,"Terminator 2: Judgement Day (L-82 Attract Score patch)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l83,l8,"Terminator 2: Judgement Day (L-83 Profanity, bugfix/MOD, LED Ghost Fix)",2022,"Williams/Averell",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgement Day (L-6)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgement Day (D-6 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ??
-CORE_CLONEDEF(t2,p2g,l8,"Terminator 2: Judgement Day (P-2G Profanity LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,p2g,l8,"Terminator 2: Judgement Day (P-2G Profanity, LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgement Day (L-4)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d4,l8,"Terminator 2: Judgement Day (D-4 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgement Day (L-3)",1991,"Williams",wpc_mDMDS,0)
@@ -637,14 +645,14 @@ CORE_CLONEDEF(t2,f32,l8,"Terminator 2: Judgement Day (FreeWPC 0.32)",1991,"FreeW
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData t2SimData = {
-  2,    				/* 2 game specific input ports */
+  2,					/* 2 game specific input ports */
   t2_stateDef,			/* Definition of all states */
   t2_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
   t2_handleBallState,	/*Function to handle ball state changes*/
   t2_drawStatic,		/*Function to handle mechanical state changes*/
-  FALSE, 				/* Do Not Simulate manual shooter */
+  FALSE,				/* Do Not Simulate manual shooter */
   NULL  				/* no custom key conditions */
 };
 
@@ -745,11 +753,11 @@ static int GetGunPos(void) {
 
 
 #if 0
-/*Return A string depciting what the gun is pointing at*/
+/*Return a string depicting what the gun is pointing at*/
 static char * GetGunDescr()
 {
-switch (GetGunPos())
-        {
+    switch (GetGunPos())
+    {
         case GUNPOS_PF:
              return "PF";
         case GUNPOS_T1:
@@ -762,8 +770,8 @@ switch (GetGunPos())
              return "T4";
         case GUNPOS_T5:
              return "T5";
-	default:
-	     return "PF";
-        }
+        default:
+             return "PF";
+    }
 }
 #endif
