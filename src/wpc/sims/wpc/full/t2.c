@@ -562,7 +562,7 @@ WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d
 WPC_ROMEND
 
 /* L-8.3 MOD that supports Profanity, and more */
-WPC_ROMSTART(t2,l83,"T2_l83_7308.rom",0x40000,CRC(6780657f) SHA1(0eed3187bf9d10bdfdad7ede65a1cc6cbeb56284))
+WPC_ROMSTART(t2,l83,"T2_l83_7308.rom",0x80000,CRC(6780657f) SHA1(0eed3187bf9d10bdfdad7ede65a1cc6cbeb56284))
 WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                     "t2_u15.l3",   CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                     "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
