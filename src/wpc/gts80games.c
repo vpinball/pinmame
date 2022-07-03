@@ -858,6 +858,26 @@ GTS80_ROMEND
 #define input_ports_thegames input_ports_gts80
 CORE_CLONEDEFNV(thegames,gts80as,"Games, The",1984,"Gottlieb",gl_mGTS80SP,0)
 
+//691A: Official version that limits the maximum of credits to 20 (instead of 25).
+INIT_S80A(thegamsb, dispNumeric3, SNDBRD_GTS80SP,0)
+GTS80_1_ROMSTART ("691A_PROM1.bin", CRC(b80042c0) SHA1(63b03025c31aa325450945f80e731e6921caf3c2))
+GTS80S2K_ROMSTART("691-s.snd",      CRC(d7011a31) SHA1(edf5de6cf5ddc1eb577dd1d8dcc9201522df8315))
+GTS80_ROMEND
+#define input_ports_thegamsb input_ports_thegames
+CORE_CLONEDEFNV(thegamsb,thegames,"Games, The (rev. 1)",1984,"Gottlieb",gl_mGTS80SP,0)
+
+//691B MOD by flipprojets.fr: fixes DIP-31 bug:
+//                            In order to reproduce the atmosphere of a stadium, the sound card generates a white noise (quite unpleasant)
+//                            supposed to imitate the crowd. The documentation indicates that it is possible to deactivate this sound using DIP-31,
+//                            by setting it to OFF. Unfortunately, Gottlieb simply forgot to implement this feature, both on build #691 and #691A.
+
+INIT_S80A(thegamsc, dispNumeric3, SNDBRD_GTS80SP,0)
+GTS80_1_ROMSTART ("691B_PROM1.bin", CRC(b271ea10) SHA1(3d3e551d4607499d704b7b2c589c5721fe1ceb95))
+GTS80S2K_ROMSTART("691-s.snd",      CRC(d7011a31) SHA1(edf5de6cf5ddc1eb577dd1d8dcc9201522df8315))
+GTS80_ROMEND
+#define input_ports_thegamsc input_ports_thegames
+CORE_CLONEDEFNV(thegamsc,thegames,"Games, The (rev. 2 MOD)",2022,"Gottlieb / Flipprojets",gl_mGTS80SP,0)
+
 /*-------------------------------------------------------------------
 / Touchdown (#688)
 /-------------------------------------------------------------------*/

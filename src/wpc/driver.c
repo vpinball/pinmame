@@ -687,6 +687,8 @@ DRIVERNV(raimfire)      //S80a-686: 11/83 Ready Aim Fire
 DRIVERNV(jack2opn)      //S80a-687: 05/84 Jacks to Open
 DRIVERNV(alienstr)      //S80a-689: 06/84 Alien Star
 DRIVERNV(thegames)      //S80a-691: 08/84 Games, The
+DRIVERNV(thegamsb)      //          0?/84 Games, The (rev. 1)
+DRIVERNV(thegamsc)      //          05/22 Games, The (rev. 2 MOD)
 DRIVERNV(eldorado)      //S80a-692: 09/84 El Dorado City of Gold
 DRIVERNV(touchdn)       //S80a-688: 10/84 Touchdown
 DRIVERNV(icefever)      //S80a-695: 02/85 Ice Fever
