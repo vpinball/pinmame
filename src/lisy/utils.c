@@ -471,3 +471,42 @@ void lisy_logger(void)
   system(str);
 
 }
+
+//switch debug output ready for replay
+void lisy80_debug_swreplay(int sw, int action)
+{
+  struct timeval now;
+  static struct timeval last;
+  long seconds, useconds;
+  static int first = 1;
+  char str_seconds[20];
+  char my_str_seconds[20];
+
+if (first)
+ {
+  first = 0;
+  //store start time in local static  var
+  gettimeofday(&last,(struct timezone *)0);
+ }
+
+ //see what time is now
+ gettimeofday(&now,(struct timezone *)0);
+
+ seconds = now.tv_sec - last.tv_sec;
+  useconds = now.tv_usec - last.tv_usec;
+  if(useconds < 0) {
+        useconds += 1000000;
+        seconds--;
+  }   
+
+ // store time we had last time
+ //gettimeofday(&last,(struct timezone *)0);
+ last = now;
+
+ //we print seconds plus MICROseconds, first elapsed time, second time elapsed since last debug output
+ //fprintf(stderr,"[%s.%06ld][%ld.%06ld] %s\n\r", my_str_seconds,now.tv_usec,seconds,useconds,message);
+
+ //print switch action plus elapsed time in milliseconds since last switch action 
+ fprintf(stderr,"lisy_swreplay %d %d %ld\n\r", sw, action, useconds/1000 + seconds*1000);
+
+}

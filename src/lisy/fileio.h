@@ -109,6 +109,7 @@ int  lisy_file_get_home_ss_lamp_mappings(int variant);
 int  lisy_file_get_home_ss_coil_mappings(int variant);
 int  lisy_file_get_home_ss_special_coil_mappings(int variant);
 int  lisy_file_get_home_ss_special_lamp_mappings(int variant);
+int  lisy_file_get_home_ss_general(void);
 
 //lisy200 (Starship) stuff
 int lisy200_file_get_mpudips( int switch_nr, int debug, char *dip_setting_filename );
@@ -161,6 +162,7 @@ int  lisy200_file_get_soundopts(void);
 #define LISYH_SS_SPECIAL_COIL_MAPPING_FILE "ss_special_coils"
 #define LISYH_SS_SPECIAL_LAMP_MAPPING_FILE "ss_special_lamps"
 #define LISYH_SS_GI_LIST "ss_GI_list"
+#define LISYH_SS_GENERAL "ss_general_parms"
 
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"

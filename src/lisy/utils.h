@@ -8,6 +8,7 @@ char debugbuf[256];
 void lisy_init( void );
 
 void lisy80_debug(char *message);
+void lisy80_debug_swreplay(int sw, int action);
 
 void lisy80_error(int error_num);
 void syserr( char *msg, int number, int doexit);
@@ -45,4 +46,3 @@ void lisy_logger(void);
 #define TOGGLE_BIT(var, pos) var ^= (1 << pos)
 
 #endif  /* UTILS_H */
-

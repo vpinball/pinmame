@@ -34,6 +34,8 @@ void display35_show_int( int display, int digit, unsigned char dat);
 void display35_show_str( int display, char *data);
 void lisy35_display_set_soundE( unsigned char value);
 void lisy35_display_set_variant( unsigned char variant);
+//Starship
+void display_ss_LCD_string2row(unsigned char row, char *buf);
 
 
 #define LS80DPCMD_INIT 1
@@ -44,6 +46,10 @@ void lisy35_display_set_variant( unsigned char variant);
 #define LSH_SS_DPCMD_GET_DIPSW_VALUE 5    //Starship, get real value
 #define LS80DPCMD_NEXT20_ROW1 6
 #define LS80DPCMD_NEXT20_ROW2 7
+
+#define LSH_SS_DPCMD_STRING2ROW 8    //Starship RTH-> change in PIC!
+#define LSH_SS_DPCMD_CURSOR_CTRL 7   //Starship
+#define LSH_SS_DPCMD_GET_IOS 6       //Starship RTH -> change in PIC
 
 #define LS80DPCMD_GET_HW_REV 100
 #define LS80DPCMD_READ_EEPROM 110

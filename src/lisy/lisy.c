@@ -51,6 +51,8 @@ t_rgbw_color led_rgbw_color[6][48];
 t_lisy_home_ss_GI_leds lisy_home_ss_GI_leds[128];
 //Starship flags
 unsigned char lisy_home_ss_ignore_credit = 0;
+//Starship general parms
+t_lisy_home_ss_general lisy_home_ss_general;
 
 //global var for debugging
 //typedef is defined in hw_lib.h

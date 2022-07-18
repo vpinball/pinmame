@@ -1921,7 +1921,7 @@ int  lisy_file_get_home_ss_special_lamp_mappings(int variant)
  unsigned char ledline,led;
 
  //map to default no mapping / no activation
- for(i=0; i<=23;i++) 
+ for(i=0; i<=23;i++)
   {
      lisy_home_ss_special_lamp_map[i].no_of_maps = 0;
   }
@@ -2240,4 +2240,54 @@ int  lisy200_file_get_soundopts(void)
    fclose(fstream);
 
   return 0;
+}
+
+//read the csv file for Starship general parameters
+int  lisy_file_get_home_ss_general(void)
+{
+ char buffer[1024];
+ char *line;
+ char file_name[80];
+ int no,param;
+ int first_line = 1;
+ FILE *fstream;
+
+//construct the filename
+  sprintf(file_name,"%s%s.csv",LISYH_MAPPING_PATH,LISYH_SS_GENERAL);
+
+  //defaults
+      lisy_home_ss_general.hstd_cycle = 7;
+      lisy_home_ss_general.hstd_sleep = 7;
+
+ fstream = fopen(file_name,"r");
+  if(fstream == NULL)
+  {
+      fprintf(stderr,"LISY_Home: opening %s failed, using defaults\n",file_name);
+  }
+  else
+  {
+   first_line = 1;
+   fprintf(stderr,"LISY_Home: reading %s for general parameters\n",file_name);
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { no=0; first_line=0; continue; } //skip first line (Header)
+     no = atoi(strtok(line, ";"));  //number of parameter
+     param = atoi(strtok(NULL, ";"));	  //parameter
+     //store it
+	//switch
+	switch(no)
+	{
+	 case 1:
+		 lisy_home_ss_general.hstd_cycle = param;
+	 break;
+	 case 2:
+		 lisy_home_ss_general.hstd_sleep = param;
+         break;
+
+	}
+   } //while
+   fclose(fstream);
+  }
+ 
+ return 0;
 }

@@ -29,8 +29,13 @@
 #include "lisy.h"
 
 
+//local vars
 //our pointers to preloaded sounds
 Mix_Chunk *lisy_H_sound[32];
+//others
+unsigned char lisy_game_running = 0; //for Starship event handler
+//cmos
+extern lisy35_cmos_data_t *lisy_by35_CMOS;
 
 #define LISYH_SOUND_PATH "/boot/lisy/lisyH/sounds/"
 //init
@@ -281,6 +286,7 @@ void lisy_home_ss_send_led_colors( void)
 unsigned char lisy_home_ss_lamp_1canplay_status = 0;
 unsigned char lisy_home_ss_lamp_2canplay_status = 0;
 unsigned char lisy_home_ss_digit_ballinplay_status = 80;
+unsigned char lisy_home_ss_switch_outhole_status = 0;
 unsigned char lisy35_flipper_disable_status = 1; //default flipper disbaled
 unsigned char lisy35_mom_solenoid_status_safe = 1; //default mom solenoid status (safe)
 
@@ -295,6 +301,16 @@ void lisy_home_ss_mom_sol_event( unsigned char mom_data )
 {
   if ( mom_data == 15) lisy35_mom_solenoid_status_safe = 1; //rest position is safe
 	else lisy35_mom_solenoid_status_safe = 0;
+}
+
+//sound from internal sound card (bally generated)
+void lisy_home_ss_sound_event( unsigned char sound )
+{
+  //play bonus sound ( fix #203 ) triggered with one of the org sounds
+  if ( ( lisy_env.has_own_sounds ) & ( sound == 8 ) )
+	{
+	  if ( lisy_home_ss_switch_outhole_status == 1) StarShip_play_wav(203);
+	}
 }
 
 void lisy_home_ss_display_event( int digit, int value, int display)
@@ -345,43 +361,94 @@ void lisy_home_ss_display_event( int digit, int value, int display)
 		break;
 	}
    }//status display
-   else
-   {
-//	printf("display event: display:%d digit:%d value:%d\n",display,digit,value);
-   }
 }
 
 void lisy_home_ss_lamp_event( int lamp, int action)
 {
+	static int hstd_count = 0;
 	switch(lamp)
 	{
-	 case LISY_HOME_SS_LAMP_1CANPLAY: //set light on player1 to ON if 1canplay or 2canplay is ON
+	 case LISY_HOME_SS_LAMP_1CANPLAY: //set light on player1 to ON if 1canplay and 2canplay is OFF, otherwise both ON
 		lisy_home_ss_lamp_1canplay_status = action;
-		if (( lisy_home_ss_lamp_1canplay_status == 1) | ( lisy_home_ss_lamp_2canplay_status ==1))
+		if (( lisy_home_ss_lamp_1canplay_status == 1) && ( lisy_home_ss_lamp_2canplay_status ==0))
 		 {
 		 lisy_home_ss_special_lamp_set ( 15, 1); 
 		 lisy_home_ss_special_lamp_set ( 16, 1); 
+		 lisy_home_ss_special_lamp_set ( 17, 0); 
+		 lisy_home_ss_special_lamp_set ( 18, 0); 
 		 }
 		else
 		 {
-		 lisy_home_ss_special_lamp_set ( 15, 0); 
-		 lisy_home_ss_special_lamp_set ( 16, 0); 
+		 lisy_home_ss_special_lamp_set ( 15, 1); 
+		 lisy_home_ss_special_lamp_set ( 16, 1); 
+		 lisy_home_ss_special_lamp_set ( 17, 1); 
+		 lisy_home_ss_special_lamp_set ( 18, 1); 
 		 }
 		break;
-	 case LISY_HOME_SS_LAMP_2CANPLAY:
+	 case LISY_HOME_SS_LAMP_2CANPLAY: //set light on player1 to ON if 1canplay and 2canplay is OFF, otherwise both ON
 		 lisy_home_ss_lamp_2canplay_status = action;
-		 lisy_home_ss_special_lamp_set ( 17, action); 
-		 lisy_home_ss_special_lamp_set ( 18, action); 
+		if (( lisy_home_ss_lamp_1canplay_status == 1) && ( lisy_home_ss_lamp_2canplay_status ==0))
+		 {
+		 lisy_home_ss_special_lamp_set ( 15, 1); 
+		 lisy_home_ss_special_lamp_set ( 16, 1); 
+		 lisy_home_ss_special_lamp_set ( 17, 0); 
+		 lisy_home_ss_special_lamp_set ( 18, 0); 
+		 }
+		else
+		 {
+		 lisy_home_ss_special_lamp_set ( 15, 1); 
+		 lisy_home_ss_special_lamp_set ( 16, 1); 
+		 lisy_home_ss_special_lamp_set ( 17, 1); 
+		 lisy_home_ss_special_lamp_set ( 18, 1); 
+		 }
 		break;
-	 case LISY_HOME_SS_LAMP_GAMEOVER:
-		 if ( action == 1)
+	 case LISY_HOME_SS_LAMP_GAMEOVER: 
+		 if ( action == 1)  //end of game
 			{
-			  //stop background sound (add on, also stopped when ball is in outhole)
+			  //stop background sound
 			  if ( lisy_env.has_own_sounds ) Mix_HaltChannel(202);
+			  lisy_game_running = 0;
+			  //activate scoring lights
+			  lisy_home_ss_special_lamp_set ( 15, 1);
+			  lisy_home_ss_special_lamp_set ( 16, 1);
+			  lisy_home_ss_special_lamp_set ( 17, 1);
+			  lisy_home_ss_special_lamp_set ( 18, 1);
+			}
+		else 
+			//start off game
+			{
+			   //fix setting RTH //Start play background
+			   if ( lisy_env.has_own_sounds ) StarShip_play_wav(202);
+			  lisy_game_running = 1;
+			  //deactivate special lamp hstd
+			  lisy_home_ss_special_lamp_set ( 22, 0); 
+			  //reset hstd count
+			  hstd_count = 0;
 			}
 		break;
-	 case LISY_HOME_SS_LAMP_HSTD:
-		//printf("HIGH score to date action:%d\n",action);
+	 case LISY_HOME_SS_LAMP_HSTD: 
+		//only if cycle parameter in ss_general_parms.csv is > 0
+	       if ( lisy_home_ss_general.hstd_cycle > 0)
+		{
+		//count the events
+		if (action) hstd_count++;
+		if ( hstd_count == lisy_home_ss_general.hstd_cycle)
+			{
+			  //show high score to date
+			  wheel_set_hstd( lisy_by35_CMOS->para.hstd);
+			  //activate special lamp hstd
+			  lisy_home_ss_special_lamp_set ( 22, 1); 
+			}
+		else if ( hstd_count == (lisy_home_ss_general.hstd_sleep + lisy_home_ss_general.hstd_cycle))
+			{
+			  //reset counts
+			  hstd_count = 0;
+			  //show score attract mode
+			  wheel_set_score( lisy_by35_CMOS->para.disp1_backup, lisy_by35_CMOS->para.disp2_backup);
+			  //deactivate special lamp hstd
+			  lisy_home_ss_special_lamp_set ( 22, 0); 
+			}
+		}
 		break;
 	}
 }
@@ -397,8 +464,16 @@ void lisy_home_ss_init_event(void)
 {
  int i;
 
+ //activate scoring lights
+ lisy_home_ss_special_lamp_set ( 15, 1); 
+ lisy_home_ss_special_lamp_set ( 16, 1); 
+ lisy_home_ss_special_lamp_set ( 17, 1); 
+ lisy_home_ss_special_lamp_set ( 18, 1); 
+
  //reset credit wheels
  wheel_score_credits_reset();
+ //reset displays
+ wheel_score_reset();
 
  //activate GI lamps for credit, drop targets 3000 and top rollover
  for(i=0; i<=127; i++)
@@ -416,24 +491,13 @@ void lisy_home_ss_init_event(void)
 }
 
 //switch event, map sounds
-void lisy_home_ss_cont_switch_event( int switch_no, int action)
+void lisy_home_ss_switch_event( int switch_no, int action)
 { 
- //start/stop background with outhole
- if ( ( lisy_env.has_own_sounds ) & (switch_no == 8) )
+ //remember status of outhole switch
+ if (switch_no == 8)
  {
-	if (action)
-    	   Mix_HaltChannel(202);  //stop background when ball is in outhole
-	else
-	   StarShip_play_wav(202); //fix setting RTH //Start play background with ball eject
-		
-         if ( ls80dbg.bitv.sound )
-          {
-	   if (action) sprintf(debugbuf,"StarShip: stopping background");
-	   else sprintf(debugbuf,"StarShip: starting background");
-          lisy80_debug(debugbuf);
-          }
+	lisy_home_ss_switch_outhole_status = action;
  }
-
 
 
  if ( ( lisy_env.has_own_sounds ) & ( ( lisy35_flipper_disable_status == 0) | ( lisy35_sound_stru[switch_no].onlyactiveingame == 0) ) )
@@ -469,7 +533,8 @@ void lisy_home_ss_event_handler( int id, int arg1, int arg2, int arg3)
 	 case LISY_HOME_SS_EVENT_DISPLAY: lisy_home_ss_display_event( arg1, arg2, arg3); break;
 	 case LISY_HOME_SS_EVENT_CONT_SOL: lisy_home_ss_cont_sol_event( arg1 ); break;
 	 case LISY_HOME_SS_EVENT_MOM_SOL: lisy_home_ss_mom_sol_event( arg1 ); break;
-	 case LISY_HOME_SS_EVENT_SWITCH: lisy_home_ss_cont_switch_event( arg1, arg2 ); break;
+	 case LISY_HOME_SS_EVENT_SWITCH: lisy_home_ss_switch_event( arg1, arg2 ); break;
+	 case LISY_HOME_SS_EVENT_SOUND: lisy_home_ss_sound_event( arg1 ); break;
 	}
 
   //2canplay lamp blocks credit switch when ball in play is 1 ( only 2 players on Starship)

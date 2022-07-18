@@ -139,9 +139,47 @@ void monitor_switches(void)
 	}while(1);
 }
 
+
+//read lisy35 switchmatrix
+//one try without delay
+// use with care! in order not to stress switch PIC
+//gives back status read ( 80 == no change)
+int lisy35_switchmatrix_read(void )
+{
+ int ret;
+ unsigned char strobe,returnval;
+ unsigned char action = 1;
+
+     ret = lisy35_switch_reader( &action );
+
+     if (ret < 80) {
+         //ret is switchnumber: NOTE: Bally  8*6==48 switches in maximum, counting 01..48
+         //starship is using all 64 switches
+        //Switches_LISY35[ret] = action;
+
+        //calculate strobe & return
+        //Note: this is different from system80
+        strobe = ret / 8;
+        returnval = ret % 8;
+
+        //set the bit in the Matrix var according to action
+        // action 1 means set the bit
+        // any other means delete the bit
+        if (action ) //set bit
+                   SET_BIT(swMatrixLISY35[strobe+1],returnval);
+        else  //delete bit
+                   CLEAR_BIT(swMatrixLISY35[strobe+1],returnval);
+
+        }
+ return(ret);
+}
+
+
+
 //update lisy35 switchmatrix
 //used for zero detection in wheels for Starship
-void lisy35_switchmatrix_update(void )
+//has 20ms delay in minimum
+void lisy35_switchmatrix_update(int mydelay )
 {
  int ret;
  unsigned char strobe,returnval;
@@ -149,8 +187,8 @@ void lisy35_switchmatrix_update(void )
 
  do
  {
-     delay(20); // 20 millisecond delay from wiringpi library
-                // for giving PIC some time to send switchcodes
+     delay(mydelay); // millisecond delay from wiringpi library
+                     // for giving PIC some time to send switchcodes
      ret = lisy35_switch_reader( &action );
 
      if (ret < 80) {

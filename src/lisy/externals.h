@@ -31,6 +31,7 @@ extern t_lisy_home_ss_GI_leds lisy_home_ss_GI_leds[128];
 extern t_rgbw_color led_rgbw_color[6][48];
 //Starship flags
 extern unsigned char lisy_home_ss_ignore_credit;
+extern t_lisy_home_ss_general lisy_home_ss_general;
 
 extern int lisy_m_APC_coil_HW_rule[32];
 

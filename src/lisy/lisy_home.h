@@ -81,6 +81,13 @@ typedef struct
 }
 t_lisy_home_ss_GI_leds;
 
+//starship general parms
+typedef struct
+{
+  int hstd_cycle;
+  int hstd_sleep;
+}
+t_lisy_home_ss_general;
 
 void lisy_home_ss_mom_coil_set( unsigned char value);
 void lisy_home_ss_cont_coil_set( unsigned char cont_data);
@@ -103,6 +110,7 @@ void lisy_home_ss_event_handler( int id, int arg1, int arg2, int arg3);
 #define LISY_HOME_SS_EVENT_DISPLAY 5
 #define LISY_HOME_SS_EVENT_SWITCH 6
 #define LISY_HOME_SS_EVENT_BOOT 7
+#define LISY_HOME_SS_EVENT_SOUND 8
 
 //special lamps on Starship
 #define LISY_HOME_SS_LAMP_PLAYER1UP 14

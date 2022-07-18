@@ -344,12 +344,12 @@ else
 void display35_show_int( int display, int digit, unsigned char dat)
 {
 
- char buf[2];
+  char buf[2];
 
-	/* build control byte */
-	mydata_display.bitv2.DISPLAY = display;
-	mydata_display.bitv2.DIGIT = digit;
-        mydata_display.bitv2.IS_CMD = 0;
+  /* build control byte */
+  mydata_display.bitv2.DISPLAY = display;
+  mydata_display.bitv2.DIGIT = digit;
+  mydata_display.bitv2.IS_CMD = 0;
 
   buf[0] = mydata_display.byte;
   buf[1] = dat;
@@ -358,7 +358,7 @@ void display35_show_int( int display, int digit, unsigned char dat)
   lisy80_write_multibyte_disp_pic( buf, 2 );
 
   //and to 'wheels' in case of Starship
-  if ( lisy_hardware_revision == 200 ) wheels_show_int( display, digit, dat );
+  if ( lisy_hardware_revision == 200 ) wheels_show_int( display, digit, dat, 0 );
 
 }
 
@@ -969,3 +969,20 @@ void lisy35_display_set_variant( unsigned char variant)
  }
 }
 
+/* 
+send a string to Starship LCD
+20 bytes, first byte is row (0==row 1)
+*/
+void display_ss_LCD_string2row(unsigned char row, char *buf)
+{
+        /* build control byte */
+        mydata_display.bitv.IS_CMD = 1;        //we are sending a command here
+
+        mydata_display.bitv.COMMAND_BYTE = LSH_SS_DPCMD_STRING2ROW; 
+        //write command to PIC
+        lisy80_write_byte_disp_pic( mydata_display.byte );
+        //LCD row is first byte
+        lisy80_write_byte_disp_pic( row );
+        //write data to PIC
+        lisy80_write_multibyte_disp_pic( buf, 20 );
+}

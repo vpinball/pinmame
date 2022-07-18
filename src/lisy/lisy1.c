@@ -26,6 +26,7 @@
 #include "sound.h"
 #include "lisy.h"
 #include "lisy_mame.h"
+#include "ball_save.h"
 
 
 //global var for internal game_name structure,
@@ -374,11 +375,19 @@ if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
 if ( (ret == 76) && (ls80opt.bitv.slam == 1)) return(swMatrixLISY1[sys1strobe-1]);
 
 
+
 //NOTE: system has has 8*5==40 switches in maximum, counting 00..04;10...14; ...
 //we use 'internal strobe 6' to handle special switches in the same way 
 //SLAM bit7  OUTHOLE bit6 RESET bit5
 if (ret < 80) //ret is switchnumber
       {
+
+	//outhole is ball save event
+	if (ls80opt.bitv.ballsave == 1) 
+	{
+	   //we may need to suppress that switch
+	   if (  lisy_ball_save_event_handler( LISY_BALL_SAVE_EVENT_SWITCH,ret ,action ) == 1) return(swMatrixLISY1[sys1strobe-1]);
+	}
 
 	//calculate strobe & return
 	//Note: this is different from system80
@@ -397,6 +406,7 @@ if (ret < 80) //ret is switchnumber
   	{
            sprintf(debugbuf,"LISY1_SWITCH_READER Switch#:%d strobe:%d return:%d action:%d\n",ret,strobe,returnval,action);
            lisy80_debug(debugbuf);
+           lisy80_debug_swreplay( ret, action);
   	}
   } //if ret < 80 => update internal matrix
 
@@ -564,6 +574,8 @@ void lisy1_lamp_handler( int data, int isld)
                  if ( new_lamp[i] && lisy1_has_own_sounds ) lisy1_play_wav(4);
                  //do a nvram write each time the game over relay ( lamp[0]) is going to change (Game Over or Game start)
 	         lisy1_nvram_delayed_write = NVRAM_DELAY;
+		 //inform ball save
+		 if (ls80opt.bitv.ballsave ) lisy_ball_save_event_handler( LISY_BALL_SAVE_EVENT_GAME_OVER,new_lamp[0],0 );
 	         break;
          case 2: if ( Q2_first_time ) { Q2_first_time = 0; break; }
                  if ( new_lamp[i] && lisy1_has_own_sounds ) lisy1_play_wav(5);
@@ -651,6 +663,9 @@ if (first)
  // if we are faster than throttle value which is per default 3000 usec (3 msec)
  //we need to slow down a bit
  //lets iterate the best value for cpu scaling from puinmame
+ 
+ //ball save needs periodic call
+ if (ls80opt.bitv.ballsave ) lisy_ball_save_event_handler( LISY_BALL_SAVE_EVENT_TIMER,0 ,0 );
 
  //do update the soundstream if enabled (pinmame internal sound only)
  if (sound_stream && sound_enabled)

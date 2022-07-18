@@ -75,6 +75,7 @@ void lisy35_ss_init( void )
  int i,sb,dip_value;
  char s_lisy_software_version[16];
  unsigned char sw_main,sw_sub,commit;
+ char infostr[25];
 
  //set signal handler
  lisy80_set_sighandler();
@@ -187,6 +188,9 @@ void lisy35_ss_init( void )
  //read the dip setting
  dip_value = display_get_ss_dipsw_value();
  fprintf(stderr,"Info: Starship: Dip setting is %d\n",dip_value);
+ //send string to LCD
+ sprintf(infostr,"DIP setting is:%02d   ",dip_value);
+ display_ss_LCD_string2row(3, infostr);
  //prepare value for mapping (0..3)
  dip_value = dip_value /4;
 
@@ -202,6 +206,8 @@ void lisy35_ss_init( void )
  lisyh_coil_select_led_driver_line(1);
  // send colorcodes to LED driver
  lisy_home_ss_send_led_colors();
+ //read the csv file for Starship general parameters
+ lisy_file_get_home_ss_general();
 
  //deactivate all special solenoids with a mapping
  lisyh_init_special_coils();
@@ -701,6 +707,8 @@ if (ret < 80) //ret is switchnumber
         {
            sprintf(debugbuf,"LISY35_SWITCH_READER Switch#:%d strobe:%d return:%d action:%d\n",ret+1,strobe,returnval,action);
            lisy80_debug(debugbuf);
+
+           lisy80_debug_swreplay( ret+1, action);
         }
   } //if ret < 80 => update internal matrix
 
@@ -1276,6 +1284,15 @@ int lisy35_get_mpudips( int switch_nr )
 
 }
 
+//lisy35_nvram_handler
+//store pos of bally nvram for later use
+lisy35_cmos_data_t *lisy_by35_CMOS;
+void lisy35_nvram_handler( UINT8 *by35_CMOS_Bally)
+{
+  //remember address for subsequent actions
+  lisy_by35_CMOS = by35_CMOS_Bally;
+}
+
 //handling of nvram via eeprom
 //read_or_write = 0 means read
 //saw never 1 with Bally for write, will be '2' out of cmos routine in by35.c
@@ -1586,7 +1603,11 @@ unsigned char sound_E;
      // reset int condition
      sound_int_occured = 0;
      //JustBoom Sound? we may want to play wav files here
-     if ( lisy35_has_own_sounds ) lisy35_play_wav(16*last_sound_E + data);
+     if ( lisy35_has_own_sounds )
+         lisy35_play_wav(16*last_sound_E + data);
+     //Starship? inform even handler
+     if ( StarShip_has_own_sounds )
+         lisy_home_ss_event_handler(LISY_HOME_SS_EVENT_SOUND,16*last_sound_E + data,0,0);
      //debug?
      if ( ls80dbg.bitv.sound )
       {

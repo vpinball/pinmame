@@ -27,7 +27,8 @@ LISYOBJS = \
  $(OBJ)/lisy/lisy_api_com.o \
  $(OBJ)/lisy/lisy_mame.o \
  $(OBJ)/lisy/lisy_home.o \
- $(OBJ)/lisy/wheels.o
+ $(OBJ)/lisy/wheels.o \
+ $(OBJ)/lisy/ball_save.o
 
 
 # LISY functions
