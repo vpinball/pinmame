@@ -510,8 +510,8 @@ static NVRAM_HANDLER(by35) {
   core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200))?0x00:0xff);
 #ifdef LISY_SUPPORT
   // 0 = read; 1 = write
-  //RTH: new: we use seperate rw partition for nvram file
-  //lisy35_nvram_handler(read_or_write, by35_CMOS);
+  // inform lisy about position of pinmame nvram memory
+  if ( read_or_write == 0) lisy35_nvram_handler( by35_CMOS);
 #endif
 }
 // Bally only uses top 4 bits
