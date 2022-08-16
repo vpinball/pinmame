@@ -26,6 +26,11 @@ make -f makefile.unixsdl_debug clean && make -f makefile.unixsdl_debug
 # debugger
 ./xpinmamed.sdl  hglbtrtr   --rompath /mnt/d/Pinball/roms -debug -scale 3  
 
-### WSL
+
+### Notes
+## WSL
 If you use wsl on windows 11 check if the display is set to :0 .
 For older wsl/windows 10 you should use something like WSLG to forward the graphical display
+
+## Sound
+I did not test with sound
