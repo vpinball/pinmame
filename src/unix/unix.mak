@@ -56,14 +56,14 @@ LIBS.xgl        = $(X11LIB) $(JOY_X11_LIBS) -lX11 -lXext $(GLLIBS) -ljpeg
 LIBS.xfx        = $(X11LIB) $(JOY_X11_LIBS) -lX11 -lXext -lglide2x
 LIBS.svgafx     = $(X11LIB) -lvga -lvgagl -lglide2x
 LIBS.openstep	= -framework AppKit
-LIBS.SDL	= $(X11LIB) `$(SDL_CONFIG) --libs`
+LIBS.sdl        = $(X11LIB) `$(SDL_CONFIG) --libs`
 LIBS.photon2	= -L/usr/lib -lph -lphrender
 
 CFLAGS.x11      = $(X11INC) $(JOY_X11_CFLAGS) $(XINPUT_DEVICES_CFLAGS)
 CFLAGS.xgl      = $(X11INC) $(JOY_X11_CFLAGS) $(GLCFLAGS)
 CFLAGS.xfx      = $(X11INC) $(JOY_X11_CFLAGS) -I/usr/include/glide
 CFLAGS.svgafx   = -I/usr/include/glide
-CFLAGS.SDL      = $(X11INC) `$(SDL_CONFIG) --cflags` -D_REENTRANT
+CFLAGS.sdl      = $(X11INC) `$(SDL_CONFIG) --cflags` -D_REENTRANT
 CFLAGS.photon2	=
 
 ifdef X11_DGA
@@ -76,7 +76,7 @@ INST.svgalib    = doinstallsuid
 INST.xgl        = doinstallsuid copycab
 INST.xfx        = doinstallsuid
 INST.svgafx     = doinstallsuid
-INST.SDL	= doinstall
+INST.sdl        = doinstall
 INST.photon2	= doinstall
 
 # handle X11 display method additonal settings
