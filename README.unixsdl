@@ -1,0 +1,36 @@
+# ubuntu
+sudo apt-get update
+sudo apt-get install -y build-essential git
+sudo apt-get install -y zlib1g-dev libx11-dev libxext-dev libxv-dev x11proto-video-dev libsdl2-dev libsdl1.2-dev libncurses5-dev
+mkdir -p ~/git
+cd ~/git
+
+# rhel/oracle linux
+sudo dnf -y update
+sudo dnf -y group install "Development Tools"
+sudo dnf -y install libX11-devel libXext-devel libXv-devel alsa-lib-devel SDL-devel ncurses-devel
+
+git clone https://github.com/vpinball/pinmame.git
+cd pinmame
+
+# normal version
+make -f makefile.unixsdl clean && make -f makefile.unixsdl
+
+# version with debugger
+make -f makefile.unixsdl_debug clean && make -f makefile.unixsdl_debug
+
+### start a game
+# normal
+./xpinmame.sdl  hglbtrtr   --rompath /mnt/d/Pinball/roms -scale 3  
+
+# debugger
+./xpinmamed.sdl  hglbtrtr   --rompath /mnt/d/Pinball/roms -debug -scale 3  
+
+
+### Notes
+## WSL
+If you use wsl on windows 11 check if the display is set to :0 .
+For older wsl/windows 10 you should use something like WSLG to forward the graphical display
+
+## Sound
+I did not test with sound

@@ -34,7 +34,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "xmame.h"
 #include "devices.h"
 #include "keyboard.h"
