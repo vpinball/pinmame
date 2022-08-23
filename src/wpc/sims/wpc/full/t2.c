@@ -26,6 +26,9 @@
               Added support for shared bulbs where necessary
   12-30-2000: Added Sample Support
 
+
+  Excessive documentation of the T2 ROM: https://www.flippermarkt.de/community/howto/cms/media/pages/pdfs/workshops/Terminator2_L8_3_(FINAL).pdf
+
  *********************************************************************************************************/
 
 
