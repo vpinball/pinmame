@@ -2934,7 +2934,7 @@ DRIVER(corv,lx2)        //          10/94 B Corvette (LX-2)
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(corv,f61)        //          ??/??   Corvette (FreeWPC 0.61)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L-6)
-DRIVER(rs,lx2p3)        //          10/94 W Red & Ted's Road Show (LX-2, Sound P-3)
+DRIVER(rs,pa2)          //          09/94 W Red & Ted's Road Show (PA-2 Prototype)
 DRIVER(rs,lx2)          //          10/94 W Red & Ted's Road Show (LX-2)
 DRIVER(rs,dx2)          //                  Red & Ted's Road Show (DX-2) LED Ghost Fix
 DRIVER(rs,lx3)          //          10/94 W Red & Ted's Road Show (LX-3)

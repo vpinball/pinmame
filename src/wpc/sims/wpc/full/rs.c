@@ -670,7 +670,7 @@ DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed
                "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
 
-WPC_ROMSTART(rs,lx2p3,"rshw_lx2.rom",0x80000,CRC(317210d0) SHA1(38adcf9c72552bd371b096080b172c63d0f843d3))
+WPC_ROMSTART(rs,pa2,"rs-u6.pa2",0x80000,CRC(674fd680) SHA1(68a4ef5c40fea6b5eae69fbd0ea4339b5757d572))
 DCS_SOUNDROM7x("rs_u2_s.p3",CRC(3a987553) SHA1(bb174cc48533e19906b5ef9d099670e03a04cc89),
                "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
                "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
@@ -697,7 +697,7 @@ CORE_CLONEDEF(rs,lx3,l6,  "Red and Ted's Road Show (LX-3)",1994,"Williams",wpc_m
 CORE_CLONEDEF(rs,dx3,l6,  "Red and Ted's Road Show (DX-3 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx2,l6,  "Red and Ted's Road Show (LX-2)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,dx2,l6,  "Red and Ted's Road Show (DX-2 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,lx2p3,l6,"Red and Ted's Road Show (LX-2, Prototype Sound P-3)",1994,"Williams",wpc_mSecurityS,0) //!! only sound, no proto game rom(s) so far
+CORE_CLONEDEF(rs,pa2,l6,  "Red and Ted's Road Show (PA-2 Prototype)",1994,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions
