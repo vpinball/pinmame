@@ -10,7 +10,7 @@ Saving NVRAM for Juegos Populares
 
 More gracefully handle parsing errors in invalid altsound CSV files to avoid crashes
 
-Updated LISY support to 5.28-53 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.28-66 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 Updated to zlib 1.2.12
 
@@ -30,6 +30,8 @@ Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
 
 Correct Dumps:
+Changed No Fear 1.0 & 1.01 to also use the older SL-1 sound ROM
+Renamed No Fear 1.0 set (as it is actually 1.0F)
 
 Clones:
 Airborne 1.5
