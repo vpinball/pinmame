@@ -291,7 +291,7 @@ DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c7
                "nfu7s",CRC(61002bdd) SHA1(e623399ff95f59a4ab7efdd7c69b1a1370479398))
 WPC_ROMEND
 
-// It is not clear from the ROMs official revision history when SND-U2.SL1 was exchanged with SL-2. At least one 0.8x machine definetly had SL-1 ROMs in it,
+// It is not clear from the ROMs official revision history when SND-U2.SL1 (which is the only one to be updated to get SL-2) was exchanged with SL-2. At least one 0.8x machine definetly had SL-1 ROMs in it,
 // and the revision history also mentions SL-1's checksum explicitly for Game Rev 1.0.
 
 WPC_ROMSTART(nf,10f,"nofe1_0.rom",0x80000,CRC(f8f6521c) SHA1(5c26f4878f257b157c2a1c46995ec8100fa20723))
@@ -324,15 +324,15 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(nf,23x,"No Fear: Dangerous Sports (2.3X Export)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,23,23x,"No Fear: Dangerous Sports (2.3)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,23f,23x,"No Fear: Dangerous Sports (2.3F French)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,22,23x,"No Fear: Dangerous Sports (2.2)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,20,23x,"No Fear: Dangerous Sports (2.0)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,11x,23x,"No Fear: Dangerous Sports (1.1X Export)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,10f,23x,"No Fear: Dangerous Sports (1.0F French)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,101,23x,"No Fear: Dangerous Sports (1.01 LED Ghost Fix)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,08x,23x,"No Fear: Dangerous Sports (0.8X Export Prototype)",1995,"Williams",wpc_mSecurityS,0)
+CORE_GAMEDEF(nf,23x,"No Fear: Dangerous Sports (2.3X Export / S1.1)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,23,23x,"No Fear: Dangerous Sports (2.3 / S1.1)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,23f,23x,"No Fear: Dangerous Sports (2.3F French / S1.1)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,22,23x,"No Fear: Dangerous Sports (2.2 / S1.1)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,20,23x,"No Fear: Dangerous Sports (2.0 / S1.1)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,11x,23x,"No Fear: Dangerous Sports (1.1X Export / S1.1)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,10f,23x,"No Fear: Dangerous Sports (1.0F French / S1.0)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,101,23x,"No Fear: Dangerous Sports (1.01 LED Ghost Fix / S1.0)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,08x,23x,"No Fear: Dangerous Sports (0.8X Export Prototype / S1.0)",1995,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

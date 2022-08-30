@@ -246,12 +246,17 @@ static sim_tInportData congo_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
+
+// If the revision log is somehow correct, only Game ROM 2.1 should use the Sound ROM 1.1
+// (all other game revisions are too old for it)
 WPC_ROMSTART(congo,21,"cg_g11.2_1",0x80000,CRC(5d8435bf) SHA1(1356758fd788bbb3c7ab29abaaea7d2baac75f55))
 DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b1356b2909598),
                "cgs3v1_0.rom",CRC(6cfd9fe0) SHA1(a76267f865c645648c8cb27aec2d05062a4a20b5),
                "cgs4v1_0.rom",CRC(2a1980e7) SHA1(0badf27c2b8bc7b0074dc5e606d64490470bc108))
 WPC_ROMEND
 
+// Thus the other DCS95 based game revisions should use Sound ROM 1.0,
+// BUT we only have the 1.0-kit version so far (which is only intended for WPC-S based machines)
 WPC_ROMSTART(congo,20,"cong2_00.rom",0x80000,CRC(e1a256ac) SHA1(f1f7a1865b5a0220e2f2ef492059df158451ca5b))
 DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b1356b2909598),
                "cgs3v1_0.rom",CRC(6cfd9fe0) SHA1(a76267f865c645648c8cb27aec2d05062a4a20b5),
@@ -270,7 +275,8 @@ DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b135
                "cgs4v1_0.rom",CRC(2a1980e7) SHA1(0badf27c2b8bc7b0074dc5e606d64490470bc108))
 WPC_ROMEND
 
-WPC_ROMSTART(congo,11s10,"cong1_10.rom",0x80000,CRC(b0b0ffd9) SHA1(26343f3bfbacf85b3f4db5aa3dad39216311a2da))
+// Game ROM 2.0 was the first to support both WPC-S and DCS95 (the WPC-S variant was intended to be used with the playfield conversion kit)
+WPC_ROMSTART(congo,20s10k,"cong2_00.rom",0x80000,CRC(e1a256ac) SHA1(f1f7a1865b5a0220e2f2ef492059df158451ca5b))
 DCS_SOUNDROM6x("su2-100.rom", CRC(c4b59ac9) SHA1(a0bc5150120777c771a181496ced71bd3f92a311),
                "su3-100.rom", CRC(1d4dbc9a) SHA1(3fac6ffb1af806d1dfcf71d85b0be21e7ea4b8d2),
                "su4-100.rom", CRC(a3e9fd93) SHA1(7d767ddf22080f9886621a5130929d7afce90472),
@@ -282,11 +288,12 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF (congo,21,"Congo (2.1)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,20,21,"Congo (2.0)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,13,21,"Congo (1.3)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,11,21,"Congo (1.1, DCS-Sound 95)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,11s10,21,"Congo (1.1, DCS-Sound 1.0)",1995,"Williams",wpc_m95DCSS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEF (congo,21,"Congo (2.1, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF (congo,20,21,"Congo (2.0, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF (congo,20s10k,21,"Congo (2.0, WPC-S S1.0-kit)",1995,"Williams",wpc_m95DCSS,0)
+CORE_CLONEDEF (congo,13,21,"Congo (1.3, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF (congo,11,21,"Congo (1.1, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+// 1.0 and 0.2 (and maybe 0.3) exist, too (0.2/0.3 also with 0.4 sound ROMs)
 
 /*-----------------------
 / Simulation Definitions

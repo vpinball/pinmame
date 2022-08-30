@@ -30,29 +30,35 @@ Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
 
 Correct Dumps:
-Changed No Fear 1.0 & 1.01 to also use the older SL-1 sound ROM
+Changed Attack From Mars 1.1 to also use the older sound ROM 1.0
+Changed No Fear 1.0 & 1.01 to also use the older sound ROM 1.0/SL-1
 Renamed No Fear 1.0 set (as it is actually 1.0F)
+Changed Tales of the Arabian Nights 1.2 & 1.3 to also use the older sound ROM 1.0
 
 Clones:
 Airborne 1.5
 Aqualand (alternate set)
 301/Bullseye (MOD rev. 12 & Normal pinball scoring MOD rev. 13)
+Congo 2.0 with WPC-S S1.0-kit
 Cosmic Princess (MOD rev. 19)
 Halley Comet (alternate set 2)
 Judge Dredd L-1AT & L-1D (Deadworld HW-MODs)
 Kiss (7-digit conversion rev. 30 & /10 Scoring Free Play + Sound Fix)
 MAC's Galaxy (blue version)
 Magic (MOD rev. 19)
-Red and Ted's Road Show (PA-2 Prototype)
+Red and Ted's Road Show PA-2 (Prototype)
 Stingray (MOD rev. 14)
 Terminator 2 L-8.3 (MOD)
-The Games (rev.1 & rev. 2 MOD)
+The Games rev.1 & rev. 2 (MOD)
 Trident (MOD 2 rev. 19)
 World Cup Soccer LX-1
 Wipe Out rev. 2 (alternate set)
 
 Removed Clones:
-Red and Ted's Road Show (LX-2, Prototype Sound P-3) - no longer needed because there is a prototype game ROM now to add the prototype sound to
+Congo 1.1 with DCS-Sound 1.0 - Game ROM 1.1 did not support the WPC-S playfield conversion kit yet (thus it was added to Game ROM 2.0 instead)
+Red and Ted's Road Show LX-2 with Prototype Sound P-3 - no longer needed because there is a prototype game ROM now to add the prototype sound to
+Safe Cracker 1.8 No Percentaging with Sound S1.0
+Safe Cracker 1.8 with Sound S1.0 - as it does not make much sense to explicitly support the 1.8/S1.0 combination anymore
 
 
 
