@@ -349,7 +349,7 @@ static core_tGameData congoDCSGameData = {
 /  Game handling
 /----------------*/
 static void init_congo(void) {
-  if (strncasecmp(Machine->gamedrv->name, "congo_11s10", 11)) {
+  if (strncasecmp(Machine->gamedrv->name, "congo_20s10k", 11)) {
     core_gameData = &congoGameData;
   } else {
     core_gameData = &congoDCSGameData;
