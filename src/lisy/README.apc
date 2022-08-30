@@ -8,7 +8,7 @@ lisymini_hwlib_init();
 
 
 "lisy_apc"
-LUSY integrated on APC board, connection via serial
+LISY integrated on APC board, connection via serial
 lisy_hw_init(5); //Variant 5
 lisyapc_hwlib_init();
 

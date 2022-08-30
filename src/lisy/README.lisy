@@ -1,10 +1,10 @@
-LISY; Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs
+LISY; Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs
 with LISY you can control your pinball machine via pinmame
 special hardware needed; have a look to www.lisy80.com & www.lisy.dev
 
 
 STARTUP
-The 'lisy service' is started after boot, when LInux enters the Multiuser state
+The 'lisy service' is started after boot, when Linux enters the Multiuser state
 You can check the status with the command "systemctl status lisy"
 The service checks if "/usr/local/bin/lisy" does exist, and then starts the main script.
 
@@ -14,7 +14,7 @@ MAIN SCRIPT  "/usr/local/bin/run_lisy (summary only, for details see comments in
 2) according to that, decide if we need to start the flash utility ( LISY35 & LISY_Home only)
 3) check via K3 ( Solenoid PIC) if we need to start hotspot and/or fadecandy
 4) determine Hardware type & revision and start LISY  with the right options
- /usr/local/bin/lisy_check ( gives returnvalue depending on HW)
+ /usr/local/bin/lisy_check ( gives return value depending on HW)
  ->  /usr/local/bin/run_lisy_X ( 1 or 80)
  -> /usr/local/bin/run_lisy35
  -> /usr/local/bin/run_lisy80_HW_311 (backward scompatibility)
@@ -38,8 +38,8 @@ Implementation into pinmame; Files where LISY code is inserted:
 
 All the sources are under /home/pi/lisy; look for "#define LISY_SUPPORT" in the pinmame source
 Start is in main.c in ./src/unix , we check for "special game names" in the calling command (last argument)
-and replace that with the gamename accordign to the dip switch settings
-Special gamen names are:
+and replace that with the gamename according to the dip switch settings
+Special game names are:
 - lisy1 -> lisy_variant: 2 - Gottlieb System1
 - lisy35 -> lisy_variant: 3 - Bally
 - lisy80 -> lisy_variant: 1 - Gottlieb System80 & LISY Home Games based on System80
@@ -67,15 +67,15 @@ lisy_hwlib_init()
 	- init Coil PIC: read Software Version; get Value of 'K3'
 	- init Switch PIC;  read Software Version;
 	- do read the eeprom (either from 24c04/old version or eeprom from Display & Solenoid PIC)
-	- set GPIO for 'trafic light' LEDs
+	- set GPIO for 'traffic light' LEDs
 minilisy_hwlib_init()
 	- RTH: fix settings at the moment 
-	- plan is to call diffent systems from here: system:121 is williams
+	- plan is to call different systems from here: system:121 is williams
 
-At this point all the LISY hardware init is done, we now do start the Software init according to the variant
+At this point all the LISY hardware init is done, we now do start the software init according to the variant
 main.c calls 'run_game' ( init_machine)  in mame.c
 we call 'lisy_init' from here. 
-According to lisy_hardware_revision initialion of LISY software part is done
+According to lisy_hardware_revision initialization of LISY software part is done.
 
 
 bontango November 2019
