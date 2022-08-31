@@ -1,3 +1,8 @@
+rs_lx2p3,rs_pa2
+nf_10,nf_10f
+congo_11s10,congo_20s10k
+sc_18,sc_18s11
+sc_18n,sc_18n11
 ratfink,startreb
 missworld,kissc
 penthouse,hglbtrtb
