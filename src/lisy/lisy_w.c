@@ -62,7 +62,7 @@ Credits: 20 28 Balls: 0 8
 */
  typedef union {
        core_tSeg segments;
-       //assigment accoring to s11games.c & core.c/.h see above
+       //assigment according to s11games.c & core.c/.h see above
        struct {
           UINT16 balls1; //0
           UINT16 player1[7]; //1..7
@@ -98,7 +98,7 @@ Credits: 20 28 Balls: 0 8
 */
  typedef union {
        core_tSeg segments;
-       //assigment accoring to s7games.c & core.c/.h see above
+       //assigment according to s7games.c & core.c/.h see above
        struct {
 	  UINT16 balls1; //0
           UINT16 player1[7]; //1..7
@@ -163,7 +163,7 @@ unsigned char lisy_AC_Relais_no = 12;
 unsigned char lisy_has_SS_Relais = 0;
 
 //internal for lisy_w.c
-//to have an delayed nvram write
+//to have a delayed nvram write
 //initial to 1 to save nvram in case of not exiting at star ( Factory Reset Message)
 static unsigned char want_to_write_nvram = 1;
 
@@ -219,9 +219,9 @@ switch(lisymini_game.typeno)
 	case LISYW_TYPE_SYS11:
 		lisy_has_AC_Relais = 0;
 		break;
-	case LISYW_TYPE_SYS11RK: 			//Road Kings is first game with AC Relais
+	case LISYW_TYPE_SYS11RK: 			//Road Kings is first game with AC Relay
 		lisy_has_SS_Relais = 1;			//but has different numbering then later SYS11A
-		break;					//it is Sol#12  and is called Solenoid Select Relais
+		break;					//it is Sol#12 and is called Solenoid Select Relay
 	case LISYW_TYPE_SYS11A:
 	case LISYW_TYPE_SYS11B:
 	case LISYW_TYPE_SYS11C:
@@ -242,17 +242,17 @@ switch(lisymini_game.typeno)
   {
     if ( lisy_has_AC_Relais != 0)
     {
-    sprintf(debugbuf,"Info: LISYMINI this game has AC Relais on solenoid %d",lisy_AC_Relais_no);
+    sprintf(debugbuf,"Info: LISYMINI this game has AC Relay on solenoid %d",lisy_AC_Relais_no);
     lisy80_debug(debugbuf);
     }
     else if ( lisy_has_SS_Relais != 0)
     {
-    sprintf(debugbuf,"Info: LISYMINI this game has SS Relais on solenoid %d",lisy_AC_Relais_no);
+    sprintf(debugbuf,"Info: LISYMINI this game has SS Relay on solenoid %d",lisy_AC_Relais_no);
     lisy80_debug(debugbuf);
     }
     else
     {
-    sprintf(debugbuf,"Info: LISYMINI this game has NO SS or AC Relais");
+    sprintf(debugbuf,"Info: LISYMINI this game has NO SS or AC Relay");
     lisy80_debug(debugbuf);
     }
     }
@@ -270,7 +270,7 @@ for(i=0; i<strlen(lisymini_game.long_name); i++) lisymini_game.long_name[i] = to
  { 
   //no special file found
   //we do it per default for all 6 special solenoids
-  //and ignore 'special switches' for pinmamem in switch_handler
+  //and ignore 'special switches' for pinmame in switch_handler
   if ( ls80dbg.bitv.basic )
   {
     sprintf(debugbuf,"LISY_Mini: no special hw rules found for game %d, setting defaults",lisymini_game.gamenr);
@@ -286,7 +286,7 @@ for(i=0; i<strlen(lisymini_game.long_name); i++) lisymini_game.long_name[i] = to
  else
  {
   //special file found
-  //setting hw rules accordently
+  //setting hw rules accordingly
   if ( ls80dbg.bitv.basic )
   {
     sprintf(debugbuf,"LISY_Mini: FOUND special hw rules for game %d",lisymini_game.gamenr);
@@ -299,7 +299,7 @@ for(i=0; i<strlen(lisymini_game.long_name); i++) lisymini_game.long_name[i] = to
 	}
  }
 
- //show green ligth for now, lisy mini is running
+ //show green light for now, lisy mini is running
  lisy80_set_red_led(0);
  lisy80_set_yellow_led(0);
  lisy80_set_green_led(1);
@@ -325,7 +325,7 @@ if (first)
   last = micros();
  }
 
- //do some usefull stuff
+ //do some useful stuff
  //do we need to write to nvram?
  if ( want_to_write_nvram )
  {
@@ -1425,8 +1425,8 @@ if ( mysol != coreGlobals.solenoids)
 	//Sol 12 version (Sys11 Roadkings)
 	if ( ( sol_no == 12) & (lisy_has_SS_Relais == 1) )
 	{
-	  //lets check if any of the muxed solenoids are active now
-	  //in pinmame these are 5,13,14,15 ( SS-relais 0) and 25..28 ( SS-relais 1)
+	  //let's check if any of the muxed solenoids are active now
+	  //in pinmame these are 5,13,14,15 ( SS-relay 0) and 25..28 ( SS-relay 1)
 	  //for checking we have to substract 1 !
 	  if ( CHECK_BIT(coreGlobals.solenoids,4)) mux_sol_active++;
 	  for(j=12; j<=14; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
@@ -1442,7 +1442,7 @@ if ( mysol != coreGlobals.solenoids)
                   lisy80_debug(debugbuf);
 	        }
 	    }
-	  else //we have active solenoids, ss relais needs to be delayd
+	  else //we have active solenoids, SS relay needs to be delayed
 	   {
 	        ss_want_to_change = action + 1; //just remember for next round
 	        if ( ls80dbg.bitv.coils )
@@ -1451,17 +1451,17 @@ if ( mysol != coreGlobals.solenoids)
                   lisy80_debug(debugbuf);
 	        }
 	   }
-	}//sol == 12 and SS_Relais present Road Kings version
+	}//sol == 12 and SS relay present Road Kings version
 
-	//Sol #12 or #14 version (Sys11 after Roadkings)
+	//Sol #12 or #14 version (Sys11 after Road Kings)
 	if ( ( sol_no == lisy_AC_Relais_no) & (lisy_has_AC_Relais == 1) )
 	{
-	  //lets check if any of the muxed solenoids are active now
-	  //in pinmame these are 1..8 ( AC-relais 0) and 25..32 ( AC-relais 1)
+	  //let's check if any of the muxed solenoids are active now
+	  //in pinmame these are 1..8 ( AC-relay 0) and 25..32 ( AC-relay 1)
 	  //for checking we have to substract 1 !
 	  for(j=0; j<=7; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
 	  for(j=24; j<=31; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
-          //no muxed solenoid active, activate ac relais
+          //no muxed solenoid active, activate AC relay
 	  if (mux_sol_active == 0) 
 	    {
 	      lisy_api_sol_ctrl(lisy_AC_Relais_no,action);
@@ -1472,7 +1472,7 @@ if ( mysol != coreGlobals.solenoids)
                   lisy80_debug(debugbuf);
 	        }
 	    }
-	  else //we have active solenoids, ac relais needs to be delayd
+	  else //we have active solenoids, AC relay needs to be delayed
 	   {
 	        ac_want_to_change = action + 1; //just remember for next round
 	        if ( ls80dbg.bitv.coils )
@@ -1481,9 +1481,9 @@ if ( mysol != coreGlobals.solenoids)
                   lisy80_debug(debugbuf);
 	        }
 	   }
-	}//sol == 14 and AC_Relais present
+	}//sol == 14 and AC relay present
 
-        //for AC and SS relais (sol 14 and 12) we have special routine (see above)
+    //for AC and SS relays (sol 14 and 12) we have special routine (see above)
 	//special solenoids, we with HW rules only by ignoring special switches 65 ... 70
 	//if the pinball (e.g. pinbot) is using special solenoids 'normal' we do it here
 	if (lisy_has_AC_Relais == 1)
@@ -1500,7 +1500,7 @@ if ( mysol != coreGlobals.solenoids)
         	if ( sol_no <= 22 ) lisy_api_sol_ctrl(sol_no,action);
 	  }
 
-        //in case we hav solenoid #23, also activate #24 on APC
+        //in case we have solenoid #23, also activate #24 on APC
         //as APC use two solenoids for flipper (left/right)
         if (sol_no == 23 ) { 
 		lisy_api_sol_ctrl(23,action);
@@ -1508,18 +1508,18 @@ if ( mysol != coreGlobals.solenoids)
 		lisy_nvram_write_to_file();
 			 }
 
-	//for games without AC or SS Relais Williams use Sol 25 for flipper enable
+	    //for games without AC or SS Relay Williams use Sol 25 for flipper enable
         if ( (sol_no == 25 ) & (lisy_has_AC_Relais == 0) & (lisy_has_SS_Relais == 0) ) {
 		 lisy_api_sol_ctrl(23,action);
 		 lisy_api_sol_ctrl(24,action);
 		 lisy_nvram_write_to_file();
 			 }
 
-	//with A-C Relais Solenoids 1..8 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..32
-        //so we need to substract 24 before sending command to APC
+	//with AC Relay Solenoids 1..8 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..32,
+    //so we need to substract 24 before sending command to APC
 	if (( sol_no >=25) & (lisy_has_AC_Relais == 1)) { lisy_api_sol_ctrl(sol_no-24,action); }
 
-	//with Solenoid Select (SS) Relais Solenoids 5,13,14,15 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..28
+	//with Solenoid Select (SS) Reley Solenoids 5,13,14,15 are muxed, in pinmame we have the 'C-Side' as Solenoids 25..28,
         //so we need to substract before sending command to APC
 	if (( sol_no >=25) & ( lisy_has_SS_Relais == 1))
 	 { 
@@ -1566,7 +1566,7 @@ if ( mysol != coreGlobals.solenoids)
 	//do we have a delayd ss activation from last round?
 	if (ss_want_to_change != 0)
 	{
-	      //is it now save to activate?
+	      //is it now safe to activate?
               if ( CHECK_BIT(coreGlobals.solenoids,4)) mux_sol_active++;
               for(j=12; j<=14; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
               for(j=24; j<=27; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
@@ -1584,10 +1584,10 @@ if ( mysol != coreGlobals.solenoids)
 	 mux_sol_active = 0; //reset counter
 	}
 
-	//do we have a delayd ac activation from last round?
+	//do we have a delayed ac activation from last round?
 	if (ac_want_to_change != 0)
 	{
-	      //is it now save to activate?
+	      //is it now safe to activate?
 	      for(j=0; j<=7; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
 	      for(j=24; j<=31; j++)  if ( CHECK_BIT(coreGlobals.solenoids,j)) mux_sol_active++;
 	      if (mux_sol_active == 0)
@@ -1613,14 +1613,14 @@ if ( mysol != coreGlobals.solenoids)
 }//solenoid_handler
 
 //read the csv file on /lisy partition and the DIP switch setting
-//give back gamename accordently and line number
+//give back gamename accordingly and line number
 // -1 in case we had an error
 //this is called early from unix/main.c
 int lisymini_get_gamename(char *gamename)
 {
  int ret;
 
- //use function from fileio to get more details about the gamne
+ //use function from fileio to get more details about the game
  ret =  lisymini_file_get_gamename( &lisymini_game);
 
   //give back the name and the number of the game
@@ -1640,8 +1640,8 @@ int lisymini_get_gamename(char *gamename)
 }
 
 //get changed switch from usbserial via LISY_API
-// if no change, returnvalue is 80
-// if change happened , identiyf switch and action and give back
+// if no change, return value is 80
+// if change happened , identify switch and action and give back
 unsigned char lisy_w_switch_reader( unsigned char *action )
 {
 
@@ -1737,7 +1737,7 @@ void lisy_w_sound_handler(unsigned char board, unsigned char data)
 
   if(first)
   {
-     //this is how pinsound do it
+     //this is how pinsound does it
      if (!strcmp(sndbrd_typestr(0) ? sndbrd_typestr(0) : sndbrd_typestr(1), "WMSS11C"))
                         sys11_patch = TRUE;
                 else
@@ -1784,7 +1784,7 @@ void lisy_mini_shutdown(void)
 }
 
 //read the csv file on /lisy partition and the DIP switch setting
-//give back gamename accordently and line number
+//give back gamename accordingly and line number
 // -1 in case we had an error
 //this is called early from unix/main.c
 int lisyapc_get_gamename(char *gamename)
