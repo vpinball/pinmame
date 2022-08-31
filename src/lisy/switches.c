@@ -40,21 +40,23 @@ if( ls80dbg.bitv.switches )
    if ( lisy_hardware_revision == 100 )  //switch numbering for system1
    {
 	switch_no = returnval * 10 + strobe;
-        sprintf(debugbuf,"LISY1 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
+        sprintf(debugbuf,"LISY1 Switch_reader: Switch%d, action:%d",switch_no,action);
         lisy80_debug(debugbuf);
    } 
    else if ( ( lisy_hardware_revision == 350 ) || ( lisy_hardware_revision == LISY_HW_LISY_H_SS ))  //switch numbering for Bally
    {
-        switch_no = 1 + returnval + strobe * 8;
-        sprintf(debugbuf,"LISY35 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
+	switch_no = 1 + returnval + strobe * 8;
+        sprintf(debugbuf,"LISY35 Switch_reader: Switch%d, action:%d",switch_no,action);
         lisy80_debug(debugbuf);
    }
    else  //switch numbering for System80
    {
 	switch_no = returnval + strobe *10;
-        sprintf(debugbuf,"LISY80 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
+        sprintf(debugbuf,"LISY80 Switch_reader: Switch%d, action:%d",switch_no,action);
         lisy80_debug(debugbuf);
    } 
+	//replay add on
+	lisy80_debug_swreplay( switch_no, action);
  }
 
 

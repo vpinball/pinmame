@@ -639,10 +639,10 @@ unsigned char lisy35_switch_handler( int sys35col )
 int ret;
 unsigned char strobe,returnval,action;
 static int simulate_coin_flag = 0;
+int sys35strobe = 1;
 
 
 //get the truth strobe
-  int sys35strobe = 1;
   if (sys35col) {
     while ((sys35col & 0x01) == 0) {
       sys35col >>= 1;
@@ -659,7 +659,7 @@ if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
  {
    if ( ( ret = lisy_udp_switch_reader( &action, 0 )) != 80)
    {
-     sprintf(debugbuf,"LISY35_SWITCH_READER (UDP Server Data received: %d",ret);
+     sprintf(debugbuf,"LISY35 Switch_reader: (UDP Server Data received: %d",ret);
      lisy80_debug(debugbuf);
      //we start internally with 0, so substract one
      --ret;
@@ -680,7 +680,7 @@ if ( ( ret == 5 ) && (action == 1))
 
         if ( ls80dbg.bitv.switches )
         {
-           lisy80_debug("LISY35_SWITCH_READER: Ball one AND 2canplay activ: credit ignored");
+           lisy80_debug("LISY35 Switch_reader: Ball one AND 2canplay activ: credit ignored");
         }
   }
 }
@@ -703,13 +703,6 @@ if (ret < 80) //ret is switchnumber
         else  //delete bit
                    CLEAR_BIT(swMatrixLISY35[strobe+1],returnval);
 
-        if ( ls80dbg.bitv.switches )
-        {
-           sprintf(debugbuf,"LISY35_SWITCH_READER Switch#:%d strobe:%d return:%d action:%d\n",ret+1,strobe,returnval,action);
-           lisy80_debug(debugbuf);
-
-           lisy80_debug_swreplay( ret+1, action);
-        }
   } //if ret < 80 => update internal matrix
 
 //do we need a 'special' routine to handle that switch?
@@ -1442,24 +1435,27 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
     //debug?
     if (  ls80dbg.bitv.coils )
     {
-         if( CHECK_BIT( cont_data, 3) && !CHECK_BIT( old_cont_data, 3))
-             lisy80_debug("bit 3 set to 1");
-         if( !CHECK_BIT( cont_data, 3) && CHECK_BIT( old_cont_data, 3))
-             lisy80_debug("bit 3 set to 0");
-         if( CHECK_BIT( cont_data, 2) && !CHECK_BIT( old_cont_data, 2))
-             lisy80_debug("flipper disabled");
-         if( !CHECK_BIT( cont_data, 2) && CHECK_BIT( old_cont_data, 2))
-             lisy80_debug("flipper enabled");
-         if( CHECK_BIT( cont_data, 1) && !CHECK_BIT( old_cont_data, 1))
-             lisy80_debug("coin lockout ON");
-         if( !CHECK_BIT( cont_data, 1) && CHECK_BIT( old_cont_data, 1))
-             lisy80_debug("coin lockout OFF");
-         if( CHECK_BIT( cont_data, 0) && !CHECK_BIT( old_cont_data, 0))
-             lisy80_debug("bit 0 set to 1");
-         if( !CHECK_BIT( cont_data, 0) && CHECK_BIT( old_cont_data, 0))
-             lisy80_debug("bit 0 set to 0");
+      if( CHECK_BIT( cont_data, 3) != CHECK_BIT( old_cont_data, 3))
+	  {
+		 if( CHECK_BIT( cont_data, 3)) lisy80_debug("cont sol changed: bit 3 set to 1");
+		 else lisy80_debug("cont sol changed: bit 3 set to 0");
+	  }
+      if( CHECK_BIT( cont_data, 2) != CHECK_BIT( old_cont_data, 2))
+	  {
+		 if( CHECK_BIT( cont_data, 2)) lisy80_debug("cont sol changed: flipper disabled");
+		 else lisy80_debug("cont sol changed: flipper enabled");
+	  }
+      if( CHECK_BIT( cont_data, 1) != CHECK_BIT( old_cont_data, 1))
+	  {
+		 if( CHECK_BIT( cont_data, 1)) lisy80_debug("cont sol changed: coin lockout ON");
+		 else lisy80_debug("cont sol changed: coin lockout OFF");
+	  }
+      if( CHECK_BIT( cont_data, 0) != CHECK_BIT( old_cont_data, 0))
+	  {
+		 if( CHECK_BIT( cont_data, 0)) lisy80_debug("cont sol changed: bit 0 set to 1");
+		 else lisy80_debug("cont sol changed: bit 0 set to 0");
+	  }
     }
-
 
     old_cont_data = cont_data;
     //send to PIC
@@ -1478,8 +1474,12 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
     lisy35_mom_coil_set(moment_data);
     if ( ls80dbg.bitv.coils )
      {
-       sprintf(debugbuf,"momentary solenoids: %d",moment_data);
-       lisy80_debug(debugbuf);
+      if( moment_data == 15)
+       { sprintf(debugbuf,"momentary solenoids OFF"); }
+      else
+       { sprintf(debugbuf,"momentary solenoids: %d",moment_data + 1); }
+
+      lisy80_debug(debugbuf);
      }
 
     //running on Starship?

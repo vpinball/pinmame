@@ -28,6 +28,7 @@ OBJ = $(LOP)lisy80.o \
       $(LOP)lisy_home.o \
       $(LOP)lisy_w.o \
       $(LOP)wheels.o \
+      $(LOP)ball_save.o \
       lisy80_control.o
 
 lisy80_control: $(OBJ)
