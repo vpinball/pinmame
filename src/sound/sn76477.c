@@ -1044,6 +1044,5 @@ void SN76477_sh_update(void)
 {
 	int i;
 	for( i = 0; i < intf->num; i++ )
-		stream_update(i,0);
+		stream_update(sn76477[i]->channel,0);
 }
-

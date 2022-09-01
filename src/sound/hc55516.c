@@ -97,6 +97,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "../../ext/libsamplerate/common.h"
 #include "../../ext/libsamplerate/samplerate.h"
 #ifdef __MINGW32__
 #include <windef.h>
@@ -161,7 +162,7 @@ static FILE *sample_log_fp;
 // the maximum PCM value.  We use loudness compression curve with an input
 // dynamic range of -DYN_RANGE_MAX to +DYN_RANGE_MAX (see below).  We 
 // ultimately convert this to the INT16 range in the range compression step,
-// but the initial gain calculation targes the wider range before compression.
+// but the initial gain calculation targets the wider range before compression.
 // So the default gain is DYN_RANGE_MAX/V_HIGH.
 //
 // In practice, some games don't use all of the available dynamic range on
@@ -291,7 +292,7 @@ struct hc55516_data
 	// that used this chip (that I'm aware of) had two stages of active low-pass 
 	// filters, so we can model them all with two IIR filter stages.  The 
 	// analog parameters vary by system, so we'll set up the appropriate 
-	// generation-specific parameters during nitialization, using the type 
+	// generation-specific parameters during initialization, using the type 
 	// information passed in from the sound board host code.
 	struct
 	{
@@ -462,7 +463,13 @@ static void add_sample_out(struct hc55516_data *chip, const double sample, const
 	sd.output_frames_gen = 0;
 	sd.end_of_input = 0;
 	sd.src_ratio = output_rate_ratio;
-	if (src_process(chip->resample_state, &sd))
+
+	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
+	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
+	// BUT we can disable this via:
+	src_set_ratio(chip->resample_state, sd.src_ratio);
+
+	if (src_process(chip->resample_state, &sd) != SRC_ERR_NO_ERROR)
 	{
 		// error processing the sample - not much we can do, so just discard
 		// the sample
@@ -928,6 +935,12 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		sd.output_frames_gen = 0;
 		sd.end_of_input = 0;
 		sd.src_ratio = stream_get_sample_rate(chip->channel) / 20000.0;
+
+		// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
+		// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
+		// BUT we can disable this via:
+		src_set_ratio(chip->resample_state, sd.src_ratio);
+
 		src_process(chip->resample_state, &sd);
 	}
 

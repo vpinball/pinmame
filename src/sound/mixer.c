@@ -408,10 +408,16 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* const chann
 	data.end_of_input = 0;
 	data.src_ratio = channel->to_frequency / channel->from_frequency;
 
-	src_process(src_state, &data);
-
 	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
 	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
+	// BUT we can disable this via:
+	src_set_ratio(src_state, data.src_ratio);
+
+	if (src_process(src_state, &data) != SRC_ERR_NO_ERROR)
+	{
+		assert(!"src_process");
+		return (dst_pos - dst_base) & ACCUMULATOR_MASK;
+	}
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
@@ -509,14 +515,16 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data * const chann
 	data.end_of_input = 0;
 	data.src_ratio = channel->to_frequency / channel->from_frequency;
 
+	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
+	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
+	// BUT we can disable this via:
+	src_set_ratio(src_state, data.src_ratio);
+
 	if (src_process(src_state, &data) != SRC_ERR_NO_ERROR)
 	{
 		assert(!"src_process");
 		return (dst_pos - dst_base) & ACCUMULATOR_MASK;
 	}
-
-	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
-	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
@@ -708,7 +716,7 @@ static void mixer_flush(struct mixer_channel_data * const channel)
 	/* mix the silence */
 	mixer_channel_resample_8_pan(channel,mixing_volume,ACCUMULATOR_MASK,&source_begin,(unsigned int)(source_end - source_begin));
 
-	/* restore the number of samples availables */
+	/* restore the number of samples available */
 	channel->samples_available = save_available;
 }
 

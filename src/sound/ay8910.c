@@ -1266,6 +1266,7 @@ void AY8910_set_clock(int chip, double clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
+	stream_update(PSG->Channel, 0);
 #ifdef SINGLE_CHANNEL_MIXER
 	stream_set_sample_rate(PSG->Channel, clock/8.);
 #else
@@ -1549,13 +1550,12 @@ void AY8910_set_reverb_filter(int chip, float delay, float force)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
-#ifdef SINGLE_CHANNEL_MIXER
 	//stream_update(PSG->Channel, 0); //!!?
+#ifdef SINGLE_CHANNEL_MIXER
 	mixer_set_reverb_filter(PSG->Channel, delay, force);
 #else
 	int ch;
 	for (ch = 0; ch < 3; ch++)
-		//stream_update(PSG->Channel + ch, 0); //!!?
 		mixer_set_reverb_filter(PSG->Channel + ch, delay, force);
 #endif
 }
