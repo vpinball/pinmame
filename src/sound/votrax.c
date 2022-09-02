@@ -312,20 +312,20 @@ void votraxsc01_set_clock(UINT32 newfreq)
 {
 	// update if changed
 	if(newfreq != votraxsc01_locals.mainclock) {
-		stream_update(votraxsc01_locals.stream, 0);
-
-		if (timer_expire(votraxsc01_locals.timer) != TIME_NEVER) {
-			// determine how many clock ticks remained on the timer
-			double remaining = timer_timeleft(votraxsc01_locals.timer)*votraxsc01_locals.mainclock; //!! was: remaining().as_ticks(votraxsc01_locals.mainclock)
-
-			// adjust the timer to the same number of ticks based on the new frequency
-			timer_adjust(votraxsc01_locals.timer, remaining/(double)newfreq/*attotime::from_ticks(remaining, newfreq)*/, 0, TIME_NEVER); //!! correct like this?
-		}
+//		stream_update(votraxsc01_locals.stream, 0);
+//
+//		if (timer_expire(votraxsc01_locals.timer) != TIME_NEVER) {
+//			// determine how many clock ticks remained on the timer
+//			double remaining = timer_timeleft(votraxsc01_locals.timer)*votraxsc01_locals.mainclock; //!! was: remaining().as_ticks(votraxsc01_locals.mainclock)
+//
+//			// adjust the timer to the same number of ticks based on the new frequency
+//			timer_adjust(votraxsc01_locals.timer, remaining/(double)newfreq/*attotime::from_ticks(remaining, newfreq)*/, 0, TIME_NEVER); //!! correct like this?
+//		}
 		votraxsc01_locals.mainclock = newfreq;
 		votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 		votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
 		stream_set_sample_rate(votraxsc01_locals.stream, votraxsc01_locals.sclock);
-		filters_commit(1);
+		filters_commit(0);
 	}
 }
 
