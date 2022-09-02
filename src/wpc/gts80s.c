@@ -450,10 +450,10 @@ static WRITE_HANDLER(GTS80SS_ext_board_3_w) {
 static WRITE_HANDLER(GTS80SS_vs_latch_w) {
 	logerror("vs_latch: %03x: %02x / %d\n", offset, data, GTS80SS_locals.device);
 	if (GTS80SS_locals.boardData.subType) {
-//		if (GTS80SS_locals.device < 7) {
+		if (cpu_gettotalcpu() < 3 || GTS80SS_locals.device < 7) { // keep the old mute in place for caveman only!
 			votraxsc01_set_volume(100);
 			votraxsc01_w(0, data^0x3f);
-//		}
+		}
 	}
 //	GTS80SS_locals.device = 2;
 }

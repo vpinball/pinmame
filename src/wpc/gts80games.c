@@ -719,7 +719,7 @@ CORE_CLONEDEFNV(striker,gts80a,"Striker",1982,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Punk! (#674)
 /-------------------------------------------------------------------*/
-INIT_S80A(punk, dispNumeric3, SNDBRD_GTS80SS_VOTRAX,0)
+INIT_S80A(punk, dispNumeric3, SNDBRD_GTS80SS,0)
 GTS80_1_ROMSTART  ("674.cpu",    CRC(70cccc57) SHA1(c2446ecf072174ce3e8524c1a01b1eea72875226))
 GTS80SS22_ROMSTART("674-s1.snd", CRC(b75f79d5) SHA1(921774dacccb025c9465ea7e24534aca2d29d6f1),
                    "674-s2.snd", CRC(005d123a) SHA1(ebe258786de09488ec0a104a47e208c66b3613b5))
