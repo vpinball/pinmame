@@ -1318,7 +1318,7 @@ WRITE_HANDLER(votraxsc01_w)
 	//if (votraxsc01_locals.inflection == inflection) //!! original code, due to separate w for inflection in MAME -> does not matter, astrocde has inflection, then -directly- phone write after it
 	//	return;
 
-	stream_update(votraxsc01_locals.stream, 0);
+//	stream_update(votraxsc01_locals.stream, 0);
 	votraxsc01_locals.inflection = inflection;
 
 	//!! in the original code this was the separate phone write from here on:
@@ -1560,7 +1560,7 @@ static void VOTRAXSC01_sh_start_timeout(int which)
 	}
 #endif
 #ifndef OLD_VOTRAX
-	stream_update(votraxsc01_locals.stream, 0);
+//	stream_update(votraxsc01_locals.stream, 0);
 
 	switch (which) {
 	case T_COMMIT_PHONE:
