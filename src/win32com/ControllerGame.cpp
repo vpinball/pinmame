@@ -15,6 +15,9 @@ extern "C" {
 #include "Alias.h"
 #include <atlwin.h>
 
+#ifndef nullptr
+#define nullptr 0
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGameInfoDlg

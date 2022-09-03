@@ -4644,11 +4644,23 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ext\zlib\crc32.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ext\zlib\deflate.c"
 						>
 					</File>
 					<File
+						RelativePath=".\ext\zlib\deflate.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ext\zlib\gzclose.c"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\gzguts.h"
 						>
 					</File>
 					<File
@@ -4672,7 +4684,19 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ext\zlib\inffast.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\inffixed.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ext\zlib\inflate.c"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\inflate.h"
 						>
 					</File>
 					<File
@@ -4680,7 +4704,15 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ext\zlib\inftrees.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ext\zlib\trees.c"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\trees.h"
 						>
 					</File>
 					<File
@@ -4688,7 +4720,27 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ext\zlib\include\zconf.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\zconf.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\include\zlib.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\zlib.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ext\zlib\zutil.c"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\zlib\zutil.h"
 						>
 					</File>
 				</Filter>

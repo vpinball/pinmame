@@ -1500,13 +1500,14 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 // that the emulator SWAP code hasn't been exercised either, for the same reason.)
 static int SWAP(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 {
+	int rn, rm, rd;
+	int siz;
+
 	assert(0); // if this happens: test following code
 
 	//According to manual - swap is an LDR followed by an STR and all endian rules apply
 	//Process: Read original data from address pointed by Rn then store data from address
 	//         pointed by Rm to Rn address, and store original data from Rn to Rd.
-	int rn, rm, rd;
-	int siz;
 
 	// get registers
 	rn = (insn >> 16) &0xf;
