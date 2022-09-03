@@ -4720,15 +4720,7 @@
 						>
 					</File>
 					<File
-						RelativePath=".\ext\zlib\include\zconf.h"
-						>
-					</File>
-					<File
 						RelativePath=".\ext\zlib\zconf.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ext\zlib\include\zlib.h"
 						>
 					</File>
 					<File
