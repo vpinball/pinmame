@@ -276,6 +276,8 @@ DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b135
 WPC_ROMEND
 
 // Game ROM 2.0 was the first to support both WPC-S and DCS95 (the WPC-S variant was intended to be used with the playfield conversion kit)
+// Sound is broken during gameplay and inc/decreasing volume, so maybe the
+//  'This ROM automatically detects the WPC or WPC-95 hardware and will work with either system.' part is not working correctly due to emulation?
 WPC_ROMSTART(congo,20s10k,"cong2_00.rom",0x80000,CRC(e1a256ac) SHA1(f1f7a1865b5a0220e2f2ef492059df158451ca5b))
 DCS_SOUNDROM6x("su2-100.rom", CRC(c4b59ac9) SHA1(a0bc5150120777c771a181496ced71bd3f92a311),
                "su3-100.rom", CRC(1d4dbc9a) SHA1(3fac6ffb1af806d1dfcf71d85b0be21e7ea4b8d2),
@@ -289,10 +291,10 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (congo,21,"Congo (2.1, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,20,21,"Congo (2.0, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,20s10k,21,"Congo (2.0, WPC-S S1.0-kit)",1995,"Williams",wpc_m95DCSS,0)
-CORE_CLONEDEF (congo,13,21,"Congo (1.3, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,11,21,"Congo (1.1, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(congo,20,21,"Congo (2.0, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(congo,20s10k,21,"Congo (2.0, WPC-S S1.0-kit)",1995,"Williams",wpc_m95DCSS,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEF(congo,13,21,"Congo (1.3, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(congo,11,21,"Congo (1.1, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
 // 1.0 and 0.2 (and maybe 0.3) exist, too (0.2/0.3 also with 0.4 sound ROMs)
 
 /*-----------------------
@@ -356,4 +358,3 @@ static void init_congo(void) {
   }
   wpc_set_fastflip_addr(0x80);
 }
-
