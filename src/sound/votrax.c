@@ -4,7 +4,7 @@
 
 	Votrax SC-01 Emulator/Simulation
 
- 	Mike@Dissfulfils.co.uk (old simulation core)
+	Mike@Dissfulfils.co.uk (old simulation core)
 	Tom.Haukap@t-online.de (dto.)
 
 	Olivier Galibert (new simulation core)
@@ -673,26 +673,26 @@ static void chip_update()
 */
 
 static void build_standard_filter(double * const a, double * const b,
-											   const double c1t, // Unswitched cap, input, top
-											   const double c1b, // Switched cap, input, bottom
-											   const double c2t, // Unswitched cap, over first amp-op, top
-											   const double c2b, // Switched cap, over first amp-op, bottom
-											   const double c3,  // Cap between the two op-amps
-											   const double c4)  // Cap over second op-amp
+                                  const unsigned int c1t, // Unswitched cap, input, top
+                                  const unsigned int c1b, // Switched cap, input, bottom
+                                  const unsigned int c2t, // Unswitched cap, over first amp-op, top
+                                  const unsigned int c2b, // Switched cap, over first amp-op, bottom
+                                  const unsigned int c3,  // Cap between the two op-amps
+                                  const unsigned int c4)  // Cap over second op-amp
 {
 	// First compute the three coefficients of H(s).  One can note
 	// that there is as many capacitor values on both sides of the
 	// division, which confirms that the capacity-per-surface-area
 	// is not needed.
 	const double k0 = c1t / (votraxsc01_locals.cclock * c1b);
-	const double k1 = c4 * c2t / (votraxsc01_locals.cclock * c1b * c3);
-	const double k2 = c4 * c2b / (votraxsc01_locals.cclock * votraxsc01_locals.cclock * c1b * c3);
+	const double k1 = ((UINT64)c4 * (UINT64)c2t) / (votraxsc01_locals.cclock * ((UINT64)c1b * (UINT64)c3));
+	const double k2 = ((UINT64)c4 * (UINT64)c2b) / (votraxsc01_locals.cclock * votraxsc01_locals.cclock * ((UINT64)c1b * (UINT64)c3));
 
 	// Estimate the filter cutoff frequency
-	const double fpeak = sqrt(fabs(k0*k1 - k2))/((2.*M_PI)*k2);
+	//const double fpeak = sqrt(fabs(k0*k1 - k2))/((2.*M_PI)*k2);
 
 	// figure radians from frequency
-	double w0 = fpeak * (2.0 * M_PI);
+	double w0 = sqrt(fabs(votraxsc01_locals.cclock * votraxsc01_locals.cclock * ((INT64)c3 * ((INT64)c1t * (INT64)c2t - (INT64)c1b * (INT64)c2b)) / ((UINT64)c2b * (UINT64)c4 * (UINT64)c2b) )); //fpeak * (2.0 * M_PI);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1500)
 	// keep it in -PI/T .. PI/T
@@ -713,10 +713,19 @@ static void build_standard_filter(double * const a, double * const b,
 	a[1] = 3.+m0;
 	a[2] = 3.-m0;
 	a[3] = 1.-m0;
-	b[0] = 1.+m1+m2;
-	b[1] = 3.+m1-m2;
-	b[2] = 3.-m1-m2;
-	b[3] = 1.-m1+m2;
+	b[0] = 1.+(m1+m2);
+	b[1] = 3.+(m1-m2);
+	b[2] = 3.-(m1+m2);
+	b[3] = 1.-(m1-m2);
+
+	a[0] /= b[0];
+	a[1] /= b[0];
+	a[2] /= b[0];
+	a[3] /= b[0];
+	b[1] /= b[0];
+	b[2] /= b[0];
+	b[3] /= b[0];
+	b[0] = 1.0;
 }
 
 /*
@@ -738,20 +747,20 @@ static void build_standard_filter(double * const a, double * const b,
 */
 
 static void build_lowpass_filter(double * const a, double * const b,
-											  const double c1t, // Unswitched cap, over amp-op, top
-											  const double c1b) // Switched cap, over amp-op, bottom
+                                 const unsigned int c1t, // Unswitched cap, over amp-op, top
+                                 const unsigned int c1b) // Switched cap, over amp-op, bottom
 {
-	// The caps values puts the cutoff at around 150Hz, put that's no good.
+	// The caps values puts the cutoff at around 150Hz, but that's no good.
 	// Recordings shows we want it around 4K, so fuzz it.
 
 	// Compute the only coefficient we care about
 	const double k = c1b / (votraxsc01_locals.cclock * c1t) * (150.0/4000.0);
 
 	// Compute the filter cutoff frequency
-	const double fpeak = 1./((2.*M_PI)*k);
+	//const double fpeak = 1./((2.*M_PI)*k);
 
 	// figure radians from frequency
-	double w0 = fpeak * (2.0 * M_PI);
+	double w0 = 1./k; //fpeak * (2.0 * M_PI);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1500)
 	// keep it in -PI/T .. PI/T
@@ -769,6 +778,10 @@ static void build_lowpass_filter(double * const a, double * const b,
 	a[0] = 1.;
 	b[0] = 1.+m;
 	b[1] = 1.-m;
+
+	a[0] /= b[0];
+	b[1] /= b[0];
+	b[0] = 1.0;
 }
 
 /*
@@ -801,22 +814,22 @@ static void build_lowpass_filter(double * const a, double * const b,
 */
 
 static void build_noise_shaper_filter(double * const a, double * const b,
-												   const double c1,  // Cap over first amp-op
-												   const double c2t, // Unswitched cap between amp-ops, input, top
-												   const double c2b, // Switched cap between amp-ops, input, bottom
-												   const double c3,  // Cap over second amp-op
-												   const double c4)  // Switched cap after second amp-op
+                                      const unsigned int c1,  // Cap over first amp-op
+                                      const unsigned int c2t, // Unswitched cap between amp-ops, input, top
+                                      const unsigned int c2b, // Switched cap between amp-ops, input, bottom
+                                      const unsigned int c3,  // Cap over second amp-op
+                                      const unsigned int c4)  // Switched cap after second amp-op
 {
 	// Coefficients of H(s) = k1*s / (1 + k2*s + k3*s^2)
-	const double k0 = c2t*c3*c2b/c4;
-	const double k1 = c2t*(votraxsc01_locals.cclock * c2b);
-	const double k2 = c1*c2t*c3/(votraxsc01_locals.cclock * c4);
+	const double k0 = ((UINT64)c2t*(UINT64)c3*(UINT64)c2b)/(double)c4;
+	const double k1 = ((UINT64)c2t*(UINT64)c2b)*votraxsc01_locals.cclock;
+	const double k2 = ((UINT64)c1* (UINT64)c2t*(UINT64)c3)/(votraxsc01_locals.cclock * c4);
 
 	// Estimate the filter cutoff frequency
-	const double fpeak = sqrt(1./k2)/(2.*M_PI);
+	//const double fpeak = sqrt(1./k2)/(2.*M_PI);
 
 	// figure radians from frequency
-	double w0 = fpeak * (2.0 * M_PI);
+	double w0 = pow(k2,-0.5); //fpeak * (2.0 * M_PI);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1500)
 	// keep it in -PI/T .. PI/T
@@ -839,6 +852,13 @@ static void build_noise_shaper_filter(double * const a, double * const b,
 	b[0] = 1.+m1+m2;
 	b[1] = 2.-2.*m2;
 	b[2] = 1.-m1+m2;
+
+	a[0] /= b[0];
+	a[1] /= b[0];
+	a[2] /= b[0];
+	b[1] /= b[0];
+	b[2] /= b[0];
+	b[0] = 1.0;
 }
 
 /*
@@ -865,15 +885,15 @@ static void build_noise_shaper_filter(double * const a, double * const b,
 */
 
 static void build_injection_filter(double * const a, double * const b,
-												const double c1b, // Switched cap, input, bottom
-												const double c2t, // Unswitched cap, over first amp-op, top
-												const double c2b, // Switched cap, over first amp-op, bottom
-												const double c3,  // Cap between the two op-amps
-												const double c4)  // Cap over second op-amp
+                                   const unsigned int c1b, // Switched cap, input, bottom
+                                   const unsigned int c2t, // Unswitched cap, over first amp-op, top
+                                   const unsigned int c2b, // Switched cap, over first amp-op, bottom
+                                   const unsigned int c3,  // Cap between the two op-amps
+                                   const unsigned int c4)  // Cap over second op-amp
 {
 	// First compute the three coefficients of H(s) = (k0 + k2*s)/(k1 - k2*s)
 	const double k0 = votraxsc01_locals.cclock * c2t;
-	const double k1 = votraxsc01_locals.cclock * (c1b * c3 / c2t - c2t);
+	const double k1 = votraxsc01_locals.cclock * (((INT64)c1b*(INT64)c3 - (INT64)c2t*(INT64)c2t) / (double)c2t);
 	const double k2 = c2b;
 
 	// Don't pre-warp
@@ -887,11 +907,18 @@ static void build_injection_filter(double * const a, double * const b,
 	b[0] = k1 - m;
 	b[1] = k1 + m;
 
-	// That ends up in a numerically unstable filter.  Neutralize it for now.
-	a[0] = 0;
-	a[1] = 0;
-	b[0] = 1.;
-	b[1] = 0;
+	a[0] /= b[0];
+	a[1] /= b[0];
+	b[1] /= b[0];
+	b[0] = 1.0;
+
+	//!! That ends up in a numerically unstable filter
+	//   (i actually would rather guess its wrong in general, as all precision experiments point in that direction!)
+	//   MAME neutralizes it.
+	//a[0] = 0;
+	//a[1] = 0;
+	//b[0] = 1.;
+	//b[1] = 0;
 }
 
 // Compute a total capacitor value based on which bits are currently active
@@ -1006,7 +1033,7 @@ void filters_commit(int force)
 			total += x[i] * a[i];
 		for(i=1; i<Nb; i++)
 			total -= y[i-1] * b[i];
-		return total / b[0];
+		return total;
 	}
 
 static float analog_calc()
@@ -1045,9 +1072,9 @@ static float analog_calc()
 	n2 = n * votraxsc01_locals.filt_fc * (1.0/15.0);
 	shift_hist(n2, votraxsc01_locals.noise_3, 2);
 
-	// 8. Apply the f2 filter, noise half,
-	n2 = apply_filter(votraxsc01_locals.noise_3, votraxsc01_locals.noise_4, votraxsc01_locals.f2n_a, 2, votraxsc01_locals.f2n_b, 2);
-	shift_hist(n2, votraxsc01_locals.noise_4, 2);
+	// 8. Apply the f2 filter, noise half //!! only deactivate (broken) noise filter instead of all of the noise completely (see build_injection_filter())
+	//n2 = apply_filter(votraxsc01_locals.noise_3, votraxsc01_locals.noise_4, votraxsc01_locals.f2n_a, 2, votraxsc01_locals.f2n_b, 2);
+	//shift_hist(n2, votraxsc01_locals.noise_4, 2);
 
 	// Mixed path
 	// 9. Add the f2 voice and f2 noise outputs
@@ -1074,7 +1101,7 @@ static float analog_calc()
 	vn = apply_filter(votraxsc01_locals.vn_5, votraxsc01_locals.vn_6, votraxsc01_locals.fx_a, 1, votraxsc01_locals.fx_b, 2);
 	shift_hist(vn, votraxsc01_locals.vn_6, 2);
 
-	return (float)vn * (float)(1.0/2.4); // prevent excessive clipping //!! MAME had a similar magic of * 1.5 here, which is way too loud though
+	return (float)vn * (float)(1.0/2.4); // prevent excessive clipping //!! MAME has a similar magic of * 0.35 here
 }
 
 #else
