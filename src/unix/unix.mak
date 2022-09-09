@@ -184,6 +184,10 @@ ifdef LISY_X
 include src/lisy/lisy.mak
 endif
 
+ifdef PPUC
+include src/ppuc/ppuc.mak
+endif
+
 ifdef DEBUG
 DBGDEFS = -DMAME_DEBUG
 else
@@ -324,7 +328,7 @@ MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 ##############################################################################
 # Begin of the real makefile.
 ##############################################################################
-$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS)
+$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(PPUCOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
 	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS) 
 
