@@ -40,8 +40,9 @@ jobs:
           copy_repository_path: /opt/pinmame
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev
+            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev libsdl2-mixer-dev
             cd /opt/pinmame/WiringPi
             ./build
             cd /opt/pinmame
             make -f makefile.ppuc
+            ls -l
