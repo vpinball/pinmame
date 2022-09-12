@@ -31,4 +31,6 @@ jobs:
           cpu_info: ${{ matrix.cpu_info }}
           copy_repository_path: /opt/pinmame
           commands: |
-            sudo -u pi taskset -c 0 /bin/bash cd /opt/pinmame; make -f makefile.ppuc
+            apt-get install --no-install-recommends -y make gcc libc6-dev
+            cd /opt/pinmame
+            make -f makefile.ppuc
