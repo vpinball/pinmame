@@ -4,7 +4,7 @@ on:
 
 jobs:
   build:
-    name: PinMAME/PPUC-${{ matrix.cpu_info }}
+    name: ${{ matrix.cpu_info }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -31,6 +31,7 @@ jobs:
           cpu_info: ${{ matrix.cpu_info }}
           copy_repository_path: /opt/pinmame
           commands: |
-            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev make gcc libc6-dev
+            apt-get update -y --allow-releaseinfo-change
+            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev
             cd /opt/pinmame
             make -f makefile.ppuc
