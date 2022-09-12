@@ -23,6 +23,13 @@ jobs:
       - name: Checkout pinmame
         uses: actions/checkout@v2
 
+      - name: Checkout WiringPi
+        uses: actions/checkout@v2
+        with:
+            repository: WiringPi/WiringPi
+            ref: master
+            path: WiringPi
+
       - name: Make in chroot environment
         uses: pguyot/arm-runner-action@v2
         with:
@@ -33,6 +40,7 @@ jobs:
           copy_repository_path: /opt/pinmame
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev wiringpi
+            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev
             cd /opt/pinmame
+            WiringPi/build
             make -f makefile.lisy
