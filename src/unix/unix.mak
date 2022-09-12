@@ -69,7 +69,7 @@ CFLAGS.photon2	=
 ifdef X11_DGA
 INST.x11        = doinstallsuid
 else
-INST.x11	= doinstall
+INST.x11        = doinstall
 endif
 INST.ggi        = doinstall
 INST.svgalib    = doinstallsuid
@@ -121,7 +121,6 @@ endif
 OBJ     = $(NAME).obj
 VGM_OBJ = $(NAME).obj/vgm
 PROC_OBJ = $(NAME).obj/p-roc
-LISY_OBJ = $(NAME).obj/lisy
 
 CORE_OBJDIRS = $(OBJ) $(VGM_OBJ) \
 	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
@@ -212,6 +211,14 @@ MY_LIBS += -lyaml-cpp -lpinproc -lftdi1 -lusb
 endif
 
 ifdef LISY_X
+MY_LIBS += -lSDL2
+MY_LIBS += -lSDL2_mixer
+MY_LIBS += -lwiringPi
+MY_LIBS += -li2c
+MY_LIBS += -lpthread
+endif
+
+ifdef PPUC
 MY_LIBS += -lSDL2
 MY_LIBS += -lSDL2_mixer
 MY_LIBS += -lwiringPi
@@ -330,7 +337,7 @@ MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 ##############################################################################
 $(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(PPUCOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS) 
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(PPUCOBJS) $(MY_LIBS)
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
@@ -391,10 +398,6 @@ $(OBJ)/%.a:
 $(PROC_OBJ)/%.o: src/p-roc/%.cpp
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CPP) $(MY_CFLAGS) -o $@ -c $<
-
-$(LISY_OBJ)/%.o: src/lisy/%.c
-	$(CC_COMMENT) @echo 'Compiling $< ...'
-	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
 
 #$(CPP_OBJ)/%.o: src/wpc/%.cpp
 #	$(CC_COMMENT) @echo 'Compiling $< ...'

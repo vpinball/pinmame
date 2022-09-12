@@ -13,11 +13,11 @@ jobs:
         include:
           - target: zero
             cpu: arm1176
-            cpu_info: cpuinfo/raspberrypi_zero_w
+            cpu_info: raspberrypi_zero_w
             base_image: raspios_lite:latest
           - target: zero2_64
             cpu: cortex-a53
-            cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
+            cpu_info: raspberrypi_zero2_w_arm64
             base_image: raspios_lite_arm64:latest
     steps:
       - name: Checkout pinmame
@@ -36,7 +36,7 @@ jobs:
           base_image: ${{ matrix.base_image }}
           image_additional_mb: 1024
           cpu: ${{ matrix.cpu }}
-          cpu_info: ${{ matrix.cpu_info }}
+          cpu_info: cpuinfo/${{ matrix.cpu_info }}
           copy_repository_path: /opt/pinmame
           commands: |
             apt-get update -y --allow-releaseinfo-change
