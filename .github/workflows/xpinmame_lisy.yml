@@ -33,6 +33,6 @@ jobs:
           copy_repository_path: /opt/pinmame
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y libasound2-dev libsdl1.2.dev
+            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev wiringpi
             cd /opt/pinmame
             make -f makefile.lisy

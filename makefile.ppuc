@@ -269,8 +269,8 @@ CFLAGS += -funroll-loops
   # CFLAGS += -march=k6-3
   # CFLAGS += -march=athlon
   # CFLAGS += -march=athlon-tbird
-#### CFLAGS += -march=athlon-xp
-  CFLAGS += -march=athlon64
+  # CFLAGS += -march=athlon-xp
+  # CFLAGS += -march=athlon64
   # CFLAGS += -march=athlon-mp
   # CFLAGS += -march=athlon-4
 
