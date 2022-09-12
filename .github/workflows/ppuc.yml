@@ -1,4 +1,4 @@
-name: lisy
+name: PPUC
 on:
   push:
 
@@ -28,7 +28,7 @@ jobs:
           echo "::set-output name=tag::${TAG}"
 
   build:
-    name: Build PinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
+    name: Build PinMAME/PPUC-${{ matrix.cpu_info }}
     runs-on: ubuntu-latest
     needs: [ version ]
     strategy:
@@ -38,15 +38,15 @@ jobs:
         include:
           - arch: armv6l
             cpu: arm1176
-            base_image: raspbian_lite:latest
+            base_image: raspios_lite
             cpu_info: raspberrypi_zero_w
           - arch: armv7l
             cpu: cortex-a7
-            base_image: raspbian_lite:latest
+            base_image: raspios_lite
             cpu_info: raspberrypi_3b
           - arch: aarch64
             cpu: cortex-a53
-            base_image: raspbian_lite:latest
+            base_image: raspios_lite
             cpu_info: raspberrypi_zero2_w_arm64_w
     steps:
       - uses: pguyot/arm-runner-action@v2
