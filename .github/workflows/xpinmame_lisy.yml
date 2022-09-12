@@ -41,6 +41,7 @@ jobs:
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev
+            cd /opt/pinmame/WiringPi
+            ./build
             cd /opt/pinmame
-            WiringPi/build
             make -f makefile.lisy
