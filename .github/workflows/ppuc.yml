@@ -1,0 +1,60 @@
+name: lisy
+on:
+  push:
+
+env:
+  VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "::set-output name=tag::${TAG}"
+
+  build:
+    name: Build PinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [armv6l, armv7l, aarch64]
+        include:
+          - arch: armv6l
+            cpu: arm1176
+            base_image: raspbian_lite:latest
+            cpu_info: raspberrypi_zero_w
+          - arch: armv7l
+            cpu: cortex-a7
+            base_image: raspbian_lite:latest
+            cpu_info: raspberrypi_3b
+          - arch: aarch64
+            cpu: cortex-a53
+            base_image: raspbian_lite:latest
+            cpu_info: raspberrypi_zero2_w_arm64_w
+    steps:
+      - uses: pguyot/arm-runner-action@v2
+        with:
+          base_image: ${{ matrix.base_image }}
+          cpu: ${{ matrix.cpu }}
+          cpu_info: ${{ matrix.cpu_info }}
+          commands: |
+            test `uname -m` = ${{ matrix.arch }}
+            grep Model /proc/cpuinfo
+            make -f makefile.ppuc
