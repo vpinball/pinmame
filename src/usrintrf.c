@@ -24,7 +24,6 @@
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
 #if defined(LISY_SUPPORT)
- #include "lisy/hw_lib.h"
  #include "lisy/lisy.h"
 #endif /* LISY_SUPPORT */
 

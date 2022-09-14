@@ -13,7 +13,6 @@
 #  include "sndbrd.c"
    NULL};
 #if defined(PINMAME) && defined(LISY_SUPPORT)
-#include "lisy/hw_lib.h"
 #include "lisy/lisy.h"
 #endif /* PINMAME && LISY_SUPPORT */
 
