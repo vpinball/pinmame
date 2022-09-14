@@ -1,7 +1,12 @@
 #ifndef EXTERNALS_H
 #define EXTERNALS_H
 
-// all the extenal global vars & routines
+#include "fileio.h"
+#include "hw_lib.h"
+#include "fadecandy.h"
+#include "lisy_home.h"
+
+//all the external global vars & routines
 //from lisy80.c or lisy1.c or lisy.c or lisy_w.c
 
 extern int lisy_has24c04;

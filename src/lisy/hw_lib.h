@@ -3,7 +3,7 @@
 
 //Version 3.x
 
-//lets collect information about the running hard & software in one place
+//let's collect information about the running hard & software in one place
 typedef struct {
     char variant[20];             // string LISY variant 1,80,35,williams,mini,atari ...
     int selection;                //game selection, usally via S2
