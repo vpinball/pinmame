@@ -18,14 +18,16 @@ VS2022 build support
 
 *** CORE/CPU ***
 Better handle flickering lamps on Sega/Stern Whitestar machines
-Fix sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these, incl. global volume control parsing
-Add global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
-Fix sound commander issues (missing 2nd part of command) for the WPC89 sound board
+Fixed sound command parsing for more (all?) Sega/Stern Whitestar machines, so altsound mode 1 should work much better now for these, incl. global volume control parsing
+Added global volume control parsing for altsound mode 1 on the older WPCs (i.e. non-DCS)
+Fixed sound commander issues (missing 2nd part of command) for the WPC89 sound board
 New WPC95 machine type: Phantom Haus with a special 128x64 DMD! (see https://www.flipprojets.fr/PhantomHaus_EN.php)
 Finally some progress on Zaccaria's 11178 analog sound
-Fix quick clock/samplerate changes for (at least) all games using the Votrax/SC01 chip and some few HC55516 CVSD based games
+Fixed quick clock/samplerate changes for (at least) all games using the Votrax/SC01 chip and some few HC55516 CVSD based games
+Retweaked new Votrax/SC01 emulation core to improve Taito and especially GTS80 games
+Fixed background sound on blkholea, eclipse (and probably more...)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt’s Basement Arcade
 New:
 Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
@@ -47,6 +49,7 @@ Judge Dredd L-1AT & L-1D (Deadworld HW-MODs)
 Kiss (7-digit conversion rev. 30 & /10 Scoring Free Play + Sound Fix)
 MAC's Galaxy (blue version)
 Magic (MOD rev. 19)
+Maverick, The Movie 2.00
 Red and Ted's Road Show PA-2 (Prototype)
 Stingray (MOD rev. 14)
 Terminator 2 L-8.3 (MOD)

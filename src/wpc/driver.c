@@ -1180,10 +1180,11 @@ DRIVERNV(heavymtl)      //Heavy Metal (198?)
 // SEGA GAMES
 // --------------
 //Data East Hardware, DMD 192x64
-DRIVER  (mav,100)       //DE/Sega MPU: 09/94 Maverick 1.00
-DRIVER  (mav,400)       //DE/Sega MPU: 09/94 Maverick 4.00
-DRIVER  (mav,401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
-DRIVER  (mav,402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
+DRIVER  (mav,100)       //DE/Sega MPU: 09/94 Maverick, The Movie 1.00
+DRIVER  (mav,200)       //DE/Sega MPU: 09/94 Maverick, The Movie 2.00
+DRIVER  (mav,400)       //DE/Sega MPU: 09/94 Maverick, The Movie 4.00
+DRIVER  (mav,401)       //DE/Sega MPU: 09/94 Maverick, The Movie 4.01 Display
+DRIVER  (mav,402)       //DE/Sega MPU: 09/94 Maverick, The Movie 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein, Mary Shelley's
 DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein, Mary Shelley's (German)
 DRIVER  (bay,f201)      //DE/Sega MPU: 04/95 Baywatch 2.01 (French)
