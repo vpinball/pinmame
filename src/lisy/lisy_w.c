@@ -65,16 +65,16 @@ typedef union {
 
     //assigment according to s11games.c & core.c/.h see above
     struct {
-        UINT16 balls1;                   //0
-        UINT16 player1[7];               //1..7
-        UINT16 balls2;                   //8
-        UINT16 player2[7];               //9..15
-        UINT16 dum1[4];                  //16..19
-        UINT16 credits1;                 //20
-        UINT16 player3[7];               //21..27
-        UINT16 credits2;                 //28
-        UINT16 player4[7];               //29..35
-        UINT16 dum2[CORE_SEGCOUNT - 36]; //the rest
+        uint16_t balls1;                   //0
+        uint16_t player1[7];               //1..7
+        uint16_t balls2;                   //8
+        uint16_t player2[7];               //9..15
+        uint16_t dum1[4];                  //16..19
+        uint16_t credits1;                 //20
+        uint16_t player3[7];               //21..27
+        uint16_t credits2;                 //28
+        uint16_t player4[7];               //29..35
+        uint16_t dum2[CORE_SEGCOUNT - 36]; //the rest
     } disp;
 } t_mysegments_s11;
 
@@ -82,7 +82,7 @@ typedef union {
 ********   SYSTEM 7  *************
 from core.h
 struct core_dispLayout {
-  UINT16 top, left, start, length, type;
+  uint16_t top, left, start, length, type;
 *
 from s7games.c
 const core_tLCDLayout s7_dispS7[] = {
@@ -102,16 +102,16 @@ typedef union {
 
     //assigment according to s7games.c & core.c/.h see above
     struct {
-        UINT16 balls1;                   //0
-        UINT16 player1[7];               //1..7
-        UINT16 balls2;                   //8
-        UINT16 player2[7];               //9..15
-        UINT16 dum1[4];                  //16..19
-        UINT16 credits1;                 //20
-        UINT16 player3[7];               //21..27
-        UINT16 credits2;                 //28
-        UINT16 player4[7];               //29..35
-        UINT16 dum2[CORE_SEGCOUNT - 36]; //the rest
+        uint16_t balls1;                   //0
+        uint16_t player1[7];               //1..7
+        uint16_t balls2;                   //8
+        uint16_t player2[7];               //9..15
+        uint16_t dum1[4];                  //16..19
+        uint16_t credits1;                 //20
+        uint16_t player3[7];               //21..27
+        uint16_t credits2;                 //28
+        uint16_t player4[7];               //29..35
+        uint16_t dum2[CORE_SEGCOUNT - 36]; //the rest
     } disp;
 } t_mysegments_s7;
 
@@ -133,16 +133,16 @@ typedef union {
 
     //assigment accoring to s11games.c & core.c/.h see above
     struct {
-        UINT16 credits1;                 //0
-        UINT16 player3[7];               //1..7
-        UINT16 credits2;                 //8
-        UINT16 player4[7];               //9..15
-        UINT16 dum1[4];                  //16..19
-        UINT16 balls1;                   //20
-        UINT16 player1[7];               //21..27
-        UINT16 balls2;                   //28
-        UINT16 player2[7];               //29..35
-        UINT16 dum2[CORE_SEGCOUNT - 36]; //the rest
+        uint16_t credits1;                 //0
+        uint16_t player3[7];               //1..7
+        uint16_t credits2;                 //8
+        uint16_t player4[7];               //9..15
+        uint16_t dum1[4];                  //16..19
+        uint16_t balls1;                   //20
+        uint16_t player1[7];               //21..27
+        uint16_t balls2;                   //28
+        uint16_t player2[7];               //29..35
+        uint16_t dum2[CORE_SEGCOUNT - 36]; //the rest
     } disp;
 } t_mysegments_s9;
 
@@ -396,7 +396,7 @@ if 'comma' is active we add 0x80
 //internal routine
 //gets a (7digit) segment value and give back char value
 char
-my_seg14_2char(UINT16 segvalue) {
+my_seg14_2char(uint16_t segvalue) {
 
     char retchar;
 
@@ -512,7 +512,7 @@ my_seg14_2char(UINT16 segvalue) {
 //internal routine
 //gets a (7digit) segment value and give back char value
 char
-my_seg2char(UINT16 segvalue) {
+my_seg2char(uint16_t segvalue) {
 
     uint8_t hascomma = 0;
     char retchar;
@@ -570,7 +570,7 @@ my_seg2char(UINT16 segvalue) {
 //send ASCII characters o display
 //use my_seg2char routine to translate williams 7segment to ASCII
 void
-send_ASCII_to_display(int no, int len, UINT16* dispval) {
+send_ASCII_to_display(int no, int len, uint16_t* dispval) {
     int i;
     char str[20]; //include null termination
 
@@ -583,14 +583,14 @@ send_ASCII_to_display(int no, int len, UINT16* dispval) {
 
 //send SEG7 data to display
 void
-send_SEG7_to_display(int no, int len, UINT16* dispval) {
+send_SEG7_to_display(int no, int len, uint16_t* dispval) {
 
     lisy_api_send_SEG7_to_disp(no, len, dispval);
 }
 
 //send SEG14 data to display
 void
-send_SEG14_to_display(int no, int len, UINT16* dispval) {
+send_SEG14_to_display(int no, int len, uint16_t* dispval) {
 
     lisy_api_send_SEG14_to_disp(no, len, dispval);
 }
@@ -629,17 +629,17 @@ typedef union {
 
     //assigment accoring to s7games.c & core.c/.h see above
     struct {
-        UINT16 player1[6];               //0..5
-        UINT16 balls1;                   //6
-        UINT16 balls2;                   //7
-        UINT16 player2[6];               //8..13
-        UINT16 credits1;                 //14
-        UINT16 credits2;                 //15
-        UINT16 dum1[4];                  // 16..19
-        UINT16 player3[6];               //20..25
-        UINT16 dum2[2];                  // 26,27
-        UINT16 player4[6];               //28..33
-        UINT16 dum3[CORE_SEGCOUNT - 34]; //the rest
+        uint16_t player1[6];               //0..5
+        uint16_t balls1;                   //6
+        uint16_t balls2;                   //7
+        uint16_t player2[6];               //8..13
+        uint16_t credits1;                 //14
+        uint16_t credits2;                 //15
+        uint16_t dum1[4];                  // 16..19
+        uint16_t player3[6];               //20..25
+        uint16_t dum2[2];                  // 26,27
+        uint16_t player4[6];               //28..33
+        uint16_t dum3[CORE_SEGCOUNT - 34]; //the rest
     } disp;
 } t_mysegments_s6;
 
@@ -648,8 +648,8 @@ void
 lisy_w_display_handler_SYS6(void) {
     static uint8_t first = 1;
     uint8_t i, k;
-    UINT16 status[4];
-    UINT16 sum1, sum2;
+    uint16_t status[4];
+    uint16_t sum1, sum2;
     int len;
 
     static t_mysegments_s6 mysegments;
@@ -749,8 +749,8 @@ void
 lisy_w_display_handler_SYS7(void) {
     static uint8_t first = 1;
     uint8_t i, k;
-    UINT16 status[4];
-    UINT16 sum1, sum2;
+    uint16_t status[4];
+    uint16_t sum1, sum2;
     int len;
 
     static t_mysegments_s7 mysegments;
@@ -850,8 +850,8 @@ void
 lisy_w_display_handler_SYS9(void) {
     static uint8_t first = 1;
     uint8_t i, k;
-    UINT16 status[4];
-    UINT16 sum1, sum2;
+    uint16_t status[4];
+    uint16_t sum1, sum2;
     int len;
 
     static t_mysegments_s9 mysegments;
@@ -951,8 +951,8 @@ void
 lisy_w_display_handler_SYS11A(void) {
     static uint8_t first = 1;
     uint8_t i, k;
-    UINT16 status[4];
-    UINT16 sum1, sum2;
+    uint16_t status[4];
+    uint16_t sum1, sum2;
     int len;
 
     static t_mysegments_s11 mysegments;
@@ -999,7 +999,7 @@ lisy_w_display_handler_SYS11A(void) {
         //and print out if debug display
         if (ls80dbg.bitv.displays) {
             char c;
-            UINT16 rt;
+            uint16_t rt;
             fprintf(stderr, "\nPlayer1: ");
             for (i = 0; i <= 6; i++) {
                 rt = mysegments.disp.player1[i];
@@ -1068,7 +1068,7 @@ core.h:#define DISP_SEG_16(row,type)    {4*row, 0, 20*row, 16, type}
 
 from core.h
 struct core_dispLayout {
-  UINT16 top, left, start, length, type;
+  uint16_t top, left, start, length, type;
 
 results in:
 Row 1: 0
@@ -1080,10 +1080,10 @@ typedef union {
 
     //assigment accoring to s11games.c & core.c/.h see above
     struct {
-        UINT16 row1[16];                 //0..15
-        UINT16 dum1[4];                  //16..19
-        UINT16 row2[16];                 //20..35
-        UINT16 dum2[CORE_SEGCOUNT - 36]; //the rest
+        uint16_t row1[16];                 //0..15
+        uint16_t dum1[4];                  //16..19
+        uint16_t row2[16];                 //20..35
+        uint16_t dum2[CORE_SEGCOUNT - 36]; //the rest
     } disp;
 } t_mysegments_s11C;
 
@@ -1122,7 +1122,7 @@ lisy_w_display_handler_SYS11C(void) {
         //and print out if debug display
         if (ls80dbg.bitv.displays) {
             char c;
-            UINT16 rt;
+            uint16_t rt;
             fprintf(stderr, "\nrow1: ");
             for (i = 0; i <= 15; i++) {
                 rt = mysegments.disp.row1[i];
@@ -1454,7 +1454,7 @@ lisy_w_solenoid_handler(void) {
 
     int j, sol_no, real_sol;
     int bitpos; //bit position in mysol
-    static UINT32 mysol = 0;
+    static uint32_t mysol = 0;
     int mux_sol_active = 0;
     uint8_t action;
     //remember if we need a delayd ac select activation

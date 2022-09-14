@@ -261,7 +261,7 @@ static core_tLCDLayout sys1_disp[] = {
 };
 core.h :
 struct core_dispLayout {
-  UINT16 top, left, start, length, type;
+  uint16_t top, left, start, length, type;
 */
 
         switch (

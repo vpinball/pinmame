@@ -336,7 +336,7 @@ lisy35_get_gamename(char* gamename) {
 //help functions
 //for bcd value PIC
 int
-my_seg2bcd(UINT16 seg) {
+my_seg2bcd(uint16_t seg) {
     int bcd;
 
     switch (seg) {
@@ -379,7 +379,7 @@ my_seg2bcd(UINT16 seg) {
 
 //for debug
 char
-by_seg2char(UINT16 seg) {
+by_seg2char(uint16_t seg) {
     char mychar;
 
     switch (seg) {
@@ -472,10 +472,10 @@ my_datchar2(int dat) {
 //display handler
 //we use segment value now
 /*
-void lisy35_display_handler( int index, UINT16 seg, int myval )
+void lisy35_display_handler( int index, uint16_t seg, int myval )
 {
 
-static UINT16 myseg[56]
+static uint16_t myseg[56]
 = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,

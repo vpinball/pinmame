@@ -1,1 +1,1 @@
-typedef unsigned short UINT16; /* unsigned 16bit */
+typedef unsigned short uint16_t; /* unsigned 16bit */

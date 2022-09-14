@@ -1,6 +1,8 @@
 #ifndef LISY_API_COM_H
 #define LISY_API_COM_H
 
+#include <stdint.h>
+
 int lisy_api_send_str_to_disp(unsigned char num, char* str);
 int lisy_api_send_SEG7_to_disp(unsigned char disp, int num, uint16_t* data);
 int lisy_api_send_SEG14_to_disp(unsigned char disp, int num, uint16_t* data);

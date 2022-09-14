@@ -33,7 +33,7 @@ lisy80_sound_stream_init(void) {
 
     //int audio_rate = 44100;                 //Frequency of audio playback
     int audio_rate = 48000;                   //Frequency of audio playback
-    Uint16 audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
+    uint16_t audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
     int audio_channels = 2;                   //2 channels = stereo
     //int audio_buffers = 2048;               //Size of the audio buffers in memory
     int audio_buffers = 1024; //bytes used per outpur sample
@@ -86,7 +86,7 @@ int
 lisy35_sound_stream_init(void) {
 
     int audio_rate = 44100;                   //Frequency of audio playback
-    Uint16 audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
+    uint16_t audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
     int audio_channels = 2;                   //2 channels = stereo
     int audio_buffers = 2048;                 //Size of the audio buffers in memory
 
@@ -154,7 +154,7 @@ int
 lisy1_sound_stream_init(void) {
 
     int audio_rate = 44100;                   //Frequency of audio playback
-    Uint16 audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
+    uint16_t audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
     int audio_channels = 2;                   //2 channels = stereo
     int audio_buffers = 2048;                 //Size of the audio buffers in memory
 
@@ -554,7 +554,7 @@ int
 mpf_sound_stream_init(int debug) {
 
     int audio_rate = 44100;             //Frequency of audio playback
-    Uint16 audio_format = AUDIO_S16SYS; //Format of the audio we're playing
+    uint16_t audio_format = AUDIO_S16SYS; //Format of the audio we're playing
     int audio_channels = 2;             //2 channels = stereo
     int audio_buffers = 2048;           //Size of the audio buffers in memory
     int flags = MIX_INIT_MP3;           //we expect mp3 files here
@@ -626,7 +626,7 @@ int
 StarShip_sound_stream_init(void) {
 
     int audio_rate = 44100;                   //Frequency of audio playback
-    Uint16 audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
+    uint16_t audio_format = MIX_DEFAULT_FORMAT; //Format of the audio we're playing
     int audio_channels = 2;                   //2 channels = stereo
     int audio_buffers = 2048;                 //Size of the audio buffers in memory
 

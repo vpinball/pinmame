@@ -1,6 +1,8 @@
 #ifndef LISY80_H
 #define LISY80_H
 
+#include <stdint.h>
+
 #define LISY80_SOFTWARE_MAIN 3
 #define LISY80_SOFTWARE_SUB  43
 

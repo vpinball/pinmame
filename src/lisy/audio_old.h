@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 /*
  * Play a wave file currently must be S16LE format 2 channel stereo
  *
