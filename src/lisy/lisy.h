@@ -1,7 +1,9 @@
 #ifndef LISY_H
 #define LISY_H
 
-// here we have all the xternals for lisy1.c and lisy80.c
+#include "hw_lib.h"
+
+// here we have all the externals for lisy1.c and lisy80.c
 extern int lisy_hardware_revision;
 extern ls80dbg_t ls80dbg;
 extern ls80opt_t ls80opt;
