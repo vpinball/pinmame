@@ -1043,11 +1043,11 @@ lisy80_get_mpudips(int switch_nr) {
 //handling of nvram via eeprom
 //read_or_write = 0 means read
 int
-lisy80_nvram_handler_old(int read_or_write, UINT8* GTS80_pRAM_GTB) {
+lisy80_nvram_handler_old(int read_or_write, uint8_t* GTS80_pRAM_GTB) {
     static unsigned char first_time = 1;
     static eeprom_block_t nvram_block;
     static eeprom_block_t lisy80_block;
-    static UINT8* GTS80_pRAM;
+    static uint8_t* GTS80_pRAM;
     unsigned char sw_main, sw_sub, commit;
     int i, ret;
 

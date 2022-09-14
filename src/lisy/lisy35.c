@@ -1342,7 +1342,7 @@ lisy35_get_mpudips(int switch_nr) {
 lisy35_cmos_data_t* lisy_by35_CMOS;
 
 void
-lisy35_nvram_handler(UINT8* by35_CMOS_Bally) {
+lisy35_nvram_handler(uint8_t* by35_CMOS_Bally) {
     //remember address for subsequent actions
     lisy_by35_CMOS = by35_CMOS_Bally;
 }
@@ -1352,12 +1352,12 @@ lisy35_nvram_handler(UINT8* by35_CMOS_Bally) {
 //saw never 1 with Bally for write, will be '2' out of cmos routine in by35.c
 //we trust eeprom write routine which will only write changed bytes
 int
-lisy35_nvram_handler_old(int read_or_write, UINT8* by35_CMOS_Bally) {
+lisy35_nvram_handler_old(int read_or_write, uint8_t* by35_CMOS_Bally) {
 
     static unsigned char first_time = 1;
     static eeprom_block_t nvram_block;
     static eeprom_block_t lisy35_block;
-    static UINT8* by35_CMOS;
+    static uint8_t* by35_CMOS;
     unsigned char sw_main, sw_sub, commit;
     int i, ret;
 

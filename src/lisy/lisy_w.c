@@ -514,7 +514,7 @@ my_seg14_2char(UINT16 segvalue) {
 char
 my_seg2char(UINT16 segvalue) {
 
-    UINT8 hascomma = 0;
+    uint8_t hascomma = 0;
     char retchar;
 
     //handle comma
@@ -646,8 +646,8 @@ typedef union {
 //display handler System6
 void
 lisy_w_display_handler_SYS6(void) {
-    static UINT8 first = 1;
-    UINT8 i, k;
+    static uint8_t first = 1;
+    uint8_t i, k;
     UINT16 status[4];
     UINT16 sum1, sum2;
     int len;
@@ -747,8 +747,8 @@ lisy_w_display_handler_SYS6(void) {
 //display handler System7
 void
 lisy_w_display_handler_SYS7(void) {
-    static UINT8 first = 1;
-    UINT8 i, k;
+    static uint8_t first = 1;
+    uint8_t i, k;
     UINT16 status[4];
     UINT16 sum1, sum2;
     int len;
@@ -848,8 +848,8 @@ lisy_w_display_handler_SYS7(void) {
 //display handler System9
 void
 lisy_w_display_handler_SYS9(void) {
-    static UINT8 first = 1;
-    UINT8 i, k;
+    static uint8_t first = 1;
+    uint8_t i, k;
     UINT16 status[4];
     UINT16 sum1, sum2;
     int len;
@@ -949,8 +949,8 @@ lisy_w_display_handler_SYS9(void) {
 //display handler System11A
 void
 lisy_w_display_handler_SYS11A(void) {
-    static UINT8 first = 1;
-    UINT8 i, k;
+    static uint8_t first = 1;
+    uint8_t i, k;
     UINT16 status[4];
     UINT16 sum1, sum2;
     int len;
@@ -1090,8 +1090,8 @@ typedef union {
 //display handler System11C
 void
 lisy_w_display_handler_SYS11C(void) {
-    static UINT8 first = 1;
-    UINT8 i, k;
+    static uint8_t first = 1;
+    uint8_t i, k;
     int len;
 
     static t_mysegments_s11C mysegments;
@@ -1785,10 +1785,10 @@ void
 lisy_w_lamp_handler() {
 
     int i, j, lamp_no;
-    static UINT8 first = 1;
+    static uint8_t first = 1;
     uint8_t action;
 
-    static UINT8 mylampMatrix[8]; //8*8 = 64 lamps in maximum
+    static uint8_t mylampMatrix[8]; //8*8 = 64 lamps in maximum
 
     if (first) {
         memset(mylampMatrix, 0, sizeof(mylampMatrix));
