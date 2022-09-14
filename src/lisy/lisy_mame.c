@@ -4,7 +4,7 @@
  bontango
 */
 
-#include "../unix/xmame.h"
+#include "xmame.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>

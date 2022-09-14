@@ -8,7 +8,7 @@
 #include "ball_save.h"
 #include "coils.h"
 #include "displays.h"
-#include "../driver.h"
+#include "driver.h"
 #include "eeprom.h"
 #include "fileio.h"
 #include "hw_lib.h"
@@ -18,9 +18,9 @@
 #include "sound.h"
 #include "switches.h"
 #include "utils.h"
-#include "../wpc/core.h"
-#include "../wpc/sndbrd.h"
-#include "../unix/xmame.h"
+#include "wpc/core.h"
+#include "wpc/sndbrd.h"
+#include "xmame.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
