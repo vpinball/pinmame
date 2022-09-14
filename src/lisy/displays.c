@@ -1000,4 +1000,5 @@ display_ss_LCD_string2row(unsigned char row, char* buf) {
     lisy80_write_byte_disp_pic(row);
     //write data to PIC
     lisy80_write_multibyte_disp_pic(buf, 20);
+    return;
 }

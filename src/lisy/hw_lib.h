@@ -34,7 +34,7 @@ typedef union {
     unsigned char byte;
 
     struct {
-        unsigned freeplay : 1, JustBoom_sound : 1, watchdog : 1, sevendigit : 1, slam : 1, test : 1, debug : 1,
+        unsigned freeplay : 1, JustBoom_sound : 1, ballsave : 1, sevendigit : 1, slam : 1, test : 1, debug : 1,
             autostart : 1;
         //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
     } bitv;

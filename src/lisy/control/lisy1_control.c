@@ -55,18 +55,11 @@ typedef struct {
 } t_coreGlobals;
 
 t_coreGlobals coreGlobals;
-
-void
-lisy_nvram_write_to_file(void) {}
-
-void
-sound_stream_update(int* dum) {}
-
+void lisy_nvram_write_to_file(void){};
+void sound_stream_update(int* dum){};
 unsigned char sound_stream = 0;
 unsigned char sound_enabled = 0;
-
-const char*
-sndbrd_typestr(int board) {}
+const char* sndbrd_typestr(int board){};
 
 //local switch Matrix, we need 9 elements
 //as pinmame internal starts with 1

@@ -843,7 +843,7 @@ lisy80_get_dips(void) {
 
         ls80opt.bitv.freeplay = ~digitalRead(LISY80_HW311_DIP1_S1);
         ls80opt.bitv.JustBoom_sound = ~digitalRead(LISY80_HW311_DIP1_S2);
-        ls80opt.bitv.watchdog = ~digitalRead(LISY80_HW311_DIP1_S3);
+        ls80opt.bitv.ballsave = ~digitalRead(LISY80_HW311_DIP1_S3);
         ls80opt.bitv.sevendigit = ~digitalRead(LISY80_HW311_DIP1_S4);
         ls80opt.bitv.slam = ~digitalRead(LISY80_HW311_DIP1_S5);
         ls80opt.bitv.test = ~digitalRead(LISY80_HW311_DIP1_S6);
@@ -907,8 +907,8 @@ lisy80_get_dips(void) {
             lisy80_debug("LISY option: Freeplay");
         if (ls80opt.bitv.JustBoom_sound)
             lisy80_debug("LISY option: JustBoom_sound");
-        if (ls80opt.bitv.watchdog)
-            lisy80_debug("LISY option: watchdog");
+        if (ls80opt.bitv.ballsave)
+            lisy80_debug("LISY option: ballsave");
         if (ls80opt.bitv.sevendigit)
             lisy80_debug("LISY option: seven digit");
         if (ls80opt.bitv.slam)

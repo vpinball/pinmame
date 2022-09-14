@@ -268,6 +268,7 @@ lisy80_play_wav(int sound_no) {
  */
 void
 StarShip_play_wav(int sound_no) {
+
     char sound_file_name[312];
 
     if (lisy35_sound_stru[sound_no].soundnumber != 0) {

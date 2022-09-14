@@ -2226,8 +2226,8 @@ lisy200_file_get_soundopts(void) {
             first_line = 0;
             continue;
         } //skip first line (Header)
-        //str = strdup(strtok(line, ";"));   //sound number in hex
-        //sound_no = strtol(str, NULL, 16);  // to be converted
+        //str = strdup(strtok(line, ";"));  //sound number in hex
+        //sound_no = strtol(str, NULL, 16); // to be converted
         sound_no = atoi(strtok(line, ";"));                                     //sound number
         lisy35_sound_stru[sound_no].soundnumber = sound_no;                     // != 0 if mapped
         lisy35_sound_stru[sound_no].path = strdup(strtok(NULL, ";"));           //path to soundfile

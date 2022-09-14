@@ -337,7 +337,7 @@ lisy_home_ss_display_event(int digit, int value, int display) {
                     lisy_home_ss_special_lamp_set(9 + lisy_home_ss_digit_ballinplay_status, 1); //Lamps 10...14
                 if ((old_ballinplay_status > 0) & (old_ballinplay_status <= 5))
                     lisy_home_ss_special_lamp_set(9 + old_ballinplay_status, 0); //Lamps 10...14
-                //store old value
+                                                                                 //store old value
                 old_ballinplay_status = lisy_home_ss_digit_ballinplay_status;
                 break;
             case LISY_HOME_DIGIT_MATCH:
@@ -358,7 +358,7 @@ lisy_home_ss_lamp_event(int lamp, int action) {
     switch (lamp) {
         case LISY_HOME_SS_LAMP_1CANPLAY: //set light on player1 to ON if 1canplay and 2canplay is OFF, otherwise both ON
             lisy_home_ss_lamp_1canplay_status = action;
-            if ((lisy_home_ss_lamp_1canplay_status == 1) && (lisy_home_ss_lamp_2canplay_status == 0)) {
+            if ((lisy_home_ss_lamp_1canplay_status == 1) & (lisy_home_ss_lamp_2canplay_status == 0)) {
                 lisy_home_ss_special_lamp_set(15, 1);
                 lisy_home_ss_special_lamp_set(16, 1);
                 lisy_home_ss_special_lamp_set(17, 0);
@@ -372,7 +372,7 @@ lisy_home_ss_lamp_event(int lamp, int action) {
             break;
         case LISY_HOME_SS_LAMP_2CANPLAY: //set light on player1 to ON if 1canplay and 2canplay is OFF, otherwise both ON
             lisy_home_ss_lamp_2canplay_status = action;
-            if ((lisy_home_ss_lamp_1canplay_status == 1) && (lisy_home_ss_lamp_2canplay_status == 0)) {
+            if ((lisy_home_ss_lamp_1canplay_status == 1) & (lisy_home_ss_lamp_2canplay_status == 0)) {
                 lisy_home_ss_special_lamp_set(15, 1);
                 lisy_home_ss_special_lamp_set(16, 1);
                 lisy_home_ss_special_lamp_set(17, 0);

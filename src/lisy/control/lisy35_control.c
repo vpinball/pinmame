@@ -40,12 +40,10 @@
 typedef unsigned short UINT16; /* unsigned 16bit */
 
 //fake definiton needed in lisy_w
-void
-core_setSw(int myswitch, unsigned char action) {}
+void core_setSw(int myswitch, unsigned char action){};
 
 //fake definiton needed in lisy1
-void
-cpunum_set_clockscale(int cpu, float clockscale) {}
+void cpunum_set_clockscale(int cpu, float clockscale){};
 
 //fake definiton needed in lisy80
 typedef struct {
@@ -62,18 +60,11 @@ typedef struct {
 } t_coreGlobals;
 
 t_coreGlobals coreGlobals;
-
-void
-lisy_nvram_write_to_file(void) {}
-
-void
-sound_stream_update(int* dum) {}
-
+void lisy_nvram_write_to_file(void){};
+void sound_stream_update(int* dum){};
 unsigned char sound_stream = 0;
 unsigned char sound_enabled = 0;
-
-const char*
-sndbrd_typestr(int board) {}
+const char* sndbrd_typestr(int board){};
 
 //48 switches, keep it easy by using 49 elements
 unsigned char Switches_LISY35[49] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

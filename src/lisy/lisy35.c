@@ -154,8 +154,9 @@ lisy35_ss_init(void) {
         if (StarShip_sound_stream_init() < 0) {
             fprintf(stderr, "sound init failed, sound emulation disabled\n");
             lisy35_has_own_sounds = 0;
-        } else
+        } else {
             fprintf(stderr, "info: sound init done\n");
+        }
     }
 
     //Starship mspecific inits
@@ -695,8 +696,8 @@ lisy35_switch_handler(int sys35col) {
 
     //ignore credit switch if we running on Starship
     //and 2canplay lamp is ON
-    if ((ret == 5) && (action == 1)) {
-        if ((lisy_hardware_revision == 200) && (lisy_home_ss_ignore_credit == 1)) {
+    if ((ret == 5) & (action == 1)) {
+        if ((lisy_hardware_revision == 200) & (lisy_home_ss_ignore_credit == 1)) {
             ret = 80;
 
             if (ls80dbg.bitv.switches) {
@@ -1163,7 +1164,7 @@ lisy35_set_variant(void) {
             fprintf(stderr, "Info: SPECIAL config for %s\n", lisy35_game.long_name);
             //switch matrix default
             lisy35_display_set_variant(1); //7-digit
-            //all outputs from coil pic to activate
+                                           //all outputs from coil pic to activate
             lisy35_coil_set_direction_J4PIN5(LISY35_PIC_PIN_OUTPUT);
             lisy35_coil_set_direction_J4PIN8(LISY35_PIC_PIN_OUTPUT);
             lisy35_coil_set_direction_J1PIN8(LISY35_PIC_PIN_OUTPUT);
@@ -1470,9 +1471,9 @@ lisy35_solenoid_handler(unsigned char data, unsigned char soundselect) {
     if (lisy35_J4PIN8_is_strobe)
         cont_data &= 0x07;
 
-    //handle continous solenois
+    //handle continuous solenoids
     //new cont data?
-    if ((old_cont_data != cont_data) && (lisy35_bally_hw_check_finished == 1)) {
+    if ((old_cont_data != cont_data) & (lisy35_bally_hw_check_finished == 1)) {
         //running on Starship?
         if (lisy_hardware_revision == 200)
             lisy_home_ss_event_handler(LISY_HOME_SS_EVENT_CONT_SOL, cont_data, 0, 0);
