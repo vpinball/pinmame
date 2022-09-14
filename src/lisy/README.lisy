@@ -25,9 +25,9 @@ Implementation into pinmame; Files where LISY code is inserted:
     makefile.unix -> compile switches, moved to makefile.lisy
     makefile.unixsdl
     makefile.unixsdl_debug
-    src/unix/main.c -> lisy_set_gamename( ..) & lisy_version
     src/mame.c -> lisy_init() & lisy80_error()
     src/usrintrf.c -> check for 'time_to_quit'
+    src/unix/main.c -> lisy_set_gamename( ..) & lisy_version
     src/unix/unix.mak -> link in LISY_OBJ & lisy.mak & SDL,SDL2,wiringpi and i2c library
     src/unix/video.c -> fake video, no videooutput with lisy
     src/unix/video-drivers/vid_lisy.c -> part of fake lisy video
