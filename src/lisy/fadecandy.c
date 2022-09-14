@@ -8,12 +8,9 @@
 #include "fadecandy.h"
 #include "externals.h"
 #include "fileio.h"
-#include "hw_lib.h"
-#include "lisy_home.h"
 #include "opc.h"
 #include "utils.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 //we reserve 512 pixels which is the max value for one fadecandy

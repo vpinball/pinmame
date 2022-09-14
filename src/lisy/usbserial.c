@@ -4,22 +4,11 @@
  bontango
 */
 #include "usbserial.h"
-#include "coils.h"
-#include "displays.h"
-#include "externals.h"
-#include "fadecandy.h"
-#include "fileio.h"
-#include "hw_lib.h"
 #include "lisy_api.h"
-#include "lisy_home.h"
-#include "opc.h"
-#include "utils.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 

@@ -37,8 +37,6 @@
 #define LISY35control_SOFTWARE_MAIN 0
 #define LISY35control_SOFTWARE_SUB  102
 
-typedef unsigned short uint16_t; /* unsigned 16bit */
-
 //fake definiton needed in lisy_w
 void core_setSw(int myswitch, unsigned char action){};
 

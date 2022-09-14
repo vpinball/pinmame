@@ -8,13 +8,9 @@
 #include "coils.h"
 #include "displays.h"
 #include "externals.h"
-#include "fadecandy.h"
 #include "hw_lib.h"
-#include "lisy_home.h"
 #include "opc.h"
 #include "utils.h"
-#include <errno.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -154,7 +150,7 @@ lisy1_file_write_dipfile(int mode, char* line) {
 //dip_nr is 1..32
 // value is 0=off 1=on
 // comment is comment from file
-// *dip_setting_filename is filename with successfull read
+// *dip_setting_filename is filename with successful read
 // if re_init is >0 the settings from the file are read again
 unsigned char
 lisy35_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename, int re_init) {
@@ -183,7 +179,7 @@ lisy35_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
 
         //construct the filename; using global var lisy35_gamenr
         sprintf(dip_file_name, "%s%03d%s", LISY35_DIPS_PATH, lisy35_game.gamenr, LISY35_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -193,13 +189,13 @@ lisy35_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY35_DIPS_PATH, LISY35_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         //we read dips on LISY35 board
         if (fstream == NULL) {
             for (i = 0; i <= 3; i++) {
@@ -210,7 +206,7 @@ lisy35_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
                     value[i * 8 + j] = CHECK_BIT(myswitch, j);
                     strcpy(comment[i * 8 + j], " ---- comment ---- ");
                 }
-                //copy filename where we was successfull to give back to calling routine
+                //copy filename where we were successful to give back to calling routine
                 strcpy(dip_setting_filename, dip_file_name);
             }
         } else {
@@ -243,7 +239,7 @@ lisy35_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
 
     //give back stored values (from first time)
     strcpy(dip_comment, comment[dip_nr - 1]);
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     return value[dip_nr - 1];
@@ -253,7 +249,7 @@ lisy35_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
 //dip_nr is 1..32
 // value is 0=off 1=on
 // comment is comment from file
-// *dip_setting_filename is filename with successfull read
+// *dip_setting_filename is filename with successful read
 // if re_init is >0 the settings from the file are read again
 unsigned char
 lisy80_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename, int re_init) {
@@ -282,7 +278,7 @@ lisy80_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
 
         //construct the filename; using global var lisy80_gamenr
         sprintf(dip_file_name, "%s%03d%s", LISY80_DIPS_PATH, lisy80_game.gamenr, LISY80_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -292,16 +288,16 @@ lisy80_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY80_DIPS_PATH, LISY80_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         if (fstream == NULL) {
             sprintf(dip_file_name, "PINMAME default as no file specified");
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             return -1;
         }
@@ -335,7 +331,7 @@ lisy80_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
 
     //give back stored values (from first time)
     strcpy(dip_comment, comment[dip_nr - 1]);
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     return value[dip_nr - 1];
@@ -345,7 +341,7 @@ lisy80_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename
 //dip_nr is 1..24
 // value is 0=off 1=on
 // comment is comment from file
-// *dip_setting_filename is filename with successfull read
+// *dip_setting_filename is filename with successful read
 // if re_init is >0 the settings from the file are read again
 unsigned char
 lisy1_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename, int re_init) {
@@ -374,7 +370,7 @@ lisy1_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename,
 
         //construct the filename; using global var lisy80_gamenr
         sprintf(dip_file_name, "%s%03d%s", LISY1_DIPS_PATH, lisy1_game.gamenr, LISY1_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -384,16 +380,16 @@ lisy1_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename,
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY1_DIPS_PATH, LISY1_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         if (fstream == NULL) {
             sprintf(dip_file_name, "PINMAME default as no file specified");
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             return -1;
         }
@@ -427,7 +423,7 @@ lisy1_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename,
 
     //give back stored values (from first time)
     strcpy(dip_comment, comment[dip_nr - 1]);
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     return value[dip_nr - 1];
@@ -473,7 +469,7 @@ lisy35_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
 
         //construct the filename; using global var lisy80_gamenr
         sprintf(dip_file_name, "%s%03d%s", LISY35_DIPS_PATH, lisy35_game.gamenr, LISY35_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we wer successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -483,22 +479,22 @@ lisy35_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY35_DIPS_PATH, LISY35_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful,
         //so we give back settings from dip switches on LISY board
         if (fstream == NULL) {
-            //we re read the dips as they could have changed without powering of the pi
+            //we re-read the dips as they could have changed without powering of the pi
             lisy35_coil_read_mpu_dips();
             //now assign dips to internal vars
             //return setting, (only once for first time call)
             for (i = 0; i <= 3; i++)
                 lisy35_dip[i].byte = lisy35_coil_get_mpu_dip(i);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             sprintf(dip_file_name, "dip setting from LISY board used: %d %d %d %d", lisy35_dip[0].byte,
                     lisy35_dip[1].byte, lisy35_dip[2].byte, lisy35_dip[3].byte);
             strcpy(dip_setting_filename, dip_file_name);
@@ -560,7 +556,7 @@ lisy35_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         first_time_debug[switch_nr] = 0;
     }
 
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     //return setting, this will be -1 if 'first_time' failed
@@ -606,7 +602,7 @@ lisy80_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
 
         //construct the filename; using global var lisy80_gamenr
         sprintf(dip_file_name, "%s%03d%s", LISY80_DIPS_PATH, lisy80_game.gamenr, LISY80_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -616,16 +612,16 @@ lisy80_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY80_DIPS_PATH, LISY80_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         if (fstream == NULL) {
             sprintf(dip_file_name, "PINMAME default as no file specified");
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             return -1;
         }
@@ -681,7 +677,7 @@ lisy80_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         fprintf(stderr, " for switch:%d\n\r", switch_nr);
     }
 
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     //return setting, this will be -1 if 'first_time' failed
@@ -727,7 +723,7 @@ lisy1_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
 
         //construct the filename; using global var lisy80_gamenr
         sprintf(dip_file_name, "%s%03d%s", LISY1_DIPS_PATH, lisy1_game.gamenr, LISY1_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -737,16 +733,16 @@ lisy1_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY1_DIPS_PATH, LISY1_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         if (fstream == NULL) {
             sprintf(dip_file_name, "PINMAME default as no file specified");
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             return -1;
         }
@@ -817,7 +813,7 @@ lisy1_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         fprintf(stderr, " for switch:%d\n\r", switch_nr);
     }
 
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     //return setting, this will be -1 if 'first_time' failed
@@ -1831,17 +1827,17 @@ lisy200_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
 
         //construct the filename;
         sprintf(dip_file_name, "%s%s", LISY200_DIPS_PATH, LISY200_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read
         fstream = fopen(dip_file_name, "r");
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         if (fstream == NULL) {
             sprintf(dip_file_name, "PINMAME default as no file specified");
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             return -1;
         }
@@ -1902,7 +1898,7 @@ lisy200_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename) {
         first_time_debug[switch_nr] = 0;
     }
 
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     //return setting, this will be -1 if 'first_time' failed
@@ -2034,7 +2030,7 @@ lisy200_file_write_dipfile(int mode, char* line) {
 //dip_nr is 1..32
 // value is 0=off 1=on
 // comment is comment from file
-// *dip_setting_filename is filename with successfull read
+// *dip_setting_filename is filename with successful read
 // if re_init is >0 the settings from the file are read again
 unsigned char
 lisy200_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filename, int re_init) {
@@ -2063,7 +2059,7 @@ lisy200_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filenam
 
         //construct the filename;
         sprintf(dip_file_name, "%s%s", LISY200_DIPS_PATH, LISY200_DIPS_FILE);
-        //copy filename where we was successfull to give back to calling routine
+        //copy filename where we were successful to give back to calling routine
         strcpy(dip_setting_filename, dip_file_name);
 
         //try to read the file with game nr
@@ -2073,13 +2069,13 @@ lisy200_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filenam
         if (fstream == NULL) {
             //construct the new filename; using 'default'
             sprintf(dip_file_name, "%sdefault%s", LISY35_DIPS_PATH, LISY35_DIPS_FILE);
-            //copy filename where we was successfull to give back to calling routine
+            //copy filename where we were successful to give back to calling routine
             strcpy(dip_setting_filename, dip_file_name);
             fstream = fopen(dip_file_name, "r");
         } //second try
 
-        //check if first or second try where successfull
-        //if it is still NULL both tries where not successfull
+        //check if first or second try where successful
+        //if it is still NULL both tries where not successful
         //we read dips on LISY35 board
         if (fstream == NULL) {
             for (i = 0; i <= 3; i++) {
@@ -2090,7 +2086,7 @@ lisy200_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filenam
                     value[i * 8 + j] = CHECK_BIT(myswitch, j);
                     strcpy(comment[i * 8 + j], " ---- comment ---- ");
                 }
-                //copy filename where we was successfull to give back to calling routine
+                //copy filename where we were successful to give back to calling routine
                 strcpy(dip_setting_filename, dip_file_name);
             }
         } else {
@@ -2123,7 +2119,7 @@ lisy200_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filenam
 
     //give back stored values (from first time)
     strcpy(dip_comment, comment[dip_nr - 1]);
-    //copy filename where we was successfull to give back to calling routine
+    //copy filename where we were successful to give back to calling routine
     strcpy(dip_setting_filename, dip_file_name);
 
     return value[dip_nr - 1];

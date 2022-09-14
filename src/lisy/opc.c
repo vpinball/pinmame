@@ -20,8 +20,6 @@ specific language governing permissions and limitations under the License. */
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 /* Wait at most 0.5 second for a connection or a write. */

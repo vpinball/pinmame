@@ -95,7 +95,7 @@ unsigned char lisymini_get_dip(char* wantdip);
 unsigned char lisyapc_get_dip(char* wantdip);
 
 //vars
-//remeber the flip_flop settings of each
+//remember the flip_flop settings of each
 union lisy80_flip_flop {
     unsigned char byte;
 
@@ -134,7 +134,7 @@ union lisy80_flip_flop {
 #define Q_SYS1_SOL7          43
 #define Q_SYS1_SOL8          44
 
-//GPIO assigments as of LISY80 HW version 3.11
+//GPIO assingments as of LISY80 HW version 3.11
 // what pins of (WiringPi)Pi driving what
 #define LISY80_HW311_LED_DP  2 //LED to signal display activity
 #define LISY80_HW311_LED_RED 1 //LED to signal errors
@@ -168,7 +168,7 @@ union lisy80_flip_flop {
 #define LISY80_HW311_DIP1_S7 23
 #define LISY80_HW311_DIP1_S8 24
 
-//GPIO assigments as of LISY80 HW version 3.2x
+//GPIO assingments as of LISY80 HW version 3.2x
 // what pins of (WiringPi)Pi driving what
 //DIP Switch S1 HW32x
 //#S1 Dip 1       Freeplay        RA2 Switch PIC

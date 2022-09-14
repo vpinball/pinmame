@@ -7,10 +7,8 @@
 
 #include "sound.h"
 #include "externals.h"
-#include "fadecandy.h"
 #include "fileio.h"
 #include "hw_lib.h"
-#include "lisy_home.h"
 #include "utils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
