@@ -22,19 +22,24 @@ MAIN SCRIPT  "/usr/local/bin/run_lisy (summary only, for details see comments in
 
 
 Implementation into pinmame; Files where LISY code is inserted:
-	makefile.unix -> compile switches, moved to makefile.lisy
-	src/unix/main.c -> lisy_set_gamename( ..) & lisy_version
-	src/mame.c -> lisy_init() & lisy80_error()
-	src/usrintrf.c -> check for 'time_to_quit' 
-	src/unix/unix.mak -> link in LISY_OBJ & lisy.mak & SDL,SDL2,wiringpi and i2c library
-	src/unix/video.c -> fake video, no videooutput with lisy
-	src/unix/video-drivers/vid_lisy.c -> part of fake lisy video
-	src/unix/sysdep/dsp-drivers/alsa.c -> new alsa code for lisy
-	src/wpc/gts80.c -> system80 implementation
-	src/wpc/gts1.c -> system1 implementation
-	src/wpc/by35.c -> Bally
-	src/wpc/s7.c -> Williams
-	src/wpc/sndbrd.c -> sound in general (used for williams only at the moment)
+    makefile.unix -> compile switches, moved to makefile.lisy
+    makefile.unixsdl
+    makefile.unixsdl_debug
+    src/unix/main.c -> lisy_set_gamename( ..) & lisy_version
+    src/mame.c -> lisy_init() & lisy80_error()
+    src/usrintrf.c -> check for 'time_to_quit'
+    src/unix/unix.mak -> link in LISY_OBJ & lisy.mak & SDL,SDL2,wiringpi and i2c library
+    src/unix/video.c -> fake video, no videooutput with lisy
+    src/unix/video-drivers/vid_lisy.c -> part of fake lisy video
+    src/unix/sysdep/dsp-drivers/alsa.c -> new alsa code for lisy
+    src/wpc/gts80.c -> system80 implementation
+    src/wpc/gts1.c -> system1 implementation
+    src/wpc/by35.c -> Bally
+    src/wpc/s4.c -> Williams
+    src/wpc/s6.c -> Williams
+    src/wpc/s7.c -> Williams
+    src/wpc/s11.c -> Williams / Data East
+    src/wpc/sndbrd.c -> sound in general (used for williams only at the moment)
 
 All the sources are under /home/pi/lisy; look for "#define LISY_SUPPORT" in the pinmame source
 Start is in main.c in ./src/unix , we check for "special game names" in the calling command (last argument)
