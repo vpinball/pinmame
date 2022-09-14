@@ -1,6 +1,8 @@
 #ifndef _LINKED_LIST_H
 #define _LINKED_LIST_H
 
+#include <SDL2/SDL_mixer.h>
+
 /* Link list node */
 struct Node_sound_element {
     char filename_with_path[512];

@@ -1,6 +1,8 @@
 #ifndef _SOUND_H
 #define _SOUND_H
 
+#include <SDL2/SDL_mixer.h>
+
 int lisy80_sound_stream_init(void);
 void lisy80_play_wav(int sound_no);
 int lisy_adjust_volume(void);
