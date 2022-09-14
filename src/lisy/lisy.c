@@ -14,7 +14,7 @@
 #include "lisy_w.h"
 #include "lisyversion.h"
 #include "utils.h"
-#include "xmame.h"
+#include "../unix/xmame.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>

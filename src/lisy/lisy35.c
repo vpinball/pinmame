@@ -7,7 +7,7 @@
 #include "lisy35.h"
 #include "coils.h"
 #include "displays.h"
-#include "driver.h"
+#include "../driver.h"
 #include "eeprom.h"
 #include "fileio.h"
 #include "hw_lib.h"
@@ -18,9 +18,9 @@
 #include "switches.h"
 #include "utils.h"
 #include "wheels.h"
-#include "wpc/core.h"
-#include "wpc/sndbrd.h"
-#include "xmame.h"
+#include "../wpc/core.h"
+#include "../wpc/sndbrd.h"
+#include "../unix/xmame.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>

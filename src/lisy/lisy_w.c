@@ -7,7 +7,7 @@
 #include "lisy_w.h"
 #include "coils.h"
 #include "displays.h"
-#include "driver.h"
+#include "../driver.h"
 #include "eeprom.h"
 #include "fileio.h"
 #include "hw_lib.h"
@@ -18,10 +18,10 @@
 #include "switches.h"
 #include "usbserial.h"
 #include "utils.h"
-#include "wpc/core.h"
-#include "wpc/s11.h"
-#include "wpc/s7.h"
-#include "xmame.h"
+#include "../wpc/core.h"
+#include "../wpc/s11.h"
+#include "../wpc/s7.h"
+#include "../unix/xmame.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
