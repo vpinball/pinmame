@@ -121,6 +121,8 @@ endif
 OBJ     = $(NAME).obj
 VGM_OBJ = $(NAME).obj/vgm
 PROC_OBJ = $(NAME).obj/p-roc
+LISY_OBJ = $(NAME).obj/lisy
+PPUC_OBJ = $(NAME).obj/lisy
 
 CORE_OBJDIRS = $(OBJ) $(VGM_OBJ) \
 	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
@@ -398,6 +400,14 @@ $(OBJ)/%.a:
 $(PROC_OBJ)/%.o: src/p-roc/%.cpp
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CPP) $(MY_CFLAGS) -o $@ -c $<
+
+$(LISY_OBJ)/%.o: src/lisy/%.c
+	$(CC_COMMENT) @echo 'Compiling $< ...'
+	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
+
+$(PPUC_OBJ)/%.o: src/lisy/%.c
+	$(CC_COMMENT) @echo 'Compiling $< ...'
+	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
 
 #$(CPP_OBJ)/%.o: src/wpc/%.cpp
 #	$(CC_COMMENT) @echo 'Compiling $< ...'
