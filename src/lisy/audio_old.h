@@ -27,8 +27,7 @@
 #define SIMPLE_AUDIO_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*
@@ -38,7 +37,7 @@ extern "C"
  * @param volume        Volume 0 - 128. SDL_MIX_MAXVOLUME constant for max volume
  *
  */
-void playSound(const char * filename, int volume);
+void playSound(const char* filename, int volume);
 
 /*
  * Plays a new music, only 1 at a time plays
@@ -47,7 +46,7 @@ void playSound(const char * filename, int volume);
  * @param volume        Volume read playSound for moree
  *
  */
-void playMusic(const char * filename, int volume);
+void playMusic(const char* filename, int volume);
 
 /*
  * Free all audio related variables
@@ -63,8 +62,7 @@ void initAudio(void);
 
 //added sound functions for LISY (bontango)
 void playSoundfromMem(int soundno);
-int putSoundtoMem(const char * filename, uint8_t loop, int volume, int soundno);
-
+int putSoundtoMem(const char* filename, uint8_t loop, int volume, int soundno);
 
 #ifdef __cplusplus
 }
