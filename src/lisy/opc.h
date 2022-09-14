@@ -15,24 +15,26 @@ specific language governing permissions and limitations under the License. */
 
 #include <stdint.h>
 
-#define OPC_DEFAULT_PORT 7890
+#define OPC_DEFAULT_PORT           7890
 
 /* OPC broadcast channel */
-#define OPC_BROADCAST 0
+#define OPC_BROADCAST              0
 
 /* OPC command codes */
-#define OPC_SET_PIXELS 0
+#define OPC_SET_PIXELS             0
 
 /* Maximum number of OPC sinks or sources allowed */
-#define OPC_MAX_SINKS 64
-#define OPC_MAX_SOURCES 64
+#define OPC_MAX_SINKS              64
+#define OPC_MAX_SOURCES            64
 
 /* Maximum number of pixels in one message */
 #define OPC_MAX_PIXELS_PER_MESSAGE ((1 << 16) / 3)
 
 // OPC client functions ----------------------------------------------------
 
-typedef struct { uint8_t r, g, b; } pixel;
+typedef struct {
+    uint8_t r, g, b;
+} pixel;
 
 /* Handle for an OPC sink created by opc_new_sink. */
 typedef int8_t opc_sink;
@@ -68,4 +70,4 @@ uint8_t opc_receive(opc_source source, opc_handler* handler, uint32_t timeout_ms
 /* Resets an OPC source to its initial state by closing the connection. */
 void opc_reset_source(opc_source source);
 
-#endif  /* OPC_H */
+#endif /* OPC_H */

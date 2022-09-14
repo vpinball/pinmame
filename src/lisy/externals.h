@@ -1,7 +1,6 @@
 #ifndef EXTERNALS_H
 #define EXTERNALS_H
 
-
 // all the extenal global vars & routines
 //from lisy80.c or lisy1.c or lisy.c or lisy_w.c
 
@@ -35,18 +34,17 @@ extern t_lisy_home_ss_general lisy_home_ss_general;
 
 extern int lisy_m_APC_coil_HW_rule[32];
 
-extern int fd_api;  //file descriptor for lisy api ( eg APC )
+extern int fd_api; //file descriptor for lisy api ( eg APC )
 
 extern t_stru_lisy80_games_csv lisy80_game;
 extern t_stru_lisy1_games_csv lisy1_game;
 extern t_stru_lisy35_games_csv lisy35_game;
 extern t_stru_lisymini_games_csv lisymini_game;
 
-void lisy1_init( void );
-void lisy80_init( void );
-void lisy35_init( void );
-void lisy35_ss_init( void );
-void lisy_w_init( void );
+void lisy1_init(void);
+void lisy80_init(void);
+void lisy35_init(void);
+void lisy35_ss_init(void);
+void lisy_w_init(void);
 
-
-#endif  /* EXTERNALS_H */
+#endif /* EXTERNALS_H */

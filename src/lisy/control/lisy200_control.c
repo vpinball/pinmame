@@ -4,71 +4,68 @@
  bontango 07.2017
 */
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <net/if.h>
-#include <arpa/inet.h>
-#include <wiringPi.h>
-#include <pthread.h>
 #include "lisy200_control.h"
-#include "../lisy35.h"
-#include "../lisy_home.h"
+#include "../coils.h"
+#include "../displays.h"
+#include "../eeprom.h"
+#include "../externals.h"
+#include "../fadecandy.h"
 #include "../fileio.h"
 #include "../hw_lib.h"
-#include "../displays.h"
-#include "../coils.h"
+#include "../lisy.h"
+#include "../lisy35.h"
+#include "../lisy_home.h"
+#include "../lisyversion.h"
+#include "../sound.h"
 #include "../switches.h"
 #include "../utils.h"
-#include "../eeprom.h"
-#include "../sound.h"
-#include "../lisy.h"
-#include "../lisyversion.h"
-#include "../fadecandy.h"
 #include "../wheels.h"
-#include "../externals.h"
-
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <wiringPi.h>
 
 //the version
-#define LISY200control_SOFTWARE_MAIN    0
-#define LISY200control_SOFTWARE_SUB     6
+#define LISY200control_SOFTWARE_MAIN 0
+#define LISY200control_SOFTWARE_SUB  6
 
 //fake definiton needed in lisy_w
-void core_setSw(int myswitch, unsigned char action) {  };
-
+void core_setSw(int myswitch, unsigned char action){};
 
 //fake definiton needed in lisy1
-void cpunum_set_clockscale(int cpu, float clockscale) {  };
+void cpunum_set_clockscale(int cpu, float clockscale){};
 
 //fake definiton needed in lisy80
 typedef struct {
- struct {
-    unsigned int  soundBoard;
-  } hw;
+    struct {
+        unsigned int soundBoard;
+    } hw;
 } core_tGameData;
 
-core_tGameData *core_gameData;
+core_tGameData* core_gameData;
 
 //fake definiton needed for mame functions
-typedef struct
-{
- unsigned char lampMatrix[2];
+typedef struct {
+    unsigned char lampMatrix[2];
 } t_coreGlobals;
-t_coreGlobals coreGlobals;
-void lisy_nvram_write_to_file( void ) {  };
-void sound_stream_update(int *dum ) {  };
-unsigned char sound_stream = 0;
-unsigned char  sound_enabled = 0;
-const char* sndbrd_typestr(int board) {  };
 
+t_coreGlobals coreGlobals;
+void lisy_nvram_write_to_file(void){};
+void sound_stream_update(int* dum){};
+unsigned char sound_stream = 0;
+unsigned char sound_enabled = 0;
+const char* sndbrd_typestr(int board){};
 
 //48 switches, keep it easy by using 49 elements
 extern unsigned char swMatrixLISY35[9];
@@ -110,1769 +107,1880 @@ unsigned char active_lampdriver_board = 0;
 //global var for all sounds
 unsigned char sound[32];
 //global vars for all displays 6-digit
-char display_D0[7]="";
-char display_D1[7]="";
-char display_D2[7]="";
-char display_D3[7]="";
-char display_D4[7]="";
-char display_D5[7]="";
-char display_D6[7]="";
+char display_D0[7] = "";
+char display_D1[7] = "";
+char display_D2[7] = "";
+char display_D3[7] = "";
+char display_D4[7] = "";
+char display_D5[7] = "";
+char display_D6[7] = "";
 //global vars for all displays 7-digit
-char display_D0A[8]="";
-char display_D1A[8]="";
-char display_D2A[8]="";
-char display_D3A[8]="";
-char display_D4A[8]="";
-char display_D5A[8]="";
+char display_D0A[8] = "";
+char display_D1A[8] = "";
+char display_D2A[8] = "";
+char display_D3A[8] = "";
+char display_D4A[8] = "";
+char display_D5A[8] = "";
 //global vars for GI setting RGB
-char line5_R[4]="0";
-char line5_G[4]="0";
-char line5_B[4]="0";
-char line6_R[4]="0";
-char line6_G[4]="0";
-char line6_B[4]="0";
+char line5_R[4] = "0";
+char line5_G[4] = "0";
+char line5_B[4] = "0";
+char line6_R[4] = "0";
+char line6_G[4] = "0";
+char line6_B[4] = "0";
 //hostname settings
-char hostname[10]=" "; //' ' indicates that there is no new hostname
+char hostname[10] = " "; //' ' indicates that there is no new hostname
 //hostname settings
-char update_path[255]=" "; //' ' indicates that there is no update file
+char update_path[255] = " "; //' ' indicates that there is no update file
 //hostname settings
-char ext_sound_no[10]=" "; //' ' indicates that there is no new extended sound to be send
+char ext_sound_no[10] = " "; //' ' indicates that there is no new extended sound to be send
 
-void error(const char *msg)
-{
+void
+error(const char* msg) {
     perror(msg);
     exit(1);
 }
 
 //short form of write command
-void sendit( int sockfd, char *buffer)
-{
-   int n;
+void
+sendit(int sockfd, char* buffer) {
+    int n;
 
-//   printf("%s",buffer);
+    //   printf("%s",buffer);
 
-   n = write(sockfd,buffer,strlen(buffer));
-   if (n < 0) error("ERROR writing to socket");
+    n = write(sockfd, buffer, strlen(buffer));
+    if (n < 0)
+        error("ERROR writing to socket");
 }
 
-
 //basic infos, called from many places
-void send_basic_infos( int sockfd)
-{
-     char buffer[256];
+void
+send_basic_infos(int sockfd) {
+    char buffer[256];
 
-   sprintf(buffer,"Selected game is %s, internal number %d<br>\n",lisy35_game.long_name,lisy35_game.gamenr);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"Special cfg:%d, AUX Board Variant:%d Soundboard variant:%d<br><br>\n",lisy35_game.special_cfg,lisy35_game.aux_lamp_variant,lisy35_game.soundboard_variant);
-   sendit( sockfd, buffer);
+    sprintf(buffer, "Selected game is %s, internal number %d<br>\n", lisy35_game.long_name, lisy35_game.gamenr);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "Special cfg:%d, AUX Board Variant:%d Soundboard variant:%d<br><br>\n", lisy35_game.special_cfg,
+            lisy35_game.aux_lamp_variant, lisy35_game.soundboard_variant);
+    sendit(sockfd, buffer);
 }
 
 //set sound and update internal vars
 //simple soundcard version, second parameter to lisy35_coil_sound_set is 0
-void do_sound_set( char *buffer)
-{
+void
+do_sound_set(char* buffer) {
 
- int sound_no,i;
- char wav_file_name[80];
+    int sound_no, i;
+    char wav_file_name[80];
 
- //the format here is 'Sxx' 
- //we trust ASCII values
- sound_no = (10 * (buffer[1]-48)) + buffer[2]-48;
+    //the format here is 'Sxx'
+    //we trust ASCII values
+    sound_no = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //set again same sound means set to zero
- if ( sound[sound_no] == 1)
-  {
-   lisy35_sound_std_sb_set( 0 );
-   //set internal var (remember)
-   for(i=0; i<=31; i++) sound[i] = 0;
-   sound[0] = 1;
-   return;
-  }
+    //set again same sound means set to zero
+    if (sound[sound_no] == 1) {
+        lisy35_sound_std_sb_set(0);
+        //set internal var (remember)
+        for (i = 0; i <= 31; i++)
+            sound[i] = 0;
+        sound[0] = 1;
+        return;
+    }
 
+    //set internal var (remember)
+    for (i = 0; i <= 31; i++)
+        sound[i] = 0;
+    sound[sound_no] = 1;
 
- //set internal var (remember)
- for(i=0; i<=31; i++) sound[i] = 0;
- sound[sound_no] = 1;
+    //JustBoom Sound? we may want to play wav files here
+    if (ls80opt.bitv.JustBoom_sound) {
+        //construct the filename, according to game_nr
+        sprintf(wav_file_name, "%s%03d/%d.wav", LISY35_SOUND_PATH, lisy35_game.gamenr, sound_no);
+        sprintf(debugbuf, "/usr/bin/aplay %s", wav_file_name);
+        system(debugbuf);
+    }
 
- //JustBoom Sound? we may want to play wav files here
- if ( ls80opt.bitv.JustBoom_sound )
- {
-  //construct the filename, according to game_nr
-  sprintf(wav_file_name,"%s%03d/%d.wav",LISY35_SOUND_PATH,lisy35_game.gamenr,sound_no);
-  sprintf(debugbuf,"/usr/bin/aplay %s",wav_file_name);
-  system(debugbuf);
- }
-
- //now set sound
- lisy35_sound_std_sb_set( sound_no );
-
+    //now set sound
+    lisy35_sound_std_sb_set(sound_no);
 }
-
 
 //set options for soundcard control
-void do_soption_set( char *buffer)
-{
+void
+do_soption_set(char* buffer) {
 
- int selection, i;
- static int sound;
+    int selection, i;
+    static int sound;
 
- //we trust ASCII values
- //the format here is 'Px_'
- selection = buffer[1]-48;
+    //we trust ASCII values
+    //the format here is 'Px_'
+    selection = buffer[1] - 48;
 
- switch(selection)
-  {
-	case 1:  //say it
-	 if ( buffer[3] != '\0') {
-		 sprintf(debugbuf,"/bin/echo \"%s\" | /usr/bin/festival --tts",&buffer[3]);
-                 system(debugbuf);
-		}
-	break;
-	case 2:  //play the sound
-	 if ( buffer[3] != '\0') 
-		{
-		  lisy35_play_wav(atoi(&buffer[3]));
- 		  sound = atoi(&buffer[3]); //store the sound
-		}
-	break;
-	case 3:  //play the soundrange
-	 if ( buffer[3] != '\0')
-	   { 
-		for(i=sound+1; i<=atoi(&buffer[3]); i++) 
-		   {
-		    sleep(2);
-		    lisy35_play_wav(i);
-		   }
-		}
-	break;
-
-  }
+    switch (selection) {
+        case 1: //say it
+            if (buffer[3] != '\0') {
+                sprintf(debugbuf, "/bin/echo \"%s\" | /usr/bin/festival --tts", &buffer[3]);
+                system(debugbuf);
+            }
+            break;
+        case 2: //play the sound
+            if (buffer[3] != '\0') {
+                lisy35_play_wav(atoi(&buffer[3]));
+                sound = atoi(&buffer[3]); //store the sound
+            }
+            break;
+        case 3: //play the soundrange
+            if (buffer[3] != '\0') {
+                for (i = sound + 1; i <= atoi(&buffer[3]); i++) {
+                    sleep(2);
+                    lisy35_play_wav(i);
+                }
+            }
+            break;
+    }
 }
 
-
-
 //do an update of lisy
-void do_updatepath_set( char *buffer)
-{
+void
+do_updatepath_set(char* buffer) {
 
- //we trust ASCII values
- //the format here is 'U_'
- sprintf(update_path,"%s",&buffer[2]);
+    //we trust ASCII values
+    //the format here is 'U_'
+    sprintf(update_path, "%s", &buffer[2]);
 
- printf("update path: %s\n",&buffer[2]);
-
+    printf("update path: %s\n", &buffer[2]);
 }
 
 //do an update of lisy, local file
-void do_update_local( int sockfd, char *what)
-{
+void
+do_update_local(int sockfd, char* what) {
 
- char *real_name,*tmp_name;
- char *line;
- char buffer[255];
+    char *real_name, *tmp_name;
+    char* line;
+    char buffer[255];
 
- //we trust ASCII values
- //the format here is 'Y'
- line = &what[1];
+    //we trust ASCII values
+    //the format here is 'Y'
+    line = &what[1];
 
- real_name = strtok(line, ";");
- tmp_name = strtok(NULL, ";");
+    real_name = strtok(line, ";");
+    tmp_name = strtok(NULL, ";");
 
- sprintf(buffer,"<a href=\"./index.php\">Back to LISY Homepage</a><br><br>");
- sendit( sockfd, buffer);
+    sprintf(buffer, "<a href=\"./index.php\">Back to LISY Homepage</a><br><br>");
+    sendit(sockfd, buffer);
 
- sprintf(buffer,"WE WILL NOW do the System update<br><br>\n");
- sendit( sockfd, buffer);
+    sprintf(buffer, "WE WILL NOW do the System update<br><br>\n");
+    sendit(sockfd, buffer);
 
- //set mode to read - write
- sprintf(buffer,"setting system mode to read/write<br><br>\n");
- sendit( sockfd, buffer);
- system("/bin/mount -o remount,rw /boot");
- system("/bin/mount -o remount,rw /");
+    //set mode to read - write
+    sprintf(buffer, "setting system mode to read/write<br><br>\n");
+    sendit(sockfd, buffer);
+    system("/bin/mount -o remount,rw /boot");
+    system("/bin/mount -o remount,rw /");
 
- //just unpack the lisy_update.tgz and execute install.sh from within
- sprintf(buffer,"try to get extract the update file<br><br>\n");
- sendit( sockfd, buffer);
- sprintf(buffer,"/bin/tar -xzf %s -C /home/pi/update",tmp_name);
- system(buffer);
+    //just unpack the lisy_update.tgz and execute install.sh from within
+    sprintf(buffer, "try to get extract the update file<br><br>\n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "/bin/tar -xzf %s -C /home/pi/update", tmp_name);
+    system(buffer);
 
- sprintf(buffer,"try to execute install.sh from within update pack<br><br>\n");
- sendit( sockfd, buffer);
- sprintf(buffer,"/bin/bash /home/pi/update/install.sh");
- system(buffer);
+    sprintf(buffer, "try to execute install.sh from within update pack<br><br>\n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "/bin/bash /home/pi/update/install.sh");
+    system(buffer);
 
- sprintf(buffer,"update done, you may want to reboot now<br><br>\n");
- sendit( sockfd, buffer);
-
+    sprintf(buffer, "update done, you may want to reboot now<br><br>\n");
+    sendit(sockfd, buffer);
 }
 
 //set the hostname of the system and reboot
-void do_hostname_set( char *buffer)
-{
+void
+do_hostname_set(char* buffer) {
 
- //we trust ASCII values
- //the format here is 'H_'
- sprintf(hostname,"%s",&buffer[2]);
-
+    //we trust ASCII values
+    //the format here is 'H_'
+    sprintf(hostname, "%s", &buffer[2]);
 }
 
 //set the command for the soundcard
-void do_ext_sound_set( char *buffer)
-{
+void
+do_ext_sound_set(char* buffer) {
 
- //we trust ASCII values
- //the format here is 'E_'
- sprintf(ext_sound_no,"%s",&buffer[2]);
-
+    //we trust ASCII values
+    //the format here is 'E_'
+    sprintf(ext_sound_no, "%s", &buffer[2]);
 }
 
 //set the GI RGB according to buffer message
-void do_ss_GI_set( char *buffer)
-{
- int GI_no;
- char str[21];
- int mycolor[6]; //RGB for line5 & 6
+void
+do_ss_GI_set(char* buffer) {
+    int GI_no;
+    char str[21];
+    int mycolor[6]; //RGB for line5 & 6
 
- //we trust ASCII values
- GI_no = buffer[1]-48;
+    //we trust ASCII values
+    GI_no = buffer[1] - 48;
 
- //the format here is 'Gx_' 
- // red and green is swapped for GI ws2811!!
-  switch( GI_no )
-  {
-   case 1:
-	strcpy(line5_R,&buffer[3]);
-	mycolor[1] = atoi(line5_R);
-	break;
-   case 2:
-	strcpy(line5_G,&buffer[3]);
-	mycolor[0] = atoi(line5_G);
-	break;
-   case 3:
-	strcpy(line5_B,&buffer[3]);
-	mycolor[2] = atoi(line5_B);
-	break;
-   case 4:
-	strcpy(line6_R,&buffer[3]);
-	mycolor[4] = atoi(line6_R);
-	break;
-   case 5:
-	strcpy(line6_G,&buffer[3]);
-	mycolor[3] = atoi(line6_G);
-	break;
-   case 6:
-	strcpy(line6_B,&buffer[3]);
-	mycolor[5] = atoi(line6_B);
-	//now do the setting
-	lisyh_led_set_GI_color( mycolor );
-	break;
-  }
+    //the format here is 'Gx_'
+    // red and green is swapped for GI ws2811!!
+    switch (GI_no) {
+        case 1:
+            strcpy(line5_R, &buffer[3]);
+            mycolor[1] = atoi(line5_R);
+            break;
+        case 2:
+            strcpy(line5_G, &buffer[3]);
+            mycolor[0] = atoi(line5_G);
+            break;
+        case 3:
+            strcpy(line5_B, &buffer[3]);
+            mycolor[2] = atoi(line5_B);
+            break;
+        case 4:
+            strcpy(line6_R, &buffer[3]);
+            mycolor[4] = atoi(line6_R);
+            break;
+        case 5:
+            strcpy(line6_G, &buffer[3]);
+            mycolor[3] = atoi(line6_G);
+            break;
+        case 6:
+            strcpy(line6_B, &buffer[3]);
+            mycolor[5] = atoi(line6_B);
+            //now do the setting
+            lisyh_led_set_GI_color(mycolor);
+            break;
+    }
 }
 
 //set the display according to buffer message
-void do_display_set( char *buffer)
-{
- int display_no;
- char display_str[21];
+void
+do_display_set(char* buffer) {
+    int display_no;
+    char display_str[21];
 
- //we trust ASCII values
- display_no = buffer[1]-48;
+    //we trust ASCII values
+    display_no = buffer[1] - 48;
 
-  switch( display_no )
-  {
-   case 1: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 1, display_str);
- 		wheel_score( 1, display_str);  //wheelscore in paralell
-	        strcpy(display_D1,display_str);
-		break;
-   case 2: 
-		sprintf(display_str,"%-6s",&buffer[3]);
- 		display35_show_str( 2, display_str);
- 		//wheel_score( 1, display_str);  //wheelscore in paralell
-	        strcpy(display_D2,display_str);
-		break;
-  }
-printf("buffer is %s\n",buffer);
+    switch (display_no) {
+        case 1:
+            sprintf(display_str, "%-6s", &buffer[3]);
+            display35_show_str(1, display_str);
+            wheel_score(1, display_str); //wheelscore in paralell
+            strcpy(display_D1, display_str);
+            break;
+        case 2:
+            sprintf(display_str, "%-6s", &buffer[3]);
+            display35_show_str(2, display_str);
+            //wheel_score( 1, display_str);  //wheelscore in paralell
+            strcpy(display_D2, display_str);
+            break;
+    }
+    printf("buffer is %s\n", buffer);
 }
 
-
-
 //pulse specific momentary solenoid
-void do_mom_solenoid_set( char *buffer)
-{
- int solenoid;
+void
+do_mom_solenoid_set(char* buffer) {
+    int solenoid;
 
- //the format here is 'Cxx' or 'Cxx'
- //we trust ASCII values
- solenoid = (10 * (buffer[1]-48)) + buffer[2]-48;
+    //the format here is 'Cxx' or 'Cxx'
+    //we trust ASCII values
+    solenoid = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //pulse the coil
- lisy35_coil_set( solenoid, 2);
-
+    //pulse the coil
+    lisy35_coil_set(solenoid, 2);
 }
 
 //pulse specific special solenoid
-void do_ss_solenoid_set( char *buffer)
-{
- int solenoid;
+void
+do_ss_solenoid_set(char* buffer) {
+    int solenoid;
 
- //the format here is 'Cxx' or 'Cxx'
- //we trust ASCII values
- solenoid = (10 * (buffer[1]-48)) + buffer[2]-48;
+    //the format here is 'Cxx' or 'Cxx'
+    //we trust ASCII values
+    solenoid = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //pulse the coil
- wheel_pulse( solenoid );
-
+    //pulse the coil
+    wheel_pulse(solenoid);
 }
 
 //set specific continous solenoid
-void do_cont_solenoid_set( char *buffer)
-{
- int solenoid;
- int action;
+void
+do_cont_solenoid_set(char* buffer) {
+    int solenoid;
+    int action;
 
- //the format here is 'Oxx_on' or 'Oxx_off'
- //we trust ASCII values
- solenoid = (10 * (buffer[1]-48)) + buffer[2]-48;
+    //the format here is 'Oxx_on' or 'Oxx_off'
+    //we trust ASCII values
+    solenoid = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //cont solenoids have an offset of 15
- solenoid += 15;
+    //cont solenoids have an offset of 15
+    solenoid += 15;
 
- //on or off?
- if ( buffer[5] == 'f') action=0; else  action=1;
+    //on or off?
+    if (buffer[5] == 'f')
+        action = 0;
+    else
+        action = 1;
 
- //set the coil pulse the coil
- lisy35_coil_set( solenoid, action);
- cont_sol[solenoid-15] = action;
-
+    //set the coil pulse the coil
+    lisy35_coil_set(solenoid, action);
+    cont_sol[solenoid - 15] = action;
 }
-
 
 //read all the set dip switch settings
 //and store to filesystem
-void do_dip_set( char *buffer)
-{
- int dip_no,i;
- char dip_setting[10];
- static char part1[32][80];
- static char part2[32][257];
- char line[512];
+void
+do_dip_set(char* buffer) {
+    int dip_no, i;
+    char dip_setting[10];
+    static char part1[32][80];
+    static char part2[32][257];
+    char line[512];
 
- //remember number of settings received so far
- static int no_settings = 0;
+    //remember number of settings received so far
+    static int no_settings = 0;
 
- //the format here is ' V_DIPxx_ON' or ' V_DIPxx_OFF'
- //or ' K_DIPxx_'comment' 
- //we trust ASCII values
- dip_no = (10 * (buffer[5]-48)) + buffer[6]-48;
+    //the format here is ' V_DIPxx_ON' or ' V_DIPxx_OFF'
+    //or ' K_DIPxx_'comment'
+    //we trust ASCII values
+    dip_no = (10 * (buffer[5] - 48)) + buffer[6] - 48;
 
- //Note: we do NOT trust the order of the settings
- //as sometimes the browser does mix things up
- //so we collect all settings an write them all at the end
- //which is after receiving 64 entries
+    //Note: we do NOT trust the order of the settings
+    //as sometimes the browser does mix things up
+    //so we collect all settings an write them all at the end
+    //which is after receiving 64 entries
 
- //dip setting?
- if ( buffer[0] == 'V')
-  {
-   //construct first part of the line
-   if ( buffer[9] == 'N') strcpy(dip_setting,"ON"); else strcpy(dip_setting,"OFF");
-   sprintf(part1[dip_no-1],"%d;%s;",dip_no,dip_setting);
-   no_settings++;
-  }
- //no, it is a comment
- else
-  {
-   //construct second part of the line
-   strcpy( part2[dip_no-1],&buffer[8]);
-   //construct the line
-   no_settings++;
-  }
-
- //once all collected, we write them to the file
- if ( no_settings >=64 )
- {
-   //dip number 1 ( 0 as we start with 0 ) means we need to open/create the file: mode = 0
-   sprintf(line,"%s%s\n",part1[0],part2[0]);
-   if ( lisy200_file_write_dipfile( 0, line ) < 0) syserr( "problems dip setting file", 77, 1);
-
-   //now write settings 2..31 with mode 1
-   for ( i=1; i<=30; i++)
-    {   
-      sprintf(line,"%s%s\n",part1[i],part2[i]);
-      if ( lisy200_file_write_dipfile( 1, line ) < 0) syserr( "problems dip setting file", 77, 1);
+    //dip setting?
+    if (buffer[0] == 'V') {
+        //construct first part of the line
+        if (buffer[9] == 'N')
+            strcpy(dip_setting, "ON");
+        else
+            strcpy(dip_setting, "OFF");
+        sprintf(part1[dip_no - 1], "%d;%s;", dip_no, dip_setting);
+        no_settings++;
+    }
+    //no, it is a comment
+    else {
+        //construct second part of the line
+        strcpy(part2[dip_no - 1], &buffer[8]);
+        //construct the line
+        no_settings++;
     }
 
-   //dip number 32 (31)  means we need to close the file after writing, mode = 2
-   sprintf(line,"%s%s\n",part1[31],part2[31]);
-   if ( lisy200_file_write_dipfile( 2, line ) < 0) syserr( "problems dip setting file", 77, 1);
+    //once all collected, we write them to the file
+    if (no_settings >= 64) {
+        //dip number 1 ( 0 as we start with 0 ) means we need to open/create the file: mode = 0
+        sprintf(line, "%s%s\n", part1[0], part2[0]);
+        if (lisy200_file_write_dipfile(0, line) < 0)
+            syserr("problems dip setting file", 77, 1);
 
-   //reset number of settings
-   no_settings = 0;
- }
+        //now write settings 2..31 with mode 1
+        for (i = 1; i <= 30; i++) {
+            sprintf(line, "%s%s\n", part1[i], part2[i]);
+            if (lisy200_file_write_dipfile(1, line) < 0)
+                syserr("problems dip setting file", 77, 1);
+        }
 
-}//do_dip_set
+        //dip number 32 (31)  means we need to close the file after writing, mode = 2
+        sprintf(line, "%s%s\n", part1[31], part2[31]);
+        if (lisy200_file_write_dipfile(2, line) < 0)
+            syserr("problems dip setting file", 77, 1);
+
+        //reset number of settings
+        no_settings = 0;
+    }
+
+} //do_dip_set
 
 // LAMPS
 
-
 //the blinking thread for lamps
-void *do_lamp_blink(void *myarg)
-{
- int i,nu;
- int action = 1;
+void*
+do_lamp_blink(void* myarg) {
+    int i, nu;
+    int action = 1;
 
- pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
- pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
- nu = (int *)myarg;
+    nu = (int*)myarg;
 
- while(1) //run untilmainfunction send cancel
- {
- if (action == 0) action = 1; else action = 0;
- for(i=0; i<=nu; i=i+2) lisy35_lamp_set( active_lampdriver_board, i, action);  
+    while (1) //run untilmainfunction send cancel
+    {
+        if (action == 0)
+            action = 1;
+        else
+            action = 0;
+        for (i = 0; i <= nu; i = i + 2)
+            lisy35_lamp_set(active_lampdriver_board, i, action);
 
- if (action == 0) action = 1; else action = 0;
- for(i=1; i<=nu; i=i+2) lisy35_lamp_set( active_lampdriver_board, i, action);  
- 
- sleep(1);
- if (action == 0) action = 1; else action = 0;
- }
- return NULL;
+        if (action == 0)
+            action = 1;
+        else
+            action = 0;
+        for (i = 1; i <= nu; i = i + 2)
+            lisy35_lamp_set(active_lampdriver_board, i, action);
 
+        sleep(1);
+        if (action == 0)
+            action = 1;
+        else
+            action = 0;
+    }
+    return NULL;
 }
 
 //the blinking thread for solenoids
-void *do_solenoid_blink(void *myarg)
-{
- int i,nu;
- int action = 1;
+void*
+do_solenoid_blink(void* myarg) {
+    int i, nu;
+    int action = 1;
 
- pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
- pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
- nu = (int *)myarg;
+    nu = (int*)myarg;
 
- while(1) //run untilmainfunction send cancel
- {
- if (action == 0) action = 1; else action = 0;
- for(i=1; i<=nu; i=i+2) lisyh_coil_set( i, action);
+    while (1) //run untilmainfunction send cancel
+    {
+        if (action == 0)
+            action = 1;
+        else
+            action = 0;
+        for (i = 1; i <= nu; i = i + 2)
+            lisyh_coil_set(i, action);
 
- if (action == 0) action = 1; else action = 0;
- for(i=2; i<=nu; i=i+2) lisyh_coil_set( i, action);
+        if (action == 0)
+            action = 1;
+        else
+            action = 0;
+        for (i = 2; i <= nu; i = i + 2)
+            lisyh_coil_set(i, action);
 
- sleep(1);
- if (action == 0) action = 1; else action = 0;
- }
- return NULL;
-
+        sleep(1);
+        if (action == 0)
+            action = 1;
+        else
+            action = 0;
+    }
+    return NULL;
 }
 
-
 //set solenoid and update internal vars
-void do_solenoid_set( char *buffer)
-{
- unsigned char sol;
- int i,action;
- //for the blinking thread
- static pthread_t p;
- int myarg;
+void
+do_solenoid_set(char* buffer) {
+    unsigned char sol;
+    int i, action;
+    //for the blinking thread
+    static pthread_t p;
+    int myarg;
 
- //the format here is 'Axx_on' or 'Axx_off'
- //we trust ASCII values
- sol = (10 * (buffer[1]-48)) + buffer[2]-48;
+    //the format here is 'Axx_on' or 'Axx_off'
+    //we trust ASCII values
+    sol = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //on or off?
- if ( buffer[5] == 'f') action=0; else  action=1;
+    //on or off?
+    if (buffer[5] == 'f')
+        action = 0;
+    else
+        action = 1;
 
-
- //special solenoid 77 means ALL solenoid
- if ( sol == 77)
- {
-  for ( i=1; i<=48; i++)
-   {
-     lisyh_coil_set( i, action);
-     solenoid[i] = action;
-     solenoid[77] = action;
-   }
- }
- //special lamp 78 means blinking solenoids with pthread
- else if ( sol == 78)
- {
-  myarg = 48;
-  //start thread here
-  solenoid[sol] = action;
-  if (action) //start thread
-    pthread_create (&p, NULL, do_solenoid_blink, (void *)myarg);
-  else //cancel thread
-   {
-    pthread_cancel (p);
-    pthread_join (p, NULL);
-  //and set all lamps to OFF
-  for ( i=1; i<=48; i++)
-   {
-     lisyh_coil_set( i, action);
-     solenoid[i] = action;
-   }
-  }
- }
- else
- {
-   //set the coil
-   lisyh_coil_set( sol, action);
-   solenoid[sol] = action;
- }
+    //special solenoid 77 means ALL solenoid
+    if (sol == 77) {
+        for (i = 1; i <= 48; i++) {
+            lisyh_coil_set(i, action);
+            solenoid[i] = action;
+            solenoid[77] = action;
+        }
+    }
+    //special lamp 78 means blinking solenoids with pthread
+    else if (sol == 78) {
+        myarg = 48;
+        //start thread here
+        solenoid[sol] = action;
+        if (action) //start thread
+            pthread_create(&p, NULL, do_solenoid_blink, (void*)myarg);
+        else //cancel thread
+        {
+            pthread_cancel(p);
+            pthread_join(p, NULL);
+            //and set all lamps to OFF
+            for (i = 1; i <= 48; i++) {
+                lisyh_coil_set(i, action);
+                solenoid[i] = action;
+            }
+        }
+    } else {
+        //set the coil
+        lisyh_coil_set(sol, action);
+        solenoid[sol] = action;
+    }
 }
 
 //set LED and update internal vars
-void do_led_set( char *buffer)
-{
- unsigned char myled, line;
- int action;
+void
+do_led_set(char* buffer) {
+    unsigned char myled, line;
+    int action;
 
- //the format here is 'Bxxx_on' or 'Bxxx_off'
- //we trust ASCII values
- myled = (100*(buffer[1]-48) + 10*(buffer[2]-48)) + buffer[3]-48;
+    //the format here is 'Bxxx_on' or 'Bxxx_off'
+    //we trust ASCII values
+    myled = (100 * (buffer[1] - 48) + 10 * (buffer[2] - 48)) + buffer[3] - 48;
 
- //on or off?
- if ( buffer[6] == 'f') action=0; else  action=1;
+    //on or off?
+    if (buffer[6] == 'f')
+        action = 0;
+    else
+        action = 1;
 
- //remember
- led[myled] = action;
+    //remember
+    led[myled] = action;
 
- //calculate which line myled is 1..192
- // split to 4 lines (1..4) and 48leds each
- if ( myled >144) { myled = myled - 144; line = 4; }
- else if ( myled >96) { myled = myled - 96; line = 3; }
- else if ( myled >48) { myled = myled - 48; line = 2; }
- else { line = 1; }
+    //calculate which line myled is 1..192
+    // split to 4 lines (1..4) and 48leds each
+    if (myled > 144) {
+        myled = myled - 144;
+        line = 4;
+    } else if (myled > 96) {
+        myled = myled - 96;
+        line = 3;
+    } else if (myled > 48) {
+        myled = myled - 48;
+        line = 2;
+    } else {
+        line = 1;
+    }
 
- //set the led
- lisyh_led_set( myled, line, action);
-
+    //set the led
+    lisyh_led_set(myled, line, action);
 }
 
 //set special lamp and update internal vars
-void do_ss_lamp_set( char *buffer)
-{
- int lamp_no;
- int action;
- int i,nu;
+void
+do_ss_lamp_set(char* buffer) {
+    int lamp_no;
+    int action;
+    int i, nu;
 
- //the format here is 'Jxx_on' or 'Jxx_off'
- //we trust ASCII values
- lamp_no = (10 * (buffer[1]-48)) + buffer[2]-48;
+    //the format here is 'Jxx_on' or 'Jxx_off'
+    //we trust ASCII values
+    lamp_no = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //on or off?
- if ( buffer[5] == 'f') action=0; else  action=1;
+    //on or off?
+    if (buffer[5] == 'f')
+        action = 0;
+    else
+        action = 1;
 
- lisy_home_ss_special_lamp_set( lamp_no, action);
- ss_lamp[lamp_no] = action;
+    lisy_home_ss_special_lamp_set(lamp_no, action);
+    ss_lamp[lamp_no] = action;
 }
 
 //set lamp and update internal vars
-void do_lamp_set( char *buffer)
-{
+void
+do_lamp_set(char* buffer) {
 
- int lamp_no;
- int action;
- int i,nu;
+    int lamp_no;
+    int action;
+    int i, nu;
 
- //for the blinking thread
- static pthread_t p;
- int myarg;
+    //for the blinking thread
+    static pthread_t p;
+    int myarg;
 
- //the format here is 'Lxx_on' or 'Lxx_off'
- //we trust ASCII values
- lamp_no = (10 * (buffer[1]-48)) + buffer[2]-48;
- 
- //on or off?
- if ( buffer[5] == 'f') action=0; else  action=1;
+    //the format here is 'Lxx_on' or 'Lxx_off'
+    //we trust ASCII values
+    lamp_no = (10 * (buffer[1] - 48)) + buffer[2] - 48;
 
- //how many lamps
-   if ( active_lampdriver_board == 1 )
-   {
-    switch ( lisy35_game.aux_lamp_variant )
-      {
-        case AS_2518_43_12_LAMPS: nu = 11; break;
-        case AS_2518_52_28_LAMPS: nu = 27; break;
-        case AS_2518_23_60_LAMPS: nu = 59; break;
-        default: nu=0; break;
-      }
-   }
-   else nu=59;
+    //on or off?
+    if (buffer[5] == 'f')
+        action = 0;
+    else
+        action = 1;
 
+    //how many lamps
+    if (active_lampdriver_board == 1) {
+        switch (lisy35_game.aux_lamp_variant) {
+            case AS_2518_43_12_LAMPS:
+                nu = 11;
+                break;
+            case AS_2518_52_28_LAMPS:
+                nu = 27;
+                break;
+            case AS_2518_23_60_LAMPS:
+                nu = 59;
+                break;
+            default:
+                nu = 0;
+                break;
+        }
+    } else
+        nu = 59;
 
- //special lamp 77 means ALL lamps
- if ( lamp_no == 77)
- {
-  for ( i=0; i<=nu; i++)
-   {
-     lisy35_lamp_set( active_lampdriver_board, i, action);  
-     lamp[i] = action;
-     lamp[77] = action;
-   } 
- }
- //special lamp 78 means blinking lamps with pthread
- else if ( lamp_no == 78)
- {
-  myarg = nu;
-  //start thread here
-  lamp[lamp_no] = action;
-  if (action) //start thread
-    pthread_create (&p, NULL, do_lamp_blink, (void *)myarg);
-  else //cancel thread
-   {
-    pthread_cancel (p);
-    pthread_join (p, NULL);
-  //and set all lamps to OFF
-  for ( i=0; i<=nu; i++)
-   {
-     lisy35_lamp_set( active_lampdriver_board, i, action);  
-     lamp[i] = action;
-   } 
-  }
- }
- else
- {
-  lisy35_lamp_set( active_lampdriver_board, lamp_no, action); 
-  lamp[lamp_no] = action;
- }
-
+    //special lamp 77 means ALL lamps
+    if (lamp_no == 77) {
+        for (i = 0; i <= nu; i++) {
+            lisy35_lamp_set(active_lampdriver_board, i, action);
+            lamp[i] = action;
+            lamp[77] = action;
+        }
+    }
+    //special lamp 78 means blinking lamps with pthread
+    else if (lamp_no == 78) {
+        myarg = nu;
+        //start thread here
+        lamp[lamp_no] = action;
+        if (action) //start thread
+            pthread_create(&p, NULL, do_lamp_blink, (void*)myarg);
+        else //cancel thread
+        {
+            pthread_cancel(p);
+            pthread_join(p, NULL);
+            //and set all lamps to OFF
+            for (i = 0; i <= nu; i++) {
+                lisy35_lamp_set(active_lampdriver_board, i, action);
+                lamp[i] = action;
+            }
+        }
+    } else {
+        lisy35_lamp_set(active_lampdriver_board, lamp_no, action);
+        lamp[lamp_no] = action;
+    }
 }
 
 //read the lamp descriptions from the file
 #define LISY200_LAMPS_PATH "/boot/lisy/lisyH/control/lamp_descriptions/"
 #define LISY200_LAMPS_FILE "lisy200_lamps.csv"
-void get_lamp_descriptions(void)
-{
 
-   FILE *fstream;
-   char lamp_file_name[80];
-   char buffer[1024];
-   char *line,*desc;
-   int first_line = 1;
-   int lamp_no;
+void
+get_lamp_descriptions(void) {
 
+    FILE* fstream;
+    char lamp_file_name[80];
+    char buffer[1024];
+    char *line, *desc;
+    int first_line = 1;
+    int lamp_no;
 
+    //construct the filename; using global var lisy80_gamenr
+    sprintf(lamp_file_name, "%s%s", LISY200_LAMPS_PATH, LISY200_LAMPS_FILE);
 
-
- //construct the filename; using global var lisy80_gamenr
- sprintf(lamp_file_name,"%s%s",LISY200_LAMPS_PATH,LISY200_LAMPS_FILE);
-
- //try to read the file with game nr
- fstream = fopen(lamp_file_name,"r");
-   if(fstream != NULL)
-   {
-      fprintf(stderr,"LISY35 Info: lamp descriptions according to %s\n\r",lamp_file_name);
-   }
-   else
-   {
-    //second try: to read the file with default
-    //construct the new filename; using 'default'
-    sprintf(lamp_file_name,"%sdefault%s",LISY200_LAMPS_PATH,LISY200_LAMPS_FILE);
-    fstream = fopen(lamp_file_name,"r");
-      if(fstream != NULL)
-      {
-      fprintf(stderr,"LISY200 Info: lamp descriptions according to %s\n\r",lamp_file_name);
-      }
-    }//second try
-
-  //check if first or second try where successfull
-  if(fstream == NULL)
-      {
-        fprintf(stderr,"LISY200 Info: lamp descriptions not found \n\r");
-        return ;
+    //try to read the file with game nr
+    fstream = fopen(lamp_file_name, "r");
+    if (fstream != NULL) {
+        fprintf(stderr, "LISY35 Info: lamp descriptions according to %s\n\r", lamp_file_name);
+    } else {
+        //second try: to read the file with default
+        //construct the new filename; using 'default'
+        sprintf(lamp_file_name, "%sdefault%s", LISY200_LAMPS_PATH, LISY200_LAMPS_FILE);
+        fstream = fopen(lamp_file_name, "r");
+        if (fstream != NULL) {
+            fprintf(stderr, "LISY200 Info: lamp descriptions according to %s\n\r", lamp_file_name);
         }
-  //now assign teh descriptions
-   while( ( line=fgets(buffer,sizeof(buffer),fstream)) != NULL)
-   {
-     if (first_line) { first_line=0; continue; } //skip first line (Header)
-     //interpret the line
-     lamp_no = atoi(strtok(line, ";"));
-     if (lamp_no <60)  //max 60 lamps
+    } //second try
+
+    //check if first or second try where successfull
+    if (fstream == NULL) {
+        fprintf(stderr, "LISY200 Info: lamp descriptions not found \n\r");
+        return;
+    }
+    //now assign teh descriptions
+    while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL) {
+        if (first_line) {
+            first_line = 0;
+            continue;
+        } //skip first line (Header)
+        //interpret the line
+        lamp_no = atoi(strtok(line, ";"));
+        if (lamp_no < 60) //max 60 lamps
         {
-	  if (( desc = strtok(NULL, ";") ) != NULL )
-	      {
-	  	strcpy ( lamp_description_line1[lamp_no], desc);
-	  	//remove trailing CR/LF
-		lamp_description_line1[lamp_no][strcspn(lamp_description_line1[lamp_no], "\r\n")] = 0;
-	  	//if we have an empty string, put one blank 
-		if( strlen( lamp_description_line1[lamp_no]) == 0) strcpy(  lamp_description_line1[lamp_no]," ");
-		}
-	  else  strcpy ( lamp_description_line1[lamp_no], " ");
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(lamp_description_line1[lamp_no], desc);
+                //remove trailing CR/LF
+                lamp_description_line1[lamp_no][strcspn(lamp_description_line1[lamp_no], "\r\n")] = 0;
+                //if we have an empty string, put one blank
+                if (strlen(lamp_description_line1[lamp_no]) == 0)
+                    strcpy(lamp_description_line1[lamp_no], " ");
+            } else
+                strcpy(lamp_description_line1[lamp_no], " ");
 
-	  if (( desc = strtok(NULL, ";") ) != NULL )
-	      {
-	  	strcpy ( lamp_description_line2[lamp_no], desc);
-	  	//remove trailing CR/LF
-		lamp_description_line2[lamp_no][strcspn(lamp_description_line2[lamp_no], "\r\n")] = 0;
-	  	//if we have an empty string, put one blank 
-		if( strlen( lamp_description_line2[lamp_no]) == 0) strcpy(  lamp_description_line2[lamp_no]," ");
-		}
-	  else  strcpy ( lamp_description_line2[lamp_no], " ");
-        }
-	else fprintf(stderr,"LISY35 Info: Lamp descriptions wrong info \n\r");
-   }
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(lamp_description_line2[lamp_no], desc);
+                //remove trailing CR/LF
+                lamp_description_line2[lamp_no][strcspn(lamp_description_line2[lamp_no], "\r\n")] = 0;
+                //if we have an empty string, put one blank
+                if (strlen(lamp_description_line2[lamp_no]) == 0)
+                    strcpy(lamp_description_line2[lamp_no], " ");
+            } else
+                strcpy(lamp_description_line2[lamp_no], " ");
+        } else
+            fprintf(stderr, "LISY35 Info: Lamp descriptions wrong info \n\r");
+    }
 }
 
 //read the lamp descriptions from the file (second board)
 //#define LISY35_LAMPS_PATH "/boot/lisy/lisy35/control/lamp_descriptions/"
 #define LISY35_LAMPS2_FILE "_lisy35_lamps2.csv"
-void get_lamp2_descriptions(void)
-{
 
-   FILE *fstream;
-   char lamp_file_name[80];
-   char buffer[1024];
-   char *line,*desc;
-   int first_line = 1;
-   int lamp_no;
+void
+get_lamp2_descriptions(void) {
 
+    FILE* fstream;
+    char lamp_file_name[80];
+    char buffer[1024];
+    char *line, *desc;
+    int first_line = 1;
+    int lamp_no;
 
+    //construct the filename; using global var lisy80_gamenr
+    sprintf(lamp_file_name, "%s%03d%s", LISY200_LAMPS_PATH, lisy35_game.gamenr, LISY35_LAMPS2_FILE);
 
-
- //construct the filename; using global var lisy80_gamenr
- sprintf(lamp_file_name,"%s%03d%s",LISY200_LAMPS_PATH,lisy35_game.gamenr,LISY35_LAMPS2_FILE);
-
- //try to read the file with game nr
- fstream = fopen(lamp_file_name,"r");
-   if(fstream != NULL)
-   {
-      fprintf(stderr,"LISY35 Info: lamp descriptions (sec. board)  according to %s\n\r",lamp_file_name);
-   }
-   else
-   {
-    //second try: to read the file with default
-    //construct the new filename; using 'default'
-    sprintf(lamp_file_name,"%sdefault%s",LISY200_LAMPS_PATH,LISY35_LAMPS2_FILE);
-    fstream = fopen(lamp_file_name,"r");
-      if(fstream != NULL)
-      {
-      fprintf(stderr,"LISY35 Info: lamp descriptions (sec. board)  according to %s\n\r",lamp_file_name);
-      }
-    }//second try
-
-  //check if first or second try where successfull
-  if(fstream == NULL)
-      {
-        fprintf(stderr,"LISY35 Info: lamp descriptions (sec. board)  not found \n\r");
-        return ;
+    //try to read the file with game nr
+    fstream = fopen(lamp_file_name, "r");
+    if (fstream != NULL) {
+        fprintf(stderr, "LISY35 Info: lamp descriptions (sec. board)  according to %s\n\r", lamp_file_name);
+    } else {
+        //second try: to read the file with default
+        //construct the new filename; using 'default'
+        sprintf(lamp_file_name, "%sdefault%s", LISY200_LAMPS_PATH, LISY35_LAMPS2_FILE);
+        fstream = fopen(lamp_file_name, "r");
+        if (fstream != NULL) {
+            fprintf(stderr, "LISY35 Info: lamp descriptions (sec. board)  according to %s\n\r", lamp_file_name);
         }
-  //now assign teh descriptions
-   while( ( line=fgets(buffer,sizeof(buffer),fstream)) != NULL)
-   {
-     if (first_line) { first_line=0; continue; } //skip first line (Header)
-     //interpret the line
-     lamp_no = atoi(strtok(line, ";"));
-     if (lamp_no <60)  //max 60 lamps
+    } //second try
+
+    //check if first or second try where successfull
+    if (fstream == NULL) {
+        fprintf(stderr, "LISY35 Info: lamp descriptions (sec. board)  not found \n\r");
+        return;
+    }
+    //now assign teh descriptions
+    while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL) {
+        if (first_line) {
+            first_line = 0;
+            continue;
+        } //skip first line (Header)
+        //interpret the line
+        lamp_no = atoi(strtok(line, ";"));
+        if (lamp_no < 60) //max 60 lamps
         {
-	  if (( desc = strtok(NULL, ";") ) != NULL )
-	      {
-	  	strcpy ( lamp2_description_line1[lamp_no], desc);
-	  	//remove trailing CR/LF
-		lamp2_description_line1[lamp_no][strcspn(lamp2_description_line1[lamp_no], "\r\n")] = 0;
-	  	//if we have an empty string, put one blank 
-		if( strlen( lamp2_description_line1[lamp_no]) == 0) strcpy(  lamp2_description_line1[lamp_no]," ");
-		}
-	  else  strcpy ( lamp2_description_line1[lamp_no], " ");
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(lamp2_description_line1[lamp_no], desc);
+                //remove trailing CR/LF
+                lamp2_description_line1[lamp_no][strcspn(lamp2_description_line1[lamp_no], "\r\n")] = 0;
+                //if we have an empty string, put one blank
+                if (strlen(lamp2_description_line1[lamp_no]) == 0)
+                    strcpy(lamp2_description_line1[lamp_no], " ");
+            } else
+                strcpy(lamp2_description_line1[lamp_no], " ");
 
-	  if (( desc = strtok(NULL, ";") ) != NULL )
-	      {
-	  	strcpy ( lamp2_description_line2[lamp_no], desc);
-	  	//remove trailing CR/LF
-		lamp2_description_line2[lamp_no][strcspn(lamp2_description_line2[lamp_no], "\r\n")] = 0;
-	  	//if we have an empty string, put one blank 
-		if( strlen( lamp2_description_line2[lamp_no]) == 0) strcpy(  lamp2_description_line2[lamp_no]," ");
-		}
-	  else  strcpy ( lamp2_description_line2[lamp_no], " ");
-        }
-	else fprintf(stderr,"LISY35 Info: Lamp descriptions wrong info \n\r");
-   }
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(lamp2_description_line2[lamp_no], desc);
+                //remove trailing CR/LF
+                lamp2_description_line2[lamp_no][strcspn(lamp2_description_line2[lamp_no], "\r\n")] = 0;
+                //if we have an empty string, put one blank
+                if (strlen(lamp2_description_line2[lamp_no]) == 0)
+                    strcpy(lamp2_description_line2[lamp_no], " ");
+            } else
+                strcpy(lamp2_description_line2[lamp_no], " ");
+        } else
+            fprintf(stderr, "LISY35 Info: Lamp descriptions wrong info \n\r");
+    }
 }
 
 //read the switch descriptions from the file
 #define LISY200_SWITCHES_PATH "/boot/lisy/lisyH/control/switch_descriptions/"
 #define LISY200_SWITCHES_FILE "lisy200_switches.csv"
-void get_switch_descriptions(void)
-{
 
-   FILE *fstream;
-   char switch_file_name[80];
-   char buffer[1024];
-   char *line,*desc;
-   int first_line = 1;
-   int switch_no;
+void
+get_switch_descriptions(void) {
 
+    FILE* fstream;
+    char switch_file_name[80];
+    char buffer[1024];
+    char *line, *desc;
+    int first_line = 1;
+    int switch_no;
 
+    //construct the filename;
+    sprintf(switch_file_name, "%s%s", LISY200_SWITCHES_PATH, LISY200_SWITCHES_FILE);
 
+    //try to read the file with game nr
+    fstream = fopen(switch_file_name, "r");
+    if (fstream != NULL) {
+        fprintf(stderr, "LISY200 Info: switch descriptions according to %s\n\r", switch_file_name);
+    }
 
- //construct the filename; 
- sprintf(switch_file_name,"%s%s",LISY200_SWITCHES_PATH,LISY200_SWITCHES_FILE);
-
- //try to read the file with game nr
- fstream = fopen(switch_file_name,"r");
-   if(fstream != NULL)
-   {
-      fprintf(stderr,"LISY200 Info: switch descriptions according to %s\n\r",switch_file_name);
-   }
-
-  //check if first where successfull
-  if(fstream == NULL)
-  {
-        fprintf(stderr,"LISY200 Info: DIP switch descriptions not found \n\r");
-        return ;
-  }
-  //now assign teh descriptions
-   while( ( line=fgets(buffer,sizeof(buffer),fstream)) != NULL)
-   {
-     if (first_line) { first_line=0; continue; } //skip first line (Header)
-     //interpret the line
-     switch_no = atoi(strtok(line, ";"));
-     if (switch_no <80)
-        {
-          if (( desc = strtok(NULL, ";") ) != NULL )
-              {
-                strcpy ( switch_description_line1[switch_no], desc);
+    //check if first where successfull
+    if (fstream == NULL) {
+        fprintf(stderr, "LISY200 Info: DIP switch descriptions not found \n\r");
+        return;
+    }
+    //now assign teh descriptions
+    while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL) {
+        if (first_line) {
+            first_line = 0;
+            continue;
+        } //skip first line (Header)
+        //interpret the line
+        switch_no = atoi(strtok(line, ";"));
+        if (switch_no < 80) {
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(switch_description_line1[switch_no], desc);
                 //remove trailing CR/LF
                 switch_description_line1[switch_no][strcspn(switch_description_line1[switch_no], "\r\n")] = 0;
-                }
-          else  strcpy ( switch_description_line1[switch_no], "");
+            } else
+                strcpy(switch_description_line1[switch_no], "");
 
-          if (( desc = strtok(NULL, ";") ) != NULL )
-              {
-                strcpy ( switch_description_line2[switch_no], desc);
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(switch_description_line2[switch_no], desc);
                 //remove trailing CR/LF
                 switch_description_line2[switch_no][strcspn(switch_description_line2[switch_no], "\r\n")] = 0;
-                }
-          else  strcpy ( switch_description_line2[switch_no], "");
-        }
-        else fprintf(stderr,"LISY200 Info: Switch descriptions wrong info \n\r");
-   }
-
+            } else
+                strcpy(switch_description_line2[switch_no], "");
+        } else
+            fprintf(stderr, "LISY200 Info: Switch descriptions wrong info \n\r");
+    }
 }
-
 
 //SOLENOIDS
 
 //read the coil descriptions from the file
 #define LISY200_COILS_PATH "/boot/lisy/lisyH/control/coil_descriptions/"
 #define LISY200_COILS_FILE "lisy200_coils.csv"
-void get_coil_descriptions(void)
-{
 
-   FILE *fstream;
-   char coil_file_name[80];
-   char buffer[1024];
-   char *line,*desc;
-   int first_line = 1;
-   int coil_no;
+void
+get_coil_descriptions(void) {
 
+    FILE* fstream;
+    char coil_file_name[80];
+    char buffer[1024];
+    char *line, *desc;
+    int first_line = 1;
+    int coil_no;
 
+    //construct the filename; using global var lisy80_gamenr
+    sprintf(coil_file_name, "%s%s", LISY200_COILS_PATH, LISY200_COILS_FILE);
 
+    //try to read the file with game nr
+    fstream = fopen(coil_file_name, "r");
+    if (fstream != NULL) {
+        fprintf(stderr, "LISY35 Info: coil descriptions according to %s\n\r", coil_file_name);
+    } else {
+        //second try: to read the file with default
+        //construct the new filename; using 'default'
+        sprintf(coil_file_name, "%sdefault%s", LISY200_COILS_PATH, LISY200_COILS_FILE);
+        fstream = fopen(coil_file_name, "r");
+        if (fstream != NULL) {
+            fprintf(stderr, "LISY200 Info: coil descriptions according to %s\n\r", coil_file_name);
+        }
+    } //second try
 
- //construct the filename; using global var lisy80_gamenr
- sprintf(coil_file_name,"%s%s",LISY200_COILS_PATH,LISY200_COILS_FILE);
-
- //try to read the file with game nr
- fstream = fopen(coil_file_name,"r");
-   if(fstream != NULL)
-   {
-      fprintf(stderr,"LISY35 Info: coil descriptions according to %s\n\r",coil_file_name);
-   }
-   else
-   {
-    //second try: to read the file with default
-    //construct the new filename; using 'default'
-    sprintf(coil_file_name,"%sdefault%s",LISY200_COILS_PATH,LISY200_COILS_FILE);
-    fstream = fopen(coil_file_name,"r");
-      if(fstream != NULL)
-      {
-      fprintf(stderr,"LISY200 Info: coil descriptions according to %s\n\r",coil_file_name);
-      }
-    }//second try
-
-  //check if first or second try where successfull
-  if(fstream == NULL)
-  {
-        fprintf(stderr,"LISY200 Info: coil descriptions not found \n\r");
-        return ;
-  }
-  //now assign teh descriptions
-   while( ( line=fgets(buffer,sizeof(buffer),fstream)) != NULL)
-   {
-     if (first_line) { first_line=0; continue; } //skip first line (Header)
-     //interpret the line
-     coil_no = atoi(strtok(line, ";"));
-     if (coil_no <=19)
-        {
-          if (( desc = strtok(NULL, ";") ) != NULL )
-              {
-                strcpy ( coil_description_line1[coil_no], desc);
+    //check if first or second try where successfull
+    if (fstream == NULL) {
+        fprintf(stderr, "LISY200 Info: coil descriptions not found \n\r");
+        return;
+    }
+    //now assign teh descriptions
+    while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL) {
+        if (first_line) {
+            first_line = 0;
+            continue;
+        } //skip first line (Header)
+        //interpret the line
+        coil_no = atoi(strtok(line, ";"));
+        if (coil_no <= 19) {
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(coil_description_line1[coil_no], desc);
                 //remove trailing CR/LF
                 coil_description_line1[coil_no][strcspn(coil_description_line1[coil_no], "\r\n")] = 0;
-	  	//if we have an empty string, put one blank 
-		if( strlen( coil_description_line1[coil_no]) == 0) strcpy(  coil_description_line1[coil_no]," ");
-                }
-          else  strcpy ( switch_description_line1[coil_no], "");
+                //if we have an empty string, put one blank
+                if (strlen(coil_description_line1[coil_no]) == 0)
+                    strcpy(coil_description_line1[coil_no], " ");
+            } else
+                strcpy(switch_description_line1[coil_no], "");
 
-          if (( desc = strtok(NULL, ";") ) != NULL )
-              {
-                strcpy ( coil_description_line2[coil_no], desc);
+            if ((desc = strtok(NULL, ";")) != NULL) {
+                strcpy(coil_description_line2[coil_no], desc);
                 //remove trailing CR/LF
                 coil_description_line2[coil_no][strcspn(coil_description_line2[coil_no], "\r\n")] = 0;
-	  	//if we have an empty string, put one blank 
-		if( strlen( coil_description_line2[coil_no]) == 0) strcpy(  coil_description_line2[coil_no]," ");
-                }
-          else  strcpy ( coil_description_line2[coil_no], "");
-        }
-        else fprintf(stderr,"LISY35 Info: coil descriptions wrong info \n\r");
-   }
-
+                //if we have an empty string, put one blank
+                if (strlen(coil_description_line2[coil_no]) == 0)
+                    strcpy(coil_description_line2[coil_no], " ");
+            } else
+                strcpy(coil_description_line2[coil_no], "");
+        } else
+            fprintf(stderr, "LISY35 Info: coil descriptions wrong info \n\r");
+    }
 }
-
 
 //send all the infos about the solenoids
 //LISY Home version
-void send_solenoid_infos( int sockfd )
-{
-  int i,j,coil_no;
-  char colorcode[80],buffer[512],name[20];
+void
+send_solenoid_infos(int sockfd) {
+    int i, j, coil_no;
+    char colorcode[80], buffer[512], name[20];
 
-  //colorcodes
-  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
+    //colorcodes
+    char* code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
 
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to switch solenoid OFF or ON  Yellow solenoids are ON<br><br>\n");
+    sendit(sockfd, buffer);
 
-     //basic info, header line
-     send_basic_infos(sockfd);
-     sprintf(buffer,"push button to switch solenoid OFF or ON  Yellow solenoids are ON<br><br>\n");
-     sendit( sockfd, buffer);
+    //special solenoid 77, set all solenoids
+    coil_no = 77;
+    if (solenoid[coil_no])
+        strcpy(colorcode, code_yellow);
+    else
+        strcpy(colorcode, code_blue);
+    if (solenoid[coil_no])
+        sprintf(name, "A%02d_off", coil_no);
+    else
+        sprintf(name, "A%02d_on", coil_no);
+    sprintf(buffer,
+            "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n",
+            name, colorcode, "set ALL solenoids", "");
+    sendit(sockfd, buffer);
+    //special solenoid 78, blinking solenoid via thread
+    coil_no = 78;
+    if (solenoid[coil_no])
+        strcpy(colorcode, code_yellow);
+    else
+        strcpy(colorcode, code_blue);
+    if (solenoid[coil_no])
+        sprintf(name, "A%02d_off", coil_no);
+    else
+        sprintf(name, "A%02d_on", coil_no);
+    sprintf(buffer,
+            "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n",
+            name, colorcode, "ALL solenoids blink", "");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 
-   //special solenoid 77, set all solenoids
-   coil_no = 77;
-   if (solenoid[coil_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-   if (solenoid[coil_no]) sprintf(name,"A%02d_off",coil_no); else sprintf(name,"A%02d_on",coil_no);
-   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
-        ,name,colorcode,"set ALL solenoids","");
-     sendit( sockfd, buffer);
-   //special solenoid 78, blinking solenoid via thread
-   coil_no = 78;
-   if (solenoid[coil_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-   if (solenoid[coil_no]) sprintf(name,"A%02d_off",coil_no); else sprintf(name,"A%02d_on",coil_no);
-   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
-        ,name,colorcode,"ALL solenoids blink","");
-     sendit( sockfd, buffer);
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
-  //48 solenoids for  LISY Home
-  //start with 4 lines 8 solenoids each
-  for(j=0; j<=3; j++)
-  {
-   for(i=1; i<=8; i++)
-    {
-     coil_no = j * 8 + i;
-     if (solenoid[coil_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (solenoid[coil_no]) sprintf(name,"A%02d_off",coil_no); else sprintf(name,"A%02d_on",coil_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Coil %02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,coil_no,"normal","coil");
-  sendit( sockfd, buffer);
-    }
-  sprintf(buffer,"<br>\n");
-  sendit( sockfd, buffer);
-  }
-
-  //the relays 1..4 ( 33 .. 36 internal )
-  for(coil_no=33; coil_no<=36; coil_no++)
-  {
-     if (solenoid[coil_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (solenoid[coil_no]) sprintf(name,"A%02d_off",coil_no); else sprintf(name,"A%02d_on",coil_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Relay %02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,coil_no-32,"24Volt","Relay");
-  sendit( sockfd, buffer);
-    }
-  //extension 1..4 ( 37 .. 40 internal )
-  for(coil_no=37; coil_no<=40; coil_no++)
-  {
-     if (solenoid[coil_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (solenoid[coil_no]) sprintf(name,"A%02d_off",coil_no); else sprintf(name,"A%02d_on",coil_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Extension %02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,coil_no-36,"optional","Extension");
-  sendit( sockfd, buffer);
-    }
-
-  sprintf(buffer,"<br>\n");
-  sendit( sockfd, buffer);
-
-  //extension 5..12 ( 41 .. 48 internal )
-  for(coil_no=41; coil_no<=48; coil_no++)
-  {
-     if (solenoid[coil_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (solenoid[coil_no]) sprintf(name,"A%02d_off",coil_no); else sprintf(name,"A%02d_on",coil_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Extension %02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,coil_no-36,"optional","Extension");
-  sendit( sockfd, buffer);
+    //48 solenoids for  LISY Home
+    //start with 4 lines 8 solenoids each
+    for (j = 0; j <= 3; j++) {
+        for (i = 1; i <= 8; i++) {
+            coil_no = j * 8 + i;
+            if (solenoid[coil_no])
+                strcpy(colorcode, code_yellow);
+            else
+                strcpy(colorcode, code_blue);
+            if (solenoid[coil_no])
+                sprintf(name, "A%02d_off", coil_no);
+            else
+                sprintf(name, "A%02d_on", coil_no);
+            sprintf(buffer,
+                    "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Coil "
+                    "%02d<BR/>%s<BR/>%s</button></form>\n",
+                    name, colorcode, coil_no, "normal", "coil");
+            sendit(sockfd, buffer);
+        }
+        sprintf(buffer, "<br>\n");
+        sendit(sockfd, buffer);
     }
 
-  sprintf(buffer,"<br>\n");
-  sendit( sockfd, buffer);
+    //the relays 1..4 ( 33 .. 36 internal )
+    for (coil_no = 33; coil_no <= 36; coil_no++) {
+        if (solenoid[coil_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (solenoid[coil_no])
+            sprintf(name, "A%02d_off", coil_no);
+        else
+            sprintf(name, "A%02d_on", coil_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Relay "
+                "%02d<BR/>%s<BR/>%s</button></form>\n",
+                name, colorcode, coil_no - 32, "24Volt", "Relay");
+        sendit(sockfd, buffer);
+    }
+    //extension 1..4 ( 37 .. 40 internal )
+    for (coil_no = 37; coil_no <= 40; coil_no++) {
+        if (solenoid[coil_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (solenoid[coil_no])
+            sprintf(name, "A%02d_off", coil_no);
+        else
+            sprintf(name, "A%02d_on", coil_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Extension "
+                "%02d<BR/>%s<BR/>%s</button></form>\n",
+                name, colorcode, coil_no - 36, "optional", "Extension");
+        sendit(sockfd, buffer);
+    }
 
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
+
+    //extension 5..12 ( 41 .. 48 internal )
+    for (coil_no = 41; coil_no <= 48; coil_no++) {
+        if (solenoid[coil_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (solenoid[coil_no])
+            sprintf(name, "A%02d_off", coil_no);
+        else
+            sprintf(name, "A%02d_on", coil_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >Extension "
+                "%02d<BR/>%s<BR/>%s</button></form>\n",
+                name, colorcode, coil_no - 36, "optional", "Extension");
+        sendit(sockfd, buffer);
+    }
+
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 }
 
 //send all the infos about the special Starship solenoids
-void send_ss_solenoid_infos( int sockfd )
-{
-  int coil_no;
-  char colorcode[80],buffer[512];
+void
+send_ss_solenoid_infos(int sockfd) {
+    int coil_no;
+    char colorcode[80], buffer[512];
 
-     //basic info, header line
-     send_basic_infos(sockfd);
-     sprintf(buffer,"push button to PULSE specific solenoid<br><br>\n");
-     sendit( sockfd, buffer);
-     //the color and style
-     strcpy(colorcode,"style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'");
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to PULSE specific solenoid<br><br>\n");
+    sendit(sockfd, buffer);
+    //the color and style
+    strcpy(colorcode, "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'");
 
-/*we have 
+    /*we have 
   4 solenoids for bells (1..4)
   5 solenoids for player 1 (5..9)
   2 solenoids for credit up/down (10...11)
   5 solenoids for player 1 (12..16)
 */
 
-   for(coil_no=1; coil_no<=4; coil_no++)
-    {
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
-	coil_no,colorcode,lisy_home_ss_special_coil_map[coil_no].comment,"");
-     sendit( sockfd, buffer);
+    for (coil_no = 1; coil_no <= 4; coil_no++) {
+        sprintf(
+            buffer,
+            "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
+            coil_no, colorcode, lisy_home_ss_special_coil_map[coil_no].comment, "");
+        sendit(sockfd, buffer);
     }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 
- for(coil_no=5; coil_no<=9; coil_no++)
-    {
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
-        coil_no,colorcode,lisy_home_ss_special_coil_map[coil_no].comment,"");
-     sendit( sockfd, buffer);
+    for (coil_no = 5; coil_no <= 9; coil_no++) {
+        sprintf(
+            buffer,
+            "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
+            coil_no, colorcode, lisy_home_ss_special_coil_map[coil_no].comment, "");
+        sendit(sockfd, buffer);
     }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 
-   for(coil_no=10; coil_no<=11; coil_no++)
-    {
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
-        coil_no,colorcode,lisy_home_ss_special_coil_map[coil_no].comment,"");
-     sendit( sockfd, buffer);
+    for (coil_no = 10; coil_no <= 11; coil_no++) {
+        sprintf(
+            buffer,
+            "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
+            coil_no, colorcode, lisy_home_ss_special_coil_map[coil_no].comment, "");
+        sendit(sockfd, buffer);
     }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 
-   for(coil_no=12; coil_no<=16; coil_no++)
-    {
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
-        coil_no,colorcode,lisy_home_ss_special_coil_map[coil_no].comment,"");
-     sendit( sockfd, buffer);
+    for (coil_no = 12; coil_no <= 16; coil_no++) {
+        sprintf(
+            buffer,
+            "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'I%02d\' %s>%s<BR/>%s</button></form>\n",
+            coil_no, colorcode, lisy_home_ss_special_coil_map[coil_no].comment, "");
+        sendit(sockfd, buffer);
     }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 }
 
-
 //send all the infos about the solenoids
-void send_mom_solenoid_infos( int sockfd )
-{
-  int i,j,coil_no;
-  char colorcode[80],buffer[512];
+void
+send_mom_solenoid_infos(int sockfd) {
+    int i, j, coil_no;
+    char colorcode[80], buffer[512];
 
-     //basic info, header line
-     send_basic_infos(sockfd);
-     sprintf(buffer,"push button to PULSE specific solenoid<br><br>\n");
-     sendit( sockfd, buffer);
-     //the color and style
-     strcpy(colorcode,"style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'");
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to PULSE specific solenoid<br><br>\n");
+    sendit(sockfd, buffer);
+    //the color and style
+    strcpy(colorcode, "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'");
 
-  //15 momenary solenoids for Bally
-  for(j=0; j<=2; j++)
-  {
-   for(i=1; i<=5; i++)
-    {
-     coil_no = j * 5 + i;
-	 // matiou: replaced <input> with <button> to allow 2 lines of text to describe solenoid
-     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'C%02d\' %s value=\'%s\n%s\' /> </form>\n",coil_no,colorcode,coil_description_line1[coil_no],coil_description_line2[coil_no]);
-	 sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'C%02d\' %s>%s<BR/>%s</button></form>\n",coil_no,colorcode,coil_description_line1[coil_no],coil_description_line2[coil_no]);
-  sendit( sockfd, buffer);
+    //15 momenary solenoids for Bally
+    for (j = 0; j <= 2; j++) {
+        for (i = 1; i <= 5; i++) {
+            coil_no = j * 5 + i;
+            // matiou: replaced <input> with <button> to allow 2 lines of text to describe solenoid
+            //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'C%02d\' %s value=\'%s\n%s\' /> </form>\n",coil_no,colorcode,coil_description_line1[coil_no],coil_description_line2[coil_no]);
+            sprintf(buffer,
+                    "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'C%02d\' "
+                    "%s>%s<BR/>%s</button></form>\n",
+                    coil_no, colorcode, coil_description_line1[coil_no], coil_description_line2[coil_no]);
+            sendit(sockfd, buffer);
+        }
+        sprintf(buffer, "<br>\n");
+        sendit(sockfd, buffer);
     }
-  sprintf(buffer,"<br>\n");
-  sendit( sockfd, buffer);
-  }
-
 }
 
 //send all the infos about the sound
-void send_sound_infos( int sockfd )
-{
+void
+send_sound_infos(int sockfd) {
 
-  int i,j,k,sound_no;
-  char colorcode[80],buffer[256];
-  unsigned char lsb,msb;
+    int i, j, k, sound_no;
+    char colorcode[80], buffer[256];
+    unsigned char lsb, msb;
 
+    //basic info, header line
+    send_basic_infos(sockfd);
 
-     //basic info, header line
-   send_basic_infos(sockfd);
-
-
-if( lisy35_game.soundboard_variant == LISY35_SB_CHIMES)
-{
-     sprintf(buffer,"this game uses Chimes, please use Solenoids to test sound<br><br>\n");
-     sendit( sockfd, buffer);
-}
-else if( lisy35_game.soundboard_variant == LISY35_SB_STANDARD) //standard SB
-{
-     sprintf(buffer,"push button to send specific sound<br><br>\n");
-     sendit( sockfd, buffer);
-
-i = 0;
-for(j=0; j<=7; j++)
-  {
-  for(k=0; k<=3; k++)
+    if (lisy35_game.soundboard_variant == LISY35_SB_CHIMES) {
+        sprintf(buffer, "this game uses Chimes, please use Solenoids to test sound<br><br>\n");
+        sendit(sockfd, buffer);
+    } else if (lisy35_game.soundboard_variant == LISY35_SB_STANDARD) //standard SB
     {
-     if (sound[i]) strcpy(colorcode,"style=\'BACKGROUND-COLOR:yellow; width: 125px; height: 5em;\'");
-                 else  strcpy(colorcode,"style=\'BACKGROUND-COLOR:powderblue; width: 125px; height: 5em;\'");
-     sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'S%02d\' %s value=\'Sound\n%02d\' /> </form>\n",i,colorcode,i);
-     sendit( sockfd, buffer);
-    //next sound
-    i++;
+        sprintf(buffer, "push button to send specific sound<br><br>\n");
+        sendit(sockfd, buffer);
+
+        i = 0;
+        for (j = 0; j <= 7; j++) {
+            for (k = 0; k <= 3; k++) {
+                if (sound[i])
+                    strcpy(colorcode, "style=\'BACKGROUND-COLOR:yellow; width: 125px; height: 5em;\'");
+                else
+                    strcpy(colorcode, "style=\'BACKGROUND-COLOR:powderblue; width: 125px; height: 5em;\'");
+                sprintf(buffer,
+                        "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'S%02d\' %s "
+                        "value=\'Sound\n%02d\' /> </form>\n",
+                        i, colorcode, i);
+                sendit(sockfd, buffer);
+                //next sound
+                i++;
+            }
+            sprintf(buffer, "<br>\n");
+            sendit(sockfd, buffer);
+        }
+    } else if (lisy35_game.soundboard_variant == LISY35_SB_EXTENDED) {
+
+        if (ext_sound_no[0] != ' ') //there was a setting of soundcard command
+        {
+
+            //calculate soundnumber/command ( max=255 from html input type)
+            sound_no = atoi(ext_sound_no);
+
+            //calculate lsb.msb for output
+            lsb = sound_no % 16;
+            msb = sound_no / 16;
+
+            //send it
+            lisy35_sound_ext_sb_set(lsb); //LSB
+            lisy35_sound_ext_sb_set(msb); //MSB
+
+            sprintf(buffer, "a command with value %d ( lsb:%d msb:%d) has been send to the soundcard<br><br>\n",
+                    sound_no, lsb, msb);
+            sendit(sockfd, buffer);
+
+            //reset command setting to prevent endless loop
+            ext_sound_no[0] = ' ';
+
+            //start with some header
+            sprintf(buffer, "send another command (sound) to the soundcard<br><br>\n");
+            sendit(sockfd, buffer);
+
+            sprintf(buffer, "<p>  Command: <input type=\"number\" max=\"255\" name=\"E\" size=\"3\" maxlength=\"3\" "
+                            "value=\"\" /></p>");
+            sendit(sockfd, buffer);
+
+            sprintf(buffer, "<p><input type=\"submit\" /></p> ");
+            sendit(sockfd, buffer);
+
+        } else //normal header
+        {
+
+            //start with some header
+            sprintf(buffer, "send one command (sound) to the soundcard<br><br>\n");
+            sendit(sockfd, buffer);
+
+            sprintf(buffer, "<p>  Command: <input type=\"number\" max=\"255\" name=\"E\" size=\"3\" maxlength=\"3\" "
+                            "value=\"\" /></p>");
+            sendit(sockfd, buffer);
+
+            sprintf(buffer, "<p><input type=\"submit\" /></p> ");
+            sendit(sockfd, buffer);
+        }
     }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-  }
-}
-else if( lisy35_game.soundboard_variant == LISY35_SB_EXTENDED)
-{
-
-  if ( ext_sound_no[0] != ' ')  //there was a setting of soundcard command
-  {
-
-   //calculate soundnumber/command ( max=255 from html input type)
-   sound_no = atoi(ext_sound_no);
-
-   //calculate lsb.msb for output
-   lsb = sound_no%16;
-   msb = sound_no/16;
-
-   //send it
-   lisy35_sound_ext_sb_set(lsb); //LSB
-   lisy35_sound_ext_sb_set(msb); //MSB
-
-   sprintf(buffer,"a command with value %d ( lsb:%d msb:%d) has been send to the soundcard<br><br>\n",sound_no,lsb,msb);
-   sendit( sockfd, buffer);
-
-   //reset command setting to prevent endless loop
-   ext_sound_no[0] = ' ';
-
-  //start with some header
-  sprintf(buffer,"send another command (sound) to the soundcard<br><br>\n");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p>  Command: <input type=\"number\" max=\"255\" name=\"E\" size=\"3\" maxlength=\"3\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p><input type=\"submit\" /></p> ");
-  sendit( sockfd, buffer);
-
-  }
-  else  //normal header
-  {
-
-  //start with some header
-  sprintf(buffer,"send one command (sound) to the soundcard<br><br>\n");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p>  Command: <input type=\"number\" max=\"255\" name=\"E\" size=\"3\" maxlength=\"3\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p><input type=\"submit\" /></p> ");
-  sendit( sockfd, buffer);
-  }
-
 }
 
+void
+send_dipswitch_infos(int sockfd) {
 
+    int i;
+    unsigned char dipvalue;
+    char dip_comment[256];
+    char filename[80];
+    char buffer[512];
+
+    //basic info, header line
+    send_basic_infos(sockfd);
+    //dummy read to init read csv routine
+    dipvalue = lisy200_file_get_onedip(1, dip_comment, filename, 1);
+    //and the source where it came from
+    sprintf(buffer, "DIP switch settings according to %s<br><br>\n", filename);
+    sendit(sockfd, buffer);
+
+    //now send the status
+    sprintf(buffer, "<form action='' method='post'>");
+    sendit(sockfd, buffer);
+
+    for (i = 1; i <= 32; i++) {
+        dipvalue = lisy200_file_get_onedip(i, dip_comment, filename, 0);
+        sprintf(buffer, "<tr>\nSwitch No:%02d -\n", i);
+        sendit(sockfd, buffer);
+        if (dipvalue) {
+            sprintf(buffer,
+                    "<td><input id=\"on\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_ON\" checked></td> ON", i,
+                    i);
+            sendit(sockfd, buffer);
+            sprintf(buffer, "<td><input id=\"off\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_OFF\"></td> OFF",
+                    i, i);
+            sendit(sockfd, buffer);
+        } else {
+            sprintf(buffer, "<td><input id=\"on\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_ON\"></td> ON", i,
+                    i);
+            sendit(sockfd, buffer);
+            sprintf(buffer,
+                    "<td><input id=\"off\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_OFF\" checked></td> OFF",
+                    i, i);
+            sendit(sockfd, buffer);
+        }
+
+        sprintf(buffer, " --- comment --- ");
+        sendit(sockfd, buffer);
+        sprintf(buffer,
+                "<input type=\"text\" name=\"dip%02d_k\" size=\"200\" maxlength=\"256\" value=\"%s\" ><br>\n</tr>\n", i,
+                dip_comment);
+        sendit(sockfd, buffer);
+    }
+
+    //basic info, footer line
+    sprintf(buffer, "<br><input type='submit' name='setdip' style='BACKGROUND-COLOR:powderblue; width: 125px; height: "
+                    "5em;' value='set values'><form>");
+    sendit(sockfd, buffer);
+    sprintf(buffer, " Note: In case of default values this will create a specific definition file for your pin<br>");
+    sendit(sockfd, buffer);
 }
 
+void
+send_lamp2_infos(int sockfd) {
+    int i, j, lamp_no;
+    char colorcode[80], buffer[512], name[10];
+    int rows, col;
 
-void send_dipswitch_infos( int sockfd )
-{
+    //colorcodes
+    char* code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
 
- int i;
- unsigned char dipvalue; 
- char dip_comment[256];
- char filename[80];
- char buffer[512];
+    //set the active lampdriver
+    active_lampdriver_board = 1;
 
- //basic info, header line
-   send_basic_infos(sockfd);
- //dummy read to init read csv routine
- dipvalue = lisy200_file_get_onedip( 1, dip_comment, filename, 1 );
- //and the source where it came from
- sprintf(buffer,"DIP switch settings according to %s<br><br>\n",filename);
- sendit( sockfd, buffer);
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
+    sendit(sockfd, buffer);
 
+    //do we have a secondary lampdriverboard
+    if (lisy35_game.aux_lamp_variant == NO_AUX_BOARD) {
+        sprintf(buffer, "This game has no secondary lampdriver board<br><br>\n");
+        sendit(sockfd, buffer);
+        return;
+    }
 
- //now send the status
- sprintf(buffer,"<form action='' method='post'>");
- sendit( sockfd, buffer);
-
- for( i=1; i<=32; i++)
-  {
-    dipvalue = lisy200_file_get_onedip( i, dip_comment, filename, 0 );
-    sprintf(buffer,"<tr>\nSwitch No:%02d -\n",i);
-    sendit( sockfd, buffer);
-    if ( dipvalue )
-     {
-       sprintf(buffer,"<td><input id=\"on\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_ON\" checked></td> ON",i,i);
-       sendit( sockfd, buffer);
-       sprintf(buffer,"<td><input id=\"off\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_OFF\"></td> OFF",i,i);
-       sendit( sockfd, buffer);
-     }
+    //special lamp 77, set all lamps
+    lamp_no = 77;
+    if (lamp[lamp_no])
+        strcpy(colorcode, code_yellow);
     else
-     {
-       sprintf(buffer,"<td><input id=\"on\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_ON\"></td> ON",i,i);
-       sendit( sockfd, buffer);
-       sprintf(buffer,"<td><input id=\"off\" type=\"radio\" name=\"dip%02d_v\" value=\"DIP%02d_OFF\" checked></td> OFF",i,i);
-       sendit( sockfd, buffer);
-     }
+        strcpy(colorcode, code_blue);
+    if (lamp[lamp_no])
+        sprintf(name, "L%02d_off", lamp_no);
+    else
+        sprintf(name, "L%02d_on", lamp_no);
+    sprintf(buffer,
+            "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n",
+            name, colorcode, "set ALL lamps", "");
+    sendit(sockfd, buffer);
+    //special lamp 78, blinking lamps via thread
+    lamp_no = 78;
+    if (lamp[lamp_no])
+        strcpy(colorcode, code_yellow);
+    else
+        strcpy(colorcode, code_blue);
+    if (lamp[lamp_no])
+        sprintf(name, "L%02d_off", lamp_no);
+    else
+        sprintf(name, "L%02d_on", lamp_no);
+    sprintf(buffer,
+            "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n",
+            name, colorcode, "ALL lamps blink", "");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 
-    sprintf(buffer," --- comment --- ");
-    sendit( sockfd, buffer);
-    sprintf(buffer,"<input type=\"text\" name=\"dip%02d_k\" size=\"200\" maxlength=\"256\" value=\"%s\" ><br>\n</tr>\n",i,dip_comment);
-    sendit( sockfd, buffer);
-  }
-
-
- //basic info, footer line
- sprintf(buffer,"<br><input type='submit' name='setdip' style='BACKGROUND-COLOR:powderblue; width: 125px; height: 5em;' value='set values'><form>");
- sendit( sockfd, buffer);
- sprintf(buffer," Note: In case of default values this will create a specific definition file for your pin<br>");
- sendit( sockfd, buffer);
-
-
-
-} 
-
-void send_lamp2_infos( int sockfd )
-{
-  int i,j,lamp_no;
-  char colorcode[80],buffer[512],name[10];
-  int rows, col;
-
-  //colorcodes
-  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
-
-  //set the active lampdriver
-  active_lampdriver_board = 1;
-
-     //basic info, header line
-   send_basic_infos(sockfd);
-     sprintf(buffer,"push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
-     sendit( sockfd, buffer);
-
-    //do we have a secondary lampdriverboard 
-    if ( lisy35_game.aux_lamp_variant == NO_AUX_BOARD )
-      {
-        sprintf(buffer,"This game has no secondary lampdriver board<br><br>\n");
-        sendit( sockfd, buffer);
-	return;
-      }
-
-   //special lamp 77, set all lamps
-   lamp_no = 77;
-   if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-   if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
-	,name,colorcode,"set ALL lamps","");
-     sendit( sockfd, buffer);
-   //special lamp 78, blinking lamps via thread
-   lamp_no = 78;
-   if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-   if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
-        ,name,colorcode,"ALL lamps blink","");
-     sendit( sockfd, buffer);
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
-   //how many lamps do we have
-   switch ( lisy35_game.aux_lamp_variant )
-   {
-        case AS_2518_43_12_LAMPS: rows = 2; col = 6; break;
-        case AS_2518_52_28_LAMPS: rows = 4; col = 7; break;
-        case AS_2518_23_60_LAMPS: rows = 6; col = 10; break;
-   }
-
-   //send all the lamps together with the status
-   //Name for Bally 35 starts with zero
-   for(i=0; i<rows; i++)
-   {
-    for(j=0; j<col; j++)
-    {
-     lamp_no=i*col+j;
-     if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-	 // matiou: replaced <input> with <button> to allow 2 lines of text to describe lamp
-     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp2_description_line1[lamp_no],lamp2_description_line2[lamp_no]);
-	 sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >L%02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,lamp_no,lamp2_description_line1[lamp_no],lamp2_description_line2[lamp_no]);
-     sendit( sockfd, buffer);
-    }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-   }
-
-}
-
-void send_led_infos( int sockfd )
-{
-
-  int i,j,k,led_no;
-  char colorcode[80],buffer[512],name[20];
-
-  //colorcodes
-  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
-
-
-     //basic info, header line
-     send_basic_infos(sockfd);
-     sprintf(buffer,"push button to switch LED OFF or ON  Yellow LEDs are ON<br><br>\n");
-     sendit( sockfd, buffer);
-
-  //192 LEDs for LISY Home; split to 4 lines with 48 each
-
-  //4 blocks with 4 lines 12 solenoids each
- for(k=1; k<=4; k++)
- { 
-  for(j=0; j<=3; j++)
-  {
-   for(i=1; i<=12; i++)
-    {
-     led_no = (k-1) * 48 + j * 12 + i;
-     if (led[led_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (led[led_no]) sprintf(name,"B%03d_off",led_no); else sprintf(name,"B%03d_on",led_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >LED %02d<BR/>%s<BR/>%d</button></form>\n",name,colorcode,led_no-((k-1)*48),"line",k);
-  sendit( sockfd, buffer);
-    }
-  }
-  sprintf(buffer,"<br><br><br>\n");
-  sendit( sockfd, buffer);
- }
-}
-
-void send_lamp_infos( int sockfd )
-{
-  int i,j,lamp_no;
-  char colorcode[80],buffer[512],name[10];
-
-  //colorcodes
-  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
-
-  //set the active lampdriver
-  active_lampdriver_board = 0;
-
-     //basic info, header line
-   send_basic_infos(sockfd);
-     sprintf(buffer,"push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
-     sendit( sockfd, buffer);
-
-   //special lamp 77, set all lamps
-   lamp_no = 77;
-   if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-   if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
-	,name,colorcode,"set ALL lamps","");
-     sendit( sockfd, buffer);
-   //special lamp 78, blinking lamps via thread
-   lamp_no = 78;
-   if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-   if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-   sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
-	,name,colorcode,"ALL lamps blink","");
-     sendit( sockfd, buffer);
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
-
-
-   //send all the lamps together with the status
-   //Name for Bally 35 starts with zero
-   // we have 60 lamps 0...59
-   for(i=0; i<=5; i++)
-   {
-    for(j=0; j<=9; j++)
-    {
-     lamp_no=i*10+j;
-     if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-	 // matiou: replaced <input> with <button> to allow 2 lines of text to describe lamp
-     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\r\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp_description_line1[lamp_no],lamp_description_line2[lamp_no]);
-	 sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >L%02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,lamp_no,lamp_description_line1[lamp_no],lamp_description_line2[lamp_no]);
-     sendit( sockfd, buffer);
-    }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-   }
-
-}
-
-void send_ss_lamp_infos( int sockfd )
-{
-  int lamp_no;
-  char colorcode[80],buffer[512],name[10];
-
-  //colorcodes
-  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
-
-     //basic info, header line
-     send_basic_infos(sockfd);
-     sprintf(buffer,"push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
-     sendit( sockfd, buffer);
-
-   // we have 24 lamps 0...23
-   // 10 Endzahl
-   // 5 Ball
-   // 4 Scorelight
-   // 4 other ( 2 used)
-
-   //send all the lamps together with the status
-   //code for special lamps is 'J'
-   for(lamp_no=0; lamp_no<=9; lamp_no++)
-   {
-     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
-     sendit( sockfd, buffer);
-   }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
-   for(lamp_no=10; lamp_no<=14; lamp_no++)
-   {
-     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
-         sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
-     sendit( sockfd, buffer);
-   }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
-   for(lamp_no=15; lamp_no<=18; lamp_no++)
-   {
-     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
-         sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
-     sendit( sockfd, buffer);
-   }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-
-   for(lamp_no=19; lamp_no<=21; lamp_no++)
-   {
-     if (ss_lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (ss_lamp[lamp_no]) sprintf(name,"J%02d_off",lamp_no); else sprintf(name,"J%02d_on",lamp_no);
-         sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >S_Lamp%02d<BR/>%s</button></form>\n",name,colorcode,lamp_no,lisy_home_ss_special_lamp_map[lamp_no].comment,"");
-     sendit( sockfd, buffer);
-   }
-   sprintf(buffer,"<br>\n");
-   sendit( sockfd, buffer);
-}
-
-void send_cont_solenoid_infos( int sockfd )
-{
-  int sol_no;
-  char colorcode[80],buffer[512],name[20];
-
-  //colorcodes
-  char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
-
-     //basic info, header line
-   send_basic_infos(sockfd);
-     sprintf(buffer,"push button to switch solenoid OFF or ON  Yellow solenoids are ON<br><br>\n");
-     sendit( sockfd, buffer);
-     sprintf(buffer,"Note: numbering is 16 .. 19 here, which might be different from what you as numbering in bally solenoid test<br><br>\n");
-     sendit( sockfd, buffer);
-
-   //send all the continuous solenoids together with the status
-   //Name for LISY35 starts with 1 rather then zero, we have only four
-    for(sol_no=1; sol_no<=4; sol_no++)
-    {
-     if (cont_sol[sol_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
-     if (cont_sol[sol_no]) sprintf(name,"O%02d_off",sol_no); else sprintf(name,"O%02d_on",sol_no);
-	 // matiou: replaced <input> with <button> to allow 2 lines of text to describe solenoid
-     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'%02d \n%s\n%s\' /> </form>\n",name,colorcode,sol_no+15,coil_description_line1[sol_no+15],coil_description_line2[sol_no+15]);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >%02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,sol_no+15,coil_description_line1[sol_no+15],coil_description_line2[sol_no+15]);
-     sendit( sockfd, buffer);
+    //how many lamps do we have
+    switch (lisy35_game.aux_lamp_variant) {
+        case AS_2518_43_12_LAMPS:
+            rows = 2;
+            col = 6;
+            break;
+        case AS_2518_52_28_LAMPS:
+            rows = 4;
+            col = 7;
+            break;
+        case AS_2518_23_60_LAMPS:
+            rows = 6;
+            col = 10;
+            break;
     }
 
-
-}
-
-
-void send_soption_infos( int sockfd )
-{
-  char buffer[512];
-  char str[256];
-  char message1[80];
-  char message2[80];
-  int i;
-  FILE *fp;
-  static int first = 1;
-
-
-  //we do this only once
-  if(first)
-  {
-
-  //first try to read sound opts, as we NEED them
-  if ( lisy35_file_get_soundopts() < 0 )
-     sprintf(message1,"error: no sound opts file; sound init failed<br>\n");
-  else
-     sprintf(message1,"info: sound opt file read OK<br>\n");
-  //now open soundcard, and init soundstream
-  if ( lisy35_sound_stream_init() < 0 )
-     sprintf(message2,"error: sound init failed, sound emulation disabled<br>\n");
- else
-   sprintf(message2,"info: sound init done<br>\n");
-
-    // matiou: added line below to make sure init code runs only once
-	first = 0;
-
-  }//first call
-
-
-  //start with some header
-  // lets aplay give us the soundcards known to the system
-  fp = popen("/usr/bin/aplay -l", "r");
-  
-   while ( fgets(str, sizeof(str)-1, fp) != NULL)
-   {
-     sprintf(buffer,"%s<br>\n",str);
-     sendit( sockfd, buffer);
-   }
-   pclose(fp);
-
-  //start with some header
-  sendit( sockfd, "<br>");
-  sendit( sockfd, message1);
-  sendit( sockfd, message2);
-  //set volume according to poti
-  sprintf(buffer,"<br>info: Volume set to %d percent<br><br>\n",lisy_adjust_volume());
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p>  Say this text: <input type=\"text\" name=\"P1\" size=\"100\" maxlength=\"250\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-  sprintf(buffer,"<p>  Play from sound (decimal soundnumber): <input type=\"number\" max=\"255\" name=\"P2\" size=\"3\" maxlength=\"3\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-  sprintf(buffer,"<p>  to sound (decimal soundnumber): <input type=\"number\" max=\"255\" name=\"P3\" size=\"3\" maxlength=\"3\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-  sprintf(buffer,"<p><input type=\"submit\" /></p> ");
-  sendit( sockfd, buffer);
-
-  //print the sound mapping
-  sendit( sockfd, "<br>these are the sound mappings: [hex][dec]<br>\n");
-     for(i=1; i<=255; i++)
-     {
-       if ( lisy35_sound_stru[i].soundnumber != 0 )
-       {
-       sprintf(buffer,"[0x%02x] [%d]: %s/%s.wav %d %s<br>",i,i,lisy35_sound_stru[i].path,
-                        lisy35_sound_stru[i].name,
-                        lisy35_sound_stru[i].option,
-                        lisy35_sound_stru[i].comment);
-       sendit( sockfd, buffer);
-       }
-     }
-}
-
-void send_update_infos( int sockfd )
-{
-  char buffer[512];
-  int ret_val;
-
-  if ( update_path[0] != ' ')  //there was a setting of the update path
-  {
-    sprintf(buffer,"WE WILL NOW do the update<br><br>\n");
-    sendit( sockfd, buffer);
-
-    //set mode to read - write
-    sprintf(buffer,"setting system mode to read/write<br><br>\n");
-    sendit( sockfd, buffer);
-    system("/bin/mount -o remount,rw /boot");
-    system("/bin/mount -o remount,rw /");
-
-    //clean up /home/pi/update
-    sprintf(buffer,"clean up update dir<br><br>\n");
-    sendit( sockfd, buffer);
-    sprintf(buffer,"/bin/rm -rf /home/pi/update/*");
-    ret_val = system(buffer);
-
-    //try to get the update file with wget
-    sprintf(buffer,"try to get the update file with wget<br><br>\n");
-    sendit( sockfd, buffer);
-    sprintf(buffer,"/usr/bin/wget %s -O /home/pi/update/lisy_update.tgz",update_path);
-    ret_val = system(buffer);
-
-    if (ret_val != 0)
-    {
-     sprintf(buffer,"return value of wget was %d<br><br>",ret_val);
-     sendit( sockfd, buffer);
-     sprintf(buffer,"update failed<br><br>");
-     sendit( sockfd, buffer);
+    //send all the lamps together with the status
+    //Name for Bally 35 starts with zero
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < col; j++) {
+            lamp_no = i * col + j;
+            if (lamp[lamp_no])
+                strcpy(colorcode, code_yellow);
+            else
+                strcpy(colorcode, code_blue);
+            if (lamp[lamp_no])
+                sprintf(name, "L%02d_off", lamp_no);
+            else
+                sprintf(name, "L%02d_on", lamp_no);
+            // matiou: replaced <input> with <button> to allow 2 lines of text to describe lamp
+            //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp2_description_line1[lamp_no],lamp2_description_line2[lamp_no]);
+            sprintf(buffer,
+                    "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                    ">L%02d<BR/>%s<BR/>%s</button></form>\n",
+                    name, colorcode, lamp_no, lamp2_description_line1[lamp_no], lamp2_description_line2[lamp_no]);
+            sendit(sockfd, buffer);
+        }
+        sprintf(buffer, "<br>\n");
+        sendit(sockfd, buffer);
     }
-    else  //just unpack the lisy_update.tgz and execute install.sh from within
-    {
-      sprintf(buffer,"try to get extract the update file<br><br>\n");
-      sendit( sockfd, buffer);
-      sprintf(buffer,"/bin/tar -xzf /home/pi/update/lisy_update.tgz -C /home/pi/update");
-      ret_val = system(buffer);
+}
 
-      sprintf(buffer,"try to execute install.sh from within update pack<br><br>\n");
-      sendit( sockfd, buffer);
-      sprintf(buffer,"/bin/bash /home/pi/update/install.sh");
-      ret_val = system(buffer);
+void
+send_led_infos(int sockfd) {
 
-      sprintf(buffer,"update done, you may want to reboot now<br><br>\n");
-      sendit( sockfd, buffer);
+    int i, j, k, led_no;
+    char colorcode[80], buffer[512], name[20];
 
+    //colorcodes
+    char* code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
+
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to switch LED OFF or ON  Yellow LEDs are ON<br><br>\n");
+    sendit(sockfd, buffer);
+
+    //192 LEDs for LISY Home; split to 4 lines with 48 each
+
+    //4 blocks with 4 lines 12 solenoids each
+    for (k = 1; k <= 4; k++) {
+        for (j = 0; j <= 3; j++) {
+            for (i = 1; i <= 12; i++) {
+                led_no = (k - 1) * 48 + j * 12 + i;
+                if (led[led_no])
+                    strcpy(colorcode, code_yellow);
+                else
+                    strcpy(colorcode, code_blue);
+                if (led[led_no])
+                    sprintf(name, "B%03d_off", led_no);
+                else
+                    sprintf(name, "B%03d_on", led_no);
+                sprintf(buffer,
+                        "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >LED "
+                        "%02d<BR/>%s<BR/>%d</button></form>\n",
+                        name, colorcode, led_no - ((k - 1) * 48), "line", k);
+                sendit(sockfd, buffer);
+            }
+        }
+        sprintf(buffer, "<br><br><br>\n");
+        sendit(sockfd, buffer);
     }
-
-    //reset update path to prevent endless loop
-    update_path[0] = ' ';
-
-
-   }
-  else  //normal header
-  {
-
-  //start with some header
-  sprintf(buffer,"do an update, with the URL specified<br><br>\n");
-  sendit( sockfd, buffer);
-  sprintf(buffer,"NOTE: do only use URLs form lisy80.com<br><br>\n");
-  sendit( sockfd, buffer);
-  sprintf(buffer,"for latest update use: http://www.flipperkeller.de/lisy/lisy_update.tgz <br><br>\n");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p>  Update path: <input type=\"text\" name=\"U\" size=\"100\" maxlength=\"250\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p><input type=\"submit\" /></p> ");
-  sendit( sockfd, buffer);
-  }
-
 }
 
+void
+send_lamp_infos(int sockfd) {
+    int i, j, lamp_no;
+    char colorcode[80], buffer[512], name[10];
 
+    //colorcodes
+    char* code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
 
-void send_hostname_infos( int sockfd )
-{
-  char buffer[256];
+    //set the active lampdriver
+    active_lampdriver_board = 0;
 
-  if ( hostname[0] != ' ')  //there was a setting of the hostname
-  {
-    sprintf(buffer,"WE WILL NOW SET the hostname of the system<br><br>\n");
-    sendit( sockfd, buffer);
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
+    sendit(sockfd, buffer);
 
-    //set mode to read - write
-    sprintf(buffer,"setting system mode to read/write<br><br>\n");
-    sendit( sockfd, buffer);
-    system("/bin/mount -o remount,rw /boot");
-    system("/bin/mount -o remount,rw /");
+    //special lamp 77, set all lamps
+    lamp_no = 77;
+    if (lamp[lamp_no])
+        strcpy(colorcode, code_yellow);
+    else
+        strcpy(colorcode, code_blue);
+    if (lamp[lamp_no])
+        sprintf(name, "L%02d_off", lamp_no);
+    else
+        sprintf(name, "L%02d_on", lamp_no);
+    sprintf(buffer,
+            "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n",
+            name, colorcode, "set ALL lamps", "");
+    sendit(sockfd, buffer);
+    //special lamp 78, blinking lamps via thread
+    lamp_no = 78;
+    if (lamp[lamp_no])
+        strcpy(colorcode, code_yellow);
+    else
+        strcpy(colorcode, code_blue);
+    if (lamp[lamp_no])
+        sprintf(name, "L%02d_off", lamp_no);
+    else
+        sprintf(name, "L%02d_on", lamp_no);
+    sprintf(buffer,
+            "<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n",
+            name, colorcode, "ALL lamps blink", "");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 
-    //create new /etc/hosts
-    sprintf(buffer,"creating a new /etc/hosts<br><br>\n");
-    sendit( sockfd, buffer);
-    system("/usr/bin/printf \"127.0.0.1\tlocalhost\n\" >/etc/hosts");
-    sprintf(buffer,"/usr/bin/printf \"127.0.0.1\t%s\" >>/etc/hosts",hostname);
-    system(buffer);
-
-    //create new /etc/hostname
-    sprintf(buffer,"creating a new /etc/hosts<br><br>\n");
-    sendit( sockfd, buffer);
-    sprintf(buffer,"/usr/bin/printf \"%s\n\" >/etc/hostname",hostname);
-    system(buffer);
-
-    //create new /etc/hostname
-    sprintf(buffer,"now sync and rebooting<br><br>\n");
-    sendit( sockfd, buffer);
-    system("/bin/sync");
-    sleep(2);
-    system("/sbin/reboot");
-
-    //reset hostname setting to prevent endless loop
-    hostname[0] = ' ';
-  }
-  else  //normal header
-  {
-
-  //start with some header
-  sprintf(buffer,"set the hostname of the system<br><br>\n");
-  sendit( sockfd, buffer);
-  sprintf(buffer,"NOTE: system will be rebooted afterwards!!<br><br>\n");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p>  Hostname: <input type=\"text\" name=\"H\" size=\"32\" maxlength=\"32\" value=\"\" /></p>");
-  sendit( sockfd, buffer);
-
-  sprintf(buffer,"<p><input type=\"submit\" /></p> ");
-  sendit( sockfd, buffer);
-  }
-
+    //send all the lamps together with the status
+    //Name for Bally 35 starts with zero
+    // we have 60 lamps 0...59
+    for (i = 0; i <= 5; i++) {
+        for (j = 0; j <= 9; j++) {
+            lamp_no = i * 10 + j;
+            if (lamp[lamp_no])
+                strcpy(colorcode, code_yellow);
+            else
+                strcpy(colorcode, code_blue);
+            if (lamp[lamp_no])
+                sprintf(name, "L%02d_off", lamp_no);
+            else
+                sprintf(name, "L%02d_on", lamp_no);
+            // matiou: replaced <input> with <button> to allow 2 lines of text to describe lamp
+            //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\r\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp_description_line1[lamp_no],lamp_description_line2[lamp_no]);
+            sprintf(buffer,
+                    "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                    ">L%02d<BR/>%s<BR/>%s</button></form>\n",
+                    name, colorcode, lamp_no, lamp_description_line1[lamp_no], lamp_description_line2[lamp_no]);
+            sendit(sockfd, buffer);
+        }
+        sprintf(buffer, "<br>\n");
+        sendit(sockfd, buffer);
+    }
 }
 
-void send_ss_GI_infos( int sockfd )
-{
-  char buffer[256];
+void
+send_ss_lamp_infos(int sockfd) {
+    int lamp_no;
+    char colorcode[80], buffer[512], name[10];
 
-  //start with some header
-   send_basic_infos(sockfd);
+    //colorcodes
+    char* code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
 
- //see how many display we have
-   sprintf(buffer,"select RGB value (0..255) and send data<br>\n");
-   sendit( sockfd, buffer);
-   //send
-   sprintf(buffer,"<p>line5 red: <input type=\"text\" name=\"G1\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",line5_R);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>line5 green: <input type=\"text\" name=\"G2\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",line5_G);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>line5 blue: <input type=\"text\" name=\"G3\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",line5_B);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>line6 red: <input type=\"text\" name=\"G4\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",line6_R);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>line6 green: <input type=\"text\" name=\"G5\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",line6_G);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>line6 blue: <input type=\"text\" name=\"G6\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",line6_B);
-   sendit( sockfd, buffer);
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to switch lamp OFF or ON  Yellow lamps are ON<br><br>\n");
+    sendit(sockfd, buffer);
 
+    // we have 24 lamps 0...23
+    // 10 Endzahl
+    // 5 Ball
+    // 4 Scorelight
+    // 4 other ( 2 used)
+
+    //send all the lamps together with the status
+    //code for special lamps is 'J'
+    for (lamp_no = 0; lamp_no <= 9; lamp_no++) {
+        if (ss_lamp[lamp_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (ss_lamp[lamp_no])
+            sprintf(name, "J%02d_off", lamp_no);
+        else
+            sprintf(name, "J%02d_on", lamp_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                ">S_Lamp%02d<BR/>%s</button></form>\n",
+                name, colorcode, lamp_no, lisy_home_ss_special_lamp_map[lamp_no].comment, "");
+        sendit(sockfd, buffer);
+    }
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
+
+    for (lamp_no = 10; lamp_no <= 14; lamp_no++) {
+        if (ss_lamp[lamp_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (ss_lamp[lamp_no])
+            sprintf(name, "J%02d_off", lamp_no);
+        else
+            sprintf(name, "J%02d_on", lamp_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                ">S_Lamp%02d<BR/>%s</button></form>\n",
+                name, colorcode, lamp_no, lisy_home_ss_special_lamp_map[lamp_no].comment, "");
+        sendit(sockfd, buffer);
+    }
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
+
+    for (lamp_no = 15; lamp_no <= 18; lamp_no++) {
+        if (ss_lamp[lamp_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (ss_lamp[lamp_no])
+            sprintf(name, "J%02d_off", lamp_no);
+        else
+            sprintf(name, "J%02d_on", lamp_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                ">S_Lamp%02d<BR/>%s</button></form>\n",
+                name, colorcode, lamp_no, lisy_home_ss_special_lamp_map[lamp_no].comment, "");
+        sendit(sockfd, buffer);
+    }
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
+
+    for (lamp_no = 19; lamp_no <= 21; lamp_no++) {
+        if (ss_lamp[lamp_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (ss_lamp[lamp_no])
+            sprintf(name, "J%02d_off", lamp_no);
+        else
+            sprintf(name, "J%02d_on", lamp_no);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                ">S_Lamp%02d<BR/>%s</button></form>\n",
+                name, colorcode, lamp_no, lisy_home_ss_special_lamp_map[lamp_no].comment, "");
+        sendit(sockfd, buffer);
+    }
+    sprintf(buffer, "<br>\n");
+    sendit(sockfd, buffer);
 }
 
-void send_display_infos( int sockfd )
-{
-  char buffer[256];
-//colorcodes
-  //char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
-  char *code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
+void
+send_cont_solenoid_infos(int sockfd) {
+    int sol_no;
+    char colorcode[80], buffer[512], name[20];
 
-  //start with some header
-   send_basic_infos(sockfd);
+    //colorcodes
+    char* code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
 
-   sprintf(buffer,"This game has 2 display with 5 digits each<br>\n");
-   sendit( sockfd, buffer);
-   //send 
-   sprintf(buffer,"<p>Display Player 1: <input type=\"text\" name=\"D1\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D1);
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>Display Player 2: <input type=\"text\" name=\"D2\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",display_D2);
-   sendit( sockfd, buffer);
+    //basic info, header line
+    send_basic_infos(sockfd);
+    sprintf(buffer, "push button to switch solenoid OFF or ON  Yellow solenoids are ON<br><br>\n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "Note: numbering is 16 .. 19 here, which might be different from what you as numbering in bally "
+                    "solenoid test<br><br>\n");
+    sendit(sockfd, buffer);
 
-   //reset buttons for Displays
-/*
+    //send all the continuous solenoids together with the status
+    //Name for LISY35 starts with 1 rather then zero, we have only four
+    for (sol_no = 1; sol_no <= 4; sol_no++) {
+        if (cont_sol[sol_no])
+            strcpy(colorcode, code_yellow);
+        else
+            strcpy(colorcode, code_blue);
+        if (cont_sol[sol_no])
+            sprintf(name, "O%02d_off", sol_no);
+        else
+            sprintf(name, "O%02d_on", sol_no);
+        // matiou: replaced <input> with <button> to allow 2 lines of text to describe solenoid
+        //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'%02d \n%s\n%s\' /> </form>\n",name,colorcode,sol_no+15,coil_description_line1[sol_no+15],coil_description_line2[sol_no+15]);
+        sprintf(buffer,
+                "<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s "
+                ">%02d<BR/>%s<BR/>%s</button></form>\n",
+                name, colorcode, sol_no + 15, coil_description_line1[sol_no + 15], coil_description_line2[sol_no + 15]);
+        sendit(sockfd, buffer);
+    }
+}
+
+void
+send_soption_infos(int sockfd) {
+    char buffer[512];
+    char str[256];
+    char message1[80];
+    char message2[80];
+    int i;
+    FILE* fp;
+    static int first = 1;
+
+    //we do this only once
+    if (first) {
+
+        //first try to read sound opts, as we NEED them
+        if (lisy35_file_get_soundopts() < 0)
+            sprintf(message1, "error: no sound opts file; sound init failed<br>\n");
+        else
+            sprintf(message1, "info: sound opt file read OK<br>\n");
+        //now open soundcard, and init soundstream
+        if (lisy35_sound_stream_init() < 0)
+            sprintf(message2, "error: sound init failed, sound emulation disabled<br>\n");
+        else
+            sprintf(message2, "info: sound init done<br>\n");
+
+        // matiou: added line below to make sure init code runs only once
+        first = 0;
+
+    } //first call
+
+    //start with some header
+    // lets aplay give us the soundcards known to the system
+    fp = popen("/usr/bin/aplay -l", "r");
+
+    while (fgets(str, sizeof(str) - 1, fp) != NULL) {
+        sprintf(buffer, "%s<br>\n", str);
+        sendit(sockfd, buffer);
+    }
+    pclose(fp);
+
+    //start with some header
+    sendit(sockfd, "<br>");
+    sendit(sockfd, message1);
+    sendit(sockfd, message2);
+    //set volume according to poti
+    sprintf(buffer, "<br>info: Volume set to %d percent<br><br>\n", lisy_adjust_volume());
+    sendit(sockfd, buffer);
+
+    sprintf(buffer,
+            "<p>  Say this text: <input type=\"text\" name=\"P1\" size=\"100\" maxlength=\"250\" value=\"\" /></p>");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>  Play from sound (decimal soundnumber): <input type=\"number\" max=\"255\" name=\"P2\" "
+                    "size=\"3\" maxlength=\"3\" value=\"\" /></p>");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>  to sound (decimal soundnumber): <input type=\"number\" max=\"255\" name=\"P3\" size=\"3\" "
+                    "maxlength=\"3\" value=\"\" /></p>");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p><input type=\"submit\" /></p> ");
+    sendit(sockfd, buffer);
+
+    //print the sound mapping
+    sendit(sockfd, "<br>these are the sound mappings: [hex][dec]<br>\n");
+    for (i = 1; i <= 255; i++) {
+        if (lisy35_sound_stru[i].soundnumber != 0) {
+            sprintf(buffer, "[0x%02x] [%d]: %s/%s.wav %d %s<br>", i, i, lisy35_sound_stru[i].path,
+                    lisy35_sound_stru[i].name, lisy35_sound_stru[i].option, lisy35_sound_stru[i].comment);
+            sendit(sockfd, buffer);
+        }
+    }
+}
+
+void
+send_update_infos(int sockfd) {
+    char buffer[512];
+    int ret_val;
+
+    if (update_path[0] != ' ') //there was a setting of the update path
+    {
+        sprintf(buffer, "WE WILL NOW do the update<br><br>\n");
+        sendit(sockfd, buffer);
+
+        //set mode to read - write
+        sprintf(buffer, "setting system mode to read/write<br><br>\n");
+        sendit(sockfd, buffer);
+        system("/bin/mount -o remount,rw /boot");
+        system("/bin/mount -o remount,rw /");
+
+        //clean up /home/pi/update
+        sprintf(buffer, "clean up update dir<br><br>\n");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "/bin/rm -rf /home/pi/update/*");
+        ret_val = system(buffer);
+
+        //try to get the update file with wget
+        sprintf(buffer, "try to get the update file with wget<br><br>\n");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "/usr/bin/wget %s -O /home/pi/update/lisy_update.tgz", update_path);
+        ret_val = system(buffer);
+
+        if (ret_val != 0) {
+            sprintf(buffer, "return value of wget was %d<br><br>", ret_val);
+            sendit(sockfd, buffer);
+            sprintf(buffer, "update failed<br><br>");
+            sendit(sockfd, buffer);
+        } else //just unpack the lisy_update.tgz and execute install.sh from within
+        {
+            sprintf(buffer, "try to get extract the update file<br><br>\n");
+            sendit(sockfd, buffer);
+            sprintf(buffer, "/bin/tar -xzf /home/pi/update/lisy_update.tgz -C /home/pi/update");
+            ret_val = system(buffer);
+
+            sprintf(buffer, "try to execute install.sh from within update pack<br><br>\n");
+            sendit(sockfd, buffer);
+            sprintf(buffer, "/bin/bash /home/pi/update/install.sh");
+            ret_val = system(buffer);
+
+            sprintf(buffer, "update done, you may want to reboot now<br><br>\n");
+            sendit(sockfd, buffer);
+        }
+
+        //reset update path to prevent endless loop
+        update_path[0] = ' ';
+
+    } else //normal header
+    {
+
+        //start with some header
+        sprintf(buffer, "do an update, with the URL specified<br><br>\n");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "NOTE: do only use URLs form lisy80.com<br><br>\n");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "for latest update use: http://www.flipperkeller.de/lisy/lisy_update.tgz <br><br>\n");
+        sendit(sockfd, buffer);
+
+        sprintf(buffer,
+                "<p>  Update path: <input type=\"text\" name=\"U\" size=\"100\" maxlength=\"250\" value=\"\" /></p>");
+        sendit(sockfd, buffer);
+
+        sprintf(buffer, "<p><input type=\"submit\" /></p> ");
+        sendit(sockfd, buffer);
+    }
+}
+
+void
+send_hostname_infos(int sockfd) {
+    char buffer[256];
+
+    if (hostname[0] != ' ') //there was a setting of the hostname
+    {
+        sprintf(buffer, "WE WILL NOW SET the hostname of the system<br><br>\n");
+        sendit(sockfd, buffer);
+
+        //set mode to read - write
+        sprintf(buffer, "setting system mode to read/write<br><br>\n");
+        sendit(sockfd, buffer);
+        system("/bin/mount -o remount,rw /boot");
+        system("/bin/mount -o remount,rw /");
+
+        //create new /etc/hosts
+        sprintf(buffer, "creating a new /etc/hosts<br><br>\n");
+        sendit(sockfd, buffer);
+        system("/usr/bin/printf \"127.0.0.1\tlocalhost\n\" >/etc/hosts");
+        sprintf(buffer, "/usr/bin/printf \"127.0.0.1\t%s\" >>/etc/hosts", hostname);
+        system(buffer);
+
+        //create new /etc/hostname
+        sprintf(buffer, "creating a new /etc/hosts<br><br>\n");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "/usr/bin/printf \"%s\n\" >/etc/hostname", hostname);
+        system(buffer);
+
+        //create new /etc/hostname
+        sprintf(buffer, "now sync and rebooting<br><br>\n");
+        sendit(sockfd, buffer);
+        system("/bin/sync");
+        sleep(2);
+        system("/sbin/reboot");
+
+        //reset hostname setting to prevent endless loop
+        hostname[0] = ' ';
+    } else //normal header
+    {
+
+        //start with some header
+        sprintf(buffer, "set the hostname of the system<br><br>\n");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "NOTE: system will be rebooted afterwards!!<br><br>\n");
+        sendit(sockfd, buffer);
+
+        sprintf(buffer,
+                "<p>  Hostname: <input type=\"text\" name=\"H\" size=\"32\" maxlength=\"32\" value=\"\" /></p>");
+        sendit(sockfd, buffer);
+
+        sprintf(buffer, "<p><input type=\"submit\" /></p> ");
+        sendit(sockfd, buffer);
+    }
+}
+
+void
+send_ss_GI_infos(int sockfd) {
+    char buffer[256];
+
+    //start with some header
+    send_basic_infos(sockfd);
+
+    //see how many display we have
+    sprintf(buffer, "select RGB value (0..255) and send data<br>\n");
+    sendit(sockfd, buffer);
+    //send
+    sprintf(buffer, "<p>line5 red: <input type=\"text\" name=\"G1\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",
+            line5_R);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>line5 green: <input type=\"text\" name=\"G2\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",
+            line5_G);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>line5 blue: <input type=\"text\" name=\"G3\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",
+            line5_B);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>line6 red: <input type=\"text\" name=\"G4\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",
+            line6_R);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>line6 green: <input type=\"text\" name=\"G5\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",
+            line6_G);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>line6 blue: <input type=\"text\" name=\"G6\" size=\"3\" maxlength=\"3\" value=\"%s\" /></p>",
+            line6_B);
+    sendit(sockfd, buffer);
+}
+
+void
+send_display_infos(int sockfd) {
+    char buffer[256];
+    //colorcodes
+    //char *code_yellow = "style=\'BACKGROUND-COLOR:yellow; width: 125px; margin:auto; height: 5em;\'";
+    char* code_blue = "style=\'BACKGROUND-COLOR:powderblue; width: 125px; margin:auto; height: 5em;\'";
+
+    //start with some header
+    send_basic_infos(sockfd);
+
+    sprintf(buffer, "This game has 2 display with 5 digits each<br>\n");
+    sendit(sockfd, buffer);
+    //send
+    sprintf(buffer,
+            "<p>Display Player 1: <input type=\"text\" name=\"D1\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",
+            display_D1);
+    sendit(sockfd, buffer);
+    sprintf(buffer,
+            "<p>Display Player 2: <input type=\"text\" name=\"D2\" size=\"6\" maxlength=\"6\" value=\"%s\" /></p>",
+            display_D2);
+    sendit(sockfd, buffer);
+
+    //reset buttons for Displays
+    /*
    sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'\n%s\n%s\' /> </form>\n" \
         ,"D0_res",code_blue,"reset Displ 1","");
      sendit( sockfd, buffer);
@@ -1882,395 +1990,375 @@ void send_display_infos( int sockfd )
 */
 }
 
-//thread fpr update the switchmatrix 
-void *do_switchmatrix_update(void *myarg)
-{
- int i,nu,ret;
- unsigned char strobe,returnval;
- unsigned char action = 1;
+//thread fpr update the switchmatrix
+void*
+do_switchmatrix_update(void* myarg) {
+    int i, nu, ret;
+    unsigned char strobe, returnval;
+    unsigned char action = 1;
 
- pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
- pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
- nu = (int *)myarg;
+    nu = (int*)myarg;
 
- while(1) //run untilmainfunction send cancel
- {
-     delay(20); // 20 millisecond delay from wiringpi library
-                // for giving PIC some time to send switchcodes
-     ret = lisy35_switch_reader( &action );
+    while (1) //run untilmainfunction send cancel
+    {
+        delay(20); // 20 millisecond delay from wiringpi library
+                   // for giving PIC some time to send switchcodes
+        ret = lisy35_switch_reader(&action);
 
-     if (ret < 80) {
-         //ret is switchnumber: NOTE: Bally  8*6==48 switches in maximum, counting 01..48
-	 //starship is using all 64 switches
-        //Switches_LISY35[ret] = action;
+        if (ret < 80) {
+            //ret is switchnumber: NOTE: Bally  8*6==48 switches in maximum, counting 01..48
+            //starship is using all 64 switches
+            //Switches_LISY35[ret] = action;
 
-	//calculate strobe & return
-        //Note: this is different from system80
-        strobe = ret / 8;
-        returnval = ret % 8;
+            //calculate strobe & return
+            //Note: this is different from system80
+            strobe = ret / 8;
+            returnval = ret % 8;
 
-        //set the bit in the Matrix var according to action
-        // action 1 means set the bit
-        // any other means delete the bit
-        if (action ) //set bit
-                   SET_BIT(swMatrixLISY35[strobe+1],returnval);
-        else  //delete bit
-                   CLEAR_BIT(swMatrixLISY35[strobe+1],returnval);
-
+            //set the bit in the Matrix var according to action
+            // action 1 means set the bit
+            // any other means delete the bit
+            if (action) //set bit
+                SET_BIT(swMatrixLISY35[strobe + 1], returnval);
+            else //delete bit
+                CLEAR_BIT(swMatrixLISY35[strobe + 1], returnval);
         }
- }
- return NULL;
-
+    }
+    return NULL;
 }
 
+void
+send_switch_infos(int sockfd) {
+    int ret, i, j, switch_no;
+    unsigned char action;
+    char colorcode[80], buffer[512];
 
-void send_switch_infos( int sockfd )
-{
-  int ret,i,j,switch_no;
-  unsigned char action;
-  char colorcode[80],buffer[512];
+    //colorcodes
+    char* code_red = "<td align=center style=\"background-color:red;\">";
+    char* code_green = "<td align=center>";
 
-  //colorcodes
-  char *code_red = "<td align=center style=\"background-color:red;\">";
-  char *code_green = "<td align=center>";
+    //update internal switch matrix with buffer from switch pic
+    //is done that in a seperate thread
 
-  //update internal switch matrix with buffer from switch pic
-  //is done that in a seperate thread
+    //send whole matrix back together with some header
+    send_basic_infos(sockfd);
 
-   //send whole matrix back together with some header
-   send_basic_infos(sockfd);
-
-
-     //printf 8 lines with 8 switches each (64 switches)
-     for(i=0; i<=7; i++) //this is the line 
-     {
-      sprintf(buffer,"<tr style=\"background-color:lawngreen;\" border=\"1\">\n");
-      sendit( sockfd, buffer);
-       for(j=0; j<=7; j++) //this is the switch 
-       { 
-	switch_no = 1 + j + i*8;
- 	//assign color, red is closed, green is open, default fo table is green
-	//if ( !Switches_LISY35[switch_no]) strcpy(colorcode,code_green); else  strcpy(colorcode,code_red);
-	//we start with switch #1
-	  if (  !CHECK_BIT(swMatrixLISY35[i+1],j)) strcpy(colorcode,code_green); else  strcpy(colorcode,code_red);
-          sprintf(buffer,"%sSwitch %02d<br>%s<br>%s</td>\n",colorcode,switch_no,switch_description_line1[switch_no],switch_description_line2[switch_no]);
-          sendit( sockfd, buffer);
-	}
-      sprintf(buffer,"</tr>\n");
-      sendit( sockfd, buffer);
-     }
+    //printf 8 lines with 8 switches each (64 switches)
+    for (i = 0; i <= 7; i++) //this is the line
+    {
+        sprintf(buffer, "<tr style=\"background-color:lawngreen;\" border=\"1\">\n");
+        sendit(sockfd, buffer);
+        for (j = 0; j <= 7; j++) //this is the switch
+        {
+            switch_no = 1 + j + i * 8;
+            //assign color, red is closed, green is open, default fo table is green
+            //if ( !Switches_LISY35[switch_no]) strcpy(colorcode,code_green); else  strcpy(colorcode,code_red);
+            //we start with switch #1
+            if (!CHECK_BIT(swMatrixLISY35[i + 1], j))
+                strcpy(colorcode, code_green);
+            else
+                strcpy(colorcode, code_red);
+            sprintf(buffer, "%sSwitch %02d<br>%s<br>%s</td>\n", colorcode, switch_no,
+                    switch_description_line1[switch_no], switch_description_line2[switch_no]);
+            sendit(sockfd, buffer);
+        }
+        sprintf(buffer, "</tr>\n");
+        sendit(sockfd, buffer);
+    }
 }
-
 
 //send infos for the homepage
-void send_home_infos( int sockfd )
-{
-     char buffer[256];
+void
+send_home_infos(int sockfd) {
+    char buffer[256];
 
-   sprintf(buffer,"<h2>LISY200 Webeditor Home Page</h2> \n");
-   sendit( sockfd, buffer);
+    sprintf(buffer, "<h2>LISY200 Webeditor Home Page</h2> \n");
+    sendit(sockfd, buffer);
 
-   sprintf(buffer,"This is LISY_control fo StarShip version %d.%d<br>\n",LISY200control_SOFTWARE_MAIN,LISY200control_SOFTWARE_SUB);
-   sendit( sockfd, buffer);
-   send_basic_infos(sockfd);
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_switches.php\">Switches</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisyh_leds.php\">LEDs (no mapping )</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_lamps.php\">Lamps (first board)</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./ss_GI.php\">GI (line 5 & 6)</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisyh_solenoids.php\">Solenoids (no mapping) </a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_mom_solenoids.php\">Momentary Solenoids</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_cont_solenoids.php\">Continuous Solenoids</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisyH_special_solenoids.php\">Starship special Solenoids</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisyH_special_lamps.php\">Starship special Lamps</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./ss_displays.php\">Displays</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_dipswitches.php\">DIP Switches</a><br><br> \n");
-   sendit( sockfd, buffer);
-if( lisy35_game.soundboard_variant == 2)
-   sprintf(buffer,"<p>\n<a href=\"./lisy35_sound_ext.php\">Sound</a><br><br> \n");
-else  sprintf(buffer,"<p>\n<a href=\"./lisy35_sound.php\">Sound</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy_soundoption.php\">Control (optional) LISY onboard soundcard</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy1_nvram.php\">NVRAM Information</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy1_software.php\">Software installed</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./hostname.php\">Set the hostname of the system</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./update.php\">update System via internet </a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./update_local.html\">update System with local tgz file</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./upload_35.html\">upload new lamp, coil or switch configuration files</a><br><br> \n");
-   sendit( sockfd, buffer);
-   sprintf(buffer,"<p>\n<a href=\"./lisy1_exit.php\">Exit and reboot</a><br><br> \n");
-   sendit( sockfd, buffer);
+    sprintf(buffer, "This is LISY_control fo StarShip version %d.%d<br>\n", LISY200control_SOFTWARE_MAIN,
+            LISY200control_SOFTWARE_SUB);
+    sendit(sockfd, buffer);
+    send_basic_infos(sockfd);
+    sprintf(buffer, "<p>\n<a href=\"./lisy35_switches.php\">Switches</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisyh_leds.php\">LEDs (no mapping )</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy35_lamps.php\">Lamps (first board)</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./ss_GI.php\">GI (line 5 & 6)</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisyh_solenoids.php\">Solenoids (no mapping) </a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy35_mom_solenoids.php\">Momentary Solenoids</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy35_cont_solenoids.php\">Continuous Solenoids</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisyH_special_solenoids.php\">Starship special Solenoids</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisyH_special_lamps.php\">Starship special Lamps</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./ss_displays.php\">Displays</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy35_dipswitches.php\">DIP Switches</a><br><br> \n");
+    sendit(sockfd, buffer);
+    if (lisy35_game.soundboard_variant == 2)
+        sprintf(buffer, "<p>\n<a href=\"./lisy35_sound_ext.php\">Sound</a><br><br> \n");
+    else
+        sprintf(buffer, "<p>\n<a href=\"./lisy35_sound.php\">Sound</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy_soundoption.php\">Control (optional) LISY onboard soundcard</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy1_nvram.php\">NVRAM Information</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy1_software.php\">Software installed</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./hostname.php\">Set the hostname of the system</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./update.php\">update System via internet </a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./update_local.html\">update System with local tgz file</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer,
+            "<p>\n<a href=\"./upload_35.html\">upload new lamp, coil or switch configuration files</a><br><br> \n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "<p>\n<a href=\"./lisy1_exit.php\">Exit and reboot</a><br><br> \n");
+    sendit(sockfd, buffer);
 }
 
-
-
-
-
 //send software version(s)
-void send_software_infos( int sockfd )
-{
-     char buffer[512];
-     char versionstring[256];
-     int dum;
-     FILE *fp;
+void
+send_software_infos(int sockfd) {
+    char buffer[512];
+    char versionstring[256];
+    int dum;
+    FILE* fp;
 
-   //get installed version of lisy
-   // Open the command for reading.
-  fp = popen("/usr/local/bin/lisy -lisyversion", "r");
-  if (fp == NULL) {
-   sprintf(buffer,"LISY Version: unknown(internal error)\n");
-   sendit( sockfd, buffer);
-  }
-  else
-  {
-   fgets(versionstring, sizeof(versionstring)-1, fp);
-   sprintf(buffer,"LISY Version: %s<br>\n",versionstring);
-   sendit( sockfd, buffer);
-   pclose(fp);
-  }
+    //get installed version of lisy
+    // Open the command for reading.
+    fp = popen("/usr/local/bin/lisy -lisyversion", "r");
+    if (fp == NULL) {
+        sprintf(buffer, "LISY Version: unknown(internal error)\n");
+        sendit(sockfd, buffer);
+    } else {
+        fgets(versionstring, sizeof(versionstring) - 1, fp);
+        sprintf(buffer, "LISY Version: %s<br>\n", versionstring);
+        sendit(sockfd, buffer);
+        pclose(fp);
+    }
 
-   //init switch pic and get Software version
-   dum = lisy80_switch_pic_init();
-   sprintf(buffer,"Software Switch PIC has version %d.%02d<br>\n",dum/100, dum%100);
-   sendit( sockfd, buffer);
+    //init switch pic and get Software version
+    dum = lisy80_switch_pic_init();
+    sprintf(buffer, "Software Switch PIC has version %d.%02d<br>\n", dum / 100, dum % 100);
+    sendit(sockfd, buffer);
 
-   //get Software version Display PIC
-   dum = display_get_sw_version();
-   sprintf(buffer,"Software Display PIC has version %d.%02d<br>\n",dum/100, dum%100);
-   sendit( sockfd, buffer);
+    //get Software version Display PIC
+    dum = display_get_sw_version();
+    sprintf(buffer, "Software Display PIC has version %d.%02d<br>\n", dum / 100, dum % 100);
+    sendit(sockfd, buffer);
 
-  //get Software version, Coil PIC
-   dum = coil_get_sw_version();
-   sprintf(buffer,"Software Coil PIC has version %d.%02d<br>\n",dum/100, dum%100);
-   sendit( sockfd, buffer);
-
+    //get Software version, Coil PIC
+    dum = coil_get_sw_version();
+    sprintf(buffer, "Software Coil PIC has version %d.%02d<br>\n", dum / 100, dum % 100);
+    sendit(sockfd, buffer);
 }
 
 //send info from nvram
-void send_nvram_infos( int sockfd )
-{
-     char buffer[256];
-     int i;
-     eeprom_block_t myblock;
+void
+send_nvram_infos(int sockfd) {
+    char buffer[256];
+    int i;
+    eeprom_block_t myblock;
 
-   //give back the stats from the nvram
-   myblock = lisy_eeprom_getstats();
+    //give back the stats from the nvram
+    myblock = lisy_eeprom_getstats();
 
- sprintf(buffer, "Content of second block of eeprom<br>\n\r");
- sendit( sockfd, buffer);
- sprintf(buffer, "Game number content first block: %d<br>\n\r",myblock.content.gamenr);
- sendit( sockfd, buffer);
- sprintf(buffer, "Number of starts: %d<br>\n\r",myblock.content.starts);
- sendit( sockfd, buffer);
- sprintf(buffer, "Number of starts with debug: %d<br>\n\r",myblock.content.debugs);
- sendit( sockfd, buffer);
- sprintf(buffer, "Number of starts, game specific if >0<br>\n\r");
- sendit( sockfd, buffer);
- for(i=0; i<=63; i++)
-   {
-     if(myblock.content.counts[i] > 0)
-      {
-       sprintf(buffer, "Number of starts Game No(%d): %d<br>\n\r",i,myblock.content.counts[i]);
-       sendit( sockfd, buffer);
-      }
-   }
- sprintf(buffer, "Software version last used: %d.%03d<br>\n\r",myblock.content.Software_Main,myblock.content.Software_Sub);
- sendit( sockfd, buffer);
-
+    sprintf(buffer, "Content of second block of eeprom<br>\n\r");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "Game number content first block: %d<br>\n\r", myblock.content.gamenr);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "Number of starts: %d<br>\n\r", myblock.content.starts);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "Number of starts with debug: %d<br>\n\r", myblock.content.debugs);
+    sendit(sockfd, buffer);
+    sprintf(buffer, "Number of starts, game specific if >0<br>\n\r");
+    sendit(sockfd, buffer);
+    for (i = 0; i <= 63; i++) {
+        if (myblock.content.counts[i] > 0) {
+            sprintf(buffer, "Number of starts Game No(%d): %d<br>\n\r", i, myblock.content.counts[i]);
+            sendit(sockfd, buffer);
+        }
+    }
+    sprintf(buffer, "Software version last used: %d.%03d<br>\n\r", myblock.content.Software_Main,
+            myblock.content.Software_Sub);
+    sendit(sockfd, buffer);
 }
 
 //do upload 'csv' files
-void do_upload( int sockfd, char *what)
-{
+void
+do_upload(int sockfd, char* what) {
 
- char *destination, *source;
- char *line;
- char buffer[256];
- int ret_val;
- //we trust ASCII values
- //the format here is 'U_'
+    char *destination, *source;
+    char* line;
+    char buffer[256];
+    int ret_val;
+    //we trust ASCII values
+    //the format here is 'U_'
 
- line = &what[1];
+    line = &what[1];
 
- destination = strtok(line, ";");
- source = strtok(NULL, ";");
+    destination = strtok(line, ";");
+    source = strtok(NULL, ";");
 
- sprintf(buffer,"<a href=\"./index.php\">Back to LISY35 Homepage</a><br><br>");
- sendit( sockfd, buffer);
+    sprintf(buffer, "<a href=\"./index.php\">Back to LISY35 Homepage</a><br><br>");
+    sendit(sockfd, buffer);
 
- sprintf(buffer,"WE WILL NOW do the upload<br><br>\n");
- sendit( sockfd, buffer);
+    sprintf(buffer, "WE WILL NOW do the upload<br><br>\n");
+    sendit(sockfd, buffer);
 
- //set mode to read - write
- sprintf(buffer,"setting system mode to read/write<br><br>\n");
- sendit( sockfd, buffer);
- system("/bin/mount -o remount,rw /boot");
+    //set mode to read - write
+    sprintf(buffer, "setting system mode to read/write<br><br>\n");
+    sendit(sockfd, buffer);
+    system("/bin/mount -o remount,rw /boot");
 
- sprintf(buffer,"we copy file to %s<br><br>\n",destination);
- sendit( sockfd, buffer);
+    sprintf(buffer, "we copy file to %s<br><br>\n", destination);
+    sendit(sockfd, buffer);
 
- sprintf(buffer,"/bin/cp %s %s",source,destination);
- ret_val = system(buffer);
+    sprintf(buffer, "/bin/cp %s %s", source, destination);
+    ret_val = system(buffer);
 
- if (ret_val != 0)
-    {
-     sprintf(buffer,"return value of wget was %d<br><br>",ret_val);
-     sendit( sockfd, buffer);
-     sprintf(buffer,"upload failed<br><br>");
-     sendit( sockfd, buffer);
-    }
-  else
-    {
-     sprintf(buffer,"upload done<br><br>");
-     sendit( sockfd, buffer);
-     sprintf(buffer,"we re-read the cofig files now<br><br>\n");
-     sendit( sockfd, buffer);
+    if (ret_val != 0) {
+        sprintf(buffer, "return value of wget was %d<br><br>", ret_val);
+        sendit(sockfd, buffer);
+        sprintf(buffer, "upload failed<br><br>");
+        sendit(sockfd, buffer);
+    } else {
+        sprintf(buffer, "upload done<br><br>");
+        sendit(sockfd, buffer);
+        sprintf(buffer, "we re-read the cofig files now<br><br>\n");
+        sendit(sockfd, buffer);
 
-    //re-read configurations
-    get_switch_descriptions();
-    get_lamp_descriptions();
-    get_coil_descriptions();
+        //re-read configurations
+        get_switch_descriptions();
+        get_lamp_descriptions();
+        get_coil_descriptions();
     }
 
- //set mode to read only again
- sprintf(buffer,"setting system mode back to to read only<br><br>\n");
- sendit( sockfd, buffer);
- system("/bin/mount -o remount,ro /boot");
+    //set mode to read only again
+    sprintf(buffer, "setting system mode back to to read only<br><br>\n");
+    sendit(sockfd, buffer);
+    system("/bin/mount -o remount,ro /boot");
 
- sprintf(buffer,"all done<br><br>\n");
- sendit( sockfd, buffer);
-
+    sprintf(buffer, "all done<br><br>\n");
+    sendit(sockfd, buffer);
 }
 
- //dirty, dirty dirty
- //as we do not have a running pinmame
- //we need to identify the soundboard of the game
- //by searching the gamename in by35games.c
- void lisy35_set_soundboard_var(void)
- {
+//dirty, dirty dirty
+//as we do not have a running pinmame
+//we need to identify the soundboard of the game
+//by searching the gamename in by35games.c
+void
+lisy35_set_soundboard_var(void) {
 
-  FILE *fstream;
-  char *line;
-  char buffer[1024];  
-  char *game_name_from_file;
-  char *soundBoard_name_from_file;
+    FILE* fstream;
+    char* line;
+    char buffer[1024];
+    char* game_name_from_file;
+    char* soundBoard_name_from_file;
 
-  unsigned char no_match = 1;
+    unsigned char no_match = 1;
 
-  //lets filter the information we needed
-  //with this cmmand we have a comma separated line
-  //first field is gamename
-  //sixt filed is Soundboard
-  //filter games with INITGAME which are either with Chimes or normal soundbaord
-  //system("/bin/grep 'INITGAME(' /home/pi/lisy/src/wpc/by35games.c |  awk -F'(' '{print $2$3}' >/tmp/bontango");
-  //RTH new: prepared file in lisy35 folder on /boot
+    //lets filter the information we needed
+    //with this cmmand we have a comma separated line
+    //first field is gamename
+    //sixt filed is Soundboard
+    //filter games with INITGAME which are either with Chimes or normal soundbaord
+    //system("/bin/grep 'INITGAME(' /home/pi/lisy/src/wpc/by35games.c |  awk -F'(' '{print $2$3}' >/tmp/bontango");
+    //RTH new: prepared file in lisy35 folder on /boot
 
-
-  //now open first filtered file
-  fstream = fopen("/boot/lisy/lisy35/control/by35games","r");
-   if(fstream == NULL)
-   {
-      fprintf(stderr,"\n LISY35_control: opening %s failed ","/boot/lisy/lisy35/control/by35games");
-      core_gameData->hw.soundBoard = 0;
-      return;
-   }
-
-   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
-   {
-     game_name_from_file = strdup(strtok(line, ","));
-     strdup(strtok(NULL, ",")); //skip
-     strdup(strtok(NULL, ",")); //skip
-     strdup(strtok(NULL, ",")); //skip
-     strdup(strtok(NULL, ",")); //skip
-     soundBoard_name_from_file = strdup(strtok(NULL, ","));
-     //do we have a match?
-     if ( strncmp( lisy35_game.gamename, game_name_from_file, strlen(lisy35_game.gamename)) == 0) 
-       { 
-         if ( strncmp( soundBoard_name_from_file, "0", 1) == 0) lisy35_game.soundboard_variant = LISY35_SB_CHIMES;
-          else lisy35_game.soundboard_variant = LISY35_SB_STANDARD;
-	 no_match = 0; 
-	 break;
-       }
-   } //while
-   fclose(fstream);
-
-  //must be game with INITGAME2 which are with extended soundbaord
-  if (no_match) lisy35_game.soundboard_variant = LISY35_SB_EXTENDED; 
-
-  //debug?
-   if ( ls80dbg.bitv.basic )
-   {
-    switch(lisy35_game.soundboard_variant)
-    {
-    case LISY35_SB_CHIMES:
-     sprintf(debugbuf,"Info: LISY35 will use soundboard variant 0 (Chimes)");
-     break;
-    case LISY35_SB_STANDARD:
-     sprintf(debugbuf,"Info: LISY35 will use soundboard variant 1 (standard SB)");
-     break;
-    case LISY35_SB_EXTENDED:
-     sprintf(debugbuf,"Info: LISY35 will use soundboard variant 2 (EXTENDED SB)");
-     break;
+    //now open first filtered file
+    fstream = fopen("/boot/lisy/lisy35/control/by35games", "r");
+    if (fstream == NULL) {
+        fprintf(stderr, "\n LISY35_control: opening %s failed ", "/boot/lisy/lisy35/control/by35games");
+        core_gameData->hw.soundBoard = 0;
+        return;
     }
-    lisy80_debug(debugbuf);
-   }
- }
 
+    while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL) {
+        game_name_from_file = strdup(strtok(line, ","));
+        strdup(strtok(NULL, ",")); //skip
+        strdup(strtok(NULL, ",")); //skip
+        strdup(strtok(NULL, ",")); //skip
+        strdup(strtok(NULL, ",")); //skip
+        soundBoard_name_from_file = strdup(strtok(NULL, ","));
+        //do we have a match?
+        if (strncmp(lisy35_game.gamename, game_name_from_file, strlen(lisy35_game.gamename)) == 0) {
+            if (strncmp(soundBoard_name_from_file, "0", 1) == 0)
+                lisy35_game.soundboard_variant = LISY35_SB_CHIMES;
+            else
+                lisy35_game.soundboard_variant = LISY35_SB_STANDARD;
+            no_match = 0;
+            break;
+        }
+    } //while
+    fclose(fstream);
+
+    //must be game with INITGAME2 which are with extended soundbaord
+    if (no_match)
+        lisy35_game.soundboard_variant = LISY35_SB_EXTENDED;
+
+    //debug?
+    if (ls80dbg.bitv.basic) {
+        switch (lisy35_game.soundboard_variant) {
+            case LISY35_SB_CHIMES:
+                sprintf(debugbuf, "Info: LISY35 will use soundboard variant 0 (Chimes)");
+                break;
+            case LISY35_SB_STANDARD:
+                sprintf(debugbuf, "Info: LISY35 will use soundboard variant 1 (standard SB)");
+                break;
+            case LISY35_SB_EXTENDED:
+                sprintf(debugbuf, "Info: LISY35 will use soundboard variant 2 (EXTENDED SB)");
+                break;
+        }
+        lisy80_debug(debugbuf);
+    }
+}
 
 //****** MAIN  ******
 
+int
+main(int argc, char* argv[]) {
+    int sockfd, newsockfd, portno;
+    socklen_t clilen;
+    char buffer[256];
+    char ip_interface[10];
+    struct sockaddr_in serv_addr, cli_addr, *myip;
+    int i, n, res;
+    int do_exit = 0;
+    struct ifreq ifa;
+    char* line;
+    int tries = 0;
+    char lisy_variant[20];
+    char lisy_gamename[20];
 
-int main(int argc, char *argv[])
-{
-     int sockfd, newsockfd, portno;
-     socklen_t clilen;
-     char buffer[256];
-     char ip_interface[10];
-     struct sockaddr_in serv_addr, cli_addr, *myip;
-     int i,n,res;
-     int do_exit = 0;
-     struct ifreq ifa;
-     char *line;
-     int tries = 0;
-     char lisy_variant[20];
-     char lisy_gamename[20];
+    //init ars
+    core_gameData = malloc(sizeof *core_gameData);
 
-     //init ars
-     core_gameData = malloc(sizeof *core_gameData);
+    //init switch description
+    for (i = 0; i < 80; i++) {
+        strcpy(switch_description_line1[i], "NOT SET");
+        strcpy(switch_description_line2[i], "");
+    }
 
-     //init switch description
-     for (i=0; i<80; i++)
-      {
-         strcpy ( switch_description_line1[i], "NOT SET");
-         strcpy ( switch_description_line2[i], "");
-      }
-
-
-
-     //check which pinball we are going to control
-     //this will also call lisy_hw_init
-     strcpy(lisy_variant,"lisy35");
-     if ( (res = lisy_set_gamename(lisy_variant, lisy_gamename)) != 0)
-           {
-             fprintf(stderr,"LISY35: no matching game or other error\n\r");
-             return (-1);
-           }
+    //check which pinball we are going to control
+    //this will also call lisy_hw_init
+    strcpy(lisy_variant, "lisy35");
+    if ((res = lisy_set_gamename(lisy_variant, lisy_gamename)) != 0) {
+        fprintf(stderr, "LISY35: no matching game or other error\n\r");
+        return (-1);
+    }
 
     //use the init functions from lisy.c
     lisy_init();
@@ -2279,30 +2367,34 @@ int main(int argc, char *argv[])
     lisy35_set_soundboard_var();
 
     //init lamps
-    lisy35_lamp_init( );
+    lisy35_lamp_init();
 
     //init coils
-    lisy35_coil_init( );
+    lisy35_coil_init();
 
     //collect latest informations and start the lisy logger
-    strcpy(lisy_env.variant,"LISY35_control");
+    strcpy(lisy_env.variant, "LISY35_control");
     lisy_logger();
 
     //init internal lamp vars as well
-    for(i=0; i<=59; i++) lamp[i] = 0;
-    for(i=0; i<=59; i++) lamp2[i] = 0;
-    for(i=0; i<=23; i++) ss_lamp[i] = 0;
+    for (i = 0; i <= 59; i++)
+        lamp[i] = 0;
+    for (i = 0; i <= 59; i++)
+        lamp2[i] = 0;
+    for (i = 0; i <= 23; i++)
+        ss_lamp[i] = 0;
 
     //init internal continous solenoid vars as well
-    for(i=0; i<=4; i++) cont_sol[i] = 0;
+    for (i = 0; i <= 4; i++)
+        cont_sol[i] = 0;
     //init internal solenoid vars as well
-    for(i=0; i<=48; i++) solenoid[i] = 0;
+    for (i = 0; i <= 48; i++)
+        solenoid[i] = 0;
 
     //init sound
     //init internal sound vars as well
-    for(i=0; i<=31; i++) sound[i] = 0;
-
-
+    for (i = 0; i <= 31; i++)
+        sound[i] = 0;
 
     //read the descriptions for the switches
     get_switch_descriptions();
@@ -2312,183 +2404,254 @@ int main(int argc, char *argv[])
     //read the descriptions for the coils
     get_coil_descriptions();
 
- // try say something about LISY80 if sound is requested
- if ( ls80opt.bitv.JustBoom_sound )
- {
-  //set volume according to poti
-  sprintf(debugbuf,"/bin/echo \"Welcome to LISY_Home (Starship) Control Version 0.%d\" | /usr/bin/festival --tts",LISY200control_SOFTWARE_SUB);
-  system(debugbuf);
- }
+    // try say something about LISY80 if sound is requested
+    if (ls80opt.bitv.JustBoom_sound) {
+        //set volume according to poti
+        sprintf(debugbuf,
+                "/bin/echo \"Welcome to LISY_Home (Starship) Control Version 0.%d\" | /usr/bin/festival --tts",
+                LISY200control_SOFTWARE_SUB);
+        system(debugbuf);
+    }
 
-     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-     if (sockfd < 0) 
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
         error("ERROR opening socket");
 
+    //try to find out our IP on eth0
+    strcpy(ifa.ifr_name, "eth0");
+    strcpy(ip_interface, "ETH0"); //upercase for message
+    if ((n = ioctl(sockfd, SIOCGIFADDR, &ifa)) != 0) {
+        //no IP on eth0, we try wlan0 now, 20 times
+        strcpy(ifa.ifr_name, "wlan0");
+        strcpy(ip_interface, "WLAN0"); //upercase for message
+        do {
+            sleep(1);
+            n = ioctl(sockfd, SIOCGIFADDR, &ifa);
+            tries++;
+            if (ls80dbg.bitv.basic) {
+                sprintf(debugbuf, "get IP of wlan0: try number:%d", tries);
+                lisy80_debug(debugbuf);
+            }
+        } while ((n != 0) & (tries < 20));
+    }
 
-     //try to find out our IP on eth0
-     strcpy (ifa.ifr_name, "eth0");
-     strcpy (ip_interface, "ETH0"); //upercase for message
-     if((n=ioctl(sockfd, SIOCGIFADDR, &ifa)) != 0) 
-      {
-	//no IP on eth0, we try wlan0 now, 20 times
-        strcpy (ifa.ifr_name, "wlan0");
-        strcpy (ip_interface, "WLAN0"); //upercase for message
-	do
-        {
-	  sleep(1);
-          n=ioctl(sockfd, SIOCGIFADDR, &ifa);
-	  tries++;
-	  if ( ls80dbg.bitv.basic )
-	   {
-             sprintf(debugbuf,"get IP of wlan0: try number:%d",tries);
-             lisy80_debug(debugbuf);
-           }
-        } while ( (n!=0) &( tries<20));
-      }
-
-     if(n) //no IP found
-     {
-        strcpy (ifa.ifr_name, "noip");
-       //construct the message
-        fprintf(stderr,"Bally NO IP");
-        display35_show_str( 1, "000000");
-        display35_show_str( 2, "000000");
-        display35_show_str( 3, "000000");
-        display35_show_str( 4, "000000");
-     }
-     else //we found an IP
-     {
-      myip = (struct sockaddr_in*)&ifa.ifr_addr;
-	//get teh pouinter to teh Ip address
+    if (n) //no IP found
+    {
+        strcpy(ifa.ifr_name, "noip");
+        //construct the message
+        fprintf(stderr, "Bally NO IP");
+        display35_show_str(1, "000000");
+        display35_show_str(2, "000000");
+        display35_show_str(3, "000000");
+        display35_show_str(4, "000000");
+    } else //we found an IP
+    {
+        myip = (struct sockaddr_in*)&ifa.ifr_addr;
+        //get teh pouinter to teh Ip address
         line = inet_ntoa(myip->sin_addr);
-	//split the ip to four displays and store value for display routine
-        sprintf(buffer,"%-6s",strtok(line, "."));
-        display35_show_str( 1, buffer); //strcpy(display_D1,buffer); strcpy(display_D1A,buffer);
-       fprintf(stderr,"%s\n",buffer);
-        sprintf(buffer,"%-6s",strtok(NULL, "."));
-        display35_show_str( 2, buffer); //strcpy(display_D2,buffer); strcpy(display_D2A,buffer);
-       fprintf(stderr,"%s\n",buffer);
-        sprintf(buffer,"%-6s",strtok(NULL, "."));
-        display35_show_str( 3, buffer); //strcpy(display_D3,buffer); strcpy(display_D3A,buffer);
-       fprintf(stderr,"%s\n",buffer);
-        sprintf(buffer,"%-6s",strtok(NULL, "."));
-        display35_show_str( 4, buffer); //strcpy(display_D4,buffer); strcpy(display_D4A,buffer);
-       fprintf(stderr,"%s\n",buffer);
-     }
+        //split the ip to four displays and store value for display routine
+        sprintf(buffer, "%-6s", strtok(line, "."));
+        display35_show_str(1, buffer); //strcpy(display_D1,buffer); strcpy(display_D1A,buffer);
+        fprintf(stderr, "%s\n", buffer);
+        sprintf(buffer, "%-6s", strtok(NULL, "."));
+        display35_show_str(2, buffer); //strcpy(display_D2,buffer); strcpy(display_D2A,buffer);
+        fprintf(stderr, "%s\n", buffer);
+        sprintf(buffer, "%-6s", strtok(NULL, "."));
+        display35_show_str(3, buffer); //strcpy(display_D3,buffer); strcpy(display_D3A,buffer);
+        fprintf(stderr, "%s\n", buffer);
+        sprintf(buffer, "%-6s", strtok(NULL, "."));
+        display35_show_str(4, buffer); //strcpy(display_D4,buffer); strcpy(display_D4A,buffer);
+        fprintf(stderr, "%s\n", buffer);
+    }
 
+    //now set up the socketserver
+    bzero((char*)&serv_addr, sizeof(serv_addr));
+    portno = 5963;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(portno);
+    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+        error("ERROR on binding");
+    listen(sockfd, 5);
+    clilen = sizeof(cli_addr);
 
-     //now set up the socketserver
-     bzero((char *) &serv_addr, sizeof(serv_addr));
-     portno = 5963;
-     serv_addr.sin_family = AF_INET;
-     serv_addr.sin_addr.s_addr = INADDR_ANY;
-     serv_addr.sin_port = htons(portno);
-     if (bind(sockfd, (struct sockaddr *) &serv_addr,
-              sizeof(serv_addr)) < 0) 
-              error("ERROR on binding");
-     listen(sockfd,5);
-     clilen = sizeof(cli_addr);
-
-     //start pthread for switchmatrix update
+    //start pthread for switchmatrix update
     pthread_t p;
     int myarg;
-    if ( pthread_create (&p, NULL, do_switchmatrix_update, (void *)myarg) != 0)
-      fprintf(stderr," could not creat do_switchmatrix_update thread\n");
+    if (pthread_create(&p, NULL, do_switchmatrix_update, (void*)myarg) != 0)
+        fprintf(stderr, " could not creat do_switchmatrix_update thread\n");
 
-
-     //wait and listen
+    //wait and listen
     do {
-     newsockfd = accept(sockfd, 
-                 (struct sockaddr *) &cli_addr, 
-                 &clilen);
-     if (newsockfd < 0) 
-          error("ERROR on accept");
-     bzero(buffer,256);
-     n = read(newsockfd,buffer,255);
-     if (n < 0) error("ERROR reading from socket");
+        newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &clilen);
+        if (newsockfd < 0)
+            error("ERROR on accept");
+        bzero(buffer, 256);
+        n = read(newsockfd, buffer, 255);
+        if (n < 0)
+            error("ERROR reading from socket");
 
-     //the home screen with all available commands
-     if ( strcmp( buffer, "home") == 0) { send_home_infos(newsockfd); close(newsockfd); }
-     //software used, send all the infos to teh webserver
-     else if ( strcmp( buffer, "software") == 0) { send_software_infos(newsockfd); close(newsockfd); }
-     //nvra stats, send all the infos to teh webserver
-     else if ( strcmp( buffer, "nvram") == 0) { send_nvram_infos(newsockfd); close(newsockfd); }
-     //overview & control switches, send all the infos to teh webserver
-     else if ( strcmp( buffer, "switches") == 0) { send_switch_infos(newsockfd); close(newsockfd); }
-     //overview & leds, send all the infos to teh webserver
-     else if ( strcmp( buffer, "leds") == 0) { send_led_infos(newsockfd); close(newsockfd); }
-     //overview & control lamps, send all the infos to teh webserver
-     else if ( strcmp( buffer, "lamps") == 0) { send_lamp_infos(newsockfd); close(newsockfd); }
-     //GI testing for Starship
-     else if ( strcmp( buffer, "ss_GI") == 0) { send_ss_GI_infos(newsockfd); close(newsockfd); }
-     //overview and control solenoids, send all the infos to teh webserver
-     else if ( strcmp( buffer, "solenoids") == 0) { send_solenoid_infos(newsockfd); close(newsockfd); }
-     //overview and control solenoids, send all the infos to teh webserver
-     else if ( strcmp( buffer, "mom_solenoids") == 0) { send_mom_solenoid_infos(newsockfd); close(newsockfd); }
-     //overview and control Starship special solenoids, send all the infos to teh webserver
-     else if ( strcmp( buffer, "ss_solenoids") == 0) { send_ss_solenoid_infos(newsockfd); close(newsockfd); }
-     //overview and control Starship special lamps, send all the infos to teh webserver
-     else if ( strcmp( buffer, "ss_lamps") == 0) { send_ss_lamp_infos(newsockfd); close(newsockfd); }
-     //overview and cobtrol sounds, send all the infos to teh webserver
-     else if ( strcmp( buffer, "cont_solenoids") == 0) { send_cont_solenoid_infos(newsockfd); close(newsockfd); }
-     //overview and cobtrol sounds, send all the infos to teh webserver
-     else if ( strcmp( buffer, "sounds") == 0) { send_sound_infos(newsockfd); close(newsockfd); }
-     //internal dip-switch emulation, send all the infos to teh webserver
-     else if ( strcmp( buffer, "dipsswitches") == 0) { send_dipswitch_infos(newsockfd); close(newsockfd); }
-     //overview & control displays, send all the infos to teh webserver
-     else if ( strcmp( buffer, "displays") == 0) { send_display_infos(newsockfd); close(newsockfd); }
-     //provide simple input field for setting hostname other then the default
-     else if ( strcmp( buffer, "hostname") == 0) { send_hostname_infos(newsockfd); close(newsockfd); }
-     //provide simple input field for initiating update
-     else if ( strcmp( buffer, "update") == 0) { send_update_infos(newsockfd); close(newsockfd); }
-     //provide simple input field for for controlling optional LISY soundcard
-     else if ( strcmp( buffer, "soption") == 0) { send_soption_infos(newsockfd); close(newsockfd); }
-     //should we exit?
-     else if ( strcmp( buffer, "exit") == 0) do_exit = 1;
-     //we interpret all Messages with an uppercase 'A' as solenoid setting (no mapping here)
-     else if (buffer[0] == 'A') do_solenoid_set(buffer);
-     //we interpret all Messages with an uppercase 'B' as LED setting (no mapping here)
-     else if (buffer[0] == 'B') do_led_set(buffer);
-     //we interpret all Messages with an uppercase 'V' as dip settings
-     else if (buffer[0] == 'V') do_dip_set(buffer);
-     //we interpret all Messages with an uppercase 'K' as dip comment settings
-     else if (buffer[0] == 'K') do_dip_set(buffer);
-     //we interpret all Messages with an uppercase 'L' as lamp settings
-     else if (buffer[0] == 'L') do_lamp_set(buffer);
-     //we interpret all Messages with an uppercase 'S' as sound settings
-     else if (buffer[0] == 'S') do_sound_set(buffer);
-     //we interpret all Messages with an uppercase 'G' as GI settings
-     else if (buffer[0] == 'G') do_ss_GI_set(buffer);
-     //we interpret all Messages with an uppercase 'E' as Extended sound settings
-     else if (buffer[0] == 'E') do_ext_sound_set(buffer);
-     //we interpret all Messages with an uppercase 'C' as coil (solenoid) settings
-     else if (buffer[0] == 'C') do_mom_solenoid_set(buffer);
-     //we interpret all Messages with an uppercase 'I' as special Starship coil (solenoid) settings
-     else if (buffer[0] == 'I') do_ss_solenoid_set(buffer);
-     //we interpret all Messages with an uppercase 'J' as special Starship lamp (LED) settings
-     else if (buffer[0] == 'J') do_ss_lamp_set(buffer);
-     //we interpret all Messages with an uppercase 'C' as continuous coil (solenoid) settings
-     else if (buffer[0] == 'O') do_cont_solenoid_set(buffer);
-     //we interpret all Messages with an uppercase 'D' as display settings
-     else if (buffer[0] == 'D') do_display_set(buffer);
-     //with an uppercase 'H' we do setting a new hostname to the system and reboot
-     else if (buffer[0] == 'H') do_hostname_set(buffer);
-     //with an uppercase 'U' we do try to initiate an update of lisy
-     else if (buffer[0] == 'U') do_updatepath_set(buffer);
-    //with an uppercase 'X' we do try to initiate upload of csv files
-     else if (buffer[0] == 'X') { do_upload(newsockfd,buffer);close(newsockfd); }
-    //with an uppercase 'Y' we do update the system with clientfile
-     else if (buffer[0] == 'Y') { do_update_local(newsockfd,buffer);close(newsockfd); }
-    //with an uppercase 'P' we control the sound oPtion
-     else if (buffer[0] == 'P') { do_soption_set(buffer); }
-     //as default we print out what we got
-     else fprintf(stderr,"Message: %s\n",buffer);
+        //the home screen with all available commands
+        if (strcmp(buffer, "home") == 0) {
+            send_home_infos(newsockfd);
+            close(newsockfd);
+        }
+        //software used, send all the infos to teh webserver
+        else if (strcmp(buffer, "software") == 0) {
+            send_software_infos(newsockfd);
+            close(newsockfd);
+        }
+        //nvra stats, send all the infos to teh webserver
+        else if (strcmp(buffer, "nvram") == 0) {
+            send_nvram_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview & control switches, send all the infos to teh webserver
+        else if (strcmp(buffer, "switches") == 0) {
+            send_switch_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview & leds, send all the infos to teh webserver
+        else if (strcmp(buffer, "leds") == 0) {
+            send_led_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview & control lamps, send all the infos to teh webserver
+        else if (strcmp(buffer, "lamps") == 0) {
+            send_lamp_infos(newsockfd);
+            close(newsockfd);
+        }
+        //GI testing for Starship
+        else if (strcmp(buffer, "ss_GI") == 0) {
+            send_ss_GI_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview and control solenoids, send all the infos to teh webserver
+        else if (strcmp(buffer, "solenoids") == 0) {
+            send_solenoid_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview and control solenoids, send all the infos to teh webserver
+        else if (strcmp(buffer, "mom_solenoids") == 0) {
+            send_mom_solenoid_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview and control Starship special solenoids, send all the infos to teh webserver
+        else if (strcmp(buffer, "ss_solenoids") == 0) {
+            send_ss_solenoid_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview and control Starship special lamps, send all the infos to teh webserver
+        else if (strcmp(buffer, "ss_lamps") == 0) {
+            send_ss_lamp_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview and cobtrol sounds, send all the infos to teh webserver
+        else if (strcmp(buffer, "cont_solenoids") == 0) {
+            send_cont_solenoid_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview and cobtrol sounds, send all the infos to teh webserver
+        else if (strcmp(buffer, "sounds") == 0) {
+            send_sound_infos(newsockfd);
+            close(newsockfd);
+        }
+        //internal dip-switch emulation, send all the infos to teh webserver
+        else if (strcmp(buffer, "dipsswitches") == 0) {
+            send_dipswitch_infos(newsockfd);
+            close(newsockfd);
+        }
+        //overview & control displays, send all the infos to teh webserver
+        else if (strcmp(buffer, "displays") == 0) {
+            send_display_infos(newsockfd);
+            close(newsockfd);
+        }
+        //provide simple input field for setting hostname other then the default
+        else if (strcmp(buffer, "hostname") == 0) {
+            send_hostname_infos(newsockfd);
+            close(newsockfd);
+        }
+        //provide simple input field for initiating update
+        else if (strcmp(buffer, "update") == 0) {
+            send_update_infos(newsockfd);
+            close(newsockfd);
+        }
+        //provide simple input field for for controlling optional LISY soundcard
+        else if (strcmp(buffer, "soption") == 0) {
+            send_soption_infos(newsockfd);
+            close(newsockfd);
+        }
+        //should we exit?
+        else if (strcmp(buffer, "exit") == 0)
+            do_exit = 1;
+        //we interpret all Messages with an uppercase 'A' as solenoid setting (no mapping here)
+        else if (buffer[0] == 'A')
+            do_solenoid_set(buffer);
+        //we interpret all Messages with an uppercase 'B' as LED setting (no mapping here)
+        else if (buffer[0] == 'B')
+            do_led_set(buffer);
+        //we interpret all Messages with an uppercase 'V' as dip settings
+        else if (buffer[0] == 'V')
+            do_dip_set(buffer);
+        //we interpret all Messages with an uppercase 'K' as dip comment settings
+        else if (buffer[0] == 'K')
+            do_dip_set(buffer);
+        //we interpret all Messages with an uppercase 'L' as lamp settings
+        else if (buffer[0] == 'L')
+            do_lamp_set(buffer);
+        //we interpret all Messages with an uppercase 'S' as sound settings
+        else if (buffer[0] == 'S')
+            do_sound_set(buffer);
+        //we interpret all Messages with an uppercase 'G' as GI settings
+        else if (buffer[0] == 'G')
+            do_ss_GI_set(buffer);
+        //we interpret all Messages with an uppercase 'E' as Extended sound settings
+        else if (buffer[0] == 'E')
+            do_ext_sound_set(buffer);
+        //we interpret all Messages with an uppercase 'C' as coil (solenoid) settings
+        else if (buffer[0] == 'C')
+            do_mom_solenoid_set(buffer);
+        //we interpret all Messages with an uppercase 'I' as special Starship coil (solenoid) settings
+        else if (buffer[0] == 'I')
+            do_ss_solenoid_set(buffer);
+        //we interpret all Messages with an uppercase 'J' as special Starship lamp (LED) settings
+        else if (buffer[0] == 'J')
+            do_ss_lamp_set(buffer);
+        //we interpret all Messages with an uppercase 'C' as continuous coil (solenoid) settings
+        else if (buffer[0] == 'O')
+            do_cont_solenoid_set(buffer);
+        //we interpret all Messages with an uppercase 'D' as display settings
+        else if (buffer[0] == 'D')
+            do_display_set(buffer);
+        //with an uppercase 'H' we do setting a new hostname to the system and reboot
+        else if (buffer[0] == 'H')
+            do_hostname_set(buffer);
+        //with an uppercase 'U' we do try to initiate an update of lisy
+        else if (buffer[0] == 'U')
+            do_updatepath_set(buffer);
+        //with an uppercase 'X' we do try to initiate upload of csv files
+        else if (buffer[0] == 'X') {
+            do_upload(newsockfd, buffer);
+            close(newsockfd);
+        }
+        //with an uppercase 'Y' we do update the system with clientfile
+        else if (buffer[0] == 'Y') {
+            do_update_local(newsockfd, buffer);
+            close(newsockfd);
+        }
+        //with an uppercase 'P' we control the sound oPtion
+        else if (buffer[0] == 'P') {
+            do_soption_set(buffer);
+        }
+        //as default we print out what we got
+        else
+            fprintf(stderr, "Message: %s\n", buffer);
 
-  } while (do_exit == 0);
+    } while (do_exit == 0);
 
-     close(newsockfd);
-     close(sockfd);
-     //menu says: exit and reboot: so do it
-     system("/sbin/reboot");
-     return 0; 
+    close(newsockfd);
+    close(sockfd);
+    //menu says: exit and reboot: so do it
+    system("/sbin/reboot");
+    return 0;
 }
