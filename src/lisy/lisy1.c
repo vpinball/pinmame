@@ -28,6 +28,8 @@
 #include <time.h>
 #include <wiringPi.h>
 
+char debugbuf[256];
+
 //global var for internal game_name structure,
 //set by  lisy80_get_gamename in unix/main
 t_stru_lisy1_games_csv lisy1_game;
