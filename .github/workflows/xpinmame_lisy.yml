@@ -38,6 +38,7 @@ jobs:
           cpu: ${{ matrix.cpu }}
           cpu_info: cpuinfo/${{ matrix.cpu_info }}
           copy_repository_path: /opt/pinmame
+          copy_artifact_path: xpinmame.vid_lisy
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev libsdl2-mixer-dev libi2c-dev
@@ -46,3 +47,9 @@ jobs:
             cd /opt/pinmame
             make -f makefile.lisy
             ls -l
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: xpinmame.vid_lisy
+          path: xpinmame.vid_lisy
