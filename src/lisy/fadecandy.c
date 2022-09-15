@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
+char debugbuf[256];
+
 //we reserve 512 pixels which is the max value for one fadecandy
 pixel lisy_fc_leds[512];
 // the sink for our opc device (fadecandy)

@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <wiringPi.h>
 
+char debugbuf[256];
+
 //local vars
 //our pointers to preloaded sounds
 Mix_Chunk* lisy_H_sound[32];

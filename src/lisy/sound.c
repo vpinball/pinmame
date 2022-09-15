@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+char debugbuf[256];
+
 //initial value
 //static int lisy80_sound_stream_status = LISY80_SOUND_STATUS_IDLE;
 

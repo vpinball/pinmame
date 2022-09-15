@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <wiringPi.h>
 
+char debugbuf[256];
+
 //global var
 union five {
     unsigned char byte;

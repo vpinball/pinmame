@@ -39,6 +39,8 @@
 #include "linked_list.h"
 #include "mpfserver.h"
 
+char debugbuf[256];
+
 char s_mpf_software_version[16];
 
 //fake definiton needed in lisy_w

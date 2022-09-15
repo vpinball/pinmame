@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <wiringPi.h>
 
+char debugbuf[256];
+
 //globale var, used in most routines
 union three {
     unsigned char byte;

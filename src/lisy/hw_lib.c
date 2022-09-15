@@ -39,6 +39,8 @@
 
 #define SW_PIC_INIT_DEL_IN_MS 50
 
+char debugbuf[256];
+
 //global vars for I2C
 int fd_disp_pic; //file descriptor for display pic
 int fd_coil_pic; //file descriptor for coil pic
