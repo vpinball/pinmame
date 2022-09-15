@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <wiringPi.h>
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 //globale var, used in most routines
 union three {

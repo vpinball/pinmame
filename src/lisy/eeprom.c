@@ -32,7 +32,7 @@ added pic eeprom routines bontango January 2018
 
 #define MAX_EEPROM_WRITE_RETRIES 30
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 //global blockbuffer for eeprom content, used to optimize read/write
 // read is done always from buffer (except first time)

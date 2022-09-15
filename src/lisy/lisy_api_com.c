@@ -12,10 +12,11 @@
 #include <string.h>
 #include <unistd.h>
 
+extern char debugbuf[256]; // see hw_lib.c
+
 //local vars
 int fd_api;
 static long lisy_api_counter = 0;
-char debugbuf[256];
 
 //lisy routine for writing to usb serial device
 //we do it here in order to beable to log all bytes send to APC

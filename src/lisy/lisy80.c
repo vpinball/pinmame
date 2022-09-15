@@ -27,7 +27,7 @@
 #include <time.h>
 #include <wiringPi.h>
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 //global vars for timing & speed
 long no_of_tickles = 0;

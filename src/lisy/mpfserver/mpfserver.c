@@ -39,7 +39,7 @@
 #include "linked_list.h"
 #include "mpfserver.h"
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 char s_mpf_software_version[16];
 

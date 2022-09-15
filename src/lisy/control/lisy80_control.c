@@ -35,7 +35,7 @@
 #define LISY80control_SOFTWARE_MAIN 0
 #define LISY80control_SOFTWARE_SUB  30
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 //fake definiton needed in lisy_w
 void core_setSw(int myswitch, unsigned char action){};

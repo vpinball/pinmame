@@ -17,9 +17,9 @@
 #include <unistd.h>
 #include <wiringPi.h>
 
-extern unsigned char swMatrixLISY35[9];
+extern char debugbuf[256]; // see hw_lib.c
 
-char debugbuf[256];
+extern unsigned char swMatrixLISY35[9];
 
 void
 lisy80_debug_switches(unsigned char data) {

@@ -30,6 +30,8 @@
 #include <time.h>
 #include <wiringPi.h>
 
+extern char debugbuf[256]; // see hw_lib.c
+
 //typedefs
 
 /*
@@ -145,8 +147,6 @@ typedef union {
         uint16_t dum2[CORE_SEGCOUNT - 36]; //the rest
     } disp;
 } t_mysegments_s9;
-
-char debugbuf[256];
 
 //global var for internal game_name structure,
 //set by  lisy_set_gamename in unix/main

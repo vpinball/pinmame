@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 //we reserve 512 pixels which is the max value for one fadecandy
 pixel lisy_fc_leds[512];

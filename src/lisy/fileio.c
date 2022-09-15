@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char debugbuf[256];
+extern char debugbuf[256]; // see hw_lib.c
 
 //handle dip definition file for current 'pin'
 //mode
