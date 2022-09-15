@@ -51,5 +51,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: xpinmame.vid_lisy
+          name: LISY xpinmame for ${{ matrix.cpu_info }}
           path: xpinmame.vid_lisy
