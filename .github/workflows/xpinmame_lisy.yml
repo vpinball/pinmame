@@ -41,7 +41,6 @@ jobs:
           cpu_info: cpuinfo/${{ matrix.cpu_info }}
           copy_repository_path: /opt/pinmame
           copy_artifact_path: xpinmame.vid_lisy
-          copy_artifact_dest: .
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev libsdl2-mixer-dev libi2c-dev
@@ -50,18 +49,8 @@ jobs:
             cd /opt/pinmame
             make -f makefile.lisy
 
-      - name: Rename the image
-        run: |
-          mv ${{ steps.arm_runner_make.outputs.image }} lisy-${{ matrix.cpu_info }}.img
-
       - name: Upload xmpinmame binary artifact
         uses: actions/upload-artifact@v3
         with:
           name: LISY xpinmame ${{ matrix.cpu_info }}
           path: xpinmame.vid_lisy
-
-      - name: Upload image artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: LISY image ${{ matrix.cpu_info }}
-          path: lisy-${{ matrix.cpu_info }}.img
