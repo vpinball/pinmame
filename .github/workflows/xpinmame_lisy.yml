@@ -50,19 +50,18 @@ jobs:
             cd /opt/pinmame
             make -f makefile.lisy
 
-      - name: Compress the image
+      - name: Rename the image
         run: |
           mv ${{ steps.arm_runner_make.outputs.image }} lisy-${{ matrix.cpu_info }}.img
-          sudo xz -T 0 -v lisy-${{ matrix.cpu_info }}.img
 
-      - name: Upload Artifacts
+      - name: Upload xmpinmame binary artifact
         uses: actions/upload-artifact@v3
         with:
           name: LISY xpinmame ${{ matrix.cpu_info }}
           path: xpinmame.vid_lisy
 
-      - name: Upload Artifacts
+      - name: Upload image artifact
         uses: actions/upload-artifact@v3
         with:
           name: LISY image ${{ matrix.cpu_info }}
-          path: lisy-${{ matrix.cpu_info }}.img.xz
+          path: lisy-${{ matrix.cpu_info }}.img
