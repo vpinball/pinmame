@@ -32,13 +32,16 @@ jobs:
 
       - name: Make in chroot environment
         uses: pguyot/arm-runner-action@v2
+        id: arm_runner_make
         with:
           base_image: ${{ matrix.base_image }}
+          optimize_image: yes
           image_additional_mb: 1024
           cpu: ${{ matrix.cpu }}
           cpu_info: cpuinfo/${{ matrix.cpu_info }}
           copy_repository_path: /opt/pinmame
           copy_artifact_path: xpinmame.vid_lisy
+          copy_artifact_dest: .
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev libsdl2-mixer-dev libi2c-dev
@@ -47,8 +50,19 @@ jobs:
             cd /opt/pinmame
             make -f makefile.lisy
 
+      - name: Compress the image
+        run: |
+          mv ${{ steps.arm_runner_make.outputs.image }} lisy-${{ matrix.cpu_info }}.img
+          sudo xz -T 0 -v lisy-${{ matrix.cpu_info }}.img
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: LISY xpinmame ${{ matrix.cpu_info }}
           path: xpinmame.vid_lisy
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: LISY image ${{ matrix.cpu_info }}
+          path: lisy-${{ matrix.cpu_info }}.img.xz
