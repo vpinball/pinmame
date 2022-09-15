@@ -122,7 +122,6 @@ OBJ     = $(NAME).obj
 VGM_OBJ = $(NAME).obj/vgm
 PROC_OBJ = $(NAME).obj/p-roc
 LISY_OBJ = $(NAME).obj/lisy
-PPUC_OBJ = $(NAME).obj/lisy
 
 CORE_OBJDIRS = $(OBJ) $(VGM_OBJ) \
 	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
@@ -185,10 +184,6 @@ ifdef LISY_X
 include src/lisy/lisy.mak
 endif
 
-ifdef PPUC
-include src/ppuc/ppuc.mak
-endif
-
 ifdef DEBUG
 DBGDEFS = -DMAME_DEBUG
 else
@@ -213,14 +208,6 @@ MY_LIBS += -lyaml-cpp -lpinproc -lftdi1 -lusb
 endif
 
 ifdef LISY_X
-MY_LIBS += -lSDL2
-MY_LIBS += -lSDL2_mixer
-MY_LIBS += -lwiringPi
-MY_LIBS += -li2c
-MY_LIBS += -lpthread
-endif
-
-ifdef PPUC
 MY_LIBS += -lSDL2
 MY_LIBS += -lSDL2_mixer
 MY_LIBS += -lwiringPi
@@ -337,9 +324,9 @@ MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 ##############################################################################
 # Begin of the real makefile.
 ##############################################################################
-$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(PPUCOBJS)
+$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(PPUCOBJS) $(MY_LIBS)
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS)
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
@@ -402,10 +389,6 @@ $(PROC_OBJ)/%.o: src/p-roc/%.cpp
 	$(CC_COMPILE) $(CPP) $(MY_CFLAGS) -o $@ -c $<
 
 $(LISY_OBJ)/%.o: src/lisy/%.c
-	$(CC_COMMENT) @echo 'Compiling $< ...'
-	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
-
-$(PPUC_OBJ)/%.o: src/lisy/%.c
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
 
