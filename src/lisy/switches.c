@@ -19,6 +19,8 @@
 
 extern unsigned char swMatrixLISY35[9];
 
+char debugbuf[256];
+
 void
 lisy80_debug_switches(unsigned char data) {
 

@@ -1,9 +1,6 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
-//define the debugbuf once here
-char debugbuf[256];
-
 void lisy_init(void);
 
 void lisy80_debug(char* message);

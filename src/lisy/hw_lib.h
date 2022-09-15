@@ -94,20 +94,6 @@ void lisy35_switch_pic_init(unsigned char variant);
 unsigned char lisymini_get_dip(char* wantdip);
 unsigned char lisyapc_get_dip(char* wantdip);
 
-//vars
-//remember the flip_flop settings of each
-union lisy80_flip_flop {
-    unsigned char byte;
-
-    struct {
-        unsigned FREE : 4;
-        unsigned ld1  : 1;
-        unsigned ld2  : 1;
-        unsigned ld3  : 1;
-        unsigned ld4  : 1;
-    } bit;
-} flip_flop_byte[13];
-
 #define I2C_DEVICE           "/dev/i2c-1"
 #define DISP_PIC_ADDR        0x40 // Address of PIC for displays
 #define COIL_PIC_ADDR        0x41 // Address of PIC for coils

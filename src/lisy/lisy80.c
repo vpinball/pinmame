@@ -47,6 +47,19 @@ int lisy_volume = 80; //SDL range from 0..128
 int lisy80_coil_min_pulse_time[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int lisy80_coil_min_pulse_mod = 0; //deaktivated by default
 
+//remember the flip_flop settings of each
+union lisy80_flip_flop {
+    unsigned char byte;
+
+    struct {
+        unsigned FREE : 4;
+        unsigned ld1  : 1;
+        unsigned ld2  : 1;
+        unsigned ld3  : 1;
+        unsigned ld4  : 1;
+    } bit;
+} flip_flop_byte[13];
+
 //global counter for nvram write
 static int nvram_delayed_write = 0;
 

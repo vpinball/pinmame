@@ -146,6 +146,8 @@ typedef union {
     } disp;
 } t_mysegments_s9;
 
+char debugbuf[256];
+
 //global var for internal game_name structure,
 //set by  lisy_set_gamename in unix/main
 t_stru_lisymini_games_csv lisymini_game;

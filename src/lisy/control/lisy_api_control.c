@@ -38,6 +38,8 @@
 #define LISYAPIcontrol_SOFTWARE_MAIN 0
 #define LISYAPIcontrol_SOFTWARE_SUB  6
 
+char debugbuf[256];
+
 //fake definiton needed in lisy_w
 void core_setSw(int myswitch, unsigned char action){};
 

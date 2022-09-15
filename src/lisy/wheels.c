@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <wiringPi.h>
 
+char debugbuf[256];
+
 //for Starship Switches
 extern unsigned char swMatrixLISY35[9];
 

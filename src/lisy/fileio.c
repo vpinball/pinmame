@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+char debugbuf[256];
+
 //handle dip definition file for current 'pin'
 //mode
 //mode == 0 -> set /lisy to rw; open file and prepare header line
