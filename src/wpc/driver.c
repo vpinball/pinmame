@@ -1020,24 +1020,27 @@ DRIVERNV(kkongltd)      //King Kong
 DRIVERNV(marqueen)      //Martian Queen
                         //O Gaucho
                         //Samba
-DRIVERNV(spcpoker)      //Space Poker
 DRIVERNV(vikngkng)      //Viking King
-DRIVERNV(force   )      //Force
-DRIVERNV(bhol_ltd)      //Black Hole
+DRIVERNV(force   )      //Force (clone of Gottlieb Close Encounters of the Third Kind)
+DRIVERNV(force_ekky)    //Force (with Ekky sound module)
+DRIVERNV(spcpoker)      //Space Poker (clone of Williams Alien Poker)
+DRIVERNV(spcpoker_ekky) //Space Poker (with Ekky sound module)
+DRIVERNV(bhol_ltd)      //Black Hole (clone of Williams Blackout)
+DRIVERNV(bhol_ltd_ekky) //Black Hole (with Ekky sound module)
 DRIVERNV(cowboy3p)      //Cowboy Eight Ball (clone of Bally Eight Ball Deluxe)
 DRIVERNV(cowboy3a)      //Cowboy Eight Ball (alternate set)
 DRIVERNV(zephy   )      //Zephy (clone of Bally Xenon)
 DRIVERNV(zephya  )      //Zephy (alternate set)
 // Sistema IV
 DRIVERNV(cowboy  )      //Cowboy Eight Ball 2 (clone of Bally Eight Ball Deluxe)
-DRIVERNV(hhotel  )      //Haunted Hotel
+DRIVERNV(hhotel  )      //Haunted Hotel (clone of Gottlieb Haunted House)
 DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game! :))
-DRIVERNV(alcapone)      //Al Capone
+DRIVERNV(alcapone)      //Al Capone (clone of Bally Speakeasy)
 DRIVERNV(alienwar)      //Alien Warrior
-DRIVERNV(columbia)      //Columbia
+DRIVERNV(columbia)      //Columbia (clone of Stern Flight 2000)
 DRIVERNV(tmacltd2)      //Time Machine (2 players)
-DRIVERNV(tmacltd4)      //Time Machine (4 players)
-DRIVERNV(tricksht)      //Trick Shooter
+DRIVERNV(tmacltd4)      //Time Machine (4 players) (clone of Williams Time Fantasy)
+DRIVERNV(tricksht)      //Trick Shooter (clone of Game Plan Sharp Shooter II)
 
 // ----------------
 // MAC GAMES

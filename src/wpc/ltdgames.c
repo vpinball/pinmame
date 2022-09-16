@@ -131,6 +131,13 @@ LTD_2_ROMSTART(force, "forceltd.bin", CRC(48f9ebbe) SHA1(8aaab352fb21263b1b93ffe
 LTD_ROMEND
 CORE_GAMEDEFNV(force,"Force",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
+INITGAME(force_ekky, dispForce, 1, 1, 0x03, 0)
+LTD_2_ROMSTART(force_ekky, "forceltd.bin", CRC(48f9ebbe) SHA1(8aaab352fb21263b1b93ffefd9b5169284083beb))
+  NORMALREGION(0x10000, LTD_MEMREG_CPU_EKKY)
+    ROM_LOAD("SOM EKKY", 0x0000, 0x0800, CRC(9950f6d6) SHA1(b9de7d24f8e772c2e3e7c0b3559b89bd9f00eb9b))
+LTD_ROMEND
+CORE_CLONEDEFNV(force_ekky,force,"Force (with Ekky sound module)",198?,"LTD",gl_mLTD3EKKY,0)
+
 static core_tLCDLayout disp2p6[] = {
   { 1, 0,14,6,CORE_SEG7 },
   { 1,18, 4,6,CORE_SEG7 },
@@ -146,6 +153,13 @@ LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d3968
 LTD_ROMEND
 CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
+INITGAME(spcpoker_ekky, disp2p6, 1, 9, 0x0f, 0x0c)
+LTD_2_ROMSTART(spcpoker_ekky, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) // patched from bad dump
+  NORMALREGION(0x10000, LTD_MEMREG_CPU_EKKY)
+    ROM_LOAD("SOM EKKY", 0x0000, 0x0800, CRC(9950f6d6) SHA1(b9de7d24f8e772c2e3e7c0b3559b89bd9f00eb9b))
+LTD_ROMEND
+CORE_CLONEDEFNV(spcpoker_ekky,spcpoker,"Space Poker (with Ekky sound module)",198?,"LTD",gl_mLTD3EKKY,0)
+
 /*-------------------------------------------------------------------
 / Black Hole
 /-------------------------------------------------------------------*/
@@ -153,6 +167,13 @@ INITGAME(bhol_ltd, disp2p6, 1, 4, 0x0f, 0x0c)
 LTD_2_ROMSTART(bhol_ltd, "blackhol.bin", CRC(9f6ae35e) SHA1(c17bf08a41c6cf93550671b0724c58e8ac302c33))
 LTD_ROMEND
 CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
+
+INITGAME(bhol_ltd_ekky, disp2p6, 1, 4, 0x0f, 0x0c)
+LTD_2_ROMSTART(bhol_ltd_ekky, "blackhol.bin", CRC(9f6ae35e) SHA1(c17bf08a41c6cf93550671b0724c58e8ac302c33))
+  NORMALREGION(0x10000, LTD_MEMREG_CPU_EKKY)
+    ROM_LOAD("SOM EKKY", 0x0000, 0x0800, CRC(9950f6d6) SHA1(b9de7d24f8e772c2e3e7c0b3559b89bd9f00eb9b))
+LTD_ROMEND
+CORE_CLONEDEFNV(bhol_ltd_ekky,bhol_ltd,"Black Hole (LTD, with Ekky sound module)",198?,"LTD",gl_mLTD3EKKY,0)
 
 static core_tLCDLayout disp3p6[] = {
   { 0, 0,14,6,CORE_SEG7 },

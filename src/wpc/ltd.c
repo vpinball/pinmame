@@ -155,6 +155,14 @@ static WRITE_HANDLER(peri_w) {
         if (data & 0x08) lampStrobe = 0;
         else if (data & 0x80) lampStrobe = 1;
         coreGlobals.tmpLampMatrix[5] = data & 0x77;
+        if (cpu_gettotalcpu() > 1) { // for Ekky sound module
+          if (!(data & 0x77)) {
+            locals.auxData = 0;
+          } else if (~locals.auxData & data & 0x77) {
+            locals.auxData = data & 0x77;
+            cpu_set_nmi_line(LTD_CPU_EKKY, PULSE_LINE);
+          }
+        }
         if (data & 0x77) {
           locals.solenoids = (locals.solenoids & 0x1ffff) | ((data & 0x77) << 17);
           coreGlobals.solenoids = locals.solenoids;
@@ -170,9 +178,18 @@ static WRITE_HANDLER(peri_w) {
     if (!offset) {
       locals.solenoids = (locals.solenoids & 0xfeffff) | ((data & 0x40) || (~data & 0x10) ? 0 : 0x10000);
       locals.diagnosticLed = data >> 7;
+      if (cpu_gettotalcpu() > 1) { // for Ekky sound module: (un)mute background sound depending on enable
+        mixer_set_volume(2, (locals.solenoids & 0x10000) ? 100 : 0);
+      }
     }
   } else if (offset == 0x06) { // either lamps or solenoids, or a mix of both!
     coreGlobals.tmpLampMatrix[6] = data;
+    if (cpu_gettotalcpu() > 1 && strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) { // for Ekky sound module
+      locals.auxData = data;
+      if (locals.auxData) {
+        cpu_set_nmi_line(LTD_CPU_EKKY, PULSE_LINE);
+      }
+    }
     locals.solenoids = (locals.solenoids & 0xff00ff) | (data << 8);
     coreGlobals.solenoids = locals.solenoids;
     locals.vblankCount = 0;
@@ -229,6 +246,9 @@ static READ_HANDLER(ff_r) {
 
 static MACHINE_INIT(LTD) {
   memset(&locals, 0, sizeof locals);
+  if (cpu_gettotalcpu() > 1) { // for Ekky sound module: mute background sound at start
+    mixer_set_volume(2, 0);
+  }
 }
 
 /*-----------------------------------------
@@ -413,4 +433,41 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(LTD4HH)
   MDRV_IMPORT_FROM(LTD4)
   MDRV_CORE_INIT_RESET_STOP(LTDHH,NULL,NULL)
+MACHINE_DRIVER_END
+
+
+// "EKKY" sound board - plays 8 different sounds (including "happy birthday", and a background sound)
+
+static READ_HANDLER(m1000_r) {
+  return ~core_revbyte(locals.auxData);
+}
+
+static WRITE_HANDLER(m1800_w) {
+  if (data & 1) DAC_0_data_w(0, 0x80);
+  if (data & 2) DAC_0_data_w(0, 0x00);
+  if (data & 4) DAC_1_data_w(0, 0x80);
+  if (data & 8) DAC_1_data_w(0, 0x00);
+}
+
+static MEMORY_READ_START(ekky_readmem)
+  {0x0000, 0x07ff, MRA_ROM},
+  {0x1000, 0x1000, m1000_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(ekky_writemem)
+  {0x0000, 0x17ff, MWA_NOP},
+  {0x1800, 0x1800, m1800_w},
+  {0x1801, 0xffff, MWA_NOP},
+MEMORY_END
+
+static struct DACinterface ekky_dacInt = {
+  2,
+  { 30, 15 }
+};
+
+MACHINE_DRIVER_START(LTD3_EKKY)
+  MDRV_IMPORT_FROM(LTD3)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 17000000./9.)
+  MDRV_CPU_MEMORY(ekky_readmem, ekky_writemem)
+  MDRV_SOUND_ADD(DAC, ekky_dacInt)
 MACHINE_DRIVER_END

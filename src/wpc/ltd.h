@@ -57,9 +57,11 @@
 
 /*-- Memory regions --*/
 #define LTD_MEMREG_CPU	REGION_CPU1
+#define LTD_MEMREG_CPU_EKKY REGION_CPU2
 
 /* CPUs */
 #define LTD_CPU	0
+#define LTD_CPU_EKKY 1
 
 /*-- LTD CPU regions and ROM, 1x1K game PROM version --*/
 #define LTD_1_ROMSTART(name, n1, chk1) \
@@ -115,11 +117,13 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(LTD3);
+extern MACHINE_DRIVER_EXTERN(LTD3_EKKY);
 extern MACHINE_DRIVER_EXTERN(LTD3A);
 extern MACHINE_DRIVER_EXTERN(LTD4);
 extern MACHINE_DRIVER_EXTERN(LTD4HH);
 
 #define gl_mLTD3   LTD3
+#define gl_mLTD3EKKY LTD3_EKKY
 #define gl_mLTD3A  LTD3A
 #define gl_mLTD4   LTD4
 #define gl_mLTD4HH LTD4HH

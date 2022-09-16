@@ -26,6 +26,7 @@ Finally some progress on Zaccaria's 11178 analog sound
 Fixed quick clock/samplerate changes for (at least) all games using the Votrax/SC01 chip and some few HC55516 CVSD based games
 Retweaked new Votrax/SC01 emulation core to improve Taito and especially GTS80 games
 Fixed background sound on blkholea, eclipse (and probably more...)
+Added Ekky sound module support for clones of LTD's Force, Space Poker, and Black Hole
 
 *** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt’s Basement Arcade
 New:
@@ -41,9 +42,11 @@ Changed Tales of the Arabian Nights 1.2 & 1.3 to also use the older sound ROM 1.
 Clones:
 Airborne 1.5
 Aqualand (alternate set)
+Black Hole (LTD, with Ekky sound module)
 301/Bullseye (MOD rev. 12 & Normal pinball scoring MOD rev. 13)
 Congo 2.0 with WPC-S S1.0-kit
 Cosmic Princess (MOD rev. 19)
+Force (with Ekky sound module)
 Halley Comet (alternate set 2)
 Judge Dredd L-1AT & L-1D (Deadworld HW-MODs)
 Kiss (7-digit conversion rev. 30 & /10 Scoring Free Play + Sound Fix)
@@ -51,6 +54,7 @@ MAC's Galaxy (blue version)
 Magic (MOD rev. 19)
 Maverick, The Movie 2.00
 Red and Ted's Road Show PA-2 (Prototype)
+Space Poker (with Ekky sound module)
 Stingray (MOD rev. 14)
 Terminator 2 L-8.3 (MOD)
 The Games rev.1 & rev. 2 (MOD)
