@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  * Simple-SDL2-Audio
  *

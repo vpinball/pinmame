@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  LISY_W.c
  April 2019

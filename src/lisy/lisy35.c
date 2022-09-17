@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  LISY35.c
  June 2017

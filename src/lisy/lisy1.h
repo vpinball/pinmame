@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef LISY1_H
 #define LISY1_H
 

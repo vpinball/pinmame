@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  LISY_HOME.c
  February 2019

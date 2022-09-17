@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef MPFSERVER_H
 #define MPFSERVER_H
 

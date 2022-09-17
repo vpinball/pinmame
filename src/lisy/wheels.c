@@ -1,5 +1,7 @@
+// license:BSD-3-Clause
+
 /*
- whheels.c
+ wheels.c
  part of lisy_home for Starship
  March 2022
  bontango

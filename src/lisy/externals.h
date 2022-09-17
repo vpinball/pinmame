@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef EXTERNALS_H
 #define EXTERNALS_H
 

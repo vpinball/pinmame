@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef SWITCHES_H_
 #define SWITCHES_H_
 

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  socketserver for lisy200 webinterface
  special for LISY_Home with Starship/Supersonic

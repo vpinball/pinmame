@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef _LINKED_LIST_H
 #define _LINKED_LIST_H
 

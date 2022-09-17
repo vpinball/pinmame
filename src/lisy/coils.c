@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
   coils.c
   part of lisy80

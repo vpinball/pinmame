@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  socketserver for lisy webinterface
  API Version for APC

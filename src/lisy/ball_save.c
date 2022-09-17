@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  BALL_SAVE.c
  Mai 2022

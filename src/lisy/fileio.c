@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
   fileio.c
   part of lisy80

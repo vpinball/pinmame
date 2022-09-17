@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef LISY_USBSER_H
 #define LISY_USBSER_H
 

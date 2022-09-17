@@ -1,8 +1,11 @@
+// license:BSD-3-Clause
+
 /*
  communication routines for LISY API
  May 2020
  bontango
 */
+
 #include "lisy_api_com.h"
 #include "externals.h"
 #include "lisy_api.h"

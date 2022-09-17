@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef _UTILS_H
 #define _UTILS_H
 

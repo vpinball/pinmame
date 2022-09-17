@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef DISPLAYS_H_
 #define DISPLAYS_H_
 

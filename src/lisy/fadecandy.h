@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef FADECANDY_H
 #define FADECANDY_H
 

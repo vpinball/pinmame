@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef _COILS_H_
 #define _COILS_H_
 

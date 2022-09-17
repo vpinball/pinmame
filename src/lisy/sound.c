@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
   lisy80_sound.c
   part of lisy80

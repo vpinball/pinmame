@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef HW_LIB_H_
 #define HW_LIB_H_
 

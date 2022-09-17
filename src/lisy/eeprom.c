@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
 This program is hereby placed into the public domain.
 Of course the program is provided without warranty of any kind.

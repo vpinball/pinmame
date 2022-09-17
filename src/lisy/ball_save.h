@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef BALL_SAVE_H
 #define BALL_SAVE_H
 

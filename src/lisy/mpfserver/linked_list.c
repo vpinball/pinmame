@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // linked list functions
 // for preloading mp3 files in mpfserver
 // using struct

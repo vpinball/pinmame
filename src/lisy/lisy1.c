@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  LISY1.c
  May 2018

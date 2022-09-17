@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
   utils.c
   part of lisy80

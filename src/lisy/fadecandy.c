@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  fadecandy.c
  May 2018

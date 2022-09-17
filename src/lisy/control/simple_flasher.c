@@ -1,7 +1,10 @@
+// license:BSD-3-Clause
+
 /*
   bontango 07.2019
   lisy simple flasher, all plattforms
 */
+
 #include "../utils.h"
 #include <dirent.h>
 #include <stdio.h>

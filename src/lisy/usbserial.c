@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  USB and serial routines for LISY
  April 2019

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  LISY80.c
  Mai 2018

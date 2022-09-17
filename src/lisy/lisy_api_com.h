@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef LISY_API_COM_H
 #define LISY_API_COM_H
 

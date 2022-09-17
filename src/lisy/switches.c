@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
   bontango 11.2015
   lisy80NG first tests

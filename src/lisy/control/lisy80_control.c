@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  socketserver for lisy80 webinterface
  bontango 9.2016

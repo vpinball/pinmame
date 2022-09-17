@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef LISY_MAME_H
 #define LISY_MAME_H
 

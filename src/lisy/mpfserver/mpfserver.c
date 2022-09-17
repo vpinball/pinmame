@@ -1,8 +1,11 @@
+// license:BSD-3-Clause
+
 /*
  mpfserver for lisy
  bontango 6.2016
  for version information look at mpfserver.h
 */
+
 #include "../coils.h"
 #include "../displays.h"
 #include "../eeprom.h"

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef WHEELS_H
 #define WHEELS_H
 

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  socketserver for picpgm webinterface
  bontango 11.2018

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  LISY_mame.c
  Mai 2019

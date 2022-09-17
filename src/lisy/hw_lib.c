@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
   hw_lib
   part of lisy80NG
