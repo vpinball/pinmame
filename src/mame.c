@@ -121,8 +121,6 @@
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
 #if defined(PINMAME) && defined(LISY_SUPPORT)
- #include "lisy/lisy80.h"
- #include "lisy/lisy1.h"
  #include "lisy/utils.h"
 #endif /* PINMAME && LISY_SUPPORT */
 #include "../ext/vgm/vgmwrite.h"

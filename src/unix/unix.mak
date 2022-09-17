@@ -69,7 +69,7 @@ CFLAGS.photon2	=
 ifdef X11_DGA
 INST.x11        = doinstallsuid
 else
-INST.x11	= doinstall
+INST.x11        = doinstall
 endif
 INST.ggi        = doinstall
 INST.svgalib    = doinstallsuid
@@ -326,7 +326,7 @@ MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 ##############################################################################
 $(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS) 
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS)
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
