@@ -37,6 +37,7 @@ extern unsigned char swMatrixLISY35[9];
 //from lisy_home.c
 extern unsigned char lisy35_flipper_disable_status;
 extern unsigned char lisy35_mom_solenoid_status_safe;
+extern unsigned char lisy_home_starship_sound;
 
 //internal to wheels
 int oldpos[2][5];
@@ -46,6 +47,8 @@ int oldpos_credit[2] = {0, 0};
 #define WHEEL_STATE_DELAY 2
 int wheel_pulses_needed[2][5] = {{0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}};
 int wheel_state[2][5] = {{0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}};
+int chime_pulses_needed[5] = {0, 0, 0, 0, 0};
+int chime_state[5] = {0, 0, 0, 0, 0};
 int wheel_pulses_credits_needed = 0;
 int wheel_credits_state = 0;
 int wheel_score_credits_reset_done = 0;
@@ -76,8 +79,8 @@ digit2sol(int display, int digit) {
 void
 wheels_refresh(void) {
     int i, j, state, coil;
-    static int pulse_time[2][5], pulse_time_credit;
-    static int delay_time[2][5], delay_time_credit;
+    static int pulse_time[2][5], pulse_time_credit, chime_pulse_time[5];
+    static int delay_time[2][5], delay_time_credit, chime_delay_time[5];
     static int credit_coil;
 
     //check status wheel
@@ -184,6 +187,57 @@ wheels_refresh(void) {
             } //state
         }     //j
     }         //i
+
+    //chimes active?
+    if (lisy_home_starship_sound == LISY_HOME_SS_SOUND_CHIMES) {
+        //check all 4 chimes
+        for (i = 0; i <= 3; i++) {
+
+            //state of current digit
+            switch (chime_state[i]) {
+                case WHEEL_STATE_OFF: //wheel is ready for pulse
+
+                    //complete round is not needed
+                    while (chime_pulses_needed[i] >= 10) {
+                        chime_pulses_needed[i] -= 10;
+                    }
+
+                    if (chime_pulses_needed[i] > 0) //do we need to pulse?
+                    {
+                        //yes store pulse and delay time for this digit
+                        //decrement puls couinter and change state to ON
+                        chime_pulses_needed[i] -= 1;
+                        coil = j + 1; //fixed mapping
+                        lisyh_coil_set(lisy_home_ss_special_coil_map[coil].mapped_to_coil, 1);
+                        chime_pulse_time[i] = lisy_home_ss_special_coil_map[coil].pulsetime;
+                        chime_delay_time[i] = lisy_home_ss_special_coil_map[coil].delay;
+                        chime_state[i] = WHEEL_STATE_ON;
+                    }
+                    break;
+
+                case WHEEL_STATE_ON:                               //wheel is active, count down pulstime
+                    chime_pulse_time[i] = chime_pulse_time[i] - 5; //5ms per call
+                    if (chime_pulse_time[i] <= 0)                  //pulse time expired?
+                    {
+                        //yes deactivate sol and change state to DELAY
+                        coil = j + 1; //fixed mapping
+                        lisyh_coil_set(lisy_home_ss_special_coil_map[coil].mapped_to_coil, 0);
+                        chime_state[i] = WHEEL_STATE_DELAY;
+                    }
+                    break;
+
+                case WHEEL_STATE_DELAY: //wheel inactive but in delay state ( we need to prevent too fast pulsing)
+                    chime_delay_time[i] = chime_delay_time[i] - 5; //5ms per call
+                    if (chime_delay_time[i] <= 0)                  //delay_time time expired?
+                    {
+                        //yes change state to DELAY
+                        chime_state[i] = WHEEL_STATE_OFF;
+                    }
+                    break;
+
+            } //state
+        }     //i
+    }         //chimes active?
 }
 
 /* wheel_pulse_reset
@@ -484,6 +538,9 @@ wheels_show_int(int display, int digit, unsigned char dat, unsigned char attract
         //set local var for pulses needed
         //will becoming active with wheels_refresh via lisy35_throtle
         wheel_pulses_needed[display][digit] += pulses;
+        //set also var for chime pulses needed
+        if (lisy_home_starship_sound == LISY_HOME_SS_SOUND_CHIMES)
+            chime_pulses_needed[digit] += pulses;
 
     } //flipper enabled?
 }

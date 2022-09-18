@@ -1,4 +1,4 @@
-// license:BSD-3-Clause
+// license:BSD-3-Claus
 
 /*
  LISY_HOME.c
@@ -35,6 +35,8 @@ extern char debugbuf[256]; // see hw_lib.c
 //local vars
 //our pointers to preloaded sounds
 Mix_Chunk* lisy_H_sound[32];
+//sound output
+unsigned char lisy_home_starship_sound = LISY_HOME_SS_SOUND_PHAT;
 //others
 unsigned char lisy_game_running = 0; //for Starship event handler
 //cmos
@@ -181,6 +183,23 @@ lisy_home_event_handler(int id, int arg1, int arg2, char* str) {
     }
 }
 
+//send the colorcode of one lamp to PIC  (aware of mapping)
+//one colorcode for all mapped leds
+void
+lisy_home_ss_lamp_set_colorcode(int lamp, unsigned char red, unsigned char green, unsigned char blue,
+                                unsigned char white) {
+    int i;
+
+    //how many mappings?
+    for (i = 0; i < lisy_home_ss_lamp_map[lamp].no_of_maps; i++) {
+        if (lisy_home_ss_lamp_map[lamp].mapped_to_line[i] == 7) //coil mapping
+            return;
+        else if (lisy_home_ss_lamp_map[lamp].mapped_to_line[i] <= 6) //LED mapping
+            lisyh_led_set_LED_color(lisy_home_ss_lamp_map[lamp].mapped_to_line[i],
+                                    lisy_home_ss_lamp_map[lamp].mapped_to_led[i], red, green, blue, white);
+    }
+}
+
 //do the led setting on starship
 //aware of mapping
 void
@@ -303,9 +322,20 @@ lisy_home_ss_mom_sol_event(unsigned char mom_data) {
 void
 lisy_home_ss_sound_event(unsigned char sound) {
     //play bonus sound ( fix #203 ) triggered with one of the org sounds
-    if ((lisy_env.has_own_sounds) & (sound == 8)) {
+    if ((lisy_env.has_own_sounds) & (sound == 8) & (lisy_home_starship_sound == LISY_HOME_SS_SOUND_PHAT)) {
         if (lisy_home_ss_switch_outhole_status == 1)
             StarShip_play_wav(203);
+    }
+    //play org sounds mapped to lisy_home coils
+    if (lisy_home_starship_sound == LISY_HOME_SS_SOUND_ORG) {
+        //RTH todo:check
+        lisyh_coil_set(lisy_home_ss_sound_map[0].mapped_to_coil, 1);
+
+        lisyh_coil_set(lisy_home_ss_sound_map[1].mapped_to_coil, sound && 1);
+        lisyh_coil_set(lisy_home_ss_sound_map[2].mapped_to_coil, sound && 2);
+        lisyh_coil_set(lisy_home_ss_sound_map[3].mapped_to_coil, sound && 4);
+        lisyh_coil_set(lisy_home_ss_sound_map[4].mapped_to_coil, sound && 8);
+        lisyh_coil_set(lisy_home_ss_sound_map[5].mapped_to_coil, sound && 16);
     }
 }
 
@@ -332,7 +362,8 @@ lisy_home_ss_display_event(int digit, int value, int display) {
                 lisy_home_ss_digit_ballinplay_status = value;
                 if ((lisy_home_ss_digit_ballinplay_status == 1) & (old_ballinplay_status == 0)) {
                     //play start sound
-                    StarShip_play_wav(201); //fix setting RTH
+                    if ((lisy_env.has_own_sounds) & (lisy_home_starship_sound == LISY_HOME_SS_SOUND_PHAT))
+                        StarShip_play_wav(201); //fix setting RTH
                     //reset displays
                     wheel_score_reset();
                 }
@@ -404,7 +435,7 @@ lisy_home_ss_lamp_event(int lamp, int action) {
             //start off game
             {
                 //fix setting RTH //Start play background
-                if (lisy_env.has_own_sounds)
+                if ((lisy_env.has_own_sounds) & (lisy_home_starship_sound == LISY_HOME_SS_SOUND_PHAT))
                     StarShip_play_wav(202);
                 lisy_game_running = 1;
                 //deactivate special lamp hstd
@@ -440,6 +471,7 @@ lisy_home_ss_lamp_event(int lamp, int action) {
 //things we want to do early after boot
 void
 lisy_home_ss_boot_event(int arg1) {
+
     //start intro sound in background if "lisy35_has_soundcard"
     if (arg1)
         system("/usr/bin/ogg123 -q /boot/lisy/lisyH/sounds/StarShip/Einschalt_Melodie.ogg &");
@@ -471,17 +503,63 @@ lisy_home_ss_init_event(void) {
             }
         }
     } //for
+
+    //set sound mode, read from coil PIC address 1
+    lisy_home_ss_set_sound_mode(lisy_eeprom_1byte_read(1, 1), 1);
+}
+
+//set sound mode, color indicating included
+//action == 1 fixed sound mode setting
+//action == 0 sound mode switches to next (+1)
+void
+lisy_home_ss_set_sound_mode(int mode, int action) {
+    if (action == 1) {
+        lisy_home_starship_sound = mode;
+        if (lisy_home_starship_sound > LISY_HOME_SS_SOUND_CHIMES)
+            lisy_home_starship_sound = LISY_HOME_SS_SOUND_NONE;
+    } else {
+        lisy_home_starship_sound += 1;
+        if (lisy_home_starship_sound > LISY_HOME_SS_SOUND_CHIMES)
+            lisy_home_starship_sound = LISY_HOME_SS_SOUND_NONE;
+    }
+
+    //credit indicator shows sound status with color
+    if (lisy_home_starship_sound == LISY_HOME_SS_SOUND_CHIMES)
+        lisy_home_ss_lamp_set_colorcode(55, 128, 0, 0, 0);
+    else if (lisy_home_starship_sound == LISY_HOME_SS_SOUND_ORG)
+        lisy_home_ss_lamp_set_colorcode(55, 0, 128, 0, 0);
+    else if (lisy_home_starship_sound == LISY_HOME_SS_SOUND_PHAT)
+        lisy_home_ss_lamp_set_colorcode(55, 0, 0, 0, 128);
+    else
+        lisy_home_ss_lamp_set_colorcode(55, 0, 0, 128, 0);
+
+    //store new mode to eeprom of coil PIC, address 1
+    lisy_eeprom_1byte_write(1, lisy_home_starship_sound, 1);
+
+    //if (  ls80dbg.bitv.sound )
+    if (1) {
+        sprintf(debugbuf, "sound status set to:%d", lisy_home_starship_sound);
+        lisy80_debug(debugbuf);
+    } //debug
 }
 
 //switch event, map sounds
 void
 lisy_home_ss_switch_event(int switch_no, int action) {
-    //remember status of outhole switch
-    if (switch_no == 8) {
-        lisy_home_ss_switch_outhole_status = action;
+
+    switch (switch_no) {
+
+        case 8: //remember status of outhole switch
+            lisy_home_ss_switch_outhole_status = action;
+            break;
+        case 25: //switch soundoutput
+            if (action == 1)
+                lisy_home_ss_set_sound_mode(0, 0); //soundmode UP
+            break;
     }
 
-    if ((lisy_env.has_own_sounds)
+    //sound mapping
+    if ((lisy_home_starship_sound == LISY_HOME_SS_SOUND_PHAT) & (lisy_env.has_own_sounds)
         & ((lisy35_flipper_disable_status == 0) | (lisy35_sound_stru[switch_no].onlyactiveingame == 0))) {
         if (action == lisy35_sound_stru[switch_no].trigger) {
             StarShip_play_wav(switch_no);
@@ -503,6 +581,7 @@ lisy_home_ss_switch_event(int switch_no, int action) {
 //the Starship eventhandler
 void
 lisy_home_ss_event_handler(int id, int arg1, int arg2, int arg3) {
+
     switch (id) {
         case LISY_HOME_SS_EVENT_BOOT:
             lisy_home_ss_boot_event(arg1);

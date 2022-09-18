@@ -63,12 +63,62 @@ unsigned char lisy1_lamp[37] = {
 unsigned char lisy1_has_soundcard = 0;  //there is a pHat soundcard installed
 unsigned char lisy1_has_own_sounds = 0; //play own sounds rather then usinig piname sound emulation
 
+//local var for game status
+unsigned char lisy1_game_running = 0;
+unsigned char lisy_attract_mode_activ = 0;
+
+//lisy1 attract mode
+static void
+lisy1_attract(unsigned char command) {
+
+    int ret;
+    unsigned char cmd, num, opt;
+    static int pause_time = 0; //time in ms steps
+
+    switch (command) {
+        case LISY1_ATTRACT_START:
+            printf("LISY1_ATTRACT_START received\n");
+            break;
+        case LISY1_ATTRACT_STOP:
+            printf("LISY1_ATTRACT_STOP received\n");
+            break;
+        case LISY1_ATTRACT_STEP:
+            printf("LISY1_ATTRACT_STEP received\n");
+            //are we in an active 'time' command? - sub 100ms
+            if ((pause_time -= 100) > 0)
+                return;
+            pause_time = 0;
+            //else get next command
+            ret = lisy1_file_get_attractopts(LISY1_ATTRACT_STEP, &cmd, &num, &opt);
+            if (ret >= 0) //no error, interpret command
+            {
+                switch (cmd) {
+                    case LISY1_ATTRACT_CMD_TIME:
+                        if (opt == LISY1_ATTRACT_CMD_TIME_OPT_S) {
+                            pause_time += num * 1000;
+                        } else if (opt == LISY1_ATTRACT_CMD_TIME_OPT_MS) {
+                            pause_time += num;
+                        }
+                        break;
+                    case LISY1_ATTRACT_CMD_LAMP:
+                        if (opt == LISY1_ATTRACT_CMD_LAMP_ON) {
+                            lisy1_coil_set(num, 1);
+                        } else if (opt == LISY1_ATTRACT_CMD_LAMP_OFF) {
+                            lisy1_coil_set(num, 0);
+                        }
+                        break;
+                }
+            }
+            break;
+    }
+}
+
 //init SW portion of lisy1
 void
 lisy1_init(void) {
     int i;
     char s_lisy_software_version[16];
-    unsigned char sw_main, sw_sub, commit;
+    unsigned char sw_main, sw_sub, commit, dum;
 
     //do the init on vars
     for (i = 0; i <= 36; i++)
@@ -146,6 +196,15 @@ lisy1_init(void) {
             lisy1_has_own_sounds = 0;
         } else
             fprintf(stderr, "info: sound init done\n");
+    }
+
+    //check for atract mode file with commands
+    if (lisy1_file_get_attractopts(LISY1_ATTRACT_INIT, &dum, &dum, &dum) >= 0) {
+        lisy_attract_mode_activ = 1;
+        fprintf(stderr, "Info: attract mode file read OK\n");
+    } else {
+        lisy_attract_mode_activ = 0;
+        fprintf(stderr, "Info: attract mode file NOT found, attract mode DISABLED\n");
     }
 
     //collect latest informations and start the lisy logger
@@ -265,7 +324,7 @@ static core_tLCDLayout sys1_disp[] = {
 };
 core.h :
 struct core_dispLayout {
-  uint16_t top, left, start, length, type;
+  UINT16 top, left, start, length, type;
 */
 
         switch (
@@ -301,42 +360,6 @@ struct core_dispLayout {
                 break;
         } //switch
     }
-
-    /* now in displays.c
-if ( ls80dbg.bitv.displays )
-{
-  if ( has_changed )
-  {
-    printf("----- Index %d changed to %d -----\n",index,value);
-
-    printf("Player1:");
-    //for (i=17; i>=12; i--) printf("%c",my_datchar(myvalue[i]));
-    for (i=12; i<=17; i++) printf("%c",my_datchar(myvalue[i]));
-    printf("\n");
-    printf("Player2:");
-    for (i=23; i>=18; i--) printf("%c",my_datchar(myvalue[i]));
-    printf("\n");
-    printf("Player3:");
-    for (i=5; i>=0; i--) printf("%c",my_datchar(myvalue[i]));
-    printf("\n");
-    printf("Player4:");
-    for (i=11; i>=6; i--) printf("%c",my_datchar(myvalue[i]));
-    printf("\n");
-
-    printf("Ball in Play:");
-    printf("%c",my_datchar(myvalue[40]));
-    printf("%c",my_datchar(myvalue[41]));
-    printf("\n");
-
-    printf("Credits:");
-    printf("%c",my_datchar(myvalue[32]));
-    printf("%c",my_datchar(myvalue[33]));
-    printf("\n");
-    printf("\n");
-  }
-
- }
-*/
 }
 
 /*
@@ -589,6 +612,14 @@ lisy1_lamp_handler(int data, int isld) {
                             lisy1_play_wav(4);
                         //do a nvram write each time the game over relay ( lamp[0]) is going to change (Game Over or Game start)
                         lisy1_nvram_delayed_write = NVRAM_DELAY;
+                        //remember status
+                        lisy1_game_running = new_lamp[1];
+                        if (lisy_attract_mode_activ == 1) {
+                            if (lisy1_game_running == 1)
+                                lisy1_attract(LISY1_ATTRACT_START);
+                            else
+                                lisy1_attract(LISY1_ATTRACT_STOP);
+                        }
                         //inform ball save
                         if (ls80opt.bitv.ballsave)
                             lisy_ball_save_event_handler(LISY_BALL_SAVE_EVENT_GAME_OVER, new_lamp[0], 0);
@@ -671,9 +702,14 @@ lisy1_throttle(void) {
     //we need to slow down a bit
     //lets iterate the best value for cpu scaling from puinmame
 
-    //ball save needs periodic call
-    if (ls80opt.bitv.ballsave)
-        lisy_ball_save_event_handler(LISY_BALL_SAVE_EVENT_TIMER, 0, 0);
+    //ball save and attract mode needs periodic calls, we do it each 100ms via lisy_timer 4
+    if (lisy_timer(100, 0, 4)) {
+        if (ls80opt.bitv.ballsave)
+            lisy_ball_save_event_handler(LISY_BALL_SAVE_EVENT_TIMER, 0, 0);
+        if ((lisy_attract_mode_activ == 1) & (lisy1_game_running == 0))
+            lisy1_attract(LISY1_ATTRACT_STEP);
+        lisy_timer(0, 1, 4); //reset timer for next round
+    }
 
     //do update the soundstream if enabled (pinmame internal sound only)
     if (sound_stream && sound_enabled) {
