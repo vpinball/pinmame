@@ -1,4 +1,4 @@
-// license:BSD-3-Claus
+// license:BSD-3-Clause
 
 /*
  LISY_HOME.c
