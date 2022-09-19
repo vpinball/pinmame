@@ -259,53 +259,51 @@ CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,0)
  *************************/
 
 /*-------------------------------------------------------------------
-/ Super Mario Bros. (#733) - Only one dsprom dump seems to work?
+/ Super Mario Bros. (#733)
 /-------------------------------------------------------------------*/
 INITGAME1(smb, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(smb,		"gprom.bin", CRC(fa1f6e52) SHA1(d7ade0e129cb399494967e025d25614bf1650db7))
-//GTS3_DMD256_ROMSTART(	"dsprom.bin",CRC(59639112) SHA1(e0cbd3a38cd99f0f5f6e85d7eee4772f462c1990))
-GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
-GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
-						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
-						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
-						"arom2.bin",CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
+GTS3ROMSTART(smb,    "gprom.bin",   CRC(fa1f6e52) SHA1(d7ade0e129cb399494967e025d25614bf1650db7))
+GTS3_DMD256_ROMSTART("dsp733.bin",  CRC(1363af26) SHA1(28c3eb62ea2dd13dd3e18158e91e4f51abca4f55)) // horizontal scrolling not perfect with this display ROM
+GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
+                     "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
+                     "arom1.bin",   CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
+                     "arom2.bin",   CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
 GTS3_ROMEND
 CORE_GAMEDEFNV(smb,"Super Mario Bros.",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
 INITGAME1(smb1, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(smb1,		"gprom1.bin", CRC(1d8c4df8) SHA1(e301bf3b2a8ed6ef902fe15b890b4c06c4606aa9))
-//GTS3_DMD256_ROMSTART(	"dsprom1.bin",CRC(1363af26) SHA1(28c3eb62ea2dd13dd3e18158e91e4f51abca4f55))
-GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
-GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
-						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
-						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
-						"arom2.bin",CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
+GTS3ROMSTART(smb1,   "gprom1.bin",  CRC(1d8c4df8) SHA1(e301bf3b2a8ed6ef902fe15b890b4c06c4606aa9))
+GTS3_DMD256_ROMSTART("dsp733-1.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
+GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
+                     "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
+                     "arom1.bin",   CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
+                     "arom2.bin",   CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
 GTS3_ROMEND
 CORE_CLONEDEFNV(smb1,smb,"Super Mario Bros. (rev. 1)",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
 INITGAME1(smb2, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(smb2,		"gprom2.bin", CRC(5b0f44c4) SHA1(ca9b0cd82c75612c85c956497c8f9c12992f6ad5))
-GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
-GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
-						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
-						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
-						"arom2.bin",CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
+GTS3ROMSTART(smb2,   "gprom2.bin",  CRC(5b0f44c4) SHA1(ca9b0cd82c75612c85c956497c8f9c12992f6ad5))
+GTS3_DMD256_ROMSTART("dsp733-1.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
+GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
+                     "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
+                     "arom1.bin",   CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
+                     "arom2.bin",   CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
 GTS3_ROMEND
 CORE_CLONEDEFNV(smb2,smb,"Super Mario Bros. (rev. 2)",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
 INITGAME1(smb3, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(smb3,		"gprom3.bin", CRC(5a40822c) SHA1(a87ec6307f848483c76141e47fd67e4549f9c9d3))
-GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
-//GTS3_DMD256_ROMSTART(	"dsprom3.bin",CRC(40e42f12) SHA1(d053e13e28c73e68e75beb9745947ec72201cead))
-GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
-						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
-						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
-						"arom2.bin",CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
+GTS3ROMSTART(smb3,   "gprom3.bin",  CRC(5a40822c) SHA1(a87ec6307f848483c76141e47fd67e4549f9c9d3))
+GTS3_DMD256_ROMSTART("dsp733-2.bin",CRC(40e42f12) SHA1(d053e13e28c73e68e75beb9745947ec72201cead)) // more translated strings
+//GTS3_DMD256_ROMSTART("dsprom.bin",CRC(59639112) SHA1(e0cbd3a38cd99f0f5f6e85d7eee4772f462c1990)) // probably a bad dump, six bytes differ from dsp733-2.bin
+GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
+                     "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
+                     "arom1.bin",   CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
+                     "arom2.bin",   CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
 GTS3_ROMEND
 CORE_CLONEDEFNV(smb3,smb,"Super Mario Bros. (rev. 3)",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
 /*-------------------------------------------------------------------
-/ Super Mario Bros. Mushroom World
+/ Super Mario Bros. Mushroom World (#N105)
 /-------------------------------------------------------------------*/
 INITGAME1(smbmush, DMD, FLIP8182, 2, SNDBRD_GTS3, 5)
 GTS3ROMSTART(smbmush,	"gprom.bin", CRC(45f6d0cc) SHA1(a73c71ab64aee293ae46e65c34d70840296778d4))
@@ -318,7 +316,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(smbmush,"Super Mario Bros. Mushroom World",1992,"Gottlieb",mGTS3DMDS_5C,0)
 
 /*-------------------------------------------------------------------
-/ Cue Ball Wizard
+/ Cue Ball Wizard (#734)
 /-------------------------------------------------------------------*/
 INITGAME2(cueball, DMD, FLIP8182, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(cueball,	"gprom.bin",CRC(3437fdd8) SHA1(2a0fc9bc8e3d0c430ce2cf8afad378fc93af609d))
@@ -357,7 +355,7 @@ CORE_CLONEDEFNV(cueball3, cueball,"Cue Ball Wizard (rev. 3)",1992,"Gottlieb",mGT
 /************************************************/
 
 /*-------------------------------------------------------------------
-/ Street Fighter II
+/ Street Fighter II (#735)
 /-------------------------------------------------------------------*/
 INITGAME2(sfight2, DMD, FLIP8283, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(sfight2,	"gprom.bin", CRC(299ad173) SHA1(95cca8c22cfabc55175a49b0439fc7858bdec1bd))
@@ -390,7 +388,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(sfight2b,sfight2,"Street Fighter II (rev. 2)",1993,"Gottlieb",mGTS3DMDS_4C_a, 0)
 
 /*-------------------------------------------------------------------
-/ Tee'd Off
+/ Tee'd Off (#736)
 /-------------------------------------------------------------------*/
 INITGAME2(teedoff, DMD, FLIP8182, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(teedoff,	"gprom.bin", CRC(0620365b) SHA1(18887c49a5d3806b725fa6289e50db82974c0f40))
@@ -423,7 +421,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(teedoff3,teedoff,"Tee'd Off (rev. 3)",1993,"Gottlieb",mGTS3DMDSA_4C_a, 0)
 
 /*-------------------------------------------------------------------
-/ Wipe Out
+/ Wipe Out (#738)
 /-------------------------------------------------------------------*/
 INITGAME2(wipeout, DMD, FLIP8182, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(wipeout,	"gprom.bin",CRC(1161cdb7) SHA1(fdf4c0abb70a41149c69bd55c613849a662944d3))
@@ -446,7 +444,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(wipeouta,wipeout,"Wipe Out (rev. 2 alternate set)",1993,"Gottlieb",mGTS3DMDSA_4C_a, 0)
 
 /*-------------------------------------------------------------------
-/ Gladiators
+/ Gladiators (#737)
 /-------------------------------------------------------------------*/
 INITGAME2(gladiatr, DMD, FLIP8283, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(gladiatr,	"gprom.bin", CRC(40386cf5) SHA1(3139e3707971a708ad98c735deec7e4ee7bb36cd))
@@ -459,7 +457,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(gladiatr,"Gladiators",1993,"Gottlieb",mGTS3DMDSA_4C_a, 0)
 
 /*-------------------------------------------------------------------
-/ World Challenge Soccer
+/ World Challenge Soccer (#741)
 /-------------------------------------------------------------------*/
 INITGAME2(wcsoccer, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(wcsoccer,	"gprom.bin", CRC(6382c32e) SHA1(e212f4a9a77d1cf089acb226a8079ac4cae8a96d))
@@ -482,7 +480,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(wcsoccd2,wcsoccer,"World Challenge Soccer (rev. 1, display rev. 2)",1994,"Gottlieb",mGTS3DMDS_4C_a, 0)
 
 /*-------------------------------------------------------------------
-/ Rescue 911
+/ Rescue 911 (#740)
 /-------------------------------------------------------------------*/
 INITGAME2(rescu911, DMD, FLIP8283, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(rescu911,	"gprom.bin", CRC(943a7597) SHA1(dcf4151727efa64e8740202b68fc8e76098ff8dd))
@@ -497,7 +495,7 @@ CORE_GAMEDEFNV(rescu911,"Rescue 911 (rev. 1)",1994,"Gottlieb",mGTS3DMDS_4C_a, 0)
 //rev 2 exists?
 
 /*-------------------------------------------------------------------
-/ Freddy: A Nightmare on Elm Street
+/ Freddy: A Nightmare on Elm Street (#744)
 /-------------------------------------------------------------------*/
 INITGAME2(freddy, DMD, FLIP8182, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(freddy,	"gprom.bin", CRC(f0a6f3e6) SHA1(ad9af12260b8adc639fa00de49366b1016df49ed))
@@ -520,7 +518,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(freddy4,freddy,"Freddy: A Nightmare on Elm Street (rev. 4)",1994,"Gottlieb",mGTS3DMDSA_4C_a, 0)
 
 /*-------------------------------------------------------------------
-/ Shaq Attaq
+/ Shaq Attaq (#743)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispShaq[] = {
   DISP_SEG_IMPORT(GTS3_dispDMD),
@@ -551,7 +549,7 @@ CORE_CLONEDEFNV(shaqatt2,shaqattq,"Shaq Attaq (rev. 2)",1995,"Gottlieb",mGTS3DMD
 /************************************************************/
 
 /*-------------------------------------------------------------------
-/ Stargate
+/ Stargate (#742)
 /-------------------------------------------------------------------*/
 INITGAME2(stargate, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(stargate,	"gprom.bin", CRC(837e4354) SHA1(b7d1e270309b3d7965dafeec7b81d2dd41e5700c))
@@ -608,7 +606,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(stargat5,stargate,"Stargate (rev. 5)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
 /*-------------------------------------------------------------------
-/ Big Hurt
+/ Big Hurt (#745)
 /-------------------------------------------------------------------*/
 INITGAME2(bighurt, DMD, FLIP8283, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(bighurt,	"gprom.bin", CRC(92ce9353) SHA1(479edb2e39fa610eb2854b028d3a039473e52eba))
@@ -621,7 +619,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(bighurt,"Big Hurt (rev. 3)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
 /*-------------------------------------------------------------------
-/ Waterworld
+/ Waterworld (#746)
 /-------------------------------------------------------------------*/
 INITGAME2(waterwld, DMD, FLIP4142, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(waterwld,	"gprom.bin", CRC(db1fd197) SHA1(caa22f7e3f52be85da496375115933722a414ee0))
@@ -656,7 +654,7 @@ CORE_CLONEDEFNV(waterwl5,waterwld,"Waterworld (rev. 5)",1995,"Gottlieb",mGTS3DMD
 //rev 6 exists?
 
 /*-------------------------------------------------------------------
-/ Mario Andretti
+/ Mario Andretti (#747)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispAndretti[] = {
   DISP_SEG_IMPORT(GTS3_dispDMD),
@@ -683,7 +681,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(andrett4,andretti,"Mario Andretti (rev. T4)",1995,"Gottlieb",mGTS3DMDS_4C_b, 0)
 
 /*-------------------------------------------------------------------
-/ Barb Wire
+/ Barb Wire (#748)
 /-------------------------------------------------------------------*/
 INITGAME2(barbwire, DMD, FLIP4243, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(barbwire,	"gprom.bin", CRC(2e130835) SHA1(f615eaf1c48851d837c57c17c038cc1d0806f6f7))
