@@ -63,21 +63,21 @@ static struct core_dispLayout GTS3_dispAlphaLED[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ Unnamed game? by Toptronic HGmbH, Germany
+/ Blank game template - the company name "Toptronic HGmbH, D-W 4044 Kaarst 1" also comes up on other games when set to German
 /-------------------------------------------------------------------*/
-/* 2 X 20 AlphaNumeric Rows, 4 X 3 7-seg displays */
-static struct core_dispLayout dispToptronic[] = {
+/* 2 X 20 AlphaNumeric Rows, 8 X 7-seg digits? */
+static struct core_dispLayout dispTemplate[] = {
   DISP_SEG_IMPORT(GTS3_dispAlpha),
   {5,12,40,8,CORE_SEG7}, {0}
 };
-INITGAME_IC(tt_game, dispToptronic, FLIP67, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(tt_game,   "gprom.bin",CRC(e7944b75) SHA1(b73f2e0004556c8aa88baef0cddcdefb5b905b8d))
+INITGAME_IC(tt_game, dispTemplate, FLIP67, 3, SNDBRD_GTS3, 4)
+GTS3ROMSTART(tt_game,   "gprom.bin",CRC(e7944b75) SHA1(b73f2e0004556c8aa88baef0cddcdefb5b905b8d)) // shows GPROM (U2) error
 GTS3SOUND32128(         "yrom1.bin",NO_DUMP,
                         "drom1.bin",NO_DUMP,
-                        "arom1.bin",CRC(b0983d90) SHA1(72e6a71f20fd5849543ca13813f062a3fc1d7dcf),
-                        "arom2.bin",CRC(3e31ce58) SHA1(a2ef72d7b2bb821d1f62dce7212e31a1df3e7791))
+                        "arom1.bin",CRC(b0983d90) SHA1(72e6a71f20fd5849543ca13813f062a3fc1d7dcf), // contains race game sounds and applause
+                        "arom2.bin",CRC(3e31ce58) SHA1(a2ef72d7b2bb821d1f62dce7212e31a1df3e7791)) // -"-
 GTS3_ROMEND
-CORE_GAMEDEFNV(tt_game,"Unnamed Game (Toptronic)",19??,"Toptronic",mGTS3S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(tt_game,"System 3 game template",19??,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 
 // Game produced by Premier for International Concepts
 /*-------------------------------------------------------------------
@@ -112,7 +112,7 @@ GTS3_ROMEND
 CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev. 2)",1989,"Gottlieb",mGTS3S80B3,0)
 
 /*-------------------------------------------------------------------
-/ Bell Ringer
+/ Bell Ringer (#N103)
 /-------------------------------------------------------------------*/
 INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS80B, 4)
 GTS3ROMSTART(bellring, "br_gprom.bin",CRC(a9a59b36) SHA1(ca6d0e54a5c85ef72485975c632660831a3b8c82))
@@ -167,7 +167,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S80B3,0)
 
 /*-------------------------------------------------------------------
-/ Nudge It (N102)
+/ Nudge It (#N102)
 /-------------------------------------------------------------------*/
 INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS80B, 4)
 GTS3ROMSTART(nudgeit, "gprom.bin",CRC(3d9e0309) SHA1(caaa28482e7f260668aa05b39b551acb8e4cc41a))
@@ -262,7 +262,7 @@ CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,0)
 / Super Mario Bros. (#733)
 /-------------------------------------------------------------------*/
 INITGAME1(smb, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(smb,    "gprom.bin",   CRC(fa1f6e52) SHA1(d7ade0e129cb399494967e025d25614bf1650db7))
+GTS3ROMSTART(smb,    "g733.bin",    CRC(1d8c4df8) SHA1(e301bf3b2a8ed6ef902fe15b890b4c06c4606aa9)) // limited to max. 20 credits, defaults to 10
 GTS3_DMD256_ROMSTART("dsp733.bin",  CRC(1363af26) SHA1(28c3eb62ea2dd13dd3e18158e91e4f51abca4f55)) // horizontal scrolling not perfect with this display ROM
 GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
                      "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
@@ -272,7 +272,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(smb,"Super Mario Bros.",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
 INITGAME1(smb1, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
-GTS3ROMSTART(smb1,   "gprom1.bin",  CRC(1d8c4df8) SHA1(e301bf3b2a8ed6ef902fe15b890b4c06c4606aa9))
+GTS3ROMSTART(smb1,   "g733-1.bin",  CRC(fa1f6e52) SHA1(d7ade0e129cb399494967e025d25614bf1650db7)) // max. 24 credits from this revision on
 GTS3_DMD256_ROMSTART("dsp733-1.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
 GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
                      "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
@@ -281,6 +281,7 @@ GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba07
 GTS3_ROMEND
 CORE_CLONEDEFNV(smb1,smb,"Super Mario Bros. (rev. 1)",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
+// This GPROM-2 / DSPROM-1 combo was found in a working game
 INITGAME1(smb2, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(smb2,   "gprom2.bin",  CRC(5b0f44c4) SHA1(ca9b0cd82c75612c85c956497c8f9c12992f6ad5))
 GTS3_DMD256_ROMSTART("dsp733-1.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))

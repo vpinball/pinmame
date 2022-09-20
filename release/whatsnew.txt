@@ -34,11 +34,11 @@ Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
 
 Correct Dumps:
-Changed Attack From Mars 1.1 to also use the older sound ROM 1.0
-Changed No Fear 1.0 & 1.01 to also use the older sound ROM 1.0/SL-1
-Renamed No Fear 1.0 set (as it is actually 1.0F)
-Changed Tales of the Arabian Nights 1.2 & 1.3 to also use the older sound ROM 1.0
-Super Mario Bros.: using different display ROMs matching the game revisions for smb and smb3
+Attack From Mars: Changed 1.1 to also use the older sound ROM 1.0
+No Fear: Changed 1.0 & 1.01 to also use the older sound ROM 1.0/SL-1
+         Renamed 1.0 set (as it is actually 1.0F)
+Super Mario Bros.: Major game / sound ROM cleanup across all revisions
+Tales of the Arabian Nights: Changed 1.2 & 1.3 to also use the older sound ROM 1.0
 
 Clones:
 Airborne 1.5
