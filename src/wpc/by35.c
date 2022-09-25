@@ -238,11 +238,10 @@ static READ_HANDLER(pia0b_r) {
     if (!col && (core_gameData->hw.gameSpecific1 & BY35GD_MARAUDER)) {
       sw = coreGlobals.swMatrix[3];
     } else {
-#ifndef LISY_SUPPORT
-      sw = core_getSwCol(col);
-#else
-      sw = lisy35_switch_handler(col); //get the switches from LISY35
+#ifdef LISY_SUPPORT
+  lisy35_switch_update(); //get the switches from LISY35
 #endif
+      sw = core_getSwCol(col);
     }
     return (locals.hw & BY35HW_REVSW) ? core_revbyte(sw) : sw;
   }
@@ -434,6 +433,7 @@ static SWITCH_UPDATE(by35) {
       CORE_SETKEYSW(inports[BY35_COMINPORT]>>15,0x01,5);
     }
   }
+
   /*-- Diagnostic buttons on CPU board --*/
 #ifndef LISY_SUPPORT
   cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
