@@ -238,9 +238,6 @@ static READ_HANDLER(pia0b_r) {
     if (!col && (core_gameData->hw.gameSpecific1 & BY35GD_MARAUDER)) {
       sw = coreGlobals.swMatrix[3];
     } else {
-#ifdef LISY_SUPPORT
-  lisy35_switch_update(); //get the switches from LISY35
-#endif
       sw = core_getSwCol(col);
     }
     return (locals.hw & BY35HW_REVSW) ? core_revbyte(sw) : sw;
@@ -375,6 +372,9 @@ static INTERRUPT_GEN(by35_vblank) {
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
   }
+#ifdef LISY_SUPPORT
+  if ((locals.vblankCount % 2) == 0) lisy35_switch_update(); //get the switches from LISY35
+#endif
   core_updateSw(core_getSol(19));
 }
 
@@ -406,6 +406,7 @@ static SWITCH_UPDATE(by35) {
   else if (keyboard_pressed_memory_repeat(KEYCODE_SPACE, 2))
     adjust_timer(0);
 #endif /* BY35_DEBUG_KEY_SUPPORT */
+#ifndef LISY_SUPPORT
   if (inports) {
     if (core_gameData->gen & (GEN_BY17|GEN_BY35|GEN_STMPU100)) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
@@ -433,6 +434,7 @@ static SWITCH_UPDATE(by35) {
       CORE_SETKEYSW(inports[BY35_COMINPORT]>>15,0x01,5);
     }
   }
+#endif
 
   /*-- Diagnostic buttons on CPU board --*/
 #ifndef LISY_SUPPORT

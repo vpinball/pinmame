@@ -707,11 +707,30 @@ lisy35_switch_update(void) {
     if (ret < 80) //ret is switchnumber
     {
 
+        //calculate strobe & return
+        //Note: this is different from system80
+        strobe = ret / 8;
+        returnval = ret % 8;
+
+        //set the bit in the Matrix var according to action
+        // action 1 means set the bit
+        // any other means delete the bit
+        if (action) //set bit
+	  {
+        //    SET_BIT(coreGlobals.swMatrix[strobe ], returnval);
+            SET_BIT(swMatrixLISY35[strobe + 1], returnval);
+	  }
+        else //delete bit
+	  {
+         //   CLEAR_BIT(coreGlobals.swMatrix[strobe ], returnval);
+            CLEAR_BIT(swMatrixLISY35[strobe + 1], returnval);
+	  }
+
         //set the switch
         core_setSw(ret+1, action);
 
         if (ls80dbg.bitv.switches) {
-            sprintf(debugbuf, "LISY35_SWITCH_HANDLER Switch#:%d action:%d\n", ret, action);
+            sprintf(debugbuf, "LISY35_SWITCH_HANDLER [%d][%d]Switch#:%d action:%d\n", strobe+1,returnval, ret+1, action);
             lisy80_debug(debugbuf);
 		}
 
@@ -785,7 +804,7 @@ lisy35_switch_update(void) {
             lisy_timer(0, 1, 2);
         }
     } //freeplay option set
-
+  
     return;
 }
 
