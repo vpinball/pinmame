@@ -373,7 +373,8 @@ static INTERRUPT_GEN(by35_vblank) {
     locals.diagnosticLed = 0;
   }
 #ifdef LISY_SUPPORT
-  if ((locals.vblankCount % 2) == 0) lisy35_switch_update(); //get the switches from LISY35
+  //if ((locals.vblankCount % 2) == 0) lisy35_switch_update(); //get the switches from LISY35
+  lisy35_switch_update(); //get the switches from LISY35
 #endif
   core_updateSw(core_getSol(19));
 }
