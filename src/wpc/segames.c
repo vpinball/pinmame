@@ -238,6 +238,14 @@ SE_ROMEND
 #define init_swtril41 init_swtril43
 CORE_CLONEDEFNV(swtril41,swtril43,"Star Wars Trilogy Special Edition, The (4.01)",1997,"Sega",de_mSES1,0)
 
+SE128_ROMSTART(swtril30,"swcpu.300",CRC(b90d2682) SHA1(a29a0d7c2e0adbad721556e6d5aefa47105a233f))
+DE_DMD32ROM8x(    "swsedspa.300",CRC(7b9817d1) SHA1(fbca577df6867f5feaab677714cf5e56702c8ba9))
+SWTRI_SND
+SE_ROMEND
+#define input_ports_swtril30 input_ports_swtril43
+#define init_swtril30 init_swtril43
+CORE_CLONEDEFNV(swtril30,swtril43,"Star Wars Trilogy Special Edition, The (3.00)",1997,"Sega",de_mSES1,0)
+
 // There were also 6 Horchow and 6 Neiman Marcus machines (Collector's Edition) with (at least) a special screen in the software, displaying the serial number
 
 /*-------------------------------------------------------------------

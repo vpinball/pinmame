@@ -28,7 +28,7 @@ Retweaked new Votrax/SC01 emulation core to improve Taito and especially GTS80 g
 Fixed background sound on blkholea, eclipse (and probably more...)
 Added Ekky sound module support for clones of LTD's Force, Space Poker, and Black Hole
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt's Basement Arcade, Silvio Finotti
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt's Basement Arcade, Silvio Finotti, ipdb.org
 New:
 Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
@@ -56,6 +56,7 @@ Magic (MOD rev. 19)
 Maverick, The Movie 2.00
 Red and Ted's Road Show PA-2 (Prototype)
 Space Poker (with Ekky sound module)
+Star Wars Trilogy Special Edition 3.00
 Stingray (MOD rev. 14)
 Terminator 2 L-8.3 (MOD)
 The Games rev.1 & rev. 2 (MOD)
