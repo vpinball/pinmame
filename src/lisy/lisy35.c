@@ -717,14 +717,13 @@ lisy35_switch_update(void) {
         // any other means delete the bit
         if (action) //set bit
 	  {
-        //    SET_BIT(coreGlobals.swMatrix[strobe ], returnval);
             SET_BIT(swMatrixLISY35[strobe + 1], returnval);
 	  }
         else //delete bit
 	  {
-         //   CLEAR_BIT(coreGlobals.swMatrix[strobe ], returnval);
             CLEAR_BIT(swMatrixLISY35[strobe + 1], returnval);
 	  }
+	//RTH Todo change internal lisy handling from matrix to switch number
 
         //set the switch
         core_setSw(ret+1, action);
