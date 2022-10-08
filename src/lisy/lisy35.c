@@ -660,26 +660,17 @@ lisy35_display_handler(int index, int value) {
 } //display_handler
 
 /*
-  switch handler
-  give back the value of the pinmame Matrix byte
+  switch update
+  set via core_setSw
   swMatrix[0] is pinmame internal (sound?)
   swMatrix[1..6] is bally,
   swMatrix[7] is  'special switches' bit7:Test; bit6:S33;
 */
-unsigned char
-lisy35_switch_handler(int sys35col) {
+void
+lisy35_switch_update(void) {
     int ret;
     unsigned char strobe, returnval, action;
     static int simulate_coin_flag = 0;
-    int sys35strobe = 1;
-
-    //get the truth strobe
-    if (sys35col) {
-        while ((sys35col & 0x01) == 0) {
-            sys35col >>= 1;
-            sys35strobe += 1;
-        }
-    }
 
     //read values from pic
     //check if there is an update first
@@ -725,9 +716,22 @@ lisy35_switch_handler(int sys35col) {
         // action 1 means set the bit
         // any other means delete the bit
         if (action) //set bit
+	  {
             SET_BIT(swMatrixLISY35[strobe + 1], returnval);
+	  }
         else //delete bit
+	  {
             CLEAR_BIT(swMatrixLISY35[strobe + 1], returnval);
+	  }
+	//RTH Todo change internal lisy handling from matrix to switch number
+
+        //set the switch
+        core_setSw(ret+1, action);
+
+        if (ls80dbg.bitv.switches) {
+            sprintf(debugbuf, "LISY35_SWITCH_HANDLER [%d][%d]Switch#:%d action:%d\n", strobe+1,returnval, ret+1, action);
+            lisy80_debug(debugbuf);
+		}
 
     } //if ret < 80 => update internal matrix
 
@@ -799,10 +803,8 @@ lisy35_switch_handler(int sys35col) {
             lisy_timer(0, 1, 2);
         }
     } //freeplay option set
-
-    //if ( swMatrixLISY35[sys35strobe] != 0) printf("RTH back:%d\n",swMatrixLISY35[sys35strobe]);
-    //just give back Matrix-Byte, should be updated by now or next cycle
-    return (swMatrixLISY35[sys35strobe]);
+  
+    return;
 }
 
 //get the status of the 'Selftest switch' (from internal matrix)
