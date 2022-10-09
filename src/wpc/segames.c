@@ -422,7 +422,10 @@ DE2S_SOUNDROM1444(   "gc_sound.u7", CRC(8b559e39) SHA1(59c33615b53864cd542c8bd3b
                      "gc_sound.u36",CRC(81f27955) SHA1(eba4250898f6de96111232e49d965b78fc6ee2e2))
 SE_ROMEND
 #define input_ports_goldcue input_ports_se
-CORE_GAMEDEFNV(goldcue,"Golden Cue",1998,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(goldcue,"Golden Cue (0.04 Prototype)",1998,"Sega",de_mSES1,0)
+
+// ipdb also shows a tournament edition proto. did it have the same ROM?
+// also what about the additional t.e. LED display?
 
 /*-------------------------------------------------------------------
 / Godzilla
