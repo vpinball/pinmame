@@ -11,6 +11,25 @@ defaults:
     shell: bash
 
 jobs:
+  dxsdk:
+    name: DirectX SDK
+    runs-on: windows-latest
+    steps:
+      - id: cache
+        uses: actions/cache@v2
+        with:
+          path: DXSDK
+          key: cache-dxsdk
+      - name: Create Cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sL https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
+          7z x DXSDK_Jun10.exe DXSDK/Include -otmp
+          7z x DXSDK_Jun10.exe DXSDK/Lib -otmp
+          mv tmp/DXSDK DXSDK
+          rm -fR DXSDK_Jun10.exe tmp
+          ls -Ra DXSDK
+
   version:
     name: Version
     runs-on: ubuntu-latest
@@ -31,7 +50,7 @@ jobs:
   build:
     name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
     runs-on: windows-2019
-    needs: [ version ]
+    needs: [ dxsdk, version ]
     strategy:
       fail-fast: false
       matrix:
@@ -63,12 +82,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ilammy/setup-nasm@v1
+      - uses: actions/cache@v2
+        with:
+          path: DXSDK
+          key: cache-dxsdk
 #      - run: |
 #          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
 #          7z x upx.zip -oupx
 #          rm upx.zip
       - name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
+          export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
           cp cmake/vpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake ${{ matrix.extra-flags }} -T v141_xp -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/vpinmame
           cmake --build build/vpinmame --config Release
