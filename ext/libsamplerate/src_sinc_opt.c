@@ -669,7 +669,7 @@ sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	if (MIN (psrc->last_ratio, data->src_ratio) < 1.0)
 		count /= MIN (psrc->last_ratio, data->src_ratio) ;
 
-	/* Maximum coefficientson either side of center point. */
+	/* Maximum coefficients on either side of center point. */
 	half_filter_chan_len = filter->channels * (int) (lrint (count) + 1) ;
 
 	input_index = psrc->last_position ;
@@ -725,7 +725,7 @@ sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 
 	psrc->last_position = input_index ;
 
-	/* Save current ratio rather then target ratio. */
+	/* Save current ratio rather than target ratio. */
 	psrc->last_ratio = src_ratio ;
 
 	data->input_frames_used = filter->in_used / filter->channels ;
