@@ -26,7 +26,9 @@ Finally some progress on Zaccaria's 11178 analog sound
 Fixed quick clock/samplerate changes for (at least) all games using the Votrax/SC01 chip and some few HC55516 CVSD based games
 Retweaked new Votrax/SC01 emulation core to improve Taito and especially GTS80 games
 Fixed background sound on blkholea, eclipse (and probably more...)
-Added Ekky sound module support for clones of LTD's Force, Space Poker, and Black Hole
+Added Ekky sound module support for clones of LTD's Force, Space Poker, and Black Hole (which is kinda similar in spirit to the non-emulated original sound chip)
+Some sound improvements for LTD
+Fixed Special Forces Solenoid issues (Bally MPU-6803 in general)
 
 *** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (François & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt's Basement Arcade, Silvio Finotti, ipdb.org
 New:
