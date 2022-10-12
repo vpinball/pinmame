@@ -708,7 +708,7 @@ target_include_directories(vpinmame PUBLIC
    src/win32com
    src/vc
    ext/zlib
-   ext/dinput
+   ext/dinput/include
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
 )
 

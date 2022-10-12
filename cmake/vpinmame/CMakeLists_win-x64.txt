@@ -702,7 +702,7 @@ target_include_directories(vpinmame PUBLIC
    src/win32com
    src/vc
    ext/zlib
-   ext/dinput
+   ext/dinput/include
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
 )
 
@@ -713,9 +713,9 @@ target_link_directories(vpinmame PUBLIC
 
 target_link_libraries(vpinmame
    winmm.lib
-   ddraw.lib
-   dxguid.lib
-   dsound.lib
+   ddraw64.lib
+   dxguid64.lib
+   dsound64.lib
    dinput64.lib
    version.lib
    bass.lib
