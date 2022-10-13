@@ -606,8 +606,8 @@ void mix_sample_8(struct mixer_channel_data * const channel, int samples_to_gene
 	/* compute the overall mixing volume */
 	if (mixer_sound_enabled)
 	{
-		mixing_volume[0] = ((channel->left_volume  * channel->mixing_level) << channel->gain) / (double)(100*100);
-		mixing_volume[1] = ((channel->right_volume * channel->mixing_level) << channel->gain) / (double)(100*100);
+		mixing_volume[0] = (float)(((channel->left_volume  * channel->mixing_level) << channel->gain) / (double)(100*100));
+		mixing_volume[1] = (float)(((channel->right_volume * channel->mixing_level) << channel->gain) / (double)(100*100));
 	} else {
 		mixing_volume[0] = 0.f;
 		mixing_volume[1] = 0.f;
@@ -654,8 +654,8 @@ void mix_sample_16(struct mixer_channel_data * const channel, int samples_to_gen
 	/* compute the overall mixing volume */
 	if (mixer_sound_enabled)
 	{
-		mixing_volume[0] = ((channel->left_volume  * channel->mixing_level) << channel->gain) / (double)(100*100);
-		mixing_volume[1] = ((channel->right_volume * channel->mixing_level) << channel->gain) / (double)(100*100);
+		mixing_volume[0] = (float)(((channel->left_volume  * channel->mixing_level) << channel->gain) / (double)(100*100));
+		mixing_volume[1] = (float)(((channel->right_volume * channel->mixing_level) << channel->gain) / (double)(100*100));
 	} else {
 		mixing_volume[0] = 0.f;
 		mixing_volume[1] = 0.f;
@@ -1219,8 +1219,8 @@ void mixer_play_streamed_sample_16(const int ch, const INT16 *data, int len, con
 
 	/* compute the overall mixing volume */
 	if (mixer_sound_enabled) {
-		mixing_volume[0] = ((channel->left_volume  * channel->mixing_level) << channel->gain) / (double)(100*100);
-		mixing_volume[1] = ((channel->right_volume * channel->mixing_level) << channel->gain) / (double)(100*100);
+		mixing_volume[0] = (float)(((channel->left_volume  * channel->mixing_level) << channel->gain) / (double)(100*100));
+		mixing_volume[1] = (float)(((channel->right_volume * channel->mixing_level) << channel->gain) / (double)(100*100));
 	} else {
 		mixing_volume[0] = 0.f;
 		mixing_volume[1] = 0.f;
