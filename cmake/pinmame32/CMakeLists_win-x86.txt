@@ -679,7 +679,7 @@ target_include_directories(pinmame32 PUBLIC
    src/ui
    src/windows
    ext/zlib
-   ext/dinput
+   ext/dinput/include
 )
 
 target_link_directories(pinmame32 PUBLIC

@@ -643,7 +643,7 @@ target_include_directories(pinmame PUBLIC
    src/vc
    src/windows
    ext/zlib
-   ext/dinput
+   ext/dinput/include
 )
 
 target_link_directories(pinmame PUBLIC
@@ -652,9 +652,9 @@ target_link_directories(pinmame PUBLIC
 
 target_link_libraries(pinmame
    winmm.lib
-   ddraw.lib
-   dxguid.lib
-   dsound.lib
+   ddraw64.lib
+   dxguid64.lib
+   dsound64.lib
    dinput64.lib
 )
 

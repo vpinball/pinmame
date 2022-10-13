@@ -673,7 +673,7 @@ target_include_directories(pinmame32 PUBLIC
    src/ui
    src/windows
    ext/zlib
-   ext/dinput
+   ext/dinput/include
 )
 
 target_link_directories(pinmame32 PUBLIC
@@ -684,9 +684,9 @@ target_link_libraries(pinmame32
    winmm.lib
    comctl32.lib
    htmlhelp.lib
-   dxguid.lib
-   dsound.lib
-   ddraw.lib
+   dxguid64.lib
+   dsound64.lib
+   ddraw64.lib
    dinput64.lib
 )
 

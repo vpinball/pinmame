@@ -652,7 +652,7 @@ target_include_directories(pinmame PUBLIC
    src/vc
    src/windows
    ext/zlib
-   ext/dinput
+   ext/dinput/include
 )
 
 target_link_directories(pinmame PUBLIC
