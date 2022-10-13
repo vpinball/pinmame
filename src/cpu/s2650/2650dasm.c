@@ -720,7 +720,7 @@ int Dasm2650(char * buff, int PC)
 			break;
 		case 0xc8: case 0xc9: case 0xca: case 0xcb:
 #if HJB
-			sprintf(buff, "ld   (%2$s),r%1$d", REL(pc), rv);
+			sprintf(buff, "ld   (%s),r%d", REL(pc), rv);
 #else
             sprintf(buff, "strr,%d %s", rv, REL(pc));
 #endif
