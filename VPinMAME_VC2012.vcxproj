@@ -200,7 +200,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -230,7 +230,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)VPinMAME.dll</OutputFile>
       <Version>20.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -269,7 +269,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -294,7 +294,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <AdditionalIncludeDirectories>$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput64.lib;dsound.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinMAME64.dll</OutputFile>
       <Version>20.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -334,7 +334,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -356,7 +356,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)VPinMAME.dll</OutputFile>
       <Version>4.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -388,7 +388,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -406,7 +406,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <AdditionalIncludeDirectories>$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput64.lib;dsound.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinMAME64.dll</OutputFile>
       <Version>4.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -443,7 +443,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -474,7 +474,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)VPinMAME.dll</OutputFile>
       <Version>20.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -505,7 +505,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -522,7 +522,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <AdditionalIncludeDirectories>$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput64.lib;dsound.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinMAME64.dll</OutputFile>
       <Version>20.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -558,7 +558,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -580,7 +580,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)VPinMAME.dll</OutputFile>
       <Version>4.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -612,7 +612,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -630,7 +630,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <AdditionalIncludeDirectories>$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput64.lib;dsound.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinMAME64.dll</OutputFile>
       <Version>4.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
