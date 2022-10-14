@@ -21,10 +21,10 @@ jobs:
             base_image: raspios_lite_arm64:latest
     steps:
       - name: Checkout pinmame
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Checkout WiringPi
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             repository: WiringPi/WiringPi
             ref: master
