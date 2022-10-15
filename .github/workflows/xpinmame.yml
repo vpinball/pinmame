@@ -29,10 +29,10 @@ jobs:
           SHA="${GITHUB_SHA}"
           SHA7="${SHA::7}"
           TAG="${VERSION}-${REVISION}-${SHA7}"
-          echo "::set-output name=version::${VERSION}"
-          echo "::set-output name=revision::${REVISION}"
-          echo "::set-output name=sha::${SHA}"
-          echo "::set-output name=tag::${TAG}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
     name: Build xpinmame-${{ matrix.platform }}

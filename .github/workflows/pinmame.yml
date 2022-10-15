@@ -26,7 +26,7 @@ jobs:
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           SHA7="${GITHUB_SHA::7}"
           TAG="${VERSION}-${REVISION}-${SHA7}"
-          echo "::set-output name=tag::${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
     name: Build PinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
