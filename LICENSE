@@ -11,6 +11,9 @@ very first line marked with
 // license:BSD-3-Clause
 Every file that doesn't, will stay (for now) under the 'old MAME' license.
 
+Some sub-directories will also feature their own license file, if necessary,
+that overrides this file here.
+
 
 ===============================================================================
 ===============================================================================

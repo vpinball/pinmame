@@ -12,7 +12,7 @@ More gracefully handle parsing errors in invalid altsound CSV files to avoid cra
 
 Updated LISY support to 5.28-76 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
-Updated to zlib 1.2.12
+Updated to zlib 1.2.13
 
 VS2022 build support
 
