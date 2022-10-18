@@ -294,7 +294,7 @@ CORE_CLONEDEFNV(smb2,smb,"Super Mario Bros. (rev. 2)",1992,"Gottlieb",mGTS3DMDSA
 
 INITGAME1(smb3, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(smb3,   "gprom3.bin",  CRC(5a40822c) SHA1(a87ec6307f848483c76141e47fd67e4549f9c9d3))
-GTS3_DMD256_ROMSTART("dsp733-2.bin",CRC(40e42f12) SHA1(d053e13e28c73e68e75beb9745947ec72201cead)) // more translated strings
+GTS3_DMD256_ROMSTART("dsp733-2.bin",CRC(40e42f12) SHA1(d053e13e28c73e68e75beb9745947ec72201cead)) // more translated strings, but missing settings 57 & 58 introduced with smb2!
 //GTS3_DMD256_ROMSTART("dsprom.bin",CRC(59639112) SHA1(e0cbd3a38cd99f0f5f6e85d7eee4772f462c1990)) // probably a bad dump, six bytes differ from dsp733-2.bin
 GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
                      "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
