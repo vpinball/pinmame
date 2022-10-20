@@ -14,11 +14,21 @@ establish an open and affordable platform for that. Ideally people will publish 
 leverage and potentially improve them. We want to see a growing library of so-called *Pinball Power-Ups* (PPUs) and a
 vital homebrew pinball community.
 
-## Licence
+## Licences
 
 The code in this directory and all sub-directories is licenced under GPLv3, except if a different license is mentioned
-in a files header. Be aware of the fact that your own enhancements of ppuc need to be licenced under a compatible
-licence.
+in a file's header or in a sub-directory. Be aware of the fact that your own enhancements of ppuc need to be licenced
+under a compatible licence.
+
+Due to complicated dependency management on different platforms, these libraries are included as source code copy:
+* [serialib](https://github.com/imabot2/serialib)
+* [cargs](https://github.com/likle/cargs)
+
+PPUC uses
+* [libpinmame](https://github.com/vpinball/pinmame)
+* [libusb](https://libusb.info/)
+* [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+* [OpenAL Soft](https://openal-soft.org/)
 
 ## Documentation
 
@@ -27,7 +37,7 @@ These components are still in an early development stage and the documentation w
 ### Command Line Options
 
 * -c path
-    *  path to config file
+    * path to config file
     * required
 * -r rom name
     * rom to use, overwrites *rom* setting in config file
@@ -48,7 +58,7 @@ These components are still in an early development stage and the documentation w
 
 Install required dependencies via homebrew:
 ```shell
-brew install libusb yaml-cpp
+brew install openal-soft libusb yaml-cpp
 ```
 
 Compile:
@@ -63,16 +73,16 @@ Run:
 build/Release/ppuc -c src/ppuc/examples/t2.yml
 ```
 
-#### Linux
+#### Linux (debian based)
 
 Install required dependencies via apt:
 ```shell
-apt install libopenal-dev libyaml-cpp-dev libusb-dev
+apt install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
 ```
 
 Compile:
 ```shell
-cp cmake/ppuc/CMakeLists_linux.txt CMakeLists.txt
+cp cmake/ppuc/CMakeLists_linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
 cmake --build build/Release
 ```
@@ -81,3 +91,7 @@ Run:
 ```shell
 sudo build/Release/ppuc -c src/ppuc/examples/t2.yml
 ```
+
+### Windows
+
+tbd

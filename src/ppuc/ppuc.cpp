@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <chrono>
 #include <queue>
@@ -14,9 +13,10 @@
 #include "yaml-cpp/yaml.h"
 
 #include "Event.h"
-#include "libpinmame.h"
+#include "../libpinmame/libpinmame.h"
 #include "pin2dmd/pin2dmd.h"
 #include "serialib/serialib.h"
+#include "cargs/cargs.h"
 
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
@@ -42,6 +42,43 @@ YAML::Node ppuc_config;
 
 bool opt_debug = false;
 int game_state = 0;
+
+static struct cag_option options[] = {
+    {
+        .identifier = 'c',
+        .access_letters = "c",
+        .access_name = "config",
+        .value_name = "VALUE",
+        .description = "Path to config file (required)"
+    },
+    {
+        .identifier = 'r',
+        .access_letters = "r",
+        .access_name = "rom",
+        .value_name = "VALUE",
+        .description = "Path to ROM file (optional, overwrites setting in config file)"
+    },
+    {
+        .identifier = 's',
+        .access_letters = "s",
+        .access_name = "serial",
+        .value_name = "VALUE",
+        .description = "Serial device (optional, overwrites setting in config file)"
+    },
+    {
+        .identifier = 'd',
+        .access_letters = "d",
+        .access_name = NULL,
+        .value_name = NULL,
+        .description = "Enable debug output (optional"
+    },
+    {
+        .identifier = 'h',
+        .access_letters = "h",
+        .access_name = "help",
+        .description = "Show help"
+    }
+};
 
 void CALLBACK Game(PinmameGame* game) {
 	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
@@ -249,7 +286,7 @@ void sendEvent(ConfigEvent* event) {
     cmsg[6] = event->value >> 24;
     cmsg[7] = (event->value >> 16) & 0xff;
     cmsg[8] = (event->value >> 8) & 0xff;
-    cmsg[9] = event->value  & 0xff;
+    cmsg[9] = event->value & 0xff;
     //      = (UINT8) 255;
 
     if (serial.writeBytes(msg, 11)) {
@@ -282,35 +319,35 @@ Event* receiveEvent() {
     return NULL;
 }
 
-int main (int argc, char **argv) {
+int main (int argc, char *argv[]) {
+    char identifier;
+    cag_option_context cag_context;
     const char *config_file = NULL;
     const char *opt_rom = NULL;
     const char *opt_serial = NULL;
     UINT8 boardsToPoll[MAX_IO_BOARDS];
     UINT8 numBoardsToPoll = 0;
 
-    int c;
-    // The options argument is a string that specifies the option characters that are valid for this program. An option
-    // character in this string can be followed by a colon (‘:’) to indicate that it takes a required argument.
-    while ((c = getopt(argc, argv, "c:dhr:s:")) != -1) {
-        switch (c) {
+    cag_option_prepare(&cag_context, options, CAG_ARRAY_SIZE(options), argc, argv);
+    while (cag_option_fetch(&cag_context)) {
+        identifier = cag_option_get(&cag_context);
+        switch (identifier) {
             case 'c':
-                config_file = optarg;
+                config_file = cag_option_get_value(&cag_context);
                 break;
             case 'r':
-                opt_rom = optarg;
+                opt_rom = cag_option_get_value(&cag_context);
                 break;
             case 's':
-                opt_serial = optarg;
+                opt_serial = cag_option_get_value(&cag_context);
                 break;
             case 'd':
                 opt_debug = true;
                 break;
             case 'h':
-                printf("todo: provide help and document the command line options\n");
-                break;
-            default:
-                abort();
+                printf("Usage: ppuc [OPTION]...\n");
+                cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
+                return 0;
         }
     }
 
@@ -334,7 +371,7 @@ int main (int argc, char **argv) {
     char errorOpening = serial.openDevice(opt_serial, 115200);
     // If connection fails, return the error code otherwise, display a success message
     if (errorOpening != 1) {
-        if (opt_debug) printf("Unable to open serial device: %s\n", opt_serial);
+        printf("Unable to open serial device: %s\n", opt_serial);
         return errorOpening;
     }
 
@@ -420,7 +457,12 @@ int main (int argc, char **argv) {
     PinmameSetHandleKeyboard(0);
     PinmameSetHandleMechanics(0);
 
+#if defined(_WIN32) || defined(_WIN64)
+    // Avoid compile error C2131. Use a larger constant value instead.
+    int changedLampStates[256];
+#else
     int changedLampStates[PinmameGetMaxLamps() * 2];
+#endif
 
 	if (PinmameRun(opt_rom) == OK) {
         // Pinball machines were slower than modern CPUs. There's no need to update states too frequently at full speed.

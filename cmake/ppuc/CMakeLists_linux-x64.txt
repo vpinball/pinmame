@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_OSX_ARCHITECTURES x86_64)
+set(CMAKE_MODULE_PATH cmake/ppuc)
 
 add_compile_definitions(
    HAS_M6809=1
@@ -82,11 +82,13 @@ add_compile_definitions(
    PINMAME_NO_UNUSED
    LIBPINMAME
    SAM_INCLUDE_COLORED
+   NAME="LIBPINMAME"
 
    LSB_FIRST
+   INLINE=static __inline__
+   PI=M_PI
+   UNIX
 )
-
-add_definitions( "-DINLINE=static inline __attribute__((always_inline))" )
 
 add_library(pinmame SHARED
    src/artwork.c
@@ -578,7 +580,8 @@ target_include_directories(pinmame PUBLIC
    src
    src/wpc
    src/cpu/m68000/generated_by_m68kmake
-   src/ios
+   src/unix
+   src/unix/sysdep
    src/libpinmame
 )
 
@@ -586,6 +589,7 @@ find_package(ZLIB)
 
 target_link_libraries(pinmame
    ZLIB::ZLIB
+   pthread
 )
 
 set_target_properties(pinmame PROPERTIES
@@ -602,20 +606,15 @@ add_executable(ppuc
    src/ppuc/ppuc.cpp
 )
 
-target_include_directories(ppuc PUBLIC
-   /usr/local/opt/libusb/include
-   /usr/local/opt/openal-soft/include
-   /usr/local/opt/yaml-cpp/include
-)
+find_package(libusb)
+
+find_package(yaml-cpp)
+
+find_package(OpenAL)
 
 target_link_libraries(ppuc LINK_PUBLIC
    pinmame
-   /usr/local/opt/openal-soft/lib/libopenal.dylib
-   /usr/local/opt/libusb/lib/libusb-1.0.dylib
-   /usr/local/opt/yaml-cpp/lib/libyaml-cpp.dylib
-)
-
-set_target_properties(ppuc PROPERTIES
-   SKIP_BUILD_RPATH TRUE
-   LINK_FLAGS "-Wl,-rpath,@executable_path"
+   libusb-1.0.so
+   yaml-cpp
+   openal
 )

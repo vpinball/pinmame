@@ -5,7 +5,7 @@ string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
 
 project(pinmame VERSION ${PROJECT_VERSION})
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
@@ -601,6 +601,8 @@ add_executable(ppuc
    src/ppuc/pin2dmd/pin2dmd.cpp
    src/ppuc/serialib/serialib.h
    src/ppuc/serialib/serialib.cpp
+   src/ppuc/cargs/cargs.h
+   src/ppuc/cargs/cargs.c
    src/ppuc/ppuc.cpp
 )
 

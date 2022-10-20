@@ -21,7 +21,7 @@ struct libusb_device_descriptor desc;
 struct libusb_context *ctx = NULL;
 
 UINT8 OutputBuffer[65536] = {};
-char byte[4] = {0};
+char bytes[4] = {0};
 
 int Pin2dmdInit() {
     static int ret = 0;
@@ -121,14 +121,14 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, boo
                             //byte0 |= (1 << bitShift);
                             break;
                         case 0x21: // 33%
-                            byte[0] |= (1 << bitShift);
+                            bytes[0] |= (1 << bitShift);
                             break;
                         case 0x43: // 67%
-                            byte[1] |= (1 << bitShift);
+                            bytes[1] |= (1 << bitShift);
                             break;
                         case 0x64: // 100%
-                            byte[0] |= (1 << bitShift);
-                            byte[1] |= (1 << bitShift);
+                            bytes[0] |= (1 << bitShift);
+                            bytes[1] |= (1 << bitShift);
                             break;
                     }
                 } else if (bitDepth == 4) {
@@ -137,66 +137,66 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, boo
                             case 0x00:
                                 break;
                             case 0x14:
-                                byte[0] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
                                 break;
                             case 0x19:
-                                byte[1] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
                                 break;
                             case 0x1E:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
                                 break;
                             case 0x23:
-                                byte[2] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x28:
-                                byte[0] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x2D:
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x32:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x37:
-                                byte[3] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x3C:
-                                byte[0] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x41:
-                                byte[1] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x46:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x4B:
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x50:
-                                byte[0] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x5A:
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x64:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                         }
                     } else {
@@ -204,66 +204,66 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, boo
                             case 0x00:
                                 break;
                             case 0x1E:
-                                byte[0] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
                                 break;
                             case 0x23:
-                                byte[1] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
                                 break;
                             case 0x28:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
                                 break;
                             case 0x2D:
-                                byte[2] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x32:
-                                byte[0] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x37:
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x3C:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
                                 break;
                             case 0x41:
-                                byte[3] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x46:
-                                byte[0] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x4B:
-                                byte[1] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x50:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x55:
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x5A:
-                                byte[0] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x5F:
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                             case 0x64:
-                                byte[0] |= (1 << bitShift);
-                                byte[1] |= (1 << bitShift);
-                                byte[2] |= (1 << bitShift);
-                                byte[3] |= (1 << bitShift);
+                                bytes[0] |= (1 << bitShift);
+                                bytes[1] |= (1 << bitShift);
+                                bytes[2] |= (1 << bitShift);
+                                bytes[3] |= (1 << bitShift);
                                 break;
                         }
                     }
@@ -273,8 +273,8 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, boo
                 if (bitShift > 7) {
                     bitShift = 0;
                     for (int i = 0; i < bitDepth; i++) {
-                        OutputBuffer[(frameSizeInByte * i) + outputBufferIndex] = byte[i];
-                        byte[i] = 0;
+                        OutputBuffer[(frameSizeInByte * i) + outputBufferIndex] = bytes[i];
+                        bytes[i] = 0;
                     }
                     outputBufferIndex++;
                 }
