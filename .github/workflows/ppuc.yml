@@ -109,13 +109,13 @@ jobs:
               upx --best --lzma build/Release/${{ matrix.libpinmame }}
             fi
           fi
-      - if: matrix.type == 'raspi'
+      - if: matrix.type == 'pc'
         run: |
           mkdir tmp
           cp build/Release/${{ matrix.ppuc }} tmp
           cp src/ppuc/README.md tmp
           cp src/ppuc/LICENSE tmp
-      - if: matrix.base_image != 'none'
+      - if: matrix.base_image == 'raspi'
         uses: pguyot/arm-runner-action@v2
         id: arm_runner_make
         with:
