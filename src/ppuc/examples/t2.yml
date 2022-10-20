@@ -5,6 +5,16 @@ serialPort: /dev/tty.usbserial-1420
 display: pin2dmd
 debug: false
 
+boards:
+  -
+    description: "IO board 0, sends switch events"
+    number: 0
+    pollEvents: true
+  -
+    description: "IO board 3, doesn't send switch events"
+    number: 3
+    pollEvents: false
+
 dipSwitches:
   -
     description: ""
@@ -39,52 +49,6 @@ dipSwitches:
     number: 8
     on: true
 
-boards:
-  -
-    description: "IO board 0, sends switch events"
-    number: 0
-    pollEvents: true
-  -
-    description: "IO board 3, doesn't send switch events"
-    number: 3
-    pollEvents: false
-
-lamps:
-  ledType: GBRW
-  lightUp: 100
-  afterGlow: 400
-  assignment:
-    -
-      description: "one million, LED 1"
-      number: 14
-      ledNumber: 27
-      brightness: 128
-      color: 000000FF
-    -
-      description: "one million, LED 2"
-      number: 14
-      ledNumber: 28
-      brightness: 128
-      color: 000000FF
-    -
-      description: "Bonus"
-      number: 13
-      ledNumber: 28
-      brightness: 196
-      color: FF00FF00
-
-flasher:
-  ledType: RGB
-  lightUp: 100
-  afterGlow: 400
-  assignment:
-    -
-      description: "describe the flasher here"
-      number: 7
-      ledNumber: 13
-      brightness: 255
-      color: FFFFFF
-
 switches:
   -
     number: 1
@@ -99,15 +63,110 @@ switches:
     board: 0
     port: 15
 
-coils:
+ledStripes:
   -
+    board: 3
+    port: 2
+    ledType: GBRW
+    lightUp: 100
+    afterGlow: 400
+    lamps:
+      -
+        description: "one million, LED 1"
+        number: 14
+        ledNumber: 27
+        brightness: 128
+        color: 000000FF
+      -
+        description: "one million, LED 2"
+        number: 14
+        ledNumber: 28
+        brightness: 128
+        color: 000000FF
+      -
+        description: "Bonus"
+        number: 13
+        ledNumber: 28
+        brightness: 196
+        color: FF00FF00
+    flashers:
+      -
+        description: "flasher"
+        number: 13
+        ledNumber: 28
+        brightness: 196
+        color: FF00FF00
+    gi:
+      -
+        description: "GI"
+        number: 1
+        ledNumber: 28
+        brightness: 196
+        color: FF00FF00
+
+lamps:
+  -
+    description: "one million"
+    number: 14
+    ledNumber: 27
+    brightness: 128
+    color: 000000FF
+  -
+    description: "two million"
+    number: 14
+    ledNumber: 28
+    brightness: 128
+    color: 000000FF
+  -
+    description: "Bonus"
+    number: 13
+    ledNumber: 28
+    brightness: 196
+    color: FF00FF00
+
+flasher:
+  ledType: RGB
+  lightUp: 100
+  afterGlow: 400
+  assignment:
+    -
+      description: "describe the flasher here"
+      number: 7
+      ledNumber: 13
+      brightness: 255
+      color: FFFFFF
+
+pwmOutput:
+  -
+    type: 'coil'
     description: "left slingshot"
     number: 17
     board: 3
-    port: 5
+    port: 7
     power: 255
     minPulseTime: 100
     maxPulseTime: 500
+    fastFlipSwitch: 4
+  -
+    type: 'flasher'
+    description: "flasher"
+    number: 17
+    board: 3
+    port: 8
+    power: 255
+    minPulseTime: 100
+    maxPulseTime: 500
+    fastFlipSwitch: -1
+  -
+    type: 'lamp'
+    description: "lamp"
+    number: 17
+    board: 3
+    port: 8
+    power: 255
+    minPulseTime: 100
+    maxPulseTime: 500
+    fastFlipSwitch: -1
 
 mechs:
   -

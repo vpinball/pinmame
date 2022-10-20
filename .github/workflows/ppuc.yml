@@ -1,0 +1,143 @@
+name: ppuc
+on:
+  push:
+
+env:
+  VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
+  UPX_ARTIFACT: 345209471
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      revision: ${{ steps.version.outputs.revision }}
+      sha: ${{ steps.version.outputs.sha }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA="${GITHUB_SHA}"
+          SHA7="${SHA::7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  build:
+    name: PPUC ${{ matrix.platform }} ${{ matrix.base_image }}
+    runs-on: ${{ matrix.os }}
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win-x64
+            platform-name: x64
+            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
+            ppuc: ppuc.exe
+            type: pc
+          - os: macos-latest
+            platform: osx-x64
+            libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
+            ppuc: ppuc
+            type: pc
+          - os: ubuntu-latest
+            platform: linux-x64
+            libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
+            ppuc: ppuc
+            type: pc
+          - os: ubuntu-latest
+            platform: linux-arm64
+            libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
+            ppuc: ppuc
+            type: pc
+          - os: ubuntu-latest
+            platform: linux-arm64
+            ppuc: ppuc
+            target: zero2_64
+            cpu: cortex-a53
+            cpu_info: raspberrypi_zero2_w_arm64
+            base_image: raspios_lite_arm64:latest
+            type: raspi
+    steps:
+      - uses: actions/checkout@v3
+      - if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
+      - if: matrix.os == 'macos-latest'
+        run: |
+          brew install openal-soft libusb yaml-cpp
+      - if: matrix.os == 'windows-latest'
+        uses: lukka/run-vcpkg@v7.4
+        with:
+          vcpkgArguments: yaml-cpp openal-soft libusb
+          vcpkgTriplet: ${{ matrix.platform-name }}-windows
+          vcpkgDirectory: deps/vcpkg
+          vcpkgGitCommitId: ce99c947b64ea3c0e274e18cc3035ca727681089
+      - if: matrix.os == 'windows-latest'
+        run: |
+          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
+          7z x upx.zip -oupx
+          rm upx.zip
+      - if: matrix.type == 'pc'
+        name: Build ppuc-${{ matrix.platform }}
+        run: |
+          cp cmake/ppuc/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cmake -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -DCMAKE_TOOLCHAIN_FILE=./deps/vcpkg/scripts/buildsystems/vcpkg.cmake -B build
+            cmake --build build --config Release
+            if [[ "${{ matrix.platform }}" != "win-arm64" ]]; then 
+              ./upx/upx.exe --best --lzma build/Release/${{ matrix.libpinmame }}
+            fi
+          else
+            cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+            cmake --build build/Release
+            if [[ "${{ matrix.platform }}" == "linux-x64" ]]; then
+              upx --best --lzma build/Release/${{ matrix.libpinmame }}
+            fi
+          fi
+      - if: matrix.type == 'raspi'
+        run: |
+          mkdir tmp
+          cp build/Release/${{ matrix.ppuc }} tmp
+          cp src/ppuc/README.md tmp
+          cp src/ppuc/LICENSE tmp
+      - if: matrix.base_image != 'none'
+        uses: pguyot/arm-runner-action@v2
+        id: arm_runner_make
+        with:
+          base_image: ${{ matrix.base_image }}
+          optimize_image: yes
+          image_additional_mb: 1024
+          cpu: ${{ matrix.cpu }}
+          cpu_info: cpuinfo/${{ matrix.cpu_info }}
+          copy_repository_path: /opt/pinmame
+          copy_artifact_path: tmp
+          commands: |
+            apt-get update -y --allow-releaseinfo-change
+            apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev libsdl2-mixer-dev libi2c-dev
+            apt-get install --no-install-recommends -y cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
+            cp cmake/ppuc/CMakeLists_linux-arm64.txt CMakeLists.txt
+            cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+            cmake --build build/Release
+            mkdir tmp
+            cp build/Release/${{ matrix.ppuc }} tmp
+            cp src/ppuc/README.md tmp
+            cp src/ppuc/LICENSE tmp
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ppuc-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.type }}
+          path: tmp
