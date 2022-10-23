@@ -1,8 +1,8 @@
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
-                             Version 3.5
-                        (October 23rd, 2022)
+                             Version 3.6
+                        (XX XXth, 2023)
                  https://github.com/vpinball/pinmame/
 **************************************************************************************
 

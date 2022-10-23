@@ -3,6 +3,11 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
+Version 3.6 (XX XXth, 2023) - ""
+------------------------------------------------------------------------------
+
+
+
 Version 3.5 (October 23rd, 2022) - "Trick or Treat"
 ------------------------------------------------------------------------------
 

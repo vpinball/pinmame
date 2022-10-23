@@ -71,8 +71,8 @@ IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,0,0
- PRODUCTVERSION 3,5,0,0
+ FILEVERSION 3,6,0,0
+ PRODUCTVERSION 3,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,16 +88,16 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
-            VALUE "FileVersion", "3, 5, 0, 0"
+            VALUE "FileVersion", "3, 6, 0, 0"
             VALUE "InternalName", "VPinMAME"
-            VALUE "LegalCopyright", "© 2000-2022 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
+            VALUE "LegalCopyright", "© 2000-2023 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
 #ifndef _WIN64
             VALUE "OriginalFilename", "VPinMAME.DLL"
 #else
             VALUE "OriginalFilename", "VPinMAME64.DLL"
 #endif
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "3.5"
+            VALUE "ProductVersion", "3.6"
         END
     END
     BLOCK "VarFileInfo"
@@ -188,9 +188,9 @@ BEGIN
     CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,94,162,8
     CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,103,162,8
     CTEXT           "Visual PinMAME written by",IDC_STATIC,148,42,160,8
-    CTEXT           "Copyright © 1997-2022 by the authors of MAME, MAME32, MAMEW and PinMAME",IDC_STATIC,148,116,162,16
+    CTEXT           "Copyright © 1997-2023 by the authors of MAME, MAME32, MAMEW and PinMAME",IDC_STATIC,148,116,162,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages",IDC_STATIC,7,135,133,24
-    CTEXT           "Copyright © 2001-2022 by the authors",IDC_STATIC,148,78,162,8
+    CTEXT           "Copyright © 2001-2023 by the authors",IDC_STATIC,148,78,162,8
     CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",IDC_STATIC,148,139,162,24
     CTEXT           "Build Date %s",IDC_BUILDDATE,148,27,162,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,162,1
