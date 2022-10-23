@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.5 (XX XXth, 2022) - ""
+Version 3.5 (October 23rd, 2022) - "Trick or Treat"
 ------------------------------------------------------------------------------
 
 Saving NVRAM for Juegos Populares
