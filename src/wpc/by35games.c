@@ -1800,6 +1800,18 @@ CORE_CLONEDEFNV(cybrnaua,cybrnaut,"Cybernaut (Free Play)",2004,"Bally / Oliver",
 /******************************************************/
 
 /*--------------------------------
+/ Sexy Girl (Arkon Automaten GmbH, Frankfurt, Germany, 1980)
+/-------------------------------*/
+INITGAME(sexygirl,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
+BY35_ROMSTART888(sexygirl,"743-14_1.716",CRC(5c40984a) SHA1(dea104242fcb6d604faa0f01f087bc58bd43cd9d),
+                          "743-12_2.716",CRC(6fa66664) SHA1(4943220942ce74d4620eb5fbbab8f8a763f65a2e),
+                          "720-30_6.716",CRC(4be8aab0) SHA1(b6ae0c4f27b7dd7fb13c0632617a2559f86f29ae))
+BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
+BY35_ROMEND
+#define input_ports_sexygirl input_ports_by35
+CORE_CLONEDEFNV(sexygirl,playboy,"Sexy Girl",1980,"Arkon (Germany)",by35_mBY35_32S,0)
+
+/*--------------------------------
 / Mystic Star (Zaccaria game, 1984)
 /-------------------------------*/
 INITGAME(myststar,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)

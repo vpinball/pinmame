@@ -6,6 +6,13 @@ What's new in PinMAME:
 Version 3.6 (XX XXth, 2023) - ""
 ------------------------------------------------------------------------------
 
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio
+Correct Dumps:
+Bell: Cosmic Flash (correct sound ROM)
+
+Clones:
+Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
+
 
 
 Version 3.5 (October 23rd, 2022) - "Trick or Treat"

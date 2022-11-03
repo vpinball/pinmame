@@ -475,7 +475,7 @@ static WRITE_HANDLER(snt_ctrl_w);
 static WRITE_HANDLER(snt_manCmd_w);
 static void snt_5220Irq(int state);
 static void snt_5220Rdy(int state);
-static READ_HANDLER(snt_8910a_r);
+READ_HANDLER(snt_8910a_r);
 
 const struct sndbrdIntf by61Intf = {
   "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
@@ -608,7 +608,7 @@ static void snt_diag(int button) {
 }
 
 static READ_HANDLER(snt_pia0a_r) {
-  if (sntlocals.brdData.subType) return snt_8910a_r(0); // -61B
+  if (sntlocals.brdData.subType && sntlocals.brdData.subType < 3) return snt_8910a_r(0); // -61B
   if ((sntlocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
@@ -649,10 +649,17 @@ static WRITE_HANDLER(snt_data_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
 }
 static WRITE_HANDLER(snt_ctrl_w) {
+  static UINT8 last;
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
-  if (sntlocals.brdData.subType == 2) {
-    pia_set_input_cb1(SNT2_PIA0, ~data & 0x01);
+  switch (sntlocals.brdData.subType) {
+    case 2:
+      pia_set_input_cb1(SNT2_PIA0, ~data & 0x01);
+      break;
+    case 3: // Cosmic Flash needs IRQ triggered depending on LSB
+      if ((last & 1) == (data & 1)) return;
+      last = data;
+      if (data & 0x01) cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, PULSE_LINE);
   }
 }
 
@@ -660,13 +667,19 @@ static int manualSoundcmd = 0; // only for sound command mode
 static WRITE_HANDLER(snt_manCmd_w) {
   manualSoundcmd = 1;
   sntlocals.lastcmd = data;
-  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
-  if (sntlocals.brdData.subType == 2) {
-    pia_set_input_cb1(SNT2_PIA0, 1); pia_set_input_cb1(SNT2_PIA0, 0);
+  pia_set_input_cb1(SNT_PIA0, 1);
+  pia_set_input_cb1(SNT_PIA0, 0);
+  switch (sntlocals.brdData.subType) {
+    case 2:
+      pia_set_input_cb1(SNT2_PIA0, 1);
+      pia_set_input_cb1(SNT2_PIA0, 0);
+      break;
+    case 3:
+      cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, PULSE_LINE);
   }
 }
 
-static READ_HANDLER(snt_8910a_r) {
+READ_HANDLER(snt_8910a_r) {
   if (!manualSoundcmd)
     return ~sntlocals.lastcmd;
   else // S&T needs special handling for sound command mode

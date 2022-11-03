@@ -86,6 +86,11 @@ DRIVERNV(test8031)      //Test 8031 cpu core
 // --------------------
 DRIVERNV(thndrman)      //Thunder Man (Zaccaria hardware)
 
+// --------------------
+// ARKON
+// --------------------
+DRIVERNV(sexygirl)      //Sexy Girl (clone of Bally Playboy, December 1980)
+
 // ---------------
 // ASTILL ENTERTAINMENT
 // ---------------
