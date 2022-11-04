@@ -649,7 +649,6 @@ static WRITE_HANDLER(snt_data_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
 }
 static WRITE_HANDLER(snt_ctrl_w) {
-  static UINT8 last;
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
   switch (sntlocals.brdData.subType) {
@@ -657,8 +656,6 @@ static WRITE_HANDLER(snt_ctrl_w) {
       pia_set_input_cb1(SNT2_PIA0, ~data & 0x01);
       break;
     case 3: // Cosmic Flash needs IRQ triggered depending on LSB
-      if ((last & 1) == (data & 1)) return;
-      last = data;
       if (data & 0x01) cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, PULSE_LINE);
   }
 }
