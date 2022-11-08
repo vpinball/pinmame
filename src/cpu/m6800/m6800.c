@@ -814,7 +814,7 @@ int m6800_execute(int cycles)
 			{
 				case 0x00: illegal(); break;
 				case 0x01: nop(); break;
-				case 0x02: illegal(); break;
+				case 0x02: ldb_im(); break; // illegal instruction, used on cosflash sound, obviously works like LDB?!
 				case 0x03: illegal(); break;
 				case 0x04: illegal(); break;
 				case 0x05: illegal(); break;
