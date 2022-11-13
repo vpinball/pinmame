@@ -3,9 +3,11 @@
 #ifndef _EEPROM_H
 #define _EEPROM_H
 
+#include <stdint.h>
+
 //typedef for eeprom block
 typedef union {
-    char byte[256];
+    uint8_t byte[256];
 
     struct {
         char signature[40];   //lisy80 signature "LISY80 by bontango - www.lisy80.com"
@@ -19,8 +21,8 @@ typedef union {
     } content;
 } eeprom_block_t;
 
-int lisy_eeprom_256byte_write(char* wbuf, int block);
-int lisy_eeprom_256byte_read(char* rbuf, int block);
+int lisy_eeprom_256byte_write(uint8_t* wbuf, int block);
+int lisy_eeprom_256byte_read(uint8_t* rbuf, int block);
 int lisy_eeprom_init(void);
 int lisy_eeprom_printstats(void);
 eeprom_block_t lisy_eeprom_getstats(void);

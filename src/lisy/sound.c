@@ -288,7 +288,7 @@ StarShip_play_wav(int sound_no) {
                 lisy35_sound_stru[sound_no].how_many_versions = 1;
                 lisy35_sound_stru[sound_no].last_version_played = 0;
                 if (ls80dbg.bitv.sound) {
-                    sprintf(debugbuf, "dynamic loaded file:%s as sound number %d\n", sound_file_name, sound_no);
+                    sprintf(debugbuf, "dynamic loaded file:%.200s as sound number %d\n", sound_file_name, sound_no);
                     lisy80_debug(debugbuf);
                 }
             }

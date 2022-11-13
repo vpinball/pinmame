@@ -1350,7 +1350,7 @@ lisy35_get_mpudips(int switch_nr) {
 lisy35_cmos_data_t* lisy_by35_CMOS;
 
 void
-lisy35_nvram_handler(uint8_t* by35_CMOS_Bally) {
+lisy35_nvram_handler(void* by35_CMOS_Bally) {
     //remember address for subsequent actions
     lisy_by35_CMOS = by35_CMOS_Bally;
 }
@@ -1433,7 +1433,7 @@ lisy35_nvram_handler_old(int read_or_write, uint8_t* by35_CMOS_Bally) {
     if (read_or_write) //1 = write
     {
 
-        ret = lisy_eeprom_256byte_write((char*)by35_CMOS, 0);
+        ret = lisy_eeprom_256byte_write((uint8_t*)by35_CMOS, 0);
         /* RTH debug in eeprom pic routine
  if ( ls80dbg.bitv.basic )
   {

@@ -30,6 +30,7 @@ added pic eeprom routines bontango January 2018
 #include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <wiringPi.h>
 
 #define MAX_EEPROM_WRITE_RETRIES 30
@@ -47,11 +48,12 @@ unsigned char lisy_eeprom_buf_block1[256];
 /* if len=0 (buf may be NULL in this case) you can reposition the eeprom's read-pointer */
 /* return 0 on success, -1 on failure */
 int
-eeprom_write(int fd, unsigned int addr, unsigned int offset, char* buf, unsigned char len) {
+eeprom_write(int fd, unsigned int addr, unsigned int offset, uint8_t* buf, unsigned char len) {
     struct i2c_rdwr_ioctl_data msg_rdwr;
     struct i2c_msg i2cmsg;
     int i;
-    char _buf[MAX_BYTES + 1];
+    //char _buf[MAX_BYTES + 1];
+    uint8_t _buf[MAX_BYTES + 1];
 
     if (len > MAX_BYTES) {
         fprintf(stderr, "I can only write MAX_BYTES bytes at a time!\n");
@@ -89,7 +91,7 @@ eeprom_write(int fd, unsigned int addr, unsigned int offset, char* buf, unsigned
 /* read len bytes stored in eeprom at address addr, offset offset in array buf */
 /* return -1 on error, 0 on success */
 int
-eeprom_read(int fd, unsigned int addr, unsigned int offset, char* buf, unsigned char len) {
+eeprom_read(int fd, unsigned int addr, unsigned int offset, uint8_t* buf, unsigned char len) {
     struct i2c_rdwr_ioctl_data msg_rdwr;
     struct i2c_msg i2cmsg;
     int i;
@@ -123,7 +125,7 @@ eeprom_read(int fd, unsigned int addr, unsigned int offset, char* buf, unsigned 
 //for 24c04 only block 0 or 1 is possible
 //0 on success, <0 on error
 int
-lisy_eeprom_256byte_write_24c04(char* wbuf, int block) {
+lisy_eeprom_256byte_write_24c04(uint8_t* wbuf, int block) {
 
     int j;
     /* filedescriptor and name of device */
@@ -179,7 +181,7 @@ lisy_eeprom_256byte_write_24c04(char* wbuf, int block) {
 //write buffer of 256 bytes to eeprom at pic
 //0 on success, <0 on error
 int
-lisy_eeprom_256byte_write_pic(char* wbuf, int block) {
+lisy_eeprom_256byte_write_pic(uint8_t* wbuf, int block) {
     int i, bytes_written;
 
     unsigned char* old_eeprom_content;
@@ -215,7 +217,7 @@ lisy_eeprom_256byte_write_pic(char* wbuf, int block) {
 }
 
 int
-lisy_eeprom_256byte_write(char* wbuf, int block) {
+lisy_eeprom_256byte_write(uint8_t* wbuf, int block) {
 
     if (lisy_has24c04)
         return (lisy_eeprom_256byte_write_24c04(wbuf, block));
@@ -227,7 +229,7 @@ lisy_eeprom_256byte_write(char* wbuf, int block) {
 //for 24c04 only block 0 or 1 is possible
 //0 on success, <0 on error
 int
-lisy_eeprom_256byte_read_24c04(char* rbuf, int block) {
+lisy_eeprom_256byte_read_24c04(uint8_t* rbuf, int block) {
 
     int j;
     /* filedescriptor and name of device */
@@ -269,7 +271,7 @@ lisy_eeprom_256byte_read_24c04(char* rbuf, int block) {
 //read buffer of 256 bytes from eeprom of pic into buffer
 //0 on success, <0 on error
 int
-lisy_eeprom_256byte_read_pic(char* rbuf, int block) {
+lisy_eeprom_256byte_read_pic(uint8_t* rbuf, int block) {
     int i;
     static unsigned char first_time = 1;
 
@@ -302,7 +304,7 @@ lisy_eeprom_256byte_read_pic(char* rbuf, int block) {
 }
 
 int
-lisy_eeprom_256byte_read(char* rbuf, int block) {
+lisy_eeprom_256byte_read(uint8_t* rbuf, int block) {
 
     if (lisy_has24c04)
         return (lisy_eeprom_256byte_read_24c04(rbuf, block));

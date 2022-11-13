@@ -33,7 +33,7 @@
 #include <wiringPi.h>
 
 extern char debugbuf[256]; // see hw_lib.c
-
+extern const char* sndbrd_typestr(int board);
 //typedefs
 
 /*

@@ -15,7 +15,7 @@ void lisy35_sound_handler(unsigned char type, unsigned char data);
 void lisy35_lamp_handler(int blanking, int board, int lampadr, int lampdata);
 void lisy35_throttle(void);
 int lisy35_get_mpudips(int switch_nr);
-void lisy35_nvram_handler(unsigned char* by35_CMOS);
+void lisy35_nvram_handler(void* by35_CMOS);
 int lisy35_get_SW_Selftest(void);
 int lisy35_get_SW_S33(void);
 

@@ -1129,7 +1129,7 @@ lisy80_nvram_handler_old(int read_or_write, uint8_t* GTS80_pRAM_GTB) {
         // if (memcmp( nvram_block.byte,  GTS80_pRAM, 0x100) != 0)
         //memcpy(nvram_block.byte,(char*)GTS80_pRAM, 0x100);
 
-        ret = lisy_eeprom_256byte_write((char*)GTS80_pRAM, 0);
+        ret = lisy_eeprom_256byte_write((uint8_t*)GTS80_pRAM, 0);
         if (ls80dbg.bitv.basic) {
             sprintf(debugbuf, "LISY80 write nvram done:%d", ret);
             lisy80_debug(debugbuf);
