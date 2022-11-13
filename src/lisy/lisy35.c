@@ -754,6 +754,7 @@ lisy35_switch_update(void) {
         //system35 (Credit) Replay switch strobe:0 ret:5, so matrix 1,5 to check
 
         //set volume each time replay is pressed
+	/* deactivated because of problems with switch detection
         if (lisy35_has_soundcard) {
             if (CHECK_BIT(swMatrixLISY35[1], 5)) //is bit set?
             {
@@ -762,7 +763,7 @@ lisy35_switch_update(void) {
                     lisy80_debug("Volume setting initiated by REPLAY Switch");
             }
         }
-
+	*/
         if (CHECK_BIT(swMatrixLISY35[1], 5)) //is bit set?
         {
             //after 2 secs we simulate coin insert via Chute#1; internal timer 1
@@ -1554,10 +1555,9 @@ lisy35_solenoid_handler(unsigned char data, unsigned char soundselect) {
 
             //JustBoom Sound? in case of chimes we may want to play wav files here
             if (lisy35_has_own_sounds) {
-                //play sound if solenoids 4 to 7 are activated
-                if ((lisy35_game.soundboard_variant == LISY35_SB_CHIMES) & (moment_data >= 4) & (moment_data <= 7)) {
-                    //we translate solenoids 4..7 to soun ds 1..4
-                    lisy35_play_wav(moment_data - 3);
+		//play sound if Q1,Q5,6,7, this maps to moment data 1..4
+                if ((lisy35_game.soundboard_variant == LISY35_SB_CHIMES) & (moment_data >= 1) & (moment_data <= 4)) {
+                    lisy35_play_wav(moment_data);
                 }
             } //has own sounds
 
