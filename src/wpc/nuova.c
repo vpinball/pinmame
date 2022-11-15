@@ -293,11 +293,9 @@ static MEMORY_WRITE_START(cf_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x0083, pia_w(2) },
   { 0x0090, 0x0093, MWA_NOP }, // no TMS speech chip, just one PIA
-  { 0x1000, 0x1000, DAC_0_data_w },
 MEMORY_END
 
 extern READ_HANDLER(snt_8910a_r);
-static struct DACinterface    cf_dacInt = { 1, { 20 }};
 static struct AY8910interface cf_ay8910Int = { 1, 3579545./4., {25}, {snt_8910a_r}};
 
 static MACHINE_DRIVER_START(cosflash)
@@ -308,7 +306,6 @@ static MACHINE_DRIVER_START(cosflash)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(cf_readmem, cf_writemem)
 
-  MDRV_SOUND_ADD(DAC,    cf_dacInt)
   MDRV_SOUND_ADD(AY8910, cf_ay8910Int)
 MACHINE_DRIVER_END
 
