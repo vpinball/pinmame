@@ -628,11 +628,16 @@ READ_HANDLER(wpc_r) {
       // This hack by JD puts right values into the memory locations
       UINT8 *timeMem = wpc_ram + 0x1800;
       UINT16 checksum = 0;
+      static time_t oldTime{0};
       time_t now;
-      struct tm *systime;
+      static struct tm *systime;
 
       time(&now);
-      systime = localtime(&now);
+      if (now != oldTime)
+      {
+          systime = localtime(&now);
+          oldTime = now;
+      }
       checksum += *timeMem++ = (systime->tm_year + 1900)>>8;
       checksum += *timeMem++ = (systime->tm_year + 1900)&0xff;
       checksum += *timeMem++ = systime->tm_mon + 1;
@@ -646,11 +651,17 @@ READ_HANDLER(wpc_r) {
       return systime->tm_hour;
     }
     case WPC_RTCMIN: {
+      static time_t oldTime{0};
       time_t now;
-      struct tm *systime;
+      static struct tm *systime;
+
       time(&now);
-      systime = localtime(&now);
-      return (systime->tm_min);
+      if (now != oldTime)
+      {
+          systime = localtime(&now);
+          oldTime = now;
+      }
+      return systime->tm_min;
     }
     case WPC_WATCHDOG:
 		//Zero cross detection flag is read from Bit 8.
@@ -1314,6 +1325,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
 PINMAME_VIDEO_UPDATE(wpcdmd_update64) {
   int ii,kk;
 
+  // Phantom Haus can only use 3 brightness levels (off and 2 on states)
 #ifdef VPINMAME
   g_raw_gtswpc_dmdframes = 2;
 #endif
