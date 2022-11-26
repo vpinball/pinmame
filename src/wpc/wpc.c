@@ -628,7 +628,7 @@ READ_HANDLER(wpc_r) {
       // This hack by JD puts right values into the memory locations
       UINT8 *timeMem = wpc_ram + 0x1800;
       UINT16 checksum = 0;
-      static time_t oldTime{0};
+      static time_t oldTime = 0;
       time_t now;
       static struct tm *systime;
 
@@ -651,7 +651,7 @@ READ_HANDLER(wpc_r) {
       return systime->tm_hour;
     }
     case WPC_RTCMIN: {
-      static time_t oldTime{0};
+      static time_t oldTime = 0;
       time_t now;
       static struct tm *systime;
 
