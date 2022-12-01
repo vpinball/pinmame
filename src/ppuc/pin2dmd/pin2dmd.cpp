@@ -21,7 +21,6 @@ struct libusb_device_descriptor desc;
 struct libusb_context *ctx = NULL;
 
 UINT8 OutputBuffer[65536] = {};
-char bytes[4] = {0};
 
 int Pin2dmdInit() {
     static int ret = 0;
@@ -48,7 +47,7 @@ int Pin2dmdInit() {
         }
     }
     else {
-        return -99;
+        return 0;
     }
 
     libusb_free_device_list(devs, 1);
@@ -56,7 +55,7 @@ int Pin2dmdInit() {
     if (MyLibusbDeviceHandle == NULL) {
         libusb_close(MyLibusbDeviceHandle);
         libusb_exit(ctx);
-        return -99;
+        return 0;
     }
 
     ret = libusb_get_string_descriptor_ascii(MyLibusbDeviceHandle, desc.iProduct, product, 256);
@@ -66,7 +65,7 @@ int Pin2dmdInit() {
         //Closes a device opened since the claim interface is failed.
         libusb_close(MyLibusbDeviceHandle);
         libusb_exit(ctx);
-        return -99;
+        return 0;
     }
 
     string = (const char*)product;
@@ -112,174 +111,7 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, boo
             OutputBuffer[3] = chunksOf512Bytes; // number of 512 byte chunks
         }
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (bitDepth == 2) {
-                    switch (Buffer[y * width + x]) {
-                        case 0x14: // 20%
-                            //Activate if you want to have the entire Display to glow, a kind of background color.
-                            //byte0 |= (1 << bitShift);
-                            break;
-                        case 0x21: // 33%
-                            bytes[0] |= (1 << bitShift);
-                            break;
-                        case 0x43: // 67%
-                            bytes[1] |= (1 << bitShift);
-                            break;
-                        case 0x64: // 100%
-                            bytes[0] |= (1 << bitShift);
-                            bytes[1] |= (1 << bitShift);
-                            break;
-                    }
-                } else if (bitDepth == 4) {
-                    if (samSpa) {
-                        switch(Buffer[y * width + x]) {
-                            case 0x00:
-                                break;
-                            case 0x14:
-                                bytes[0] |= (1 << bitShift);
-                                break;
-                            case 0x19:
-                                bytes[1] |= (1 << bitShift);
-                                break;
-                            case 0x1E:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                break;
-                            case 0x23:
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x28:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x2D:
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x32:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x37:
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x3C:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x41:
-                                bytes[1] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x46:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x4B:
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x50:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x5A:
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x64:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                        }
-                    } else {
-                        switch (Buffer[y * width + x]) {
-                            case 0x00:
-                                break;
-                            case 0x1E:
-                                bytes[0] |= (1 << bitShift);
-                                break;
-                            case 0x23:
-                                bytes[1] |= (1 << bitShift);
-                                break;
-                            case 0x28:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                break;
-                            case 0x2D:
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x32:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x37:
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x3C:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                break;
-                            case 0x41:
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x46:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x4B:
-                                bytes[1] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x50:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x55:
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x5A:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x5F:
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                            case 0x64:
-                                bytes[0] |= (1 << bitShift);
-                                bytes[1] |= (1 << bitShift);
-                                bytes[2] |= (1 << bitShift);
-                                bytes[3] |= (1 << bitShift);
-                                break;
-                        }
-                    }
-                }
-
-                bitShift++;
-                if (bitShift > 7) {
-                    bitShift = 0;
-                    for (int i = 0; i < bitDepth; i++) {
-                        OutputBuffer[(frameSizeInByte * i) + outputBufferIndex] = bytes[i];
-                        bytes[i] = 0;
-                    }
-                    outputBufferIndex++;
-                }
-            }
-        }
+        memcpy(&OutputBuffer[4], Buffer, (chunksOf512Bytes * 512));
 
         // The OutputBuffer to be sent consists of a 4 byte header and a number of chunks of 512 bytes.
         libusb_bulk_transfer(MyLibusbDeviceHandle, EP_OUT, OutputBuffer, (chunksOf512Bytes * 512) + 4, NULL, 1000);

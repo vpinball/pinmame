@@ -2,8 +2,7 @@
 
 The *Pinball Power-Up Controllers* are a set of hard- and software designed to repair and enhance the capabilities of
 classic pinball machines of the 80s and 90s and to drive the hardware of home brew pinball machines.
-The project is in ongoing development. Visit the [PPUC Page](https://github.com/mkalkbrenner/ppuc) for further
-information.
+The project is in ongoing development. Visit the [PPUC Page](http://ppuc.org) for further information.
 This directory contains the PinMAME related parts, mainly the building blocks to emulate a pinball CPU that drives
 PPUC I/O boards.
 
