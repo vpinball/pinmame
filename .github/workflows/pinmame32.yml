@@ -57,7 +57,7 @@ jobs:
 #          rm upx.zip
       - run: |
           curl -L https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-win64.zip -o upx.zip
-          7z x upx.zip -oupx
+          7z e upx.zip -oupx
           rm upx.zip
       - name: Build PinMAME32${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
