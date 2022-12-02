@@ -376,14 +376,12 @@ static void sns_irq0b(int state);
 static void sns_irq1a(int state);
 static void sns_irq1b(int state);
 
-static void startcm3374a(int param);
-static void startcm3374b(int param);
-static void stopcm3374a(int param);
-static void stopcm3374b(int param);
+static void startcem3374(int param);
+static void stopcem3374(int param);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia1ca1, pia1ca2, pia2a, pia2b;
+  int pia0a, pia0b, pia1a, pia1cb1, pia1ca1, pia1ca2, pia2a, pia2b;
   UINT8 lastcmd, daclatch, dacbyte1, dacbyte2;
   int dacMute,dacinp,channel;
   UINT8 snot_ab1, snot_ab2, snot_ab3, snot_ab4; // output from ls139 2d
@@ -391,14 +389,20 @@ static struct {
   UINT8 s_inh4,s_inh3,s_inh2,s_inh1,s_envca,s_ensyncb; // output from ls259 3I
   int vcrfreq,rescntl,levchb,pwmb,freqb,levcha,pwma,freqa,r500cmd;
   int tmsPitch;
+  mame_timer *fadeTimer;
+  int vola, volb;
 } snslocals;
+
+static READ_HANDLER(sns_pia1b_r) {
+  return pia_1_portb_r(0);
+}
 
 static const struct pia6821_interface sns_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, sns_pia0cb2_w,
   /*irq: A/B           */ sns_irq0a, sns_irq0b
 },{
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, PIA_UNUSED_VAL(0x03), sns_pia1ca1_r, sns_pia1cb1_r, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, sns_pia1b_r, sns_pia1ca1_r, sns_pia1cb1_r, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq1a, sns_irq1b
 },{
@@ -406,6 +410,30 @@ static const struct pia6821_interface sns_pia[] = {{
   /*o: A/B,CA/B2       */ sns_pia2a_w, sns_pia2b_w, sns_pia2ca2_w, 0,
   /*irq: A/B           */ 0, 0
 }};
+
+static void fade_timer(int param) {
+  int dec = snslocals.rescntl / 16;
+  if (!dec) dec = 25; // fade veeery slowly on 0 value :)
+  else if (dec < 50) dec = 50; // slowest sensible fading speed, apart from 0
+  if (snslocals.vola > dec) {
+    snslocals.vola -= dec;
+  } else {
+    snslocals.vola = 0;
+    // TODO: we need to tell the main board the sound has finished; no idea how it's really done (PIA output B never changes)!?
+    if (!snslocals.vola && !snslocals.volb) UpdateZACSoundACT(0x03);
+  }
+  mixer_set_volume(snslocals.channel,   snslocals.vola * 100 / 0xfff);
+  mixer_set_volume(snslocals.channel+1, snslocals.vola * 100 / 0xfff);
+  if (snslocals.volb > dec) {
+    snslocals.volb -= dec;
+  } else {
+    snslocals.volb = 0;
+    if (!snslocals.vola && !snslocals.volb) UpdateZACSoundACT(0x03);
+  }
+  mixer_set_volume(snslocals.channel+2, snslocals.volb * 100 / 0xfff);
+  mixer_set_volume(snslocals.channel+3, snslocals.volb * 100 / 0xfff);
+//printf("\r\r\r\r\r\r\r\r\r\r\r%03x:%03x:%03x", snslocals.rescntl, snslocals.vola, snslocals.volb);
+}
 
 static void initTMS(void) {
   tms5220_reset();
@@ -418,6 +446,10 @@ static void initTMS(void) {
   } else {
     // Farfalla, Devil Riders, Magic Castle, Robot, Spooky, (New) Star's Phoenix, Thunder Man
     tms5220_set_variant(TMS5220_IS_5220C);
+  }
+  if (core_gameData->hw.soundBoard & 0x02) {
+    snslocals.fadeTimer = timer_alloc(fade_timer);
+    timer_adjust(snslocals.fadeTimer, TIME_IN_MSEC(25), 0, TIME_IN_MSEC(25));
   }
 }
 
@@ -445,48 +477,38 @@ static WRITE_HANDLER(sns_dac_w) {
 }
 
 static void writeToCEM(void) {
-  switch (snslocals.pia1b >> 5) {
+  int changed = 0;
+  switch (pia_1_portb_r(0) >> 5) {
     case 0:
-      if (snslocals.freqa != snslocals.dacinp) {
-        snslocals.freqa = snslocals.dacinp;
-        startcm3374a(0);
-      }
+      changed = (snslocals.freqa != snslocals.dacinp);
+      snslocals.freqa = snslocals.dacinp;
       break;
     case 1:
+      changed = (snslocals.pwma != snslocals.dacinp);
       snslocals.pwma = snslocals.dacinp;
       break;
     case 2:
-      if (snslocals.levcha != snslocals.dacinp) {
-        snslocals.levcha = snslocals.dacinp;
-        mixer_set_volume(snslocals.channel+0, snslocals.levcha * 100 / 0xfff);
-        mixer_set_volume(snslocals.channel+1, snslocals.levcha * 100 / 0xfff);
-      }
+      snslocals.levcha = snslocals.dacinp;
       break;
     case 3:
-      if (snslocals.freqb != snslocals.dacinp) {
-        snslocals.freqb = snslocals.dacinp;
-        startcm3374b(0);
-      }
+      changed = (snslocals.freqb != snslocals.dacinp);
+      snslocals.freqb = snslocals.dacinp;
       break;
     case 4:
+      changed = (snslocals.pwmb != snslocals.dacinp);
       snslocals.pwmb = snslocals.dacinp;
       break;
     case 5:
-      if (snslocals.levchb != snslocals.dacinp) {
-        snslocals.levchb = snslocals.dacinp;
-        mixer_set_volume(snslocals.channel+2, snslocals.levchb * 100 / 0xfff);
-        mixer_set_volume(snslocals.channel+3, snslocals.levchb * 100 / 0xfff);
-      }
+      snslocals.levchb = snslocals.dacinp;
       break;
     case 6:
       snslocals.rescntl = snslocals.dacinp;
       break;
     case 7:
+      changed = (snslocals.vcrfreq != snslocals.dacinp);
       snslocals.vcrfreq = snslocals.dacinp;
-      startcm3374a(0);
-      startcm3374b(0);
-      break;
   }
+  if (changed) startcem3374(0);
 }
 
 static READ_HANDLER(sns_pia0a_r) {
@@ -521,14 +543,14 @@ static WRITE_HANDLER(sns_pia1b_w) {
   logerror("%04x:sns_pia1b_w %02x\n", activecpu_get_previouspc(),data);
   snslocals.r500cmd = 0;
 
-  if (snslocals.pia1b & ~data & 0x01) { // read, overrides write command!
+  if (pia_1_portb_r(0) & ~data & 0x01) { // read, overrides write command!
     // Port A is assigned in sns_pia1ca2_r, otherwise speech may be garbled
     snslocals.r500cmd = 1;
-  } else if (snslocals.pia1b & ~data & 0x02) { // write
+  } else if (pia_1_portb_r(0) & ~data & 0x02) { // write
     tms5220_data_w(0, snslocals.pia1a);
   }
-  if (!(core_gameData->hw.soundBoard & 0x02) && (data & 0xf0) != (snslocals.pia1b & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
-  snslocals.pia1b = data;
+  if (!(core_gameData->hw.soundBoard & 0x02) && (data & 0xf0) != (pia_1_portb_r(0) & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
+  pia_set_input_b(SNS_PIA1, data);
   pia_set_input_ca2(SNS_PIA1, tms5220_ready_r());
 
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
@@ -547,7 +569,6 @@ static WRITE_HANDLER(sns_pia1b_w) {
     if ((data & 0x08) && (~data & 0x10)) snslocals.snot_ab2 = SW_TRUE;
     if ((~data & 0x08) && (~data & 0x10)) snslocals.snot_ab1 = SW_TRUE;
 //    logerror("sns_pia1b_w: data %x snot_ab4 %x snot_ab3 %x snot_ab2 %x snot_ab1 %x \n", data,snslocals.snot_ab4,snslocals.snot_ab3,snslocals.snot_ab2,snslocals.snot_ab1);
-//    writeToCEM();
   }
 }
 static READ_HANDLER(sns_pia1ca1_r) {
@@ -602,7 +623,7 @@ static WRITE_HANDLER(sns_data_w) {
     case SNDBRD_ZAC11178_13181:
       snslocals.pia1ca1 = data & 0x80 ? 1 : 0;
       pia_set_input_ca1(SNS_PIA1, snslocals.pia1ca1); // CA1 should connect to GND according to schematics... or to DB7! :)
-//      logerror("sns_data_ command stored %x\n", data);
+//      logerror("sns_data_w command stored %x\n", data);
       // cpu reads command from adress b0 after nmi !!!
       if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
       break;
@@ -637,10 +658,7 @@ static void sns_irq0b(int state) {
 static int timerSet;
 static void fireNmi(int dummy) {
   if (timerSet) {
-    cpu_set_nmi_line(ZACSND_CPUA, ASSERT_LINE);
-//printf(".");
-    stopcm3374a(0);
-    stopcm3374b(0);
+    cpu_set_nmi_line(ZACSND_CPUA, PULSE_LINE);
   }
 }
 
@@ -649,12 +667,11 @@ static void sns_irq1a(int state) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
     cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
   if (core_gameData->hw.soundBoard & 0x02) { // true for 11178
-  	if (state) { // IRQA is set to 1 and back to 0 within 6 CPU cycles, but the IRQ line assertion must be delayed slightly and must be cancelable
+  	if (state) { // IRQA is set to 1 and back to 0 within 6 CPU cycles, but the NMI line assertion must be delayed slightly and must be cancelable
       timerSet = 1;
       timer_set(TIME_IN_CYCLES(5, ZACSND_CPUA), 0, fireNmi);
     } else {
       timerSet = 0;
-      cpu_set_nmi_line(ZACSND_CPUA, CLEAR_LINE);
     }
   }
 }
@@ -684,7 +701,7 @@ static void sns_5220Rdy(int state) {
 / to replace the AY8910 chip.
 /-----------------------------------------*/
 // This is the E signal, divided by a 4040 chip's Q11, so 3.58 MHz / 4 / 2048, so ~437 Hz
-#define SNS_11178_IRQFREQ 3579545.0/8192.0
+#define SNS_11178_IRQFREQ 3579545./8192.
 
 static INTERRUPT_GEN(sns3_irq);
 static WRITE_HANDLER(dacxfer);
@@ -722,7 +739,7 @@ static UINT8 sawtoothWaver[64];
 
 static int sns_sh_start(const struct MachineSound *msound) {
   UINT8 i;
-  int mixing_levels[4] = {15,15,15,15};
+  int mixing_levels[4] = {MIXER(15,MIXER_PAN_LEFT),MIXER(15,MIXER_PAN_LEFT),MIXER(15,MIXER_PAN_RIGHT),MIXER(15,MIXER_PAN_RIGHT)};
   for (i=0; i < 64; i++) {  // reverse waves
     triangleWaver[63-i]=triangleWave[i];
     sawtoothWaver[63-i]=sawtoothWave[i];
@@ -731,14 +748,10 @@ static int sns_sh_start(const struct MachineSound *msound) {
   if (!snslocals.channel) {
     // allocate channels
     snslocals.channel = mixer_allocate_channels(4, mixing_levels);
-    mixer_set_name  (snslocals.channel+0, "CEM 3374 A TR");
-    mixer_set_volume(snslocals.channel+0,0);
+    mixer_set_name  (snslocals.channel,   "CEM 3374 A TR");
     mixer_set_name  (snslocals.channel+1, "CEM 3374 A SA");
-    mixer_set_volume(snslocals.channel+1,0);
     mixer_set_name  (snslocals.channel+2, "CEM 3374 B TR");
-    mixer_set_volume(snslocals.channel+2,0);
     mixer_set_name  (snslocals.channel+3, "CEM 3374 B SA");
-    mixer_set_volume(snslocals.channel+3,0);
   }
   return 0;
 }
@@ -774,66 +787,71 @@ MACHINE_DRIVER_START(zac11178)
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(CUSTOM,  sns_custInt)
+//  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
-static void stopcm3374a(int param)  {
+static void stopcem3374(int param) {
   if (mixer_is_sample_playing(snslocals.channel))
     mixer_stop_sample(snslocals.channel);
   if (mixer_is_sample_playing(snslocals.channel+1))
     mixer_stop_sample(snslocals.channel+1);
-}
-
-static void stopcm3374b(int param)  {
   if (mixer_is_sample_playing(snslocals.channel+2))
     mixer_stop_sample(snslocals.channel+2);
   if (mixer_is_sample_playing(snslocals.channel+3))
     mixer_stop_sample(snslocals.channel+3);
 }
 
-static void startcm3374a(int param) {
-  int freq = snslocals.vcrfreq / 16 + snslocals.freqa * snslocals.freqa / 64;
-  if (snslocals.freqa == 0) stopcm3374a(param);
-  if (mixer_is_sample_playing(snslocals.channel))
-    mixer_set_sample_frequency(snslocals.channel, freq);
-  else
-    mixer_play_sample(snslocals.channel, (signed char *)triangleWave, sizeof(triangleWave), freq, 1);
+static void startcem3374(int param) {
+  signed char *triWave = param ? (signed char *)triangleWaver : (signed char *)triangleWave;
+  signed char *sawWave = param ? (signed char *)sawtoothWaver : (signed char *)sawtoothWave;
+  int triSize = param ? sizeof(triangleWaver) : sizeof(triangleWave);
+  int sawSize = param ? sizeof(sawtoothWaver) : sizeof(sawtoothWave);
 
-  if (mixer_is_sample_playing(snslocals.channel+1))
-    mixer_set_sample_frequency(snslocals.channel+1, freq);
-  else
-    mixer_play_sample(snslocals.channel+1, (signed char *)sawtoothWave, sizeof(sawtoothWave), freq, 1);
-}
+  int freqa = snslocals.s_entriga || snslocals.s_ensawa || snslocals.pwma || snslocals.s_ensyncb ? ((snslocals.s_enpwma ? snslocals.pwma : 0) + snslocals.freqa * snslocals.freqa) / 125 + snslocals.vcrfreq / 2 : 0;
+  int freqb = snslocals.s_entrigb || snslocals.s_ensawb || snslocals.pwmb || snslocals.s_ensynca ? (snslocals.pwmb + snslocals.freqb * snslocals.freqb) / 125 + snslocals.vcrfreq / 2 : 0;
 
-static void startcm3374b(int param) {
-  int freq = snslocals.vcrfreq / 16 + snslocals.freqb * snslocals.freqb / 64;
-  if (snslocals.freqb == 0) stopcm3374b(param);
-  if (!param) {
+  if (snslocals.s_entriga || snslocals.s_ensyncb) {
+    if (mixer_is_sample_playing(snslocals.channel))
+      mixer_set_sample_frequency(snslocals.channel, snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa);
+    else
+      mixer_play_sample(snslocals.channel, (signed char *)triangleWave, sizeof(triangleWave), snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa, 1);
+  } else
+    mixer_stop_sample(snslocals.channel);
+
+  if (snslocals.s_ensawa || snslocals.s_enpwma || snslocals.s_ensyncb) {
+    if (mixer_is_sample_playing(snslocals.channel+1))
+      mixer_set_sample_frequency(snslocals.channel+1, snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa);
+    else
+      mixer_play_sample(snslocals.channel+1, (signed char *)sawtoothWave, sizeof(sawtoothWave), snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa, 1);
+  } else
+    mixer_stop_sample(snslocals.channel+1);
+
+  if (snslocals.s_entrigb || snslocals.s_ensynca) {
     if (mixer_is_sample_playing(snslocals.channel+2))
-      mixer_set_sample_frequency(snslocals.channel+2, freq);
+      mixer_set_sample_frequency(snslocals.channel+2, snslocals.s_ensynca ? (freqa + freqb) / 2 : freqb);
     else
-      mixer_play_sample(snslocals.channel+2, (signed char *)triangleWave, sizeof(triangleWave), freq, 1);
-  
+      mixer_play_sample(snslocals.channel+2, triWave, triSize, snslocals.s_ensynca ? (freqa + freqb) / 2 : freqb, 1);
+  } else
+    mixer_stop_sample(snslocals.channel+2);
+
+  if (snslocals.s_ensawb || snslocals.pwmb || snslocals.s_ensynca) {
     if (mixer_is_sample_playing(snslocals.channel+3))
-      mixer_set_sample_frequency(snslocals.channel+3, freq);
+      mixer_set_sample_frequency(snslocals.channel+3, snslocals.s_ensynca ? (freqa + freqb) / 2 : freqb);
     else
-      mixer_play_sample(snslocals.channel+3, (signed char *)sawtoothWave, sizeof(sawtoothWave), freq, 1);
-  } else {
-    if (mixer_is_sample_playing(snslocals.channel+2))
-      mixer_set_sample_frequency(snslocals.channel+2, freq);
-    else
-      mixer_play_sample(snslocals.channel+2, (signed char *)triangleWaver, sizeof(triangleWaver), freq, 1);
-  
-    if (mixer_is_sample_playing(snslocals.channel+3))
-      mixer_set_sample_frequency(snslocals.channel+3, freq);
-    else
-      mixer_play_sample(snslocals.channel+3, (signed char *)sawtoothWaver, sizeof(sawtoothWaver), freq, 1);
-  }
+      mixer_play_sample(snslocals.channel+3, sawWave, sawSize, snslocals.s_ensynca ? (freqa + freqb) / 2 : freqb, 1);
+  } else
+    mixer_stop_sample(snslocals.channel+3);
+//printf("FREQA:%03x PWMA:%03x LEVA:%03x FREQB:%03x PWMB:%03x LEVB:%03x RESCTRL:%03x VCRFREQ:%03x ", snslocals.freqa, snslocals.pwma, snslocals.levcha, snslocals.freqb, snslocals.pwmb, snslocals.levchb, snslocals.rescntl, snslocals.vcrfreq);
+//printf("DACSH:%x REFSEL:%x TRIGA:%x SAWA:%x PWMA:%x TRIGB:%x SAWB:%x SYNCA:%x SYNCB:%x VCA:%x ", snslocals.s_dacsh, snslocals.s_refsel, snslocals.s_entriga, snslocals.s_ensawa, snslocals.s_enpwma, snslocals.s_entrigb, snslocals.s_ensawb, snslocals.s_ensynca, snslocals.s_ensyncb, snslocals.s_envca);
+//printf("INH1:%x INH2:%x INH3:%x INH4:%x\n", snslocals.s_inh1, snslocals.s_inh2, snslocals.s_inh3, snslocals.s_inh4);
 }
 
 static INTERRUPT_GEN(sns3_irq) {
   snslocals.pia1cb1 = !snslocals.pia1cb1;
   pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
-if (keyboard_pressed_memory_repeat(KEYCODE_B, 10)) { pia_set_input_ca1(SNS_PIA1, 1); pia_set_input_ca1(SNS_PIA1, 0); }
+#ifdef MAME_DEBUG
+  if (keyboard_pressed_memory_repeat(KEYCODE_B, 30)) UpdateZACSoundACT(0x03);
+#endif
 }
 
 // OK: the following addresses are only used by the 11178 sound board variants
@@ -859,78 +877,76 @@ static WRITE_HANDLER(dacxfer) {
 // ok dac input: first byte (msb bit) second byte (only 4 bits are used and contains lsb bit)
   UINT16 val = (snslocals.dacbyte1 << 4) | (snslocals.dacbyte2 >> 4);
 // TODO: find out why there is an erratic write between registers 0 and 7?!
+//printf("%x%d:%03x ", snslocals.s_inh1, pia_1_portb_r(0) >> 5, val);
   if (ignoreNext) {
     ignoreNext = 0;
-//printf("%x:%3x ", snslocals.pia1b >> 5, val);
+//printf("\n");
+    if (!snslocals.s_inh1 || snslocals.s_inh2 || snslocals.s_inh3) {
+      stopcem3374(0);
+    }
     return;
   }
-  if (snslocals.pia1b >> 5 == 0) ignoreNext = 1;
+  if (pia_1_portb_r(0) >> 5 == 0) ignoreNext = 1;
   snslocals.dacinp = val;
-  
-//if (snslocals.pia1b >> 5 == 0) printf("\n");
-//printf("%c%x:%3x ", snslocals.s_inh1 ? '!' : ' ', snslocals.pia1b >> 5, val);
-  if (snslocals.s_inh1) {
-    writeToCEM();
-  }
+  writeToCEM();
 }
 
 static WRITE_HANDLER(chip3h259) {
-  int flag = (data | ~snslocals.pia1b) & 1;
+  int changed = 0;
+  int flag = (data | ~pia_1_portb_r(0)) & 1;
   if (snslocals.snot_ab1) {     // Enable is logic low, latch adressable
     switch (offset) {
       case 0:
+        changed = (snslocals.s_dacsh != flag);
         snslocals.s_dacsh = flag;
         break;
       case 1:
+        changed = (snslocals.s_refsel != flag);
         snslocals.s_refsel = flag;
         break;
       case 2:
+        changed = (snslocals.s_entriga != flag);
+        if (changed) snslocals.vola = snslocals.levcha;
         snslocals.s_entriga = flag;
-        if (snslocals.s_entriga) {
-          mixer_set_volume(snslocals.channel+0, snslocals.levcha * 100 / 0xfff);
-        } else {
-          mixer_set_volume(snslocals.channel+0,0);
-        }
         break;
       case 3:
+        changed = (snslocals.s_ensawa != flag);
+        if (changed) snslocals.vola = snslocals.levcha;
         snslocals.s_ensawa = flag;
-        if (snslocals.s_ensawa) {
-          mixer_set_volume(snslocals.channel+1, snslocals.levcha * 100 / 0xfff);
-        } else {
-          mixer_set_volume(snslocals.channel+1,0);
-        }
         break;
       case 4:
+        changed = (snslocals.s_enpwma != flag);
         snslocals.s_enpwma = flag;
         break;
       case 5:
+        changed = (snslocals.s_entrigb != flag);
+        if (changed) snslocals.volb = snslocals.levchb;
         snslocals.s_entrigb = flag;
-        if (snslocals.s_entrigb) {
-          mixer_set_volume(snslocals.channel+2, snslocals.levchb * 100 / 0xfff);
-        } else {
-          mixer_set_volume(snslocals.channel+2,0);
-        }
         break;
       case 6:
+        changed = (snslocals.s_ensawb != flag);
+        if (changed) snslocals.volb = snslocals.levchb;
         snslocals.s_ensawb = flag;
-        if (snslocals.s_ensawb) {
-          mixer_set_volume(snslocals.channel+3, snslocals.levchb * 100 / 0xfff);
-        } else {
-          mixer_set_volume(snslocals.channel+3,0);
-        }
         break;
       case 7:
+        changed = (snslocals.s_ensynca != flag);
+        if (changed) snslocals.volb = snslocals.levchb;
         snslocals.s_ensynca = flag;
     }
+    if (changed) startcem3374(0);
 //    logerror("%04x:chip3h259: offset %x data %x s_dacsh %x s_refsel %x s_entriga %x s_ensawa %x s_enpwma %x s_entrigb %x s_ensawb %x s_ensynca %x \n",activecpu_get_previouspc(),offset,data,snslocals.s_dacsh,snslocals.s_refsel,snslocals.s_entriga,snslocals.s_ensawa,snslocals.s_enpwma ,snslocals.s_entrigb,snslocals.s_ensawb,snslocals.s_ensynca);
   }
 }
 
 static WRITE_HANDLER(chip3i259) {
-  int flag = (data | ~snslocals.pia1b) & 1;
+  static int lastinh1;
+  int changed = 0;
+  int flag = (data | ~pia_1_portb_r(0)) & 1;
   if (snslocals.snot_ab1) {     // Enable is logic low, latch adressable
     switch (offset) {
       case 0:
+        changed = (snslocals.s_ensyncb != flag);
+        if (changed) snslocals.vola = snslocals.levcha;
         snslocals.s_ensyncb = flag;
         break;
       case 1:
@@ -938,20 +954,38 @@ static WRITE_HANDLER(chip3i259) {
         break;
       case 2:
         snslocals.s_inh1 = flag;
+        if (flag && lastinh1) {
+          changed = 1;
+          snslocals.vola = snslocals.levcha;
+          snslocals.volb = snslocals.levchb;
+        }
+        lastinh1 = flag;
         break;
       case 3:
+        changed = (snslocals.s_inh2 != flag);
         snslocals.s_inh2 = flag;
+        if (changed) {
+          snslocals.vola = snslocals.levcha;
+          snslocals.volb = snslocals.levchb;
+        }
         break;
       case 4:
+        changed = (snslocals.s_inh3 != flag);
         snslocals.s_inh3 = flag;
+        if (changed) {
+          snslocals.vola = snslocals.levcha;
+          snslocals.volb = snslocals.levchb;
+        }
         break;
       case 5:
-        snslocals.s_inh4 = flag;
-        if (snslocals.s_inh4) { // stop cm3374
-          stopcm3374b(0);
-          stopcm3374a(0);
+        changed = (snslocals.s_inh4 != flag);
+        if (changed) {
+          snslocals.vola = snslocals.levcha;
+          snslocals.volb = snslocals.levchb;
         }
+        snslocals.s_inh4 = flag;
     }
+    if (changed) startcem3374(0);
 //    logerror("%04x:chip3i259: offset %x data %x s_ensyncb %x s_envca %x s_inh1 %x s_inh2 %x s_inh3 %x s_inh4 %x \n",activecpu_get_previouspc(),offset,data,snslocals.s_ensyncb,snslocals.s_envca,snslocals.s_inh1,snslocals.s_inh2,snslocals.s_inh3 ,snslocals.s_inh4);
   }
 }
