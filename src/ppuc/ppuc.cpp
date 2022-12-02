@@ -14,7 +14,9 @@
 
 #include "Event.h"
 #include "../libpinmame/libpinmame.h"
+#include "dmd/dmd.h"
 #include "pin2dmd/pin2dmd.h"
+#include "zedmd/zedmd.h"
 #include "serialib/serialib.h"
 #include "cargs/cargs.h"
 
@@ -37,6 +39,9 @@ UINT8 msg[6] = {0};
 UINT8 cmsg[11] = {0};
 // Serial object
 serialib serial;
+
+int pin2dmd = 0;
+int zedmd = 0;
 
 YAML::Node ppuc_config;
 
@@ -134,7 +139,24 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 		p_displayLayout->length);
 
 	if ((p_displayLayout->type & DMD) == DMD) {
-        Pin2dmdRender(p_displayLayout->width, p_displayLayout->height, (UINT8 *) p_displayData, p_displayLayout->depth, PinmameGetHardwareGen() & (SAM | SPA));
+        UINT8* buffer = (UINT8 *) dmdRender(p_displayLayout->width, p_displayLayout->height,
+                    (UINT8 *) p_displayData,p_displayLayout->depth,
+                   PinmameGetHardwareGen() & (SAM | SPA));
+
+        std::vector<std::thread> threads;
+
+        if (pin2dmd > 0) {
+            threads.push_back(std::thread(Pin2dmdRender, p_displayLayout->width, p_displayLayout->height, buffer,
+                          p_displayLayout->depth, PinmameGetHardwareGen() & (SAM | SPA)));
+        }
+        if (zedmd > 0) {
+            threads.push_back(std::thread(ZeDmdRender, p_displayLayout->width, p_displayLayout->height, buffer,
+                                          p_displayLayout->depth, PinmameGetHardwareGen() & (SAM | SPA)));
+        }
+
+        for (auto &th : threads) {
+            th.join();
+        }
 	}
 	else {
         // todo
@@ -277,6 +299,7 @@ void sendEvent(Event* event) {
 }
 
 void sendEvent(ConfigEvent* event) {
+    return;
     //      = (UINT8) 255;
     cmsg[1] = event->sourceId;
     cmsg[2] = event->boardId;
@@ -289,7 +312,7 @@ void sendEvent(ConfigEvent* event) {
     cmsg[9] = event->value & 0xff;
     //      = (UINT8) 255;
 
-    if (serial.writeBytes(msg, 11)) {
+    if (serial.writeBytes(cmsg, 11)) {
         if (opt_debug) printf("Sent config event %d %d %d.\n", event->boardId, event->topic, event->key);
     }
     else {
@@ -367,6 +390,12 @@ int main (int argc, char *argv[]) {
     std::string c_serial = ppuc_config["serialPort"].as<std::string>();
     if (!opt_serial) opt_serial = c_serial.c_str();
 
+    // Initialize displays.
+    pin2dmd = Pin2dmdInit();
+    if (opt_debug) printf("PIN2DMD: %d\n", pin2dmd);
+    zedmd = ZeDmdInit(opt_serial);
+    if (opt_debug) printf("ZeDMD: %d\n", zedmd);
+
     // Connection to serial port.
     char errorOpening = serial.openDevice(opt_serial, 115200);
     // If connection fails, return the error code otherwise, display a success message
@@ -425,10 +454,6 @@ int main (int argc, char *argv[]) {
     alcMakeContextCurrent(context);
     alGenSources((ALuint) 1, &_audioSource);
     alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
-
-    // Initialize displays.
-    int pin2dmd = Pin2dmdInit();
-    if (opt_debug) printf("PIN2DMD: %d\n", pin2dmd);
 
     PinmameConfig config = {
             AUDIO_FORMAT_INT16,
