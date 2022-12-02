@@ -90,6 +90,22 @@ serialib::~serialib()
                         - 38400
                         - 57600
                         - 115200
+
+               \n Optionally supported baud rates, depending on Linux kernel:\n
+                        - 230400
+                        - 460800
+                        - 500000
+                        - 576000
+                        - 921600
+                        - 1000000
+                        - 1152000
+                        - 1500000
+                        - 2000000
+                        - 2500000
+                        - 3000000
+                        - 3500000
+                        - 4000000
+
      \param Databits : Number of data bits in one UART transmission.
 
             \n Supported values: \n
@@ -254,6 +270,45 @@ char serialib::openDevice(const char *Device, const unsigned int Bauds,
     case 38400 :    Speed=B38400; break;
     case 57600 :    Speed=B57600; break;
     case 115200 :   Speed=B115200; break;
+#if defined (B230400)
+    case 230400 :   Speed=B230400; break;
+#endif
+#if defined (B460800)
+    case 460800 :   Speed=B460800; break;
+#endif
+#if defined (B500000)
+    case 500000 :   Speed=B500000; break;
+#endif
+#if defined (B576000)
+    case 576000 :   Speed=B576000; break;
+#endif
+#if defined (B921600)
+    case 921600 :   Speed=B921600; break;
+#endif
+#if defined (B1000000)
+    case 1000000 :   Speed=B1000000; break;
+#endif
+#if defined (B1152000)
+    case 1152000 :   Speed=B1152000; break;
+#endif
+#if defined (B1500000)
+    case 1500000 :   Speed=B1500000; break;
+#endif
+#if defined (B2000000)
+    case 2000000 :   Speed=B2000000; break;
+#endif
+#if defined (B2500000)
+    case 2500000 :   Speed=B2500000; break;
+#endif
+#if defined (B3000000)
+    case 3000000 :   Speed=B3000000; break;
+#endif
+#if defined (B3500000)
+    case 3500000 :   Speed=B3500000; break;
+#endif
+#if defined (B4000000)
+    case 4000000 :   Speed=B4000000; break;
+#endif
     default : return -4;
     }
     int databits_flag = 0;
@@ -403,7 +458,7 @@ int serialib::writeString(const char *receivedString)
      \param Buffer : array of bytes to send on the port
      \param NbBytes : number of byte to send
      \return 1 success
-     \return -1 error while writting data
+     \return -1 error while writing data
   */
 int serialib::writeBytes(const void *Buffer, const unsigned int NbBytes)
 {
