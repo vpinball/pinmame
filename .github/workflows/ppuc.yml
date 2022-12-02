@@ -87,9 +87,13 @@ jobs:
           vcpkgTriplet: ${{ matrix.platform-name }}-windows
           vcpkgDirectory: deps/vcpkg
           vcpkgGitCommitId: ce99c947b64ea3c0e274e18cc3035ca727681089
+#      - if: matrix.os == 'windows-latest'
+#        run: |
+#          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
+#          7z x upx.zip -oupx
+#          rm upx.zip
       - if: matrix.os == 'windows-latest'
         run: |
-#         curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
           curl -L https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-win64.zip -o upx.zip
           7z x upx.zip -oupx
           rm upx.zip
