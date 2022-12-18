@@ -2769,10 +2769,9 @@ DRIVER(cftbl,l4c)       //          02/20 B Creature from the Black Lagoon (L-4C
 //DRIVER(cftbl,l5)      //          11/20 B Creature from the Black Lagoon (L-5)  //Rev. 5.0, also done by Soren, but official now
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
 DRIVER(hshot,p9)        //                  Hot Shot Basketball (P-9) LED Ghost Fix
-DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
-DRIVER(ww,p2)           //                  White Water (P-9, P-1 sound) LED Ghost Fix
-DRIVER(ww,p8)           //          11/92 W White Water (P-8, P-2 sound)
-DRIVER(ww,p9)           //                  White Water (P-9, P-2 sound) LED Ghost Fix
+DRIVER(ww,p6)           //WPC-518:  10/92 W White Water (P-6 Prototype)
+DRIVER(ww,p8)           //          11/92 W White Water (P-8 Prototype)
+DRIVER(ww,p9)           //                  White Water (P-9 Prototype) LED Ghost Fix
 DRIVER(ww,l2)           //          12/92 W White Water (L-2)
 DRIVER(ww,d2)           //                  White Water (D-2) LED Ghost Fix
 DRIVER(ww,l3)           //          01/93 W White Water (L-3)
@@ -2795,7 +2794,7 @@ DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)
 DRIVER(drac,d1)         //                  Bram Stoker's Dracula (D-1) LED Ghost Fix
 DRIVER(drac,l2c)        //          04/16 W Bram Stoker's Dracula (L-2C)
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1 Prototype)
-DRIVER(tz,pa2)          //                  Twilight Zone (PA-2) LED Ghost Fix
+DRIVER(tz,pa2)          //                  Twilight Zone (PA-2 Prototype) LED Ghost Fix
 DRIVER(tz,p3)           //          04/93 B Twilight Zone (P-3)
 DRIVER(tz,p3d)          //                  Twilight Zone (P-3) LED Ghost Fix
 DRIVER(tz,p4)           //          04/93 B Twilight Zone (P-4)
@@ -2857,7 +2856,7 @@ DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption
 DRIVER(afv,d4)          //                  Addams Family Values (D-4 Redemption) LED Ghost Fix
 DRIVER(sttng,p4)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-4 Prototype)
 DRIVER(sttng,p5)        //          11/93 W Star Trek: The Next Generation (P-5 Prototype)
-DRIVER(sttng,p6)        //                  Star Trek: The Next Generation (P-6) LED Ghost Fix
+DRIVER(sttng,p6)        //                  Star Trek: The Next Generation (P-6 Prototype) LED Ghost Fix
 DRIVER(sttng,p8)        //          11/93 W Star Trek: The Next Generation (P-8 Prototype)
 DRIVER(sttng,l1)        //          11/93 W Star Trek: The Next Generation (LX-1)
 DRIVER(sttng,d1)        //                  Star Trek: The Next Generation (DX-1) LED Ghost Fix
@@ -2875,15 +2874,15 @@ DRIVER(sttng,ds)        //                  Star Trek: The Next Generation (DX-7
 DRIVER(sttng,g7)        //          02/94 W Star Trek: The Next Generation (LG-7 German)
 DRIVER(sttng,h7)        //                  Star Trek: The Next Generation (HG-7) LED Ghost Fix
 DRIVER(pop,pa3)         //WPC-522:  12/93 B Popeye Saves the Earth (PA-3 Prototype)
-DRIVER(pop,pa4)         //                  Popeye Saves the Earth (PA-4) LED Ghost Fix
+DRIVER(pop,pa4)         //                  Popeye Saves the Earth (PA-4 Prototype) LED Ghost Fix
 DRIVER(pop,la4)         //          02/94 B Popeye Saves the Earth (LA-4)
 DRIVER(pop,lx4)         //          02/94 B Popeye Saves the Earth (LX-4)
 DRIVER(pop,lx5)         //          02/94 B Popeye Saves the Earth (LX-5)
 DRIVER(pop,dx5)         //                  Popeye Saves the Earth (DX-5) LED Ghost Fix
 DRIVER(dm,pa2)          //WPC-528:  03/94 W Demolition Man (PA-2 Prototype)
-DRIVER(dm,pa3)          //                  Demolition Man (PA-3) LED Ghost Fix
+DRIVER(dm,pa3)          //                  Demolition Man (PA-3 Prototype) LED Ghost Fix
 DRIVER(dm,px5)          //          04/94 W Demolition Man (PX-5 Prototype)
-DRIVER(dm,px6)          //                  Demolition Man (PX-6) LED Ghost Fix
+DRIVER(dm,px6)          //                  Demolition Man (PX-6 Prototype) LED Ghost Fix
 DRIVER(dm,la1)          //          04/94 W Demolition Man (LA-1)
 DRIVER(dm,da1)          //                  Demolition Man (DA-1) LED Ghost Fix
 DRIVER(dm,lx3)          //          04/94 W Demolition Man (LX-3)
@@ -2916,9 +2915,9 @@ DRIVER(wcs,l3c)         //          06/16 B World Cup Soccer (LX-3C)
 DRIVER(wcs,la2)         //          02/94 B World Cup Soccer (LA-2)
 DRIVER(wcs,l1)          //          05/94 B World Cup Soccer (LX-1)
 DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (PA-2 Prototype)
-DRIVER(wcs,p5)          //                  World Cup Soccer (PA-5) LED Ghost Fix
+DRIVER(wcs,p5)          //                  World Cup Soccer (PA-5 Prototype) LED Ghost Fix
 DRIVER(wcs,p3)          //          ??/?? B World Cup Soccer (PX-3 Prototype)
-DRIVER(wcs,p6)          //                  World Cup Soccer (PX-6) LED Ghost Fix
+DRIVER(wcs,p6)          //                  World Cup Soccer (PX-6 Prototype) LED Ghost Fix
 DRIVER(wcs,f10)         //          ??/??   World Cup Soccer (FreeWPC 0.10)
 DRIVER(wcs,f50)         //          ??/??   World Cup Soccer (FreeWPC 0.50)
 DRIVER(wcs,f62)         //          ??/??   World Cup Soccer (FreeWPC 0.62)
@@ -2936,7 +2935,7 @@ DRIVER(fs,lx5)          //          11/94 W Flintstones, The (LX-5)
 DRIVER(fs,dx5)          //                  Flintstones, The (DX-5) LED Ghost Fix
 DRIVER(corv,px3)        //WPC-536:  08/94 B Corvette (PX-3 Prototype)
 DRIVER(corv,px4)        //          09/94 B Corvette (PX-4 Prototype)
-DRIVER(corv,px5)        //                  Corvette (PX-5) LED Ghost Fix
+DRIVER(corv,px5)        //                  Corvette (PX-5 Prototype) LED Ghost Fix
 DRIVER(corv,la1)        //          09/94 B Corvette (LA-1)
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX-1)
 DRIVER(corv,dx1)        //                  Corvette (DX-1) LED Ghost Fix
@@ -2982,7 +2981,7 @@ DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry (LX-2)
 DRIVER(dh,dx2)          //                  Dirty Harry (DX-2) LED Ghost Fix
 DRIVER(dh,lf2)          //                  Dirty Harry (LF-2 French)
 DRIVER(tom,06)          //WPC-539:  03/95 B Theatre of Magic (0.6A Prototype)
-DRIVER(tom,061)         //                  Theatre of Magic (0.61A) LED Ghost Fix
+DRIVER(tom,061)         //                  Theatre of Magic (0.61A Prototype) LED Ghost Fix
 DRIVER(tom,10f)         //          04/95 B Theatre of Magic (1.0 French)
 DRIVER(tom,101f)        //                  Theatre of Magic (1.01 French) LED Ghost Fix
 DRIVER(tom,12a)         //          04/95 B Theatre of Magic (1.2A)
