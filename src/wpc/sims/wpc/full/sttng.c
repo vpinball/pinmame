@@ -567,6 +567,7 @@ static void sttng_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
+// normal L-1 sound ROMs
 #define ST_SND \
 DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db028b94e5), \
                "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab), \
@@ -576,40 +577,26 @@ DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db0
                "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a), \
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 
-WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908)) ST_SND WPC_ROMEND
-WPC_ROMSTART(sttng,d7,"trek_dx7.rom",0x80000,CRC(e0894fab) SHA1(673695d9a0533cccdc842489e875223fcd8ccbd9)) ST_SND WPC_ROMEND
+// special L-1 sound ROMs
+#define ST_SPECIAL_SND \
+DCS_SOUNDROM7x("ngs_u2.rom",CRC(e9fe68fe) SHA1(3d7631aa5ddd52f7c3c00cd091e212430faea249), \
+               "ngs_u3.rom",CRC(368cfd89) SHA1(40ddc12b2cabbcf73ababf753f3a2fd4bcc10737), \
+               "ngs_u4.rom",CRC(8e79a513) SHA1(4b763d7445acd921a0a6d64d18b5df8ff9e3257e), \
+               "ngs_u5.rom",CRC(46049eb0) SHA1(02991bf1d33ac1df91f459b2d37cf7e07e347b04), \
+               "ngs_u6.rom",CRC(e0124da0) SHA1(bfdba059d084c93122ad291aa8def61f43c26d47), \
+               "ngs_u7.rom",CRC(dc1c74d0) SHA1(21b6b4d2cdd5086bcbbc7ee7a2abdc550a45d2e3), \
+               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
+
+WPC_ROMSTART(sttng,l7,"trek_lx7.rom",  0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,d7,"trek_dx7.rom",  0x80000,CRC(e0894fab) SHA1(673695d9a0533cccdc842489e875223fcd8ccbd9)) ST_SND WPC_ROMEND
+
+WPC_ROMSTART(sttng,x7,"trek_x7.rom",   0x80000,CRC(4e71c9c7) SHA1(8a7ec42dfb4a6902ba745548b40e84de5305c295)) ST_SPECIAL_SND WPC_ROMEND
+WPC_ROMSTART(sttng,dx,"trek_d7.rom",   0x80000,CRC(57c15e90) SHA1(bf99d5b0102489db5a994a8a3801e5b1a27e541a)) ST_SPECIAL_SND WPC_ROMEND
+
 WPC_ROMSTART(sttng,l7c,"trek_lx7c.rom",0x80000,CRC(da2b5082) SHA1(7f87d89e04f284e6050b7a3fbbf48e1db40cb804)) ST_SND WPC_ROMEND
 
-WPC_ROMSTART(sttng,x7,"trek_x7.rom",0x80000,CRC(4e71c9c7) SHA1(8a7ec42dfb4a6902ba745548b40e84de5305c295))
-DCS_SOUNDROM7x("ngs_u2.rom",CRC(e9fe68fe) SHA1(3d7631aa5ddd52f7c3c00cd091e212430faea249),
-               "ngs_u3.rom",CRC(368cfd89) SHA1(40ddc12b2cabbcf73ababf753f3a2fd4bcc10737),
-               "ngs_u4.rom",CRC(8e79a513) SHA1(4b763d7445acd921a0a6d64d18b5df8ff9e3257e),
-               "ngs_u5.rom",CRC(46049eb0) SHA1(02991bf1d33ac1df91f459b2d37cf7e07e347b04),
-               "ngs_u6.rom",CRC(e0124da0) SHA1(bfdba059d084c93122ad291aa8def61f43c26d47),
-               "ngs_u7.rom",CRC(dc1c74d0) SHA1(21b6b4d2cdd5086bcbbc7ee7a2abdc550a45d2e3),
-               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
-WPC_ROMEND
-WPC_ROMSTART(sttng,dx,"trek_d7.rom",0x80000,CRC(57c15e90) SHA1(bf99d5b0102489db5a994a8a3801e5b1a27e541a))
-DCS_SOUNDROM7x("ngs_u2.rom",CRC(e9fe68fe) SHA1(3d7631aa5ddd52f7c3c00cd091e212430faea249),
-               "ngs_u3.rom",CRC(368cfd89) SHA1(40ddc12b2cabbcf73ababf753f3a2fd4bcc10737),
-               "ngs_u4.rom",CRC(8e79a513) SHA1(4b763d7445acd921a0a6d64d18b5df8ff9e3257e),
-               "ngs_u5.rom",CRC(46049eb0) SHA1(02991bf1d33ac1df91f459b2d37cf7e07e347b04),
-               "ngs_u6.rom",CRC(e0124da0) SHA1(bfdba059d084c93122ad291aa8def61f43c26d47),
-               "ngs_u7.rom",CRC(dc1c74d0) SHA1(21b6b4d2cdd5086bcbbc7ee7a2abdc550a45d2e3),
-               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
-WPC_ROMEND
-
-WPC_ROMSTART(sttng,s7,"trek_lx7.rom",0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908))
-DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad4143927ddc6fee),
-               "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
-               "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194),
-               "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778),
-               "ng_u6_s.l1",CRC(bb21377d) SHA1(229fb42a1f8b22727a809e5d63f26f045a2adda5),
-               "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a),
-               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
-WPC_ROMEND
-WPC_ROMSTART(sttng,ds,"trek_dx7.rom",0x80000,CRC(e0894fab) SHA1(673695d9a0533cccdc842489e875223fcd8ccbd9))
-DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad4143927ddc6fee),
+WPC_ROMSTART(sttng,p4,"sttng_p4.u6",0x80000,CRC(836774f0) SHA1(5784f77eaad41ccf07446874720be146fd562c68))
+DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad4143927ddc6fee), // where does this P-1 sound rom really belong to? all prototypes? or is even P-4 too new? // Only 4 bytes are different from L-1
                "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
                "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194),
                "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778),
@@ -618,10 +605,9 @@ DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad414392
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 WPC_ROMEND
 
-WPC_ROMSTART(sttng,p4,"sttng_p4.u6",0x80000,CRC(836774f0) SHA1(5784f77eaad41ccf07446874720be146fd562c68)) ST_SND WPC_ROMEND
-WPC_ROMSTART(sttng,p5,"sttng_p5.u6",0x80000,CRC(c1b80a8e) SHA1(90dd99efd41ec5405c631ad374a369f9fcb7217e)) ST_SND WPC_ROMEND
-WPC_ROMSTART(sttng,p6,"sttng_p6.u6",0x80000,CRC(3162c58a) SHA1(f9007a36b53f762fb220f23953cd9745e2ca3cba)) ST_SND WPC_ROMEND
-WPC_ROMSTART(sttng,p8,"sttng_p8.u6",0x80000,CRC(bf599f45) SHA1(ec660f99030f89bdfe3d04cc38fd450d6bbedf7d)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,p5,"sttng_p5.u6", 0x80000,CRC(c1b80a8e) SHA1(90dd99efd41ec5405c631ad374a369f9fcb7217e)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,p6,"sttng_p6.u6", 0x80000,CRC(3162c58a) SHA1(f9007a36b53f762fb220f23953cd9745e2ca3cba)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,p8,"sttng_p8.u6", 0x80000,CRC(bf599f45) SHA1(ec660f99030f89bdfe3d04cc38fd450d6bbedf7d)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,g7,"trek_lg7.rom",0x80000,CRC(e723b8a1) SHA1(77c3f8ea378772ce45bb8de818069fc08cbc4574)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,h7,"trek_dg7.rom",0x80000,CRC(8df53345) SHA1(341951d7d1d775d81b8166270787852b34693808)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,l1,"trek_lx1.rom",0x80000,CRC(390befc0) SHA1(2059891e3fc3034d600274c3915371123c964d28)) ST_SND WPC_ROMEND
@@ -643,8 +629,6 @@ CORE_CLONEDEF(sttng,p4,l7,"Star Trek: The Next Generation (P-4 Prototype)",1993,
 CORE_CLONEDEF(sttng,p5,l7,"Star Trek: The Next Generation (P-5 Prototype)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,p6,l7,"Star Trek: The Next Generation (P-6 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,p8,l7,"Star Trek: The Next Generation (P-8 Prototype)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7, Sound P-1)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,ds,l7,"Star Trek: The Next Generation (DX-7 LED Ghost Fix, Sound P-1)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,g7,l7,"Star Trek: The Next Generation (LG-7 German)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,h7,l7,"Star Trek: The Next Generation (HG-7 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l1,l7,"Star Trek: The Next Generation (LX-1)",1993,"Williams",wpc_mDCSS,0)

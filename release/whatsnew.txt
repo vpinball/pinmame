@@ -19,6 +19,7 @@ Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 White Water P-6 (Prototype)
 
 Removed Clones:
+STTNG S7/DS (as these were just created to be able to use a P-1 sound rom, (for now) wired to P-4 instead)
 White Water P-1/P-2 (as these were just created to be able to use the P-1 sound roms, now wired to P-6 as found on a real machine)
 
 
