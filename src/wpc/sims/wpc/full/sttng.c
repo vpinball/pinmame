@@ -489,7 +489,7 @@ static core_tLampDisplay sttng_lampPos = {
 { 0, 0 }, /* top left */
 {39, 29}, /* size */
 {
- {1,{{23, 5,YELLOW}}},{1,{{25, 4,YELLOW}}},{1,{{28,12,WHITE}}},{1,{{26,11,WHITE}}} // The latter 2 (Time Rift and Worm Hole) lamps are swapped compared to manual?
+ {1,{{23, 5,YELLOW}}},{1,{{25, 4,YELLOW}}},{1,{{28,12,WHITE}}},{1,{{26,11,WHITE}}}, // The latter 2 (Time Rift and Worm Hole) lamps are swapped compared to manual?
  {1,{{27, 3,YELLOW}}},{1,{{29,14,RED}}},{1,{{37,14,ORANGE}}},{1,{{28,16,WHITE}}},
  {1,{{24,12,WHITE}}},{1,{{23,14,WHITE}}},{1,{{24,16,WHITE}}},{1,{{23,23,YELLOW}}},
  {1,{{25,24,YELLOW}}},{1,{{26,14,WHITE}}},{1,{{26,17,WHITE}}},{1,{{27,25,YELLOW}}},
