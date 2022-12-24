@@ -99,7 +99,7 @@ static int ymin, ymax;
 
 static int flip_x, flip_y, swap_xy;
 
-int vector_updates; /* avgdvg_go_w()'s per Mame frame, should be 1 */
+int vector_updates = 0; /* avgdvg_go_w()'s per Mame frame, should be 1 */
 
 
 #define BANK_SIZE (0x2000)
