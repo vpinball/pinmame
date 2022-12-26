@@ -950,7 +950,7 @@ int avgdvg_init(int vector_type)
 {
 	int i;
 
-	vector_updates = 0
+	vector_updates = 0;
 
 	/* 0 vector RAM size is invalid */
 	if (vectorram_size == 0)
