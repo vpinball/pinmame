@@ -286,7 +286,7 @@ static int dvg_generate_vector_list(void)
 			case 9:
 
 				/* compute raw X and Y values */
-	  			y = firstwd & 0x03ff;
+				y = firstwd & 0x03ff;
 				x = secondwd & 0x3ff;
 				if (firstwd & 0x400)
 					y = -y;
@@ -301,16 +301,16 @@ static int dvg_generate_vector_list(void)
 				z = effective_z(z, z);
 
 				/* determine the scale factor; scale 9 means -1 */
-	  			temp = ((scale + opcode) & 0x0f);
-	  			if (temp > 9)
+				temp = ((scale + opcode) & 0x0f);
+				if (temp > 9)
 					temp = -1;
 
 				/* compute the deltas */
-	  			deltax = (x << 16) >> (9-temp);
+				deltax = (x << 16) >> (9-temp);
 				deltay = (y << 16) >> (9-temp);
 
 				/* adjust the current position and compute timing */
-	  			currentx += deltax;
+				currentx += deltax;
 				currenty -= deltay;
 				total_length += dvg_vector_timer(temp);
 
@@ -337,7 +337,7 @@ static int dvg_generate_vector_list(void)
 
 				/* determine the scale factor; scale 9 means -1 */
 				temp = 2 + ((firstwd >> 2) & 0x02) + ((firstwd >> 11) & 0x01);
-	  			temp = (scale + temp) & 0x0f;
+				temp = (scale + temp) & 0x0f;
 				if (temp > 9)
 					temp = -1;
 				VGLOG(("(%d,%d) z: %d scal: %d", x, y, z, temp));
@@ -347,7 +347,7 @@ static int dvg_generate_vector_list(void)
 				deltay = (y << 16) >> (9 - temp);
 
 				/* adjust the current position and compute timing */
-	  			currentx += deltax;
+				currentx += deltax;
 				currenty -= deltay;
 				total_length += dvg_vector_timer(temp);
 
@@ -363,9 +363,9 @@ static int dvg_generate_vector_list(void)
 				x = twos_comp_val(secondwd, 12);
 
 				/* global scale comes from upper 4 bits of second word */
-	  			scale = secondwd >> 12;
+				scale = secondwd >> 12;
 
-	  			/* set the current X,Y */
+				/* set the current X,Y */
 				currentx = (x - xmin) << 16;
 				currenty = (ymax - y) << 16;
 				VGLOG(("(%d,%d) scal: %d", x, y, secondwd >> 12));
@@ -376,7 +376,7 @@ static int dvg_generate_vector_list(void)
 
 				/* handle stack underflow */
 				if (sp == 0)
-	    		{
+				{
 					VGLOG(("\n*** Vector generator stack underflow! ***\n"));
 					done = 1;
 					sp = MAXSTACK - 1;
@@ -398,7 +398,7 @@ static int dvg_generate_vector_list(void)
 
 				/* debugging */
 				if (firstwd & 0x1fff)
-      				VGLOG(("(%d?)", firstwd & 0x0fff));
+					VGLOG(("(%d?)", firstwd & 0x0fff));
 				break;
 
 			/* DJMPL: jump to a new program location */
@@ -421,7 +421,7 @@ static int dvg_generate_vector_list(void)
 
 				/* check for stack overflows */
 				if (sp == (MAXSTACK - 1))
-	    		{
+				{
 					VGLOG(("\n*** Vector generator stack overflow! ***\n"));
 					done = 1;
 					sp = 0;
@@ -438,7 +438,7 @@ static int dvg_generate_vector_list(void)
 				VGLOG(("Unknown DVG opcode found\n"));
 				done = 1;
 		}
-   		VGLOG(("\n"));
+		VGLOG(("\n"));
 	}
 
 	/* return the total length of everything drawn */
@@ -949,6 +949,8 @@ WRITE16_HANDLER( avgdvg_reset_word_w )
 int avgdvg_init(int vector_type)
 {
 	int i;
+
+	vector_updates = 0
 
 	/* 0 vector RAM size is invalid */
 	if (vectorram_size == 0)
