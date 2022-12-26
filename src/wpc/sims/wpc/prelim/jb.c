@@ -296,8 +296,8 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(jb,10r,"Jack*Bot (1.0R)",1995,"Williams",wpc_m95DCSS,0)
 CORE_CLONEDEF(jb,101r,10r,"Jack*Bot (1.01R LED Ghost Fix)",1995,"Williams",wpc_m95DCSS,0)
-CORE_CLONEDEF(jb,10b,10r,"Jack*Bot (1.0B Belgish/Canadian)",1995,"Williams",wpc_m95DCSS,0)
-CORE_CLONEDEF(jb,101b,10r,"Jack*Bot (1.01B Belgish/Canadian LED Ghost Fix)",1995,"Williams",wpc_m95DCSS,0)
+CORE_CLONEDEF(jb,10b,10r,"Jack*Bot (1.0B Belgian/Canadian)",1995,"Williams",wpc_m95DCSS,0)
+CORE_CLONEDEF(jb,101b,10r,"Jack*Bot (1.01B Belgian/Canadian LED Ghost Fix)",1995,"Williams",wpc_m95DCSS,0)
 CORE_CLONEDEF(jb,04a,10r,"Jack*Bot (0.4A Prototype)",1995,"Williams",wpc_m95DCSS,0) // WPC-S 5-Board
 
 /*-----------------------
