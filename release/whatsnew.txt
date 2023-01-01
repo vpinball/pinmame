@@ -15,6 +15,7 @@ Correct Dumps:
 Bell: Cosmic Flash (correct sound ROM)
 
 Clones:
+Metallica 0.52
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Tommy 1.02 (Belgian)
 White Water P-6 (Prototype)

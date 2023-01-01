@@ -279,16 +279,16 @@ static int dedswitch_upper_r(void)
 /*-- Common Inports for SAM Games --*/
 #define SAM_COMPORTS \
   PORT_START /* 0 */ \
-	/*Switch Col. 0*/ \
+    /*Switch Col. 0*/ \
     COREPORT_BITDEF(  0x0010, IPT_TILT,           KEYCODE_INSERT)  \
     COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_HOME)  \
     COREPORT_BIT   (  0x0040, "Ticket Notch",     KEYCODE_K)  \
-	COREPORT_BIT   (  0x0080, "Dedicated Sw#20",  KEYCODE_L) \
+    COREPORT_BIT   (  0x0080, "Dedicated Sw#20",  KEYCODE_L) \
     COREPORT_BIT   (  0x0100, "Back",             KEYCODE_7) \
     COREPORT_BIT   (  0x0200, "Minus",            KEYCODE_8) \
     COREPORT_BIT   (  0x0400, "Plus",             KEYCODE_9) \
     COREPORT_BIT   (  0x0800, "Select",           KEYCODE_0) \
-	/*Switch Col. 2*/ \
+    /*Switch Col. 2*/ \
     COREPORT_BIT   (  0x8000, "Start Button",     KEYCODE_1) \
     COREPORT_BIT   (  0x4000, "Tournament Start", KEYCODE_2) \
     /*Switch Col. 9*/ \
@@ -296,7 +296,7 @@ static int dedswitch_upper_r(void)
     COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)  \
     COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)  \
     COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6)  \
-	/*None*/ \
+    /*None*/ \
     COREPORT_BITTOG(  0x1000, "Coin Door",        KEYCODE_END) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x001f, 0x0000, "Country") \
@@ -1501,7 +1501,7 @@ static INTERRUPT_GEN(sam_vblank) {
 
 	/*-- display --*/
 	if ((samlocals.vblankCount % SAM_DISPLAYSMOOTH) == 0) {
-	    coreGlobals.diagnosticLed = samlocals.diagnosticLed;
+		coreGlobals.diagnosticLed = samlocals.diagnosticLed;
 		samlocals.diagnosticLed = 0;
 	}
 
@@ -2744,6 +2744,7 @@ CORE_CLONEDEF(avs, 170hc,170h, "Avengers, The Limited Edition (V1.7) (Colored MO
 /-------------------------------------------------------------------*/
 INITGAME(mtl, GEN_SAM, sam_dmd128x32, SAM_9COL, SAM_GAME_AUXSOL12 | SAM_GAME_METALLICA_MAGNET)
 
+SAM1_ROM128MB(mtl_052,   "mtl_052.bin",  CRC(6150be49) SHA1(0095722d2a96c58c66a78180146c358e3b859817), 80135496)
 SAM1_ROM128MB(mtl_103,   "mtl_103.bin",  CRC(9b073858) SHA1(129872e38d21d9d6d20f81388825113f13645bab), 0x04D24D04)
 SAM1_ROM128MB(mtl_105,   "mtl_105.bin",  CRC(4699e2cf) SHA1(b56e85583362056b33f7b8eb6255d34d234ea5ea), 0x04DEDE5C)
 SAM1_ROM128MB(mtl_106,   "mtl_106.bin",  CRC(5ac6c70a) SHA1(aaa68eebd1b894383416d2a491ac074a73be8d91), 0x04E8A214)
@@ -2783,6 +2784,7 @@ SAM1_ROM128MB(mtl_180hc, "mtl180hc.bin", NO_DUMP, 0x05FFFFF0)
 SAM_INPUT_PORTS_START(mtl, 1)
 
 CORE_GAMEDEF(mtl, 180h, "Metallica Limited Edition (V1.80.0)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 052,  180h, "Metallica (V0.52)", 2013, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 103,  180h, "Metallica (V1.03)", 2013, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 105,  180h, "Metallica (V1.05)", 2013, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 106,  180h, "Metallica (V1.06)", 2013, "Stern", sam2, 0)

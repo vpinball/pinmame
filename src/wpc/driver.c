@@ -2147,7 +2147,8 @@ DRIVER(avs,170h)        //        01/16 Avengers - V1.7 Limited Edition
 DRIVER(avs,170c)        // pinball browser colorized using extend memory
 DRIVER(avs,170hc)       // pinball browser colorized using extend memory
 #endif
-//DRIVER(mtl,100)         //S.A.M.: 04/13 Metallica - V1.0
+DRIVER(mtl,052)         //S.A.M.: 0?/13 Metallica - V0.52
+//DRIVER(mtl,100)         //        04/13 Metallica - V1.0
 //DRIVER(mtl,102)         //        05/13 Metallica - V1.02
 DRIVER(mtl,103)         //        05/13 Metallica - V1.03
 //DRIVER(mtl,104)         //        05/13 Metallica - V1.04
