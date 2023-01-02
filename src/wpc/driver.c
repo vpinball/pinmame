@@ -1350,10 +1350,12 @@ DRIVERNV(lectrono)      //MPU-100: 08/78 Lectronamo
 DRIVERNV(lectrofp)      //         08/78 Lectronamo (Free Play)
 DRIVERNV(wildfyre)      //MPU-100: 10/78 Wildfyre
 DRIVERNV(wildfyfp)      //         10/78 Wildfyre (Free Play)
+DRIVERNV(wildfyrc)      //         10/22 Wildfyre (One Ball MOD)
 DRIVERNV(nugent)        //MPU-100: 11/78 Nugent
 DRIVERNV(nugentfp)      //         11/78 Nugent (Free Play)
 DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
 DRIVERNV(draculfp)      //         01/79 Dracula (Free Play)
+DRIVERNV(draculc)       //         10/22 Dracula (One Ball MOD)
 DRIVERNV(trident)       //MPU-100: 03/79 Trident
 DRIVERNV(tridenta)      //         03/79 Trident (Old)
 DRIVERNV(tridenfp)      //         03/79 Trident (Old Free Play)
@@ -1429,6 +1431,7 @@ DRIVERNV(freefafp)      //         01/81 Freefall (Free Play)
 DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(lightnfp)      //         03/81 Lightning (Free Play)
 DRIVERNV(lightnib)      //         09/21 Lightning (Free Play & MOD rev. 19)
+DRIVERNV(lightnic)      //         10/22 Lightning (Free Play & MOD rev. 25)
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
 DRIVERNV(splitsfp)      //         08/81 Split Second (Free Play)
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
