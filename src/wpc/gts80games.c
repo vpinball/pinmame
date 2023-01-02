@@ -685,7 +685,7 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(rockyf,rocky,"Rocky (French Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
-/ Spirit (#673)
+/ Spirit (#673) (Note that there is no rev. 1 known, only rev. 2)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout dispSpirit[] = {
   DISP_SEG_IMPORT(dispNumeric3), {6, 9,50,6,CORE_SEG9}, {0}
@@ -696,7 +696,16 @@ GTS80SS22_ROMSTART("673-s1.snd", CRC(fd3062ae) SHA1(6eae04ec470afd4363ca448ee106
                    "673-s2.snd", CRC(7cf923f1) SHA1(2182324c30e8cb22735e59b74d4f6b268d3750e6))
 GTS80_ROMEND
 #define input_ports_spirit input_ports_gts80
-CORE_CLONEDEFNV(spirit,gts80a,"Spirit",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(spirit,gts80a,"Spirit (rev. 2)",1982,"Gottlieb",gl_mGTS80SS,0)
+
+// Fixes bonus bug on "Spot Targets" and the "BA" and "LL" target order bug:
+INIT_S80A(spirit3, dispSpirit, SNDBRD_GTS80SS,0)
+GTS80_1_ROMSTART  ("673-3.bin",  CRC(20aff323) SHA1(89c546ad87080604b7aa68845f2bdd53f54bff1b))
+GTS80SS22_ROMSTART("673-s1.snd", CRC(fd3062ae) SHA1(6eae04ec470afd4363ca448ee106e3e89fbf471e),
+                   "673-s2.snd", CRC(7cf923f1) SHA1(2182324c30e8cb22735e59b74d4f6b268d3750e6))
+GTS80_ROMEND
+#define input_ports_spirit3 input_ports_gts80
+CORE_CLONEDEFNV(spirit3,spirit,"Spirit (rev. 3 MOD)",2023,"Flipprojets",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Striker (#675)

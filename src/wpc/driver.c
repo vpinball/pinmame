@@ -678,7 +678,9 @@ DRIVERNV(cavemana)      //                Caveman (set 2)
 DRIVERNV(cavemane)      //                Caveman (Evolution, unofficial MOD)
 DRIVERNV(rocky)         //S80a-672: 09/82 Rocky
 DRIVERNV(rockyf)        //                Rocky (French Speech)
-DRIVERNV(spirit)        //S80a-673: 11/82 Spirit
+//DRIVERNV(spirit0)       //S80a-673: 11/82 Spirit
+DRIVERNV(spirit)        //                Spirit (rev. 2)
+DRIVERNV(spirit3)       //          01/23 Spirit (rev. 3 MOD)
 DRIVERNV(striker)       //S80a-675: 11/82 Striker
 DRIVERNV(punk)          //S80a-674: 12/82 Punk!
 DRIVERNV(krull)         //S80a-676: 02/83 Krull
