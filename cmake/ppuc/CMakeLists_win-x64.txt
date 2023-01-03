@@ -646,6 +646,8 @@ set_target_properties(pinmame PROPERTIES
 )
 
 add_executable(ppuc
+   src/ppuc/dmdcommon/dmdcommon.h
+   src/ppuc/dmdcommon/dmdcommon.cpp
    src/ppuc/dmd/dmd.h
    src/ppuc/dmd/dmd.cpp
    src/ppuc/pin2dmd/pin2dmd.h

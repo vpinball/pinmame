@@ -19,6 +19,10 @@
 #include "zedmd/zedmd.h"
 #include "serialib/serialib.h"
 #include "cargs/cargs.h"
+#include "dmdcommon/dmdcommon.h"
+#if defined(SERUM_SUPPORT)
+    #include "serum/serum-decode.h"
+#endif
 
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
@@ -43,9 +47,18 @@ serialib serial;
 int pin2dmd = 0;
 int zedmd = 0;
 
+UINT8 previousDisplayBuffer[16384] = {0};
+void* p_previousDisplayBuffer = &previousDisplayBuffer[0];
+UINT16 serum_skip_frames = 0;
+UINT16 serum_skip_frames_left = 0;
+UINT8 DmdPlanesBuffer[12288] = {0};
+
 YAML::Node ppuc_config;
 
 bool opt_debug = false;
+bool opt_no_serial = false;
+bool opt_serum = false;
+bool opt_console_display = false;
 int game_state = 0;
 
 static struct cag_option options[] = {
@@ -71,11 +84,48 @@ static struct cag_option options[] = {
         .description = "Serial device (optional, overwrites setting in config file)"
     },
     {
+        .identifier = 'n',
+        .access_letters = "n",
+        .access_name = "no-serial",
+        .value_name = NULL,
+        .description = "No serial communication to controllers (optional)"
+    },
+#if defined(SERUM_SUPPORT)
+    {
+        .identifier = 'u',
+        .access_letters = "u",
+        .access_name = "serum",
+        .value_name = NULL,
+        .description = "Enable Serum colorization (optional)"
+    },
+    {
+        .identifier = 't',
+        .access_letters = "t",
+        .access_name = "serum-timeout",
+        .value_name = "VALUE",
+        .description = "Serum timeout in milliseconds to ignore unknown frames (optional)"
+    },
+    {
+        .identifier = 'p',
+        .access_letters = "p",
+        .access_name = "serum-skip-frames",
+        .value_name = "VALUE",
+        .description = "Serum ignore number of unknown frames (optional)"
+    },
+#endif
+    {
+        .identifier = 'i',
+        .access_letters = "i",
+        .access_name = "console-display",
+        .value_name = NULL,
+        .description = "Enable console display (optional)"
+    },
+    {
         .identifier = 'd',
         .access_letters = "d",
-        .access_name = NULL,
+        .access_name = "debug",
         .value_name = NULL,
-        .description = "Enable debug output (optional"
+        .description = "Enable debug output (optional)"
     },
     {
         .identifier = 'h',
@@ -85,93 +135,209 @@ static struct cag_option options[] = {
     }
 };
 
+
+void sendEvent(Event* event) {
+    if (!opt_no_serial) {
+        //     = (UINT8) 255;
+        msg[1] = event->sourceId;
+        msg[2] = event->eventId >> 8;
+        msg[3] = event->eventId & 0xff;
+        msg[4] = event->value;
+        //     = (UINT8) 255;
+
+        if (serial.writeBytes(msg, 6)) {
+            if (opt_debug) printf("Sent event %d %d %d.\n", event->sourceId, event->eventId, event->value);
+        } else {
+            printf("Error: Could not send event %d %d %d.\n", event->sourceId, event->eventId, event->value);
+        }
+    }
+    // delete the event and free the memory
+    delete event;
+}
+
+void sendEvent(ConfigEvent* event) {
+    if (!opt_no_serial) {
+        //      = (UINT8) 255;
+        cmsg[1] = event->sourceId;
+        cmsg[2] = event->boardId;
+        cmsg[3] = event->topic;
+        cmsg[4] = event->key;
+        cmsg[5] = event->index;
+        cmsg[6] = event->value >> 24;
+        cmsg[7] = (event->value >> 16) & 0xff;
+        cmsg[8] = (event->value >> 8) & 0xff;
+        cmsg[9] = event->value & 0xff;
+        //      = (UINT8) 255;
+
+        if (serial.writeBytes(cmsg, 11)) {
+            if (opt_debug) printf("Sent config event %d %d %d.\n", event->boardId, event->topic, event->key);
+        } else {
+            printf("Error: Could not send event %d %d %d.\n", event->boardId, event->topic, event->key);
+        }
+    }
+    // delete the event and free the memory
+    delete event;
+}
+
+Event* receiveEvent() {
+    if (!opt_no_serial) {
+        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+        // Set a timeout of 1ms when waiting for an I/O board event.
+        while ((std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::steady_clock::now() - start)).count() < 1000) {
+            if (serial.available() >= 6) {
+                UINT8 poll[6] = {0};
+                if (serial.readBytes(poll, 6)) {
+                    if (poll[0] == 255 && poll[5] == 255) {
+                        return new Event(poll[1], (((UINT16) poll[2]) << 8) + poll[3], poll[4]);
+                    }
+                }
+                return NULL;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 void CALLBACK Game(PinmameGame* game) {
-	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
-		game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
+    printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
+           game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
 void CALLBACK OnStateUpdated(int state) {
-	if (opt_debug) printf("OnStateUpdated(): state=%d\n", state);
+    if (opt_debug) printf("OnStateUpdated(): state=%d\n", state);
 
-	if (!state) {
-		exit(1);
-	}
-	else {
-		PinmameMechConfig mechConfig;
-		memset(&mechConfig, 0, sizeof(mechConfig));
+    if (!state) {
+        exit(1);
+    }
+    else {
+        PinmameMechConfig mechConfig;
+        memset(&mechConfig, 0, sizeof(mechConfig));
 
-		mechConfig.sol1 = 11;
-		mechConfig.length = 240;
-		mechConfig.steps = 240;
-		mechConfig.type = NONLINEAR | REVERSE | ONESOL;
-		mechConfig.sw[0].swNo = 32;
-		mechConfig.sw[0].startPos = 0;
-		mechConfig.sw[0].endPos = 5;
+        mechConfig.sol1 = 11;
+        mechConfig.length = 240;
+        mechConfig.steps = 240;
+        mechConfig.type = NONLINEAR | REVERSE | ONESOL;
+        mechConfig.sw[0].swNo = 32;
+        mechConfig.sw[0].startPos = 0;
+        mechConfig.sw[0].endPos = 5;
 
-		PinmameSetMech(0, &mechConfig);
+        PinmameSetMech(0, &mechConfig);
 
         game_state = state;
-	}
+    }
 }
 
 void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout) {
     if (opt_debug) printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
-		index,
-		displayCount,
-		p_displayLayout->type,
-		p_displayLayout->top,
-		p_displayLayout->left,
-		p_displayLayout->width,
-		p_displayLayout->height,
-		p_displayLayout->depth,
-		p_displayLayout->length);
+                          index,
+                          displayCount,
+                          p_displayLayout->type,
+                          p_displayLayout->top,
+                          p_displayLayout->left,
+                          p_displayLayout->width,
+                          p_displayLayout->height,
+                          p_displayLayout->depth,
+                          p_displayLayout->length);
 }
 
 void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout) {
     if (opt_debug) printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
-		index,
-		p_displayLayout->type,
-		p_displayLayout->top,
-		p_displayLayout->left,
-		p_displayLayout->width,
-		p_displayLayout->height,
-		p_displayLayout->depth,
-		p_displayLayout->length);
+                          index,
+                          p_displayLayout->type,
+                          p_displayLayout->top,
+                          p_displayLayout->left,
+                          p_displayLayout->width,
+                          p_displayLayout->height,
+                          p_displayLayout->depth,
+                          p_displayLayout->length);
 
-	if ((p_displayLayout->type & DMD) == DMD) {
-        UINT8* buffer = (UINT8 *) dmdRender(p_displayLayout->width, p_displayLayout->height,
-                    (UINT8 *) p_displayData,p_displayLayout->depth,
-                   PinmameGetHardwareGen() & (SAM | SPA));
+    if ((p_displayLayout->type & DMD) == DMD) {
+        UINT8 *buffer = (UINT8 *) dmdConvertToFrame(p_displayLayout->width, p_displayLayout->height,
+                                                    (UINT8 *) p_displayData, p_displayLayout->depth,
+                                                    PinmameGetHardwareGen() & (SAM | SPA));
 
-        std::vector<std::thread> threads;
-
-        if (pin2dmd > 0) {
-            threads.push_back(std::thread(Pin2dmdRender, p_displayLayout->width, p_displayLayout->height, buffer,
-                          p_displayLayout->depth, PinmameGetHardwareGen() & (SAM | SPA)));
+        if (opt_console_display) {
+            for (int y = 0; y < p_displayLayout->height; y++) {
+                for (int x = 0; x < p_displayLayout->width; x++) {
+                    UINT8 value = ((UINT8*) buffer)[y * p_displayLayout->width + x];
+                    printf("%2d", value);
+                }
+                printf("\n");
+            }
+            if (!opt_debug) printf("\033[%dA", p_displayLayout->height);
         }
-        if (zedmd > 0) {
-            threads.push_back(std::thread(ZeDmdRender, p_displayLayout->width, p_displayLayout->height, buffer,
-                                          p_displayLayout->depth, PinmameGetHardwareGen() & (SAM | SPA)));
+
+        if (pin2dmd > 0 || (zedmd > 0 && !opt_serum)) {
+            DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
+                                       DmdPlanesBuffer, p_displayLayout->depth);
+
+            std::vector <std::thread> threads;
+
+            if (pin2dmd > 0) {
+                threads.push_back(std::thread(Pin2dmdRender, p_displayLayout->width, p_displayLayout->height,
+                                              DmdPlanesBuffer, p_displayLayout->depth,
+                                              PinmameGetHardwareGen() & (SAM | SPA)));
+            }
+            if (zedmd > 0) {
+                threads.push_back(std::thread(ZeDmdRender, p_displayLayout->width, p_displayLayout->height,
+                                              DmdPlanesBuffer, p_displayLayout->depth));
+            }
+
+            for (auto &th: threads) {
+                th.join();
+            }
         }
 
-        for (auto &th : threads) {
-            th.join();
+#if defined(SERUM_SUPPORT)
+        if (zedmd > 0 && opt_serum) {
+            UINT8 palette[192] = {0};
+            UINT8 rotations[24] = {0};
+            if (Serum_Colorize(buffer, p_displayLayout->width, p_displayLayout->height,
+                           &palette[0], &rotations[0])) {
+
+                if (!memcmp(p_previousDisplayBuffer, buffer, p_displayLayout->width * p_displayLayout->height)) {
+                    return;
+                }
+                else {
+                    memcpy(p_previousDisplayBuffer, buffer, p_displayLayout->width * p_displayLayout->height);
+                }
+
+                DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
+                                           DmdPlanesBuffer, 6);
+                ZeDmdRenderSerum(p_displayLayout->width, p_displayLayout->height, DmdPlanesBuffer,
+                                 &palette[0], &rotations[0]);
+
+                serum_skip_frames_left = serum_skip_frames;
+            }
+            else if(serum_skip_frames_left < 1) {
+                DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
+                                           DmdPlanesBuffer, p_displayLayout->depth);
+                ZeDmdRender(p_displayLayout->width, p_displayLayout->height, DmdPlanesBuffer,
+                            p_displayLayout->depth);
+            }
+            else {
+                serum_skip_frames_left--;
+            }
         }
-	}
-	else {
+#endif
+    }
+    else {
         // todo
-		//DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
-	}
+        //DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
+    }
 }
 
 int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
     if (opt_debug) printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
-		p_audioInfo->format,
-		p_audioInfo->channels,
-		p_audioInfo->sampleRate,
-		p_audioInfo->framesPerSecond,
-		p_audioInfo->samplesPerFrame,
-		p_audioInfo->bufferSize);
+                          p_audioInfo->format,
+                          p_audioInfo->channels,
+                          p_audioInfo->sampleRate,
+                          p_audioInfo->framesPerSecond,
+                          p_audioInfo->samplesPerFrame,
+                          p_audioInfo->bufferSize);
 
     _audioChannels = p_audioInfo->channels;
     _audioSampleRate = (int) p_audioInfo->sampleRate;
@@ -190,7 +356,7 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
     alSourceQueueBuffers(_audioSource, MAX_AUDIO_BUFFERS, _audioBuffers);
     alSourcePlay(_audioSource);
 
-	return p_audioInfo->samplesPerFrame;
+    return p_audioInfo->samplesPerFrame;
 }
 
 int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
@@ -249,26 +415,27 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
 
 void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
     if (opt_debug) printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
+    sendEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) solenoid, (UINT8) isActive));
 }
 
 void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
     if (opt_debug) printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
-		mechNo,
-		p_mechInfo->type,
-		p_mechInfo->length,
-		p_mechInfo->steps,
-		p_mechInfo->pos,
-		p_mechInfo->speed);
+                          mechNo,
+                          p_mechInfo->type,
+                          p_mechInfo->length,
+                          p_mechInfo->steps,
+                          p_mechInfo->pos,
+                          p_mechInfo->speed);
 }
 
 void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo) {
     if (opt_debug) printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
-		mechNo,
-		p_mechInfo->type,
-		p_mechInfo->length,
-		p_mechInfo->steps,
-		p_mechInfo->pos,
-		p_mechInfo->speed);
+                          mechNo,
+                          p_mechInfo->type,
+                          p_mechInfo->length,
+                          p_mechInfo->steps,
+                          p_mechInfo->pos,
+                          p_mechInfo->speed);
 }
 
 void CALLBACK OnConsoleDataUpdated(void* p_data, int size) {
@@ -276,70 +443,7 @@ void CALLBACK OnConsoleDataUpdated(void* p_data, int size) {
 }
 
 int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode) {
-	return 0;
-}
-
-void sendEvent(Event* event) {
-    //     = (UINT8) 255;
-    msg[1] = event->sourceId;
-    msg[2] = event->eventId >> 8;
-    msg[3] = event->eventId & 0xff;
-    msg[4] = event->value;
-    //     = (UINT8) 255;
-
-    if (serial.writeBytes(msg, 6)) {
-        if (opt_debug) printf("Sent event %d %d %d.\n", event->sourceId, event->eventId, event->value);
-    }
-    else {
-        printf("Error: Could not send event %d %d %d.\n", event->sourceId, event->eventId, event->value);
-    }
-
-    // delete the event and free the memory
-    delete event;
-}
-
-void sendEvent(ConfigEvent* event) {
-    return;
-    //      = (UINT8) 255;
-    cmsg[1] = event->sourceId;
-    cmsg[2] = event->boardId;
-    cmsg[3] = event->topic;
-    cmsg[4] = event->key;
-    cmsg[5] = event->index;
-    cmsg[6] = event->value >> 24;
-    cmsg[7] = (event->value >> 16) & 0xff;
-    cmsg[8] = (event->value >> 8) & 0xff;
-    cmsg[9] = event->value & 0xff;
-    //      = (UINT8) 255;
-
-    if (serial.writeBytes(cmsg, 11)) {
-        if (opt_debug) printf("Sent config event %d %d %d.\n", event->boardId, event->topic, event->key);
-    }
-    else {
-        printf("Error: Could not send event %d %d %d.\n", event->boardId, event->topic, event->key);
-    }
-
-    // delete the event and free the memory
-    delete event;
-}
-
-Event* receiveEvent() {
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
-    // Set a timeout of 1ms when waiting for an I/O board event.
-    while ((std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start)).count() < 1000) {
-        if (serial.available() >= 6) {
-            UINT8 poll[6] = {0};
-            if (serial.readBytes(poll, 6)) {
-                if (poll[0] == 255 && poll[5] == 255) {
-                    return new Event(poll[1], (((UINT16) poll[2]) << 8) + poll[3], poll[4]);
-                }
-            }
-            return NULL;
-        }
-    }
-
-    return NULL;
+    return 0;
 }
 
 int main (int argc, char *argv[]) {
@@ -348,6 +452,10 @@ int main (int argc, char *argv[]) {
     const char *config_file = NULL;
     const char *opt_rom = NULL;
     const char *opt_serial = NULL;
+#if defined(SERUM_SUPPORT)
+    const char *opt_serum_timeout = NULL;
+    const char *opt_serum_skip_frames = NULL;
+#endif
     UINT8 boardsToPoll[MAX_IO_BOARDS];
     UINT8 numBoardsToPoll = 0;
 
@@ -363,6 +471,23 @@ int main (int argc, char *argv[]) {
                 break;
             case 's':
                 opt_serial = cag_option_get_value(&cag_context);
+                break;
+            case 'n':
+                opt_no_serial = true;
+                break;
+#if defined(SERUM_SUPPORT)
+            case 'u':
+                opt_serum = true;
+                break;
+            case 't':
+                opt_serum_timeout = cag_option_get_value(&cag_context);
+                break;
+            case 'p':
+                opt_serum_skip_frames = cag_option_get_value(&cag_context);
+                break;
+#endif
+            case 'i':
+                opt_console_display = true;
                 break;
             case 'd':
                 opt_debug = true;
@@ -390,71 +515,6 @@ int main (int argc, char *argv[]) {
     std::string c_serial = ppuc_config["serialPort"].as<std::string>();
     if (!opt_serial) opt_serial = c_serial.c_str();
 
-    // Initialize displays.
-    pin2dmd = Pin2dmdInit();
-    if (opt_debug) printf("PIN2DMD: %d\n", pin2dmd);
-    zedmd = ZeDmdInit(opt_serial);
-    if (opt_debug) printf("ZeDMD: %d\n", zedmd);
-
-    // Connection to serial port.
-    char errorOpening = serial.openDevice(opt_serial, 115200);
-    // If connection fails, return the error code otherwise, display a success message
-    if (errorOpening != 1) {
-        printf("Unable to open serial device: %s\n", opt_serial);
-        return errorOpening;
-    }
-
-    // Disable DTR, otherwise Arduino will reset permanently.
-    serial.clearDTR();
-    msg[0] = (UINT8) 255;
-    msg[5] = (UINT8) 255;
-    cmsg[0] = (UINT8) 255;
-    cmsg[10] = (UINT8) 255;
-
-    // Wait for the serial communication to be established before continuing.
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    const YAML::Node& boards = ppuc_config["boards"];
-    for (YAML::Node n_board : boards) {
-        if (n_board["pollEvents"].as<bool>()) {
-            boardsToPoll[numBoardsToPoll++] = n_board["number"].as<UINT8>();
-        }
-    }
-
-    const YAML::Node& switches = ppuc_config["switches"];
-    UINT8 index = 0;
-    for (YAML::Node n_switch : switches) {
-        // Send switch configuration to I/O boards
-        sendEvent(new ConfigEvent(
-                n_switch["board"].as<UINT8>(),
-                (UINT8) CONFIG_TOPIC_SWITCHES,
-                index,
-                (UINT8) CONFIG_TOPIC_SWITCHES_NUMBER,
-                n_switch["number"].as<UINT32>()
-                ));
-        sendEvent(new ConfigEvent(
-                n_switch["board"].as<UINT8>(),
-                (UINT8) CONFIG_TOPIC_SWITCHES,
-                index++,
-                (UINT8) CONFIG_TOPIC_SWITCHES_PORT,
-                n_switch["port"].as<UINT32>()
-                ));
-    }
-
-    // Wait before continuing.
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    // Tell I/O boards to read initial switch states, for example coin door closed.
-    sendEvent(new Event(EVENT_READ_SWITCHES, 1));
-
-    // Initialize the sound device
-    const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-    ALCdevice *device = alcOpenDevice(defaultDeviceName);
-    ALCcontext *context = alcCreateContext(device, NULL);
-    alcMakeContextCurrent(context);
-    alGenSources((ALuint) 1, &_audioSource);
-    alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
-
     PinmameConfig config = {
             AUDIO_FORMAT_INT16,
             44100,
@@ -476,6 +536,186 @@ int main (int argc, char *argv[]) {
 #else
     snprintf((char*)config.vpmPath, MAX_PATH, "%s/.pinmame/", getenv("HOME"));
 #endif
+
+#if defined(SERUM_SUPPORT)
+    if (opt_serum) {
+        int pwidth;
+        int pheight;
+        unsigned int pnocolors;
+
+        char tbuf[1024];
+        strcpy(tbuf, config.vpmPath);
+        if ((tbuf[strlen(tbuf) - 1] != '\\') && (tbuf[strlen(tbuf) - 1] != '/')) strcat(tbuf, "/");
+        strcat(tbuf, "altcolor");
+
+        bool serum_loaded = Serum_Load(tbuf, opt_rom, &pwidth, &pheight, &pnocolors);
+        if (serum_loaded) {
+            if (opt_debug) printf("Serum: loaded %s.cRZ.\n", opt_rom);
+
+            if (opt_serum_timeout) {
+                UINT16 serum_timeout;
+                std::stringstream st(opt_serum_timeout);
+                st >> serum_timeout;
+                Serum_SetIgnoreUnknownFramesTimeout(serum_timeout);
+                printf("TIMEOUT %d\n", serum_timeout);
+            }
+
+            if (opt_serum_skip_frames) {
+                std::stringstream ssf(opt_serum_skip_frames);
+                ssf >> serum_skip_frames;
+                printf("SKIP %d\n", serum_skip_frames);
+            }
+        }
+        else {
+            if (opt_debug) printf("Serum: %s.cRZ not found.\n", opt_rom);
+            opt_serum = false;
+        }
+    }
+#endif
+
+    // Initialize displays.
+    pin2dmd = Pin2dmdInit();
+    if (opt_debug) printf("PIN2DMD: %d\n", pin2dmd);
+    zedmd = ZeDmdInit(opt_serial);
+    if (opt_debug) printf("ZeDMD: %d\n", zedmd);
+
+    if (!opt_no_serial) {
+        // Connection to serial port.
+        char errorOpening = serial.openDevice(opt_serial, 115200);
+        // If connection fails, return the error code otherwise, display a success message
+        if (errorOpening != 1) {
+            printf("Unable to open serial device: %s\n", opt_serial);
+            return errorOpening;
+        }
+
+        // Disable DTR, otherwise Arduino will reset permanently.
+        serial.clearDTR();
+        msg[0] = (UINT8) 255;
+        msg[5] = (UINT8) 255;
+        cmsg[0] = (UINT8) 255;
+        cmsg[10] = (UINT8) 255;
+
+        // Wait for the serial communication to be established before continuing.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    const YAML::Node& boards = ppuc_config["boards"];
+    for (YAML::Node n_board : boards) {
+        if (n_board["pollEvents"].as<bool>()) {
+            boardsToPoll[numBoardsToPoll++] = n_board["number"].as<UINT8>();
+        }
+    }
+
+    // Send switch configuration to I/O boards
+    const YAML::Node& switches = ppuc_config["switches"];
+    for (YAML::Node n_switch : switches) {
+        UINT8 index = 0;
+        sendEvent(new ConfigEvent(
+                n_switch["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_SWITCHES,
+                index++,
+                (UINT8) CONFIG_TOPIC_PORT,
+                n_switch["port"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_switch["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_SWITCHES,
+                index++,
+                (UINT8) CONFIG_TOPIC_NUMBER,
+                n_switch["number"].as<UINT32>()
+                ));
+    }
+
+    // Send PWM configuration to I/O boards
+    const YAML::Node& pwmOutput = ppuc_config["pwmOutput"];
+    for (YAML::Node n_pwmOutput : pwmOutput) {
+        UINT8 index = 0;
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_PORT,
+                n_pwmOutput["port"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_NUMBER,
+                n_pwmOutput["number"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_POWER,
+                n_pwmOutput["power"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_MIN_PULSE_TIME,
+                n_pwmOutput["minPulseTime"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_MAX_PULSE_TIME,
+                n_pwmOutput["maxPulseTime"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_HOLD_POWER,
+                n_pwmOutput["holdPower"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_HOLD_POWER_ACTIVATION_TIME,
+                n_pwmOutput["holdPowerActivationTime"].as<UINT32>()
+        ));
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_FAST_SWITCH,
+                n_pwmOutput["fastFlipSwitch"].as<UINT32>()
+        ));
+        std::string c_type = n_pwmOutput["type"].as<std::string>();
+        UINT32 type = 1; // "coil"
+        if (strcmp(c_type.c_str(), "flasher")) {
+            type = 2;
+        }
+        else if (strcmp(c_type.c_str(), "lamp")) {
+            type = 3;
+        }
+        sendEvent(new ConfigEvent(
+                n_pwmOutput["board"].as<UINT8>(),
+                (UINT8) CONFIG_TOPIC_PWM,
+                index++,
+                (UINT8) CONFIG_TOPIC_TYPE,
+                type
+        ));
+    }
+
+    // Wait before continuing.
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Tell I/O boards to read initial switch states, for example coin door closed.
+    sendEvent(new Event(EVENT_READ_SWITCHES, 1));
+
+    // Initialize the sound device
+    const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+    ALCdevice *device = alcOpenDevice(defaultDeviceName);
+    ALCcontext *context = alcCreateContext(device, NULL);
+    alcMakeContextCurrent(context);
+    alGenSources((ALuint) 1, &_audioSource);
+    alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
 
     PinmameSetConfig(&config);
 

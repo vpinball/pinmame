@@ -144,6 +144,8 @@ pwmOutput:
     board: 3
     port: 7
     power: 255
+    holdPower: 0
+    holdPowerActivationTime: 0
     minPulseTime: 100
     maxPulseTime: 500
     fastFlipSwitch: 4
@@ -154,9 +156,11 @@ pwmOutput:
     board: 3
     port: 8
     power: 255
+    holdPower: 0
+    holdPowerActivationTime: 0
     minPulseTime: 100
     maxPulseTime: 500
-    fastFlipSwitch: -1
+    fastFlipSwitch: 0
   -
     type: 'lamp'
     description: "lamp"
@@ -164,9 +168,11 @@ pwmOutput:
     board: 3
     port: 8
     power: 255
+    holdPower: 0
+    holdPowerActivationTime: 0
     minPulseTime: 100
     maxPulseTime: 500
-    fastFlipSwitch: -1
+    fastFlipSwitch: 0
 
 mechs:
   -
