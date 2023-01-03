@@ -20,7 +20,7 @@ UINT8 ZeDMDDefaultPalette4Bit[48] = { 0, 0, 0, 51, 25, 0, 64, 32, 0, 77, 38, 0,
 
 int ZeDmdInit(const char* ignore_device) {
     static int ret = 0;
-    char device_name[22];
+    char device_name[23];
 
     // To shake hands, PPUC must send 7 bytes {0x5a, 0x65, 0x64, 0x72, 0x75, 0x6d, 12}.
     // The ESP32 will answer {0x5a, 0x65, 0x64, 0x72, width_low, width_high, height_low, height_high}.
