@@ -22,6 +22,7 @@ under a compatible licence.
 Due to complicated dependency management on different platforms, these libraries are included as source code copy:
 * [serialib](https://github.com/imabot2/serialib)
 * [cargs](https://github.com/likle/cargs)
+* [libdmdcommon](https://github.com/zesinger/libdmdcommon)
 
 PPUC uses
 * [libpinmame](https://github.com/vpinball/pinmame)
@@ -46,6 +47,9 @@ These components are still in an early development stage and the documentation w
     * optional
 * -d
     * enable debug mode, overwrites *debug* setting in config file
+    * optional
+* -i
+    * render display in console
     * optional
 * -h
     * help

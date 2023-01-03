@@ -92,7 +92,7 @@ int ZeDmdInit(const char* ignore_device) {
     return 0;
 }
 
-void ZeDmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, bool samSpa) {
+void ZeDmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
     if (width <= deviceWidth && height <= deviceHeight) {
         // To send a 4-color frame, send {0x5a, 0x65, 0x64, 0x72, 0x75, 0x6d, 8} followed by 3 * 4 bytes for the palette
         // (R, G, B) followed by 2 planes of width * height / 8 bytes for the frame. It is possible to send a colored
@@ -140,3 +140,37 @@ void ZeDmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, bool 
         }
     }
 }
+
+#if defined(SERUM_SUPPORT)
+void ZeDmdRenderSerum(UINT16 width, UINT16 height, UINT8* Buffer, UINT8* palette, UINT8* rotation) {
+    if (width <= deviceWidth && height <= deviceHeight) {
+        char response = 0;
+        if (device.readChar(&response, 100) && response == 'R') {
+            int planeBytes = (width * height / 8 * 6);
+            int totalBytes = 6 + 1 + 192 + planeBytes + 24;
+            int chunk = 256;
+            UINT8* outputBuffer = (UINT8*) malloc(totalBytes);
+            memcpy(&outputBuffer[0], ZeDMDControlCharacters, 6);
+            outputBuffer[6] = 11;
+            memcpy(&outputBuffer[7], palette, 192);
+            memcpy(&outputBuffer[199], Buffer, planeBytes);
+            memcpy(&outputBuffer[199 + planeBytes], rotation, 24);
+
+            int bufferPosition = 0;
+            while (bufferPosition < totalBytes) {
+                device.writeBytes(&outputBuffer[bufferPosition], ((totalBytes - bufferPosition) < chunk) ? (totalBytes - bufferPosition) : chunk);
+                if (device.readChar(&response, 100) && response == 'A') {
+                    // Received (A)cknowledge, ready to send the next chunk.
+                    bufferPosition += chunk;
+                } else {
+                    // Something went wrong. Terminate current transmission of the buffer and return.
+                    free(outputBuffer);
+                    return;
+                }
+            }
+
+            free(outputBuffer);
+        }
+    }
+}
+#endif

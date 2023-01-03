@@ -11,6 +11,7 @@
 #define PLATFORM_WPC           1
 #define PLATFORM_DATA_EAST     2
 #define PLATFORM_SYS11         3
+#define PLATFORM_LIBPINMAME    100
 
 #define EVENT_SOURCE_ANY      42 // "*"
 #define EVENT_SOURCE_DEBUG    66 // "B" Debug
@@ -27,14 +28,20 @@
 #define EVENT_SOURCE_SOLENOID 83 // "S" VPX/DOF/PUP includes flashers
 #define EVENT_SOURCE_SWITCH   87 // "W" VPX/DOF/PUP
 
-#define CONFIG_TOPIC_COILS    99  // "c"
-#define CONFIG_TOPIC_FLASHERS 102 // "f"
 #define CONFIG_TOPIC_LAMPS    108 // "l"
 #define CONFIG_TOPIC_MECHS    109 // "m"
+#define CONFIG_TOPIC_PWM      112 // "p"
 #define CONFIG_TOPIC_SWITCHES 115 // "s"
 
-#define CONFIG_TOPIC_SWITCHES_NUMBER 78 // "N"
-#define CONFIG_TOPIC_SWITCHES_PORT   80 // "P"
+#define CONFIG_TOPIC_HOLD_POWER_ACTIVATION_TIME 65 // "A"
+#define CONFIG_TOPIC_FAST_SWITCH                70 // "F"
+#define CONFIG_TOPIC_HOLD_POWER                 72 // "H"
+#define CONFIG_TOPIC_MAX_PULSE_TIME             77 // "M"
+#define CONFIG_TOPIC_NUMBER                     78 // "N"
+#define CONFIG_TOPIC_PORT                       80 // "P"
+#define CONFIG_TOPIC_MIN_PULSE_TIME             84 // "T"
+#define CONFIG_TOPIC_POWER                      87 // "W"
+#define CONFIG_TOPIC_TYPE                       89 // "Y"
 
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
