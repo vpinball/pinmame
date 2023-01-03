@@ -553,7 +553,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 	/* find an empty file handle */
 	for (i = 0; i < MAX_OPEN_FILES; i++)
-		if (openfile[i].handle == NULL || openfile[i].handle == INVALID_HANDLE_VALUE)
+		if (!openfile[i].handle || openfile[i].handle == INVALID_HANDLE_VALUE)
 			break;
 	if (i == MAX_OPEN_FILES)
 		return NULL;
@@ -820,7 +820,7 @@ void osd_fclose(osd_file *file)
 #else
 		close(file->handle);
 #endif
-	file->handle = NULL;
+	file->handle = 0;
 }
 
 
