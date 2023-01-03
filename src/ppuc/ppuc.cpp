@@ -313,7 +313,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
                 serum_skip_frames_left = serum_skip_frames;
             }
             else if(serum_skip_frames_left < 1) {
-                Serum_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
+                DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
                                            DmdPlanesBuffer, p_displayLayout->depth);
                 ZeDmdRender(p_displayLayout->width, p_displayLayout->height, DmdPlanesBuffer,
                             p_displayLayout->depth);
