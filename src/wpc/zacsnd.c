@@ -469,6 +469,7 @@ static void sns_init(struct sndbrdData *brdData) {
   if (core_gameData->hw.soundBoard & 0x02) {
     snslocals.fadeTimer = timer_alloc(fade_timer);
     timer_adjust(snslocals.fadeTimer, TIME_IN_USEC(12500), 0, TIME_IN_USEC(12500));
+    snslocals.vcagain = 0xfff;
   }
 }
 
@@ -965,7 +966,13 @@ static WRITE_HANDLER(chip3i259) {
         break;
       case 1:
         snslocals.s_envca = flag;
-        snslocals.vcagain = flag ? snslocals.dacinp : 0xfff;
+        if (flag && snslocals.vcagain != snslocals.dacinp) {
+          snslocals.vcagain = snslocals.dacinp;
+          mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
+          mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
+          mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
+          mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
+        }
         if (!flag && !lastvca) {
           changed = 1;
           snslocals.vola = snslocals.levcha;
