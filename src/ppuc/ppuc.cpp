@@ -21,7 +21,7 @@
 #include "cargs/cargs.h"
 #include "dmdcommon/dmdcommon.h"
 #if defined(SERUM_SUPPORT)
-    #include "serum/serum-decode.h"
+    #include "../../../libserum/src/serum-decode.h"
 #endif
 
 typedef unsigned char UINT8;

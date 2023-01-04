@@ -82,6 +82,7 @@ add_compile_definitions(
    PINMAME_NO_UNUSED
    LIBPINMAME
    SAM_INCLUDE_COLORED
+   SERUM_SUPPORT
    NAME="LIBPINMAME"
 
    LSB_FIRST
@@ -596,6 +597,22 @@ set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
 )
 
+add_library(serum SHARED
+        ../libserum/src/miniz/zip_file.hpp
+        ../libserum/src/serum-decode.h
+        ../libserum/src/serum-decode.cpp
+        )
+
+target_link_libraries(serum -lm)
+
+target_include_directories(serum PUBLIC
+        ../libserum/src
+        )
+
+set_target_properties(serum PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        )
+
 add_executable(ppuc
    src/ppuc/dmdcommon/dmdcommon.h
    src/ppuc/dmdcommon/dmdcommon.cpp
@@ -620,6 +637,7 @@ find_package(OpenAL)
 
 target_link_libraries(ppuc LINK_PUBLIC
    pinmame
+   serum
    libusb-1.0.so
    yaml-cpp
    openal

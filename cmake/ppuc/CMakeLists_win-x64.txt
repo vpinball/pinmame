@@ -80,6 +80,7 @@ add_compile_definitions(
    PINMAME_NO_UNUSED
    LIBPINMAME
    SAM_INCLUDE_COLORED
+   SERUM_SUPPORT
 
    LSB_FIRST
    _CRT_SECURE_NO_WARNINGS
@@ -645,6 +646,22 @@ set_target_properties(pinmame PROPERTIES
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
 
+add_library(serum SHARED
+        ../libserum/src/miniz/zip_file.hpp
+        ../libserum/src/serum-decode.h
+        ../libserum/src/serum-decode.cpp
+        )
+
+target_link_libraries(serum -lm)
+
+target_include_directories(serum PUBLIC
+        ../libserum/src
+        )
+
+set_target_properties(serum PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        )
+
 add_executable(ppuc
    src/ppuc/dmdcommon/dmdcommon.h
    src/ppuc/dmdcommon/dmdcommon.cpp
@@ -669,6 +686,7 @@ find_package(OpenAL)
 
 target_link_libraries(ppuc LINK_PUBLIC
    pinmame
+   serum
    ${LIBUSB_LIBRARIES}
    yaml-cpp
    ${OPENAL_LIBRARY}
