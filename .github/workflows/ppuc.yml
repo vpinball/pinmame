@@ -80,9 +80,7 @@ jobs:
         with:
           repository: zesinger/libserum
           path: libserum
-      - run: ls -l ../../
-      - run: ls -l ../
-      - run: ls -l
+      - run: mv libserum ../libserum
       - if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
