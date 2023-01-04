@@ -73,14 +73,16 @@ jobs:
             base_image: raspios_lite_arm64:latest
             type: raspi
     steps:
+      - name: Checkout pinmame
+        uses: actions/checkout@v3
       - name: Checkout libserum
         uses: actions/checkout@v3
         with:
           repository: zesinger/libserum
           path: libserum
-      - name: Checkout pinmame
-        uses: actions/checkout@v3
+      - run: ls -l ../../
       - run: ls -l ../
+      - run: ls -l
       - if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
