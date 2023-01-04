@@ -80,7 +80,7 @@ jobs:
           path: libserum
       - name: Checkout pinmame
         uses: actions/checkout@v3
-      - run: ls -l
+      - run: ls -l ../
       - if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
