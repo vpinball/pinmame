@@ -421,7 +421,7 @@ static void fade_timer(int param) {
   } else {
     snslocals.vola = 0;
     // TODO: we need to tell the main board the sound has finished; no idea how it's really done (PIA output B never changes)!?
-    if (!snslocals.vola && !snslocals.volb) UpdateZACSoundACT(0x03);
+    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) UpdateZACSoundACT(0x03);
   }
   mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
   mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
@@ -429,7 +429,7 @@ static void fade_timer(int param) {
     snslocals.volb -= dec;
   } else {
     snslocals.volb = 0;
-    if (!snslocals.vola && !snslocals.volb) UpdateZACSoundACT(0x03);
+    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) UpdateZACSoundACT(0x03);
   }
   mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
   mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
@@ -627,8 +627,10 @@ static WRITE_HANDLER(sns_data_w) {
       pia_set_input_ca1(SNS_PIA1, snslocals.pia1ca1);
       break;
     case SNDBRD_ZAC11178_13181:
-      snslocals.pia1ca1 = data & 0x80 ? 1 : 0;
-      pia_set_input_ca1(SNS_PIA1, snslocals.pia1ca1); // CA1 should connect to GND according to schematics... or to DB7! :)
+      if (data & 0x40) { // don't let illegal sound commands confuse the main board
+        snslocals.pia1ca1 = data & 0x80 ? 1 : 0;
+        pia_set_input_ca1(SNS_PIA1, snslocals.pia1ca1); // CA1 should connect to GND according to schematics... or to DB7! :)
+      }
 //      logerror("sns_data_w command stored %x\n", data);
       // cpu reads command from adress b0 after nmi !!!
       if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
