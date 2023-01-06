@@ -132,7 +132,7 @@ static struct {
   int zc;                 /* zero cross flag */
   int gi_zc_state;        /* GI Triac state to be applied on next zero cross */
   double last_zc_time;    /* Global time when last zero cross for GI Dimming was processed */
-  double gi_on_time[CORE_MAXGI]; /* Global time when when GI Triac was turned on */
+  double gi_on_time[CORE_MAXGI]; /* Global time when GI Triac was turned on */
   UINT32 solenoidbits[64];
   UINT32 modsol_seen_pulses;
   UINT8 modsol_seen_flip_pulses;
@@ -212,13 +212,13 @@ void wpc_set_fastflip_addr(int addr)
     solenoid changes.  This allows specific machines to override the handler
     in their init routine with one that can intercept certain solenoid
     changes and then have the default handler cover all other cases.
-    
+
     `solNum` is 0 to 63 and represents a bit number in the value returned by
     core_getAllSol().
-    
+
     `enabled` indicates whether the solenoid has changed to enabled (1) or
     disabled (0).
-    
+
     `smoothed` indicated whether this came from the period solenoid change
     processing with smoothed readings (1) or came from an immediate solenoid
     change in the emulator (0).
@@ -293,15 +293,15 @@ void wpc_set_fastflip_addr(int addr)
     // TODO:PROC: Upper flipper circuits in WPC-95. (Is this still the case?)
     // Some games (AFM) seem to use sim files to activate these coils.  Others (MM) don't ever seem to activate them (Trolls).
   }
-  
+
   // Called from wpc_w() to process immediate changes to solenoid values.
   void proc_immediate_solenoid_change(int offset, UINT8 new_data) {
     static UINT32 current_values = 0;
     UINT32 mask = (0xFF << offset);
     UINT8 changed_data = new_data ^ ((current_values & mask) >> offset);
-    int i;
-    
+
     if (changed_data) {
+      int i;
       current_values = (current_values & ~mask) | (new_data << offset);
       for (i = offset; changed_data; ++i, changed_data >>= 1, new_data >>= 1) {
         // bits 28-31 map to C37 to C40 (index 36 to 39 of wpc_proc_solenoid_handler)
@@ -478,14 +478,14 @@ static INTERRUPT_GEN(wpc_vblank) {
       coreGlobals.solenoids2 |= wpclocals.solFlip;
       wpclocals.solFlip = wpclocals.solFlipPulse;
     }
-	// If fastflipaddr is set, we want sol31 to be triggered by a nonzero value
-	// in that location
-	if (wpc_fastflip_addr > 0)
-	{
-		coreGlobals.solenoids2 &= ~(0x400);
-		if (wpc_ram[wpc_fastflip_addr] > 0)
-			coreGlobals.solenoids2 |= 0x400;
-	}
+    // If fastflipaddr is set, we want sol31 to be triggered by a nonzero value
+    // in that location
+    if (wpc_fastflip_addr > 0)
+    {
+      coreGlobals.solenoids2 &= ~(0x400);
+      if (wpc_ram[wpc_fastflip_addr] > 0)
+        coreGlobals.solenoids2 |= 0x400;
+    }
 
   }
   else if (((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) &&
@@ -519,13 +519,13 @@ static INTERRUPT_GEN(wpc_vblank) {
 				UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
 				UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
 				for (row = 0; row < 8; row++) {
-                                        procLamp = 80 + (8 * col) + row;
+					procLamp = 80 + (8 * col) + row;
 					if (chgLamps & 0x01) {
 						procDriveLamp(procLamp, tmpLamps & 0x01);
 					}
-                                        if (coreGlobals.isKickbackLamp[procLamp]) {
-                                                procKickbackCheck(procLamp);
-                                        }
+					if (coreGlobals.isKickbackLamp[procLamp]) {
+						procKickbackCheck(procLamp);
+					}
 					chgLamps >>= 1;
 					tmpLamps >>= 1;
 				}
@@ -545,15 +545,15 @@ static INTERRUPT_GEN(wpc_vblank) {
     coreGlobals.diagnosticLed = wpclocals.diagnostic;
     wpclocals.diagnostic = 0;
 
-	//Display status of GI strings
-	#if PRINT_GI_DATA
-	{
-		int i;
-		for(i=0;i<CORE_MAXGI;i++)
-			printf("GI[%d]=%d ",i,coreGlobals.gi[i]);
-		printf("\n");
-	}
-	#endif
+    //Display status of GI strings
+    #if PRINT_GI_DATA
+    {
+      int i;
+      for(i=0;i<CORE_MAXGI;i++)
+        printf("GI[%d]=%d ",i,coreGlobals.gi[i]);
+      printf("\n");
+    }
+    #endif
   }
 
 #ifdef PROC_SUPPORT
@@ -666,12 +666,12 @@ READ_HANDLER(wpc_r) {
       return systime->tm_min;
     }
     case WPC_WATCHDOG:
-		//Zero cross detection flag is read from Bit 8.
-		wpc_data[offset] = (wpclocals.zc<<7) | (wpc_data[offset] & 0x7f);
+      //Zero cross detection flag is read from Bit 8.
+      wpc_data[offset] = (wpclocals.zc<<7) | (wpc_data[offset] & 0x7f);
 
-		if(wpclocals.zc)
-		{
-         // When ASIC receive a watchdog read with Zero Cross flag, it will reset the GI triac latch to the last value written to WPC_GILAMPS
+      if(wpclocals.zc)
+      {
+         // When ASIC receives a watchdog read with Zero Cross flag, it will reset the GI triac latch to the last value written to WPC_GILAMPS
          // So we update the GI outputs with what we have seen so far, and prepare for next cycle
          double zc_time = timer_get_time();
          if (zc_time > wpclocals.last_zc_time)
@@ -697,16 +697,16 @@ READ_HANDLER(wpc_r) {
          }
          wpclocals.last_zc_time = zc_time;
 
-			#if DEBUG_GI
-			printf("[%8f] Zero Cross processed: ", timer_get_time());
+         #if DEBUG_GI
+         printf("[%8f] Zero Cross processed: ", timer_get_time());
          {
             int i;
             for (i = 0; i < CORE_MAXGI; i++)
                printf("GI[%d]=%d ", i, coreGlobals.gi[i]);
             printf("\n");
          }
-			#endif
-         
+         #endif
+
          //Reset flag now that it's been read.
          wpclocals.zc = 0;
       }
@@ -826,32 +826,32 @@ WRITE_HANDLER(wpc_w) {
     case WPC_GILAMPS: {
       int ii, tmp;
 
-	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
-	  //  We simulate this here by forcing the bits on
-	  if (core_gameData->gen & GEN_WPC95)
-		  data = data | 0x18;
+      //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
+      //  We simulate this here by forcing the bits on
+      if (core_gameData->gen & GEN_WPC95)
+        data = data | 0x18;
 
-     // Save state for next zero cross GI output reset
-     wpclocals.gi_zc_state = data;
+      // Save state for next zero cross GI output reset
+      wpclocals.gi_zc_state = data;
 
-     //Loop over each GI Triac Bit
-     double write_time = timer_get_time();
-     for (ii = 0,tmp=data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+      //Loop over each GI Triac Bit
+      double write_time = timer_get_time();
+      for (ii = 0,tmp=data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
         // If Bit is set, Triac is turned on if it was not already on.
         // We save irq number to compute dimming on next zero cross.
         if ((tmp & 0x01) && write_time < wpclocals.gi_on_time[ii])
            wpclocals.gi_on_time[ii] = write_time;
-     }
+      }
 
-     #if DEBUG_GI_W
-     printf("[%8f] GI_W PC=%4x, data=%2x > GI State/On time ", write_time, activecpu_get_pc(), data);
-     for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+      #if DEBUG_GI_W
+      printf("[%8f] GI_W PC=%4x, data=%2x > GI State/On time ", write_time, activecpu_get_pc(), data);
+      for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
         printf(" || GI[%d]=%d => %8f", ii, tmp & 0x01, wpclocals.gi_on_time[ii]);
-     }
-     printf("\n");
-     #endif
+      }
+      printf("\n");
+      #endif
 
-     break;
+      break;
     }
     case WPC_EXTBOARD1: /* WPC_ALPHAPOS */
       if (wpc_modsol_aux_board == 1)
@@ -920,13 +920,13 @@ WRITE_HANDLER(wpc_w) {
       else sndbrd_0_ctrl_w(0,data);
       break;
     case WPC_WATCHDOG:
-	    //Increment irq count - This is the best way to know an IRQ was serviced as this register is written immediately during the IRQ code.
-	    //Only do this if bit 8 is set, as WW_L5 sometimes writes 0x06 here during the interrupt code.
-		if(data & 0x80)
-		{
-			//Clear the IRQ now
-		  cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
-		}
+      //Increment irq count - This is the best way to know an IRQ was serviced as this register is written immediately during the IRQ code.
+      //Only do this if bit 8 is set, as WW_L5 sometimes writes 0x06 here during the interrupt code.
+      if(data & 0x80)
+      {
+        //Clear the IRQ now
+        cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
+      }
       break;
     case WPC_FIRQSRC:
       /* CPU writes here after a non-dmd firq. Don't know what happens */
@@ -1144,9 +1144,9 @@ static INTERRUPT_GEN(wpc_irq) {
 
 static SWITCH_UPDATE(wpc) {
 #ifdef PROC_SUPPORT
-	if (coreGlobals.p_rocEn) {
-		procGetSwitchEvents();
-	} else {
+  if (coreGlobals.p_rocEn) {
+    procGetSwitchEvents();
+  } else {
 #endif
   if (inports) {
     coreGlobals.swMatrix[CORE_COINDOORSWCOL] = inports[WPC_COMINPORT] & 0xff;
@@ -1163,7 +1163,7 @@ static SWITCH_UPDATE(wpc) {
       core_setSw(core_gameData->wpc.comSw.shooter,  inports[CORE_SIMINPORT] & SIM_SHOOTERKEY);
   }
 #ifdef PROC_SUPPORT
-	}
+  }
 #endif
 }
 
@@ -1200,13 +1200,13 @@ static MACHINE_INIT(wpc) {
       sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPC95:
-	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
-	  //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
-       wpclocals.gi_zc_state = 0x18;
-	  coreGlobals.gi[CORE_MAXGI-2] = 8;
-	  coreGlobals.gi[CORE_MAXGI-1] = 8;
+      //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
+      //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
+      wpclocals.gi_zc_state = 0x18;
+      coreGlobals.gi[CORE_MAXGI-2] = 8;
+      coreGlobals.gi[CORE_MAXGI-1] = 8;
     case GEN_WPC95DCS:
-	  //Sound board initialization
+      //Sound board initialization
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
   
