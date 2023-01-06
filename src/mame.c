@@ -2108,8 +2108,8 @@ static int validitychecks(void)
 
 					if (!IS_FRAC(drv.gfxdecodeinfo[j].gfxlayout->total))
 					{
-						int len, avail, k, start;
-						start = 0;
+						UINT32 len, avail, k;
+						UINT32 start = 0;
 						for (k = 0;k < MAX_GFX_PLANES;k++)
 						{
 							if (drv.gfxdecodeinfo[j].gfxlayout->planeoffset[k] > start)

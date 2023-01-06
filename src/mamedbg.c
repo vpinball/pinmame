@@ -1991,7 +1991,7 @@ static const char *name_rom( const char *type, int regnum, unsigned *base, unsig
 			for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
 			{
 				const char *name = ROM_GETNAME(rom);
-				int length = 0;
+				unsigned length = 0;
 
 				for (chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
 					length += ROM_GETLENGTH(chunk);
@@ -2336,7 +2336,8 @@ INLINE void dbg_set_rect( struct rectangle *r, int x, int y, int w, int h )
  **************************************************************************/
 static void dbg_open_windows( void )
 {
-	UINT32 i, w, h, aw, ah;
+	int i;
+	UINT32 w, h, aw, ah;
 
 	/* Initialize windowing engine */
 	get_screen_size( &w, &h );
@@ -2767,9 +2768,10 @@ static void dump_regs( void )
 static unsigned dump_dasm( unsigned pc )
 {
 	UINT32 win = WIN_DASM(active_cpu);
-	int w = win_get_w(win);
-	int h = win_get_h(win);
-	int x, y, l, line_pc_cpu = INVALID, line_pc_cur = INVALID;
+	UINT32 w = win_get_w(win);
+	UINT32 h = win_get_h(win);
+	UINT32 x, y, line_pc_cur = INVALID;
+	int l, line_pc_cpu = INVALID;
 	UINT8 color;
 	char dasm[127+1];
 	unsigned pc_first = pc, pc_next;
@@ -3452,7 +3454,7 @@ static int edit_cmds_info( void )
 		int i;
 		for( i = 0; commands[i].name; i++ )
 		{
-			int l = strlen(cmd);
+			size_t l = strlen(cmd);
 			if( strlen(commands[i].name) < l )
 				l = strlen(commands[i].name);
 			if( strncmp( cmd, commands[i].name, l ) == 0 && !isalnum(cmd[l]) )
@@ -3765,7 +3767,7 @@ static void cmd_help( void )
 	top = 0;
 	do
 	{
-		int l;
+		UINT32 l;
 		for( src = help, i = top; *src && i > 0; src += strlen(src) + 1 )
 			i--;
 		win_set_curpos( win, 0, 0 );
@@ -4714,7 +4716,7 @@ static void cmd_sound_disable( void )
 static void cmd_set_ignore( void )
 {
 	char *cmd = CMD;
-	unsigned cpunum;
+	int cpunum;
 	int length;
 
 	cpunum = xtou( &cmd, &length );
@@ -4753,7 +4755,7 @@ static void cmd_set_ignore( void )
 static void cmd_set_observe( void )
 {
 	char *cmd = CMD;
-	unsigned cpunum;
+	int cpunum;
 	int length;
 
 	cpunum = xtou( &cmd, &length );
@@ -4963,7 +4965,7 @@ static void cmd_dasm_up( void )
 		 * which means that a previous guess was wrong.
 		 */
 		unsigned dasm_pc_tmp = rshift(DBGDASM.pc_top - lshift(INSTL)) & AMASK;
-		int i;
+		unsigned int i;
 		for( i = 0; i < INSTL; i += ALIGN )
 		{
 			if( dasm_line( lshift(dasm_pc_tmp), 1 ) == DBGDASM.pc_top )
