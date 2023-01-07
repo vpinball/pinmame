@@ -1318,13 +1318,51 @@ void core_updateSw(int flipEn) {
     UINT64 allSol = core_getAllSol();
     UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & vp_getSolMask64();
 
+#ifdef LIBPINMAME
+    int start = 0, end = CORE_FIRSTCUSTSOL+core_gameData->hw.custSol-1;
+    	
+    if (options.usemodsol)
+    {
+       for(ii = 0; ii<CORE_MODSOL_MAX; ii++)
+       {
+          if (ii==40)
+             ii=CORE_FIRSTCUSTSOL-1;
+
+          if (coreGlobals.lastModSol[ii] != coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii])
+          {
+             coreGlobals.lastModSol[ii] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii];
+             OnSolenoid(ii+1, coreGlobals.lastModSol[ii]);
+          }
+       }
+       // Treat the VPM reserved solenoids the old way. 
+       start = 40;
+       end = CORE_FIRSTCUSTSOL-1;
+       chgSol >>= start;
+       allSol >>= start;
+    }
+
+    for (ii = start; ii < end; ii++) 
+    {
+       if (chgSol & 0x01)
+          OnSolenoid(ii+1, allSol & 0x01);
+
+       chgSol >>= 1;
+       allSol >>= 1;
+    }
+
+    allSol = core_getAllSol();
+    chgSol = (allSol ^ coreGlobals.lastSol) & vp_getSolMask64();
+#endif
+
     if (chgSol) {
       coreGlobals.lastSol = allSol;
       for (ii = 1; ii < CORE_FIRSTCUSTSOL+core_gameData->hw.custSol; ii++) {
         if (chgSol & 0x01) {
           /*-- solenoid has changed state --*/
 
+#ifndef LIBPINMAME
           OnSolenoid(ii, allSol & 0x01);
+#endif
           /*-- log solenoid number on the display (except flippers) --*/
           if ((!pmoptions.dmd_only && (allSol & 0x01)) &&
               ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {

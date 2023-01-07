@@ -266,9 +266,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_FIRSTCUSTSOL  51
 #define CORE_FIRSTLFLIPSOL 45
 #define CORE_FIRSTSIMSOL   49
-#if defined(PROC_SUPPORT) || defined(LIBPINMAME)
 #define CORE_MAXSOL        64
-#endif
 
 #define CORE_SSFLIPENSOL  23
 #define CORE_FIRSTSSSOL   17
@@ -402,6 +400,7 @@ typedef struct {
   volatile UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
   volatile UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
   UINT64 lastSol;         /* last state of all solenoids */
+  UINT8 lastModSol[CORE_MODSOL_MAX];
   volatile int    gi[CORE_MAXGI];  /* WPC gi strings */
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
