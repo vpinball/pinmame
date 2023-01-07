@@ -260,13 +260,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
                                                     PinmameGetHardwareGen() & (SAM | SPA));
 
         if (opt_console_display) {
-            for (int y = 0; y < p_displayLayout->height; y++) {
-                for (int x = 0; x < p_displayLayout->width; x++) {
-                    UINT8 value = ((UINT8*) buffer)[y * p_displayLayout->width + x];
-                    printf("%2d", value);
-                }
-                printf("\n");
-            }
+            dmdConsoleRender(p_displayLayout->width, p_displayLayout->height, buffer, p_displayLayout->depth);
             if (!opt_debug) printf("\033[%dA", p_displayLayout->height);
         }
 
@@ -557,13 +551,11 @@ int main (int argc, char *argv[]) {
                 std::stringstream st(opt_serum_timeout);
                 st >> serum_timeout;
                 Serum_SetIgnoreUnknownFramesTimeout(serum_timeout);
-                printf("TIMEOUT %d\n", serum_timeout);
             }
 
             if (opt_serum_skip_frames) {
                 std::stringstream ssf(opt_serum_skip_frames);
                 ssf >> serum_skip_frames;
-                printf("SKIP %d\n", serum_skip_frames);
             }
         }
         else {
