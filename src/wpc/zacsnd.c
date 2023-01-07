@@ -633,12 +633,11 @@ static WRITE_HANDLER(sns_data_w) {
       }
 //      logerror("sns_data_w command stored %x\n", data);
       // cpu reads command from adress b0 after nmi !!!
-      if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+      if ((~data & 0x40) && (data & 0x80)) cpu_set_nmi_line(ZACSND_CPUB, PULSE_LINE);
       break;
     case SNDBRD_ZAC13181x3:
-      if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUA, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
-      if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
-      if (data & 0x40) cpu_set_nmi_line(ZACSND_CPUC, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+      if ((~data & 0x40) && (data & 0x80)) cpu_set_nmi_line(ZACSND_CPUB, PULSE_LINE);
+      if ((data & 0x40) && (data & 0x80)) cpu_set_nmi_line(ZACSND_CPUC, PULSE_LINE);
   }
 }
 
@@ -1025,18 +1024,20 @@ static WRITE_HANDLER(chip3i259) {
 / Sound & Speech board 1B11178 with 1B13181 / 1B11181 daughter board.
 / This daughter board is equipped with a Z80 processor, and
 / plays background music (all done with DACs).
-/ The earlier 1B13181/0 single DAC version was used on Zankor only,
-/ Spooky already has the full 3 DAC board 1B11181/1.
+/ The earlier 1B13181/0 single-channel version was used on Zankor only,
+/ Spooky already has the full three-channel board 1B11181/1.
+/ And even though only one DAC serves all the channels,
+/ in the emulation, three DACs are used for cleaner sound output.
 /
 / Also Sound & Speech board 1B11183 with three Z80 CPUs, used on Star's Phoenix.
-/ One CPU does the exact same stuff like on the 1B11181 daughter board,
-/ the 2nd CPU handles speech and effects, and the 3rd one produces
-/ some siren-like effects (not played back in sound test).
+/ One CPU does the exact same stuff as on the 1B11181 daughter board,
+/ the 2nd CPU handles speech and effects,
+/ and the 3rd one acts as a slave to the first CPU to play a musical tune.
 / That's five DAC chips playing at the same time! :)
 /-----------------------------------------*/
 static struct DACinterface     z80_1dacInt = { 1, { 50 }};
 static struct DACinterface     z80_3dacInt = { 3, { 20, 30, 30 }};
-static struct DACinterface     z80_5dacInt = { 5, { 20, 30, 30, 20, 20 }};
+static struct DACinterface     z80_5dacInt = { 5, { 20, 30, 30, 20, 30 }};
 
 static MEMORY_READ_START(z80_readmem)
   { 0x0000, 0xfbff, MRA_ROM },
@@ -1051,28 +1052,59 @@ static WRITE_HANDLER(DAC_2_signed_data_w) { DAC_signed_data_w(2, data); }
 static WRITE_HANDLER(DAC_3_signed_data_w) { DAC_signed_data_w(3, data); }
 static WRITE_HANDLER(DAC_4_signed_data_w) { DAC_signed_data_w(4, data); }
 
-static WRITE_HANDLER(snd_act_w) {
-//  logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
-  // ACTSPK & ACTSND
-  UpdateZACSoundACT(data & 0x01 ? 0 : 0x02);    // only ACTSND inverted on bit 0, ACTSPK not used?
+static int actflags;
+static WRITE_HANDLER(akl_w) {
+  actflags = (actflags & 2) | (~data & 1);
+  UpdateZACSoundACT(actflags);
 }
 
-static WRITE_HANDLER(snd_mod_w) {
-  // sound modulation for different chips maybe?
-//  logerror("cpu #%d MOD:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
+static WRITE_HANDLER(akl1_w) {
+  akl_w(offset, data);
+  cpu_set_nmi_line(ZACSND_CPUA, PULSE_LINE);
+}
+
+static WRITE_HANDLER(akl2_w) {
+  // unused
+}
+
+static WRITE_HANDLER(akl3_w) {
+  actflags = (actflags & 1) | (~data & 1) << 1;
+  UpdateZACSoundACT(actflags);
+}
+
+static UINT8 solcmd;
+static WRITE_HANDLER(sol_w) {
+  solcmd = data;
+}
+
+static READ_HANDLER(readcmd_a) {
+  return solcmd;
 }
 
 static PORT_READ_START(z80_readport)
   { 0x01, 0x01, readcmd },
 PORT_END
 
+static PORT_READ_START(z80_readport_a)
+  { 0x01, 0x01, readcmd_a },
+PORT_END
+
 static PORT_WRITE_START(z80_writeport_a)
   { 0x00, 0x00, DAC_4_signed_data_w },
-  { 0x02, 0x02, snd_mod_w },
+  { 0x02, 0x02, akl2_w },
 PORT_END
+
 static PORT_WRITE_START(z80_writeport_b)
   { 0x00, 0x00, DAC_0_signed_data_w },
-  { 0x02, 0x03, snd_mod_w },
+  { 0x02, 0x02, akl_w },
+  { 0x03, 0x03, MWA_NOP },
+  { 0x04, 0x04, DAC_1_signed_data_w },
+  { 0x08, 0x08, DAC_2_signed_data_w },
+PORT_END
+static PORT_WRITE_START(z80_writeport_b2)
+  { 0x00, 0x00, DAC_0_signed_data_w },
+  { 0x02, 0x02, akl1_w },
+  { 0x03, 0x03, sol_w },
   { 0x04, 0x04, DAC_1_signed_data_w },
   { 0x08, 0x08, DAC_2_signed_data_w },
 PORT_END
@@ -1083,10 +1115,11 @@ static PORT_READ_START(z80_readport_c)
 PORT_END
 static PORT_WRITE_START(z80_writeport_c)
   { 0x00, 0x00, DAC_3_signed_data_w },
-  { 0x02, 0x02, snd_act_w },
+  { 0x02, 0x02, akl3_w },
   { 0x03, 0x03, tms5220_data_w },
 PORT_END
 
+static INTERRUPT_GEN(cpu_a_irq) { cpu_set_irq_line(ZACSND_CPUA, 0, PULSE_LINE); }
 static INTERRUPT_GEN(cpu_b_irq) { cpu_set_irq_line(ZACSND_CPUB, 0, PULSE_LINE); }
 static INTERRUPT_GEN(cpu_c_irq) { cpu_set_irq_line(ZACSND_CPUC, 0, PULSE_LINE); }
 
@@ -1097,7 +1130,7 @@ static MACHINE_DRIVER_START(zac11178_13181_nodac)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
   MDRV_CPU_PORTS(z80_readport, z80_writeport_b)
-  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 60)
+  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 4000000./65536.)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178_13181)
@@ -1111,21 +1144,23 @@ MACHINE_DRIVER_START(zac11178_11181)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11183)
-  MDRV_CPU_ADD(Z80, 4000000)
+  MDRV_CPU_ADD(Z80, 4096000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
-  MDRV_CPU_PORTS(z80_readport, z80_writeport_a)
+  MDRV_CPU_PORTS(z80_readport_a, z80_writeport_a)
+  MDRV_CPU_PERIODIC_INT(cpu_a_irq, 4096000./65536.)
 
   MDRV_CPU_ADD(Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
-  MDRV_CPU_PORTS(z80_readport, z80_writeport_b)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport_b2)
+  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 4000000./65536.)
 
   MDRV_CPU_ADD(Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
   MDRV_CPU_PORTS(z80_readport_c, z80_writeport_c)
-  MDRV_CPU_PERIODIC_INT(cpu_c_irq, 60)
+  MDRV_CPU_PERIODIC_INT(cpu_c_irq, 4000000./65536.)
 
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
