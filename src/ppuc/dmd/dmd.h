@@ -6,6 +6,6 @@ typedef unsigned short UINT16;
 typedef unsigned int UINT32;
 
 void* dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, bool samSPa);
-void* dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth);
+void dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth);
 
 #endif /* DMD_H */

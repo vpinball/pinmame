@@ -132,7 +132,7 @@ void* dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth
     return DmdFrameBuffer;
 }
 
-void* dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth) {
+void dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             UINT8 value = buffer[y * width + x];
