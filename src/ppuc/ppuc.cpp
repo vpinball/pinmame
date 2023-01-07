@@ -407,9 +407,9 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
     return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
-    if (opt_debug) printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
-    sendEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) solenoid, (UINT8) isActive));
+void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState) {
+    if (opt_debug) printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
+    sendEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) p_solenoidState->solNo, (UINT8) p_solenoidState->state));
 }
 
 void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
@@ -526,9 +526,9 @@ int main (int argc, char *argv[]) {
     };
 
 #if defined(_WIN32) || defined(_WIN64)
-    snprintf((char*)config.vpmPath, MAX_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
+    snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
 #else
-    snprintf((char*)config.vpmPath, MAX_PATH, "%s/.pinmame/", getenv("HOME"));
+    snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s/.pinmame/", getenv("HOME"));
 #endif
 
 #if defined(SERUM_SUPPORT)
@@ -716,9 +716,9 @@ int main (int argc, char *argv[]) {
 
 #if defined(_WIN32) || defined(_WIN64)
     // Avoid compile error C2131. Use a larger constant value instead.
-    int changedLampStates[256];
+    PinmameLampState changedLampStates[256];
 #else
-    int changedLampStates[PinmameGetMaxLamps() * 2];
+    PinmameLampState changedLampStates[PinmameGetMaxLamps()];
 #endif
 
 	if (PinmameRun(opt_rom) == OK) {
@@ -763,8 +763,8 @@ int main (int argc, char *argv[]) {
 
             int count = PinmameGetChangedLamps(changedLampStates);
             for (int c = 0; c < count;) {
-                UINT16 lampNo = changedLampStates[c++];
-                UINT8 lampState = changedLampStates[c++] == 0 ? 0 : 1;
+                UINT16 lampNo = changedLampStates[c].lampNo;
+                UINT8 lampState = changedLampStates[c].state == 0 ? 0 : 1;
 
                 if (opt_debug) printf("Lamp updated: lampNo=%d, lampState=%d\n",
                        lampNo,

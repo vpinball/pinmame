@@ -14,11 +14,10 @@
 #define CALLBACK
 #endif
 
-#define MAX_PATH 512
-#define MAX_DISPLAYS 50
-#define MAX_MECHSW 20
-
-#define ACCUMULATOR_SAMPLES 8192 // from mixer.c
+#define PINMAME_MAX_VPM_PATH 512
+#define PINMAME_MAX_DISPLAYS 50
+#define PINMAME_MAX_MECHSW 20
+#define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
 	OK = 0,
@@ -30,7 +29,7 @@ typedef enum {
 	MECH_NO_INVALID = 6
 } PINMAME_STATUS;
 
-typedef enum : int {
+typedef enum {
 	AUDIO_FORMAT_INT16 = 0,
 	AUDIO_FORMAT_FLOAT = 1
 } PINMAME_AUDIO_FORMAT;
@@ -298,6 +297,32 @@ typedef struct {
 
 typedef struct {
 	int swNo;
+	int state;
+} PinmameSwitchState;
+
+typedef struct {
+	int solNo;
+	int state;
+} PinmameSolenoidState;
+
+typedef struct {
+	int lampNo;
+	int state;
+} PinmameLampState;
+
+typedef struct {
+	int giNo;
+	int state;
+} PinmameGIState;
+
+typedef struct {
+	int ledNo;
+	int chgSeg;
+	int state;
+} PinmameLEDState;
+
+typedef struct {
+	int swNo;
 	int startPos;
 	int endPos;
 	int pulse;
@@ -312,7 +337,7 @@ typedef struct {
 	int initialPos;
 	int acc;
 	int ret;
-	PinmameMechSwitchConfig sw[MAX_MECHSW];
+	PinmameMechSwitchConfig sw[PINMAME_MAX_MECHSW];
 } PinmameMechConfig;
 
 typedef struct {
@@ -337,14 +362,14 @@ typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audi
 typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
 typedef void (CALLBACK *PinmameOnMechAvailableCallback)(int mechNo, PinmameMechInfo* p_mechInfo);
 typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInfo* p_mechInfo);
-typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(int solenoid, int isActive);
+typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState);
 typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
 
 typedef struct {
 	const PINMAME_AUDIO_FORMAT audioFormat;
 	const int sampleRate;
-	const char vpmPath[MAX_PATH];
+	const char vpmPath[PINMAME_MAX_VPM_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
 	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;
 	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
@@ -364,19 +389,27 @@ LIBPINMAME_API int PinmameGetHandleKeyboard();
 LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard);
 LIBPINMAME_API int PinmameGetHandleMechanics();
 LIBPINMAME_API void PinmameSetHandleMechanics(const int handleMechanics);
+LIBPINMAME_API int PinmameGetUseModulatedSolenoids();
+LIBPINMAME_API void PinmameSetUseModulatedSolenoids(const int useModSol);
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name);
 LIBPINMAME_API int PinmameIsRunning();
 LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
+LIBPINMAME_API uint64_t PinmameGetSolenoidMask();
+LIBPINMAME_API void PinmameSetSolenoidMask(const uint64_t mask);
 LIBPINMAME_API int PinmameGetSwitch(const int swNo);
 LIBPINMAME_API void PinmameSetSwitch(const int swNo, const int state);
-LIBPINMAME_API void PinmameSetSwitches(const int* const p_states, const int numSwitches);
+LIBPINMAME_API void PinmameSetSwitches(const PinmameSwitchState* const p_states, const int numSwitches);
+LIBPINMAME_API int PinmameGetMaxSolenoids();
+LIBPINMAME_API int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxLamps();
-LIBPINMAME_API int PinmameGetChangedLamps(int* const p_changedStates);
+LIBPINMAME_API int PinmameGetChangedLamps(PinmameLampState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
-LIBPINMAME_API int PinmameGetChangedGIs(int* const p_changedStates);
+LIBPINMAME_API int PinmameGetChangedGIs(PinmameGIState* constp_changedStates);
+LIBPINMAME_API int PinmameGetMaxLEDs();
+LIBPINMAME_API int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t, PinmameLEDState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxMechs();
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
 
