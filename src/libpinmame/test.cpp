@@ -233,8 +233,8 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
 	return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(int solenoid, int isActive) {
-	printf("OnSolenoidUpdated: solenoid=%d, isActive=%d\n", solenoid, isActive);
+void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState) {
+	printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
 }
 
 void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
@@ -285,9 +285,9 @@ int main(int, char**) {
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)
-		snprintf((char*)config.vpmPath, MAX_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
+		snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
 	#else
-		snprintf((char*)config.vpmPath, MAX_PATH, "%s/.pinmame/", getenv("HOME"));
+		snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s/.pinmame/", getenv("HOME"));
 	#endif
 
 	PinmameSetConfig(&config);

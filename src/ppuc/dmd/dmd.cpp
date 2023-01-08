@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "dmd.h"
 
 UINT8 DmdFrameBuffer[16384] = {0};
@@ -129,4 +130,32 @@ void* dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth
     }
 
     return DmdFrameBuffer;
+}
+
+void dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth) {
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            UINT8 value = buffer[y * width + x];
+            if (bitDepth > 2) {
+                printf("%2d", value);
+            }
+            else {
+                switch (value) {
+                    case 0:
+                        printf("\033[0;40m⚫\033[0m");
+                        break;
+                    case 1:
+                        printf("\033[0;40m🟤\033[0m");
+                        break;
+                    case 2:
+                        printf("\033[0;40m🟠\033[0m");
+                        break;
+                    case 3:
+                        printf("\033[0;40m🟡\033[0m");
+                        break;
+                }
+            }
+        }
+        printf("\n");
+    }
 }
