@@ -11,7 +11,7 @@ Fix WPC General Illumination (GI) Dimming (most noticably if more than one GI li
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
@@ -20,6 +20,7 @@ Clones:
 Dracula (One Ball MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
+Pin-Bot J-2 (PEMBOT (no relation))
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Spirit (initial release) & rev. 3 (MOD)
 Tommy 1.02 (Belgian)
