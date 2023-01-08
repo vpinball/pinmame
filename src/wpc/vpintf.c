@@ -36,7 +36,7 @@ int vp_getLamp(int lampNo) {
 
 /*-------------------------------------------
 /  get all lamps changed since last call
-/  returns number of canged lamps
+/  returns number of changed lamps
 /-------------------------------------*/
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
   UINT8 lampMatrix[CORE_MAXLAMPCOL];
@@ -101,9 +101,11 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 	int start = 0, end = CORE_FIRSTCUSTSOL+core_gameData->hw.custSol-1;
 
 	locals.lastSol = allSol;
-	
-	if (options.usemodsol)
+
+	if (options.usemodsol || coreGlobals.nModulatedOutputs > 0)
 	{
+		core_perform_pwm_integration();
+
 		for(ii = 0; ii<CORE_MODSOL_MAX; ii++)
 		{
 			// Skip the VPM reserved solenoids, they will be handled after.  Need to include
@@ -112,11 +114,12 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 			if (ii==40)
 				ii=CORE_FIRSTCUSTSOL-1;
 
-			if (locals.lastModSol[ii] != coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii])
+			UINT8 activeValue = coreGlobals.modulatedOutputs[ii].type == CORE_MODOUT_DEFAULT ? coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii] : coreGlobals.modulatedOutputs[ii].value;
+			if (locals.lastModSol[ii] != activeValue)
 			{
-				locals.lastModSol[ii] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii];
-				chgStat[idx].solNo = ii+1; // Solenoid number
-				chgStat[idx].currStat = locals.lastModSol[ii];
+				locals.lastModSol[ii] = activeValue;
+				chgStat[idx].solNo = ii + 1; // Solenoid number
+				chgStat[idx].currStat = activeValue;
 				idx += 1;
 			}
 		}
@@ -149,7 +152,17 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   int idx = 0;
   int ii;
 
-  memcpy(allGI, coreGlobals.gi, sizeof(allGI));
+  if (coreGlobals.nModulatedOutputs > 0)
+  {
+	 core_perform_pwm_integration();
+	 for (ii = 0; ii < CORE_MAXGI; ii++) {
+		allGI[ii] = coreGlobals.modulatedOutputs[CORE_MAXSOL + ii].type == CORE_MODOUT_DEFAULT ? coreGlobals.gi[ii] : coreGlobals.modulatedOutputs[CORE_MAXSOL + ii].value;
+	 }
+  }
+  else
+  {
+	  memcpy(allGI, coreGlobals.gi, sizeof(allGI));
+  }
 
   /*-- add changed to array --*/
   for (ii = 0; ii < CORE_MAXGI; ii++) {
@@ -181,9 +194,19 @@ int vp_getDIP(int dipBank) {
 /  set Solenoid Mask
 /-----------*/
 void vp_setSolMask(int no, int mask) {
-	// TODO This is a bit of a B2S compatibility hack - B2S precludes us from adding a proper new setting.
-	// Use index 2 to turn on/off modulated solenoids, also see put_SolMask()
-	if (no == 2)
+	// TODO This is a bit of a B2S compatibility hack - B2S precludes us from adding a proper new setting,
+	// Therefore we use this setting for modulated and PWM settings, also see VPinMame Controller.put_SolMask()
+	if (1000 <= no && no < 1200)
+		// Map to solenoid output PWM settings
+		vp_setModOutputType(VP_OUT_SOLENOID, no - 1000, mask);
+	else if (1200 <= no && no < 1300)
+		// Map to GI output PWM settings
+		vp_setModOutputType(VP_OUT_GI, no - 1200, mask);
+	else if (1300 <= no && no < 2000)
+		// Map to lamp output PWM settings
+		vp_setModOutputType(VP_OUT_LAMP, no - 1300, mask);
+	else if (no == 2)
+		// Use index 2 to turn on/off modulated solenoids
 		options.usemodsol = mask;
 	else
 		locals.solMask[no] = mask;
@@ -198,6 +221,33 @@ int vp_getSolMask(int no) {
 
 UINT64 vp_getSolMask64(void) {
   return (((UINT64)locals.solMask[1])<<32) | locals.solMask[0];
+}
+
+/*-----------
+/  set Output Modulation Type
+/-----------*/
+void vp_setModOutputType(int output, int no, int type) {
+	// For the time being, the only supported output type is solenoid, but the API is designed to be 
+	// extended to lamp matrix (needed by Whitestar for Lord of the ring) and GI (needed by all WPC).
+	if (coreGlobals.modulatedOutputs[no].type != type)
+	{
+		if (output == VP_OUT_SOLENOID)
+			coreGlobals.modulatedOutputs[no].type = type;
+		else if (output == VP_OUT_GI)
+			coreGlobals.modulatedOutputs[CORE_MAXSOL + no].type = type;
+		else if (output == VP_OUT_LAMP)
+			coreGlobals.modulatedOutputs[CORE_MAXSOL + CORE_MAXGI + no].type = type;
+		if (type == CORE_MODOUT_DEFAULT)
+			coreGlobals.nModulatedOutputs--;
+		else
+			coreGlobals.nModulatedOutputs++;
+	}
+}
+
+int vp_getModOutputType(int output, int no) {
+	if (output == VP_OUT_SOLENOID)
+		return coreGlobals.modulatedOutputs[no].type;
+	return CORE_MODOUT_DEFAULT;
 }
 
 int vp_getMech(int mechNo) {

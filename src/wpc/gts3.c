@@ -385,6 +385,8 @@ static void GTS3_irq(int state) {
 	static int irq = 0;
 	cpu_set_irq_line(GTS3_CPUNO, 0, irq?ASSERT_LINE:CLEAR_LINE);
 	irq = !irq;
+	if (coreGlobals.nModulatedOutputs > 0)
+		core_store_pulsed_samples(GTS3_IRQFREQ);
 }
 
 /*

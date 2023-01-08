@@ -2,6 +2,7 @@
 /* PINMAME - Interface function (Input/Output) */
 /***********************************************/
 #include <stdarg.h>
+#include <math.h>
 #include "driver.h"
 #include "sim.h"
 #include "snd_cmd.h"
@@ -2110,6 +2111,207 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *p
 	// return outputlevel;
 	*prev_level = (UINT8)targetlevel;
 	return targetlevel;
+}
+
+void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSamples, UINT8* samples, int bitpos, int stride)
+{
+   // Update modulated solenoid using custom PWM integration function
+   int samplePos = coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1);
+   double sampleFreq = coreGlobals.pulsedOutStateSampleFreq;
+   switch (output->type)
+   {
+   case CORE_MODOUT_PWM_RATIO:
+   {
+      int nPulse = 0;
+      for (int i = 0; i < nSamples; i++, samplePos = (samplePos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
+         nPulse += (samples[samplePos * stride] >> bitpos) & 1;
+      output->value = (UINT8)(nPulse * 255 / nSamples);
+   }
+   break;
+   case CORE_MODOUT_BULB_44_6_3V_AC:
+   case CORE_MODOUT_BULB_47_6_3V_AC:
+   case CORE_MODOUT_BULB_86_6_3V_AC:
+   case CORE_MODOUT_BULB_44_18V_DC_WPC:
+   case CORE_MODOUT_BULB_44_18V_DC_GTS3:
+   case CORE_MODOUT_BULB_44_18V_DC_S11:
+   case CORE_MODOUT_BULB_89_20V_DC_WPC:
+   case CORE_MODOUT_BULB_89_20V_DC_GTS3:
+   case CORE_MODOUT_BULB_89_32V_DC_S11:
+   {
+      // Incandescent bulb model based on Dulli Chandra Agrawal's and others publications (Heating-times of tungsten filament incandescent lamps).
+      // The bulb is a varying resistor depending on filament temperature, which is heated by the current (Ohm's law)
+      // and cooled by radiating energy (Planck & Stefan/Boltzmann laws). The visible emission power is then evaluated from the filament temperature.
+      // TODO The tests did not exhibit any performance issue but most computation could be moved to optimized to LUTs
+
+      // Bulb driver electronics from a few schematics/photos:
+      double U, serial_R = 0.0;
+      switch (output->type)
+      {
+      case CORE_MODOUT_BULB_44_6_3V_AC: // 6.3V AC used for GI
+      case CORE_MODOUT_BULB_47_6_3V_AC:
+      case CORE_MODOUT_BULB_86_6_3V_AC:
+         // for AC power, we modulate the voltage here instead of using RMS value since it gives a slightly smoother fading for WPC (maybe overkill ?).
+         // If needed (WPC for example), machine driver needs to sync with zero crossing by calling 'core_zero_cross'
+         U = 6.3 * 1.414 * fabs(sin(60.0 * 2.0 * PI * (timer_get_time() - coreGlobals.lastACZeroCross)));
+         break;
+      case CORE_MODOUT_BULB_44_18V_DC_WPC:
+         U = 18 - 0.7 - 0.7; // 18V switched through a TIP102 and a TIP107 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A)
+         serial_R = 0.22; // From schematics (TZ, TOTAN, CFTBL, WPC95 general)
+         break;
+      case CORE_MODOUT_BULB_44_18V_DC_GTS3:
+         U = 18 - 1.1; // 18V switched through a Mosfets 12P06 & 12N10L, 1N4004 serial (1.1V voltage drop from datasheet)
+         serial_R = 3.5; // From schematics (Cue Ball Wizard)
+         break;
+      case CORE_MODOUT_BULB_44_18V_DC_S11:
+         U = 18; // 18V switched through
+         serial_R = 4.3; // From schematics (Guns'n Roses)
+         break;
+      case CORE_MODOUT_BULB_89_20V_DC_WPC:
+         U = 20 - 0.7; // 20V DC switched through a TIP102 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A)
+         serial_R = 0.12; // From WPC schematics (TZ, TOTAN, CFTBL, WPC95 general)
+         break;
+      case CORE_MODOUT_BULB_89_20V_DC_GTS3:
+         U = 20; // 20V DC switched through a 12N10L Mosfet (no voltage drop)
+         serial_R = 0.3; // From schematics (Cue Ball Wizard)
+         break;
+      case CORE_MODOUT_BULB_89_32V_DC_S11:
+         U = 32 - 1.0 - 1.0; // 32V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 3 Ohms serial resistor and a diode (1V voltage drop)
+         serial_R = 3.0; // From board photos
+         break;
+      }
+
+      // Bulb characteristics, estimated by fitting ratings (U,I,P) at a supposed steady state temperature of 2700K, then validating against high FPS video
+      double R0, S, Mass;
+      switch (output->type)
+      {
+      case CORE_MODOUT_BULB_44_6_3V_AC: // Bulb #44/555: 6.3V 0.25A 1.575W 11.3lm (commonly used for GI & inserts)
+      case CORE_MODOUT_BULB_44_18V_DC_WPC: 
+      case CORE_MODOUT_BULB_44_18V_DC_GTS3:
+      case CORE_MODOUT_BULB_44_18V_DC_S11:
+         R0 = 1.70020865326503000; // Resistor at 293K
+         S = 0.00000161355490514; // Filament surface
+         Mass = 0.00000021518852281; // Filament mass
+         break;
+      case CORE_MODOUT_BULB_47_6_3V_AC: // Bulb #47: 6.3V 0.15A 0.945W 6.3lm (used for GI with less heat)
+         R0 = 2.83368108877505000;
+         S = 0.00000096864911477;
+         Mass = 0.00000009191361309;
+         break;
+      case CORE_MODOUT_BULB_89_20V_DC_WPC:// Bulb #89/906: 13V 0.58A 7.54W 75.4lm (commonly used for flashers)
+      case CORE_MODOUT_BULB_89_20V_DC_GTS3:
+      case CORE_MODOUT_BULB_89_32V_DC_S11:
+         R0 = 1.51222718202281000;
+         S = 0.00000771540636690;
+         Mass =  0.00000180252338558;
+         break;
+      case CORE_MODOUT_BULB_86_6_3V_AC: // Bulb #86: 6.3V 0.2A 1.26W 5.027lm (seldom specific use)
+         R0 = 2.12526081658129000;
+         S = 0.00000129093660708;
+         Mass = 0.00000014836928066;
+         break;
+      }
+
+      // Initial perceived emission level
+      double average_emission = 0.0;
+      for (int i = 0; i < 16; i++)
+      {
+         average_emission += output->state.emission_history[i];
+      }
+
+      UINT8 mask = 1 << bitpos;
+      double T = output->state.filament_temperature < 293.0 ? 293.0 : output->state.filament_temperature; // a 0K temperature would cause NaN, so keep it above room temperature of 293K
+      double T2 = T * T;
+      double T3 = T2 * T;
+      samplePos = (coreGlobals.pulsedOutStateSamplePos + 1 - nSamples) & (CORE_MODOUT_SAMPLE_MAX - 1);
+      double max_emission = average_emission;
+      for (int i = 0; i < nSamples; i++, samplePos = (samplePos + 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
+      {
+         double delta_energy = -0.00000005670374419 * S * 0.0000664 * pow(T, 5.0796); // pow(T, 5.0796) is pow(T, 4) from Stefan/Boltzmann multiplied by emissivity which is 0.0000664*pow(T,1.0796)
+         if (samples[samplePos * stride] & mask)
+         {
+            double R = R0 * pow(T / 293.0, 1.215);
+            double U1 = U * R / (R + serial_R);
+            delta_energy += U1 * U1 / R;
+         }
+         double specific_heat = 3.0 * 45.2268 * (1.0 - 310.0 * 310.0 / (20.0 * T2)) + (2.0 * 0.0045549 * T) + (4 * 0.000000000577874 * T3);
+         double delta_T = (1.0 / sampleFreq) * delta_energy / (specific_heat * Mass);
+         T += delta_T > 1000.0 ? 1000.0 : delta_T; // Clamp dT due to low resolution integration on dt (1ms integration leads to very high dT during intensity surge, 0.1ms would be better)
+         T2 = T * T;
+         T3 = T2 * T;
+
+         // Store the emission power in the visible range (see http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html)
+         // The forumla is a polynemonial regression over the wanted range (1500K to 3000K, fitted to get full power at 2700K, which is the steady state temperature used in the bulb model)
+         // The relative luminous flux depending on temperature does not depend on the bulb (mostly).
+         // Note that this power value is the perceived power (convolution of emitted energy by eye sensibility over visible range) so if it is used to drive a light
+         // of another color, then it must be corrected by the ratio of color intensity between 2700K color (this model) and the chosen light color.
+         double emission = 0.00000000164372236759046 * T3 - 0.00000915034539479724000 * T2 + 0.01697990181540710000000 * T - 10.46937655626230000000000;
+         if (emission < 0)
+            emission = 0;
+         else if (emission > 2.5)
+            emission = 2.5;
+
+         // Compute the perceived emission by averaging the last 16 samples (sliding average)
+         average_emission -= output->state.emission_history[output->state.emission_history_pos & 0x0F];
+         output->state.emission_history[output->state.emission_history_pos & 0x0F] = emission;
+         output->state.emission_history_pos = (output->state.emission_history_pos + 1) & 0x0F;
+         average_emission += emission;
+         max_emission = average_emission > max_emission ? average_emission : max_emission;
+      }
+      output->state.filament_temperature = T;
+
+      if (max_emission <= 0.0)
+         output->value = 0;
+      else if (max_emission >= 16.0)
+         output->value = 255;
+      else
+         output->value = (UINT8) (max_emission * 255.0 / 16.0);
+   }
+   break;
+   case CORE_MODOUT_LED: 
+   {
+      // LED reacts almost instantly (<1us), the integration is based on the human eye perception: 
+      // flashing below 100Hz (limit between 50-100 depends on each human), dimming above (there should be a "flicker" range in the middle)
+      int n = (int)(sampleFreq / 100); // Go through samples of the last 1/100s (100Hz limit)
+      int nPulse = 0;
+      for (int i = 0; i < n; i++, samplePos = (samplePos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
+         nPulse += (samples[samplePos * stride] >> bitpos) & 1;
+      output->value = (UINT8)(nPulse * 255 / (n - 1));
+   }
+   break;
+   case CORE_MODOUT_MOTOR_LINEAR: 
+   {
+      // Linear motor position which increase linearly over time when voltage is high
+      for (int i = 0; i < nSamples; i++, samplePos = (samplePos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
+         output->state.motor_position += (samples[samplePos * stride] >> bitpos) & 1;
+      output->value = (UINT8)((output->state.motor_position * 100.0) / sampleFreq); // normalize to 100 steps per seconds
+   }
+   break;
+   case CORE_MODOUT_DEFAULT:
+   default:
+      // Default is the modulated solenoid values as computed by each hardware drivers (nothing to do here since the integration is already performed)
+      break;
+   }
+}
+
+/* PWM integration.This is only done on request for performance and because
+ * the integration result depends on the integration period for some integrators.
+ * For example a bulb will return the maximum averaged emission power over the
+ * integration period (since the retina is analogous and persists brightness).
+ */
+void core_perform_pwm_integration()
+{
+   int nSamples = coreGlobals.pulsedOutStateSamplePos - coreGlobals.lastModulatedOutputIntegrationPos;
+   {
+      for (int ii = 0; ii < 32 /*CORE_MAXSOL*/; ii++) // We only store the state of the first 32 solenoids
+      {
+         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[ii], nSamples, ((UINT8*)coreGlobals.pulsedSolStateSamples) + (ii >> 3), ii & 7, 4);
+      }
+      for (int ii = 0; ii < CORE_MAXGI; ii++)
+      {
+         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[CORE_MAXSOL + ii], nSamples, (UINT8*)coreGlobals.pulsedGIStateSamples, ii, 1);
+      }
+   }
+   coreGlobals.lastModulatedOutputIntegrationPos = coreGlobals.pulsedOutStateSamplePos;
 }
 
 void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate)
