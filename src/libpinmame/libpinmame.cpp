@@ -870,10 +870,6 @@ LIBPINMAME_API int PinmameGetMaxMechs() {
  ******************************************************/
 
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig) {
-	if (!_isRunning) {
-		return EMULATOR_NOT_RUNNING;
-	}
-	
 	if (g_fHandleMechanics) {
 		return MECH_HANDLE_MECHANICS;
 	}
