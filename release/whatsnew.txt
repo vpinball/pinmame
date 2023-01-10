@@ -18,9 +18,10 @@ Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illeg
 
 Clones:
 Dracula (One Ball MOD)
+Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
-Pin-Bot J-2 (PEMBOT (no relation))
+Pin-Bot J-2 (PEMBOT (no relation)) (MOD)
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Spirit (initial release) & rev. 3 (MOD)
 Tommy 1.02 (Belgian)

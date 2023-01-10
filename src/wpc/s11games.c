@@ -318,7 +318,7 @@ CORE_CLONEDEF(pb,l2,l5, "Pin-Bot (L-2)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l1,l5, "Pin-Bot (L-1)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,p4,l5, "Pin-Bot (P-4 Prototype)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,j1,l5, "Pin-Bot (PEMBOT (no relation) J-1)", 2020, "A.M. Thurnherr", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,j2,l5, "Pin-Bot (PEMBOT (no relation) J-2)", 2023, "idealjoker", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,j2,l5, "Pin-Bot (PEMBOT (no relation) J-2)", 2023, "idealjoker", s11_mS11XSL,0) // "Minor bug fixes and improvements"
 
 /*--------------------
 / F-14 Tomcat 5/87
