@@ -1880,14 +1880,14 @@ int GetPlayCount(int driver_index)
         return game_variables[driver_index].play_count;
 }
 
-int GetPlayTime(int driver_index)
+time_t GetPlayTime(int driver_index)
 {
         assert(0 <= driver_index && driver_index < num_games);
 
         return game_variables[driver_index].play_time;
 }
 
-void IncrementPlayTime(int driver_index,int playtime)
+void IncrementPlayTime(int driver_index,time_t playtime)
 {
         assert(0 <= driver_index && driver_index < num_games);
         game_variables[driver_index].play_time += playtime;
@@ -1895,8 +1895,8 @@ void IncrementPlayTime(int driver_index,int playtime)
 
 void GetTextPlayTime(int driver_index,char *buf)
 {
-        int hour, minute, second;
-        int temp = game_variables[driver_index].play_time;
+        time_t hour, minute, second;
+        time_t temp = game_variables[driver_index].play_time;
 
         assert(0 <= driver_index && driver_index < num_games);
 
@@ -1906,9 +1906,9 @@ void GetTextPlayTime(int driver_index,char *buf)
         second = temp - 60*minute;
 
         if (hour == 0)
-                sprintf(buf, "%d:%02d", minute, second );
+                sprintf(buf, "%lld:%02lld", minute, second );
         else
-                sprintf(buf, "%d:%02d:%02d", hour, minute, second );
+                sprintf(buf, "%lld:%02lld:%02lld", hour, minute, second );
 }
 
 int GetUIJoyUp(int joycodeIndex)

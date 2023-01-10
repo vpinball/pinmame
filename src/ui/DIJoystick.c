@@ -226,7 +226,7 @@ static void DIJoystick_poll_joysticks(void)
 
 static int DIJoystick_is_joy_pressed(int joycode)
 {
-	int joy_num;
+	unsigned int joy_num;
 	int stick;
 	int axis;
 	int dir;

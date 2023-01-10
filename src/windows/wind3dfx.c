@@ -691,12 +691,13 @@ static int effects_scanline_init(void)
 	int scanline_data[2][4] = { { 0xFFFFFF, 0x000000, -1, -1 }, { 0x9F9F9F, 0xFFFFFF, 0x9F9F9F, 0x000000 } };
 
 	DDSURFACEDESC2 surface_desc = { sizeof(DDSURFACEDESC2) };
-	HRESULT result;
-	unsigned int x, y;
-	int i;
 
+	int i;
 	for (i = 0; i < 2; i++)
 	{
+		HRESULT result;
+		int x, y;
+
 		// lock the surface
 		result = IDirectDrawSurface7_Lock(win_d3d_scanline_surface[i], NULL, &surface_desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 		if (result != DD_OK)
