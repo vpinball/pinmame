@@ -219,13 +219,16 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CustomBuildStep>
       <Message>Copying to root and generating gamelist.txt...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(ProjectDir)$(TargetName)_gamelist.txt"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -259,13 +262,16 @@
       </DataExecutionPrevention>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -300,13 +306,16 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <TargetMachine>MachineX86</TargetMachine>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -341,12 +350,15 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       </DataExecutionPrevention>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -380,12 +392,15 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <TargetMachine>MachineX86</TargetMachine>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -419,13 +434,16 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       </DataExecutionPrevention>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -460,13 +478,16 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <TargetMachine>MachineX86</TargetMachine>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -501,6 +522,9 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       </DataExecutionPrevention>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ext\vgm\vgmwrite.c" />

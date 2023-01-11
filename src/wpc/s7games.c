@@ -159,16 +159,16 @@ S7_ROMEND
 CORE_CLONEDEF(jngld,l1,l2,"Jungle Lord (L-1)",1981,"Williams",s7_mS7S,0)
 
 /*
-Jungle Lord new tricks (JLnt) is a set of Home ROMs for the 1980 Williams Jungle Lord pinball machine. In addition to all original game rules, with minor sound and scoring tweaks, the following new tricks have been implemented (*operator adjustable feature):
+Jungle Lord new tricks (JLnt) is a set of Home ROMs for the 1980 Williams Jungle Lord pinball machine. In addition to all original game rules, with minor sound and scoring tweaks, the following new tricks have been implemented (operator adjustable feature):
 
 Skill Shots:
-Quickly locking a new ball in the lower or upper saucer awards 100k or Instant Multiball*, except during Stampede Mode.
+Quickly locking a new ball in the lower or upper saucer awards 100k or Instant Multiball, except during Stampede Mode.
 
 Extra Ball:
-Complete 1-2-3-4-5-sequence three times* to light Extra Ball in lower lock; progress is indicated by bonus lamps during completion and at each ball start.
+Complete 1-2-3-4-5-sequence three times to light Extra Ball in lower lock; progress is indicated by bonus lamps during completion and at each ball start.
 
 MB Bonus Frenzy:
-Each bonus advance during multiball sounds trumpet and instantly scores 20k*.
+Each bonus advance during multiball sounds trumpet and instantly scores 20k.
 
 Combo Shots:
 Quick 2-/3-way combos ([left inlane,] turnaround, lower lock) ring bell and score 100/250k, respectively, except during multiball.
@@ -189,7 +189,32 @@ S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7e
 S7_ROMEND
 CORE_CLONEDEF(jngld,nt,l2,"Jungle Lord (New Tricks)",2013,"A.M. Thurnherr",s7_mS7S,0)
 
-// A L1 version of JLNT exists, but idealjoker wants to redo some things in addition (so rerelease by early 2021?)
+// "Fairly important fixes for a couple of light problems; correct EPROM checksums"
+S7_ROMSTART8088(jngld,ntl2,"JLnt_L2_U14.bin",CRC(3fdc7726) SHA1(738b6d39aad4d197eb9f5144fa843474514ee50a),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "JLnt_L2_U26.bin", CRC(32dfacfc) SHA1(0bc0c5201f5640736f5cf86564101d07cf377f60))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+S7_ROMEND
+CORE_CLONEDEF(jngld,ntl2,l2,"Jungle Lord (New Tricks L-2)",2022,"idealjoker",s7_mS7S,0)
+
+// The next one is considered a beta as it was still WIP when idealjoker sold his machine,
+//  but it was also the version he sold it with, so it should(!) be save to have it running on real machines, too
+// "Significant game changes/improvements, including LORD lamps on memory and a multiball Jackpot shot.
+//  I believe that it is solid but there is no documentation."
+S7_ROMSTART8088(jngld,ntl3,"JLnt_L3beta_U14.bin",CRC(d833e381) SHA1(47e495519ad85c1fe376d610025ead46dc4e736c),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "JLnt_L3beta_U26.bin", CRC(ba8ed019) SHA1(81ccabc15129c0b4cdff4229327e9782c4173056))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+S7_ROMEND
+CORE_CLONEDEF(jngld,ntl3,l2,"Jungle Lord (New Tricks L-3beta)",2022,"idealjoker",s7_mS7S,0)
 
 /*--------------------------------
 / Pharaoh - Sys.7 (Game #504)

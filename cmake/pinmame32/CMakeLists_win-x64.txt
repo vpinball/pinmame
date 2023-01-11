@@ -700,6 +700,7 @@ target_link_options(pinmame32 PUBLIC
 )
 
 set_target_properties(pinmame32 PROPERTIES
+   VS_DPI_AWARE "On"
    RUNTIME_OUTPUT_NAME "PinMAME32"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )

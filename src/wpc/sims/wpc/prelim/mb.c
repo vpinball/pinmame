@@ -295,7 +295,7 @@ WPC_ROMEND
 CORE_GAMEDEF (mb,10,   "Monster Bash (1.0)",1998,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mb,106,10,"Monster Bash (1.06)", 1998,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mb,106b,10,"Monster Bash (1.06b)", 1998,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(mb,05,10,"Monster Bash (0.5)", 1998,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mb,05,10,"Monster Bash (0.5 Prototype)", 1998,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

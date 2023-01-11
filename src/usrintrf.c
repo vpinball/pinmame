@@ -587,7 +587,7 @@ static unsigned multiline_extract(const char **pbegin, const char *end, unsigned
 				++word_end;
 
 			/* if that pushes us past the max, truncate here */
-			if (numchars + word_end - begin > maxchars)
+			if (numchars + (word_end - begin) > maxchars)
 			{
 				/* if we have at least one character, strip the space */
 				if (numchars)
@@ -3628,7 +3628,7 @@ static void onscrd_gamma(struct mame_bitmap *bitmap,int increment,int arg)
 	gamma_correction = palette_get_global_gamma();
 
 	sprintf(buf,"%s %1.2f", ui_getstring (UI_gamma), gamma_correction);
-	displayosd(bitmap,buf,100*(gamma_correction-0.5)/(2.0-0.5),100*(1.0-0.5)/(2.0-0.5));
+	displayosd(bitmap,buf,(int)(100*(gamma_correction-0.5)/(2.0-0.5)),(int)(100*(1.0-0.5)/(2.0-0.5)));
 }
 
 static void onscrd_vector_flicker(struct mame_bitmap *bitmap,int increment,int arg)
@@ -3652,7 +3652,7 @@ static void onscrd_vector_flicker(struct mame_bitmap *bitmap,int increment,int a
 	flicker_correction = vector_get_flicker();
 
 	sprintf(buf,"%s %1.2f", ui_getstring (UI_vectorflicker), flicker_correction);
-	displayosd(bitmap,buf,flicker_correction,0);
+	displayosd(bitmap,buf,(int)flicker_correction,0);
 }
 
 static void onscrd_vector_intensity(struct mame_bitmap *bitmap,int increment,int arg)
@@ -3845,7 +3845,7 @@ static void displaymessage(struct mame_bitmap *bitmap,const char *text)
 	int avail;
 
 
-	if (uirotwidth < uirotcharwidth * strlen(text))
+	if (uirotwidth < uirotcharwidth * (int)strlen(text))
 	{
 		ui_displaymessagewindow(bitmap,text);
 		return;

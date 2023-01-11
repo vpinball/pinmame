@@ -489,12 +489,10 @@ static int png_read_bitmap(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *pPAL)
 
 		if (p.color_type == 2) /*(p->bit_depth > 8) */
 		{
-			int j;
-			UINT8 bTmp;
-
+			UINT32 j;
 			for (j = 0; j < p.width; j++)
 			{
-				bTmp = ptr[0];
+				UINT8 bTmp = ptr[0];
 				ptr[0] = ptr[2];
 				ptr[2] = bTmp;
 				ptr += 3;

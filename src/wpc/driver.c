@@ -2443,7 +2443,9 @@ DRIVER(bk,l4)           //          11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4 French Speech)
 DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
 DRIVER(jngld,l2)        //          02/81 W Jungle Lord (L-2)
-DRIVER(jngld,nt)        //          09/13 W Jungle Lord New Tricks
+DRIVER(jngld,nt)        //          09/13   Jungle Lord New Tricks
+DRIVER(jngld,ntl2)      //          ??/2?   Jungle Lord New Tricks L-2 (2021 or 2022)
+DRIVER(jngld,ntl3)      //          ??/2?   Jungle Lord New Tricks L-3beta (2021 or 2022)
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh (L-2)
 DRIVER(pharo,l2b)       //          05/19 W Pharaoh (L-2 'Tomb' Sample Sound Fix MOD)
                         //S7-506:   06/81 W Black Knight Limited Edition
@@ -2505,6 +2507,7 @@ DRIVER(pb,l3)           //          10/86 W Pin-Bot (L-3)
 DRIVER(pb,l5)           //          10/86 W Pin-Bot (L-5)
 DRIVER(pb,l5h)          //          08/12   Pin-Bot (L-5, Freeplay / solar value mod)
 DRIVER(pb,j1)           //          11/20   Pin-Bot (PEMBOT (no relation) J-1)
+DRIVER(pb,j2)           //          01/23   Pin-Bot (PEMBOT (no relation) J-2)
 DRIVER(tts,l1)          //S11-919:  ??/86 W Tic-Tac-Strike (L-1, Shuffle)
 DRIVER(tts,l2)          //          ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire

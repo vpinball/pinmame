@@ -1140,21 +1140,21 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
 #ifdef PROC_SUPPORT
-					if (coreGlobals.p_rocEn) {
-                                                if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
-						    (!pmoptions.alpha_on_dmd)) {
-                                                    switch (top) {
-                                                        case 0: proc_top[left/char_width + (doubleAlpha == 0)] = tmpSeg; break;
-                                                        case 21:  // This is the ball/credit display if fitted, so work out which position
-                                                            if (left == 12) proc_bottom[0] = tmpSeg;
-                                                            else if (left == 24) proc_bottom[8] = tmpSeg;
-                                                            else if (left == 48) proc_top[0] = tmpSeg;
-                                                            else proc_top[8] = tmpSeg;
-                                                        break;
-                                                        default: proc_bottom[left/char_width + (doubleAlpha == 0)] = tmpSeg; break;
-							} 
-						}
-					}
+            if (coreGlobals.p_rocEn) {
+              if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
+                  (!pmoptions.alpha_on_dmd)) {
+                switch (top) {
+                  case 0: proc_top[left/char_width + (doubleAlpha == 0)] = tmpSeg; break;
+                  case 21:  // This is the ball/credit display if fitted, so work out which position
+                    if (left == 12) proc_bottom[0] = tmpSeg;
+                    else if (left == 24) proc_bottom[8] = tmpSeg;
+                    else if (left == 48) proc_top[0] = tmpSeg;
+                    else proc_top[8] = tmpSeg;
+                    break;
+                  default: proc_bottom[left/char_width + (doubleAlpha == 0)] = tmpSeg; break;
+                }
+              }
+            }
 #endif
           }
           coreGlobals.drawSeg[*pos] = tmpSeg;
@@ -1164,12 +1164,12 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         seg += step; lastSeg += step;
       }
 #ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
-				    (!pmoptions.alpha_on_dmd)) {
-					procUpdateAlphaDisplay(proc_top, proc_bottom);
-				}
-			}
+      if (coreGlobals.p_rocEn) {
+        if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
+            (!pmoptions.alpha_on_dmd)) {
+          procUpdateAlphaDisplay(proc_top, proc_bottom);
+        }
+      }
 #endif 
     }
 
@@ -1191,29 +1191,29 @@ VIDEO_UPDATE(core_gen) {
   int count = 0;
 
 #ifdef PROC_SUPPORT
-	int alpha = (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_ALLS11)) != 0;
-	if (coreGlobals.p_rocEn) {
-		if (pmoptions.alpha_on_dmd && alpha) {
-			procClearDMD();
-		}
-	}
-	// If we don't want the DMD displayed on the screen, skip this code
-	if (pmoptions.virtual_dmd) {
+  int alpha = (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_ALLS11)) != 0;
+  if (coreGlobals.p_rocEn) {
+    if (pmoptions.alpha_on_dmd && alpha) {
+      procClearDMD();
+    }
+  }
+  // If we don't want the DMD displayed on the screen, skip this code
+  if (pmoptions.virtual_dmd) {
 #endif
 
 #ifdef LIBPINMAME
-   g_display_index = 0;
+  g_display_index = 0;
 #endif
 
   updateDisplay(bitmap, cliprect, core_gameData->lcdLayout, &count);
   memcpy(locals.lastSeg, coreGlobals.segments, sizeof(locals.lastSeg));
 #ifdef PROC_SUPPORT
-	}
-	if (coreGlobals.p_rocEn) {
-		if (pmoptions.alpha_on_dmd && alpha) {
-			procUpdateDMD();
-		}
-	}
+  }
+  if (coreGlobals.p_rocEn) {
+    if (pmoptions.alpha_on_dmd && alpha) {
+      procUpdateDMD();
+    }
+  }
 #endif
 
   video_update_core_status(bitmap,cliprect);
@@ -1320,7 +1320,7 @@ void core_updateSw(int flipEn) {
 
 #ifdef LIBPINMAME
     int start = 0, end = CORE_FIRSTCUSTSOL+core_gameData->hw.custSol-1;
-    	
+
     if (options.usemodsol)
     {
        for(ii = 0; ii<CORE_MODSOL_MAX; ii++)
@@ -1367,7 +1367,7 @@ void core_updateSw(int flipEn) {
           if ((!pmoptions.dmd_only && (allSol & 0x01)) &&
               ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
             locals.solLog[locals.solLogCount] = ii;
-	    core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
+            core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
               locals.solLog[(locals.solLogCount+1) & 3],
               locals.solLog[(locals.solLogCount+2) & 3],
               locals.solLog[(locals.solLogCount+3) & 3],
@@ -1877,29 +1877,29 @@ static MACHINE_INIT(core) {
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
 
 #ifdef PROC_SUPPORT
-		/*-- P-ROC operation requires a YAML.  Disable P-ROC operation
-		 * if no YAML is specified. --*/
+    /*-- P-ROC operation requires a YAML.  Disable P-ROC operation
+     * if no YAML is specified. --*/
 
-		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
-		if (coreGlobals.p_rocEn) {
-			/*-- Finish P-ROC initialization now that the sim is active. --*/
-			coreGlobals.p_rocEn = procIsActive();
-			/*-- If the initialization fails, disable the p-roc support --*/
-			if (!coreGlobals.p_rocEn) {
-				fprintf(stderr, "P-ROC initialization failed.  Disabling P-ROC support.\n");
-				// TODO: deInit P-ROC here?
-			}
-			else {
-                             // read s11CreditDisplay, doubleAlpha and s11BallDisplay settings
-                             procBallCreditDisplay();
+    coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
+    if (coreGlobals.p_rocEn) {
+      /*-- Finish P-ROC initialization now that the sim is active. --*/
+      coreGlobals.p_rocEn = procIsActive();
+      /*-- If the initialization fails, disable the p-roc support --*/
+      if (!coreGlobals.p_rocEn) {
+        fprintf(stderr, "P-ROC initialization failed.  Disabling P-ROC support.\n");
+        // TODO: deInit P-ROC here?
+      }
+      else {
+        // read s11CreditDisplay, doubleAlpha and s11BallDisplay settings
+        procBallCreditDisplay();
 
-                             // Added option to enable keyboard for direct switches to YAML
-                             g_fHandleKeyboard = procKeyboardWanted();
+        // Added option to enable keyboard for direct switches to YAML
+        g_fHandleKeyboard = procKeyboardWanted();
 
-                             // We don't want the PC to make the noises of pop bumpers etc
-                             g_fHandleMechanics= 0;
-                       }
-		}
+        // We don't want the PC to make the noises of pop bumpers etc
+        g_fHandleMechanics= 0;
+      }
+    }
 #endif
 
     /*-- masks bit used by flippers --*/
@@ -1918,9 +1918,9 @@ static MACHINE_INIT(core) {
     {
       UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
       if (((int)size > Machine->drv->screen_width) && (locals.displaySize > 1)) {
-  	/* force small display */
-  	locals.displaySize = 1;
-  	core_initDisplaySize(core_gameData->lcdLayout);
+        /* force small display */
+        locals.displaySize = 1;
+        core_initDisplaySize(core_gameData->lcdLayout);
       }
     }
     /*-- Sound enabled ? */
@@ -1949,7 +1949,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
+    pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
 #endif
 
   OnStateChange(1); /* We have a lift-off */
@@ -1964,7 +1964,7 @@ static MACHINE_STOP(core) {
 #ifdef VPINMAME
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdDeInit();
+    pindmdDeInit();
 #endif
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
@@ -1989,9 +1989,9 @@ static MACHINE_STOP(core) {
   }
   memset(locals.timers, 0, sizeof(locals.timers));
 #ifdef PROC_SUPPORT
-	if (coreGlobals.p_rocEn) {
-		procDeinitialize();
-	}
+  if (coreGlobals.p_rocEn) {
+    procDeinitialize();
+  }
 #endif
   coreData = NULL;
 }
