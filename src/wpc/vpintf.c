@@ -196,14 +196,14 @@ int vp_getDIP(int dipBank) {
 void vp_setSolMask(int no, int mask) {
 	// TODO This is a bit of a B2S compatibility hack - B2S precludes us from adding a proper new setting,
 	// Therefore we use this setting for modulated and PWM settings, also see VPinMame Controller.put_SolMask()
-	if (1000 <= no && no < 1200)
-		// Map to solenoid output PWM settings
+	if (1001 <= no && no <= 1200)
+		// Map to solenoid output PWM settings (first solenoid is #1 to ...)
 		vp_setModOutputType(VP_OUT_SOLENOID, no - 1000, mask);
-	else if (1200 <= no && no < 1300)
-		// Map to GI output PWM settings
+	else if (1201 <= no && no <= 1300)
+		// Map to GI output PWM settings (first GI is #1 to #5)
 		vp_setModOutputType(VP_OUT_GI, no - 1200, mask);
-	else if (1300 <= no && no < 2000)
-		// Map to lamp output PWM settings
+	else if (1301 <= no && no <= 2000)
+		// Map to lamp output PWM settings (first lamp is #1 to ...)
 		vp_setModOutputType(VP_OUT_LAMP, no - 1300, mask);
 	else if (no == 2)
 		// Use index 2 to turn on/off modulated solenoids
@@ -224,7 +224,7 @@ UINT64 vp_getSolMask64(void) {
 }
 
 /*-----------
-/  set Output Modulation Type
+/  set Output Modulation Type ('no' starts at 1 upward, for example 1-5 for GI)
 /-----------*/
 void vp_setModOutputType(int output, int no, int type) {
 	// For the time being, the only supported output type is solenoid, but the API is designed to be 
@@ -232,11 +232,11 @@ void vp_setModOutputType(int output, int no, int type) {
 	if (coreGlobals.modulatedOutputs[no].type != type)
 	{
 		if (output == VP_OUT_SOLENOID)
-			coreGlobals.modulatedOutputs[no].type = type;
+			coreGlobals.modulatedOutputs[no - 1].type = type;
 		else if (output == VP_OUT_GI)
-			coreGlobals.modulatedOutputs[CORE_MAXSOL + no].type = type;
+			coreGlobals.modulatedOutputs[CORE_MAXSOL + no - 1].type = type;
 		else if (output == VP_OUT_LAMP)
-			coreGlobals.modulatedOutputs[CORE_MAXSOL + CORE_MAXGI + no].type = type;
+			coreGlobals.modulatedOutputs[CORE_MAXSOL + CORE_MAXGI + no - 1].type = type;
 		if (type == CORE_MODOUT_DEFAULT)
 			coreGlobals.nModulatedOutputs--;
 		else
