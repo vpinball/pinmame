@@ -5,6 +5,7 @@ What's new in Visual PinMAME:
 
 Version 3.6 (XX XXth, 2023) - ""
 ------------------------------------------------------------------------------
+- Add 'ModOutputType' to COM-API for new PWM support (see whatsnew.txt and https://github.com/vpinball/pinmame/pull/89 for details and usage)
 
 Version 3.5 (October 23rd, 2022) - "Trick or Treat"
 ------------------------------------------------------------------------------
