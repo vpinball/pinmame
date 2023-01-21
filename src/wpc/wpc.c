@@ -196,7 +196,11 @@ static void wpc_zc(int data) {
    // Set Zero Cross flag (it's reset when read)
 	wpclocals.zc = 1;
    
+   // Synchronize core PWM integration AC signal
+   core_zero_cross();
+
    // GI outputs are driven by Triac which continue to conduct when turned on until current decreases under the holding current. This happens at zero cross, so we updated GI level
+   coreGlobals.pulsedGIState = wpclocals.gi_zc_state;
 
    // GI Dimming seems to be processed by the CPU during IRQ handling with IRQ being every ~1ms
    // Since zero cross and IRQ are not perfectly aligned, there can be either 8 or 9 irq per zero cross period in 60Hz countries (~1ms / ~8.3ms, this would be 9 or 10 in 50Hz countries ~1ms / ~10ms).
@@ -827,6 +831,7 @@ WRITE_HANDLER(wpc_w) {
       wpclocals.gi_zc_state = data;
 
       // Loop over each GI Triac Bit and turn on according Triacs
+      coreGlobals.pulsedGIState |= data;
       double write_time = timer_get_time();
       for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
          // If Bit is set, Triac is turned on (if it was not already on).
@@ -1039,6 +1044,8 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
+   if (coreGlobals.nModulatedOutputs > 0)
+      core_store_pulsed_samples(WPC_IRQFREQ);
 #ifdef WPC_MODSOLSAMPLE
 	if (options.usemodsol)
 	{

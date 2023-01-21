@@ -951,7 +951,7 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 	if (uCount == 0)
 	{ *pVal = 0; return S_OK; }
 
-	/*-- add changed lamps to array --*/
+	/*-- add changed solenoids to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 	for (int i = 0; i < uCount; i++)
 	{
@@ -1514,7 +1514,7 @@ STDMETHODIMP CController::get_ChangedGIStrings(VARIANT *pVal) {
 /****************************************************************************
  * IController.ChangedSolenoids property (read-only): gets the state of all 
  * solenoids
- * (also gets the information, if at leats one solenoid has changed after 
+ * (also gets the information, if at least one solenoid has changed after 
  * last call; element 0 state if TRUE if at least one solenoid has changed 
  * state sice last call)
  ****************************************************************************/
@@ -1685,10 +1685,35 @@ STDMETHODIMP CController::get_SolMask(int nLow, long *pVal)
 
 STDMETHODIMP CController::put_SolMask(int nLow, long newVal)
 {
-	if ( (nLow<0) || (nLow>2) ) //TODO B2S hack, see vp_setSolMask()
+	// TODO B2S hack, see vp_setSolMask()
+	if (!((0 <= nLow && nLow <= 2) || (1000 <= nLow && nLow < 1999)))
 		return S_FALSE;
 
 	vp_setSolMask(nLow, newVal);
+
+	return S_OK;
+}
+
+/****************************************************************************
+ * IController.ModOutputType property: gets/sets modulated output type, i.e.
+ * how the output behaves when it is modulated
+ ****************************************************************************/
+STDMETHODIMP CController::get_ModOutputType(int output, int no, int* pVal)
+{
+	if (output != VP_OUT_SOLENOID)
+		return S_FALSE;
+
+	*pVal = vp_getModOutputType(output, no);
+
+	return S_OK;
+}
+
+STDMETHODIMP CController::put_ModOutputType(int output, int no, int newVal)
+{
+	if (output != VP_OUT_SOLENOID)
+		return S_FALSE;
+
+	vp_setModOutputType(output, no, newVal);
 
 	return S_OK;
 }
