@@ -174,8 +174,8 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   if (coreGlobals.nModulatedOutputs > 0)
   {
 	 core_perform_pwm_integration();
-	 for (ii = 0; ii < CORE_MAXGI; ii++) {
-		allGI[ii] = coreGlobals.modulatedOutputs[CORE_MAXSOL + ii].type == CORE_MODOUT_DEFAULT ? coreGlobals.gi[ii] : coreGlobals.modulatedOutputs[CORE_MAXSOL + ii].value;
+	 for (ii = 0; ii < CORE_MODOUT_GI_MAX; ii++) {
+		allGI[ii] = coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii].type == CORE_MODOUT_DEFAULT ? coreGlobals.gi[ii] : coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii].value;
 	 }
   }
   else
@@ -253,9 +253,9 @@ void vp_setModOutputType(int output, int no, int type) {
 		if (output == VP_OUT_SOLENOID)
 			coreGlobals.modulatedOutputs[no - 1].type = type;
 		else if (output == VP_OUT_GI)
-			coreGlobals.modulatedOutputs[CORE_MAXSOL + no - 1].type = type;
+			coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + no - 1].type = type;
 		else if (output == VP_OUT_LAMP)
-			coreGlobals.modulatedOutputs[CORE_MAXSOL + CORE_MAXGI + no - 1].type = type;
+			coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + no - 1].type = type;
 		if (type == CORE_MODOUT_DEFAULT)
 			coreGlobals.nModulatedOutputs--;
 		else
