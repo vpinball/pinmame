@@ -102,19 +102,37 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 
 	locals.lastSol = allSol;
 
-	if (options.usemodsol || coreGlobals.nModulatedOutputs > 0)
+	// If activated, treat the PWM integrated solenoids
+	if (coreGlobals.nModulatedOutputs > 0)
 	{
 		core_perform_pwm_integration();
+		for (ii = 0; ii < CORE_MODOUT_SOL_MAX; ii++)
+		{
+			UINT8 activeValue = coreGlobals.modulatedOutputs[ii].value;
+			if (locals.lastModSol[ii] != activeValue)
+			{
+				locals.lastModSol[ii] = activeValue;
+				chgStat[idx].solNo = ii + 1; // Solenoid number
+				chgStat[idx].currStat = activeValue;
+				idx += 1;
+			}
+		}
+		start = CORE_MODOUT_SOL_MAX;
+		chgSol >>= start;
+		allSol >>= start;
+	}
 
-		for(ii = 0; ii<CORE_MODSOL_MAX; ii++)
+	// If activated, treat the solenoid modulation performed by hardware driver (GTS3 & WPC)
+	if (options.usemodsol)
+	{
+		for(ii = start; ii<CORE_MODSOL_MAX; ii++)
 		{
 			// Skip the VPM reserved solenoids, they will be handled after.  Need to include
 			// "flipper" solenoids as WPC may sneak flashers there when upper flippers aren't present.
 			// WPC will put unsmoothed 0/1 values on actual flippers so this shouldn't harm anything.
 			if (ii==40)
 				ii=CORE_FIRSTCUSTSOL-1;
-
-			UINT8 activeValue = coreGlobals.modulatedOutputs[ii].type == CORE_MODOUT_DEFAULT ? coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii] : coreGlobals.modulatedOutputs[ii].value;
+			UINT8 activeValue = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii];
 			if (locals.lastModSol[ii] != activeValue)
 			{
 				locals.lastModSol[ii] = activeValue;
@@ -124,12 +142,13 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 			}
 		}
 		// Treat the VPM reserved solenoids the old way. 
+		chgSol >>= (40 - start);
+		allSol >>= (40 - start);
 		start = 40;
 		end = CORE_FIRSTCUSTSOL-1;
-		chgSol >>= start;
-		allSol >>= start;
 	}
 
+	// Treat the remaining solenoids as binary state
 	for (ii = start; ii < end; ii++) 
 	{
 		if (chgSol & 0x01) {

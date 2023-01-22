@@ -2159,7 +2159,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
          serial_R = 0.22; // From schematics (TZ, TOTAN, CFTBL, WPC95 general)
          break;
       case CORE_MODOUT_BULB_44_18V_DC_GTS3:
-         U = 18 - 1.1; // 18V switched through a Mosfets 12P06 & 12N10L, 1N4004 serial (1.1V voltage drop from datasheet)
+         U = 18 - 1.1; // Switched through MOSFETs (12P06 & 12N10L), serial 3,5 Ohms, then serie with 1N4004 voltage drop (1,1V) for bulbs / 120 Ohms with 1N4004 for LEDs
          serial_R = 3.5; // From schematics (Cue Ball Wizard)
          break;
       case CORE_MODOUT_BULB_44_18V_DC_S11:
@@ -2288,8 +2288,31 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
    break;
    case CORE_MODOUT_DEFAULT:
    default:
-      // Default is the modulated solenoid values as computed by each hardware drivers (nothing to do here since the integration is already performed)
-      break;
+   {
+      // Default is the modulated solenoid values as computed by each hardware drivers if implemented or the non modulated value
+      int index = ((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput);
+      if (index < CORE_MODOUT_SOL_MAX)
+      {
+         // For the time being, only GTS3 and WPC have modulated solenoids direclty implemented in the driver
+         if ((core_gameData->gen & (GEN_ALLWPC | GEN_GTS3)) && options.usemodsol)
+            output->value = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][index];
+         else
+            output->value = core_getSol(index + 1);
+      }
+      else if (index < CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX)
+      {
+         // WPC & Data East drivers write the GI state in this array, others will be at 0 (no dedicated GI output)
+         output->value = coreGlobals.gi[index - CORE_MODOUT_SOL_MAX];
+      }
+      else if (index < CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + CORE_MODOUT_LAMP_MAX)
+      {
+         // TODO preliminary implementation, untested since Lamps are not yet supported
+         int row = (index - CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX) >> 8;
+         int col = (index - CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX) & 0x7;
+         output->value = coreGlobals.lampMatrix[row] & (1 << col);
+      }
+   }
+   break;
    }
 }
 
@@ -2301,14 +2324,15 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
 void core_perform_pwm_integration()
 {
    int nSamples = coreGlobals.pulsedOutStateSamplePos - coreGlobals.lastModulatedOutputIntegrationPos;
+   if (coreGlobals.pulsedOutStateSampleFreq > 0 && nSamples > 0)
    {
-      for (int ii = 0; ii < 32 /*CORE_MAXSOL*/; ii++) // We only store the state of the first 32 solenoids
+      for (int ii = 0; ii < CORE_MODOUT_SOL_MAX; ii++)
       {
          core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[ii], nSamples, ((UINT8*)coreGlobals.pulsedSolStateSamples) + (ii >> 3), ii & 7, 4);
       }
-      for (int ii = 0; ii < CORE_MAXGI; ii++)
+      for (int ii = 0; ii < CORE_MODOUT_GI_MAX; ii++)
       {
-         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[CORE_MAXSOL + ii], nSamples, (UINT8*)coreGlobals.pulsedGIStateSamples, ii, 1);
+         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii], nSamples, (UINT8*)coreGlobals.pulsedGIStateSamples, ii, 1);
       }
    }
    coreGlobals.lastModulatedOutputIntegrationPos = coreGlobals.pulsedOutStateSamplePos;

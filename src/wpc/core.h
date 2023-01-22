@@ -375,6 +375,9 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
 #define CORE_MODOUT_MOTOR_LINEAR         500 /* Linear integration for motor (like Twilight Zone clock). Note: evaluate PWM implementation for mech for this type of devices. */
 
+#define CORE_MODOUT_SOL_MAX      32 /* Maximum number of modulated outputs for solenoids */
+#define CORE_MODOUT_GI_MAX        5 /* Maximum number of modulated outputs for GI */
+#define CORE_MODOUT_LAMP_MAX      0 /* Maximum number of modulated outputs for lamps (not yet implemented, so 0 for now) */
 #define CORE_MODOUT_SAMPLE_MAX  256 /* Size of sampling history for PWM integration. Must be a power of 2 */
 
 
@@ -440,7 +443,7 @@ typedef struct {
   UINT8 pulsedGIStateSamples[CORE_MODOUT_SAMPLE_MAX];  /* sample pulse value of WPC gi strings */
   int nModulatedOutputs;
   int lastModulatedOutputIntegrationPos; /* Last sample index where modulated output integration was performed */
-  core_tModulatedOutput modulatedOutputs[CORE_MAXSOL + CORE_MAXGI + CORE_MAXLAMPCOL*8];
+  core_tModulatedOutput modulatedOutputs[CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + CORE_MODOUT_LAMP_MAX];
   volatile int    gi[CORE_MAXGI];  /* WPC gi strings */
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
@@ -526,13 +529,17 @@ extern UINT64 core_getAllSol(void);
 /*-- PWM sampling, AC sync and integration --*/
 extern void core_perform_pwm_integration();
 INLINE void core_zero_cross() {
-   coreGlobals.lastACZeroCross = timer_get_time();
+   if (coreGlobals.nModulatedOutputs > 0)
+      coreGlobals.lastACZeroCross = timer_get_time();
 }
 INLINE void core_store_pulsed_samples(double freq) {
-   coreGlobals.pulsedOutStateSampleFreq = freq;
-   coreGlobals.pulsedOutStateSamplePos++;
-   coreGlobals.pulsedSolStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedSolState;
-   coreGlobals.pulsedGIStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedGIState;
+   if (coreGlobals.nModulatedOutputs > 0)
+   {
+      coreGlobals.pulsedOutStateSampleFreq = freq;
+      coreGlobals.pulsedOutStateSamplePos++;
+      coreGlobals.pulsedSolStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedSolState;
+      coreGlobals.pulsedGIStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedGIState;
+   }
 }
 
 INLINE void core_update_modulated_light(UINT32 *light, int bit){

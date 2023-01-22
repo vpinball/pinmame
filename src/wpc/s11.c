@@ -100,8 +100,7 @@ static struct {
 
 static void s11_irqline(int state) {
   if (state) {
-    if (coreGlobals.nModulatedOutputs > 0)
-      core_store_pulsed_samples((int) S11_IRQFREQ);
+    core_store_pulsed_samples((int) S11_IRQFREQ);
     cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
     /*Set coin door inputs, differs between S11 & DE*/
     if (locals.deGame) {
