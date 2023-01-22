@@ -167,7 +167,6 @@ BEGIN
         POPUP "&Show Folders"
         BEGIN
             MENUITEM "overridden by code",          ID_CONTEXT_SHOW_FOLDER_START
-
         END
     END
 END
@@ -1339,4 +1338,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

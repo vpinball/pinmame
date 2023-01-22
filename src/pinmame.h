@@ -11,9 +11,6 @@
 #define DBG_BPR         1 // BPR command added to debugger
 #define PINMAME_SAMPLES 1 // Sample Support
 
-#define TINY_COMPILE
-#define NEOFREE
-
 
 #  ifndef PI
 #    define PI 3.1415926535897932384626433832795

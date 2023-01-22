@@ -16,7 +16,6 @@
 #include "mamedbg.h"
 
 
-
 /*************************************
  *
  *	Include headers from all CPUs
@@ -1543,7 +1542,7 @@ static const char *dummy_info(void *context, int regnum)
 		case CPU_INFO_FAMILY: return "no CPU";
 		case CPU_INFO_VERSION: return "0.0";
 		case CPU_INFO_FILE: return __FILE__;
-		case CPU_INFO_CREDITS: return "The MAME team.";
+		case CPU_INFO_CREDITS: return "The PinMAME team.";
 	}
 	return "";
 }

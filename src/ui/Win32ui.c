@@ -568,27 +568,6 @@ const char* column_names[COLUMN_MAX] =
 	"Play Time"
 };
 
-/* a tiny compile is without Neogeo games */
-#if (defined(NEOFREE) || defined(TINY_COMPILE)) && !defined(NEOMAME)
-struct GameDriver driver_neogeo =
-{
-	__FILE__,
-	0,
-	"Neo-Geo Fake driver",
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-    0,
-    NOT_A_DRIVER
-};
-#else
-extern struct GameDriver driver_neogeo;
-#endif
-
 /***************************************************************************
     Message Macros
  ***************************************************************************/
@@ -787,7 +766,7 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_antialias %d",          pOpts->dmd_antialias);
 #endif /* PINMAME */
 
-	dprintf("Launching MAME32:");
+	dprintf("Launching PinMAME32:");
 	dprintf("%s",pCmdLine);
 }
 
@@ -887,7 +866,7 @@ int Mame32Main(HINSTANCE    hInstance,
 {
 	MSG 	msg;
 
-	dprintf("MAME32 starting");
+	dprintf("PinMAME32 starting");
 
 	options.gui_host = 1;
 	use_gui_romloading = TRUE;
@@ -2129,7 +2108,7 @@ static LRESULT WINAPI MameWindowProc(HWND hWnd, UINT message, UINT_PTR wParam, L
 
 		  POSSIBLE BUGS:
 		  I've included this check in the subclassed windows, but a
-		  mose move in either the title bar, the menu, or the
+		  mouse move in either the title bar, the menu, or the
 		  toolbar will not generate a WM_MOUSEOVER message. At least
 		  not one that I know how to pick up. A solution could maybe
 		  be to subclass those too, but that's too much work :)
@@ -3676,7 +3655,7 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 		break;
 
 		/*
-		  Switches to fullscreen mode. No check mark handeling
+		  Switches to fullscreen mode. No check mark handling
 		  for this item cause in fullscreen mode the menu won't
 		  be visible anyways.
 		*/

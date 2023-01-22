@@ -7917,25 +7917,6 @@ static UINT8 DefaultEnableRegion(SearchRegion * region, SearchInfo * info)
 				(!region->writeHandler->base))
 				return 1;
 
-#ifndef MESS
-#ifndef TINY_COMPILE
-#ifndef CPSMAME
-
-			{
-				extern struct GameDriver	driver_neogeo;
-
-				// for neogeo, search bank one
-				if(	(Machine->gamedrv->clone_of == &driver_neogeo) &&
-					(info->targetType == kRegionType_CPU) &&
-					(info->targetIdx == 0) &&
-					(handler == MWA_BANK1))
-					return 1;
-			}
-
-#endif
-#endif
-#endif
-
 #if HAS_TMS34010
 
 			// for exterminator, search bank one
