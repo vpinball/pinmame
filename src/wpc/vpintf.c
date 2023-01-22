@@ -174,8 +174,8 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   if (coreGlobals.nModulatedOutputs > 0)
   {
 	 core_perform_pwm_integration();
-	 for (ii = 0; ii < CORE_MODOUT_GI_MAX; ii++) {
-		allGI[ii] = coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii].type == CORE_MODOUT_DEFAULT ? coreGlobals.gi[ii] : coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii].value;
+	 for (ii = 0; ii < CORE_MAXGI; ii++) {
+		allGI[ii] = coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii].value;
 	 }
   }
   else
@@ -243,30 +243,42 @@ UINT64 vp_getSolMask64(void) {
 }
 
 /*-----------
-/  set Output Modulation Type ('no' starts at 1 upward, for example 1-5 for GI)
+/  set Output Modulation Type ('no' starts at 1 upward, for example 1-5 for WPC GI)
 /-----------*/
 void vp_setModOutputType(int output, int no, int type) {
 	// For the time being, the only supported output type is solenoid, but the API is designed to be 
 	// extended to lamp matrix (needed by Whitestar for Lord of the ring) and GI (needed by all WPC).
-	if (coreGlobals.modulatedOutputs[no].type != type)
+	int pos;
+	if (output == VP_OUT_SOLENOID && 1 <= no && no <= CORE_MODOUT_SOL_MAX)
+		pos = no - 1;
+	else if (output == VP_OUT_GI && 1 <= no && no <= CORE_MODOUT_GI_MAX)
+		pos = CORE_MODOUT_SOL_MAX + no - 1;
+	else if (output == VP_OUT_LAMP && 1 <= no && no <= CORE_MODOUT_LAMP_MAX)
+		pos = CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + no - 1;
+	else
+		return;
+	if (coreGlobals.modulatedOutputs[pos].type != type)
 	{
-		if (output == VP_OUT_SOLENOID)
-			coreGlobals.modulatedOutputs[no - 1].type = type;
-		else if (output == VP_OUT_GI)
-			coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + no - 1].type = type;
-		else if (output == VP_OUT_LAMP)
-			coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + no - 1].type = type;
-		if (type == CORE_MODOUT_DEFAULT)
+		int prev_type = coreGlobals.modulatedOutputs[pos].type;
+		coreGlobals.modulatedOutputs[pos].type = type;
+		if (type == CORE_MODOUT_DEFAULT && prev_type != CORE_MODOUT_DEFAULT)
 			coreGlobals.nModulatedOutputs--;
-		else
+		else if (type != CORE_MODOUT_DEFAULT && prev_type == CORE_MODOUT_DEFAULT)
 			coreGlobals.nModulatedOutputs++;
 	}
 }
 
 int vp_getModOutputType(int output, int no) {
-	if (output == VP_OUT_SOLENOID)
-		return coreGlobals.modulatedOutputs[no].type;
-	return CORE_MODOUT_DEFAULT;
+	int pos;
+	if (output == VP_OUT_SOLENOID && 1 <= no && no <= CORE_MODOUT_SOL_MAX)
+		pos = no - 1;
+	else if (output == VP_OUT_GI && 1 <= no && no <= CORE_MODOUT_GI_MAX)
+		pos = CORE_MODOUT_SOL_MAX + no - 1;
+	else if (output == VP_OUT_LAMP && 1 <= no && no <= CORE_MODOUT_LAMP_MAX)
+		pos = CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + no - 1;
+	else
+		return CORE_MODOUT_DEFAULT;
+	return coreGlobals.modulatedOutputs[pos].type;
 }
 
 int vp_getMech(int mechNo) {
