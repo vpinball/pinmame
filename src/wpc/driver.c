@@ -546,6 +546,7 @@ DRIVER(tftc,400)        //               10/15 Tales From the Crypt (4.00 unoffi
 DRIVER(tomy,102)        //Data East MPU: 02/94 The Who's Tommy Pinball Wizard (1.02)
 DRIVER(tomy,102be)      //               02/94 The Who's Tommy Pinball Wizard (1.02 Belgian)
 DRIVER(tomy,h30)        //               02/94 The Who's Tommy Pinball Wizard (3.00 Dutch)
+DRIVER(tomy,301g)       //               02/94 The Who's Tommy Pinball Wizard (3.01 German)
 DRIVER(tomy,400)        //               02/94 The Who's Tommy Pinball Wizard (4.00)
 DRIVER(tomy,500)        //               05/16 The Who's Tommy Pinball Wizard (5.00 unofficial MOD)
 DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
