@@ -2293,15 +2293,15 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       int index = ((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput);
       if (index < CORE_MODOUT_SOL_MAX)
       {
-         // For the time being, only GTS3 and WPC have modulated solenoids direclty implemented in the driver
-         if ((core_gameData->gen & (GEN_ALLWPC | GEN_GTS3)) && options.usemodsol)
+         // For the time being, only GTS3, WPC and SAM have modulated solenoids direclty implemented in the driver
+         if ((core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_SAM)) && options.usemodsol)
             output->value = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][index];
          else
             output->value = core_getSol(index + 1);
       }
       else if (index < CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX)
       {
-         // WPC & Data East drivers write the GI state in this array, others will be at 0 (no dedicated GI output)
+         // WPC, SAM & Data East drivers write the GI state in this array, others will be at 0 (no dedicated GI output)
          output->value = coreGlobals.gi[index - CORE_MODOUT_SOL_MAX];
       }
       else if (index < CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + CORE_MODOUT_LAMP_MAX)
