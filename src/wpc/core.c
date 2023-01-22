@@ -2324,7 +2324,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
 void core_perform_pwm_integration()
 {
    int nSamples = coreGlobals.pulsedOutStateSamplePos - coreGlobals.lastModulatedOutputIntegrationPos;
-   if (coreGlobals.nModulatedOutputs > 0 && coreGlobals.pulsedOutStateSampleFreq > 0 && nSamples > 0)
+   if (coreGlobals.pulsedOutStateSampleFreq > 0 && nSamples > 0)
    {
       for (int ii = 0; ii < CORE_MODOUT_SOL_MAX; ii++)
       {

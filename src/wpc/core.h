@@ -529,13 +529,17 @@ extern UINT64 core_getAllSol(void);
 /*-- PWM sampling, AC sync and integration --*/
 extern void core_perform_pwm_integration();
 INLINE void core_zero_cross() {
-   coreGlobals.lastACZeroCross = timer_get_time();
+   if (coreGlobals.nModulatedOutputs > 0)
+      coreGlobals.lastACZeroCross = timer_get_time();
 }
 INLINE void core_store_pulsed_samples(double freq) {
-   coreGlobals.pulsedOutStateSampleFreq = freq;
-   coreGlobals.pulsedOutStateSamplePos++;
-   coreGlobals.pulsedSolStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedSolState;
-   coreGlobals.pulsedGIStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedGIState;
+   if (coreGlobals.nModulatedOutputs > 0)
+   {
+      coreGlobals.pulsedOutStateSampleFreq = freq;
+      coreGlobals.pulsedOutStateSamplePos++;
+      coreGlobals.pulsedSolStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedSolState;
+      coreGlobals.pulsedGIStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedGIState;
+   }
 }
 
 INLINE void core_update_modulated_light(UINT32 *light, int bit){

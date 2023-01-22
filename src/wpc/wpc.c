@@ -1044,8 +1044,7 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
-   if (coreGlobals.nModulatedOutputs > 0)
-      core_store_pulsed_samples(WPC_IRQFREQ);
+   core_store_pulsed_samples(WPC_IRQFREQ);
 #ifdef WPC_MODSOLSAMPLE
 	if (options.usemodsol)
 	{
