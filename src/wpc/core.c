@@ -2297,7 +2297,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
          if ((core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_SAM)) && options.usemodsol)
             output->value = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][index];
          else
-            output->value = core_getSol(index + 1);
+            output->value = (coreGlobals.solenoids >> index) & 1;
       }
       else if (index < CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX)
       {
