@@ -45,12 +45,6 @@ extern unsigned int coinlockedout[COIN_COUNTERS];
 static int game_paused = 0; /* not zero if the game is paused */
 #endif
 
-extern int neogeo_memcard_load(int);
-extern void neogeo_memcard_save(void);
-extern void neogeo_memcard_eject(void);
-extern int neogeo_memcard_create(int);
-/* MARTINEZ.F 990207 Memory Card End */
-
 #if defined(LIBPINMAME)
 extern int libpinmame_time_to_quit(void);
 #endif
