@@ -2144,15 +2144,18 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       // TODO The tests did not exhibit any performance issue but most computation could be moved to optimized to LUTs
 
       // Bulb driver electronics from a few schematics/photos:
-      double U, serial_R = 0.0;
+      double U, serial_R = 0.0, acTime = 0.0;
+      int isAC = FALSE;
       switch (output->type)
       {
       case CORE_MODOUT_BULB_44_6_3V_AC: // 6.3V AC used for GI
       case CORE_MODOUT_BULB_47_6_3V_AC:
       case CORE_MODOUT_BULB_86_6_3V_AC:
-         // for AC power, we modulate the voltage here instead of using RMS value since it gives a slightly smoother fading for WPC (maybe overkill ?).
+         // for AC power, we modulate the voltage instead of using RMS value since it gives a slightly smoother fading for WPC (maybe overkill ?).
          // If needed (WPC for example), machine driver needs to sync with zero crossing by calling 'core_zero_cross'
-         U = 6.3 * 1.414 * fabs(sin(60.0 * 2.0 * PI * (timer_get_time() - coreGlobals.lastACZeroCross)));
+         U = 6.3;
+         isAC = TRUE;
+         acTime = (timer_get_time() - coreGlobals.lastACZeroCross) - nSamples / sampleFreq;
          break;
       case CORE_MODOUT_BULB_44_18V_DC_WPC:
          U = 18 - 0.7 - 0.7; // 18V switched through a TIP102 and a TIP107 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A)
@@ -2230,7 +2233,8 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
          if (samples[samplePos * stride] & mask)
          {
             double R = R0 * pow(T / 293.0, 1.215);
-            double U1 = U * R / (R + serial_R);
+            // Little hack for AC power: we add 0.5% to avoid the flickering caused by the sampling process
+            double U1 = (isAC ? 1.005 * 1.414 * sin(60.0 * 2.0 * PI * acTime) * U : U) * R / (R + serial_R);
             delta_energy += U1 * U1 / R;
          }
          double specific_heat = 3.0 * 45.2268 * (1.0 - 310.0 * 310.0 / (20.0 * T2)) + (2.0 * 0.0045549 * T) + (4 * 0.000000000577874 * T3);
@@ -2256,6 +2260,8 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
          output->state.emission_history_pos = (output->state.emission_history_pos + 1) & 0x0F;
          average_emission += emission;
          max_emission = average_emission > max_emission ? average_emission : max_emission;
+
+         acTime += 1.0 / sampleFreq;
       }
       output->state.filament_temperature = T;
 
