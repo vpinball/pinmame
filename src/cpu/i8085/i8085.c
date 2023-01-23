@@ -1,10 +1,19 @@
+// license:BSD-3-Clause
+// copyright-holders:Juergen Buchmueller, hap
+// thanks-to:Marcel De Kogel
 /*****************************************************************************
  *
- *	 i8085.c
- *	 Portable I8085A emulator V1.2
+ *   Portable I8085A emulator V1.3
  *
- *	 Copyright (c) 1999 Juergen Buchmueller, all rights reserved.
- *	 Partially based on information out of Z80Em by Marcel De Kogel
+ *   Copyright Juergen Buchmueller, all rights reserved.
+ *   Partially based on information out of Z80Em by Marcel De Kogel
+ *
+ *   TODO:
+ *   - not sure if 8085 DSUB H flag is correct
+ *   - accurate 8085 undocumented V/K flags
+ *   - most of those is_8085 can probably be done better, like function overrides
+ *
+ * ---------------------------------------------------------------------------
  *
  * changes in V1.3
  *   - Added undocumented opcodes for the 8085A, based on a german
@@ -17,50 +26,35 @@
  *     Thanks for the info and a copy of the tables go to Timo Sachsenberg
  *     <timo.sachsenberg@student.uni-tuebingen.de>
  * changes in V1.2
- *	 - corrected cycle counts for these classes of opcodes
- *	   Thanks go to Jim Battle <frustum@pacbell.bet>
+ *   - corrected cycle counts for these classes of opcodes
+ *     Thanks go to Jim Battle <frustum@pacbell.bet>
  *
- *					808x	 Z80
- *	   DEC A		   5	   4	\
- *	   INC A		   5	   4	 \
- *	   LD A,B		   5	   4	  >-- Z80 is faster
- *	   JP (HL)		   5	   4	 /
- *	   CALL cc,nnnn: 11/17	 10/17	/
+ *                  808x     Z80
+ *     DEC A           5       4    \
+ *     INC A           5       4     \
+ *     LD A,B          5       4      >-- Z80 is faster
+ *     JP (HL)         5       4     /
+ *     CALL cc,nnnn: 11/17   10/17  /
  *
- *	   INC HL		   5	   6	\
- *	   DEC HL		   5	   6	 \
- *	   LD SP,HL 	   5	   6	  \
- *	   ADD HL,BC	  10	  11	   \
- *	   INC (HL) 	  10	  11		>-- 8080 is faster
- *	   DEC (HL) 	  10	  11	   /
- *	   IN A,(#) 	  10	  11	  /
- *	   OUT (#),A	  10	  11	 /
- *	   EX (SP),HL	  18	  19	/
- *
- *	 - This source code is released as freeware for non-commercial purposes.
- *	 - You are free to use and redistribute this code in modified or
- *	   unmodified form, provided you list me in the credits.
- *	 - If you modify this source code, you must add a notice to each modified
- *	   source file that it has been changed.  If you're a nice person, you
- *	   will clearly mark each change too.  :)
- *	 - If you wish to use this for commercial purposes, please contact me at
- *	   pullmoll@t-online.de
- *	 - The author of this copywritten work reserves the right to change the
- *	   terms of its usage and license at any time, including retroactively
- *	 - This entire notice must remain in the source code.
- *
+ *     INC HL          5       6    \
+ *     DEC HL          5       6     \
+ *     LD SP,HL        5       6      \
+ *     ADD HL,BC      10      11       \
+ *     INC (HL)       10      11        >-- 8080 is faster
+ *     DEC (HL)       10      11       /
+ *     IN A,(#)       10      11      /
+ *     OUT (#),A      10      11     /
+ *     EX (SP),HL     18      19    /
  *
  * Revisions:
  *
  * xx-xx-2002 Acho A. Tang
- *
  * - 8085 emulation was in fact never used. It's been treated as a plain 8080.
  * - protected IRQ0 vector from being overwritten
  * - modified interrupt handler to properly process 8085-specific IRQ's
  * - corrected interrupt masking, RIM and SIM behaviors according to Intel's documentation
  *
  * 20-Jul-2002 Krzysztof Strzecha
- *
  * - SBB r instructions should affect parity flag.
  *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
  *   There are probably more opcodes which should affect this flag, but don't.
@@ -73,16 +67,14 @@
  *   Thanks for the info go to Anton V. Ignatichev.
  *
  * 08-Dec-2002 Krzysztof Strzecha
- *
  * - ADC r instructions should affect parity flag.
  *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
  *   There are probably more opcodes which should affect this flag, but don't.
  *
  * 05-Sep-2003 Krzysztof Strzecha
- *
  * - INR r, DCR r, ADD r, SUB r, CMP r instructions should affect parity flag.
  *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
- * 
+ *
  * 23-Dec-2006 Tomasz Slanina
  * - SIM fixed
  *
@@ -110,8 +102,8 @@
  * October 2012, hap
  * - fixed H flag on subtraction opcodes
  * - on 8080, don't push the unsupported flags(X5, X3, V) to stack
- * - 8080 passes on 8080/8085 CPU Exerciser, 8085 errors only on the DAA test
- *   (ref: http://www.idb.me.uk/sunhillow/8080.html - tests only 8080 opcodes)
+ * - it passes on 8080/8085 CPU Exerciser (ref: http://www.idb.me.uk/sunhillow/8080.html
+ *   tests only 8080 opcodes, link is dead so go via archive.org)
  *
  *****************************************************************************/
 
@@ -186,19 +178,19 @@ const UINT8 i8085_lut_cycles_8085[256]={
 /* 9 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* A */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
-/* C */ 6, 10,10,10,11,12,7, 12,6, 10,10,12,11,11,7, 12,
-/* D */ 6, 10,10,10,11,12,7, 12,6, 10,10,10,11,10,7, 12,
-/* E */ 6, 10,10,16,11,12,7, 12,6, 6, 10,5, 11,10,7, 12,
-/* F */ 6, 10,10,4, 11,12,7, 12,6, 6, 10,4, 11,10,7, 12 };
+/* C */ 6, 10,7, 7, 9, 12,7, 12,6, 10,7, 6, 9, 9, 7, 12,
+/* D */ 6, 10,7, 10,9, 12,7, 12,6, 10,7, 10,9, 7, 7, 12,
+/* E */ 6, 10,7, 16,9, 12,7, 12,6, 6, 7, 5, 9, 10,7, 12,
+/* F */ 6, 10,7, 4, 9, 12,7, 12,6, 6, 7, 4, 9, 7, 7, 12 };
 
 /* special cases (partially taken care of elsewhere):
-               base c    taken?   not taken?
-M_RET  8080    5         +6(11)   -0            (conditional)
-M_RET  8085    6         +6(12)   -0            (conditional)
-M_JMP  8080    10        +0       -0
-M_JMP  8085    10        +0       -3(7)
-M_CALL 8080    11        +6(17)   -0
-M_CALL 8085    11        +7(18)   -2(9)
+                base c    taken?
+M_RET  8080    5         +6(11)    (conditional)
+M_RET  8085    6         +6(12)    (conditional)
+M_JMP  8080    10        +0
+M_JMP  8085    7         +3(10)
+M_CALL 8080    11        +6(17)
+M_CALL 8085    9         +9(18)
 
 */
 
@@ -262,29 +254,29 @@ INLINE void execute_one(int opcode)
 
 	switch (opcode)
 	{
-		case 0x00:	/* NOP	*/
+		case 0x00: // NOP
 			/* no op */
 			break;
-		case 0x01:      /* LXI	B,nnnn */
+		case 0x01: // LXI B,nnnn
 			I.BC.w.l = ARG16();
 			break;
-		case 0x02: 	/* STAX B */
+		case 0x02: // STAX B
 			WM(I.BC.d, I.AF.b.h);
 			break;
-		case 0x03: 	/* INX	B */
+		case 0x03: // INX B
 			I.BC.w.l++;
-			if( I.cputype ) { if (I.BC.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.BC.w.l == 0x0000) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x04: 	/* INR	B */
+		case 0x04: // INR B
 			M_INR(I.BC.b.h);
 			break;
-		case 0x05: 	/* DCR	B */
+		case 0x05: // DCR B
 			M_DCR(I.BC.b.h);
 			break;
-		case 0x06: 	/* MVI	B,nn */
+		case 0x06: // MVI B,nn
 			M_MVI(I.BC.b.h);
 			break;
-		case 0x07: 	/* RLC	*/
+		case 0x07: // RLC
 			M_RLC;
 			break;
 		case 0x08:
@@ -295,26 +287,26 @@ INLINE void execute_one(int opcode)
 						/* NOP undocumented */
 			}
 			break;
-		case 0x09: 	/* DAD	B */
+		case 0x09: // DAD B
 			M_DAD(BC);
 			break;
-		case 0x0a: 	/* LDAX B */
+		case 0x0a: // LDAX B
 			I.AF.b.h = RM(I.BC.d);
 			break;
-		case 0x0b: 	/* DCX	B */
+		case 0x0b: // DCX B
 			I.BC.w.l--;
-			if( I.cputype ) { if (I.BC.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.BC.w.l == 0xffff) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x0c: 	/* INR	C */
+		case 0x0c: // INR C
 			M_INR(I.BC.b.l);
 			break;
-		case 0x0d: 	/* DCR	C */
+		case 0x0d: // DCR C
 			M_DCR(I.BC.b.l);
 			break;
-		case 0x0e: 	/* MVI	C,nn */
+		case 0x0e: // MVI C,nn
 			M_MVI(I.BC.b.l);
 			break;
-		case 0x0f: 	/* RRC	*/
+		case 0x0f: // RRC
 			M_RRC;
 			break;
 
@@ -327,26 +319,26 @@ INLINE void execute_one(int opcode)
 						/* NOP undocumented */
 			}
 			break;
-		case 0x11: 	/* LXI	D,nnnn */
+		case 0x11: // LXI D,nnnn
 			I.DE.w.l = ARG16();
 			break;
-		case 0x12: 	/* STAX D */
+		case 0x12: // STAX D
 			WM(I.DE.d, I.AF.b.h);
 			break;
-		case 0x13: 	/* INX	D */
+		case 0x13: // INX D
 			I.DE.w.l++;
-			if( I.cputype ) { if (I.DE.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.DE.w.l == 0x0000) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x14: 	/* INR	D */
+		case 0x14: // INR D
 			M_INR(I.DE.b.h);
 			break;
-		case 0x15: 	/* DCR	D */
+		case 0x15: // DCR D
 			M_DCR(I.DE.b.h);
 			break;
-		case 0x16: 	/* MVI	D,nn */
+		case 0x16: // MVI D,nn
 			M_MVI(I.DE.b.h);
 			break;
-		case 0x17: 	/* RAL	*/
+		case 0x17: // RAL
 			M_RAL;
 			break;
 
@@ -355,32 +347,32 @@ INLINE void execute_one(int opcode)
 						/* RLDE */
 				I.AF.b.l = (I.AF.b.l & ~(CF | VF)) | (I.DE.b.h >> 7);
 				I.DE.w.l = (I.DE.w.l << 1) | (I.DE.w.l >> 15);
-				if (0 != (((I.DE.w.l >> 15) ^ I.AF.b.l) & CF))
+				if ((((I.DE.w.l >> 15) ^ I.AF.b.l) & CF) != 0)
 					I.AF.b.l |= VF;
 			} else {
 						/* NOP undocumented */
 			}
 			break;
-		case 0x19: 	/* DAD	D */
+		case 0x19: // DAD D
 			M_DAD(DE);
 			break;
-		case 0x1a: 	/* LDAX D */
+		case 0x1a: // LDAX D
 			I.AF.b.h = RM(I.DE.d);
 			break;
-		case 0x1b: 	/* DCX	D */
+		case 0x1b: // DCX D
 			I.DE.w.l--;
-			if( I.cputype ) { if (I.DE.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.DE.w.l == 0xffff) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x1c: 	/* INR	E */
+		case 0x1c: // INR E
 			M_INR(I.DE.b.l);
 			break;
-		case 0x1d: 	/* DCR	E */
+		case 0x1d: // DCR E
 			M_DCR(I.DE.b.l);
 			break;
-		case 0x1e: 	/* MVI	E,nn */
+		case 0x1e: // MVI E,nn
 			M_MVI(I.DE.b.l);
 			break;
-		case 0x1f: 	/* RAR	*/
+		case 0x1f: // RAR
 			M_RAR;
 			break;
 
@@ -394,41 +386,37 @@ INLINE void execute_one(int opcode)
 						/* NOP undocumented */
 			}
 			break;
-		case 0x21: 	/* LXI	H,nnnn */
+		case 0x21: // LXI H,nnnn
 			I.HL.w.l = ARG16();
 			break;
-		case 0x22: 	/* SHLD nnnn */
+		case 0x22: // SHLD nnnn
 			I.XX.w.l = ARG16();
 			WM(I.XX.d, I.HL.b.l);
 			I.XX.w.l++;
 			WM(I.XX.d, I.HL.b.h);
 			break;
-		case 0x23: 	/* INX	H */
+		case 0x23: // INX H
 			I.HL.w.l++;
-			if( I.cputype ) { if (I.HL.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.HL.w.l == 0x0000) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x24: 	/* INR	H */
+		case 0x24: // INR H
 			M_INR(I.HL.b.h);
 			break;
-		case 0x25: 	/* DCR	H */
+		case 0x25: // DCR H
 			M_DCR(I.HL.b.h);
 			break;
-		case 0x26: 	/* MVI	H,nn */
+		case 0x26: // MVI H,nn
 			M_MVI(I.HL.b.h);
 			break;
-		case 0x27: 	/* DAA	*/
+		case 0x27: // DAA
 			I.XX.b.h = I.AF.b.h;
-					if (I.cputype && I.AF.b.l&VF) {
-						if ((I.AF.b.l&HF) | ((I.AF.b.h&0xf)>9)) I.XX.b.h-=6;
-						if ((I.AF.b.l&CF) | (I.AF.b.h>0x99)) I.XX.b.h-=0x60;
-					}
-					else {
-						if ((I.AF.b.l&HF) | ((I.AF.b.h&0xf)>9)) I.XX.b.h+=6;
-						if ((I.AF.b.l&CF) | (I.AF.b.h>0x99)) I.XX.b.h+=0x60;
-					}
+			if ((I.AF.b.l&HF) | ((I.AF.b.h&0xf)>9))
+				I.XX.b.h += 6;
+			if ((I.AF.b.l&CF) | (I.AF.b.h>0x99))
+				I.XX.b.h += 0x60;
 
-					I.AF.b.l=(I.AF.b.l&3) | (I.AF.b.h&0x28) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
-					I.AF.b.h=I.XX.b.h;
+			I.AF.b.l=(I.AF.b.l&23) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
+			I.AF.b.h=I.XX.b.h;
 			break;
 
 		case 0x28:
@@ -440,31 +428,31 @@ INLINE void execute_one(int opcode)
 						/* NOP undocumented */
 			}
 			break;
-		case 0x29: 	/* DAD	H */
+		case 0x29: // DAD H
 			M_DAD(HL);
 			break;
-		case 0x2a: 	/* LHLD nnnn */
+		case 0x2a: // LHLD nnnn
 			I.XX.d = ARG16();
 			I.HL.b.l = RM(I.XX.d);
 			I.XX.w.l++;
 			I.HL.b.h = RM(I.XX.d);
 			break;
-		case 0x2b: 	/* DCX	H */
+		case 0x2b: // DCX H
 			I.HL.w.l--;
-			if( I.cputype ) { if (I.HL.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.HL.w.l == 0xffff) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x2c: 	/* INR	L */
+		case 0x2c: // INR L
 			M_INR(I.HL.b.l);
 			break;
-		case 0x2d: 	/* DCR	L */
+		case 0x2d: // DCR L
 			M_DCR(I.HL.b.l);
 			break;
-		case 0x2e: 	/* MVI	L,nn */
+		case 0x2e: // MVI L,nn
 			M_MVI(I.HL.b.l);
 			break;
-		case 0x2f: 	/* CMA	*/
+		case 0x2f: // CMA
 			I.AF.b.h ^= 0xff;
-			if( I.cputype ) { I.AF.b.l |= HF | VF; }
+			if( I.cputype ) { I.AF.b.l |= VF; }
 			break;
 
 		case 0x30: //!! misses new port from MAME
@@ -487,32 +475,32 @@ INLINE void execute_one(int opcode)
 						/* NOP undocumented */
 			}
 			break;
-		case 0x31: 	/* LXI SP,nnnn */
+		case 0x31: // LXI SP,nnnn
 			I.SP.w.l = ARG16();
 			break;
-		case 0x32: 	/* STAX nnnn */
+		case 0x32: // STAX nnnn
 			I.XX.d = ARG16();
 			WM(I.XX.d, I.AF.b.h);
 			break;
-		case 0x33: 	/* INX	SP */
+		case 0x33: // INX SP
 			I.SP.w.l++;
-			if( I.cputype ) { if (I.SP.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.SP.w.l == 0x0000) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x34: 	/* INR	M */
+		case 0x34: // INR M
 			I.XX.b.l = RM(I.HL.d);
 			M_INR(I.XX.b.l);
 			WM(I.HL.d, I.XX.b.l);
 			break;
-		case 0x35: 	/* DCR	M */
+		case 0x35: // DCR M
 			I.XX.b.l = RM(I.HL.d);
 			M_DCR(I.XX.b.l);
 			WM(I.HL.d, I.XX.b.l);
 			break;
-		case 0x36: 	/* MVI	M,nn */
+		case 0x36: // MVI M,nn
 			I.XX.b.l = ARG();
 			WM(I.HL.d, I.XX.b.l);
 			break;
-		case 0x37: 	/* STC	*/
+		case 0x37: // STC
 			I.AF.b.l = (I.AF.b.l & 0xfe) | CF;
 			break;
 
@@ -525,27 +513,27 @@ INLINE void execute_one(int opcode)
 						/* NOP undocumented */
 			}
 			break;
-		case 0x39: 	/* DAD SP */
+		case 0x39: // DAD SP
 			M_DAD(SP);
 			break;
-		case 0x3a: 	/* LDAX nnnn */
+		case 0x3a: // LDAX nnnn
 			I.XX.d = ARG16();
 			I.AF.b.h = RM(I.XX.d);
 			break;
-		case 0x3b: 	/* DCX	SP */
+		case 0x3b: // DCX SP
 			I.SP.w.l--;
-			if( I.cputype ) { if (I.SP.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
+			if( I.cputype ) { if (I.SP.w.l == 0xffff) I.AF.b.l |= KF; else I.AF.b.l &= ~KF; }
 			break;
-		case 0x3c: 	/* INR	A */
+		case 0x3c: // INR A
 			M_INR(I.AF.b.h);
 			break;
-		case 0x3d: 	/* DCR	A */
+		case 0x3d: // DCR A
 			M_DCR(I.AF.b.h);
 			break;
-		case 0x3e: 	/* MVI	A,nn */
+		case 0x3e: // MVI A,nn
 			M_MVI(I.AF.b.h);
 			break;
-		case 0x3f: 	/* CMC	*/
+		case 0x3f: // CMC
 			I.AF.b.l = (I.AF.b.l & 0xfe) | (~I.AF.b.l & CF);
 			break;
 
@@ -717,7 +705,7 @@ INLINE void execute_one(int opcode)
 		case 0x75: 	/* MOV	M,L */
 			WM(I.HL.d, I.HL.b.l);
 			break;
-		case 0x76: 	/* HALT */
+		case 0x76: // HLT (instead of MOV M,M)
 			I.PC.w.l--;
 			I.HALT = 1;
 			if (i8085_ICount > 0) i8085_ICount = 0; //!!
@@ -951,39 +939,39 @@ INLINE void execute_one(int opcode)
 			M_CMP(I.AF.b.h);
 			break;
 
-		case 0xc0: 	/* RNZ	*/
+		case 0xc0: // RNZ
 			M_RET( !(I.AF.b.l & ZF) );
 			break;
-		case 0xc1: 	/* POP	B */
+		case 0xc1: // POP B
 			M_POP(BC);
 			break;
-		case 0xc2: 	/* JNZ	nnnn */
+		case 0xc2: // JNZ nnnn
 			M_JMP( !(I.AF.b.l & ZF) );
 			break;
-		case 0xc3: 	/* JMP	nnnn */
+		case 0xc3: // JMP nnnn
 			M_JMP(1);
 			break;
-		case 0xc4: 	/* CNZ	nnnn */
+		case 0xc4: // CNZ nnnn
 			M_CALL( !(I.AF.b.l & ZF) );
 			break;
-		case 0xc5: 	/* PUSH B */
+		case 0xc5: // PUSH B
 			M_PUSH(BC);
 			break;
-		case 0xc6:  	/* ADI	nn */
+		case 0xc6: // ADI nn
 			I.XX.b.l = ARG();
 			M_ADD(I.XX.b.l);
 				break;
-		case 0xc7: 	/* RST	0 */
+		case 0xc7: // RST 0
 			M_RST(0);
 			break;
 
-		case 0xc8: 	/* RZ	*/
+		case 0xc8: // RZ
 			M_RET( I.AF.b.l & ZF );
 			break;
-		case 0xc9: 	/* RET	*/
+		case 0xc9: // RET
 			M_RET(1);
 			break;
-		case 0xca: 	/* JZ	nnnn */
+		case 0xca: // JZ nnnn
 			M_JMP( I.AF.b.l & ZF );
 			break;
 		case 0xcb:
@@ -998,47 +986,47 @@ INLINE void execute_one(int opcode)
 				M_JMP(1);
 			}
 			break;
-		case 0xcc: 	/* CZ	nnnn */
+		case 0xcc: // CZ nnnn
 			M_CALL( I.AF.b.l & ZF );
 			break;
-		case 0xcd: 	/* CALL nnnn */
+		case 0xcd: // CALL nnnn
 			M_CALL(1);
 			break;
-		case 0xce: 	/* ACI	nn */
+		case 0xce: // ACI nn
 			I.XX.b.l = ARG();
 			M_ADC(I.XX.b.l);
 			break;
-		case 0xcf: 	/* RST	1 */
+		case 0xcf: // RST 1
 			M_RST(1);
 			break;
 
-		case 0xd0: 	/* RNC	*/
+		case 0xd0: // RNC
 			M_RET( !(I.AF.b.l & CF) );
 			break;
-		case 0xd1: 	/* POP	D */
+		case 0xd1: // POP D
 			M_POP(DE);
 			break;
-		case 0xd2: 	/* JNC	nnnn */
+		case 0xd2: // JNC nnnn
 			M_JMP( !(I.AF.b.l & CF) );
 			break;
-		case 0xd3: 	/* OUT	nn */
+		case 0xd3: // OUT nn
 			M_OUT;
 			break;
-		case 0xd4: 	/* CNC	nnnn */
+		case 0xd4: // CNC nnnn
 			M_CALL( !(I.AF.b.l & CF) );
 			break;
-		case 0xd5: 	/* PUSH D */
+		case 0xd5: // PUSH D
 			M_PUSH(DE);
 			break;
-		case 0xd6: 	/* SUI	nn */
+		case 0xd6: // SUI nn
 			I.XX.b.l = ARG();
 			M_SUB(I.XX.b.l);
 			break;
-		case 0xd7: 	/* RST	2 */
+		case 0xd7: // RST 2
 			M_RST(2);
 			break;
 
-		case 0xd8: 	/* RC	*/
+		case 0xd8: // RC
 			M_RET( I.AF.b.l & CF );
 			break;
 		case 0xd9:
@@ -1051,79 +1039,79 @@ INLINE void execute_one(int opcode)
 			} else {
 					/* RET undocumented */
 				M_POP(PC);
-                                change_pc16(I.PC.d);									\
+				change_pc16(I.PC.d);\
 			}
 			break;
-		case 0xda: 	/* JC	nnnn */
+		case 0xda: // JC nnnn
 			M_JMP( I.AF.b.l & CF );
 			break;
-		case 0xdb: 	/* IN	nn */
+		case 0xdb: // IN nn
 			M_IN;
 			break;
-		case 0xdc: 	/* CC	nnnn */
+		case 0xdc: // CC nnnn
 			M_CALL( I.AF.b.l & CF );
 			break;
 		case 0xdd:
 			if( I.cputype ) {
 						/* JNX  nnnn */
-				M_JMP( !(I.AF.b.l & X5F) );
+				M_JMP( !(I.AF.b.l & KF) );
 			} else {
 					/* CALL nnnn undocumented */
 				M_CALL(1);
 			}
 			break;
-		case 0xde: 	/* SBI	nn */
+		case 0xde: // SBI nn
 			I.XX.b.l = ARG();
 			M_SBB(I.XX.b.l);
 			break;
-		case 0xdf: 	/* RST	3 */
+		case 0xdf: // RST 3
 			M_RST(3);
 			break;
 
-		case 0xe0: 	/* RPO	  */
+		case 0xe0: // RPO
 			M_RET( !(I.AF.b.l & PF) );
 			break;
-		case 0xe1: 	/* POP	H */
+		case 0xe1: // POP H
 			M_POP(HL);
 			break;
-		case 0xe2: 	/* JPO	nnnn */
+		case 0xe2: // JPO nnnn
 			M_JMP( !(I.AF.b.l & PF) );
 			break;
-		case 0xe3: 	/* XTHL */
+		case 0xe3: // XTHL
 			M_POP(XX);
 			M_PUSH(HL);
 			I.HL.d = I.XX.d;
 			break;
-		case 0xe4: 	/* CPO	nnnn */
+		case 0xe4: // CPO nnnn
 			M_CALL( !(I.AF.b.l & PF) );
 			break;
-		case 0xe5: 	/* PUSH H */
+		case 0xe5: // PUSH H
 			M_PUSH(HL);
 			break;
-		case 0xe6: 	/* ANI	nn */
+		case 0xe6: // ANI nn
 			I.XX.b.l = ARG();
 			M_ANA(I.XX.b.l);
 			break;
-		case 0xe7: 	/* RST	4 */
+		case 0xe7: // RST 4
 			M_RST(4);
 			break;
 
-		case 0xe8: 	/* RPO	*/
+		case 0xe8: // RPE
 			M_RET( I.AF.b.l & PF );
 			break;
-		case 0xe9: 	/* PCHL */
+		case 0xe9: // PCHL
 			I.PC.d = I.HL.w.l;
 			change_pc16(I.PC.d);
 			break;
-		case 0xea: 	/* JPE	nnnn */
+		case 0xea: // JPE nnnn
 			M_JMP( I.AF.b.l & PF );
 			break;
-		case 0xeb: 	/* XCHG */
+		case 0xeb: // XCHG
 			I.XX.d = I.DE.d;
 			I.DE.d = I.HL.d;
 			I.HL.d = I.XX.d;
 			break;
-		case 0xec: 	/* CPO	nnnn */
+		case 0xec: // CPO nnnn
 			M_CALL( I.AF.b.l & PF );
 			break;
 		case 0xed:
@@ -1138,52 +1126,55 @@ INLINE void execute_one(int opcode)
 				M_CALL(1);
 			}
 			break;
-		case 0xee: 	/* XRI	nn */
+		case 0xee: // XRI nn
 			I.XX.b.l = ARG();
 			M_XRA(I.XX.b.l);
 			break;
-		case 0xef: 	/* RST	5 */
+		case 0xef: // RST 5
 			M_RST(5);
 			break;
 
-		case 0xf0: 	/* RP	*/
+		case 0xf0: // RP
 			M_RET( !(I.AF.b.l&SF) );
 			break;
-		case 0xf1: 	/* POP	A */
+		case 0xf1: // POP A
 			M_POP(AF);
 			break;
-		case 0xf2: 	/* JP	nnnn */
+		case 0xf2: // JP nnnn
 			M_JMP( !(I.AF.b.l & SF) );
 			break;
-		case 0xf3: 	/* DI	*/
+		case 0xf3: // DI
 			/* remove interrupt enable */
 			I.IM &= ~IM_IE;
 			break;
-		case 0xf4: 	/* CP	nnnn */
+		case 0xf4: // CP nnnn
 			M_CALL( !(I.AF.b.l & SF) );
 			break;
-		case 0xf5: 	/* PUSH A */
-                        //if (IS_8080()) I.AF.b.l = (I.AF.b.l&~(X3F|X5F))|VF; // on 8080, VF=1 and X3F=0 and X5F=0 always! (we don't have to check for it elsewhere)
+		case 0xf5: // PUSH A
+			// X3F is always 0, and on 8080, VF=1 and KF=0
+			// (we don't have to check for it elsewhere)
+			I.AF.b.l &= ~X3F;
+			if (!I.cputype) I.AF.b.l = (I.AF.b.l&~KF)|VF;
 			M_PUSH(AF);
 			break;
-		case 0xf6: 	/* ORI	nn */
+		case 0xf6: // ORI nn
 			I.XX.b.l = ARG();
 			M_ORA(I.XX.b.l);
 			break;
-		case 0xf7: 	/* RST	6 */
+		case 0xf7: // RST 6
 			M_RST(6);
 			break;
 
-		case 0xf8: 	/* RM	*/
+		case 0xf8: // RM
 			M_RET( I.AF.b.l & SF );
 			break;
-		case 0xf9: 	/* SPHL */
+		case 0xf9: // SPHL
 			I.SP.d = I.HL.d;
 			break;
-		case 0xfa: 	/* JM	nnnn */
+		case 0xfa: // JM nnnn
 			M_JMP( I.AF.b.l & SF );
 			break;
-		case 0xfb: 	/* EI */ //!! not ported from new MAME
+		case 0xfb: // EI //!! not ported from new MAME
 			/* set interrupt enable */
 			I.IM |= IM_IE;
 			/* remove serviced IRQ flag */
@@ -1232,23 +1223,23 @@ INLINE void execute_one(int opcode)
 				}
 			}
 			break;
-		case 0xfc: 	/* CM	nnnn */
+		case 0xfc: // CM nnnn
 			M_CALL( I.AF.b.l & SF );
 			break;
 		case 0xfd:
 			if( I.cputype ) {
 						/* JX   nnnn */
-				M_JMP( I.AF.b.l & X5F );
+				M_JMP( I.AF.b.l & KF );
 			} else {
 					/* CALL nnnn undocumented */
 				M_CALL(1);
 			}
 			break;
-		case 0xfe: 	/* CPI	nn */
+		case 0xfe: // CPI nn
 			I.XX.b.l = ARG();
 			M_CMP(I.XX.b.l);
 			break;
-		case 0xff: 	/* RST	7 */
+		case 0xff: // RST 7
 			M_RST(7);
 			break;
 	}
@@ -1256,7 +1247,6 @@ INLINE void execute_one(int opcode)
 
 static void Interrupt(void)
 {
-
 	if( I.HALT )		/* if the CPU was halted */
 	{
 		I.PC.w.l++; 	/* skip HALT instr */
@@ -1730,12 +1720,11 @@ const char *i8085_info(void *context, int regnum)
 		case CPU_INFO_REG+I8085_RST65_STATE: sprintf(buffer[which], "RST65:%X", I.irq_state[I8085_RST65_LINE]); break;
 		case CPU_INFO_REG+I8085_RST75_STATE: sprintf(buffer[which], "RST75:%X", I.irq_state[I8085_RST75_LINE]); break;
 		case CPU_INFO_FLAGS:
-			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
+			sprintf(buffer[which], "%c%c%c%c.%c%c%c",
 				(r->AF.b.l & 0x80) ? 'S':'.',
 				(r->AF.b.l & 0x40) ? 'Z':'.',
-				(r->AF.b.l & 0x20) ? 'X':'.', // X5
+				(r->AF.b.l & 0x20) ? 'K':'.', // X5
 				(r->AF.b.l & 0x10) ? 'H':'.',
-				(r->AF.b.l & 0x08) ? '?':'.',
 				(r->AF.b.l & 0x04) ? 'P':'.',
 				(r->AF.b.l & 0x02) ? 'V':'.',
 				(r->AF.b.l & 0x01) ? 'C':'.');
