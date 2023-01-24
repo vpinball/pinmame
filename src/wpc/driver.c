@@ -1147,7 +1147,7 @@ DRIVERNV(cobrapb)       //Cobra (1987)
 // ----------------
 // PLAYMATIC
 // ----------------
-DRIVERNV(msdisco)       // ??/?? Miss Disco (bingo machine)
+DRIVERNV(msdisco)       // ??/?? Miss Disco (Bingo)
 DRIVERNV(spcgambl)      // 03/78 Space Gambler
 DRIVERNV(bigtown)       // 04/78 Big Town
 DRIVERNV(lastlap)       // 09/78 Last Lap
@@ -1189,100 +1189,107 @@ DRIVERNV(trebol)        //Trebol (1985)
 DRIVERNV(heavymtl)      //Heavy Metal (198?)
 
 // ----------------
-// SEEBEN
+// SEEBEN / SIRMO
 // ----------------
-DRIVERNV(penalty)       //Penalty (Bingo) (19??)
-DRIVERNV(brooklyn)      //Brooklyn (Bingo) (19??)
-DRIVERNV(newdixie)      //New Dixieland (Bingo) (19??)
+DRIVERNV(penalty)       // 19?? - Penalty (Bingo)
+DRIVERNV(brooklyn)      // 19?? - Brooklyn (set 1) (Bingo)
+DRIVERNV(brooklyna)     // 19?? - Brooklyn (set 2) (Bingo)
+DRIVERNV(newdixie)      // 19?? - New Dixieland (Bingo)
+DRIVERNV(superdix)      // 19?? - Super Dixieland (Bingo)
+DRIVERNV(cntine31)      // 19?? - Continental 3 in 1 (Bingo)
+DRIVERNV(domino2)       // 19?? - Domino II (Bingo)
+DRIVERNV(tripjok)       // 19?? - Triple Joker (Bingo)
+DRIVERNV(ggate)         // 19?? - Golden Gate (set 1) (Bingo)
+DRIVERNV(ggatea)        // 19?? - Golden Gate (set 2) (Bingo)
 
 // --------------
 // SEGA GAMES
 // --------------
 //Data East Hardware, DMD 192x64
 DRIVER  (mav,100)       //DE/Sega MPU: 09/94 Maverick, The Movie 1.00
-DRIVER  (mav,200)       //DE/Sega MPU: 09/94 Maverick, The Movie 2.00
-DRIVER  (mav,400)       //DE/Sega MPU: 09/94 Maverick, The Movie 4.00
-DRIVER  (mav,401)       //DE/Sega MPU: 09/94 Maverick, The Movie 4.01 Display
-DRIVER  (mav,402)       //DE/Sega MPU: 09/94 Maverick, The Movie 4.02 Display
+DRIVER  (mav,200)       //             09/94 Maverick, The Movie 2.00
+DRIVER  (mav,400)       //             09/94 Maverick, The Movie 4.00
+DRIVER  (mav,401)       //             09/94 Maverick, The Movie 4.01 Display
+DRIVER  (mav,402)       //             09/94 Maverick, The Movie 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein, Mary Shelley's
-DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein, Mary Shelley's (German)
+DRIVERNV(frankstg)      //             01/95 Frankenstein, Mary Shelley's (German)
 DRIVER  (bay,f201)      //DE/Sega MPU: 04/95 Baywatch 2.01 (French)
-DRIVER  (bay,d300)      //DE/Sega MPU: 04/95 Baywatch 3.00 (Dutch)
-DRIVERNV(baywatch)      //DE/Sega MPU: 05/95 Baywatch 4.00
-DRIVER  (bay,d400)      //DE/Sega MPU: 05/95 Baywatch 4.00 (Dutch)
-DRIVER  (bay,e400)      //DE/Sega MPU: 05/95 Baywatch 4.00 (English)
-DRIVER  (bay,401)       //DE/Sega MPU: 12/17 Baywatch 4.01 (unofficial MOD)
+DRIVER  (bay,d300)      //             04/95 Baywatch 3.00 (Dutch)
+DRIVERNV(baywatch)      //             05/95 Baywatch 4.00
+DRIVER  (bay,d400)      //             05/95 Baywatch 4.00 (Dutch)
+DRIVER  (bay,e400)      //             05/95 Baywatch 4.00 (English)
+DRIVER  (bay,401)       //             12/17 Baywatch 4.01 (unofficial MOD)
 DRIVERNV(batmanf1)      //DE/Sega MPU: 07/95 Batman Forever (1.02)
-DRIVERNV(batmanf2)      //DE/Sega MPU: 07/95 Batman Forever (2.02)
-DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
-DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
-DRIVER  (bmf,uk)        //DE/Sega MPU: 07/95 Batman Forever (English)
-DRIVER  (bmf,at)        //DE/Sega MPU: 07/95 Batman Forever (Austrian)
-DRIVER  (bmf,be)        //DE/Sega MPU: 07/95 Batman Forever (Belgian)
-DRIVER  (bmf,ch)        //DE/Sega MPU: 07/95 Batman Forever (Swiss)
-DRIVER  (bmf,cn)        //DE/Sega MPU: 07/95 Batman Forever (Canadian)
-DRIVER  (bmf,de)        //DE/Sega MPU: 07/95 Batman Forever (German)
-DRIVER  (bmf,fr)        //DE/Sega MPU: 07/95 Batman Forever (French)
-DRIVER  (bmf,nl)        //DE/Sega MPU: 07/95 Batman Forever (Dutch)
-DRIVER  (bmf,it)        //DE/Sega MPU: 07/95 Batman Forever (Italian)
-DRIVER  (bmf,sp)        //DE/Sega MPU: 07/95 Batman Forever (Spanish)
-DRIVER  (bmf,no)        //DE/Sega MPU: 07/95 Batman Forever (Norwegian)
-DRIVER  (bmf,sv)        //DE/Sega MPU: 07/95 Batman Forever (Swedish)
-DRIVER  (bmf,jp)        //DE/Sega MPU: 07/95 Batman Forever (Japanese)
-DRIVER  (bmf,time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
+DRIVERNV(batmanf2)      //             07/95 Batman Forever (2.02)
+DRIVERNV(batmanf3)      //             07/95 Batman Forever (3.0)
+DRIVERNV(batmanf)       //             07/95 Batman Forever (4.0)
+DRIVER  (bmf,uk)        //             07/95 Batman Forever (English)
+DRIVER  (bmf,at)        //             07/95 Batman Forever (Austrian)
+DRIVER  (bmf,be)        //             07/95 Batman Forever (Belgian)
+DRIVER  (bmf,ch)        //             07/95 Batman Forever (Swiss)
+DRIVER  (bmf,cn)        //             07/95 Batman Forever (Canadian)
+DRIVER  (bmf,de)        //             07/95 Batman Forever (German)
+DRIVER  (bmf,fr)        //             07/95 Batman Forever (French)
+DRIVER  (bmf,nl)        //             07/95 Batman Forever (Dutch)
+DRIVER  (bmf,it)        //             07/95 Batman Forever (Italian)
+DRIVER  (bmf,sp)        //             07/95 Batman Forever (Spanish)
+DRIVER  (bmf,no)        //             07/95 Batman Forever (Norwegian)
+DRIVER  (bmf,sv)        //             07/95 Batman Forever (Swedish)
+DRIVER  (bmf,jp)        //             07/95 Batman Forever (Japanese)
+DRIVER  (bmf,time)      //             07/95 Batman Forever (Timed Version)
 DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
 //Whitestar Hardware, DMD 128x32
 DRIVERNV(apollo1)       //Whitestar: 11/95 Apollo 13 (1.00)
-DRIVERNV(apollo2)       //Whitestar: 11/95 Apollo 13 (2.03)
-DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13 (5.01)
-DRIVERNV(apollo14)      //Whitestar: 11/95 Apollo 13 (5.01, Display 4.01)
+DRIVERNV(apollo2)       //           11/95 Apollo 13 (2.03)
+DRIVERNV(apollo13)      //           11/95 Apollo 13 (5.01)
+DRIVERNV(apollo14)      //           11/95 Apollo 13 (5.01, Display 4.01)
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
-DRIVER  (twst,404)      //Whitestar: 05/96 Twister (4.04)
-DRIVER  (twst,405)      //Whitestar: 05/96 Twister (4.05)
+DRIVER  (twst,404)      //           05/96 Twister (4.04)
+DRIVER  (twst,405)      //           05/96 Twister (4.05)
 DRIVER  (id4,201)       //Whitestar: 07/96 ID4: Independence Day (2.01)
-DRIVER  (id4,201f)      //Whitestar: 07/96 ID4: Independence Day (2.01 French)
-DRIVERNV(id4)           //Whitestar: 07/96 ID4: Independence Day (2.02)
-DRIVERNV(id4f)          //Whitestar: 07/96 ID4: Independence Day (2.02 French)
+DRIVER  (id4,201f)      //           07/96 ID4: Independence Day (2.01 French)
+DRIVERNV(id4)           //           07/96 ID4: Independence Day (2.02)
+DRIVERNV(id4f)          //           07/96 ID4: Independence Day (2.02 French)
 DRIVERNV(spacejm2)      //Whitestar: 08/96 Space Jam (2.00)
-DRIVERNV(spacejam)      //Whitestar: 08/96 Space Jam (3.00)
-DRIVERNV(spacejmf)      //Whitestar: 08/96 Space Jam (3.00 French)
-DRIVERNV(spacejmg)      //Whitestar: 08/96 Space Jam (3.00 German)
-DRIVERNV(spacejmi)      //Whitestar: 08/96 Space Jam (3.00 Italian)
+DRIVERNV(spacejam)      //           08/96 Space Jam (3.00)
+DRIVERNV(spacejmf)      //           08/96 Space Jam (3.00 French)
+DRIVERNV(spacejmg)      //           08/96 Space Jam (3.00 German)
+DRIVERNV(spacejmi)      //           08/96 Space Jam (3.00 Italian)
 DRIVERNV(swtril30)      //Whitestar: 02/97 Star Wars Trilogy (3.00)
-DRIVERNV(swtril41)      //Whitestar: 03/97 Star Wars Trilogy (4.01)
-DRIVERNV(swtril43)      //Whitestar: 03/97 Star Wars Trilogy (4.03)
+DRIVERNV(swtril41)      //           03/97 Star Wars Trilogy (4.01)
+DRIVERNV(swtril43)      //           03/97 Star Wars Trilogy (4.03)
 DRIVERNV(jplstw20)      //Whitestar: 06/97 Lost World: Jurassic Park, The (2.00)
-DRIVERNV(jplstw22)      //Whitestar: 06/97 Lost World: Jurassic Park, The (2.02)
+DRIVERNV(jplstw22)      //           06/97 Lost World: Jurassic Park, The (2.02)
 DRIVERNV(xfiles20)      //Whitestar: 08/97 X-Files (2.00)
-DRIVERNV(xfiles2)       //Whitestar: 08/97 X-Files (2.04)
-DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files (3.03)
-DRIVERNV(xfilesf)       //Whitestar: 08/97 X-Files (3.03 French)
+DRIVERNV(xfiles2)       //           08/97 X-Files (2.04)
+DRIVERNV(xfiles)        //           08/97 X-Files (3.03)
+DRIVERNV(xfilesf)       //           08/97 X-Files (3.03 French)
 DRIVERNV(startrp2)      //Whitestar: 11/97 Starship Troopers (2.00)
-DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers (2.01)
+DRIVERNV(startrp)       //           11/97 Starship Troopers (2.01)
 DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
 DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
 DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVER  (vipr,102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
-DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin' (2.01)
+DRIVERNV(viprsega)      //           02/98 Viper Night Drivin' (2.01)
 DRIVERNV(lostspc1)      //Whitestar: 06/98 Lost in Space (1.01, Display 1.01)
-DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space (1.01, Display 1.02)
-DRIVERNV(lostspcg)      //Whitestar: 06/98 Lost in Space (1.01 German)
-DRIVERNV(lostspcf)      //Whitestar: 06/98 Lost in Space (1.01 French)
+DRIVERNV(lostspc)       //           06/98 Lost in Space (1.01, Display 1.02)
+DRIVERNV(lostspcg)      //           06/98 Lost in Space (1.01 German)
+DRIVERNV(lostspcf)      //           06/98 Lost in Space (1.01 French)
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVER  (godz,090)      //Whitestar: 09/98 Godzilla (0.90 Prototype)
-DRIVER  (godz,100)      //Whitestar: 09/98 Godzilla (1.00)
-DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla (2.05)
+DRIVER  (godz,100)      //           09/98 Godzilla (1.00)
+DRIVERNV(godzilla)      //           09/98 Godzilla (2.05)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90 Prototype)
-DRIVER  (sprk,096)      //Whitestar: 01/99 South Park (0.96 Prototype)
-DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
+DRIVER  (sprk,096)      //           01/99 South Park (0.96 Prototype)
+DRIVER  (sprk,103)      //           01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley-Davidson (Sega, 1.03, Display 1.00)
-DRIVER  (harl,a13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03, Display 1.04)
-DRIVER  (harl,u13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03 English, Display 1.04)
-DRIVER  (harl,f13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03 French)
-DRIVER  (harl,g13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03 German)
-DRIVER  (harl,i13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03 Italian)
-DRIVER  (harl,l13)      //Whitestar: 10/99 Harley-Davidson (Sega, 1.03 Spanish)
+DRIVER  (harl,a13)      //           10/99 Harley-Davidson (Sega, 1.03, Display 1.04)
+DRIVER  (harl,u13)      //           10/99 Harley-Davidson (Sega, 1.03 English, Display 1.04)
+DRIVER  (harl,f13)      //           10/99 Harley-Davidson (Sega, 1.03 French)
+DRIVER  (harl,g13)      //           10/99 Harley-Davidson (Sega, 1.03 German)
+DRIVER  (harl,i13)      //           10/99 Harley-Davidson (Sega, 1.03 Italian)
+DRIVER  (harl,l13)      //           10/99 Harley-Davidson (Sega, 1.03 Spanish)
 
 // ----------------
 // SLEIC
@@ -1321,8 +1328,19 @@ DRIVERNV(vrnwrld)       // 1996 - Verne's World
 // ---------------
 // SPLIN BINGO
 // ---------------
-DRIVERNV(goldgame)      // 19?? - Golden Game
-DRIVERNV(goldgam2)      // 19?? - Golden Game Stake 6/10
+DRIVERNV(goldgame)      // 19?? - Golden Game (Bingo)
+DRIVERNV(goldgam2)      // 19?? - Golden Game Kit Bingo Stake 6/10 (Bingo)
+DRIVERNV(goldgstake),   // 19?? - Golden Game Bingo Stake 6/10 (Bingo)
+DRIVERNV(goldgnew)      // 19?? - Golden Game Bingo New (Bingo)
+DRIVERNV(goldgkit1)     // 19?? - Golden Game Kit 1 Generation (Bingo)
+DRIVERNV(michigan)      // 19?? - Michigan (Bingo)
+DRIVERNV(michkit1)      // 19?? - Michigan Bingo Kit 1 Generation (Bingo)
+DRIVERNV(michkitb)      // 19?? - Michigan Kit Bingo Stake 6/10 (Bingo)
+DRIVERNV(michstake)     // 19?? - Michigan Bingo Stake 6/10 (Bingo)
+DRIVERNV(michnew)       // 19?? - Michigan Bingo New (Bingo)
+DRIVERNV(montana)       // 19?? - Montana Bingo Stake 6/10 (Bingo)
+DRIVERNV(topgame)       // 19?? - Top Game Laser L10 (Bingo)
+DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
 
 // ---------------
 // SPORT MATIC

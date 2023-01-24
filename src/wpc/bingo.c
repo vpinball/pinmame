@@ -207,7 +207,7 @@ static SWITCH_UPDATE(splin) {
   }
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
+#ifndef PINMAME_NO_UNUSED // currently unused function (GCC 3.4)
 static READ_HANDLER(sw_r) {
   return coreGlobals.swMatrix[1+offset];
 }
@@ -306,8 +306,129 @@ ROM_END
 #define input_ports_goldgam2 input_ports_splin
 #define init_goldgam2 init_splin
 
-CORE_GAMEDEFNV (goldgame,           "Golden Game (Bingo)",            19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
-CORE_CLONEDEFNV(goldgam2, goldgame, "Golden Game Stake 6/10 (Bingo)", 19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+ROM_START(goldgstake)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "h0127.evn", 0x80000, 0x10000, CRC(477ddee2) SHA1(a4d16b44ee43838120fbc1e4642867c3d375fe5f)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "h0127.ods", 0x80001, 0x10000, CRC(89aea35a) SHA1(65bb5c5448de05180d0fd5b593f783b860de5b7c)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_goldgstake input_ports_splin
+#define init_goldgstake init_splin
+
+ROM_START(goldgnew)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "h018.e", 0x80000, 0x10000, CRC(0b209318) SHA1(56e36d6672820f5610dfdcb6dc93c3aa92286992)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "h018.o", 0x80001, 0x10000, CRC(d7ec2522) SHA1(5c09be69db1338483b7b65193f29b5bea4fb6195)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_goldgnew input_ports_splin
+#define init_goldgnew init_splin
+
+ROM_START(goldgkit1)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "v87k.e", 0x80000, 0x10000, CRC(57f4f0c4) SHA1(7b8cb888a55a2aa46e7737a8dc44b2f983a189c0)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "v87k.o", 0x80001, 0x10000, CRC(6178d4e5) SHA1(6d4c8056324157c448963761d7f49ce80e42d912)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_goldgkit1 input_ports_splin
+#define init_goldgkit1 init_splin
+
+ROM_START(michkit1)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "ac001.e",   0x80000, 0x10000, CRC(c92af347) SHA1(7d46408b37a7f88232fc87b3289beb244a94390c)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "ac001.o",   0x80001, 0x10000, CRC(e321600a) SHA1(3e99a162a34d3ca28f6ca33ee442820bae8a1574)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_michkit1 input_ports_splin
+#define init_michkit1 init_splin
+
+ROM_START(michkitb)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "ac0127.evn",0x80000, 0x10000, CRC(cce266d0) SHA1(e45df0bb58758e727767965cc0edcee0f25ce97e)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "ac0127.ods",0x80001, 0x10000, CRC(1cde7f17) SHA1(dbfe9b94f768e24e58ec19d0152e98bfa2965b6f)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_michkitb input_ports_splin
+#define init_michkitb init_splin
+
+ROM_START(michstake)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "c0128.evn", 0x80000, 0x10000, CRC(68af141a) SHA1(0e94f70c2fd74bfc5829f19ba502e9b288432685)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "c0128.ods", 0x80001, 0x10000, CRC(ff2752f6) SHA1(bd6c45ac0a533aeb5930b5a1705152eec704b5e9)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_michstake input_ports_splin
+#define init_michstake init_splin
+
+ROM_START(michnew)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "c017.e",    0x80000, 0x10000, CRC(8a1cf5d7) SHA1(aad87d13503753b13dbdae2a2792afa004747e6e)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "c017.o",    0x80001, 0x10000, CRC(0bfdff4d) SHA1(5dacaa689ae7eaba5f28d88a8d9f3d6de0421744)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_michnew input_ports_splin
+#define init_michnew init_splin
+
+ROM_START(michigan)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "c9925_1.e", 0x80000, 0x10000, CRC(ab42e3b8) SHA1(917b5a7a005baf6bae676e54a0292e32d11a7df1)) \
+      ROM_RELOAD(0xe0000, 0x10000) \
+    ROM_LOAD16_BYTE( "c9925_1.o", 0x80001, 0x10000, CRC(7a0d6c70) SHA1(1d410b9f5df69cc9cbf17dbc9c73fee928e167d7)) \
+      ROM_RELOAD(0xe0001, 0x10000) \
+ROM_END
+#define input_ports_michigan input_ports_splin
+#define init_michigan init_splin
+
+ROM_START(montana)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD16_BYTE( "m0128.e", 0x80000, 0x20000, CRC(51a56929) SHA1(4a1d9939ff441f82661e1adcb0d698061f383429)) \
+      ROM_RELOAD(0xc0000, 0x20000) \
+    ROM_LOAD16_BYTE( "m0128.o", 0x80001, 0x20000, CRC(03431945) SHA1(da441895f3f6db9e573fcb5de8e287e65cc9a00d)) \
+      ROM_RELOAD(0xc0001, 0x20000) \
+ROM_END
+#define input_ports_montana input_ports_splin
+#define init_montana init_splin
+
+ROM_START(topgame)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD( "v252l10.p0", 0x0000, 0x8000, CRC(d3f71f05) SHA1(2bbafeee2e5eda6ff4ed8c7d52f2bb33c50f398c)) \
+    ROM_LOAD( "v252l10.p1", 0x8000, 0x8000, CRC(f98531d1) SHA1(63ae30821788dccbaa0749db55cd85f5a7a609bf)) \
+ROM_END
+#define input_ports_topgame input_ports_splin
+#define init_topgame init_splin
+
+ROM_START(topgamet)
+  NORMALREGION(0x100000, REGION_CPU1) \
+    ROM_LOAD( "v252tr.p0", 0x0000, 0x8000, CRC(c947cccc) SHA1(37837ec030b2e86109d40fc19c24fc6aa73a272c)) \
+    ROM_LOAD( "v252tr.p1", 0x8000, 0x8000, CRC(00a3ee14) SHA1(5ebf2d0ea891e365f5bd1cc03f0bd913a638b49b)) \
+ROM_END
+#define input_ports_topgamet input_ports_splin
+#define init_topgamet init_splin
+
+
+CORE_GAMEDEFNV (goldgame,             "Golden Game (Bingo)",                      19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(goldgam2,   goldgame, "Golden Game Kit Bingo Stake 6/10 (Bingo)", 19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(goldgstake, goldgame, "Golden Game Bingo Stake 6/10 (Bingo)",     19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(goldgnew,   goldgame, "Golden Game Bingo New (Bingo)",            19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(goldgkit1,  goldgame, "Golden Game Kit 1 Generation (Bingo)",     19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (michigan,             "Michigan (Bingo)",                         19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(michkit1,   michigan, "Michigan Bingo Kit 1 Generation (Bingo)",  19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(michkitb,   michigan, "Michigan Kit Bingo Stake 6/10 (Bingo)",    19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(michstake,  michigan, "Michigan Bingo Stake 6/10 (Bingo)",        19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(michnew,    michigan, "Michigan Bingo New (Bingo)",               19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (montana,              "Montana Bingo Stake 6/10 (Bingo)",         19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (topgame,              "Top Game Laser L10 (Bingo)",               19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(topgamet,   topgame,  "Top Game Turbo (Bingo)",                   19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
 
 
 // Seeben / Sirmo (Belgium)
@@ -400,6 +521,14 @@ ROM_END
 #define input_ports_brooklyn input_ports_seeben
 #define init_brooklyn init_seeben
 
+ROM_START(brooklyna)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("o10307-1.epr", 0x8000, 0x8000, CRC(628ac640) SHA1(67edb424f15880e874b03028066e6c0039db21fa)) \
+    ROM_LOAD("o10307-2.epr", 0x0000, 0x4000, CRC(c35d83ff) SHA1(e37c03e6960138cb6b628dfc6b12e484bbae96e8)) \
+ROM_END
+#define input_ports_brooklyna input_ports_seeben
+#define init_brooklyna init_seeben
+
 ROM_START(newdixie) \
   NORMALREGION(0x10000, REGION_CPU1) \
     ROM_LOAD("10307-1.epr", 0x8000, 0x8000, CRC(7b6b2e9c) SHA1(149c9e1d2a3e7db735835c6fa795e41b2eb45175)) \
@@ -408,7 +537,63 @@ ROM_END
 #define input_ports_newdixie input_ports_seeben
 #define init_newdixie init_seeben
 
-CORE_GAMEDEFNV (penalty,  "Penalty (Bingo)",  19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
-CORE_GAMEDEFNV (brooklyn, "Brooklyn (Bingo)", 19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
+ROM_START(superdix)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD( "12906-1.epr", 0x8000, 0x8000, CRC(e90a8aa5) SHA1(88dac74fb020535b535f7c4c245bbece398164ee)) \
+    ROM_LOAD( "12906-2.epr", 0x0000, 0x4000, CRC(4875dfb4) SHA1(722bfa89f69d14e24555eea9cc975012098db25b)) \
+ROM_END
+#define input_ports_superdix input_ports_seeben
+#define init_superdix init_seeben
 
-CORE_GAMEDEFNV (newdixie, "New Dixieland (Bingo)", 19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+ROM_START(cntine31)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("10107-1.epr", 0x8000, 0x8000, CRC(3b67cce3) SHA1(95f71526c236262ff985148ba7ea057f07fadbe8)) \
+    ROM_LOAD("10107-2.epr", 0x0000, 0x4000, CRC(89d08795) SHA1(dc75502580d681d9b4dc878b0d80346bcef407ae)) \
+ROM_END
+#define input_ports_cntine31 input_ports_seeben
+#define init_cntine31 init_seeben
+
+ROM_START(domino2)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("13006.epr", 0x8000, 0x8000, CRC(8ed9b2a5) SHA1(8f3e730cef3e74cb043691a111e1bf6660642a73)) \
+ROM_END
+#define input_ports_domino2 input_ports_seeben
+#define init_domino2 init_seeben
+
+ROM_START(ggate)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD( "13006-1.epr", 0x8000, 0x8000, CRC(6a451fc6) SHA1(93287937c8a679dfca1a162977a62357134673b6)) \
+    ROM_LOAD( "13006-2.epr", 0x0000, 0x4000, CRC(217299b0) SHA1(ef3ee8811183dca43699a7c2d75fb99bc3668ae2)) \
+ROM_END
+#define input_ports_ggate input_ports_seeben
+#define init_ggate init_seeben
+
+ROM_START(ggatea)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD( "12906-1.epr", 0x8000, 0x8000, CRC(3792fc4c) SHA1(4ab88b6c73ce1b49e1a4d12cc9fa61c7d74ed780)) \
+    ROM_LOAD( "12906-2.epr", 0x0000, 0x4000, CRC(a1115196) SHA1(dfa549a547b5cd7a9369d30fa1e868e6725cb3f1)) \
+ROM_END
+#define input_ports_ggatea input_ports_seeben
+#define init_ggatea init_seeben
+
+ROM_START(tripjok)
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD( "13006-1", 0x8000, 0x8000, CRC(5682ac90) SHA1(c9fa13c56e9178eb861991fcad6b09fd27cca3cb)) \
+    ROM_LOAD( "13006-2", 0x0000, 0x4000, CRC(c7104e8f) SHA1(a3737f70cb9c97df24b5da915ef53b6d30f2470d)) \
+ROM_END
+#define input_ports_tripjok input_ports_seeben
+#define init_tripjok init_seeben
+
+CORE_GAMEDEFNV (penalty,           "Penalty (Bingo)",            19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (brooklyn,          "Brooklyn (set 1) (Bingo)",   19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(brooklyna,brooklyn,"Brooklyn (set 2) (Bingo)",   19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (newdixie,          "New Dixieland (Bingo)",      19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_GAMEDEFNV (superdix,          "Super Dixieland (Bingo)",    19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_GAMEDEFNV (cntine31,          "Continental 3 in 1 (Bingo)", 19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_GAMEDEFNV (domino2,           "Domino II (Bingo)",          19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_GAMEDEFNV (tripjok,           "Triple Joker (Bingo)",       19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (ggate,             "Golden Gate (set 1) (Bingo)",19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_CLONEDEFNV(ggatea,ggate,      "Golden Gate (set 2) (Bingo)",19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)

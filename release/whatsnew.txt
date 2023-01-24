@@ -16,8 +16,26 @@ Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,mot
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker
 New:
 Seeben: Brooklyn (Bingo) (not working)
+        Brooklyn (set 2) (Bingo) (not working)
+        Continental 3 in 1 (Bingo) (not working)
+        Domino II (Bingo) (not working)
+        Golden Gate (set 1) (Bingo) (not working)
+        Golden Gate (set 2) (Bingo) (not working)
         New Dixieland (Bingo) (not working)
         Penalty (Bingo) (not working)
+        Super Dixieland (Bingo) (not working)
+        Triple Joker (Bingo) (not working)
+Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
+        Golden Game Bingo New (Bingo) (not working)
+        Golden Game Kit 1 Generation (Bingo) (not working)
+        Michigan (Bingo) (not working)
+        Michigan Bingo Kit 1 Generation (Bingo) (not working)
+        Michigan Kit Bingo Stake 6/10 (Bingo) (not working)
+        Michigan Bingo Stake 6/10 (Bingo) (not working)
+        Michigan Bingo New (Bingo) (not working)
+        Montana Bingo Stake 6/10 (Bingo) (not working)
+        Top Game Laser L10 (Bingo) (not working)
+        Top Game Turbo (Bingo) (not working)
 
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
