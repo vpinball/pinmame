@@ -11,9 +11,14 @@ Fix WPC General Illumination (GI) Dimming (most noticably if more than one GI li
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
- this will dramatically improve e.g. flasher modulation, but needs special script support by each table
+ this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker
+New:
+Seeben: Brooklyn (Bingo) (not working)
+        New Dixieland (Bingo) (not working)
+        Penalty (Bingo) (not working)
+
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
