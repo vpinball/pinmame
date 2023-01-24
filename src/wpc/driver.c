@@ -1330,7 +1330,7 @@ DRIVERNV(vrnwrld)       // 1996 - Verne's World
 // ---------------
 DRIVERNV(goldgame)      // 19?? - Golden Game (Bingo)
 DRIVERNV(goldgam2)      // 19?? - Golden Game Kit Bingo Stake 6/10 (Bingo)
-DRIVERNV(goldgstake),   // 19?? - Golden Game Bingo Stake 6/10 (Bingo)
+DRIVERNV(goldgstake)    // 19?? - Golden Game Bingo Stake 6/10 (Bingo)
 DRIVERNV(goldgnew)      // 19?? - Golden Game Bingo New (Bingo)
 DRIVERNV(goldgkit1)     // 19?? - Golden Game Kit 1 Generation (Bingo)
 DRIVERNV(michigan)      // 19?? - Michigan (Bingo)
