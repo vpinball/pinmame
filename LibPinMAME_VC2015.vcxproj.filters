@@ -654,6 +654,9 @@
     <ClCompile Include="src\wpc\bowlgames.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="src\wpc\bulb.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
     <ClCompile Include="src\wpc\by35.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
@@ -1662,6 +1665,9 @@
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
     <ClInclude Include="src\wpc\atari.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\bulb.h">
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
     <ClInclude Include="src\wpc\by35.h">
