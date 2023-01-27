@@ -19,7 +19,7 @@ TOOLS=
 #
 DRVLIBS = $(PINOBJ)/sim.o $(PINOBJ)/core.o $(OBJ)/allgames.a
 DRVLIBS += $(PINOBJ)/vpintf.o $(PINOBJ)/snd_cmd.o $(PINOBJ)/wpcsam.o
-DRVLIBS += $(PINOBJ)/sndbrd.o
+DRVLIBS += $(PINOBJ)/sndbrd.o $(PINOBJ)/bulb.o 
 DRVLIBS += $(OBJ)/machine/4094.o
 DRVLIBS += $(OBJ)/sound/wavwrite.o
 

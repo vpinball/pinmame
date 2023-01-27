@@ -9,6 +9,7 @@
 #include "mech.h"
 #include "core.h"
 #include "video.h"
+#include "bulb.h"
 
 #ifdef PROC_SUPPORT
  #include "p-roc/p-roc.h"
@@ -1876,7 +1877,8 @@ static MACHINE_INIT(core) {
     /*-- init switch matrix --*/
     memcpy(coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
-
+    /*-- init bulb LUTs --*/
+    bulb_init();
 #ifdef PROC_SUPPORT
     /*-- P-ROC operation requires a YAML.  Disable P-ROC operation
      * if no YAML is specified. --*/
@@ -2141,7 +2143,6 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       // Incandescent bulb model based on Dulli Chandra Agrawal's and others publications (Heating-times of tungsten filament incandescent lamps).
       // The bulb is a varying resistor depending on filament temperature, which is heated by the current (Ohm's law)
       // and cooled by radiating energy (Planck & Stefan/Boltzmann laws). The visible emission power is then evaluated from the filament temperature.
-      // TODO The tests did not exhibit any performance issue but most computation could be moved to optimized to LUTs
 
       // Bulb driver electronics from a few schematics/photos:
       double U, serial_R = 0.0, acTime = 0.0;
@@ -2184,33 +2185,25 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       }
 
       // Bulb characteristics, estimated by fitting ratings (U,I,P) at a supposed steady state temperature of 2700K, then validating against high FPS video
-      double R0, S, Mass;
+      int bulb;
       switch (output->type)
       {
       case CORE_MODOUT_BULB_44_6_3V_AC: // Bulb #44/555: 6.3V 0.25A 1.575W 11.3lm (commonly used for GI & inserts)
       case CORE_MODOUT_BULB_44_18V_DC_WPC: 
       case CORE_MODOUT_BULB_44_18V_DC_GTS3:
       case CORE_MODOUT_BULB_44_18V_DC_S11:
-         R0 = 1.70020865326503000; // Resistor at 293K
-         S = 0.00000161355490514; // Filament surface
-         Mass = 0.00000021518852281; // Filament mass
+         bulb = BULB_44;
          break;
       case CORE_MODOUT_BULB_47_6_3V_AC: // Bulb #47: 6.3V 0.15A 0.945W 6.3lm (used for GI with less heat)
-         R0 = 2.83368108877505000;
-         S = 0.00000096864911477;
-         Mass = 0.00000009191361309;
+         bulb = BULB_47;
          break;
       case CORE_MODOUT_BULB_89_20V_DC_WPC:// Bulb #89/906: 13V 0.58A 7.54W 75.4lm (commonly used for flashers)
       case CORE_MODOUT_BULB_89_20V_DC_GTS3:
       case CORE_MODOUT_BULB_89_32V_DC_S11:
-         R0 = 1.51222718202281000;
-         S = 0.00000771540636690;
-         Mass =  0.00000180252338558;
+         bulb = BULB_89;
          break;
       case CORE_MODOUT_BULB_86_6_3V_AC: // Bulb #86: 6.3V 0.2A 1.26W 5.027lm (seldom specific use)
-         R0 = 2.12526081658129000;
-         S = 0.00000129093660708;
-         Mass = 0.00000014836928066;
+         bulb = BULB_86;
          break;
       }
 
@@ -2220,39 +2213,26 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       {
          average_emission += output->state.emission_history[i];
       }
-
-      UINT8 mask = 1 << bitpos;
-      double T = output->state.filament_temperature < 293.0 ? 293.0 : output->state.filament_temperature; // a 0K temperature would cause NaN, so keep it above room temperature of 293K
-      double T2 = T * T;
-      double T3 = T2 * T;
-      samplePos = (coreGlobals.pulsedOutStateSamplePos + 1 - nSamples) & (CORE_MODOUT_SAMPLE_MAX - 1);
+      double T = output->state.filament_temperature;
       double max_emission = average_emission;
+      double dt = 1.0 / sampleFreq;
+      UINT8 mask = 1 << bitpos;
+      samplePos = (coreGlobals.pulsedOutStateSamplePos + 1 - nSamples) & (CORE_MODOUT_SAMPLE_MAX - 1);
       for (int i = 0; i < nSamples; i++, samplePos = (samplePos + 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
       {
-         double delta_energy = -0.00000005670374419 * S * 0.0000664 * pow(T, 5.0796); // pow(T, 5.0796) is pow(T, 4) from Stefan/Boltzmann multiplied by emissivity which is 0.0000664*pow(T,1.0796)
+         T = T < 293.0 ? 293.0 : T > 2999.0 ? 2999.0 : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
          if (samples[samplePos * stride] & mask)
          {
-            double R = R0 * pow(T / 293.0, 1.215);
-            // Little hack for AC power: we add 0.5% to avoid the flickering caused by the sampling process
-            double U1 = (isAC ? 1.005 * 1.414 * sin(60.0 * 2.0 * PI * acTime) * U : U) * R / (R + serial_R);
-            delta_energy += U1 * U1 / R;
+            // Little hack for AC power: we add 0.5% to avoid the slight flickering caused by the sampling process
+            double U1 = isAC ? 1.005 * 1.414 * sin(60.0 * 2.0 * PI * acTime) * U : U;
+            double dT = dt * bulb_heat_up_factor(bulb, T, U1, serial_R);
+            T += dT > 1000.0 ? 1000.0 : dT;
          }
-         double specific_heat = 3.0 * 45.2268 * (1.0 - 310.0 * 310.0 / (20.0 * T2)) + (2.0 * 0.0045549 * T) + (4 * 0.000000000577874 * T3);
-         double delta_T = (1.0 / sampleFreq) * delta_energy / (specific_heat * Mass);
-         T += delta_T > 1000.0 ? 1000.0 : delta_T; // Clamp dT due to low resolution integration on dt (1ms integration leads to very high dT during intensity surge, 0.1ms would be better)
-         T2 = T * T;
-         T3 = T2 * T;
-
-         // Store the emission power in the visible range (see http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html)
-         // The forumla is a polynemonial regression over the wanted range (1500K to 3000K, fitted to get full power at 2700K, which is the steady state temperature used in the bulb model)
-         // The relative luminous flux depending on temperature does not depend on the bulb (mostly).
-         // Note that this power value is the perceived power (convolution of emitted energy by eye sensibility over visible range) so if it is used to drive a light
-         // of another color, then it must be corrected by the ratio of color intensity between 2700K color (this model) and the chosen light color.
-         double emission = 0.00000000164372236759046 * T3 - 0.00000915034539479724000 * T2 + 0.01697990181540710000000 * T - 10.46937655626230000000000;
-         if (emission < 0)
-            emission = 0;
-         else if (emission > 2.5)
-            emission = 2.5;
+         else
+         {
+            T += dt * bulb_cool_down_factor(bulb, T);
+         }
+         double emission = bulb_filament_temperature_to_emission(T);
 
          // Compute the perceived emission by averaging the last 16 samples (sliding average)
          average_emission -= output->state.emission_history[output->state.emission_history_pos & 0x0F];
@@ -2261,7 +2241,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
          average_emission += emission;
          max_emission = average_emission > max_emission ? average_emission : max_emission;
 
-         acTime += 1.0 / sampleFreq;
+         acTime += dt;
       }
       output->state.filament_temperature = T;
 

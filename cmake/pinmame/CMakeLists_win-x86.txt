@@ -380,6 +380,8 @@ add_executable(pinmame WIN32
    src/wpc/boomerang.c
    src/wpc/bowarrow.c
    src/wpc/bowlgames.c
+   src/wpc/bulb.c
+   src/wpc/bulb.h
    src/wpc/by35.c
    src/wpc/by35.h
    src/wpc/by35games.c
