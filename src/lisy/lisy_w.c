@@ -1277,6 +1277,8 @@ lisy_w_switch_handler(void) {
     }
     //advance
     if (ret == 72) {
+    	//start timer for nvram write as we may do settings here which we do not want lost
+    	want_to_write_nvram = 1;
         switch (lisymini_game.typeno) {
             case LISYW_TYPE_SYS3:
             case LISYW_TYPE_SYS4:
