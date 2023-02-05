@@ -436,7 +436,7 @@ typedef struct {
   volatile UINT8 pulsedGIState;  /* current pulse value of WPC GI strings */
   UINT64 lastSol;         /* last state of all solenoids */
   UINT8 lastModSol[CORE_MODSOL_MAX];
-  double lastACZeroCross; /* Machine time of zero crossing (AC frequency is fixed at 60Hz) */
+  int lastACZeroCross; /* Position of output sampling when last zero crossing happened (AC frequency is fixed at 60Hz) */
   double pulsedOutStateSampleFreq; /* Frequency of output sampling */
   int pulsedOutStateSamplePos; /* Current position of output sampling in the circular buffers */
   UINT32 pulsedSolStateSamples[CORE_MODOUT_SAMPLE_MAX];  /* sample pulse value of all solenoids */
@@ -530,7 +530,7 @@ extern UINT64 core_getAllSol(void);
 extern void core_perform_pwm_integration();
 INLINE void core_zero_cross() {
    if (coreGlobals.nModulatedOutputs > 0)
-      coreGlobals.lastACZeroCross = timer_get_time();
+   coreGlobals.lastACZeroCross = coreGlobals.pulsedOutStateSamplePos;
 }
 INLINE void core_store_pulsed_samples(double freq) {
    if (coreGlobals.nModulatedOutputs > 0)

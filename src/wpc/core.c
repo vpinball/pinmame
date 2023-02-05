@@ -2115,11 +2115,9 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *p
 	return targetlevel;
 }
 
-void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSamples, UINT8* samples, int bitpos, int stride)
+// Update modulated solenoid using custom PWM integration function
+void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samplePos, int nSamples, int zcPos, UINT8* samples, int bitpos, int stride)
 {
-   // Update modulated solenoid using custom PWM integration function
-   int samplePos = coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1);
-   double sampleFreq = coreGlobals.pulsedOutStateSampleFreq;
    switch (output->type)
    {
    case CORE_MODOUT_PWM_RATIO:
@@ -2143,6 +2141,9 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       // Incandescent bulb model based on Dulli Chandra Agrawal's and others publications (Heating-times of tungsten filament incandescent lamps).
       // The bulb is a varying resistor depending on filament temperature, which is heated by the current (Ohm's law)
       // and cooled by radiating energy (Planck & Stefan/Boltzmann laws). The visible emission power is then evaluated from the filament temperature.
+      const double dt = 1.0 / coreGlobals.pulsedOutStateSampleFreq;
+      // processes the samples from the oldest to the most recent
+      samplePos = (samplePos - nSamples) & (CORE_MODOUT_SAMPLE_MAX - 1);
 
       // Bulb driver electronics from a few schematics/photos:
       double U, serial_R = 0.0, acTime = 0.0;
@@ -2156,7 +2157,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
          // If needed (WPC for example), machine driver needs to sync with zero crossing by calling 'core_zero_cross'
          U = 6.3;
          isAC = TRUE;
-         acTime = (timer_get_time() - coreGlobals.lastACZeroCross) - nSamples / sampleFreq;
+         acTime = ((samplePos - zcPos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1)) * dt;
          break;
       case CORE_MODOUT_BULB_44_18V_DC_WPC:
          U = 18 - 0.7 - 0.7; // 18V switched through a TIP102 and a TIP107 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A)
@@ -2215,9 +2216,9 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       }
       double T = output->state.filament_temperature;
       double max_emission = average_emission;
-      double dt = 1.0 / sampleFreq;
+
+      // Iterates over each sampled output value and computes its impact on bulb filament
       UINT8 mask = 1 << bitpos;
-      samplePos = (coreGlobals.pulsedOutStateSamplePos + 1 - nSamples) & (CORE_MODOUT_SAMPLE_MAX - 1);
       for (int i = 0; i < nSamples; i++, samplePos = (samplePos + 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
       {
          T = T < 293.0 ? 293.0 : T > 2999.0 ? 2999.0 : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
@@ -2257,7 +2258,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
    {
       // LED reacts almost instantly (<1us), the integration is based on the human eye perception: 
       // flashing below 100Hz (limit between 50-100 depends on each human), dimming above (there should be a "flicker" range in the middle)
-      int n = (int)(sampleFreq / 100); // Go through samples of the last 1/100s (100Hz limit)
+      int n = (int)(coreGlobals.pulsedOutStateSampleFreq / 100); // Go through samples of the last 1/100s (100Hz limit)
       int nPulse = 0;
       for (int i = 0; i < n; i++, samplePos = (samplePos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
          nPulse += (samples[samplePos * stride] >> bitpos) & 1;
@@ -2269,7 +2270,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
       // Linear motor position which increase linearly over time when voltage is high
       for (int i = 0; i < nSamples; i++, samplePos = (samplePos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1))
          output->state.motor_position += (samples[samplePos * stride] >> bitpos) & 1;
-      output->value = (UINT8)((output->state.motor_position * 100.0) / sampleFreq); // normalize to 100 steps per seconds
+      output->value = (UINT8)((output->state.motor_position * 100.0) / coreGlobals.pulsedOutStateSampleFreq); // normalize to 100 steps per seconds
    }
    break;
    case CORE_MODOUT_DEFAULT:
@@ -2309,19 +2310,27 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int nSam
  */
 void core_perform_pwm_integration()
 {
-   int nSamples = coreGlobals.pulsedOutStateSamplePos - coreGlobals.lastModulatedOutputIntegrationPos;
+   // Integration is performed on requested, therefore this can be called from another thread that the one of the main emulation.
+   // To avoid threading issues:
+   // - the emulation thread continuously fills the coreGlobals.pulsedSolStateSamples / coreGlobals.pulsedOutStateSamplePos / coreGlobals.lastACZeroCross
+   // - the integration thread only reads from these, and is the only one allowed to write to coreGlobals.modulatedOutputs / coreGlobals.lastModulatedOutputIntegrationPos
+   // This function is not allowed to call any of the core function which are nto thread safe (timer_get_time(),...)
+   int newSamplePos = coreGlobals.pulsedOutStateSamplePos;
+   int nSamples = newSamplePos - coreGlobals.lastModulatedOutputIntegrationPos;
    if (coreGlobals.pulsedOutStateSampleFreq > 0 && nSamples > 0)
    {
+      int zcPos = coreGlobals.lastACZeroCross;
+      int samplePos = newSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1);
       for (int ii = 0; ii < CORE_MODOUT_SOL_MAX; ii++)
       {
-         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[ii], nSamples, ((UINT8*)coreGlobals.pulsedSolStateSamples) + (ii >> 3), ii & 7, 4);
+         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[ii], samplePos, nSamples, zcPos, ((UINT8*)coreGlobals.pulsedSolStateSamples) + (ii >> 3), ii & 7, 4);
       }
       for (int ii = 0; ii < CORE_MODOUT_GI_MAX; ii++)
       {
-         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii], nSamples, (UINT8*)coreGlobals.pulsedGIStateSamples, ii, 1);
+         core_perform_output_pwm_integration(&coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii], samplePos, nSamples, zcPos, (UINT8*)coreGlobals.pulsedGIStateSamples, ii, 1);
       }
    }
-   coreGlobals.lastModulatedOutputIntegrationPos = coreGlobals.pulsedOutStateSamplePos;
+   coreGlobals.lastModulatedOutputIntegrationPos = newSamplePos;
 }
 
 void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate)
