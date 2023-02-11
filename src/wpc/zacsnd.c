@@ -423,16 +423,16 @@ static void fade_timer(int param) {
     // TODO: we need to tell the main board the sound has finished; no idea how it's really done (PIA output B never changes)!?
     if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) UpdateZACSoundACT(0x03);
   }
-  mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
-  mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
+  mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
+  mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   if (snslocals.volb > dec) {
     snslocals.volb -= dec;
   } else {
     snslocals.volb = 0;
     if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) UpdateZACSoundACT(0x03);
   }
-  mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
-  mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
+  mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
+  mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
 }
 
 static void initTMS(void) {
@@ -708,7 +708,7 @@ static void sns_5220Rdy(int state) {
 / to replace the AY8910 chip.
 /-----------------------------------------*/
 // This is the E signal, divided by a 4040 chip's Q11, so 3.58 MHz / 4 / 2048, so ~437 Hz
-#define SNS_11178_IRQFREQ 3579545./8192.
+#define SNS_11178_IRQFREQ (3579545./8192.)
 
 static INTERRUPT_GEN(sns3_irq);
 static WRITE_HANDLER(dacxfer);
@@ -969,10 +969,10 @@ static WRITE_HANDLER(chip3i259) {
         snslocals.s_envca = flag;
         if (flag && snslocals.vcagain != snslocals.dacinp) {
           snslocals.vcagain = snslocals.dacinp;
-          mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
-          mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100 / 0xfff / 0xfff);
-          mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
-          mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100 / 0xfff / 0xfff);
+          mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
+          mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
+          mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
+          mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
         }
         if (!flag && !lastvca) {
           changed = 1;
