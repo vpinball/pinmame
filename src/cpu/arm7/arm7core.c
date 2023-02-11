@@ -153,11 +153,11 @@ INLINE data32_t arm7_cpu_read32( int addr )
 		#endif
 
 		if ((addr&3)==3)
-			return ((result&0x000000ff)<<24)|((result&0xffffff00)>> 8);
+			return rotl_32(result, 24);
 		if ((addr&3)==2)
-			return ((result&0x0000ffff)<<16)|((result&0xffff0000)>>16);
+			return rotl_32(result, 16);
 		if ((addr&3)==1)
-			return ((result&0x00ffffff)<< 8)|((result&0xff000000)>>24);
+			return rotl_32(result, 8);
 	}
 	return result;
 }
