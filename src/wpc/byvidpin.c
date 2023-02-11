@@ -9,7 +9,7 @@
    MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 resistor to diode change) - See note below
 
    (BabyPacman Only):
-   VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
+   VIDIOT Board: Handles Video/Joystick Switches/Sound Board
    Chips:       (1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
 
    (Granny & Gators Only):
@@ -18,7 +18,7 @@
    Cheap Squeak Sound Board
 
    *EMULATION ISSUES*
-   Baby Pac: working fine
+   Baby Pac: working fine, except: mostly glitches if started for a second time, also never works correctly in 64bit
    G & G: Color blending is not accurately emulated, but transparency is simulated
 
    Interesting Tech Note:
@@ -33,7 +33,7 @@
         I believe that some late games such as Grand Slam
         may have also used the AS-2518-133 mpu. // note: the latter is confirmed by Grand Slams manual
 
-        This is the same as an  AS-2518-35  mpu except that
+        This is the same as an  AS-2518-35 mpu except that
         R113 which is fed from J4 by +43v is now CR52 a 1N4148
         diode fed by 6.3vac from General Illumination.
         To use the -133 as a -35 change CR52 to be
@@ -194,7 +194,7 @@ static WRITE_HANDLER(pia1b_w) {
   // Momentary Solenoids 1-7
   if (!locals.p1_cb2)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x07)) & 0x7f;
-  // Continuos solenoids 8-11
+  // Continuous solenoids 8-11
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffff87f) | contsols;
   locals.solenoids |= contsols;
 }
@@ -248,13 +248,13 @@ static INTERRUPT_GEN(byVP_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % BYVP_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
-    coreGlobals.diagnosticLed = (locals.diagnosticLedV<<1)| (locals.diagnosticLed);
+    coreGlobals.diagnosticLed = (locals.diagnosticLedV<<1) | (locals.diagnosticLed);
     locals.diagnosticLed = locals.diagnosticLedV = 0;
   }
 
@@ -481,7 +481,7 @@ static PINMAME_VIDEO_UPDATE(byVP_update) {
 /------------------------------------*/
 static MEMORY_READ_START(byVP_readmem)
   { 0x0000, 0x0080, MRA_RAM }, /* U7 128 Byte Ram*/
-  { 0x0088, 0x008b, pia_r(BYVP_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
+  { 0x0088, 0x008b, pia_r(BYVP_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(BYVP_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
   { 0x0300, 0x031c, MRA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
@@ -492,7 +492,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(byVP_writemem)
   { 0x0000, 0x0080, MWA_RAM }, /* U7 128 Byte Ram*/
-  { 0x0088, 0x008b, pia_w(BYVP_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
+  { 0x0088, 0x008b, pia_w(BYVP_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BYVP_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MWA_RAM, &byVP_CMOS }, /* CMOS Battery Backed*/
   { 0x0300, 0x031c, MWA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
@@ -606,4 +606,3 @@ MACHINE_DRIVER_START(byVP2)
   MDRV_SCREEN_SIZE(256,256) // 256x192 + matrices
   MDRV_VISIBLE_AREA(0, 255, 0, 255)
 MACHINE_DRIVER_END
-
