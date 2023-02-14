@@ -555,6 +555,17 @@ S11_ROMEND
 #define input_ports_swrds input_ports_s11
 CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11BS, 0)
 
+// single u27 rom that upgrades L1 to German Language Text L2 (labeled as G2), u26 was same rom content as swrd_u26.l1 (was also labeled as REV1)
+
+S11_ROMSTART48(swrds,lg2,"swrd_u26.l1", CRC(e7a54874) SHA1(9f3486a0eed32ab0919805bed771ffd214a78967),
+                         "swrd_u27g.l2",CRC(ef7194d4) SHA1(45b4fc316b603921fdafaf2638a46a94e6efc190))
+S11XS_SOUNDROM88(        "swrd_u21.l1", CRC(ee8b0a64) SHA1(c2c52059a9a5f7c0abcfdd76cfc6d5b5451f7d1e),
+                         "swrd_u22.l1", CRC(73dcdbb0) SHA1(66f5b3804442a1742b6fb3cccf539c4df956b3f2))
+S11CS_SOUNDROM88(        "swrd_u4.l1",  CRC(272b509c) SHA1(756d3783f664ca1c41dd1d12032330b74c3f89ea),
+                         "swrd_u19.l1", CRC(a22f84fa) SHA1(1731e86e85cca2d283512d5048c787df3970c9c5))
+S11_ROMEND
+CORE_CLONEDEF(swrds, lg2, l2, "Swords of Fury (LG-2 German)", 1988, "Williams", s11_mS11BS, 0) // actually reports as L-2, not LG-2 (on chiplabel said G2)
+
 S11_ROMSTART48(swrds,l1,"swrd_u26.l1", CRC(e7a54874) SHA1(9f3486a0eed32ab0919805bed771ffd214a78967),
                         "swrd_u27.l1", CRC(885dc3d6) SHA1(26463efb476c0bbfc3cb49b450167c4a985672bf))
 S11XS_SOUNDROM88(       "swrd_u21.l1", CRC(ee8b0a64) SHA1(c2c52059a9a5f7c0abcfdd76cfc6d5b5451f7d1e),
