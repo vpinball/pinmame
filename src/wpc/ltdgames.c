@@ -148,13 +148,13 @@ static core_tLCDLayout disp2p6[] = {
 /*-------------------------------------------------------------------
 / Space Poker
 /-------------------------------------------------------------------*/
-INITGAME(spcpoker, disp2p6, 1, 9, 0x0f, 0x0c)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) // patched from bad dump
+INITGAME(spcpoker, disp2p6, 1, 6, 0x0f, 0x0c)
+LTD_2_ROMSTART(spcpoker, "space_poker_16_jp.bin", CRC(8fc2bdf6) SHA1(48eeae7ef21adbb4801e339565e55a03db6de179))
 LTD_ROMEND
 CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
-INITGAME(spcpoker_ekky, disp2p6, 1, 9, 0x0f, 0x0c)
-LTD_2_ROMSTART(spcpoker_ekky, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) // patched from bad dump
+INITGAME(spcpoker_ekky, disp2p6, 1, 6, 0x0f, 0x0c)
+LTD_2_ROMSTART(spcpoker_ekky, "space_poker_16_jp.bin", CRC(8fc2bdf6) SHA1(48eeae7ef21adbb4801e339565e55a03db6de179))
   NORMALREGION(0x10000, LTD_MEMREG_CPU_EKKY)
     ROM_LOAD("SOM EKKY", 0x0000, 0x0800, CRC(9950f6d6) SHA1(b9de7d24f8e772c2e3e7c0b3559b89bd9f00eb9b))
 LTD_ROMEND

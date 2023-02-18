@@ -13,7 +13,7 @@ Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mex
 Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
  this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -40,6 +40,7 @@ Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
+LTD:  Space Poker
 
 Clones:
 Dracula (One Ball MOD)
