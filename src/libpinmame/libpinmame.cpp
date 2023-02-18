@@ -711,23 +711,6 @@ LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen() {
 }
 
 /******************************************************
- * PinmameGetSolenoidMask
- ******************************************************/
-
-LIBPINMAME_API uint64_t PinmameGetSolenoidMask() {
-    return vp_getSolMask64();
-}
-
-/******************************************************
- * PinmameSetSolenoidMask
- ******************************************************/
-
-LIBPINMAME_API void PinmameSetSolenoidMask(const uint64_t mask) {
-    vp_setSolMask(0, (int)(mask & 0xFFFFFFFF));
-    vp_setSolMask(1, (int)((mask >> 32) & 0xFFFFFFFF)); 
-}
-
-/******************************************************
  * PinmameGetSwitch
  ******************************************************/
 
@@ -758,11 +741,36 @@ LIBPINMAME_API void PinmameSetSwitches(const PinmameSwitchState* const p_states,
 }
 
 /******************************************************
+ * PinmameGetSolenoidMask
+ ******************************************************/
+
+LIBPINMAME_API uint64_t PinmameGetSolenoidMask() {
+	return vp_getSolMask64();
+}
+
+/******************************************************
+ * PinmameSetSolenoidMask
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetSolenoidMask(const uint64_t mask) {
+	vp_setSolMask(0, (int)(mask & 0xFFFFFFFF));
+	vp_setSolMask(1, (int)((mask >> 32) & 0xFFFFFFFF));
+}
+
+/******************************************************
  * PinmameGetMaxSolenoids
  ******************************************************/
 
 LIBPINMAME_API int PinmameGetMaxSolenoids() {
 	return (CORE_MAXSOL + CORE_MODSOL_MAX);
+}
+
+/******************************************************
+ * PinmameGetSolenoid
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetSolenoid(const int solNo) {
+	return (_isRunning) ? vp_getSolenoid(solNo) : 0;
 }
 
 /******************************************************
@@ -788,6 +796,14 @@ LIBPINMAME_API int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_chan
 
 LIBPINMAME_API int PinmameGetMaxLamps() {
 	return (CORE_MAXLAMPCOL * 8) + CORE_MAXRGBLAMPS;
+}
+
+/******************************************************
+ * PinmameGetLamp
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetLamp(const int lampNo) {
+	return (_isRunning) ? vp_getLamp(lampNo) : 0;
 }
 
 /******************************************************
@@ -907,4 +923,22 @@ LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMech
 	mech_add(mechNo + (MECH_MAXMECH / 2), &mechInitData);
 
 	return OK;
+}
+
+/******************************************************
+ * PinmameGetDIP
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetDIP(const int dipBank) {
+	return (_isRunning) ? vp_getDIP(dipBank) : 0;
+}
+
+/******************************************************
+ * PinmameSetDIP
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetDIP(const int dipBank, const int value) {
+	if (_isRunning) {
+		 vp_setDIP(dipBank, value);
+	}
 }

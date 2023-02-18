@@ -397,20 +397,23 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
-LIBPINMAME_API uint64_t PinmameGetSolenoidMask();
-LIBPINMAME_API void PinmameSetSolenoidMask(const uint64_t mask);
 LIBPINMAME_API int PinmameGetSwitch(const int swNo);
 LIBPINMAME_API void PinmameSetSwitch(const int swNo, const int state);
 LIBPINMAME_API void PinmameSetSwitches(const PinmameSwitchState* const p_states, const int numSwitches);
+LIBPINMAME_API uint64_t PinmameGetSolenoidMask();
+LIBPINMAME_API void PinmameSetSolenoidMask(const uint64_t mask);
 LIBPINMAME_API int PinmameGetMaxSolenoids();
+LIBPINMAME_API int PinmameGetSolenoid(const int solNo);
 LIBPINMAME_API int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxLamps();
+LIBPINMAME_API int PinmameGetLamp(const int lampNo);
 LIBPINMAME_API int PinmameGetChangedLamps(PinmameLampState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
-LIBPINMAME_API int PinmameGetChangedGIs(PinmameGIState* constp_changedStates);
+LIBPINMAME_API int PinmameGetChangedGIs(PinmameGIState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxLEDs();
 LIBPINMAME_API int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t, PinmameLEDState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxMechs();
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
-
+LIBPINMAME_API int PinmameGetDIP(const int dipBank);
+LIBPINMAME_API void PinmameSetDIP(const int dipBank, const int value);
 #endif

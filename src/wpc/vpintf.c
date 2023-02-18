@@ -31,7 +31,11 @@ void vp_init(void) {
 /-------------------------------------*/
 int vp_getLamp(int lampNo) {
   if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo)-8;
+#ifndef LIBPINMAME
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
+#else
+  return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01 ? 255 : 0;
+#endif
 }
 
 /*-------------------------------------------
