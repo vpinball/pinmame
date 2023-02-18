@@ -595,6 +595,9 @@ WPC_ROMSTART(sttng,dx,"trek_d7.rom",   0x80000,CRC(57c15e90) SHA1(bf99d5b0102489
 
 WPC_ROMSTART(sttng,l7c,"trek_lx7c.rom",0x80000,CRC(da2b5082) SHA1(7f87d89e04f284e6050b7a3fbbf48e1db40cb804)) ST_SND WPC_ROMEND
 
+//WPC_ROMSTART(sttng,x8,"trek_RC1_828A.rom",0x80000,CRC(22880bf0) SHA1(40e5aa3846240b7c4a7fe78ad57059207d91421c)) ST_SPECIAL_SND WPC_ROMEND // old RC
+WPC_ROMSTART(sttng,x8,"trek_x8.rom",   0x80000,CRC(535bcda6) SHA1(26468e905b6f9e8362fafd8bbb47d18da9af860d)) ST_SPECIAL_SND WPC_ROMEND
+
 WPC_ROMSTART(sttng,p4,"sttng_p4.u6",0x80000,CRC(836774f0) SHA1(5784f77eaad41ccf07446874720be146fd562c68))
 DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad4143927ddc6fee), // where does this P-1 sound rom really belong to? all prototypes? or is even P-4 too new? // Only 4 bytes are different from L-1
                "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
@@ -637,6 +640,8 @@ CORE_CLONEDEF(sttng,l2,l7,"Star Trek: The Next Generation (LX-2)",1993,"Williams
 CORE_CLONEDEF(sttng,d2,l7,"Star Trek: The Next Generation (DX-2 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l3,l7,"Star Trek: The Next Generation (LX-3)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l5,l7,"Star Trek: The Next Generation (LX-5)",1993,"Williams",wpc_mDCSS,0)
+//LX-8 MOD: https://www.flippermarkt.de/community/forum/threads/sttng-neues-game-rom-lx8-aktueller-stand-und-allgemeine-infos-zur-nz-in-lx7.251544
+CORE_CLONEDEF(sttng,x8,l7,"Star Trek: The Next Generation (LX-8 MOD, Special Sound L-1)",2023,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

@@ -2906,6 +2906,7 @@ DRIVER(sttng,d7)        //                  Star Trek: The Next Generation (DX-7
 DRIVER(sttng,l7c)       //          08/17 W Star Trek: The Next Generation (LX-7C Competition MOD)
 DRIVER(sttng,x7)        //          02/94 W Star Trek: The Next Generation (LX-7 Special Sound L-1)
 DRIVER(sttng,dx)        //                  Star Trek: The Next Generation (DX-7 Special Sound L-1) LED Ghost Fix
+DRIVER(sttng,x8)        //          02/23 W Star Trek: The Next Generation (LX-8 MOD Special Sound L-1)
 DRIVER(sttng,g7)        //          02/94 W Star Trek: The Next Generation (LG-7 German)
 DRIVER(sttng,h7)        //                  Star Trek: The Next Generation (HG-7) LED Ghost Fix
 DRIVER(pop,pa3)         //WPC-522:  12/93 B Popeye Saves the Earth (PA-3 Prototype)
