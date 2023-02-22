@@ -151,24 +151,24 @@ typedef struct
 	const char* name;           // human-readable name
 	char code;                  // single-char code used within the hash string
 	unsigned int size;          // checksum size in bytes
-	
+
 	// Functions used to calculate the hash of a memory block
 	void (*calculate_begin)(void);
-	void (*calculate_buffer)(const void* mem, unsigned long len);
+	void (*calculate_buffer)(const void* mem, unsigned int len);
 	void (*calculate_end)(UINT8* bin_chksum);
 
 } hash_function_desc;
 
 static void h_crc_begin(void);
-static void h_crc_buffer(const void* mem, unsigned long len);
+static void h_crc_buffer(const void* mem, unsigned int len);
 static void h_crc_end(UINT8* chksum);
 
 static void h_sha1_begin(void);
-static void h_sha1_buffer(const void* mem, unsigned long len);
+static void h_sha1_buffer(const void* mem, unsigned int len);
 static void h_sha1_end(UINT8* chksum);
 
 static void h_md5_begin(void);
-static void h_md5_buffer(const void* mem, unsigned long len);
+static void h_md5_buffer(const void* mem, unsigned int len);
 static void h_md5_end(UINT8* chksum);
 
 static hash_function_desc hash_descs[HASH_NUM_FUNCTIONS] =
@@ -523,7 +523,7 @@ int hash_data_insert_binary_checksum(char* d, unsigned int function, UINT8* chec
 	}
 }
 
-void hash_compute(char* dst, const unsigned char* data, unsigned long length, unsigned int functions)
+void hash_compute(char* dst, const unsigned char* data, unsigned int length, unsigned int functions)
 {
 	int i;
 
@@ -655,7 +655,7 @@ static void h_crc_begin(void)
 	crc = 0;
 }
 
-static void h_crc_buffer(const void* mem, unsigned long len)
+static void h_crc_buffer(const void* mem, unsigned int len)
 {
 	crc = crc32(crc, (UINT8*)mem, len);
 }
@@ -676,7 +676,7 @@ static void h_sha1_begin(void)
 	sha1_init(&sha1ctx);
 }
 
-static void h_sha1_buffer(const void* mem, unsigned long len)
+static void h_sha1_buffer(const void* mem, unsigned int len)
 {
 	sha1_update(&sha1ctx, len, (UINT8*)mem);
 }
@@ -692,10 +692,10 @@ static struct MD5Context md5_ctx;
 
 static void h_md5_begin(void)
 {
-	MD5Init(&md5_ctx);		
+	MD5Init(&md5_ctx);
 }
 
-static void h_md5_buffer(const void* mem, unsigned long len)
+static void h_md5_buffer(const void* mem, unsigned int len)
 {
 	MD5Update(&md5_ctx, (md5byte*)mem, len);
 }

@@ -71,7 +71,7 @@ unsigned int hash_data_used_functions(const char* d);
 
 // Compute hash of a data chunk in memory. Parameter 'functions' specifies which hashing functions
 //  we want the checksum of.
-void hash_compute(char* dst, const unsigned char* data, unsigned long length, unsigned int functions);
+void hash_compute(char* dst, const unsigned char* data, unsigned int length, unsigned int functions);
 
 // Verifies that a hash string is valid
 int hash_verify_string(const char *hash);
@@ -79,5 +79,5 @@ int hash_verify_string(const char *hash);
 #ifdef __cplusplus
 }
 #endif
-	
+
 #endif
