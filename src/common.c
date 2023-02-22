@@ -126,7 +126,7 @@ void showdisclaimer(void)   /* MAURY_BEGIN: dichiarazione */
 #ifdef LSB_FIRST
 #define intelLong(x) (x)
 #else
-#define intelLong(x) ((((x) << 24) | (((unsigned long) (x)) >> 24) | (( (x) & 0x0000ff00) << 8) | (( (x) & 0x00ff0000) >> 8)))
+#define intelLong(x) ((((x) << 24) | (((unsigned int) (x)) >> 24) | (( (x) & 0x0000ff00) << 8) | (( (x) & 0x00ff0000) >> 8)))
 #endif
 
 /*-------------------------------------------------
@@ -135,7 +135,7 @@ void showdisclaimer(void)   /* MAURY_BEGIN: dichiarazione */
 
 static struct GameSample *read_wav_sample(mame_file *f)
 {
-	unsigned long offset = 0;
+	UINT32 offset = 0;
 	UINT32 length, rate, filesize;
 	UINT16 bits, temp16;
 	char buf[32];
