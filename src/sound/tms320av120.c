@@ -71,10 +71,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
      DECLARATIONS
 ***********************************************************************************************/
 //MPG Stuff
-INLINE long Layer2Requant(long sample, long levels, int scaleIndex);
-static void Matrix(long *V, long *subbandSamples, int numSamples);
-static void Layer12Synthesis(  int num, long *V[16], long *subbandSamples,	int numSubbandSamples);
-static long GetBits(int num, int numBits);
+INLINE int Layer2Requant(int sample, int levels, int scaleIndex);
+static void Matrix(int *V, int *subbandSamples, int numSamples);
+static void Layer12Synthesis(int num, int V[16][64], int *subbandSamples, int numSubbandSamples);
+static int GetBits(int num, int numBits);
 static void DecodeLayer2(int num);
 
 //TMS320AV120 Stuff
@@ -98,15 +98,15 @@ static int valid_header(int chipnum);
 ***********************************************************************************************/
 struct TMS320AV120Chip
 {
- UINT8  framebuff[MPG_FRAMESIZE];		//Holds raw mpg data for 1 frame (also used as header input buffer)
+ UINT8	framebuff[MPG_FRAMESIZE];		//Holds raw mpg data for 1 frame (also used as header input buffer)
  UINT8	fb_pos;							//Current frame buffer position
- INT16  pcmbuffer[CAP_PCMBUFFER_SIZE];	//Decoded PCM data buffer
+ INT16	pcmbuffer[CAP_PCMBUFFER_SIZE];	//Decoded PCM data buffer
  UINT32 pcm_pos;						//Position of next data to be input into the pcm buffer
  UINT32 sOut;							//Position of next sample to read out of the pcm buffer
- int    stream;							//Holds stream channel assignment
- int    bitsRemaining;					//Keep track of # of bits we've read from frame buffer
- long *_V[16];							//Synthesis window for single channel
- int    mute;							//Mute status ( 0 = off, 1 = Mute )
+ int	stream;							//Holds stream channel assignment
+ int	bitsRemaining;					//Keep track of # of bits we've read from frame buffer
+ int	V[16][64];						//Synthesis window for single channel
+ int	mute;							//Mute status ( 0 = off, 1 = Mute )
  int	reset;							//Reset status( 0 = off, 1 = Reset)
  int	bof_line;						//BOF Line status
  int	sreq_line;						//SREQ Line status
@@ -116,9 +116,9 @@ struct TMS320AV120Chip
 
 //Layer 2 Quantization
 typedef struct {
-   long _levels;  // Number of levels
-   char _bits;    // bits to read
-   int _grouping;// Yes->decompose into three samples
+   int _levels;         // Number of levels
+   unsigned char _bits; // bits to read
+   int _grouping;       // Yes->decompose into three samples
 } Layer2QuantClass;
 
 //Different Quantization types
@@ -149,7 +149,7 @@ Layer2QuantClass *l2allocationE[] = {
 
 //Allocation Entry
 typedef struct{
-   char _numberBits;
+   unsigned char _numberBits;
    Layer2QuantClass **_quantClasses;
 }Layer2BitAllocationTableEntry ;
 
@@ -165,7 +165,7 @@ static Layer2BitAllocationTableEntry Layer2AllocationB2d[32] = {
    {0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
 };
 
-static long SynthesisWindowCoefficients[] = // 2.16 fixed-point values
+static int SynthesisWindowCoefficients[] = // 2.16 fixed-point values
 {0, -1, -1, -1, -1, -1, -1, -2, -2, -2, -2, -3, -3, -4, -4, -5, -5, -6,
 -7, -7, -8, -9, -10, -11, -13, -14, -16, -17, -19, -21, -24, -26,
 
@@ -238,16 +238,15 @@ static long SynthesisWindowCoefficients[] = // 2.16 fixed-point values
      GLOBALS
 ***********************************************************************************************/
 
-static struct TMS320AV120Chip tms320av120[MAX_TMS320AV120];		// Each Chip
-static const struct TMS320AV120interface *intf;					// Pointer to the interface
-static long layer1ScaleFactors[64];								// MPG Layer 1 Scale Factors
-static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};		// Bit reading masks
+static struct TMS320AV120Chip tms320av120[MAX_TMS320AV120];			// Each Chip
+static const struct TMS320AV120interface *intf;						// Pointer to the interface
+static int layer1ScaleFactors[64];									// MPG Layer 1 Scale Factors
+static const UINT8 bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};	// Bit reading masks
 //Matrix stuff
-static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
-                             1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
-static long phaseShiftsR[32], phaseShiftsI[32]; // 1.14
-static long vShiftR[64], vShiftI[64]; // 1.13
-static long D[512];
+static const UINT8 order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
+static int phaseShiftsR[32], phaseShiftsI[32]; // 1.14
+static int vShiftR[64], vShiftI[64]; // 1.13
+static int D[512];
 
 #if LOG_DATA_IN	
 static FILE *fp;	//For logging
@@ -258,22 +257,21 @@ static FILE *fp;	//For logging
 ***********************************************************************************************/
 
 // return 2.16 requantized and scaled value
-INLINE long Layer2Requant(long sample, long levels, int scaleIndex) {
+INLINE int Layer2Requant(int sample, int levels, int scaleIndex) {
    return (layer1ScaleFactors[scaleIndex] * (((sample+sample+1 - levels)<<15)/levels)) >> 14;
 }
 
 // subbandSamples input are 2.16
-static void Matrix(long *V, long *subbandSamples, int numSamples) {
+static void Matrix(int *V, int *subbandSamples, int numSamples) {
    int i,n,size,fftStep;
-   long *workR=V; // Re-use V as work storage
-   long workI[64]; // Imaginary part
-   long *pWorkR;
-   long *pWorkI;
-   const char *next = order;
+   int *workR=V; // Re-use V as work storage
+   int workI[64]; // Imaginary part
+   int *pWorkR;
+   int *pWorkI;
    int phaseShiftIndex, phaseShiftStep = 8;
-   long tR,tI;
-   long *pcmR;
-   long *pcmI;
+   int tR,tI;
+   int *pcmR;
+   int *pcmI;
 
    for(i=numSamples;i<32;i++)
       subbandSamples[i]=0;
@@ -284,9 +282,9 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
    pWorkR = workR; // 2.16
    pWorkI = workI; // 2.16
 
-   for(n=0;n<16;n++) {
-      long a = subbandSamples[(int)*next++];
-      long b = subbandSamples[(int)*next++];
+   for(n=0;n<32;n+=2) {
+      int a = subbandSamples[order[n]];
+      int b = subbandSamples[order[n+1]];
       *pWorkR++ = a+b;  *pWorkI++ = 0; 
       *pWorkR++ = a;    *pWorkI++ = b; 
       *pWorkR++ = a-b;  *pWorkI++ = 0; 
@@ -312,8 +310,8 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
       }
       phaseShiftIndex = phaseShiftStep;
       for(fftStep = 1; fftStep < size; fftStep++) {
-         long phaseShiftR = phaseShiftsR[phaseShiftIndex];
-         long phaseShiftI = phaseShiftsI[phaseShiftIndex];
+         int phaseShiftR = phaseShiftsR[phaseShiftIndex];
+         int phaseShiftI = phaseShiftsI[phaseShiftIndex];
          phaseShiftIndex += phaseShiftStep;
          for(n=fftStep; n < 64; n += 2*size) {
             tR = (phaseShiftR*workR[n+size] 
@@ -346,19 +344,20 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
 }
 
 //Convert Layer 1 or Layer 2 subband samples into pcm samples and put into pcm buffer
-static void Layer12Synthesis(  int num,
-					    long *V[16],
-                        long *subbandSamples,
-						int numSubbandSamples)
+static void Layer12Synthesis(int num,
+                             int V[16][64],
+                             int *subbandSamples,
+                             int numSubbandSamples)
 {
    INT16 *pcmSamples = &(tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos]);
    int i,j;
-   long *t = V[15];
-   long *nextD;
+   int *nextD;
+   int t[64];
+   memcpy(t, V[15], 64*sizeof(int));
 
    for(i=15;i>0;i--) // Shift V buffers over
-      V[i] = V[i-1];
-   V[0] = t;
+      memcpy(V[i], V[i-1], 64*sizeof(int));
+   memcpy(V[0], t, 64*sizeof(int));
 
    // Convert subband samples into PCM samples in V[0]
    Matrix(V[0],subbandSamples,numSubbandSamples);
@@ -366,7 +365,7 @@ static void Layer12Synthesis(  int num,
    // D is 3.12, V is 6.9, want 16 bit output
    nextD = D;
    for(j=0;j<32;j++) {
-      long sample = 0; // 8.16
+      int sample = 0; // 8.16
       for(i=0;i<16;i+=2) {
          sample += (*nextD++ * V[i][j]) >> 8;
          sample += (*nextD++ * V[i+1][j+32]) >> 8;
@@ -376,12 +375,12 @@ static void Layer12Synthesis(  int num,
 }
 
 //Return bits from the frame buffer
-static long GetBits(int num, int numBits) {
-   long result;
+static int GetBits(int num, int numBits) {
+   int result;
    if(tms320av120[num].bitsRemaining == 0) { // If no bits in this byte get from next byte in frame buffer!
-      tms320av120[num].fb_pos++;				 // ...
+      tms320av120[num].fb_pos++;             // ...
 	  //Make sure we're not out of data!
-	  if(tms320av120[num].fb_pos > MPG_FRAMESIZE) {
+	  if(tms320av120[num].fb_pos >= MPG_FRAMESIZE) {
 		  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
 		  return 0;
 	  }
@@ -392,10 +391,15 @@ static long GetBits(int num, int numBits) {
       return (tms320av120[num].framebuff[tms320av120[num].fb_pos]>>tms320av120[num].bitsRemaining) & bitmasks[numBits];
    }
    // Use up rest of this byte, then recurse to get more bits
-   result = (tms320av120[num].framebuff[tms320av120[num].fb_pos] & bitmasks[tms320av120[num].bitsRemaining]) << (numBits - tms320av120[num].bitsRemaining);
+   result = (int)(tms320av120[num].framebuff[tms320av120[num].fb_pos] & bitmasks[tms320av120[num].bitsRemaining]) << (numBits - tms320av120[num].bitsRemaining);
    numBits -= tms320av120[num].bitsRemaining; // I don't need as many bits now
    tms320av120[num].bitsRemaining = 8;  // Move to next bit
    tms320av120[num].fb_pos++;
+   //Make sure we're not out of data!
+   if(tms320av120[num].fb_pos >= MPG_FRAMESIZE) {
+	  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
+	  return 0;
+   }
    return result | GetBits(num,numBits);
 }
 
@@ -404,12 +408,12 @@ static void DecodeLayer2(int num)
 {
 int allocation[32];				// One set of allocation data for each subband
 int scaleFactorSelection[32];	// One set of scale factor selectors for each subband
-long sbSamples[3][32];			// Three sets/groups of subband samples for each of the 32 Subbands
+int sbSamples[3][32];			// Three sets/groups of subband samples for each of the 32 Subbands
 int scaleFactor[3][32];			// Scale factors for each of the 3 groups of 32 Subbands
 int sblimit=0;					// One past highest subband with non-empty allocation
 int sb, sf, gp;
 int scale_factor;				//Current scale factor index
-long levels;					//Quantization level
+int levels;						//Quantization level
 Layer2BitAllocationTableEntry *allocationMap;
 
 //Reset bits flag
@@ -476,7 +480,7 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 				scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
 				levels = quantClass->_levels;
 				if (quantClass->_grouping) { // Grouped samples
-					long s = GetBits(num,quantClass->_bits); // Get group
+					int s = GetBits(num,quantClass->_bits); // Get group
 					// Separate out by computing successive remainders
 					sbSamples[0][sb] = Layer2Requant(s % levels,levels,scale_factor);
 					s /= levels;
@@ -486,7 +490,7 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 				}
 				else { // Ungrouped samples
 					int width = quantClass->_bits;
-					long s = GetBits(num,width); // Get 1st sample
+					int s = GetBits(num,width); // Get 1st sample
 					sbSamples[0][sb] = Layer2Requant(s,levels,scale_factor);
 					s = GetBits(num,width); // Get 2nd sample
 					sbSamples[1][sb] = Layer2Requant(s,levels,scale_factor);
@@ -496,11 +500,11 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 			}
 		}
 		// Now, feed three sets of subband samples into synthesis engine
-		Layer12Synthesis(num,tms320av120[num]._V,sbSamples[0],sblimit);
+		Layer12Synthesis(num,tms320av120[num].V,sbSamples[0],sblimit);
 		tms320av120[num].pcm_pos += 32;
-		Layer12Synthesis(num,tms320av120[num]._V,sbSamples[1],sblimit);
+		Layer12Synthesis(num,tms320av120[num].V,sbSamples[1],sblimit);
 		tms320av120[num].pcm_pos += 32;
-		Layer12Synthesis(num,tms320av120[num]._V,sbSamples[2],sblimit);
+		Layer12Synthesis(num,tms320av120[num].V,sbSamples[2],sblimit);
 		tms320av120[num].pcm_pos += 32;
 	}	//# of groups
 }		//# of scale factors
@@ -541,10 +545,10 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 			break;
 		}
 		//Send next pcm sample to output buffer (mute if it is set)
-		buffer[ii] = (!tms320av120[num].mute) ? tms320av120[num].pcmbuffer[tms320av120[num].sOut] : 0;
+		buffer[ii] = (!tms320av120[num].mute) ? tms320av120[num].pcmbuffer[tms320av120[num].sOut] : (INT16)0;
 		tms320av120[num].sOut++;
 		//Loop to beginning if we reach end of pcm buffer
-		if( tms320av120[num].sOut == CAP_PCMBUFFER_SIZE)	
+		if( tms320av120[num].sOut == CAP_PCMBUFFER_SIZE)
 			tms320av120[num].sOut = 0;
 		}
  }
@@ -559,9 +563,9 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 ***********************************************************************************************/
 int TMS320AV120_sh_start(const struct MachineSound *msound)
 {
-	int i, j, vi, failed=0;
+	int i, j, failed=0;
 	char stream_name[40];
-	long *nextD = D;
+	int *nextD = D;
 
 	//Get reference to the interface
 	intf = msound->sound_interface;
@@ -579,20 +583,6 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 
 		if(failed) break;
 
-		//Create Synthesis Window vars
-		for(vi=0;vi<16;vi++) {
-		  //For each of the 16 values, we point to 64 PCM Samples (data type: long)
-		  tms320av120[i]._V[vi] = (long*)malloc(64*sizeof(long));
-		  //Ensure it was created..
-		  if(!tms320av120[i]._V[vi]) {
-			failed = 1;
-			break;
-		  }
-		  //Initialize to 0
-		  for(j=0;j<64;j++)
-			tms320av120[i]._V[vi][j] = 0;
-		}
-
 		//Open for logging data
 		#if LOG_DATA_IN	
 		fp = fopen("c:\\tms320av120.mp3","wb");
@@ -602,13 +592,13 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 	if(!failed) {
 		//Create Scale Factor values
 		for(i=0;i<63;i++)
-			layer1ScaleFactors[i] = (long)(32767.0 * pow(2.0, 1.0 - i/3.0));
+			layer1ScaleFactors[i] = (int)(32767.0 * pow(2.0, 1.0 - i/3.0));
 		// For speed, precompute all of the phase shift values
-	    for(i=0;i<32;i++) { // 1.14
-         phaseShiftsR[i] = (long)(16384.0*cos(i*(M_PI/32.0)));
-         phaseShiftsI[i] = (long)(16384.0*sin(i*(M_PI/32.0)));
-         vShiftR[i] = (long)(16384.0*cos((32+i)*(M_PI/64.0)));
-         vShiftI[i] = (long)(16384.0*sin((32+i)*(M_PI/64.0)));
+		for(i=0;i<32;i++) { // 1.14
+         phaseShiftsR[i] = (int)(16384.0*cos(i*(M_PI/32.0)));
+         phaseShiftsI[i] = (int)(16384.0*sin(i*(M_PI/32.0)));
+         vShiftR[i] = (int)(16384.0*cos((32+i)*(M_PI/64.0)));
+         vShiftI[i] = (int)(16384.0*sin((32+i)*(M_PI/64.0)));
 		}
 		// Rearrange synthesis window coefficients into a more
 		// useful order, and scale them to 3.12
@@ -628,25 +618,10 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 
 void TMS320AV120_sh_stop(void)
 {
-  int i,vi;
-
   //Close logging file
-  #if LOG_DATA_IN	
+  #if LOG_DATA_IN
   if(fp)	fclose(fp);
   #endif
-
-  /*-- Delete memory we allocated dynamically --*/
-  for (i = 0; i < intf->num; i++)
-  {
-	/*-- Delete Synth windows data --*/
-	for(vi=0;vi<16;vi++)
-	{
-		if(tms320av120[i]._V[vi]) {
-			free(tms320av120[i]._V[vi]);
-			tms320av120[i]._V[vi] = NULL;
-		}
-	}
-  }
 }
 
 /**********************************************************************************************
