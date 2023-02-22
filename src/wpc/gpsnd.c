@@ -672,7 +672,7 @@ static WRITE_HANDLER(m6840_w ) {
 //  logerror("M6840: offset %d = %02x\n", offset, data);
   m6840d.ax[offset]=data;
   if (offset == 3) {
-	long int w1;
+	int w1;
 	gps_locals.timlat1 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
 	m6840d.timer1 = gps_locals.timlat1;
 	w1 = MSU1_INTCLOCK / (2 * (m6840d.timer1 + 1));
@@ -706,7 +706,7 @@ static WRITE_HANDLER(m6840_w ) {
 		logerror ("Playsam Q3 off\n");
 	}
   }
-  if (offset == 1)  {
+  if (offset == 1) {
 	gps_locals.cr2= m6840d.ax[offset];
 	logerror("%04x: m6840_w  CR2 %02x       ", activecpu_get_previouspc(), gps_locals.cr2);
 	if ((gps_locals.cr2 & 0x80) == 0) {

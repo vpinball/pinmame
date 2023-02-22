@@ -18,10 +18,10 @@ extern "C" {
 #endif
 
 /* initializes random number generator with a seed */
-void mame_srand(unsigned long s);
+void mame_srand(unsigned int s);
 
 /* generates a random number on [0,0xffffffff]-interval */
-unsigned long mame_rand(void);
+unsigned int mame_rand(void);
 
 #ifdef __cplusplus
 }

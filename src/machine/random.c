@@ -54,13 +54,13 @@
 #define MIXBITS(u,v) ( ((u) & UMASK) | ((v) & LMASK) )
 #define TWIST(u,v) ((MIXBITS(u,v) >> 1) ^ ((v)&1UL ? MATRIX_A : 0UL))
 
-static unsigned long state[N]; /* the array for the state vector  */
+static unsigned int state[N]; /* the array for the state vector  */
 static int left = 1;
 static int initf = 0;
-static unsigned long *next;
+static unsigned int *next;
 
 /* initializes state[N] with a seed */
-static void init_genrand(unsigned long s)
+static void init_genrand(unsigned int s)
 {
     int j;
     state[0]= s & 0xffffffffUL;
@@ -80,7 +80,7 @@ static void init_genrand(unsigned long s)
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 static void init_by_array(init_key, key_length)
-static unsigned long init_key[], key_length;
+static unsigned int init_key[], key_length;
 {
     int i, j, k;
     init_genrand(19650218UL);
@@ -109,7 +109,7 @@ static unsigned long init_key[], key_length;
 
 static void next_state(void)
 {
-    unsigned long *p=state;
+    unsigned int *p=state;
     int j;
 
     /* if init_genrand() has not been called, */
@@ -129,9 +129,9 @@ static void next_state(void)
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
-static unsigned long genrand_int32(void)
+static unsigned int genrand_int32(void)
 {
-    unsigned long y;
+    unsigned int y;
 
     if (--left == 0) next_state();
     y = *next++;
@@ -148,9 +148,9 @@ static unsigned long genrand_int32(void)
 #if 0  /* not needed for MAME, left for reference */
 
 /* generates a random number on [0,0x7fffffff]-interval */
-static long genrand_int31(void)
+static int genrand_int31(void)
 {
-    unsigned long y;
+    unsigned int y;
 
     if (--left == 0) next_state();
     y = *next++;
@@ -161,13 +161,13 @@ static long genrand_int31(void)
     y ^= (y << 15) & 0xefc60000UL;
     y ^= (y >> 18);
 
-    return (long)(y>>1);
+    return (int)(y>>1);
 }
 
 /* generates a random number on [0,1]-real-interval */
 static double genrand_real1(void)
 {
-    unsigned long y;
+    unsigned int y;
 
     if (--left == 0) next_state();
     y = *next++;
@@ -185,7 +185,7 @@ static double genrand_real1(void)
 /* generates a random number on [0,1)-real-interval */
 static double genrand_real2(void)
 {
-    unsigned long y;
+    unsigned int y;
 
     if (--left == 0) next_state();
     y = *next++;
@@ -203,7 +203,7 @@ static double genrand_real2(void)
 /* generates a random number on (0,1)-real-interval */
 static double genrand_real3(void)
 {
-    unsigned long y;
+    unsigned int y;
 
     if (--left == 0) next_state();
     y = *next++;
@@ -221,7 +221,7 @@ static double genrand_real3(void)
 /* generates a random number on [0,1) with 53-bit resolution*/
 static double genrand_res53(void)
 {
-    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6;
+    unsigned int a=genrand_int32()>>5, b=genrand_int32()>>6;
     return(a*67108864.0+b)*(1.0/9007199254740992.0);
 }
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
@@ -229,7 +229,7 @@ static double genrand_res53(void)
 int main(void)
 {
     int i;
-    unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
+    unsigned int init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
     init_by_array(init, length);
     /* This is an example of initializing by an array.       */
     /* You may use init_genrand(seed) with any 32bit integer */
@@ -255,14 +255,12 @@ int main(void)
  * The extra function call should get optimized by the compiler.
  */
 
-void mame_srand(unsigned long s)
+void mame_srand(unsigned int s)
 {
 	init_genrand(s);
 }
 
-unsigned long mame_rand(void)
+unsigned int mame_rand(void)
 {
 	return genrand_int32();
 }
-
-
