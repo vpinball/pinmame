@@ -147,25 +147,19 @@ Layer2QuantClass *l2allocationE[] = {
    &l2qc4095,&l2qc8191,&l2qc16383,&l2qc32767
 };
 
-//Allocation Entry
-typedef struct{
-   unsigned char _numberBits;
-   Layer2QuantClass **_quantClasses;
-}Layer2BitAllocationTableEntry ;
-
 // 11 active subbands
 // Mono requires 38 bits for allocation table
 // Used at lowest bit rates 
-static Layer2BitAllocationTableEntry Layer2AllocationB2d[32] = {
-   { 4, l2allocationE },   { 4, l2allocationE },   { 3, l2allocationE },
-   { 3, l2allocationE },   { 3, l2allocationE },   { 3, l2allocationE },
-   { 3, l2allocationE },   { 3, l2allocationE },   { 3, l2allocationE },
-   { 3, l2allocationE },   { 3, l2allocationE },   { 3, l2allocationE },
-   {0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
-   {0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
+static const unsigned char Layer2AllocationB2d[32] = { // number of Bits
+   4, 4, 3,
+   3, 3, 3,
+   3, 3, 3,
+   3, 3, 3,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0
 };
 
-static int SynthesisWindowCoefficients[] = // 2.16 fixed-point values
+static const int SynthesisWindowCoefficients[] = // 2.16 fixed-point values
 {0, -1, -1, -1, -1, -1, -1, -2, -2, -2, -2, -3, -3, -4, -4, -5, -5, -6,
 -7, -7, -8, -9, -10, -11, -13, -14, -16, -17, -19, -21, -24, -26,
 
@@ -240,9 +234,11 @@ static int SynthesisWindowCoefficients[] = // 2.16 fixed-point values
 
 static struct TMS320AV120Chip tms320av120[MAX_TMS320AV120];			// Each Chip
 static const struct TMS320AV120interface *intf;						// Pointer to the interface
+
+//LUTs
 static int layer1ScaleFactors[64];									// MPG Layer 1 Scale Factors
 static const UINT8 bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};	// Bit reading masks
-//Matrix stuff
+//Matrix stuff/LUTs
 static const UINT8 order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
 static int phaseShiftsR[32], phaseShiftsI[32]; // 1.14
 static int vShiftR[64], vShiftI[64]; // 1.13
@@ -293,7 +289,7 @@ static void Matrix(int *V, int *subbandSamples, int numSamples) {
 
    // This is a fast version of the transform in the ISO standard.
    // It's derived using the same principles as the FFT,
-   // but it's NOT a Fourier Transform. 
+   // but it's NOT a Fourier Transform.
 
    // In each iteration, I throw out one bit of accuracy
    // This gives me an extra bit of headroom to avoid overflow
@@ -351,7 +347,7 @@ static void Layer12Synthesis(int num,
 {
    INT16 *pcmSamples = &(tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos]);
    int i,j;
-   int *nextD;
+   const int *nextD = D;
    int t[64];
    memcpy(t, V[15], 64*sizeof(int));
 
@@ -363,11 +359,10 @@ static void Layer12Synthesis(int num,
    Matrix(V[0],subbandSamples,numSubbandSamples);
 
    // D is 3.12, V is 6.9, want 16 bit output
-   nextD = D;
    for(j=0;j<32;j++) {
       int sample = 0; // 8.16
       for(i=0;i<16;i+=2) {
-         sample += (*nextD++ * V[i][j]) >> 8;
+         sample += (*nextD++ * V[i  ][j   ]) >> 8;
          sample += (*nextD++ * V[i+1][j+32]) >> 8;
       }
       *pcmSamples++ = (INT16)(sample >> 1); // Output samples are 16 bit
@@ -412,20 +407,14 @@ int sbSamples[3][32];			// Three sets/groups of subband samples for each of the 
 int scaleFactor[3][32];			// Scale factors for each of the 3 groups of 32 Subbands
 int sblimit=0;					// One past highest subband with non-empty allocation
 int sb, sf, gp;
-int scale_factor;				//Current scale factor index
-int levels;						//Quantization level
-Layer2BitAllocationTableEntry *allocationMap;
 
 //Reset bits flag
 tms320av120[num].bitsRemaining = 8;
 
-// Select which allocation map to use
-allocationMap = Layer2AllocationB2d;
-
 // Retrieve allocation for each of the 32 Subbands
 for(sb=0;sb<32;sb++) {
-   if(allocationMap[sb]._numberBits) {
-        allocation[sb] = GetBits(num,allocationMap[sb]._numberBits);
+   if(Layer2AllocationB2d[sb]) {
+        allocation[sb] = GetBits(num,Layer2AllocationB2d[sb]);
         if(allocation[sb] && (sb >= sblimit))
            sblimit=sb+1;
    } else
@@ -465,22 +454,23 @@ for(sb=0; sb<sblimit; sb++)
 	   }
 	}
 }
-   
+
 for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 	for(gp=0;gp<4;gp++) { // 4 groups of samples in each 1/3
-         
+
 		for(sb=0;sb<sblimit;sb++) { // Read 3 sets of 32 subband samples (skip non-used subbands)
-			Layer2QuantClass *quantClass = allocationMap[sb]._quantClasses ? allocationMap[sb]._quantClasses[ allocation[sb] ] : 0 ;
-			if(!allocation[sb]) { // No bits, store zero for each set
-			    sbSamples[0][sb] = 0;
+			Layer2QuantClass * const quantClass = Layer2AllocationB2d[sb] ? l2allocationE[ allocation[sb] ] : 0;
+			if(!allocation[sb] || !Layer2AllocationB2d[sb]) { // No bits, store zero for each set
+				sbSamples[0][sb] = 0;
 				sbSamples[1][sb] = 0;
 				sbSamples[2][sb] = 0;
 			}
 			else {
-				scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
-				levels = quantClass->_levels;
+				int scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
+				int levels = quantClass->_levels;		//Quantization level
+				int width = quantClass->_bits;
+				int s = GetBits(num,width); // Get group / 1st sample
 				if (quantClass->_grouping) { // Grouped samples
-					int s = GetBits(num,quantClass->_bits); // Get group
 					// Separate out by computing successive remainders
 					sbSamples[0][sb] = Layer2Requant(s % levels,levels,scale_factor);
 					s /= levels;
@@ -489,8 +479,6 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 					sbSamples[2][sb] = Layer2Requant(s % levels,levels,scale_factor);
 				}
 				else { // Ungrouped samples
-					int width = quantClass->_bits;
-					int s = GetBits(num,width); // Get 1st sample
 					sbSamples[0][sb] = Layer2Requant(s,levels,scale_factor);
 					s = GetBits(num,width); // Get 2nd sample
 					sbSamples[1][sb] = Layer2Requant(s,levels,scale_factor);
@@ -564,8 +552,6 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 int TMS320AV120_sh_start(const struct MachineSound *msound)
 {
 	int i, j, failed=0;
-	char stream_name[40];
-	int *nextD = D;
 
 	//Get reference to the interface
 	intf = msound->sound_interface;
@@ -574,6 +560,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 	memset(&tms320av120, 0, sizeof(tms320av120));
 	for (i = 0; i < intf->num; i++)
 	{
+		char stream_name[40];
 		/*-- allocate a DAC stream at 32KHz --*/
 		sprintf(stream_name, "%s #%d", sound_name(msound), i);
 		tms320av120[i].stream = stream_init(stream_name, intf->mixing_level[i], 32000, i, tms320av120_update);
@@ -590,6 +577,8 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 	}
 
 	if(!failed) {
+		int *nextD = D;
+
 		//Create Scale Factor values
 		for(i=0;i<63;i++)
 			layer1ScaleFactors[i] = (int)(32767.0 * pow(2.0, 1.0 - i/3.0));
