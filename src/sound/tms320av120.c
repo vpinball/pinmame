@@ -51,6 +51,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************/
 
+#include <windows.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -72,8 +74,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************************************/
 //MPG Stuff
 INLINE int Layer2Requant(int sample, int levels, int scaleIndex);
-static void Matrix(int *V, int *subbandSamples, int numSamples);
-static void Layer12Synthesis(int num, int V[16][64], int *subbandSamples, int numSubbandSamples);
+static void Matrix(int V[64], int subbandSamples[32], int numSamples);
+static void Layer12Synthesis(int num, int subbandSamples[32], int numSubbandSamples);
 static int GetBits(int num, int numBits);
 static void DecodeLayer2(int num);
 
@@ -258,19 +260,16 @@ INLINE int Layer2Requant(int sample, int levels, int scaleIndex) {
 }
 
 // subbandSamples input are 2.16
-static void Matrix(int *V, int *subbandSamples, int numSamples) {
-   int i,n,size,fftStep;
+static void Matrix(int V[64], int subbandSamples[32], int numSamples) {
+   int n,size;
    int *workR=V; // Re-use V as work storage
    int workI[64]; // Imaginary part
    int *pWorkR;
    int *pWorkI;
-   int phaseShiftIndex, phaseShiftStep = 8;
-   int tR,tI;
-   int *pcmR;
-   int *pcmI;
+   int phaseShiftStep = 8;
 
-   for(i=numSamples;i<32;i++)
-      subbandSamples[i]=0;
+   for(n=numSamples;n<32;n++)
+      subbandSamples[n]=0;
 
    // The initialization step here precalculates the
    // two-point transforms (each two inputs generate four outputs)
@@ -293,10 +292,12 @@ static void Matrix(int *V, int *subbandSamples, int numSamples) {
 
    // In each iteration, I throw out one bit of accuracy
    // This gives me an extra bit of headroom to avoid overflow
-   for(size=4; size<64; size <<= 1) {
-      // Since the first phase shfit value is always 1,
+   for(size=4; size<64; size*=2) {
+      int phaseShiftIndex, fftStep;
+      // Since the first phase shift value is always 1,
       // I can save a few multiplies by duplicating the loop
       for(n=0; n < 64; n += 2*size) {
+         int tR, tI;
          tR = workR[n+size];
          workR[n+size] = (workR[n] - tR)>>1;
          workR[n] = (workR[n] + tR)>>1;
@@ -310,6 +311,7 @@ static void Matrix(int *V, int *subbandSamples, int numSamples) {
          int phaseShiftI = phaseShiftsI[phaseShiftIndex];
          phaseShiftIndex += phaseShiftStep;
          for(n=fftStep; n < 64; n += 2*size) {
+            int tR, tI;
             tR = (phaseShiftR*workR[n+size] 
                      - phaseShiftI*workI[n+size])>>14;
             tI = (phaseShiftR*workI[n+size] 
@@ -326,8 +328,8 @@ static void Matrix(int *V, int *subbandSamples, int numSamples) {
    // Build final V values by massaging transform output
    {
       // Now build V values from the complex transform output
-      pcmR = workR+33; // 6.12
-      pcmI = workI+33; // 6.12
+      int *pcmR = workR+33; // 6.12
+      int *pcmI = workI+33; // 6.12
       V[16] = 0;    // V[16] is always 0
       for(n=1;n<32;n++) {   // V is the real part, V is 6.9
          V[n+16] = (vShiftR[n] * *pcmR++ - vShiftI[n] * *pcmI++)>>15;
@@ -341,29 +343,28 @@ static void Matrix(int *V, int *subbandSamples, int numSamples) {
 
 //Convert Layer 1 or Layer 2 subband samples into pcm samples and put into pcm buffer
 static void Layer12Synthesis(int num,
-                             int V[16][64],
-                             int *subbandSamples,
+                             int subbandSamples[32],
                              int numSubbandSamples)
 {
    INT16 *pcmSamples = &(tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos]);
    int i,j;
    const int *nextD = D;
    int t[64];
-   memcpy(t, V[15], 64*sizeof(int));
+   memcpy(t, tms320av120[num].V[15], 64*sizeof(int));
 
    for(i=15;i>0;i--) // Shift V buffers over
-      memcpy(V[i], V[i-1], 64*sizeof(int));
-   memcpy(V[0], t, 64*sizeof(int));
+      memcpy(tms320av120[num].V[i], tms320av120[num].V[i-1], 64*sizeof(int));
+   memcpy(tms320av120[num].V[0], t, 64*sizeof(int));
 
    // Convert subband samples into PCM samples in V[0]
-   Matrix(V[0],subbandSamples,numSubbandSamples);
+   Matrix(tms320av120[num].V[0],subbandSamples,numSubbandSamples);
 
    // D is 3.12, V is 6.9, want 16 bit output
    for(j=0;j<32;j++) {
       int sample = 0; // 8.16
       for(i=0;i<16;i+=2) {
-         sample += (*nextD++ * V[i  ][j   ]) >> 8;
-         sample += (*nextD++ * V[i+1][j+32]) >> 8;
+         sample += (*nextD++ * tms320av120[num].V[i  ][j   ]) >> 8;
+         sample += (*nextD++ * tms320av120[num].V[i+1][j+32]) >> 8;
       }
       *pcmSamples++ = (INT16)(sample >> 1); // Output samples are 16 bit
    }
@@ -377,6 +378,7 @@ static int GetBits(int num, int numBits) {
 	  //Make sure we're not out of data!
 	  if(tms320av120[num].fb_pos >= MPG_FRAMESIZE) {
 		  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
+		  MessageBox(NULL, "0", "0", MB_OK);
 		  return 0;
 	  }
       tms320av120[num].bitsRemaining = 8;
@@ -393,6 +395,7 @@ static int GetBits(int num, int numBits) {
    //Make sure we're not out of data!
    if(tms320av120[num].fb_pos >= MPG_FRAMESIZE) {
 	  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
+	  MessageBox(NULL, "1", "1", MB_OK);
 	  return 0;
    }
    return result | GetBits(num,numBits);
@@ -420,6 +423,9 @@ for(sb=0;sb<32;sb++) {
    } else
         allocation[sb] = 0;
 }
+
+if(sblimit >= 32)
+	MessageBox(NULL,"sbl","sbl",MB_OK);
 
 // Retrieve scale factor selection information for each of the 32 subbands (skip non-used subbands)
 for(sb=0; sb<sblimit; sb++)
@@ -459,6 +465,9 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 	for(gp=0;gp<4;gp++) { // 4 groups of samples in each 1/3
 
 		for(sb=0;sb<sblimit;sb++) { // Read 3 sets of 32 subband samples (skip non-used subbands)
+			if(allocation[sb] >= 16)
+				MessageBox(NULL,"alsb","alsb",MB_OK);
+
 			Layer2QuantClass * const quantClass = Layer2AllocationB2d[sb] ? l2allocationE[ allocation[sb] ] : 0;
 			if(!allocation[sb] || !Layer2AllocationB2d[sb]) { // No bits, store zero for each set
 				sbSamples[0][sb] = 0;
@@ -467,9 +476,17 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 			}
 			else {
 				int scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
+				if (scale_factor >= 63)
+					MessageBox(NULL, "scf", "scf", MB_OK);
 				int levels = quantClass->_levels;		//Quantization level
+				if (levels == 0)
+				{
+					char bla[64];
+					sprintf(bla, "%u %u %u %u %u", sf, gp, sb, allocation[sb], sblimit);
+					MessageBox(NULL, bla, bla, MB_OK);
+				}
 				int width = quantClass->_bits;
-				int s = GetBits(num,width); // Get group / 1st sample
+				int s = GetBits(num,width);      //Get group / 1st sample
 				if (quantClass->_grouping) { // Grouped samples
 					// Separate out by computing successive remainders
 					sbSamples[0][sb] = Layer2Requant(s % levels,levels,scale_factor);
@@ -488,11 +505,11 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 			}
 		}
 		// Now, feed three sets of subband samples into synthesis engine
-		Layer12Synthesis(num,tms320av120[num].V,sbSamples[0],sblimit);
+		Layer12Synthesis(num,sbSamples[0],sblimit);
 		tms320av120[num].pcm_pos += 32;
-		Layer12Synthesis(num,tms320av120[num].V,sbSamples[1],sblimit);
+		Layer12Synthesis(num,sbSamples[1],sblimit);
 		tms320av120[num].pcm_pos += 32;
-		Layer12Synthesis(num,tms320av120[num].V,sbSamples[2],sblimit);
+		Layer12Synthesis(num,sbSamples[2],sblimit);
 		tms320av120[num].pcm_pos += 32;
 	}	//# of groups
 }		//# of scale factors
@@ -580,7 +597,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 		int *nextD = D;
 
 		//Create Scale Factor values
-		for(i=0;i<63;i++)
+		for(i=0;i<64;i++) //!! is the value for layer1ScaleFactors[63] correct?
 			layer1ScaleFactors[i] = (int)(32767.0 * pow(2.0, 1.0 - i/3.0));
 		// For speed, precompute all of the phase shift values
 		for(i=0;i<32;i++) { // 1.14
