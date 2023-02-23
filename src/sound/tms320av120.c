@@ -118,35 +118,21 @@ struct TMS320AV120Chip
 
 //Layer 2 Quantization
 typedef struct {
-   int _levels;         // Number of levels
-   unsigned char _bits; // bits to read
-   int _grouping;       // Yes->decompose into three samples
+   unsigned short _levels;  // Number of levels
+   unsigned char _bits;     // bits to read
+   unsigned char _grouping; // Yes->decompose into three samples
 } Layer2QuantClass;
 
 //Different Quantization types
-static Layer2QuantClass l2qc3 = {3,5,1};
-static Layer2QuantClass l2qc5 = {5,7,1};
-//static Layer2QuantClass l2qc7 = {7,3,0};		Not used for our specific sampling frequencies
-static Layer2QuantClass l2qc9 = {9,10,1};
-static Layer2QuantClass l2qc15 = {15,4,0};
-static Layer2QuantClass l2qc31 = {31,5,0};
-static Layer2QuantClass l2qc63 = {63,6,0};
-static Layer2QuantClass l2qc127 = {127,7,0};
-static Layer2QuantClass l2qc255 = {255,8,0};
-static Layer2QuantClass l2qc511 = {511,9,0};
-static Layer2QuantClass l2qc1023 = {1023,10,0};
-static Layer2QuantClass l2qc2047 = {2047,11,0};
-static Layer2QuantClass l2qc4095 = {4095,12,0};
-static Layer2QuantClass l2qc8191 = {8191,13,0};
-static Layer2QuantClass l2qc16383 = {16383,14,0};
-static Layer2QuantClass l2qc32767 = {32767,15,0};
-//static Layer2QuantClass l2qc65535 = {65535,16,0};		Not used for our specific sampling frequencies
-
 //Allocation Table
-Layer2QuantClass *l2allocationE[] = {
-   0,&l2qc3,&l2qc5,&l2qc9,
-   &l2qc15,&l2qc31,&l2qc63,&l2qc127,&l2qc255,&l2qc511,&l2qc1023,&l2qc2047,
-   &l2qc4095,&l2qc8191,&l2qc16383,&l2qc32767
+static const Layer2QuantClass l2allocationE[] = {
+   {0,0,0},
+   /*l2qc3*/{3,5,1},/*l2qc5*/{5,7,1},
+   /*l2qc7{7,3,0},*/ // Not used for our specific sampling frequencies
+   /*l2qc9*/{9,10,1},
+   /*l2qc15*/{15,4,0},/*l2qc31*/{31,5,0},/*l2qc63*/{63,6,0},/*l2qc127*/{127,7,0},/*l2qc255*/{255,8,0},/*l2qc511*/{511,9,0},/*l2qc1023*/{1023,10,0},/*l2qc2047*/{2047,11,0},
+   /*l2qc4095*/{4095,12,0},/*l2qc8191*/{8191,13,0},/*l2qc16383*/{16383,14,0},/*l2qc32767*/{32767,15,0}
+   /*l2qc65535{65535,16,0}*/ // Not used for our specific sampling frequencies
 };
 
 // 11 active subbands
@@ -468,26 +454,26 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 			if(allocation[sb] >= 16)
 				MessageBox(NULL,"alsb","alsb",MB_OK);
 
-			Layer2QuantClass * const quantClass = Layer2AllocationB2d[sb] ? l2allocationE[ allocation[sb] ] : 0;
 			if(!allocation[sb] || !Layer2AllocationB2d[sb]) { // No bits, store zero for each set
 				sbSamples[0][sb] = 0;
 				sbSamples[1][sb] = 0;
 				sbSamples[2][sb] = 0;
 			}
 			else {
+				const Layer2QuantClass quantClass = l2allocationE[allocation[sb]];
 				int scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
 				if (scale_factor >= 63)
 					MessageBox(NULL, "scf", "scf", MB_OK);
-				int levels = quantClass->_levels;		//Quantization level
+				int levels = quantClass._levels;		//Quantization level
 				if (levels == 0)
 				{
 					char bla[64];
 					sprintf(bla, "%u %u %u %u %u", sf, gp, sb, allocation[sb], sblimit);
 					MessageBox(NULL, bla, bla, MB_OK);
 				}
-				int width = quantClass->_bits;
+				int width = quantClass._bits;
 				int s = GetBits(num,width);      //Get group / 1st sample
-				if (quantClass->_grouping) { // Grouped samples
+				if (quantClass._grouping) { // Grouped samples
 					// Separate out by computing successive remainders
 					sbSamples[0][sb] = Layer2Requant(s % levels,levels,scale_factor);
 					s /= levels;
