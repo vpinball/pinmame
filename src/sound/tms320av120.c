@@ -51,8 +51,6 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************/
 
-#include <windows.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -364,7 +362,6 @@ static int GetBits(int num, int numBits) {
 	  //Make sure we're not out of data!
 	  if(tms320av120[num].fb_pos >= MPG_FRAMESIZE) {
 		  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
-		  MessageBox(NULL, "0", "0", MB_OK);
 		  return 0;
 	  }
       tms320av120[num].bitsRemaining = 8;
@@ -381,7 +378,6 @@ static int GetBits(int num, int numBits) {
    //Make sure we're not out of data!
    if(tms320av120[num].fb_pos >= MPG_FRAMESIZE) {
 	  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
-	  MessageBox(NULL, "1", "1", MB_OK);
 	  return 0;
    }
    return result | GetBits(num,numBits);
@@ -409,9 +405,6 @@ for(sb=0;sb<32;sb++) {
    } else
         allocation[sb] = 0;
 }
-
-if(sblimit >= 32)
-	MessageBox(NULL,"sbl","sbl",MB_OK);
 
 // Retrieve scale factor selection information for each of the 32 subbands (skip non-used subbands)
 for(sb=0; sb<sblimit; sb++)
@@ -451,9 +444,6 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 	for(gp=0;gp<4;gp++) { // 4 groups of samples in each 1/3
 
 		for(sb=0;sb<sblimit;sb++) { // Read 3 sets of 32 subband samples (skip non-used subbands)
-			if(allocation[sb] >= 16)
-				MessageBox(NULL,"alsb","alsb",MB_OK);
-
 			if(!allocation[sb] || !Layer2AllocationB2d[sb]) { // No bits, store zero for each set
 				sbSamples[0][sb] = 0;
 				sbSamples[1][sb] = 0;
@@ -462,15 +452,7 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 			else {
 				const Layer2QuantClass quantClass = l2allocationE[allocation[sb]];
 				int scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
-				if (scale_factor >= 63)
-					MessageBox(NULL, "scf", "scf", MB_OK);
 				int levels = quantClass._levels;		//Quantization level
-				if (levels == 0)
-				{
-					char bla[64];
-					sprintf(bla, "%u %u %u %u %u", sf, gp, sb, allocation[sb], sblimit);
-					MessageBox(NULL, bla, bla, MB_OK);
-				}
 				int width = quantClass._bits;
 				int s = GetBits(num,width);      //Get group / 1st sample
 				if (quantClass._grouping) { // Grouped samples
