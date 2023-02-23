@@ -523,7 +523,7 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 		//Loop to beginning if we reach end of pcm buffer
 		if( tms320av120[num].sOut == CAP_PCMBUFFER_SIZE)
 			tms320av120[num].sOut = 0;
-		}
+	}
  }
 
  /* fill the rest with the silence */
@@ -566,7 +566,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 
 		//Create Scale Factor values
 		for(i=0;i<64;i++) //!! is the value for layer1ScaleFactors[63] correct?
-			layer1ScaleFactors[i] = (int)(32767.0 * pow(2.0, 1.0 - i/3.0));
+			layer1ScaleFactors[i] = (int)(32767.0 * exp2(1.0 - i/3.0));
 		// For speed, precompute all of the phase shift values
 		for(i=0;i<32;i++) { // 1.14
          phaseShiftsR[i] = (int)(16384.0*cos(i*(M_PI/32.0)));
