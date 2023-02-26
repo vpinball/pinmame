@@ -45,6 +45,7 @@ Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
 LTD:  Space Poker
+NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
 
 Clones:
 Dracula (One Ball MOD)
@@ -61,6 +62,7 @@ White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
 
 Removed Clones:
+NBA Fastbreak: 3.1 with Sound S1.0 (as this was just created to be able to use S1.0, which is nowadays wired to 1.1/1.15 instead)
 Star Trek: The Next Generation S7/DS (as these were just created to be able to use a P-1 sound rom, (for now) wired to P-4 instead)
 White Water P-1/P-2 (as these were just created to be able to use the P-1 sound roms, now wired to P-6 as found on a real machine)
 
