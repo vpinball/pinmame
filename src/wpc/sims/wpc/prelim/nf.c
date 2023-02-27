@@ -331,7 +331,7 @@ CORE_CLONEDEF(nf,22,23x,"No Fear: Dangerous Sports (2.2 / S1.1)",1995,"Williams"
 CORE_CLONEDEF(nf,20,23x,"No Fear: Dangerous Sports (2.0 / S1.1)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,11x,23x,"No Fear: Dangerous Sports (1.1X Export / S1.1)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,10f,23x,"No Fear: Dangerous Sports (1.0F French / S1.0)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,101,23x,"No Fear: Dangerous Sports (1.01 LED Ghost Fix / S1.0)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,101,23x,"No Fear: Dangerous Sports (1.01F LED Ghost Fix / S1.0)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,08x,23x,"No Fear: Dangerous Sports (0.8X Export Prototype / S1.0)",1995,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------

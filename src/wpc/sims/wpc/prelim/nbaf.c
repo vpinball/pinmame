@@ -291,14 +291,14 @@ WPC_ROMSTART(nbaf,23,"g11-23.rom",0x80000,CRC(a6ceb6de) SHA1(055387ee7da57e1a8fb
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(nbaf,31,"NBA Fastbreak (3.1, English/German Sound S3.0)",1997,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(nbaf,11s,31,"NBA Fastbreak (1.1, Sound S0.4)",1997,"Bally",wpc_m95S,0) //S0.4 only parked here, should only be used with proto game code
-CORE_CLONEDEF(nbaf,11,31,"NBA Fastbreak (1.1, Sound S1.0)",1997,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(nbaf,11a,31,"NBA Fastbreak (1.1, German Sound S2.0)",1997,"Bally",wpc_m95S,0) //basically S1.0, but german speech
-CORE_CLONEDEF(nbaf,115,31,"NBA Fastbreak (1.15, Sound S1.0)",1997,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(nbaf,21,31,"NBA Fastbreak (2.1, English/German Sound S3.0)",1997,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(nbaf,22,31,"NBA Fastbreak (2.2, English/German Sound S3.0)",1997,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(nbaf,23,31,"NBA Fastbreak (2.3, English/German Sound S3.0)",1997,"Bally",wpc_m95S,0)
+CORE_GAMEDEF(nbaf,31,"NBA Fastbreak (3.1 / S3.0 English/German)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(nbaf,11s,31,"NBA Fastbreak (1.1 / S0.4)",1997,"Bally",wpc_m95S,0) //S0.4 only parked here, should only be used with proto game code
+CORE_CLONEDEF(nbaf,11,31,"NBA Fastbreak (1.1 / S1.0)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(nbaf,11a,31,"NBA Fastbreak (1.1 / S2.0 German)",1997,"Bally",wpc_m95S,0) //basically S1.0, but german speech
+CORE_CLONEDEF(nbaf,115,31,"NBA Fastbreak (1.15 / S1.0)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(nbaf,21,31,"NBA Fastbreak (2.1 / S3.0 English/German)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(nbaf,22,31,"NBA Fastbreak (2.2 / S3.0 English/German)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(nbaf,23,31,"NBA Fastbreak (2.3 / S3.0 English/German)",1997,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
