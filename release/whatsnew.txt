@@ -49,6 +49,7 @@ NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
 
 Clones:
 Dracula (One Ball MOD)
+Flipper Football 1.03
 Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
