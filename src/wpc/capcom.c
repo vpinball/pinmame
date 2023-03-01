@@ -547,7 +547,7 @@ static void Skip_Error_Msg(void){
 			fixaddr = 0x000805e4;	//BSB
 			break;
 		case 9:
-			fixaddr = 0x00000880;	//FF104
+			fixaddr = 0x00000880;	//FF103,FF104
 			break;
 		case 10:
 			fixaddr = 0x00051704;	//BBB

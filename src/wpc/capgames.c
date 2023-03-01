@@ -264,7 +264,7 @@ CC_ROMEND
 CORE_GAMEDEFNV(ffv104,"Flipper Football (1.04)",1996,"Capcom",cc2,0)
 
 //Version 1.03
-INITGAME(ffv103, 12, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
+INITGAME(ffv103, 9, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_8(ffv103,  "u1l_v104.bin",CRC(375f4dd3) SHA1(0e3845afccf51a2d20e01afb371b8b7076a1ea79), // officially labeled as V1.02 on this 1.03 machine (see above)
                        "u1h_v104.bin",CRC(2133fc8e) SHA1(b4296f890a11aefdd09083636f416112e64fb0be), // dto.
                        "u2l_v104.bin",CRC(b74175ae) SHA1(dd0279e20a2ccb03dbea0087ab9d15a973543553), // dto.
