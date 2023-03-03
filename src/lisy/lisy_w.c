@@ -1844,6 +1844,18 @@ lisy_w_sound_handler(unsigned char board, unsigned char data) {
         first = 0;
     }
 
+    //filter the 5 relevant bits in order to have soundnumbers from 1..31 for sys3..6
+    switch (lisymini_game.typeno) {
+        case LISYW_TYPE_SYS3:
+        case LISYW_TYPE_SYS4:
+        case LISYW_TYPE_SYS6:
+        case LISYW_TYPE_SYS6A:
+    		data = data & 0xF8;
+    		data = data>>3;
+            	break;
+    }
+
+
     // skip instruction every 2 instr
     // if second instruction is same as first
     if (sys11_patch) {
