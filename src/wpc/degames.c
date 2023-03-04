@@ -1330,6 +1330,18 @@ DE_ROMEND
 #define input_ports_frankstg input_ports_frankst
 CORE_CLONEDEFNV(frankstg,frankst,"Frankenstein, Mary Shelley's (German)",1995,"Sega",de_mDEDMD64S2A,0)
 
+#define init_franksti init_frankst
+DE_ROMSTARTx0(franksti,"franka.103", CRC(a9aba9be) SHA1(1cc22fcbc0f51a17037637c04e606579956c9cba))
+DE_DMD64ROM88(         "FrankDispRom0_I1.03", CRC(6be7cc1c) SHA1(418ea4843c1380478a88aa08a63ab8ec98a55ac3),
+                       "FrankDispRom3_I1.03", CRC(9e08281e) SHA1(dcebeccf86b20cbd89449f1f9f1879bcb7abb836))
+DE2S_SOUNDROM1444(     "frsnd.u7"  , CRC(084f856c) SHA1(c91331a32b565c2ed3f96156f44143dc22009e8e),
+                       "frsnd.u17" , CRC(0da904d6) SHA1(e190f1a35147b2f39224832969ca7b1d4a30f6cc),
+                       "frsnd.u21" , CRC(14d4bc12) SHA1(9e7005c5bd0afe7f9c9215b39878496640cdea77),
+                       "frsnd.u36" , CRC(9964d721) SHA1(5ea0bc051d1909bee80d3feb6b7350b6307b6dcb))
+DE_ROMEND
+#define input_ports_franksti input_ports_frankst
+CORE_CLONEDEFNV(franksti,frankst,"Frankenstein, Mary Shelley's (Italian)",1995,"Sega",de_mDEDMD64S2A,0)
+
 //Start of the Portals Diagnostic Menu System
 /*-------------------------------------------------------------
 / Baywatch - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
