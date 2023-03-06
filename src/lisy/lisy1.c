@@ -447,6 +447,7 @@ lisy1_switch_handler(int sys1strobe) {
         lisy_timer(0, 1, 0);
     }
 
+    /* deactivated due to 'freeplay' problems
     //set volume each time replay is pressed
     if (lisy1_has_soundcard) {
         if (CHECK_BIT(swMatrixLISY1[3], 0)) //is bit set?
@@ -456,6 +457,7 @@ lisy1_switch_handler(int sys1strobe) {
                 lisy80_debug("Volume setting initiated by REPLAY Switch");
         }
     }
+    */
 
     if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
     {
