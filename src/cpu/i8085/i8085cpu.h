@@ -12,7 +12,7 @@
 
 #define SF              0x80
 #define ZF              0x40
-#define X5F             0x20
+#define KF              0x20
 #define HF              0x10
 #define X3F             0x08
 #define PF              0x04

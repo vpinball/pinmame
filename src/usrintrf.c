@@ -41,30 +41,9 @@ extern unsigned int dispensed_tickets;
 extern unsigned int coins[COIN_COUNTERS];
 extern unsigned int coinlockedout[COIN_COUNTERS];
 
-/* MARTINEZ.F 990207 Memory Card */
-#ifndef MESS
-#ifndef TINY_COMPILE
-#ifndef CPSMAME
-int 		memcard_menu(struct mame_bitmap *bitmap, int);
-extern int	mcd_action;
-extern int	mcd_number;
-extern int	memcard_status;
-extern int	memcard_number;
-extern int	memcard_manager;
-extern struct GameDriver driver_neogeo;
-#endif
-#endif
-#endif
-
 #if defined(__sgi) && !defined(MESS)
 static int game_paused = 0; /* not zero if the game is paused */
 #endif
-
-extern int neogeo_memcard_load(int);
-extern void neogeo_memcard_save(void);
-extern void neogeo_memcard_eject(void);
-extern int neogeo_memcard_create(int);
-/* MARTINEZ.F 990207 Memory Card End */
 
 #if defined(LIBPINMAME)
 extern int libpinmame_time_to_quit(void);
@@ -2973,141 +2952,6 @@ static int displayhistory (struct mame_bitmap *bitmap, int selected)
 
 
 #ifndef MESS
-#ifndef TINY_COMPILE
-#ifndef CPSMAME
-int memcard_menu(struct mame_bitmap *bitmap, int selection)
-{
-	int sel;
-	int menutotal = 0;
-	const char *menuitem[10];
-	char buf[256];
-	char buf2[256];
-
-	sel = selection - 1 ;
-
-	sprintf(buf, "%s %03d", ui_getstring (UI_loadcard), mcd_number);
-	menuitem[menutotal++] = buf;
-	menuitem[menutotal++] = ui_getstring (UI_ejectcard);
-	menuitem[menutotal++] = ui_getstring (UI_createcard);
-#ifdef MESS
-	menuitem[menutotal++] = ui_getstring (UI_resetcard);
-#endif
-	menuitem[menutotal++] = ui_getstring (UI_returntomain);
-	menuitem[menutotal] = 0;
-
-	if (mcd_action!=0)
-	{
-		strcpy (buf2, "\n");
-
-		switch(mcd_action)
-		{
-			case 1:
-				strcat (buf2, ui_getstring (UI_loadfailed));
-				break;
-			case 2:
-				strcat (buf2, ui_getstring (UI_loadok));
-				break;
-			case 3:
-				strcat (buf2, ui_getstring (UI_cardejected));
-				break;
-			case 4:
-				strcat (buf2, ui_getstring (UI_cardcreated));
-				break;
-			case 5:
-				strcat (buf2, ui_getstring (UI_cardcreatedfailed));
-				strcat (buf2, "\n");
-				strcat (buf2, ui_getstring (UI_cardcreatedfailed2));
-				break;
-			default:
-				strcat (buf2, ui_getstring (UI_carderror));
-				break;
-		}
-
-		strcat (buf2, "\n\n");
-		ui_displaymessagewindow(bitmap,buf2);
-		if (input_ui_pressed(IPT_UI_SELECT))
-			mcd_action = 0;
-	}
-	else
-	{
-		ui_displaymenu(bitmap,menuitem,0,0,sel,0);
-
-		if (input_ui_pressed_repeat(IPT_UI_RIGHT,8))
-			mcd_number = (mcd_number + 1) % 1000;
-
-		if (input_ui_pressed_repeat(IPT_UI_LEFT,8))
-			mcd_number = (mcd_number + 999) % 1000;
-
-		if (input_ui_pressed_repeat(IPT_UI_DOWN,8))
-			sel = (sel + 1) % menutotal;
-
-		if (input_ui_pressed_repeat(IPT_UI_UP,8))
-			sel = (sel + menutotal - 1) % menutotal;
-
-		if (input_ui_pressed(IPT_UI_SELECT))
-		{
-			switch(sel)
-			{
-			case 0:
-				neogeo_memcard_eject();
-				if (neogeo_memcard_load(mcd_number))
-				{
-					memcard_status=1;
-					memcard_number=mcd_number;
-					mcd_action = 2;
-				}
-				else
-					mcd_action = 1;
-				break;
-			case 1:
-				neogeo_memcard_eject();
-				mcd_action = 3;
-				break;
-			case 2:
-				if (neogeo_memcard_create(mcd_number))
-					mcd_action = 4;
-				else
-					mcd_action = 5;
-				break;
-#ifdef MESS
-			case 3:
-				memcard_manager=1;
-				sel=-2;
-				machine_reset();
-				break;
-			case 4:
-				sel=-1;
-				break;
-#else
-			case 3:
-				sel=-1;
-				break;
-#endif
-
-
-			}
-		}
-
-		if (input_ui_pressed(IPT_UI_CANCEL))
-			sel = -1;
-
-		if (input_ui_pressed(IPT_UI_CONFIGURE))
-			sel = -2;
-
-		if (sel == -1 || sel == -2)
-		{
-			schedule_full_refresh();
-		}
-	}
-
-	return sel + 1;
-}
-#endif
-#endif
-#endif
-
-
-#ifndef MESS
 enum { UI_SWITCH = 0,UI_DEFCODE,UI_CODE,UI_ANALOG,UI_CALIBRATE,
 		UI_STATS,UI_GAMEINFO, UI_HISTORY,
 		UI_CHEAT,UI_RESET,UI_MEMCARD,UI_RAPIDFIRE,UI_EXIT };
@@ -3215,19 +3059,6 @@ static void setup_menu_init(void)
 		menu_item[menu_total] = ui_getstring (UI_cheat); menu_action[menu_total++] = UI_CHEAT;
 	}
 
-#ifndef MESS
-#ifndef TINY_COMPILE
-#ifndef CPSMAME
-	if (Machine->gamedrv->clone_of == &driver_neogeo ||
-			(Machine->gamedrv->clone_of &&
-				Machine->gamedrv->clone_of->clone_of == &driver_neogeo))
-	{
-		menu_item[menu_total] = ui_getstring (UI_memorycard); menu_action[menu_total++] = UI_MEMCARD;
-	}
-#endif
-#endif
-#endif
-
 	menu_item[menu_total] = ui_getstring (UI_resetgame); menu_action[menu_total++] = UI_RESET;
 	menu_item[menu_total] = ui_getstring (UI_returntogame); menu_action[menu_total++] = UI_EXIT;
 	menu_item[menu_total] = 0; /* terminate array */
@@ -3295,15 +3126,6 @@ static int setup_menu(struct mame_bitmap *bitmap, int selected)
 			case UI_CHEAT:
 				res = cheat_menu(bitmap, sel >> SEL_BITS);
 				break;
-#ifndef MESS
-#ifndef TINY_COMPILE
-#ifndef CPSMAME
-			case UI_MEMCARD:
-				res = memcard_menu(bitmap, sel >> SEL_BITS);
-				break;
-#endif
-#endif
-#endif
 		}
 
 		if (res == -1)

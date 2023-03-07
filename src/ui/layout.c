@@ -156,7 +156,7 @@ const ICONDATA g_iconData[] =
 	{ 0 }
 };
 
-const char g_szDefaultGame[] = "pacman";
+const char g_szDefaultGame[] = "ij_l7";
 const char g_szPlayGameString[] = "&Play %s";
 const char g_szGameCountString[] = "%d games";
 const char g_szHistoryFileName[] = "history.dat";

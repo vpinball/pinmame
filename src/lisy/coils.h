@@ -10,6 +10,7 @@ void coil_set_str(char* str, int action);
 void coil_test(void);
 void lisy80_coil_init(void);
 void lisy1_coil_init(void);
+void lisy1_lamp_init(void);
 void lisy35_coil_init(void);
 void lisy35_lamp_init(void);
 

@@ -234,6 +234,18 @@ lisy80_coil_init(void) {
 }
 
 /*
+ set all Lamps OFF LISY1 
+*/
+void
+lisy1_lamp_init(void) {
+    int i;
+
+    //L3 .. L36
+    for (i = 3; i <= 36; i++)
+        lisy80_coil_set(i, 0);
+}
+
+/*
  set all Lamps and coils OFF LISY1
 */
 void

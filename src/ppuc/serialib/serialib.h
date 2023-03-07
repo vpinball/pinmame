@@ -292,7 +292,7 @@ public:
     void                initTimer();
 
     // Return the elapsed time since initialization
-    unsigned long int   elapsedTime_ms();
+    unsigned int        elapsedTime_ms();
 
 private:
 #if defined (NO_POSIX_TIME)

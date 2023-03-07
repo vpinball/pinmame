@@ -27,7 +27,7 @@ Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game
 Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
 Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
 Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
-Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
+Seeben/Sirmo, Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
 Sport Matic, Regama, Illinois Pinball.
 
 *Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.*

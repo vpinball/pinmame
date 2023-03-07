@@ -169,7 +169,11 @@ static WRITE_HANDLER(peri_w) {
           locals.vblankCount = 0;
         }
       } else {
-        coreGlobals.tmpLampMatrix[offset + 12 * lampStrobe] = data;
+        if (offset == 1 && lampStrobe) {
+          coreGlobals.tmpLampMatrix[13] = data;
+        } else {
+          coreGlobals.tmpLampMatrix[offset] = data;
+        }
       }
     } else {
       coreGlobals.tmpLampMatrix[offset] = data;
@@ -185,7 +189,7 @@ static WRITE_HANDLER(peri_w) {
   } else if (offset == 0x06) { // either lamps or solenoids, or a mix of both!
     coreGlobals.tmpLampMatrix[6] = data;
     if (cpu_gettotalcpu() > 1 && strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) { // for Ekky sound module
-      locals.auxData = data;
+      locals.auxData = data & 0x7f; // mask out "Happy birthday" tune
       if (locals.auxData) {
         cpu_set_nmi_line(LTD_CPU_EKKY, PULSE_LINE);
       }

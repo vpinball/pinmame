@@ -3546,6 +3546,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\bulb.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\bulb.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\by35.c"
 					>
 				</File>

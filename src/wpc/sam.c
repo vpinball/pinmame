@@ -1572,10 +1572,12 @@ static NVRAM_HANDLER(sam) {
 static void sam_timer(int data)
 {
 	samlocals.zc = !samlocals.zc;
+	core_zero_cross();
 }
 
 static INTERRUPT_GEN(sam_irq)
 {
+	core_store_pulsed_samples(SAM_IRQFREQ);
 	at91_fire_irq(AT91_FIQ_IRQ);
 }
 

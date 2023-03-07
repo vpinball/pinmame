@@ -65,6 +65,7 @@ unsigned char lisy1_has_own_sounds = 0; //play own sounds rather then usinig pin
 
 //local var for game status
 unsigned char lisy1_game_running = 0;
+unsigned char lisy1_game_has_attract = 0;
 unsigned char lisy_attract_mode_activ = 0;
 
 //lisy1 attract mode
@@ -77,13 +78,15 @@ lisy1_attract(unsigned char command) {
 
     switch (command) {
         case LISY1_ATTRACT_START:
-            printf("LISY1_ATTRACT_START received\n");
+            if (ls80dbg.bitv.basic) lisy80_debug("LISY1_ATTRACT_START received");
+	    lisy_attract_mode_activ = 1;
             break;
         case LISY1_ATTRACT_STOP:
-            printf("LISY1_ATTRACT_STOP received\n");
+            if (ls80dbg.bitv.basic) lisy80_debug("LISY1_ATTRACT_STOP received");
+	    lisy_attract_mode_activ = 0;
             break;
         case LISY1_ATTRACT_STEP:
-            printf("LISY1_ATTRACT_STEP received\n");
+            //printf("LISY1_ATTRACT_STEP received\n");
             //are we in an active 'time' command? - sub 100ms
             if ((pause_time -= 100) > 0)
                 return;
@@ -123,6 +126,9 @@ lisy1_init(void) {
     //do the init on vars
     for (i = 0; i <= 36; i++)
         lisy1_lamp[i] = 0;
+
+    //put all coils and lamps to zero
+    lisy1_coil_init();
 
     //set signal handler
     lisy80_set_sighandler();
@@ -198,12 +204,13 @@ lisy1_init(void) {
             fprintf(stderr, "info: sound init done\n");
     }
 
-    //check for atract mode file with commands
+    //check for attract mode file with commands
     if (lisy1_file_get_attractopts(LISY1_ATTRACT_INIT, &dum, &dum, &dum) >= 0) {
-        lisy_attract_mode_activ = 1;
+        lisy1_game_has_attract = 1;
         fprintf(stderr, "Info: attract mode file read OK\n");
+        lisy1_attract(LISY1_ATTRACT_START); //start attract mode
     } else {
-        lisy_attract_mode_activ = 0;
+        lisy1_game_has_attract = 0;
         fprintf(stderr, "Info: attract mode file NOT found, attract mode DISABLED\n");
     }
 
@@ -613,12 +620,15 @@ lisy1_lamp_handler(int data, int isld) {
                         //do a nvram write each time the game over relay ( lamp[0]) is going to change (Game Over or Game start)
                         lisy1_nvram_delayed_write = NVRAM_DELAY;
                         //remember status
-                        lisy1_game_running = new_lamp[1];
-                        if (lisy_attract_mode_activ == 1) {
-                            if (lisy1_game_running == 1)
+                        lisy1_game_running = new_lamp[0];
+                        if (lisy1_game_has_attract == 1) {
+                            if (lisy1_game_running == 0)
                                 lisy1_attract(LISY1_ATTRACT_START);
-                            else
+                            else {
                                 lisy1_attract(LISY1_ATTRACT_STOP);
+				//put all lamps to zero
+				lisy1_lamp_init();
+				}
                         }
                         //inform ball save
                         if (ls80opt.bitv.ballsave)

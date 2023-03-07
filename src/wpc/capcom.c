@@ -80,14 +80,14 @@
 #define TEST50V_TRY3		//Seems to give steady 99V reading
 
 #if USE_ADJUSTED_FREQ
-	#define CC_ZCFREQ       124			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
+	#define CC_ZCFREQ		124			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
 	#define CPU_CLOCK		24000000	/* Animation speed is more accurate at this speed, strange.. */
 #else
-	#define CC_ZCFREQ       87			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
+	#define CC_ZCFREQ		87			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
 	#define CPU_CLOCK		16670000	/* Animation speed is more accurate at this speed, strange.. */
 #endif
 
-#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
+#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this number of VBLANKS */
 #define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 
 #define CC_IRQ4FREQ		TIME_IN_CYCLES(4000,0)	//Seems to work well for both KP & FF //was 8000 before, but experiments showed that 4000 works better (no lamp flicker and quicker lamp response on KP)
@@ -350,9 +350,9 @@ static READ16_HANDLER(io_r) {
     //Read from other boards
     case 0x000006:
     case 0x00000a:
-	  data=0xffff;
+      data=0xffff;
       DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
-	  //printf("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask);
+      //printf("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask);
       break;
     //Lamp A & B Matrix Row Status? Used to determine non-functioning bulbs?
     case 0x00000c:
@@ -396,7 +396,7 @@ static READ16_HANDLER(io_r) {
       break;
 
     default:
-	  DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
+      DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
   }
   return data;
 }
@@ -484,7 +484,7 @@ static WRITE16_HANDLER(io_w) {
       break;
 
     default:
-	  DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
+      DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
   }
 }
 
@@ -547,7 +547,7 @@ static void Skip_Error_Msg(void){
 			fixaddr = 0x000805e4;	//BSB
 			break;
 		case 9:
-			fixaddr = 0x00000880;	//FF104
+			fixaddr = 0x00000880;	//FF103,FF104
 			break;
 		case 10:
 			fixaddr = 0x00051704;	//BBB
@@ -738,9 +738,9 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
 			intens1 = intens1<<2;
 		}
 		RAM+=1;
-	  }
+      }
     *line++ = 0;
-	RAM+=16;
+    RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
@@ -768,8 +768,8 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 			intensr = intensr<<2;
 		}
 		RAM+=1;
-	  }
-	RAM+=16;
+      }
+    RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;

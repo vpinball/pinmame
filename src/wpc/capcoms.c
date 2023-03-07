@@ -12,7 +12,7 @@
   #3) Currently rom is hacked to bypass error messages for the above failed tests..
   #4) Strange issues when trying to reset the sound board in KP (other games appear to work)...
       a) sometimes it works fine, other times the cpu will totally stop playing sounds..
-	  b) Also, watching the data coming back to 68306 after reset, it seems to stop sending data..
+      b) Also, watching the data coming back to 68306 after reset, it seems to stop sending data..
   ------------------------------------
 */
 #include "driver.h"
@@ -172,7 +172,7 @@ void cap_bof(int chipnum,int state)
 	//If line is lo - trigger the interrupt, otherwise clear it
 
 #if !DISABLE_BOF_HACK
-	//Ignore every 5th transition of low->hi (NO IDEA WHY THIS WORKS WELL FOR MUSIC, BUT NOT QUITE RIGHT FOR SOUNDS
+	//Ignore every 5th transition of low->hi (NO IDEA WHY THIS WORKS WELL FOR MUSIC, BUT NOT QUITE RIGHT FOR SOUNDS)
 	if(!state)
 		locals.bof_last[chipnum]++;
 	if(locals.bof_last[chipnum] == 5) {
@@ -357,7 +357,7 @@ static READ_HANDLER(port_r)
 			P1.0    (O) = LED
 			P1.1    (X) = NC
 			P1.2    (I) = /CTS = CLEAR TO SEND   (Will NOT send data if line = 1)
-			P1.3    (O) = /RTS = REQEUST TO SEND (If receiving too much data, set's line = 1)
+			P1.3    (O) = /RTS = REQUEST TO SEND (If receiving too much data, set's line = 1)
 			P1.4    (I) = SCL = U10 - Pin 14 - EPOT CLOCK			(Not a mistake, port used for both I/O)
 			P1.5    (I) = SDA = U10 - Pin  9 - EPOT SERIAL DATA		(Not a mistake, port used for both I/O)
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
@@ -401,7 +401,7 @@ static WRITE_HANDLER(port_w)
 			P1.0    (O) = LED
 			P1.1    (X) = NC
 			P1.2    (I) = /CTS = CLEAR TO SEND   (Will NOT send data if line = 1)
-			P1.3    (O) = /RTS = REQEUST TO SEND (If receiving too much data, set's line = 1)
+			P1.3    (O) = /RTS = REQUEST TO SEND (If receiving too much data, set's line = 1)
 			P1.4    (O) = SCL = U10 - Pin 14 - EPOT CLOCK
 			P1.5    (O) = SDA = U10 - Pin  9 - EPOT SERIAL DATA
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ

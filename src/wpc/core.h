@@ -357,9 +357,29 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define LPURPLE     (COL_LAMP+7)
 
 /* Modulated solenoid array */
-#define CORE_MODSOL_CUR		0
-#define CORE_MODSOL_PREV	1
-#define CORE_MODSOL_MAX		68
+#define CORE_MODSOL_CUR		    0
+#define CORE_MODSOL_PREV	    1
+#define CORE_MODSOL_MAX		    68
+
+#define CORE_MODOUT_DEFAULT                0 /* Uses default driver modulated solenoid implementation */
+#define CORE_MODOUT_PWM_RATIO              1 /* pulse ratio over the last integration period, allow (approximated) device emulation by the calling app */
+#define CORE_MODOUT_BULB_44_6_3V_AC      100 /* Incandescent #44/555 Bulb connected to 6.3V, commonly used for GI */
+#define CORE_MODOUT_BULB_47_6_3V_AC      101 /* Incandescent #47 Bulb connected to 6.3V, commonly used for (darker) GI with less heat */
+#define CORE_MODOUT_BULB_86_6_3V_AC      102 /* Incandescent #86 Bulb connected to 6.3V, seldom use: TZ, CFTBL,... */
+#define CORE_MODOUT_BULB_44_18V_DC_WPC   201 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_44_18V_DC_GTS3  202 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89/906 Bulb connected to 12V, commonly used for flashers */
+#define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89/906 Bulb connected to 12V, commonly used for flashers */
+#define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89/906 Bulb connected to 32V, used for flashers on S11 with output strobing */
+#define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
+#define CORE_MODOUT_MOTOR_LINEAR         500 /* Linear integration for motor (like Twilight Zone clock). Note: evaluate PWM implementation for mech for this type of devices. */
+
+#define CORE_MODOUT_SOL_MAX      32 /* Maximum number of modulated outputs for solenoids */
+#define CORE_MODOUT_GI_MAX        5 /* Maximum number of modulated outputs for GI */
+#define CORE_MODOUT_LAMP_MAX      0 /* Maximum number of modulated outputs for lamps (not yet implemented, so 0 for now) */
+#define CORE_MODOUT_SAMPLE_MAX  256 /* Size of sampling history for PWM integration. Must be a power of 2 */
+
 
 /*-------------------------------------------
 /  Draw data. draw lamps,switches,solenoids
@@ -380,6 +400,20 @@ typedef struct {
   core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
+typedef struct {
+   int type; /* Type of modulation from CORE_MODOUT_ definitions */
+   UINT8 value; /* Last computed output value */
+   union { /* Internal state of the output device, depending of its type */
+      struct
+      {
+         double filament_temperature;
+         double emission_history[16];
+         int emission_history_pos;
+      };
+      int motor_position;
+   } state;
+} core_tModulatedOutput;
+
 #define CORE_SEGCOUNT 128
 #ifdef LSB_FIRST
 typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
@@ -399,8 +433,17 @@ typedef struct {
   volatile UINT32 solenoids2;      /* flipper solenoids */
   volatile UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
   volatile UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
+  volatile UINT8 pulsedGIState;  /* current pulse value of WPC GI strings */
   UINT64 lastSol;         /* last state of all solenoids */
   UINT8 lastModSol[CORE_MODSOL_MAX];
+  int lastACZeroCross; /* Position of output sampling when last zero crossing happened (AC frequency is fixed at 60Hz) */
+  double pulsedOutStateSampleFreq; /* Frequency of output sampling */
+  int pulsedOutStateSamplePos; /* Current position of output sampling in the circular buffers */
+  UINT32 pulsedSolStateSamples[CORE_MODOUT_SAMPLE_MAX];  /* sample pulse value of all solenoids */
+  UINT8 pulsedGIStateSamples[CORE_MODOUT_SAMPLE_MAX];  /* sample pulse value of WPC gi strings */
+  int nModulatedOutputs;
+  int lastModulatedOutputIntegrationPos; /* Last sample index where modulated output integration was performed */
+  core_tModulatedOutput modulatedOutputs[CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + CORE_MODOUT_LAMP_MAX];
   volatile int    gi[CORE_MAXGI];  /* WPC gi strings */
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
@@ -437,7 +480,7 @@ typedef struct {
   } hw;
   const void *simData;
   struct { /* WPC specific stuff */
-    char serialNo[21];  /* Securty chip serial number */
+    char serialNo[21];  /* Security chip serial number */
     UINT8 invSw[CORE_MAXSWCOL]; /* inverted switches (e.g. optos) */
     /* common switches */
     struct { int start, tilt, sTilt, coinDoor, shooter; } comSw;
@@ -483,6 +526,22 @@ extern int core_getSol(int solNo);
 extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
 
+/*-- PWM sampling, AC sync and integration --*/
+extern void core_perform_pwm_integration();
+INLINE void core_zero_cross() {
+   if (coreGlobals.nModulatedOutputs > 0)
+   coreGlobals.lastACZeroCross = coreGlobals.pulsedOutStateSamplePos;
+}
+INLINE void core_store_pulsed_samples(double freq) {
+   if (coreGlobals.nModulatedOutputs > 0)
+   {
+      coreGlobals.pulsedOutStateSampleFreq = freq;
+      coreGlobals.pulsedOutStateSamplePos++;
+      coreGlobals.pulsedSolStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedSolState;
+      coreGlobals.pulsedGIStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedGIState;
+   }
+}
+
 INLINE void core_update_modulated_light(UINT32 *light, int bit){
 	(*light) = (*light) << 1;
 	if (bit)
@@ -490,6 +549,8 @@ INLINE void core_update_modulated_light(UINT32 *light, int bit){
 }
 
 extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *prev_level);
+extern void core_perform_pwm_integration();
+
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
 /*-- nvram handling --*/

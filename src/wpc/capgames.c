@@ -32,7 +32,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 #define capInvSw9  {0, 0x0f, 0x0f, 0x8c, 0x80}
 #define capInvSw10 {0, 0x00, 0x01, 0x78, 0x00, 0x00, 0x01}
 #define capInvSw11 {0, 0x01, 0x00, 0x78, 0x88, 0x08, 0x10}
-#define capInvSw12 {0, 0x00, 0x00, 0x38, 0x00, 0x30, 0x00, 0x01}
+#define capInvSw12 {0, 0x0f, 0x0f, 0x8c, 0x80}
 #define capInvSw13 {0, 0x00, 0x00, 0x38, 0x00, 0x30, 0x00, 0x01}
 
 #define INITGAME(name, gameno, disp, balls, sb, lamps) \
@@ -247,12 +247,12 @@ CORE_CLONEDEFNV(bsb105,bsv103,"Breakshot (Beta 1.5)",1996,"Capcom",cc1,0)
 // Not 100% clear on FF address for this one.   Goes 0-255 at seemingly appropriate times,
 // but will disable flips for a short period on a tilt warning ("yellow card" on DMD).
 INITGAMEFF(ffv104, 9, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8, 0x010af)
-CC_ROMSTART_8(ffv104,  "u1l_v104.bin",CRC(375f4dd3) SHA1(0e3845afccf51a2d20e01afb371b8b7076a1ea79),
-                       "u1h_v104.bin",CRC(2133fc8e) SHA1(b4296f890a11aefdd09083636f416112e64fb0be),
-                       "u2l_v104.bin",CRC(b74175ae) SHA1(dd0279e20a2ccb03dbea0087ab9d15a973543553),
-                       "u2h_v104.bin",CRC(98621d17) SHA1(1656715930af09629b22569ec6b4cde537c2f83f),
-                       "u4l_v104.bin",CRC(912bc445) SHA1(01b80ba9353e6096066490943ca4a7c64131023d),
-                       "u4h_v104.bin",CRC(fb7012a9) SHA1(2e8717954dab0f30b59e716b5a47acf0f3feb379),
+CC_ROMSTART_8(ffv104,  "u1l_v104.bin",CRC(375f4dd3) SHA1(0e3845afccf51a2d20e01afb371b8b7076a1ea79), // labeled as V1.04 in Pfutz' readme (see below)
+                       "u1h_v104.bin",CRC(2133fc8e) SHA1(b4296f890a11aefdd09083636f416112e64fb0be), // dto.
+                       "u2l_v104.bin",CRC(b74175ae) SHA1(dd0279e20a2ccb03dbea0087ab9d15a973543553), // dto.
+                       "u2h_v104.bin",CRC(98621d17) SHA1(1656715930af09629b22569ec6b4cde537c2f83f), // dto.
+                       "u4l_v104.bin",CRC(912bc445) SHA1(01b80ba9353e6096066490943ca4a7c64131023d), // dto.
+                       "u4h_v104.bin",CRC(fb7012a9) SHA1(2e8717954dab0f30b59e716b5a47acf0f3feb379), // dto.
                        "u3l_v104.bin",CRC(aed63bd0) SHA1(06e4943cb06c5027abc1e63358c7c8c55344c8f3),
                        "u3h_v104.bin",CRC(9376881e) SHA1(a84c3fecefbc6fc455719c06bf6e77f81fbcb78c))
 CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),
@@ -262,6 +262,25 @@ CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323
 				   "u31_v101.bin", CRC(2b14e032) SHA1(c423ae5ed2fcc582201606bac3e766ec332b395a))
 CC_ROMEND
 CORE_GAMEDEFNV(ffv104,"Flipper Football (1.04)",1996,"Capcom",cc2,0)
+
+//Version 1.03
+INITGAME(ffv103, 9, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
+CC_ROMSTART_8(ffv103,  "u1l_v104.bin",CRC(375f4dd3) SHA1(0e3845afccf51a2d20e01afb371b8b7076a1ea79), // officially labeled as V1.02 on this 1.03 machine (see above)
+                       "u1h_v104.bin",CRC(2133fc8e) SHA1(b4296f890a11aefdd09083636f416112e64fb0be), // dto.
+                       "u2l_v104.bin",CRC(b74175ae) SHA1(dd0279e20a2ccb03dbea0087ab9d15a973543553), // dto.
+                       "u2h_v104.bin",CRC(98621d17) SHA1(1656715930af09629b22569ec6b4cde537c2f83f), // dto.
+                       "u4l_v104.bin",CRC(912bc445) SHA1(01b80ba9353e6096066490943ca4a7c64131023d), // dto.
+                       "u4h_v104.bin",CRC(fb7012a9) SHA1(2e8717954dab0f30b59e716b5a47acf0f3feb379), // dto.
+                       "u3l_v103.bin",CRC(8A2213EC) SHA1(5ED56B7B565ED302421B16BEA9A05A003ADD26E9),
+                       "u3h_v103.bin",CRC(A57C615F) SHA1(73DA7C0E6348CF0A13C4F81C8E865E283D4D58B4))
+CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),
+				   "u28_v101.bin", CRC(68b896e0) SHA1(3d8c286d43c1db68c39fb4d130cd3cd679209a22),
+				   "u29_v101.bin", CRC(b79f3e58) SHA1(9abd570590216800bbfe9f12b4660fbe0200679e),
+				   "u30_v101.bin", CRC(f5432518) SHA1(8c26a267335289145f29db822bf7dfcb4730b208),
+				   "u31_v101.bin", CRC(2b14e032) SHA1(c423ae5ed2fcc582201606bac3e766ec332b395a))
+CC_ROMEND
+CORE_CLONEDEFNV(ffv103,ffv104,"Flipper Football (1.03)",1996,"Capcom",cc2,0)
+
 //Version 1.01
 INITGAME(ffv101, 12, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_8(ffv101,  "u1l_v100.bin",CRC(1c0b776f) SHA1(a1cabe9646973a97000a8f42295dfcfbed3691fa),

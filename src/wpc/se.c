@@ -91,6 +91,15 @@ struct {
 #ifdef PROC_SUPPORT
 static int switches_retrieved=0;
 #endif
+
+/*-------------------------
+/  Generate IRQ interrupt
+/--------------------------*/
+static INTERRUPT_GEN(se_irq) {
+   core_store_pulsed_samples(SE_FIRQFREQ);
+   irq1_line_pulse();
+}
+
 static INTERRUPT_GEN(se_vblank) {
   /*-------------------------------
   /  copy local data to interface
@@ -840,7 +849,7 @@ static MACHINE_DRIVER_START(se)
   MDRV_CORE_INIT_RESET_STOP(se,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
   MDRV_CPU_VBLANK_INT(se_vblank, VBLANK)
-  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_FIRQFREQ)
+  MDRV_CPU_PERIODIC_INT(se_irq, SE_FIRQFREQ)
   MDRV_NVRAM_HANDLER(se)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(se)
@@ -878,7 +887,7 @@ MACHINE_DRIVER_START(se3aS)
   MDRV_CORE_INIT_RESET_STOP(se3,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
   MDRV_CPU_VBLANK_INT(se_vblank, VBLANK)
-  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_FIRQFREQ)
+  MDRV_CPU_PERIODIC_INT(se_irq, SE_FIRQFREQ)
   MDRV_NVRAM_HANDLER(se)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(se)

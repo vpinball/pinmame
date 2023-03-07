@@ -322,6 +322,14 @@ static core_tLCDLayout smmanDisp[] = {
   {4, 0,50,6,CORE_SEG7}, {4,14,42,6,CORE_SEG7},
   {6, 2,35,2,CORE_SEG7}, {6, 8,38,2,CORE_SEG7}, {0}
 };
+
+static core_tLCDLayout smmanDisp7[] = {
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
+  {4, 0,49,7,CORE_SEG87F}, {4,16,41,7,CORE_SEG87F},
+  {6, 4,35,2,CORE_SEG7}, {6,10,38,2,CORE_SEG7},{0}
+};
+
 INITGAME(smman,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTART888(smman,"742-20_1.716",CRC(33e55a75) SHA1(98fbec07c9d03557654e5b67e29738c66156ec62),
                        "742-18_2.716",CRC(5365d36c) SHA1(1db651d31e28cf3fda00bef5289bb14d3b37b3c1),
@@ -331,26 +339,26 @@ BY35_ROMEND
 #define input_ports_smman input_ports_by35
 CORE_GAMEDEFNV(smman,"Six Million Dollar Man, The",1978,"Bally",by35_mBY35_32S,0)
 
-INITGAME(smmanb,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
-BY35_ROMSTARTx00(smmanb,"6mi$2732.u2",  CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
-                         "3032d7.bin",  CRC(c0fc5342) SHA1(0511162ac54e1c630c7460cec7311bc928baf656))
-BY50_SOUNDROM(           "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
+INITGAME(smmanb,GEN_BY35,smmanDisp7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
+BY35_ROMSTARTx00(smmanb,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
+                        "3032d7.bin",  CRC(c0fc5342) SHA1(0511162ac54e1c630c7460cec7311bc928baf656))
+BY50_SOUNDROM(          "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmanb input_ports_by35
 CORE_CLONEDEFNV(smmanb,smman,"Six Million Dollar Man, The (7-digit conversion rev. 20)",2004,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(smmanc,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
-BY35_ROMSTARTx00(smmanc,"6mi$2732.u2",  CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
-                         "strekc.u6",   CRC(0ee0d6ac) SHA1(1c71d2ade69d433780a2becc5480b2b3e7ddb0e0))
-BY50_SOUNDROM(           "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
+BY35_ROMSTARTx00(smmanc,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
+                        "strekc.u6",   CRC(0ee0d6ac) SHA1(1c71d2ade69d433780a2becc5480b2b3e7ddb0e0))
+BY50_SOUNDROM(          "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmanc input_ports_by35
 CORE_CLONEDEFNV(smmanc,smman,"Six Million Dollar Man, The (Free Play rev. 3)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(smmand,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
-BY35_ROMSTARTx00(smmand,"6mi$2732.u2",  CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
-                         "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
-BY50_SOUNDROM(           "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
+BY35_ROMSTARTx00(smmand,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
+                        "strekd.u6",   CRC(03344105) SHA1(78fd822854a0843ef0e73e261716b15da07ae3b8))
+BY50_SOUNDROM(          "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmand input_ports_by35
 CORE_CLONEDEFNV(smmand,smman,"Six Million Dollar Man, The (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
@@ -1815,10 +1823,10 @@ CORE_CLONEDEFNV(sexygirl,playboy,"Sexy Girl",1980,"Arkon (Germany)",by35_mBY35_3
 / Mystic Star (Zaccaria game, 1984)
 /-------------------------------*/
 INITGAME(myststar,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
-BY35_ROMSTART888(myststar,"rom1.bin",CRC(9a12dc91) SHA1(8961c22b2aeabac04d36d124f283409e11faee8a),
+BY35_ROMSTART888(myststar,"rom1.bin",CRC(9a12dc91) SHA1(8961c22b2aeabac04d36d124f283409e11faee8a), // "Mystic_lgc" was splitted into three files fitting into a standard Bally board, jumpered to accept 3x 2716 EPROMs. The game code is very close to the one used on Bally's 1979 "Star Trek".
                           "rom2.bin",CRC(888ee5ae) SHA1(d99746c7c9a9a0a83b4bc15473fe9ebd3b02ffe4),
                           "rom3.bin",CRC(9e0a4619) SHA1(82065b74d39ba932704514e83d432262d360f1e1))
-BY50_SOUNDROM(            "snd.123", NO_DUMP)
+BY50_SOUNDROM(            "snd.123", NO_DUMP) // If there was no special Zaccaria sound board (nobody seems to know), the sound board from Star Trek should work here as well.
 BY35_ROMEND
 #define input_ports_myststar input_ports_by35
 CORE_GAMEDEFNV(myststar,"Mystic Star",1984,"Zaccaria",by35_mBY35_50S,0)

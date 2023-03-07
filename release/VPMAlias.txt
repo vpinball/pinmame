@@ -47,3 +47,6 @@ cc_13D,cc_13
 blaze,csmic_l1
 FF,gw_l5
 Raya,hothand
+playboystentacle,playboys
+ffdp,rock
+tennmnfb_c27,mnfb_c27

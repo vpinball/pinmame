@@ -254,7 +254,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			}
 			if (err == CSV_SUCCESS) {
 				int colID,colCHANNEL,colDUCK,colGAIN,colLOOP,colSTOP,colFNAME;
-				long pos;
+				size_t pos;
 				LOG(("n_headers: %d\n", c->n_header_fields));
 				colID = csv_get_colnumber_for_field(c, "ID");
 				colCHANNEL = csv_get_colnumber_for_field(c, "CHANNEL");

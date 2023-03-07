@@ -2173,8 +2173,8 @@ static void h0100(UINT16 opcode)
 		/* R0 = (R0:R1)/S   R1 = (R0:R1)%S */
 		{
 			INT16 d = readword(src);
-			long divq = (READREG(R0) << 16) | READREG(R1);
-			long q = divq/d;
+			int divq = (READREG(R0) << 16) | READREG(R1);
+			int q = divq/d;
 
 			if ((q < -32768L) || (q > 32767L))
 			{
@@ -2197,7 +2197,7 @@ static void h0100(UINT16 opcode)
 		/* MPYS -- MultiPlY Signed */
 		/* Results:  R0:R1 = R0*S */
 		{
-			long prod = ((long) (INT16) READREG(R0)) * ((long) (INT16) readword(src));
+			int prod = ((int) (INT16) READREG(R0)) * ((int) (INT16) readword(src));
 
 			I.STATUS &= ~ (ST_LGT | ST_AGT | ST_EQ);
 			if (prod > 0)
@@ -3094,7 +3094,7 @@ static void h2000(UINT16 opcode)
 		/* Note that early TMS9995 reportedly perform an extra dummy read in PC space */
 		dest = ((dest+dest) + I.WP) & ~1;
 		{
-			unsigned long prod = ((unsigned long) readword(dest)) * ((unsigned long) readword(src));
+			unsigned int prod = ((unsigned int) readword(dest)) * ((unsigned int) readword(src));
 			writeword(dest, prod >> 16);
 			writeword(dest+2, prod & 0xFFFF);
 		}
@@ -3107,7 +3107,7 @@ static void h2000(UINT16 opcode)
 		{
 			UINT16 d = readword(src);
 			UINT16 hi = readword(dest);
-			unsigned long divq = (((unsigned long) hi) << 16) | readword(dest+2);
+			unsigned int divq = (((unsigned int) hi) << 16) | readword(dest+2);
 
 			if (d <= hi)
 			{

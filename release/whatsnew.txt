@@ -6,29 +6,66 @@ What's new in PinMAME:
 Version 3.6 (XX XXth, 2023) - ""
 ------------------------------------------------------------------------------
 
+Updated LISY support to 5.28-82 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
+
+Fix Capcom crashes in 64bit builds
+
 *** CORE/CPU ***
-Fix WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
+Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
+Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
+ this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
+Fixed 6 million dollar man 7 digit conversion display
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
+New:
+Seeben: Brooklyn (Bingo) (not working)
+        Brooklyn (set 2) (Bingo) (not working)
+        Continental 3 in 1 (Bingo) (not working)
+        Domino II (Bingo) (not working)
+        Golden Gate (set 1) (Bingo) (not working)
+        Golden Gate (set 2) (Bingo) (not working)
+        New Dixieland (Bingo) (not working)
+        Penalty (Bingo) (not working)
+        Super Dixieland (Bingo) (not working)
+        Triple Joker (Bingo) (not working)
+Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
+        Golden Game Bingo New (Bingo) (not working)
+        Golden Game Kit 1 Generation (Bingo) (not working)
+        Michigan (Bingo) (not working)
+        Michigan Bingo Kit 1 Generation (Bingo) (not working)
+        Michigan Kit Bingo Stake 6/10 (Bingo) (not working)
+        Michigan Bingo Stake 6/10 (Bingo) (not working)
+        Michigan Bingo New (Bingo) (not working)
+        Montana Bingo Stake 6/10 (Bingo) (not working)
+        Top Game Laser L10 (Bingo) (not working)
+        Top Game Turbo (Bingo) (not working)
+
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
+LTD:  Space Poker
+NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
 
 Clones:
 Dracula (One Ball MOD)
+Flipper Football 1.03
+Frankenstein 1.03 (Italian)
 Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
 Pin-Bot J-2 (PEMBOT (no relation)) (MOD)
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Spirit (initial release) & rev. 3 (MOD)
-Tommy 1.02 (Belgian)
+STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
+Swords of Fury LG-2 (German)
+Tommy 1.02 (Belgian), 3.01 (German)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
 
 Removed Clones:
+NBA Fastbreak: 3.1 with Sound S1.0 (as this was just created to be able to use S1.0, which is nowadays wired to 1.1/1.15 instead)
 Star Trek: The Next Generation S7/DS (as these were just created to be able to use a P-1 sound rom, (for now) wired to P-4 instead)
 White Water P-1/P-2 (as these were just created to be able to use the P-1 sound roms, now wired to P-6 as found on a real machine)
 

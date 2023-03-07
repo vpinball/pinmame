@@ -204,14 +204,6 @@ const struct KeyboardInfo *osd_get_key_list(void)
    return keylist;
 }
 
-#ifndef MESS
-#ifndef TINY_COMPILE
-#ifndef CPSMAME
-extern struct GameDriver driver_neogeo;
-#endif
-#endif
-#endif
-
 int osd_is_key_pressed(int keycode)
 {
    /* blames to the dos-people who want to check key states before

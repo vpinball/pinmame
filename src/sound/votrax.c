@@ -1116,11 +1116,11 @@ static float analog_calc()
 
 
 // int sample_rate[4] = {22050, 22550, 23050, 23550};
-long sample_rate[4] = {22050, 22050, 22050, 22050};
+int sample_rate[4] = {22050, 22050, 22050, 22050};
 
 INLINE int time_to_samples(int ms)
 {
-	return sample_rate[votraxsc01_locals.actIntonation]*ms/1000;
+	return (int)((long long)sample_rate[votraxsc01_locals.actIntonation]*ms/1000);
 }
 
 void PrepareVoiceData(int nextPhoneme, int nextIntonation)

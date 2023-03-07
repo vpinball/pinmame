@@ -603,7 +603,7 @@ int serialib::readString(char *receivedString,char finalChar,unsigned int maxNbB
     char            charRead;
     // Timer used for timeout
     timeOut         timer;
-    long int        timeOutParam;
+    unsigned int    timeOutParam;
 
     // Initialize the timer (for timeout)
     timer.initTimer();
@@ -1090,7 +1090,7 @@ void timeOut::initTimer()
     \return     The number of microseconds elapsed since the functions InitTimer was called.
   */
 //Return the elapsed time since initialization
-unsigned long int timeOut::elapsedTime_ms()
+unsigned int timeOut::elapsedTime_ms()
 {
 #if defined (NO_POSIX_TIME)
     // Current time
@@ -1105,7 +1105,7 @@ unsigned long int timeOut::elapsedTime_ms()
     sec=CurrentTime.QuadPart-previousTime;
 
     // Return the elapsed time in milliseconds
-    return sec/(counterFrequency/1000);
+    return (unsigned int)(sec*1000ull/counterFrequency);
 #else
     // Current time
     struct timeval CurrentTime;

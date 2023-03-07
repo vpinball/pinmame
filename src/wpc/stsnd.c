@@ -544,10 +544,10 @@ static void st300_pulse (int param) {
 
 
 // return pseudo random white noise number in the range -scale to scale
-static unsigned long noise_seed = 0xdeadbabe;
+static unsigned int noise_seed = 0xdeadbabe;
 static float white_noise(const float scale)
 {
-	unsigned long white;
+	unsigned int white;
 	noise_seed = noise_seed * 196314165 + 907633515;
 	white = noise_seed >> 9;
 	white |= 0x40000000;
@@ -696,7 +696,7 @@ static WRITE_HANDLER(st300_ctrl_w) {
 static WRITE_HANDLER(st300_data_w) {
 	int w;
 	if (data == 3) {
-		long int w1;
+		int w1;
 		st300loc.timlat1 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
 		snddatst300.timer1 = st300loc.timlat1;
 		w1 = ST300_INTCLOCK / (2 * (snddatst300.timer1 + 1));

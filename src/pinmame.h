@@ -11,9 +11,6 @@
 #define DBG_BPR         1 // BPR command added to debugger
 #define PINMAME_SAMPLES 1 // Sample Support
 
-#define TINY_COMPILE
-#define NEOFREE
-
 
 #  ifndef PI
 #    define PI 3.1415926535897932384626433832795
@@ -147,6 +144,91 @@
 #ifdef PX_ZEN
 #undef INLINE
 #define INLINE static
+#endif
+
+#ifdef _MSC_VER
+/*-------------------------------------------------
+    rotl_32 - circularly shift a 32-bit value left
+    by the specified number of bits (modulo 32)
+-------------------------------------------------*/
+#ifndef rotl_32
+#define rotl_32 _rotl
+#endif
+/*-------------------------------------------------
+    rotr_32 - circularly shift a 32-bit value right
+    by the specified number of bits (modulo 32)
+-------------------------------------------------*/
+#ifndef rotr_32
+#define rotr_32 _rotr
+#endif
+/*-------------------------------------------------
+    rotl_64 - circularly shift a 64-bit value left
+    by the specified number of bits (modulo 64)
+-------------------------------------------------*/
+#ifndef rotl_64
+#define rotl_64 _rotl64
+#endif
+/*-------------------------------------------------
+    rotr_64 - circularly shift a 64-bit value right
+    by the specified number of bits (modulo 64)
+-------------------------------------------------*/
+#ifndef rotr_64
+#define rotr_64 _rotr64
+#endif
+
+#else
+/*-------------------------------------------------
+    rotl_32 - circularly shift a 32-bit value left
+    by the specified number of bits (modulo 32)
+-------------------------------------------------*/
+INLINE unsigned int rotl_32(unsigned int val, int shift)
+{
+	shift &= 31;
+	if (shift)
+		return val << shift | val >> (32 - shift);
+	else
+		return val;
+}
+
+/*-------------------------------------------------
+    rotr_32 - circularly shift a 32-bit value right
+    by the specified number of bits (modulo 32)
+-------------------------------------------------*/
+INLINE unsigned int rotr_32(unsigned int val, int shift)
+{
+	shift &= 31;
+	if (shift)
+		return val >> shift | val << (32 - shift);
+	else
+		return val;
+}
+
+/*-------------------------------------------------
+    rotl_64 - circularly shift a 64-bit value left
+    by the specified number of bits (modulo 64)
+-------------------------------------------------*/
+INLINE unsigned long long rotl_64(unsigned long long val, int shift)
+{
+	shift &= 63;
+	if (shift)
+		return val << shift | val >> (64 - shift);
+	else
+		return val;
+}
+
+/*-------------------------------------------------
+    rotr_64 - circularly shift a 64-bit value right
+    by the specified number of bits (modulo 64)
+-------------------------------------------------*/
+INLINE unsigned long long rotr_64(unsigned long long val, int shift)
+{
+	shift &= 63;
+	if (shift)
+		return val >> shift | val << (64 - shift);
+	else
+		return val;
+}
+
 #endif
 
 #endif /* INC_PINMAME */

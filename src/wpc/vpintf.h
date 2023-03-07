@@ -19,6 +19,11 @@ typedef struct { int ledNo, chgSeg, currStat; } vp_tChgLED[CORE_SEGCOUNT];
 typedef struct { int sndNo; } vp_tChgSound[MAX_CMD_LOG];
 typedef struct { int nvramNo, oldStat, currStat; } vp_tChgNVRAMs[CORE_MAXNVRAM];
 
+#define VP_OUT_SOLENOID          0 /* Solenoid output type */
+#define VP_OUT_LAMP              1 /* Lamp output type */
+#define VP_OUT_GI                2 /* Global Illumination output type */
+#define VP_OUT_LED               3 /* LED segment output type */
+
 #define VP_MAXDIPBANKS 10
 /*----------------------------------------------------
 / Switches/Lamps are numbered differently in WPCgames
@@ -100,6 +105,16 @@ void vp_setSolMask(int low, int mask);
 /  get Solenoid Mask
 /-----------*/
 int vp_getSolMask(int low);
+
+/*-----------
+/  set Output Modulation Type
+/-----------*/
+void vp_setModOutputType(int output, int no, int type);
+
+/*-----------
+/  get Output Modulation Type
+/-----------*/
+int vp_getModOutputType(int output, int no);
 
 /*-----------
 / Mechanics

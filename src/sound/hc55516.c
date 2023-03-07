@@ -383,7 +383,7 @@ struct hc55516_data
 		double vmin, vmax;
 
 		// number of samples collected since the last log file update
-		long nsamples;
+		int nsamples;
 	} dynrange;
 #endif
 };

@@ -382,6 +382,7 @@ static WRITE_HANDLER( xvia_1_cb2_w ) {
 //IRQ:  IRQ to Main CPU
 static void GTS3_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
+	core_store_pulsed_samples(GTS3_IRQFREQ);
 	static int irq = 0;
 	cpu_set_irq_line(GTS3_CPUNO, 0, irq?ASSERT_LINE:CLEAR_LINE);
 	irq = !irq;

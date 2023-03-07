@@ -15,7 +15,7 @@
 #endif
 
 #define PRINT_GI_DATA      0 /* printf the GI Data for debugging purposes   */
-#define DEBUG_GI           0 /* debug GI code - more printf stuff basically */
+#define DEBUG_GI           0 /* debug GI PWM code - more printf stuff basically */
 #define DEBUG_GI_W         0 /* debug GI write - even more printf stuff */
 #define WPC_FAST_FLIP      1
 #define WPC_VBLANKDIV      32/* This steers how precise the DMD FIRQ interrupt is (as it depends on the DMD_FIRQLINE) */
@@ -191,9 +191,41 @@ MEMORY_END
 static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
 int wpc_m2sw(int col, int row) { return col*10+row+1; }
 
-//Set Zero Cross flag (it's reset when read)
+// Zero Cross: a voltage comparator triggers when +5V AC reaches +5V or -5V, so at 120Hz in US (would be 100Hz in Europa), leading to around ~8.3ms period
 static void wpc_zc(int data) {
+   // Set Zero Cross flag (it's reset when read)
 	wpclocals.zc = 1;
+   
+   // Synchronize core PWM integration AC signal
+   core_zero_cross();
+
+   // GI outputs are driven by Triac which continue to conduct when turned on until current decreases under the holding current. This happens at zero cross, so we updated GI level
+   coreGlobals.pulsedGIState = wpclocals.gi_zc_state;
+
+   // GI Dimming seems to be processed by the CPU during IRQ handling with IRQ being every ~1ms
+   // Since zero cross and IRQ are not perfectly aligned, there can be either 8 or 9 irq per zero cross period in 60Hz countries (~1ms / ~8.3ms, this would be 9 or 10 in 50Hz countries ~1ms / ~10ms).
+   // The resulting GI level is the ratio of on/off pulse of the PWM cycle computed using MAME global time
+   double zc_time = timer_get_time();
+   if (zc_time > wpclocals.last_zc_time)
+   {
+      for (int ii = 0,tmp= wpclocals.gi_zc_state; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+         if (wpclocals.gi_on_time[ii] >= zc_time)
+            // Not turned on since last zero cross
+            coreGlobals.gi[ii] = 0;
+         else
+            // The initial implementation would return values between 0 and 8, so we keep this scaling for backward compatibility
+            coreGlobals.gi[ii] = (int)(0.5 + 8.0 * (1.0 - (wpclocals.gi_on_time[ii] - wpclocals.last_zc_time) / (zc_time - wpclocals.last_zc_time)));
+         // If bit is still set, ASIC GI output Txx is continuously high and Triac continuously conduct (for the complete AC period), otherwise we set it's turn on time far after the next zero cross.
+         wpclocals.gi_on_time[ii] = tmp & 0x01 ? zc_time : zc_time + 100.0;
+      }
+      #if DEBUG_GI
+      printf("[%8f] Zero Cross: ", timer_get_time());
+      for (int i = 0; i < CORE_MAXGI; i++)
+         printf("GI[%d]=%d ", i, coreGlobals.gi[i]);
+      printf("\n");
+      #endif
+   }
+   wpclocals.last_zc_time = zc_time;
 }
 
 void wpc_set_modsol_aux_board(int board)
@@ -668,48 +700,12 @@ READ_HANDLER(wpc_r) {
     case WPC_WATCHDOG:
       //Zero cross detection flag is read from Bit 8.
       wpc_data[offset] = (wpclocals.zc<<7) | (wpc_data[offset] & 0x7f);
-
-      if(wpclocals.zc)
-      {
-         // When ASIC receives a watchdog read with Zero Cross flag, it will reset the GI triac latch to the last value written to WPC_GILAMPS
-         // So we update the GI outputs with what we have seen so far, and prepare for next cycle
-         double zc_time = timer_get_time();
-         if (zc_time > wpclocals.last_zc_time)
-         {
-            for (int ii = 0,tmp= wpclocals.gi_zc_state; ii < CORE_MAXGI; ii++, tmp >>= 1) {
-               // On all known ROMs so far, GI Dimming is processed by the CPU during IRQ handling with IRQ being every ~1ms
-               // Zero cross detect on both +5V and -5V of AC. It leads to 120Hz in US (100Hz in Europa), therefore ~8.3ms period (would be ~10ms in Europa).
-               // Since zero cross and IRQ are not perfectly aligned, there can be either 8 or 9 irq per zero cross period in 60Hz countries (~1ms / ~8.3ms, this would be 9 or 10 in 50Hz countries ~1ms / ~10ms).
-               // The ratio of on/off pulse is computed using MAME global time instead of counting the IRQ since it appears easier
-               if (wpclocals.gi_on_time[ii] >= zc_time)
-                  coreGlobals.gi[ii] = 0;
-               else
-                  // The initial implementation would return values between 0 and 8, so we keep this scaling for backward compatibility
-                  // If there are 8 IRQ in a zerocross period, this results in 0 1 2 3 4 5 6 7 8 levels depending on when (which IRQ) the GI Triac was turned on
-                  // If there are 9 IRQ in a zerocross period, this results in 0 1 2 3 4 4 5 6 7 8 levels depending on when (which IRQ) the GI Triac was turned on
-                  coreGlobals.gi[ii] = (int)(0.5 + 8.0 * (1.0 - (wpclocals.gi_on_time[ii] - wpclocals.last_zc_time) / (zc_time - wpclocals.last_zc_time)));
-               // If Bit is set, Triac is turned on directly (for the complete AC period), otherwise we set it's turn on time far after the next zero cross.
-               if (tmp & 0x01)
-                  wpclocals.gi_on_time[ii] = zc_time;
-               else
-                  wpclocals.gi_on_time[ii] = zc_time + 100.0;
-            }
-         }
-         wpclocals.last_zc_time = zc_time;
-
-         #if DEBUG_GI
-         printf("[%8f] Zero Cross processed: ", timer_get_time());
-         {
-            int i;
-            for (i = 0; i < CORE_MAXGI; i++)
-               printf("GI[%d]=%d ", i, coreGlobals.gi[i]);
-            printf("\n");
-         }
-         #endif
-
-         //Reset flag now that it's been read.
-         wpclocals.zc = 0;
-      }
+      #if DEBUG_GI
+      if (wpclocals.zc)
+         printf("[%f] Zero Cross CPU read\n", timer_get_time());
+      #endif
+      //Reset flag now that it's been read.
+      wpclocals.zc = 0;
       break;
     case WPC_SOUNDIF:
       return sndbrd_0_data_r(0);
@@ -834,13 +830,14 @@ WRITE_HANDLER(wpc_w) {
       // Save state for next zero cross GI output reset
       wpclocals.gi_zc_state = data;
 
-      //Loop over each GI Triac Bit
+      // Loop over each GI Triac Bit and turn on according Triacs
+      coreGlobals.pulsedGIState |= data;
       double write_time = timer_get_time();
-      for (ii = 0,tmp=data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
-        // If Bit is set, Triac is turned on if it was not already on.
-        // We save irq number to compute dimming on next zero cross.
-        if ((tmp & 0x01) && write_time < wpclocals.gi_on_time[ii])
-           wpclocals.gi_on_time[ii] = write_time;
+      for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+         // If Bit is set, Triac is turned on (if it was not already on).
+         // We save turn on time to compute dimming ratio on next zero cross.
+         if ((tmp & 0x01) && write_time < wpclocals.gi_on_time[ii])
+            wpclocals.gi_on_time[ii] = write_time;
       }
 
       #if DEBUG_GI_W
@@ -1047,6 +1044,7 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
+   core_store_pulsed_samples(WPC_IRQFREQ);
 #ifdef WPC_MODSOLSAMPLE
 	if (options.usemodsol)
 	{
