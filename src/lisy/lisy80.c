@@ -461,6 +461,7 @@ lisy80_switch_handler(int riot0b) {
         }
     } //freeplay option set
 
+    /* deactivated due to 'freeplay' problems
     //set volume each time replay is pressed
     if ((ret == LISY80_REPLAY_SWITCH) & (action == 1)) {
         if (lisy80_has_soundcard) {
@@ -469,6 +470,7 @@ lisy80_switch_handler(int riot0b) {
                 lisy80_debug("Volume setting initiated by REPLAY Switch");
         }
     }
+    */
 
     /* RTH
 //if ret >80 lets check if we have switches to simulate in the queue

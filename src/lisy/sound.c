@@ -161,8 +161,8 @@ lisy1_sound_stream_init(void) {
     int audio_buffers = 2048;                 //Size of the audio buffers in memory
 
     int i, ret;
-    //RTH soundfile names for LISY1 are fixed for now
-    char lisy1_wav_file_name[6][80] = {"10.wav", "100.wav", "1000.wav", "gameover.wav", "tilt.wav"};
+    //RTH soundfile names for LISY1 are fixed 
+    char lisy1_wav_file_name[8][80] = {"10.wav", "100.wav", "1000.wav", "gameover.wav", "tilt.wav" , "coin1.wav", "coin2.wav"};
     char wav_file_name[255];
 
     /* Initialize only SDL Audio on default device */
@@ -176,15 +176,15 @@ lisy1_sound_stream_init(void) {
         return (-1);
     }
 
-    // allocate only 5 mixing channels for system1
-    Mix_AllocateChannels(5);
+    // allocate only 7 mixing channels for system1
+    Mix_AllocateChannels(7);
 
     // set volume to lisy_volume for all allocated channels
     Mix_Volume(-1, lisy_volume);
 
     //try to preload all sounds
     ret = -1; //we set it to 0 if at least one wav file could be loaded
-    for (i = 1; i <= 5; i++) {
+    for (i = 1; i <= 7; i++) {
         sprintf(wav_file_name, "%s%03d/%s", LISY1_SOUND_PATH, lisy1_game.gamenr, lisy1_wav_file_name[i - 1]);
         lisysound[i] = Mix_LoadWAV(wav_file_name);
         if (lisysound[i] == NULL) {

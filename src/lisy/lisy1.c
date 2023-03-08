@@ -64,7 +64,7 @@ unsigned char lisy1_has_soundcard = 0;  //there is a pHat soundcard installed
 unsigned char lisy1_has_own_sounds = 0; //play own sounds rather then usinig piname sound emulation
 
 //local var for game status
-unsigned char lisy1_game_running = 0;
+unsigned char lisy1_game_not_running = 0;
 unsigned char lisy1_game_has_attract = 0;
 unsigned char lisy_attract_mode_activ = 0;
 
@@ -447,6 +447,7 @@ lisy1_switch_handler(int sys1strobe) {
         lisy_timer(0, 1, 0);
     }
 
+    /* deactivated due to 'freeplay' problems
     //set volume each time replay is pressed
     if (lisy1_has_soundcard) {
         if (CHECK_BIT(swMatrixLISY1[3], 0)) //is bit set?
@@ -456,6 +457,7 @@ lisy1_switch_handler(int sys1strobe) {
                 lisy80_debug("Volume setting initiated by REPLAY Switch");
         }
     }
+    */
 
     if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
     {
@@ -529,7 +531,12 @@ lisy1_solenoid_handler(int ioport, int enable) {
         case 2:
             lisy1_coil_set(Q_TENS, !enable);
             if ((lisy1_has_own_sounds) && (enable == 0))
-                lisy1_play_wav(1);
+		{
+		if ( lisy1_game_not_running == 1)
+                	lisy1_play_wav(1);
+		else
+                	lisy1_play_wav(6);
+		}
             break;
         case 3:
             lisy1_coil_set(Q_HUND, !enable);
@@ -539,7 +546,12 @@ lisy1_solenoid_handler(int ioport, int enable) {
         case 4:
             lisy1_coil_set(Q_TOUS, !enable);
             if ((lisy1_has_own_sounds) && (enable == 0))
-                lisy1_play_wav(3);
+		{
+		if ( lisy1_game_not_running == 1)
+                	lisy1_play_wav(3);
+		else
+                	lisy1_play_wav(7);
+		}
             break;
         case 5:
             lisy1_coil_set(Q_SYS1_SOL6, !enable);
@@ -616,13 +628,13 @@ lisy1_lamp_handler(int data, int isld) {
                             break;
                         }
                         if (new_lamp[i] && lisy1_has_own_sounds)
-                            lisy1_play_wav(4);
+                            lisy1_play_wav(4); //Tilt Sound
                         //do a nvram write each time the game over relay ( lamp[0]) is going to change (Game Over or Game start)
                         lisy1_nvram_delayed_write = NVRAM_DELAY;
                         //remember status
-                        lisy1_game_running = new_lamp[0];
+                        lisy1_game_not_running = new_lamp[0];
                         if (lisy1_game_has_attract == 1) {
-                            if (lisy1_game_running == 0)
+                            if (lisy1_game_not_running == 0)
                                 lisy1_attract(LISY1_ATTRACT_START);
                             else {
                                 lisy1_attract(LISY1_ATTRACT_STOP);
@@ -639,8 +651,11 @@ lisy1_lamp_handler(int data, int isld) {
                             Q2_first_time = 0;
                             break;
                         }
-                        if (new_lamp[i] && lisy1_has_own_sounds)
-                            lisy1_play_wav(5);
+                        if (lisy1_has_own_sounds)
+			  {
+                          if (new_lamp[i] == 1) 
+                            lisy1_play_wav(5); //Game over Sound will be played when level goes to high again
+			  }
                         break;
                 }
             }
@@ -716,7 +731,7 @@ lisy1_throttle(void) {
     if (lisy_timer(100, 0, 4)) {
         if (ls80opt.bitv.ballsave)
             lisy_ball_save_event_handler(LISY_BALL_SAVE_EVENT_TIMER, 0, 0);
-        if ((lisy_attract_mode_activ == 1) & (lisy1_game_running == 0))
+        if ((lisy_attract_mode_activ == 1) & (lisy1_game_not_running == 0))
             lisy1_attract(LISY1_ATTRACT_STEP);
         lisy_timer(0, 1, 4); //reset timer for next round
     }
