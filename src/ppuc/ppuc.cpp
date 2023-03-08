@@ -289,8 +289,9 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
         if (zedmd > 0 && opt_serum) {
             UINT8 palette[192] = {0};
             UINT8 rotations[24] = {0};
+            UINT32 triggerID;
             if (Serum_Colorize(buffer, p_displayLayout->width, p_displayLayout->height,
-                           &palette[0], &rotations[0])) {
+                           &palette[0], &rotations[0], &triggerID)) {
 
                 if (!memcmp(p_previousDisplayBuffer, buffer, p_displayLayout->width * p_displayLayout->height)) {
                     return;
@@ -303,6 +304,8 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
                                            DmdPlanesBuffer, 6);
                 ZeDmdRenderSerum(p_displayLayout->width, p_displayLayout->height, DmdPlanesBuffer,
                                  &palette[0], &rotations[0]);
+
+                // todo: send DMD Event with triggerID
 
                 serum_skip_frames_left = serum_skip_frames;
             }
@@ -536,13 +539,14 @@ int main (int argc, char *argv[]) {
         int pwidth;
         int pheight;
         unsigned int pnocolors;
+        unsigned int pntriggers;
 
         char tbuf[1024];
         strcpy(tbuf, config.vpmPath);
         if ((tbuf[strlen(tbuf) - 1] != '\\') && (tbuf[strlen(tbuf) - 1] != '/')) strcat(tbuf, "/");
         strcat(tbuf, "altcolor");
 
-        bool serum_loaded = Serum_Load(tbuf, opt_rom, &pwidth, &pheight, &pnocolors);
+        bool serum_loaded = Serum_Load(tbuf, opt_rom, &pwidth, &pheight, &pnocolors, &pntriggers);
         if (serum_loaded) {
             if (opt_debug) printf("Serum: loaded %s.cRZ.\n", opt_rom);
 
