@@ -600,7 +600,8 @@ set_target_properties(pinmame PROPERTIES
 )
 
 add_library(serum SHARED
-        ../libserum/src/miniz/zip_file.hpp
+        ../libserum/src/miniz/miniz.h
+        ../libserum/src/miniz/miniz.c
         ../libserum/src/serum-decode.h
         ../libserum/src/serum-decode.cpp
         )
