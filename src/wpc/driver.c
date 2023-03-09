@@ -1419,8 +1419,10 @@ DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(galaxyps)      //         08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //         01/80 Galaxy (Free Play)
 DRIVERNV(galaxyb)       //         ??/04 Galaxy (7-Digit conversion)
+DRIVERNV(galaxyc)       //         03/23 Galaxy (7-Digit conversion, Fixes & modified rules)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(alifp)         //         03/80 Ali (Free Play)
+DRIVERNV(alib)          //         03/23 Ali (7-Digit conversion Free Play rev. 76)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //         03/80 Big Game (Free Play)
 DRIVERNV(biggameb)      //         11/19 Big Game (MOD rev. 7)

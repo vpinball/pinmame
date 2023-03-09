@@ -556,6 +556,7 @@ ST200_ROMSTART8888(galaxyfp,"cpu_u1.716",  CRC(35656b67) SHA1(e1ad9456c561d19220
 BY35_ROMEND
 #define input_ports_galaxyfp input_ports_st
 CORE_CLONEDEFNV(galaxyfp,galaxy,"Galaxy (Free Play)",1980,"Stern",by35_mST200,0)
+
 /*--------------------------------
 / Galaxy (7-digit conversion)
 /-------------------------------*/
@@ -567,6 +568,15 @@ ST200_ROMSTART8888(galaxyb,"cpu_u1b.716",CRC(53f7c0c9) SHA1(c3ee8bbdd1eca7a044c7
 BY35_ROMEND
 #define input_ports_galaxyb input_ports_galaxy
 CORE_CLONEDEFNV(galaxyb,galaxy,"Galaxy (7-digit conversion)",2003,"Stern / Oliver",by35_mST200,0) // rev. 2
+
+INITGAME(galaxyc,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(galaxyc,"GALAXYF_708_U1.716",CRC(3ed417b0) SHA1(76c81b7f7ec56bccea8696e57889a453686281e5),
+                           "GALAXYF_708_U5.716",CRC(f90d54e1) SHA1(bbccaf1fafceea73e96a503b853557520fe43a0d),
+                           "GALAXYF_708_U2.716",CRC(4e74e6ec) SHA1(324a85c38d91a7ce74e32c94b849d5db23e35641),
+                           "GALAXYF_708_U6.716",CRC(75630cb2) SHA1(44bd55d2eefc3c0eaeb610ca4c54c1c09dc3d5d6))
+BY35_ROMEND
+#define input_ports_galaxyc input_ports_galaxy
+CORE_CLONEDEFNV(galaxyc,galaxy,"Galaxy (7-Digit conversion, Fixes & modified rules)",2023,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Ali
@@ -582,12 +592,21 @@ CORE_GAMEDEFNV(ali,"Ali",1980,"Stern",by35_mST200,0)
 
 INITGAME(alifp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(alifp,"fpali_u1.716",CRC(85888cfa) SHA1(286bce3a2e1cbedc224c10d884f5db8b7ffa2a75),
-                       "fpali_u5.716",CRC(52b8e39e) SHA1(267921c2a5636d1f2cc93f0913f005a3e50801a4),
-                       "cpu_u2.716",CRC(9c91d08f) SHA1(a3e8c8e8c2c8b03d86b36eea8c84e5c0a27b8444),
-                       "cpu_u6.716",CRC(7629db56) SHA1(f922d31ec4dd1755da0a24bec4e3fa3a7a9b22fc))
+                         "fpali_u5.716",CRC(52b8e39e) SHA1(267921c2a5636d1f2cc93f0913f005a3e50801a4),
+                         "cpu_u2.716",CRC(9c91d08f) SHA1(a3e8c8e8c2c8b03d86b36eea8c84e5c0a27b8444),
+                         "cpu_u6.716",CRC(7629db56) SHA1(f922d31ec4dd1755da0a24bec4e3fa3a7a9b22fc))
 BY35_ROMEND
 #define input_ports_alifp input_ports_st
 CORE_CLONEDEFNV(alifp,ali,"Ali (Free Play)",1980,"Stern",by35_mST200,0)
+
+INITGAME(alib,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(alib,"alif_F76_U1.716",CRC(4fbeee49) SHA1(99617d8e8408ee2728328328176878fe061a1f7e),
+                        "alif_F76_U5.716",CRC(c0a705fb) SHA1(dab391b57f5648cb6a827008af9bbbcc3000ce92),
+                        "alif_F76_U2.716",CRC(3ed8f851) SHA1(229d0c07e597e156c43b5c945ee21c62a091ce25),
+                        "alif_F76_U6.716",CRC(09486559) SHA1(fda5596b26590b565aad3dd802bb042b266d99d7))
+BY35_ROMEND
+#define input_ports_alib input_ports_st
+CORE_GAMEDEFNV(alib,"Ali (7-digit conversion Free Play rev. 76)",2023,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Big Game
