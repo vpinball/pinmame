@@ -71,6 +71,7 @@ unsigned char lisy80_read_byte_sw_pic(void);
 
 void lisy80_sound_set(int sound);
 void lisy1_sound_set(int sound);
+void lisy1_solenoid_pulse(int solenoid);
 //void lisy35_sound_set(int sound);
 
 int lisy80_switch_readycheck(void);
