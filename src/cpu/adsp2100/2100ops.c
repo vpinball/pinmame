@@ -53,7 +53,7 @@
 #define CALC_V(s,d,r)	(adsp2100.astat |= (((s) ^ (d) ^ (r) ^ ((r) >> 1)) >> 13) & 0x04)
 #define CALC_C(r)		(adsp2100.astat |= ((r) >> 13) & 0x08)
 #define CALC_C_SUB(r)	(adsp2100.astat |= (~(r) >> 13) & 0x08)
-#define CALC_NZ(r) 		CLR_FLAGS; CALC_N(r); CALC_Z(r)
+#define CALC_NZ(r)		CLR_FLAGS; CALC_N(r); CALC_Z(r)
 #define CALC_NZV(s,d,r) CLR_FLAGS; CALC_N(r); CALC_Z(r); CALC_V(s,d,r)
 #define CALC_NZVC(s,d,r) CLR_FLAGS; CALC_N(r); CALC_Z(r); CALC_V(s,d,r); CALC_C(r)
 #define CALC_NZVC_SUB(s,d,r) CLR_FLAGS; CALC_N(r); CALC_Z(r); CALC_V(s,d,r); CALC_C_SUB(r)
@@ -849,6 +849,7 @@ void alu_op_ar(int op)
 			xop = ALU_GETXREG_UNSIGNED(xop);
 			res = (xop & 0x8000) ? -xop : xop;
 			CLR_FLAGS;
+			CLR_S;
 			if (xop == 0) SET_Z;
 			if (xop == 0x8000) SET_N, SET_V;
 			if (xop & 0x8000) SET_S;
@@ -988,6 +989,7 @@ void alu_op_af(int op)
 			xop = ALU_GETXREG_UNSIGNED(xop);
 			res = (xop & 0x8000) ? -xop : xop;
 			CLR_FLAGS;
+			CLR_S;
 			if (xop == 0) SET_Z;
 			if (xop == 0x8000) SET_N, SET_V;
 			if (xop & 0x8000) SET_S;
@@ -1016,7 +1018,7 @@ void mac_op_mr(int op)
 	INT64 res;
 
 //	switch ((op >> 13) & 15)
-	switch (op & (15<<13))	/*JB*/
+	switch (op & (15<<13))  /*JB*/
 	{
 		case 0x00<<13:
 			/* no-op */
@@ -1180,7 +1182,7 @@ void mac_op_mf(int op)
 	INT64 res;
 
 //	switch ((op >> 13) & 15)
-	switch (op & (15<<13))	/*JB*/
+	switch (op & (15<<13))  /*JB*/
 	{
 		case 0x00<<13:
 			/* no-op */
@@ -1339,7 +1341,7 @@ void shift_op(int op)
 	UINT32 res;
 
 //	switch ((op >> 11) & 15)
-	switch (op & (15<<11))	/*JB*/
+	switch (op & (15<<11))  /*JB*/
 	{
 		case 0x00<<11:
 			/* LSHIFT (HI) */
@@ -1522,7 +1524,7 @@ void shift_op_imm(int op)
 	UINT32 res;
 
 //	switch ((op >> 11) & 15)
-	switch (op & (15<<11))	/*JB*/
+	switch (op & (15<<11))  /*JB*/
 	{
 		case 0x00<<11:
 			/* LSHIFT (HI) */
