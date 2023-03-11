@@ -681,11 +681,20 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause) {
 }
 
 /******************************************************
+ * PinmameIsPaused
+ ******************************************************/
+
+LIBPINMAME_API int PinmameIsPaused() {
+	return g_fPause;
+}
+
+/******************************************************
  * PinmameStop
  ******************************************************/
 
 LIBPINMAME_API void PinmameStop() {
 	if (_p_gameThread) {
+		g_fPause = 0;
 		_timeToQuit = 1;
 
 		_p_gameThread->join();

@@ -394,6 +394,7 @@ LIBPINMAME_API void PinmameSetUseModulatedSolenoids(const int useModSol);
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name);
 LIBPINMAME_API int PinmameIsRunning();
 LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
+LIBPINMAME_API int PinmameIsPaused();
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();
