@@ -8,6 +8,7 @@
 #include <thread>
 #include <condition_variable>
 #include <shared_mutex>
+#include <mutex>
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -31,6 +32,8 @@ typedef unsigned short UINT16;
 
 #define MAX_AUDIO_BUFFERS 4
 #define MAX_AUDIO_QUEUE_SIZE 10
+#define MAX_EVENT_SEND_QUEUE_SIZE 10
+#define MAX_EVENT_RECV_QUEUE_SIZE 10
 #define MAX_IO_BOARDS 8
 
 ALuint _audioSource;
@@ -63,6 +66,14 @@ bool dmd_sam_spa;
 bool dmd_ready = false;
 std::shared_mutex dmd_shared_mutex;
 std::condition_variable_any dmd_cv;
+
+Event* event_send_queue[MAX_EVENT_SEND_QUEUE_SIZE];
+Event* event_recv_queue[MAX_EVENT_RECV_QUEUE_SIZE];
+int event_send_index = 0;
+int event_recv_index = 0;
+std::mutex event_send_mutex;
+std::mutex event_recv_mutex;
+std::condition_variable event_send_cv;
 
 YAML::Node ppuc_config;
 
@@ -147,6 +158,41 @@ static struct cag_option options[] = {
 };
 
 
+void queueEvent(Event* event) {
+    std::unique_lock<std::mutex> ul(event_send_mutex);
+
+    event_send_queue[event_send_index++] = event;
+
+    if (event_send_index >= MAX_EVENT_SEND_QUEUE_SIZE) {
+        event_send_index = 0;
+    }
+
+    ul.unlock();
+    event_send_cv.notify_one();
+}
+
+Event* receiveEvent() {
+    if (!opt_no_serial) {
+        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+        // Set a timeout of 1ms when waiting for an I/O board event.
+        while ((std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::steady_clock::now() - start)).count() < 1000) {
+            if (serial.available() >= 6) {
+                UINT8 poll[6] = {0};
+                if (serial.readBytes(poll, 6)) {
+                    if (poll[0] == 255 && poll[5] == 255) {
+                        return new Event(poll[1], (((UINT16) poll[2]) << 8) + poll[3], poll[4]);
+                    }
+                }
+                return NULL;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 void sendEvent(Event* event) {
     if (!opt_no_serial) {
         //     = (UINT8) 255;
@@ -161,7 +207,36 @@ void sendEvent(Event* event) {
         } else {
             printf("Error: Could not send event %d %d %d.\n", event->sourceId, event->eventId, event->value);
         }
+
+        if (event->sourceId == EVENT_POLL_EVENTS) {
+            bool null_event = false;
+            Event *event_recv;
+            while (!null_event && (event_recv = receiveEvent())) {
+                switch (event_recv->sourceId) {
+                    case EVENT_NULL:
+                        null_event = true;
+                        break;
+
+                    default:
+                        if (opt_debug)
+                            printf("Received event %d %d %d.\n", event_recv->sourceId, event_recv->eventId, event_recv->value);
+
+                        event_recv_mutex.lock();
+                        event_recv_queue[event_recv_index++] = event_recv;
+                        event_recv_mutex.unlock();
+
+                        if (event_recv_index >= MAX_EVENT_RECV_QUEUE_SIZE) {
+                            event_recv_index = 0;
+                        }
+                        break;
+                }
+
+                // delete the event and free the memory
+                delete event_recv;
+            }
+        }
     }
+
     // delete the event and free the memory
     delete event;
 }
@@ -190,26 +265,43 @@ void sendEvent(ConfigEvent* event) {
     delete event;
 }
 
-Event* receiveEvent() {
-    if (!opt_no_serial) {
-        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
-        // Set a timeout of 1ms when waiting for an I/O board event.
-        while ((std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::steady_clock::now() - start)).count() < 1000) {
-            if (serial.available() >= 6) {
-                UINT8 poll[6] = {0};
-                if (serial.readBytes(poll, 6)) {
-                    if (poll[0] == 255 && poll[5] == 255) {
-                        return new Event(poll[1], (((UINT16) poll[2]) << 8) + poll[3], poll[4]);
-                    }
-                }
-                return NULL;
-            }
-        }
+void handleEvent(Event* event) {
+    switch (event->sourceId) {
+        case EVENT_SOURCE_SWITCH:
+            if (opt_debug)
+                printf("Switch update received: switchNo=%d, switchState=%d\n",
+                        event->eventId,
+                        event->value);
+            PinmameSetSwitch(event->eventId, event->value);
+            break;
     }
 
-    return NULL;
+    // delete the event and free the memory
+    delete event;
+}
+
+void EventThread() {
+    int index = 0;
+
+    while (true) {
+        std::unique_lock<std::mutex> ul(event_send_mutex);
+        event_send_cv.wait(ul, [index]() { return index != event_send_index; });
+
+        if (index < event_send_index) {
+            for (int i = index; i <= event_send_index; i++) {
+                sendEvent(event_send_queue[i]);
+            }
+        }
+        else {
+            for (int i = index; i < MAX_EVENT_SEND_QUEUE_SIZE; i++) {
+                sendEvent(event_send_queue[i]);
+            }
+            for (int i = 0; i <= event_send_index; i++) {
+                sendEvent(event_send_queue[i]);
+            }
+        }
+        index = event_send_index;
+    }
 }
 
 void CALLBACK Game(PinmameGame* game) {
@@ -444,7 +536,7 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
 
 void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState) {
     if (opt_debug) printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
-    sendEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) p_solenoidState->solNo, (UINT8) p_solenoidState->state));
+    queueEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) p_solenoidState->solNo, (UINT8) p_solenoidState->state));
 }
 
 void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
@@ -623,6 +715,7 @@ int main (int argc, char *argv[]) {
 
     std::thread t_resetdmd(ResetDmdThread);
 
+    std::thread t_event;
     if (!opt_no_serial) {
         // Connection to serial port.
         char errorOpening = serial.openDevice(opt_serial, 115200);
@@ -641,6 +734,8 @@ int main (int argc, char *argv[]) {
 
         // Wait for the serial communication to be established before continuing.
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        t_event = std::thread(EventThread);
     }
 
     const YAML::Node& boards = ppuc_config["boards"];
@@ -781,6 +876,7 @@ int main (int argc, char *argv[]) {
         // Poll I/O boards for events (mainly switches) every 50us.
         int poll_interval_ms = 50;
         int poll_trigger = poll_interval_ms * 1000 / sleep_us;
+        int index_recv = 0;
 
         while (1) {
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
@@ -791,28 +887,29 @@ int main (int argc, char *argv[]) {
                 poll_trigger = poll_interval_ms * 1000 / sleep_us;
 
                 for (int i = 0; i < numBoardsToPoll; i++) {
-                    sendEvent(new Event(EVENT_POLL_EVENTS, 1, boardsToPoll[i]));
+                    queueEvent(new Event(EVENT_POLL_EVENTS, 1, boardsToPoll[i]));
+                }
+            }
 
-                    bool null_event = false;
-                    Event *event;
-                    while (!null_event && (event = receiveEvent())) {
-                        switch (event->sourceId) {
-                            case EVENT_SOURCE_SWITCH:
-                                if (opt_debug)
-                                    printf("Switch update received: switchNo=%d, switchState=%d\n",
-                                           event->eventId,
-                                           event->value);
-                                PinmameSetSwitch(event->eventId, event->value);
-                                break;
+            event_recv_mutex.lock();
+            bool handle_events = (index_recv != event_recv_index);
+            event_recv_mutex.unlock();
 
-                            case EVENT_NULL:
-                                null_event = true;
-                                break;
-                        }
-
-                        delete event;
+            if (handle_events) {
+                if (index_recv < event_recv_index) {
+                    for (int i = index_recv; i <= event_recv_index; i++) {
+                        handleEvent(event_recv_queue[i]);
                     }
                 }
+                else {
+                    for (int i = index_recv; i < MAX_EVENT_RECV_QUEUE_SIZE; i++) {
+                        handleEvent(event_recv_queue[i]);
+                    }
+                    for (int i = 0; i <= event_recv_index; i++) {
+                        handleEvent(event_recv_queue[i]);
+                    }
+                }
+                index_recv = event_recv_index;
             }
 
             int count = PinmameGetChangedLamps(changedLampStates);
@@ -824,7 +921,7 @@ int main (int argc, char *argv[]) {
                        lampNo,
                        lampState);
 
-                sendEvent(new Event(EVENT_SOURCE_LIGHT, lampNo, lampState));
+                queueEvent(new Event(EVENT_SOURCE_LIGHT, lampNo, lampState));
             }
 		}
 	}
