@@ -251,7 +251,7 @@
 //pitch. For some reason [now known - see above], when the YM2151 is not outputting sound, the FIRQ rate goes down..
 //[Or so it seemed - in fact the FIRQ rate was the same, but the Williams 6809 ROM code was written in such a way
 //that a high percentage of interrupts occurred when interrupts were masked, making it seem like they weren't
-//occuring.]  Def. some kind of MAME core bug with timing [turns out not really: it was actually an obscure 
+//occurring.]  Def. some kind of MAME core bug with timing [turns out not really: it was actually an obscure 
 //hardware detail about the YM2151 that wasn't being emulated properly and that the Williams sound board ROM 
 //code implicitly depends upon - see above], but I can't find it. I really hope someone can fix this hack 
 //someday..SJE 09/17/03 [wish granted! MJR 5/3/19]
@@ -1663,17 +1663,17 @@ static void adsp_irqGen(int dummy) {
     cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ1, PULSE_LINE);
   }
 
-  next = (adsp_aBufData.size / adsp_aBufData.step * adsp_aBufData.irqCount /
-          DCS_IRQSTEPS - 1) * adsp_aBufData.step;
+  next = (adsp_aBufData.size / adsp_aBufData.step * adsp_aBufData.irqCount / DCS_IRQSTEPS)
+          * adsp_aBufData.step;
 
+  // % is needed as the original hardware always wraps the pointer at the end, and the 4th quadrant pointer will point one word past the end of the buffer
   cpunum_set_reg(dcslocals.brdData.cpuNo, ADSP2100_I0 + adsp_aBufData.iReg,
-                 adsp_aBufData.start + next);
+                 adsp_aBufData.start + (next % adsp_aBufData.size));
 
   adsp.txData(adsp_aBufData.start + adsp_aBufData.last, (next - adsp_aBufData.last),
               adsp_aBufData.step, adsp_aBufData.sRate);
 
   adsp_aBufData.last = next;
-
 }
 
 static void adsp_txCallback(int port, INT32 data) {
