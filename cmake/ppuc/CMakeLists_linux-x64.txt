@@ -601,22 +601,16 @@ set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
 )
 
-add_library(serum SHARED
-        ../libserum/src/miniz/miniz.h
-        ../libserum/src/miniz/miniz.c
-        ../libserum/src/serum-decode.h
-        ../libserum/src/serum-decode.cpp
-        )
-
-target_link_libraries(serum -lm)
-
-target_include_directories(serum PUBLIC
-        ../libserum/src
-        )
-
-set_target_properties(serum PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        )
+# use libserum if it exists
+get_filename_component(SERUM_CMAKE ../libserum/CMakeLists.txt ABSOLUTE)
+if(EXISTS ${SERUM_CMAKE})
+   message(STATUS "enabling SERUM colorisation module")
+   add_subdirectory(../libserum libserum)
+   add_definitions(-DSERUM_SUPPORT)
+   set (SERUM_LIBRARIES Serum)
+else()
+   message(STATUS "libserum source not found in ../libserum, not enabling it")
+endif()
 
 add_executable(ppuc
    src/ppuc/dmdcommon/dmdcommon.h
@@ -642,7 +636,7 @@ find_package(OpenAL)
 
 target_link_libraries(ppuc LINK_PUBLIC
    pinmame
-   serum
+   ${SERUM_LIBRARIES}
    libusb-1.0.so
    yaml-cpp
    openal
