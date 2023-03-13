@@ -1541,7 +1541,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) 
   idx = 0;
   if (dcs_dac.status == 0)
   {
-      const int idx_end = min((int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5), size);
+      const int idx_end = MIN((int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5), size);
       for (; idx < idx_end; idx += memStep) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
