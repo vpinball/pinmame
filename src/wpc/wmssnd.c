@@ -16,20 +16,22 @@
  #include <windef.h>
 #endif
 
-// Enables some subtle low pass on the DCS output to avoid a bit of noise. 
+// Enables some subtle low pass on the DCS output to potentially(!) avoid a bit of noise. 
 // As the real HW also has a bunch of lowpass filters, it would be interesting to 
 // check the direct output of the DCS chip on real hardware if it also features a 
 // bit of noise or not at that stage (e.g. before all the filters).
 //
-// [MJR - Yes, it would definitely have lots of noise, namely quantization noise,
-// given that a DAC is involved and the sampling rate is fairly low.  The real 
+// [MJR] - The real 
 // boards have a chain of four Sallen-Key low-pass filters with a cutoff frequency
 // of 18875 Hz.  "Cutoff" in this context doesn't mean a brick wall; it's just the
 // corner frequency in the low-pass rolloff curve, which is pretty shallow for 
 // Sallen-Key filters.  They use four chained filters to steepen the curve, to cut
 // out most of the output above 18875 Hz, which is probably right around the Nyquist
 // limit for the sampling rate they're using.
-#define DCS_LOWPASS 
+//
+// NOTE: it seems like the mentioned noise in the first comment was only caused by an emulation defect/bug,
+// thus for now, disable the low-pass filters and prefer 1:1 DCS audio quality output.
+//#define DCS_LOWPASS
 
 #ifdef DCS_LOWPASS
  #include "sound/filter.h"
@@ -532,13 +534,13 @@ static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this 
   if (core_gameData->gen == GEN_S9) {
 	// For S9 games, turn up the HC gain slightly. Note that we can't use
 	// hw.gameSpecific2 to encode custom equalization for S9, because it's
-    // already used for other purposes.  (Or at least was at some point; Space 
+	// already used for other purposes.  (Or at least was at some point; Space 
 	// Shuttle defines a non-zero value there.  I suspect this is vestigial
 	// because I can't find any references anywhere that actually use it.)
 	hc55516_set_gain(0, 1.5);
   }
   else {
-    // For S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
+	// For S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
 	int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
 	int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
 	int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
@@ -547,11 +549,11 @@ static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this 
 	if (hcgain == 0)
 	  hcgain = 150;
 
-    if (hcgain != 0)
-      hc55516_set_gain(0, hcgain / 100.0);
-    if (ymvol != 0)
+	if (hcgain != 0)
+	  hc55516_set_gain(0, hcgain / 100.0);
+	if (ymvol != 0)
 	  YM2151_set_mixing_levels(0, ymvol, ymvol);
-    if (dacvol != 0)
+	if (dacvol != 0)
 	  DAC_set_mixing_level(0, dacvol);
   }
 }
