@@ -18,7 +18,9 @@ Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,mot
  this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
 Fixed 6 million dollar man 7 digit conversion display
 Fixed inverted switches for ffv101
-Fixed regression in DCS Audio decoding and also fix one subtle DCS emulation bug
+Fixed regression in DCS Audio decoding
+Also fixed one subtle DCS emulation bug that leads to slight buzzing/crackling on some samples though (mainly audible when using good speakers or headphones or if the internal volume is cranked up very high)
+ one of the longest standing bugs in the history of PinMAME!
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
 New:
