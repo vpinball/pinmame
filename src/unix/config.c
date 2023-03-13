@@ -532,7 +532,7 @@ int config_init (int argc, char *argv[])
 			/* continue if the fuzz index is worse */
 			if (tmp > fuzz)
 				continue;
-			/* on equal fuzz index, we prefear working, original games */
+			/* on equal fuzz index, we prefer working, original games */
 			if (tmp == fuzz)
 			{
 				/* game is a clone */
@@ -651,7 +651,7 @@ int config_init (int argc, char *argv[])
 		INP_HEADER inp_header;
 
 		memset(&inp_header, '\0', sizeof(INP_HEADER));
-		strcpy(inp_header.name, drivers[game_index]->name);
+		strncpy(inp_header.name, drivers[game_index]->name, sizeof(inp_header.name)-1);
 		mame_fwrite(options.record, &inp_header, sizeof(INP_HEADER));
 	}
 
