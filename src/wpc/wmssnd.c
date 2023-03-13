@@ -246,7 +246,7 @@
 #define PREDCS_FIRQ_HACK_FIXED
 
 //This awful hack WAS here to prevent a bug that caused the speech pitch to be too low on pre-dcs games when
-//the YM2151 is not outputing music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
+//the YM2151 is not outputting music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
 //The 6809 will output CVSD speech data based on the speed of the FIRQ. The faster the speed, the higher the
 //pitch. For some reason [now known - see above], when the YM2151 is not outputting sound, the FIRQ rate goes down..
 //[Or so it seemed - in fact the FIRQ rate was the same, but the Williams 6809 ROM code was written in such a way
@@ -1133,12 +1133,12 @@ static WRITE_HANDLER(dcs_ctrl_w);
 static void dcs_init(struct sndbrdData *brdData);
 
 /*-- local data --*/
-#define DCS_BUFFER_SIZE	  8192  // Must be power of 2 because of how circular buffer works
-#define DCS_BUFFER_MASK	  (DCS_BUFFER_SIZE - 1)
+#define DCS_BUFFER_SIZE 8192  // Must be power of 2 because of how circular buffer works
+#define DCS_BUFFER_MASK (DCS_BUFFER_SIZE - 1)
 #define DCS_DEFAULT_SAMPLE_RATE 31250 // as found in Ask Uncle Willy #3: July 7, 1995
 
 static struct {
- int     status;   // 0 = disabled, 1 playing
+ int     status;    // 0 = disabled, 1 playing
  int     sOut, sIn; // positions in sound buffer
  INT16  *buffer;
  int     stream;
@@ -1357,7 +1357,7 @@ static int dcs_custStart(const struct MachineSound *msound) {
   }
   }
 #else
-  dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, resolves noise on scared stiff for example, while not cutting off too much else -> is this due to DCS compression itself?
+  dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, not cutting off too much
   dcs_dac.filter_state = filter_state_alloc();
   filter_state_reset(dcs_dac.filter_f, dcs_dac.filter_state);
 #endif
@@ -1537,11 +1537,12 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) 
 	  assert(stream_get_sample_rate(dcs_dac.stream) == sRate);
   }
 
-  // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
+  // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts. Only happens very rarely.
+  idx = 0;
   if (dcs_dac.status == 0)
   {
-      const int idx_end = (int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5);
-      for (idx = 0; idx < idx_end; idx++) {
+      const int idx_end = min((int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5), size);
+      for (; idx < idx_end; idx += memStep) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
       }
@@ -1549,7 +1550,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) 
       dcs_dac.status = 1;
   }
   /*-- size is the size of the buffer not the number of samples --*/
-  for (idx = 0; idx < size; idx += memStep) {
+  for (; idx < size; idx += memStep) {
     dcs_dac.buffer[dcs_dac.sIn] = mem[idx];
     dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
   }
@@ -1576,7 +1577,7 @@ static struct {
 static void adsp_irqGen(int dummy);
 
 static void adsp_init(data8_t *(*getBootROM)(int soft),
-                     void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate)) {
+                      void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate)) {
   /* stupid timer/machine init handling in MAME */
   if (adsp.irqTimer) timer_remove(adsp.irqTimer);
   /*-- reset control registers etc --*/
@@ -1631,9 +1632,9 @@ static WRITE16_HANDLER(adsp_control_w) {
       break;
     case S1_CONTROL_REG:
       if (((data>>4) & 3) == 2)
-	DBGLOG(("Oh no!, the data is compresed with u-law encoding\n"));
+	DBGLOG(("Oh no!, the data is compressed with u-law encoding\n"));
       if (((data>>4) & 3) == 3)
-	DBGLOG(("Oh no!, the data is compresed with A-law encoding\n"));
+	DBGLOG(("Oh no!, the data is compressed with A-law encoding\n"));
       break;
   } /* switch */
 }
@@ -1790,14 +1791,14 @@ UINT32 dcs_speedup(UINT32 pc) {
       *i0++ = ar;
 			/* 2B52       AR = AX1 - AY1 */
       ar = ax1 - ay1;
-  			/* 2B53       DM(I2,M1) = AR */
+			/* 2B53       DM(I2,M1) = AR */
       *i2++ = ar;
     }
   }
   {
     int mem63d, mem63e, mem63f;
     int jj,kk;
-  			/* 2B54     AR = $0002 */
+			/* 2B54     AR = $0002 */
 			/* 2B55     DM($15EB) = AR (063d) */
     mem63d = 2;
 			/* 2B56     SI = $0040 */
@@ -2574,7 +2575,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             *i1 = ar;
             i1 -= 3;
         }
-	}
+    }
 
 	/* 0100     MSTAT = $0000 - MAC result placement = fractional */
 	// This sets the multiplication mode to "fractional":  MAC results are
@@ -2743,7 +2744,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             /* 012D   WORD PTR [$623] = SR0 */
             mem623 >>= 1;
         }
-	}
+    }
 
 	/* 
 	 *   This appears to be a Fast Fourier Transform pass over the decoded
@@ -2793,7 +2794,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             *i4 = mr >> 15; // >> 16; // see above
             i4 += 2;
         }
-	}
+    }
     activecpu_set_reg(ADSP2100_PC, pc + (0x13a - 0x00e8));
     return 0;                                              /* execute a NOP */
 }
