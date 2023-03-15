@@ -3006,6 +3006,7 @@ DRIVER(ts,la4)          //          02/95 B Shadow, The (LA-4)
 DRIVER(ts,da4)          //                  Shadow, The (DA-4) LED Ghost Fix
 DRIVER(ts,lx4)          //          02/95 B Shadow, The (LX-4)
 DRIVER(ts,dx4)          //                  Shadow, The (DX-4) LED Ghost Fix
+DRIVER(ts,lf4)          //          02/95 B Shadow, The (LF-4) French
 DRIVER(ts,lx5)          //          05/95 B Shadow, The (LX-5)
 DRIVER(ts,dx5)          //                  Shadow, The (DX-5) LED Ghost Fix
 DRIVER(ts,la6)          //          05/95 B Shadow, The (LA-6)

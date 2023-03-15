@@ -64,6 +64,7 @@ Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
 Pin-Bot J-2 (PEMBOT (no relation)) (MOD)
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
+Shadow, The LF-4 (French)
 Spirit (initial release) & rev. 3 (MOD)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
