@@ -4752,12 +4752,14 @@ FORCE_INLINE __m128i _mm_set_epi32(int i3, int i2, int i1, int i0)
     return vreinterpretq_m128i_s32(vld1q_s32(data));
 }
 
+#if 0 // fails compilation on raspberry zero 64bit
 // Set packed 64-bit integers in dst with the supplied values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi64
 FORCE_INLINE __m128i _mm_set_epi64(__m64 i1, __m64 i2)
 {
     return _mm_set_epi64x(vreinterpret_s64_m64(i1), vreinterpret_s64_m64(i2));
 }
+#endif
 
 // Set packed 64-bit integers in dst with the supplied values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi64x
@@ -4838,12 +4840,14 @@ FORCE_INLINE __m128i _mm_set1_epi32(int _i)
     return vreinterpretq_m128i_s32(vdupq_n_s32(_i));
 }
 
+#if 0 // fails compilation on raspberry zero 64bit
 // Broadcast 64-bit integer a to all elements of dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi64
 FORCE_INLINE __m128i _mm_set1_epi64(__m64 _i)
 {
     return vreinterpretq_m128i_s64(vdupq_n_s64(vreinterpret_s64_m64(_i)));
 }
+#endif
 
 // Broadcast 64-bit integer a to all elements of dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi64x
