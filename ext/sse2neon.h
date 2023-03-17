@@ -80,6 +80,15 @@
 #define ALIGN_STRUCT(x) __attribute__((aligned(x)))
 #define _sse2neon_likely(x) __builtin_expect(!!(x), 1)
 #define _sse2neon_unlikely(x) __builtin_expect(!!(x), 0)
+#elif defined(_MSC_VER)
+#ifndef FORCE_INLINE
+#define FORCE_INLINE __forceinline
+#endif
+#ifndef ALIGN_STRUCT
+#define ALIGN_STRUCT(x) __declspec(align(x))
+#endif
+#define _sse2neon_likely(x) (x)
+#define _sse2neon_unlikely(x) (x)
 #else /* non-GNU / non-clang compilers */
 #warning "Macro name collisions may happen with unsupported compiler."
 #ifndef FORCE_INLINE
