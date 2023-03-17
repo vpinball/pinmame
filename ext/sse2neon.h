@@ -5198,10 +5198,10 @@ FORCE_INLINE __m128d _mm_sqrt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sra_epi16
 FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
 {
-    int64_t c = (int64_t) vget_low_s64((int64x2_t) count);
+    int64_t c = (int64_t) vget_low_s64(vreinterpretq_s64_m128i(count));
     if (_sse2neon_unlikely(c & ~15))
         return _mm_cmplt_epi16(a, _mm_setzero_si128());
-    return vreinterpretq_m128i_s16(vshlq_s16((int16x8_t) a, vdupq_n_s16(-c)));
+    return vreinterpretq_m128i_s16(vshlq_s16(vreinterpretq_s16_m128i(a), vdupq_n_s16(-c)));
 }
 
 // Shift packed 32-bit integers in a right by count while shifting in sign bits,
@@ -5209,7 +5209,7 @@ FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sra_epi32
 FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
 {
-    int64_t c = (int64_t) vget_low_s64((int64x2_t) count);
+    int64_t c = (int64_t) vget_low_s64(vreinterpretq_s64_m128i(count));
     if (_sse2neon_unlikely(c & ~31))
         return _mm_cmplt_epi32(a, _mm_setzero_si128());
     return vreinterpretq_m128i_s32(vshlq_s32(vreinterpretq_s32_m128i(a), vdupq_n_s32(-c)));
@@ -7550,10 +7550,10 @@ FORCE_INLINE int _mm_testz_si128(__m128i a, __m128i b)
 
 /* SSE4.2 */
 
-const static uint16_t _sse2neon_cmpestr_mask16b[8] ALIGN_STRUCT(16) = {
+const static uint16_t ALIGN_STRUCT(16) _sse2neon_cmpestr_mask16b[8] = {
     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
 };
-const static uint8_t _sse2neon_cmpestr_mask8b[16] ALIGN_STRUCT(16) = {
+const static uint8_t ALIGN_STRUCT(16) _sse2neon_cmpestr_mask8b[16] = {
     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
 };
