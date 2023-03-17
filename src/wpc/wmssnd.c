@@ -1299,7 +1299,9 @@ static data8_t *dcs_getBootROM(int soft) {
 }
 
 static int dcs_custStart(const struct MachineSound *msound) {
+#if defined(DCS_LOWPASS) && defined(SALLEN_KEY)
   int i,fi;
+#endif
 
   /*-- clear DAC data --*/
   memset(&dcs_dac,0,sizeof(dcs_dac));
@@ -1391,8 +1393,10 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
     /* fill in with samples until we hit the end or run out */
     for (ii = 0; ii < length; ii++)
     {
+#if defined(DCS_LOWPASS) && defined(SALLEN_KEY)
       double v;
       int iii;
+#endif
       if (dcs_dac.sOut == dcs_dac.sIn) break;
 #ifdef DCS_LOWPASS
  #ifdef SALLEN_KEY

@@ -17,8 +17,12 @@
 #include	"common.h"
 
 #ifdef RESAMPLER_SSE_OPT
- #include <xmmintrin.h>
- #include <emmintrin.h>
+ #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
+  #include <xmmintrin.h>
+  #include <emmintrin.h>
+ #else // Arm Neon
+  #include "../sse2neon.h"
+ #endif
 #endif
 
 static int psrc_set_converter (SRC_PRIVATE	*psrc, int converter_type) ;
