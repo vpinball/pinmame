@@ -8120,6 +8120,8 @@ FORCE_INLINE int _sse2neon_ctzll(unsigned long long x)
     }                                                                          \
     return dst
 
+#if !defined(_MSC_VER) || defined(__clang__)
+
 // Compare packed strings in a and b with lengths la and lb using the control
 // in imm8, and returns 1 if b did not contain a null character and the
 // resulting mask was zero, and 0 otherwise.
@@ -8184,6 +8186,8 @@ FORCE_INLINE int _mm_cmpestro(__m128i a,
     return r2 & 1;
 }
 
+#endif
+
 // Compare packed strings in a and b with lengths la and lb using the control in
 // imm8, and returns 1 if any character in a was null, and 0 otherwise.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpestrs
@@ -8236,6 +8240,8 @@ FORCE_INLINE int _mm_cmpestrz(__m128i a,
         SSE2NEON_CMPISTRX_LENGTH(b, lb, imm8);   \
     } while (0)
 
+#if !defined(_MSC_VER) || defined(__clang__)
+
 // Compare packed strings with implicit lengths in a and b using the control in
 // imm8, and returns 1 if b did not contain a null character and the resulting
 // mask was zero, and 0 otherwise.
@@ -8272,6 +8278,8 @@ FORCE_INLINE __m128i _mm_cmpistrm(__m128i a, __m128i b, const int imm8)
     SSE2NEON_COMP_AGG(a, b, la, lb, imm8, CMPISTRX);
     SSE2NEON_CMPSTR_GENERATE_MASK(dst);
 }
+
+#endif
 
 // Compare packed strings with implicit lengths in a and b using the control in
 // imm8, and returns bit 0 of the resulting bit mask.
@@ -8845,6 +8853,8 @@ FORCE_INLINE __m128i _mm_aeskeygenassist_si128(__m128i a, const int rcon)
 #undef SSE2NEON_MULTIPLY
 #endif
 
+#endif
+
 #else /* __ARM_FEATURE_CRYPTO */
 // Implements equivalent of 'aesenc' by combining AESE (with an empty key) and
 // AESMC and then manually applying the real key as an xor operation. This
@@ -8915,8 +8925,6 @@ FORCE_INLINE __m128i _mm_aeskeygenassist_si128(__m128i a, const int rcon)
     uint32x4_t r = {0, (unsigned) rcon, 0, (unsigned) rcon};
     return vreinterpretq_m128i_u8(dest) ^ vreinterpretq_m128i_u32(r);
 }
-#endif
-
 #endif
 
 /* Others */

@@ -330,7 +330,7 @@ sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to)
 #ifdef RESAMPLER_SSE_OPT
 static inline __m128 horizontal_add(const __m128 a)
 {
-#if 0 //!! needs SSE3
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) //!! or SSE3
     const __m128 ftemp = _mm_hadd_ps(a, a);
     return _mm_hadd_ps(ftemp, ftemp);
 #else    
