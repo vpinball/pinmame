@@ -4757,14 +4757,12 @@ FORCE_INLINE __m128i _mm_set_epi32(int i3, int i2, int i1, int i0)
     return vreinterpretq_m128i_s32(vld1q_s32(data));
 }
 
-#if !defined(_MSC_VER) || defined(__clang__)
 // Set packed 64-bit integers in dst with the supplied values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi64
 FORCE_INLINE __m128i _mm_set_epi64(__m64 i1, __m64 i2)
 {
-    return _mm_set_epi64x((int64_t) i1, (int64_t) i2);
+    return _mm_set_epi64x(vreinterpret_s64_m64(i1), vreinterpret_s64_m64(i2));
 }
-#endif
 
 // Set packed 64-bit integers in dst with the supplied values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi64x
@@ -4845,14 +4843,12 @@ FORCE_INLINE __m128i _mm_set1_epi32(int _i)
     return vreinterpretq_m128i_s32(vdupq_n_s32(_i));
 }
 
-#if !defined(_MSC_VER) || defined(__clang__)
 // Broadcast 64-bit integer a to all elements of dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi64
 FORCE_INLINE __m128i _mm_set1_epi64(__m64 _i)
 {
-    return vreinterpretq_m128i_s64(vdupq_n_s64((int64_t) _i));
+    return vreinterpretq_m128i_s64(vdupq_n_s64(vreinterpret_s64_m64(_i)));
 }
-#endif
 
 // Broadcast 64-bit integer a to all elements of dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi64x
@@ -6906,6 +6902,8 @@ FORCE_INLINE __m128d _mm_dp_pd(__m128d a, __m128d b, const int imm)
     return res;
 }
 
+#if !defined(_MSC_VER) || defined(__clang__)
+
 // Conditionally multiply the packed single-precision (32-bit) floating-point
 // elements in a and b using the high 4 bits in imm8, sum the four products,
 // and conditionally store the sum in dst using the low 4 bits of imm.
@@ -6949,6 +6947,8 @@ FORCE_INLINE __m128 _mm_dp_ps(__m128 a, __m128 b, const int imm)
     };
     return vreinterpretq_m128_f32(res);
 }
+
+#endif
 
 // Extract a 32-bit integer from a, selected with imm8, and store the result in
 // dst.
@@ -7796,6 +7796,8 @@ static int _sse2neon_aggregate_equal_any_16x8(int la, int lb, __m128i mtx[16])
     return res;
 }
 
+#if !defined(_MSC_VER) || defined(__clang__)
+
 /* clang-format off */
 #define SSE2NEON_GENERATE_CMP_EQUAL_ANY(prefix) \
     prefix##IMPL(byte) \
@@ -7999,6 +8001,8 @@ static cmpestr_func_t _sse2neon_cmpfunc_table[] = {
     SSE2NEON_CMPESTR_LIST
 #undef _
 };
+
+#endif
 
 FORCE_INLINE int _sse2neon_sido_negative(int res, int lb, int imm8, int bound)
 {
@@ -8491,6 +8495,8 @@ static const uint8_t _sse2neon_rsbox[256] = SSE2NEON_AES_RSBOX(SSE2NEON_AES_H0);
      ((y >> 4 & 1) * SSE2NEON_XT(SSE2NEON_XT(SSE2NEON_XT(SSE2NEON_XT(x))))))
 #endif
 
+#if !defined(_MSC_VER) || defined(__clang__)
+
 // In the absence of crypto extensions, implement aesenc using regular NEON
 // intrinsics instead. See:
 // https://www.workofard.com/2017/01/accelerated-aes-for-the-arm64-linux-kernel/
@@ -8909,6 +8915,8 @@ FORCE_INLINE __m128i _mm_aeskeygenassist_si128(__m128i a, const int rcon)
     uint32x4_t r = {0, (unsigned) rcon, 0, (unsigned) rcon};
     return vreinterpretq_m128i_u8(dest) ^ vreinterpretq_m128i_u32(r);
 }
+#endif
+
 #endif
 
 /* Others */
