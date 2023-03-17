@@ -125,11 +125,6 @@
     (defined(_M_ARM) || defined(__arm__))
 #define SSE2NEON_HAS_BITSCAN64
 #endif
-#if !defined(__clang__)
-#pragma message ( "sse2Neon: All asm based ops will be wrong" )
-#define __asm__
-#define __volatile__(x)
-#endif
 #endif
 
 /* Compiler barrier */
