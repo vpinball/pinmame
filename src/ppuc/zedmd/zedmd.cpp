@@ -4,6 +4,7 @@
 
 #include "zedmd.h"
 #include "../serialib/serialib.h"
+#include "../miniz/miniz.h"
 
 // Serial object
 serialib device;
@@ -48,19 +49,18 @@ int ZeDmdInit(const char* ignore_device) {
 
         // Try to connect to the device.
         if (device.openDevice(device_name, 921600) == 1) {
-            //printf("Device %s\n", device_name);
 
             // Reset the device.
             device.clearDTR();
             device.setRTS();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
             device.clearRTS();
             device.clearDTR();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
             // The ESP32 sends some information about itself first. That needs to be removed before handshake.
             while (device.available() > 0) {
-                device.readBytes(acknowledge, 8, 100);
+                device.readBytes(acknowledge, 8, 200);
                 // @todo avoid endless loop in case of a different device that sends permanently.
             }
 
@@ -77,9 +77,18 @@ int ZeDmdInit(const char* ignore_device) {
                         deviceHeight = acknowledge[6] + acknowledge[7] * 256;
 
                         if (deviceWidth > 0 && deviceHeight > 0) {
-                            //printf("Width  %d\n", deviceWidth);
-                            //printf("Height %d\n", deviceHeight);
-                            return 1;
+                            printf("Width  %d\n", deviceWidth);
+                            printf("Height %d\n", deviceHeight);
+
+                            char response = 0;
+                            if (device.readChar(&response, 100) && response == 'R') {
+                                device.writeBytes(ZeDMDControlCharacters, 6);
+                                // Enable compression.
+                                device.writeChar(14);
+                                if (device.readChar(&response, 100) && response == 'A') {
+                                    return 1;
+                                }
+                            }
                         }
                     }
                 }
@@ -92,6 +101,46 @@ int ZeDmdInit(const char* ignore_device) {
     return 0;
 }
 
+void ZeDmdTransmit(int command, UINT8* Buffer, mz_ulong output_buffer_size) {
+    char response = 0;
+    if (device.readChar(&response, ZEDMD_TIMEOUT) && response == 'R') {
+        device.writeBytes(ZeDMDControlCharacters, 6);
+        device.writeChar(command);
+
+        mz_ulong compressed_buffer_size = mz_compressBound(output_buffer_size);
+        UINT8* compressedBuffer = (UINT8*) malloc((size_t) compressed_buffer_size);;
+        mz_compress(compressedBuffer, &compressed_buffer_size, Buffer, output_buffer_size);
+        //printf("ZeDMD Compression: %d => %d\n", output_buffer_size, compressed_buffer_size);
+
+        UINT8 byteArray[2];
+        byteArray[0] = (UINT8)((compressed_buffer_size >> 8) & 0xFF);
+        byteArray[1] = (UINT8)((compressed_buffer_size & 0xFF));
+        device.writeBytes(byteArray, 2);
+
+        // Don't send the entire buffer at once. To avoid timing or buffer issues with the CP210x driver we send chunks
+        // of 256 bytes. First we wait for a (R)eady signal from ZeDMD. In between the chunks we wait for an
+        // (A)cknowledge signal that indicates that the entire chunk has been received. The (E)rror signal is ignored.
+        // We don't have time to re-start the transmission from the beginning. Instead, we skip this frame and let
+        // libpinmame provide the next frame as usual.
+        int chunk = 256 - 6 - 1 - 2;
+        int bufferPosition = 0;
+        while (bufferPosition < compressed_buffer_size) {
+            device.writeBytes(&compressedBuffer[bufferPosition], ((compressed_buffer_size - bufferPosition) < chunk) ? (compressed_buffer_size - bufferPosition) : chunk);
+            if (device.readChar(&response, ZEDMD_TIMEOUT) && response == 'A') {
+                // Received (A)cknowledge, ready to send the next chunk.
+                bufferPosition += chunk;
+                chunk = 256;
+            } else {
+                // Something went wrong. Terminate current transmission of the buffer and return.
+                free(compressedBuffer);
+                return;
+            }
+        }
+
+        free(compressedBuffer);
+    }
+}
+
 void ZeDmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
     if (width <= deviceWidth && height <= deviceHeight) {
         // To send a 4-color frame, send {0x5a, 0x65, 0x64, 0x72, 0x75, 0x6d, 8} followed by 3 * 4 bytes for the palette
@@ -100,77 +149,31 @@ void ZeDmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
         // To send a 16-color frame, send {0x5a, 0x65, 0x64, 0x72, 0x75, 0x6d, 9} followed by 3 * 16 bytes for the
         // palette (R, G, B) followed by 4 planes of width * height / 8 bytes for the frame. Once again, if you want to
         // use the standard colors, send (orange (255,127,0) gradient).
-        //
-        // Don't send the entire buffer at once. To avoid timing or buffer issues with the CP210x driver we send chunks
-        // of 256 bytes. First we wait for a (R)eady signal from ZeDMD. In between the chunks we wait for an
-        // (A)cknowledge signal that indicates that the entire chunk has been received. The (E)rror signal is ignored.
-        // We don't have time to re-start the transmission from the beginning. Instead, we skip this frame and let
-        // libpinmame provide the next frame as usual.
-        char response = 0;
-        if (device.readChar(&response, 100) && response == 'R') {
-            device.writeBytes(ZeDMDControlCharacters, 6);
+        int buffer_size = (width * height / 8 * bitDepth);
+        int palette_size = (bitDepth == 2) ? 12 : 48;
+        mz_ulong output_buffer_size = buffer_size + palette_size;
+        UINT8* outputBuffer = (UINT8*) malloc((size_t) output_buffer_size);
+        memcpy(outputBuffer, (bitDepth == 2) ? ZeDMDDefaultPalette2Bit : ZeDMDDefaultPalette4Bit, palette_size);
+        memcpy(&outputBuffer[palette_size], Buffer, buffer_size);
 
-            int bytesSent = 0;
-            if (bitDepth == 2) {
-                // Command byte.
-                device.writeChar(8);
-                device.writeBytes(ZeDMDDefaultPalette2Bit, 12);
-                bytesSent = 19;
-            } else {
-                // Command byte.
-                device.writeChar(9);
-                device.writeBytes(ZeDMDDefaultPalette4Bit, 48);
-                bytesSent = 55;
-            }
+        ZeDmdTransmit((bitDepth == 2) ? 8 : 9, outputBuffer, output_buffer_size);
 
-            int totalBytes = (width * height / 8 * bitDepth) + bytesSent;
-            int chunk = 256 - bytesSent;
-            int bufferPosition = 0;
-            while (bufferPosition < totalBytes) {
-                device.writeBytes(&Buffer[bufferPosition], ((totalBytes - bufferPosition) < chunk) ? (totalBytes - bufferPosition) : chunk);
-                if (device.readChar(&response, 100) && response == 'A') {
-                    // Received (A)cknowledge, ready to send the next chunk.
-                    bufferPosition += chunk;
-                    chunk = 256;
-                } else {
-                    // Something went wrong. Terminate current transmission of the buffer and return.
-                    return;
-                }
-            }
-        }
+        free(outputBuffer);
     }
 }
 
 #if defined(SERUM_SUPPORT)
 void ZeDmdRenderSerum(UINT16 width, UINT16 height, UINT8* Buffer, UINT8* palette, UINT8* rotation) {
     if (width <= deviceWidth && height <= deviceHeight) {
-        char response = 0;
-        if (device.readChar(&response, 100) && response == 'R') {
-            int planeBytes = (width * height / 8 * 6);
-            int totalBytes = 6 + 1 + 192 + planeBytes + 24;
-            int chunk = 256;
-            UINT8* outputBuffer = (UINT8*) malloc(totalBytes);
-            memcpy(&outputBuffer[0], ZeDMDControlCharacters, 6);
-            outputBuffer[6] = 11;
-            memcpy(&outputBuffer[7], palette, 192);
-            memcpy(&outputBuffer[199], Buffer, planeBytes);
-            memcpy(&outputBuffer[199 + planeBytes], rotation, 24);
+        int planeBytes = (width * height / 8 * 6);
+        mz_ulong output_buffer_size = 192 + planeBytes + 24;
+        UINT8* outputBuffer = (UINT8*) malloc((size_t) output_buffer_size);
+        memcpy(outputBuffer, palette, 192);
+        memcpy(&outputBuffer[192], Buffer, planeBytes);
+        memcpy(&outputBuffer[192 + planeBytes], rotation, 24);
+        ZeDmdTransmit(11, outputBuffer, output_buffer_size);
 
-            int bufferPosition = 0;
-            while (bufferPosition < totalBytes) {
-                device.writeBytes(&outputBuffer[bufferPosition], ((totalBytes - bufferPosition) < chunk) ? (totalBytes - bufferPosition) : chunk);
-                if (device.readChar(&response, 100) && response == 'A') {
-                    // Received (A)cknowledge, ready to send the next chunk.
-                    bufferPosition += chunk;
-                } else {
-                    // Something went wrong. Terminate current transmission of the buffer and return.
-                    free(outputBuffer);
-                    return;
-                }
-            }
-
-            free(outputBuffer);
-        }
+        free(outputBuffer);
     }
 }
 #endif

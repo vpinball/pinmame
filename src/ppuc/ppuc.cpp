@@ -365,6 +365,12 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
         dmd_depth = p_displayLayout->depth;
         dmd_buffer = (UINT8 *) dmdConvertToFrame(dmd_width, dmd_height, (UINT8 *) p_displayData, dmd_depth, dmd_sam_spa);
 
+        if (!memcmp(p_previousDisplayBuffer, dmd_buffer, dmd_width * dmd_height)) {
+            return;
+        }
+
+        memcpy(p_previousDisplayBuffer, dmd_buffer, dmd_width * dmd_height);
+
         if (pin2dmd > 0 || zedmd > 0) {
             DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_buffer, dmd_planes_buffer, dmd_depth);
         }
@@ -384,6 +390,7 @@ void Pin2DmdThread() {
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
+        sl.unlock();
 
         Pin2dmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth, dmd_sam_spa);
     }
@@ -393,21 +400,16 @@ void ZeDmdThread() {
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
+        sl.unlock();
 
         if (opt_serum) {
 #if defined(SERUM_SUPPORT)
             UINT8 palette[192] = {0};
             UINT8 rotations[24] = {0};
             UINT32 triggerID;
+
             if (Serum_Colorize(dmd_buffer, dmd_width, dmd_height,
                            &palette[0], &rotations[0], &triggerID)) {
-
-                if (!memcmp(p_previousDisplayBuffer, dmd_buffer, dmd_width * dmd_height)) {
-                    return;
-                }
-                else {
-                    memcpy(p_previousDisplayBuffer, dmd_buffer, dmd_width * dmd_height);
-                }
 
                 DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_buffer, dmd_serum_planes_buffer, 6);
                 ZeDmdRenderSerum(dmd_width, dmd_height, dmd_serum_planes_buffer, &palette[0], &rotations[0]);
@@ -435,6 +437,7 @@ void ConsoleDmdThread() {
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
+        sl.unlock();
 
         dmdConsoleRender(dmd_width, dmd_height, dmd_buffer, dmd_depth);
         if (!opt_debug) printf("\033[%dA", dmd_height);
@@ -445,8 +448,9 @@ void ResetDmdThread() {
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
+        sl.unlock();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
         dmd_ready = false;
     }
 }
@@ -702,7 +706,6 @@ int main (int argc, char *argv[]) {
     }
 
     zedmd = ZeDmdInit(opt_serial);
-    if (opt_debug) printf("ZeDMD: %d\n", zedmd);
     std::thread t_zedmd;
     if (zedmd) {
         t_zedmd = std::thread(ZeDmdThread);

@@ -619,6 +619,8 @@ add_executable(ppuc
    src/ppuc/zedmd/zedmd.cpp
    src/ppuc/cargs/cargs.h
    src/ppuc/cargs/cargs.c
+   src/ppuc/miniz/miniz.h
+   src/ppuc/miniz/miniz.c
    src/ppuc/ppuc.cpp
 )
 
