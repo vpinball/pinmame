@@ -2060,7 +2060,7 @@ FORCE_INLINE __m128 _mm_movelh_ps(__m128 __A, __m128 __B)
 FORCE_INLINE int _mm_movemask_pi8(__m64 a)
 {
     uint8x8_t input = vreinterpret_u8_m64(a);
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || (defined(_M_ARM64) && defined(__clang__)) //!!
     static const int8x8_t shift = {0, 1, 2, 3, 4, 5, 6, 7};
     uint8x8_t tmp = vshr_n_u8(input, 7);
     return vaddv_u8(vshl_u8(tmp, shift));
@@ -2081,7 +2081,7 @@ FORCE_INLINE int _mm_movemask_pi8(__m64 a)
 FORCE_INLINE int _mm_movemask_ps(__m128 a)
 {
     uint32x4_t input = vreinterpretq_u32_m128(a);
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || (defined(_M_ARM64) && defined(__clang__)) //!!
     static const int32x4_t shift = {0, 1, 2, 3};
     uint32x4_t tmp = vshrq_n_u32(input, 31);
     return vaddvq_u32(vshlq_u32(tmp, shift));
@@ -2980,8 +2980,8 @@ FORCE_INLINE __m128i _mm_andnot_si128(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_avg_epu16
 FORCE_INLINE __m128i _mm_avg_epu16(__m128i a, __m128i b)
 {
-    return (__m128i) vrhaddq_u16(vreinterpretq_u16_m128i(a),
-                                 vreinterpretq_u16_m128i(b));
+    return vreinterpretq_m128i_u16(vrhaddq_u16(vreinterpretq_u16_m128i(a),
+                                               vreinterpretq_u16_m128i(b)));
 }
 
 // Average packed unsigned 8-bit integers in a and b, and store the results in
@@ -4730,7 +4730,7 @@ FORCE_INLINE void _mm_pause()
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sad_epu8
 FORCE_INLINE __m128i _mm_sad_epu8(__m128i a, __m128i b)
 {
-    uint16x8_t t = vpaddlq_u8(vabdq_u8((uint8x16_t) a, (uint8x16_t) b));
+    uint16x8_t t = vpaddlq_u8(vabdq_u8(vreinterpretq_u8_m128i(a), vreinterpretq_u8_m128i(b)));
     return vreinterpretq_m128i_u64(vpaddlq_u32(vpaddlq_u16(t)));
 }
 
@@ -4757,12 +4757,14 @@ FORCE_INLINE __m128i _mm_set_epi32(int i3, int i2, int i1, int i0)
     return vreinterpretq_m128i_s32(vld1q_s32(data));
 }
 
+#if !defined(_MSC_VER) || defined(__clang__)
 // Set packed 64-bit integers in dst with the supplied values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi64
 FORCE_INLINE __m128i _mm_set_epi64(__m64 i1, __m64 i2)
 {
     return _mm_set_epi64x((int64_t) i1, (int64_t) i2);
 }
+#endif
 
 // Set packed 64-bit integers in dst with the supplied values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi64x
@@ -4796,7 +4798,7 @@ FORCE_INLINE __m128i _mm_set_epi8(signed char b15,
                     (int8_t) b4,  (int8_t) b5,  (int8_t) b6,  (int8_t) b7,
                     (int8_t) b8,  (int8_t) b9,  (int8_t) b10, (int8_t) b11,
                     (int8_t) b12, (int8_t) b13, (int8_t) b14, (int8_t) b15};
-    return (__m128i) vld1q_s8(data);
+    return vreinterpretq_m128i_s8(vld1q_s8(data));
 }
 
 // Set packed double-precision (64-bit) floating-point elements in dst with the
@@ -4843,12 +4845,14 @@ FORCE_INLINE __m128i _mm_set1_epi32(int _i)
     return vreinterpretq_m128i_s32(vdupq_n_s32(_i));
 }
 
+#if !defined(_MSC_VER) || defined(__clang__)
 // Broadcast 64-bit integer a to all elements of dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi64
 FORCE_INLINE __m128i _mm_set1_epi64(__m64 _i)
 {
     return vreinterpretq_m128i_s64(vdupq_n_s64((int64_t) _i));
 }
+#endif
 
 // Broadcast 64-bit integer a to all elements of dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi64x
@@ -4930,7 +4934,7 @@ FORCE_INLINE __m128i _mm_setr_epi8(signed char b0,
                     (int8_t) b4,  (int8_t) b5,  (int8_t) b6,  (int8_t) b7,
                     (int8_t) b8,  (int8_t) b9,  (int8_t) b10, (int8_t) b11,
                     (int8_t) b12, (int8_t) b13, (int8_t) b14, (int8_t) b15};
-    return (__m128i) vld1q_s8(data);
+    return vreinterpretq_m128i_s8(vld1q_s8(data));
 }
 
 // Set packed double-precision (64-bit) floating-point elements in dst with the
@@ -5208,7 +5212,7 @@ FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
     int64_t c = (int64_t) vget_low_s64((int64x2_t) count);
     if (_sse2neon_unlikely(c & ~31))
         return _mm_cmplt_epi32(a, _mm_setzero_si128());
-    return vreinterpretq_m128i_s32(vshlq_s32((int32x4_t) a, vdupq_n_s32(-c)));
+    return vreinterpretq_m128i_s32(vshlq_s32(vreinterpretq_s32_m128i(a), vdupq_n_s32(-c)));
 }
 
 // Shift packed 16-bit integers in a right by imm8 while shifting in sign
@@ -5217,7 +5221,7 @@ FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
 FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int imm)
 {
     const int count = (imm & ~15) ? 15 : imm;
-    return (__m128i) vshlq_s16((int16x8_t) a, vdupq_n_s16(-count));
+    return vreinterpretq_m128i_s16(vshlq_s16(vreinterpretq_s16_m128i(a), vdupq_n_s16(-count)));
 }
 
 // Shift packed 32-bit integers in a right by imm8 while shifting in sign bits,
