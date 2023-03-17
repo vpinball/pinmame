@@ -2060,7 +2060,7 @@ FORCE_INLINE __m128 _mm_movelh_ps(__m128 __A, __m128 __B)
 FORCE_INLINE int _mm_movemask_pi8(__m64 a)
 {
     uint8x8_t input = vreinterpret_u8_m64(a);
-#if defined(__aarch64__) || (defined(_M_ARM64) && defined(__clang__)) //!!
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const int8x8_t shift = {0, 1, 2, 3, 4, 5, 6, 7};
     uint8x8_t tmp = vshr_n_u8(input, 7);
     return vaddv_u8(vshl_u8(tmp, shift));
@@ -2081,7 +2081,7 @@ FORCE_INLINE int _mm_movemask_pi8(__m64 a)
 FORCE_INLINE int _mm_movemask_ps(__m128 a)
 {
     uint32x4_t input = vreinterpretq_u32_m128(a);
-#if defined(__aarch64__) || (defined(_M_ARM64) && defined(__clang__)) //!!
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const int32x4_t shift = {0, 1, 2, 3};
     uint32x4_t tmp = vshrq_n_u32(input, 31);
     return vaddvq_u32(vshlq_u32(tmp, shift));
@@ -6902,8 +6902,6 @@ FORCE_INLINE __m128d _mm_dp_pd(__m128d a, __m128d b, const int imm)
     return res;
 }
 
-#if !defined(_MSC_VER) || defined(__clang__)
-
 // Conditionally multiply the packed single-precision (32-bit) floating-point
 // elements in a and b using the high 4 bits in imm8, sum the four products,
 // and conditionally store the sum in dst using the low 4 bits of imm.
@@ -6947,8 +6945,6 @@ FORCE_INLINE __m128 _mm_dp_ps(__m128 a, __m128 b, const int imm)
     };
     return vreinterpretq_m128_f32(res);
 }
-
-#endif
 
 // Extract a 32-bit integer from a, selected with imm8, and store the result in
 // dst.
@@ -7796,8 +7792,6 @@ static int _sse2neon_aggregate_equal_any_16x8(int la, int lb, __m128i mtx[16])
     return res;
 }
 
-#if !defined(_MSC_VER) || defined(__clang__)
-
 /* clang-format off */
 #define SSE2NEON_GENERATE_CMP_EQUAL_ANY(prefix) \
     prefix##IMPL(byte) \
@@ -8002,8 +7996,6 @@ static cmpestr_func_t _sse2neon_cmpfunc_table[] = {
 #undef _
 };
 
-#endif
-
 FORCE_INLINE int _sse2neon_sido_negative(int res, int lb, int imm8, int bound)
 {
     switch (imm8 & 0x30) {
@@ -8120,8 +8112,6 @@ FORCE_INLINE int _sse2neon_ctzll(unsigned long long x)
     }                                                                          \
     return dst
 
-#if !defined(_MSC_VER) || defined(__clang__)
-
 // Compare packed strings in a and b with lengths la and lb using the control
 // in imm8, and returns 1 if b did not contain a null character and the
 // resulting mask was zero, and 0 otherwise.
@@ -8186,8 +8176,6 @@ FORCE_INLINE int _mm_cmpestro(__m128i a,
     return r2 & 1;
 }
 
-#endif
-
 // Compare packed strings in a and b with lengths la and lb using the control in
 // imm8, and returns 1 if any character in a was null, and 0 otherwise.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpestrs
@@ -8240,8 +8228,6 @@ FORCE_INLINE int _mm_cmpestrz(__m128i a,
         SSE2NEON_CMPISTRX_LENGTH(b, lb, imm8);   \
     } while (0)
 
-#if !defined(_MSC_VER) || defined(__clang__)
-
 // Compare packed strings with implicit lengths in a and b using the control in
 // imm8, and returns 1 if b did not contain a null character and the resulting
 // mask was zero, and 0 otherwise.
@@ -8278,8 +8264,6 @@ FORCE_INLINE __m128i _mm_cmpistrm(__m128i a, __m128i b, const int imm8)
     SSE2NEON_COMP_AGG(a, b, la, lb, imm8, CMPISTRX);
     SSE2NEON_CMPSTR_GENERATE_MASK(dst);
 }
-
-#endif
 
 // Compare packed strings with implicit lengths in a and b using the control in
 // imm8, and returns bit 0 of the resulting bit mask.
@@ -8502,8 +8486,6 @@ static const uint8_t _sse2neon_rsbox[256] = SSE2NEON_AES_RSBOX(SSE2NEON_AES_H0);
      ((y >> 3 & 1) * SSE2NEON_XT(SSE2NEON_XT(SSE2NEON_XT(x)))) ^ \
      ((y >> 4 & 1) * SSE2NEON_XT(SSE2NEON_XT(SSE2NEON_XT(SSE2NEON_XT(x))))))
 #endif
-
-#if !defined(_MSC_VER) || defined(__clang__)
 
 // In the absence of crypto extensions, implement aesenc using regular NEON
 // intrinsics instead. See:
@@ -8851,8 +8833,6 @@ FORCE_INLINE __m128i _mm_aeskeygenassist_si128(__m128i a, const int rcon)
 #if defined(__aarch64__) || defined(_M_ARM64)
 #undef SSE2NEON_XT
 #undef SSE2NEON_MULTIPLY
-#endif
-
 #endif
 
 #else /* __ARM_FEATURE_CRYPTO */
