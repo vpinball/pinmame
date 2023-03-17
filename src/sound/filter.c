@@ -7,7 +7,11 @@
 #include <stdlib.h>
 
 #if defined(SSE_FILTER_OPT)
- #include <xmmintrin.h>
+ #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
+  #include <xmmintrin.h>
+ #else // Arm Neon
+  #include "../sse2neon.h"
+ #endif
  #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128
      {
