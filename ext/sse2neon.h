@@ -125,6 +125,11 @@
     (defined(_M_ARM) || defined(__arm__))
 #define SSE2NEON_HAS_BITSCAN64
 #endif
+#if !defined(__clang__)
+#pragma message ( "sse2Neon: All asm based ops will be wrong" )
+#define __asm__
+#define __volatile__(x)
+#endif
 #endif
 
 /* Compiler barrier */
@@ -190,7 +195,7 @@ FORCE_INLINE void _sse2neon_smp_mb(void)
 #endif
 
 #include <arm_neon.h>
-#if !defined(__aarch64__) && (__ARM_ARCH == 8)
+#if !defined(__aarch64__) && !defined(_M_ARM64) && (__ARM_ARCH == 8)
 #if defined __has_include && __has_include(<arm_acle.h>)
 #include <arm_acle.h>
 #endif
@@ -208,7 +213,7 @@ FORCE_INLINE void _sse2neon_smp_mb(void)
 #endif
 
 /* Rounding functions require either Aarch64 instructions or libm failback */
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 #include <math.h>
 #endif
 
@@ -217,7 +222,7 @@ FORCE_INLINE void _sse2neon_smp_mb(void)
  * To write or access to these registers in user mode,
  * we have to perform syscall instead.
  */
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 #include <sys/time.h>
 #endif
 
@@ -317,7 +322,7 @@ typedef float32x4_t __m128; /* 128-bit vector containing 4 floats */
 // On ARM 32-bit architecture, the float64x2_t is not supported.
 // The data type __m128d should be represented in a different way for related
 // intrinsic conversion.
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 typedef float64x2_t __m128d; /* 128-bit vector containing 2 doubles */
 #else
 typedef float32x4_t __m128d;
@@ -413,7 +418,7 @@ typedef int64x2_t __m128i; /* 128-bit vector containing integers */
 
 #define vreinterpret_f32_m64(x) vreinterpret_f32_s64(x)
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #define vreinterpretq_m128d_s32(x) vreinterpretq_f64_s32(x)
 #define vreinterpretq_m128d_s64(x) vreinterpretq_f64_s64(x)
 
@@ -545,7 +550,7 @@ FORCE_INLINE uint8x16x4_t _sse2neon_vld1q_u8_x4(const uint8_t *p)
 }
 #endif
 
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 /* emulate vaddv u8 variant */
 FORCE_INLINE uint8_t _sse2neon_vaddv_u8(uint8x8_t v8)
 {
@@ -560,7 +565,7 @@ FORCE_INLINE uint8_t _sse2neon_vaddv_u8(uint8x8_t v8)
 }
 #endif
 
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 /* emulate vaddvq u8 variant */
 FORCE_INLINE uint8_t _sse2neon_vaddvq_u8(uint8x16_t a)
 {
@@ -578,7 +583,7 @@ FORCE_INLINE uint8_t _sse2neon_vaddvq_u8(uint8x16_t a)
 }
 #endif
 
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 /* emulate vaddvq u16 variant */
 FORCE_INLINE uint16_t _sse2neon_vaddvq_u16(uint16x8_t a)
 {
@@ -648,7 +653,7 @@ typedef struct {
     uint8_t bit23 : 1;
     uint8_t bit24 : 1;
     uint8_t res2 : 7;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint32_t res3;
 #endif
 } fpcr_bitfield;
@@ -799,7 +804,7 @@ FORCE_INLINE void _sse2neon_kadd_f32(float *sum, float *c, float y)
 }
 
 #if defined(__ARM_FEATURE_CRYPTO) && \
-    (defined(__aarch64__) || __has_builtin(__builtin_arm_crypto_vmullp64))
+    (defined(__aarch64__) || defined(_M_ARM64) || __has_builtin(__builtin_arm_crypto_vmullp64))
 // Wraps vmull_p64
 FORCE_INLINE uint64x2_t _sse2neon_vmull_p64(uint64x1_t _a, uint64x1_t _b)
 {
@@ -856,7 +861,7 @@ static uint64x2_t _sse2neon_vmull_p64(uint64x1_t _a, uint64x1_t _b)
 
     // Interleave. Using vzip1 and vzip2 prevents Clang from emitting TBL
     // instructions.
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint8x16_t lm_p0 = vreinterpretq_u8_u64(
         vzip1q_u64(vreinterpretq_u64_u8(l), vreinterpretq_u64_u8(m)));
     uint8x16_t lm_p1 = vreinterpretq_u8_u64(
@@ -884,7 +889,7 @@ static uint64x2_t _sse2neon_vmull_p64(uint64x1_t _a, uint64x1_t _b)
     uint8x16_t t2t3_l = veorq_u8(t2t3_tmp, t2t3_h);
 
     // De-interleave
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint8x16_t t0 = vreinterpretq_u8_u64(
         vuzp1q_u64(vreinterpretq_u64_u8(t0t1_l), vreinterpretq_u64_u8(t0t1_h)));
     uint8x16_t t1 = vreinterpretq_u8_u64(
@@ -1023,7 +1028,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi_3332(__m128i a)
 
 // FORCE_INLINE __m128i _mm_shuffle_epi32_splat(__m128i a, __constrange(0,255)
 // int imm)
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #define _mm_shuffle_epi32_splat(a, imm)                          \
     __extension__({                                              \
         vreinterpretq_m128i_s32(                                 \
@@ -1474,7 +1479,7 @@ FORCE_INLINE __m128 _mm_cvt_pi2ps(__m128 a, __m64 b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvt_ps2pi
 FORCE_INLINE __m64 _mm_cvt_ps2pi(__m128 a)
 {
-#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     return vreinterpret_m64_s32(
         vget_low_s32(vcvtnq_s32_f32(vrndiq_f32(vreinterpretq_f32_m128(a)))));
 #else
@@ -1498,7 +1503,7 @@ FORCE_INLINE __m128 _mm_cvt_si2ss(__m128 a, int b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvt_ss2si
 FORCE_INLINE int _mm_cvt_ss2si(__m128 a)
 {
-#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     return vgetq_lane_s32(vcvtnq_s32_f32(vrndiq_f32(vreinterpretq_f32_m128(a))),
                           0);
 #else
@@ -1628,7 +1633,7 @@ FORCE_INLINE float _mm_cvtss_f32(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtss_si64
 FORCE_INLINE int64_t _mm_cvtss_si64(__m128 a)
 {
-#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     return (int64_t) vgetq_lane_f32(vrndiq_f32(vreinterpretq_f32_m128(a)), 0);
 #else
     float32_t data = vgetq_lane_f32(
@@ -1680,7 +1685,7 @@ FORCE_INLINE int64_t _mm_cvttss_si64(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_div_ps
 FORCE_INLINE __m128 _mm_div_ps(__m128 a, __m128 b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vdivq_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(b)));
 #else
@@ -1730,14 +1735,14 @@ FORCE_INLINE unsigned int _sse2neon_mm_get_flush_zero_mode()
 {
     union {
         fpcr_bitfield field;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         uint64_t value;
 #else
         uint32_t value;
 #endif
     } r;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("mrs %0, FPCR" : "=r"(r.value)); /* read */
 #else
     __asm__ __volatile__("vmrs %0, FPSCR" : "=r"(r.value)); /* read */
@@ -1754,14 +1759,14 @@ FORCE_INLINE unsigned int _MM_GET_ROUNDING_MODE()
 {
     union {
         fpcr_bitfield field;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         uint64_t value;
 #else
         uint32_t value;
 #endif
     } r;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("mrs %0, FPCR" : "=r"(r.value)); /* read */
 #else
     __asm__ __volatile__("vmrs %0, FPSCR" : "=r"(r.value)); /* read */
@@ -2055,7 +2060,7 @@ FORCE_INLINE __m128 _mm_movelh_ps(__m128 __A, __m128 __B)
 FORCE_INLINE int _mm_movemask_pi8(__m64 a)
 {
     uint8x8_t input = vreinterpret_u8_m64(a);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const int8x8_t shift = {0, 1, 2, 3, 4, 5, 6, 7};
     uint8x8_t tmp = vshr_n_u8(input, 7);
     return vaddv_u8(vshl_u8(tmp, shift));
@@ -2076,7 +2081,7 @@ FORCE_INLINE int _mm_movemask_pi8(__m64 a)
 FORCE_INLINE int _mm_movemask_ps(__m128 a)
 {
     uint32x4_t input = vreinterpretq_u32_m128(a);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const int32x4_t shift = {0, 1, 2, 3};
     uint32x4_t tmp = vshrq_n_u32(input, 31);
     return vaddvq_u32(vshlq_u32(tmp, shift));
@@ -2280,14 +2285,14 @@ FORCE_INLINE void _sse2neon_mm_set_flush_zero_mode(unsigned int flag)
     // regardless of the value of the FZ bit.
     union {
         fpcr_bitfield field;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         uint64_t value;
 #else
         uint32_t value;
 #endif
     } r;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("mrs %0, FPCR" : "=r"(r.value)); /* read */
 #else
     __asm__ __volatile__("vmrs %0, FPSCR" : "=r"(r.value)); /* read */
@@ -2295,7 +2300,7 @@ FORCE_INLINE void _sse2neon_mm_set_flush_zero_mode(unsigned int flag)
 
     r.field.bit24 = (flag & _MM_FLUSH_ZERO_MASK) == _MM_FLUSH_ZERO_ON;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("msr FPCR, %0" ::"r"(r)); /* write */
 #else
     __asm__ __volatile__("vmsr FPSCR, %0" ::"r"(r));        /* write */
@@ -2328,14 +2333,14 @@ FORCE_INLINE void _MM_SET_ROUNDING_MODE(int rounding)
 {
     union {
         fpcr_bitfield field;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         uint64_t value;
 #else
         uint32_t value;
 #endif
     } r;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("mrs %0, FPCR" : "=r"(r.value)); /* read */
 #else
     __asm__ __volatile__("vmrs %0, FPSCR" : "=r"(r.value)); /* read */
@@ -2359,7 +2364,7 @@ FORCE_INLINE void _MM_SET_ROUNDING_MODE(int rounding)
         r.field.bit23 = 0;
     }
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("msr FPCR, %0" ::"r"(r)); /* write */
 #else
     __asm__ __volatile__("vmsr FPSCR, %0" ::"r"(r));        /* write */
@@ -2559,7 +2564,7 @@ FORCE_INLINE void _mm_lfence(void)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sqrt_ps
 FORCE_INLINE __m128 _mm_sqrt_ps(__m128 in)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(vsqrtq_f32(vreinterpretq_f32_m128(in)));
 #else
     float32x4_t recip = vrsqrteq_f32(vreinterpretq_f32_m128(in));
@@ -2782,7 +2787,7 @@ FORCE_INLINE __m128 _mm_undefined_ps(void)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_ps
 FORCE_INLINE __m128 _mm_unpackhi_ps(__m128 a, __m128 b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vzip2q_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(b)));
 #else
@@ -2798,7 +2803,7 @@ FORCE_INLINE __m128 _mm_unpackhi_ps(__m128 a, __m128 b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_ps
 FORCE_INLINE __m128 _mm_unpacklo_ps(__m128 a, __m128 b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vzip1q_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(b)));
 #else
@@ -2857,7 +2862,7 @@ FORCE_INLINE __m128i _mm_add_epi8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_add_pd
 FORCE_INLINE __m128d _mm_add_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vaddq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -2876,7 +2881,7 @@ FORCE_INLINE __m128d _mm_add_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_add_sd
 FORCE_INLINE __m128d _mm_add_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_add_pd(a, b));
 #else
     double *da = (double *) &a;
@@ -3035,7 +3040,7 @@ FORCE_INLINE __m128i _mm_castps_si128(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_castsi128_pd
 FORCE_INLINE __m128d _mm_castsi128_pd(__m128i a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vreinterpretq_f64_m128i(a));
 #else
     return vreinterpretq_m128d_f32(vreinterpretq_f32_m128i(a));
@@ -3107,7 +3112,7 @@ FORCE_INLINE __m128i _mm_cmpeq_epi8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpeq_pd
 FORCE_INLINE __m128d _mm_cmpeq_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(
         vceqq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -3133,7 +3138,7 @@ FORCE_INLINE __m128d _mm_cmpeq_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpge_pd
 FORCE_INLINE __m128d _mm_cmpge_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(
         vcgeq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -3155,7 +3160,7 @@ FORCE_INLINE __m128d _mm_cmpge_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpge_sd
 FORCE_INLINE __m128d _mm_cmpge_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_cmpge_pd(a, b));
 #else
     // expand "_mm_cmpge_pd()" to reduce unnecessary operations
@@ -3202,7 +3207,7 @@ FORCE_INLINE __m128i _mm_cmpgt_epi8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpgt_pd
 FORCE_INLINE __m128d _mm_cmpgt_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(
         vcgtq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -3224,7 +3229,7 @@ FORCE_INLINE __m128d _mm_cmpgt_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpgt_sd
 FORCE_INLINE __m128d _mm_cmpgt_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_cmpgt_pd(a, b));
 #else
     // expand "_mm_cmpge_pd()" to reduce unnecessary operations
@@ -3244,7 +3249,7 @@ FORCE_INLINE __m128d _mm_cmpgt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmple_pd
 FORCE_INLINE __m128d _mm_cmple_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(
         vcleq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -3266,7 +3271,7 @@ FORCE_INLINE __m128d _mm_cmple_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmple_sd
 FORCE_INLINE __m128d _mm_cmple_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_cmple_pd(a, b));
 #else
     // expand "_mm_cmpge_pd()" to reduce unnecessary operations
@@ -3316,7 +3321,7 @@ FORCE_INLINE __m128i _mm_cmplt_epi8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmplt_pd
 FORCE_INLINE __m128d _mm_cmplt_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(
         vcltq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -3338,7 +3343,7 @@ FORCE_INLINE __m128d _mm_cmplt_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmplt_sd
 FORCE_INLINE __m128d _mm_cmplt_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_cmplt_pd(a, b));
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3357,7 +3362,7 @@ FORCE_INLINE __m128d _mm_cmplt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpneq_pd
 FORCE_INLINE __m128d _mm_cmpneq_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_s32(vmvnq_s32(vreinterpretq_s32_u64(
         vceqq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)))));
 #else
@@ -3383,7 +3388,7 @@ FORCE_INLINE __m128d _mm_cmpneq_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpnge_pd
 FORCE_INLINE __m128d _mm_cmpnge_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(veorq_u64(
         vcgeq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)),
         vdupq_n_u64(UINT64_MAX)));
@@ -3416,7 +3421,7 @@ FORCE_INLINE __m128d _mm_cmpnge_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_cmpngt_pd
 FORCE_INLINE __m128d _mm_cmpngt_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(veorq_u64(
         vcgtq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)),
         vdupq_n_u64(UINT64_MAX)));
@@ -3449,7 +3454,7 @@ FORCE_INLINE __m128d _mm_cmpngt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpnle_pd
 FORCE_INLINE __m128d _mm_cmpnle_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(veorq_u64(
         vcleq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)),
         vdupq_n_u64(UINT64_MAX)));
@@ -3482,7 +3487,7 @@ FORCE_INLINE __m128d _mm_cmpnle_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpnlt_pd
 FORCE_INLINE __m128d _mm_cmpnlt_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_u64(veorq_u64(
         vcltq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)),
         vdupq_n_u64(UINT64_MAX)));
@@ -3515,7 +3520,7 @@ FORCE_INLINE __m128d _mm_cmpnlt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpord_pd
 FORCE_INLINE __m128d _mm_cmpord_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     // Excluding NaNs, any two floating point numbers can be compared.
     uint64x2_t not_nan_a =
         vceqq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(a));
@@ -3547,7 +3552,7 @@ FORCE_INLINE __m128d _mm_cmpord_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpord_sd
 FORCE_INLINE __m128d _mm_cmpord_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_cmpord_pd(a, b));
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3569,7 +3574,7 @@ FORCE_INLINE __m128d _mm_cmpord_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpunord_pd
 FORCE_INLINE __m128d _mm_cmpunord_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     // Two NaNs are not equal in comparison operation.
     uint64x2_t not_nan_a =
         vceqq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(a));
@@ -3602,7 +3607,7 @@ FORCE_INLINE __m128d _mm_cmpunord_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cmpunord_sd
 FORCE_INLINE __m128d _mm_cmpunord_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_cmpunord_pd(a, b));
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3624,7 +3629,7 @@ FORCE_INLINE __m128d _mm_cmpunord_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_comige_sd
 FORCE_INLINE int _mm_comige_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vgetq_lane_u64(vcgeq_f64(a, b), 0) & 0x1;
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3639,7 +3644,7 @@ FORCE_INLINE int _mm_comige_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_comigt_sd
 FORCE_INLINE int _mm_comigt_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vgetq_lane_u64(vcgtq_f64(a, b), 0) & 0x1;
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3654,7 +3659,7 @@ FORCE_INLINE int _mm_comigt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_comile_sd
 FORCE_INLINE int _mm_comile_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vgetq_lane_u64(vcleq_f64(a, b), 0) & 0x1;
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3669,7 +3674,7 @@ FORCE_INLINE int _mm_comile_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_comilt_sd
 FORCE_INLINE int _mm_comilt_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vgetq_lane_u64(vcltq_f64(a, b), 0) & 0x1;
 #else
     uint64_t a0 = (uint64_t) vget_low_u64(vreinterpretq_u64_m128d(a));
@@ -3684,7 +3689,7 @@ FORCE_INLINE int _mm_comilt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_comieq_sd
 FORCE_INLINE int _mm_comieq_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vgetq_lane_u64(vceqq_f64(a, b), 0) & 0x1;
 #else
     uint32x4_t a_not_nan =
@@ -3713,7 +3718,7 @@ FORCE_INLINE int _mm_comineq_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtepi32_pd
 FORCE_INLINE __m128d _mm_cvtepi32_pd(__m128i a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vcvtq_f64_s64(vmovl_s32(vget_low_s32(vreinterpretq_s32_m128i(a)))));
 #else
@@ -3768,7 +3773,7 @@ FORCE_INLINE __m64 _mm_cvtpd_pi32(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtpd_ps
 FORCE_INLINE __m128 _mm_cvtpd_ps(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     float32x2_t tmp = vcvt_f32_f64(vreinterpretq_f64_m128d(a));
     return vreinterpretq_m128_f32(vcombine_f32(tmp, vdup_n_f32(0)));
 #else
@@ -3783,7 +3788,7 @@ FORCE_INLINE __m128 _mm_cvtpd_ps(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtpi32_pd
 FORCE_INLINE __m128d _mm_cvtpi32_pd(__m64 a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vcvtq_f64_s64(vmovl_s32(vreinterpret_s32_m64(a))));
 #else
@@ -3802,7 +3807,7 @@ FORCE_INLINE __m128i _mm_cvtps_epi32(__m128 a)
 {
 #if defined(__ARM_FEATURE_FRINT)
     return vreinterpretq_m128i_s32(vcvtq_s32_f32(vrnd32xq_f32(a)));
-#elif defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#elif defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     switch (_MM_GET_ROUNDING_MODE()) {
     case _MM_ROUND_NEAREST:
         return vreinterpretq_m128i_s32(vcvtnq_s32_f32(a));
@@ -3855,7 +3860,7 @@ FORCE_INLINE __m128i _mm_cvtps_epi32(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtps_pd
 FORCE_INLINE __m128d _mm_cvtps_pd(__m128 a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vcvt_f64_f32(vget_low_f32(vreinterpretq_f32_m128(a))));
 #else
@@ -3869,7 +3874,7 @@ FORCE_INLINE __m128d _mm_cvtps_pd(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtsd_f64
 FORCE_INLINE double _mm_cvtsd_f64(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return (double) vgetq_lane_f64(vreinterpretq_f64_m128d(a), 0);
 #else
     return ((double *) &a)[0];
@@ -3881,7 +3886,7 @@ FORCE_INLINE double _mm_cvtsd_f64(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtsd_si32
 FORCE_INLINE int32_t _mm_cvtsd_si32(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return (int32_t) vgetq_lane_f64(vrndiq_f64(vreinterpretq_f64_m128d(a)), 0);
 #else
     __m128d rnd = _mm_round_pd(a, _MM_FROUND_CUR_DIRECTION);
@@ -3895,7 +3900,7 @@ FORCE_INLINE int32_t _mm_cvtsd_si32(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtsd_si64
 FORCE_INLINE int64_t _mm_cvtsd_si64(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return (int64_t) vgetq_lane_f64(vrndiq_f64(vreinterpretq_f64_m128d(a)), 0);
 #else
     __m128d rnd = _mm_round_pd(a, _MM_FROUND_CUR_DIRECTION);
@@ -3916,7 +3921,7 @@ FORCE_INLINE int64_t _mm_cvtsd_si64(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtsd_ss
 FORCE_INLINE __m128 _mm_cvtsd_ss(__m128 a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(vsetq_lane_f32(
         vget_lane_f32(vcvt_f32_f64(vreinterpretq_f64_m128d(b)), 0),
         vreinterpretq_f32_m128(a), 0));
@@ -3950,7 +3955,7 @@ FORCE_INLINE int64_t _mm_cvtsi128_si64(__m128i a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtsi32_sd
 FORCE_INLINE __m128d _mm_cvtsi32_sd(__m128d a, int32_t b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vsetq_lane_f64((double) b, vreinterpretq_f64_m128d(a), 0));
 #else
@@ -3978,7 +3983,7 @@ FORCE_INLINE __m128i _mm_cvtsi32_si128(int a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtsi64_sd
 FORCE_INLINE __m128d _mm_cvtsi64_sd(__m128d a, int64_t b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vsetq_lane_f64((double) b, vreinterpretq_f64_m128d(a), 0));
 #else
@@ -4015,7 +4020,7 @@ FORCE_INLINE __m128i _mm_cvtsi64_si128(int64_t a)
 FORCE_INLINE __m128d _mm_cvtss_sd(__m128d a, __m128 b)
 {
     double d = (double) vgetq_lane_f32(vreinterpretq_f32_m128(b), 0);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vsetq_lane_f64(d, vreinterpretq_f64_m128d(a), 0));
 #else
@@ -4067,7 +4072,7 @@ FORCE_INLINE int32_t _mm_cvttsd_si32(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvttsd_si64
 FORCE_INLINE int64_t _mm_cvttsd_si64(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vgetq_lane_s64(vcvtq_s64_f64(vreinterpretq_f64_m128d(a)), 0);
 #else
     double ret = *((double *) &a);
@@ -4085,7 +4090,7 @@ FORCE_INLINE int64_t _mm_cvttsd_si64(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_div_pd
 FORCE_INLINE __m128d _mm_div_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vdivq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -4105,7 +4110,7 @@ FORCE_INLINE __m128d _mm_div_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_div_sd
 FORCE_INLINE __m128d _mm_div_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     float64x2_t tmp =
         vdivq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b));
     return vreinterpretq_m128d_f64(
@@ -4139,7 +4144,7 @@ FORCE_INLINE __m128d _mm_div_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_load_pd
 FORCE_INLINE __m128d _mm_load_pd(const double *p)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vld1q_f64(p));
 #else
     const float *fp = (const float *) p;
@@ -4159,7 +4164,7 @@ FORCE_INLINE __m128d _mm_load_pd(const double *p)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_load_sd
 FORCE_INLINE __m128d _mm_load_sd(const double *p)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vsetq_lane_f64(*p, vdupq_n_f64(0), 0));
 #else
     const float *fp = (const float *) p;
@@ -4181,7 +4186,7 @@ FORCE_INLINE __m128i _mm_load_si128(const __m128i *p)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_load1_pd
 FORCE_INLINE __m128d _mm_load1_pd(const double *p)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vld1q_dup_f64(p));
 #else
     return vreinterpretq_m128d_s64(vdupq_n_s64(*(const int64_t *) p));
@@ -4194,7 +4199,7 @@ FORCE_INLINE __m128d _mm_load1_pd(const double *p)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_loadh_pd
 FORCE_INLINE __m128d _mm_loadh_pd(__m128d a, const double *p)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vcombine_f64(vget_low_f64(vreinterpretq_f64_m128d(a)), vld1_f64(p)));
 #else
@@ -4220,7 +4225,7 @@ FORCE_INLINE __m128i _mm_loadl_epi64(__m128i const *p)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_loadl_pd
 FORCE_INLINE __m128d _mm_loadl_pd(__m128d a, const double *p)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vcombine_f64(vld1_f64(p), vget_high_f64(vreinterpretq_f64_m128d(a))));
 #else
@@ -4236,7 +4241,7 @@ FORCE_INLINE __m128d _mm_loadl_pd(__m128d a, const double *p)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_loadr_pd
 FORCE_INLINE __m128d _mm_loadr_pd(const double *p)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     float64x2_t v = vld1q_f64(p);
     return vreinterpretq_m128d_f64(vextq_f64(v, v, 1));
 #else
@@ -4276,7 +4281,7 @@ FORCE_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b)
 {
     int32x4_t low = vmull_s16(vget_low_s16(vreinterpretq_s16_m128i(a)),
                               vget_low_s16(vreinterpretq_s16_m128i(b)));
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int32x4_t high =
         vmull_high_s16(vreinterpretq_s16_m128i(a), vreinterpretq_s16_m128i(b));
 
@@ -4330,7 +4335,7 @@ FORCE_INLINE __m128i _mm_max_epu8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_max_pd
 FORCE_INLINE __m128d _mm_max_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #if SSE2NEON_PRECISE_MINMAX
     float64x2_t _a = vreinterpretq_f64_m128d(a);
     float64x2_t _b = vreinterpretq_f64_m128d(b);
@@ -4358,7 +4363,7 @@ FORCE_INLINE __m128d _mm_max_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_max_sd
 FORCE_INLINE __m128d _mm_max_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_max_pd(a, b));
 #else
     double *da = (double *) &a;
@@ -4391,7 +4396,7 @@ FORCE_INLINE __m128i _mm_min_epu8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_min_pd
 FORCE_INLINE __m128d _mm_min_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #if SSE2NEON_PRECISE_MINMAX
     float64x2_t _a = vreinterpretq_f64_m128d(a);
     float64x2_t _b = vreinterpretq_f64_m128d(b);
@@ -4418,7 +4423,7 @@ FORCE_INLINE __m128d _mm_min_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_min_sd
 FORCE_INLINE __m128d _mm_min_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_min_pd(a, b));
 #else
     double *da = (double *) &a;
@@ -4573,7 +4578,7 @@ FORCE_INLINE __m128i _mm_mul_epu32(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_mul_pd
 FORCE_INLINE __m128d _mm_mul_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vmulq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -4634,7 +4639,7 @@ FORCE_INLINE __m128i _mm_mulhi_epu16(__m128i a, __m128i b)
     uint16x4_t a3210 = vget_low_u16(vreinterpretq_u16_m128i(a));
     uint16x4_t b3210 = vget_low_u16(vreinterpretq_u16_m128i(b));
     uint32x4_t ab3210 = vmull_u16(a3210, b3210);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint32x4_t ab7654 =
         vmull_high_u16(vreinterpretq_u16_m128i(a), vreinterpretq_u16_m128i(b));
     uint16x8_t r = vuzp2q_u16(vreinterpretq_u16_u32(ab3210),
@@ -4800,7 +4805,7 @@ FORCE_INLINE __m128i _mm_set_epi8(signed char b15,
 FORCE_INLINE __m128d _mm_set_pd(double e1, double e0)
 {
     double ALIGN_STRUCT(16) data[2] = {e0, e1};
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vld1q_f64((float64_t *) data));
 #else
     return vreinterpretq_m128d_f32(vld1q_f32((float32_t *) data));
@@ -4817,7 +4822,7 @@ FORCE_INLINE __m128d _mm_set_pd(double e1, double e0)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_sd
 FORCE_INLINE __m128d _mm_set_sd(double a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vsetq_lane_f64(a, vdupq_n_f64(0), 0));
 #else
     return _mm_set_pd(0, a);
@@ -4864,7 +4869,7 @@ FORCE_INLINE __m128i _mm_set1_epi8(signed char w)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_pd
 FORCE_INLINE __m128d _mm_set1_pd(double d)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vdupq_n_f64(d));
 #else
     return vreinterpretq_m128d_s64(vdupq_n_s64(*(int64_t *) &d));
@@ -4940,7 +4945,7 @@ FORCE_INLINE __m128d _mm_setr_pd(double e1, double e0)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_setzero_pd
 FORCE_INLINE __m128d _mm_setzero_pd(void)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vdupq_n_f64(0));
 #else
     return vreinterpretq_m128d_f32(vdupq_n_f32(0));
@@ -5162,7 +5167,7 @@ FORCE_INLINE __m128i _mm_slli_epi64(__m128i a, int imm)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sqrt_pd
 FORCE_INLINE __m128d _mm_sqrt_pd(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vsqrtq_f64(vreinterpretq_f64_m128d(a)));
 #else
     double a0 = sqrt(((double *) &a)[0]);
@@ -5177,7 +5182,7 @@ FORCE_INLINE __m128d _mm_sqrt_pd(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sqrt_sd
 FORCE_INLINE __m128d _mm_sqrt_sd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return _mm_move_sd(a, _mm_sqrt_pd(b));
 #else
     return _mm_set_pd(((double *) &a)[1], sqrt(((double *) &b)[0]));
@@ -5339,7 +5344,7 @@ FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_store_pd
 FORCE_INLINE void _mm_store_pd(double *mem_addr, __m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     vst1q_f64((float64_t *) mem_addr, vreinterpretq_f64_m128d(a));
 #else
     vst1q_f32((float32_t *) mem_addr, vreinterpretq_f32_m128d(a));
@@ -5352,7 +5357,7 @@ FORCE_INLINE void _mm_store_pd(double *mem_addr, __m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_store_pd1
 FORCE_INLINE void _mm_store_pd1(double *mem_addr, __m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     float64x1_t a_low = vget_low_f64(vreinterpretq_f64_m128d(a));
     vst1q_f64((float64_t *) mem_addr,
               vreinterpretq_f64_m128d(vcombine_f64(a_low, a_low)));
@@ -5368,7 +5373,7 @@ FORCE_INLINE void _mm_store_pd1(double *mem_addr, __m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=mm_store_sd
 FORCE_INLINE void _mm_store_sd(double *mem_addr, __m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     vst1_f64((float64_t *) mem_addr, vget_low_f64(vreinterpretq_f64_m128d(a)));
 #else
     vst1_u64((uint64_t *) mem_addr, vget_low_u64(vreinterpretq_u64_m128d(a)));
@@ -5394,7 +5399,7 @@ FORCE_INLINE void _mm_store_si128(__m128i *p, __m128i a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_storeh_pd
 FORCE_INLINE void _mm_storeh_pd(double *mem_addr, __m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     vst1_f64((float64_t *) mem_addr, vget_high_f64(vreinterpretq_f64_m128d(a)));
 #else
     vst1_f32((float32_t *) mem_addr, vget_high_f32(vreinterpretq_f32_m128d(a)));
@@ -5413,7 +5418,7 @@ FORCE_INLINE void _mm_storel_epi64(__m128i *a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_storel_pd
 FORCE_INLINE void _mm_storel_pd(double *mem_addr, __m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     vst1_f64((float64_t *) mem_addr, vget_low_f64(vreinterpretq_f64_m128d(a)));
 #else
     vst1_f32((float32_t *) mem_addr, vget_low_f32(vreinterpretq_f32_m128d(a)));
@@ -5464,7 +5469,7 @@ FORCE_INLINE void _mm_stream_pd(double *p, __m128d a)
 {
 #if __has_builtin(__builtin_nontemporal_store)
     __builtin_nontemporal_store(a, (float32x4_t *) p);
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(_M_ARM64)
     vst1q_f64(p, vreinterpretq_f64_m128d(a));
 #else
     vst1q_s64((int64_t *) p, vreinterpretq_s64_m128d(a));
@@ -5544,7 +5549,7 @@ FORCE_INLINE __m128i _mm_sub_epi8(__m128i a, __m128i b)
 //  https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=mm_sub_pd
 FORCE_INLINE __m128d _mm_sub_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vsubq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -5638,7 +5643,7 @@ FORCE_INLINE __m128d _mm_undefined_pd(void)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_epi16
 FORCE_INLINE __m128i _mm_unpackhi_epi16(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s16(
         vzip2q_s16(vreinterpretq_s16_m128i(a), vreinterpretq_s16_m128i(b)));
 #else
@@ -5654,7 +5659,7 @@ FORCE_INLINE __m128i _mm_unpackhi_epi16(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_epi32
 FORCE_INLINE __m128i _mm_unpackhi_epi32(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s32(
         vzip2q_s32(vreinterpretq_s32_m128i(a), vreinterpretq_s32_m128i(b)));
 #else
@@ -5670,7 +5675,7 @@ FORCE_INLINE __m128i _mm_unpackhi_epi32(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_epi64
 FORCE_INLINE __m128i _mm_unpackhi_epi64(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s64(
         vzip2q_s64(vreinterpretq_s64_m128i(a), vreinterpretq_s64_m128i(b)));
 #else
@@ -5685,7 +5690,7 @@ FORCE_INLINE __m128i _mm_unpackhi_epi64(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_epi8
 FORCE_INLINE __m128i _mm_unpackhi_epi8(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s8(
         vzip2q_s8(vreinterpretq_s8_m128i(a), vreinterpretq_s8_m128i(b)));
 #else
@@ -5703,7 +5708,7 @@ FORCE_INLINE __m128i _mm_unpackhi_epi8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_pd
 FORCE_INLINE __m128d _mm_unpackhi_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vzip2q_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -5718,7 +5723,7 @@ FORCE_INLINE __m128d _mm_unpackhi_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_epi16
 FORCE_INLINE __m128i _mm_unpacklo_epi16(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s16(
         vzip1q_s16(vreinterpretq_s16_m128i(a), vreinterpretq_s16_m128i(b)));
 #else
@@ -5734,7 +5739,7 @@ FORCE_INLINE __m128i _mm_unpacklo_epi16(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_epi32
 FORCE_INLINE __m128i _mm_unpacklo_epi32(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s32(
         vzip1q_s32(vreinterpretq_s32_m128i(a), vreinterpretq_s32_m128i(b)));
 #else
@@ -5750,7 +5755,7 @@ FORCE_INLINE __m128i _mm_unpacklo_epi32(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_epi64
 FORCE_INLINE __m128i _mm_unpacklo_epi64(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s64(
         vzip1q_s64(vreinterpretq_s64_m128i(a), vreinterpretq_s64_m128i(b)));
 #else
@@ -5765,7 +5770,7 @@ FORCE_INLINE __m128i _mm_unpacklo_epi64(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_epi8
 FORCE_INLINE __m128i _mm_unpacklo_epi8(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s8(
         vzip1q_s8(vreinterpretq_s8_m128i(a), vreinterpretq_s8_m128i(b)));
 #else
@@ -5781,7 +5786,7 @@ FORCE_INLINE __m128i _mm_unpacklo_epi8(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_pd
 FORCE_INLINE __m128d _mm_unpacklo_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vzip1q_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -5818,7 +5823,7 @@ FORCE_INLINE __m128i _mm_xor_si128(__m128i a, __m128i b)
 FORCE_INLINE __m128d _mm_addsub_pd(__m128d a, __m128d b)
 {
     _sse2neon_const __m128d mask = _mm_set_pd(1.0f, -1.0f);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vfmaq_f64(vreinterpretq_f64_m128d(a),
                                              vreinterpretq_f64_m128d(b),
                                              vreinterpretq_f64_m128d(mask)));
@@ -5834,7 +5839,7 @@ FORCE_INLINE __m128d _mm_addsub_pd(__m128d a, __m128d b)
 FORCE_INLINE __m128 _mm_addsub_ps(__m128 a, __m128 b)
 {
     _sse2neon_const __m128 mask = _mm_setr_ps(-1.0f, 1.0f, -1.0f, 1.0f);
-#if defined(__aarch64__) || defined(__ARM_FEATURE_FMA) /* VFPv4+ */
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_FMA) /* VFPv4+ */
     return vreinterpretq_m128_f32(vfmaq_f32(vreinterpretq_f32_m128(a),
                                             vreinterpretq_f32_m128(mask),
                                             vreinterpretq_f32_m128(b)));
@@ -5848,7 +5853,7 @@ FORCE_INLINE __m128 _mm_addsub_ps(__m128 a, __m128 b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_hadd_pd
 FORCE_INLINE __m128d _mm_hadd_pd(__m128d a, __m128d b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vpaddq_f64(vreinterpretq_f64_m128d(a), vreinterpretq_f64_m128d(b)));
 #else
@@ -5864,7 +5869,7 @@ FORCE_INLINE __m128d _mm_hadd_pd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_hadd_ps
 FORCE_INLINE __m128 _mm_hadd_ps(__m128 a, __m128 b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vpaddq_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(b)));
 #else
@@ -5882,7 +5887,7 @@ FORCE_INLINE __m128 _mm_hadd_ps(__m128 a, __m128 b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_hsub_pd
 FORCE_INLINE __m128d _mm_hsub_pd(__m128d _a, __m128d _b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     float64x2_t a = vreinterpretq_f64_m128d(_a);
     float64x2_t b = vreinterpretq_f64_m128d(_b);
     return vreinterpretq_m128d_f64(
@@ -5902,7 +5907,7 @@ FORCE_INLINE __m128 _mm_hsub_ps(__m128 _a, __m128 _b)
 {
     float32x4_t a = vreinterpretq_f32_m128(_a);
     float32x4_t b = vreinterpretq_f32_m128(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vsubq_f32(vuzp1q_f32(a, b), vuzp2q_f32(a, b)));
 #else
@@ -5927,7 +5932,7 @@ FORCE_INLINE __m128 _mm_hsub_ps(__m128 _a, __m128 _b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_movedup_pd
 FORCE_INLINE __m128d _mm_movedup_pd(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(
         vdupq_laneq_f64(vreinterpretq_f64_m128d(a), 0));
 #else
@@ -5941,7 +5946,7 @@ FORCE_INLINE __m128d _mm_movedup_pd(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_movehdup_ps
 FORCE_INLINE __m128 _mm_movehdup_ps(__m128 a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vtrn2q_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(a)));
 #elif defined(_sse2neon_shuffle)
@@ -5960,7 +5965,7 @@ FORCE_INLINE __m128 _mm_movehdup_ps(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_moveldup_ps
 FORCE_INLINE __m128 _mm_moveldup_ps(__m128 a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128_f32(
         vtrn1q_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(a)));
 #elif defined(_sse2neon_shuffle)
@@ -6074,7 +6079,7 @@ FORCE_INLINE __m128i _mm_hadd_epi16(__m128i _a, __m128i _b)
 {
     int16x8_t a = vreinterpretq_s16_m128i(_a);
     int16x8_t b = vreinterpretq_s16_m128i(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s16(vpaddq_s16(a, b));
 #else
     return vreinterpretq_m128i_s16(
@@ -6090,7 +6095,7 @@ FORCE_INLINE __m128i _mm_hadd_epi32(__m128i _a, __m128i _b)
 {
     int32x4_t a = vreinterpretq_s32_m128i(_a);
     int32x4_t b = vreinterpretq_s32_m128i(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s32(vpaddq_s32(a, b));
 #else
     return vreinterpretq_m128i_s32(
@@ -6122,7 +6127,7 @@ FORCE_INLINE __m64 _mm_hadd_pi32(__m64 a, __m64 b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_hadds_epi16
 FORCE_INLINE __m128i _mm_hadds_epi16(__m128i _a, __m128i _b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int16x8_t a = vreinterpretq_s16_m128i(_a);
     int16x8_t b = vreinterpretq_s16_m128i(_b);
     return vreinterpretq_s64_s16(
@@ -6147,7 +6152,7 @@ FORCE_INLINE __m64 _mm_hadds_pi16(__m64 _a, __m64 _b)
 {
     int16x4_t a = vreinterpret_s16_m64(_a);
     int16x4_t b = vreinterpret_s16_m64(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpret_s64_s16(vqadd_s16(vuzp1_s16(a, b), vuzp2_s16(a, b)));
 #else
     int16x4x2_t res = vuzp_s16(a, b);
@@ -6162,7 +6167,7 @@ FORCE_INLINE __m128i _mm_hsub_epi16(__m128i _a, __m128i _b)
 {
     int16x8_t a = vreinterpretq_s16_m128i(_a);
     int16x8_t b = vreinterpretq_s16_m128i(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s16(
         vsubq_s16(vuzp1q_s16(a, b), vuzp2q_s16(a, b)));
 #else
@@ -6178,7 +6183,7 @@ FORCE_INLINE __m128i _mm_hsub_epi32(__m128i _a, __m128i _b)
 {
     int32x4_t a = vreinterpretq_s32_m128i(_a);
     int32x4_t b = vreinterpretq_s32_m128i(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s32(
         vsubq_s32(vuzp1q_s32(a, b), vuzp2q_s32(a, b)));
 #else
@@ -6194,7 +6199,7 @@ FORCE_INLINE __m64 _mm_hsub_pi16(__m64 _a, __m64 _b)
 {
     int16x4_t a = vreinterpret_s16_m64(_a);
     int16x4_t b = vreinterpret_s16_m64(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpret_m64_s16(vsub_s16(vuzp1_s16(a, b), vuzp2_s16(a, b)));
 #else
     int16x4x2_t c = vuzp_s16(a, b);
@@ -6209,7 +6214,7 @@ FORCE_INLINE __m64 _mm_hsub_pi32(__m64 _a, __m64 _b)
 {
     int32x2_t a = vreinterpret_s32_m64(_a);
     int32x2_t b = vreinterpret_s32_m64(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpret_m64_s32(vsub_s32(vuzp1_s32(a, b), vuzp2_s32(a, b)));
 #else
     int32x2x2_t c = vuzp_s32(a, b);
@@ -6224,7 +6229,7 @@ FORCE_INLINE __m128i _mm_hsubs_epi16(__m128i _a, __m128i _b)
 {
     int16x8_t a = vreinterpretq_s16_m128i(_a);
     int16x8_t b = vreinterpretq_s16_m128i(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s16(
         vqsubq_s16(vuzp1q_s16(a, b), vuzp2q_s16(a, b)));
 #else
@@ -6240,7 +6245,7 @@ FORCE_INLINE __m64 _mm_hsubs_pi16(__m64 _a, __m64 _b)
 {
     int16x4_t a = vreinterpret_s16_m64(_a);
     int16x4_t b = vreinterpret_s16_m64(_b);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpret_m64_s16(vqsub_s16(vuzp1_s16(a, b), vuzp2_s16(a, b)));
 #else
     int16x4x2_t c = vuzp_s16(a, b);
@@ -6255,7 +6260,7 @@ FORCE_INLINE __m64 _mm_hsubs_pi16(__m64 _a, __m64 _b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_maddubs_epi16
 FORCE_INLINE __m128i _mm_maddubs_epi16(__m128i _a, __m128i _b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint8x16_t a = vreinterpretq_u8_m128i(_a);
     int8x16_t b = vreinterpretq_s8_m128i(_b);
     int16x8_t tl = vmulq_s16(vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(a))),
@@ -6359,7 +6364,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi8(__m128i a, __m128i b)
     uint8x16_t idx = vreinterpretq_u8_m128i(b);  // input b
     uint8x16_t idx_masked =
         vandq_u8(idx, vdupq_n_u8(0x8F));  // avoid using meaningless bits
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_s8(vqtbl1q_s8(tbl, idx_masked));
 #elif defined(__GNUC__)
     int8x16_t ret;
@@ -6405,7 +6410,7 @@ FORCE_INLINE __m128i _mm_sign_epi16(__m128i _a, __m128i _b)
     // (b < 0) ? 0xFFFF : 0
     uint16x8_t ltMask = vreinterpretq_u16_s16(vshrq_n_s16(b, 15));
     // (b == 0) ? 0xFFFF : 0
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int16x8_t zeroMask = vreinterpretq_s16_u16(vceqzq_s16(b));
 #else
     int16x8_t zeroMask = vreinterpretq_s16_u16(vceqq_s16(b, vdupq_n_s16(0)));
@@ -6434,7 +6439,7 @@ FORCE_INLINE __m128i _mm_sign_epi32(__m128i _a, __m128i _b)
     uint32x4_t ltMask = vreinterpretq_u32_s32(vshrq_n_s32(b, 31));
 
     // (b == 0) ? 0xFFFFFFFF : 0
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int32x4_t zeroMask = vreinterpretq_s32_u32(vceqzq_s32(b));
 #else
     int32x4_t zeroMask = vreinterpretq_s32_u32(vceqq_s32(b, vdupq_n_s32(0)));
@@ -6463,7 +6468,7 @@ FORCE_INLINE __m128i _mm_sign_epi8(__m128i _a, __m128i _b)
     uint8x16_t ltMask = vreinterpretq_u8_s8(vshrq_n_s8(b, 7));
 
     // (b == 0) ? 0xFF : 0
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int8x16_t zeroMask = vreinterpretq_s8_u8(vceqzq_s8(b));
 #else
     int8x16_t zeroMask = vreinterpretq_s8_u8(vceqq_s8(b, vdupq_n_s8(0)));
@@ -6492,7 +6497,7 @@ FORCE_INLINE __m64 _mm_sign_pi16(__m64 _a, __m64 _b)
     uint16x4_t ltMask = vreinterpret_u16_s16(vshr_n_s16(b, 15));
 
     // (b == 0) ? 0xFFFF : 0
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int16x4_t zeroMask = vreinterpret_s16_u16(vceqz_s16(b));
 #else
     int16x4_t zeroMask = vreinterpret_s16_u16(vceq_s16(b, vdup_n_s16(0)));
@@ -6521,7 +6526,7 @@ FORCE_INLINE __m64 _mm_sign_pi32(__m64 _a, __m64 _b)
     uint32x2_t ltMask = vreinterpret_u32_s32(vshr_n_s32(b, 31));
 
     // (b == 0) ? 0xFFFFFFFF : 0
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int32x2_t zeroMask = vreinterpret_s32_u32(vceqz_s32(b));
 #else
     int32x2_t zeroMask = vreinterpret_s32_u32(vceq_s32(b, vdup_n_s32(0)));
@@ -6550,7 +6555,7 @@ FORCE_INLINE __m64 _mm_sign_pi8(__m64 _a, __m64 _b)
     uint8x8_t ltMask = vreinterpret_u8_s8(vshr_n_s8(b, 7));
 
     // (b == 0) ? 0xFF : 0
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     int8x8_t zeroMask = vreinterpret_s8_u8(vceqz_s8(b));
 #else
     int8x8_t zeroMask = vreinterpret_s8_u8(vceq_s8(b, vdup_n_s8(0)));
@@ -6638,7 +6643,7 @@ FORCE_INLINE __m128d _mm_blendv_pd(__m128d _a, __m128d _b, __m128d _mask)
 {
     uint64x2_t mask =
         vreinterpretq_u64_s64(vshrq_n_s64(vreinterpretq_s64_m128d(_mask), 63));
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     float64x2_t a = vreinterpretq_f64_m128d(_a);
     float64x2_t b = vreinterpretq_f64_m128d(_b);
     return vreinterpretq_m128d_f64(vbslq_f64(mask, b, a));
@@ -6668,7 +6673,7 @@ FORCE_INLINE __m128 _mm_blendv_ps(__m128 _a, __m128 _b, __m128 _mask)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_ceil_pd
 FORCE_INLINE __m128d _mm_ceil_pd(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vrndpq_f64(vreinterpretq_f64_m128d(a)));
 #else
     double *f = (double *) &a;
@@ -6682,7 +6687,7 @@ FORCE_INLINE __m128d _mm_ceil_pd(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_ceil_ps
 FORCE_INLINE __m128 _mm_ceil_ps(__m128 a)
 {
-#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     return vreinterpretq_m128_f32(vrndpq_f32(vreinterpretq_f32_m128(a)));
 #else
     float *f = (float *) &a;
@@ -6714,7 +6719,7 @@ FORCE_INLINE __m128 _mm_ceil_ss(__m128 a, __m128 b)
 // in dst
 FORCE_INLINE __m128i _mm_cmpeq_epi64(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_u64(
         vceqq_u64(vreinterpretq_u64_m128i(a), vreinterpretq_u64_m128i(b)));
 #else
@@ -6871,7 +6876,7 @@ FORCE_INLINE __m128d _mm_dp_pd(__m128d a, __m128d b, const int imm)
         _mm_castsi128_pd(_mm_set_epi64x(bit5Mask, bit4Mask));
     __m128d tmp = _mm_and_pd(mul, mulMask);
 #else
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     double d0 = (imm & 0x10) ? vgetq_lane_f64(vreinterpretq_f64_m128d(a), 0) *
                                    vgetq_lane_f64(vreinterpretq_f64_m128d(b), 0)
                              : 0;
@@ -6885,7 +6890,7 @@ FORCE_INLINE __m128d _mm_dp_pd(__m128d a, __m128d b, const int imm)
     __m128d tmp = _mm_set_pd(d1, d0);
 #endif
     // Sum the products
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     double sum = vpaddd_f64(vreinterpretq_f64_m128d(tmp));
 #else
     double sum = *((double *) &tmp) + *(((double *) &tmp) + 1);
@@ -6903,7 +6908,7 @@ FORCE_INLINE __m128d _mm_dp_pd(__m128d a, __m128d b, const int imm)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_dp_ps
 FORCE_INLINE __m128 _mm_dp_ps(__m128 a, __m128 b, const int imm)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     /* shortcuts */
     if (imm == 0xFF) {
         return _mm_set1_ps(vaddvq_f32(_mm_mul_ps(a, b)));
@@ -6971,7 +6976,7 @@ FORCE_INLINE __m128 _mm_dp_ps(__m128 a, __m128 b, const int imm)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_floor_pd
 FORCE_INLINE __m128d _mm_floor_pd(__m128d a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128d_f64(vrndmq_f64(vreinterpretq_f64_m128d(a)));
 #else
     double *f = (double *) &a;
@@ -6985,7 +6990,7 @@ FORCE_INLINE __m128d _mm_floor_pd(__m128d a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_floor_ps
 FORCE_INLINE __m128 _mm_floor_ps(__m128 a)
 {
-#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     return vreinterpretq_m128_f32(vrndmq_f32(vreinterpretq_f32_m128(a)));
 #else
     float *f = (float *) &a;
@@ -7148,7 +7153,7 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 {
     __m128i dst;
     uint16_t min, idx = 0;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     // Find the minimum value
     min = vminvq_u16(vreinterpretq_u16_m128i(a));
 
@@ -7247,7 +7252,7 @@ FORCE_INLINE __m128i _mm_mpsadbw_epu8(__m128i a, __m128i b, const int imm)
     c26 = vreinterpretq_s16_u16(vabdl_u8(vget_low_u8(_a_2), low_b));
     uint8x16_t _a_3 = vextq_u8(_a, _a, 3);
     c37 = vreinterpretq_s16_u16(vabdl_u8(vget_low_u8(_a_3), low_b));
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     // |0|4|2|6|
     c04 = vpaddq_s16(c04, c26);
     // |1|5|3|7|
@@ -7307,7 +7312,7 @@ FORCE_INLINE __m128i _mm_packus_epi32(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_round_pd
 FORCE_INLINE __m128d _mm_round_pd(__m128d a, int rounding)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     switch (rounding) {
     case (_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC):
         return vreinterpretq_m128d_f64(vrndnq_f64(vreinterpretq_f64_m128d(a)));
@@ -7376,7 +7381,7 @@ FORCE_INLINE __m128d _mm_round_pd(__m128d a, int rounding)
 // software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_round_ps
 FORCE_INLINE __m128 _mm_round_ps(__m128 a, int rounding)
 {
-#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
     switch (rounding) {
     case (_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC):
         return vreinterpretq_m128_f32(vrndnq_f32(vreinterpretq_f32_m128(a)));
@@ -7810,7 +7815,7 @@ static int _sse2neon_aggregate_ranges_16x8(int la, int lb, __m128i mtx[16])
             vshrq_n_u32(vreinterpretq_u32_m128i(mtx[j]), 16));
         uint32x4_t vec_res = vandq_u32(vreinterpretq_u32_m128i(mtx[j]),
                                        vreinterpretq_u32_m128i(tmp));
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         int t = vaddvq_u32(vec_res) ? 1 : 0;
 #else
         uint64x2_t sumh = vpaddlq_u32(vec_res);
@@ -8295,7 +8300,7 @@ FORCE_INLINE int _mm_cmpistrz(__m128i a, __m128i b, const int imm8)
 // in b for greater than.
 FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     return vreinterpretq_m128i_u64(
         vcgtq_s64(vreinterpretq_s64_m128i(a), vreinterpretq_s64_m128i(b)));
 #else
@@ -8310,7 +8315,7 @@ FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u16
 FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32ch %w[c], %w[c], %w[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8328,7 +8333,7 @@ FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u32
 FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cw %w[c], %w[c], %w[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8346,7 +8351,7 @@ FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u64
 FORCE_INLINE uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cx %w[c], %w[c], %x[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8362,7 +8367,7 @@ FORCE_INLINE uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u8
 FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cb %w[c], %w[c], %w[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8473,7 +8478,7 @@ static const uint8_t _sse2neon_rsbox[256] = SSE2NEON_AES_RSBOX(SSE2NEON_AES_H0);
 #undef SSE2NEON_AES_H0
 
 /* x_time function and matrix multiply function */
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 #define SSE2NEON_XT(x) (((x) << 1) ^ ((((x) >> 7) & 1) * 0x1b))
 #define SSE2NEON_MULTIPLY(x, y)                                  \
     (((y & 1) * x) ^ ((y >> 1 & 1) * SSE2NEON_XT(x)) ^           \
@@ -8489,7 +8494,7 @@ static const uint8_t _sse2neon_rsbox[256] = SSE2NEON_AES_RSBOX(SSE2NEON_AES_H0);
 // for more information.
 FORCE_INLINE __m128i _mm_aesenc_si128(__m128i a, __m128i RoundKey)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const uint8_t shift_rows[] = {
         0x0, 0x5, 0xa, 0xf, 0x4, 0x9, 0xe, 0x3,
         0x8, 0xd, 0x2, 0x7, 0xc, 0x1, 0x6, 0xb,
@@ -8586,7 +8591,7 @@ FORCE_INLINE __m128i _mm_aesenc_si128(__m128i a, __m128i RoundKey)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesdec_si128
 FORCE_INLINE __m128i _mm_aesdec_si128(__m128i a, __m128i RoundKey)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const uint8_t inv_shift_rows[] = {
         0x0, 0xd, 0xa, 0x7, 0x4, 0x1, 0xe, 0xb,
         0x8, 0x5, 0x2, 0xf, 0xc, 0x9, 0x6, 0x3,
@@ -8657,7 +8662,7 @@ FORCE_INLINE __m128i _mm_aesdec_si128(__m128i a, __m128i RoundKey)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenclast_si128
 FORCE_INLINE __m128i _mm_aesenclast_si128(__m128i a, __m128i RoundKey)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const uint8_t shift_rows[] = {
         0x0, 0x5, 0xa, 0xf, 0x4, 0x9, 0xe, 0x3,
         0x8, 0xd, 0x2, 0x7, 0xc, 0x1, 0x6, 0xb,
@@ -8707,7 +8712,7 @@ FORCE_INLINE __m128i _mm_aesenclast_si128(__m128i a, __m128i RoundKey)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesdeclast_si128
 FORCE_INLINE __m128i _mm_aesdeclast_si128(__m128i a, __m128i RoundKey)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const uint8_t inv_shift_rows[] = {
         0x0, 0xd, 0xa, 0x7, 0x4, 0x1, 0xe, 0xb,
         0x8, 0x5, 0x2, 0xf, 0xc, 0x9, 0x6, 0x3,
@@ -8744,7 +8749,7 @@ FORCE_INLINE __m128i _mm_aesdeclast_si128(__m128i a, __m128i RoundKey)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesimc_si128
 FORCE_INLINE __m128i _mm_aesimc_si128(__m128i a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     static const uint8_t ror32by8[] = {
         0x1, 0x2, 0x3, 0x0, 0x5, 0x6, 0x7, 0x4,
         0x9, 0xa, 0xb, 0x8, 0xd, 0xe, 0xf, 0xc,
@@ -8798,7 +8803,7 @@ FORCE_INLINE __m128i _mm_aesimc_si128(__m128i a)
 // for details.
 FORCE_INLINE __m128i _mm_aeskeygenassist_si128(__m128i a, const int rcon)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint8x16_t _a = vreinterpretq_u8_m128i(a);
     uint8x16_t v = vqtbl4q_u8(_sse2neon_vld1q_u8_x4(_sse2neon_sbox), _a);
     v = vqtbx4q_u8(v, _sse2neon_vld1q_u8_x4(_sse2neon_sbox + 0x40), _a - 0x40);
@@ -8825,7 +8830,7 @@ FORCE_INLINE __m128i _mm_aeskeygenassist_si128(__m128i a, const int rcon)
 #undef SSE2NEON_AES_SBOX
 #undef SSE2NEON_AES_RSBOX
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #undef SSE2NEON_XT
 #undef SSE2NEON_MULTIPLY
 #endif
@@ -8933,14 +8938,14 @@ FORCE_INLINE unsigned int _sse2neon_mm_get_denormals_zero_mode()
 {
     union {
         fpcr_bitfield field;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         uint64_t value;
 #else
         uint32_t value;
 #endif
     } r;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("mrs %0, FPCR" : "=r"(r.value)); /* read */
 #else
     __asm__ __volatile__("vmrs %0, FPSCR" : "=r"(r.value)); /* read */
@@ -8954,7 +8959,7 @@ FORCE_INLINE unsigned int _sse2neon_mm_get_denormals_zero_mode()
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_popcnt_u32
 FORCE_INLINE int _mm_popcnt_u32(unsigned int a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #if __has_builtin(__builtin_popcount)
     return __builtin_popcount(a);
 #else
@@ -8981,7 +8986,7 @@ FORCE_INLINE int _mm_popcnt_u32(unsigned int a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_popcnt_u64
 FORCE_INLINE int64_t _mm_popcnt_u64(uint64_t a)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #if __has_builtin(__builtin_popcountll)
     return __builtin_popcountll(a);
 #else
@@ -9010,14 +9015,14 @@ FORCE_INLINE void _sse2neon_mm_set_denormals_zero_mode(unsigned int flag)
     // regardless of the value of the FZ bit.
     union {
         fpcr_bitfield field;
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
         uint64_t value;
 #else
         uint32_t value;
 #endif
     } r;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("mrs %0, FPCR" : "=r"(r.value)); /* read */
 #else
     __asm__ __volatile__("vmrs %0, FPSCR" : "=r"(r.value)); /* read */
@@ -9025,7 +9030,7 @@ FORCE_INLINE void _sse2neon_mm_set_denormals_zero_mode(unsigned int flag)
 
     r.field.bit24 = (flag & _MM_DENORMALS_ZERO_MASK) == _MM_DENORMALS_ZERO_ON;
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     __asm__ __volatile__("msr FPCR, %0" ::"r"(r)); /* write */
 #else
     __asm__ __volatile__("vmsr FPSCR, %0" ::"r"(r));        /* write */
@@ -9036,7 +9041,7 @@ FORCE_INLINE void _sse2neon_mm_set_denormals_zero_mode(unsigned int flag)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=rdtsc
 FORCE_INLINE uint64_t _rdtsc(void)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     uint64_t val;
 
     /* According to ARM DDI 0487F.c, from Armv8.0 to Armv8.5 inclusive, the

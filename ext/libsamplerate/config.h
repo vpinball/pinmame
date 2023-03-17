@@ -36,7 +36,7 @@
 
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
  #define RESAMPLER_SSE_OPT
-#elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__aarch64__))
+#elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__))
  #define RESAMPLER_SSE_OPT // uses sse2neon then
 #else
  #pragma message ( "Warning: No SSE2 optimizations for Resampler enabled" )
