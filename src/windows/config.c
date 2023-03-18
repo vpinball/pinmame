@@ -680,7 +680,11 @@ int cli_frontend_init (int argc, char **argv)
                 INP_HEADER inp_header;
 
                 memset(&inp_header, '\0', sizeof(INP_HEADER));
+#ifdef strcpy_s
                 strcpy_s(inp_header.name, sizeof(inp_header.name), drivers[game_index]->name);
+#else
+                strcpy(inp_header.name, drivers[game_index]->name);
+#endif
                 /* MAME32 stores the MAME version numbers at bytes 9 - 11
                  * MAME DOS keeps this information in a string, the
                  * Windows code defines them in the Makefile.
