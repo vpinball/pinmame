@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #if defined(SSE_FILTER_OPT)
- #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
+ #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
   #include <xmmintrin.h>
  #else // Arm Neon
   #include "../../ext/sse2neon.h"

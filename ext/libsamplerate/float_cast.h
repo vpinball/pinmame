@@ -63,7 +63,7 @@
 
 	#include	<math.h>
 
-#elif (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
+#elif (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
 
 	/*	Win64 section should be places before Win32 one, because
 	**	most likely both WIN32 and WIN64 will be defined in 64-bit case.
