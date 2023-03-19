@@ -680,7 +680,7 @@ int cli_frontend_init (int argc, char **argv)
                 INP_HEADER inp_header;
 
                 memset(&inp_header, '\0', sizeof(INP_HEADER));
-#ifdef strcpy_s
+#ifndef __MINGW32__
                 strcpy_s(inp_header.name, sizeof(inp_header.name), drivers[game_index]->name);
 #else
                 strcpy(inp_header.name, drivers[game_index]->name);
