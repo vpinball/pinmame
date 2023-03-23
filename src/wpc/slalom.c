@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /******************************************************************************************
   Stargame: Slalom Code 0.3
   Playbar:  Bloody Roller

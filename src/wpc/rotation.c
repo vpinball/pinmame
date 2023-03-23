@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Midway Pinball games
  --------------------
@@ -10,11 +12,12 @@
 	Hardware:
 	---------
 		CPU:     Z80 @ 1.77 MHz
-			INT: NMI via 8156 timer output
+		    INT: NMI via 8156 timer output
 		IO:      Z80 Ports, 8156 PIA
 		DISPLAY: 5 x 6 Digit 7-Segment panels
-		SOUND:	 Astrocade sound chip (part no. 0066-117XX, marked as "K3-4" on schematic
+		SOUND:   Astrocade sound chip (part no. 0066-117XX, marked as "K3-4" on schematic
 ************************************************************************************************/
+
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/z80/z80.h"

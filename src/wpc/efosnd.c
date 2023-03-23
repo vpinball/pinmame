@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /***************************************************************************
 
    Copied from https://github.com/mamedev/mame/blob/master/src/mame/audio/efo_zsu.cpp:
@@ -24,6 +26,7 @@
    0xff - read sound latch (triggered by write from master board; default vector set by 5K/+5 pullups on D0-D7)
 
 ***************************************************************************/
+
 #include "driver.h"
 #include "core.h"
 #include "sndbrd.h"

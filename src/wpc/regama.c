@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #include "driver.h"
 #include "core.h"
 #include "cpu/i8085/i8085.h"

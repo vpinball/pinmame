@@ -1,13 +1,15 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Peyper (Spain)
  --------------
    Hardware:
    ---------
 		CPU:     Z80B @ 5 MHz
-			INT: IRQ @ ~1600 Hz (R/C timer, needs to be measured on real machine, eg. Video Dens uses a slower rate)
+		    INT: IRQ @ ~1600 Hz (R/C timer, needs to be measured on real machine, eg. Video Dens uses a slower rate)
 		IO:      Z80 ports, Intel 8279 KDI chip, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
-		SOUND:	 2 x AY8910 @ 2.5 MHz
+		SOUND:   2 x AY8910 @ 2.5 MHz
  ************************************************************************************************/
 
 #include "driver.h"

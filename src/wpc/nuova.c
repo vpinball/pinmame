@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /******************************************************************************************
   Nuova Bell Games
   ----------------
@@ -11,6 +13,7 @@
   - Skill Flight schematics show an additional TMS5220C speech chip which is not used?!
   - U-Boat 65 has an additional music board, no info available
 *******************************************************************************************/
+
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "cpu/i8051/i8051.h"

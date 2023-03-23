@@ -1,13 +1,15 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Lancelot (by Peyper, 1994)
  --------------------------
    Hardware:
    ---------
 		CPU:     Z80 compatible (Z80B-8400BPS) @ 5 MHz
-			INT: IRQ @ ~1059 Hz (fed by NE555 timer)
+		    INT: IRQ @ ~1059 Hz (fed by NE555 timer)
 		IO:      Z80 ports
 		DISPLAY: 7-segment panels, direct segment access
-		SOUND:	 MSM6295, YMF262, YAC512, running off TMP91P640 microcontroller (with undumped ROM)
+		SOUND:   MSM6295, YMF262, YAC512, running off TMP91P640 microcontroller (with undumped ROM)
  ************************************************************************************************/
 
 #include "driver.h"

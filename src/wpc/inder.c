@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Inder (Spain)
  -------------
@@ -12,12 +14,12 @@
    Hardware:
    ---------
 		CPU:     Z80 @ 2.5 MHz
-			INT: IRQ @ 250 Hz (4 ms) for the games up to Lap by Lap, slightly less for later games
+		    INT: IRQ @ 250 Hz (4 ms) for the games up to Lap by Lap, slightly less for later games
 		IO:      DMA for earlier games,
 		         PIAs for later ones.
 		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
-		SOUND:	 TI76489 @ 2 MHz for Brave Team
-				 AY8910 @ 2 MHz for Canasta86, 2x AY8910 on separate Z80 CPU for Lap By Lap,
+		SOUND:   TI76489 @ 2 MHz for Brave Team
+		         AY8910 @ 2 MHz for Canasta86, 2x AY8910 on separate Z80 CPU for Lap By Lap,
 		         MSM5205 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
 
