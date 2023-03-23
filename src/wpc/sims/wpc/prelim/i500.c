@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Indianapolis 500 (Bally, 1995) Pinball Simulator
 

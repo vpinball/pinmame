@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Tales of the Arabian Nights (Williams, 1996) Pinball Simulator
 

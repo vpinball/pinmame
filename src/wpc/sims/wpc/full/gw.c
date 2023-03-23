@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /********************************************************************************************
  Williams Hispeed II: The Getaway (1992) Pinball Simulator
 

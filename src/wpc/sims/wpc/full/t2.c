@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /********************************************************************************************
  Williams Terminator 2: Judgement Day (1991) Pinball Simulator
 

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary The Shadow (Bally, 1994) Pinball Simulator
 

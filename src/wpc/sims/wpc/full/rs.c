@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Red & Ted's Road Show (Williams, 1994) Pinball Simulator
 

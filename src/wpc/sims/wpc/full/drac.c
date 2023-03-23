@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Bram Stoker's Dracula (Williams, 1993) Pinball Simulator
 

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Harley-Davidson (Bally, 1991) Pinball Simulator
 

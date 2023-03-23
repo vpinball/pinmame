@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Doctor Who (Williams, 1994) Pinball Simulator
 

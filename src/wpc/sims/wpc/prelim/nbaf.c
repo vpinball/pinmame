@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary NBA Fastbreak (Bally, 1997) Pinball Simulator
 

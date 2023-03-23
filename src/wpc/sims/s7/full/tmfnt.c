@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Time Fantasy (Williams, 1982) Pinball Simulator
 

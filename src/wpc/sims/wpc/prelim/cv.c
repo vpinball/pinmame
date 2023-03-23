@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Cirqus Voltaire (Bally, 1997) Pinball Simulator
 

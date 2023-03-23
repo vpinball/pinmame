@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Creature From The Black Lagoon (Bally, 1992) Pinball Simulator
 

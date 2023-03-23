@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Jack*Bot (Williams, 1995) Pinball Simulator
 

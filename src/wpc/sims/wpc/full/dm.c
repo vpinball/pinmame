@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Demolition Man (Williams, 1994) Pinball Simulator
 

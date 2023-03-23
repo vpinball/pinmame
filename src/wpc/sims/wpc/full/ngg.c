@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  No Good Gofers (Williams, 1997) Pinball Simulator
 
