@@ -39,6 +39,8 @@ FILE *stdout_file;
 FILE *stderr_file;
 #endif
 
+extern void libpinmame_log_message(const char* format, ...);
+
 #ifdef MESS
 #include "image.h"
 #endif
@@ -836,10 +838,9 @@ void osd_fclose(osd_file *file)
 int osd_display_loading_rom_message(const char *name,struct rom_load_data *romdata)
 {
 	if (name)
-		fprintf(stdout, "osd_display_loading_rom_message(): loading %-12s...\n", name);
+		libpinmame_log_message("osd_display_loading_rom_message(): loading %-12s...", name);
 	else
-		fprintf(stdout, "osd_display_loading_rom_message():\n");
-	fflush(stdout);
+		libpinmame_log_message("osd_display_loading_rom_message():");
 
 	return 0;
 }

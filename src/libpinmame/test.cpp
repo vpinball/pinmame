@@ -265,6 +265,12 @@ int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode) {
 	return 0;
 }
 
+void CALLBACK OnLogMessage(const char* format, va_list args) {
+    char buffer[1024];
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    printf("%s\n", buffer);
+}
+
 int main(int, char**) {
 	system(CLEAR_SCREEN);
 
@@ -281,7 +287,8 @@ int main(int, char**) {
 		&OnMechUpdated,
 		&OnSolenoidUpdated,
 		&OnConsoleDataUpdated,
-		&IsKeyPressed
+		&IsKeyPressed,
+		&OnLogMessage,
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)
