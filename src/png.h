@@ -73,14 +73,14 @@ struct png_info {
 int png_verify_signature (mame_file *fp);
 int png_inflate_image (struct png_info *p);
 int png_read_file(mame_file *fp, struct png_info *p);
-int png_read_info(mame_file *fp, struct png_info *p);
+static int png_read_info(mame_file *fp, struct png_info *p);
 int png_expand_buffer_8bit (struct png_info *p);
 void png_delete_unused_colors (struct png_info *p);
 int png_add_text (const char *keyword, const char *text);
 int png_unfilter(struct png_info *p);
 int png_filter(struct png_info *p);
 int png_deflate_image(struct png_info *p);
-int png_write_sig(mame_file *fp);
+static int png_write_sig(mame_file *fp);
 int png_write_datastream(mame_file *fp, struct png_info *p);
 int png_write_bitmap(mame_file *fp, struct mame_bitmap *bitmap);
 int mng_capture_start(mame_file *fp, struct mame_bitmap *bitmap);
