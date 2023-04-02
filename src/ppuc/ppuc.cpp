@@ -876,7 +876,8 @@ int main (int argc, char *argv[]) {
 
     PinmameSetConfig(&config);
 
-    PinmameSetDmdMode(PINMAME_DMD_MODE::RAW);
+    // @todo: switch to RAW as soon as fixed in libpinmame
+    PinmameSetDmdMode(PINMAME_DMD_MODE::BRIGHTNESS);
     PinmameSetHandleKeyboard(0);
     PinmameSetHandleMechanics(0);
 
