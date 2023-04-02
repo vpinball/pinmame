@@ -907,7 +907,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
         const int offs = (ii-1)*layout->length + jj;
         currbuffer[offs] = col;
 #ifdef LIBPINMAME
-        g_raw_dmdbuffer[offs] = g_fDmdMode ? col : shade_16_enabled ? raw_16[col] : raw_4[col];
+        g_raw_dmdbuffer[offs] = (g_fDmdMode == 0) ? (shade_16_enabled ? raw_16[col] : raw_4[col]) : col;
 #else
         if(layout->length >= 128) { // Capcom hack
           g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
