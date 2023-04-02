@@ -19,8 +19,13 @@
 #include "common.h"
 
 #ifdef RESAMPLER_SSE_OPT
- #include <xmmintrin.h>
- #include <emmintrin.h>
+ #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
+  #include <xmmintrin.h>
+  #include <emmintrin.h>
+ #else // Arm Neon
+  #include <stdint.h>
+  #include "../sse2neon.h"
+ #endif
  #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128i
      {
@@ -325,7 +330,7 @@ sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to)
 #ifdef RESAMPLER_SSE_OPT
 static inline __m128 horizontal_add(const __m128 a)
 {
-#if 0 //!! needs SSE3
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) //!! or SSE3
     const __m128 ftemp = _mm_hadd_ps(a, a);
     return _mm_hadd_ps(ftemp, ftemp);
 #else    

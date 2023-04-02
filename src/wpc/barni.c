@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Barni Pinball
  -----------------
@@ -11,6 +13,7 @@
 		SOUND:	 basically the same as Bally's Squalk & Talk -61 board but missing AY8912 synth chip
 
 ************************************************************************************************/
+
 #include <stdarg.h>
 #include "driver.h"
 #include "core.h"

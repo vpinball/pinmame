@@ -2353,19 +2353,18 @@ lisy_file_get_home_ss_sound_mappings(int variant) {
 //give -1 in case we had an error
 //give back commands and opts read from file
 int
-lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, unsigned char* num, unsigned char* opt) {
+lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, long* num, unsigned char* opt, char* textorpath) {
 
     char attract_file_name[80];
     char buffer[1024];
     char* line;
-    char *cmdtok, *opttok;
-    int numtok;
+    char *cmdtok, *opttok, *txttok;
+    long numtok;
 
     int i;
 
     static FILE* fstream;
     static int first_line = 1;
-
     if (command == LISY1_ATTRACT_INIT) {
         //construct the filename; using global var lisy1_gamenr
         sprintf(attract_file_name, "%s%03d%s", LISY1_ATTRACT_PATH, lisy1_game.gamenr, LISY1_ATTRACT_FILE);
@@ -2392,11 +2391,11 @@ lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, unsigned c
         //first field is attract mode command
         cmdtok = strdup(strtok(line, ";"));
         //second field is number
-        numtok = atoi(strtok(NULL, ";"));
-        //thierd field is  opt
-        opttok = strdup(strtok(NULL, ";"));
+        numtok = atol(strtok(NULL, ";"));
         //interpret line
         if (strncmp(cmdtok, "time", 4) == 0) {
+            //third field is  opt
+            opttok = strdup(strtok(NULL, ";"));
             *cmd = LISY1_ATTRACT_CMD_TIME;
             //time has option second 's' or millisecond 'ms'
             if (strncmp(opttok, "s", 1) == 0)
@@ -2411,6 +2410,8 @@ lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, unsigned c
                 return (-3);
             }
         } else if (strncmp(cmdtok, "lamp", 4) == 0) {
+            //third field is  opt
+            opttok = strdup(strtok(NULL, ";"));
             *cmd = LISY1_ATTRACT_CMD_LAMP;
             //lamp has option on or off
             if (strncmp(opttok, "on", 2) == 0)
@@ -2424,6 +2425,30 @@ lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, unsigned c
                 }
                 return (-4);
             }
+        } else if (strncmp(cmdtok, "coil", 4) == 0) {
+            //third field is  opt
+            opttok = strdup(strtok(NULL, ";"));
+            *cmd = LISY1_ATTRACT_CMD_COIL;
+            //coil has option pulse only
+            if (strncmp(opttok, "pulse", 2) == 0)
+                *opt = LISY1_ATTRACT_CMD_COIL_PULSE;
+            else {
+                if (ls80dbg.bitv.basic) {
+                    sprintf(debugbuf, "attract: unknown coil option:%s\n", opttok);
+                    lisy80_debug(debugbuf);
+                }
+                return (-7);
+            }
+        } else if (strncmp(cmdtok, "wav", 3) == 0) {
+            *cmd = LISY1_ATTRACT_CMD_WAV;
+            //third field is path to wav
+            txttok = strdup(strtok(NULL, ";"));
+	    strcpy( textorpath, txttok);
+        } else if (strncmp(cmdtok, "speech", 4) == 0) {
+            *cmd = LISY1_ATTRACT_CMD_SPEECH;
+            //third field is text to speech
+            txttok = strdup(strtok(NULL, ";"));
+	    strcpy( textorpath, txttok);
         } else {
             if (ls80dbg.bitv.basic) {
                 sprintf(debugbuf, "attract: unknown command:%s\n", cmdtok);

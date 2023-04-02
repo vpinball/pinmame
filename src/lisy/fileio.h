@@ -80,7 +80,7 @@ int lisy1_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename)
 unsigned char lisy1_file_get_onedip(int dip_nr, char* dip_comment, char* dip_setting_filenamee, int re_init);
 int lisy1_file_write_dipfile(int mode, char* line);
 int lisy1_file_get_coilopts(void);
-int  lisy1_file_get_attractopts(unsigned char command, unsigned char *cmd, unsigned char *num, unsigned char *opt);
+int  lisy1_file_get_attractopts(unsigned char command, unsigned char *cmd, long *num, unsigned char *opt, char *textorpath);
 
 int lisy35_file_get_gamename(t_stru_lisy35_games_csv* lisy35_game);
 int lisy35_file_get_mpudips(int switch_nr, int debug, char* dip_setting_filename);
@@ -147,11 +147,15 @@ int lisy200_file_get_soundopts(void);
 #define LISY1_ATTRACT_STOP                 2
 #define LISY1_ATTRACT_STEP                 3
 #define LISY1_ATTRACT_CMD_TIME             0
-#define LISY1_ATTRACT_CMD_TIME_OPT_S       0
-#define LISY1_ATTRACT_CMD_TIME_OPT_MS      0
-#define LISY1_ATTRACT_CMD_LAMP             1
-#define LISY1_ATTRACT_CMD_LAMP_OFF         0
-#define LISY1_ATTRACT_CMD_LAMP_ON          1
+#define LISY1_ATTRACT_CMD_TIME_OPT_S       1
+#define LISY1_ATTRACT_CMD_TIME_OPT_MS      2
+#define LISY1_ATTRACT_CMD_LAMP             3
+#define LISY1_ATTRACT_CMD_LAMP_OFF         4
+#define LISY1_ATTRACT_CMD_LAMP_ON          5
+#define LISY1_ATTRACT_CMD_COIL             6
+#define LISY1_ATTRACT_CMD_COIL_PULSE       7
+#define LISY1_ATTRACT_CMD_WAV              8
+#define LISY1_ATTRACT_CMD_SPEECH           9
 
 /* LISY35 stuff */
 #define LISY35_GAMES_CSV                   "/boot/lisy/lisy35/cfg/lisy35games.csv"

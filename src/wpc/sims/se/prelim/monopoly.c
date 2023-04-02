@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Monopoly (Stern, 2001) Pinball Simulator
 

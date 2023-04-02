@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Millionaire (Williams, 1987) Pinball Simulator
 

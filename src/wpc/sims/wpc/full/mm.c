@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Medieval Madness (Williams, 1997) Pinball Simulator
 

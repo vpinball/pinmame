@@ -70,11 +70,22 @@ unsigned char lisy_attract_mode_activ = 0;
 
 //lisy1 attract mode
 static void
-lisy1_attract(unsigned char command) {
+lisy1_attract(unsigned char command, long value) {
 
     int ret;
-    unsigned char cmd, num, opt;
-    static int pause_time = 0; //time in ms steps
+    unsigned char cmd, opt;
+    long num;
+    static long pause_time = 0; //time in micro s steps
+    static long wav_period = 0; //period for wav play
+    static long wav_period_sik = 0; //period for wav play reset
+    static char wav_period_activ = 0; //period for wav play active
+    static char wav_path[255]; //wav path
+    static long speech_period = 0; //period for text speech
+    static long speech_period_sik = 0; //period for text speech reset
+    static unsigned char speech_period_activ = 0; //period for text speech active
+    static char speech_text[255]; //speech text
+    char textorpath[255];
+    char systemstr[312];
 
     switch (command) {
         case LISY1_ATTRACT_START:
@@ -86,21 +97,48 @@ lisy1_attract(unsigned char command) {
 	    lisy_attract_mode_activ = 0;
             break;
         case LISY1_ATTRACT_STEP:
-            //printf("LISY1_ATTRACT_STEP received\n");
-            //are we in an active 'time' command? - sub 100ms
-            if ((pause_time -= 100) > 0)
+            //active wav command?
+            if(wav_period_activ == 1)
+            {
+               if ((wav_period -= value) < 0)
+               {
+                sprintf(systemstr, "/usr/bin/aplay %s &", wav_path);
+                system(systemstr);
+                wav_period = wav_period_sik;
+               }
+            }
+	    //active speech command?
+	    if(speech_period_activ == 1)
+	    {
+               if ((speech_period -= value) < 0)
+	       {
+            	sprintf(systemstr, "(/bin/echo \"%s\" | /usr/bin/festival --tts &)", speech_text);
+            	system(systemstr);
+		speech_period = speech_period_sik;
+	       }
+	    }
+
+	    /*
+            if (ls80dbg.bitv.basic) 
+		{
+                sprintf(debugbuf, "LISY1_ATTRACT_STEP received: step:%ld pause:%ld", value, pause_time);
+                lisy80_debug(debugbuf);
+		} */
+            //are we in an active 'time' command? - sub  step value
+            //and return if waittime is not reached
+            if ((pause_time -= value) > 0)
                 return;
             pause_time = 0;
             //else get next command
-            ret = lisy1_file_get_attractopts(LISY1_ATTRACT_STEP, &cmd, &num, &opt);
+            ret = lisy1_file_get_attractopts(LISY1_ATTRACT_STEP, &cmd, &num, &opt, textorpath);
             if (ret >= 0) //no error, interpret command
             {
                 switch (cmd) {
                     case LISY1_ATTRACT_CMD_TIME:
                         if (opt == LISY1_ATTRACT_CMD_TIME_OPT_S) {
-                            pause_time += num * 1000;
+                            pause_time += num * 1000000;
                         } else if (opt == LISY1_ATTRACT_CMD_TIME_OPT_MS) {
-                            pause_time += num;
+                            pause_time += num * 1000;
                         }
                         break;
                     case LISY1_ATTRACT_CMD_LAMP:
@@ -109,6 +147,27 @@ lisy1_attract(unsigned char command) {
                         } else if (opt == LISY1_ATTRACT_CMD_LAMP_OFF) {
                             lisy1_coil_set(num, 0);
                         }
+                        break;
+                    case LISY1_ATTRACT_CMD_COIL_PULSE:
+                            lisy1_solenoid_pulse(num);
+                        break;
+                    case LISY1_ATTRACT_CMD_WAV:
+			if (wav_period_activ == 0) //only one command per session
+			{
+				wav_period_activ = 1;
+				wav_period = num * 1000000;
+				wav_period_sik = wav_period;
+				strcpy( wav_path, textorpath);
+			}
+                        break;
+                    case LISY1_ATTRACT_CMD_SPEECH:
+			if (speech_period_activ == 0) //only one command per session
+			{
+				speech_period_activ = 1;
+				speech_period = num * 1000000;
+				speech_period_sik = speech_period;
+				strcpy( speech_text, textorpath);
+			}
                         break;
                 }
             }
@@ -120,8 +179,10 @@ lisy1_attract(unsigned char command) {
 void
 lisy1_init(void) {
     int i;
+    long duml;
     char s_lisy_software_version[16];
     unsigned char sw_main, sw_sub, commit, dum;
+    char dumc[255];
 
     //do the init on vars
     for (i = 0; i <= 36; i++)
@@ -168,8 +229,7 @@ lisy1_init(void) {
                 sprintf(debugbuf, "Info: welcome Message is: %s", message);
                 lisy80_debug(debugbuf);
             }
-            sprintf(debugbuf, "/bin/echo \"%s\" | /usr/bin/festival --tts", message);
-            //  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 1 Version %s running on %s\" | /usr/bin/festival --tts",s_lisy_software_version,lisy1_game.long_name);
+            sprintf(debugbuf, "(/bin/echo \"%s\" | /usr/bin/festival --tts &)", message);
             system(debugbuf);
         }
     }
@@ -205,10 +265,10 @@ lisy1_init(void) {
     }
 
     //check for attract mode file with commands
-    if (lisy1_file_get_attractopts(LISY1_ATTRACT_INIT, &dum, &dum, &dum) >= 0) {
+    if (lisy1_file_get_attractopts(LISY1_ATTRACT_INIT, &dum, &duml, &dum, dumc) >= 0) {
         lisy1_game_has_attract = 1;
         fprintf(stderr, "Info: attract mode file read OK\n");
-        lisy1_attract(LISY1_ATTRACT_START); //start attract mode
+        //lisy1_attract(LISY1_ATTRACT_START,0); //start attract mode
     } else {
         lisy1_game_has_attract = 0;
         fprintf(stderr, "Info: attract mode file NOT found, attract mode DISABLED\n");
@@ -635,9 +695,9 @@ lisy1_lamp_handler(int data, int isld) {
                         lisy1_game_not_running = new_lamp[0];
                         if (lisy1_game_has_attract == 1) {
                             if (lisy1_game_not_running == 0)
-                                lisy1_attract(LISY1_ATTRACT_START);
+                                lisy1_attract(LISY1_ATTRACT_START,0);
                             else {
-                                lisy1_attract(LISY1_ATTRACT_STOP);
+                                lisy1_attract(LISY1_ATTRACT_STOP,0);
 				//put all lamps to zero
 				lisy1_lamp_init();
 				}
@@ -728,13 +788,16 @@ lisy1_throttle(void) {
     //lets iterate the best value for cpu scaling from puinmame
 
     //ball save and attract mode needs periodic calls, we do it each 100ms via lisy_timer 4
-    if (lisy_timer(100, 0, 4)) {
+    /* RTH Todo needed for ball save only
+    if (lisy_timer(10, 0, 4)) {
         if (ls80opt.bitv.ballsave)
             lisy_ball_save_event_handler(LISY_BALL_SAVE_EVENT_TIMER, 0, 0);
         if ((lisy_attract_mode_activ == 1) & (lisy1_game_not_running == 0))
             lisy1_attract(LISY1_ATTRACT_STEP);
         lisy_timer(0, 1, 4); //reset timer for next round
-    }
+    } */
+
+
 
     //do update the soundstream if enabled (pinmame internal sound only)
     if (sound_stream && sound_enabled) {
@@ -751,8 +814,18 @@ lisy1_throttle(void) {
             //calculate if we are above minimum sleep time
             sleeptime = g_lisy1_throttle_val - (now - last);
         } while (sleeptime > 0);
+    } else if (lisy_attract_mode_activ == 1)
+    //if we are in attract mode we do not slow down
+    {
+        //calculate how much time passed since last call
+        now = micros();
+        //beware of 'wrap' which happens each 71 minutes
+        if (now < last)
+            now = last; //we had a wrap
+
+        if (lisy1_game_not_running == 0) lisy1_attract(LISY1_ATTRACT_STEP,now - last);
     } else
-    //if no sound enabled use sleep routine
+    //if no sound enabled and no attract mode use sleep routine
     {
         //see how many micros passed
         now = micros();

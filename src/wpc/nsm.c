@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  NSM, Germany (aka Loewen)
  -------------------------
@@ -12,8 +14,9 @@
 		CPU:     TMS9995 @ 11.052 MHz
 		IO:      CPU ports, 9x HC4094 decoder chips
 		DISPLAY: 5 x 8 Digit, 7-Segment panels
-		SOUND:	 2 x AY8912 (same as AY8910 but one I/O port only)
+		SOUND:   2 x AY8912 (same as AY8910 but one I/O port only)
 ************************************************************************************************/
+
 #include "driver.h"
 #include "cpu/tms9900/tms9900.h"
 #include "machine/4094.h"

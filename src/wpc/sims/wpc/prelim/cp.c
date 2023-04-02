@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary The Champion Pub (Bally, 1998) Pinball Simulator
 

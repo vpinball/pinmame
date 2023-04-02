@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  The Machine: Bride of Pinbot (Williams, 1991) Pinball Simulator
 

@@ -344,7 +344,7 @@ int png_read_file(mame_file *fp, struct png_info *p)
 	return 1;
 }
 
-int png_read_info(mame_file *fp, struct png_info *p)
+static int png_read_info(mame_file *fp, struct png_info *p)
 {
 	UINT32 chunk_type=0;
 	UINT8 *chunk_data;
@@ -615,7 +615,7 @@ static int write_chunk(mame_file *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT
 	return 1;
 }
 
-int png_write_sig(mame_file *fp)
+static int png_write_sig(mame_file *fp)
 {
 	/* PNG Signature */
 	if (mame_fwrite(fp, PNG_Signature, 8) != 8)

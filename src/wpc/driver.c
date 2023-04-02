@@ -1419,8 +1419,10 @@ DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(galaxyps)      //         08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //         01/80 Galaxy (Free Play)
 DRIVERNV(galaxyb)       //         ??/04 Galaxy (7-Digit conversion)
+DRIVERNV(galaxyc)       //         03/23 Galaxy (7-Digit conversion, Fixes & modified rules)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(alifp)         //         03/80 Ali (Free Play)
+DRIVERNV(alib)          //         03/23 Ali (7-Digit conversion Free Play rev. 76)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //         03/80 Big Game (Free Play)
 DRIVERNV(biggameb)      //         11/19 Big Game (MOD rev. 7)
@@ -3004,6 +3006,7 @@ DRIVER(ts,la4)          //          02/95 B Shadow, The (LA-4)
 DRIVER(ts,da4)          //                  Shadow, The (DA-4) LED Ghost Fix
 DRIVER(ts,lx4)          //          02/95 B Shadow, The (LX-4)
 DRIVER(ts,dx4)          //                  Shadow, The (DX-4) LED Ghost Fix
+DRIVER(ts,lf4)          //          02/95 B Shadow, The (LF-4) French
 DRIVER(ts,lx5)          //          05/95 B Shadow, The (LX-5)
 DRIVER(ts,dx5)          //                  Shadow, The (DX-5) LED Ghost Fix
 DRIVER(ts,la6)          //          05/95 B Shadow, The (LA-6)

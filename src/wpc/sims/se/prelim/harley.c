@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Harley Davidson (Sega/Stern) Pinball Simulator
 

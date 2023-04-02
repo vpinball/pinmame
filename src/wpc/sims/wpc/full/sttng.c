@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /********************************************************************************************
  Williams Star Trek Next Generation (1994) Pinball Simulator
 

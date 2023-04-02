@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // Mirco Games: Lucky Draw
 
 #include "driver.h"

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Scared Stiff (Bally, 1996) Pinball Simulator
 

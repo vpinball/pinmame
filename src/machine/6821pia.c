@@ -647,29 +647,29 @@ void pia_set_input_ca1(int which, int data)
       p->in_set |= PIA_IN_SET_CA1;
     }
     else
-	if (p->in_ca1 ^ data)
-	{
-		/* handle the active transition */
-		if ((data && C1_LOW_TO_HIGH(p->ctl_a)) || (!data && C1_HIGH_TO_LOW(p->ctl_a)))
+		if (p->in_ca1 ^ data)
 		{
-			/* mark the IRQ */
-			p->irq_a1 = 1;
-
-			/* update externals */
-			update_6821_interrupts(p);
-
-			/* CA2 is configured as output and in read strobe mode and cleared by a CA1 transition */
-			if (C2_OUTPUT(p->ctl_a) && C2_STROBE_MODE(p->ctl_a) && STROBE_C1_RESET(p->ctl_a))
+			/* handle the active transition */
+			if ((data && C1_LOW_TO_HIGH(p->ctl_a)) || (!data && C1_HIGH_TO_LOW(p->ctl_a)))
 			{
-				/* call the CA2 output function */
-				if (!p->out_ca2)
-					if (p->intf->out_ca2_func) p->intf->out_ca2_func(0, 1);
-
-				/* clear CA2 */
-				p->out_ca2 = 1;
+				/* mark the IRQ */
+				p->irq_a1 = 1;
+	
+				/* update externals */
+				update_6821_interrupts(p);
+	
+				/* CA2 is configured as output and in read strobe mode and cleared by a CA1 transition */
+				if (C2_OUTPUT(p->ctl_a) && C2_STROBE_MODE(p->ctl_a) && STROBE_C1_RESET(p->ctl_a))
+				{
+					/* call the CA2 output function */
+					if (!p->out_ca2)
+						if (p->intf->out_ca2_func) p->intf->out_ca2_func(0, 1);
+	
+					/* clear CA2 */
+					p->out_ca2 = 1;
+				}
 			}
 		}
-	}
 
 	/* set the new value for CA1 */
 	p->in_ca1 = data;
@@ -695,23 +695,23 @@ void pia_set_input_ca2(int which, int data)
 	  p->in_set |= PIA_IN_SET_CA2;
     }
     else
-	/* CA2 is in input mode */
-	if (C2_INPUT(p->ctl_a))
-	{
-		/* the new state has caused a transition */
-		if (p->in_ca2 ^ data)
+		/* CA2 is in input mode */
+		if (C2_INPUT(p->ctl_a))
 		{
-			/* handle the active transition */
-			if ((data && C2_LOW_TO_HIGH(p->ctl_a)) || (!data && C2_HIGH_TO_LOW(p->ctl_a)))
+			/* the new state has caused a transition */
+			if (p->in_ca2 ^ data)
 			{
-				/* mark the IRQ */
-				p->irq_a2 = 1;
-
-				/* update externals */
-				update_6821_interrupts(p);
+				/* handle the active transition */
+				if ((data && C2_LOW_TO_HIGH(p->ctl_a)) || (!data && C2_HIGH_TO_LOW(p->ctl_a)))
+				{
+					/* mark the IRQ */
+					p->irq_a2 = 1;
+	
+					/* update externals */
+					update_6821_interrupts(p);
+				}
 			}
 		}
-	}
 
 	/* set the new value for CA2 */
 	p->in_ca2 = data;
@@ -750,34 +750,34 @@ void pia_set_input_cb1(int which, int data)
 	  p->in_set |= PIA_IN_SET_CB1;
     }
     else
-	/* the new state has caused a transition */
-	if (p->in_cb1 ^ data)
-	{
-		/* handle the active transition */
-		if ((data && C1_LOW_TO_HIGH(p->ctl_b)) || (!data && C1_HIGH_TO_LOW(p->ctl_b)))
+		/* the new state has caused a transition */
+		if (p->in_cb1 ^ data)
 		{
-			/* mark the IRQ */
-			p->irq_b1 = 1;
-
-			/* update externals */
-			update_6821_interrupts(p);
-
-			/* CB2 is configured as output and in write strobe mode and cleared by a CA1 transition */
-			if (C2_OUTPUT(p->ctl_b) && C2_STROBE_MODE(p->ctl_b) && STROBE_C1_RESET(p->ctl_b))
+			/* handle the active transition */
+			if ((data && C1_LOW_TO_HIGH(p->ctl_b)) || (!data && C1_HIGH_TO_LOW(p->ctl_b)))
 			{
-				/* the IRQ1 flag must have also been cleared */
-				if (!p->irq_b1)
+				/* mark the IRQ */
+				p->irq_b1 = 1;
+	
+				/* update externals */
+				update_6821_interrupts(p);
+	
+				/* CB2 is configured as output and in write strobe mode and cleared by a CA1 transition */
+				if (C2_OUTPUT(p->ctl_b) && C2_STROBE_MODE(p->ctl_b) && STROBE_C1_RESET(p->ctl_b))
 				{
-					/* call the CB2 output function */
-					if (!p->out_cb2)
-						if (p->intf->out_cb2_func) p->intf->out_cb2_func(0, 1);
-
-					/* clear CB2 */
-					p->out_cb2 = 1;
+					/* the IRQ1 flag must have also been cleared */
+					if (!p->irq_b1)
+					{
+						/* call the CB2 output function */
+						if (!p->out_cb2)
+							if (p->intf->out_cb2_func) p->intf->out_cb2_func(0, 1);
+	
+						/* clear CB2 */
+						p->out_cb2 = 1;
+					}
 				}
 			}
 		}
-	}
 
 	/* set the new value for CB1 */
 	p->in_cb1 = data;
@@ -803,24 +803,23 @@ void pia_set_input_cb2(int which, int data)
       p->in_set |= PIA_IN_SET_CB2;
     }
     else
-
-	/* CB2 is in input mode */
-	if (C2_INPUT(p->ctl_b))
-	{
-		/* the new state has caused a transition */
-		if (p->in_cb2 ^ data)
+		/* CB2 is in input mode */
+		if (C2_INPUT(p->ctl_b))
 		{
-			/* handle the active transition */
-			if ((data && C2_LOW_TO_HIGH(p->ctl_b)) || (!data && C2_HIGH_TO_LOW(p->ctl_b)))
+			/* the new state has caused a transition */
+			if (p->in_cb2 ^ data)
 			{
-				/* mark the IRQ */
-				p->irq_b2 = 1;
-
-				/* update externals */
-				update_6821_interrupts(p);
+				/* handle the active transition */
+				if ((data && C2_LOW_TO_HIGH(p->ctl_b)) || (!data && C2_HIGH_TO_LOW(p->ctl_b)))
+				{
+					/* mark the IRQ */
+					p->irq_b2 = 1;
+	
+					/* update externals */
+					update_6821_interrupts(p);
+				}
 			}
 		}
-	}
 
 	/* set the new value for CA2 */
 	p->in_cb2 = data;

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Theatre of Magic (Bally) Pinball Simulator
 

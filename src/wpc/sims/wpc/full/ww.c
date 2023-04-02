@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  White Water (Williams, 1993) Pinball Simulator
 

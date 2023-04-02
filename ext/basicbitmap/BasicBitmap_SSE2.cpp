@@ -17,12 +17,12 @@
 #include "BasicBitmap.h"
 #include "BasicBitmap_C.h"
 
-#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
 	#define _COMPILE_WITH_SSE2
 #endif
 
 #if 0
-#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64))
 	#if (_MSC_VER >= 1400) || defined(__SSE2__)
 		#define _COMPILE_WITH_SSE2
 	#endif

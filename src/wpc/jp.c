@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Juegos Populares (Spain)
  ------------------------
@@ -9,12 +11,13 @@
    Hardware:
    ---------
 		CPU:     Z80 @ 4 MHz
-			INT: IRQ @ 977 Hz (4MHz/2048/2)
+		    INT: IRQ @ 977 Hz (4MHz/2048/2)
 		IO:      DMA, AY8910 input ports
 		DISPLAY: 7-digit 8-segment panels with direct segment access, driven by 4x 4094 serial controllers.
-		SOUND:	 AY8910 @ 2 MHz on CPU board,
+		SOUND:   AY8910 @ 2 MHz on CPU board,
 		         Z80 CPU with ADPCM chip (probably an MSM5205 @ 384 kHz) on separate board.
  ************************************************************************************************/
+
 //Games: America 1492 1986, Aqualand 1986, Faeton 1985, Halley Comet 1986,
 //       Lortium 1987, Olympus 1986, Petaco 1984, Petaco2 1985
 

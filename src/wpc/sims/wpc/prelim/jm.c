@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Johnny Mnemonic (Bally/Williams, 1995) Pinball Simulator
 

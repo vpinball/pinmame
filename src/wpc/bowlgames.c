@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  * In this file we'll collect any bowler, shuffle alley, pitch & bat game,
  * and other non-pinball stuff that's running on pinball machine hardware.

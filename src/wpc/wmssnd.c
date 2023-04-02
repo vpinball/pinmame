@@ -16,20 +16,22 @@
  #include <windef.h>
 #endif
 
-// Enables some subtle low pass on the DCS output to avoid a bit of noise. 
+// Enables some subtle low pass on the DCS output to potentially(!) avoid a bit of noise. 
 // As the real HW also has a bunch of lowpass filters, it would be interesting to 
 // check the direct output of the DCS chip on real hardware if it also features a 
 // bit of noise or not at that stage (e.g. before all the filters).
 //
-// [MJR - Yes, it would definitely have lots of noise, namely quantization noise,
-// given that a DAC is involved and the sampling rate is fairly low.  The real 
+// [MJR] - The real 
 // boards have a chain of four Sallen-Key low-pass filters with a cutoff frequency
 // of 18875 Hz.  "Cutoff" in this context doesn't mean a brick wall; it's just the
 // corner frequency in the low-pass rolloff curve, which is pretty shallow for 
 // Sallen-Key filters.  They use four chained filters to steepen the curve, to cut
 // out most of the output above 18875 Hz, which is probably right around the Nyquist
 // limit for the sampling rate they're using.
-#define DCS_LOWPASS 
+//
+// NOTE: it seems like the mentioned noise in the first comment was only caused by an emulation defect/bug,
+// thus for now, disable the low-pass filters and prefer 1:1 DCS audio quality output.
+//#define DCS_LOWPASS
 
 #ifdef DCS_LOWPASS
  #include "sound/filter.h"
@@ -246,12 +248,12 @@
 #define PREDCS_FIRQ_HACK_FIXED
 
 //This awful hack WAS here to prevent a bug that caused the speech pitch to be too low on pre-dcs games when
-//the YM2151 is not outputing music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
+//the YM2151 is not outputting music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
 //The 6809 will output CVSD speech data based on the speed of the FIRQ. The faster the speed, the higher the
 //pitch. For some reason [now known - see above], when the YM2151 is not outputting sound, the FIRQ rate goes down..
 //[Or so it seemed - in fact the FIRQ rate was the same, but the Williams 6809 ROM code was written in such a way
 //that a high percentage of interrupts occurred when interrupts were masked, making it seem like they weren't
-//occuring.]  Def. some kind of MAME core bug with timing [turns out not really: it was actually an obscure 
+//occurring.]  Def. some kind of MAME core bug with timing [turns out not really: it was actually an obscure 
 //hardware detail about the YM2151 that wasn't being emulated properly and that the Williams sound board ROM 
 //code implicitly depends upon - see above], but I can't find it. I really hope someone can fix this hack 
 //someday..SJE 09/17/03 [wish granted! MJR 5/3/19]
@@ -532,13 +534,13 @@ static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this 
   if (core_gameData->gen == GEN_S9) {
 	// For S9 games, turn up the HC gain slightly. Note that we can't use
 	// hw.gameSpecific2 to encode custom equalization for S9, because it's
-    // already used for other purposes.  (Or at least was at some point; Space 
+	// already used for other purposes.  (Or at least was at some point; Space 
 	// Shuttle defines a non-zero value there.  I suspect this is vestigial
 	// because I can't find any references anywhere that actually use it.)
 	hc55516_set_gain(0, 1.5);
   }
   else {
-    // For S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
+	// For S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
 	int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
 	int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
 	int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
@@ -547,11 +549,11 @@ static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this 
 	if (hcgain == 0)
 	  hcgain = 150;
 
-    if (hcgain != 0)
-      hc55516_set_gain(0, hcgain / 100.0);
-    if (ymvol != 0)
+	if (hcgain != 0)
+	  hc55516_set_gain(0, hcgain / 100.0);
+	if (ymvol != 0)
 	  YM2151_set_mixing_levels(0, ymvol, ymvol);
-    if (dacvol != 0)
+	if (dacvol != 0)
 	  DAC_set_mixing_level(0, dacvol);
   }
 }
@@ -1133,12 +1135,12 @@ static WRITE_HANDLER(dcs_ctrl_w);
 static void dcs_init(struct sndbrdData *brdData);
 
 /*-- local data --*/
-#define DCS_BUFFER_SIZE	  8192  // Must be power of 2 because of how circular buffer works
-#define DCS_BUFFER_MASK	  (DCS_BUFFER_SIZE - 1)
+#define DCS_BUFFER_SIZE 8192  // Must be power of 2 because of how circular buffer works
+#define DCS_BUFFER_MASK (DCS_BUFFER_SIZE - 1)
 #define DCS_DEFAULT_SAMPLE_RATE 31250 // as found in Ask Uncle Willy #3: July 7, 1995
 
 static struct {
- int     status;   // 0 = disabled, 1 playing
+ int     status;    // 0 = disabled, 1 playing
  int     sOut, sIn; // positions in sound buffer
  INT16  *buffer;
  int     stream;
@@ -1297,7 +1299,9 @@ static data8_t *dcs_getBootROM(int soft) {
 }
 
 static int dcs_custStart(const struct MachineSound *msound) {
+#if defined(DCS_LOWPASS) && defined(SALLEN_KEY)
   int i,fi;
+#endif
 
   /*-- clear DAC data --*/
   memset(&dcs_dac,0,sizeof(dcs_dac));
@@ -1357,7 +1361,7 @@ static int dcs_custStart(const struct MachineSound *msound) {
   }
   }
 #else
-  dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, resolves noise on scared stiff for example, while not cutting off too much else -> is this due to DCS compression itself?
+  dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, not cutting off too much
   dcs_dac.filter_state = filter_state_alloc();
   filter_state_reset(dcs_dac.filter_f, dcs_dac.filter_state);
 #endif
@@ -1389,8 +1393,10 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
     /* fill in with samples until we hit the end or run out */
     for (ii = 0; ii < length; ii++)
     {
+#if defined(DCS_LOWPASS) && defined(SALLEN_KEY)
       double v;
       int iii;
+#endif
       if (dcs_dac.sOut == dcs_dac.sIn) break;
 #ifdef DCS_LOWPASS
  #ifdef SALLEN_KEY
@@ -1537,11 +1543,12 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) 
 	  assert(stream_get_sample_rate(dcs_dac.stream) == sRate);
   }
 
-  // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
+  // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts. Only happens very rarely.
+  idx = 0;
   if (dcs_dac.status == 0)
   {
-      const int idx_end = (int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5);
-      for (idx = 0; idx < idx_end; idx++) {
+      const int idx_end = MIN((int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5), size);
+      for (; idx < idx_end; idx += memStep) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
       }
@@ -1549,7 +1556,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) 
       dcs_dac.status = 1;
   }
   /*-- size is the size of the buffer not the number of samples --*/
-  for (idx = 0; idx < size; idx += memStep) {
+  for (; idx < size; idx += memStep) {
     dcs_dac.buffer[dcs_dac.sIn] = mem[idx];
     dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
   }
@@ -1576,7 +1583,7 @@ static struct {
 static void adsp_irqGen(int dummy);
 
 static void adsp_init(data8_t *(*getBootROM)(int soft),
-                     void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate)) {
+                      void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate)) {
   /* stupid timer/machine init handling in MAME */
   if (adsp.irqTimer) timer_remove(adsp.irqTimer);
   /*-- reset control registers etc --*/
@@ -1631,9 +1638,9 @@ static WRITE16_HANDLER(adsp_control_w) {
       break;
     case S1_CONTROL_REG:
       if (((data>>4) & 3) == 2)
-	DBGLOG(("Oh no!, the data is compresed with u-law encoding\n"));
+	DBGLOG(("Oh no!, the data is compressed with u-law encoding\n"));
       if (((data>>4) & 3) == 3)
-	DBGLOG(("Oh no!, the data is compresed with A-law encoding\n"));
+	DBGLOG(("Oh no!, the data is compressed with A-law encoding\n"));
       break;
   } /* switch */
 }
@@ -1663,17 +1670,17 @@ static void adsp_irqGen(int dummy) {
     cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ1, PULSE_LINE);
   }
 
-  next = (adsp_aBufData.size / adsp_aBufData.step * adsp_aBufData.irqCount /
-          DCS_IRQSTEPS - 1) * adsp_aBufData.step;
+  next = (adsp_aBufData.size / adsp_aBufData.step * adsp_aBufData.irqCount / DCS_IRQSTEPS)
+          * adsp_aBufData.step;
 
+  // % is needed as the original hardware always wraps the pointer at the end, and the 4th quadrant pointer will point one word past the end of the buffer
   cpunum_set_reg(dcslocals.brdData.cpuNo, ADSP2100_I0 + adsp_aBufData.iReg,
-                 adsp_aBufData.start + next);
+                 adsp_aBufData.start + (next % adsp_aBufData.size));
 
   adsp.txData(adsp_aBufData.start + adsp_aBufData.last, (next - adsp_aBufData.last),
               adsp_aBufData.step, adsp_aBufData.sRate);
 
   adsp_aBufData.last = next;
-
 }
 
 static void adsp_txCallback(int port, INT32 data) {
@@ -1790,14 +1797,14 @@ UINT32 dcs_speedup(UINT32 pc) {
       *i0++ = ar;
 			/* 2B52       AR = AX1 - AY1 */
       ar = ax1 - ay1;
-  			/* 2B53       DM(I2,M1) = AR */
+			/* 2B53       DM(I2,M1) = AR */
       *i2++ = ar;
     }
   }
   {
     int mem63d, mem63e, mem63f;
     int jj,kk;
-  			/* 2B54     AR = $0002 */
+			/* 2B54     AR = $0002 */
 			/* 2B55     DM($15EB) = AR (063d) */
     mem63d = 2;
 			/* 2B56     SI = $0040 */
@@ -2574,7 +2581,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             *i1 = ar;
             i1 -= 3;
         }
-	}
+    }
 
 	/* 0100     MSTAT = $0000 - MAC result placement = fractional */
 	// This sets the multiplication mode to "fractional":  MAC results are
@@ -2743,7 +2750,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             /* 012D   WORD PTR [$623] = SR0 */
             mem623 >>= 1;
         }
-	}
+    }
 
 	/* 
 	 *   This appears to be a Fast Fourier Transform pass over the decoded
@@ -2793,7 +2800,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             *i4 = mr >> 15; // >> 16; // see above
             i4 += 2;
         }
-	}
+    }
     activecpu_set_reg(ADSP2100_PC, pc + (0x13a - 0x00e8));
     return 0;                                              /* execute a NOP */
 }

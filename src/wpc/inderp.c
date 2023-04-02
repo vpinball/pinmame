@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Inder (early games, "Indertronic B-1")
  --------------------------------------
@@ -5,10 +7,10 @@
    Hardware:
    ---------
 		CPU:     M6502, R/C combo with 100kOhms and 10pF for clock, manual says 4 microseconds min. instruction execution
-			INT:   ? (somewhere in between 200 .. 250 Hz seems likely)
+		    INT: ? (somewhere in between 200 .. 250 Hz seems likely)
 		IO:      DMA only
 		DISPLAY: 6-digit, both 9-segment & 7-segment panels with direct segment access
-		SOUND:	 simple tones, needs comparison with real machine
+		SOUND:   simple tones, needs comparison with real machine
  ************************************************************************************************/
 
 #include "driver.h"

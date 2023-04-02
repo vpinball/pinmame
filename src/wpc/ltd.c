@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  LTD (Brasil)
  ------------
@@ -23,11 +25,11 @@
 
    Hardware:
    ---------
-		CPU:	 M6802 for system III, M6803 for system 4 with NTSC quartz
+		CPU:     M6802 for system III, M6803 for system 4 with NTSC quartz
 		DISPLAY: 7-segment LED panels, direct segment access on system 4
-		SOUND:	 - discrete (tones) on early system III games
-				 - unknown sound hardware on Force, Space Poker, and Black Hole
-				 - 2 x AY8910 (separated for left & right speaker) for Cowboy, Zephy, and system 4 games
+		SOUND:   - discrete (tones) on early system III games
+		         - unknown sound hardware on Force, Space Poker, and Black Hole
+		         - 2 x AY8910 (separated for left & right speaker) for Cowboy, Zephy, and system 4 games
  ************************************************************************************************/
 
 #include "driver.h"

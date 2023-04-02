@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Elvira and the Party Monsters Pinball Simulator
 

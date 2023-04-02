@@ -3,41 +3,36 @@
 Major bugs in PinMAME that we are aware of:
 -------------------------------------------
 
- #1) Williams/Bally WPC: DCS sound still has some problems, only on high volume levels.
-     (So don't use full volume (29-31) to avoid static noise)
-     This seems to happen on real machines, too, but could also be just a sideeffect there of the amp and speakers.
-     (Note that disabling the low pass filter in the DCS core in addition exposes some static noise on some machines, when playing certain samples -> DCS compression itself might be the cause?)
-
- #2) Not all Williams/Bally WPC functions are implemented in PinMAME.
+ #1) Not all Williams/Bally WPC functions are implemented in PinMAME.
      The most important (?!) functions missing are the ticket dispenser,
      and accurate real time clock emulation (current rtc functionality is a workaround).
 
- #3) The WPC printer function is only tested with default settings.
+ #2) The WPC printer function is only tested with default settings.
      The printout will probably not work with other settings.
 
- #4) The name and year for each game were taken from the Internet Pinball Database
+ #3) The name and year for each game were taken from the Internet Pinball Database
      (http://www.ipdb.org) OR from supposedly more accurate personal research/sources, and so may not be 100% accurate!
 
- #5) Occasional pops/clicks on Capcom sound.
+ #4) Occasional pops/clicks on Capcom sound.
 
- #6) Occasional pops/clicks/crackling on Whitestar II sound, only on high volume levels.
+ #5) Occasional pops/clicks/crackling on Whitestar II sound, only on high volume levels.
      (~24 and above, for example on Nascar and Grand Prix, or even ~20 on LOTR, so avoid this)
      This seems to happen on real machines (verified on 2 different Grand Prix pinballs), too.
 
- #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate for all machines.
+ #6) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate for all machines.
 
- #8) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally.
+ #7) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally.
 
- #9) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h(c)).
+ #8) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h(c)).
      Alternately, check the "skip pinball startup test" in vpm.
 
-#10) GTS80S DAC sound is off for most of the sound effects.
+ #9) GTS80S DAC sound is off for most of the sound effects.
 
-#11) Some setups crash when using the AT91 JIT compiled code (e.g. Whitestar II and SAM), disable AT91 JIT
+#10) Some setups crash when using the AT91 JIT compiled code (e.g. Whitestar II and SAM), disable AT91 JIT
      by setting "at91jit" to 0 in the registry.
 
-#12) AT91 JIT is 32-bit only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
+#11) AT91 JIT is 32-bit and x86 only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
      ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
      but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
 
-#13) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for certain machines like BOP, etc.
+#12) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for certain machines like BOP, etc.

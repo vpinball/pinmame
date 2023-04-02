@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Hurricane (Williams, 1991) Pinball Simulator
 

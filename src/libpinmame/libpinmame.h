@@ -4,6 +4,7 @@
 #define LIBPINMAME_H
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define LIBPINMAME_API extern "C" __declspec(dllexport)
@@ -28,6 +29,11 @@ typedef enum {
 	MECH_HANDLE_MECHANICS = 5,
 	MECH_NO_INVALID = 6
 } PINMAME_STATUS;
+
+typedef enum {
+	RAW = 0,
+	BRIGHTNESS = 1
+} PINMAME_DMD_MODE;
 
 typedef enum {
 	AUDIO_FORMAT_INT16 = 0,
@@ -365,6 +371,7 @@ typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInf
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState);
 typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
+typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args);
 
 typedef struct {
 	const PINMAME_AUDIO_FORMAT audioFormat;
@@ -380,6 +387,7 @@ typedef struct {
 	PinmameOnSolenoidUpdatedCallback cb_OnSolenoidUpdated;
 	PinmameOnConsoleDataUpdatedCallback cb_OnConsoleDataUpdated;
 	PinmameIsKeyPressedFunction fn_IsKeyPressed;
+	PinmameOnLogMessageCallback cb_OnLogMessage;
 } PinmameConfig;
 
 LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback);
@@ -389,11 +397,14 @@ LIBPINMAME_API int PinmameGetHandleKeyboard();
 LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard);
 LIBPINMAME_API int PinmameGetHandleMechanics();
 LIBPINMAME_API void PinmameSetHandleMechanics(const int handleMechanics);
+LIBPINMAME_API void PinmameSetDmdMode(const PINMAME_DMD_MODE dmdMode);
+LIBPINMAME_API PINMAME_DMD_MODE PinmameGetDmdMode();
 LIBPINMAME_API int PinmameGetUseModulatedSolenoids();
 LIBPINMAME_API void PinmameSetUseModulatedSolenoids(const int useModSol);
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name);
 LIBPINMAME_API int PinmameIsRunning();
 LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause);
+LIBPINMAME_API int PinmameIsPaused();
 LIBPINMAME_API PINMAME_STATUS PinmameReset();
 LIBPINMAME_API void PinmameStop();
 LIBPINMAME_API PINMAME_HARDWARE_GEN PinmameGetHardwareGen();

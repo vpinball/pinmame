@@ -21,6 +21,7 @@ int g_fHandleKeyboard = 0;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
+PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE::RAW;
 
 #ifdef VPINMAME_ALTSOUND
 char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
@@ -414,6 +415,19 @@ extern "C" void OnSolenoid(const int solenoid, const int state) {
 }
 
 /******************************************************
+ * libpinmame_log_message
+ ******************************************************/
+
+extern "C" void libpinmame_log_message(const char* format, ...) {
+	if (_p_Config->cb_OnLogMessage) {
+		va_list args;
+		va_start(args, format);
+		(*(_p_Config->cb_OnLogMessage))(format, args);
+		va_end(args);
+	}
+}
+
+/******************************************************
  * libpinmame_update_mech
  ******************************************************/
 
@@ -544,7 +558,7 @@ LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
 
 	memcpy(_p_Config, p_config, sizeof(PinmameConfig));
 
-	fprintf(stdout, "PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _p_Config->sampleRate, _p_Config->vpmPath);
+	libpinmame_log_message("PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _p_Config->sampleRate, _p_Config->vpmPath);
 
 	memset(&options, 0, sizeof(options));
 
@@ -596,6 +610,22 @@ LIBPINMAME_API int PinmameGetHandleMechanics() {
 
 LIBPINMAME_API void PinmameSetHandleMechanics(const int handleMechanics) {
 	g_fHandleMechanics = handleMechanics;
+}
+
+/******************************************************
+ * PinmameSetDmdMode
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetDmdMode(const PINMAME_DMD_MODE dmdMode) {
+	g_fDmdMode = dmdMode;
+}
+
+/******************************************************
+ * PinmameGetDmdMode
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_DMD_MODE PinmameGetDmdMode() {
+	return g_fDmdMode;
 }
 
 /******************************************************
@@ -681,11 +711,20 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause) {
 }
 
 /******************************************************
+ * PinmameIsPaused
+ ******************************************************/
+
+LIBPINMAME_API int PinmameIsPaused() {
+	return g_fPause;
+}
+
+/******************************************************
  * PinmameStop
  ******************************************************/
 
 LIBPINMAME_API void PinmameStop() {
 	if (_p_gameThread) {
+		g_fPause = 0;
 		_timeToQuit = 1;
 
 		_p_gameThread->join();

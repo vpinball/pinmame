@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Popeye Saves the Earth (Bally, 1994) Pinball Simulator
 

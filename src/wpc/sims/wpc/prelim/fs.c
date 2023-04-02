@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary The Flintstones (Williams, 1994) Pinball Simulator
 

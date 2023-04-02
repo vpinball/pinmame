@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Safe Cracker (Bally, 1996) Pinball Simulator
 

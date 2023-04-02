@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Junk Yard (Williams, 1996) Pinball Simulator
 

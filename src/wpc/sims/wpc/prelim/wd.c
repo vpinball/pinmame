@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary WHO Dunnit (Bally, 1995) Pinball Simulator
 

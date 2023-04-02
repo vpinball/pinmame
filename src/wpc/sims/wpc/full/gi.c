@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Gilligan's Island (Bally, 1991) Pinball Simulator
 

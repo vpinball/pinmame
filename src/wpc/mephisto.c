@@ -1,7 +1,10 @@
+// license:BSD-3-Clause
+
 #include "driver.h"
 #include "core.h"
 #include "cpu/i86/i88intf.h"
 #include "cpu/i8051/i8051.h"
+
 /*
 static struct {
   UINT8 col;

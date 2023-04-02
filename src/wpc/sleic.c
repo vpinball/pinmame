@@ -1,17 +1,19 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Sleic (Spain)
  -------------
 
    Hardware:
    ---------
-		CPU:	 I80C188 @ ??? for game & sound,
-				 I80C39 @ ??? for DMD display,
-				 Z80 @ ??? for I/O
-			INT: IRQ @ ???
+		CPU:     I80C188 @ ??? for game & sound,
+		         I80C39 @ ??? for DMD display,
+		         Z80 @ ??? for I/O
+		    INT: IRQ @ ???
 		DISPLAY: DMD
-		SOUND:	 YM3812 @ ???,
-				 DAC,
-				 OKI6376 @ 2 or 4 MHz for speech / FX
+		SOUND:   YM3812 @ ???,
+		         DAC,
+		         OKI6376 @ 2 or 4 MHz for speech / FX
  ************************************************************************************************/
 
 #include "driver.h"

@@ -6,7 +6,7 @@ What's new in PinMAME:
 Version 3.6 (XX XXth, 2023) - ""
 ------------------------------------------------------------------------------
 
-Updated LISY support to 5.28-82 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
+Updated LISY support to 5.28-85 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
 Fix Capcom crashes in 64bit builds
 
@@ -17,6 +17,11 @@ Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mex
 Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
  this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
 Fixed 6 million dollar man 7 digit conversion display
+Fixed inverted switches for ffv101
+Fixed regression in DCS Audio decoding
+Also fixed one subtle DCS emulation bug that leads to slight buzzing/crackling on some samples though (mainly audible when using good speakers or headphones or if the internal volume is cranked up very high)
+ one of the longest standing bugs in the history of PinMAME!
+Due to the above, remove DCS low pass filtering (introduced in 2.8) again and prefer 1:1 DCS output quality
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
 New:
@@ -47,16 +52,20 @@ Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illeg
       Super Bowl (sound ROM redump showed one byte of difference)
 LTD:  Space Poker
 NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
+Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
+Ali (7-digit conversion Free Play rev. 76)
 Dracula (One Ball MOD)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)
+Galaxy (7-Digit conversion, Fixes & modified rules)
 Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
 Pin-Bot J-2 (PEMBOT (no relation)) (MOD)
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
+Shadow, The LF-4 (French)
 Spirit (initial release) & rev. 3 (MOD)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)

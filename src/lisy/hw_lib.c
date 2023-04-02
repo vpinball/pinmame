@@ -556,6 +556,47 @@ lisy1_sound_set(int sound) {
         lisy1_coil_set(Q_TOUS, 0);
 }
 
+//pulse specific solenoid LISY1 ( 
+void
+lisy1_solenoid_pulse(int solenoid) {
+    int coil;
+
+    switch (solenoid) {
+        case 1:
+            coil = Q_KNOCK;
+            break;
+        case 2:
+            coil = Q_TENS;
+            break;
+        case 3:
+            coil = Q_HUND;
+            break;
+        case 4:
+            coil = Q_TOUS;
+            break;
+        case 5:
+            coil = Q_OUTH;
+            break;
+        case 6:
+            coil = Q_SYS1_SOL6;
+            break;
+        case 7:
+            coil = Q_SYS1_SOL7;
+            break;
+        case 8:
+            coil = Q_SYS1_SOL8;
+            break;
+        default:
+            return;
+            break;
+    }
+    //now pulse the coil
+    lisy1_coil_set(coil, 1);
+    //usleep(COIL_PULSE_TIME); done in lisy1_coil_set already
+    lisy1_coil_set(coil, 0);
+}
+
+
 //set the sound LISY80
 void
 lisy80_sound_set(int sound) {

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Elvis (Stern, 2004) Pinball Simulator
 

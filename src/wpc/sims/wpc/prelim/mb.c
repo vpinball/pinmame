@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*******************************************************************************
  Preliminary Monster Bash (Williams, 1998) Pinball Simulator
 
@@ -7,6 +9,7 @@
  Read PZ.c or FH.c if you like more help.
 
  ******************************************************************************/
+
 /* 160401 Added mechanics simulator */
 /*------------------------------------------------------------------------------
   Keys for the Monster Bash Simulator:
