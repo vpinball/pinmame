@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "zedmd.h"
+#include "../dmd/dmd.h"
 #include "../serialib/serialib.h"
 #include "../miniz/miniz.h"
 
@@ -13,11 +14,6 @@ UINT16 deviceWidth = 0;
 UINT16 deviceHeight = 0;
 
 UINT8 ZeDMDControlCharacters[6] = {0x5a, 0x65, 0x64, 0x72, 0x75, 0x6d};
-UINT8 ZeDMDDefaultPalette2Bit[12] = { 0, 0, 0, 144, 34, 0, 192, 76, 0, 255, 127 ,0 };
-UINT8 ZeDMDDefaultPalette4Bit[48] = { 0, 0, 0, 51, 25, 0, 64, 32, 0, 77, 38, 0,
-                                    89, 44, 0, 102, 51, 0, 115, 57, 0, 128, 64, 0,
-                                    140, 70, 0, 153, 76, 0, 166, 83, 0, 179, 89, 0,
-                                    191, 95, 0, 204, 102, 0, 230, 114, 0, 255, 127, 0 };
 
 int ZeDmdInit(const char* ignore_device) {
     static int ret = 0;
@@ -77,9 +73,6 @@ int ZeDmdInit(const char* ignore_device) {
                         deviceHeight = acknowledge[6] + acknowledge[7] * 256;
 
                         if (deviceWidth > 0 && deviceHeight > 0) {
-                            printf("Width  %d\n", deviceWidth);
-                            printf("Height %d\n", deviceHeight);
-
                             char response = 0;
                             if (device.readChar(&response, 100) && response == 'R') {
                                 device.writeBytes(ZeDMDControlCharacters, 6);
@@ -108,7 +101,7 @@ void ZeDmdTransmit(int command, UINT8* Buffer, mz_ulong output_buffer_size) {
         device.writeChar(command);
 
         mz_ulong compressed_buffer_size = mz_compressBound(output_buffer_size);
-        UINT8* compressedBuffer = (UINT8*) malloc((size_t) compressed_buffer_size);;
+        UINT8* compressedBuffer = (UINT8*) malloc((size_t) compressed_buffer_size);
         mz_compress(compressedBuffer, &compressed_buffer_size, Buffer, output_buffer_size);
         //printf("ZeDMD Compression: %d => %d\n", output_buffer_size, compressed_buffer_size);
 
@@ -136,7 +129,7 @@ void ZeDmdTransmit(int command, UINT8* Buffer, mz_ulong output_buffer_size) {
                 return;
             }
         }
-
+    
         free(compressedBuffer);
     }
 }
@@ -153,7 +146,7 @@ void ZeDmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
         int palette_size = (bitDepth == 2) ? 12 : 48;
         mz_ulong output_buffer_size = buffer_size + palette_size;
         UINT8* outputBuffer = (UINT8*) malloc((size_t) output_buffer_size);
-        memcpy(outputBuffer, (bitDepth == 2) ? ZeDMDDefaultPalette2Bit : ZeDMDDefaultPalette4Bit, palette_size);
+        memcpy(outputBuffer, dmdGetDefaultPalette(bitDepth), palette_size);
         memcpy(&outputBuffer[palette_size], Buffer, buffer_size);
 
         ZeDmdTransmit((bitDepth == 2) ? 8 : 9, outputBuffer, output_buffer_size);

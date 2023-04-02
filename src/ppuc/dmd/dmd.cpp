@@ -1,135 +1,138 @@
 #include <stdio.h>
 #include "dmd.h"
 
-UINT8 DmdFrameBuffer[16384] = {0};
+UINT8 DmdDefaultPalette2Bit[12] = { 0, 0, 0, 144, 34, 0, 192, 76, 0, 255, 127 ,0 };
+UINT8 DmdDefaultPalette4Bit[48] = { 0, 0, 0, 51, 25, 0, 64, 32, 0, 77, 38, 0,
+                                    89, 44, 0, 102, 51, 0, 115, 57, 0, 128, 64, 0,
+                                    140, 70, 0, 153, 76, 0, 166, 83, 0, 179, 89, 0,
+                                    191, 95, 0, 204, 102, 0, 230, 114, 0, 255, 127, 0 };
 
-void* dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, bool samSpa) {
+void dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* Buffer, UINT8* Frame, int bitDepth, bool samSpa) {
     int buffer_size = width * height;
- 
+
     for (int i = 0; i < buffer_size; i++) {
         if (bitDepth == 2) {
             switch (Buffer[i]) {
-                case 0x14: // 20%
-                    DmdFrameBuffer[i] = 0;
-                    break;
                 case 0x21: // 33%
-                    DmdFrameBuffer[i] = 1;
+                    Frame[i] = 1;
                     break;
                 case 0x43: // 67%
-                    DmdFrameBuffer[i] = 2;
+                    Frame[i] = 2;
                     break;
                 case 0x64: // 100%
-                    DmdFrameBuffer[i] = 3;
+                    Frame[i] = 3;
+                    break;
+                case 0x14: // 20%
+                default:
+                    Frame[i] = 0;
                     break;
             }
         } else if (bitDepth == 4) {
             if (samSpa) {
                 switch(Buffer[i]) {
                     case 0x00:
-                        DmdFrameBuffer[i] = 0;
+                        Frame[i] = 0;
                         break;
                     case 0x14:
-                        DmdFrameBuffer[i] = 1;
+                        Frame[i] = 1;
                         break;
                     case 0x19:
-                        DmdFrameBuffer[i] = 2;
+                        Frame[i] = 2;
                         break;
                     case 0x1E:
-                        DmdFrameBuffer[i] = 3;
+                        Frame[i] = 3;
                         break;
                     case 0x23:
-                        DmdFrameBuffer[i] = 4;
+                        Frame[i] = 4;
                         break;
                     case 0x28:
-                        DmdFrameBuffer[i] = 5;
+                        Frame[i] = 5;
                         break;
                     case 0x2D:
-                        DmdFrameBuffer[i] = 6;
+                        Frame[i] = 6;
                         break;
                     case 0x32:
-                        DmdFrameBuffer[i] = 7;
+                        Frame[i] = 7;
                         break;
                     case 0x37:
-                        DmdFrameBuffer[i] = 8;
+                        Frame[i] = 8;
                         break;
                     case 0x3C:
-                        DmdFrameBuffer[i] = 9;
+                        Frame[i] = 9;
                         break;
                     case 0x41:
-                        DmdFrameBuffer[i] = 10;
+                        Frame[i] = 10;
                         break;
                     case 0x46:
-                        DmdFrameBuffer[i] = 11;
+                        Frame[i] = 11;
                         break;
                     case 0x4B:
-                        DmdFrameBuffer[i] = 12;
+                        Frame[i] = 12;
                         break;
                     case 0x50:
-                        DmdFrameBuffer[i] = 13;
+                        Frame[i] = 13;
                         break;
                     case 0x5A:
-                        DmdFrameBuffer[i] = 14;
+                        Frame[i] = 14;
                         break;
                     case 0x64:
-                        DmdFrameBuffer[i] = 15;
+                        Frame[i] = 15;
                         break;
                 }
             } else {
                 switch (Buffer[i]) {
                     case 0x00:
-                        DmdFrameBuffer[i] = 0;
+                        Frame[i] = 0;
                         break;
                     case 0x1E:
-                        DmdFrameBuffer[i] = 1;
+                        Frame[i] = 1;
                         break;
                     case 0x23:
-                        DmdFrameBuffer[i] = 2;
+                        Frame[i] = 2;
                         break;
                     case 0x28:
-                        DmdFrameBuffer[i] = 3;
+                        Frame[i] = 3;
                         break;
                     case 0x2D:
-                        DmdFrameBuffer[i] = 4;
+                        Frame[i] = 4;
                         break;
                     case 0x32:
-                        DmdFrameBuffer[i] = 5;
+                        Frame[i] = 5;
                         break;
                     case 0x37:
-                        DmdFrameBuffer[i] = 6;
+                        Frame[i] = 6;
                         break;
                     case 0x3C:
-                        DmdFrameBuffer[i] = 7;
+                        Frame[i] = 7;
                         break;
                     case 0x41:
-                        DmdFrameBuffer[i] = 8;
+                        Frame[i] = 8;
                         break;
                     case 0x46:
-                        DmdFrameBuffer[i] = 9;
+                        Frame[i] = 9;
                         break;
                     case 0x4B:
-                        DmdFrameBuffer[i] = 10;
+                        Frame[i] = 10;
                         break;
                     case 0x50:
-                        DmdFrameBuffer[i] = 11;
+                        Frame[i] = 11;
                         break;
                     case 0x55:
-                        DmdFrameBuffer[i] = 12;
+                        Frame[i] = 12;
                         break;
                     case 0x5A:
-                        DmdFrameBuffer[i] = 13;
+                        Frame[i] = 13;
                         break;
                     case 0x5F:
-                        DmdFrameBuffer[i] = 14;
+                        Frame[i] = 14;
                         break;
                     case 0x64:
-                        DmdFrameBuffer[i] = 15;
+                        Frame[i] = 15;
                         break;
                 }
             }
         }
     }
-
-    return DmdFrameBuffer;
 }
 
 void dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth) {
@@ -158,4 +161,12 @@ void dmdConsoleRender(UINT16 width, UINT16 height, UINT8* buffer, int bitDepth) 
         }
         printf("\n");
     }
+}
+
+UINT8* dmdGetDefaultPalette(int bitDepth) {
+    if (bitDepth == 2) {
+        return DmdDefaultPalette2Bit;
+    }
+
+    return DmdDefaultPalette4Bit;
 }
