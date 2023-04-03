@@ -74,8 +74,9 @@ jobs:
             type: raspi
     steps:
       - uses: actions/checkout@v3
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-latest' && matrix.type != 'raspi' 
         run: |
+          sudo apt-get update
           sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
       - if: matrix.os == 'macos-latest'
         run: |
