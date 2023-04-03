@@ -92,23 +92,6 @@ add_compile_definitions(
    _CRT_SECURE_NO_WARNINGS
 )
 
-add_compile_options(
-   $<$<CONFIG:RELEASE>:/Ob2>
-   $<$<CONFIG:RELEASE>:/O2>
-   $<$<CONFIG:RELEASE>:/Oi>
-   $<$<CONFIG:RELEASE>:/arch:SSE2>
-   $<$<CONFIG:RELEASE>:/fp:fast>
-   $<$<CONFIG:RELEASE>:/fp:except->
-   $<$<CONFIG:RELEASE>:/Ot>
-   $<$<CONFIG:RELEASE>:/GF>
-   $<$<CONFIG:RELEASE>:/GS->
-   $<$<CONFIG:RELEASE>:/Gy>
-   $<$<CONFIG:RELEASE>:/GR->
-   $<$<CONFIG:RELEASE>:/Oy>
-   $<$<CONFIG:RELEASE>:/GT>
-   $<$<CONFIG:RELEASE>:/GL>
-)
-
 set_source_files_properties(
    src/windows/asmblit.asm LANGUAGE ASM_NASM
    src/windows/asmtile.asm LANGUAGE ASM_NASM
@@ -671,6 +654,13 @@ add_executable(pinmame32 WIN32
    ext/zlib/trees.c
    ext/zlib/uncompr.c
    ext/zlib/zutil.c
+)
+
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL)
+
+target_compile_options(pinmame32 PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
 )
 
 target_include_directories(pinmame32 PUBLIC
