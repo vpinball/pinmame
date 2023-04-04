@@ -69,11 +69,11 @@ jobs:
           - os: macos-latest
             platform: ios-arm64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
-          - os: ubuntu-18.04
+          - os: ubuntu-latest
             platform: linux-x64
             libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
             pinmame-test: pinmame_test
-          - os: ubuntu-18.04
+          - os: ubuntu-latest
             platform: android-arm64-v8a
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.so
     steps:

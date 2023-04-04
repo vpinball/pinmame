@@ -22,76 +22,46 @@ void DumpDmd(int index, UINT8* p_displayData, PinmameDisplayLayout* p_displayLay
 			
 			if (p_displayLayout->depth == 2) {
 				switch(value) {
-					case 0x14:
+					case 0:
 						printf("░");
 						break;
-					case 0x21:
+					case 1:
 						printf("▒");
 						break;
-					case 0x43:
+					case 2:
 						printf("▓");
 						break;
-					case 0x64:
+					case 3:
 						printf("▓");
 						break;
 				}
 			}
 			else {
-				if (PinmameGetHardwareGen() & (SAM | SPA)) {
-					switch(value) {
-						case 0x00:
-						case 0x14:
-						case 0x19:
-						case 0x1E:
-							printf("░");
-							break;
-						case 0x23:
-						case 0x28:
-						case 0x2D:
-						case 0x32:
-							printf("▒");
-							break;
-						case 0x37:
-						case 0x3C:
-						case 0x41:
-						case 0x46:
-							printf("▓");
-							break;
-						case 0x4B:
-						case 0x50:
-						case 0x5A:
-						case 0x64:
-							printf("▓");
-							break;
-					}
-				}
-				else {
-					switch(value) {
-						case 0x00:
-						case 0x1E:
-						case 0x23:
-						case 0x28:
-							printf("░");
-							break;
-						case 0x2D:
-						case 0x32:
-						case 0x37:
-						case 0x3C:
-							printf("▒");
-							break;
-						case 0x41:
-						case 0x46:
-						case 0x4B:
-						case 0x50:
-							printf("▓");
-							break;
-						case 0x55:
-						case 0x5A:
-						case 0x5F:
-						case 0x64:
-							printf("▓");
-							break;
-					}
+				switch(value) {
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+						printf("░");
+						break;
+					case 4:
+					case 5:
+					case 6:
+					case 7:
+						printf("▒");
+						break;
+					case 8:
+					case 9:
+					case 10:
+					case 11:
+						printf("▓");
+						break;
+					case 12:
+					case 13:
+					case 14:
+					case 15:
+						printf("▓");
+						break;
 				}
 			}
 		}
@@ -302,6 +272,8 @@ int main(int, char**) {
 	PinmameSetHandleKeyboard(0);
 	PinmameSetHandleMechanics(0);
 
+	PinmameSetDmdMode(PINMAME_DMD_MODE::RAW);
+
 	PinmameGetGames(&Game);
 	PinmameGetGame("fourx4", &Game);
 
@@ -314,7 +286,7 @@ int main(int, char**) {
 	//PinmameRun("fourx4");
 	//PinmameRun("ripleys");
 	//PinmameRun("fh_l9");
-	//PinmameRun("acd_168hc");
+	//PinmameRun("acd_170hc");
 	//PinmameRun("snspares");
 
 	if (PinmameRun("t2_l8") == OK) {

@@ -31,8 +31,8 @@ typedef enum {
 } PINMAME_STATUS;
 
 typedef enum {
-	RAW = 0,
-	BRIGHTNESS = 1
+	BRIGHTNESS = 0,
+	RAW = 1
 } PINMAME_DMD_MODE;
 
 typedef enum {

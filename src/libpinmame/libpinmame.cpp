@@ -21,7 +21,7 @@ int g_fHandleKeyboard = 0;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
-PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE::RAW;
+PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE::BRIGHTNESS;
 
 #ifdef VPINMAME_ALTSOUND
 char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
