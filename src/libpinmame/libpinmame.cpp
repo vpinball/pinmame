@@ -629,22 +629,6 @@ LIBPINMAME_API PINMAME_DMD_MODE PinmameGetDmdMode() {
 }
 
 /******************************************************
- * PinmameGetUseModulatedSolenoids
- ******************************************************/
-
-LIBPINMAME_API int PinmameGetUseModulatedSolenoids() {
-	return options.usemodsol ? 1 : 0;
-}
-
-/******************************************************
- * PinmameSetUseModulatedSolenoids
- ******************************************************/
-
-LIBPINMAME_API void PinmameSetUseModulatedSolenoids(const int useModulatedSolenoids) {
-    options.usemodsol = useModulatedSolenoids > 0;
-}
-
-/******************************************************
  * PinmameRun
  ******************************************************/
 
@@ -783,17 +767,16 @@ LIBPINMAME_API void PinmameSetSwitches(const PinmameSwitchState* const p_states,
  * PinmameGetSolenoidMask
  ******************************************************/
 
-LIBPINMAME_API uint64_t PinmameGetSolenoidMask() {
-	return vp_getSolMask64();
+LIBPINMAME_API uint32_t PinmameGetSolenoidMask(const int low) {
+	return vp_getSolMask(low);
 }
 
 /******************************************************
  * PinmameSetSolenoidMask
  ******************************************************/
 
-LIBPINMAME_API void PinmameSetSolenoidMask(const uint64_t mask) {
-	vp_setSolMask(0, (int)(mask & 0xFFFFFFFF));
-	vp_setSolMask(1, (int)((mask >> 32) & 0xFFFFFFFF));
+LIBPINMAME_API void PinmameSetSolenoidMask(const int low, const uint32_t mask) {
+	vp_setSolMask(low, mask);
 }
 
 /******************************************************
