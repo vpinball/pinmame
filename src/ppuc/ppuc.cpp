@@ -35,6 +35,7 @@ typedef unsigned short UINT16;
 #define MAX_EVENT_SEND_QUEUE_SIZE 10
 #define MAX_EVENT_RECV_QUEUE_SIZE 10
 #define MAX_IO_BOARDS 8
+#define DMD_FRAME_BUFFERS 10
 
 ALuint _audioSource;
 ALuint _audioBuffers[MAX_AUDIO_BUFFERS];
@@ -54,7 +55,8 @@ int zedmd = 0;
 
 UINT8 dmd_planes_buffer[12288] = {0};
 UINT8 dmd_serum_planes_buffer[12288] = {0};
-UINT8 dmd_frame_buffer[16384] = {0};
+UINT8 dmd_frame_buffer[DMD_FRAME_BUFFERS][16384] = {0};
+int dmd_frame_buffer_position = 0;
 UINT16 dmd_width;
 UINT16 dmd_height;
 int dmd_depth;
@@ -365,9 +367,10 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
         dmd_width = p_displayLayout->width;
         dmd_height = p_displayLayout->height;
         dmd_depth = p_displayLayout->depth;
-        memcpy(dmd_frame_buffer, p_displayData, dmd_width*dmd_height);
-        //dmdConvertToFrame(dmd_width, dmd_height, (UINT8 *) p_displayData, dmd_frame_buffer, dmd_depth, dmd_sam_spa);
-
+        memcpy(dmd_frame_buffer[dmd_frame_buffer_position++], p_displayData, dmd_width*dmd_height);
+        if (dmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
+            dmd_frame_buffer_position = 0;
+        }
         dmd_ready = true;
 
         ul.unlock();
@@ -380,79 +383,108 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 }
 
 void Pin2DmdThread() {
+    int pin2dmd_frame_buffer_position = 0;
+
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
         sl.unlock();
 
-        DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer, dmd_planes_buffer, dmd_depth);
-        Pin2dmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth, dmd_sam_spa);
+        while (pin2dmd_frame_buffer_position != dmd_frame_buffer_position) {
+            DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer[pin2dmd_frame_buffer_position], dmd_planes_buffer, dmd_depth);
+            Pin2dmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth, dmd_sam_spa);
+
+            pin2dmd_frame_buffer_position++;
+            if (pin2dmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
+                pin2dmd_frame_buffer_position = 0;
+            }
+        }
     }
 }
 
 void ZeDmdThread() {
+    int zedmd_frame_buffer_position = 0;
+
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
         sl.unlock();
 
-        if (opt_serum) {
-#if defined(SERUM_SUPPORT)
-            UINT8 palette[192] = {0};
-            UINT8 rotations[24] = {0};
-            UINT32 triggerID;
-            UINT32 hashcode;
-            int frameID;
+        while (zedmd_frame_buffer_position != dmd_frame_buffer_position) {
+            if (opt_serum) {
+    #if defined(SERUM_SUPPORT)
+                UINT8 palette[192] = {0};
+                UINT8 rotations[24] = {0};
+                UINT32 triggerID;
+                UINT32 hashcode;
+                int frameID;
 
-            Serum_SetStandardPalette(dmdGetDefaultPalette(dmd_depth), dmd_depth);
+                Serum_SetStandardPalette(dmdGetDefaultPalette(dmd_depth), dmd_depth);
 
-            if (Serum_ColorizeWithMetadata(dmd_frame_buffer, dmd_width, dmd_height,
-                           &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
+                if (Serum_ColorizeWithMetadata(dmd_frame_buffer[zedmd_frame_buffer_position], dmd_width, dmd_height,
+                            &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
 
-                DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer, dmd_serum_planes_buffer, 6);
-                ZeDmdRenderSerum(dmd_width, dmd_height, dmd_serum_planes_buffer, &palette[0], &rotations[0]);
+                    DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer[zedmd_frame_buffer_position], dmd_serum_planes_buffer, 6);
+                    ZeDmdRenderSerum(dmd_width, dmd_height, dmd_serum_planes_buffer, &palette[0], &rotations[0]);
 
-                // todo: send DMD Event with triggerID
+                    // todo: send DMD Event with triggerID
+                }
+    #endif
             }
-#endif
-        }
-        else {
-            DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer, dmd_planes_buffer, dmd_depth);
-            ZeDmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth);
+            else {
+                DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer[zedmd_frame_buffer_position], dmd_planes_buffer, dmd_depth);
+                ZeDmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth);
+            }
+
+            zedmd_frame_buffer_position++;
+            if (zedmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
+                zedmd_frame_buffer_position = 0;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
 }
 
 void ConsoleDmdThread() {
+    int console_frame_buffer_position = 0;
+
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []() { return dmd_ready; });
-
-        if (opt_serum) {
-#if defined(SERUM_SUPPORT)
-            UINT8 palette[192] = {0};
-            UINT8 rotations[24] = {0};
-            UINT32 triggerID;
-            UINT32 hashcode;
-            int frameID;
-
-            Serum_SetStandardPalette(dmdGetDefaultPalette(dmd_depth), dmd_depth);
-
-            if (Serum_ColorizeWithMetadata(dmd_frame_buffer, dmd_width, dmd_height,
-                           &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
-
-                dmdConsoleRender(dmd_width, dmd_height, dmd_frame_buffer, 6);
-
-                // todo: send DMD Event with triggerID
-            }
-#endif
-        }
-        else {
-            dmdConsoleRender(dmd_width, dmd_height, dmd_frame_buffer, dmd_depth);
-        }
-
-        if (!opt_debug) printf("\033[%dA", dmd_height);
         sl.unlock();
+
+        while (console_frame_buffer_position != dmd_frame_buffer_position) {
+            if (opt_serum) {
+#if defined(SERUM_SUPPORT)
+                UINT8 palette[192] = {0};
+                UINT8 rotations[24] = {0};
+                UINT32 triggerID;
+                UINT32 hashcode;
+                int frameID;
+
+                Serum_SetStandardPalette(dmdGetDefaultPalette(dmd_depth), dmd_depth);
+
+                if (Serum_ColorizeWithMetadata(dmd_frame_buffer[console_frame_buffer_position], dmd_width, dmd_height,
+                            &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
+
+                    dmdConsoleRender(dmd_width, dmd_height, dmd_frame_buffer[console_frame_buffer_position], 6);
+
+                    // todo: send DMD Event with triggerID
+                }
+#endif
+            }
+            else {
+                dmdConsoleRender(dmd_width, dmd_height, dmd_frame_buffer[console_frame_buffer_position], dmd_depth);
+            }
+
+            if (!opt_debug) printf("\033[%dA", dmd_height);
+
+            console_frame_buffer_position++;
+            if (console_frame_buffer_position >= DMD_FRAME_BUFFERS) {
+                console_frame_buffer_position = 0;
+            }
+        }
     }
 }
 
