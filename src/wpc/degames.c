@@ -451,7 +451,6 @@ DE1S_SOUNDROM288(      "tmntf7.rom",  CRC(59ba0153) SHA1(e7b02a656c67a0d866020a6
                        "tmntf4.rom",  CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))
 DE_ROMEND
 CORE_CLONEDEF(tmnt,101,104,"Teenage Mutant Ninja Turtles (1.01)",1991,"Data East",de_mDEDMD16S1,0)
-
 /* Old readme:
 Location	Chip		ChkSum		Notes
 U2			27010		34E3		Sound
@@ -460,8 +459,18 @@ F-7			27256		1530		Sound
 C5			27C256		5AFF		MPU A1.01
 B5			27128		1DFF		MPU A1.01
 DMD			27512		CDD6		DMD A1.04
-
 According to this, CPU 1.01 could already work with Display 1.04. So the question is if we should use 1.03 or rather 1.04 with CPU 1.01 */
+
+// From Matt: Info about if there are earlier sound roms or not is not known.
+//            All I know is this game had a different topper and mentioned a VUK in the captive ball area.
+DE_ROMSTART48(tmnt_a07,"tmntb5a.007",  CRC(7314f444) SHA1(e18c46009b90d8671a1f15542eb882f391bd57db),
+                       "tmntc5a.007",  CRC(f0ec9ac0) SHA1(c7c70c1185dffa725fbba09aa1c5ea52cabbc4a5))
+DE_DMD16ROM1(          "tmntdsp16.491",CRC(6ed5744e) SHA1(7d02ed19d3bc479386c58282826a3dc06999307f))
+DE1S_SOUNDROM288(      "tmntf7.rom",   CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),
+                       "tmntf6.rom",   CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),
+                       "tmntf4.rom",   CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))
+DE_ROMEND
+CORE_CLONEDEF(tmnt,a07,104,"Teenage Mutant Ninja Turtles (A 0.7 VUK Prototype)",1991,"Data East",de_mDEDMD16S1,0)
 
 /***************************************************************************/
 /** ALL FOLLOWING GAMES BELOW STARTED USING NEW SOUND BOARD WITH BSMT2000 **/
