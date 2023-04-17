@@ -704,7 +704,17 @@ int main (int argc, char *argv[]) {
     // Initialize the sound device
     const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
     ALCdevice *device = alcOpenDevice(defaultDeviceName);
+    if (!device) {
+        printf("failed to alcOpenDevice to %s\n", defaultDeviceName);
+        return 1;
+    }
+
     ALCcontext *context = alcCreateContext(device, NULL);
+    if (!context) {
+        printf("failed call to alcCreateContext\n");
+        return 1;
+    }
+
     alcMakeContextCurrent(context);
     alGenSources((ALuint) 1, &_audioSource);
     alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
@@ -777,6 +787,8 @@ int main (int argc, char *argv[]) {
 
     // Close the serial device
     serial.closeDevice();
+
+	if (device) alcCloseDevice(device);
 
 	return 0;
 }
