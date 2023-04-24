@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifdef DMDDEVICE_DLL_EXPORTS
 	#define DMDDEV __declspec(dllexport) 
 #else
