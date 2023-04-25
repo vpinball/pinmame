@@ -387,7 +387,7 @@ static struct {
   UINT8 snot_ab1, snot_ab2, snot_ab3, snot_ab4; // output from ls139 2d
   UINT8 s_ensynca,s_ensawb,s_entrigb,s_enpwma,s_ensawa,s_entriga,s_refsel,s_dacsh; // output from ls259 3h
   UINT8 s_inh4,s_inh3,s_inh2,s_inh1,s_envca,s_ensyncb; // output from ls259 3I
-  int vcrfreq,rescntl,levchb,pwmb,freqb,levcha,pwma,freqa,r500cmd;
+  int vcrfreq,rescntl,levchb,pwmb,freqb,levcha,pwma,freqa;
   int tmsPitch;
   mame_timer *fadeTimer;
   int vola, volb;
@@ -547,14 +547,15 @@ static WRITE_HANDLER(sns_pia1a_w) {
 }
 static WRITE_HANDLER(sns_pia1b_w) {
   logerror("%04x:sns_pia1b_w %02x\n", activecpu_get_previouspc(),data);
-  snslocals.r500cmd = 0;
 
   if (pia_1_portb_r(0) & ~data & 0x01) { // read, overrides write command!
-    // Port A is assigned in sns_pia1ca2_r, otherwise speech may be garbled
-    snslocals.r500cmd = 1;
+    snslocals.pia1a = tms5220_status_r(0);
   } else if (pia_1_portb_r(0) & ~data & 0x02) { // write
     tms5220_data_w(0, snslocals.pia1a);
+  } else { // pull up port A if speech chip is not read from or written to, fixes garbled speech
+    snslocals.pia1a = 0xff;
   }
+  	
   if (!(core_gameData->hw.soundBoard & 0x02) && (data & 0xf0) != (pia_1_portb_r(0) & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
   pia_set_input_b(SNS_PIA1, data);
   pia_set_input_ca2(SNS_PIA1, tms5220_ready_r());
@@ -582,8 +583,6 @@ static READ_HANDLER(sns_pia1ca1_r) {
 }
 static READ_HANDLER(sns_pia1ca2_r) {
 //  logerror("sns_pia1ca2_r TMS5220 ready %x\n", snslocals.pia1ca2);
-// oliver
-  if (snslocals.r500cmd) snslocals.pia1a = tms5220_status_r(0);
   return snslocals.pia1ca2;
 }
 static READ_HANDLER(sns_pia1cb1_r) {
