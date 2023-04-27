@@ -776,7 +776,7 @@ int main (int argc, char *argv[]) {
         }
 
         // Disable DTR, otherwise Arduino will reset permanently.
-        serial.clearDTR();
+        //serial.clearDTR();
         msg[0] = (UINT8) 255;
         msg[5] = (UINT8) 255;
         cmsg[0] = (UINT8) 255;
