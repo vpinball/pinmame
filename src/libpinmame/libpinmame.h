@@ -15,7 +15,7 @@
 #define CALLBACK
 #endif
 
-#define PINMAME_MAX_VPM_PATH 512
+#define PINMAME_MAX_PATH 512
 #define PINMAME_MAX_DISPLAYS 50
 #define PINMAME_MAX_MECHSW 20
 #define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
@@ -29,6 +29,14 @@ typedef enum {
 	MECH_HANDLE_MECHANICS = 5,
 	MECH_NO_INVALID = 6
 } PINMAME_STATUS;
+
+typedef enum {
+	ROMS = 0,
+	NVRAM = 1,
+	SAMPLES = 2,
+	CONFIG = 3,
+	HIGHSCORE = 4
+} PINMAME_FILE_TYPE;
 
 typedef enum {
 	BRIGHTNESS = 0,
@@ -360,23 +368,23 @@ typedef struct {
 	unsigned int standardcode;
 } PinmameKeyboardInfo;
 
-typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game);
-typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state);
-typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
-typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout);
-typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo);
-typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples);
-typedef void (CALLBACK *PinmameOnMechAvailableCallback)(int mechNo, PinmameMechInfo* p_mechInfo);
-typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInfo* p_mechInfo);
-typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState);
-typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size);
-typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode);
-typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args);
+typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game, void* userData);
+typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state, void* userData);
+typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, void* userData);
+typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* userData);
+typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo, void* userData);
+typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples, void* userData);
+typedef void (CALLBACK *PinmameOnMechAvailableCallback)(int mechNo, PinmameMechInfo* p_mechInfo, void* userData);
+typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInfo* p_mechInfo, void* userData);
+typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState, void* userData);
+typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size, void* userData);
+typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode, void* userData);
+typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args, void* userData);
 
 typedef struct {
 	const PINMAME_AUDIO_FORMAT audioFormat;
 	const int sampleRate;
-	const char vpmPath[PINMAME_MAX_VPM_PATH];
+	const char vpmPath[PINMAME_MAX_PATH];
 	PinmameOnStateUpdatedCallback cb_OnStateUpdated;
 	PinmameOnDisplayAvailableCallback cb_OnDisplayAvailable;
 	PinmameOnDisplayUpdatedCallback cb_OnDisplayUpdated;
@@ -393,6 +401,7 @@ typedef struct {
 LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback);
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback);
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config);
+LIBPINMAME_API void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
 LIBPINMAME_API int PinmameGetHandleKeyboard();
 LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard);
 LIBPINMAME_API int PinmameGetHandleMechanics();
@@ -425,4 +434,5 @@ LIBPINMAME_API int PinmameGetMaxMechs();
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
 LIBPINMAME_API int PinmameGetDIP(const int dipBank);
 LIBPINMAME_API void PinmameSetDIP(const int dipBank, const int value);
+LIBPINMAME_API void PinmameSetUserData(const void* p_userData);
 #endif

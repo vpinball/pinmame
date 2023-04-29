@@ -129,12 +129,12 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 	}
 }
 
-void CALLBACK Game(PinmameGame* game) {
+void CALLBACK Game(PinmameGame* game, void* p_userData) {
 	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
 		game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
-void CALLBACK OnStateUpdated(int state) {
+void CALLBACK OnStateUpdated(int state, void* p_userData) {
 	printf("OnStateUpdated(): state=%d\n", state);
 
 	if (!state) {
@@ -156,7 +156,7 @@ void CALLBACK OnStateUpdated(int state) {
 	}
 }
 
-void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout) {
+void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, void* p_userData) {
 	printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
 		displayCount,
@@ -169,7 +169,7 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
 		p_displayLayout->length);
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout) {
+void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* p_userData) {
 	printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
 		p_displayLayout->type,
@@ -188,7 +188,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 	}
 }
 
-int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
+int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* p_userData) {
 	printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
 		p_audioInfo->format,
 		p_audioInfo->channels,
@@ -199,15 +199,15 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
 	return p_audioInfo->samplesPerFrame;
 }
 
-int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
+int CALLBACK OnAudioUpdated(void* p_buffer, int samples, void* p_userData) {
 	return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState) {
+void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, void* p_userData) {
 	printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
 }
 
-void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
+void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, void* p_userData) {
 	printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
 		mechNo,
 		p_mechInfo->type,
@@ -217,7 +217,7 @@ void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
 		p_mechInfo->speed);
 }
 
-void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo) {
+void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, void* p_userData) {
 	printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
 		mechNo,
 		p_mechInfo->type,
@@ -227,15 +227,15 @@ void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo) {
 		p_mechInfo->speed);
 }
 
-void CALLBACK OnConsoleDataUpdated(void* p_data, int size) {
+void CALLBACK OnConsoleDataUpdated(void* p_data, int size, void* p_userData) {
 	printf("OnConsoleDataUpdated: size=%d\n", size);
 }
 
-int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode) {
+int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, void* p_userData) {
 	return 0;
 }
 
-void CALLBACK OnLogMessage(const char* format, va_list args) {
+void CALLBACK OnLogMessage(const char* format, va_list args, void* p_userData) {
     char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), format, args);
     printf("%s\n", buffer);
@@ -262,9 +262,9 @@ int main(int, char**) {
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)
-		snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
+		snprintf((char*)config.vpmPath, PINMAME_MAX_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
 	#else
-		snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s/.pinmame/", getenv("HOME"));
+		snprintf((char*)config.vpmPath, PINMAME_MAX_PATH, "%s/.pinmame/", getenv("HOME"));
 	#endif
 
 	PinmameSetConfig(&config);
