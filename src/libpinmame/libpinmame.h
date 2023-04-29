@@ -368,18 +368,18 @@ typedef struct {
 	unsigned int standardcode;
 } PinmameKeyboardInfo;
 
-typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game, void* userData);
-typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state, void* userData);
-typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, void* userData);
-typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* userData);
-typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo, void* userData);
-typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples, void* userData);
-typedef void (CALLBACK *PinmameOnMechAvailableCallback)(int mechNo, PinmameMechInfo* p_mechInfo, void* userData);
-typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInfo* p_mechInfo, void* userData);
-typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState, void* userData);
-typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size, void* userData);
-typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode, void* userData);
-typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args, void* userData);
+typedef void (CALLBACK *PinmameGameCallback)(PinmameGame* p_game, const void* p_userData);
+typedef void (CALLBACK *PinmameOnStateUpdatedCallback)(int state, const void* p_userData);
+typedef void (CALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData);
+typedef void (CALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData);
+typedef int (CALLBACK *PinmameOnAudioAvailableCallback)(PinmameAudioInfo* p_audioInfo, const void* p_userData);
+typedef int (CALLBACK *PinmameOnAudioUpdatedCallback)(void* p_buffer, int samples, const void* p_userData);
+typedef void (CALLBACK *PinmameOnMechAvailableCallback)(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData);
+typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData);
+typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState, const void* p_userData);
+typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size, const void* p_userData);
+typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode, const void* p_userData);
+typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args, const void* p_userData);
 
 typedef struct {
 	const PINMAME_AUDIO_FORMAT audioFormat;
@@ -398,8 +398,8 @@ typedef struct {
 	PinmameOnLogMessageCallback cb_OnLogMessage;
 } PinmameConfig;
 
-LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback);
-LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback);
+LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, const void* p_userData);
+LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, const void* p_userData);
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config);
 LIBPINMAME_API void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
 LIBPINMAME_API int PinmameGetHandleKeyboard();

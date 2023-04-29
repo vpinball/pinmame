@@ -482,7 +482,7 @@ void StartGame(const int gameNum) {
  * PinmameGetGame
  ******************************************************/
 
-LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback) {
+LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, const void* p_userData) {
 	if (_p_Config == nullptr) {
 		return CONFIG_NOT_SET;
 	}
@@ -507,7 +507,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
 	game.found = RomsetMissing(gameNum) == 0;
 
 	if (callback) {
-		(*callback)(&game, _p_userData);
+		(*callback)(&game, p_userData);
 	}
 
 	return OK;
@@ -517,7 +517,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
  * PinmameGetGames
  ******************************************************/
 
-LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
+LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, const void* p_userData) {
 	if (_p_Config == nullptr) {
 		return CONFIG_NOT_SET;
 	}
@@ -539,7 +539,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback) {
 		game.found = RomsetMissing(gameNum) == 0;
 
 		if (callback) {
-			(*callback)(&game, _p_userData);
+			(*callback)(&game, p_userData);
 		}
 
 		gameNum++;

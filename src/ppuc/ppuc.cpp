@@ -206,7 +206,7 @@ void CALLBACK Game(PinmameGame* game) {
            game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
-void CALLBACK OnStateUpdated(int state, void* p_userData) {
+void CALLBACK OnStateUpdated(int state, const void* p_userData) {
     if (opt_debug) printf("OnStateUpdated(): state=%d\n", state);
 
     if (!state) {
@@ -230,7 +230,7 @@ void CALLBACK OnStateUpdated(int state, void* p_userData) {
     }
 }
 
-void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, void* p_userData) {
+void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
     if (opt_debug) printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
                           index,
                           displayCount,
@@ -243,7 +243,7 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
                           p_displayLayout->length);
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* p_userData) {
+void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
     if (opt_debug) printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
                           index,
                           p_displayLayout->type,
@@ -324,7 +324,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
     }
 }
 
-int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* p_userData) {
+int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userData) {
     if (opt_debug) printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
                           p_audioInfo->format,
                           p_audioInfo->channels,
@@ -353,7 +353,7 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* p_userData) {
     return p_audioInfo->samplesPerFrame;
 }
 
-int CALLBACK OnAudioUpdated(void* p_buffer, int samples, void* p_userData) {
+int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData) {
     if (_audioQueue.size() >= MAX_AUDIO_QUEUE_SIZE) {
         while (!_audioQueue.empty()) {
             void* p_destBuffer = _audioQueue.front();
@@ -407,12 +407,12 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples, void* p_userData) {
     return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, void* p_userData) {
+void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData) {
     if (opt_debug) printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
     sendEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) p_solenoidState->solNo, (UINT8) p_solenoidState->state));
 }
 
-void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, void* p_userData) {
+void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData) {
     if (opt_debug) printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
                           mechNo,
                           p_mechInfo->type,
@@ -422,7 +422,7 @@ void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, void* p_u
                           p_mechInfo->speed);
 }
 
-void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, void* p_userData) {
+void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData) {
     if (opt_debug) printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
                           mechNo,
                           p_mechInfo->type,
@@ -432,11 +432,11 @@ void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, void* p_use
                           p_mechInfo->speed);
 }
 
-void CALLBACK OnConsoleDataUpdated(void* p_data, int size, void* p_userData) {
+void CALLBACK OnConsoleDataUpdated(void* p_data, int size, const void* p_userData) {
     if (opt_debug) printf("OnConsoleDataUpdated: size=%d\n", size);
 }
 
-int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, void* p_userData) {
+int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData) {
     return 0;
 }
 
