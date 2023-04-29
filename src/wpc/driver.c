@@ -3242,8 +3242,11 @@ DRIVERNV(bbeltgfp)      //      Black Belt (German Speech Free Play)
 DRIVERNV(bbeltffp)      //      Black Belt (French Speech Free Play)
 DRIVERNV(mexico)        //07/86 Mexico 86
 DRIVERNV(mexicofp)      //      Mexico 86 (Free Play)
-DRIVERNV(zankor)        //12/86 Zankor
-DRIVERNV(zankorfp)      //      Zankor (Free Play)
+DRIVERNV(zankor)        //12/86 Zankor (TMS5200 Italian Speech)
+DRIVERNV(zankorfp)      //      Zankor (TMS5200 Italian Speech, Free Play)
+DRIVERNV(zankor2i)      //      Zankor (TMS5220 Italian Speech)
+DRIVERNV(zank2ifp)      //      Zankor (TMS5220 Italian Speech, Free Play)
+                        //      Zankor (German Speech) // ROMs do exist but they have been misdumped
 DRIVERNV(spooky)        //04/87 Spooky
 DRIVERNV(spookyi)       //      Spooky (Italian Speech)
 DRIVERNV(spookyfp)      //      Spooky (Free Play)

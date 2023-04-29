@@ -73,6 +73,7 @@ Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)
 Tommy 1.02 (Belgian), 3.01 (German)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
+Zankor (TMS5220 Italian Speech)
 
 Removed Clones:
 NBA Fastbreak: 3.1 with Sound S1.0 (as this was just created to be able to use S1.0, which is nowadays wired to 1.1/1.15 instead)

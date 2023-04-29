@@ -437,14 +437,11 @@ static void fade_timer(int param) {
 
 static void initTMS(void) {
   tms5220_reset();
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370
-    || core_gameData->hw.soundBoard == SNDBRD_ZAC11178
-    || !strncasecmp(Machine->gamedrv->name, "tmac", 4)
-    || !strncasecmp(Machine->gamedrv->name, "zankor", 6)) {
-    // Pinball Champ ('82), Soccer Kings, Time Machine, Pool Champion, Black Belt, Mexico 86, Zankor
+  if (!(core_gameData->hw.gameSpecific2 & 1)) {
+    // Pinball Champ ('82), Soccer Kings, Time Machine, Pool Champion, Black Belt, Mexico 86, Zankor (TMS5200)
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
-    // Farfalla, Devil Riders, Magic Castle, Robot, Spooky, (New) Star's Phoenix, Thunder Man
+    // Farfalla, Devil Riders, Magic Castle, Robot, Zankor (TMS5220) Spooky, (New) Star's Phoenix, Thunder Man
     tms5220_set_variant(TMS5220_IS_5220C);
   }
 }
@@ -456,9 +453,7 @@ static void sns_init(struct sndbrdData *brdData) {
     pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
   }
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
-    snslocals.pia1a = 0xff;
-  }
+  snslocals.pia1a = 0xff;
   if (!(core_gameData->hw.soundBoard & 0x02)) {
     pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   }
@@ -555,7 +550,7 @@ static WRITE_HANDLER(sns_pia1b_w) {
   } else { // pull up port A if speech chip is not read from or written to, fixes garbled speech
     snslocals.pia1a = 0xff;
   }
-  	
+
   if (!(core_gameData->hw.soundBoard & 0x02) && (data & 0xf0) != (pia_1_portb_r(0) & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
   pia_set_input_b(SNS_PIA1, data);
   pia_set_input_ca2(SNS_PIA1, tms5220_ready_r());
@@ -611,7 +606,7 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 static WRITE_HANDLER(sns_data_w) {
   snslocals.lastcmd = data;
 
-  if ((core_gameData->hw.gameSpecific2 & 1) && (data & 0x80)) // some of the speech would be garbled otherwise!
+  if ((core_gameData->hw.gameSpecific2 & 2) && (data & 0x80)) // some of the speech would be garbled otherwise!
     initTMS();
 
   switch (core_gameData->hw.soundBoard) {
