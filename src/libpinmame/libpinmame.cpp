@@ -356,11 +356,17 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 					memcpy(_displayData[index], p_data, (displayLayout.width * displayLayout.height) * sizeof(UINT8));
 					(*(_p_Config->cb_OnDisplayUpdated))(index, _displayData[index], &displayLayout, _p_userData);
 				}
+				else {
+					(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &displayLayout, _p_userData);
+				}
 			}
 			else {
 				if (memcmp(_displayData[index], p_data, displayLayout.length * sizeof(UINT16))) {
 					memcpy(_displayData[index], p_data, displayLayout.length * sizeof(UINT16));
 					(*(_p_Config->cb_OnDisplayUpdated))(index, _displayData[index], &displayLayout, _p_userData);
+				}
+				else {
+					(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &displayLayout, _p_userData);
 				}
 			}
 		}
