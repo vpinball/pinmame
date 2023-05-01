@@ -180,11 +180,13 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 		p_displayLayout->depth,
 		p_displayLayout->length);
 
-	if ((p_displayLayout->type & DMD) == DMD) {
-		DumpDmd(index, (UINT8*)p_displayData, p_displayLayout);
-	}
-	else {
-		DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
+	if (p_displayData) {
+		if ((p_displayLayout->type & DMD) == DMD) {
+			DumpDmd(index, (UINT8*)p_displayData, p_displayLayout);
+		}
+		else {
+			DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
+		}
 	}
 }
 
