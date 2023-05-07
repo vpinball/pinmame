@@ -654,13 +654,11 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 //
 // logerror
 //
-#ifdef VPINMAME // VPM defines its own log function
-#ifdef _DEBUG
-    FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
-#endif
-#else /* VPINMAME */
+// VPM defines its own logger, only use this in standalone build
+#ifndef VPINMAME 
 	#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
-		static FILE *logfile = NULL;
+        FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
+        static FILE *logfile = NULL;
 		static int maxlogsize;
 		static int curlogsize;
 		static int errorlog;
