@@ -1,6 +1,7 @@
 name: ppuc
 on:
   push:
+  pull_request:
 
 env:
   VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966

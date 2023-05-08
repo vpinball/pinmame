@@ -1,6 +1,7 @@
 name: xpinmame_lisy
 on:
   push:
+  pull_request:
 
 jobs:
   build:
