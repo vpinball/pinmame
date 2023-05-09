@@ -363,9 +363,7 @@ static WRITE_HANDLER(sns_pia0cb2_w);
 static READ_HANDLER(sns_pia1a_r);
 static WRITE_HANDLER(sns_pia1a_w);
 static WRITE_HANDLER(sns_pia1b_w);
-static READ_HANDLER(sns_pia1ca1_r);
 static READ_HANDLER(sns_pia1ca2_r);
-static READ_HANDLER(sns_pia1cb1_r);
 static READ_HANDLER(sns_pia2a_r);
 static WRITE_HANDLER(sns_pia2a_w);
 static WRITE_HANDLER(sns_pia2b_w);
@@ -381,7 +379,7 @@ static void stopcem3374(int param);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1cb1, pia1ca1, pia1ca2, pia2a, pia2b;
+  int pia0a, pia0b, pia1a, pia1ca2, pia2a, pia2b;
   UINT8 lastcmd, daclatch, dacbyte1, dacbyte2;
   int dacMute,dacinp,channel;
   UINT8 snot_ab1, snot_ab2, snot_ab3, snot_ab4; // output from ls139 2d
@@ -392,18 +390,15 @@ static struct {
   mame_timer *fadeTimer;
   int vola, volb;
   UINT16 vcagain;
+  int actflags;
 } snslocals;
-
-static READ_HANDLER(sns_pia1b_r) {
-  return pia_1_portb_r(0);
-}
 
 static const struct pia6821_interface sns_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, sns_pia0cb2_w,
   /*irq: A/B           */ sns_irq0a, sns_irq0b
 },{
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, sns_pia1b_r, sns_pia1ca1_r, sns_pia1cb1_r, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, 0, 0, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq1a, sns_irq1b
 },{
@@ -418,18 +413,18 @@ static void fade_timer(int param) {
   else if (dec < 25) dec = 25; // slowest sensible fading speed, apart from 0
   if (snslocals.vola > dec) {
     snslocals.vola -= dec;
-  } else {
+  } else if (snslocals.vola) {
     snslocals.vola = 0;
     // TODO: we need to tell the main board the sound has finished; no idea how it's really done (PIA output B never changes)!?
-    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) UpdateZACSoundACT(0x03);
+    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) memory_region(REGION_CPU2)[0x0017] = 0x10;
   }
   mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   if (snslocals.volb > dec) {
     snslocals.volb -= dec;
-  } else {
+  } else if (snslocals.volb) {
     snslocals.volb = 0;
-    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) UpdateZACSoundACT(0x03);
+    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) memory_region(REGION_CPU2)[0x0037] = 0x10;
   }
   mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
@@ -437,12 +432,12 @@ static void fade_timer(int param) {
 
 static void initTMS(void) {
   tms5220_reset();
-  if (!(core_gameData->hw.gameSpecific2 & 1)) {
+  if (!(core_gameData->hw.gameSpecific2 & USES_TMS_5220)) {
     // Pinball Champ ('82), Soccer Kings, Time Machine, Pool Champion, Black Belt, Mexico 86, Zankor (TMS5200)
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
-    // Farfalla, Devil Riders, Magic Castle, Robot, Zankor (TMS5220) Spooky, (New) Star's Phoenix, Thunder Man
-    tms5220_set_variant(TMS5220_IS_5220C);
+    // Farfalla, Devil Riders, Magic Castle, Robot, Zankor (TMS5220), Spooky, (New) Star's Phoenix, Thunder Man
+    tms5220_set_variant(TMS5220_IS_5220);
   }
 }
 
@@ -459,7 +454,9 @@ static void sns_init(struct sndbrdData *brdData) {
   }
   // reset tms5220
   snslocals.tmsPitch = -1;
+  snslocals.actflags = 3;
   initTMS();
+  UpdateZACSoundACT(snslocals.actflags);
 
   if (core_gameData->hw.soundBoard & 0x02) {
     snslocals.fadeTimer = timer_alloc(fade_timer);
@@ -556,12 +553,21 @@ static WRITE_HANDLER(sns_pia1b_w) {
   pia_set_input_ca2(SNS_PIA1, tms5220_ready_r());
 
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
-    UpdateZACSoundACT(data & 0x04 ? 0 : 0x03);  //both ACTSND & ACTSPK inverted on bit 2
+  	if (snslocals.actflags != (data & 0x04 ? 0 : 3)) {
+      snslocals.actflags = data & 0x04 ? 0 : 3; //both ACTSND & ACTSPK inverted on bit 2
+      UpdateZACSoundACT(snslocals.actflags);
+    }
   } else if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
-    UpdateZACSoundACT(data & 0x04 ? 0 : 0x02);  //only ACTSND inverted on bit 2, ACTSPK not used?
-//    logerror("%04x:UpdateZACSoundACT %x\n", activecpu_get_previouspc(),data);
+    int old = snslocals.actflags;
+    snslocals.actflags = (snslocals.actflags & 1) | (data & 0x04 ? 0 : 2); // ACTSND inverted on bit 2, ACTSPK from daughter board
+    if (snslocals.actflags != old) {
+      UpdateZACSoundACT(snslocals.actflags);
+    }
   } else {
-    UpdateZACSoundACT((data>>2) & 0x03);    //ACTSPK & ACTSND on bits 2 & 3
+    if (snslocals.actflags != ((data >> 2) & 0x03)) {
+      snslocals.actflags = (data >> 2) & 0x03; //ACTSPK & ACTSND on bits 2 & 3
+      UpdateZACSoundACT(snslocals.actflags);
+    }
   }
   // set ab1 to ab4 switches based on pb3 & pb4 IC 2d
   if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
@@ -573,18 +579,9 @@ static WRITE_HANDLER(sns_pia1b_w) {
 //    logerror("sns_pia1b_w: data %x snot_ab4 %x snot_ab3 %x snot_ab2 %x snot_ab1 %x \n", data,snslocals.snot_ab4,snslocals.snot_ab3,snslocals.snot_ab2,snslocals.snot_ab1);
   }
 }
-static READ_HANDLER(sns_pia1ca1_r) {
-  return snslocals.pia1ca1;
-}
 static READ_HANDLER(sns_pia1ca2_r) {
 //  logerror("sns_pia1ca2_r TMS5220 ready %x\n", snslocals.pia1ca2);
   return snslocals.pia1ca2;
-}
-static READ_HANDLER(sns_pia1cb1_r) {
-  if (core_gameData->hw.soundBoard & 0x02) // true for all 11178
-    return snslocals.pia1cb1;
-  else
-    return tms5220_int_r();
 }
 
 static READ_HANDLER(sns_pia2a_r) {
@@ -606,7 +603,7 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 static WRITE_HANDLER(sns_data_w) {
   snslocals.lastcmd = data;
 
-  if ((core_gameData->hw.gameSpecific2 & 2) && (data & 0x80)) // some of the speech would be garbled otherwise!
+  if ((core_gameData->hw.gameSpecific2 & NEEDS_TMS_RESET_ON_DATA) && (data & 0x80)) // some of the speech would be garbled otherwise!
     initTMS();
 
   switch (core_gameData->hw.soundBoard) {
@@ -617,15 +614,10 @@ static WRITE_HANDLER(sns_data_w) {
       cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
       break;
     case SNDBRD_ZAC11178:
-      snslocals.pia1ca1 = data & 0x80 ? 1 : 0;
-      pia_set_input_ca1(SNS_PIA1, snslocals.pia1ca1);
+      pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0);
       break;
     case SNDBRD_ZAC11178_13181:
-      if (data & 0x40) { // don't let illegal sound commands confuse the main board
-        snslocals.pia1ca1 = data & 0x80 ? 1 : 0;
-        pia_set_input_ca1(SNS_PIA1, snslocals.pia1ca1); // CA1 should connect to GND according to schematics... or to DB7! :)
-      }
-//      logerror("sns_data_w command stored %x\n", data);
+      pia_set_input_ca1(SNS_PIA1, (data & 0xc0) == 0xc0); // CA1 is fed by DB6 & DB7 from daughter board (same signals as on main board though)
       // cpu reads command from adress b0 after nmi !!!
       if ((~data & 0x40) && (data & 0x80)) cpu_set_nmi_line(ZACSND_CPUB, PULSE_LINE);
       break;
@@ -848,8 +840,8 @@ static void startcem3374(int param) {
 }
 
 static INTERRUPT_GEN(sns3_irq) {
-  snslocals.pia1cb1 = !snslocals.pia1cb1;
-  pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
+  static int cb1;
+  pia_set_input_cb1(SNS_PIA1, cb1 = !cb1);
 #ifdef MAME_DEBUG
   if (keyboard_pressed_memory_repeat(KEYCODE_B, 30)) memory_region(REGION_CPU2)[0x0050] &= 0xfb;
   if (keyboard_pressed_memory_repeat(KEYCODE_N, 30)) memory_region(REGION_CPU2)[0x0037] = 0x10;
@@ -1046,10 +1038,12 @@ static WRITE_HANDLER(DAC_2_signed_data_w) { DAC_signed_data_w(2, data); }
 static WRITE_HANDLER(DAC_3_signed_data_w) { DAC_signed_data_w(3, data); }
 static WRITE_HANDLER(DAC_4_signed_data_w) { DAC_signed_data_w(4, data); }
 
-static int actflags;
 static WRITE_HANDLER(akl_w) {
-  actflags = (actflags & 2) | (~data & 1);
-  UpdateZACSoundACT(actflags);
+	int old = snslocals.actflags;
+  snslocals.actflags = (snslocals.actflags & 2) | (~data & 1);
+  if (old != snslocals.actflags) {
+    UpdateZACSoundACT(snslocals.actflags);
+  }
 }
 
 static WRITE_HANDLER(akl1_w) {
@@ -1062,8 +1056,11 @@ static WRITE_HANDLER(akl2_w) {
 }
 
 static WRITE_HANDLER(akl3_w) {
-  actflags = (actflags & 1) | (~data & 1) << 1;
-  UpdateZACSoundACT(actflags);
+	int old = snslocals.actflags;
+  snslocals.actflags = (snslocals.actflags & 1) | (~data & 1) << 1;
+  if (old != snslocals.actflags) {
+    UpdateZACSoundACT(snslocals.actflags);
+  }
 }
 
 static UINT8 solcmd;

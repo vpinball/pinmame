@@ -35,9 +35,6 @@ static core_tLCDLayout dispZAC3[] = {
 #define SOUNDFLAG GAME_IMPERFECT_SOUND
 #endif
 
-#define USES_TMS_5220            1
-#define NEEDS_TMS_RESET_ON_DATA  2
-
 #define INITGAME1(name, gen, disp, sb) \
 static core_tGameData name##GameData = {gen,disp,{FLIP_SW(FLIP_L),0,0,0,sb,0,125}}; \
 static void init_##name(void) { \
