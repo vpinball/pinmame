@@ -413,18 +413,15 @@ static void fade_timer(int param) {
   else if (dec < 25) dec = 25; // slowest sensible fading speed, apart from 0
   if (snslocals.vola > dec) {
     snslocals.vola -= dec;
-  } else if (snslocals.vola) {
+  } else {
     snslocals.vola = 0;
-    // TODO: we need to tell the main board the sound has finished; no idea how it's really done (PIA output B never changes)!?
-    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) memory_region(REGION_CPU2)[0x0017] = 0x10;
   }
   mixer_set_volume(snslocals.channel,   snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   mixer_set_volume(snslocals.channel+1, snslocals.vola * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   if (snslocals.volb > dec) {
     snslocals.volb -= dec;
-  } else if (snslocals.volb) {
+  } else {
     snslocals.volb = 0;
-    if (!snslocals.vola && !snslocals.volb && !snslocals.s_enpwma) memory_region(REGION_CPU2)[0x0037] = 0x10;
   }
   mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
   mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
@@ -760,7 +757,30 @@ static MEMORY_READ_START(sns3_readmem)
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
+// TODO: remove this hack once we find out how the end of sounds are actually triggered
+static WRITE_HANDLER(hack) {
+  static UINT8 old[48];
+  int i, allOnes = 1;
+  memory_region(REGION_CPU2)[0x5e] = data;
+  for (i = 0; i < 48; i++) {
+    if (old[i] != 0x01) {
+      allOnes = 0;
+      break;
+    }
+  }
+  if (allOnes) {
+    memory_region(REGION_CPU2)[0x0017] = 0x10;
+    memset(old, 0, sizeof(old));
+    return;
+  }
+  for (i = 46; i >= 0; i--) {
+    old[i + 1] = old[i];
+  }
+  old[0] = data;
+}
+
 static MEMORY_WRITE_START(sns3_writemem)
+  { 0x005e, 0x005e, hack },
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x0087, chip3h259 },
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
