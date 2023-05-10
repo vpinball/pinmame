@@ -658,7 +658,7 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 #ifndef VPINMAME 
 #ifndef __GNUC__
 	#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
-		FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
+//		FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
 		static FILE *logfile = NULL;
 		static int maxlogsize;
 		static int curlogsize;
