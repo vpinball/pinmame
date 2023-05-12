@@ -408,7 +408,7 @@ static const struct pia6821_interface sns_pia[] = {{
 }};
 
 static void fade_timer(int param) {
-  int dec = snslocals.rescntl / 32;
+  int dec = snslocals.rescntl / 64;
   if (!dec) dec = 16; // fade veeery slowly on 0 value :)
   else if (dec < 25) dec = 25; // slowest sensible fading speed, apart from 0
   if (snslocals.vola > dec) {
@@ -501,6 +501,8 @@ static void writeToCEM(void) {
       break;
     case 7:
       changed = (snslocals.vcrfreq != snslocals.dacinp);
+      if (changed && snslocals.vola < snslocals.levcha - 12) snslocals.vola += 12;
+      if (changed && snslocals.volb < snslocals.levchb - 12) snslocals.volb += 12;
       snslocals.vcrfreq = snslocals.dacinp;
   }
   if (changed) startcem3374(snslocals.s_ensyncb);
@@ -773,10 +775,14 @@ static WRITE_HANDLER(hack) {
     memset(old, 0, sizeof(old));
     return;
   }
-  for (i = 46; i >= 0; i--) {
-    old[i + 1] = old[i];
+  if (data != 0x01) {
+    memset(old, 0, sizeof(old));
+  } else {
+    for (i = 46; i >= 0; i--) {
+      old[i + 1] = old[i];
+    }
+    old[0] = data;
   }
-  old[0] = data;
 }
 
 static MEMORY_WRITE_START(sns3_writemem)
