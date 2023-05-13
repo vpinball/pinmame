@@ -761,10 +761,16 @@ MEMORY_END
 
 // TODO: remove this hack once we find out how the end of sounds are actually triggered
 static WRITE_HANDLER(hack) {
-  static UINT8 old[48];
+  static UINT8 old[75];
+  static int oldact;
   int i, allOnes = 1;
-  memory_region(REGION_CPU2)[0x5e] = data;
-  for (i = 0; i < 48; i++) {
+  memory_region(REGION_CPU2)[0x005e] = data;
+  if (snslocals.actflags != oldact) {
+    memset(&old, 0, sizeof(old));
+    oldact = snslocals.actflags;
+    return;
+  }
+  for (i = 0; i < 75; i++) {
     if (old[i] != 0x01) {
       allOnes = 0;
       break;
@@ -772,13 +778,13 @@ static WRITE_HANDLER(hack) {
   }
   if (allOnes) {
     memory_region(REGION_CPU2)[0x0017] = 0x10;
-    memset(old, 0, sizeof(old));
+    memset(&old, 0, sizeof(old));
     return;
   }
   if (data != 0x01) {
-    memset(old, 0, sizeof(old));
+    memset(&old, 0, sizeof(old));
   } else {
-    for (i = 46; i >= 0; i--) {
+    for (i = 73; i >= 0; i--) {
       old[i + 1] = old[i];
     }
     old[0] = data;
@@ -860,9 +866,9 @@ static void startcem3374(int param) {
       mixer_play_sample(snslocals.channel+3, sawWave, sawSize, snslocals.s_ensynca ? (freqa + freqb) / 2 : freqb, 1);
   } else
     mixer_stop_sample(snslocals.channel+3);
-//printf("FREQA:%03x PWMA:%03x LEVA:%03x FREQB:%03x PWMB:%03x LEVB:%03x RESCTRL:%03x VCRFREQ:%03x ", snslocals.freqa, snslocals.pwma, snslocals.levcha, snslocals.freqb, snslocals.pwmb, snslocals.levchb, snslocals.rescntl, snslocals.vcrfreq);
-//printf("DACSH:%x REFSEL:%x TRIGA:%x SAWA:%x PWMA:%x TRIGB:%x SAWB:%x SYNCA:%x SYNCB:%x VCA:%x ", snslocals.s_dacsh, snslocals.s_refsel, snslocals.s_entriga, snslocals.s_ensawa, snslocals.s_enpwma, snslocals.s_entrigb, snslocals.s_ensawb, snslocals.s_ensynca, snslocals.s_ensyncb, snslocals.s_envca);
-//printf("INH1:%x INH2:%x INH3:%x INH4:%x\n", snslocals.s_inh1, snslocals.s_inh2, snslocals.s_inh3, snslocals.s_inh4);
+//printf("FREQA:%03x PWMA:%03x LEVA:%03x FREQB:%03x PWMB:%03x LEVB:%03x RESCTRL:%03x VCRFREQ:%03x GAIN:%03x ", snslocals.freqa, snslocals.pwma, snslocals.levcha, snslocals.freqb, snslocals.pwmb, snslocals.levchb, snslocals.rescntl, snslocals.vcrfreq, snslocals.vcagain);
+//printf("DACSH:%x REFSEL:%x TRIGA:%x SAWA:%x PWMA:%x TRIGB:%x SAWB:%x SYNCA:%x SYNCB:%x ", snslocals.s_dacsh, snslocals.s_refsel, snslocals.s_entriga, snslocals.s_ensawa, snslocals.s_enpwma, snslocals.s_entrigb, snslocals.s_ensawb, snslocals.s_ensynca, snslocals.s_ensyncb);
+//printf("INH:%x%x%x%x\n", snslocals.s_inh1, snslocals.s_inh2, snslocals.s_inh3, snslocals.s_inh4);
 }
 
 static INTERRUPT_GEN(sns3_irq) {
@@ -964,7 +970,7 @@ static WRITE_HANDLER(chip3h259) {
 }
 
 static WRITE_HANDLER(chip3i259) {
-  static int lastinh1, lastvca;
+  static int lastinh1;
   int changed = 0;
   int flag = (data | ~pia_1_portb_r(0)) & 1;
   if (snslocals.snot_ab1) {     // Enable is logic low, latch adressable
@@ -978,6 +984,11 @@ static WRITE_HANDLER(chip3i259) {
         snslocals.s_ensyncb = flag;
         break;
       case 1:
+        if (!flag && !snslocals.s_envca) {
+          changed = 1;
+          snslocals.vola = snslocals.levcha;
+          snslocals.volb = snslocals.levchb;
+        }
         snslocals.s_envca = flag;
         if (flag && snslocals.vcagain != snslocals.dacinp) {
           snslocals.vcagain = snslocals.dacinp;
@@ -986,12 +997,6 @@ static WRITE_HANDLER(chip3i259) {
           mixer_set_volume(snslocals.channel+2, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
           mixer_set_volume(snslocals.channel+3, snslocals.volb * snslocals.vcagain * 100u / (0xfffu * 0xfffu));
         }
-        if (!flag && !lastvca) {
-          changed = 1;
-          snslocals.vola = snslocals.levcha;
-          snslocals.volb = snslocals.levchb;
-        }
-        lastvca = flag;
         break;
       case 2:
         snslocals.s_inh1 = flag;
