@@ -12,10 +12,13 @@ Fix Capcom crashes in 64bit builds
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
-Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
-Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
  this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
+Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
+Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
+Fixed Zaccaria strsphnx sound emulation
+Found a cleaner way to prevent garbled speech on Zaccaria
+General Zaccaria sound improvements
 Fixed 6 million dollar man 7 digit conversion display
 Fixed inverted switches for ffv101
 Fixed regression in DCS Audio decoding
