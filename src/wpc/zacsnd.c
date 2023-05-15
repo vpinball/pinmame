@@ -552,7 +552,7 @@ static WRITE_HANDLER(sns_pia1b_w) {
   pia_set_input_ca2(SNS_PIA1, tms5220_ready_r());
 
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
-  	if (snslocals.actflags != (data & 0x04 ? 0 : 3)) {
+    if (snslocals.actflags != (data & 0x04 ? 0 : 3)) {
       snslocals.actflags = data & 0x04 ? 0 : 3; //both ACTSND & ACTSPK inverted on bit 2
       snslocals.vola = snslocals.volb = 0;
       UpdateZACSoundACT(snslocals.actflags);
@@ -718,6 +718,7 @@ static const UINT8 triangleWave[] = {
   0xc1, 0xc9, 0xd1, 0xd9, 0xe1, 0xe9, 0xf1, 0xf9  //           *
 };
 static UINT8 triangleWaver[64];
+static UINT8 triangleWave45[64];
 
 static const UINT8 sawtoothWave[] = {
   0x02, 0x06, 0x0a, 0x0e, 0x12, 0x16, 0x1a, 0x1e, //       *
@@ -730,6 +731,7 @@ static const UINT8 sawtoothWave[] = {
   0xe2, 0xe6, 0xea, 0xee, 0xf2, 0xf6, 0xfa, 0xfe  //       *
 };
 static UINT8 sawtoothWaver[64];
+static UINT8 sawtoothWave45[64];
 
 static int sns_sh_start(const struct MachineSound *msound) {
   UINT8 i;
@@ -737,6 +739,15 @@ static int sns_sh_start(const struct MachineSound *msound) {
   for (i=0; i < 64; i++) {  // reverse waves
     triangleWaver[63-i]=triangleWave[i];
     sawtoothWaver[63-i]=sawtoothWave[i];
+  }
+  // apply some sort of 45 deg filter
+  for (i = 0; i < 56; i++) {
+    triangleWave45[i + 8] = triangleWave[i];
+    sawtoothWave45[i + 8] = sawtoothWave[i];
+  }
+  for (i = 56; i < 64; i++) {
+    triangleWave45[i - 56] = triangleWave[i];
+    sawtoothWave45[i - 56] = sawtoothWave[i];
   }
   UpdateZACSoundLED(1, 1);
   if (!snslocals.channel) {
@@ -841,7 +852,7 @@ static void startcem3374(int param) {
     if (mixer_is_sample_playing(snslocals.channel))
       mixer_set_sample_frequency(snslocals.channel, snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa);
     else
-      mixer_play_sample(snslocals.channel, (signed char *)triangleWave, sizeof(triangleWave), snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa, 1);
+      mixer_play_sample(snslocals.channel, (signed char *)triangleWave45, sizeof(triangleWave45), snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa, 1);
   } else
     mixer_stop_sample(snslocals.channel);
 
@@ -849,7 +860,7 @@ static void startcem3374(int param) {
     if (mixer_is_sample_playing(snslocals.channel+1))
       mixer_set_sample_frequency(snslocals.channel+1, snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa);
     else
-      mixer_play_sample(snslocals.channel+1, (signed char *)sawtoothWave, sizeof(sawtoothWave), snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa, 1);
+      mixer_play_sample(snslocals.channel+1, (signed char *)sawtoothWave45, sizeof(sawtoothWave45), snslocals.s_ensyncb ? (freqa + freqb) / 2 : freqa, 1);
   } else
     mixer_stop_sample(snslocals.channel+1);
 
@@ -982,6 +993,8 @@ static WRITE_HANDLER(chip3i259) {
         if (changed) {
           snslocals.vola = snslocals.levcha;
           snslocals.volb = snslocals.levchb;
+          stream_update(snslocals.channel+2, 0);
+          stream_update(snslocals.channel+3, 0);
         }
         snslocals.s_ensyncb = flag;
         break;
@@ -1072,7 +1085,7 @@ static WRITE_HANDLER(DAC_3_signed_data_w) { DAC_signed_data_w(3, data); }
 static WRITE_HANDLER(DAC_4_signed_data_w) { DAC_signed_data_w(4, data); }
 
 static WRITE_HANDLER(akl_w) {
-	int old = snslocals.actflags;
+  int old = snslocals.actflags;
   snslocals.actflags = (snslocals.actflags & 2) | (~data & 1);
   if (old != snslocals.actflags) {
     UpdateZACSoundACT(snslocals.actflags);
@@ -1089,7 +1102,7 @@ static WRITE_HANDLER(akl2_w) {
 }
 
 static WRITE_HANDLER(akl3_w) {
-	int old = snslocals.actflags;
+  int old = snslocals.actflags;
   snslocals.actflags = (snslocals.actflags & 1) | (~data & 1) << 1;
   if (old != snslocals.actflags) {
     UpdateZACSoundACT(snslocals.actflags);
