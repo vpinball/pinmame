@@ -554,12 +554,14 @@ static WRITE_HANDLER(sns_pia1b_w) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
   	if (snslocals.actflags != (data & 0x04 ? 0 : 3)) {
       snslocals.actflags = data & 0x04 ? 0 : 3; //both ACTSND & ACTSPK inverted on bit 2
+      snslocals.vola = snslocals.volb = 0;
       UpdateZACSoundACT(snslocals.actflags);
     }
   } else if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     int old = snslocals.actflags;
     snslocals.actflags = (snslocals.actflags & 1) | (data & 0x04 ? 0 : 2); // ACTSND inverted on bit 2, ACTSPK from daughter board
     if (snslocals.actflags != old) {
+      snslocals.vola = snslocals.volb = 0;
       UpdateZACSoundACT(snslocals.actflags);
     }
   } else {
@@ -779,7 +781,6 @@ static WRITE_HANDLER(hack) {
   if (allOnes) {
     memory_region(REGION_CPU2)[0x0017] = 0x10; // this will ultimately write to PIA port B bit 2
     memset(&old, 0, sizeof(old));
-    if (snslocals.lastcmd != 0x7e) snslocals.vola = snslocals.volb = 0; // make up for a "bug" in Mexico 86
     return;
   }
   if (data != 0x01) {
