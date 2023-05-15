@@ -408,7 +408,7 @@ static const struct pia6821_interface sns_pia[] = {{
 }};
 
 static void fade_timer(int param) {
-  int dec = snslocals.rescntl / 64;
+  int dec = snslocals.rescntl / 128;
   if (!dec) dec = 16; // fade veeery slowly on 0 value :)
   else if (dec < 25) dec = 25; // slowest sensible fading speed, apart from 0
   if (snslocals.vola > dec) {
@@ -777,8 +777,9 @@ static WRITE_HANDLER(hack) {
     }
   }
   if (allOnes) {
-    memory_region(REGION_CPU2)[0x0017] = 0x10;
+    memory_region(REGION_CPU2)[0x0017] = 0x10; // this will ultimately write to PIA port B bit 2
     memset(&old, 0, sizeof(old));
+    if (snslocals.lastcmd != 0x7e) snslocals.vola = snslocals.volb = 0; // make up for a "bug" in Mexico 86
     return;
   }
   if (data != 0x01) {
@@ -1053,7 +1054,7 @@ static WRITE_HANDLER(chip3i259) {
 / That's five DAC chips playing at the same time! :)
 /-----------------------------------------*/
 static struct DACinterface     z80_1dacInt = { 1, { 50 }};
-static struct DACinterface     z80_3dacInt = { 3, { 20, 30, 30 }};
+static struct DACinterface     z80_3dacInt = { 3, { 15, 20, 20 }};
 static struct DACinterface     z80_5dacInt = { 5, { 20, 30, 30, 20, 30 }};
 
 static MEMORY_READ_START(z80_readmem)
