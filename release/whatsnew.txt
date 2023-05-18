@@ -18,12 +18,13 @@ Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but 
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Fixed Zaccaria strsphnx sound, background music works correctly now
 Found a cleaner way to prevent garbled speech on Zaccaria
-Fixed 6 million dollar man 7 digit conversion display
-Fixed inverted switches for ffv101
+Use YMFM's YM2151 core for a more accurate emulation (GTS3, Older Bally/Williams WPCs, Older Data Easts)
 Fixed regression in DCS Audio decoding
 Also fixed one subtle DCS emulation bug that leads to slight buzzing/crackling on some samples though (mainly audible when using good speakers or headphones or if the internal volume is cranked up very high)
  one of the longest standing bugs in the history of PinMAME!
 Due to the above, remove DCS low pass filtering (introduced in 2.8) again and prefer 1:1 DCS output quality
+Fixed 6 million dollar man 7 digit conversion display
+Fixed inverted switches for ffv101
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
 New:
