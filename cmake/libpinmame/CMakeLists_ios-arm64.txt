@@ -63,7 +63,7 @@ add_compile_definitions(
    HAS_TMS9995=1
    HAS_COP420=1
    HAS_DAC=1
-   HAS_YM2151_ALT=1
+   HAS_YM2151_YMFM=1
    HAS_HC55516=1
    HAS_MC3417=1
    HAS_SAMPLES=1
