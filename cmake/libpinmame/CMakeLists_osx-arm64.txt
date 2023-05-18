@@ -577,6 +577,9 @@ set(PINMAME_SOURCES
 
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
+
+   ext/ymfm/ymfm_opm.cpp
+   ext/ymfm/ymfm_opm.h
 )
 
 set(PINMAME_INCLUDE_DIRS

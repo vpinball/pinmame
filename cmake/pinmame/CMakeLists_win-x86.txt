@@ -613,6 +613,9 @@ add_executable(pinmame WIN32
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
 
+   ext/ymfm/ymfm_opm.cpp
+   ext/ymfm/ymfm_opm.h
+
    ext/zlib/adler32.c
    ext/zlib/compress.c
    ext/zlib/crc32.c

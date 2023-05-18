@@ -575,6 +575,9 @@ add_executable(xpinmame
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
 
+   ext/ymfm/ymfm_opm.cpp
+   ext/ymfm/ymfm_opm.h
+
    src/unix/main.c 
    src/unix/sound.c 
    src/unix/keyboard.c 

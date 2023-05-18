@@ -591,6 +591,9 @@ add_library(pinmame STATIC
 
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
+
+   ext/ymfm/ymfm_opm.cpp
+   ext/ymfm/ymfm_opm.h
 )
 
 target_include_directories(pinmame PUBLIC
