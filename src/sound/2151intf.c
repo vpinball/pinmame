@@ -38,6 +38,7 @@
 
  static void* chip[MAX_2151];
  static unsigned short vgm_idx[MAX_2151];
+ static unsigned char lastreg[MAX_2151];
 #endif
 
 /* for stream system */
@@ -451,19 +452,19 @@ READ_HANDLER( YM2151_status_port_2_r )
 }
 
 #if (HAS_YM2151_ALT)
-static int lastreg0, lastreg1, lastreg2;
+static int lastreg[MAX_2151];
 
 WRITE_HANDLER( YM2151_register_port_0_w )
 {
-	lastreg0 = data;
+	lastreg[0] = data;
 }
 WRITE_HANDLER( YM2151_register_port_1_w )
 {
-	lastreg1 = data;
+	lastreg[1] = data;
 }
 WRITE_HANDLER( YM2151_register_port_2_w )
 {
-	lastreg2 = data;
+	lastreg[2] = data;
 }
 
 WRITE_HANDLER( YM2151_data_port_0_w )
@@ -472,27 +473,27 @@ WRITE_HANDLER( YM2151_data_port_0_w )
 	{
 #if (HAS_YM2151)
 	case CHIP_YM2151_DAC:
-		YM2151Write(0,0,lastreg0);
+		YM2151Write(0,0,lastreg[0]);
 		YM2151Write(0,1,data);
 		break;
 #endif
 #if (HAS_YM2151_ALT)
 	case CHIP_YM2151_ALT:
 		YM2151UpdateRequest(0);
-		YM2151WriteReg(0,lastreg0,data);
+		YM2151WriteReg(0,lastreg[0],data);
 		break;
 #endif
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(0);
-		OPM_Write/*Buffered*/(&chip[0], lastreg0, data);
+		OPM_Write/*Buffered*/(&chip[0], lastreg[0], data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(0);
-		vgm_write(vgm_idx[0], 0x00, lastreg0, data);
-		ymfm_ym2151_write/*_buffered*/(chip[0], lastreg0, data);
+		vgm_write(vgm_idx[0], 0x00, lastreg[0], data);
+		ymfm_ym2151_write/*_buffered*/(chip[0], lastreg[0], data);
 		break;
 #endif
 	}
@@ -504,27 +505,27 @@ WRITE_HANDLER( YM2151_data_port_1_w )
 	{
 #if (HAS_YM2151)
 	case CHIP_YM2151_DAC:
-		YM2151Write(1,0,lastreg1);
+		YM2151Write(1,0,lastreg[1]);
 		YM2151Write(1,1,data);
 		break;
 #endif
 #if (HAS_YM2151_ALT)
 	case CHIP_YM2151_ALT:
 		YM2151UpdateRequest(1);
-		YM2151WriteReg(1,lastreg1,data);
+		YM2151WriteReg(1,lastreg[1],data);
 		break;
 #endif
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(1);
-		OPM_Write/*Buffered*/(&chip[1], lastreg1, data);
+		OPM_Write/*Buffered*/(&chip[1], lastreg[1], data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(1);
-		vgm_write(vgm_idx[1], 0x00, lastreg1, data);
-		ymfm_ym2151_write/*_buffered*/(chip[1], lastreg1, data);
+		vgm_write(vgm_idx[1], 0x00, lastreg[1], data);
+		ymfm_ym2151_write/*_buffered*/(chip[1], lastreg[1], data);
 		break;
 #endif
 	}
@@ -536,27 +537,27 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 	{
 #if (HAS_YM2151)
 	case CHIP_YM2151_DAC:
-		YM2151Write(2,0,lastreg2);
+		YM2151Write(2,0,lastreg[2]);
 		YM2151Write(2,1,data);
 		break;
 #endif
 #if (HAS_YM2151_ALT)
 	case CHIP_YM2151_ALT:
 		YM2151UpdateRequest(2);
-		YM2151WriteReg(2,lastreg2,data);
+		YM2151WriteReg(2,lastreg[2],data);
 		break;
 #endif
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(2);
-		OPM_Write/*Buffered*/(&chip[2], lastreg2, data);
+		OPM_Write/*Buffered*/(&chip[2], lastreg[2], data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(2);
-		vgm_write(vgm_idx[2], 0x00, lastreg2, data);
-		ymfm_ym2151_write/*_buffered*/(chip[2], lastreg2, data);
+		vgm_write(vgm_idx[2], 0x00, lastreg[2], data);
+		ymfm_ym2151_write/*_buffered*/(chip[2], lastreg[2], data);
 		break;
 #endif
 	}
@@ -576,7 +577,10 @@ WRITE_HANDLER( YM2151_word_0_w )
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(0);
-		vgm_write(vgm_idx[0], 0x00, offset, data);
+		if (offset & 0x01)
+			vgm_write(vgm_idx[0], offset >> 1, lastreg[0], data);
+		else
+			lastreg[0] = data;
 		ymfm_ym2151_write/*_buffered*/(chip[0], offset, data);
 		break;
 #endif
@@ -604,7 +608,10 @@ WRITE_HANDLER( YM2151_word_1_w )
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(1);
-		vgm_write(vgm_idx[1], 0x00, offset, data);
+		if (offset & 0x01)
+			vgm_write(vgm_idx[1], offset >> 1, lastreg[1], data);
+		else
+			lastreg[1] = data;
 		ymfm_ym2151_write/*_buffered*/(chip[1], offset, data);
 		break;
 #endif
