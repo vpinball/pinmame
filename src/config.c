@@ -650,15 +650,18 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 	return CONFIG_ERROR_SUCCESS;
 }
 // DAR_DEBUG @20230506 Defining this for now without a filename just to avoid
-//                     linking errors for DEBUG builds
+//                     linking errors for DEBUG builds.
+// DAR @20230510 Added check for LIBPINMAME since we only want this if we are
+//               building libpinmame standalone in DEBUG
 //
 // logerror
 //
 // VPM defines its own logger, only use this in standalone build
 #ifndef VPINMAME 
 #ifndef __GNUC__
+#ifdef LIBPINMAME
 	#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
-		FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
+//		FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
 		static FILE *logfile = NULL;
 		static int maxlogsize;
 		static int curlogsize;
@@ -692,5 +695,6 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 			va_end(arg);
 		}
 	#endif /* PINMAME DEBUG */
+#endif /* LIBPINMAME*/
 #endif /* __GNUC__ (mingw) */
 #endif /* VPINMAME */
