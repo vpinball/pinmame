@@ -112,7 +112,7 @@ lisy_hw_init(int lisy_variant) {
     lisy_env.disp_sw_ver = 0;                //Display PIC Software version
     lisy_env.coil_sw_ver = 0;                //Coil PIC Software version
     lisy_env.switch_sw_ver = 0;              //Coil PIC Software version
-    strcpy(lisy_env.gitversion, GITVERSION); //LISY Softwareversion git format
+    strcpy(lisy_env.gitversion, LISYVERSION); //LISY Softwareversion
     lisy_env.has_soundcard = 0;              //do we have a soundcard?
     lisy_env.has_own_sounds = 0;             //do we want to play pinmame sounds?
 
@@ -235,12 +235,12 @@ lisy_set_gamename(char* arg_from_main, char* lisy_gamename) {
     return (0);
 }
 
-//get lisyversion ( from GITVERSION in lisyversion.h )
+//get lisyversion ( from LISYVERSION in lisyversion.h )
 //attention will cause seg fault if misconfigured
 void
 lisy_get_sw_version(unsigned char* sw_main, unsigned char* sw_sub, unsigned char* commit) {
 
-    char gitversion[40] = GITVERSION;
+    char gitversion[40] = LISYVERSION;
 
     //gitversion has format:  "5.20-1-g6f15813"
     *sw_main = atoi(strtok(gitversion, "."));

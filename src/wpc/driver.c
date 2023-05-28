@@ -474,7 +474,8 @@ DRIVER(simp,a20)        //Data East MPU: 09/90 Simpsons, The (2.0)
 DRIVER(simp,a27)        //               09/90 Simpsons, The (2.7)
 //DMD 128 x 16
 DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
-DRIVER(tmnt,101)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.01)
+DRIVER(tmnt,a07)        //Data East MPU: 04/91 Teenage Mutant Ninja Turtles (A 0.7 VUK Prototype)
+DRIVER(tmnt,101)        //               05/91 Teenage Mutant Ninja Turtles (1.01)
 DRIVER(tmnt,103)        //               05/91 Teenage Mutant Ninja Turtles (1.03)
 DRIVER(tmnt,104)        //               05/91 Teenage Mutant Ninja Turtles (1.04)
 DRIVER(tmnt,104g)       //               05/91 Teenage Mutant Ninja Turtles (1.04 German)
@@ -3241,8 +3242,11 @@ DRIVERNV(bbeltgfp)      //      Black Belt (German Speech Free Play)
 DRIVERNV(bbeltffp)      //      Black Belt (French Speech Free Play)
 DRIVERNV(mexico)        //07/86 Mexico 86
 DRIVERNV(mexicofp)      //      Mexico 86 (Free Play)
-DRIVERNV(zankor)        //12/86 Zankor
-DRIVERNV(zankorfp)      //      Zankor (Free Play)
+DRIVERNV(zankor)        //12/86 Zankor (TMS5200 Italian Speech)
+DRIVERNV(zankorfp)      //      Zankor (TMS5200 Italian Speech, Free Play)
+DRIVERNV(zankor2i)      //      Zankor (TMS5220 Italian Speech)
+DRIVERNV(zank2ifp)      //      Zankor (TMS5220 Italian Speech, Free Play)
+                        //      Zankor (German Speech) // ROMs do exist but they have been misdumped
 DRIVERNV(spooky)        //04/87 Spooky
 DRIVERNV(spookyi)       //      Spooky (Italian Speech)
 DRIVERNV(spookyfp)      //      Spooky (Free Play)

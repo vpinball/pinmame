@@ -12,16 +12,19 @@ Fix Capcom crashes in 64bit builds
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
-Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
-Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
  this will dramatically improve e.g. flasher modulation, add support for e.g. modulated solenoids, but needs special script support by each table
-Fixed 6 million dollar man 7 digit conversion display
-Fixed inverted switches for ffv101
+Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
+Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
+Fixed Zaccaria strsphnx sound, background music works correctly now
+Found a cleaner way to prevent garbled speech on Zaccaria
+Use YMFM's YM2151 core for a more accurate emulation (GTS3, Older Bally/Williams WPCs, Older Data Easts)
 Fixed regression in DCS Audio decoding
 Also fixed one subtle DCS emulation bug that leads to slight buzzing/crackling on some samples though (mainly audible when using good speakers or headphones or if the internal volume is cranked up very high)
  one of the longest standing bugs in the history of PinMAME!
 Due to the above, remove DCS low pass filtering (introduced in 2.8) again and prefer 1:1 DCS output quality
+Fixed 6 million dollar man 7 digit conversion display
+Fixed inverted switches for ffv101
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
 New:
@@ -69,9 +72,11 @@ Shadow, The LF-4 (French)
 Spirit (initial release) & rev. 3 (MOD)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
+Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)
 Tommy 1.02 (Belgian), 3.01 (German)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
+Zankor (TMS5220 Italian Speech)
 
 Removed Clones:
 NBA Fastbreak: 3.1 with Sound S1.0 (as this was just created to be able to use S1.0, which is nowadays wired to 1.1/1.15 instead)

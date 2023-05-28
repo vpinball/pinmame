@@ -1,6 +1,15 @@
 How to setup Visual C++ to compile PinMAME (all flavours)
 =========================================================
 
+UPDATE 05/17/2023
+-----------------
+A new script has been added: "win_build.bat" which generates Visual Studio project files automatically for any configuration (Win32, x64, Release, Debug).  It can also optionally build the generated projects. The script uses the same CMake scripts that the automated CI workflows use. As long as the automated builds work, this script should work too.
+
+Assuming you have an installed version of Visual Studio, and the necessary third-party build dependencies, the only additional requirement to use this script is CMake.  Once installed, it should no longer be necessary to use the version-controlled Visual Studio project files.  The generated project files can be loaded into Visual Studio for editing code, debugging, etc
+
+To view the documentation for the script, you can either open the "win_build_help.txt" directly or via the "/?" command line argument when running the script.  If you have any questions or problems with the script, please contact me: twistgrav@yahoo.com or on Discord @MrGrynch#1235
+
+
 ------------------------------
 Quick Setup for Advanced Users
 ------------------------------

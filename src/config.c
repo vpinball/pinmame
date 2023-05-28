@@ -649,4 +649,52 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 	cfg->position = POSITION_AFTER_MIXER;
 	return CONFIG_ERROR_SUCCESS;
 }
+// DAR_DEBUG @20230506 Defining this for now without a filename just to avoid
+//                     linking errors for DEBUG builds.
+// DAR @20230510 Added check for LIBPINMAME since we only want this if we are
+//               building libpinmame standalone in DEBUG
+//
+// logerror
+//
+// VPM defines its own logger, only use this in standalone build
+#ifndef VPINMAME 
+#ifndef __GNUC__
+#ifdef LIBPINMAME
+	#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
+//		FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
+		static FILE *logfile = NULL;
+		static int maxlogsize;
+		static int curlogsize;
+		static int errorlog;
+//		static int erroroslog;
+		void CLIB_DECL logerror(const char *text, ...) {
+			va_list arg;
 
+			/* standard vfprintf stuff here */
+			va_start(arg, text);
+
+			if (errorlog && logfile)
+			{
+				curlogsize += vfprintf(logfile, text, arg);
+				if (curlogsize > maxlogsize * 1024)
+				{
+					fclose(logfile);
+					logfile = NULL;
+					exit(1);
+				}
+			}
+
+			//DAR_TODO find out where OutputDebugString is defined
+			//if (erroroslog)
+			//{
+			//	//extern int vsnprintf(char *s, size_t maxlen, const char *fmt, va_list _arg);
+			//	char buffer[2048];
+			//	vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), text, arg);
+			//	OutputDebugString(buffer);
+			//}
+			va_end(arg);
+		}
+	#endif /* PINMAME DEBUG */
+#endif /* LIBPINMAME*/
+#endif /* __GNUC__ (mingw) */
+#endif /* VPINMAME */

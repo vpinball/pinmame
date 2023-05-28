@@ -44,7 +44,7 @@ add_compile_definitions(
    HAS_TMS9995=1
    HAS_COP420=1
    HAS_DAC=1
-   HAS_YM2151_ALT=1
+   HAS_YM2151_YMFM=1
    HAS_HC55516=1
    HAS_MC3417=1
    HAS_SAMPLES=1
@@ -587,6 +587,9 @@ add_library(pinmame SHARED
    ext/vgm/vgmwrite.c
    ext/vgm/vgmwrite.h
 
+   ext/ymfm/ymfm_opm.cpp
+   ext/ymfm/ymfm_opm.h
+
    ext/zlib/adler32.c
    ext/zlib/compress.c
    ext/zlib/crc32.c
@@ -625,7 +628,7 @@ target_link_libraries(pinmame
 )
 
 target_link_options(pinmame PUBLIC
-   $<$<CONFIG:RELEASE>:/SAFESEH:NO>
+   /SAFESEH:NO
    $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
    $<$<CONFIG:RELEASE>:/OPT:REF>
    $<$<CONFIG:RELEASE>:/OPT:ICF>

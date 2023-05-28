@@ -307,7 +307,7 @@ void CALLBACK Game(PinmameGame* game) {
            game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
-void CALLBACK OnStateUpdated(int state) {
+void CALLBACK OnStateUpdated(int state, const void* p_userData) {
     if (opt_debug) printf("OnStateUpdated(): state=%d\n", state);
 
     if (!state) {
@@ -337,7 +337,7 @@ void CALLBACK OnLogMessage(const char* format, va_list args) {
     printf("%s\n", buffer);
 }
 
-void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout) {
+void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
     if (opt_debug) printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
                           index,
                           displayCount,
@@ -350,7 +350,7 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
                           p_displayLayout->length);
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout) {
+void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
     if (opt_debug) printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
                           index,
                           p_displayLayout->type,
@@ -499,7 +499,7 @@ void ResetDmdThread() {
     }
 }
 
-int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
+int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userData) {
     if (opt_debug) printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
                           p_audioInfo->format,
                           p_audioInfo->channels,
@@ -528,7 +528,7 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo) {
     return p_audioInfo->samplesPerFrame;
 }
 
-int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
+int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData) {
     if (_audioQueue.size() >= MAX_AUDIO_QUEUE_SIZE) {
         while (!_audioQueue.empty()) {
             void* p_destBuffer = _audioQueue.front();
@@ -582,12 +582,12 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples) {
     return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState) {
+void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData) {
     if (opt_debug) printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
     queueEvent(new Event(EVENT_SOURCE_SOLENOID, (UINT16) p_solenoidState->solNo, (UINT8) p_solenoidState->state));
 }
 
-void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
+void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData) {
     if (opt_debug) printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
                           mechNo,
                           p_mechInfo->type,
@@ -597,7 +597,7 @@ void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo) {
                           p_mechInfo->speed);
 }
 
-void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo) {
+void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData) {
     if (opt_debug) printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
                           mechNo,
                           p_mechInfo->type,
@@ -607,11 +607,11 @@ void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo) {
                           p_mechInfo->speed);
 }
 
-void CALLBACK OnConsoleDataUpdated(void* p_data, int size) {
+void CALLBACK OnConsoleDataUpdated(void* p_data, int size, const void* p_userData) {
     if (opt_debug) printf("OnConsoleDataUpdated: size=%d\n", size);
 }
 
-int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode) {
+int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData) {
     return 0;
 }
 
@@ -702,9 +702,9 @@ int main (int argc, char *argv[]) {
     };
 
 #if defined(_WIN32) || defined(_WIN64)
-    snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
+    snprintf((char*)config.vpmPath, PINMAME_MAX_PATH, "%s%s\\pinmame\\", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
 #else
-    snprintf((char*)config.vpmPath, PINMAME_MAX_VPM_PATH, "%s/.pinmame/", getenv("HOME"));
+    snprintf((char*)config.vpmPath, PINMAME_MAX_PATH, "%s/.pinmame/", getenv("HOME"));
 #endif
 
 #if defined(SERUM_SUPPORT)
@@ -901,7 +901,17 @@ int main (int argc, char *argv[]) {
     // Initialize the sound device
     const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
     ALCdevice *device = alcOpenDevice(defaultDeviceName);
+    if (!device) {
+        printf("failed to alcOpenDevice to %s\n", defaultDeviceName);
+        return 1;
+    }
+
     ALCcontext *context = alcCreateContext(device, NULL);
+    if (!context) {
+        printf("failed call to alcCreateContext\n");
+        return 1;
+    }
+
     alcMakeContextCurrent(context);
     alGenSources((ALuint) 1, &_audioSource);
     alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
@@ -979,6 +989,8 @@ int main (int argc, char *argv[]) {
 
     // Close the serial device
     serial.closeDevice();
+
+	if (device) alcCloseDevice(device);
 
 	return 0;
 }
