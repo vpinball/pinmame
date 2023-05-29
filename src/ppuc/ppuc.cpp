@@ -19,12 +19,14 @@
 #include "../libpinmame/libpinmame.h"
 #include "dmd/dmd.h"
 #include "pin2dmd/pin2dmd.h"
-#include "zedmd/zedmd.h"
 #include "serialib/serialib.h"
 #include "cargs/cargs.h"
-#include "dmdcommon/dmdcommon.h"
 #if defined(SERUM_SUPPORT)
     #include "../../../libserum/src/serum-decode.h"
+#endif
+#if defined(ZEDMD_SUPPORT)
+    #include "../../../libzedmd/src/ZeDMD.h"
+    ZeDMD zedmd;
 #endif
 
 typedef unsigned char UINT8;
@@ -50,17 +52,16 @@ UINT8 cmsg[11] = {0};
 // Serial object
 serialib serial;
 
-int pin2dmd = 0;
-int zedmd = 0;
+int pin2dmd_connected = 0;
+int zedmd_connected = 0;
 
 UINT8 dmd_planes_buffer[12288] = {0};
 UINT8 dmd_serum_planes_buffer[12288] = {0};
 UINT8 dmd_frame_buffer[DMD_FRAME_BUFFERS][16384] = {0};
+UINT8 dmd_frame_buffer_width[DMD_FRAME_BUFFERS] = {0};
+UINT8 dmd_frame_buffer_height[DMD_FRAME_BUFFERS] = {0};
+UINT8 dmd_frame_buffer_depth[DMD_FRAME_BUFFERS] = {0};
 int dmd_frame_buffer_position = 0;
-UINT16 dmd_width;
-UINT16 dmd_height;
-int dmd_depth;
-bool dmd_sam_spa;
 bool dmd_ready = false;
 std::shared_mutex dmd_shared_mutex;
 std::condition_variable_any dmd_cv;
@@ -331,7 +332,7 @@ void CALLBACK OnStateUpdated(int state, const void* p_userData) {
     }
 }
 
-void CALLBACK OnLogMessage(const char* format, va_list args) {
+void CALLBACK OnLogMessage(const char* format, va_list args, const void* p_userData) {
     char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), format, args);
     printf("%s\n", buffer);
@@ -351,6 +352,10 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
 }
 
 void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
+    if (p_displayData == nullptr) {
+        return;
+    }
+
     if (opt_debug) printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
                           index,
                           p_displayLayout->type,
@@ -361,25 +366,23 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
                           p_displayLayout->depth,
                           p_displayLayout->length);
 
+    std::unique_lock<std::shared_mutex> ul(dmd_shared_mutex);
     if ((p_displayLayout->type & DMD) == DMD) {
-        std::unique_lock<std::shared_mutex> ul(dmd_shared_mutex);
-
-        dmd_width = p_displayLayout->width;
-        dmd_height = p_displayLayout->height;
-        dmd_depth = p_displayLayout->depth;
-        memcpy(dmd_frame_buffer[dmd_frame_buffer_position++], p_displayData, dmd_width*dmd_height);
+        dmd_frame_buffer_width[dmd_frame_buffer_position] = p_displayLayout->width;
+        dmd_frame_buffer_height[dmd_frame_buffer_position] = p_displayLayout->height;
+        dmd_frame_buffer_depth[dmd_frame_buffer_position] = p_displayLayout->depth;
+        memcpy(dmd_frame_buffer[dmd_frame_buffer_position++], p_displayData, p_displayLayout->width * p_displayLayout->height);
         if (dmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
             dmd_frame_buffer_position = 0;
         }
         dmd_ready = true;
-
-        ul.unlock();
-        dmd_cv.notify_all();
     }
     else {
         // todo
         //DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
     }
+    ul.unlock();
+    dmd_cv.notify_all();
 }
 
 void Pin2DmdThread() {
@@ -391,8 +394,8 @@ void Pin2DmdThread() {
         sl.unlock();
 
         while (pin2dmd_frame_buffer_position != dmd_frame_buffer_position) {
-            DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer[pin2dmd_frame_buffer_position], dmd_planes_buffer, dmd_depth);
-            Pin2dmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth, dmd_sam_spa);
+            dmdConvertToFrame(dmd_frame_buffer_width[pin2dmd_frame_buffer_position], dmd_frame_buffer_height[pin2dmd_frame_buffer_position], dmd_frame_buffer[pin2dmd_frame_buffer_position], dmd_planes_buffer, dmd_frame_buffer_depth[pin2dmd_frame_buffer_position]);
+            Pin2dmdRender(dmd_frame_buffer_width[pin2dmd_frame_buffer_position], dmd_frame_buffer_height[pin2dmd_frame_buffer_position], dmd_planes_buffer, dmd_frame_buffer_depth[pin2dmd_frame_buffer_position]);
 
             pin2dmd_frame_buffer_position++;
             if (pin2dmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
@@ -403,7 +406,11 @@ void Pin2DmdThread() {
 }
 
 void ZeDmdThread() {
+#if defined(ZEDMD_SUPPORT)
     int zedmd_frame_buffer_position = 0;
+    UINT16 prevWidth = 0;
+    UINT16 prevHeight = 0;
+    UINT8 prevBitDepth = 0;
 
     while (true) {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
@@ -411,39 +418,62 @@ void ZeDmdThread() {
         sl.unlock();
 
         while (zedmd_frame_buffer_position != dmd_frame_buffer_position) {
+            if (dmd_frame_buffer_width[zedmd_frame_buffer_position] != prevWidth || dmd_frame_buffer_height[zedmd_frame_buffer_position] != prevHeight) {
+                prevWidth = dmd_frame_buffer_width[zedmd_frame_buffer_position];
+                prevHeight = dmd_frame_buffer_height[zedmd_frame_buffer_position];
+                zedmd.SetFrameSize(prevWidth, prevHeight);
+            }
+            UINT8 renderBuffer[prevWidth * prevHeight];
+            memcpy(renderBuffer, dmd_frame_buffer[zedmd_frame_buffer_position], prevWidth * prevHeight);
+
             if (opt_serum) {
-    #if defined(SERUM_SUPPORT)
+#if defined(SERUM_SUPPORT)
                 UINT8 palette[192] = {0};
                 UINT8 rotations[24] = {0};
                 UINT32 triggerID;
                 UINT32 hashcode;
                 int frameID;
 
-                Serum_SetStandardPalette(dmdGetDefaultPalette(dmd_depth), dmd_depth);
+                Serum_SetStandardPalette(zedmd.GetDefaultPalette(dmd_frame_buffer_depth[zedmd_frame_buffer_position]), dmd_frame_buffer_depth[zedmd_frame_buffer_position]);
 
-                if (Serum_ColorizeWithMetadata(dmd_frame_buffer[zedmd_frame_buffer_position], dmd_width, dmd_height,
-                            &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
+                if (Serum_ColorizeWithMetadata(renderBuffer, prevWidth, prevHeight, &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
+                    // Force other render modes to reload the default palette.
+                    prevBitDepth = 0;
 
-                    DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer[zedmd_frame_buffer_position], dmd_serum_planes_buffer, 6);
-                    ZeDmdRenderSerum(dmd_width, dmd_height, dmd_serum_planes_buffer, &palette[0], &rotations[0]);
+                    zedmd.RenderColoredGray6(renderBuffer, palette, rotations);
 
                     // todo: send DMD Event with triggerID
                 }
-    #endif
+#endif
             }
             else {
-                DmdCommon_ConvertFrameToPlanes(dmd_width, dmd_height, dmd_frame_buffer[zedmd_frame_buffer_position], dmd_planes_buffer, dmd_depth);
-                ZeDmdRender(dmd_width, dmd_height, dmd_planes_buffer, dmd_depth);
+                if (dmd_frame_buffer_depth[zedmd_frame_buffer_position] != prevBitDepth) {
+                    prevBitDepth = dmd_frame_buffer_depth[zedmd_frame_buffer_position];
+                    zedmd.SetDefaultPalette(prevBitDepth);
+                }
+
+                switch (prevBitDepth) {
+                    case 2:
+                        zedmd.RenderGray2(renderBuffer);
+                        break;
+
+                    case 4:
+                        zedmd.RenderGray4(renderBuffer);
+                        break;
+
+                    default:
+                        printf("Unsupported ZeDMD bit depth: %d\n", prevBitDepth);
+                }
             }
 
             zedmd_frame_buffer_position++;
             if (zedmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
                 zedmd_frame_buffer_position = 0;
             }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
+
     }
+#endif
 }
 
 void ConsoleDmdThread() {
@@ -455,30 +485,9 @@ void ConsoleDmdThread() {
         sl.unlock();
 
         while (console_frame_buffer_position != dmd_frame_buffer_position) {
-            if (opt_serum) {
-#if defined(SERUM_SUPPORT)
-                UINT8 palette[192] = {0};
-                UINT8 rotations[24] = {0};
-                UINT32 triggerID;
-                UINT32 hashcode;
-                int frameID;
+            dmdConsoleRender(dmd_frame_buffer_width[console_frame_buffer_position], dmd_frame_buffer_height[console_frame_buffer_position], dmd_frame_buffer[console_frame_buffer_position], dmd_frame_buffer_depth[console_frame_buffer_position]);
 
-                Serum_SetStandardPalette(dmdGetDefaultPalette(dmd_depth), dmd_depth);
-
-                if (Serum_ColorizeWithMetadata(dmd_frame_buffer[console_frame_buffer_position], dmd_width, dmd_height,
-                            &palette[0], &rotations[0], &triggerID, &hashcode, &frameID)) {
-
-                    dmdConsoleRender(dmd_width, dmd_height, dmd_frame_buffer[console_frame_buffer_position], 6);
-
-                    // todo: send DMD Event with triggerID
-                }
-#endif
-            }
-            else {
-                dmdConsoleRender(dmd_width, dmd_height, dmd_frame_buffer[console_frame_buffer_position], dmd_depth);
-            }
-
-            if (!opt_debug) printf("\033[%dA", dmd_height);
+            if (!opt_debug) printf("\033[%dA", dmd_frame_buffer_height[console_frame_buffer_position]);
 
             console_frame_buffer_position++;
             if (console_frame_buffer_position >= DMD_FRAME_BUFFERS) {
@@ -745,18 +754,22 @@ int main (int argc, char *argv[]) {
 #endif
 
     // Initialize displays.
-    pin2dmd = Pin2dmdInit();
-    if (opt_debug) printf("PIN2DMD: %d\n", pin2dmd);
+    pin2dmd_connected = Pin2dmdInit();
+    if (opt_debug) printf("PIN2DMD: %d\n", pin2dmd_connected);
     std::thread t_pin2dmd;
-    if (pin2dmd) {
+    if (pin2dmd_connected) {
         t_pin2dmd = std::thread(Pin2DmdThread);
     }
 
-    zedmd = ZeDmdInit(opt_serial);
+#if defined(ZEDMD_SUPPORT)
+    zedmd.IgnoreDevice(opt_serial);
+    zedmd_connected = (int) zedmd.Open();
+    if (opt_debug) printf("ZeDMD: %d\n", zedmd_connected);
     std::thread t_zedmd;
-    if (zedmd) {
+    if (zedmd_connected) {
         t_zedmd = std::thread(ZeDmdThread);
     }
+#endif
 
     std::thread t_consoledmd;
     if (opt_console_display) {
@@ -930,7 +943,7 @@ int main (int argc, char *argv[]) {
 #endif
 
 	if (PinmameRun(opt_rom) == OK) {
-        dmd_sam_spa = PinmameGetHardwareGen() & (SAM | SPA);
+        // sam_spa = PinmameGetHardwareGen() & (SAM | SPA);
 
         // Pinball machines were slower than modern CPUs. There's no need to update states too frequently at full speed.
         int sleep_us = 1000;

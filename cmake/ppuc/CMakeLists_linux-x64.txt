@@ -615,21 +615,26 @@ else()
    message(STATUS "libserum source not found in ../libserum, not enabling it")
 endif()
 
+# use libzedmd if it exists
+get_filename_component(ZEDMD_CMAKE ../libzedmd/CMakeLists.txt ABSOLUTE)
+if(EXISTS ${ZEDMD_CMAKE})
+   message(STATUS "enabling ZeDMD communication module")
+   add_subdirectory(../libzedmd libzedmd)
+   add_definitions(-DZEDMD_SUPPORT)
+   set (ZEDMD_LIBRARIES ZeDMD)
+else()
+   message(STATUS "libzedmd source not found in ../libzedmd, not enabling it")
+endif()
+
 add_executable(ppuc
-   src/ppuc/dmdcommon/dmdcommon.h
-   src/ppuc/dmdcommon/dmdcommon.cpp
    src/ppuc/dmd/dmd.h
    src/ppuc/dmd/dmd.cpp
    src/ppuc/pin2dmd/pin2dmd.h
    src/ppuc/pin2dmd/pin2dmd.cpp
    src/ppuc/serialib/serialib.h
    src/ppuc/serialib/serialib.cpp
-   src/ppuc/zedmd/zedmd.h
-   src/ppuc/zedmd/zedmd.cpp
    src/ppuc/cargs/cargs.h
    src/ppuc/cargs/cargs.c
-   src/ppuc/miniz/miniz.h
-   src/ppuc/miniz/miniz.c
    src/ppuc/ppuc.cpp
 )
 
@@ -642,6 +647,7 @@ find_package(OpenAL)
 target_link_libraries(ppuc LINK_PUBLIC
    pinmame
    ${SERUM_LIBRARIES}
+   ${ZEDMD_LIBRARIES}
    libusb-1.0.so
    yaml-cpp
    openal

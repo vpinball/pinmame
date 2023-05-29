@@ -754,7 +754,7 @@ char serialib::flushReceiver()
     \return The number of bytes received by the serial provider but not yet read.
 */
 int serialib::available()
-{    
+{
 #if defined (_WIN32) || defined(_WIN64)
     // Device errors
     DWORD commErrors;

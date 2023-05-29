@@ -7,131 +7,40 @@ UINT8 DmdDefaultPalette4Bit[48] = { 0, 0, 0, 51, 25, 0, 64, 32, 0, 77, 38, 0,
                                     140, 70, 0, 153, 76, 0, 166, 83, 0, 179, 89, 0,
                                     191, 95, 0, 204, 102, 0, 230, 114, 0, 255, 127, 0 };
 
-void dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* Buffer, UINT8* Frame, int bitDepth, bool samSpa) {
-    int buffer_size = width * height;
+void dmdConvertToFrame(UINT16 width, UINT16 height, UINT8* frame, UINT8* planes, int bitDepth)
+{
+    UINT8 bitMask = 1;
+    UINT32 tj = 0;
+    const UINT32 frameSize = height * width;
+    const UINT32 planeOffset = frameSize / 8;
 
-    for (int i = 0; i < buffer_size; i++) {
-        if (bitDepth == 2) {
-            switch (Buffer[i]) {
-                case 0x21: // 33%
-                    Frame[i] = 1;
-                    break;
-                case 0x43: // 67%
-                    Frame[i] = 2;
-                    break;
-                case 0x64: // 100%
-                    Frame[i] = 3;
-                    break;
-                case 0x14: // 20%
-                default:
-                    Frame[i] = 0;
-                    break;
+    for (UINT8 tk = 0; tk < bitDepth; tk++) planes[tk * planeOffset + tj] = 0;
+
+    for (UINT32 ti = 0; ti < frameSize; ti++)
+    {
+        UINT8 tl = 1;
+        for (UINT8 tk = 0; tk < bitDepth; tk++)
+        {
+            if ((frame[ti] & tl) > 0)
+            {
+                planes[tk * planeOffset + tj] |= bitMask;
             }
-        } else if (bitDepth == 4) {
-            if (samSpa) {
-                switch(Buffer[i]) {
-                    case 0x00:
-                        Frame[i] = 0;
-                        break;
-                    case 0x14:
-                        Frame[i] = 1;
-                        break;
-                    case 0x19:
-                        Frame[i] = 2;
-                        break;
-                    case 0x1E:
-                        Frame[i] = 3;
-                        break;
-                    case 0x23:
-                        Frame[i] = 4;
-                        break;
-                    case 0x28:
-                        Frame[i] = 5;
-                        break;
-                    case 0x2D:
-                        Frame[i] = 6;
-                        break;
-                    case 0x32:
-                        Frame[i] = 7;
-                        break;
-                    case 0x37:
-                        Frame[i] = 8;
-                        break;
-                    case 0x3C:
-                        Frame[i] = 9;
-                        break;
-                    case 0x41:
-                        Frame[i] = 10;
-                        break;
-                    case 0x46:
-                        Frame[i] = 11;
-                        break;
-                    case 0x4B:
-                        Frame[i] = 12;
-                        break;
-                    case 0x50:
-                        Frame[i] = 13;
-                        break;
-                    case 0x5A:
-                        Frame[i] = 14;
-                        break;
-                    case 0x64:
-                        Frame[i] = 15;
-                        break;
-                }
-            } else {
-                switch (Buffer[i]) {
-                    case 0x00:
-                        Frame[i] = 0;
-                        break;
-                    case 0x1E:
-                        Frame[i] = 1;
-                        break;
-                    case 0x23:
-                        Frame[i] = 2;
-                        break;
-                    case 0x28:
-                        Frame[i] = 3;
-                        break;
-                    case 0x2D:
-                        Frame[i] = 4;
-                        break;
-                    case 0x32:
-                        Frame[i] = 5;
-                        break;
-                    case 0x37:
-                        Frame[i] = 6;
-                        break;
-                    case 0x3C:
-                        Frame[i] = 7;
-                        break;
-                    case 0x41:
-                        Frame[i] = 8;
-                        break;
-                    case 0x46:
-                        Frame[i] = 9;
-                        break;
-                    case 0x4B:
-                        Frame[i] = 10;
-                        break;
-                    case 0x50:
-                        Frame[i] = 11;
-                        break;
-                    case 0x55:
-                        Frame[i] = 12;
-                        break;
-                    case 0x5A:
-                        Frame[i] = 13;
-                        break;
-                    case 0x5F:
-                        Frame[i] = 14;
-                        break;
-                    case 0x64:
-                        Frame[i] = 15;
-                        break;
+            tl <<= 1;
+        }
+
+        if (bitMask == 0x80)
+        {
+            bitMask = 1;
+            tj++;
+            if (tj < planeOffset)
+            {
+                for (UINT8 tk = 0; tk < bitDepth; tk++)
+                {
+                    planes[tk * planeOffset + tj] = 0;
                 }
             }
         }
+        else bitMask <<= 1;
     }
 }
 

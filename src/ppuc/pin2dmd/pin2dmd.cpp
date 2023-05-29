@@ -90,7 +90,7 @@ int Pin2dmdInit() {
     return ret;
 }
 
-void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth, bool samSpa) {
+void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
     if (
         (width == 256 && height == 64 && Pin2dmdHD) ||
         (width == 192 && height == 64 && (Pin2dmdXL || Pin2dmdHD)) ||
