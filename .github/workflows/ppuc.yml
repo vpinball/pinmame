@@ -82,6 +82,12 @@ jobs:
           repository: zesinger/libserum
           path: libserum
       - run: mv libserum ../libserum
+      - name: Checkout libzedmd
+        uses: actions/checkout@v3
+        with:
+          repository: PPUC/libzedmd
+          path: libzedmd
+      - run: mv libzedmd ../libzedmd
       - if: matrix.os == 'ubuntu-latest' && matrix.type != 'raspi'
         run: |
           sudo apt-get update
