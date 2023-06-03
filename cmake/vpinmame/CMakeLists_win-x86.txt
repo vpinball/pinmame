@@ -534,6 +534,7 @@ add_library(vpinmame SHARED
    src/wpc/sleic.c
    src/wpc/sleic.h
    src/wpc/sleicgames.c
+   src/wpc/snd_alt.cpp
    src/wpc/snd_alt.h
    src/wpc/snd_cmd.c
    src/wpc/snd_cmd.h
