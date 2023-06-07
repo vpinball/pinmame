@@ -292,14 +292,11 @@ void vgm_start(struct RunningMachine *machine)
 		VgmPCache[curvgm].CacheData = NULL;
 	}
 	
-	// start the timer
-	// (done here because it makes save states with vgmwrite off compatible with
-	//  saves that have it on)
-	timer_pulse(TIME_IN_HZ(44100), 0, vgmfile_callback);
-			//44.1 KHz VGM pulse timer
-	
 	if (! LOG_VGM_FILE)
 		return;
+	
+	// start the timer
+	timer_pulse(TIME_IN_HZ(44100), 0, vgmfile_callback); //44.1 KHz VGM pulse timer
 	
 	// Get the Game Information and write the GD3 Tag
 	gamedrv = machine->gamedrv;
