@@ -422,14 +422,27 @@ extern "C" void OnSolenoid(const int solenoid, const int state) {
 }
 
 /******************************************************
- * libpinmame_log_message
+ * libpinmame_log_info
  ******************************************************/
 
-extern "C" void libpinmame_log_message(const char* format, ...) {
+extern "C" void libpinmame_log_info(const char* format, ...) {
 	if (_p_Config->cb_OnLogMessage) {
 		va_list args;
 		va_start(args, format);
-		(*(_p_Config->cb_OnLogMessage))(format, args, _p_userData);
+		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL::LOG_INFO, format, args, _p_userData);
+		va_end(args);
+	}
+}
+
+/******************************************************
+ * libpinmame_log_error
+ ******************************************************/
+
+extern "C" void libpinmame_log_error(const char* format, ...) {
+	if (_p_Config->cb_OnLogMessage) {
+		va_list args;
+		va_start(args, format);
+		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL::LOG_ERROR, format, args, _p_userData);
 		va_end(args);
 	}
 }
@@ -473,15 +486,19 @@ extern "C" void libpinmame_update_mech(const int mechNo, mech_tMechData* p_mechD
  * StartGame
  ******************************************************/
 
-void StartGame(const int gameNum) {
+int StartGame(const int gameNum) {
+	int err;
+
 	_displaysInit = 0;
 
 	memset(_mechInit, 0, sizeof(_mechInit));
 	memset(_mechInfo, 0, sizeof(_mechInfo));
 
-	run_game(gameNum);
+	err = run_game(gameNum);
 
 	OnStateChange(0);
+
+	return err;
 }
 
 /******************************************************
@@ -565,7 +582,7 @@ LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config) {
 
 	memcpy(_p_Config, p_config, sizeof(PinmameConfig));
 
-	libpinmame_log_message("PinmameSetConfig(): sampleRate=%d, vpmPath=%s\n", _p_Config->sampleRate, _p_Config->vpmPath);
+	libpinmame_log_info("PinmameSetConfig(): sampleRate=%d, vpmPath=%s", _p_Config->sampleRate, _p_Config->vpmPath);
 
 	memset(&options, 0, sizeof(options));
 

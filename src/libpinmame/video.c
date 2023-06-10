@@ -20,6 +20,7 @@
 #include "menu.h"
 #endif
 
+extern void libpinmame_log_info(const char* format, ...);
 
 //============================================================
 //	IMPORTS
@@ -187,7 +188,7 @@ struct rc_option video_opts[] =
 
 int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_components)
 {
-	printf("osd_create_display: %.2f fps\n", params->fps);
+	libpinmame_log_info("osd_create_display: %.2f fps", params->fps);
 
 	//	logerror("width %d, height %d depth %d\n", params->width, params->height, params->depth);
 
@@ -217,7 +218,7 @@ void osd_close_display(void)
 	if (frames_displayed != 0)
 	{
 		cycles_t cps = osd_cycles_per_second();
-		printf("Average FPS: %f (%d frames)\n", (double)cps / (end_time - start_time) * frames_displayed, frames_displayed);
+		libpinmame_log_info("Average FPS: %f (%d frames)", (double)cps / (end_time - start_time) * frames_displayed, frames_displayed);
 	}
 }
 

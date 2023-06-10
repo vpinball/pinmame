@@ -523,6 +523,7 @@ int main (int argc, char *argv[]) {
             &OnSolenoidUpdated,
             &OnConsoleDataUpdated,
             &IsKeyPressed,
+            NULL,
     };
 
 #if defined(_WIN32) || defined(_WIN64)
