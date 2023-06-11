@@ -6,6 +6,24 @@
 
 #include "altsound_data.h"
 
+// ---------------------------------------------------------------------------
+// Data Structures
+// ---------------------------------------------------------------------------
+
+// Structure for CSV parsing
+typedef struct _csv_reader {
+	FILE* f;
+	int delimiter;
+	int n_header_fields;
+	char** header_fields;	// header split in fields
+	int n_fields;
+	char** fields;			// current row split in fields
+} CsvReader;
+
+// ---------------------------------------------------------------------------
+// Class definitions
+// ---------------------------------------------------------------------------
+
 class AltsoundCsvParser {
 public:
 	// Standard constructor
@@ -14,7 +32,7 @@ public:
 	bool parse(PinSamples* psd);
 
 protected:
-//	// Default constructor
+	// Default constructor
 	AltsoundCsvParser();
 
 private: // functions

@@ -5,11 +5,13 @@
 #include <unistd.h>
 
 #ifdef __cplusplus
-extern "C" {
+  extern "C" {
 #endif
+
 #include <dirent.h>
+
 #ifdef __cplusplus
-}
+  }
 #endif
 
 #define CSV_MAX_LINE_LENGTH 512

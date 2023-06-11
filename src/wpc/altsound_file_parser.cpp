@@ -1,27 +1,17 @@
 #include "altsound_file_parser.hpp"
 
 #ifdef __cplusplus
-extern "C" {
+  extern "C" {
 #endif
+
 #include <dirent.h>
+
 #ifdef __cplusplus
-}
+  }
 #endif
-
-// Storage for path to VPinMAME
-//char cvpmd[1024];
-//const char* path_main = "\\altsound\\";
-
-// Support for folder-based altsound
-const char* path_jingle = "jingle\\";
-const char* path_music = "music\\";
-const char* path_sfx = "sfx\\";
-const char* path_single = "single\\";
-const char* path_voice = "voice\\";
 
 AltsoundFileParser::AltsoundFileParser(char *gname_in)
 : g_szGameName(gname_in)
-//  base_path(NULL)
 {
 	char* lpHelp = cvpmd;
 	char* lpSlash = NULL;
@@ -48,9 +38,6 @@ AltsoundFileParser::AltsoundFileParser(char *gname_in)
 
 	// Determine base path length
 	base_path_length = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1;
-
-//	size_t PATH_LEN;
-//	char* PATH;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,6 +84,11 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 	char cwd[1024];
 	_getcwd(cwd, sizeof(cwd));
 	int result = 0; // Assume success at start
+	const char* path_jingle = "jingle\\";
+	const char* path_music = "music\\";
+	const char* path_sfx = "sfx\\";
+	const char* path_single = "single\\";
+	const char* path_voice = "voice\\";
 
 	for (int i = 0; i < 5; ++i) {
 		const char* const subpath = (i == 0) ? path_jingle :

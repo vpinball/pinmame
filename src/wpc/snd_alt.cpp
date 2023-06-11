@@ -862,7 +862,6 @@ extern "C" void alt_sound_exit() {
 
 	if (cached_machine_name != 0) // better free everything like above!
 	{
-		free(cached_machine_name);
 		cached_machine_name[0] = '#';
 		if (BASS_Free() == FALSE) {
 			LOG(("%sFAILED: BASS_Free(): %s\n", indent, get_bass_err()));
