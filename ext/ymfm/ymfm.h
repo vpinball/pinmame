@@ -36,11 +36,6 @@
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
  #define _CRT_SECURE_NO_WARNINGS
 #endif
-// DAR@20230602
-// This breaks debug builds of VPinMame (at least).
-//#if defined(_MSC_VER)
-// #define _ITERATOR_DEBUG_LEVEL 0
-//#endif
 
 #include <cassert>
 #include <cstdint>

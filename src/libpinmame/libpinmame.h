@@ -21,6 +21,12 @@
 #define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
+	LOG_DEBUG = 0,
+	LOG_INFO = 1,
+	LOG_ERROR = 2
+} PINMAME_LOG_LEVEL;
+
+typedef enum {
 	OK = 0,
 	CONFIG_NOT_SET = 1,
 	GAME_NOT_FOUND = 2,
@@ -379,7 +385,7 @@ typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInf
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState, const void* p_userData);
 typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size, const void* p_userData);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode, const void* p_userData);
-typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args, const void* p_userData);
+typedef void (CALLBACK *PinmameOnLogMessageCallback)(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData);
 
 typedef struct {
 	const PINMAME_AUDIO_FORMAT audioFormat;

@@ -127,6 +127,11 @@
 #if !defined(_MSC_VER) && !defined(LIBPINMAME) && !defined(XMAME) //!! as not included in PinMAMEs standard makefile build yet
  #include "../ext/vgm/vgmwrite.c"
 #endif
+
+#ifdef LIBPINMAME
+extern void libpinmame_log_error(const char* format, ...);
+#endif
+
 /***************************************************************************
 
 	Constants
@@ -260,7 +265,11 @@ INLINE void bail_and_print(const char *message)
 	if (!bailing)
 	{
 		bailing = 1;
+#ifndef LIBPINMAME
 		printf("%s\n", message);
+#else
+		libpinmame_log_error("%s", message);
+#endif
 	}
 }
 
