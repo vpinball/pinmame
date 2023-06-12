@@ -908,6 +908,14 @@ LIBPINMAME_API int PinmameGetMaxGIs() {
 }
 
 /******************************************************
+ * PinmameGetGI
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetGI(const int giNo) {
+	return (_isRunning) ? vp_getGI(giNo) : 0;
+}
+
+/******************************************************
  * PinmameGetChangedGIs
  ******************************************************/
 

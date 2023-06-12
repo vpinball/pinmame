@@ -1225,15 +1225,15 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 		/* display either an error message or a warning message */
 		if (romdata->errors)
 		{
-			strcat(romdata->errorbuf, "ERROR: required files are missing, the game cannot be run.\n");
+			strcat(romdata->errorbuf, "ERROR: required files are missing, the game cannot be run.");
 			// bailing = 1;
 		}
 		else
-			strcat(romdata->errorbuf, "WARNING: the game might not run correctly.\n");
+			strcat(romdata->errorbuf, "WARNING: the game might not run correctly.");
 
 #ifndef LIBPINMAME
 		/* display the result */
-		printf("%s", romdata->errorbuf);
+		printf("%s\n", romdata->errorbuf);
 #else
 		libpinmame_log_error("display_rom_load_results():\n%s", romdata->errorbuf);
 #endif

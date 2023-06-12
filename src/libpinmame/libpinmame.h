@@ -433,6 +433,7 @@ LIBPINMAME_API int PinmameGetMaxLamps();
 LIBPINMAME_API int PinmameGetLamp(const int lampNo);
 LIBPINMAME_API int PinmameGetChangedLamps(PinmameLampState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
+LIBPINMAME_API int PinmameGetGI(const int giNo);
 LIBPINMAME_API int PinmameGetChangedGIs(PinmameGIState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxLEDs();
 LIBPINMAME_API int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t, PinmameLEDState* const p_changedStates);
