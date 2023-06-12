@@ -156,6 +156,7 @@ int lisy200_file_get_soundopts(void);
 #define LISY1_ATTRACT_CMD_COIL_PULSE       7
 #define LISY1_ATTRACT_CMD_WAV              8
 #define LISY1_ATTRACT_CMD_SPEECH           9
+#define LISY1_ATTRACT_CMD_REM              10
 
 /* LISY35 stuff */
 #define LISY35_GAMES_CSV                   "/boot/lisy/lisy35/cfg/lisy35games.csv"
