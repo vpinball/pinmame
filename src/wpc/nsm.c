@@ -270,7 +270,6 @@ static MACHINE_RESET(nsm) {
 }
 
 static MACHINE_STOP(nsm) {
-  int i;
   locals.uv = 1;
   cpu_set_irq_line(0, 0, PULSE_LINE); // IRQ routine saves NVRAM
   // wait two timeslices before shutdown so the IRQ routine can finish
