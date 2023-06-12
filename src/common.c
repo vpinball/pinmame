@@ -16,6 +16,9 @@
 
 //#define LOG_LOAD
 
+#ifdef LIBPINMAME
+extern void libpinmame_log_error(const char* format, ...);
+#endif
 
 
 /***************************************************************************
@@ -1228,8 +1231,12 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 		else
 			strcat(romdata->errorbuf, "WARNING: the game might not run correctly.\n");
 
+#ifndef LIBPINMAME
 		/* display the result */
 		printf("%s", romdata->errorbuf);
+#else
+		libpinmame_log_error("display_rom_load_results():\n%s", romdata->errorbuf);
+#endif
 
 #ifndef LIBPINMAME
 		/* if we're not getting out of here, wait for a keypress */

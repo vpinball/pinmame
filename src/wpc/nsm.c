@@ -270,13 +270,11 @@ static MACHINE_RESET(nsm) {
 }
 
 static MACHINE_STOP(nsm) {
-  int i;
   locals.uv = 1;
   cpu_set_irq_line(0, 0, PULSE_LINE); // IRQ routine saves NVRAM
-  // wait some timeslices before shutdown so the IRQ routine can finish
-  for (i=0; i < 90; i++) {
-    run_one_timeslice();
-  }
+  // wait two timeslices before shutdown so the IRQ routine can finish
+  run_one_timeslice();
+  run_one_timeslice();
 }
 
 static core_tLCDLayout dispNsm[] = {

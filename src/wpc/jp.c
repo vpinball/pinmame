@@ -281,7 +281,7 @@ static MACHINE_INIT(JP) {
 static MACHINE_STOP(JP) {
   int i;
   cpu_set_nmi_line(0, PULSE_LINE); // NMI routine makes sure the NVRAM is valid!
-  for (i = 0; i < 300; i++) { // run lots of timeslices before shutdown so the NMI routine can finish
+  for (i = 0; i < 40; i++) { // run some timeslices before shutdown so the NMI routine can finish
     run_one_timeslice();
   }
 }
