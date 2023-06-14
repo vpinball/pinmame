@@ -13,6 +13,7 @@
 
 #define USES_TMS_5220            1
 #define NEEDS_TMS_RESET_ON_DATA  2
+#define NO_AY8910                4
 
 extern MACHINE_DRIVER_EXTERN(zac1311);
 extern MACHINE_DRIVER_EXTERN(zac1125);

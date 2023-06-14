@@ -140,19 +140,19 @@ static void delay(int x) {
 
 static WRITE_HANDLER(play3s_man_w) {
   if (!strncasecmp(Machine->gamedrv->name, "cerberus", 8)) {
-    cpu_boost_interleave(TIME_IN_USEC(40), TIME_IN_USEC(5000));
+    cpu_boost_interleave(TIME_IN_USEC(40), TIME_IN_USEC(1000));
     play3s_data_w(offset, data >> 4);
-    delay(20);
+    delay(3);
     play3s_data_w(offset, 0);
-    delay(10);
+    delay(3);
     play3s_data_w(offset, data & 0x0f);
-    delay(10);
+    delay(12);
     play3s_data_w(offset, 0);
   } else {
     play3s_data_w(offset, data);
     play3s_ctrl_w(offset, 0);
   }
-  delay(20);
+  delay(3);
   play3s_ctrl_w(offset, 1);
 }
 
