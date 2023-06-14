@@ -342,7 +342,7 @@ MACHINE_DRIVER_START(zac1370)
 
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
-  MDRV_SOUND_ADD(AY8910,  sns_ay8910Int)
+  MDRV_SOUND_ADD_TAG("ay8910", AY8910, sns_ay8910Int)
   MDRV_SOUND_ADD(DAC,     sns_dacInt)
 MACHINE_DRIVER_END
 
@@ -509,14 +509,17 @@ static void writeToCEM(void) {
 }
 
 static READ_HANDLER(sns_pia0a_r) {
+  if (core_gameData->hw.gameSpecific2 & NO_AY8910) return 0xff;
   if ((snslocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
 static WRITE_HANDLER(sns_pia0a_w) {
+  if (core_gameData->hw.gameSpecific2 & NO_AY8910) return;
   snslocals.pia0a = data;
   if (snslocals.pia0b & 0x02) AY8910Write(0, snslocals.pia0b ^ 0x01, snslocals.pia0a);
 }
 static WRITE_HANDLER(sns_pia0b_w) {
+  if (core_gameData->hw.gameSpecific2 & NO_AY8910) return;
   if ((data & 0xf0) != (snslocals.pia0b & 0xf0)) logerror("DAC1408 modulation: %x\n", data >> 4);
   snslocals.pia0b = data;
   if (snslocals.pia0b & 0x02) AY8910Write(0, snslocals.pia0b ^ 0x01, snslocals.pia0a);
