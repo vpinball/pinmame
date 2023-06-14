@@ -26,7 +26,7 @@
 // Support for lookup-based altsound (CSV)
 const char* path_table = "\\altsound.csv";
 
-AltsoundCsvParser::AltsoundCsvParser(char *gname_in)
+AltsoundCsvParser::AltsoundCsvParser(const char *gname_in)
 : reader(NULL),
   g_szGameName(gname_in),
   filename(NULL)
@@ -92,16 +92,16 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 
 	// File opened, read header
 	if (csv_read_header() != CSV_SUCCESS) {
-		LOG(("%sfailed to read CSV header\n", indent));
+		LOG(("failed to read CSV header\n"));
 		free(reader);
 		reader = NULL;
 	
-		LOG(("%sEND: PARSE_ALTSOUND_CSV\n", indent)); //DAR_DEBUG
+		LOG(("END: PARSE_ALTSOUND_CSV\n")); //DAR_DEBUG
 		return false;
 	}
 	
 	int colID, colCHANNEL, colDUCK, colGAIN, colLOOP, colSTOP, colFNAME;
-	LOG(("%snum_headers: %d\n", indent, reader->n_header_fields));
+	LOG(("num_headers: %d\n", reader->n_header_fields));
 	
 	colID = csv_get_colnumber_for_field("ID");
 	colCHANNEL = csv_get_colnumber_for_field("CHANNEL");
@@ -148,7 +148,7 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 		int val = 0;
 		const int err = csv_read_record();
 		if (err != CSV_SUCCESS) {
-			LOG(("%sFAILED TO READ CSV RECORD %d\n", indent, i));
+			LOG(("FAILED TO READ CSV RECORD %d\n", i));
 			psd->num_files = i;
 			return false;
 //			break;
@@ -180,13 +180,13 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 		psd->files_with_subpath[i] = (char*)malloc(strlen(tmpPath) + 1);
 		strcpy(psd->files_with_subpath[i], tmpPath);
 	
-		LOG(("%sID = %d, CHANNEL = %d, DUCK = %.2f, GAIN = %.2f, LOOP = %d, STOP = %d, FNAME = '%s'\n" \
-			, indent, psd->ID[i], psd->channel[i], psd->ducking[i], psd->gain[i], psd->loop[i] \
+		LOG(("ID = %d, CHANNEL = %d, DUCK = %.2f, GAIN = %.2f, LOOP = %d, STOP = %d, FNAME = '%s'\n" \
+			, psd->ID[i], psd->channel[i], psd->ducking[i], psd->gain[i], psd->loop[i] \
 			, psd->stop[i], psd->files_with_subpath[i]));
 	}
 	
 	csv_close();
-	LOG(("%sFOUND %d SAMPLES\n", indent, psd->num_files));
+	LOG(("FOUND %d SAMPLES\n", psd->num_files));
 	
 	// Clean up allocated memory
     //DAR_TODO

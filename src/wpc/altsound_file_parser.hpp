@@ -9,7 +9,7 @@
 class AltsoundFileParser {
 public:
 	// Standard constructor
-	AltsoundFileParser(char *gname_in);
+	AltsoundFileParser(const char *gname_in);
 
 	bool parse(PinSamples* psd);
 
@@ -19,7 +19,7 @@ protected:
 private: // functions
 
 private: // data
-	char* g_szGameName;
+	const char* g_szGameName;
 //	char* base_path;
 	int base_path_length;
 	char cvpmd[1024];

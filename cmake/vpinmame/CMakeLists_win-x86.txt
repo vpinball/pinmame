@@ -354,6 +354,10 @@ add_library(vpinmame SHARED
    src/wpc/altsound_file_parser.hpp
    src/wpc/altsound_csv_parser.cpp
    src/wpc/altsound_csv_parser.hpp
+   src/wpc/altsound_processor.cpp
+   src/wpc/altsound_processor.hpp
+   src/wpc/altsound2_processor.cpp
+   src/wpc/altsound2_processor.hpp
    src/wpc/alvg.c
    src/wpc/alvg.h
    src/wpc/alvgdmd.c
@@ -694,7 +698,7 @@ add_library(vpinmame SHARED
    ext/basicbitmap/BasicBitmap_C.h
 )
 
-set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL)
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
 target_compile_options(vpinmame PUBLIC
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
