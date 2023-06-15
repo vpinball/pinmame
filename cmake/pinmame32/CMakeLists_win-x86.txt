@@ -662,8 +662,10 @@ add_executable(pinmame32 WIN32
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
 target_compile_options(pinmame32 PUBLIC
-   $<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>
-   $<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C>:/EHsc>>
 )
 
 target_include_directories(pinmame32 PUBLIC

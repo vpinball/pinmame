@@ -609,8 +609,10 @@ add_library(pinmame SHARED
 set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
 target_compile_options(pinmame PUBLIC
-   $<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>
-   $<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C>:/EHsc>>
 )
 
 target_include_directories(pinmame PUBLIC
