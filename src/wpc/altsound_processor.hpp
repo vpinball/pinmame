@@ -2,6 +2,7 @@
 #include <array>
 
 #include "altsound_data.h"
+#include "snd_alt.h"
 #include "..\ext\bass\bass.h"
 
 typedef std::array<AltsoundStreamInfo, ALT_MAX_CHANNELS> StreamArray;

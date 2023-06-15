@@ -15,6 +15,15 @@
 #ifdef __cplusplus
   }
 #endif
+#define ALT_MAX_CMDS 4
+
+// Structure for command data
+typedef struct _cmd_data {
+unsigned int cmd_counter;
+int stored_command;
+unsigned int cmd_filter;
+unsigned int cmd_buffer[ALT_MAX_CMDS];
+} CmdData;
 
 // ---------------------------------------------------------------------------
 // snd_cmd function prototypes

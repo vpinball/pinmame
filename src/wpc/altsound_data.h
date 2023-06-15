@@ -37,7 +37,6 @@
 // ---------------------------------------------------------------------------
 
 // For command parsing
-#define ALT_MAX_CMDS 4
 #define BASS_NO_STREAM 0
 #define ALT_MAX_CHANNELS 16
 
@@ -62,13 +61,13 @@ typedef struct _pin_samples {
 	unsigned int num_files;
 } PinSamples;
 
-// Structure for command data
-typedef struct _cmd_data {
-	unsigned int cmd_counter;
-	int stored_command;
-	unsigned int cmd_filter;
-	unsigned int cmd_buffer[ALT_MAX_CMDS];
-} CmdData;
+//// Structure for command data
+//typedef struct _cmd_data {
+//	unsigned int cmd_counter;
+//	int stored_command;
+//	unsigned int cmd_filter;
+//	unsigned int cmd_buffer[ALT_MAX_CMDS];
+//} CmdData;
 
 #ifdef __cplusplus
 typedef struct _stream_info {

@@ -31,11 +31,11 @@ add_executable(instvpm WIN32
    src/win32com/VPinMAME.idl
 )
 
-set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL)
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
 target_compile_options(instvpm PUBLIC
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   $<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>
+   $<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>
 )
 
 target_include_directories(instvpm PUBLIC
