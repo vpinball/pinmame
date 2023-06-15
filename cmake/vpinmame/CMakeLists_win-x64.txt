@@ -351,6 +351,10 @@ add_library(vpinmame SHARED
    src/wpc/altsound_file_parser.hpp
    src/wpc/altsound_csv_parser.cpp
    src/wpc/altsound_csv_parser.hpp
+   src/wpc/altsound_processor.cpp
+   src/wpc/altsound_processor.hpp
+   src/wpc/altsound2_processor.cpp
+   src/wpc/altsound2_processor.hpp
    src/wpc/alvg.c
    src/wpc/alvg.h
    src/wpc/alvgdmd.c
