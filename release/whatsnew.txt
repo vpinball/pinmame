@@ -28,7 +28,7 @@ Fixed 6 million dollar man 7 digit conversion display
 Fixed inverted switches for ffv101
 Reduced pre-shutdown time for Joctronic, NSM, Juegos Populares after fixing timeslice issue related to quick VGM timer
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -61,6 +61,7 @@ Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
 Ali (7-digit conversion Free Play rev. 76)
+Black Knight L-2
 Dracula (One Ball MOD)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)
