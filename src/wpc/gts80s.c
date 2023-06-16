@@ -30,7 +30,7 @@
 		- subtype 0: without SC-01 (Votrax) chip installed
 		- subtype 1: SC-01 (Votrax) chip installed
 
-		Schematics corresponding to the -1 revision of the board can be found in the Mars, God of War and Volcano manuals.
+		Schematics corresponding to the -1 revision of the board can be found in the Mars - God of War and Volcano manuals.
 		Schematics corresponding to the -3 revision of the board can be found in the Black Hole and Haunted House manuals.
 
     - System 80A Sound Board with a PiggyPack installed
@@ -670,6 +670,7 @@ struct CustomSound_interface GTS80SS_customsoundinterface = { s80ss_sh_start, s8
 
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
+	{ 1 },					/* SC-01-A */ // most likely the oldest GTS80s (Mars and ???) feature the SC-01?
 	{ 100 },				/* master volume */ // OLD_VOTRAX 75
 	{ 720000 },				/* initial sampling frequency */ //!! or ~895kHz? or MAME astrocde's 756000? // OLD_VOTRAX: 7000
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
@@ -743,11 +744,9 @@ static WRITE_HANDLER(s80bs_ay8910_latch_w)
 static void nmi_callback(int param)
 {
 	//Reset the timing frequency
-	double interval;
-	int cl1, cl2;
-	cl1 = 16-(GTS80BS_locals.nmi_rate&0x0f);
-	cl2 = 16-((GTS80BS_locals.nmi_rate&0xf0)>>4);
-	interval = (250000>>8);
+	int cl1 = 16-(GTS80BS_locals.nmi_rate&0x0f);
+	int cl2 = 16-((GTS80BS_locals.nmi_rate&0xf0)>>4);
+	double interval = (250000>>8);
 	/*if(cl1>0)*/	interval /= cl1;
 	/*if(cl2>0)*/	interval /= cl2;
 

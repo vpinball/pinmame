@@ -154,11 +154,12 @@ static void taitos_diag(int state) {
 struct DACinterface TAITO_dacInt =
 {
   1,			/* 1 Chip */
-  {25}		    /* Volume */
+  {25}			/* Volume */
 };
 
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
+	{ 1 },					/* SC-01-A */ // most likely the oldest (Fire Action and ???) Taitos (or all??) feature the SC-01?
 	{ 75 },					/* master volume */ // OLD_VOTRAX 50
 	{ 720000 },				/* dynamically changing this is currently not supported */ // 'About the SC01, it does not have an external oscillator' // OLD_VOTRAX: 8000
 	{ &votrax_busy }		/* set NMI when busy signal get's low */
