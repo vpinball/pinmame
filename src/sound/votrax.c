@@ -1693,7 +1693,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 #if !defined(OLD_VOTRAX) && !defined(REAL_DEVICE)
 	// initialize internal state
 	votraxsc01_locals.mainclock = votraxsc01_locals.intf->baseFrequency[0]; //!! clock();
-	votraxsc01_locals.type = votraxsc01_locals.intf->type;
+	votraxsc01_locals.type = votraxsc01_locals.intf->type[0];
 	votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 	votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
 	votraxsc01_locals.stream = stream_init_float("Votrax - SC01", votraxsc01_locals.intf->mixing_level[0], votraxsc01_locals.sclock, 0, Votrax_Update, 1);
