@@ -45,6 +45,7 @@ extern MACHINE_DRIVER_EXTERN(gts80s_sp);
 	ROM_LOAD(n1, 0x7000,  0x0800, chk1) \
 	ROM_LOAD(n2, 0x7800,  0x0800, chk2)
 
+extern MACHINE_DRIVER_EXTERN(gts80s_ss_old);
 extern MACHINE_DRIVER_EXTERN(gts80s_ss);
 
 
