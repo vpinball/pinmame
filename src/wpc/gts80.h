@@ -312,7 +312,7 @@ extern MACHINE_DRIVER_EXTERN(gts80bs3a);
 
 #define gl_mGTS80S		gts80s
 #define gl_mGTS80SP		gts80sp
-#define gl_mGTS80SS_OLD	gts80ss_old
+#define gl_mGTS80SS_old	gts80ss_old
 #define gl_mGTS80SS		gts80ss
 #define gl_mGTS80VID	gts80vid
 #define gl_mGTS80TAB	gts80tab
