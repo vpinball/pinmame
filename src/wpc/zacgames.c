@@ -1085,11 +1085,8 @@ CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Tecnoplay",mTECHNO,0)
 /*--------------------------------
 / Thunder Man (1987)
 /-------------------------------*/
-extern MACHINE_DRIVER_EXTERN(ZAC2);
-extern MACHINE_DRIVER_EXTERN(zac1370);
 static MACHINE_DRIVER_START(thndrman)
-  MDRV_IMPORT_FROM(ZAC2)
-  MDRV_IMPORT_FROM(zac1370)
+  MDRV_IMPORT_FROM(ZAC2A)
   MDRV_SOUND_REMOVE("ay8910")
 MACHINE_DRIVER_END
 

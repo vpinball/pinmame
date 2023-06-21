@@ -685,10 +685,6 @@ struct VOTRAXSC01interface GTS80SS_votrax_sc01a_interface = {
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
 };
 
-const struct sndbrdIntf gts80ss_oldIntf = {
-  "GTS80SS_OLD", gts80ss_init, gts80ss_exit, gts80ss_diag, gts80ss_data_w, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
-};
-
 const struct sndbrdIntf gts80ssIntf = {
   "GTS80SS", gts80ss_init, gts80ss_exit, gts80ss_diag, gts80ss_data_w, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
