@@ -367,6 +367,10 @@ typedef struct {
 	int pos;
 	int speed;
 } PinmameMechInfo;
+
+typedef struct {
+	int sndNo;
+} PinmameSoundCommand;
 	
 typedef struct {
 	const char* name;
@@ -439,6 +443,8 @@ LIBPINMAME_API int PinmameGetMaxLEDs();
 LIBPINMAME_API int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t, PinmameLEDState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxMechs();
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
+LIBPINMAME_API int PinmameGetMaxSoundCommands();
+LIBPINMAME_API int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands);
 LIBPINMAME_API int PinmameGetDIP(const int dipBank);
 LIBPINMAME_API void PinmameSetDIP(const int dipBank, const int value);
 LIBPINMAME_API void PinmameSetUserData(const void* p_userData);
