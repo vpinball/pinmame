@@ -335,14 +335,22 @@ CORE_CLONEDEFNV(mars,gts80,"Mars - God of War",1981,"Gottlieb",gl_mGTS80SS,0)
 //From flipprojets.fr: After analysis of the 666-S ROM, it turns out that there are very few differences
 //                     compared to the normal version. In fact, only the timers for the rise of the target 
 //                     banks and the ejection of the outhole have been corrected.
-//                     On the "sample" version it should therefore not always working very fine!
-INIT_S80(marsp, dispNumeric1, SNDBRD_GTS80SS_VOTRAX)
+//                     On the "sample" version it should therefore not always be working very fine!
+//Also from flipprojets.fr: MARS prototype (with black box instead of red) used a different sound board:
+// (Picture is here, browse the web page: https://www.flipprojets.fr/Audioboards_EN.php#alternate/3/ )
+// And SC-01 equipped.
+// And at least some MARS production with standard MA-216 board were equipped with SC-01.
+// But In my MARS red pinball machine (Standard MA216) a SC-01A was found.
+// So I think they used the rest of SC-01 stock and move after to SC-01A.
+// For sure all machines after MARS were SC-01A equipped.
+// (Never seen VOLCANO with SC-01, and I have many boards!)
+INIT_S80(marsp, dispNumeric1, SNDBRD_GTS80SS_VOTRAX_OLD)
 GTS80_1_ROMSTART  ("666s-1.cpu", CRC(029e0bcf) SHA1(20764464ede38bee2a726fc2ae98a60375b3cb1c))
 GTS80SS22_ROMSTART("666-s1.snd", CRC(d33dc8a5) SHA1(8d071c392996a74c3cdc2cf5ea3be3c86553ce89),
                    "666-s2.snd", CRC(e5616f3e) SHA1(a6b5ebd0b456a555db0889cd63ce79aafc64dbe5))
 GTS80_ROMEND
 #define input_ports_marsp input_ports_mars
-CORE_CLONEDEFNV(marsp,mars,"Mars - God of War (Prototype)",1981,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(marsp,mars,"Mars - God of War (Prototype)",1981,"Gottlieb",gl_mGTS80SS_old,0)
 
 INIT_S80(marsf, dispNumeric1, SNDBRD_GTS80SS_VOTRAX)
 GTS80_1_ROMSTART  ("666-1.cpu",   CRC(bb7d476a) SHA1(22d5d7f0e52c5180f73a1ca0b3c6bd4b7d0843d6))
@@ -598,7 +606,7 @@ GTS80SS22_ROMSTART("670-s1.snd", CRC(506bc22a) SHA1(3c69f8d0c38c51796c31fb38c02d
                    "670-s2.snd", CRC(f662ee4b) SHA1(0f63e01672b7c07a4913e150f0bbe07ecfc06e7c))
 GTS80_ROMEND
 #define input_ports_dvlsdre input_ports_gts80
-CORE_CLONEDEFNV(dvlsdre,gts80a,"Devil's Dare",1981,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(dvlsdre,gts80a,"Devil's Dare",1982,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Devil's Dare (Sound Only) (#670)
@@ -609,7 +617,7 @@ GTS80S1K_ROMSTART("670-a-s.snd",  CRC(f141d535) SHA1(91e4ab9ce63b5ff3e395b6447a1
                   "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_dvlsdre2 input_ports_gts80
-CORE_CLONEDEFNV(dvlsdre2,gts80as,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(dvlsdre2,gts80as,"Devil's Dare (Sound Only)",1982,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Caveman (#PV-810) Pinball/Video Combo

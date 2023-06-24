@@ -3,10 +3,10 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.6 (XX XXth, 2023) - ""
+Version 3.6 (XX XXth, 2023) - "Sounds good III"
 ------------------------------------------------------------------------------
 
-Updated LISY support to 5.28-85 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
+Updated LISY support to 5.28-87 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
 Fix Capcom crashes in 64bit builds
 
@@ -26,9 +26,10 @@ Also fixed one subtle DCS emulation bug that leads to slight buzzing/crackling o
 Due to the above, remove DCS low pass filtering (introduced in 2.8) again and prefer 1:1 DCS output quality
 Fixed 6 million dollar man 7 digit conversion display
 Fixed inverted switches for ffv101
-Reduced pre-shutdown time for Joctronic, NSM, Juegos Populares after fixing timeslice issue related to quick VGM timer
+Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM, Juegos Populares, after fixing timeslice issue related to the VGM file dump feature (which uses a fast timer)
+Added support for the old SC-01 Votrax ROM version (wired only to the Mars - God of War Prototype so far)
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -61,6 +62,7 @@ Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
 Ali (7-digit conversion Free Play rev. 76)
+Black Knight L-2
 Dracula (One Ball MOD)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)

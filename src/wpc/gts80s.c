@@ -27,10 +27,11 @@
       Black Hole, Volcano, and Devils Dare
 
     - System 80/80A Sound & Speech Board
-		- subtype 0: without SC-01 (Votrax) chip installed
-		- subtype 1: SC-01 (Votrax) chip installed
+		- subtype 0: without SC-01(-A) (Votrax) chip installed
+		- subtype 1: new SC-01-A (Votrax) chip installed
+		- subtype 2: old SC-01 (Votrax) chip installed
 
-		Schematics corresponding to the -1 revision of the board can be found in the Mars, God of War and Volcano manuals.
+		Schematics corresponding to the -1 revision of the board can be found in the Mars - God of War and Volcano manuals.
 		Schematics corresponding to the -3 revision of the board can be found in the Black Hole and Haunted House manuals.
 
     - System 80A Sound Board with a PiggyPack installed
@@ -463,7 +464,7 @@ static struct riot6532_interface GTS80SS_riot6532_intf = {
 
 static WRITE_HANDLER(GTS80SS_riot6532_3_ram_w)
 {
-	UINT8 *pMem = GTS80SS_locals.pRIOT6532_3_ram + (offset%0x80);
+	UINT8 * const pMem = GTS80SS_locals.pRIOT6532_3_ram + (offset%0x80);
 
 	pMem[0x0000] = pMem[0x0080] = pMem[0x0100] = pMem[0x0180] = data;
 }
@@ -590,7 +591,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 		| ((core_getDip(4)&0x20) ? 0x02:0x00) /* S6: speech enabled */
 		| ((core_getDip(4)&0x40) ? 0x01:0x00) /* S7: connected, usage unknown */
 //		| ((core_getDip(4)&0x80) ? 0x80:0x00) /* S8: not used (goes to the expansion board, pin J1-17) */
-    ;
+	;
 
 	/*
 		Init RAM, i.e. set base of all banks to the base of bank 1,
@@ -611,7 +612,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	GTS80SS_locals.last_clock = GTS80SS_locals.last_soundupdate = 0.;
 
 	{
-	UINT8 *mr = memory_region(GTS80SS_locals.boardData.cpuNo);
+	UINT8 * const mr = memory_region(GTS80SS_locals.boardData.cpuNo);
 	for(i = 0; i<8; i++)
 		memcpy(mr+0x8000+0x1000*i, mr+0x7000, 0x1000);
 	}
@@ -670,6 +671,15 @@ struct CustomSound_interface GTS80SS_customsoundinterface = { s80ss_sh_start, s8
 
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
+	{ 0 },					/* SC-01 */ // most likely only the oldest GTS80 with Votrax (Mars Prototype) features the 'old' SC-01, see comment in gts80games.c/Mars
+	{ 100 },				/* master volume */ // OLD_VOTRAX 75
+	{ 720000 },				/* initial sampling frequency */ //!! or ~895kHz? or MAME astrocde's 756000? // OLD_VOTRAX: 7000
+	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
+};
+
+struct VOTRAXSC01interface GTS80SS_votrax_sc01a_interface = {
+	1,						/* 1 chip */
+	{ 1 },					/* SC-01-A */ // most likely only the oldest GTS80 with Votrax (Mars Prototype) features the 'old' SC-01, see comment in gts80games.c/Mars
 	{ 100 },				/* master volume */ // OLD_VOTRAX 75
 	{ 720000 },				/* initial sampling frequency */ //!! or ~895kHz? or MAME astrocde's 756000? // OLD_VOTRAX: 7000
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
@@ -679,13 +689,23 @@ const struct sndbrdIntf gts80ssIntf = {
   "GTS80SS", gts80ss_init, gts80ss_exit, gts80ss_diag, gts80ss_data_w, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
-MACHINE_DRIVER_START(gts80s_ss)
+MACHINE_DRIVER_START(gts80s_ss_old)
   MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.) // verified by Bontango on real HW (~892KHz)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80SS_readmem, GTS80SS_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, GTS80SS_customsoundinterface)
   MDRV_SOUND_ADD(VOTRAXSC01, GTS80SS_votrax_sc01_interface)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80s_ss)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.) // verified by Bontango on real HW (~892KHz)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80SS_readmem, GTS80SS_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(CUSTOM, GTS80SS_customsoundinterface)
+  MDRV_SOUND_ADD(VOTRAXSC01, GTS80SS_votrax_sc01a_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
@@ -743,11 +763,9 @@ static WRITE_HANDLER(s80bs_ay8910_latch_w)
 static void nmi_callback(int param)
 {
 	//Reset the timing frequency
-	double interval;
-	int cl1, cl2;
-	cl1 = 16-(GTS80BS_locals.nmi_rate&0x0f);
-	cl2 = 16-((GTS80BS_locals.nmi_rate&0xf0)>>4);
-	interval = (250000>>8);
+	int cl1 = 16-(GTS80BS_locals.nmi_rate&0x0f);
+	int cl2 = 16-((GTS80BS_locals.nmi_rate&0xf0)>>4);
+	double interval = (250000>>8);
 	/*if(cl1>0)*/	interval /= cl1;
 	/*if(cl2>0)*/	interval /= cl2;
 
@@ -848,7 +866,7 @@ WRITE_HANDLER(s80bs_sh_w)
 static READ_HANDLER(s80bs1_sound_input_r)
 {
 	int data = (core_getDip(4) >> 4) | ((core_getDip(5) & 0x03) << 4) | ((~core_getDip(4) & 0x01) << 6);
-	if(GTS80BS_locals.speechboard_drq)	data |= 0x80;
+	if(GTS80BS_locals.speechboard_drq) data |= 0x80;
 	return data;
 }
 
@@ -898,6 +916,7 @@ static WRITE_HANDLER( s80bs1_sound_control_w )
 
 	/* bit 7 goes to the speech chip RESET pin */
 	//No interface in the sp0250 emulation for it yet?
+
 	last = data & 0x44;
 }
 
@@ -1165,9 +1184,9 @@ static WRITE_HANDLER(u2latch_w)
 */
 static WRITE_HANDLER(sound_control_w)
 {
-	int hold_enable_w, hold_enable_cs, hold_u3;
+	int hold_enable_w, /*hold_enable_cs,*/ hold_u3;
 	hold_enable_w = GTS80BS_locals.enable_w;
-	hold_enable_cs = GTS80BS_locals.enable_cs;
+	//hold_enable_cs = GTS80BS_locals.enable_cs;
 	hold_u3 = GTS80BS_locals.u3_latch;
 
 	//Process common bits (D0 for NMI, D7 for YM2151)

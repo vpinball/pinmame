@@ -1010,6 +1010,31 @@ LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMech
 }
 
 /******************************************************
+ * PinmameGetMaxSoundCommands
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetMaxSoundCommands() {
+	return MAX_CMD_LOG;
+}
+
+/******************************************************
+ * PinmameGetNewSoundCommands
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands) {
+	if (!_isRunning) {
+		return -1;
+	}
+
+	vp_tChgSound chgSounds;
+	const int count = vp_getNewSoundCommands(chgSounds);
+	if (count > 0) {
+		memcpy(p_newCommands, chgSounds, count * sizeof(PinmameSoundCommand));
+	}
+	return count;
+}
+
+/******************************************************
  * PinmameGetDIP
  ******************************************************/
 

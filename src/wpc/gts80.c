@@ -70,7 +70,7 @@ static INTERRUPT_GEN(GTS80_vblank) {
     lisy80TickleWatchdog();
 #endif
 
-  GTS80locals.vblankCount += 1;
+  GTS80locals.vblankCount++;
   /*-- lamps are not strobed so no need to smooth --*/
   /*-- solenoids --*/
   if ((GTS80locals.vblankCount % GTS80_SOLSMOOTH) == 0) {
@@ -531,6 +531,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts80sp)
   MDRV_IMPORT_FROM(gts80)
   MDRV_IMPORT_FROM(gts80s_sp)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80ss_old)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_ss_old)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80ss)
