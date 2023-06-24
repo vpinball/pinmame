@@ -4,24 +4,43 @@
 #pragma once
 #endif
 
-#include "altsound_data.h"
+#include "snd_alt.h"
+#include "altsound_data.hpp"
 
 // ---------------------------------------------------------------------------
 // Class definitions
 // ---------------------------------------------------------------------------
 
 class AltsoundCsvParser {
-public:
+public: // methods
+
 	// Standard constructor
 	AltsoundCsvParser(const char *gname_in);
 
 	bool parse(PinSamples* psd);
 
+public: // data
+
+	// Structure for traditional AltSound CSV parsing
+	typedef struct _csv_reader {
+		FILE* f;
+		int delimiter;
+		int n_header_fields;
+		char** header_fields;	// header split in fields
+		int n_fields;
+		char** fields;			// current row split in fields
+	} CsvReader;
+
 protected:
+
 	// Default constructor
-	AltsoundCsvParser();
+	AltsoundCsvParser() {/* not used */};
+
+	// Copy constructor
+	AltsoundCsvParser(AltsoundCsvParser&) {/* not used */ };
 
 private: // functions
+
 	void csv_close();
 	int csv_read_header();
 	int csv_read_record();
@@ -36,6 +55,7 @@ private: // functions
 	int csv_get_str_field(const int field_index, char** pValue);
 
 private: // data
+
 	CsvReader *reader;
 	const char* g_szGameName;
 	char* filename;

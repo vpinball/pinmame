@@ -4,18 +4,22 @@
 #pragma once
 #endif
 
-#include "altsound_data.h"
+#include "snd_alt.h"
+#include "altsound_data.hpp"
 
 class AltsoundFileParser {
 public:
+	
 	// Standard constructor
 	AltsoundFileParser(const char *gname_in);
 
 	bool parse(PinSamples* psd);
 
 protected:
+	
 	// Default constructor
-	AltsoundFileParser();
+	AltsoundFileParser() {};
+
 private: // functions
 
 private: // data

@@ -5,28 +5,33 @@
 #endif
 
 #include <stdio.h>
-
-#include "altsound_data.h"
+#include "..\ext\bass\bass.h"
 
 #ifdef __cplusplus
   extern "C" {
 #endif
   #include "driver.h"
+  #include <dirent.h>
 #ifdef __cplusplus
   }
 #endif
+
 #define ALT_MAX_CMDS 4
+
+// ---------------------------------------------------------------------------
+// Data Structures
+// ---------------------------------------------------------------------------
 
 // Structure for command data
 typedef struct _cmd_data {
-unsigned int cmd_counter;
-int stored_command;
-unsigned int cmd_filter;
-unsigned int cmd_buffer[ALT_MAX_CMDS];
+	unsigned int cmd_counter;
+	int stored_command;
+	unsigned int cmd_filter;
+	unsigned int cmd_buffer[ALT_MAX_CMDS];
 } CmdData;
 
 // ---------------------------------------------------------------------------
-// snd_cmd function prototypes
+// snd_alt function prototypes
 // ---------------------------------------------------------------------------
 
 #ifdef __cplusplus
@@ -62,8 +67,5 @@ void preprocess_commands(CmdData* cmds_out, int cmd);
 // the function be allowed to run?
 // Function to process combined commands based on ROM hardware platform
 void postprocess_commands(const unsigned int combined_cmd);
-
-// Helper function to get short path for sample filenames
-//const char* get_short_path(const char* long_path_in);
 
 #endif //SND_ALT_H
