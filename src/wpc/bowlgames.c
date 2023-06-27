@@ -403,6 +403,63 @@ ROM_START(larana)
 ROM_END
 CORE_GAMEDEFNV(larana,"La Rana",1990,"Inder (Spain)",INDERS1RANA,0)
 
+/*-------------------------------------------------------------------
+/ Gun Shot
+--------------------------------------------------------------------*/
+extern MACHINE_DRIVER_EXTERN(gunshot);
+static core_tLCDLayout gs_disp[] = {{0}};
+static core_tGameData gunshotGameData = {0,gs_disp,{FLIP_SW(FLIP_L),0,-4,0,SNDBRD_SPINB,0,0,175},NULL,{"",{0,0,0x0f,0x10}}};
+static void init_gunshot(void) {
+  core_gameData = &gunshotGameData;
+}
+INPUT_PORTS_START(gunshot)
+  CORE_PORTS
+  SIM_PORTS(1)
+  PORT_START /* 0, switches */
+    COREPORT_BIT(     0x0001, "Coin", KEYCODE_1)
+    COREPORT_BIT(     0x0008, "Tilt", KEYCODE_DEL)
+    COREPORT_BIT(     0x0020, "Fire", KEYCODE_ENTER)
+  PORT_START /* 1, dips 1..8 */
+    COREPORT_DIPNAME( 0x000f, 0x000a, "Games/Coins")
+      COREPORT_DIPSET(0x0000, "2/1" )
+      COREPORT_DIPSET(0x0001, "1/1" )
+      COREPORT_DIPSET(0x000a, "1/1, 3/2" )
+      COREPORT_DIPSET(0x0002, "1/1, 5/4" )
+      COREPORT_DIPSET(0x000f, "2/2, 5/4" )
+      COREPORT_DIPSET(0x0003, "1/2" )
+      COREPORT_DIPSET(0x0004, "1/2, 5/8" )
+      COREPORT_DIPSET(0x0005, "1/2, 3/4" )
+      COREPORT_DIPSET(0x0006, "1/4" )
+      COREPORT_DIPSET(0x0007, "1/4, 6/20" )
+      COREPORT_DIPSET(0x0008, "1/4, 3/8" )
+//    COREPORT_DIPSET(0x0009, "1/1" )
+//    COREPORT_DIPSET(0x000b, "1/2" )
+//    COREPORT_DIPSET(0x000c, "1/2, 3/4" )
+//    COREPORT_DIPSET(0x000d, "1/2, 3/4" )
+//    COREPORT_DIPSET(0x000e, "1/2, 3/4" )
+    COREPORT_DIPNAME( 0x0010, 0x0000, DEF_STR(Unknown))
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0010, DEF_STR(On))
+    COREPORT_DIPNAME( 0x0020, 0x0020, "Attract tune")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0020, DEF_STR(On))
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Test mode")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0040, DEF_STR(On))
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Game mode")
+      COREPORT_DIPSET(0x0000, "Normal" )
+      COREPORT_DIPSET(0x0080, "Exhibition (endless)" )
+INPUT_PORTS_END
+ROM_START(gunshot)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("m-177_gun_shot_rom_0_version_0.4.ci3", 0x0000, 0x4000, CRC(4754a983) SHA1(21c517c78624af41e0295877cc6d6ba7a66fe0fa))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("m-177_gun_shot_rom_1_version_0.0.ic9", 0x0000, 0x2000, CRC(19fcec2d) SHA1(ff69de0652a54d5c00738c8144897e33df972eee))
+  NORMALREGION(0x80000, REGION_USER1)
+    ROM_LOAD("m-177_gun_shot_rom_2_version_0.0.ic16",0x00000,0x80000,CRC(f91ddd0c) SHA1(cc4e1440e76330872f512d56376f45b92a8dbee6))
+ROM_END
+CORE_GAMEDEFNV(gunshot, "Gun Shot", 199?, "Spinball (Spain)", gunshot, 0) 
+
 /*--------------------
 / Slugfest baseball
 /--------------------*/

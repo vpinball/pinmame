@@ -874,6 +874,7 @@ DRIVERNV(smb2)          //                Super Mario Bros. (rev.2)
 DRIVERNV(smb3)          //                Super Mario Bros. (rev.3)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
+DRIVERNV(cueball1)      //          10/92 Cue Ball Wizard (older display rev.)
 DRIVERNV(cueball2)      //          10/92 Cue Ball Wizard (rev.2)
 DRIVERNV(cueball3)      //          10/92 Cue Ball Wizard (rev.3)
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
@@ -966,6 +967,7 @@ DRIVERNV(larana  )      //La Rana (1990)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 DRIVERNV(metalman)      //Metal Man (1992)
+DRIVERNV(gunshot)       //Gun Shot (19??)
 
 // ----------------
 // JAC VAN HAM
