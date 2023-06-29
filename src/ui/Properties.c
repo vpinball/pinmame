@@ -2844,7 +2844,11 @@ static void InitializeDefaultInputUI(HWND hwnd)
 					strcmp (FindFileData.cFileName,"..") != 0)
 				{
 					// copy the filename
+#ifdef __GNUC__
+					strcpy (root,FindFileData.cFileName);
+#else
 					strcpy_s (root,sizeof(root),FindFileData.cFileName);
+#endif
 
 					// assume it's not a zip file
 					isZipFile = 0;
