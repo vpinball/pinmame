@@ -967,7 +967,7 @@ DRIVERNV(larana  )      //La Rana (1990)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 DRIVERNV(metalman)      //Metal Man (1992)
-DRIVERNV(gunshot)       //Gun Shot (19??)
+DRIVERNV(gunshot)       //Gun Shot (1996)
 
 // ----------------
 // JAC VAN HAM

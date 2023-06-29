@@ -458,7 +458,7 @@ ROM_START(gunshot)
   NORMALREGION(0x80000, REGION_USER1)
     ROM_LOAD("m-177_gun_shot_rom_2_version_0.0.ic16",0x00000,0x80000,CRC(f91ddd0c) SHA1(cc4e1440e76330872f512d56376f45b92a8dbee6))
 ROM_END
-CORE_GAMEDEFNV(gunshot, "Gun Shot", 199?, "Spinball (Spain)", gunshot, 0) 
+CORE_GAMEDEFNV(gunshot, "Gun Shot", 1996, "Spinball (Spain)", gunshot, 0) 
 
 /*--------------------
 / Slugfest baseball
