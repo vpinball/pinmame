@@ -27,6 +27,12 @@
 class AltsoundProcessorBase {
 public:
 	
+	// Default constructor
+	AltsoundProcessorBase() = delete;
+
+	// Copy constructor
+	AltsoundProcessorBase(AltsoundProcessorBase&) = delete;
+
 	// Standard Constructor
 	AltsoundProcessorBase(const std::string& game_name_in);
 
@@ -36,33 +42,15 @@ public:
 	// Process ROM commands to the sound board
 	virtual bool handleCmd(const unsigned int cmd_in) = 0;
 
-	// stop playback of provided stream handle
-	static bool stopStream(HSTREAM hstream_in);
-
-	// get lowest ducking value of all active streams
-	static float getMinDucking();
-
-	// free BASS resources of provided stream handle
-	static bool freeStream(const HSTREAM stream_in);
-
-	// find available sound channel for sample playback
-	static bool findFreeChannel(unsigned int& channel_out);
-
-	// set volume on provided stream
-	static bool setStreamVolume(HSTREAM stream_in, const float vol_in);
+	// external interface to stop playback of the current music stream
+	virtual bool stopMusic() = 0;
 
 public: // data
 	
 protected: // functions
 
-	// Default constructor
-	AltsoundProcessorBase() {/* not used */};
-
-	// Copy constructor
-	AltsoundProcessorBase(AltsoundProcessorBase&) {/* not used */};
-
 	// populate sample data
-	virtual bool loadSamples(void) = 0;
+	virtual bool loadSamples() = 0;
 
 	// initialize processing state
 	virtual void init() = 0;
@@ -74,7 +62,22 @@ protected: // functions
 	bool createStream(void* syncproc_in, AltsoundStreamInfo* stream_out);
 
 	// get short path of current game <gamename>/subpath/filename
-	const char* getShortPath(const char* const path_in);
+	std::string getShortPath(const std::string& path_in);
+
+	// stop playback on all active streams
+	bool stopAllStreams();
+
+	// stop playback of provided stream handle
+	static bool stopStream(HSTREAM hstream_in);
+
+	// free BASS resources of provided stream handle
+	static bool freeStream(const HSTREAM stream_in);
+
+	// find available sound channel for sample playback
+	static bool findFreeChannel(unsigned int& channel_out);
+
+	// set volume on provided stream
+	static bool setStreamVolume(HSTREAM stream_in, const float vol_in);
 
 protected: // data
 	

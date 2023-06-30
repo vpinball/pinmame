@@ -32,6 +32,7 @@
 //#include "altsound2_processor.hpp"
 #include "altsound_processor_base.hpp"
 #include "altsound_processor.hpp"
+#include "altsound2_processor.hpp"
 #include "altsound_file_parser.hpp"
 #include "inipp.h"
 #include "altsound_data.hpp"
@@ -65,15 +66,21 @@ extern "C" char g_szGameName[256];
 CmdData cmds;
 
 // Initialization support
-static BOOL is_initialized = FALSE;
-static BOOL run_once = true;
-static BOOL altsound_stable = TRUE;
+/*static*/ BOOL is_initialized = FALSE;
+/*static*/ BOOL run_once = true;
+/*static*/ BOOL altsound_stable = TRUE;
 
 // Processing instance to specialize command handling
-static AltsoundProcessor *processor = NULL;
+/*static*/ AltsoundProcessorBase *processor = NULL;
 
 // Use ROM control commands to control master volume
 bool use_rom_ctrl = true;
+
+extern BehaviorInfo music_behavior;
+extern BehaviorInfo callout_behavior;
+extern BehaviorInfo sfx_behavior;
+extern BehaviorInfo solo_behavior;
+extern BehaviorInfo overlay_behavior;
 
 // ---------------------------------------------------------------------------
 // Function prototypes
@@ -103,6 +110,12 @@ string get_altound_format(const string& path_in);
 
 // Parse the altsound ini file
 bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctrl_out);
+
+typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
+
+void parseBehaviorValue(const IniSection& section, const std::string& key,
+	                    std::bitset<5>& behavior);
+void parseVolumeValue(const IniSection& section, const std::string& key, float& volume);
 
 // ---------------------------------------------------------------------------
 // Functional code
@@ -235,7 +248,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	if (format == "altsound2") {
 		// AltSound2 only supports new CSV format. No need to specify format
 		// in the constructor
-		// DAR_TODO
+		processor = new Altsound2Processor(g_szGameName);
 	}
 	else if (format == "altsound" || format == "pinsound") {
 		// Traditional altsound processor handles existing CSV and legacy
@@ -565,7 +578,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 		if (combined_cmd == 0x03E3) // stop music
 		{
 			LOG(("- stopping MUSIC(2)\n")); //DAR_DEBUG
-			processor->stopMusicStream();
+			processor->stopMusic();
 		}
 	}
 
@@ -576,7 +589,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 		if ((combined_cmd == 0x0018 || combined_cmd == 0x0023)) // stop music //!! ???? 0x0019??
 		{
 			LOG(("- stopping MUSIC(3)\n")); //DAR_DEBUG
-			processor->stopMusicStream();
+			processor->stopMusic();
 		}
 	}
 
@@ -587,7 +600,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 		if (((combined_cmd == 0x0000 || (combined_cmd & 0xf0ff) == 0xf000))) // stop music
 		{
 			LOG(("- stopping MUSIC(4)\n")); //DAR_DEBUG
-			processor->stopMusicStream();
+			processor->stopMusic();
 		}
 	}
 	
@@ -761,86 +774,289 @@ bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctr
 	LOG(("- Parsed \"rom_ctrl\": %s\n", rom_control.c_str()));
 	rom_ctrl_out = rom_control == "1";
 
+	// parse MUSIC behavior
+	auto& music_section = ini.sections["music"];
+
+	parseBehaviorValue(music_section, "ducks", music_behavior.ducks);
+	parseBehaviorValue(music_section, "pauses", music_behavior.pauses);
+	parseBehaviorValue(music_section, "stops", music_behavior.stops);
+
+	parseVolumeValue(music_section, "music_duck_vol", music_behavior.music_duck_vol);
+	parseVolumeValue(music_section, "callout_duck_vol", music_behavior.callout_duck_vol);
+	parseVolumeValue(music_section, "sfx_duck_vol", music_behavior.sfx_duck_vol);
+	parseVolumeValue(music_section, "solo_duck_vol", music_behavior.solo_duck_vol);
+	parseVolumeValue(music_section, "overlay_duck_vol", music_behavior.overlay_duck_vol);
+	
+	// parse CALLOUT behavior
+	auto& callout_section = ini.sections["callout"];
+
+	parseBehaviorValue(callout_section, "ducks", callout_behavior.ducks);
+	parseBehaviorValue(callout_section, "pauses", callout_behavior.pauses);
+	parseBehaviorValue(callout_section, "stops", callout_behavior.stops);
+
+	parseVolumeValue(callout_section, "music_duck_vol", callout_behavior.music_duck_vol);
+	parseVolumeValue(callout_section, "callout_duck_vol", callout_behavior.callout_duck_vol);
+	parseVolumeValue(callout_section, "sfx_duck_vol", callout_behavior.sfx_duck_vol);
+	parseVolumeValue(callout_section, "solo_duck_vol", callout_behavior.solo_duck_vol);
+	parseVolumeValue(callout_section, "overlay_duck_vol", callout_behavior.overlay_duck_vol);
+
+	// parse SFX behavior
+	auto& sfx_section = ini.sections["sfx"];
+
+	parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
+	parseBehaviorValue(sfx_section, "pauses", sfx_behavior.pauses);
+	parseBehaviorValue(sfx_section, "stops", sfx_behavior.stops);
+
+	parseVolumeValue(sfx_section, "music_duck_vol", sfx_behavior.music_duck_vol);
+	parseVolumeValue(sfx_section, "callout_duck_vol", sfx_behavior.callout_duck_vol);
+	parseVolumeValue(sfx_section, "sfx_duck_vol", sfx_behavior.sfx_duck_vol);
+	parseVolumeValue(sfx_section, "solo_duck_vol", sfx_behavior.solo_duck_vol);
+	parseVolumeValue(sfx_section, "overlay_duck_vol", sfx_behavior.overlay_duck_vol);
+
+	// parse SOLO behavior
+	auto& solo_section = ini.sections["solo"];
+
+	parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);
+	parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
+	parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
+
+	parseVolumeValue(solo_section, "music_duck_vol", solo_behavior.music_duck_vol);
+	parseVolumeValue(solo_section, "callout_duck_vol", solo_behavior.callout_duck_vol);
+	parseVolumeValue(solo_section, "sfx_duck_vol", solo_behavior.sfx_duck_vol);
+	parseVolumeValue(solo_section, "solo_duck_vol", solo_behavior.solo_duck_vol);
+	parseVolumeValue(solo_section, "overlay_duck_vol", solo_behavior.overlay_duck_vol);
+
+	// parse OVERLAY behavior
+	auto& overlay_section = ini.sections["overlay"];
+
+	parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
+	parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
+	parseBehaviorValue(overlay_section, "stops", overlay_behavior.stops);
+
+	parseVolumeValue(overlay_section, "music_duck_vol", overlay_behavior.music_duck_vol);
+	parseVolumeValue(overlay_section, "callout_duck_vol", overlay_behavior.callout_duck_vol);
+	parseVolumeValue(overlay_section, "sfx_duck_vol", overlay_behavior.sfx_duck_vol);
+	parseVolumeValue(overlay_section, "solo_duck_vol", overlay_behavior.solo_duck_vol);
+	parseVolumeValue(overlay_section, "overlay_duck_vol", overlay_behavior.overlay_duck_vol);
 	LOG(("END: parse_altsound_ini()\n"));
 	return true;
+}
+
+// ---------------------------------------------------------------------------
+// Helper function to parse Altsound2 behavior values
+// ---------------------------------------------------------------------------
+
+typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
+
+void parseBehaviorValue(const IniSection& section, const std::string& key, std::bitset<5>& behavior)
+{
+	std::string token;
+	std::string parsed_value;
+	inipp::get_value(section, key, parsed_value);
+
+	std::stringstream ss(parsed_value);
+	while (std::getline(ss, token, ',')) {
+		//LOG(("TOKEN: %s\n", token.c_str()));
+		if (token == "music") {
+			behavior.set(0, true);
+		}
+		else if (token == "callout") {
+			behavior.set(1, true);
+		}
+		else if (token == "sfx") {
+			behavior.set(2, true);
+		}
+		else if (token == "solo") {
+			behavior.set(3, true);
+		}
+		else if (token == "overlay") {
+			behavior.set(4, true);
+		}
+	}
+}
+
+
+// ---------------------------------------------------------------------------
+// Helper function to parse Altsound2 behavior volume values
+// ---------------------------------------------------------------------------
+
+void parseVolumeValue(const IniSection& section, const std::string& key, float& volume)
+{
+	std::string parsed_value;
+	inipp::get_value(section, key, parsed_value);
+
+	if (!parsed_value.empty()) {
+		try {
+			int val = std::stoul(parsed_value);
+			volume = val > 100 ? 1.0f : val < 0 ? 0.0f : (float)val / 100.f;
+		}
+		catch (const std::exception& e) {
+			LOG(("Exception while parsing volume value: %s\n", e.what()));
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
 // Helper function to create the altsound.ini file
 // ---------------------------------------------------------------------------
 
-bool create_altsound_ini(const string& path_in)
+bool create_altsound_ini(const std::string& path_in)
 {
 	LOG(("BEGIN: create_altsound_ini()\n"));
 
-	string format = get_altound_format(path_in);
+	std::string format = get_altound_format(path_in);
 
 	if (format.empty()) {
 		LOG(("- FAILED: get_altsound_format()\n"));
-
 		LOG(("END: create_altsound_ini()\n"));
 		return false;
 	}
 	LOG(("- SUCCESS: get_altsound_format(): %s\n", format.c_str()));
 
-	string ini_path = path_in;
-	ini_path.append("\\altsound.ini");
+	std::string ini_path = path_in + "\\altsound.ini";
+	std::ofstream file_out(ini_path);
 
-	std::ofstream file_out;
-	file_out.open(ini_path);
-
-	file_out << "; ----------------------------------------------------------------------------" << endl;
-	file_out << "; There are three supported formats :" << endl;
-	file_out << ";  1. Legacy" << endl;
-	file_out << ";  2. AltSound" << endl;
-	file_out << ";  3. AltSound2" << endl;
-	file_out << ";" << endl;
-	file_out << "; Legacy: the original AltSound format that parses a file / folder structure" << endl;
-	file_out << ";         similar to the PinSound system. It is no longer used for new" << endl;
-	file_out << ";         AltSound packages" << endl;
-	file_out << ";" << endl;
-	file_out << "; AltSound: a CSV-based format designed as a replacement for the PinSound" << endl;
-	file_out << ";           format. This format defines samples according to \"channels\" with" << endl;
-	file_out << ";           loosely defined behaviors controlled by the associated metadata" << endl;
-	file_out << ";           \"gain\", \"ducking\", and \"stop\" fields. This is the format" << endl;
-	file_out << ";           currently in use by most AltSound authors" << endl;
-	file_out << ";" << endl;
-	file_out << "; Altsound2: a new CSV-based format that defines samples according to" << endl;
-	file_out << ";            contextual types, allowing for more intuitively designed AltSound" << endl;
-	file_out << ";            packages. General playback behavior is dictated by the assigned" << endl;
-	file_out << ";            type. Behaviors can evolve without the need for adding" << endl;
-	file_out << ";            additional CSV fields, and the combinatorial complexity that" << endl;
-	file_out << ";            comes with it." << endl;
-    file_out << ";            NOTE: This option requires the new altsound2.csv" << endl;
-	file_out << ";" << endl;
-	file_out << "; ----------------------------------------------------------------------------" << endl;
+	file_out << "; ----------------------------------------------------------------------------\n";
+	file_out << "; There are three supported AltSound formats :\n";
+	file_out << ";  1. Legacy\n";
+	file_out << ";  2. AltSound\n";
+	file_out << ";  3. AltSound2\n";
+	file_out << ";\n";
+	file_out << "; Legacy: the original AltSound format that parses a file / folder structure\n";
+	file_out << ";         similar to the PinSound system. It is no longer used for new\n";
+	file_out << ";         AltSound packages\n";
+	file_out << ";\n";
+	file_out << "; AltSound: a CSV-based format designed as a replacement for the PinSound\n";
+	file_out << ";           format. This format defines samples according to \"channels\" with\n";
+	file_out << ";           loosely defined behaviors controlled by the associated metadata\n";
+	file_out << ";           \"gain\", \"ducking\", and \"stop\" fields. This is the format\n";
+	file_out << ";           currently in use by most AltSound authors\n";
+	file_out << ";\n";
+	file_out << "; Altsound2: a new CSV-based format that defines samples according to\n";
+	file_out << ";            contextual types, allowing for more intuitively designed AltSound\n";
+	file_out << ";            packages. General playback behavior is dictated by the assigned\n";
+	file_out << ";            type. Behaviors can evolve without the need for adding\n";
+	file_out << ";            additional CSV fields, and the combinatorial complexity that\n";
+	file_out << ";            comes with it.\n";
+	file_out << ";            NOTE: This option requires the new altsound2.csv format\n";
+	file_out << ";\n";
+	file_out << "; ----------------------------------------------------------------------------\n\n";
 
 	// create [format] section
-	file_out << "[format]" << endl;
-	file_out << "format = " << format << endl;
+	file_out << "[format]\n";
+	file_out << "format = " << format << "\n\n";
 
-	file_out << endl;
-	file_out << "; ----------------------------------------------------------------------------" << endl;
-	file_out << "; The AltSound processor attempts to recreate certain sample behaviors based" << endl;
-	file_out << "; on commands sent from the ROM.This does not appear to be working in all" << endl;
-	file_out << "; cases, resulting in undesirable muting of the sample playback volume." << endl;
-	file_out << "; Until this can be addressed, this feature can be disabled by setting" << endl;
-	file_out << "; the \"rom_control\" setting to false." << endl;
-	file_out << ";" << endl;
-	file_out << "; Turning this feature off will use only the defined \"gain\" and \"ducking\"" << endl;
-	file_out << "; values defined in the CSV file, and will not attempt to replicate ROM" << endl;
-	file_out << "; behavior for sample playback." << endl;
-	file_out << ";" << endl;
-	file_out << "; To preserve current functionality, this feature is enabled by default" << endl;
-	file_out << "; NOTE: This option works with all AltSound formats listed above" << endl;
-	file_out << "; ----------------------------------------------------------------------------" << endl;
+	file_out << "; ----------------------------------------------------------------------------\n";
+	file_out << "; The AltSound processor attempts to recreate original playback behavior based\n";
+	file_out << "; on commands sent from the ROM. This does not appear to be working in all\n";
+	file_out << "; cases, resulting in undesirable muting of the sample playback volume.\n";
+	file_out << "; Until this can be addressed, this feature can be disabled by setting\n";
+	file_out << "; the \"rom_control\" setting to false.\n";
+	file_out << ";\n";
+	file_out << "; Turning this feature off will use only the defined \"gain\" and \"ducking\"\n";
+	file_out << "; values defined in the CSV file, and will not attempt to replicate ROM\n";
+	file_out << "; behavior for sample playback.\n";
+	file_out << ";\n";
+	file_out << "; To preserve current functionality, this feature is enabled by default\n";
+	file_out << "; NOTE: This option works with all AltSound formats listed above\n";
+	file_out << "; ----------------------------------------------------------------------------\n\n";
 
 	// create [volume] section
-	file_out << "[volume]" << endl;
-	file_out << "rom_ctrl = 1" << endl;
+	file_out << "[volume]\n";
+	file_out << "rom_ctrl = 1\n\n";
+
+	file_out << "; ----------------------------------------------------------------------------\n";
+	file_out << "; The section below allows for tailoring of the AltSound2 behaviors. They are\n";
+	file_out << "; not used for traditional Altound or Legacy Altsound formats\n";
+	file_out << ";\n";
+	file_out << "; The AltSound2 format supports the following sample types :\n";
+	file_out << ";\n";
+	file_out << "; -MUSIC   : background music\n";
+	file_out << "; -CALLOUT : voice interludes and callouts\n";
+	file_out << "; -SFX     : short sounds to supplement table sounds\n";
+	file_out << "; -SOLO    : sound played at end-of-ball/game, or tilt\n";
+	file_out << "; -OVERLAY : sounds played over music/sfx\n";
+	file_out << ";\n";
+	file_out << "; Each sample type supports the following variables to tailor playback behavior\n";
+	file_out << "; with respect to other sample types:\n";
+	file_out << ";\n";
+	file_out << "; \"ducks\"            : specify which sample types are ducked\n";
+	file_out << "; \"pauses\"           : specify which sample types are paused\n";
+	file_out << "; \"stops\"            : specify which sample types are stopped\n";
+	file_out << "; \"music_duck_vol\"   : specify the ducked volume for music samples\n";
+	file_out << "; \"callout_duck_vol\" : specify the ducked volume for callout samples\n";
+	file_out << "; \"sfx_duck_vol\"     : specify the ducked volume for sfx samples\n";
+	file_out << "; \"solo_duck_vol\"    : specify the ducked volume for solo samples\n";
+	file_out << "; \"overlay_duck_vol\" : specify the ducked volume for overlay samples\n";
+	file_out << ";\n";
+	file_out << "; NOTES\n";
+	file_out << "; - a sample type cannot duck / pause another sample of the same type\n";
+	file_out << "; - stopping a sample of the same type essentially means that only one sample\n";
+	file_out << ";   of that type can be played at the same time\n";
+	file_out << "; - a stopped sample cannot be resumed / restarted\n";
+	file_out << "; - ducking values are specified as a percentage of the gain of the\n";
+	file_out << ";   affected sample type(s). Valid values range from 0 to 100 where\n";
+	file_out << ";   0 completely mutes the sample, and 100 effectively negates ducking\n";
+	file_out << "; - if multiple ducking values apply to a single sample, the lowest\n";
+	file_out << ";   ducking value is used\n";
+	file_out << "; - ducking / pausing ends when the sample that set it has ended.If\n";
+	file_out << ";   multiple sample types duck / pause another type, playback will remain\n";
+	file_out << ";   ducked / paused until the last affecting sample has ended\n";
+	file_out << "; ----------------------------------------------------------------------------\n\n";
+
+	// create behavior variable section
+	file_out << "[music]\n";
+		file_out << "ducks =\n";
+		file_out << "pauses =\n";
+		file_out << "stops = music\n";
+		file_out << "; music_duck_vol =\n";
+		file_out << "; callout_duck_vol =\n";
+		file_out << "; sfx_duck_vol =\n";
+		file_out << "; solo_duck_vol =\n";
+		file_out << "; overlay_duck_vol =\n\n";
+
+	file_out << "[callout]\n";
+		file_out << "ducks = sfx\n";
+		file_out << "pauses = music\n";
+		file_out << "stops = callout\n";
+		file_out << "; music_duck_vol =\n";
+		file_out << "; callout_duck_vol =\n";
+		file_out << "sfx_duck_vol =\n";
+		file_out << "; solo_duck_vol =\n";
+		file_out << "; overlay_duck_vol =\n\n";
+
+	file_out << "[sfx]\n";
+		file_out << "ducks =\n";
+		file_out << "pauses =\n";
+		file_out << "stops =\n";
+		file_out << "; music_duck_vol =\n";
+		file_out << "; callout_duck_vol =\n";
+		file_out << "; sfx_duck_vol =\n";
+		file_out << "; solo_duck_vol =\n";
+		file_out << "; overlay_duck_vol =\n\n";
+
+	file_out << "[solo]\n";
+		file_out << "ducks =\n";
+		file_out << "pauses =\n";
+		file_out << "stops = music, solo, overlay, callout\n";
+		file_out << "; music_duck_vol =\n";
+		file_out << "; callout_duck_vol =\n";
+		file_out << "; sfx_duck_vol =\n";
+		file_out << "; solo_duck_vol =\n";
+		file_out << "; overlay_duck_vol =\n\n";
+
+	file_out << "[overlay]\n";
+		file_out << "ducks = music, sfx\n";
+		file_out << "pauses =\n";
+		file_out << "stops =\n";
+		file_out << "music_duck_vol =\n";
+		file_out << "; callout_duck_vol =\n";
+		file_out << "sfx_duck_vol =\n";
+		file_out << "; solo_duck_vol =\n";
+		file_out << "; overlay_duck_vol =\n\n";
+
 	file_out.close();
 	LOG(("- \"altsound.ini\" created\n"));
-
 	LOG(("END: create_altsound_ini()\n"));
 	return true;
 }

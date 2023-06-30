@@ -17,7 +17,9 @@
 
 // Library includes
 #include <array>
+#include <bitset>
 #include <mutex>
+#include <vector>
 
 #define BASS_NO_STREAM 0
 #define ALT_MAX_CHANNELS 16
@@ -68,9 +70,10 @@ extern float global_vol;
 // Global Data Structures
 // ----------------------------------------------------------------------------
 
+// Structure to hold information about active streams
 struct _stream_info {
 	_stream_info() : hstream(0), hsync(0), stream_type(static_cast<AltsoundSampleType>(0)), \
-		channel_idx(0), sample_path(0), ducking(1.0f), stop_music(false), \
+		channel_idx(0), sample_path(), ducking(1.0f), stop_music(false), \
 		loop(0), gain(1.0f) {}
 	~_stream_info() {
 		LOG(("Destroying HSTREAM: %u\n", hstream));
@@ -80,18 +83,21 @@ struct _stream_info {
 	unsigned long hsync;
 	enum AltsoundSampleType stream_type;
 	unsigned int channel_idx;
-	char* sample_path;
+	std::string sample_path;
 	float ducking;
 	bool stop_music;
-	char loop;
+	bool loop;
 	float gain;
 };
 
 enum AltsoundSampleType {
-	UNDEFINED,
+	UNDEFINED = 0,
 	MUSIC,
 	JINGLE,
 	SFX,
+	CALLOUT,
+	SOLO,
+	OVERLAY
 };
 
 // Structure for holding traditional AltSound sample data
@@ -106,10 +112,56 @@ typedef struct _pin_samples {
 	unsigned int num_files;
 } PinSamples;
 
+// Structure for managing sample type behavior
+typedef struct _behavior_info {
+	enum class BehaviorBits {
+		MUSIC = 0,
+		CALLOUT,
+		SFX,
+		SOLO,
+		OVERLAY
+	};
+
+	std::bitset<5> ducks = 0;
+	std::bitset<5> stops = 0;
+	std::bitset<5> pauses = 0;
+
+	float music_duck_vol = 1.0f;
+	float callout_duck_vol = 1.0f;
+	float sfx_duck_vol = 1.0f;
+	float solo_duck_vol = 1.0f;
+	float overlay_duck_vol = 1.0f;
+} BehaviorInfo;
+
+
+// Structure for holding Altsound2 sample data
+typedef struct _sample_info {
+	unsigned int id;
+	std::string type;
+	float duck = 1.0f;
+	float gain = 1.0f;
+	std::string fname;
+} SampleInfo;
+
+typedef std::vector<SampleInfo> Samples;
+
 // ---------------------------------------------------------------------------
-// Helper function to translate BASS error codes to printable strings
+// Helper function prototypes
 // ---------------------------------------------------------------------------
 
+// translate BASS error codes to printable strings
 const char* get_bass_err();  // function prototype
+
+// translate AltsoundSampleType enum values to strings
+std::string toString(AltsoundSampleType sampleType);
+
+// tranlsate string representation of AltsoundSample to enum value
+AltsoundSampleType toSampleType(const std::string& type_in);
+
+// convert provided string to uppercase
+std::string toUpper(const std::string& string_in);
+
+// convert provided string to lowercase
+std::string toLower(const std::string& string_in);
 
 #endif // ALTSOUND_DATA_H

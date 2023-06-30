@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// AltsoundProcessor
+// altsound_processor.cpp
 // Dave Roscoe 06/14/2023
 //
 // Encapsulates all specialized processing for the legacy Altsound
@@ -9,7 +9,8 @@
 // ---------------------------------------------------------------------------
 #include "altsound_processor.hpp"
 
-// System includes
+// Std Library includes
+#include <algorithm>
 #include <string>
 
 // Local includes
@@ -24,8 +25,13 @@ using std::string;
 //   simultaneously, and other than adjusting ducking, have no other
 //   impacts on active streams
 //
-/*static*/ AltsoundStreamInfo* cur_mus_stream = nullptr;
-/*static*/ AltsoundStreamInfo* cur_jin_stream = nullptr;
+static AltsoundStreamInfo* cur_mus_stream = nullptr;
+static AltsoundStreamInfo* cur_jin_stream = nullptr;
+
+// windef.h "min" conflicts with std::min
+#ifdef min
+  #undef min
+#endif
 
 // ---------------------------------------------------------------------------
 // CTOR/DTOR
@@ -89,11 +95,7 @@ AltsoundProcessor::~AltsoundProcessor()
 	cur_mus_stream = NULL;
 	cur_jin_stream = NULL;
 
-	// stop all streams
-	for (auto stream : channel_stream) {
-		if (stream)
-			stopStream(stream->hstream);
-	}
+	stopAllStreams();
 }
 
 // ---------------------------------------------------------------------------
@@ -142,7 +144,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	new_stream->sample_path = psd.files_with_subpath[sample_idx];
 	new_stream->stop_music  = psd.stop[sample_idx] != 0;
 	new_stream->ducking     = psd.ducking[sample_idx];
-	new_stream->loop        = psd.loop[sample_idx];
+	new_stream->loop        = psd.loop[sample_idx] == 100;
 	new_stream->gain        = psd.gain[sample_idx];
 
 	unsigned int sample_channel = psd.channel[sample_idx];
@@ -238,7 +240,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		else {
 			LOG(("- SUCCESS: BASS_ChannelPlay(%u): CH(%d) CMD(%04X) SAMPLE(%s)\n", \
 				new_stream->hstream, new_stream->channel_idx, cmd_combined_in, \
-				getShortPath(new_stream->sample_path)));
+				getShortPath(new_stream->sample_path).c_str()));
 		}
 	}
 	
@@ -452,7 +454,23 @@ bool AltsoundProcessor::process_sfx(AltsoundStreamInfo* stream_out)
 }
 
 // ---------------------------------------------------------------------------
+// This method should ONLY be called by snd_alt.cpp
+// This function exists to provide an external interface to stop music
+// streams.  Some derivations of the base class require post-processing
+// after calling stopMusicStreams, which cannot be replicated if called
+// directly by an external function
+// ---------------------------------------------------------------------------
 
+bool AltsoundProcessor::stopMusic()
+{
+	if (!stopMusicStream()) {
+		LOG(("FAILED: stopMusicStream()\n"));
+		return false;
+	}
+	return true;
+}
+
+// ---------------------------------------------------------------------------
 bool AltsoundProcessor::stopMusicStream()
 {
 	// LOG(("BEGIN stopMusicStream()\n"));
@@ -461,8 +479,9 @@ bool AltsoundProcessor::stopMusicStream()
 	if (cur_mus_stream) {
 		HSTREAM hstream = cur_mus_stream->hstream;
 		unsigned int ch_idx = cur_mus_stream->channel_idx;
-		LOG(("Current MUSIC stream(%s): HSTREAM: %u  CH: %02d\n", getShortPath(cur_mus_stream->sample_path), 
-			hstream, cur_mus_stream->channel_idx));
+		LOG(("Current MUSIC stream(%s): HSTREAM: %u  CH: %02d\n",
+			  getShortPath(cur_mus_stream->sample_path).c_str(), hstream,
+			  cur_mus_stream->channel_idx));
 
 		if (stopStream(hstream)) {
 			LOG(("- Stopped MUSIC stream: %u  Chan: %02d\n", hstream, ch_idx));
@@ -685,3 +704,39 @@ void CALLBACK AltsoundProcessor::music_callback(HSYNC handle, DWORD channel,\
 }
 
 // ---------------------------------------------------------------------------
+
+float AltsoundProcessor::getMinDucking()
+{
+	//LOG(("BEGIN: getMinDucking()\n"));
+
+	float min_ducking = 1.0f;
+	int num_x_streams = 0;
+
+	for (int index = 0; index < channel_stream.size(); ++index) {
+		const auto stream = channel_stream[index];
+		if (stream) {
+			// stream defined on the channel
+			LOG(("- channel_stream[%d]: STREAM: %u  DUCKING: %0.02f\n", index, \
+				stream->hstream, stream->ducking));
+
+			num_x_streams++;
+
+			if (stream->ducking < 0) {
+				// Special case. Jingle ducking < 0 pauses music stream in
+				// traditional altsound packages. We don't want it to
+				// influence actual ducking, since it would always be the
+				// lowest value of all other samples.
+				LOG(("- Ducking value < 0. Skipping...\n")); // DAR_DEBUG
+				continue;
+			}
+
+			min_ducking = std::min(min_ducking, stream->ducking);
+		}
+	}
+
+	LOG(("- Num active streams: %d\n", num_x_streams));
+	LOG(("- Min ducking of all active channels: %.2f\n", min_ducking)); // DAR_DEBUG
+
+	//LOG(("END: getMinDucking()\n")); // DAR_DEBUG
+	return min_ducking;
+}

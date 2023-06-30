@@ -9,17 +9,6 @@
 // ---------------------------------------------------------------------------
 #include "altsound_processor_base.hpp"
 
-// Std Library includes
-#include <algorithm>
-
-// namespace resolution
-using std::min;
-
-// windef.h "min" conflicts with std::min
-#ifdef min
- #undef min
-#endif
-
 // ---------------------------------------------------------------------------
 // CTOR/DTOR
 // ---------------------------------------------------------------------------
@@ -55,44 +44,8 @@ bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 	LOG(("- No free channels available!\n"));
 	LOG(("END: findFreeChannel()\n"));
 	return false;
-}
 
-// ----------------------------------------------------------------------------
-
-float AltsoundProcessorBase::getMinDucking()
-{
-	//LOG(("BEGIN: getMinDucking()\n"));
-
-	float min_ducking = 1.0f;
-	int num_x_streams = 0;
-
-	for (int index = 0; index < channel_stream.size(); ++index) {
-		const auto stream = channel_stream[index];
-		if (stream) {
-			// stream defined on the channel
-			LOG(("- channel_stream[%d]: STREAM: %u  DUCKING: %0.02f\n", index, \
-				stream->hstream, stream->ducking));
-
-			num_x_streams++;
-
-			if (stream->ducking < 0) {
-				// Special case. Jingle ducking < 0 pauses music stream in
-				// traditional altsound packages. We don't want it to
-				// influence actual ducking, since it would always be the
-				// lowest value of all other samples.
-				LOG(("- Ducking value < 0. Skipping...\n")); // DAR_DEBUG
-				continue;
-			}
-
-			min_ducking = std::min(min_ducking, stream->ducking);
-		}
-	}
-
-	LOG(("- Num active streams: %d\n", num_x_streams));
-	LOG(("- Min ducking of all active channels: %.2f\n", min_ducking)); // DAR_DEBUG
-
-	//LOG(("END: getMinDucking()\n")); // DAR_DEBUG
-	return min_ducking;
+	LOG(("END: findFreeChannel()\n"));
 }
 
 // ----------------------------------------------------------------------------
@@ -112,8 +65,8 @@ bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_i
 			stream_in, new_vol, get_bass_err()));
 	}
 	else {
-		LOG(("- Successfully set volume for stream(%u): DUCKING_VOL:%.02f  GLOBAL_VOL:%.02f\
-             MASTER_VOL:%.02f\n", stream_in, vol_in, global_vol, master_vol));
+		LOG(("- Successfully set volume for stream(%u): SAMPLE_VOL:%.02f  GLOBAL_VOL:%.02f  MASTER_VOL:%.02f\n",
+			  stream_in, vol_in, global_vol, master_vol));
 	}
 
 	//LOG(("END: setVolume()\n")); //DAR_DEBUG
@@ -126,7 +79,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 {
 	//LOG(("BEGIN: createStream()\n")); //DAR_DEBUG
 
-	const char* short_path = getShortPath(stream_out->sample_path); // supports logging
+	std::string short_path = getShortPath(stream_out->sample_path); // supports logging
 	unsigned int ch_idx;
 	
 	if (!findFreeChannel(ch_idx)) {
@@ -136,14 +89,14 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	}
 
 	stream_out->channel_idx = ch_idx; // store channel assignment
+	bool loop = stream_out->loop;
 
-	// Create playback stream
-	HSTREAM hstream = BASS_StreamCreateFile(FALSE, stream_out->sample_path, 0, 0,
-		(stream_out->loop == 100) ? BASS_SAMPLE_LOOP : 0);
+  // Create playback stream
+	HSTREAM hstream = BASS_StreamCreateFile(FALSE, stream_out->sample_path.c_str(), 0, 0, loop ? BASS_SAMPLE_LOOP : 0);
 
 	if (hstream == BASS_NO_STREAM) {
 		// Failed to create stream
-		LOG(("- FAILED: BASS_StreamCreateFile(%s): %s\n", short_path, get_bass_err()));
+		LOG(("- FAILED: BASS_StreamCreateFile(%s): %s\n", short_path.c_str(), get_bass_err()));
 		return false;
 	}
 
@@ -154,7 +107,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 
 	if (!callback) {
 		// Invalid callback
-		LOG(("- ERROR: stream_out.stream_type is unknown\n", short_path, get_bass_err()));
+		LOG(("- ERROR: stream_out.stream_type is unknown\n", short_path.c_str(), get_bass_err()));
 		freeStream(hstream);
 		return false;
 	}
@@ -221,14 +174,33 @@ bool AltsoundProcessorBase::stopStream(HSTREAM hstream_in)
 	return success;
 }
 
+// ----------------------------------------------------------------------------
+
+bool AltsoundProcessorBase::stopAllStreams()
+{
+	bool success = true;
+
+	for (auto stream : channel_stream) {
+		if (!stream)
+			continue;
+
+		if (!stopStream(stream->hstream)) {
+			success = false;
+			LOG(("FAILED: stopStream(%u)", stream->hstream));
+		}
+	}
+	
+	return success;
+}
+
 // ---------------------------------------------------------------------------
 // Helper function to remove major path from filenames.  Returns just:
 // <ROM shortname>/<rest of path>
 // ---------------------------------------------------------------------------
 
-const char* AltsoundProcessorBase::getShortPath(const char* const path_in)
+std::string AltsoundProcessorBase::getShortPath(const std::string& path_in)
 {
-	const char* tmp_str = strstr(path_in, game_name.c_str());
-	return tmp_str ? tmp_str : path_in;
+	std::string tmp_str = strstr(path_in.c_str(), game_name.c_str());
+	return tmp_str.empty() ? tmp_str : path_in;
 }
 
