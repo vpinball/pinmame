@@ -1475,6 +1475,9 @@ static void ResetBackground(char *szFile)
 static void RandomSelectBackground(void)
 {
 	struct _finddata_t c_file;
+#ifdef __GNUC__
+#define intptr_t long
+#endif
 	intptr_t hFile;
 	char szFile[MAX_PATH];
 	int count=0;
@@ -4804,7 +4807,11 @@ static void MamePlayBackGame()
 		_splitpath(filename, drive, dir, bare_fname, ext);
 
 		sprintf(path,"%s%s",drive,dir);
+#ifdef __GNUC__
+		sprintf(fname,"%s%s",bare_fname,ext);
+#else
 		sprintf_s(fname,sizeof(fname),"%s%s",bare_fname,ext);
+#endif
 		if (path[strlen(path)-1] == '\\')
 			path[strlen(path)-1] = 0; // take off trailing back slash
 

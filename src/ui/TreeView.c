@@ -1308,6 +1308,9 @@ static int InitExtraFolders(void)
 	struct stat     stat_buffer;
 	struct _finddata_t files;
 	int             i, count = 0;
+#ifdef __GNUC__
+#define intptr_t long
+#endif
 	intptr_t        hLong;
 	char*           ext;
 	char            buf[256];
@@ -1389,7 +1392,11 @@ static int InitExtraFolders(void)
 				}
 				fclose(fp);
 
+#ifdef __GNUC__
+				strcpy(buf, files.name);
+#else
 				strcpy_s(buf, sizeof(buf), files.name);
+#endif
 				ext = strrchr(buf, '.');
 
 				if (ext && *(ext + 1) && !_stricmp(ext + 1, "ini"))

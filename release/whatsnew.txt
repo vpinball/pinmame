@@ -29,7 +29,7 @@ Fixed inverted switches for ffv101
 Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM, Juegos Populares, after fixing timeslice issue related to the VGM file dump feature (which uses a fast timer)
 Added support for the old SC-01 Votrax ROM version (wired only to the Mars - God of War Prototype so far)
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -41,6 +41,7 @@ Seeben: Brooklyn (Bingo) (not working)
         Penalty (Bingo) (not working)
         Super Dixieland (Bingo) (not working)
         Triple Joker (Bingo) (not working)
+Spinball: Gun Shot (vending machine in a pinball cabinet - https://www.recreativas.org/gun-shot-6590-spinball-sa)
 Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
         Golden Game Bingo New (Bingo) (not working)
         Golden Game Kit 1 Generation (Bingo) (not working)
@@ -63,6 +64,7 @@ Shadow: Fix checksum of LH-6 with wrong text index patch
 Clones:
 Ali (7-digit conversion Free Play rev. 76)
 Black Knight L-2
+Cue Ball Wizard (older display rev.)
 Dracula (One Ball MOD)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)
