@@ -5,7 +5,8 @@
 #endif
 
 #include <stdio.h>
-#include "..\ext\bass\bass.h"
+//#include "..\ext\bass\bass.h"
+#include "bass.h"
 
 #ifdef __cplusplus
   extern "C" {

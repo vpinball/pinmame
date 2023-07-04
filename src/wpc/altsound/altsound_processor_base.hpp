@@ -18,7 +18,7 @@
 
 // Local includes
 #include "altsound_data.hpp"
-#include "..\ext\bass\bass.h"
+#include "bass.h"
 
 // ---------------------------------------------------------------------------
 // AltsoundProcessorBase class definition

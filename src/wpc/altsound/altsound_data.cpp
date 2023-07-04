@@ -17,7 +17,8 @@
 //#include <unordered_map>
 
 // Local includes
-#include "..\ext\bass\bass.h"
+//#include "..\ext\bass\bass.h"
+#include "bass.h"
 
 // Instance of global thread synchronization mutex
 std::mutex io_mutex;
