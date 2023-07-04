@@ -104,9 +104,8 @@ AltsoundProcessor::~AltsoundProcessor()
 
 bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 {
-	LOG(("BEGIN AltsoundProcessor::handleCmd()\n")); //DAR_DEBUG
-
-	LOG(("- Acquiring mutex...\n")); //DAR_DEBUG
+	LOG(("BEGIN AltsoundProcessor::handleCmd()\n"));
+	LOG(("- Acquiring mutex...\n"));
 	std::lock_guard<std::mutex> guard(io_mutex);
 
 	if (!is_initialized || !is_stable) {
@@ -117,7 +116,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 			LOG(("- AltsoundProcessor is unstable. Processing skipped\n"));
 		}
 		
-		LOG(("END: AltsoundProcessor::handleCmd()\n")); //DAR_DEBUG
+		LOG(("END: AltsoundProcessor::handleCmd()\n"));
 		return false;
 	}
 
@@ -126,12 +125,11 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 
 	if (sample_idx == -1) {
 		// No matching command.  Clean up and exit
-		LOG(("- FAILED: get_sample()\n", cmd_combined_in)); //DAR_DEBUG
+		LOG(("- FAILED: get_sample()\n", cmd_combined_in));
 
-		//LOG(("END: AltsoundProcessor::handleCmd()\n")); //DAR_DEBUG
+		LOG(("END: AltsoundProcessor::handleCmd()\n"));
 		return false;
 	}
-	LOG(("- SUCCESS: get_sample(%04X)\n", cmd_combined_in));
 
 	BOOL play_music = FALSE;
 	BOOL play_jingle = FALSE;
@@ -153,7 +151,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		new_stream->stream_type = JINGLE;
 
 		if (process_jingle(new_stream)) {
-			LOG(("- SUCCESS: process_jingle()\n")); //DAR_DEBUG
+			LOG(("- SUCCESS: process_jingle()\n"));
 			
             // update stream storage
 			channel_stream[new_stream->channel_idx] = new_stream;
@@ -164,7 +162,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		}
 		else {
 			// An error ocurred during processing
-			LOG(("- FAILED: process_jingle()\n")); //DAR_DEBUG
+			LOG(("- FAILED: process_jingle()\n"));
 		}
 	}
 
@@ -173,7 +171,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		new_stream->stream_type = MUSIC;
 
 		if (process_music(new_stream)) {
-			LOG(("- SUCCESS: process_music()\n")); //DAR_DEBUG
+			LOG(("- SUCCESS: process_music()\n"));
 
 			// update stream storage
 			channel_stream[new_stream->channel_idx] = new_stream;
@@ -184,7 +182,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		}
 		else {
 			// An error ocurred during processing
-			LOG(("- FAILED: process_music()\n")); //DAR_DEBUG
+			LOG(("- FAILED: process_music()\n"));
 		}
 	}
 
@@ -193,7 +191,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		new_stream->stream_type = SFX;
 
  		if (process_sfx(new_stream)) {
-			LOG(("- SUCCESS: process_sfx()\n")); //DAR_DEBUG
+			LOG(("- SUCCESS: process_sfx()\n"));
 
 			// update stream storage
 			channel_stream[new_stream->channel_idx] = new_stream;
@@ -203,20 +201,20 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		}
 		else {
 			// An error ocurred during processing
-			LOG(("- FAILED: process_sfx()\n")); //DAR_DEBUG
+			LOG(("- FAILED: process_sfx()\n"));
 		}
 	}
 
 	if (!play_music && !play_jingle && !play_sfx) {
-		LOG(("- FAILED: alt_sound_handle()\n")); //DAR_DEBUG
+		LOG(("- FAILED: alt_sound_handle()\n"));
 
-		//LOG(("END: AltsoundProcessor::process_cmd()\n")); //DAR_DEBUG
+		LOG(("END: AltsoundProcessor::process_cmd()\n"));
 		return false;
 	}
 
 	// Get lowest ducking value from all channels (including music, jingle)
 	float min_ducking = getMinDucking();
-	LOG(("- MIN DUCKING VALUE: %.2f\n", min_ducking)); //DAR_DEBUG
+	LOG(("- MIN DUCKING VALUE: %.2f\n", min_ducking));
 
 	// set new music volume	
 	if (cur_mus_stream) {
@@ -227,7 +225,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	else {
 		// No music is currently playing.  If a music file starts later,
 		// the code above will ensure the volume will be set correctly
-		LOG(("- NO MUSIC STREAM. SKIPPING.\n")); //DAR_DEBUG
+		LOG(("- NO MUSIC STREAM. SKIPPING.\n"));
 	}
 
 	// Play pending sound determined above, if any
@@ -235,7 +233,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		if (!BASS_ChannelPlay(stream, 0)) {
 			// Sound playback failed
 			LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", new_stream->hstream,\
-				 get_bass_err())); //DAR_DEBUG
+				 get_bass_err()));
 		}
 		else {
 			LOG(("- SUCCESS: BASS_ChannelPlay(%u): CH(%d) CMD(%04X) SAMPLE(%s)\n", \
@@ -244,7 +242,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		}
 	}
 	
-	LOG(("END: AltsoundProcessor::handleCmd()\n")); //DAR_DEBUG
+	LOG(("END: AltsoundProcessor::handleCmd()\n"));
 	return true;
 }
 
@@ -256,24 +254,24 @@ void AltsoundProcessor::init()
 	cur_mus_stream = NULL;
 	cur_jin_stream = NULL;
 
-	//LOG(("BEGIN AltsoundProcessor::init()\n")); //DAR_DEBUG
+	//LOG(("BEGIN AltsoundProcessor::init()\n"));
 	if (!loadSamples()) {
 		LOG(("FAILED: AltsoundProcessor::loadSamples()\n"));
 
-		//LOG(("END: AltsoundProcessor::init()\n")); //DAR_DEBUG
+		//LOG(("END: AltsoundProcessor::init()\n"));
 	}
 	LOG(("SUCCESS: AltsoundProcessor::loadSamples()\n"));
 
 	// if we are here, initialization succeeded
 	is_initialized = true;
 
-	//LOG(("END: AltsoundProcessor::init()\n")); //DAR_DEBUG
+	//LOG(("END: AltsoundProcessor::init()\n"));
 }
 
 // ---------------------------------------------------------------------------
 
 bool AltsoundProcessor::loadSamples() {
-	//LOG(("BEGIN loadSamples()\n")); //DAR_DEBUG
+	//LOG(("BEGIN loadSamples()\n"));
 
 	// No files yet
 	psd.num_files = 0;
@@ -282,34 +280,33 @@ bool AltsoundProcessor::loadSamples() {
 		AltsoundCsvParser csv_parser(game_name.c_str());
 
 		if (!csv_parser.parse(&psd)) {
-			LOG(("- FAILED: csv_parser.parse()\n")); //DAR_DEBUG
-
-			//LOG(("END: AltsoundProcessor::init()\n")); //DAR_DEBUG
+			LOG(("- FAILED: csv_parser.parse()\n"));
+			LOG(("END: AltsoundProcessor::loadSamples()\n"));
 			return is_initialized;
 		}
-		LOG(("- SUCCESS: csv_parser.parse()\n")); //DAR_DEBUG
+		LOG(("- SUCCESS: csv_parser.parse()\n"));
 	}
 	else if (format == "pinsound") {
 		AltsoundFileParser file_parser(game_name.c_str());
 		if (!file_parser.parse(&psd)) {
-			LOG(("- FAILED: file_parser.parse()\n")); //DAR_DEBUG
+			LOG(("- FAILED: file_parser.parse()\n"));
 
-			//LOG(("END: loadSamples\n")); //DAR_DEBUG
+			//LOG(("END: AltsoundProcessor::loadSamples\n"));
 			return false;
 		}
 		else {
-			LOG(("- SUCCESS: file_parser.parse()\n")); //DAR_DEBUG
+			LOG(("- SUCCESS: file_parser.parse()\n"));
 		}
 	}
 	
-	//LOG(("END: loadSamples\n")); //DAR_DEBUG
+	//LOG(("END: AltsoundProcessor::loadSamples\n"));
 	return true;
 }
 
 // ---------------------------------------------------------------------------
 
 int AltsoundProcessor::getSample(const unsigned int cmd_combined_in) {
-	//LOG(("BEGIN getSample()\n")); //DAR_DEBUG
+	//LOG(("BEGIN AltsoundProcessor::getSample()\n"));
 
 	unsigned int sample_idx = -1;
 
@@ -328,7 +325,7 @@ int AltsoundProcessor::getSample(const unsigned int cmd_combined_in) {
 
 				// Loop while the next sample ID matches the command
 			} while (psd.ID[i + num_samples] == cmd_combined_in);
-			LOG(("- SUCCESS: Found %d sample(s) for ID: %04X\n", num_samples, cmd_combined_in)); //DAR_DEBUG
+			LOG(("- SUCCESS: Found %d sample(s) for ID: %04X\n", num_samples, cmd_combined_in));
 
 			// num_samples now contains the number of samples with the same ID
 			// pick one to play at random
@@ -338,10 +335,10 @@ int AltsoundProcessor::getSample(const unsigned int cmd_combined_in) {
 	}
 
 	if (sample_idx == -1) {
-		LOG(("- FAILED: No sample(s) found for ID: %04X\n", cmd_combined_in)); //DAR_DEBUG
+		LOG(("- FAILED: No sample(s) found for ID: %04X\n", cmd_combined_in));
 	}
 	
-	//LOG(("END: getSample()\n")); //DAR_DEBUG
+	//LOG(("END: AltsoundProcessor::getSample()\n"));
 	return sample_idx;
 }
 
@@ -355,8 +352,12 @@ bool AltsoundProcessor::process_music(AltsoundStreamInfo* stream_out)
 
 	// stop current music stream
 	if (stopMusicStream()) {
+		// DAR@20230703
+		// If you set a callback for end-of-stream for MUSIC streams,
+		// the looping behavior will not work.
+		//
 		// create new music stream
-		if (createStream(&music_callback, stream_out)) {
+		if (createStream(nullptr, stream_out)) {
 			// set music volume.  Will get ducked as needed later
 			if (setStreamVolume(stream_out->hstream, stream_out->gain)) {
 				success = true;
@@ -381,7 +382,7 @@ bool AltsoundProcessor::process_music(AltsoundStreamInfo* stream_out)
 
 bool AltsoundProcessor::process_jingle(AltsoundStreamInfo* stream_out)
 {
-	LOG(("BEGIN: process_jingle()\n"));
+	LOG(("BEGIN: AltsoundProcessor::process_jingle()\n"));
 	bool success = true;
 
 	// DAR@20230621
@@ -421,7 +422,7 @@ bool AltsoundProcessor::process_jingle(AltsoundStreamInfo* stream_out)
 		if (success) {
 			success = setStreamVolume(stream_out->hstream, stream_out->gain);
 			if (!success) {
-				LOG(("- FAILED: setStreamVolume()\n")); // DAR_DEBUG
+				LOG(("- FAILED: setStreamVolume()\n"));
 			}
 		}
 		else {
@@ -429,7 +430,7 @@ bool AltsoundProcessor::process_jingle(AltsoundStreamInfo* stream_out)
 		}
 	}
 
-	LOG(("END: process_jingle()\n")); // DAR_DEBUG
+	LOG(("END: AltsoundProcessor::process_jingle()\n"));
 	return success;
 }
 
@@ -534,7 +535,7 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 	// All SYNCPROC functions run on the same thread, and will block other
 	// sync processes, so these should be fast.  The SYNCPROC thread is
 	// separate from the main thread so thread safety should be considered
-	LOG(("\nBEGIN: jingle_callback()\n"));
+	LOG(("\nBEGIN: AltsoundProcessor::jingle_callback()\n"));
 	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
 
 	LOG(("- Acquiring mutex...\n"));
@@ -563,7 +564,7 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 
 	// free stream resources
 	if (!freeStream(inst_hstream)) {
-		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err())); // DAR_DEBUG
+		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err()));
 	}
 
 	// reset tracking variables
@@ -573,11 +574,11 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 
 	if (cur_mus_stream) {
 		HSTREAM mus_hstream = cur_mus_stream->hstream;
-		LOG(("- Adjusting MUSIC volume\n")); // DAR_DEBUG
+		LOG(("- Adjusting MUSIC volume\n"));
 
 		// re-calculate music ducking based on active channels.
 		float min_ducking = getMinDucking();
-		LOG(("- Min ducking value: %.2f\n", min_ducking)); // DAR_DEBUG
+		LOG(("- Min ducking value: %.2f\n", min_ducking));
 
 		// set new music volume
 		float adj_mus_vol = cur_mus_stream->gain * min_ducking;
@@ -587,7 +588,7 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 		// This is a kludgy way to make sure we only resume paused playback
 		// when the stream that paused it ends
 		if (stream_inst->ducking < 0.0f && BASS_ChannelIsActive(mus_hstream) == BASS_ACTIVE_PAUSED) {
-			LOG(("- Resuming MUSIC playback\n")); // DAR_DEBUG
+			LOG(("- Resuming MUSIC playback\n"));
 
 			if (!BASS_ChannelPlay(mus_hstream, 0)) {
 				LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", mus_hstream, get_bass_err()));
@@ -595,7 +596,7 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 		}
 	}
 
-	LOG(("END: jingle_callback()\n"));
+	LOG(("END: AltsoundProcessor::jingle_callback()\n"));
 }
 
 // ---------------------------------------------------------------------------
@@ -606,10 +607,9 @@ void CALLBACK AltsoundProcessor::sfx_callback(HSYNC handle, DWORD channel,\
 	// All SYNCPROC functions run on the same thread, and will block other
 	// sync processes, so these should be fast.  The SYNCPROC thread is
 	// separate from the main thread so thread safety should be considered
-	LOG(("\nBEGIN: sfx_callback()\n"));
-	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel)); //DAR_DEBUG
-
-	LOG(("- Acquiring mutex...\n")); //DAR_DEBUG
+	LOG(("\nBEGIN: AltsoundProcessor::sfx_callback()\n"));
+	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
+	LOG(("- Acquiring mutex...\n"));
 	std::lock_guard<std::mutex> guard(io_mutex);
 	
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
@@ -632,7 +632,7 @@ void CALLBACK AltsoundProcessor::sfx_callback(HSYNC handle, DWORD channel,\
 
 	// free stream resources
 	if (!freeStream(inst_hstream)) {
-		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err())); // DAR_DEBUG
+		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err()));
 	}
 
 	// reset tracking variables
@@ -641,18 +641,18 @@ void CALLBACK AltsoundProcessor::sfx_callback(HSYNC handle, DWORD channel,\
 
 	if (cur_mus_stream) {
 		HSTREAM mus_hstream = cur_mus_stream->hstream;
-		LOG(("- Adjusting MUSIC volume\n")); // DAR_DEBUG
+		LOG(("- Adjusting MUSIC volume\n"));
 
 		// re-calculate music ducking based on active channels.
 		float min_ducking = getMinDucking();
-		LOG(("- Min ducking value: %.2f\n", min_ducking)); // DAR_DEBUG
+		LOG(("- Min ducking value: %.2f\n", min_ducking));
 
 		// set new music volume
 		float adj_mus_vol = cur_mus_stream->gain * min_ducking;
 		setStreamVolume(mus_hstream, adj_mus_vol);
 	}
 	
-	LOG(("END: sfx_callback()\n")); //DAR_DEBUG
+	LOG(("END: AltsoundProcessor::sfx_callback()\n"));
 }
 
 // ---------------------------------------------------------------------------
@@ -663,10 +663,9 @@ void CALLBACK AltsoundProcessor::music_callback(HSYNC handle, DWORD channel,\
 	// All SYNCPROC functions run on the same thread, and will block other
 	// sync processes, so these should be fast.  The SYNCPROC thread is
 	// separate from the main thread so thread safety should be considered
-	LOG(("BEGIN music_callback()\n"));
+	LOG(("BEGIN AltsoundProcessor::music_callback()\n"));
 	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
-
-	LOG(("- Acquiring mutex...\n")); //DAR_DEBUG
+	LOG(("- Acquiring mutex...\n"));
 	std::lock_guard<std::mutex> guard(io_mutex);
 	
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
@@ -700,14 +699,14 @@ void CALLBACK AltsoundProcessor::music_callback(HSYNC handle, DWORD channel,\
 	channel_stream[inst_ch_idx] = nullptr;
 	cur_mus_stream = nullptr;
 	
-	LOG(("END: music_callback()\n")); //DAR_DEBUG
+	LOG(("END: AltsoundProcessor::music_callback()\n"));
 }
 
 // ---------------------------------------------------------------------------
 
 float AltsoundProcessor::getMinDucking()
 {
-	//LOG(("BEGIN: getMinDucking()\n"));
+	//LOG(("BEGIN: AltsoundProcessor::getMinDucking()\n"));
 
 	float min_ducking = 1.0f;
 	int num_x_streams = 0;
@@ -726,17 +725,16 @@ float AltsoundProcessor::getMinDucking()
 				// traditional altsound packages. We don't want it to
 				// influence actual ducking, since it would always be the
 				// lowest value of all other samples.
-				LOG(("- Ducking value < 0. Skipping...\n")); // DAR_DEBUG
+				LOG(("- Ducking value < 0. Skipping...\n"));
 				continue;
 			}
 
 			min_ducking = std::min(min_ducking, stream->ducking);
 		}
 	}
-
 	LOG(("- Num active streams: %d\n", num_x_streams));
-	LOG(("- Min ducking of all active channels: %.2f\n", min_ducking)); // DAR_DEBUG
+	LOG(("- Min ducking of all active channels: %.2f\n", min_ducking));
 
-	//LOG(("END: getMinDucking()\n")); // DAR_DEBUG
+	//LOG(("END: AltsoundProcessor::getMinDucking()\n"));
 	return min_ducking;
 }

@@ -264,7 +264,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 		strcat_s(PATH, PATHl, g_szGameName);
 		strcat_s(PATH, PATHl, "\\");
 		strcat_s(PATH, PATHl, subpath);
-		LOG(("CURRENT_PATH1: %s\n", PATH)); //DAR_DEBUG
+		LOG(("CURRENT_PATH1: %s\n", PATH));
 
 		dir = opendir(PATH);
 		if (!dir)
@@ -280,7 +280,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 			FILE *f;
 			strcpy_s(PATHG, PATHGl, PATH);
 			strcat_s(PATHG, PATHGl, "gain.txt");
-			LOG(("CURRENT_PATH2: %s\n", PATHG)); //DAR_DEBUG
+			LOG(("CURRENT_PATH2: %s\n", PATHG));
 			f = fopen(PATHG, "r");
 
 			if (f) {
@@ -302,7 +302,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 			FILE *f;
 			strcpy_s(PATHG, PATHGl, PATH);
 			strcat_s(PATHG, PATHGl, "ducking.txt");
-			LOG(("CURRENT_PATH3: %s\n", PATHG)); //DAR_DEBUG
+			LOG(("CURRENT_PATH3: %s\n", PATHG));
 			f = fopen(PATHG, "r");
 
 			if (f) {
@@ -325,7 +325,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 				&& strstr(entry->d_name, ".txt") == 0
 				&& strstr(entry->d_name, ".ini") == 0)
 			{
-				LOG(("CURRENT_ENTRY1: %s\n", entry->d_name)); //DAR_DEBUG
+				//LOG(("CURRENT_ENTRY1: %s\n", entry->d_name));
 				// Not a system file or txt file.  Assume it's a directory
 				// (per PinSound format requirements).  Backup the current
 				// directory stream and entry
@@ -351,7 +351,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					strcpy_s(PATHG, PATHGl, PATH2);
 					strcat_s(PATHG, PATHGl, "\\");
 					strcat_s(PATHG, PATHGl, "gain.txt");
-					LOG(("CURRENT_PATH4: %s\n", PATHG)); //DAR_DEBUG
+					LOG(("CURRENT_PATH4: %s\n", PATHG));
 					f = fopen(PATHG, "r");
 					if (f)
 					{
@@ -370,7 +370,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					strcpy_s(PATHG, PATHGl, PATH2);
 					strcat_s(PATHG, PATHGl, "\\");
 					strcat_s(PATHG, PATHGl, "ducking.txt");
-					LOG(("CURRENT_PATH5: %s\n", PATHG)); //DAR_DEBUG
+					LOG(("CURRENT_PATH5: %s\n", PATHG));
 					f = fopen(PATHG, "r");
 					if (f)
 					{
@@ -382,7 +382,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					free(PATHG);
 				}
 
-				LOG(("OPENDIR: %s\n", PATH2)); //DAR_DEBUG
+				LOG(("OPENDIR: %s\n", PATH2));
 				dir2 = opendir(PATH2);
 				entry2 = readdir(dir2);
 				while (entry2 != NULL) {
@@ -390,7 +390,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 						&& strstr(entry2->d_name, ".txt") == 0
 						&& strstr(entry2->d_name, ".ini") == 0)
 					{
-						LOG(("CURRENT_ENTRY2: %s\n", entry->d_name)); //DAR_DEBUG
+						//LOG(("CURRENT_ENTRY2: %s\n", entry->d_name));
 						const size_t PATH3l = strlen(PATH2) + 1 + strlen(entry2->d_name) + 1;
 						char* const ptr = strrchr(PATH2, '\\');
 						char id[7] = { 0, 0, 0, 0, 0, 0, 0 };

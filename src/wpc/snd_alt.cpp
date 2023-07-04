@@ -113,9 +113,11 @@ bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctr
 
 typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
 
-void parseBehaviorValue(const IniSection& section, const std::string& key,
+bool parseBehaviorValue(const IniSection& section, const std::string& key,
 	                    std::bitset<5>& behavior);
-void parseVolumeValue(const IniSection& section, const std::string& key, float& volume);
+bool parseVolumeValue(const IniSection& section, const std::string& key, float& volume);
+
+std::string trim(const std::string& str);
 
 // ---------------------------------------------------------------------------
 // Functional code
@@ -123,7 +125,7 @@ void parseVolumeValue(const IniSection& section, const std::string& key, float& 
 
 extern "C" void alt_sound_handle(int boardNo, int cmd)
 {
-	LOG(("\nBEGIN: alt_sound_handle()\n")); //DAR_DEBUG
+	LOG(("\nBEGIN: alt_sound_handle()\n"));
 
 	if (!is_initialized && altsound_stable) {
 		is_initialized = alt_sound_init(&cmds);
@@ -132,8 +134,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 
 	if (!is_initialized || !altsound_stable) {
 		LOG(("ERROR: Altsound unstable. Processing skipped.\n"));
-		
-		LOG(("END: alt_sound_handle()\n")); //DAR_DEBUG
+		LOG(("END: alt_sound_handle()\n"));
 		return;
 	}
 
@@ -143,7 +144,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	while (attenuation++ < 0) {
 		master_vol /= 1.122018454f; // = (10 ^ (1/20)) = 1dB
 	}
-	LOG(("- Master Volume (Post Attenuation): %f\n ", master_vol)); //DAR_DEBUG
+	LOG(("- Master Volume (Post Attenuation): %f\n ", master_vol));
 
 	cmds.cmd_counter++;
 
@@ -170,38 +171,38 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 		cmds.stored_command = cmd;
 
 		if (cmds.cmd_filter) {
-			LOG(("- Command filtered: %04X\n", cmd)); //DAR_DEBUG
+			LOG(("- Command filtered: %04X\n", cmd));
 		}
 
 		if ((cmds.cmd_counter & 1) != 0) {
-			LOG(("- Command incomplete: %04X\n", cmd)); //DAR_DEBUG
+			LOG(("- Command incomplete: %04X\n", cmd));
 		}
 		
-		LOG(("END: alt_sound_handle\n")); //DAR_DEBUG
+		LOG(("END: alt_sound_handle\n"));
 		return;
 	}
-	LOG(("- Command complete. Processing...\n")); //DAR_DEBUG
+	LOG(("- Command complete. Processing...\n"));
 
 	// combine stored command with the current
 	unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
 
 	// Handle the resulting command
 	if (!processor->handleCmd(cmd_combined)) {
-		LOG(("- FAILED: processor::handleCmd()\n")); //DAR_DEBUG
+		LOG(("- FAILED: processor::handleCmd()\n"));
 
 		postprocess_commands(cmd_combined);
 
 		
-		LOG(("END: alt_sound_handle()\n")); //DAR_DEBUG
+		LOG(("END: alt_sound_handle()\n"));
 		return;
 	}
-	LOG(("- SUCCESS: processor::handleCmd()\n")); //DAR_DEBUG
+	LOG(("- SUCCESS: processor::handleCmd()\n"));
 
 	//DAR@20230522 I don't know what this does yet
 	postprocess_commands(cmd_combined);
 
 	
-	LOG(("END: alt_sound_handle()\n")); //DAR_DEBUG
+	LOG(("END: alt_sound_handle()\n"));
 }
 
 // ---------------------------------------------------------------------------
@@ -298,14 +299,14 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	//	int ch;
 	//	// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
 	//	// required for WPC89 sound board
-	//	LOG(("MUTING INTERNAL PINMAME MIXER\n")); //DAR_DEBUG
+	//	LOG(("MUTING INTERNAL PINMAME MIXER\n"));
 	//	for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) {
 	//		const char* mixer_name = mixer_get_name(ch);
 	//		if (mixer_name != NULL)	{
 	//			mixer_set_volume(ch, 0);
 	//		}
 	//		else {
-	//			LOG(("MIXER_NAME (Channel %d) IS NULL\n", ch)); //DAR_DEBUG
+	//			LOG(("MIXER_NAME (Channel %d) IS NULL\n", ch));
 	//		}
 	//	}
 
@@ -351,10 +352,10 @@ extern "C" void alt_sound_exit() {
 // ---------------------------------------------------------------------------
 
 extern "C" void alt_sound_pause(BOOL pause) {
-	LOG(("BEGIN: alt_sound_pause()\n")); // DAR_DEBUG
+	LOG(("BEGIN: alt_sound_pause()\n"));
 
 	if (pause) {
-		LOG(("- Pausing stream playback (ALL)\n")); // DAR_DEBUG
+		LOG(("- Pausing stream playback (ALL)\n"));
 
 		// Pause all channels
 		for (int i = 0; i < ALT_MAX_CHANNELS; ++i) {
@@ -364,16 +365,16 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			HSTREAM stream = channel_stream[i]->hstream;
 			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PLAYING) {
 				if (!BASS_ChannelPause(stream)) {
-					LOG(("- FAILED: BASS_ChannelPause(%u): %s\n", stream, get_bass_err())); // DAR_DEBUG
+					LOG(("- FAILED: BASS_ChannelPause(%u): %s\n", stream, get_bass_err()));
 				}
 				else {
-					LOG(("- SUCCESS: BASS_ChannelPause(%u)\n", stream)); // DAR_DEBUG
+					LOG(("- SUCCESS: BASS_ChannelPause(%u)\n", stream));
 				}
 			}
 		}
 	}
 	else {
-		LOG(("- Resuming stream playback (ALL)\n")); // DAR_DEBUG
+		LOG(("- Resuming stream playback (ALL)\n"));
 
 		// Resume all channels
 		for (int i = 0; i < ALT_MAX_CHANNELS; ++i) {
@@ -383,16 +384,16 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			HSTREAM stream = channel_stream[i]->hstream;
 			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PAUSED) {
 				if (!BASS_ChannelPlay(stream, 0)) {
-					LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", stream, get_bass_err())); // DAR_DEBUG
+					LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", stream, get_bass_err()));
 				}
 				else {
-					LOG(("- SUCCESS: BASS_ChannelPlay(%u)\n", stream)); // DAR_DEBUG
+					LOG(("- SUCCESS: BASS_ChannelPlay(%u)\n", stream));
 				}
 			}
 		}
 	}
 
-	LOG(("END: alt_sound_pause()\n")); // DAR_DEBUG
+	LOG(("END: alt_sound_pause()\n"));
 }
 
 // ---------------------------------------------------------------------------
@@ -416,7 +417,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WPC95DCS) ||
 		(hardware_gen == GEN_WPC95))
 	{
-		LOG(("Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95\n")); //DAR_DEBUG
+		LOG(("Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95\n"));
 
 		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA)) // change volume?
 			||
@@ -449,7 +450,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WPCDMD) || // remaps everything to 16bit, a bit stupid maybe
 		(hardware_gen == GEN_WPCFLIPTRON))
 	{
-		LOG(("- Hardware Generation: GEN_WPCALPHA_2, GEN_WPCDMD, GEN_WPCFLIPTRON\n")); //DAR_DEBUG
+		LOG(("- Hardware Generation: GEN_WPCALPHA_2, GEN_WPCDMD, GEN_WPCFLIPTRON\n"));
 
 		*cmd_filter = 0;
 		if ((cmd_buffer[2] == 0x79) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
@@ -488,7 +489,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_S11B2) ||
 		(hardware_gen == GEN_S11C))
 	{
-		LOG(("- Hardware Generation: GEN_WPCALPHA_1, GEN_S11, GEN_S11X, GEN_S11B2, GEN_S11C\n")); //DAR_DEBUG
+		LOG(("- Hardware Generation: GEN_WPCALPHA_1, GEN_S11, GEN_S11X, GEN_S11B2, GEN_S11C\n"));
 
 		if (cmd_in != cmd_buffer[1]) //!! some stuff is doubled or tripled -> filter out?
 		{
@@ -504,7 +505,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_DEDMD64) ||
 		(hardware_gen == GEN_DE))        // this one just tested with BTTF so far
 	{
-		LOG(("- Hardware Generation: GEN_DEDMD16, GEN_DEDMD32, GEN_DEDMD64, GEN_DE\n")); //DAR_DEBUG
+		LOG(("- Hardware Generation: GEN_DEDMD16, GEN_DEDMD32, GEN_DEDMD64, GEN_DE\n"));
 
 		if (cmd_in != 0xFF && cmd_in != 0x00) // 8 bit command
 		{
@@ -525,7 +526,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WS_1) ||
 		(hardware_gen == GEN_WS_2))
 	{
-		LOG(("- Hardware Generation: GEN_WS, GEN_WS_1, GEN_WS_2\n")); //DAR_DEBUG
+		LOG(("- Hardware Generation: GEN_WS, GEN_WS_1, GEN_WS_2\n"));
 
 		*cmd_filter = 0;
 		if (cmd_buffer[1] == 0xFE)
@@ -558,17 +559,17 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 			*cmd_counter = 1;
 	}
 	
-	LOG(("END: preprocess_commands()\n")); //DAR_DEBUG
+	LOG(("END: preprocess_commands()\n"));
 }
 
 // ---------------------------------------------------------------------------
 
 void postprocess_commands(const unsigned int combined_cmd) {
-	LOG(("BEGIN: postprocess_commands()\n")); //DAR_DEBUG
+	LOG(("BEGIN: postprocess_commands()\n"));
 
 	// Get hardware generation
 	UINT64 hardware_gen = core_gameData->gen;
-	LOG(("- MAME_GEN: %d\n", hardware_gen)); //DAR_DEBUG
+	LOG(("- MAME_GEN: %d\n", hardware_gen));
 
 	if (hardware_gen == GEN_WPCDCS
 		|| hardware_gen == GEN_WPCSECURITY
@@ -577,7 +578,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	{
 		if (combined_cmd == 0x03E3) // stop music
 		{
-			LOG(("- stopping MUSIC(2)\n")); //DAR_DEBUG
+			LOG(("- stopping MUSIC(2)\n"));
 			processor->stopMusic();
 		}
 	}
@@ -588,7 +589,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	{
 		if ((combined_cmd == 0x0018 || combined_cmd == 0x0023)) // stop music //!! ???? 0x0019??
 		{
-			LOG(("- stopping MUSIC(3)\n")); //DAR_DEBUG
+			LOG(("- stopping MUSIC(3)\n"));
 			processor->stopMusic();
 		}
 	}
@@ -599,12 +600,12 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	{
 		if (((combined_cmd == 0x0000 || (combined_cmd & 0xf0ff) == 0xf000))) // stop music
 		{
-			LOG(("- stopping MUSIC(4)\n")); //DAR_DEBUG
+			LOG(("- stopping MUSIC(4)\n"));
 			processor->stopMusic();
 		}
 	}
 	
-	LOG(("END: postprocess_commands()\n")); //DAR_DEBUG
+	LOG(("END: postprocess_commands()\n"));
 }
 
 // ---------------------------------------------------------------------------
@@ -677,7 +678,7 @@ string get_altound_format(const string& path_in)
 
 std::string get_vpinmame_path()
 {
-	LOG(("BEGIN: get_vpinmame_path\n"));
+	//LOG(("BEGIN: get_vpinmame_path\n"));
 
 	char cvpmd[MAX_PATH];
 	HMODULE hModule = nullptr;
@@ -700,7 +701,7 @@ std::string get_vpinmame_path()
 		LOG(("Module not found: VPinMAME.dll or VPinMAME64.dll\n"));
 	}
 
-	LOG(("END: get_vpinmame_path\n"));
+	//LOG(("END: get_vpinmame_path\n"));
 	return "";
 }
 
@@ -765,6 +766,7 @@ bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctr
 	// get format
 	string format;
 	inipp::get_value(ini.sections["format"], "format", format);
+	format = toLower(format);
 	LOG(("- Parsed \"format\": %s\n", format.c_str()));
 	format_out = format;
 
@@ -777,69 +779,72 @@ bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctr
 	// parse MUSIC behavior
 	auto& music_section = ini.sections["music"];
 
-	parseBehaviorValue(music_section, "ducks", music_behavior.ducks);
-	parseBehaviorValue(music_section, "pauses", music_behavior.pauses);
-	parseBehaviorValue(music_section, "stops", music_behavior.stops);
+	bool success = true;
 
-	parseVolumeValue(music_section, "music_duck_vol", music_behavior.music_duck_vol);
-	parseVolumeValue(music_section, "callout_duck_vol", music_behavior.callout_duck_vol);
-	parseVolumeValue(music_section, "sfx_duck_vol", music_behavior.sfx_duck_vol);
-	parseVolumeValue(music_section, "solo_duck_vol", music_behavior.solo_duck_vol);
-	parseVolumeValue(music_section, "overlay_duck_vol", music_behavior.overlay_duck_vol);
+	success &= parseBehaviorValue(music_section, "ducks", music_behavior.ducks);
+	success &= parseBehaviorValue(music_section, "pauses", music_behavior.pauses);
+	success &= parseBehaviorValue(music_section, "stops", music_behavior.stops);
+
+	success &= parseVolumeValue(music_section, "music_duck_vol", music_behavior.music_duck_vol);
+	success &= parseVolumeValue(music_section, "callout_duck_vol", music_behavior.callout_duck_vol);
+	success &= parseVolumeValue(music_section, "sfx_duck_vol", music_behavior.sfx_duck_vol);
+	success &= parseVolumeValue(music_section, "solo_duck_vol", music_behavior.solo_duck_vol);
+	success &= parseVolumeValue(music_section, "overlay_duck_vol", music_behavior.overlay_duck_vol);
 	
 	// parse CALLOUT behavior
 	auto& callout_section = ini.sections["callout"];
 
-	parseBehaviorValue(callout_section, "ducks", callout_behavior.ducks);
-	parseBehaviorValue(callout_section, "pauses", callout_behavior.pauses);
-	parseBehaviorValue(callout_section, "stops", callout_behavior.stops);
+	success &= parseBehaviorValue(callout_section, "ducks", callout_behavior.ducks);
+	success &= parseBehaviorValue(callout_section, "pauses", callout_behavior.pauses);
+	success &= parseBehaviorValue(callout_section, "stops", callout_behavior.stops);
 
-	parseVolumeValue(callout_section, "music_duck_vol", callout_behavior.music_duck_vol);
-	parseVolumeValue(callout_section, "callout_duck_vol", callout_behavior.callout_duck_vol);
-	parseVolumeValue(callout_section, "sfx_duck_vol", callout_behavior.sfx_duck_vol);
-	parseVolumeValue(callout_section, "solo_duck_vol", callout_behavior.solo_duck_vol);
-	parseVolumeValue(callout_section, "overlay_duck_vol", callout_behavior.overlay_duck_vol);
+	success &= parseVolumeValue(callout_section, "music_duck_vol", callout_behavior.music_duck_vol);
+	success &= parseVolumeValue(callout_section, "callout_duck_vol", callout_behavior.callout_duck_vol);
+	success &= parseVolumeValue(callout_section, "sfx_duck_vol", callout_behavior.sfx_duck_vol);
+	success &= parseVolumeValue(callout_section, "solo_duck_vol", callout_behavior.solo_duck_vol);
+	success &= parseVolumeValue(callout_section, "overlay_duck_vol", callout_behavior.overlay_duck_vol);
 
 	// parse SFX behavior
 	auto& sfx_section = ini.sections["sfx"];
 
-	parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
-	parseBehaviorValue(sfx_section, "pauses", sfx_behavior.pauses);
-	parseBehaviorValue(sfx_section, "stops", sfx_behavior.stops);
+	success &= parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
+	success &= parseBehaviorValue(sfx_section, "pauses", sfx_behavior.pauses);
+	success &= parseBehaviorValue(sfx_section, "stops", sfx_behavior.stops);
 
-	parseVolumeValue(sfx_section, "music_duck_vol", sfx_behavior.music_duck_vol);
-	parseVolumeValue(sfx_section, "callout_duck_vol", sfx_behavior.callout_duck_vol);
-	parseVolumeValue(sfx_section, "sfx_duck_vol", sfx_behavior.sfx_duck_vol);
-	parseVolumeValue(sfx_section, "solo_duck_vol", sfx_behavior.solo_duck_vol);
-	parseVolumeValue(sfx_section, "overlay_duck_vol", sfx_behavior.overlay_duck_vol);
+	success &= parseVolumeValue(sfx_section, "music_duck_vol", sfx_behavior.music_duck_vol);
+	success &= parseVolumeValue(sfx_section, "callout_duck_vol", sfx_behavior.callout_duck_vol);
+	success &= parseVolumeValue(sfx_section, "sfx_duck_vol", sfx_behavior.sfx_duck_vol);
+	success &= parseVolumeValue(sfx_section, "solo_duck_vol", sfx_behavior.solo_duck_vol);
+	success &= parseVolumeValue(sfx_section, "overlay_duck_vol", sfx_behavior.overlay_duck_vol);
 
 	// parse SOLO behavior
 	auto& solo_section = ini.sections["solo"];
 
-	parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);
-	parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
-	parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
+	success &= parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);
+	success &= parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
+	success &= parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
 
-	parseVolumeValue(solo_section, "music_duck_vol", solo_behavior.music_duck_vol);
-	parseVolumeValue(solo_section, "callout_duck_vol", solo_behavior.callout_duck_vol);
-	parseVolumeValue(solo_section, "sfx_duck_vol", solo_behavior.sfx_duck_vol);
-	parseVolumeValue(solo_section, "solo_duck_vol", solo_behavior.solo_duck_vol);
-	parseVolumeValue(solo_section, "overlay_duck_vol", solo_behavior.overlay_duck_vol);
+	success &= parseVolumeValue(solo_section, "music_duck_vol", solo_behavior.music_duck_vol);
+	success &= parseVolumeValue(solo_section, "callout_duck_vol", solo_behavior.callout_duck_vol);
+	success &= parseVolumeValue(solo_section, "sfx_duck_vol", solo_behavior.sfx_duck_vol);
+	success &= parseVolumeValue(solo_section, "solo_duck_vol", solo_behavior.solo_duck_vol);
+	success &= parseVolumeValue(solo_section, "overlay_duck_vol", solo_behavior.overlay_duck_vol);
 
 	// parse OVERLAY behavior
 	auto& overlay_section = ini.sections["overlay"];
 
-	parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
-	parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
-	parseBehaviorValue(overlay_section, "stops", overlay_behavior.stops);
+	success &= parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
+	success &= parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
+	success &= parseBehaviorValue(overlay_section, "stops", overlay_behavior.stops);
 
-	parseVolumeValue(overlay_section, "music_duck_vol", overlay_behavior.music_duck_vol);
-	parseVolumeValue(overlay_section, "callout_duck_vol", overlay_behavior.callout_duck_vol);
-	parseVolumeValue(overlay_section, "sfx_duck_vol", overlay_behavior.sfx_duck_vol);
-	parseVolumeValue(overlay_section, "solo_duck_vol", overlay_behavior.solo_duck_vol);
-	parseVolumeValue(overlay_section, "overlay_duck_vol", overlay_behavior.overlay_duck_vol);
+	success &= parseVolumeValue(overlay_section, "music_duck_vol", overlay_behavior.music_duck_vol);
+	success &= parseVolumeValue(overlay_section, "callout_duck_vol", overlay_behavior.callout_duck_vol);
+	success &= parseVolumeValue(overlay_section, "sfx_duck_vol", overlay_behavior.sfx_duck_vol);
+	success &= parseVolumeValue(overlay_section, "solo_duck_vol", overlay_behavior.solo_duck_vol);
+	success &= parseVolumeValue(overlay_section, "overlay_duck_vol", overlay_behavior.overlay_duck_vol);
+
 	LOG(("END: parse_altsound_ini()\n"));
-	return true;
+	return success;
 }
 
 // ---------------------------------------------------------------------------
@@ -848,7 +853,7 @@ bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctr
 
 typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
 
-void parseBehaviorValue(const IniSection& section, const std::string& key, std::bitset<5>& behavior)
+bool parseBehaviorValue(const IniSection& section, const std::string& key, std::bitset<5>& behavior)
 {
 	std::string token;
 	std::string parsed_value;
@@ -856,7 +861,9 @@ void parseBehaviorValue(const IniSection& section, const std::string& key, std::
 
 	std::stringstream ss(parsed_value);
 	while (std::getline(ss, token, ',')) {
-		//LOG(("TOKEN: %s\n", token.c_str()));
+		token = trim(token);
+		token = toLower(token);
+
 		if (token == "music") {
 			behavior.set(0, true);
 		}
@@ -873,6 +880,7 @@ void parseBehaviorValue(const IniSection& section, const std::string& key, std::
 			behavior.set(4, true);
 		}
 	}
+	return true;
 }
 
 
@@ -880,7 +888,7 @@ void parseBehaviorValue(const IniSection& section, const std::string& key, std::
 // Helper function to parse Altsound2 behavior volume values
 // ---------------------------------------------------------------------------
 
-void parseVolumeValue(const IniSection& section, const std::string& key, float& volume)
+bool parseVolumeValue(const IniSection& section, const std::string& key, float& volume)
 {
 	std::string parsed_value;
 	inipp::get_value(section, key, parsed_value);
@@ -891,9 +899,11 @@ void parseVolumeValue(const IniSection& section, const std::string& key, float& 
 			volume = val > 100 ? 1.0f : val < 0 ? 0.0f : (float)val / 100.f;
 		}
 		catch (const std::exception& e) {
-			LOG(("Exception while parsing volume value: %s\n", e.what()));
+			LOG(("- Exception while parsing volume value: %s\n", e.what()));
+			return false;
 		}
 	}
+	return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -1059,4 +1069,19 @@ bool create_altsound_ini(const std::string& path_in)
 	LOG(("- \"altsound.ini\" created\n"));
 	LOG(("END: create_altsound_ini()\n"));
 	return true;
+}
+
+// ----------------------------------------------------------------------------
+// Helper function to trim whitespace from parsed tokens
+// ----------------------------------------------------------------------------
+
+std::string trim(const std::string& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	if (std::string::npos == first)
+	{
+		return str;
+	}
+	size_t last = str.find_last_not_of(' ');
+	return str.substr(first, (last - first + 1));
 }

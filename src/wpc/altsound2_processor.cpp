@@ -15,7 +15,6 @@
 #include <iomanip>
 #include <map>
 #include <sstream>
-#include <unordered_map>
 #include <string>
 
 // Local includes
@@ -126,9 +125,8 @@ Altsound2Processor::~Altsound2Processor()
 
 bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 {
-	LOG(("BEGIN Altsound2Processor::handleCmd()\n")); //DAR_DEBUG
-
-	LOG(("- Acquiring mutex...\n")); //DAR_DEBUG
+	LOG(("BEGIN Altsound2Processor::handleCmd()\n"));
+	LOG(("- Acquiring mutex...\n"));
 	std::lock_guard<std::mutex> guard(io_mutex);
 
 	if (!is_initialized || !is_stable) {
@@ -138,8 +136,7 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 		else {
 			LOG(("- Altsound2Processor is unstable. Processing skipped\n"));
 		}
-
-		LOG(("END: Altsound2Processor::handleCmd()\n")); //DAR_DEBUG
+		LOG(("END: Altsound2Processor::handleCmd()\n"));
 		return false;
 	}
 
@@ -148,18 +145,17 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 
 	if (sample_idx == -1) {
 		// No matching command.  Clean up and exit
-		LOG(("- FAILED: get_sample()\n", cmd_combined_in)); //DAR_DEBUG
-
-		//LOG(("END: Altsound2Processor::handleCmd()\n")); //DAR_DEBUG
+		LOG(("- FAILED: get_sample()\n", cmd_combined_in));
+		LOG(("END: Altsound2Processor::handleCmd()\n"));
 		return false;
 	}
-	LOG(("- SUCCESS: get_sample(%04X)\n", cmd_combined_in));
 
 	AltsoundStreamInfo* new_stream = new AltsoundStreamInfo();
 
 	// pre-populate stream info
 	new_stream->sample_path = samples[sample_idx].fname;
 	new_stream->gain = samples[sample_idx].gain;
+	new_stream->loop = samples[sample_idx].loop;
 
 	AltsoundSampleType sample_type = toSampleType(samples[sample_idx].type);
 
@@ -167,47 +163,57 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 	switch (sample_type) {
 	case MUSIC:
 		new_stream->stream_type = MUSIC;
-		if (processStream(music_behavior, &music_callback, new_stream)) {
+		if (processStream(music_behavior, new_stream)) {
 			channel_stream[new_stream->channel_idx] = cur_mus_stream = new_stream;
 		}
 		else {
-			LOG(("- FAILED: processMusic()\n")); //DAR_DEBUG
+			LOG(("- FAILED: processMusic()\n"));
+			LOG(("END: Altsound2Processor::handleCmd()\n"));
+			return false;
 		}
 		break;
 	case SFX:
 		new_stream->stream_type = SFX;
-		if (processStream(sfx_behavior, &sfx_callback, new_stream)) {
+		if (processStream(sfx_behavior, new_stream)) {
 			channel_stream[new_stream->channel_idx] = new_stream;
 		}
 		else {
-			LOG(("- FAILED: processSfx()\n")); //DAR_DEBUG
+			LOG(("- FAILED: processSfx()\n"));
+			LOG(("END: Altsound2Processor::handleCmd()\n"));
+			return false;
 		}
 		break;
 	case CALLOUT:
 		new_stream->stream_type = CALLOUT;
-		if (processStream(callout_behavior, &callout_callback, new_stream)) {
+		if (processStream(callout_behavior, new_stream)) {
 			channel_stream[new_stream->channel_idx] = cur_callout_stream = new_stream;
 		}
 		else {
-			LOG(("- FAILED: processCallout()\n")); //DAR_DEBUG
+			LOG(("- FAILED: processCallout()\n"));
+			LOG(("END: Altsound2Processor::handleCmd()\n"));
+			false;
 		}
 		break;
 	case SOLO:
 		new_stream->stream_type = SOLO;
-		if (processStream(solo_behavior, &solo_callback, new_stream)) {
+		if (processStream(solo_behavior, new_stream)) {
 			channel_stream[new_stream->channel_idx] = cur_solo_stream = new_stream;
 		}
 		else {
-			LOG(("- FAILED: processSolo()\n")); //DAR_DEBUG
+			LOG(("- FAILED: processSolo()\n"));
+			LOG(("END: Altsound2Processor::handleCmd()\n"));
+			return false;
 		}
 		break;
 	case OVERLAY:
 		new_stream->stream_type = OVERLAY;
-		if (processStream(overlay_behavior, &overlay_callback, new_stream)) {
+		if (processStream(overlay_behavior, new_stream)) {
 			channel_stream[new_stream->channel_idx] = new_stream;
 		}
 		else {
-			LOG(("- FAILED: processOverlay()\n")); //DAR_DEBUG
+			LOG(("- FAILED: processOverlay()\n"));
+			LOG(("END: Altsound2Processor::handleCmd()\n"));
+			return false;
 		}
 		break;
 	}
@@ -220,6 +226,8 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 		if (!BASS_ChannelPlay(new_stream->hstream, 0)) {
 			// Sound playback failed
 			LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", new_stream->hstream, get_bass_err()));
+			LOG(("END: Altsound2Processor::handleCmd()\n"));
+			return false;
 		}
 		else {
 			LOG(("- SUCCESS: BASS_ChannelPlay(%u): CH(%d) CMD(%04X) SAMPLE(%s)\n", \
@@ -228,7 +236,7 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 		}
 	}
 
-	LOG(("END: Altsound2Processor::handleCmd()\n")); //DAR_DEBUG
+	LOG(("END: Altsound2Processor::handleCmd()\n"));
 	return true;
 }
 
@@ -236,48 +244,46 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 
 void Altsound2Processor::init()
 {
+	//LOG(("BEGIN Altsound2Processor::init()\n"));
+
 	// reset stream tracking
 	cur_mus_stream = nullptr;
 	cur_callout_stream = nullptr;
 	cur_solo_stream = nullptr;
-
-	//LOG(("BEGIN Altsound2Processor::init()\n")); //DAR_DEBUG
+	
 	if (!loadSamples()) {
 		LOG(("FAILED: Altsound2Processor::loadSamples()\n"));
-
-		//LOG(("END: Altsound2Processor::init()\n")); //DAR_DEBUG
+		//LOG(("END: Altsound2Processor::init()\n"));
 	}
 	LOG(("SUCCESS: Altsound2Processor::loadSamples()\n"));
 
 	// if we are here, initialization succeeded
 	is_initialized = true;
 
-	//LOG(("END: Altsound2Processor::init()\n")); //DAR_DEBUG
+	//LOG(("END: Altsound2Processor::init()\n"));
 }
 
 // ---------------------------------------------------------------------------
 
 bool Altsound2Processor::loadSamples()
 {
-	//LOG(("BEGIN loadSamples()\n")); //DAR_DEBUG
+	//LOG(("BEGIN Altsound2Processor::loadSamples()\n"));
 	string altsound_path = get_vpinmame_path();
 	if (!altsound_path.empty()) {
 		altsound_path += "\\altsound\\";
 		altsound_path += game_name;
-//		altsound_path += "\\altsound2.csv";
 	}
 
 	Altsound2CsvParser csv_parser(altsound_path);
 
 	if (!csv_parser.parse(samples)) {
-		LOG(("- FAILED: csv_parser.parse()\n")); //DAR_DEBUG
-
-		//LOG(("END: Altsound2Processor::init()\n")); //DAR_DEBUG
+		LOG(("- FAILED: csv_parser.parse()\n"));
+		//LOG(("END: Altsound2Processor::init()\n"));
 		return is_initialized;
 	}
-	LOG(("- SUCCESS: csv_parser.parse()\n")); //DAR_DEBUG
+	LOG(("- SUCCESS: csv_parser.parse()\n"));
 
-    //LOG(("END: loadSamples\n")); //DAR_DEBUG
+    //LOG(("END: Altsound2Processor::loadSamples\n"));
 	return true;
 }
 
@@ -285,7 +291,7 @@ bool Altsound2Processor::loadSamples()
 
 int Altsound2Processor::getSample(const unsigned int cmd_combined_in)
 {
-	LOG(("BEGIN getSample()\n")); //DAR_DEBUG
+	//LOG(("BEGIN Altsound2Processor::getSample()\n"));
 
 	int sample_idx = -1;
 	std::vector<int> matching_samples;
@@ -298,23 +304,23 @@ int Altsound2Processor::getSample(const unsigned int cmd_combined_in)
 	}
 
 	if (matching_samples.empty()) {
-		LOG(("- FAILED: No sample(s) found for ID: %04X\n", cmd_combined_in)); //DAR_DEBUG
+		LOG(("- FAILED: No sample(s) found for ID: %04X\n", cmd_combined_in));
 	}
 	else {
-		LOG(("- SUCCESS: Found %lu sample(s) for ID: %04X\n", matching_samples.size(), cmd_combined_in)); //DAR_DEBUG
+		LOG(("- Found %lu sample(s) for ID: %04X\n", matching_samples.size(), cmd_combined_in));
 		
 		// pick one to play at random
 		sample_idx = matching_samples[rand() % matching_samples.size()];
 		LOG(("- SAMPLE: %s\n", getShortPath(samples[sample_idx].fname).c_str()));
 	}
 
-	LOG(("END: getSample()\n")); //DAR_DEBUG
+	//LOG(("END: getSample()\n"));
 	return sample_idx;
 }
 
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::processStream(const BehaviorInfo& behavior, void* syncproc,
+bool Altsound2Processor::processStream(const BehaviorInfo& behavior,
 	                                   AltsoundStreamInfo* stream_out)
 {
 	std::string type_str = toString(stream_out->stream_type);
@@ -324,11 +330,18 @@ bool Altsound2Processor::processStream(const BehaviorInfo& behavior, void* syncp
 	bool success = processBehaviors(behavior, *stream_out);
 	if (!success) {
 		LOG(("FAILED: processBehaviors()\n"));
+		LOG(("END: processStream(%s)\n", type_str.c_str()));
 		return success;
 	}
 
+	// DAR@20230703
+	// For music streams, we cannot set a callback for end-of-stream because
+	// it will prevent looping
+	//
 	// create new music stream
-	success = createStream(syncproc, stream_out);
+	SYNCPROC* callback_fn = stream_out->stream_type == MUSIC ? nullptr : &common_callback;
+	success = createStream(callback_fn, stream_out);
+	//success = createStream(&common_callback, stream_out);
 	if (!success) {
 		LOG(("FAILED: createStream()\n"));
 	}
@@ -382,7 +395,11 @@ bool Altsound2Processor::processBehaviors(const BehaviorInfo& behavior,
 
 void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type_in)
 {
+	LOG(("BEGIN: Altsound2Processor::postProcessBehaviors()\n"));
 	int idx = streamTypeToIndex[type_in];
+
+	if (type_in == CALLOUT)
+		int i = 0;
 
 	// update ducking behavior
 	music_duck_vol[idx] = 1.0f;
@@ -402,6 +419,7 @@ void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type_in)
 	printBehaviorData();
 #endif
 
+	LOG(("END: Altsound2Processor::postProcessBehaviors()\n"));
 }
 
 // ----------------------------------------------------------------------------
@@ -409,8 +427,7 @@ void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type_in)
 bool Altsound2Processor::processMusicBehavior(const BehaviorInfo& behavior,
 	                                          const AltsoundStreamInfo& stream)
 {
-	LOG(("BEGIN: processMusicBehavior()\n"));
-
+	LOG(("BEGIN: Altsound2Processor::processMusicBehavior()\n"));
 	using BB = BehaviorInfo::BehaviorBits;
 
 	// process impact of behavior on MUSIC streams
@@ -418,6 +435,7 @@ bool Altsound2Processor::processMusicBehavior(const BehaviorInfo& behavior,
 		// current sample behavior calls to stop MUSIC stream
 		if (!stopMusicStream()) {
 			LOG(("- FAILED: stopMusicStream()\n"));
+			LOG(("END: Altsound2Processor::processMusicBehavior()\n"));
 			return false;
 		}
 	}
@@ -429,6 +447,7 @@ bool Altsound2Processor::processMusicBehavior(const BehaviorInfo& behavior,
 			if (cur_mus_stream) {
 				if (!BASS_ChannelPause(cur_mus_stream->hstream)) {
 					LOG(("- FAILED: BASS_ChannelPause(): %s\n", get_bass_err()));
+					LOG(("END: Altsound2Processor::processMusicBehavior()\n"));
 					return false;
 				}
 				else {
@@ -455,11 +474,12 @@ bool Altsound2Processor::processMusicBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: MUSIC streams cannot duck another MUSIC stream\n"));
+			LOG(("END: processMusicBehavior()\n"));
 			return false;
 		}
 	}
 
-	LOG(("END: processMusicBehavior()\n"));
+	LOG(("END: Altsound2Processor::processMusicBehavior()\n"));
 	return true;
 }
 
@@ -468,7 +488,7 @@ bool Altsound2Processor::processMusicBehavior(const BehaviorInfo& behavior,
 bool Altsound2Processor::processCalloutBehavior(const BehaviorInfo& behavior,
 	                                            const AltsoundStreamInfo& stream)
 {
-	LOG(("BEGIN: processCalloutBehavior()\n"));
+	LOG(("BEGIN: Altsound2Processor::processCalloutBehavior()\n"));
 	using BB = BehaviorInfo::BehaviorBits;
 
 	// process callout
@@ -476,6 +496,7 @@ bool Altsound2Processor::processCalloutBehavior(const BehaviorInfo& behavior,
 		// current sample behavior calls to stop CALLOUT stream
 		if (!stopCalloutStream()) {
 			LOG(("- FAILED: stopCalloutStream()\n"));
+			LOG(("END: Altsound2Processor::processCalloutBehavior()\n"));
 			return false;
 		}
 	}
@@ -485,6 +506,7 @@ bool Altsound2Processor::processCalloutBehavior(const BehaviorInfo& behavior,
 			if (cur_callout_stream) {
 				if (!BASS_ChannelPause(cur_callout_stream->hstream)) {
 					LOG(("- FAILED: BASS_ChannelPause(): %s\n", get_bass_err()));
+					LOG(("END: Altsound2Processor::processCalloutBehavior()\n"));
 					return false;
 				}
 				else {
@@ -513,11 +535,12 @@ bool Altsound2Processor::processCalloutBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: CALLOUT streams cannot duck another CALLOUT stream\n"));
+			LOG(("END: Altsound2Processor::processCalloutBehavior()\n"));
 			return false;
 		}
 	}
 
-	LOG(("END: processCalloutBehavior()\n"));
+	LOG(("END: Altsound2Processor::processCalloutBehavior()\n"));
 	return true;
 }
 
@@ -526,7 +549,7 @@ bool Altsound2Processor::processCalloutBehavior(const BehaviorInfo& behavior,
 bool Altsound2Processor::processSfxBehavior(const BehaviorInfo& behavior,
 	                                        const AltsoundStreamInfo& stream)
 {
-	LOG(("BEGIN: processSfxBehavior()\n"));
+	LOG(("BEGIN: Altsound2Processor::processSfxBehavior()\n"));
 	using BB = BehaviorInfo::BehaviorBits;
 
 	// process sfx
@@ -547,6 +570,7 @@ bool Altsound2Processor::processSfxBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: SFX streams cannot stop another SFX stream\n"));
+			LOG(("END: Altsound2Processor::processSfxBehavior()\n"));
 			return false;
 		}
 	}
@@ -567,11 +591,12 @@ bool Altsound2Processor::processSfxBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: SFX streams cannot duck another SFX stream\n"));
+			LOG(("END: Altsound2Processor::processSfxBehavior()\n"));
 			return false;
 		}
 	}
 
-	LOG(("END: processSfxBehavior()\n"));
+	LOG(("END: Altsound2Processor::processSfxBehavior()\n"));
 	return true;
 }
 
@@ -580,7 +605,7 @@ bool Altsound2Processor::processSfxBehavior(const BehaviorInfo& behavior,
 bool Altsound2Processor::processSoloBehavior(const BehaviorInfo& behavior,
                                              const AltsoundStreamInfo& stream)
 {
-	LOG(("BEGIN: processSoloBehavior()\n"));
+	LOG(("BEGIN: Altsound2Processor::processSoloBehavior()\n"));
 	using BB = BehaviorInfo::BehaviorBits;
 
 	// process solo
@@ -588,6 +613,7 @@ bool Altsound2Processor::processSoloBehavior(const BehaviorInfo& behavior,
 		// current sample behavior calls to stop SOLO stream
 		if (!stopSoloStream()) {
 			LOG(("- FAILED: stopSoloStream()\n"));
+			LOG(("END: Altsound2Processor::processSoloBehavior()\n"));
 			return false;
 		}
 	}
@@ -597,6 +623,7 @@ bool Altsound2Processor::processSoloBehavior(const BehaviorInfo& behavior,
 			if (cur_solo_stream) {
 				if (!BASS_ChannelPause(cur_solo_stream->hstream)) {
 					LOG(("- FAILED: BASS_ChannelPause(): %s\n", get_bass_err()));
+					LOG(("END: Altsound2Processor::processSoloBehavior()\n"));
 					return false;
 				}
 				else {
@@ -607,6 +634,7 @@ bool Altsound2Processor::processSoloBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: SOLO streams cannot pause another SOLO stream\n"));
+			LOG(("END: Altsound2Processor::processSoloBehavior()\n"));
 			return false;
 		}
 	}
@@ -625,11 +653,12 @@ bool Altsound2Processor::processSoloBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: SOLO streams cannot duck another SOLO stream\n"));
+			LOG(("END: Altsound2Processor::processSoloBehavior()\n"));
 			return false;
 		}
 	}
 
-	LOG(("END: processSoloBehavior()\n"));
+	LOG(("END: Altsound2Processor::processSoloBehavior()\n"));
 	return true;
 }
 
@@ -638,7 +667,7 @@ bool Altsound2Processor::processSoloBehavior(const BehaviorInfo& behavior,
 bool Altsound2Processor::processOverlayBehavior(const BehaviorInfo& behavior,
 	                                           const AltsoundStreamInfo& stream)
 {
-	LOG(("BEGIN: processOverlayBehavior()\n"));
+	LOG(("BEGIN: Altsound2Processor::processOverlayBehavior()\n"));
 	using BB = BehaviorInfo::BehaviorBits;
 
 	// process overlay
@@ -651,6 +680,7 @@ bool Altsound2Processor::processOverlayBehavior(const BehaviorInfo& behavior,
 
 				if (!stopStream(stream->hstream)) {
 					LOG(("- FAILED: stopStream(%u)\n", stream->hstream));
+					LOG(("END: Altsound2Processor::processOverlayBehavior()\n"));
 					return false;
 				}
 			}
@@ -668,6 +698,7 @@ bool Altsound2Processor::processOverlayBehavior(const BehaviorInfo& behavior,
 
 				if (!BASS_ChannelPause(stream->hstream)) {
 					LOG(("- FAILED: BASS_ChannelPause(): %s\n", get_bass_err()));
+					LOG(("END: Altsound2Processor::processOverlayBehavior()\n"));
 					return false;
 				}
 				else {
@@ -695,11 +726,12 @@ bool Altsound2Processor::processOverlayBehavior(const BehaviorInfo& behavior,
 		}
 		else {
 			LOG(("- ERROR: OVERLAY streams cannot duck another OVERLAY stream\n"));
+			LOG(("END: Altsound2Processor::processOverlayBehavior()\n"));
 			return false;
 		}
 	}
 
-	LOG(("END: processOverlayBehavior()\n"));
+	LOG(("END: Altsound2Processor::processOverlayBehavior()\n"));
 	return true;
 }
 
@@ -734,15 +766,18 @@ bool Altsound2Processor::stopMusic()
 // ----------------------------------------------------------------------------
 bool Altsound2Processor::stopMusicStream()
 {
+	LOG(("BEGIN: Altsound2Processor::stopMusicStream()\n"));
+
 	if (!cur_mus_stream) {
-		// no MUSIC stream active
+		LOG(("- No active MUSIC stream\n"));
+		LOG(("END: Altsound2Processor::stopMusicStream()\n"));
 		return true;
 	}
 
 	HSTREAM hstream = cur_mus_stream->hstream;
 	unsigned int ch_idx = cur_mus_stream->channel_idx;
 
-	LOG(("Current MUSIC stream(%s): HSTREAM: %u  CH: %02d\n",
+	LOG(("- Current MUSIC stream(%s): HSTREAM: %u  CH: %02d\n",
 		getShortPath(getShortPath(cur_mus_stream->sample_path)).c_str(), hstream, ch_idx));
 
 	bool success = stopStream(hstream);
@@ -754,8 +789,11 @@ bool Altsound2Processor::stopMusicStream()
 	}
 	else {
 		LOG(("- FAILED: stopStream(%u)\n", hstream));
+		LOG(("END: Altsound2Processor::stopMusicStream()\n"));
+		return false;
 	}
 
+	LOG(("END: Altsound2Processor::stopMusicStream()\n"));
 	return true;
 }
 
@@ -763,9 +801,10 @@ bool Altsound2Processor::stopMusicStream()
 
 bool Altsound2Processor::stopCalloutStream()
 {
-	// LOG(("BEGIN stopCalloutStream()\n"));
+	LOG(("BEGIN: Altsound2Processor::stopCalloutStream()\n"));
 	if (!cur_callout_stream) {
-		// no CALLOUT stream active
+		LOG(("- No active CALLOUT stream\n"));
+		LOG(("END: Altsound2Processor::stopCalloutStream()\n"));
 		return true;
 	}
 
@@ -783,10 +822,12 @@ bool Altsound2Processor::stopCalloutStream()
 		cur_callout_stream = nullptr;
 	}
 	else {
-		LOG(("- FAILED: stopStream(%u)\n", hstream));
+		LOG(("- FAILED: Altsound2Processor::stopStream(%u)\n", hstream));
+		LOG(("END: Altsound2Processor::stopCalloutStream()\n"));
+		return false;
 	}
 
-	// LOG(("END: stopCalloutStream()\n"));
+	LOG(("END: Altsound2Processor::stopCalloutStream()\n"));
 	return success;
 }
 
@@ -794,17 +835,18 @@ bool Altsound2Processor::stopCalloutStream()
 
 bool Altsound2Processor::stopSoloStream()
 {
-	// LOG(("BEGIN stopSoloStream()\n"));
+    LOG(("BEGIN: Altsound2Processor::stopSoloStream()\n"));
 	if (!cur_solo_stream) {
-		// no SOLO stream active
+		LOG(("- No active SOLO stream\n"));
+		LOG(("END: Altsound2Processor::stopSoloStream()\n"));
 		return true;
 	}
 
 	HSTREAM hstream = cur_solo_stream->hstream;
 	unsigned int ch_idx = cur_solo_stream->channel_idx;
 
-	LOG(("Current MUSIC stream(%s): HSTREAM: %u  CH: %02d\n",
-		getShortPath(getShortPath(cur_mus_stream->sample_path)).c_str(), hstream, ch_idx));
+	LOG(("Current SOLO stream(%s): HSTREAM: %u  CH: %02d\n",
+		getShortPath(getShortPath(cur_solo_stream->sample_path)).c_str(), hstream, ch_idx));
 
 	bool success = stopStream(hstream);
 	if (success) {
@@ -815,268 +857,86 @@ bool Altsound2Processor::stopSoloStream()
 	}
 	else {
 		LOG(("- FAILED: stopStream(%u)\n", hstream));
+		LOG(("END: Altsound2Processor::stopSoloStream()\n"));
+		return false;
 	}
 
-	// LOG(("END: stopSoloStream()\n"));
+	LOG(("END: Altsound2Processor::stopSoloStream()\n"));
 	return success;
 }
 
 // ---------------------------------------------------------------------------
 
-void CALLBACK Altsound2Processor::overlay_callback(HSYNC handle, DWORD channel, \
-	                                               DWORD data, void* user)
+void CALLBACK Altsound2Processor::common_callback(HSYNC handle, DWORD channel,
+	                                              DWORD data, void* user)
 {
 	// All SYNCPROC functions run on the same thread, and will block other
 	// sync processes, so these should be fast.  The SYNCPROC thread is
 	// separate from the main thread so thread safety should be considered
-	LOG(("\nBEGIN: overlay_callback()\n"));
+	LOG(("\nBEGIN: Altsound2Processor::common_callback()\n"));
 	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
-
 	LOG(("- Acquiring mutex...\n"));
 	std::lock_guard<std::mutex> guard(io_mutex);
 
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
 	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
-
-	// DAR@20230621
-	// The following is not strictly necessary, but I'm keeping it here until
-	// I'm comfortable these situations don't/can't happen
-	if (stream_inst->hstream != hstream_in) {
-		LOG(("callback HSTREAM != instance HSTREAM\n"));
-	}
-	else if (stream_inst->stream_type != OVERLAY) {
-		LOG(("instance HSTREAM is NOT an OVERLAY stream\n"));
-	}
-
 	HSTREAM inst_hstream = stream_inst->hstream;
+
+	if (inst_hstream != hstream_in) {
+		LOG(("- ERROR: callback HSTREAM != instance HSTREAM\n"));
+		LOG(("END: Altsound2Processor::common_callback()\n"));
+		return;
+	}
+
 	unsigned int inst_ch_idx = stream_inst->channel_idx;
 
-	LOG(("- OVERLAY stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
+	switch (stream_inst->stream_type) {
+	case SOLO:
+		cur_solo_stream = nullptr;
+		LOG(("- SOLO stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
+		break;
 
-	// free stream resources
-	if (!freeStream(inst_hstream)) {
-		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err())); // DAR_DEBUG
-	}
+	// DAR@20230703
+	// The end-of-stream callback will get called for looping streams when the original
+    // sample ends.  We can't clean up here, or the sample won't loop!
+	//case MUSIC:
+	//	cur_mus_stream = nullptr;
+	//	LOG(("- MUSIC stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
+	//	break;
 
-	// reset tracking variables
-	delete channel_stream[inst_ch_idx];
-	channel_stream[inst_ch_idx] = nullptr;
+	case SFX:
+		LOG(("- SFX stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
+		break;
 
-	// update ducking behavior tracking
-	postProcessBehaviors(OVERLAY);
-
-	// re-adjust ducked volumes
-	adjustStreamVolumes();
-
-	// update paused streams
-	processPausedStreams();
-
-	LOG(("END: overlay_callback()\n"));
-}
-
-// ---------------------------------------------------------------------------
-
-void CALLBACK Altsound2Processor::callout_callback(HSYNC handle, DWORD channel,\
-                                	               DWORD data, void *user)
-{
-	// All SYNCPROC functions run on the same thread, and will block other
-	// sync processes, so these should be fast.  The SYNCPROC thread is
-	// separate from the main thread so thread safety should be considered
-	LOG(("\nBEGIN: callout_callback()\n"));
-	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
-
-	LOG(("- Acquiring mutex...\n"));
-	std::lock_guard<std::mutex> guard(io_mutex);
-
-	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
-
-	// DAR@20230621
-	// The following is not strictly necessary, but I'm keeping it here until
-	// I'm comfortable these situations don't/can't happen
-	if (stream_inst->hstream != hstream_in) {
-		LOG(("callback HSTREAM != instance HSTREAM\n"));
-	}
-	else if (stream_inst->stream_type != CALLOUT) {
-		LOG(("instance HSTREAM is NOT a CALLOUT stream\n"));
-	}
-
-	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
+	case CALLOUT:
+		cur_callout_stream = nullptr;
 		LOG(("- CALLOUT stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
+		break;
 
-	// free stream resources
-	if (!freeStream(inst_hstream)) {
-		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err())); // DAR_DEBUG
+	case OVERLAY:
+		LOG(("- OVERLAY stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
+		break;
+
+	default:
+		LOG(("- Unknown stream type\n"));
+		LOG(("END: common_callback()\n"));
+		return;
 	}
-
-	// reset tracking variables
-	delete channel_stream[inst_ch_idx];
-	channel_stream[inst_ch_idx] = nullptr;
-	cur_callout_stream = nullptr;
-
-	// update ducking behavior tracking
-	postProcessBehaviors(CALLOUT);
-
-	// re-adjust ducked volumes
-	adjustStreamVolumes();
-
-	// update paused streams
-	processPausedStreams();
-
-	LOG(("END: callout_callback()\n"));
-}
-
-// ---------------------------------------------------------------------------
-
-void CALLBACK Altsound2Processor::sfx_callback(HSYNC handle, DWORD channel, \
-	DWORD data, void *user)
-{
-	// All SYNCPROC functions run on the same thread, and will block other
-	// sync processes, so these should be fast.  The SYNCPROC thread is
-	// separate from the main thread so thread safety should be considered
-	LOG(("\nBEGIN: sfx_callback()\n"));
-	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel)); //DAR_DEBUG
-
-	LOG(("- Acquiring mutex...\n")); //DAR_DEBUG
-	std::lock_guard<std::mutex> guard(io_mutex);
-
-	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
-
-	// DAR@20230621
-	// The following is not strictly necessary, but I'm keeping it here until
-	// I'm comfortable these situations don't/can't happen
-	if (stream_inst->hstream != hstream_in) {
-		LOG(("callback HSTREAM != instance HSTREAM\n"));
-	}
-	else if (stream_inst->stream_type != SFX) {
-		LOG(("instance HSTREAM is NOT a SFX stream\n"));
-	}
-
-	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
-
-	LOG(("- SFX stream(%u) finished on CH(%02d)\n", inst_hstream, inst_ch_idx));
-
-	// free stream resources
-	if (!freeStream(inst_hstream)) {
-		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err())); // DAR_DEBUG
-	}
-
-	// reset tracking variables
-	delete channel_stream[inst_ch_idx];
-	channel_stream[inst_ch_idx] = nullptr;
-
-	// update ducking behavior tracking
-	postProcessBehaviors(SFX);
-
-	// re-adjust ducked volumes
-	adjustStreamVolumes();
-
-	// update paused streams
-	processPausedStreams();
-
-	LOG(("END: sfx_callback()\n")); //DAR_DEBUG
-}
-
-// ---------------------------------------------------------------------------
-
-void CALLBACK Altsound2Processor::music_callback(HSYNC handle, DWORD channel, \
-	DWORD data, void *user)
-{
-	// All SYNCPROC functions run on the same thread, and will block other
-	// sync processes, so these should be fast.  The SYNCPROC thread is
-	// separate from the main thread so thread safety should be considered
-	LOG(("BEGIN music_callback()\n"));
-	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
-
-	LOG(("- Acquiring mutex...\n")); //DAR_DEBUG
-	std::lock_guard<std::mutex> guard(io_mutex);
-
-	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
-
-	// DAR@20230621
-	// The following is not strictly necessary, but I'm keeping it here until
-	// I'm comfortable these situations don't/can't happen
-	if (stream_inst->hstream != hstream_in) {
-		LOG(("callback HSTREAM != instance HSTREAM\n"));
-	}
-	else if (stream_inst->stream_type != MUSIC) {
-		LOG(("instance HSTREAM is NOT a MUSIC stream\n"));
-	}
-
-	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
-
-	LOG(("- MUSIC stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
 
 	// free stream resources
 	if (!freeStream(inst_hstream)) {
 		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err()));
 	}
 
-	// reset tracking variables
-	delete channel_stream[inst_ch_idx];
-	channel_stream[inst_ch_idx] = nullptr;
-	cur_mus_stream = nullptr;
-
+	// DAR@20230702 Must do this BEFORE deleting the
+	// channel_stream object or else the data is destroyed
+	//
 	// update ducking behavior tracking
-	postProcessBehaviors(MUSIC);
-
-	// re-adjust ducked volumes
-	adjustStreamVolumes();
-
-	// update paused streams
-	processPausedStreams();
-	
-	LOG(("END: music_callback()\n")); //DAR_DEBUG
-}
-
-// ---------------------------------------------------------------------------
-
-void CALLBACK Altsound2Processor::solo_callback(HSYNC handle, DWORD channel, \
-	DWORD data, void* user)
-{
-	// All SYNCPROC functions run on the same thread, and will block other
-	// sync processes, so these should be fast.  The SYNCPROC thread is
-	// separate from the main thread so thread safety should be considered
-	LOG(("\nBEGIN: overlay_callback()\n"));
-	LOG(("- HSYNC: %u  HSTREAM: %u\n", handle, channel));
-
-	LOG(("- Acquiring mutex...\n"));
-	std::lock_guard<std::mutex> guard(io_mutex);
-
-	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
-
-	// DAR@20230621
-	// The following is not strictly necessary, but I'm keeping it here until
-	// I'm comfortable these situations don't/can't happen
-	if (stream_inst->hstream != hstream_in) {
-		LOG(("callback HSTREAM != instance HSTREAM\n"));
-	}
-	else if (stream_inst->stream_type != SOLO) {
-		LOG(("instance HSTREAM is NOT an SOLO stream\n"));
-	}
-
-	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
-
-	LOG(("- SOLO stream(%u) finished on ch(%02d)\n", inst_hstream, inst_ch_idx));
-
-	// free stream resources
-	if (!freeStream(inst_hstream)) {
-		LOG(("- FAILED: free_stream(%u): %s\n", inst_hstream, get_bass_err())); // DAR_DEBUG
-	}
+	postProcessBehaviors(stream_inst->stream_type);
 
 	// reset tracking variables
 	delete channel_stream[inst_ch_idx];
 	channel_stream[inst_ch_idx] = nullptr;
-
-	// update ducking behavior tracking
-	postProcessBehaviors(SOLO);
 
 	// re-adjust ducked volumes
 	adjustStreamVolumes();
@@ -1084,14 +944,14 @@ void CALLBACK Altsound2Processor::solo_callback(HSYNC handle, DWORD channel, \
 	// update paused streams
 	processPausedStreams();
 
-	LOG(("END: jingle_callback()\n"));
+	LOG(("END: Altsound2Processor::common_callback()\n"));
 }
 
 // ----------------------------------------------------------------------------
 
 bool Altsound2Processor::adjustStreamVolumes()
 {
-	LOG(("BEGIN: adjustStreamVolumes()\n"));
+	LOG(("BEGIN: Altsound2Processor::adjustStreamVolumes()\n"));
 	bool success = true;
 	int num_x_streams = 0;
 
@@ -1103,31 +963,35 @@ bool Altsound2Processor::adjustStreamVolumes()
 		{OVERLAY, &overlay_duck_vol}
 	};
 
-	for (const auto& stream : channel_stream) {
-		if (stream) {
-			// Stream defined on the channel
-			float adjusted_vol = 0.0f;
-			auto iter = volumeStatusMap.find(stream->stream_type);
-			if (iter != volumeStatusMap.end()) {
-				adjusted_vol = stream->gain * (*std::min_element(iter->second->begin(), iter->second->end()));
-			}
-			else {
-				LOG(("ERROR: Unknown stream type\n"));
-				return false;
-			}
+	for (const auto& streamPtr : channel_stream) {
+		if (!streamPtr) continue; // Stream is not defined
 
-			if (!setStreamVolume(stream->hstream, adjusted_vol))
-				success = false;
+		const auto& stream = *streamPtr; // Dereference pointer for readability
 
-			LOG(("- channel_stream[%d]: STREAM: %u  DUCKING: %0.02f\n", num_x_streams, stream->hstream, stream->ducking));
-			num_x_streams++;
+		auto iter = volumeStatusMap.find(stream.stream_type);
+		if (iter == volumeStatusMap.end()) {
+			LOG(("- ERROR: Unknown stream type\n"));
+			success = false;
+			continue;
 		}
+
+		float ducking_value = *std::min_element(iter->second->begin(), iter->second->end());
+		LOG(("- %s stream(%u) ducked to %.02f of %.02f\n", toString(stream.stream_type).c_str(),
+			 stream.hstream, ducking_value, stream.gain));
+
+		float adjusted_vol = stream.gain * ducking_value;
+		if (!setStreamVolume(stream.hstream, adjusted_vol)) {
+			LOG(("- FAILED: setStreamVolume()\n"));
+			success = false;
+		}
+		num_x_streams++;
 	}
 
 	LOG(("- Num active streams: %d\n", num_x_streams));
-	LOG(("END: adjustStreamVolumes()\n"));
+	LOG(("END: Altsound2Processor::adjustStreamVolumes()\n"));
 	return success;
 }
+
 
 // ----------------------------------------------------------------------------
 
@@ -1135,49 +999,63 @@ bool Altsound2Processor::processPausedStreams()
 {
 	LOG(("BEGIN: processPausedStreams()\n"));
 
-	// DAR@20230628
-	// Creating a map of the <stream>_paused arrays allows for more efficient
-	// processing downstream
-	//
-	// Mapping of StreamType to pause array
-	std::unordered_map<AltsoundSampleType, std::array<bool, NUM_STREAM_TYPES>*> pauseStatusMap = {
+	auto pauseStatusMap = buildPauseStatusMap();
+
+	bool success = true;
+	for (const auto& stream : channel_stream) {
+		if (stream) {
+			success &= tryResumeStream(*stream, pauseStatusMap);
+		}
+	}
+
+	LOG(("END: processPausedStreams()\n"));
+	return success;
+}
+
+// ----------------------------------------------------------------------------
+
+bool Altsound2Processor::tryResumeStream(const AltsoundStreamInfo& stream,
+	                                     const PausedStatusMap& pauseStatusMap)
+{
+	LOG(("BEGIN: tryResumeStream()\n"));
+
+	auto pauseStatusMapIter = pauseStatusMap.find(stream.stream_type);
+	if (pauseStatusMapIter == pauseStatusMap.end()) {
+		LOG(("ERROR: Unknown stream type\n"));
+		return false;
+	}
+
+	auto& pauseStatusArray = *pauseStatusMapIter->second;
+	if (!isAnyPaused(pauseStatusArray)) {
+		HSTREAM hstream = stream.hstream;
+
+		if (BASS_ChannelIsActive(hstream) == BASS_ACTIVE_PAUSED) {
+			if (!BASS_ChannelPlay(hstream, 0)) {
+				LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", hstream, get_bass_err()));
+				return false;
+			}
+			LOG(("Successfully resumed stream: %u\n", hstream));
+		}
+	}
+
+	LOG(("END: tryResumeStream()\n"));
+	return true;
+}
+
+// ----------------------------------------------------------------------------
+// Helper function to build the common map of stream types to paused_status
+// arrays.  This is used for behavior processing and management
+// ----------------------------------------------------------------------------
+
+PausedStatusMap Altsound2Processor::buildPauseStatusMap()
+{
+	return {
 		{MUSIC, &music_paused},
 		{CALLOUT, &callout_paused},
 		{SFX, &sfx_paused},
 		{SOLO, &solo_paused},
 		{OVERLAY, &overlay_paused}
 	};
-
-	bool success = true;
-
-	for (const auto& stream : channel_stream) {
-		if (stream) {
-			// If pauseStatusMap doesn't contain the stream type, log an error and return
-			if (pauseStatusMap.count(stream->stream_type) == 0) {
-				LOG(("ERROR: Unknown stream type\n"));
-				return false;
-			}
-
-			auto& pauseStatusArray = *pauseStatusMap[stream->stream_type];
-			if (!isAnyPaused(pauseStatusArray)) {
-				HSTREAM hstream = stream->hstream;
-
-				if (hstream != 0 && BASS_ChannelIsActive(hstream) == BASS_ACTIVE_PAUSED) {
-					if (!BASS_ChannelPlay(hstream, 0)) {
-						LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", hstream, get_bass_err()));
-						success = false;
-					}
-				}
-				else {
-					LOG(("ERROR: Stream: %u is not paused\n", hstream));
-					success = false;
-				}
-			}
-		}
-	}
-
-	LOG(("END: processPausedStreams()\n"));
-	return success;
 }
 
 // ---------------------------------------------------------------------------
@@ -1193,10 +1071,12 @@ bool Altsound2Processor::isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& p
 }
 
 // ---------------------------------------------------------------------------
-// Helper DEBUG function to output all behavior bookkeeping data
+// Helper DEBUG functions to output all behavior bookkeeping data
 // ---------------------------------------------------------------------------
 void Altsound2Processor::printBehaviorData() {
-	// Then you call these functions with your arrays
+	std::ostringstream oss;
+	oss << "                     MUS   CALL  SFX   SOLO  OVER" << std::endl;
+	oss << "                   ---------------------------------" << std::endl;
 	printArray("music_duck_vol   ", music_duck_vol);
 	printArray("callout_duck_vol ", callout_duck_vol);
 	printArray("sfx_duck_vol     ", sfx_duck_vol);
@@ -1205,6 +1085,8 @@ void Altsound2Processor::printBehaviorData() {
 	
 	LOG(("\n"));
 
+	oss << "                     MUS   CALL  SFX   SOLO  OVER" << std::endl;
+	oss << "                   ---------------------------------" << std::endl;
 	printArrayBool("music_paused   ", music_paused);
 	printArrayBool("callout_paused ", callout_paused);
 	printArrayBool("sfx_paused     ", sfx_paused);

@@ -12,9 +12,10 @@
 #pragma once
 #endif
 
+// Std Library includes
 #include <string>
 
-//#include "snd_alt.h"
+// local includes
 #include "altsound_data.hpp"
 
 extern std::string get_vpinmame_path();
@@ -42,6 +43,9 @@ protected:
 	Altsound2CsvParser(Altsound2CsvParser&) {/* not used */ };
 
 private: // functions
+
+	// trim any whitespace from field values
+	std::string trim(const std::string& str);
 
 private: // data
 

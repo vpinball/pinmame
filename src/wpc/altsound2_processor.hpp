@@ -16,6 +16,7 @@
 // Library includes
 #include <string>
 #include <array>
+#include <unordered_map>
 
 // Local includes
 #include "altsound_processor_base.hpp"
@@ -23,6 +24,8 @@
 #include "..\ext\bass\bass.h"
 
 #define NUM_STREAM_TYPES 5
+
+typedef std::unordered_map<AltsoundSampleType, std::array<bool, NUM_STREAM_TYPES>*> PausedStatusMap;
 
 // ---------------------------------------------------------------------------
 // Altsound2Processor class definition
@@ -64,8 +67,7 @@ private: // functions
 	int getSample(const unsigned int cmd_combined_in) override;
 
 	// process stream commands
-	bool processStream(const BehaviorInfo& behavior, void* syncproc,
-		               AltsoundStreamInfo* stream_out);
+	bool processStream(const BehaviorInfo& behavior, AltsoundStreamInfo* stream_out);
 
 	// Execute actions that implement the sample type behaviors
 	bool processBehaviors(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
@@ -85,27 +87,6 @@ private: // functions
 	// Process effect of passed behavior on OVERLAY streams
 	bool processOverlayBehavior(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
-	// BASS SYNCPROC callback when OVERLAY samples end
-	static void CALLBACK overlay_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
-
-	// BASS SYNCPROC callback when CALLOUT samples end
-	static void CALLBACK callout_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
-
-	// BASS SYNCPROC callback when SFX samples end
-	static void CALLBACK sfx_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
-
-	// BASS SYNCPROC callback when MUSIC samples end
-	static void CALLBACK music_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
-
-	// BASS SYNCPROC callback when SOLO samples end
-	static void CALLBACK solo_callback(HSYNC handle, DWORD channel, DWORD data, void* user);
-
-	// Update behaviors when streams end
-	static void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type);
-
-	// Helper function to check is a stream type still needs to be paused
-	static bool isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& pauseStatusArray);
-
 	// Stop currently-playing MUSIC stream
 	bool stopMusicStream();
 
@@ -115,11 +96,25 @@ private: // functions
 	// Stop currently-playing SOLO stream
 	bool stopSoloStream();
 
+	// BASS SYNCPROC callback whan a stream ends
+	static void CALLBACK common_callback(HSYNC handle, DWORD channel, DWORD data, void* user);
+
+	// Update behaviors when streams end
+	static void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type);
+
+	// Helper function to check is a stream type still needs to be paused
+	static bool isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& pauseStatusArray);
+
 	// adjust volume of active streams to accommodate ducking
 	static bool adjustStreamVolumes();
 
 	// resume paused playback on streams that no longer need to be paused
 	static bool processPausedStreams();
+
+	static PausedStatusMap buildPauseStatusMap();
+
+	static bool tryResumeStream(const AltsoundStreamInfo& stream, 
+		                        const PausedStatusMap& pauseStatusMap);
 
 	// DEBUG helper fns to print all behavior data
 	static void printBehaviorData();

@@ -141,6 +141,7 @@ typedef struct _sample_info {
 	float duck = 1.0f;
 	float gain = 1.0f;
 	std::string fname;
+	bool loop = false;
 } SampleInfo;
 
 typedef std::vector<SampleInfo> Samples;

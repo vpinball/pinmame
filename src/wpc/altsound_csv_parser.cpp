@@ -96,7 +96,7 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 		free(reader);
 		reader = NULL;
 	
-		LOG(("END: PARSE_ALTSOUND_CSV\n")); //DAR_DEBUG
+		LOG(("END: PARSE_ALTSOUND_CSV\n"));
 		return false;
 	}
 	

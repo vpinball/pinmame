@@ -84,8 +84,7 @@ protected: // data
 	std::string game_name;
 
 private: // functions
-
 private: // data
-
 };
+
 #endif // ALTSOUND_PROCESSOR_BASE_HPP

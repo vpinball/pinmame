@@ -31,31 +31,29 @@ AltsoundProcessorBase::~AltsoundProcessorBase()
 
 bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 {
-	LOG(("BEGIN: findFreeChannel()\n"));
+	//LOG(("BEGIN: findFreeChannel()\n"));
 
 	auto it = std::find(channel_stream.begin(), channel_stream.end(), nullptr);
 	if (it != channel_stream.end()) {
 		channel_out = std::distance(channel_stream.begin(), it);
 		LOG(("- Found free channel: %02u\n", channel_out));
-		LOG(("END: findFreeChannel()\n"));
+		//LOG(("END: findFreeChannel()\n"));
 		return true;
 	}
 
-	LOG(("- No free channels available!\n"));
-	LOG(("END: findFreeChannel()\n"));
+	LOG(("- ERROR: No free channels available!\n"));
+	//LOG(("END: findFreeChannel()\n"));
 	return false;
-
-	LOG(("END: findFreeChannel()\n"));
 }
 
 // ----------------------------------------------------------------------------
 
 bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_in)
 {
-	//LOG(("BEGIN: setVolume()\n")); //DAR_DEBUG
+	//LOG(("BEGIN: AltsoundProcessorBase::setVolume()\n"));
 
 	if (stream_in == BASS_NO_STREAM)
-		return false;
+		return true;
 
 	float new_vol = vol_in * global_vol * master_vol;
 	bool success = BASS_ChannelSetAttribute(stream_in, BASS_ATTRIB_VOL, new_vol);
@@ -69,7 +67,7 @@ bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_i
 			  stream_in, vol_in, global_vol, master_vol));
 	}
 
-	//LOG(("END: setVolume()\n")); //DAR_DEBUG
+	//LOG(("END: AltsoundProcessorBase::setVolume()\n"));
 	return success;
 }
 
@@ -77,14 +75,14 @@ bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_i
 
 bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* stream_out)
 {
-	//LOG(("BEGIN: createStream()\n")); //DAR_DEBUG
+	LOG(("BEGIN: AltsoundProcessorBase::createStream()\n"));
 
 	std::string short_path = getShortPath(stream_out->sample_path); // supports logging
 	unsigned int ch_idx;
 	
 	if (!findFreeChannel(ch_idx)) {
-		// No available channel found
 		LOG(("- No free channels available!\n"));
+		LOG(("END: AltsoundProcessorBase::createStream()\n"));
 		return false;
 	}
 
@@ -97,35 +95,32 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	if (hstream == BASS_NO_STREAM) {
 		// Failed to create stream
 		LOG(("- FAILED: BASS_StreamCreateFile(%s): %s\n", short_path.c_str(), get_bass_err()));
+		LOG(("END: AltsoundProcessorBase::createStream()\n"));
 		return false;
 	}
-
-	stream_out->hstream = hstream; // store hstream
 
 	// Set callback to execute when sample playback ends
 	SYNCPROC* callback = static_cast<SYNCPROC*>(syncproc_in);
+	HSYNC hsync = 0;
 
-	if (!callback) {
-		// Invalid callback
-		LOG(("- ERROR: stream_out.stream_type is unknown\n", short_path.c_str(), get_bass_err()));
-		freeStream(hstream);
-		return false;
+	if (callback) {
+		// Set sync to execute callback when sample playback ends
+		hsync = BASS_ChannelSetSync(hstream, BASS_SYNC_END | BASS_SYNC_ONETIME, 0,
+			                              callback, stream_out);
+		if (!hsync) {
+			// Failed to set sync
+			LOG(("- FAILED: BASS_ChannelSetSync(): STREAM: %u ERROR: %s\n", hstream, get_bass_err()));
+			freeStream(hstream);
+			LOG(("END: AltsoundProcessorBase::createStream()\n"));
+			return false;
+		}
 	}
-
-	// Set sync to execute callback when sample playback ends
-	HSYNC hsync = BASS_ChannelSetSync(hstream, BASS_SYNC_END | BASS_SYNC_ONETIME, 0, callback, stream_out);
-
-	if (!hsync) {
-		// Failed to set sync
-		LOG(("- FAILED: BASS_ChannelSetSync(): STREAM: %u ERROR: %s\n", hstream, get_bass_err()));
-		freeStream(hstream);
-		return false;
-	}
-
-	stream_out->hsync = hsync; // store hsync
 	LOG(("- Successfully created stream(%u) on channel(%02d)\n", hstream, ch_idx));
 
-	//LOG(("END: createStream()\n")); //DAR_DEBUG
+	stream_out->hstream = hstream; // store hstream
+	stream_out->hsync = hsync; // store hsync
+
+	LOG(("END: AltsoundProcessorBase::createStream()\n"));
 	return true;
 }
 
@@ -133,7 +128,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 
 bool AltsoundProcessorBase::freeStream(const HSTREAM hstream_in)
 {
-	//LOG(("BEGIN: freeStream()\n")); //DAR_DEBUG
+	//LOG(("BEGIN: AltsoundProcessorBase::freeStream()\n"));
 
 	bool success = BASS_StreamFree(hstream_in);
 	if (!success) {
@@ -143,7 +138,7 @@ bool AltsoundProcessorBase::freeStream(const HSTREAM hstream_in)
 		LOG(("- Successfully free'd stream(%u)\n", hstream_in));
 	}
 
-	//LOG(("END: freeStream()\n")); //DAR_DEBUG
+	//LOG(("END: AltsoundProcessorBase::freeStream()\n"));
 	return success;
 }
 
@@ -151,7 +146,7 @@ bool AltsoundProcessorBase::freeStream(const HSTREAM hstream_in)
 
 bool AltsoundProcessorBase::stopStream(HSTREAM hstream_in)
 {
-	LOG(("BEGIN: stopStream()\n"));
+	LOG(("BEGIN: AltsoundProcessorBase::stopStream()\n"));
 
 	bool success = false;
 
@@ -170,7 +165,7 @@ bool AltsoundProcessorBase::stopStream(HSTREAM hstream_in)
 		}
 	}
 
-	LOG(("END: stopStream()\n")); //DAR_DEBUG
+	LOG(("END: AltsoundProcessorBase::stopStream()\n"));
 	return success;
 }
 
@@ -201,6 +196,6 @@ bool AltsoundProcessorBase::stopAllStreams()
 std::string AltsoundProcessorBase::getShortPath(const std::string& path_in)
 {
 	std::string tmp_str = strstr(path_in.c_str(), game_name.c_str());
-	return tmp_str.empty() ? tmp_str : path_in;
+	return tmp_str.empty() ? path_in : tmp_str;
 }
 

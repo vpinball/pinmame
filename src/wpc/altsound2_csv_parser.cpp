@@ -57,23 +57,40 @@ bool Altsound2CsvParser::parse(Samples& samples)
 
 			// Read ID field (unsigned hexadecimal)
 			if (std::getline(ss, field, ','))
+			{
+				field = trim(field);
 				entry.id = std::stoul(field, nullptr, 16);
+			}
 
 			// Read TYPE field
 			if (std::getline(ss, field, ','))
+			{
+				field = trim(field);
+				field = toLower(field);
 				entry.type = field;
 
+				if (field == "music") {
+					entry.loop = true;
+				}
+			}
+
 			// Read GAIN field (float)
-			if (std::getline(ss, field, ',')) {
+			if (std::getline(ss, field, ','))
+			{
+				field = trim(field);
 				float val = std::stof(field);
 				entry.gain = val < 0.0f ? 0.0f : val > 100.0f ? 1.0f : val / 100.0f;
 			}
 
 			// Read FNAME field
-			if (std::getline(ss, field, ',')) {
+			if (std::getline(ss, field, ','))
+			{
+				field = trim(field);
+				field = toLower(field);
 				std::string sample_path = altsound_path + '\\' + field;
 				entry.fname = sample_path;
 			}
+
 
 			samples.push_back(entry);
 			LOG(("ID = %d, TYPE = %s, GAIN = %.02f, FNAME = '%s'\n" \
@@ -90,3 +107,17 @@ bool Altsound2CsvParser::parse(Samples& samples)
 	return success;
 }
 
+// ----------------------------------------------------------------------------
+// Helper function to trim whitespace from parsed field values
+// ----------------------------------------------------------------------------
+
+std::string Altsound2CsvParser::trim(const std::string& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	if (std::string::npos == first)
+	{
+		return str;
+	}
+	size_t last = str.find_last_not_of(' ');
+	return str.substr(first, (last - first + 1));
+}
