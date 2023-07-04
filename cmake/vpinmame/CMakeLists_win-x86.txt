@@ -730,7 +730,7 @@ target_include_directories(vpinmame PUBLIC
 target_link_directories(vpinmame PUBLIC
    ext/dinput
    ext/bass
-#   altsound
+   altsound
 )
 
 target_link_libraries(vpinmame
