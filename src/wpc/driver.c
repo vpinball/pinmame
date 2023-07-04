@@ -967,7 +967,6 @@ DRIVERNV(larana  )      //La Rana (1990)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 DRIVERNV(metalman)      //Metal Man (1992)
-DRIVERNV(gunshot)       //Gun Shot (1996)
 
 // ----------------
 // JAC VAN HAM
@@ -1329,6 +1328,7 @@ DRIVERNV(mach2)         // 1995 - Mach 2 // or Mach 2.0 Two ?
 DRIVERNV(mach2a)        // 1995 - Mach 2 (alternate set)
 DRIVERNV(jolypark)      // 1996 - Jolly Park
 DRIVERNV(vrnwrld)       // 1996 - Verne's World
+DRIVERNV(gunshot)       // 1996 - Gun Shot (vending machine in a pinball cabinet, no display)
 
 // ---------------
 // SPLIN BINGO
