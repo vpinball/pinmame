@@ -94,6 +94,8 @@ set_source_files_properties(
    src/win32com/VPinMAME.rc LANGUAGE RC
 )
 
+add_subdirectory(src/wpc/altsound)
+
 add_library(vpinmame SHARED
    src/artwork.c
    src/artwork.h
@@ -346,20 +348,20 @@ add_library(vpinmame SHARED
    src/window.c
    src/window.h
    src/wpc/allied.c
-   src/wpc/altsound_data.cpp
-   src/wpc/altsound_data.hpp
-   src/wpc/altsound_file_parser.cpp
-   src/wpc/altsound_file_parser.hpp
-   src/wpc/altsound_csv_parser.cpp
-   src/wpc/altsound_csv_parser.hpp
-   src/wpc/altsound2_csv_parser.cpp
-   src/wpc/altsound2_csv_parser.hpp   
-   src/wpc/altsound_processor.cpp
-   src/wpc/altsound_processor.hpp
-   src/wpc/altsound_processor_base.cpp
-   src/wpc/altsound_processor_base.hpp
-   src/wpc/altsound2_processor.cpp
-   src/wpc/altsound2_processor.hpp
+#   src/wpc/altsound_data.cpp
+#   src/wpc/altsound_data.hpp
+#   src/wpc/altsound_file_parser.cpp
+#   src/wpc/altsound_file_parser.hpp
+#   src/wpc/altsound_csv_parser.cpp
+#   src/wpc/altsound_csv_parser.hpp
+#   src/wpc/altsound2_csv_parser.cpp
+#   src/wpc/altsound2_csv_parser.hpp
+#   src/wpc/altsound_processor_base.cpp
+#   src/wpc/altsound_processor_base.hpp
+#   src/wpc/altsound_processor.cpp
+#   src/wpc/altsound_processor.hpp
+#   src/wpc/altsound2_processor.cpp
+#   src/wpc/altsound2_processor.hpp
    src/wpc/alvg.c
    src/wpc/alvg.h
    src/wpc/alvgdmd.c
@@ -545,8 +547,8 @@ add_library(vpinmame SHARED
    src/wpc/sleic.c
    src/wpc/sleic.h
    src/wpc/sleicgames.c
-   src/wpc/snd_alt.cpp
-   src/wpc/snd_alt.h
+#   src/wpc/snd_alt.cpp
+#   src/wpc/snd_alt.h
    src/wpc/snd_cmd.c
    src/wpc/snd_cmd.h
    src/wpc/sndbrd.c
@@ -725,6 +727,7 @@ target_link_directories(vpinmame PUBLIC
 )
 
 target_link_libraries(vpinmame
+   altsound
    winmm.lib
    ddraw64.lib
    dxguid64.lib
