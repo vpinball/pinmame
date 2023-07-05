@@ -1578,12 +1578,22 @@ CORE_GAMEDEFNV(m_mpac,"Mr. & Mrs. Pac-Man Pinball",1982,"Bally",by35_mBY35_61S,0
 
 #define init_m_mpaca init_m_mpac
 BY35_ROMSTARTx00(m_mpaca,"872-04_2.732",CRC(5e542882) SHA1(bec5f56cd5192e0a12ea1226a49a2b7d8eaaa5cf),
-                        "7536fn.u6",   CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
-BY61_SOUNDROMxx00(      "872-01_4.532",CRC(d21ce16d) SHA1(3ee6e2629530e7e6e4d7eac713d34c48297a1047),
-                        "872-03_5.532",CRC(8fcdf853) SHA1(7c6bffcd974d2684e7f2c69d926f6cabb53e2f90))
+                         "7536fn.u6",   CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
+BY61_SOUNDROMxx00(       "872-01_4.532",CRC(d21ce16d) SHA1(3ee6e2629530e7e6e4d7eac713d34c48297a1047),
+                         "872-03_5.532",CRC(8fcdf853) SHA1(7c6bffcd974d2684e7f2c69d926f6cabb53e2f90))
 BY35_ROMEND
 #define input_ports_m_mpaca input_ports_m_mpac
 CORE_CLONEDEFNV(m_mpaca,m_mpac,"Mr. & Mrs. Pac-Man Pinball (Free Play)",2004,"Bally / Oliver",by35_mBY35_61S,0) // rev. 1
+
+// plays a "startup" sound, no idea what else was changed?!
+#define init_m_mpacb init_m_mpac
+BY35_ROMSTARTx00(m_mpacb,"U2",          CRC(a697971a) SHA1(e45cbb7822ac159c447877c4c837be5aaa4ac675),
+                         "720-53_6.732",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
+BY61_SOUNDROMxx00(       "872-01_4.532",CRC(d21ce16d) SHA1(3ee6e2629530e7e6e4d7eac713d34c48297a1047),
+                         "872-03_5.532",CRC(8fcdf853) SHA1(7c6bffcd974d2684e7f2c69d926f6cabb53e2f90))
+BY35_ROMEND
+#define input_ports_m_mpacb input_ports_m_mpac
+CORE_CLONEDEFNV(m_mpacb,m_mpac,"Mr. & Mrs. Pac-Man Pinball (alternate version)",????,"Bally",by35_mBY35_61S,0)
 
 /*---------------------------------------------------
 / BMX (BY35-888: 11/82) - Uses AS2518-51 Sound Board

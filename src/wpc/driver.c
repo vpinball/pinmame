@@ -281,6 +281,7 @@ DRIVERNV(rapidfir)      //BY35-869: 04/82 Rapid Fire
 DRIVERNV(rapidfia)      //          09/05 Rapid Fire (Free Play)
 DRIVERNV(m_mpac  )      //BY35-872: 04/82 Mr. & Mrs. Pac-Man Pinball
 DRIVERNV(m_mpaca )      //          10/04 Mr. & Mrs. Pac-Man Pinball (Free Play)
+DRIVERNV(m_mpacb )      //          ??/?? Mr. & Mrs. Pac-Man Pinball (alternate version)
 DRIVERNV(spectrum)      //BY35-868: 06/82 Spectrum
 DRIVERNV(spectru4)      //          06/82 Spectrum (Rev. 4)
 DRIVERNV(spectrua)      //          10/04 Spectrum (Free Play)
