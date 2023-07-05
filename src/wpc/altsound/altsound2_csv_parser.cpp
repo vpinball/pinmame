@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 extern BehaviorInfo music_behavior;
 extern BehaviorInfo callout_behavior;
@@ -36,7 +37,6 @@ Altsound2CsvParser::Altsound2CsvParser(const std::string& path_in)
 bool Altsound2CsvParser::parse(Samples& samples)
 {
 	LOG(("BEGIN: Altsound2CsvParser::parse()\n"));
-	bool success = false;
 
 	std::ifstream file(filename);
 	if (!file.is_open()) {
@@ -45,10 +45,19 @@ bool Altsound2CsvParser::parse(Samples& samples)
 	}
 
 	std::string line;
-	// DAR_TODO make this case-insensitive
+
 	// skip header row
 	std::getline(file, line);
 
+	std::unordered_set<std::string> allowed_types = {
+		"music",
+		"callout",
+		"solo",
+		"sfx",
+		"overlay" 
+	};
+	
+	bool success = true;
 	try {
 		while (std::getline(file, line)) {
 			std::stringstream ss(line);
@@ -69,6 +78,12 @@ bool Altsound2CsvParser::parse(Samples& samples)
 				field = toLower(field);
 				entry.type = field;
 
+				if (allowed_types.find(field) == allowed_types.end()) {
+					LOG(("- ERROR: %s is not a known sample type\n"));
+					success = false;
+					break;
+				}
+
 				if (field == "music") {
 					entry.loop = true;
 				}
@@ -85,18 +100,22 @@ bool Altsound2CsvParser::parse(Samples& samples)
 			// Read FNAME field
 			if (std::getline(ss, field, ','))
 			{
+				if (field.empty()) {
+					LOG(("ERROR: sample filename is blank\n"));
+					success = false;
+					break;
+				}
+
 				field = trim(field);
 				field = toLower(field);
 				std::string sample_path = altsound_path + '\\' + field;
 				entry.fname = sample_path;
 			}
 
-
 			samples.push_back(entry);
 			LOG(("ID = %d, TYPE = %s, GAIN = %.02f, FNAME = '%s'\n" \
 				, entry.id, entry.type.c_str(), entry.gain, entry.fname.c_str()));
 		}
-		success = true;
 	}
 	catch (std::exception e) {
 		LOG(("FAILED: Altsound2CsvParser::parse(): %s", e.what()));

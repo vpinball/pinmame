@@ -14,10 +14,8 @@
 // Standard Library includes
 #include <cctype>
 #include <map>
-//#include <unordered_map>
 
 // Local includes
-//#include "..\ext\bass\bass.h"
 #include "bass.h"
 
 // Instance of global thread synchronization mutex
@@ -38,6 +36,8 @@ BehaviorInfo overlay_behavior;
 
 // namespace resolution
 using std::string;
+
+AltsoundLogger logger("altsound.log");
 
 // ---------------------------------------------------------------------------
 // Helper function to translate AltsoundSample type constants to strings

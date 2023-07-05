@@ -36,6 +36,7 @@
 #include "altsound_file_parser.hpp"
 #include "inipp.h"
 #include "altsound_data.hpp"
+#include "altsound_logger.hpp"
 
 // namespace scope resolution
 using std::string;

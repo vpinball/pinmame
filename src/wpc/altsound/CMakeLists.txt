@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 3.16)
 #
 #project(vpinmame VERSION ${PROJECT_VERSION})
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
 
 add_compile_definitions(
@@ -37,6 +37,7 @@ add_library(altsound STATIC
    altsound_csv_parser.hpp
    altsound2_csv_parser.cpp
    altsound2_csv_parser.hpp
+   altsound_logger.hpp
    altsound_processor_base.cpp
    altsound_processor_base.hpp
    altsound_processor.cpp
@@ -70,7 +71,7 @@ target_link_directories(altsound PUBLIC
    ext/bass
 )
 
-target_link_libraries(altsound
+target_link_libraries(altsound PUBLIC
    version.lib
    bass.lib
 )

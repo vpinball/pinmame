@@ -21,6 +21,8 @@
 #include <mutex>
 #include <vector>
 
+#include "altsound_logger.hpp"
+
 #define BASS_NO_STREAM 0
 #define ALT_MAX_CHANNELS 16
 
@@ -28,25 +30,12 @@
 // Logging support
 // ----------------------------------------------------------------------------
 
-#if (defined(_DEBUG) && defined(VPINMAME))
-  #ifdef __cplusplus
-    extern "C" {
-  #endif
-	extern void logerror(const char *text, ...);
-  #ifdef __cplusplus
-  }
-  #endif
+extern AltsoundLogger logger;  // global logger instance
 
 #ifdef LOG
   #undef LOG
 #endif
-  #define LOG(x) logerror x;
-#else
-  #ifdef LOG
-    #undef LOG
-  #endif
-  #define LOG(x)
-#endif // VPinMAME DEBUG
+#define LOG(x) logger.log x;
 
 // ----------------------------------------------------------------------------
 // Global Variables
