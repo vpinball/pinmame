@@ -1,5 +1,6 @@
 #include "altsound_csv_parser.hpp"
 
+// Std Library includes
 #include <memory>
 #include <string.h>
 #include <unistd.h>
@@ -7,12 +8,12 @@
 #ifdef __cplusplus
   extern "C" {
 #endif
-
-#include <dirent.h>
-
+  #include <dirent.h>
 #ifdef __cplusplus
   }
 #endif
+
+#include "altsound_logger.hpp"
 
 #define CSV_MAX_LINE_LENGTH 512
 #define CSV_SUCCESS 0
@@ -26,12 +27,12 @@
 // Support for lookup-based altsound (CSV)
 const char* path_table = "\\altsound.csv";
 
+extern AltsoundLogger alog;
+
 AltsoundCsvParser::AltsoundCsvParser(const char *gname_in)
 : reader(NULL),
   g_szGameName(gname_in),
   filename(NULL)
-//  path_main(path_main_in)
-//  cvpmd(cvpmd_in)
 {
 	char* lpHelp = cvpmd;
 	char* lpSlash = NULL;
@@ -78,6 +79,9 @@ AltsoundCsvParser::AltsoundCsvParser(const char *gname_in)
 //DAR_TODO add logging to CSV parsing functions
 bool AltsoundCsvParser::parse(PinSamples* psd)
 {
+	ALT_DEBUG(0, "BEGIN AltsoundCsvParser::parse()");
+	INDENT;
+
 	reader = (CsvReader*)malloc(sizeof(CsvReader));
 
 	reader->f = fopen(filename, "r");
@@ -92,16 +96,17 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 
 	// File opened, read header
 	if (csv_read_header() != CSV_SUCCESS) {
-		LOG(("failed to read CSV header\n"));
+		ALT_ERROR(0, "FAILED csv_read_header()");
 		free(reader);
 		reader = NULL;
 	
-		LOG(("END: PARSE_ALTSOUND_CSV\n"));
+		OUTDENT;
+		ALT_DEBUG(0, "END AltsoundCsvParser::parse()");
 		return false;
 	}
 	
 	int colID, colCHANNEL, colDUCK, colGAIN, colLOOP, colSTOP, colFNAME;
-	LOG(("num_headers: %d\n", reader->n_header_fields));
+	ALT_INFO(0, "num_headers: %d\n", reader->n_header_fields);
 	
 	colID = csv_get_colnumber_for_field("ID");
 	colCHANNEL = csv_get_colnumber_for_field("CHANNEL");
@@ -148,10 +153,9 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 		int val = 0;
 		const int err = csv_read_record();
 		if (err != CSV_SUCCESS) {
-			LOG(("FAILED TO READ CSV RECORD %d\n", i));
+			ALT_ERROR(1, "FAILED csv_read_record()");
 			psd->num_files = i;
 			return false;
-//			break;
 		}
 	
 		csv_get_hex_field(colID, &val);
@@ -180,17 +184,19 @@ bool AltsoundCsvParser::parse(PinSamples* psd)
 		psd->files_with_subpath[i] = (char*)malloc(strlen(tmpPath) + 1);
 		strcpy(psd->files_with_subpath[i], tmpPath);
 	
-		LOG(("ID = %d, CHANNEL = %d, DUCK = %.2f, GAIN = %.2f, LOOP = %d, STOP = %d, FNAME = '%s'\n" \
-			, psd->ID[i], psd->channel[i], psd->ducking[i], psd->gain[i], psd->loop[i] \
-			, psd->stop[i], psd->files_with_subpath[i]));
+		ALT_INFO(1, "ID = %d, CHANNEL = %d, DUCK = %.2f, GAIN = %.2f, LOOP = %d, STOP = %d, FNAME = '%s'\n" \
+			      , psd->ID[i], psd->channel[i], psd->ducking[i], psd->gain[i], psd->loop[i] \
+			      , psd->stop[i], psd->files_with_subpath[i]);
 	}
 	
 	csv_close();
-	LOG(("FOUND %d SAMPLES\n", psd->num_files));
+	ALT_INFO(0, "Found %d samples", psd->num_files);
 	
 	// Clean up allocated memory
     //DAR_TODO
 
+	OUTDENT;
+	ALT_DEBUG(0, "END AltsoundCsvParser::parse()");
 	return true;
 }
 

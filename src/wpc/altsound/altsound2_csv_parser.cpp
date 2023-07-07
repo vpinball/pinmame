@@ -15,11 +15,15 @@
 #include <vector>
 #include <unordered_set>
 
+#include "altsound_logger.hpp"
+
 extern BehaviorInfo music_behavior;
 extern BehaviorInfo callout_behavior;
 extern BehaviorInfo sfx_behavior;
 extern BehaviorInfo solo_behavior;
 extern BehaviorInfo overlay_behavior;
+
+extern AltsoundLogger alog;
 
 // ----------------------------------------------------------------------------
 // CTOR/DTOR
@@ -34,13 +38,17 @@ Altsound2CsvParser::Altsound2CsvParser(const std::string& path_in)
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2CsvParser::parse(Samples& samples)
+bool Altsound2CsvParser::parse(std::vector<SampleInfo>& samples_out)
 {
-	LOG(("BEGIN: Altsound2CsvParser::parse()\n"));
+	ALT_DEBUG(0, "BEGIN Altsound2CsvParser::parse()");
+	INDENT;
 
 	std::ifstream file(filename);
 	if (!file.is_open()) {
-		LOG(("ERROR: Unable to open file: %s\n", filename.c_str()));
+		ALT_ERROR(0, "Unable to open file: %s", filename.c_str());
+
+		OUTDENT;
+		ALT_DEBUG(0, "END Altsound2CsvParser::parse()");
 		return false;
 	}
 
@@ -75,11 +83,12 @@ bool Altsound2CsvParser::parse(Samples& samples)
 			if (std::getline(ss, field, ','))
 			{
 				field = trim(field);
-				field = toLower(field);
+				//field = toLower(field);
+				std::transform(field.begin(), field.end(), field.begin(), ::tolower);
 				entry.type = field;
 
 				if (allowed_types.find(field) == allowed_types.end()) {
-					LOG(("- ERROR: %s is not a known sample type\n"));
+					ALT_ERROR(1, "%s is not a known sample type");
 					success = false;
 					break;
 				}
@@ -101,42 +110,29 @@ bool Altsound2CsvParser::parse(Samples& samples)
 			if (std::getline(ss, field, ','))
 			{
 				if (field.empty()) {
-					LOG(("ERROR: sample filename is blank\n"));
+					ALT_ERROR(1, "Sample filename is blank");
 					success = false;
 					break;
 				}
 
 				field = trim(field);
-				field = toLower(field);
+				std::transform(field.begin(), field.end(), field.begin(), ::tolower);
 				std::string sample_path = altsound_path + '\\' + field;
 				entry.fname = sample_path;
 			}
 
-			samples.push_back(entry);
-			LOG(("ID = %d, TYPE = %s, GAIN = %.02f, FNAME = '%s'\n" \
-				, entry.id, entry.type.c_str(), entry.gain, entry.fname.c_str()));
+			samples_out.push_back(entry);
+			ALT_DEBUG(0, "ID = %d, TYPE = %s, GAIN = %.02f, FNAME = '%s'", entry.id,
+				 entry.type.c_str(), entry.gain, entry.fname.c_str());
 		}
 	}
 	catch (std::exception e) {
-		LOG(("FAILED: Altsound2CsvParser::parse(): %s", e.what()));
+		ALT_ERROR(0, "Altsound2CsvParser::parse(): %s", e.what());
 	}
 
 	file.close();
-	LOG(("BEGIN: Altsound2CsvParser::parse()\n"));
+
+	OUTDENT;
+	ALT_DEBUG(0, "END Altsound2CsvParser::parse()");
 	return success;
-}
-
-// ----------------------------------------------------------------------------
-// Helper function to trim whitespace from parsed field values
-// ----------------------------------------------------------------------------
-
-std::string Altsound2CsvParser::trim(const std::string& str)
-{
-	size_t first = str.find_first_not_of(' ');
-	if (std::string::npos == first)
-	{
-		return str;
-	}
-	size_t last = str.find_last_not_of(' ');
-	return str.substr(first, (last - first + 1));
 }

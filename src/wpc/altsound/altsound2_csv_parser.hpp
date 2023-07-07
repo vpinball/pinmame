@@ -30,7 +30,7 @@ public: // methods
 	// Standard constructor
 	Altsound2CsvParser(const std::string& path_in);
 
-	bool parse(Samples& psd);
+	bool parse(std::vector<SampleInfo>& samples_out);
 
 public: // data
 
@@ -43,9 +43,6 @@ protected:
 	Altsound2CsvParser(Altsound2CsvParser&) {/* not used */ };
 
 private: // functions
-
-	// trim any whitespace from field values
-	std::string trim(const std::string& str);
 
 private: // data
 

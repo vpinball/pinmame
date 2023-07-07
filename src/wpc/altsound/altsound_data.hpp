@@ -15,27 +15,16 @@
 #pragma once
 #endif
 
-// Library includes
+// Std Library includes
 #include <array>
 #include <bitset>
 #include <mutex>
 #include <vector>
 
-#include "altsound_logger.hpp"
-
 #define BASS_NO_STREAM 0
 #define ALT_MAX_CHANNELS 16
 
-// ----------------------------------------------------------------------------
-// Logging support
-// ----------------------------------------------------------------------------
-
-extern AltsoundLogger logger;  // global logger instance
-
-#ifdef LOG
-  #undef LOG
-#endif
-#define LOG(x) logger.log x;
+#define LOG // DAR_TODO remove when logging converted
 
 // ----------------------------------------------------------------------------
 // Global Variables
@@ -64,9 +53,7 @@ struct _stream_info {
 	_stream_info() : hstream(0), hsync(0), stream_type(static_cast<AltsoundSampleType>(0)), \
 		channel_idx(0), sample_path(), ducking(1.0f), stop_music(false), \
 		loop(0), gain(1.0f) {}
-	~_stream_info() {
-		LOG(("Destroying HSTREAM: %u\n", hstream));
-	}
+	~_stream_info();
 
 	unsigned long hstream;
 	unsigned long hsync;
@@ -122,7 +109,6 @@ typedef struct _behavior_info {
 	float overlay_duck_vol = 1.0f;
 } BehaviorInfo;
 
-
 // Structure for holding Altsound2 sample data
 typedef struct _sample_info {
 	unsigned int id;
@@ -132,8 +118,6 @@ typedef struct _sample_info {
 	std::string fname;
 	bool loop = false;
 } SampleInfo;
-
-typedef std::vector<SampleInfo> Samples;
 
 // ---------------------------------------------------------------------------
 // Helper function prototypes
@@ -148,10 +132,10 @@ std::string toString(AltsoundSampleType sampleType);
 // tranlsate string representation of AltsoundSample to enum value
 AltsoundSampleType toSampleType(const std::string& type_in);
 
-// convert provided string to uppercase
-std::string toUpper(const std::string& string_in);
+// determine if the given path exists
+bool dir_exists(const std::string& path_in);
 
-// convert provided string to lowercase
-std::string toLower(const std::string& string_in);
+// trim leading and trailing whitespace from string
+std::string trim(const std::string& str);
 
 #endif // ALTSOUND_DATA_H

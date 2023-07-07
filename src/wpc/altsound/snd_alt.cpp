@@ -11,10 +11,10 @@
   #define CURRENT_DIRECTORY getcwd
 #endif
 
+// Std Library includes
 #include <algorithm>
 #include <time.h>
 #include <string.h>
-#include <fstream>
 #include <ostream>
 #include <sys/stat.h>
 
@@ -26,14 +26,14 @@
   }
 #endif
 
+// local includes
 #include "osdepend.h"
 #include "gen.h"
-
-//#include "altsound2_processor.hpp"
 #include "altsound_processor_base.hpp"
 #include "altsound_processor.hpp"
 #include "altsound2_processor.hpp"
 #include "altsound_file_parser.hpp"
+#include "altsound_ini_processor.hpp"
 #include "inipp.h"
 #include "altsound_data.hpp"
 #include "altsound_logger.hpp"
@@ -41,6 +41,15 @@
 // namespace scope resolution
 using std::string;
 using std::endl;
+
+AltsoundLogger alog("altsound.log");
+
+// Data structure to hold sample behaviors
+BehaviorInfo music_behavior;
+BehaviorInfo callout_behavior;
+BehaviorInfo sfx_behavior;
+BehaviorInfo solo_behavior;
+BehaviorInfo overlay_behavior;
 
 // windef.h "min" conflicts with std::min
 #ifdef min
@@ -67,21 +76,15 @@ extern "C" char g_szGameName[256];
 CmdData cmds;
 
 // Initialization support
-/*static*/ BOOL is_initialized = FALSE;
-/*static*/ BOOL run_once = true;
-/*static*/ BOOL altsound_stable = TRUE;
+BOOL is_initialized = FALSE;
+BOOL run_once = true;
+BOOL altsound_stable = TRUE;
 
 // Processing instance to specialize command handling
-/*static*/ AltsoundProcessorBase *processor = NULL;
+AltsoundProcessorBase *processor = NULL;
 
 // Use ROM control commands to control master volume
 bool use_rom_ctrl = true;
-
-extern BehaviorInfo music_behavior;
-extern BehaviorInfo callout_behavior;
-extern BehaviorInfo sfx_behavior;
-extern BehaviorInfo solo_behavior;
-extern BehaviorInfo overlay_behavior;
 
 // ---------------------------------------------------------------------------
 // Function prototypes
@@ -90,35 +93,7 @@ extern BehaviorInfo overlay_behavior;
 // get path to VPinMAME
 std::string get_vpinmame_path();
 
-// Helper function to check if supplied path exists
-bool dir_exists(const string& path_in);
-
-// Create altsound.ini file if it doesn't exist
-bool create_altsound_ini(const string& path_in);
-
-// DAR@20230623
-// This is in support of altsound.ini file creation for packages that don't
-// already have one (legacy).  It works in order of precedence:
-//
-//  1. presence of altsound2.csv
-//  2. presence of altsound.csv
-//	3. presense of PinSound directory structure
-//
-// Once the .ini file is created, it can be modified to adjust preference.
-//
-// determine altsound format from installed data
-string get_altound_format(const string& path_in);
-
-// Parse the altsound ini file
-bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctrl_out);
-
-typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
-
-bool parseBehaviorValue(const IniSection& section, const std::string& key,
-	                    std::bitset<5>& behavior);
-bool parseVolumeValue(const IniSection& section, const std::string& key, float& volume);
-
-std::string trim(const std::string& str);
+//std::string trim(const std::string& str);
 
 // ---------------------------------------------------------------------------
 // Functional code
@@ -126,7 +101,9 @@ std::string trim(const std::string& str);
 
 extern "C" void alt_sound_handle(int boardNo, int cmd)
 {
-	LOG(("\nBEGIN: alt_sound_handle()\n"));
+	ALT_DEBUG(0, "");
+	ALT_DEBUG(0, "BEGIN alt_sound_handle()");
+	INDENT;
 
 	if (!is_initialized && altsound_stable) {
 		is_initialized = alt_sound_init(&cmds);
@@ -134,8 +111,10 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	}
 
 	if (!is_initialized || !altsound_stable) {
-		LOG(("ERROR: Altsound unstable. Processing skipped.\n"));
-		LOG(("END: alt_sound_handle()\n"));
+		ALT_ERROR(0, "Altsound unstable. Processing skipped.");
+
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_handle()");
 		return;
 	}
 
@@ -145,7 +124,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	while (attenuation++ < 0) {
 		master_vol /= 1.122018454f; // = (10 ^ (1/20)) = 1dB
 	}
-	LOG(("- Master Volume (Post Attenuation): %f\n ", master_vol));
+	ALT_DEBUG(0, "Master Volume (Post Attenuation): %.02f", master_vol);
 
 	cmds.cmd_counter++;
 
@@ -172,50 +151,53 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 		cmds.stored_command = cmd;
 
 		if (cmds.cmd_filter) {
-			LOG(("- Command filtered: %04X\n", cmd));
+			ALT_DEBUG(0, "Command filtered: %04X", cmd);
 		}
 
 		if ((cmds.cmd_counter & 1) != 0) {
-			LOG(("- Command incomplete: %04X\n", cmd));
+			ALT_DEBUG(0, "Command incomplete: %04X", cmd);
 		}
 		
-		LOG(("END: alt_sound_handle\n"));
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_handle");
 		return;
 	}
-	LOG(("- Command complete. Processing...\n"));
+	ALT_DEBUG(0, "Command complete. Processing...");
 
 	// combine stored command with the current
 	unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
 
 	// Handle the resulting command
 	if (!processor->handleCmd(cmd_combined)) {
-		LOG(("- FAILED: processor::handleCmd()\n"));
+		ALT_WARNING(0, "FAILED processor::handleCmd()");
 
 		postprocess_commands(cmd_combined);
-
 		
-		LOG(("END: alt_sound_handle()\n"));
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_handle()");
 		return;
 	}
-	LOG(("- SUCCESS: processor::handleCmd()\n"));
+	ALT_INFO(0, "SUCCESS processor::handleCmd()");
 
 	//DAR@20230522 I don't know what this does yet
 	postprocess_commands(cmd_combined);
-
 	
-	LOG(("END: alt_sound_handle()\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END alt_sound_handle()");
+	ALT_DEBUG(0, "");
 }
 
 // ---------------------------------------------------------------------------
 
 BOOL alt_sound_init(CmdData* cmds_out)
 {
-	LOG(("BEGIN: alt_sound_init()\n"));
+	ALT_DEBUG(0, "BEGIN alt_sound_init()");
+	INDENT;
 
 	// DAR@20230616
 	// This shouldn't happen, so if it does, log it
 	if (processor) {
-		LOG(("ERROR: processor already defined\n"));
+		ALT_ERROR(0, "Processor already defined");
 		delete processor;
 		processor = NULL;
 	}
@@ -231,19 +213,26 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	if (!altsound_path.empty()) {
 		altsound_path += "\\altsound\\";
 		altsound_path += g_szGameName;
-		LOG(("- Path to altsound: %s\n", altsound_path.c_str()));
+		ALT_INFO(0, "Path to altsound: %s", altsound_path.c_str());
 	}
 	else {
-		LOG(("FAILED: get_vpinmame_path()\n"));
+		ALT_ERROR(0, "VPinMAME not found");
+
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_init()");
 		return false;
 	}
 
 	// parse .ini file
+	AltsoundIniProcessor ini_proc;
 	string format;
 	bool rom_ctrl = true;
 
-	if (!parse_altsound_ini(altsound_path, format, rom_ctrl)) {
-		LOG(("FAILED: parse_altsound_ini(%s)", altsound_path.c_str()));
+	if (!ini_proc.parse_altsound_ini(altsound_path, format, rom_ctrl)) {
+		ALT_ERROR(0, "Failed to parse_altsound_ini(%s)", altsound_path.c_str());
+		
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
 	}
 
@@ -258,16 +247,21 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		processor = new AltsoundProcessor(g_szGameName, format);
 	}
 	else {
-		LOG(("ERROR: Unknown AltSound format: %s\n", format.c_str()));
+		ALT_ERROR(0, "Unknown AltSound format: %s", format.c_str());
+
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
 	}
 
 	if (!processor) {
-		LOG(("FAILED: Unable to create AltSound processor\n"));
-		LOG(("END: alt_sound_init()\n"));
+		ALT_ERROR(0, "FAILED: Unable to create AltSound processor");
+		
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
 	}
-	LOG(("SUCCESS: %s processor created\n", format.c_str()));
+	ALT_INFO(0, "%s processor created", format.c_str());
 
 	global_vol = 1.0f;
 	master_vol = 1.0f;
@@ -285,7 +279,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		DSidx++; // as 0 is nosound //!! mapping is otherwise the same or not?!
 	if (!BASS_Init(DSidx, 44100, 0, /*g_pvp->m_hwnd*/NULL, NULL)) //!! get sample rate from VPM? and window?
 	{
-		LOG(("- BASS initialization error: %s\n", get_bass_err()));
+		ALT_ERROR(0, "BASS initialization error: %s", get_bass_err());
 		//sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
 	}
 
@@ -300,18 +294,19 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	//	int ch;
 	//	// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
 	//	// required for WPC89 sound board
-	//	LOG(("MUTING INTERNAL PINMAME MIXER\n"));
+	//	LOG(("MUTING INTERNAL PINMAME MIXER"));
 	//	for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) {
 	//		const char* mixer_name = mixer_get_name(ch);
 	//		if (mixer_name != NULL)	{
 	//			mixer_set_volume(ch, 0);
 	//		}
 	//		else {
-	//			LOG(("MIXER_NAME (Channel %d) IS NULL\n", ch));
+	//			LOG(("MIXER_NAME (Channel %d) IS NULL", ch));
 	//		}
 	//	}
 
-	LOG(("END: alt_sound_init()\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END alt_sound_init()");
 	return TRUE;
 }
 
@@ -319,7 +314,8 @@ BOOL alt_sound_init(CmdData* cmds_out)
 
 extern "C" void alt_sound_exit() {
 	//DAR_TODO clean up internal storage?
-	LOG(("BEGIN: alt_sound_exit()\n"));
+	ALT_DEBUG(0, "BEGIN alt_sound_exit()");
+	INDENT;
 
 	// reset static variables
 	static CmdData cmds;
@@ -341,22 +337,24 @@ extern "C" void alt_sound_exit() {
 	// up resources that are still held by the processor.  If this is called
 	// first, it will cause an error to be logged when shutting down
 	if (BASS_Free() == FALSE) {
-		LOG(("- FAILED: BASS_Free(): %s\n", get_bass_err()));
+		ALT_ERROR(0, "FAILED BASS_Free(): %s", get_bass_err());
 	}
 	else {
-		LOG(("- SUCCESS: BASS_Free()\n"));
+		ALT_INFO(0, "SUCCESS BASS_Free()");
 	}
 
-	LOG(("END: alt_sound_exit()\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END alt_sound_exit()");
 }
 
 // ---------------------------------------------------------------------------
 
 extern "C" void alt_sound_pause(BOOL pause) {
-	LOG(("BEGIN: alt_sound_pause()\n"));
+	ALT_DEBUG(0, "BEGIN alt_sound_pause()");
+	INDENT;
 
 	if (pause) {
-		LOG(("- Pausing stream playback (ALL)\n"));
+		ALT_INFO(0, "Pausing stream playback (ALL)");
 
 		// Pause all channels
 		for (int i = 0; i < ALT_MAX_CHANNELS; ++i) {
@@ -366,16 +364,16 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			HSTREAM stream = channel_stream[i]->hstream;
 			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PLAYING) {
 				if (!BASS_ChannelPause(stream)) {
-					LOG(("- FAILED: BASS_ChannelPause(%u): %s\n", stream, get_bass_err()));
+					ALT_WARNING(0, "FAILED BASS_ChannelPause(%u): %s", stream, get_bass_err());
 				}
 				else {
-					LOG(("- SUCCESS: BASS_ChannelPause(%u)\n", stream));
+					ALT_INFO(0, "SUCCESS BASS_ChannelPause(%u)", stream);
 				}
 			}
 		}
 	}
 	else {
-		LOG(("- Resuming stream playback (ALL)\n"));
+		ALT_INFO(0, "Resuming stream playback (ALL)");
 
 		// Resume all channels
 		for (int i = 0; i < ALT_MAX_CHANNELS; ++i) {
@@ -385,27 +383,29 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			HSTREAM stream = channel_stream[i]->hstream;
 			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PAUSED) {
 				if (!BASS_ChannelPlay(stream, 0)) {
-					LOG(("- FAILED: BASS_ChannelPlay(%u): %s\n", stream, get_bass_err()));
+					ALT_WARNING(0, "FAILED BASS_ChannelPlay(%u): %s", stream, get_bass_err());
 				}
 				else {
-					LOG(("- SUCCESS: BASS_ChannelPlay(%u)\n", stream));
+					ALT_INFO(0, "SUCCESS BASS_ChannelPlay(%u)", stream);
 				}
 			}
 		}
 	}
 
-	LOG(("END: alt_sound_pause()\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END alt_sound_pause()");
 }
 
 // ---------------------------------------------------------------------------
 
 void preprocess_commands(CmdData* cmds_out, int cmd_in)
 {
-	LOG(("BEGIN: preprocess_commands()\n"));
+	ALT_DEBUG(0, "BEGIN preprocess_commands()");
+	INDENT;
 
 	// Get hardware generation
 	UINT64 hardware_gen = core_gameData->gen;
-	LOG(("- MAME_GEN: %d\n", hardware_gen));
+	ALT_DEBUG(0, "MAME_GEN: %d", hardware_gen);
 
 	// syntactic candy
 	unsigned int* cmd_buffer = cmds_out->cmd_buffer;
@@ -418,7 +418,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WPC95DCS) ||
 		(hardware_gen == GEN_WPC95))
 	{
-		LOG(("Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95\n"));
+		ALT_DEBUG(0, "Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95");
 
 		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA)) // change volume?
 			||
@@ -430,11 +430,11 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 				// appear to work correctly in all cases. 
 				if (use_rom_ctrl) {
 					global_vol = std::min((float)cmd_buffer[1] / 127.f, 1.0f);
-					LOG(("- Change volume %.2f\n", global_vol));
+					ALT_INFO(0, "Change volume %.02f", global_vol);
 				}
 			}
 			else
-				LOG(("- filtered command %02X %02X %02X %02X\n", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]));
+				ALT_DEBUG(0, "filtered command %02X %02X %02X %02X", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
 
 			for (int i = 0; i < ALT_MAX_CMDS; ++i) {
 				cmd_buffer[i] = ~0;
@@ -451,7 +451,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WPCDMD) || // remaps everything to 16bit, a bit stupid maybe
 		(hardware_gen == GEN_WPCFLIPTRON))
 	{
-		LOG(("- Hardware Generation: GEN_WPCALPHA_2, GEN_WPCDMD, GEN_WPCFLIPTRON\n"));
+		ALT_DEBUG(0, "Hardware Generation: GEN_WPCALPHA_2, GEN_WPCDMD, GEN_WPCFLIPTRON");
 
 		*cmd_filter = 0;
 		if ((cmd_buffer[2] == 0x79) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
@@ -461,7 +461,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 			// appear to work correctly in all cases. 
 			if (use_rom_ctrl) {
 				global_vol = std::min((float)cmd_buffer[1] / 127.f, 1.0f);
-				LOG(("- Change volume %.2f\n", global_vol));
+				ALT_INFO(0, "Change volume %.02f", global_vol);
 			}
 
 			for (int i = 0; i < ALT_MAX_CMDS; ++i)
@@ -490,7 +490,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_S11B2) ||
 		(hardware_gen == GEN_S11C))
 	{
-		LOG(("- Hardware Generation: GEN_WPCALPHA_1, GEN_S11, GEN_S11X, GEN_S11B2, GEN_S11C\n"));
+		ALT_DEBUG(0, "Hardware Generation: GEN_WPCALPHA_1, GEN_S11, GEN_S11X, GEN_S11B2, GEN_S11C");
 
 		if (cmd_in != cmd_buffer[1]) //!! some stuff is doubled or tripled -> filter out?
 		{
@@ -506,7 +506,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_DEDMD64) ||
 		(hardware_gen == GEN_DE))        // this one just tested with BTTF so far
 	{
-		LOG(("- Hardware Generation: GEN_DEDMD16, GEN_DEDMD32, GEN_DEDMD64, GEN_DE\n"));
+		ALT_DEBUG(0, "Hardware Generation: GEN_DEDMD16, GEN_DEDMD32, GEN_DEDMD64, GEN_DE");
 
 		if (cmd_in != 0xFF && cmd_in != 0x00) // 8 bit command
 		{
@@ -527,7 +527,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WS_1) ||
 		(hardware_gen == GEN_WS_2))
 	{
-		LOG(("- Hardware Generation: GEN_WS, GEN_WS_1, GEN_WS_2\n"));
+		ALT_DEBUG(0, "Hardware Generation: GEN_WS, GEN_WS_1, GEN_WS_2");
 
 		*cmd_filter = 0;
 		if (cmd_buffer[1] == 0xFE)
@@ -539,7 +539,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 				// appear to work correctly in all cases. 
 				if (use_rom_ctrl) {
 					global_vol = std::min((float)cmd_buffer[1] / 127.f, 1.0f);
-					LOG(("- Change volume %.2f\n", global_vol));
+					ALT_INFO(0, "Change volume %.02f", global_vol);
 				}
 
 				for (int i = 0; i < ALT_MAX_CMDS; ++i)
@@ -560,17 +560,19 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 			*cmd_counter = 1;
 	}
 	
-	LOG(("END: preprocess_commands()\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END preprocess_commands()");
 }
 
 // ---------------------------------------------------------------------------
 
 void postprocess_commands(const unsigned int combined_cmd) {
-	LOG(("BEGIN: postprocess_commands()\n"));
+	ALT_DEBUG(0, "BEGIN postprocess_commands()");
+	INDENT;
 
 	// Get hardware generation
 	UINT64 hardware_gen = core_gameData->gen;
-	LOG(("- MAME_GEN: %d\n", hardware_gen));
+	ALT_DEBUG(0, "MAME_GEN: %d", hardware_gen);
 
 	if (hardware_gen == GEN_WPCDCS
 		|| hardware_gen == GEN_WPCSECURITY
@@ -579,7 +581,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	{
 		if (combined_cmd == 0x03E3) // stop music
 		{
-			LOG(("- stopping MUSIC(2)\n"));
+			ALT_INFO(0, "Stopping MUSIC(2)");
 			processor->stopMusic();
 		}
 	}
@@ -590,7 +592,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	{
 		if ((combined_cmd == 0x0018 || combined_cmd == 0x0023)) // stop music //!! ???? 0x0019??
 		{
-			LOG(("- stopping MUSIC(3)\n"));
+			ALT_INFO(0, "Stopping MUSIC(3)");
 			processor->stopMusic();
 		}
 	}
@@ -601,76 +603,13 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	{
 		if (((combined_cmd == 0x0000 || (combined_cmd & 0xf0ff) == 0xf000))) // stop music
 		{
-			LOG(("- stopping MUSIC(4)\n"));
+			ALT_INFO(0, "Stopping MUSIC(4)");
 			processor->stopMusic();
 		}
 	}
 	
-	LOG(("END: postprocess_commands()\n"));
-}
-
-// ---------------------------------------------------------------------------
-// Helper function to determine AltSound format
-// ---------------------------------------------------------------------------
-
-string get_altound_format(const string& path_in)
-{
-	LOG(("BEGIN: get_altsound_format()\n"));
-
-	bool using_altsound = false;
-	bool using_altsound2 = false;
-	bool using_pinsound = false;
-
-	// check for altsound2
-	string path1 = path_in;
-	path1.append("\\altsound2.csv");
-
-	std::ifstream ini(path1.c_str());
-	if (ini.good()) {
-		LOG(("- Using AltSound2 format\n"));
-		using_altsound2 = true;
-		ini.close();
-	}
-	else {
-		// checl for traditional altsound
-		string path2 = path_in;
-		path2.append("\\altsound.csv");
-
-		std::ifstream ini(path2.c_str());
-		if (ini.good()) {
-			LOG(("- Using traditional AltSound format\n"));
-			using_altsound = true;
-			ini.close();
-		}
-	}
-
-	if (!using_altsound && !using_altsound2) {
-		// check for PinSound
-		string path3 = path_in;
-		string path4 = path_in;
-		string path5 = path_in;
-		string path6 = path_in;
-
-		path3.append("\\jingle");
-		path4.append("\\music");
-		path5.append("\\sfx");
-		path6.append("\\voice");
-
-		// DAR@20230617
-		// I don't know if all of these will be included in every altsound
-		// package, so if even one is found, it will assume that the PinSound
-		// format is to be used
-		using_pinsound = dir_exists(path3) ? true : dir_exists(path4) ? true : \
-			dir_exists(path5) ? true : dir_exists(path6) ? true : false;
-
-		if (using_pinsound)
-			LOG(("- Using PinSound format\n"));
-	}
-
-	return using_altsound2 ? "altsound2" : using_altsound ? "altsound" : 
-		   using_pinsound ? "pinsound" : "";
-
-	LOG(("END: get_altsound_format()\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END postprocess_commands()");
 }
 
 // ---------------------------------------------------------------------------
@@ -679,7 +618,8 @@ string get_altound_format(const string& path_in)
 
 std::string get_vpinmame_path()
 {
-	//LOG(("BEGIN: get_vpinmame_path\n"));
+	ALT_DEBUG(0, "BEGIN get_vpinmame_path");
+	INDENT;
 
 	char cvpmd[MAX_PATH];
 	HMODULE hModule = nullptr;
@@ -694,395 +634,17 @@ std::string get_vpinmame_path()
 	{
 		GetModuleFileNameA(hModule, cvpmd, sizeof(cvpmd));
 		std::string vpm_path = cvpmd;
-		LOG(("END: get_vpinmame_path\n"));
+		
+		OUTDENT;
+		ALT_DEBUG(0, "END get_vpinmame_path");
 		return vpm_path.substr(0, vpm_path.rfind("\\"));
 	}
 	else
 	{
-		LOG(("Module not found: VPinMAME.dll or VPinMAME64.dll\n"));
+		ALT_ERROR(0, "Module not found: VPinMAME.dll or VPinMAME64.dll");
 	}
 
-	//LOG(("END: get_vpinmame_path\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "END get_vpinmame_path");
 	return "";
-}
-
-// ---------------------------------------------------------------------------
-// Helper function to check if a directory exists
-// ---------------------------------------------------------------------------
-
-bool dir_exists(const std::string& path_in)
-{
-	LOG(("BEGIN: dir_exists()\n"));
-
-	struct stat info;
-
-	if (stat(path_in.c_str(), &info) != 0) {
-		LOG(("- Directory: %s does not exist\n", path_in.c_str()));
-		
-		LOG(("END: dir_exists()\n"));
-		return false;
-	}
-	LOG(("- Directory: %s exists\n", path_in.c_str()));
-
-	LOG(("END: dir_exists()\n"));
-	return (info.st_mode & S_IFDIR) != 0;
-}
-
-// ---------------------------------------------------------------------------
-// Helper function to parse the altsound.ini file
-// ---------------------------------------------------------------------------
-
-bool parse_altsound_ini(const string& path_in, string& format_out, bool& rom_ctrl_out)
-{
-	LOG(("BEGIN: parse_altsound_ini()\n"));
-
-	// if altsound.ini does not exist, create it
-	string ini_path = path_in;
-	ini_path.append("\\altsound.ini");
-
-	std::ifstream file_in(ini_path);
-	if (!file_in.good()) {
-		LOG(("- \"altsound.ini\" not found. Creating it.\n"));
-		if (!create_altsound_ini(path_in)) {
-			LOG(("- FAILED: create_ini_file()\n"));
-
-			LOG(("END: parse_altsound_ini()\n"));
-			return false;
-		}
-		LOG(("- SUCCESS: create_ini_file()\n"));
-		file_in.open(ini_path);
-	}
-
-	if (!file_in.good()) {
-		LOG(("- failed to open \"altsound.ini\"\n"));
-
-		LOG(("END: parse_altsound_ini()\n"));
-		return false;
-	}
-
-	// parse ini file
-	inipp::Ini<char> ini;
-	ini.parse(file_in);
-
-	// get format
-	string format;
-	inipp::get_value(ini.sections["format"], "format", format);
-	format = toLower(format);
-	LOG(("- Parsed \"format\": %s\n", format.c_str()));
-	format_out = format;
-
-	// get ROM volume control
-	string rom_control;
-	inipp::get_value(ini.sections["volume"], "rom_ctrl", rom_control);
-	LOG(("- Parsed \"rom_ctrl\": %s\n", rom_control.c_str()));
-	rom_ctrl_out = rom_control == "1";
-
-	// parse MUSIC behavior
-	auto& music_section = ini.sections["music"];
-
-	bool success = true;
-
-	success &= parseBehaviorValue(music_section, "ducks", music_behavior.ducks);
-	success &= parseBehaviorValue(music_section, "pauses", music_behavior.pauses);
-	success &= parseBehaviorValue(music_section, "stops", music_behavior.stops);
-
-	success &= parseVolumeValue(music_section, "music_duck_vol", music_behavior.music_duck_vol);
-	success &= parseVolumeValue(music_section, "callout_duck_vol", music_behavior.callout_duck_vol);
-	success &= parseVolumeValue(music_section, "sfx_duck_vol", music_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(music_section, "solo_duck_vol", music_behavior.solo_duck_vol);
-	success &= parseVolumeValue(music_section, "overlay_duck_vol", music_behavior.overlay_duck_vol);
-	
-	// parse CALLOUT behavior
-	auto& callout_section = ini.sections["callout"];
-
-	success &= parseBehaviorValue(callout_section, "ducks", callout_behavior.ducks);
-	success &= parseBehaviorValue(callout_section, "pauses", callout_behavior.pauses);
-	success &= parseBehaviorValue(callout_section, "stops", callout_behavior.stops);
-
-	success &= parseVolumeValue(callout_section, "music_duck_vol", callout_behavior.music_duck_vol);
-	success &= parseVolumeValue(callout_section, "callout_duck_vol", callout_behavior.callout_duck_vol);
-	success &= parseVolumeValue(callout_section, "sfx_duck_vol", callout_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(callout_section, "solo_duck_vol", callout_behavior.solo_duck_vol);
-	success &= parseVolumeValue(callout_section, "overlay_duck_vol", callout_behavior.overlay_duck_vol);
-
-	// parse SFX behavior
-	auto& sfx_section = ini.sections["sfx"];
-
-	success &= parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
-	success &= parseBehaviorValue(sfx_section, "pauses", sfx_behavior.pauses);
-	success &= parseBehaviorValue(sfx_section, "stops", sfx_behavior.stops);
-
-	success &= parseVolumeValue(sfx_section, "music_duck_vol", sfx_behavior.music_duck_vol);
-	success &= parseVolumeValue(sfx_section, "callout_duck_vol", sfx_behavior.callout_duck_vol);
-	success &= parseVolumeValue(sfx_section, "sfx_duck_vol", sfx_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(sfx_section, "solo_duck_vol", sfx_behavior.solo_duck_vol);
-	success &= parseVolumeValue(sfx_section, "overlay_duck_vol", sfx_behavior.overlay_duck_vol);
-
-	// parse SOLO behavior
-	auto& solo_section = ini.sections["solo"];
-
-	success &= parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);
-	success &= parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
-	success &= parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
-
-	success &= parseVolumeValue(solo_section, "music_duck_vol", solo_behavior.music_duck_vol);
-	success &= parseVolumeValue(solo_section, "callout_duck_vol", solo_behavior.callout_duck_vol);
-	success &= parseVolumeValue(solo_section, "sfx_duck_vol", solo_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(solo_section, "solo_duck_vol", solo_behavior.solo_duck_vol);
-	success &= parseVolumeValue(solo_section, "overlay_duck_vol", solo_behavior.overlay_duck_vol);
-
-	// parse OVERLAY behavior
-	auto& overlay_section = ini.sections["overlay"];
-
-	success &= parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
-	success &= parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
-	success &= parseBehaviorValue(overlay_section, "stops", overlay_behavior.stops);
-
-	success &= parseVolumeValue(overlay_section, "music_duck_vol", overlay_behavior.music_duck_vol);
-	success &= parseVolumeValue(overlay_section, "callout_duck_vol", overlay_behavior.callout_duck_vol);
-	success &= parseVolumeValue(overlay_section, "sfx_duck_vol", overlay_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(overlay_section, "solo_duck_vol", overlay_behavior.solo_duck_vol);
-	success &= parseVolumeValue(overlay_section, "overlay_duck_vol", overlay_behavior.overlay_duck_vol);
-
-	LOG(("END: parse_altsound_ini()\n"));
-	return success;
-}
-
-// ---------------------------------------------------------------------------
-// Helper function to parse Altsound2 behavior values
-// ---------------------------------------------------------------------------
-
-typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
-
-bool parseBehaviorValue(const IniSection& section, const std::string& key, std::bitset<5>& behavior)
-{
-	std::string token;
-	std::string parsed_value;
-	inipp::get_value(section, key, parsed_value);
-
-	std::stringstream ss(parsed_value);
-	while (std::getline(ss, token, ',')) {
-		token = trim(token);
-		token = toLower(token);
-
-		if (token == "music") {
-			behavior.set(0, true);
-		}
-		else if (token == "callout") {
-			behavior.set(1, true);
-		}
-		else if (token == "sfx") {
-			behavior.set(2, true);
-		}
-		else if (token == "solo") {
-			behavior.set(3, true);
-		}
-		else if (token == "overlay") {
-			behavior.set(4, true);
-		}
-	}
-	return true;
-}
-
-
-// ---------------------------------------------------------------------------
-// Helper function to parse Altsound2 behavior volume values
-// ---------------------------------------------------------------------------
-
-bool parseVolumeValue(const IniSection& section, const std::string& key, float& volume)
-{
-	std::string parsed_value;
-	inipp::get_value(section, key, parsed_value);
-
-	if (!parsed_value.empty()) {
-		try {
-			int val = std::stoul(parsed_value);
-			volume = val > 100 ? 1.0f : val < 0 ? 0.0f : (float)val / 100.f;
-		}
-		catch (const std::exception& e) {
-			LOG(("- Exception while parsing volume value: %s\n", e.what()));
-			return false;
-		}
-	}
-	return true;
-}
-
-// ---------------------------------------------------------------------------
-// Helper function to create the altsound.ini file
-// ---------------------------------------------------------------------------
-
-bool create_altsound_ini(const std::string& path_in)
-{
-	LOG(("BEGIN: create_altsound_ini()\n"));
-
-	std::string format = get_altound_format(path_in);
-
-	if (format.empty()) {
-		LOG(("- FAILED: get_altsound_format()\n"));
-		LOG(("END: create_altsound_ini()\n"));
-		return false;
-	}
-	LOG(("- SUCCESS: get_altsound_format(): %s\n", format.c_str()));
-
-	std::string ini_path = path_in + "\\altsound.ini";
-	std::ofstream file_out(ini_path);
-
-	file_out << "; ----------------------------------------------------------------------------\n";
-	file_out << "; There are three supported AltSound formats :\n";
-	file_out << ";  1. Legacy\n";
-	file_out << ";  2. AltSound\n";
-	file_out << ";  3. AltSound2\n";
-	file_out << ";\n";
-	file_out << "; Legacy: the original AltSound format that parses a file / folder structure\n";
-	file_out << ";         similar to the PinSound system. It is no longer used for new\n";
-	file_out << ";         AltSound packages\n";
-	file_out << ";\n";
-	file_out << "; AltSound: a CSV-based format designed as a replacement for the PinSound\n";
-	file_out << ";           format. This format defines samples according to \"channels\" with\n";
-	file_out << ";           loosely defined behaviors controlled by the associated metadata\n";
-	file_out << ";           \"gain\", \"ducking\", and \"stop\" fields. This is the format\n";
-	file_out << ";           currently in use by most AltSound authors\n";
-	file_out << ";\n";
-	file_out << "; Altsound2: a new CSV-based format that defines samples according to\n";
-	file_out << ";            contextual types, allowing for more intuitively designed AltSound\n";
-	file_out << ";            packages. General playback behavior is dictated by the assigned\n";
-	file_out << ";            type. Behaviors can evolve without the need for adding\n";
-	file_out << ";            additional CSV fields, and the combinatorial complexity that\n";
-	file_out << ";            comes with it.\n";
-	file_out << ";            NOTE: This option requires the new altsound2.csv format\n";
-	file_out << ";\n";
-	file_out << "; ----------------------------------------------------------------------------\n\n";
-
-	// create [format] section
-	file_out << "[format]\n";
-	file_out << "format = " << format << "\n\n";
-
-	file_out << "; ----------------------------------------------------------------------------\n";
-	file_out << "; The AltSound processor attempts to recreate original playback behavior based\n";
-	file_out << "; on commands sent from the ROM. This does not appear to be working in all\n";
-	file_out << "; cases, resulting in undesirable muting of the sample playback volume.\n";
-	file_out << "; Until this can be addressed, this feature can be disabled by setting\n";
-	file_out << "; the \"rom_control\" setting to false.\n";
-	file_out << ";\n";
-	file_out << "; Turning this feature off will use only the defined \"gain\" and \"ducking\"\n";
-	file_out << "; values defined in the CSV file, and will not attempt to replicate ROM\n";
-	file_out << "; behavior for sample playback.\n";
-	file_out << ";\n";
-	file_out << "; To preserve current functionality, this feature is enabled by default\n";
-	file_out << "; NOTE: This option works with all AltSound formats listed above\n";
-	file_out << "; ----------------------------------------------------------------------------\n\n";
-
-	// create [volume] section
-	file_out << "[volume]\n";
-	file_out << "rom_ctrl = 1\n\n";
-
-	file_out << "; ----------------------------------------------------------------------------\n";
-	file_out << "; The section below allows for tailoring of the AltSound2 behaviors. They are\n";
-	file_out << "; not used for traditional Altound or Legacy Altsound formats\n";
-	file_out << ";\n";
-	file_out << "; The AltSound2 format supports the following sample types :\n";
-	file_out << ";\n";
-	file_out << "; -MUSIC   : background music\n";
-	file_out << "; -CALLOUT : voice interludes and callouts\n";
-	file_out << "; -SFX     : short sounds to supplement table sounds\n";
-	file_out << "; -SOLO    : sound played at end-of-ball/game, or tilt\n";
-	file_out << "; -OVERLAY : sounds played over music/sfx\n";
-	file_out << ";\n";
-	file_out << "; Each sample type supports the following variables to tailor playback behavior\n";
-	file_out << "; with respect to other sample types:\n";
-	file_out << ";\n";
-	file_out << "; \"ducks\"            : specify which sample types are ducked\n";
-	file_out << "; \"pauses\"           : specify which sample types are paused\n";
-	file_out << "; \"stops\"            : specify which sample types are stopped\n";
-	file_out << "; \"music_duck_vol\"   : specify the ducked volume for music samples\n";
-	file_out << "; \"callout_duck_vol\" : specify the ducked volume for callout samples\n";
-	file_out << "; \"sfx_duck_vol\"     : specify the ducked volume for sfx samples\n";
-	file_out << "; \"solo_duck_vol\"    : specify the ducked volume for solo samples\n";
-	file_out << "; \"overlay_duck_vol\" : specify the ducked volume for overlay samples\n";
-	file_out << ";\n";
-	file_out << "; NOTES\n";
-	file_out << "; - a sample type cannot duck / pause another sample of the same type\n";
-	file_out << "; - stopping a sample of the same type essentially means that only one sample\n";
-	file_out << ";   of that type can be played at the same time\n";
-	file_out << "; - a stopped sample cannot be resumed / restarted\n";
-	file_out << "; - ducking values are specified as a percentage of the gain of the\n";
-	file_out << ";   affected sample type(s). Valid values range from 0 to 100 where\n";
-	file_out << ";   0 completely mutes the sample, and 100 effectively negates ducking\n";
-	file_out << "; - if multiple ducking values apply to a single sample, the lowest\n";
-	file_out << ";   ducking value is used\n";
-	file_out << "; - ducking / pausing ends when the sample that set it has ended.If\n";
-	file_out << ";   multiple sample types duck / pause another type, playback will remain\n";
-	file_out << ";   ducked / paused until the last affecting sample has ended\n";
-	file_out << "; ----------------------------------------------------------------------------\n\n";
-
-	// create behavior variable section
-	file_out << "[music]\n";
-		file_out << "ducks =\n";
-		file_out << "pauses =\n";
-		file_out << "stops = music\n";
-		file_out << "; music_duck_vol =\n";
-		file_out << "; callout_duck_vol =\n";
-		file_out << "; sfx_duck_vol =\n";
-		file_out << "; solo_duck_vol =\n";
-		file_out << "; overlay_duck_vol =\n\n";
-
-	file_out << "[callout]\n";
-		file_out << "ducks = sfx\n";
-		file_out << "pauses = music\n";
-		file_out << "stops = callout\n";
-		file_out << "; music_duck_vol =\n";
-		file_out << "; callout_duck_vol =\n";
-		file_out << "sfx_duck_vol =\n";
-		file_out << "; solo_duck_vol =\n";
-		file_out << "; overlay_duck_vol =\n\n";
-
-	file_out << "[sfx]\n";
-		file_out << "ducks =\n";
-		file_out << "pauses =\n";
-		file_out << "stops =\n";
-		file_out << "; music_duck_vol =\n";
-		file_out << "; callout_duck_vol =\n";
-		file_out << "; sfx_duck_vol =\n";
-		file_out << "; solo_duck_vol =\n";
-		file_out << "; overlay_duck_vol =\n\n";
-
-	file_out << "[solo]\n";
-		file_out << "ducks =\n";
-		file_out << "pauses =\n";
-		file_out << "stops = music, solo, overlay, callout\n";
-		file_out << "; music_duck_vol =\n";
-		file_out << "; callout_duck_vol =\n";
-		file_out << "; sfx_duck_vol =\n";
-		file_out << "; solo_duck_vol =\n";
-		file_out << "; overlay_duck_vol =\n\n";
-
-	file_out << "[overlay]\n";
-		file_out << "ducks = music, sfx\n";
-		file_out << "pauses =\n";
-		file_out << "stops =\n";
-		file_out << "music_duck_vol =\n";
-		file_out << "; callout_duck_vol =\n";
-		file_out << "sfx_duck_vol =\n";
-		file_out << "; solo_duck_vol =\n";
-		file_out << "; overlay_duck_vol =\n\n";
-
-	file_out.close();
-	LOG(("- \"altsound.ini\" created\n"));
-	LOG(("END: create_altsound_ini()\n"));
-	return true;
-}
-
-// ----------------------------------------------------------------------------
-// Helper function to trim whitespace from parsed tokens
-// ----------------------------------------------------------------------------
-
-std::string trim(const std::string& str)
-{
-	size_t first = str.find_first_not_of(' ');
-	if (std::string::npos == first)
-	{
-		return str;
-	}
-	size_t last = str.find_last_not_of(' ');
-	return str.substr(first, (last - first + 1));
 }

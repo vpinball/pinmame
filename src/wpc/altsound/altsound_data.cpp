@@ -17,6 +17,7 @@
 
 // Local includes
 #include "bass.h"
+#include "altsound_logger.hpp"
 
 // Instance of global thread synchronization mutex
 std::mutex io_mutex;
@@ -27,17 +28,21 @@ StreamArray channel_stream;
 float master_vol = 1.0f;
 float global_vol = 1.0f;
 
-// Data structure to hold sample behaviors
-BehaviorInfo music_behavior;
-BehaviorInfo callout_behavior;
-BehaviorInfo sfx_behavior;
-BehaviorInfo solo_behavior;
-BehaviorInfo overlay_behavior;
-
 // namespace resolution
 using std::string;
 
-AltsoundLogger logger("altsound.log");
+// ----------------------------------------------------------------------------
+// Logging support
+// ----------------------------------------------------------------------------
+
+extern AltsoundLogger alog;  // external global logger instance
+
+// ----------------------------------------------------------------------------
+
+// _stream_info destructor
+_stream_info::~_stream_info() {
+	ALT_DEBUG(0, "Destroying HSTREAM: %u", hstream);
+}
 
 // ---------------------------------------------------------------------------
 // Helper function to translate AltsoundSample type constants to strings
@@ -73,7 +78,8 @@ AltsoundSampleType toSampleType(const std::string& type_in)
 			  {"OVERLAY", AltsoundSampleType::OVERLAY}
 	};
 
-	string str = toUpper(type_in);
+	string str = type_in;
+	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
 	auto it = typeMap.find(str);
 	if (it != typeMap.end()) {
@@ -146,30 +152,40 @@ const char* get_bass_err()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Helper function to convert a string to uppercase
-// ----------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Helper function to check if a directory exists
+// ---------------------------------------------------------------------------
 
-std::string toUpper(const std::string& string_in)
+bool dir_exists(const std::string& path_in)
 {
-	std::string result = string_in;
-	std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
-		return std::toupper(c);
-	});
+	ALT_DEBUG(0, "BEGIN dir_exists()");
+	INDENT;
 
-	return result;
+	struct stat info;
+
+	if (stat(path_in.c_str(), &info) != 0) {
+		ALT_INFO(0, "Directory: %s does not exist", path_in.c_str());
+		ALT_DEBUG(0, "END dir_exists()");
+		return false;
+	}
+	ALT_INFO(0, "Directory: %s exists", path_in.c_str());
+
+	OUTDENT;
+	ALT_INFO(0, "END dir_exists()");
+	return (info.st_mode & S_IFDIR) != 0;
 }
 
 // ----------------------------------------------------------------------------
-// Helper function to convert a string to lowercase
+// Helper function to trim whitespace from parsed tokens
 // ----------------------------------------------------------------------------
 
-std::string toLower(const std::string& string_in)
+std::string trim(const std::string& str)
 {
-	std::string result = string_in;
-	std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
-		return std::tolower(c);
-	});
-
-	return result;
+	size_t first = str.find_first_not_of(' ');
+	if (std::string::npos == first)
+	{
+		return str;
+	}
+	size_t last = str.find_last_not_of(' ');
+	return str.substr(first, (last - first + 1));
 }

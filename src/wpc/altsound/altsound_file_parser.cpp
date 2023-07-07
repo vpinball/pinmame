@@ -10,6 +10,10 @@
   }
 #endif
 
+#include "altsound_logger.hpp"
+
+extern AltsoundLogger alog;
+
 AltsoundFileParser::AltsoundFileParser(const char *gname_in)
 : g_szGameName(gname_in)
 {
@@ -79,6 +83,9 @@ AltsoundFileParser::AltsoundFileParser(const char *gname_in)
 //        ...
 bool AltsoundFileParser::parse(PinSamples* psd)
 {
+	ALT_DEBUG(0, "BEGIN AltsoundFileParser::parse()");
+	INDENT;
+
 	DIR* dir;
 	char* PATH;
 	char cwd[1024];
@@ -104,7 +111,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 		strcat_s(PATH, PATHl, g_szGameName);
 		strcat_s(PATH, PATHl, "\\");
 		strcat_s(PATH, PATHl, subpath);
-		LOG(("SEARCH PATH: %s\n", PATH));
+		ALT_INFO(0, "Search path: %s", PATH);
 
 		DIR *dir;
 		struct dirent *entry;
@@ -117,7 +124,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 		dir = opendir(PATH);
 		if (!dir) {
 			// Path not found.. try the others
-			LOG(("Not a directory: %s\n", PATH));
+			ALT_INFO(0, "Not a directory: %s", PATH);
 			free(PATH);
 			continue;
 		}
@@ -143,7 +150,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 				char* const PATH2 = (char*)malloc(PATH2l);
 				strcpy_s(PATH2, PATH2l, PATH);
 				strcat_s(PATH2, PATH2l, entry->d_name);
-				LOG(("SEARCH SUB-PATH: %s\n", PATH2));
+				ALT_INFO(1, "Search sub-path: %s", PATH2);
 
 				// Open subfolder of parent sound class directory.  For example
 				// from the comments above:
@@ -157,26 +164,28 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					// this is due to the opendir coming back as NULL, which seems like
 					// it should be protected in any case
 				dir2 = opendir(PATH2);
-				LOG(("DIRECTORY STREAM CREATED: %d\n", dir2));
+				ALT_INFO(1, "Directory stream created: %d", dir2);
+
 				if (!dir2) {
 					// Path not found.. try the others
-					LOG(("Not a directory: %s\n", PATH2));
+					ALT_INFO(1, "Not a directory: %s", PATH2);
 					free(PATH2);
 					entry = NULL;
 					continue;
 				}
 
 				entry2 = readdir(dir2);
-				LOG(("ENTRY: %d\n", entry2));
+				ALT_INFO(0, "ENTRY: %d\n", entry2);
 
 				while (entry2 != NULL) {
-					LOG(("FOUND FILE: %s\n", entry2->d_name));
+					ALT_INFO(1, "Found file: %s", entry2->d_name);
+
 					if (entry2->d_name[0] != '.'
 						&& strstr(entry2->d_name, ".txt") == 0
 						&& strstr(entry2->d_name, ".ini") == 0)
 						// not a system or txt file.  This must be a sound file.
 						// Increase the number of files being tracked.
-						LOG(("ADDING FILE: %s\n", entry2->d_name));
+						ALT_INFO(1, "Adding file: %s", entry2->d_name);
 					psd->num_files++;
 
 					// get next sound file in subdirectory
@@ -205,11 +214,11 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 
 	if (psd->num_files <= 0) {
 		// No filenames parsed.. exit
-		LOG(("NO FILES FOUND!\n"));
+		ALT_ERROR(0, "No files found!");
 		psd->files_with_subpath = NULL;
 
 		
-		LOG(("END: PARSE_ALTSOUND_FOLDERS\n"));
+		ALT_DEBUG(0, "END AltsoundFileParser::parse()");
 		return false;
 	}
 
@@ -264,13 +273,13 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 		strcat_s(PATH, PATHl, g_szGameName);
 		strcat_s(PATH, PATHl, "\\");
 		strcat_s(PATH, PATHl, subpath);
-		LOG(("CURRENT_PATH1: %s\n", PATH));
+		ALT_INFO(0, "Current_path1: %s", PATH);
 
 		dir = opendir(PATH);
 		if (!dir)
 		{
 			// Path not found.. try the others
-			LOG(("Path not found: %s\n", PATH));
+			ALT_INFO(0, "Path not found: %s", PATH);
 			free(PATH);
 			continue;
 		}
@@ -280,7 +289,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 			FILE *f;
 			strcpy_s(PATHG, PATHGl, PATH);
 			strcat_s(PATHG, PATHGl, "gain.txt");
-			LOG(("CURRENT_PATH2: %s\n", PATHG));
+			ALT_INFO(0, "Current_path2: %s", PATHG);
 			f = fopen(PATHG, "r");
 
 			if (f) {
@@ -302,7 +311,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 			FILE *f;
 			strcpy_s(PATHG, PATHGl, PATH);
 			strcat_s(PATHG, PATHGl, "ducking.txt");
-			LOG(("CURRENT_PATH3: %s\n", PATHG));
+			ALT_INFO(0, "Current_path3: %s", PATHG);
 			f = fopen(PATHG, "r");
 
 			if (f) {
@@ -351,7 +360,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					strcpy_s(PATHG, PATHGl, PATH2);
 					strcat_s(PATHG, PATHGl, "\\");
 					strcat_s(PATHG, PATHGl, "gain.txt");
-					LOG(("CURRENT_PATH4: %s\n", PATHG));
+					ALT_INFO(1, "Current_path4: %s", PATHG);
 					f = fopen(PATHG, "r");
 					if (f)
 					{
@@ -370,7 +379,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					strcpy_s(PATHG, PATHGl, PATH2);
 					strcat_s(PATHG, PATHGl, "\\");
 					strcat_s(PATHG, PATHGl, "ducking.txt");
-					LOG(("CURRENT_PATH5: %s\n", PATHG));
+					ALT_INFO(1, "Current_path5: %s", PATHG);
 					f = fopen(PATHG, "r");
 					if (f)
 					{
@@ -382,7 +391,7 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 					free(PATHG);
 				}
 
-				LOG(("OPENDIR: %s\n", PATH2));
+				ALT_INFO(1, "opendir(%s)", PATH2);
 				dir2 = opendir(PATH2);
 				entry2 = readdir(dir2);
 				while (entry2 != NULL) {
@@ -424,9 +433,9 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 							psd->stop[psd->num_files] = 0;
 						}
 
-						LOG(("ID = %d, CHANNEL = %d, DUCK = %.2f, GAIN = %.2f, LOOP = %d, STOP = %d, FNAME = '%s'\n" \
-							, psd->ID[i], psd->channel[i], psd->ducking[i], psd->gain[i], psd->loop[i] \
-							, psd->stop[i], psd->files_with_subpath[i]));
+						ALT_INFO(2, "ID = %d, CHANNEL = %d, DUCK = %.2f, GAIN = %.2f, LOOP = %d, STOP = %d, FNAME = '%s'\n" \
+							      , psd->ID[i], psd->channel[i], psd->ducking[i], psd->gain[i], psd->loop[i] \
+							      , psd->stop[i], psd->files_with_subpath[i]);
 
 						psd->num_files++;
 					}
@@ -443,11 +452,12 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 		closedir(dir);
 		free(PATH);
 	}
-	LOG(("Found %d samples\n", psd->num_files));
+	ALT_INFO(0, "Found %d samples", psd->num_files);
 
 	dir = opendir(cwd);
 	closedir(dir);
 
-	LOG(("END: PARSE_ALTSOUND_FOLDERS\n"));
+	OUTDENT;
+	ALT_DEBUG(0, "BEGIN AltsoundFileParser::parse()");
 	return true;
 }

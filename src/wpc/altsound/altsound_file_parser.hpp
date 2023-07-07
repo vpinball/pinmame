@@ -24,7 +24,6 @@ private: // functions
 
 private: // data
 	const char* g_szGameName;
-//	char* base_path;
 	int base_path_length;
 	char cvpmd[1024];
 	const char* path_main = "\\altsound\\";

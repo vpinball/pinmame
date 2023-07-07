@@ -4,8 +4,10 @@
 #pragma once
 #endif
 
+// Std Library includes
 #include <stdio.h>
-//#include "..\ext\bass\bass.h"
+
+// Local includes
 #include "bass.h"
 
 #ifdef __cplusplus
@@ -60,12 +62,6 @@ BOOL alt_sound_init(CmdData* cmds_out);
 // Function to pre-process commands based on ROM hardware platform
 void preprocess_commands(CmdData* cmds_out, int cmd);
 
-//DAR_TODO
-// This is called after all other command processing.
-// ? Does it matter?
-// ? can it be called right after combining?
-// ? If any of the 16-bit commands trigger channel 0 to stop, can the rest of
-// the function be allowed to run?
 // Function to process combined commands based on ROM hardware platform
 void postprocess_commands(const unsigned int combined_cmd);
 

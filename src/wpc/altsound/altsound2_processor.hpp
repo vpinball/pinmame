@@ -125,7 +125,7 @@ private: // data
 
 	bool is_initialized;
 	bool is_stable; // future use
-	Samples samples;
+	std::vector<SampleInfo> samples;
 };
 
 // ---------------------------------------------------------------------------

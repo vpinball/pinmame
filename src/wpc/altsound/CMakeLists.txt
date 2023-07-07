@@ -23,9 +23,9 @@ add_compile_definitions(
    LSB_FIRST
    DIRECTINPUT_VERSION=0x0700
    DIRECTDRAW_VERSION=0x0300
-   WIN32
+   #WIN32
    _CRT_SECURE_NO_WARNINGS
-   _USRDLL
+   #_USRDLL
 )
 
 add_library(altsound STATIC
@@ -37,6 +37,9 @@ add_library(altsound STATIC
    altsound_csv_parser.hpp
    altsound2_csv_parser.cpp
    altsound2_csv_parser.hpp
+   altsound_ini_processor.hpp
+   altsound_ini_processor.cpp
+   altsound_logger.cpp
    altsound_logger.hpp
    altsound_processor_base.cpp
    altsound_processor_base.hpp
