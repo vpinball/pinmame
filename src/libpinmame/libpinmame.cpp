@@ -635,6 +635,22 @@ LIBPINMAME_API void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char*
 }
 
 /******************************************************
+ * PinmameGetCheat
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetCheat() {
+	return options.cheat;
+}
+
+/******************************************************
+ * PinmameSetHandleMechanics
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetCheat(const int cheat) {
+	options.cheat = cheat;
+}
+
+/******************************************************
  * PinmameGetHandleKeyboard
  ******************************************************/
 
