@@ -277,6 +277,7 @@ int main(int, char**) {
 
 	PinmameSetConfig(&config);
 
+	PinmameSetCheat(0);
 	PinmameSetHandleKeyboard(0);
 	PinmameSetHandleMechanics(0);
 

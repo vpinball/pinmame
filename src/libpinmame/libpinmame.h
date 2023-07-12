@@ -412,6 +412,8 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, const void* p_userData);
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config);
 LIBPINMAME_API void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
+LIBPINMAME_API int PinmameGetCheat();
+LIBPINMAME_API void PinmameSetCheat(const int cheat);
 LIBPINMAME_API int PinmameGetHandleKeyboard();
 LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard);
 LIBPINMAME_API int PinmameGetHandleMechanics();
