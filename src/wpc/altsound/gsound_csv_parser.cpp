@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------
-// altsound2_csv_parser.cpp
+// gsound_csv_parser.cpp
 // 06/23/23 - Dave Roscoe
 //
-// Parser for AltSound2 format CSV files
+// Parser for G-Sound format CSV files
 // ---------------------------------------------------------------------------
 // license:<TODO>
 // ---------------------------------------------------------------------------
-#include "altsound2_csv_parser.hpp"
+#include "gsound_csv_parser.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -29,7 +29,7 @@ extern AltsoundLogger alog;
 // CTOR/DTOR
 // ----------------------------------------------------------------------------
 
-Altsound2CsvParser::Altsound2CsvParser(const std::string& path_in)
+GSoundCsvParser::GSoundCsvParser(const std::string& path_in)
 : altsound_path(path_in),
   filename()
 {
@@ -38,9 +38,9 @@ Altsound2CsvParser::Altsound2CsvParser(const std::string& path_in)
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2CsvParser::parse(std::vector<SampleInfo>& samples_out)
+bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2CsvParser::parse()");
+	ALT_DEBUG(0, "BEGIN GSoundCsvParser::parse()");
 	INDENT;
 
 	std::ifstream file(filename);
@@ -48,7 +48,7 @@ bool Altsound2CsvParser::parse(std::vector<SampleInfo>& samples_out)
 		ALT_ERROR(0, "Unable to open file: %s", filename.c_str());
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2CsvParser::parse()");
+		ALT_DEBUG(0, "END GSoundCsvParser::parse()");
 		return false;
 	}
 
@@ -127,12 +127,12 @@ bool Altsound2CsvParser::parse(std::vector<SampleInfo>& samples_out)
 		}
 	}
 	catch (std::exception e) {
-		ALT_ERROR(0, "Altsound2CsvParser::parse(): %s", e.what());
+		ALT_ERROR(0, "GSoundCsvParser::parse(): %s", e.what());
 	}
 
 	file.close();
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2CsvParser::parse()");
+	ALT_DEBUG(0, "END GSoundCsvParser::parse()");
 	return success;
 }

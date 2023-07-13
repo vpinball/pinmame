@@ -35,8 +35,8 @@ add_library(altsound STATIC
    altsound_file_parser.hpp
    altsound_csv_parser.cpp
    altsound_csv_parser.hpp
-   altsound2_csv_parser.cpp
-   altsound2_csv_parser.hpp
+   gsound_csv_parser.cpp
+   gsound_csv_parser.hpp
    altsound_ini_processor.hpp
    altsound_ini_processor.cpp
    altsound_logger.cpp
@@ -45,8 +45,8 @@ add_library(altsound STATIC
    altsound_processor_base.hpp
    altsound_processor.cpp
    altsound_processor.hpp
-   altsound2_processor.cpp
-   altsound2_processor.hpp
+   gsound_processor.cpp
+   gsound_processor.hpp
    snd_alt.cpp
    snd_alt.h
 )

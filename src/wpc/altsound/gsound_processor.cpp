@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
-// altsound2_processor.cpp
+// gsound_processor.cpp
 // 06/14/23 - Dave Roscoe
 //
-// Encapsulates all specialized processing for the Altsound2
+// Encapsulates all specialized processing for the G-Sound
 // CSV format
 // ---------------------------------------------------------------------------
 // license:<TODO>
 // ---------------------------------------------------------------------------
-#include "altsound2_processor.hpp"
+#include "gsound_processor.hpp"
 
 // Standard Library includes
 #include <algorithm>
@@ -19,7 +19,7 @@
 
 // Local includes
 #include "osdepend.h"
-#include "altsound2_csv_parser.hpp"
+#include "gsound_csv_parser.hpp"
 #include "altsound_logger.hpp"
 
 using std::string;
@@ -109,7 +109,7 @@ extern BehaviorInfo overlay_behavior;
 // CTOR/DTOR
 // ---------------------------------------------------------------------------
 
-Altsound2Processor::Altsound2Processor(const char* gname_in)
+GSoundProcessor::GSoundProcessor(const char* gname_in)
 : AltsoundProcessorBase(string(gname_in)),
   is_initialized(false),
   is_stable(true) // future use
@@ -118,7 +118,7 @@ Altsound2Processor::Altsound2Processor(const char* gname_in)
 	init();
 }
 
-Altsound2Processor::~Altsound2Processor()
+GSoundProcessor::~GSoundProcessor()
 {
 	// DAR@20230624
 	// These cannot be deleted here, since they will be deleted when the
@@ -137,22 +137,22 @@ Altsound2Processor::~Altsound2Processor()
 // Function implementation
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
+bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 {
-	ALT_INFO(0, "BEGIN Altsound2Processor::handleCmd()");
+	ALT_INFO(0, "BEGIN GSoundProcessor::handleCmd()");
 	ALT_DEBUG(1, "Acquiring mutex");
 	std::lock_guard<std::mutex> guard(io_mutex);
 
 	if (!is_initialized || !is_stable) {
 		if (!is_initialized) {
-			ALT_ERROR(1, "Altsound2Processor is not initialized. Processing skipped");
+			ALT_ERROR(1, "GSoundProcessor is not initialized. Processing skipped");
 		}
 		else {
-			ALT_ERROR(1, "Altsound2Processor is unstable. Processing skipped");
+			ALT_ERROR(1, "GSoundProcessor is unstable. Processing skipped");
 		}
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END: Altsound2Processor::handleCmd()");
+		ALT_DEBUG(0, "END: GSoundProcessor::handleCmd()");
 		return false;
 	}
 
@@ -161,10 +161,10 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 
 	if (sample_idx == -1) {
 		// No matching command.  Clean up and exit
-		ALT_ERROR(1, "FAILED Altsound2Processor::get_sample()", cmd_combined_in);
+		ALT_ERROR(1, "FAILED GSoundProcessor::get_sample()", cmd_combined_in);
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+		ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 		return false;
 	}
 
@@ -185,10 +185,10 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 			channel_stream[new_stream->channel_idx] = cur_mus_stream = new_stream;
 		}
 		else {
-			ALT_ERROR(1, "FAILED Altsound2Processor::processMusic()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::processMusic()");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 			return false;
 		}
 		break;
@@ -198,10 +198,10 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 			channel_stream[new_stream->channel_idx] = new_stream;
 		}
 		else {
-			ALT_ERROR(1, "FAILED Altsound2Processor::processSfx()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::processSfx()");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 			return false;
 		}
 		break;
@@ -211,10 +211,10 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 			channel_stream[new_stream->channel_idx] = cur_callout_stream = new_stream;
 		}
 		else {
-			ALT_ERROR(1, "FAILED Altsound2Processor::processCallout()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::processCallout()");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 			false;
 		}
 		break;
@@ -224,10 +224,10 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 			channel_stream[new_stream->channel_idx] = cur_solo_stream = new_stream;
 		}
 		else {
-			ALT_ERROR(1,"FAILED Altsound2Processor::processSolo()");
+			ALT_ERROR(1,"FAILED GSoundProcessor::processSolo()");
 
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 			return false;
 		}
 		break;
@@ -237,10 +237,10 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 			channel_stream[new_stream->channel_idx] = cur_overlay_stream = new_stream;
 		}
 		else {
-			ALT_ERROR(1, "FAILED Altsound2Processor::processOverlay()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::processOverlay()");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 			return false;
 		}
 		break;
@@ -264,7 +264,7 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 			ALT_ERROR(2, "FAILED %s stream playback: %s", stream_type_str, get_bass_err());
 
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 			return false;
 		}
 		else {
@@ -274,15 +274,15 @@ bool Altsound2Processor::handleCmd(const unsigned int cmd_combined_in)
 
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::handleCmd()");
+	ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 	return true;
 }
 
 // ---------------------------------------------------------------------------
 
-void Altsound2Processor::init()
+void GSoundProcessor::init()
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::init()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::init()");
 	INDENT;
 
 	// reset stream tracking
@@ -292,9 +292,9 @@ void Altsound2Processor::init()
 	cur_callout_stream = nullptr;
 	
 	if (!loadSamples()) {
-		ALT_ERROR(1, "FAILED Altsound2Processor::loadSamples()");
+		ALT_ERROR(1, "FAILED GSoundProcessor::loadSamples()");
 	}
-	ALT_INFO(1, "SUCCESS: Altsound2Processor::loadSamples()");
+	ALT_INFO(1, "SUCCESS: GSoundProcessor::loadSamples()");
 
 	// populate group volumes
 	group_vol[streamTypeToIndex[MUSIC]]   = music_behavior.group_vol;
@@ -307,14 +307,14 @@ void Altsound2Processor::init()
 	is_initialized = true;
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::init()");
+	ALT_DEBUG(0, "END GSoundProcessor::init()");
 }
 
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::loadSamples()
+bool GSoundProcessor::loadSamples()
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::loadSamples()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::loadSamples()");
 	INDENT;
 
 	string altsound_path = get_vpinmame_path();
@@ -323,27 +323,27 @@ bool Altsound2Processor::loadSamples()
 		altsound_path += game_name;
 	}
 
-	Altsound2CsvParser csv_parser(altsound_path);
+	GSoundCsvParser csv_parser(altsound_path);
 
 	if (!csv_parser.parse(samples)) {
-		ALT_ERROR(1, "FAILED Altsound2CsvParser::parse()");
+		ALT_ERROR(1, "FAILED GSoundCsvParser::parse()");
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::init()");
+		ALT_DEBUG(0, "END GSoundProcessor::init()");
 		return is_initialized;
 	}
-	ALT_INFO(1, "SUCCESS Altsound2CsvParser::parse()");
+	ALT_INFO(1, "SUCCESS GSoundCsvParser::parse()");
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::init()");
+	ALT_DEBUG(0, "END GSoundProcessor::init()");
 	return true;
 }
 
 // ---------------------------------------------------------------------------
 
-int Altsound2Processor::getSample(const unsigned int cmd_combined_in)
+int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::getSample()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::getSample()");
 	INDENT;
 
 	int sample_idx = -1;
@@ -368,16 +368,16 @@ int Altsound2Processor::getSample(const unsigned int cmd_combined_in)
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::getSample()");
+	ALT_DEBUG(0, "END GSoundProcessor::getSample()");
 	return sample_idx;
 }
 
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::processStream(const BehaviorInfo& behavior,
+bool GSoundProcessor::processStream(const BehaviorInfo& behavior,
 	                                   AltsoundStreamInfo* stream_out)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processStream()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processStream()");
 	INDENT;
 
 //	std::string type_str = toString(stream_out->stream_type);
@@ -385,10 +385,10 @@ bool Altsound2Processor::processStream(const BehaviorInfo& behavior,
 	// process behaviors for this sample type
 	bool success = processBehaviors(behavior, *stream_out);
 	if (!success) {
-		ALT_ERROR(0, "FAILED: Altsound2Processor::processBehaviors()");
+		ALT_ERROR(0, "FAILED: GSoundProcessor::processBehaviors()");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::processStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::processStream()");
 		return success;
 	}
 
@@ -400,7 +400,7 @@ bool Altsound2Processor::processStream(const BehaviorInfo& behavior,
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processStream()");
+	ALT_DEBUG(0, "END GSoundProcessor::processStream()");
 	return success;
 }
 
@@ -421,17 +421,17 @@ bool Altsound2Processor::processStream(const BehaviorInfo& behavior,
 // behavior processing of the other types for similar processing
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processBehaviors(const BehaviorInfo& behavior,
+bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior,
 	                                      const AltsoundStreamInfo& stream)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processBehaviors()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processBehaviors()");
 	INDENT;
 
 	if (!processMusicImpacts(behavior, stream)) {
-		ALT_ERROR(1, "FAILED Altsound2Processor::processMusicBehavior()");
+		ALT_ERROR(1, "FAILED GSoundProcessor::processMusicBehavior()");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::processBehaviors()");
+		ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 		return false;
 	}
 
@@ -439,31 +439,31 @@ bool Altsound2Processor::processBehaviors(const BehaviorInfo& behavior,
 		ALT_ERROR(1, "FAILED  processCalloutBehavior()");
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::processBehaviors()");
+		ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 		return false;
 	}
 
 	if (!processSfxImpacts(behavior, stream)) {
-		ALT_ERROR(1, "FAILED Altsound2Processor::processSfxBehavior()");
+		ALT_ERROR(1, "FAILED GSoundProcessor::processSfxBehavior()");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::processBehaviors()");
+		ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 		return false;
 	}
 
 	if (!processSoloImpacts(behavior, stream)) {
-		ALT_ERROR(1, "FAILED Altsound2Processor::processSoloBehavior()");
+		ALT_ERROR(1, "FAILED GSoundProcessor::processSoloBehavior()");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::processBehaviors()");
+		ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 		return false;
 	}
 
 	if (!processOverlayImpacts(behavior, stream)) {
-		ALT_ERROR(1, "FAILED Altsound2Processor::processOverlayBehavior()");
+		ALT_ERROR(1, "FAILED GSoundProcessor::processOverlayBehavior()");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::processBehaviors()");
+		ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 		return false;
 	}
 
@@ -471,15 +471,15 @@ bool Altsound2Processor::processBehaviors(const BehaviorInfo& behavior,
 	printBehaviorData();
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processBehaviors()");
+	ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 	return true;
 }
 
 // ----------------------------------------------------------------------------
 
-void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type_in)
+void GSoundProcessor::postProcessBehaviors(AltsoundSampleType type_in)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::postProcessBehaviors()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::postProcessBehaviors()");
 	INDENT;
 
 	// get index into the relevant ducking and paused arrays for the provided
@@ -504,15 +504,15 @@ void Altsound2Processor::postProcessBehaviors(AltsoundSampleType type_in)
 	printBehaviorData();
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::postProcessBehaviors()");
+	ALT_DEBUG(0, "END GSoundProcessor::postProcessBehaviors()");
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processMusicImpacts(const BehaviorInfo& behavior,
+bool GSoundProcessor::processMusicImpacts(const BehaviorInfo& behavior,
 	                                          const AltsoundStreamInfo& stream)
 {
-	ALT_DEBUG(0, "BEGIN: Altsound2Processor::processMusicImpacts()");
+	ALT_DEBUG(0, "BEGIN: GSoundProcessor::processMusicImpacts()");
 	INDENT;
 
 	using BB = BehaviorInfo::BehaviorBits;
@@ -521,10 +521,10 @@ bool Altsound2Processor::processMusicImpacts(const BehaviorInfo& behavior,
 	if (behavior.stops.test(static_cast<size_t>(BB::MUSIC))) {
 		// current sample behavior calls to stop MUSIC stream
 		if (!stopMusicStream()) {
-			ALT_ERROR(1, "FAILED Altsound2Processor::stopMusicStream()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::stopMusicStream()");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processMusicImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processMusicImpacts()");
 			return false;
 		}
 	}
@@ -538,7 +538,7 @@ bool Altsound2Processor::processMusicImpacts(const BehaviorInfo& behavior,
 					ALT_ERROR(1, "FAILED BASS_ChannelPause(): %s", get_bass_err());
 					
 					OUTDENT;
-					ALT_DEBUG(0, "END Altsound2Processor::processMusicImpacts()");
+					ALT_DEBUG(0, "END GSoundProcessor::processMusicImpacts()");
 					return false;
 				}
 				else {
@@ -567,22 +567,22 @@ bool Altsound2Processor::processMusicImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "MUSIC streams cannot duck another MUSIC stream");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processMusicImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processMusicImpacts()");
 			return false;
 		}
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processMusicImpacts()");
+	ALT_DEBUG(0, "END GSoundProcessor::processMusicImpacts()");
 	return true;
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processCalloutImpacts(const BehaviorInfo& behavior,
+bool GSoundProcessor::processCalloutImpacts(const BehaviorInfo& behavior,
 	                                            const AltsoundStreamInfo& stream)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processCalloutImpacts()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processCalloutImpacts()");
 	INDENT;
 
 	using BB = BehaviorInfo::BehaviorBits;
@@ -591,10 +591,10 @@ bool Altsound2Processor::processCalloutImpacts(const BehaviorInfo& behavior,
 	if (behavior.stops.test(static_cast<size_t>(BB::CALLOUT))) {
 		// current sample behavior calls to stop CALLOUT stream
 		if (!stopCalloutStream()) {
-			ALT_ERROR(1, "FAILED Altsound2Processor::stopCalloutStream()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::stopCalloutStream()");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processCalloutImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processCalloutImpacts()");
 			return false;
 		}
 	}
@@ -606,7 +606,7 @@ bool Altsound2Processor::processCalloutImpacts(const BehaviorInfo& behavior,
 					ALT_ERROR(1, "FAILED BASS_ChannelPause(): %s", get_bass_err());
 					
 					OUTDENT;
-					ALT_DEBUG(0, "END Altsound2Processor::processCalloutImpacts()");
+					ALT_DEBUG(0, "END GSoundProcessor::processCalloutImpacts()");
 					return false;
 				}
 				else {
@@ -637,22 +637,22 @@ bool Altsound2Processor::processCalloutImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "CALLOUT streams cannot duck another CALLOUT stream");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processCalloutImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processCalloutImpacts()");
 			return false;
 		}
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processCalloutImpacts()");
+	ALT_DEBUG(0, "END GSoundProcessor::processCalloutImpacts()");
 	return true;
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processSfxImpacts(const BehaviorInfo& behavior,
+bool GSoundProcessor::processSfxImpacts(const BehaviorInfo& behavior,
 	                                        const AltsoundStreamInfo& stream)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processSfxImpacts()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processSfxImpacts()");
 	INDENT;
 
 	using BB = BehaviorInfo::BehaviorBits;
@@ -677,7 +677,7 @@ bool Altsound2Processor::processSfxImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "SFX streams cannot stop another SFX stream");
 
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processSfxImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processSfxImpacts()");
 			return false;
 		}
 	}
@@ -700,22 +700,22 @@ bool Altsound2Processor::processSfxImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "SFX streams cannot duck another SFX stream");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processSfxImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processSfxImpacts()");
 			return false;
 		}
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processSfxImpacts()");
+	ALT_DEBUG(0, "END GSoundProcessor::processSfxImpacts()");
 	return true;
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processSoloImpacts(const BehaviorInfo& behavior,
+bool GSoundProcessor::processSoloImpacts(const BehaviorInfo& behavior,
                                              const AltsoundStreamInfo& stream)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processSoloImpacts()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processSoloImpacts()");
 	INDENT;
 
 	using BB = BehaviorInfo::BehaviorBits;
@@ -724,10 +724,10 @@ bool Altsound2Processor::processSoloImpacts(const BehaviorInfo& behavior,
 	if (behavior.stops.test(static_cast<size_t>(BB::SOLO))) {
 		// current sample behavior calls to stop SOLO stream
 		if (!stopSoloStream()) {
-			ALT_ERROR(1, "FAILED Altsound2Processor::stopSoloStream()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::stopSoloStream()");
 
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processSoloImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processSoloImpacts()");
 			return false;
 		}
 	}
@@ -739,7 +739,7 @@ bool Altsound2Processor::processSoloImpacts(const BehaviorInfo& behavior,
 					ALT_ERROR(1, "FAILED BASS_ChannelPause(): %s", get_bass_err());
 
 					OUTDENT;
-					ALT_DEBUG(0, "END Altsound2Processor::processSoloImpacts()");
+					ALT_DEBUG(0, "END GSoundProcessor::processSoloImpacts()");
 					return false;
 				}
 				else {
@@ -752,7 +752,7 @@ bool Altsound2Processor::processSoloImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "SOLO streams cannot pause another SOLO stream");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processSoloImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processSoloImpacts()");
 			return false;
 		}
 	}
@@ -773,22 +773,22 @@ bool Altsound2Processor::processSoloImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "SOLO streams cannot duck another SOLO stream");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processSoloBehavior()");
+			ALT_DEBUG(0, "END GSoundProcessor::processSoloBehavior()");
 			return false;
 		}
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processSoloBehavior()");
+	ALT_DEBUG(0, "END GSoundProcessor::processSoloBehavior()");
 	return true;
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processOverlayImpacts(const BehaviorInfo& behavior,
+bool GSoundProcessor::processOverlayImpacts(const BehaviorInfo& behavior,
 	                                           const AltsoundStreamInfo& stream)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processOverlayImpacts()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processOverlayImpacts()");
 	INDENT;
 
 	using BB = BehaviorInfo::BehaviorBits;
@@ -797,10 +797,10 @@ bool Altsound2Processor::processOverlayImpacts(const BehaviorInfo& behavior,
 	if (behavior.stops.test(static_cast<size_t>(BB::OVERLAY))) {
 		// current sample behavior calls to stop OVERLAY stream
 		if (!stopOverlayStream()) {
-			ALT_ERROR(1, "FAILED Altsound2Processor::stopOverlayStream()");
+			ALT_ERROR(1, "FAILED GSoundProcessor::stopOverlayStream()");
 
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processOverlayImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processOverlayImpacts()");
 			return false;
 		}
 	}
@@ -814,7 +814,7 @@ bool Altsound2Processor::processOverlayImpacts(const BehaviorInfo& behavior,
 					ALT_ERROR(1, "FAILED BASS_ChannelPause(): %s", get_bass_err());
 
 					OUTDENT;
-					ALT_DEBUG(0, "END Altsound2Processor::processOverlayImpacts()");
+					ALT_DEBUG(0, "END GSoundProcessor::processOverlayImpacts()");
 					return false;
 				}
 				else {
@@ -844,13 +844,13 @@ bool Altsound2Processor::processOverlayImpacts(const BehaviorInfo& behavior,
 			ALT_ERROR(1, "OVERLAY streams cannot duck another OVERLAY stream");
 			
 			OUTDENT;
-			ALT_DEBUG(0, "END Altsound2Processor::processOverlayImpacts()");
+			ALT_DEBUG(0, "END GSoundProcessor::processOverlayImpacts()");
 			return false;
 		}
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processOverlayImpacts()");
+	ALT_DEBUG(0, "END GSoundProcessor::processOverlayImpacts()");
 	return true;
 }
 
@@ -858,17 +858,17 @@ bool Altsound2Processor::processOverlayImpacts(const BehaviorInfo& behavior,
 // This methods is only meant to be called by snd_alt.cpp  It is used to safely
 // call stopMusicStream, while maintaing the behavior bookkeeping
 // ----------------------------------------------------------------------------
-bool Altsound2Processor::stopMusic()
+bool GSoundProcessor::stopMusic()
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::stopMusic()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::stopMusic()");
 	INDENT;
 
 	//DAR_TODO add error checking
 	if (!stopMusicStream()) {
-		ALT_ERROR(1, "FAILED Altsound2Processor::stopMusicStream()");
+		ALT_ERROR(1, "FAILED GSoundProcessor::stopMusicStream()");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopMusic()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopMusic()");
 		return false;
 	}
 
@@ -882,7 +882,7 @@ bool Altsound2Processor::stopMusic()
 	processPausedStreams();
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::stopMusic()");
+	ALT_DEBUG(0, "END GSoundProcessor::stopMusic()");
 	return true;
 }
 
@@ -891,16 +891,16 @@ bool Altsound2Processor::stopMusic()
 // method should only be called as part of behavior processing.  Otherwise,
 // calling this method can cause problems
 // ----------------------------------------------------------------------------
-bool Altsound2Processor::stopMusicStream()
+bool GSoundProcessor::stopMusicStream()
 {
-	ALT_DEBUG(0, "BEGIN: Altsound2Processor::stopMusicStream()");
+	ALT_DEBUG(0, "BEGIN: GSoundProcessor::stopMusicStream()");
 	INDENT;
 
 	if (!cur_mus_stream) {
 		ALT_INFO(1, "No active MUSIC stream");
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopMusicStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopMusicStream()");
 		return true;
 	}
 
@@ -921,27 +921,27 @@ bool Altsound2Processor::stopMusicStream()
 		ALT_ERROR(1, "FAILED stopStream(%u)", hstream);
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopMusicStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopMusicStream()");
 		return false;
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::stopMusicStream()");
+	ALT_DEBUG(0, "END GSoundProcessor::stopMusicStream()");
 	return true;
 }
 
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::stopCalloutStream()
+bool GSoundProcessor::stopCalloutStream()
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::stopCalloutStream()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::stopCalloutStream()");
 	INDENT;
 
 	if (!cur_callout_stream) {
 		ALT_INFO(1, "No active CALLOUT stream");
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopCalloutStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopCalloutStream()");
 		return true;
 	}
 
@@ -959,30 +959,30 @@ bool Altsound2Processor::stopCalloutStream()
 		cur_callout_stream = nullptr;
 	}
 	else {
-		ALT_ERROR(1, "FAILED Altsound2Processor::stopStream(%u)", hstream);
+		ALT_ERROR(1, "FAILED GSoundProcessor::stopStream(%u)", hstream);
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopCalloutStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopCalloutStream()");
 		return false;
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::stopCalloutStream()");
+	ALT_DEBUG(0, "END GSoundProcessor::stopCalloutStream()");
 	return success;
 }
 
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::stopSoloStream()
+bool GSoundProcessor::stopSoloStream()
 {
-    ALT_DEBUG(0, "BEGIN Altsound2Processor::stopSoloStream()");
+    ALT_DEBUG(0, "BEGIN GSoundProcessor::stopSoloStream()");
 	INDENT;
 
 	if (!cur_solo_stream) {
 		ALT_INFO(1, "No active SOLO stream");
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopSoloStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopSoloStream()");
 		return true;
 	}
 
@@ -1003,27 +1003,27 @@ bool Altsound2Processor::stopSoloStream()
 		ALT_ERROR(1, "FAILED stopStream(%u)", hstream);
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopSoloStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopSoloStream()");
 		return false;
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::stopSoloStream()");
+	ALT_DEBUG(0, "END GSoundProcessor::stopSoloStream()");
 	return success;
 }
 
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::stopOverlayStream()
+bool GSoundProcessor::stopOverlayStream()
 {
-	ALT_DEBUG(0, "BEGIN: Altsound2Processor::stopOverlayStream()");
+	ALT_DEBUG(0, "BEGIN: GSoundProcessor::stopOverlayStream()");
 	INDENT;
 
 	if (!cur_overlay_stream) {
 		ALT_INFO(1, "No active OVERLAY stream");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopOverlayStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopOverlayStream()");
 		return true;
 	}
 
@@ -1044,24 +1044,24 @@ bool Altsound2Processor::stopOverlayStream()
 		ALT_ERROR(1, "FAILED stopStream(%u)", hstream);
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::stopOverlayStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::stopOverlayStream()");
 		return false;
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::stopOverlayStream()");
+	ALT_DEBUG(0, "END GSoundProcessor::stopOverlayStream()");
 	return true;
 }
 
 // ----------------------------------------------------------------------------
 
-void CALLBACK Altsound2Processor::common_callback(HSYNC handle, DWORD channel,
+void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel,
 	                                              DWORD data, void* user)
 {
 	// All SYNCPROC functions run on the same thread, and will block other
 	// sync processes, so these should be fast.  The SYNCPROC thread is
 	// separate from the main thread so thread safety should be considered
-	ALT_DEBUG(0, "\nBEGIN: Altsound2Processor::common_callback()");
+	ALT_DEBUG(0, "\nBEGIN: GSoundProcessor::common_callback()");
 	INDENT;
 
 	ALT_INFO(1, "HSYNC: %u  HSTREAM: %u", handle, channel);
@@ -1076,7 +1076,7 @@ void CALLBACK Altsound2Processor::common_callback(HSYNC handle, DWORD channel,
 		ALT_ERROR(1, "Callback HSTREAM != instance HSTREAM");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::common_callback()");
+		ALT_DEBUG(0, "END GSoundProcessor::common_callback()");
 		return;
 	}
 
@@ -1116,7 +1116,7 @@ void CALLBACK Altsound2Processor::common_callback(HSYNC handle, DWORD channel,
 		ALT_ERROR(1, "Unknown stream type");
 
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::common_callback()");
+		ALT_DEBUG(0, "END GSoundProcessor::common_callback()");
 		return;
 	}
 
@@ -1142,14 +1142,14 @@ void CALLBACK Altsound2Processor::common_callback(HSYNC handle, DWORD channel,
 	processPausedStreams();
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::common_callback()");
+	ALT_DEBUG(0, "END GSoundProcessor::common_callback()");
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::adjustStreamVolumes()
+bool GSoundProcessor::adjustStreamVolumes()
 {
-	ALT_INFO(0, "BEGIN Altsound2Processor::adjustStreamVolumes()");
+	ALT_INFO(0, "BEGIN GSoundProcessor::adjustStreamVolumes()");
 	INDENT;
 
 	bool success = true;
@@ -1195,16 +1195,16 @@ bool Altsound2Processor::adjustStreamVolumes()
 	ALT_INFO(1, "Num active streams: %d", num_x_streams);
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::adjustStreamVolumes()");
+	ALT_DEBUG(0, "END GSoundProcessor::adjustStreamVolumes()");
 	return success;
 }
 
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::processPausedStreams()
+bool GSoundProcessor::processPausedStreams()
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::processPausedStreams()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::processPausedStreams()");
 	INDENT;
 
 	auto pauseStatusMap = buildPauseStatusMap();
@@ -1217,16 +1217,16 @@ bool Altsound2Processor::processPausedStreams()
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::processPausedStreams()");
+	ALT_DEBUG(0, "END GSoundProcessor::processPausedStreams()");
 	return success;
 }
 
 // ----------------------------------------------------------------------------
 
-bool Altsound2Processor::tryResumeStream(const AltsoundStreamInfo& stream,
+bool GSoundProcessor::tryResumeStream(const AltsoundStreamInfo& stream,
 	                                     const PausedStatusMap& pauseStatusMap)
 {
-	ALT_DEBUG(0, "BEGIN Altsound2Processor::tryResumeStream()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::tryResumeStream()");
 	INDENT;
 
 	auto pauseStatusMapIter = pauseStatusMap.find(stream.stream_type);
@@ -1234,7 +1234,7 @@ bool Altsound2Processor::tryResumeStream(const AltsoundStreamInfo& stream,
 		ALT_ERROR(1, "Unknown stream type");
 		
 		OUTDENT;
-		ALT_DEBUG(0, "END Altsound2Processor::tryResumeStream()");
+		ALT_DEBUG(0, "END GSoundProcessor::tryResumeStream()");
 		return false;
 	}
 
@@ -1247,7 +1247,7 @@ bool Altsound2Processor::tryResumeStream(const AltsoundStreamInfo& stream,
 				ALT_ERROR(1, "FAILED BASS_ChannelPlay(%u): %s", hstream, get_bass_err());
 
 				OUTDENT;
-				ALT_DEBUG(0, "END Altsound2Processor::tryResumeStream()");
+				ALT_DEBUG(0, "END GSoundProcessor::tryResumeStream()");
 				return false;
 			}
 			ALT_INFO(1, "Successfully resumed stream: %u", hstream);
@@ -1255,7 +1255,7 @@ bool Altsound2Processor::tryResumeStream(const AltsoundStreamInfo& stream,
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END Altsound2Processor::tryResumeStream()");
+	ALT_DEBUG(0, "END GSoundProcessor::tryResumeStream()");
 	return true;
 }
 
@@ -1264,7 +1264,7 @@ bool Altsound2Processor::tryResumeStream(const AltsoundStreamInfo& stream,
 // arrays.  This is used for behavior processing and management
 // ----------------------------------------------------------------------------
 
-PausedStatusMap Altsound2Processor::buildPauseStatusMap()
+PausedStatusMap GSoundProcessor::buildPauseStatusMap()
 {
 	return {
 		{MUSIC, &music_paused},
@@ -1280,7 +1280,7 @@ PausedStatusMap Altsound2Processor::buildPauseStatusMap()
 // pause
 // ---------------------------------------------------------------------------
 
-bool Altsound2Processor::isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& pauseStatusArray)
+bool GSoundProcessor::isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& pauseStatusArray)
 {
 	return std::any_of(pauseStatusArray.begin(), pauseStatusArray.end(), [](bool value) {
 		return value;
@@ -1290,7 +1290,7 @@ bool Altsound2Processor::isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& p
 // ---------------------------------------------------------------------------
 // Helper DEBUG functions to output all behavior bookkeeping data
 // ---------------------------------------------------------------------------
-void Altsound2Processor::printBehaviorData() {
+void GSoundProcessor::printBehaviorData() {
 	ALT_DEBUG(0, "");
 	ALT_DEBUG(1, "                     MUS   CALL   SFX   SOLO  OVER");
 	ALT_DEBUG(1, "                   ---------------------------------");
@@ -1311,7 +1311,7 @@ void Altsound2Processor::printBehaviorData() {
 	ALT_DEBUG(0, "");
 }
 
-void Altsound2Processor::printArray(const std::string& name, const std::array<float, NUM_STREAM_TYPES>& arr) {
+void GSoundProcessor::printArray(const std::string& name, const std::array<float, NUM_STREAM_TYPES>& arr) {
 	std::ostringstream oss;
 	oss << name << ": { ";
 
@@ -1322,7 +1322,7 @@ void Altsound2Processor::printArray(const std::string& name, const std::array<fl
 	ALT_DEBUG(1,"%s", oss.str().c_str());
 }
 
-void Altsound2Processor::printArrayBool(const std::string& name, const std::array<bool, NUM_STREAM_TYPES>& arr) {
+void GSoundProcessor::printArrayBool(const std::string& name, const std::array<bool, NUM_STREAM_TYPES>& arr) {
 	std::ostringstream oss;
 	oss << name << ": { ";
 	

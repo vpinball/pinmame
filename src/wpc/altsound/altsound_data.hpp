@@ -110,7 +110,7 @@ typedef struct _behavior_info {
 	float overlay_duck_vol = 1.0f;
 } BehaviorInfo;
 
-// Structure for holding Altsound2 sample data
+// Structure for holding G-Sound sample data
 typedef struct _sample_info {
 	unsigned int id;
 	std::string type;

@@ -177,7 +177,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in, string& for
 }
 
 // ---------------------------------------------------------------------------
-// Helper function to parse Altsound2 behavior values
+// Helper function to parse G-Sound behavior values
 // ---------------------------------------------------------------------------
 
 bool AltsoundIniProcessor::parseBehaviorValue(const IniSection& section, const std::string& key, std::bitset<5>& behavior)
@@ -213,7 +213,7 @@ bool AltsoundIniProcessor::parseBehaviorValue(const IniSection& section, const s
 
 
 // ---------------------------------------------------------------------------
-// Helper function to parse Altsound2 behavior volume values
+// Helper function to parse G-Sound behavior volume values
 // ---------------------------------------------------------------------------
 
 bool AltsoundIniProcessor::parseVolumeValue(const IniSection& section, const std::string& key, float& volume)

@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
-// altsound2_csv_parser.hpp
+// gsound_csv_parser.hpp
 // 06/23/23 - Dave Roscoe
 //
-// Parser for AltSound2 format CSV files
+// Parser for G-Sound format CSV files
 // ---------------------------------------------------------------------------
 // license:<TODO>
 // ---------------------------------------------------------------------------
-#ifndef ALTSOUND2_CSV_PARSER_HPP
-#define ALTSOUND2_CSV_PARSER_HPP
+#ifndef GSOUND_CSV_PARSER_HPP
+#define GSOUND_CSV_PARSER_HPP
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
@@ -24,11 +24,11 @@ extern std::string get_vpinmame_path();
 // Class definitions
 // ---------------------------------------------------------------------------
 
-class Altsound2CsvParser {
+class GSoundCsvParser {
 public: // methods
 
 	// Standard constructor
-	Altsound2CsvParser(const std::string& path_in);
+	GSoundCsvParser(const std::string& path_in);
 
 	bool parse(std::vector<SampleInfo>& samples_out);
 
@@ -37,10 +37,10 @@ public: // data
 protected:
 
 	// Default constructor
-	Altsound2CsvParser() {/* not used */ };
+	GSoundCsvParser() {/* not used */ };
 
 	// Copy constructor
-	Altsound2CsvParser(Altsound2CsvParser&) {/* not used */ };
+	GSoundCsvParser(GSoundCsvParser&) {/* not used */ };
 
 private: // functions
 
@@ -50,4 +50,4 @@ private: // data
 	std::string filename;
 };
 
-#endif // ALTSOUND2_CSV_PARSER_HPP
+#endif // GSOUND_CSV_PARSER_HPP

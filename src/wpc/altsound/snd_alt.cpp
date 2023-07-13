@@ -31,7 +31,7 @@
 #include "gen.h"
 #include "altsound_processor_base.hpp"
 #include "altsound_processor.hpp"
-#include "altsound2_processor.hpp"
+#include "gsound_processor.hpp"
 #include "altsound_file_parser.hpp"
 #include "altsound_ini_processor.hpp"
 #include "inipp.h"
@@ -239,7 +239,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	if (format == "gsound") {
 		// G-Sound only supports new CSV format. No need to specify format
 		// in the constructor
-		processor = new Altsound2Processor(g_szGameName);
+		processor = new GSoundProcessor(g_szGameName);
 	}
 	else if (format == "altsound" || format == "pinsound") {
 		// Traditional altsound processor handles existing CSV and legacy
