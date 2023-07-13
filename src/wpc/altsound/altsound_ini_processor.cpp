@@ -80,72 +80,96 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in, string& for
 		alog.setLogLevel(level);
 	}
 
+	using BB = BehaviorInfo::BehaviorBits;
+
 	// parse MUSIC behavior
 	auto& music_section = ini.sections["music"];
 
 	bool success = true;
 
-	success &= parseBehaviorValue(music_section, "ducks", music_behavior.ducks);
-	success &= parseBehaviorValue(music_section, "pauses", music_behavior.pauses);
-	success &= parseBehaviorValue(music_section, "stops", music_behavior.stops);
+	// MUSIC behaviors are fixed.  It does not duck/pause/stop other streams
+	music_behavior.stops.set(static_cast<int>(BB::MUSIC), true); // MUSIC stops other MUSIC streams
+	
+	success &= parseVolumeValue(music_section, "group_vol", music_behavior.group_vol);
 
-	success &= parseVolumeValue(music_section, "music_duck_vol", music_behavior.music_duck_vol);
-	success &= parseVolumeValue(music_section, "callout_duck_vol", music_behavior.callout_duck_vol);
-	success &= parseVolumeValue(music_section, "sfx_duck_vol", music_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(music_section, "solo_duck_vol", music_behavior.solo_duck_vol);
-	success &= parseVolumeValue(music_section, "overlay_duck_vol", music_behavior.overlay_duck_vol);
-
-	// parse CALLOUT behavior
+    // parse CALLOUT behavior
 	auto& callout_section = ini.sections["callout"];
 
-	success &= parseBehaviorValue(callout_section, "ducks", callout_behavior.ducks);
-	success &= parseBehaviorValue(callout_section, "pauses", callout_behavior.pauses);
-	success &= parseBehaviorValue(callout_section, "stops", callout_behavior.stops);
-
-	success &= parseVolumeValue(callout_section, "music_duck_vol", callout_behavior.music_duck_vol);
-	success &= parseVolumeValue(callout_section, "callout_duck_vol", callout_behavior.callout_duck_vol);
+	// stops
+	callout_behavior.stops.set(static_cast<int>(BB::CALLOUT), true); // CALLOUT stops other CALLOUT streams
+	
+	// pauses
+	callout_behavior.pauses.set(static_cast<int>(BB::MUSIC), true);
+	callout_behavior.pauses.set(static_cast<int>(BB::OVERLAY), true);
+	
+	// ducks
+	callout_behavior.ducks.set(static_cast<int>(BB::SFX), true);
+    //success &= parseBehaviorValue(callout_section, "ducks", callout_behavior.ducks);
+	//success &= parseBehaviorValue(callout_section, "pauses", callout_behavior.pauses);
+	//success &= parseBehaviorValue(callout_section, "stops", callout_behavior.stops);
+	
+	success &= parseVolumeValue(callout_section, "group_vol", callout_behavior.group_vol);
+	//success &= parseVolumeValue(callout_section, "music_duck_vol", callout_behavior.music_duck_vol);
+	//success &= parseVolumeValue(callout_section, "callout_duck_vol", callout_behavior.callout_duck_vol);
 	success &= parseVolumeValue(callout_section, "sfx_duck_vol", callout_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(callout_section, "solo_duck_vol", callout_behavior.solo_duck_vol);
-	success &= parseVolumeValue(callout_section, "overlay_duck_vol", callout_behavior.overlay_duck_vol);
+	//success &= parseVolumeValue(callout_section, "solo_duck_vol", callout_behavior.solo_duck_vol);
+	//success &= parseVolumeValue(callout_section, "overlay_duck_vol", callout_behavior.overlay_duck_vol);
 
 	// parse SFX behavior
 	auto& sfx_section = ini.sections["sfx"];
 
-	success &= parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
-	success &= parseBehaviorValue(sfx_section, "pauses", sfx_behavior.pauses);
-	success &= parseBehaviorValue(sfx_section, "stops", sfx_behavior.stops);
+	//success &= parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
+	//success &= parseBehaviorValue(sfx_section, "pauses", sfx_behavior.pauses);
+	//success &= parseBehaviorValue(sfx_section, "stops", sfx_behavior.stops);
 
-	success &= parseVolumeValue(sfx_section, "music_duck_vol", sfx_behavior.music_duck_vol);
-	success &= parseVolumeValue(sfx_section, "callout_duck_vol", sfx_behavior.callout_duck_vol);
-	success &= parseVolumeValue(sfx_section, "sfx_duck_vol", sfx_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(sfx_section, "solo_duck_vol", sfx_behavior.solo_duck_vol);
-	success &= parseVolumeValue(sfx_section, "overlay_duck_vol", sfx_behavior.overlay_duck_vol);
+	success &= parseVolumeValue(sfx_section, "group_vol", sfx_behavior.group_vol);
+	//success &= parseVolumeValue(sfx_section, "music_duck_vol", sfx_behavior.music_duck_vol);
+	//success &= parseVolumeValue(sfx_section, "callout_duck_vol", sfx_behavior.callout_duck_vol);
+	//success &= parseVolumeValue(sfx_section, "sfx_duck_vol", sfx_behavior.sfx_duck_vol);
+	//success &= parseVolumeValue(sfx_section, "solo_duck_vol", sfx_behavior.solo_duck_vol);
+	//success &= parseVolumeValue(sfx_section, "overlay_duck_vol", sfx_behavior.overlay_duck_vol);
 
 	// parse SOLO behavior
 	auto& solo_section = ini.sections["solo"];
 
-	success &= parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);
-	success &= parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
-	success &= parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
+	// stops
+	solo_behavior.stops.set(static_cast<int>(BB::MUSIC), true);
+	solo_behavior.stops.set(static_cast<int>(BB::OVERLAY), true);
+	solo_behavior.stops.set(static_cast<int>(BB::CALLOUT), true);
+	solo_behavior.stops.set(static_cast<int>(BB::SOLO), true);
+	//solo_behavior.stops.set(static_cast<int>(BB::SFX), true);
 
-	success &= parseVolumeValue(solo_section, "music_duck_vol", solo_behavior.music_duck_vol);
-	success &= parseVolumeValue(solo_section, "callout_duck_vol", solo_behavior.callout_duck_vol);
-	success &= parseVolumeValue(solo_section, "sfx_duck_vol", solo_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(solo_section, "solo_duck_vol", solo_behavior.solo_duck_vol);
-	success &= parseVolumeValue(solo_section, "overlay_duck_vol", solo_behavior.overlay_duck_vol);
+	//success &= parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);
+	//success &= parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
+	//success &= parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
+
+	success &= parseVolumeValue(solo_section, "group_vol", solo_behavior.group_vol);
+	//success &= parseVolumeValue(solo_section, "music_duck_vol", solo_behavior.music_duck_vol);
+	//success &= parseVolumeValue(solo_section, "callout_duck_vol", solo_behavior.callout_duck_vol);
+	//success &= parseVolumeValue(solo_section, "sfx_duck_vol", solo_behavior.sfx_duck_vol);
+	//success &= parseVolumeValue(solo_section, "solo_duck_vol", solo_behavior.solo_duck_vol);
+	//success &= parseVolumeValue(solo_section, "overlay_duck_vol", solo_behavior.overlay_duck_vol);
 
 	// parse OVERLAY behavior
 	auto& overlay_section = ini.sections["overlay"];
 
-	success &= parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
-	success &= parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
-	success &= parseBehaviorValue(overlay_section, "stops", overlay_behavior.stops);
+	// stops
+	overlay_behavior.stops.set(static_cast<int>(BB::OVERLAY), true);
 
+	// ducks
+	overlay_behavior.ducks.set(static_cast<int>(BB::MUSIC), true);
+	overlay_behavior.ducks.set(static_cast<int>(BB::SFX), true);
+
+	//success &= parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
+	//success &= parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
+	//success &= parseBehaviorValue(overlay_section, "stops", overlay_behavior.stops);
+
+	success &= parseVolumeValue(overlay_section, "group_vol", overlay_behavior.group_vol);
 	success &= parseVolumeValue(overlay_section, "music_duck_vol", overlay_behavior.music_duck_vol);
-	success &= parseVolumeValue(overlay_section, "callout_duck_vol", overlay_behavior.callout_duck_vol);
+	//success &= parseVolumeValue(overlay_section, "callout_duck_vol", overlay_behavior.callout_duck_vol);
 	success &= parseVolumeValue(overlay_section, "sfx_duck_vol", overlay_behavior.sfx_duck_vol);
-	success &= parseVolumeValue(overlay_section, "solo_duck_vol", overlay_behavior.solo_duck_vol);
-	success &= parseVolumeValue(overlay_section, "overlay_duck_vol", overlay_behavior.overlay_duck_vol);
+	//success &= parseVolumeValue(overlay_section, "solo_duck_vol", overlay_behavior.solo_duck_vol);
+	//success &= parseVolumeValue(overlay_section, "overlay_duck_vol", overlay_behavior.overlay_duck_vol);
 
 	OUTDENT;
 	ALT_DEBUG(0, "END parse_altsound_ini()");
@@ -200,7 +224,7 @@ bool AltsoundIniProcessor::parseVolumeValue(const IniSection& section, const std
 	if (!parsed_value.empty()) {
 		try {
 			int val = std::stoul(parsed_value);
-			volume = val > 100 ? 1.0f : val < 0 ? 0.0f : (float)val / 100.f;
+			volume = val > 100 ? 1.0f : val <= 0 ? 0.0f : (float)val / 100.f;
 		}
 		catch (const std::exception& e) {
 			ALT_ERROR(0, "Exception while parsing volume value: %s\n", e.what());
@@ -218,7 +242,7 @@ bool AltsoundIniProcessor::parseVolumeValue(const IniSection& section, const std
 // This is in support of altsound.ini file creation for packages that don't
 // already have one (legacy).  It works in order of precedence:
 //
-//  1. presence of altsound2.csv
+//  1. presence of gsound.csv
 //  2. presence of altsound.csv
 //	3. presence of PinSound directory structure
 //
@@ -230,17 +254,17 @@ string AltsoundIniProcessor::get_altound_format(const string& path_in)
 	INDENT;
 
 	bool using_altsound = false;
-	bool using_altsound2 = false;
+	bool using_gsound = false;
 	bool using_pinsound = false;
 
-	// check for altsound2
+	// check for gsound
 	string path1 = path_in;
-	path1.append("\\altsound2.csv");
+	path1.append("\\gsound.csv");
 
 	std::ifstream ini(path1.c_str());
 	if (ini.good()) {
-		ALT_INFO(0, "Using AltSound2 format");
-		using_altsound2 = true;
+		ALT_INFO(0, "Using G-Sound format");
+		using_gsound = true;
 		ini.close();
 	}
 	else {
@@ -256,7 +280,7 @@ string AltsoundIniProcessor::get_altound_format(const string& path_in)
 		}
 	}
 
-	if (!using_altsound && !using_altsound2) {
+	if (!using_altsound && !using_gsound) {
 		// check for PinSound
 		string path3 = path_in;
 		string path4 = path_in;
@@ -279,8 +303,7 @@ string AltsoundIniProcessor::get_altound_format(const string& path_in)
 			ALT_INFO(0, "Using PinSound format");
 	}
 
-	return using_altsound2 ? "altsound2" : using_altsound ? "altsound" :
-		using_pinsound ? "pinsound" : "";
+	return using_gsound ? "gsound" : using_altsound ? "altsound" : using_pinsound ? "pinsound" : "";
 
 	OUTDENT;
 	ALT_DEBUG(0, "END get_altsound_format()");
@@ -313,11 +336,11 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 	file_out << "; There are three supported AltSound formats :\n";
 	file_out << ";  1. Legacy\n";
 	file_out << ";  2. AltSound\n";
-	file_out << ";  3. AltSound2\n";
+	file_out << ";  3. G-Sound\n";
 	file_out << ";\n";
-	file_out << "; Legacy: the original AltSound format that parses a file / folder structure\n";
-	file_out << ";         similar to the PinSound system. It is no longer used for new\n";
-	file_out << ";         AltSound packages\n";
+	file_out << "; Legacy  : the original AltSound format that parses a file / folder structure\n";
+	file_out << ";           similar to the PinSound system. It is no longer used for new\n";
+	file_out << ";           AltSound packages\n";
 	file_out << ";\n";
 	file_out << "; AltSound: a CSV-based format designed as a replacement for the PinSound\n";
 	file_out << ";           format. This format defines samples according to \"channels\" with\n";
@@ -325,13 +348,13 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 	file_out << ";           \"gain\", \"ducking\", and \"stop\" fields. This is the format\n";
 	file_out << ";           currently in use by most AltSound authors\n";
 	file_out << ";\n";
-	file_out << "; Altsound2: a new CSV-based format that defines samples according to\n";
-	file_out << ";            contextual types, allowing for more intuitively designed AltSound\n";
-	file_out << ";            packages. General playback behavior is dictated by the assigned\n";
-	file_out << ";            type. Behaviors can evolve without the need for adding\n";
-	file_out << ";            additional CSV fields, and the combinatorial complexity that\n";
-	file_out << ";            comes with it.\n";
-	file_out << ";            NOTE: This option requires the new altsound2.csv format\n";
+	file_out << "; G-Sound : a new CSV-based format that defines samples according to\n";
+	file_out << ";           contextual types, allowing for more intuitively designed AltSound\n";
+	file_out << ";           packages. General playback behavior is dictated by the assigned\n";
+	file_out << ";           type. Behaviors can evolve without the need for adding\n";
+	file_out << ";           additional CSV fields, and the combinatorial complexity that\n";
+	file_out << ";           comes with it.\n";
+	file_out << ";           NOTE: This option requires the new gsound.csv format\n";
 	file_out << ";\n";
 	file_out << "; ----------------------------------------------------------------------------\n\n";
 
@@ -379,94 +402,67 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 	file_out << "logging_level = Error\n\n";
 
 	file_out << "; ----------------------------------------------------------------------------\n";
-	file_out << "; The section below allows for tailoring of the AltSound2 behaviors. They are\n";
-	file_out << "; not used for traditional Altound or Legacy Altsound formats\n";
+	file_out << "; The section below allows for tailoring of the G-Sound behaviors. They are\n";
+	file_out << "; not used for traditional AltSound or Legacy Altsound formats\n";
 	file_out << ";\n";
-	file_out << "; The AltSound2 format supports the following sample types :\n";
+	file_out << "; The G-Sound format supports the following sample types:\n";
 	file_out << ";\n";
-	file_out << "; -MUSIC   : background music\n";
-	file_out << "; -CALLOUT : voice interludes and callouts\n";
-	file_out << "; -SFX     : short sounds to supplement table sounds\n";
-	file_out << "; -SOLO    : sound played at end-of-ball/game, or tilt\n";
-	file_out << "; -OVERLAY : sounds played over music/sfx\n";
+	file_out << "; - MUSIC   : background music.  Only one can play at a time\n";
+	file_out << "; - CALLOUT : voice interludes and callouts.  Only one can play at a time\n";
+	file_out << "; - SFX     : short sounds to supplement table sounds.  Multiple can play at a time\n";
+	file_out << "; - SOLO    : sound played at end-of-ball/game, or tilt.  Only one can play at a time\n";
+	file_out << "; - OVERLAY : sounds played over music/sfx.  Only one can play at a time\n";
 	file_out << ";\n";
-	file_out << "; Each sample type supports the following variables to tailor playback behavior\n";
-	file_out << "; with respect to other sample types:\n";
+	file_out << "; Sample types have built-in behaviors.  Some can be user-modified. The adjustable\n";
+	file_out << "; variables are:\n";
 	file_out << ";\n";
-	file_out << "; \"ducks\"            : specify which sample types are ducked\n";
-	file_out << "; \"pauses\"           : specify which sample types are paused\n";
-	file_out << "; \"stops\"            : specify which sample types are stopped\n";
-	file_out << "; \"music_duck_vol\"   : specify the ducked volume for music samples\n";
-	file_out << "; \"callout_duck_vol\" : specify the ducked volume for callout samples\n";
-	file_out << "; \"sfx_duck_vol\"     : specify the ducked volume for sfx samples\n";
-	file_out << "; \"solo_duck_vol\"    : specify the ducked volume for solo samples\n";
-	file_out << "; \"overlay_duck_vol\" : specify the ducked volume for overlay samples\n";
+	file_out << "; ducks            : specify which sample types are ducked\n";
+	file_out << "; pauses           : specify which sample types are paused\n";
+	file_out << "; stops            : specify which sample types are stopped\n";
+	file_out << "; group_vol        : relative group volume for sample type\n";
+	file_out << "; music_duck_vol   : ducked volume for music samples\n";
+	file_out << "; callout_duck_vol : ducked volume for callout samples\n";
+	file_out << "; sfx_duck_vol     : ducked volume for sfx samples\n";
+	file_out << "; solo_duck_vol    : ducked volume for solo samples\n";
+	file_out << "; overlay_duck_vol : ducked volume for overlay samples\n";
 	file_out << ";\n";
 	file_out << "; NOTES\n";
 	file_out << "; - a sample type cannot duck / pause another sample of the same type\n";
 	file_out << "; - stopping a sample of the same type essentially means that only one sample\n";
 	file_out << ";   of that type can be played at the same time\n";
-	file_out << "; - a stopped sample cannot be resumed / restarted\n";
+	file_out << "; - a stopped sample cannot be resumed/restarted\n";
 	file_out << "; - ducking values are specified as a percentage of the gain of the\n";
-	file_out << ";   affected sample type(s). Valid values range from 0 to 100 where\n";
+	file_out << ";   affected sample type(s). Values range from 0 to 100 where\n";
 	file_out << ";   0 completely mutes the sample, and 100 effectively negates ducking\n";
 	file_out << "; - if multiple ducking values apply to a single sample, the lowest\n";
 	file_out << ";   ducking value is used\n";
-	file_out << "; - ducking / pausing ends when the sample that set it has ended.If\n";
-	file_out << ";   multiple sample types duck / pause another type, playback will remain\n";
-	file_out << ";   ducked / paused until the last affecting sample has ended\n";
+	file_out << "; - ducking/pausing ends when the sample that set it has ended\n";
+	file_out << "; - If multiple sample types duck/pause another type, playback will remain\n";
+	file_out << ";   ducked/paused until the last affecting sample has ended\n";
 	file_out << "; ----------------------------------------------------------------------------\n\n";
 
 	// create behavior variable section
 	file_out << "[music]\n";
-	file_out << "ducks =\n";
-	file_out << "pauses =\n";
-	file_out << "stops = music\n";
-	file_out << "; music_duck_vol =\n";
-	file_out << "; callout_duck_vol =\n";
-	file_out << "; sfx_duck_vol =\n";
-	file_out << "; solo_duck_vol =\n";
-	file_out << "; overlay_duck_vol =\n\n";
+	file_out << "group_vol = 100\n\n";
 
 	file_out << "[callout]\n";
 	file_out << "ducks = sfx\n";
-	file_out << "pauses = music\n";
-	file_out << "stops = callout\n";
-	file_out << "; music_duck_vol =\n";
-	file_out << "; callout_duck_vol =\n";
-	file_out << "sfx_duck_vol =\n";
-	file_out << "; solo_duck_vol =\n";
-	file_out << "; overlay_duck_vol =\n\n";
+	file_out << "pauses = music, overlay\n";
+	file_out << "group_vol = 100\n";
+	file_out << "sfx_duck_vol = 65\n\n";
 
 	file_out << "[sfx]\n";
-	file_out << "ducks =\n";
-	file_out << "pauses =\n";
-	file_out << "stops =\n";
-	file_out << "; music_duck_vol =\n";
-	file_out << "; callout_duck_vol =\n";
-	file_out << "; sfx_duck_vol =\n";
-	file_out << "; solo_duck_vol =\n";
-	file_out << "; overlay_duck_vol =\n\n";
+	file_out << "group_vol = 100\n\n";
 
 	file_out << "[solo]\n";
-	file_out << "ducks =\n";
-	file_out << "pauses =\n";
-	file_out << "stops = music, solo, overlay, callout\n";
-	file_out << "; music_duck_vol =\n";
-	file_out << "; callout_duck_vol =\n";
-	file_out << "; sfx_duck_vol =\n";
-	file_out << "; solo_duck_vol =\n";
-	file_out << "; overlay_duck_vol =\n\n";
+	file_out << "stops = music, overlay, callout\n";
+	file_out << "group_vol = 100\n\n";
 
 	file_out << "[overlay]\n";
 	file_out << "ducks = music, sfx\n";
-	file_out << "pauses =\n";
-	file_out << "stops =\n";
-	file_out << "music_duck_vol =\n";
-	file_out << "; callout_duck_vol =\n";
-	file_out << "sfx_duck_vol =\n";
-	file_out << "; solo_duck_vol =\n";
-	file_out << "; overlay_duck_vol =\n\n";
+	file_out << "group_vol = 100\n";
+	file_out << "music_duck_vol = 50\n";
+	file_out << "sfx_duck_vol = 65\n\n";
 
 	file_out.close();
 

@@ -23,8 +23,12 @@
 #define ALT_ERROR(indent, msg, ...) alog.error(indent, msg, ##__VA_ARGS__)
 #define ALT_WARNING(indent, msg, ...) alog.warning(indent, msg, ##__VA_ARGS__)
 #define ALT_DEBUG(indent, msg, ...) alog.debug(indent, msg, ##__VA_ARGS__)
-#define INDENT alog.indent()
-#define OUTDENT alog.outdent()
+//#define INDENT alog.indent()
+#define INDENT
+//#define OUTDENT alog.outdent()
+#define OUTDENT
+#define ALT_CALL(func) ([&]() { alog.indent(); auto ret = func; alog.outdent(); return ret; }())
+#define ALT_RETURN(retval) do { alog.outdent(); return retval; } while (0)
 
 class AltsoundLogger
 {

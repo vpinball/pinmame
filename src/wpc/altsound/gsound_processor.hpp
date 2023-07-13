@@ -73,19 +73,19 @@ private: // functions
 	bool processBehaviors(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
 	// Process effect of passed behavior structure on MUSIC streams
-	bool processMusicBehavior(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	bool processMusicImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
 	// Process effect of passed behavior on CALLOUT streams
-	bool processCalloutBehavior(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	bool processCalloutImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
 	// Process effect of passed behavior on SFX streams
-	bool processSfxBehavior(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	bool processSfxImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
 	// Process effect of passed behavior on SOLO streams
-	bool processSoloBehavior(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	bool processSoloImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
 	// Process effect of passed behavior on OVERLAY streams
-	bool processOverlayBehavior(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	bool processOverlayImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
 
 	// Stop currently-playing MUSIC stream
 	bool stopMusicStream();
@@ -95,6 +95,9 @@ private: // functions
 
 	// Stop currently-playing SOLO stream
 	bool stopSoloStream();
+
+	// Stop currently-playing OVERLAY stream
+	bool stopOverlayStream();
 
 	// BASS SYNCPROC callback whan a stream ends
 	static void CALLBACK common_callback(HSYNC handle, DWORD channel, DWORD data, void* user);

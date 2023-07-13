@@ -102,6 +102,7 @@ typedef struct _behavior_info {
 	std::bitset<5> stops = 0;
 	std::bitset<5> pauses = 0;
 
+	float group_vol = 1.0f;
 	float music_duck_vol = 1.0f;
 	float callout_duck_vol = 1.0f;
 	float sfx_duck_vol = 1.0f;
@@ -127,7 +128,7 @@ typedef struct _sample_info {
 const char* get_bass_err();  // function prototype
 
 // translate AltsoundSampleType enum values to strings
-std::string toString(AltsoundSampleType sampleType);
+const char* toString(AltsoundSampleType sampleType);
 
 // tranlsate string representation of AltsoundSample to enum value
 AltsoundSampleType toSampleType(const std::string& type_in);

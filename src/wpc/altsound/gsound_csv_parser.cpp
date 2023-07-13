@@ -33,7 +33,7 @@ Altsound2CsvParser::Altsound2CsvParser(const std::string& path_in)
 : altsound_path(path_in),
   filename()
 {
-	filename = altsound_path + "\\altsound2.csv";
+	filename = altsound_path + "\\gsound.csv";
 }
 
 // ----------------------------------------------------------------------------

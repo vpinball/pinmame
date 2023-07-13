@@ -168,7 +168,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
 
 	// Handle the resulting command
-	if (!processor->handleCmd(cmd_combined)) {
+	if (!ALT_CALL(processor->handleCmd(cmd_combined))) {
 		ALT_WARNING(0, "FAILED processor::handleCmd()");
 
 		postprocess_commands(cmd_combined);
@@ -236,8 +236,8 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		return FALSE;
 	}
 
-	if (format == "altsound2") {
-		// AltSound2 only supports new CSV format. No need to specify format
+	if (format == "gsound") {
+		// G-Sound only supports new CSV format. No need to specify format
 		// in the constructor
 		processor = new Altsound2Processor(g_szGameName);
 	}

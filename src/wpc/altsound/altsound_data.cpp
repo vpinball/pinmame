@@ -48,7 +48,7 @@ _stream_info::~_stream_info() {
 // Helper function to translate AltsoundSample type constants to strings
 // ---------------------------------------------------------------------------
 
-std::string toString(AltsoundSampleType sampleType) {
+const char* toString(AltsoundSampleType sampleType) {
 	switch (sampleType) {
 	case UNDEFINED: return "UNDEFINED";
 	case MUSIC:     return "MUSIC";
