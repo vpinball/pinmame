@@ -1131,6 +1131,7 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
 // ----------------
 // PEYPER
 // ----------------
+DRIVERNV(odinp)         //Odin (Prototype, 1985)
 DRIVERNV(odin)          //Odin (1985)
 DRIVERNV(nemesis)       //Nemesis (1986)
 DRIVERNV(wolfman)       //Wolf Man (1987)

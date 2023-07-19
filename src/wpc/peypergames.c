@@ -52,7 +52,15 @@ INITGAME(odin, disp6f, 1, 4)
 PEYPER_ROMSTART2(odin, "odin_a.bin", CRC(ac3a7770) SHA1(2409629d3adbae0d7e6e5f9fe6f137c1e5a1bb86),
 						   "odin_b.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
 PEYPER_ROMEND
-CORE_GAMEDEFNV(odin,"Odin",1985,"Peyper (Spain)",gl_mPEYPER,0)
+CORE_GAMEDEFNV(odin,"Odin",1985,"Peyper (Spain)",gl_mPEYPER_O,0)
+
+ODINP_INPUT_PORTS_START PEYPER_INPUT_PORTS_END
+static core_tGameData odinpGameData = {GEN_PEYPER,disp6f,{FLIP_SW(FLIP_L),0,4,0,SNDBRD_NONE}};
+static void init_odinp(void) { core_gameData = &odinpGameData; }
+PEYPER_ROMSTART2(odinp, "CD1", CRC(f8747b2e) SHA1(8dfbef08bb0df0d1e5c11b88d29cd9c61b72bec9),
+						            "CD2", CRC(c2dbe5b5) SHA1(c6b34334a55471f0550d84376f260fde9048cd31))
+PEYPER_ROMEND
+CORE_CLONEDEFNV(odinp,odin,"Odin (Prototype)",1985,"Peyper (Spain)",gl_mPEYPER_OP,0)
 
 /*-------------------------------------------------------------------
 / Nemesis (1986)
@@ -106,7 +114,7 @@ static core_tLCDLayout sonicDisp7[] = {
 
 // Third World (1978) - using Playmatic hardware
 // Night Fever (1979) - using Playmatic hardware
-// Storm (1979)
+// Storm (1979) - using Playmatic hardware
 
 /*-------------------------------------------------------------------
 / Odin De Luxe (1985)
@@ -115,7 +123,7 @@ INITGAME_SONIC(odin_dlx, disp6f, 1, 4)
 PEYPER_ROMSTART2(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
 						   "odin_b.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
 PEYPER_ROMEND
-CORE_CLONEDEFNV(odin_dlx,odin,"Odin De Luxe",1985,"Sonic (Spain)",gl_mPEYPER,0)
+CORE_CLONEDEFNV(odin_dlx,odin,"Odin De Luxe",1985,"Sonic (Spain)",gl_mPEYPER_O,0)
 
 /*-------------------------------------------------------------------
 / Gamatron (1986)
