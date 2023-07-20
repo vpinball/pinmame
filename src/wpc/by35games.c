@@ -1586,6 +1586,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(m_mpaca,m_mpac,"Mr. & Mrs. Pac-Man Pinball (Free Play)",2004,"Bally / Oliver",by35_mBY35_61S,0) // rev. 1
 
 // plays a "startup" sound, no idea what else was changed?!
+//  the U6 dump was also equal to the known one
 #define init_m_mpacb init_m_mpac
 BY35_ROMSTARTx00(m_mpacb,"U2",          CRC(a697971a) SHA1(e45cbb7822ac159c447877c4c837be5aaa4ac675),
                          "720-53_6.732",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
