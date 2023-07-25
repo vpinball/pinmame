@@ -1131,6 +1131,7 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
 // ----------------
 // PEYPER
 // ----------------
+DRIVERNV(odinp)         //Odin (Prototype, 1985)
 DRIVERNV(odin)          //Odin (1985)
 DRIVERNV(nemesis)       //Nemesis (1986)
 DRIVERNV(wolfman)       //Wolf Man (1987)
@@ -1704,6 +1705,7 @@ DRIVERNV(elv302g)       //           08/04 Elvis (3.02 German)
 DRIVERNV(elv302l)       //           08/04 Elvis (3.02 Spanish)
 DRIVERNV(elv302f)       //           08/04 Elvis (3.02 French)
 DRIVERNV(elv302i)       //           08/04 Elvis (3.02 Italian)
+DRIVERNV(elv100)        //           08/04 Elvis (1.00)
 DRIVER  (harl,a40)      //Whitestar: 10/04 Harley-Davidson (Stern, 4.00)
 DRIVER  (harl,f40)      //           10/04 Harley-Davidson (Stern, 4.00 French)
 DRIVER  (harl,g40)      //           10/04 Harley-Davidson (Stern, 4.00 German)

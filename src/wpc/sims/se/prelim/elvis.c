@@ -51,26 +51,27 @@ static struct {
 } locals;
 
 extern struct {
-	int    vblankCount;
-	int    initDone;
-	UINT32 solenoids;
-	int    lampRow, lampColumn;
-	int    diagnosticLed;
-	int    swCol;
-	int	 flipsol, flipsolPulse;
-	int    sst0;			//SST0 bit from sound section
-	int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
-	UINT8 *ram8000;
-	int    auxdata;
-	/* Mini DMD stuff */
-	int    lastgiaux, miniidx, miniframe;
-	int    minidata[7], minidmd[4][3][8];
-	/* trace ram related */
-#if defined(SUPPORT_TRACERAM) && SUPPORT_TRACERAM
-	UINT8 *traceRam;
+  int    vblankCount;
+  int    initDone;
+  UINT32 solenoids;
+  int    lampRow, lampColumn;
+  int    diagnosticLed;
+  int    swCol;
+  int	 flipsol, flipsolPulse;
+  int    sst0;			//SST0 bit from sound section
+  int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
+  UINT8 *ram8000;
+  int    auxdata;
+  /* Mini DMD stuff */
+  int    lastgiaux, miniidx, miniframe;
+  int    minidata[7], minidmd[4][3][8];
+  /* trace ram related */
+#if SUPPORT_TRACERAM
+  UINT8 *traceRam;
 #endif
-	UINT8  curBank;                   /* current bank select */
-#define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
+  UINT8  curBank;                   /* current bank select */
+  #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
+  int fastflipaddr;
 } selocals;
 
 /*--------------------------
@@ -332,109 +333,116 @@ SE_ROMEND
 #define init_elvisi init_elvis
 
 SE128_ROMSTART(elv400, "elvscpua.400", CRC(385be9ed) SHA1(c25b54a9b52bece17de9c394c019a4d2649bcf47))
-DE_DMD32ROM8x(        "elvsdspa.401", CRC(fb08d5c3) SHA1(03f9886381d32bfd012a2663d2b7331a76c8c1c0))
+DE_DMD32ROM8x(         "elvsdspa.401", CRC(fb08d5c3) SHA1(03f9886381d32bfd012a2663d2b7331a76c8c1c0))
 ELVIS_SND
 SE_ROMEND
 #define input_ports_elv400 input_ports_elvis
 #define init_elv400 init_elvis
 
 SE128_ROMSTART(elv400l, "elvscpul.400", CRC(536d4e3c) SHA1(3470ffdc32dbce9142dab82c25915d617e1429e6))
-DE_DMD32ROM8x(         "elvsdspl.401", CRC(57fc6ed2) SHA1(3349a56ce38ab4ffdf1469bac8dbc9d08c077f6e))
+DE_DMD32ROM8x(          "elvsdspl.401", CRC(57fc6ed2) SHA1(3349a56ce38ab4ffdf1469bac8dbc9d08c077f6e))
 ELVIS_SND_SP
 SE_ROMEND
 #define input_ports_elv400l input_ports_elvis
 #define init_elv400l init_elvis
 
 SE128_ROMSTART(elv400g, "elvscpug.400", CRC(c5992b96) SHA1(0e8c285b76374daad17017994cd9d8e68a98ba42))
-DE_DMD32ROM8x(         "elvsdspg.401", CRC(a694f642) SHA1(a44febcc08445f53aa96b0c791a636d541cebb97))
+DE_DMD32ROM8x(          "elvsdspg.401", CRC(a694f642) SHA1(a44febcc08445f53aa96b0c791a636d541cebb97))
 ELVIS_SND_GR
 SE_ROMEND
 #define input_ports_elv400g input_ports_elvis
 #define init_elv400g init_elvis
 
 SE128_ROMSTART(elv400f, "elvscpuf.400", CRC(9ae4f3c4) SHA1(5ec1590ca54f36565953467226a85491a96d2d3c))
-DE_DMD32ROM8x(         "elvsdspf.401", CRC(1ddd1823) SHA1(86c2bacb596265a28a4b6dce3cd47ed5a2cf74d7))
+DE_DMD32ROM8x(          "elvsdspf.401", CRC(1ddd1823) SHA1(86c2bacb596265a28a4b6dce3cd47ed5a2cf74d7))
 ELVIS_SND_FR
 SE_ROMEND
 #define input_ports_elv400f input_ports_elvis
 #define init_elv400f init_elvis
 
 SE128_ROMSTART(elv400i, "elvscpui.400", CRC(dd2876fc) SHA1(3b860ad176e3fda58be1f165fc2f9965f36259ef))
-DE_DMD32ROM8x(         "elvsdspi.401", CRC(51f92cec) SHA1(a678dcb29f867b07641f39f5e0a9bf0e5daf9dc3))
+DE_DMD32ROM8x(          "elvsdspi.401", CRC(51f92cec) SHA1(a678dcb29f867b07641f39f5e0a9bf0e5daf9dc3))
 ELVIS_SND_IT
 SE_ROMEND
 #define input_ports_elv400i input_ports_elvis
 #define init_elv400i init_elvis
 
 SE128_ROMSTART(elv303, "elvscpua.303", CRC(a0dd77d8) SHA1(2882eed805c2eb3cabadcfe51997a534ddac9050))
-DE_DMD32ROM8x(        "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
+DE_DMD32ROM8x(         "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
 ELVIS_SND
 SE_ROMEND
 #define input_ports_elv303 input_ports_elvis
 #define init_elv303 init_elvis
 
 SE128_ROMSTART(elv303l, "elvscpul.303", CRC(691b9882) SHA1(fd8ceef9dbae6c788964d417ad1c61a4bb8e0d9b))
-DE_DMD32ROM8x(         "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
+DE_DMD32ROM8x(          "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
 ELVIS_SND_SP
 SE_ROMEND
 #define input_ports_elv303l input_ports_elvis
 #define init_elv303l init_elvis
 
 SE128_ROMSTART(elv303g, "elvscpug.303", CRC(66b50538) SHA1(2612c0618c1d438632ff56b3b779214cf6534ff8))
-DE_DMD32ROM8x(         "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
+DE_DMD32ROM8x(          "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
 ELVIS_SND_GR
 SE_ROMEND
 #define input_ports_elv303g input_ports_elvis
 #define init_elv303g init_elvis
 
 SE128_ROMSTART(elv303f, "elvscpuf.303", CRC(bc5cc2b9) SHA1(f434164384153a3cca358af55ed82c7757e74fd9))
-DE_DMD32ROM8x(         "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
+DE_DMD32ROM8x(          "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
 ELVIS_SND_FR
 SE_ROMEND
 #define input_ports_elv303f input_ports_elvis
 #define init_elv303f init_elvis
 
 SE128_ROMSTART(elv303i, "elvscpui.303", CRC(11f47b7a) SHA1(4fbe64ed49719408b77ebf6871bb2211e03de394))
-DE_DMD32ROM8x(         "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
+DE_DMD32ROM8x(          "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
 ELVIS_SND_IT
 SE_ROMEND
 #define input_ports_elv303i input_ports_elvis
 #define init_elv303i init_elvis
 
 SE128_ROMSTART(elv302, "elvscpua.302", CRC(52fd7068) SHA1(548568aeb30a17541b07489dfecde9d4d63bf82b))
-DE_DMD32ROM8x(        "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
+DE_DMD32ROM8x(         "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
 ELVIS_SND
 SE_ROMEND
 #define input_ports_elv302 input_ports_elvis
 #define init_elv302 init_elvis
 
 SE128_ROMSTART(elv302l, "elvscpul.302", CRC(0c6f1897) SHA1(ac71f833d4227c2d2d665a169eb0d12c73aeab04))
-DE_DMD32ROM8x(         "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
+DE_DMD32ROM8x(          "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
 ELVIS_SND_SP
 SE_ROMEND
 #define input_ports_elv302l input_ports_elvis
 #define init_elv302l init_elvis
 
 SE128_ROMSTART(elv302g, "elvscpug.302", CRC(9d907782) SHA1(3bad8d0429029b0055d09e50af16bca4da724e0f))
-DE_DMD32ROM8x(         "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
+DE_DMD32ROM8x(          "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
 ELVIS_SND_GR
 SE_ROMEND
 #define input_ports_elv302g input_ports_elvis
 #define init_elv302g init_elvis
 
 SE128_ROMSTART(elv302f, "elvscpuf.302", CRC(893a5ac6) SHA1(4be45cf036cdd643f10ecbb4d0b1778d25cf778a))
-DE_DMD32ROM8x(         "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
+DE_DMD32ROM8x(          "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
 ELVIS_SND_FR
 SE_ROMEND
 #define input_ports_elv302f input_ports_elvis
 #define init_elv302f init_elvis
 
 SE128_ROMSTART(elv302i, "elvscpui.302", CRC(a2c15460) SHA1(dcd4d4b61745ab2ccba662f9d72f56774a830ea0))
-DE_DMD32ROM8x(         "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
+DE_DMD32ROM8x(          "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
 ELVIS_SND_IT
 SE_ROMEND
 #define input_ports_elv302i input_ports_elvis
 #define init_elv302i init_elvis
+
+SE128_ROMSTART(elv100, "Elvis_cpu_1.00.bin",     CRC(5ca9aadc) SHA1(563248af88a851e9eac115c34a80e107b1dba20e))
+DE_DMD32ROM8x(         "Elvis_display_1.00.bin", CRC(8feffc70) SHA1(71849701d49064c65adfdf76908f9fa79a8b25b8))
+ELVIS_SND
+SE_ROMEND
+#define input_ports_elv100 input_ports_elvis
+#define init_elv100 init_elvis
 
 /*--------------
 /  Game drivers
@@ -463,18 +471,20 @@ CORE_CLONEDEFNV(elv302g,elvis,"Elvis (3.02 German)",2004,"Stern",de_mSES3,0)
 CORE_CLONEDEFNV(elv302f,elvis,"Elvis (3.02 French)",2004,"Stern",de_mSES3,0)
 CORE_CLONEDEFNV(elv302i,elvis,"Elvis (3.02 Italian)",2004,"Stern",de_mSES3,0)
 
+CORE_CLONEDEFNV(elv100,elvis,"Elvis (1.00)",2004,"Stern",de_mSES3,0)
+
 /*-----------------------
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData elvisSimData = {
   2,    				/* 2 game specific input ports */
-  elvis_stateDef,	/* Definition of all states */
-  elvis_inportData,	/* Keyboard Entries */
+  elvis_stateDef,		/* Definition of all states */
+  elvis_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed */
   NULL, 				/* no init */
   elvis_handleBallState,	/*Function to handle ball state changes */
-  elvis_drawStatic,	/* Function to handle mechanical state changes */
-  FALSE, 				/* Simulate manual shooter? */
+  elvis_drawStatic,		/* Function to handle mechanical state changes */
+  FALSE,				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
 

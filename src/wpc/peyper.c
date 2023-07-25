@@ -18,8 +18,10 @@
 #include "peyper.h"
 #include "sndbrd.h"
 
-#define VD_IRQFREQ         800 /* IRQ frequency for Video Dens games on this hardware */
+#define VD_IRQFREQ         600 /* IRQ frequency for Video Dens games on this hardware */
 #define PEYPER_IRQFREQ    1600 /* IRQ frequency */
+#define PEYPER_IRQFREQ_O  2500 /* IRQ frequency for Odin (Deluxe) */
+#define PEYPER_IRQFREQ_OP  440 /* IRQ frequency for Odin Prototype */
 #define PEYPER_CPUFREQ 5000000 /* CPU clock frequency */
 
 /*----------------
@@ -108,7 +110,7 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{ coreGlobals.tmpLampMatrix[2] = data; }
 static WRITE_HANDLER(ay8910_1_portb_w)	{ coreGlobals.tmpLampMatrix[3] = data; }
 
 struct AY8910interface PEYPER_ay8910Int = {
-	2,			/* 2 chip */
+	2,			/* 2 chips */
 	2500000,	/* 2.5 MHz */
 	{ 30, 30 },		/* Volume */
 	{ 0, 0 }, { 0, 0 },
@@ -143,6 +145,7 @@ static WRITE_HANDLER(i8279_w) {
     if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
+      locals.i8279ram[locals.i8279reg] = data;
       if (!core_gameData->hw.gameSpecific1 && (coreGlobals.tmpLampMatrix[8] & 0x11) == 0x11) { // load replay values
         locals.segments[40 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
       } else {
@@ -185,6 +188,8 @@ MEMORY_END
 
 static PORT_READ_START(PEYPER_readport)
   {0x00,0x01, i8279_r},
+  {0x05,0x05, AY8910_read_port_0_r},
+  {0x09,0x09, AY8910_read_port_1_r},
   {0x20,0x24, dip_r}, // only 20, 24 used
   {0x28,0x28, sw0_r},
 PORT_END
@@ -217,6 +222,18 @@ MACHINE_DRIVER_START(PEYPER)
   MDRV_SWITCH_UPDATE(PEYPER)
   MDRV_SWITCH_CONV(PEYPER_sw2m,PEYPER_m2sw)
   MDRV_SOUND_ADD(AY8910, PEYPER_ay8910Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PEYPER_O)
+  MDRV_IMPORT_FROM(PEYPER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(PEYPER_irq, PEYPER_IRQFREQ_O)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PEYPER_OP)
+  MDRV_IMPORT_FROM(PEYPER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(PEYPER_irq, PEYPER_IRQFREQ_OP)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PEYPER_VD)
