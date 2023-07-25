@@ -2,10 +2,9 @@
 // altsound_data.hpp
 // 06/23/23 - Dave Roscoe
 //
-// Holds global variables and structures in support of AltSound processing.
+// Contains global definitions and structures in support of AltSound processing.
 // This provides a cleaner separation between the legacy C code and the new C++
-// code, and is necessary to ensure that only one instance of these exist
-// across multiple compilation units
+// code
 // ---------------------------------------------------------------------------
 // license:<TODO>
 // ---------------------------------------------------------------------------
@@ -19,6 +18,7 @@
 #include <array>
 #include <bitset>
 #include <mutex>
+#include <unordered_map>
 #include <vector>
 
 #define BASS_NO_STREAM 0
@@ -27,43 +27,25 @@
 #define LOG // DAR_TODO remove when logging converted
 
 // ----------------------------------------------------------------------------
-// Global Variables
+// Global Data Structures
 // ----------------------------------------------------------------------------
+
 struct _stream_info;  // forward declaration for clarity
 typedef _stream_info AltsoundStreamInfo;
 typedef std::array<AltsoundStreamInfo*, ALT_MAX_CHANNELS> StreamArray;
 
-// DAR@20230623
-// This is necessary because BASS SYNCPROC callbacks run in a separate thread
-// from the main AltSound processor, and both modify shared memory
-//
-extern std::mutex io_mutex;  // thread synchronization mutex
-
-extern const char* bass_err_names[];  // debug output support 
-extern StreamArray channel_stream;  // channel stream array
-extern float master_vol;
-extern float global_vol;
-
-// ----------------------------------------------------------------------------
-// Global Data Structures
-// ----------------------------------------------------------------------------
-
 // Structure to hold information about active streams
 struct _stream_info {
-	_stream_info() : hstream(0), hsync(0), stream_type(static_cast<AltsoundSampleType>(0)), \
-		channel_idx(0), sample_path(), ducking(1.0f), stop_music(false), \
-		loop(0), gain(1.0f) {}
-	~_stream_info();
-
-	unsigned long hstream;
-	unsigned long hsync;
-	enum AltsoundSampleType stream_type;
-	unsigned int channel_idx;
+	unsigned long hstream = 0;
+	unsigned long hsync = 0;
+	enum AltsoundSampleType stream_type = static_cast<AltsoundSampleType>(0);
+	unsigned int channel_idx = 0;
 	std::string sample_path;
-	float ducking;
-	bool stop_music;
-	bool loop;
-	float gain;
+	unsigned int ducking_profile = 0;
+	float ducking = 1.0f;
+	bool stop_music = false;
+	bool loop = false;
+	float gain = 1.0f;
 };
 
 enum AltsoundSampleType {
@@ -88,7 +70,16 @@ typedef struct _pin_samples {
 	unsigned int num_files;
 } PinSamples;
 
-// Structure for managing sample type behavior
+// Structure for storing G-Sound ducking profiles
+typedef struct _ducking_profile {
+	float music_duck_vol = 1.0f;
+	float callout_duck_vol = 1.0f;
+	float sfx_duck_vol = 1.0f;
+	float solo_duck_vol = 1.0f;
+	float overlay_duck_vol = 1.0f;
+} DuckingProfile;
+
+// Structure for managing G-Sound sample type behavior
 typedef struct _behavior_info {
 	enum class BehaviorBits {
 		MUSIC = 0,
@@ -103,21 +94,51 @@ typedef struct _behavior_info {
 	std::bitset<5> pauses = 0;
 
 	float group_vol = 1.0f;
-	float music_duck_vol = 1.0f;
-	float callout_duck_vol = 1.0f;
-	float sfx_duck_vol = 1.0f;
-	float solo_duck_vol = 1.0f;
-	float overlay_duck_vol = 1.0f;
+
+	std::unordered_map<std::string, _ducking_profile> ducking_profiles;
+
+	float getDuckVolume(unsigned int profile_num, AltsoundSampleType type) const
+	{
+		std::string profileKey = "profile" + std::to_string(profile_num);
+
+		auto it = ducking_profiles.find(profileKey);
+		if (it != ducking_profiles.end()) {
+			const _ducking_profile& profile = it->second;
+
+			switch (type) {
+			case AltsoundSampleType::MUSIC:
+				return profile.music_duck_vol;
+			case AltsoundSampleType::CALLOUT:
+				return profile.callout_duck_vol;
+			case AltsoundSampleType::SFX:
+				return profile.sfx_duck_vol;
+			case AltsoundSampleType::SOLO:
+				return profile.solo_duck_vol;
+			case AltsoundSampleType::OVERLAY:
+				return profile.overlay_duck_vol;
+			default:
+				return 0.0f;
+			}
+		}
+
+		// Return a default value or handle the case when profile or type is not found
+		return 0.0f;
+	}
+
+	// implementation defined in the .cpp
+	void printDuckingProfiles() const;
+
 } BehaviorInfo;
 
 // Structure for holding G-Sound sample data
 typedef struct _sample_info {
 	unsigned int id;
-	std::string type;
+	std::string type = "";
 	float duck = 1.0f;
 	float gain = 1.0f;
-	std::string fname;
+	std::string fname = "";
 	bool loop = false;
+	unsigned int ducking_profile = 0;
 } SampleInfo;
 
 // ---------------------------------------------------------------------------

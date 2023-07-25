@@ -1,4 +1,7 @@
 #include "altsound_file_parser.hpp"
+#include "altsound_logger.hpp"
+
+extern AltsoundLogger alog;
 
 #ifdef __cplusplus
   extern "C" {
@@ -9,10 +12,6 @@
 #ifdef __cplusplus
   }
 #endif
-
-#include "altsound_logger.hpp"
-
-extern AltsoundLogger alog;
 
 AltsoundFileParser::AltsoundFileParser(const char *gname_in)
 : g_szGameName(gname_in)
@@ -194,7 +193,9 @@ bool AltsoundFileParser::parse(PinSamples* psd)
 
 				// All sound files for this sound class collected.
 				// Close the directory stream and free allocated memory
-				closedir(dir2);
+				
+					closedir(dir2);
+				
 				free(PATH2);
 
 				// Restore backed up parent folder and entry.

@@ -29,12 +29,26 @@ using std::string;
 static AltsoundStreamInfo* cur_mus_stream = nullptr;
 static AltsoundStreamInfo* cur_jin_stream = nullptr;
 
-// windef.h "min" conflicts with std::min
+// windef.h min/max conflicts with std::min/max
 #ifdef min
   #undef min
 #endif
+#ifdef max
+	#undef max
+#endif
+
+// Instance of global thread synchronization mutex
+extern std::mutex io_mutex;
+
+// Instance of global array of BASS channels 
+extern StreamArray channel_stream;
+
+extern float master_vol;
+extern float global_vol;
 
 extern AltsoundLogger alog;
+
+const unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
 
 // ---------------------------------------------------------------------------
 // CTOR/DTOR
@@ -129,7 +143,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	// get sample for playback
 	int sample_idx = getSample(cmd_combined_in);
 
-	if (sample_idx == -1) {
+	if (sample_idx == UNSET_IDX) {
 		// No matching command.  Clean up and exit
 		ALT_ERROR(0, "FAILED AltsoundProcessor::get_sample(%u)", cmd_combined_in);
 		
@@ -325,12 +339,12 @@ bool AltsoundProcessor::loadSamples()
 
 // ---------------------------------------------------------------------------
 
-int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
+unsigned int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
 {
 	ALT_DEBUG(0, "BEGIN AltsoundProcessor::getSample()");
 	INDENT;
 
-	unsigned int sample_idx = -1;
+	unsigned int sample_idx = UNSET_IDX;
 
 	// Look for sample that matches the current command
 	for (int i = 0; i < psd.num_files; ++i) {
@@ -356,7 +370,7 @@ int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
 		}
 	}
 
-	if (sample_idx == -1) {
+	if (sample_idx == UNSET_IDX) {
 		ALT_WARNING(0, "FAILED No sample(s) found for ID: %04X", cmd_combined_in);
 	}
 	

@@ -22,6 +22,7 @@
   extern "C" {
 #endif
   #include "core.h"
+#include "osdepend.h"
 #ifdef __cplusplus
   }
 #endif
@@ -50,6 +51,15 @@ BehaviorInfo callout_behavior;
 BehaviorInfo sfx_behavior;
 BehaviorInfo solo_behavior;
 BehaviorInfo overlay_behavior;
+
+// Instance of global thread synchronization mutex
+std::mutex io_mutex;
+
+// Instance of global array of BASS channels 
+StreamArray channel_stream;
+
+float master_vol = 1.0f;
+float global_vol = 1.0f;
 
 // windef.h "min" conflicts with std::min
 #ifdef min
@@ -85,6 +95,9 @@ AltsoundProcessorBase *processor = NULL;
 
 // Use ROM control commands to control master volume
 bool use_rom_ctrl = true;
+
+// Record sound commands for later playback
+bool rec_snd_cmds = false;
 
 // ---------------------------------------------------------------------------
 // Function prototypes
@@ -227,8 +240,9 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	AltsoundIniProcessor ini_proc;
 	string format;
 	bool rom_ctrl = true;
+	bool rec_cmds = false;
 
-	if (!ini_proc.parse_altsound_ini(altsound_path, format, rom_ctrl)) {
+	if (!ini_proc.parse_altsound_ini(altsound_path, format, rec_cmds, rom_ctrl)) {
 		ALT_ERROR(0, "Failed to parse_altsound_ini(%s)", altsound_path.c_str());
 		
 		OUTDENT;
@@ -236,7 +250,11 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		return FALSE;
 	}
 
-	if (format == "gsound") {
+	// update global variables with parsed data
+	use_rom_ctrl = rom_ctrl;
+	rec_snd_cmds = rec_cmds;
+
+	if (format == "g-sound") {
 		// G-Sound only supports new CSV format. No need to specify format
 		// in the constructor
 		processor = new GSoundProcessor(g_szGameName);
@@ -265,7 +283,6 @@ BOOL alt_sound_init(CmdData* cmds_out)
 
 	global_vol = 1.0f;
 	master_vol = 1.0f;
-	use_rom_ctrl = rom_ctrl;
 
 	// intialize the command bookkeeping structure
 	cmds_out->cmd_counter = 0;

@@ -9,6 +9,7 @@
 #include <string>
 
 // Local includes
+#include "altsound_data.hpp"
 #include "inipp.h"
 
 class AltsoundIniProcessor
@@ -16,9 +17,11 @@ class AltsoundIniProcessor
 public:
 	// syntactic candy
 	typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
+	typedef std::unordered_map<std::string, DuckingProfile> ProfileMap;
 
 	// Parse the altsound ini file
-	bool parse_altsound_ini(const std::string& path_in, std::string& format_out, bool& rom_ctrl_out);
+	bool parse_altsound_ini(const std::string& path_in, std::string& format_out, bool& rec_cmds_out,
+		                    bool& rom_ctrl_out);
 
 private: // functions
 	
@@ -27,6 +30,9 @@ private: // functions
 	
 	// helper function to parse behavior volume values
 	bool parseVolumeValue(const IniSection& section, const std::string& key, float& volume);
+
+	// helper function to parse ducking profiles
+	bool parseDuckingProfile(const IniSection& ducking_section, ProfileMap& profiles);
 
 	// determine altsound format from installed data
 	std::string get_altound_format(const std::string& path_in);

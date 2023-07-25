@@ -20,12 +20,12 @@
 
 // Local includes
 #include "altsound_processor_base.hpp"
-#include "snd_alt.h"
+//#include "snd_alt.h"
 #include "..\ext\bass\bass.h"
+#include "altsound_logger.hpp"
 
-#define NUM_STREAM_TYPES 5
-
-typedef std::unordered_map<AltsoundSampleType, std::array<bool, NUM_STREAM_TYPES>*> PausedStatusMap;
+//#define NUM_STREAM_TYPES 5
+constexpr int NUM_STREAM_TYPES = 5;
 
 // ---------------------------------------------------------------------------
 // GSoundProcessor class definition
@@ -53,6 +53,43 @@ public:
 	// Process ROM commands to the sound board
 	bool handleCmd(const unsigned int cmd_in) override;
 
+	// DEBUG helper fns to print all behavior data
+	static void GSoundProcessor::printBehaviorData();
+	// Helper function to print vector elements
+	template<typename T>
+	static void printVector(const std::vector<T>& vec)
+	{
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(2) << "[ ";
+		for (const auto& element : vec)
+		{
+			if (std::is_same<T, bool>::value)
+			{
+				ss << (element ? "true" : "false") << " ";
+			}
+			else
+			{
+				ss << element << " ";
+			}
+		}
+		ss << "]";
+		ALT_DEBUG(1, ss.str().c_str());
+	}
+
+	// Helper function to print arrays of vectors
+	template<typename T, size_t N>
+	static void printArray(const std::array<std::vector<T>, N>& arr)
+	{
+		for (size_t i = 0; i < N; ++i)
+		{
+			std::stringstream ss;
+			ss << "Element " << i << ": ";
+			printVector(arr[i]);
+			ss << std::endl;
+		}
+	}
+
+
 protected:
 
 private: // functions
@@ -64,65 +101,39 @@ private: // functions
 	bool loadSamples() override;
 
 	// find sample matching provided command
-	int getSample(const unsigned int cmd_combined_in) override;
+	unsigned int getSample(const unsigned int cmd_combined_in) override;
 
 	// process stream commands
 	bool processStream(const BehaviorInfo& behavior, AltsoundStreamInfo* stream_out);
 
-	// Execute actions that implement the sample type behaviors
-	bool processBehaviors(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	// Process impacts of sample type behaviors
+	bool processBehaviors(const BehaviorInfo& behavior, const AltsoundStreamInfo* stream);
 
-	// Process effect of passed behavior structure on MUSIC streams
-	bool processMusicImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	// Update behavior impacts when streams end
+	static bool postProcessBehaviors(const BehaviorInfo& behavior, const AltsoundStreamInfo& finished_stream);
 
-	// Process effect of passed behavior on CALLOUT streams
-	bool processCalloutImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+//	static std::vector<float>* getDuckVolumeVector(const AltsoundSampleType sampleType);
+//	static std::unordered_map<unsigned long, float>* getDuckVolumeMap(const AltsoundSampleType sampleType);
 
-	// Process effect of passed behavior on SFX streams
-	bool processSfxImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
+	static std::unordered_map<unsigned long, bool>* getPausedMap(const AltsoundSampleType sampleType);
 
-	// Process effect of passed behavior on SOLO streams
-	bool processSoloImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
-
-	// Process effect of passed behavior on OVERLAY streams
-	bool processOverlayImpacts(const BehaviorInfo& behavior, const AltsoundStreamInfo& stream);
-
-	// Stop currently-playing MUSIC stream
-	bool stopMusicStream();
-
-	// Stop currently-playing CALLOUT stream
-	bool stopCalloutStream();
-
-	// Stop currently-playing SOLO stream
-	bool stopSoloStream();
-
-	// Stop currently-playing OVERLAY stream
-	bool stopOverlayStream();
+	// Stop the exclusive stream referenced by stream_ptr
+	bool stopExclusiveStream(const AltsoundSampleType stream_type);
 
 	// BASS SYNCPROC callback whan a stream ends
 	static void CALLBACK common_callback(HSYNC handle, DWORD channel, DWORD data, void* user);
 
-	// Update behaviors when streams end
-	static void postProcessBehaviors(AltsoundSampleType type);
-
-	// Helper function to check is a stream type still needs to be paused
-	static bool isAnyPaused(const std::array<bool, NUM_STREAM_TYPES>& pauseStatusArray);
-
 	// adjust volume of active streams to accommodate ducking
 	static bool adjustStreamVolumes();
 
+	static float findLowestDuckVolume(AltsoundSampleType stream_type);
+	
 	// resume paused playback on streams that no longer need to be paused
 	static bool processPausedStreams();
 
-	static PausedStatusMap buildPauseStatusMap();
+	static bool tryResumeStream(const AltsoundStreamInfo& stream);
 
-	static bool tryResumeStream(const AltsoundStreamInfo& stream, 
-		                        const PausedStatusMap& pauseStatusMap);
-
-	// DEBUG helper fns to print all behavior data
-	static void printBehaviorData();
-	static void printArray(const std::string& name, const std::array<float, NUM_STREAM_TYPES>& arr);
-	static void printArrayBool(const std::string& name, const std::array<bool, NUM_STREAM_TYPES>& arr);
+	void GSoundProcessor::startLogging(const std::string& gameName);
 
 private: // data
 

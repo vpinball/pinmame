@@ -56,7 +56,7 @@ protected: // functions
 	virtual void init() = 0;
 
 	// find sample matching provided command
-	virtual int getSample(const unsigned int cmd_combined_in) = 0;
+	virtual unsigned int getSample(const unsigned int cmd_combined_in) = 0;
 
 	// Create stream for BASS playback
 	bool createStream(void* syncproc_in, AltsoundStreamInfo* stream_out);
@@ -79,6 +79,8 @@ protected: // functions
 	// set volume on provided stream
 	static bool setStreamVolume(HSTREAM stream_in, const float vol_in);
 
+	const std::string& getGameName();
+
 protected: // data
 	
 	std::string game_name;
@@ -86,5 +88,13 @@ protected: // data
 private: // functions
 private: // data
 };
+
+// ----------------------------------------------------------------------------
+// Inline functions
+// ----------------------------------------------------------------------------
+
+inline const std::string& AltsoundProcessorBase::getGameName() {
+	return game_name;
+}
 
 #endif // ALTSOUND_PROCESSOR_BASE_HPP

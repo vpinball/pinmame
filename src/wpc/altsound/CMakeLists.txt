@@ -7,89 +7,137 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-#file(READ src/version.c version)
-#string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
-#
-#project(vpinmame VERSION ${PROJECT_VERSION})
+# set initial source root to CMake source root
+set(ROOT_DIR ${CMAKE_SOURCE_DIR})
+
+# Load helper functions
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/helper_fns.cmake)
+
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+	project(altsound_test)
+	findRootDirectory(.git) # use .git as root search target
+endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
 
 add_compile_definitions(
-   MAMEVER=7300
    PINMAME
    VPINMAME_ALTSOUND
-
-   LSB_FIRST
-   DIRECTINPUT_VERSION=0x0700
-   DIRECTDRAW_VERSION=0x0300
-   #WIN32
-   _CRT_SECURE_NO_WARNINGS
-   #_USRDLL
 )
 
-add_library(altsound STATIC
-   altsound_data.cpp
-   altsound_data.hpp
+set(STANDALONE_SOURCES
+	altsound_data.cpp
+	altsound_data.hpp
+	gsound_csv_parser.cpp
+	gsound_csv_parser.hpp
+	altsound_ini_processor.hpp
+	altsound_ini_processor.cpp
+	altsound_logger.cpp
+	altsound_logger.hpp
+	altsound_processor_base.cpp
+	altsound_processor_base.hpp
+	gsound_processor.cpp
+	gsound_processor.hpp
+)
+
+set(VPINMAME_SOURCES
    altsound_file_parser.cpp
    altsound_file_parser.hpp
    altsound_csv_parser.cpp
    altsound_csv_parser.hpp
-   gsound_csv_parser.cpp
-   gsound_csv_parser.hpp
-   altsound_ini_processor.hpp
-   altsound_ini_processor.cpp
-   altsound_logger.cpp
-   altsound_logger.hpp
-   altsound_processor_base.cpp
-   altsound_processor_base.hpp
    altsound_processor.cpp
    altsound_processor.hpp
-   gsound_processor.cpp
-   gsound_processor.hpp
    snd_alt.cpp
    snd_alt.h
 )
 
-set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
+set(FULL_SOURCES
+  ${STANDALONE_SOURCES}
+)
 
-target_compile_options(altsound PUBLIC
+# If not building standalone, add the VPinMAME sources
+if (NOT ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+	set(FULL_SOURCES ${FULL_SOURCES}
+		${VPINMAME_SOURCES}
+)
+endif()
+
+add_library(altsound STATIC
+	${FULL_SOURCES}
+)
+
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc /INCREMENTAL:NO)
+
+target_compile_options(altsound PRIVATE
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc /INCREMENTAL:NO>>
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C>:/EHsc>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C>:/EHsc /INCREMENTAL:NO>>
 )
 
 target_include_directories(altsound PUBLIC
    ${CMAKE_CURRENT_SOURCE_DIR}
-   ${CMAKE_SOURCE_DIR}/src
-   ${CMAKE_SOURCE_DIR}/src/wpc
-   ${CMAKE_SOURCE_DIR}/src/windows
-   ${CMAKE_SOURCE_DIR}/src/vc #dirent.h
-   ${CMAKE_SOURCE_DIR}/ext/bass
-   ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+   ${ROOT_DIR}
+   ${ROOT_DIR}/src
+   ${ROOT_DIR}/src/wpc
+   ${ROOT_DIR}/src/windows
+   ${ROOT_DIR}/src/vc #dirent.h
+   ${ROOT_DIR}/ext/bass
 )
 
-target_link_directories(altsound PUBLIC
-   ext/bass
+target_link_directories(altsound PRIVATE
+   ${ROOT_DIR}/ext/bass
 )
 
-target_link_libraries(altsound PUBLIC
-   version.lib
+target_link_libraries(altsound PRIVATE
    bass.lib
 )
 
-target_link_options(altsound PUBLIC
+target_link_options(altsound PRIVATE
    /SAFESEH:NO
-   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-   $<$<CONFIG:RELEASE>:/OPT:REF>
-   $<$<CONFIG:RELEASE>:/OPT:ICF>
-   $<$<CONFIG:RELEASE>:/LTCG>
-   $<$<CONFIG:RELEASE>:/DYNAMICBASE:NO>
+   /INCREMENTAL:NO>
 )
 
 set_target_properties(altsound PROPERTIES
    LINKER_LANGUAGE CXX
-   VS_DPI_AWARE "On"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
+
+# build executable if building standalone
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+	add_compile_definitions(ALTSOUND_STANDALONE)
+
+	add_executable(altsound_test
+		main.cpp
+	)
+
+	target_include_directories(altsound_test PRIVATE
+		${ROOT_DIR}/ext/bass
+	)
+
+	target_link_libraries(altsound_test PRIVATE
+		altsound
+	)
+
+	target_link_directories(altsound_test PRIVATE
+		${ROOT_DIR}/ext/bass
+	)
+
+	set_target_properties(altsound_test PROPERTIES
+		LINKER_LANGUAGE CXX
+			MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+	)
+endif()
+
+if (MSVC)
+    set(CMAKE_BUILD_TOOL msbuild)
+else()
+    set(CMAKE_BUILD_TOOL make)
+endif()
+
+# adds the ability to clean build artifacts
+#add_custom_target(clean-all
+#    COMMAND ${CMAKE_BUILD_TOOL} clean
+#	COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_SOURCE_DIR}/build"
+#)

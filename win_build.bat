@@ -54,6 +54,7 @@ set GENERATOR=
 set BUILD=
 set CONFIG=
 
+set GEN_ALTSOUND=""
 set GEN_INSTVPM=""
 set GEN_LIBPINMAME=""
 set GEN_PINMAME=""
@@ -80,6 +81,22 @@ if %errorlevel% neq 0 goto :failed
 :main_proc
 @REM Display active parameters for this build
 call :print_globals
+
+@REM *************************************************************************
+@REM BUILD ALTSOUND
+@REM *************************************************************************
+if %GEN_ALTSOUND% == YES (
+   set OUTPATH=build/altsound/%PLATFORM%/
+
+@REM   copy /Y cmake\instvpm\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+   pushd src\wpc\altsound
+   cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+
+    if %BUILD%==YES (
+        cmake --build !OUTPATH! --config %CONFIG%
+    )
+    popd
+)
 
 @REM *************************************************************************
 @REM BUILD INSTVPM
@@ -239,11 +256,14 @@ exit /b %errorlevel%
 
 :parse_project
     if /I %1 == ALL (
+        set GEN_ALTSOUND=YES
         set GEN_INSTVPM=YES
         set GEN_LIBPINMAME=YES
         set GEN_PINMAME=YES
         set GEN_PINMAME32=YES
         set GEN_VPINMAME=YES
+    ) else if /I %1 == altsound (
+        set GEN_ALTSOUND=YES
     ) else if /I %1 == instvpm (
         set GEN_INSTVPM=YES
     ) else if /I %1 == libpinmame (

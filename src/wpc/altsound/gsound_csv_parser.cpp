@@ -33,7 +33,7 @@ GSoundCsvParser::GSoundCsvParser(const std::string& path_in)
 : altsound_path(path_in),
   filename()
 {
-	filename = altsound_path + "\\gsound.csv";
+	filename = altsound_path + "\\g-sound.csv";
 }
 
 // ----------------------------------------------------------------------------
@@ -68,6 +68,11 @@ bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
 	bool success = true;
 	try {
 		while (std::getline(file, line)) {
+			if (line.empty()) {
+				// ignore blank lines
+				continue;
+			}
+
 			std::stringstream ss(line);
 			std::string field;
 			SampleInfo entry;
@@ -104,6 +109,14 @@ bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
 				field = trim(field);
 				float val = std::stof(field);
 				entry.gain = val < 0.0f ? 0.0f : val > 100.0f ? 1.0f : val / 100.0f;
+			}
+
+			// Read DUCKING_PROFILE field (uint)
+			if (std::getline(ss, field, ','))
+			{
+				field = trim(field);
+				unsigned int val = std::stoul(field);
+				entry.ducking_profile = val;
 			}
 
 			// Read FNAME field

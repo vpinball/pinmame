@@ -19,15 +19,6 @@
 #include "bass.h"
 #include "altsound_logger.hpp"
 
-// Instance of global thread synchronization mutex
-std::mutex io_mutex;
-
-// Instance of global array of BASS channels 
-StreamArray channel_stream;
-
-float master_vol = 1.0f;
-float global_vol = 1.0f;
-
 // namespace resolution
 using std::string;
 
@@ -38,10 +29,15 @@ using std::string;
 extern AltsoundLogger alog;  // external global logger instance
 
 // ----------------------------------------------------------------------------
+// Helper function to print the ducking profiles in a _behavior_info structure
+// ----------------------------------------------------------------------------
 
-// _stream_info destructor
-_stream_info::~_stream_info() {
-	ALT_DEBUG(0, "Destroying HSTREAM: %u", hstream);
+void _behavior_info::printDuckingProfiles() const {
+	for (const auto& profile : ducking_profiles) {
+		const DuckingProfile& dp = profile.second;
+		ALT_DEBUG(0, "Ducking %s, music_duck_vol: %f, callout_duck_vol: %f, sfx_duck_vol: %f, solo_duck_vol: %f, overlay_duck_vol: %f",
+			profile.first.c_str(), dp.music_duck_vol, dp.callout_duck_vol, dp.sfx_duck_vol, dp.solo_duck_vol, dp.overlay_duck_vol);
+	}
 }
 
 // ---------------------------------------------------------------------------

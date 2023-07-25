@@ -61,7 +61,7 @@ private: // functions
 	bool loadSamples() override;
 	
 	// find sample matching provided command
-	int getSample(const unsigned int cmd_combined_in) override;
+	unsigned int getSample(const unsigned int cmd_combined_in) override;
 	
 	// 
 	bool stopMusicStream();

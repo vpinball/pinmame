@@ -12,6 +12,9 @@
 #include "altsound_logger.hpp"
 
 extern AltsoundLogger alog;
+extern StreamArray channel_stream;
+extern float master_vol;
+extern float global_vol;
 
 // ---------------------------------------------------------------------------
 // CTOR/DTOR

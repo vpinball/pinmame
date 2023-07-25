@@ -25,13 +25,13 @@
 // Data Structures
 // ---------------------------------------------------------------------------
 
-// Structure for command data
-typedef struct _cmd_data {
-	unsigned int cmd_counter;
-	int stored_command;
-	unsigned int cmd_filter;
-	unsigned int cmd_buffer[ALT_MAX_CMDS];
-} CmdData;
+	  // Structure for command data
+	  typedef struct _cmd_data {
+		  unsigned int cmd_counter;
+		  int stored_command;
+		  unsigned int cmd_filter;
+		  unsigned int cmd_buffer[ALT_MAX_CMDS];
+	  } CmdData;
 
 // ---------------------------------------------------------------------------
 // snd_alt function prototypes

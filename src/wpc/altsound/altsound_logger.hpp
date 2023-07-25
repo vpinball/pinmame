@@ -16,6 +16,7 @@
 // Std Library includes
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <string>
 
 // convenience macros
@@ -117,6 +118,7 @@ private:  // methods
 			out << finalMessage;
 			out.flush();
 		}
+		std::cout << finalMessage;
 	}
 
 	// DAR@20230706
