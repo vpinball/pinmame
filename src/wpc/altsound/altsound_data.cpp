@@ -41,6 +41,41 @@ void _behavior_info::printDuckingProfiles() const {
 }
 
 // ---------------------------------------------------------------------------
+// Helper function to find ducking_profiles stored in the _behavior_info
+// structure
+// ---------------------------------------------------------------------------
+
+float _behavior_info::getDuckVolume(unsigned int profile_num, AltsoundSampleType type) const
+{
+	std::string profile_key = "profile" + std::to_string(profile_num);
+
+	auto it = ducking_profiles.find(profile_key);
+	if (it != ducking_profiles.end()) {
+		const _ducking_profile& profile = it->second;
+
+		switch (type) {
+		case AltsoundSampleType::MUSIC:
+			return profile.music_duck_vol;
+		case AltsoundSampleType::CALLOUT:
+			return profile.callout_duck_vol;
+		case AltsoundSampleType::SFX:
+			return profile.sfx_duck_vol;
+		case AltsoundSampleType::SOLO:
+			return profile.solo_duck_vol;
+		case AltsoundSampleType::OVERLAY:
+			return profile.overlay_duck_vol;
+		default:
+			return 1.0f;
+		}
+	}
+	else {
+		ALT_ERROR(0, "Ducking Profile %s not found.  Using default", profile_key.c_str());
+	}
+
+	return 1.0f;
+}
+
+// ---------------------------------------------------------------------------
 // Helper function to translate AltsoundSample type constants to strings
 // ---------------------------------------------------------------------------
 

@@ -97,35 +97,10 @@ typedef struct _behavior_info {
 
 	std::unordered_map<std::string, _ducking_profile> ducking_profiles;
 
-	float getDuckVolume(unsigned int profile_num, AltsoundSampleType type) const
-	{
-		std::string profileKey = "profile" + std::to_string(profile_num);
+	// For ducking volume for supplied sample type in supplied profile ID
+	float getDuckVolume(unsigned int profile_num, AltsoundSampleType type) const;
 
-		auto it = ducking_profiles.find(profileKey);
-		if (it != ducking_profiles.end()) {
-			const _ducking_profile& profile = it->second;
-
-			switch (type) {
-			case AltsoundSampleType::MUSIC:
-				return profile.music_duck_vol;
-			case AltsoundSampleType::CALLOUT:
-				return profile.callout_duck_vol;
-			case AltsoundSampleType::SFX:
-				return profile.sfx_duck_vol;
-			case AltsoundSampleType::SOLO:
-				return profile.solo_duck_vol;
-			case AltsoundSampleType::OVERLAY:
-				return profile.overlay_duck_vol;
-			default:
-				return 0.0f;
-			}
-		}
-
-		// Return a default value or handle the case when profile or type is not found
-		return 0.0f;
-	}
-
-	// implementation defined in the .cpp
+	// Debug helper to print contents of stored ducking profiles
 	void printDuckingProfiles() const;
 
 } BehaviorInfo;

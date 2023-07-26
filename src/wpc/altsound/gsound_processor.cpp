@@ -24,7 +24,7 @@
 #include <string>
 
 // Local includes
-#include "osdepend.h"
+//#include "osdepend.h"
 #include "gsound_csv_parser.hpp"
 
 using std::string;
@@ -118,9 +118,9 @@ static std::unordered_map<AltsoundSampleType, int> streamTypeToIndex = {
 // affecting stream ends
 //
 // Streams can have overlapping impacts on other streams.  When an affecting
-// stream ends, we can't assume its safe to remove the behavior impact from
-// the affected sample type.  The map key ensures we capture ALL the behavior
-// impacts for each sample type.  Only when the map is cleared, can the impact
+// stream ends, it can't be assumed its safe to remove the behavior impact from
+// the affected sample type.  The map key ensures ALL the behavior impacts are
+// captured for each sample type.  Only when the map is cleared, can the impact
 // be removed
 //
 // globals to manage stream ducking
@@ -162,7 +162,10 @@ std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned long, bool>*>
 // maintaining relative individual volumes.  For example, if we have 3 MUSIC
 // tracks with 90, 60, 55 gain levels individually, setting the group volume
 // to 90 will duck all MUSIC tracks by 10% while maintaining the volume
-// relationships between the individual tracks.
+// relationships between the individual tracks.  Each index into the array
+// represents the sample type they apply to.  For example, index 0 is MUSIC
+// group volume.  Index 1 is CALLOUT These values can be set in
+// the configuration file
 //
 // Group volumes for sample types
 std::array<float, NUM_STREAM_TYPES> group_vol = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
@@ -633,7 +636,7 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 	}
 	
 	// DEBUG helper
-	//printBehaviorData();
+	printBehaviorData();
 
 	OUTDENT;
 	ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
@@ -704,7 +707,7 @@ bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
 	}
 
 	// DEBUG helper
-	//printBehaviorData();
+	printBehaviorData();
 
 	OUTDENT;
 	ALT_DEBUG(0, "END GSoundProcessor::postProcessBehaviors()");
@@ -902,7 +905,15 @@ bool GSoundProcessor::adjustStreamVolumes()
 
 		const auto& stream = *streamPtr; // Dereference pointer for readability
 		float ducking_value = 1.0f;
-		float grp_vol = group_vol[streamTypeToIndex[stream.stream_type]];
+
+		//std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
+		//	{MUSIC, &music_behavior},
+		//	{CALLOUT, &callout_behavior},
+		//	{SFX, &sfx_behavior},
+		//	{SOLO, &solo_behavior},
+		//	{OVERLAY, &overlay_behavior}
+		//};
+		float grp_vol = behavior_map[stream.stream_type]->group_vol;
 
 		AltsoundSampleType stream_type = stream.stream_type;
 
