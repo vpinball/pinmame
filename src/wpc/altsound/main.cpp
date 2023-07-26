@@ -262,17 +262,18 @@ BOOL alt_sound_init(CmdData* cmds_out)
 
 	// parse .ini file
 	AltsoundIniProcessor ini_proc;
-	string format;
-	bool rom_ctrl = true;
-	bool rec_cmds = false;
 
-	if (!ini_proc.parse_altsound_ini(altsound_path, format, rec_cmds, rom_ctrl)) {
+	if (!ini_proc.parse_altsound_ini(altsound_path)) {
 		ALT_ERROR(0, "Failed to parse_altsound_ini(%s)", altsound_path.c_str());
 		
 		OUTDENT;
 		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
 	}
+
+	string format = ini_proc.getAltsoundFormat();
+	bool rom_ctrl = ini_proc.usingRomVolumeControl();
+	bool rec_cmds = ini_proc.recordSoundCmds();
 
 	if (format == "g-sound") {
 		// G-Sound only supports new CSV format. No need to specify format
@@ -448,7 +449,7 @@ void parseFile(const char* filename) {
 	std::ifstream inFile(filename);
 	if (!inFile) {
 		std::cerr << "Unable to open file " << filename << std::endl;
-		exit(1); // or handle the error in a manner you prefer
+		exit(1);
 	}
 
 	std::string line;
@@ -457,28 +458,58 @@ void parseFile(const char* filename) {
 	if (std::getline(inFile, line)) {
 		size_t colonPos = line.find(':');
 		if (colonPos != std::string::npos) {
-			strncpy(g_szGameName, line.substr(colonPos + 1).c_str(), sizeof(g_szGameName) - 1);
-			g_szGameName[sizeof(g_szGameName) - 1] = '\0'; // Null-terminate in case of overflow
+			std::string gameName = line.substr(colonPos + 1);
+			gameName.erase(std::remove_if(gameName.begin(), gameName.end(), ::isspace), gameName.end()); // Remove whitespaces
+
+			// Ensure no overflow
+			if (gameName.length() < sizeof(g_szGameName)) {
+				std::strcpy(g_szGameName, gameName.c_str());
+			}
+			else {
+				std::cerr << "Game name too long" << std::endl;
+				exit(1);
+			}
 		}
 	}
 
 	// The rest of the lines are test data
 	while (std::getline(inFile, line)) {
+		// Ignore blank lines
+		if (line.empty()) continue;
+
 		std::istringstream ss(line);
 
 		TestData data;
 		std::string temp, command;
 
 		// Parse msec and discard ','
-		std::getline(ss, temp, ',');
-		data.msec = std::stoul(temp);
+		if (!std::getline(ss, temp, ',')) continue; // Ignore line if no comma
+		try {
+			data.msec = std::stoul(temp);
+		}
+		catch (std::exception const& e) {
+			std::cerr << "Unable to parse time: " << temp << std::endl;
+			continue;
+		}
 
 		// Parse command as a hexadecimal value
 		ss >> std::ws; // skip whitespaces
-		std::getline(ss, command, ',');
-		command = command.substr(2); // remove '0x'
+		if (!std::getline(ss, command, ',')) continue; // Ignore line if no second comma
+		if (command.substr(0, 2) == "0x") {
+			command = command.substr(2); // remove '0x'
+		}
+		else {
+			std::cerr << "Command value is not in hexadecimal format: " << command << std::endl;
+			continue;
+		}
 
-		data.snd_cmd = std::stoul(command, nullptr, 16);
+		try {
+			data.snd_cmd = std::stoul(command, nullptr, 16);
+		}
+		catch (std::exception const& e) {
+			std::cerr << "Unable to parse command: " << command << std::endl;
+			continue;
+		}
 		testData.push_back(data);
 	}
 

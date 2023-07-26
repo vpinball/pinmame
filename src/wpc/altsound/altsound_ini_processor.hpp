@@ -5,6 +5,7 @@
 #endif
 
 // Std Library includes
+#include <assert.h>
 #include <bitset>
 #include <string>
 
@@ -15,13 +16,31 @@
 class AltsoundIniProcessor
 {
 public:
+
 	// syntactic candy
-	typedef std::map<inipp::Ini<char>::String, inipp::Ini<char>::String> IniSection;
-	typedef std::unordered_map<std::string, DuckingProfile> ProfileMap;
+	using IniSection = std::map<inipp::Ini<char>::String, inipp::Ini<char>::String>;
+	using ProfileMap = std::unordered_map<std::string, DuckingProfile>;
+
+	// Default constructor
+	AltsoundIniProcessor() = default;
+
+	// Default destructor
+	~AltsoundIniProcessor() = default;
+
+	// Copy constructor - NOT USED
+	AltsoundIniProcessor(AltsoundIniProcessor&) = delete;
 
 	// Parse the altsound ini file
-	bool parse_altsound_ini(const std::string& path_in, std::string& format_out, bool& rec_cmds_out,
-		                    bool& rom_ctrl_out);
+	bool parse_altsound_ini(const std::string& path_in);
+
+	// Return parsed flag indicating whether to enable sound command recording
+	const bool AltsoundIniProcessor::recordSoundCmds() const;
+
+	// Return parsed AltsoundFormat type
+	const std::string& getAltsoundFormat() const;
+
+	// Return parse ROM volume control flag
+	const bool usingRomVolumeControl() const;
 
 private: // functions
 	
@@ -40,8 +59,43 @@ private: // functions
 	// Create altsound.ini file
 	bool create_altsound_ini(const std::string& path_in);
 
+	// Helper function to trim whitespace from strings and conver to lowercase
+	std::string normalizeString(std::string str);
+
+	// Helper template class to replicate C++17 function
+	template<class T>
+	const T& clamp(const T& v, const T& lo, const T& hi)
+	{
+		assert(!(hi < lo));
+		return (v < lo) ? lo : (hi < v) ? hi : v;
+	}
+
 private: // data
 
+	bool record_sound_commands = false;
+	bool rom_volume_control = true;
+	std::string altsound_format;
 };
 
+// ----------------------------------------------------------------------------
+// Inline functions
+// ----------------------------------------------------------------------------
+
+inline const bool AltsoundIniProcessor::recordSoundCmds() const {
+	return record_sound_commands;
+}
+
+// ----------------------------------------------------------------------------
+
+inline const std::string& AltsoundIniProcessor::getAltsoundFormat() const {
+	return altsound_format;
+}
+
+
+// ----------------------------------------------------------------------------
+inline const bool AltsoundIniProcessor::usingRomVolumeControl() const {
+	return rom_volume_control;
+}
+
+// ----------------------------------------------------------------------------
 #endif // ALTSOUND_INI_PROCESSOR_H

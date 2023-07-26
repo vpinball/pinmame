@@ -26,7 +26,6 @@
 // Local includes
 #include "osdepend.h"
 #include "gsound_csv_parser.hpp"
-//#include "altsound_logger.hpp"
 
 using std::string;
 using std::vector;
@@ -43,34 +42,13 @@ using std::vector;
 // DAR@20230721
 // ALTSOUND_STANDALONE is a compile-time flag set only when building the
 // altsound processor as an executable.  It prevents the executable from
-// trying to record a playback during playback, and corrupting the source
+// trying to record a cmdlog.txt during playback, corrupting the source
 // file
 //
 #ifndef ALTSOUND_STANDALONE
-	// Initialize your log file and the start time.
-	// These could be members of your GSoundProcessor class.
 	std::ofstream logFile;
 	std::chrono::high_resolution_clock::time_point lastCmdTime;
 #endif
-
-const unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
-
-// NOTE:
-// SFX streams don't require tracking since multiple can play simultaneously.
-// Other than adjusting ducking, they have no other impacts on active streams
-//
-// Single-play stream tracking
-static unsigned int cur_mus_stream_idx = UNSET_IDX;
-static unsigned int cur_callout_stream_idx = UNSET_IDX;
-static unsigned int cur_solo_stream_idx = UNSET_IDX;
-static unsigned int cur_overlay_stream_idx = UNSET_IDX;
-
-std::map<AltsoundSampleType, unsigned int*> tracked_stream_idx_map = {
-	{AltsoundSampleType::MUSIC, &cur_mus_stream_idx},
-	{AltsoundSampleType::CALLOUT, &cur_callout_stream_idx},
-	{AltsoundSampleType::SOLO, &cur_solo_stream_idx},
-	{AltsoundSampleType::OVERLAY, &cur_overlay_stream_idx}
-};
 
 // reference to global AltSound logger
 extern AltsoundLogger alog;
@@ -93,6 +71,25 @@ extern StreamArray channel_stream;
 // Behavior Management Support Globals
 // ----------------------------------------------------------------------------
 
+const unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
+
+// NOTE:
+// SFX streams don't require tracking since multiple can play simultaneously.
+// Other than adjusting ducking, they have no other impacts on active streams
+//
+// Single-play stream tracking
+static unsigned int cur_mus_stream_idx = UNSET_IDX;
+static unsigned int cur_callout_stream_idx = UNSET_IDX;
+static unsigned int cur_solo_stream_idx = UNSET_IDX;
+static unsigned int cur_overlay_stream_idx = UNSET_IDX;
+
+std::map<AltsoundSampleType, unsigned int*> tracked_stream_idx_map = {
+	{AltsoundSampleType::MUSIC, &cur_mus_stream_idx},
+	{AltsoundSampleType::CALLOUT, &cur_callout_stream_idx},
+	{AltsoundSampleType::SOLO, &cur_solo_stream_idx},
+	{AltsoundSampleType::OVERLAY, &cur_overlay_stream_idx}
+};
+
 // DAR@20230628
 // Because the stream.stream_type enumeration values may not match the bitset
 // values below, we need to map the AltsoundSampleType constants to the
@@ -110,22 +107,21 @@ static std::unordered_map<AltsoundSampleType, int> streamTypeToIndex = {
 };
 
 // DAR@20230719
-// The arrays below contain the ducking and pausing behavior impacts of sample
-// types on other sample types.  For example, the music_duck_vol array contains
+// The maps below contain the ducking and pausing behavior impacts of sample
+// types on other sample types.  For example, the music_duck_vol map contains
 // the impacts on MUSIC volume from the behaviors of the other sample types.
-// Similarly, the music_paused array contains the paused status of MUSIC
+// Similarly, the music_paused map contains the paused status of MUSIC
 // streams based on the behavior of the other streams.
 //
-// Each index into the arrays below correlate with sample type.  For
-// example, MUSIC impact data is index 0, CALLOUT impact data is index 1, etc.
-// Looking at the "music_duck_vol" array, it contains the ducking impacts of
-// other sample types on the MUSIC stream volume
+// The map key is the stream ID (HSTREAM) of the stream that is setting the
+// duck value.  This allows the correct entry to be removed when the 
+// affecting stream ends
 //
-// The arrays contain vectors because the behaviors for stream types can
-// have overlapping impacts on other streams.  When an affecting stream ends,
-// we can't assume its safe to remove the behavior impact from the affected
-// sample type.  The vector ensures we capture ALL the behavior impacts for each
-// sample type.  Only when the vector is cleared, can the impact be removed
+// Streams can have overlapping impacts on other streams.  When an affecting
+// stream ends, we can't assume its safe to remove the behavior impact from
+// the affected sample type.  The map key ensures we capture ALL the behavior
+// impacts for each sample type.  Only when the map is cleared, can the impact
+// be removed
 //
 // globals to manage stream ducking
 std::unordered_map<unsigned long, float> music_duck_vol;
@@ -164,7 +160,7 @@ std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned long, bool>*>
 // A common mixing board function is to set gain levels for individual tracks
 // and then apply a group volume to change volume for a group of tracks. while
 // maintaining relative individual volumes.  For example, if we have 3 MUSIC
-// tracks with 90, 60, 55 volume levels individually, setting the group volume
+// tracks with 90, 60, 55 gain levels individually, setting the group volume
 // to 90 will duck all MUSIC tracks by 10% while maintaining the volume
 // relationships between the individual tracks.
 //
@@ -178,7 +174,7 @@ std::array<float, NUM_STREAM_TYPES> group_vol = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f }
 // types.  For example, music_behavior defines what impacts MUSIC samples have
 // on other non-MUSIC sample types.
 //
-// NOTE: With the exception of STOP, self-behaviors are not supported.
+// NOTE: With the exception of STOP, self-impacting behaviors are not supported.
 //
 // external reference to stream behaviors
 extern BehaviorInfo music_behavior;
@@ -187,6 +183,7 @@ extern BehaviorInfo sfx_behavior;
 extern BehaviorInfo solo_behavior;
 extern BehaviorInfo overlay_behavior;
 
+// convenience structure for working with behaviors
 std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
 	{MUSIC, &music_behavior},
 	{CALLOUT, &callout_behavior},
@@ -389,7 +386,6 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		}
 	}
 
-
 	OUTDENT;
 	ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
 	return true;
@@ -410,56 +406,6 @@ void GSoundProcessor::init()
 	
 	const float INITIAL_DUCK_VOL = 1.0f;
 	const bool INITIAL_PAUSED_STATUS = false;
-
-	//// Initialize music_duck_vol array with initial duck volume
-	//for (auto& vec : music_duck_vol) {
-	//	vec.push_back(INITIAL_DUCK_VOL);
-	//}
-
-	//// Initialize callout_duck_vol array with initial duck volume
-	//for (auto& vec : callout_duck_vol) {
-	//	vec.push_back(INITIAL_DUCK_VOL);
-	//}
-
-	//// Initialize sfx_duck_vol array with initial duck volume
-	//for (auto& vec : sfx_duck_vol) {
-	//	vec.push_back(INITIAL_DUCK_VOL);
-	//}
-
-	//// Initialize solo_duck_vol array with initial duck volume
-	//for (auto& vec : solo_duck_vol) {
-	//	vec.push_back(INITIAL_DUCK_VOL);
-	//}
-
-	//// Initialize overlay_duck_vol array with initial duck volume
-	//for (auto& vec : overlay_duck_vol) {
-	//	vec.push_back(INITIAL_DUCK_VOL);
-	//}
-
-	//// Initialize music_paused array with initial paused status
-	//for (auto& vec : music_paused) {
-	//	vec.push_back(INITIAL_PAUSED_STATUS);
-	//}
-
-	//// Initialize callout_paused array with initial paused status
-	//for (auto& vec : callout_paused) {
-	//	vec.push_back(INITIAL_PAUSED_STATUS);
-	//}
-
-	//// Initialize sfx_paused array with initial paused status
-	//for (auto& vec : sfx_paused) {
-	//	vec.push_back(INITIAL_PAUSED_STATUS);
-	//}
-
-	//// Initialize solo_paused array with initial paused status
-	//for (auto& vec : solo_paused) {
-	//	vec.push_back(INITIAL_PAUSED_STATUS);
-	//}
-
-	//// Initialize overlay_paused array with initial paused status
-	//for (auto& vec : overlay_paused) {
-	//	vec.push_back(INITIAL_PAUSED_STATUS);
-	//}
 
 	if (!loadSamples()) {
 		ALT_ERROR(1, "FAILED GSoundProcessor::loadSamples()");
@@ -531,7 +477,8 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 			matching_sample_count++;
 
 			// reservoir sampling approach
-			// Each matching sample has equal chance (1/matching_sample_count) to become the selected one.
+			// Each matching sample has equal chance (1/matching_sample_count) to
+			// become the selected one.
 			if (rand() % matching_sample_count == 0) {
 				sample_idx = i;
 			}
@@ -559,8 +506,6 @@ bool GSoundProcessor::processStream(const BehaviorInfo& behavior,
 	ALT_DEBUG(0, "BEGIN GSoundProcessor::processStream()");
 	INDENT;
 
-//	std::string type_str = toString(stream_out->stream_type);
-
 	// create new stream
 	bool success = ALT_CALL(createStream(&common_callback, stream_out));
 
@@ -574,6 +519,7 @@ bool GSoundProcessor::processStream(const BehaviorInfo& behavior,
 
 	// process behaviors for this sample type
 	success = processBehaviors(behavior, stream_out);
+
 	if (!success) {
 		ALT_ERROR(0, "FAILED: GSoundProcessor::processBehaviors()");
 	}
@@ -603,6 +549,7 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 	ALT_DEBUG(0, "BEGIN: GSoundProcessor::processBehaviors()");
 	INDENT;
 
+	// Syntactic sugar for accessing bitset values
 	using BB = BehaviorInfo::BehaviorBits;
 
 	// Iterate through all sample types
@@ -632,18 +579,8 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 		}
 		else if (behavior.pauses.test(static_cast<size_t>(sampleBehaviorBit)))
 		{
-			std::unordered_map<unsigned long, bool>* pausedMap = getPausedMap(sampleType);
-			if (pausedMap == nullptr)
-			{
-				ALT_ERROR(1, "Paused vector for %s not found", toString(sampleType));
-				OUTDENT;
-				ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
-				return false;
-			}
-
 			// Add pause impact from the current stream on the current sample type
-			if (sampleType != stream->stream_type)
-			{
+			if (sampleType != stream->stream_type) {
 				// get tracked stream index
 				unsigned int* cur_stream_idx = tracked_stream_idx_map[sampleType];
 
@@ -661,7 +598,13 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 					}
 				}
 				
-				pausedMap[sampleType][stream->hstream] = true;
+				// DAR@20230723
+				// Whether or not there was actually a stream playing, record the fact
+				// that the current behavior wanted it paused.  This way, if a stream
+				// starts that should be paused, it will be, as long as the stream that
+				// set the behavior is still playing
+				auto& map = *paused_status_map[sampleType];
+				map[stream->hstream] = true;
 			}
 			else
 			{
@@ -698,8 +641,8 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 }
 
 // ----------------------------------------------------------------------------
-// This function is called after a sample ends or is stopped, to process the
-// behavior impacts of the sample ending on other samples.
+// This function is called after a stream ends or is stopped, to process the
+// behavior impacts of the stream ending on other streams
 // ----------------------------------------------------------------------------
 
 bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
@@ -731,21 +674,14 @@ bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
 		// Process PAUSE behavior impact
 		if (behavior.pauses.test(static_cast<size_t>(sampleBehaviorBit)))
 		{
-			std::unordered_map<unsigned long, bool>* pausedMap = getPausedMap(sampleType);
-			if (pausedMap == nullptr)
-			{
-				ALT_ERROR(1, "Pause map for %s not found", toString(sampleType));
+			auto& map = *paused_status_map[sampleType];
 
-				OUTDENT;
-				ALT_DEBUG(0, "END GSoundProcessor::postProcessBehaviors()");
-				return false;
-			}
-
-			if (!pausedMap->empty()) {
+			if (!map.empty()) {
 				unsigned long stream_id = finished_stream.hstream;
-				auto it = pausedMap->find(stream_id);
-				if (it != pausedMap->end()) {
-					pausedMap->erase(it);
+				auto it = map.find(stream_id);
+				if (it != map.end()) {
+					ALT_DEBUG(1, "Erasing pausing impact from %s stream: %u", toString(finished_stream.stream_type), finished_stream.hstream);
+					map.erase(it);
 				}
 			}
 		}
@@ -754,14 +690,14 @@ bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
 		ALT_DEBUG(1, "Post-processing %s ducking impact on %s streams", toString(finished_stream.stream_type), toString(sampleType));
 		if (behavior.ducks.test(static_cast<size_t>(sampleBehaviorBit)))
 		{
-			auto map = duck_vol_map[sampleType];
+			auto& map = *duck_vol_map[sampleType];
 
-			if (!map->empty()) {
+			if (!map.empty()) {
 				unsigned long stream_id = finished_stream.hstream;
-				auto it = map->find(stream_id);
-				if (it != map->end()) {
+				auto it = map.find(stream_id);
+				if (it != map.end()) {
 					ALT_DEBUG(1, "Erasing ducking impact from %s stream: %u", toString(finished_stream.stream_type), finished_stream.hstream);
-					map->erase(it);
+					map.erase(it);
 				}
 			}
 		}
@@ -776,58 +712,8 @@ bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
 }
 
 // ----------------------------------------------------------------------------
-// Helper function to get the correct "duck_vol" vector for the supplied
-// sample type
-// ----------------------------------------------------------------------------
-
-//std::unordered_map<unsigned long, float>* GSoundProcessor::getDuckVolumeMap(const AltsoundSampleType sampleType)
-//{
-//	switch (sampleType)
-//	{
-//	case AltsoundSampleType::MUSIC:
-//		return &music_duck_vol;
-//	case AltsoundSampleType::CALLOUT:
-//		return &callout_duck_vol;
-//	case AltsoundSampleType::SFX:
-//		return &sfx_duck_vol;
-//	case AltsoundSampleType::SOLO:
-//		return &solo_duck_vol;
-//	case AltsoundSampleType::OVERLAY:
-//		return &overlay_duck_vol;
-//	}
-//
-//	// DAR_TODO need error handling here
-//	return nullptr;  // Return nullptr if the vector is not found
-//}
-
-// ----------------------------------------------------------------------------
-// Helper function to get the correct "paused" vector for the supplied
-// sample type
-// ----------------------------------------------------------------------------
-
-std::unordered_map<unsigned long, bool>* GSoundProcessor::getPausedMap(const AltsoundSampleType sampleType)
-{
-	switch (sampleType)
-	{
-	case AltsoundSampleType::MUSIC:
-		return &music_paused;
-	case AltsoundSampleType::CALLOUT:
-		return &callout_paused;
-	case AltsoundSampleType::SFX:
-		return &sfx_paused;
-	case AltsoundSampleType::SOLO:
-		return &solo_paused;
-	case AltsoundSampleType::OVERLAY:
-		return &overlay_paused;
-	}
-
-	// DAR_TODO need error handling here
-	return nullptr;
-}
-
-// ----------------------------------------------------------------------------
 // This method is only meant to be called by snd_alt.cpp  It is used to safely
-// call stopMusicStream, while maintaining the behavior bookkeeping
+// call stopExclusiveStream(MUSIC), while maintaining the behavior bookkeeping
 // ----------------------------------------------------------------------------
 
 bool GSoundProcessor::stopMusic()
@@ -843,9 +729,6 @@ bool GSoundProcessor::stopMusic()
 		ALT_DEBUG(0, "END GSoundProcessor::stopMusic()");
 		return false;
 	}
-
-	// update ducking behavior tracking
-	postProcessBehaviors(music_behavior, *channel_stream[cur_mus_stream_idx]);
 
 	// re-adjust ducked volumes
 	adjustStreamVolumes();
@@ -872,13 +755,6 @@ bool GSoundProcessor::stopExclusiveStream(const AltsoundSampleType stream_type)
 {
 	ALT_DEBUG(0, "BEGIN: GSoundProcessor::stopExclusiveStream()");
 	INDENT;
-
-	//std::map<AltsoundSampleType, unsigned int*> streamTypeToIndex = {
-	//	{AltsoundSampleType::MUSIC, &cur_mus_stream_idx},
-	//	{AltsoundSampleType::CALLOUT, &cur_callout_stream_idx},
-	//	{AltsoundSampleType::SOLO, &cur_solo_stream_idx},
-	//	{AltsoundSampleType::OVERLAY, &cur_overlay_stream_idx}
-	//};
 
 	// Get the current stream index for the sample type
 	unsigned int* cur_stream_idx = tracked_stream_idx_map[stream_type];
@@ -999,7 +875,7 @@ void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWOR
 		channel_stream[inst_ch_idx] = nullptr;
 	}
 
-	// re-adjust ducked volumes
+	// re-adjust stream volumes
 	adjustStreamVolumes();
 
 	// update paused streams
@@ -1140,7 +1016,8 @@ bool GSoundProcessor::tryResumeStream(const AltsoundStreamInfo& stream)
 }
 
 // ----------------------------------------------------------------------------
-// Helper function to find the lowest volume in the provided array
+// Helper function to find the lowest volume in the ducking map associated
+// with the passed-in stream type
 // ----------------------------------------------------------------------------
 
 float GSoundProcessor::findLowestDuckVolume(AltsoundSampleType stream_type)
@@ -1177,6 +1054,7 @@ float GSoundProcessor::findLowestDuckVolume(AltsoundSampleType stream_type)
 // ---------------------------------------------------------------------------
 // Helper DEBUG functions to output all behavior bookkeeping data
 // ---------------------------------------------------------------------------
+
 void GSoundProcessor::printBehaviorData() {
 	ALT_DEBUG(0, "BEGIN GSoundProcessor::printBehaviorData()");
 	INDENT;

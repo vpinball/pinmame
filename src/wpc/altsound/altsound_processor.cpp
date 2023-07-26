@@ -320,7 +320,7 @@ bool AltsoundProcessor::loadSamples()
 		}
 		ALT_INFO(0, "SUCCESS AltsoundCsvParser::parse()");
 	}
-	else if (format == "pinsound") {
+	else if (format == "legacy") {
 		AltsoundFileParser file_parser(game_name.c_str());
 		if (!file_parser.parse(&psd)) {
 			ALT_ERROR(0, "FAILED AltsoundFileParser::parse()");

@@ -238,17 +238,18 @@ BOOL alt_sound_init(CmdData* cmds_out)
 
 	// parse .ini file
 	AltsoundIniProcessor ini_proc;
-	string format;
-	bool rom_ctrl = true;
-	bool rec_cmds = false;
 
-	if (!ini_proc.parse_altsound_ini(altsound_path, format, rec_cmds, rom_ctrl)) {
+	if (!ini_proc.parse_altsound_ini(altsound_path)) {
 		ALT_ERROR(0, "Failed to parse_altsound_ini(%s)", altsound_path.c_str());
 		
 		OUTDENT;
 		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
 	}
+
+	string format = ini_proc.getAltsoundFormat();
+	bool rom_ctrl = ini_proc.usingRomVolumeControl();
+	bool rec_cmds = ini_proc.recordSoundCmds();
 
 	// update global variables with parsed data
 	use_rom_ctrl = rom_ctrl;
@@ -259,7 +260,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		// in the constructor
 		processor = new GSoundProcessor(g_szGameName);
 	}
-	else if (format == "altsound" || format == "pinsound") {
+	else if (format == "altsound" || format == "legacy") {
 		// Traditional altsound processor handles existing CSV and legacy
 		// PinSound format so it must be specified in the constructor
 		processor = new AltsoundProcessor(g_szGameName, format);
