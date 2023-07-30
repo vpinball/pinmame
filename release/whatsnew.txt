@@ -28,6 +28,7 @@ Fixed 6 million dollar man 7 digit conversion display
 Fixed inverted switches for ffv101
 Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM, Juegos Populares, after fixing timeslice issue related to the VGM file dump feature (which uses a fast timer)
 Added support for the old SC-01 Votrax ROM version (wired only to the Mars - God of War Prototype so far)
+Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt)
 New:
