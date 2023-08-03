@@ -114,6 +114,10 @@ bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
 			// Read DUCKING_PROFILE field (uint)
 			if (std::getline(ss, field, ','))
 			{
+				if (field.empty()) {
+					field = "0"; // default value
+				}
+
 				field = trim(field);
 				unsigned int val = std::stoul(field);
 				entry.ducking_profile = val;

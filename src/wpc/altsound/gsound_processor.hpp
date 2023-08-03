@@ -16,6 +16,7 @@
 // Library includes
 #include <string>
 #include <array>
+#include <random>
 #include <unordered_map>
 
 // Local includes
@@ -127,13 +128,14 @@ private: // functions
 
 	static bool tryResumeStream(const AltsoundStreamInfo& stream);
 
-	void GSoundProcessor::startLogging(const std::string& gameName);
+	bool GSoundProcessor::startLogging(const std::string& gameName);
 
 private: // data
 
 	bool is_initialized;
 	bool is_stable; // future use
 	std::vector<SampleInfo> samples;
+	std::mt19937 generator; // mersenne twister
 };
 
 // ---------------------------------------------------------------------------

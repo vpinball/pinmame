@@ -248,12 +248,8 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	}
 
 	string format = ini_proc.getAltsoundFormat();
-	bool rom_ctrl = ini_proc.usingRomVolumeControl();
-	bool rec_cmds = ini_proc.recordSoundCmds();
-
-	// update global variables with parsed data
-	use_rom_ctrl = rom_ctrl;
-	rec_snd_cmds = rec_cmds;
+	use_rom_ctrl = ini_proc.usingRomVolumeControl();
+	rec_snd_cmds = ini_proc.recordSoundCmds();
 
 	if (format == "g-sound") {
 		// G-Sound only supports new CSV format. No need to specify format

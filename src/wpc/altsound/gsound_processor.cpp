@@ -10,6 +10,7 @@
 // <TODO> G-Sound description
 // ---------------------------------------------------------------------------
 
+#define NOMINMAX
 #include "gsound_processor.hpp"
 
 // Standard Library includes
@@ -29,15 +30,6 @@
 
 using std::string;
 using std::vector;
-
-// windef.h "min" conflicts with std::min/max
-#ifdef max
-	#undef max
-#endif
-
-#ifdef min
-	#undef min
-#endif
 
 // DAR@20230721
 // ALTSOUND_STANDALONE is a compile-time flag set only when building the
@@ -202,7 +194,8 @@ std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
 GSoundProcessor::GSoundProcessor(const char* gname_in)
 : AltsoundProcessorBase(string(gname_in)),
   is_initialized(false),
-  is_stable(true) // future use
+  is_stable(true), // future use
+  generator(std::random_device()()) // seed random number generator
 {
 	// perform initialization (load samples, etc)
 	init();
@@ -249,7 +242,7 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 			// Log the time and command.
 			logFile << std::setw(10) << std::setfill('0') << std::dec << deltaTime;
 			logFile << ", 0x" << std::setw(4) << std::setfill('0') << std::hex << cmd_combined_in;
-			logFile << ", " << "This is a comment" << std::endl;
+			logFile << ", " << "<user comments here>" << std::endl;
 
 			// Store the current time for the next command.
 			lastCmdTime = currentTime;
@@ -428,7 +421,12 @@ void GSoundProcessor::init()
 	#ifndef ALTSOUND_STANDALONE
 		// If recording sound commands, initialize output file
 		if (rec_snd_cmds) {
-			startLogging(AltsoundProcessorBase::getGameName());
+			if (!ALT_CALL(startLogging(AltsoundProcessorBase::getGameName()))) {
+				ALT_ERROR(0, "FAILED startLogging()");
+			}
+			else {
+				ALT_INFO(1, "SUCCESS startLogging()");
+			}
 		}
 	#endif
 
@@ -475,6 +473,8 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 	int matching_sample_count = 0;
 	unsigned int sample_idx = UNSET_IDX;
 
+	std::uniform_int_distribution<int> distribution(0, std::numeric_limits<int>::max());
+
 	for (int i = 0; i < samples.size(); ++i) {
 		if (samples[i].id == cmd_combined_in) {
 			matching_sample_count++;
@@ -482,7 +482,7 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 			// reservoir sampling approach
 			// Each matching sample has equal chance (1/matching_sample_count) to
 			// become the selected one.
-			if (rand() % matching_sample_count == 0) {
+			if (distribution(generator) % matching_sample_count == 0) {
 				sample_idx = i;
 			}
 		}
@@ -493,7 +493,9 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 	}
 	else {
 		ALT_INFO(0, "Found %d sample(s) for ID: %04X", matching_sample_count, cmd_combined_in);
-		ALT_INFO(0, "Sample: %s", getShortPath(samples[sample_idx].fname).c_str());
+		if (sample_idx != UNSET_IDX) {
+			ALT_INFO(0, "Sample: %s", getShortPath(samples[sample_idx].fname).c_str());
+		}
 	}
 
 	OUTDENT;
@@ -1094,10 +1096,40 @@ void GSoundProcessor::printBehaviorData() {
 
 // ----------------------------------------------------------------------------
 
-void GSoundProcessor::startLogging(const std::string& gameName) {
+bool GSoundProcessor::startLogging(const std::string& gameName) {
 #ifndef ALTSOUND_STANDALONE
-	logFile.open(gameName + "_cmdlog.txt");
-	logFile << "game_name:" << gameName << std::endl;
+	ALT_DEBUG(0, "BEGIN startLogging()");
+
+	// Check if gameName is not empty
+	if (gameName.empty()) {
+		ALT_ERROR(1, "Game name is empty. Cannot start logging.");
+		ALT_DEBUG(0, "END startLogging()");
+		return false;
+	}
+
+	std::string recording_fname = gameName + "-cmdlog.txt";
+	logFile.open(recording_fname);
+	if (!logFile.is_open()) {
+		ALT_ERROR(1, "Failed to open log file: %s", recording_fname.c_str());
+		ALT_DEBUG(0, "END startLogging()");
+		return false;
+	}
+
+	ALT_INFO(1, "Creating sound command log: %s", recording_fname.c_str());
+
+	std::string game_altsound_path = get_vpinmame_path() + "/altsound/" + gameName;
+
+	// Check if game_altsound_path is valid
+	if (!dir_exists(game_altsound_path)) {
+		ALT_ERROR(1, "Altsound path does not exist: %s", game_altsound_path.c_str());
+		ALT_DEBUG(0, "END startLogging()");
+		return false;
+	}
+
+	logFile << "altsound_path: " << game_altsound_path << std::endl;
 	lastCmdTime = std::chrono::high_resolution_clock::now();
+
+	ALT_DEBUG(0, "END startLogging()");
 #endif
+	return true;
 }
