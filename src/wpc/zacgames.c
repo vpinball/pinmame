@@ -306,7 +306,7 @@ ZAC_ROMSTART000(pinchamf, "pinchamp.ic1",CRC(1412ec33) SHA1(82c158ec0536f76cbe80
                           "pinchamp.ic2",CRC(a24ba4c6) SHA1(4f02c4d6cd727fa96a68c72012b0b4a4484397c4),
                           "pinchamp.ic3",CRC(df5f4f88) SHA1(249cf958b0998aa41fa26c617be9b6c52c2f5549))
 ZAC_SOUNDROM_cefg1(       "pchmp_fr.1c", CRC(fcaa6907) SHA1(9c6a3c88754651fd3972bad7c3a920cd4fa885ce),
-                          "pchmp_fr.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
+                          "pchmp_gb.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
                           "pchmp_fr.1f", CRC(1cd8398c) SHA1(cc72bdce47d8f7189fe315e44cb0af976fc25d65),
                           "pchmp_fr.1g", CRC(e8f5cdcb) SHA1(b94dd696cf1688ede90c54e9b55a8d6ec546ecba))
 ZAC_ROMEND
@@ -350,7 +350,7 @@ ZAC_ROMSTART000(pincha7f, "pblchmp7.ic1",CRC(f050b7fa) SHA1(918bdfd77e785c546202
                           "pblchmp7.ic2",CRC(cbcb63c7) SHA1(c15329482f02614185adcd0475a02c667cadfc98),
                           "pblchmp7.ic3",CRC(54abff9c) SHA1(925c7c1fb903bd6069aee1967c75eb8e61ecf591))
 ZAC_SOUNDROM_cefg1(       "pchmp_fr.1c", CRC(fcaa6907) SHA1(9c6a3c88754651fd3972bad7c3a920cd4fa885ce),
-                          "pchmp_fr.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
+                          "pchmp_gb.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
                           "pchmp_fr.1f", CRC(1cd8398c) SHA1(cc72bdce47d8f7189fe315e44cb0af976fc25d65),
                           "pchmp_fr.1g", CRC(e8f5cdcb) SHA1(b94dd696cf1688ede90c54e9b55a8d6ec546ecba))
 ZAC_ROMEND
@@ -392,7 +392,7 @@ INITGAME(pincffp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
 ZAC_ROMSTART1820(pincffp, "pincfp.ic1",  CRC(174ff0b2) SHA1(8e4d06c140724fef96fe357bb584c3b25d22eac6),
                           "pincfp.ic2",  CRC(5d3ff552) SHA1(926daa3c8cf2acfd481d9fec99ef24285f9b8951))
 ZAC_SOUNDROM_cefg1(       "pchmp_fr.1c", CRC(fcaa6907) SHA1(9c6a3c88754651fd3972bad7c3a920cd4fa885ce),
-                          "pchmp_fr.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
+                          "pchmp_gb.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
                           "pchmp_fr.1f", CRC(1cd8398c) SHA1(cc72bdce47d8f7189fe315e44cb0af976fc25d65),
                           "pchmp_fr.1g", CRC(e8f5cdcb) SHA1(b94dd696cf1688ede90c54e9b55a8d6ec546ecba))
 ZAC_ROMEND
@@ -432,7 +432,7 @@ INITGAME(pinc7ffp,GEN_ZAC2,dispZAC2,SNDBRD_ZAC1370,0)
 ZAC_ROMSTART1820(pinc7ffp,"pinc7fp.ic1", CRC(8bff8868) SHA1(16b525995fc584e226b8499b914e21059ac80416),
                           "pinc7fp.ic2", CRC(5f75b984) SHA1(276017cc54f4ac253478383642ce32929dfc8d92))
 ZAC_SOUNDROM_cefg1(       "pchmp_fr.1c", CRC(fcaa6907) SHA1(9c6a3c88754651fd3972bad7c3a920cd4fa885ce),
-                          "pchmp_fr.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
+                          "pchmp_gb.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
                           "pchmp_fr.1f", CRC(1cd8398c) SHA1(cc72bdce47d8f7189fe315e44cb0af976fc25d65),
                           "pchmp_fr.1g", CRC(e8f5cdcb) SHA1(b94dd696cf1688ede90c54e9b55a8d6ec546ecba))
 ZAC_ROMEND
