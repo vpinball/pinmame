@@ -312,11 +312,16 @@ static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3579545./4., {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
 static struct AY8910interface  sns2_ay8910Int = { 2, 3579545./4., {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
 
+static READ_HANDLER(m00df_r) {
+  return 0xff; // unmapped memory should usually read as all high bits
+}
+
 static MEMORY_READ_START(sns_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_r(SNS_PIA0) },
   { 0x0084, 0x0087, pia_r(SNS_PIA2) }, // 13136 only
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
+  { 0x00df, 0x00df, m00df_r }, // code flaw in farfalla @$FD7A: anda $00DF (94 opcode) instead of anda #$DF (84 opcode); bad dump maybe?!
   { 0x1800, 0x1800, sns2_8910a_r }, // 13136 only
   { 0x2000, 0x2000, sns_8910a_r },
   { 0x7000, 0xffff, MRA_ROM },
@@ -398,7 +403,7 @@ static const struct pia6821_interface sns_pia[] = {{
   /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, sns_pia0cb2_w,
   /*irq: A/B           */ sns_irq0a, sns_irq0b
 },{
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, 0, 0, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, PIA_UNUSED_VAL(0), 0, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq1a, sns_irq1b
 },{
@@ -532,7 +537,7 @@ static WRITE_HANDLER(sns_pia0cb2_w) {
 } // mute DAC
 
 static READ_HANDLER(sns_pia1a_r) {
-  logerror("%04x:sns_pia1a_r %02x\n", activecpu_get_previouspc(),snslocals.pia1a);
+//  logerror("%04x:sns_pia1a_r %02x\n", activecpu_get_previouspc(),snslocals.pia1a);
   return snslocals.pia1a;
 }
 static WRITE_HANDLER(sns_pia1a_w) {
