@@ -41,7 +41,7 @@ public:
 	GSoundProcessor(GSoundProcessor&) = delete;
 
 	// Standard constructor
-	GSoundProcessor(const char* gname_in);
+	GSoundProcessor(const std::string& game_name, const std::string& vpm_path);
 
 	// Destructor
 	~GSoundProcessor();
@@ -54,41 +54,6 @@ public:
 
 	// DEBUG helper fns to print all behavior data
 	static void GSoundProcessor::printBehaviorData();
-
-	//// Helper function to print vector elements
-	//template<typename T>
-	//static void printVector(const std::vector<T>& vec)
-	//{
-	//	std::stringstream ss;
-	//	ss << std::fixed << std::setprecision(2) << "[ ";
-	//	for (const auto& element : vec)
-	//	{
-	//		if (std::is_same<T, bool>::value)
-	//		{
-	//			ss << (element ? "true" : "false") << " ";
-	//		}
-	//		else
-	//		{
-	//			ss << element << " ";
-	//		}
-	//	}
-	//	ss << "]";
-	//	ALT_DEBUG(1, ss.str().c_str());
-	//}
-
-	//// Helper function to print arrays of vectors
-	//template<typename T, size_t N>
-	//static void printArray(const std::array<std::vector<T>, N>& arr)
-	//{
-	//	for (size_t i = 0; i < N; ++i)
-	//	{
-	//		std::stringstream ss;
-	//		ss << "Element " << i << ": ";
-	//		printVector(arr[i]);
-	//		ss << std::endl;
-	//	}
-	//}
-
 
 protected:
 
@@ -118,23 +83,23 @@ private: // functions
 	// BASS SYNCPROC callback whan a stream ends
 	static void CALLBACK common_callback(HSYNC handle, DWORD channel, DWORD data, void* user);
 
-	// adjust volume of active streams to accommodate ducking
+	// adjust volume of active streams to accommodate current ducking impacts
 	static bool adjustStreamVolumes();
 
+	// determine lowest ducking volume impacts on stream_type
 	static float findLowestDuckVolume(AltsoundSampleType stream_type);
 	
-	// resume paused playback on streams that no longer need to be paused
+	// process PAUSED behavior impacts for all streams
 	static bool processPausedStreams();
-
+	
+	// resume paused playback on streams that no longer need to be paused
 	static bool tryResumeStream(const AltsoundStreamInfo& stream);
-
-	bool GSoundProcessor::startLogging(const std::string& gameName);
 
 private: // data
 
 	bool is_initialized;
 	bool is_stable; // future use
-	std::vector<SampleInfo> samples;
+	std::vector<GSoundSampleInfo> samples;
 	std::mt19937 generator; // mersenne twister
 };
 

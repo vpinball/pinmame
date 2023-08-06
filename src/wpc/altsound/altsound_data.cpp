@@ -220,3 +220,14 @@ std::string trim(const std::string& str)
 	size_t last = str.find_last_not_of(' ');
 	return str.substr(first, (last - first + 1));
 }
+
+// ----------------------------------------------------------------------------
+// Helper function to convert strings to lowercase
+// ----------------------------------------------------------------------------
+
+std::string toLowerCase(const std::string& str)
+{
+	std::string lowerCaseStr;
+	std::transform(str.begin(), str.end(), std::back_inserter(lowerCaseStr), ::tolower);
+	return lowerCaseStr;
+}

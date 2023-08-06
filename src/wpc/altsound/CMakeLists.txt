@@ -37,17 +37,26 @@ set(STANDALONE_SOURCES
 	altsound_logger.hpp
 	altsound_processor_base.cpp
 	altsound_processor_base.hpp
+	altsound_processor.cpp
+	altsound_processor.hpp
+    altsound_file_parser.cpp
+    altsound_file_parser.hpp
+    altsound_csv_parser.cpp
+    altsound_csv_parser.hpp
 	gsound_processor.cpp
 	gsound_processor.hpp
+	${ROOT_DIR}/src/vc/dirent.c # for AltsoundFileParser
+	${ROOT_DIR}/src/vc/dirent.h # for AltsoundFileParser
+	${ROOT_DIR}/src/vc/unistd.h # for AltsoundCsvParser
 )
 
 set(VPINMAME_SOURCES
-   altsound_file_parser.cpp
-   altsound_file_parser.hpp
-   altsound_csv_parser.cpp
-   altsound_csv_parser.hpp
-   altsound_processor.cpp
-   altsound_processor.hpp
+#   altsound_file_parser.cpp
+#   altsound_file_parser.hpp
+#   altsound_csv_parser.cpp
+#   altsound_csv_parser.hpp
+#   altsound_processor.cpp
+#   altsound_processor.hpp
    snd_alt.cpp
    snd_alt.h
 )
@@ -114,6 +123,7 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 	target_include_directories(altsound_test PRIVATE
 		${ROOT_DIR}/ext/bass
+        ${ROOT_DIR}/src/vc #dirent.h
 	)
 
 	target_link_libraries(altsound_test PRIVATE

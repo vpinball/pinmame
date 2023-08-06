@@ -37,9 +37,9 @@
 #endif
 
 #include "altsound_processor_base.hpp"
-//#include "altsound_processor.hpp"
+#include "altsound_processor.hpp"
 #include "gsound_processor.hpp"
-//#include "altsound_file_parser.hpp"
+#include "altsound_file_parser.hpp"
 #include "altsound_ini_processor.hpp"
 #include "inipp.h"
 #include "altsound_data.hpp"
@@ -69,8 +69,8 @@ std::mutex io_mutex;
 // Instance of global array of BASS channels 
 StreamArray channel_stream;
 
-float master_vol = 1.0f;
-float global_vol = 1.0f;
+//float master_vol = 1.0f;
+//float global_vol = 1.0f;
 
 // Structure to hold a sound command and its associated timing
 struct TestData {
@@ -81,30 +81,19 @@ struct TestData {
 struct InitData {
 	std::string log_path;
 	std::vector<TestData> test_data;
+	std::string vpm_path;
 	std::string altsound_path;
 };
 
 // Processing instance to specialize command handling
 std::unique_ptr<AltsoundProcessorBase> processor;
 
-// Use ROM control commands to control master volume
-bool use_rom_ctrl = true;
-
-// Record received sound commands for later playback
-bool rec_snd_cmds = false;
-
 // The current game ROM shortname
 char g_szGameName[256];
-
-// Path to VPinMAME.  AltSound processors need this
-string vpm_path;
 
 // ---------------------------------------------------------------------------
 // Function prototypes
 // ---------------------------------------------------------------------------
-
-// get path to VPinMAME.  Processors need this
-std::string get_vpinmame_path();
 
 // Main entrypoint for AltSound handling
 bool processCommand(int cmd);
@@ -113,8 +102,7 @@ bool processCommand(int cmd);
 std::pair<bool, InitData> init(const std::string& log_path);
 
 // Parse command log file for playback
-bool parseCmdFile(const std::string& filename, std::vector<TestData>& testData_out,
-	              std::string& altsound_path_out);
+bool parseCmdFile(InitData& init_data);
 
 // Handle playback of stored sound commands
 bool playbackCommands(const std::vector<TestData>& testData);
@@ -204,14 +192,15 @@ bool processCommand(int cmd)
 
 // ---------------------------------------------------------------------------
 
-std::pair<bool, InitData> init(const std::string& log_path) {
+std::pair<bool, InitData> init(const std::string& log_path)
+{
 	ALT_DEBUG(0, "BEGIN init()");
 
 	InitData init_data;
 	init_data.log_path = log_path;
 
 	try {
-		if (!ALT_CALL(parseCmdFile(log_path, init_data.test_data, init_data.altsound_path))) {
+		if (!ALT_CALL(parseCmdFile(init_data))) {
 			throw std::runtime_error("Failed to parse command file.");
 		}
 		ALT_INFO(1, "SUCCESS parseCmdFile()");
@@ -229,13 +218,15 @@ std::pair<bool, InitData> init(const std::string& log_path) {
 		}
 
 		string format = ini_proc.getAltsoundFormat();
-		use_rom_ctrl = ini_proc.usingRomVolumeControl();
-		rec_snd_cmds = ini_proc.recordSoundCmds();
+		std::string game_name(g_szGameName);
 
 		if (format == "g-sound") {
 			// G-Sound only supports new CSV format. No need to specify format
 			// in the constructor
-			processor.reset(new GSoundProcessor(g_szGameName));
+			processor.reset(new GSoundProcessor(game_name, init_data.vpm_path));
+		}
+		else if (format == "altsound" || format == "legacy") {
+			processor.reset(new AltsoundProcessor(game_name, init_data.vpm_path, format));
 		}
 		else {
 			throw std::runtime_error("Unknown AltSound format: " + format);
@@ -245,6 +236,14 @@ std::pair<bool, InitData> init(const std::string& log_path) {
 			throw std::runtime_error("FAILED: Unable to create AltSound processor");
 		}
 		ALT_INFO(0, "%s processor created", format.c_str());
+
+		// set ROM volume control preference
+		processor->romControlsVol(ini_proc.usingRomVolumeControl());
+		
+		// set sound command recording preference
+		processor->recordSoundCmds(ini_proc.recordSoundCmds());
+
+		processor->init();
 
 		// Initialize BASS
 		int DSidx = -1; // BASS default device
@@ -264,28 +263,18 @@ std::pair<bool, InitData> init(const std::string& log_path) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Helper function to get path to VpinMAME
-// ---------------------------------------------------------------------------
-
-std::string get_vpinmame_path()
-{
-	return vpm_path;
-}
-
 // ----------------------------------------------------------------------------
 // Command file parser
 // ----------------------------------------------------------------------------
 
-bool parseCmdFile(const std::string& filename, std::vector<TestData>& testData_out,
-	std::string& altsound_path_out)
+bool parseCmdFile(InitData& init_data)
 {
 	ALT_DEBUG(0, "BEGIN parseCmdFile");
 
 	try {
-		std::ifstream inFile(filename);
+		std::ifstream inFile(init_data.log_path);
 		if (!inFile.is_open()) {
-			throw std::runtime_error("Unable to open file: " + filename);
+			throw std::runtime_error("Unable to open file: " + init_data.log_path);
 		}
 
 		std::string line;
@@ -302,8 +291,8 @@ bool parseCmdFile(const std::string& filename, std::vector<TestData>& testData_o
 				std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
 
 				// capture path to the altsound
-				altsound_path_out = fullPath;
-				ALT_INFO(1, "Path to altsound: %s", altsound_path_out.c_str());
+				init_data.altsound_path = fullPath;
+				ALT_INFO(1, "Path to altsound: %s", init_data.altsound_path.c_str());
 
 				size_t lastSlashPos = fullPath.rfind('/');
 				if (lastSlashPos != std::string::npos) {
@@ -315,7 +304,7 @@ bool parseCmdFile(const std::string& filename, std::vector<TestData>& testData_o
 					std::strcpy(g_szGameName, gameName.c_str());
 
 					// capture path to VPinMAME
-					vpm_path = fullPath.substr(0, fullPath.find("/altsound/"));
+					init_data.vpm_path = fullPath.substr(0, fullPath.find("/altsound/"));
 				}
 			}
 		}
@@ -351,7 +340,7 @@ bool parseCmdFile(const std::string& filename, std::vector<TestData>& testData_o
 				throw std::runtime_error("Unable to parse command: " + command);
 			}
 
-			testData_out.push_back(data);
+			init_data.test_data.push_back(data);
 		}
 
 		inFile.close();

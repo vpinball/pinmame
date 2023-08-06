@@ -3,13 +3,13 @@
 
 #include "snd_alt.h"
 
-#if defined(_WIN32)
-  #include <direct.h>
-  #define CURRENT_DIRECTORY _getcwd
-#else
-  #include <unistd.h>
-  #define CURRENT_DIRECTORY getcwd
-#endif
+//#if defined(_WIN32)
+//  #include <direct.h>
+//  #define CURRENT_DIRECTORY _getcwd
+//#else
+//  #include <unistd.h>
+//  #define CURRENT_DIRECTORY getcwd
+//#endif
 
 // Std Library includes
 #include <algorithm>
@@ -58,9 +58,6 @@ std::mutex io_mutex;
 // Instance of global array of BASS channels 
 StreamArray channel_stream;
 
-float master_vol = 1.0f;
-float global_vol = 1.0f;
-
 // windef.h "min" conflicts with std::min
 #ifdef min
   #undef min
@@ -95,9 +92,6 @@ AltsoundProcessorBase *processor = NULL;
 
 // Use ROM control commands to control master volume
 bool use_rom_ctrl = true;
-
-// Record sound commands for later playback
-bool rec_snd_cmds = false;
 
 // ---------------------------------------------------------------------------
 // Function prototypes
@@ -134,9 +128,11 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	//DAR@20230519 not sure what this does
 	int	attenuation = osd_get_mastervolume();
 
+	float master_vol = processor->getMasterVol();
 	while (attenuation++ < 0) {
 		master_vol /= 1.122018454f; // = (10 ^ (1/20)) = 1dB
 	}
+	processor->setMasterVol(master_vol);
 	ALT_DEBUG(0, "Master Volume (Post Attenuation): %.02f", master_vol);
 
 	cmds.cmd_counter++;
@@ -222,10 +218,10 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	srand(static_cast<unsigned int>(time(NULL)));
 
 	// get path to altsound folder for the current game
-	string altsound_path = get_vpinmame_path();
-	if (!altsound_path.empty()) {
-		altsound_path += "\\altsound\\";
-		altsound_path += g_szGameName;
+	string altsound_path;
+	string vpm_path = get_vpinmame_path();
+	if (!vpm_path.empty()) {
+		altsound_path = vpm_path + "/altsound/" + g_szGameName;
 		ALT_INFO(0, "Path to altsound: %s", altsound_path.c_str());
 	}
 	else {
@@ -248,18 +244,18 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	}
 
 	string format = ini_proc.getAltsoundFormat();
-	use_rom_ctrl = ini_proc.usingRomVolumeControl();
-	rec_snd_cmds = ini_proc.recordSoundCmds();
+
+	std::string game_name(g_szGameName);
 
 	if (format == "g-sound") {
 		// G-Sound only supports new CSV format. No need to specify format
 		// in the constructor
-		processor = new GSoundProcessor(g_szGameName);
+		processor = new GSoundProcessor(game_name, vpm_path);
 	}
 	else if (format == "altsound" || format == "legacy") {
 		// Traditional altsound processor handles existing CSV and legacy
 		// PinSound format so it must be specified in the constructor
-		processor = new AltsoundProcessor(g_szGameName, format);
+		processor = new AltsoundProcessor(game_name, vpm_path, format);
 	}
 	else {
 		ALT_ERROR(0, "Unknown AltSound format: %s", format.c_str());
@@ -278,8 +274,13 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	}
 	ALT_INFO(0, "%s processor created", format.c_str());
 
-	global_vol = 1.0f;
-	master_vol = 1.0f;
+	processor->setMasterVol(1.0f);
+	processor->setGlobalVol(1.0f);
+	processor->romControlsVol(ini_proc.usingRomVolumeControl());
+	processor->recordSoundCmds(ini_proc.recordSoundCmds());
+
+	// perform processor initialization (load samples, etc)
+	processor->init();
 
 	// intialize the command bookkeeping structure
 	cmds_out->cmd_counter = 0;
@@ -339,8 +340,6 @@ extern "C" void alt_sound_exit() {
 	run_once = TRUE;
 	altsound_stable = TRUE;
 	use_rom_ctrl = true;
-	master_vol = 1.0f;
-	global_vol = 1.0f;
 
 	// clean up processor
 	delete processor;
@@ -442,9 +441,9 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 				// DAR@20230518
 				// I don't know why this is nerfing the volume.  It does not
 				// appear to work correctly in all cases. 
-				if (use_rom_ctrl) {
-					global_vol = std::min((float)cmd_buffer[1] / 127.f, 1.0f);
-					ALT_INFO(0, "Change volume %.02f", global_vol);
+				if (processor->romControlsVol()) {
+					processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f));
+					ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
 				}
 			}
 			else
@@ -473,9 +472,9 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 			// DAR@20230518
 			// I don't know why this is nerfing the volume.  It does not
 			// appear to work correctly in all cases. 
-			if (use_rom_ctrl) {
-				global_vol = std::min((float)cmd_buffer[1] / 127.f, 1.0f);
-				ALT_INFO(0, "Change volume %.02f", global_vol);
+			if (processor->romControlsVol()) {
+				processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f));
+				ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
 			}
 
 			for (int i = 0; i < ALT_MAX_CMDS; ++i)
@@ -551,9 +550,9 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 				// DAR@20230518
 				// I don't know why this is nerfing the volume.  It does not
 				// appear to work correctly in all cases. 
-				if (use_rom_ctrl) {
-					global_vol = std::min((float)cmd_buffer[1] / 127.f, 1.0f);
-					ALT_INFO(0, "Change volume %.02f", global_vol);
+				if (processor->romControlsVol()) {
+					processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f));
+					ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
 				}
 
 				for (int i = 0; i < ALT_MAX_CMDS; ++i)
@@ -648,10 +647,13 @@ std::string get_vpinmame_path()
 	{
 		GetModuleFileNameA(hModule, cvpmd, sizeof(cvpmd));
 		std::string vpm_path = cvpmd;
-		
+
+		// Normalize slashes
+		std::replace(vpm_path.begin(), vpm_path.end(), '\\', '/');
+
 		OUTDENT;
-		ALT_DEBUG(0, "END get_vpinmame_path");
-		return vpm_path.substr(0, vpm_path.rfind("\\"));
+		ALT_DEBUG(0, "END get_vpinmame_path()");
+		return vpm_path.substr(0, vpm_path.rfind("/"));
 	}
 	else
 	{
@@ -659,6 +661,7 @@ std::string get_vpinmame_path()
 	}
 
 	OUTDENT;
-	ALT_DEBUG(0, "END get_vpinmame_path");
+	ALT_DEBUG(0, "END get_vpinmame_path()");
 	return "";
 }
+

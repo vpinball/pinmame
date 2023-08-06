@@ -17,11 +17,11 @@
 
 #include "altsound_logger.hpp"
 
-extern BehaviorInfo music_behavior;
-extern BehaviorInfo callout_behavior;
-extern BehaviorInfo sfx_behavior;
-extern BehaviorInfo solo_behavior;
-extern BehaviorInfo overlay_behavior;
+//extern BehaviorInfo music_behavior;
+//extern BehaviorInfo callout_behavior;
+//extern BehaviorInfo sfx_behavior;
+//extern BehaviorInfo solo_behavior;
+//extern BehaviorInfo overlay_behavior;
 
 extern AltsoundLogger alog;
 
@@ -33,12 +33,12 @@ GSoundCsvParser::GSoundCsvParser(const std::string& path_in)
 : altsound_path(path_in),
   filename()
 {
-	filename = altsound_path + "\\g-sound.csv";
+	filename = altsound_path + "/g-sound.csv";
 }
 
 // ----------------------------------------------------------------------------
 
-bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
+bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 {
 	ALT_DEBUG(0, "BEGIN GSoundCsvParser::parse()");
 	INDENT;
@@ -75,7 +75,7 @@ bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
 
 			std::stringstream ss(line);
 			std::string field;
-			SampleInfo entry;
+			GSoundSampleInfo entry;
 
 			// Read ID field (unsigned hexadecimal)
 			if (std::getline(ss, field, ','))
@@ -126,19 +126,29 @@ bool GSoundCsvParser::parse(std::vector<SampleInfo>& samples_out)
 			// Read FNAME field
 			if (std::getline(ss, field, ','))
 			{
+				field = trim(field);
 				if (field.empty()) {
 					ALT_ERROR(1, "Sample filename is blank");
 					success = false;
+					entry.fname = "";  // assign some default value
 					break;
 				}
 
-				field = trim(field);
-				std::transform(field.begin(), field.end(), field.begin(), ::tolower);
-				std::string sample_path = altsound_path + '\\' + field;
+				std::string sample_path = altsound_path + '/' + field;
+
+				// Normalize to forward slashes
+				std::replace(sample_path.begin(), sample_path.end(), '\\', '/');
 				entry.fname = sample_path;
+			}
+			else {
+				ALT_ERROR(1, "Failed to parse FNAME");
+				success = false;
+				entry.fname = "";  // assign some default value
+				break;
 			}
 
 			samples_out.push_back(entry);
+
 			ALT_DEBUG(0, "ID = %d, TYPE = %s, GAIN = %.02f, FNAME = '%s'", entry.id,
 				 entry.type.c_str(), entry.gain, entry.fname.c_str());
 		}

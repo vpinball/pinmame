@@ -1,11 +1,24 @@
+// ---------------------------------------------------------------------------
+// altsound_csv_parser.hpp
+// 06/23/23 - Dave Roscoe
+//
+// Parser for legacy and traditional altsound format CSV files
+// ---------------------------------------------------------------------------
+// license:<TODO>
+// ---------------------------------------------------------------------------
 #ifndef ALTSOUND_CSV_PARSER_HPP
 #define ALTSOUND_CSV_PARSER_HPP
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
 
-#include "snd_alt.h"
+// Std Library includes
+#include <string>
+
+// local includes
 #include "altsound_data.hpp"
+
+//extern std::string get_vpinmame_path();
 
 // ---------------------------------------------------------------------------
 // Class definitions
@@ -15,51 +28,26 @@ class AltsoundCsvParser {
 public: // methods
 
 	// Standard constructor
-	AltsoundCsvParser(const char *gname_in);
+	AltsoundCsvParser(const std::string& altsound_path_in);
 
-	bool parse(PinSamples* psd);
+	bool parse(std::vector<AltsoundSampleInfo>& samples_out);
 
 public: // data
-
-	// Structure for traditional AltSound CSV parsing
-	typedef struct _csv_reader {
-		FILE* f;
-		int delimiter;
-		int n_header_fields;
-		char** header_fields;	// header split in fields
-		int n_fields;
-		char** fields;			// current row split in fields
-	} CsvReader;
 
 protected:
 
 	// Default constructor
-	AltsoundCsvParser() {/* not used */};
+	AltsoundCsvParser() {/* not used */ };
 
 	// Copy constructor
 	AltsoundCsvParser(AltsoundCsvParser&) {/* not used */ };
 
 private: // functions
 
-	void csv_close();
-	int csv_read_header();
-	int csv_read_record();
-	int csv_get_colnumber_for_field(const char* fieldname);
-	int csv_get_hex_field(const int field_index, int* pValue);
-	int csv_get_int_field(const int field_index, int* pValue);
-	void trim(const char* const start, char* end);
-	int fgetline(char* const buff, const int nchars, FILE* const file);
-	int parse_line(char* line, const int header);
-	void free_record();
-	int csv_get_float_field(const int field_index, float* pValue);
-	int csv_get_str_field(const int field_index, char** pValue);
-
 private: // data
 
-	CsvReader *reader;
-	const char* g_szGameName;
-	char* filename;
-	char cvpmd[1024];
-	const char* path_main = "\\altsound\\";
+	std::string altsound_path;
+	std::string filename;
 };
-#endif //ALTSOUND_CSV_PARSER_HPP
+
+#endif // ALTSOUND_CSV_PARSER_HPP

@@ -11,9 +11,9 @@ class AltsoundFileParser {
 public:
 	
 	// Standard constructor
-	AltsoundFileParser(const char *gname_in);
+	AltsoundFileParser(const std::string& altsound_path_in);
 
-	bool parse(PinSamples* psd);
+	bool parse(std::vector<AltsoundSampleInfo>& samples_out);
 
 protected:
 	
@@ -23,10 +23,7 @@ protected:
 private: // functions
 
 private: // data
-	const char* g_szGameName;
-	int base_path_length;
-	char cvpmd[1024];
-	const char* path_main = "\\altsound\\";
+	std::string altsound_path;
 };
 
 #endif //ALTSOUND_FILE_PARSER_HPP

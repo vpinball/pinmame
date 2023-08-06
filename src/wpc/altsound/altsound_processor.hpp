@@ -38,7 +38,8 @@ public:
 	AltsoundProcessor(AltsoundProcessor&) = delete;
 
 	// Standard constructor
-	AltsoundProcessor(const char* gname_in,
+	AltsoundProcessor(const std::string& game_name_in,
+		              const std::string& vpm_path_in,
 		              const std::string& format_in);
 
 	// Destructor
@@ -96,7 +97,7 @@ private: // data
 	bool is_initialized;
 	bool is_stable; // future use
 	CmdData cmds;
-	PinSamples psd;
+	std::vector<AltsoundSampleInfo> samples;
 };
 
 // ---------------------------------------------------------------------------

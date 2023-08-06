@@ -9,24 +9,52 @@
 // ---------------------------------------------------------------------------
 #include "altsound_processor_base.hpp"
 
+#include <chrono>
+#include <iomanip>
+
 #include "altsound_logger.hpp"
 
 extern AltsoundLogger alog;
 extern StreamArray channel_stream;
-extern float master_vol;
-extern float global_vol;
+
+// initialize static data members
+float AltsoundProcessorBase::global_vol = 1.0f;
+float AltsoundProcessorBase::master_vol = 1.0f;
+
+// reference to sound command recording status
+extern bool rec_snd_cmds;
+
+// DAR@20230721
+// ALTSOUND_STANDALONE is a compile-time flag set only when building the
+// altsound processor as an executable.  It prevents the executable from
+// trying to record a cmdlog.txt during playback, corrupting the source
+// file
+//
+#ifndef ALTSOUND_STANDALONE
+	std::ofstream logFile;
+	std::chrono::high_resolution_clock::time_point lastCmdTime;
+#endif
 
 // ---------------------------------------------------------------------------
 // CTOR/DTOR
 // ---------------------------------------------------------------------------
 
-AltsoundProcessorBase::AltsoundProcessorBase(const std::string& game_name_in)
-: game_name(game_name_in)
+AltsoundProcessorBase::AltsoundProcessorBase(const std::string& game_name,
+	                                         const std::string& vpm_path)
+: game_name(game_name),
+  vpm_path(vpm_path)
 {
 }
 
 AltsoundProcessorBase::~AltsoundProcessorBase()
 {
+#ifndef ALTSOUND_STANDALONE
+	// close sound command recording log
+	if (logFile.is_open()) {
+		logFile.close();
+	}
+#endif
+
 	// clean up stored steam objects
 	for (auto& stream : channel_stream) {
 		delete stream;
@@ -35,6 +63,87 @@ AltsoundProcessorBase::~AltsoundProcessorBase()
 }
 
 // ---------------------------------------------------------------------------
+
+bool AltsoundProcessorBase::handleCmd(const unsigned int cmd_in) 
+{
+#ifndef ALTSOUND_STANDALONE
+	if (rec_snd_cmds) {
+		// sound command recording is enabled
+
+		// Get the current time.
+		auto currentTime = std::chrono::high_resolution_clock::now();
+
+		// Compute the difference from the last command time.
+		auto deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastCmdTime).count();
+
+		// Log the time and command.
+		logFile << std::setw(10) << std::setfill('0') << std::dec << deltaTime;
+		logFile << ", 0x" << std::setw(4) << std::setfill('0') << std::hex << cmd_in;
+		logFile << ", " << "<user comments here>" << std::endl;
+
+		// Store the current time for the next command.
+		lastCmdTime = currentTime;
+	}
+#endif
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+
+void AltsoundProcessorBase::init()
+{
+#ifndef ALTSOUND_STANDALONE
+	// If recording sound commands, initialize output file
+	if (rec_snd_cmds) {
+		if (!ALT_CALL(startLogging(AltsoundProcessorBase::getGameName()))) {
+			ALT_ERROR(0, "FAILED startLogging()");
+		}
+		else {
+			ALT_INFO(1, "SUCCESS startLogging()");
+		}
+	}
+#endif
+}
+
+// ---------------------------------------------------------------------------
+
+bool AltsoundProcessorBase::startLogging(const std::string& gameName) {
+#ifndef ALTSOUND_STANDALONE
+	ALT_DEBUG(0, "BEGIN startLogging()");
+
+	// Check if gameName is not empty
+	if (gameName.empty()) {
+		ALT_ERROR(1, "Game name is empty. Cannot start logging.");
+		ALT_DEBUG(0, "END startLogging()");
+		return false;
+	}
+
+	std::string recording_fname = gameName + "-cmdlog.txt";
+	logFile.open(recording_fname);
+	if (!logFile.is_open()) {
+		ALT_ERROR(1, "Failed to open log file: %s", recording_fname.c_str());
+		ALT_DEBUG(0, "END startLogging()");
+		return false;
+	}
+
+	ALT_INFO(1, "Creating sound command log: %s", recording_fname.c_str());
+
+	std::string game_altsound_path = vpm_path + "/altsound/" + gameName;
+
+	// Check if game_altsound_path is valid
+	if (!dir_exists(game_altsound_path)) {
+		ALT_ERROR(1, "Altsound path does not exist: %s", game_altsound_path.c_str());
+		ALT_DEBUG(0, "END startLogging()");
+		return false;
+	}
+
+	logFile << "altsound_path: " << game_altsound_path << std::endl;
+	lastCmdTime = std::chrono::high_resolution_clock::now();
+
+	ALT_DEBUG(0, "END startLogging()");
+#endif
+	return true;
+}
 
 bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 {
@@ -225,7 +334,15 @@ bool AltsoundProcessorBase::stopAllStreams()
 
 std::string AltsoundProcessorBase::getShortPath(const std::string& path_in)
 {
-	std::string tmp_str = strstr(path_in.c_str(), game_name.c_str());
-	return tmp_str.empty() ? path_in : tmp_str;
+	std::size_t pos = path_in.find(game_name);
+	if (pos != std::string::npos)
+	{
+		return path_in.substr(pos);
+	}
+	else
+	{
+		return path_in;
+	}
 }
+
 

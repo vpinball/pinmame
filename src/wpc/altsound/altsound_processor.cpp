@@ -43,8 +43,8 @@ extern std::mutex io_mutex;
 // Instance of global array of BASS channels 
 extern StreamArray channel_stream;
 
-extern float master_vol;
-extern float global_vol;
+//extern float master_vol;
+//extern float global_vol;
 
 extern AltsoundLogger alog;
 
@@ -54,54 +54,18 @@ const unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
 // CTOR/DTOR
 // ---------------------------------------------------------------------------
 
-AltsoundProcessor::AltsoundProcessor(const char* gname_in,
+AltsoundProcessor::AltsoundProcessor(const std::string& game_name_in,
+	                                 const std::string& vpm_path_in,
 	                                 const string& format_in)
-:AltsoundProcessorBase(string(gname_in)),
+:AltsoundProcessorBase(game_name_in, vpm_path_in),
   format(format_in),
   is_initialized(false),
   is_stable(true) // future use
 {
-	// initialize sample storage
-	psd.ID = 0;
-	psd.files_with_subpath = 0;
-	psd.channel = 0;
-	psd.gain = 0;
-	psd.ducking = 0;
-	psd.loop = 0;
-	psd.stop = 0;
-	psd.num_files = 0;
-
-	// perform initialization (load samples, etc)
-	init();
 }
 
 AltsoundProcessor::~AltsoundProcessor()
 {
-	// clean up sample data
-	for (int i = 0; i < psd.num_files; ++i)
-	{
-		free(psd.files_with_subpath[i]);
-		psd.files_with_subpath[i] = 0;
-	}
-
-	free(psd.ID);
-	free(psd.files_with_subpath);
-	free(psd.gain);
-	free(psd.ducking);
-	free(psd.channel);
-	free(psd.loop);
-	free(psd.stop);
-
-	psd.ID = 0;
-	psd.files_with_subpath = 0;
-	psd.gain = 0;
-	psd.ducking = 0;
-	psd.channel = 0;
-	psd.loop = 0;
-	psd.stop = 0;
-
-	psd.num_files = 0;
-
 	// DAR@20230624
 	// cur_mus_stream and cur_jin_stream are copies of pointers stored in
 	// channel_stream[].  They cannot be deleted here, since they will be
@@ -126,6 +90,9 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 
 	ALT_DEBUG(0, "Acquiring mutex");
 	std::lock_guard<std::mutex> guard(io_mutex);
+	
+	// Pass command to base class for processing
+	AltsoundProcessorBase::handleCmd(cmd_combined_in);
 
 	if (!is_initialized || !is_stable) {
 		if (!is_initialized) {
@@ -160,13 +127,14 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	HSTREAM stream = BASS_NO_STREAM;
 
 	// pre-populate stream info
-	new_stream->sample_path = psd.files_with_subpath[sample_idx];
-	new_stream->stop_music  = psd.stop[sample_idx] != 0;
-	new_stream->ducking     = psd.ducking[sample_idx];
-	new_stream->loop        = psd.loop[sample_idx] == 100;
-	new_stream->gain        = psd.gain[sample_idx];
+	new_stream->sample_path = samples[sample_idx].fname;
+	new_stream->stop_music  = samples[sample_idx].stop;
+	new_stream->ducking = samples[sample_idx].ducking;
+	new_stream->loop        = samples[sample_idx].loop;
+	new_stream->gain        = samples[sample_idx].gain;
 
-	unsigned int sample_channel = psd.channel[sample_idx];
+	unsigned int sample_channel = samples[sample_idx].channel;
+
 	if (sample_channel == 1) {
 		// Command is for playing Jingle/Single
 		new_stream->stream_type = JINGLE;
@@ -294,6 +262,9 @@ void AltsoundProcessor::init()
 	// if we are here, initialization succeeded
 	is_initialized = true;
 
+	// Iinitialize base class
+	AltsoundProcessorBase::init();
+
 	OUTDENT;
 	ALT_DEBUG(0, "END AltsoundProcessor::init()");
 }
@@ -304,25 +275,28 @@ bool AltsoundProcessor::loadSamples()
 {
 	ALT_DEBUG(0, "BEGIN AltsoundProcessor::loadSamples()");
 	INDENT;
-
-	// No files yet
-	psd.num_files = 0;
+	
+	string altsound_path = vpm_path; // in base class
+	if (!altsound_path.empty()) {
+		altsound_path += "/altsound/";
+		altsound_path += game_name;
+	}
 
 	if (format == "altsound") {
-		AltsoundCsvParser csv_parser(game_name.c_str());
+		AltsoundCsvParser csv_parser(altsound_path);
 
-		if (!csv_parser.parse(&psd)) {
+		if (!csv_parser.parse(samples)) {
 			ALT_ERROR(0, "FAILED AltsoundCsvParser::parse()");
 			
 			OUTDENT;
 			ALT_DEBUG(0, "END AltsoundProcessor::loadSamples()");
-			return is_initialized;
+			return false;
 		}
 		ALT_INFO(0, "SUCCESS AltsoundCsvParser::parse()");
 	}
 	else if (format == "legacy") {
-		AltsoundFileParser file_parser(game_name.c_str());
-		if (!file_parser.parse(&psd)) {
+		AltsoundFileParser file_parser(altsound_path);
+		if (!file_parser.parse(samples)) {
 			ALT_ERROR(0, "FAILED AltsoundFileParser::parse()");
 			
 			OUTDENT;
@@ -347,20 +321,20 @@ unsigned int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
 	unsigned int sample_idx = UNSET_IDX;
 
 	// Look for sample that matches the current command
-	for (int i = 0; i < psd.num_files; ++i) {
-		if (psd.ID[i] == cmd_combined_in) {
+	for (int i = 0; i < samples.size(); ++i) {
+		if (samples[i].id == cmd_combined_in) {
 			// Current ID matches the command. Check if there are more samples for this
 			// command and randomly pick one
 			unsigned int num_samples = 0;
 			do {
 				num_samples++;
 
-				if (i + num_samples >= psd.num_files)
+				if (i + num_samples >= samples.size())
 					// sample index exceeds the number of samples
 					break;
 
 				// Loop while the next sample ID matches the command
-			} while (psd.ID[i + num_samples] == cmd_combined_in);
+			} while (samples[i + num_samples].id == cmd_combined_in);
 			ALT_INFO(0, "SUCCESS Found %d sample(s) for ID: %04X", num_samples, cmd_combined_in);
 
 			// num_samples now contains the number of samples with the same ID

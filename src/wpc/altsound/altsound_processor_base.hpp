@@ -34,16 +34,30 @@ public:
 	AltsoundProcessorBase(AltsoundProcessorBase&) = delete;
 
 	// Standard Constructor
-	AltsoundProcessorBase(const std::string& game_name_in);
+	AltsoundProcessorBase(const std::string& game_name, const std::string& vpm_path);
 
 	// Destructor
 	~AltsoundProcessorBase();
 
 	// Process ROM commands to the sound board
-	virtual bool handleCmd(const unsigned int cmd_in) = 0;
+	virtual bool handleCmd(const unsigned int cmd_in);
 
 	// external interface to stop playback of the current music stream
 	virtual bool stopMusic() = 0;
+
+	void romControlsVol(const bool use_rom_vol);
+	bool romControlsVol();
+
+	void recordSoundCmds(const bool rec_sound_cmds);
+
+	// initialize processing state
+	virtual void init();
+
+	void setMasterVol(const float vol_in);
+	static float getMasterVol();
+
+	void setGlobalVol(const float vol_in);
+	static float getGlobalVol();
 
 public: // data
 	
@@ -51,9 +65,6 @@ protected: // functions
 
 	// populate sample data
 	virtual bool loadSamples() = 0;
-
-	// initialize processing state
-	virtual void init() = 0;
 
 	// find sample matching provided command
 	virtual unsigned int getSample(const unsigned int cmd_combined_in) = 0;
@@ -81,12 +92,23 @@ protected: // functions
 
 	const std::string& getGameName();
 
+	const std::string& getVpmPath();
+
+	bool startLogging(const std::string& gameName);
+
 protected: // data
 	
 	std::string game_name;
+	std::string vpm_path;
 
 private: // functions
+
 private: // data
+
+	bool rec_snd_cmds = false;
+	bool use_rom_ctrl = true;
+	static float global_vol;
+	static float master_vol;
 };
 
 // ----------------------------------------------------------------------------
@@ -96,5 +118,39 @@ private: // data
 inline const std::string& AltsoundProcessorBase::getGameName() {
 	return game_name;
 }
+
+inline const std::string& AltsoundProcessorBase::getVpmPath() {
+	return vpm_path;
+}
+
+inline void AltsoundProcessorBase::romControlsVol(const bool use_rom_vol) {
+	use_rom_ctrl = use_rom_vol;
+}
+
+inline bool AltsoundProcessorBase::romControlsVol() {
+	return use_rom_ctrl;
+}
+
+inline void AltsoundProcessorBase::recordSoundCmds(const bool rec_sound_cmds) {
+	rec_snd_cmds = rec_sound_cmds;
+}
+
+inline void AltsoundProcessorBase::setMasterVol(const float vol_in) {
+	master_vol = vol_in;
+}
+
+inline float AltsoundProcessorBase::getMasterVol() {
+	return master_vol;
+}
+
+inline void AltsoundProcessorBase::setGlobalVol(const float vol_in) {
+	global_vol = vol_in;
+}
+
+inline float AltsoundProcessorBase::getGlobalVol() {
+	return global_vol;
+}
+
+// ----------------------------------------------------------------------------
 
 #endif // ALTSOUND_PROCESSOR_BASE_HPP

@@ -30,7 +30,7 @@ public: // methods
 	// Standard constructor
 	GSoundCsvParser(const std::string& path_in);
 
-	bool parse(std::vector<SampleInfo>& samples_out);
+	bool parse(std::vector<GSoundSampleInfo>& samples_out);
 
 public: // data
 

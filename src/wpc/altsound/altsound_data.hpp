@@ -58,18 +58,6 @@ enum AltsoundSampleType {
 	OVERLAY
 };
 
-// Structure for holding traditional AltSound sample data
-typedef struct _pin_samples {
-	int * ID;
-	char ** files_with_subpath;
-	signed char * channel;
-	float * gain;
-	float * ducking;
-	unsigned char * loop;
-	unsigned char * stop;
-	unsigned int num_files;
-} PinSamples;
-
 // Structure for storing G-Sound ducking profiles
 typedef struct _ducking_profile {
 	float music_duck_vol = 1.0f;
@@ -105,8 +93,21 @@ typedef struct _behavior_info {
 
 } BehaviorInfo;
 
+// Structure for holding traditional AltSound sample data
+typedef struct _altsound_sample_info {
+	unsigned int id;
+	int channel;
+	float gain;
+	float ducking;
+	bool loop;
+	bool stop;
+	std::string name;
+	std::string fname;
+} AltsoundSampleInfo;
+
+// DAR_TODO do we need "duck" here?
 // Structure for holding G-Sound sample data
-typedef struct _sample_info {
+typedef struct _gsound_sample_info {
 	unsigned int id;
 	std::string type = "";
 	float duck = 1.0f;
@@ -114,7 +115,7 @@ typedef struct _sample_info {
 	std::string fname = "";
 	bool loop = false;
 	unsigned int ducking_profile = 0;
-} SampleInfo;
+} GSoundSampleInfo;
 
 // ---------------------------------------------------------------------------
 // Helper function prototypes
@@ -134,5 +135,8 @@ bool dir_exists(const std::string& path_in);
 
 // trim leading and trailing whitespace from string
 std::string trim(const std::string& str);
+
+// convert string to lowercase
+std::string toLowerCase(const std::string& str);
 
 #endif // ALTSOUND_DATA_H
