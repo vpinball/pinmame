@@ -6,9 +6,9 @@ goto :end_header
 **************************************************************************
 * Win_Build Script
 * Generates/Builds Windows-based project files from CMake workflow scripts
-* v1.0
+* v1.1
 * Dave Roscoe
-* 05/10/2023
+* 08/06/2023
 *-------------------------------------------------------------------------
 * SCRIPT NOTES
 * - Creates individual solution and project files for each
@@ -23,7 +23,6 @@ goto :end_header
 *-------------------------------------------------------------------------
 * FUTURE WORK
 * - Re-implement in Powershell
-* - Add unit tests
 * - Add single solution file generation for all projects
 * - Add ability to clean up targets and CMake artifacts.
 *-------------------------------------------------------------------------
@@ -88,7 +87,6 @@ call :print_globals
 if %GEN_ALTSOUND% == YES (
    set OUTPATH=build/altsound/%PLATFORM%/
 
-@REM   copy /Y cmake\instvpm\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
    pushd src\wpc\altsound
    cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 

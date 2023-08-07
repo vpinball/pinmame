@@ -10,18 +10,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <unordered_set>
 
 #include "altsound_logger.hpp"
-
-//extern BehaviorInfo music_behavior;
-//extern BehaviorInfo callout_behavior;
-//extern BehaviorInfo sfx_behavior;
-//extern BehaviorInfo solo_behavior;
-//extern BehaviorInfo overlay_behavior;
 
 extern AltsoundLogger alog;
 
@@ -149,8 +144,14 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 
 			samples_out.push_back(entry);
 
-			ALT_DEBUG(0, "ID = %d, TYPE = %s, GAIN = %.02f, FNAME = '%s'", entry.id,
-				 entry.type.c_str(), entry.gain, entry.fname.c_str());
+			std::ostringstream debug_stream;
+			debug_stream << "ID = 0x" << std::setfill('0') << std::setw(4) << std::hex << entry.id << std::dec
+				<< ", TYPE = " << entry.type
+				<< ", GAIN = " << std::fixed << std::setprecision(2) << entry.gain
+				<< ", DUCK_PRF = " << entry.ducking_profile
+				<< ", FNAME = " << entry.fname;
+
+			ALT_DEBUG(0, debug_stream.str().c_str());
 		}
 	}
 	catch (std::exception e) {

@@ -22,6 +22,8 @@ ARGUMENT/PARAM REFERENCE
 PRJ: Sets the project file(s) to be generated.
      ALL       : Generates all project files. See project descriptions below
                  for output path of the generated project files
+     ALTSOUND  : Generates the "altsound" project. Files will be created
+                 in <PINMAME_ROOT>/src/wpc/altsound/<PLATFORM>
      INSTVPM   : Generates the "instvpm" project.  Files will be created
                  in <PINMAME_ROOT>/build/instvpm/<PLATFORM>/
      LIBPINMAME: Generates the "libpinmame" project. Files will be created

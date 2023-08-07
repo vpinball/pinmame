@@ -51,12 +51,6 @@ set(STANDALONE_SOURCES
 )
 
 set(VPINMAME_SOURCES
-#   altsound_file_parser.cpp
-#   altsound_file_parser.hpp
-#   altsound_csv_parser.cpp
-#   altsound_csv_parser.hpp
-#   altsound_processor.cpp
-#   altsound_processor.hpp
    snd_alt.cpp
    snd_alt.h
 )
@@ -146,8 +140,3 @@ else()
     set(CMAKE_BUILD_TOOL make)
 endif()
 
-# adds the ability to clean build artifacts
-#add_custom_target(clean-all
-#    COMMAND ${CMAKE_BUILD_TOOL} clean
-#	COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_SOURCE_DIR}/build"
-#)
