@@ -21,6 +21,8 @@ protected:
 	AltsoundFileParser() {};
 
 private: // functions
+	
+	float parseFileValue(const std::string& filePath, bool isGain);
 
 private: // data
 	std::string altsound_path;

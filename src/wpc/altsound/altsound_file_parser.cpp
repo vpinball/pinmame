@@ -1,25 +1,26 @@
+// ---------------------------------------------------------------------------
+// altsound_file_parser.cpp
+// 08/06/23 - Dave Roscoe
+//
+// Parser for Legacy format sample files and directories
+// ---------------------------------------------------------------------------
+// license:<TODO>
+// ---------------------------------------------------------------------------
+
 #include "altsound_file_parser.hpp"
+
+// Standard Library includes
+#include <iomanip>
+
+// local includes
+#include <dirent.h>
 #include "altsound_logger.hpp"
 
 extern AltsoundLogger alog;
-#if defined(_WIN32)
-#include <direct.h>
-#define CURRENT_DIRECTORY _getcwd
-#else
-#include <unistd.h>
-#define CURRENT_DIRECTORY getcwd
-#endif
 
-//#ifdef __cplusplus
-//  extern "C" {
-//#endif
-
-#include <dirent.h>
-#include <iomanip>
-
-//#ifdef __cplusplus
-//  }
-//#endif
+// ---------------------------------------------------------------------------
+// CTOR/DTOR
+// ---------------------------------------------------------------------------
 
 AltsoundFileParser::AltsoundFileParser(const std::string& altsound_path_in)
 	: altsound_path(altsound_path_in)
@@ -69,123 +70,13 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	INDENT;
 
 	int result = 0; // Assume success at start
-	int num_files = 0;
+
 	const std::string path_jingle = "jingle/";
 	const std::string path_music = "music/";
 	const std::string path_sfx = "sfx/";
 	const std::string path_single = "single/";
 	const std::string path_voice = "voice/";
 
-	for (int i = 0; i < 5; ++i) {
-		const std::string subpath = (i == 0) ? path_jingle :
-			((i == 1) ? path_music :
-			((i == 2) ? path_sfx :
-				((i == 3) ? path_single : path_voice)));
-
-		std::string PATH = altsound_path + '/' + subpath;
-		ALT_INFO(0, "Search path: %s", PATH.c_str());
-
-		DIR *dir;
-		struct dirent *entry;
-
-		// open root directory of the current sound class.  For example, from
-		// the comments above:
-		// <ROM shortname>\
-		    //    music\			<--- sound class: "music"
-			//
-		dir = opendir(PATH.c_str());
-		if (!dir) {
-			// Path not found.. try the others
-			ALT_INFO(0, "Not a directory: %s", PATH.c_str());
-			continue;
-		}
-
-		// Loop through the directory entries
-		entry = readdir(dir);
-		while (entry != NULL) {
-			if (entry->d_name[0] != '.'
-				&& strstr(entry->d_name, ".txt") == 0
-				&& strstr(entry->d_name, ".ini") == 0) {
-				// Not a system file or txt file.  Assume it's a directory
-				// (per PinSound format requirements).  Backup the current
-				// directory stream and entry
-				const DIR backup_dir = *dir;
-				struct dirent backup_entry = *entry;
-
-				DIR *dir2;
-				struct dirent *entry2;
-
-				// Create new path with subdirectory name, preserving the
-				// parent directory stream and current entry
-				std::string PATH2 = PATH + std::string(entry->d_name);
-				ALT_INFO(1, "Search sub-path: %s", PATH2.c_str());
-
-				// Open subfolder of parent sound class directory.  For example
-				// from the comments above:
-				// <ROM shortname>\
-		            //    music\			            <--- sound class: "music"
-					//        <instruction1>-name\      <--- ROM instruction ID-<snd_name>
-					//
-					// DAR@20230525
-					// Found an odd problem on Windows.  A hidden file shows up in the
-					// dir stream "desktop.ini" which crashes the program.  I believe
-					// this is due to the opendir coming back as NULL, which seems like
-					// it should be protected in any case
-				dir2 = opendir(PATH2.c_str());
-				ALT_INFO(1, "Directory stream created: %d", dir2);
-
-				if (!dir2) {
-					// Path not found.. try the others
-					ALT_INFO(1, "Not a directory: %s", PATH2.c_str());
-					entry = NULL;
-					continue;
-				}
-
-				entry2 = readdir(dir2);
-				ALT_INFO(0, "ENTRY: %d\n", entry2);
-
-				while (entry2 != NULL) {
-					ALT_INFO(1, "Found file: %s", entry2->d_name);
-
-					if (entry2->d_name[0] != '.'
-						&& strstr(entry2->d_name, ".txt") == 0
-						&& strstr(entry2->d_name, ".ini") == 0) {
-						// not a system or txt file.  This must be a sound file.
-						// Increase the number of files being tracked.
-						ALT_INFO(1, "Adding file: %s", entry2->d_name);
-						num_files++;
-					}
-
-					// get next sound file in subdirectory
-					entry2 = readdir(dir2);
-				}
-
-				// All sound files for this sound class collected.
-				// Close the directory stream and free allocated memory
-				closedir(dir2);
-
-				// Restore backed up parent folder and entry.
-				*dir = backup_dir;
-				*entry = backup_entry;
-			}
-
-			// get next entry in the parent directory stream
-			entry = readdir(dir);
-		}
-
-		// All sound class directories processed.  Close directory stream
-		closedir(dir);
-	}
-
-	if (num_files <= 0) {
-		// No filenames parsed.. exit
-		ALT_ERROR(0, "No files found!");
-
-		ALT_DEBUG(0, "END AltsoundFileParser::parse()");
-		return false;
-	}
-
-	// value
 	for (int i = 0; i < 5; ++i) {
 		float default_gain = .1f;
 		float default_ducking = 1.f; //!! default depends on type??
@@ -212,49 +103,26 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		std::string PATH = altsound_path + '/' + subpath;
 		ALT_INFO(0, "Current_path1: %s", PATH.c_str());
 
+		// Check for new default gain
+		std::string PATHG = PATH + "gain.txt";
+		float parsedGain = parseFileValue(PATHG, true);
+		if (parsedGain != -1.0f) {
+			default_gain = parsedGain;
+		}
+
+		// Check for new default ducking
+		PATHG = PATH + "ducking.txt";
+		float parsedDucking = parseFileValue(PATHG, false);
+		if (parsedDucking != -1.0f) {
+			default_ducking = parsedDucking;
+		}
+
 		dir = opendir(PATH.c_str());
 		if (!dir)
 		{
 			// Path not found.. try the others
 			ALT_INFO(0, "Path not found: %s", PATH.c_str());
 			continue;
-		}
-
-		{// parse gain.txt
-			FILE *f;
-
-			const std::string PATHG = PATH + "gain.txt";
-			ALT_INFO(0, "Current_path2: %s", PATHG.c_str());
-			f = fopen(PATHG.c_str(), "r");
-
-			if (f) {
-				unsigned int tmp_gain = 0;
-				// Set default gain from file
-				fscanf(f, "%u", &tmp_gain);
-				fclose(f);
-				default_gain = tmp_gain > 100 ? 1.0f : (float)tmp_gain / 100.f;
-			}
-			else {
-				// Default gain not found, use default defined above
-			}
-		}
-		{// parse ducking.txt
-			FILE *f;
-
-			const std::string PATHG = PATH + "ducking.txt";
-			ALT_INFO(0, "Current_path3: %s", PATHG.c_str());
-			f = fopen(PATHG.c_str(), "r");
-
-			if (f) {
-				// Set default ducking from file
-				int tmp_duck = 0;
-				fscanf(f, "%d", &tmp_duck);
-				fclose(f);
-				default_ducking = tmp_duck > 100 ? 1.0f : (float)tmp_duck / 100.f;
-			}
-			else {
-				// Default ducking not found, use default defined above
-			}
 		}
 
 		// parse individual sound file data
@@ -278,37 +146,23 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 				std::string PATH2 = PATH + entry->d_name;
 
-				{// individual gain
-					FILE *f;
-
-					const std::string PATHG = PATH2 + '/' + "gain.txt";
-					ALT_INFO(1, "Current_path4: %s", PATHG.c_str());
-					f = fopen(PATHG.c_str(), "r");
-					if (f)
-					{
-						unsigned int tmp_gain = 0;
-						fscanf(f, "%u", &tmp_gain);
-						fclose(f);
-						gain = tmp_gain > 100 ? 1.0f : (float)tmp_gain / 100.f;
-					}
-				}
-				{// individual ducking
-					FILE *f;
-
-					const std::string PATHG = PATH2 + '/' + "ducking.txt";
-					ALT_INFO(1, "Current_path5: %s", PATHG.c_str());
-					f = fopen(PATHG.c_str(), "r");
-					if (f)
-					{
-						int tmp_ducking = 0;
-						fscanf(f, "%d", &tmp_ducking);
-						fclose(f);
-						ducking = tmp_ducking > 100 ? 1.0f : (float)tmp_ducking / 100.f;
-					}
+				// Check for overriding gain value
+				std::string PATHG = PATH2 + '/' + "gain.txt";
+				float parsedGain = parseFileValue(PATHG, true);
+				if (parsedGain != -1.0f) {
+					gain = parsedGain;
 				}
 
-				ALT_INFO(1, "opendir(%s)", PATH2.c_str());
+				// check for overriding ducking value
+				PATHG = PATH2 + '/' + "ducking.txt";
+				float parsedDucking = parseFileValue(PATHG, false);
+				if (parsedDucking != -1.0f) {
+					ducking = parsedDucking;
+				}
+
 				dir2 = opendir(PATH2.c_str());
+				ALT_INFO(1, "opendir(%s)", PATH2.c_str());
+
 				entry2 = readdir(dir2);
 				while (entry2 != NULL) {
 					if (entry2->d_name[0] != '.'
@@ -371,9 +225,29 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		}
 		closedir(dir);
 	}
-	ALT_INFO(0, "Found %d samples", num_files);
+	ALT_INFO(0, "Found %d samples", samples_out.size());
 
 	OUTDENT;
 	ALT_DEBUG(0, "BEGIN AltsoundFileParser::parse()");
 	return true;
+}
+
+// ----------------------------------------------------------------------------
+
+float AltsoundFileParser::parseFileValue(const std::string& filePath, bool isGain)
+{
+	FILE *f = fopen(filePath.c_str(), "r");
+	if (!f) {
+		return -1.0f;  // File not found
+	}
+	int tmpValue = 0;
+	fscanf(f, "%d", &tmpValue);
+	fclose(f);
+
+	if (isGain) {
+		return tmpValue > 100 ? 1.0f : (float)tmpValue / 100.f;
+	}
+	else {
+		return tmpValue > 100 ? 1.0f : (float)tmpValue / 100.f;
+	}
 }

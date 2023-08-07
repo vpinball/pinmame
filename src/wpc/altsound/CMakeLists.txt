@@ -47,7 +47,6 @@ set(STANDALONE_SOURCES
 	gsound_processor.hpp
 	${ROOT_DIR}/src/vc/dirent.c # for AltsoundFileParser
 	${ROOT_DIR}/src/vc/dirent.h # for AltsoundFileParser
-	${ROOT_DIR}/src/vc/unistd.h # for AltsoundCsvParser
 )
 
 set(VPINMAME_SOURCES
