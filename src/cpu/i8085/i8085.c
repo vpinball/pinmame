@@ -162,8 +162,9 @@ const UINT8 i8085_lut_cycles_8080[256]={
 /* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* C */ 5, 10,10,10,11,11,7, 11,5, 10,10,10,11,11,7, 11,
 /* D */ 5, 10,10,10,11,11,7, 11,5, 10,10,10,11,11,7, 11,
-/* E */ 5, 10,10,18,11,11,7, 11,5, 5, 10,5, 11,11,7, 11,
+/* E */ 5, 10,10,18,11,11,7, 11,5, 5, 10,4, 11,11,7, 11,
 /* F */ 5, 10,10,4, 11,11,7, 11,5, 5, 10,4, 11,11,7, 11 };
+
 const UINT8 i8085_lut_cycles_8085[256]={
 /*      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  */
 /* 0 */ 4, 10,7, 6, 4, 4, 7, 4, 10,10,7, 6, 4, 4, 7, 4,
@@ -180,7 +181,7 @@ const UINT8 i8085_lut_cycles_8085[256]={
 /* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* C */ 6, 10,7, 7, 9, 12,7, 12,6, 10,7, 6, 9, 9, 7, 12,
 /* D */ 6, 10,7, 10,9, 12,7, 12,6, 10,7, 10,9, 7, 7, 12,
-/* E */ 6, 10,7, 16,9, 12,7, 12,6, 6, 7, 5, 9, 10,7, 12,
+/* E */ 6, 10,7, 16,9, 12,7, 12,6, 6, 7, 4, 9, 10,7, 12,
 /* F */ 6, 10,7, 4, 9, 12,7, 12,6, 6, 7, 4, 9, 7, 7, 12 };
 
 /* special cases (partially taken care of elsewhere):
@@ -415,7 +416,7 @@ INLINE void execute_one(int opcode)
 			if ((I.AF.b.l&CF) | (I.AF.b.h>0x99))
 				I.XX.b.h += 0x60;
 
-			I.AF.b.l=(I.AF.b.l&23) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
+			I.AF.b.l=(I.AF.b.l&0x23) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
 			I.AF.b.h=I.XX.b.h;
 			break;
 
@@ -960,7 +961,7 @@ INLINE void execute_one(int opcode)
 		case 0xc6: // ADI nn
 			I.XX.b.l = ARG();
 			M_ADD(I.XX.b.l);
-				break;
+			break;
 		case 0xc7: // RST 0
 			M_RST(0);
 			break;
@@ -1111,7 +1112,7 @@ INLINE void execute_one(int opcode)
 			I.DE.d = I.HL.d;
 			I.HL.d = I.XX.d;
 			break;
-		case 0xec: // CPO nnnn
+		case 0xec: // CPE nnnn
 			M_CALL( I.AF.b.l & PF );
 			break;
 		case 0xed:
