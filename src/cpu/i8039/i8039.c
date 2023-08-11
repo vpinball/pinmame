@@ -119,7 +119,7 @@ typedef struct
 } I8039_Regs;
 
 static I8039_Regs R;
-static int    i8039_ICount;
+/*static*/ int    i8039_ICount;
 static int    inst_cycles;
 
 /* The opcode table now is a combination of cycle counts and function pointers */
@@ -586,7 +586,7 @@ void i8039_init (void)
 /****************************************************************************
  * Reset registers to their initial values
  ****************************************************************************/
-static void i8039_reset (void *param)
+void i8039_reset (void *param)
 {
 	R.PC.w.l = 0;
 	R.SP  = 0;
@@ -610,7 +610,7 @@ static void i8039_reset (void *param)
 /****************************************************************************
  * Shut down CPU emulation
  ****************************************************************************/
-static void i8039_exit (void)
+void i8039_exit (void)
 {
 	/* nothing to do ? */
 }
@@ -675,7 +675,7 @@ static int Timer_IRQ(void)
 /****************************************************************************
  * Execute cycles CPU cycles. Return number of cycles really executed
  ****************************************************************************/
-static int i8039_execute(int cycles)
+int i8039_execute(int cycles)
 {
 	unsigned T1;
 	int count;
@@ -753,7 +753,7 @@ unsigned i8039_get_context (void *dst)
 /****************************************************************************
  * Set all registers to given values
  ****************************************************************************/
-static void i8039_set_context (void *src)
+void i8039_set_context (void *src)
 {
 	if( src )
 	{
@@ -845,7 +845,7 @@ void i8039_set_reg (int regnum, unsigned val)
 /****************************************************************************
  * Set IRQ line state
  ****************************************************************************/
-static void i8039_set_irq_line(int irqline, int state)
+void i8039_set_irq_line(int irqline, int state)
 {
 	if (state != CLEAR_LINE) {
 		R.irq_state = I8039_EXTERNAL_INT;
