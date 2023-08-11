@@ -119,7 +119,7 @@ typedef struct
 } I8039_Regs;
 
 static I8039_Regs R;
-int	   i8039_ICount;
+static int    i8039_ICount;
 static int    inst_cycles;
 
 /* The opcode table now is a combination of cycle counts and function pointers */
@@ -160,10 +160,9 @@ INLINE void SET (UINT8 flag) { R.PSW |= flag;  }
 /* Get next opcode argument and increment program counter */
 INLINE unsigned M_RDMEM_OPCODE (void)
 {
-	unsigned retval;
-	retval=M_RDOP_ARG(R.PC.w.l);
-	R.PC.w.l++;
-	return retval;
+	UINT16 address = R.PC.w.l;
+	R.PC.w.l = ((R.PC.w.l + 1) & 0x7ff) | (R.PC.w.l & 0x800);
+	return M_RDOP_ARG(address);
 }
 
 INLINE void push(UINT8 d)
@@ -185,35 +184,38 @@ INLINE UINT8 pull(void) {
 INLINE void daa_a(void)
 {
 	if ((R.A & 0x0f) > 0x09 || (R.PSW & A_FLAG))
+	{
+		if (R.A > 0xf9)
+			SET(C_FLAG);
 		R.A += 0x06;
+	}
 	if ((R.A & 0xf0) > 0x90 || (R.PSW & C_FLAG))
 	{
 		R.A += 0x60;
 		SET(C_FLAG);
-	} else CLR(C_FLAG);
+	}
 }
 
 INLINE void M_ADD(UINT8 dat)
 {
-	UINT16 temp;
+	UINT16 temp = R.A + dat;
+	UINT16 temp4 = (R.A & 0x0f) + (dat & 0x0f);
 
 	CLR(C_FLAG | A_FLAG);
-	if ((R.A & 0xf) + (dat & 0xf) > 0xf) SET(A_FLAG);
-	temp = R.A + dat;
-	if (temp > 0xff) SET(C_FLAG);
-	R.A  = temp & 0xff;
+	R.PSW |= (temp4 << 2) & A_FLAG;
+	R.PSW |= (temp >> 1) & C_FLAG;
+	R.A = temp;
 }
 
 INLINE void M_ADDC(UINT8 dat)
 {
-	UINT16 temp;
+	UINT16 temp = R.A + dat + M_Cy;
+	UINT16 temp4 = (R.A & 0x0f) + (dat & 0x0f) + M_Cy;
 
-	CLR(A_FLAG);
-	if ((R.A & 0xf) + (dat & 0xf) + M_Cy > 0xf) SET(A_FLAG);
-	temp = R.A + dat + M_Cy;
-	CLR(C_FLAG);
-	if (temp > 0xff) SET(C_FLAG);
-	R.A  = temp & 0xff;
+	CLR(C_FLAG | A_FLAG);
+	R.PSW |= (temp4 << 2) & A_FLAG;
+	R.PSW |= (temp >> 1) & C_FLAG;
+	R.A = temp;
 }
 
 INLINE void M_CALL(UINT16 addr)
@@ -221,10 +223,6 @@ INLINE void M_CALL(UINT16 addr)
 	push(R.PC.b.l);
 	push((R.PC.b.h & 0x0f) | (R.PSW & 0xf0));
 	R.PC.w.l = addr;
-	#ifdef MESS
-		change_pc(addr);
-	#endif
-
 }
 
 INLINE void M_XCHD(UINT8 addr)
@@ -316,25 +314,14 @@ static void dec_r6(void)	 { R6--; }
 static void dec_r7(void)	 { R7--; }
 static void dis_i(void)		 { R.xirq_en = 0; }
 static void dis_tcnti(void)	 { R.tirq_en = 0; R.pending_irq &= ~I8039_TIMCNT_INT; }
-#ifdef MESS
-	static void djnz_r0(void)	{ UINT8 i=M_RDMEM_OPCODE(); R0--; if (R0 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r1(void)	{ UINT8 i=M_RDMEM_OPCODE(); R1--; if (R1 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r2(void)	{ UINT8 i=M_RDMEM_OPCODE(); R2--; if (R2 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r3(void)	{ UINT8 i=M_RDMEM_OPCODE(); R3--; if (R3 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r4(void)	{ UINT8 i=M_RDMEM_OPCODE(); R4--; if (R4 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r5(void)	{ UINT8 i=M_RDMEM_OPCODE(); R5--; if (R5 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r6(void)	{ UINT8 i=M_RDMEM_OPCODE(); R6--; if (R6 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-	static void djnz_r7(void)	{ UINT8 i=M_RDMEM_OPCODE(); R7--; if (R7 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-#else
-	static void djnz_r0(void)	{ UINT8 i=M_RDMEM_OPCODE(); R0--; if (R0 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r1(void)	{ UINT8 i=M_RDMEM_OPCODE(); R1--; if (R1 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r2(void)	{ UINT8 i=M_RDMEM_OPCODE(); R2--; if (R2 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r3(void)	{ UINT8 i=M_RDMEM_OPCODE(); R3--; if (R3 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r4(void)	{ UINT8 i=M_RDMEM_OPCODE(); R4--; if (R4 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r5(void)	{ UINT8 i=M_RDMEM_OPCODE(); R5--; if (R5 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r6(void)	{ UINT8 i=M_RDMEM_OPCODE(); R6--; if (R6 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-	static void djnz_r7(void)	{ UINT8 i=M_RDMEM_OPCODE(); R7--; if (R7 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-#endif
+static void djnz_r0(void)	{ UINT8 i=M_RDMEM_OPCODE(); R0--; if (R0 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r1(void)	{ UINT8 i=M_RDMEM_OPCODE(); R1--; if (R1 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r2(void)	{ UINT8 i=M_RDMEM_OPCODE(); R2--; if (R2 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r3(void)	{ UINT8 i=M_RDMEM_OPCODE(); R3--; if (R3 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r4(void)	{ UINT8 i=M_RDMEM_OPCODE(); R4--; if (R4 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r5(void)	{ UINT8 i=M_RDMEM_OPCODE(); R5--; if (R5 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r6(void)	{ UINT8 i=M_RDMEM_OPCODE(); R6--; if (R6 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void djnz_r7(void)	{ UINT8 i=M_RDMEM_OPCODE(); R7--; if (R7 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
 static void en_i(void)		 { R.xirq_en = 1; if (R.irq_state == I8039_EXTERNAL_INT) { R.irq_extra_cycles += Ext_IRQ(); } }
 static void en_tcnti(void)	 { R.tirq_en = 1; }
 static void ento_clk(void)	 { M_UNDEFINED(); }
@@ -361,74 +348,40 @@ static void jmp(void)
 
 	oldpc = R.PC.w.l-1;
 	R.PC.w.l = i | a11;
-#ifdef MESS
-	change_pc(R.PC.w.l);
-#endif
 	newpc = R.PC.w.l;
 	if (newpc == oldpc) { if (i8039_ICount > 0) i8039_ICount = 0; } /* speed up busy loop */
 	else if (newpc == oldpc-1 && M_RDOP(newpc) == 0x00)	/* NOP - Gyruss */
 		{ if (i8039_ICount > 0) i8039_ICount = 0; }
 }
 
-#ifdef MESS
-    static void jmp_1(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x100 | a11; change_pc(R.PC.w.l); }
-    static void jmp_2(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x200 | a11; change_pc(R.PC.w.l); }
-    static void jmp_3(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x300 | a11; change_pc(R.PC.w.l); }
-    static void jmp_4(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x400 | a11; change_pc(R.PC.w.l); }
-    static void jmp_5(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x500 | a11; change_pc(R.PC.w.l); }
-    static void jmp_6(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x600 | a11; change_pc(R.PC.w.l); }
-    static void jmp_7(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x700 | a11; change_pc(R.PC.w.l); }
-    static void jmpp_xa(void)	 { UINT16 addr = (R.PC.w.l & 0xf00) | R.A; R.PC.w.l = (R.PC.w.l & 0xf00) | M_RDMEM(addr); change_pc(R.PC.w.l); }
-    static void jb_0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x01) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x02) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_2(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x04) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_3(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x08) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_4(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x10) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_5(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x20) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_6(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x40) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jb_7(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x80) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jf0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_F0y) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jf1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.f1)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jnc(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_Cn)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jc(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_Cy)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jni(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.irq_state == I8039_EXTERNAL_INT) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jnt_0(void)  	 { UINT8 i=M_RDMEM_OPCODE(); if (!test_r(0)) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jt_0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (test_r(0))  { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jnt_1(void)  	 { UINT8 i=M_RDMEM_OPCODE(); if (!test_r(1)) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jt_1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (test_r(1))  { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jnz(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A != 0)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jz(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A == 0)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); } else ADJUST_CYCLES }
-    static void jtf(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.t_flag)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; change_pc(R.PC.w.l); R.t_flag = 0; } else ADJUST_CYCLES }
-#else
-    static void jmp_1(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x100 | a11; }
-    static void jmp_2(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x200 | a11; }
-    static void jmp_3(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x300 | a11; }
-    static void jmp_4(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x400 | a11; }
-    static void jmp_5(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x500 | a11; }
-    static void jmp_6(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x600 | a11; }
-    static void jmp_7(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x700 | a11; }
-    static void jmpp_xa(void)	 { UINT16 addr = (R.PC.w.l & 0xf00) | R.A; R.PC.w.l = (R.PC.w.l & 0xf00) | M_RDMEM(addr); }
-    static void jb_0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x01) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x02) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_2(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x04) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_3(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x08) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_4(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x10) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_5(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x20) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_6(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x40) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jb_7(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x80) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jf0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_F0y) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jf1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.f1)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jnc(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_Cn)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jc(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_Cy)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jni(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.irq_state == I8039_EXTERNAL_INT) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jnt_0(void)  	 { UINT8 i=M_RDMEM_OPCODE(); if (!test_r(0)) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jt_0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (test_r(0))  { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jnt_1(void)  	 { UINT8 i=M_RDMEM_OPCODE(); if (!test_r(1)) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jt_1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (test_r(1))  { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jnz(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A != 0)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jz(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A == 0)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
-    static void jtf(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.t_flag)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; R.t_flag = 0; } else ADJUST_CYCLES }
-#endif
+static void jmp_1(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x100 | a11; }
+static void jmp_2(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x200 | a11; }
+static void jmp_3(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x300 | a11; }
+static void jmp_4(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x400 | a11; }
+static void jmp_5(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x500 | a11; }
+static void jmp_6(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x600 | a11; }
+static void jmp_7(void)	 	 { UINT8 i=M_RDOP(R.PC.w.l); UINT16 a11 = (R.irq_executing == I8039_NO_INT) ? R.A11 : 0; R.PC.w.l = i | 0x700 | a11; }
+static void jmpp_xa(void)	 { UINT16 addr = (R.PC.w.l & 0xf00) | R.A; R.PC.w.l = (R.PC.w.l & 0xf00) | M_RDMEM(addr); }
+static void jb_0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x01) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x02) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_2(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x04) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_3(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x08) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_4(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x10) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_5(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x20) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_6(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x40) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jb_7(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A & 0x80) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jf0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_F0y) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jf1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.f1)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jnc(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_Cn)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jc(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (M_Cy)	{ R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jni(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.irq_state == I8039_EXTERNAL_INT) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jnt_0(void)  	 { UINT8 i=M_RDMEM_OPCODE(); if (!test_r(0)) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jt_0(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (test_r(0))  { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jnt_1(void)  	 { UINT8 i=M_RDMEM_OPCODE(); if (!test_r(1)) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jt_1(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (test_r(1))  { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jnz(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A != 0)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jz(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.A == 0)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
+static void jtf(void)	 	 { UINT8 i=M_RDMEM_OPCODE(); if (R.t_flag)	 { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; R.t_flag = 0; } else ADJUST_CYCLES }
 static void mov_a_n(void)	 { R.A = M_RDMEM_OPCODE(); }
 static void mov_a_r0(void)	 { R.A = R0; }
 static void mov_a_r1(void)	 { R.A = R1; }
@@ -464,14 +417,14 @@ static void mov_xr0_a(void)	 { intRAM[R0 & 0x7f] = R.A; }
 static void mov_xr1_a(void)	 { intRAM[R1 & 0x7f] = R.A; }
 static void mov_xr0_n(void)	 { intRAM[R0 & 0x7f] = M_RDMEM_OPCODE(); }
 static void mov_xr1_n(void)	 { intRAM[R1 & 0x7f] = M_RDMEM_OPCODE(); }
-static void movd_a_p4(void)	 { R.A = port_r(4); }
-static void movd_a_p5(void)	 { R.A = port_r(5); }
-static void movd_a_p6(void)	 { R.A = port_r(6); }
-static void movd_a_p7(void)	 { R.A = port_r(7); }
-static void movd_p4_a(void)	 { port_w(4, R.A); }
-static void movd_p5_a(void)	 { port_w(5, R.A); }
-static void movd_p6_a(void)	 { port_w(6, R.A); }
-static void movd_p7_a(void)	 { port_w(7, R.A); }
+static void movd_a_p4(void)	 { R.A = port_r(4) & 0x0F; }
+static void movd_a_p5(void)	 { R.A = port_r(5) & 0x0F; }
+static void movd_a_p6(void)	 { R.A = port_r(6) & 0x0F; }
+static void movd_a_p7(void)	 { R.A = port_r(7) & 0x0F; }
+static void movd_p4_a(void)	 { port_w(4, R.A & 0x0F); }
+static void movd_p5_a(void)	 { port_w(5, R.A & 0x0F); }
+static void movd_p6_a(void)	 { port_w(6, R.A & 0x0F); }
+static void movd_p7_a(void)	 { port_w(7, R.A & 0x0F); }
 static void movp_a_xa(void)	 { R.A = M_RDMEM((R.PC.w.l & 0x0f00) | R.A); }
 static void movp3_a_xa(void) { R.A = M_RDMEM(0x300 | R.A); }
 static void movx_a_xr0(void) { R.A = M_IN(R0); }
@@ -500,19 +453,12 @@ static void orld_p7_a(void)	 { port_w(7, port_r(7) | R.A ); }
 static void outl_bus_a(void) { bus_w(R.A); }
 static void outl_p1_a(void)	 { port_w(1, R.A); R.P1 = R.A; }
 static void outl_p2_a(void)	 { port_w(2, R.A); R.P2 = R.A; }
-#ifdef MESS
-	static void ret(void)	 { R.PC.w.l = ((pull() & 0x0f) << 8); R.PC.w.l |= pull(); change_pc(R.PC.w.l); }
-#else
-	static void ret(void)	 { R.PC.w.l = ((pull() & 0x0f) << 8); R.PC.w.l |= pull(); }
-#endif
+static void ret(void)	 { R.PC.w.l = ((pull() & 0x0f) << 8); R.PC.w.l |= pull(); }
 
 static void retr(void)
 {
 	UINT8 i=pull();
 	R.PC.w.l = ((i & 0x0f) << 8) | pull();
-	#ifdef MESS
-		change_pc(R.PC.w.l);
-	#endif
 	R.PSW = (R.PSW & 0x0f) | (i & 0xf0);	/* Stack is already changed by pull */
 	regPTR = ((M_By) ? 24 : 0);
 
@@ -526,12 +472,12 @@ static void retr(void)
 		R.irq_extra_cycles += Timer_IRQ();			/* Service pending Timer/Counter IRQ */
 	}
 }
-static void rl_a(void)		 { UINT8 i=R.A & 0x80; R.A <<= 1; if (i) R.A |= 0x01; else R.A &= 0xfe; }
+static void rl_a(void)		 { R.A = (R.A << 1) | (R.A >> 7); }
 /* NS990113 */
-static void rlc_a(void) 	 { UINT8 i=M_Cy; if (R.A & 0x80) SET(C_FLAG); else CLR(C_FLAG); R.A <<= 1; if (i) R.A |= 0x01; else R.A &= 0xfe; }
-static void rr_a(void)		 { UINT8 i=R.A & 1; R.A >>= 1; if (i) R.A |= 0x80; else R.A &= 0x7f; }
+static void rlc_a(void) 	 { UINT8 newc = R.A & C_FLAG; R.A = (R.A << 1) | (R.PSW >> 7); R.PSW = (R.PSW & ~C_FLAG) | newc; }
+static void rr_a(void)		 { R.A = (R.A >> 1) | (R.A << 7); }
 /* NS990113 */
-static void rrc_a(void)		 { UINT8 i=M_Cy; if (R.A & 1) SET(C_FLAG); else CLR(C_FLAG); R.A >>= 1; if (i) R.A |= 0x80; else R.A &= 0x7f; }
+static void rrc_a(void)		 { UINT8 newc = (R.A << 7) & C_FLAG; R.A = (R.A >> 1) | (R.PSW & C_FLAG); R.PSW = (R.PSW & ~C_FLAG) | newc; }
 static void sel_mb0(void)	 { R.A11 = 0x000; }
 static void sel_mb1(void)	 { R.A11 = 0x800; }
 static void sel_rb0(void)	 { CLR(B_FLAG); regPTR = 0;  }
@@ -566,37 +512,37 @@ static void xrl_a_xr1(void)	 { R.A ^= intRAM[R1 & 0x7f]; }
 
 static const s_opcode opcode_main[256]=
 {
-	{1, nop 	   },{0, illegal	},{2, outl_bus_a },{2, add_a_n	  },{2, jmp 	   },{1, en_i		},{0, illegal	 },{1, dec_a	  },
-	{2, ins_a_bus  },{2, in_a_p1	},{2, in_a_p2	 },{0, illegal	  },{2, movd_a_p4  },{2, movd_a_p5	},{2, movd_a_p6  },{2, movd_a_p7  },
+	{1, nop 	   },{1, illegal	},{2, outl_bus_a },{2, add_a_n	  },{2, jmp 	   },{1, en_i		},{1, illegal	 },{1, dec_a	  },
+	{2, ins_a_bus  },{2, in_a_p1	},{2, in_a_p2	 },{1, illegal	  },{2, movd_a_p4  },{2, movd_a_p5	},{2, movd_a_p6  },{2, movd_a_p7  },
 	{1, inc_xr0    },{1, inc_xr1	},{2, jb_0		 },{2, adc_a_n	  },{2, call	   },{1, dis_i		},{2, jtf		 },{1, inc_a	  },
 	{1, inc_r0	   },{1, inc_r1 	},{1, inc_r2	 },{1, inc_r3	  },{1, inc_r4	   },{1, inc_r5 	},{1, inc_r6	 },{1, inc_r7	  },
-	{1, xch_a_xr0  },{1, xch_a_xr1	},{0, illegal	 },{2, mov_a_n	  },{2, jmp_1	   },{1, en_tcnti	},{2, jnt_0 	 },{1, clr_a	  },
+	{1, xch_a_xr0  },{1, xch_a_xr1	},{1, illegal	 },{2, mov_a_n	  },{2, jmp_1	   },{1, en_tcnti	},{2, jnt_0 	 },{1, clr_a	  },
 	{1, xch_a_r0   },{1, xch_a_r1	},{1, xch_a_r2	 },{1, xch_a_r3   },{1, xch_a_r4   },{1, xch_a_r5	},{1, xch_a_r6	 },{1, xch_a_r7   },
-	{1, xchd_a_xr0 },{1, xchd_a_xr1 },{2, jb_1		 },{0, illegal	  },{2, call_1	   },{1, dis_tcnti	},{2, jt_0		 },{1, cpl_a	  },
-	{0, illegal    },{2, outl_p1_a	},{2, outl_p2_a  },{0, illegal	  },{2, movd_p4_a  },{2, movd_p5_a	},{2, movd_p6_a  },{2, movd_p7_a  },
+	{1, xchd_a_xr0 },{1, xchd_a_xr1 },{2, jb_1		 },{1, illegal	  },{2, call_1	   },{1, dis_tcnti	},{2, jt_0		 },{1, cpl_a	  },
+	{0, illegal    },{2, outl_p1_a	},{2, outl_p2_a  },{1, illegal	  },{2, movd_p4_a  },{2, movd_p5_a	},{2, movd_p6_a  },{2, movd_p7_a  },
 	{1, orl_a_xr0  },{1, orl_a_xr1	},{1, mov_a_t	 },{2, orl_a_n	  },{2, jmp_2	   },{1, strt_cnt	},{2, jnt_1 	 },{1, swap_a	  },
 	{1, orl_a_r0   },{1, orl_a_r1	},{1, orl_a_r2	 },{1, orl_a_r3   },{1, orl_a_r4   },{1, orl_a_r5	},{1, orl_a_r6	 },{1, orl_a_r7   },
 	{1, anl_a_xr0  },{1, anl_a_xr1	},{2, jb_2		 },{2, anl_a_n	  },{2, call_2	   },{1, strt_t 	},{2, jt_1		 },{1, daa_a	  },
 	{1, anl_a_r0   },{1, anl_a_r1	},{1, anl_a_r2	 },{1, anl_a_r3   },{1, anl_a_r4   },{1, anl_a_r5	},{1, anl_a_r6	 },{1, anl_a_r7   },
-	{1, add_a_xr0  },{1, add_a_xr1	},{1, mov_t_a	 },{0, illegal	  },{2, jmp_3	   },{1, stop_tcnt	},{0, illegal	 },{1, rrc_a	  },
+	{1, add_a_xr0  },{1, add_a_xr1	},{1, mov_t_a	 },{1, illegal	  },{2, jmp_3	   },{1, stop_tcnt	},{1, illegal	 },{1, rrc_a	  },
 	{1, add_a_r0   },{1, add_a_r1	},{1, add_a_r2	 },{1, add_a_r3   },{1, add_a_r4   },{1, add_a_r5	},{1, add_a_r6	 },{1, add_a_r7   },
-	{1, adc_a_xr0  },{1, adc_a_xr1	},{2, jb_3		 },{0, illegal	  },{2, call_3	   },{1, ento_clk	},{2, jf1		 },{1, rr_a 	  },
+	{1, adc_a_xr0  },{1, adc_a_xr1	},{2, jb_3		 },{1, illegal	  },{2, call_3	   },{1, ento_clk	},{2, jf1		 },{1, rr_a 	  },
 	{1, adc_a_r0   },{1, adc_a_r1	},{1, adc_a_r2	 },{1, adc_a_r3   },{1, adc_a_r4   },{1, adc_a_r5	},{1, adc_a_r6	 },{1, adc_a_r7   },
-	{2, movx_a_xr0 },{2, movx_a_xr1 },{0, illegal	 },{2, ret		  },{2, jmp_4	   },{1, clr_f0 	},{2, jni		 },{0, illegal	  },
-	{2, orl_bus_n  },{2, orl_p1_n	},{2, orl_p2_n	 },{0, illegal	  },{2, orld_p4_a  },{2, orld_p5_a	},{2, orld_p6_a  },{2, orld_p7_a  },
+	{2, movx_a_xr0 },{2, movx_a_xr1 },{1, illegal	 },{2, ret		  },{2, jmp_4	   },{1, clr_f0 	},{2, jni		 },{1, illegal	  },
+	{2, orl_bus_n  },{2, orl_p1_n	},{2, orl_p2_n	 },{1, illegal	  },{2, orld_p4_a  },{2, orld_p5_a	},{2, orld_p6_a  },{2, orld_p7_a  },
 	{2, movx_xr0_a },{2, movx_xr1_a },{2, jb_4		 },{2, retr 	  },{2, call_4	   },{1, cpl_f0 	},{2, jnz		 },{1, clr_c	  },
-	{2, anl_bus_n  },{2, anl_p1_n	},{2, anl_p2_n	 },{0, illegal	  },{2, anld_p4_a  },{2, anld_p5_a	},{2, anld_p6_a  },{2, anld_p7_a  },
-	{1, mov_xr0_a  },{1, mov_xr1_a	},{0, illegal	 },{2, movp_a_xa  },{2, jmp_5	   },{1, clr_f1 	},{0, illegal	 },{1, cpl_c	  },
+	{2, anl_bus_n  },{2, anl_p1_n	},{2, anl_p2_n	 },{1, illegal	  },{2, anld_p4_a  },{2, anld_p5_a	},{2, anld_p6_a  },{2, anld_p7_a  },
+	{1, mov_xr0_a  },{1, mov_xr1_a	},{1, illegal	 },{2, movp_a_xa  },{2, jmp_5	   },{1, clr_f1 	},{1, illegal	 },{1, cpl_c	  },
 	{1, mov_r0_a   },{1, mov_r1_a	},{1, mov_r2_a	 },{1, mov_r3_a   },{1, mov_r4_a   },{1, mov_r5_a	},{1, mov_r6_a	 },{1, mov_r7_a   },
-	{2, mov_xr0_n  },{2, mov_xr1_n	},{2, jb_5		 },{2, jmpp_xa	  },{2, call_5	   },{1, cpl_f1 	},{2, jf0		 },{0, illegal	  },
+	{2, mov_xr0_n  },{2, mov_xr1_n	},{2, jb_5		 },{2, jmpp_xa	  },{2, call_5	   },{1, cpl_f1 	},{2, jf0		 },{1, illegal	  },
 	{2, mov_r0_n   },{2, mov_r1_n	},{2, mov_r2_n	 },{2, mov_r3_n   },{2, mov_r4_n   },{2, mov_r5_n	},{2, mov_r6_n	 },{2, mov_r7_n   },
-	{0, illegal    },{0, illegal	},{0, illegal	 },{0, illegal	  },{2, jmp_6	   },{1, sel_rb0	},{2, jz		 },{1, mov_a_psw  },
+	{0, illegal    },{1, illegal	},{1, illegal	 },{1, illegal	  },{2, jmp_6	   },{1, sel_rb0	},{2, jz		 },{1, mov_a_psw  },
 	{1, dec_r0	   },{1, dec_r1 	},{1, dec_r2	 },{1, dec_r3	  },{1, dec_r4	   },{1, dec_r5 	},{1, dec_r6	 },{1, dec_r7	  },
-	{1, xrl_a_xr0  },{1, xrl_a_xr1	},{2, jb_6		 },{2, xrl_a_n	  },{2, call_6	   },{1, sel_rb1	},{0, illegal	 },{1, mov_psw_a  },
+	{1, xrl_a_xr0  },{1, xrl_a_xr1	},{2, jb_6		 },{2, xrl_a_n	  },{2, call_6	   },{1, sel_rb1	},{1, illegal	 },{1, mov_psw_a  },
 	{1, xrl_a_r0   },{1, xrl_a_r1	},{1, xrl_a_r2	 },{1, xrl_a_r3   },{1, xrl_a_r4   },{1, xrl_a_r5	},{1, xrl_a_r6	 },{1, xrl_a_r7   },
-	{0, illegal    },{0, illegal	},{0, illegal	 },{2, movp3_a_xa },{2, jmp_7	   },{1, sel_mb0	},{2, jnc		 },{1, rl_a 	  },
+	{0, illegal    },{1, illegal	},{1, illegal	 },{2, movp3_a_xa },{2, jmp_7	   },{1, sel_mb0	},{2, jnc		 },{1, rl_a 	  },
 	{2, djnz_r0    },{2, djnz_r1	},{2, djnz_r2	 },{2, djnz_r3	  },{2, djnz_r4    },{2, djnz_r5	},{2, djnz_r6	 },{2, djnz_r7	  },
-	{1, mov_a_xr0  },{1, mov_a_xr1	},{2, jb_7		 },{0, illegal	  },{2, call_7	   },{1, sel_mb1	},{2, jc		 },{1, rlc_a	  },
+	{1, mov_a_xr0  },{1, mov_a_xr1	},{2, jb_7		 },{1, illegal	  },{2, call_7	   },{1, sel_mb1	},{2, jc		 },{1, rlc_a	  },
 	{1, mov_a_r0   },{1, mov_a_r1	},{1, mov_a_r2	 },{1, mov_a_r3   },{1, mov_a_r4   },{1, mov_a_r5	},{1, mov_a_r6	 },{1, mov_a_r7   }
 };
 
@@ -608,6 +554,8 @@ static const s_opcode opcode_main[256]=
  ****************************************************************************/
 void i8039_init (void)
 {
+	memset(&R,0,sizeof(R));
+
 	int cpu = cpu_getactivecpu();
 
 	state_save_register_UINT16("i8039", cpu, "PC", &R.PC.w.l, 1);
@@ -638,13 +586,13 @@ void i8039_init (void)
 /****************************************************************************
  * Reset registers to their initial values
  ****************************************************************************/
-void i8039_reset (void *param)
+static void i8039_reset (void *param)
 {
 	R.PC.w.l = 0;
 	R.SP  = 0;
 	R.A   = 0;
-	R.PSW = 0x08;		/* Start with Carry SET, Bit 4 is always SET */
-	memset(R.RAM, 0x0, 128);
+	R.PSW = (R.PSW & (C_FLAG | A_FLAG)) | 0x08;		/* Start with No Carry (unless reset), Bit 4 is always SET */
+	memset(R.RAM, 0x0, 128); //!! meh
 	R.P1  = 0xff;
 	R.P2  = 0xff;
 	R.bus = 0;
@@ -653,8 +601,7 @@ void i8039_reset (void *param)
 
 	R.A11     = 0;
 	R.tirq_en = R.xirq_en = 0;
-	/*R.timerON =*/ R.countON = 0;
-	R.timerON = 1;  /* Mario Bros. doesn't work without this */
+	R.timerON = R.countON = 0;
 	R.irq_extra_cycles = 0;
 	R.masterClock = 0;
 }
@@ -663,7 +610,7 @@ void i8039_reset (void *param)
 /****************************************************************************
  * Shut down CPU emulation
  ****************************************************************************/
-void i8039_exit (void)
+static void i8039_exit (void)
 {
 	/* nothing to do ? */
 }
@@ -706,9 +653,6 @@ static int Timer_IRQ(void)
 			push(R.PC.b.l);
 			push((R.PC.b.h & 0x0f) | (R.PSW & 0xf0));
 			R.PC.w.l = 0x07;
-			#ifdef MESS
-				change_pc(0x07);
-			#endif
 
 			extra_cycles = 2;		/* 2 clock cycles used */
 
@@ -731,7 +675,7 @@ static int Timer_IRQ(void)
 /****************************************************************************
  * Execute cycles CPU cycles. Return number of cycles really executed
  ****************************************************************************/
-int i8039_execute(int cycles)
+static int i8039_execute(int cycles)
 {
 	unsigned T1;
 	int count;
@@ -741,7 +685,7 @@ int i8039_execute(int cycles)
 
 	do
 	{
-		unsigned opcode;
+		unsigned opcode, timerInt;
 		R.PREVPC = R.PC;
 
 		CALL_MAME_DEBUG;
@@ -755,6 +699,7 @@ int i8039_execute(int cycles)
 		(*(opcode_main[opcode].function))();
 		i8039_ICount -= inst_cycles; ///
 
+		timerInt = 0;
 		if (R.countON)	/* NS990113 */
 		{
 			for ( ; inst_cycles > 0; inst_cycles-- )
@@ -763,10 +708,8 @@ int i8039_execute(int cycles)
 				if (POSITIVE_EDGE_T1)
 				{
 					R.timer++;
-					if (R.timer == 0) {
-						count = Timer_IRQ();	/* Handle Counter IRQ */
-						i8039_ICount -= count;
-					}
+					if (R.timer == 0)
+						timerInt = 1;
 				}
 				R.Old_T1 = T1;
 			}
@@ -777,12 +720,17 @@ int i8039_execute(int cycles)
 			if (R.masterClock >= 32) {	/* NS990113 */
 				R.masterClock -= 32;
 				R.timer++;
-				if (R.timer == 0) {
-					count = Timer_IRQ();	/* Handle Timer IRQ */
-					i8039_ICount -= count;
-				}
+				if (R.timer == 0) 
+					timerInt = 1;
 			}
 		}
+		
+		if (timerInt)
+		{
+			count = Timer_IRQ();	/* Handle Timer IRQ */
+			i8039_ICount -= count;
+		}
+
 	} while (i8039_ICount>0);
 
 	i8039_ICount -= R.irq_extra_cycles;
@@ -805,16 +753,13 @@ unsigned i8039_get_context (void *dst)
 /****************************************************************************
  * Set all registers to given values
  ****************************************************************************/
-void i8039_set_context (void *src)
+static void i8039_set_context (void *src)
 {
 	if( src )
 	{
 		R = *(I8039_Regs*)src;
 		regPTR = ((M_By) ? 24 : 0);
 		R.SP = (R.PSW << 1) & 0x0f;
-		#ifdef MESS
-			change_pc(R.PC.w.l);
-		#endif
 	}
 	/* Handle forced Interrupts throught the Debugger */
 	if (R.irq_state != I8039_NO_INT) {
@@ -900,7 +845,7 @@ void i8039_set_reg (int regnum, unsigned val)
 /****************************************************************************
  * Set IRQ line state
  ****************************************************************************/
-void i8039_set_irq_line(int irqline, int state)
+static void i8039_set_irq_line(int irqline, int state)
 {
 	if (state != CLEAR_LINE) {
 		R.irq_state = I8039_EXTERNAL_INT;

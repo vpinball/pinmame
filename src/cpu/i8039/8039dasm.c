@@ -30,7 +30,7 @@ typedef unsigned char byte;
 #define FMT(a,b) a, b
 #define PTRS_PER_FORMAT 2
 
-const char *Formats[] = {
+static const char *const Formats[] = {
 	FMT("00000011dddddddd", "add  a,#$%X"),
 	FMT("01101rrr", "add  a,%R"),
 	FMT("0110000r", "add  a,@%R"),
