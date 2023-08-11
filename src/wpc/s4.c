@@ -101,6 +101,12 @@ static void s4_irqline(int state) {
 
 static INTERRUPT_GEN(s4_irq) {
   s4_irqline(1);
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+ //timing according to throttle value in games.cfg
+ lisy_w_throttle();
+#endif
   timer_set(TIME_IN_CYCLES(32,0),0,s4_irqline);
 }
 
@@ -126,18 +132,11 @@ static READ_HANDLER(s4_dips_r) {
 /************/
 /* SWITCH MATRIX */
 static READ_HANDLER(s4_swrow_r) {
-#if defined(LISY_SUPPORT)
- //get the switches from LISY_mini
- lisy_w_switch_handler();
-#endif
  return core_getSwCol(s4locals.swCol);
 }
 
 static WRITE_HANDLER(s4_swcol_w) {
  s4locals.swCol = data;
-#if defined(LISY_SUPPORT)
- lisy_w_throttle();
-#endif
 }
 
 /*****************/
