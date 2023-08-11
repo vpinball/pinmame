@@ -47,12 +47,23 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	std::getline(file, line);
 
 	bool success = true;
+	bool read_first_line = false;
+
 	try {
 		while (std::getline(file, line)) {
+			if (!read_first_line) {
+				// Skip header line
+				read_first_line = true;
+				continue;
+			}
+
 			if (line.empty()) {
 				// ignore blank lines
 				continue;
 			}
+
+			// Some Altsounds use quotes around fields.  These need to be removed.
+			line.erase(std::remove(line.begin(), line.end(), '\"'), line.end());
 
 			std::stringstream ss(line);
 			std::string field;
@@ -136,12 +147,12 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 			// STOP
 			if (std::getline(ss, field, ',')) {
-				entry.loop = std::stoul(trim(field)) == 1;
+				entry.stop = std::stoul(trim(field)) == 1;
 			}
 			else {
 				ALT_ERROR(0, "Failed to parse sample STOP value");
 				success = false;
-				entry.loop = false;  // assign some default value
+				entry.stop = false;  // assign some default value
 				break;
 			}
 

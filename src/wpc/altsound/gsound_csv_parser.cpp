@@ -61,12 +61,23 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 	};
 	
 	bool success = true;
+	bool read_first_line = false;
+
 	try {
 		while (std::getline(file, line)) {
+			if (!read_first_line) {
+				// Skip header line
+				read_first_line = true;
+				continue;
+			}
+
 			if (line.empty()) {
 				// ignore blank lines
 				continue;
 			}
+
+			// Some Altsounds use quotes around fields.  These need to be removed.
+			line.erase(std::remove(line.begin(), line.end(), '\"'), line.end());
 
 			std::stringstream ss(line);
 			std::string field;
