@@ -37,7 +37,7 @@ public:
 	AltsoundProcessorBase(const std::string& game_name, const std::string& vpm_path);
 
 	// Destructor
-	~AltsoundProcessorBase();
+	virtual ~AltsoundProcessorBase();
 
 	// Process ROM commands to the sound board
 	virtual bool handleCmd(const unsigned int cmd_in);

@@ -493,14 +493,16 @@ std::string AltsoundIniProcessor::get_altound_format(const std::string& path_in)
 		"\\voice"
 	};
 
-	for (const auto& directory : directories) {
-		if (dir_exists(path_in + directory)) {
-			ALT_INFO(0, "Using Legacy (PinSound) format");
-			OUTDENT;
-			ALT_DEBUG(0, "END get_altsound_format()");
-			return "legacy";
-		}
+	if (std::any_of(directories.begin(), directories.end(), [&](const auto& directory) {
+		return dir_exists(path_in + directory);
+	}))
+	{
+		ALT_INFO(0, "Using Legacy (PinSound) format");
+		OUTDENT;
+		ALT_DEBUG(0, "END get_altsound_format()");
+		return "legacy";
 	}
+
 
 	OUTDENT;
 	ALT_DEBUG(0, "END get_altsound_format()");

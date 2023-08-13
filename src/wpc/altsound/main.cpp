@@ -111,7 +111,7 @@ bool playbackCommands(const std::vector<TestData>& testData);
 // Functional code
 // ---------------------------------------------------------------------------
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
 	if (argc < 2) {
 		std::cout << "Usage: " << argv[0] << " <gamename>-cmdlog.txt path" << std::endl;
 		std::cout << "Where <gamename>-cmdlog.txt path is the full path and "

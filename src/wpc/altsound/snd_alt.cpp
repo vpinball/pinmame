@@ -332,9 +332,6 @@ extern "C" void alt_sound_exit() {
 	ALT_DEBUG(0, "BEGIN alt_sound_exit()");
 	INDENT;
 
-	// reset static variables
-	static CmdData cmds;
-
 	// Initialization support
 	is_initialized = FALSE;
 	run_once = TRUE;

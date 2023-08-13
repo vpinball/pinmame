@@ -28,7 +28,7 @@ class GSoundCsvParser {
 public: // methods
 
 	// Standard constructor
-	GSoundCsvParser(const std::string& path_in);
+	explicit GSoundCsvParser(const std::string& path_in);
 
 	bool parse(std::vector<GSoundSampleInfo>& samples_out);
 

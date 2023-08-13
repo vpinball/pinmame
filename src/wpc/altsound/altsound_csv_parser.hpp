@@ -28,7 +28,7 @@ class AltsoundCsvParser {
 public: // methods
 
 	// Standard constructor
-	AltsoundCsvParser(const std::string& altsound_path_in);
+	explicit AltsoundCsvParser(const std::string& altsound_path_in);
 
 	bool parse(std::vector<AltsoundSampleInfo>& samples_out);
 

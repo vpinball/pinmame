@@ -47,16 +47,9 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	std::getline(file, line);
 
 	bool success = true;
-	bool read_first_line = false;
 
 	try {
 		while (std::getline(file, line)) {
-			if (!read_first_line) {
-				// Skip header line
-				read_first_line = true;
-				continue;
-			}
-
 			if (line.empty()) {
 				// ignore blank lines
 				continue;

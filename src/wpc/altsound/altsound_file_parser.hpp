@@ -11,7 +11,7 @@ class AltsoundFileParser {
 public:
 	
 	// Standard constructor
-	AltsoundFileParser(const std::string& altsound_path_in);
+	explicit AltsoundFileParser(const std::string& altsound_path_in);
 
 	bool parse(std::vector<AltsoundSampleInfo>& samples_out);
 

@@ -61,16 +61,9 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 	};
 	
 	bool success = true;
-	bool read_first_line = false;
 
 	try {
 		while (std::getline(file, line)) {
-			if (!read_first_line) {
-				// Skip header line
-				read_first_line = true;
-				continue;
-			}
-
 			if (line.empty()) {
 				// ignore blank lines
 				continue;
@@ -84,15 +77,18 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 			GSoundSampleInfo entry;
 
 			// Read ID field (unsigned hexadecimal)
-			if (std::getline(ss, field, ','))
-			{
+			if (std::getline(ss, field, ',')) {
 				field = trim(field);
 				entry.id = std::stoul(field, nullptr, 16);
 			}
+			else {
+				ALT_ERROR(1, "Failed to parse ID field");
+				success = false;
+				break;
+			}
 
 			// Read TYPE field
-			if (std::getline(ss, field, ','))
-			{
+			if (std::getline(ss, field, ',')) {
 				field = trim(field);
 				//field = toLower(field);
 				std::transform(field.begin(), field.end(), field.begin(), ::tolower);
@@ -108,13 +104,24 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 					entry.loop = true;
 				}
 			}
+			else {
+				ALT_ERROR(1, "Failed to parse TYPE field");
+				entry.type = "";
+				success = false;
+				break;
+			}
 
 			// Read GAIN field (float)
-			if (std::getline(ss, field, ','))
-			{
+			if (std::getline(ss, field, ',')) {
 				field = trim(field);
 				float val = std::stof(field);
 				entry.gain = val < 0.0f ? 0.0f : val > 100.0f ? 1.0f : val / 100.0f;
+			}
+			else {
+				ALT_ERROR(1, "Failed to parse GAIN field");
+				entry.gain = 1.0f;
+				success = false;
+				break;
 			}
 
 			// Read DUCKING_PROFILE field (uint)
@@ -127,6 +134,12 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 				field = trim(field);
 				unsigned int val = std::stoul(field);
 				entry.ducking_profile = val;
+			}
+			else {
+				ALT_ERROR(1, "Failed to parse DUCKING_PROFILE field");
+				entry.ducking_profile = 0;
+				success = false;
+				break;
 			}
 
 			// Read FNAME field
@@ -165,7 +178,7 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 			ALT_DEBUG(0, debug_stream.str().c_str());
 		}
 	}
-	catch (std::exception e) {
+	catch (const std::exception& e) {
 		ALT_ERROR(0, "GSoundCsvParser::parse(): %s", e.what());
 	}
 

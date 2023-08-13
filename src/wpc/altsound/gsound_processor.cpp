@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <sstream>
 #include <string>
 
@@ -285,7 +286,7 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 			
 			OUTDENT;
 			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
-			false;
+			return false;
 		}
 		break;
 	case SOLO:
@@ -362,9 +363,6 @@ void GSoundProcessor::init()
 	cur_solo_stream_idx = UNSET_IDX;
 	cur_callout_stream_idx = UNSET_IDX;
 	
-	const float INITIAL_DUCK_VOL = 1.0f;
-	const bool INITIAL_PAUSED_STATUS = false;
-
 	if (!loadSamples()) {
 		ALT_ERROR(1, "FAILED GSoundProcessor::loadSamples()");
 	}
@@ -541,7 +539,7 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 			// Add pause impact from the current stream on the current sample type
 			if (sampleType != stream->stream_type) {
 				// get tracked stream index
-				unsigned int* cur_stream_idx = tracked_stream_idx_map[sampleType];
+				const unsigned int* cur_stream_idx = tracked_stream_idx_map[sampleType];
 
 				if (*cur_stream_idx != UNSET_IDX) {
 					HSTREAM hstream = channel_stream[*cur_stream_idx]->hstream;
@@ -768,7 +766,7 @@ void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWOR
 	std::lock_guard<std::mutex> guard(io_mutex);
 
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
+	const AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
 	HSTREAM inst_hstream = stream_inst->hstream;
 
 	if (inst_hstream != hstream_in) {
@@ -922,7 +920,7 @@ bool GSoundProcessor::processPausedStreams()
 	INDENT;
 
 	bool success = true;
-	for (const auto& stream : channel_stream) {
+	for (const auto* stream : channel_stream) {
 		if (stream) {
 			success &= tryResumeStream(*stream);
 		}
@@ -952,16 +950,11 @@ bool GSoundProcessor::tryResumeStream(const AltsoundStreamInfo& stream)
 	}
 
 	// Get a reference to the relevant pause map
-	auto& pauseMap = *pauseStatusMapIter->second;
-	bool shouldRemainPaused = false;
+	const auto& pauseMap = *pauseStatusMapIter->second;
 
 	// Search the pause map for any value that is true (indicating a pause)
-	for (const auto& valuePair : pauseMap) {
-		if (valuePair.second) { // Check if the stream is paused
-			shouldRemainPaused = true;
-			break;
-		}
-	}
+	bool shouldRemainPaused = std::any_of(pauseMap.begin(), pauseMap.end(),
+		[](const auto& valuePair) { return valuePair.second; });
 
 	if (!shouldRemainPaused) {
 		HSTREAM hstream = stream.hstream;
@@ -992,7 +985,7 @@ float GSoundProcessor::findLowestDuckVolume(AltsoundSampleType stream_type)
 	ALT_DEBUG(0, "BEGIN GSoundProcessor::findLowestDuckVolume()");
 	INDENT;
 
-	auto map = duck_vol_map[stream_type];
+	const auto map = duck_vol_map[stream_type];
 
 	if (map->empty()) {
 		// If there are no entries in the map, return the default volume.
@@ -1003,15 +996,12 @@ float GSoundProcessor::findLowestDuckVolume(AltsoundSampleType stream_type)
 		return 1.0f;
 	}
 
-	// Start with the highest possible volume
-	float min_vol = 1.0f;
+	// Search for lowest volume in the map, defaulting to 1.0f if empty
+	float min_vol = std::accumulate(map->begin(), map->end(), 1.0f,
+		[](float currentMin, const auto& pair) { return std::min(currentMin, pair.second); });
 
-	// For each key-value pair in the map...
-	for (const auto& pair : *map) {
-		// If this value is smaller than the current min, update the min
-		min_vol = std::min(min_vol, pair.second);
-	}
 	ALT_DEBUG(1, "Min ducking value for %s streams: %.02f", toString(stream_type), min_vol);
+
 
 	OUTDENT;
 	ALT_DEBUG(0, "END GSoundProcessor::findLowestDuckVolume()");

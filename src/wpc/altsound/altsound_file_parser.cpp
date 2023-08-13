@@ -69,8 +69,6 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	ALT_DEBUG(0, "BEGIN AltsoundFileParser::parse()");
 	INDENT;
 
-	int result = 0; // Assume success at start
-
 	const std::string path_jingle = "jingle/";
 	const std::string path_music = "music/";
 	const std::string path_sfx = "sfx/";
@@ -178,7 +176,6 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 						sample.fname = PATH2 + '/' + entry2->d_name;
 
 						memcpy(id, ptr + 1, 6);
-						std::string id_str(id);
 						sample.id = std::stoul(trim(id), nullptr, 16);
 
 						sample.gain = gain;

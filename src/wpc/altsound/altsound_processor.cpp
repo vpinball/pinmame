@@ -60,7 +60,8 @@ AltsoundProcessor::AltsoundProcessor(const std::string& game_name_in,
 :AltsoundProcessorBase(game_name_in, vpm_path_in),
   format(format_in),
   is_initialized(false),
-  is_stable(true) // future use
+  is_stable(true), // future use
+  cmds()
 {
 }
 
@@ -567,7 +568,7 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 	std::lock_guard<std::mutex> guard(io_mutex);
 
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
+	const AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
 
 	// DAR@20230621
 	// The following is not strictly necessary, but I'm keeping it here until
@@ -641,7 +642,7 @@ void CALLBACK AltsoundProcessor::sfx_callback(HSYNC handle, DWORD channel,\
 	std::lock_guard<std::mutex> guard(io_mutex);
 	
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
+	const AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
 	
 	// DAR@20230621
 	// The following is not strictly necessary, but I'm keeping it here until
@@ -700,7 +701,7 @@ void CALLBACK AltsoundProcessor::music_callback(HSYNC handle, DWORD channel,\
 	std::lock_guard<std::mutex> guard(io_mutex);
 	
 	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
-	AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
+	const AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
 
 	// DAR@20230621
 	// The following is not strictly necessary, but I'm keeping it here until
