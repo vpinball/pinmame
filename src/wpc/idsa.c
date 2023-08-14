@@ -236,7 +236,7 @@ static PORT_WRITE_START(IDSA_writeport)
 MEMORY_END
 
 static void reset_common(void) {
-  static int inverted;
+  static int inverted = 0;
   memset(&locals, 0, sizeof locals);
   sp0256_reset();
   if (!inverted) {

@@ -34,6 +34,8 @@ static struct {
   int    i8279cmd;
   int    i8279reg;
   UINT8  i8279ram[16];
+
+  UINT8 lastData;
 } locals;
 
 static INTERRUPT_GEN(PEYPER_irq) {
@@ -51,7 +53,7 @@ static INTERRUPT_GEN(PEYPER_vblank) {
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % PEYPER_SOLSMOOTH) == 0)
-  	locals.solenoids &= 0xff000000;
+    locals.solenoids &= 0xff000000;
   /*-- display --*/
   if ((locals.vblankCount % PEYPER_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
@@ -110,8 +112,8 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{ coreGlobals.tmpLampMatrix[2] = data; }
 static WRITE_HANDLER(ay8910_1_portb_w)	{ coreGlobals.tmpLampMatrix[3] = data; }
 
 struct AY8910interface PEYPER_ay8910Int = {
-	2,			/* 2 chips */
-	2500000,	/* 2.5 MHz */
+	2,				/* 2 chips */
+	2500000,		/* 2.5 MHz */
 	{ 30, 30 },		/* Volume */
 	{ 0, 0 }, { 0, 0 },
 	{ ay8910_0_porta_w, ay8910_1_porta_w },
@@ -120,13 +122,12 @@ struct AY8910interface PEYPER_ay8910Int = {
 
 // handles the 8279 keyboard / display interface chip
 static READ_HANDLER(i8279_r) {
-  static UINT8 lastData;
   logerror("i8279 r%d (cmd %02x, reg %02x)\n", offset, locals.i8279cmd, locals.i8279reg);
-  if ((locals.i8279cmd & 0xe0) == 0x40) lastData = coreGlobals.swMatrix[1 + (locals.i8279cmd & 0x07)]; // read switches (only 4 columns actually used)
-  else if ((locals.i8279cmd & 0xe0) == 0x60) lastData = locals.i8279ram[locals.i8279reg]; // read display ram
+  if ((locals.i8279cmd & 0xe0) == 0x40) locals.lastData = coreGlobals.swMatrix[1 + (locals.i8279cmd & 0x07)]; // read switches (only 4 columns actually used)
+  else if ((locals.i8279cmd & 0xe0) == 0x60) locals.lastData = locals.i8279ram[locals.i8279reg]; // read display ram
   else logerror("i8279 r:%02x\n", locals.i8279cmd);
   if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
-  return lastData;
+  return locals.lastData;
 }
 static WRITE_HANDLER(i8279_w) {
   if (offset) { // command

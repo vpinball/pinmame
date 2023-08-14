@@ -65,6 +65,8 @@ extern struct {
   UINT8  curBank;                   /* current bank select */
   #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
   int fastflipaddr;
+
+  UINT8 lampstate[80];
 } selocals;
 
 /*-----------------------

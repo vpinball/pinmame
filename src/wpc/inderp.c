@@ -21,7 +21,7 @@
 /  Local variables
 /-----------------*/
 static struct {
-	UINT16 digit[5];
+  UINT16 digit[5];
   int vblankCount, sndTimer;
 } locals;
 
@@ -29,11 +29,11 @@ static struct {
 /  copy local data to interface
 /--------------------------------*/
 static INTERRUPT_GEN(INDERP_vblank) {
-  locals.vblankCount++;
+	locals.vblankCount++;
 	if (locals.vblankCount % 4 == 0) {
 		coreGlobals.solenoids &= 0xffff00;
 	}
-  locals.sndTimer++;
+	locals.sndTimer++;
 	if (locals.sndTimer % 6 == 0) {
 		coreGlobals.solenoids &= 0x000fff;
     discrete_sound_w(0x01, 0);
@@ -76,11 +76,11 @@ static WRITE_HANDLER(lamp_w) {
 }
 
 static WRITE_HANDLER(strobe_w) {
-	static int posMap[10] = { 0, 6, 7, 8, 5, 4, 2, 9, 3, 1 };
-	int pos;
-	memory_region(REGION_CPU1)[0xab] = data;
+  static const int posMap[10] = { 0, 6, 7, 8, 5, 4, 2, 9, 3, 1 };
+  int pos;
+  memory_region(REGION_CPU1)[0xab] = data;
   pos = data ? 1 + core_BitColToNum(data) : 0;
-  coreGlobals.segments[posMap[pos]].w = locals.digit[0];
+  coreGlobals.segments[     posMap[pos]].w = locals.digit[0];
   coreGlobals.segments[10 + posMap[pos]].w = locals.digit[1];
   coreGlobals.segments[20 + posMap[pos]].w = locals.digit[2];
   coreGlobals.segments[30 + posMap[pos]].w = locals.digit[3];
@@ -92,7 +92,7 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(sol0_w) {
-	locals.vblankCount = 0;
+  locals.vblankCount = 0;
   coreGlobals.solenoids |= 1 << data;
 }
 
@@ -110,7 +110,7 @@ static WRITE_HANDLER(sol1_w) {
 	  discrete_sound_w(0x80, 0);
 	  discrete_sound_w(1 << data, 1);
 	} else {
-    coreGlobals.solenoids |= 0x1000; // knocker (sol. 13)
+	  coreGlobals.solenoids |= 0x1000; // knocker (sol. 13)
 	}
 }
 

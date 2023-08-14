@@ -71,9 +71,9 @@ struct {
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
-  int	 flipsol, flipsolPulse;
+  int    flipsol, flipsolPulse;
   int    sst0;			//SST0 bit from sound section
-  int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
+  int    plin;			//Plasma In (not connected prior to LOTR Hardware)
   UINT8 *ram8000;
   int    auxdata;
   /* Mini DMD stuff */
@@ -86,6 +86,8 @@ struct {
   UINT8  curBank;                   /* current bank select */
   #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
   int fastflipaddr;
+
+  UINT8 lampstate[80];
 } selocals;
 
 #ifdef PROC_SUPPORT
@@ -137,12 +139,11 @@ static INTERRUPT_GEN(se_vblank) {
 		}
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 #else
-    static UINT8 lampstate[80] = {0};
     int i;
     for (i = 0; i < 10; ++i) {
         int i2;
         for (i2 = 0; i2 < 8; ++i2)
-            lampstate[i * 8 + i2] += (coreGlobals.tmpLampMatrix[i] >> i2) & 1;
+            selocals.lampstate[i * 8 + i2] += (coreGlobals.tmpLampMatrix[i] >> i2) & 1;
     }
     if ((selocals.vblankCount % (VBLANK*SE_LAMPSMOOTH)) == 0)
     {
@@ -151,9 +152,9 @@ static INTERRUPT_GEN(se_vblank) {
         for (i = 0; i < 10; ++i) {
             int i2;
             for (i2 = 0; i2 < 8; ++i2)
-                coreGlobals.lampMatrix[i] |= lampstate[i * 8 + i2] > 1 ? (1 << i2) : 0; //!! > 1 related to the magic of VBLANK and SE_LAMPSMOOTH, so that LOTR lamps blink
+                coreGlobals.lampMatrix[i] |= selocals.lampstate[i * 8 + i2] > 1 ? (1 << i2) : 0; //!! > 1 related to the magic of VBLANK and SE_LAMPSMOOTH, so that LOTR lamps blink
         }
-        memset(lampstate, 0, 80);
+        memset(selocals.lampstate, 0, sizeof(selocals.lampstate));
     }
 #endif
     memset(coreGlobals.tmpLampMatrix, 0, 10);
@@ -238,6 +239,7 @@ static SWITCH_UPDATE(se) {
 }
 
 static MACHINE_INIT(se3) {
+	memset(&selocals, 0, sizeof(selocals));
 	//const char * const gn = Machine->gamedrv->name;
 	sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
 	sndbrd_1_init(SNDBRD_DE3S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
@@ -283,6 +285,7 @@ static MACHINE_INIT(se3) {
 
 static MACHINE_INIT(se) {
   const char * const gn = Machine->gamedrv->name;
+  memset(&selocals, 0, sizeof(selocals));
   sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
   sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
 
@@ -591,7 +594,7 @@ static WRITE_HANDLER(giaux_w) {
 		 Mapping:   Bit
 					5 4
 					---
-		            0 0 = (<0x10) DUART - Channel #1
+					0 0 = (<0x10) DUART - Channel #1
 					0 1 = ( 0x10) DUART - Channel #2
 					1 0 = ( 0x20) AUXIN - To J3 Connector of TSBI
 					1 1 = ( 0x30) AUXOUT - To J4 Connector of TSBI ( To Mini DMD )
@@ -619,11 +622,11 @@ static WRITE_HANDLER(giaux_w) {
           if (col == 5) selocals.miniframe = (selocals.miniframe + 1) % 3;
         }
       }
-	}
+    }
     if (core_gameData->hw.display & SE_MINIDMD3) {
       if (data == 0xbe)	coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
-	}
-	else
+    }
+    else
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | ((data & 0x38) << 1);
     selocals.lastgiaux = data;
   }
@@ -649,7 +652,7 @@ static WRITE_HANDLER(giaux_w) {
     selocals.lastgiaux = data;
   }
   else if (core_gameData->hw.display & SE_LED) { // map LEDs as extra lamp columns
-    static int order[] = { 6, 2, 4, 5, 1, 3, 0 };
+    static const int order[] = { 6, 2, 4, 5, 1, 3, 0 };
     if (selocals.auxdata == 0x30 && (selocals.lastgiaux & 0x40)) selocals.miniidx = 0;
     if (data == 0x7e) {
       if (order[selocals.miniidx])
@@ -772,7 +775,7 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
 }
 // 3-Color MINI DMD Type 4 (Simpsons) (14x10)
 PINMAME_VIDEO_UPDATE(seminidmd4_update) {
-  static int color[2][2] = {
+  static const int color[2][2] = {
     { 0, 6 }, { 7, 9 } // off, green, red, yellow
   };
   int ii;

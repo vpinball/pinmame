@@ -49,6 +49,8 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments,pseg;
   WRITE_HANDLER((*PORTA_WRITE));
+
+  UINT8 val;
 } locals;
 
 static void GP_dispStrobe(int mask) {
@@ -149,16 +151,15 @@ static INTERRUPT_GEN(GP_vblank) {
 }
 
 static SWITCH_UPDATE(GP) {
-  static UINT8 val = 0;
   if (inports) {
-	coreGlobals.swMatrix[0] = (inports[GP_COMINPORT]>>9) & 0x03;
-	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0xf7)) |
+    coreGlobals.swMatrix[0] = (inports[GP_COMINPORT]>>9) & 0x03;
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0xf7)) |
                               ((inports[GP_COMINPORT] & 0xff) & 0xf7);
-	coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & (~0x02)) |
+    coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & (~0x02)) |
                               ((inports[GP_COMINPORT]>>7) & 0x02);
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(GP_SWTEST)) generic_nvram[0xac] = val++;
+  if (core_getSw(GP_SWTEST)) generic_nvram[0xac] = locals.val++;
   if (core_getSw(GP_SWSOUNDDIAG) && core_gameData->hw.soundBoard == SNDBRD_GPMSU3)
     cpu_set_nmi_line(GP_SCPUNO, PULSE_LINE);
 }

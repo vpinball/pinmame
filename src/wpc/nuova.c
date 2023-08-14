@@ -54,6 +54,13 @@ static struct {
   UINT8 sndCmd;
   UINT8 pia_a, pia_b;
   int mute, mute2, enable, enable2;
+
+  int lastBank;
+  UINT8 rx;
+  UINT8 timeout;
+  UINT8 irq;
+  UINT8 val, cnt;
+  UINT8 byte;
 } locals;
 
 static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
@@ -144,15 +151,13 @@ static WRITE_HANDLER(enable_w) {
 }
 
 static WRITE_HANDLER(bank_w) {
-  static int lastBank;
-  int bank;
   if (locals.enable) {
-    bank = core_BitColToNum((~data & 0x0f) ^ 0x01);
+    int bank = core_BitColToNum((~data & 0x0f) ^ 0x01);
     cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * bank);
     if (bank) {
-      if (bank != lastBank)
+      if (bank != locals.lastBank)
         logerror("bank:%d\n", bank);
-      lastBank = bank;
+      locals.lastBank = bank;
     }
     locals.mute = (data >> 6) & 1;
     coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x05) | ((~data >> 7) << 1);
@@ -249,7 +254,7 @@ static core_tLCDLayout dispAlpha[] = {
 INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY51N,BY35GD_NOSOUNDE)
 BY35_ROMSTARTx00(suprbowl,"sbowlu2.732", CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
                           "sbowlu6.732", CRC(a9c92719) SHA1(972da0cf87863b637b88575c329f1d8162098d6f))
-BY56_SOUNDROM(            "suprbowl.snd",CRC(04f37a2a) SHA1(9d07661e67593e865364f5883be4dcd2ca084060))
+BY56_SOUNDROM(            "suprbowl.snd",CRC(04f37a2a) SHA1(9d07661e67593e865364f5883be4dcd2ca084060)) // this redump has one byte difference to previous dump
 BY35_ROMEND
 BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_51NS,0)
@@ -315,7 +320,7 @@ MACHINE_DRIVER_END
 INITGAMENB(cosflash,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY61N,BY35GD_NOSOUNDE)
 BY35_ROMSTARTx00(cosflash,"cf2d.532",    CRC(939e941d) SHA1(889862043f351762e8c866aefb36a9ea75cbf828),
                           "cf6d.532",    CRC(7af93d2f) SHA1(2d939b14f7fe79f836e12926f44b70037630cd3f))
-BY61_SOUNDROMxxx0(        "cf-sound.532",CRC(7fda4f13) SHA1(9993ba890e91613014bad0950511bcff522b8dbd) BAD_DUMP)
+BY61_SOUNDROMxxx0(        "cf-sound.532",CRC(7fda4f13) SHA1(9993ba890e91613014bad0950511bcff522b8dbd) BAD_DUMP) // has most likely (at least) one bad byte (illegal instruction), at $9B0 (02 instead of C6, LDI immediate)
 BY35_ROMEND
 BY35_INPUT_PORTS_START(cosflash, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(cosflash,"Cosmic Flash",1985,"Bell Games",cosflash,0)
@@ -577,15 +582,13 @@ CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, 0)
 // gv 08/02/18: f1gp uses two complete soundboards, one for fx and one for music!
 
 static WRITE_HANDLER(bank_w_f1gp) {
-  static int lastBank;
-  int bank;
   if (locals.enable2) {
-    bank = core_BitColToNum((~data & 0x0f) ^ 0x01);
+    int bank = core_BitColToNum((~data & 0x0f) ^ 0x01);
     cpu_setbank(2, memory_region(REGION_SOUND2) + 0x8000 * bank);
     if (bank) {
-      if (bank != lastBank)
+      if (bank != locals.lastBank)
         logerror("bank2:%d\n", bank);
-      lastBank = bank;
+      locals.lastBank = bank;
     }
     locals.mute2 = (data >> 6) & 1;
     coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | ((~data >> 7) << 2);
@@ -677,7 +680,7 @@ CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, 0)
 // gv 08/09/18: different bank swapping, enable not used
 
 static WRITE_HANDLER(bank_w_toppin) {
-  static int swap[16] = { 0, 3, 5, 0, 7, 0, 0, 0, 0, 2, 4, 0, 6, 0, 0, 0 };
+  static const int swap[16] = { 0, 3, 5, 0, 7, 0, 0, 0, 0, 2, 4, 0, 6, 0, 0, 0 };
   int bank = swap[(~data & 0x1e) >> 1];
   logerror("bank:%d\n", bank);
   cpu_setbank(1, memory_region(REGION_SOUND1) + 0x4000 * bank);
@@ -740,10 +743,9 @@ static MEMORY_WRITE_START(snd_writemem2)
 MEMORY_END
 
 static READ_HANDLER(port_r) {
-  static UINT8 val, cnt;
-  cnt++;
-  if (cnt % 32 == 0) val++;
-//printf("%02x ", val);
+  locals.cnt++;
+  if (locals.cnt % 32 == 0) locals.val++;
+//printf("%02x ", locals.val);
   // no idea what enables the internal timers, but they need to remain off!
   if (i8752_internal_r(0x80 + TCON) & 0x50) {
     i8752_internal_w(0x80 + TCON, i8752_internal_r(0x80 + TCON) & 0x0f);
@@ -752,7 +754,7 @@ static READ_HANDLER(port_r) {
     case 2: logerror(" port  2 R\n"); break;
     case 3: logerror("  port 3 R\n"); break;
   }
-  return offset == 3 ? val : 0;
+  return offset == 3 ? locals.val : 0;
 }
 
 static WRITE_HANDLER(port_w) {
@@ -781,32 +783,28 @@ void tx_cb(int data) {
 }
 
 int rx_cb(void) {
-  static UINT8 byte;
-  byte++;
+  locals.byte++;
 //printf("RX:%02x ", byte);
-  return byte;
+  return locals.byte;
 }
 
 static void serial(int data) {
-  static int rx;
-  rx = !rx;
-  cpu_set_irq_line(2, I8051_RX_LINE, rx ? ASSERT_LINE : CLEAR_LINE);
+  locals.rx = !locals.rx;
+  cpu_set_irq_line(2, I8051_RX_LINE, locals.rx ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void tf0(int data) {
-  static int timeout;
-  timeout = !timeout;
-  cpu_set_irq_line(2, I8051_T0_LINE, timeout ? ASSERT_LINE : CLEAR_LINE);
-  if (timeout)
+  locals.timeout = !locals.timeout;
+  cpu_set_irq_line(2, I8051_T0_LINE, locals.timeout ? ASSERT_LINE : CLEAR_LINE);
+  if (locals.timeout)
     i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) & 0x7f); // prevent all irqs temporarily
   else
     i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) | 0x80); // reenable irqs
 }
 
 static void int1(int data) {
-  static int irq;
-  irq = !irq;
-  cpu_set_irq_line(2, I8051_INT1_LINE, irq ? ASSERT_LINE : CLEAR_LINE);
+  locals.irq = !locals.irq;
+  cpu_set_irq_line(2, I8051_INT1_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static INTERRUPT_GEN(odd) {

@@ -23,6 +23,8 @@ static struct {
   int col, row, pos, zc, outSet;
   UINT8 latch;
   void *printfile;
+
+  UINT8 phaseA;
 } locals;
 
 static INTERRUPT_GEN(EFO_vblank) {
@@ -30,15 +32,14 @@ static INTERRUPT_GEN(EFO_vblank) {
 }
 
 static INTERRUPT_GEN(EFO_zc) {
-  static int phaseA;
   if (core_gameData->hw.gameSpecific1) {
-    z80ctc_2_trg2_w(0, phaseA); // would prevent comeback from running
+    z80ctc_2_trg2_w(0, locals.phaseA); // would prevent comeback from running
   }
   if (core_gameData->hw.gameSpecific2) {
-    z80ctc_2_trg3_w(0, phaseA); // would prevent cobrapb from running
+    z80ctc_2_trg3_w(0, locals.phaseA); // would prevent cobrapb from running
   }
-  if (phaseA) locals.zc = !locals.zc;
-  phaseA = !phaseA;
+  if (locals.phaseA) locals.zc = !locals.zc;
+  locals.phaseA = !locals.phaseA;
 }
 
 extern void ctc_interrupt_0(int state);
@@ -74,6 +75,7 @@ static void ck0_pulse(int param) {
 */
 static MACHINE_INIT(EFO) {
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  memset(&locals, 0x00, sizeof(locals));
   ctc_intf.baseclock[2] = Machine->drv->cpu[0].cpu_clock;
   z80ctc_init(&ctc_intf);
 //timer_pulse(TIME_IN_HZ(2000000), 0, ck0_pulse); // probably used to strobe in serial display data
@@ -133,7 +135,6 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(out_w) {
-  static UINT8 printdata[] = { 0 };
   if (data & 0x0f) locals.outSet = data & 0x0f;
   if (data & 0x04) {
     sndbrd_0_data_w(0, locals.latch);
@@ -143,8 +144,8 @@ static WRITE_HANDLER(out_w) {
       sprintf(filename,"%s.prt", Machine->gamedrv->name);
       locals.printfile = mame_fopen(Machine->gamedrv->name, filename, FILETYPE_PRINTER, 2); // APPEND write mode
     }
-    printdata[0] = locals.latch;
-    if (locals.printfile) mame_fwrite(locals.printfile, printdata, 1);
+    UINT8 printdata = locals.latch;
+    if (locals.printfile) mame_fwrite(locals.printfile, &printdata, 1);
 #if MAME_DEBUG
     printf("%c", locals.latch);
 #endif

@@ -79,6 +79,8 @@ static struct {
   int    panelSel;
   int    cpuType;
   int    resetDone;
+
+  UINT8  n2data;
 } locals;
 
 static INTERRUPT_GEN(PLAYMATIC_irq1) {
@@ -175,7 +177,6 @@ static int bitColToNum(int tmp)
   return data;
 }
 
-static UINT8 n2data;
 static WRITE_HANDLER(out1_n) {
   int p = locals.ef[1];
   switch (offset) {
@@ -186,22 +187,22 @@ static WRITE_HANDLER(out1_n) {
       coreGlobals.segments[22].w = data & 2 ? core_bcd2seg7[0] : 0;
       break;
     case 2: // display / sound data
-      n2data = data;
+      locals.n2data = data;
       break;
     case 3:
       locals.digitSel = data ^ 0x0f;
       if (locals.digitSel > 1) { // score displays
-        coreGlobals.segments[(locals.digitSel-2)*2].w = core_bcd2seg7[n2data >> 4];
-        coreGlobals.segments[(locals.digitSel-2)*2 + 1].w = core_bcd2seg7[n2data & 0x0f];
+        coreGlobals.segments[(locals.digitSel-2)*2].w = core_bcd2seg7[locals.n2data >> 4];
+        coreGlobals.segments[(locals.digitSel-2)*2 + 1].w = core_bcd2seg7[locals.n2data & 0x0f];
         coreGlobals.segments[2].w |= 0x80;
         coreGlobals.segments[8].w |= 0x80;
         coreGlobals.segments[12].w |= 0x80;
         coreGlobals.segments[16].w |= 0x80;
       } else if (locals.digitSel) { // sound & player up lights
-        sndbrd_0_data_w(0, n2data);
-        coreGlobals.tmpLampMatrix[6] = (1 << (n2data >> 5)) >> 1;
+        sndbrd_0_data_w(0, locals.n2data);
+        coreGlobals.tmpLampMatrix[6] = (1 << (locals.n2data >> 5)) >> 1;
       } else { // solenoids
-        coreGlobals.solenoids = (coreGlobals.solenoids & 0x10000) | n2data;
+        coreGlobals.solenoids = (coreGlobals.solenoids & 0x10000) | locals.n2data;
       }
       break;
     case 4:
@@ -220,14 +221,14 @@ static WRITE_HANDLER(out1_n) {
 static READ_HANDLER(in1_n) {
   UINT8 data = coreGlobals.swMatrix[offset];
   if (offset == 7) {
-    data |= (n2data & core_getDip(2)) ? 0 : 0x40;
-    data |= (n2data & core_getDip(3)) ? 0 : 0x80;
+    data |= (locals.n2data & core_getDip(2)) ? 0 : 0x40;
+    data |= (locals.n2data & core_getDip(3)) ? 0 : 0x80;
   }
   return offset > 5 ? ~data : data;
 }
 
 static WRITE_HANDLER(out2_n) {
-  static int outports[4][7] =
+  static const int outports[4][7] =
     {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP },
      { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP },
      { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND },

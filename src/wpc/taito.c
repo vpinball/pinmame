@@ -14,8 +14,8 @@
 // Lamp matrix:   (ST0-ST15)*10 + L3-L0
 // Solenoids:     1-6 (first column), 7-12 (second column)
 //                17: mux relay, 18: game play relay
-//			      7-12 are automatically activated by sol 17
-//				  flip sols as usual: right 45-46, left 47-48, active if sol 18 is on
+//                7-12 are automatically activated by sol 17
+//                flip sols as usual: right 45-46, left 47-48, active if sol 18 is on
 //
 // Many thanks to Alexandre Souza and Newton Pessoa
 
@@ -40,7 +40,7 @@ static struct {
 static NVRAM_HANDLER(taito);
 static NVRAM_HANDLER(taito_old);
 
-static int segMap[] = {
+static const int segMap[] = {
 	4,0,-4,4,0,-4,4,0,-4,4,0,-4,0,0
 };
 
@@ -56,11 +56,11 @@ static INTERRUPT_GEN(taito_vblank) {
 	}
 
 	// -- lamps --
- 	if ((TAITOlocals.vblankCount % TAITO_LAMPSMOOTH) == 0) {
- 		memcpy(coreGlobals.lampMatrix, TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
- 	}
+	if ((TAITOlocals.vblankCount % TAITO_LAMPSMOOTH) == 0) {
+		memcpy(coreGlobals.lampMatrix, TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
+	}
 
-    // -- display --
+	// -- display --
 	if ((TAITOlocals.vblankCount % TAITO_DISPLAYSMOOTH) == 0) {
 		memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
 	}
@@ -70,12 +70,12 @@ static INTERRUPT_GEN(taito_vblank) {
 }
 
 static SWITCH_UPDATE(taito) {
-	if (inports) {
+  if (inports) {
     CORE_SETKEYSW(inports[TAITO_COMINPORT]>>8, 0x80, 0);
     CORE_SETKEYSW(inports[TAITO_COMINPORT],    0xff, 1);
     CORE_SETKEYSW(inports[TAITO_COMINPORT]>>8, 0x1f, 8);
     if (inports[TAITO_COMINPORT] & 0x8000) sndbrd_0_diag(1);
-	}
+  }
 }
 
 static INTERRUPT_GEN(taito_irq) {

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
  * "Pentacup" by Micropin.
  * There were two different models:
@@ -25,16 +27,20 @@ static struct {
   int restart_flg;
   mame_timer *sndTimer;
   mame_timer *resetTimer;
+
+  double volume;
+  UINT8  irq;
+  UINT8  swData_irq;
+  UINT8  swData[4];
+  UINT8  out[16];
 } locals;
 
 
 /* 1978 version */
 
 static void mp_adjust_volume(void) {
-  static double volume;
-  double expdecay = 0;
-
   if (locals.decay & 0x8) {
+    double expdecay = 0;
     switch (locals.decay & 0x7) {                   // exp(-100 / (6.8 * 80*((decay) & 0x7 + 1)/8));
       case 0: expdecay = 0.23; break;
       case 1: expdecay = 0.47; break;
@@ -46,21 +52,21 @@ static void mp_adjust_volume(void) {
       case 7: expdecay = 0.83; break;
     }
     if (locals.vol_on) {
-      if (volume > locals.vol)
-        volume = ((volume - locals.vol) * expdecay) + locals.vol;
+      if (locals.volume > locals.vol)
+        locals.volume = ((locals.volume - locals.vol) * expdecay) + locals.vol;
       else
-        volume = locals.vol;
+        locals.volume = locals.vol;
     } else {
-      volume *= expdecay;
+      locals.volume *= expdecay;
     }
     timer_adjust(locals.sndTimer, TIME_IN_MSEC(100), 0, TIME_NEVER);
   } else {
     if (locals.vol_on)
-      volume = locals.vol;
+      locals.volume = locals.vol;
     else
-      volume = 0;
+      locals.volume = 0;
   }
-  mixer_set_volume(0, (int)volume);
+  mixer_set_volume(0, (int)locals.volume);
 }
 
 static WRITE_HANDLER(mp_pia0a_w) {
@@ -210,15 +216,21 @@ static MEMORY_READ_START(mp_readmem)
 MEMORY_END
 
 static MACHINE_INIT(MICROPIN) {
+  memset(&locals, 0, sizeof(locals));
+  locals.sndTimer = timer_alloc(snd_timer);
+  locals.resetTimer = timer_alloc(reset_timer);
+
   pia_config(0, PIA_STANDARD_ORDERING, &mp_pia[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &mp_pia[1]);
   pia_reset();
 }
 
 static MACHINE_RESET(MICROPIN) {
+  mame_timer *tmp0 = locals.sndTimer;
+  mame_timer *tmp1 = locals.resetTimer;
   memset(&locals, 0, sizeof(locals));
-  locals.sndTimer = timer_alloc(snd_timer);
-  locals.resetTimer = timer_alloc(reset_timer);
+  locals.sndTimer = tmp0;
+  locals.resetTimer = tmp1;
 
   // Initialize pia1 outputs at reset to emulate pullup of undriven input signals to generate reset tone
   pia_write(1, 0, 0xff);    // set vol/snd ports to outputs
@@ -252,7 +264,7 @@ static void mp_nmi(int data) {
   // probably a watchdog timer (will pulse NMI which causes a reset)
 }
 
-DISCRETE_SOUND_START(mp_discInt)
+static DISCRETE_SOUND_START(mp_discInt)
   DISCRETE_INPUT(NODE_01,0x0001,0xffff,0)
   DISCRETE_INPUT(NODE_02,0x0002,0xffff,0)
   DISCRETE_INPUT(NODE_03,0x0004,0xffff,0)
@@ -352,9 +364,8 @@ CORE_GAMEDEFNV(pentacup,"Pentacup (rev. 1)",1978,"Micropin",pentacup,0)
 
 static INTERRUPT_GEN(mp2_vblank) {
   int i;
-  UINT8 mem;
   for (i = 0; i < 32; i++) {
-    mem = memory_region(REGION_CPU1)[0x23c0 + i];
+    UINT8 mem = memory_region(REGION_CPU1)[0x23c0 + i];
     coreGlobals.segments[62 - i * 2].w = core_bcd2seg7[mem >> 4];
     coreGlobals.segments[63 - i * 2].w = core_bcd2seg7[mem & 0x0f];
   }
@@ -365,17 +376,14 @@ static INTERRUPT_GEN(mp2_vblank) {
 }
 
 static INTERRUPT_GEN(mp2_irq) {
-  static int irq;
-  static UINT8 swData;
+  cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, I8085_RST65_LINE, !locals.irq ? ASSERT_LINE : CLEAR_LINE);
+  locals.irq = !locals.irq;
 
-  cpu_set_irq_line(0, I8085_RST55_LINE, irq ? ASSERT_LINE : CLEAR_LINE);
-  cpu_set_irq_line(0, I8085_RST65_LINE, !irq ? ASSERT_LINE : CLEAR_LINE);
-  irq = !irq;
-
-  if (~swData & coreGlobals.swMatrix[3] & 0x01) { // 25 pts, inverted
+  if (~locals.swData_irq & coreGlobals.swMatrix[3] & 0x01) { // 25 pts, inverted
     memory_region(REGION_CPU1)[0x2193] &= 0xfe;
   }
-  swData = coreGlobals.swMatrix[3];
+  locals.swData_irq = coreGlobals.swMatrix[3];
   if (coreGlobals.swMatrix[4] & 0x20) { // end of ball
     memory_region(REGION_CPU1)[0x21a0] = 1;
   }
@@ -385,7 +393,6 @@ static INTERRUPT_GEN(mp2_irq) {
 }
 
 static SWITCH_UPDATE(MICROPIN2) {
-  static UINT8 swData[4];
   int i, sw, offset;
 
   if (inports) {
@@ -398,13 +405,13 @@ static SWITCH_UPDATE(MICROPIN2) {
     for (i = 0; i < 8; i++) {
       offset = 0x2193 + sw * 8 + i;
       if (offset < 0x2194 || (offset > 0x219f && offset < 0x21a4)) continue;
-      if (~swData[sw] & coreGlobals.swMatrix[3 + sw] & (1 << i)) {
+      if (~locals.swData[sw] & coreGlobals.swMatrix[3 + sw] & (1 << i)) {
         memory_region(REGION_CPU1)[offset] |= 1;
       } else {
         memory_region(REGION_CPU1)[offset] &= 0xfe;
       }
     }
-    swData[sw] = coreGlobals.swMatrix[3 + sw];
+    locals.swData[sw] = coreGlobals.swMatrix[3 + sw];
   }
 }
 
@@ -423,10 +430,9 @@ static MEMORY_READ_START(mp2_readmem)
 MEMORY_END
 
 static WRITE_HANDLER(mp2_out) {
-  static UINT8 out[16];
   coreGlobals.lampMatrix[offset] = ~data;
-  if (out[offset] != data) logerror("out %x: %02x\n", offset, data);
-  out[offset] = data;
+  if (locals.out[offset] != data) logerror("out %x: %02x\n", offset, data);
+  locals.out[offset] = data;
 #ifdef MAME_DEBUG
   if (offset == 0x0d) {
     coreGlobals.segments[64].w = core_bcd2seg7[data ^ 0xff];

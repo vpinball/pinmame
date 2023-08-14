@@ -15,25 +15,26 @@ static struct {
   UINT8 sndCmd;
   int dispNo, dispCol, swRow;
   core_tSeg segments;
+
+  int count;
+  UINT8 zc;
 } locals;
 
 static INTERRUPT_GEN(joctronic_vblank) {
-  static int count;
-  int i;
-  if (count > 2) {
+  if (locals.count > 2) {
+    int i;
     for (i = 0; i < 8; i++) {
       coreGlobals.segments[40 + i].w = locals.segments[i].w;
       locals.segments[i].w = 0;
     }
   }
-  count = (count + 1) % 4;
+  locals.count = (locals.count + 1) % 4;
   core_updateSw(TRUE); // game enables flippers directly
 }
 
 static INTERRUPT_GEN(joctronic_zc) {
-  static int zc;
-  z80ctc_0_trg3_w(0, zc);
-  zc = !zc;
+  z80ctc_0_trg3_w(0, locals.zc);
+  locals.zc = !locals.zc;
 }
 
 static WRITE_HANDLER(to0_w) {
@@ -60,6 +61,7 @@ static Z80_DaisyChain JOCTRONIC_DaisyChain[] = {
 };
 
 static MACHINE_INIT(JOCTRONIC) {
+  memset(&locals, 0x00, sizeof(locals));
   /* init CTC */
   ctc_intf.baseclock[0] = Machine->drv->cpu[0].cpu_clock;
   z80ctc_init(&ctc_intf);

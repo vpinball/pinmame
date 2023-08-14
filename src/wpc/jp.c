@@ -44,6 +44,10 @@ static struct {
   int    i8279reg;
   UINT8  i8279ram[16];
   int    sixColumns;
+
+  UINT8 mdata;
+  UINT8 which;
+  UINT8 lastData;
 } locals;
 
 static INTERRUPT_GEN(JP_irq) {
@@ -104,7 +108,7 @@ static SWITCH_UPDATE(JP) {
 // the rest of the bits enable the single digits (therefore 28 digits possible).
 static void dispStrobe(void) {
 //static UINT32 oldDisp;
-  static int pos[32] = { 31, 30, 29, 28, 26, 25, 24, 23, 22, 19, 18, 17, 16, 15,
+  static const int pos[32] = { 31, 30, 29, 28, 26, 25, 24, 23, 22, 19, 18, 17, 16, 15,
     12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 33, 34, 35, 36, 21, 14, 7, 0 };
   int i, data = locals.sixColumns ? (!(locals.dispData >> 24) ? 8 : 
     core_BitColToNum(locals.dispData >> 24)) : (locals.dispData >> 24) & 0x0f;
@@ -316,10 +320,8 @@ static INTERRUPT_GEN(JPS_irq) {
 }
 
 /* MSM5205 interrupt callback */
-static UINT8 mdata;
-static int which;
 static void JP_msmIrq(int data) {
-	MSM5205_data_w(0, (which = !which) ? mdata >> 4 : mdata & 0x0f);
+	MSM5205_data_w(0, (locals.which = !locals.which) ? locals.mdata >> 4 : locals.mdata & 0x0f);
 }
 
 static struct MSM5205interface JP_msm5205Int = {
@@ -337,8 +339,8 @@ static WRITE_HANDLER(bank_w) {
 
 static WRITE_HANDLER(snd_w) {
 //logerror("snd_w: %02x\n", data);
-  mdata = data;
-  which = 0;
+  locals.mdata = data;
+  locals.which = 0;
 }
 
 static WRITE_HANDLER(enable_w) {
@@ -422,16 +424,15 @@ struct AY8910interface JP2_ay8910Int2 = {
 
 // handles the 8279 keyboard / display interface chip
 static READ_HANDLER(i8279_r) {
-  static UINT8 lastData;
-  if ((locals.i8279cmd & 0xe0) == 0x40) lastData = coreGlobals.swMatrix[1 + (locals.i8279cmd & 0x07)]; // read switches
-  else if ((locals.i8279cmd & 0xe0) == 0x60) lastData = locals.i8279ram[locals.i8279reg]; // read display ram
+  if ((locals.i8279cmd & 0xe0) == 0x40) locals.lastData = coreGlobals.swMatrix[1 + (locals.i8279cmd & 0x07)]; // read switches
+  else if ((locals.i8279cmd & 0xe0) == 0x60) locals.lastData = locals.i8279ram[locals.i8279reg]; // read display ram
   else logerror("i8279 r:%02x\n", locals.i8279cmd);
   if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
-  return lastData;
+  return locals.lastData;
 }
 static WRITE_HANDLER(i8279_w) {
-  static int pos[32] = { 26, 24, 27, 25,  5, 23,  4, 22,  3, 21,  2, 20,  1, 19,  0, 18,
-                         28, 30, 29, 31, 11, 17, 10, 16,  9, 15,  8, 14,  7, 13,  6, 12 };
+  static const int pos[32] = { 26, 24, 27, 25,  5, 23,  4, 22,  3, 21,  2, 20,  1, 19,  0, 18,
+                               28, 30, 29, 31, 11, 17, 10, 16,  9, 15,  8, 14,  7, 13,  6, 12 };
   if (offset) { // command
     locals.i8279cmd = data;
     if ((locals.i8279cmd & 0xe0) == 0x40)

@@ -17,7 +17,7 @@ extern void UpdateZACSoundACT(int data);
 / Zaccaria Sound-On-Board 1311
 / 4 simple tone generators, solenoid-controlled
 /-----------------------------------------*/
-DISCRETE_SOUND_START(zac1311_discInt)
+static DISCRETE_SOUND_START(zac1311_discInt)
   DISCRETE_INPUT(NODE_01,1,0x000f,0)                         // Input handlers, mostly for enable
   DISCRETE_INPUT(NODE_02,2,0x000f,0)
   DISCRETE_INPUT(NODE_04,4,0x000f,0)
@@ -91,7 +91,7 @@ static void ne555_timer(int n) {
 }
 
 static WRITE_HANDLER(zac1125_data_w) {
-  static double states[8][5] = { // pins 7, 18, 20, 24, and optional timer interval
+  static const double states[8][5] = { // pins 7, 18, 20, 24, and optional timer interval
     { RES_K(468), RES_K(100),RES_M(1), RES_K(9.9) },
     { RES_K(4.7), RES_K(32), RES_M(1), RES_K(136) },
     { RES_K(468), RES_K(25), RES_M(1), RES_K(9.9) },
@@ -101,8 +101,8 @@ static WRITE_HANDLER(zac1125_data_w) {
     { RES_M(1.5), RES_K(100),RES_M(1), RES_K(358) },
     { RES_K(192), RES_K(9.1),RES_K(32),RES_K(94)  }
   };
-  static int vco[8] = { 1, 1, 1, 1, 0, 0, 1, 1 };
-  static int mix[8] = { 0, 0, 0, 0, 0, 0, 2, 0 };
+  static const int vco[8] = { 1, 1, 1, 1, 0, 0, 1, 1 };
+  static const int mix[8] = { 0, 0, 0, 0, 0, 0, 2, 0 };
 
   data &= 0x0f;
   if (data) {
@@ -157,6 +157,7 @@ static struct {
   struct sndbrdData brdData;
   int lastcmd;
   int tc;
+  int currentValue;
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
@@ -173,27 +174,26 @@ static WRITE_HANDLER(sp1346_data_w) {
   i8035_set_reg(I8035_TC, splocals.tc);
 
   if (Machine->drv->sound[1].sound_type) { // >0 means SN74677 & NE555 chips present
-    static double res[8] = { 0, RES_M(4.7), RES_M(2), RES_K(820), RES_K(680), RES_K(560), RES_K(470), RES_K(330) };
-    static int currentValue = 0;
+    static const double res[8] = { 0, RES_M(4.7), RES_M(2), RES_K(820), RES_K(680), RES_K(560), RES_K(470), RES_K(330) };
     switch (data) {
       case 0:
         if (splocals.lastcmd == 0) {
           SN76477_mixer_w(0, 7);
-          currentValue = 0;
+          splocals.currentValue = 0;
         }
         break;
       case 1: // raise the frequency if value < 7
-        if (currentValue < 7) currentValue++;
+        if (splocals.currentValue < 7) splocals.currentValue++;
         break;
       case 2: // lower the frequency if value > 1
-        if (currentValue > 1) currentValue--;
+        if (splocals.currentValue > 1) splocals.currentValue--;
         break;
     }
-    if (currentValue > 0) {
+    if (splocals.currentValue > 0) {
       SN76477_mixer_w(0, 4);
-      SN76477_set_slf_res(0, res[currentValue]);
+      SN76477_set_slf_res(0, res[splocals.currentValue]);
     }
-    SN76477_enable_w(0, !currentValue);
+    SN76477_enable_w(0, !splocals.currentValue);
     discrete_sound_w(1, data == 3); // enable the NE555 tone
   }
 
@@ -264,7 +264,7 @@ static struct SN76477interface zac1146_sn76477Int = { 1, { 30 }, /* mixing level
 };
 
 static int type[1] = {0};
-DISCRETE_SOUND_START(zac1146_discInt)
+static DISCRETE_SOUND_START(zac1146_discInt)
   DISCRETE_INPUT(NODE_01,1,0x0003,0)
   DISCRETE_555_ASTABLE(NODE_10,NODE_01,12.0,RES_K(1),RES_K(56),CAP_N(10),NODE_NC,type)
   DISCRETE_GAIN(NODE_20,NODE_10,1250)
@@ -396,6 +396,15 @@ static struct {
   int vola, volb;
   UINT16 vcagain;
   int actflags;
+
+  UINT8 old[75];
+  int oldact;
+  UINT8 cb1;
+  UINT8 ignoreNext;
+  UINT8 lastinh1;
+  UINT8 lastAy;
+  UINT8 timerSet;
+  UINT8 solcmd;
 } snslocals;
 
 static const struct pia6821_interface sns_pia[] = {{
@@ -639,9 +648,8 @@ static WRITE_HANDLER(sns_data_w) {
 static READ_HANDLER(sns_8910a_r) { return ~snslocals.lastcmd; }
 
 static WRITE_HANDLER(sns_8910b_w) {
-  static UINT8 lastAy = 0;
-  if ((lastAy & 0x0f) != (data & 0x0f)) logerror("AY8910  modulation: %x\n", data & 0x0f);
-  lastAy = data;
+  if ((snslocals.lastAy & 0x0f) != (data & 0x0f)) logerror("AY8910  modulation: %x\n", data & 0x0f);
+  snslocals.lastAy = data;
 }
 
 static READ_HANDLER(sns2_8910a_r) { return ~snslocals.lastcmd; }
@@ -657,9 +665,8 @@ static void sns_irq0b(int state) {
     cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static int timerSet;
 static void fireNmi(int dummy) {
-  if (timerSet) {
+  if (snslocals.timerSet) {
     cpu_set_nmi_line(ZACSND_CPUA, PULSE_LINE);
   }
 }
@@ -670,10 +677,10 @@ static void sns_irq1a(int state) {
     cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
   if (core_gameData->hw.soundBoard & 0x02) { // true for 11178
   	if (state) { // IRQA is set to 1 and back to 0 within 6 CPU cycles, but the NMI line assertion must be delayed slightly and must be cancelable
-      timerSet = 1;
+      snslocals.timerSet = 1;
       timer_set(TIME_IN_CYCLES(5, ZACSND_CPUA), 0, fireNmi);
     } else {
-      timerSet = 0;
+      snslocals.timerSet = 0;
     }
   }
 }
@@ -782,33 +789,31 @@ MEMORY_END
 
 // TODO: remove this hack once we find out how the end of sounds are actually triggered
 static WRITE_HANDLER(hack) {
-  static UINT8 old[75];
-  static int oldact;
   int i, allOnes = 1;
   memory_region(REGION_CPU2)[0x005e] = data;
-  if (snslocals.actflags != oldact) {
-    memset(&old, 0, sizeof(old));
-    oldact = snslocals.actflags;
+  if (snslocals.actflags != snslocals.oldact) {
+    memset(&snslocals.old, 0, sizeof(snslocals.old));
+    snslocals.oldact = snslocals.actflags;
     return;
   }
-  for (i = 0; i < 75; i++) {
-    if (old[i] != 0x01) {
+  for (i = 0; i < sizeof(snslocals.old); i++) {
+    if (snslocals.old[i] != 0x01) {
       allOnes = 0;
       break;
     }
   }
   if (allOnes) {
     memory_region(REGION_CPU2)[0x0017] = 0x10; // this will ultimately write to PIA port B bit 2
-    memset(&old, 0, sizeof(old));
+    memset(&snslocals.old, 0, sizeof(snslocals.old));
     return;
   }
   if (data != 0x01) {
-    memset(&old, 0, sizeof(old));
+    memset(&snslocals.old, 0, sizeof(snslocals.old));
   } else {
-    for (i = 73; i >= 0; i--) {
-      old[i + 1] = old[i];
+    for (i = sizeof(snslocals.old)-2; i >= 0; i--) {
+      snslocals.old[i + 1] = snslocals.old[i];
     }
-    old[0] = data;
+    snslocals.old[0] = data;
   }
 }
 
@@ -893,8 +898,7 @@ static void startcem3374(int param) {
 }
 
 static INTERRUPT_GEN(sns3_irq) {
-  static int cb1;
-  pia_set_input_cb1(SNS_PIA1, cb1 = !cb1);
+  pia_set_input_cb1(SNS_PIA1, snslocals.cb1 = !snslocals.cb1);
 #ifdef MAME_DEBUG
   if (keyboard_pressed_memory_repeat(KEYCODE_B, 30)) memory_region(REGION_CPU2)[0x0050] &= 0xfb;
   if (keyboard_pressed_memory_repeat(KEYCODE_N, 30)) memory_region(REGION_CPU2)[0x0037] = 0x10;
@@ -921,19 +925,18 @@ static WRITE_HANDLER(storebyte2) {
   snslocals.dacbyte2 = snslocals.daclatch;
 }
 static WRITE_HANDLER(dacxfer) {
-  static int ignoreNext;
 // this dac uses 12 bits, so a 16 bit dac must be used...
 // ok dac input: first byte (msb bit) second byte (only 4 bits are used and contains lsb bit)
   snslocals.dacinp = (snslocals.dacbyte1 << 4) | (snslocals.dacbyte2 >> 4);
 // there is an extra DAC write between registers 0 and 7 used to feed VCAGAIN
-  if (ignoreNext) {
-    ignoreNext = 0;
+  if (snslocals.ignoreNext) {
+      snslocals.ignoreNext = 0;
     if (!snslocals.s_inh1 || snslocals.s_inh2 || snslocals.s_inh3) {
       stopcem3374(0);
     }
     return;
   }
-  if (pia_1_portb_r(0) >> 5 == 0) ignoreNext = 1;
+  if (pia_1_portb_r(0) >> 5 == 0) snslocals.ignoreNext = 1;
   writeToCEM();
 }
 
@@ -991,10 +994,9 @@ static WRITE_HANDLER(chip3h259) {
 }
 
 static WRITE_HANDLER(chip3i259) {
-  static int lastinh1;
-  int changed = 0;
-  int flag = (data | ~pia_1_portb_r(0)) & 1;
-  if (snslocals.snot_ab1) {     // Enable is logic low, latch adressable
+  const int flag = (data | ~pia_1_portb_r(0)) & 1;
+  if (snslocals.snot_ab1) {     // Enable is logic low, latch addressable
+    int changed = 0;
     switch (offset) {
       case 0:
         changed = (snslocals.s_ensyncb != flag);
@@ -1023,12 +1025,12 @@ static WRITE_HANDLER(chip3i259) {
         break;
       case 2:
         snslocals.s_inh1 = flag;
-        if (flag && lastinh1) {
+        if (flag && snslocals.lastinh1) {
           changed = 1;
           snslocals.vola = snslocals.levcha;
           snslocals.volb = snslocals.levchb;
         }
-        lastinh1 = flag;
+        snslocals.lastinh1 = flag;
         break;
       case 3:
         changed = (snslocals.s_inh2 != flag);
@@ -1117,13 +1119,12 @@ static WRITE_HANDLER(akl3_w) {
   }
 }
 
-static UINT8 solcmd;
 static WRITE_HANDLER(sol_w) {
-  solcmd = data;
+  snslocals.solcmd = data;
 }
 
 static READ_HANDLER(readcmd_a) {
-  return solcmd;
+  return snslocals.solcmd;
 }
 
 static PORT_READ_START(z80_readport)

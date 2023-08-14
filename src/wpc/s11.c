@@ -96,6 +96,9 @@ static struct {
   UINT8  solBits1,solBits2;
   UINT8  solBits2prv;
 #endif
+#ifndef PINMAME_NO_UNUSED
+  int soundSys; /* 0 = CPU board sound, 1 = Sound board */
+#endif
 } locals;
 
 static void s11_irqline(int state) {
@@ -241,7 +244,7 @@ static INTERRUPT_GEN(s11_vblank) {
 
    */
                 allSol = (allSol & 0xffffffff00000000) |
-		         (coreGlobals.solenoids);
+                         (coreGlobals.solenoids);
                 // The Sys11 code fires all coils at once at the start - FF00 - in order
                 // to get the buffers on the MPU to a known state, before the blanking
                 // comes on.  However, with the P-ROC the blanking comes on earlier
@@ -382,9 +385,9 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
 /*-----------------
 / Display handling
 /-----------------*/
-/*NOTE: Data East DMD Games:     data = 0x01, CN1-Pin 7 (Strobe) goes low
-				 data = 0x04, CN2-Pin 1 (Enable) goes low
-			(currently we don't need to read these values)*/
+/*NOTE: Data East DMD Games: data = 0x01, CN1-Pin 7 (Strobe) goes low
+                             data = 0x04, CN2-Pin 1 (Enable) goes low
+                             (currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
   locals.digSel = data & 0x0f;
   if (core_gameData->hw.display & S11_BCDDIAG)
@@ -610,7 +613,6 @@ static WRITE_HANDLER(pia5ca2_w) { /*
 }
 #ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(s11_sndCmd_w) {
-  static int soundSys = -1; /* 0 = CPU board sound, 1 = Sound board */
   if (soundSys < 0)
     soundSys = (data & 0x01);
   else {
@@ -635,7 +637,7 @@ static struct pia6821_interface s11_pia[] = {
 {/* PIA 0 (2100) */
  /* PA0 - PA7 Sound Select Outputs (sound latch) */
  /* PB0 - PB7 Solenoid 9-16 (12 is usually for multiplexing) */
-  /* CA2       Sound H.S.  */
+ /* CA2       Sound H.S.  */
  /* CB2       Enable Special Solenoids */
  /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
@@ -753,6 +755,10 @@ int s11_m2sw(int col, int row) { return col*8+row-7; } // needed to map
 #endif
 
 static MACHINE_INIT(s11) {
+  memset(&locals,0,sizeof(locals));
+#ifndef PINMAME_NO_UNUSED
+  locals.soundSys = -1;
+#endif
   if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64))
     locals.deGame = 1;
   else
@@ -796,6 +802,7 @@ static MACHINE_INIT(s11) {
   }
 }
 static MACHINE_INIT(s9pf) {
+  memset(&locals,0,sizeof(locals));
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
   pia_config(S11_PIA1, PIA_STANDARD_ORDERING, &s11_pia[1]);
   pia_config(S11_PIA2, PIA_STANDARD_ORDERING, &s11_pia[2]);

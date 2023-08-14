@@ -339,7 +339,6 @@ static WRITE16_HANDLER(u16_w) {
 /*************/
 static READ16_HANDLER(io_r) {
   UINT16 data = 0;
-  static int swcol = 0;
 
   switch (offset) {
     //Read from driver board
@@ -364,9 +363,11 @@ static READ16_HANDLER(io_r) {
     case 0x200009:
     case 0x20000a:
     case 0x20000b:
-      swcol = offset-0x200007;
+    {
+      int swcol = offset-0x200007;
       data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
       break;
+    }
 
     //Solenoid A & B Status??? (returing a value here, removes waiting for short error msg, when IRQ4 set to 2000 cycles in KP)
     case 0x20000c:
@@ -375,7 +376,7 @@ static READ16_HANDLER(io_r) {
 		//printf("PC%08x - io_r: [%08x] (%04x) = %04x\n",activecpu_get_pc(),offset,mem_mask,data);
 		break;
 
-	//Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
+    //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
     case 0x400000:
       if (!core_gameData->hw.lampCol) {
         //Cabinet/Coin Door Switches are read as the lower byte on all switch reads
@@ -731,14 +732,14 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {
     UINT8 *line = &coreGlobals.dotCol[ii][0];
-      for (kk = 0; kk < 16; kk++) {
+    for (kk = 0; kk < 16; kk++) {
 		UINT16 intens1 = RAM[0];
 		for(jj=0;jj<8;jj++) {
 			*line++ = (intens1&0xc000)>>14;
 			intens1 = intens1<<2;
 		}
 		RAM+=1;
-      }
+    }
     *line++ = 0;
     RAM+=16;
   }
@@ -758,7 +759,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
   for (ii = 0; ii <= 64; ii++) {
     UINT8 *linel = &coreGlobals.dotCol[ii][0];
     UINT8 *liner = &coreGlobals.dotCol[ii][128];
-      for (kk = 0; kk < 16; kk++) {
+    for (kk = 0; kk < 16; kk++) {
 		UINT16 intensl = RAM[0];
 		UINT16 intensr = RAM[0x10];
 		for(jj=0;jj<8;jj++) {
@@ -768,7 +769,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 			intensr = intensr<<2;
 		}
 		RAM+=1;
-      }
+    }
     RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, layout);
