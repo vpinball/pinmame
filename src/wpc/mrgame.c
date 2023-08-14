@@ -957,6 +957,7 @@ PALETTE_INIT( mrgame_g1 )
 
 PALETTE_INIT( mrgame_g2 )
 {
+	int i;
 	for (i = 0; (UINT32)i < Machine->drv->total_colors; i++)
 	{
 		int g,b;
