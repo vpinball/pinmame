@@ -50,6 +50,9 @@ static struct {
   int vblankCount, zc, irq;
   int inhibit, zcSanity, dispSanity;
   int irqstate, irqstates[4];
+
+  int digit;
+  int oldstate;
 } locals;
 
 // determines the amount of bits set in a given value
@@ -61,14 +64,13 @@ static int countBits(int value) {
 }
 
 static void piaIrq(int num, int state) {
-  static int oldstate;
   locals.irqstates[num] = state;
   locals.irqstate = locals.irqstates[0] || locals.irqstates[1] || locals.irqstates[2] || locals.irqstates[3];
-  if (oldstate != locals.irqstate) {
+  if (locals.oldstate != locals.irqstate) {
     logerror("IRQ state: %d\n", locals.irqstate);
     cpu_set_irq_line(0, M6800_IRQ_LINE, locals.irqstate ? ASSERT_LINE : CLEAR_LINE);
   }
-  oldstate = locals.irqstate;
+  locals.oldstate = locals.irqstate;
 }
 
 static INTERRUPT_GEN(by68701_vblank) {
@@ -146,7 +148,7 @@ static WRITE_HANDLER(pp1_a_w) {
   logerror("%04x: PIA 1 A WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
 static WRITE_HANDLER(pp1_b_w) { // periphal data
-  static int solOrder[2][4][4] = {{
+  static const int solOrder[2][4][4] = {{
     { 2, 3, 4, 5},
     { 8, 9, 1, 0},
     {10,20, 6, 7},
@@ -157,7 +159,7 @@ static WRITE_HANDLER(pp1_b_w) { // periphal data
     {11,13,10,17},
     { 8,12, 4, 6}
   }};
-  static int lampRows[15] = { 4, 8, 9, 10, 11, 12, 13, 14, 5, 0, 6, 7, 1, 2, 3 };
+  static const int lampRows[15] = { 4, 8, 9, 10, 11, 12, 13, 14, 5, 0, 6, 7, 1, 2, 3 };
   if (locals.lampCol != 0x0f) {
     UINT8 lampdata = locals.zc ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f;
     coreGlobals.tmpLampMatrix[lampRows[locals.lampCol]] |= lampdata;
@@ -243,7 +245,6 @@ static MACHINE_STOP(by68701) {
 
 // displays, solenoids, lamp and switch strobe
 static WRITE_HANDLER(by68701_m0800_w) {
-  static int digit;
   int num;
   locals.strobe = offset;
   switch (offset) {
@@ -251,7 +252,7 @@ static WRITE_HANDLER(by68701_m0800_w) {
       locals.lampCol = data & 0x0f;
       break;
     case 1: // switch column & display digit
-      if (data & 0x08) digit = (1 + (data & 0x07)) % 8;
+      if (data & 0x08) locals.digit = (1 + (data & 0x07)) % 8;
       else locals.swCol = data & 0x07;
       break;
     case 2: // solenoids, handled completely in PIA write for lack of a better method
@@ -261,15 +262,15 @@ static WRITE_HANDLER(by68701_m0800_w) {
       sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
       break;
     case 4: case 5: case 6: case 7: // player display data
-      num = (offset-4)*8 + 7 - digit;
+      num = (offset-4)*8 + 7 - locals.digit;
       locals.segments[num].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
       if (locals.commas && locals.segments[num].w && (num % 8 == 1 || num % 8 == 4)) locals.segments[num].w |= 0x80;
       break;
     case 10: // BIP / match display data
       if (core_gameData->hw.gameSpecific1) { // FG, full-sized futaba panel
-        locals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
+        locals.segments[32 + 7 - locals.digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
       } else { // EBD: small 7-seg alarm clock panel
-        locals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) >> 6) | ((data & 0x80) >> 5);
+        locals.segments[32 + 7 - locals.digit].w = (data & 0x7f) | ((data & 0x80) >> 6) | ((data & 0x80) >> 5);
       }
       break;
     default:

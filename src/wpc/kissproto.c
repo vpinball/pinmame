@@ -11,6 +11,8 @@ static struct {
   core_tSeg segments;
   int vblankCount;
   int ramBank;
+
+  UINT8 irq;
 } locals;
 
 static INTERRUPT_GEN(by8035_vblank) {
@@ -41,8 +43,7 @@ static INTERRUPT_GEN(by8035_vblank) {
 }
 
 static INTERRUPT_GEN(by8035_irq) {
-  static int irq;
-  cpu_set_irq_line(0, 0, (irq = !irq) ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, 0, (locals.irq = !locals.irq) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static READ_HANDLER(by8035_ram_r) {

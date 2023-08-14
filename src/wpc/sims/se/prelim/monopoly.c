@@ -50,9 +50,9 @@ extern struct {
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
-  int	 flipsol, flipsolPulse;
+  int    flipsol, flipsolPulse;
   int    sst0;			//SST0 bit from sound section
-  int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
+  int    plin;			//Plasma In (not connected prior to LOTR Hardware)
   UINT8 *ram8000;
   int    auxdata;
   /* Mini DMD stuff */
@@ -76,6 +76,10 @@ static struct {
   int flipperPos;
   int flipperDir;
   int flipperSpeed;
+
+  int speedCnt;
+  int oldSpeed[8];
+  int oldFlipperPos;
 } locals;
 
 /*--------------------------
@@ -544,6 +548,7 @@ static WRITE_HANDLER(monopoly_w) {
 /----------------*/
 static void init_monopoly(void) {
   core_gameData = &monopolyGameData;
+  memset(&locals, 0, sizeof(locals));
   install_mem_write_handler(0, 0x2000, 0x2003, monopoly_w);
 }
 
@@ -558,20 +563,17 @@ static void monopoly_handleMech(int mech) {
 #endif
 
 static int monopoly_getMech(int mechNo){
-  static int speedCnt;
-  static int oldSpeed[8];
-  static int oldFlipperPos;
   int speed, dist;
   switch (mechNo) {
     case 0: return locals.flipperPos /5;
     case 1:
-      dist = locals.flipperPos - oldFlipperPos;
+      dist = locals.flipperPos - locals.oldFlipperPos;
       if (dist < 0) dist = - dist;
       if (dist > 2500) dist -= 5000;
       if (dist < 0) dist = - dist;
-      oldFlipperPos = locals.flipperPos;
-      oldSpeed[speedCnt = (speedCnt + 1) % 8] = locals.flipperDir * dist;
-      speed = (oldSpeed[0] + oldSpeed[1] + oldSpeed[2] + oldSpeed[3] + oldSpeed[4] + oldSpeed[5] + oldSpeed[6] + oldSpeed[7]) / 8;
+      locals.oldFlipperPos = locals.flipperPos;
+      locals.oldSpeed[locals.speedCnt = (locals.speedCnt + 1) % 8] = locals.flipperDir * dist;
+      speed = (locals.oldSpeed[0] + locals.oldSpeed[1] + locals.oldSpeed[2] + locals.oldSpeed[3] + locals.oldSpeed[4] + locals.oldSpeed[5] + locals.oldSpeed[6] + locals.oldSpeed[7]) / 8;
       return speed / 3;
   }
   return 0;

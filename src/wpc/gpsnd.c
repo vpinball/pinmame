@@ -85,9 +85,9 @@ static struct SN76477interface  gpSS2_sn76477Int = { 3, { 50, 50, 50 }, /* mixin
 };
 
 static WRITE_HANDLER(gpss2_data_w)
-{ // tone frequencies          D'   C'   B    A    H    G    F          E    D
-  static double voltage[16] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
-  static int howl_or_whoop = 0;
+{ // tone frequencies                D'   C'   B    A    H    G    F          E    D
+  static const double voltage[16] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
+  static UINT8 howl_or_whoop = 0;
   int sb = core_gameData->hw.soundBoard & 0x01; // 1 if SSU3
   data &= 0x0f;
   switch (data) {
@@ -357,7 +357,7 @@ static void gpss4_init(struct sndbrdData *brdData)
 
 #define MSU1_INTCLOCK    894875  // clock speed in hz of msu_1 board ! 
 
-static  INT16  volumemsu1[] = {
+static const INT16 volumemsu1[] = {
 	00,  00,  35, 40, 45, 50, 55, 60, 65, 70,  75,  80,  85,  90,95,100,100       
 };
 //	30,  30,  40, 40, 50, 50, 60, 60, 70, 70,  80,  80,  90,  90,100,100,100       
@@ -381,6 +381,8 @@ static struct {
   UINT16 timlats1,timlats2,timlats3;  
   int    cr1,cr2,cr3, channel,timp1,timp2,timp3, tfre1,tfre2,tfre3 ;
   int    reset;
+
+  UINT8  last;
 } gps_locals;
 
 #define GPS_PIA0  0
@@ -838,8 +840,7 @@ static WRITE_HANDLER(m6840_w ) {
 
 
 static void pia_cb1_w(int data) {
-	static int last;
-	pia_set_input_cb1(GPS_PIA0, (last = !last));
+	pia_set_input_cb1(GPS_PIA0, (gps_locals.last = !gps_locals.last));
 }
 
 

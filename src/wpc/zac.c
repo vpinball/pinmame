@@ -310,12 +310,12 @@ static WRITE_HANDLER(data_port_w)
 /*   FLAG WRITE = Write Serial Output (hooked to printer) */
 static WRITE_HANDLER(flag_w)
 {
-	static UINT8 printdata[] = {0};
+	static UINT8 printdata = 0;
 	static int bitno = 0;
 	static int startbit = 0;
 	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | (data << 2);
 	if (locals.printfile == NULL) {
-	  char filename[13];
+	  char filename[64];
 	  sprintf(filename,"%s.prt", Machine->gamedrv->name);
 	  locals.printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,2); // APPEND write mode
 	}
@@ -324,11 +324,11 @@ static WRITE_HANDLER(flag_w)
 	else if (data == 0 && startbit == 1)
 		startbit = 2;
 	else if (bitno < 8 && startbit > 1)
-		printdata[0] |= (data << bitno++);
+		printdata |= (data << bitno++);
 	if (bitno == 8 && startbit > 1)
-    	if (locals.printfile) mame_fwrite(locals.printfile, printdata, 1);
-    if (bitno > 7) {
-		printdata[0] = 0;
+		if (locals.printfile) mame_fwrite(locals.printfile, &printdata, 1);
+	if (bitno > 7) {
+		printdata = 0;
 		bitno = 0;
 		startbit = 0;
 	}
