@@ -74,18 +74,22 @@ static struct {
   int vblankCount;
   int hw;
   int irqstates[4];
+
+  int oldstate;
+  int counter;
+  int pos0;
+  int pos1;
 } locals;
 
 static void piaIrq(int num, int state) {
-  static int oldstate;
   int irqstate;
   locals.irqstates[num] = state;
   irqstate = locals.irqstates[0] || locals.irqstates[1] || locals.irqstates[2] || locals.irqstates[3];
-  if (oldstate != irqstate) {
+  if (locals.oldstate != irqstate) {
 //    logerror("IRQ state: %d\n", irqstate);
     cpu_set_irq_line(0, M6800_IRQ_LINE, irqstate ? ASSERT_LINE : CLEAR_LINE);
   }
-  oldstate = irqstate;
+  locals.oldstate = irqstate;
 }
 
 static void piaIrq0(int state) { piaIrq(0, state); }
@@ -162,7 +166,6 @@ static WRITE_HANDLER(pia0a_w) {
 /* PIA1:A-W  0,2-7 Display handling */
 /*        W  1     Sound E */
 static WRITE_HANDLER(pia1a_w) {
-  static int counter, pos0, pos1;
   if (locals.hw & BY35HW_SOUNDE)
   {
     sndbrd_0_ctrl_w(0, (locals.cb21 ? 1 : 0) | (data & 0x02));
@@ -173,18 +176,18 @@ static WRITE_HANDLER(pia1a_w) {
 
   if (core_gameData->hw.gameSpecific1 & BY35GD_ALPHA) {
     if (data & 0x80) { // 1st alphanumeric display strobe
-      if (pos0 < 20)
-        locals.segments[pos0++].w = core_ascii2seg16s[locals.a0 & 0x7f] | (locals.a0 & 0x80);
-      counter++;
-      if (counter > 7) {
-        counter = 0;
-        pos0 = 0;
-        pos1 = 0;
+      if (locals.pos0 < 20)
+        locals.segments[locals.pos0++].w = core_ascii2seg16s[locals.a0 & 0x7f] | (locals.a0 & 0x80);
+      locals.counter++;
+      if (locals.counter > 7) {
+        locals.counter = 0;
+        locals.pos0 = 0;
+        locals.pos1 = 0;
       }
     } else if (data & 0x40) { // 2nd alphanumeric display strobe
-      counter = 0;
-      if (pos1 < 12)
-        locals.segments[20+(pos1++)].w = core_ascii2seg16s[locals.a0 & 0x7f] | (locals.a0 & 0x80);
+      locals.counter = 0;
+      if (locals.pos1 < 12)
+        locals.segments[20+(locals.pos1++)].w = core_ascii2seg16s[locals.a0 & 0x7f] | (locals.a0 & 0x80);
     }
   } else if (!locals.ca20) {
     if (locals.hw & BY35HW_INVDISP4) {
@@ -862,6 +865,7 @@ static INTERRUPT_GEN(sam_display_irq) {
 }
 
 static MACHINE_INIT(sam) {
+  memset(&locals, 0, sizeof(locals));
   pia_config(0, PIA_STANDARD_ORDERING, &sam_pia[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &sam_pia[1]);
   pia_config(2, PIA_STANDARD_ORDERING, &sam_pia[2]);

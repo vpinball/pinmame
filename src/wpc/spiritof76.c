@@ -14,6 +14,9 @@ static struct {
   UINT8 piaa, piab;
   UINT32 solenoids;
   int sol5, sol7;
+
+  UINT8 state;
+  int tick5, tick7;
 } locals;
 
 static INTERRUPT_GEN(spirit_vblank) {
@@ -26,8 +29,7 @@ static INTERRUPT_GEN(spirit_vblank) {
 }
 
 static INTERRUPT_GEN(spirit_irq) {
-	static int state;
-  cpu_set_irq_line(0, M6800_IRQ_LINE, (state = !state) ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, M6800_IRQ_LINE, (locals.state = !locals.state) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static SWITCH_UPDATE(spirit) {
@@ -43,7 +45,6 @@ static WRITE_HANDLER(piaa_w) {
 }
 
 static WRITE_HANDLER(piab_w) {
-  static int tick5, tick7;
 	int off;
 	locals.piab = data;
 	if (data & 0x80) {
@@ -63,14 +64,14 @@ static WRITE_HANDLER(piab_w) {
 		}
   } else if (data & 0x20) {
     off = data & 0x0f;
-    tick5 = off == 5 ? 0 : tick5 + 1;
- 	  locals.sol5 = tick5 < 4;
-    tick7 = off == 7 ? 0 : tick7 + 1;
- 	  locals.sol7 = tick7 < 4;
-  	if (off) {
-  	  locals.solenoids |= 1 << (off - 1);
+    locals.tick5 = off == 5 ? 0 : locals.tick5 + 1;
+    locals.sol5 = locals.tick5 < 4;
+    locals.tick7 = off == 7 ? 0 : locals.tick7 + 1;
+    locals.sol7 = locals.tick7 < 4;
+    if (off) {
+      locals.solenoids |= 1 << (off - 1);
       coreGlobals.solenoids = (coreGlobals.solenoids & 0x8000) | locals.solenoids;
-  	}
+    }
   }
 }
 
@@ -91,8 +92,8 @@ static MACHINE_INIT(spirit) {
 }
 
 static READ_HANDLER(sw_r) {
-	int row = (locals.piab & 0x0f) / 2;
-	int shiftBits = locals.piab % 2 ? 4 : 0;
+  int row = (locals.piab & 0x0f) / 2;
+  int shiftBits = locals.piab % 2 ? 4 : 0;
   if (row > 5) {
     return core_revbyte(core_getDip(row - 6) >> (4 - shiftBits)) >> 4;
   }

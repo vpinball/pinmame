@@ -31,6 +31,12 @@ static struct {
   UINT8 strobe2;
   UINT8 via_a;
   int bitCount;
+
+  UINT8 lampData;
+  UINT8 lampRow;
+  UINT8 col4[3];
+  UINT8 lastSw9;
+  int segNum;
 } locals;
 
 /*-------------------------------
@@ -100,18 +106,17 @@ static READ_HANDLER(pia1a_r) {
 }
 
 static READ_HANDLER(pia1b_r) {
-  static UINT8 lastSw9 = 0;
   UINT8 retVal;
   UINT8 sw9 = coreGlobals.swMatrix[9] & 0xf0;
   UINT8 newSw9 = sw9;
   UINT8 dips = core_getDip(locals.strobe2 / 2);
   // HACK that will close both coin switches at the same time so the credits don't keep adding up!
   // Unfortunately this means both coins are amounted to the credits for now.
-  if (~lastSw9 & sw9 & 0x30) {
+  if (~locals.lastSw9 & sw9 & 0x30) {
     newSw9 |= 0x30;
   }
   retVal = (newSw9 ^ 0x30) | (locals.strobe2 % 2 ? dips >> 4 : dips & 0x0f);
-  lastSw9 = sw9;
+  locals.lastSw9 = sw9;
   return retVal;
 }
 
@@ -144,16 +149,14 @@ static int singleBitSet(UINT8 b) {
 }
 
 static WRITE_HANDLER(via0b_w) {
-  static UINT8 lampData = 0, lampRow = 0, col4[3] = {0,0,0};
-  static int segNum = 0;
   switch (locals.via_a >> 4) {
     case 0:
       sndbrd_0_data_w(0, ~data);
       break;
     case 1:
       if (!(locals.bitCount % 8)) {
-        segNum = 31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f);
-        showSegment(segNum, data);
+        locals.segNum = 31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f);
+        showSegment(locals.segNum, data);
       }
       locals.bitCount++;
       break;
@@ -163,8 +166,8 @@ static WRITE_HANDLER(via0b_w) {
           if (core_gameData->hw.lampCol) {
             // champion uses two solenoid outputs to control 12 extra lamps
             coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0x9f) << 8);
-            if (~data & 0x20) coreGlobals.lampMatrix[8] = lampRow;
-            if (~data & 0x40) coreGlobals.lampMatrix[9] = lampRow;
+            if (~data & 0x20) coreGlobals.lampMatrix[8] = locals.lampRow;
+            if (~data & 0x40) coreGlobals.lampMatrix[9] = locals.lampRow;
           } else {
             coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0xff) << 8);
           }
@@ -173,21 +176,21 @@ static WRITE_HANDLER(via0b_w) {
           coreGlobals.solenoids = (coreGlobals.solenoids & 0x1ff00) | (~data & 0xff);
           break;
         case 2:
-          lampRow = ~data;
-          if (singleBitSet(lampRow)) {
-            int colNum = core_BitColToNum(lampRow);
-            coreGlobals.lampMatrix[colNum] = lampData;
+          locals.lampRow = ~data;
+          if (singleBitSet(locals.lampRow)) {
+            int colNum = core_BitColToNum(locals.lampRow);
+            coreGlobals.lampMatrix[colNum] = locals.lampData;
             // column 4 is additionally fed with all 0 on champion, so buffer the previous value a while
             if (core_gameData->hw.lampCol && colNum == 4) {
-              col4[0] = col4[1];
-              col4[1] = col4[2];
-              col4[2] = lampData;
-              coreGlobals.lampMatrix[4] |= col4[0] | col4[1];
+              locals.col4[0] = locals.col4[1];
+              locals.col4[1] = locals.col4[2];
+              locals.col4[2] = locals.lampData;
+              coreGlobals.lampMatrix[4] |= locals.col4[0] | locals.col4[1];
             }
           }
           break;
         case 3:
-          lampData = ~data;
+          locals.lampData = ~data;
           break;
         default:
           logerror("VIA A/B: %02x/%02x\n", locals.via_a, data);
@@ -196,8 +199,8 @@ static WRITE_HANDLER(via0b_w) {
       break;
     case 7:
       if (core_getDip(2) && !data) {
-        showSegment(segNum-1, 0);
-        showSegment(segNum, 0);
+        showSegment(locals.segNum-1, 0);
+        showSegment(locals.segNum, 0);
       }
       break;
     default:

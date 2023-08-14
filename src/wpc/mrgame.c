@@ -114,6 +114,8 @@ static struct {
   int sndcmd;
   int gameOn;
   int pout2;
+
+  int scrollers[32];
 } locals;
 
 static data8_t *mrgame_videoram;
@@ -163,13 +165,13 @@ static INTERRUPT_GEN(mrgame_irq) { cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE
 //Generate an IRQ on the sound chip's z80
 static INTERRUPT_GEN(snd_irq) {
 	cpu_set_irq_line(2,Z80_IRQ,PULSE_LINE);
-    cpu_set_irq_line(3,Z80_IRQ,PULSE_LINE);
+	cpu_set_irq_line(3,Z80_IRQ,PULSE_LINE);
 }
 
 //Generate an NMI on the sound chip's z80
 static void snd_nmi(int state) {
 	cpu_set_irq_line(2,Z80_NMI,PULSE_LINE);
-    cpu_set_irq_line(3,Z80_NMI,PULSE_LINE);
+	cpu_set_irq_line(3,Z80_NMI,PULSE_LINE);
 }
 
 
@@ -194,8 +196,8 @@ static INTERRUPT_GEN(vblank) {
 
   /*-- display --*/
   if ((locals.vblankCount % MRGAME_DISPLAYSMOOTH) == 0) {
-	/*update leds*/
-	coreGlobals.diagnosticLed = locals.diagnosticLED;
+    /*update leds*/
+    coreGlobals.diagnosticLed = locals.diagnosticLED;
   }
 
   core_updateSw(locals.gameOn);
@@ -203,13 +205,12 @@ static INTERRUPT_GEN(vblank) {
 
 static SWITCH_UPDATE(mrgame) {
   if (inports) {
-	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[CORE_COREINPORT] & 0x007f);		//Column 1 Switches
-	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xf9) | (inports[CORE_COREINPORT] & 0x0180)>>6;  //Column 2 Switches
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[CORE_COREINPORT] & 0x007f);		//Column 1 Switches
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xf9) | (inports[CORE_COREINPORT] & 0x0180)>>6;  //Column 2 Switches
   }
 }
 
 static MACHINE_INIT(mrgame) {
-
   memset(&locals, 0, sizeof(locals));
 
   locals.sndstb = 1;
@@ -242,7 +243,7 @@ Bits 5   Ack Spk
 Bits 6-7 Opto flipper switches
 */
 static READ16_HANDLER(rsw_ack_r) {
-    int data = core_getDip(0) ^ 0x0f;
+	int data = core_getDip(0) ^ 0x0f;
 	data |= (locals.acksnd << 4);
 	data |= (locals.ackspk << 5);
 	data |= (coreGlobals.swMatrix[9] << 6);
@@ -253,12 +254,12 @@ static READ16_HANDLER(rsw_ack_r) {
 static WRITE_HANDLER(solenoid_w)
 {
 	if (offset < 4) {
-		int    sol = offset*8+locals.a0a2;	// sol #
-		UINT32 msk = ~(1<<sol);			// mask this bit
-		UINT32 bit = (locals.d0d1&1)<<sol;	// data bit
+		int    sol = offset*8+locals.a0a2; // sol #
+		UINT32 msk = ~(1<<sol);            // mask this bit
+		UINT32 bit = (locals.d0d1&1)<<sol; // data bit
 
-	        locals.solenoids |=
-	        coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & msk) | bit;
+		locals.solenoids |=
+			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & msk) | bit;
 	}
 	else {
 		LOG(("Solenoid_W Logic Error\n"));
@@ -649,7 +650,6 @@ static const struct rectangle screen_visible_area =
 
 //Video Update - Generation #1
 PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
-	static int scrollers[32];
 	size_t offs;
 	int color;
 	int colorindex = 0;
@@ -659,25 +659,25 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 
 #ifdef MAME_DEBUG
 
-if(1 || !debugger_focus) {
-if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
+  if(1 || !debugger_focus) {
+    if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 #ifdef TEST_MOTORSHOW
-	  fake_w(0,0);
+      fake_w(0,0);
 #else
-	charoff = 0;
-	locals.acksnd = !locals.acksnd;
+      charoff = 0;
+      locals.acksnd = !locals.acksnd;
 #endif
-}
-  //core_textOutf(50,20,1,"offset=%08x", charoff);
-  if(keyboard_pressed_memory_repeat(KEYCODE_Z,4))
-	  charoff+=0x100;
-  if(keyboard_pressed_memory_repeat(KEYCODE_X,4))
-	  charoff-=0x100;
-  if(keyboard_pressed_memory_repeat(KEYCODE_C,4))
-	  charoff++;
-  if(keyboard_pressed_memory_repeat(KEYCODE_V,4))
-	  charoff--;
-}
+    }
+    //core_textOutf(50,20,1,"offset=%08x", charoff);
+    if(keyboard_pressed_memory_repeat(KEYCODE_Z,4))
+      charoff+=0x100;
+    if(keyboard_pressed_memory_repeat(KEYCODE_X,4))
+      charoff-=0x100;
+    if(keyboard_pressed_memory_repeat(KEYCODE_C,4))
+      charoff++;
+    if(keyboard_pressed_memory_repeat(KEYCODE_V,4))
+      charoff--;
+  }
 #endif
 
 	/* for every character in the Video RAM, check if it has been modified */
@@ -694,10 +694,10 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
 			color = mrgame_objectram[colorindex];
-			scrollers[sx] = -mrgame_objectram[colorindex-1];
+			locals.scrollers[sx] = -mrgame_objectram[colorindex-1];
 
 			tile = mrgame_videoram[offs]+
-                   (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
+			       (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
@@ -708,7 +708,7 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 		}
 	}
 	/* copy the temporary bitmap to the screen with scolling */
-	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
+	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32, locals.scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
 	for (offs = 0x40; offs < 0x60; offs += 4)
@@ -722,18 +722,17 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
 		drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
-				color+2,							//+2 to offset from PinMAME palette entries
+				color+2,                    //+2 to offset from PinMAME palette entries
 				flipx,flipy,
 				sx,sy,
 				0,TRANSPARENCY_PEN,0);
 	}
 	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
-    return 0;
+	return 0;
 }
 
 //Video Update - Generation #2
 PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
-	static int scrollers[32];
 	size_t offs;
 	int colorindex = 0;
 	int tile;
@@ -757,10 +756,10 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
-			scrollers[sx] = -mrgame_objectram[colorindex-1];
+			locals.scrollers[sx] = -mrgame_objectram[colorindex-1];
 
 			tile = mrgame_videoram[offs]+
-                   (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
+			       (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
 					0,			//Always color 0 because there's no color data used
@@ -770,7 +769,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 		}
 	}
 	/* copy the temporary bitmap to the screen with scolling */
-	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
+	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32, locals.scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
 
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
@@ -794,7 +793,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	}
 	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
 
-    return 0;
+	return 0;
 }
 
 
@@ -922,7 +921,7 @@ static int mrgame_m2sw(int col, int row) { return col*8+row-7-1; }
 
 PALETTE_INIT( mrgame_g1 )
 {
-	int bit0,bit1,bit2,i,r,g,b;
+	int i;
 
 	//Add in PinMAME colors for the lamp,sw,sol matrix to display
 	palette_set_color(0,0,0,0);
@@ -933,11 +932,12 @@ PALETTE_INIT( mrgame_g1 )
 
 	for (; (UINT32)i < Machine->drv->total_colors; i++)
 	{
+		int g,b;
 		/* red component */
-		bit0 = (*color_prom >> 0) & 0x01;
-		bit1 = (*color_prom >> 1) & 0x01;
-		bit2 = (*color_prom >> 2) & 0x01;
-		r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		int bit0 = (*color_prom >> 0) & 0x01;
+		int bit1 = (*color_prom >> 1) & 0x01;
+		int bit2 = (*color_prom >> 2) & 0x01;
+		int r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
 		/* green component */
 		bit0 = (*color_prom >> 3) & 0x01;
 		bit1 = (*color_prom >> 4) & 0x01;
@@ -957,14 +957,14 @@ PALETTE_INIT( mrgame_g1 )
 
 PALETTE_INIT( mrgame_g2 )
 {
-	int bit0,bit1,bit2,i,r,g,b;
 	for (i = 0; (UINT32)i < Machine->drv->total_colors; i++)
 	{
+		int g,b;
 		/* red component */
-		bit0 = (*color_prom >> 0) & 0x01;
-		bit1 = (*color_prom >> 1) & 0x01;
-		bit2 = (*color_prom >> 2) & 0x01;
-		r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		int bit0 = (*color_prom >> 0) & 0x01;
+		int bit1 = (*color_prom >> 1) & 0x01;
+		int bit2 = (*color_prom >> 2) & 0x01;
+		int r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
 		/* green component */
 		bit0 = (*color_prom >> 3) & 0x01;
 		bit1 = (*color_prom >> 4) & 0x01;
@@ -1042,8 +1042,8 @@ static struct GfxLayout spritelayout_g2 =
 	16,16,						/* 16*16 characters */
 	4096/4,						/* 4096/4 characters = (32768 Bytes / 8 bits per byte)  */
 	5,							/* 5 bits per pixel */
-    //3,2,1,5,4 Plane Ordering
-    { 0x8000*8*2, 0x8000*8*1, 0x8000*8*0, 0x8000*8*4, 0x8000*8*3 },		/* the bitplanes are separated across the 5 roms */
+	//3,2,1,5,4 Plane Ordering
+	{ 0x8000*8*2, 0x8000*8*1, 0x8000*8*0, 0x8000*8*4, 0x8000*8*3 },		/* the bitplanes are separated across the 5 roms */
 	{ 0, 1, 2, 3, 4, 5, 6, 7,
 			8*8+0, 8*8+1, 8*8+2, 8*8+3, 8*8+4, 8*8+5, 8*8+6, 8*8+7 },
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,

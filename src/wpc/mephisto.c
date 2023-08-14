@@ -5,11 +5,11 @@
 #include "cpu/i86/i88intf.h"
 #include "cpu/i8051/i8051.h"
 
-/*
+
 static struct {
-  UINT8 col;
+  UINT8 state;
 } locals;
-*/
+
 
 static WRITE_HANDLER(ic4_w) {
 //  logerror("Write to  IC4:  %02x:%02x\n", offset, data);
@@ -91,6 +91,7 @@ static MEMORY_READ_START(cirsa_readmem)
 MEMORY_END
 
 static MACHINE_INIT(CIRSA) {
+  memset(&locals, 0, sizeof(locals));
 }
 
 static SWITCH_UPDATE(CIRSA) {
@@ -104,14 +105,13 @@ static INTERRUPT_GEN(cirsa_vblank) {
 }
 
 static INTERRUPT_GEN(cirsa_irq) {
-  static int state;
-  cpu_set_irq_line(0, 0, (state = !state));
+  cpu_set_irq_line(0, 0, (locals.state = !locals.state));
 }
 
-static READ_HANDLER(ay8910_porta_r)	  { return coreGlobals.swMatrix[0]; }
+static READ_HANDLER(ay8910_porta_r)   { return coreGlobals.swMatrix[0]; }
 static READ_HANDLER(ay8910_portb_r)   { return coreGlobals.swMatrix[1]; }
-static WRITE_HANDLER(ay8910_porta_w)	{ coreGlobals.tmpLampMatrix[0] = data; }
-static WRITE_HANDLER(ay8910_portb_w)	{ coreGlobals.tmpLampMatrix[1] = data; }
+static WRITE_HANDLER(ay8910_porta_w)  { coreGlobals.tmpLampMatrix[0] = data; }
+static WRITE_HANDLER(ay8910_portb_w)  { coreGlobals.tmpLampMatrix[1] = data; }
 
 static void ym3812_irq(int irq) {
   cpu_set_irq_line(1, 0, irq ? ASSERT_LINE : CLEAR_LINE);
@@ -119,7 +119,7 @@ static void ym3812_irq(int irq) {
 
 static struct AY8910interface cirsa_ay8910Int = {
   1,			/* 1 chip */
-  1500000,	/* 1.5 MHz */
+  1500000,		/* 1.5 MHz */
   { 50 },		/* Volume */
   { ay8910_porta_r },
   { ay8910_portb_r },
@@ -129,8 +129,8 @@ static struct AY8910interface cirsa_ay8910Int = {
 
 static struct YM3812interface cirsa_ym3812Int = {
   1,						/* 1 chip */
-  3579545,				/* NTSC clock */
-  { 50 },				/* volume */
+  3579545,					/* NTSC clock */
+  { 50 },					/* volume */
   { ym3812_irq },			/* IRQ Callback */
 };
 
