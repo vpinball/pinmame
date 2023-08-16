@@ -5,6 +5,7 @@
 #include "cpu/m6800/m6800.h"
 #include "cpu/m68000/m68000.h"
 #include "cpu/m6809/m6809.h"
+#include "sound/discrete.h"
 #include "sound/tms5220.h" // uses TMS5200
 #include "core.h"
 #include "sndbrd.h"
@@ -14,7 +15,67 @@
 // sample support added for by32 / by50 by Oliver Kaegi (08/27/2004)
 //
 // sample table for both 82s123 prom from the by32 / by50 sound card...
-//
+
+#if 0 // port from MAME, to be wired up
+static const struct discrete_mixer_desc as2888_digital_mixer_info =
+{
+	DISC_MIXER_IS_RESISTOR,                       /* type */
+	{RES_K(33), RES_K(3.9)},                      /* r{} */
+	{0, 0, 0, 0},                                 /* r_node */
+	{0, 0},                                       /* c{} */
+	0,                                            /* rI  */
+//	RES_VOLTAGE_DIVIDER(RES_K(10), RES_R(360)),   /* rF  */
+	RES_K(10),                                    /* rF  */   // not really
+	CAP_U(0.01),                                  /* cF  */
+	0,                                            /* cAmp */
+	0,                                            /* vRef */
+	0.00002                                       /* gain */
+};
+
+static const struct discrete_op_amp_filt_info as2888_preamp_info = {
+	RES_K(10), 0, RES_R(470), 0,      /* r1 .. r4 */
+	RES_K(10),                        /* rF */
+	CAP_U(1),                         /* C1 */
+	0,                                /* C2 */
+	0,                                /* C3 */
+	0.0,                              /* vRef */
+	12.0,                             /* vP */
+	-12.0,                            /* vN */
+};
+
+static DISCRETE_SOUND_START(as2888_discrete)
+
+	DISCRETE_INPUT_DATA(NODE_08)        // Start Sustain Attenuation from 555 circuit
+	DISCRETE_INPUT_LOGIC(NODE_01)       // Binary Counter B output (divide by 1) T2
+	DISCRETE_INPUT_LOGIC(NODE_04)       // Binary Counter D output (divide by 4) T3
+
+	DISCRETE_DIVIDE(NODE_11, 1, NODE_01, 1) // 2
+	DISCRETE_DIVIDE(NODE_14, 1, NODE_04, 1)
+
+
+	DISCRETE_RCFILTER(NODE_06, 1, NODE_14, RES_K(15), CAP_U(0.1))      // T4 filter
+#if 0
+	DISCRETE_RCFILTER(NODE_05, 1, NODE_11, RES_K(33), CAP_U(0.01))     // T1 filter
+	DISCRETE_ADDER2(NODE_07, 1, NODE_05, NODE_06)
+#else
+
+	DISCRETE_MIXER2(NODE_07, 1, NODE_11, NODE_06, &as2888_digital_mixer_info)   // Mix and filter T1 and T4 together
+#endif
+	DISCRETE_RCDISC5(NODE_87, 1, NODE_08, RES_K(150), CAP_U(1.0))
+
+	DISCRETE_RCFILTER_VREF(NODE_88,1,NODE_87,RES_M(1),CAP_U(0.01),2)
+	DISCRETE_MULTIPLY(NODE_09, 1, NODE_07, NODE_88)    // Apply sustain
+
+	DISCRETE_OP_AMP_FILTER(NODE_20, 1, NODE_09, 0, DISC_OP_AMP_FILTER_IS_HIGH_PASS_1, &as2888_preamp_info)
+
+	DISCRETE_CRFILTER(NODE_25, NODE_20, RES_M(100), CAP_U(0.05))    // Resistor is fake. Capacitor in series between pre-amp and output amp.
+
+	DISCRETE_GAIN(NODE_30, NODE_25, 50) // Output amplifier LM380 fixed inbuilt gain of 50
+
+	DISCRETE_OUTPUT(NODE_30, 10000000)  //  17000000
+DISCRETE_SOUND_END
+#endif
+
 static const char *u318_sample_names[] =
 {
 	"*s3250u3",
@@ -115,13 +176,17 @@ static struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop}
 MACHINE_DRIVER_START(by32)
   MDRV_SOUND_ADD(CUSTOM, by32_custInt)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#if 0
+  MDRV_SOUND_ADD(DISCRETE, as2888_discrete)
+#else
   MDRV_SOUND_ADD_TAG("BY_32_50", SAMPLES, u318_samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 
 static struct {
   struct sndbrdData brdData;
-  int  startit, lastCmd,  strobe, sampleoff;
+  int startit, lastCmd, strobe, sampleoff;
 } by32locals;
 
 
@@ -149,63 +214,61 @@ static void by32_sh_stop(void) {
 
 static int lastchan = 0;
 static void playsam(int cmd) {
-   int i;
+  int i;
   if ((cmd != by32locals.lastCmd) && ((cmd & 0x0f) != 0x0f)) {
 
-       int samplex;
-        samplex = by32locals.sampleoff + (cmd & 0x1f);
+    int samplex = by32locals.sampleoff + (cmd & 0x1f);
 //  logerror("%04x: samplestart cmd %02x alstcmd %02x %d \n", activecpu_get_previouspc(), cmd,by32locals.lastCmd,samplex);
 
-// 	if (by32locals.startit == 0)
-// 	{
-// 		sample_start(0,samplex,0);
-// 		by32locals.startit = 1;
-// 	}
-// 	else
-// 	{
+//	if (by32locals.startit == 0)
+//	{
+//		sample_start(0,samplex,0);
+//		by32locals.startit = 1;
+//	}
+//	else
+//	{
 		lastchan++;
 		if (lastchan > 2) lastchan = 0;
-  		sample_start(6+lastchan,samplex,0);
+		sample_start(6+lastchan,samplex,0);
 		//  		by32locals.startit = 0;
 //	}
 //       sample_start(0,samplex,0);
-  } else   if ((cmd & 0x0f) == 0x0f)     {
+  } else if ((cmd & 0x0f) == 0x0f) {
 	   for (i = 0;i < 3;i++) {
            if (i != lastchan) sample_stop(6+i);
-        }
-         }
+	   }
+  }
   by32locals.lastCmd = cmd;
 }
 
 static WRITE_HANDLER(by32_data_w) {
-      	logerror("%04x: by_data_w data %02x \n", activecpu_get_previouspc(), data);
-      	if (~by32locals.strobe & 0x01)
- 	{
- 		by32locals.lastCmd =	(by32locals.lastCmd & 0x10) | (data & 0x0f); // case d
- 	}
- 	else
- 	{
-       		playsam((by32locals.lastCmd & 0x10) | (data & 0x0f)); 		// case c
-       	}
+    logerror("%04x: by_data_w data %02x \n", activecpu_get_previouspc(), data);
+    if (~by32locals.strobe & 0x01)
+    {
+        by32locals.lastCmd = (by32locals.lastCmd & 0x10) | (data & 0x0f); // case d
+    }
+    else
+    {
+        playsam((by32locals.lastCmd & 0x10) | (data & 0x0f)); // case c
+    }
 }
 static WRITE_HANDLER(by32_ctrl_w) {
 int i;
   if (~by32locals.strobe & 0x01)
-	{
- //        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
-// sound e bit is swaped !!!!
+  {
+//        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
+// sound e bit is swapped !!!!
           playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10)); // case b
-	}
+  }
   else
-    	if (~data & 0x01)
-           {
-// 	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
-  	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
-	   for (i = 0;i < 3;i++) {
-           if (i != lastchan) sample_stop(6+i);
-        }
-
-           }
+    if (~data & 0x01)
+    {
+//     by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
+       by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
+       for (i = 0;i < 3;i++) {
+         if (i != lastchan) sample_stop(6+i);
+       }
+    }
 
   logerror("%04x: by_ctrl32_w data %02x startit %d\n", activecpu_get_previouspc(), data,by32locals.startit);
   by32locals.strobe = data;	// case e
@@ -216,16 +279,16 @@ static WRITE_HANDLER(by32_manCmd_w) {
 }
 static void by32_init(struct sndbrdData *brdData) {
   int w;
-   memset(&by32locals, 0, sizeof(by32locals));
+  memset(&by32locals, 0, sizeof(by32locals));
   by32locals.brdData = *brdData;
   w = core_revbyte(*(by32locals.brdData.romRegion));
     if (w == 0xfe)
     {
-    	by32locals.sampleoff	= 18;		// 751-18 game rom detected (star trek,playboy...)
+    	by32locals.sampleoff = 18;      // 751-18 game rom detected (star trek,playboy...)
     }
     else
     {
-    	by32locals.sampleoff	= 32 + 18;		// 751-51 game rom detected (harlem, dolly...)
+    	by32locals.sampleoff = 32 + 18; // 751-51 game rom detected (harlem, dolly...)
     }
     logerror("%04x: by_ctrl32_int %02x \n", activecpu_get_previouspc(),w );
 }
@@ -274,7 +337,7 @@ const struct sndbrdIntf by51Intf = {
   "BY51", sp_init, NULL, sp_diag, sp51_manCmd_w, sp51_data_w, NULL, sp51_ctrl_w, NULL,
 };
 
-static struct AY8910interface   sp_ay8910Int  = { 1, 3579545/4, {20}, {sp_8910a_r} };
+static struct AY8910interface   sp_ay8910Int  = { 1, 3579545./4., {20}, {sp_8910a_r} };
 
 static MEMORY_READ_START(sp51_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -448,7 +511,7 @@ static void sp_irq(int state) {
 / CA1:    NC
 / CA2:    Self-test LED (+5V)
 / CB1:    Sound interrupt (assume it starts high)
-/ CB2:	  ?
+/ CB2:    ?
 / IRQA, IRQB: CPU IRQ
 /
 / PIA1: 0090
@@ -482,7 +545,7 @@ const struct sndbrdIntf by61Intf = {
 };
 static struct TMS5220interface snt_tms5220Int = { 640000, 75, snt_5220Irq, snt_5220Rdy };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
-static struct AY8910interface  snt_ay8910Int = { 1, 3579545/4, {25}, {snt_8910a_r}};
+static struct AY8910interface  snt_ay8910Int = { 1, 3579545./4., {25}, {snt_8910a_r}};
 
 static MEMORY_READ_START(snt_readmem)
   { 0x0000, 0x007f, MRA_RAM },
