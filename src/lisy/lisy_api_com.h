@@ -22,7 +22,8 @@ void lisy_api_sound_play_file(unsigned char board, char* filename);
 int lisy_api_print_hw_info(void);
 void lisy_api_show_boot_message(char* software_version, char* system_id, int game_no, char* gamename);
 int lisy_api_get_con_hw(char* idstr);
-unsigned char lisy_api_get_dip_switch(unsigned char number);
+unsigned char lisy_api_get_apc_game_setting(unsigned char number);
+int lisy_api_set_apc_game_setting(unsigned char number, unsigned char value);
 int lisy_api_check_con_hw(char* idstr);
 
 //mapping for segemnts

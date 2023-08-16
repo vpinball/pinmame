@@ -40,11 +40,11 @@ typedef struct {
 static PPS4_Regs I;
 
 int PPS4_ICount = 0;
-int wasLB = 0;
-int wasLDI = 0;
+static int wasLB = 0;
+static int wasLDI = 0;
 
 /* Word count for all opcodes */
-static int words[] = {
+static const int words[] = {
 	2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

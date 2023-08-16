@@ -49,10 +49,18 @@ static struct {
   core_tSeg segments;
   int swCol, cycle;
   UINT8 port2, auxData;
-  int isHH;
+
+  UINT8 isHH; // LTD4HH
+
+  UINT8 strobe;
+  UINT8 lampStrobe;
+  UINT8 dispData[2];
+  int clear;
+  int lampCol;
+  int solBank;
 } locals;
 
-#define LTD_CPUFREQ	3579545./4.
+#define LTD_CPUFREQ	(3579545./4.)
 
 static WRITE_HANDLER(ay8910_0_ctrl_w)  { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w)  { AY8910Write(0,1,data); }
@@ -126,7 +134,7 @@ static SWITCH_UPDATE(LTD) {
   cpu_set_nmi_line(LTD_CPU, coreGlobals.swMatrix[0] & 1);
 }
 
-DISCRETE_SOUND_START(ltd3_discInt)
+static DISCRETE_SOUND_START(ltd3_discInt)
 	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
 	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
 	DISCRETE_MULTADD(NODE_03,1,NODE_01,10,200)
@@ -147,15 +155,13 @@ static void snd_stop(int param) {
    15  : CLR       - resets all output
  */
 static WRITE_HANDLER(peri_w) {
-  static int freq[] = { 105, 70, 40, 30, 21, 15, 10, 5 };
-  static UINT8 strobe;
-  static int lampStrobe;
+  static const int freq[] = { 105, 70, 40, 30, 21, 15, 10, 5 };
   int seg;
   if (offset < 0x06) {
     if (!strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) {
       if (offset == 5) { // extra strobe for more lamps
-        if (data & 0x08) lampStrobe = 0;
-        else if (data & 0x80) lampStrobe = 1;
+        if (data & 0x08) locals.lampStrobe = 0;
+        else if (data & 0x80) locals.lampStrobe = 1;
         coreGlobals.tmpLampMatrix[5] = data & 0x77;
         if (cpu_gettotalcpu() > 1) { // for Ekky sound module
           if (!(data & 0x77)) {
@@ -171,7 +177,7 @@ static WRITE_HANDLER(peri_w) {
           locals.vblankCount = 0;
         }
       } else {
-        if (offset == 1 && lampStrobe) {
+        if (offset == 1 && locals.lampStrobe) {
           coreGlobals.tmpLampMatrix[13] = data;
         } else {
           coreGlobals.tmpLampMatrix[offset] = data;
@@ -191,7 +197,7 @@ static WRITE_HANDLER(peri_w) {
   } else if (offset == 0x06) { // either lamps or solenoids, or a mix of both!
     coreGlobals.tmpLampMatrix[6] = data;
     if (cpu_gettotalcpu() > 1 && strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) { // for Ekky sound module
-      locals.auxData = data & 0x7f; // mask out "Happy birthday" tune
+      locals.auxData = data & 0x7f; // mask out "Happy birthday" tune for the Ekky module
       if (locals.auxData) {
         cpu_set_nmi_line(LTD_CPU_EKKY, PULSE_LINE);
       }
@@ -204,7 +210,7 @@ static WRITE_HANDLER(peri_w) {
     coreGlobals.solenoids = locals.solenoids;
     locals.vblankCount = 0;
   } else if (offset == 0x08) {
-    seg = 9 - (strobe & 0x0f);
+    seg = 9 - (locals.strobe & 0x0f);
     locals.segments[seg].w = core_bcd2seg7a[data >> 4];
     locals.segments[10 + seg].w = core_bcd2seg7a[data & 0x0f];
     if (core_gameData->hw.gameSpecific1 & (1 << seg)) {
@@ -220,7 +226,7 @@ static WRITE_HANDLER(peri_w) {
         coreGlobals.tmpLampMatrix[9 + seg / 2 * 2] = (coreGlobals.tmpLampMatrix[9 + seg / 2 * 2] & 0x0f) | (data << 4);
     }
   } else if (offset == 0x09) {
-    strobe = data;
+    locals.strobe = data;
     if (data & 0x10) {
       discrete_sound_w(1, freq[data >> 5]);
       discrete_sound_w(2, 1);
@@ -351,28 +357,26 @@ static UINT8 convDisp(UINT8 data) {
 }
 
 static WRITE_HANDLER(peri4_w) {
-  static UINT8 dispData[2];
-  static int clear, lampCol, solBank;
   if (locals.port2 & 0x10) {
     switch (locals.cycle) {
-      case  0: clear = data != 0xff; if (clear) lampCol = (1 + core_BitColToNum(data)) % 8; break;
+      case  0: locals.clear = data != 0xff; if (locals.clear) locals.lampCol = (1 + core_BitColToNum(data)) % 8; break;
       case  1: if (locals.isHH) {
                  if ((data & 0x0f) != 0x0f) locals.solenoids |= 0x10 << (data & 0x0f);
                  if ((data & 0xf0) != 0xf0) locals.solenoids |= 0x4000 << (data >> 4);
                  coreGlobals.solenoids = locals.solenoids;
                } else
-                 solBank = core_BitColToNum(data);
+                 locals.solBank = core_BitColToNum(data);
                break;
-      case  2: locals.solenoids |= (data >> 4) << (solBank * 4);
+      case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4);
                locals.solenoids2 |= (data & 0x0f) << 4;
                coreGlobals.solenoids = locals.solenoids; coreGlobals.solenoids2 = locals.solenoids2; break;
-      case  6: if (clear) locals.swCol = data >> 4;
-               locals.segments[31-(data & 0x0f)].w = dispData[0];
-               locals.segments[15-(data & 0x0f)].w = dispData[1]; break;
-      case  7: if (clear) dispData[0] = convDisp(data); break;
-      case  8: if (clear) dispData[1] = convDisp(data); break;
-      case  9: if (clear) coreGlobals.tmpLampMatrix[(lampCol % 2 ? 8 : 12) + lampCol / 2] = locals.auxData; break;
-      case 10: if (clear) coreGlobals.tmpLampMatrix[lampCol] = data; break;
+      case  6: if (locals.clear) locals.swCol = data >> 4;
+               locals.segments[31-(data & 0x0f)].w = locals.dispData[0];
+               locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
+      case  7: if (locals.clear) locals.dispData[0] = convDisp(data); break;
+      case  8: if (locals.clear) locals.dispData[1] = convDisp(data); break;
+      case  9: if (locals.clear) coreGlobals.tmpLampMatrix[(locals.lampCol % 2 ? 8 : 12) + locals.lampCol / 2] = locals.auxData; break;
+      case 10: if (locals.clear) coreGlobals.tmpLampMatrix[locals.lampCol] = data; break;
       default: logerror("peri_%d_w = %02x\n", locals.cycle, data);
     }
   }

@@ -27,6 +27,14 @@ static struct {
   UINT8 digit, latch, snd;
   int irq, irqenable, irqlevel, zc, zcenable;
   int bcd, col;
+
+  UINT16 last_volume; // UINT16 just to encode the initial value, otherwise UINT8
+  UINT16 old_dsw;     // UINT16 just to encode the initial value, otherwise UINT8
+  UINT8 ignore_dsw;
+
+  UINT8 disp_cnt;
+  UINT8 kill_fast_sols;
+  UINT8 latch_port;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -247,12 +255,18 @@ PORT_END
 
 static MACHINE_INIT(jvh) {
   memset(&locals, 0, sizeof(locals));
+  locals.last_volume = 0xFFFF;
+  locals.ignore_dsw = 1;
+  locals.old_dsw = 0xFFFF;
   cpu_set_irq_callback(0, irq_callback);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, NULL, NULL, NULL);
 }
 
 static MACHINE_RESET(jvh) {
   memset(&locals, 0, sizeof(locals));
+  locals.last_volume = 0xFFFF;
+  locals.ignore_dsw = 1;
+  locals.old_dsw = 0xFFFF;
 }
 
 static SWITCH_UPDATE(jvh) {
@@ -308,10 +322,9 @@ static void jvh_firq(int state) {
 }
 
 static WRITE_HANDLER(vol2_w) {
-  static UINT8 last;
-  if (last != data) {
+  if (locals.last_volume != data) {
     mixer_set_volume(4, (data & 0x0f) * 8);
-    last = data;
+    locals.last_volume = data;
   }
 }
 
@@ -608,27 +621,24 @@ static MACHINE_RESET(jvh3) {
 }
 
 static INTERRUPT_GEN(vblank3) {
-  static int dispCnt;
-  static int killFastSols;
-  UINT16 segs;
   int i;
 
-  if (killFastSols && !(--killFastSols)) {
+  if (locals.kill_fast_sols && !(--locals.kill_fast_sols)) {
     coreGlobals.solenoids &= 0xfffffff8;
   }
-  if (!killFastSols && coreGlobals.solenoids & 0x7) {
-    killFastSols = 3;
+  if (!locals.kill_fast_sols && coreGlobals.solenoids & 0x7) {
+    locals.kill_fast_sols = 3;
   }
 
   core_updateSw(core_getSol(4));
 
   for (i = 0; i < 40; i++) {
-    segs = 0xf8a0 + 4 * (i / 8) + (dispCnt < 8 ? 0 : 2);
+    UINT16 segs = 0xf8a0 + 4 * (i / 8) + (locals.disp_cnt < 8 ? 0 : 2);
     segs = (memory_region(REGION_CPU1)[segs] << 8) | memory_region(REGION_CPU1)[segs + 1];
     segs = core_ascii2seg16[0x7f & memory_region(REGION_CPU1)[segs + i % 8]];
     coreGlobals.segments[i].w = i < 16 ? segs : (segs & 0x7f) | ((segs & 0x200) >> 8) | ((segs & 0x2000) >> 11);
   }
-  dispCnt = (dispCnt + 1) % 16;
+  locals.disp_cnt = (locals.disp_cnt + 1) % 16;
 }
 
 static INTERRUPT_GEN(irq3) {
@@ -654,11 +664,10 @@ static MEMORY_READ_START(readmem3)
 MEMORY_END
 
 static WRITE_HANDLER(port_w) {
-  static UINT8 latch;
   if (offset <= 0x07)
-    latch = (latch & ~(1 << offset)) | (data << offset);
+    locals.latch_port = (locals.latch_port & ~(1 << offset)) | (data << offset);
   else if (offset == 0x08 || offset == 0x09)
-    logerror("Port %02x: %x latch %02x\n", offset, data, latch);
+    logerror("Port %02x: %x latch %02x\n", offset, data, locals.latch_port);
   else if (offset >= 0x11 && offset <= 0x13) // very short pulses, maybe flashers?
     coreGlobals.solenoids |= data << (offset - 0x11);
   else if (offset >= 0x20 && offset <= 0x5f)
@@ -764,20 +773,18 @@ static void snd_stop(int param) {
 }
 
 static WRITE_HANDLER(ym2203_b_w) {
-  static int ignore = 1;
-  static UINT8 old;
-  if (old != data) {
-    if (!ignore && !sndlocals.ignore) {
+  if (locals.old_dsw != data) {
+    if (!locals.ignore_dsw && !sndlocals.ignore) {
       discrete_sound_w(1, data);
       discrete_sound_w(2, 1);
       if (!sndlocals.timer) sndlocals.timer = timer_alloc(snd_stop);
       timer_reset(sndlocals.timer, 0.05);
     } else {
-      if (ignore) ignore--;
+      if (locals.ignore_dsw) locals.ignore_dsw = 0;
       else if (sndlocals.ignore) sndlocals.ignore--;
     }
+    locals.old_dsw = data;
   }
-  old = data;
 }
 
 static void ym2203_irq(int state) {

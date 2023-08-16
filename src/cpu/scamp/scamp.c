@@ -37,7 +37,7 @@ static SCAMP_Regs I;
 int SCAMP_ICount = 0;
 
 /* Cycles count for all opcodes */
-static int op_cycles[] = {
+static const int op_cycles[] = {
 	8, 7, 5, 5, 6, 6, 5, 6, 5, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 5, 5, 5, 5,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

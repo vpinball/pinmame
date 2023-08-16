@@ -1322,15 +1322,15 @@ lisyapc_get_dip(char* wantdip) {
 
     //give back value wanted
     if (strcmp(wantdip, "S1") == 0)
-        return lisy_api_get_dip_switch(2);
+        return lisy_api_get_apc_game_setting(2);
     else if (strcmp(wantdip, "S2") == 0)
-        return lisy_api_get_dip_switch(3); //S2 is gamenumber
+        return lisy_api_get_apc_game_setting(3); //S2 is gamenumber
     else if (strcmp(wantdip, "K1") == 0)
-        return (0x1F & lisy_api_get_dip_switch(4)); //debug options
+        return (0x1F & lisy_api_get_apc_game_setting(4)); //debug options
     else if (strcmp(wantdip, "K2") == 0)
-        return (0x60 & lisy_api_get_dip_switch(4));
+        return (0x60 & lisy_api_get_apc_game_setting(4));
     else if (strcmp(wantdip, "K3") == 0)
-        return (0x80 & lisy_api_get_dip_switch(4));
+        return (0x80 & lisy_api_get_apc_game_setting(4));
     else
         return 0;
 }

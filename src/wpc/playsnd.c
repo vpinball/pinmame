@@ -24,6 +24,9 @@ static struct {
   UINT8  freq;
   int    ef[5];
   mame_timer *timer;
+
+  UINT8 oldData;
+  UINT8 timer_on;
 } sndlocals;
 
 static void play1s_timer_callback(int n) {
@@ -38,24 +41,22 @@ static void play1s_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(play1s_data_w) {
-  static UINT8 oldData;
-  static int timer_on;
   if (data & 0x0f) {
-    if (oldData != data) sndlocals.volume = 100;
-    oldData = data;
+    if (sndlocals.oldData != data) sndlocals.volume = 100;
+    sndlocals.oldData = data;
     discrete_sound_w(1, data & 0x01);
     discrete_sound_w(2, data & 0x02);
     discrete_sound_w(4, data & 0x04);
     discrete_sound_w(8, data & 0x08);
     if (~data & 0x10) { // start fading
       timer_adjust(sndlocals.timer, 0.005, 0, 0.005);
-      timer_on = 1;
+      sndlocals.timer_on = 1;
     } else { // no fading used
       timer_adjust(sndlocals.timer, TIME_NEVER, 0, 0);
-      timer_on = 0;
+      sndlocals.timer_on = 0;
       mixer_set_volume(0, sndlocals.volume);
     }
-  } else if (!timer_on) { // no fading going on, so stop sound
+  } else if (!sndlocals.timer_on) { // no fading going on, so stop sound
     discrete_sound_w(8, 0);
     discrete_sound_w(4, 0);
     discrete_sound_w(2, 0);

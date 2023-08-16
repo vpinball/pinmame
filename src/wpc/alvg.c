@@ -108,6 +108,8 @@ struct {
   int    via_1_b;
   int    sound_strobe;
   int    dispCol;
+
+  int    lastCol;
 } alvglocals;
 
 static UINT16 segMapper(UINT16 value) {
@@ -125,7 +127,7 @@ static UINT16 segMapper(UINT16 value) {
 
 /*Receive command from DMD
  Pins are wired as:
-    PIN   CPU  - DMD      - Data Bus
+	PIN   CPU  - DMD      - Data Bus
 	-----------------------------------
 	16 -  ENA  - ACK2     - D3 - OR D3?
 	17 -  ACK  - ACK1     - D0 - OR D2?
@@ -152,11 +154,11 @@ static WRITE_HANDLER(solenoid_w)
 		case 1:
 			alvglocals.swAvail2 = (data & 0x40) ? 1 : 0;
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
-            break;
+			break;
 		case 2:
 			alvglocals.swAvail1 = data ? 1 : 0;
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
-            break;
+			break;
 		case 3:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
 			break;
@@ -288,7 +290,7 @@ PB7        = NU
 PB6        = NU
 PB5        = Display Data (Generation #1 Only)
 PB4        = Display Clock (Generation #1 Only)
-PB3		   = Display Enable (Generation #1 Only)
+PB3        = Display Enable (Generation #1 Only)
 PB2        = NU
 PB1  (Out) = Sound Clock
 PB0        = NU
@@ -494,10 +496,9 @@ static WRITE_HANDLER(disp_porta_w) {
 
 // Hi seg row A
 static WRITE_HANDLER(disp_portb_w) {
-  static int lastCol;
-  if (alvglocals.dispCol != lastCol)
+  if (alvglocals.dispCol != alvglocals.lastCol)
     coreGlobals.segments[alvglocals.dispCol].w = segMapper(data << 8);
-  lastCol = alvglocals.dispCol;
+  alvglocals.lastCol = alvglocals.dispCol;
 }
 
 // Low seg row B
@@ -507,13 +508,13 @@ static WRITE_HANDLER(disp_portc_w) {
 
 static ppi8255_interface ppi8255_intf =
 {
-	4, 												/* 4 chips */
-	{0, 0, 0, 0},										/* Port A read */
-	{0, 0, 0, 0},										/* Port B read */
-	{0, 0, 0, 0},										/* Port C read */
-	{u12_porta_w, u13_porta_w, u14_porta_w, disp_porta_w},		/* Port A write */
-	{u12_portb_w, u13_portb_w, u14_portb_w, disp_portb_w},		/* Port B write */
-	{u12_portc_w, u13_portc_w, u14_portc_w, disp_portc_w},		/* Port C write */
+	4,														/* 4 chips */
+	{0, 0, 0, 0},											/* Port A read */
+	{0, 0, 0, 0},											/* Port B read */
+	{0, 0, 0, 0},											/* Port C read */
+	{u12_porta_w, u13_porta_w, u14_porta_w, disp_porta_w},	/* Port A write */
+	{u12_portb_w, u13_portb_w, u14_portb_w, disp_portb_w},	/* Port B write */
+	{u12_portc_w, u13_portc_w, u14_portc_w, disp_portc_w},	/* Port C write */
 };
 
 

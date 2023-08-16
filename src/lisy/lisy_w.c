@@ -34,6 +34,7 @@
 
 extern char debugbuf[256]; // see hw_lib.c
 extern const char* sndbrd_typestr(int board);
+extern UINT8 *lisy_s4_CMOS;
 //typedefs
 
 /*
@@ -1193,6 +1194,155 @@ lisy_w_display_handler(void) {
 }
 
 /*
+  cmos setting for SYS3
+  handled by APC
+*/
+void
+lisy_S3_cmos_setting(void) {
+    int i, ret;
+    UINT8 data[29];
+    unsigned char action;
+
+    //calculate decimal values out of 4bit bcd data in CMOS
+    for(i=0; i<58; i+=2) {
+	data[i/2] = ( lisy_s4_CMOS[i] & 0x0f ) * 10 + ( lisy_s4_CMOS[i+1] & 0x0f );
+    }
+
+    if (ls80dbg.bitv.basic)  {
+    printf("current CMOS values\n");
+    printf("(0x100) Williams check value 0x5a: 0x%x%x\n", lisy_s4_CMOS[0] & 0x0f ,  lisy_s4_CMOS[1] & 0x0f );
+    //0xff means disabled
+    printf("(0x102)");
+    if( data[1] == 165) printf("Replay1: disabled\n"); else printf("Replay1: %d0.000\n",data[1]);
+    printf("(0x104)");
+    if( data[2] == 165) printf("Replay1: disabled\n"); else printf("Replay2: %d0.000\n",data[2]);
+    printf("(0x106)");
+    if( data[3] == 165) printf("Replay1: disabled\n"); else printf("Replay3: %d0.000\n",data[3]);
+    printf("(0x108)");
+    if( data[4] == 165) printf("Replay1: disabled\n"); else printf("Replay4: %d0.000\n",data[4]);
+    printf("(0x10A)Max Credits: %d\n",data[5]);
+    printf("(0x10C)Match: %d\n",data[6]);
+    printf("(0x10E)Play: %d\n",data[7]);
+    printf("(0x110)High Score Credits: %d\n",data[8]);
+    //0x111 .. 0x117 ot set ( data 9,10,11 )
+    printf("(0x118)lowest coin sl mult: %d\n",data[12]);
+    printf("(0x11A)middle coin sl mult: %d\n",data[13]);
+    printf("(0x11C)highest coin sl mult: %d\n",data[14]);
+    printf("(0x11E)minimum coin p credit: %d\n",data[15]);
+    printf("(0x120)coin unit bonus: %d\n",data[16]);
+    printf("(0x122)coin unit p credit: %d\n",data[17]);
+    printf("(0x124)number of balls: %d\n",data[18]);
+    printf("(0x126)max tilts: %d\n",data[19]);
+    printf("(0x128)cur num of credits: %d\n",data[20]);
+    printf("(0x12A)HSTD 10.000 pts: %d\n",data[21]);
+    /*
+    printf("(0x12C)HSTD 100 pts: %d\n",data[22]);
+    printf("(0x12E)HSTD 1 pts: %d\n",data[23]);
+    printf("(0x130)no of coin slot 1: %d\n",data[24]);
+    printf("(0x132)no of coin slot 2: %d\n",data[25]);
+    printf("(0x134)no of coin slot 3: %d\n",data[26]);
+    printf("(0x136)no credits payed: %d\n",data[27]);
+    printf("(0x138)no credits won: %d\n",data[28]);
+    */
+    lisy80_debug("sending 18 bytes to APC");
+    }
+
+    //game setting APC is from 46 to 63
+    for(i=1; i<=8; i++) {
+	lisy_api_set_apc_game_setting( 45 + i, data[i]);
+printf("set setting %d: %d\n",45+i,data[i]);
+    }
+    for(i=12; i<=21; i++) {
+	lisy_api_set_apc_game_setting( 42 + i, data[i]);
+printf("set setting %d: %d\n",42+i,data[i]);
+    }
+
+    //now wait for APC to reset advance switch
+    //and get new settings
+    do {
+       ret = lisy_w_switch_reader(&action);
+       //if debug mode is set we get our reedings from udp switchreader in additon
+       //but do not overwrite real switches
+       if ((ls80dbg.bitv.basic) & (ret == 80)) {
+        if ((ret = lisy_udp_switch_reader(&action, 0)) != 80) {
+            sprintf(debugbuf, "LISY_W_SWITCH_HANDLER (UDP Server Data received: %d", ret);
+            lisy80_debug(debugbuf);
+        }
+       }
+       //wait a bit
+       delay(200);
+    } while ( ret!=72) ;
+
+    if (ls80dbg.bitv.basic)  lisy80_debug("received switch #73 with action 0");
+    if (ls80dbg.bitv.basic)  lisy80_debug("try to get new settings from APC");
+
+    //game setting APC is from 46 to 63
+    for(i=1; i<=8; i++) {
+	data[i] = lisy_api_get_apc_game_setting( 45 + i);
+printf("get setting %d: %d\n",45+i,data[i]);
+    }
+    for(i=12; i<=21; i++) {
+	data[i] = lisy_api_get_apc_game_setting( 42 + i);
+printf("get setting %d: %d\n",42+i,data[i]);
+    }
+
+    //write new settings to cmos
+    //calculate 4bit bcd data in CMOS out of data
+    for(i=0; i<58; i+=2) {
+        lisy_s4_CMOS[i] = data[i/2] / 10;
+        lisy_s4_CMOS[i+1] = data[i/2] % 10;
+//printf("data %d  bcd %d %d\n",data[i/2], lisy_s4_CMOS[i] , lisy_s4_CMOS[i+1] );
+        lisy_s4_CMOS[i] |= 0xf0;
+        lisy_s4_CMOS[i+1] |= 0xf0;
+    }
+
+    if (ls80dbg.bitv.basic)  {
+    printf("NEW CMOS values\n");
+    printf("(0x100) Williams check value 0x5a: 0x%x%x\n", lisy_s4_CMOS[0] & 0x0f ,  lisy_s4_CMOS[1] & 0x0f );
+    //0xff means disabled
+    printf("(0x102)");
+    if( data[1] == 165) printf("Replay1: disabled\n"); else printf("Replay1: %d0.000\n",data[1]);
+    printf("(0x104)");
+    if( data[2] == 165) printf("Replay1: disabled\n"); else printf("Replay2: %d0.000\n",data[2]);
+    printf("(0x106)");
+    if( data[3] == 165) printf("Replay1: disabled\n"); else printf("Replay3: %d0.000\n",data[3]);
+    printf("(0x108)");
+    if( data[4] == 165) printf("Replay1: disabled\n"); else printf("Replay4: %d0.000\n",data[4]);
+    printf("(0x10A)Max Credits: %d\n",data[5]);
+    printf("(0x10C)Match: %d\n",data[6]);
+    printf("(0x10E)Play: %d\n",data[7]);
+    printf("(0x110)High Score Credits: %d\n",data[8]);
+    //0x111 .. 0x117 ot set ( data 9,10,11 )
+    printf("(0x118)lowest coin sl mult: %d\n",data[12]);
+    printf("(0x11A)middle coin sl mult: %d\n",data[13]);
+    printf("(0x11C)highest coin sl mult: %d\n",data[14]);
+    printf("(0x11E)minimum coin p credit: %d\n",data[15]);
+    printf("(0x120)coin unit bonus: %d\n",data[16]);
+    printf("(0x122)coin unit p credit: %d\n",data[17]);
+    printf("(0x124)number of balls: %d\n",data[18]);
+    printf("(0x126)max tilts: %d\n",data[19]);
+    printf("(0x128)cur num of credits: %d\n",data[20]);
+    printf("(0x12A)HSTD 10.000 pts: %d\n",data[21]);
+    /*
+    printf("(0x12C)HSTD 100 pts: %d\n",data[22]);
+    printf("(0x12E)HSTD 1 pts: %d\n",data[23]);
+    printf("(0x130)no of coin slot 1: %d\n",data[24]);
+    printf("(0x132)no of coin slot 2: %d\n",data[25]);
+    printf("(0x134)no of coin slot 3: %d\n",data[26]);
+    printf("(0x136)no credits payed: %d\n",data[27]);
+    printf("(0x138)no credits won: %d\n",data[28]);
+    */
+    lisy80_debug("store in new pinmame file and EXIT");
+    }
+
+    //write to pinmam file
+    lisy_nvram_write_to_file();
+
+    //exit with code 3, which restarts lisy from script
+    exit(3);
+}
+
+/*
   switch handler
   we use core_setSw and let pinmame
   read core switches
@@ -1277,14 +1427,18 @@ lisy_w_switch_handler(void) {
     }
     //advance
     if (ret == 72) {
-    	//start timer for nvram write as we may do settings here which we do not want lost
-    	want_to_write_nvram = 1;
         switch (lisymini_game.typeno) {
             case LISYW_TYPE_SYS3:
+		//special setting routine handeld by APC
+		if ( (action == 1) & (core_getSw(S7_SWUPDN) > 0) )
+			lisy_S3_cmos_setting();
+                break;
             case LISYW_TYPE_SYS4:
             case LISYW_TYPE_SYS6:
             case LISYW_TYPE_SYS6A:
             case LISYW_TYPE_SYS7:
+    		//start timer for nvram write as we may do settings here which we do not want lost
+    		want_to_write_nvram = 1;
                 core_setSw(S7_SWADVANCE, action);
                 if (ls80dbg.bitv.switches) {
                     sprintf(debugbuf, "LISY_W_SWITCH_HANDLER S7_SWADVANCE(%d) action:%d\n", ret, action);
@@ -1298,6 +1452,8 @@ lisy_w_switch_handler(void) {
             case LISYW_TYPE_SYS11B:
             case LISYW_TYPE_SYS11C:
             case LISYW_TYPE_SYS11RG:
+    		//start timer for nvram write as we may do settings here which we do not want lost
+    		want_to_write_nvram = 1;
                 core_setSw(S11_SWADVANCE, action);
                 if (ls80dbg.bitv.switches) {
                     sprintf(debugbuf, "LISY_W_SWITCH_HANDLER S11_SWADVANCE(%d) action:%d\n", ret, action);

@@ -638,12 +638,13 @@ static core_tGameData pzGameData = {
 /*---------------
    Game handling
  ----------------*/
+static int trick = 44;
+
 static void init_pz(void) {
   core_gameData = &pzGameData;
+  trick = 44;
   hc55516_set_sample_clock(0, 22372);
 }
-
-static int trick = 44;
 
 static void pz_handleMech(int mech) {
   /* ---------------------------------------

@@ -40,9 +40,9 @@ static void init_nbaf(void);
   local static variables
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
-//static struct {
-//  int
-//} locals;
+static struct {
+  int count, lastBit7, lastBit6;
+} locals;
 
 /*--------------------------
 / Game specific input ports
@@ -346,26 +346,24 @@ static core_tGameData nbafGameData = {
   }
 };
 
-static int count = 24, lastBit7, lastBit6;
-
 static WRITE_HANDLER(nbaf_wpc_w) {
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
-	if (GET_BIT7 && !lastBit7) {
-	  if (count > 0) count--;
+	if (GET_BIT7 && !locals.lastBit7) {
+	  if (locals.count > 0) locals.count--;
 	}
 	if (GET_BIT6) {
-	  coreGlobals.segments[0].w = core_bcd2seg7[count / 10];
-	  coreGlobals.segments[1].w = core_bcd2seg7[count % 10];
+	  coreGlobals.segments[0].w = core_bcd2seg7[locals.count / 10];
+	  coreGlobals.segments[1].w = core_bcd2seg7[locals.count % 10];
 	}
-	if (!(GET_BIT6) && lastBit6) {
-	  count = 24;
+	if (!(GET_BIT6) && locals.lastBit6) {
+	  locals.count = 24;
 	}
-	if (!(GET_BIT6) && !(GET_BIT7) && !lastBit6 && !lastBit7) {
+	if (!(GET_BIT6) && !(GET_BIT7) && !locals.lastBit6 && !locals.lastBit7) {
 	  coreGlobals.segments[0].w = coreGlobals.segments[1].w = 0;
 	}
-	lastBit6 = GET_BIT6;
-	lastBit7 = GET_BIT7;
+	locals.lastBit6 = GET_BIT6;
+	locals.lastBit7 = GET_BIT7;
   }
 }
 
@@ -374,6 +372,8 @@ static WRITE_HANDLER(nbaf_wpc_w) {
 /----------------*/
 static void init_nbaf(void) {
   core_gameData = &nbafGameData;
+  memset(&locals, 0, sizeof(locals));
+  locals.count = 24;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, nbaf_wpc_w);
   wpc_set_fastflip_addr(0x7b);
 }

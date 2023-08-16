@@ -38,6 +38,8 @@ static struct {
   UINT32 solenoids;
   UINT8  tmpLampData;
   core_tSeg pseg;
+
+  int oldCol;
 } locals;
 
 /*-----------------------------------------------
@@ -117,13 +119,12 @@ static READ_HANDLER(keypad_r) {
 }
 
 static WRITE_HANDLER(lamp_w) {
-  static int oldCol;
   locals.tmpLampData = data;
-  if (oldCol != locals.tmpSwCol) {
+  if (locals.oldCol != locals.tmpSwCol) {
     coreGlobals.tmpLampMatrix[locals.tmpSwCol] |= data;
     coreGlobals.lampMatrix[locals.tmpSwCol] = coreGlobals.tmpLampMatrix[locals.tmpSwCol];
   }
-  oldCol = locals.tmpSwCol;
+  locals.oldCol = locals.tmpSwCol;
 }
 
 static WRITE_HANDLER(sol_w) {

@@ -28,6 +28,9 @@ static struct {
   UINT8 strobe;
   UINT32 solenoids;
   int zc, uv, cruCount, lockRamWrite;
+
+  UINT8 toggle_keypad;
+  UINT8 toggle_cru;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -173,23 +176,21 @@ static READ_HANDLER(read_diag3) {
 }
 
 static READ_HANDLER(keypad_r) {
-  static int toggle;
-  toggle = !toggle;
-  return ~coreGlobals.swMatrix[11 + toggle];
+  locals.toggle_keypad = !locals.toggle_keypad;
+  return ~coreGlobals.swMatrix[11 + locals.toggle_keypad];
 }
 
 static READ_HANDLER(cru_r) {
-  static int toggle;
-  static int colMap[8] = { 2, 3, 4, 5, 6, 7, 8, 1 };
+  static const int colMap[8] = { 2, 3, 4, 5, 6, 7, 8, 1 };
   switch (offset) {
     case 0: // tells the next read from offset 4 that it's 16-bit, meaning to read switch columns 9 and 10 (combining offsets 4 and 5)
-      toggle = 1;
+      locals.toggle_cru = 1;
       return 0; // does not matter
     case 2:
       return 0xff; // unknown
     case 4:
-      if (toggle) {
-        toggle = 0;
+      if (locals.toggle_cru) {
+        locals.toggle_cru = 0;
         return 0xf0 ^ core_revbyte(coreGlobals.swMatrix[10]); // SW 72 .. 79 (upper nybble inverted)
       }
       return core_revbyte(coreGlobals.swMatrix[colMap[locals.strobe]]);
@@ -259,6 +260,7 @@ static PORT_READ_START( readport )
 PORT_END
 
 static MACHINE_INIT(nsm) {
+  memset(&locals, 0, sizeof(locals));
   HC4094_init(&hc4094nsm);
 }
 

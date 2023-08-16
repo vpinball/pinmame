@@ -17,6 +17,8 @@ static struct {
   // dmd16 stuff
   UINT32 hv5408, hv5408s, hv5308, hv5308s, hv5222, lasthv5222;
   int blnk, rowdata, rowclk, frame;
+
+  int laststat;
 } dmdlocals;
 
 static UINT16 *dmd64RAM;
@@ -158,7 +160,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 		   expects. So reverse each byte. */
 		procReverseSubFrameBytes(procSubFrame0);
 		procReverseSubFrameBytes(procSubFrame1);
-                procUpdateDMD();
+		procUpdateDMD();
 		/* Don't explicitly update the DMD from here. The P-ROC code
 		   will update after the next DMD event. */
 	}
@@ -468,17 +470,16 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
 }
 
 static void dmd16_setbusy(int bit, int value) {
-  static int laststat = 0;
-  const int newstat = (laststat & ~bit) | (value ? bit : 0);
+  const int newstat = (dmdlocals.laststat & ~bit) | (value ? bit : 0);
 #if 1
   /* In the data-sheet for the HC74 flip-flop is says that SET & CLR are _not_
      edge triggered. For some strange reason, the DMD doesn't work unless we
      treat the HC74 as edge-triggered.
   */
-  if      (~newstat & laststat & BUSY_CLR) dmdlocals.busy = 0;
-  else if (~newstat & laststat & BUSY_SET) dmdlocals.busy = 1;
+  if      (~newstat & dmdlocals.laststat & BUSY_CLR) dmdlocals.busy = 0;
+  else if (~newstat & dmdlocals.laststat & BUSY_SET) dmdlocals.busy = 1;
   else if ((newstat & (BUSY_CLR|BUSY_SET)) == (BUSY_CLR|BUSY_SET)) {
-    if (newstat & ~laststat & BUSY_CLK) dmdlocals.busy = 1;
+    if (newstat & ~dmdlocals.laststat & BUSY_CLK) dmdlocals.busy = 1;
   }
 #else
   switch (newstat & 0x03) {
@@ -491,7 +492,7 @@ static void dmd16_setbusy(int bit, int value) {
       dmdlocals.busy = 1; break;
   }
 #endif
-  laststat = newstat;
+  dmdlocals.laststat = newstat;
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, Z80_INT_REQ, dmdlocals.busy ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy);
 }

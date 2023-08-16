@@ -139,6 +139,8 @@ static struct {
   UINT8 modsol_seen_aux_pulses;
   int modsol_count;
   int modsol_sample;
+
+  UINT8 frameNo;
 } wpclocals;
 
 // Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
@@ -194,8 +196,8 @@ int wpc_m2sw(int col, int row) { return col*10+row+1; }
 // Zero Cross: a voltage comparator triggers when +5V AC reaches +5V or -5V, so at 120Hz in US (would be 100Hz in Europa), leading to around ~8.3ms period
 static void wpc_zc(int data) {
    // Set Zero Cross flag (it's reset when read)
-	wpclocals.zc = 1;
-   
+   wpclocals.zc = 1;
+
    // Synchronize core PWM integration AC signal
    core_zero_cross();
 
@@ -351,7 +353,7 @@ void wpc_set_fastflip_addr(int addr)
 static MACHINE_DRIVER_START(wpc)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(wpc,NULL,wpc)
-  MDRV_CPU_ADD(M6809, 2000000) // XTAL8/4
+  MDRV_CPU_ADD(M6809, 2000000) // MC6809E, 68B09E XTAL8/4
   MDRV_CPU_MEMORY(wpc_readmem, wpc_writemem)
   MDRV_CPU_VBLANK_INT(wpc_vblank, WPC_VBLANKDIV)
   MDRV_CPU_PERIODIC_INT(wpc_irq, WPC_IRQFREQ)
@@ -408,7 +410,6 @@ MACHINE_DRIVER_END
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_vblank) {
-  static int frameNo;
 #ifdef PROC_SUPPORT
 	static int gi_last[CORE_MAXGI];
 	int changed_gi[CORE_MAXGI];
@@ -430,9 +431,9 @@ static INTERRUPT_GEN(wpc_vblank) {
         if (wpc_data[DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
           dmdlocals.DMDFrames[0] = dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
         } else { // full page
-          dmdlocals.DMDFrames[frameNo] = memory_region(WPC_DMDREGION) + wpc_data[DMD_VISIBLEPAGE] * 0x400;
+          dmdlocals.DMDFrames[wpclocals.frameNo] = memory_region(WPC_DMDREGION) + wpc_data[DMD_VISIBLEPAGE] * 0x400;
         }
-        frameNo = 1 - frameNo;
+        wpclocals.frameNo = 1 - wpclocals.frameNo;
       } else {
         dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
       }
@@ -624,7 +625,6 @@ static void wpc_firq(int set, int src) {
 / Emulate the WPC chip
 /-----------------------*/
 READ_HANDLER(wpc_r) {
-  static UINT8 dd_unknown = 0x81;
   switch (offset) {
     case WPC_FLIPPERS: /* Flipper switches */
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0)
@@ -741,7 +741,7 @@ READ_HANDLER(wpc_r) {
     case 0x3fd3-WPC_BASE:
       if (sndbrd_0_type() == SNDBRD_S11CS) {
         DBGLOG(("DD_UNKNOWN_R: %04x\n", activecpu_get_pc()));
-        dd_unknown = sndbrd_0_ctrl_r(0) & 0x10 ? 0x81 : 0;
+        UINT8 dd_unknown = sndbrd_0_ctrl_r(0) & 0x10 ? 0x81 : 0;
         return dd_unknown;
       }
       break;
@@ -967,7 +967,7 @@ WRITE_HANDLER(wpc_w) {
     case WPC_PRINTDATAX:
       if (data == 0) {
         if (wpc_printfile == NULL) {
-          char filename[13];
+          char filename[64];
 
           sprintf(filename,"%s.prt", Machine->gamedrv->name);
           wpc_printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,1);

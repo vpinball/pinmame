@@ -27,6 +27,8 @@ static struct {
   int dispStrobe;
   int dispBlank;
   int dipStrobe;
+
+  UINT8 irq;
 } locals;
 
 static INTERRUPT_GEN(jeutel_vblank) {
@@ -34,9 +36,8 @@ static INTERRUPT_GEN(jeutel_vblank) {
 }
 
 static INTERRUPT_GEN(jeutel_irq) {
-  static int irq = 0;
-  irq = !irq;
-  cpu_set_irq_line(0, 0, irq ? ASSERT_LINE : CLEAR_LINE);
+  locals.irq = !locals.irq;
+  cpu_set_irq_line(0, 0, locals.irq ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void jeutel_nmi(int data) {
@@ -171,12 +172,13 @@ static ppi8255_interface ppi8255_intf =
 };
 
 static MACHINE_INIT(JEUTEL) {
+  memset(&locals, 0x00, sizeof(locals));
   sndbrd_0_init(core_gameData->hw.soundBoard, 2, memory_region(REGION_CPU3), NULL, NULL);
 }
 
 static MACHINE_RESET(JEUTEL) {
   memset(&locals, 0x00, sizeof(locals));
-	ppi8255_init(&ppi8255_intf);
+  ppi8255_init(&ppi8255_intf);
 }
 
 static SWITCH_UPDATE(JEUTEL) {
@@ -289,8 +291,7 @@ static void tms5110_irq(int data) {
 }
 
 static int tms5110_callback(void) {
-  int value;
-  value = (memory_region(REGION_SOUND1)[sndlocals.tmsAddr] >> sndlocals.tmsBit) & 1;
+  int value = (memory_region(REGION_SOUND1)[sndlocals.tmsAddr] >> sndlocals.tmsBit) & 1;
   sndlocals.tmsBit++;
   if (sndlocals.tmsBit > 7) {
     sndlocals.tmsAddr++;

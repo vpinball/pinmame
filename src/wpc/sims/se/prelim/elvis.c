@@ -57,9 +57,9 @@ extern struct {
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
-  int	 flipsol, flipsolPulse;
+  int    flipsol, flipsolPulse;
   int    sst0;			//SST0 bit from sound section
-  int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
+  int    plin;			//Plasma In (not connected prior to LOTR Hardware)
   UINT8 *ram8000;
   int    auxdata;
   /* Mini DMD stuff */
@@ -72,6 +72,8 @@ extern struct {
   UINT8  curBank;                   /* current bank select */
   #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
   int fastflipaddr;
+
+  UINT8 lampstate[80];
 } selocals;
 
 /*--------------------------

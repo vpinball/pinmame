@@ -12,6 +12,7 @@
 /*         of 1/10s */
 /* 231000  Now uses textOutf function */
 /* 070401  Added firstrow argument to sim_draw */
+
 #define SIM_SHOOTRELTIME   3 /* how long the fake solenoid is active VBLANKS */
 #define SIM_TIMEFACTOR     6 /* multiplier for VBLANK to simulator timing */
 #define SIM_MAXSPIN        2 /* spinners in parallell */
@@ -241,7 +242,7 @@ int sim_getSol(int solNo) {
 }
 
 /*--------------------------
-/  initialize the simluator
+/  initialize the simulator
 /---------------------------*/
 int sim_init(sim_tSimData *gameSimData, int *inports, int firstGameInport) {
   int ii;
@@ -266,7 +267,7 @@ int sim_init(sim_tSimData *gameSimData, int *inports, int firstGameInport) {
 /  Spinner handling
 /-------------------*/
 static void sim_startSpin(int swNo, int time) {
-  static int spinStart[] = {0,251,219,191,172,143,114,87,65};
+  static const int spinStart[] = {0,251,219,191,172,143,114,87,65};
   int idx = -1;
   int ii;
 
@@ -283,19 +284,19 @@ static void sim_startSpin(int swNo, int time) {
   switch(time)
   {
 	  //2 seconds
-	  case 0:	
+	  case 0:
 		time = 2;
 		break;
 	  //4 seconds
-	  case 1:	
+	  case 1:
 		time = 4;
 		break;
 	  //6 seconds
-	  case 2:	
+	  case 2:
 		time = 6;
 		break;
-	  //8 secodns
-	  case 3:	
+	  //8 seconds
+	  case 3:
 		time = 8;
 		break;
   }
@@ -327,4 +328,3 @@ static void sim_updateSpin(void) {
       locals.spinner[ii].spinCount += 10;
     }
 }
-

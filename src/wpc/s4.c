@@ -47,6 +47,9 @@ static struct {
 } s4locals;
 
 static data8_t *s4_CMOS;
+#if defined(LISY_SUPPORT)
+ data8_t *lisy_s4_CMOS;
+#endif
 
 /*
   6 Digit Structure, Alpha Position, and Layout
@@ -507,6 +510,9 @@ MACHINE_DRIVER_END
 / Load/Save static ram
 /-------------------------------------------------*/
 static NVRAM_HANDLER(s4) {
+#if defined(LISY_SUPPORT)
+ lisy_s4_CMOS = s4_CMOS;
+#endif
   core_nvram(file, read_or_write, s4_CMOS, 0x100, 0xff);
 }
 

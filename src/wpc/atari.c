@@ -39,20 +39,22 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments, pseg;
   int    snd1Enable;
+
+  UINT8  dmaCount;
+  UINT8  toggle;
+  UINT8  enable_irq;
 } locals;
 
 static UINT8 latch[] = {
   0, 0, 0, 0, 0
 };
 
-static int toggle = 0;
 static INTERRUPT_GEN(ATARI1_nmihi) {
-	static int dmaCount = 0;
 	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
-	dmaCount++;
-	if (dmaCount > 1) {
-		dmaCount = 0;
-		toggle = !toggle;
+	locals.dmaCount++;
+	if (locals.dmaCount > 1) {
+		locals.dmaCount = 0;
+		locals.toggle = !locals.toggle;
 	}
 }
 
@@ -174,7 +176,7 @@ static READ_HANDLER(dipg1_r) {
 	/* every second NMI pulse, a DMA interrupt is triggered.
 	   Only if the 7th bit of dip switch 2/4 has changed when
 	   that dip is read, the game code will proceed! */
-	return toggle ? (dipram[offset] | 0x40) : (dipram[offset] & 0xbf);
+	return locals.toggle ? (dipram[offset] | 0x40) : (dipram[offset] & 0xbf);
 }
 static WRITE_HANDLER(dipg1_w) {
 	/* In fact, some games try to do that bit toggling stuff by themselves,
@@ -274,7 +276,7 @@ static WRITE_HANDLER(disp0_w) {
 }
 
 static WRITE_HANDLER(disp1_w) {
-	static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
+	static const int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
 	int ii;
 	data &= 0x07;
 	for (ii = 0; ii < 7; ii++) {
@@ -286,7 +288,7 @@ static WRITE_HANDLER(disp1_w) {
 // Gen 1
 static void setLatch(int no, UINT8 data, UINT8 mask, int cnt) {
 	/* table to adjust for original Atari sol numbers */
-	static UINT32 solTable[] = {
+	static const UINT32 solTable[] = {
 		0x00001, 0x00010, 0x04000, 0x00040,
 		0x00002, 0x00020, 0x00008, 0x08000,
 		0x00800, 0x00004, 0x00080, 0x02000,
@@ -467,6 +469,7 @@ MEMORY_END
 
 static void init_common(void) {
   memset(&locals, 0, sizeof locals);
+  locals.enable_irq = 1;
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
 }
 
@@ -557,22 +560,22 @@ static MEMORY_WRITE_START(ATARI4_writemem)
   {0x3000,0x37ff,	MWA_RAM},
 MEMORY_END
 
-static int enable_irq = 1;
 static int irq_callback(int line) {
   cpu_set_irq_line(0, 0, CLEAR_LINE);
-  enable_irq = 1;
+  locals.enable_irq = 1;
   return 0;
 }
 
 static INTERRUPT_GEN(ATARI4_irq) {
-  if (enable_irq) {
+  if (locals.enable_irq) {
     cpu_set_irq_line(0, 0, ASSERT_LINE);
-    enable_irq = 0;
+    locals.enable_irq = 0;
   }
 }
 
 static MACHINE_INIT(ATARI4) {
   memset(&locals, 0, sizeof locals);
+  locals.enable_irq = 1;
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
   cpu_set_irq_callback(0, irq_callback);
 }
