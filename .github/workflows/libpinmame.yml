@@ -70,6 +70,9 @@ jobs:
           - os: macos-latest
             platform: ios-arm64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
+          - os: macos-latest
+            platform: tvos-arm64
+            libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
           - os: ubuntu-latest
             platform: linux-x64
             libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
@@ -111,6 +114,9 @@ jobs:
           mkdir tmp
           cp build/Release/${{ matrix.libpinmame }} tmp
           if [[ "${{ matrix.platform }}" == "ios-arm64" ]]; then
+            cp build/Release/zlib-prefix/src/zlib-build/libz.a tmp
+          fi
+          if [[ "${{ matrix.platform }}" == "tvos-arm64" ]]; then
             cp build/Release/zlib-prefix/src/zlib-build/libz.a tmp
           fi
           if [[ "${{ matrix.pinmame-test }}" ]]; then
