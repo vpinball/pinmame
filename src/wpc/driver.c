@@ -691,7 +691,8 @@ DRIVERNV(krull)         //S80a-676: 02/83 Krull
 DRIVERNV(goinnuts)      //S80a-682: 02/83 Goin' Nuts
 DRIVERNV(qbquest)       //S80a-677: 03/83 Q*bert's Quest
 DRIVERNV(sorbit)        //S80a-680: 05/83 Super Orbit
-DRIVERNV(rflshdlx)      //S80a-681: 06/83 Royal Flush Deluxe
+DRIVERNV(rflshdlx1)     //S80a-681: 06/83 Royal Flush Deluxe (rev. 1)
+DRIVERNV(rflshdlx)      //          06/83 Royal Flush Deluxe (rev. 2)
 DRIVERNV(amazonh)       //S80a-684: 09/83 Amazon Hunt
 DRIVERNV(amazonha)      //                Amazon Hunt (alternate set)
 DRIVERNV(rackemup)      //S80a-685: 11/83 Rack 'Em Up
