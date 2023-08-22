@@ -103,7 +103,7 @@ MACHINE_DRIVER_END
 #define BY32_PITCH      200
 
 /* waveform for the audio hardware */
-static const UINT16 sineWave[] = {
+static const INT16 sineWave[] = {
   6836, 16956, 20464, 22477, 24174, 24988, 25600, 25699, 
   25710, 11529, 6486, 6222, 6587, 6805, 6835, 6574, 
   6347, 6026, 21288, 23102, 22166, 20086, 18564, 17068, 
