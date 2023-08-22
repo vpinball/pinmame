@@ -533,7 +533,6 @@ add_executable(xpinmame
    src/wpc/sleic.c
    src/wpc/sleic.h
    src/wpc/sleicgames.c
-   src/wpc/snd_alt.h
    src/wpc/snd_cmd.c
    src/wpc/snd_cmd.h
    src/wpc/sndbrd.c

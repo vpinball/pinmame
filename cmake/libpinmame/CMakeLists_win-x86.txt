@@ -522,7 +522,7 @@ add_library(pinmame SHARED
    src/wpc/sleic.c
    src/wpc/sleic.h
    src/wpc/sleicgames.c
-   src/wpc/snd_alt.h
+#   src/wpc/snd_alt.h
    src/wpc/snd_cmd.c
    src/wpc/snd_cmd.h
    src/wpc/sndbrd.c
@@ -605,11 +605,13 @@ add_library(pinmame SHARED
    ext/zlib/zutil.c
 )
 
-set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL)
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
 target_compile_options(pinmame PUBLIC
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc>>
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C>:/EHsc>>
 )
 
 target_include_directories(pinmame PUBLIC
