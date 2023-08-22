@@ -163,6 +163,7 @@ static void setfreq(int cmd) {
     f = sizeof(sineWave)/((1.1E-6+BY32_PITCH*1E-8)*sData)/8;
     mixer_set_sample_frequency(by32locals.channel, f);
     by32locals.volume = 1000;
+    mixer_set_volume(by32locals.channel, 100);
   }
   by32locals.lastCmd = cmd;
 }
