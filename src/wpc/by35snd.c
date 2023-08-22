@@ -12,10 +12,6 @@
 #include "by35.h"
 #include "by35snd.h"
 
-// sample support added for by32 / by50 by Oliver Kaegi (08/27/2004)
-//
-// sample table for both 82s123 prom from the by32 / by50 sound card...
-
 #if 0 // port from MAME, to be wired up
 static const struct discrete_mixer_desc as2888_digital_mixer_info =
 {
@@ -76,85 +72,6 @@ static DISCRETE_SOUND_START(as2888_discrete)
 DISCRETE_SOUND_END
 #endif
 
-static const char *u318_sample_names[] =
-{
-	"*s3250u3",
-	"w1801.wav",
-	"w1802.wav",
-	"w1803.wav",
-	"w1804.wav",
-	"w1805.wav",
-	"w1806.wav",
-	"w1807.wav",
-	"w1808.wav",
-	"w1809.wav",
-	"w1810.wav",
-	"w1811.wav",
-	"w1812.wav",
-	"w1813.wav",
-	"w1814.wav",
-	"w1815.wav",
-	"w1815.wav",
-	"w1817.wav",
-	"w1818.wav",
-	"w1819.wav",
-	"w1820.wav",
-	"w1821.wav",
-	"w1822.wav",
-	"w1823.wav",
-	"w1824.wav",
-	"w1825.wav",
-	"w1826.wav",
-	"w1827.wav",
-	"w1828.wav",
-	"w1829.wav",
-	"w1830.wav",
-	"w1831.wav",
-	"w1831.wav",
-	"w5101.wav",
-	"w5102.wav",
-	"w5103.wav",
-	"w5104.wav",
-	"w5105.wav",
-	"w5106.wav",
-	"w5107.wav",
-	"w5108.wav",
-	"w5109.wav",
-	"w5110.wav",
-	"w5111.wav",
-	"w5112.wav",
-	"w5113.wav",
-	"w5114.wav",
-	"w5115.wav",
-	"w5115.wav",
-	"w5117.wav",
-	"w5118.wav",
-	"w5119.wav",
-	"w5120.wav",
-	"w5121.wav",
-	"w5122.wav",
-	"w5123.wav",
-	"w5124.wav",
-	"w5125.wav",
-	"w5126.wav",
-	"w5127.wav",
-	"w5128.wav",
-	"w5129.wav",
-	"w5130.wav",
-	"w5131.wav",
-	"w5131.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface u318_samples_interface =
-{
-	3,
-	50,	/* volume */
-	u318_sample_names,
-	"Bally sounds"
-};
-
-
 /*----------------------------------------
 /              -32, -50 sound
 /-----------------------------------------*/
@@ -174,123 +91,78 @@ const struct sndbrdIntf by32Intf = {
 static struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop};
 
 MACHINE_DRIVER_START(by32)
-  MDRV_SOUND_ADD(CUSTOM, by32_custInt)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 #if 0
   MDRV_SOUND_ADD(DISCRETE, as2888_discrete)
 #else
-  MDRV_SOUND_ADD_TAG("BY_32_50", SAMPLES, u318_samples_interface)
+  MDRV_SOUND_ADD(CUSTOM, by32_custInt)
 #endif
 MACHINE_DRIVER_END
 
+#define BY32_DECAYFREQ   50
+#define BY32_EXPFACTOR   91
+#define BY32_PITCH      200
+
+/* waveform for the audio hardware */
+static const UINT16 sineWave[] = {
+  6836, 16956, 20464, 22477, 24174, 24988, 25600, 25699, 
+  25710, 11529, 6486, 6222, 6587, 6805, 6835, 6574, 
+  6347, 6026, 21288, 23102, 22166, 20086, 18564, 17068, 
+  15433, 14130, 12733, -4363, -7370, -7842, -7468, -7275, 
+  -7076, -6897, -6630, -2875, 6858, 5115, 482, -2879, 
+  -5526, -8070, -9501, -10671, -16040, -27830, -29562, -28556, 
+  -27184, -25808, -24037, -22682, -20848, -14203, -2291, 513, 
+  879, 880, 959, 1074, 1244, 1380, -4861, -14419, 
+  -15251, -14156, -12504, -11270, -10166, -9080, -8086, 497
+};
 
 static struct {
   struct sndbrdData brdData;
-  int startit, lastCmd, strobe, sampleoff;
+  int volume, lastCmd, channel, strobe;
 } by32locals;
 
+static void by32_decay(int param) {
+  mixer_set_volume(by32locals.channel, by32locals.volume/10);
+  if (by32locals.volume < 50) by32locals.volume = 0;
+  else by32locals.volume = by32locals.volume * BY32_EXPFACTOR / 100;
+}
 
-static int by32_sh_start(const struct MachineSound *msound)  {
-  mixer_allocate_channel(0);
+static int by32_sh_start(const struct MachineSound *msound) {
+  by32locals.channel = mixer_allocate_channel(25);
+  mixer_play_sample_16(by32locals.channel, (INT16 *)sineWave, sizeof(sineWave), 0, 1);
+  timer_pulse(TIME_IN_HZ(BY32_DECAYFREQ),0,by32_decay);
   return 0;
 }
 
-
 static void by32_sh_stop(void) {
+  mixer_stop_sample(by32locals.channel);
 }
 
-
-
-// table to play samples
-
-//by32_ctrl_w         	by32_data_w
-//    cb2 e  		a-d    		prev-cb2    prev-a-d   		result (dont play if 1111)
-// a) 0   X   		 		X		  		fill prev cb2
-// b) 1   X            			0        	0001      	play X0001
-// c)        		1100    	1       	0001       	play X1100 fill prev a-d
-// d)     		0001		0		XXXX 		fill prev a-d
-// e) 1   x                             1                               ignore
-// X -> dont care
-
-static int lastchan = 0;
-static void playsam(int cmd) {
-  int i;
+static void setfreq(int cmd) {
+  UINT8 sData; int f;
   if ((cmd != by32locals.lastCmd) && ((cmd & 0x0f) != 0x0f)) {
-
-    int samplex = by32locals.sampleoff + (cmd & 0x1f);
-//  logerror("%04x: samplestart cmd %02x alstcmd %02x %d \n", activecpu_get_previouspc(), cmd,by32locals.lastCmd,samplex);
-
-//	if (by32locals.startit == 0)
-//	{
-//		sample_start(0,samplex,0);
-//		by32locals.startit = 1;
-//	}
-//	else
-//	{
-		lastchan++;
-		if (lastchan > 2) lastchan = 0;
-		sample_start(6+lastchan,samplex,0);
-		//  		by32locals.startit = 0;
-//	}
-//       sample_start(0,samplex,0);
-  } else if ((cmd & 0x0f) == 0x0f) {
-	   for (i = 0;i < 3;i++) {
-           if (i != lastchan) sample_stop(6+i);
-	   }
+    sData = core_revbyte(*(by32locals.brdData.romRegion + (cmd ^ 0x10)));
+    f = sizeof(sineWave)/((1.1E-6+BY32_PITCH*1E-8)*sData)/8;
+    mixer_set_sample_frequency(by32locals.channel, f);
   }
   by32locals.lastCmd = cmd;
 }
 
 static WRITE_HANDLER(by32_data_w) {
-    logerror("%04x: by_data_w data %02x \n", activecpu_get_previouspc(), data);
-    if (~by32locals.strobe & 0x01)
-    {
-        by32locals.lastCmd = (by32locals.lastCmd & 0x10) | (data & 0x0f); // case d
-    }
-    else
-    {
-        playsam((by32locals.lastCmd & 0x10) | (data & 0x0f)); // case c
-    }
+  setfreq((by32locals.lastCmd & 0x10) | (data & 0x0f));
 }
+
 static WRITE_HANDLER(by32_ctrl_w) {
-int i;
-  if (~by32locals.strobe & 0x01)
-  {
-//        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
-// sound e bit is swapped !!!!
-          playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10)); // case b
-  }
-  else
-    if (~data & 0x01)
-    {
-//     by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
-       by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
-       for (i = 0;i < 3;i++) {
-         if (i != lastchan) sample_stop(6+i);
-       }
-    }
-
-  logerror("%04x: by_ctrl32_w data %02x startit %d\n", activecpu_get_previouspc(), data,by32locals.startit);
-  by32locals.strobe = data;	// case e
+  if (~by32locals.strobe & data & 0x01) by32locals.volume = 1000;
+//  else if (~data & 0x01) by32locals.volume = 0;
+  setfreq((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00));
+  by32locals.strobe = data;
 }
-
 static WRITE_HANDLER(by32_manCmd_w) {
   by32_data_w(0, data); by32_ctrl_w(0,0); by32_ctrl_w(0,((data & 0x10)>>3)|0x01);
 }
 static void by32_init(struct sndbrdData *brdData) {
-  int w;
   memset(&by32locals, 0, sizeof(by32locals));
   by32locals.brdData = *brdData;
-  w = core_revbyte(*(by32locals.brdData.romRegion));
-    if (w == 0xfe)
-    {
-    	by32locals.sampleoff = 18;      // 751-18 game rom detected (star trek,playboy...)
-    }
-    else
-    {
-    	by32locals.sampleoff = 32 + 18; // 751-51 game rom detected (harlem, dolly...)
-    }
-    logerror("%04x: by_ctrl32_int %02x \n", activecpu_get_previouspc(),w );
 }
 
 
