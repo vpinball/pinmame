@@ -146,6 +146,7 @@
     </Filter>
     <Filter Include="Source Files\external\ymfm">
       <UniqueIdentifier>{f07f9e68-4307-495d-8167-73034cabb4b6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\PinMAME\altsound">
       <UniqueIdentifier>{63599608-1299-463d-b1e3-917d2e1f5f6c}</UniqueIdentifier>
     </Filter>
