@@ -511,12 +511,11 @@ static  INT16  sineWaveinp[] = {
 
 
 static void oneshoot (int param) {
-
    logerror("oneshoot time ca1 started \n");
    gps_locals.stateca1 = 1;
 }
 
-static void playsam1(int param){
+static void playsam1(int param) {
 // timer 1 (q1) is easy wave 
   if ((gps_locals.cr1 & 0x80)  && (gps_locals.timlat1 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), (int)(gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137), 1);
@@ -529,7 +528,7 @@ static void playsam1(int param){
   }
 }
 
-static void playsam2(int param){
+static void playsam2(int param) {
 // timer 2 (q2) is easy wave 
   if ((gps_locals.cr2 & 0x80)  && (gps_locals.timlat2 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+1))	{	// is already playing
@@ -541,7 +540,7 @@ static void playsam2(int param){
   }
 }
 
-static void playsam3(int param){
+static void playsam3(int param) {
 // timer 3 (q3) is easy wave 
   if ((gps_locals.cr3 & 0x80)  && (gps_locals.timlat3 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+2))	{	// is already playing
