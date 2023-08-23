@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 // Local includes
-#include "bass.h"
+#include "../../ext/bass/bass.h"
 
 #ifdef __cplusplus
   extern "C" {

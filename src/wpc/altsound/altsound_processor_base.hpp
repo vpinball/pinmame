@@ -18,7 +18,7 @@
 
 // Local includes
 #include "altsound_data.hpp"
-#include "bass.h"
+#include "../../ext/bass/bass.h"
 
 // ---------------------------------------------------------------------------
 // AltsoundProcessorBase class definition
@@ -26,7 +26,7 @@
 
 class AltsoundProcessorBase {
 public:
-	
+
 	// Default constructor
 	AltsoundProcessorBase() = delete;
 

@@ -96,7 +96,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	string logging;
 	inipp::get_value(ini.sections["logging"], "logging_level", logging);
 	ALT_INFO(0, "Parsed \"logging_level\": %s", logging.c_str());
-	AltsoundLogger::Level level = alog.toLogLevel(logging);
+	const AltsoundLogger::Level level = alog.toLogLevel(logging);
 	if (level == AltsoundLogger::UNDEFINED) {
 		ALT_ERROR(0, "Unknown log level: %s. Defaulting to Error logging", logging);
 		alog.setLogLevel(AltsoundLogger::Level::Error);
@@ -116,7 +116,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// MUSIC behavior parsing
 	// ------------------------------------------------------------------------
 	
-	auto& music_section = ini.sections["music"];
+	const auto& music_section = ini.sections["music"];
 
 	// parse MUSIC "STOP" behavior
 	// MUSIC streams only stop themselves
@@ -181,7 +181,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// SFX behavior parsing
 	// ------------------------------------------------------------------------
 
-	auto& sfx_section = ini.sections["sfx"];
+	const auto& sfx_section = ini.sections["sfx"];
 
 	// Parse SFX "STOPS" behavior
 	// SFX streams do not stop other streams
@@ -191,7 +191,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	success &= parseBehaviorValue(sfx_section, "ducks", sfx_behavior.ducks);
 
 	// Parse SFX "SFX_DUCKING_PROFILES"
-	auto& sfx_ducking_section = ini.sections["sfx_ducking_profiles"];
+	const auto& sfx_ducking_section = ini.sections["sfx_ducking_profiles"];
 	
 	if (!sfx_ducking_section.empty()) {
 		success &= parseDuckingProfile(sfx_ducking_section, sfx_behavior.ducking_profiles);
@@ -213,7 +213,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// SOLO behavior parsing
 	// ------------------------------------------------------------------------
 
-	auto& solo_section = ini.sections["solo"];
+	const auto& solo_section = ini.sections["solo"];
 
 	// Parse SOLO "STOPS" behavior
 	solo_behavior.stops.set(static_cast<int>(BB::SOLO), true); // SOLO stops other SOLO streams
@@ -247,7 +247,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// OVERLAY behavior parsing
 	// ------------------------------------------------------------------------
 
-	auto& overlay_section = ini.sections["overlay"];
+	const auto& overlay_section = ini.sections["overlay"];
 
 	// Parse OVERLAY "STOPS" behavior
 	// OVERLAY streams only stop other OVERLAY streams
@@ -258,7 +258,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	success &= parseBehaviorValue(overlay_section, "ducks", overlay_behavior.ducks);
 
 	// parse OVERLAY "OVERLAY_DUCKING_PROFILES"
-	auto& overlay_ducking_section = ini.sections["overlay_ducking_profiles"];
+	const auto& overlay_ducking_section = ini.sections["overlay_ducking_profiles"];
 	
 	if (!overlay_ducking_section.empty()) {
 		success &= parseDuckingProfile(overlay_ducking_section, overlay_behavior.ducking_profiles);
@@ -330,8 +330,8 @@ bool AltsoundIniProcessor::parseVolumeValue(const IniSection& section, const std
 	}
 
 	try {
-		unsigned long val = std::stoul(parsed_value);
-		volume = clamp(val, 0ul, 100ul) / 100.f;
+		const int val = std::stoi(parsed_value);
+		volume = (float)clamp(val, 0, 100) / 100.f;
 	}
 	catch (const std::invalid_argument& e) {
 		ALT_ERROR(0, "Invalid number format while parsing volume value: %s\n", parsed_value.c_str());
@@ -414,7 +414,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 				return false;
 			}
 
-			float volume = val > 100 ? 1.0f : val <= 0 ? 0.0f : static_cast<float>(val) / 100.f;
+			const float volume = val > 100 ? 1.0f : val <= 0 ? 0.0f : static_cast<float>(val) / 100.f;
 
 			// Set the corresponding volume based on the label
 			if (label == "music") {
@@ -471,7 +471,7 @@ std::string AltsoundIniProcessor::get_altound_format(const std::string& path_in)
 	ALT_DEBUG(0, "BEGIN get_altsound_format()");
 	INDENT;
 
-	std::vector<std::pair<std::string, std::string>> filesAndFormats{
+	const std::vector<std::pair<std::string, std::string>> filesAndFormats{
 		{ "\\g-sound.csv", "g-sound" },
 		{ "\\altsound.csv", "altsound" },
 	};
@@ -528,7 +528,7 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 	ALT_DEBUG(0, "BEGIN AltsoundIniProcessor::create_altsound_ini()");
 	INDENT;
 
-	std::string format = get_altound_format(path_in);
+	const std::string format = get_altound_format(path_in);
 
 	if (format.empty()) {
 		ALT_ERROR(0, "FAILED AltsoundIniProcessor::get_altsound_format()");
@@ -539,7 +539,7 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 	}
 	ALT_INFO(0, "SUCCESS AltsoundIniProcessor::get_altsound_format(): %s", format.c_str());
 
-	std::string config_str =
+	const std::string config_str =
 		"; ----------------------------------------------------------------------------\n"
 		"; altsound.ini - Configuration file for all AltSound formats\n"
 		";\n"
@@ -683,7 +683,7 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 		"ducking_profile1 = sfx:65, music:65\n"
 		"ducking_profile2 = sfx:80, music:50\n";
 
-	std::string ini_path = path_in + "\\altsound.ini";
+	const std::string ini_path = path_in + "\\altsound.ini";
 	std::ofstream file_out(ini_path);
 
 	if (file_out.is_open()) {

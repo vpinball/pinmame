@@ -38,7 +38,7 @@ AltsoundLogger::Level AltsoundLogger::toLogLevel(const std::string& lvl_in)
 	std::string str = lvl_in;
 	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
-	auto it = typeMap.find(str);
+	const auto it = typeMap.find(str);
 	if (it != typeMap.end()) {
 		return it->second;
 	}

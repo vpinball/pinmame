@@ -39,10 +39,10 @@ extern bool rec_snd_cmds;
 // CTOR/DTOR
 // ---------------------------------------------------------------------------
 
-AltsoundProcessorBase::AltsoundProcessorBase(const std::string& game_name,
-	                                         const std::string& vpm_path)
-: game_name(game_name),
-  vpm_path(vpm_path)
+AltsoundProcessorBase::AltsoundProcessorBase(const std::string& _game_name,
+	                                         const std::string& _vpm_path)
+: game_name(_game_name),
+  vpm_path(_vpm_path)
 {
 }
 
@@ -71,10 +71,10 @@ bool AltsoundProcessorBase::handleCmd(const unsigned int cmd_in)
 		// sound command recording is enabled
 
 		// Get the current time.
-		auto currentTime = std::chrono::high_resolution_clock::now();
+		const auto currentTime = std::chrono::high_resolution_clock::now();
 
 		// Compute the difference from the last command time.
-		auto deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastCmdTime).count();
+		const auto deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastCmdTime).count();
 
 		// Log the time and command.
 		logFile << std::setw(10) << std::setfill('0') << std::dec << deltaTime;
@@ -150,7 +150,7 @@ bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 	ALT_INFO(0, "BEGIN: AltsoundProcessorBase::findFreeChannel()");
 	INDENT;
 
-	auto it = std::find(channel_stream.begin(), channel_stream.end(), nullptr);
+	const auto it = std::find(channel_stream.begin(), channel_stream.end(), nullptr);
 	if (it != channel_stream.end()) {
 		channel_out = std::distance(channel_stream.begin(), it);
 		ALT_INFO(1, "Found free channel: %02u", channel_out);
@@ -176,11 +176,11 @@ bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_i
 	if (stream_in == BASS_NO_STREAM)
 		return true;
 
-	float new_vol = vol_in * global_vol * master_vol;
+	const float new_vol = vol_in * global_vol * master_vol;
 	ALT_INFO(1, "Setting volume for stream %u", stream_in);
 	ALT_DEBUG(1, "SAMPLE_VOL:%.02f  GLOBAL_VOL:%.02f  MASTER_VOL:%.02f", vol_in,
 		      global_vol, master_vol);
-	bool success = BASS_ChannelSetAttribute(stream_in, BASS_ATTRIB_VOL, new_vol);
+	const bool success = BASS_ChannelSetAttribute(stream_in, BASS_ATTRIB_VOL, new_vol);
 
 	if (!success) {
 		ALT_ERROR(1, "FAILED BASS_ChannelSetAttribute(BASS_ATTRIB_VOL)");
@@ -201,7 +201,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	ALT_DEBUG(0, "BEGIN AltsoundProcessorBase::createStream()");
 	INDENT;
 
-	std::string short_path = getShortPath(stream_out->sample_path); // supports logging
+	const std::string short_path = getShortPath(stream_out->sample_path); // supports logging
 	unsigned int ch_idx;
 	
 	if (!ALT_CALL(findFreeChannel(ch_idx))) {
@@ -213,7 +213,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	}
 
 	stream_out->channel_idx = ch_idx; // store channel assignment
-	bool loop = stream_out->loop;
+	const bool loop = stream_out->loop;
 
   // Create playback stream
 	HSTREAM hstream = BASS_StreamCreateFile(FALSE, stream_out->sample_path.c_str(), 0, 0, loop ? BASS_SAMPLE_LOOP : 0);
@@ -262,7 +262,7 @@ bool AltsoundProcessorBase::freeStream(const HSTREAM hstream_in)
 	ALT_INFO(0, "BEGIN AltsoundProcessorBase::freeStream()");
 	INDENT;
 
-	bool success = BASS_StreamFree(hstream_in);
+	const bool success = BASS_StreamFree(hstream_in);
 	if (!success) {
 		ALT_ERROR(1, "FAILED BASS_StreamFree(%u)", hstream_in);
 	}
@@ -334,7 +334,7 @@ bool AltsoundProcessorBase::stopAllStreams()
 
 std::string AltsoundProcessorBase::getShortPath(const std::string& path_in)
 {
-	std::size_t pos = path_in.find(game_name);
+	const std::size_t pos = path_in.find(game_name);
 	if (pos != std::string::npos)
 	{
 		return path_in.substr(pos);
@@ -344,5 +344,3 @@ std::string AltsoundProcessorBase::getShortPath(const std::string& path_in)
 		return path_in;
 	}
 }
-
-

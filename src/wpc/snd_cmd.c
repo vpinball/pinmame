@@ -60,7 +60,7 @@
 #endif
 
 #ifdef VPINMAME_ALTSOUND // for alternate/external sound processing
- #include "snd_alt.h"
+ #include "altsound/snd_alt.h"
 #endif
 #ifdef VPINMAME_PINSOUND // for PinSound support
  //#include <timeapi.h>

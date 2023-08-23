@@ -102,6 +102,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		ALT_INFO(0, "Current_path1: %s", PATH.c_str());
 
 		// Check for new default gain
+		{
 		std::string PATHG = PATH + "gain.txt";
 		float parsedGain = parseFileValue(PATHG, true);
 		if (parsedGain != -1.0f) {
@@ -113,6 +114,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		float parsedDucking = parseFileValue(PATHG, false);
 		if (parsedDucking != -1.0f) {
 			default_ducking = parsedDucking;
+		}
 		}
 
 		dir = opendir(PATH.c_str());
@@ -241,7 +243,7 @@ float AltsoundFileParser::parseFileValue(const std::string& filePath, bool isGai
 	fscanf(f, "%d", &tmpValue);
 	fclose(f);
 
-	if (isGain) {
+	if (isGain) { //!! both are the same?!
 		return tmpValue > 100 ? 1.0f : (float)tmpValue / 100.f;
 	}
 	else {

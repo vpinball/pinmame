@@ -13,8 +13,8 @@
 
 // Std Library includes
 #include <algorithm>
-#include <time.h>
-#include <string.h>
+#include <ctime>
+#include <cstring>
 #include <ostream>
 #include <sys/stat.h>
 
@@ -84,7 +84,7 @@ CmdData cmds;
 
 // Initialization support
 BOOL is_initialized = FALSE;
-BOOL run_once = true;
+BOOL run_once = TRUE;
 BOOL altsound_stable = TRUE;
 
 // Processing instance to specialize command handling
@@ -174,7 +174,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	ALT_DEBUG(0, "Command complete. Processing...");
 
 	// combine stored command with the current
-	unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
+	const unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
 
 	// Handle the resulting command
 	if (!ALT_CALL(processor->handleCmd(cmd_combined))) {
@@ -219,7 +219,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 
 	// get path to altsound folder for the current game
 	string altsound_path;
-	string vpm_path = get_vpinmame_path();
+	const string vpm_path = get_vpinmame_path();
 	if (!vpm_path.empty()) {
 		altsound_path = vpm_path + "/altsound/" + g_szGameName;
 		ALT_INFO(0, "Path to altsound: %s", altsound_path.c_str());
@@ -243,9 +243,9 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		return FALSE;
 	}
 
-	string format = ini_proc.getAltsoundFormat();
+	const string format = ini_proc.getAltsoundFormat();
 
-	std::string game_name(g_szGameName);
+	const std::string game_name(g_szGameName);
 
 	if (format == "g-sound") {
 		// G-Sound only supports new CSV format. No need to specify format
@@ -265,13 +265,13 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		return FALSE;
 	}
 
-	if (!processor) {
+	/*if (!processor) {
 		ALT_ERROR(0, "FAILED: Unable to create AltSound processor");
 		
 		OUTDENT;
 		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
-	}
+	}*/
 	ALT_INFO(0, "%s processor created", format.c_str());
 
 	processor->setMasterVol(1.0f);
@@ -371,7 +371,7 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			if (!channel_stream[i])
 				continue;
 
-			HSTREAM stream = channel_stream[i]->hstream;
+			const HSTREAM stream = channel_stream[i]->hstream;
 			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PLAYING) {
 				if (!BASS_ChannelPause(stream)) {
 					ALT_WARNING(0, "FAILED BASS_ChannelPause(%u): %s", stream, get_bass_err());
@@ -390,7 +390,7 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			if (!channel_stream[i])
 				continue;
 
-			HSTREAM stream = channel_stream[i]->hstream;
+			const HSTREAM stream = channel_stream[i]->hstream;
 			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PAUSED) {
 				if (!BASS_ChannelPlay(stream, 0)) {
 					ALT_WARNING(0, "FAILED BASS_ChannelPlay(%u): %s", stream, get_bass_err());
@@ -414,7 +414,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 	INDENT;
 
 	// Get hardware generation
-	UINT64 hardware_gen = core_gameData->gen;
+	const UINT64 hardware_gen = core_gameData->gen;
 	ALT_DEBUG(0, "MAME_GEN: %d", hardware_gen);
 
 	// syntactic candy
@@ -581,7 +581,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 	INDENT;
 
 	// Get hardware generation
-	UINT64 hardware_gen = core_gameData->gen;
+	const UINT64 hardware_gen = core_gameData->gen;
 	ALT_DEBUG(0, "MAME_GEN: %d", hardware_gen);
 
 	if (hardware_gen == GEN_WPCDCS
@@ -623,7 +623,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 }
 
 // ---------------------------------------------------------------------------
-// Helper function to get path to VpinMAME
+// Helper function to get path to VPinMAME
 // ---------------------------------------------------------------------------
 
 std::string get_vpinmame_path()
@@ -631,7 +631,6 @@ std::string get_vpinmame_path()
 	ALT_DEBUG(0, "BEGIN get_vpinmame_path");
 	INDENT;
 
-	char cvpmd[MAX_PATH];
 	HMODULE hModule = nullptr;
 
 #ifdef _WIN64
@@ -642,6 +641,7 @@ std::string get_vpinmame_path()
 
 	if (hModule != nullptr)
 	{
+		char cvpmd[MAX_PATH];
 		GetModuleFileNameA(hModule, cvpmd, sizeof(cvpmd));
 		std::string vpm_path = cvpmd;
 
@@ -650,7 +650,7 @@ std::string get_vpinmame_path()
 
 		OUTDENT;
 		ALT_DEBUG(0, "END get_vpinmame_path()");
-		return vpm_path.substr(0, vpm_path.rfind("/"));
+		return vpm_path.substr(0, vpm_path.rfind('/'));
 	}
 	else
 	{
@@ -659,6 +659,5 @@ std::string get_vpinmame_path()
 
 	OUTDENT;
 	ALT_DEBUG(0, "END get_vpinmame_path()");
-	return "";
+	return string();
 }
-

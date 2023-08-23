@@ -14,9 +14,10 @@
 // Standard Library includes
 #include <cctype>
 #include <map>
+#include <algorithm>
 
 // Local includes
-#include "bass.h"
+#include "../../ext/bass/bass.h"
 #include "altsound_logger.hpp"
 
 // namespace resolution
@@ -47,9 +48,9 @@ void _behavior_info::printDuckingProfiles() const {
 
 float _behavior_info::getDuckVolume(unsigned int profile_num, AltsoundSampleType type) const
 {
-	std::string profile_key = "profile" + std::to_string(profile_num);
+	const std::string profile_key = "profile" + std::to_string(profile_num);
 
-	auto it = ducking_profiles.find(profile_key);
+	const auto it = ducking_profiles.find(profile_key);
 	if (it != ducking_profiles.end()) {
 		const _ducking_profile& profile = it->second;
 
@@ -112,7 +113,7 @@ AltsoundSampleType toSampleType(const std::string& type_in)
 	string str = type_in;
 	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
-	auto it = typeMap.find(str);
+	const auto it = typeMap.find(str);
 	if (it != typeMap.end()) {
 		return it->second;
 	}
@@ -174,7 +175,7 @@ const char* get_bass_err()
 	};
 
 	// returns string representation of BASS error codes
-	int err = BASS_ErrorGetCode();
+	const int err = BASS_ErrorGetCode();
 	if (err < 0) {
 		return "BASS_ERROR_UNKNOWN";
 	}
@@ -212,12 +213,12 @@ bool dir_exists(const std::string& path_in)
 
 std::string trim(const std::string& str)
 {
-	size_t first = str.find_first_not_of(' ');
+	const size_t first = str.find_first_not_of(' ');
 	if (std::string::npos == first)
 	{
 		return str;
 	}
-	size_t last = str.find_last_not_of(' ');
+	const size_t last = str.find_last_not_of(' ');
 	return str.substr(first, (last - first + 1));
 }
 

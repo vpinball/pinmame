@@ -648,11 +648,11 @@ target_link_directories(pinmame PUBLIC
 )
 
 target_link_libraries(pinmame
-	winmm.lib
-    ddraw64.lib
-    dxguid64.lib
-    dsound64.lib
-    dinput64.lib
+   winmm.lib
+   ddraw64.lib
+   dxguid64.lib
+   dsound64.lib
+   dinput64.lib
 )
 
 target_link_options(pinmame PUBLIC

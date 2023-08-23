@@ -74,7 +74,7 @@ StreamArray channel_stream;
 
 // Structure to hold a sound command and its associated timing
 struct TestData {
-	unsigned long msec;
+	unsigned int msec;
 	uint32_t snd_cmd;
 };
 

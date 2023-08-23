@@ -36,8 +36,8 @@ typedef std::array<AltsoundStreamInfo*, ALT_MAX_CHANNELS> StreamArray;
 
 // Structure to hold information about active streams
 struct _stream_info {
-	unsigned long hstream = 0;
-	unsigned long hsync = 0;
+	unsigned int hstream = 0;
+	unsigned int hsync = 0;
 	enum AltsoundSampleType stream_type = static_cast<AltsoundSampleType>(0);
 	unsigned int channel_idx = 0;
 	std::string sample_path;
@@ -108,7 +108,7 @@ typedef struct _altsound_sample_info {
 // DAR_TODO do we need "duck" here?
 // Structure for holding G-Sound sample data
 typedef struct _gsound_sample_info {
-	unsigned int id;
+	unsigned int id = 0;
 	std::string type = "";
 	float duck = 1.0f;
 	float gain = 1.0f;

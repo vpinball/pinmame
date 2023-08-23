@@ -50,7 +50,7 @@ extern StreamArray channel_stream;
 // Behavior Management Support Globals
 // ----------------------------------------------------------------------------
 
-const unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
+constexpr unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
 
 // NOTE:
 // SFX streams don't require tracking since multiple can play simultaneously.
@@ -103,14 +103,14 @@ static std::unordered_map<AltsoundSampleType, int> streamTypeToIndex = {
 // be removed
 //
 // globals to manage stream ducking
-std::unordered_map<unsigned long, float> music_duck_vol;
-std::unordered_map<unsigned long, float> callout_duck_vol;
-std::unordered_map<unsigned long, float> sfx_duck_vol;
-std::unordered_map<unsigned long, float> solo_duck_vol;
-std::unordered_map<unsigned long, float> overlay_duck_vol;
+std::unordered_map<unsigned int, float> music_duck_vol;
+std::unordered_map<unsigned int, float> callout_duck_vol;
+std::unordered_map<unsigned int, float> sfx_duck_vol;
+std::unordered_map<unsigned int, float> solo_duck_vol;
+std::unordered_map<unsigned int, float> overlay_duck_vol;
 
 // convenience structure for working with ducking maps
-std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned long, float>*> duck_vol_map = {
+std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned int, float>*> duck_vol_map = {
 	{MUSIC, &music_duck_vol},
 	{CALLOUT, &callout_duck_vol},
 	{SFX, &sfx_duck_vol},
@@ -119,14 +119,14 @@ std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned long, float>*
 };
 
 // globals to manage stream pausing
-std::unordered_map<unsigned long, bool> music_paused;
-std::unordered_map<unsigned long, bool> callout_paused;
-std::unordered_map<unsigned long, bool> sfx_paused;
-std::unordered_map<unsigned long, bool> solo_paused;
-std::unordered_map<unsigned long, bool> overlay_paused;
+std::unordered_map<unsigned int, bool> music_paused;
+std::unordered_map<unsigned int, bool> callout_paused;
+std::unordered_map<unsigned int, bool> sfx_paused;
+std::unordered_map<unsigned int, bool> solo_paused;
+std::unordered_map<unsigned int, bool> overlay_paused;
 
 // convenience structure for working with paused maps
-std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned long, bool>*> paused_status_map = {
+std::unordered_map<AltsoundSampleType, std::unordered_map<unsigned int, bool>*> paused_status_map = {
 	{MUSIC, &music_paused},
 	{CALLOUT, &callout_paused},
 	{SFX, &sfx_paused},
@@ -166,7 +166,7 @@ extern BehaviorInfo solo_behavior;
 extern BehaviorInfo overlay_behavior;
 
 // convenience structure for working with behaviors
-std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
+std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = { //!! meh
 	{MUSIC, &music_behavior},
 	{CALLOUT, &callout_behavior},
 	{SFX, &sfx_behavior},
@@ -178,8 +178,8 @@ std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
 // CTOR/DTOR
 // ---------------------------------------------------------------------------
 
-GSoundProcessor::GSoundProcessor(const std::string& game_name, const std::string& vpm_path)
-: AltsoundProcessorBase(game_name, vpm_path),
+GSoundProcessor::GSoundProcessor(const std::string& _game_name, const std::string& _vpm_path)
+: AltsoundProcessorBase(_game_name, _vpm_path),
   is_initialized(false),
   is_stable(true), // future use
   generator(std::random_device()()) // seed random number generator
@@ -226,7 +226,7 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	}
 
 	// get sample for playback
-	int sample_idx = ALT_CALL(getSample(cmd_combined_in));
+	const int sample_idx = ALT_CALL(getSample(cmd_combined_in));
 
 	if (sample_idx == -1) {
 		// No matching command.  Clean up and exit
@@ -245,7 +245,7 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	new_stream->loop = samples[sample_idx].loop;
 	new_stream->ducking_profile = samples[sample_idx].ducking_profile;
 
-	AltsoundSampleType sample_type = toSampleType(samples[sample_idx].type);
+	const AltsoundSampleType sample_type = toSampleType(samples[sample_idx].type);
 
 	switch (sample_type) {
 	case MUSIC:
@@ -323,7 +323,7 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	ALT_CALL(adjustStreamVolumes());
 
 	// Play pending sound determined above, if any
-	std::string shortPathStr = getShortPath(new_stream->sample_path);
+	const std::string shortPathStr = getShortPath(new_stream->sample_path);
 	const char* sample_short_path = shortPathStr.c_str();
 	const char* stream_type_str = toString(new_stream->stream_type);
 
@@ -361,7 +361,7 @@ void GSoundProcessor::init()
 	cur_mus_stream_idx = UNSET_IDX;
 	cur_callout_stream_idx = UNSET_IDX;
 	cur_solo_stream_idx = UNSET_IDX;
-	cur_callout_stream_idx = UNSET_IDX;
+	cur_overlay_stream_idx = UNSET_IDX;
 	
 	if (!loadSamples()) {
 		ALT_ERROR(1, "FAILED GSoundProcessor::loadSamples()");
@@ -427,7 +427,7 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 
 	std::uniform_int_distribution<int> distribution(0, std::numeric_limits<int>::max());
 
-	for (int i = 0; i < samples.size(); ++i) {
+	for (size_t i = 0; i < samples.size(); ++i) {
 		if (samples[i].id == cmd_combined_in) {
 			matching_sample_count++;
 
@@ -576,7 +576,7 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 			if (sampleType != stream->stream_type)	{
 				// Get ducking volume for this sample to apply to the current sample type
 				if (stream->ducking_profile != 0) {
-					float duck_vol = behavior.getDuckVolume(stream->ducking_profile, sampleType);
+					const float duck_vol = behavior.getDuckVolume(stream->ducking_profile, sampleType);
 
 					auto& map = *duck_vol_map[sampleType];
 					map[stream->hstream] = duck_vol;
@@ -634,7 +634,7 @@ bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
 			auto& map = *paused_status_map[sampleType];
 
 			if (!map.empty()) {
-				unsigned long stream_id = finished_stream.hstream;
+				unsigned int stream_id = finished_stream.hstream;
 				auto it = map.find(stream_id);
 				if (it != map.end()) {
 					ALT_DEBUG(1, "Erasing pausing impact from %s stream: %u", toString(finished_stream.stream_type), finished_stream.hstream);
@@ -650,7 +650,7 @@ bool GSoundProcessor::postProcessBehaviors(const BehaviorInfo& behavior,
 			auto& map = *duck_vol_map[sampleType];
 
 			if (!map.empty()) {
-				unsigned long stream_id = finished_stream.hstream;
+				unsigned int stream_id = finished_stream.hstream;
 				auto it = map.find(stream_id);
 				if (it != map.end()) {
 					ALT_DEBUG(1, "Erasing ducking impact from %s stream: %u", toString(finished_stream.stream_type), finished_stream.hstream);
@@ -732,12 +732,12 @@ bool GSoundProcessor::stopExclusiveStream(const AltsoundSampleType stream_type)
 	postProcessBehaviors(*behavior_map[stream_type], *cur_stream);
 
 	HSTREAM hstream = cur_stream->hstream;
-	unsigned int ch_idx = cur_stream->channel_idx;
+	const unsigned int ch_idx = cur_stream->channel_idx;
 
 	ALT_INFO(1, "Current stream(%s): HSTREAM: %u  CH: %02d",
 		getShortPath(getShortPath(cur_stream->sample_path)).c_str(), hstream, ch_idx);
 
-	bool success = stopStream(hstream);
+	const bool success = stopStream(hstream);
 	if (success) {
 		ALT_INFO(1, "Stopped %s stream: %u  Chan: %02d", toString(stream_type), hstream, ch_idx);
 		delete channel_stream[ch_idx];
@@ -777,8 +777,8 @@ void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWOR
 		return;
 	}
 
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
-	AltsoundSampleType stream_type = stream_inst->stream_type;
+	const unsigned int inst_ch_idx = stream_inst->channel_idx;
+	const AltsoundSampleType stream_type = stream_inst->stream_type;
 
 	BehaviorInfo behavior;
 	switch (stream_type) {
@@ -867,9 +867,9 @@ bool GSoundProcessor::adjustStreamVolumes()
 		//	{SOLO, &solo_behavior},
 		//	{OVERLAY, &overlay_behavior}
 		//};
-		float grp_vol = behavior_map[stream.stream_type]->group_vol;
+		const float grp_vol = behavior_map[stream.stream_type]->group_vol;
 
-		AltsoundSampleType stream_type = stream.stream_type;
+		const AltsoundSampleType stream_type = stream.stream_type;
 
 		switch (stream_type) {
 		case MUSIC:
@@ -893,7 +893,7 @@ bool GSoundProcessor::adjustStreamVolumes()
 
 		ALT_DEBUG(1, "%s ducking volume: %.02f", toString(stream_type), ducking_value);
 
-		float adjusted_vol = stream.gain * ducking_value * grp_vol;
+		const float adjusted_vol = stream.gain * ducking_value * grp_vol;
 		if (!setStreamVolume(stream.hstream, adjusted_vol)) {
 			ALT_ERROR(1, "FAILED setStreamVolume()");
 			success = false;
@@ -953,7 +953,7 @@ bool GSoundProcessor::tryResumeStream(const AltsoundStreamInfo& stream)
 	const auto& pauseMap = *pauseStatusMapIter->second;
 
 	// Search the pause map for any value that is true (indicating a pause)
-	bool shouldRemainPaused = std::any_of(pauseMap.begin(), pauseMap.end(),
+	const bool shouldRemainPaused = std::any_of(pauseMap.begin(), pauseMap.end(),
 		[](const auto& valuePair) { return valuePair.second; });
 
 	if (!shouldRemainPaused) {
@@ -997,7 +997,7 @@ float GSoundProcessor::findLowestDuckVolume(AltsoundSampleType stream_type)
 	}
 
 	// Search for lowest volume in the map, defaulting to 1.0f if empty
-	float min_vol = std::accumulate(map->begin(), map->end(), 1.0f,
+	const float min_vol = std::accumulate(map->begin(), map->end(), 1.0f,
 		[](float currentMin, const auto& pair) { return std::min(currentMin, pair.second); });
 
 	ALT_DEBUG(1, "Min ducking value for %s streams: %.02f", toString(stream_type), min_vol);

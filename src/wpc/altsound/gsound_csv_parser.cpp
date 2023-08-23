@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <algorithm>
 
 #include "altsound_logger.hpp"
 
@@ -25,8 +26,7 @@ extern AltsoundLogger alog;
 // ----------------------------------------------------------------------------
 
 GSoundCsvParser::GSoundCsvParser(const std::string& path_in)
-: altsound_path(path_in),
-  filename()
+: altsound_path(path_in)
 {
 	filename = altsound_path + "/g-sound.csv";
 }
@@ -106,7 +106,7 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 			}
 			else {
 				ALT_ERROR(1, "Failed to parse TYPE field");
-				entry.type = "";
+				entry.type.clear();
 				success = false;
 				break;
 			}
@@ -149,7 +149,7 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 				if (field.empty()) {
 					ALT_ERROR(1, "Sample filename is blank");
 					success = false;
-					entry.fname = "";  // assign some default value
+					entry.fname.clear();  // assign some default value
 					break;
 				}
 
@@ -162,7 +162,7 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 			else {
 				ALT_ERROR(1, "Failed to parse FNAME");
 				success = false;
-				entry.fname = "";  // assign some default value
+				entry.fname.clear();  // assign some default value
 				break;
 			}
 

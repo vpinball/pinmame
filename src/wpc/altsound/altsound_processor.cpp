@@ -48,7 +48,7 @@ extern StreamArray channel_stream;
 
 extern AltsoundLogger alog;
 
-const unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
+constexpr unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
 
 // ---------------------------------------------------------------------------
 // CTOR/DTOR
@@ -102,19 +102,19 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		else {
 			ALT_ERROR(0, "AltsoundProcessor is unstable. Processing skipped");
 		}
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END AltsoundProcessor::handleCmd()");
 		return false;
 	}
 
 	// get sample for playback
-	int sample_idx = getSample(cmd_combined_in);
+	const unsigned int sample_idx = getSample(cmd_combined_in);
 
 	if (sample_idx == UNSET_IDX) {
 		// No matching command.  Clean up and exit
 		ALT_ERROR(0, "FAILED AltsoundProcessor::get_sample(%u)", cmd_combined_in);
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END AltsoundProcessor::handleCmd()");
 		return false;
@@ -134,7 +134,7 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	new_stream->loop        = samples[sample_idx].loop;
 	new_stream->gain        = samples[sample_idx].gain;
 
-	unsigned int sample_channel = samples[sample_idx].channel;
+	const int sample_channel = samples[sample_idx].channel;
 
 	if (sample_channel == 1) {
 		// Command is for playing Jingle/Single
@@ -204,13 +204,13 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	}
 
 	// Get lowest ducking value from all channels (including music, jingle)
-	float min_ducking = getMinDucking();
+	const float min_ducking = getMinDucking();
 	ALT_INFO(0, "Min ducking value: %.02f", min_ducking);
 
 	// set new music volume	
 	if (cur_mus_stream) {
 		// calculate ducked volume for music
-		float adj_mus_vol = cur_mus_stream->gain * min_ducking;
+		const float adj_mus_vol = cur_mus_stream->gain * min_ducking;
 		setStreamVolume(cur_mus_stream->hstream, adj_mus_vol);
 	}
 	else {
@@ -322,7 +322,7 @@ unsigned int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
 	unsigned int sample_idx = UNSET_IDX;
 
 	// Look for sample that matches the current command
-	for (int i = 0; i < samples.size(); ++i) {
+	for (size_t i = 0; i < samples.size(); ++i) {
 		if (samples[i].id == cmd_combined_in) {
 			// Current ID matches the command. Check if there are more samples for this
 			// command and randomly pick one
@@ -500,7 +500,7 @@ bool AltsoundProcessor::stopMusicStream()
 
 	if (cur_mus_stream) {
 		HSTREAM hstream = cur_mus_stream->hstream;
-		unsigned int ch_idx = cur_mus_stream->channel_idx;
+		const unsigned int ch_idx = cur_mus_stream->channel_idx;
 		ALT_INFO(0, "Current MUSIC stream(%s): HSTREAM: %u  CH: %02d",
 			  getShortPath(cur_mus_stream->sample_path).c_str(), hstream,
 			  cur_mus_stream->channel_idx);
@@ -533,7 +533,7 @@ bool AltsoundProcessor::stopJingleStream()
 
 	if (cur_jin_stream) {
 		HSTREAM hstream = cur_jin_stream->hstream;
-		unsigned int ch_idx = cur_jin_stream->channel_idx;
+		const unsigned int ch_idx = cur_jin_stream->channel_idx;
 
 		if (stopStream(hstream)) {
 			ALT_INFO(0, "Stopped JINGLE stream: %u  Chan: %02d", hstream, ch_idx);
@@ -584,7 +584,7 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 	}
 
 	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
+	const unsigned int inst_ch_idx = stream_inst->channel_idx;
 
 	ALT_INFO(0, "JINGLE stream(%u) finished on ch(%02d)", inst_hstream, inst_ch_idx);
 
@@ -603,11 +603,11 @@ void CALLBACK AltsoundProcessor::jingle_callback(HSYNC handle, DWORD channel,\
 		ALT_INFO(0, "Adjusting MUSIC volume");
 
 		// re-calculate music ducking based on active channels.
-		float min_ducking = getMinDucking();
+		const float min_ducking = getMinDucking();
 		ALT_INFO(0, "Min ducking value: %.02f", min_ducking);
 
 		// set new music volume
-		float adj_mus_vol = cur_mus_stream->gain * min_ducking;
+		const float adj_mus_vol = cur_mus_stream->gain * min_ducking;
 		setStreamVolume(mus_hstream, adj_mus_vol);
 
 		// DAR@20230622
@@ -655,7 +655,7 @@ void CALLBACK AltsoundProcessor::sfx_callback(HSYNC handle, DWORD channel,\
 	}
 
 	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
+	const unsigned int inst_ch_idx = stream_inst->channel_idx;
 		
 	ALT_INFO(0, "SFX stream(%u) finished on CH(%02d)", inst_hstream, inst_ch_idx);
 
@@ -673,11 +673,11 @@ void CALLBACK AltsoundProcessor::sfx_callback(HSYNC handle, DWORD channel,\
 		ALT_INFO(0, "Adjusting MUSIC volume");
 
 		// re-calculate music ducking based on active channels.
-		float min_ducking = getMinDucking();
+		const float min_ducking = getMinDucking();
 		ALT_INFO(0, "Min ducking value: %.02f", min_ducking);
 
 		// set new music volume
-		float adj_mus_vol = cur_mus_stream->gain * min_ducking;
+		const float adj_mus_vol = cur_mus_stream->gain * min_ducking;
 		setStreamVolume(mus_hstream, adj_mus_vol);
 	}
 	
@@ -717,7 +717,7 @@ void CALLBACK AltsoundProcessor::music_callback(HSYNC handle, DWORD channel,\
 	}
 
 	HSTREAM inst_hstream = stream_inst->hstream;
-	unsigned int inst_ch_idx = stream_inst->channel_idx;
+	const unsigned int inst_ch_idx = stream_inst->channel_idx;
 
 	ALT_INFO(0, "MUSIC stream(%u) finished on ch(%02d)", inst_hstream, inst_ch_idx);
 
@@ -745,11 +745,11 @@ float AltsoundProcessor::getMinDucking()
 	float min_ducking = 1.0f;
 	int num_x_streams = 0;
 
-	for (int index = 0; index < channel_stream.size(); ++index) {
+	for (size_t index = 0; index < channel_stream.size(); ++index) {
 		const auto stream = channel_stream[index];
 		if (stream) {
 			// stream defined on the channel
-			ALT_INFO(1, "Channel_stream[%d]: STREAM: %u  DUCKING: %0.02f", index, stream->hstream, stream->ducking);
+			ALT_INFO(1, "Channel_stream[%u]: STREAM: %u  DUCKING: %0.02f", index, stream->hstream, stream->ducking);
 
 			num_x_streams++;
 

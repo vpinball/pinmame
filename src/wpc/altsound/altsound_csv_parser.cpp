@@ -9,6 +9,7 @@
 #include "altsound_csv_parser.hpp"
 
 #include <iomanip>
+#include <algorithm>
 
 #include "altsound_logger.hpp"
 
@@ -19,8 +20,7 @@ extern AltsoundLogger alog;
 // ----------------------------------------------------------------------------
 
 AltsoundCsvParser::AltsoundCsvParser(const std::string& altsound_path_in)
-: altsound_path(altsound_path_in),
-  filename()
+: altsound_path(altsound_path_in)
 {
 	filename = altsound_path + "/altsound.csv";
 }
@@ -84,7 +84,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 					entry.channel = -1;
 				}
 				else {
-					unsigned int val = std::stoul(trimmed);
+					int val = std::stoi(trimmed);
 					if (val == 0 || val == 1) {
 						entry.channel = val;
 					}
@@ -106,7 +106,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 			// DUCK
 			if (std::getline(ss, field, ',')) {
 				float val = std::stof(trim(field));
-				entry.ducking = val < 0.0 ? -1.0f : val > 100.0f ? 1.0f : val / 100.0f;
+				entry.ducking = val < 0.0f ? -1.0f : val > 100.0f ? 1.0f : val / 100.0f;
 			}
 			else {
 				ALT_ERROR(0, "Failed to parse sample DUCK value");
@@ -155,7 +155,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 			}
 			else {
 				success = false;
-				entry.name = "";  // assign some default value
+				entry.name.clear();  // assign some default value
 			}
 
 			// FNAME
@@ -165,7 +165,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 				if (field.empty()) {
 					ALT_ERROR(1, "Sample filename is blank");
 					success = false;
-					entry.fname = "";  // assign some default value
+					entry.fname.clear();  // assign some default value
 					break;
 				}
 
@@ -178,7 +178,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 			else {
 				ALT_ERROR(1, "Failed to parse FNAME");
 				success = false;
-				entry.fname = "";  // assign some default value
+				entry.fname.clear();  // assign some default value
 				break;
 			}
 
@@ -186,8 +186,8 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 			std::ostringstream debug_stream;
 			debug_stream << "ID = 0x" << std::setfill('0') << std::setw(4) << std::hex << entry.id << std::dec
- 						 << ", CHANNEL = " << entry.channel
- 						 << ", DUCKING = " << std::fixed << std::setprecision(2) << entry.ducking
+						 << ", CHANNEL = " << entry.channel
+						 << ", DUCKING = " << std::fixed << std::setprecision(2) << entry.ducking
 						 << ", GAIN = " << std::fixed << std::setprecision(2) << entry.gain
 						 << ", LOOP = " << entry.loop
 						 << ", NAME = " << entry.name
