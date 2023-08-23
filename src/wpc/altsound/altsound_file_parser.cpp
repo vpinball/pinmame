@@ -82,16 +82,16 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		const std::string subpath = (i == 0) ? path_jingle :
 			((i == 1) ? path_music :
 			((i == 2) ? path_sfx :
-				((i == 3) ? path_single : path_voice)));
+			((i == 3) ? path_single : path_voice)));
 
 		// Set default ducking values.  Can be overridden by ducking.txt file
 		if (subpath == path_jingle || subpath == path_single) {
 			default_ducking = .1f; // % music volume retained when active
 		}
-		if (subpath == path_sfx) {
+		else if (subpath == path_sfx) {
 			default_ducking = .8f;
 		}
-		if (subpath == path_voice) {
+		else if (subpath == path_voice) {
 			default_ducking = .65f;
 		}
 
@@ -127,10 +127,10 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 		// parse individual sound file data
 		entry = readdir(dir);
-		while (entry != NULL) {
+		while (entry != nullptr) {
 			if (entry->d_name[0] != '.'
-				&& strstr(entry->d_name, ".txt") == 0
-				&& strstr(entry->d_name, ".ini") == 0)
+				&& strstr(entry->d_name, ".txt") == nullptr
+				&& strstr(entry->d_name, ".ini") == nullptr)
 			{
 				// Not a system file or txt file.  Assume it's a directory
 				// (per PinSound format requirements).  Backup the current
@@ -164,10 +164,10 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 				ALT_INFO(1, "opendir(%s)", PATH2.c_str());
 
 				entry2 = readdir(dir2);
-				while (entry2 != NULL) {
+				while (entry2 != nullptr) {
 					if (entry2->d_name[0] != '.'
-						&& strstr(entry2->d_name, ".txt") == 0
-						&& strstr(entry2->d_name, ".ini") == 0)
+						&& strstr(entry2->d_name, ".txt") == nullptr
+						&& strstr(entry2->d_name, ".ini") == nullptr)
 					{
 						//LOG(("CURRENT_ENTRY2: %s\n", entry->d_name));
 						const char* ptr = strrchr(PATH2.c_str(), '/');
@@ -243,7 +243,7 @@ float AltsoundFileParser::parseFileValue(const std::string& filePath, bool isGai
 	fscanf(f, "%d", &tmpValue);
 	fclose(f);
 
-	if (isGain) { //!! both are the same?!
+	if (isGain) { // both being the same is as intended for now
 		return tmpValue > 100 ? 1.0f : (float)tmpValue / 100.f;
 	}
 	else {

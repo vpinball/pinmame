@@ -2,7 +2,7 @@
 // altsound_csv_parser.hpp
 // 06/23/23 - Dave Roscoe
 //
-// Parser for legacy and traditional altsound format CSV files
+// Parser for legacy and traditional AltSound format CSV files
 // ---------------------------------------------------------------------------
 // license:<TODO>
 // ---------------------------------------------------------------------------
