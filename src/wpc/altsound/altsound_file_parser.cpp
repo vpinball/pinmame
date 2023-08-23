@@ -104,14 +104,14 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		// Check for new default gain
 		{
 		std::string PATHG = PATH + "gain.txt";
-		float parsedGain = parseFileValue(PATHG, true);
+		float parsedGain = parseFileValue(PATHG);
 		if (parsedGain != -1.0f) {
 			default_gain = parsedGain;
 		}
 
 		// Check for new default ducking
 		PATHG = PATH + "ducking.txt";
-		float parsedDucking = parseFileValue(PATHG, false);
+		float parsedDucking = parseFileValue(PATHG);
 		if (parsedDucking != -1.0f) {
 			default_ducking = parsedDucking;
 		}
@@ -148,14 +148,14 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 				// Check for overriding gain value
 				std::string PATHG = PATH2 + '/' + "gain.txt";
-				float parsedGain = parseFileValue(PATHG, true);
+				float parsedGain = parseFileValue(PATHG);
 				if (parsedGain != -1.0f) {
 					gain = parsedGain;
 				}
 
 				// check for overriding ducking value
 				PATHG = PATH2 + '/' + "ducking.txt";
-				float parsedDucking = parseFileValue(PATHG, false);
+				float parsedDucking = parseFileValue(PATHG);
 				if (parsedDucking != -1.0f) {
 					ducking = parsedDucking;
 				}
@@ -233,20 +233,25 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 // ----------------------------------------------------------------------------
 
-float AltsoundFileParser::parseFileValue(const std::string& filePath, bool isGain)
+float AltsoundFileParser::parseFileValue(const std::string& filePath)
 {
 	FILE *f = fopen(filePath.c_str(), "r");
 	if (!f) {
-		return -1.0f;  // File not found
+		// file not found
+		return -1.0f;
 	}
-	int tmpValue = 0;
-	fscanf(f, "%d", &tmpValue);
-	fclose(f);
 
-	if (isGain) { //!! both are the same?!
-		return tmpValue > 100 ? 1.0f : (float)tmpValue / 100.f;
+	int tmpValue = 0;
+	if (fscanf(f, "%d", &tmpValue) != 1) {
+		// failed to read an integer from file
+		fclose(f);
+		return -1.0f;
 	}
-	else {
-		return tmpValue > 100 ? 1.0f : (float)tmpValue / 100.f;
+
+	if (fclose(f) != 0) { // Check for closing success
+		// failed to close file
+		return -1.0f;
 	}
+
+	return tmpValue >= 100 ? 1.0f : tmpValue < 0.0f ? 0.0f : (float)tmpValue / 100.f;
 }

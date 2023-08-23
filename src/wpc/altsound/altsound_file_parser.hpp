@@ -22,7 +22,7 @@ protected:
 
 private: // functions
 	
-	float parseFileValue(const std::string& filePath, bool isGain);
+	float parseFileValue(const std::string& filePath);
 
 private: // data
 	std::string altsound_path;
