@@ -6,6 +6,8 @@
 #pragma once
 #endif
 
+#include "pinmame.h"
+
 #ifdef ENABLE_MECHANICAL_SAMPLES
 
 /*Exported Functions*/

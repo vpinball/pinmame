@@ -18,12 +18,12 @@
            match is found! (SJE)
 */
 
-#ifdef ENABLE_MECHANICAL_SAMPLES
-
 #include "driver.h"
 #include "core.h"
 #include "wpc.h"
 #include "wpcsam.h"
+
+#ifdef ENABLE_MECHANICAL_SAMPLES
 
 /*----------------
 / Samples
