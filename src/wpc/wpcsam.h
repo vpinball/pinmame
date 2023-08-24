@@ -6,7 +6,7 @@
 #pragma once
 #endif
 
-#include "..\pinmame.h"
+#include "pinmame.h"
 
 #ifdef ENABLE_MECHANICAL_SAMPLES
 
