@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // altsound_csv_parser.hpp
 //
-// Parser for legacy and traditional altsound format CSV files
+// Parser for legacy and traditional AltSound format CSV files
 // ---------------------------------------------------------------------------
 // license:BSD-3-Clause
 // copyright-holders:Carsten Wächter, Dave Roscoe

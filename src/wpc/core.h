@@ -476,7 +476,9 @@ typedef struct {
     int  (*getMech)(int mechNo);      /* get status of mechanics */
     void (*drawMech)(BMTYPE **line); /* draw game specific hardware */
     core_tLampDisplay *lampData;      /* lamp layout */
+#ifdef ENABLE_MECHANICAL_SAMPLES
     wpc_tSamSolMap   *solsammap;      /* solenoids samples */
+#endif
   } hw;
   const void *simData;
   struct { /* WPC specific stuff */

@@ -358,6 +358,7 @@ static core_tLampDisplay taf_lampPos = {
 //sThMotor
 //sBookMotor
 //sSwampRel
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap taf_SamSolMap[] = {
  /*Channel #0*/
  //{sKnocker,0,SAM_KNOCKER},
@@ -376,6 +377,7 @@ static wpc_tSamSolMap taf_SamSolMap[] = {
 {sThHole,3,SAM_SOLENOID}, {sThKick,3,SAM_SOLENOID},
 {-1}
 };
+#endif
 
 static void taf_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"Book: %-6s", core_getSw(swBookOpen) ? "Open" : (core_getSw(swBookClose) ? "Closed" : ""));
@@ -572,7 +574,10 @@ static core_tGameData tafGameData = {
     FLIP_BUT(FLIP_L) | FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L|FLIP_U),
     0,0,0,0,0,0,0,
     NULL, taf_handleMech, taf_getMech, taf_drawMech,
-    &taf_lampPos, taf_SamSolMap
+    &taf_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , taf_SamSolMap
+#endif
   },
   &tafSimData,
   {

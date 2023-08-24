@@ -391,6 +391,7 @@ static void br_drawStatic(BMTYPE **line) {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap br_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -408,6 +409,7 @@ static wpc_tSamSolMap br_samsolmap[] = {
  {sBallLockup,3,SAM_SOLENOID_ON}, {sBallLockup,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sRampUp,3,SAM_FLAPOPEN}, {sRampDown,3,SAM_FLAPCLOSE},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -476,13 +478,13 @@ CORE_CLONEDEF (br,d3,l4,"Black Rose (D-3 LED Ghost Fix)",1993,"Bally",wpc_mFlipt
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData brSimData = {
-  2,    				/* 2 game specific input ports */
-  br_stateDef,				/* Definition of all states */
-  br_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  br_stateDef,			/* Definition of all states */
+  br_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  br_handleBallState,			/*Function to handle ball state changes*/
-  br_drawStatic,			/*Function to handle mechanical state changes*/
+  br_handleBallState,	/*Function to handle ball state changes*/
+  br_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -496,7 +498,10 @@ static core_tGameData brGameData = {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,0,0,0,0,0,
     NULL, br_handleMech, br_getMech, br_drawMech,
-    NULL, br_samsolmap
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , br_samsolmap
+#endif
   },
   &brSimData,
   {

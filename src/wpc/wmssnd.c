@@ -18,7 +18,7 @@
 
 // Enables some subtle low pass on the DCS output to potentially(!) avoid a bit of noise. 
 // As the real HW also has a bunch of lowpass filters, it would be interesting to 
-// check the direct output of the DCS chip on real hardware if it also features a 
+// check the direct output of the DCS chip on real hardware if it features a 
 // bit of noise or not at that stage (e.g. before all the filters).
 //
 // [MJR] - The real 
@@ -29,7 +29,7 @@
 // out most of the output above 18875 Hz, which is probably right around the Nyquist
 // limit for the sampling rate they're using.
 //
-// NOTE: it seems like the mentioned noise in the first comment was only caused by an emulation defect/bug,
+// UPDATE: it seems like the mentioned noise in the first comment was only caused by an emulation defect/bug,
 // thus for now, disable the low-pass filters and prefer 1:1 DCS audio quality output.
 //#define DCS_LOWPASS
 
@@ -320,7 +320,9 @@ MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, s67s_dacInt)
   MDRV_SOUND_ADD(HC55516, s67s_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static struct {
@@ -446,7 +448,9 @@ MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC,    s9s_dacInt)
   MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static MEMORY_READ_START(s11s_readmem)
@@ -473,7 +477,9 @@ MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC,    s9s_dacInt)
   MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wmssnd_s11xs)
@@ -636,7 +642,9 @@ MACHINE_DRIVER_START(wmssnd_s9ps)
   MDRV_CPU_MEMORY(s9p_readmem, s9p_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("dac",  DAC,    s9p_dacInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 /*--------------------------
@@ -736,7 +744,9 @@ MACHINE_DRIVER_START(wmssnd_s11cs)
   MDRV_SOUND_ADD(YM2151, s11cs_ym2151Int)
   MDRV_SOUND_ADD_TAG("dac",  DAC,    s11cs_dacInt)
   MDRV_SOUND_ADD_TAG("cvsd", HC55516,s11cs_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static const struct pia6821_interface s11cs_pia = {
@@ -854,7 +864,9 @@ MACHINE_DRIVER_START(wmssnd_s11js)
   MDRV_CPU_MEMORY(s11js_readmem, s11js_writemem)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151, s11js_ym2151Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static WRITE_HANDLER(s11js_rombank_w) {
@@ -1124,7 +1136,9 @@ MACHINE_DRIVER_START(wmssnd_wpcs)
   MDRV_SOUND_ADD(YM2151, wpcs_ym2151Int)
   MDRV_SOUND_ADD(DAC,    wpcs_dacInt)
   MDRV_SOUND_ADD(HC55516,wpcs_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 #ifdef PREDCS_FIRQ_HACK
   //Force the FIRQ to toggle @ the specified rate, but only while the 2151 is not outputting sound
   MDRV_TIMER_ADD(firq_hack, FIRQ_HACK_RATE)
@@ -1274,7 +1288,9 @@ MACHINE_DRIVER_START(wmssnd_dcs1)
   MDRV_CPU_MEMORY(dcs1_readmem, dcs1_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static MEMORY_READ16_START(dcs2_readmem)
@@ -1308,7 +1324,9 @@ MACHINE_DRIVER_START(wmssnd_dcs2)
   MDRV_CPU_MEMORY(dcs2_readmem, dcs2_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 /*----------------

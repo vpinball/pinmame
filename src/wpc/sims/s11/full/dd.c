@@ -357,6 +357,7 @@ static core_tLampDisplay dd_lampPos = {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap dd_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -373,6 +374,7 @@ static wpc_tSamSolMap dd_samsolmap[] = {
  /*Channel #3*/
  {sLPopper,3,SAM_POPPER},  {sRPopper,3,SAM_POPPER},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -446,7 +448,10 @@ static core_tGameData ddGameData = {
     FLIP_SWNO(swLFlip,swRFlip),
     0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2,0,
     NULL, dd_handleMech, NULL, NULL,
-    &dd_lampPos, dd_samsolmap
+    &dd_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , dd_samsolmap
+#endif
   },
   &ddSimData,
   {{ 0 }},

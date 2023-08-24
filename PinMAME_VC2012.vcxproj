@@ -506,6 +506,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ext\ymfm\ymfm_adpcm.cpp" />
+    <ClCompile Include="ext\ymfm\ymfm_opl.cpp" />
+    <ClCompile Include="ext\ymfm\ymfm_opm.cpp" />
+    <ClCompile Include="ext\ymfm\ymfm_pcm.cpp" />
     <ClCompile Include="ext\zlib\adler32.c" />
     <ClCompile Include="ext\zlib\compress.c" />
     <ClCompile Include="ext\zlib\crc32.c" />
@@ -1377,6 +1381,16 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\zacgames.c" />
     <ClCompile Include="src\wpc\zacproto.c" />
     <ClCompile Include="src\wpc\zacsnd.c" />
+    <ClCompile Include="src\wpc\altsound\altsound_csv_parser.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_data.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_file_parser.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_ini_processor.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_logger.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_processor.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_processor_base.cpp" />
+    <ClCompile Include="src\wpc\altsound\gsound_csv_parser.cpp" />
+    <ClCompile Include="src\wpc\altsound\gsound_processor.cpp" />
+    <ClCompile Include="src\wpc\altsound\snd_alt.cpp" />
     <ClCompile Include="src\wpc\sims\s11\full\dd.c" />
     <ClCompile Include="src\wpc\sims\s11\full\milln.c" />
     <ClCompile Include="src\wpc\sims\s11\prelim\eatpm.c" />
@@ -1436,6 +1450,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="ext\vgm\vgmwrite.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\ymfm\ymfm_opm.h" />
     <ClInclude Include="ext\zlib\crc32.h" />
     <ClInclude Include="ext\zlib\deflate.h" />
     <ClInclude Include="ext\zlib\gzguts.h" />
@@ -1660,6 +1675,17 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\wpc\wpcsam.h" />
     <ClInclude Include="src\wpc\zac.h" />
     <ClInclude Include="src\wpc\zacsnd.h" />
+    <ClCompile Include="src\wpc\altsound\altsound_csv_parser.hpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_data.hpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_file_parser.hpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_ini_processor.hpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_logger.hpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_processor.hpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_processor_base.hpp" />
+    <ClCompile Include="src\wpc\altsound\gsound_csv_parser.hpp" />
+    <ClCompile Include="src\wpc\altsound\gsound_processor.hpp" />
+    <ClCompile Include="src\wpc\altsound\inipp.h" />
+    <ClCompile Include="src\wpc\altsound\snd_alt.h" />
     <ClInclude Include="src\vc\dirent.h" />
     <ClInclude Include="src\vc\unistd.h" />
     <ClInclude Include="ext\vgm\vgmwrite.h" />

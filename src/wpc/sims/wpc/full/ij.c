@@ -408,7 +408,7 @@ static int ij_handleBallState(sim_tBallStatus *ball, int *inports) {
 
     case stIdol4:
       if ( core_getSol(sIdolRelease) )
-      	return setState(stIdolExit,2);
+        return setState(stIdolExit,2);
       /* fall through */
 
     case stIdol1:
@@ -537,6 +537,7 @@ static core_tLampDisplay ij_lampPos = {
 }
 };
 
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap ij_SamSolMap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER},
@@ -566,6 +567,7 @@ static wpc_tSamSolMap ij_SamSolMap[] = {
 
  {sIdolRelease, 4, SAM_SOLENOID_ON}, {sIdolRelease, 4, SAM_SOLENOID_OFF, WPCSAM_F_ONOFF},{-1}
 };
+#endif
 
 static void ij_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Idol Position: %3d",locals.idolPos);
@@ -783,7 +785,10 @@ static core_tGameData ijGameData = {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
     1,0,7,0,0,0,0,
     ij_getSol, ij_handleMech, ij_getMech, ij_drawMech,
-    &ij_lampPos, ij_SamSolMap
+    &ij_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , ij_SamSolMap
+#endif
   },
   &ijSimData,
   {

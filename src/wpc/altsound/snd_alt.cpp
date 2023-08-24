@@ -88,7 +88,7 @@ BOOL run_once = TRUE;
 BOOL altsound_stable = TRUE;
 
 // Processing instance to specialize command handling
-AltsoundProcessorBase *processor = NULL;
+AltsoundProcessorBase *processor = nullptr;
 
 // Use ROM control commands to control master volume
 bool use_rom_ctrl = true;
@@ -208,7 +208,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	if (processor) {
 		ALT_ERROR(0, "Processor already defined");
 		delete processor;
-		processor = NULL;
+		processor = nullptr;
 	}
 
 	// initialize channel_stream storage
@@ -428,6 +428,8 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		(hardware_gen == GEN_WPC95DCS) ||
 		(hardware_gen == GEN_WPC95))
 	{
+		// For future improvements, also check https://github.com/mjrgh/DCSExplorer/ for a lot of new info on the DCS inner workings
+
 		ALT_DEBUG(0, "Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95");
 
 		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA)) // change volume?

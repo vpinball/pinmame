@@ -329,6 +329,7 @@ static sim_tInportData hd_inportData[] = {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap hd_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -349,6 +350,7 @@ static wpc_tSamSolMap hd_samsolmap[] = {
  {sTLEject,3,SAM_POPPER}, {sTREject,3,SAM_POPPER},
  {sLREject,3,SAM_POPPER},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -412,13 +414,13 @@ CORE_GAMEDEFNV(che_cho,"Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficia
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData hdSimData = {
-  2,    				/* 2 game specific input ports */
-  hd_stateDef,				/* Definition of all states */
-  hd_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  hd_stateDef,			/* Definition of all states */
+  hd_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  hd_handleBallState,			/*Function to handle ball state changes*/
-  hd_drawStatic,			/*Function to handle mechanical state changes*/
+  hd_handleBallState,	/*Function to handle ball state changes*/
+  hd_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -436,7 +438,10 @@ static core_tGameData hdGameData = {
     FLIP_SWNO(12,11),
     0,0,0,0,0,0,0,
     NULL, hd_handleMech, NULL, NULL,
-    NULL, hd_samsolmap
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , hd_samsolmap
+#endif
   },
   &hdSimData,
   {
@@ -467,5 +472,4 @@ static void hd_handleMech(int mech) {
      ---------------------------------------- */
   if ((mech & 0x02) && core_getSol(sCDrop))
     { core_setSw(swharLey,0) ; core_setSw(swharlEy,0) ; core_setSw(swharleY,0); }
-
 }

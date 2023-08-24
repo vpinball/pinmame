@@ -628,7 +628,10 @@ static core_tGameData nggGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,8,0,0,1,0,
     ngg_getSol, ngg_handleMech, ngg_getMech, ngg_drawMech,
-    &ngg_lampPos, NULL
+    &ngg_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &nggSimData,
   {
@@ -809,4 +812,3 @@ static const char* showramp(int lr)
   else
     return "Ramp";
 }
-

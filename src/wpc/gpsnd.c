@@ -511,12 +511,11 @@ static  INT16  sineWaveinp[] = {
 
 
 static void oneshoot (int param) {
-
    logerror("oneshoot time ca1 started \n");
    gps_locals.stateca1 = 1;
 }
 
-static void playsam1(int param){
+static void playsam1(int param) {
 // timer 1 (q1) is easy wave 
   if ((gps_locals.cr1 & 0x80)  && (gps_locals.timlat1 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), (int)(gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137), 1);
@@ -529,7 +528,7 @@ static void playsam1(int param){
   }
 }
 
-static void playsam2(int param){
+static void playsam2(int param) {
 // timer 2 (q2) is easy wave 
   if ((gps_locals.cr2 & 0x80)  && (gps_locals.timlat2 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+1))	{	// is already playing
@@ -541,7 +540,7 @@ static void playsam2(int param){
   }
 }
 
-static void playsam3(int param){
+static void playsam3(int param) {
 // timer 3 (q3) is easy wave 
   if ((gps_locals.cr3 & 0x80)  && (gps_locals.timlat3 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+2))	{	// is already playing
@@ -932,17 +931,23 @@ static struct CustomSound_interface msu1_custInt = {msu1_sh_start, msu1_sh_stop}
 
 MACHINE_DRIVER_START(gpSSU1)
   MDRV_SOUND_ADD(SN76477, gpSS1_sn76477Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpSSU2)
   MDRV_SOUND_ADD(SN76477, gpSS2_sn76477Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpSSU4)
   MDRV_SOUND_ADD(SN76477, gpSS4_sn76477Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpMSU1)
@@ -950,7 +955,9 @@ MACHINE_DRIVER_START(gpMSU1)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps_readmem, gps_writemem)
   MDRV_SOUND_ADD(CUSTOM, msu1_custInt) // uses an MC6840, to be implemented yet!
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
   MDRV_TIMER_ADD(pia_cb1_w, 413.793 * 2)
 MACHINE_DRIVER_END
 
@@ -965,6 +972,8 @@ MACHINE_DRIVER_START(gpMSU3)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps3_readmem, gps3_writemem)
   MDRV_SOUND_ADD(DAC, msu3_dacInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
   MDRV_TIMER_ADD(pia_cb1_w, 413.793 * 2)
 MACHINE_DRIVER_END

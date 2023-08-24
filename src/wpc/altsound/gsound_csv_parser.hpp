@@ -38,10 +38,10 @@ public: // data
 protected:
 
 	// Default constructor
-	GSoundCsvParser() {/* not used */ };
+	GSoundCsvParser() {/* not used */ }
 
 	// Copy constructor
-	GSoundCsvParser(GSoundCsvParser&) {/* not used */ };
+	GSoundCsvParser(GSoundCsvParser&) {/* not used */ }
 
 private: // functions
 

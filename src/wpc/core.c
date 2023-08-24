@@ -2279,7 +2279,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
    default:
    {
       // Default is the modulated solenoid values as computed by each hardware drivers if implemented or the non modulated value
-      int index = ((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput);
+      int index = (int)(((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput));
       if (index < CORE_MODOUT_SOL_MAX)
       {
          // For the time being, only GTS3, WPC and SAM have modulated solenoids direclty implemented in the driver

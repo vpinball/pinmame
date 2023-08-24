@@ -516,6 +516,7 @@ static core_tLampDisplay sttng_lampPos = {
 }
 };
 
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap sttng_SamSolMap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sPlunger,0,SAM_SOLENOID},
@@ -544,6 +545,7 @@ static wpc_tSamSolMap sttng_SamSolMap[] = {
  /*Channel #5*/
  {sLGunMotor,5,SAM_MOTOR_1, WPCSAM_F_CONT}, {sRGunMotor,5,SAM_MOTOR_1, WPCSAM_F_CONT},{-1}
 };
+#endif
 
 /*--------------------------------------------------------
   Code to draw the mechanical objects, and their states!
@@ -675,7 +677,10 @@ static core_tGameData sttngGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     1,0,6,0,0,0,0,
     sttng_getSol, sttng_handleMech, sttng_getMech, sttng_drawMech,
-    &sttng_lampPos, sttng_SamSolMap
+    &sttng_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , sttng_SamSolMap
+#endif
   },
   &sttngSimData,
   {     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */

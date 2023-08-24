@@ -722,7 +722,10 @@ static void dm_handleMech(int mech) {
       locals.diverterCount = 0;
       if (locals.diverterPos != CRYOCLAW) {
         locals.diverterPos = CRYOCLAW;
-        wpc_play_sample(0, SAM_DIVERTER);
+#ifdef ENABLE_MECHANICAL_SAMPLES
+      if (coreGlobals.soundEn)
+          wpc_play_sample(0, SAM_DIVERTER);
+#endif
       }
     }
     else if (locals.diverterPos == CRYOCLAW && locals.diverterCount++ > 25) {

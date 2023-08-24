@@ -335,7 +335,10 @@ static core_tGameData tsGameData = {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,1,0,0,0,0,
     ts_getSol, ts_handleMech, ts_getMech, ts_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &tsSimData,
   {

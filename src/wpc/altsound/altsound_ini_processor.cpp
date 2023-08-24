@@ -65,7 +65,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 
 	if (!file_in.good()) {
 		ALT_ERROR(0, "Failed to open \"altsound.ini\"");
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END parse_altsound_ini()");
 		return false;
@@ -75,7 +75,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	inipp::Ini<char> ini;
 	ini.parse(file_in);
 
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	// System parsing
 	// ------------------------------------------------------------------------
 
@@ -100,7 +100,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// ------------------------------------------------------------------------
 	// Logging parsing
 	// ------------------------------------------------------------------------
-	
+
 	// parse LOGGING_LEVEL
 	string logging;
 	inipp::get_value(ini.sections["logging"], "logging_level", logging);
@@ -124,7 +124,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// ------------------------------------------------------------------------
 	// MUSIC behavior parsing
 	// ------------------------------------------------------------------------
-	
+
 	const auto& music_section = ini.sections["music"];
 
 	// parse MUSIC "STOP" behavior
@@ -203,7 +203,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 
 	// Parse SFX "SFX_DUCKING_PROFILES"
 	const auto& sfx_ducking_section = ini.sections["sfx_ducking_profiles"];
-	
+
 	if (!sfx_ducking_section.empty()) {
 		success &= parseDuckingProfile(sfx_ducking_section, sfx_behavior.ducking_profiles);
 	}
@@ -241,7 +241,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	//auto& solo_ducking_section = ini.sections["solo_ducking_profiles"];
 	//
 	//if (!solo_ducking_section.empty()) {
-    //  success &= parseDuckingProfile(solo_ducking_section, solo_behavior.ducking_profiles);
+	//  success &= parseDuckingProfile(solo_ducking_section, solo_behavior.ducking_profiles);
 	//}
 	//else if (solo_behavior.ducks != 0) {
 	//	// SOLO behavior specifies stream ducking but no profile defined.
@@ -252,7 +252,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// Parse SOLO "PAUSES" behavior
 	// SOLO streams do not pause other streams
 	//success &= parseBehaviorValue(solo_section, "pauses", solo_behavior.pauses);
-	
+
 	// Parse SOLO "GROUP_VOL" behavior
 	success &= parseVolumeValue(solo_section, "group_vol", solo_behavior.group_vol);
 
@@ -272,7 +272,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 
 	// parse OVERLAY "OVERLAY_DUCKING_PROFILES"
 	const auto& overlay_ducking_section = ini.sections["overlay_ducking_profiles"];
-	
+
 	if (!overlay_ducking_section.empty()) {
 		success &= parseDuckingProfile(overlay_ducking_section, overlay_behavior.ducking_profiles);
 	}
@@ -285,7 +285,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// Parse OVERLAY "PAUSES" behavior
 	// OVERLAY streams do not pause other streams
 	//success &= parseBehaviorValue(overlay_section, "pauses", overlay_behavior.pauses);
-	
+
 	// Parse OVERLAY "GROUP_VOL" behavior
 	success &= parseVolumeValue(overlay_section, "group_vol", overlay_behavior.group_vol);
 
@@ -499,7 +499,7 @@ std::string AltsoundIniProcessor::get_altound_format(const std::string& path_in)
 		}
 	}
 
-	std::vector<std::string> directories{
+	const std::vector<std::string> directories{
 		"\\jingle",
 		"\\music",
 		"\\sfx",
@@ -519,7 +519,7 @@ std::string AltsoundIniProcessor::get_altound_format(const std::string& path_in)
 
 	OUTDENT;
 	ALT_DEBUG(0, "END get_altsound_format()");
-	return "";
+	return string();
 }
 
 // ----------------------------------------------------------------------------
@@ -715,5 +715,3 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 	ALT_DEBUG(0, "END AltsoundIniProcessor::create_altsound_ini()");
 	return true;
 }
-
-

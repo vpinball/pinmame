@@ -203,7 +203,9 @@ GSoundProcessor::~GSoundProcessor()
 
 bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 {
-	ALT_INFO(0, "BEGIN GSoundProcessor::handleCmd()");
+	ALT_DEBUG(0, "BEGIN GSoundProcessor::handleCmd()");
+	INDENT;
+
 	ALT_DEBUG(1, "Acquiring mutex");
 	std::lock_guard<std::mutex> guard(io_mutex);
 
@@ -376,7 +378,7 @@ void GSoundProcessor::init()
 	// if we are here, initialization succeeded
 	is_initialized = true;
 
-	// Iinitialize base class
+	// Initialize base class
 	AltsoundProcessorBase::init();
 
 	OUTDENT;
@@ -401,7 +403,7 @@ bool GSoundProcessor::loadSamples()
 
 	if (!csv_parser.parse(samples)) {
 		ALT_ERROR(1, "FAILED GSoundCsvParser::parse()");
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END GSoundProcessor::init()");
 		return false;
@@ -488,14 +490,14 @@ bool GSoundProcessor::processStream(const BehaviorInfo& behavior,
 // This is the meat of the G-Sound system.  Each sample type defines behaviors
 // that affect streams.  Rather than inferring them from combinations of CSV
 // parameters, they are explicitly spelled out. Altsound authors can tweak
-// these behaviors to get the overal mixes they want.  G-Sound represents a new
+// these behaviors to get the overall mixes they want.  G-Sound represents a new
 // option for authors.
 //
 // How to think of behavior processing:
 // Every time a new sample is processed, its associated behavior definition
-// and the new stream info is sent here.  Each sample tyoe is checked against
+// and the new stream info is sent here.  Each sample type is checked against
 // the new sample's behavior definition to determine its impact on the
-// other stream types, and the bookeeping is updated to reflect those
+// other stream types, and the bookkeeping is updated to reflect those
 // impacts.
 // ----------------------------------------------------------------------------
 
@@ -703,7 +705,7 @@ bool GSoundProcessor::stopMusic()
 // cur_callout_stream, 	cur_solo_stream, and cur_callout_stream.  Because of the
 // complex bookkeeping involved with managing behaviors, this method should only
 // be called as part of behavior processing.  Otherwise, it will corrupt the
-// bookeeping and cause problems
+// bookkeeping and cause problems
 // ----------------------------------------------------------------------------
 
 bool GSoundProcessor::stopExclusiveStream(const AltsoundSampleType stream_type)

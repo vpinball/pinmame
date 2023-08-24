@@ -59,7 +59,7 @@
 // Helper function prototypes
 // ---------------------------------------------------------------------------
 
-// Function to initialize all altound variables and data structures
+// Function to initialize all AltSound variables and data structures
 BOOL alt_sound_init(CmdData* cmds_out);
 
 // Function to pre-process commands based on ROM hardware platform
