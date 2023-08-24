@@ -90,25 +90,25 @@ WPC_INPUT_PORTS_START(bop,3)
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0008,"L/R Slingshot",		KEYCODE_MINUS)
+    COREPORT_BIT(0x0008,"L/R Slingshot",	KEYCODE_MINUS)
     COREPORT_BIT(0x0010,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0020,"Ramp Fail/OK",	        KEYCODE_R)
+    COREPORT_BIT(0x0020,"Ramp Fail/OK",		KEYCODE_R)
     COREPORT_BIT(0x0040,"RightLoop",		KEYCODE_R)
-    COREPORT_BIT(0x0100,"Left Jet",		KEYCODE_T)
+    COREPORT_BIT(0x0100,"Left Jet",			KEYCODE_T)
     COREPORT_BIT(0x0200,"Right Jet",		KEYCODE_Y)
     COREPORT_BIT(0x0400,"Bottom Jet",		KEYCODE_U)
     COREPORT_BIT(0x0800,"Small Wheel",		KEYCODE_S)
     COREPORT_BIT(0x1000,"Left Loop",		KEYCODE_L)
     COREPORT_BIT(0x2000,"Center Ramp",		KEYCODE_C)
-    COREPORT_BIT(0x4000,"BonusX",		KEYCODE_X)
+    COREPORT_BIT(0x4000,"BonusX",			KEYCODE_X)
     COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
 
 
   PORT_START /* 1 */
     COREPORT_BIT(0x0001,"Right Top 5K",		KEYCODE_B)
     COREPORT_BIT(0x0002,"Right Bot 5K",		KEYCODE_N)
-    COREPORT_BIT(0x0004,"Left 5K",		KEYCODE_V)
-    COREPORT_BIT(0x0008,"Spinner",		KEYCODE_J)
+    COREPORT_BIT(0x0004,"Left 5K",			KEYCODE_V)
+    COREPORT_BIT(0x0008,"Spinner",			KEYCODE_J)
 
 WPC_INPUT_PORTS_END
 
@@ -124,7 +124,7 @@ WPC_INPUT_PORTS_END
 
 #define swSlamTilt	21
 #define swCoinDoor	22
-#define swTicket     	23
+#define swTicket	23
 #define swRTrough	25
 #define swCTrough	26
 #define swLTrough	27
@@ -142,8 +142,8 @@ WPC_INPUT_PORTS_END
 #define swRRampMade	41
 #define swLeftLoop	43
 #define swRTopLoop	44
-#define swRBotLoop     	45
-#define swUPKicker    	46
+#define swRBotLoop	45
+#define swUPKicker	46
 #define swEnterHead	47
 
 #define swSpinner	51
@@ -178,7 +178,7 @@ WPC_INPUT_PORTS_END
 #define sControlledGate	4
 #define sSkillShot	5
 #define sWireBallHolder	6
-#define sKnocker       	7
+#define sKnocker	7
 #define sHeadMouth	8
 #define sLeftJet	9
 #define sLeftSling	10
@@ -295,7 +295,7 @@ static int bop_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:
+		case stBallLane:
 		if (ball->speed < 10)
 			return setState(stNotEnough,10);	/*Ball not plunged hard enough*/
 		if (ball->speed < 15)
@@ -339,7 +339,7 @@ static int bop_handleBallState(sim_tBallStatus *ball, int *inports) {
 		/*-----------------
 		    MiniPF Exit
 		-------------------*/
-    	case stMiniPFExit:
+		case stMiniPFExit:
 		if (ball->speed < 25)
 			return setState(stMiniPFRight,150);	/* Out MiniPF From Right */
 		if (ball->speed < 35)
@@ -511,7 +511,7 @@ static sim_tSimData bopSimData = {
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   bop_initSim,			/* Simulator Init */
   bop_handleBallState,	/*Function to handle ball state changes*/
-  bop_drawStatic,		*Function to handle mechanical state changes*/
+  bop_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -608,12 +608,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 2 && core_getSol(sHeadMotor) && !core_getSol(sHeadDirection)) {
       locals.facePos++;
       if (locals.facePos < 100)
-	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos > 101 && locals.facePos < 149)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos == 150) {
-	locals.headPos = 3;
-	locals.facePos = 0;
+        locals.headPos = 3;
+        locals.facePos = 0;
       }
     }
 
@@ -623,12 +623,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 3 && core_getSol(sHeadMotor) && !core_getSol(sHeadDirection)) {
       locals.facePos++;
       if (locals.facePos < 125)
-	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos > 126 && locals.facePos < 149)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos == 150) {
-	locals.headPos = 4;
-	locals.facePos = 0;
+        locals.headPos = 4;
+        locals.facePos = 0;
       }
     }
 
@@ -637,12 +637,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 4 && core_getSol(sHeadMotor) && !core_getSol(sHeadDirection)) {
       locals.facePos++;
       if (locals.facePos < 100)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos > 101 && locals.facePos < 169)
-	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos == 170) {
-	locals.headPos = 1;
-	locals.facePos = 0;
+        locals.headPos = 1;
+        locals.facePos = 0;
       }
     }
 
@@ -651,12 +651,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 4 && core_getSol(sHeadMotor) && core_getSol(sHeadDirection)) {
       locals.facePos--;
       if (locals.facePos > -100)
- 	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos < -101 && locals.facePos > -149)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos == -150) {
-	locals.headPos = 3;
-	locals.facePos = 0;
+        locals.headPos = 3;
+        locals.facePos = 0;
       }
     }
 
@@ -665,12 +665,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 3 && core_getSol(sHeadMotor) && core_getSol(sHeadDirection)) {
       locals.facePos--;
       if (locals.facePos > -100)
-  	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos < -101 && locals.facePos > -149)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos == -150) {
-	locals.headPos = 2;
-	locals.facePos = 0;
+        locals.headPos = 2;
+        locals.facePos = 0;
       }
     }
 
@@ -679,12 +679,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 2 && core_getSol(sHeadMotor) && core_getSol(sHeadDirection)) {
       locals.facePos--;
       if (locals.facePos > -100)
-	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos < -101 && locals.facePos > -149)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos == -150) {
-	locals.headPos = 1;
-	locals.facePos = 0;
+        locals.headPos = 1;
+        locals.facePos = 0;
       }
     }
 
@@ -694,12 +694,12 @@ static void bop_handleMech(int mech) {
     if (locals.headPos == 1 && core_getSol(sHeadMotor) && core_getSol(sHeadDirection)) {
       locals.facePos--;
       if (locals.facePos > -100)
-	core_setSw(swFacePosition,1);
+        core_setSw(swFacePosition,1);
       if (locals.facePos < -101 && locals.facePos > -169)
-	core_setSw(swFacePosition,0);
+        core_setSw(swFacePosition,0);
       if (locals.facePos == -170) {
-	locals.headPos = 4;
-	locals.facePos = 0;
+        locals.headPos = 4;
+        locals.facePos = 0;
       }
     }
     /* Those were all the possible movements that the head can make */
