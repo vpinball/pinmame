@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------
+// altsound_ini_processor.cpp
+//
+// Parser for AltSound configuration file
+// ---------------------------------------------------------------------------
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
+// ---------------------------------------------------------------------------
+
 #include "altsound_ini_processor.hpp"
 
 // Std Library includes
@@ -122,6 +131,8 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// MUSIC streams only stop themselves
 	music_behavior.stops.set(static_cast<int>(BB::MUSIC), true); // MUSIC stops other MUSIC streams
 
+	// DAR@20230823 Leaving this commented code for now in case it becomes necessary
+	// to activate this in the near future.  Will remove later, if not needed
 	// parse MUSIC "DUCKS" behavior
 	// MUSIC streams do not duck other streams
 	//success &= parseBehaviorValue(music_section, "ducks", music_behavior.ducks);
@@ -219,6 +230,8 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	solo_behavior.stops.set(static_cast<int>(BB::SOLO), true); // SOLO stops other SOLO streams
 	success &= parseBehaviorValue(solo_section, "stops", solo_behavior.stops);
 
+	// DAR@20230823 Leaving this commented code for now in case it becomes necessary
+	// to activate this in the near future.  Will remove later, if not needed
 	// Parse SOLO "DUCKS" behavior
 	// SOLO streams do not duck other streams
 	//success &= parseBehaviorValue(solo_section, "ducks", solo_behavior.ducks);

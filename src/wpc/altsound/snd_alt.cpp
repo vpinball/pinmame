@@ -550,7 +550,7 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 				// I don't know why this is nerfing the volume.  It does not
 				// appear to work correctly in all cases. 
 				if (processor->romControlsVol()) {
-					processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f));
+					processor->setGlobalVol((float)(0x2F - cmd_in) / 31.f);
 					ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
 				}
 

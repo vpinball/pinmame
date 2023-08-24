@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
 // altsound_data.cpp
-// 06/23/23 - Dave Roscoe
 //
 // Holds global variables and structures in support of AltSound processing.
 // This provides a cleaner separation between the legacy C code and the new C++
 // code, and is necessary to ensure that only one instance of these exist
 // across multiple compilation units
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders:Dave Roscoe
 // ---------------------------------------------------------------------------
 #include "altsound_data.hpp"
 

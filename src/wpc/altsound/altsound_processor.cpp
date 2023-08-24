@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
 // altsound_processor.cpp
-// Dave Roscoe 06/14/2023
 //
 // Encapsulates all specialized processing for the legacy Altsound
 // CSV and PinSound format
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe, Carsten Wächter
 // ---------------------------------------------------------------------------
 #include "altsound_processor.hpp"
 
