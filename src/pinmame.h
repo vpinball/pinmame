@@ -8,7 +8,7 @@
 #define WPCDCSSPEEDUP   1 // DCS Speedup added to MAME ADSP emulation
 #define DBG_BPR         1 // BPR command added to debugger
 
-#if !(defined(VPINMAME) || defined(LIBPINMAME))
+#if !(defined(VPINMAME) || defined(LIBPINMAME) || defined(LISY_SUPPORT))
  #define ENABLE_MECHANICAL_SAMPLES // maybe remove this at some point completely? not wired up for all machines anyway!
 #endif
 
