@@ -60,6 +60,8 @@ jobs:
           mkdir tmp
           cp build/Release/${{ matrix.exe }} tmp
           cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
       - uses: actions/upload-artifact@v3
         with:
           name: xpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}

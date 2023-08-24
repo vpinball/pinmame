@@ -71,6 +71,7 @@ jobs:
           cp build/Release/PinMAME32.exe tmp
           cp release/license.txt tmp
           cp release/whatsnew.txt tmp
+          cp release/pinmame.txt tmp
       - uses: actions/upload-artifact@v3
         with:
           name: PinMAME32${{ matrix.artifact-suffix }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}

@@ -88,6 +88,9 @@ jobs:
           cp ext/bass/${{ matrix.bass }} tmp
           cp release/VPMAlias.txt tmp
           cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp "release/visual pinmame.txt" tmp
+          cp release/whatsnew.txt tmp
           cp release/whatsnewVPM.txt tmp
       - uses: actions/upload-artifact@v3
         with:
