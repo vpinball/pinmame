@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
 // altsound_processor_base.cpp
-// 06/23/23 - Dave Roscoe
 //
 // Base class implementation for AltsoundProcessor, which encapsulates
 // command execution, and specialization in support of all AltSound formats
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
 #include "altsound_processor_base.hpp"
 

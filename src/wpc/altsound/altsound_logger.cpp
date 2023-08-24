@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------
+// altsound_logger.cpp
+//
+// Runtime and debug logger for AltSound
+// ---------------------------------------------------------------------------
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
+// ---------------------------------------------------------------------------
+
 #include "altsound_logger.hpp"
 
 #include <algorithm>

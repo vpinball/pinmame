@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------
 // altsound_logger.hpp
-// 07/04/23 - Dave Roscoe
 //
-// Simple always-on file logger using printf-style formatting, with support
-// for indentation of logged messages for easier reading and context
+// Runtime and debug logger for AltSound
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
+
 #ifndef ALTSOUND_LOGGER_H
 #define ALTSOUND_LOGGER_H
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4

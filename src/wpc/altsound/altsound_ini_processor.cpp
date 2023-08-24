@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------
+// altsound_ini_processor.cpp
+//
+// Parser for AltSound configuration file
+// ---------------------------------------------------------------------------
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
+// ---------------------------------------------------------------------------
+
 #include "altsound_ini_processor.hpp"
 
 // Std Library includes

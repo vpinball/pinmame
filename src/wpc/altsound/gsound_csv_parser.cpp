@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
 // gsound_csv_parser.cpp
-// 06/23/23 - Dave Roscoe
 //
 // Parser for G-Sound format CSV files
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
 #include "gsound_csv_parser.hpp"
 

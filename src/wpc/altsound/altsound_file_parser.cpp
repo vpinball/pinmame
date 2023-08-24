@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
 // altsound_file_parser.cpp
-// 08/06/23 - Dave Roscoe
 //
 // Parser for Legacy format sample files and directories
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders:Carsten Wächter, Dave Roscoe
 // ---------------------------------------------------------------------------
 
 #include "altsound_file_parser.hpp"

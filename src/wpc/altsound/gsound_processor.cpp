@@ -1,13 +1,11 @@
 // ---------------------------------------------------------------------------
 // gsound_processor.cpp
-// 06/14/23 - Dave Roscoe
 //
 // Encapsulates all specialized processing for the G-Sound
 // CSV format
 // ---------------------------------------------------------------------------
-// license:<TODO>
-// ---------------------------------------------------------------------------
-// <TODO> G-Sound description
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
 
 #define NOMINMAX

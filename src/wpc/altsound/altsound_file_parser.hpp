@@ -1,3 +1,11 @@
+// ---------------------------------------------------------------------------
+// altsound_file_parser.hpp
+//
+// Parser for Legacy format sample files and directories
+// ---------------------------------------------------------------------------
+// license:BSD-3-Clause
+// copyright-holders:Carsten Wächter, Dave Roscoe
+// ---------------------------------------------------------------------------
 #ifndef ALTSOUND_FILE_PARSER_HPP
 #define ALTSOUND_FILE_PARSER_HPP
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4

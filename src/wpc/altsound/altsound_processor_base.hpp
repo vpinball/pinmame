@@ -1,12 +1,13 @@
 // ---------------------------------------------------------------------------
 // altsound_processor_base.hpp
-// 06/23/23 - Dave Roscoe
 //
 // Base class implementation for AltsoundProcessor, which encapsulates
 // command execution, and specialization in support of all AltSound formats
 // ---------------------------------------------------------------------------
-// license:<TODO>
+// license:BSD-3-Clause
+// copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
+
 #ifndef ALTSOUND_PROCESSOR_BASE_HPP
 #define ALTSOUND_PROCESSOR_BASE_HPP
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
