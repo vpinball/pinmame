@@ -421,7 +421,10 @@ static core_tGameData afmGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,2,3,0,0,1,0, // 2 extra lamp columns for the LEDs
     afm_getSol, afm_handleMech, afm_getMech, afm_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &afmSimData,
   {
@@ -535,4 +538,3 @@ static void init_afm(void) {
   }
 #endif
 }
-

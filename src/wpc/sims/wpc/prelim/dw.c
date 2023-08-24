@@ -348,13 +348,13 @@ CORE_CLONEDEF(dw,p6,l2,"Dr. Who (P-6 LED Ghost Fix)",1992, "Bally",wpc_mFliptron
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData dwSimData = {
-  2,    				/* 2 game specific input ports */
-  dw_stateDef,				/* Definition of all states */
-  dw_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  dw_stateDef,			/* Definition of all states */
+  dw_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  dw_handleBallState,			/*Function to handle ball state changes*/
-  dw_drawStatic,			/*Function to handle mechanical state changes*/
+  dw_handleBallState,	/*Function to handle ball state changes*/
+  dw_drawStatic,		/*Function to handle mechanical state changes*/
   FALSE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -368,7 +368,10 @@ static core_tGameData dwGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
     0,0,0,0,0,0,0,
     NULL, dw_handleMech, NULL, NULL,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &dwSimData,
   {

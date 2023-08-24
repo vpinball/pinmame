@@ -311,7 +311,10 @@ static core_tGameData bkGameData = {
     0,
     0,0,0,0,0,0,0,
     NULL, bk_handleMech, NULL, NULL,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &bkSimData,
   {{ 0 }},

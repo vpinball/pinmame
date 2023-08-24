@@ -438,6 +438,7 @@ static void bop_drawStatic(BMTYPE **line) {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap bop_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -457,6 +458,7 @@ static wpc_tSamSolMap bop_samsolmap[] = {
  {sControlledGate,3,SAM_SOLENOID_ON}, {sControlledGate,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -503,13 +505,13 @@ CORE_CLONEDEF(bop,d2,l7,"Machine: Bride of Pinbot, The (D-2 LED Ghost Fix)",1991
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData bopSimData = {
-  2,    				/* 2 game specific input ports */
-  bop_stateDef,				/* Definition of all states */
-  bop_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  bop_stateDef,			/* Definition of all states */
+  bop_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
-  bop_initSim, 				/* Simulator Init */
-  bop_handleBallState,			/*Function to handle ball state changes*/
-  bop_drawStatic,			/*Function to handle mechanical state changes*/
+  bop_initSim,			/* Simulator Init */
+  bop_handleBallState,	/*Function to handle ball state changes*/
+  bop_drawStatic,		*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -524,7 +526,10 @@ static core_tGameData bopGameData = {
     0, 2, // 2 extra lamp columns for the helmet lights
     0, 0, 0, 0, 0,
     NULL, bop_handleMech, bop_getMech, bop_drawMech,
-    &bop_lampPos, bop_samsolmap
+    &bop_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , bop_samsolmap
+#endif
   },
   &bopSimData,
   {

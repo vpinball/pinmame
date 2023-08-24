@@ -501,6 +501,7 @@ all the keys handy :) */
 }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap pz_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL},
@@ -522,6 +523,7 @@ static wpc_tSamSolMap pz_samsolmap[] = {
  /*Channel #4*/
  {sDJMouth,4,SAM_SOLENOID_ON}, {sDJMouth,4,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -592,24 +594,24 @@ use conventional flippers, use revision L-3 instead. */
 CORE_GAMEDEF(pz, f4, "Party Zone, The (F-4 Fliptronic)", 1991, "Bally", wpc_mFliptronS, 0)
 CORE_CLONEDEF(pz,f4pfx,f4,"Party Zone, The (F-4 Pinball FX)",2018,"Zen Studios",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,f5,f4,"Party Zone, The (F-5 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,l1,f4,"Party Zone, The (L-1)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,d1,f4,"Party Zone, The (D-1 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,l2,f4,"Party Zone, The (L-2)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,d2,f4,"Party Zone, The (D-2 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,l3,f4,"Party Zone, The (L-3)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,d3,f4,"Party Zone, The (D-3 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,l1,f4,"Party Zone, The (L-1)",1991,"Bally",wpc_mDMDS,0) // non-fliptronic and all below, too
+CORE_CLONEDEF(pz,d1,f4,"Party Zone, The (D-1 LED Ghost Fix)",1991,"Bally",wpc_mDMDS,0)
+CORE_CLONEDEF(pz,l2,f4,"Party Zone, The (L-2)",1991,"Bally",wpc_mDMDS,0)
+CORE_CLONEDEF(pz,d2,f4,"Party Zone, The (D-2 LED Ghost Fix)",1991,"Bally",wpc_mDMDS,0)
+CORE_CLONEDEF(pz,l3,f4,"Party Zone, The (L-3)",1991,"Bally",wpc_mDMDS,0)
+CORE_CLONEDEF(pz,d3,f4,"Party Zone, The (D-3 LED Ghost Fix)",1991,"Bally",wpc_mDMDS,0)
 
 /*-----------------------
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData pzSimData = {
-  3,    				/* 3 game specific input ports */
-  pz_stateDef,				/* Definition of all states */
-  pz_inportData,			/* Keyboard Entries */
+  3,					/* 3 game specific input ports */
+  pz_stateDef,			/* Definition of all states */
+  pz_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
   pz_handleBallState,	/*Function to handle ball state changes*/
-  pz_drawStatic,			/*Function to handle mechanical state changes*/
+  pz_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -623,7 +625,10 @@ static core_tGameData pzGameData = {
     FLIP_SWNO(12,11) | FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,
     NULL, pz_handleMech, pz_getMech, pz_drawMech,
-    &pz_lampPos, pz_samsolmap
+    &pz_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , pz_samsolmap
+#endif
   },
   &pzSimData,
   {

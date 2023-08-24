@@ -5,16 +5,16 @@
 #pragma once
 #endif
 
-#define PINMAME_EXT     1 // PinMAME extensions added to MAME source
-#define PINMAME_EXIT    1 // Use Machine->exitfunc (normally only in MESS)
 #define WPCDCSSPEEDUP   1 // DCS Speedup added to MAME ADSP emulation
 #define DBG_BPR         1 // BPR command added to debugger
-#define PINMAME_SAMPLES 1 // Sample Support
 
+#if !(defined(VPINMAME) || defined(LIBPINMAME))
+ #define ENABLE_MECHANICAL_SAMPLES // maybe remove this at some point completely? not wired up for all machines anyway!
+#endif
 
-#  ifndef PI
-#    define PI 3.1415926535897932384626433832795
-#  endif
+#ifndef PI
+ #define PI 3.1415926535897932384626433832795
+#endif
 #define osd_mark_dirty(a,b,c,d)
 #define VIDEO_SUPPORTS_DIRTY 0
 #define FILETYPE_PRINTER FILETYPE_MEMCARD

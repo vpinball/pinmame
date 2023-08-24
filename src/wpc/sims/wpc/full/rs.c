@@ -511,6 +511,7 @@ static core_tLampDisplay rs_lampPos = {
  }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap rs_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -536,6 +537,7 @@ static wpc_tSamSolMap rs_samsolmap[] = {
 */
 
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -705,7 +707,7 @@ CORE_CLONEDEF(rs,pa2,l6,  "Red and Ted's Road Show (PA-2 Prototype)",1994,"Willi
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData rsSimData = {
-  2,    				/* 2 game specific input ports */
+  2,					/* 2 game specific input ports */
   rs_stateDef,			/* Definition of all states */
   rs_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
@@ -725,7 +727,10 @@ static core_tGameData rsGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), /* actually 3 left flippers */
     0,0,8,0,0,0,0,
     rs_getSol, rs_handleMech, rs_getMech, rs_drawMech,
-    &rs_lampPos, rs_samsolmap
+    &rs_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , rs_samsolmap
+#endif
   },
   &rsSimData,
   {

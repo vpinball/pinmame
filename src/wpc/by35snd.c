@@ -157,10 +157,9 @@ static void by32_sh_stop(void) {
 }
 
 static void setfreq(int cmd) {
-  UINT8 sData; int f;
   if ((cmd != by32locals.lastCmd) && ((cmd & 0x0f) != 0x0f)) {
-    sData = core_revbyte(*(by32locals.brdData.romRegion + (cmd ^ 0x10)));
-    f = sizeof(sineWave)/((1.1E-6+BY32_PITCH*1E-8)*sData)/8;
+    UINT8 sData = core_revbyte(*(by32locals.brdData.romRegion + (cmd ^ 0x10)));
+    double f = sizeof(sineWave)/((1.1E-6+BY32_PITCH*1E-8)*sData)/8;
     mixer_set_sample_frequency(by32locals.channel, f);
     by32locals.volume = 1000;
     mixer_set_volume(by32locals.channel, 100);

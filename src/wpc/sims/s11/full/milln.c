@@ -349,6 +349,7 @@ static void milln_drawStatic(BMTYPE **line) {
 }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap milln_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -370,6 +371,7 @@ static wpc_tSamSolMap milln_samsolmap[] = {
  /*Channel #4*/
  {sLeftEject,4,SAM_SOLENOID_ON}, {sRightEject,4,SAM_SOLENOID_ON},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -411,7 +413,10 @@ static core_tGameData millnGameData = {
     FLIP_SWNO(swLLaneChange,swRLaneChange),
     0,0,0,0,0,0,0,
     NULL, milln_handleMech, NULL, milln_drawMech,
-    NULL, milln_samsolmap
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , milln_samsolmap
+#endif
   },
   &millnSimData,
   {{ 0 }},
