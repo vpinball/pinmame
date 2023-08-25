@@ -90,7 +90,7 @@ jobs:
 #          fi
       - run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            curl -L https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-win64.zip -o upx.zip
+            curl -L https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-win64.zip -o upx.zip
             7z e upx.zip -oupx
             rm upx.zip
           fi
