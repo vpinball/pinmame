@@ -5,16 +5,17 @@ What's new in PinMAME:
 
 Version 3.6 (XX XXth, 2023) - "Sounds good III"
 ------------------------------------------------------------------------------
+
 "AltSound 2.0"
-- Completely re-written AltSound processing
-- Fixed existing bugs in original AltSound code
-- compatible with all existing AltSound library formats
+- Completely re-written AltSound (mode 1) processing
+- Fixed existing bugs and regressions in the original AltSound code
+- Compatible with all existing AltSound library formats
 - New G-Sound library format.  Provides a new option for authors to develop
   immersive, multi-layered AltSound packages
-- New AltSound configuration options via per-table .ini file.
+- New AltSound configuration options via per-table .ini file
 - Independent and configurable always-on AltSound logger
 - Ability to record live game sound commands.  Useful for testing sounds without
-  having to repeatedly create on live game.
+  having to repeatedly create a live game.
 - Ability to script game sound commands (currently dev only feature).  Useful
   for testing specific scenarios like mode progressions or sound mix behavior
   without having to create them in a live game
