@@ -67,13 +67,10 @@ static MACHINE_INIT(STARGAME) {
 }
 
 static MACHINE_RESET(STARGAME) {
-  memset(&locals, 0x00, sizeof(locals));
-
   mea8000_reset();
 }
 
 static MACHINE_RESET(WHTFORCE) {
-  memset(&locals, 0x00, sizeof(locals));
   locals.isWf = 1;
 
   mea8000_reset();

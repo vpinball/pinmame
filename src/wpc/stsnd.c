@@ -139,7 +139,7 @@ static void st100_elec_chime(int dummy) {
 
 
 static int st100b_sh_start(const struct MachineSound *msound) {
-	int mixing_levels[6] = {25,25,25,25,25,25};
+	static const int mixing_levels[6] = {25,25,25,25,25,25};
 	memset(&st100loc, 0, sizeof(st100loc));
 	st100loc.channel = mixer_allocate_channels(6, mixing_levels);
 
@@ -171,7 +171,7 @@ static int st100b_sh_start(const struct MachineSound *msound) {
 }
 
 static int st100_sh_start(const struct MachineSound *msound) {
-	int mixing_levels[14] = {25,25,25,25,25,25,20,20,20,20,20,20,20,20};
+	static const int mixing_levels[14] = {25,25,25,25,25,25,20,20,20,20,20,20,20,20};
 	memset(&st100loc, 0, sizeof(st100loc));
 	st100loc.channel = mixer_allocate_channels(14, mixing_levels);
 
@@ -250,6 +250,8 @@ static void st100_sh_stop(void) {
 	mixer_stop_sample(st100loc.channel+11);
 	mixer_stop_sample(st100loc.channel+12);
 	mixer_stop_sample(st100loc.channel+13);
+
+	timer_remove(st100loc.ecdecayTimer);
 }
 
 

@@ -35,6 +35,7 @@ static void play1s_timer_callback(int n) {
 }
 
 static void play1s_init(struct sndbrdData *brdData) {
+  if (sndlocals.timer) timer_remove(sndlocals.timer);
   memset(&sndlocals, 0, sizeof sndlocals);
   sndlocals.timer = timer_alloc(play1s_timer_callback);
   sndlocals.volume = 100;
@@ -86,6 +87,7 @@ static void play2s_timer_callback(int n) {
 }
 
 static void play2s_init(struct sndbrdData *brdData) {
+  if (sndlocals.timer) timer_remove(sndlocals.timer);
   memset(&sndlocals, 0, sizeof sndlocals);
   sndlocals.timer = timer_alloc(play2s_timer_callback);
 }
@@ -163,6 +165,7 @@ static void play4s_timer_callback(int n) {
 }
 
 static void play4s_init(struct sndbrdData *brdData) {
+  if (sndlocals.timer) timer_remove(sndlocals.timer);
   memset(&sndlocals, 0, sizeof sndlocals);
   sndlocals.timer = timer_alloc(play4s_timer_callback);
   timer_adjust(sndlocals.timer, TIME_IN_HZ(3496), 0, TIME_IN_HZ(3496)); // ought to be correct according to 1863 datasheet

@@ -61,7 +61,6 @@ static MACHINE_INIT(slalom) {
 }
 
 static MACHINE_RESET(slalom) {
-  memset(&locals, 0x00, sizeof(locals));
 }
 
 #ifdef MAME_DEBUG

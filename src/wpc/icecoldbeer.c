@@ -177,13 +177,14 @@ struct AY8910interface ice_ay8910Int = {
 };
 
 static MACHINE_INIT(ICE) {
-  int i; for (i=0; i < 3; i++) pia_config(i, PIA_STANDARD_ORDERING, &ice_pia[i]);
+  int i;
+  memset(&locals, 0, sizeof(locals));
+  for (i=0; i < 3; i++) pia_config(i, PIA_STANDARD_ORDERING, &ice_pia[i]);
   pia_reset();
   pia_set_input_ca1(1, 1);
   AY8910_set_volume(0, 2, 0); // AY chip #0 channel C is used as a 30Hz clock generator, so it needs to be muted!
 }
 static MACHINE_RESET(ICE) {
-  memset(&locals, 0, sizeof(locals));
 }
 static MACHINE_STOP(ICE) {
   pia_unconfig();

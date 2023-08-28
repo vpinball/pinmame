@@ -223,6 +223,8 @@ static MACHINE_STOP(ZAC) {
     locals.printfile = NULL;
   }
 
+  timer_remove(locals.irqtimer);
+
   ZAC_soundExit();
 }
 

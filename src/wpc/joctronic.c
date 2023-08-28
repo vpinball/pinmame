@@ -69,7 +69,6 @@ static MACHINE_INIT(JOCTRONIC) {
 }
 
 static MACHINE_RESET(JOCTRONIC) {
-  memset(&locals, 0x00, sizeof(locals));
 }
 
 static MACHINE_STOP(JOCTRONIC) {
@@ -78,6 +77,7 @@ static MACHINE_STOP(JOCTRONIC) {
   for (i = 0; i < 70; i++) { // run some timeslices before shutdown so the NMI routine can finish
     run_one_timeslice();
   }
+  sndbrd_0_exit();
 }
 
 static SWITCH_UPDATE(JOCTRONIC) {

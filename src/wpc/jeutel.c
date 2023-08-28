@@ -177,8 +177,11 @@ static MACHINE_INIT(JEUTEL) {
 }
 
 static MACHINE_RESET(JEUTEL) {
-  memset(&locals, 0x00, sizeof(locals));
   ppi8255_init(&ppi8255_intf);
+}
+
+static MACHINE_STOP(JEUTEL) {
+  sndbrd_0_exit();
 }
 
 static SWITCH_UPDATE(JEUTEL) {
@@ -325,7 +328,7 @@ MACHINE_DRIVER_START(jeutel)
   MDRV_CPU_VBLANK_INT(jeutel_vblank, 1)
   MDRV_CPU_PERIODIC_INT(jeutel_irq, 500)
   MDRV_TIMER_ADD(jeutel_nmi, 200) // this is not correct; the 2nd CPU should trigger this on BUSAK actually
-  MDRV_CORE_INIT_RESET_STOP(JEUTEL,JEUTEL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(JEUTEL,JEUTEL,JEUTEL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JEUTEL)
   MDRV_DIAGNOSTIC_LEDH(3)

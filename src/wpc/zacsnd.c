@@ -125,6 +125,8 @@ static WRITE_HANDLER(zac1125_data_w) {
 }
 
 static void zac1125_init(struct sndbrdData *brdData) {
+  if (s1125locals.ne555) timer_remove(s1125locals.ne555);
+  memset(&s1125locals, 0, sizeof(s1125locals));
   /* MIXER A & C = GND */
   SN76477_mixer_w(0, 0);
   /* ENVELOPE is constant: pin1 = hi, pin 28 = lo */
@@ -453,6 +455,8 @@ static void initTMS(void) {
 }
 
 static void sns_init(struct sndbrdData *brdData) {
+  if (snslocals.fadeTimer) timer_remove(snslocals.fadeTimer);
+  memset(&snslocals, 0, sizeof(snslocals));
   snslocals.brdData = *brdData;
 
   if (!(core_gameData->hw.soundBoard & 0x02)) {

@@ -82,7 +82,6 @@ static MACHINE_INIT(EFO) {
 }
 
 static MACHINE_RESET(EFO) {
-  memset(&locals, 0x00, sizeof(locals));
   z80ctc_2_reset();
 }
 

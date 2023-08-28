@@ -237,7 +237,6 @@ static MACHINE_INIT(by68701) {
 }
 static MACHINE_RESET(by68701) {
   pia_reset();
-  memset(&locals, 0, sizeof(locals));
 }
 static MACHINE_STOP(by68701) {
   sndbrd_0_exit();

@@ -229,10 +229,6 @@ static MACHINE_INIT(WICO) {
 }
 
 static MACHINE_RESET(WICO) {
-  memset(&locals, 0, sizeof locals);  
-  memset(shared_ram, 0x12, 0x800);  
-  cpunum_set_reset_line(HOUSEKEEPING, ASSERT_LINE);
-  cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, CLEAR_LINE);
 }
 
 struct SN76494interface WICO_sn76494Int = {

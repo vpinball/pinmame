@@ -12,12 +12,12 @@
   Generation #1 (Games Up to Al's Garage Band?)
   ---------------------------------------------
   SOUND BOARD:
-    CPU: 6809 @ 2 Mhz
+	CPU: 6809 @ 2 Mhz
 	I/O: 6255 VIA
 	SND: YM3812 (Music), OKI6295 (Speech)
 
   DISPLAY BOARD:
-    ALPHA NUMERIC SEGMENTS ( 2 DISPLAYS OF 20 DIGIT 16 ALPHA/NUMERIC SEGMENTS )
+	ALPHA NUMERIC SEGMENTS ( 2 DISPLAYS OF 20 DIGIT 16 ALPHA/NUMERIC SEGMENTS )
 	I/O: 8255
 
   Generation #2 (All remaining games)
@@ -28,7 +28,7 @@
 	SND: BSMT2000 @ 24Mhz
 
   DISPLAY BOARD:
-    DMD CONTROLLER:
+	DMD CONTROLLER:
 	CPU: 8031 @ 12 Mhz? (Displays properly @ 1-2 Mhz)
 
 
@@ -267,8 +267,8 @@ PB0        = NU*/
 static READ_HANDLER( xvia_1_b_r ) {
 	int data = alvglocals.via_1_b;
 	data = ((data&0xf7) | alvglocals.DMDEnable) +
-		   ((data&0xef) | alvglocals.DMDClock)  +
-		   ((data&0xdf) | alvglocals.DMDData);
+	       ((data&0xef) | alvglocals.DMDClock)  +
+	       ((data&0xdf) | alvglocals.DMDData);
 //printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
 	return data;
 }
@@ -643,13 +643,14 @@ static MACHINE_STOP(alvg) {
   sndbrd_0_exit();
   sndbrd_1_exit();
 }
+
 //Show Sound & DMD Diagnostic LEDS
 void alvg_UpdateSoundLEDS(int num,UINT8 bit)
 {
-	if(num==0)
-		alvglocals.diagnosticLed1 = bit;
-	else
-		alvglocals.diagnosticLed2 = bit;
+  if(num==0)
+    alvglocals.diagnosticLed1 = bit;
+  else
+    alvglocals.diagnosticLed2 = bit;
 }
 
 /*-----------------------------------------------

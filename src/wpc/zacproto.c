@@ -42,7 +42,6 @@ static MACHINE_INIT(zacProto) {
 }
 
 static MACHINE_STOP(zacProto) {
-  memset(&locals, 0, sizeof(locals));
 }
 
 static SWITCH_UPDATE(zacProto) {

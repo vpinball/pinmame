@@ -367,16 +367,9 @@ static MACHINE_INIT(GTS1T) {
 }
 
 static MACHINE_RESET(GTS1) {
-	memset(&locals, 0, sizeof locals);
-	locals.Data_Reg_A_count = 16;
-	locals.Data_Reg_B_count = 16;
 }
 
 static MACHINE_RESET(GTS1T) {
-	memset(&locals, 0, sizeof locals);
-	locals.Data_Reg_A_count = 16;
-	locals.Data_Reg_B_count = 16;
-	locals.tones = 1;
 }
 
 static MACHINE_STOP(GTS1) {

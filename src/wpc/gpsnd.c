@@ -227,7 +227,7 @@ static struct SN76477interface  gpSS4_sn76477Int = { 4, { 50, 50, 50, 50 }, /* m
 };
 
 
-static mame_timer *capTimer;
+static mame_timer *capTimer = NULL;
 static void capTimer_timer(int n) {
   static int offset = 1;
   static int pin18res = 320;
@@ -329,6 +329,7 @@ static WRITE_HANDLER(gpss4_data_w)
 
 static void gpss4_init(struct sndbrdData *brdData)
 {
+  if (capTimer) timer_remove(capTimer);
   capTimer = timer_alloc(capTimer_timer);
   timer_adjust(capTimer, TIME_NEVER, 0, TIME_NEVER);
 

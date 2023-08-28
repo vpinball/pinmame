@@ -801,6 +801,13 @@ static MACHINE_INIT(s11) {
       break;
   }
 }
+static MACHINE_RESET(s11) {
+  pia_reset();
+}
+static MACHINE_STOP(s11) {
+  sndbrd_0_exit(); sndbrd_1_exit();
+}
+
 static MACHINE_INIT(s9pf) {
   memset(&locals,0,sizeof(locals));
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
@@ -811,11 +818,11 @@ static MACHINE_INIT(s9pf) {
   pia_config(S11_PIA5, PIA_STANDARD_ORDERING, &s11_pia[5]);
   sndbrd_0_init(SNDBRD_S9S, 1, NULL, NULL, NULL);
 }
-static MACHINE_RESET(s11) {
+static MACHINE_RESET(s9pf) {
   pia_reset();
 }
-static MACHINE_STOP(s11) {
-  sndbrd_0_exit(); sndbrd_1_exit();
+static MACHINE_STOP(s9pf) {
+  sndbrd_0_exit();
 }
 
 /*---------------------------
@@ -882,7 +889,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(s11_s9PS)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s9ps)
-  MDRV_CORE_INIT_RESET_STOP(s9pf,s11,s11)
+  MDRV_CORE_INIT_RESET_STOP(s9pf,s9pf,s9pf)
   MDRV_NVRAM_HANDLER(s11)
   MDRV_DIAGNOSTIC_LED7
   MDRV_SOUND_CMD(s11_sndCmd_w)
