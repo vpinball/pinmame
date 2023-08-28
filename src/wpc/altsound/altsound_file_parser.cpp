@@ -76,7 +76,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	const std::string path_voice = "voice/";
 
 	for (int i = 0; i < 5; ++i) {
-		float default_gain = .1f;
+		float default_gain = 1.0f;
 		float default_ducking = 1.f; //!! default depends on type??
 
 		const std::string subpath = (i == 0) ? path_jingle :
@@ -178,7 +178,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 						sample.fname = PATH2 + '/' + entry2->d_name;
 
 						memcpy(id, ptr + 1, 6);
-						sample.id = std::stoul(trim(id), nullptr, 16);
+						sample.id = std::stoul(trim(id), nullptr);
 
 						sample.gain = gain;
 						sample.ducking = ducking;

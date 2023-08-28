@@ -118,7 +118,7 @@ bool AltsoundProcessorBase::startLogging(const std::string& gameName) {
 		return false;
 	}
 
-	std::string recording_fname = gameName + "-cmdlog.txt";
+	std::string recording_fname = vpm_path + "/altsound/" + gameName+ "/cmdlog.txt";
 	logFile.open(recording_fname);
 	if (!logFile.is_open()) {
 		ALT_ERROR(1, "Failed to open log file: %s", recording_fname.c_str());
