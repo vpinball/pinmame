@@ -520,6 +520,11 @@ static MACHINE_INIT(cc) {
 #endif
 }
 
+static MACHINE_STOP(cc)
+{
+  sndbrd_0_exit();
+}
+
 //NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie,
 //		0x10092192 becomes 0x00092192
 static void Skip_Error_Msg(void){
@@ -564,9 +569,9 @@ static void Skip_Error_Msg(void){
 			break;
 		default:
 			break;
-  }
-  //Skip Error Message Routine
-  *((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
+	}
+	//Skip Error Message Routine
+	*((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
 }
 
 //Show Sound & DMD Diagnostic LEDS
@@ -697,7 +702,7 @@ PORT_END
 //Default hardware - no sound support
 MACHINE_DRIVER_START(cc)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(cc, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(cc, NULL, cc)
   MDRV_CPU_ADD(M68306, CPU_CLOCK)
   MDRV_CPU_MEMORY(cc_readmem, cc_writemem)
   MDRV_CPU_PORTS(cc_readport, cc_writeport)
@@ -938,7 +943,7 @@ static struct QSound_interface romstar_qsoundInt = {
 
 MACHINE_DRIVER_START(romstar)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(romstar, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(romstar, NULL, cc)
   MDRV_CPU_ADD(M68306, CPU_CLOCK)
   MDRV_CPU_MEMORY(romstar_readmem, romstar_writemem)
   MDRV_CPU_PORTS(romstar_readport, romstar_writeport)

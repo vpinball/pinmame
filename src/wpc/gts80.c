@@ -487,7 +487,8 @@ static MACHINE_INIT(gts80) {
 }
 
 static MACHINE_STOP(gts80) {
-  sndbrd_0_exit(); riot6532_unconfig();
+  sndbrd_0_exit();
+  riot6532_unconfig();
 }
 
 /*-----------------------------------------------
