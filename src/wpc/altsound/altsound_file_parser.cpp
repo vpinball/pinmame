@@ -76,7 +76,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	const std::string path_voice = "voice/";
 
 	for (int i = 0; i < 5; ++i) {
-		float default_gain = 1.0f;
+		float default_gain = .1f;
 		float default_ducking = 1.f; //!! default depends on type??
 
 		const std::string subpath = (i == 0) ? path_jingle :
@@ -150,7 +150,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 				std::string PATHG = PATH2 + '/' + "gain.txt";
 				float parsedGain = parseFileValue(PATHG);
 				if (parsedGain != -1.0f) {
-					gain = parsedGain;
+					gain = parsedGain ;
 				}
 
 				// check for overriding ducking value
@@ -180,7 +180,15 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 						memcpy(id, ptr + 1, 6);
 						sample.id = std::stoul(trim(id), nullptr);
 
-						sample.gain = gain;
+						// DAR@20230828
+						// Original code divided the gain by 20 before storing.
+						// That equates to multiplying the fractional gain below
+						// by 5.  This often results in gain values greater than
+						// 1.0f which indicates an amplified sound.  If the gain
+						// being read in is 100% (1.0f) then this value will end up
+						// being 5.0f which seems awfully high.  However, to
+						// replicate original behavior, it is being preserved below
+						sample.gain = gain * 5.0f;
 						sample.ducking = ducking;
 
 						if (subpath == path_music) {
