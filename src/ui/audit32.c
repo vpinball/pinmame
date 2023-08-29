@@ -384,7 +384,7 @@ static void CLIB_DECL DetailsPrintf(const char *fmt, ...)
 	va_list marker;
 	char	buffer[2000];
 	char * s;
-	long l;
+	int l;
 
 	//RS 20030613 Different Ids for Property Page and Dialog
 	// so see which one's currently instantiated

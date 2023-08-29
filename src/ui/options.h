@@ -575,6 +575,9 @@ void SetSampleAuditResults(int driver_index, int audit_results);
 void IncrementPlayCount(int driver_index);
 int GetPlayCount(int driver_index);
 
+#ifdef __GNUC__
+#define time_t int
+#endif
 void IncrementPlayTime(int driver_index,time_t playtime);
 time_t GetPlayTime(int driver_index);
 void GetTextPlayTime(int driver_index,char *buf);

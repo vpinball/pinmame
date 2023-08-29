@@ -95,7 +95,7 @@
 #define mlogerror logerror
 /*
 static void drawit(int seg) {
-	int segs[8] = {0};
+	int segs[7] = {0};
 	int i;
 	seg = seg>>1;	//Remove HJ segment for now
 	for(i=0; i<7; i++) {
@@ -121,6 +121,9 @@ static struct {
   void (*DISPSTROBE)(int mask);
   WRITE_HANDLER((*SEGWRITE));
   WRITE_HANDLER((*DISPDATA));
+
+  int old_lampadr;
+  UINT8 last;
 } locals;
 
 static NVRAM_HANDLER(by6803);
@@ -175,15 +178,15 @@ static void by6803_dispStrobe1(int mask) {
 static WRITE_HANDLER(by6803_segwrite2) {
 /*
   if(data>1 && !locals.p0_ca2) {
-		mlogerror("seg_w %x : module=%x : digit=%x : blank=%x\n",data,
-					locals.p0_a & 0x0f, locals.p0_a>>4, locals.p0_ca2);
-		drawit(data);
+    mlogerror("seg_w %x : module=%x : digit=%x : blank=%x\n",data,
+              locals.p0_a & 0x0f, locals.p0_a>>4, locals.p0_ca2);
+    drawit(data);
   }
 */
   /*Save segment for later*/
   /*Output is not changed, when PA0 is high*/
   if(locals.p0_a&1)
-	locals.p1_a = data;
+    locals.p1_a = data;
 }
 
 static WRITE_HANDLER(by6803_dispdata2) {
@@ -238,9 +241,8 @@ static void by6803_dispStrobe2(int mask) {
 }
 
 static void by6803_lampStrobe(void) {
-  static int old_lampadr = 0x0f;
   int lampadr = locals.lampadr;
-  if (lampadr != old_lampadr) {
+  if (lampadr != locals.old_lampadr) {
     int i, lampdata = (locals.p0_a>>5)^0x07;
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*(locals.phase_a-1)];
     int bit = 1<<(lampadr & 0x07);
@@ -251,7 +253,7 @@ static void by6803_lampStrobe(void) {
       lampdata >>= 1; matrix += 2;
     }
   }
-  old_lampadr = lampadr;
+  locals.old_lampadr = lampadr;
 }
 
 /* PIA0:A-W  Control what is read from PIA0:B
@@ -365,16 +367,16 @@ static SWITCH_UPDATE(by6803) {
     coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>13) & 0x03;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (ext?0xd0:0xdf)) |
                               ((inports[BY6803_COMINPORT]) & 0x20) |
-							  (ext?(inports[BY6803_COMINPORT+1] & 0x0f):0);
+                              (ext?(inports[BY6803_COMINPORT+1] & 0x0f):0);
     coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (ext?0x90:0x98)) |
                               ((inports[BY6803_COMINPORT]>>6) & 0x67) |
                               (ext?((inports[BY6803_COMINPORT+1]>>4) & 0x0f):0);
-	if (ext) {
-		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xf0) |
-								  ((inports[BY6803_COMINPORT+1]>>8) & 0x0f);
-		coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xf0) |
-								  ((inports[BY6803_COMINPORT+1]>>12) & 0x0f);
-	}
+    if (ext) {
+        coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xf0) |
+                                  ((inports[BY6803_COMINPORT+1]>>8) & 0x0f);
+        coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xf0) |
+                                  ((inports[BY6803_COMINPORT+1]>>12) & 0x0f);
+    }
   }
 
   /*-- Diagnostic buttons on CPU board --*/
@@ -436,8 +438,7 @@ static struct pia6821_interface piaIntf[] = {{
 }};
 
 static INTERRUPT_GEN(by6803_irq) {
-  static int last = 0;
-  pia_set_input_ca1(BY6803_PIA1, last = !last);
+  pia_set_input_ca1(BY6803_PIA1, locals.last = !locals.last);
 }
 
 #ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
@@ -457,6 +458,7 @@ static void by6803_zeroCross(int data) {
 
 static MACHINE_INIT(by6803) {
   memset(&locals, 0, sizeof(locals));
+  locals.old_lampadr = 0x0f;
   sndbrd_0_init(core_gameData->hw.soundBoard,1,memory_region(REGION_SOUND1),NULL,by6803_soundLED);
   pia_config(BY6803_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BY6803_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);

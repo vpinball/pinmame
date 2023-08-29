@@ -333,13 +333,13 @@ CORE_CLONEDEF(cc,104,13,"Cactus Canyon (1.04 Test 0.2)",1998,"Bally / The Pinbal
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData ccSimData = {
-  2,    				/* 2 game specific input ports */
-  cc_stateDef,				/* Definition of all states */
-  cc_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  cc_stateDef,			/* Definition of all states */
+  cc_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  cc_handleBallState,			/*Function to handle ball state changes*/
-  cc_drawStatic,			/*Function to handle mechanical state changes*/
+  cc_handleBallState,	/*Function to handle ball state changes*/
+  cc_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -352,7 +352,10 @@ static core_tGameData ccGameData = {
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,1,0,
-    NULL,NULL,NULL,NULL,&cc_lampPos,NULL
+    NULL,NULL,NULL,NULL,&cc_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    ,NULL
+#endif
   },
   &ccSimData,
   {

@@ -475,6 +475,7 @@ static core_tLampDisplay t2_lampPos = {
 }	/*End of lamps array*/
 };
 
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap t2_SamSolMap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL},
@@ -494,6 +495,7 @@ static wpc_tSamSolMap t2_SamSolMap[] = {
  {sDropTarget,3,SAM_SOLENOID},
  {-1}
 };
+#endif
 
 /*--------------------------------------------------------
   Code to draw the mechanical objects, and their states!
@@ -670,7 +672,10 @@ static core_tGameData t2GameData = {
     FLIP_SWNO(12,11),
     0,0,0,0,0,0,0,
     NULL, t2_handleMech, t2_getMech, t2_drawMech,
-    &t2_lampPos, t2_SamSolMap
+    &t2_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , t2_SamSolMap
+#endif
   },
   &t2SimData,
   {
@@ -716,10 +721,13 @@ static void t2_handleMech(int mech) {
       core_setSw(swDropTarget,1);		/*If Drop Target Down, Switch Must be Active*/
     }
     /*-- if DT is up, & Drop Target Switch Active, lower it!! --*/
-    /*-- NOTE: Here because for somereason, the sKnockDown solenoid does not fire during game play --*/
+    /*-- NOTE: Here because for some reason, the sKnockDown solenoid does not fire during game play --*/
     if (locals.droptargetPos == DT_UP && core_getSw(swDropTarget)) {
       locals.droptargetPos = DT_DOWN;
-      wpc_play_sample(2,SAM_FLAPCLOSE);
+#ifdef ENABLE_MECHANICAL_SAMPLES
+      if (coreGlobals.soundEn)
+        wpc_play_sample(2,SAM_FLAPCLOSE);
+#endif
     }
     /*-- if DT is down, & Drop Target Solenoid firing raise it! --*/
     if (locals.droptargetPos == DT_DOWN && core_getSol(sDropTarget)) {

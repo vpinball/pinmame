@@ -64,28 +64,28 @@ WPC_INPUT_PORTS_START(cftbl,3)
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"L/R Ramp",	        KEYCODE_R)
+    COREPORT_BIT(0x0004,"L/R Ramp",			KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
+    COREPORT_BIT(0x0010,"L/R Slingshot",	KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"Paid - P",		KEYCODE_W)
-    COREPORT_BIT(0x0100,"Paid - A",		KEYCODE_E)
-    COREPORT_BIT(0x0200,"Paid - I",		KEYCODE_R)
-    COREPORT_BIT(0x0400,"Paid - D",		KEYCODE_T)
+    COREPORT_BIT(0x0040,"Paid - P",			KEYCODE_W)
+    COREPORT_BIT(0x0100,"Paid - A",			KEYCODE_E)
+    COREPORT_BIT(0x0200,"Paid - I",			KEYCODE_R)
+    COREPORT_BIT(0x0400,"Paid - D",			KEYCODE_T)
     COREPORT_BIT(0x0800,"Snackbar - Cola",	KEYCODE_Y)
-    COREPORT_BIT(0x1000,"Snackbar - HotDog",	KEYCODE_U)
-    COREPORT_BIT(0x2000,"Snackbar - PopCorn",	KEYCODE_I)
-    COREPORT_BIT(0x4000,"Snackbar - IceCream",	KEYCODE_O)
-    COREPORT_BIT(0x8000,"Snackbar Hole",		KEYCODE_H)
+    COREPORT_BIT(0x1000,"Snackbar - HotDog",KEYCODE_U)
+    COREPORT_BIT(0x2000,"Snackbar - PopCorn",KEYCODE_I)
+    COREPORT_BIT(0x4000,"Snackbar - IceCream",KEYCODE_O)
+    COREPORT_BIT(0x8000,"Snackbar Hole",	KEYCODE_H)
 
   PORT_START /* 1 */
     COREPORT_BIT(0x0001,"Left Jet Bumper",	KEYCODE_A)
     COREPORT_BIT(0x0002,"Right Jet Bumper",	KEYCODE_S)
-    COREPORT_BIT(0x0004,"Bottom Jet Bumper",	KEYCODE_D)
+    COREPORT_BIT(0x0004,"Bottom Jet Bumper",KEYCODE_D)
     COREPORT_BIT(0x0008,"Left Subway",		KEYCODE_L)
     COREPORT_BIT(0x0010,"Right Subway",		KEYCODE_Z)
-    COREPORT_BIT(0x0020,"Creature Bowl",		KEYCODE_C)
-    COREPORT_BIT(0x0040,"Move Your Car Lane",	KEYCODE_M)
+    COREPORT_BIT(0x0020,"Creature Bowl",	KEYCODE_C)
+    COREPORT_BIT(0x0040,"Move Your Car Lane",KEYCODE_M)
     COREPORT_BIT(0x0100,"Drain",			KEYCODE_Q)
 
 WPC_INPUT_PORTS_END
@@ -93,72 +93,72 @@ WPC_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swStart      	13
-#define swTilt       	14
-#define swTopLeftRO	15
+#define swStart			13
+#define swTilt			14
+#define swTopLeftRO		15
 #define swLeftSubway	16
 #define swCenterSubway	17
 #define swCenterShotRU	18
 
-#define swSlamTilt	21
-#define swCoinDoor	22
-#define swTicket     	23
-#define swPaid		25
-#define swpAid		26
-#define swpaId		27
-#define swpaiD		28
+#define swSlamTilt		21
+#define swCoinDoor		22
+#define swTicket		23
+#define swPaid			25
+#define swpAid			26
+#define swpaId			27
+#define swpaiD			28
 
-#define swBottomJet	33
+#define swBottomJet		33
 #define swRightPopper	34
 #define swEnterRRamp	35
 #define swEnterLRamp	36
 #define swLowRPopper	37
 #define swRampUpDown	38
 
-#define swCola		41
-#define swHotDog	42
-#define swPopCorn	43
-#define swIceCream     	44
-#define swLeftJet    	45
-#define swRightJet	46
-#define swLeftSling	47
+#define swCola			41
+#define swHotDog		42
+#define swPopCorn		43
+#define swIceCream		44
+#define swLeftJet		45
+#define swRightJet		46
+#define swLeftSling		47
 #define swRightSling	48
 
 #define swLeftOutlane	51
 #define swLeftInlane	52
 #define swRightInlane	53
 #define swRightOutlane	54
-#define	swOutHole	55
-#define	swRTrough	56
-#define	swCTrough	57
-#define	swLTrough	58
+#define	swOutHole		55
+#define	swRTrough		56
+#define	swCTrough		57
+#define	swLTrough		58
 
-#define	swRRampExit	61
+#define	swRRampExit		61
 #define	swLowLRampExit	62
-#define	swCLaneExit	63
-#define	swURampExit	64
-#define	swBowl		65
-#define	swShooter	66
+#define	swCLaneExit		63
+#define	swURampExit		64
+#define	swBowl			65
+#define	swShooter		66
 
 /*---------------------
 / Solenoid definitions
 /----------------------*/
 
 #define sRightPopper	1
-#define sLowRPopper	3
-#define sTrough		4
-#define sRightSling    	5
-#define sLeftSling    	6
-#define sKnocker       	7
-#define sOutHole       	12
-#define sLeftJet	13
-#define sRightJet	14
-#define sBottomJet	15
+#define sLowRPopper		3
+#define sTrough			4
+#define sRightSling		5
+#define sLeftSling		6
+#define sKnocker		7
+#define sOutHole		12
+#define sLeftJet		13
+#define sRightJet		14
+#define sBottomJet		15
 #define sCurlyRampGI1	20
 #define sHologramPush	21
-#define sRampUp		23
+#define sRampUp			23
 #define sCurlyRampGI2	24
-#define sRampDown	26
+#define sRampDown		26
 #define sMirrorMotor	27
 #define sHologramLamp	28
 
@@ -355,6 +355,7 @@ static sim_tInportData cftbl_inportData[] = {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap cftbl_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -372,6 +373,7 @@ static wpc_tSamSolMap cftbl_samsolmap[] = {
  {sLowRPopper,3,SAM_POPPER}, {sRightPopper,2,SAM_POPPER},
  {-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -439,17 +441,19 @@ CORE_CLONEDEF (cftbl,l2,l4,"Creature from the Black Lagoon (L-2)",1993,"Bally",w
 CORE_CLONEDEF (cftbl,d2,l4,"Creature from the Black Lagoon (D-2 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3 Prototype, SP-1)",1992,"Bally",wpc_mFliptronS,0)
 
+// Zen Pinball Emu: They were able to clear all licensing with MB, but Creature has some subtle and not so subtle differences. The first is that 4 of the 5 license holders for the songs within the game were not able to be reached but not for lack of trying. That means rather than the song changing with each ball, you get the same tune over and over.
+
 /*-----------------------
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData cftblSimData = {
-  2,    				/* 2 game specific input ports */
-  cftbl_stateDef,			/* Definition of all states */
-  cftbl_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  cftbl_stateDef,		/* Definition of all states */
+  cftbl_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  cftbl_handleBallState,		/*Function to handle ball state changes*/
-  cftbl_drawStatic,			/*Function to handle mechanical state changes*/
+  cftbl_handleBallState,/*Function to handle ball state changes*/
+  cftbl_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -463,7 +467,10 @@ static core_tGameData cftblGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,1,0,0,0,0,0, // 8 (or 12?) ramp lights; the pattern repeats every 4 lamps, so 1 extra column is enough
     NULL, cftbl_handleMech, NULL, cftbl_drawMech,
-    NULL, cftbl_samsolmap
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , cftbl_samsolmap
+#endif
   },
   &cftblSimData,
   {
@@ -499,7 +506,7 @@ static void cftbl_handleMech(int mech) {
      --	Get Up and Down the Creature Ramp  --
      ---------------------------------------- */
   if (mech & 0x01) {
-    /*-- if Ramp is Up and the RampDown Solenoid is firing, Lower it --*/
+    /*-- if Ramp is Up and the RampDown Solenoid is firing, lower it --*/
     if (core_getSol(sRampDown))
       locals.creaturerampPos = 1 ;
     /*-- if Ramp is Down and the RampUp Solenoid is firing, raise it --*/

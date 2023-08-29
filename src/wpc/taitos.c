@@ -12,6 +12,7 @@
 / Taito uses four different sound boards:
 / - sintetizador
 / - sintevox (sintetizador with an additional SC-01A)
+/    Hudson performs maintenance  on Taito machines. In all the machines that he worked until today he only found Chip SC01A. According to him, if Taito had used the SC01, it would be in the Cavaleiro Negro and Fire Action machines.
 / - sintetizador with a daughter board installed
 / - sintevox with a daughter board installed
 /
@@ -22,7 +23,7 @@
 / 0x1800 - 0x1fff: ROM 1
 / (some games like Shark or Sure Shot differ)
 / sintevox:
-/ SC-01 connected to output of PIA Port B
+/ SC-01A connected to output of PIA Port B
 /
 /-----------------------------------------*/
 
@@ -154,11 +155,12 @@ static void taitos_diag(int state) {
 struct DACinterface TAITO_dacInt =
 {
   1,			/* 1 Chip */
-  {25}		    /* Volume */
+  {25}			/* Volume */
 };
 
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
+	{ 1 },					/* SC-01-A */ // most likely the oldest (Fire Action and ???) Taitos (or all??) feature the SC-01?
 	{ 75 },					/* master volume */ // OLD_VOTRAX 50
 	{ 720000 },				/* dynamically changing this is currently not supported */ // 'About the SC01, it does not have an external oscillator' // OLD_VOTRAX: 8000
 	{ &votrax_busy }		/* set NMI when busy signal get's low */
@@ -177,7 +179,9 @@ MACHINE_DRIVER_START(taitos_sintetizador)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, TAITO_dacInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(taitos_sintetizador_nmi)

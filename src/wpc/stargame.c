@@ -12,6 +12,9 @@
 static struct {
   int swCol, dispCnt, isWf;
   UINT8 sndCmd;
+
+  UINT8 zc;
+  UINT8 dispCol;
 } locals;
 
 static INTERRUPT_GEN(stargame_vblank) {
@@ -19,10 +22,9 @@ static INTERRUPT_GEN(stargame_vblank) {
 }
 
 static INTERRUPT_GEN(stargame_zc) {
-  static int zc;
-  z80ctc_0_trg2_w(0, zc);
-  z80ctc_0_trg3_w(0, !zc);
-  zc = !zc;
+  z80ctc_0_trg2_w(0, locals.zc);
+  z80ctc_0_trg3_w(0, !locals.zc);
+  locals.zc = !locals.zc;
 }
 
 static void ctc_interrupt(int state) {
@@ -53,6 +55,8 @@ static Z80_DaisyChain STARGAME_DaisyChain[] = {
 };
 
 static MACHINE_INIT(STARGAME) {
+  memset(&locals, 0x00, sizeof(locals));
+
   /* init CTC */
   ctc_intf.baseclock[0] = Machine->drv->cpu[0].cpu_clock;
   z80ctc_init(&ctc_intf);
@@ -63,15 +67,12 @@ static MACHINE_INIT(STARGAME) {
 }
 
 static MACHINE_RESET(STARGAME) {
-  memset(&locals, 0x00, sizeof(locals));
-  
   mea8000_reset();
 }
 
 static MACHINE_RESET(WHTFORCE) {
-  memset(&locals, 0x00, sizeof(locals));
   locals.isWf = 1;
-  
+
   mea8000_reset();
 }
 
@@ -197,18 +198,17 @@ static WRITE_HANDLER(port_6x_w) {
 
 // serial display output
 static WRITE_HANDLER(port_68_w) {
-  static int dispCol;
   if (locals.isWf) {
     data ^= 0xff;
   }
   switch (locals.dispCnt) {
-    case 3: dispCol = data & 0x07; break;
-    case 11: coreGlobals.segments[27 - dispCol].w = data; break;
-    case 19: coreGlobals.segments[20 - dispCol].w = data; break;
-    case 27: coreGlobals.segments[34 - dispCol].w = data; break;
-    case 35: coreGlobals.segments[13 - dispCol].w = data; break;
-    case 43: coreGlobals.segments[6 - dispCol].w = data; break;
-    case 51: coreGlobals.segments[41 - dispCol].w = data; break;
+    case 3: locals.dispCol = data & 0x07; break;
+    case 11: coreGlobals.segments[27 - locals.dispCol].w = data; break;
+    case 19: coreGlobals.segments[20 - locals.dispCol].w = data; break;
+    case 27: coreGlobals.segments[34 - locals.dispCol].w = data; break;
+    case 35: coreGlobals.segments[13 - locals.dispCol].w = data; break;
+    case 43: coreGlobals.segments[6 -  locals.dispCol].w = data; break;
+    case 51: coreGlobals.segments[41 - locals.dispCol].w = data; break;
   }
   locals.dispCnt++;
 }

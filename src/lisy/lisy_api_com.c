@@ -851,21 +851,47 @@ lisy_api_get_con_hw(char* idstr) {
     return (lisy_api_read_string(LISY_G_HW, idstr));
 }
 
-//get status of (external or virtuel) DIP switch
-unsigned char
-lisy_api_get_dip_switch(unsigned char number) {
+//set value of APC game setting
+int
+lisy_api_set_apc_game_setting(unsigned char number, unsigned char value) {
 
     int ret;
     unsigned char cmd, status;
-    unsigned char cmd_data[2];
+    unsigned char cmd_data[4];
 
-    cmd = LISY_G_SW_SETTING;
+    cmd = LISY_S_APC_SETTING;
 
     //send cmd
     cmd_data[0] = cmd;
     //number of setting group
-    cmd_data[1] = 1;
-    //send switch number
+    cmd_data[1] = LISY_APC_GAME_SETTING;
+    //send setting number
+    cmd_data[2] = number;
+    //send value
+    cmd_data[3] = value;
+
+    if (lisy_api_write(cmd_data, 4, ls80dbg.bitv.basic) != 4) {
+        fprintf(stderr, "Game setting Error writing to serial %s\n", strerror(errno));
+	return(-1);
+	}
+    return(0);
+}
+
+//get value of APC game setting
+unsigned char
+lisy_api_get_apc_game_setting(unsigned char number) {
+
+    int ret;
+    unsigned char cmd, status;
+    unsigned char cmd_data[3];
+
+    cmd = LISY_G_APC_SETTING;
+
+    //send cmd
+    cmd_data[0] = cmd;
+    //number of setting group
+    cmd_data[1] = LISY_APC_GAME_SETTING;
+    //send setting number
     cmd_data[2] = number;
 
     //send cmd
@@ -876,12 +902,13 @@ lisy_api_get_dip_switch(unsigned char number) {
 
     //receive answer
     if ((ret = read(fd_api, &status, 1)) != 1) {
-        printf("Error reading from serial dip switch value, return:%d %s\n", ret, strerror(errno));
+        printf("Error reading from serial apc game setting:%d, return:%d %s\n",number , ret, strerror(errno));
         return -1;
     }
 
     return status;
 }
+
 
 //Rmake sure connected hardware is of type 'idstr'
 //will also sync in case there are still bytes in the send/recv queue

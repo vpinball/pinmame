@@ -28,6 +28,7 @@ static struct {
   int dispRow;
   core_tSeg segments;
   int isV1, lrq;
+  mame_timer* timer;
 } locals;
 
 static INTERRUPT_GEN(IDSA_irq) {
@@ -236,7 +237,8 @@ static PORT_WRITE_START(IDSA_writeport)
 MEMORY_END
 
 static void reset_common(void) {
-  static int inverted;
+  static int inverted = 0;
+  if (locals.timer) timer_remove(locals.timer);
   memset(&locals, 0, sizeof locals);
   sp0256_reset();
   if (!inverted) {
@@ -279,7 +281,8 @@ static MACHINE_RESET(v1) {
   locals.isV1 = 1;
   // NMI routine saves the credits to NVRAM (called upon power down on real machine)
   cpu_set_nmi_line(0, PULSE_LINE);
-  timer_adjust(timer_alloc(v1_reset_timer), TIME_IN_MSEC(1), 0, TIME_NEVER);
+  locals.timer = timer_alloc(v1_reset_timer);
+  timer_adjust(locals.timer, TIME_IN_MSEC(1), 0, TIME_NEVER);
 }
 
 MACHINE_DRIVER_START(v1)

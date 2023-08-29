@@ -62,6 +62,8 @@ static struct {
   int goferpos[2];      // status of left and right gofers
   int slampos;          // position of slam ramp
   int slamdelay;        // slam ramp smoothing counter
+
+  int lastFlip;
 } locals;
 
 #define NGG_WHEELRES 10
@@ -626,7 +628,10 @@ static core_tGameData nggGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,8,0,0,1,0,
     ngg_getSol, ngg_handleMech, ngg_getMech, ngg_drawMech,
-    &ngg_lampPos, NULL
+    &ngg_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &nggSimData,
   {
@@ -666,14 +671,13 @@ static mech_tInitData mechnggWheel = {
 };
 
 static WRITE_HANDLER(ngg_wpc_w) {
-  static int lastFlip = 0;
   //static int lastWheel = 0;
 // writes to the flippers have to be delayed 1 cycle to not interfere with the flashers.
 // also, an intermittent 0 byte write has to be avoided.
   if (offset == WPC_FLIPPERCOIL95) {
-    if (lastFlip & data) wpc_w(WPC_FLIPPERCOIL95, data);
-    if (!lastFlip & !data) wpc_w(WPC_FLIPPERCOIL95, 0);
-    lastFlip = data;
+    if (locals.lastFlip & data) wpc_w(WPC_FLIPPERCOIL95, data);
+    if (!locals.lastFlip & !data) wpc_w(WPC_FLIPPERCOIL95, 0);
+    locals.lastFlip = data;
   } else
     wpc_w(offset, data);
 
@@ -716,6 +720,7 @@ static void init_ngg(void) {
   install_mem_write_handler(0, 0x3fb0, 0x3fff, ngg_wpc_w);
   locals.slampos = 0;
   locals.slamdelay = 0;
+  locals.lastFlip = 0;
   wpc_set_modsol_aux_board(2);
   mech_add(0, &mechnggWheel);
   wpc_set_fastflip_addr(0x87);
@@ -807,4 +812,3 @@ static const char* showramp(int lr)
   else
     return "Ramp";
 }
-

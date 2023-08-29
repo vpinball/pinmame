@@ -339,7 +339,6 @@ static WRITE16_HANDLER(u16_w) {
 /*************/
 static READ16_HANDLER(io_r) {
   UINT16 data = 0;
-  static int swcol = 0;
 
   switch (offset) {
     //Read from driver board
@@ -364,9 +363,11 @@ static READ16_HANDLER(io_r) {
     case 0x200009:
     case 0x20000a:
     case 0x20000b:
-      swcol = offset-0x200007;
+    {
+      int swcol = offset-0x200007;
       data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
       break;
+    }
 
     //Solenoid A & B Status??? (returing a value here, removes waiting for short error msg, when IRQ4 set to 2000 cycles in KP)
     case 0x20000c:
@@ -375,7 +376,7 @@ static READ16_HANDLER(io_r) {
 		//printf("PC%08x - io_r: [%08x] (%04x) = %04x\n",activecpu_get_pc(),offset,mem_mask,data);
 		break;
 
-	//Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
+    //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
     case 0x400000:
       if (!core_gameData->hw.lampCol) {
         //Cabinet/Coin Door Switches are read as the lower byte on all switch reads
@@ -519,6 +520,11 @@ static MACHINE_INIT(cc) {
 #endif
 }
 
+static MACHINE_STOP(cc)
+{
+  sndbrd_0_exit();
+}
+
 //NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie,
 //		0x10092192 becomes 0x00092192
 static void Skip_Error_Msg(void){
@@ -563,9 +569,9 @@ static void Skip_Error_Msg(void){
 			break;
 		default:
 			break;
-  }
-  //Skip Error Message Routine
-  *((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
+	}
+	//Skip Error Message Routine
+	*((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
 }
 
 //Show Sound & DMD Diagnostic LEDS
@@ -696,7 +702,7 @@ PORT_END
 //Default hardware - no sound support
 MACHINE_DRIVER_START(cc)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(cc, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(cc, NULL, cc)
   MDRV_CPU_ADD(M68306, CPU_CLOCK)
   MDRV_CPU_MEMORY(cc_readmem, cc_writemem)
   MDRV_CPU_PORTS(cc_readport, cc_writeport)
@@ -731,14 +737,14 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {
     UINT8 *line = &coreGlobals.dotCol[ii][0];
-      for (kk = 0; kk < 16; kk++) {
+    for (kk = 0; kk < 16; kk++) {
 		UINT16 intens1 = RAM[0];
 		for(jj=0;jj<8;jj++) {
 			*line++ = (intens1&0xc000)>>14;
 			intens1 = intens1<<2;
 		}
 		RAM+=1;
-      }
+    }
     *line++ = 0;
     RAM+=16;
   }
@@ -758,7 +764,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
   for (ii = 0; ii <= 64; ii++) {
     UINT8 *linel = &coreGlobals.dotCol[ii][0];
     UINT8 *liner = &coreGlobals.dotCol[ii][128];
-      for (kk = 0; kk < 16; kk++) {
+    for (kk = 0; kk < 16; kk++) {
 		UINT16 intensl = RAM[0];
 		UINT16 intensr = RAM[0x10];
 		for(jj=0;jj<8;jj++) {
@@ -768,7 +774,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 			intensr = intensr<<2;
 		}
 		RAM+=1;
-      }
+    }
     RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, layout);
@@ -937,7 +943,7 @@ static struct QSound_interface romstar_qsoundInt = {
 
 MACHINE_DRIVER_START(romstar)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(romstar, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(romstar, NULL, cc)
   MDRV_CPU_ADD(M68306, CPU_CLOCK)
   MDRV_CPU_MEMORY(romstar_readmem, romstar_writemem)
   MDRV_CPU_PORTS(romstar_readport, romstar_writeport)

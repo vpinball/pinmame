@@ -376,6 +376,7 @@ static sim_tInportData ww_inportData[] = {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap ww_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -396,6 +397,7 @@ static wpc_tSamSolMap ww_samsolmap[] = {
  /*Channel #4*/
  {sMotor,4,SAM_MOTOR_1,WPCSAM_F_CONT},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -490,7 +492,10 @@ static core_tGameData wwGameData = {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,2,0,0,0,0,0,
     NULL, ww_handleMech, ww_getMech, ww_drawMech,
-    NULL, ww_samsolmap
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , ww_samsolmap
+#endif
   },
   &wwSimData,
   {     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
@@ -506,7 +511,10 @@ static core_tGameData lh5GameData = {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,2,0,0,0,1,0,
     NULL, ww_handleMech, ww_getMech, ww_drawMech,
-    NULL, ww_samsolmap
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , ww_samsolmap
+#endif
   },
   &wwSimData,
   {     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */

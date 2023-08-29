@@ -569,6 +569,7 @@ static core_tLampDisplay fh_lampPos = {
 
   The code specifies: SOLENOID, CHANNEL #, and SAMPLE NAME
   *************************************************************/
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap fh_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL},
@@ -597,6 +598,7 @@ static wpc_tSamSolMap fh_samsolmap[] = {
 // {sEyesRight,3,SAM_DIVERTER},  {sEyesLeft,3,SAM_DIVERTER}
 
 };
+#endif
 
 static void fh_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Trap Door: %-6s", locals.trapdoorPos?"Open":"Closed");
@@ -717,7 +719,10 @@ static core_tGameData fhGameData = {
     FLIP_SWNO(12,11),   /* Which switches are the flippers */
     0,0,0,0,0,1,0,
     NULL, fh_handleMech, NULL, fh_drawMech,
-    &fh_lampPos, fh_samsolmap
+    &fh_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , fh_samsolmap
+#endif
   },
   &fhSimData,
   {
@@ -735,7 +740,10 @@ static core_tGameData fhpa1GameData = {
     FLIP_SWNO(12,11),   /* Which switches are the flippers */
     0,0,0,0,0,1,0,
     NULL, fh_handleMech, NULL, fh_drawMech,
-    &fh_lampPos, fh_samsolmap
+    &fh_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , fh_samsolmap
+#endif
   },
   &fhSimData,
   {
@@ -815,7 +823,10 @@ static void fh_handleMech(int mech) {
   if (mech & 0x01) {
     if (core_getSol(sRampDiv) && locals.diverterPos != OPEN) {
       locals.diverterPos = OPEN;
-      wpc_play_sample(0,SAM_DIVERTER);
+#ifdef ENABLE_MECHANICAL_SAMPLES
+      if (coreGlobals.soundEn)
+        wpc_play_sample(0,SAM_DIVERTER);
+#endif
     }
     else
       locals.divertercount++;
@@ -874,11 +885,17 @@ static void fh_handleMech(int mech) {
     eyesright = core_getSol(sEyesRight);
     if (eyesleft && !(locals.rudyeyesLR == EYES_LEFT)) {
       locals.rudyeyesLR = EYES_LEFT;
-      wpc_play_sample(2,SAM_DIVERTER);
+#ifdef ENABLE_MECHANICAL_SAMPLES
+      if (coreGlobals.soundEn)
+        wpc_play_sample(2,SAM_DIVERTER);
+#endif
     }
     if (eyesright && !(locals.rudyeyesLR == EYES_RIGHT)) {
       locals.rudyeyesLR = EYES_RIGHT;
-      wpc_play_sample(2,SAM_DIVERTER);
+#ifdef ENABLE_MECHANICAL_SAMPLES
+      if (coreGlobals.soundEn)
+        wpc_play_sample(2,SAM_DIVERTER);
+#endif
     }
     if (!eyesleft && !eyesright)
       locals.rudyeyesLR = EYES_ST;

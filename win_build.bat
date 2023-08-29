@@ -6,9 +6,9 @@ goto :end_header
 **************************************************************************
 * Win_Build Script
 * Generates/Builds Windows-based project files from CMake workflow scripts
-* v1.0
+* v1.1
 * Dave Roscoe
-* 05/10/2023
+* 08/06/2023
 *-------------------------------------------------------------------------
 * SCRIPT NOTES
 * - Creates individual solution and project files for each
@@ -23,7 +23,6 @@ goto :end_header
 *-------------------------------------------------------------------------
 * FUTURE WORK
 * - Re-implement in Powershell
-* - Add unit tests
 * - Add single solution file generation for all projects
 * - Add ability to clean up targets and CMake artifacts.
 *-------------------------------------------------------------------------
@@ -54,6 +53,7 @@ set GENERATOR=
 set BUILD=
 set CONFIG=
 
+set GEN_ALTSOUND=""
 set GEN_INSTVPM=""
 set GEN_LIBPINMAME=""
 set GEN_PINMAME=""
@@ -80,6 +80,21 @@ if %errorlevel% neq 0 goto :failed
 :main_proc
 @REM Display active parameters for this build
 call :print_globals
+
+@REM *************************************************************************
+@REM BUILD ALTSOUND
+@REM *************************************************************************
+if %GEN_ALTSOUND% == YES (
+   set OUTPATH=build/altsound/%PLATFORM%/
+
+   pushd src\wpc\altsound
+   cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+
+    if %BUILD%==YES (
+        cmake --build !OUTPATH! --config %CONFIG%
+    )
+    popd
+)
 
 @REM *************************************************************************
 @REM BUILD INSTVPM
@@ -239,11 +254,14 @@ exit /b %errorlevel%
 
 :parse_project
     if /I %1 == ALL (
+        set GEN_ALTSOUND=YES
         set GEN_INSTVPM=YES
         set GEN_LIBPINMAME=YES
         set GEN_PINMAME=YES
         set GEN_PINMAME32=YES
         set GEN_VPINMAME=YES
+    ) else if /I %1 == altsound (
+        set GEN_ALTSOUND=YES
     ) else if /I %1 == instvpm (
         set GEN_INSTVPM=YES
     ) else if /I %1 == libpinmame (
@@ -403,4 +421,3 @@ exit /b %errorlevel%
 :failed
     echo *** ERROR: ABNORMAL SCRIPT TERMINATION ***
     exit %errorlevel%
-

@@ -162,14 +162,15 @@ const UINT8 i8085_lut_cycles_8080[256]={
 /* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* C */ 5, 10,10,10,11,11,7, 11,5, 10,10,10,11,11,7, 11,
 /* D */ 5, 10,10,10,11,11,7, 11,5, 10,10,10,11,11,7, 11,
-/* E */ 5, 10,10,18,11,11,7, 11,5, 5, 10,5, 11,11,7, 11,
+/* E */ 5, 10,10,18,11,11,7, 11,5, 5, 10,4, 11,11,7, 11,
 /* F */ 5, 10,10,4, 11,11,7, 11,5, 5, 10,4, 11,11,7, 11 };
+
 const UINT8 i8085_lut_cycles_8085[256]={
 /*      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  */
 /* 0 */ 4, 10,7, 6, 4, 4, 7, 4, 10,10,7, 6, 4, 4, 7, 4,
 /* 1 */ 7, 10,7, 6, 4, 4, 7, 4, 10,10,7, 6, 4, 4, 7, 4,
-/* 2 */ 7, 10,16,6, 4, 4, 7, 4, 10,10,16,6, 4, 4, 7, 4,
-/* 3 */ 7, 10,13,6, 10,10,10,4, 10,10,13,6, 4, 4, 7, 4,
+/* 2 */ 4, 10,16,6, 4, 4, 7, 4, 10,10,16,6, 4, 4, 7, 4,
+/* 3 */ 4, 10,13,6, 10,10,10,4, 10,10,13,6, 4, 4, 7, 4,
 /* 4 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* 5 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* 6 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
@@ -180,7 +181,7 @@ const UINT8 i8085_lut_cycles_8085[256]={
 /* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
 /* C */ 6, 10,7, 7, 9, 12,7, 12,6, 10,7, 6, 9, 9, 7, 12,
 /* D */ 6, 10,7, 10,9, 12,7, 12,6, 10,7, 10,9, 7, 7, 12,
-/* E */ 6, 10,7, 16,9, 12,7, 12,6, 6, 7, 5, 9, 10,7, 12,
+/* E */ 6, 10,7, 16,9, 12,7, 12,6, 6, 7, 4, 9, 10,7, 12,
 /* F */ 6, 10,7, 4, 9, 12,7, 12,6, 6, 7, 4, 9, 7, 7, 12 };
 
 /* special cases (partially taken care of elsewhere):
@@ -281,7 +282,7 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0x08:
 			if( I.cputype ) {
-						/* DSUB */
+						/* undocumented DSUB */
 				M_DSUB();
 			} else {
 						/* NOP undocumented */
@@ -312,9 +313,9 @@ INLINE void execute_one(int opcode)
 
 		case 0x10:
 			if( I.cputype ) {
-						/* ASRH */
+						/* undocumented ARHL */
 				I.AF.b.l = (I.AF.b.l & ~CF) | (I.HL.b.l & CF);
-				I.HL.w.l = (I.HL.w.l >> 1);
+				I.HL.w.l = (I.HL.w.l & 0x8000) | (I.HL.w.l >> 1);
 			} else {
 						/* NOP undocumented */
 			}
@@ -344,7 +345,7 @@ INLINE void execute_one(int opcode)
 
 		case 0x18:
 			if( I.cputype ) {
-						/* RLDE */
+						/* undocumented RDEL */
 				I.AF.b.l = (I.AF.b.l & ~(CF | VF)) | (I.DE.b.h >> 7);
 				I.DE.w.l = (I.DE.w.l << 1) | (I.DE.w.l >> 15);
 				if ((((I.DE.w.l >> 15) ^ I.AF.b.l) & CF) != 0)
@@ -415,13 +416,13 @@ INLINE void execute_one(int opcode)
 			if ((I.AF.b.l&CF) | (I.AF.b.h>0x99))
 				I.XX.b.h += 0x60;
 
-			I.AF.b.l=(I.AF.b.l&23) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
+			I.AF.b.l=(I.AF.b.l&0x23) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
 			I.AF.b.h=I.XX.b.h;
 			break;
 
 		case 0x28:
 			if( I.cputype ) {
-						/* LDEH nn */
+						/* undocumented LDHI nn */
 				I.XX.d = ARG();
 				I.DE.d = (I.HL.d + I.XX.d) & 0xffff;
 			} else {
@@ -506,7 +507,7 @@ INLINE void execute_one(int opcode)
 
 		case 0x38:
 			if( I.cputype ) {
-						/* LDES nn */
+						/* undocumented LDSI nn */
 				I.XX.d = ARG();
 				I.DE.d = (I.SP.d + I.XX.d) & 0xffff;
 			} else {
@@ -960,7 +961,7 @@ INLINE void execute_one(int opcode)
 		case 0xc6: // ADI nn
 			I.XX.b.l = ARG();
 			M_ADD(I.XX.b.l);
-				break;
+			break;
 		case 0xc7: // RST 0
 			M_RST(0);
 			break;
@@ -974,12 +975,12 @@ INLINE void execute_one(int opcode)
 		case 0xca: // JZ nnnn
 			M_JMP( I.AF.b.l & ZF );
 			break;
-		case 0xcb:
+		case 0xcb: //!! compare with MAME
 			if( I.cputype ) {
 				if (I.AF.b.l & VF) {
 					M_RST(8);			/* call 0x40 */
 				} else {
-					i8085_ICount += 6;	/* RST  V */
+					i8085_ICount += 6;	/* undocumented RSTV */
 				}
 			} else {
 					/* JMP	nnnn undocumented*/
@@ -1031,7 +1032,7 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0xd9:
 			if( I.cputype ) {
-						/* SHLX */
+						/* undocumented SHLX */
 				I.XX.w.l = I.DE.w.l;
 				WM(I.XX.d, I.HL.b.l);
 				I.XX.w.l++;
@@ -1053,7 +1054,7 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0xdd:
 			if( I.cputype ) {
-						/* JNX  nnnn */
+						/* undocumented JNX5 nnnn */
 				M_JMP( !(I.AF.b.l & KF) );
 			} else {
 					/* CALL nnnn undocumented */
@@ -1111,12 +1112,12 @@ INLINE void execute_one(int opcode)
 			I.DE.d = I.HL.d;
 			I.HL.d = I.XX.d;
 			break;
-		case 0xec: // CPO nnnn
+		case 0xec: // CPE nnnn
 			M_CALL( I.AF.b.l & PF );
 			break;
 		case 0xed:
 			if( I.cputype ) {
-						/* LHLX */
+						/* undocumented LHLX */
 				I.XX.w.l = I.DE.w.l;
 				I.HL.b.l = RM(I.XX.d);
 				I.XX.w.l++;
@@ -1228,7 +1229,7 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0xfd:
 			if( I.cputype ) {
-						/* JX   nnnn */
+						/* undocumented JX5 nnnn */
 				M_JMP( I.AF.b.l & KF );
 			} else {
 					/* CALL nnnn undocumented */

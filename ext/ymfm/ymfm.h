@@ -36,8 +36,11 @@
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
  #define _CRT_SECURE_NO_WARNINGS
 #endif
-#if defined(_MSC_VER)
- #define _ITERATOR_DEBUG_LEVEL 0
+
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
 #endif
 
 #include <cassert>

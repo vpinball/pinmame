@@ -827,7 +827,7 @@ char *rc_get_home_dir(void)
    }
    if (!(s=malloc(strlen(pw->pw_dir)+1)))
    {
-      fprintf(stderr, "error: malloc faild for homedir string\n");
+      fprintf(stderr, "error: malloc failed for homedir string\n");
       return NULL;
    }
    strcpy(s, pw->pw_dir);

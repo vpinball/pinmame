@@ -331,13 +331,13 @@ static void jm_drawMech(BMTYPE **line) {
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData jmSimData = {
-  2,    				/* 2 game specific input ports */
-  jm_stateDef,				/* Definition of all states */
-  jm_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  jm_stateDef,			/* Definition of all states */
+  jm_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  jm_handleBallState,			/*Function to handle ball state changes*/
-  jm_drawStatic,			/*Function to handle mechanical state changes*/
+  jm_handleBallState,	/*Function to handle ball state changes*/
+  jm_drawStatic,		/*Function to handle mechanical state changes*/
   FALSE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -351,7 +351,10 @@ static core_tGameData jmGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) | FLIP_BUT(FLIP_L | FLIP_U),
     0,0,0,0,0,0,0,
     0, jm_handleMech,jm_getMech, jm_drawMech,
-    0, NULL
+    0
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &jmSimData,
   {
@@ -371,4 +374,3 @@ static void init_jm(void) {
   locals.xPos = -64;
   locals.yPos = -300;
 }
-

@@ -281,6 +281,7 @@ DRIVERNV(rapidfir)      //BY35-869: 04/82 Rapid Fire
 DRIVERNV(rapidfia)      //          09/05 Rapid Fire (Free Play)
 DRIVERNV(m_mpac  )      //BY35-872: 04/82 Mr. & Mrs. Pac-Man Pinball
 DRIVERNV(m_mpaca )      //          10/04 Mr. & Mrs. Pac-Man Pinball (Free Play)
+DRIVERNV(m_mpacb )      //          ??/?? Mr. & Mrs. Pac-Man Pinball (alternate version)
 DRIVERNV(spectrum)      //BY35-868: 06/82 Spectrum
 DRIVERNV(spectru4)      //          06/82 Spectrum (Rev. 4)
 DRIVERNV(spectrua)      //          10/04 Spectrum (Free Play)
@@ -690,7 +691,8 @@ DRIVERNV(krull)         //S80a-676: 02/83 Krull
 DRIVERNV(goinnuts)      //S80a-682: 02/83 Goin' Nuts
 DRIVERNV(qbquest)       //S80a-677: 03/83 Q*bert's Quest
 DRIVERNV(sorbit)        //S80a-680: 05/83 Super Orbit
-DRIVERNV(rflshdlx)      //S80a-681: 06/83 Royal Flush Deluxe
+DRIVERNV(rflshdlx1)     //S80a-681: 06/83 Royal Flush Deluxe (rev. 1)
+DRIVERNV(rflshdlx)      //          06/83 Royal Flush Deluxe (rev. 2)
 DRIVERNV(amazonh)       //S80a-684: 09/83 Amazon Hunt
 DRIVERNV(amazonha)      //                Amazon Hunt (alternate set)
 DRIVERNV(rackemup)      //S80a-685: 11/83 Rack 'Em Up
@@ -874,6 +876,7 @@ DRIVERNV(smb2)          //                Super Mario Bros. (rev.2)
 DRIVERNV(smb3)          //                Super Mario Bros. (rev.3)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
+DRIVERNV(cueball1)      //          10/92 Cue Ball Wizard (older display rev.)
 DRIVERNV(cueball2)      //          10/92 Cue Ball Wizard (rev.2)
 DRIVERNV(cueball3)      //          10/92 Cue Ball Wizard (rev.3)
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
@@ -1129,6 +1132,7 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
 // ----------------
 // PEYPER
 // ----------------
+DRIVERNV(odinp)         //Odin (Prototype, 1985)
 DRIVERNV(odin)          //Odin (1985)
 DRIVERNV(nemesis)       //Nemesis (1986)
 DRIVERNV(wolfman)       //Wolf Man (1987)
@@ -1327,6 +1331,7 @@ DRIVERNV(mach2)         // 1995 - Mach 2 // or Mach 2.0 Two ?
 DRIVERNV(mach2a)        // 1995 - Mach 2 (alternate set)
 DRIVERNV(jolypark)      // 1996 - Jolly Park
 DRIVERNV(vrnwrld)       // 1996 - Verne's World
+DRIVERNV(gunshot)       // 1996 - Gun Shot (vending machine in a pinball cabinet, no display)
 
 // ---------------
 // SPLIN BINGO
@@ -1701,6 +1706,7 @@ DRIVERNV(elv302g)       //           08/04 Elvis (3.02 German)
 DRIVERNV(elv302l)       //           08/04 Elvis (3.02 Spanish)
 DRIVERNV(elv302f)       //           08/04 Elvis (3.02 French)
 DRIVERNV(elv302i)       //           08/04 Elvis (3.02 Italian)
+DRIVERNV(elv100)        //           08/04 Elvis (1.00)
 DRIVER  (harl,a40)      //Whitestar: 10/04 Harley-Davidson (Stern, 4.00)
 DRIVER  (harl,f40)      //           10/04 Harley-Davidson (Stern, 4.00 French)
 DRIVER  (harl,g40)      //           10/04 Harley-Davidson (Stern, 4.00 German)
@@ -2469,7 +2475,8 @@ DRIVER(frpwr,b7)        //          12/03   Firepower (Sys.7 7-digit conversion)
 DRIVER(frpwr,c7)        //          11/06   Firepower (Sys.7/7-digit Custom Rev. 38)
 DRIVER(frpwr,d7)        //          10/05   Firepower (Sys.7/7-digit Custom Rev. 31)
 DRIVER(frpwr,e7)        //          10/05   Firepower (Sys.7/6-digit /10 Scoring Rev. 31)
-DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
+DRIVER(bk,l2)           //S7-500:   ??/80 W Black Knight (L-2)
+DRIVER(bk,l3)           //          11/80 W Black Knight (L-3)
 DRIVER(bk,l4)           //          11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4 French Speech)
 DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
@@ -3180,28 +3187,36 @@ DRIVERNV(sockfp)        //      Soccer Kings (Free Play)
 DRIVERNV(sockifp)       //      Soccer Kings (Italian Speech Free Play)
 DRIVERNV(sockgfp)       //      Soccer Kings (German Speech Free Play)
 DRIVERNV(pinchamp)      //04/83 Pinball Champ
+DRIVERNV(pinchamf)      //      Pinball Champ (French Speech)
 DRIVERNV(pinchamg)      //      Pinball Champ (German Speech)
 DRIVERNV(pinchami)      //      Pinball Champ (Italian Speech)
 DRIVERNV(pincham7)      //      Pinball Champ (7 digits)
+DRIVERNV(pincha7f)      //      Pinball Champ (7 digits, French Speech)
 DRIVERNV(pincha7g)      //      Pinball Champ (7 digits, German Speech)
 DRIVERNV(pincha7i)      //      Pinball Champ (7 digits, Italian Speech)
 DRIVERNV(pincfp)        //      Pinball Champ (Free Play)
+DRIVERNV(pincffp)       //      Pinball Champ (French Speech Free Play)
 DRIVERNV(pincgfp)       //      Pinball Champ (German Speech Free Play)
 DRIVERNV(pincifp)       //      Pinball Champ (Italian Speech Free Play)
 DRIVERNV(pinc7fp)       //      Pinball Champ (7 digits Free Play)
+DRIVERNV(pinc7ffp)      //      Pinball Champ (7 digits, French Speech Free Play)
 DRIVERNV(pinc7gfp)      //      Pinball Champ (7 digits, German Speech Free Play)
 DRIVERNV(pinc7ifp)      //      Pinball Champ (7 digits, Italian Speech Free Play)
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(tmacgzac)      //      Time Machine (German Speech)
 DRIVERNV(tmacfzac)      //      Time Machine (French Speech)
+DRIVERNV(tmacizac)      //      Time Machine (Italian Speech)
 DRIVERNV(tmachfp)       //      Time Machine (Free Play)
 DRIVERNV(tmacgfp)       //      Time Machine (German Speech Free Play)
 DRIVERNV(tmacffp)       //      Time Machine (French Speech Free Play)
+DRIVERNV(tmacifp)       //      Time Machine (Italian Speech Free Play)
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(farfalli)      //      Farfalla (Italian Speech)
+DRIVERNV(farfallf)      //      Farfalla (French Speech)
 DRIVERNV(farfallg)      //      Farfalla (German Speech)
 DRIVERNV(farffp)        //      Farfalla (Free Play)
 DRIVERNV(farfifp)       //      Farfalla (Italian Speech Free Play)
+DRIVERNV(farfffp)       //      Farfalla (French Speech Free Play)
 DRIVERNV(farfgfp)       //      Farfalla (German Speech Free Play)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
 DRIVERNV(dvlridei)      //      Devil Riders (Italian Speech)
@@ -3240,8 +3255,10 @@ DRIVERNV(bbeltzfp)      //      Black Belt (Free Play)
 DRIVERNV(bbeltifp)      //      Black Belt (Italian Speech Free Play)
 DRIVERNV(bbeltgfp)      //      Black Belt (German Speech Free Play)
 DRIVERNV(bbeltffp)      //      Black Belt (French Speech Free Play)
-DRIVERNV(mexico)        //07/86 Mexico 86
-DRIVERNV(mexicofp)      //      Mexico 86 (Free Play)
+DRIVERNV(mexico)        //07/86 Mexico 86 (German Speech)
+DRIVERNV(mexicoi)       //      Mexico 86 (Italian Speech)
+DRIVERNV(mexicofp)      //      Mexico 86 (German Speech Free Play)
+DRIVERNV(mexicifp)      //      Mexico 86 (Italian Speech Free Play)
 DRIVERNV(zankor)        //12/86 Zankor (TMS5200 Italian Speech)
 DRIVERNV(zankorfp)      //      Zankor (TMS5200 Italian Speech, Free Play)
 DRIVERNV(zankor2i)      //      Zankor (TMS5220 Italian Speech)

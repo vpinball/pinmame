@@ -9,6 +9,10 @@ static struct {
   int swCol;
   int bitCnt;
   int vblankCnt;
+
+  UINT8 lastSw7;
+  UINT8 lastC;
+  UINT32 latch;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -42,38 +46,36 @@ static int colForBit(UINT8 data) {
 }
 
 static WRITE_HANDLER(riot_portc_w) {
-  static UINT8 lastC;
-  static UINT32 latch;
   int strobe;
   int col = colForBit(data);
   if (col) {
     if (data & 1)
-      latch &= ~(1 << locals.bitCnt);
+      locals.latch &= ~(1 << locals.bitCnt);
     else
-      latch |= 1 << locals.bitCnt;
+      locals.latch |= 1 << locals.bitCnt;
     locals.bitCnt++;
     switch (col) {
       case 1:
       case 2:
         if (locals.bitCnt > 15) {
-          strobe = (latch & 0x1000) ? 1 : 0; // this is probably how additional displays are accessed, needs other games to confirm
-          coreGlobals.segments[strobe + 16 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & latch)];
-          coreGlobals.segments[strobe + 18 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & latch >> 4)];
-          coreGlobals.segments[strobe + 20 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & latch >> 8)];
-          coreGlobals.segments[strobe + 22 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & latch >> 12)];
+          strobe = (locals.latch & 0x1000) ? 1 : 0; // this is probably how additional displays are accessed, needs other games to confirm
+          coreGlobals.segments[strobe + 16 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch)];
+          coreGlobals.segments[strobe + 18 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch >> 4)];
+          coreGlobals.segments[strobe + 20 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch >> 8)];
+          coreGlobals.segments[strobe + 22 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch >> 12)];
         }
         break;
       case 3:
         if (locals.bitCnt > 31) {
-          coreGlobals.lampMatrix[0] = core_revbyte(latch);
-          coreGlobals.lampMatrix[1] = core_revbyte(latch >> 8);
-          coreGlobals.lampMatrix[2] = core_revbyte(latch >> 16);
-          coreGlobals.lampMatrix[3] = core_revbyte(latch >> 24);
+          coreGlobals.lampMatrix[0] = core_revbyte(locals.latch);
+          coreGlobals.lampMatrix[1] = core_revbyte(locals.latch >> 8);
+          coreGlobals.lampMatrix[2] = core_revbyte(locals.latch >> 16);
+          coreGlobals.lampMatrix[3] = core_revbyte(locals.latch >> 24);
         }
     }
   }
-  cpu_set_irq_line(0, I8085_RST75_LINE, ~lastC & data & 0x20 ? ASSERT_LINE : CLEAR_LINE);
-  lastC = data;
+  cpu_set_irq_line(0, I8085_RST75_LINE, ~locals.lastC & data & 0x20 ? ASSERT_LINE : CLEAR_LINE);
+  locals.lastC = data;
   if (~data & 0x10) {
     locals.vblankCnt = 0;
     coreGlobals.lampMatrix[4] = (coreGlobals.lampMatrix[4] & 0xef) | 0x10;
@@ -115,7 +117,6 @@ static MACHINE_RESET(regama) {
 }
 
 static SWITCH_UPDATE(regama) {
-  static UINT8 lastSw7;
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x80, 1);
     CORE_SETKEYSW(inports[CORE_COREINPORT],      0x1c, 6);
@@ -123,20 +124,20 @@ static SWITCH_UPDATE(regama) {
   }
   i8085_set_SID(coreGlobals.swMatrix[7] & 1 ? 0 : 1); // clear and verify RAM on reset when SID line is low
   // HACK to make coin switches work. No idea what feeds these values but I don't think it's done by manipulating the RAM directly!
-  if (~lastSw7 & coreGlobals.swMatrix[7] & 2) {
+  if (~locals.lastSw7 & coreGlobals.swMatrix[7] & 2) {
     memory_region(REGION_CPU1)[0x803f] = 1;
     memory_region(REGION_CPU1)[0x803d] |= 2;
-  } else if (~lastSw7 & coreGlobals.swMatrix[7] & 4) {
+  } else if (~locals.lastSw7 & coreGlobals.swMatrix[7] & 4) {
     memory_region(REGION_CPU1)[0x803f] = 2;
-  } else if (~lastSw7 & coreGlobals.swMatrix[7] & 8) {
+  } else if (~locals.lastSw7 & coreGlobals.swMatrix[7] & 8) {
     memory_region(REGION_CPU1)[0x803f] = 3;
-  } else if (~lastSw7 & coreGlobals.swMatrix[7] & 0x10) {
+  } else if (~locals.lastSw7 & coreGlobals.swMatrix[7] & 0x10) {
     memory_region(REGION_CPU1)[0x803f] = 4;
     memory_region(REGION_CPU1)[0x803d] |= 2;
   }
   cpu_set_irq_line(0, I8085_INTR_LINE, coreGlobals.swMatrix[7] & 0x40 ? ASSERT_LINE : CLEAR_LINE); // INTR stalls the machine
   cpu_set_nmi_line(0, coreGlobals.swMatrix[7] & 0x80 ? ASSERT_LINE : CLEAR_LINE); // NMI resets the machine
-  lastSw7 = coreGlobals.swMatrix[7];
+  locals.lastSw7 = coreGlobals.swMatrix[7];
 }
 
 static MEMORY_READ_START(readmem)

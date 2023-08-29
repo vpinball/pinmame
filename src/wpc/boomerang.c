@@ -204,7 +204,6 @@ static MACHINE_INIT(boomerang) {
 }
 
 static MACHINE_RESET(boomerang) {
-  memset(&locals, 0, sizeof(locals));
   pia_reset();
 }
 

@@ -169,6 +169,8 @@ lisy1_attract(unsigned char command, long value) {
 				strcpy( speech_text, textorpath);
 			}
                         break;
+                    case LISY1_ATTRACT_CMD_REM:
+                        break;
                 }
             }
             break;

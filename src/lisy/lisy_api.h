@@ -3,7 +3,7 @@
 #ifndef LISY_API_H
 #define LISY_API_H
 
-#define LISY_API_VERSION_STR "0.11"
+#define LISY_API_VERSION_STR "0.12"
 
 //info, parameter none
 #define LISY_G_HW            0 //get connected LISY hardware -	return "LISY1" or "LISY80"
@@ -58,8 +58,12 @@
 //special rules
 #define LISY_S_SET_HWRULE     0x3C //Configure Hardware Rule for Solenoid
 
-//read parameter (e.g. for APC)
-#define LISY_G_SW_SETTING     0x40 //get DIP-Switch setting, arg is switch no - return byte is value of DIP (8pos)
+//read/write APC settings
+#define LISY_G_APC_SETTING     0x40 //get APC settings - parameter 1 below - parameter 2 is setting# - return byte is value
+#define LISY_S_APC_SETTING     0x41 //set APC settings - parameter 1 below - parameter 2 is setting# - parameter 3 (byte) is value
+//parameter 1 for APC settings
+#define LISY_APC_SYSTEM_SETTING  0
+#define LISY_APC_GAME_SETTING    1
 
 //general, parameter none
 #define LISY_INIT             100 //init/reset LISY - return byte 0=OK, >0 Errornumber Errornumbers TBD

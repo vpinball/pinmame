@@ -112,6 +112,12 @@ static void s6_piaIrq(int state) {
 
 static INTERRUPT_GEN(s6_irq) {
   s6_irqline(1);
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+ //timing according to throttle value in games.cfg
+ lisy_w_throttle();
+#endif
   timer_set(TIME_IN_CYCLES(32,0),0,s6_irqline);
 }
 
@@ -136,18 +142,11 @@ static READ_HANDLER(s6_dips_r) {
 /*SWITCH MATRIX     */
 /********************/
 static READ_HANDLER(s6_swrow_r) {
-#if defined(LISY_SUPPORT)
- //get the switches from LISY_mini
- lisy_w_switch_handler();
-#endif
  return core_getSwCol(s6locals.swCol);
 }
 
 static WRITE_HANDLER(s6_swcol_w) {
  s6locals.swCol = data;
-#if defined(LISY_SUPPORT)
- lisy_w_throttle();
-#endif
 }
 
 /*****************/
@@ -388,4 +387,3 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(s6) {
   core_nvram(file, read_or_write, s6_CMOS, 0x0100, 0xff);
 }
-

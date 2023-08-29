@@ -10,6 +10,8 @@ static struct {
   int nmi, outhole, swStrobe;
   UINT8 sndCmd, manCmd;
   int subtype;
+
+  UINT8 toggle;
 } sndlocals;
 
 static void tabart_init(struct sndbrdData *brdData) {
@@ -19,15 +21,13 @@ static void tabart_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(tabart_manCmd_w) {
-  static int toggle;
-
   if (sndlocals.subtype) {
     sndlocals.sndCmd = data;
     return;
   }
 
   sndlocals.swStrobe = 0;
-  if (!toggle)
+  if (!sndlocals.toggle)
     sndlocals.manCmd = data;
   else {
     sndlocals.sndCmd = data;
@@ -35,7 +35,7 @@ static WRITE_HANDLER(tabart_manCmd_w) {
     sndlocals.nmi = 1;
     cpu_set_nmi_line(1, PULSE_LINE);
   }
-  toggle = !toggle;
+  sndlocals.toggle = !sndlocals.toggle;
 }
 
 // This is needed to determine the correct switch row

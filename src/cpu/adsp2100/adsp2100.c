@@ -253,6 +253,12 @@ typedef struct
 	UINT8		irq_latch[5];
 	INT32		interrupt_cycles;
 	int			(*irq_callback)(int irqline);
+
+#ifdef WPCDCSSPEEDUP
+	UINT32 lastpc;
+	int icount;
+	int xcount;
+#endif
 } adsp2100_Regs;
 
 
@@ -626,8 +632,14 @@ void adsp2100_reset(void *param)
 	adsp2100.irq_latch[3] = CLEAR_LINE;
 	adsp2100.interrupt_cycles = 0;
 #if TRACK_HOTSPOTS
-      memset(pcbucket,0,sizeof(pcbucket));
+	memset(pcbucket,0,sizeof(pcbucket));
 #endif
+#ifdef WPCDCSSPEEDUP
+	adsp2100.lastpc = 0;
+	adsp2100.icount = 0;
+	adsp2100.xcount = 0;
+#endif
+	adsp2100_icount = 50000;
 }
 
 
@@ -790,37 +802,35 @@ int adsp2100_execute(int cycles)
 { /* The current sample is always in I7 */
   /* the busy loop always starts with: */
   /* 0d02a3  AR = I7 */
-  static int lastpc = 0, icount = 0;
   if (op == 0x0d02a3) {
-    if (lastpc == adsp2100.pc) { /* been here before ? */
-      if (icount < 10) {         /* a few instructions ago ? */
-        cpu_spinuntil_int();     /* wait for interrupt */
-        lastpc = 0;              /* amnesia */
+    if (adsp2100.lastpc == adsp2100.pc) { /* been here before ? */
+      if (adsp2100.icount < 10) {         /* a few instructions ago ? */
+        cpu_spinuntil_int();              /* wait for interrupt */
+        adsp2100.lastpc = 0;              /* amnesia */
       }
     }
     else
-      lastpc = adsp2100.pc;       /* first time */
-    icount = 0;
+      adsp2100.lastpc = adsp2100.pc;      /* first time */
+    adsp2100.icount = 0;
   }
   else
-    icount += 1;
+    adsp2100.icount += 1;
 }
 {
   /* The decompression for the 1994+ games starts after the following sequence: */
   /* 000000 NOP */
   /* 0c0080 DIS */
   /* 0c2000 DIS */
-  static int xcount = 0;
-  if (xcount == 0)
-    xcount = (op == 0x000000) ? 1 : 0;
-  else if (xcount == 1)
-    xcount = (op == 0x0c0080) ? 2 : 0;
-  else if (xcount == 2)
-    xcount = (op == 0x0c2000) ? 3 : 0;
+  if (adsp2100.xcount == 0)
+    adsp2100.xcount = (op == 0x000000) ? 1 : 0;
+  else if (adsp2100.xcount == 1)
+    adsp2100.xcount = (op == 0x0c0080) ? 2 : 0;
+  else if (adsp2100.xcount == 2)
+    adsp2100.xcount = (op == 0x0c2000) ? 3 : 0;
   else {
     extern UINT32 dcs_speedup(UINT32 pc);
     op = dcs_speedup(adsp2100.pc);
-    xcount = 0;
+    adsp2100.xcount = 0;
     adsp2100_icount -= 5233; /* amount of instructions replaced by speedup */
   }
 }

@@ -148,11 +148,16 @@ void CALLBACK OnStateUpdated(int state, const void *p_userData)
     }
 }
 
-void CALLBACK OnLogMessage(const char *format, va_list args, const void *p_userData)
-{
-    char buffer[1024];
-    vsnprintf(buffer, sizeof(buffer), format, args);
-    printf("%s\n", buffer);
+void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData) {
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), format, args);
+
+	if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO) {
+		printf("INFO: %s", buffer);
+	}
+	else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR) {
+		printf("ERROR: %s", buffer);
+	}
 }
 
 void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout, const void *p_userData)

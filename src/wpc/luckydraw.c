@@ -12,6 +12,12 @@ static struct {
   int vblankCount;
   UINT8 p1, p2;
   UINT32 solenoids;
+
+  int solBank;
+  UINT8 tc;
+  UINT8 lampData;
+  UINT8 segData[4];
+  UINT8 dispBlank;
 } locals;
 
 static INTERRUPT_GEN(mirco_vblank) {
@@ -23,9 +29,8 @@ static INTERRUPT_GEN(mirco_vblank) {
 }
 
 static INTERRUPT_GEN(t0) {
-  static int tc;
-  i8035_set_reg(I8035_TC, tc ? -1 : 0);
-  tc = !tc;
+  i8035_set_reg(I8035_TC, locals.tc ? -1 : 0);
+  locals.tc = !locals.tc;
 }
 
 static SWITCH_UPDATE(mirco) {
@@ -66,10 +71,6 @@ static READ_HANDLER(p2_r) {
 }
 
 static WRITE_HANDLER(port_w) {
-  static int solBank;
-  static UINT8 lampData;
-  static UINT8 segData[4];
-  static UINT8 dispBlank;
   int col;
   UINT8 *ram = memory_region(REGION_CPU1) + 0x1000;
   logerror("%03x: W%x %02x: %02x\n", activecpu_get_previouspc(), locals.p2 >> 4, offset, data);
@@ -79,18 +80,18 @@ static WRITE_HANDLER(port_w) {
       ram[offset] = data;
       break;
     case 1:
-      solBank = data;
-      if (!solBank) {
+      locals.solBank = data;
+      if (!locals.solBank) {
         locals.solenoids = 0;
       }
       break;
     case 2:
-      if (solBank) {
+      if (locals.solBank) {
         locals.vblankCount = 0;
-        if (solBank & 1) {
+        if (locals.solBank & 1) {
           locals.solenoids = (locals.solenoids & 0xff00) | data;
         }
-        if (solBank & 2) {
+        if (locals.solBank & 2) {
           locals.solenoids = (locals.solenoids & 0x00ff) | (data << 8);
         }
         if (data) { // sometimes data is flaky, so allow fast overwrites and also keep previous data
@@ -99,35 +100,35 @@ static WRITE_HANDLER(port_w) {
       }
       break;
     case 3:
-      dispBlank = 0xff ^ data;
+      locals.dispBlank = 0xff ^ data;
       break;
     // case 5/6: unused by code, possible expansion (J4-14, J4-13)
     case 8:
-      segData[0] = data;
+      locals.segData[0] = data;
       break;
     case 9:
-      segData[1] = data;
+      locals.segData[1] = data;
       break;
     case 0x0a:
-      segData[2] = data;
+      locals.segData[2] = data;
       break;
     case 0x0b:
-      segData[3] = data;
+      locals.segData[3] = data;
       break;
     case 0x0c:
-      lampData = data;
+      locals.lampData = data;
       break;
     case 0x0d:
       col = core_BitColToNum(data);
-      coreGlobals.lampMatrix[col] = lampData;
-      coreGlobals.segments[col].w = dispBlank & 1 ? 0 : core_bcd2seg7[segData[0] & 0x0f];
-      coreGlobals.segments[8 + col].w = dispBlank & 2 ? 0 : core_bcd2seg7[segData[0] >> 4];
-      coreGlobals.segments[16 + col].w = dispBlank & 4 ? 0 : core_bcd2seg7[segData[1] & 0x0f];
-      coreGlobals.segments[24 + col].w = dispBlank & 8 ? 0 : core_bcd2seg7[segData[1] >> 4];
-      coreGlobals.segments[32 + col].w = dispBlank & 0x10 ? 0 : core_bcd2seg7[segData[2] & 0x0f];
-      coreGlobals.segments[40 + col].w = dispBlank & 0x20 ? 0 : core_bcd2seg7[segData[2] >> 4];
-      coreGlobals.segments[48 + col].w = dispBlank & 0x40 ? 0 : core_bcd2seg7[segData[3] & 0x0f];
-      coreGlobals.segments[56 + col].w = dispBlank & 0x80 ? 0 : core_bcd2seg7[segData[3] >> 4];
+      coreGlobals.lampMatrix[col] = locals.lampData;
+      coreGlobals.segments[col     ].w = locals.dispBlank & 1    ? 0 : core_bcd2seg7[locals.segData[0] & 0x0f];
+      coreGlobals.segments[8  + col].w = locals.dispBlank & 2    ? 0 : core_bcd2seg7[locals.segData[0] >> 4];
+      coreGlobals.segments[16 + col].w = locals.dispBlank & 4    ? 0 : core_bcd2seg7[locals.segData[1] & 0x0f];
+      coreGlobals.segments[24 + col].w = locals.dispBlank & 8    ? 0 : core_bcd2seg7[locals.segData[1] >> 4];
+      coreGlobals.segments[32 + col].w = locals.dispBlank & 0x10 ? 0 : core_bcd2seg7[locals.segData[2] & 0x0f];
+      coreGlobals.segments[40 + col].w = locals.dispBlank & 0x20 ? 0 : core_bcd2seg7[locals.segData[2] >> 4];
+      coreGlobals.segments[48 + col].w = locals.dispBlank & 0x40 ? 0 : core_bcd2seg7[locals.segData[3] & 0x0f];
+      coreGlobals.segments[56 + col].w = locals.dispBlank & 0x80 ? 0 : core_bcd2seg7[locals.segData[3] >> 4];
       break;
     default:
 #ifdef VERBOSE_OUTPUT

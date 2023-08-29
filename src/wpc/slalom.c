@@ -14,6 +14,9 @@
 static struct {
   UINT8 sndCmd, msmData;
   int swCol, dispCol, dispCnt, f2, isBr;
+
+  UINT8 zc;
+  UINT8 intr;
 } locals;
 
 static INTERRUPT_GEN(slalom_vblank) {
@@ -21,12 +24,11 @@ static INTERRUPT_GEN(slalom_vblank) {
 }
 
 static INTERRUPT_GEN(slalom_zc) {
-  static int zc;
-  z80ctc_0_trg3_w(0, zc);
-  if (zc) {
+  z80ctc_0_trg3_w(0, locals.zc);
+  if (locals.zc) {
     locals.f2 = !locals.f2;
   }
-  zc = !zc;
+  locals.zc = !locals.zc;
 }
 
 static void ctc_interrupt(int state) {
@@ -53,12 +55,12 @@ static Z80_DaisyChain slalom_DaisyChain[] = {
 };
 
 static MACHINE_INIT(slalom) {
+  memset(&locals, 0x00, sizeof(locals));
   ctc_intf.baseclock[0] = Machine->drv->cpu[0].cpu_clock;
   z80ctc_init(&ctc_intf);
 }
 
 static MACHINE_RESET(slalom) {
-  memset(&locals, 0x00, sizeof(locals));
 }
 
 #ifdef MAME_DEBUG
@@ -131,7 +133,7 @@ static WRITE_HANDLER(lamp_w) {
 }
 
 static WRITE_HANDLER(sol_w) {
-  static int pos[7] = { 5, 4, 3, 0, 6, 1, 2 };
+  static const int pos[7] = { 5, 4, 3, 0, 6, 1, 2 };
   UINT32 solMask, solBits;
   if (!locals.isBr) { // on slalom03, $A008 is the display column write ($9002 on blroller)
     locals.dispCol = pos[core_BitColToNum(data) - 1];
@@ -230,10 +232,9 @@ static WRITE_HANDLER(msm_data_w) {
 }
 
 static void msmIrq(int data) {
-  static int intr;
-  cpu_set_irq_line(1, 0, intr ? ASSERT_LINE : CLEAR_LINE);
-  MSM5205_data_w(0, intr ? locals.msmData & 0x0f : locals.msmData >> 4);
-  intr = !intr;
+  cpu_set_irq_line(1, 0, locals.intr ? ASSERT_LINE : CLEAR_LINE);
+  MSM5205_data_w(0, locals.intr ? locals.msmData & 0x0f : locals.msmData >> 4);
+  locals.intr = !locals.intr;
 }
 
 static struct AY8910interface slalom_ay8910Int = {
@@ -336,7 +337,6 @@ INPUT_PORTS_END
 CORE_GAMEDEFNV(slalom03, "Slalom Code 0.3", 1988, "Stargame", slalom, 0)
 
 static MACHINE_RESET(roller) {
-  memset(&locals, 0x00, sizeof(locals));
   locals.isBr = 1;
 }
 

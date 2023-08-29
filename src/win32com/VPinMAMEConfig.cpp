@@ -251,8 +251,13 @@ void vpm_frontend_init(void) {
 }
 
 void vpm_frontend_exit(void) {
-  if (logfile) // don't know if this is legit to do here, but just be safe
-  { fclose(logfile); logfile = NULL; }
+  // DAR@20230528
+  // This is causing a crash.  The logfile was not opened by this code but
+  // it's being closed here.  The code that owns the file doesnt know this
+  // and will return the handle to the closed file in the vpm_game_init()
+  // call.  Can't do that!
+  //if (logfile) // don't know if this is legit to do here, but just be safe
+  //{ fclose(logfile); logfile = NULL; }
 }
 
 extern "C" {
@@ -372,6 +377,10 @@ void CLIB_DECL logerror(const char *text,...) {
     vsnprintf(szBuffer, sizeof(szBuffer) / sizeof(szBuffer[0]), text, arg);
     OutputDebugString(szBuffer);
     fprintf(logfile, szBuffer);
+	
+	//DAR@20230518 Delay in output was hiding cause of crash, should flush
+	//             the buffer regularly to ensure capture
+	fflush(logfile);
   }
   va_end(arg);
 }

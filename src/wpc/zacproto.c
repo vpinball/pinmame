@@ -42,7 +42,6 @@ static MACHINE_INIT(zacProto) {
 }
 
 static MACHINE_STOP(zacProto) {
-  memset(&locals, 0, sizeof(locals));
 }
 
 static SWITCH_UPDATE(zacProto) {
@@ -62,7 +61,7 @@ static READ_HANDLER(dip_r) {
   return core_getDip(offset);
 }
 
-static int bcd2seg7f[16] = {
+static const int bcd2seg7f[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,
 /* A    B    C    D    E    F */
@@ -134,7 +133,7 @@ static MEMORY_WRITE_START(writemem)
   { 0x0e09, 0x0e16, lamp_w },
 MEMORY_END
 
-DISCRETE_SOUND_START(zacProto_discInt)
+static DISCRETE_SOUND_START(zacProto_discInt)
 	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
 	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
 	DISCRETE_MULTADD(NODE_05,1,NODE_01,2,90)

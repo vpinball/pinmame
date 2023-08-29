@@ -40,6 +40,9 @@ static struct {
 	UINT16 pgolAddress;
 	UINT32 solenoids;
 	int    tones;
+
+	int Data_Reg_A_count;
+	int Data_Reg_B_count;
 } locals;
 
 /*-------------------------------
@@ -127,13 +130,11 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(port_w) {
-	static int Data_Reg_A_count = 16;
-	static int Data_Reg_B_count = 16;
 	int device = offset >> 4;
 	int ioport = offset & 0x0f;
 	int sos = data & 0x10;
 	int enable = (data & 0x08) ? 1 : 0;
- 	int rw = data & 0x40;
+	int rw = data & 0x40;
 	int group = 0x07 ^ (((data & 0x80) >> 5) | ((data & 0x30) >> 4));
 	locals.accu = data & 0x0f;
 	switch (device) {
@@ -269,36 +270,36 @@ static WRITE_HANDLER(port_w) {
 					// not implemented, do we need it?
 					break;
 				case 0xd: // Data Bus I/D5, I/D6,I/D7,I/D9 -> Data Reg. B
-					switch(Data_Reg_B_count) {
+					switch(locals.Data_Reg_B_count) {
 						case 3: case 4: case 5: case 6: case 7: case 8:
-							disp_w(Data_Reg_B_count - 3, locals.accu); //0 ... 5: player 3
+							disp_w(locals.Data_Reg_B_count - 3, locals.accu); //0 ... 5: player 3
 							break;
 						case 11: case 12: case 13: case 14: case 15: case 16:
-							disp_w(Data_Reg_B_count - 5, locals.accu); // 6 ... 11: player 4
+							disp_w(locals.Data_Reg_B_count - 5, locals.accu); // 6 ... 11: player 4
 							break;
 					}
-					Data_Reg_B_count--;
-					//we will recieve 16 updates each time
-					if (Data_Reg_B_count <= 0) Data_Reg_B_count = 16;
+					locals.Data_Reg_B_count--;
+					//we will receive 16 updates each time
+					if (locals.Data_Reg_B_count <= 0) locals.Data_Reg_B_count = 16;
 					break;
 				case 0xe: //  Data Bus I/D5, I/D6,I/D7,I/D9 -> Data Reg. A
-					switch(Data_Reg_A_count) {
+					switch(locals.Data_Reg_A_count) {
 						case 1: case 2:
-							disp_w(Data_Reg_A_count + 39, locals.accu); //40 ... 41 status display  'ball in play' 
+							disp_w(locals.Data_Reg_A_count + 39, locals.accu); //40 ... 41 status display  'ball in play' 
 							break;
 						case 3: case 4: case 5: case 6: case 7: case 8:
-							disp_w(Data_Reg_A_count + 9, locals.accu); //12 ... 17: player 1
+							disp_w(locals.Data_Reg_A_count + 9, locals.accu); //12 ... 17: player 1
 							break;
 						case 9: case 10:
-							disp_w(Data_Reg_A_count + 23, locals.accu); //32 ... 33 system1 status display credits
+							disp_w(locals.Data_Reg_A_count + 23, locals.accu); //32 ... 33 system1 status display credits
 							break;
 						case 11: case 12: case 13: case 14: case 15: case 16:
-							disp_w(Data_Reg_A_count + 7, locals.accu); //18 ... 23: player 2
+							disp_w(locals.Data_Reg_A_count + 7, locals.accu); //18 ... 23: player 2
 							break;
 					}
-					Data_Reg_A_count--;
-					//we will recieve 16 updates each time
-					if (Data_Reg_A_count <= 0) Data_Reg_A_count = 16;
+					locals.Data_Reg_A_count--;
+					//we will receive 16 updates each time
+					if (locals.Data_Reg_A_count <= 0) locals.Data_Reg_A_count = 16;
 					break;
 				default:
 					TRACE(("%03x: unknown command for display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu));
@@ -352,22 +353,23 @@ MEMORY_END
 
 static MACHINE_INIT(GTS1) {
 	memset(&locals, 0, sizeof locals);
+	locals.Data_Reg_A_count = 16;
+	locals.Data_Reg_B_count = 16;
 	if (core_gameData->hw.soundBoard)
 		sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 }
 
 static MACHINE_INIT(GTS1T) {
 	memset(&locals, 0, sizeof locals);
+	locals.Data_Reg_A_count = 16;
+	locals.Data_Reg_B_count = 16;
 	locals.tones = 1;
 }
 
 static MACHINE_RESET(GTS1) {
-	memset(&locals, 0, sizeof locals);
 }
 
 static MACHINE_RESET(GTS1T) {
-	memset(&locals, 0, sizeof locals);
-	locals.tones = 1;
 }
 
 static MACHINE_STOP(GTS1) {
@@ -405,7 +407,9 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(GTS1C)
 	MDRV_IMPORT_FROM(GTS1NS)
 	MDRV_DIPS(24)
+#ifdef ENABLE_MECHANICAL_SAMPLES
 	MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(GTS1T)
@@ -413,7 +417,9 @@ MACHINE_DRIVER_START(GTS1T)
 	MDRV_CORE_INIT_RESET_STOP(GTS1T,GTS1T,GTS1)
 	MDRV_DIPS(24)
 	MDRV_SOUND_ADD(DISCRETE, b18555_discInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
 	MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(GTS1S80)

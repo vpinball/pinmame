@@ -25,11 +25,11 @@
 
 
 /**************************************************************************
-	Internal Clock divisor
+    Internal Clock divisor
 
-	External Clock is divided internally by 3 to produce the machine state
-	generator. This is then divided by 5 for the instruction cycle times.
-	(Each instruction cycle passes through 5 machine states).
+    External Clock is divided internally by 3 to produce the machine state
+    generator. This is then divided by 5 for the instruction cycle times.
+    (Each instruction cycle passes through 5 machine states).
 */
 
 #define I8039_CLOCK_DIVIDER		(3*5)
@@ -197,25 +197,25 @@ extern READ_HANDLER(n7751_internal_r);
 #include "memory.h"
 
 /*
- *	 Input a UINT8 from given I/O port
+ *   Input a UINT8 from given I/O port
  */
 #define I8039_In(Port) ((UINT8)cpu_readport16(Port))
 
 
 /*
- *	 Output a UINT8 to given I/O port
+ *   Output a UINT8 to given I/O port
  */
 #define I8039_Out(Port,Value) (cpu_writeport16(Port,Value))
 
 
 /*
- *	 Read a UINT8 from given memory location
+ *   Read a UINT8 from given memory location
  */
 #define I8039_RDMEM(A) ((unsigned)cpu_readmem16(A))
 
 
 /*
- *	 Write a UINT8 to given memory location
+ *   Write a UINT8 to given memory location
  */
 #define I8039_WRMEM(A,V) (cpu_writemem16(A,V))
 

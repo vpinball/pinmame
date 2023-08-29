@@ -18,7 +18,7 @@
 
 // Enables some subtle low pass on the DCS output to potentially(!) avoid a bit of noise. 
 // As the real HW also has a bunch of lowpass filters, it would be interesting to 
-// check the direct output of the DCS chip on real hardware if it also features a 
+// check the direct output of the DCS chip on real hardware if it features a 
 // bit of noise or not at that stage (e.g. before all the filters).
 //
 // [MJR] - The real 
@@ -29,7 +29,7 @@
 // out most of the output above 18875 Hz, which is probably right around the Nyquist
 // limit for the sampling rate they're using.
 //
-// NOTE: it seems like the mentioned noise in the first comment was only caused by an emulation defect/bug,
+// UPDATE: it seems like the mentioned noise in the first comment was only caused by an emulation defect/bug,
 // thus for now, disable the low-pass filters and prefer 1:1 DCS audio quality output.
 //#define DCS_LOWPASS
 
@@ -245,6 +245,8 @@
 // HC55516 emulation code.)  Fixing the problem in the YM code makes
 // the clock consistent like it was designed to be.
 //
+// NOTE: The YMFM 2151 emulation core does not seem to accurately emulate this
+// behavior yet, thus we simulate this delay in the emulation code in here! (search for HAS_YM2151_YMFM)
 #define PREDCS_FIRQ_HACK_FIXED
 
 //This awful hack WAS here to prevent a bug that caused the speech pitch to be too low on pre-dcs games when
@@ -318,7 +320,9 @@ MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, s67s_dacInt)
   MDRV_SOUND_ADD(HC55516, s67s_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static struct {
@@ -444,7 +448,9 @@ MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC,    s9s_dacInt)
   MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static MEMORY_READ_START(s11s_readmem)
@@ -471,7 +477,9 @@ MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC,    s9s_dacInt)
   MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wmssnd_s11xs)
@@ -634,7 +642,9 @@ MACHINE_DRIVER_START(wmssnd_s9ps)
   MDRV_CPU_MEMORY(s9p_readmem, s9p_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("dac",  DAC,    s9p_dacInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 /*--------------------------
@@ -734,7 +744,9 @@ MACHINE_DRIVER_START(wmssnd_s11cs)
   MDRV_SOUND_ADD(YM2151, s11cs_ym2151Int)
   MDRV_SOUND_ADD_TAG("dac",  DAC,    s11cs_dacInt)
   MDRV_SOUND_ADD_TAG("cvsd", HC55516,s11cs_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static const struct pia6821_interface s11cs_pia = {
@@ -852,7 +864,9 @@ MACHINE_DRIVER_START(wmssnd_s11js)
   MDRV_CPU_MEMORY(s11js_readmem, s11js_writemem)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151, s11js_ym2151Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static WRITE_HANDLER(s11js_rombank_w) {
@@ -910,6 +924,9 @@ static struct {
   struct sndbrdData brdData;
   int replyAvail;
   int volume;
+#if HAS_YM2151_YMFM
+  data8_t ym_reg_addr;
+#endif
 } locals;
 
 static WRITE_HANDLER(wpcs_rombank_w) {
@@ -968,7 +985,6 @@ static void wpcs_ym2151IRQ(int state) {
 }
 
 #ifdef PREDCS_FIRQ_HACK
-
 	//This value is based on a lot of trial and error and comparing the same voice sample played with and without music playing
 	#define FIRQ_HACK_RATE        2400
 
@@ -989,9 +1005,84 @@ static void wpcs_ym2151IRQ(int state) {
 				last++;
 			}
 		}
-
 	}
-#endif
+#elif HAS_YM2151_YMFM
+static void DCS89_YM2151_defer_register_14_write(int param)
+{
+	YM2151_word_0_w(0, 0x14);
+	YM2151_word_0_w(1, param);
+}
+
+static WRITE_HANDLER( DCS89_YM2151_word_0_w )
+{
+	// even offset -> register address write; odd offset -> register data write
+	if ((offset & 1) == 0)
+	{
+		// register address write - the data value is the register number, which
+		// specifies which register the next odd-offset write affects
+		locals.ym_reg_addr = data;
+	}
+	else
+	{
+		// Register data write.  If we're writing value 0x15 to register 0x14,
+		// defer the write for 3us to simulate the latency of the original
+		// YM2151 hardware.  The WPC89 ROM software contains a hard-coded
+		// dependency on this latency being longer than the M6809 instruction
+		// cycle time.  The M6809 program executes this write while FIRQ is
+		// disabled in the status register, then immediately executes an
+		// ANDCC instruction that re-enables the FIRQ.  The code sequence
+		// assumes that an FIRQ that was asserted while the interrupts were
+		// masked out will still be asserted one instruction cycle later,
+		// after the ANDCC finishes.  If that assumption doesn't hold, the
+		// sound board emulation won't work properly - we get the timing
+		// error described in the documentation above regarding the
+		// PREDCS_FIRQ_HACK.  The *correct* solution is to change the
+		// YM2151 emulator code so that it faithfully replicates the
+		// original hardware behavior.  That was the original approach, but
+		// it has proven problematic because PinMAME now has three different
+		// YM2151 emulator implementations (apparently people can't stop
+		// writing new ones), and this register-write latency effect doesn't
+		// seem to be important to anyone except PinMAME, so none of those
+		// emulator re-writers bother to properly implement this.  It's not
+		// a documented feature, and you wouldn't notice that it even exists
+		// without either a very careful analysis of a physical specimen of
+		// the chip OR a reference system that demonstrates the behavior,
+		// such as a WPC89 board.  At any rate, since the YM2151 emulators
+		// can't seem to get it right, a next-best approach is to handle it
+		// here, in the bridge bertween the WPC89 emulation and the YM2151
+		// emulation.
+		if (locals.ym_reg_addr == 0x14 && data == 0x15)
+		{
+			// set a one-shot timer to do the deferred register write
+			timer_set(3.0e-6, data, DCS89_YM2151_defer_register_14_write);
+			return;
+		}
+	}
+
+	// pass it along to the YM2151 emulator
+	YM2151_word_0_w(offset, data);
+}
+
+static MEMORY_READ_START(wpcs_readmem)
+  { 0x0000, 0x1fff, MRA_RAM },
+  { 0x2401, 0x2401, YM2151_status_port_0_r }, /* 2401-27ff odd */
+  { 0x3000, 0x3000, wpcs_latch_r }, /* 3000-33ff */
+  { 0x4000, 0xbfff, CAT2(MRA_BANK, WPCS_BANK0) }, //32K
+  { 0xc000, 0xffff, MRA_ROM }, /* same as page 7f */	//16K
+MEMORY_END
+
+static MEMORY_WRITE_START(wpcs_writemem)
+  { 0x0000, 0x1fff, MWA_RAM },
+  { 0x2000, 0x2000, wpcs_rombank_w }, /* 2000-23ff */
+  { 0x2400, 0x2401, DCS89_YM2151_word_0_w }, /* 2400-27fe even *//* 2401-27ff odd */
+  { 0x2800, 0x2800, DAC_0_data_w }, /* 2800-2bff */
+  { 0x2c00, 0x2c00, hc55516_0_clock_set_w },  /* 2c00-2fff */
+  { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
+  { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
+  { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
+MEMORY_END
+
+#else
 
 static MEMORY_READ_START(wpcs_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
@@ -1011,6 +1102,7 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
 MEMORY_END
+#endif
 
 // Relative mixing volumes for the WPC89 sound devices.  [mjr 5/2019] Adjusted the levels
 // based on the original analog mixing levels inferred from the WPC89 schematics:
@@ -1044,7 +1136,9 @@ MACHINE_DRIVER_START(wmssnd_wpcs)
   MDRV_SOUND_ADD(YM2151, wpcs_ym2151Int)
   MDRV_SOUND_ADD(DAC,    wpcs_dacInt)
   MDRV_SOUND_ADD(HC55516,wpcs_hc55516Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 #ifdef PREDCS_FIRQ_HACK
   //Force the FIRQ to toggle @ the specified rate, but only while the 2151 is not outputting sound
   MDRV_TIMER_ADD(firq_hack, FIRQ_HACK_RATE)
@@ -1194,7 +1288,9 @@ MACHINE_DRIVER_START(wmssnd_dcs1)
   MDRV_CPU_MEMORY(dcs1_readmem, dcs1_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 static MEMORY_READ16_START(dcs2_readmem)
@@ -1228,7 +1324,9 @@ MACHINE_DRIVER_START(wmssnd_dcs2)
   MDRV_CPU_MEMORY(dcs2_readmem, dcs2_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 /*----------------

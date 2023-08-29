@@ -895,17 +895,17 @@ static MACHINE_INIT(spinb) {
 
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
-  SPINBlocals.nmiSeries=0;
+  SPINBlocals.nmiSeries = 0;
 }
 
 static MACHINE_INIT(spinbnmi) {
   machine_init_spinb();
-  SPINBlocals.nmiSeries=1;
+  SPINBlocals.nmiSeries = 1;
 }
 
 static MACHINE_INIT(spinbnmi2) {
   machine_init_spinb();
-  SPINBlocals.nmiSeries=2;
+  SPINBlocals.nmiSeries = 2;
 }
 
 static MACHINE_RESET(spinb) {
@@ -914,6 +914,8 @@ static MACHINE_RESET(spinb) {
 
 static MACHINE_STOP(spinb) {
   sndbrd_0_exit();
+
+  timer_remove(SPINBlocals.irqtimer);
 }
 
 //Only the INT0 pin is configured for read access and we handle that in the dmd command handler
@@ -1382,6 +1384,36 @@ MACHINE_DRIVER_START(spinbs1n2)
   MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, SPINB_msm6585Int2)
+  MDRV_SOUND_CMD(spinb_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("spinb")
+MACHINE_DRIVER_END
+
+// Gun Shot: single MSM6585 sound board, no display, no NVRAM, just 8 DIPs
+static SWITCH_UPDATE(gunshot) {
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x29, 1);
+  }
+}
+static struct MSM5205interface gunshot_msm6585Int = {
+  1,
+  384000,
+  {SPINB_S1_msmIrq},
+  {MSM5205_S48_4B},
+  {50}
+};
+MACHINE_DRIVER_START(gunshot)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(spinb,spinb,spinb)
+  MDRV_CPU_ADD(Z80, 4000000) // Z80A, pics show 8 MHz quartz, so divided by 2
+  MDRV_CPU_MEMORY(spinb_readmem, spinb_writemem)
+  MDRV_CPU_VBLANK_INT(spinb_vblank, 1)
+  MDRV_SWITCH_UPDATE(gunshot)
+  MDRV_DIPS(8)
+
+  MDRV_CPU_ADD(Z80, 3000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
+  MDRV_SOUND_ADD(MSM5205, gunshot_msm6585Int)
   MDRV_SOUND_CMD(spinb_sndCmd_w)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END

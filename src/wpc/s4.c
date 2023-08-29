@@ -47,6 +47,9 @@ static struct {
 } s4locals;
 
 static data8_t *s4_CMOS;
+#if defined(LISY_SUPPORT)
+ data8_t *lisy_s4_CMOS;
+#endif
 
 /*
   6 Digit Structure, Alpha Position, and Layout
@@ -101,6 +104,12 @@ static void s4_irqline(int state) {
 
 static INTERRUPT_GEN(s4_irq) {
   s4_irqline(1);
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+ //timing according to throttle value in games.cfg
+ lisy_w_throttle();
+#endif
   timer_set(TIME_IN_CYCLES(32,0),0,s4_irqline);
 }
 
@@ -126,18 +135,11 @@ static READ_HANDLER(s4_dips_r) {
 /************/
 /* SWITCH MATRIX */
 static READ_HANDLER(s4_swrow_r) {
-#if defined(LISY_SUPPORT)
- //get the switches from LISY_mini
- lisy_w_switch_handler();
-#endif
  return core_getSwCol(s4locals.swCol);
 }
 
 static WRITE_HANDLER(s4_swcol_w) {
  s4locals.swCol = data;
-#if defined(LISY_SUPPORT)
- lisy_w_throttle();
-#endif
 }
 
 /*****************/
@@ -508,6 +510,9 @@ MACHINE_DRIVER_END
 / Load/Save static ram
 /-------------------------------------------------*/
 static NVRAM_HANDLER(s4) {
+#if defined(LISY_SUPPORT)
+ lisy_s4_CMOS = s4_CMOS;
+#endif
   core_nvram(file, read_or_write, s4_CMOS, 0x100, 0xff);
 }
 

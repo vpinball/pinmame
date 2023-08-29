@@ -479,6 +479,7 @@ static core_tLampDisplay tom_lampPos = {
 }
 };
 
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap tom_SamSolMap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER},
@@ -501,6 +502,7 @@ static wpc_tSamSolMap tom_SamSolMap[] = {
  {sTopKickout, 3, SAM_SOLENOID},
  {sTopJet,3,SAM_JET3},{-1}
 };
+#endif
 
 static void tom_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Trunk Pos : %-3d", locals.trunkPos);
@@ -584,7 +586,7 @@ CORE_CLONEDEF(tom,061,13, "Theatre of Magic (0.61A LED Ghost Fix)",1995,"Bally",
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData tomSimData = {
-  2,    				/* 2 game specific input ports */
+  2,					/* 2 game specific input ports */
   tom_stateDef,			/* Definition of all states */
   tom_inportData,		/* Keyboard Entries */
   { stCapturedRest, stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain },
@@ -605,7 +607,10 @@ static core_tGameData tomGameData = {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,
     NULL, tom_handleMech, tom_getMech, tom_drawMech,
-    &tom_lampPos, tom_SamSolMap
+    &tom_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , tom_SamSolMap
+#endif
   },
   &tomSimData,
   {

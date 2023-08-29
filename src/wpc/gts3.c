@@ -104,6 +104,10 @@ struct {
   char   extra16led;
   int    sound_data;
   UINT8  prn[8];
+
+  int bitSet;
+  int vblank_counter;
+  UINT8 irq;
 } GTS3locals;
 
 //We need 2 structures, since Strikes N Spares has 2 DMD Displays
@@ -224,8 +228,6 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
   PB6:  Display Strobe (DSTRB)
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
-	static int bitSet = 0;
-
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA))
 			GTS3locals.lampColumn = 1;
@@ -238,25 +240,24 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 	GTS3_dmdlocals[0].dstrb = (data & DSTRB) != 0;
 	if (GTS3_dmdlocals[0].version) { // probably wrong, but the only way to show *any* display
 		if (GTS3_dmdlocals[0].dstrb) {
-			bitSet++;
-			if (bitSet == 4)
+			GTS3locals.bitSet++;
+			if (GTS3locals.bitSet == 4)
 			{
 				// 12/17/16 (djrobx) - Teed Off's animations are running way too fast.  Vblank 
 				// appears to be firing too often.   Seems to be closer to correct if you do it every 
 				// 3rd time this bit is set, but probably means this method is not right as the 
 				// above comment suggests.
-				static int vblank_counter = 0;
-				vblank_counter++;
-				if (vblank_counter == 3)
+				GTS3locals.vblank_counter++;
+				if (GTS3locals.vblank_counter == 3)
 				{
-					vblank_counter = 0;
+					GTS3locals.vblank_counter = 0;
 					dmd_vblank(0);
 					if(GTS3_dmdlocals[0].version == 2)
 					  dmd_vblank(1);
 				}
 			}
 		} else
-			bitSet = 0;
+			GTS3locals.bitSet = 0;
 	}
 
 	GTS3locals.u4pb = data;
@@ -383,9 +384,8 @@ static WRITE_HANDLER( xvia_1_cb2_w ) {
 static void GTS3_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
 	core_store_pulsed_samples(GTS3_IRQFREQ);
-	static int irq = 0;
-	cpu_set_irq_line(GTS3_CPUNO, 0, irq?ASSERT_LINE:CLEAR_LINE);
-	irq = !irq;
+	cpu_set_irq_line(GTS3_CPUNO, 0, GTS3locals.irq?ASSERT_LINE:CLEAR_LINE);
+	GTS3locals.irq = !GTS3locals.irq;
 }
 
 /*
@@ -880,7 +880,6 @@ static void dmd_vblank(int which) {
 static WRITE_HANDLER(aux1_w)
 {
 	static void *printfile;
-	static UINT8 printdata[] = {0};
 	if (printfile == NULL) {
 		char filename[13];
 		sprintf(filename,"%s.prt", Machine->gamedrv->name);
@@ -890,8 +889,8 @@ static WRITE_HANDLER(aux1_w)
 	if (offset < 8) {
 		GTS3locals.prn[offset] = data;
 		if (!offset) {
-			printdata[0] = data;
-			mame_fwrite(printfile, printdata, 1);
+			UINT8 printdata = data;
+			mame_fwrite(printfile, &printdata, 1);
 		}
 	}
 	logerror1("Aux1 Write: Offset: %x Data: %x\n",offset,data);
@@ -913,7 +912,7 @@ static INTERRUPT_GEN(alphanmi) {
 #ifdef GTS3_MODSOL
 	if (options.usemodsol)
 	{
-		static int modsol_rate_counter = 0;
+		static int modsol_rate_counter = 0; //!! move to GTS3locals
 		if (++modsol_rate_counter == GTS3_MODSOL_SAMPLE)
 		{
 			int i;

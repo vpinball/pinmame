@@ -530,7 +530,6 @@ add_executable(pinmame32 WIN32
    src/wpc/sleic.c
    src/wpc/sleic.h
    src/wpc/sleicgames.c
-   src/wpc/snd_alt.h
    src/wpc/snd_cmd.c
    src/wpc/snd_cmd.h
    src/wpc/sndbrd.c
@@ -654,11 +653,13 @@ add_executable(pinmame32 WIN32
    ext/zlib/zutil.c
 )
 
-set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL)
+set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
 target_compile_options(pinmame32 PUBLIC
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc>>
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C>:/EHsc>>
 )
 
 target_include_directories(pinmame32 PUBLIC

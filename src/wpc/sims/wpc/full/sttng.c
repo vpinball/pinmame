@@ -81,7 +81,13 @@ static struct {
   int UTDivPos;			/* Keep Track of Under Playfield Top Diverter*/
   int UBDivPos;			/* Keep Track of Under Playfield Bott Diverter*/
   int TTDivPos;			/* Keep Track of Top Diverter*/
-  } locals;
+
+  int utdivcnt;
+  int ubdivcnt;
+  int ttdivcnt;
+  int lbuff;
+  int rbuff;
+} locals;
 
 /*--------------------------
 / Game specific input ports
@@ -510,6 +516,7 @@ static core_tLampDisplay sttng_lampPos = {
 }
 };
 
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap sttng_SamSolMap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sPlunger,0,SAM_SOLENOID},
@@ -538,6 +545,7 @@ static wpc_tSamSolMap sttng_SamSolMap[] = {
  /*Channel #5*/
  {sLGunMotor,5,SAM_MOTOR_1, WPCSAM_F_CONT}, {sRGunMotor,5,SAM_MOTOR_1, WPCSAM_F_CONT},{-1}
 };
+#endif
 
 /*--------------------------------------------------------
   Code to draw the mechanical objects, and their states!
@@ -669,7 +677,10 @@ static core_tGameData sttngGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     1,0,6,0,0,0,0,
     sttng_getSol, sttng_handleMech, sttng_getMech, sttng_drawMech,
-    &sttng_lampPos, sttng_SamSolMap
+    &sttng_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , sttng_SamSolMap
+#endif
   },
   &sttngSimData,
   {     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
@@ -692,6 +703,7 @@ READ_HANDLER(sttng_swRowRead) {
 
 static void init_sttng(void) {
   core_gameData = &sttngGameData;
+  memset(&locals, 0, sizeof(locals));
   wpc_set_modsol_aux_board(1);
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                            sttng_swRowRead);
@@ -713,11 +725,6 @@ static int sttng_getSol(int solNo) {
   return 0;
 }
 
-static int utdivcnt=0;
-static int ubdivcnt=0;
-static int ttdivcnt=0;
-static int lbuff=0;
-static int rbuff=0;
 #define CHECK_SOL	50	/*Number of times to check if the solenoid is still firing*/
 
 static void sttng_handleMech(int mech) {
@@ -729,13 +736,13 @@ static void sttng_handleMech(int mech) {
       Reset Counter for opening it back!*/
     if (core_getSol(sUDiverterTop)) {
       locals.UTDivPos = DIV_CLOSED;
-      utdivcnt = 0;
+      locals.utdivcnt = 0;
     }
     else {
       /*Solenoid not firing, if after CHECK_SOL # of checks, it hasn't fired, we flag it as open!*/
-      utdivcnt++;
-      if (utdivcnt > CHECK_SOL) {
-        utdivcnt=0;
+      locals.utdivcnt++;
+      if (locals.utdivcnt > CHECK_SOL) {
+        locals.utdivcnt=0;
         locals.UTDivPos = DIV_OPEN;
       }
     }
@@ -745,13 +752,13 @@ static void sttng_handleMech(int mech) {
       Reset Counter for closing it back!*/
     if (core_getSol(sUDiverterBott)) {
       locals.UBDivPos = DIV_OPEN;
-      ubdivcnt = 0;
+      locals.ubdivcnt = 0;
     }
     else {
       /*Solenoid not firing, if after CHECK_SOL # of checks, it hasn't fired, we flag it as closed!*/
-      ubdivcnt++;
-      if (ubdivcnt > CHECK_SOL) {
-        ubdivcnt=0;
+      locals.ubdivcnt++;
+      if (locals.ubdivcnt > CHECK_SOL) {
+        locals.ubdivcnt=0;
         locals.UBDivPos = DIV_CLOSED;
       }
     }
@@ -761,13 +768,13 @@ static void sttng_handleMech(int mech) {
     Reset Counter for opening it back!*/
     if (core_getSol(sTopDiverter)) {
       locals.TTDivPos = DIV_CLOSED;
-      ttdivcnt = 0;
+      locals.ttdivcnt = 0;
     }
     else {
       /*Solenoid not firing, if after CHECK_SOL # of checks, it hasn't fired, we flag it as open!*/
-      ttdivcnt++;
-      if (ttdivcnt > CHECK_SOL) {
-        ttdivcnt=0;
+      locals.ttdivcnt++;
+      if (locals.ttdivcnt > CHECK_SOL) {
+        locals.ttdivcnt=0;
         locals.TTDivPos = DIV_OPEN;
       }
     }
@@ -808,7 +815,7 @@ static void sttng_handleMech(int mech) {
     if (core_getSol(sLGunMotor)) {
       /*Buffer movement.. Even if motor is firing, delay actual movement*/
       /*Here to prevent a simulator bug which moves the guns before loading them*/
-      if (lbuff++ > CHECK_SOL+40) {
+      if (locals.lbuff++ > CHECK_SOL+40) {
         /*Do we need to reverse direction?*/
         if (locals.LgunLDir == GUN_LEFT && locals.LgunPos >= GUN_END)
           locals.LgunDir = GUN_RIGHT;
@@ -824,7 +831,7 @@ static void sttng_handleMech(int mech) {
       }
     } /*Gun Motor*/
     else
-      lbuff = 0;
+      locals.lbuff = 0;
   }
 
 /* --------------- */
@@ -849,7 +856,7 @@ static void sttng_handleMech(int mech) {
     if (core_getSol(sRGunMotor)) {
       /*Buffer movement.. Even if motor is firing, delay actual movement*/
       /*Here to prevent a simulator bug which moves the guns before loading them*/
-      if (rbuff++ > CHECK_SOL+40) {
+      if (locals.rbuff++ > CHECK_SOL+40) {
         /*Do we need to reverse direction?*/
         if (locals.RgunLDir == GUN_LEFT && locals.RgunPos >= GUN_END)
           locals.RgunDir = GUN_RIGHT;
@@ -864,7 +871,7 @@ static void sttng_handleMech(int mech) {
       }
     } /*Gun Motor*/
     else
-      rbuff=0;
+      locals.rbuff=0;
   }
 }
 

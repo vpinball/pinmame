@@ -412,7 +412,6 @@ static MACHINE_INIT(byVP) {
   pia_config(BYVP_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BYVP_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   pia_config(BYVP_PIA2, PIA_STANDARD_ORDERING, &piaIntf[2]);
-  pia_reset();
 }
 
 extern void by45snd_reset(void);
@@ -420,7 +419,6 @@ static void by_vdp_interrupt(int state);
 static MACHINE_RESET(byVP)
 {
 	//printf("reset\n");
-	memset(&locals, 0, sizeof(locals));
 	by45snd_reset();
 	pia_reset();
 	by_vdp_interrupt(0);

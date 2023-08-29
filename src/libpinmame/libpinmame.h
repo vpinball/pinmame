@@ -21,6 +21,12 @@
 #define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
 typedef enum {
+	LOG_DEBUG = 0,
+	LOG_INFO = 1,
+	LOG_ERROR = 2
+} PINMAME_LOG_LEVEL;
+
+typedef enum {
 	OK = 0,
 	CONFIG_NOT_SET = 1,
 	GAME_NOT_FOUND = 2,
@@ -361,6 +367,10 @@ typedef struct {
 	int pos;
 	int speed;
 } PinmameMechInfo;
+
+typedef struct {
+	int sndNo;
+} PinmameSoundCommand;
 	
 typedef struct {
 	const char* name;
@@ -379,7 +389,7 @@ typedef void (CALLBACK *PinmameOnMechUpdatedCallback)(int mechNo, PinmameMechInf
 typedef void (CALLBACK *PinmameOnSolenoidUpdatedCallback)(PinmameSolenoidState* p_solenoidState, const void* p_userData);
 typedef void (CALLBACK *PinmameOnConsoleDataUpdatedCallback)(void* p_data, int size, const void* p_userData);
 typedef int (CALLBACK *PinmameIsKeyPressedFunction)(PINMAME_KEYCODE keycode, const void* p_userData);
-typedef void (CALLBACK *PinmameOnLogMessageCallback)(const char* format, va_list args, const void* p_userData);
+typedef void (CALLBACK *PinmameOnLogMessageCallback)(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData);
 
 typedef struct {
 	const PINMAME_AUDIO_FORMAT audioFormat;
@@ -402,6 +412,8 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, const void* p_userData);
 LIBPINMAME_API void PinmameSetConfig(const PinmameConfig* const p_config);
 LIBPINMAME_API void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
+LIBPINMAME_API int PinmameGetCheat();
+LIBPINMAME_API void PinmameSetCheat(const int cheat);
 LIBPINMAME_API int PinmameGetHandleKeyboard();
 LIBPINMAME_API void PinmameSetHandleKeyboard(const int handleKeyboard);
 LIBPINMAME_API int PinmameGetHandleMechanics();
@@ -427,11 +439,14 @@ LIBPINMAME_API int PinmameGetMaxLamps();
 LIBPINMAME_API int PinmameGetLamp(const int lampNo);
 LIBPINMAME_API int PinmameGetChangedLamps(PinmameLampState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxGIs();
+LIBPINMAME_API int PinmameGetGI(const int giNo);
 LIBPINMAME_API int PinmameGetChangedGIs(PinmameGIState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxLEDs();
 LIBPINMAME_API int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t, PinmameLEDState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxMechs();
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
+LIBPINMAME_API int PinmameGetMaxSoundCommands();
+LIBPINMAME_API int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands);
 LIBPINMAME_API int PinmameGetDIP(const int dipBank);
 LIBPINMAME_API void PinmameSetDIP(const int dipBank, const int value);
 LIBPINMAME_API void PinmameSetUserData(const void* p_userData);

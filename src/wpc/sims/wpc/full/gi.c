@@ -434,6 +434,7 @@ static core_tLampDisplay gi_lampPos = {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap gi_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -454,6 +455,7 @@ static wpc_tSamSolMap gi_samsolmap[] = {
  /*Channel #4*/
  {sJungleMotor,4,SAM_MOTOR_1,WPCSAM_F_CONT},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -490,13 +492,13 @@ CORE_CLONEDEF(gi,l8,l9,"Gilligan's Island (L-8)",1992,"Bally", wpc_mDMDS,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData giSimData = {
-  2,    				/* 2 game specific input ports */
-  gi_stateDef,				/* Definition of all states */
-  gi_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  gi_stateDef,			/* Definition of all states */
+  gi_inportData,		/* Keyboard Entries */
   { stRTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  gi_handleBallState,			/*Function to handle ball state changes*/
-  gi_drawStatic,			/*Function to handle mechanical state changes*/
+  gi_handleBallState,	/*Function to handle ball state changes*/
+  gi_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -510,7 +512,10 @@ static core_tGameData giGameData = {
     FLIP_SWNO(12,11),
     0,0,0,0,0,0,0,
     NULL, gi_handleMech, NULL, gi_drawMech,
-    &gi_lampPos, gi_samsolmap
+    &gi_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , gi_samsolmap
+#endif
   },
   &giSimData,
   {

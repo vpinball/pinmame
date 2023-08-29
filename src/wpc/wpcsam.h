@@ -6,6 +6,10 @@
 #pragma once
 #endif
 
+#include "pinmame.h"
+
+#ifdef ENABLE_MECHANICAL_SAMPLES
+
 /*Exported Functions*/
 void wpc_play_sample(int channel, int samplename);
 void proc_mechsounds(int sol, int newState);
@@ -20,16 +24,12 @@ typedef struct {
   UINT8 flags;		/*When and how low to play*/
 } wpc_tSamSolMap;
 
-#ifdef PINMAME_SAMPLES
-  extern struct Samplesinterface samples_interface;
-  #define SAMPLESINTERFACE {SOUND_SAMPLES, &samples_interface}
-#else
-  #define SAMPLESINTERFACE {0}
-#endif
+extern struct Samplesinterface samples_interface;
+#define SAMPLESINTERFACE {SOUND_SAMPLES, &samples_interface}
 
-#define WPCSAM_F_OFFON		 0	/* play sample if sol is activated (default) */
-#define WPCSAM_F_ONOFF		 1	/* play samples if sol is deactivated */
-#define WPCSAM_F_CONT            2      /* play sample continuesly (loop)*/
+#define WPCSAM_F_OFFON       0 /* play sample if sol is activated (default) */
+#define WPCSAM_F_ONOFF       1 /* play samples if sol is deactivated */
+#define WPCSAM_F_CONT        2 /* play sample continuously (loop) */
 
 /*SOUND SAMPLES*/
 #define WPCSAM_KNOCKER		 0
@@ -42,7 +42,7 @@ typedef struct {
 #define WPCSAM_FLAPOPEN		 7
 #define WPCSAM_FLAPCLOSE	 8
 #define WPCSAM_LFLIPPER		 9
-#define WPCSAM_RFLIPPER	    10
+#define WPCSAM_RFLIPPER		10
 #define WPCSAM_JET1			11
 #define WPCSAM_JET2			12
 #define WPCSAM_JET3			13
@@ -76,4 +76,5 @@ typedef struct {
 #define SAM_SOLENOID_ON		WPCSAM_SOLENOID_ON	/* sol is hold after activating */
 #define SAM_SOLENOID_OFF	WPCSAM_SOLENOID_OFF	/* sol is deactivated and gets to it's rest position, should be used with WPCSAM_F_ONOFF */
 
-#endif	/* INC_WPCSAM */
+#endif
+#endif /* INC_WPCSAM */

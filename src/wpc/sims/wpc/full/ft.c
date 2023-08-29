@@ -502,13 +502,13 @@ CORE_CLONEDEF(ft,p5,l5,"Fish Tales (P-5 LED Ghost Fix)",1992, "Williams",wpc_mFl
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData ftSimData = {
-  2,    			/* # game specific input ports */
-  ft_stateDef,                  /* Definition of all states */
-  ft_inportData,                /* Keyboard Entries */
+  2,				/* # game specific input ports */
+  ft_stateDef,		/* Definition of all states */
+  ft_inportData,	/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 			/* no init */
-  ft_handleBallState,           /*Function to handle ball state changes*/
-  ft_drawStatic,                /*Function to handle mechanical state changes*/
+  ft_handleBallState,/*Function to handle ball state changes*/
+  ft_drawStatic,	/*Function to handle mechanical state changes*/
   FALSE, 			/* Do Not Simulate manual shooter */
   NULL  			/* no custom key conditions */
 };
@@ -522,7 +522,10 @@ static core_tGameData ftGameData = {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),	/* Which switches are the flippers */
     0,0,3,0,0,0,0,
     ft_getSol, ft_handleMech, ft_getMech, ft_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &ftSimData,
   {
@@ -651,7 +654,7 @@ static const char * showReelPos(void)
 static int ft_getMech(int mechNo) {
   switch (mechNo) {
 	//Return Reel Position
-    case 0: return locals.reelPos;
+	case 0: return locals.reelPos;
 	//Return Which Ball Lock is UP in Reel Position!
 	case 1:
 		if(locals.reelPos>=BALL1UP && locals.reelPos<=BALL1UP+ERROR_RANGE)
@@ -661,6 +664,6 @@ static int ft_getMech(int mechNo) {
 		if(locals.reelPos>=BALL3UP && locals.reelPos<=BALL3UP+ERROR_RANGE)
 			return 3;
 		return 0;
-    }
+  }
   return 0;
 }

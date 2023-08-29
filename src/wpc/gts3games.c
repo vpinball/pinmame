@@ -329,6 +329,16 @@ GTS3SOUND32256(			"yrom1.bin",CRC(c22f5cc5) SHA1(a5bfbc1824bc483eecc961851bd411c
 GTS3_ROMEND
 CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
 
+INITGAME2(cueball1, DMD, FLIP8182, 3, SNDBRD_GTS3, 4)
+GTS3ROMSTART(cueball1,	"gprom.bin",CRC(3437fdd8) SHA1(2a0fc9bc8e3d0c430ce2cf8afad378fc93af609d))
+GTS3_DMD256_ROMSTART(	"dsprom0.bin",CRC(3756efeb) SHA1(2bf84a840ad134666c76d49b89c2de76c0420af8))
+GTS3SOUND32256(			"yrom1.bin",CRC(c22f5cc5) SHA1(a5bfbc1824bc483eecc961851bd411cb0dbcdc4a),
+						"drom1.bin",CRC(9fd04109) SHA1(27864fe4e9c248dce6221c9e56861967d089b216),
+						"arom1.bin",CRC(476bb11c) SHA1(ce546df59933cc230a6671dec493bbbe71146dee),
+						"arom2.bin",CRC(23708ad9) SHA1(156fcb19403f9845404af1a4ac4edfd3fcde601d))
+GTS3_ROMEND
+CORE_CLONEDEFNV(cueball1, cueball,"Cue Ball Wizard (older display rev.)",1992,"Gottlieb",mGTS3DMDSA_5C, 0)
+
 INITGAME2(cueball2, DMD, FLIP8182, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(cueball2,	"gprom.r2",CRC(171c0a0e) SHA1(e53d32e7cddf47feacf3f5c00651c2216da39b7a))
 GTS3_DMD256_ROMSTART(	"dsprom.r2",CRC(70345a0b) SHA1(38ccea4f367d6ac777119201156b2f35c4d2d379))

@@ -318,7 +318,7 @@ CORE_GAMEDEF(tmfnt,l5,"Time Fantasy (L-5)",1982,"Williams",s7_mS7S,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData tmfntSimData = {
-  2,   			/* 2 game specific input ports */
+  2,			/* 2 game specific input ports */
   tmfnt_stateDef,	/* Definition of all states */
   tmfnt_inportData,	/* Keyboard Entries */
   { stOuthole, stDrain, stDrain, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
@@ -338,7 +338,10 @@ static core_tGameData tmfntGameData = {
     0,
     0,0,0,0,0,0,0,
     NULL, NULL, NULL, tmfnt_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &tmfntSimData,
   {{ 0 }},

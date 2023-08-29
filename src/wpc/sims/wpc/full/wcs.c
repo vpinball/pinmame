@@ -545,7 +545,10 @@ static core_tGameData wcsGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,
     wcs_getSol, wcs_handleMech, wcs_getMech, wcs_drawMech,
-    &wcs_lampPos, NULL
+    &wcs_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &wcsSimData,
   {

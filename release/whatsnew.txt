@@ -3,10 +3,26 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.6 (XX XXth, 2023) - ""
+Version 3.6 (XX XXth, 2023) - "Sounds good III"
 ------------------------------------------------------------------------------
 
-Updated LISY support to 5.28-85 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
+"AltSound 2.0"
+- Completely re-written AltSound (mode 1) processing
+- Fixed existing bugs and regressions in the original AltSound code
+- Compatible with all existing AltSound library formats
+- New G-Sound library format.  Provides a new option for authors to develop
+  immersive, multi-layered AltSound packages
+- New AltSound configuration options via per-table .ini file
+- Independent and configurable always-on AltSound logger
+- Ability to record live game sound commands.  Useful for testing sounds without
+  having to repeatedly create a live game.
+- Ability to script game sound commands (currently dev only feature).  Useful
+  for testing specific scenarios like mode progressions or sound mix behavior
+  without having to create them in a live game
+- Ability to playback recorded sound commands via standalone AltSound driver
+  preserving original game timing (currently dev only feature)
+
+Updated LISY support to 5.28-90 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
 Fix Capcom crashes in 64bit builds
 
@@ -18,15 +34,23 @@ Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but 
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Fixed Zaccaria strsphnx sound, background music works correctly now
 Found a cleaner way to prevent garbled speech on Zaccaria
-Use YMFM's YM2151 core for a more accurate emulation (GTS3, Older Bally/Williams WPCs, Older Data Easts)
+Used YMFM's YM2151 core for a more accurate emulation (GTS3, Older Bally/Williams WPCs, Older Data Easts)
+Improved HC55516 CVSD sound emulation once more (most Williams/Bally machines in the Gorgar up to Twilight Zone range)
 Fixed regression in DCS Audio decoding
 Also fixed one subtle DCS emulation bug that leads to slight buzzing/crackling on some samples though (mainly audible when using good speakers or headphones or if the internal volume is cranked up very high)
  one of the longest standing bugs in the history of PinMAME!
-Due to the above, remove DCS low pass filtering (introduced in 2.8) again and prefer 1:1 DCS output quality
+Due to the above, removed DCS low pass filtering (introduced in 2.8) again and prefer 1:1 DCS output quality
+Refined Bally-32 sound emulation (so it also does not require the sample package s3250u3.zip anymore now)
+Disabled mechanical sample use (solenoids, bumpers, etc) via the pinmame.zip sample package if running VPinMAME or libPinMAME (as this should be handled by the table itself then)
 Fixed 6 million dollar man 7 digit conversion display
 Fixed inverted switches for ffv101
+Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM, Juegos Populares, after fixing timeslice issue related to the VGM file dump feature (which uses a fast timer)
+Added support for the old SC-01 Votrax ROM version (wired only to the Mars - God of War Prototype so far)
+Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
+Improved emulation robustness when running multiple machines from the same generation (e.g. System11) one after another (e.g. from within VPX)
+ or when resetting certain machines
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -38,6 +62,7 @@ Seeben: Brooklyn (Bingo) (not working)
         Penalty (Bingo) (not working)
         Super Dixieland (Bingo) (not working)
         Triple Joker (Bingo) (not working)
+Spinball: Gun Shot (vending machine in a pinball cabinet - https://www.recreativas.org/gun-shot-6590-spinball-sa)
 Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
         Golden Game Bingo New (Bingo) (not working)
         Golden Game Kit 1 Generation (Bingo) (not working)
@@ -59,20 +84,30 @@ Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
 Ali (7-digit conversion Free Play rev. 76)
+Black Knight L-2
+Cue Ball Wizard (older display rev.)
 Dracula (One Ball MOD)
+Elvis 1.00
+Farfalla (French Speech)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)
 Galaxy (7-Digit conversion, Fixes & modified rules)
 Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
+Mexico 86 (Italian Speech)
+Mr. & Mrs. Pac-Man Pinball (alternate version)
+Odin (Prototype)
+Pinball Champ (French Speech)
 Pin-Bot J-2 (PEMBOT (no relation)) (MOD)
+Royal Flush Deluxe rev. 1
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Shadow, The LF-4 (French)
 Spirit (initial release) & rev. 3 (MOD)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
 Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)
+Time Machine (Zaccaria, Italian Speech)
 Tommy 1.02 (Belgian), 3.01 (German)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)

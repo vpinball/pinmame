@@ -127,6 +127,11 @@
 #if !defined(_MSC_VER) && !defined(LIBPINMAME) && !defined(XMAME) //!! as not included in PinMAMEs standard makefile build yet
  #include "../ext/vgm/vgmwrite.c"
 #endif
+
+#ifdef LIBPINMAME
+extern void libpinmame_log_error(const char* format, ...);
+#endif
+
 /***************************************************************************
 
 	Constants
@@ -260,7 +265,11 @@ INLINE void bail_and_print(const char *message)
 	if (!bailing)
 	{
 		bailing = 1;
+#ifndef LIBPINMAME
 		printf("%s\n", message);
+#else
+		libpinmame_log_error("%s", message);
+#endif
 	}
 }
 
@@ -550,10 +559,10 @@ void run_machine_core(void)
 	/* if we didn't find a settings file, show the disclaimer */
 	if (settingsloaded || options.skip_disclaimer || showcopyright(artwork_get_ui_bitmap()) == 0)
 	{
-#ifndef VPINMAME
+#if !(defined(VPINMAME) || defined(LIBPINMAME))
 		/* show info about incorrect behaviour (wrong colors etc.) */
 		if (showgamewarnings(artwork_get_ui_bitmap()) == 0)
-#endif /* VPINMAME */
+#endif /* VPINMAME || LIBPINMAME */
 		{
 			/* show info about the game */
 			if (options.skip_gameinfo || showgameinfo(artwork_get_ui_bitmap()) == 0)
@@ -793,7 +802,7 @@ static int vh_open(void)
 
 	/* reset performance data */
 	last_fps_time = osd_cycles();
-	rendered_frames_since_last_fps = frames_since_last_fps = 0;
+	vfcount = rendered_frames_since_last_fps = frames_since_last_fps = 0;
 	performance.game_speed_percent = 100;
 	performance.frames_per_second = Machine->drv->frames_per_second;
 	performance.vector_updates_last_second = 0;

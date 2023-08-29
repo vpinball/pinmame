@@ -2388,6 +2388,8 @@ lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, long* num,
             first_line = 0; //skip first line (Header)
             line = fgets(buffer, sizeof(buffer), fstream);
         }
+	//sanity check empty line
+	if( strlen(line) < 3 ) return(-10);
         //first field is attract mode command
         cmdtok = strdup(strtok(line, ";"));
         //second field is number
@@ -2449,6 +2451,8 @@ lisy1_file_get_attractopts(unsigned char command, unsigned char* cmd, long* num,
             //third field is text to speech
             txttok = strdup(strtok(NULL, ";"));
 	    strcpy( textorpath, txttok);
+        } else if (strncmp(cmdtok, "rem", 3) == 0) {
+            *cmd = LISY1_ATTRACT_CMD_REM;
         } else {
             if (ls80dbg.bitv.basic) {
                 sprintf(debugbuf, "attract: unknown command:%s\n", cmdtok);
