@@ -4,6 +4,7 @@ rom: t2_l8
 serialPort: /dev/tty.usbserial-1420
 display: pin2dmd
 debug: false
+platform: WPC
 
 boards:
   -
@@ -63,6 +64,64 @@ switches:
     board: 0
     port: 15
 
+switchMatrix:
+  board: 3
+  activeLow: true
+  pulseTime: 30
+  columns:
+    -
+      number: 1
+      port: 8
+    -
+      number: 2
+      port: 9
+    -
+      number: 3
+      port: 10
+    -
+      number: 4
+      port: 11
+    -
+      number: 5
+      port: 12
+    -
+      number: 6
+      port: 13
+    -
+      number: 7
+      port: 14
+    -
+      number: 8
+      port: 15
+    -
+      number: 9
+      port: 15
+  rows:
+    -
+      number: 1
+      port: 8
+    -
+      number: 2
+      port: 9
+    -
+      number: 3
+      port: 10
+    -
+      number: 4
+      port: 11
+    -
+      number: 5
+      port: 12
+    -
+      number: 6
+      port: 13
+    -
+      number: 7
+      port: 14
+    -
+      number: 8
+      port: 15
+
 ledStripes:
   -
     board: 3
@@ -103,38 +162,6 @@ ledStripes:
         ledNumber: 28
         brightness: 196
         color: FF00FF00
-
-lamps:
-  -
-    description: "one million"
-    number: 14
-    ledNumber: 27
-    brightness: 128
-    color: 000000FF
-  -
-    description: "two million"
-    number: 14
-    ledNumber: 28
-    brightness: 128
-    color: 000000FF
-  -
-    description: "Bonus"
-    number: 13
-    ledNumber: 28
-    brightness: 196
-    color: FF00FF00
-
-flasher:
-  ledType: RGB
-  lightUp: 100
-  afterGlow: 400
-  assignment:
-    -
-      description: "describe the flasher here"
-      number: 7
-      ledNumber: 13
-      brightness: 255
-      color: FFFFFF
 
 pwmOutput:
   -

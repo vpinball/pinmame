@@ -50,7 +50,7 @@ jobs:
             libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
             ppuc: ppuc.exe
             type: pc
-          - os: macos-latest
+          - os: macos-13
             platform: osx-x64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
             ppuc: ppuc
@@ -88,11 +88,17 @@ jobs:
           repository: PPUC/libzedmd
           path: libzedmd
       - run: mv libzedmd ../libzedmd
+      - name: Checkout libppuc
+        uses: actions/checkout@v3
+        with:
+          repository: PPUC/libppuc
+          path: libppuc
+      - run: mv libppuc ../libppuc
       - if: matrix.os == 'ubuntu-latest' && matrix.type != 'raspi'
         run: |
           sudo apt-get update
           sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
-      - if: matrix.os == 'macos-latest'
+      - if: matrix.os == 'macos-13'
         run: |
           brew install openal-soft libusb yaml-cpp
       - if: matrix.os == 'windows-latest'
