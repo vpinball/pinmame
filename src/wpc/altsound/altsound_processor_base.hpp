@@ -14,6 +14,12 @@
 #pragma once
 #endif
 
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+
 // Library includes
 #include <mutex>
 

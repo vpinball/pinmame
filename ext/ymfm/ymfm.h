@@ -37,6 +37,12 @@
  #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>

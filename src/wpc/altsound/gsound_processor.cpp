@@ -435,7 +435,7 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 			// Each matching sample has equal chance (1/matching_sample_count) to
 			// become the selected one.
 			if (distribution(generator) % matching_sample_count == 0) {
-				sample_idx = i;
+				sample_idx = (unsigned int)i;
 			}
 		}
 	}

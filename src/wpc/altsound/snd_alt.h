@@ -7,6 +7,14 @@
 #pragma once
 #endif
 
+#ifdef __cplusplus
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+#endif
+
 // Std Library includes
 #include <stdio.h>
 

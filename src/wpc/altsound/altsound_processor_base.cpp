@@ -152,7 +152,7 @@ bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 
 	const auto it = std::find(channel_stream.begin(), channel_stream.end(), nullptr);
 	if (it != channel_stream.end()) {
-		channel_out = std::distance(channel_stream.begin(), it);
+		channel_out = (unsigned int)std::distance(channel_stream.begin(), it);
 		ALT_INFO(1, "Found free channel: %02u", channel_out);
 		
 		OUTDENT;

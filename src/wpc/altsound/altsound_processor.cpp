@@ -335,7 +335,7 @@ unsigned int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
 
 			// num_samples now contains the number of samples with the same ID
 			// pick one to play at random
-			sample_idx = i + rand() % num_samples;
+			sample_idx = (unsigned int)i + rand() % num_samples;
 			break;
 		}
 	}

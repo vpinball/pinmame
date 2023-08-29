@@ -15,6 +15,12 @@
 #pragma once
 #endif
 
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+
 // Std Library includes
 #include <array>
 #include <bitset>
