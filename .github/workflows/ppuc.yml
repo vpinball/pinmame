@@ -97,7 +97,7 @@ jobs:
       - if: matrix.os == 'ubuntu-latest' && matrix.type != 'raspi'
         run: |
           sudo apt-get update
-          sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
+          sudo apt-get install zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
       - if: matrix.os == 'macos-13'
         run: |
           brew install openal-soft libusb yaml-cpp
