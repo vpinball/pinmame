@@ -1269,39 +1269,6 @@
     <ClCompile Include="src\wpc\altsound\snd_alt.cpp">
       <Filter>Source Files\PinMAME\altsound</Filter>
     </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_csv_parser.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_data.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_file_parser.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_ini_processor.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_logger.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_processor.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\altsound_processor_base.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\gsound_csv_parser.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\gsound_processor.hpp">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\inipp.h">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\altsound\snd_alt.h">
-      <Filter>Source Files\PinMAME\altsound</Filter>
-    </ClCompile>
     <ClCompile Include="ext\vgm\vgmwrite.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1957,6 +1924,39 @@
     </ClInclude>
     <ClInclude Include="ext\vgm\vgmwrite.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_csv_parser.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_data.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_file_parser.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_ini_processor.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_logger.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_processor.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_processor_base.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\gsound_csv_parser.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\gsound_processor.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\inipp.h">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\snd_alt.h">
+      <Filter>Source Files\PinMAME\altsound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

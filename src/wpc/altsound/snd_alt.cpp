@@ -1,6 +1,8 @@
 // license:BSD-3-Clause
 // copyright-holders:Carsten Wächter
 
+#define NOMINMAX
+
 #include "snd_alt.h"
 
 //#if defined(_WIN32)
@@ -22,7 +24,7 @@
   extern "C" {
 #endif
   #include "core.h"
-#include "osdepend.h"
+  #include "osdepend.h"
 #ifdef __cplusplus
   }
 #endif
@@ -57,11 +59,6 @@ std::mutex io_mutex;
 
 // Instance of global array of BASS channels 
 StreamArray channel_stream;
-
-// windef.h "min" conflicts with std::min
-#ifdef min
-  #undef min
-#endif
 
 // ---------------------------------------------------------------------------
 // Constants

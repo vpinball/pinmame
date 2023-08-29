@@ -7,6 +7,9 @@
 // license:BSD-3-Clause
 // copyright-holders: Dave Roscoe, Carsten Wächter
 // ---------------------------------------------------------------------------
+
+#define NOMINMAX
+
 #include "altsound_processor.hpp"
 
 // Std Library includes
@@ -28,14 +31,6 @@ using std::string;
 //
 static AltsoundStreamInfo* cur_mus_stream = nullptr;
 static AltsoundStreamInfo* cur_jin_stream = nullptr;
-
-// windef.h min/max conflicts with std::min/max
-#ifdef min
-  #undef min
-#endif
-#ifdef max
-	#undef max
-#endif
 
 // Instance of global thread synchronization mutex
 extern std::mutex io_mutex;

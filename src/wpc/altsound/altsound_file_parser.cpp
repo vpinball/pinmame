@@ -150,7 +150,7 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 				std::string PATHG = PATH2 + '/' + "gain.txt";
 				float parsedGain = parseFileValue(PATHG);
 				if (parsedGain != -1.0f) {
-					gain = parsedGain ;
+					gain = parsedGain;
 				}
 
 				// check for overriding ducking value
