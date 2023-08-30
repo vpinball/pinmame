@@ -581,6 +581,16 @@ int main(int argc, char *argv[])
     {
         ppuc->SetSerial(opt_serial);
     }
+    else {
+        // opt_serial will be ignored by ZeDMD later.
+        opt_serial = ppuc->GetSerial();
+    }
+
+    if (!opt_no_serial && !ppuc->Connect())
+    {
+        printf("Unable to open serial communication to PPUC boards.\n");
+        return 1;
+    }
 
     PinmameConfig config = {
         AUDIO_FORMAT_INT16,
@@ -683,12 +693,6 @@ int main(int argc, char *argv[])
     }
 
     std::thread t_resetdmd(ResetDmdThread);
-
-    if (!opt_no_serial && !ppuc->Connect())
-    {
-        printf("Unable to open serial communication to PPUC boards.\n");
-        exit(1);
-    }
 
     // Initialize the sound device
     const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
