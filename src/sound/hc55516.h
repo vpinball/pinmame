@@ -39,6 +39,7 @@ struct hc55516_interface
 {
 	int num;
 	int volume[MAX_HC55516];
+	int chip_type;
 	int output_filter_type;
 };
 

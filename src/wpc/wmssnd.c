@@ -297,7 +297,7 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 }; // The very first Williams speech board used the MC3417 (and not a HC555XX), but should not matter much in practice??
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, 55516, HC55516_FILTER_C8228 }; // The very first Williams speech board used the MC3417 (and not a HC555XX), but should not matter much in practice??
 
 /* THESE (at least) SHOULD BE USING MC3417, i.e. maybe split sys6 and sys7 sound and pick then on case per case basis??
 sys6:
@@ -439,7 +439,7 @@ static MEMORY_WRITE_START(s9s_writemem)
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 }; // all boards were using a HC55516
+static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_C8228 }; // all boards were using a HC555XX
 
 MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -467,8 +467,8 @@ MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
 static struct DACinterface      s11xs_dacInt2     = { 2, { 15, 15 }};
-static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 }; // all boards were using a HC55516
-static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_SYS11 }; // all boards were using a HC555XX
+static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, 55536, HC55516_FILTER_SYS11 };
 
 MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -729,7 +729,7 @@ MEMORY_END
 // don't sound good for a given game.  See WPCSND_HC55516_LEVELS in wmssnd.h
 // for instructions.
 static struct DACinterface      s11cs_dacInt      = { 1, { 15 }};
-static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 }; // all boards were using a HC55516
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, 55536, HC55516_FILTER_SYS11 }; // all boards were using a HC555XX
 static struct YM2151interface   s11cs_ym2151Int = {
 	1, 3579545, /* Hz */
 	{ YM3012_VOL(8, MIXER_PAN_CENTER, 8, MIXER_PAN_CENTER) },
@@ -1121,7 +1121,7 @@ MEMORY_END
 //
 //[OLD NOTE, before HC55516 rewrite: These volume levels sound really good compared to my own Funhouse and T2: Dac=100%,CVSD=80%,2151=15%]
 static struct DACinterface      wpcs_dacInt     = { 1, { 70 }};
-static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 }; // all boards were using a HC55516
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_WPC89 }; // all boards were using a HC555XX, BUT some late WPC boards also used a MC3417 daughter board due to HC555XX shortages!
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
