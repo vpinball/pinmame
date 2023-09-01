@@ -82,6 +82,12 @@ jobs:
           repository: zesinger/libserum
           path: libserum
       - run: mv libserum ../libserum
+      - name: Checkout libserialport
+        uses: actions/checkout@v3
+        with:
+          repository: PPUC/libserialport
+          path: libserialport
+      - run: mv libserialport ../libserialport
       - name: Checkout libzedmd
         uses: actions/checkout@v3
         with:
