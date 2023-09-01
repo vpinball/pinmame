@@ -127,6 +127,7 @@ ledStripes:
     board: 3
     port: 2
     ledType: GBRW
+    amount: 21
     lightUp: 100
     afterGlow: 400
     lamps:

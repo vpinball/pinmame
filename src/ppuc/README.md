@@ -58,6 +58,19 @@ These components are still in an early development stage and the documentation w
 
 ### Compiling
 
+```shell
+mkdir PPUC
+cd PPUC
+git clone https://github.com/PPUC/libserialport.git
+git clone https://github.com/PPUC/libppuc.git
+git clone https://github.com/PPUC/libzedmd.git
+git clone https://github.com/zesinger/libserum
+git clone https://github.com/PPUC/pinmame.git
+cd pinmame
+git checkout libppuc
+```
+Now continue the the OS specific steps.
+
 #### macOS
 
 Install required dependencies via homebrew:
