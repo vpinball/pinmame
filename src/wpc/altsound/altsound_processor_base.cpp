@@ -145,6 +145,8 @@ bool AltsoundProcessorBase::startLogging(const std::string& gameName) {
 	return true;
 }
 
+// ---------------------------------------------------------------------------
+
 bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 {
 	ALT_INFO(0, "BEGIN: AltsoundProcessorBase::findFreeChannel()");
@@ -152,7 +154,7 @@ bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 
 	const auto it = std::find(channel_stream.begin(), channel_stream.end(), nullptr);
 	if (it != channel_stream.end()) {
-		channel_out = (unsigned int)std::distance(channel_stream.begin(), it);
+		channel_out = static_cast<unsigned int>(std::distance(channel_stream.begin(), it));
 		ALT_INFO(1, "Found free channel: %02u", channel_out);
 		
 		OUTDENT;
@@ -201,7 +203,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	ALT_DEBUG(0, "BEGIN AltsoundProcessorBase::createStream()");
 	INDENT;
 
-	const std::string short_path = getShortPath(stream_out->sample_path); // supports logging
+	const std::string short_path = getShortPath(stream_out->sample_path);
 	unsigned int ch_idx;
 	
 	if (!ALT_CALL(findFreeChannel(ch_idx))) {
@@ -215,7 +217,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	stream_out->channel_idx = ch_idx; // store channel assignment
 	const bool loop = stream_out->loop;
 
-  // Create playback stream
+    // Create playback stream
 	HSTREAM hstream = BASS_StreamCreateFile(FALSE, stream_out->sample_path.c_str(), 0, 0, loop ? BASS_SAMPLE_LOOP : 0);
 
 	if (hstream == BASS_NO_STREAM) {

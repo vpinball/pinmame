@@ -38,9 +38,7 @@ extern std::mutex io_mutex;
 // Instance of global array of BASS channels 
 extern StreamArray channel_stream;
 
-//extern float master_vol;
-//extern float global_vol;
-
+// Reference to global logger instance
 extern AltsoundLogger alog;
 
 constexpr unsigned int UNSET_IDX = std::numeric_limits<unsigned int>::max();
@@ -244,7 +242,6 @@ void AltsoundProcessor::init()
 	cur_mus_stream = nullptr;
 	cur_jin_stream = nullptr;
 
-	//LOG(("BEGIN AltsoundProcessor::init()"));
 	if (!loadSamples()) {
 		ALT_ERROR(0, "FAILED AltsoundProcessor::loadSamples()");
 		is_initialized = false;
@@ -335,7 +332,7 @@ unsigned int AltsoundProcessor::getSample(const unsigned int cmd_combined_in)
 
 			// num_samples now contains the number of samples with the same ID
 			// pick one to play at random
-			sample_idx = (unsigned int)i + rand() % num_samples;
+			sample_idx = static_cast<unsigned int>(i) + rand() % num_samples;
 			break;
 		}
 	}
@@ -406,14 +403,12 @@ bool AltsoundProcessor::process_jingle(AltsoundStreamInfo* stream_out)
 		if (stream_out->stop_music) {
 			// STOP field set. Stop current music stream
 			if (!stopMusicStream()) {
-				//success = false;
 				ALT_WARNING(0, "FAILED AltsoundProcessor::stopMusicStream()");
 			}
 		}
 		else if (stream_out->ducking < 0.0f) {
 			// Pause current music stream
 			if (BASS_ChannelPause(cur_mus_stream->hstream)) {
-				//success = false;
 				ALT_WARNING(0, "FAILED BASS_ChannelPause(): %s", get_bass_err());
 			}
 		}
