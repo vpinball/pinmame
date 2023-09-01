@@ -651,14 +651,51 @@ static void add_sample_out(struct hc55516_data *chip, const double sample, const
 // reference to see what the abstract mathematical formulas really are.
 //
 
-// helper for the 10-bit integrator register: clip an integer to 10 bits
+// Helper for the 10-bit integrator register: clip an integer to 10 bits
 // (signed) -> -512..+511
 INLINE int clip10bits(int v)
 {
+	// Saturate to 10-bit signed range
+	//
+	// Note: the MAME code, which doggedly reproduces the gate logic
+	// from the chip decap, expresses this operation in the most obtuse
+	// possible way, but MAME's version accomplishes the same thing.
+	// Here's how MAME expresses it:
+	//
+	//  v = v & 0x3ff;
+	//  return (v & 0x200) != 0 ? v | ~0x3FF : v;
+	//
+	// That's the hardware designer's way of thinking about arithmetic,
+	// as something you have to decompose into invertes and NAND/NOR
+	// gates.  We C programmers have the luxury of working with human-
+	// readable numbers and algebraic expressions, so let's do that
+	// instead.  It's not at all obvious that the MAME code expresses
+	// the same operation as this nice simple math formula, so let's
+	// look at what's going on in the bit logic.  The first line in the
+	// MAME code masks the value to the low-order 10 bits (setting all
+	// of the higher bits to zero, however many bits there are in the
+	// native machine type representing the local variable v after the
+	// C compiler turns it into machine code - probably 32 bits, but
+	// it could be 16 or 64, or who knows, 36 if we ever get ported
+	// to a PDP-10).  But the point is, whatever size 'v' is locally,
+	// we now have just a 10-bit number in it, with all of the higher-
+	// order bits zeroed.  On the original HC55516 hardware, this
+	// number is *physically* stored in a 10-bit register, so there
+	// actually are no higher-order bits to store - that's why MAME
+	// has to zero them.  But the HC hardware thinks about this 10-bit
+	// register as a signed 2's-complement value.  What does that mean
+	// for the C translation?  It means that if the high-order bit of
+	// this 10-bit value is '1', the 10-bit value is negative, so we
+	// need our wider native C value to ALSO be negative.  How do we
+	// make it negative?  By filling all of the higher-order bits
+	// with '1' bits.  That's what that second line is doing: it's
+	// testing the sign bit of the 10-bit value, at bit 0x200, and
+	// if it's set (meaning the 10-bit value is negative), it fills
+	// in all of the higher-order bits in the native C 'v' with '1'
+	// bits.  If bit 0x200 is zero, it does nothing, leaving the
+	// higher-order bits as zeros (which we guaranteed that they
+	// already are via the first line).
 	return v < -512 ? -512 : v > 511 ? 511 : v;
-	// MAME has this:
-	//v = v & 0x3ff;
-	//return (v & 0x200) != 0 ? v | ~0x3FF : v;
 }
 
 // helper for the 10-bit integrator register: sign-extend a 10-bit value
@@ -697,16 +734,36 @@ static void process_bit_HC555XX(struct hc55516_data *chip, const UINT8 bit, cons
 	// buffer the sample
 	add_sample_out(chip, sample / 32768.0, output_rate_ratio);
 
-	// charge the integrator from the syllabic filter according to the current data bit
+	// Charge the integrator from the syllabic filter according to the 
+	// current data bit.
+	//
+	// Note: the MAME version of this code, which is a doggedly literal
+	// translation of the HC55516 gate logic (from a decap analysis) into
+	// C, expresses the negation of 'sum' as a somewhat obtuse bit-
+	// twiddling operation.  We C programmers have the luxury of a more
+	// abstract mathematical expression of our intent, so let's take
+	// advantage of that and not resort to unreadable bit twiddling.
+	// MAME expresses the negation like this:
+	// 
+	//    sum = (~sum) + 1;
+	//    sum = signext10bits(sum & 0x3FF);
+	// 
+	// That bit-twiddling formula is the canonical bit-logic decomposition
+	// of the 2's complement negation operation - you invert all the bits
+	// and add 1.  The physical HC chip does it that way because that's
+	// the way you do it in logic gates.  For a C program, it's will work
+	// on 2's-complement platforms to do the same decomposition, but it's
+	// actually not 100% portable to do so, because there do exist machines
+	// with other integer representations (although none that anyone would
+	// use today, admiteedly).  The math operation that we're trying to
+	// achieve is a negation, so it's more strictly correct to write it
+	// that way and let the compiler translate it into the appropatei
+	// machine operation for us.
 	sum = chip->filter.intg.syl_reg >> 6;
 	if (sum < 2)
 		sum = 2;
 	if ((chip->shiftreg & 1) != 0)
 		sum = -sum;
-	// MAME has this:
-	//if ((chip->shiftreg & 1) != 0)
-	//	sum = (~sum) + 1;
-	//sum = signext10bits(sum & 0x3FF);
 	chip->filter.intg.integrator = clip10bits(chip->filter.intg.integrator + sum);
 }
 
