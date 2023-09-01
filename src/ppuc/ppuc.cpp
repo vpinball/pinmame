@@ -567,6 +567,7 @@ int main(int argc, char *argv[])
     {
         opt_debug = ppuc->GetDebug();
     }
+    ppuc->SetDebug(opt_debug);
 
     if (opt_rom)
     {
