@@ -757,7 +757,7 @@ static void process_bit_HC555XX(struct hc55516_data *chip, const UINT8 bit, cons
 	// with other integer representations (although none that anyone would
 	// use today, admiteedly).  The math operation that we're trying to
 	// achieve is a negation, so it's more strictly correct to write it
-	// that way and let the compiler translate it into the appropate
+	// that way and let the compiler translate it into the appropiate
 	// machine operation for us.
 	sum = chip->filter.intg.syl_reg >> 6;
 	if (sum < 2)
