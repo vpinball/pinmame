@@ -353,7 +353,7 @@ struct hc55516_data
 	UINT8	shiftreg;
 
 	// Syllabic filter status and parameters
-	union
+	struct
 	{
 		// Integer arithmetic, as used in HC55516/HC55536 hardware
 		struct
