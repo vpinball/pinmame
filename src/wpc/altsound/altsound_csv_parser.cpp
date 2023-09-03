@@ -85,14 +85,12 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 				}
 				else {
 					int val = std::stoi(trimmed);
-					if (val == 0 || val == 1) {
+					if (val == 0 || val == 1 || val == -1) {
 						entry.channel = val;
 					}
 					else {
-						ALT_ERROR(0, "Invalid sample CHANNEL value");
-						success = false;
+						ALT_WARNING(1, "Invalid sample CHANNEL value: %d", val);
 						entry.channel = -1;  // assign some default value
-						break;
 					}
 				}
 			}

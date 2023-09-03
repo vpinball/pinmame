@@ -5,14 +5,6 @@
 
 #include "snd_alt.h"
 
-//#if defined(_WIN32)
-//  #include <direct.h>
-//  #define CURRENT_DIRECTORY _getcwd
-//#else
-//  #include <unistd.h>
-//  #define CURRENT_DIRECTORY getcwd
-//#endif
-
 // Std Library includes
 #include <algorithm>
 #include <ctime>
@@ -45,6 +37,7 @@
 using std::string;
 using std::endl;
 
+// Global logging instance
 AltsoundLogger alog("altsound.log");
 
 // Data structure to hold sample behaviors
@@ -96,8 +89,6 @@ bool use_rom_ctrl = true;
 
 // get path to VPinMAME
 std::string get_vpinmame_path();
-
-//std::string trim(const std::string& str);
 
 // ---------------------------------------------------------------------------
 // Functional code
@@ -261,14 +252,6 @@ BOOL alt_sound_init(CmdData* cmds_out)
 		ALT_DEBUG(0, "END alt_sound_init()");
 		return FALSE;
 	}
-
-	/*if (!processor) {
-		ALT_ERROR(0, "FAILED: Unable to create AltSound processor");
-		
-		OUTDENT;
-		ALT_DEBUG(0, "END alt_sound_init()");
-		return FALSE;
-	}*/
 	ALT_INFO(0, "%s processor created", format.c_str());
 
 	processor->setMasterVol(1.0f);
@@ -325,7 +308,6 @@ BOOL alt_sound_init(CmdData* cmds_out)
 // ---------------------------------------------------------------------------
 
 extern "C" void alt_sound_exit() {
-	//DAR_TODO clean up internal storage?
 	ALT_DEBUG(0, "BEGIN alt_sound_exit()");
 	INDENT;
 
