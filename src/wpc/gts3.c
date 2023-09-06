@@ -101,7 +101,7 @@ struct {
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
   UINT8  ax[7], cx1, cx2, ex1;
-  char   extra16led;
+  char   extra16led; // bool
   int    sound_data;
   UINT8  prn[8];
 
