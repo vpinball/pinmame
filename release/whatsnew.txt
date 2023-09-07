@@ -51,7 +51,7 @@ Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
 Improved emulation robustness when running multiple machines from the same generation (e.g. System11) one after another (e.g. from within VPX)
  or when resetting certain machines
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -75,6 +75,9 @@ Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
         Montana Bingo Stake 6/10 (Bingo) (not working)
         Top Game Laser L10 (Bingo) (not working)
         Top Game Turbo (Bingo) (not working)
+
+Kinda new:
+X-Files 3.04 (unofficial MOD)
 
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
