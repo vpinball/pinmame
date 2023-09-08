@@ -122,9 +122,10 @@ jobs:
           if [[ "${{ matrix.pinmame-test }}" ]]; then
             cp build/Release/${{ matrix.pinmame-test }} tmp
           fi
+          cp release/gamelist.txt tmp
           cp release/license.txt tmp
-          cp release/whatsnew.txt tmp
           cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
       - uses: actions/upload-artifact@v3
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
