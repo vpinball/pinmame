@@ -25,7 +25,6 @@
 #define IDC_CABINETMODE                 106
 #define IDC_SAMPLERATE                  110
 #define IDC_ANTIALIAS                   111
-#define IDC_SYNCLEVEL                   112
 #define IDC_FASTFRAMES                  113
 #define IDC_PINDMD                      114
 #define IDC_WINDMD                      115

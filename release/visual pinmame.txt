@@ -93,9 +93,6 @@ NOTE: If you do not know what to pick, leave every setting at its default value!
  Emulation Fast Frames: Will emulate the first X frames as fast as possible, leading to a quicker startup, without any sideeffects (usually this value is in the 100s to 1000s range)
 
 
- VP<->VPM synclevel: Was used to balance the processing power between VP and VPM, nowadays best leave at 0 (but if you still insist, this is the number of times that VPM will try to get control over the CPU, per second, see http://www.vpforums....?showtopic=1951)
-
-
  Display Antialias: Simple anti-aliasing filter of the output window (0..100%)
 
  Display Opacity: Steers the transparency of the output window (0..100%) (useful if you wanna place the window over the playfield itself)

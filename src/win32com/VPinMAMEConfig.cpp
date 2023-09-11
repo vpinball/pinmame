@@ -57,8 +57,7 @@ int sound_mode = 0;
 int g_vgmwrite = 0;
 
 int threadpriority = 1;
-//int synclevel = 60;
-int synclevel = 0;		//SJE: Default synclevel is 0 now.. 10/01/03
+static int deprecated_synclevel = 0;
 
 static FILE *logfile = NULL;
 
@@ -73,7 +72,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_int,  &dmd_scalefactor,  "0", 0, 10000, NULL, "DMD display size (1/2 = 2x, 3,4,.. = 3x,4x,..)" },
 	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
-	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },	//SJE: Default synclevel is 0 now.. 10/01/03
+	{ "synclevel",  NULL, rc_int,  &deprecated_synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },
 	{ "fastframes",  NULL, rc_int,  &fastfrms,  "-1", -1, 100000, NULL, "Unthrottled frames at game start" },
 	{ "ignore_rom_crc", NULL, rc_bool, &ignoreRomCRC,  "0", -1, 1, NULL, "Ignore ROM CRC Errors" },
 	{ "cabinet_mode", NULL, rc_bool, &cabinetMode,  "0", -1, 1, NULL, "Enables Cabinet Mode" },

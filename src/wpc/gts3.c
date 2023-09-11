@@ -881,7 +881,7 @@ static WRITE_HANDLER(aux1_w)
 {
 	static void *printfile;
 	if (printfile == NULL) {
-		char filename[13];
+		char filename[64];
 		sprintf(filename,"%s.prt", Machine->gamedrv->name);
 		printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,2); // APPEND write mode
 	}

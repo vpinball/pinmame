@@ -499,7 +499,7 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 		win_use_ddraw = 0;
 #endif 
 #ifndef DISABLE_DX7
- 	if (win_use_ddraw)
+	if (win_use_ddraw)
 		DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);
 #endif
 
@@ -543,7 +543,7 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 
 	// indicate for later that we're just beginning
 	warming_up = 1;
-    return 0;
+	return 0;
 }
 
 
@@ -695,12 +695,7 @@ static void check_inputs(void)
 //============================================================
 //	throttle_speed
 //============================================================
-#ifdef VPINMAME
-extern HANDLE g_hEnterThrottle;
-extern int    g_iSyncFactor;
-int           iCurrentSyncValue = 512;
-#endif
-int    g_iThrottleAdj = 0;
+static int g_iThrottleAdj = 0;
 
 
 #ifdef DEBUG_SOUND
@@ -743,20 +738,6 @@ void throttle_speed_part(int part, int totalparts)
 {
 	static double ticks_per_sleep_msec = 0;
 	cycles_t target, curr, cps;
-
-#ifdef VPINMAME
-	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) {
-		if ( g_iSyncFactor>=1024 )
-			SetEvent(g_hEnterThrottle);
-		else {
-			iCurrentSyncValue += g_iSyncFactor;
-			if ( iCurrentSyncValue>=1024 ) {
-				SetEvent(g_hEnterThrottle);
-				iCurrentSyncValue -= 1024;
-			}
-		}
-	}
-#endif
 
 	// if we're only syncing to the refresh, bail now
 	if (win_sync_refresh)
