@@ -91,6 +91,25 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	rom_volume_control = (rom_control == "1");
 	ALT_INFO(0, "Parsed \"rom_volume_ctrl\": %s", rom_volume_control ? "true" : "false");
 
+	// get skip count
+	string skip_count_str;
+	inipp::get_value(ini.sections["system"], "cmd_skip_count", skip_count_str);
+	try {
+		if (!skip_count_str.empty()) {
+			const int val = std::stoi(skip_count_str);
+			skip_count = val;
+			ALT_INFO(0, "Parsed \"cmd_skip_count\": %d", skip_count);
+		}
+	}
+	catch (const std::invalid_argument& e) {
+		ALT_ERROR(0, "Invalid number format while parsing cmd_skip_count value: %s\n", skip_count_str.c_str());
+		return false;
+	}
+	catch (const std::out_of_range& e) {
+		ALT_ERROR(0, "Number out of range while parsing cmd_skip_count value: %s\n", skip_count_str.c_str());
+		return false;
+	}
+
 	// get AltSound format type
 	inipp::get_value(ini.sections["format"], "format", altsound_format);
 	altsound_format = normalizeString(altsound_format);
@@ -566,7 +585,6 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 		";                     to create custom testing scenarios. The\n"
 		";                     \"cmdlog.txt\" file is created in the \"tables\"\n"
 		";                     folder. This feature is turned off by default\n"
-		";                     NOTE: This is currently only supported for G-Sound format\n"
 		";\n"
 		"; rom_volume_ctrl   : the AltSound processor attempts to recreate original\n"
 		";                     playback behavior using commands sent from the ROM.\n"
@@ -574,11 +592,20 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 		";                     muting of the playback volume. Setting this variable\n"
 		";                     to 0 turns this feature off.\n"
 		";                     NOTE: This option works for all AltSound formats\n"
+		";\n"
+		"; cmd_skip_count    : some ROMs send out spurious commands during initialization\n"
+		";                     which match valid runtime commands.  In this case, it is not\n"
+		";                     desirable to output sound, but want to allow later instances\n"
+		";                     to play normally.  This variable allows AltSound authors to\n"
+		";                     specify how many initial commands to ignore at startup.\n"
+		";                     NOTE:  If the record_sound_cmds flag is set, the skipped\n"
+		";                     commands will be included in the recording file.\n"
 		"; ----------------------------------------------------------------------------\n"
 		"\n"
 		"[system]\n"
 		"record_sound_cmds = 0\n"
 		"rom_volume_ctrl = 1\n"
+		"cmd_skip_count = 0\n"
 		"\n"
 		"; ----------------------------------------------------------------------------\n"
 		"; There are three supported AltSound formats:\n"

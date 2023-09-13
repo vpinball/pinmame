@@ -42,7 +42,8 @@ extern bool rec_snd_cmds;
 AltsoundProcessorBase::AltsoundProcessorBase(const std::string& _game_name,
 	                                         const std::string& _vpm_path)
 : game_name(_game_name),
-  vpm_path(_vpm_path)
+  vpm_path(_vpm_path),
+  skip_count(0)
 {
 }
 
