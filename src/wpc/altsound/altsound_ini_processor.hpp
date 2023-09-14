@@ -54,8 +54,11 @@ public:
 	// Return parsed AltsoundFormat type
 	const std::string& getAltsoundFormat() const;
 
-	// Return parse ROM volume control flag
+	// Return parsed ROM volume control flag
 	const bool usingRomVolumeControl() const;
+
+	// Return parsed skip count value
+	const unsigned int AltsoundIniProcessor::getSkipCount() const;
 
 private: // functions
 	
@@ -90,6 +93,7 @@ private: // data
 	bool record_sound_commands = false;
 	bool rom_volume_control = true;
 	std::string altsound_format;
+	unsigned int skip_count = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -108,9 +112,15 @@ inline const std::string& AltsoundIniProcessor::getAltsoundFormat() const {
 
 
 // ----------------------------------------------------------------------------
+
 inline const bool AltsoundIniProcessor::usingRomVolumeControl() const {
 	return rom_volume_control;
 }
 
 // ----------------------------------------------------------------------------
+
+inline const unsigned int AltsoundIniProcessor::getSkipCount() const {
+	return skip_count;
+}
+
 #endif // ALTSOUND_INI_PROCESSOR_H

@@ -52,20 +52,28 @@ public:
 	// external interface to stop playback of the current music stream
 	virtual bool stopMusic() = 0;
 
+	// ROM volume control accessor/nutator
 	void romControlsVol(const bool use_rom_vol);
 	bool romControlsVol();
 
+	// command recording flag mutator
 	void recordSoundCmds(const bool rec_sound_cmds);
 
 	// initialize processing state
 	virtual void init();
 
+	// master volume accessor/mutator
 	void setMasterVol(const float vol_in);
 	static float getMasterVol();
 
+	// global accessor/mutator
 	void setGlobalVol(const float vol_in);
 	static float getGlobalVol();
 
+	// command skip count accessor/mutator
+	void setSkipCount(const unsigned int skip_count_in);
+	const unsigned int getSkipCount() const;
+	
 public: // data
 	
 protected: // functions
@@ -97,10 +105,13 @@ protected: // functions
 	// set volume on provided stream
 	static bool setStreamVolume(HSTREAM stream_in, const float vol_in);
 
+	// Return ROM shortname
 	const std::string& getGameName();
 
+	// Return path to VPinMAME
 	const std::string& getVpmPath();
 
+	// Initialize log file
 	bool startLogging(const std::string& gameName);
 
 protected: // data
@@ -116,6 +127,7 @@ private: // data
 	bool use_rom_ctrl = true;
 	static float global_vol;
 	static float master_vol;
+	unsigned int skip_count;
 };
 
 // ----------------------------------------------------------------------------
@@ -126,38 +138,64 @@ inline const std::string& AltsoundProcessorBase::getGameName() {
 	return game_name;
 }
 
+// ----------------------------------------------------------------------------
+
 inline const std::string& AltsoundProcessorBase::getVpmPath() {
 	return vpm_path;
 }
+
+// ----------------------------------------------------------------------------
 
 inline void AltsoundProcessorBase::romControlsVol(const bool use_rom_vol) {
 	use_rom_ctrl = use_rom_vol;
 }
 
+// ----------------------------------------------------------------------------
+
 inline bool AltsoundProcessorBase::romControlsVol() {
 	return use_rom_ctrl;
 }
+
+// ----------------------------------------------------------------------------
 
 inline void AltsoundProcessorBase::recordSoundCmds(const bool rec_sound_cmds) {
 	rec_snd_cmds = rec_sound_cmds;
 }
 
+// ----------------------------------------------------------------------------
+
 inline void AltsoundProcessorBase::setMasterVol(const float vol_in) {
 	master_vol = vol_in;
 }
+
+// ----------------------------------------------------------------------------
 
 inline float AltsoundProcessorBase::getMasterVol() {
 	return master_vol;
 }
 
+// ----------------------------------------------------------------------------
+
 inline void AltsoundProcessorBase::setGlobalVol(const float vol_in) {
 	global_vol = vol_in;
 }
+
+// ----------------------------------------------------------------------------
 
 inline float AltsoundProcessorBase::getGlobalVol() {
 	return global_vol;
 }
 
 // ----------------------------------------------------------------------------
+
+inline const unsigned int AltsoundProcessorBase::getSkipCount() const {
+	return skip_count;
+}
+
+// ----------------------------------------------------------------------------
+
+inline void AltsoundProcessorBase::setSkipCount(const unsigned int skip_count_in) {
+	skip_count = skip_count_in;
+}
 
 #endif // ALTSOUND_PROCESSOR_BASE_HPP

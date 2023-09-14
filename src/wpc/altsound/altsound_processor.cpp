@@ -101,6 +101,16 @@ bool AltsoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		return false;
 	}
 
+	// Skip this command?
+	unsigned int skip_count = AltsoundProcessorBase::getSkipCount();
+	if (skip_count > 0) {
+		--skip_count;
+		AltsoundProcessorBase::setSkipCount(skip_count);
+		ALT_DEBUG(0, "Sound command skipped, (%d) remaining", skip_count);
+		ALT_DEBUG(0, "END AltsoundProcessor::handleCmd()");
+		return true;
+	}
+
 	// get sample for playback
 	const unsigned int sample_idx = getSample(cmd_combined_in);
 
