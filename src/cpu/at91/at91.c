@@ -76,7 +76,7 @@ extern int activecpu;
 
 //Flags for Testing
 #define INT_BLOCK_FIQ   0			//Turn on/off blocking of specified Interrupt (Leave OFF for non-test situation)
-#define INT_BLOCK_IRQ0	0
+#define INT_BLOCK_IRQ0  0
 #define INT_BLOCK_TC0   0
 #define INT_BLOCK_TC1   0
 #define INT_BLOCK_TC2   0
@@ -120,10 +120,10 @@ static void timer_trigger_event(int timer_num);
 #define WRITE32(addr,data)	at91_cpu_write32(addr,data)
 #define PTR_READ32			&at91_cpu_read32
 #define PTR_WRITE32			&at91_cpu_write32
-#define PTR_READ16          &arm7_cpu_read16
-#define PTR_WRITE16         &arm7_cpu_write16
-#define PTR_READ8           &arm7_cpu_read8
-#define PTR_WRITE8          &arm7_cpu_write8
+#define PTR_READ16			&arm7_cpu_read16
+#define PTR_WRITE16			&arm7_cpu_write16
+#define PTR_READ8			&arm7_cpu_read8
+#define PTR_WRITE8			&arm7_cpu_write8
 
 /* Macros that need to be defined according to the cpu implementation specific need */
 #define ARMREG(reg)			at91.sArmRegister[reg]
@@ -179,8 +179,8 @@ typedef struct
 	ARM7CORE_REGS								//these must be included in your cpu specific register implementation
 	int prev_cycles;							//# of previous cycles used since last opcode was performed.
 	int tot_prev_cycles;						//# of total previous cycles
-	int remap;	//flag if remap of ram occurred
-	data32_t aic_vectors[32];						//holds vector address for each interrupt 0-31
+	int remap;									//flag if remap of ram occurred
+	data32_t aic_vectors[32];					//holds vector address for each interrupt 0-31
 	data32_t aic_smr[32];						//Holds IRQ priorities
 	data32_t aic_irqmask;						//holds the irq enabled mask for each interrupt 0-31 (0 = disabled, 1 = enabled) - 1 bit per interrupt.
 	data32_t aic_irqstatus;						//holds the status of the current interrupt # - 0-31 are valid #
@@ -204,7 +204,7 @@ typedef struct
 	int cpunum;									//CPU num
 	data32_t *page0_ram_ptr;					//holder for the pointer set by the driver to ram @ page 0.
 	data32_t *reset_ram_ptr;					//holder for the pointer set by the driver to ram swap location.
-	data32_t page0[0x100000];					//Hold copy of original boot rom data @ page 0.
+	data32_t page0[0x100000/4];					//Hold copy of original boot rom data @ page 0.
 	#if USE_MAME_TIMERS
 	mame_timer* timer[MAX_TIMER];				//handle to mame timer for each clock
 	#endif
@@ -1196,7 +1196,7 @@ INLINE void internal_write (int addr, data32_t data)
 			break;
 		}
 
- 		default:
+		default:
 			LOG(("%08x: AT91-OCP WRITE: %08x = %08x\n",activecpu_get_pc(),addr,data));
 	}
 }
@@ -1766,7 +1766,7 @@ void at91_fire_irq(int irqline)
 //	{
 //		return;
 //	}
-//  Always mark as pending, but don't fire if masked. 
+//  Always mark as pending, but don't fire if masked.
 
 	if(irqline == AT91_FIQ_IRQ)
 	{
@@ -1961,12 +1961,11 @@ INLINE BeforeOpCodeHook(void)
 	if( (TC_RUNNING(0) || TC_RUNNING(1) || TC_RUNNING(2)) )			//for speed we use this, but really it should loop and check using MAX_TIMER var
 	{
 		int i;
-		int cycles = 0;
 
 		//Check each timer
 		for(i=0; i<MAX_TIMER; i++)
 		{
-			cycles = at91.prev_cycles;				//How many cycles have passed since last check?
+			int cycles = at91.prev_cycles;			//How many cycles have passed since last check?
 			cycles+= at91.tc_clock[i].halfticks;	//Add half ticks since last time
 			//Is this timer running?
 			if(TC_RUNNING(i))

@@ -75,7 +75,7 @@ static UINT8 num_voices;
 static struct ADPCMVoice adpcm[MAX_ADPCM];
 
 /* step size index shift table */
-static int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
+static const int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
 
 /* lookup table for the precomputed difference */
 static int diff_lookup[49*16];
@@ -115,7 +115,7 @@ const UINT8 okim6295_volume_table[16] =
 static void compute_tables(void)
 {
 	/* nibble to bit map */
-	static int nbl2bit[16][4] =
+	static const int nbl2bit[16][4] =
 	{
 		{ 1, 0, 0, 0}, { 1, 0, 0, 1}, { 1, 0, 1, 0}, { 1, 0, 1, 1},
 		{ 1, 1, 0, 0}, { 1, 1, 0, 1}, { 1, 1, 1, 0}, { 1, 1, 1, 1},

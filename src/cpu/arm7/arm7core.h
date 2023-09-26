@@ -389,4 +389,3 @@ EXTERN char *(*arm7_dasm_cop_do_callback)( char *pBuf, data32_t opcode, char *pC
 #endif
 
 #endif /* ARM7CORE_H */
-

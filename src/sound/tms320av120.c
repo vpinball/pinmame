@@ -542,7 +542,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 	intf = msound->sound_interface;
 
 	/* initialize the chips */
-	memset(&tms320av120, 0, sizeof(tms320av120));
+	memset(tms320av120, 0, sizeof(tms320av120));
 	for (i = 0; i < intf->num; i++)
 	{
 		char stream_name[40];

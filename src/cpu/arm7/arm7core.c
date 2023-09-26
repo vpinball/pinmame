@@ -437,7 +437,6 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 {
 	int i, result;
-	UINT32 data;
 
 	result = 0;
 	rbv &= ~3;
@@ -446,7 +445,7 @@ static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 		if ((pat >> i) & 1)
 		{
 			if (ARM7.pendingAbtD == 0) {
-				data = READ32(rbv += 4);
+				UINT32 data = READ32(rbv += 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
 						SET_REGISTER( 15, data );
@@ -465,7 +464,6 @@ static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 {
 	int i, result;
-	UINT32 data;
 
 	result = 0;
 	rbv &= ~3;
@@ -475,7 +473,7 @@ static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 		{
 			if (ARM7.pendingAbtD == 0) // "Overwriting of registers stops when the abort happens."
 			{
-			data = READ32(rbv += 4);
+			UINT32 data = READ32(rbv += 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
 					SET_MODE_REGISTER(mode, 15, data);
@@ -493,7 +491,6 @@ static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 {
 	int i, result;
-	UINT32 data;
 
 	result = 0;
 	rbv &= ~3;
@@ -502,7 +499,7 @@ static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 		if ((pat >> i) & 1)
 		{
 			if (ARM7.pendingAbtD == 0) {
-				data = READ32(rbv -= 4);
+				UINT32 data = READ32(rbv -= 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
 						SET_REGISTER( 15, data );
@@ -521,7 +518,6 @@ static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 static int loadDecMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 {
 	int i, result;
-	UINT32 data;
 
 	result = 0;
 	rbv &= ~3;
@@ -531,7 +527,7 @@ static int loadDecMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 		{
 			if (ARM7.pendingAbtD == 0) // "Overwriting of registers stops when the abort happens."
 			{
-			data = READ32(rbv -= 4);
+			UINT32 data = READ32(rbv -= 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
 					SET_MODE_REGISTER(mode, 15, data);
@@ -590,7 +586,7 @@ static int storeIncMode(data32_t pat, data32_t rbv, int mode)
 // classic CV: 3005aa0 does the DMA thing
 static int storeDec( data32_t pat, data32_t rbv)
 {
-        int i, result = 0, cnt;
+	int i, result = 0, cnt;
 
 	// pre-count the # of registers doing DMA
 	for (i = 15; i >= 0; i--)
@@ -852,7 +848,6 @@ static void HandleCoProcDO(data32_t insn)
 //Co-Processor Register Transfer - To/From Arm to Co-Proc
 static void HandleCoProcRT(data32_t insn)
 {
-	
 	/* xxxx 1110 oooL nnnn dddd cccc ppp1 mmmm */
 
 	// Load (MRC) data from Co-Proc to ARM7 register

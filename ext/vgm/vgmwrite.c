@@ -296,6 +296,7 @@ void vgm_start(struct RunningMachine *machine)
 		return;
 	
 	// start the timer
+	//PINMAME change: if also done if not logging (like in original source), then cpu slices change, leading to timing issues on some machines
 	timer_pulse(TIME_IN_HZ(44100), 0, vgmfile_callback); //44.1 KHz VGM pulse timer
 	
 	// Get the Game Information and write the GD3 Tag
