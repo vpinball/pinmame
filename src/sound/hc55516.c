@@ -7,7 +7,7 @@
 //
 // Overview
 //
-// The HC55516 is a CVSD (continuously variable slope delta) modulation 
+// The HC555XX is a CVSD (continuously variable slope delta) modulation 
 // encoder/decoder chip.  CVSD modulation was popular in the 1980s for digital
 // voice encoding, because it provides decent fidelity for voice audio at low
 // bit rates.  CVSD happens to work particularly well with the spectrum
@@ -393,11 +393,11 @@ struct hc55516_data
 	// Syllabic filter status and parameters
 	struct
 	{
-		// Integer arithmetic, as used in HC55516/HC55536 hardware
+		// Integer arithmetic, as used in HC555XX hardware
 		struct
 		{
-			int syl_reg;			// syllabic filter register - 12-bit signed int
-			int integrator;			// integrator register - 10-bit signed int
+			int syl_reg;           // syllabic filter register - 12-bit signed int
+			int integrator;        // integrator register - 10-bit signed int
 
 			// Syllabic filter parameters.  The specific values come from the
 			// decap analysis, and differ for HC55516 vs HC55532/36/64.
@@ -410,12 +410,12 @@ struct hc55516_data
 		// Floating-point arithmetic, used in original MAME implementation
 		struct
 		{
-			double 	syl_level;      // simulated voltage on the syllabic filter
-			double	integrator;     // simulated voltage on integrator output
+			double syl_level;      // simulated voltage on the syllabic filter
+			double integrator;     // simulated voltage on integrator output
 
 			// Output gain.  This is the conversion factor from the simulated voltage
 			// level on the integrator to an INT16 PCM sample for the MAME stream.
-			double  gain;
+			double gain;
 
 		} dbl;
 	} filter;

@@ -352,6 +352,9 @@ static const struct pia6821_interface s67s_pia = {
 static void s67s_init(struct sndbrdData *brdData) {
   s67slocals.brdData = *brdData;
   pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
+
+  // Note that the speech board games featured a potentiometer on the separate speech board to mix speech and sound (so it could be tweaked by the operator!).
+  // For the moment, the mixing sounds okay as-is.
 }
 
 static WRITE_HANDLER(s67s_ctrl_w) {
@@ -466,9 +469,13 @@ static MEMORY_WRITE_START(s11s_writemem)
 MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
+// The s11xs features 2 DACs/HC555XXs (s11b2s 2 DACs only) for code simplicity, actually,
+// this would allow to emulate one on the mainboard, and one on the soundboard.
+// In practice, only the soundboard had them, while the mainboard was not populated anymore,
+// as on later System11 revisions, more and more audio components were moved from the MPU to the soundboard.
 static struct DACinterface      s11xs_dacInt2     = { 2, { 15, 15 }};
-static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_SYS11 }; // all boards were using a HC555XX
-static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, 55536, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_SYS11 };      // all boards were using a HC555XX
+static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, 55536, HC55516_FILTER_SYS11 }; // dto.
 
 MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -545,6 +552,7 @@ static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this 
   int dacvol = ((core_gameData->hw.gameSpecific2) >> 25) & 0x7f;
 
   // The system 9&11 games sound better with the HC gain turned up a bit by default.
+  // Note that sys9 games featured a potentiometer on the separate speech board to mix speech and sound (so it could be tweaked by the operator!).
   if (hcgain == 0)
     hcgain = 150;
 

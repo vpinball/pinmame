@@ -2528,6 +2528,8 @@ DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer (L-1)
 DRIVER(sorcr,l2)        //          03/85 W Sorcerer (L-2)
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet (L-4)
 DRIVER(comet,l5)        //          06/85 W Comet (L-5)
+//System 10
+                        //S10-543N: 12/85 W 4-IN-1
 //System 11
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
