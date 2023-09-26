@@ -129,7 +129,7 @@ INPUT_PORTS_START(ph)
       COREPORT_DIPSET(0x00e0, "Spain" ) \
       COREPORT_DIPSET(0x00f0, "U.S.A. / Canada 2" )
 INPUT_PORTS_END
-CORE_GAMEDEF(ph,04,"Phantom Haus (0.4)",1996,"Williams",wpc_m95S,0)
+CORE_GAMEDEF(ph,04,"Phantom Haus (0.4 Prototype)",1996,"Williams",wpc_m95S,0)
 
 /*--------------
 / Test Fixture DMD generation

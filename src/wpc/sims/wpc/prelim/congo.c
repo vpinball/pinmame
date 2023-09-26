@@ -50,22 +50,22 @@ static void init_congo(void);
 WPC_INPUT_PORTS_START(congo,4)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"",		        KEYCODE_R)
-    COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
-    COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"Left Jet",		KEYCODE_W)
-    COREPORT_BIT(0x0080,"Right Jet",		KEYCODE_E)
-    COREPORT_BIT(0x0100,"Bottom Jet",		KEYCODE_R)
+    COREPORT_BIT(0x0001,"Left Qualifier",KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",KEYCODE_RCONTROL)
+    COREPORT_BIT(0x0004,"",			KEYCODE_R)
+    COREPORT_BIT(0x0008,"L/R Outlane",KEYCODE_O)
+    COREPORT_BIT(0x0010,"L/R Slingshot",KEYCODE_MINUS)
+    COREPORT_BIT(0x0020,"L/R Inlane",KEYCODE_I)
+    COREPORT_BIT(0x0040,"Left Jet",	KEYCODE_W)
+    COREPORT_BIT(0x0080,"Right Jet",KEYCODE_E)
+    COREPORT_BIT(0x0100,"Bottom Jet",KEYCODE_R)
     COREPORT_BIT(0x0200,"",			KEYCODE_T)
     COREPORT_BIT(0x0400,"",			KEYCODE_Y)
     COREPORT_BIT(0x0800,"",			KEYCODE_U)
     COREPORT_BIT(0x1000,"",			KEYCODE_I)
     COREPORT_BIT(0x2000,"",			KEYCODE_O)
     COREPORT_BIT(0x4000,"",			KEYCODE_A)
-    COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
+    COREPORT_BIT(0x8000,"Drain",	KEYCODE_Q)
 
   PORT_START /* 1 */
     COREPORT_BIT(0x0001,"",			KEYCODE_S)
@@ -91,29 +91,29 @@ WPC_INPUT_PORTS_END
 / Switch definitions
 /--------------------*/
 /* Standard Switches */
-#define swStart      	13
-#define swTilt       	14
-#define swSlamTilt	21
-#define swCoinDoor	22
-#define swTicket     	23
+#define swStart			13
+#define swTilt			14
+#define swSlamTilt		21
+#define swCoinDoor		22
+#define swTicket		23
 
 /* Other switches */
 #define swLeftOutlane	16
 #define swRightInlane	17
-#define swShooter	18
-#define swLaunch	23
+#define swShooter		18
+#define swLaunch		23
 #define swLeftInlane	26
 #define swRightOutlane	27
-#define swTroughJam	31
-#define swTrough1	32
-#define swTrough2	33
-#define swTrough3	34
-#define swTrough4	35
-#define swLeftSling	61
+#define swTroughJam		31
+#define swTrough1		32
+#define swTrough2		33
+#define swTrough3		34
+#define swTrough4		35
+#define swLeftSling		61
 #define swRightSling	62
-#define swLeftJet	63
-#define swRightJet	64
-#define swBottomJet	65
+#define swLeftJet		63
+#define swRightJet		64
+#define swBottomJet		65
 
 /*---------------------
 / Solenoid definitions
@@ -133,29 +133,29 @@ WPC_INPUT_PORTS_END
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
       stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet
-	  };
+};
 
 static sim_tState congo_stateDef[] = {
-  {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
+  {"Not Installed",	0,0,			0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",		0,0,		 0,		0,		0,	0,	0,	SIM_STNOTEXCL},
+  {"Playfield",		0,0,			0,		0,			0,	0,	0,	SIM_STNOTEXCL},
 
   /*Line 1*/
   {"Trough 4",		1,swTrough4,	0,		stTrough3,	1},
   {"Trough 3",		1,swTrough3,	0,		stTrough2,	1},
   {"Trough 2",		1,swTrough2,	0,		stTrough1,	1},
-  {"Trough 1",		1,swTrough1,	sTrough,	stTrough,	1},
-  {"Trough Jam",	1,swTroughJam,  0,		stShooter,	1},
-  {"Drain",		1,0,		0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
+  {"Trough 1",		1,swTrough1,	sTrough,stTrough,	1},
+  {"Trough Jam",	1,swTroughJam,	0,		stShooter,	1},
+  {"Drain",			1,0,			0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
 
   /*Line 2*/
-  {"Shooter",		1,swShooter,	 sLaunch,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
-  {"Ball Lane",		1,0,		 0,		stFree,		7,	0,	0,	SIM_STNOTEXCL},
+  {"Shooter",		1,swShooter,	 sLaunch,stBallLane,0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
+  {"Ball Lane",		1,0,			 0,		stFree,		7,	0,	0,	SIM_STNOTEXCL},
   {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
-  {"Left Outlane",      1,swLeftOutlane, 0,             stDrain,        15, sKickBack, stFree, 5},
+  {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15, sKickBack, stFree, 5},
   {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
   {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
-  {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
+  {"Left Slingshot",1,swLeftSling,	 0,		stFree,		1},
   {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
   {"Left Bumper",	1,swLeftJet,	 0,		stFree,		1},
   {"Right Bumper",	1,swRightJet,	 0,		stFree,		1},
@@ -303,13 +303,13 @@ CORE_CLONEDEF(congo,11,21,"Congo (1.1, DCS95 S1.1)",1995,"Williams",wpc_m95S,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData congoSimData = {
-  2,    				/* 2 game specific input ports */
-  congo_stateDef,			/* Definition of all states */
-  congo_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  congo_stateDef,		/* Definition of all states */
+  congo_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  congo_handleBallState,		/*Function to handle ball state changes*/
-  congo_drawStatic,			/*Function to handle mechanical state changes*/
+  congo_handleBallState,/*Function to handle ball state changes*/
+  congo_drawStatic,		/*Function to handle mechanical state changes*/
   FALSE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };

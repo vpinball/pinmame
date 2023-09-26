@@ -2046,6 +2046,8 @@ GTS80_ROMEND
 #define input_ports_robowffp input_ports_robowars
 CORE_CLONEDEFNV(robowffp,robowars, "Robo-War (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
+// A german Robo-War version also exists according to Flipprojets
+
 /*-------------------------------------------------------------------
 / Excalibur (#715)
 /-------------------------------------------------------------------*/

@@ -2338,6 +2338,7 @@ DRIVERNV(zekepeak)      //??/83 Zeke's Peak (Redemption)
 // ---------------
 // TAITO DO BRASIL GAMES
 // ---------------
+                        // Apache? (1979 version features solid state according to taito book)
 DRIVERNV(football)      //03/79 Football (W World Cup'78, 05/78)
                         //03/79 Hot Ball (B Eight Ball, 01/77)
                         //??/?? Sultan (G Sinbad, 05/78)

@@ -122,7 +122,7 @@ CORE_CLONEDEF(frpwr,c7,l6,"Firepower (Sys.7/7-digit conversion rev. 38)",2006,"W
 /-----------------------------------*/
 INITGAMEFULL(csmic,s7_dispS7,52,49,0, 36,37,21,22,24,23)
 S7_ROMSTART8088(csmic,l1, "ic14.716",   CRC(ac66c0dc) SHA1(9e2ac0e956008c2d56ffd564c983e127bc4af7ae),
-                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165), // = standard Sys7 BLUE flipper ROMs in positions IC17 and IC20
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
                           "ic26.716",   CRC(a259eba0) SHA1(0c5acae3beacb8abb0160dd8a580d3514ca557fe))
 S67S_SOUNDROMS8(          "sound12.716",CRC(af41737b) SHA1(8be4e7cebe5a821e859550c0350f0fc9cc00b2a9))
@@ -358,6 +358,8 @@ S7_ROMEND
 #define input_ports_barra input_ports_s7
 CORE_GAMEDEF(barra,l1,"Barracora (L-1)",1981,"Williams",s7_mS7S,0)
 
+// Barracora 2x/3x PF multiplier MOD exists (Sharpes)
+
 /*----------------------------
 / Varkon - Sys.7 (Game #512)
 /----------------------------*/
@@ -370,6 +372,11 @@ S67S_SOUNDROMS8(          "sound12.716",CRC(d13db2bb) SHA1(862546bbdd1476906948f
 S7_ROMEND
 #define input_ports_vrkon input_ports_s7
 CORE_GAMEDEF(vrkon,l1,"Varkon (L-1)",1982,"Williams",s7_mS7S,0)
+
+// Homebrew Spellbinder (the never finished Proto/no code written/similar to Hyperball concept: https://www.ipdb.org/machine.cgi?id=3727) ROM is in the making from Jess Askey:
+//  .. sitting about 50% complete right now… Im hoping to dive back into it in 2021 if I can. I don’t have much… I just have two backglasses and what I believe is the only playfield made
+//  .. but it is a painted playfield like a normal pin with inserts and printing on the characters
+// Proto VP version: https://www.youtube.com/watch?v=y75F_Hae3S0&t=7s
 
 /*-------------------------------
 / Spellbinder - Sys.7 - (Game #513) - NOT Released - Developed by Jess Askey see https://github.com/jessaskey/wms_perc
