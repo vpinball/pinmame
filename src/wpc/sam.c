@@ -1342,8 +1342,8 @@ void sam_init(void)
 		samlocals.fastflipaddr = 0x01072dea;
 	else if (strncasecmp(gn, "twenty4_150", 11) == 0)
 		samlocals.fastflipaddr = 0x0106ec1e;
-	//else if (strncasecmp(gn, "mt_145hb", 8) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "mt_145hb", 8) == 0)
+		samlocals.fastflipaddr = 0x01077a92;
 	else if (strncasecmp(gn, "mt_145h", 7) == 0)
 		samlocals.fastflipaddr = 0x01077b82;
 	else if (strncasecmp(gn, "mt_145", 6) == 0)
@@ -1397,7 +1397,11 @@ static void sam_LED_hack(int usartno)
 
 	// Several games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.  
 	
-	if (strncasecmp(gn, "mt_145h", 7)==0)
+	if (strncasecmp(gn, "mt_145hb", 8)==0)
+	{
+		samlocals.LED_hack_send_garbage = 1; //!! or rather do a manual patch as below?
+	}
+	else if (strncasecmp(gn, "mt_145h", 7)==0)
 	{
 		cpu_writemem32ledw(0x1061728, 0x00);
 	}
@@ -1425,7 +1429,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 	int i;
 	for (i = 0; i < size; i++)
 	{
-		char s[91];
+		char s[16];
 		sprintf(s, "%02x", data[i]);
 	//	OutputDebugString(s);
 	}
@@ -1458,7 +1462,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 		{
 			// Looking for the header.
 			// Mustang or Star Trek
-			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41)
+			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41) //!! (((*data) == 0xf1 || (*data) == 0xfe) && samlocals.prev_ch1 == 0x01) for Mustang Boss?!
 			{
 				if (samlocals.serchar_waiting == 2)
 				{
@@ -1496,8 +1500,8 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			samlocals.prev_ch2 = samlocals.prev_ch1;
 			samlocals.prev_ch1 = *(data++);
 			size--;
-		} 
-		else 
+		}
+		else
 		{
 			const int count = size > (samlocals.leds_per_string - samlocals.led_col) ? samlocals.leds_per_string - samlocals.led_col : size;
 			int i;
@@ -1558,7 +1562,7 @@ static INTERRUPT_GEN(sam_vblank) {
 #ifdef MAME_DEBUG
 		for (i = 0; i < core_gameData->hw.lampCol - 2; i++) {
 			coreGlobals.lampMatrix[10 + i] = (coreGlobals.RGBlamps[8 * i] ? 1 : 0) | (coreGlobals.RGBlamps[8 * i + 1] ? 2 : 0)
-			 | (coreGlobals.RGBlamps[8 * i + 2] ? 4 : 0) | (coreGlobals.RGBlamps[8 * i + 3] ? 8 : 0)
+			 | (coreGlobals.RGBlamps[8 * i + 2] ?    4 : 0) | (coreGlobals.RGBlamps[8 * i + 3] ?    8 : 0)
 			 | (coreGlobals.RGBlamps[8 * i + 4] ? 0x10 : 0) | (coreGlobals.RGBlamps[8 * i + 5] ? 0x20 : 0)
 			 | (coreGlobals.RGBlamps[8 * i + 6] ? 0x40 : 0) | (coreGlobals.RGBlamps[8 * i + 7] ? 0x80 : 0);
 		}
