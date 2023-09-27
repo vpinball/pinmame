@@ -1244,22 +1244,24 @@ void sam_init(void)
 	else
 		at91_block_timers = 0;
 
-	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
-	// Load the balls in trough (E+SDFG), start the game.  
-	// Use CheatEngine to find memory locations that are 1
+	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.
+	// Load the balls in trough (E+SDFG(maybe also HJ)), start the game.
+	// Use CheatEngine to find byte memory locations that are 1.
 	// Enter service menu.  Use cheatengine to find memory locations that are 0.
-	// Exit service menu, *quickly* search for items that changed back to 1. 
+	// Further go down the menu until you end up within the first switch test.  Search for 1.
+	// Back one level.  Search for 0.
+	// Exit service menu, *quickly* search for items that changed back to 1.
 	// Enter service menu once again.  Use cheat engine to poke "1" into 0 values until you find the one
-	// that lets solenoid 15 (left flipper) fire when you hit the left shift key (usually its near the last one). 
-	// Now you know the dynamic memory address - break PinMame32 in VC debugger.  
-	// Add a memory breakpoint on that address.   Resume debugging.  Exit/enter the service menu, 
-	// breakpoint will hit.  Walk back up the stack one step to find the arm7core write.  This will have the 
-	// arm7 memory addr as the parameter.  This is the value you need here.  
+	// that lets solenoid 15 (left flipper) fire when you hit the left shift key (usually its near to the last entry).
+	// Now you know the dynamic memory address - break PinMame32 in VC debugger.
+	// Add a memory/data breakpoint (1 byte) on that address (needs another active breakpoint to allow for that).  Resume debugging.  Exit/enter the service menu,
+	// breakpoint will hit.  Walk back up the stack one step to find the arm7core write.  This will have the
+	// arm7 memory addr as the parameter.  This is the value you need here.
 
 	if (strncasecmp(gn, "trn_174h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107ad24;
-	//else if (strncasecmp(gn, "trn_174", 7) == 0) // and/or 17402?
-	//	samlocals.fastflipaddr = ;
+		samlocals.fastflipaddr = 0x0107adc2; 
+	else if (strncasecmp(gn, "trn_174", 7) == 0) // and/or 17402?
+		samlocals.fastflipaddr = 0x0107614a;
 	else if (strncasecmp(gn, "acd_168h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107cd82;
 	else if (strncasecmp(gn, "acd_170h", 8) == 0)
@@ -1270,26 +1272,26 @@ void sam_init(void)
 		samlocals.fastflipaddr = 0x0107f646;
 	else if (strncasecmp(gn, "mtl_180h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107f676;
-	//else if (strncasecmp(gn, "mtl_180", 7) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "mtl_180", 7) == 0)
+		samlocals.fastflipaddr = 0x01078e52;
 	else if (strncasecmp(gn, "twd_160h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107f7d2;
 	else if (strncasecmp(gn, "twd_160", 7) == 0)
 		samlocals.fastflipaddr = 0x01074d4a;
-	//else if (strncasecmp(gn, "wof_602h", 8) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "wof_602h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107050a;
 	else if (strncasecmp(gn, "wof_500", 7) == 0)
 		samlocals.fastflipaddr = 0x0106e7e6;
 	else if (strncasecmp(gn, "st_161h", 7) == 0)
 		samlocals.fastflipaddr = 0x0107d7a2;
-	//else if (strncasecmp(gn, "st_162h", 7) == 0)
-	//	samlocals.fastflipaddr = ;
-	//else if (strncasecmp(gn, "st_162", 6) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "st_162h", 7) == 0)
+		samlocals.fastflipaddr = 0x01079aaa;
+	else if (strncasecmp(gn, "st_162", 6) == 0)
+		samlocals.fastflipaddr = 0x01075d6a;
 	else if (strncasecmp(gn, "xmn_151h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107b222;
-	//else if (strncasecmp(gn, "xmn_151", 7) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "xmn_151", 7) == 0)
+		samlocals.fastflipaddr = 0x0107680a;
 	else if (strncasecmp(gn, "fg_1200", 7) == 0)
 		samlocals.fastflipaddr = 0x010681d6;
 	else if (strncasecmp(gn, "potc_600", 8) == 0)
@@ -1298,18 +1300,18 @@ void sam_init(void)
 		samlocals.fastflipaddr = 0x01055bf6;
 	else if (strncasecmp(gn, "im_185ve", 8) == 0)
 		samlocals.fastflipaddr = 0x01053ed6;
-	//else if (strncasecmp(gn, "im_186ve", 8) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "im_186ve", 8) == 0)
+		samlocals.fastflipaddr = 0x01053fee;
 	else if (strncasecmp(gn, "im_185", 6) == 0)
 		samlocals.fastflipaddr = 0x01068bde;
-	//else if (strncasecmp(gn, "im_186", 6) == 0)
-	//	samlocals.fastflipaddr = ;
-	//else if (strncasecmp(gn, "avr_120h", 8) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "im_186", 6) == 0)
+		samlocals.fastflipaddr = 0x01068cf6;
+	else if (strncasecmp(gn, "avr_120h", 8) == 0)
+		samlocals.fastflipaddr = 0x01069772;
 	else if (strncasecmp(gn, "avr_200", 7) == 0)
 		samlocals.fastflipaddr = 0x01056afa;
-	//else if (strncasecmp(gn, "avs_170h", 8) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "avs_170h", 8) == 0)
+		samlocals.fastflipaddr = 0x0106dada;
 	else if (strncasecmp(gn, "avs_170", 7) == 0)
 		samlocals.fastflipaddr = 0x0106db1e;
 	else if (strncasecmp(gn, "wpt_140a", 8) == 0)
@@ -1324,16 +1326,16 @@ void sam_init(void)
 		samlocals.fastflipaddr = 0x01068fde;
 	else if (strncasecmp(gn, "bbh_170", 7) == 0)
 		samlocals.fastflipaddr = 0x0106acae;
-	//else if (strncasecmp(gn, "sman_261", 8) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "sman_261", 8) == 0)
+		samlocals.fastflipaddr = 0x0107d89e;
 	else if (strncasecmp(gn, "smanve_101", 10) == 0)
 		samlocals.fastflipaddr = 0x0106d61e;
 	else if (strncasecmp(gn, "nba_802", 7) == 0)
 		samlocals.fastflipaddr = 0x010609be;
 	else if (strncasecmp(gn, "rsn_110h", 8) == 0)
 		samlocals.fastflipaddr = 0x01070716;
-	//else if (strncasecmp(gn, "rsn_110", 7) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "rsn_110", 7) == 0)
+		samlocals.fastflipaddr = 0x0106fb3a;
 	else if (strncasecmp(gn, "csi_240", 7) == 0)
 		samlocals.fastflipaddr = 0x0106475e;
 	else if (strncasecmp(gn, "ij4_210", 7) == 0)
@@ -1344,8 +1346,8 @@ void sam_init(void)
 	//	samlocals.fastflipaddr = ;
 	else if (strncasecmp(gn, "mt_145h", 7) == 0)
 		samlocals.fastflipaddr = 0x01077b82;
-	//else if (strncasecmp(gn, "mt_145", 6) == 0)
-	//	samlocals.fastflipaddr = ;
+	else if (strncasecmp(gn, "mt_145", 6) == 0)
+		samlocals.fastflipaddr = 0x01070912;
 	//else if (strncasecmp(gn, "scarn200", 8) == 0)
 	//	samlocals.fastflipaddr = ;
 }
