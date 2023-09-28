@@ -40,6 +40,10 @@
 #include "dmddevice.h"
 #include "mech.h"
 
+#ifdef LIBPINMAME
+extern void libpinmame_forward_console_data(void* data, int size);
+#endif
+
 // Defines
 
 #define SAM_USE_JIT
@@ -127,7 +131,7 @@ struct {
 	int vblankCount;
 	int diagnosticLed;
 	int sw_stb;
-	int zc;
+	UINT8 zc; // bool
 	int video_page[2];
 	INT16 samplebuf[2][SNDBUFSIZE];
 	INT16 lastsamp[2];
@@ -135,8 +139,8 @@ struct {
 	int sampnum;
 	UINT8 volume[2], mute[2], DAC_mute[2]; //0..127, 0/1
 	int pass;
-	int coindoor;
-	int samVersion; // 1 or 2
+	UINT8 coindoor; // bool
+	UINT8 samVersion; // 1 or 2
 	UINT16 value;
 	INT16 bank;
 	UINT8 miniDMDData[14][16];
@@ -151,7 +155,7 @@ struct {
 	int lampcol;
 	UINT8 auxstrb;
 	UINT8 auxdata;
-	int WOF_minidmdflag; // =dataBlock in original SAM.c
+	UINT8 WOF_minidmdflag; // =dataBlock in original SAM.c // bool
 	int colWrites;
 	int dataWrites[6]; //!! [4] unused, see 0x02400026, maybe also need a [6], see 0x0240002B?
 	int miniDMDCol;
@@ -164,10 +168,10 @@ struct {
 	int led_row;
 	int target_row;
 	int serchar_waiting;
-	int leds_per_string;
+	UINT8 leds_per_string;
 
-	int LED_hack_send_garbage;
-	
+	UINT8 LED_hack_send_garbage; // bool
+
 	UINT32 fastflipaddr;
 } samlocals;
 
@@ -535,7 +539,7 @@ static READ32_HANDLER(samxilinx_r)
 		//                     works     bits:   0 0 0 zc u1 u1
 		//                                                u1 = solenoids have power - 1-32
 		//                                                   u1 = power switch
-		data = /*(0x1C & 0xFB)*/(7 << 3) | (samlocals.zc<<2) | (samlocals.coindoor != 0 ? 3:0); //!! which one is correct?
+		data = /*(0x1C & 0xFB)*/(7u << 3) | (samlocals.zc<<2) | (samlocals.coindoor != 0 ? 3u:0u); //!! which one is correct?
 		data = data << 8;
 	}
 	if(logit) LOG(("%08x: reading from: %08x = %08x (mask=%x)\n",activecpu_get_pc(),0x02400024+offset,data,mask));
@@ -626,7 +630,7 @@ static MEMORY_READ32_START(sam_readmem)
 	{ 0x0109F000, 0x010FFFFF, MRA32_RAM },					//U13 RAM - Sound Data for output
 	{ 0x01100000, 0x011FFFFF, samswitch_r },				//Various Input Signals
 	{ 0x02000000, 0x020FFFFF, MRA32_RAM },					//U9 Boot Flash Eprom
-    { 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },	    //U11 NVRAM (128K)
+	{ 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },	    //U11 NVRAM (128K)
 	{ 0x02400024, 0x02400027, samxilinx_r },				//I/O Related
 	{ 0x03000000, 0x030000FF, MRA32_RAM },					//USB Related
 	{ 0x04000000, 0x047FFFFF, MRA32_RAM }, 					//1st 8MB of Flash ROM U44 Mapped here
@@ -672,19 +676,19 @@ static WRITE32_HANDLER(samdmdram_w)
 	  break;
 	// DMD Page Register
 	case 0x8:
-      if (mask & 0xffff0000)
-        samlocals.video_page[1] = data >> 16;
+	  if (mask & 0xffff0000)
+	    samlocals.video_page[1] = data >> 16;
 	  else
-        samlocals.video_page[0] = data;
-      break;
+	    samlocals.video_page[0] = data;
+	  break;
 
 	// ?? - The code reads the dips, and if the value read is 0x76, this address is never written to, otherwise
 	//      a hardcoded value of 1 is written here (not during any interrupt code, but regular code).
 	case 0x2aaa0:
-      break;
+	  break;
 
 	default:
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),0x1100000+offset,data));
+	  LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),0x1100000+offset,data));
   }
 }
 
@@ -1118,8 +1122,8 @@ static WRITE32_HANDLER(sambank_w)
 }*/
 
 static MEMORY_WRITE32_START(sam_writemem)
-	{ 0x00000000, 0x000FFFFF, MWA32_RAM, &sam_page0_ram},  // Boot RAM
-	{ 0x00300000, 0x003FFFFF, MWA32_RAM, &sam_reset_ram},  // Swapped RAM
+	{ 0x00000000, 0x000FFFFF, MWA32_RAM, &sam_page0_ram},  //Boot RAM
+	{ 0x00300000, 0x003FFFFF, MWA32_RAM, &sam_reset_ram},  //Swapped RAM
 	{ 0x01000000, 0x0107FFFF, MWA32_RAM },				   //U13 RAM - General Usage (Code is executed here sometimes)
 	{ 0x01080000, 0x0109EFFF, MWA32_RAM },				   //U13 RAM - DMD Data for output
 	{ 0x0109F000, 0x010FFFFF, samxilinx_w },			   //U13 RAM - Sound Data for output
@@ -1395,7 +1399,7 @@ static void sam_LED_hack(int usartno)
 {
 	const char * const gn = Machine->gamedrv->name;
 
-	// Several games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.
+	// Mustang and TWD LE do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.
 	
 	if (strncasecmp(gn, "mt_145hb", 8)==0)
 	{
@@ -1409,22 +1413,17 @@ static void sam_LED_hack(int usartno)
 	{
 		cpu_writemem32ledw_dword(0x1eb0, 0xe1a00000);
 	}
-	else // TWD LE // The default implementation is to blast some data at it.  This seems to work for Walking Dead and at least speeds up others.
+	else // The default implementation is to blast some data at it.  This seems to work for Walking Dead LE, but not Mustang.
 	{
 		samlocals.LED_hack_send_garbage = 1;
 	}
 
-	if (strncasecmp(gn, "twd_", 4) != 0) //!! TWD needs multiple blasts
-		at91_set_serial_receive_ready(NULL); // disable hack after triggering it once in here
+	at91_set_serial_receive_ready(NULL); // disable hack after triggering it once in here
 }
 
 // The serial LED boards seem to receive a 3 byte header (85 + address, 41, 80),
 // then a 65 byte long array of bytes that represent the LEDs.
 // Walking Dead LE seems to use a different format, two strings (83, 88 but with only 0x23 leds).
-
-#ifdef LIBPINMAME
-extern void libpinmame_forward_console_data(void* data, int size);
-#endif
 
 static void sam_transmit_serial(int usartno, data8_t *data, int size)
 {
@@ -1434,9 +1433,9 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 	{
 		char s[16];
 		sprintf(s, "%02x", data[i]);
-	//	OutputDebugString(s);
+		OutputDebugString(s);
 	}
-//	OutputDebugString("\n");
+	OutputDebugString("\n");
 #endif
 
 	while (size > 0)
@@ -1452,6 +1451,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 #endif
 			return;
 		}
+
 		// Walking Dead LE is waiting for some sort of non-zero response
 		// from the led string.  Continue sending a block of garbage in response until we see
 		// a valid LED string.   Mustang has the same issue, but we have a hack in place that skips the check.
@@ -1461,15 +1461,17 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			memset(tmp, 0x01, sizeof(tmp));
 			at91_receive_serial(0, tmp, sizeof(tmp));
 		}
+
 		if (samlocals.led_row == -1)
 		{
 			// Looking for the header.
-			// Mustang or Star Trek LE
+
+			// All Mustangs and Star Trek LE
 			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41)
 			{
 				if (samlocals.serchar_waiting == 2)
 				{
-					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], &samlocals.tmp_leds[0], samlocals.leds_per_string);
+					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 				}
 				samlocals.leds_per_string = samlocals.prev_ch1;
 				samlocals.led_row = samlocals.prev_ch2 - 0x85;
@@ -1482,22 +1484,22 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 				// TWD sends garbage data in the led string sometimes.   Only accept if it was framed properly. 
 				if (samlocals.serchar_waiting == 2)
 				{
-					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], &samlocals.tmp_leds[0], samlocals.leds_per_string);
+					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 					samlocals.LED_hack_send_garbage = 0;
 				}
 				samlocals.leds_per_string = samlocals.prev_ch1;
 				samlocals.led_row = (samlocals.prev_ch2 == 0x83) ? ((*data) == 0x80) ? 0 : 2 : ((*data) == 0x80) ? 1 : 3;
 			}	
-			// AC/DC LE or Metallica LE
+			// AC/DC LE and Metallica LE
 			if ((*data) == 0x00 && samlocals.prev_ch1 == 0x80 && strncasecmp(Machine->gamedrv->name, "twd_", 4) != 0) // to prevent TWD from entering here initially
 			{
 				if (samlocals.serchar_waiting == 1)
 				{
-					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], &samlocals.tmp_leds[0], samlocals.leds_per_string);
+					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 				}
 				samlocals.leds_per_string = 56;
 				samlocals.led_row = 0;
-			}	
+			}
 			samlocals.led_col = 0;
 			samlocals.serchar_waiting++;
 			samlocals.prev_ch2 = samlocals.prev_ch1;
@@ -1534,7 +1536,7 @@ static INTERRUPT_GEN(sam_vblank) {
 	/  copy local data to interface
 	/--------------------------------*/
 	samlocals.vblankCount++;
-	
+
 	/*-- lamps --*/
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 
@@ -1589,13 +1591,17 @@ static INTERRUPT_GEN(sam_vblank) {
 	}
 	coreGlobals.solenoids = solenoidupdate;
 	}
-	coreGlobals.solenoids2 = 0;
-	coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 0;
+
 	if (samlocals.fastflipaddr > 0 && cpu_readmem32ledw(samlocals.fastflipaddr) == 0x01)
 	{
 		coreGlobals.solenoids2 = 0x10;
 		coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 255;
-	}	
+	}
+	else
+	{
+		coreGlobals.solenoids2 = 0;
+		coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 0;
+	}
 	core_updateSw(1);
 }
 
@@ -1636,7 +1642,7 @@ static MACHINE_DRIVER_START(sam1)
     MDRV_NVRAM_HANDLER(sam)
     MDRV_TIMER_ADD(sam_timer, SAM_ZC_FREQ)
     MDRV_SOUND_ADD(CUSTOM, samCustInt)
-	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+    MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
     MDRV_DIAGNOSTIC_LEDH(2)
 MACHINE_DRIVER_END
 
@@ -1715,23 +1721,23 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
 static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
     int ii,jj,kk,bits;
 
-	if (options.usemodsol)
-	{
-		for (jj = 0; jj < 5; jj++)
-			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
-				for (kk = 0; kk < 5; kk++)
-				{
-					const int target = ((jj * 7) + ii) + (kk * 35);
-					coreGlobals.dotCol[kk + 1][(jj * 7) + ii] = coreGlobals.RGBlamps[target + 60] >> 4;
-				}
-	}
-	else
-	{
-		for (jj = 0; jj < 5; jj++)
-			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
-				for (kk = 0; kk < 5; kk++)
-					coreGlobals.dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj] & bits ? 15 : 0;
-	}
+    if (options.usemodsol)
+    {
+        for (jj = 0; jj < 5; jj++)
+            for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
+                for (kk = 0; kk < 5; kk++)
+                {
+                    const int target = ((jj * 7) + ii) + (kk * 35);
+                    coreGlobals.dotCol[kk + 1][(jj * 7) + ii] = coreGlobals.RGBlamps[target + 60] >> 4;
+                }
+    }
+    else
+    {
+        for (jj = 0; jj < 5; jj++)
+            for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
+                for (kk = 0; kk < 5; kk++)
+                    coreGlobals.dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj] & bits ? 15 : 0;
+    }
     for (ii = 0; ii < 35; ii++) {
         bits = 0;
         for (kk = 1; kk < 6; kk++)
@@ -2235,7 +2241,7 @@ static void wof_drawMech(BMTYPE **line) {
 static core_tGameData wofGameData = { 
 	GEN_SAM, sammini2_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, SAM_8COL, 16, 0, 0, SAM_GAME_WOF ,0, sam_getSol, wof_handleMech, wof_getMech, wof_drawMech}
 };
-	
+
 static void init_wof(void) { 
 	core_gameData = &wofGameData; 
 	mech_add(0, &mechwofWheel);
