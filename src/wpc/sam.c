@@ -17,7 +17,7 @@
    internalized, so we'd need to look for each game's spot in RAM where they write a command,
    and send our commands there.
   -Still a # of unmapped / unhandled address writes (maybe reads as well)
-  -sam_LED_hack() triggers specialized hacks to get LED updates going
+  -sam_LED_hack() triggers specialized hacks to get LED updates going immediately (otherwise takes a while)
   -IJ/CSI still have timinig issues that are worked around for now, see at91_block_timers
 
   FIRQ frequency of 4008Hz was measured on real machine.
@@ -1395,29 +1395,32 @@ static void sam_LED_hack(int usartno)
 {
 	const char * const gn = Machine->gamedrv->name;
 
-	// Several games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.  
+	// Several games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.
 	
 	if (strncasecmp(gn, "mt_145hb", 8)==0)
 	{
-		samlocals.LED_hack_send_garbage = 1; //!! or rather do a manual patch as below?
+		cpu_writemem32ledw(0x01061648, 0x00);
 	}
 	else if (strncasecmp(gn, "mt_145h", 7)==0)
 	{
-		cpu_writemem32ledw(0x1061728, 0x00);
+		cpu_writemem32ledw(0x01061728, 0x00);
 	}
 	else if (strncasecmp(gn, "mt_145", 6)==0)
 	{
 		cpu_writemem32ledw_dword(0x1eb0, 0xe1a00000);
 	}
-	else //if (stricmp(gn, "twd_156h")==0)  // The default implementation is to blast some data at it.  This seems to work for Walking Dead and at least speeds up others. 
+	else // TWD LE // The default implementation is to blast some data at it.  This seems to work for Walking Dead and at least speeds up others.
 	{
 		samlocals.LED_hack_send_garbage = 1;
 	}
+
+	if (strncasecmp(gn, "twd_", 4) != 0) //!! TWD needs multiple blasts
+		at91_set_serial_receive_ready(NULL); // disable hack after triggering it once in here
 }
 
-// The serial LED boards seem to receive a 3 byte header (85 + address, 41, 80), 
-// then a 65 byte long array of bytes that represent the LEDs. 
-// Walking Dead seems to use a different format, two strings (83, 88 but with only 0x23 leds).
+// The serial LED boards seem to receive a 3 byte header (85 + address, 41, 80),
+// then a 65 byte long array of bytes that represent the LEDs.
+// Walking Dead LE seems to use a different format, two strings (83, 88 but with only 0x23 leds).
 
 #ifdef LIBPINMAME
 extern void libpinmame_forward_console_data(void* data, int size);
@@ -1461,8 +1464,8 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 		if (samlocals.led_row == -1)
 		{
 			// Looking for the header.
-			// Mustang or Star Trek
-			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41) //!! (((*data) == 0xf1 || (*data) == 0xfe) && samlocals.prev_ch1 == 0x01) for Mustang Boss?!
+			// Mustang or Star Trek LE
+			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41)
 			{
 				if (samlocals.serchar_waiting == 2)
 				{
@@ -1485,8 +1488,8 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 				samlocals.leds_per_string = samlocals.prev_ch1;
 				samlocals.led_row = (samlocals.prev_ch2 == 0x83) ? ((*data) == 0x80) ? 0 : 2 : ((*data) == 0x80) ? 1 : 3;
 			}	
-			// AC/DC or Metallica 
-			if ((*data) == 0x00 && samlocals.prev_ch1 == 0x80)
+			// AC/DC LE or Metallica LE
+			if ((*data) == 0x00 && samlocals.prev_ch1 == 0x80 && strncasecmp(Machine->gamedrv->name, "twd_", 4) != 0) // to prevent TWD from entering here initially
 			{
 				if (samlocals.serchar_waiting == 1)
 				{
@@ -1495,7 +1498,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 				samlocals.leds_per_string = 56;
 				samlocals.led_row = 0;
 			}	
-			samlocals.led_col=0;
+			samlocals.led_col = 0;
 			samlocals.serchar_waiting++;
 			samlocals.prev_ch2 = samlocals.prev_ch1;
 			samlocals.prev_ch1 = *(data++);
