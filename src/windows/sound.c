@@ -20,6 +20,15 @@
 #include "video.h"
 #include "rc.h"
 
+#include "../../ext/libsamplerate/config.h"
+#ifdef RESAMPLER_SSE_OPT
+ #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
+  #include <xmmintrin.h>
+  #include <emmintrin.h>
+ #else // Arm Neon
+  #include "../sse2neon.h"
+ #endif
+#endif
 
 
 //============================================================
@@ -64,6 +73,7 @@ extern int verbose;
 
 // global parameters
 int							attenuation = 0;
+double						volume_gain = 1.;
 
 
 
@@ -373,6 +383,28 @@ int osd_update_audio_stream(INT16 *buffer)
 			buffer = mix_buffer;
 		}
 
+		if(volume_gain > 1.)
+		{
+			const float vgf = volume_gain;
+			int i;
+			for (i = 0; i < input_bytes; ++i)
+			{
+#if defined(RESAMPLER_SSE_OPT)
+				const INT16 samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_mul_ss(_mm_cvtsi32_ss(_mm_setzero_ps(), buffer[i]), _mm_set_ss(vgf)), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+#else
+				const float sample = (float)buffer[i] * vgf;
+				INT16 samplei;
+				if (sample <= -32768.f)
+					samplei = -32768;
+				else if (sample >= 32767.f)
+					samplei = 32767;
+				else
+					samplei = (INT16)(lrintf(sample));
+#endif
+				buffer[i] = samplei;
+			}
+		}
+
 		// copy data into the sound buffer
 		copy_sample_data(buffer, input_bytes);
 
@@ -423,16 +455,21 @@ int osd_update_audio_stream(INT16 *buffer)
 
 void osd_set_mastervolume(int _attenuation)
 {
-	// clamp the attenuation to 0-32 range
-	if (_attenuation > 0)
-		_attenuation = 0;
+	volume_gain = 1.;
+
+	// clamp the attenuation to -32 - 32 range
 	if (_attenuation < -32)
 		_attenuation = -32;
+	if (_attenuation > 32)
+		_attenuation = 32;
 	attenuation = _attenuation;
+
+	while (_attenuation-- > 0)
+		volume_gain *= 1.1220184543019634355910389464779; // = (10 ^ (1/20)) = 1dB
 
 	// set the master volume
 	if (stream_buffer && is_enabled)
-		IDirectSoundBuffer_SetVolume(stream_buffer, (attenuation == -32) ? DSBVOLUME_MIN : attenuation * 100);
+		IDirectSoundBuffer_SetVolume(stream_buffer, (attenuation == -32) ? DSBVOLUME_MIN : min(attenuation,0) * 100);
 }
 
 
@@ -457,7 +494,7 @@ void osd_sound_enable(int enable_it)
 	if (stream_buffer)
 	{
 		if (enable_it)
-			IDirectSoundBuffer_SetVolume(stream_buffer, attenuation * 100);
+			IDirectSoundBuffer_SetVolume(stream_buffer, min(attenuation,0) * 100);
 		else
 			IDirectSoundBuffer_SetVolume(stream_buffer, DSBVOLUME_MIN);
 

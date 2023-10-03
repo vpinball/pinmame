@@ -51,6 +51,8 @@ Implemented fast flips for avr_120h, avs_170h, im_186, im_186ve, mt_145, mt_145h
 Fixed crash of Mustang Boss mt_145hb
 Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM, Juegos Populares, after fixing timeslice issue related to the VGM file dump feature (which uses a fast timer)
 Added support for the old SC-01 Votrax ROM version (wired only to the Mars - God of War Prototype so far)
+Made it possible to increase the volume slider setting (e.g. using the Tilde key) above 0db (for now on windows only)
+ try to avoid it though, as it can result in sound clipping artifacts!
 Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
 Improved emulation robustness when running multiple machines from the same generation (e.g. System11) one after another (e.g. from within VPX)
  or when resetting certain machines
