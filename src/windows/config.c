@@ -90,6 +90,7 @@ struct rc_option pinmame_opts[] = {
         { "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
 #endif /* PROC_SUPPORT */
         { "vgmwrite", NULL, rc_bool, &pmoptions.vgmwrite, "0", 0, 0, NULL, "Enable to write a VGM of the current session (name is based on romname)" },
+        { "force_stereo", NULL, rc_bool, &pmoptions.force_mono_to_stereo, "0", 0, 0, NULL, "Always force stereo output (e.g. to better support multi channel sound systems)" },
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 #endif /* PINMAME */

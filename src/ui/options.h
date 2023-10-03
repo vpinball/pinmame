@@ -224,7 +224,8 @@ typedef struct
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 	int sound_mode;
 #endif
-	int vgmwrite;
+	int vgmwrite; // bool
+	int force_mono_to_stereo; // bool
 #endif /* PINMAME */
 
 } options_type;

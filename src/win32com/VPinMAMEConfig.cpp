@@ -55,6 +55,7 @@ int resampling_quality = 0;
 int sound_mode = 0;
 #endif
 int g_vgmwrite = 0;
+int g_force_mono_to_stereo = 0;
 
 int threadpriority = 1;
 static int deprecated_synclevel = 0;
@@ -102,6 +103,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "low_latency_throttle", NULL, rc_bool, &g_low_latency_throttle, "1", 0, 0, NULL, "Distribute CPU execution across one emulated frame to minimize flipper latency" },
 
 	{ "vgmwrite", NULL, rc_bool, &g_vgmwrite, "0", 0, 0, NULL, "Enable to write a VGM of the current session (name is based on romname)" },
+	{ "force_stereo", NULL, rc_bool, &g_force_mono_to_stereo, "0", 0, 0, NULL, "Always force stereo output (e.g. to better support multi channel sound systems)" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -220,6 +222,7 @@ const static char* RunningGameSettings[] = {
 	"low_latency_throttle",
 
 	"vgmwrite",
+	"force_stereo",
 
 	// video_opts
 	"screen",

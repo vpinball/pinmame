@@ -95,6 +95,10 @@ private:
 		SetDlgItemInt(IDC_ANTIALIAS, vValue.lVal, FALSE);
 		VariantClear(&vValue);
 
+		pGameSettings->get_Value(CComBSTR("force_stereo"), &vValue);
+		CheckDlgButton(IDC_MONOTOSTEREO, (vValue.boolVal == VARIANT_TRUE) ? BST_CHECKED : BST_UNCHECKED);
+		VariantClear(&vValue);
+
 		pGameSettings->get_Value(CComBSTR("showpindmd"), &vValue);
 		CheckDlgButton(IDC_PINDMD, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 		VariantClear(&vValue);
@@ -199,6 +203,8 @@ private:
 
 		pGameSettings->put_Value(CComBSTR("samplerate"), CComVariant((int) GetDlgItemInt(IDC_SAMPLERATE,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE)));
+
+		pGameSettings->put_Value(CComBSTR("force_stereo"), CComVariant((BOOL)IsDlgButtonChecked(IDC_MONOTOSTEREO)));
 
 		pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant((BOOL) IsDlgButtonChecked(IDC_PINDMD)));
 		pGameSettings->put_Value(CComBSTR("showwindmd"), CComVariant((BOOL) IsDlgButtonChecked(IDC_WINDMD)));
