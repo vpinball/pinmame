@@ -43,7 +43,7 @@ static struct SN76477interface  gpSS1_sn76477Int = { 1, { 50 }, /* mixing level 
 
 static WRITE_HANDLER(gpss1_data_w)
 { // tone frequencies          C    E             A    A low
-  static double voltage[16] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
+  static const double voltage[16] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
   data &= 0x0f;
   if (voltage[data]) {
     SN76477_set_vco_voltage(0, voltage[data]);
@@ -228,20 +228,21 @@ static struct SN76477interface  gpSS4_sn76477Int = { 4, { 50, 50, 50, 50 }, /* m
 
 
 static mame_timer *capTimer = NULL;
+static int cap_offset = 1;
+static int cap_pin18res = 320;
+
 static void capTimer_timer(int n) {
-  static int offset = 1;
-  static int pin18res = 320;
-  pin18res += offset;
-  if (pin18res > 419)
-    offset = -1;
-  else if (pin18res < 321)
-    offset = 1;
-  SN76477_set_vco_res(3, RES_K(pin18res)); /* 18 */
+  cap_pin18res += cap_offset;
+  if (cap_pin18res > 419)
+    cap_offset = -1;
+  else if (cap_pin18res < 321)
+    cap_offset = 1;
+  SN76477_set_vco_res(3, RES_K(cap_pin18res)); /* 18 */
 }
 
 static WRITE_HANDLER(gpss4_data_w)
 { // tone frequencies             C'   B    A
-  static double voltage[16] = {0, 5.4, 4.8, 4.5};
+  static const double voltage[16] = {0, 5.4, 4.8, 4.5};
   data &= 0x0f;
   if (data < 0x0f) SN76477_enable_w(1, 1);
   switch (data) {
@@ -329,6 +330,9 @@ static WRITE_HANDLER(gpss4_data_w)
 
 static void gpss4_init(struct sndbrdData *brdData)
 {
+  cap_offset = 1;
+  cap_pin18res = 320;
+
   if (capTimer) timer_remove(capTimer);
   capTimer = timer_alloc(capTimer_timer);
   timer_adjust(capTimer, TIME_NEVER, 0, TIME_NEVER);
@@ -608,17 +612,17 @@ static void m6840_pulse (int param) {
 
 static void gpsm_init(struct sndbrdData *brdData)
 {
-	int mixing_levels[4] = {25,25,25,25};
+	const int mixing_levels[4] = {25,25,25,25};
 	int i;
 	int s = 0;
 	memset(&gps_locals, 0x00, sizeof(gps_locals));
 	gps_locals.brdData = *brdData;
 	for (i = 0;i < 32000;i++) {
-    		s =  (s ? 0 : 1);
-    		if (s) {
-    			sineWaveext[i] = rand();
-    		} else
-    			sineWaveext[i] = 0-rand();
+		s = (s ? 0 : 1);
+		if (s) {
+			sineWaveext[i] = rand();
+		} else
+			sineWaveext[i] = 0-rand();
 	}
 	pia_config(GPS_PIA0, PIA_STANDARD_ORDERING, &gps_pia[0]);
 	pia_config(GPS_PIA1, PIA_STANDARD_ORDERING, &gps_pia[1]);

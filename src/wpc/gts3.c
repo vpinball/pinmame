@@ -108,6 +108,8 @@ struct {
   int bitSet;
   int vblank_counter;
   UINT8 irq;
+
+  int modsol_rate_counter;
 } GTS3locals;
 
 //We need 2 structures, since Strikes N Spares has 2 DMD Displays
@@ -912,11 +914,10 @@ static INTERRUPT_GEN(alphanmi) {
 #ifdef GTS3_MODSOL
 	if (options.usemodsol)
 	{
-		static int modsol_rate_counter = 0; //!! move to GTS3locals
-		if (++modsol_rate_counter == GTS3_MODSOL_SAMPLE)
+		if (++GTS3locals.modsol_rate_counter == GTS3_MODSOL_SAMPLE)
 		{
 			int i;
-			modsol_rate_counter = 0;
+			GTS3locals.modsol_rate_counter = 0;
 			for (i = 0; i < 32; i++)
 			{
 				core_update_modulated_light(&GTS3locals.solenoidbits[i], GTS3locals.solenoid_seen_pulses & (1 << i));
