@@ -60,7 +60,7 @@
 #endif
 
 #ifdef VPINMAME_ALTSOUND // for alternate/external sound processing
- #include "snd_alt.h"
+ #include "altsound/snd_alt.h"
 #endif
 #ifdef VPINMAME_PINSOUND // for PinSound support
  //#include <timeapi.h>
@@ -351,6 +351,17 @@ void reinit_pinSound(void)
 
 	// create a mail slot to talk to the PinSound Studio
 	hFilePinSound = makeWriteSlot(PinSoundStudioSlotName);
+
+	// DAR@20230901
+	// If PinSound Studio is not running, this will return a bad handle.
+	// If we allow the attempt to make a read slot to occur in this case,
+	// the table will fail to load and hang indefinitely.  Handling the
+	// failure here prevents that
+	if (hFilePinSound == INVALID_HANDLE_VALUE) {
+		LOG(("Error:  Failed to create PinSound write slot!"));
+		return;
+	}
+
 	// create slot to receive response from the PinSound Studio
 	hFilePinMAME = makeReadSlot(PinMAMESlotName);
 

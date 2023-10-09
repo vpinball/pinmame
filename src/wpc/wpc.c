@@ -193,7 +193,7 @@ MEMORY_END
 static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
 int wpc_m2sw(int col, int row) { return col*10+row+1; }
 
-// Zero Cross: a voltage comparator triggers when +5V AC reaches +5V or -5V, so at 120Hz in US (would be 100Hz in Europa), leading to around ~8.3ms period
+// Zero Cross: a voltage comparator triggers when +5V AC reaches +5V or -5V, so at 120Hz in US (would be 100Hz in Europe), leading to around ~8.3ms period
 static void wpc_zc(int data) {
    // Set Zero Cross flag (it's reset when read)
    wpclocals.zc = 1;

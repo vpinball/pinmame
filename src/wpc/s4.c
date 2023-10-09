@@ -123,7 +123,7 @@ static INTERRUPT_GEN(s4_irq) {
 /*********************/
 /*Dips are returned to a4-7 and are read by pulsing of a0-3 (same as alpapos).
   Dips are matrixed.. Column 0 = Function Switches 1-4, Column 1 = Function Switches 5-8..
-  		      Column 2 = Data Switches 1-4, Column 3 = Data Switches 5-8
+                      Column 2 = Data Switches 1-4, Column 3 = Data Switches 5-8
   Game expects on=0, off=1 from dip switches.
   Game expects 0xFF for function dips when ENTER-key is not pressed.
 */
@@ -277,8 +277,8 @@ static const struct pia6821_interface s4_pia[] = {{
 	BCD2: Feeds Player 3, 4
 	Alpha Pos (L-R): 1,2,3,4,5,6
 	Strobing: 1-6 = (P1&3)1-6
-		  7,8,16 = (Status)5,6,(2&3)
-		  9-14 = (P2&4)1-6
+	          7,8,16 = (Status)5,6,(2&3)
+	          9-14 = (P2&4)1-6
 */
  /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), 0, 0,
  /* o : A/B,CA2/B2        */ s4_pa_w, s4_alpha_w, 0, s4_specsol6_w,
@@ -288,24 +288,24 @@ static const struct pia6821_interface s4_pia[] = {{
 /*PIA II:
 (in)	PA0-7:	Switch Rows
 (in)	PB0-7:	Switch Columns??
-(out)	PB0-7:  Switch Column Enable
-	CA1:	None
-	CB1:	None
+(out)	PB0-7:	Switch Column Enable
+		CA1:	None
+		CB1:	None
 (out)	CA2:	Special Solenoid #4
 (out)	CB2:	Special Solenoid #3
 */
   /* i : A/B,CA1/B1,CA2/B2 */ s4_swrow_r, 0, 0, 0, 0, 0,
   /* o : A/B,CA2/B2        */ 0, s4_swcol_w, s4_specsol4_w, s4_specsol3_w,
-  /* irq: A/B             */  0, 0
+  /* irq: A/B              */ 0, 0
 },{
 /*PIA 3 - Lamp Matrix*/
 /*
 PIA III:
 (out)	PA0-7:	Lamp Rows
 (out)	PB0-7:	Lamp Columns
-(in)    PB0-7:  Lamp Column (input????!!)
-	CA1:	None
-	CB1:	None
+(in)	PB0-7:	Lamp Column (input????!!)
+		CA1:	None
+		CB1:	None
 (out)	CA2:	Special Solenoid #2
 (out)	CB2:	Special Solenoid #1
 */
@@ -513,7 +513,7 @@ MACHINE_DRIVER_START(s3S)
   MDRV_IMPORT_FROM(wmssnd_s67s)
 MACHINE_DRIVER_END
 
-/*-- S4 with sound board --*/
+/*-- S4 with sound board --*/ // Flash, Tri Zone, Pokerino, Time Warp, Stellar Wars (more?)
 MACHINE_DRIVER_START(s4S)
   MDRV_IMPORT_FROM(s4)
   MDRV_IMPORT_FROM(wmssnd_s67s)
@@ -528,4 +528,3 @@ static NVRAM_HANDLER(s4) {
 #endif
   core_nvram(file, read_or_write, s4_CMOS, 0x100, 0xff);
 }
-

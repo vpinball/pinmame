@@ -203,7 +203,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -272,7 +272,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib;ext\dinput\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -455,7 +455,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <CompileAs>Default</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -653,6 +653,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="ext\basicbitmap\BasicBitmap.cpp" />
     <ClCompile Include="ext\basicbitmap\BasicBitmap_SSE2.cpp" />
     <ClCompile Include="ext\vgm\vgmwrite.c" />
+    <ClCompile Include="ext\ymfm\ymfm_adpcm.cpp" />
+    <ClCompile Include="ext\ymfm\ymfm_opl.cpp" />
+    <ClCompile Include="ext\ymfm\ymfm_opm.cpp" />
+    <ClCompile Include="ext\ymfm\ymfm_pcm.cpp" />
     <ClCompile Include="ext\zlib\adler32.c" />
     <ClCompile Include="ext\zlib\compress.c" />
     <ClCompile Include="ext\zlib\crc32.c" />
@@ -1507,6 +1511,16 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\zacgames.c" />
     <ClCompile Include="src\wpc\zacproto.c" />
     <ClCompile Include="src\wpc\zacsnd.c" />
+    <ClCompile Include="src\wpc\altsound\altsound_csv_parser.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_data.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_file_parser.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_ini_processor.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_logger.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_processor.cpp" />
+    <ClCompile Include="src\wpc\altsound\altsound_processor_base.cpp" />
+    <ClCompile Include="src\wpc\altsound\gsound_csv_parser.cpp" />
+    <ClCompile Include="src\wpc\altsound\gsound_processor.cpp" />
+    <ClCompile Include="src\wpc\altsound\snd_alt.cpp" />
     <ClCompile Include="src\wpc\sims\s11\full\dd.c" />
     <ClCompile Include="src\wpc\sims\s11\full\milln.c" />
     <ClCompile Include="src\wpc\sims\s11\prelim\eatpm.c" />
@@ -1588,6 +1602,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="ext\basicbitmap\BasicBitmap.h" />
     <ClInclude Include="ext\basicbitmap\BasicBitmap_C.h" />
     <ClInclude Include="ext\vgm\vgmwrite.h" />
+    <ClInclude Include="ext\ymfm\ymfm_opm.h" />
     <ClInclude Include="ext\zlib\crc32.h" />
     <ClInclude Include="ext\zlib\deflate.h" />
     <ClInclude Include="ext\zlib\gzguts.h" />
@@ -1815,6 +1830,17 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\wpc\wpcsam.h" />
     <ClInclude Include="src\wpc\zac.h" />
     <ClInclude Include="src\wpc\zacsnd.h" />
+    <ClInclude Include="src\wpc\altsound\altsound_csv_parser.hpp" />
+    <ClInclude Include="src\wpc\altsound\altsound_data.hpp" />
+    <ClInclude Include="src\wpc\altsound\altsound_file_parser.hpp" />
+    <ClInclude Include="src\wpc\altsound\altsound_ini_processor.hpp" />
+    <ClInclude Include="src\wpc\altsound\altsound_logger.hpp" />
+    <ClInclude Include="src\wpc\altsound\altsound_processor.hpp" />
+    <ClInclude Include="src\wpc\altsound\altsound_processor_base.hpp" />
+    <ClInclude Include="src\wpc\altsound\gsound_csv_parser.hpp" />
+    <ClInclude Include="src\wpc\altsound\gsound_processor.hpp" />
+    <ClInclude Include="src\wpc\altsound\inipp.h" />
+    <ClInclude Include="src\wpc\altsound\snd_alt.h" />
     <ClInclude Include="src\vc\dirent.h" />
     <ClInclude Include="src\vc\unistd.h" />
     <ClInclude Include="src\win32com\Alias.h" />

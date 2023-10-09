@@ -199,7 +199,7 @@ static void by35p_zeroCross(int data) {
 }
 
 static MACHINE_INIT(by35Proto) {
-  static int afterInit;
+  static int afterInit = 0;
   int resetSw = afterInit ? locals.resetSw : 0;
   memset(&locals, 0, sizeof(locals));
   locals.resetSw = resetSw;

@@ -62,7 +62,7 @@ static WRITE_HANDLER(mcpu_ram8000_w);
 static READ_HANDLER(mcpu_ram8000_r);
 
 /*----------------
-/ Local variables
+/ Local variables, if changing, sync with elvis and monopoly, too!!
 /-----------------*/
 struct {
   int    vblankCount;

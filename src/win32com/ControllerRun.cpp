@@ -32,9 +32,6 @@ char g_fShowWinDMD      = TRUE;		// DMD active by default
 
 BOOL cabinetMode        = FALSE;
 
-int    g_iSyncFactor    = 0;
-HANDLE g_hEnterThrottle = INVALID_HANDLE_VALUE;
-extern int g_iSyncFactor;
 char g_szGameName[256] = "";		// String containing requested game name (may be different from ROM if aliased)
 }
 
@@ -47,7 +44,6 @@ extern int dmd_width;
 extern int dmd_height;
 
 extern int threadpriority;
-extern int synclevel;
 
 #define VPINMAMEONEVENTMSG	"VPinMAMEOnEventMsg"
 
@@ -140,34 +136,14 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 
 	g_fPause = 0;
 
-	int iSyncLevel = synclevel;
-	if ( iSyncLevel<0 )
-		iSyncLevel = 0;
-	else if ( iSyncLevel>60 )
-		iSyncLevel = 60;
-
-	if ( iSyncLevel ) {
-		if ( iSyncLevel<=20 )
-			g_iSyncFactor = 1024;
-		else
-			g_iSyncFactor = (int) (1024.0*(iSyncLevel/60.0)); //!!!!
-
-		g_hEnterThrottle = CreateEvent(NULL, false, true, NULL);
-	}
 #ifndef DEBUG
-	else {
-		// just in case
-		g_iSyncFactor = 0;
-		g_hEnterThrottle = INVALID_HANDLE_VALUE;
-
-		switch ( threadpriority ) {
-			case 1:
-				SetThreadPriority(pController->m_hThreadRun, THREAD_PRIORITY_ABOVE_NORMAL);
-				break;
-			case 2:
-				SetThreadPriority(pController->m_hThreadRun, THREAD_PRIORITY_HIGHEST);
-				break;
-		}
+	switch ( threadpriority ) {
+		case 1:
+			SetThreadPriority(pController->m_hThreadRun, THREAD_PRIORITY_ABOVE_NORMAL);
+			break;
+		case 2:
+			SetThreadPriority(pController->m_hThreadRun, THREAD_PRIORITY_HIGHEST);
+			break;
 	}
 #endif
 
@@ -175,14 +151,7 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 	run_game(pController->m_nGameNo);
 	vpm_game_exit(pController->m_nGameNo);
 
-	if ( iSyncLevel ) {
-		SetEvent(g_hEnterThrottle);
-		CloseHandle(g_hEnterThrottle);
-		g_hEnterThrottle = INVALID_HANDLE_VALUE;
-		g_iSyncFactor = 0;
-	}
-	else
-		SetThreadPriority(pController->m_hThreadRun, THREAD_PRIORITY_NORMAL);
+	SetThreadPriority(pController->m_hThreadRun, THREAD_PRIORITY_NORMAL);
 
 	// fire the OnMachineStopped event
 	OnStateChange(0);

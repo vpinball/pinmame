@@ -31,8 +31,6 @@ extern "C" {
 
 extern HWND win_video_window;
 extern int g_fPause;
-extern HANDLE g_hEnterThrottle;
-extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
 extern struct mame_display *current_display_ptr;
 
@@ -56,7 +54,7 @@ extern void uSleep(const UINT64 u);
 #include "Alias.h"
 
 extern int fAllowWriteAccess;
-extern int synclevel;
+extern int deprecated_synclevel;
 
 void CreateEventWindow(CController* pController);
 void DestroyEventWindow(CController* pController);
@@ -599,12 +597,6 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 		return S_FALSE;
 	}
 
-	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
-	if ((g_hEnterThrottle != INVALID_HANDLE_VALUE) && g_iSyncFactor)
-		WaitForSingleObject(g_hEnterThrottle, (synclevel <= 20) ? synclevel : 50);
-	else if (synclevel<0)
-		uSleep(-synclevel*1000);
-
 	/*-- Count changes --*/
 	size_t uCount;
 
@@ -866,12 +858,6 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
 
-  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
-  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
-	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
-  else if ( synclevel<0 )
-	  uSleep(-synclevel*1000);
-
   /*-- Count changes --*/
   vp_tChgLamps chgLamps;
   int uCount = vp_getChangedLamps(chgLamps);
@@ -937,12 +923,6 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
-
-	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
-	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
-		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
-	else if ( synclevel<0 )
-		uSleep(-synclevel*1000);
 
 	/*-- Count changes --*/
 	vp_tChgSols chgSol;
@@ -1012,12 +992,6 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
-
-	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
-	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
-		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
-	else if ( synclevel<0 )
-		uSleep(-synclevel*1000);
 
 	/*-- Count changes --*/
 	int uCount = vp_getChangedGI(chgGI);
@@ -1271,12 +1245,6 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
-  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
-  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
-	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
-  else if ( synclevel<0 )
-	  uSleep(-synclevel*1000);
-
   /*-- Count changes --*/
   int uCount = vp_getChangedLamps(chgLamps);
 
@@ -1371,12 +1339,6 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
-
-  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
-  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
-	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
-  else if ( synclevel<0 )
-	uSleep(-synclevel*1000);
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
@@ -1847,7 +1809,7 @@ STDMETHODIMP CController::get_ShowDMDOnly(VARIANT_BOOL *pVal)
 
 	VARIANT vValue;
 	VariantInit(&vValue);
-	
+
 	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("dmd_only"), &vValue);
 	*pVal = vValue.boolVal;
 

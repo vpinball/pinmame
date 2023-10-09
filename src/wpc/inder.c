@@ -600,7 +600,7 @@ static ppi8255_interface ppi8255_intf0 =
 };
 
 static MACHINE_INIT(INDERS0) {
-  init_common();
+	init_common();
 
 	/* init PPI */
 	ppi8255_init(&ppi8255_intf0);
@@ -692,14 +692,14 @@ static READ_HANDLER(snd1_porta_r) { /* LOGSND(("SND1_PORTA_R\n")); */ return 0; 
 static READ_HANDLER(snd1_portb_r) { /* LOGSND(("SND1_PORTB_R\n")); */ return 0; }
 static READ_HANDLER(snd1_portc_r) {
 	int data = sndlocals2.S1_PC0;
-  //LOGSND(("SND1_PORTC_R = %x\n",data));
+	//LOGSND(("SND1_PORTC_R = %x\n",data));
 	return data;
 }
 
 static WRITE_HANDLER(snd1_porta_w) { sndlocals2.S1_AHI = data; }
 static WRITE_HANDLER(snd1_portb_w) { sndlocals2.S1_ALO = data; }
 static WRITE_HANDLER(snd1_portc_w) {
-  //LOGSND(("SND1_PORTC_W = %02x\n",data));
+	//LOGSND(("SND1_PORTC_W = %02x\n",data));
 
 	//Set Reset Line on the chip
 	MSM5205_reset_w(0, GET_BIT6);
@@ -708,7 +708,7 @@ static WRITE_HANDLER(snd1_portc_w) {
 	if (GET_BIT6) {
 		sndlocals2.S1_PC0 = 1;
 	} else {
-    //Read Data from ROM & Write Data To MSM Chip
+		//Read Data from ROM & Write Data To MSM Chip
 		int msmdata = INDER_S1_MSM5205_READROM(0);
 		INDER_S1_MSM5205_w(0,msmdata);
 	}
@@ -755,7 +755,7 @@ static WRITE_HANDLER(snd2_portc_w) {
 	if (GET_BIT6) {
 		sndlocals2.S2_PC0 = 1;
 	} else {
-    //Read Data from ROM & Write Data To MSM Chip
+		//Read Data from ROM & Write Data To MSM Chip
 		int msmdata = INDER_S2_MSM5205_READROM(0);
 		INDER_S2_MSM5205_w(0,msmdata);
 	}
@@ -799,7 +799,7 @@ static WRITE_HANDLER(sndctrl_2_w) {
 static READ_HANDLER(INDER_S1_MSM5205_READROM) {
 	int addr, data;
 	addr = (sndlocals2.S1_CS1 << 18) | (sndlocals2.S1_A17 << 17) | (sndlocals2.S1_A16 << 16)
-	  | (sndlocals2.S1_AHI << 8) | sndlocals2.S1_ALO;
+	     | (sndlocals2.S1_AHI << 8) | sndlocals2.S1_ALO;
 	data = (UINT8)*(memory_region(REGION_USER1) + addr);
 	return data;
 }
@@ -807,7 +807,7 @@ static READ_HANDLER(INDER_S1_MSM5205_READROM) {
 static READ_HANDLER(INDER_S2_MSM5205_READROM) {
 	int addr, data;
 	addr = (sndlocals2.S2_CS1 << 18) | (sndlocals2.S2_A17 << 17) | (sndlocals2.S2_A16 << 16)
-	  | (sndlocals2.S2_AHI << 8) | sndlocals2.S2_ALO;
+	     | (sndlocals2.S2_AHI << 8) | sndlocals2.S2_ALO;
 	data = (UINT8)*(memory_region(REGION_USER2) + addr);
 	return data;
 }
@@ -902,7 +902,7 @@ static MEMORY_WRITE_START(indersnd1_writemem)
 	{ 0x0000, 0x1fff, MWA_ROM },
 	{ 0x2000, 0x3fff, MWA_RAM },
 	{ 0x4000, 0x4003, ppi8255_4_w},
-//{ 0x4900, 0x4900, MWA_NOP}, // unknown stuff here
+//	{ 0x4900, 0x4900, MWA_NOP}, // unknown stuff here
 	{ 0x6000, 0x6000, sndctrl_1_w},
 MEMORY_END
 
@@ -917,7 +917,7 @@ static MEMORY_WRITE_START(indersnd2_writemem)
 	{ 0x0000, 0x1fff, MWA_ROM },
 	{ 0x2000, 0x3fff, MWA_RAM },
 	{ 0x4000, 0x4003, ppi8255_5_w},
-//{ 0x4900, 0x4900, MWA_NOP}, // unknown stuff here
+//	{ 0x4900, 0x4900, MWA_NOP}, // unknown stuff here
 	{ 0x6000, 0x6000, sndctrl_2_w},
 MEMORY_END
 

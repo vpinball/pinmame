@@ -15,13 +15,15 @@
            the game FLIP_SOL()
    020801  Recoded proc_mechsound() to check for {-1} entry,
            and to also not continue searching the map, after a
-		   match is found! (SJE)
+           match is found! (SJE)
 */
 
 #include "driver.h"
 #include "core.h"
 #include "wpc.h"
 #include "wpcsam.h"
+
+#ifdef ENABLE_MECHANICAL_SAMPLES
 
 /*----------------
 / Samples
@@ -67,22 +69,22 @@ void proc_mechsounds(int sol, int newState) {
   else {
     wpc_tSamSolMap *item = core_gameData->hw.solsammap;
     if (item) {
-	  while (item->solname >= 0 && item->solname != sol)
-			item++;
-	  if(item->solname >= 0 && item->solname == sol) {
-		if (newState) {
-	        if (item->flags == WPCSAM_F_OFFON)
-	          sample_start(item->channel, item->samname, 0);
-		    else if (item->flags == WPCSAM_F_CONT)
-              sample_start(item->channel, item->samname, 1);
-		}
-		else {
-			if (item->flags == WPCSAM_F_ONOFF)
+      while (item->solname >= 0 && item->solname != sol)
+        item++;
+      if(item->solname >= 0 && item->solname == sol) {
+        if (newState) {
+            if (item->flags == WPCSAM_F_OFFON)
               sample_start(item->channel, item->samname, 0);
             else if (item->flags == WPCSAM_F_CONT)
-	          sample_stop(item->channel);
-		}
-	    item++;
+              sample_start(item->channel, item->samname, 1);
+        }
+        else {
+            if (item->flags == WPCSAM_F_ONOFF)
+              sample_start(item->channel, item->samname, 0);
+            else if (item->flags == WPCSAM_F_CONT)
+              sample_stop(item->channel);
+        }
+        item++;
       } /* if(item->solname >=0 */
     } /* if (item) */
   }
@@ -91,5 +93,7 @@ void proc_mechsounds(int sol, int newState) {
 void wpc_play_sample(int channel, int samplename) {
   /*Don't play again if already playing it*/
   if(!sample_playing(channel))
-   sample_start(channel,samplename,0);
+    sample_start(channel,samplename,0);
 }
+
+#endif

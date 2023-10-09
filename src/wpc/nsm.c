@@ -268,7 +268,6 @@ static MACHINE_RESET(nsm) {
   // Disable auto wait state generation on reset
   tms9995reset_param param = { 0 };
   cpunum_reset(0, &param, NULL);
-  memset(&locals, 0, sizeof(locals));
 }
 
 static MACHINE_STOP(nsm) {

@@ -117,6 +117,11 @@ static MACHINE_INIT(tecno) {
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
+static MACHINE_STOP(tecno)
+{
+  sndbrd_0_exit();	
+}
+
 //Input Key - Return Switches (uses Lamp Column Strobe)
 static READ16_HANDLER(input_key_r) {
 	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
@@ -315,7 +320,7 @@ struct DACinterface tecno_dacInt =
 
 MACHINE_DRIVER_START(tecno)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(tecno, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(tecno, NULL, tecno)
   MDRV_CPU_ADD_TAG("mcpu", M68000, TECNO_CPUFREQ)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)

@@ -95,11 +95,12 @@ typedef struct {
   int sound_mode; // 0 = pinmame, 1 = altsound, 2 = pinsound, 3 = pinsound + recordings
 #endif
 #ifdef PROC_SUPPORT
-	char *p_roc;				/* YAML Machine description file */
-	int alpha_on_dmd;			/* Virtual alphanumeric displays on P-ROC DMD */
-	int virtual_dmd;			/* If we have no screen, then we can suppress the DMD */
+  char *p_roc;                 /* YAML Machine description file */
+  int alpha_on_dmd;            /* Virtual alphanumeric displays on P-ROC DMD */
+  int virtual_dmd;             /* If we have no screen, then we can suppress the DMD */
 #endif /* PROC_SUPPORT */
-  int vgmwrite;
+  int vgmwrite; // bool
+  int force_mono_to_stereo; // bool
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {

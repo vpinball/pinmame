@@ -895,17 +895,17 @@ static MACHINE_INIT(spinb) {
 
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
-  SPINBlocals.nmiSeries=0;
+  SPINBlocals.nmiSeries = 0;
 }
 
 static MACHINE_INIT(spinbnmi) {
   machine_init_spinb();
-  SPINBlocals.nmiSeries=1;
+  SPINBlocals.nmiSeries = 1;
 }
 
 static MACHINE_INIT(spinbnmi2) {
   machine_init_spinb();
-  SPINBlocals.nmiSeries=2;
+  SPINBlocals.nmiSeries = 2;
 }
 
 static MACHINE_RESET(spinb) {
@@ -914,6 +914,8 @@ static MACHINE_RESET(spinb) {
 
 static MACHINE_STOP(spinb) {
   sndbrd_0_exit();
+
+  timer_remove(SPINBlocals.irqtimer);
 }
 
 //Only the INT0 pin is configured for read access and we handle that in the dmd command handler

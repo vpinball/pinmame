@@ -209,7 +209,7 @@ void throttle_speed_part(int part, int totalparts)
 
 int g_low_latency_throttle = 0;
 
-int g_iThrottleAdj = 0;
+static int g_iThrottleAdj = 0;
 
 void SetThrottleAdj(int adj)
 {

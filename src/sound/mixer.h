@@ -8,6 +8,9 @@
 
 #define MIXER_MAX_CHANNELS 25
 
+/* accumulators have ACCUMULATOR_SAMPLES samples (must be a power of 2) */
+#define ACCUMULATOR_SAMPLES 8192
+
 /*
   When you allocate a channel, you pass a default mixing level setting.
   The mixing level is in the range 0-100, and is passed down to the OS dependant

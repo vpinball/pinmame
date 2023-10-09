@@ -42,6 +42,13 @@ static struct {
   void *printfile;
   mame_timer *irqtimer;
   int irqfreq;
+
+  // serial
+  UINT8 read_byte;
+  UINT8 read_bitno;
+
+  UINT8 write_bitno;
+  UINT8 write_startbit;
 } locals;
 
 static INTERRUPT_GEN(ZAC_vblank_old) {
@@ -191,6 +198,8 @@ static MACHINE_INIT(ZAC1) {
   locals.irqtimer = timer_alloc(timer_callback_old);
   locals.irqfreq = core_gameData->hw.gameSpecific1;
   timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
+  locals.read_byte = 0xff;
+  locals.read_bitno = 7;
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback_old);
 
@@ -211,6 +220,8 @@ static MACHINE_INIT(ZAC2) {
   locals.irqtimer = timer_alloc(timer_callback);
   locals.irqfreq = core_gameData->hw.gameSpecific1;
   timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
+  locals.read_byte = 0xff;
+  locals.read_bitno = 7;
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
 
@@ -222,6 +233,8 @@ static MACHINE_STOP(ZAC) {
     mame_fclose(locals.printfile);
     locals.printfile = NULL;
   }
+
+  timer_remove(locals.irqtimer);
 
   ZAC_soundExit();
 }
@@ -267,14 +280,12 @@ static READ_HANDLER(data_port_r)
 */
 static READ_HANDLER(sense_r)
 {
-	static UINT8 byte = 0xff;
-	static int bitno = 7;
-	if (++bitno > 7) {
-		byte++;
-		bitno = 0;
+	if (++locals.read_bitno > 7) {
+		locals.read_byte++;
+		locals.read_bitno = 0;
 //		logerror("%x: Sense Input=%02x\n",activecpu_get_previouspc(),byte);
 	}
-	return ((byte >> bitno) & 1) | core_getSw(-8);
+	return ((locals.read_byte >> locals.read_bitno) & 1) | core_getSw(-8);
 }
 
 /*
@@ -310,27 +321,25 @@ static WRITE_HANDLER(data_port_w)
 /*   FLAG WRITE = Write Serial Output (hooked to printer) */
 static WRITE_HANDLER(flag_w)
 {
-	static UINT8 printdata[] = {0};
-	static int bitno = 0;
-	static int startbit = 0;
+	static UINT8 printdata = 0;
 	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | (data << 2);
 	if (locals.printfile == NULL) {
-	  char filename[13];
+	  char filename[64];
 	  sprintf(filename,"%s.prt", Machine->gamedrv->name);
 	  locals.printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,2); // APPEND write mode
 	}
-	if (data && startbit < 1)
-		startbit = 1;
-	else if (data == 0 && startbit == 1)
-		startbit = 2;
-	else if (bitno < 8 && startbit > 1)
-		printdata[0] |= (data << bitno++);
-	if (bitno == 8 && startbit > 1)
-    	if (locals.printfile) mame_fwrite(locals.printfile, printdata, 1);
-    if (bitno > 7) {
-		printdata[0] = 0;
-		bitno = 0;
-		startbit = 0;
+	if (data && locals.write_startbit < 1)
+		locals.write_startbit = 1;
+	else if (data == 0 && locals.write_startbit == 1)
+		locals.write_startbit = 2;
+	else if (locals.write_bitno < 8 && locals.write_startbit > 1)
+		printdata |= (data << locals.write_bitno++);
+	if (locals.write_bitno == 8 && locals.write_startbit > 1)
+		if (locals.printfile) mame_fwrite(locals.printfile, &printdata, 1);
+	if (locals.write_bitno > 7) {
+		printdata = 0;
+		locals.write_bitno = 0;
+		locals.write_startbit = 0;
 	}
 //	logerror("%x: Flag output=%x\n",activecpu_get_previouspc(),data);
 }

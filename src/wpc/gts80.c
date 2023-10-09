@@ -189,7 +189,7 @@ static READ_HANDLER(slam_sw_r) {
 
 /* BCD version */
 static WRITE_HANDLER(riot6532_1aBCD_w) {
-  static int reorder[] = { 8, 0, 1, 15, 9, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7 };
+  static const int reorder[] = { 8, 0, 1, 15, 9, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7 };
   int dispdata = data & 0x0f;
   int pos = reorder[15 - dispdata];
   // Load buffers on rising edge 0x10,0x20,0x40
@@ -487,7 +487,8 @@ static MACHINE_INIT(gts80) {
 }
 
 static MACHINE_STOP(gts80) {
-  sndbrd_0_exit(); riot6532_unconfig();
+  sndbrd_0_exit();
+  riot6532_unconfig();
 }
 
 /*-----------------------------------------------

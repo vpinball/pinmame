@@ -57,7 +57,7 @@ jobs:
 #          7z x upx.zip -oupx
 #          rm upx.zip
       - run: |
-          curl -L https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-win64.zip -o upx.zip
+          curl -L https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-win64.zip -o upx.zip
           7z e upx.zip -oupx
           rm upx.zip
       - name: Build PinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
@@ -69,7 +69,9 @@ jobs:
       - run: |
           mkdir tmp
           cp build/Release/PinMAME.exe tmp
+          cp release/gamelist.txt tmp
           cp release/license.txt tmp
+          cp release/pinmame.txt tmp
           cp release/whatsnew.txt tmp
       - uses: actions/upload-artifact@v3
         with:

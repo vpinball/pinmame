@@ -226,12 +226,6 @@ static MACHINE_INIT(MICROPIN) {
 }
 
 static MACHINE_RESET(MICROPIN) {
-  mame_timer *tmp0 = locals.sndTimer;
-  mame_timer *tmp1 = locals.resetTimer;
-  memset(&locals, 0, sizeof(locals));
-  locals.sndTimer = tmp0;
-  locals.resetTimer = tmp1;
-
   // Initialize pia1 outputs at reset to emulate pullup of undriven input signals to generate reset tone
   pia_write(1, 0, 0xff);    // set vol/snd ports to outputs
   pia_write(1, 2, 0x0f);    // set decay ports to outputs      
@@ -245,6 +239,11 @@ static MACHINE_RESET(MICROPIN) {
   // Hold CPU in reset for 1.1s as specified in schematic
   cpu_set_halt_line(0, ASSERT_LINE);
   timer_adjust(locals.resetTimer, TIME_IN_MSEC(1100), 0, TIME_NEVER);
+}
+
+static MACHINE_STOP(MICROPIN) {
+  timer_remove(locals.sndTimer);
+  timer_remove(locals.resetTimer);
 }
 
 static SWITCH_UPDATE(MICROPIN) {
@@ -310,7 +309,7 @@ DISCRETE_SOUND_END
 
 MACHINE_DRIVER_START(pentacup)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(MICROPIN,MICROPIN,NULL)
+  MDRV_CORE_INIT_RESET_STOP(MICROPIN,MICROPIN,MICROPIN)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
   MDRV_CPU_MEMORY(mp_readmem, mp_writemem)
   MDRV_CPU_PERIODIC_INT(mp_irq, 500) // noted as 11.5 us in schematics, but 500 Hz is more like the real thing. :)

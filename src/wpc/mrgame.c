@@ -223,6 +223,10 @@ static MACHINE_INIT(mrgame) {
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(MRGAME_MEMREG_SND1),NULL,NULL);
 }
 
+static MACHINE_STOP(mrgame)
+{
+  sndbrd_0_exit();	
+}
 
 //Reads current switch column (really row) - Inverted
 static READ16_HANDLER(col_r) {
@@ -1062,7 +1066,7 @@ static struct GfxDecodeInfo gfxdecodeinfo_g2[] =
 /* Main CPU - Common among all generations */
 MACHINE_DRIVER_START(mrgame_cpu)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(mrgame, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(mrgame, NULL, mrgame)
   MDRV_CPU_ADD_TAG("mcpu", M68000, MRGAME_CPUFREQ)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_PERIODIC_INT(mrgame_irq, MRGAME_IRQ_FREQ)

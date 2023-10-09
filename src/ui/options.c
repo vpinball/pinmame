@@ -327,6 +327,7 @@ static REG_OPTION regGameOpts[] =
         { "sound_mode",             RO_INT,     &gOpts.sound_mode,        0, 0},
 #endif
         { "vgmwrite",               RO_BOOL,    &gOpts.vgmwrite,          0, 0},
+        { "force_stereo",           RO_BOOL,    &gOpts.force_mono_to_stereo, 0, 0},
 #endif /* PINMAME */
 
 };
@@ -816,6 +817,7 @@ BOOL OptionsInit()
         global.sound_mode        = 0;
 #endif
         global.vgmwrite          = FALSE;
+        global.force_mono_to_stereo = FALSE;
 #endif /* PINMAME */
 
         // game_options[x] is valid if game_variables[i].options_loaded == true

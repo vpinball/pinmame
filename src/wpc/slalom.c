@@ -61,7 +61,6 @@ static MACHINE_INIT(slalom) {
 }
 
 static MACHINE_RESET(slalom) {
-  memset(&locals, 0x00, sizeof(locals));
 }
 
 #ifdef MAME_DEBUG
@@ -338,7 +337,6 @@ INPUT_PORTS_END
 CORE_GAMEDEFNV(slalom03, "Slalom Code 0.3", 1988, "Stargame", slalom, 0)
 
 static MACHINE_RESET(roller) {
-  memset(&locals, 0x00, sizeof(locals));
   locals.isBr = 1;
 }
 

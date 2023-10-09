@@ -577,9 +577,9 @@ static MACHINE_INIT(by35) {
   }
 
   if ((sb & 0xff00) == SNDBRD_ST300 || sb == SNDBRD_ASTRO) {
-    install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);	// ok
-    install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);    	// ok
-    install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);	// ok
+    install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);  // ok
+    install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);  // ok
+    install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);// ok
   } else if (sb == SNDBRD_ST100) {
     install_mem_write_handler(0,0x00a0, 0x00a0, stern100_snd_w); // sounds on (DIP 23 = 1)
     install_mem_write_handler(0,0x00c0, 0x00c0, stern100_chm_w); // chimes on (DIP 23 = 0)

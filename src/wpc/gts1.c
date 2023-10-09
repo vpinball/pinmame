@@ -367,16 +367,9 @@ static MACHINE_INIT(GTS1T) {
 }
 
 static MACHINE_RESET(GTS1) {
-	memset(&locals, 0, sizeof locals);
-	locals.Data_Reg_A_count = 16;
-	locals.Data_Reg_B_count = 16;
 }
 
 static MACHINE_RESET(GTS1T) {
-	memset(&locals, 0, sizeof locals);
-	locals.Data_Reg_A_count = 16;
-	locals.Data_Reg_B_count = 16;
-	locals.tones = 1;
 }
 
 static MACHINE_STOP(GTS1) {
@@ -414,7 +407,9 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(GTS1C)
 	MDRV_IMPORT_FROM(GTS1NS)
 	MDRV_DIPS(24)
+#ifdef ENABLE_MECHANICAL_SAMPLES
 	MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(GTS1T)
@@ -422,7 +417,9 @@ MACHINE_DRIVER_START(GTS1T)
 	MDRV_CORE_INIT_RESET_STOP(GTS1T,GTS1T,GTS1)
 	MDRV_DIPS(24)
 	MDRV_SOUND_ADD(DISCRETE, b18555_discInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
 	MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(GTS1S80)

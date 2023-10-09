@@ -70,6 +70,9 @@ jobs:
           - os: macos-latest
             platform: ios-arm64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
+          - os: macos-latest
+            platform: tvos-arm64
+            libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
           - os: ubuntu-latest
             platform: linux-x64
             libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
@@ -87,7 +90,7 @@ jobs:
 #          fi
       - run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            curl -L https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-win64.zip -o upx.zip
+            curl -L https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-win64.zip -o upx.zip
             7z e upx.zip -oupx
             rm upx.zip
           fi
@@ -113,10 +116,16 @@ jobs:
           if [[ "${{ matrix.platform }}" == "ios-arm64" ]]; then
             cp build/Release/zlib-prefix/src/zlib-build/libz.a tmp
           fi
+          if [[ "${{ matrix.platform }}" == "tvos-arm64" ]]; then
+            cp build/Release/zlib-prefix/src/zlib-build/libz.a tmp
+          fi
           if [[ "${{ matrix.pinmame-test }}" ]]; then
             cp build/Release/${{ matrix.pinmame-test }} tmp
           fi
+          cp release/gamelist.txt tmp
           cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
       - uses: actions/upload-artifact@v3
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}

@@ -101,13 +101,15 @@ struct {
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
   UINT8  ax[7], cx1, cx2, ex1;
-  char   extra16led;
+  char   extra16led; // bool
   int    sound_data;
   UINT8  prn[8];
 
   int bitSet;
   int vblank_counter;
   UINT8 irq;
+
+  int modsol_rate_counter;
 } GTS3locals;
 
 //We need 2 structures, since Strikes N Spares has 2 DMD Displays
@@ -881,7 +883,7 @@ static WRITE_HANDLER(aux1_w)
 {
 	static void *printfile;
 	if (printfile == NULL) {
-		char filename[13];
+		char filename[64];
 		sprintf(filename,"%s.prt", Machine->gamedrv->name);
 		printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,2); // APPEND write mode
 	}
@@ -912,11 +914,10 @@ static INTERRUPT_GEN(alphanmi) {
 #ifdef GTS3_MODSOL
 	if (options.usemodsol)
 	{
-		static int modsol_rate_counter = 0; //!! move to GTS3locals
-		if (++modsol_rate_counter == GTS3_MODSOL_SAMPLE)
+		if (++GTS3locals.modsol_rate_counter == GTS3_MODSOL_SAMPLE)
 		{
 			int i;
-			modsol_rate_counter = 0;
+			GTS3locals.modsol_rate_counter = 0;
 			for (i = 0; i < 32; i++)
 			{
 				core_update_modulated_light(&GTS3locals.solenoidbits[i], GTS3locals.solenoid_seen_pulses & (1 << i));

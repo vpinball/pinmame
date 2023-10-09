@@ -82,7 +82,6 @@ static MACHINE_INIT(EFO) {
 }
 
 static MACHINE_RESET(EFO) {
-  memset(&locals, 0x00, sizeof(locals));
   z80ctc_2_reset();
 }
 
@@ -140,7 +139,7 @@ static WRITE_HANDLER(out_w) {
     sndbrd_0_data_w(0, locals.latch);
   } else if ((data & 0xef) == (data & 0x20)) {
     if (!locals.printfile) {
-      char filename[13];
+      char filename[64];
       sprintf(filename,"%s.prt", Machine->gamedrv->name);
       locals.printfile = mame_fopen(Machine->gamedrv->name, filename, FILETYPE_PRINTER, 2); // APPEND write mode
     }

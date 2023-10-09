@@ -400,4 +400,3 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(s6) {
   core_nvram(file, read_or_write, s6_CMOS, 0x0100, 0xff);
 }
-

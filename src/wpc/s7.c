@@ -550,7 +550,7 @@ static MACHINE_INIT(rr) {
   pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
   sndbrd_0_init(SNDBRD_S9S, 1, NULL, NULL, NULL);
   MDRV_SOUND_CMD(sndbrd_0_data_w)
-  s7locals.ssEn= 1;
+  s7locals.ssEn = 1;
   s7locals.rr = 1;
 }
 

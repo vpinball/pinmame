@@ -691,7 +691,8 @@ DRIVERNV(krull)         //S80a-676: 02/83 Krull
 DRIVERNV(goinnuts)      //S80a-682: 02/83 Goin' Nuts
 DRIVERNV(qbquest)       //S80a-677: 03/83 Q*bert's Quest
 DRIVERNV(sorbit)        //S80a-680: 05/83 Super Orbit
-DRIVERNV(rflshdlx)      //S80a-681: 06/83 Royal Flush Deluxe
+DRIVERNV(rflshdlx1)     //S80a-681: 06/83 Royal Flush Deluxe (rev. 1)
+DRIVERNV(rflshdlx)      //          06/83 Royal Flush Deluxe (rev. 2)
 DRIVERNV(amazonh)       //S80a-684: 09/83 Amazon Hunt
 DRIVERNV(amazonha)      //                Amazon Hunt (alternate set)
 DRIVERNV(rackemup)      //S80a-685: 11/83 Rack 'Em Up
@@ -1271,6 +1272,7 @@ DRIVERNV(xfiles20)      //Whitestar: 08/97 X-Files (2.00)
 DRIVERNV(xfiles2)       //           08/97 X-Files (2.04)
 DRIVERNV(xfiles)        //           08/97 X-Files (3.03)
 DRIVERNV(xfilesf)       //           08/97 X-Files (3.03 French)
+DRIVERNV(xfiles304)     //           09/23 X-Files (3.04 unofficial MOD)
 DRIVERNV(startrp2)      //Whitestar: 11/97 Starship Troopers (2.00)
 DRIVERNV(startrp)       //           11/97 Starship Troopers (2.01)
 DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
@@ -2336,6 +2338,7 @@ DRIVERNV(zekepeak)      //??/83 Zeke's Peak (Redemption)
 // ---------------
 // TAITO DO BRASIL GAMES
 // ---------------
+                        // Apache? (1979 version features solid state according to taito book)
 DRIVERNV(football)      //03/79 Football (W World Cup'78, 05/78)
                         //03/79 Hot Ball (B Eight Ball, 01/77)
                         //??/?? Sultan (G Sinbad, 05/78)
@@ -2525,6 +2528,8 @@ DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer (L-1)
 DRIVER(sorcr,l2)        //          03/85 W Sorcerer (L-2)
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet (L-4)
 DRIVER(comet,l5)        //          06/85 W Comet (L-5)
+//System 10
+                        //S10-543N: 12/85 W 4-IN-1
 //System 11
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)

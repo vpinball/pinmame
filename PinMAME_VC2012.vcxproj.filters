@@ -133,6 +133,12 @@
     <Filter Include="Source Files\external\zlib">
       <UniqueIdentifier>{3acabe38-a15a-4ea2-bab7-e73115eb7bf9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\external\ymfm">
+      <UniqueIdentifier>{0734d31b-617b-4e38-900c-491ec5ee0b3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\altsound">
+      <UniqueIdentifier>{63599608-1299-463d-b1e3-917d2e1f5f6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\artwork.c">
@@ -1203,6 +1209,9 @@
     <ClCompile Include="ext\vgm\vgmwrite.c">
       <Filter>Source Files\external\vgm</Filter>
     </ClCompile>
+    <ClCompile Include="ext\ymfm\ymfm_opm.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
     <ClCompile Include="ext\zlib\adler32.c">
       <Filter>Source Files\external\zlib</Filter>
     </ClCompile>
@@ -1247,6 +1256,45 @@
     </ClCompile>
     <ClCompile Include="ext\zlib\zutil.c">
       <Filter>Source Files\external\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ymfm\ymfm_opl.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ymfm\ymfm_adpcm.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ymfm\ymfm_pcm.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_csv_parser.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_data.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_file_parser.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_ini_processor.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_logger.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_processor.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\altsound_processor_base.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\gsound_csv_parser.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\gsound_processor.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\altsound\snd_alt.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1898,6 +1946,9 @@
     <ClInclude Include="ext\vgm\vgmwrite.h">
       <Filter>Source Files\external\vgm</Filter>
     </ClInclude>
+    <ClInclude Include="ext\ymfm\ymfm_opm.h">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClInclude>
     <ClInclude Include="ext\zlib\crc32.h">
       <Filter>Source Files\external\zlib</Filter>
     </ClInclude>
@@ -1930,6 +1981,39 @@
     </ClInclude>
     <ClInclude Include="ext\zlib\zutil.h">
       <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_csv_parser.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_data.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_file_parser.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_ini_processor.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_logger.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_processor.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\altsound_processor_base.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\gsound_csv_parser.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\gsound_processor.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\inipp.h">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\altsound\snd_alt.h">
+      <Filter>Source Files\PinMAME\altsound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -419,6 +419,7 @@ static void mm_drawStatic(BMTYPE **line) {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap mm_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -446,6 +447,7 @@ static wpc_tSamSolMap mm_samsolmap[] = {
  {sRightGate,5,SAM_SOLENOID_ON}, {sRightGate,5,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sDBMotor,5,SAM_MOTOR_1,WPCSAM_F_CONT},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -488,13 +490,13 @@ CORE_CLONEDEF(mm,05,10,"Medieval Madness (0.50 Prototype)",1997,"Williams",wpc_m
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData mmSimData = {
-  2,    			/* 2 game specific input ports */
-  mm_stateDef,			/* Definition of all states */
-  mm_inportData,		/* Keyboard Entries */
+  2,				/* 2 game specific input ports */
+  mm_stateDef,		/* Definition of all states */
+  mm_inportData,	/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
-  mm_initSim, 			/* no init */
-  mm_handleBallState,	/*Function to handle ball state changes*/
-  mm_drawStatic,		/*Function to handle mechanical state changes*/
+  mm_initSim,		/* no init */
+  mm_handleBallState,/*Function to handle ball state changes*/
+  mm_drawStatic,	/*Function to handle mechanical state changes*/
   FALSE, 			/* Simulate manual shooter? */
   NULL  			/* Custom key conditions? */
 };
@@ -508,7 +510,10 @@ static core_tGameData mmGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,1,0,
     NULL, mm_handleMech, mm_getMech, mm_drawMech,
-    &mm_lampPos, mm_samsolmap
+    &mm_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , mm_samsolmap
+#endif
   },
   &mmSimData,
   {

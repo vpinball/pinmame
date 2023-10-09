@@ -802,7 +802,7 @@ static int vh_open(void)
 
 	/* reset performance data */
 	last_fps_time = osd_cycles();
-	rendered_frames_since_last_fps = frames_since_last_fps = 0;
+	vfcount = rendered_frames_since_last_fps = frames_since_last_fps = 0;
 	performance.game_speed_percent = 100;
 	performance.frames_per_second = Machine->drv->frames_per_second;
 	performance.vector_updates_last_second = 0;

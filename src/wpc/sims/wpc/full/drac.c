@@ -450,6 +450,7 @@ static core_tLampDisplay drac_lampPos = {
 }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap drac_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -474,6 +475,7 @@ F*CKING diverter... it flicks so the sample gets played a lot of times!
  {sRRampDown,3,SAM_FLAPCLOSE}, {sLDrop,3,SAM_SOLENOID_ON},
  {sCastleRelease,3,SAM_SOLENOID_ON}, {sCastleRelease,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -541,7 +543,10 @@ static core_tGameData dracGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,
     NULL, drac_handleMech, NULL, drac_drawMech,
-    &drac_lampPos, drac_samsolmap
+    &drac_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , drac_samsolmap
+#endif
   },
   &dracSimData,
   {

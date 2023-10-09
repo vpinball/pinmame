@@ -30,6 +30,8 @@ static struct {
   struct sndbrdData brdData;
   int cmd, planenable, disenable, setsync;
   int vid_page;
+
+  int last;
 } dmdlocals;
 
 /*declarations*/
@@ -150,15 +152,14 @@ static READ_HANDLER(port_r)
 
 static WRITE_HANDLER(port_w)
 {
-	static int last = 0;
 	switch(offset) {
 		case 0:
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		case 1:
 			dmdlocals.vid_page = data & 0x0f;
-			if(last != data) {
-				last = data;
+			if(dmdlocals.last != data) {
+				dmdlocals.last = data;
 				LOG(("port write @ %x, data=%x\n",offset,data));
 			}
 			break;

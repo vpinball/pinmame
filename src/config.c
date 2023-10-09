@@ -649,7 +649,7 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 	cfg->position = POSITION_AFTER_MIXER;
 	return CONFIG_ERROR_SUCCESS;
 }
-// DAR_DEBUG @20230506 Defining this for now without a filename just to avoid
+// DAR @20230506 Defining this for now without a filename just to avoid
 //                     linking errors for DEBUG builds.
 // DAR @20230510 Added check for LIBPINMAME since we only want this if we are
 //               building libpinmame standalone in DEBUG

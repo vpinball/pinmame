@@ -564,7 +564,10 @@ static core_tGameData tzGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U),
     1,0,9,0,0,0,0, // 1 switch column, 9 solenoids
     tz_getSol, tz_handleMech, tz_getMech, tz_drawMech,
-    &tz_lampPos, NULL
+    &tz_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &tzSimData,
   {
@@ -641,7 +644,7 @@ static void tz_handleMech(int mech) {
       case 2: locals.clockTick -= 1; if (locals.clockTick == -1) locals.clockTick = TZ_CLOCKTICKS*48-1; break;
     }
     { /* convert clockTick to optos */
-      static int hour2sw[12] = {0x09,0x01,0x00,0x04,0x0c,0x0d,0x05,0x07,0x06,0x02,0x03,0x0b};
+      static const int hour2sw[12] = {0x09,0x01,0x00,0x04,0x0c,0x0d,0x05,0x07,0x06,0x02,0x03,0x0b};
       int tickM = locals.clockTick % (TZ_CLOCKTICKS * 4);
       int hour = hour2sw[((locals.clockTick+2*TZ_CLOCKTICKS)/(4*TZ_CLOCKTICKS)+12) % 12];
 

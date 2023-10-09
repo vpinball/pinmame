@@ -43,7 +43,7 @@ static struct SN76477interface  gpSS1_sn76477Int = { 1, { 50 }, /* mixing level 
 
 static WRITE_HANDLER(gpss1_data_w)
 { // tone frequencies          C    E             A    A low
-  static double voltage[16] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
+  static const double voltage[16] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
   data &= 0x0f;
   if (voltage[data]) {
     SN76477_set_vco_voltage(0, voltage[data]);
@@ -85,9 +85,9 @@ static struct SN76477interface  gpSS2_sn76477Int = { 3, { 50, 50, 50 }, /* mixin
 };
 
 static WRITE_HANDLER(gpss2_data_w)
-{ // tone frequencies          D'   C'   B    A    H    G    F          E    D
-  static double voltage[16] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
-  static int howl_or_whoop = 0;
+{ // tone frequencies                D'   C'   B    A    H    G    F          E    D
+  static const double voltage[16] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
+  static UINT8 howl_or_whoop = 0;
   int sb = core_gameData->hw.soundBoard & 0x01; // 1 if SSU3
   data &= 0x0f;
   switch (data) {
@@ -227,21 +227,22 @@ static struct SN76477interface  gpSS4_sn76477Int = { 4, { 50, 50, 50, 50 }, /* m
 };
 
 
-static mame_timer *capTimer;
+static mame_timer *capTimer = NULL;
+static int cap_offset = 1;
+static int cap_pin18res = 320;
+
 static void capTimer_timer(int n) {
-  static int offset = 1;
-  static int pin18res = 320;
-  pin18res += offset;
-  if (pin18res > 419)
-    offset = -1;
-  else if (pin18res < 321)
-    offset = 1;
-  SN76477_set_vco_res(3, RES_K(pin18res)); /* 18 */
+  cap_pin18res += cap_offset;
+  if (cap_pin18res > 419)
+    cap_offset = -1;
+  else if (cap_pin18res < 321)
+    cap_offset = 1;
+  SN76477_set_vco_res(3, RES_K(cap_pin18res)); /* 18 */
 }
 
 static WRITE_HANDLER(gpss4_data_w)
 { // tone frequencies             C'   B    A
-  static double voltage[16] = {0, 5.4, 4.8, 4.5};
+  static const double voltage[16] = {0, 5.4, 4.8, 4.5};
   data &= 0x0f;
   if (data < 0x0f) SN76477_enable_w(1, 1);
   switch (data) {
@@ -329,6 +330,10 @@ static WRITE_HANDLER(gpss4_data_w)
 
 static void gpss4_init(struct sndbrdData *brdData)
 {
+  cap_offset = 1;
+  cap_pin18res = 320;
+
+  if (capTimer) timer_remove(capTimer);
   capTimer = timer_alloc(capTimer_timer);
   timer_adjust(capTimer, TIME_NEVER, 0, TIME_NEVER);
 
@@ -357,7 +362,7 @@ static void gpss4_init(struct sndbrdData *brdData)
 
 #define MSU1_INTCLOCK    894875  // clock speed in hz of msu_1 board ! 
 
-static  INT16  volumemsu1[] = {
+static const INT16 volumemsu1[] = {
 	00,  00,  35, 40, 45, 50, 55, 60, 65, 70,  75,  80,  85,  90,95,100,100       
 };
 //	30,  30,  40, 40, 50, 50, 60, 60, 70, 70,  80,  80,  90,  90,100,100,100       
@@ -381,6 +386,8 @@ static struct {
   UINT16 timlats1,timlats2,timlats3;  
   int    cr1,cr2,cr3, channel,timp1,timp2,timp3, tfre1,tfre2,tfre3 ;
   int    reset;
+
+  UINT8  last;
 } gps_locals;
 
 #define GPS_PIA0  0
@@ -509,12 +516,11 @@ static  INT16  sineWaveinp[] = {
 
 
 static void oneshoot (int param) {
-
    logerror("oneshoot time ca1 started \n");
    gps_locals.stateca1 = 1;
 }
 
-static void playsam1(int param){
+static void playsam1(int param) {
 // timer 1 (q1) is easy wave 
   if ((gps_locals.cr1 & 0x80)  && (gps_locals.timlat1 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), (int)(gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137), 1);
@@ -527,7 +533,7 @@ static void playsam1(int param){
   }
 }
 
-static void playsam2(int param){
+static void playsam2(int param) {
 // timer 2 (q2) is easy wave 
   if ((gps_locals.cr2 & 0x80)  && (gps_locals.timlat2 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+1))	{	// is already playing
@@ -539,7 +545,7 @@ static void playsam2(int param){
   }
 }
 
-static void playsam3(int param){
+static void playsam3(int param) {
 // timer 3 (q3) is easy wave 
   if ((gps_locals.cr3 & 0x80)  && (gps_locals.timlat3 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+2))	{	// is already playing
@@ -606,17 +612,17 @@ static void m6840_pulse (int param) {
 
 static void gpsm_init(struct sndbrdData *brdData)
 {
-	int mixing_levels[4] = {25,25,25,25};
+	const int mixing_levels[4] = {25,25,25,25};
 	int i;
 	int s = 0;
 	memset(&gps_locals, 0x00, sizeof(gps_locals));
 	gps_locals.brdData = *brdData;
 	for (i = 0;i < 32000;i++) {
-    		s =  (s ? 0 : 1);
-    		if (s) {
-    			sineWaveext[i] = rand();
-    		} else
-    			sineWaveext[i] = 0-rand();
+		s = (s ? 0 : 1);
+		if (s) {
+			sineWaveext[i] = rand();
+		} else
+			sineWaveext[i] = 0-rand();
 	}
 	pia_config(GPS_PIA0, PIA_STANDARD_ORDERING, &gps_pia[0]);
 	pia_config(GPS_PIA1, PIA_STANDARD_ORDERING, &gps_pia[1]);
@@ -838,8 +844,7 @@ static WRITE_HANDLER(m6840_w ) {
 
 
 static void pia_cb1_w(int data) {
-	static int last;
-	pia_set_input_cb1(GPS_PIA0, (last = !last));
+	pia_set_input_cb1(GPS_PIA0, (gps_locals.last = !gps_locals.last));
 }
 
 
@@ -931,17 +936,23 @@ static struct CustomSound_interface msu1_custInt = {msu1_sh_start, msu1_sh_stop}
 
 MACHINE_DRIVER_START(gpSSU1)
   MDRV_SOUND_ADD(SN76477, gpSS1_sn76477Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpSSU2)
   MDRV_SOUND_ADD(SN76477, gpSS2_sn76477Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpSSU4)
   MDRV_SOUND_ADD(SN76477, gpSS4_sn76477Int)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpMSU1)
@@ -949,7 +960,9 @@ MACHINE_DRIVER_START(gpMSU1)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps_readmem, gps_writemem)
   MDRV_SOUND_ADD(CUSTOM, msu1_custInt) // uses an MC6840, to be implemented yet!
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
   MDRV_TIMER_ADD(pia_cb1_w, 413.793 * 2)
 MACHINE_DRIVER_END
 
@@ -964,6 +977,8 @@ MACHINE_DRIVER_START(gpMSU3)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps3_readmem, gps3_writemem)
   MDRV_SOUND_ADD(DAC, msu3_dacInt)
+#ifdef ENABLE_MECHANICAL_SAMPLES
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#endif
   MDRV_TIMER_ADD(pia_cb1_w, 413.793 * 2)
 MACHINE_DRIVER_END

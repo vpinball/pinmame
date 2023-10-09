@@ -148,7 +148,7 @@ static int OpInizialized = 0;
 
 static void InitDasm8039(void)
 {
-	const char **ops;
+	const char * const *ops;
 	int i;
 
 	ops = Formats; i = 0;

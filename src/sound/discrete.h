@@ -1109,38 +1109,138 @@
 #define DISC_LOGADJ 1.0
 #define DISC_LINADJ 0.0
 
+/* calculate charge exponent using discrete sample time */
+#define RC_CHARGE_EXP(rc)                       (1.0-exp(-1.0/((rc)*Machine->sample_rate)))
+/* calculate charge exponent using given sample time */
+#define RC_CHARGE_EXP_DT(rc, dt)                (1.0 - exp(-(dt) / (rc)))
+#define RC_CHARGE_NEG_EXP_DT(rc, dt)            (1.0 - exp((dt) / (rc)))
+
+/* calculate discharge exponent using discrete sample time */
+#define RC_DISCHARGE_EXP(rc)                    (exp(-context->sample_time / (rc)))
+/* calculate discharge exponent using given sample time */
+#define RC_DISCHARGE_EXP_DT(rc, dt)             (exp(-(dt) / (rc)))
+#define RC_DISCHARGE_NEG_EXP_DT(rc, dt)         (exp((dt) / (rc)))
+
+#define FREQ_OF_555(_r1, _r2, _c)   (1.49 / (((_r1) + 2 * (_r2)) * (_c)))
+
 /* Function possibilities for the LFSR feedback nodes */
 /* 2 inputs, one output                               */
-#define DISC_LFSR_XOR		0
-#define DISC_LFSR_OR		1
-#define DISC_LFSR_AND		2
-#define DISC_LFSR_XNOR		3
-#define DISC_LFSR_NOR		4
-#define DISC_LFSR_NAND		5
-#define DISC_LFSR_IN0		6
-#define DISC_LFSR_IN1		7
-#define DISC_LFSR_NOT_IN0	8
-#define DISC_LFSR_NOT_IN1	9
-#define DISC_LFSR_REPLACE	10
+#define DISC_LFSR_XOR                       0
+#define DISC_LFSR_OR                        1
+#define DISC_LFSR_AND                       2
+#define DISC_LFSR_XNOR                      3
+#define DISC_LFSR_NOR                       4
+#define DISC_LFSR_NAND                      5
+#define DISC_LFSR_IN0                       6
+#define DISC_LFSR_IN1                       7
+#define DISC_LFSR_NOT_IN0                   8
+#define DISC_LFSR_NOT_IN1                   9
+#define DISC_LFSR_REPLACE                   10
+#define DISC_LFSR_XOR_INV_IN0               11
+#define DISC_LFSR_XOR_INV_IN1               12
 
 /* LFSR Flag Bits */
-#define DISC_LFSR_FLAG_OUT_INVERT	0x01
-#define DISC_LFSR_FLAG_RESET_TYPE_L	0x00
-#define DISC_LFSR_FLAG_RESET_TYPE_H	0x02
+#define DISC_LFSR_FLAG_OUT_INVERT           0x01
+#define DISC_LFSR_FLAG_RESET_TYPE_L         0x00
+#define DISC_LFSR_FLAG_RESET_TYPE_H         0x02
+#define DISC_LFSR_FLAG_OUTPUT_F0            0x04
+#define DISC_LFSR_FLAG_OUTPUT_SR_SN1        0x08
 
 /* Sample & Hold supported clock types */
-#define DISC_SAMPHOLD_REDGE	0
-#define DISC_SAMPHOLD_FEDGE	1
-#define DISC_SAMPHOLD_HLATCH	2
-#define DISC_SAMPHOLD_LLATCH	3
+#define DISC_SAMPHOLD_REDGE                 0
+#define DISC_SAMPHOLD_FEDGE                 1
+#define DISC_SAMPHOLD_HLATCH                2
+#define DISC_SAMPHOLD_LLATCH                3
+
+/* Shift options */
+#define DISC_LOGIC_SHIFT__RESET_L           0x00
+#define DISC_LOGIC_SHIFT__RESET_H           0x10
+#define DISC_LOGIC_SHIFT__LEFT              0x00
+#define DISC_LOGIC_SHIFT__RIGHT             0x20
 
 /* Maximum number of resistors in ladder chain */
-#define DISC_LADDER_MAXRES	8
+#define DISC_LADDER_MAXRES                  8
 
 /* Filter types */
-#define DISC_FILTER_LOWPASS	0
-#define DISC_FILTER_HIGHPASS	1
-#define DISC_FILTER_BANDPASS	2
+#define DISC_FILTER_LOWPASS                 0
+#define DISC_FILTER_HIGHPASS                1
+#define DISC_FILTER_BANDPASS                2
+
+/* Mixer types */
+#define DISC_MIXER_IS_RESISTOR              0
+#define DISC_MIXER_IS_OP_AMP                1
+#define DISC_MIXER_IS_OP_AMP_WITH_RI        2   /* Used only internally.  Use DISC_MIXER_IS_OP_AMP */
+
+/* Triggered Op Amp Functions */
+enum
+{
+	DISC_OP_AMP_TRIGGER_FUNCTION_NONE,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG0,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG0_INV,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG1,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG1_INV,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG2,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG2_INV,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG01_AND,
+	DISC_OP_AMP_TRIGGER_FUNCTION_TRG01_NAND
+};
+
+
+/* Common Op Amp Flags and values */
+#define DISC_OP_AMP_IS_NORTON               0x100
+#define OP_AMP_NORTON_VBE                   0.5     // This is the norton junction voltage. Used only internally.
+#define OP_AMP_VP_RAIL_OFFSET               1.5     // This is how close an op-amp can get to the vP rail. Used only internally.
+
+/* Integrate options */
+#define DISC_INTEGRATE_OP_AMP_1             0x00
+#define DISC_INTEGRATE_OP_AMP_2             0x10
+
+/* op amp 1 shot types */
+#define DISC_OP_AMP_1SHT_1                  0x00
+
+/* Op Amp Filter Options */
+#define DISC_OP_AMP_FILTER_IS_LOW_PASS_1    0x00
+#define DISC_OP_AMP_FILTER_IS_HIGH_PASS_1   0x10
+#define DISC_OP_AMP_FILTER_IS_BAND_PASS_1   0x20
+#define DISC_OP_AMP_FILTER_IS_BAND_PASS_1M  0x30
+#define DISC_OP_AMP_FILTER_IS_HIGH_PASS_0   0x40
+#define DISC_OP_AMP_FILTER_IS_BAND_PASS_0   0x50
+#define DISC_OP_AMP_FILTER_IS_LOW_PASS_1_A  0x60
+
+#define DISC_OP_AMP_FILTER_TYPE_MASK        (0xf0 | DISC_OP_AMP_IS_NORTON)  // Used only internally.
+
+/* Sallen-Key filter Options */
+#define DISC_SALLEN_KEY_LOW_PASS            0x01
+#define DISC_SALLEN_KEY_HIGH_PASS           0x02
+
+
+/* Op Amp Oscillator Flags */
+#define DISC_OP_AMP_OSCILLATOR_TYPE_MASK    (0xf0 | DISC_OP_AMP_IS_NORTON)  // Used only internally.
+#define DISC_OP_AMP_OSCILLATOR_1            0x00
+#define DISC_OP_AMP_OSCILLATOR_2            0x10
+#define DISC_OP_AMP_OSCILLATOR_VCO_1        0x20
+#define DISC_OP_AMP_OSCILLATOR_VCO_2        0x30
+#define DISC_OP_AMP_OSCILLATOR_VCO_3        0x40
+
+#define DISC_OP_AMP_OSCILLATOR_OUT_MASK         0x07
+#define DISC_OP_AMP_OSCILLATOR_OUT_CAP          0x00
+#define DISC_OP_AMP_OSCILLATOR_OUT_SQW          0x01
+#define DISC_OP_AMP_OSCILLATOR_OUT_ENERGY       0x02
+#define DISC_OP_AMP_OSCILLATOR_OUT_LOGIC_X      0x03
+#define DISC_OP_AMP_OSCILLATOR_OUT_COUNT_F_X    0x04
+#define DISC_OP_AMP_OSCILLATOR_OUT_COUNT_R_X    0x05
+
+/* Schmitt Oscillator Options */
+#define DISC_SCHMITT_OSC_IN_IS_LOGIC        0x00
+#define DISC_SCHMITT_OSC_IN_IS_VOLTAGE      0x01
+
+#define DISC_SCHMITT_OSC_ENAB_IS_AND        0x00
+#define DISC_SCHMITT_OSC_ENAB_IS_NAND       0x02
+#define DISC_SCHMITT_OSC_ENAB_IS_OR         0x04
+#define DISC_SCHMITT_OSC_ENAB_IS_NOR        0x06
+
+#define DISC_SCHMITT_OSC_ENAB_MASK          0x06    /* Bits that define output enable type.
+                                                     * Used only internally in module. */
 
 /* 555_AST output flags */
 #define DISC_555_ASTBL_DC	0x00
@@ -1222,6 +1322,35 @@ struct discrete_ladder
 	double smoothing_cap;
 };
 
+#define DISC_MAX_MIXER_INPUTS   8
+struct discrete_mixer_desc
+{
+	int     type;
+	double  r[DISC_MAX_MIXER_INPUTS];       /* static input resistance values.  These are in series with rNode, if used. */
+	int     r_node[DISC_MAX_MIXER_INPUTS];  /* variable resistance nodes, if needed.  0 if not used. */
+	double  c[DISC_MAX_MIXER_INPUTS];
+	double  rI;
+	double  rF;
+	double  cF;
+	double  cAmp;
+	double  vRef;
+	double  gain;               /* Scale value to get output close to +/- 32767 */
+};
+
+struct discrete_op_amp_filt_info
+{
+	double  r1;
+	double  r2;
+	double  r3;
+	double  r4;
+	double  rF;
+	double  c1;
+	double  c2;
+	double  c3;
+	double  vRef;
+	double  vP;
+	double  vN;
+};
 
 struct discrete_adsr
 {
@@ -1289,6 +1418,8 @@ enum {
 	/* Sources */
 		DSS_NULL,                                /* Nothing, nill, zippo, only to be used as terminating node */
 		DSS_CONSTANT,                            /* Constant node */
+		DSS_INPUT_DATA,		/* Input node */
+		DSS_INPUT_LOGIC,	/* Input node */
 		DSS_ADJUSTMENT,                          /* Adjustment node */
 		DSS_INPUT,                               /* Memory mapped input node */
 		DSS_INPUT_PULSE,                         /* Memory mapped input node, single pulsed version */
@@ -1302,10 +1433,13 @@ enum {
 		DSS_SAWTOOTHWAVE,                        /* Sawtooth wave generator */
 		DSS_ADSR,                                /* ADSR Envelope generator */
 
+		DST_MIXER,			/* Final Mixing Stage */
+
 	/* Transforms */
 		DST_RCFILTER,				 /* Simple RC Filter network */
 		DST_RCDISC,                              /* Simple RC discharge */
 		DST_RCDISC2,                             /* Switched 2 Input RC discharge */
+		DST_RCDISC5,        /* Diode in series with R//C */
 
 		DST_RCFILTERN,				 /* Simple RC Filter network */
 		DST_RCDISCN,                             /* Simple RC discharge */
@@ -1315,6 +1449,8 @@ enum {
 		DST_CLAMP,                               /* Signal Clamp */
 		DST_FILTER1,                             /* 1st Order Filter, Low or High Pass */
 		DST_FILTER2,                             /* 2nd Order Filter, Low, High, or Band Pass */
+		DST_CRFILTER,		/* RC Bypass Filter (High Pass) */
+		DST_OP_AMP_FILT,	/* Op Amp filters */
 		DST_TRANSFORM,                           /* Muliply math functions based on string */
 		DST_GAIN,                                /* Gain Block, D = (A*B) + C*/
 		DST_DIVIDE,                              /* Gain Block, C = A/B */
@@ -1357,6 +1493,8 @@ enum {
 #define DISCRETE_INPUT(NODE,ADDR,MASK,INIT0)                            { NODE, DSS_INPUT       , 6, { NODE_NC,NODE_NC,NODE_NC,NODE_NC,NODE_NC,NODE_NC }, { INIT0,ADDR,MASK,1   ,0     ,INIT0 }, NULL, "Input" },
 #define DISCRETE_INPUTX(NODE,ADDR,MASK,GAIN,OFFSET,INIT0)               { NODE, DSS_INPUT       , 6, { NODE_NC,NODE_NC,NODE_NC,NODE_NC,NODE_NC,NODE_NC }, { INIT0,ADDR,MASK,GAIN,OFFSET,INIT0 }, NULL, "InputX" },
 #define DISCRETE_INPUT_PULSE(NODE,ADDR,MASK,INIT0)                      { NODE, DSS_INPUT_PULSE , 6, { NODE_NC,NODE_NC,NODE_NC,NODE_NC,NODE_NC,NODE_NC }, { INIT0,ADDR,MASK,1   ,0     ,INIT0 }, NULL, "Input Pulse" },
+#define DISCRETE_INPUT_DATA(NODE)                                       { NODE, DSS_INPUT_DATA  , 3, { NODE_NC,NODE_NC,NODE_NC }, { 1,0,0 }, NULL, "Input Data" },
+#define DISCRETE_INPUT_LOGIC(NODE)                                      { NODE, DSS_INPUT_LOGIC , 3, { NODE_NC,NODE_NC,NODE_NC }, { 1,0,0 }, NULL, "Input Logic" },
 
 #define DISCRETE_SQUAREWAVE(NODE,ENAB,FREQ,AMPL,DUTY,BIAS,PHASE)        { NODE, DSS_SQUAREWAVE  , 6, { ENAB,FREQ,AMPL,DUTY,BIAS,NODE_NC }, { ENAB,FREQ,AMPL,DUTY,BIAS,PHASE }, NULL, "Square Wave" },
 #define DISCRETE_SQUAREWFIX(NODE,ENAB,FREQ,AMPL,DUTY,BIAS,PHASE)        { NODE, DSS_SQUAREWFIX  , 6, { ENAB,FREQ,AMPL,DUTY,BIAS,NODE_NC }, { ENAB,FREQ,AMPL,DUTY,BIAS,PHASE }, NULL, "Square Wave Fixed" },
@@ -1371,11 +1509,15 @@ enum {
 #define DISCRETE_RCFILTER(NODE,ENAB,INP0,RVAL,CVAL)                     { NODE, DST_RCFILTER    , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,INP0,RVAL,CVAL }, NULL, "RC Filter" },
 #define DISCRETE_RCDISC(NODE,ENAB,INP0,RVAL,CVAL)                       { NODE, DST_RCDISC      , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,INP0,RVAL,CVAL }, NULL, "RC Discharge" },
 #define DISCRETE_RCDISC2(NODE,SWITCH,INP0,RVAL0,INP1,RVAL1,CVAL)        { NODE, DST_RCDISC2     , 6, { SWITCH,INP0,NODE_NC,INP1,NODE_NC,NODE_NC }, { SWITCH,INP0,RVAL0,INP1,RVAL1,CVAL }, NULL, "RC Discharge 2" },
+#define DISCRETE_RCDISC5(NODE,ENAB,INP0,RVAL,CVAL)                      { NODE, DST_RCDISC5     , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,INP0,RVAL,CVAL }, NULL, "RC Discharge 5" },
 #define DISCRETE_RCFILTERN(NODE,ENAB,INP0,RVAL,CVAL)                    { NODE, DST_RCFILTERN   , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,INP0,RVAL,CVAL }, NULL, "RC Filter (New Type)" },
+#define DISCRETE_RCFILTER_VREF(NODE,ENAB,INP0,RVAL,CVAL,VREF)           { NODE, DST_RCFILTER    , 5, { ENAB,INP0,NODE_NC,NODE_NC,NODE_NC }, { ENAB,INP0,RVAL,CVAL,VREF }, NULL, "RC Filter to VREF" },
 #define DISCRETE_RCDISCN(NODE,ENAB,INP0,RVAL,CVAL)                      { NODE, DST_RCDISCN     , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,INP0,RVAL,CVAL }, NULL, "RC Discharge (New Type)" },
 #define DISCRETE_RCDISC2N(NODE,SWITCH,INP0,RVAL0,INP1,RVAL1,CVAL)       { NODE, DST_RCDISC2N    , 6, { SWITCH,INP0,NODE_NC,INP1,NODE_NC,NODE_NC }, { SWITCH,INP0,RVAL0,INP1,RVAL1,CVAL }, NULL, "RC Discharge 2 (New Type)" },
 #define DISCRETE_FILTER1(NODE,ENAB,INP0,FREQ,TYPE)                      { NODE, DST_FILTER1     , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,INP0,FREQ,TYPE }, NULL, "1st Order Filter" },
 #define DISCRETE_FILTER2(NODE,ENAB,INP0,FREQ,DAMP,TYPE)                 { NODE, DST_FILTER2     , 5, { ENAB,INP0,NODE_NC,NODE_NC,NODE_NC }, { ENAB,INP0,FREQ,DAMP,TYPE }, NULL, "2nd Order Filter" },
+#define DISCRETE_CRFILTER(NODE,INP0,RVAL,CVAL)                          { NODE, DST_CRFILTER    , 3, { INP0,RVAL,CVAL }, { INP0,RVAL,CVAL }, NULL, "DISCRETE_CRFILTER" },
+#define DISCRETE_OP_AMP_FILTER(NODE,ENAB,INP0,INP1,TYPE,INFO)           { NODE, DST_OP_AMP_FILT , 4, { ENAB,INP0,INP1,NODE_NC }, { ENAB,INP0,INP1,TYPE }, INFO, "DISCRETE_OP_AMP_FILTER" },
 
 #define DISCRETE_RAMP(NODE,ENAB,RAMP,GRAD,START,END,CLAMP)              { NODE, DST_RAMP        , 6, { ENAB,RAMP,GRAD,START,END,CLAMP }, { ENAB,RAMP,GRAD,START,END,CLAMP }, NULL, "Ramp Up/Down" },
 #define DISCRETE_ONOFF(NODE,ENAB,INP0)                                  { NODE, DST_GAIN        , 4, { ENAB,INP0,NODE_NC,NODE_NC }, { ENAB,0,1,0 }, NULL, "OnOff Switch" },
@@ -1387,6 +1529,7 @@ enum {
 #define DISCRETE_TRANSFORM3(NODE,ENAB,INP0,INP1,INP2,FUNCT)             { NODE, DST_TRANSFORM   , 4, { ENAB,INP0,INP1,INP2 }, { ENAB,INP0,INP1,INP2 }, FUNCT, "Transform 3 Nodes" },
 #define DISCRETE_TRANSFORM4(NODE,ENAB,INP0,INP1,INP2,INP3,FUNCT)        { NODE, DST_TRANSFORM   , 5, { ENAB,INP0,INP1,INP2,INP3 }, { ENAB,INP0,INP1,INP2,INP3 }, FUNCT, "Transform 4 Nodes" },
 #define DISCRETE_TRANSFORM5(NODE,ENAB,INP0,INP1,INP2,INP3,INP4,FUNCT)   { NODE, DST_TRANSFORM   , 6, { ENAB,INP0,INP1,INP2,INP3,INP4 }, { ENAB,INP0,INP1,INP2,INP3,INP4 }, FUNCT, "Transform 5 Nodes" },
+#define DISCRETE_MIXER2(NODE,ENAB,IN0,IN1,INFO)                         { NODE, DST_MIXER       , 3, { ENAB,IN0,IN1 }, { ENAB,IN0,IN1 }, INFO, "Final Mixer 2 Stage" },
 #define DISCRETE_DIVIDE(NODE,ENAB,INP0,INP1)                            { NODE, DST_DIVIDE      , 3, { ENAB,INP0,INP1 }, { ENAB,INP0,INP1 }, NULL, "Divider" },
 #define DISCRETE_CLAMP(NODE,ENAB,INP0,MIN,MAX,CLAMP)                    { NODE, DST_CLAMP       , 5, { ENAB,INP0,MIN,MAX,CLAMP }, { ENAB,INP0,MIN,MAX,CLAMP }, NULL, "Signal Clamp" },
 #define DISCRETE_SWITCH(NODE,ENAB,SWITCH,INP0,INP1)                     { NODE, DST_SWITCH      , 4, { ENAB,SWITCH,INP0,INP1 }, { ENAB,SWITCH,INP0,INP1 }, NULL, "2 Pole Switch" },
@@ -1428,6 +1571,8 @@ enum {
 /*        Software interface to the external world i.e Into Mame        */
 /*                                                                      */
 /************************************************************************/
+
+struct node_description* find_node(int node);
 
 int  discrete_sh_start (const struct MachineSound *msound);
 void discrete_sh_stop (void);

@@ -798,7 +798,23 @@ GTS80SS22_ROMSTART("681-s1.snd", CRC(33455bbd) SHA1(04db645060d93d7d9faff56ead9f
                    "681-s2.snd", CRC(639c93f9) SHA1(1623fea6681a009e7a755357fa85206cf2ce6897))
 GTS80_ROMEND
 #define input_ports_rflshdlx input_ports_gts80
-CORE_CLONEDEFNV(rflshdlx,gts80a,"Royal Flush Deluxe",1983,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(rflshdlx,gts80a,"Royal Flush Deluxe (rev. 2)",1983,"Gottlieb",gl_mGTS80SS,0)
+
+/* Flipprojets:
+How do these two versions differ?
+It's very simple: on the 681/2, Gottlieb simply added two controls to activate sounds that had been forgotten in the 681/1.
+The two versions are therefore strictly identical as far as the rules are concerned, there is no difference, except at the level of the sounds.
+I haven't researched further to find out in which case these sounds were played (or not), but it concerns sounds 5 and 6.
+On the 681/1 there must be cases where these sounds are missing and this has been fixed on the 681/2.
+The 681/1 version is therefore fully functional and its replacement by the 681/2 is not absolutely essential for playing.
+However, if you have this version, be aware that you are missing some sounds!*/
+INIT_S80A(rflshdlx1, dispNumeric3, SNDBRD_GTS80SS,0)
+GTS80_1_ROMSTART  ("681-1.BIN",  CRC(2d6b3729) SHA1(0190cbaae6ef689af387e7b8c997a82f60f33b97))
+GTS80SS22_ROMSTART("681-s1.snd", CRC(33455bbd) SHA1(04db645060d93d7d9faff56ead9fa29a9c4723ec),
+                   "681-s2.snd", CRC(639c93f9) SHA1(1623fea6681a009e7a755357fa85206cf2ce6897))
+GTS80_ROMEND
+#define input_ports_rflshdlx1 input_ports_gts80
+CORE_CLONEDEFNV(rflshdlx1,gts80a,"Royal Flush Deluxe (rev. 1)",1983,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Goin' Nuts (#682)
@@ -2029,6 +2045,8 @@ GTS80BSSOUND3232(            "drom1.snd",    CRC(ea59b6a1) SHA1(6a4cdd37ba85f94f
 GTS80_ROMEND
 #define input_ports_robowffp input_ports_robowars
 CORE_CLONEDEFNV(robowffp,robowars, "Robo-War (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
+
+// A german Robo-War version also exists according to Flipprojets
 
 /*-------------------------------------------------------------------
 / Excalibur (#715)

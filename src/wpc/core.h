@@ -452,7 +452,7 @@ typedef struct {
   int    p_rocEn;         /* P-ROC support enable */
   int    isKickbackLamp[255];
 #endif
-  volatile char   segDim[CORE_SEGCOUNT]; /* segments dimming */
+  volatile UINT8 segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */
@@ -476,7 +476,9 @@ typedef struct {
     int  (*getMech)(int mechNo);      /* get status of mechanics */
     void (*drawMech)(BMTYPE **line); /* draw game specific hardware */
     core_tLampDisplay *lampData;      /* lamp layout */
+#ifdef ENABLE_MECHANICAL_SAMPLES
     wpc_tSamSolMap   *solsammap;      /* solenoids samples */
+#endif
   } hw;
   const void *simData;
   struct { /* WPC specific stuff */

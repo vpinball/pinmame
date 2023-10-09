@@ -167,6 +167,9 @@ static int vblank;
 static int current_frame;
 static INT32 watchdog_counter;
 
+static int timetrig_spin = 0;
+static int timetrig_yield = 0;
+
 static int cycles_running;
 static int cycles_stolen;
 
@@ -349,13 +352,15 @@ static void cpu_pre_run(void)
 	/* now reset each CPU */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 #ifdef PINMAME
-        	if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_AUDIO_CPU) || Machine->sample_rate != 0)
+		if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_AUDIO_CPU) || Machine->sample_rate != 0)
 #endif /* PINMAME */
 		cpunum_reset(cpunum, Machine->drv->cpu[cpunum].reset_param, cpu_irq_callbacks[cpunum]);
 
 	/* reset the globals */
 	cpu_vblankreset();
 	current_frame = 0;
+	timetrig_spin = 0;
+	timetrig_yield = 0;
 	state_save_dump_registry();
 }
 
@@ -1466,21 +1471,17 @@ void cpu_yield(void)
 
 void cpu_spinuntil_time(double duration)
 {
-	static int timetrig = 0;
-
-	cpu_spinuntil_trigger(TRIGGER_SUSPENDTIME + timetrig);
-	cpu_triggertime(duration, TRIGGER_SUSPENDTIME + timetrig);
-	timetrig = (timetrig + 1) & 255;
+	cpu_spinuntil_trigger(TRIGGER_SUSPENDTIME + timetrig_spin);
+	cpu_triggertime(duration, TRIGGER_SUSPENDTIME + timetrig_spin);
+	timetrig_spin = (timetrig_spin + 1) & 255;
 }
 
 
 void cpu_yielduntil_time(double duration)
 {
-	static int timetrig = 0;
-
-	cpu_yielduntil_trigger(TRIGGER_YIELDTIME + timetrig);
-	cpu_triggertime(duration, TRIGGER_YIELDTIME + timetrig);
-	timetrig = (timetrig + 1) & 255;
+	cpu_yielduntil_trigger(TRIGGER_YIELDTIME + timetrig_yield);
+	cpu_triggertime(duration, TRIGGER_YIELDTIME + timetrig_yield);
+	timetrig_yield = (timetrig_yield + 1) & 255;
 }
 
 

@@ -447,7 +447,10 @@ static core_tGameData ssGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,2,0,0,0,1,0, // 2 extra lamp columns for the LEDs of rev. 0.1
     NULL, ss_handleMech, ss_getMech, ss_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &ssSimData,
   {
@@ -516,4 +519,3 @@ static void ss_drawMech(BMTYPE **line) {
         core_textOutf(30,40,BLACK,"Coin Door   : %-6s", core_getSw(swCoinDoor) ? "Closed":"Open");
         core_textOutf(30,50,BLACK,"Spider Wheel: %s",   spiderWheelText[(mech_getPos(0)+6)*2/25]);
 }
-

@@ -1378,8 +1378,10 @@ void core_updateSw(int flipEn) {
               locals.solLog[(locals.solLogCount+0) & 3]);
             locals.solLogCount = (locals.solLogCount + 1) & 3;
           }
+#ifdef ENABLE_MECHANICAL_SAMPLES
           if (coreGlobals.soundEn)
             proc_mechsounds(ii, allSol & 0x01);
+#endif
         }
         chgSol >>= 1;
         allSol >>= 1;
@@ -1853,7 +1855,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 /-----------------------*/
 static MACHINE_INIT(core) {
 #ifdef PROC_SUPPORT
-	char * yaml_filename = pmoptions.p_roc;
+  char * yaml_filename = pmoptions.p_roc;
 #endif
 
   if (!coreData) { // first time
@@ -2004,7 +2006,7 @@ static MACHINE_STOP(core) {
 static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *maxY) {
   if (layout) {
     for (; layout->length; layout += 1) {
-      int tmpX = 0, tmpY = 0, type = layout->type & CORE_SEGMASK;
+      int tmpX, tmpY, type = layout->type & CORE_SEGMASK;
 #if defined(VPINMAME) && !defined(MAME_DEBUG)
       if (layout->type & CORE_NODISP) continue;
 #endif
@@ -2279,10 +2281,10 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
    default:
    {
       // Default is the modulated solenoid values as computed by each hardware drivers if implemented or the non modulated value
-      int index = ((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput);
+      int index = (int)(((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput));
       if (index < CORE_MODOUT_SOL_MAX)
       {
-         // For the time being, only GTS3, WPC and SAM have modulated solenoids direclty implemented in the driver
+         // For the time being, only GTS3, WPC and SAM have modulated solenoids directly implemented in the driver
          if ((core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_SAM)) && options.usemodsol)
             output->value = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][index];
          else

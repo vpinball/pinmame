@@ -345,13 +345,13 @@ CORE_CLONEDEF(cv,13, 14, "Cirqus Voltaire (1.3)", 1997,"Bally",wpc_m95S,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData cvSimData = {
-  2,    				/* 2 game specific input ports */
-  cv_stateDef,				/* Definition of all states */
-  cv_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  cv_stateDef,			/* Definition of all states */
+  cv_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  cv_handleBallState,			/*Function to handle ball state changes*/
-  cv_drawStatic,			/*Function to handle mechanical state changes*/
+  cv_handleBallState,	/*Function to handle ball state changes*/
+  cv_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -365,7 +365,10 @@ static core_tGameData cvGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,2,0,0,1,0,
     cv_getSol, cv_handleMech, cv_getMech, cv_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &cvSimData,
   {

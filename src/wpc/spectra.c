@@ -71,7 +71,6 @@ static MACHINE_INIT(SPECTRA) {
 }
 
 static MACHINE_RESET(SPECTRA) {
-  memset(&locals, 0x00, sizeof(locals));
   riot6532_reset();
 }
 

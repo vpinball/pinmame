@@ -553,13 +553,13 @@ CORE_CLONEDEF(gw,d3,l5,"Getaway: High Speed II, The (D-3 LED Ghost Fix)",1992,"W
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData gwSimData = {
-  2,    			/* # game specific input ports */
-  gw_stateDef,			/* Definition of all states */
-  gw_inportData,		/* Keyboard Entries */
+  2,				/* # game specific input ports */
+  gw_stateDef,		/* Definition of all states */
+  gw_inportData,	/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 			/* no init */
-  gw_handleBallState,		/*Function to handle ball state changes*/
-  gw_drawStatic,		/*Function to handle mechanical state changes*/
+  gw_handleBallState,/*Function to handle ball state changes*/
+  gw_drawStatic,	/*Function to handle mechanical state changes*/
   FALSE, 			/* Do Not Simulate manual shooter */
   NULL  			/* no custom key conditions */
 };
@@ -573,7 +573,10 @@ static core_tGameData gwGameData = {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),	/* Which switches are the flippers */
     0,0,0,0,0,0,0,
     NULL, gw_handleMech, NULL, gw_drawMech,
-    &gw_lampPos, NULL
+    &gw_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &gwSimData,
   {

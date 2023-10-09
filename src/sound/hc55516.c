@@ -1,13 +1,13 @@
 // license:BSD-3-Clause
 //
-// HC55516/HC55536/HC55564 - a CVSD voice decoder chip
+// HC55516/HC55532/HC55536/HC55564 - a CVSD voice decoder chip
 //
 
 // ---------------------------------------------------------------------------
 //
 // Overview
 //
-// The HC55516 is a CVSD (continuously variable slope delta) modulation 
+// The HC555XX is a CVSD (continuously variable slope delta) modulation 
 // encoder/decoder chip.  CVSD modulation was popular in the 1980s for digital
 // voice encoding, because it provides decent fidelity for voice audio at low
 // bit rates.  CVSD happens to work particularly well with the spectrum
@@ -56,15 +56,18 @@
 // behavior is at the limits of the accumulator register ranges, which
 // the old MAME implementation wasn't able to replicate, as it's not
 // something we could have inferred from the reference filter spec in
-// the data sheet.  The lack of proper clipping in the old PinMame
+// the data sheet.  The lack of proper clipping in the old PinMAME
 // implementation motivated the addition of a loudness compression
 // adjustment to handle the excessive dynamic range that resulted.  That
 // might actually have been detrimentally audible.
 //
-// The HC55516 was part of a family of nearly identical chips that also 
-// included the HC55536 and HC55564.  Apparently the only difference among
-// these variations was the maximum sample clock rate supported, so they're 
-// essentially interchangeable.  There's an unrelated family of CVSD decoders
+// The HC55516 was part of a family of nearly identical chips that also
+// included the HC55532, HC55536 and HC55564.  Apparently the only difference among
+// these variations was the maximum sample clock rate supported (and some
+// bugs, on the earlier revisions) and internal parameters, so they're
+// essentially interchangeable (except for some very early machines, due to
+// potential software timing bugs that the HC55516 could still cope with though).
+// There's an unrelated family of CVSD decoders
 // used in some older pinball machines, the MC3417 and MC3418, which have
 // similar properties (in that they're also based on CVSD modulation) but
 // aren't compatible with the HC555xx chips and had a somewhat different
@@ -75,6 +78,8 @@
 // versions of PinMAME used the same code for both, but we've separated
 // them into their own modules now so that we can use the optimal numerical
 // parameters and logic for each chip type.
+// Note that apparently Williams/Bally themselves used a daughter board on
+// late WPC releases (with the MC341X) if they couldn't get hold of enough HC555XX chips.
 //
 // The chief difficulty in implementing a good HC555xx decoder for PinMAME
 // comes from the way the sample rate is handled in the original pinball
@@ -124,6 +129,39 @@
 // take each sample from our HC55516 output, feed it to a libsamplerate
 // converter, and pass the resulting resampled signal to MAME.
 
+
+/* Lord Nightmares additional comments on this chip emu:
+The decap my research is based off of is an HC55516 (from https://seanriddle.com/55516die.html) however
+this HC55516 die has the spaces on the die for two different sets of silicon vias (only one is populated
+but changing this requires changing only one mask layer) and if you populate the 'missing' vias and remove
+the others, the behavior changes to match the HC55532 datasheet (mostly).
+
+I'm ASSUMING this is the correct behavior for HC55532, as we don't have a decap of an HC55532
+(they're very rare, only made for 2 or 3 years).
+
+We also do not (yet) have a decap of an HC55564 (and HC55536 which should be a simplified, cheaper,
+decode-only HC55564), although the datasheet and apocryphal evidence leads me to believe that it behaves
+like an HC55516, but possibly with 2 bugs fixed:
+
+1) The HC55516 datasheet (at least the early ones, and some later ones) claims the /FZ input resets both
+   the syllabic and integrator filter. The silicon tracing proves it doesn't, it just forces a constant
+   alternating input, which takes a lot longer to zero the signal than the datasheet implies. I'm GUESSING
+   the HC55564 fixed this so it actually zeroes the two digital filters.
+
+   (additional comment from MJR: Those are interesting details about the /FZ behavior in his remarks -
+    It doesn't look like it'll affect VPM, since VPM's version of the chip emulator doesn't even implement
+    the /FZ line. It must have never been needed, presumably because it's not wired to a controlled input
+    on any of the pinball sound boards. I spot-checked a couple of System 11 schematics just now,
+    and /FZ is indeed just pulled high on the ones I checked)
+
+2) The HC55516 and HC55532 have a bug with the way the signed integrator filter decays toward zero by 1/16
+   (or 1/32 for HC55532) of its current value each clock cycle, where, if the current value is positive,
+   the filter will get stuck with a value of 0xF or 0x1F (for 55516 and 55532 respectively) in the integrator
+   and never decay to truly zero. I believe this bug was fixed in the HC55564 and HC55536, which presumably
+   allowed for eliminating a weird DC offset hack circuit which takes up a significant portion of the die.
+*/
+
+
 #include "driver.h"
 #include "filter.h"
 #include "streams.h"
@@ -148,7 +186,7 @@
 //
 // There are now two implementations of the HC555xx family:
 //
-// * The original PinMame implementation, which uses the standard discrete-
+// * The original PinMAME implementation, which uses the standard discrete-
 //   time filter algorithms to create a model of the ideal syllabic filter
 //   per the published specifications in the HC55516 data sheet
 //
@@ -157,13 +195,13 @@
 //   analysis of a specimen of the physical chip.
 //
 // The two implementations perform essentially identical math, since they're
-// both implementing the same discrete-time filter system.  The old PinMame
+// both implementing the same discrete-time filter system.  The old PinMAME
 // version implements the math using native 'double' types, whereas the chip
 // logic uses 10- and 12-bit 2's complement integer registers (which aren't
 // actually integer values mathematically throughout the calculation: the
 // chip is also doing fractional arithmetic, but doing so using explicit
 // bit shifts rather than implicitly using C operators with floating-point
-// types).  The old PinMame version executes the intermediate calculations
+// types).  The old PinMAME version executes the intermediate calculations
 // at higher precision than the chip, due to the wider registers it uses,
 // but at the cost of some discrepancy from the exact bit values produced
 // by the chip, due to the greater rounding error with the chip's narrow
@@ -175,7 +213,7 @@
 // initialization, since it's fixed into the chip state structures once
 // those are created.
 //
-// The two versions sound identical subjectively.  The old PinMame version
+// The two versions sound identical subjectively.  The old PinMAME version
 // is a more accurate model of the abstract mathematical filter that the
 // chip purports to implement, but the hardware logic version is a more
 // accurate re-creation of the chip, and should exactly match its output
@@ -183,10 +221,10 @@
 // replicate anything beyond that, since the rest of the hardware system
 // is in the analog domain.)
 //
-//   0 -> use the original PinMame implementation
+//   0 -> use the original PinMAME implementation
 //   1 -> use the chip logic simulation
 //
-int hc55516_use_chip_logic = 1;
+static const int hc55516_use_chip_logic = 1;
 
 
 // ---------------------------------------------------------------------------
@@ -291,7 +329,7 @@ static FILE *dynrange_log_fp;
 // constants and 16kHz into the proportionality formula above, yielding 
 // the following fixed charging factors:
 //
-// Note: these apply to the old PinMame implementation of the filter,
+// Note: these apply to the old PinMAME implementation of the filter,
 // which uses IEEE doubles to hold intermediate results.  The original
 // HC555xx implementation (as revealed by a decap analysis) used 10-
 // and 12-bit fixed-point arithmetic.  The corresponding parameters
@@ -349,17 +387,17 @@ struct hc55516_data
 	// mixer channel
 	INT8 	channel;
 
-    // syllabic shift register
-    UINT8	shiftreg;
+	// syllabic shift register
+	UINT8	shiftreg;
 
 	// Syllabic filter status and parameters
-	union
+	struct
 	{
-		// Integer arithmetic, as used in HC55516/HC55536 hardware
+		// Integer arithmetic, as used in HC555XX hardware
 		struct
 		{
-			int syl_reg;			// syllabic filter register - 12-bit signed int
-			int integrator;			// integreator register - 10-bit signed int
+			int syl_reg;           // syllabic filter register - 12-bit signed int
+			int integrator;        // integrator register - 10-bit signed int
 
 			// Syllabic filter parameters.  The specific values come from the
 			// decap analysis, and differ for HC55516 vs HC55532/36/64.
@@ -372,12 +410,12 @@ struct hc55516_data
 		// Floating-point arithmetic, used in original MAME implementation
 		struct
 		{
-			double 	syl_level;      // simulated voltage on the syllabic filter
-			double	integrator;     // simulated voltage on integrator output
+			double syl_level;      // simulated voltage on the syllabic filter
+			double integrator;     // simulated voltage on integrator output
 
 			// Output gain.  This is the conversion factor from the simulated voltage
 			// level on the integrator to an INT16 PCM sample for the MAME stream.
-			double  gain;
+			double gain;
 
 		} dbl;
 	} filter;
@@ -619,7 +657,7 @@ static void add_sample_out(struct hc55516_data *chip, const double sample, const
 // decap analysis of the HC55516's internal circuit traces.   The calculations
 // here are done using 10- and 12-bit 2's complement integer registers, which 
 // are interpreted in some of the intermediate steps as fixed-point fraction
-// values.  The arithmetic is essentially the same as the original PinMame
+// values.  The arithmetic is essentially the same as the original PinMAME
 // implementation - not surprising, since both are implementing the same
 // system of discrete-time filters.  But the correspondence is hard to see
 // because the arithmetic here looks like integer arithmetic (which isn't
@@ -651,10 +689,50 @@ static void add_sample_out(struct hc55516_data *chip, const double sample, const
 // reference to see what the abstract mathematical formulas really are.
 //
 
-// helper for the 10-bit integrator register: clip an integer to 10 bits
+// Helper for the 10-bit integrator register: clip an integer to 10 bits
 // (signed) -> -512..+511
 INLINE int clip10bits(int v)
 {
+	// Saturate to 10-bit signed range
+	//
+	// Note: the MAME code, which doggedly reproduces the gate logic
+	// from the chip decap, expresses this operation in the most obtuse
+	// possible way, but MAME's version accomplishes the same thing.
+	// Here's how MAME expresses it:
+	//
+	//  v = v & 0x3ff;
+	//  return (v & 0x200) != 0 ? v | ~0x3FF : v;
+	//
+	// That's the hardware designer's way of thinking about arithmetic,
+	// as something you have to decompose into inverts and NAND/NOR
+	// gates.  We C programmers have the luxury of working with human-
+	// readable numbers and algebraic expressions, so let's do that
+	// instead.  It's not at all obvious that the MAME code expresses
+	// the same operation as this nice simple math formula, so let's
+	// look at what's going on in the bit logic.  The first line in the
+	// MAME code masks the value to the low-order 10 bits (setting all
+	// of the higher bits to zero, however many bits there are in the
+	// native machine type representing the local variable v after the
+	// C compiler turns it into machine code - probably 32 bits, but
+	// it could be 16 or 64, or who knows, 36 if we ever get ported
+	// to a PDP-10).  But the point is, whatever size 'v' is locally,
+	// we now have just a 10-bit number in it, with all of the higher-
+	// order bits zeroed.  On the original HC55516 hardware, this
+	// number is *physically* stored in a 10-bit register, so there
+	// actually are no higher-order bits to store - that's why MAME
+	// has to zero them.  But the HC hardware thinks about this 10-bit
+	// register as a signed 2's-complement value.  What does that mean
+	// for the C translation?  It means that if the high-order bit of
+	// this 10-bit value is '1', the 10-bit value is negative, so we
+	// need our wider native C value to ALSO be negative.  How do we
+	// make it negative?  By filling all of the higher-order bits
+	// with '1' bits.  That's what that second line is doing: it's
+	// testing the sign bit of the 10-bit value, at bit 0x200, and
+	// if it's set (meaning the 10-bit value is negative), it fills
+	// in all of the higher-order bits in the native C 'v' with '1'
+	// bits.  If bit 0x200 is zero, it does nothing, leaving the
+	// higher-order bits as zeros (which we guaranteed that they
+	// already are via the first line).
 	return v < -512 ? -512 : v > 511 ? 511 : v;
 }
 
@@ -694,7 +772,31 @@ static void process_bit_HC555XX(struct hc55516_data *chip, const UINT8 bit, cons
 	// buffer the sample
 	add_sample_out(chip, sample / 32768.0, output_rate_ratio);
 
-	// charge the integrator from the syllabic filter according to the current data bit
+	// Charge the integrator from the syllabic filter according to the 
+	// current data bit.
+	//
+	// Note: the MAME version of this code, which is a doggedly literal
+	// translation of the HC55516 gate logic (from a decap analysis) into
+	// C, expresses the negation of 'sum' as a somewhat obtuse bit-
+	// twiddling operation.  We C programmers have the luxury of a more
+	// abstract mathematical expression of our intent, so let's take
+	// advantage of that and not resort to unreadable bit twiddling.
+	// MAME expresses the negation like this:
+	// 
+	//    sum = (~sum) + 1;
+	//    sum = signext10bits(sum & 0x3FF);
+	// 
+	// That bit-twiddling formula is the canonical bit-logic decomposition
+	// of the 2's complement negation operation - you invert all the bits
+	// and add 1.  The physical HC chip does it that way because that's
+	// the way you do it in logic gates.  For a C program, it will work
+	// on 2's-complement platforms to do the same decomposition, but it's
+	// actually not 100% portable to do so, because there do exist machines
+	// with other integer representations (although none that anyone would
+	// use today, admittedly).  The math operation that we're trying to
+	// achieve is a negation, so it's more strictly correct to write it
+	// that way and let the compiler translate it into the appropriate
+	// machine operation for us.
 	sum = chip->filter.intg.syl_reg >> 6;
 	if (sum < 2)
 		sum = 2;
@@ -715,7 +817,7 @@ static float flat_loudness(struct hc55516_data *chip, double sample)
 
 // ---------------------------------------------------------------------------
 //
-// Process an input bit using the original PinMame double-precision float
+// Process an input bit using the original PinMAME double-precision float
 // implementation of the filter.  This implements the same standard discrete-
 // time filter math as the decap version above, but it uses double-precision
 // floats instead of fixed-point fractions.  This performs the calculations
@@ -1052,10 +1154,10 @@ void hc55516_clock_w(int num, int state)
 	}
 }
 
-// Set the gain, as a mutiple of the default gain.  The default gain
+// Set the gain, as a multiple of the default gain.  The default gain
 // yields a 1:1 mapping from the full dynamic range of the HC55516 to
 // the full dynamic range of the MAME stream.  This only applies when
-// using the old PinMame implementation - it's ignored for the new
+// using the old PinMAME implementation - it's ignored for the new
 // decap chip logic version.
 void hc55516_set_gain(int num, double gain)
 {
@@ -1111,7 +1213,7 @@ WRITE_HANDLER(hc55516_1_digit_clock_clear_w) { hc55516_digit_clock_clear_w(1, da
 // specific game can call this during initialization to preset the clock rate
 // for the HC55516 chip, if known.  (This isn't required, and in fact the
 // information isn't currently used for anything, as we instead adapt to the
-// de facto playback rate at run time.)
+// de-facto playback rate at run time.)
 void hc55516_set_sample_clock(int chipno, int frequency)
 {
 	// This information isn't currently used, so we just ignore the call.
@@ -1166,61 +1268,67 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		{
 			// Chip type.  The newer MAME decap implementation distinguishes
 			// the chip types because the internal logic uses slightly different
-			// arithmetic parameters across the different chips.  PinMame doesn't
-			// appear to have any notion of which chip we're using more specific
-			// than "55516 family", and as far as I can tell, all of the pinball
+			// arithmetic parameters across the different chips.  PinMAME doesn't
+			// have a full notion of which chip we're using more specific
+			// than "55516 family" for most machines, most of the pinball
 			// sound boards that used these chips used the 55536 variant (the
-			// low-cost decoder-only version of the 55532).  For the sake of
-			// documentation and easier future extension, I'm including the
-			// MAME parameters for all of the chip variants.  This hard-coded
-			// selection can be replaced with something from the MachineSound
-			// struct if specific variant selection is ever needed.
-			int chip_type = 55536;
+			// low-cost decoder-only version of the 55532) though, earlier ones the 55516.
 
 			// use the chip logic simulation, with a flat loudness curve
 			chip->process_bit = process_bit_HC555XX;
 			chip->compress_loudness = flat_loudness;
 
 			// Populate the filter parameters according to the chip type
-			if (chip_type == 55516)
+			if (intf->chip_type == 55516)
 			{
 				// 55516 parameters
 				chip->filter.intg.charge_mask = 0xFC0;
 				chip->filter.intg.charge_shift = 6;
 				chip->filter.intg.charge_add = 0xFC1;
 				chip->filter.intg.decay_shift = 4;
+
+				chip->filter.intg.syl_reg = 0x3F;
 			}
-			else if (chip_type == 55532 || chip_type == 55536 || chip_type == 55564)
+			else if (intf->chip_type == 55532 || intf->chip_type == 55536 || intf->chip_type == 55564)
 			{
 				// 55532 parameters.
 				//
-				// The decap analysis had nothing to say about the 55536 variant, but
+				// The MAME/decap analysis had nothing to say about the 55536 variant, but
 				// from the data sheet, it appears that the 55536 is identical to the
 				// 55532 except that the encoder stage isn't included.  So we'll take
-				// the decoder filter parameters to bew identical to the '32.
+				// the decoder filter parameters to be identical to the '32.
 				//
 				// The same goes for the '64.  That chip appears to be identical to
 				// the '32 except that it's rated for higher maximum bit clock rates.
+				//
+				// Note that the newer revision '36/'64 may(!) have had some additional bugfixes
+				// where the older chips did not fully allow to get a constant 0 output,
+				// which may have lead to a 'humming' issue with these.
+				//
+				// Also note that the following 55532 params are not verified by a real
+				// decap yet, but are derived from implicit information from the 55516 decap.
 				chip->filter.intg.charge_mask = 0xF80;
 				chip->filter.intg.charge_shift = 7;
 				chip->filter.intg.charge_add = 0xFE1;
 				chip->filter.intg.decay_shift = 5;
+
+				chip->filter.intg.syl_reg = 0x7F;
 			}
 			else
 			{
-				// invalid chip selectikon
+				// invalid chip selection
 				return 1;
 			}
 		}
 		else
 		{
-			// Use the original PinMame ideal syllabic filter simulation, with the
+			// Use the original PinMAME ideal syllabic filter simulation, with the
 			// corresponding loudness compression curve.  (Dynamic range compression
 			// is required with this filter simulation because it doesn't have any
 			// internal clipping, which allows its effective dynamic range to exceed
 			// the 16-bit range of the the MAME stream.)
 			//
-			// A alternative to the non-linear compression curve that would be truer
+			// An alternative to the non-linear compression curve that would be truer
 			// to the original HC55516 logic would be to clip the sample to the 16-bit
 			// range.  That might also require some scaling (i.e., multiply the samples
 			// by X, where X > 1.0) to raise the floor level.
@@ -1232,7 +1340,15 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		}
 
 		// create the output stream
-		sprintf(name, "HC55516 #%d", i);
+		switch(intf->chip_type)
+		{
+		case 55516: sprintf(name, "HC55516 #%d", i); break;
+		case 55532: sprintf(name, "HC55532 #%d", i); break;
+		case 55536: sprintf(name, "HC55536 #%d", i); break;
+		case 55564: sprintf(name, "HC55564 #%d", i); break;
+		default:    sprintf(name, "unknown HC555XX #%d", i); break;
+		}
+
 		chip->channel = stream_init_float(name, intf->volume[i], Machine->sample_rate, i, hc55516_update, 1); // pick output sample rate for max quality, also saves an additional filtering step in the mixer!
 		chip->stream_update_time = timer_get_time();
 		chip->output_dt = 1.0 / Machine->sample_rate;

@@ -263,10 +263,11 @@ static MACHINE_INIT(jvh) {
 }
 
 static MACHINE_RESET(jvh) {
-  memset(&locals, 0, sizeof(locals));
-  locals.last_volume = 0xFFFF;
-  locals.ignore_dsw = 1;
-  locals.old_dsw = 0xFFFF;
+}
+
+static MACHINE_STOP(jvh)
+{
+  sndbrd_0_exit();
 }
 
 static SWITCH_UPDATE(jvh) {
@@ -375,7 +376,7 @@ static int jvh_m2sw(int col, int row) {
 
 MACHINE_DRIVER_START(jvh)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(jvh,jvh,NULL)
+  MDRV_CORE_INIT_RESET_STOP(jvh,jvh,jvh)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 
@@ -620,6 +621,12 @@ static MACHINE_RESET(jvh3) {
   sndlocals.ignore = 2;
 }
 
+static MACHINE_STOP(jvh3)
+{
+  if (!sndlocals.timer) timer_remove(sndlocals.timer);
+  sndbrd_0_exit();
+}
+
 static INTERRUPT_GEN(vblank3) {
   int i;
 
@@ -815,7 +822,7 @@ DISCRETE_SOUND_END
 
 MACHINE_DRIVER_START(jvh3)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(jvh3,jvh3,NULL)
+  MDRV_CORE_INIT_RESET_STOP(jvh3,jvh3,jvh3)
 
   MDRV_CPU_ADD_TAG("mcpu", TMS9995, 12000000)
   MDRV_CPU_MEMORY(readmem3, writemem3)

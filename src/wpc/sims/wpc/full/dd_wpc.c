@@ -60,19 +60,19 @@ WPC_INPUT_PORTS_START(dd,3)
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"MixMaster",	        KEYCODE_R)
-    COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
-    COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
+    COREPORT_BIT(0x0004,"MixMaster",	KEYCODE_R)
+    COREPORT_BIT(0x0008,"L/R Outlane",	KEYCODE_O)
+    COREPORT_BIT(0x0010,"L/R Slingshot",KEYCODE_MINUS)
+    COREPORT_BIT(0x0020,"L/R Inlane",	KEYCODE_I)
     COREPORT_BIT(0x0040,"Left Jet",		KEYCODE_W)
-    COREPORT_BIT(0x0100,"Right Jet",		KEYCODE_E)
-    COREPORT_BIT(0x0200,"Bottom Jet",		KEYCODE_R)
-    COREPORT_BIT(0x0400,"Top Target",		KEYCODE_T)
+    COREPORT_BIT(0x0100,"Right Jet",	KEYCODE_E)
+    COREPORT_BIT(0x0200,"Bottom Jet",	KEYCODE_R)
+    COREPORT_BIT(0x0400,"Top Target",	KEYCODE_T)
     COREPORT_BIT(0x0800,"RDrop1",		KEYCODE_Y)
     COREPORT_BIT(0x1000,"RDrop2",		KEYCODE_U)
     COREPORT_BIT(0x2000,"RDrop3",		KEYCODE_I)
     COREPORT_BIT(0x4000,"RDrop4",		KEYCODE_O)
-    COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
+    COREPORT_BIT(0x8000,"Drain",		KEYCODE_Q)
 
   PORT_START /* 1 */
     COREPORT_BIT(0x0001,"Reflex",		KEYCODE_A)
@@ -81,23 +81,23 @@ WPC_INPUT_PORTS_START(dd,3)
     COREPORT_BIT(0x0008,"refLex",		KEYCODE_F)
     COREPORT_BIT(0x0010,"reflEx",		KEYCODE_G)
     COREPORT_BIT(0x0020,"refleX",		KEYCODE_H)
-    COREPORT_BIT(0x0040,"Heart Target",		KEYCODE_J)
+    COREPORT_BIT(0x0040,"Heart Target",	KEYCODE_J)
     COREPORT_BIT(0x0080,"Magnet",		KEYCODE_K)
     COREPORT_BIT(0x0100,"Big Shot",		KEYCODE_L)
     COREPORT_BIT(0x0200,"LPopper",		KEYCODE_Z)
     COREPORT_BIT(0x0400,"RPopper",		KEYCODE_X)
     COREPORT_BIT(0x0800,"Rt Loop",		KEYCODE_C)
-    COREPORT_BIT(0x1000,"LCoin",			KEYCODE_3)
-    COREPORT_BIT(0x2000,"CCoin",			KEYCODE_4)
-    COREPORT_BIT(0x4000,"RCoin",			KEYCODE_5)
+    COREPORT_BIT(0x1000,"LCoin",		KEYCODE_3)
+    COREPORT_BIT(0x2000,"CCoin",		KEYCODE_4)
+    COREPORT_BIT(0x4000,"RCoin",		KEYCODE_5)
 
 WPC_INPUT_PORTS_END
 
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swTilt       	11
-#define swStart      	13
+#define swTilt		11
+#define swStart		13
 #define swRCoin		14
 #define swCCoin		15
 #define swLCoin		16
@@ -106,8 +106,8 @@ WPC_INPUT_PORTS_END
 
 #define swShooter	21
 #define swOutHole	22
-#define swRTrough     	23
-#define swCTrough     	24
+#define swRTrough	23
+#define swCTrough	24
 #define swLTrough	25
 #define swHeart		26
 #define swEnterRamp	27
@@ -186,7 +186,7 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       stReflex, strEflex, streFlex, strefLex, streflEx, strefleX, stHeart, stBigShot, stMagnet, stInMagnet,
       stRLoop, stITest2, stLJet, stRJet, stBJet, stTopLeft10, stMidTop10, stMidMid10, stMidBot10, stRLoopFall,
       stLPopper, stInReel2, stRPopper
-	  };
+};
 
 static sim_tState dd_stateDef[] = {
   {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
@@ -281,7 +281,7 @@ static int dd_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 	}
     return 0;
-  }
+}
 
 /*---------------------------
 /  Keyboard conversion table
@@ -372,6 +372,7 @@ static core_tLampDisplay dd_lampPos = {
   }
 
 /* Solenoid-to-sample handling */
+#ifdef ENABLE_MECHANICAL_SAMPLES
 static wpc_tSamSolMap dd_samsolmap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
@@ -388,6 +389,7 @@ static wpc_tSamSolMap dd_samsolmap[] = {
  /*Channel #3*/
  {sLPopper,3,SAM_POPPER},  {sRPopper,3,SAM_POPPER},{-1}
 };
+#endif
 
 /*-----------------
 /  ROM definitions
@@ -419,13 +421,13 @@ CORE_CLONEDEF(dd,p06,l2,"Dr. Dude (PA-6 WPC Prototype)",1990,"Bally",wpc_a1_one,
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData ddSimData = {
-  2,    				/* 2 game specific input ports */
-  dd_stateDef,				/* Definition of all states */
-  dd_inportData,			/* Keyboard Entries */
+  2,					/* 2 game specific input ports */
+  dd_stateDef,			/* Definition of all states */
+  dd_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  dd_handleBallState,		/*Function to handle ball state changes*/
-  dd_drawStatic,			/*Function to handle mechanical state changes*/
+  dd_handleBallState,	/*Function to handle ball state changes*/
+  dd_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -442,7 +444,10 @@ static core_tGameData ddGameData = {
     FLIP_SWNO(82,81),
     0,0,0,0,0,0,0,
     NULL, dd_handleMech, NULL, NULL,
-    &dd_lampPos, dd_samsolmap
+    &dd_lampPos
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , dd_samsolmap
+#endif
   },
   &ddSimData,
   {

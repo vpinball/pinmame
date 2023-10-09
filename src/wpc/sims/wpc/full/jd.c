@@ -515,7 +515,10 @@ static core_tGameData jdGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U),
     0,0,1,0,0,0,0,
     jd_getSol, jd_handleMech, jd_getMech, jd_drawMech,
-    NULL, NULL
+    NULL
+#ifdef ENABLE_MECHANICAL_SAMPLES
+    , NULL
+#endif
   },
   &jdSimData,
   {
