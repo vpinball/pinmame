@@ -105,10 +105,15 @@ static void s4_irqline(int state) {
 static INTERRUPT_GEN(s4_irq) {
   s4_irqline(1);
 #if defined(LISY_SUPPORT)
- //get the switches from LISY_mini
+ static count = 0;
+ //get the switches from LISY_mini (needed in test/diag mode)
  lisy_w_switch_handler();
- //timing according to throttle value in games.cfg
- lisy_w_throttle();
+ //reduced call to throttle in order not to interfere with timing
+ //but needed for nvram timer
+ if ((count++) > 500 ) {
+   lisy_w_throttle();
+   count = 0;
+   }
 #endif
   timer_set(TIME_IN_CYCLES(32,0),0,s4_irqline);
 }
@@ -135,10 +140,18 @@ static READ_HANDLER(s4_dips_r) {
 /************/
 /* SWITCH MATRIX */
 static READ_HANDLER(s4_swrow_r) {
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+#endif
  return core_getSwCol(s4locals.swCol);
 }
 
 static WRITE_HANDLER(s4_swcol_w) {
+#if defined(LISY_SUPPORT)
+ //LISY timing adjusted with switch polling
+ lisy_w_throttle();
+#endif
  s4locals.swCol = data;
 }
 

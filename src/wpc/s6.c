@@ -113,10 +113,15 @@ static void s6_piaIrq(int state) {
 static INTERRUPT_GEN(s6_irq) {
   s6_irqline(1);
 #if defined(LISY_SUPPORT)
- //get the switches from LISY_mini
+ static count = 0;
+ //get the switches from LISY_mini (needed in test/diag mode)
  lisy_w_switch_handler();
- //timing according to throttle value in games.cfg
- lisy_w_throttle();
+ //reduced call to throttle in order not to interfere with timing
+ //but needed for nvram timer
+ if ((count++) > 500 ) {
+   lisy_w_throttle();
+   count = 0;
+   }
 #endif
   timer_set(TIME_IN_CYCLES(32,0),0,s6_irqline);
 }
@@ -142,10 +147,18 @@ static READ_HANDLER(s6_dips_r) {
 /*SWITCH MATRIX     */
 /********************/
 static READ_HANDLER(s6_swrow_r) {
+#if defined(LISY_SUPPORT)
+ //get the switches from LISY_mini
+ lisy_w_switch_handler();
+#endif
  return core_getSwCol(s6locals.swCol);
 }
 
 static WRITE_HANDLER(s6_swcol_w) {
+#if defined(LISY_SUPPORT)
+ //LISY timing adjusted with switch polling
+ lisy_w_throttle();
+#endif
  s6locals.swCol = data;
 }
 
