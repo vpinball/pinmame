@@ -715,7 +715,7 @@ void SetThrottleAdj(int adj)
 	static int last = 0;
 	if (adj != last)
 	{
-		sprintf(tmp, "Set throttle adj: %d (cur %d)", adj, g_iThrottleAdjCur);
+		snprintf(tmp, sizeof(tmp), "Set throttle adj: %d (cur %d)", adj, g_iThrottleAdjCur);
 		DebugSound(tmp);
 		last = adj;
 	}
@@ -778,7 +778,7 @@ void throttle_speed_part(int part, int totalparts)
 #ifdef DEBUG_THROTTLE
 		{
 			char tmp[91];
-			sprintf(tmp, "Throt: part %d of %d FS: %d Delta: %lld\n",part, totalparts, frameskip_counter, curr - target);
+			snprintf(tmp, sizeof(tmp), "Throt: part %d of %d FS: %d Delta: %lld\n",part, totalparts, frameskip_counter, curr - target);
 			OutputDebugString(tmp);
 		}
 #endif

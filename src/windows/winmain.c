@@ -107,6 +107,8 @@ static void stop_profiler(void);
 #define main main_
 #endif
 
+char g_szGameName[256] = "";		// String containing requested game name (may be different from ROM if aliased)
+
 int main(int argc, char **argv)
 {
 	int game_index;
@@ -123,19 +125,19 @@ int main(int argc, char **argv)
 		startup_info.dwFlags &&
 		!(startup_info.dwFlags & STARTF_USESTDHANDLES))
 	{
-		char message_text[1024] = "";
+		char message_text[1024];
 		int button;
 		FILE* fp;
 
 #ifndef MESS
 #ifdef PINMAME
-        sprintf(message_text, APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
-                              "\n"
-                              "Please consult the documentation for more information.\n"
-                              "\n"
-                              "Would you like to open the documentation now?");
+		snprintf(message_text, sizeof(message_text), APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
+							  "\n"
+							  "Please consult the documentation for more information.\n"
+							  "\n"
+							  "Would you like to open the documentation now?");
 #else /* PINMAME */
-		sprintf(message_text, APPLONGNAME " v%s - Multiple Arcade Machine Emulator\n"
+		snprintf(message_text, sizeof(message_text), APPLONGNAME " v%s - Multiple Arcade Machine Emulator\n"
 							  "Copyright (C) 1997-2003 by Nicola Salmoria and the MAME Team\n"
 							  "\n"
 							  APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
@@ -154,7 +156,7 @@ int main(int argc, char **argv)
 							  , build_version);
 #endif /* PINMAME */
 #else /* MESS */
-		sprintf(message_text, APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
+		snprintf(message_text, sizeof(message_text), APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
 							  "\n"
 							  "Please consult the documentation for more information.\n"
 							  "\n"
@@ -210,6 +212,8 @@ int main(int argc, char **argv)
 		extern void restore_win_timer_resolution();
 
 		set_lowest_possible_win_timer_resolution();
+
+		strcpy_s(g_szGameName, sizeof(g_szGameName), drivers[game_index]->name);
 
 #if ENABLE_PROFILER
 		start_profiler();
@@ -472,7 +476,7 @@ static const char *lookup_symbol(UINT32 address)
 	// create the final result
 	if (address - best_addr > 0x10000)
 		return "";
-	sprintf(buffer, " (%s+0x%04x)", best_symbol, address - best_addr);
+	snprintf(buffer, sizeof(buffer), " (%s+0x%04x)", best_symbol, address - best_addr);
 	return buffer;
 }
 

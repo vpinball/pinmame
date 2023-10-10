@@ -505,9 +505,9 @@ int win_init_window(void)
 
 	// make the window title
 #ifdef VPINMAME
-	sprintf(title, "%s", Machine->gamedrv->description);
+	snprintf(title, sizeof(title), "VPinMAME: %s", Machine->gamedrv->description);
 #else
-	sprintf(title, APPNAME ": %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
+	snprintf(title, sizeof(title), APPNAME ": %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
 #endif
 
 #if HAS_WINDOW_MENU
@@ -1830,7 +1830,7 @@ static int create_debug_window(void)
 	RECT bounds, work_bounds;
 	TCHAR title[256];
 
-	sprintf(title, "Debug: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
+	snprintf(title, sizeof(title), "Debug: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
 
 	// get the adjusted bounds
 	bounds.top = bounds.left = 0;
