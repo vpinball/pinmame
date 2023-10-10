@@ -104,6 +104,8 @@
 
 #endif /* defined(__GNUC__) */
 
+extern char g_szGameName[256];
+
 #ifndef HDF_SORTUP
 #define HDF_SORTUP 0x400
 #endif
@@ -804,6 +806,8 @@ static int RunMAME(int nGameIndex)
 	char pCmdLine[2048];
 	time_t start, end;
 	time_t elapsedtime;
+
+	strcpy_s(g_szGameName, sizeof(g_szGameName), drivers[nGameIndex]->name);
 
 	CreateCommandLine(nGameIndex, pCmdLine);
 
