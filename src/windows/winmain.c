@@ -105,9 +105,10 @@ static void stop_profiler(void);
 
 #ifdef WINUI
 #define main main_
-#endif
-
+extern char g_szGameName[256];
+#else
 char g_szGameName[256] = "";		// String containing requested game name (may be different from ROM if aliased)
+#endif
 
 int main(int argc, char **argv)
 {
