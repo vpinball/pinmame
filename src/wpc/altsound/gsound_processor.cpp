@@ -222,6 +222,12 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		return false;
 	}
 
+	// DAR@20231018
+	// Sometimes ROMs send sound commands at startup that result in unwanted
+	// sound playback.  These commands may be valid during normal runtime, so
+	// we don't want to simply ignore them.  Instead, authors can choose to
+	// skip a number of initial commands.  This can be set in the .ini file
+	// 
 	// Skip this command?
 	unsigned int skip_count = AltsoundProcessorBase::getSkipCount();
 	if (skip_count > 0) {
@@ -538,8 +544,6 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 				ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 				return false;
 			}
-
-
 		}
 		else if (behavior.pauses.test(static_cast<size_t>(sampleBehaviorBit)))
 		{

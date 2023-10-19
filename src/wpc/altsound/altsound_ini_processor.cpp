@@ -149,6 +149,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	// parse MUSIC "STOP" behavior
 	// MUSIC streams only stop themselves
 	music_behavior.stops.set(static_cast<int>(BB::MUSIC), true); // MUSIC stops other MUSIC streams
+	success &= parseBehaviorValue(music_section, "stops", music_behavior.stops);
 
 	// DAR@20230823 Leaving this commented code for now in case it becomes necessary
 	// to activate this in the near future.  Will remove later, if not needed
