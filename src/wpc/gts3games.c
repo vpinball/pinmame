@@ -226,6 +226,15 @@ GTS3SOUND32128(        "yrom1.bin",CRC(4ecf6ecb) SHA1(92469ccdedcc8e61edcddaedd6
 GTS3_ROMEND
 CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,0)
 
+INITGAME(beav_butt, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
+GTS3ROMSTART(beav_butt,"gpromb.bin",CRC(f18b377a) SHA1(afecfbe442589254c167c8676bb4b2e824bedc34))
+GTS3SOUND32128(         "yrom1.bin",CRC(4ecf6ecb) SHA1(92469ccdedcc8e61edcddaedd688ef990a9ad5ad),
+                        "drom1.bin",CRC(3863a9df) SHA1(1759abbfcb127a6909f70845f41daf3ac8e80cef),
+                        "arom1.bin",CRC(357b0069) SHA1(870b0b84c6b3754f89b4e4e0b4594613ef589204),
+                        "arom2.bin",CRC(5be02ff7) SHA1(51af73a26bbed0915ec57cde8f9cac552978b2dc))
+GTS3_ROMEND
+CORE_CLONEDEFNV(beav_butt,clas1812,"Beavis and Butt-Head (Class of 1812 MOD)",2023,"Gottlieb",mGTS3S,0)
+
 /************************************************/
 /*Start of 2nd generation Alpha Numeric Hardware*/
 /************************************************/

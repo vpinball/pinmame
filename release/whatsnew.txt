@@ -57,7 +57,7 @@ Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
 Improved emulation robustness when running multiple machines from the same generation (e.g. System11) one after another (e.g. from within VPX)
  or when resetting certain machines
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson
+*** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr
 New:
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
@@ -94,6 +94,7 @@ Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
 Ali (7-digit conversion Free Play rev. 76)
+Beavis and Butt-Head (Class of 1812 MOD)
 Black Knight L-2
 Cue Ball Wizard (older display rev.)
 Dracula (One Ball MOD)
