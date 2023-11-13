@@ -6,9 +6,9 @@
 #pragma once
 #endif
 
-#define MAX_HC55516		4
+#define MAX_HC55516		2
 
-// Set the known sample clock rate for an HC55516 chip.  'num' is the chip
+// Set the known sample clock rate for an HC555XX chip.  'num' is the chip
 // number - most games only use one HC55516 chip, in which case this should
 // be 0.  If the game uses multiple chips, set the frequency for each chip
 // individually.  This can be called from the init_GAME() routine for an 
@@ -39,16 +39,17 @@ struct hc55516_interface
 {
 	int num;
 	int volume[MAX_HC55516];
+	int chip_type;
 	int output_filter_type;
 };
 
 #ifdef PINMAME
 /* 
- *  Set the gain, as a multiple of the HC55516 default gain.  Setting the gain
+ *  Set the gain, as a multiple of the HC555XX default gain.  Setting the gain
  *  here to 1.0 selects the default gain, 0.5 is half the default gain, 2.0 is
  *  twice the default gain.
  *
- *  The default gain linearly maps the full dynamic range of the HC55516 output 
+ *  The default gain linearly maps the full dynamic range of the HC555XX output 
  *  to the full dynamic range of the 16-bit PCM MAME stream.
  *
  *  The main reason to set a non-default gain is to select a higher gain for a
@@ -59,7 +60,7 @@ struct hc55516_interface
  *  stream.
  *
  *  Increasing the gain above 1.0 will cause clipping if any samples in the game
- *  exceed (1.0/gain) of the HC55516 dynamic range.  Clipping might be an 
+ *  exceed (1.0/gain) of the HC555XX dynamic range.  Clipping might be an 
  *  acceptable tradeoff for some games to increase the apparent loudness.
  */
 void hc55516_set_gain(int num, double gain);

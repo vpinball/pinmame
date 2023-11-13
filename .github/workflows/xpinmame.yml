@@ -59,6 +59,7 @@ jobs:
       - run: |
           mkdir tmp
           cp build/Release/${{ matrix.exe }} tmp
+          cp release/gamelist.txt tmp
           cp release/license.txt tmp
           cp release/pinmame.txt tmp
           cp release/whatsnew.txt tmp

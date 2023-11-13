@@ -256,7 +256,7 @@ float AltsoundFileParser::parseFileValue(const std::string& filePath)
 		return -1.0f;
 	}
 
-	if (fclose(f) != 0) { // Check for closing success
+	if (fclose(f) != 0) {
 		// failed to close file
 		return -1.0f;
 	}

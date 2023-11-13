@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <wiringPi.h>
 
 extern char debugbuf[256]; // see hw_lib.c
 
@@ -870,6 +871,10 @@ lisy_api_set_apc_game_setting(unsigned char number, unsigned char value) {
     //send value
     cmd_data[3] = value;
 
+    //delay for APC
+    delay(10);
+
+    //send cmd
     if (lisy_api_write(cmd_data, 4, ls80dbg.bitv.basic) != 4) {
         fprintf(stderr, "Game setting Error writing to serial %s\n", strerror(errno));
 	return(-1);
@@ -893,6 +898,9 @@ lisy_api_get_apc_game_setting(unsigned char number) {
     cmd_data[1] = LISY_APC_GAME_SETTING;
     //send setting number
     cmd_data[2] = number;
+
+    //delay for APC
+    delay(10);
 
     //send cmd
     if (lisy_api_write(cmd_data, 3, ls80dbg.bitv.switches) != 3) {

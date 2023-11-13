@@ -2284,7 +2284,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
       int index = (int)(((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput));
       if (index < CORE_MODOUT_SOL_MAX)
       {
-         // For the time being, only GTS3, WPC and SAM have modulated solenoids direclty implemented in the driver
+         // For the time being, only GTS3, WPC and SAM have modulated solenoids directly implemented in the driver
          if ((core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_SAM)) && options.usemodsol)
             output->value = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][index];
          else

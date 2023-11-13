@@ -643,8 +643,8 @@ static struct pia6821_interface s11_pia[] = {
  /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 1 (2400) */
- /* PA0 - PA7 Lamp Matrix Strobe */
- /* PB0 - PB7 Lamp Matrix Return */
+ /* PA0 - PA7 Lamp Matrix Return (rows) */
+ /* PB0 - PB7 Lamp Matrix Strobe (columns) */
  /* CA2       F SS6 */
  /* CB2       E SS5 */
  /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,

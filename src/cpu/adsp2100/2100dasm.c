@@ -262,7 +262,7 @@ unsigned dasm2100(char *buffer, unsigned pc)
 				buffer += sprintf(buffer, "??? (%06X)", op);
 			break;
 		case 0x0a:
-			/* 00001010 00000000 0000xxxx  conditional return */
+			/* 00001010 00000000 000xxxxx  conditional return */
 			if ((op & 0x00ffe0) == 0x000000)
 			{
 				buffer += sprintf(buffer, "%s", condition[op & 15]);

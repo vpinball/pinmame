@@ -117,6 +117,8 @@ LTD_2_ROMSTART(vikngkng, "vikking.bin", CRC(aa32d158) SHA1(b24294ae4ecb2ab3119ad
 LTD_ROMEND
 CORE_GAMEDEFNV(vikngkng,"Viking King",19??,"LTD",gl_mLTD3,0)
 
+// All the Ekky using clones below try to mimick the real sound hardware, but are not real HW based machines
+
 /*-------------------------------------------------------------------
 / Force
 /-------------------------------------------------------------------*/

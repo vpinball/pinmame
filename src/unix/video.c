@@ -1188,7 +1188,7 @@ void throttle_speed_part(int part, int totalparts)
 //RTH from video.c windows
 int g_low_latency_throttle = 0;
 
-int g_iThrottleAdj = 0;
+static int g_iThrottleAdj = 0;
 
 //1:1 copy from windows video.c
 void SetThrottleAdj(int adj)

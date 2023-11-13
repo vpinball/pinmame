@@ -3319,14 +3319,15 @@ static void onscrd_volume(struct mame_bitmap *bitmap,int increment,int arg)
 	{
 		attenuation = osd_get_mastervolume();
 		attenuation += increment;
-		if (attenuation > 0) attenuation = 0;
+		//if (attenuation > 0) attenuation = 0; // gain is now handled, at least in the windows sound module
+		if (attenuation > 32) attenuation = 32;
 		if (attenuation < -32) attenuation = -32;
 		osd_set_mastervolume(attenuation);
 	}
 	attenuation = osd_get_mastervolume();
 
-	sprintf(buf,"%s %3ddB", ui_getstring (UI_volume), attenuation);
-	displayosd(bitmap,buf,100 * (attenuation + 32) / 32,100);
+	sprintf(buf,"%s %3ddB", ui_getstring(UI_volume), attenuation);
+	displayosd(bitmap,buf,100 * (attenuation + 32) / 64,100);
 }
 
 static void onscrd_mixervol(struct mame_bitmap *bitmap,int increment,int arg)
@@ -3570,7 +3571,7 @@ static void onscrd_init(void)
 			if (Machine->drv->sound[soundnum].sound_type == SOUND_DISCRETE)
 			{
 				/* For each DISCRETE_ADJUST node then there is a slider, there can only be one SOUND_DISCRETE */
-				/* in the machinbe sound delcaration so this WONT trigger more than once                      */
+				/* in the machine sound declaration so this WONT trigger more than once                      */
 				{
 					int count;
 					count=discrete_sh_adjuster_count((struct discrete_sound_block*)Machine->drv->sound[soundnum].sound_interface);
@@ -3585,7 +3586,7 @@ static void onscrd_init(void)
 			}
 		}
 #endif /* HAS_DISCRETE */
-		/* K.Wilkins Feb2003 Additional of Disrete Sound System ADJUSTMENT sliders */
+		/* K.Wilkins Feb2003 Additional of Discrete Sound System ADJUSTMENT sliders */
 	}
 
 	if (options.cheat)

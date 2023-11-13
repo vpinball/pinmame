@@ -107,7 +107,7 @@ struct _osd_file
 #if defined(_WIN32) || defined(_WIN64)
 	DWORD		bufferbytes;
 #else
-	unsigned long bufferbytes;
+	size_t		bufferbytes;
 #endif
 	UINT8		buffer[FILE_BUFFER_SIZE];
 };

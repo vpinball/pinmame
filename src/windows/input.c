@@ -1236,13 +1236,13 @@ static void init_joylist(void)
 #ifdef sprintf_s
 					sprintf_s(tempname, sizeof(tempname), "Mouse %d %s", mouse + 1, instance.tszName);
 #else
-					sprintf(tempname, "Mouse %d %s", mouse + 1, instance.tszName);
+					snprintf(tempname, sizeof(tempname), "Mouse %d %s", mouse + 1, instance.tszName);
 #endif
 				else
 #ifdef sprintf_s
 					sprintf_s(tempname, sizeof(tempname), "Mouse %s", instance.tszName);
 #else
-					sprintf(tempname, "Mouse %s", instance.tszName);
+					snprintf(tempname, sizeof(tempname), "Mouse %s", instance.tszName);
 #endif
 				add_joylist_entry(tempname, JOYCODE(mouse, JOYTYPE_MOUSEBUTTON, button), &joycount);
 			}
@@ -1263,11 +1263,11 @@ static void init_joylist(void)
 			if (result == DI_OK)
 			{
 				// add negative value
-				sprintf(tempname, "J%d %s -", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s -", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_AXIS_NEG, axis), &joycount);
 
 				// add positive value
-				sprintf(tempname, "J%d %s +", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s +", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_AXIS_POS, axis), &joycount);
 
 				// get the axis range while we're here
@@ -1291,7 +1291,7 @@ static void init_joylist(void)
 			if (result == DI_OK)
 			{
 				// make the name for this item
-				sprintf(tempname, "J%d %s", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_BUTTON, button), &joycount);
 			}
 		}
@@ -1308,19 +1308,19 @@ static void init_joylist(void)
 			if (result == DI_OK)
 			{
 				// add up direction
-				sprintf(tempname, "J%d %s U", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s U", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_POV_UP, pov), &joycount);
 
 				// add down direction
-				sprintf(tempname, "J%d %s D", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s D", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_POV_DOWN, pov), &joycount);
 
 				// add left direction
-				sprintf(tempname, "J%d %s L", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s L", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_POV_LEFT, pov), &joycount);
 
 				// add right direction
-				sprintf(tempname, "J%d %s R", stick + 1, instance.tszName);
+				snprintf(tempname, sizeof(tempname), "J%d %s R", stick + 1, instance.tszName);
 				add_joylist_entry(tempname, JOYCODE(stick, JOYTYPE_POV_RIGHT, pov), &joycount);
 			}
 		}
@@ -1650,7 +1650,7 @@ void process_ctrlr_system(struct rc_struct *iptrc, const char *ctype, const stru
 	char buffer[128];
 	const struct GameDriver *tmp_gd;
 
-	sprintf(buffer, "%s", drv->source_file+12);
+	snprintf(buffer, sizeof(buffer), "%s", drv->source_file+12);
 	buffer[strlen(buffer) - 2] = 0;
 
 	tmp_gd = drv;
@@ -2245,16 +2245,16 @@ static void init_proclist(void)
 	int procInputCount=0;
 	char tempname[MAX_INPUT_NAME_LENGTH];
 
-	sprintf(tempname, "Left Flipper");
+	snprintf(tempname, sizeof(tempname), "Left Flipper");
 	add_procInputList_entry(tempname, 0, &procInputCount);
 
-	sprintf(tempname, "Right Flipper");
+	snprintf(tempname, sizeof(tempname), "Right Flipper");
 	add_procInputList_entry(tempname, 1, &procInputCount);
 
-	sprintf(tempname, "Start Button");
+	snprintf(tempname, sizeof(tempname), "Start Button");
 	add_procInputList_entry(tempname, 2, &procInputCount);
 
-	sprintf(tempname, "Quit");
+	snprintf(tempname, sizeof(tempname), "Quit");
 	add_procInputList_entry(tempname, 3, &procInputCount);
 
 	// terminate array

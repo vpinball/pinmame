@@ -24,7 +24,6 @@
 #include <string>
 
 // Local includes
-//#include "osdepend.h"
 #include "gsound_csv_parser.hpp"
 
 using std::string;
@@ -164,7 +163,7 @@ extern BehaviorInfo solo_behavior;
 extern BehaviorInfo overlay_behavior;
 
 // convenience structure for working with behaviors
-std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = { //!! meh
+std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
 	{MUSIC, &music_behavior},
 	{CALLOUT, &callout_behavior},
 	{SFX, &sfx_behavior},
@@ -182,8 +181,6 @@ GSoundProcessor::GSoundProcessor(const std::string& _game_name, const std::strin
   is_stable(true), // future use
   generator(std::random_device()()) // seed random number generator
 {
-	//// perform initialization (load samples, etc)
-	//init();
 }
 
 GSoundProcessor::~GSoundProcessor()
@@ -223,6 +220,22 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 		OUTDENT;
 		ALT_DEBUG(0, "END: GSoundProcessor::handleCmd()");
 		return false;
+	}
+
+	// DAR@20231018
+	// Sometimes ROMs send sound commands at startup that result in unwanted
+	// sound playback.  These commands may be valid during normal runtime, so
+	// we don't want to simply ignore them.  Instead, authors can choose to
+	// skip a number of initial commands.  This can be set in the .ini file
+	// 
+	// Skip this command?
+	unsigned int skip_count = AltsoundProcessorBase::getSkipCount();
+	if (skip_count > 0) {
+		--skip_count;
+		AltsoundProcessorBase::setSkipCount(skip_count);
+		ALT_DEBUG(0, "Sound command skipped, (%d) remaining", skip_count);
+		ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
+		return true;
 	}
 
 	// get sample for playback
@@ -435,7 +448,7 @@ unsigned int GSoundProcessor::getSample(const unsigned int cmd_combined_in)
 			// Each matching sample has equal chance (1/matching_sample_count) to
 			// become the selected one.
 			if (distribution(generator) % matching_sample_count == 0) {
-				sample_idx = (unsigned int)i;
+				sample_idx = static_cast<unsigned int>(i);
 			}
 		}
 	}
@@ -531,8 +544,6 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 				ALT_DEBUG(0, "END GSoundProcessor::processBehaviors()");
 				return false;
 			}
-
-
 		}
 		else if (behavior.pauses.test(static_cast<size_t>(sampleBehaviorBit)))
 		{
@@ -860,13 +871,6 @@ bool GSoundProcessor::adjustStreamVolumes()
 		const auto& stream = *streamPtr; // Dereference pointer for readability
 		float ducking_value = 1.0f;
 
-		//std::unordered_map<AltsoundSampleType, BehaviorInfo*> behavior_map = {
-		//	{MUSIC, &music_behavior},
-		//	{CALLOUT, &callout_behavior},
-		//	{SFX, &sfx_behavior},
-		//	{SOLO, &solo_behavior},
-		//	{OVERLAY, &overlay_behavior}
-		//};
 		const float grp_vol = behavior_map[stream.stream_type]->group_vol;
 
 		const AltsoundSampleType stream_type = stream.stream_type;

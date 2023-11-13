@@ -249,26 +249,26 @@ static sim_tInportData dh_inportData[] = {
 /------------------*/
 WPC_ROMSTART(dh,lx2,"harr_lx2.rom",0x80000,CRC(d92c2d35) SHA1(68f08120fbc510db46b1fd0e68ec07fe536f77ca))
 DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a) SHA1(c89ec1c2f4f5201cbc40c7038cd1219b200066c7),
-		"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
-		"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
-		"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
-		"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
+				"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
+				"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
+				"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
+				"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
 WPC_ROMEND
 
 WPC_ROMSTART(dh,dx2,"harr_dx2.rom",0x80000,CRC(3594efb6) SHA1(68780cd546189ac45d6a30766a11ab5dac83a64c))
 DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a) SHA1(c89ec1c2f4f5201cbc40c7038cd1219b200066c7),
-		"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
-		"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
-		"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
-		"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
+				"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
+				"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
+				"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
+				"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
 WPC_ROMEND
 
 WPC_ROMSTART(dh,lf2,"harr_lf2.rom",0x80000,CRC(c4931917) SHA1(f7a366fade194ad7b3671acf55d894e3c31992d0))
 DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a) SHA1(c89ec1c2f4f5201cbc40c7038cd1219b200066c7),
-		"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
-		"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
-		"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
-		"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
+				"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
+				"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
+				"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
+				"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
 WPC_ROMEND
 
 /*--------------
@@ -282,15 +282,15 @@ CORE_CLONEDEF(dh,lf2,lx2,"Dirty Harry (LF-2 French)",1995,"Williams",wpc_mSecuri
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData dhSimData = {
-  2,    				/* 2 game specific input ports */
+  2,						/* 2 game specific input ports */
   dh_stateDef,				/* Definition of all states */
   dh_inportData,			/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
-  NULL, 				/* no init */
-  dh_handleBallState,			/*Function to handle ball state changes*/
-  dh_drawStatic,			/*Function to handle mechanical state changes*/
-  FALSE, 				/* Simulate manual shooter? */
-  NULL  				/* Custom key conditions? */
+  NULL,						/* No init */
+  dh_handleBallState,		/* Function to handle ball state changes*/
+  dh_drawStatic,			/* Function to handle mechanical state changes*/
+  FALSE,					/* Simulate manual shooter? */
+  NULL						/* Custom key conditions? */
 };
 
 /*----------------------
@@ -317,4 +317,3 @@ static core_tGameData dhGameData = {
 static void init_dh(void) {
   core_gameData = &dhGameData;
 }
-

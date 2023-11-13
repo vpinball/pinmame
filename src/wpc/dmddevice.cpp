@@ -18,14 +18,14 @@
  #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
 #endif
 
-UINT16  seg_data2[CORE_SEGCOUNT] = {};
-UINT16  dmd_width = 128;
-UINT16  dmd_height = 32;
-bool    dmd_hasDMD = false;
-bool    hasExtraData = false;
+static UINT16  seg_data2[CORE_SEGCOUNT] = {};
+static UINT16  dmd_width = 128;
+static UINT16  dmd_height = 32;
+static bool    dmd_hasDMD = false;
+static bool    dmd_hasExtraData = false;
 
-HMODULE DmdDev_hModule;
-HMODULE DmdScr_hModule;
+static HMODULE DmdDev_hModule;
+static HMODULE DmdScr_hModule;
 
 typedef int(*DmdDev_Open_t)();
 typedef bool(*DmdDev_Close_t)();
@@ -41,31 +41,31 @@ typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UI
 typedef void(*DmdDev_render_PM_Alphanumeric_Frame_t)(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 typedef void(*DmdDev_render_PM_Alphanumeric_Dim_Frame_t)(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2);
 
-DmdDev_Open_t DmdDev_Open;
-DmdDev_Close_t DmdDev_Close;
-DmdDev_PM_GameSettings_t DmdDev_PM_GameSettings;
-DmdDev_Set_4_Colors_Palette_t DmdDev_Set_4_Colors_Palette;
-DmdDev_Console_Data_t DmdDev_Console_Data;
-DmdDev_Console_Input_Ptr_t DmdDev_Console_Input_Ptr;
-DmdDev_Render_16_Shades_t DmdDev_Render_16_Shades;
-DmdDev_Render_4_Shades_t DmdDev_Render_4_Shades;
-DmdDev_Render_16_Shades_with_Raw_t DmdDev_Render_16_Shades_with_Raw;
-DmdDev_Render_4_Shades_with_Raw_t DmdDev_Render_4_Shades_with_Raw;
-DmdDev_render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
-DmdDev_render_PM_Alphanumeric_Dim_Frame_t DmdDev_render_PM_Alphanumeric_Dim_Frame;
+static DmdDev_Open_t DmdDev_Open;
+static DmdDev_Close_t DmdDev_Close;
+static DmdDev_PM_GameSettings_t DmdDev_PM_GameSettings;
+static DmdDev_Set_4_Colors_Palette_t DmdDev_Set_4_Colors_Palette;
+static DmdDev_Console_Data_t DmdDev_Console_Data;
+static DmdDev_Console_Input_Ptr_t DmdDev_Console_Input_Ptr;
+static DmdDev_Render_16_Shades_t DmdDev_Render_16_Shades;
+static DmdDev_Render_4_Shades_t DmdDev_Render_4_Shades;
+static DmdDev_Render_16_Shades_with_Raw_t DmdDev_Render_16_Shades_with_Raw;
+static DmdDev_Render_4_Shades_with_Raw_t DmdDev_Render_4_Shades_with_Raw;
+static DmdDev_render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
+static DmdDev_render_PM_Alphanumeric_Dim_Frame_t DmdDev_render_PM_Alphanumeric_Dim_Frame;
 
-DmdDev_Open_t DmdScr_Open;
-DmdDev_Close_t DmdScr_Close;
-DmdDev_PM_GameSettings_t DmdScr_PM_GameSettings;
-DmdDev_Set_4_Colors_Palette_t DmdScr_Set_4_Colors_Palette;
-DmdDev_Console_Data_t DmdScr_Console_Data;
-DmdDev_Console_Input_Ptr_t DmdScr_Console_Input_Ptr;
-DmdDev_Render_16_Shades_t DmdScr_Render_16_Shades;
-DmdDev_Render_4_Shades_t DmdScr_Render_4_Shades;
-DmdDev_Render_16_Shades_with_Raw_t DmdScr_Render_16_Shades_with_Raw;
-DmdDev_Render_4_Shades_with_Raw_t DmdScr_Render_4_Shades_with_Raw;
-DmdDev_render_PM_Alphanumeric_Frame_t DmdScr_render_PM_Alphanumeric_Frame;
-DmdDev_render_PM_Alphanumeric_Dim_Frame_t DmdScr_render_PM_Alphanumeric_Dim_Frame;
+static DmdDev_Open_t DmdScr_Open;
+static DmdDev_Close_t DmdScr_Close;
+static DmdDev_PM_GameSettings_t DmdScr_PM_GameSettings;
+static DmdDev_Set_4_Colors_Palette_t DmdScr_Set_4_Colors_Palette;
+static DmdDev_Console_Data_t DmdScr_Console_Data;
+static DmdDev_Console_Input_Ptr_t DmdScr_Console_Input_Ptr;
+static DmdDev_Render_16_Shades_t DmdScr_Render_16_Shades;
+static DmdDev_Render_4_Shades_t DmdScr_Render_4_Shades;
+static DmdDev_Render_16_Shades_with_Raw_t DmdScr_Render_16_Shades_with_Raw;
+static DmdDev_Render_4_Shades_with_Raw_t DmdScr_Render_4_Shades_with_Raw;
+static DmdDev_render_PM_Alphanumeric_Frame_t DmdScr_render_PM_Alphanumeric_Frame;
+static DmdDev_render_PM_Alphanumeric_Dim_Frame_t DmdScr_render_PM_Alphanumeric_Dim_Frame;
 
 void FwdConsoleData(UINT8 data) {
 	if (DmdDev_Console_Data)
@@ -90,8 +90,8 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	// look for the DmdDevice(64).dll and DmdScreen(64).dll in the path of vpinmame.dll
 	char DmdDev_filename[MAX_PATH];
 	char DmdScr_filename[MAX_PATH];
-	bool	DmdScr = false;
-	bool	DmdDev = false;
+	bool DmdScr = false;
+	bool DmdDev = false;
 
 #ifndef _WIN64
 #ifdef VPINMAME
@@ -187,7 +187,7 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	dmd_width = 128; // set default DMD size
 	dmd_height = 32;
 	dmd_hasDMD = false;
-	hasExtraData = false;
+	dmd_hasExtraData = false;
 	memset(seg_data2, 0, CORE_SEGCOUNT * sizeof(UINT16));
 
 	rgb24 color0, color33, color66, color100;
@@ -356,7 +356,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 	if((gen == GEN_BY35) && (disp_num_segs[0] == 2))
 	{
 		memcpy(seg_data2,seg_data, CORE_SEGCOUNT * sizeof(UINT16));
-		hasExtraData = true;
+		dmd_hasExtraData = true;
 		return;
 	}
 
@@ -377,7 +377,6 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 			layout = _2x7Num10_2x7Num10_4x1Num;
 			break;
 
-		// williams
 		case GEN_WPCALPHA_1:
 		case GEN_WPCALPHA_2:
 		case GEN_S11C:
@@ -448,6 +447,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 					break;
 			}
 			break;
+
 		// bally
 		case GEN_BY17:
 		case GEN_BY35:
@@ -460,7 +460,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 						layout = _2x6Num_2x6Num_4x1Num;
 						break;
 					case 7:
-						if(hasExtraData)
+						if(dmd_hasExtraData)
 							layout = _2x7Num_2x7Num_10x1Num;
 						else
 							layout = _2x7Num_2x7Num_4x1Num;
@@ -475,12 +475,15 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		case GEN_BYPROTO:
 			layout = _2x6Num_2x6Num_4x1Num;
 			break;
+
+		// hankin
+		case GEN_HNK:
+			layout = _2x20Alpha;
+			break;
+
 		//!! unsupported so far:
 		// astro
 		case GEN_ASTRO:
-			break;
-		// hankin
-		case GEN_HNK:
 			break;
 		case GEN_BOWLING:
 			break;
@@ -492,9 +495,9 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 	}
 
 	if (DmdDev_render_PM_Alphanumeric_Dim_Frame)
-		DmdDev_render_PM_Alphanumeric_Dim_Frame (layout, seg_data, seg_dim, seg_data2);
+		DmdDev_render_PM_Alphanumeric_Dim_Frame(layout, seg_data, seg_dim, seg_data2);
 	else if (DmdDev_render_PM_Alphanumeric_Frame) // older interface without dimming
-		DmdDev_render_PM_Alphanumeric_Frame (layout, seg_data, seg_data2);
+		DmdDev_render_PM_Alphanumeric_Frame(layout, seg_data, seg_data2);
 
 	if (DmdScr_render_PM_Alphanumeric_Dim_Frame)
 		DmdScr_render_PM_Alphanumeric_Dim_Frame(layout, seg_data, seg_dim, seg_data2);

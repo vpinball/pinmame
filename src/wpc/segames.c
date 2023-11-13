@@ -282,14 +282,14 @@ DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c5
 
 INITGAME(xfiles,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(xfiles,"xfcpu.303",CRC(c7ab5efe) SHA1(dcb4b89adfb5ba39e59c1118a00b29941d3ea4e9))
-DE_DMD32ROM8x(   "xfildspa.300",CRC(03c96af8) SHA1(06a26116f863bb9b2d127e18c5ba500537923d62))
+DE_DMD32ROM8x(     "xfildspa.300",CRC(03c96af8) SHA1(06a26116f863bb9b2d127e18c5ba500537923d62))
 XFIL_SND
 SE_ROMEND
 #define input_ports_xfiles input_ports_se
 CORE_GAMEDEFNV(xfiles,"X-Files, The (3.03)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(xfilesf,"xfcpu.303",CRC(c7ab5efe) SHA1(dcb4b89adfb5ba39e59c1118a00b29941d3ea4e9))
-DE_DMD32ROM8x(   "xfildspf.300",CRC(fe9b1292) SHA1(ead40d2cdff060829008f468e08512c4f5f9e055))
+DE_DMD32ROM8x(      "xfildspf.300",CRC(fe9b1292) SHA1(ead40d2cdff060829008f468e08512c4f5f9e055))
 XFIL_SND
 SE_ROMEND
 #define input_ports_xfilesf input_ports_xfiles
@@ -297,22 +297,28 @@ SE_ROMEND
 CORE_CLONEDEFNV(xfilesf,xfiles,"X-Files, The (3.03 French)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(xfiles2,"xfcpu.204",CRC(a4913128) SHA1(1fe348725e13fd5dc56b6b2dbd173d0b49953483))
-DE_DMD32ROM8x(   "xfildspa.201",CRC(bb015f24) SHA1(ca539d978ef0b8244227ea0c60087da5e7f0ee9e))
+DE_DMD32ROM8x(      "xfildspa.201",CRC(bb015f24) SHA1(ca539d978ef0b8244227ea0c60087da5e7f0ee9e))
 XFIL_SND
 SE_ROMEND
 #define input_ports_xfiles2 input_ports_xfiles
 #define init_xfiles2 init_xfiles
 CORE_CLONEDEFNV(xfiles2,xfiles,"X-Files, The (2.04)",1997,"Sega",de_mSES1,0)
 
-INITGAME(xfiles20,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(xfiles20,"xfcpu.200",CRC(fd9e8ae8) SHA1(7f904eaae437bf938f01e9df875b9415167fc4c5))
-DE_DMD32ROM8x(   "xfildspa.200",CRC(3fb161c3) SHA1(ea00c5c5a1e4908fcc34b0558b89325db091595d))
-DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c58cd5973ff11b),
-                  "xfsndu17.c40",CRC(40bfc835) SHA1(2d6ac82acbbf9645bcb84fab7f285f2373e516a8),
-                  "xfsndu21.c40",CRC(b56a5ca6) SHA1(5fa23a8bb57e45aca159882226e603d9a6be078b))
+DE_DMD32ROM8x(       "xfildspa.200",CRC(3fb161c3) SHA1(ea00c5c5a1e4908fcc34b0558b89325db091595d))
+XFIL_SND
 SE_ROMEND
 #define input_ports_xfiles20 input_ports_xfiles
+#define init_xfiles20 init_xfiles
 CORE_CLONEDEFNV(xfiles20,xfiles,"X-Files, The (2.00)",1997,"Sega",de_mSES1,0)
+
+SE128_ROMSTART(xfiles304,"xfcpu.304",CRC(1970a3dc) SHA1(8f73ba4f724c8e774839eb3b27d56cc1551a60ac))
+DE_DMD32ROM8x(        "xfildspa.300",CRC(03c96af8) SHA1(06a26116f863bb9b2d127e18c5ba500537923d62))
+XFIL_SND
+SE_ROMEND
+#define input_ports_xfiles304 input_ports_xfiles
+#define init_xfiles304 init_xfiles
+CORE_CLONEDEFNV(xfiles304,xfiles,"X-Files, The (3.04 unofficial MOD)",2023,"Sega",de_mSES1,0)
 
 // There were also 12 Neiman Marcus machines (Collector's Edition) with (at least) a special screen in the software, displaying the serial number
 

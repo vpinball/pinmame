@@ -309,10 +309,10 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
     for (jj = 0; jj < 16; jj++) {
       for (kk = 7; kk >= 0; kk--) {
         *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
-	  }
+      }
       for (kk = 15; kk > 7; kk--) {
         *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
-	  }
+      }
       RAM++;
     }
     *line = 0;

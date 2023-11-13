@@ -87,7 +87,7 @@ int YM2203_sh_start(const struct MachineSound *msound)
 		volume = intf->mixing_level[i]>>16; /* high 16 bit */
 		stream[i] = stream_init(name,volume,rate,i,YM2203UpdateOne/*YM2203UpdateCallback*/);
 	}
-	/* Initialize FM emurator */
+	/* Initialize FM emulator */
 	if (YM2203Init(intf->num,intf->baseclock,rate,TimerHandler,IRQHandler) == 0)
 	{
 		/* Ready */

@@ -867,6 +867,7 @@ DRIVERNV(carhop)        //S3-725:   01/91 Car Hop
 DRIVERNV(hoops)         //S3-727:   02/91 Hoops
 DRIVERNV(cactjack)      //S3-729:   04/91 Cactus Jack's
 DRIVERNV(clas1812)      //S3-730:   08/91 Class of 1812
+DRIVERNV(beav_butt)     //          11/23 Beavis and Butt-Head (Class of 1812 MOD)
 DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf 'n Safari
 DRIVERNV(opthund)       //S3-732:   02/92 Operation: Thunder
 //System 3 128x32 DMD
@@ -1272,6 +1273,7 @@ DRIVERNV(xfiles20)      //Whitestar: 08/97 X-Files (2.00)
 DRIVERNV(xfiles2)       //           08/97 X-Files (2.04)
 DRIVERNV(xfiles)        //           08/97 X-Files (3.03)
 DRIVERNV(xfilesf)       //           08/97 X-Files (3.03 French)
+DRIVERNV(xfiles304)     //           09/23 X-Files (3.04 unofficial MOD)
 DRIVERNV(startrp2)      //Whitestar: 11/97 Starship Troopers (2.00)
 DRIVERNV(startrp)       //           11/97 Starship Troopers (2.01)
 DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
@@ -2337,6 +2339,7 @@ DRIVERNV(zekepeak)      //??/83 Zeke's Peak (Redemption)
 // ---------------
 // TAITO DO BRASIL GAMES
 // ---------------
+                        // Apache? (1979 version features solid state according to taito book)
 DRIVERNV(football)      //03/79 Football (W World Cup'78, 05/78)
                         //03/79 Hot Ball (B Eight Ball, 01/77)
                         //??/?? Sultan (G Sinbad, 05/78)
@@ -2526,6 +2529,8 @@ DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer (L-1)
 DRIVER(sorcr,l2)        //          03/85 W Sorcerer (L-2)
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet (L-4)
 DRIVER(comet,l5)        //          06/85 W Comet (L-5)
+//System 10
+                        //S10-543N: 12/85 W 4-IN-1
 //System 11
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)

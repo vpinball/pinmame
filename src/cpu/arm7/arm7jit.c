@@ -566,7 +566,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	sx = (insn & 0x40);
 	isImmOfs = (insn & 0x400000);     // Bit 22 = offset type - 1 = immediate, 0 = register
 	immOfs = (((insn >> 8) & 0x0f) << 4) | (insn & 0x0f); // immediate value in high nibble (bits 8-11) and lo nibble (bit 0-3)
-									  // note: immediate offset is valid only if isImmOfs is true
+	                                  // note: immediate offset is valid only if isImmOfs is true
 	rm = insn & 0x0f;                 // offset register; valid only if isImmOfs is false
 	preIdx = (insn & INSN_SDT_P);
 	up = insn & INSN_SDT_U;
@@ -574,6 +574,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 
 	// If we have a double-word instruction (LDRD, STRD), the encoding is special.
 	// NOTE!  These instructions aren't exercised in any Whitestar code.
+	// Update: Triggered with mt_140 (at least)
 	if (ddinstr)
 	{
 		assert(0); // if this happens, test following code

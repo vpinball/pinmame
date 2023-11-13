@@ -90,7 +90,6 @@ bool GSoundCsvParser::parse(std::vector<GSoundSampleInfo>& samples_out)
 			// Read TYPE field
 			if (std::getline(ss, field, ',')) {
 				field = trim(field);
-				//field = toLower(field);
 				std::transform(field.begin(), field.end(), field.begin(), ::tolower);
 				entry.type = field;
 

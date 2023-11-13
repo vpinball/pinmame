@@ -56,7 +56,6 @@ typedef void cpuop_func(void);
 extern  cpuop_func *cpufunctbl[65536];
 
 
-typedef char flagtype;
 #ifndef __WATCOMC__
 #define READ_MEML(a,b) asm ("mov (%%esi),%%eax \n\t bswap %%eax \n\t" :"=a" (b) :"S" (a))
 #define READ_MEMW(a,b) asm ("mov (%%esi),%%ax\n\t  xchg %%al,%%ah" :"=a" (b) : "S" (a))

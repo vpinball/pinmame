@@ -151,11 +151,11 @@ int osd_start_audio_stream(int stereo)
 
 	if (Machine->sample_rate != 0) {
 		memset(&aqc, 0, sizeof(AQCallbackStruct));
-	
+
 		aqc.dataFormat.mSampleRate = (Float64) Machine->sample_rate;
 		aqc.dataFormat.mFormatID = kAudioFormatLinearPCM;
 		aqc.dataFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
-		aqc.dataFormat.mChannelsPerFrame = (Machine->drv->sound_attributes & SOUND_SUPPORTS_STEREO) ? 2 : 1;
+		aqc.dataFormat.mChannelsPerFrame = stereo ? 2 : 1;
 		aqc.dataFormat.mFramesPerPacket = 1;
 		aqc.dataFormat.mBitsPerChannel = 16;
 		aqc.dataFormat.mBytesPerPacket = 2 * aqc.dataFormat.mChannelsPerFrame;

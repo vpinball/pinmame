@@ -297,7 +297,7 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 }; // The very first Williams speech board used the MC3417 (and not a HC555XX), but should not matter much in practice??
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, 55516, HC55516_FILTER_C8228 }; // The very first Williams speech board used the MC3417 (and not a HC555XX), but should not matter much in practice??
 
 /* THESE (at least) SHOULD BE USING MC3417, i.e. maybe split sys6 and sys7 sound and pick then on case per case basis??
 sys6:
@@ -352,6 +352,9 @@ static const struct pia6821_interface s67s_pia = {
 static void s67s_init(struct sndbrdData *brdData) {
   s67slocals.brdData = *brdData;
   pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
+
+  // Note that the speech board games featured a potentiometer on the separate speech board to mix speech and sound (so it could be tweaked by the operator!).
+  // For the moment, the mixing sounds okay as-is.
 }
 
 static WRITE_HANDLER(s67s_ctrl_w) {
@@ -439,7 +442,7 @@ static MEMORY_WRITE_START(s9s_writemem)
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 }; // all boards were using a HC55516
+static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_C8228 }; // all boards were using a HC555XX
 
 MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -466,9 +469,13 @@ static MEMORY_WRITE_START(s11s_writemem)
 MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
+// The s11xs features 2 DACs/HC555XXs (s11b2s 2 DACs only) for code simplicity, actually,
+// this would allow to emulate one on the mainboard, and one on the soundboard.
+// In practice, only the soundboard had them, while the mainboard was not populated anymore,
+// as on later System11 revisions, more and more audio components were moved from the MPU to the soundboard.
 static struct DACinterface      s11xs_dacInt2     = { 2, { 15, 15 }};
-static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 }; // all boards were using a HC55516
-static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_SYS11 };      // all boards were using a HC555XX
+static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, 55536, HC55516_FILTER_SYS11 }; // dto.
 
 MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -539,31 +546,22 @@ static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this 
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
 
-  if (core_gameData->gen == GEN_S9) {
-	// For S9 games, turn up the HC gain slightly. Note that we can't use
-	// hw.gameSpecific2 to encode custom equalization for S9, because it's
-	// already used for other purposes.  (Or at least was at some point; Space 
-	// Shuttle defines a non-zero value there.  I suspect this is vestigial
-	// because I can't find any references anywhere that actually use it.)
-	hc55516_set_gain(0, 1.5);
-  }
-  else {
-	// For S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
-	int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
-	int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
-	int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
+  // For S9&S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
+  int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
+  int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
+  int dacvol = ((core_gameData->hw.gameSpecific2) >> 25) & 0x7f;
 
-	// The system 11 games sound better with the HC gain turned up a bit by default.
-	if (hcgain == 0)
-	  hcgain = 150;
+  // The system 9&11 games sound better with the HC gain turned up a bit by default.
+  // Note that sys9 games featured a potentiometer on the separate speech board to mix speech and sound (so it could be tweaked by the operator!).
+  if (hcgain == 0)
+    hcgain = 150;
 
-	if (hcgain != 0)
-	  hc55516_set_gain(0, hcgain / 100.0);
-	if (ymvol != 0)
-	  YM2151_set_mixing_levels(0, ymvol, ymvol);
-	if (dacvol != 0)
-	  DAC_set_mixing_level(0, dacvol);
-  }
+  if (hcgain != 0)
+    hc55516_set_gain(0, hcgain / 100.0);
+  if (ymvol != 0)
+    YM2151_set_mixing_levels(0, ymvol, ymvol);
+  if (dacvol != 0)
+    DAC_set_mixing_level(0, dacvol);
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
@@ -729,7 +727,7 @@ MEMORY_END
 // don't sound good for a given game.  See WPCSND_HC55516_LEVELS in wmssnd.h
 // for instructions.
 static struct DACinterface      s11cs_dacInt      = { 1, { 15 }};
-static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 }; // all boards were using a HC55516
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, 55536, HC55516_FILTER_SYS11 }; // all boards were using a HC555XX
 static struct YM2151interface   s11cs_ym2151Int = {
 	1, 3579545, /* Hz */
 	{ YM3012_VOL(8, MIXER_PAN_CENTER, 8, MIXER_PAN_CENTER) },
@@ -1121,7 +1119,7 @@ MEMORY_END
 //
 //[OLD NOTE, before HC55516 rewrite: These volume levels sound really good compared to my own Funhouse and T2: Dac=100%,CVSD=80%,2151=15%]
 static struct DACinterface      wpcs_dacInt     = { 1, { 70 }};
-static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 }; // all boards were using a HC55516
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, 55536, HC55516_FILTER_WPC89 }; // all boards were using a HC555XX, BUT some late WPC boards also used a MC3417 daughter board due to HC555XX shortages!
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
@@ -1172,6 +1170,7 @@ static WRITE_HANDLER(wpcs_ctrl_w) { /*-- a write here resets the CPU --*/
 }
 
 static void wpcs_init(struct sndbrdData *brdData) {
+  // Use hw.gameSpecific2 to encode game-specific custom equalization.
   int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
   int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
   int dacvol = ((core_gameData->hw.gameSpecific2) >> 25) & 0x7f;
@@ -1179,6 +1178,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
   /* the non-paged ROM is at the end of the image. move it to its correct place */
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
   wpcs_rombank_w(0,0);
+
   if (hcgain != 0)
 	hc55516_set_gain(0, hcgain / 100.0);
   if (ymvol != 0)

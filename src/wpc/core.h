@@ -452,7 +452,7 @@ typedef struct {
   int    p_rocEn;         /* P-ROC support enable */
   int    isKickbackLamp[255];
 #endif
-  volatile char   segDim[CORE_SEGCOUNT]; /* segments dimming */
+  volatile UINT8 segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */

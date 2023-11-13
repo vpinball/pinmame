@@ -90,6 +90,7 @@ struct rc_option pinmame_opts[] = {
         { "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
 #endif /* PROC_SUPPORT */
         { "vgmwrite", NULL, rc_bool, &pmoptions.vgmwrite, "0", 0, 0, NULL, "Enable to write a VGM of the current session (name is based on romname)" },
+        { "force_stereo", NULL, rc_bool, &pmoptions.force_mono_to_stereo, "0", 0, 0, NULL, "Always force stereo output (e.g. to better support multi channel sound systems)" },
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 #endif /* PINMAME */
@@ -399,11 +400,11 @@ int parse_config (const char* filename, const struct GameDriver *gamedrv)
                         if (retval)
                                 return retval;
                 }
-                sprintf(buffer, "%s.ini", gamedrv->name);
+                snprintf(buffer, sizeof(buffer), "%s.ini", gamedrv->name);
         }
         else
         {
-                sprintf(buffer, "%s", filename);
+                snprintf(buffer, sizeof(buffer), "%s", filename);
         }
 
         if (verbose)
@@ -490,7 +491,7 @@ int cli_frontend_init (int argc, char **argv)
                 exit(1);
         }
 
-        sprintf (buffer, "%s.ini", cmd_name);
+        snprintf (buffer, sizeof(buffer), "%s.ini", cmd_name);
 
         /* parse mame.ini/mess.ini even if called with another name */
 #ifdef MESS
@@ -525,7 +526,7 @@ int cli_frontend_init (int argc, char **argv)
 
         if (showconfig)
         {
-                sprintf (buffer, " %s running parameters", cmd_name);
+                snprintf (buffer, sizeof(buffer), " %s running parameters", cmd_name);
                 rc_write(rc, stdout, buffer);
                 exit(0);
         }
@@ -640,7 +641,7 @@ int cli_frontend_init (int argc, char **argv)
         {
                 const struct GameDriver *tmp_gd;
 
-                sprintf(buffer, "%s", drivers[game_index]->source_file+12);
+                snprintf(buffer, sizeof(buffer), "%s", drivers[game_index]->source_file+12);
                 buffer[strlen(buffer) - 2] = 0;
 
                 tmp_gd = drivers[game_index];

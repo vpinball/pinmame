@@ -1296,16 +1296,18 @@ int sound_start(void)
 	int totalsound = 0;
 	int i;
 
+	cleared_value = 0x00;
+
 	/* Verify the order of entries in the sndintf[] array */
 	for (i = 0;i < SOUND_COUNT;i++)
 	{
 		if (sndintf[i].sound_num != i)
 		{
-            int j;
+			int j;
 logerror("Sound #%d wrong ID %d: check enum SOUND_... in src/sndintrf.h!\n",i,sndintf[i].sound_num);
 			for (j = 0; j < i; j++)
 				logerror("ID %2d: %s\n", j, sndintf[j].name);
-            return 1;
+			return 1;
 		}
 	}
 

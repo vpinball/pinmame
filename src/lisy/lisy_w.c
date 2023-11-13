@@ -1201,6 +1201,7 @@ void
 lisy_S3_cmos_setting(void) {
     int i, ret;
     UINT8 data[29];
+    UINT8 old_data[29];
     unsigned char action;
 
     //calculate decimal values out of 4bit bcd data in CMOS
@@ -1288,10 +1289,19 @@ printf("get setting %d: %d\n",42+i,data[i]);
 
     //write new settings to cmos
     //calculate 4bit bcd data in CMOS out of data
-    for(i=0; i<58; i+=2) {
+    //data 1..8
+    for(i=2; i<=16; i+=2) {
         lisy_s4_CMOS[i] = data[i/2] / 10;
         lisy_s4_CMOS[i+1] = data[i/2] % 10;
-//printf("data %d  bcd %d %d\n",data[i/2], lisy_s4_CMOS[i] , lisy_s4_CMOS[i+1] );
+	//printf("data %d  bcd %d %d\n",data[i/2], lisy_s4_CMOS[i] , lisy_s4_CMOS[i+1] );
+        lisy_s4_CMOS[i] |= 0xf0;
+        lisy_s4_CMOS[i+1] |= 0xf0;
+    }
+    //data 12..21
+    for(i=24; i<=42; i+=2) {
+        lisy_s4_CMOS[i] = data[i/2] / 10;
+        lisy_s4_CMOS[i+1] = data[i/2] % 10;
+	//printf("data %d  bcd %d %d\n",data[i/2], lisy_s4_CMOS[i] , lisy_s4_CMOS[i+1] );
         lisy_s4_CMOS[i] |= 0xf0;
         lisy_s4_CMOS[i+1] |= 0xf0;
     }

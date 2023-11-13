@@ -16,6 +16,8 @@
 #include "Screenshot.h"
 #include "win32ui.h"
 
+char g_szGameName[256] = "";		// String containing requested game name (may be different from ROM if aliased)
+
 int WINAPI WinMain(HINSTANCE    hInstance,
                    HINSTANCE    hPrevInstance,
                    LPSTR        lpCmdLine,

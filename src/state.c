@@ -48,7 +48,7 @@ enum {
 #ifdef VERBOSE
 static const char *ss_type[] =	{ "i8", "u8", "i16", "u16", "i32", "u32", "int", "dbl", "flt" };
 #endif
-static int		   ss_size[] =	{	 1,    1,	  2,	 2, 	4,	   4,	  4,	 8,     4 };
+static const int ss_size[] =	{	 1,    1,	  2,	 2, 	4,	   4,	  4,	 8,     4 };
 
 static void ss_c2(unsigned char *, unsigned);
 static void ss_c4(unsigned char *, unsigned);

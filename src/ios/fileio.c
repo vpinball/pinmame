@@ -26,12 +26,12 @@ struct pathdata {
 };
 
 struct _osd_file {
-	int		        handle;
+	int			    handle;
 	UINT64		    filepos;
 	UINT64		    end;
 	UINT64		    offset;
 	UINT64		    bufferbase;
-	unsigned long	bufferbytes;
+	size_t		    bufferbytes;
 	UINT8		    buffer[FILE_BUFFER_SIZE];
 };
 
@@ -44,21 +44,21 @@ static struct pathdata pathlist[FILETYPE_end];
 
 void set_pathlist(int file_type, const char* new_rawpath) {
 	struct pathdata *list = &pathlist[file_type];
-    
+
 	if (list->pathcount != 0) {
 		int pathindex;
-        
+
 		for (pathindex = 0; pathindex < list->pathcount; pathindex++) {
 			free((void *)list->path[pathindex]);
-        }
-        
+		}
+
 		free((void *)list->path);
 	}
-    
+
 	list->path = NULL;
 	list->pathcount = 0;
-    
-	list->rawpath = new_rawpath;    
+
+	list->rawpath = new_rawpath;
 }
 
 /**
@@ -77,7 +77,7 @@ static char* find_reverse_path_sep(char* name) {
 	char* p = name + strlen(name) - 1;
 	while (p >= name && !is_pathsep(*p)) {
 		p--;
-    }
+	}
 	return (p >= name) ? p : NULL;
 }
 
@@ -86,26 +86,26 @@ static char* find_reverse_path_sep(char* name) {
  */
 
 static void create_path(char* path, int has_filename) {
-    struct stat st;
+	struct stat st;
 
 	char* sep = find_reverse_path_sep(path);
-    
-    if (sep && sep > path && !is_pathsep(sep[-1])) {
+
+	if (sep && sep > path && !is_pathsep(sep[-1])) {
 		*sep = 0;
 		create_path(path, 0);
 		*sep = '/';
 	}
-    
+
 	if (has_filename) {
 		return;
-    }
-    
+	}
+
     if (!stat(path, &st)) {
         return;
     }
-    
+
     ipinmame_logger("create_path(): creating path - path=%s, has_filename=%d", path, has_filename);
-    
+
     mkdir(path, 0777);
 }
 
@@ -123,22 +123,22 @@ INLINE int is_variablechar(char c) {
 
 static const char* parse_variable(const char** start, const char* end) {
 	const char* src = *start;
-    const char* var;
-    
+	const char* var;
+
 	char variable[1024];
 	char *dest = variable;
-    
+
 	for (src = *start; src < end && is_variablechar(*src); src++) {
 		*dest++ = *src;
-    }
-    
+	}
+
 	if(src == *start) {
 		return("$");
-    }
-    
+	}
+
 	*dest = 0;
 	*start = src;
-    
+
 	var = getenv(variable);
 	return (var) ? var : "";
 }
@@ -151,7 +151,7 @@ static char* copy_and_expand_variables(const char* path, int len) {
 	char *dst, *result;
 	const char *src;
 	int length = 0;
-    
+
 	for (src = path; src < path + len; ) {
 		if (*src++ == '$') {
 			length += strlen(parse_variable(&src, path + len));
@@ -160,13 +160,13 @@ static char* copy_and_expand_variables(const char* path, int len) {
 			length++;
         }
     }
-    
+
 	result = malloc(length + 1);
 
 	if (!result) {
         exit(1);
     }
-    
+
 	for (src = path, dst = result; src < path + len;) {
 		char c = *src++;
 		if (c == '$') {
@@ -176,7 +176,7 @@ static char* copy_and_expand_variables(const char* path, int len) {
 			*dst++ = c;
         }
 	}
-    
+
 	*dst = 0;
 	return result;
 }
@@ -188,48 +188,48 @@ static char* copy_and_expand_variables(const char* path, int len) {
 static void expand_pathlist(struct pathdata *list) {
 	const char *rawpath = (list->rawpath) ? list->rawpath : "";
 	const char *token;
-    
+
     if (list->pathcount != 0) {
 		int pathindex;
-        
+
 		for (pathindex = 0; pathindex < list->pathcount; pathindex++) {
 			free((void *)list->path[pathindex]);
         }
-        
+
 		free((void *)list->path);
 	}
-    
+
 	list->path = NULL;
 	list->pathcount = 0;
-    
+
 	token = strchr(rawpath, ';');
 
 	if (!token) {
 		token = rawpath + strlen(rawpath);
     }
-    
+
 	while (1) {
 		list->path = realloc((void *)list->path, (list->pathcount + 1) * sizeof(char *));
 		if (!list->path) {
             exit(1);
         }
-        
+
 		list->path[list->pathcount++] = copy_and_expand_variables(rawpath, token - rawpath);
-        
+
 		if (*token == 0) {
 			break;
         }
-        
+
 		rawpath = token + 1;
-        
+
 		token = strchr(rawpath, ';');
 
 		if (!token) {
 			token = rawpath + strlen(rawpath);
         }
 	}
-    
-	return;    
+
+	return;
 }
 
 /**
@@ -238,19 +238,19 @@ static void expand_pathlist(struct pathdata *list) {
 
 static const char* get_path_for_filetype(int filetype, int pathindex, UINT32* count) {
 	struct pathdata* list;
-    
+
 	switch (filetype) {
 #ifndef MESS
 		case FILETYPE_IMAGE:
 			list = &pathlist[FILETYPE_ROM];
 			break;
 #endif
-            
+
 		default:
 			list = &pathlist[filetype];
 			break;
 	}
-    
+
 	if (list->pathcount == 0 || list->rawpath) {
 		if (list == &pathlist[FILETYPE_ROM] && rompath_extra) {
 			const char* rawpath = (list->rawpath) ? list->rawpath : "";
@@ -258,37 +258,37 @@ static const char* get_path_for_filetype(int filetype, int pathindex, UINT32* co
 			sprintf(newpath, "%s;%s", rompath_extra, rawpath);
 			list->rawpath = newpath;
 		}
-        
+
 		expand_pathlist(list);
 	}
-    
+
 	if (count) {
 		*count = list->pathcount;
-    }
-    
+	}
+
 	return (pathindex < list->pathcount) ? list->path[pathindex] : "";
 }
 
 /**
  * compose_path
  */
- 
+
 static void compose_path(char* output, int pathtype, int pathindex, const char* filename) {
 	const char* basepath = get_path_for_filetype(pathtype, pathindex, NULL);
 	char* p;
-    
+
 	*output = 0;
 
 	if (basepath) {
         strcat(output, basepath);
     }
-    
+
 	if (*output && !is_pathsep(output[strlen(output) - 1])) {
         strcat(output,  "/");
     }
-    
+
     strcat(output, filename);
-    
+
 	for (p = output; *p; p++) {
 		if (*p == '\\') {
 			*p = '/';
@@ -301,14 +301,14 @@ static void compose_path(char* output, int pathtype, int pathindex, const char* 
  */
 
 int osd_display_loading_rom_message(const char* name,struct rom_load_data *romdata) {
-    if (name) {
+	if (name) {
 		ipinmame_logger("osd_display_loading_rom_message(): loading %-12s...", name);
-    }
+	}
 	else {
 		ipinmame_logger("osd_display_loading_rom_message():");
-    }
-    
-    return 0;
+	}
+
+	return 0;
 }
 
 /**
@@ -317,10 +317,10 @@ int osd_display_loading_rom_message(const char* name,struct rom_load_data *romda
 
 int osd_get_path_count(int pathtype) {
 	UINT32 count;
-    
+
 	get_path_for_filetype(pathtype, 0, &count);
-	
-    return (int)count;
+
+	return (int)count;
 }
 
 /**
@@ -354,57 +354,57 @@ osd_file* osd_fopen(int pathtype, int pathindex, const char *filename, const cha
     int i;
     struct stat st;
     char fullpath[1024];
-    
+
     for (i = 0; i < MAX_OPEN_FILES; i++) {
         if (openfile[i].handle == (int)NULL || openfile[i].handle == INVALID_HANDLE_VALUE) {
             break;
         }
     }
-    
+
     if (i == MAX_OPEN_FILES) {
         return NULL;
     }
-    
+
     file = &openfile[i];
     memset(file, 0, sizeof(*file));
-    
+
     if (strchr(mode, 'r')) {
         access = O_RDONLY; 
     }
     else if (strchr(mode, 'w')) {
-        access = O_WRONLY; 
+        access = O_WRONLY;
         access |= (O_CREAT | O_TRUNC);
     }
     else if (strchr(mode, '+')) {
         access = O_RDWR;
     }
-    
-   	compose_path(fullpath, pathtype, pathindex, filename);    
+
+    compose_path(fullpath, pathtype, pathindex, filename);
     ipinmame_logger("osd_fopen(): access=%08X, fullpath=%s", access, fullpath);
-    
+
     stat(fullpath, &st);
-    
+
     file->handle = open(fullpath, access, 0666);
-    
+
     if (file->handle == INVALID_HANDLE_VALUE) {
         if (!(access & O_WRONLY) || errno != ENOENT) {
             ipinmame_logger("osd_fopen(): unable to open");
             return NULL;
         }
-        
+
         create_path(fullpath, 1);
         file->handle = open(fullpath, access, 0666);
-        
+
         if (file->handle == INVALID_HANDLE_VALUE) {
             ipinmame_logger("osd_fopen(): unable to open");
             return NULL;
         }
     }
-    
+
     fstat(file->handle, &st);
     file->end = st.st_size;
-    
-    return file;    
+
+    return file;
 }
 
 /**
@@ -426,25 +426,25 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length) {
 	UINT32 bytes_left = length;
 	int bytes_to_copy;
 	UINT32 result;
-    
+
 	if (file->offset >= file->bufferbase && file->offset < file->bufferbase + file->bufferbytes) {
 		bytes_to_copy = file->bufferbase + file->bufferbytes - file->offset;
-		
-        if (bytes_to_copy > length) {
+
+		if (bytes_to_copy > length) {
 			bytes_to_copy = length;
-        }
-        
+		}
+
 		memcpy(buffer, &file->buffer[file->offset - file->bufferbase], bytes_to_copy);
-        
+
 		bytes_left -= bytes_to_copy;
 		file->offset += bytes_to_copy;
 		buffer = (UINT8 *)buffer + bytes_to_copy;
-        
+
 		if (bytes_left == 0) {
 			return length;
-        }
+		}
 	}
-    
+
 	if (file->offset != file->filepos) {
         if (lseek(file->handle, file->offset, SEEK_SET) == -1) {
             file->filepos = ~0;
@@ -452,29 +452,29 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length) {
         }
 		file->filepos = file->offset;
 	}
-    
+
 	if (length < FILE_BUFFER_SIZE / 2) {
 		file->bufferbase = file->offset;		        
         file->bufferbytes = read(file->handle, file->buffer, FILE_BUFFER_SIZE);
-        
+
         file->filepos += file->bufferbytes;
-        
+
 		bytes_to_copy = bytes_left;
-		
+
         if (bytes_to_copy > file->bufferbytes) {
 			bytes_to_copy = file->bufferbytes;
         }
-        
+
 		memcpy(buffer, file->buffer, bytes_to_copy);
-        
+
 		file->offset += bytes_to_copy;
 		bytes_left -= bytes_to_copy;
 		return length - bytes_left;
 	}
 	else {
-        result = read(file->handle, buffer, bytes_left);
+		result = read(file->handle, buffer, bytes_left);
 		file->filepos += result;
-        
+
 		file->offset += result;
 		bytes_left -= result;
 		return length - bytes_left;
@@ -487,22 +487,22 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length) {
 
 UINT32 osd_fwrite(osd_file *file, const void *buffer, UINT32 length) {
 	UINT32 result;
-    
+
     file->bufferbytes = 0;
-    
+
     if (lseek(file->handle, file->offset, SEEK_SET) == -1) {
         return 0;
     }
-    
+
     result = write(file->handle, buffer, length);
-    
+
     file->filepos += result;
     file->offset += result;
-    
+
     if (file->offset > file->end) {
         file->end = file->offset;
     }
-    
+
     return result;
 }
 
@@ -520,10 +520,10 @@ UINT64 osd_fsize(osd_file *file)
 int osd_fseek(osd_file *file, INT64 offset, int whence) {
 	switch (whence) {
 		default:
-		case SEEK_SET:	
-            file->offset = offset;		
+		case SEEK_SET:
+            file->offset = offset;
             break;
-		case SEEK_CUR:	
+		case SEEK_CUR:
             file->offset += offset;
             break;
 		case SEEK_END:
