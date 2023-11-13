@@ -761,7 +761,7 @@ int main(int argc, char *argv[])
         int poll_trigger = poll_interval_ms * 1000 / sleep_us;
         int index_recv = 0;
 
-        while (1)
+        while (true)
         {
             std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
 

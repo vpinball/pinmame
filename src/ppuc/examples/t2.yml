@@ -1,5 +1,5 @@
 ppucVersion: 1
-rom: dummy
+rom: t2_l8
 serialPort: dummy
 platform: WPC
 debug: false
