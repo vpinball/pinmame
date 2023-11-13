@@ -1,210 +1,913 @@
-description: "T2 example configuration"
 ppucVersion: 1
-rom: t2_l8
-serialPort: /dev/tty.usbserial-1420
-display: pin2dmd
-debug: false
+rom: dummy
+serialPort: dummy
 platform: WPC
-
+debug: false
 boards:
   -
-    description: "IO board 0, sends switch events"
+    description: 'PPUC Node 0 (Backbox)'
     number: 0
+    pollEvents: false
+  -
+    description: 'PPUC Node 1 (Cab)'
+    number: 1
     pollEvents: true
   -
-    description: "IO board 3, doesn't send switch events"
-    number: 3
-    pollEvents: false
-
-dipSwitches:
-  -
-    description: ""
-    number: 1
-    on: false
-  -
-    description: ""
+    description: 'PPUC Node 2 (PF)'
     number: 2
-    on: false
+    pollEvents: true
   -
-    description: ""
+    description: 'PPUC Node 3 (PF)'
     number: 3
-    on: false
+    pollEvents: true
   -
-    description: ""
+    description: 'PPUC Node 4 (PF)'
     number: 4
-    on: false
-  -
-    description: "W15 / SW5"
-    number: 5
-    on: true
-  -
-    description: "W16 / SW6"
-    number: 6
-    on: true
-  -
-    description: "W17 / SW7"
-    number: 7
-    on: true
-  -
-    description: "W18 / SW8"
-    number: 8
-    on: true
-
+    pollEvents: true
+dipSwitches: {  }
 switches:
   -
-    number: 1
-    board: 0
-    port: 13
+    description: 'Right Flipper'
+    number: 11
+    board: 1
+    port: 3
   -
-    number: 2
-    board: 0
-    port: 14
+    description: 'Left Flipper'
+    number: 12
+    board: 1
+    port: 4
   -
+    description: 'Start Button'
     number: 13
-    board: 0
-    port: 15
-
-switchMatrix:
-  board: 3
-  activeLow: true
-  pulseTime: 30
-  columns:
-    -
-      number: 1
-      port: 8
-    -
-      number: 2
-      port: 9
-    -
-      number: 3
-      port: 10
-    -
-      number: 4
-      port: 11
-    -
-      number: 5
-      port: 12
-    -
-      number: 6
-      port: 13
-    -
-      number: 7
-      port: 14
-    -
-      number: 8
-      port: 15
-    -
-      number: 9
-      port: 15
-  rows:
-    -
-      number: 1
-      port: 8
-    -
-      number: 2
-      port: 9
-    -
-      number: 3
-      port: 10
-    -
-      number: 4
-      port: 11
-    -
-      number: 5
-      port: 12
-    -
-      number: 6
-      port: 13
-    -
-      number: 7
-      port: 14
-    -
-      number: 8
-      port: 15
-
-ledStripes:
+    board: 1
+    port: 5
   -
-    board: 3
-    port: 2
-    ledType: GBRW
-    amount: 21
-    lightUp: 100
-    afterGlow: 400
-    lamps:
-      -
-        description: "one million, LED 1"
-        number: 14
-        ledNumber: 27
-        brightness: 128
-        color: 000000FF
-      -
-        description: "one million, LED 2"
-        number: 14
-        ledNumber: 28
-        brightness: 128
-        color: 000000FF
-      -
-        description: "Bonus"
-        number: 13
-        ledNumber: 28
-        brightness: 196
-        color: FF00FF00
-    flashers:
-      -
-        description: "flasher"
-        number: 13
-        ledNumber: 28
-        brightness: 196
-        color: FF00FF00
-    gi:
-      -
-        description: "GI"
-        number: 1
-        ledNumber: 28
-        brightness: 196
-        color: FF00FF00
-
-pwmOutput:
+    description: 'Plumb Bob Tilt'
+    number: 14
+    board: 1
+    port: 6
   -
-    type: 'coil'
-    description: "left slingshot"
+    description: 'Trough Left'
+    number: 15
+    board: 2
+    port: 17
+  -
+    description: 'Trough Left'
+    number: 15
+    board: 2
+    port: 3
+  -
+    description: 'Trough Center'
+    number: 16
+    board: 2
+    port: 4
+  -
+    description: 'Trough Right'
     number: 17
-    board: 3
+    board: 2
+    port: 5
+  -
+    description: Outhole
+    number: 18
+    board: 2
+    port: 6
+  -
+    description: 'Slam Tilt'
+    number: 21
+    board: 1
     port: 7
-    power: 255
-    holdPower: 0
-    holdPowerActivationTime: 0
-    minPulseTime: 100
-    maxPulseTime: 500
-    fastFlipSwitch: 4
   -
-    type: 'flasher'
-    description: "flasher"
-    number: 17
-    board: 3
+    description: 'Coin Door Closed'
+    number: 22
+    board: 1
     port: 8
-    power: 255
-    holdPower: 0
-    holdPowerActivationTime: 0
-    minPulseTime: 100
-    maxPulseTime: 500
-    fastFlipSwitch: 0
   -
-    type: 'lamp'
-    description: "lamp"
-    number: 17
-    board: 3
+    description: 'Test Position (Always Closed)'
+    number: 24
+    board: 1
+    port: 9
+  -
+    description: 'Left Outlane'
+    number: 25
+    board: 2
+    port: 7
+  -
+    description: 'Left Return Lane'
+    number: 26
+    board: 2
     port: 8
-    power: 255
-    holdPower: 0
-    holdPowerActivationTime: 0
-    minPulseTime: 100
-    maxPulseTime: 500
-    fastFlipSwitch: 0
-
-mechs:
   -
-    description: "canon"
-    number: 0
+    description: 'Right Return Lane'
+    number: 27
+    board: 2
+    port: 9
+  -
+    description: 'Right Outlane'
+    number: 28
+    board: 2
+    port: 10
+  -
+    description: 'Gun Loaded'
+    number: 31
+    board: 4
+    port: 3
+  -
+    description: 'Gun Mark'
+    number: 32
+    board: 4
+    port: 4
+  -
+    description: 'Gun Home'
+    number: 33
+    board: 4
+    port: 5
+  -
+    description: 'Mid Left Stand-Up Target'
+    number: 36
+    board: 3
+    port: 3
+  -
+    description: 'Mid Center Stand-Up Target'
+    number: 37
+    board: 3
+    port: 4
+  -
+    description: 'Mid Right Stand-Up Target'
+    number: 38
+    board: 3
+    port: 5
+  -
+    description: 'Left Jet'
+    number: 41
+    board: 4
+    port: 6
+  -
+    description: 'Right Jet'
+    number: 42
+    board: 4
+    port: 7
+  -
+    description: 'Bottom Jet'
+    number: 43
     board: 4
     port: 8
+  -
+    description: 'Left Sling'
+    number: 44
+    board: 2
+    port: 11
+  -
+    description: 'Right Sling'
+    number: 45
+    board: 2
+    port: 12
+  -
+    description: 'Top Right Stand-Up Target'
+    number: 46
+    board: 2
+    port: 13
+  -
+    description: 'Mid Right Stand-Up Target'
+    number: 47
+    board: 2
+    port: 14
+  -
+    description: 'Bot Right Stand-Up Target'
+    number: 48
+    board: 2
+    port: 15
+  -
+    description: 'Left Lock'
+    number: 51
+    board: 3
+    port: 6
+  -
+    description: 'Low Escape Route'
+    number: 53
+    board: 3
+    port: 7
+  -
+    description: 'High Escape Route'
+    number: 54
+    board: 3
+    port: 8
+  -
+    description: 'Top Lock'
+    number: 55
+    board: 4
+    port: 9
+  -
+    description: 'Top Lane Left'
+    number: 56
+    board: 4
+    port: 10
+  -
+    description: 'Top Lane Center'
+    number: 57
+    board: 4
+    port: 11
+  -
+    description: 'Top Lane Right'
+    number: 58
+    board: 4
+    port: 12
+  -
+    description: 'Left Ramp Entry'
+    number: 61
+    board: 3
+    port: 9
+  -
+    description: 'Left Ramp Made'
+    number: 62
+    board: 3
+    port: 10
+  -
+    description: 'Right Ramp Entry'
+    number: 63
+    board: 4
+    port: 13
+  -
+    description: 'Right Ramp Made'
+    number: 64
+    board: 4
+    port: 14
+  -
+    description: 'Low Chase Loop'
+    number: 65
+    board: 4
+    port: 15
+  -
+    description: 'High Chase Loop'
+    number: 66
+    board: 4
+    port: 16
+  -
+    description: 'Target 1 High'
+    number: 71
+    board: 3
+    port: 11
+  -
+    description: 'Target 2'
+    number: 72
+    board: 3
+    port: 12
+  -
+    description: 'Target 3'
+    number: 73
+    board: 3
+    port: 13
+  -
+    description: 'Target 4'
+    number: 74
+    board: 3
+    port: 14
+  -
+    description: 'Target 5 Low'
+    number: 75
+    board: 3
+    port: 15
+  -
+    description: 'Ball Popper'
+    number: 76
+    board: 3
+    port: 16
+  -
+    description: 'Drop Target'
+    number: 77
+    board: 3
+    port: 17
+  -
+    description: Shooter
+    number: 78
+    board: 2
+    port: 16
+ledStripes:
+  -
+    description: Inserts
+    board: 2
+    port: 29
+    ledType: WS2812_RGBW
+    amount: 1
+    lightUp: 0
+    afterGlow: 0
+    lamps:
+      -
+        description: 'Multiplier 2X'
+        number: 11
+        ledNumber: 1
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Multiplier 4X'
+        number: 12
+        ledNumber: 12
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Hold Bonus'
+        number: 13
+        ledNumber: 13
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Multiplier 6X'
+        number: 14
+        ledNumber: 14
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Multiplier 8X'
+        number: 15
+        ledNumber: 15
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Shoot Again'
+        number: 16
+        ledNumber: 16
+        brightness: 128
+        color: FF0000
+      -
+        description: Mouth
+        number: 17
+        ledNumber: 17
+        brightness: 128
+        color: FFFFFF
+      -
+        description: Kickback
+        number: 21
+        ledNumber: 21
+        brightness: 128
+        color: FF7D00
+      -
+        description: Special
+        number: 22
+        ledNumber: 22
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Left Return Lane'
+        number: 23
+        ledNumber: 23
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Right Return Lane'
+        number: 24
+        ledNumber: 24
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Data Base 3'
+        number: 25
+        ledNumber: 25
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Load Gun'
+        number: 26
+        ledNumber: 26
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Extra Ball'
+        number: 27
+        ledNumber: 27
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Load for Jackpot'
+        number: 28
+        ledNumber: 28
+        brightness: 128
+        color: 0000FF
+      -
+        description: 'Target 1 High'
+        number: 31
+        ledNumber: 31
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Target 2'
+        number: 32
+        ledNumber: 32
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Target 3'
+        number: 33
+        ledNumber: 33
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Target 4'
+        number: 34
+        ledNumber: 34
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Target 5 Low'
+        number: 35
+        ledNumber: 35
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Middle Target Bank Left'
+        number: 36
+        ledNumber: 36
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Middle Target Bank Center'
+        number: 37
+        ledNumber: 37
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Middle Target Bank Right'
+        number: 38
+        ledNumber: 38
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Lock Two'
+        number: 41
+        ledNumber: 41
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Data Base 2'
+        number: 42
+        ledNumber: 42
+        brightness: 128
+        color: FFFFFF
+      -
+        description: '10 Million'
+        number: 43
+        ledNumber: 43
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Extra Ball'
+        number: 44
+        ledNumber: 44
+        brightness: 128
+        color: FF0000
+      -
+        description: Multi-Ball
+        number: 45
+        ledNumber: 45
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Light Hurry Up'
+        number: 46
+        ledNumber: 46
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Hold Bonus'
+        number: 47
+        ledNumber: 47
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Security Pass'
+        number: 48
+        ledNumber: 48
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Eyes Lower'
+        number: 51
+        ledNumber: 51
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Eyes Upper'
+        number: 52
+        ledNumber: 52
+        brightness: 128
+        color: FF0000
+      -
+        description: '5,000,000'
+        number: 53
+        ledNumber: 53
+        brightness: 128
+        color: FF0000
+      -
+        description: '3,000,000'
+        number: 54
+        ledNumber: 54
+        brightness: 128
+        color: FF0000
+      -
+        description: '1,000,000'
+        number: 55
+        ledNumber: 55
+        brightness: 128
+        color: FF0000
+      -
+        description: '750,000'
+        number: 56
+        ledNumber: 56
+        brightness: 128
+        color: FF0000
+      -
+        description: '500,000'
+        number: 57
+        ledNumber: 57
+        brightness: 128
+        color: FF0000
+      -
+        description: '250,000'
+        number: 58
+        ledNumber: 58
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Left CPU Lit'
+        number: 61
+        ledNumber: 61
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Left Vault Key'
+        number: 62
+        ledNumber: 62
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Left Silent Alarm'
+        number: 63
+        ledNumber: 63
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Left Passcode'
+        number: 64
+        ledNumber: 64
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Left Checkpoint'
+        number: 65
+        ledNumber: 65
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Lock 1'
+        number: 66
+        ledNumber: 66
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Data Base 1'
+        number: 67
+        ledNumber: 67
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Left Ramp'
+        number: 68
+        ledNumber: 68
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Right CPU Lit'
+        number: 71
+        ledNumber: 71
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Vault Key'
+        number: 72
+        ledNumber: 72
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Silent Alarm'
+        number: 73
+        ledNumber: 73
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Passcode'
+        number: 74
+        ledNumber: 74
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Checkpoint'
+        number: 75
+        ledNumber: 75
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Bank Top'
+        number: 76
+        ledNumber: 76
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Bank Middle'
+        number: 77
+        ledNumber: 77
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Right Bank Bottom'
+        number: 78
+        ledNumber: 78
+        brightness: 128
+        color: FF7D00
+      -
+        description: 'Chase Value'
+        number: 81
+        ledNumber: 81
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Right Ramp'
+        number: 82
+        ledNumber: 82
+        brightness: 128
+        color: FF0000
+      -
+        description: 'Hurry Up'
+        number: 83
+        ledNumber: 83
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Start Button'
+        number: 84
+        ledNumber: 84
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Drop Target'
+        number: 85
+        ledNumber: 85
+        brightness: 128
+        color: FFFFFF
+      -
+        description: 'Top Lane Left'
+        number: 86
+        ledNumber: 86
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Top Lane Center'
+        number: 87
+        ledNumber: 87
+        brightness: 128
+        color: 00FF00
+      -
+        description: 'Top Lane Right'
+        number: 88
+        ledNumber: 88
+        brightness: 128
+        color: 00FF00
+    flashers: {  }
+    gi: {  }
+  -
+    description: 'Playfield GI'
+    board: 3
+    port: 29
+    ledType: WS2812_RGBW
+    amount: 1
+    lightUp: 0
+    afterGlow: 0
+    lamps: {  }
+    flashers: {  }
+    gi:
+      -
+        description: 'GI Led 1'
+        number: 1
+        ledNumber: 1
+        brightness: 128
+        color: FFFFFF
+  -
+    description: Flashers
+    board: 4
+    port: 29
+    ledType: WS2812_GBRW
+    amount: 12
+    lightUp: 0
+    afterGlow: 0
+    lamps: {  }
+    flashers:
+      -
+        description: 'First Flasher'
+        number: 1
+        ledNumber: 1
+        brightness: 128
+        color: E01B24
+    gi: {  }
+pwmOutput:
+  -
+    description: 'Ball Popper'
+    type: coil
+    number: 1
+    board: 3
+    port: 21
+    power: 128
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: 'Gun Kicker'
+    type: coil
+    number: 2
+    board: 4
+    port: 21
+    power: 128
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: Outhole
+    type: coil
+    number: 3
+    board: 2
+    port: 21
+    power: 128
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: Trough
+    type: coil
+    number: 4
+    board: 2
+    port: 22
+    power: 128
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: 'Right Sling'
+    type: coil
+    number: 5
+    board: 2
+    port: 23
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 45
+  -
+    description: 'Left Sling'
+    type: coil
+    number: 6
+    board: 2
+    port: 24
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 44
+  -
+    description: Knocker
+    type: coil
+    number: 7
+    board: 0
+    port: 21
+    power: 128
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: Kickback
+    type: coil
+    number: 7
+    board: 2
+    port: 26
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 25
+  -
+    description: Plunger
+    type: coil
+    number: 9
+    board: 2
+    port: 27
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: 'Top Lock'
+    type: coil
+    number: 10
+    board: 4
+    port: 22
+    power: 128
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: 'Knock Down'
+    type: coil
+    number: 12
+    board: 3
+    port: 22
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: 'Left Jet'
+    type: coil
+    number: 13
+    board: 4
+    port: 23
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 41
+  -
+    description: 'Right Jet'
+    type: coil
+    number: 14
+    board: 4
+    port: 24
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 42
+  -
+    description: 'Bottom Jet'
+    type: coil
+    number: 15
+    board: 4
+    port: 26
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 43
+  -
+    description: 'Left Lock'
+    type: coil
+    number: 16
+    board: 3
+    port: 23
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 0
+  -
+    description: 'Lower Right Flipper'
+    type: coil
+    number: 29
+    board: 2
+    port: 19
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 11
+  -
+    description: 'Lower Left Flipper'
+    type: coil
+    number: 30
+    board: 2
+    port: 20
+    power: 220
+    holdPower: 0
+    holdPowerActivationTime: 0
+    minPulseTime: 0
+    maxPulseTime: 0
+    fastFlipSwitch: 12
+mechs: {  }

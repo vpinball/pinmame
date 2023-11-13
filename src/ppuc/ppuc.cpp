@@ -51,9 +51,10 @@ uint8_t dmd_frame_buffer_width[DMD_FRAME_BUFFERS] = {0};
 uint8_t dmd_frame_buffer_height[DMD_FRAME_BUFFERS] = {0};
 uint8_t dmd_frame_buffer_depth[DMD_FRAME_BUFFERS] = {0};
 int dmd_frame_buffer_position = 0;
-bool dmd_ready = false;
+std::atomic<bool> dmd_ready = false;
 std::shared_mutex dmd_shared_mutex;
 std::condition_variable_any dmd_cv;
+std::atomic<bool> stop_flag = false;
 
 bool opt_debug = false;
 bool opt_no_serial = false;
@@ -148,16 +149,19 @@ void CALLBACK OnStateUpdated(int state, const void *p_userData)
     }
 }
 
-void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData) {
-	char buffer[1024];
-	vsnprintf(buffer, sizeof(buffer), format, args);
+void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char *format, va_list args, const void *p_userData)
+{
+    char buffer[1024];
+    vsnprintf(buffer, sizeof(buffer), format, args);
 
-	if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO) {
-		printf("INFO: %s", buffer);
-	}
-	else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR) {
-		printf("ERROR: %s", buffer);
-	}
+    if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO)
+    {
+        printf("INFO: %s", buffer);
+    }
+    else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR)
+    {
+        printf("ERROR: %s", buffer);
+    }
 }
 
 void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout, const void *p_userData)
@@ -223,8 +227,12 @@ void Pin2DmdThread()
     {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []()
-                    { return dmd_ready; });
+                    { return dmd_ready || stop_flag; });
         sl.unlock();
+        if (stop_flag)
+        {
+            return;
+        }
 
         while (pin2dmd_frame_buffer_position != dmd_frame_buffer_position)
         {
@@ -252,8 +260,12 @@ void ZeDmdThread()
     {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []()
-                    { return dmd_ready; });
+                    { return dmd_ready || stop_flag; });
         sl.unlock();
+        if (stop_flag)
+        {
+            return;
+        }
 
         while (zedmd_frame_buffer_position != dmd_frame_buffer_position)
         {
@@ -329,8 +341,12 @@ void ConsoleDmdThread()
     {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []()
-                    { return dmd_ready; });
+                    { return dmd_ready || stop_flag; });
         sl.unlock();
+        if (stop_flag)
+        {
+            return;
+        }
 
         while (console_frame_buffer_position != dmd_frame_buffer_position)
         {
@@ -354,11 +370,16 @@ void ResetDmdThread()
     {
         std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
         dmd_cv.wait(sl, []()
-                    { return dmd_ready; });
+                    { return dmd_ready || stop_flag; });
         sl.unlock();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         dmd_ready = false;
+
+        if (stop_flag)
+        {
+            return;
+        }
     }
 }
 
@@ -582,7 +603,8 @@ int main(int argc, char *argv[])
     {
         ppuc->SetSerial(opt_serial);
     }
-    else {
+    else
+    {
         // opt_serial will be ignored by ZeDMD later.
         opt_serial = ppuc->GetSerial();
     }
@@ -671,13 +693,13 @@ int main(int argc, char *argv[])
         t_pin2dmd = std::thread(Pin2DmdThread);
     }
 
+    std::thread t_zedmd;
 #if defined(ZEDMD_SUPPORT)
     zedmd.IgnoreDevice(opt_serial);
     // zedmd_connected = (int)zedmd.OpenWiFi("192.168.178.125", 3333);
     zedmd_connected = (int)zedmd.Open();
     if (opt_debug)
         printf("ZeDMD: %d\n", zedmd_connected);
-    std::thread t_zedmd;
     if (zedmd_connected)
     {
         if (opt_debug)
@@ -754,7 +776,7 @@ int main(int argc, char *argv[])
                 while ((switchState = ppuc->GetNextSwitchState()) != nullptr)
                 {
                     PinmameSetSwitch(switchState->number, switchState->state);
-                } ;
+                };
             }
 
             int count = PinmameGetChangedLamps(changedLampStates);
@@ -771,6 +793,24 @@ int main(int argc, char *argv[])
                 ppuc->SetLampState(lampNo, lampState);
             }
         }
+    }
+
+    stop_flag = true;
+    if (t_pin2dmd.joinable())
+    {
+        t_pin2dmd.join();
+    }
+    if (t_zedmd.joinable())
+    {
+        t_zedmd.join();
+    }
+    if (t_consoledmd.joinable())
+    {
+        t_consoledmd.join();
+    }
+    if (t_resetdmd.joinable())
+    {
+        t_resetdmd.join();
     }
 
     if (!opt_no_serial)
