@@ -50,11 +50,6 @@ switches:
     description: 'Trough Left'
     number: 15
     board: 2
-    port: 17
-  -
-    description: 'Trough Left'
-    number: 15
-    board: 2
     port: 3
   -
     description: 'Trough Center'
@@ -275,7 +270,7 @@ switches:
     description: 'Drop Target'
     number: 77
     board: 3
-    port: 17
+    port: 1
   -
     description: Shooter
     number: 78

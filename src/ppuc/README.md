@@ -106,7 +106,7 @@ cmake --build build/Release
 
 Run:
 ```shell
-sudo build/Release/ppuc -c src/ppuc/examples/t2.yml
+build/Release/ppuc -c src/ppuc/examples/t2.yml
 ```
 
 ### Windows
