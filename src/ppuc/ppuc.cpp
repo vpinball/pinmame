@@ -609,6 +609,43 @@ int main(int argc, char *argv[])
         opt_serial = ppuc->GetSerial();
     }
 
+    // Initialize displays.
+    // ZeDMD messes with USB ports. when searching for the DMD.
+    // So it is important to start that search before PIN2DMD
+    // or the RS485 BUS get initialized.
+    std::thread t_zedmd;
+#if defined(ZEDMD_SUPPORT)
+    zedmd.IgnoreDevice(opt_serial);
+    // zedmd_connected = (int)zedmd.OpenWiFi("192.168.178.125", 3333);
+    zedmd_connected = (int)zedmd.Open();
+    if (opt_debug)
+        printf("ZeDMD: %d\n", zedmd_connected);
+    if (zedmd_connected)
+    {
+        if (opt_debug)
+            zedmd.EnableDebug();
+        // zedmd.EnablePreUpscaling();
+        t_zedmd = std::thread(ZeDmdThread);
+    }
+#endif
+
+    pin2dmd_connected = Pin2dmdInit();
+    if (opt_debug)
+        printf("PIN2DMD: %d\n", pin2dmd_connected);
+    std::thread t_pin2dmd;
+    if (pin2dmd_connected)
+    {
+        t_pin2dmd = std::thread(Pin2DmdThread);
+    }
+
+    std::thread t_consoledmd;
+    if (opt_console_display)
+    {
+        t_consoledmd = std::thread(ConsoleDmdThread);
+    }
+
+    std::thread t_resetdmd(ResetDmdThread);
+
     if (!opt_no_serial && !ppuc->Connect())
     {
         printf("Unable to open serial communication to PPUC boards.\n");
@@ -682,40 +719,6 @@ int main(int argc, char *argv[])
         }
     }
 #endif
-
-    // Initialize displays.
-    pin2dmd_connected = Pin2dmdInit();
-    if (opt_debug)
-        printf("PIN2DMD: %d\n", pin2dmd_connected);
-    std::thread t_pin2dmd;
-    if (pin2dmd_connected)
-    {
-        t_pin2dmd = std::thread(Pin2DmdThread);
-    }
-
-    std::thread t_zedmd;
-#if defined(ZEDMD_SUPPORT)
-    zedmd.IgnoreDevice(opt_serial);
-    // zedmd_connected = (int)zedmd.OpenWiFi("192.168.178.125", 3333);
-    zedmd_connected = (int)zedmd.Open();
-    if (opt_debug)
-        printf("ZeDMD: %d\n", zedmd_connected);
-    if (zedmd_connected)
-    {
-        if (opt_debug)
-            zedmd.EnableDebug();
-        // zedmd.EnablePreUpscaling();
-        t_zedmd = std::thread(ZeDmdThread);
-    }
-#endif
-
-    std::thread t_consoledmd;
-    if (opt_console_display)
-    {
-        t_consoledmd = std::thread(ConsoleDmdThread);
-    }
-
-    std::thread t_resetdmd(ResetDmdThread);
 
     // Initialize the sound device
     const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
