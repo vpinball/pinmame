@@ -270,7 +270,7 @@ switches:
     description: 'Drop Target'
     number: 77
     board: 3
-    port: 1
+    port: 17
   -
     description: Shooter
     number: 78
