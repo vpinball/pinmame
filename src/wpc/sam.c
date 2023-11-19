@@ -2411,7 +2411,7 @@ SAM1_ROM32MB(bdk_290, "bdk_290.bin", CRC(09ce777e) SHA1(79b6d3f91aa4d42318c698a4
 SAM1_ROM32MB(bdk_294, "bdk_294.bin", CRC(e087ec82) SHA1(aad2c43e6de9a520954eb50b6c824a138cd6f47f), 0x01C00844)
 SAM1_ROM32MB(bdk_300, "bdk_300.bin", CRC(8325bc80) SHA1(04f20d78ad33956618e576bba108ab145e26f9aa), 0x01C6AD84)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(bdk_294c, "bdk_294c.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
+//SAM1_ROM128MB(bdk_294c, "bdk_294c.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
 #endif 
 
 SAM_INPUT_PORTS_START(bdk, 1)
@@ -2427,7 +2427,7 @@ CORE_CLONEDEF(bdk, 240, 294, "Batman: The Dark Knight (V2.4)", 2009, "Stern", sa
 CORE_CLONEDEF(bdk, 290, 294, "Batman: The Dark Knight (V2.9)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00)", 2010, "Stern", sam1, 0) // Standard model in Stern terms
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(bdk, 294c, 294, "Batman: The Dark Knight (V2.9) (Colored MOD)", 2010, "Stern", sam1, 0)
+//CORE_CLONEDEF(bdk, 294c, 294, "Batman: The Dark Knight (V2.9) (Colored MOD)", 2010, "Stern", sam1, 0) // seems to be lost by now :/
 #endif
 
 /*-------------------------------------------------------------------

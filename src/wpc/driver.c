@@ -2023,7 +2023,7 @@ DRIVER(bdk,240)         //        11/09 Batman - The Dark Knight - V2.4  (scarec
 DRIVER(bdk,290)         //        05/10 Batman - The Dark Knight - V2.9  (with 3 ball scarecrow multiball)
 DRIVER(bdk,294)         //        05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
 #ifdef SAM_INCLUDE_COLORED
-DRIVER(bdk,294c)        //        05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
+//DRIVER(bdk,294c)        //        05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball) // seems to be lost by now :/
 #endif
 DRIVER(bdk,300)         //        ??/10 Batman - The Dark Knight - V3.00 Home Edition/Costco
 //DRIVER(csi,100)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.00
