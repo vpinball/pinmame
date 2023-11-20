@@ -982,6 +982,14 @@ LIBPINMAME_API int PinmameGetMaxMechs() {
 }
 
 /******************************************************
+ * PinmameGetMech
+ ******************************************************/
+
+LIBPINMAME_API int PinmameGetMech(const int mechNo) {
+	return (_isRunning) ? vp_getMech(mechNo) : 0;
+}
+
+/******************************************************
  * PinmameSetMech
  ******************************************************/
 

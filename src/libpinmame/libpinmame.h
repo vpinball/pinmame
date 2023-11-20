@@ -444,6 +444,7 @@ LIBPINMAME_API int PinmameGetChangedGIs(PinmameGIState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxLEDs();
 LIBPINMAME_API int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t, PinmameLEDState* const p_changedStates);
 LIBPINMAME_API int PinmameGetMaxMechs();
+LIBPINMAME_API int PinmameGetMech(const int mechNo);
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig);
 LIBPINMAME_API int PinmameGetMaxSoundCommands();
 LIBPINMAME_API int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands);

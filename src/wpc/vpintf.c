@@ -286,7 +286,7 @@ int vp_getModOutputType(int output, int no) {
 }
 
 int vp_getMech(int mechNo) {
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   extern int g_fHandleMechanics;
   if (g_fHandleMechanics == 0)
     return (mechNo < 0) ? mech_getSpeed(MECH_MAXMECH/2-1-mechNo) : mech_getPos(MECH_MAXMECH/2-1+mechNo);
