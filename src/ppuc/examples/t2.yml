@@ -279,389 +279,389 @@ switches:
 ledStripes:
   -
     description: Inserts
-    board: 2
+    board: 4
     port: 29
     ledType: WS2812_RGBW
-    amount: 1
+    amount: 63
     lightUp: 0
     afterGlow: 0
     lamps:
       -
         description: 'Multiplier 2X'
         number: 11
-        ledNumber: 1
+        ledNumber: 0
         brightness: 128
-        color: 00FF00
+        color: FF
       -
         description: 'Multiplier 4X'
         number: 12
-        ledNumber: 12
+        ledNumber: 1
         brightness: 128
-        color: 00FF00
+        color: FF0000
       -
         description: 'Hold Bonus'
         number: 13
-        ledNumber: 13
+        ledNumber: 2
         brightness: 128
         color: FF7D00
       -
         description: 'Multiplier 6X'
         number: 14
-        ledNumber: 14
+        ledNumber: 3
         brightness: 128
         color: 00FF00
       -
         description: 'Multiplier 8X'
         number: 15
-        ledNumber: 15
+        ledNumber: 4
         brightness: 128
         color: 00FF00
       -
         description: 'Shoot Again'
         number: 16
-        ledNumber: 16
+        ledNumber: 5
         brightness: 128
         color: FF0000
       -
         description: Mouth
         number: 17
-        ledNumber: 17
+        ledNumber: 6
         brightness: 128
         color: FFFFFF
       -
         description: Kickback
         number: 21
-        ledNumber: 21
+        ledNumber: 7
         brightness: 128
         color: FF7D00
       -
         description: Special
         number: 22
-        ledNumber: 22
+        ledNumber: 8
         brightness: 128
         color: FF0000
       -
         description: 'Left Return Lane'
         number: 23
-        ledNumber: 23
+        ledNumber: 9
         brightness: 128
         color: FFFFFF
       -
         description: 'Right Return Lane'
         number: 24
-        ledNumber: 24
+        ledNumber: 10
         brightness: 128
         color: FF7D00
       -
         description: 'Data Base 3'
         number: 25
-        ledNumber: 25
+        ledNumber: 11
         brightness: 128
         color: FF7D00
       -
         description: 'Load Gun'
         number: 26
-        ledNumber: 26
+        ledNumber: 12
         brightness: 128
         color: 00FF00
       -
         description: 'Extra Ball'
         number: 27
-        ledNumber: 27
+        ledNumber: 13
         brightness: 128
         color: FF0000
       -
         description: 'Load for Jackpot'
         number: 28
-        ledNumber: 28
+        ledNumber: 14
         brightness: 128
         color: 0000FF
       -
         description: 'Target 1 High'
         number: 31
-        ledNumber: 31
+        ledNumber: 15
         brightness: 128
         color: FFFFFF
       -
         description: 'Target 2'
         number: 32
-        ledNumber: 32
+        ledNumber: 16
         brightness: 128
         color: FFFFFF
       -
         description: 'Target 3'
         number: 33
-        ledNumber: 33
+        ledNumber: 17
         brightness: 128
         color: FFFFFF
       -
         description: 'Target 4'
         number: 34
-        ledNumber: 34
+        ledNumber: 18
         brightness: 128
         color: FFFFFF
       -
         description: 'Target 5 Low'
         number: 35
-        ledNumber: 35
+        ledNumber: 19
         brightness: 128
         color: FFFFFF
       -
         description: 'Middle Target Bank Left'
         number: 36
-        ledNumber: 36
+        ledNumber: 20
         brightness: 128
         color: FF0000
       -
         description: 'Middle Target Bank Center'
         number: 37
-        ledNumber: 37
+        ledNumber: 21
         brightness: 128
         color: FF0000
       -
         description: 'Middle Target Bank Right'
         number: 38
-        ledNumber: 38
+        ledNumber: 22
         brightness: 128
         color: FF0000
       -
         description: 'Lock Two'
         number: 41
-        ledNumber: 41
+        ledNumber: 23
         brightness: 128
         color: 00FF00
       -
         description: 'Data Base 2'
         number: 42
-        ledNumber: 42
+        ledNumber: 24
         brightness: 128
         color: FFFFFF
       -
         description: '10 Million'
         number: 43
-        ledNumber: 43
+        ledNumber: 25
         brightness: 128
         color: FF0000
       -
         description: 'Extra Ball'
         number: 44
-        ledNumber: 44
+        ledNumber: 26
         brightness: 128
         color: FF0000
       -
         description: Multi-Ball
         number: 45
-        ledNumber: 45
+        ledNumber: 27
         brightness: 128
         color: FF0000
       -
         description: 'Light Hurry Up'
         number: 46
-        ledNumber: 46
+        ledNumber: 28
         brightness: 128
         color: FF0000
       -
         description: 'Hold Bonus'
         number: 47
-        ledNumber: 47
+        ledNumber: 29
         brightness: 128
         color: FF0000
       -
         description: 'Security Pass'
         number: 48
-        ledNumber: 48
+        ledNumber: 30
         brightness: 128
         color: FF0000
       -
         description: 'Eyes Lower'
         number: 51
-        ledNumber: 51
+        ledNumber: 31
         brightness: 128
         color: FF0000
       -
         description: 'Eyes Upper'
         number: 52
-        ledNumber: 52
+        ledNumber: 32
         brightness: 128
         color: FF0000
       -
         description: '5,000,000'
         number: 53
-        ledNumber: 53
+        ledNumber: 33
         brightness: 128
         color: FF0000
       -
         description: '3,000,000'
         number: 54
-        ledNumber: 54
+        ledNumber: 34
         brightness: 128
         color: FF0000
       -
         description: '1,000,000'
         number: 55
-        ledNumber: 55
+        ledNumber: 35
         brightness: 128
         color: FF0000
       -
         description: '750,000'
         number: 56
-        ledNumber: 56
+        ledNumber: 36
         brightness: 128
         color: FF0000
       -
         description: '500,000'
         number: 57
-        ledNumber: 57
+        ledNumber: 37
         brightness: 128
         color: FF0000
       -
         description: '250,000'
         number: 58
-        ledNumber: 58
+        ledNumber: 38
         brightness: 128
         color: FF0000
       -
         description: 'Left CPU Lit'
         number: 61
-        ledNumber: 61
+        ledNumber: 39
         brightness: 128
         color: FF7D00
       -
         description: 'Left Vault Key'
         number: 62
-        ledNumber: 62
+        ledNumber: 40
         brightness: 128
         color: FF7D00
       -
         description: 'Left Silent Alarm'
         number: 63
-        ledNumber: 63
+        ledNumber: 41
         brightness: 128
         color: FF7D00
       -
         description: 'Left Passcode'
         number: 64
-        ledNumber: 64
+        ledNumber: 42
         brightness: 128
         color: FF7D00
       -
         description: 'Left Checkpoint'
         number: 65
-        ledNumber: 65
+        ledNumber: 43
         brightness: 128
         color: FF7D00
       -
         description: 'Lock 1'
         number: 66
-        ledNumber: 66
+        ledNumber: 44
         brightness: 128
         color: 00FF00
       -
         description: 'Data Base 1'
         number: 67
-        ledNumber: 67
+        ledNumber: 45
         brightness: 128
         color: FF7D00
       -
         description: 'Left Ramp'
         number: 68
-        ledNumber: 68
+        ledNumber: 46
         brightness: 128
         color: FF0000
       -
         description: 'Right CPU Lit'
         number: 71
-        ledNumber: 71
+        ledNumber: 47
         brightness: 128
         color: FF7D00
       -
         description: 'Right Vault Key'
         number: 72
-        ledNumber: 72
+        ledNumber: 48
         brightness: 128
         color: FF7D00
       -
         description: 'Right Silent Alarm'
         number: 73
-        ledNumber: 73
+        ledNumber: 49
         brightness: 128
         color: FF7D00
       -
         description: 'Right Passcode'
         number: 74
-        ledNumber: 74
+        ledNumber: 50
         brightness: 128
         color: FF7D00
       -
         description: 'Right Checkpoint'
         number: 75
-        ledNumber: 75
+        ledNumber: 51
         brightness: 128
         color: FF7D00
       -
         description: 'Right Bank Top'
         number: 76
-        ledNumber: 76
+        ledNumber: 52
         brightness: 128
         color: FF7D00
       -
         description: 'Right Bank Middle'
         number: 77
-        ledNumber: 77
+        ledNumber: 53
         brightness: 128
         color: FF7D00
       -
         description: 'Right Bank Bottom'
         number: 78
-        ledNumber: 78
+        ledNumber: 54
         brightness: 128
         color: FF7D00
       -
         description: 'Chase Value'
         number: 81
-        ledNumber: 81
+        ledNumber: 55
         brightness: 128
         color: FF0000
       -
         description: 'Right Ramp'
         number: 82
-        ledNumber: 82
+        ledNumber: 56
         brightness: 128
         color: FF0000
       -
         description: 'Hurry Up'
         number: 83
-        ledNumber: 83
+        ledNumber: 57
         brightness: 128
         color: FFFFFF
       -
         description: 'Start Button'
         number: 84
-        ledNumber: 84
+        ledNumber: 58
         brightness: 128
         color: FFFFFF
       -
         description: 'Drop Target'
         number: 85
-        ledNumber: 85
+        ledNumber: 59
         brightness: 128
         color: FFFFFF
       -
         description: 'Top Lane Left'
         number: 86
-        ledNumber: 86
+        ledNumber: 60
         brightness: 128
         color: 00FF00
       -
         description: 'Top Lane Center'
         number: 87
-        ledNumber: 87
+        ledNumber: 61
         brightness: 128
         color: 00FF00
       -
         description: 'Top Lane Right'
         number: 88
-        ledNumber: 88
+        ledNumber: 62
         brightness: 128
         color: 00FF00
     flashers: {  }
@@ -685,7 +685,7 @@ ledStripes:
         color: FFFFFF
   -
     description: Flashers
-    board: 4
+    board: 2
     port: 29
     ledType: WS2812_GBRW
     amount: 12
