@@ -764,6 +764,8 @@ int main(int argc, char *argv[])
         int poll_trigger = poll_interval_ms * 1000 / sleep_us;
         int index_recv = 0;
 
+        ppuc->StartUpdates();
+
         while (true)
         {
             std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
@@ -778,6 +780,10 @@ int main(int argc, char *argv[])
                 PPUCSwitchState *switchState;
                 while ((switchState = ppuc->GetNextSwitchState()) != nullptr)
                 {
+                    if (opt_debug)
+                    {
+                        printf("Switch updated: #%d, %d\n", switchState->number, switchState->state);
+                    }
                     PinmameSetSwitch(switchState->number, switchState->state);
                 };
             }
@@ -789,9 +795,9 @@ int main(int argc, char *argv[])
                 uint8_t lampState = changedLampStates[c].state == 0 ? 0 : 1;
 
                 if (opt_debug)
-                    printf("Lamp updated: lampNo=%d, lampState=%d\n",
-                           lampNo,
-                           lampState);
+                {
+                    printf("Lamp updated: #%d, %d\n", lampNo, lampState);
+                }
 
                 ppuc->SetLampState(lampNo, lampState);
             }

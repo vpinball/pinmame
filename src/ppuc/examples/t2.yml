@@ -274,8 +274,8 @@ switches:
   -
     description: Shooter
     number: 78
-    board: 2
-    port: 16
+    board: 1
+    port: 10
 ledStripes:
   -
     description: Inserts
@@ -283,8 +283,8 @@ ledStripes:
     port: 29
     ledType: WS2812_RGBW
     amount: 63
-    lightUp: 0
-    afterGlow: 0
+    lightUp: 100
+    afterGlow: 1200
     lamps:
       -
         description: 'Multiplier 2X'
