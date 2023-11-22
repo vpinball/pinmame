@@ -26,7 +26,7 @@
 #define DMD_FRAMES         3 /* Some early machines like T2 could in some few animations (like T2 attract mode) profit from more shades, but very tricky to get right without flicker ! */
 
 /*-- Smoothing values --*/
-#ifdef PROC_SUPPORT
+#if defined(PROC_SUPPORT) || defined(PPUC_SUPPORT)
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define WPC_SOLSMOOTH      1 /* Don't smooth values on real hardware */
 #define WPC_LAMPSMOOTH     1

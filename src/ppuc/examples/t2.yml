@@ -27,6 +27,26 @@ boards:
 dipSwitches: {  }
 switches:
   -
+    description: 'Service Escape'
+    number: 5
+    board: 1
+    port: 11
+  -
+    description: 'Volume Down'
+    number: 6
+    board: 1
+    port: 12
+  -
+    description: 'Volume Up'
+    number: 7
+    board: 1
+    port: 13
+  -
+    description: 'Begin Enter'
+    number: 8
+    board: 1
+    port: 14
+  -
     description: 'Right Flipper'
     number: 11
     board: 1
