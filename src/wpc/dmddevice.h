@@ -23,7 +23,9 @@ typedef enum {
 	_4x7Num10,
 	_6x4Num_4x1Num,
 	_2x7Num_4x1Num_1x16Alpha,
-	_1x16Alpha_1x16Num_1x7Num
+	_1x16Alpha_1x16Num_1x7Num,
+	_1x7Num_1x16Alpha_1x16Num,
+	_1x16Alpha_1x16Num_1x7Num_1x4Num
 } layout_t;
 
 
