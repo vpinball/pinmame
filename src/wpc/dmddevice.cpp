@@ -343,7 +343,7 @@ void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* currbuffe
 	}
 }
 
-void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs) {
+void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
 
 	// Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
 	// block this from running.
@@ -382,11 +382,13 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		case GEN_S11C:
 		case GEN_S11B2:
 			layout = _2x16Alpha;
+			if (strncasecmp(GameName, "rvrbt", 5) == 0)
+				layout = _1x16Alpha_1x16Num_1x7Num_1x4Num;
 			break;
 		case GEN_S11:
 			layout = _6x4Num_4x1Num;
 			break;
-		case GEN_S11X:
+		case GEN_S11X: // incl. GEN_S11A, GEN_S11B
 			switch(total_disp){
 				case 2:
 					layout = _2x16Alpha;
@@ -401,6 +403,8 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 					layout = _2x7Alpha_2x7Num_4x1Num;
 					break;
 			}
+			if (strncasecmp(GameName, "polic", 5) == 0)
+				layout = _1x7Num_1x16Alpha_1x16Num;
 			break;
 
 		// dataeast

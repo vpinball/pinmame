@@ -125,10 +125,9 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 	}
 }
 
-
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2) 
 {
-	if (isOpen) {	
+	if (isOpen) {
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 	
 		switch (layout) {
@@ -136,7 +135,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 				_2x16Alpha(seg_data);
 				break;
 			case __2x20Alpha :
-				_2x20Alpha(seg_data); //!! misses 4 chars in each row
+				_2x20Alpha(seg_data);
 				break;
 			case __2x7Alpha_2x7Num :
 				_2x7Alpha_2x7Num(seg_data);
@@ -173,6 +172,12 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 				break;
 			case __1x16Alpha_1x16Num_1x7Num :
 				_1x16Alpha_1x16Num_1x7Num(seg_data);
+				break;
+			case __1x7Num_1x16Alpha_1x16Num :
+				_1x7Num_1x16Alpha_1x16Num(seg_data);
+				break;
+			case __1x16Alpha_1x16Num_1x7Num_1x4Num :
+				_1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data);
 				break;
 			default:
 				break;

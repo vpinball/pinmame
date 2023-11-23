@@ -442,6 +442,12 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 			case __1x16Alpha_1x16Num_1x7Num :
 				_1x16Alpha_1x16Num_1x7Num(seg_data);
 				break;
+			case __1x7Num_1x16Alpha_1x16Num :
+				_1x7Num_1x16Alpha_1x16Num(seg_data);
+				break;
+			case __1x16Alpha_1x16Num_1x7Num_1x4Num :
+				_1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data);
+				break;
 			default:
 				break;
 		}

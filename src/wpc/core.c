@@ -26,11 +26,11 @@
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 
-#ifdef LIBPINMAME
- extern int g_fDmdMode;
+ #ifdef LIBPINMAME
+  extern int g_fDmdMode;
 
- int g_display_index = 0;
-#endif
+  int g_display_index = 0;
+ #endif
 
  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
@@ -1187,7 +1187,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 #ifdef VPINMAME
   //alpha frame
   if(g_fShowPinDMD)
-    renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, total_disp, disp_num_segs);
+    renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, total_disp, disp_num_segs, Machine->gamedrv->name);
 #endif
 }
 
@@ -2280,7 +2280,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
    case CORE_MODOUT_DEFAULT:
    default:
    {
-      // Default is the modulated solenoid values as computed by each hardware drivers if implemented or the non modulated value
+      // Default is the modulated solenoid values as computed by each hardware driver, if implemented, or the non modulated value
       int index = (int)(((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput));
       if (index < CORE_MODOUT_SOL_MAX)
       {
