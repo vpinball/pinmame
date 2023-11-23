@@ -26,6 +26,8 @@ Updated LISY support to 5.28-90 (Linux for Gottlieb System1 & System80, Bally, A
 
 Fix Capcom crashes in 64bit builds
 
+Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler
+
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
 Added Pulse Width Modulation support for a variety of bulbs,LED,GI,solenoids,motors with a user selectable output device PWM integrator (see https://github.com/vpinball/pinmame/pull/89 for all the details and how to use)
