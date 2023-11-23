@@ -152,7 +152,7 @@ void CALLBACK OnStateUpdated(int state, const void* p_userData) {
 		mechConfig.sw[0].startPos = 0;
 		mechConfig.sw[0].endPos = 5;
 
-		PinmameSetMech(0, &mechConfig);
+		PinmameSetMech(1, &mechConfig);
 	}
 }
 
