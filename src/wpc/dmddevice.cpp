@@ -1,5 +1,6 @@
 #ifndef WIN32
 
+#include "driver.h"
 #include "dmddevice.h"
 
 #else
