@@ -1,6 +1,8 @@
+#ifndef WIN32
+
 #include "dmddevice.h"
 
-#ifdef WIN32
+#else
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -10,6 +12,7 @@
 #include "gen.h"
 #include "core.h"
 #include "cpu/at91/at91.h"
+#include "dmddevice.h"
 
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
  #define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
