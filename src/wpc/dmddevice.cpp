@@ -1,7 +1,11 @@
 #ifndef WIN32
 
 #include "driver.h"
+#include "gen.h"
+#include "core.h"
 #include "dmddevice.h"
+
+static UINT16  seg_data2[CORE_SEGCOUNT] = {};
 
 #else
 
