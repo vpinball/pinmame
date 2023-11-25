@@ -35,6 +35,8 @@ static bool    dmd_hasDMD = false;
 static HMODULE DmdDev_hModule;
 static HMODULE DmdScr_hModule;
 
+extern char build_version[];
+
 typedef int(*DmdDev_Open_t)();
 typedef bool(*DmdDev_Close_t)();
 typedef void(*DmdDev_PM_GameSettings_t)(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options);
@@ -109,6 +111,15 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 #ifdef VPINMAME
 	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME64.dll");
 #endif
+#endif
+
+#ifdef LIBPINMAME
+	char libpinmame_name[MAX_PATH];
+	strcpy(libpinmame_name, "libpinmame-");
+	strcat(libpinmame_name, build_version);
+	libpinmame_name[14] = '\0';
+	strcat(libpinmame_name, ".dll");
+	const HINSTANCE hVpmDLL = GetModuleHandle(libpinmame_name);
 #endif
 
 	GetModuleFileName(hVpmDLL,DmdDev_filename,MAX_PATH);
