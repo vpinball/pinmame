@@ -36,7 +36,7 @@ typedef int(*Console_Input_t)(UINT8 *buf, int size);
 Console_Input_t Console_Input = NULL;
 
 typedef enum {
-	None,
+	__None,
 	__2x16Alpha,
 	__2x20Alpha,
 	__2x7Alpha_2x7Num,
@@ -52,7 +52,8 @@ typedef enum {
 	__2x7Num_4x1Num_1x16Alpha,
 	__1x16Alpha_1x16Num_1x7Num,
 	__1x7Num_1x16Alpha_1x16Num,
-	__1x16Alpha_1x16Num_1x7Num_1x4Num
+	__1x16Alpha_1x16Num_1x7Num_1x4Num,
+	__Invalid
 } layout_t;
 
 #ifdef __cplusplus

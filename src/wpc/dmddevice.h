@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef WIN32
-
 typedef struct rgb24 {
 	UINT8 red;
 	UINT8 green;
@@ -45,6 +43,4 @@ void FwdConsoleData(UINT8 data);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
