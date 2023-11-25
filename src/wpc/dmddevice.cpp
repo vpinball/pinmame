@@ -22,7 +22,6 @@ static UINT16  seg_data2[CORE_SEGCOUNT] = {};
 static UINT16  dmd_width = 128;
 static UINT16  dmd_height = 32;
 static bool    dmd_hasDMD = false;
-static bool    dmd_hasExtraData = false;
 
 static HMODULE DmdDev_hModule;
 static HMODULE DmdScr_hModule;
@@ -187,8 +186,7 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	dmd_width = 128; // set default DMD size
 	dmd_height = 32;
 	dmd_hasDMD = false;
-	dmd_hasExtraData = false;
-	memset(seg_data2, 0, CORE_SEGCOUNT * sizeof(UINT16));
+	memset(seg_data2, 0, sizeof(seg_data2));
 
 	rgb24 color0, color33, color66, color100;
 
@@ -343,22 +341,17 @@ void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* currbuffe
 	}
 }
 
-void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
-
-	// Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
-	// block this from running.
-	if (dmd_hasDMD)
-		return;
-
-	layout_t layout = None;
+// this one can be called without having to do an init/de-init, so its pure
+layout_t layoutAlphanumericFrame(UINT64 gen, UINT16* seg_data, UINT16* seg_data_2, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
 
 	// Medusa fix
-	if((gen == GEN_BY35) && (disp_num_segs[0] == 2))
+	if((strncasecmp(GameName, "medusa", 6) == 0) && (disp_num_segs[0] == 2))
 	{
-		memcpy(seg_data2,seg_data, CORE_SEGCOUNT * sizeof(UINT16));
-		dmd_hasExtraData = true;
-		return;
+		memcpy(seg_data_2,seg_data, sizeof(seg_data2));
+		return __Invalid;
 	}
+
+	layout_t layout = __None;
 
 	// switch to current game tech
 	switch(gen){
@@ -367,57 +360,57 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		case GEN_S3C:
 		case GEN_S4:
 		case GEN_S6:
-			layout = _2x6Num_2x6Num_4x1Num;
+			layout = __2x6Num_2x6Num_4x1Num;
 			break;
 		case GEN_S7:
-			//_2x7Num_4x1Num_1x16Alpha;		//!! hmm i did this for a reason??
-			layout = _2x7Num_2x7Num_4x1Num_gen7;
+			//__2x7Num_4x1Num_1x16Alpha;		//!! hmm i did this for a reason??
+			layout = __2x7Num_2x7Num_4x1Num_gen7;
 			break;
 		case GEN_S9:
-			layout = _2x7Num10_2x7Num10_4x1Num;
+			layout = __2x7Num10_2x7Num10_4x1Num;
 			break;
 
 		case GEN_WPCALPHA_1:
 		case GEN_WPCALPHA_2:
 		case GEN_S11C:
 		case GEN_S11B2:
-			layout = _2x16Alpha;
+			layout = __2x16Alpha;
 			if (strncasecmp(GameName, "rvrbt", 5) == 0)
-				layout = _1x16Alpha_1x16Num_1x7Num_1x4Num;
+				layout = __1x16Alpha_1x16Num_1x7Num_1x4Num;
 			break;
 		case GEN_S11:
-			layout = _6x4Num_4x1Num;
+			layout = __6x4Num_4x1Num;
 			break;
 		case GEN_S11X: // incl. GEN_S11A, GEN_S11B
 			switch(total_disp){
 				case 2:
-					layout = _2x16Alpha;
+					layout = __2x16Alpha;
 					break;
 				case 3:
-					layout = _1x16Alpha_1x16Num_1x7Num;
+					layout = __1x16Alpha_1x16Num_1x7Num;
 					break;
 				case 4:
-					layout = _2x7Alpha_2x7Num;
+					layout = __2x7Alpha_2x7Num;
 					break;
 				case 8:
-					layout = _2x7Alpha_2x7Num_4x1Num;
+					layout = __2x7Alpha_2x7Num_4x1Num;
 					break;
 			}
 			if (strncasecmp(GameName, "polic", 5) == 0)
-				layout = _1x7Num_1x16Alpha_1x16Num;
+				layout = __1x7Num_1x16Alpha_1x16Num;
 			break;
 
 		// dataeast
 		case GEN_DE:
 			switch(total_disp){
 				case 2:
-					layout = _2x16Alpha;
+					layout = __2x16Alpha;
 					break;
 				case 4:
-					layout = _2x7Alpha_2x7Num;
+					layout = __2x7Alpha_2x7Num;
 					break;
 				case 8:
-					layout = _2x7Alpha_2x7Num_4x1Num;
+					layout = __2x7Alpha_2x7Num_4x1Num;
 					break;
 			}
 			break;
@@ -427,16 +420,16 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		case GEN_GTS80:
 			switch(disp_num_segs[0]){
 				case 6:
-					layout = _2x6Num10_2x6Num10_4x1Num;
+					layout = __2x6Num10_2x6Num10_4x1Num;
 					break;
 				case 7:
-					layout = _2x7Num10_2x7Num10_4x1Num;
+					layout = __2x7Num10_2x7Num10_4x1Num;
 					break;
 			}
 			break;
 		case GEN_GTS80B:
 		case GEN_GTS3:
-			layout = _2x20Alpha;
+			layout = __2x20Alpha;
 			break;
 
 		// stern
@@ -444,10 +437,10 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		case GEN_STMPU200:
 			switch(disp_num_segs[0]){
 				case 6:
-					layout = _2x6Num_2x6Num_4x1Num;
+					layout = __2x6Num_2x6Num_4x1Num;
 					break;
 				case 7:
-					layout = _2x7Num_2x7Num_4x1Num;
+					layout = __2x7Num_2x7Num_4x1Num;
 					break;
 			}
 			break;
@@ -461,28 +454,28 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 			}else{
 				switch(disp_num_segs[0]){
 					case 6:
-						layout = _2x6Num_2x6Num_4x1Num;
+						layout = __2x6Num_2x6Num_4x1Num;
 						break;
 					case 7:
-						if(dmd_hasExtraData)
-							layout = _2x7Num_2x7Num_10x1Num;
+						if(strncasecmp(GameName, "medusa", 6) == 0)
+							layout = __2x7Num_2x7Num_10x1Num;
 						else
-							layout = _2x7Num_2x7Num_4x1Num;
+							layout = __2x7Num_2x7Num_4x1Num;
 						break;
 				}
 			}
 			break;
 		case GEN_BY6803:
 		case GEN_BY6803A:
-			layout = _4x7Num10;
+			layout = __4x7Num10;
 			break;
 		case GEN_BYPROTO:
-			layout = _2x6Num_2x6Num_4x1Num;
+			layout = __2x6Num_2x6Num_4x1Num;
 			break;
 
 		// hankin
 		case GEN_HNK:
-			layout = _2x20Alpha;
+			layout = __2x20Alpha;
 			break;
 
 		//!! unsupported so far:
@@ -497,6 +490,21 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 		case GEN_ZAC2:
 			break;
 	}
+
+	return layout;
+}
+
+void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
+
+	// Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
+	// block this from running.
+	if (dmd_hasDMD)
+		return;
+
+	const layout_t layout = layoutAlphanumericFrame(gen, seg_data, seg_data2, total_disp, disp_num_segs, GameName);
+
+	if (layout == __Invalid)
+		return;
 
 	if (DmdDev_render_PM_Alphanumeric_Dim_Frame)
 		DmdDev_render_PM_Alphanumeric_Dim_Frame(layout, seg_data, seg_dim, seg_data2);

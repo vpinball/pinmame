@@ -21,7 +21,7 @@
 static UINT8  *dmd32RAM;
 static UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100%
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
 extern UINT8  g_raw_gtswpc_dmd[];
 extern UINT32 g_raw_gtswpc_dmdframes;
 #endif
@@ -356,7 +356,7 @@ static void pistol_poker__mystery_castle_dmd(void) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
   int ii,jj;
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   int i = 0;
   g_raw_gtswpc_dmdframes = 4;
 #endif
@@ -376,7 +376,7 @@ static void pistol_poker__mystery_castle_dmd(void) {
 		  *line++ = level[((RAM[0] >> 2 & 0x01) + (RAM[0x200] >> 2 & 0x01) + (RAM[0x400] >> 2 & 0x01) + (RAM[0x600] >> 2 & 0x01))];
 		  *line++ = level[((RAM[0] >> 1 & 0x01) + (RAM[0x200] >> 1 & 0x01) + (RAM[0x400] >> 1 & 0x01) + (RAM[0x600] >> 1 & 0x01))];
 		  *line++ = level[((RAM[0]/*>>0*/&0x01) + (RAM[0x200]/*>>0*/&0x01) + (RAM[0x400]/*>>0*/&0x01) + (RAM[0x600]/*>>0*/&0x01))];
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
 		  g_raw_gtswpc_dmd[        i] = reverse(RAM[0]);
 		  g_raw_gtswpc_dmd[0x200 + i] = reverse(RAM[0x200]);
 		  g_raw_gtswpc_dmd[0x400 + i] = reverse(RAM[0x400]);
@@ -399,7 +399,7 @@ static void pistol_poker__mystery_castle_dmd(void) {
 		  *line++ = level[(RAM[0]/*>>0*/&0x04)];
 		  *line++ = level[(RAM[0] << 1 & 0x04)];
 		  *line++ = level[(RAM[0] << 2 & 0x04)];
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
 		  g_raw_gtswpc_dmd[        i] =
 		  g_raw_gtswpc_dmd[0x200 + i] =
 		  g_raw_gtswpc_dmd[0x400 + i] =

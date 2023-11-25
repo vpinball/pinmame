@@ -1,4 +1,4 @@
-UINT8 AlphaNumericFrameBuffer[2048] = {};
+static UINT8 AlphaNumericFrameBuffer[2048] = {0};
 
 static const UINT8 segSizes[8][16] = {
 	{5,5,5,5,5,5,2,2,5,5,5,2,5,5,5,1},
@@ -166,7 +166,7 @@ static const UINT8 segs[8][17][5][2] = {
 //* In:
 //* Out:
 //*****************************************************
-UINT8 getPixel(const int x, const int y)
+static UINT8 getPixel(const int x, const int y)
 {
    const int v = (y*16)+(x/8);
    const int z = 1<<(x%8);
@@ -181,7 +181,7 @@ UINT8 getPixel(const int x, const int y)
 //* In:
 //* Out:
 //*****************************************************
-void drawPixel(const int x, const int y, const UINT8 colour)
+static void drawPixel(const int x, const int y, const UINT8 colour)
 {
    const int v = (y*16)+(x/8);
    const int z = 1<<(x%8);
@@ -220,7 +220,7 @@ void drawPixel(const int x, const int y, const UINT8 colour)
 //* In:
 //* Out:
 //*****************************************************
-void drawSegment(const int x, const int y, const UINT8 type, const UINT16 seg, const UINT8 colour)
+static void drawSegment(const int x, const int y, const UINT8 type, const UINT16 seg, const UINT8 colour)
 {
 	for (int i = 0; i<segSizes[type][seg]; i++)
 		drawPixel(segs[type][seg][i][0] + x, segs[type][seg][i][1] + y, colour);
@@ -232,7 +232,7 @@ void drawSegment(const int x, const int y, const UINT8 type, const UINT16 seg, c
 //* In:
 //* Out:
 //*****************************************************
-void smoothDigitCorners(const int x, const int y) {
+static void smoothDigitCorners(const int x, const int y) {
 	// remove corner pixel (round font corners)
 	if(getPixel(x,1+y) && getPixel(1+x,y))
 		drawPixel(0+x,y,0);
@@ -244,7 +244,7 @@ void smoothDigitCorners(const int x, const int y) {
 		drawPixel(6+x,10+y,0);
 }
 
-void smoothDigitCorners6Px(const int x, const int y) {
+static void smoothDigitCorners6Px(const int x, const int y) {
 	if (getPixel(x,1+y) && getPixel(1+x,y))
 		drawPixel(0+x,y,0);
 	if (getPixel(x+4,1+y) && getPixel(3+x,y))
@@ -261,7 +261,7 @@ void smoothDigitCorners6Px(const int x, const int y) {
 //* In:
 //* Out:
 //*****************************************************
-void _2x16Alpha(const UINT16 *const seg_data)
+static void _2x16Alpha(const UINT16 *const seg_data)
 {
 	for (int i=0; i<16; i++) {
 		for (int j=0; j<16; j++) {
@@ -281,7 +281,7 @@ void _2x16Alpha(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x20Alpha(const UINT16 *const seg_data)
+static void _2x20Alpha(const UINT16 *const seg_data)
 {
 	for (int i=0; i<20; i++) {
 		for (int j=0; j<16; j++) {
@@ -302,7 +302,7 @@ void _2x20Alpha(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Alpha_2x7Num(const UINT16 *const seg_data)
+static void _2x7Alpha_2x7Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -326,7 +326,7 @@ void _2x7Alpha_2x7Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
+static void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -361,7 +361,7 @@ void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
+static void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<12; i++) {
 		for (int j=0; j<16; j++) {
@@ -396,7 +396,7 @@ void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x6Num10_2x6Num10_4x1Num(const UINT16 *const seg_data)
+static void _2x6Num10_2x6Num10_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<12; i++) {
 		for (int j=0; j<16; j++) {
@@ -431,7 +431,7 @@ void _2x6Num10_2x6Num10_4x1Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
+static void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -466,7 +466,7 @@ void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_2x7Num_10x1Num(const UINT16 *const seg_data, const UINT16 *const extra_seg_data)
+static void _2x7Num_2x7Num_10x1Num(const UINT16 *const seg_data, const UINT16 *const extra_seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -513,7 +513,7 @@ void _2x7Num_2x7Num_10x1Num(const UINT16 *const seg_data, const UINT16 *const ex
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_2x7Num_4x1Num_gen7(const UINT16 *const seg_data)
+static void _2x7Num_2x7Num_4x1Num_gen7(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -548,7 +548,7 @@ void _2x7Num_2x7Num_4x1Num_gen7(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
+static void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -581,7 +581,7 @@ void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _4x7Num10(const UINT16 *const seg_data)
+static void _4x7Num10(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -604,7 +604,7 @@ void _4x7Num10(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _6x4Num_4x1Num(const UINT16 *const seg_data)
+static void _6x4Num_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<8; i++) {
 		for (int j=0; j<16; j++) {
@@ -643,7 +643,7 @@ void _6x4Num_4x1Num(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_4x1Num_1x16Alpha(const UINT16 *const seg_data)
+static void _2x7Num_4x1Num_1x16Alpha(const UINT16 *const seg_data)
 {
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
@@ -682,7 +682,7 @@ void _2x7Num_4x1Num_1x16Alpha(const UINT16 *const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
+static void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
 {
 	// 1x16 alphanumeric
 	for (int i=0; i<16; i++) {
@@ -717,7 +717,7 @@ void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _1x7Num_1x16Alpha_1x16Num(const UINT16 * const seg_data)
+static void _1x7Num_1x16Alpha_1x16Num(const UINT16 * const seg_data)
 {
 	// 1x16 alphanumeric
 	for (int i=0; i<16; i++) {
@@ -753,7 +753,7 @@ void _1x7Num_1x16Alpha_1x16Num(const UINT16 * const seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _1x16Alpha_1x16Num_1x7Num_1x4Num(const UINT16 * const seg_data)
+static void _1x16Alpha_1x16Num_1x7Num_1x4Num(const UINT16 * const seg_data)
 {
 	// 1x16 alphanumeric
 	for (int i=0; i<16; i++) {
