@@ -1,3 +1,5 @@
+#include "dmddevice.h"
+
 #ifdef WIN32
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -8,7 +10,6 @@
 #include "gen.h"
 #include "core.h"
 #include "cpu/at91/at91.h"
-#include "dmddevice.h"
 
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
  #define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
@@ -341,6 +342,8 @@ void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* currbuffe
 	}
 }
 
+#endif
+
 // this one can be called without having to do an init/de-init, so its pure
 layout_t layoutAlphanumericFrame(UINT64 gen, UINT16* seg_data, UINT16* seg_data_2, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
 
@@ -493,6 +496,8 @@ layout_t layoutAlphanumericFrame(UINT64 gen, UINT16* seg_data, UINT16* seg_data_
 
 	return layout;
 }
+
+#ifdef WIN32
 
 void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
 
