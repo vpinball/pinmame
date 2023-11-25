@@ -9,6 +9,8 @@ Version 3.6 (XX XXth, 2023) - "Sounds good III"
 
 - Add new 'Extend Mono sound to Stereo' option, to help multi channel (e.g. 5.1 or 7.1 speaker setup) sound system users
 
+- RawDmdPixels can now also feature alpha-segments, if running a non-DMD based machine
+
 - Remove the SyncLevel option from the options, nowadays this should be counter-productive
 
 Version 3.5 (October 23rd, 2022) - "Trick or Treat"
@@ -84,7 +86,7 @@ Version 3.2 (October 6th, 2019) - "Sounds good II"
 - Improve timing precision of DMD frame dumps
 
 - Fix for external dmddevice(64).dll: map GEN_GTS80B to _2x20Alpha layout
-- Also introduce new function to dmddevice interface: void Render_PM_Alphanumeric_Dim_Frame(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2); which includes dimming of segments
+- Also introduce a new function to the dmddevice interface: void Render_PM_Alphanumeric_Dim_Frame(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2); which includes dimming of segments
 - Also (optionally) extend dmddevice interface (with noOfRawFrames and rawbuffer):
    void Render_16_Shades_with_Raw(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
    void Render_4_Shades_with_Raw (UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
