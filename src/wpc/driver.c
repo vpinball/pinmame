@@ -1212,6 +1212,24 @@ DRIVERNV(ggatea)        // 19?? - Golden Gate (set 2) (Bingo)
 // --------------
 // SEGA GAMES
 // --------------
+// https://www.pinballnews.com/learn/japanesepinballs/index.html
+// 1976 - RODEO
+// 1976 - TEMPTATION
+// 1977 - BIG TOGETHER
+// 1977 - NOSTALGIA
+// 1977 - WOMAN-LIB
+// 1977 - SKY LOVER
+// 1977 - MIKOSHI
+// 1977 - MILLIONAIRE
+// 1977 - SOUTHPAW
+// 1977 - SPACE SHUTTLE
+// 1978 - BIG KICK
+// 1978 - MISS NESSIE
+// 1978 - KNOCKOUT BLOW
+// 1978 - MONTE ROSA
+// 1978 - CHA-CHA-CHA
+// 1979 - ADVENTURE
+
 //Data East Hardware, DMD 192x64
 DRIVER  (mav,100)       //DE/Sega MPU: 10/94 Maverick, The Movie (1.00)
 DRIVER  (mav,200)       //             10/94 Maverick, The Movie (2.00)
