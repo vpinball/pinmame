@@ -35,8 +35,6 @@ static bool    dmd_hasDMD = false;
 static HMODULE DmdDev_hModule;
 static HMODULE DmdScr_hModule;
 
-extern char build_version[];
-
 typedef int(*DmdDev_Open_t)();
 typedef bool(*DmdDev_Close_t)();
 typedef void(*DmdDev_PM_GameSettings_t)(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options);
@@ -91,38 +89,26 @@ extern "C" {
 
 int RcvConsoleInput(UINT8 *buf, int size)
 {
-	int ret = at91_receive_serial(1, buf, size);
+	const int ret = at91_receive_serial(1, buf, size);
 	return ret;
+}
+
+static HMODULE GetCurrentModule()
+{
+	HMODULE hModule = NULL;
+	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,	(LPCTSTR)GetCurrentModule, &hModule);
+	return hModule;
 }
 
 int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions *Options) {
 
-	// look for the DmdDevice(64).dll and DmdScreen(64).dll in the path of vpinmame.dll
+	// look for the DmdDevice(64).dll and DmdScreen(64).dll in the path of vpinmame.dll/libpinmame-X.X.dll
 	char DmdDev_filename[MAX_PATH];
 	char DmdScr_filename[MAX_PATH];
 	bool DmdScr = false;
 	bool DmdDev = false;
 
-#ifndef _WIN64
-#ifdef VPINMAME
-	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME.dll");
-#endif
-#else
-#ifdef VPINMAME
-	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME64.dll");
-#endif
-#endif
-
-#ifdef LIBPINMAME
-	char libpinmame_name[MAX_PATH];
-	strcpy(libpinmame_name, "libpinmame-");
-	strcat(libpinmame_name, build_version);
-	libpinmame_name[14] = '\0';
-	strcat(libpinmame_name, ".dll");
-	const HINSTANCE hVpmDLL = GetModuleHandle(libpinmame_name);
-#endif
-
-	GetModuleFileName(hVpmDLL,DmdDev_filename,MAX_PATH);
+	GetModuleFileName(GetCurrentModule(),DmdDev_filename,MAX_PATH);
 	strcpy(DmdScr_filename,DmdDev_filename);
 	char *ptr  = strrchr(DmdDev_filename,'\\');
 	char *ptr2 = strrchr(DmdScr_filename,'\\');

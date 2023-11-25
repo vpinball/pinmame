@@ -246,7 +246,7 @@ extern "C" int osd_start_audio_stream(const int stereo) {
 		_audioInfo.channels = stereo ? 2 : 1;
 		_audioInfo.sampleRate = Machine->sample_rate;
 		_audioInfo.framesPerSecond = Machine->drv->frames_per_second;
-		_audioInfo.samplesPerFrame = Machine->sample_rate / Machine->drv->frames_per_second;
+		_audioInfo.samplesPerFrame = (int)(Machine->sample_rate / Machine->drv->frames_per_second);
 		_audioInfo.bufferSize = PINMAME_ACCUMULATOR_SAMPLES * 2;
 
 		return (*(_p_Config->cb_OnAudioAvailable))(&_audioInfo, _p_userData);
@@ -260,14 +260,15 @@ extern "C" int osd_start_audio_stream(const int stereo) {
 
 extern "C" int osd_update_audio_stream(INT16* p_buffer) {
 	if (_p_Config->cb_OnAudioUpdated) {
-		int samplesThisFrame = mixer_samples_this_frame();
+		const int samplesThisFrame = mixer_samples_this_frame();
 
 		if (_p_Config->audioFormat == AUDIO_FORMAT_INT16) {
 			return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame, _p_userData);
 		}
 
-		for (int i = 0; i < samplesThisFrame * _audioInfo.channels; i++) {
-			_audioData[i] = ((float)p_buffer[i]) / 32768.0;
+		const int samplesEnd = samplesThisFrame * _audioInfo.channels;
+		for (int i = 0; i < samplesEnd; i++) {
+			_audioData[i] = (float)p_buffer[i] * (float)(1.0/32768.0);
 		}
 
 		return (*(_p_Config->cb_OnAudioUpdated))((void*)_audioData, samplesThisFrame, _p_userData);

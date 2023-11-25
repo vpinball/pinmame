@@ -183,7 +183,7 @@ bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_i
 	ALT_INFO(1, "Setting volume for stream %u", stream_in);
 	ALT_DEBUG(1, "SAMPLE_VOL:%.02f  GLOBAL_VOL:%.02f  MASTER_VOL:%.02f", vol_in,
 		      global_vol, master_vol);
-	const bool success = BASS_ChannelSetAttribute(stream_in, BASS_ATTRIB_VOL, new_vol);
+	const bool success = BASS_ChannelSetAttribute(stream_in, BASS_ATTRIB_VOL, new_vol) != 0;
 
 	if (!success) {
 		ALT_ERROR(1, "FAILED BASS_ChannelSetAttribute(BASS_ATTRIB_VOL)");
@@ -265,7 +265,7 @@ bool AltsoundProcessorBase::freeStream(const HSTREAM hstream_in)
 	ALT_INFO(0, "BEGIN AltsoundProcessorBase::freeStream()");
 	INDENT;
 
-	const bool success = BASS_StreamFree(hstream_in);
+	const bool success = BASS_StreamFree(hstream_in) != 0;
 	if (!success) {
 		ALT_ERROR(1, "FAILED BASS_StreamFree(%u)", hstream_in);
 	}
