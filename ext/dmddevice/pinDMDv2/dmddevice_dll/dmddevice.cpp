@@ -200,10 +200,10 @@ DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, con
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
-	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+	if (!memcmp(oldbuffer, currbuffer, (size_t)width*height)) //check if same frame again
 		return;
 
-	memcpy(oldbuffer, currbuffer, width*height);
+	memcpy(oldbuffer, currbuffer, (size_t)width*height);
 
 	if (isOpen) {
 		int byteIdx=4;
@@ -242,7 +242,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,width*height);
+			memcpy(tempbuffer,currbuffer,(size_t)width*height);
 
 
 		// dmd height
@@ -295,10 +295,10 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
-	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+	if (!memcmp(oldbuffer, currbuffer, (size_t)width*height)) //check if same frame again
 		return;
 
-	memcpy(oldbuffer, currbuffer, width*height);
+	memcpy(oldbuffer, currbuffer, (size_t)width*height);
 
 	if (isOpen) {
 		int byteIdx=4;
@@ -337,7 +337,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,width*height);
+			memcpy(tempbuffer,currbuffer,(size_t)width*height);
 	
 
 		// dmd height

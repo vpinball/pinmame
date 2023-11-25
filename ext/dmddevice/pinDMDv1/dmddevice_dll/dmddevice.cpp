@@ -25,7 +25,7 @@ bool slowUSB = false;
 void Send_Clear_Screen()
 {
 	memset(OutputPacketBuffer,0x00, 2052);
-	const UINT8 tmp[4] = {
+	static const UINT8 tmp[4] = {
 		0x81, 0xC3, 0xE7, 0x00 //header
 		}; 
 	memcpy(OutputPacketBuffer, tmp, sizeof(tmp));
@@ -120,10 +120,10 @@ DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, con
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
-	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+	if (!memcmp(oldbuffer, currbuffer, (size_t)width*height)) //check if same frame again
 		return;
 
-	memcpy(oldbuffer, currbuffer, width*height);
+	memcpy(oldbuffer, currbuffer, (size_t)width*height);
 
 	if (isOpen) {
 		int byteIdx=4;
@@ -162,7 +162,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,width*height);
+			memcpy(tempbuffer,currbuffer,(size_t)width*height);
 	
 
 		// dmd height
@@ -218,10 +218,10 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
-	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+	if (!memcmp(oldbuffer, currbuffer, (size_t)width*height)) //check if same frame again
 		return;
 
-	memcpy(oldbuffer, currbuffer, width*height);
+	memcpy(oldbuffer, currbuffer, (size_t)width*height);
 
 	if (isOpen) {
 		int byteIdx=4;
@@ -230,7 +230,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
 		OutputPacketBuffer[2] = 0xE7;
-		OutputPacketBuffer[3] = 0x0;		// command byte
+		OutputPacketBuffer[3] = 0x0;	// command byte
 
 		// 128x16 = display centered vert
 		// 128x32 = no change
@@ -260,7 +260,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,width*height);
+			memcpy(tempbuffer,currbuffer,(size_t)width*height);
 
 
 		// dmd height

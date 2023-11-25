@@ -80,7 +80,7 @@ DMDDEV void Set_16_Colors_Palette(rgb24 *color)
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
-		for (int i = 0; i < width*height; i++){
+		for (int i = 0; i < (int)width*height; i++){
 			switch (currbuffer[i]) {
 			case 0:
 				arr[i] = colors[0];
@@ -111,7 +111,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
-		for (int i = 0; i < width*height; i++)
+		for (int i = 0; i < (int)width*height; i++)
 			arr[i] = colors[currbuffer[i]];
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);
@@ -202,7 +202,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer)
 {
 	if (isOpen) {
-		for (int i = 0; i < width*height; i++){
+		for (int i = 0; i < (int)width*height; i++){
 			arr[i] = ((int)currbuffer[i].red << 16) | ((int)currbuffer[i].green << 8) | ((int)currbuffer[i].blue /*<< 0*/);
 		}
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
