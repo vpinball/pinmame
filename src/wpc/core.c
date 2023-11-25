@@ -1204,17 +1204,15 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     static UINT16 seg_data2[CORE_SEGCOUNT] = {0};
     const layout_t alpha_layout = layoutAlphanumericFrame(core_gameData->gen, seg_data, seg_data2, total_disp, disp_num_segs, Machine->gamedrv->name);
 
-    if (alpha_layout != __Invalid && oldbuffer != NULL) { // detect if same frame again
-      if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
-      {
-        g_raw_dmdx = 128;
-        g_raw_dmdy = 32;
+    if (alpha_layout != __Invalid) { // detect if same frame again
+      int i;
 
-        g_needs_DMD_update = 1;
+      g_raw_dmdx = 128;
+      g_raw_dmdy = 32;
 
-        //
+      //
 
-        memset(AlphaNumericFrameBuffer,0x00,2048);
+		memset(AlphaNumericFrameBuffer,0x00,2048);
 
 		switch (alpha_layout) {
 			case __2x16Alpha :
@@ -1269,28 +1267,34 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 				break;
 		}
 
-		for (int i = 0; i < 512; ++i) {
-			g_raw_dmdbuffer[(i*8)]   = AlphaNumericFrameBuffer[i]    & 0x01 | AlphaNumericFrameBuffer[i+512]<<1 & 0x02 | AlphaNumericFrameBuffer[i+1024]<<2 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<3 & 0x08;
-			g_raw_dmdbuffer[(i*8)+1] = AlphaNumericFrameBuffer[i]>>1 & 0x01 | AlphaNumericFrameBuffer[i+512]    & 0x02 | AlphaNumericFrameBuffer[i+1024]<<1 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<2 & 0x08;
-			g_raw_dmdbuffer[(i*8)+2] = AlphaNumericFrameBuffer[i]>>2 & 0x01 | AlphaNumericFrameBuffer[i+512]>>1 & 0x02 | AlphaNumericFrameBuffer[i+1024]    & 0x04 | AlphaNumericFrameBuffer[i+1536]<<1 & 0x08;
-			g_raw_dmdbuffer[(i*8)+3] = AlphaNumericFrameBuffer[i]>>3 & 0x01 | AlphaNumericFrameBuffer[i+512]>>2 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>1 & 0x04 | AlphaNumericFrameBuffer[i+1536]    & 0x08;
-			g_raw_dmdbuffer[(i*8)+4] = AlphaNumericFrameBuffer[i]>>4 & 0x01 | AlphaNumericFrameBuffer[i+512]>>3 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>2 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>1 & 0x08;
-			g_raw_dmdbuffer[(i*8)+5] = AlphaNumericFrameBuffer[i]>>5 & 0x01 | AlphaNumericFrameBuffer[i+512]>>4 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>3 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>2 & 0x08;
-			g_raw_dmdbuffer[(i*8)+6] = AlphaNumericFrameBuffer[i]>>6 & 0x01 | AlphaNumericFrameBuffer[i+512]>>5 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>4 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>3 & 0x08;
-			g_raw_dmdbuffer[(i*8)+7] = AlphaNumericFrameBuffer[i]>>7 & 0x01 | AlphaNumericFrameBuffer[i+512]>>6 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>5 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>4 & 0x08;
+		for (i = 0; i < 512; ++i) {
+			currbuffer[(i*8)]   = AlphaNumericFrameBuffer[i]    & 0x01 | AlphaNumericFrameBuffer[i+512]<<1 & 0x02 | AlphaNumericFrameBuffer[i+1024]<<2 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<3 & 0x08;
+			currbuffer[(i*8)+1] = AlphaNumericFrameBuffer[i]>>1 & 0x01 | AlphaNumericFrameBuffer[i+512]    & 0x02 | AlphaNumericFrameBuffer[i+1024]<<1 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<2 & 0x08;
+			currbuffer[(i*8)+2] = AlphaNumericFrameBuffer[i]>>2 & 0x01 | AlphaNumericFrameBuffer[i+512]>>1 & 0x02 | AlphaNumericFrameBuffer[i+1024]    & 0x04 | AlphaNumericFrameBuffer[i+1536]<<1 & 0x08;
+			currbuffer[(i*8)+3] = AlphaNumericFrameBuffer[i]>>3 & 0x01 | AlphaNumericFrameBuffer[i+512]>>2 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>1 & 0x04 | AlphaNumericFrameBuffer[i+1536]    & 0x08;
+			currbuffer[(i*8)+4] = AlphaNumericFrameBuffer[i]>>4 & 0x01 | AlphaNumericFrameBuffer[i+512]>>3 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>2 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>1 & 0x08;
+			currbuffer[(i*8)+5] = AlphaNumericFrameBuffer[i]>>5 & 0x01 | AlphaNumericFrameBuffer[i+512]>>4 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>3 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>2 & 0x08;
+			currbuffer[(i*8)+6] = AlphaNumericFrameBuffer[i]>>6 & 0x01 | AlphaNumericFrameBuffer[i+512]>>5 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>4 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>3 & 0x08;
+			currbuffer[(i*8)+7] = AlphaNumericFrameBuffer[i]>>7 & 0x01 | AlphaNumericFrameBuffer[i+512]>>6 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>5 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>4 & 0x08;
 		}
 
-        //
+      //
 
-        // swap buffers
-        if (currbuffer == buffer1) {
-          currbuffer = buffer2;
-          oldbuffer = buffer1;
-        }
-        else {
-          currbuffer = buffer1;
-          oldbuffer = buffer2;
-        }
+      if (oldbuffer != NULL && memcmp(oldbuffer, currbuffer, g_raw_dmdx*g_raw_dmdy))
+      {
+        for (i = 0; i < g_raw_dmdx*g_raw_dmdy; ++i)
+          g_raw_dmdbuffer[i] = (UINT8)((int)currbuffer[i]*100/15);
+        g_needs_DMD_update = 1;
+      }
+
+      // swap buffers
+      if (currbuffer == buffer1) {
+        currbuffer = buffer2;
+        oldbuffer = buffer1;
+      }
+      else {
+        currbuffer = buffer1;
+        oldbuffer = buffer2;
       }
     }
   }
