@@ -369,6 +369,11 @@ layout_t layoutAlphanumericFrame(UINT64 gen, UINT16* seg_data, UINT16* seg_data_
 		case GEN_S4:
 		case GEN_S6:
 			layout = __2x6Num_2x6Num_4x1Num;
+			if ((strncasecmp(GameName, "algar", 5) == 0) || // Sys6A with 7 digit displays
+				(strncasecmp(GameName, "alpok", 5) == 0) ||
+				(strncasecmp(GameName, "frpwr_b6", 8) == 0) ||
+				(strncasecmp(GameName, "frpwr_c6", 8) == 0))
+				layout = __2x7Num_2x7Num_4x1Num_gen7;
 			break;
 		case GEN_S7:
 			//__2x7Num_4x1Num_1x16Alpha;		//!! hmm i did this for a reason??
