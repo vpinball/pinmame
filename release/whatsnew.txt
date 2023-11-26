@@ -26,7 +26,7 @@ Updated LISY support to 5.28-90 (Linux for Gottlieb System1 & System80, Bally, A
 
 Fix Capcom crashes in 64bit builds
 
-Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler
+Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler, Algar, Alien Poker and 7 digit variants of Firepower
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
