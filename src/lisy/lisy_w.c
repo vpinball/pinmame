@@ -1201,7 +1201,6 @@ void
 lisy_S3_cmos_setting(void) {
     int i, ret;
     UINT8 data[29];
-    UINT8 old_data[29];
     unsigned char action;
 
     //calculate decimal values out of 4bit bcd data in CMOS
@@ -1211,16 +1210,16 @@ lisy_S3_cmos_setting(void) {
 
     if (ls80dbg.bitv.basic)  {
     printf("current CMOS values\n");
-    printf("(0x100) Williams check value 0x5a: 0x%x%x\n", lisy_s4_CMOS[0] & 0x0f ,  lisy_s4_CMOS[1] & 0x0f );
+    printf("(0x100) Williams check value 0x5a: 0x%x%x\n", lisy_s4_CMOS[0] & 0x0f, lisy_s4_CMOS[1] & 0x0f );
     //0xff means disabled
     printf("(0x102)");
     if( data[1] == 165) printf("Replay1: disabled\n"); else printf("Replay1: %d0.000\n",data[1]);
     printf("(0x104)");
-    if( data[2] == 165) printf("Replay1: disabled\n"); else printf("Replay2: %d0.000\n",data[2]);
+    if( data[2] == 165) printf("Replay2: disabled\n"); else printf("Replay2: %d0.000\n",data[2]);
     printf("(0x106)");
-    if( data[3] == 165) printf("Replay1: disabled\n"); else printf("Replay3: %d0.000\n",data[3]);
+    if( data[3] == 165) printf("Replay3: disabled\n"); else printf("Replay3: %d0.000\n",data[3]);
     printf("(0x108)");
-    if( data[4] == 165) printf("Replay1: disabled\n"); else printf("Replay4: %d0.000\n",data[4]);
+    if( data[4] == 165) printf("Replay4: disabled\n"); else printf("Replay4: %d0.000\n",data[4]);
     printf("(0x10A)Max Credits: %d\n",data[5]);
     printf("(0x10C)Match: %d\n",data[6]);
     printf("(0x10E)Play: %d\n",data[7]);
@@ -1313,11 +1312,11 @@ printf("get setting %d: %d\n",42+i,data[i]);
     printf("(0x102)");
     if( data[1] == 165) printf("Replay1: disabled\n"); else printf("Replay1: %d0.000\n",data[1]);
     printf("(0x104)");
-    if( data[2] == 165) printf("Replay1: disabled\n"); else printf("Replay2: %d0.000\n",data[2]);
+    if( data[2] == 165) printf("Replay2: disabled\n"); else printf("Replay2: %d0.000\n",data[2]);
     printf("(0x106)");
-    if( data[3] == 165) printf("Replay1: disabled\n"); else printf("Replay3: %d0.000\n",data[3]);
+    if( data[3] == 165) printf("Replay3: disabled\n"); else printf("Replay3: %d0.000\n",data[3]);
     printf("(0x108)");
-    if( data[4] == 165) printf("Replay1: disabled\n"); else printf("Replay4: %d0.000\n",data[4]);
+    if( data[4] == 165) printf("Replay4: disabled\n"); else printf("Replay4: %d0.000\n",data[4]);
     printf("(0x10A)Max Credits: %d\n",data[5]);
     printf("(0x10C)Match: %d\n",data[6]);
     printf("(0x10E)Play: %d\n",data[7]);
@@ -1364,9 +1363,9 @@ lisy_w_switch_handler(void) {
     static unsigned char first = 1;
     static int simulate_coin_flag = 0;
 
-    //on first call read alls wicthes from APC
+    //on first call read all switches from APC
     if (first) {
-        //get the switch status from APC andf set internal pinmame matrix
+        //get the switch status from APC and set internal pinmame matrix
         for (i = 1; i <= 64; i++)
             core_setSw(i, lisy_api_get_switch_status(i));
 
@@ -1644,7 +1643,7 @@ lisy_w_solenoid_handler(void) {
         return;
     }
 
-    //did something changed?
+    //did something change?
     if (mysol != coreGlobals.solenoids) {
         //check all solenoids
         for (bitpos = 0; bitpos <= 31; bitpos++) {
@@ -1669,7 +1668,7 @@ lisy_w_solenoid_handler(void) {
                     continue;
                 }
 
-                //special case riverboard gambler, ignor sol14 & sol15 in this case ( wheel )
+                //special case riverboard gambler, ignore sol14 & sol15 in this case ( wheel )
                 //as it is handled directly above
                 //special case Riverboat Gambler 'wheel' via Sol14 & 15
                 if ((lisymini_game.typeno == LISYW_TYPE_SYS11RG) && ((sol_no == 14) || (sol_no == 15))) {
@@ -2036,7 +2035,7 @@ lisy_w_sound_handler(unsigned char board, unsigned char data) {
     }
 
     old_data = data;
-    //use command  play index and let do APC the work ;-)
+    //use command play index and let do APC the work ;-)
     lisy_api_sound_play_index(board, data);
 }
 

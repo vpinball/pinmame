@@ -706,7 +706,7 @@ int main (int argc, char *argv[]) {
     const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
     ALCdevice *device = alcOpenDevice(defaultDeviceName);
     if (!device) {
-        printf("failed to alcOpenDevice to %s\n", defaultDeviceName);
+        printf("failed to alcOpenDevice for %s\n", defaultDeviceName);
         return 1;
     }
 

@@ -617,16 +617,18 @@ static void* memcpy_fast(void *destination, const void *source, size_t size)
 {
 	unsigned char *dst = (unsigned char*)destination;
 	const unsigned char *src = (const unsigned char*)source;
-	static size_t cachesize = 0x200000; // L2-cache size
-	size_t padding;
 
 	// small memory copy
 	if (size <= 128) {
 		return memcpy_tiny(dst, src, size);
 	}
 
+#if 1
+	memcpy(dst, src, size);
+#else
+	static const size_t cachesize = 0x200000; // L2-cache size
 	// align destination to 16 bytes boundary
-	padding = (16 - (((size_t)dst) & 15)) & 15;
+	size_t padding = (16 - (((size_t)dst) & 15)) & 15;
 
 	if (padding > 0) {
 		__m128i head = _mm_loadu_si128((const __m128i*)src);
@@ -717,7 +719,7 @@ static void* memcpy_fast(void *destination, const void *source, size_t size)
 	}
 
 	memcpy_tiny(dst, src, size);
-
+#endif
 	return destination;
 }
 
@@ -1721,7 +1723,7 @@ int BasicBitmap_SSE2_AVX_Enable()
 
 	int result = 0;
 	if (_x86_cpu_feature(26)) {
-		_internal_hook_memcpy = memcpy_fast;
+		_internal_hook_memcpy = NULL; //memcpy_fast; // should not be necessary anymore nowadays
 
 		BasicBitmap::SetDriver(32, NormalBlit_32, false);
 		BasicBitmap::SetDriver(24, NormalBlit_24, false);

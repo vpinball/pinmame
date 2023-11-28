@@ -4,7 +4,7 @@
 #include "core.h"
 #include "wmssnd.h"
 #include "sndbrd.h"
-#include "s4.h"                 //*System 3 Is Nearly Identical to 4, so we share functions*/
+#include "s4.h"         // System 3 Is Nearly Identical to 4, so we share functions
 
 #define s3_mS3  s4_mS4  //                        ""
 

@@ -72,7 +72,7 @@ dcs:
 # ------------
 # 55aaXXYY = Set Volume
 # XX = 47 to FF step 08
-# YY = FF - XX ... reason unknown.
+# YY = ~XX (for verification?)
 # ------------
 :55aa47b8:Set volume (8)
 :55aa4fb0:Set volume (9)
