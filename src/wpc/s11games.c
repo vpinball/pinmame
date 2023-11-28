@@ -882,6 +882,9 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
 S11_ROMEND
 CORE_CLONEDEF(polic,l2,l4,"Police Force (LA-2)", 1989, "Williams", s11_mS11BS,0)
 
+// There exists also a u4 sound l1, where should this go to?
+//S11CS_SOUNDROM88(       "pfrc_u4.l1",  CRC(4e7fd9aa) SHA1(5ba279ffeb6d1864c582f97fa89ee4bd2f084505),
+
 /*-----------------------------
 / Transporter the Rescue 6/89
 /----------------------------*/
@@ -897,6 +900,10 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
 S11_ROMEND
 #define input_ports_tsptr input_ports_s11
 CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0)
+
+// There exist also a u4 and u20 sound l1, where should these go to?
+//S11CS_SOUNDROM888(      "tran_u4.l1",  CRC(63e92f8b) SHA1(57f2841419415fc3560d46a63119c76f98cade9b),
+//                        "tran_u20.l1", CRC(fabddaaf) SHA1(7c014bb5b1ac8da61ffd265ba98bcb8256c5f666))
 
 /*-----------------------
 / Bad Cats 12/89
@@ -1395,6 +1402,9 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
                         "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
 S11_ROMEND
 CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny's Birthday Ball (LU-2 Europe)", 1990, "Bally", s11c_one,0)
+
+// There exists also a u4 sound l1, where should this go to?
+//S11CS_SOUNDROM000(      "bugs_u4.l1",  CRC(dbfec77e) SHA1(57e2b0cfae51ed2aa3cad5ceb407260d10477068),
 
 /*--------------------
 / Dr. Dude - moved to own simulator
