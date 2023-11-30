@@ -73,10 +73,13 @@ DRIVERNV(mystcast)      // AG08:   06/93  Mystery Castle (R02)
 DRIVERNV(mystcasa)      // EPC081: ??/9?  Mystery Castle (R03)
 DRIVERNV(pstlpkr1)      // AG10:   11/93  Pistol Poker (R01)
 DRIVERNV(pstlpkr)       //         11/93  Pistol Poker (R02)
-                        //         ??/93  Dual-Pool - proto
-                        //         ??/93  Slam 'N Jam - proto
+                        //         ??/93  Dual-Pool - proto (no software was done, only whitewood)
+                        //         ??/93  Maxx Badazz - proto (no known machine exists)
+                        //         ??/93  Slam 'N Jam - proto (2 machines with software exist)
 DRIVERNV(usafootr)      // EPC111: 02/94  U.S.A. Football Redemption (P08)
-                        //         ??/94  A-MAZE-ING Baseball - proto
+                        //         ??/94  A-MAZE-ING Baseball - proto (at least one machine exists)
+                        //         ??/??  Slapshot - proto (no software was done, only whitewood)
+                        //         ??/??  Unnamed Tic-Tac-Toe themed game - proto (at least one machine exists)
 #ifdef MAME_DEBUG
 DRIVERNV(test8031)      //Test 8031 cpu core
 #endif
