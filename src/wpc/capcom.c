@@ -160,10 +160,6 @@ static INTERRUPT_GEN(cc_vblank) {
                             | (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8 + 1].value >= 0.5 ? 2 : 0);
 
   core_updateSw(TRUE);
-
-  float state[CORE_MODOUT_SOL_MAX];
-  core_getAllPhysicSols(state);
-  int zz = 1;
 }
 
 static SWITCH_UPDATE(cc) {
