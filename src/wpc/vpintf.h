@@ -12,9 +12,9 @@
 	#define GAME_NOCRC 0
 #endif
 
-typedef struct { int lampNo, currStat; } vp_tChgLamps[CORE_MAXLAMPCOL*8];
-typedef struct { int solNo,  currStat; } vp_tChgSols[CORE_MAXSOL + CORE_MODSOL_MAX];
-typedef struct { int giNo,   currStat; } vp_tChgGIs[CORE_MAXGI];
+typedef struct { int lampNo, currStat; } vp_tChgLamps[CORE_MODOUT_LAMP_MAX];
+typedef struct { int solNo,  currStat; } vp_tChgSols[CORE_MODOUT_SOL_MAX];
+typedef struct { int giNo,   currStat; } vp_tChgGIs[CORE_MODOUT_GI_MAX];
 typedef struct { int ledNo, chgSeg, currStat; } vp_tChgLED[CORE_SEGCOUNT];
 typedef struct { int sndNo; } vp_tChgSound[MAX_CMD_LOG];
 typedef struct { int nvramNo, oldStat, currStat; } vp_tChgNVRAMs[CORE_MAXNVRAM];
@@ -22,7 +22,7 @@ typedef struct { int nvramNo, oldStat, currStat; } vp_tChgNVRAMs[CORE_MAXNVRAM];
 #define VP_OUT_SOLENOID          0 /* Solenoid output type */
 #define VP_OUT_LAMP              1 /* Lamp output type */
 #define VP_OUT_GI                2 /* Global Illumination output type */
-#define VP_OUT_LED               3 /* LED segment output type */
+#define VP_OUT_ALPHASEG          3 /* Alpha Numeric segment output type */
 
 #define VP_MAXDIPBANKS 10
 /*----------------------------------------------------
@@ -59,13 +59,13 @@ INLINE int vp_getSwitch(int swNo) { return core_getSw(swNo); }
 /*------------------------------------
 /  get status of a solenoid (0=off, !0=on)
 /-------------------------------------*/
-INLINE int vp_getSolenoid(int solNo) { return core_getSol(solNo); }
+int vp_getSolenoid(int solNo);
 
 /*-------------------------------------------
-/  get status of a GIString (0=off, 1=on)
+/  get status of a GIString (0=off, !0=on)
 / (WPC games only)
 /-------------------------------------*/
-INLINE int vp_getGI(int giNo) { return coreGlobals.gi[giNo]; }
+int vp_getGI(int giNo);
 
 /*-------------------------------------------
 /  get all lamps changed since last call

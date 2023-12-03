@@ -1325,7 +1325,7 @@ static void m68306_duart_set_dusr(int which,int data);		//Set the DUSR register
 static void m68306_duart_set_duisr(int data);				//Set the DUISR register
 static void m68306_duart_set_duimr(int data);				//Set the DUIMR register
 static void m68306_duart_check_int(void);					//Check for a DUART interrupt
-static void duart_start_timer(void);						//Duart Start Timer
+static void duart_start_timer(int reset);						//Duart Start Timer
 static void duart_timer_callback (int param);				//Duart Timer Callback
 static void m68306_rx_cause_int(int which,int data);		//Generate a Receiver Interrupt
 #ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
@@ -1525,22 +1525,15 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		case 0xf7fd:
 			LOG(("%8x:START COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
 #if !DISABLE_68306_TIMER
-			//TIMER MODE?
-			if(m68306duartreg[dirDUACR] & 0x40) {
-				//Look for 1->0 transition in the output to trigger an interrupt!
-				if(m68306_duart.timer_output) {
-					//Set CTR/TMR RDY bit (3) in DUISR
-					m68306_duart_set_duisr(m68306duartreg[dirDUISR] | 0x08);
-				}
-				//Clear OP3 output
-				m68306_duart.timer_output = 0;
-				//Restart timer!
-				duart_start_timer();
+			//Look for 1->0 transition in the output to trigger an interrupt!
+			if(m68306_duart.timer_output) {
+				//Set CTR/TMR RDY bit (3) in DUISR
+				m68306_duart_set_duisr(m68306duartreg[dirDUISR] | 0x08);
 			}
-			//COUNTER MODE?
-			else {
-				//Start count down from preloaded value
-			}
+			//Clear OP3 output
+			m68306_duart.timer_output = 0;
+			//Start timer!
+			duart_start_timer(1);
 #endif
 			break;
 		//F7FF - STOP COUNTER COMMAND
@@ -1550,11 +1543,12 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 			//Clear CTR/TMR RDY bit (3) in DUISR - BOTH TIMER & COUNTER MODE
 			m68306duartreg[dirDUISR] &= (~0x08);
 
-			//COUNTER MODE? - NOT IMPLEMENTED
+			//COUNTER MODE
 			if((m68306duartreg[dirDUACR] & 0x40) == 0) {
 				//Clear OP3 output
 				m68306_duart.timer_output = 0;
-				//Stop the counter..
+				//Stop the counter
+				timer_enable(m68306_duart.timer, 0);
 			}
 #endif
 			break;
@@ -1819,7 +1813,7 @@ static void m68306_rx_cause_int(int which,int data)
 }
 
 //Duart Start Timer
-static void duart_start_timer(void)
+static void duart_start_timer(int reset)
 {
 	double time;
 	double clock_src;
@@ -1829,12 +1823,24 @@ static void duart_start_timer(void)
 	timer_enable(m68306_duart.timer, 0);
 
 	//For now, support only external clock src (but really we should check the clock source bits in auxillary register
-	clock_src = TIME_IN_HZ(3686400);	// Clock src is fixed @ 3.6864MHz
+	switch (m68306duartreg[dirDUACR] & 0x30)
+	{
+	case 0x00: clock_src = TIME_IN_HZ(3686400       );	break; // External-IP2: unsupported, use default clock of 3.6864MHz
+	case 0x10: clock_src = TIME_IN_HZ(3686400 / 16.0);	break; // External-IP2/16: unsupported, use default clock of 3.6864MHz / 16
+	case 0x20: clock_src = TIME_IN_HZ(3686400       );	break; // Crystal or External Clock: use fixed clock of 3.6864MHz
+	case 0x30: clock_src = TIME_IN_HZ(3686400 / 16.0);	break; // External Clock Divided by 16: use fixed clock of 3.6864MHz / 16
+	}
 	//Get preload  value
 	preload = (m68306duartreg[dirCNT_MSB] << 8) | m68306duartreg[dirCNT_LSB];
-	if(!preload) return;
-	//Restart the timer (period is clock source * (2 * preload value)
-	time = clock_src * 2 * preload;
+	if(preload < 2) return;
+	if (m68306duartreg[dirDUACR] & 0x40) { // Timer mode
+		//Restart the timer (period is clock source * preload value, hence the generated square wave has a period of 2 * clock source * preload value since it toggles the output)
+		time = clock_src * preload;
+	}
+	else { // Counter mode
+		//Restart the timer: period is clock source * preload value on reset, after that it continues counting from 0xFFFF (application is supposed to stop / restart it)
+		time = reset ? (clock_src * preload) : (clock_src * 0x0FFFF);
+	}
 	timer_adjust(m68306_duart.timer, time, 0, 0);
 }
 
@@ -1849,7 +1855,7 @@ static void duart_timer_callback (int param)
 		m68306_duart_set_duisr(m68306duartreg[dirDUISR] | 0x08);
 	}
 	//Restart timer!
-	duart_start_timer();
+	duart_start_timer(0);
 }
 
 //Can we generate an interrupt?

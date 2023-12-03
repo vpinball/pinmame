@@ -4,6 +4,8 @@
 #pragma once
 #endif
 
+#include <assert.h>
+
 #include "wpcsam.h"
 #include "gen.h"
 #include "sim.h"
@@ -243,7 +245,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 /* 41-44 - "" - Copy of above    */
 /* 45-48 Lower flipper solenoids */
 /* 49-50 Simulated               */
-/* 51-44                         */
+/* 51-64                         */
 /*       S9/S11            */
 /*  1- 8 Standard 'A'-side */
 /*  9-16 Standard          */
@@ -294,19 +296,17 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 /* example: #define swCustom CORE_CUSTSOLNO(1)  // custom solenoid 1 */
 #define CORE_CUSTSOLNO(n) (CORE_FIRSTCUSTSOL-1+(n))
 
-#define CORE_STDLAMPCOLS   8
-#define CORE_STDSWCOLS    12
-
-#define CORE_COINDOORSWCOL   0   /* internal array number */
-#define CORE_MAXSWCOL       16   /* switch columns (0-9=sw matrix, 10=coin door, 11=cabinet/flippers) */
-#define CORE_FLIPPERSWCOL   11   /* internal array number */
-#define CORE_CUSTSWCOL     CORE_STDSWCOLS  /* first custom (game specific) switch column */
-#define CORE_MAXLAMPCOL     42   /* lamp column (0-7=std lamp matrix 8- custom) */
-#define CORE_CUSTLAMPCOL   CORE_STDLAMPCOLS  /* first custom lamp column */
-#define CORE_MAXRGBLAMPS     260 /* Currently the max needed for SAM support, see SAM_LEDS_MAX */
-#define CORE_MAXPORTS        8   /* Maximum input ports */
-#define CORE_MAXGI           5   /* Maximum GI strings */
-#define CORE_MAXNVRAM        131118 /* Maximum number of NVRAM bytes, only used for get_ChangedNVRAM so far */
+#define CORE_COINDOORSWCOL                0 /* internal array number */
+#define CORE_MAXSWCOL                    16 /* switch columns (0-9=sw matrix, 10=coin door, 11=cabinet/flippers) */
+#define CORE_FLIPPERSWCOL                11 /* internal array number */
+#define CORE_STDSWCOLS                   12 /* Base number of switch matrix columns */
+#define CORE_CUSTSWCOL       CORE_STDSWCOLS /* first custom (game specific) switch column */
+#define CORE_MAXLAMPCOL                  72 /* lamp column (0-7=std lamp matrix 8- custom) */
+#define CORE_STDLAMPCOLS                  8 /* Base number of lamp matrix columns */
+#define CORE_CUSTLAMPCOL   CORE_STDLAMPCOLS /* first custom lamp column */
+#define CORE_MAXPORTS                     8 /* Maximum input ports */
+#define CORE_MAXGI                        5 /* Maximum GI strings */
+#define CORE_MAXNVRAM                131118 /* Maximum number of NVRAM bytes, only used for get_ChangedNVRAM so far */
 
 /*-- create a custom switch number --*/
 /* example: #define swCustom CORE_CUSTSWNO(1,2)  // custom column 1 row 2 */
@@ -357,30 +357,44 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define LBLUE       (COL_LAMP+6)
 #define LPURPLE     (COL_LAMP+7)
 
-/* Modulated solenoid array */
-#define CORE_MODSOL_CUR		    0
-#define CORE_MODSOL_PREV	    1
-#define CORE_MODSOL_MAX		    68
+/*-- Physical devices on binary outputs --*/
 
-#define CORE_MODOUT_DEFAULT                0 /* Uses default driver modulated solenoid implementation */
-#define CORE_MODOUT_PWM_RATIO              1 /* pulse ratio over the last integration period, allow (approximated) device emulation by the calling app */
+#define CORE_MODOUT_ENABLE_LEGACY    1 /* Bitmask for options.usemodsol to enable legacy behavior (simple solenoid integration for WPC/SAM)  */
+#define CORE_MODOUT_ENABLE_SOLENOIDS 2 /* Bitmask for options.usemodsol to enable solenoids */
+#define CORE_MODOUT_ENABLE_LGIAS     4 /* Bitmask for options.usemodsol to enable Lamp/GI/AlphaSegments */
+#define CORE_MODOUT_FORCE_ON       128 /* Bitmask for options.usemodsol for drivers that needs PWM integration to be performed whatever the user settings are */
+
+#define CORE_MODOUT_LAMP_MAX                   (CORE_MAXLAMPCOL*8) /* Maximum number of modulated outputs for lamps */
+#define CORE_MODOUT_SOL_MAX                                     72 /* Maximum number of modulated outputs for solenoids */
+#define CORE_MODOUT_GI_MAX                                       8 /* Maximum number of modulated outputs for GI */
+#define CORE_MODOUT_SEG_MAX                                    256 /* Maximum number of modulated outputs for alphanumeric segments - 256=16x8x2 */
+#define CORE_MODOUT_LAMP0                                        0 /* Index of first lamp output */
+#define CORE_MODOUT_SOL0                      CORE_MODOUT_LAMP_MAX /* Index of first solenoid output */
+#define CORE_MODOUT_GI0   (CORE_MODOUT_SOL0 + CORE_MODOUT_SOL_MAX) /* Index of first GI output */
+#define CORE_MODOUT_SEG0  (CORE_MODOUT_GI0  + CORE_MODOUT_GI_MAX ) /* Index of first alphanumeric segment output */
+#define CORE_MODOUT_MAX   (CORE_MODOUT_SEG0 + CORE_MODOUT_SEG_MAX) /* Maximum number of modulated outputs */
+
+#define CORE_MODOUT_NONE                   0 /* just don't do anything: value defined by driver is kept unchanged by integrator */
+#define CORE_MODOUT_PULSE                  1 /* No integration, just the raw pulse state */
+#define CORE_MODOUT_SOL_2_STATE            2 /* Very basic 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms */
+#define CORE_MODOUT_LEGACY_SOL_2_STATE    50 /* Very basic 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms, waits for a few 'VBlank' before being reported */
+#define CORE_MODOUT_LEGACY_SOL_CUSTOM     51 /* Call custom solenoid implementation */
+#define CORE_MODOUT_LEGACY_SOL_WPC        52 /* Initial WPC implementation for backward compatibility: sample all high output seen on the first 32 solenoids during last 2ms, then average every 28 samples, therefore updating output every 56ms */
 #define CORE_MODOUT_BULB_44_6_3V_AC      100 /* Incandescent #44/555 Bulb connected to 6.3V, commonly used for GI */
 #define CORE_MODOUT_BULB_47_6_3V_AC      101 /* Incandescent #47 Bulb connected to 6.3V, commonly used for (darker) GI with less heat */
 #define CORE_MODOUT_BULB_86_6_3V_AC      102 /* Incandescent #86 Bulb connected to 6.3V, seldom use: TZ, CFTBL,... */
+#define CORE_MODOUT_BULB_44_5_7V_AC      103 /* Incandescent #44/555 Bulb connected to 5.7V, used for GI on Stern/Sega Whitestar as well as Stern SAM hardware (slower fading up and 78% dimmer light emission) */
 #define CORE_MODOUT_BULB_44_18V_DC_WPC   201 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
-#define CORE_MODOUT_BULB_44_18V_DC_GTS3  202 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_44_20V_DC_GTS3  202 /* Incandescent #44/555 Bulb connected to 20V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
-#define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89/906 Bulb connected to 12V, commonly used for flashers */
-#define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89/906 Bulb connected to 12V, commonly used for flashers */
+#define CORE_MODOUT_BULB_44_18V_DC_SE    204 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_44_20V_DC_CC    205 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89/906 Bulb connected to 20V, commonly used for flashers */
+#define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89/906 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89/906 Bulb connected to 32V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
-#define CORE_MODOUT_MOTOR_LINEAR         500 /* Linear integration for motor (like Twilight Zone clock). Note: evaluate PWM implementation for mech for this type of devices. */
-
-#define CORE_MODOUT_SOL_MAX      32 /* Maximum number of modulated outputs for solenoids */
-#define CORE_MODOUT_GI_MAX        5 /* Maximum number of modulated outputs for GI */
-#define CORE_MODOUT_LAMP_MAX      0 /* Maximum number of modulated outputs for lamps (not yet implemented, so 0 for now) */
-#define CORE_MODOUT_SAMPLE_MAX  256 /* Size of sampling history for PWM integration. Must be a power of 2 */
-
+#define CORE_MODOUT_LED_STROBE_1_10MS    401 /* LED Strobed 1ms over 10ms for full power */
+#define CORE_MODOUT_NTYPES               CORE_MODOUT_LED_STROBE_1_10MS + 1
 
 /*-------------------------------------------
 /  Draw data. draw lamps,switches,solenoids
@@ -403,17 +417,23 @@ typedef struct {
 
 typedef struct {
    int type; /* Type of modulation from CORE_MODOUT_ definitions */
-   UINT8 value; /* Last computed output value */
-   union { /* Internal state of the output device, depending of its type */
+   float value; /* Last computed output main physical characteristic (relative brightness for bulbs, strength for solenoids,...) */
+   float dataTimestamp; /* Timestamp of the state data. */
+   float elapsedInStateTime[2]; /* Total amount of time spent in each binary state since last PWM integration */
+   float lastFlipTimestamp; /* Timestamp of the last state change. */
+   union { /* Last PWM integration result (not taking in account elapsedInStateTime periods) */
       struct
       {
-         double filament_temperature;
-         double emission_history[16];
-         int emission_history_pos;
-      };
-      int motor_position;
+         float filament_temperature;
+         float eye_integration[4];
+      } bulb; // Physical model of a bulb
+      struct
+      {
+         int nSamples;
+         int value;
+      } wpc; // Implementation of legacy WPC modulated solenoid
    } state;
-} core_tModulatedOutput;
+} core_tPhysicOutput;
 
 #define CORE_SEGCOUNT 128
 #ifdef LSB_FIRST
@@ -422,38 +442,39 @@ typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT]
 typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
 #endif /* LSB_FIRST */
 typedef struct {
+  /*-- Switches --*/
   volatile UINT8  swMatrix[CORE_MAXSWCOL];
-  volatile UINT8  invSw[CORE_MAXSWCOL];   /* Active low switches */
-  volatile UINT8  lampMatrix[CORE_MAXLAMPCOL];
-  volatile UINT8  tmpLampMatrix[CORE_MAXLAMPCOL];
-  volatile UINT8  RGBlamps[CORE_MAXRGBLAMPS];
-  core_tSeg segments;     /* segments data from driver */
-  UINT16 drawSeg[CORE_SEGCOUNT]; /* segments drawn */
-  tDMDDot dotCol; /* raw DMD dots */
-  volatile UINT32 solenoids;       /* on power driver bord */
-  volatile UINT32 solenoids2;      /* flipper solenoids */
-  volatile UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
-  volatile UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
-  volatile UINT8 pulsedGIState;  /* current pulse value of WPC GI strings */
-  UINT64 lastSol;         /* last state of all solenoids */
-  UINT8 lastModSol[CORE_MODSOL_MAX];
-  int lastACZeroCross; /* Position of output sampling when last zero crossing happened (AC frequency is fixed at 60Hz) */
-  double pulsedOutStateSampleFreq; /* Frequency of output sampling */
-  int pulsedOutStateSamplePos; /* Current position of output sampling in the circular buffers */
-  UINT32 pulsedSolStateSamples[CORE_MODOUT_SAMPLE_MAX];  /* sample pulse value of all solenoids */
-  UINT8 pulsedGIStateSamples[CORE_MODOUT_SAMPLE_MAX];  /* sample pulse value of WPC gi strings */
-  int nModulatedOutputs;
-  int lastModulatedOutputIntegrationPos; /* Last sample index where modulated output integration was performed */
-  core_tModulatedOutput modulatedOutputs[CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + CORE_MODOUT_LAMP_MAX];
-  volatile int    gi[CORE_MAXGI];  /* WPC gi strings */
-  int    simAvail;        /* simulator (keys) available */
-  int    soundEn;         /* Sound enabled ? */
-  volatile int    diagnosticLed;   /* data relating to diagnostic led(s)*/
+  volatile UINT8  invSw[CORE_MAXSWCOL];                         /* Active low switches */
+  /*-- Strobed lamp matrix --*/
+  volatile UINT8  lampMatrix[CORE_MAXLAMPCOL];                  /* Strobed lamp matrix binary state as integrated during last strobe to On/Off state */
+  volatile UINT8  tmpLampMatrix[CORE_MAXLAMPCOL];               /* Strobed lamp matrix binary state being currently integrated (intermediate state until next end of strobe) */
+  /*-- Alphanumeric driver --*/
+  core_tSeg segments;                                           /* Segments data from driver */
+  UINT16 drawSeg[CORE_SEGCOUNT];                                /* Segments drawn */
+  volatile UINT8 segDim[CORE_SEGCOUNT];                         /* Segments dimming. TODO this is unsupported for the time being since it needs more work. Drop it in favor of new physic outputs ? */
+  /*-- DMD --*/
+  tDMDDot dotCol;                                               /* Raw DMD dots */
+  /*-- Solenoids --*/
+  volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
+  volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
+  volatile UINT32 solenoids2;                                   /* Current integrated binary On/Off value of additional solenoids, including flipper solenoids (not pulsed, averaged over a period depending on the driver) */
+  UINT64 flipperCoils;                                          /* coil mapping of flipper power/hold coils => TODO move to core_gameData */
+  /*-- GI --*/
+  volatile int   gi[CORE_MAXGI];                                /* WPC GI strings state */
+  /*-- Generalized outputs --*/
+  int nSolenoids, nLamps, nGI, nAlphaSegs;                      /* Number of physical outputs the driver handles */
+  float lastACZeroCrossTimeStamp;                               /* Last time AC did cross 0 as reported by the driver (should be 120Hz) */
+  UINT8 binaryOutputState[CORE_MODOUT_MAX / 8];                 /* Pulsed binary state */
+  core_tPhysicOutput physicOutputState[CORE_MODOUT_MAX];        /* Output state, taking in account the physical device wired to the binary output */
+  float lastPhysicOutputReportedValue[CORE_MODOUT_MAX];         /* Last state value reported for each of the physic outputs */
+  /*-- Miscellaneous --*/
+  int    simAvail;                                              /* Simulator (keys) available */
+  int    soundEn;                                               /* Sound enabled ? */
+  volatile int    diagnosticLed;                                /* Data relating to diagnostic led(s)*/
 #ifdef PROC_SUPPORT
   int    p_rocEn;         /* P-ROC support enable */
   int    isKickbackLamp[255];
 #endif
-  volatile UINT8 segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */
@@ -528,31 +549,16 @@ extern int core_getSwCol(int colEn);
 extern int core_getSol(int solNo);
 extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
+extern void core_getAllPhysicSols(float* state);
 
-/*-- PWM sampling, AC sync and integration --*/
-extern void core_perform_pwm_integration();
-INLINE void core_zero_cross() {
-   if (coreGlobals.nModulatedOutputs > 0)
-   coreGlobals.lastACZeroCross = coreGlobals.pulsedOutStateSamplePos;
-}
-INLINE void core_store_pulsed_samples(double freq) {
-   if (coreGlobals.nModulatedOutputs > 0)
-   {
-      coreGlobals.pulsedOutStateSampleFreq = freq;
-      coreGlobals.pulsedOutStateSamplePos++;
-      coreGlobals.pulsedSolStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedSolState;
-      coreGlobals.pulsedGIStateSamples[coreGlobals.pulsedOutStateSamplePos & (CORE_MODOUT_SAMPLE_MAX - 1)] = coreGlobals.pulsedGIState;
-   }
-}
-
-INLINE void core_update_modulated_light(UINT32 *light, int bit){
-	(*light) = (*light) << 1;
-	if (bit)
-		(*light) |= 0x01;
-}
-
-extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, volatile UINT8 *prev_level);
-extern void core_perform_pwm_integration();
+/*-- AC sync and PWM integration --*/
+extern void core_set_pwm_output_type(int startIndex, int count, int type);
+extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
+extern void core_write_pwm_output(int index, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
+extern void core_write_pwm_output_8b(int index, UINT8 bitStates);
+extern void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask);
+extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
+INLINE void core_zero_cross() { coreGlobals.lastACZeroCrossTimeStamp = (float) timer_get_time(); }
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

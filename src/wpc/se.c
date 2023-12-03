@@ -98,7 +98,6 @@ static int switches_retrieved=0;
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(se_irq) {
-   core_store_pulsed_samples(SE_FIRQFREQ);
    irq1_line_pulse();
 }
 
@@ -168,15 +167,24 @@ static INTERRUPT_GEN(se_vblank) {
 	coreGlobals.solenoids = selocals.solenoids;
 	// Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
 	// unused because it is remapped to VPM flipper constants.  
-	if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr-1] > 0)  
-		coreGlobals.solenoids |= 0x4000;
+   if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr - 1] > 0) {
+     coreGlobals.solenoids |= 0x4000;
+     coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) / 8] |= 0x40;
+     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 1.0;
+   }
+   else
+   {
+     coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) / 8] &= ~0x40;
+     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 0.0;
+   }
 	selocals.solenoids = coreGlobals.pulsedSolState;
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
-			UINT64 allSol = core_getAllSol();
+         static UINT64 lastSol = 0;
+         UINT64 allSol = core_getAllSol();
 			if (coreGlobals.p_rocEn) {
 				int ii;
-				UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
+				UINT64 chgSol = (allSol ^ lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
 				UINT64 tmpSol = allSol;
 
 				/* standard coils */
@@ -191,7 +199,7 @@ static INTERRUPT_GEN(se_vblank) {
 			}
 			procFlush();
 			// TODO/PROC: This doesn't seem to be happening in core.c.  Why not?
-			coreGlobals.lastSol = allSol;
+			lastSol = allSol;
 		}
 #endif
   }
@@ -281,6 +289,27 @@ static MACHINE_INIT(se3) {
 		selocals.fastflipaddr = 0x04 + 1;
 	else if (strncasecmp(gn, "lotr", 4) == 0)
 		selocals.fastflipaddr = 0x04 + 1;*/
+
+   // Initialize outputs
+   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_SE);
+   if (core_gameData->hw.display & SE_LED)
+      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 6 * 8, CORE_MODOUT_LED);
+   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 2, CORE_MODOUT_NONE); // Fake solenoids for fast flip
+   coreGlobals.nGI = 1;
+   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
+	const struct GameDriver* rootDrv = Machine->gamedrv;
+	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+		rootDrv = rootDrv->clone_of;
+	const char* const grn = rootDrv->name;
+	if (strncasecmp(grn, "lotr", 4) == 0) { // The Lord of The Ring
+      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+   }
 }
 
 static MACHINE_INIT(se) {
@@ -354,6 +383,27 @@ static MACHINE_INIT(se) {
     if (selocals.traceRam) memset(selocals.traceRam,0,0x2000);
   }
 #endif
+
+  // Initialize outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_SE);
+  if (core_gameData->hw.display & SE_LED)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 6 * 8, CORE_MODOUT_LED);
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 2, CORE_MODOUT_NONE); // Fake solenoids for fast flip
+  coreGlobals.nGI = 1;
+  core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
+  // Game specific hardware
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+     rootDrv = rootDrv->clone_of;
+  const char* const grn = rootDrv->name;
+  if (strncasecmp(grn, "rctycn", 8) == 0) { // Roller Coaster Tycoon
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
 }
 
 static MACHINE_STOP(se) {
@@ -410,11 +460,21 @@ static READ_HANDLER(mcpu_ram8000_r) { return selocals.ram8000[offset]; }
 /*-- Lamps --*/
 static WRITE_HANDLER(lampdriv_w) {
   selocals.lampRow = core_revbyte(data);
-  core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn, selocals.lampRow);
+  //core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn, selocals.lampRow);
+  core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  selocals.lampColumn       & 0x00FF, selocals.lampRow, 8);
+  core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (selocals.lampColumn >> 8) & 0x00FF, selocals.lampRow, 2);
 }
-static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0xff00) | data, selocals.lampRow);}
+static WRITE_HANDLER(lampstrb_w) {
+  //core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0xff00) | data, selocals.lampRow);
+  selocals.lampColumn = (selocals.lampColumn & 0xff00) | data;
+  core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,  selocals.lampColumn & 0x00FF, selocals.lampRow, 8);
+}
 static READ_HANDLER(lampstrb_r) { return selocals.lampColumn & 0xff; }
-static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0x00ff) | (data<<8), selocals.lampRow);}
+static WRITE_HANDLER(auxlamp_w) {
+  //core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0x00ff) | (data<<8), selocals.lampRow);
+  selocals.lampColumn = (selocals.lampColumn & 0x00ff) | (data<<8);
+  core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (selocals.lampColumn >> 8) & 0x00FF, selocals.lampRow, 2);
+}
 static READ_HANDLER(auxlamp_r) { return (selocals.lampColumn >> 8) & 0xff; }
 static WRITE_HANDLER(gilamp_w) {
   logerror("GI lamps %d=%02x\n", offset, data);
@@ -452,6 +512,7 @@ static READ_HANDLER(dip_r) { return ~core_getDip(0); }
 /*-- Solenoids --*/
 static const int solmaskno[] = { 8, 0, 16, 24 };
 static WRITE_HANDLER(solenoid_w) {
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + solmaskno[offset], data);
   UINT32 mask = ~(0xff<<solmaskno[offset]);
   UINT32 sols = data<<solmaskno[offset];
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
@@ -465,9 +526,9 @@ static WRITE_HANDLER(solenoid_w) {
 static READ_HANDLER(solenoid_r) {
   int data = (coreGlobals.pulsedSolState >> solmaskno[offset]) & 0xff;
   if (offset == 0) {
-	data &= 0x3f;
-	data |= ((selocals.flipsolPulse & 0x01) << 7);
-	data |= ((selocals.flipsolPulse & 0x04) >> 4);
+    data &= 0x3f;
+    data |= ((selocals.flipsolPulse & 0x01) << 7); // Bit 16
+    data |= ((selocals.flipsolPulse & 0x04) << 4); // Bit 15
   }
   return data;
 }
@@ -605,6 +666,7 @@ static WRITE_HANDLER(giaux_w) {
     printf("giaux = %x, (GI=%x A=%x B=%x C=%x D=%x E=%x), aux = %x (%c)\n",data,GET_BIT0,GET_BIT7,GET_BIT3,GET_BIT4,GET_BIT5,GET_BIT6,selocals.auxdata,selocals.auxdata);
 #endif
   coreGlobals.gi[0]=(~data & 0x01) ? 9 : 0;
+  core_write_pwm_output_8b(CORE_MODOUT_GI0, ~data & 0x01);
   if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
@@ -651,12 +713,17 @@ static WRITE_HANDLER(giaux_w) {
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = data;
   }
-  else if (core_gameData->hw.display & SE_LED) { // map LEDs as extra lamp columns
+  else if (core_gameData->hw.display & SE_LED) { // map 6x8 LEDs as extra lamp columns
     static const int order[] = { 6, 2, 4, 5, 1, 3, 0 };
     if (selocals.auxdata == 0x30 && (selocals.lastgiaux & 0x40)) selocals.miniidx = 0;
     if (data == 0x7e) {
-      if (order[selocals.miniidx])
+      if (order[selocals.miniidx]) {
         coreGlobals.tmpLampMatrix[9 + order[selocals.miniidx]] = selocals.auxdata;
+        // Not sure if the data is strobed or if the auxiliary LED board latch it. For the time being, let's latch it
+        //for (int i = 0; i < 6; i++)
+        //  core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10*8 + i*8, (i+1) == order[selocals.miniidx] ? selocals.auxdata : 0);
+        core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8 + order[selocals.miniidx] * 8, selocals.auxdata);
+      }
       if (selocals.miniidx < 6) selocals.miniidx++;
     } else if (data == 0xbe)
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
@@ -666,6 +733,10 @@ static WRITE_HANDLER(giaux_w) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.miniidx = (selocals.miniidx + 1) % 32;
       coreGlobals.tmpLampMatrix[selocals.miniidx+10] = selocals.auxdata;
+      // Not sure if the data is strobed or if the auxiliary LED board latch it. For the time being, let's latch it
+      //for (int i = 0; i < 32; i++) // For Titanic, a coin dropper with a titanic boat surrounded by tons of controlled lamps
+      //  core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10*8 + i*8, i == selocals.miniidx ? selocals.auxdata : 0);
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8 + selocals.miniidx * 8, selocals.auxdata);
     }
     selocals.lastgiaux = data;
   } else if (core_gameData->hw.display & SE_DIGIT) {

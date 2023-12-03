@@ -30,17 +30,11 @@
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define WPC_SOLSMOOTH      1 /* Don't smooth values on real hardware */
 #define WPC_LAMPSMOOTH     1
-#define WPC_DISPLAYSMOOTH  1 /* Smooth the display over this number of VBLANKS (=60Hz/X) */
-#if defined(PPUC_SUPPORT)
-#define WPC_MODSOLSMOOTH   1 /* Modulated solenoids - History length to smooth over (depends on WPC_IRQFREQ) */
-#define WPC_MODSOLSAMPLE   1 /* Modulated solenoid sampling rate (every n IRQs, depends on WPC_IRQFREQ) */
-#endif
+#define WPC_DISPLAYSMOOTH  1
 #else
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this number of VBLANKS (=60Hz/X) */
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS (=60Hz/X) */
 #define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS (=60Hz/X) */
-#define WPC_MODSOLSMOOTH   28/* Modulated solenoids - History length to smooth over (depends on WPC_IRQFREQ) */
-#define WPC_MODSOLSAMPLE   2 /* Modulated solenoid sampling rate (every n IRQs, depends on WPC_IRQFREQ) */
 #endif
 
 /*-- IRQ frequency, most WPC functions are performed at 1/16 of this frequency --*/
@@ -134,13 +128,9 @@ static struct {
   int firqSrc;            /* source of last firq */
   int diagnostic;
   int zc;                 /* zero cross flag */
-  int gi_zc_state;        /* GI Triac state to be applied on next zero cross */
-  double last_zc_time;    /* Global time when last zero cross for GI Dimming was processed */
   double gi_on_time[CORE_MAXGI]; /* Global time when GI Triac was turned on */
+  volatile UINT8 conductingGITriacs; /* Current conducting triacs of WPC GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
   UINT32 solenoidbits[64];
-  UINT32 modsol_seen_pulses;
-  UINT8 modsol_seen_flip_pulses;
-  UINT8 modsol_seen_aux_pulses;
   int modsol_count;
   int modsol_sample;
 
@@ -202,25 +192,23 @@ static void wpc_zc(int data) {
    // Set Zero Cross flag (it's reset when read)
    wpclocals.zc = 1;
 
-   // Synchronize core PWM integration AC signal
-   core_zero_cross();
-
-   // GI outputs are driven by Triac which continue to conduct when turned on until current decreases under the holding current. This happens at zero cross, so we updated GI level
-   coreGlobals.pulsedGIState = wpclocals.gi_zc_state;
+   // GI outputs are driven by Triac which continue to conduct when turned on until current decreases under the holding current.
+   // Current drops below this threshold at zero cross, so we update conducting triacs which are the only one still being triggered by the latched value.
+   wpclocals.conductingGITriacs = wpc_data[WPC_GILAMPS];
 
    // GI Dimming seems to be processed by the CPU during IRQ handling with IRQ being every ~1ms
    // Since zero cross and IRQ are not perfectly aligned, there can be either 8 or 9 irq per zero cross period in 60Hz countries (~1ms / ~8.3ms, this would be 9 or 10 in 50Hz countries ~1ms / ~10ms).
    // The resulting GI level is the ratio of on/off pulse of the PWM cycle computed using MAME global time
    double zc_time = timer_get_time();
-   if (zc_time > wpclocals.last_zc_time)
+   if (zc_time > coreGlobals.lastACZeroCrossTimeStamp)
    {
-      for (int ii = 0,tmp= wpclocals.gi_zc_state; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+      for (int ii = 0, tmp= wpclocals.conductingGITriacs; ii < 5; ii++, tmp >>= 1) {
          if (wpclocals.gi_on_time[ii] >= zc_time)
             // Not turned on since last zero cross
             coreGlobals.gi[ii] = 0;
          else
             // The initial implementation would return values between 0 and 8, so we keep this scaling for backward compatibility
-            coreGlobals.gi[ii] = (int)(0.5 + 8.0 * (1.0 - (wpclocals.gi_on_time[ii] - wpclocals.last_zc_time) / (zc_time - wpclocals.last_zc_time)));
+            coreGlobals.gi[ii] = (int)(0.5 + 8.0 * (1.0 - (wpclocals.gi_on_time[ii] - coreGlobals.lastACZeroCrossTimeStamp) / (zc_time - coreGlobals.lastACZeroCrossTimeStamp)));
          // If bit is still set, ASIC GI output Txx is continuously high and Triac continuously conduct (for the complete AC period), otherwise we set it's turn on time far after the next zero cross.
          wpclocals.gi_on_time[ii] = tmp & 0x01 ? zc_time : zc_time + 100.0;
       }
@@ -231,7 +219,18 @@ static void wpc_zc(int data) {
       printf("\n");
       #endif
    }
-   wpclocals.last_zc_time = zc_time;
+
+   // Synchronize core PWM integration AC signal
+   core_zero_cross();
+
+   // More precise implementation with better physic emulation
+   core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
+   if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
+   {
+      int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
+      int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi & (0x11 << chase_2b));
+   }
 }
 
 void wpc_set_modsol_aux_board(int board)
@@ -243,6 +242,7 @@ void wpc_set_fastflip_addr(int addr)
 {
 	wpc_fastflip_addr = addr;
 }
+
 
 #ifdef PROC_SUPPORT
   /*
@@ -431,7 +431,7 @@ static INTERRUPT_GEN(wpc_vblank) {
       wpc_firq(TRUE, WPC_FIRQ_DMD);
     if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == 0) {
       /*-- This is the real VBLANK interrupt --*/
-      if (core_gameData->hw.gameSpecific2) { // PH: DMD is toggled between half and full page size using DMD_FIRQLINE register bit
+      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: DMD is toggled between half and full page size using DMD_FIRQLINE register bit
         if (wpc_data[DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
           dmdlocals.DMDFrames[0] = dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
         } else { // full page
@@ -443,7 +443,7 @@ static INTERRUPT_GEN(wpc_vblank) {
       }
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
-				if (core_gameData->hw.gameSpecific2) { // PH: reasonable guess on how to handle two frames only
+				if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: reasonable guess on how to handle two frames only
 					procFillDMDSubFrame(3 - frameNo, dmdlocals.DMDFrames[1 - frameNo], 0x400);
 				} else {
 					/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
@@ -635,7 +635,7 @@ READ_HANDLER(wpc_r) {
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_FLIPPERSW95:
-      if (core_gameData->hw.gameSpecific2) { // PH: reel switches
+      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: reel switches
         return ~coreGlobals.swMatrix[3];
       }
       if (core_gameData->gen & GENWPC_HASWPC95)
@@ -783,40 +783,44 @@ WRITE_HANDLER(wpc_w) {
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = ~data;
-        wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
 #ifdef WPC_FAST_FLIP
         coreGlobals.solenoids2 |= wpclocals.solFlip;
 #endif
       }
       break;
     case WPC_FLIPPERCOIL95: /* WPC_EXTBOARD4 */
-      if (core_gameData->hw.gameSpecific2) { // PH: LED digits
+      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: LED digits
         if (data != 0xff) {
           coreGlobals.segments[core_BitColToNum(0xff ^ data)].w = wpclocals.alphaSeg[core_BitColToNum(0xff ^ data)].w = core_bcd2seg7[wpc_data[WPC_EXTBOARD1]];
         }
       } else if (core_gameData->gen & GENWPC_HASWPC95) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
-        wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
 #ifdef WPC_FAST_FLIP
         coreGlobals.solenoids2 |= wpclocals.solFlip;
 #endif
       }
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      {
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
+      }
       break;
     case WPC_ALPHA2HI:
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      {
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + ((20 + wpc_data[WPC_ALPHAPOS]) * 2 + 1) * 8, data);
+      }
       break;
     case WPC_LAMPROW: /* row and column can be written in any order */
-      core_setLamp(coreGlobals.tmpLampMatrix,wpc_data[WPC_LAMPCOLUMN],data);
+      core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, wpc_data[WPC_LAMPCOLUMN], data, 8);
       break;
     case WPC_LAMPCOLUMN: /* row and column can be written in any order */
-      core_setLamp(coreGlobals.tmpLampMatrix,data,wpc_data[WPC_LAMPROW]);
-      if (core_gameData->hw.gameSpecific2) { // PH uses 192 lamps
-        core_setLamp(coreGlobals.tmpLampMatrix, data << 8,  wpc_data[WPC_EXTBOARD2]);
-        core_setLamp(coreGlobals.tmpLampMatrix, data << 16, wpc_data[WPC_EXTBOARD3]);
+      core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, data, wpc_data[WPC_LAMPROW], 8);
+      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH uses 192 lamps
+        core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 +  64, data, wpc_data[WPC_EXTBOARD2], 8);
+        core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 128, data, wpc_data[WPC_EXTBOARD3], 8);
       }
       break;
     case WPC_SWCOLSELECT:
@@ -831,11 +835,15 @@ WRITE_HANDLER(wpc_w) {
       if (core_gameData->gen & GEN_WPC95)
         data = data | 0x18;
 
-      // Save state for next zero cross GI output reset
-      wpclocals.gi_zc_state = data;
-
       // Loop over each GI Triac Bit and turn on according Triacs
-      coreGlobals.pulsedGIState |= data;
+      wpclocals.conductingGITriacs |= data; // Triac that were turned on before will continue to conduct until next zero cross, therefore we 'or' them with previous pulsed state
+      core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
+      if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
+      {
+         int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
+         int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
+         core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi& (0x11 << chase_2b));
+      }
       double write_time = timer_get_time();
       for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
          // If Bit is set, Triac is turned on (if it was not already on).
@@ -856,24 +864,50 @@ WRITE_HANDLER(wpc_w) {
     }
     case WPC_EXTBOARD1: /* WPC_ALPHAPOS */
       if (wpc_modsol_aux_board == 1)
-        wpclocals.modsol_seen_aux_pulses |= data;
+      {
+        assert(CORE_FIRSTCUSTSOL == 51);
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, data << 2, 0xFC); // Write 50..55
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 56, data >> 6, 0x03); // Write 56..57
+      }
+      else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      {
+        // Alphanumeric segment strobing change => turn off previous segment and on the ones of the new selected position
+        int prevIndex = (CORE_MODOUT_SEG0 >> 3) + wpc_data[WPC_ALPHAPOS] * 2;
+        int newIndex  = (CORE_MODOUT_SEG0 >> 3) +     data               * 2;
+        if (prevIndex != newIndex)
+          for (int i = 0; i < 4; i++)
+          {
+            int offset = i == 0 ? 0 : i == 1 ? 1 : i == 2 ? 40 : 41;
+            core_write_pwm_output_8b((newIndex  + offset) * 8, coreGlobals.binaryOutputState[prevIndex + offset]);
+            core_write_pwm_output_8b((prevIndex + offset) * 8, 0);
+          }
+      }
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
-      if (core_gameData->hw.gameSpecific2) { // PH: lamps 65 .. 128
-        core_setLamp(coreGlobals.tmpLampMatrix, wpc_data[WPC_LAMPCOLUMN] << 8, data);
+      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: lamps 65 .. 128 (data is row of 2nd matrix)
+        core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, wpc_data[WPC_LAMPCOLUMN], data, 8);
       }
-      if (wpc_modsol_aux_board == 2)
-        wpclocals.modsol_seen_aux_pulses |= data;
-
-      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      else if (wpc_modsol_aux_board == 2)
+      {
+        assert(CORE_FIRSTCUSTSOL == 51);
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, data << 2, 0xFC); // Write 50..55
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 56, data >> 6, 0x03); // Write 56..57
+      }
+      else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8, data);
+      }
       break;
     case WPC_EXTBOARD3:
-      if (core_gameData->hw.gameSpecific2) { // PH: lamps 129 .. 192
-        core_setLamp(coreGlobals.tmpLampMatrix, wpc_data[WPC_LAMPCOLUMN] << 16, data);
+      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: lamps 129 .. 192 (data is row of 3rd matrix)
+        core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 128, wpc_data[WPC_LAMPCOLUMN], data, 8);
       }
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.hi |= data;
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (wpc_data[WPC_ALPHAPOS] * 2 + 1) * 8, data);
+      }
       break;
     case WPC_SHIFTADRH:
     case WPC_SHIFTADRL:
@@ -884,23 +918,30 @@ WRITE_HANDLER(wpc_w) {
       //DBGLOG(("W:DIPSWITCH %x\n",data));
       break; /* just save value */
     case WPC_SOLENOID1:
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
-      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID2:
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
-      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID3:
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
-      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
+      if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
+      {
+         int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
+         int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
+         core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi & (0x11 << chase_2b));
+         coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = 0x11 << chase_2b;
+      }
       break;
     case WPC_SOLENOID4:
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
-      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case 0x3fd1-WPC_BASE:
@@ -1048,99 +1089,6 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
-   core_store_pulsed_samples(WPC_IRQFREQ);
-#ifdef WPC_MODSOLSAMPLE
-	if (options.usemodsol)
-	{
-		if (wpclocals.modsol_sample < WPC_MODSOLSAMPLE-1)
-		{
-			wpclocals.modsol_sample++;
-		}
-		else
-		{
-			int i;
-			wpclocals.modsol_sample = 0;
-
-			// Messy mappings to duplicate what the core does, see core_getSol()
-			for (i = 0; i < 32; i++)
-			{
-				core_update_modulated_light(&wpclocals.solenoidbits[i], wpclocals.modsol_seen_pulses & (1 << i));
-			}
-			wpclocals.modsol_seen_pulses = coreGlobals.pulsedSolState;
-			for (i = 4; i < 8; i++)
-			{
-				if (wpclocals.nonFlipBits & (1 << i))
-				{
-					core_update_modulated_light(&wpclocals.solenoidbits[i + 28], wpclocals.modsol_seen_flip_pulses & (1 << i));
-				}
-			}
-			wpclocals.modsol_seen_flip_pulses = wpclocals.solFlipPulse;
-			if (wpc_modsol_aux_board > 0)
-			{
-				for (i = 0; i < 8; i++)
-				{
-					core_update_modulated_light(&wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], wpclocals.modsol_seen_aux_pulses & (1 << i));
-				}
-				wpclocals.modsol_seen_aux_pulses = (wpc_modsol_aux_board == 1) ? wpc_data[WPC_EXTBOARD1] : wpc_data[WPC_EXTBOARD2];
-			}
-			if (wpclocals.modsol_count < WPC_MODSOLSMOOTH)
-			{
-				wpclocals.modsol_count++;
-			}
-			else
-			{
-				wpclocals.modsol_count  = 0;
-				// TODO: Does GEN_ALLWPC apply to everything in this driver?  If yes this check is not needed here, but I can
-				// see the same check is made in the P-ROC stuff above?
-				for (i = 0; i < ((core_gameData->gen & GEN_ALLWPC) ? 28 : 32); i++)
-				{
-					coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(wpclocals.solenoidbits[i], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);
-				}
-				for (i = 4; i < 8; i++)
-				{
-					if (wpclocals.nonFlipBits & (1 << i))
-					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i + 28] = core_calc_modulated_light(wpclocals.solenoidbits[i + 28], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i + 28]);
-					}
-					else
-					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i + 28] = ((wpclocals.solFlip & (1 << i)) > 0) ? 1 : 0;
-					}
-				}
-				if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
-				{
-					for (i = 36; i < 40; i++)
-					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(wpclocals.solenoidbits[i - 8], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i - 8]);
-					}
-				}
-				else
-				{
-					for (i = 36; i<40; i++)
-					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i + 1) ? 1 : 0;
-					}
-				}
-				// Now that we've copied 29-32 to 37-41, we can replace 29-32 if needed.   Also see above TODO
-				if (core_gameData->gen & GEN_ALLWPC)
-				{
-					for(i=28;i<32;i++)
-					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i+1) ? 1 :0;
-					}
-				}
-				// Aux board solenoids.  Copy anything above 8 as boolean.  TZ uses this for special fake gumball eject mech.  Bleh.
-				for (i = 0; i < core_gameData->hw.custSol; i++)
-				{
-					if (i < 8 && wpc_modsol_aux_board > 0)
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_calc_modulated_light(wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][CORE_FIRSTCUSTSOL + i - 1]);
-					else
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_getSol(CORE_FIRSTCUSTSOL + i) ? 1 :0;
-				}
-			}
-		}
-	}
-#endif
   cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
 }
 
@@ -1186,8 +1134,6 @@ static MACHINE_INIT(wpc) {
   cpu_setbank(6, memory_region(WPC_CPUREGION) + 0x3400);
   cpu_setbank(7, memory_region(WPC_CPUREGION) + 0x3600);
 
-  wpclocals.gi_zc_state = 0x00;
-
   switch (core_gameData->gen) {
     case GEN_WPCALPHA_1:
       sndbrd_0_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION),NULL,NULL);
@@ -1204,7 +1150,7 @@ static MACHINE_INIT(wpc) {
     case GEN_WPC95:
       //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
       //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
-      wpclocals.gi_zc_state = 0x18;
+      wpc_data[WPC_GILAMPS] = 0x18;
       coreGlobals.gi[CORE_MAXGI-2] = 8;
       coreGlobals.gi[CORE_MAXGI-1] = 8;
     case GEN_WPC95DCS:
@@ -1212,10 +1158,261 @@ static MACHINE_INIT(wpc) {
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
 
+  // Initialize outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_WPC);
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol; // Auxiliary solenoid board adding 8 outputs are already included in the base solenoid span (see core_gelAllModSol) (WPC Fliptronics: TZ / WPC DCS: DM, IJ, STTNG / WPC Security : RS / WPC 95: NGG)
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  coreGlobals.nGI = 5;
+  core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
+  if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) { // BOP, FH, HD alpahanumeric segments
+    coreGlobals.nAlphaSegs = 16*8*2;
+    core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_LED); // TODO check the schematics and physical properties. Are these LEDS or something more complex ?
+  }
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+     rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
+  if (strncasecmp(gn, "afm_113", 7) == 0) { // Attack from Mars
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "bop_l7", 6) == 0) { // The Machine: Bride of the Pinbot
+     int flashers[] = { 17, 18, 19, 20, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+     // TODO check Helmet (seems they are 12V) wired at sol #21/#22 (motor ? but operator manual states flashers)
+     // TODO add Helmet lights
+  }
+  else if (strncasecmp(gn, "br_l4", 5) == 0) { // Black Rose
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "cc_13", 5) == 0) { // Cactus Canyon
+     int flashers[] = { 18, 19, 20, 24, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "corv_21", 7) == 0) { // Corvette
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "cp_16", 5) == 0) { // The Champion Pub
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "cv_14", 5) == 0) { // Cirqus Voltaire
+     int flashers[] = { 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "cftbl_l4", 8) == 0) { // Creature From The Black Lagoon
+     int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28 }; // 28 is hologram lamp
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64, 8, CORE_MODOUT_BULB_86_6_3V_AC); // chase lights (8 strings of #86 bulbs wired between GI and solenoids outputs through triacs and a 2 bit decoder)
+  }
+  else if (strncasecmp(gn, "congo_21", 8) == 0) { // Congo
+     int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "dh_lx2", 6) == 0) { // Dirty Harry
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "dm_lx4", 6) == 0) { // Demolition Man
+     int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "drac_l1", 7) == 0) { // Bram Stoker's Dracula
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 26 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "dw_l2", 5) == 0) { // Doctor Who
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "fh_l9", 5) == 0) { // Fun House
+     int flashers[] = { 17, 18, 19, 20, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "fs_lx5", 6) == 0) { // The Flintstones
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 24 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "ft_l5", 5) == 0) { // Fish Tales
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "gi_l9", 5) == 0) { // Gilligan's Island
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "gw_l5", 5) == 0) { // High Speed II: The Getaway
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "hd_l3", 5) == 0) { // Harley Davidson
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "hshot_p8", 7) == 0) { // Hot Shot
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "hurr_l2", 5) == 0) { // Hurricane
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "i500_11r", 8) == 0) { // Indiana 500
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "ij_l7", 5) == 0) { // Indiana Jones
+     int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 24 - 1].type = CORE_MODOUT_LED; // Plane Guns LED
+  }
+  else if (strncasecmp(gn, "jb_10r", 6) == 0) { // Jack Bot
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "jd_l7", 5) == 0) { // Judge Dredd
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "jm_12r", 6) == 0) { // Johnny Mnemonic
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "jy_12", 5) == 0) { // Junk Yard
+     int flashers[] = { 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "mb_10", 5) == 0) { // Monster Bash
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "mm_10", 5) == 0) { // Medieval Madness
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "nbaf_31", 7) == 0) { // NBA Fast Break
+     int flashers[] = { 17, 19, 20, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "nf_23x", 6) == 0) { // No Fear
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "ngg_13", 6) == 0) { // No Good Goofers
+     int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "pop_lx5", 7) == 0) { // Popeye Save The earth
+     int flashers[] = { 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "pz_f4", 5) == 0) { // Party Zone
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "rs_l6", 5) == 0) { // Road Show
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "sc_18s11", 8) == 0) { // Safe Cracker
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "sf_l1", 5) == 0) { // SlugFest
+     int flashers[] = { 17, 18, 19, 20, 25, 26 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "ss_15", 5) == 0) { // Scared Stiff
+     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 35 + 14, 36 + 14 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "sttng_l7", 8) == 0) { // Star Trek Next Generation
+     int flashers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 41 + 14, 42 + 14 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "totan_l4", 8) == 0) { // Tales Of The Arabian Nights
+     int flashers[] = { 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "taf_l5", 6) == 0) { // The Addams Family
+     int flashers[] = { 17, 18, 19, 20, 21, 22 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "tafg_lx3", 8) == 0) { // The Addams Family Gold Edition
+     int flashers[] = { 17, 18, 19, 20, 21, 22 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "tom_13", 6) == 0) { // Theatre of Magic
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 24 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "ts_lx5", 6) == 0) { // The Shadow
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "tz_92", 5) == 0) { // Twilight Zone
+     int flashers[] = { 17, 18, 19, 20, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  else if (strncasecmp(gn, "t2_l8", 5) == 0) { // Terminator 2
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "wcs_l2", 6) == 0) { // World Cup Soccer
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "wd_12", 5) == 0) { // Who Dunnit
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "ww_l5", 5) == 0) { // White Water
+     int flashers[] = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+  }
+  // Legacy integrator for backward compatibility: not really needed, the new one gives better result but could be uncommented if bugs are found with existing tables
+  /*if (options.usemodsol & CORE_MODOUT_ENABLE_LEGACY)
+    core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_LEGACY_SOL_WPC);
+    //for (int i = 0; i < coreGlobals.nSolenoids; i++)
+    //  if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type == CORE_MODOUT_BULB_89_20V_DC_WPC)
+    //    coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type = CORE_MODOUT_LEGACY_SOL_WPC;*/
+
   // Reset GI dimming timers
-  wpclocals.last_zc_time = timer_get_time();
-  for (int ii = 0,tmp= wpclocals.gi_zc_state; ii < CORE_MAXGI; ii++, tmp >>= 1) {
-     wpclocals.gi_on_time[ii] = wpclocals.last_zc_time + (tmp & 0x01 ? 0 : 100);
+  core_zero_cross();
+  for (int ii = 0,tmp= wpc_data[WPC_GILAMPS]; ii < 5; ii++, tmp >>= 1) {
+     wpclocals.gi_on_time[ii] = coreGlobals.lastACZeroCrossTimeStamp + (tmp & 0x01 ? 0 : 100);
   }
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];

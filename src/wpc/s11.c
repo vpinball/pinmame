@@ -103,7 +103,6 @@ static struct {
 
 static void s11_irqline(int state) {
   if (state) {
-    core_store_pulsed_samples((int) S11_IRQFREQ);
     cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
     /*Set coin door inputs, differs between S11 & DE*/
     if (locals.deGame) {
@@ -243,6 +242,7 @@ static INTERRUPT_GEN(s11_vblank) {
    * going active
 
    */
+                static UINT64 lastSol = 0;
                 allSol = (allSol & 0xffffffff00000000) |
                          (coreGlobals.solenoids);
                 // The Sys11 code fires all coils at once at the start - FF00 - in order
@@ -253,7 +253,7 @@ static INTERRUPT_GEN(s11_vblank) {
                 // be made during the game, so this should be fine.
                 if (coreGlobals.p_rocEn && allSol != 0xff00) {
                         //int ii;
-                        UINT64 chgSol1 = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
+                        UINT64 chgSol1 = (allSol ^ lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
                         UINT64 tmpSol1 = allSol;
                         UINT64 chgSol2 = chgSol1;
                         UINT64 tmpSol2 = tmpSol1;
@@ -293,7 +293,7 @@ static INTERRUPT_GEN(s11_vblank) {
                                 // If this is a Road Kings, it has different muxed solenoids
                                 // so check if any of them are still active
                                 if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
-                                    if ((offSol ^ coreGlobals.lastSol) & 0xff007010) {
+                                    if ((offSol ^ lastSol) & 0xff007010) {
                                         // Some are active, so we won't process A/C yet
                                         if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
                                     }
@@ -306,7 +306,7 @@ static INTERRUPT_GEN(s11_vblank) {
                                 }
                                 else { //Not a Road Kings
                                     // Check if any of the switched solenoids are active
-                                    if ((offSol ^ coreGlobals.lastSol) & 0xff0000ff) {
+                                    if ((offSol ^ lastSol) & 0xff0000ff) {
                                         if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
                                     }
                                     else {
@@ -340,8 +340,7 @@ static INTERRUPT_GEN(s11_vblank) {
                             }
                             if (mame_debug) fprintf(stderr,"\nCoil Loop End");
 
-                            // This doesn't seem to be happening in core.c.  Why not?
-                            coreGlobals.lastSol = allSol;
+                            lastSol = allSol;
                         }
 		}
   }
@@ -373,10 +372,10 @@ static INTERRUPT_GEN(s11_vblank) {
 /  Lamp handling
 /----------------*/
 static WRITE_HANDLER(pia1a_w) {
-  core_setLamp(coreGlobals.tmpLampMatrix, locals.lampColumn, locals.lampRow = ~data);
+  core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, locals.lampColumn, locals.lampRow = ~data, 8);
 }
 static WRITE_HANDLER(pia1b_w) {
-  core_setLamp(coreGlobals.tmpLampMatrix, locals.lampColumn = data, locals.lampRow);
+  core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, locals.lampColumn = data, locals.lampRow, 8);
 }
 
 /*-- Jumper W7 --*/
@@ -508,6 +507,12 @@ static void updsol(void) {
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ffff00) |
                                    (coreGlobals.pulsedSolState << 24);
   }
+
+  // Simple implementation of modulated solenoids by pushing the pulsed state taking in account muxing to the physics emulation
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0     ,  coreGlobals.pulsedSolState        & 0x0FF);
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (coreGlobals.pulsedSolState >> 8)  & 0x0FF);
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, (coreGlobals.pulsedSolState >> 16) & 0x0FF);
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, (coreGlobals.pulsedSolState >> 24) & 0x0FF);
 
   locals.solenoids |= coreGlobals.pulsedSolState;
 }
@@ -799,6 +804,29 @@ static MACHINE_INIT(s11) {
       sndbrd_0_init(core_gameData->hw.display,    2, memory_region(DE_DMD16ROMREGION),NULL,NULL);
       sndbrd_1_init(core_gameData->hw.soundBoard, 1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
       break;
+  }
+
+  // Initialize outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_S11);
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+     rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
+  if (strncasecmp(gn, "gnr_300", 7) == 0) { // Guns'n Roses
+    int solenoids[32] = {
+      /*  1.. 4 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
+      /*  5.. 8 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
+      /*  9..12 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_PULSE,              CORE_MODOUT_BULB_44_6_3V_AC,    CORE_MODOUT_SOL_2_STATE,        /* #10 is K1 mux relay, #11 is GI relay */
+      /* 13..16 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
+      /* 17..20 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
+      /* 21..24 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_PULSE,
+      /* 25..28 */ CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, /* 8 muxed outputs (K1 relay is solenoid #10) */
+      /* 29..32 */ CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11  /* 8 muxed outputs (K1 relay is solenoid #10) */
+    };
+    core_set_pwm_output_types(CORE_MODOUT_SOL0, 32, solenoids);
   }
 }
 static MACHINE_RESET(s11) {

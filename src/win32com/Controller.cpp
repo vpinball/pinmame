@@ -1637,7 +1637,7 @@ STDMETHODIMP CController::put_LockDisplay(VARIANT_BOOL newVal)
  ****************************************************************************/
 STDMETHODIMP CController::get_SolMask(int nLow, long *pVal)
 {
-	if ( !pVal || (nLow<0) || (nLow>1) )
+	if ( !pVal)
 		return S_FALSE;
 
 	*pVal = vp_getSolMask(nLow);
@@ -1648,7 +1648,7 @@ STDMETHODIMP CController::get_SolMask(int nLow, long *pVal)
 STDMETHODIMP CController::put_SolMask(int nLow, long newVal)
 {
 	// TODO B2S hack, see vp_setSolMask()
-	if (!((0 <= nLow && nLow <= 2) || (1000 <= nLow && nLow < 1999)))
+	if (!((0 <= nLow && nLow <= 2) || (1000 <= nLow && nLow < 2999)))
 		return S_FALSE;
 
 	vp_setSolMask(nLow, newVal);

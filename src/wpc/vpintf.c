@@ -5,17 +5,19 @@
 #include "snd_cmd.h"
 
 static struct {
+  UINT8  lastPhysicsOutput[CORE_MODOUT_MAX];
   UINT8  lastLampMatrix[CORE_MAXLAMPCOL];
-  UINT8 lastRGBLamps[CORE_MAXRGBLAMPS];
-  UINT64 lastSol;
-  UINT8  lastModSol[CORE_MODSOL_MAX];
-  UINT32 solMask[2];
   int    lastGI[CORE_MAXGI];
+  UINT64 lastSol;
+  UINT32 solMask[2];
   UINT8  dips[VP_MAXDIPBANKS];
   UINT16 lastSeg[CORE_SEGCOUNT];
   int    lastSoundCommandIndex;
   mech_tInitData md;
 } locals;
+
+INLINE double saturate(double v) { return v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v; }
+INLINE UINT8 saturatedByte(double v) { return (UINT8)(255.0 * (v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v)); }
 
 /*-------------------------------
 /  Initialise/reset the VP interface
@@ -30,7 +32,10 @@ void vp_init(void) {
 /  get status of a lamp (0=off, 1=on)
 /-------------------------------------*/
 int vp_getLamp(int lampNo) {
-  if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo)-8;
+  if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
+  /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
 #ifndef LIBPINMAME
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
 #else
@@ -38,57 +43,85 @@ int vp_getLamp(int lampNo) {
 #endif
 }
 
+/*------------------------------------
+/  get status of a solenoid (0=off, !0=on)
+/-------------------------------------*/
+int vp_getSolenoid(int solNo)
+{
+  return core_getSol(solNo);
+}
+
+/*-------------------------------------------
+/  get status of a GIString (0=off, !0=on)
+/ (WPC games only)
+/-------------------------------------*/
+int vp_getGI(int giNo)
+{
+  /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
+  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
+  return coreGlobals.gi[giNo];
+}
+
 /*-------------------------------------------
 /  get all lamps changed since last call
 /  returns number of changed lamps
 /-------------------------------------*/
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
-  UINT8 lampMatrix[CORE_MAXLAMPCOL];
-  UINT8 RGBlamps[CORE_MAXRGBLAMPS];
-  int idx = 0;
-  int ii;
-
-  /*-- get current status --*/
-  memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
-  memcpy(RGBlamps, coreGlobals.RGBlamps, sizeof(RGBlamps));
-
+  int ii, idx = 0;
   /*-- fill in array --*/
-  for (ii = 0; ii < CORE_STDLAMPCOLS+core_gameData->hw.lampCol; ii++) {
-    int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
-    if (chgLamp) {
-      int tmpLamp = lampMatrix[ii];
-      int jj;
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+  {
+	 for (ii = 0; ii < coreGlobals.nLamps; ii++) {
+		UINT8 val = (UINT8)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
+		if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
+		  chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp((ii / 8) + 1, ii & 7) : 0;
+		  chgStat[idx].currStat = val;
+		  idx += 1;
+		  locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
+		}
+	 }
+  }
+  else
+  {
+    UINT8 lampMatrix[CORE_MAXLAMPCOL];
+    memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
+	 int nCol = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2) ? 2 : core_gameData->hw.lampCol;
+    for (ii = 0; ii < CORE_STDLAMPCOLS + nCol; ii++) {
+      int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
+      if (chgLamp) {
+        int tmpLamp = lampMatrix[ii];
+        int jj;
 
-      for (jj = 0; jj < 8; jj++) {
-        if (chgLamp & 0x01) {
-          chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
+        for (jj = 0; jj < 8; jj++) {
+          if (chgLamp & 0x01) {
+            chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
 #ifndef LIBPINMAME
-          chgStat[idx].currStat = tmpLamp & 0x01;
+            chgStat[idx].currStat = tmpLamp & 0x01;
 #else
-          chgStat[idx].currStat = tmpLamp & 0x01 ? 255 : 0;
+            chgStat[idx].currStat = tmpLamp & 0x01 ? 255 : 0;
 #endif
-          idx += 1;
+            idx += 1;
+          }
+          chgLamp >>= 1;
+          tmpLamp >>= 1;
         }
-        chgLamp >>= 1;
-        tmpLamp >>= 1;
       }
     }
+	 memcpy(locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
+	 // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
+	 if ((core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2)) {
+	   for (ii = 80; ii < coreGlobals.nLamps; ii++) {
+		  UINT8 val = (UINT8)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
+		  if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
+		    chgStat[idx].lampNo = ii + 1;
+		    chgStat[idx].currStat = val;
+		    idx += 1;
+		    locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
+		  }
+	   }
+	 }
   }
-
-  for (ii = 0; ii < CORE_MAXRGBLAMPS; ii++) {
-	  int chgLamp = RGBlamps[ii] ^ locals.lastRGBLamps[ii];
-	  if (chgLamp) {
-		  // With this mapping 1-80 are "legacy" 
-		  // 8 bit lamps, and 81+ are modern intensity-level
-		  // RGB capable LEDs.  
-		  chgStat[idx].lampNo = ii+81;  
-		  chgStat[idx].currStat = RGBlamps[ii]; 
-		  idx += 1;
-	  }
-  }
-
-  memcpy(locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
-  memcpy(locals.lastRGBLamps, RGBlamps, sizeof(RGBlamps));
   return idx;
 }
 
@@ -98,72 +131,39 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 /-------------------------------------*/
 int vp_getChangedSolenoids(vp_tChgSols chgStat) 
 {
-	UINT64 allSol = core_getAllSol();
-	UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
-	int idx = 0;
-	int ii;
-	int start = 0, end = CORE_FIRSTCUSTSOL+core_gameData->hw.custSol-1;
-
-	locals.lastSol = allSol;
-
-	// If activated, treat the PWM integrated solenoids
-	if (coreGlobals.nModulatedOutputs > 0)
-	{
-		core_perform_pwm_integration();
-		for (ii = 0; ii < CORE_MODOUT_SOL_MAX; ii++)
-		{
-			UINT8 activeValue = coreGlobals.modulatedOutputs[ii].value;
-			if (locals.lastModSol[ii] != activeValue)
-			{
-				locals.lastModSol[ii] = activeValue;
-				chgStat[idx].solNo = ii + 1; // Solenoid number
-				chgStat[idx].currStat = activeValue;
-				idx += 1;
-			}
-		}
-		start = CORE_MODOUT_SOL_MAX;
-		chgSol >>= start;
-		allSol >>= start;
-	}
-
-	// If activated, treat the solenoid modulation performed by hardware driver (GTS3 & WPC)
-	if (options.usemodsol)
-	{
-		for(ii = start; ii<CORE_MODSOL_MAX; ii++)
-		{
-			// Skip the VPM reserved solenoids, they will be handled after.  Need to include
-			// "flipper" solenoids as WPC may sneak flashers there when upper flippers aren't present.
-			// WPC will put unsmoothed 0/1 values on actual flippers so this shouldn't harm anything.
-			if (ii==40)
-				ii=CORE_FIRSTCUSTSOL-1;
-			UINT8 activeValue = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii];
-			if (locals.lastModSol[ii] != activeValue)
-			{
-				locals.lastModSol[ii] = activeValue;
-				chgStat[idx].solNo = ii + 1; // Solenoid number
-				chgStat[idx].currStat = activeValue;
-				idx += 1;
-			}
-		}
-		// Treat the VPM reserved solenoids the old way. 
-		chgSol >>= (40 - start);
-		allSol >>= (40 - start);
-		start = 40;
-		end = CORE_FIRSTCUSTSOL-1;
-	}
-
-	// Treat the remaining solenoids as binary state
-	for (ii = start; ii < end; ii++) 
-	{
+  int ii, idx = 0;
+  if (coreGlobals.nSolenoids && (
+	  (options.usemodsol & CORE_MODOUT_ENABLE_SOLENOIDS) 
+  || ((core_gameData->gen & GEN_ALLWPC) && (options.usemodsol & CORE_MODOUT_ENABLE_LEGACY)) ))
+  {
+    float state[CORE_MODOUT_SOL_MAX];
+    core_getAllPhysicSols(state);
+    for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
+		UINT8 v = saturatedByte(state[ii]);
+      if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
+        chgStat[idx].solNo = ii + 1;
+		  chgStat[idx].currStat = v;
+        idx += 1;
+        locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] = v;
+      }
+    }
+  }
+  else {
+    UINT64 allSol = core_getAllSol();
+	 UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
+	 locals.lastSol = allSol;
+	 for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
+	 {
 		if (chgSol & 0x01) {
-			chgStat[idx].solNo = ii+1; // Solenoid number
-			chgStat[idx].currStat = (allSol & 0x01);
-			idx += 1;
+		  chgStat[idx].solNo = ii+1; // Solenoid number
+		  chgStat[idx].currStat = (allSol & 0x01);
+		  idx += 1;
 		}
 		chgSol >>= 1;
 		allSol >>= 1;
-	}
-	return idx;
+	 }
+  }
+  return idx;
 }
 
 /*-------------------------------------------
@@ -171,32 +171,35 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 /  returns number of canged GIstrings
 /-------------------------------------*/
 int vp_getChangedGI(vp_tChgGIs chgStat) {
-  int allGI[CORE_MAXGI];
-  int idx = 0;
-  int ii;
-
-  if (coreGlobals.nModulatedOutputs > 0)
+  /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
+  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
   {
-	 core_perform_pwm_integration();
-	 for (ii = 0; ii < CORE_MAXGI; ii++) {
-		allGI[ii] = coreGlobals.modulatedOutputs[CORE_MODOUT_SOL_MAX + ii].value;
-	 }
-  }
-  else
-  {
-	  memcpy(allGI, coreGlobals.gi, sizeof(allGI));
+	  int idx = 0;
+	  for (int i = 0; i < coreGlobals.nGI; i++) {
+		  UINT8 val = (UINT8)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].value);
+		  if (val != locals.lastPhysicsOutput[CORE_MODOUT_GI0 + i]) {
+			  chgStat[idx].giNo = i;
+			  chgStat[idx].currStat = val;
+			  locals.lastPhysicsOutput[CORE_MODOUT_GI0 + i] = val;
+			  idx += 1;
+		  }
+	  }
+	  return idx;
   }
 
   /*-- add changed to array --*/
+  int allGI[CORE_MAXGI];
+  int idx = 0;
+  int ii;
+  memcpy(allGI, coreGlobals.gi, sizeof(allGI));
   for (ii = 0; ii < CORE_MAXGI; ii++) {
-    if (allGI[ii] != locals.lastGI[ii]) {
-      chgStat[idx].giNo     = ii;
-      chgStat[idx].currStat = allGI[ii];
-      idx += 1;
+	 if (allGI[ii] != locals.lastGI[ii]) {
+		chgStat[idx].giNo     = ii;
+		chgStat[idx].currStat = allGI[ii];
+		idx += 1;
     }
   }
   memcpy(locals.lastGI, allGI, sizeof(allGI));
-
   return idx;
 }
 /*-----------
@@ -217,29 +220,55 @@ int vp_getDIP(int dipBank) {
 /  set Solenoid Mask
 /-----------*/
 void vp_setSolMask(int no, int mask) {
-	// TODO This is a bit of a B2S compatibility hack - B2S precludes us from adding a proper new setting,
+	// TODO This is a horrible B2S compatibility hack - B2S precludes us from adding a proper new setting,
 	// Therefore we use this setting for modulated and PWM settings, also see VPinMame Controller.put_SolMask()
 	if (1001 <= no && no <= 1200)
-		// Map to solenoid output PWM settings (first solenoid is #1 to ...)
+		// Map to solenoid output PWM settings (first solenoid is #1 to #64)
 		vp_setModOutputType(VP_OUT_SOLENOID, no - 1000, mask);
 	else if (1201 <= no && no <= 1300)
 		// Map to GI output PWM settings (first GI is #1 to #5)
 		vp_setModOutputType(VP_OUT_GI, no - 1200, mask);
 	else if (1301 <= no && no <= 2000)
-		// Map to lamp output PWM settings (first lamp is #1 to ...)
+		// Map to lamp output PWM settings (first lamp is #1 to #336)
 		vp_setModOutputType(VP_OUT_LAMP, no - 1300, mask);
+	else if (2001 <= no)
+		// Map to alpha segment output PWM settings (first alpha segment is #1 to ...)
+		vp_setModOutputType(VP_OUT_ALPHASEG, no - 2000, mask);
 	else if (no == 2)
-		// Use index 2 to turn on/off modulated solenoids
-		options.usemodsol = mask;
-	else
+	{
+		// Use index 2 to turn on/off modulated solenoids, using a bit mask:
+		// 1 enable legacy "modulated solenoid"
+		// 2 enable physical solenoids outputs
+		// 4 enable lamps/GI/aLphanum segments physical outputs
+		options.usemodsol = (options.usemodsol & CORE_MODOUT_FORCE_ON) | mask;
+	}
+	else if (no == 0 || no == 1)
+	{
+		// Binary mask for solenoid output
 		locals.solMask[no] = mask;
+	}
 }
 
 /*-----------
 /  get Solenoid Mask
 /-----------*/
 int vp_getSolMask(int no) {
-  return locals.solMask[no];
+	// TODO This is a horrible B2S compatibility hack - B2S precludes us from adding a proper new setting,
+	// Therefore we use this setting for modulated and PWM settings, also see VPinMame Controller.put_SolMask()
+	if (1001 <= no && no <= 1200)
+		return vp_getModOutputType(VP_OUT_SOLENOID, no - 1000);
+	else if (1201 <= no && no <= 1300)
+		return vp_getModOutputType(VP_OUT_GI, no - 1200);
+	else if (1301 <= no && no <= 2000)
+		return vp_getModOutputType(VP_OUT_LAMP, no - 1300);
+	else if (2001 <= no)
+		return vp_getModOutputType(VP_OUT_ALPHASEG, no - 2000);
+	else if (no == 2)
+		return options.usemodsol;
+	else if (no == 0 || no == 1)
+		return locals.solMask[no];
+	else
+		return -1;
 }
 
 UINT64 vp_getSolMask64(void) {
@@ -250,39 +279,47 @@ UINT64 vp_getSolMask64(void) {
 /  set Output Modulation Type ('no' starts at 1 upward, for example 1-5 for WPC GI)
 /-----------*/
 void vp_setModOutputType(int output, int no, int type) {
-	// For the time being, the only supported output type is solenoid, but the API is designed to be 
-	// extended to lamp matrix (needed by Whitestar for Lord of the ring) and GI (needed by all WPC).
-	int pos;
-	if (output == VP_OUT_SOLENOID && 1 <= no && no <= CORE_MODOUT_SOL_MAX)
-		pos = no - 1;
-	else if (output == VP_OUT_GI && 1 <= no && no <= CORE_MODOUT_GI_MAX)
-		pos = CORE_MODOUT_SOL_MAX + no - 1;
-	else if (output == VP_OUT_LAMP && 1 <= no && no <= CORE_MODOUT_LAMP_MAX)
-		pos = CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + no - 1;
-	else
-		return;
-	if (coreGlobals.modulatedOutputs[pos].type != type)
+	int pos = -1;
+	if (output == VP_OUT_SOLENOID && 1 <= no && no <= coreGlobals.nSolenoids)
 	{
-		int prev_type = coreGlobals.modulatedOutputs[pos].type;
-		coreGlobals.modulatedOutputs[pos].type = type;
-		if (type == CORE_MODOUT_DEFAULT && prev_type != CORE_MODOUT_DEFAULT)
-			coreGlobals.nModulatedOutputs--;
-		else if (type != CORE_MODOUT_DEFAULT && prev_type == CORE_MODOUT_DEFAULT)
-			coreGlobals.nModulatedOutputs++;
+		pos = CORE_MODOUT_SOL0 + no - 1;
+		options.usemodsol |= CORE_MODOUT_ENABLE_SOLENOIDS;
+	}
+	else if (output == VP_OUT_GI && 1 <= no && no <= coreGlobals.nGI)
+	{
+		pos = CORE_MODOUT_GI0 + no - 1;
+		options.usemodsol |= CORE_MODOUT_ENABLE_LGIAS;
+	}
+	else if (output == VP_OUT_LAMP && 1 <= no && no <= coreGlobals.nLamps)
+	{
+		pos = CORE_MODOUT_LAMP0 + no - 1;
+		options.usemodsol |= CORE_MODOUT_ENABLE_LGIAS;
+	}
+	else if (output == VP_OUT_ALPHASEG && 1 <= no && no <= coreGlobals.nAlphaSegs)
+	{
+		pos = CORE_MODOUT_SEG0 + no - 1;
+		options.usemodsol |= CORE_MODOUT_ENABLE_LGIAS;
+	}
+	if (pos != -1)
+	{
+		memset(&(coreGlobals.physicOutputState[pos]), 0, sizeof(core_tPhysicOutput));
+		coreGlobals.physicOutputState[pos].type = type;
 	}
 }
 
 int vp_getModOutputType(int output, int no) {
 	int pos;
-	if (output == VP_OUT_SOLENOID && 1 <= no && no <= CORE_MODOUT_SOL_MAX)
-		pos = no - 1;
-	else if (output == VP_OUT_GI && 1 <= no && no <= CORE_MODOUT_GI_MAX)
-		pos = CORE_MODOUT_SOL_MAX + no - 1;
-	else if (output == VP_OUT_LAMP && 1 <= no && no <= CORE_MODOUT_LAMP_MAX)
-		pos = CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX + no - 1;
+	if (output == VP_OUT_SOLENOID && 1 <= no && no <= coreGlobals.nSolenoids)
+		pos = CORE_MODOUT_SOL0 + no - 1;
+	else if (output == VP_OUT_GI && 1 <= no && no <= coreGlobals.nGI)
+		pos = CORE_MODOUT_GI0 + no - 1;
+	else if (output == VP_OUT_LAMP && 1 <= no && no <= coreGlobals.nLamps)
+		pos = CORE_MODOUT_LAMP0 + no - 1;
+	else if (output == VP_OUT_ALPHASEG && 1 <= no && no <= coreGlobals.nAlphaSegs)
+		pos = CORE_MODOUT_SEG0 + no - 1;
 	else
-		return CORE_MODOUT_DEFAULT;
-	return coreGlobals.modulatedOutputs[pos].type;
+		return -1; // Undefined behavior
+	return coreGlobals.physicOutputState[pos].type;
 }
 
 int vp_getMech(int mechNo) {
