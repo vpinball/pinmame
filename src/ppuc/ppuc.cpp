@@ -219,7 +219,7 @@ void CALLBACK OnStateUpdated(int state, const void* p_userData) {
         mechConfig.sol1 = 11;
         mechConfig.length = 240;
         mechConfig.steps = 240;
-        mechConfig.type = NONLINEAR | REVERSE | ONESOL;
+        mechConfig.type = PINMAME_MECH_FLAGS_NONLINEAR | PINMAME_MECH_FLAGS_REVERSE | PINMAME_MECH_FLAGS_ONESOL;
         mechConfig.sw[0].swNo = 32;
         mechConfig.sw[0].startPos = 0;
         mechConfig.sw[0].endPos = 5;
@@ -254,10 +254,10 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
                           p_displayLayout->depth,
                           p_displayLayout->length);
 
-    if ((p_displayLayout->type & DMD) == DMD) {
+    if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
         UINT8 *buffer = (UINT8 *) dmdConvertToFrame(p_displayLayout->width, p_displayLayout->height,
                                                     (UINT8 *) p_displayData, p_displayLayout->depth,
-                                                    PinmameGetHardwareGen() & (SAM | SPA));
+                                                    PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA));
 
         if (opt_console_display) {
             dmdConsoleRender(p_displayLayout->width, p_displayLayout->height, buffer, p_displayLayout->depth);
@@ -273,7 +273,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
             if (pin2dmd > 0) {
                 threads.push_back(std::thread(Pin2dmdRender, p_displayLayout->width, p_displayLayout->height,
                                               DmdPlanesBuffer, p_displayLayout->depth,
-                                              PinmameGetHardwareGen() & (SAM | SPA)));
+                                              PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)));
             }
             if (zedmd > 0) {
                 threads.push_back(std::thread(ZeDmdRender, p_displayLayout->width, p_displayLayout->height,
@@ -510,7 +510,7 @@ int main (int argc, char *argv[]) {
     if (!opt_serial) opt_serial = c_serial.c_str();
 
     PinmameConfig config = {
-            AUDIO_FORMAT_INT16,
+            PINMAME_AUDIO_FORMAT_INT16,
             44100,
             "",
             &OnStateUpdated,
@@ -523,6 +523,7 @@ int main (int argc, char *argv[]) {
             &OnSolenoidUpdated,
             &OnConsoleDataUpdated,
             &IsKeyPressed,
+            NULL,
             NULL,
     };
 
@@ -732,7 +733,7 @@ int main (int argc, char *argv[]) {
     PinmameLampState changedLampStates[PinmameGetMaxLamps()];
 #endif
 
-	if (PinmameRun(opt_rom) == OK) {
+	if (PinmameRun(opt_rom) == PINMAME_STATUS_OK) {
         // Pinball machines were slower than modern CPUs. There's no need to update states too frequently at full speed.
         int sleep_us = 1000;
         // Poll I/O boards for events (mainly switches) every 50us.

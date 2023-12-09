@@ -107,7 +107,7 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 			{ "         " },
 		};
 
-		char (*segments)[10] = (p_displayLayout->type == SEG16S) ? segments_16s : segments_16c;
+		char (*segments)[10] = (p_displayLayout->type == PINMAME_DISPLAY_TYPE_SEG16S) ? segments_16s : segments_16c;
 
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 9; column++) {
@@ -147,7 +147,7 @@ void CALLBACK OnStateUpdated(int state, const void* p_userData) {
 		mechConfig.sol1 = 11;
 		mechConfig.length = 240;
 		mechConfig.steps = 240;
-		mechConfig.type = NONLINEAR | REVERSE | ONESOL;
+		mechConfig.type = PINMAME_MECH_FLAGS_NONLINEAR | PINMAME_MECH_FLAGS_REVERSE | PINMAME_MECH_FLAGS_ONESOL;
 		mechConfig.sw[0].swNo = 32;
 		mechConfig.sw[0].startPos = 0;
 		mechConfig.sw[0].endPos = 5;
@@ -181,7 +181,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 		p_displayLayout->length);
 
 	if (p_displayData) {
-		if ((p_displayLayout->type & DMD) == DMD) {
+		if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
 			DumpDmd(index, (UINT8*)p_displayData, p_displayLayout);
 		}
 		else {
@@ -241,19 +241,23 @@ void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_li
 	char buffer[1024];
 	vsnprintf(buffer, sizeof(buffer), format, args);
 
-	if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO) {
+	if (logLevel == PINMAME_LOG_LEVEL_INFO) {
 		printf("INFO: %s", buffer);
 	}
-	else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR) {
+	else if (logLevel == PINMAME_LOG_LEVEL_ERROR) {
 		printf("ERROR: %s", buffer);
 	}
+}
+
+void CALLBACK OnSoundCommand(int boardNo, int cmd, const void* p_userData) {
+	printf("OnSoundCommand: boardNo=%d, cmd=%d\n", boardNo, cmd);
 }
 
 int main(int, char**) {
 	system(CLEAR_SCREEN);
 
 	PinmameConfig config = {
-		AUDIO_FORMAT_FLOAT,
+		PINMAME_AUDIO_FORMAT_FLOAT,
 		44100,
 		"",
 		&OnStateUpdated,
@@ -267,6 +271,7 @@ int main(int, char**) {
 		&OnConsoleDataUpdated,
 		&IsKeyPressed,
 		&OnLogMessage,
+		&OnSoundCommand,
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)
@@ -281,7 +286,8 @@ int main(int, char**) {
 	PinmameSetHandleKeyboard(0);
 	PinmameSetHandleMechanics(0);
 
-	PinmameSetDmdMode(PINMAME_DMD_MODE::RAW);
+	PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
+	PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
 
 	PinmameGetGames(&Game, NULL);
 	PinmameGetGame("fourx4", &Game, NULL);
@@ -297,8 +303,9 @@ int main(int, char**) {
 	//PinmameRun("fh_l9");
 	//PinmameRun("acd_170hc");
 	//PinmameRun("snspares");
+	//PinmameRun("gnr_300");
 
-	if (PinmameRun("t2_l8") == OK) {
+	if (PinmameRun("t2_l8") == PINMAME_STATUS_OK) {
 		while (true) {
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}

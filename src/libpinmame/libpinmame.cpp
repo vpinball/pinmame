@@ -21,11 +21,8 @@ int g_fHandleKeyboard = 0;
 int g_fHandleMechanics = 0;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
-PINMAME_DMD_MODE g_fDmdMode = BRIGHTNESS;
-
-#ifdef VPINMAME_ALTSOUND
-char g_szGameName[256] = { 0 }; // String containing requested game name (may be different from ROM if aliased)
-#endif
+PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE_BRIGHTNESS;
+PINMAME_SOUND_MODE g_fSoundMode = PINMAME_SOUND_MODE_DEFAULT;
 }
 
 static int _isRunning = 0;
@@ -44,109 +41,109 @@ static PinmameAudioInfo _audioInfo;
 static float _audioData[PINMAME_ACCUMULATOR_SAMPLES * 2];
 
 static const PinmameKeyboardInfo _keyboardInfo[] = {
-	{ "A", A, KEYCODE_A },
-	{ "B", B, KEYCODE_B },
-	{ "C", C, KEYCODE_C },
-	{ "D", D, KEYCODE_D },
-	{ "E", E, KEYCODE_E },
-	{ "F", F, KEYCODE_F },
-	{ "G", G, KEYCODE_G },
-	{ "H", H, KEYCODE_H },
-	{ "I", I, KEYCODE_I },
-	{ "J", J, KEYCODE_J },
-	{ "K", K, KEYCODE_K },
-	{ "L", L, KEYCODE_L },
-	{ "M", M, KEYCODE_M },
-	{ "N", N, KEYCODE_N },
-	{ "O", O, KEYCODE_O },
-	{ "P", P, KEYCODE_P },
-	{ "Q", Q, KEYCODE_Q },
-	{ "R", R, KEYCODE_R },
-	{ "S", S, KEYCODE_S },
-	{ "T", T, KEYCODE_T },
-	{ "U", U, KEYCODE_U },
-	{ "V", V, KEYCODE_V },
-	{ "W", W, KEYCODE_W },
-	{ "X", X, KEYCODE_X },
-	{ "Y", Y, KEYCODE_Y },
-	{ "Z", Z, KEYCODE_Z },
-	{ "0", NUMBER_0, KEYCODE_0 },
-	{ "1", NUMBER_1, KEYCODE_1 },
-	{ "2", NUMBER_2, KEYCODE_2 },
-	{ "3", NUMBER_3, KEYCODE_3 },
-	{ "4", NUMBER_4, KEYCODE_4 },
-	{ "5", NUMBER_5, KEYCODE_5 },
-	{ "6", NUMBER_6, KEYCODE_6 },
-	{ "7", NUMBER_7, KEYCODE_7 },
-	{ "8", NUMBER_8, KEYCODE_8 },
-	{ "9", NUMBER_9, KEYCODE_9 },
-	{ "KEYPAD 0", KEYPAD_1, KEYCODE_0_PAD },
-	{ "KEYPAD 1", KEYPAD_2, KEYCODE_1_PAD },
-	{ "KEYPAD 2", KEYPAD_2, KEYCODE_2_PAD },
-	{ "KEYPAD 3", KEYPAD_3, KEYCODE_3_PAD },
-	{ "KEYPAD 4", KEYPAD_4, KEYCODE_4_PAD },
-	{ "KEYPAD 5", KEYPAD_5, KEYCODE_5_PAD },
-	{ "KEYPAD 6", KEYPAD_6, KEYCODE_6_PAD },
-	{ "KEYPAD 7", KEYPAD_7, KEYCODE_7_PAD },
-	{ "KEYPAD 8", KEYPAD_8, KEYCODE_8_PAD },
-	{ "KEYPAD 9", KEYPAD_9, KEYCODE_9_PAD },
-	{ "F1", F1, KEYCODE_F1 },
-	{ "F2", F2, KEYCODE_F2 },
-	{ "F3", F3, KEYCODE_F3 },
-	{ "F4", F4, KEYCODE_F4 },
-	{ "F5", F5, KEYCODE_F5 },
-	{ "F6", F6, KEYCODE_F6 },
-	{ "F7", F7, KEYCODE_F7 },
-	{ "F8", F8, KEYCODE_F8 },
-	{ "F9", F9, KEYCODE_F9 },
-	{ "F10", F10, KEYCODE_F10 },
-	{ "F11", F11, KEYCODE_F11 },
-	{ "F12", F12, KEYCODE_F12 },
-	{ "ESCAPE", ESCAPE, KEYCODE_ESC },
-	{ "GRAVE ACCENT", GRAVE_ACCENT, KEYCODE_TILDE },
-	{ "MINUS", MINUS, KEYCODE_MINUS },
-	{ "EQUALS", EQUALS, KEYCODE_EQUALS },
-	{ "BACKSPACE", BACKSPACE, KEYCODE_BACKSPACE },
-	{ "TAB", TAB, KEYCODE_TAB },
-	{ "LEFT BRACKET", LEFT_BRACKET, KEYCODE_OPENBRACE },
-	{ "RIGHT BRACKET", RIGHT_BRACKET, KEYCODE_CLOSEBRACE },
-	{ "ENTER", ENTER, KEYCODE_ENTER },
-	{ "SEMICOLON", SEMICOLON, KEYCODE_COLON },
-	{ "QUOTE", QUOTE, KEYCODE_QUOTE },
-	{ "BACKSLASH", BACKSLASH, KEYCODE_BACKSLASH },
-	{ "COMMA", COMMA, KEYCODE_COMMA },
-	{ "PERIOD", PERIOD, KEYCODE_STOP },
-	{ "SLASH", SLASH, KEYCODE_SLASH },
-	{ "SPACE", SPACE, KEYCODE_SPACE },
-	{ "INSERT", INSERT, KEYCODE_INSERT },
-	{ "DELETE", DELETE, KEYCODE_DEL },
-	{ "HOME", HOME, KEYCODE_HOME },
-	{ "END", END, KEYCODE_END },
-	{ "PAGE UP", PAGE_UP, KEYCODE_PGUP },
-	{ "PAGE DOWN", PAGE_DOWN, KEYCODE_PGDN },
-	{ "LEFT", LEFT, KEYCODE_LEFT },
-	{ "RIGHT", RIGHT, KEYCODE_RIGHT },
-	{ "UP", UP, KEYCODE_UP },
-	{ "DOWN", DOWN, KEYCODE_DOWN },
-	{ "KEYPAD DIVIDE", KEYPAD_DIVIDE, KEYCODE_SLASH_PAD },
-	{ "KEYPAD MULTIPLY", KEYPAD_MULTIPLY, KEYCODE_ASTERISK },
-	{ "KEYPAD SUBTRACT", KEYPAD_SUBTRACT, KEYCODE_MINUS_PAD },
-	{ "KEYPAD ADD", KEYPAD_ADD, KEYCODE_PLUS_PAD },
-	{ "KEYPAD ENTER", KEYPAD_ENTER, KEYCODE_ENTER_PAD },
-	{ "PRINT SCREEN", PRINT_SCREEN, KEYCODE_PRTSCR },
-	{ "PAUSE", PAUSE, KEYCODE_PAUSE },
-	{ "LEFT SHIFT", LEFT_SHIFT, KEYCODE_LSHIFT },
-	{ "RIGHT SHIFT", RIGHT_SHIFT, KEYCODE_RSHIFT },
-	{ "LEFT CONTROL", LEFT_CONTROL, KEYCODE_LCONTROL },
-	{ "RIGHT CONTROL", RIGHT_CONTROL, KEYCODE_RCONTROL },
-	{ "LEFT ALT", LEFT_ALT, KEYCODE_LALT },
-	{ "RIGHT ALT", RIGHT_ALT, KEYCODE_RALT },
-	{ "SCROLL LOCK", SCROLL_LOCK, KEYCODE_SCRLOCK },
-	{ "NUM LOCK", NUM_LOCK, KEYCODE_NUMLOCK },
-	{ "CAPS LOCK", CAPS_LOCK, KEYCODE_CAPSLOCK },
-	{ "LEFT SUPER", LEFT_SUPER, KEYCODE_LWIN },
-	{ "RIGHT SUPER", RIGHT_SUPER, KEYCODE_RWIN },
-	{ "MENU", MENU, KEYCODE_MENU }
+	{ "A", PINMAME_KEYCODE_A, KEYCODE_A },
+	{ "B", PINMAME_KEYCODE_B, KEYCODE_B },
+	{ "C", PINMAME_KEYCODE_C, KEYCODE_C },
+	{ "D", PINMAME_KEYCODE_D, KEYCODE_D },
+	{ "E", PINMAME_KEYCODE_E, KEYCODE_E },
+	{ "F", PINMAME_KEYCODE_F, KEYCODE_F },
+	{ "G", PINMAME_KEYCODE_G, KEYCODE_G },
+	{ "H", PINMAME_KEYCODE_H, KEYCODE_H },
+	{ "I", PINMAME_KEYCODE_I, KEYCODE_I },
+	{ "J", PINMAME_KEYCODE_J, KEYCODE_J },
+	{ "K", PINMAME_KEYCODE_K, KEYCODE_K },
+	{ "L", PINMAME_KEYCODE_L, KEYCODE_L },
+	{ "M", PINMAME_KEYCODE_M, KEYCODE_M },
+	{ "N", PINMAME_KEYCODE_N, KEYCODE_N },
+	{ "O", PINMAME_KEYCODE_O, KEYCODE_O },
+	{ "P", PINMAME_KEYCODE_P, KEYCODE_P },
+	{ "Q", PINMAME_KEYCODE_Q, KEYCODE_Q },
+	{ "R", PINMAME_KEYCODE_R, KEYCODE_R },
+	{ "S", PINMAME_KEYCODE_S, KEYCODE_S },
+	{ "T", PINMAME_KEYCODE_T, KEYCODE_T },
+	{ "U", PINMAME_KEYCODE_U, KEYCODE_U },
+	{ "V", PINMAME_KEYCODE_V, KEYCODE_V },
+	{ "W", PINMAME_KEYCODE_W, KEYCODE_W },
+	{ "X", PINMAME_KEYCODE_X, KEYCODE_X },
+	{ "Y", PINMAME_KEYCODE_Y, KEYCODE_Y },
+	{ "Z", PINMAME_KEYCODE_Z, KEYCODE_Z },
+	{ "0", PINMAME_KEYCODE_NUMBER_0, KEYCODE_0 },
+	{ "1", PINMAME_KEYCODE_NUMBER_1, KEYCODE_1 },
+	{ "2", PINMAME_KEYCODE_NUMBER_2, KEYCODE_2 },
+	{ "3", PINMAME_KEYCODE_NUMBER_3, KEYCODE_3 },
+	{ "4", PINMAME_KEYCODE_NUMBER_4, KEYCODE_4 },
+	{ "5", PINMAME_KEYCODE_NUMBER_5, KEYCODE_5 },
+	{ "6", PINMAME_KEYCODE_NUMBER_6, KEYCODE_6 },
+	{ "7", PINMAME_KEYCODE_NUMBER_7, KEYCODE_7 },
+	{ "8", PINMAME_KEYCODE_NUMBER_8, KEYCODE_8 },
+	{ "9", PINMAME_KEYCODE_NUMBER_9, KEYCODE_9 },
+	{ "KEYPAD 0", PINMAME_KEYCODE_KEYPAD_1, KEYCODE_0_PAD },
+	{ "KEYPAD 1", PINMAME_KEYCODE_KEYPAD_2, KEYCODE_1_PAD },
+	{ "KEYPAD 2", PINMAME_KEYCODE_KEYPAD_2, KEYCODE_2_PAD },
+	{ "KEYPAD 3", PINMAME_KEYCODE_KEYPAD_3, KEYCODE_3_PAD },
+	{ "KEYPAD 4", PINMAME_KEYCODE_KEYPAD_4, KEYCODE_4_PAD },
+	{ "KEYPAD 5", PINMAME_KEYCODE_KEYPAD_5, KEYCODE_5_PAD },
+	{ "KEYPAD 6", PINMAME_KEYCODE_KEYPAD_6, KEYCODE_6_PAD },
+	{ "KEYPAD 7", PINMAME_KEYCODE_KEYPAD_7, KEYCODE_7_PAD },
+	{ "KEYPAD 8", PINMAME_KEYCODE_KEYPAD_8, KEYCODE_8_PAD },
+	{ "KEYPAD 9", PINMAME_KEYCODE_KEYPAD_9, KEYCODE_9_PAD },
+	{ "F1", PINMAME_KEYCODE_F1, KEYCODE_F1 },
+	{ "F2", PINMAME_KEYCODE_F2, KEYCODE_F2 },
+	{ "F3", PINMAME_KEYCODE_F3, KEYCODE_F3 },
+	{ "F4", PINMAME_KEYCODE_F4, KEYCODE_F4 },
+	{ "F5", PINMAME_KEYCODE_F5, KEYCODE_F5 },
+	{ "F6", PINMAME_KEYCODE_F6, KEYCODE_F6 },
+	{ "F7", PINMAME_KEYCODE_F7, KEYCODE_F7 },
+	{ "F8", PINMAME_KEYCODE_F8, KEYCODE_F8 },
+	{ "F9", PINMAME_KEYCODE_F9, KEYCODE_F9 },
+	{ "F10", PINMAME_KEYCODE_F10, KEYCODE_F10 },
+	{ "F11", PINMAME_KEYCODE_F11, KEYCODE_F11 },
+	{ "F12", PINMAME_KEYCODE_F12, KEYCODE_F12 },
+	{ "ESCAPE", PINMAME_KEYCODE_ESCAPE, KEYCODE_ESC },
+	{ "GRAVE ACCENT", PINMAME_KEYCODE_GRAVE_ACCENT, KEYCODE_TILDE },
+	{ "MINUS", PINMAME_KEYCODE_MINUS, KEYCODE_MINUS },
+	{ "EQUALS", PINMAME_KEYCODE_EQUALS, KEYCODE_EQUALS },
+	{ "BACKSPACE", PINMAME_KEYCODE_BACKSPACE, KEYCODE_BACKSPACE },
+	{ "TAB", PINMAME_KEYCODE_TAB, KEYCODE_TAB },
+	{ "LEFT BRACKET", PINMAME_KEYCODE_LEFT_BRACKET, KEYCODE_OPENBRACE },
+	{ "RIGHT BRACKET", PINMAME_KEYCODE_RIGHT_BRACKET, KEYCODE_CLOSEBRACE },
+	{ "ENTER", PINMAME_KEYCODE_ENTER, KEYCODE_ENTER },
+	{ "SEMICOLON", PINMAME_KEYCODE_SEMICOLON, KEYCODE_COLON },
+	{ "QUOTE", PINMAME_KEYCODE_QUOTE, KEYCODE_QUOTE },
+	{ "BACKSLASH", PINMAME_KEYCODE_BACKSLASH, KEYCODE_BACKSLASH },
+	{ "COMMA", PINMAME_KEYCODE_COMMA, KEYCODE_COMMA },
+	{ "PERIOD", PINMAME_KEYCODE_PERIOD, KEYCODE_STOP },
+	{ "SLASH", PINMAME_KEYCODE_SLASH, KEYCODE_SLASH },
+	{ "SPACE", PINMAME_KEYCODE_SPACE, KEYCODE_SPACE },
+	{ "INSERT", PINMAME_KEYCODE_INSERT, KEYCODE_INSERT },
+	{ "DELETE", PINMAME_KEYCODE_DELETE, KEYCODE_DEL },
+	{ "HOME", PINMAME_KEYCODE_HOME, KEYCODE_HOME },
+	{ "END", PINMAME_KEYCODE_END, KEYCODE_END },
+	{ "PAGE UP", PINMAME_KEYCODE_PAGE_UP, KEYCODE_PGUP },
+	{ "PAGE DOWN", PINMAME_KEYCODE_PAGE_DOWN, KEYCODE_PGDN },
+	{ "LEFT", PINMAME_KEYCODE_LEFT, KEYCODE_LEFT },
+	{ "RIGHT", PINMAME_KEYCODE_RIGHT, KEYCODE_RIGHT },
+	{ "UP", PINMAME_KEYCODE_UP, KEYCODE_UP },
+	{ "DOWN", PINMAME_KEYCODE_DOWN, KEYCODE_DOWN },
+	{ "KEYPAD DIVIDE", PINMAME_KEYCODE_KEYPAD_DIVIDE, KEYCODE_SLASH_PAD },
+	{ "KEYPAD MULTIPLY", PINMAME_KEYCODE_KEYPAD_MULTIPLY, KEYCODE_ASTERISK },
+	{ "KEYPAD SUBTRACT", PINMAME_KEYCODE_KEYPAD_SUBTRACT, KEYCODE_MINUS_PAD },
+	{ "KEYPAD ADD", PINMAME_KEYCODE_KEYPAD_ADD, KEYCODE_PLUS_PAD },
+	{ "KEYPAD ENTER", PINMAME_KEYCODE_KEYPAD_ENTER, KEYCODE_ENTER_PAD },
+	{ "PRINT SCREEN", PINMAME_KEYCODE_PRINT_SCREEN, KEYCODE_PRTSCR },
+	{ "PAUSE", PINMAME_KEYCODE_PAUSE, KEYCODE_PAUSE },
+	{ "LEFT SHIFT", PINMAME_KEYCODE_LEFT_SHIFT, KEYCODE_LSHIFT },
+	{ "RIGHT SHIFT", PINMAME_KEYCODE_RIGHT_SHIFT, KEYCODE_RSHIFT },
+	{ "LEFT CONTROL", PINMAME_KEYCODE_LEFT_CONTROL, KEYCODE_LCONTROL },
+	{ "RIGHT CONTROL", PINMAME_KEYCODE_RIGHT_CONTROL, KEYCODE_RCONTROL },
+	{ "LEFT ALT", PINMAME_KEYCODE_LEFT_ALT, KEYCODE_LALT },
+	{ "RIGHT ALT", PINMAME_KEYCODE_RIGHT_ALT, KEYCODE_RALT },
+	{ "SCROLL LOCK", PINMAME_KEYCODE_SCROLL_LOCK, KEYCODE_SCRLOCK },
+	{ "NUM LOCK", PINMAME_KEYCODE_NUM_LOCK, KEYCODE_NUMLOCK },
+	{ "CAPS LOCK", PINMAME_KEYCODE_CAPS_LOCK, KEYCODE_CAPSLOCK },
+	{ "LEFT SUPER", PINMAME_KEYCODE_LEFT_SUPER, KEYCODE_LWIN },
+	{ "RIGHT SUPER", PINMAME_KEYCODE_RIGHT_SUPER, KEYCODE_RWIN },
+	{ "MENU", PINMAME_KEYCODE_MENU, KEYCODE_MENU }
 };
 
 /******************************************************
@@ -259,10 +256,10 @@ extern "C" int osd_start_audio_stream(const int stereo) {
  ******************************************************/
 
 extern "C" int osd_update_audio_stream(INT16* p_buffer) {
-	if (_p_Config->cb_OnAudioUpdated) {
+	if (_p_Config->cb_OnAudioUpdated && g_fSoundMode == PINMAME_SOUND_MODE_DEFAULT) {
 		const int samplesThisFrame = mixer_samples_this_frame();
 
-		if (_p_Config->audioFormat == AUDIO_FORMAT_INT16) {
+		if (_p_Config->audioFormat == PINMAME_AUDIO_FORMAT_INT16) {
 			return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame, _p_userData);
 		}
 
@@ -386,6 +383,12 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 	}
 }
 
+extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd) {
+	if (_p_Config->cb_OnSoundCommand) {
+		(*(_p_Config->cb_OnSoundCommand))(boardNo, cmd, _p_userData);
+	}
+}
+
 /******************************************************
  * libpinmame_forward_console_data
  ******************************************************/
@@ -430,7 +433,7 @@ extern "C" void libpinmame_log_info(const char* format, ...) {
 	if (_p_Config->cb_OnLogMessage) {
 		va_list args;
 		va_start(args, format);
-		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL::LOG_INFO, format, args, _p_userData);
+		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL_INFO, format, args, _p_userData);
 		va_end(args);
 	}
 }
@@ -443,7 +446,7 @@ extern "C" void libpinmame_log_error(const char* format, ...) {
 	if (_p_Config->cb_OnLogMessage) {
 		va_list args;
 		va_start(args, format);
-		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL::LOG_ERROR, format, args, _p_userData);
+		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL_ERROR, format, args, _p_userData);
 		va_end(args);
 	}
 }
@@ -516,13 +519,13 @@ int StartGame(const int gameNum) {
 
 LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, const void* p_userData) {
 	if (_p_Config == nullptr) {
-		return CONFIG_NOT_SET;
+		return PINMAME_STATUS_CONFIG_NOT_SET;
 	}
 
 	int gameNum = GetGameNumFromString(p_name);
 
 	if (gameNum < 0) {
-		return GAME_NOT_FOUND;
+		return PINMAME_STATUS_GAME_NOT_FOUND;
 	}
 
 	PinmameGame game;
@@ -542,7 +545,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
 		(*callback)(&game, p_userData);
 	}
 
-	return OK;
+	return PINMAME_STATUS_OK;
 }
 
 /******************************************************
@@ -551,7 +554,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGa
 
 LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, const void* p_userData) {
 	if (_p_Config == nullptr) {
-		return CONFIG_NOT_SET;
+		return PINMAME_STATUS_CONFIG_NOT_SET;
 	}
 
 	int gameNum = 0;
@@ -577,7 +580,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, cons
 		gameNum++;
 	}
 
-	return OK;
+	return PINMAME_STATUS_OK;
 }
 
 /******************************************************
@@ -625,19 +628,19 @@ LIBPINMAME_API void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char*
 	strcpy(newPath, p_path);
 
 	switch(fileType) {
-		case ROMS:
+		case PINMAME_FILE_TYPE_ROMS:
 			setPath(FILETYPE_ROM, newPath);
 			break;
-		case NVRAM:
+		case PINMAME_FILE_TYPE_NVRAM:
 			setPath(FILETYPE_NVRAM, newPath);
 			break;
-		case SAMPLES:
+		case PINMAME_FILE_TYPE_SAMPLES:
 			setPath(FILETYPE_SAMPLE, newPath);
 			break;
-		case CONFIG:
+		case PINMAME_FILE_TYPE_CONFIG:
 			setPath(FILETYPE_CONFIG, newPath);
 			break;
-		case HIGHSCORE:
+		case PINMAME_FILE_TYPE_HIGHSCORE:
 			setPath(FILETYPE_HIGHSCORE, newPath);
 			break;
 	}
@@ -652,7 +655,7 @@ LIBPINMAME_API int PinmameGetCheat() {
 }
 
 /******************************************************
- * PinmameSetHandleMechanics
+ * PinmameSetCheat
  ******************************************************/
 
 LIBPINMAME_API void PinmameSetCheat(const int cheat) {
@@ -708,33 +711,45 @@ LIBPINMAME_API PINMAME_DMD_MODE PinmameGetDmdMode() {
 }
 
 /******************************************************
+ * PinmameGetSoundMode
+ ******************************************************/
+
+LIBPINMAME_API PINMAME_SOUND_MODE PinmameGetSoundMode() {
+	return g_fSoundMode;
+}
+
+/******************************************************
+ * PinmameSetSoundMode
+ ******************************************************/
+
+LIBPINMAME_API void PinmameSetSoundMode(const PINMAME_SOUND_MODE soundMode) {
+	g_fSoundMode = soundMode;
+}
+
+/******************************************************
  * PinmameRun
  ******************************************************/
 
 LIBPINMAME_API PINMAME_STATUS PinmameRun(const char* const p_name) {
 	if (_p_Config == nullptr) {
-		return CONFIG_NOT_SET;
+		return PINMAME_STATUS_CONFIG_NOT_SET;
 	}
 
 	if (_isRunning) {
-		return GAME_ALREADY_RUNNING;
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
 	}
 
 	const int gameNum = GetGameNumFromString(p_name);
 
 	if (gameNum < 0) {
-		return GAME_NOT_FOUND;
+		return PINMAME_STATUS_GAME_NOT_FOUND;
 	}
-
-#ifdef VPINMAME_ALTSOUND
-	strcpy_s(g_szGameName, p_name);
-#endif
 
 	vp_init();
 
 	_p_gameThread = new std::thread(StartGame, gameNum);
 
-	return OK;
+	return PINMAME_STATUS_OK;
 }
 
 /******************************************************
@@ -753,10 +768,10 @@ LIBPINMAME_API PINMAME_STATUS PinmameReset() {
 	if (_isRunning) {
 		machine_reset();
 
-		return OK;
+		return PINMAME_STATUS_OK;
 	}
 
-	return EMULATOR_NOT_RUNNING;
+	return PINMAME_STATUS_EMULATOR_NOT_RUNNING;
 }
 
 /******************************************************
@@ -767,10 +782,10 @@ LIBPINMAME_API PINMAME_STATUS PinmamePause(const int pause) {
 	if (_isRunning) {
 		g_fPause = pause;
 
-		return OK;
+		return PINMAME_STATUS_OK;
 	}
 
-	return EMULATOR_NOT_RUNNING;
+	return PINMAME_STATUS_EMULATOR_NOT_RUNNING;
 }
 
 /******************************************************
@@ -794,10 +809,6 @@ LIBPINMAME_API void PinmameStop() {
 
 		delete(_p_gameThread);
 		_p_gameThread = nullptr;
-
-#ifdef VPINMAME_ALTSOUND
-		g_szGameName[0] = '\0';
-#endif
 
 		_timeToQuit = 0;
 	}
@@ -1004,11 +1015,11 @@ LIBPINMAME_API int PinmameGetMech(const int mechNo) {
 
 LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig) {
 	if (g_fHandleMechanics) {
-		return MECH_HANDLE_MECHANICS;
+		return PINMAME_STATUS_MECH_HANDLE_MECHANICS;
 	}
 
 	if (mechNo < 1 || mechNo > (MECH_MAXMECH / 2)) {
-		return MECH_NO_INVALID;
+		return PINMAME_STATUS_MECH_NO_INVALID;
 	}
 
 	mech_tInitData mechInitData;
@@ -1037,7 +1048,7 @@ LIBPINMAME_API PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMech
 
 	mech_add((MECH_MAXMECH / 2) + mechNo - 1, &mechInitData);
 
-	return OK;
+	return PINMAME_STATUS_OK;
 }
 
 /******************************************************
