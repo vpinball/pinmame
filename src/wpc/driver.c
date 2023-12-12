@@ -94,19 +94,19 @@ DRIVERNV(thndrman)      //Thunder Man (Zaccaria hardware)
 // --------------------
 DRIVERNV(sexygirl)      //Sexy Girl (clone of Bally Playboy, December 1980)
 
-// ---------------
+// --------------------
 // ASTILL ENTERTAINMENT
-// ---------------
+// --------------------
 DRIVER(rush,10)         //Rush (custom pin, based on WPC fliptronics hardware)
 
-// ---------------
+// --------------------
 // ASTRO GAMES
-// ---------------
+// --------------------
 DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using old Stern hardware
 
-// ---------------
+// --------------------
 // ATARI GAMES
-// ---------------
+// --------------------
                         //Triangle (Prototype, 1976?)
 DRIVERNV(atarians)      //Atarians, The (November 1976)
 DRIVERNV(time2000)      //Time 2000 (June 1977)
@@ -2645,6 +2645,7 @@ DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (LG-4 
 DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(bcats,g4)        //          11/89 W Bad Cats (LG-4)
 DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
+DRIVER(bcats,tcm)       //          12/23   Bad Cats (The Cat's Meow MOD)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
 DRIVER(rvrbt,p7)        //          11/89 W Riverboat Gambler (PA-7 Prototype)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (LA-1)
