@@ -820,6 +820,7 @@ DRIVERNV(robowrfp)      //                Robo-War (Free Play)
 DRIVERNV(robowarf)      //                Robo-War (French)
 DRIVERNV(robowffp)      //                Robo-War (French Free Play)
 DRIVERNV(badgirls)      //S80b-717: 11/88 Bad Girls
+DRIVERNV(badgirl2)      //                Bad Girls (alternate set)
 DRIVERNV(badgrlfp)      //                Bad Girls (Free Play)
 DRIVERNV(badgirlg)      //                Bad Girls (German)
 DRIVERNV(badgrgfp)      //                Bad Girls (German Free Play)
