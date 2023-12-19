@@ -52,7 +52,7 @@ Fixed fast flip detection for im_185 and trn_174h
 Implemented fast flips for avr_120h, avs_170h, im_186, im_186ve, mt_145, mt_145hb, mtl_180, rsn_110, sman_261, st_162, st_162h, trn_174, wof_602h and xmn_151
  this finalizes fast flip support for all Stern SAM machines, (at least) for all its newest game revisions (both Pro and LE)
 Fixed crash of Mustang Boss mt_145hb
-Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM, Juegos Populares, after fixing timeslice issue related to the VGM file dump feature (which uses a fast timer)
+Fixed regressions by reducing the pre-shutdown time for Joctronic, NSM and Juegos Populares, after fixing a timeslice issue related to the VGM file dump feature (which uses a fast timer)
 Added support for the old SC-01 Votrax ROM version (wired only to the Mars - God of War Prototype so far)
 Made it possible to increase the volume slider setting (e.g. using the Tilde key) above 0db (for now on windows only)
  try to avoid it though, as it can result in sound clipping artifacts!
