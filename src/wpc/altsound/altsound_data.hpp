@@ -31,8 +31,6 @@
 #define BASS_NO_STREAM 0
 #define ALT_MAX_CHANNELS 16
 
-#define LOG // DAR_TODO remove when logging converted
-
 // ----------------------------------------------------------------------------
 // Global Data Structures
 // ----------------------------------------------------------------------------
