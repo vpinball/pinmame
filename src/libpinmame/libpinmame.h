@@ -1,15 +1,13 @@
 // license:BSD-3-Clause
 
-#ifndef LIBPINMAME_H
-#define LIBPINMAME_H
+#pragma once
 
 #include <stdint.h>
 #include <stdarg.h>
 
-#if defined(_WIN32) || defined(_WIN64)
+#ifdef _MSC_VER
 #define LIBPINMAME_API extern "C" __declspec(dllexport)
 #define CALLBACK __stdcall
-#define strcasecmp _stricmp
 #else
 #define LIBPINMAME_API extern "C" __attribute__((visibility("default")))
 #define CALLBACK
@@ -85,6 +83,7 @@ typedef enum {
 	PINMAME_DISPLAY_TYPE_SEGREV = 0x80,
 	PINMAME_DISPLAY_TYPE_DMDNOAA = 0x100,
 	PINMAME_DISPLAY_TYPE_NODISP = 0x200,
+	PINMAME_DISPLAY_TYPE_DMDSEG = 0x400,
 	PINMAME_DISPLAY_TYPE_SEG8H = PINMAME_DISPLAY_TYPE_SEG8 | PINMAME_DISPLAY_TYPE_SEGHIBIT,
 	PINMAME_DISPLAY_TYPE_SEG7H = PINMAME_DISPLAY_TYPE_SEG7 | PINMAME_DISPLAY_TYPE_SEGHIBIT,
 	PINMAME_DISPLAY_TYPE_SEG87H = PINMAME_DISPLAY_TYPE_SEG87 | PINMAME_DISPLAY_TYPE_SEGHIBIT,
@@ -460,4 +459,3 @@ LIBPINMAME_API int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCo
 LIBPINMAME_API int PinmameGetDIP(const int dipBank);
 LIBPINMAME_API void PinmameSetDIP(const int dipBank, const int value);
 LIBPINMAME_API void PinmameSetUserData(const void* p_userData);
-#endif

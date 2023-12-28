@@ -1086,7 +1086,15 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     if (layout->type == CORE_IMPORT)
       { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
     if (layout->fptr)
-      if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) continue;
+      if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) {
+#ifdef LIBPINMAME
+        if (layout->type == CORE_VIDEO) {
+          libpinmame_update_display(g_display_index, layout, bitmap);
+          g_display_index++;
+        }
+#endif
+        continue;
+      }
     {
       int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols+1) / 2;
       int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
@@ -1201,6 +1209,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   // block this from running.
   if(!has_DMD)
   {
+#ifdef LIBPINMAME
+    static struct core_dispLayout segDmdDispLayout = { 0, 0, 32, 128, CORE_DMD | CORE_DMDSEG, NULL, NULL };
+#endif
+
     static UINT16 seg_data2[CORE_SEGCOUNT] = {0};
     const layout_t alpha_layout = layoutAlphanumericFrame(core_gameData->gen, seg_data, seg_data2, total_disp, disp_num_segs, Machine->gamedrv->name);
 
@@ -1212,7 +1224,13 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
       //
 
+#ifdef VPINMAME
 		memset(AlphaNumericFrameBuffer,0x00,2048);
+#endif
+
+#ifdef LIBPINMAME
+		memset(AlphaNumericFrameBuffer,0x00,4096);
+#endif
 
 		switch (alpha_layout) {
 			case __2x16Alpha :
@@ -1267,6 +1285,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 				break;
 		}
 
+#ifdef VPINMAME
 		for (i = 0; i < 512; ++i) {
 			currbuffer[(i*8)]   = AlphaNumericFrameBuffer[i]    & 0x01 | AlphaNumericFrameBuffer[i+512]<<1 & 0x02 | AlphaNumericFrameBuffer[i+1024]<<2 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<3 & 0x08;
 			currbuffer[(i*8)+1] = AlphaNumericFrameBuffer[i]>>1 & 0x01 | AlphaNumericFrameBuffer[i+512]    & 0x02 | AlphaNumericFrameBuffer[i+1024]<<1 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<2 & 0x08;
@@ -1296,7 +1315,19 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         currbuffer = buffer1;
         oldbuffer = buffer2;
       }
+#endif
+
+#ifdef LIBPINMAME
+      libpinmame_update_display(g_display_index, &segDmdDispLayout, AlphaNumericFrameBuffer);
+      g_display_index++;
+#endif
     }
+#ifdef LIBPINMAME
+    else {
+      libpinmame_update_display(g_display_index, &segDmdDispLayout, NULL);
+      g_display_index++;
+    }
+#endif
   }
 #endif
 }
