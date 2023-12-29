@@ -184,70 +184,6 @@ void CALLBACK OnDisplayUpdated(int index, void *p_displayData, PinmameDisplayLay
     if (p_displayData == nullptr)
     {
         return;
-
-    if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
-        UINT8 *buffer = (UINT8 *) dmdConvertToFrame(p_displayLayout->width, p_displayLayout->height,
-                                                    (UINT8 *) p_displayData, p_displayLayout->depth,
-                                                    PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA));
-
-        if (opt_console_display) {
-            dmdConsoleRender(p_displayLayout->width, p_displayLayout->height, buffer, p_displayLayout->depth);
-            if (!opt_debug) printf("\033[%dA", p_displayLayout->height);
-        }
-
-        if (pin2dmd > 0 || (zedmd > 0 && !opt_serum)) {
-            DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
-                                       DmdPlanesBuffer, p_displayLayout->depth);
-
-            std::vector <std::thread> threads;
-
-            if (pin2dmd > 0) {
-                threads.push_back(std::thread(Pin2dmdRender, p_displayLayout->width, p_displayLayout->height,
-                                              DmdPlanesBuffer, p_displayLayout->depth,
-                                              PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)));
-            }
-            if (zedmd > 0) {
-                threads.push_back(std::thread(ZeDmdRender, p_displayLayout->width, p_displayLayout->height,
-                                              DmdPlanesBuffer, p_displayLayout->depth));
-            }
-
-            for (auto &th: threads) {
-                th.join();
-            }
-        }
-
-#if defined(SERUM_SUPPORT)
-        if (zedmd > 0 && opt_serum) {
-            UINT8 palette[192] = {0};
-            UINT8 rotations[24] = {0};
-            if (Serum_Colorize(buffer, p_displayLayout->width, p_displayLayout->height,
-                           &palette[0], &rotations[0])) {
-
-                if (!memcmp(p_previousDisplayBuffer, buffer, p_displayLayout->width * p_displayLayout->height)) {
-                    return;
-                }
-                else {
-                    memcpy(p_previousDisplayBuffer, buffer, p_displayLayout->width * p_displayLayout->height);
-                }
-
-                DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
-                                           DmdPlanesBuffer, 6);
-                ZeDmdRenderSerum(p_displayLayout->width, p_displayLayout->height, DmdPlanesBuffer,
-                                 &palette[0], &rotations[0]);
-
-                serum_skip_frames_left = serum_skip_frames;
-            }
-            else if(serum_skip_frames_left < 1) {
-                DmdCommon_ConvertFrameToPlanes(p_displayLayout->width, p_displayLayout->height, buffer,
-                                           DmdPlanesBuffer, p_displayLayout->depth);
-                ZeDmdRender(p_displayLayout->width, p_displayLayout->height, DmdPlanesBuffer,
-                            p_displayLayout->depth);
-            }
-            else {
-                serum_skip_frames_left--;
-            }
-        }
-#endif
     }
 
     if (opt_debug)
@@ -818,7 +754,8 @@ int main(int argc, char *argv[])
     PinmameLampState changedLampStates[PinmameGetMaxLamps()];
 #endif
 
-	if (PinmameRun(opt_rom) == PINMAME_STATUS_OK) {
+    if (PinmameRun(opt_rom) == PINMAME_STATUS_OK)
+    {
         // Pinball machines were slower than modern CPUs. There's no need to update states too frequently at full speed.
         int sleep_us = 1000;
         // Poll I/O boards for events (mainly switches) every 50us.
