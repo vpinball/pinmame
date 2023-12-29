@@ -1,9 +1,9 @@
 // license:BSD-3-Clause
 
 #ifdef DMDDEVICE_DLL_EXPORTS
-	#define DMDDEV __declspec(dllexport) 
+	#define DMDDEV __declspec(dllexport)
 #else
-	#define DMDDEV __declspec(dllimport) 
+	#define DMDDEV __declspec(dllimport)
 #endif
 
 typedef struct tPMoptions {
@@ -35,22 +35,25 @@ UINT8 *OutputPacketBuffer;
 typedef int(*Console_Input_t)(UINT8 *buf, int size);
 Console_Input_t Console_Input = NULL;
 
-typedef enum { 
-	None,
-	__2x16Alpha, 
-	__2x20Alpha, 
-	__2x7Alpha_2x7Num, 
-	__2x7Alpha_2x7Num_4x1Num, 
-	__2x7Num_2x7Num_4x1Num, 
-	__2x7Num_2x7Num_10x1Num, 
-	__2x7Num_2x7Num_4x1Num_gen7, 
+typedef enum {
+	__None,
+	__2x16Alpha,
+	__2x20Alpha,
+	__2x7Alpha_2x7Num,
+	__2x7Alpha_2x7Num_4x1Num,
+	__2x7Num_2x7Num_4x1Num,
+	__2x7Num_2x7Num_10x1Num,
+	__2x7Num_2x7Num_4x1Num_gen7,
 	__2x7Num10_2x7Num10_4x1Num,
 	__2x6Num_2x6Num_4x1Num,
 	__2x6Num10_2x6Num10_4x1Num,
 	__4x7Num10,
 	__6x4Num_4x1Num,
 	__2x7Num_4x1Num_1x16Alpha,
-	__1x16Alpha_1x16Num_1x7Num
+	__1x16Alpha_1x16Num_1x7Num,
+	__1x7Num_1x16Alpha_1x16Num,
+	__1x16Alpha_1x16Num_1x7Num_1x4Num,
+	__Invalid
 } layout_t;
 
 #ifdef __cplusplus

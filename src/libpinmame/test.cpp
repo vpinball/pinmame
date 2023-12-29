@@ -15,7 +15,12 @@
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
 
-void DumpDmd(int index, UINT8* p_displayData, PinmameDisplayLayout* p_displayLayout) {
+void DumpVideo(int index, UINT8* p_displayData, PinmameDisplayLayout* p_displayLayout)
+{
+}
+
+void DumpDmd(int index, UINT8* p_displayData, PinmameDisplayLayout* p_displayLayout)
+{
 	for (int y = 0; y < p_displayLayout->height; y++) {
 		for (int x = 0; x < p_displayLayout->width; x++) {
 			UINT8 value = p_displayData[y * p_displayLayout->width + x];
@@ -70,7 +75,8 @@ void DumpDmd(int index, UINT8* p_displayData, PinmameDisplayLayout* p_displayLay
 	}
 }
 
-void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_displayLayout) {
+void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_displayLayout)
+{
 	char output[8][512] = {
 		{ '\0' },
 		{ '\0' },
@@ -107,7 +113,7 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 			{ "         " },
 		};
 
-		char (*segments)[10] = (p_displayLayout->type == SEG16S) ? segments_16s : segments_16c;
+		char (*segments)[10] = (p_displayLayout->type == PINMAME_DISPLAY_TYPE_SEG16S) ? segments_16s : segments_16c;
 
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 9; column++) {
@@ -124,39 +130,39 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 		}
 	}
 
-	for (int row = 0; row < 8; row++) {
+	for (int row = 0; row < 8; row++)
 		printf("%s\n", output[row]);
-	}
 }
 
-void CALLBACK Game(PinmameGame* game, const void* p_userData) {
+void CALLBACK Game(PinmameGame* game, const void* p_userData)
+{
 	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
 		game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
-void CALLBACK OnStateUpdated(int state, const void* p_userData) {
+void CALLBACK OnStateUpdated(int state, const void* p_userData)
+{
 	printf("OnStateUpdated(): state=%d\n", state);
 
-	if (!state) {
+	if (!state)
 		exit(1);
-	}
-	else {
-		PinmameMechConfig mechConfig;
-		memset(&mechConfig, 0, sizeof(mechConfig));
 
-		mechConfig.sol1 = 11;
-		mechConfig.length = 240;
-		mechConfig.steps = 240;
-		mechConfig.type = NONLINEAR | REVERSE | ONESOL;
-		mechConfig.sw[0].swNo = 32;
-		mechConfig.sw[0].startPos = 0;
-		mechConfig.sw[0].endPos = 5;
+	PinmameMechConfig mechConfig;
+	memset(&mechConfig, 0, sizeof(mechConfig));
 
-		PinmameSetMech(0, &mechConfig);
-	}
+	mechConfig.sol1 = 11;
+	mechConfig.length = 240;
+	mechConfig.steps = 240;
+	mechConfig.type = PINMAME_MECH_FLAGS_NONLINEAR | PINMAME_MECH_FLAGS_REVERSE | PINMAME_MECH_FLAGS_ONESOL;
+	mechConfig.sw[0].swNo = 32;
+	mechConfig.sw[0].startPos = 0;
+	mechConfig.sw[0].endPos = 5;
+
+	PinmameSetMech(1, &mechConfig);
 }
 
-void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
+void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData)
+{
 	printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
 		displayCount,
@@ -169,7 +175,8 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
 		p_displayLayout->length);
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData) {
+void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData)
+{
 	printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
 		p_displayLayout->type,
@@ -181,16 +188,17 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 		p_displayLayout->length);
 
 	if (p_displayData) {
-		if ((p_displayLayout->type & DMD) == DMD) {
+		if (p_displayLayout->type == PINMAME_DISPLAY_TYPE_VIDEO)
+			DumpVideo(index, (UINT8*)p_displayData, p_displayLayout);
+		else if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD)
 			DumpDmd(index, (UINT8*)p_displayData, p_displayLayout);
-		}
-		else {
+		else
 			DumpAlphanumeric(index, (UINT16*)p_displayData, p_displayLayout);
-		}
 	}
 }
 
-int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userData) {
+int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userData)
+{
 	printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
 		p_audioInfo->format,
 		p_audioInfo->channels,
@@ -201,15 +209,18 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userD
 	return p_audioInfo->samplesPerFrame;
 }
 
-int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData) {
+int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData)
+{
 	return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData) {
+void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData)
+{
 	printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
 }
 
-void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData) {
+void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
+{
 	printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
 		mechNo,
 		p_mechInfo->type,
@@ -219,7 +230,8 @@ void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const voi
 		p_mechInfo->speed);
 }
 
-void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData) {
+void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
+{
 	printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
 		mechNo,
 		p_mechInfo->type,
@@ -229,31 +241,38 @@ void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void*
 		p_mechInfo->speed);
 }
 
-void CALLBACK OnConsoleDataUpdated(void* p_data, int size, const void* p_userData) {
+void CALLBACK OnConsoleDataUpdated(void* p_data, int size, const void* p_userData)
+{
 	printf("OnConsoleDataUpdated: size=%d\n", size);
 }
 
-int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData) {
+int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData)
+{
 	return 0;
 }
 
-void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData) {
+void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData)
+{
 	char buffer[1024];
 	vsnprintf(buffer, sizeof(buffer), format, args);
 
-	if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO) {
-		printf("INFO: %s", buffer);
-	}
-	else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR) {
-		printf("ERROR: %s", buffer);
-	}
+	if (logLevel == PINMAME_LOG_LEVEL_INFO)
+		printf("INFO: %s\n", buffer);
+	else if (logLevel == PINMAME_LOG_LEVEL_ERROR)
+		printf("ERROR: %s\n", buffer);
 }
 
-int main(int, char**) {
+void CALLBACK OnSoundCommand(int boardNo, int cmd, const void* p_userData)
+{
+	printf("OnSoundCommand: boardNo=%d, cmd=%d\n", boardNo, cmd);
+}
+
+int main(int, char**)
+{
 	system(CLEAR_SCREEN);
 
 	PinmameConfig config = {
-		AUDIO_FORMAT_FLOAT,
+		PINMAME_AUDIO_FORMAT_FLOAT,
 		44100,
 		"",
 		&OnStateUpdated,
@@ -267,6 +286,7 @@ int main(int, char**) {
 		&OnConsoleDataUpdated,
 		&IsKeyPressed,
 		&OnLogMessage,
+		&OnSoundCommand,
 	};
 
 	#if defined(_WIN32) || defined(_WIN64)
@@ -281,7 +301,8 @@ int main(int, char**) {
 	PinmameSetHandleKeyboard(0);
 	PinmameSetHandleMechanics(0);
 
-	PinmameSetDmdMode(PINMAME_DMD_MODE::RAW);
+	PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
+	PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
 
 	PinmameGetGames(&Game, NULL);
 	PinmameGetGame("fourx4", &Game, NULL);
@@ -297,11 +318,14 @@ int main(int, char**) {
 	//PinmameRun("fh_l9");
 	//PinmameRun("acd_170hc");
 	//PinmameRun("snspares");
+	//PinmameRun("gnr_300");
+	//PinmameRun("babypac");
+	//PinmameRun("t2_l8");
+	//PinmameRun("galaxy");
 
-	if (PinmameRun("t2_l8") == OK) {
-		while (true) {
+	if (PinmameRun("galaxy") == PINMAME_STATUS_OK) {
+		while (true)
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
-		}
 	}
 
 	return 0;

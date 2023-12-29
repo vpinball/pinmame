@@ -46,6 +46,7 @@ static struct {
   int channel;
 
   UINT8 iBuffer;
+  INT8 samples[2][32];
 } hnks_locals;
 
 MEMORY_READ_START(hnks_readmem)
@@ -69,19 +70,17 @@ static void hnks_irq(int state) {
 
 void start_samples(void)
 {
-	INT8 samples[2][32];
-
 	int i;
 	const unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (hnks_locals.actSamples*0x20);
 
 	hnks_locals.iBuffer = 1-hnks_locals.iBuffer;
 	for (i=0; i<0x20; i++)
-		samples[hnks_locals.iBuffer][i] = (INT8)((((*adr++)<<4)-0x80) * hnks_locals.volume);
+		hnks_locals.samples[hnks_locals.iBuffer][i] = (INT8)((((*adr++)<<4)-0x80) * hnks_locals.volume);
 
 	// looks strange? (cond?32:1), thats ok!
 	mixer_play_sample(
 		hnks_locals.channel, 
-		samples[hnks_locals.iBuffer],
+		hnks_locals.samples[hnks_locals.iBuffer],
 		!hnks_locals.counterReset?0x20:1, 
 		BASE_FREQUENCY/(hnks_locals.counterSpeed/((1-hnks_locals.div2)+1)+1),
 		1
@@ -195,8 +194,7 @@ static void hnks_init(struct sndbrdData *brdData)
 }
 
 static int hnks_sh_start(const struct MachineSound *msound) {
-  hnks_locals.channel = mixer_allocate_channel(15);
-  mixer_set_volume(hnks_locals.channel,0xff);
+  hnks_locals.channel = mixer_allocate_channel(25);
   return 0;
 }
 

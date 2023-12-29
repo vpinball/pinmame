@@ -65,7 +65,7 @@ CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
 
 #define init_canastfp init_canasta
 #define input_ports_canastfp input_ports_canasta
-INDER_ROMSTART(canastfp,	"c860.bin", CRC(b1f79e52) SHA1(8e9c616f9be19d056da2f86778539d62c0885bac),
+INDER_ROMSTART(canastfp,"c860.bin",    CRC(b1f79e52) SHA1(8e9c616f9be19d056da2f86778539d62c0885bac),
 						"c861_fp.bin", CRC(673c2592) SHA1(f1cc931e5c54e01f41025fafb87e91acc0828adf))
 INDER_ROMEND
 CORE_CLONEDEFNV(canastfp,canasta,"Canasta '86' (Free Play)",1986,"Inder (Spain)",gl_mINDER1,0)
@@ -167,6 +167,12 @@ CORE_CLONEDEFNV(corsarfp,corsario,"Corsario (Free Play)",1989,"Inder (Spain)",gl
 
 /*-------------------------------------------------------------------
 / Mundial 90 (1990)
+/ Soon after the launch of Mundial 90, Inder detected a bug on the
+/ program ROM that could cause the catapult frame to break, so they
+/ sent a letter (dated June 1990) with an updated program ROM and
+/ recalling the buggy one. It is unclear if the supported set is the
+/ fixed or the older one, as it matches one dumped from an EEPROM
+/ with an original Inder label dated 18-April-1990.
 /-------------------------------------------------------------------*/
 INITGAME(mundial, inderDisp7a, 0, 0,0x10,0,0,0)
 INDER_ROMSTART1(mundial,"mundial.cpu", CRC(b615e69b) SHA1(d129eb6f2943af40ddffd0da1e7a711b58f65b3c))

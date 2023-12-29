@@ -28,6 +28,11 @@
  //#define VPINMAME_PINSOUND // pmoptions.sound_mode == 2 || 3
 #endif
 
+#ifdef LIBPINMAME
+  extern int g_fSoundMode;
+  extern void libpinmame_snd_cmd_log(int boardNo, int cmd);
+#endif
+
 #define VERBOSE 0
 
 #if VERBOSE
@@ -520,6 +525,10 @@ void snd_cmd_log(int boardNo, int cmd) {
 #ifdef VPINMAME_ALTSOUND
   if (options.samplerate != 0 && pmoptions.sound_mode == 1)
     alt_sound_handle(boardNo, cmd);
+#endif
+#ifdef LIBPINMAME
+  if (options.samplerate != 0 && g_fSoundMode == 1)
+    libpinmame_snd_cmd_log(boardNo, cmd);
 #endif
 #ifdef VPINMAME_PINSOUND
   if (options.samplerate != 0 && (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3))

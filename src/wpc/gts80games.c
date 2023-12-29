@@ -2123,6 +2123,15 @@ GTS80_ROMEND
 #define input_ports_badgirls input_ports_gts80
 CORE_GAMEDEFNV(badgirls, "Bad Girls",1988,"Gottlieb",gl_mGTS80BS3,0)
 
+INITGAME(badgirl2, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(badgirl2, "prom2a.cpu",CRC(53e05ca7) SHA1(a45a37e180f10fcbc3fe89be28b3d5c7e56561c2),
+                             "prom1a.cpu",CRC(07082568) SHA1(ea89dede1543fe34f8f0e95a33120a727c3ff274))
+GTS80BSSOUND3232(            "drom1.snd", CRC(452dec20) SHA1(a9c41dfb2d83c5671ab96e946f13df774b567976),
+                             "yrom1.snd", CRC(ab3b8e2d) SHA1(b57a0b804b42b923bb102d295e3b8a69b1033d27))
+GTS80_ROMEND
+#define input_ports_badgirl2 input_ports_badgirls
+CORE_CLONEDEFNV(badgirl2, badgirls, "Bad Girls (alternate set)",1988,"Gottlieb",gl_mGTS80BS3,0)
+
 INITGAME(badgrlfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(badgrlfp, "prom2.cpu",    CRC(583933ec) SHA1(89da6750d779d68db578715b058f9321695b79b0),
                              "prom1_fp.cpu", CRC(05e8259b) SHA1(d1e4e50e44e215dcfa510e4d45d6c39e136452b1))
@@ -2473,15 +2482,11 @@ static MEMORY_WRITE_START(manila_writemem)
   {0x2000,0xffff, MWA_NOP},      /*Game Prom (continued)*/
 MEMORY_END
 
-extern MACHINE_DRIVER_EXTERN(gts80);
 static MACHINE_DRIVER_START(manila)
-  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80bs1)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(manila_readmem, manila_writemem)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_SCREEN_SIZE(320, 200)
-  MDRV_VISIBLE_AREA(0, 319, 0, 199)
-  MDRV_IMPORT_FROM(gts80s_b1)
 MACHINE_DRIVER_END
 
 /*-------------------------------------------------------------------

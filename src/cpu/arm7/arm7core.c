@@ -269,7 +269,7 @@ static const char* GetModeText( int cpsr )
 INLINE void SwitchMode (int cpsr_mode_val)
 {
 	static int old_mode = 0;
-	
+
 	// set the new mode
 	data32_t cspr = GET_CPSR & ~MODE_FLAG;
 	SET_CPSR(cspr | cpsr_mode_val);
@@ -278,7 +278,7 @@ INLINE void SwitchMode (int cpsr_mode_val)
 	if (old_mode != cpsr_mode_val)
 	{
 		int i;
-		
+
 		// swap out the banked registers (R8-R14 and SPSR)
 		SetSavedRegister(old_mode, SPSR, GetActiveRegister(SPSR));
 		for (i = 8 ; i <= 14 ; ++i)
@@ -366,7 +366,7 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 		}
 		break;
 
-	case 1:			       			/* LSR */
+	case 1:						/* LSR */
 		if (k == 0 || k == 32)
 		{
 			if (pCarry) *pCarry = rm & SIGN_BIT;

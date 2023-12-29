@@ -73,10 +73,13 @@ DRIVERNV(mystcast)      // AG08:   06/93  Mystery Castle (R02)
 DRIVERNV(mystcasa)      // EPC081: ??/9?  Mystery Castle (R03)
 DRIVERNV(pstlpkr1)      // AG10:   11/93  Pistol Poker (R01)
 DRIVERNV(pstlpkr)       //         11/93  Pistol Poker (R02)
-                        //         ??/93  Dual-Pool - proto
-                        //         ??/93  Slam 'N Jam - proto
+                        //         ??/93  Dual-Pool - proto (no software was done, only whitewood)
+                        //         ??/93  Maxx Badazz - proto (no known machine exists)
+                        //         ??/93  Slam 'N Jam - proto (2 machines with software exist)
 DRIVERNV(usafootr)      // EPC111: 02/94  U.S.A. Football Redemption (P08)
-                        //         ??/94  A-MAZE-ING Baseball - proto
+                        //         ??/94  A-MAZE-ING Baseball - proto (at least one machine exists)
+                        //         ??/??  Slapshot - proto (no software was done, only whitewood)
+                        //         ??/??  Unnamed Tic-Tac-Toe themed game - proto (at least one machine exists)
 #ifdef MAME_DEBUG
 DRIVERNV(test8031)      //Test 8031 cpu core
 #endif
@@ -91,19 +94,19 @@ DRIVERNV(thndrman)      //Thunder Man (Zaccaria hardware)
 // --------------------
 DRIVERNV(sexygirl)      //Sexy Girl (clone of Bally Playboy, December 1980)
 
-// ---------------
+// --------------------
 // ASTILL ENTERTAINMENT
-// ---------------
+// --------------------
 DRIVER(rush,10)         //Rush (custom pin, based on WPC fliptronics hardware)
 
-// ---------------
+// --------------------
 // ASTRO GAMES
-// ---------------
+// --------------------
 DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using old Stern hardware
 
-// ---------------
+// --------------------
 // ATARI GAMES
-// ---------------
+// --------------------
                         //Triangle (Prototype, 1976?)
 DRIVERNV(atarians)      //Atarians, The (November 1976)
 DRIVERNV(time2000)      //Time 2000 (June 1977)
@@ -817,6 +820,7 @@ DRIVERNV(robowrfp)      //                Robo-War (Free Play)
 DRIVERNV(robowarf)      //                Robo-War (French)
 DRIVERNV(robowffp)      //                Robo-War (French Free Play)
 DRIVERNV(badgirls)      //S80b-717: 11/88 Bad Girls
+DRIVERNV(badgirl2)      //                Bad Girls (alternate set)
 DRIVERNV(badgrlfp)      //                Bad Girls (Free Play)
 DRIVERNV(badgirlg)      //                Bad Girls (German)
 DRIVERNV(badgrgfp)      //                Bad Girls (German Free Play)
@@ -1212,6 +1216,24 @@ DRIVERNV(ggatea)        // 19?? - Golden Gate (set 2) (Bingo)
 // --------------
 // SEGA GAMES
 // --------------
+// https://www.pinballnews.com/learn/japanesepinballs/index.html
+// 1976 - RODEO
+// 1976 - TEMPTATION
+// 1977 - BIG TOGETHER
+// 1977 - NOSTALGIA
+// 1977 - WOMAN-LIB
+// 1977 - SKY LOVER
+// 1977 - MIKOSHI
+// 1977 - MILLIONAIRE
+// 1977 - SOUTHPAW
+// 1977 - SPACE SHUTTLE
+// 1978 - BIG KICK
+// 1978 - MISS NESSIE
+// 1978 - KNOCKOUT BLOW
+// 1978 - MONTE ROSA
+// 1978 - CHA-CHA-CHA
+// 1979 - ADVENTURE
+
 //Data East Hardware, DMD 192x64
 DRIVER  (mav,100)       //DE/Sega MPU: 10/94 Maverick, The Movie (1.00)
 DRIVER  (mav,200)       //             10/94 Maverick, The Movie (2.00)
@@ -1436,6 +1458,7 @@ DRIVERNV(biggamfp)      //         03/80 Big Game (Free Play)
 DRIVERNV(biggameb)      //         11/19 Big Game (MOD rev. 7)
 DRIVERNV(biggamec)      //         10/20 Big Game (MOD rev. 8)
 DRIVERNV(biggamed)      //         09/21 Big Game (MOD rev. 9)
+DRIVERNV(biggamee)      //         12/23 Big Game (MOD rev. 12)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //         05/80 Seawitch (Free Play)
 DRIVERNV(seawitcha)     //         10/21 Seawitch (MOD rev. 5)
@@ -2023,7 +2046,7 @@ DRIVER(bdk,240)         //        11/09 Batman - The Dark Knight - V2.4  (scarec
 DRIVER(bdk,290)         //        05/10 Batman - The Dark Knight - V2.9  (with 3 ball scarecrow multiball)
 DRIVER(bdk,294)         //        05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
 #ifdef SAM_INCLUDE_COLORED
-DRIVER(bdk,294c)        //        05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
+//DRIVER(bdk,294c)        //        05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball) // seems to be lost by now :/
 #endif
 DRIVER(bdk,300)         //        ??/10 Batman - The Dark Knight - V3.00 Home Edition/Costco
 //DRIVER(csi,100)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.00
@@ -2624,6 +2647,7 @@ DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (LG-4 
 DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(bcats,g4)        //          11/89 W Bad Cats (LG-4)
 DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
+DRIVER(bcats,tcm)       //          12/23   Bad Cats (The Cat's Meow MOD)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
 DRIVER(rvrbt,p7)        //          11/89 W Riverboat Gambler (PA-7 Prototype)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (LA-1)

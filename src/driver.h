@@ -91,7 +91,7 @@ typedef struct {
   int dmd_red0, dmd_green0, dmd_blue0;
   int dmd_opacity;
   int resampling_quality;
-#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND) || defined(LIBPINMAME)
   int sound_mode; // 0 = pinmame, 1 = altsound, 2 = pinsound, 3 = pinsound + recordings
 #endif
 #ifdef PROC_SUPPORT

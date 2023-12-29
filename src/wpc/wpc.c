@@ -90,7 +90,7 @@ static SWITCH_UPDATE(wpc);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
 extern UINT8  g_raw_gtswpc_dmd[];
 extern UINT32 g_raw_gtswpc_dmdframes;
 #endif
@@ -1315,7 +1315,7 @@ static VIDEO_START(wpc_dmd) {
 PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   int ii,kk;
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   g_raw_gtswpc_dmdframes = DMD_FRAMES;
 #endif
 
@@ -1333,7 +1333,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
                                     (dmdlocals.DMDFrames[1][kk] & 0xaa) +
                                     (dmdlocals.DMDFrames[2][kk] & 0xaa));
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
       g_raw_gtswpc_dmd[kk        ] = dmdlocals.DMDFrames[0][kk];
       g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
       g_raw_gtswpc_dmd[kk + 0x400] = dmdlocals.DMDFrames[2][kk];
@@ -1360,7 +1360,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update64) {
   int ii,kk;
 
   // Phantom Haus can only use 3 brightness levels (off and 2 on states)
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   g_raw_gtswpc_dmdframes = 2;
 #endif
 
@@ -1373,7 +1373,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update64) {
       const unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
                                     (dmdlocals.DMDFrames[1][kk] & 0xaa));
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
       g_raw_gtswpc_dmd[kk]         = dmdlocals.DMDFrames[0][kk];
       g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
 #endif

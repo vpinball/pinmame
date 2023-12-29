@@ -598,7 +598,7 @@ void pia_write(int which, int offset, int data)
 				/* determine the new value */
 				int temp = SET_C2(data) ? 1 : 0;
 
-				/* if this creates a transition, call the CA2 output function */
+				/* if this creates a transition, call the CB2 output function */
 				if (p->out_cb2 ^ temp)
 					if (p->intf->out_cb2_func) p->intf->out_cb2_func(0, temp);
 

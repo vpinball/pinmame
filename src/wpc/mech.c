@@ -36,8 +36,12 @@ void mech_emuExit(void) {
   if (locals.mechTimer) { timer_remove(locals.mechTimer); locals.mechTimer = NULL; }
   locals.emuRunning = FALSE;
 }
-int mech_getPos(int mechNo)   { return locals.mechData[mechNo].pos; }
-int mech_getSpeed(int mechNo) { return locals.mechData[mechNo].speed / locals.mechData[mechNo].ret; }
+int mech_getPos(int mechNo) {
+  return locals.mechData[mechNo].pos;
+}
+int mech_getSpeed(int mechNo) {
+  return (locals.mechData[mechNo].ret != 0) ? locals.mechData[mechNo].speed / locals.mechData[mechNo].ret : 0;
+}
 
 void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int steps, mech_tSwData sw[], int initialpos) {
   if ((locals.mechTimer == NULL) && locals.emuRunning) {

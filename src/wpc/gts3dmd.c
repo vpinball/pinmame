@@ -23,7 +23,7 @@ static const int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; 
 //static const int level5[19] = { 0, 3, 3, 4, 5, 5, 5, 7, 8, 9, 11, 11, 11, 12, 13, 14, 15, 15, 15 };
 //static const int level[25]  = { 0, 0, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15 }; // temporary mapping for both 4 and 5 color roms // deprecated
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
 extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
 extern UINT32 g_raw_gtswpc_dmdframes;
 
@@ -43,7 +43,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   int ii,jj,kk,ll;
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
   int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   int i = 0;
 #endif
 
@@ -53,7 +53,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
       UINT8 *line = &coreGlobals.dotCol[jj][0];
       for (kk = 0; kk < 16; kk++) {          // 16 columns/line
         UINT8 data = *frameData++;
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
         g_raw_gtswpc_dmd[i] = reverse(data);
         i++;
 #endif
@@ -90,7 +90,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
   int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   int i = 0;
   g_raw_gtswpc_dmdframes = frames;
 #endif
@@ -101,7 +101,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   core_textOutf(50,50,1,temp);
 #endif
 
-  /* Drawing is not optimised so just clear everything */
+  /* Drawing is not optimized so just clear everything */
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
   memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
   for (ii = 0; ii < frames; ii++) {
@@ -109,7 +109,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
       UINT8 *line = &coreGlobals.dotCol[jj][0];
       for (kk = 0; kk < 16; kk++) {         // 16 columns/line
         UINT8 data = *frameData++;
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
         g_raw_gtswpc_dmd[i] = reverse(data);
         i++;
 #endif

@@ -20,29 +20,31 @@
   #include <Windows.h>
  #endif
  #include "dmddevice.h"
+ #include "../../ext/dmddevice/usbalphanumeric.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 
-#ifdef LIBPINMAME
- extern int g_fDmdMode;
+ #ifdef LIBPINMAME
+  extern int g_fDmdMode;
 
- int g_display_index = 0;
-#endif
+  int g_display_index = 0;
+ #endif
 
  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
  static UINT8 *currbuffer = buffer1;
  static UINT8 *oldbuffer = NULL;
  static UINT32 raw_dmdoffs = 0;
+ static UINT8 has_DMD = 0;
 
  #include "gts3dmd.h"
  UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
  UINT32 g_raw_gtswpc_dmdframes = 0;
 
- UINT32 g_needs_DMD_update = 1;
+ UINT8 g_needs_DMD_update = 1;
 #endif
 
 /* stuff to test VPINMAME */
@@ -831,6 +833,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   UINT32 palette32_16[16];
   unsigned char palette[4][3];
 
+  has_DMD = 1;
+
   int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
 	  rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
@@ -953,12 +957,12 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
           }
 	  }
 
-	  if (oldbuffer != NULL) {	  // detect if same frame again
+	  if (oldbuffer != NULL) { // detect if same frame again
 		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
 		  {
 			  g_needs_DMD_update = 1;
 
-			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)	// output dump frame to .txt
+			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames) // output dump frame to .txt
 			  {
 				  FILE *f;
 				  char *ptr;
@@ -1082,7 +1086,15 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     if (layout->type == CORE_IMPORT)
       { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
     if (layout->fptr)
-      if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) continue;
+      if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) {
+#ifdef LIBPINMAME
+        if (layout->type == CORE_VIDEO) {
+          libpinmame_update_display(g_display_index, layout, bitmap);
+          g_display_index++;
+        }
+#endif
+        continue;
+      }
     {
       int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols+1) / 2;
       int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
@@ -1187,7 +1199,136 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 #ifdef VPINMAME
   //alpha frame
   if(g_fShowPinDMD)
-    renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, total_disp, disp_num_segs);
+    renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, total_disp, disp_num_segs, Machine->gamedrv->name);
+#endif
+
+#if defined(VPINMAME) || defined(LIBPINMAME)
+  // blit segments into a DMD, too (at the moment only to pass easily to VP, e.g. tournament mode verification)
+
+  // Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
+  // block this from running.
+  if(!has_DMD)
+  {
+#ifdef LIBPINMAME
+    static struct core_dispLayout segDmdDispLayout = { 0, 0, 32, 128, CORE_DMD | CORE_DMDSEG, NULL, NULL };
+#endif
+
+    static UINT16 seg_data2[CORE_SEGCOUNT] = {0};
+    const layout_t alpha_layout = layoutAlphanumericFrame(core_gameData->gen, seg_data, seg_data2, total_disp, disp_num_segs, Machine->gamedrv->name);
+
+    if (alpha_layout != __Invalid) { // detect if same frame again
+      int i;
+
+      g_raw_dmdx = 128;
+      g_raw_dmdy = 32;
+
+      //
+
+#ifdef VPINMAME
+		memset(AlphaNumericFrameBuffer,0x00,2048);
+#endif
+
+#ifdef LIBPINMAME
+		memset(AlphaNumericFrameBuffer,0x00,4096);
+#endif
+
+		switch (alpha_layout) {
+			case __2x16Alpha :
+				_2x16Alpha(seg_data);
+				break;
+			case __2x20Alpha :
+				_2x20Alpha(seg_data);
+				break;
+			case __2x7Alpha_2x7Num :
+				_2x7Alpha_2x7Num(seg_data);
+				break;
+			case __2x7Alpha_2x7Num_4x1Num :
+				_2x7Alpha_2x7Num_4x1Num(seg_data);
+				break;
+			case __2x7Num_2x7Num_4x1Num :
+				_2x7Num_2x7Num_4x1Num(seg_data);
+				break;
+			case __2x7Num_2x7Num_10x1Num :
+				_2x7Num_2x7Num_10x1Num(seg_data,seg_data2);
+				break;
+			case __2x7Num_2x7Num_4x1Num_gen7 :
+				_2x7Num_2x7Num_4x1Num_gen7(seg_data);
+				break;
+			case __2x7Num10_2x7Num10_4x1Num :
+				_2x7Num10_2x7Num10_4x1Num(seg_data);
+				break;
+			case __2x6Num_2x6Num_4x1Num :
+				_2x6Num_2x6Num_4x1Num(seg_data);
+				break;
+			case __2x6Num10_2x6Num10_4x1Num :
+				_2x6Num10_2x6Num10_4x1Num(seg_data);
+				break;
+			case __4x7Num10 :
+				_4x7Num10(seg_data);
+				break;
+			case __6x4Num_4x1Num :
+				_6x4Num_4x1Num(seg_data);
+				break;
+			case __2x7Num_4x1Num_1x16Alpha :
+				_2x7Num_4x1Num_1x16Alpha(seg_data);
+				break;
+			case __1x16Alpha_1x16Num_1x7Num :
+				_1x16Alpha_1x16Num_1x7Num(seg_data);
+				break;
+			case __1x7Num_1x16Alpha_1x16Num :
+				_1x7Num_1x16Alpha_1x16Num(seg_data);
+				break;
+			case __1x16Alpha_1x16Num_1x7Num_1x4Num :
+				_1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data);
+				break;
+			default:
+				break;
+		}
+
+#ifdef VPINMAME
+		for (i = 0; i < 512; ++i) {
+			currbuffer[(i*8)]   = AlphaNumericFrameBuffer[i]    & 0x01 | AlphaNumericFrameBuffer[i+512]<<1 & 0x02 | AlphaNumericFrameBuffer[i+1024]<<2 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<3 & 0x08;
+			currbuffer[(i*8)+1] = AlphaNumericFrameBuffer[i]>>1 & 0x01 | AlphaNumericFrameBuffer[i+512]    & 0x02 | AlphaNumericFrameBuffer[i+1024]<<1 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<2 & 0x08;
+			currbuffer[(i*8)+2] = AlphaNumericFrameBuffer[i]>>2 & 0x01 | AlphaNumericFrameBuffer[i+512]>>1 & 0x02 | AlphaNumericFrameBuffer[i+1024]    & 0x04 | AlphaNumericFrameBuffer[i+1536]<<1 & 0x08;
+			currbuffer[(i*8)+3] = AlphaNumericFrameBuffer[i]>>3 & 0x01 | AlphaNumericFrameBuffer[i+512]>>2 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>1 & 0x04 | AlphaNumericFrameBuffer[i+1536]    & 0x08;
+			currbuffer[(i*8)+4] = AlphaNumericFrameBuffer[i]>>4 & 0x01 | AlphaNumericFrameBuffer[i+512]>>3 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>2 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>1 & 0x08;
+			currbuffer[(i*8)+5] = AlphaNumericFrameBuffer[i]>>5 & 0x01 | AlphaNumericFrameBuffer[i+512]>>4 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>3 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>2 & 0x08;
+			currbuffer[(i*8)+6] = AlphaNumericFrameBuffer[i]>>6 & 0x01 | AlphaNumericFrameBuffer[i+512]>>5 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>4 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>3 & 0x08;
+			currbuffer[(i*8)+7] = AlphaNumericFrameBuffer[i]>>7 & 0x01 | AlphaNumericFrameBuffer[i+512]>>6 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>5 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>4 & 0x08;
+		}
+
+      //
+
+      if (oldbuffer != NULL && memcmp(oldbuffer, currbuffer, g_raw_dmdx*g_raw_dmdy))
+      {
+        for (i = 0; i < g_raw_dmdx*g_raw_dmdy; ++i)
+          g_raw_dmdbuffer[i] = (UINT8)((int)currbuffer[i]*100/15);
+        g_needs_DMD_update = 1;
+      }
+
+      // swap buffers
+      if (currbuffer == buffer1) {
+        currbuffer = buffer2;
+        oldbuffer = buffer1;
+      }
+      else {
+        currbuffer = buffer1;
+        oldbuffer = buffer2;
+      }
+#endif
+
+#ifdef LIBPINMAME
+      libpinmame_update_display(g_display_index, &segDmdDispLayout, AlphaNumericFrameBuffer);
+      g_display_index++;
+#endif
+    }
+#ifdef LIBPINMAME
+    else {
+      libpinmame_update_display(g_display_index, &segDmdDispLayout, NULL);
+      g_display_index++;
+    }
+#endif
+  }
 #endif
 }
 
@@ -1942,7 +2083,7 @@ static MACHINE_INIT(core) {
         inports[ii] = readinputport(ii);
 
       coreGlobals.simAvail = sim_init((sim_tSimData *)core_gameData->simData,
-                                         inports,CORE_COREINPORT+(coreData->coreDips+31)/16);
+                                      inports,CORE_COREINPORT+(coreData->coreDips+31)/16);
     }
     /*-- finally init the core --*/
     if (coreData->init) coreData->init();
@@ -1981,6 +2122,7 @@ static MACHINE_STOP(core) {
   currbuffer = buffer1;
   oldbuffer = NULL;
   raw_dmdoffs = 0;
+  has_DMD = 0;
 
   g_raw_gtswpc_dmdframes = 0;
 
@@ -2280,7 +2422,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
    case CORE_MODOUT_DEFAULT:
    default:
    {
-      // Default is the modulated solenoid values as computed by each hardware drivers if implemented or the non modulated value
+      // Default is the modulated solenoid values as computed by each hardware driver, if implemented, or the non modulated value
       int index = (int)(((UINT8*)output - (UINT8*)&coreGlobals.modulatedOutputs) / sizeof(core_tModulatedOutput));
       if (index < CORE_MODOUT_SOL_MAX)
       {

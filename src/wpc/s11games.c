@@ -882,6 +882,9 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
 S11_ROMEND
 CORE_CLONEDEF(polic,l2,l4,"Police Force (LA-2)", 1989, "Williams", s11_mS11BS,0)
 
+// There exists also a u4 sound l1, where should this go to?
+//S11CS_SOUNDROM88(       "pfrc_u4.l1",  CRC(4e7fd9aa) SHA1(5ba279ffeb6d1864c582f97fa89ee4bd2f084505),
+
 /*-----------------------------
 / Transporter the Rescue 6/89
 /----------------------------*/
@@ -897,6 +900,10 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
 S11_ROMEND
 #define input_ports_tsptr input_ports_s11
 CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0)
+
+// There exist also a u4 and u20 sound l1, where should these go to?
+//S11CS_SOUNDROM888(      "tran_u4.l1",  CRC(63e92f8b) SHA1(57f2841419415fc3560d46a63119c76f98cade9b),
+//                        "tran_u20.l1", CRC(fabddaaf) SHA1(7c014bb5b1ac8da61ffd265ba98bcb8256c5f666))
 
 /*-----------------------
 / Bad Cats 12/89
@@ -931,9 +938,19 @@ S11CS_SOUNDROM888(      "cats_u4.l1",  CRC(18c62813) SHA1(a4fb69cfedd0b92c22b599
                         "cats_u20.l1", CRC(bf4dc35a) SHA1(9920ce90d93fb6ecf98792c35bb6eb8862a969f3))
 S11_ROMEND
 
+S11_ROMSTART48(bcats,tcm,"cats_u26.tcm",CRC(464aa22d) SHA1(402dc1cf7fb86a4c05d7db423a22a1b733ac7f40),
+                        "cats_u27.tcm", CRC(6684b334) SHA1(99186555d6e22f3670799d05c662474d208561e0))
+S11XS_SOUNDROM88(       "cats_u21.l1",  CRC(04110d08) SHA1(4b44b26983cb5d14a93c16a19dc2bdbaa665dc69),
+                        "cats_u22.l1",  CRC(7e152c78) SHA1(b4ab770fdd9420a5d35e55bf8fb84c99ac544b8b))
+S11CS_SOUNDROM888(      "cats_u4.l1",   CRC(18c62813) SHA1(a4fb69cfedd0b92c22b599913df3cdf8b3eef42c),
+                        "cats_u19.l1",  CRC(f2fea68b) SHA1(9a41823e71342b7a162420378f122bba34ce0636),
+                        "cats_u20.l1",  CRC(bf4dc35a) SHA1(9920ce90d93fb6ecf98792c35bb6eb8862a969f3))
+S11_ROMEND
+
 CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,l2,l5,"Bad Cats (LA-2)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,g4,l5,"Bad Cats (LG-4)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bcats,tcm,l5,"Bad Cats (The Cat's Meow)", 2023, "idealjoker", s11_mS11BS,0)
 
 /*-----------------------
 / Mousin' Around 12/89
@@ -1395,6 +1412,9 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
                         "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
 S11_ROMEND
 CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny's Birthday Ball (LU-2 Europe)", 1990, "Bally", s11c_one,0)
+
+// There exists also a u4 sound l1, where should this go to?
+//S11CS_SOUNDROM000(      "bugs_u4.l1",  CRC(dbfec77e) SHA1(57e2b0cfae51ed2aa3cad5ceb407260d10477068),
 
 /*--------------------
 / Dr. Dude - moved to own simulator

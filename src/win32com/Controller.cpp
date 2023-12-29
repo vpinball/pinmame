@@ -38,7 +38,7 @@ extern UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
 extern UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
-extern UINT32 g_needs_DMD_update;
+extern UINT8  g_needs_DMD_update;
 extern int g_cpu_affinity_mask;
 
 extern char g_fShowWinDMD;

@@ -213,9 +213,11 @@ int main(int argc, char **argv)
 		extern void restore_win_timer_resolution();
 
 		set_lowest_possible_win_timer_resolution();
-
+#ifdef __GNUC__
+		strcpy(g_szGameName, drivers[game_index]->name);
+#else
 		strcpy_s(g_szGameName, sizeof(g_szGameName), drivers[game_index]->name);
-
+#endif
 #if ENABLE_PROFILER
 		start_profiler();
 #endif

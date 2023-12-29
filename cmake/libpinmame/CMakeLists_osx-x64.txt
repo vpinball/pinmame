@@ -385,6 +385,8 @@ set(PINMAME_SOURCES
    src/wpc/degames.c
    src/wpc/desound.c
    src/wpc/desound.h
+   src/wpc/dmddevice.h
+   src/wpc/dmddevice.cpp
    src/wpc/driver.c
    src/wpc/efo.c
    src/wpc/efosnd.c

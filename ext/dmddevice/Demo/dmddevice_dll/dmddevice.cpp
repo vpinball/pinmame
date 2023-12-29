@@ -80,7 +80,7 @@ DMDDEV void Set_16_Colors_Palette(rgb24 *color)
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
-		for (int i = 0; i < width*height; i++){
+		for (int i = 0; i < (int)width*height; i++){
 			switch (currbuffer[i]) {
 			case 0:
 				arr[i] = colors[0];
@@ -111,7 +111,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
-		for (int i = 0; i < width*height; i++)
+		for (int i = 0; i < (int)width*height; i++)
 			arr[i] = colors[currbuffer[i]];
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);
@@ -125,10 +125,9 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 	}
 }
 
-
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2) 
 {
-	if (isOpen) {	
+	if (isOpen) {
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 	
 		switch (layout) {
@@ -136,7 +135,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 				_2x16Alpha(seg_data);
 				break;
 			case __2x20Alpha :
-				_2x20Alpha(seg_data); //!! misses 4 chars in each row
+				_2x20Alpha(seg_data);
 				break;
 			case __2x7Alpha_2x7Num :
 				_2x7Alpha_2x7Num(seg_data);
@@ -174,6 +173,12 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 			case __1x16Alpha_1x16Num_1x7Num :
 				_1x16Alpha_1x16Num_1x7Num(seg_data);
 				break;
+			case __1x7Num_1x16Alpha_1x16Num :
+				_1x7Num_1x16Alpha_1x16Num(seg_data);
+				break;
+			case __1x16Alpha_1x16Num_1x7Num_1x4Num :
+				_1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data);
+				break;
 			default:
 				break;
 		}
@@ -197,7 +202,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer)
 {
 	if (isOpen) {
-		for (int i = 0; i < width*height; i++){
+		for (int i = 0; i < (int)width*height; i++){
 			arr[i] = ((int)currbuffer[i].red << 16) | ((int)currbuffer[i].green << 8) | ((int)currbuffer[i].blue /*<< 0*/);
 		}
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);

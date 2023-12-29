@@ -204,10 +204,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -225,7 +225,7 @@
       <Message>Copying to root and generating gamelist.txt...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(ProjectDir)$(TargetName)_gamelist.txt"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -247,10 +247,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\bass\x64;ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -264,7 +264,7 @@
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -286,10 +286,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -304,7 +304,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -326,10 +326,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\bass\x64;ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -343,7 +343,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -375,10 +375,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012md.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -391,7 +391,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <CustomBuildStep>
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -413,10 +413,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012md.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\bass\x64;ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -430,7 +430,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -452,10 +452,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcmd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\dinput;ext\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -470,7 +470,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Message>Copying to root...</Message>
       <Command>copy "$(TargetPath)" "$(ProjectDir)"
 copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      </Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -492,10 +492,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcmd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\bass\x64;ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
