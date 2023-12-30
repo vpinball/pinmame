@@ -44,12 +44,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            platform: win-x64
-            platform-name: x64
-            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
-            ppuc: ppuc.exe
-            type: pc
+#          - os: windows-latest
+#            platform: win-x64
+#            platform-name: x64
+#            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
+#            ppuc: ppuc.exe
+#            type: pc
           - os: macos-13
             platform: osx-x64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
