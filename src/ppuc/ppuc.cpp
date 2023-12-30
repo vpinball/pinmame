@@ -624,7 +624,10 @@ int main(int argc, char *argv[])
     {
         if (opt_debug)
             zedmd.EnableDebug();
-        // zedmd.EnablePreUpscaling();
+
+        zedmd.DisablePreUpscaling();
+        //zedmd.EnablePreUpscaling();
+
         t_zedmd = std::thread(ZeDmdThread);
     }
 #endif
@@ -744,7 +747,7 @@ int main(int argc, char *argv[])
     PinmameSetConfig(&config);
 
     PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
-    //PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
+    // PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
     PinmameSetHandleKeyboard(0);
     PinmameSetHandleMechanics(0);
 

@@ -30,7 +30,11 @@
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define WPC_SOLSMOOTH      1 /* Don't smooth values on real hardware */
 #define WPC_LAMPSMOOTH     1
-#define WPC_DISPLAYSMOOTH  1
+#define WPC_DISPLAYSMOOTH  1 /* Smooth the display over this number of VBLANKS (=60Hz/X) */
+#if defined(PPUC_SUPPORT)
+#define WPC_MODSOLSMOOTH   1 /* Modulated solenoids - History length to smooth over (depends on WPC_IRQFREQ) */
+#define WPC_MODSOLSAMPLE   1 /* Modulated solenoid sampling rate (every n IRQs, depends on WPC_IRQFREQ) */
+#endif
 #else
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this number of VBLANKS (=60Hz/X) */
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS (=60Hz/X) */
@@ -605,7 +609,7 @@ static INTERRUPT_GEN(wpc_vblank) {
       1 ||
 #endif
 #ifdef PROC_SUPPORT
-      coreGlobals.p_rocEn || 
+      coreGlobals.p_rocEn ||
 #endif
       (wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
     core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
@@ -1056,7 +1060,7 @@ static INTERRUPT_GEN(wpc_irq) {
 		{
 			int i;
 			wpclocals.modsol_sample = 0;
-			
+
 			// Messy mappings to duplicate what the core does, see core_getSol()
 			for (i = 0; i < 32; i++)
 			{
@@ -1207,7 +1211,7 @@ static MACHINE_INIT(wpc) {
       //Sound board initialization
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
-  
+
   // Reset GI dimming timers
   wpclocals.last_zc_time = timer_get_time();
   for (int ii = 0,tmp= wpclocals.gi_zc_state; ii < CORE_MAXGI; ii++, tmp >>= 1) {
