@@ -154,11 +154,11 @@ void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char *format, va_li
     char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), format, args);
 
-    if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO)
+    if (logLevel == PINMAME_LOG_LEVEL_INFO)
     {
         printf("INFO: %s", buffer);
     }
-    else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR)
+    else if (logLevel == PINMAME_LOG_LEVEL_ERROR)
     {
         printf("ERROR: %s", buffer);
     }
@@ -198,7 +198,7 @@ void CALLBACK OnDisplayUpdated(int index, void *p_displayData, PinmameDisplayLay
                p_displayLayout->length);
 
     std::unique_lock<std::shared_mutex> ul(dmd_shared_mutex);
-    if ((p_displayLayout->type & DMD) == DMD)
+    if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD)
     {
         dmd_frame_buffer_width[dmd_frame_buffer_position] = p_displayLayout->width;
         dmd_frame_buffer_height[dmd_frame_buffer_position] = p_displayLayout->height;
@@ -743,7 +743,8 @@ int main(int argc, char *argv[])
 
     PinmameSetConfig(&config);
 
-    PinmameSetDmdMode(PINMAME_DMD_MODE::RAW);
+    PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
+    //PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
     PinmameSetHandleKeyboard(0);
     PinmameSetHandleMechanics(0);
 
