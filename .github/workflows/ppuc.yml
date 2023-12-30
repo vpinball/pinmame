@@ -76,12 +76,12 @@ jobs:
     steps:
       - name: Checkout pinmame
         uses: actions/checkout@v3
-      - name: Checkout libserum
-        uses: actions/checkout@v3
-        with:
-          repository: zesinger/libserum
-          path: libserum
-      - run: mv libserum ../libserum
+#      - name: Checkout libserum
+#        uses: actions/checkout@v3
+#        with:
+#          repository: zesinger/libserum
+#          path: libserum
+#      - run: mv libserum ../libserum
       - name: Checkout libserialport
         uses: actions/checkout@v3
         with:
@@ -114,11 +114,6 @@ jobs:
           vcpkgTriplet: ${{ matrix.platform-name }}-windows
           vcpkgDirectory: deps/vcpkg
           vcpkgGitCommitId: ce99c947b64ea3c0e274e18cc3035ca727681089
-#      - if: matrix.os == 'windows-latest'
-#        run: |
-#          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
-#          7z x upx.zip -oupx
-#          rm upx.zip
       - if: matrix.os == 'windows-latest'
         run: |
           curl -L https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-win64.zip -o upx.zip
