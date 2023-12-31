@@ -719,7 +719,7 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_DMDON][2]    = bStart;
 
   /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
-  if (pmoptions.dmd_colorize) { 
+  if (pmoptions.dmd_colorize) {
     if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
       tmpPalette[COL_DMDOFF][0]   = pmoptions.dmd_red0;
       tmpPalette[COL_DMDOFF][1]   = pmoptions.dmd_green0;
@@ -736,7 +736,7 @@ static PALETTE_INIT(core) {
       tmpPalette[COL_DMD66][2]    = pmoptions.dmd_blue66;
     }
   }
-  
+
   /*-- segment display antialias colors --*/
   tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
   tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;
@@ -1186,7 +1186,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           procUpdateAlphaDisplay(proc_top, proc_bottom);
         }
       }
-#endif 
+#endif
     }
 
 #ifdef LIBPINMAME
@@ -1479,14 +1479,14 @@ void core_updateSw(int flipEn) {
              OnSolenoid(ii+1, coreGlobals.lastModSol[ii]);
           }
        }
-       // Treat the VPM reserved solenoids the old way. 
+       // Treat the VPM reserved solenoids the old way.
        start = 40;
        end = CORE_FIRSTCUSTSOL-1;
        chgSol >>= start;
        allSol >>= start;
     }
 
-    for (ii = start; ii < end; ii++) 
+    for (ii = start; ii < end; ii++)
     {
        if (chgSol & 0x01)
           OnSolenoid(ii+1, allSol & 0x01);
@@ -2336,7 +2336,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
       switch (output->type)
       {
       case CORE_MODOUT_BULB_44_6_3V_AC: // Bulb #44/555: 6.3V 0.25A 1.575W 11.3lm (commonly used for GI & inserts)
-      case CORE_MODOUT_BULB_44_18V_DC_WPC: 
+      case CORE_MODOUT_BULB_44_18V_DC_WPC:
       case CORE_MODOUT_BULB_44_18V_DC_GTS3:
       case CORE_MODOUT_BULB_44_18V_DC_S11:
          bulb = BULB_44;
@@ -2400,9 +2400,9 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
          output->value = (UINT8) (max_emission * 255.0 / 16.0);
    }
    break;
-   case CORE_MODOUT_LED: 
+   case CORE_MODOUT_LED:
    {
-      // LED reacts almost instantly (<1us), the integration is based on the human eye perception: 
+      // LED reacts almost instantly (<1us), the integration is based on the human eye perception:
       // flashing below 100Hz (limit between 50-100 depends on each human), dimming above (there should be a "flicker" range in the middle)
       int n = (int)(coreGlobals.pulsedOutStateSampleFreq / 100); // Go through samples of the last 1/100s (100Hz limit)
       int nPulse = 0;
@@ -2411,7 +2411,7 @@ void core_perform_output_pwm_integration(core_tModulatedOutput* output, int samp
       output->value = (UINT8)(nPulse * 255 / (n - 1));
    }
    break;
-   case CORE_MODOUT_MOTOR_LINEAR: 
+   case CORE_MODOUT_MOTOR_LINEAR:
    {
       // Linear motor position which increase linearly over time when voltage is high
       for (int i = 0; i < nSamples; i++, samplePos = (samplePos - 1) & (CORE_MODOUT_SAMPLE_MAX - 1))

@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_MODULE_PATH cmake/ppuc)
 
 add_compile_definitions(
    HAS_M6809=1
@@ -85,10 +84,12 @@ add_compile_definitions(
    NAME="LIBPINMAME"
 
    LSB_FIRST
-   INLINE=static __inline__
+
    PI=M_PI
    UNIX
 )
+
+add_definitions( "-DINLINE=static inline __attribute__((always_inline))" )
 
 add_library(pinmame SHARED
    src/artwork.c
@@ -384,6 +385,8 @@ add_library(pinmame SHARED
    src/wpc/degames.c
    src/wpc/desound.c
    src/wpc/desound.h
+   src/wpc/dmddevice.h
+   src/wpc/dmddevice.cpp
    src/wpc/driver.c
    src/wpc/efo.c
    src/wpc/efosnd.c
@@ -593,24 +596,52 @@ find_package(ZLIB)
 
 target_link_libraries(pinmame
    ZLIB::ZLIB
-   pthread
 )
 
 set_target_properties(pinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
 )
 
+# use libppuc if it exists
+get_filename_component(PPUC_CMAKE ../libppuc/CMakeLists.txt ABSOLUTE)
+if(EXISTS ${PPUC_CMAKE})
+   message(STATUS "enabling PPUC i/o boards cummunication")
+   add_subdirectory(../libppuc libppuc)
+   add_definitions(-DPPUC_SUPPORT)
+   set (PPUC_LIBRARIES PPUC)
+   find_package(yaml-cpp REQUIRED)
+   link_directories(${YAML_CPP_LIBRARY_DIR})
+else()
+   message(STATUS "libppuc source not found in ../libppuc, not enabling it")
+endif()
+
+# use libserum if it exists
+get_filename_component(SERUM_CMAKE ../libserum/CMakeLists.txt ABSOLUTE)
+if(EXISTS ${SERUM_CMAKE})
+   message(STATUS "enabling SERUM colorisation module")
+   add_subdirectory(../libserum libserum)
+   add_definitions(-DSERUM_SUPPORT)
+   set (SERUM_LIBRARIES Serum)
+else()
+   message(STATUS "libserum source not found in ../libserum, not enabling it")
+endif()
+
+# use libzedmd if it exists
+get_filename_component(ZEDMD_CMAKE ../libzedmd/CMakeLists.txt ABSOLUTE)
+if(EXISTS ${ZEDMD_CMAKE})
+   message(STATUS "enabling ZeDMD communication module")
+   add_subdirectory(../libzedmd libzedmd)
+   add_definitions(-DZEDMD_SUPPORT)
+   set (ZEDMD_LIBRARIES ZeDMD)
+else()
+   message(STATUS "libzedmd source not found in ../libzedmd, not enabling it")
+endif()
+
 add_executable(ppuc
-   src/ppuc/dmdcommon/dmdcommon.h
-   src/ppuc/dmdcommon/dmdcommon.cpp
    src/ppuc/dmd/dmd.h
    src/ppuc/dmd/dmd.cpp
    src/ppuc/pin2dmd/pin2dmd.h
    src/ppuc/pin2dmd/pin2dmd.cpp
-   src/ppuc/serialib/serialib.h
-   src/ppuc/serialib/serialib.cpp
-   src/ppuc/zedmd/zedmd.h
-   src/ppuc/zedmd/zedmd.cpp
    src/ppuc/cargs/cargs.h
    src/ppuc/cargs/cargs.c
    src/ppuc/ppuc.cpp
@@ -618,13 +649,13 @@ add_executable(ppuc
 
 find_package(libusb)
 
-find_package(yaml-cpp)
-
 find_package(OpenAL)
 
 target_link_libraries(ppuc LINK_PUBLIC
    pinmame
+   ${PPUC_LIBRARIES}
+   ${SERUM_LIBRARIES}
+   ${ZEDMD_LIBRARIES}
    libusb-1.0.so
-   yaml-cpp
    openal
 )

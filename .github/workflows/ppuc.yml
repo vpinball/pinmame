@@ -44,13 +44,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            platform: win-x64
-            platform-name: x64
-            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
-            ppuc: ppuc.exe
-            type: pc
-          - os: macos-latest
+#          - os: windows-latest
+#            platform: win-x64
+#            platform-name: x64
+#            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
+#            ppuc: ppuc.exe
+#            type: pc
+          - os: macos-13
             platform: osx-x64
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
             ppuc: ppuc
@@ -74,12 +74,41 @@ jobs:
             base_image: raspios_lite_arm64:latest
             type: raspi
     steps:
-      - uses: actions/checkout@v3
-      - if: matrix.os == 'ubuntu-latest' && matrix.type != 'raspi' 
+      - name: Checkout pinmame
+        uses: actions/checkout@v3
+#      - name: Checkout libserum
+#        uses: actions/checkout@v3
+#        with:
+#          repository: zesinger/libserum
+#          path: libserum
+#      - if: matrix.type == 'pc'
+#        run: mv libserum ../libserum
+      - name: Checkout libserialport
+        uses: actions/checkout@v3
+        with:
+          repository: PPUC/libserialport
+          path: libserialport
+      - if: matrix.type == 'pc'
+        run: mv libserialport ../libserialport
+      - name: Checkout libzedmd
+        uses: actions/checkout@v3
+        with:
+          repository: PPUC/libzedmd
+          path: libzedmd
+      - if: matrix.type == 'pc'
+        run: mv libzedmd ../libzedmd
+      - name: Checkout libppuc
+        uses: actions/checkout@v3
+        with:
+          repository: PPUC/libppuc
+          path: libppuc
+      - if: matrix.type == 'pc'
+        run: mv libppuc ../libppuc
+      - if: matrix.os == 'ubuntu-latest' && matrix.type != 'raspi'
         run: |
           sudo apt-get update
-          sudo apt-get install cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
-      - if: matrix.os == 'macos-latest'
+          sudo apt-get install zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev
+      - if: matrix.os == 'macos-13'
         run: |
           brew install openal-soft libusb yaml-cpp
       - if: matrix.os == 'windows-latest'
@@ -89,11 +118,6 @@ jobs:
           vcpkgTriplet: ${{ matrix.platform-name }}-windows
           vcpkgDirectory: deps/vcpkg
           vcpkgGitCommitId: ce99c947b64ea3c0e274e18cc3035ca727681089
-#      - if: matrix.os == 'windows-latest'
-#        run: |
-#          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
-#          7z x upx.zip -oupx
-#          rm upx.zip
       - if: matrix.os == 'windows-latest'
         run: |
           curl -L https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-win64.zip -o upx.zip
@@ -106,7 +130,7 @@ jobs:
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             cmake -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -DCMAKE_TOOLCHAIN_FILE=./deps/vcpkg/scripts/buildsystems/vcpkg.cmake -B build
             cmake --build build --config Release
-            if [[ "${{ matrix.platform }}" != "win-arm64" ]]; then 
+            if [[ "${{ matrix.platform }}" != "win-arm64" ]]; then
               ./upx/upx.exe --best --lzma build/Release/${{ matrix.libpinmame }}
             fi
           else
@@ -134,6 +158,10 @@ jobs:
           copy_repository_path: /opt/pinmame
           copy_artifact_path: tmp
           commands: |
+            #mv libserum ../libserum
+            mv libserialport ../libserialport
+            mv libzedmd ../libzedmd
+            mv libppuc ../libppuc
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y libasound2-dev libsdl2.dev libsdl2-mixer-dev libi2c-dev
             apt-get install --no-install-recommends -y cmake zlib1g-dev libopenal-dev libyaml-cpp-dev libusb-1.0-0-dev

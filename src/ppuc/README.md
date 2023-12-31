@@ -22,13 +22,14 @@ under a compatible licence.
 Due to complicated dependency management on different platforms, these libraries are included as source code copy:
 * [serialib](https://github.com/imabot2/serialib)
 * [cargs](https://github.com/likle/cargs)
-* [libdmdcommon](https://github.com/zesinger/libdmdcommon)
 
 PPUC uses
 * [libpinmame](https://github.com/vpinball/pinmame)
 * [libusb](https://libusb.info/)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 * [OpenAL Soft](https://openal-soft.org/)
+* [libzedmd](https://github.com/PPUC/libzedmd)
+* [libserum](https://github.com/zesinger/libserum)
 
 ## Documentation
 
@@ -42,7 +43,7 @@ These components are still in an early development stage and the documentation w
 * -r rom name
     * rom to use, overwrites *rom* setting in config file
     * optional
-* -s serial device 
+* -s serial device
     * serial device path to use, overwrites *serialPort* setting in config file
     * optional
 * -d
@@ -56,6 +57,19 @@ These components are still in an early development stage and the documentation w
 
 
 ### Compiling
+
+```shell
+mkdir PPUC
+cd PPUC
+git clone https://github.com/PPUC/libserialport.git
+git clone https://github.com/PPUC/libppuc.git
+git clone https://github.com/PPUC/libzedmd.git
+git clone https://github.com/zesinger/libserum
+git clone https://github.com/PPUC/pinmame.git
+cd pinmame
+git checkout libppuc
+```
+Now continue the the OS specific steps.
 
 #### macOS
 
@@ -92,7 +106,7 @@ cmake --build build/Release
 
 Run:
 ```shell
-sudo build/Release/ppuc -c src/ppuc/examples/t2.yml
+build/Release/ppuc -c src/ppuc/examples/t2.yml
 ```
 
 ### Windows
