@@ -14,8 +14,6 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 add_compile_definitions(
    HAS_M6809=1
    HAS_M6808=1

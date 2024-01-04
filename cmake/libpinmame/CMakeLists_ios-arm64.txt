@@ -17,8 +17,6 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_FLAGS -fembed-bitcode)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 include(ExternalProject)
 
 ExternalProject_Add(zlib
