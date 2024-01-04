@@ -71,6 +71,8 @@ add_library(altsound STATIC
 
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc /INCREMENTAL:NO)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 target_compile_options(altsound PRIVATE
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
    $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CXX>:/EHsc /INCREMENTAL:NO>>
