@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
-Version 3.6 (XX XXth, 2023) - "Sounds good III"
+Version 3.6 (XX XXth, 2024) - "Sounds good III"
 ------------------------------------------------------------------------------
 - Add 'ModOutputType' to COM-API for new PWM support (see whatsnew.txt and https://github.com/vpinball/pinmame/pull/89 for details and usage)
 

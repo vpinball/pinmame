@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.6 (XX XXth, 2023) - "Sounds good III"
+Version 3.6 (XX XXth, 2024) - "Sounds good III"
 ------------------------------------------------------------------------------
 
 "AltSound 2.0"
