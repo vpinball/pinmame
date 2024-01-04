@@ -60,7 +60,7 @@ public:
 	bool handleCmd(const unsigned int cmd_in) override;
 
 	// DEBUG helper fns to print all behavior data
-	static void GSoundProcessor::printBehaviorData();
+	static void printBehaviorData();
 
 protected:
 

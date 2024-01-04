@@ -684,7 +684,11 @@ int osd_feof(osd_file *file)
 UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 {
 	UINT32 bytes_left = length;
+#if defined(_WIN32) || defined(_WIN64)
+	DWORD result;
+#else
 	UINT32 result;
+#endif
 
 	// handle data from within the buffer
 	if (file->offset >= file->bufferbase && file->offset < file->bufferbase + file->bufferbytes)
@@ -776,8 +780,10 @@ UINT32 osd_fwrite(osd_file *file, const void *buffer, UINT32 length)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	LONG upperPos;
-#endif
+	DWORD result;
+#else
 	UINT32 result;
+#endif
 
 	// invalidate any buffered data
 	file->bufferbytes = 0;

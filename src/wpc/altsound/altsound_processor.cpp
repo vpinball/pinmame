@@ -53,8 +53,7 @@ AltsoundProcessor::AltsoundProcessor(const std::string& game_name_in,
 :AltsoundProcessorBase(game_name_in, vpm_path_in),
   format(format_in),
   is_initialized(false),
-  is_stable(true), // future use
-  cmds()
+  is_stable(true) // future use
 {
 }
 

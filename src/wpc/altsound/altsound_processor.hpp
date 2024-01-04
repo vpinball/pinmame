@@ -102,7 +102,6 @@ private: // data
 	std::string format;
 	bool is_initialized;
 	bool is_stable; // future use
-	CmdData cmds;
 	std::vector<AltsoundSampleInfo> samples;
 };
 

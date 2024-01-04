@@ -29,6 +29,8 @@ int g_fDumpFrames = 0;
 int g_fPause = 0;
 PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE_BRIGHTNESS;
 PINMAME_SOUND_MODE g_fSoundMode = PINMAME_SOUND_MODE_DEFAULT;
+
+char g_szGameName[256] = {0}; //!! not set yet
 }
 
 int _isRunning = 0;

@@ -49,7 +49,7 @@ public:
 	bool parse_altsound_ini(const std::string& path_in);
 
 	// Return parsed flag indicating whether to enable sound command recording
-	const bool AltsoundIniProcessor::recordSoundCmds() const;
+	const bool recordSoundCmds() const;
 
 	// Return parsed AltsoundFormat type
 	const std::string& getAltsoundFormat() const;
@@ -58,13 +58,13 @@ public:
 	const bool usingRomVolumeControl() const;
 
 	// Return parsed skip count value
-	const unsigned int AltsoundIniProcessor::getSkipCount() const;
+	const unsigned int getSkipCount() const;
 
 private: // functions
-	
+
 	// helper function to parse behavior variable values
 	bool parseBehaviorValue(const IniSection& section, const std::string& key, std::bitset<5>& behavior);
-	
+
 	// helper function to parse behavior volume values
 	bool parseVolumeValue(const IniSection& section, const std::string& key, float& volume);
 

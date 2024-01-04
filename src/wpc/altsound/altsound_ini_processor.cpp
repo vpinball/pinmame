@@ -126,7 +126,7 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	ALT_INFO(0, "Parsed \"logging_level\": %s", logging.c_str());
 	const AltsoundLogger::Level level = alog.toLogLevel(logging);
 	if (level == AltsoundLogger::UNDEFINED) {
-		ALT_ERROR(0, "Unknown log level: %s. Defaulting to Error logging", logging);
+		ALT_ERROR(0, "Unknown log level: %s. Defaulting to Error logging", logging.c_str());
 		alog.setLogLevel(AltsoundLogger::Level::Error);
 	}
 	else {
@@ -397,7 +397,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 		std::string subkey = normalizeString(key.substr(0, subkey_test.size()));
 
 		if (subkey != subkey_test) {
-			ALT_ERROR(1, "Failed to parse ini file - unexpected key: %s", key);
+			ALT_ERROR(1, "Failed to parse ini file - unexpected key: %s", key.c_str());
 
 			OUTDENT;
 			ALT_DEBUG(0, "END AltsoundIniProcessor::parseDuckingProfile()");
@@ -411,7 +411,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 			profile_number = std::stoi(key.substr(subkey.size()));
 		}
 		catch (std::invalid_argument& e) {
-			ALT_ERROR(1, "Invalid profile number: %s", key.substr(subkey.size()));
+			ALT_ERROR(1, "Invalid profile number: %s", key.substr(subkey.size()).c_str());
 
 			OUTDENT;
 			ALT_DEBUG(0, "END AltsoundIniProcessor::parseDuckingProfile()");
@@ -431,7 +431,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 
 			// Split the token at the ':' delimiter
 			if (!std::getline(tokenStream, label, ':')) {
-				ALT_ERROR(1, "Failed to parse label: %s", token);
+				ALT_ERROR(1, "Failed to parse label: %s", token.c_str());
 
 				OUTDENT;
 				ALT_DEBUG(0, "END AltsoundIniProcessor::parseDuckingProfile()");
@@ -440,7 +440,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 
 			label = normalizeString(label);
 			if (!(tokenStream >> val)) {
-				ALT_ERROR(1, "Failed to parse value: %s", token);
+				ALT_ERROR(1, "Failed to parse value: %s", token.c_str());
 
 				OUTDENT;
 				ALT_DEBUG(0, "END AltsoundIniProcessor::parseDuckingProfile()");
@@ -466,7 +466,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 				profile.overlay_duck_vol = volume;
 			}
 			else {
-				ALT_ERROR(1, "Unknown sample type label: %s", label);
+				ALT_ERROR(1, "Unknown sample type label: %s", label.c_str());
 
 				OUTDENT;
 				ALT_DEBUG(0, "END AltsoundIniProcessor::parseDuckingProfile()");
