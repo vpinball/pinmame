@@ -217,14 +217,14 @@ int GetDisplayCount(const struct core_dispLayout* p_layout, int* const p_index)
 
 int UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, const struct mame_bitmap* p_bitmap)
 {
-	UINT8 r,g,b;
-	UINT8* dst = (UINT8*)pDisplay->pData;
+	UINT8* __restrict dst = (UINT8*)pDisplay->pData;
 	int diff = 0;
 
 	if (p_bitmap->depth == 8) {
 		for(int j = 0; j < pDisplay->layout.height; j++) {
-			UINT8* src = (UINT8*)p_bitmap->line[j];
+			const UINT8* __restrict src = (UINT8*)p_bitmap->line[j];
 			for(int i=0; i < pDisplay->layout.width; i++) {
+				UINT8 r,g,b;
 				palette_get_color((*src++),&r,&g,&b);
 				if (dst[0] != r || dst[1] != g || dst[2] != b)
 					diff = 1;
@@ -236,8 +236,9 @@ int UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, const struct mame_bitma
 	}
 	else if(p_bitmap->depth == 15 || p_bitmap->depth == 16) {
 		for(int j = 0; j < pDisplay->layout.height; j++) {
-			UINT16* src = (UINT16*)p_bitmap->line[j];
+			const UINT16* __restrict src = (UINT16*)p_bitmap->line[j];
 			for(int i=0; i < pDisplay->layout.width; i++) {
+				UINT8 r,g,b;
 				palette_get_color((*src++),&r,&g,&b);
 				if (dst[0] != r || dst[1] != g || dst[2] != b)
 					diff = 1;
@@ -249,11 +250,12 @@ int UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, const struct mame_bitma
 	}
 	else {
 		for(int j = 0; j < pDisplay->layout.height; j++) {
-			UINT32* src = (UINT32*)p_bitmap->line[j];
+			const UINT32* __restrict src = (UINT32*)p_bitmap->line[j];
 			for(int i=0; i < pDisplay->layout.width; i++) {
+				UINT8 r,g,b;
+				palette_get_color((*src++),&r,&g,&b);
 				if (dst[0] != r || dst[1] != g || dst[2] != b)
 					diff = 1;
-				palette_get_color((*src++),&r,&g,&b);
 				*(dst++) = r;
 				*(dst++) = g;
 				*(dst++) = b;
