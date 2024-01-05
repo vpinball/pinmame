@@ -1929,7 +1929,7 @@ UINT64 core_getAllSol(void) {
 /  Get the status of a DIP bank (8 dips)
 /-----------------------------------------*/
 int core_getDip(int dipBank) {
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(LIBPINMAME)
   return vp_getDIP(dipBank);
 #else /* VPINMAME */
   return (readinputport(CORE_COREINPORT+1+dipBank/2)>>((dipBank & 0x01)*8))&0xff;
