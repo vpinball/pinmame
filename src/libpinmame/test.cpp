@@ -134,13 +134,13 @@ void DumpAlphanumeric(int index, UINT16* p_displayData, PinmameDisplayLayout* p_
 		printf("%s\n", output[row]);
 }
 
-void CALLBACK Game(PinmameGame* game, const void* p_userData)
+void PINMAMECALLBACK Game(PinmameGame* game, const void* p_userData)
 {
 	printf("Game(): name=%s, description=%s, manufacturer=%s, year=%s, flags=%lu, found=%d\n",
 		game->name, game->description, game->manufacturer, game->year, (unsigned long)game->flags, game->found);
 }
 
-void CALLBACK OnStateUpdated(int state, const void* p_userData)
+void PINMAMECALLBACK OnStateUpdated(int state, const void* p_userData)
 {
 	printf("OnStateUpdated(): state=%d\n", state);
 
@@ -161,7 +161,7 @@ void CALLBACK OnStateUpdated(int state, const void* p_userData)
 	PinmameSetMech(1, &mechConfig);
 }
 
-void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData)
+void PINMAMECALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* p_userData)
 {
 	printf("OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
@@ -175,7 +175,7 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayo
 		p_displayLayout->length);
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData)
+void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* p_userData)
 {
 	printf("OnDisplayUpdated(): index=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d\n",
 		index,
@@ -197,7 +197,7 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLay
 	}
 }
 
-int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userData)
+int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userData)
 {
 	printf("OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d\n",
 		p_audioInfo->format,
@@ -209,17 +209,17 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* p_userD
 	return p_audioInfo->samplesPerFrame;
 }
 
-int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData)
+int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData)
 {
 	return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData)
+void PINMAMECALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData)
 {
 	printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,  p_solenoidState->state);
 }
 
-void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
+void PINMAMECALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
 {
 	printf("OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
 		mechNo,
@@ -230,7 +230,7 @@ void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const voi
 		p_mechInfo->speed);
 }
 
-void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
+void PINMAMECALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
 {
 	printf("OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, speed=%d\n",
 		mechNo,
@@ -241,17 +241,17 @@ void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo, const void*
 		p_mechInfo->speed);
 }
 
-void CALLBACK OnConsoleDataUpdated(void* p_data, int size, const void* p_userData)
+void PINMAMECALLBACK OnConsoleDataUpdated(void* p_data, int size, const void* p_userData)
 {
 	printf("OnConsoleDataUpdated: size=%d\n", size);
 }
 
-int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData)
+int PINMAMECALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData)
 {
 	return 0;
 }
 
-void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData)
+void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* p_userData)
 {
 	char buffer[1024];
 	vsnprintf(buffer, sizeof(buffer), format, args);
@@ -262,7 +262,7 @@ void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_li
 		printf("ERROR: %s\n", buffer);
 }
 
-void CALLBACK OnSoundCommand(int boardNo, int cmd, const void* p_userData)
+void PINMAMECALLBACK OnSoundCommand(int boardNo, int cmd, const void* p_userData)
 {
 	printf("OnSoundCommand: boardNo=%d, cmd=%d\n", boardNo, cmd);
 }
