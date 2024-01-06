@@ -1161,7 +1161,7 @@ PINMAMEAPI PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConf
 	mech_tInitData mechInitData;
 	memset(&mechInitData, 0, sizeof(mech_tInitData));
 
-	if (!p_mechConfig) {
+	if (p_mechConfig) {
 		mechInitData.type = p_mechConfig->type;
 
 		mechInitData.sol1 = p_mechConfig->sol1;
