@@ -34,11 +34,6 @@ UINT8 DMDFrames2[GTS3DMD_FRAMES_5C][0x200]; //2nd DMD Display for Strikes N Spar
 #define GTS3_IRQFREQ       1500 /* IRQ Frequency (Guessed)*/
 #define GTS3_ALPHANMIFREQ  1000 /* Alpha NMI Frequency (Guessed)*/
 
-#ifdef GTS3_MODSOL // unfinished
- #define GTS3_MODSOL_SAMPLE 4
- #define GTS3_MODSOL_SMOOTH 31
-#endif
-
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
 #define GTS3_SCPUNO 2
@@ -78,10 +73,6 @@ struct {
   core_tSeg segments, pseg;
   int    vblankCount;
   UINT32 solenoids;
-#ifdef GTS3_MODSOL
-  UINT32 solenoid_seen_pulses;
-  UINT32 solenoidbits[32];
-#endif
   int    lampRow, lampColumn;
   UINT8  diagnosticLed;  // bool
   UINT8  diagnosticLed1; // bool
@@ -206,7 +197,7 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 static WRITE_HANDLER(alpha_u4_pb_w) {
 	int dispBits = data & 0xf0;
 
-	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
+	/* Kept for reference but seems wrong to me (Niwak) since I think LDATA and LCLR have different purposes
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA))
 			GTS3locals.lampColumn = 1;
@@ -214,7 +205,30 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
 		core_setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	} else
-		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);*/
+
+	// As I (Niwak) understand from schematics:
+	// - Rows are a simple latch (74HC273) with overcurrent comparators
+	// - Columns use two 74HS164 (serial 8 bit decoders), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
+	// - LCLR creates a short pulse (through a 555, with R=4.7k and C=0.1uF so 50us pulse) that will reset the overcurrent comparators on the row outputs, not sure why
+	// This results in the following write sequence for strobing (observed on Cue Ball Wizard):
+	// - Set lampRow to 0 (turn off all lamps)
+	// - Set LDATA (only if needed, to start strobe on first column) / LSTRB H->L / LSTRB L->H / Clear LDATA
+	// - Set lampRow to expected output (turn on expected lamps of the new column)
+	// - LCLR H->L / LCLR L->H
+	// We do not simulate the LCLR signals since the pulse is too short (50us) for the output resolution and the aim is not obvious
+	//printf("t=%8.5f Col=%3x STRB=%d DATA=%d LCLR=%d\n", timer_get_time(), GTS3locals.lampColumn, data & LSTRB, data & LDATA, data & LCLR);
+	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
+	{
+		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0ffe) | (data & LDATA);
+		if (GTS3locals.lampColumn == 1) // Simple strobe emulation: reset lamp matrix when strobe restarts at column 0
+		{
+			memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+		}
+	}
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, GTS3locals.lampRow, 8);
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, GTS3locals.lampRow, 4);
 
 	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
 	else if (dispBits == 0xc0) { GTS3locals.acol++; }
@@ -230,6 +244,7 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
   PB6:  Display Strobe (DSTRB)
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
+	/* Kept for reference but seems wrong to me (Niwak) since I think LDATA and LCLR have different purposes
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA))
 			GTS3locals.lampColumn = 1;
@@ -237,7 +252,30 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
 		core_setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	} else
-		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);*/
+
+	// As I (Niwak) understand from schematics:
+	// - Rows are a simple latch (74HC273) with overcurrent comparators
+	// - Columns use two 74HS164 (serial 8 bit decoders), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
+	// - LCLR creates a short pulse (through a 555, with R=4.7k and C=0.1uF so 50us pulse) that will reset the overcurrent comparators on the row outputs, not sure why
+	// This results in the following write sequence for strobing (observed on Cue Ball Wizard):
+	// - Set lampRow to 0 (turn off all lamps)
+	// - Set LDATA (only if needed, to start strobe on first column) / LSTRB H->L / LSTRB L->H / Clear LDATA
+	// - Set lampRow to expected output (turn on expected lamps of the new column)
+	// - LCLR H->L / LCLR L->H
+	// We do not simulate the LCLR signals since the pulse is too short (50us) for the output resolution and the aim is not obvious
+	//printf("t=%8.5f Col=%3x STRB=%d DATA=%d LCLR=%d\n", timer_get_time(), GTS3locals.lampColumn, data & LSTRB, data & LDATA, data & LCLR);
+	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
+	{
+		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0ffe) | (data & LDATA);
+		if (GTS3locals.lampColumn == 1) // Simple strobe emulation: reset lamp matrix when strobe restarts at column 0
+		{
+			memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+		}
+	}
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, GTS3locals.lampRow, 8);
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, GTS3locals.lampRow, 4);
 
 	GTS3_dmdlocals[0].dstrb = (data & DSTRB) != 0;
 	if (GTS3_dmdlocals[0].version) { // probably wrong, but the only way to show *any* display
@@ -346,8 +384,10 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 			GTS3locals.segments[39 + data].w = GTS3locals.pseg[39 + data].w =
 			(GTS3locals.ax[6] & 0x3f) | ((GTS3locals.ax[6] & 0xc0) << 3)
 			| ((GTS3locals.ax[5] & 0x0f) << 11) | ((GTS3locals.ax[5] & 0x10) << 2) | ((GTS3locals.ax[5] & 0x20) << 3);
-	} else if (core_gameData->hw.lampCol > 4) { // flashers
-		coreGlobals.tmpLampMatrix[12] = data;
+	} else if (core_gameData->hw.lampCol > 4) { // flashers drived by auxiliary board (for example backbox lights in SF2)
+		// FIXME From the schematics, I would say that the latch only happens if ax[4] is raised up (not checked here)
+		coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = data; // These are latched, not strobed
+		core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 12 * 8, data);
 	} else if (!(GTS3locals.ax[4] & 1)) { // LEDs
 		if (GTS3locals.alphagen)
 			GTS3locals.segments[40 + (data >> 4)].w = GTS3locals.pseg[40 + (data >> 4)].w = core_bcd2seg[data & 0x0f];
@@ -385,7 +425,6 @@ static WRITE_HANDLER( xvia_1_cb2_w ) {
 //IRQ:  IRQ to Main CPU
 static void GTS3_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
-	core_store_pulsed_samples(GTS3_IRQFREQ);
 	cpu_set_irq_line(GTS3_CPUNO, 0, GTS3locals.irq?ASSERT_LINE:CLEAR_LINE);
 	GTS3locals.irq = !GTS3locals.irq;
 }
@@ -445,9 +484,10 @@ static INTERRUPT_GEN(GTS3_vblank) {
   GTS3locals.vblankCount++;
 
   /*-- lamps --*/
+  /* Kept for reference. Since lamp matrix strobed is not done at the pace of vblank, the lamp matrix is pushed at the strobe pace.
   if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-  }
+  }*/
   /*-- solenoids --*/
   coreGlobals.solenoids = GTS3locals.solenoids;
   if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
@@ -530,12 +570,18 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.DISPLAY_CONTROL = alpha_display;
   GTS3locals.UPDATE_DISPLAY = alpha_update;
   GTS3locals.AUX_W = alpha_aux;
-#ifdef GTS3_MODSOL
-  GTS3locals.solenoid_seen_pulses = 0;
-#endif
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
+
+  // Initialize outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  for (int i = 0; i < 64 + 42 * 8; i++)
+	  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].type = i < coreGlobals.nLamps ? CORE_MODOUT_BULB_44_20V_DC_GTS3 : CORE_MODOUT_NONE;
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  for (int i = 0; i < coreGlobals.nSolenoids; i++)
+	  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type = CORE_MODOUT_SOL_2_STATE;
+  coreGlobals.nGI = 0;
 }
 
 /*Alpha Numeric First Generation Init*/
@@ -581,6 +627,31 @@ static void gts3dmd_init(void) {
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 2, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
+
+  // Initialize outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_20V_DC_GTS3);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  // Game specific hardware
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+	  rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
+  if (strncasecmp(gn, "barbwire", 7) == 0) { // Barbwire
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+  }
+  else if (strncasecmp(gn, "cueball", 7) == 0) { // Cueball Wizard
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'DOUBLE' LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'WIZARD' LEDs
+  }
+  else if (strncasecmp(gn, "sfight2", 7) == 0) { // Street Fighter 2
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 'FIGHTER' LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Backbox flasher (from aux board)
+  }
 }
 
 /*DMD Generation Init*/
@@ -646,34 +717,23 @@ static WRITE_HANDLER(solenoid_w)
 	switch(offset){
 		case 0:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
+			core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
 			break;
 		case 1:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
+			core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
 			break;
 		case 2:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
-#ifdef GTS3_MODSOL
-			/*{static FILE* fout = NULL; static int cnt = 0; static int lst = 0;
-			if (!fout) fout = fopen("gtssol24.txt", "a");
-			if (core_getPulsedSol(24) != lst)
-			{
-				fprintf(fout, "sol 24 write %d %d\n", cnt, core_getPulsedSol(24));
-				lst = core_getPulsedSol(24);
-				cnt = 0;
-			}
-			else cnt++;
-			}*/
-#endif
+			core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
 			break;
 		case 3:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
+			core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
 			break;
 		default:
 			logerror1("Solenoid_W Logic Error\n");
 	}
-#ifdef GTS3_MODSOL
-	GTS3locals.solenoid_seen_pulses |= coreGlobals.pulsedSolState;
-#endif
 }
 
 /*DMD Bankswitching - can handle two DMD displays*/
@@ -813,7 +873,10 @@ static READ_HANDLER(display_r){ /* logerror("DISPLAY_R\n"); */ return 0;}
 static WRITE_HANDLER(lds_w)
 {
 	//logerror1("LDS Write: Data: %x\n",data);
+	//printf("t=%8.5f LDS Write Data=%02x\n", timer_get_time(), data);
 	GTS3locals.lampRow = data;
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, GTS3locals.lampRow, 8);
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, GTS3locals.lampRow, 4);
 }
 
 //PB0-7 Varies on Alpha or DMD Generation!
@@ -911,22 +974,6 @@ static READ_HANDLER(aux1_r) {
 }
 
 static INTERRUPT_GEN(alphanmi) {
-#ifdef GTS3_MODSOL
-	if (options.usemodsol)
-	{
-		if (++GTS3locals.modsol_rate_counter == GTS3_MODSOL_SAMPLE)
-		{
-			int i;
-			GTS3locals.modsol_rate_counter = 0;
-			for (i = 0; i < 32; i++)
-			{
-				core_update_modulated_light(&GTS3locals.solenoidbits[i], GTS3locals.solenoid_seen_pulses & (1 << i));
-				coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(GTS3locals.solenoidbits[i], GTS3_MODSOL_SMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);
-			}
-			GTS3locals.solenoid_seen_pulses = coreGlobals.pulsedSolState;
-		}
-	}
-#endif
 	xvia_0_cb2_w(0,0);
 }
 

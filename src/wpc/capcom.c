@@ -6,16 +6,16 @@
   Hardware from 1995-1996
 
   CPU BOARD:
-	CPU: 68306 @ 16.67 Mhz
-	I/O: 68306 has 2 8-bit ports and a dual uart with timer
-	DMD: Custom programmed U16 chip handles DMD Control Data and some timing
-	Size: 128x32 (all games except Flipper Football - 256x64!)
+   CPU: 68306 @ 16.67 Mhz
+   I/O: 68306 has 2 8-bit ports and a dual uart with timer
+   DMD: Custom programmed U16 chip handles DMD Control Data and some timing
+   Size: 128x32 (all games except Flipper Football - 256x64!)
 
   SOUND BOARD:
-	CPU: 87c52 @ 12 Mhz
-	I/O: 87c52 has a uart
-	SND: 2 x TMS320AV120 MPG DECODER ( Only 1 on Breakshot )
-	VOL: x9241 Digital Volume Pot
+   CPU: 87c52 @ 12 Mhz
+   I/O: 87c52 has a uart
+   SND: 2 x TMS320AV120 MPG DECODER ( Only 1 on Breakshot )
+   VOL: x9241 Digital Volume Pot
 
   Capcom Standard Pins:
   Lamp Matrix     = 2 x (8x8 Matrixs) = 128 Lamps - NOTE: No GI - every single lamp is cpu controlled
@@ -34,9 +34,9 @@
   09/21/03-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
   09/25/03          - First time game booted without any errors.. (Even though in reality, the U16 would still fail if not hacked around)
   11/03/03          - First time sound was working almost fully (although still some glitches and much work left to do)
-  11/09/03		    - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
+  11/09/03		     - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
   11/10/03          - Seem to have found decent IRQ4 freq. to allow KP & FF to fire sols 1 & 2 properly
-  11/15/03			- 68306 optimized & true address mappings implemented, major speed improvements!
+  11/15/03			  - 68306 optimized & true address mappings implemented, major speed improvements!
 
   Hacks & Issues that need to be looked into:
   #1) Why do we need to adjust the CPU Speed to get the animations to display at correct speed? U16 related bug?
@@ -57,40 +57,54 @@
       -> suggestion: Find mem location (as it's only one machine/ROM version after all!) and use that directly instead of trying to track/map it?
   #11) Flippers are not implemented.  VPinMame appears to pass flipper switches through to flipper solenoids (always on).   Actual flipper solenoids
        seem to give one very latent pulse instead of staying on.
+
+ [VB 02/01/2024]
+ After diving into the schematics and some 68000 disassembler, some changes:
+ - Added PWM with physical model outputs (really needed, since the hardware uses this almost everywhere)
+ - Replaced diagnostic leds by PWM output in an addtional lamp column (they were wrong before, and Capcom use PWM to report ok state)
+ - Moved back to 'normal' frequencies: CPU at 16MHz from the schematics, 120Hz for zero cross since these are things we can be sure of
+ - Removed locals.driverboard read/write: from the schematics, this is an hardcoded value read from U55 (sheet 9 of driver board schematics, checked for Airborne, Breakshot,...)
+ - Adjusted Line_5/Line_V to be read as expected (RC filter with comparator, the CPU measure how long it takes to pass the comparator threshold)
+ - Fixed 68306 DUART counter which was counting 2 times too slow. 5V/50V measure is now right (it is used to measure Pulse/Charge/Discharge lengths and likely adjust solenoid PWM to get consistent solenoid strength accross voltage levels)
+ - Removed locals.blanking since it is in fact the lamp matrix VSET1/2 which enable/disable lamp matrices (not solenoid). There is also a Blank signal from U16 which is unknown so far
+ - Returns the lamp/solenoid state when read since the schematics shows that the read value is the latched one, including overcurrent reset (used in diagnostics section of DMD)
+ - Zero cross (IRQ2) is now latched and manually reseted by the CPU as the schematics shows
+ - Cleaned up a little bit of memory mapping between Breakshot and other games
+ - Implemented U16 programmable interrupt controller. Startup tests are now passing.
+ - Adjusted (hacked) IRQ1 timings to fulfill zero cross measurements (in audit, in ROM code, also impacts how IRQ4 line 1 is setup by game code)
+ Things are better but would still needs some work:
+ - IRQ1 is not yet fully understood, timings used seems good but are nto verified
+ - U16 Blank signal is not understood and not simulated, this will likely give wrong dead sol/bulb report in diagnostics, which is annoying since software will disable those dead solenoids
+ - VSet1/VSet2 is only partially implemented, this will likely give wrong dead bulb report in diagnostics
+ - Level1/Level2 for switches is not implemented (likely no impact, since this may be done to detect 'resistor' switches)
+
 **************************************************************************************/
 #include <stdarg.h>
+#include <math.h>
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
 #include "core.h"
 #include "capcoms.h"
 #include "sndbrd.h"
 
-//Show all error messages at startup (U16 Errors)
-#define SKIP_ERROR_MSG		1
-
-//Turn off to use the correct actual frequency values, but the animations are much too slow..
-#define USE_ADJUSTED_FREQ	1
-
 //Turn off when not testing mpg audio
-#define TEST_MPGAUDIO		0
+#define TEST_MPGAUDIO	   0
 
-//3 different ways to test 50V line (ONLY 1 can be uncommented at a time)
-//#define TEST50V_TRY1		//Gives varying readings, but most in the 50-85V range
-//#define TEST50V_TRY2		//Gives varying readings (only some games), but most in the 30V-50V range (note: 40V range raises check 50V interlock switch error message)
-#define TEST50V_TRY3		//Seems to give steady 99V reading
+// Define to get read/write log to U16
+#define VERBOSE_U16        0
 
-#if USE_ADJUSTED_FREQ
-	#define CC_ZCFREQ		124			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
-	#define CPU_CLOCK		24000000	/* Animation speed is more accurate at this speed, strange.. */
-#else
-	#define CC_ZCFREQ		87			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
-	#define CPU_CLOCK		16670000	/* Animation speed is more accurate at this speed, strange.. */
-#endif
+// Define to 1 to patch ROM to disable error messages
+#define SKIP_ERROR_MSG	   0
 
-#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this number of VBLANKS */
-#define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
+// Define to log lamp strobe timings
+#define LOG_LAMP_STROBE    0
 
-#define CC_IRQ4FREQ		TIME_IN_CYCLES(4000,0)	//Seems to work well for both KP & FF //was 8000 before, but experiments showed that 4000 works better (no lamp flicker and quicker lamp response on KP)
+// Breakshot has a modified hardware with a single lamp matrix (B), the hardware of the other lamp matrix being used as a switch matrix, allowing to spare the switch board
+#define HAS_SWITCH_BOARD (core_gameData->hw.lampCol > 1)
+
+#define CC_ZCFREQ		120		/* Zero cross frequency for 60Hz */
+
+#define CPU_CLOCK		16670000	/* Main frequency of the MC68306 (design frequency, and XTal from schematics) */
 
 static data16_t *rom_base;
 static data16_t *ramptr;
@@ -99,25 +113,24 @@ static data16_t *ramptr;
 extern void capcoms_manual_reset(void);
 
 static struct {
-  UINT32 solenoids;
-  UINT16 u16a[4],u16b[4];
-  UINT16 driverBoard;
-  int vblankCount;
-  int u16irqcount;
-  int diagnosticLed;
-  int diagnosticLedS;
+  UINT32 solenoids; // romstar only
   UINT8 visible_page;
-  int zero_cross;
-  int blanking;
-  int swCol;
-  int read_u16;
-  UINT16 lastb;
+  int zero_cross, zero_acq; // Raised by zero cross comparator (120Hz) latched, acked when IRQ2 is processed
+  int swCol; // Breakshot only: active switch column
   int vset;
-  int line_v;
   int greset;
+  UINT16 parallelA, parallelB;
   int pulse;
+  double pulseVoltage, lastPulseFlip;
   int first_sound_reset;
-  UINT8 lamps[16*8];
+  int lampAColDisable, lampBColDisable;
+  UINT16 lampA, lampB;
+
+  UINT16 u16a[4], u16b[4];
+  int irq1State, irq4State;
+  int u16IRQ4Mask, u16IRQState, u16IRQ1Adjust;
+  double u16IRQ1Period, u16IRQ4Line1Period, u16IRQ4Line2Period, u16IRQ4Line3Period;
+  mame_timer *u16IRQ1timer, *u16IRQ4Line1timer, *u16IRQ4Line2timer, *u16IRQ4Line3timer;
 } locals;
 
 static NVRAM_HANDLER(cc);
@@ -127,65 +140,51 @@ static INTERRUPT_GEN(cc_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount++;
+  // TODO Why do we delay lamps/solenoids until VBLANK ? this creates artificial latency, direct set/callback would be better at least for solenoids
 
   /*-- lamps --*/
-  if ((locals.vblankCount % CC_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
-  }
+  memset(coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
+  for (int i = 0; i < 8 + core_gameData->hw.lampCol; i++)
+    for (int j = 0; j < 8; j++)
+      if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1)
+        coreGlobals.lampMatrix[i] |= 1 << j;
 
   /*-- solenoids --*/
-  if ((locals.vblankCount % CC_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = locals.solenoids;
-    locals.solenoids = coreGlobals.pulsedSolState;
-    coreGlobals.pulsedSolState = 0;
-  }
+  coreGlobals.solenoids = 0;
+  for (int i = 0; i < 32; i++)
+    if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5)
+      coreGlobals.solenoids |= 1 << i;
 
-  /*update leds*/
-  coreGlobals.diagnosticLed = (locals.diagnosticLedS<<1) | locals.diagnosticLed;
-  locals.diagnosticLed = 0;
-  locals.diagnosticLedS = 0;
+  /*-- update leds (they are PWM faded, so uses physic output) --*/
+  coreGlobals.diagnosticLed = (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8    ].value >= 0.5 ? 1 : 0)
+                            | (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8 + 1].value >= 0.5 ? 2 : 0);
 
   core_updateSw(TRUE);
+
+  float state[CORE_MODOUT_SOL_MAX];
+  core_getAllPhysicSols(state);
+  int zz = 1;
 }
 
 static SWITCH_UPDATE(cc) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT],0xcf,9);
-    if (core_gameData->hw.lampCol)
+    if (HAS_SWITCH_BOARD)
       CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0xff,0);
     else
       CORE_SETKEYSW(((inports[CORE_COREINPORT]>>8)<<4),0xf0,2);
   }
 }
 
-/********************/
-/* IRQ & ZERO CROSS */
-/********************/
-//IRQ2 Generation (Zero X) - (callback)
+/*********************/
+/* IRQ2 - ZERO CROSS */
+/*********************/
 static void cc_zeroCross(int data) {
-
-#ifdef TEST50V_TRY1
- locals.line_v = !locals.line_v;
-#endif
-
- locals.zero_cross = !locals.zero_cross;
- cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
-}
-
-//IRQ1 Generation (callback)
-static void cc_u16irq1(int data) {
-  locals.u16irqcount += 1;
-  if (locals.u16irqcount == (0x08>>((locals.u16b[0] & 0xc0)>>6))) {
-    cpu_set_irq_line(0,MC68306_IRQ_1,PULSE_LINE);
-    locals.u16irqcount = 0;
+  if (!locals.zero_acq) {
+    //printf("%8.5f, Zero Cross\n", timer_get_time());
+    locals.zero_cross = 1;
+    cpu_set_irq_line(0, MC68306_IRQ_2, ASSERT_LINE);
   }
-}
-
-//IRQ4 Generation (callback)
-static void cc_u16irq4(int data) {
-	cpu_set_irq_line(0,MC68306_IRQ_4,PULSE_LINE);
 }
 
 /***************/
@@ -194,49 +193,52 @@ static void cc_u16irq4(int data) {
 //PA0   - J3 - Pin 7 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
 //PA1   - J3 - Pin 8 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
 //PA2   - J3 - Pin 9 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
-//PA3   - LED(output only)
-//PA4   - LINE_5 (Measures +5V Low power D/C Line)
-//PA5   - LINE_V (Measures 50V High Power A/C Line for Solenoids)
-//PA6   - VSET(output only)
-//PA7   - GRESET(output only)
+//PA3   - LED (output only)
+//PA4   - LINE_5 (input: Measures +5V Low power D/C Line)
+//PA5   - LINE_V (input: Measures 50V High Power D/C Line for Solenoids)
+//PA6   - VSET (output only)
+//PA7   - GRESET (output only)
 static READ16_HANDLER(cc_porta_r) {
-	int data;
+  int data = locals.parallelA & 0xCF;
+   
+  // Hardware measure 5V DV and 50V DC voltage by performing pulses (using PULSE out signal) through a RC low pass filter (time constant is 363us, since it is a 11k resistor with a 33nF capacitor)
+  // then reading the binary compared value against voltage divided from 5V or 50V line. So we compute the voltage at the capacitor and perform the comparison like the hardware
+  // Some games seems to also have 5V line voltage with the same RC schematics as for 50V (f.e. in Airborne scematics but missing in Breakshot ones). There is no audit result for it.
+  // For simpler implementation, we can use a threshold for charge/discharge computed as -RC.ln(1-Vth/V0) for charge and -RC.ln(Vth/V0) for discharge, V0 is 5V, Vth is the comparator threshold (from the voltage divider of 11k/11k applied to 5V so 2.5V)
+  double now = timer_get_time(), v;
+  if (locals.pulse) // Charging from initial voltage (locals.pulseVoltage) toward 5V
+    v = locals.pulseVoltage + (5.0 - locals.pulseVoltage) * (1.0 - exp(-(now - locals.lastPulseFlip) / (11000.0 * 33.0e-9)));
+  else // Discharging from initial voltage (locals.pulseVoltage)
+    v = locals.pulseVoltage * exp(-(now - locals.lastPulseFlip) / (11000.0 * 33.0e-9));
+   
+  if (v > (55.0 - 1.1 - 1.1) * 2000.0 / (56200.0 + 2000.0)) // 55V AC through MB352W bridge rectifier (2 x 1.1V voltage drop)
+  //if ((locals.pulse && now - locals.pulseStart > 0.00015083) || (!locals.pulse && now - locals.pulseEnd < 0.00039161))
+    data |= 1 << 5; // Line 50V
 
-#ifdef TEST50V_TRY2
-	static int tot=0;
-	if(tot++==2) {
-		locals.line_v = 0;
-		tot = 0;
-	}
-	else
-		locals.line_v = 1;
-#endif
-#ifdef TEST50V_TRY3
-	locals.line_v = !locals.line_v;
-#endif
+  if (v > 5.0 * 11000.0 / (11000.0 + 11000.0))
+  //if ((locals.pulse && now - locals.pulseStart > 0.00025161) || (!locals.pulse && now - locals.pulseEnd < 0.00025161))
+    data |= 1 << 4; // Line 5V
 
-	data = (1<<4) | (locals.line_v<<5);
-	if(!locals.pulse)	data ^= 0x10;
-	DBGLOG(("Port A read\n"));
-	//printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
-	return data;
+  DBGLOG(("Port A read\n"));
+  //printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
+  return data;
 }
 /***************/
 /* PORT B READ */
 /***************/
-//PB0 OR IACK2 - ZERO X ACK(Output Only)
+//PB0 OR IACK2 - ZERO X ACK (Output Only)
 //PB1 OR IACK3 - PULSE (To J2) (Output Only)
 //PB2 OR IACK5 - J3 - Pin 13 - Token/Coin Meter/Printer Interface Board - SW3(Unknown Purpose)(Output Only)
 //PB3 OR IACK6 - J3 - Pin 12 - Token/Coin Meter/Printer Interface Board - SW4(Unknown Purpose)(Output Only)
-//PB4 OR IRQ2  - ZERO CROSS IRQ
+//PB4 OR IRQ2  - ZERO CROSS IRQ (Input)
 //PB5 OR IRQ3  - NOT USED?
 //PB6 OR IRQ5  - J3 - Pin 11 - Token/Coin Meter/Printer Interface Board - SW6(Unknown Purpose)(Output Only)
 //PB7 OR IRQ6  - NOT USED?
 static READ16_HANDLER(cc_portb_r) {
-	int data = 0;
-	data |= locals.zero_cross<<4;
-	DBGLOG(("Port B read = %x\n",data));
-	return data;
+  int data = locals.parallelB & 0xEF;
+  data |= locals.zero_cross << 4;
+  DBGLOG(("Port B read = %x\n",data));
+  return data;
 }
 
 /****************/
@@ -253,27 +255,31 @@ static READ16_HANDLER(cc_portb_r) {
 static WRITE16_HANDLER(cc_porta_w) {
   int reset;
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
-	DBGLOG(("Port A write %04x\n",data));
+    DBGLOG(("Port A write %04x\n",data));
 
-  locals.diagnosticLed = ((~data)&0x08>>3);
-  locals.vset = (data>>6)&1;
-  reset = (data>>7)&1;
+  // Bulletin service 95-010a states that the diag led should goes bright then dims 4 times per second => PWM integration on the diag LED...
+  core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8, (data & 0x08) >> 3, 0x01);
+
+  // Cabinet switch voltage level comparator (either comparator from +5V with 2.2k/1.2k =>1.76V or 2.2k/3.9k => 3.20V), not sure why
+  locals.vset = (data>>6) & 1;
 
   //Manually reset the sound board on 1->0 transition (but don't do it the very first time, ie, when both cpu's first boot up)
-  if(locals.greset && !reset) {
-	  if(!locals.first_sound_reset) locals.first_sound_reset=1;
-	  else capcoms_manual_reset();
+  reset = (data >> 7) & 1;
+  if (locals.greset && !reset) {
+    if(!locals.first_sound_reset)
+      locals.first_sound_reset=1;
+   else
+     capcoms_manual_reset();
   }
   locals.greset = reset;
 
-  if (!core_gameData->hw.lampCol)
-	locals.driverBoard = 0x0700; // this value is expected by Breakshot after port writes
+  locals.parallelA = data;
 }
 /****************/
 /* PORT B WRITE */
 /****************/
-//PB0 OR IACK2 - ZERO CROSS ACK (Clears IRQ2)
-//PB1 OR IACK3 - PULSE (To J2)
+//PB0 OR IACK2 - ZERO CROSS ACK (Clears IRQ2) - Lower ZC IRQ after serviced
+//PB1 OR IACK3 - PULSE (To J2) - Used to measure 5V / 50V voltage
 //PB2 OR IACK5 - J3 - Pin 13 - Token/Coin Meter/Printer Interface Board - SW3(Unknown Purpose)(Output Only)
 //PB3 OR IACK6 - J3 - Pin 12 - Token/Coin Meter/Printer Interface Board - SW4(Unknown Purpose)(Output Only)
 //PB4 OR IRQ2  - ZERO CROSS IRQ (Input Only)
@@ -281,34 +287,153 @@ static WRITE16_HANDLER(cc_porta_w) {
 //PB6 OR IRQ5  - J3 - Pin 11 - Token/Coin Meter/Printer Interface Board - SW6(Unknown Purpose)
 //PB7 OR IRQ6  - NOT USED?
 static WRITE16_HANDLER(cc_portb_w) {
-  locals.pulse = (data>>1)&1;
   DBGLOG(("Port B write %04x\n",data));
-  if (data & ~locals.lastb & 0x01)
-	  cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
-  locals.lastb = data;
-  //if(locals.pulse) printf("pulse=1\n"); else printf("pulse=0\n");
+
+  int newPulse = data & 2;
+  if (locals.pulse != newPulse) {
+    double now = timer_get_time();
+    //if (!newPulse)
+    //printf("PC %08x - %8.5f, Pulse toggle: %d -> %d, length=%8.5f\n", activecpu_get_pc(), timer_get_time(), locals.pulse, newPulse, newPulse ? (now - locals.pulseStart) : (now - locals.pulseEnd));
+    if (newPulse) // End of discharge
+      locals.pulseVoltage = locals.pulseVoltage * exp(-(now - locals.lastPulseFlip) / (11000.0 * 33.0e-9));
+    else // End of charge
+      locals.pulseVoltage = locals.pulseVoltage + (5.0 - locals.pulseVoltage) * (1.0 - exp(-(now - locals.lastPulseFlip) / (11000.0 * 33.0e-9)));
+    locals.lastPulseFlip = now;
+    locals.pulse = newPulse;
+  }
+
+  locals.zero_acq = data & 1;
+  if (locals.zero_acq) {
+    locals.zero_cross = 0;
+    cpu_set_irq_line(0, MC68306_IRQ_2, CLEAR_LINE);
+  }
+
+  locals.parallelB = data;
 }
+
+/*********************************************************************************************************************/
+// U16 chip
+// 
+// U16 custom Capcom chip is a programmable gate array with no available documentation. From reverse engineering performed, it is supposed to:
+// - Continuously stream data from RAM to DMD display
+// - Manage DRAM access to handle muxing access between U16 and CPU (and also address muxing for the 512ko RAM chip HM514260)
+// - Provide one independent frequency adjustable interrupt wired to CPU/IRQ1
+// - Provide an interrupt controller with 3 lines, 2 of the 3 being frequency adjustable, wired to CPU/IRQ4
+// - Generate the 3.6864MHz clock for the serial module of the MC68306 microcontroller (for serial output to printer, also used to measure AC frequency)
+// - Generate a general BLANK signal which turns off all outputs
+// 
+// it is controlled through 2x8 bytes of input/output, mapped at $40c0000X / $40c0040X
+// Reading:
+//   $40c00000  u16????????    is read during startup, if result is not 0x00BC, code will setup u16IRQmode, u16DMDBlock and u16DMDPage, and check again for 0x00BC or fail
+//   $40c00002  u16IRQstate    ........ ...??CBA - CBA is active IRQ4 lines (pending ACK), likely also reports IRQ1 but not checked by any code I have looked at
+//
+// Writing:
+//   $40c00002  u16IRQstate    ........ ...XXCBA is used to acknowledge IRQ by writing the inverted bit to ack:
+//                             . IRQ1 by writing one of 0xffef (during startup tests) or 0xffe7 (during gameplay)
+//                             . IRQ4 by writing one of 0xfffe / 0xfffd / 0xfffb
+//   $40c00004  u16DMDBlock    Set DMD Visible Block offset (12 bits)
+//   $40c00006  u16DMDPage     Set DMD Visible Page  offset ( 4 bits)
+//
+//   $40c00401  u16IRQmode     XX???CBA - Set IRQ generation mode
+//                             . XX  is IRQ1 mode. This mode is not yet fully understood. Frequencies used have been deduced from startup tests timing (at startup) and 60Hz 
+//                                   measured by game code (during gameplay). The only identified difference being the way the IRQ is acknowledge (delay flag ? something unspot yet ?).
+//                             . CBA is IRQ4 line enable, bit C is inverted:
+//                                 C is a fixed frequency interrupt generator, likely corresponding to DMD VBlank since it is 45.9Hz for FF (64 lines), 91.8Hz for others (32 lines), maybe this flag is DMD steobe on/off
+//                                 B use frequency defined by writting at 40C00404
+//                                 A use frequency defined by writting at 40C00402
+//                             . ??? are unknown. Breakshot, Flipper Football & KingPin always set them to 011, except if an auxiliary board is present, then it is set to 111
+//   $40C00402  u16IRQ4line1f  is IRQ4 line 1 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
+//   $40C00404  u16IRQ4line2f  is IRQ4 line 2 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
+// 
+// No other access were witnessed, so others are likely unused.
+// 
+// TODO:
+// - U16 Interrupt controllers are checked at startup by measuring their interrupt frequency against different settings, 
+//   which allows to identify the expected values in the specific context of startup. IRQ4 line 1 & 2 seems to be purely
+//   frequency driven. IRQ4 line 3 seems ot be the DMD VBlank. IRQ1 is somewhat less understood and hacked to get correct
+//   game behavior.
+// - blank signal from U16 blanks the solenoids and should be implemented, since solenoids PWM, handled by IRQ2 & IRQ4, 
+//   use state readback to identify and disable dead solenoids. blank signal from U16 should also be implemented for 
+//   lamps (but the ROM code doesn't disable broken lamps).
+/*********************************************************************************************************************/
+
+#if VERBOSE_U16
+#define LOG_U16(x)	printf x
+#else
+#define LOG_U16(x)
+#endif
+
+static void cc_u16irq1(int data) {
+  //if (!locals.irq1State) printf(">> Raise IRQ1\n");
+  locals.irq1State = 1;
+  locals.u16IRQState |= 0x10;
+  cpu_set_irq_line(0, MC68306_IRQ_1, ASSERT_LINE);
+}
+
+static void cc_u16irq4line1(int data) {
+  if (locals.u16IRQ4Mask & 1) {
+    //if (!locals.irq4State) printf(">> Raise IRQ4\n");
+    locals.irq4State = 1;
+    locals.u16IRQState |= 0x01;
+    cpu_set_irq_line(0, MC68306_IRQ_4, ASSERT_LINE);
+  }
+}
+
+static void cc_u16irq4line2(int data) {
+  if (locals.u16IRQ4Mask & 2) {
+    //if (!locals.irq4State) printf(">> Raise IRQ4\n");
+    locals.irq4State = 1;
+    locals.u16IRQState |= 0x02;
+    cpu_set_irq_line(0, MC68306_IRQ_4, ASSERT_LINE);
+  }
+}
+
+static void cc_u16irq4line3(int data) {
+  if (locals.u16IRQ4Mask & 4) {
+    //if (!locals.irq4State) printf(">> Raise IRQ4\n");
+    locals.irq4State = 1;
+    locals.u16IRQState |= 0x04;
+    cpu_set_irq_line(0, MC68306_IRQ_4, ASSERT_LINE);
+  }
+}
+
+INLINE void u16UpdateIRQ() {
+  if ((locals.u16IRQState & 0x10) == 0) {
+    //if (locals.irq1State) printf("<< Drop  IRQ1\n");
+    locals.irq1State = 0;
+    cpu_set_irq_line(0, MC68306_IRQ_1, CLEAR_LINE);
+  }
+  if ((locals.u16IRQ4Mask & locals.u16IRQState) == 0) {
+    //if (locals.irq4State) printf("<< Drop  IRQ4\n");
+    locals.irq4State = 0;
+    cpu_set_irq_line(0, MC68306_IRQ_4, CLEAR_LINE);
+  }
+}
+
 /************/
 /* U16 READ */
 /************/
 static READ16_HANDLER(u16_r) {
   offset &= 0x203;
-  //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
-  //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
-
+  data16_t value;
   switch (offset) {
-    case 0x000: case 0x001:
-		return locals.u16a[offset];
+    case 0x000:
+      value = 0x00BC;
+      LOG_U16(("PC %08x - U16r Health state ?  [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), offset, value, mem_mask));
+      break;
 
-	//Should probably never occur?
-	case 0x002: case 0x003:
-		DBGLOG(("reading U16-%x\n",offset));
-		return locals.u16a[offset];
+    case 0x001:
+      value = ~(locals.u16IRQ4Mask & locals.u16IRQState);
+      //LOG_U16(("PC %08x - U16r IRQ state=%04x  [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), locals.u16IRQ4Mask & locals.u16IRQState, offset, value, mem_mask));
+      break;
 
-    case 0x200: case 0x201: case 0x202: case 0x203:
-      return locals.u16b[offset&3];
+    default:
+      value = offset < 0x0004 ? locals.u16a[offset] : locals.u16b[offset & 3];
+      LOG_U16(("PC %08x - U16r X Unsupported X [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), offset, value, mem_mask));
   }
-  return 0;
+
+  //DBGLOG(("U16r [%03x]=%04x (%04x)\n", offset, value, mem_mask));
+  return value;
 }
 
 /*************/
@@ -316,22 +441,64 @@ static READ16_HANDLER(u16_r) {
 /*************/
 static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
-   // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
-  //printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
-
-  //DMD Visible Block offset
-  if (offset==2)
-	locals.visible_page = (locals.visible_page & 0x0f) | (data << 4);
-  //DMD Visible Page offset
-  if (offset==3)
-	locals.visible_page = (locals.visible_page & 0xf0) | (data >> 12);
+  // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
 
   switch (offset) {
-    case 0x000: case 0x001: case 0x002: case 0x003:
-      locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data; break;
-    case 0x200: case 0x201: case 0x202: case 0x203:
-      locals.u16b[offset&3] = (locals.u16b[offset&3] & mem_mask) | data; break;
+    case 0x001: { // IRQ ACK
+      // After startup tests, IRQ1 are acknowledged using 0x18 instead of 0x10. No clue why so far
+      //LOG_U16(("PC %08x - U16w IRQ ACK %02x      [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), (~data) & 0x17, offset, data, mem_mask));
+      locals.u16IRQState &= data;
+      u16UpdateIRQ();
+      // FIXME this is clearly a hack but we do not know what actually drives IRQ1 and the ROM code expects frequency around 4KHz when acknowledgeded with 0xFFE7 (during play) while it expects a 2.96KHz frequency when acked with 0xFFEF (during startup), so...
+      if (((data & 0x10) == 0) && (locals.u16IRQ1Adjust == (data & 0x08))) {
+         locals.u16IRQ1Adjust = (~data) & 0x08;
+         timer_adjust(locals.u16IRQ1timer, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period, 0, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period);
+      }
+      break;
+    }
+
+    case 0x002: // DMD Visible Block offset
+      LOG_U16(("PC %08x - U16w DMD block  %04x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data & 0x0FFF, offset, data, mem_mask));
+      locals.visible_page = (locals.visible_page & 0x0f) | (data << 4);
+      break;
+
+    case 0x003: // DMD Visible Page offset
+      LOG_U16(("PC %08x - U16w DMD page   %04x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data >> 12, offset, data, mem_mask));
+      locals.visible_page = (locals.visible_page & 0xf0) | (data >> 12);
+      break;
+
+    case 0x200: { // IRQ1 Frequency, IRQ4 line 1/2/3 enable
+      LOG_U16(("PC %08x - U16w IRQ1 f=%x IRQ4=%x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), (data >> 6) & 3, (data & 0x7) ^ 4, offset, data, mem_mask));
+      //int irq1NCycles[] = { 22662, 11308, 5631, 2789 }; // Number of CPU cycles taken from startup check disassembly (value without IRQ1 adjusting on ACK)
+      int irq1NCycles[] = { 22602, 11248, 5571, 2729 }; // Number of CPU cycles taken from startup check disassembly (value with IRQ1 adjusting on ACK)
+      locals.u16IRQ1Period = TIME_IN_SEC(irq1NCycles[(data >> 6) & 3] / (double)CPU_CLOCK);
+      timer_adjust(locals.u16IRQ1timer, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period, 0, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period);
+      timer_adjust(locals.u16IRQ4Line1timer, locals.u16IRQ4Line1Period, 0, locals.u16IRQ4Line1Period);
+      timer_adjust(locals.u16IRQ4Line2timer, locals.u16IRQ4Line2Period, 0, locals.u16IRQ4Line2Period);
+      timer_adjust(locals.u16IRQ4Line3timer, locals.u16IRQ4Line3Period, 0, locals.u16IRQ4Line3Period);
+      locals.u16IRQ4Mask = (data & 0x7) ^ 4;
+      locals.u16IRQState = 0; // Not sure if changing the IRQ mode resets the IRQ outputs
+      u16UpdateIRQ();
+      break;
+    }
+    case 0x201: { // IRQ4 Line 1 frequency
+      LOG_U16(("PC %08x - U16w IRQ4 f1=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
+      locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+      break;
+    }
+    case 0x202: { // IRQ4 Line 2 frequency
+      LOG_U16(("PC %08x - U16w IRQ4 f2=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
+      locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+      break;
+    }
+    default:
+      LOG_U16(("PC %08x - U16w X Unsupported X [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), offset, data, mem_mask));
   }
+
+  if (offset < 0x0004)
+    locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data;
+  else
+    locals.u16b[offset & 3] = (locals.u16b[offset & 3] & mem_mask) | data;
 }
 
 /*************/
@@ -341,45 +508,56 @@ static READ16_HANDLER(io_r) {
   UINT16 data = 0;
 
   switch (offset) {
-    //Read from driver board
+    ////////////////////////////// AUX_I/O => Power Driver Board - Lamp matrices (and strobed switch matrix for Breakshot)
+    // Driver Board ID (to be checked from others manuals to be sure they all use the same Board IDs, on sheet 9 of Driver Board/Solenoid schematics)
     case 0x000008:
-      DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
-      data = locals.driverBoard;
+      data = HAS_SWITCH_BOARD ? 0x0300 : 0x0700; // From Airborne & Breakshot manuals
       break;
-    //Read from other boards
+    // Read from other boards
     case 0x000006:
     case 0x00000a:
       data=0xffff;
       DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
       //printf("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask);
       break;
-    //Lamp A & B Matrix Row Status? Used to determine non-functioning bulbs?
+    // Latched value of Lamp A & B Matrix Row Status after overcurrent comparator, used to determine non-functioning bulbs in diagnostic menu
     case 0x00000c:
-    case 0x00000d:
-      data = locals.blanking ? 0xffff : 0;
+      data = (~locals.lampA & 0xFF00) | (locals.lampA & 0x00FF);
       break;
-    //Playfield Switches
+    case 0x00000d:
+      data = (~locals.lampB & 0xFF00) | (locals.lampB & 0x00FF);
+      break;
+    
+    ////////////////////////////// EXT_I/O => Power Driver Board - Solenoids / Switch Board (not present for Breakshot)
+    // Playfield Switches from switch board (if present)
     case 0x200008:
     case 0x200009:
     case 0x20000a:
     case 0x20000b:
-    {
-      int swcol = offset-0x200007;
-      data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
+      if (HAS_SWITCH_BOARD) {
+        int swcol = offset-0x200007;
+        data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
+      }
       break;
-    }
-
-    //Solenoid A & B Status??? (returing a value here, removes waiting for short error msg, when IRQ4 set to 2000 cycles in KP)
+    // Solenoid status
+    //Sols: 1-8 (hi byte) & 17-24 (lo byte) status, including blank (from U16) and overcurrent state
     case 0x20000c:
+      data = coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 16) >> 3] | (coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0) >> 3] << 8);
+      data = core_revword(data);
+      break;
+    //Sols: 9-16 (hi byte) & 24-32 (lo byte) status, including blank (from U16) and overcurrent state
     case 0x20000d:
-		data = 0xffff;
-		//printf("PC%08x - io_r: [%08x] (%04x) = %04x\n",activecpu_get_pc(),offset,mem_mask,data);
-		break;
+      data = coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 24) >> 3] | (coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) >> 3] << 8);
+      data = core_revword(data);
+      break;
 
-    //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
+    ////////////////////////////// SWITCH0 => Read cabinet switches (no address decoding) / strobed switches
+    //Cabinet/Coin Door Switches OR 8 cabinet switches and 8 strobed switches for Breakshot (which does not have the switch board)
     case 0x400000:
-      if (!core_gameData->hw.lampCol) {
-        //Cabinet/Coin Door Switches are read as the lower byte on all switch reads
+      if (HAS_SWITCH_BOARD) {
+        data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+      } else {
+        // Cabinet/Coin Door Switches are read as the lower byte on all switch reads
         data = coreGlobals.swMatrix[9];
         switch(locals.swCol) {
           case 0x80: data |= coreGlobals.swMatrix[1]<<8; break;
@@ -391,8 +569,7 @@ static READ16_HANDLER(io_r) {
           case 0x02: data |= coreGlobals.swMatrix[7]<<8; break;
           case 0x01: data |= coreGlobals.swMatrix[8]<<8; break;
         }
-      } else
-        data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+      }
       data ^= 0xffff; //Switches are inverted
       break;
 
@@ -402,87 +579,105 @@ static READ16_HANDLER(io_r) {
   return data;
 }
 
-static int brt(int a) {
-  int offset = (255-a)/4;
-  if (offset < 32) offset = 32;
-  a += offset;
-  if (a > 255) a = 255;
-  return a;
-}
-
 /*************/
 /* I/O WRITE */
 /*************/
 static WRITE16_HANDLER(io_w) {
-  int i, j;
   UINT16 soldata;
   //DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
 
+#if LOG_LAMP_STROBE
+  static double lampBStart, strobeLength;
+#endif
+
   switch (offset) {
+    ////////////////////////////// AUX_I/O => Power Driver Board - Lamp matrices (and strobed switch matrix for Breakshot)
     //Write to other boards
-    case 0x00000006:
-    case 0x00000007:
-    case 0x0000000a:
-    case 0x0000000b:
+    case 0x000006:
+    case 0x000007:
+    case 0x00000a:
+    case 0x00000b:
       DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
       break;
-    //Blanking (for lamps & solenoids?)
-    case 0x00000008:
-      locals.blanking = (data & 0x0c)?1:0;
+    
+    // Lamp A & B VSET1/2: change voltage comparator reference for columns of matrix A & B => in turn, enable/disable column outputs
+    // In fact, this is somewhat more complex since it toggles the VSet of the overcurrent voltage comparator from 0.128V to 0.291V.
+    // Since #44 bulbs powered through 18V strobe have a high current surge when turning on a cold bulb of more than 10A leading to 
+    // 0.212V at voltage comparator, this prevents turning on bulbs, but this will not turn off bulbs which are already on (resistance 
+    // gets higher as filament get hotter, with a stable current around 714mA at 2700K, leading to 0.014V at voltage comparator)
+    case 0x000008: {
+      locals.lampAColDisable = (data >> 2) & 1;
+      locals.lampBColDisable = (data >> 3) & 1;
+      #if LOG_LAMP_STROBE
+      static double blankingStart = 0.0;
+      static double strobeStart = 0.0;
+      if (locals.lampBColDisable)
+         blankingStart = timer_get_time();
+      else {
+         printf("t=%8.5f Strobe=%5.2fms, Pulse=%5.2fms, Blanking=%5.2fms\n", timer_get_time(), (timer_get_time() - strobeStart) * 1000.0, (strobeLength / 8.0) * 1000.0, (timer_get_time() - blankingStart) * 1000.0);
+         strobeStart = timer_get_time();
+         strobeLength = 0.0;
+      }
+      #endif
       break;
+    }
     //Lamp A Matrix OR Switch Strobe Column (Games with only Lamp B Matrix)
-    case 0x0000000c:
-      if (!core_gameData->hw.lampCol)
+    case 0x00000c:
+      if (HAS_SWITCH_BOARD) {
+        UINT16 lampA = (data & 0xFF00) | (~data & 0x00FF);
+        //printf("t=%8.5f Lamp A Write=%04x Data=%04x\n", timer_get_time(), lampA, data);
+        if (locals.lampAColDisable) // lampAColDisable only prevents turning on cold bulbs, this is a hacky simplified implementation (we should cross columns and rows but it would be overkill)
+          lampA &= 0x00FF; //lampA &= locals.lampA | 0x00FF;
+        locals.lampA = lampA;
+        core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, (locals.lampA >> 8) & 0xFF, locals.lampA & 0xff, 8);
+      } else {
         locals.swCol = data;
-      else if (!locals.blanking) {
-        for (i = 0; i < 8; i++) {
-          if (data & (0x0100 << i)) coreGlobals.tmpLampMatrix[i] |= ~data & 0xff;
-          for (j = 0; j < 8; j++) {
-            if ((data & (0x0100 << i)) && (~data & (1 << j))) {
-              locals.lamps[i*8 + j] = brt(locals.lamps[i*8 + j]);
-            } else if (locals.lamps[i*8 + j]) {
-              locals.lamps[i*8 + j]--;
-            }
-          }
-        }
       }
       break;
-    //Lamp B Matrix (for games that only have lamp b, shift to lower half of our lamp matrix for easier numbering)
-    case 0x0000000d:
-      if (!locals.blanking) {
-        for (i = 0; i < 8; i++) {
-          if (data & (0x0100 << i)) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+i] |= ~data & 0xff;
-          for (j = 0; j < 8; j++) {
-            if ((data & (0x0100 << i)) && (~data & (1 << j))) {
-              locals.lamps[(core_gameData->hw.lampCol+i)*8 + j] = brt(locals.lamps[(core_gameData->hw.lampCol+i)*8 + j]);
-            } else if (locals.lamps[(core_gameData->hw.lampCol+i)*8 + j]) {
-              locals.lamps[(core_gameData->hw.lampCol+i)*8 + j]--;
-            }
-          }
-        }
-      }
+    //Lamp B Matrix (for Breakshot that only have lamp B, shift to lower half of our lamp matrix for easier numbering)
+    case 0x00000d: {
+      UINT16 lampB = (data & 0xFF00) | (~data & 0x00FF);
+      //printf("t=%8.5f Lamp B Write=%04x Data=%04x\n", timer_get_time(), lampB, data);
+      if (locals.lampBColDisable) // lampBColDisable only prevents turning on cold bulbs, this is a hacky simplified implementation (we should cross columns and rows but it would be overkill)
+        lampB &= 0x00FF; //lampB &= locals.lampB | 0x00FF;
+      locals.lampB = lampB;
+      #if LOG_LAMP_STROBE
+      if (locals.lampB != 0)
+        lampBStart = timer_get_time();
+      else if (!locals.lampBColDisable)
+        strobeLength += timer_get_time() - lampBStart;
+      #endif
+      core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + (core_gameData->hw.lampCol - 1) * 8, (locals.lampB >> 8) & 0xFF, locals.lampB & 0xff, 8);
       break;
+    }
 
-    //Write to driver board
-    case 0x00200008:
-      DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
-      locals.driverBoard = data << 8;
+    ////////////////////////////// EXT_I/O => Power Driver Board - Solenoids / Switch Board (not present for Breakshot)
+    // Voltage comparator level for switch banks 0..31 / 32..63
+    case 0x200000:
+      // Switch inputs can be either compared to GND or 4.2V, not sure why this would be used
+      // locals.swLevel1 = data & 1;
+      // locals.swLevel2 = (data >> 1) & 1;
+      //printf("t=%8.5f Switch levels=%04x\n", timer_get_time(), data);
       break;
-
     //Sols: 1-8 (hi byte) & 17-24 (lo byte)
-    case 0x0020000c:
+    case 0x20000c:
       soldata = core_revword(data^0xffff);
-      coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<16;
-      coreGlobals.pulsedSolState |= (soldata & 0xff00)>>8;
-      locals.solenoids = coreGlobals.pulsedSolState;
+      coreGlobals.pulsedSolState = (soldata & 0x00ff)<<16;
+      coreGlobals.pulsedSolState = (soldata & 0xff00)>>8;
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16,  soldata       & 0xFF);
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0,      (soldata >> 8) & 0xFF);
       break;
     //Sols: 9-16 (hi byte) & 24-32 (lo byte)
-    case 0x0020000d:
+    case 0x20000d:
       soldata = core_revword(data^0xffff);
-      coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<24;
-      coreGlobals.pulsedSolState |= (soldata & 0xff00)>>0;
-      locals.solenoids = coreGlobals.pulsedSolState;
+      coreGlobals.pulsedSolState = (soldata & 0x00ff)<<24;
+      coreGlobals.pulsedSolState = (soldata & 0xff00)>>0;
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24,  soldata       & 0xFF);
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (soldata >> 8) & 0xFF);
       break;
+
+    ////////////////////////////// SWITCH0 => 16 Cabinet switches
+    // No write support
 
     default:
       DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
@@ -492,11 +687,32 @@ static WRITE16_HANDLER(io_w) {
 static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
-  locals.vblankCount = 1;
 
-  //Skip showing error messages? (NOTE: MUST COME BEFORE WE COPY ROMS BELOW)
+  // Force physical output emulation since this is needed for diagnostic LEDs and the driver is based on it
+  options.usemodsol |= CORE_MODOUT_FORCE_ON;
+
+  // If wanted, we can skip the startup error messages by patching the rom (NOTE: MUST COME BEFORE WE COPY ROMS BELOW)
 #if SKIP_ERROR_MSG
-	Skip_Error_Msg();
+  //NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie,
+  //		0x10092192 becomes 0x00092192
+  UINT32 fixaddr = 0;
+  switch (core_gameData->hw.gameSpecific1) {
+    case 0: break;
+    case 1: case 2: fixaddr = 0x0009593c;	break; //PM
+    case 3:         fixaddr = 0x0008ce04; break; //AB
+    case 4:         fixaddr = 0x00088204; break; //ABR
+    case 5: case 6: fixaddr = 0x0008eb60; break; //BS
+    case 7:         fixaddr = 0x0008a520; break; //BS102R
+    case 8:         fixaddr = 0x000805e4; break; //BSB
+    case 9:         fixaddr = 0x00000880; break; //FF103,FF104
+    case 10:        fixaddr = 0x00051704; break; //BBB
+    case 11:        fixaddr = 0x00000894; break; //KP
+    case 12:        fixaddr = 0x00000784; break; //FF101
+    case 13:        fixaddr = 0x0008a684; break; //PP100
+    default: break;
+   }
+   //Skip Error Message Routine
+   *((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
 #endif
 
   //Copy roms into correct location (ie, starting at 0x10000000 where they are mapped)
@@ -504,19 +720,68 @@ static MACHINE_INIT(cc) {
   //Copy 1st 0x100 bytes of rom into RAM for vector table
   memcpy(ramptr, memory_region(REGION_USER1), 0x100);
 
+  // Initialize outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8; // Lamp Matrix A & B, +1 col for PWM diag LED
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps - 8, CORE_MODOUT_BULB_44_20V_DC_CC);
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 8, 8, CORE_MODOUT_NONE); // Unused
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 8, 1, CORE_MODOUT_LED); // CPU Board Diagnostic LED
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 7, 1, CORE_MODOUT_LED); // Sound Board Diagnostic LED
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1].type = CORE_MODOUT_LEGACY_SOL_CUSTOM; // GameOn solenoid for Fast Flips
+  // Game specific hardware
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+    rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
+  // For flashers, Capcom uses #89 bulb wired through a STP20N10L Mosfet, 0.02 ohms resistor to a 20V DC source
+  // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
+  if (strncasecmp(gn, "abv106", 6) == 0) { // Airborne
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  } 
+  else if (strncasecmp(gn, "bbb109", 6) == 0) { // Big Bang Bar
+    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908;
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "bsv103", 6) == 0) { // Breakshot
+    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908;
+    coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 28 - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC; // Center pocket Flasher
+    // coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 27 - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC; // Plunger Flasher (appears in doc but was not kept in production)
+  }
+  else if (strncasecmp(gn, "ffv104", 6) == 0) { // Flipper Football
+    coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908;
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "kpb105", 6) == 0) { // KingPin
+    // To be checked since this is from VPX table (did not found a manual for this one)
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1,  2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(gn, "pmv112", 6) == 0) { // Pinball Magic
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+
   //Init soundboard
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
+
+  locals.u16IRQ1timer = timer_alloc(cc_u16irq1);
+  locals.u16IRQ4Line1timer = timer_alloc(cc_u16irq4line1);
+  locals.u16IRQ4Line2timer = timer_alloc(cc_u16irq4line2);
+  locals.u16IRQ4Line3timer = timer_alloc(cc_u16irq4line3);
+  // defaults IRQ periods
+  locals.u16IRQ1Period = TIME_IN_SEC(22668 / (double)CPU_CLOCK);
+  locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+  // Flipper Football frequency for IRQ4 Line 3 is half of other games => likely DMD vblank since DMD has twice more lines (so 45.9Hz for FF, 91.8Hz for others)
+  int defaultLine3 = (core_gameData->hw.gameSpecific1 == 9 || core_gameData->hw.gameSpecific1 == 12) ? 0x0000 : 0x0800;
+  locals.u16IRQ4Line3Period = TIME_IN_SEC(((0x1000 - (defaultLine3 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
 
 #if TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation
   cpunum_set_halt_line(0,1);
-#else
-  //IRQ1 Maximum Frequency
-  timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
-
-  //IRQ4 Frequency
-  timer_pulse(CC_IRQ4FREQ,0,cc_u16irq4);
-
 #endif
 }
 
@@ -525,59 +790,10 @@ static MACHINE_STOP(cc)
   sndbrd_0_exit();
 }
 
-//NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie,
-//		0x10092192 becomes 0x00092192
-static void Skip_Error_Msg(void){
-	UINT32 fixaddr = 0;
-	switch (core_gameData->hw.gameSpecific1) {
-		case 0:
-			break;
-		case 1:
-		case 2:
-			fixaddr = 0x0009593c;	//PM
-			break;
-		case 3:
-			fixaddr = 0x0008ce04;	//AB
-			break;
-		case 4:
-			fixaddr = 0x00088204;	//ABR
-			break;
-		case 5:
-		case 6:
-			fixaddr = 0x0008eb60;	//BS
-			break;
-		case 7:
-			fixaddr = 0x0008a520;	//BS102R
-			break;
-		case 8:
-			fixaddr = 0x000805e4;	//BSB
-			break;
-		case 9:
-			fixaddr = 0x00000880;	//FF103,FF104
-			break;
-		case 10:
-			fixaddr = 0x00051704;	//BBB
-			break;
-		case 11:
-			fixaddr = 0x00000894;	//KP
-			break;
-		case 12:
-			fixaddr = 0x00000784;	//FF101
-			break;
-		case 13:
-			fixaddr = 0x0008a684;	//PP100
-			break;
-		default:
-			break;
-	}
-	//Skip Error Message Routine
-	*((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
-}
-
-//Show Sound & DMD Diagnostic LEDS
+// Show Sound & DMD Diagnostic LEDS
 void cap_UpdateSoundLEDS(int data)
 {
-	locals.diagnosticLedS = data;
+   core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8, data << 1, 0x02);
 }
 
 /*-----------------------------------
@@ -669,10 +885,10 @@ CS3 = 30000000-3001ffff (RW) -  NVRAM
 Therefore:
  B A B=A23,A=A22 - Base address = 40000000
 ----------------------
- 0 0 (40000000) - /AUX I-O
- 0 1 (40400000) - /EXT I-O
- 1 0 (40800000) - /SWITCH0
- 1 1 (40c00000) - /CS		(U16)
+ 0 0 (40000000) - /AUX I-O => Power Driver Board - Lamp matrices (and strobed switch matrix for Breakshot)
+ 0 1 (40400000) - /EXT I-O => Power Driver Board - Solenoids / Switch Board (not present for Breakshot)
+ 1 0 (40800000) - /SWITCH0 => 16 Cabinet switches
+ 1 1 (40c00000) - /CS		=> U16 custom chip
 */
 static MEMORY_READ16_START(cc_readmem)
   { 0x00000000, 0x0007ffff, MRA16_RAM },			/* DRAM */
@@ -738,12 +954,12 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
   for (ii = 0; ii <= 32; ii++) {
     UINT8 *line = &coreGlobals.dotCol[ii][0];
     for (kk = 0; kk < 16; kk++) {
-		UINT16 intens1 = RAM[0];
-		for(jj=0;jj<8;jj++) {
-			*line++ = (intens1&0xc000)>>14;
-			intens1 = intens1<<2;
-		}
-		RAM+=1;
+      UINT16 intens1 = RAM[0];
+      for(jj=0;jj<8;jj++) {
+         *line++ = (intens1&0xc000)>>14;
+         intens1 = intens1<<2;
+      }
+      RAM+=1;
     }
     *line++ = 0;
     RAM+=16;
@@ -765,44 +981,21 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
     UINT8 *linel = &coreGlobals.dotCol[ii][0];
     UINT8 *liner = &coreGlobals.dotCol[ii][128];
     for (kk = 0; kk < 16; kk++) {
-		UINT16 intensl = RAM[0];
-		UINT16 intensr = RAM[0x10];
-		for(jj=0;jj<8;jj++) {
-			*linel++ = (intensl&0xc000)>>14;
-			intensl = intensl<<2;
-			*liner++ = (intensr&0xc000)>>14;
-			intensr = intensr<<2;
-		}
-		RAM+=1;
+      UINT16 intensl = RAM[0];
+      UINT16 intensr = RAM[0x10];
+      for(jj=0;jj<8;jj++) {
+         *linel++ = (intensl&0xc000)>>14;
+         intensl = intensl<<2;
+         *liner++ = (intensr&0xc000)>>14;
+         intensr = intensr<<2;
+      }
+      RAM+=1;
     }
     RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
-
-/********************************/
-/*** Shaded lamps update code ***/
-/********************************/
-PINMAME_VIDEO_UPDATE(cc_lamp16x8) {
-  UINT16 *seg = &coreGlobals.drawSeg[0];
-  int ii, jj;
-
-  for (ii = 0; ii < 8; ii++) {
-    for (jj = 0; jj < 16; jj++) {
-      UINT8 *line = &coreGlobals.dotCol[1+ii][jj];
-      *line = 63+locals.lamps[jj*8+ii]/16;
-    }
-  }
-  for (jj = 0; jj < 16; jj++) {
-    for (ii = 0; ii < 8; ii+=4) {
-      *seg++ = (coreGlobals.dotCol[1+ii][jj]-63) | ((coreGlobals.dotCol[2+ii][jj]-63)<<4) | ((coreGlobals.dotCol[3+ii][jj]-63)<<8) | ((coreGlobals.dotCol[4+ii][jj]-63)<<12);
-    }
-  }
-  video_update_core_dmd(bitmap, cliprect, layout);
-  return 0;
-}
-
 
 // Goofy Hoops - using Q-Sound chip and different memory / port mapping on 68306 MPU 
 
@@ -828,7 +1021,7 @@ static MACHINE_INIT(romstar) {
   timer_pulse(TIME_IN_HZ(970), 0, romstar_irq1);
 
   //IRQ4 clock - might be unused, still pulse it because we don't know what that U8 chip does...
-  timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4);
+  /* FIXME timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4); */
 }
 
 static INTERRUPT_GEN(romstar_vblank) {

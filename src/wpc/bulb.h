@@ -11,6 +11,8 @@
 #define BULB_89   3
 #define BULB_MAX  4
 
+#define BULB_T_MAX 3400
+
 extern void bulb_init();
 extern double bulb_filament_temperature_to_emission(const double T);
 extern double bulb_emission_to_filament_temperature(const double p);

@@ -465,7 +465,7 @@ static core_tGameData cftblGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,1,0,0,0,0,0, // 8 (or 12?) ramp lights; the pattern repeats every 4 lamps, so 1 extra column is enough
+    0,1,0,0,0,0,WPC_CFTBL, // 8 ramp lights 'Chase Light' wired between GI outputs 1/4 and 2 bit decoder wired on solenoid outputs 20/24 => directly handled in main WPC driver
     NULL, cftbl_handleMech, NULL, cftbl_drawMech,
     NULL
 #ifdef ENABLE_MECHANICAL_SAMPLES
@@ -482,21 +482,11 @@ static core_tGameData cftblGameData = {
   }
 };
 
-static WRITE_HANDLER(cftbl_wpc_w) {
-  UINT8 state;
-  wpc_w(offset, data);
-  if (offset == WPC_SOLENOID3) {
-    state = 1 << ((GET_BIT7 << 1) | GET_BIT3);
-    coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = (state << 4) | state;
-  }
-}
-
 /*---------------
 /  Game handling
 /----------------*/
 static void init_cftbl(void) {
   core_gameData = &cftblGameData;
-  install_mem_write_handler(0, 0x3fb0, 0x3fff, cftbl_wpc_w);
   hc55516_set_sample_clock(0, 22372);
 }
 

@@ -3,7 +3,6 @@
 #include <math.h>
 #include "bulb.h"
 
-
 /*-------------------
 /  Bulb characteristics and precomputed LUTs
 /-------------------*/
@@ -11,19 +10,20 @@ typedef struct {
   double surface; /* filament surface in m² */
   double mass;	/* filament mass in kg */
   double r0; /* resistance at 293K */
-  double cool_down[3000]; /* precomputed cool down factor */
-  double heat_factor[3000]; /* precomputed heat factor = 1.0 / (R * Mass * Specific Heat) */
+  double cool_down[BULB_T_MAX + 1]; /* precomputed cool down factor */
+  double heat_factor[BULB_T_MAX + 1]; /* precomputed heat factor = 1.0 / (R * Mass * Specific Heat) */
 } bulb_tLampCharacteristics;
 
 /*-------------------
 /  local variables
 /-------------------*/
 static struct {
-  double                      t_to_p[1500];
+  double                      t_to_p[BULB_T_MAX + 1 - 1500];
   double                      p_to_t[512];
-  double                      specific_heat[3000];
+  double                      specific_heat[BULB_T_MAX + 1];
 } locals;
 
+// Bulb characteristics, estimated by fitting ratings (U,I,P) at a supposed steady state temperature of 2700K, then validating against high FPS video
 static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
    { 0.000001549619403110030, 0.000000203895434417560, 1.70020865326503000 }, // #44 Bulb characteristics (6.3V, 250mA, 1.26W, 5lm)
    { 0.000000929872857822516, 0.000000087040748856477, 2.83368108877505000 }, // #47 Bulb characteristics (6.3V, 150mA, 0.95W, 6.3lm)
@@ -38,13 +38,13 @@ void bulb_init()
 {
    // Compute filament temperature to visible emission power LUT, normalized by visible emission power at T=2700K, according 
    // to the formula from "Luminous radiation from a black body and the mechanical equivalentt of light" by W.W.Coblentz and W.B.Emerson
-   for (int i=0; i<1500; i++)
+   for (int i=0; i<= BULB_T_MAX - 1500; i++)
    {
       double T = 1500.0 + i;
       locals.t_to_p[i] = 1.247/pow(1.0+129.05/T, 204.0) + 0.0678/pow(1.0+78.85/T, 404.0) + 0.0489/pow(1.0+23.52/T, 1004.0) + 0.0406/pow(1.0+13.67/T, 2004.0);
    }
    double P2700 = locals.t_to_p[2700 - 1500];
-   for (int i=0; i<1500; i++)
+   for (int i=0; i<= BULB_T_MAX - 1500; i++)
    {
       locals.t_to_p[i] /= P2700;
    }
@@ -58,7 +58,7 @@ void bulb_init()
          t_pos++;
       locals.p_to_t[i] = 1500 + t_pos;
    }
-   for (int i=0; i<3000; i++)
+   for (int i=0; i <= BULB_T_MAX; i++)
    {
       double T = i;
       // Compute Tungsten specific heat (energy to temperature transfer, depending on temperature) according to forumla from "Heating-times of tungsten filament incandescent lamps" by Dulli Chandra Agrawal
@@ -80,7 +80,7 @@ void bulb_init()
 double bulb_filament_temperature_to_emission(const double T)
 {
    if (T < 1500.0) return 0;
-   if (T >= 2999.0) return locals.t_to_p[1499];
+   if (T >= BULB_T_MAX) return locals.t_to_p[BULB_T_MAX - 1500];
    return locals.t_to_p[(int)T - 1500];
    // Linear interpolation is not worth its cost
    // int lower_T = (int) T, upper_T = (int) (T + 0.5);
@@ -89,7 +89,7 @@ double bulb_filament_temperature_to_emission(const double T)
 }
 
 /*-------------------------------
-/  Returns filament temperature for a given visible emission power normalized for a an emission power of 1.0 at 2700K
+/  Returns filament temperature for a given visible emission power normalized for an emission power of 1.0 at 2700K
 /-------------------------------*/
 double bulb_emission_to_filament_temperature(const double p)
 {
@@ -147,7 +147,7 @@ double bulb_heat_up(const int bulb, double T, double duration, const double U, c
 {
    while (duration > 0.0)
    {
-      T = T < 293.0 ? 293.0 : T > 2999.0 ? 2999.0 : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
+      T = T < 293.0 ? 293.0 : T > BULB_T_MAX ? BULB_T_MAX : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
       double energy;
       if (serial_R)
       {

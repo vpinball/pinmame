@@ -60,7 +60,7 @@ static void ph_drawMech(BMTYPE **line) {
 }
 static core_tGameData phGameData = {
   GEN_WPC95, wpc_dispDMD64,
-  { FLIP_SWNO(0,0), 0,16,0,0,0,0,1, NULL, NULL, mech_getPos, ph_drawMech },
+  { FLIP_SWNO(0,0), 0,16,0,0,0,0,WPC_PH, NULL, NULL, mech_getPos, ph_drawMech },
   NULL,
   {
     "901 100031 64739 123",

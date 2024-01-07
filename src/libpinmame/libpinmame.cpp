@@ -1007,7 +1007,7 @@ PINMAMEAPI void PinmameSetSolenoidMask(const int low, const uint32_t mask)
 
 PINMAMEAPI int PinmameGetMaxSolenoids()
 {
-	return (CORE_MAXSOL + CORE_MODSOL_MAX);
+	return CORE_MODOUT_SOL_MAX;
 }
 
 /******************************************************
@@ -1041,7 +1041,7 @@ PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedS
 
 PINMAMEAPI int PinmameGetMaxLamps()
 {
-	return (CORE_MAXLAMPCOL * 8) + CORE_MAXRGBLAMPS;
+	return CORE_MODOUT_LAMP_MAX;
 }
 
 /******************************************************
@@ -1075,7 +1075,7 @@ PINMAMEAPI int PinmameGetChangedLamps(PinmameLampState* const p_changedStates)
 
 PINMAMEAPI int PinmameGetMaxGIs()
 {
-	return CORE_MAXGI;
+	return CORE_MODOUT_GI_MAX;
 }
 
 /******************************************************
@@ -1109,7 +1109,7 @@ PINMAMEAPI int PinmameGetChangedGIs(PinmameGIState* const p_changedStates)
 
 PINMAMEAPI int PinmameGetMaxLEDs()
 {
-	return CORE_SEGCOUNT;
+	return CORE_MODOUT_SEG_MAX;
 }
 
 /******************************************************
