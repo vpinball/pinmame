@@ -16,8 +16,7 @@ static struct {
   mech_tInitData md;
 } locals;
 
-INLINE double saturate(double v) { return v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v; }
-INLINE UINT8 saturatedByte(double v) { return (UINT8)(255.0 * (v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v)); }
+INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
 /*-------------------------------
 /  Initialise/reset the VP interface
@@ -73,7 +72,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
   {
 	 for (ii = 0; ii < coreGlobals.nLamps; ii++) {
-		UINT8 val = (UINT8)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
+		UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
 		if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
 		  chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp((ii / 8) + 1, ii & 7) : 0;
 		  chgStat[idx].currStat = val;
@@ -86,7 +85,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   {
     UINT8 lampMatrix[CORE_MAXLAMPCOL];
     memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
-	 int nCol = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2) ? 2 : core_gameData->hw.lampCol;
+    int nCol = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2) ? 2 : core_gameData->hw.lampCol;
     for (ii = 0; ii < CORE_STDLAMPCOLS + nCol; ii++) {
       int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
       if (chgLamp) {
@@ -112,7 +111,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 	 // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
 	 if ((core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2)) {
 	   for (ii = 80; ii < coreGlobals.nLamps; ii++) {
-		  UINT8 val = (UINT8)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
+		  UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
 		  if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
 		    chgStat[idx].lampNo = ii + 1;
 		    chgStat[idx].currStat = val;
@@ -139,17 +138,17 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
     for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-		UINT8 v = saturatedByte(state[ii]);
+      UINT8 v = saturatedByte(state[ii]);
       if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
         chgStat[idx].solNo = ii + 1;
-		  chgStat[idx].currStat = v;
+        chgStat[idx].currStat = v;
         idx += 1;
         locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] = v;
       }
     }
   }
   else {
-    UINT64 allSol = core_getAllSol();
+	 UINT64 allSol = core_getAllSol();
 	 UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
 	 locals.lastSol = allSol;
 	 for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
@@ -176,7 +175,7 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   {
 	  int idx = 0;
 	  for (int i = 0; i < coreGlobals.nGI; i++) {
-		  UINT8 val = (UINT8)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].value);
+		  UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].value);
 		  if (val != locals.lastPhysicsOutput[CORE_MODOUT_GI0 + i]) {
 			  chgStat[idx].giNo = i;
 			  chgStat[idx].currStat = val;
@@ -193,7 +192,7 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   int ii;
   memcpy(allGI, coreGlobals.gi, sizeof(allGI));
   for (ii = 0; ii < CORE_MAXGI; ii++) {
-	 if (allGI[ii] != locals.lastGI[ii]) {
+    if (allGI[ii] != locals.lastGI[ii]) {
 		chgStat[idx].giNo     = ii;
 		chgStat[idx].currStat = allGI[ii];
 		idx += 1;
@@ -371,8 +370,8 @@ int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask, UINT64 mask2) {
 
   for (ii = 0; ii < CORE_SEGCOUNT; ii++, mask >>= 1) {
     UINT16 chgSeg = coreGlobals.drawSeg[ii] ^ locals.lastSeg[ii];
-	if (ii == 64)
-		mask = mask2;
+    if (ii == 64)
+      mask = mask2;
     if ((mask & 0x01) && chgSeg) {
       chgStat[idx].ledNo = ii;
       chgStat[idx].chgSeg = chgSeg;

@@ -87,7 +87,7 @@ void vp_setDIP(int bank, int value) { }
   extern void libpinmame_update_display(const int index, const struct core_dispLayout* p_layout, const void* p_data);
 #endif
 
-INLINE UINT8 saturatedByte(double v) { return (UINT8)(255.0 * (v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v)); }
+INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
@@ -1230,12 +1230,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
       //
 
-#ifdef VPINMAME
-		memset(AlphaNumericFrameBuffer,0x00,2048);
-#endif
-
-#ifdef LIBPINMAME
-		memset(AlphaNumericFrameBuffer,0x00,4096);
+#if defined(VPINMAME) || defined(LIBPINMAME)
+		memset(AlphaNumericFrameBuffer,0,sizeof(AlphaNumericFrameBuffer));
 #endif
 
 		switch (alpha_layout) {
@@ -1474,7 +1470,7 @@ void core_updateSw(int flipEn) {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
     for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-		UINT8 v = saturatedByte(state[ii]);
+      UINT8 v = saturatedByte(state[ii]);
       if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
         #ifdef LIBPINMAME
         OnSolenoid(ii + 1, v);
@@ -1503,11 +1499,11 @@ void core_updateSw(int flipEn) {
   }
   else {
     UINT64 allSol = core_getAllSol();
-	 UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
+    UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
     locals.lastSol = allSol;
-	 for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
-	 {
-		if (chgSol & 0x01) {
+    for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
+    {
+      if (chgSol & 0x01) {
         OnSolenoid(ii + 1, allSol & 0x01);
         /*-- log solenoid number on the display (except flippers) --*/
         if ((!pmoptions.dmd_only && (allSol & 0x01)) && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
@@ -1524,9 +1520,9 @@ void core_updateSw(int flipEn) {
            proc_mechsounds(ii, allSol & 0x01);
         #endif
       }
-		chgSol >>= 1;
-		allSol >>= 1;
-	 }
+      chgSol >>= 1;
+      allSol >>= 1;
+    }
   }
 
   /*-- check if we should use simulator keys --*/
@@ -2085,7 +2081,7 @@ typedef struct {
       {
          int type;        /* bulb physical characteristics */
          int isAC;        /* AC or DC ? */
-         float U;	        /* voltage (Volts) */
+         float U;         /* voltage (Volts) */
          float serial_R;  /* serial resistor (Ohms) */
       } bulb;
    };
@@ -2216,7 +2212,7 @@ static MACHINE_INIT(core) {
     coreOutputinfos[CORE_MODOUT_PULSE].minPWMIntegrationTime = 0.0f;
     // binary output: fire as soon as a low to high transition is found, then go low if low and not pulsed
     coreOutputinfos[CORE_MODOUT_SOL_2_STATE].minPWMIntegrationTime = 0.001f;
-	 // legacy binary output: like CORE_MODOUT_SOL_2_STATE but with legacy behavior of delaying the state by a few 'VBlank's (also used to have a bug on WPC which would only check if not pulsed but not base state)
+    // legacy binary output: like CORE_MODOUT_SOL_2_STATE but with legacy behavior of delaying the state by a few 'VBlank's (also used to have a bug on WPC which would only check if not pulsed but not base state)
     coreOutputinfos[CORE_MODOUT_LEGACY_SOL_2_STATE].minPWMIntegrationTime = 0.001f;
     // legacy binary output: return binary value for driver's getSol function
     coreOutputinfos[CORE_MODOUT_LEGACY_SOL_CUSTOM].minPWMIntegrationTime = 0.0f;
@@ -2513,7 +2509,7 @@ void core_update_pwm_output(float now, int index, int isFlip)
    const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
    output->elapsedInStateTime[state] += (now - output->dataTimestamp);
    output->dataTimestamp = now;
-   
+
    const float elapsedSinceLastFlip = now - output->lastFlipTimestamp;
    const float minPWMIntegrationTime = coreOutputinfos[output->type].minPWMIntegrationTime;
    float integrationLength = output->elapsedInStateTime[0] + output->elapsedInStateTime[1];
@@ -2536,14 +2532,14 @@ void core_update_pwm_output(float now, int index, int isFlip)
    else if (integrationLength < minPWMIntegrationTime)
    {
      // Perform only the basic state accumulation for performance reasons
-	  // This avoid doing full physics model integration for each state change on fast controllers like Capcom or SAM hardware
-	  return;
+     // This avoid doing full physics model integration for each state change on fast controllers like Capcom or SAM hardware
+     return;
    }
    else if (elapsedSinceLastFlip < integrationLength) // integrationLength is >= minPWMIntegrationTime but last flip happened inside the integration period
    {
       // Last flip happened in this integration period: perform integration up to the last flip event (to align on end of pulse if applicable), keeping the remaining for later integration
-	  now -= elapsedSinceLastFlip;
-	  integrationLength -= elapsedSinceLastFlip;
+      now -= elapsedSinceLastFlip;
+      integrationLength -= elapsedSinceLastFlip;
       output->elapsedInStateTime[state] -= elapsedSinceLastFlip;
       pwmDutyCycle = output->elapsedInStateTime[1] / integrationLength;
       output->elapsedInStateTime[1 - state] = 0.0f;
@@ -2570,14 +2566,14 @@ void core_update_pwm_output(float now, int index, int isFlip)
      output->value = (float)state;
      break;
    case CORE_MODOUT_SOL_2_STATE: {
-	  // Apply the legacy solenoid behavior but directly updating coreGlobals on state change avoiding the latency of legacy implementation
+     // Apply the legacy solenoid behavior but directly updating coreGlobals on state change avoiding the latency of legacy implementation
      // (which used to handle PWM by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware)
-	  double prevValue = output->value;
+     double prevValue = output->value;
      if (isFlip && state == 0) {
        // If binary output is flipping to ON state, immediatly retain the ON state
        output->value = 1.0f;
      }
-	  else if ((now - coreGlobals.physicOutputState[index].lastFlipTimestamp) > 0.060f) {
+     else if ((now - coreGlobals.physicOutputState[index].lastFlipTimestamp) > 0.060f) {
        // Output is in a stable state (not PWMed since at least 60ms), just report its value
        // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
        output->value = (float)state;
@@ -2665,7 +2661,7 @@ void core_update_pwm_output(float now, int index, int isFlip)
          const float dt = integrationLength < minPWMIntegrationTime ? integrationLength : minPWMIntegrationTime;
          // Keeps T within the range of the LUT (between room temperature and melt down point)
          output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
-         const float Ut = isAC ? (1.41421356f * sinf(60.0f * 2.0f * (float) PI * (integrationTime - coreGlobals.lastACZeroCrossTimeStamp)) * U) : U;
+         const float Ut = isAC ? (1.41421356f * sinf((float)(60.0 * 2.0 * PI) * (integrationTime - coreGlobals.lastACZeroCrossTimeStamp)) * U) : U;
          const float dT = dt * (float) bulb_heat_up_factor(bulb, output->state.bulb.filament_temperature, Ut, serial_R);
          output->state.bulb.filament_temperature += dT < 1000.0f ? dT : 1000.0f;
          core_eye_flicker_fusion(output, dt, (float) bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature));
@@ -2709,7 +2705,7 @@ void core_update_pwm_output(float now, int index, int isFlip)
 }
 
 // Called periodically to perform PWM integration on all outputs.
-// This is needed if we need multithreaded access to the output state like for VPinMame since integration is not thread safe.
+// This is needed if we need multithreaded access to the output state like for VPinMAME since integration is not thread safe.
 void core_update_pwm_outputs(int unused)
 {
    float now = (float) timer_get_time();

@@ -1267,10 +1267,10 @@ static MACHINE_INIT(wpc) {
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
-  else if (strncasecmp(gn, "hshot_p8", 7) == 0) { // Hot Shot
+  else if (strncasecmp(gn, "hshot_p8", 8) == 0) { // Hot Shot
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "hurr_l2", 5) == 0) { // Hurricane
+  else if (strncasecmp(gn, "hurr_l2", 7) == 0) { // Hurricane
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "i500_11r", 8) == 0) { // Indiana 500
@@ -1323,7 +1323,7 @@ static MACHINE_INIT(wpc) {
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
-  else if (strncasecmp(gn, "pop_lx5", 7) == 0) { // Popeye Save The earth
+  else if (strncasecmp(gn, "pop_lx5", 7) == 0) { // Popeye Save The Earth
      int flashers[] = { 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;

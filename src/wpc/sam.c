@@ -1229,8 +1229,8 @@ static MACHINE_INIT(sam) {
 		LOG(("Unable to create sam_snd.raw file\n"));
 	#endif
 
-   // Initialize outputs
-   // Force physical output emulation since we use them to compute solenoids
+	// Initialize outputs
+	// Force physical output emulation since we use them to compute solenoids
 	options.usemodsol |= CORE_MODOUT_FORCE_ON;
 	coreGlobals.nGI = 1;
 	coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
@@ -1272,10 +1272,10 @@ static MACHINE_INIT(sam) {
 		int flashers[] = { 18, 20, 21, 22, 24, 26, 28, 31 };
 		for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 			coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
-	  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 29].type = CORE_MODOUT_NONE;
-	  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 45].type = CORE_MODOUT_NONE;
-	  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 59].type = CORE_MODOUT_LED_STROBE_1_10MS;
-	  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 60].type = CORE_MODOUT_LED_STROBE_1_10MS;
+		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 29].type = CORE_MODOUT_NONE;
+		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 45].type = CORE_MODOUT_NONE;
+		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 59].type = CORE_MODOUT_LED_STROBE_1_10MS;
+		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 60].type = CORE_MODOUT_LED_STROBE_1_10MS;
 	}
 	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
 		// TODO no manual found on IPDB
@@ -1300,7 +1300,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "mt_145h", 8) == 0) { // Mustang LE
+	else if (strncasecmp(gn, "mt_145h", 7) == 0) { // Mustang LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1368,7 +1368,7 @@ static MACHINE_INIT(sam) {
 	else if (strncasecmp(gn, "twenty4_150", 11) == 0) { // 24
 		// TODO no manual found on IPDB
 	}
-	else if (strncasecmp(gn, "wof_500", 7) == 0) { // Wheel of fortune
+	else if (strncasecmp(gn, "wof_500", 7) == 0) { // Wheel of Fortune
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED); // Mini DMD (175 faded LEDs)
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1703,7 +1703,7 @@ static INTERRUPT_GEN(sam_vblank) {
 	memset(coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
 	for (int i = 0; i < 8 + core_gameData->hw.lampCol; i++)
 		for (int j = 0; j < 8; j++)
-			if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.25)
+			if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.25f)
 				coreGlobals.lampMatrix[i] |= 1 << j;
 
 	/*-- display --*/
@@ -1715,7 +1715,7 @@ static INTERRUPT_GEN(sam_vblank) {
    /*-- solenoids --*/
    coreGlobals.solenoids = 0;
    for (int i = 0; i < 32; i++)
-      if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5)
+      if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
          coreGlobals.solenoids |= 1 << i;
 
 	/*-- GameOn for Fast Flips --*/
@@ -1832,7 +1832,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
 			 //const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
 			 const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
 			 float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			 coreGlobals.dotCol[y + 1][x] = (UINT8)(15.0 * (v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v));
+			 coreGlobals.dotCol[y + 1][x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
 		 }
 	 // Use the video update to output mini DMD as LED segments (somewhat hacky)
 	 for (ii = 0; ii < 5; ii++) {
@@ -1852,9 +1852,9 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (kk = 0; kk < 5; kk++) {
 			const int target = 140 + jj + (kk * 35);
 			float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dotCol[kk + 1][jj] = (UINT8)(15.0 * (v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v));
+			coreGlobals.dotCol[kk + 1][jj] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
 		}
-	 // Use the video update to output mini DMD as LED segments (somewhat hacky)
+    // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 35; ii++) {
       bits = 0;
       for (kk = 1; kk < 6; kk++)

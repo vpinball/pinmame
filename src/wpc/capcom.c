@@ -34,9 +34,9 @@
   09/21/03-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
   09/25/03          - First time game booted without any errors.. (Even though in reality, the U16 would still fail if not hacked around)
   11/03/03          - First time sound was working almost fully (although still some glitches and much work left to do)
-  11/09/03		     - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
+  11/09/03          - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
   11/10/03          - Seem to have found decent IRQ4 freq. to allow KP & FF to fire sols 1 & 2 properly
-  11/15/03			  - 68306 optimized & true address mappings implemented, major speed improvements!
+  11/15/03          - 68306 optimized & true address mappings implemented, major speed improvements!
 
   Hacks & Issues that need to be looked into:
   #1) Why do we need to adjust the CPU Speed to get the animations to display at correct speed? U16 related bug?
@@ -88,13 +88,13 @@
 #include "sndbrd.h"
 
 //Turn off when not testing mpg audio
-#define TEST_MPGAUDIO	   0
+#define TEST_MPGAUDIO      0
 
 // Define to get read/write log to U16
 #define VERBOSE_U16        0
 
 // Define to 1 to patch ROM to disable error messages
-#define SKIP_ERROR_MSG	   0
+#define SKIP_ERROR_MSG     0
 
 // Define to log lamp strobe timings
 #define LOG_LAMP_STROBE    0
@@ -146,18 +146,18 @@ static INTERRUPT_GEN(cc_vblank) {
   memset(coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
   for (int i = 0; i < 8 + core_gameData->hw.lampCol; i++)
     for (int j = 0; j < 8; j++)
-      if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1)
+      if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1f)
         coreGlobals.lampMatrix[i] |= 1 << j;
 
   /*-- solenoids --*/
   coreGlobals.solenoids = 0;
   for (int i = 0; i < 32; i++)
-    if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5)
+    if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
       coreGlobals.solenoids |= 1 << i;
 
   /*-- update leds (they are PWM faded, so uses physic output) --*/
-  coreGlobals.diagnosticLed = (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8    ].value >= 0.5 ? 1 : 0)
-                            | (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8 + 1].value >= 0.5 ? 2 : 0);
+  coreGlobals.diagnosticLed = (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8    ].value >= 0.5f ? 1 : 0)
+                            | (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8 + 1].value >= 0.5f ? 2 : 0);
 
   core_updateSw(TRUE);
 }
@@ -196,7 +196,7 @@ static void cc_zeroCross(int data) {
 //PA7   - GRESET (output only)
 static READ16_HANDLER(cc_porta_r) {
   int data = locals.parallelA & 0xCF;
-   
+
   // Hardware measure 5V DV and 50V DC voltage by performing pulses (using PULSE out signal) through a RC low pass filter (time constant is 363us, since it is a 11k resistor with a 33nF capacitor)
   // then reading the binary compared value against voltage divided from 5V or 50V line. So we compute the voltage at the capacitor and perform the comparison like the hardware
   // Some games seems to also have 5V line voltage with the same RC schematics as for 50V (f.e. in Airborne scematics but missing in Breakshot ones). There is no audit result for it.
@@ -253,7 +253,7 @@ static WRITE16_HANDLER(cc_porta_w) {
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
     DBGLOG(("Port A write %04x\n",data));
 
-  // Bulletin service 95-010a states that the diag led should goes bright then dims 4 times per second => PWM integration on the diag LED...
+  // Bulletin service 95-010a states that the diag led should go bright then dims 4 times per second => PWM integration on the diag LED...
   core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8, (data & 0x08) >> 3, 0x01);
 
   // Cabinet switch voltage level comparator (either comparator from +5V with 2.2k/1.2k =>1.76V or 2.2k/3.9k => 3.20V), not sure why
@@ -465,8 +465,8 @@ static WRITE16_HANDLER(u16_w) {
 
     case 0x200: { // IRQ1 Frequency, IRQ4 line 1/2/3 enable
       LOG_U16(("PC %08x - U16w IRQ1 f=%x IRQ4=%x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), (data >> 6) & 3, (data & 0x7) ^ 4, offset, data, mem_mask));
-      //int irq1NCycles[] = { 22662, 11308, 5631, 2789 }; // Number of CPU cycles taken from startup check disassembly (value without IRQ1 adjusting on ACK)
-      int irq1NCycles[] = { 22602, 11248, 5571, 2729 }; // Number of CPU cycles taken from startup check disassembly (value with IRQ1 adjusting on ACK)
+      //static const int irq1NCycles[] = { 22662, 11308, 5631, 2789 }; // Number of CPU cycles taken from startup check disassembly (value without IRQ1 adjusting on ACK)
+      static const int irq1NCycles[] = { 22602, 11248, 5571, 2729 }; // Number of CPU cycles taken from startup check disassembly (value with IRQ1 adjusting on ACK)
       locals.u16IRQ1Period = TIME_IN_SEC(irq1NCycles[(data >> 6) & 3] / (double)CPU_CLOCK);
       timer_adjust(locals.u16IRQ1timer, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period, 0, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period);
       timer_adjust(locals.u16IRQ4Line1timer, locals.u16IRQ4Line1Period, 0, locals.u16IRQ4Line1Period);
@@ -689,12 +689,12 @@ static MACHINE_INIT(cc) {
 
   // If wanted, we can skip the startup error messages by patching the rom (NOTE: MUST COME BEFORE WE COPY ROMS BELOW)
 #if SKIP_ERROR_MSG
-  //NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie,
-  //		0x10092192 becomes 0x00092192
+  //NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, i.e.
+  //      0x10092192 becomes 0x00092192
   UINT32 fixaddr = 0;
   switch (core_gameData->hw.gameSpecific1) {
     case 0: break;
-    case 1: case 2: fixaddr = 0x0009593c;	break; //PM
+    case 1: case 2: fixaddr = 0x0009593c; break; //PM
     case 3:         fixaddr = 0x0008ce04; break; //AB
     case 4:         fixaddr = 0x00088204; break; //ABR
     case 5: case 6: fixaddr = 0x0008eb60; break; //BS
@@ -750,7 +750,7 @@ static MACHINE_INIT(cc) {
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "kpb105", 6) == 0) { // KingPin
-    // To be checked since this is from VPX table (did not found a manual for this one)
+    // To be checked since this is from VPX table (did not find a manual for this one)
     coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1,  2, CORE_MODOUT_BULB_89_20V_DC_WPC);
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -884,7 +884,7 @@ Therefore:
  0 0 (40000000) - /AUX I-O => Power Driver Board - Lamp matrices (and strobed switch matrix for Breakshot)
  0 1 (40400000) - /EXT I-O => Power Driver Board - Solenoids / Switch Board (not present for Breakshot)
  1 0 (40800000) - /SWITCH0 => 16 Cabinet switches
- 1 1 (40c00000) - /CS		=> U16 custom chip
+ 1 1 (40c00000) - /CS      => U16 custom chip
 */
 static MEMORY_READ16_START(cc_readmem)
   { 0x00000000, 0x0007ffff, MRA16_RAM },			/* DRAM */

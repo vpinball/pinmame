@@ -170,18 +170,18 @@ static INTERRUPT_GEN(se_vblank) {
    if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr - 1] > 0) {
      coreGlobals.solenoids |= 0x4000;
      coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) / 8] |= 0x40;
-     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 1.0;
+     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 1.0f;
    }
    else
    {
      coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) / 8] &= ~0x40;
-     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 0.0;
+     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 0.0f;
    }
 	selocals.solenoids = coreGlobals.pulsedSolState;
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
-         static UINT64 lastSol = 0;
-         UINT64 allSol = core_getAllSol();
+			static UINT64 lastSol = 0;
+			UINT64 allSol = core_getAllSol();
 			if (coreGlobals.p_rocEn) {
 				int ii;
 				UINT64 chgSol = (allSol ^ lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
@@ -300,11 +300,11 @@ static MACHINE_INIT(se3) {
    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 2, CORE_MODOUT_NONE); // Fake solenoids for fast flip
    coreGlobals.nGI = 1;
    core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
-	const struct GameDriver* rootDrv = Machine->gamedrv;
-	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
-		rootDrv = rootDrv->clone_of;
-	const char* const grn = rootDrv->name;
-	if (strncasecmp(grn, "lotr", 4) == 0) { // The Lord of The Ring
+   const struct GameDriver* rootDrv = Machine->gamedrv;
+   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+      rootDrv = rootDrv->clone_of;
+   const char* const grn = rootDrv->name;
+   if (strncasecmp(grn, "lotr", 4) == 0) { // The Lord of The Rings
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -399,7 +399,7 @@ static MACHINE_INIT(se) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const grn = rootDrv->name;
-  if (strncasecmp(grn, "rctycn", 8) == 0) { // Roller Coaster Tycoon
+  if (strncasecmp(grn, "rctycn", 6) == 0) { // Roller Coaster Tycoon
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);

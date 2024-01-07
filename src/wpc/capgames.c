@@ -5,7 +5,7 @@
 #include "sndbrd.h"
 
 // CPU controlled flipper coils. Fast flips are also provided but are not 100% correct since the hardware is CPU controlled and pulse modulated
-#define FLIP    FLIP_SWNO(5,6) + FLIP_SOL(FLIP_LL | FLIP_LR | FLIP_UR | FLIP_UL)
+#define FLIP    (FLIP_SWNO(5,6) + FLIP_SOL(FLIP_LL | FLIP_LR | FLIP_UR | FLIP_UL))
 
 /*-- DMD 128 X 32 --*/
 const core_tLCDLayout cc_dispDMD128x32[] = {
