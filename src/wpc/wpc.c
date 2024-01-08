@@ -1182,8 +1182,7 @@ static MACHINE_INIT(wpc) {
      int flashers[] = { 17, 18, 19, 20, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
-     // TODO check Helmet (seems they are 12V) wired at sol #21/#22 (motor ? but operator manual states flashers)
-     // TODO add Helmet lights
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_BULB_44_18V_DC_WPC); // Helmet lights
   }
   else if (strncasecmp(gn, "br_l4", 5) == 0) { // Black Rose
      int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
@@ -1403,7 +1402,7 @@ static MACHINE_INIT(wpc) {
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   // Legacy integrator for backward compatibility: not really needed, the new one gives better result but could be uncommented if bugs are found with existing tables
-  /*if (options.usemodsol & CORE_MODOUT_ENABLE_LEGACY)
+  /*if (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)
     core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_LEGACY_SOL_WPC);
     //for (int i = 0; i < coreGlobals.nSolenoids; i++)
     //  if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type == CORE_MODOUT_BULB_89_20V_DC_WPC)
