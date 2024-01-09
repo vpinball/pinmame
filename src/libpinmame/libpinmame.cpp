@@ -1002,6 +1002,24 @@ PINMAMEAPI void PinmameSetSolenoidMask(const int low, const uint32_t mask)
 }
 
 /******************************************************
+ * PinmameGetModOutputType
+ ******************************************************/
+
+PINMAMEAPI PINMAME_MOD_OUTPUT_TYPE PinmameGetModOutputType(const int output, const int no)
+{
+	return (PINMAME_MOD_OUTPUT_TYPE)vp_getModOutputType(output, no);
+}
+
+/******************************************************
+ * PinmameSetModOutputType
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PINMAME_MOD_OUTPUT_TYPE type)
+{
+	vp_setModOutputType(output, no, (int)type);
+}
+
+/******************************************************
  * PinmameGetMaxSolenoids
  ******************************************************/
 

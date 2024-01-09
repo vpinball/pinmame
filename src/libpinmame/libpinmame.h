@@ -92,6 +92,13 @@ typedef enum {
 	PINMAME_DISPLAY_TYPE_SEG7SCH = PINMAME_DISPLAY_TYPE_SEG7SC | PINMAME_DISPLAY_TYPE_SEGHIBIT
 } PINMAME_DISPLAY_TYPE;
 
+typedef enum {
+	PINMAME_MOD_OUTPUT_TYPE_SOLENOID = 0,  // Solenoid output type
+	PINMAME_MOD_OUTPUT_TYPE_LAMP = 1,      // Lamp output type
+	PINMAME_MOD_OUTPUT_TYPE_GI = 2,        // Global Illumination output type
+	PINMAME_MOD_OUTPUT_TYPE_ALPHASEG = 3,  // Alpha Numeric segment output type
+} PINMAME_MOD_OUTPUT_TYPE;
+
 typedef enum : uint64_t {
 	PINMAME_HARDWARE_GEN_WPCALPHA_1 = 0x0000000000001,  // Alpha-numeric display S11 sound, Dr Dude 10/90
 	PINMAME_HARDWARE_GEN_WPCALPHA_2 = 0x0000000000002,  // Alpha-numeric display,  - The Machine BOP 4/91
@@ -440,6 +447,8 @@ PINMAMEAPI void PinmameSetSwitch(const int swNo, const int state);
 PINMAMEAPI void PinmameSetSwitches(const PinmameSwitchState* const p_states, const int numSwitches);
 PINMAMEAPI uint32_t PinmameGetSolenoidMask(const int low);
 PINMAMEAPI void PinmameSetSolenoidMask(const int low, const uint32_t mask);
+PINMAMEAPI PINMAME_MOD_OUTPUT_TYPE PinmameGetModOutputType(const int output, const int no);
+PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PINMAME_MOD_OUTPUT_TYPE type);
 PINMAMEAPI int PinmameGetMaxSolenoids();
 PINMAMEAPI int PinmameGetSolenoid(const int solNo);
 PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates);
