@@ -152,25 +152,25 @@ static INTERRUPT_GEN(s11_vblank) {
     if (coreGlobals.p_rocEn) {
       // Loop through the lamp matrix, looking for any which have changed state
       int col, row, procLamp;
-			for(col = 0; col < CORE_STDLAMPCOLS; col++) {
-				UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
-				UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
-				for (row = 0; row < 8; row++) {
-                                        procLamp = 80 + (8 * col) + row;
-                                        // If lamp (col,row) has changed state, drive the P-ROC with the new value
-                                        if (chgLamps & 0x01) {
-                                            procDriveLamp(procLamp, tmpLamps & 0x01);
-                                        }
-                                        // If this lamp was defined in the YAML file as one showng kickback status,
-                                        // then call to the kickback routine to update information
-                                        if (coreGlobals.isKickbackLamp[procLamp]) {
-                                                procKickbackCheck(procLamp);
-                                        }
-					chgLamps >>= 1;
-					tmpLamps >>= 1;
-				}
-			}
-			procFlush();
+      for(col = 0; col < CORE_STDLAMPCOLS; col++) {
+        UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
+        UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
+        for (row = 0; row < 8; row++) {
+          procLamp = 80 + (8 * col) + row;
+          // If lamp (col,row) has changed state, drive the P-ROC with the new value
+          if (chgLamps & 0x01) {
+            procDriveLamp(procLamp, tmpLamps & 0x01);
+          }
+          // If this lamp was defined in the YAML file as one showng kickback status,
+          // then call to the kickback routine to update information
+          if (coreGlobals.isKickbackLamp[procLamp]) {
+            procKickbackCheck(procLamp);
+          }
+          chgLamps >>= 1;
+          tmpLamps >>= 1;
+        }
+      }
+      procFlush();
     }
 #endif //PROC_SUPPORT
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
@@ -240,109 +240,108 @@ static INTERRUPT_GEN(s11_vblank) {
    * are currently inactive.
    * The routine first handles all coils going inactive, then A/C if it's safe, then all the coils
    * going active
-
    */
-                static UINT64 lastSol = 0;
-                allSol = (allSol & 0xffffffff00000000) |
-                         (coreGlobals.solenoids);
-                // The Sys11 code fires all coils at once at the start - FF00 - in order
-                // to get the buffers on the MPU to a known state, before the blanking
-                // comes on.  However, with the P-ROC the blanking comes on earlier
-                // which means we get a lot of clunks.  So we skip the FF00 call.
-                // Cannot think of any reason why any valid call for all coils would
-                // be made during the game, so this should be fine.
-                if (coreGlobals.p_rocEn && allSol != 0xff00) {
-                        //int ii;
-                        UINT64 chgSol1 = (allSol ^ lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
-                        UINT64 tmpSol1 = allSol;
-                        UINT64 chgSol2 = chgSol1;
-                        UINT64 tmpSol2 = tmpSol1;
-                        UINT64 onSol = allSol & chgSol1;
-                        UINT64 offSol = ~allSol & chgSol1;
-                        // Only bother with all this checking if anything actually changed
-                        if (chgSol1 || locals.ac_select) {
-                            if (mame_debug) {
-                                fprintf(stderr,"\nCoil Loop Start");
-                                if (locals.ac_select) fprintf(stderr,"\n -Remembered delayed AC from previous loop");
-                            }
-                            // First loop through for anything going inactive
-                            for (ii=0; ii<64; ii++) {
-                                    if (chgSol1 & 0x1) {
-                                        // If the A/C select has made any state change, just make a note of it
-                                        if (ii==core_gameData->sxx.muxSol - 1) {locals.ac_select = 1; locals.ac_state = tmpSol1 & 0x1;}
-                                        // otherwise we only want to do this if we are going inactive
-                                        else if (!(tmpSol1 & 0x1)) {
-                                            if (mame_debug) fprintf(stderr,"\n -Pinmame coil %d changed state",ii);
+    static UINT64 lastSol = 0; //!! move to locals
+    allSol = (allSol & 0xffffffff00000000) |
+             (coreGlobals.solenoids);
+    // The Sys11 code fires all coils at once at the start - FF00 - in order
+    // to get the buffers on the MPU to a known state, before the blanking
+    // comes on.  However, with the P-ROC the blanking comes on earlier
+    // which means we get a lot of clunks.  So we skip the FF00 call.
+    // Cannot think of any reason why any valid call for all coils would
+    // be made during the game, so this should be fine.
+    if (coreGlobals.p_rocEn && allSol != 0xff00) {
+      //int ii;
+      UINT64 chgSol1 = (allSol ^ lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
+      UINT64 tmpSol1 = allSol;
+      UINT64 chgSol2 = chgSol1;
+      UINT64 tmpSol2 = tmpSol1;
+      UINT64 onSol = allSol & chgSol1;
+      UINT64 offSol = ~allSol & chgSol1;
+      // Only bother with all this checking if anything actually changed
+      if (chgSol1 || locals.ac_select) {
+        if (mame_debug) {
+          fprintf(stderr,"\nCoil Loop Start");
+          if (locals.ac_select) fprintf(stderr,"\n -Remembered delayed AC from previous loop");
+        }
+        // First loop through for anything going inactive
+        for (ii=0; ii<64; ii++) {
+          if (chgSol1 & 0x1) {
+            // If the A/C select has made any state change, just make a note of it
+            if (ii==core_gameData->sxx.muxSol - 1) {locals.ac_select = 1; locals.ac_state = tmpSol1 & 0x1;}
+            // otherwise we only want to do this if we are going inactive
+            else if (!(tmpSol1 & 0x1)) {
+              if (mame_debug) fprintf(stderr,"\n -Pinmame coil %d changed state",ii);
 
-                                            if (ii<24) procDriveCoil(ii+40,0);
-                                            else if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
-                                                if (mame_debug) fprintf(stderr,"\nRK MUX Logic");
-                                                if (ii==24) procDriveCoil(44,0);
-                                                else procDriveCoil(ii+27,0);
-                                                }
-                                            else if (ii < 44) procDriveCoil(ii+16, 0);
-                                            }
-                                    }
-                                    chgSol1 >>= 1;
-                                    tmpSol1 >>= 1;
-                            }
-                            // Now that we processed anything going inactive, we take care of the
-                            // A/C select if it needs to change
-                            
-                            if (locals.ac_select)  {
-                                // If this is a Road Kings, it has different muxed solenoids
-                                // so check if any of them are still active
-                                if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
-                                    if ((offSol ^ lastSol) & 0xff007010) {
-                                        // Some are active, so we won't process A/C yet
-                                        if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
-                                    }
-                                    else {
-                                        // No switched coils are active, so it's safe to do the A/C
-                                        if (mame_debug) fprintf(stderr,"\n -AC Select changed state");
-                                        procDriveCoil(core_gameData->sxx.muxSol + 39,locals.ac_state);
-                                        locals.ac_select = 0;
-                                    }
-                                }
-                                else { //Not a Road Kings
-                                    // Check if any of the switched solenoids are active
-                                    if ((offSol ^ lastSol) & 0xff0000ff) {
-                                        if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
-                                    }
-                                    else {
-                                        // If not, it's safe to handle the A/C select
-                                        if (mame_debug) fprintf(stderr,"\n -AC Select changed state");
-                                        procDriveCoil(core_gameData->sxx.muxSol + 39,locals.ac_state);
-                                        locals.ac_select = 0;
-                                    }
-                                }
-                            }
-                            // Second loop through for anything going active, these will be
-                            // safe now as we processed the A/C select already (if applicable)
-                            if (onSol) for (ii=0; ii<64; ii++) {
-                                    if (chgSol2 & 0x1) {
-                                        // If the A/C select has made any state change, skip it because we already
-                                        // handled it
-                                        if (ii!=core_gameData->sxx.muxSol - 1 && (tmpSol2 & 0x1)) {
-                                            if (mame_debug) fprintf(stderr,"\n -Pinmame coil %d changed state",ii);
+              if (ii<24) procDriveCoil(ii+40,0);
+              else if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
+                if (mame_debug) fprintf(stderr,"\nRK MUX Logic");
+                if (ii==24) procDriveCoil(44,0);
+                else procDriveCoil(ii+27,0);
+              }
+              else if (ii < 44) procDriveCoil(ii+16, 0);
+            }
+          }
+          chgSol1 >>= 1;
+          tmpSol1 >>= 1;
+        }
+        // Now that we processed anything going inactive, we take care of the
+        // A/C select if it needs to change
 
-                                            if (ii<24) procDriveCoil(ii+40,1);
-                                            else if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
-                                                if (mame_debug) fprintf(stderr,"\nRK MUX Logic");
-                                                if (ii==24) procDriveCoil(44,1);
-                                                else procDriveCoil(ii+27,1);
-                                                }
-                                            else if (ii< 44) procDriveCoil(ii+16, 1);
-                                            }
-                                    }
-                                    chgSol2 >>= 1;
-                                    tmpSol2 >>= 1;
-                            }
-                            if (mame_debug) fprintf(stderr,"\nCoil Loop End");
+        if (locals.ac_select)  {
+          // If this is a Road Kings, it has different muxed solenoids
+          // so check if any of them are still active
+          if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
+            if ((offSol ^ lastSol) & 0xff007010) {
+              // Some are active, so we won't process A/C yet
+              if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
+            }
+            else {
+              // No switched coils are active, so it's safe to do the A/C
+              if (mame_debug) fprintf(stderr,"\n -AC Select changed state");
+              procDriveCoil(core_gameData->sxx.muxSol + 39,locals.ac_state);
+              locals.ac_select = 0;
+            }
+          }
+          else { //Not a Road Kings
+            // Check if any of the switched solenoids are active
+            if ((offSol ^ lastSol) & 0xff0000ff) {
+              if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
+            }
+            else {
+              // If not, it's safe to handle the A/C select
+              if (mame_debug) fprintf(stderr,"\n -AC Select changed state");
+              procDriveCoil(core_gameData->sxx.muxSol + 39,locals.ac_state);
+              locals.ac_select = 0;
+            }
+          }
+        }
+        // Second loop through for anything going active, these will be
+        // safe now as we processed the A/C select already (if applicable)
+        if (onSol) for (ii=0; ii<64; ii++) {
+          if (chgSol2 & 0x1) {
+            // If the A/C select has made any state change, skip it because we already
+            // handled it
+            if (ii!=core_gameData->sxx.muxSol - 1 && (tmpSol2 & 0x1)) {
+              if (mame_debug) fprintf(stderr,"\n -Pinmame coil %d changed state",ii);
 
-                            lastSol = allSol;
-                        }
-		}
+              if (ii<24) procDriveCoil(ii+40,1);
+              else if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
+                if (mame_debug) fprintf(stderr,"\nRK MUX Logic");
+                if (ii==24) procDriveCoil(44,1);
+                else procDriveCoil(ii+27,1);
+              }
+              else if (ii< 44) procDriveCoil(ii+16, 1);
+            }
+          }
+          chgSol2 >>= 1;
+          tmpSol2 >>= 1;
+        }
+        if (mame_debug) fprintf(stderr,"\nCoil Loop End");
+
+        lastSol = allSol;
+      }
+    }
   }
 #endif  //PROC_SUPPORT
   /*-- display --*/
