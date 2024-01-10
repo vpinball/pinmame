@@ -950,7 +950,7 @@ S11_ROMEND
 CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,l2,l5,"Bad Cats (LA-2)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,g4,l5,"Bad Cats (LG-4)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bcats,tcm,l5,"Bad Cats (The Cat's Meow)", 2023, "idealjoker", s11_mS11BS,0)
+CORE_CLONEDEF(bcats,tcm,l5,"Bad Cats (The Cat's Meow)", 2023, "idealjoker", s11_mS11BS,0) //The Cat's Meow -- a new home ROM for Bad Cats https://pinside.com/pinball/forum/topic/the-cat-s-meow-a-new-home-rom-for-bad-cats
 
 /*-----------------------
 / Mousin' Around 12/89
