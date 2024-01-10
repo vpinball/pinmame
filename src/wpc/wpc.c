@@ -235,12 +235,12 @@ static void wpc_zc(int data) {
 
 void wpc_set_modsol_aux_board(int board)
 {
-	wpc_modsol_aux_board = board;
+  wpc_modsol_aux_board = board;
 }
 
 void wpc_set_fastflip_addr(int addr)
 {
-	wpc_fastflip_addr = addr;
+  wpc_fastflip_addr = addr;
 }
 
 
@@ -1122,9 +1122,9 @@ static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
 }
 
 static MACHINE_INIT(wpc) {
-                              /*128K  256K        512K        768K       1024K*/
+                                    /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
-  size_t romLength = memory_region_length(WPC_ROMREGION);
+  const size_t romLength = memory_region_length(WPC_ROMREGION);
 
   memset(&wpclocals, 0, sizeof(wpclocals));
 
@@ -1174,24 +1174,24 @@ static MACHINE_INIT(wpc) {
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
   if (strncasecmp(gn, "afm_113", 7) == 0) { // Attack from Mars
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "bop_l7", 6) == 0) { // The Machine: Bride of the Pinbot
-     int flashers[] = { 17, 18, 19, 20, 23, 24 };
+     static const int flashers[] = { 17, 18, 19, 20, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
      // TODO check Helmet (seems they are 12V) wired at sol #21/#22 (motor ? but operator manual states flashers)
      // TODO add Helmet lights
   }
   else if (strncasecmp(gn, "br_l4", 5) == 0) { // Black Rose
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "cc_13", 5) == 0) { // Cactus Canyon
-     int flashers[] = { 18, 19, 20, 24, 25, 26, 27, 28 };
+     static const int flashers[] = { 18, 19, 20, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1199,23 +1199,23 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "cp_16", 5) == 0) { // The Champion Pub
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "cv_14", 5) == 0) { // Cirqus Voltaire
-     int flashers[] = { 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "cftbl_l4", 8) == 0) { // Creature From The Black Lagoon
-     int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28 }; // 28 is hologram lamp
+     static const int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28 }; // 28 is hologram lamp
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64, 8, CORE_MODOUT_BULB_86_6_3V_AC); // chase lights (8 strings of #86 bulbs wired between GI and solenoids outputs through triacs and a 2 bit decoder)
   }
   else if (strncasecmp(gn, "congo_21", 8) == 0) { // Congo
-     int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1224,22 +1224,22 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "dm_lx4", 6) == 0) { // Demolition Man
-     int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 };
+     static const int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "drac_l1", 7) == 0) { // Bram Stoker's Dracula
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 26 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "dw_l2", 5) == 0) { // Doctor Who
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "fh_l9", 5) == 0) { // Fun House
-     int flashers[] = { 17, 18, 19, 20, 23, 24 };
+     static const int flashers[] = { 17, 18, 19, 20, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1248,22 +1248,22 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 24 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ft_l5", 5) == 0) { // Fish Tales
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "gi_l9", 5) == 0) { // Gilligan's Island
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "gw_l5", 5) == 0) { // High Speed II: The Getaway
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "hd_l3", 5) == 0) { // Harley Davidson
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1278,7 +1278,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ij_l7", 5) == 0) { // Indiana Jones
-     int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
      coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 24 - 1].type = CORE_MODOUT_LED; // Plane Guns LED
@@ -1287,7 +1287,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "jd_l7", 5) == 0) { // Judge Dredd
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1296,22 +1296,22 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "jy_12", 5) == 0) { // Junk Yard
-     int flashers[] = { 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "mb_10", 5) == 0) { // Monster Bash
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "mm_10", 5) == 0) { // Medieval Madness
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "nbaf_31", 7) == 0) { // NBA Fast Break
-     int flashers[] = { 17, 19, 20, 22, 23, 24 };
+     static const int flashers[] = { 17, 19, 20, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1319,17 +1319,17 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ngg_13", 6) == 0) { // No Good Goofers
-     int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "pop_lx5", 7) == 0) { // Popeye Save The Earth
-     int flashers[] = { 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 };
+     static const int flashers[] = { 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "pz_f4", 5) == 0) { // Party Zone
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1337,37 +1337,37 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "sc_18s11", 8) == 0) { // Safe Cracker
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "sf_l1", 5) == 0) { // SlugFest
-     int flashers[] = { 17, 18, 19, 20, 25, 26 };
+     static const int flashers[] = { 17, 18, 19, 20, 25, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "ss_15", 5) == 0) { // Scared Stiff
-     int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 35 + 14, 36 + 14 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 35 + 14, 36 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "sttng_l7", 8) == 0) { // Star Trek Next Generation
-     int flashers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 41 + 14, 42 + 14 };
+     static const int flashers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 41 + 14, 42 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "totan_l4", 8) == 0) { // Tales Of The Arabian Nights
-     int flashers[] = { 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
+     static const int flashers[] = { 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "taf_l5", 6) == 0) { // The Addams Family
-     int flashers[] = { 17, 18, 19, 20, 21, 22 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "tafg_lx3", 8) == 0) { // The Addams Family Gold Edition
-     int flashers[] = { 17, 18, 19, 20, 21, 22 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1381,7 +1381,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "tz_92", 5) == 0) { // Twilight Zone
-     int flashers[] = { 17, 18, 19, 20, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
+     static const int flashers[] = { 17, 18, 19, 20, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
@@ -1398,7 +1398,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ww_l5", 5) == 0) { // White Water
-     int flashers[] = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
+     static const int flashers[] = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
         coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
