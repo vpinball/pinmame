@@ -436,7 +436,7 @@ int wave_num(const struct MachineSound *msound) { return ((struct Wave_interface
 
 struct snd_interface sndintf[] =
 {
-    {
+	{
 		SOUND_DUMMY,
 		"",
 		0,
@@ -447,7 +447,7 @@ struct snd_interface sndintf[] =
 		0
 	},
 #if (HAS_CUSTOM)
-    {
+	{
 		SOUND_CUSTOM,
 		"Custom",
 		0,
@@ -459,7 +459,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_SAMPLES)
-    {
+	{
 		SOUND_SAMPLES,
 		"Samples",
 		0,
@@ -475,7 +475,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_DAC)
-    {
+	{
 		SOUND_DAC,
 		"DAC",
 		DAC_num,
@@ -487,7 +487,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_DISCRETE)
-    {
+	{
 		SOUND_DISCRETE,
 		"Discrete Components",
 		0,
@@ -499,7 +499,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_AY8910)
-    {
+	{
 		SOUND_AY8910,
 		"AY-3-8910",
 		AY8910_num,
@@ -511,7 +511,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2203)
-    {
+	{
 		SOUND_YM2203,
 		"YM2203",
 		YM2203_num,
@@ -523,7 +523,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2151 || HAS_YM2151_ALT || HAS_YM2151_NUKED || HAS_YM2151_YMFM)
-    {
+	{
 		SOUND_YM2151,
 		"YM2151",
 		YM2151_num,
@@ -535,7 +535,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2608)
-    {
+	{
 		SOUND_YM2608,
 		"YM2608",
 		YM2608_num,
@@ -547,7 +547,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2610)
-    {
+	{
 		SOUND_YM2610,
 		"YM2610",
 		YM2610_num,
@@ -559,7 +559,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2610B)
-    {
+	{
 		SOUND_YM2610B,
 		"YM2610B",
 		YM2610_num,
@@ -571,7 +571,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2612)
-    {
+	{
 		SOUND_YM2612,
 		"YM2612",
 		YM2612_num,
@@ -583,7 +583,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM3438)
-    {
+	{
 		SOUND_YM3438,
 		"YM3438",
 		YM2612_num,
@@ -595,7 +595,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM2413)
-    {
+	{
 		SOUND_YM2413,
 		"YM2413",
 		YM2413_num,
@@ -607,7 +607,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM3812)
-    {
+	{
 		SOUND_YM3812,
 		"YM3812",
 		YM3812_num,
@@ -619,7 +619,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YM3526)
-    {
+	{
 		SOUND_YM3526,
 		"YM3526",
 		YM3526_num,
@@ -631,7 +631,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_YMZ280B)
-    {
+	{
 		SOUND_YMZ280B,
 		"YMZ280B",
 		YMZ280B_num,
@@ -655,7 +655,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_SN76477)
-    {
+	{
 		SOUND_SN76477,
 		"SN76477",
 		SN76477_num,
@@ -667,45 +667,45 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_SN76496)
-    {
+	{
 		SOUND_SN76489,
 		"SN76489",
 		SN76496_num,
 		SN76496_clock,
 		SN76489_sh_start,
-        0,
+		0,
 		0
 	},
-    {
+	{
 		SOUND_SN76489A,
 		"SN76489A",
 		SN76496_num,
 		SN76496_clock,
 		SN76489A_sh_start,
-        0,
+		0,
 		0
 	},
-    {
-        SOUND_SN76494,
-        "SN76494",
-        SN76496_num,
-        SN76496_clock,
-        SN76494_sh_start,
-        0,
-        0
-    },
-    {
+	{
+		SOUND_SN76494,
+		"SN76494",
+		SN76496_num,
+		SN76496_clock,
+		SN76494_sh_start,
+		0,
+		0
+	},
+	{
 		SOUND_SN76496,
 		"SN76496",
 		SN76496_num,
 		SN76496_clock,
 		SN76496_sh_start,
-        0,
+		0,
 		0
 	},
 #endif
 #if (HAS_POKEY)
-    {
+	{
 		SOUND_POKEY,
 		"Pokey",
 		POKEY_num,
@@ -717,7 +717,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_NES)
-    {
+	{
 		SOUND_NES,
 		"Nintendo",
 		NES_num,
@@ -729,7 +729,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_ASTROCADE)
-    {
+	{
 		SOUND_ASTROCADE,
 		"Astrocade",
 		ASTROCADE_num,
@@ -741,7 +741,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_NAMCO)
-    {
+	{
 		SOUND_NAMCO,
 		"Namco",
 		0,
@@ -753,7 +753,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_NAMCONA)
-    {
+	{
 		SOUND_NAMCONA,
 		"Namco NA",
 		0,
@@ -765,11 +765,11 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_TMS36XX)
-    {
+	{
 		SOUND_TMS36XX,
 		"TMS36XX",
 		TMS36XX_num,
-        0,
+		0,
 		tms36xx_sh_start,
 		tms36xx_sh_stop,
 		tms36xx_sh_update,
@@ -777,7 +777,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_TMS5110)
-    {
+	{
 		SOUND_TMS5110,
 		"TMS5110",
 		0,
@@ -789,7 +789,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_TMS5220)
-    {
+	{
 		SOUND_TMS5220,
 		"TMS5220",
 		0,
@@ -801,7 +801,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_VLM5030)
-    {
+	{
 		SOUND_VLM5030,
 		"VLM5030",
 		0,
@@ -813,7 +813,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_ADPCM)
-    {
+	{
 		SOUND_ADPCM,
 		"ADPCM",
 		ADPCM_num,
@@ -825,7 +825,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_OKIM6295)
-    {
+	{
 		SOUND_OKIM6295,
 		"MSM6295",
 		OKIM6295_num,
@@ -837,7 +837,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_MSM5205)
-    {
+	{
 		SOUND_MSM5205,
 		"MSM5205",
 		MSM5205_num,
@@ -849,7 +849,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_MSM5232)
-    {
+	{
 		SOUND_MSM5232,
 		"MSM5232",
 		MSM5232_num,
@@ -861,7 +861,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_UPD7759)
-    {
+	{
 		SOUND_UPD7759,
 		"uPD7759",
 		0,
@@ -873,7 +873,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_HC55516)
-    {
+	{
 		SOUND_HC55516,
 		"HC55516",
 		HC55516_num,
@@ -885,7 +885,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_MC3417)
-    {
+	{
 		SOUND_MC3417,
 		"MC3417",
 		MC3417_num,
@@ -897,7 +897,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_K005289)
-    {
+	{
 		SOUND_K005289,
 		"005289",
 		0,
@@ -909,7 +909,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_K007232)
-    {
+	{
 		SOUND_K007232,
 		"007232",
 		K007232_num,
@@ -921,7 +921,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_K051649)
-    {
+	{
 		SOUND_K051649,
 		"051649",
 		0,
@@ -933,7 +933,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_K053260)
-    {
+	{
 		SOUND_K053260,
 		"053260",
 		K053260_num,
@@ -945,7 +945,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_K054539)
-    {
+	{
 		SOUND_K054539,
 		"054539",
 		K054539_num,
@@ -1161,7 +1161,7 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #if (HAS_TIA)
-    {
+	{
 		SOUND_TIA,
 		"TIA",
 		0,
