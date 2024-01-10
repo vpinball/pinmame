@@ -33,7 +33,7 @@ void vp_init(void) {
 int vp_getLamp(int lampNo) {
   if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT))
 	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
 #ifndef LIBPINMAME
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
@@ -57,7 +57,7 @@ int vp_getSolenoid(int solNo)
 int vp_getGI(int giNo)
 {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT))
 	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
   return coreGlobals.gi[giNo];
 }
@@ -69,7 +69,7 @@ int vp_getGI(int giNo)
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
   int ii, idx = 0;
   /*-- fill in array --*/
-  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT))
   {
 	 for (ii = 0; ii < coreGlobals.nLamps; ii++) {
 		UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
@@ -132,8 +132,8 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 {
   int ii, idx = 0;
   if (coreGlobals.nSolenoids && (
-	  (options.usemodsol & CORE_MODOUT_ENABLE_SOLENOIDS) 
-  || ((core_gameData->gen & GEN_ALLWPC) && (options.usemodsol & CORE_MODOUT_ENABLE_LEGACY)) ))
+	  (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) 
+  || ((core_gameData->gen & GEN_ALLWPC) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
@@ -171,7 +171,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 /-------------------------------------*/
 int vp_getChangedGI(vp_tChgGIs chgStat) {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_LGIAS))
+  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT))
   {
 	  int idx = 0;
 	  for (int i = 0; i < coreGlobals.nGI; i++) {
@@ -263,7 +263,7 @@ int vp_getSolMask(int no) {
 	else if (2001 <= no)
 		return vp_getModOutputType(VP_OUT_ALPHASEG, no - 2000);
 	else if (no == 2)
-		return options.usemodsol;
+		return options.usemodsol & ~CORE_MODOUT_FORCE_ON;
 	else if (no == 0 || no == 1)
 		return locals.solMask[no];
 	else
@@ -282,22 +282,22 @@ void vp_setModOutputType(int output, int no, int type) {
 	if (output == VP_OUT_SOLENOID && 1 <= no && no <= coreGlobals.nSolenoids)
 	{
 		pos = CORE_MODOUT_SOL0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_SOLENOIDS;
+		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
 	}
 	else if (output == VP_OUT_GI && 1 <= no && no <= coreGlobals.nGI)
 	{
 		pos = CORE_MODOUT_GI0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_LGIAS;
+		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
 	}
 	else if (output == VP_OUT_LAMP && 1 <= no && no <= coreGlobals.nLamps)
 	{
 		pos = CORE_MODOUT_LAMP0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_LGIAS;
+		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
 	}
 	else if (output == VP_OUT_ALPHASEG && 1 <= no && no <= coreGlobals.nAlphaSegs)
 	{
 		pos = CORE_MODOUT_SEG0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_LGIAS;
+		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
 	}
 	if (pos != -1)
 	{

@@ -1464,8 +1464,8 @@ void core_updateSw(int flipEn) {
             (SIM_BALLS(inports[CORE_SIMINPORT])));
   
   /*-- Report changed solenoids --*/
-  if (coreGlobals.nSolenoids && ((options.usemodsol & CORE_MODOUT_ENABLE_SOLENOIDS) 
-     || ((core_gameData->gen & GEN_ALLWPC) && (options.usemodsol & CORE_MODOUT_ENABLE_LEGACY)) ))
+  if (coreGlobals.nSolenoids && 
+     ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) || ((core_gameData->gen & GEN_ALLWPC | core_gameData->gen & GEN_SAM) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
@@ -1632,7 +1632,7 @@ static VIDEO_UPDATE(core_status) {
         for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
           const int lampx = drawData->lamps[num].lamppos[qq].x;
           const int lampy = drawData->lamps[num].lamppos[qq].y;
-          if (options.usemodsol & (CORE_MODOUT_ENABLE_LGIAS | CORE_MODOUT_FORCE_ON)) {
+          if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)) {
             UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii * 8 + jj].value);
             line[lampx][starty + lampy] = 64 + (v >> 4);
           }
@@ -1653,12 +1653,12 @@ static VIDEO_UPDATE(core_status) {
   }
   /*-- Default square lamp matrix layout --*/
   else {
-    int nCols = coreGlobals.nLamps ? (coreGlobals.nLamps + 7) >> 3 : CORE_CUSTLAMPCOL + core_gameData->hw.lampCol * 8;
-    for (ii = 0; ii < nCols; ii++) {
+    assert((coreGlobals.nLamps == 0) || ((coreGlobals.nLamps + 7) >> 3 == CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
+    for (ii = 0; ii < CORE_CUSTLAMPCOL + core_gameData->hw.lampCol; ii++) {
       BMTYPE** line = &lines[locals.firstSimRow + startRow];
       bits = coreGlobals.lampMatrix[ii];
       for (jj = 0; jj < 8; jj++) {
-        if (options.usemodsol & (CORE_MODOUT_ENABLE_LGIAS | CORE_MODOUT_FORCE_ON)) {
+        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)) {
           UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii * 8 + jj].value);
           line[0][thisCol + ii * 2] = 64 + (v >> 4);
         } else
@@ -1693,7 +1693,7 @@ static VIDEO_UPDATE(core_status) {
 
   {
     BMTYPE **line = &lines[locals.firstSimRow + startRow];
-    if (options.usemodsol & (CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LEGACY | CORE_MODOUT_FORCE_ON))
+    if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
     {
       float state[CORE_MODOUT_SOL_MAX];
       core_getAllPhysicSols(state);
@@ -1752,7 +1752,7 @@ static VIDEO_UPDATE(core_status) {
 
     for (ii = 0; ii < CORE_MAXGI; ii++)
     {
-      if (options.usemodsol & (CORE_MODOUT_ENABLE_LGIAS | CORE_MODOUT_FORCE_ON))
+      if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON))
       {
         UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + ii].value);
         lines[locals.firstSimRow + startRow][thisCol + ii * 2] = 64 + (v >> 4);
@@ -1853,10 +1853,10 @@ void core_updInvSw(int swNo, int inv) {
 /--------------------------------------*/
 int core_getSol(int solNo) {
   if (solNo <= 28)
-    return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LEGACY)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
+    return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
   else if (solNo <= 32) { // 29-32
     if (core_gameData->gen & GEN_ALLS11)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LEGACY)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
     else if (core_gameData->gen & GEN_ALLWPC) // GI circuits
       return coreGlobals.solenoids2 & (1<<(solNo-29+8)); // GameOn
   }
@@ -1875,9 +1875,9 @@ int core_getSol(int solNo) {
   }
   else if (solNo <= 44) { // 37-44 WPC95 & S11 extra
     if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) // Duplicated in 37..40 / 41..44, so always read from 41..44 (hence the |4 in the index/mask)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LEGACY)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((solNo - 13) | 4)].value) : coreGlobals.solenoids & (1<<((solNo - 13)|4));
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((solNo - 13) | 4)].value) : coreGlobals.solenoids & (1<<((solNo - 13)|4));
     if (core_gameData->gen & GEN_ALLS11)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LEGACY)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
     int mask = 1<<(solNo - 45);
@@ -1951,7 +1951,7 @@ UINT64 core_getAllSol(void) {
 /--------------------------------------------------*/
 void core_getAllPhysicSols(float* state)
 {
-  assert(coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_LEGACY | CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_FORCE_ON)));
+  assert(coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)));
   memset(state, 0, CORE_MODOUT_SOL_MAX * sizeof(float)); // To avoid reporting garbage states for unused solenoid slots
   /*-- 1..32, hardware solenoids --*/
   if (core_gameData->gen & GEN_ALLWPC) {
@@ -2199,10 +2199,9 @@ static MACHINE_INIT(core) {
     /*-- init PWM integration (needs to be done after coreData->init() which defines the number of outputs and the physical model to be used on each output) --*/
     // If physic output enabled and defined by driver, update all outputs every 1ms to allow async reading done by VPinMame (should be optimized to something less heavy...)
     // Note that some table made during 3.6 beta phase define output type even AFTER init. They will not work with the new implementation and need to be updated
-    // options.usemodsol = CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LGIAS; // Uncomment for testing
-    if ( ((options.usemodsol & CORE_MODOUT_ENABLE_SOLENOIDS) && coreGlobals.nSolenoids)
-      || ((options.usemodsol & CORE_MODOUT_ENABLE_LEGACY   ) && coreGlobals.nSolenoids)
-      || ((options.usemodsol & CORE_MODOUT_ENABLE_LGIAS    ) && (coreGlobals.nLamps || coreGlobals.nGI || coreGlobals.nAlphaSegs)) 
+    //options.usemodsol = CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
+    if ( ((options.usemodsol & CORE_MODOUT_ENABLE_MODSOL ) && coreGlobals.nSolenoids)
+      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) && (coreGlobals.nSolenoids || coreGlobals.nLamps || coreGlobals.nGI || coreGlobals.nAlphaSegs))
       ||  (options.usemodsol & CORE_MODOUT_FORCE_ON))
       timer_pulse(TIME_IN_HZ(999), 0, core_update_pwm_outputs);
     memset(coreOutputinfos, 0, sizeof(coreOutputinfos));
@@ -2734,7 +2733,7 @@ void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_LEGACY | CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LGIAS | CORE_MODOUT_FORCE_ON)) == 0)
+   if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)) == 0)
       return;
    const float now = (float)timer_get_time();
    for (int i = 0; i < count; i++) {
@@ -2751,7 +2750,7 @@ void core_write_pwm_output(int index, int count, UINT8 bitStates)
 
 void core_write_pwm_output_8b(int index, UINT8 bitStates)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_LEGACY | CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LGIAS | CORE_MODOUT_FORCE_ON)) == 0)
+   if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)) == 0)
       return;
    assert((index & 7) == 0);
    UINT8 changeMask = coreGlobals.binaryOutputState[index >> 3] ^ bitStates; // Identify differences
@@ -2772,7 +2771,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
 
 void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_LEGACY | CORE_MODOUT_ENABLE_SOLENOIDS | CORE_MODOUT_ENABLE_LGIAS | CORE_MODOUT_FORCE_ON)) == 0)
+   if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)) == 0)
       return;
    assert((index & 7) == 0);
    UINT8 changeMask = bitMask & (coreGlobals.binaryOutputState[index >> 3] ^ bitStates); // Identify differences

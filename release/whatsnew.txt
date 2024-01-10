@@ -32,12 +32,11 @@ Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force,
 Added the emulation of physical bulbs & LEDs connected to binary outputs, for WPC, GTS3, SAM, Whitestar, Capcom and S11 hardware.
   This allows to dramatically improve e.g. lamp or flasher modulation (for example the pulsing lights below the princess of TOTAN,
   or the Sauron eye of LOTR, or slowly fading lamps in Breakshot). This needs to be enabled before use, the same way as for the existing
-  'modulated' solenoids: by setting SolMask(2) which is now a bitmask: 1 is legacy modulated solenoids, 2 is physical model for solenoid
-  outputs, 4 is physical model for lamps/GIs/Segment outputs. To be emulated correctly, devices connected to binary output must be defined.
-  PinMAME already has the definition for lots of them (to be found in MACHINE_INIT of each driver) but if the one you want is missing,
-  or you want to modify it, use 'SolMask(xx) = type' to change it, where xx is the output to be modified (see vp_setSolMask), and yy is
-  the type (see core.h). Also see the updated core scripts coming with VPX.
-  This also opens up the path for emulation of dimmed alphanumerical segments and strength modulated solenoids
+  'modulated' solenoids: by setting SolMask(2) to 1 for legacy modulated solenoids or 2 for physical model of all outputs.
+  To be emulated correctly, devices connected to binary output must be defined. PinMAME already has the definition for lots of them 
+  (to be found in MACHINE_INIT of each driver) but if the one you want is missing, or you want to modify it, use 'SolMask(xx) = type' 
+  to change it, where xx is the output to be modified (see vp_setSolMask), and yy is the type (see core.h). Also see the updated core 
+  scripts coming with VPX. This also opens up the path for emulation of dimmed alphanumerical segments and strength modulated solenoids
   (for example Capcom Kingpin, or the way most modern hardware handle Power/Hold and EOS switch).
 
 *** CORE/CPU ***

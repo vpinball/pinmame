@@ -359,9 +359,8 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 
 /*-- Physical devices on binary outputs --*/
 
-#define CORE_MODOUT_ENABLE_LEGACY    1 /* Bitmask for options.usemodsol to enable legacy behavior (simple solenoid integration for WPC/SAM)  */
-#define CORE_MODOUT_ENABLE_SOLENOIDS 2 /* Bitmask for options.usemodsol to enable solenoids */
-#define CORE_MODOUT_ENABLE_LGIAS     4 /* Bitmask for options.usemodsol to enable Lamp/GI/AlphaSegments */
+#define CORE_MODOUT_ENABLE_MODSOL    1 /* Bitmask for options.usemodsol to enable legacy behavior (simple solenoid linear integration for WPC/SAM)  */
+#define CORE_MODOUT_ENABLE_PHYSOUT   2 /* Bitmask for options.usemodsol to enable physics output for solenoids/Lamp/GI/AlphaSegments */
 #define CORE_MODOUT_FORCE_ON       128 /* Bitmask for options.usemodsol for drivers that needs PWM integration to be performed whatever the user settings are */
 
 #define CORE_MODOUT_LAMP_MAX                   (CORE_MAXLAMPCOL*8) /* Maximum number of modulated outputs for lamps */

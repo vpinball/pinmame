@@ -512,7 +512,7 @@ static void updsol(void) {
   core_write_pwm_output_8b(CORE_MODOUT_SOL0     ,  coreGlobals.pulsedSolState        & 0x0FF);
   core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (coreGlobals.pulsedSolState >> 8)  & 0x0FF);
   core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, (coreGlobals.pulsedSolState >> 16) & 0x0FF);
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, (coreGlobals.pulsedSolState >> 24) & 0x0FF);
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, (coreGlobals.pulsedSolState >> 24) & 0x0FF); // Muxed solenoids
 
   locals.solenoids |= coreGlobals.pulsedSolState;
 }
@@ -553,7 +553,7 @@ static WRITE_HANDLER(latch2200) {
 }
 #endif
 
-static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data;}
+static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data; coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1].value = data ? 0.f : 1.f; }
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
 static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 1); }
@@ -811,22 +811,70 @@ static MACHINE_INIT(s11) {
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_S11);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, CORE_MODOUT_NONE); // GameOn output for fast flips
+  if (core_gameData->sxx.muxSol)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + core_gameData->sxx.muxSol - 1, 1, CORE_MODOUT_PULSE); // K1 mux relay
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
-  if (strncasecmp(gn, "gnr_300", 7) == 0) { // Guns'n Roses
-    int solenoids[32] = {
-      /*  1.. 4 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
-      /*  5.. 8 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
-      /*  9..12 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_PULSE,              CORE_MODOUT_BULB_44_6_3V_AC,    CORE_MODOUT_SOL_2_STATE,        /* #10 is K1 mux relay, #11 is GI relay */
-      /* 13..16 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
-      /* 17..20 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,
-      /* 21..24 */ CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_SOL_2_STATE,        CORE_MODOUT_PULSE,
-      /* 25..28 */ CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, /* 8 muxed outputs (K1 relay is solenoid #10) */
-      /* 29..32 */ CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11, CORE_MODOUT_BULB_44_18V_DC_S11  /* 8 muxed outputs (K1 relay is solenoid #10) */
-    };
-    core_set_pwm_output_types(CORE_MODOUT_SOL0, 32, solenoids);
+  // DataEast/Sega 1
+  if (strncasecmp(gn, "lwar_a83", 8) == 0) { // Laser War
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 1 - 1, 3, CORE_MODOUT_BULB_89_32V_DC_S11);
+     // Note: The yellow, red & blue mars flashers are connected to ground through 660 ohms resistor, not sure why (5 ohms when switched on, 2 bulbs in parallel).
+     // One explication would be to keep the filament warm (don't think it would be visible. This would need further investigation)
+  }
+  // DataEast/Sega 3
+  // Missing: Rocky & Bullwinkle, BTTF, Checkpoint, TMNT, The Simpsons, WWF Royal Rumble
+  else if ((strncasecmp(gn, "gnr_300", 7) == 0) // Guns'n Roses
+     || (strncasecmp(gn, "tftc_303", 8) == 0) // Tales from The Crypt
+     || (strncasecmp(gn, "stwr_104", 8) == 0) // Star Wars
+     || (strncasecmp(gn, "jupk_513", 8) == 0)) { // Jurassic Park
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+  }
+  else if ((strncasecmp(gn, "btmn_103", 8) == 0) // Batman
+     || (strncasecmp(gn, "hook_408", 8) == 0)) { // Hook
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 3, CORE_MODOUT_BULB_89_32V_DC_S11);
+  }
+  else if (strncasecmp(gn, "lah_112", 7) == 0) { // Last Action Hero
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+  }
+  else if ((strncasecmp(gn, "aar_101", 7) == 0) // Aaron Spelling
+     || (strncasecmp(gn, "lw3_208", 7) == 0)) { // Lethal Weapon 3
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 9 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+  }
+  else if (strncasecmp(gn, "trek_201", 8) == 0) { // Star Trek 25th
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 9 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+  }
+  else if (strncasecmp(gn, "tomy_400", 8) == 0) { // Tommy Pinball Wizard
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
+  }
+  // DataEast/Sega 3b
+  else if ((strncasecmp(gn, "batmanf", 7) == 0) // Batman Forever
+     || (strncasecmp(gn, "baywatch", 8) == 0) // Baywatch
+     || (strncasecmp(gn, "mav_402", 7) == 0)) { // Maverick
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
+  }
+  else if (strncasecmp(gn, "frankst", 7) == 0) { // Mary Shelley's Frankenstein
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
   }
 }
 static MACHINE_RESET(s11) {
