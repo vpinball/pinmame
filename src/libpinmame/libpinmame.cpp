@@ -2,6 +2,8 @@
 
 #include "libpinmame.h"
 
+#include "../../ext/libsamplerate/samplerate.h"
+
 #include <thread>
 #include <vector>
 
@@ -339,9 +341,7 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
 	if (_p_Config->audioFormat == PINMAME_AUDIO_FORMAT_INT16)
 		return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame, _p_userData);
 
-	const int samplesEnd = samplesThisFrame * _audioInfo.channels;
-	for (int i = 0; i < samplesEnd; i++)
-		_audioData[i] = (float)p_buffer[i] * (float)(1.0/32768.0);
+	src_short_to_float_array(p_buffer, _audioData, samplesThisFrame * _audioInfo.channels);
 
 	return (*(_p_Config->cb_OnAudioUpdated))((void*)_audioData, samplesThisFrame, _p_userData);
 }

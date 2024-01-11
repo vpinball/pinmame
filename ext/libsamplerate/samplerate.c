@@ -501,7 +501,14 @@ src_char_to_float_array(const signed char * const __restrict in, float * const _
 {
 	int i;
 	for (i = 0 ; i < len ; i++)
+#ifdef RESAMPLER_SSE_OPT
+	{
+		__m128 tmp;
+		out[i] = _mm_cvtss_f32(_mm_mul_ss(_mm_cvt_si2ss(tmp,in[i]),_mm_set_ss((float)(1.0 / 0x80))));
+	}
+#else
 		out[i] = (float)in[i] * (float)(1.0 / 0x80); // (float)(in[i] / (1.0 * 0x80));
+#endif
 } /* src_char_to_float_array */
 
 void
@@ -509,7 +516,14 @@ src_short_to_float_array (const short * const __restrict in, float * const __res
 {
 	int i;
 	for (i = 0 ; i < len ; i++)
-		out [i] = (float)in[i] * (float)(1.0 / 0x8000); // (float) (in [i] / (1.0 * 0x8000)) ;
+#ifdef RESAMPLER_SSE_OPT
+	{
+		__m128 tmp;
+		out[i] = _mm_cvtss_f32(_mm_mul_ss(_mm_cvt_si2ss(tmp,in[i]),_mm_set_ss((float)(1.0 / 0x8000))));
+	}
+#else
+		out[i] = (float)in[i] * (float)(1.0 / 0x8000); // (float)(in[i] / (1.0 * 0x8000));
+#endif
 } /* src_short_to_float_array */
 
 void
@@ -535,9 +549,17 @@ src_float_to_short_array (const float * const __restrict in, short * const __res
 void
 src_int_to_float_array (const int * const __restrict in, float * const __restrict out, int len)
 {
+	// >>7 is there to overall increase the precision of the endresult (i.e. mapping 24bits of the integer to the 24bits fp32 mantissa precision)
 	int i;
 	for (i = 0 ; i < len ; i++)
-		out [i] = (float)in[i] * (float)(1.0 / (8.0 * 0x10000000)); // (float) (in [i] / (8.0 * 0x10000000)) ;
+#ifdef RESAMPLER_SSE_OPT
+	{
+		__m128 tmp;
+		out[i] = _mm_cvtss_f32(_mm_mul_ss(_mm_cvt_si2ss(tmp,in[i]>>7),_mm_set_ss((float)(1.0 / (1.0 * (0x80000000>>7)))));
+	}
+#else
+		out[i] = (float)(in[i]>>7) * (float)(1.0 / (1.0 * (0x80000000>>7))); // (float)(in[i] / (1.0 * (0x80000000>>7)));
+#endif
 } /* src_int_to_float_array */
 
 void
@@ -546,15 +568,15 @@ src_float_to_int_array (const float * const __restrict in, int * const __restric
 	int i;
 	for (i = 0 ; i < len ; i++)
 #ifdef RESAMPLER_SSE_OPT
-		out[i] = _mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(in[i] * (float)(8.0 * 0x10000000)), _mm_set_ss(2147483520.f)), _mm_set_ss((float)(-8.0 * 0x10000000)))); //!! cannot output INT_MAX like this (max is 2147483520 instead of 2147483647), but who cares!
+		out[i] = _mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(in[i] * (float)(1.0 * 0x80000000)), _mm_set_ss(2147483520.f)), _mm_set_ss((float)(-1.0 * 0x80000000)))); //!! cannot output INT_MAX like this (max is 2147483520 instead of 2147483647), but who cares!
 #else
 	{	double scaled_value;
-		scaled_value = in [i] * (8.0 * 0x10000000) ;
+		scaled_value = in [i] * (1.0 * 0x80000000) ;
 		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
 		{	out [i] = 0x7fffffff ;
 			continue ;
 			}
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
+		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-1.0 * 0x80000000))
 		{	out [i] = -1 - 0x7fffffff ;
 			continue ;
 			}
