@@ -45,52 +45,40 @@ UINT8 DMDFrames2[GTS3DMD_FRAMES_5C][0x200]; //2nd DMD Display for Strikes N Spar
 #define logerror1 printf
 #endif
 
-/* FORCE The 16 Segment Layout to match the output order expected by core.c */
-static const int alpha_adjust[16] = {0,1,2,3,4,5,9,10,11,12,13,14,6,8,15,7};
-
 static WRITE_HANDLER(display_control);
 
 /*Alpha Display Generation Specific*/
-static WRITE_HANDLER(alpha_u4_pb_w);
 static READ_HANDLER(alpha_u4_pb_r);
 static WRITE_HANDLER(alpha_display);
 static WRITE_HANDLER(alpha_aux);
-static void alpha_update(void);
 /*DMD Generation Specific*/
 static void dmdswitchbank(int which);
-static WRITE_HANDLER(dmd_u4_pb_w);
 static READ_HANDLER(dmd_u4_pb_r);
 static WRITE_HANDLER(dmd_display);
 static WRITE_HANDLER(dmd_aux);
 static void dmd_vblank(int which);
-static void dmd_update(void);
 
 /*----------------
 / Local variables
 /-----------------*/
 struct {
   int    alphagen;
-  core_tSeg segments, pseg;
+  int    alphaNumCol, alphaNumColShitRegister;
+  core_tWord activeSegments[2];  // Realtime active alphanum segments
   int    vblankCount;
   UINT32 solenoids;
   int    lampRow, lampColumn;
   UINT8  diagnosticLed;  // bool
   UINT8  diagnosticLed1; // bool
   UINT8  diagnosticLed2; // bool
-  //int    swCol;
-  int    ssEn;
-  //int    mainIrq;
   UINT8  swDiag; // bool
   UINT8  swTilt; // bool
   UINT8  swSlam; // bool
   UINT8  swPrin; // bool
-  int    acol;
-  int    u4pb;
-  WRITE_HANDLER((*U4_PB_W));
+  UINT8    u4pb;
   READ_HANDLER((*U4_PB_R));
   WRITE_HANDLER((*DISPLAY_CONTROL));
   WRITE_HANDLER((*AUX_W));
-  void (*UPDATE_DISPLAY)(void);
   UINT8  ax[7], cx1, cx2, ex1;
   char   extra16led; // bool
   int    sound_data;
@@ -138,9 +126,9 @@ static READ_HANDLER(alpha_u4_pb_r)
    PB0-2: Output only
    PB3:  Test Switch
    PB4:  Tilt Switch
-   PB5-  A1P3-3 - Display Controller - Status1 (Not labeld on Schematic)
+   PB5-  A1P3-3 - Display Controller - Status1 (Not labeled on Schematic)
    PB6-  A1P3-1 - Display Controller - DMD Display Strobe (DSTB) - Output only, but might be read!
-   PB7-  A1P3-2 - Display Controller - Status2 (Not labeld on Schematic)
+   PB7-  A1P3-2 - Display Controller - Status2 (Not labeled on Schematic)
 */
 static READ_HANDLER(dmd_u4_pb_r)
 {
@@ -175,17 +163,14 @@ static WRITE_HANDLER( xvia_0_a_w )
 	// logerror1("WRITE:NA?: via_0_a_w: %x\n",data);
 }
 
-//PB0-7 Varies on Alpha or DMD Generation!
-static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
-
-/* ALPHA GENERATION
-   ----------------
+/* U4 VIA Parralel Out B
+   ---------------------
   PB0:  Lamp Data      (LDATA)
   PB1:  Lamp Strobe    (LSTRB)
   PB2:  Lamp Clear     (LCLR)
-  PB5:  Display Data   (DDATA)
+  PB5:  Display Data   (DDATA) Alpha generation only, unused for DMD generation
   PB6:  Display Strobe (DSTRB)
-  PB7:  Display Blank  (DBLNK)
+  PB7:  Display Blank  (DBLNK) Alpha generation only, unused for DMD generation
 */
 #define LDATA 0x01
 #define LSTRB 0x02
@@ -194,114 +179,96 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 #define DSTRB 0x40
 #define DBLNK 0x80
 
-static WRITE_HANDLER(alpha_u4_pb_w) {
-	int dispBits = data & 0xf0;
-
-	/* Kept for reference but seems wrong to me (Niwak) since I think LDATA and LCLR have different purposes
-	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
-		if ((data & LCLR) && (data & LDATA))
-			GTS3locals.lampColumn = 1;
-		else
-			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-		core_setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
-	} else
-		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);*/
-
-	// As I (Niwak) understand from schematics:
+static WRITE_HANDLER( xvia_0_b_w ) {
+	// From schematics:
 	// - Rows are a simple latch (74HC273) with overcurrent comparators
-	// - Columns use two 74HS164 (serial 8 bit decoders), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
-	// - LCLR creates a short pulse (through a 555, with R=4.7k and C=0.1uF so 50us pulse) that will reset the overcurrent comparators on the row outputs, not sure why
+	// - Columns use two 74HS164 (8 bit shit register), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
+	// - LCLR creates a short pulse (through a 555, with R=4.7k and C=0.1uF so 50us pulse) that will reset the overcurrent comparators on the row outputs (likely to cover the latching between row & column and avoid ghosting)
 	// This results in the following write sequence for strobing (observed on Cue Ball Wizard):
 	// - Set lampRow to 0 (turn off all lamps)
 	// - Set LDATA (only if needed, to start strobe on first column) / LSTRB H->L / LSTRB L->H / Clear LDATA
 	// - Set lampRow to expected output (turn on expected lamps of the new column)
 	// - LCLR H->L / LCLR L->H
-	// We do not simulate the LCLR signals since the pulse is too short (50us) for the output resolution and the aim is not obvious
+	// We do not simulate the LCLR signals since the pulse is too short (50us) for the output resolution
 	//printf("t=%8.5f Col=%3x STRB=%d DATA=%d LCLR=%d\n", timer_get_time(), GTS3locals.lampColumn, data & LSTRB, data & LDATA, data & LCLR);
 	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
 	{
 		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0ffe) | (data & LDATA);
-		if (GTS3locals.lampColumn == 1) // Simple strobe emulation: reset lamp matrix when strobe restarts at column 0
+		if (GTS3locals.lampColumn == 0x001) // Simple strobe emulation: accumulate lamp matrix until strobe restarts from first column
 		{
 			memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
 		}
 	}
-	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, GTS3locals.lampRow, 8);
-	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, GTS3locals.lampRow, 4);
-
-	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
-	else if (dispBits == 0xc0) { GTS3locals.acol++; }
-
-	GTS3locals.u4pb = data;
-}
-
-/* DMD GENERATION
-   ----------------
-  PB0:  Lamp Data      (LDATA)
-  PB1:  Lamp Strobe    (LSTRB)
-  PB2:  Lamp Clear     (LCLR)
-  PB6:  Display Strobe (DSTRB)
-*/
-static WRITE_HANDLER(dmd_u4_pb_w) {
-	/* Kept for reference but seems wrong to me (Niwak) since I think LDATA and LCLR have different purposes
-	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
-		if ((data & LCLR) && (data & LDATA))
-			GTS3locals.lampColumn = 1;
-		else
-			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-		core_setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
-	} else
-		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);*/
-
-	// As I (Niwak) understand from schematics:
-	// - Rows are a simple latch (74HC273) with overcurrent comparators
-	// - Columns use two 74HS164 (serial 8 bit decoders), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
-	// - LCLR creates a short pulse (through a 555, with R=4.7k and C=0.1uF so 50us pulse) that will reset the overcurrent comparators on the row outputs, not sure why
-	// This results in the following write sequence for strobing (observed on Cue Ball Wizard):
-	// - Set lampRow to 0 (turn off all lamps)
-	// - Set LDATA (only if needed, to start strobe on first column) / LSTRB H->L / LSTRB L->H / Clear LDATA
-	// - Set lampRow to expected output (turn on expected lamps of the new column)
-	// - LCLR H->L / LCLR L->H
-	// We do not simulate the LCLR signals since the pulse is too short (50us) for the output resolution and the aim is not obvious
-	//printf("t=%8.5f Col=%3x STRB=%d DATA=%d LCLR=%d\n", timer_get_time(), GTS3locals.lampColumn, data & LSTRB, data & LDATA, data & LCLR);
-	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
-	{
-		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0ffe) | (data & LDATA);
-		if (GTS3locals.lampColumn == 1) // Simple strobe emulation: reset lamp matrix when strobe restarts at column 0
+	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not gives any benefit
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, lampRow, 8);
+	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, lampRow, 4);
+	
+	
+	if (GTS3locals.alphagen)
+	{ // Alpha generation
+		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShitRegister);
+		if (data & ~GTS3locals.u4pb & DSTRB) // Positive edge on DSTRB: shift 20bit register and set bit0 to DDATA
 		{
-			memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16, 0);
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, 0);
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , 0);
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, 0);
+			GTS3locals.alphaNumColShitRegister = ((GTS3locals.alphaNumColShitRegister << 1) & 0x0ffffe) | ((data & DDATA) >> 5);
+			GTS3locals.alphaNumCol = GTS3locals.alphaNumColShitRegister == 0 ? 20 : core_BitColToNum(GTS3locals.alphaNumColShitRegister);
+			// This should never happens but you can drive the hardware to it (multiple resets,...), this will lead to incorrect rendering
+			// assert((GTS3locals.alphaNumColShitRegister == 0) || (GTS3locals.alphaNumColShitRegister == (1 << GTS3locals.alphaNumCol)));
 		}
-	}
-	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, GTS3locals.lampRow, 8);
-	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, GTS3locals.lampRow, 4);
-
-	GTS3_dmdlocals[0].dstrb = (data & DSTRB) != 0;
-	if (GTS3_dmdlocals[0].version) { // probably wrong, but the only way to show *any* display
-		if (GTS3_dmdlocals[0].dstrb) {
-			GTS3locals.bitSet++;
-			if (GTS3locals.bitSet == 4)
+		if (data & ~GTS3locals.u4pb & DBLNK) // DBlank start (positive edge)
+		{
+			for (int i = 0; i < 20 * 2 * 2; i++)
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i * 8, 0);
+		}
+		else if (GTS3locals.alphaNumCol < 20) {
+			if (~data & GTS3locals.u4pb & DBLNK) // DBlank end (negative edge)
 			{
-				// 12/17/16 (djrobx) - Teed Off's animations are running way too fast.  Vblank 
-				// appears to be firing too often.   Seems to be closer to correct if you do it every 
-				// 3rd time this bit is set, but probably means this method is not right as the 
-				// above comment suggests.
-				GTS3locals.vblank_counter++;
-				if (GTS3locals.vblank_counter == 3)
-				{
-					GTS3locals.vblank_counter = 0;
-					dmd_vblank(0);
-					if(GTS3_dmdlocals[0].version == 2)
-					  dmd_vblank(1);
-				}
+				// Basic non dimmed segments emulation: just use the column and value defined during DBLNK
+				coreGlobals.segments[GTS3locals.alphaNumCol + 20].w = GTS3locals.activeSegments[0].w;
+				coreGlobals.segments[GTS3locals.alphaNumCol     ].w = GTS3locals.activeSegments[1].w;
 			}
-		} else
-			GTS3locals.bitSet = 0;
+			if ((data & DBLNK) == 0)
+			{
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16    , GTS3locals.activeSegments[0].b.lo);
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, GTS3locals.activeSegments[0].b.hi);
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , GTS3locals.activeSegments[1].b.lo);
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, GTS3locals.activeSegments[1].b.hi);
+			}
+		}
 	}
-
+	else
+	{ // DMD generation
+		GTS3_dmdlocals[0].dstrb = (data & DSTRB) != 0;
+		if (GTS3_dmdlocals[0].version) { // probably wrong, but the only way to show *any* display
+			if (GTS3_dmdlocals[0].dstrb) {
+				GTS3locals.bitSet++;
+				if (GTS3locals.bitSet == 4)
+				{
+					// 12/17/16 (djrobx) - Teed Off's animations are running way too fast.  Vblank 
+					// appears to be firing too often.   Seems to be closer to correct if you do it every 
+					// 3rd time this bit is set, but probably means this method is not right as the 
+					// above comment suggests.
+					GTS3locals.vblank_counter++;
+					if (GTS3locals.vblank_counter == 3)
+					{
+						GTS3locals.vblank_counter = 0;
+						dmd_vblank(0);
+						if(GTS3_dmdlocals[0].version == 2)
+						  dmd_vblank(1);
+					}
+				}
+			} else
+				GTS3locals.bitSet = 0;
+		}
+	}
+	
 	GTS3locals.u4pb = data;
 }
+
 
 //AUX DATA? See ca2 above!
 static WRITE_HANDLER( xvia_0_ca2_w )
@@ -379,18 +346,23 @@ static WRITE_HANDLER( xvia_1_a_w )
 		AX4     = Latch the Data (set by aux write handler)
 */
 static WRITE_HANDLER( xvia_1_b_w ) {
-	if (GTS3locals.extra16led) { // used for alpha display digits on Vegas only
+	// FIXME this looks somewhat wrong to me: I think the 6522 VIA is supposed to latch the data on its programmable inpout/output parallel port,
+	// then the CPU trigger AX4/5/6 for the aux board to handle it. Here we are doing the opposite
+	if (GTS3locals.extra16led) { // used for the 3 playfield alpha digit displays on Vegas only
+		// TODO implement full aux board logic
 		if (data > 0 && data < 4 && GTS3locals.ax[4] == GTS3locals.ax[6])
-			GTS3locals.segments[39 + data].w = GTS3locals.pseg[39 + data].w =
-			(GTS3locals.ax[6] & 0x3f) | ((GTS3locals.ax[6] & 0xc0) << 3)
-			| ((GTS3locals.ax[5] & 0x0f) << 11) | ((GTS3locals.ax[5] & 0x10) << 2) | ((GTS3locals.ax[5] & 0x20) << 3);
+			coreGlobals.segments[39 + data].w = (GTS3locals.ax[6] & 0x3f) 
+		                                     | ((GTS3locals.ax[6] & 0xc0) <<  3) 
+											 | ((GTS3locals.ax[5] & 0x0f) << 11) 
+											 | ((GTS3locals.ax[5] & 0x10) <<  2) 
+											 | ((GTS3locals.ax[5] & 0x20) <<  3);
 	} else if (core_gameData->hw.lampCol > 4) { // flashers drived by auxiliary board (for example backbox lights in SF2)
 		// FIXME From the schematics, I would say that the latch only happens if ax[4] is raised up (not checked here)
-		coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = data; // These are latched, not strobed
+		coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = data;
 		core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 12 * 8, data);
 	} else if (!(GTS3locals.ax[4] & 1)) { // LEDs
 		if (GTS3locals.alphagen)
-			GTS3locals.segments[40 + (data >> 4)].w = GTS3locals.pseg[40 + (data >> 4)].w = core_bcd2seg[data & 0x0f];
+			coreGlobals.segments[40 + (data >> 4)].w = core_bcd2seg[data & 0x0f];
 		else
 			coreGlobals.segments[data >> 4].w = core_bcd2seg[data & 0x0f];
 	}
@@ -446,6 +418,7 @@ U4:
 (O)PB0:  Lamp Data    (LDATA)
 (O)PB1:  Lamp Strobe  (LSTRB)
 (O)PB2:  Lamp Clear   (LCLR)
+(O)PB5:  Display Data   (DDATA) - Alpha Generation Only!
 (O)PB6:  Display Strobe (DSTRB)
 (O)PB7:  Display Blanking (DBLNK) - Alpha Generation Only!
 (O)CA2: To A1P6-12 & A1P7-6 Auxiliary
@@ -483,33 +456,25 @@ static INTERRUPT_GEN(GTS3_vblank) {
   /--------------------------------*/
   GTS3locals.vblankCount++;
 
-  /*-- lamps --*/
-  /* Kept for reference. Since lamp matrix strobed is not done at the pace of vblank, the lamp matrix is pushed at the strobe pace.
-  if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
-	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-  }*/
   /*-- solenoids --*/
   coreGlobals.solenoids = GTS3locals.solenoids;
   if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
-	if (GTS3locals.ssEn) {
+	// FIXME ssEn is never set. Special solenoids are handled by core_updateSw triggered from GameOn directly read from solenoid #31 state
+	// Note that the code here would have a bug because it sets solenoids #23 as GameOn but this solenoid is used for other purposes by GTS3 hardware
+	/*if (GTS3locals.ssEn) { 
 	  int ii;
 	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
 	  /*-- special solenoids updated based on switches --*/
-	  for (ii = 0; ii < 6; ii++)
+	  /*for (ii = 0; ii < 6; ii++)
 		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
 		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-	}
+	}*/
 	GTS3locals.solenoids = coreGlobals.pulsedSolState;
   }
-  /*-- display --*/
-  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) {
-	/*Update alpha or dmd display*/
-	GTS3locals.UPDATE_DISPLAY();
-
-	/*update leds*/
-
-	//Strikes N Spares has 2 DMD LED, but no Sound Board LED
-	if (GTS3_dmdlocals[0].version == 2) {
+  
+  /*-- diagnostic leds --*/
+  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
+	if (GTS3_dmdlocals[0].version == 2) { //Strikes N Spares has 2 DMD LED, but no Sound Board LED
 		coreGlobals.diagnosticLed = GTS3locals.diagnosticLed |
 									(GTS3_dmdlocals[0].diagnosticLed << 1) |
 									(GTS3_dmdlocals[1].diagnosticLed << 2);
@@ -520,7 +485,8 @@ static INTERRUPT_GEN(GTS3_vblank) {
 									GTS3locals.diagnosticLed;
 	}
   }
-  core_updateSw(GTS3locals.solenoids & 0x80000000);
+  
+  core_updateSw(GTS3locals.solenoids & 0x80000000); // GameOn is solenoid #31 for all tables
 }
 
 static SWITCH_UPDATE(GTS3) {
@@ -565,23 +531,46 @@ static void GTS3_alpha_common_init(void) {
   via_config(1, &via_1_interface);
   via_reset();
 
-  GTS3locals.U4_PB_W  = alpha_u4_pb_w;
   GTS3locals.U4_PB_R  = alpha_u4_pb_r;
   GTS3locals.DISPLAY_CONTROL = alpha_display;
-  GTS3locals.UPDATE_DISPLAY = alpha_update;
   GTS3locals.AUX_W = alpha_aux;
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
-  // Initialize outputs
+  /* Initialize outputs */
+  coreGlobals.nGI = 0; // in fact there are 2 GI relays (playfield / backbox) controlled by low power solenoid outputs
+  coreGlobals.nAlphaSegs = 20 * 16 * 2;
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
-  for (int i = 0; i < 64 + 42 * 8; i++)
-	  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].type = i < coreGlobals.nLamps ? CORE_MODOUT_BULB_44_20V_DC_GTS3 : CORE_MODOUT_NONE;
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
-  for (int i = 0; i < coreGlobals.nSolenoids; i++)
-	  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type = CORE_MODOUT_SOL_2_STATE;
-  coreGlobals.nGI = 0;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_20V_DC_GTS3);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'A' relay: lightbox insert (backbox), note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 15, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
+  // VFD powered through 8.6V AC for the filaments, and 47V DC for grids and anodes, 0.5ms pulse every 20ms (dimmable)
+  core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_VFD_STROBE_05_20MS);
+  // Game specific hardware
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+	  rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
+  // First generation
+  if (strncasecmp(gn, "lca", 3) == 0) { // Light Camera Action
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+  }
+  // Second generation
+  else if (strncasecmp(gn, "opthund", 7) == 0) { // Operation Thunder
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Aux board flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // SPECIAL
+  }
+  else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf'n Safari
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4 * 8 + 4, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Left Billboard
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 5 * 8 + 2, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Right Billboard
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 7, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Monster Nostrils
+  }
 }
 
 /*Alpha Numeric First Generation Init*/
@@ -619,36 +608,39 @@ static void gts3dmd_init(void) {
      (memory_region_length(GTS3_MEMREG_DROM1) - 0x8000), 0x8000);
   }
 
-  GTS3locals.U4_PB_W  = dmd_u4_pb_w;
   GTS3locals.U4_PB_R  = dmd_u4_pb_r;
   GTS3locals.DISPLAY_CONTROL = dmd_display;
-  GTS3locals.UPDATE_DISPLAY = dmd_update;
   GTS3locals.AUX_W = dmd_aux;
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 2, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
   // Initialize outputs
+  coreGlobals.nGI = 0; // in fact there are 2 GI relays (playfield / backbox) controlled by low power solenoid outputs
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_20V_DC_GTS3);
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'A' relay: lightbox insert (backbox), note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 15, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
   // Game specific hardware
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
 	  rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
   if (strncasecmp(gn, "barbwire", 8) == 0) { // Barbwire
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
   }
   else if (strncasecmp(gn, "cueball", 7) == 0) { // Cueball Wizard
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'DOUBLE' LEDs
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'WIZARD' LEDs
   }
   else if (strncasecmp(gn, "sfight2", 7) == 0) { // Street Fighter 2
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23, 15, CORE_MODOUT_PULSE);           // 'S' relay: Lower playfield GameOn
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 'FIGHTER' LEDs
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Backbox flasher (from aux board)
   }
@@ -773,46 +765,27 @@ static WRITE_HANDLER(display_control) { GTS3locals.DISPLAY_CONTROL(offset,data);
 		DS3 = enable i,j,k,l,m,n,dot,comma of Top Segment
 */
 static WRITE_HANDLER(alpha_display){
-	if ((GTS3locals.u4pb & ~DBLNK) && (GTS3locals.acol < 20)) {
-		switch ( offset ) {
-		case 0:
-			GTS3locals.segments[20+GTS3locals.acol].b.lo |= GTS3locals.pseg[20+GTS3locals.acol].b.lo = data;
-/*			// commented out segments dimming as it needs more work
-			if (GTS3locals.pseg[20+GTS3locals.acol].w) {
-				coreGlobals.segDim[20+GTS3locals.acol] /=2;
-			} else {
-				if (coreGlobals.segDim[20+GTS3locals.acol] < 15)
-				  coreGlobals.segDim[20+GTS3locals.acol] +=3;
-				else
-				  GTS3locals.segments[20+GTS3locals.acol].w = 0;
-				GTS3locals.pseg[20+GTS3locals.acol].w = GTS3locals.segments[20+GTS3locals.acol].w;
-			}
-*/
-			break;
-
-		case 1:
-			GTS3locals.segments[20+GTS3locals.acol].b.hi |= GTS3locals.pseg[20+GTS3locals.acol].b.hi = data;
-			break;
-
-		case 2:
-			GTS3locals.segments[GTS3locals.acol].b.lo |= GTS3locals.pseg[GTS3locals.acol].b.lo = data;
-/*			// commented out segments dimming as it needs more work
-			if (GTS3locals.pseg[GTS3locals.acol].w) {
-				coreGlobals.segDim[GTS3locals.acol] /=2;
-			} else {
-				if (coreGlobals.segDim[GTS3locals.acol] < 15)
-				  coreGlobals.segDim[GTS3locals.acol] +=3;
-				else
-				  GTS3locals.segments[GTS3locals.acol].w = 0;
-				GTS3locals.pseg[GTS3locals.acol].w = GTS3locals.segments[GTS3locals.acol].w;
-			}
-*/
-			break;
-
-		case 3:
-			GTS3locals.segments[GTS3locals.acol].b.hi |= GTS3locals.pseg[GTS3locals.acol].b.hi = data;
-			break;
-		}
+	/* Adjust the 16 Segment Layout to match the output order expected by core.c */
+	if (offset & 1) // Hi byte (8..15)
+	{
+		GTS3locals.activeSegments[offset >> 1].w &= 0x063F;                // Remove bits 6..8 and 11..15
+		GTS3locals.activeSegments[offset >> 1].w |= ((data & 0x0F) << 11)  /* 8..11 => 11..14 */
+											               | ((data & 0x10) <<  2)  /*    12 =>      6 */
+											               | ((data & 0x20) <<  3)  /*    13 =>      8 */
+											               | ((data & 0x40) <<  9)  /*    14 =>     15 */
+											               | ((data & 0x80)      ); /*    15 =>      7 */
+	}
+	else // Lo byte (0..7)
+	{
+		GTS3locals.activeSegments[offset >> 1].w &= 0xF9C0;               // Remove bits 0..5 and 9..10
+		GTS3locals.activeSegments[offset >> 1].w |= ((data & 0x3F)     )  /* 0.. 5 => 0.. 5 */
+											               | ((data & 0xC0) << 3); /* 6.. 7 => 9..10 */
+	}
+	if (((GTS3locals.u4pb & DBLNK) == 0) && (GTS3locals.alphaNumCol < 20)) { // This should never happen since character pattern is loaded to the latch registers while DBLNK is raised
+		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16    , GTS3locals.activeSegments[0].b.lo);
+		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, GTS3locals.activeSegments[0].b.hi);
+		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , GTS3locals.activeSegments[0].b.lo);
+		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, GTS3locals.activeSegments[1].b.hi);
 	}
 }
 
@@ -976,30 +949,6 @@ static READ_HANDLER(aux1_r) {
 static INTERRUPT_GEN(alphanmi) {
 	xvia_0_cb2_w(0,0);
 }
-
-static void alpha_update(){
-	/* FORCE The 16 Segment Layout to match the output order expected by core.c */
-	// There's got to be a better way than this junky code!
-	UINT16 segbits, tempbits;
-	int i,j,k;
-	for (i=0; i<2; i++) {
-		for (j=0; j<20; j++){
-			segbits = GTS3locals.segments[20*i+j].w;
-			tempbits = 0;
-			if (segbits > 0) {
-				for (k=0; k<16; k++) {
-					if ( (segbits>>k)&1 )
-						tempbits |= (1<<alpha_adjust[k]);
-				}
-			}
-			GTS3locals.segments[20*i+j].w = tempbits;
-		}
-	}
-	memcpy(coreGlobals.segments, GTS3locals.segments, sizeof(coreGlobals.segments));
-	memcpy(GTS3locals.segments, GTS3locals.pseg, sizeof(GTS3locals.segments));
-}
-
-static void dmd_update() {}
 
 //Show Sound Diagnostic LEDS
 void UpdateSoundLEDS(int num,UINT8 bit)

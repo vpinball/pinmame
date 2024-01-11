@@ -307,6 +307,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MAXPORTS                     8 /* Maximum input ports */
 #define CORE_MAXGI                        5 /* Maximum GI strings */
 #define CORE_MAXNVRAM                131118 /* Maximum number of NVRAM bytes, only used for get_ChangedNVRAM so far */
+#define CORE_SEGCOUNT                   128 /* Maximum number of alpha numeric display (16 segments each) */
 
 /*-- create a custom switch number --*/
 /* example: #define swCustom CORE_CUSTSWNO(1,2)  // custom column 1 row 2 */
@@ -363,10 +364,10 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_ENABLE_PHYSOUT   2 /* Bitmask for options.usemodsol to enable physics output for solenoids/Lamp/GI/AlphaSegments */
 #define CORE_MODOUT_FORCE_ON       128 /* Bitmask for options.usemodsol for drivers that needs PWM integration to be performed whatever the user settings are */
 
-#define CORE_MODOUT_LAMP_MAX                   (CORE_MAXLAMPCOL*8) /* Maximum number of modulated outputs for lamps */
+#define CORE_MODOUT_LAMP_MAX                 (CORE_MAXLAMPCOL * 8) /* Maximum number of modulated outputs for lamps */
 #define CORE_MODOUT_SOL_MAX                                     72 /* Maximum number of modulated outputs for solenoids */
 #define CORE_MODOUT_GI_MAX                                       8 /* Maximum number of modulated outputs for GI */
-#define CORE_MODOUT_SEG_MAX                                    256 /* Maximum number of modulated outputs for alphanumeric segments - 256=16x8x2 */
+#define CORE_MODOUT_SEG_MAX                   (CORE_SEGCOUNT * 16) /* Maximum number of modulated outputs for alphanumeric segments */
 #define CORE_MODOUT_LAMP0                                        0 /* Index of first lamp output */
 #define CORE_MODOUT_SOL0                      CORE_MODOUT_LAMP_MAX /* Index of first solenoid output */
 #define CORE_MODOUT_GI0   (CORE_MODOUT_SOL0 + CORE_MODOUT_SOL_MAX) /* Index of first GI output */
@@ -393,7 +394,9 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89/906 Bulb connected to 32V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
 #define CORE_MODOUT_LED_STROBE_1_10MS    401 /* LED Strobed 1ms over 10ms for full power */
-#define CORE_MODOUT_NTYPES               CORE_MODOUT_LED_STROBE_1_10MS + 1
+#define CORE_MODOUT_VFD_STROBE_05_20MS   450 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
+#define CORE_MODOUT_VFD_STROBE_1_16MS    451 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
+#define CORE_MODOUT_NTYPES               CORE_MODOUT_VFD_STROBE_1_16MS + 1
 
 /*-------------------------------------------
 /  Draw data. draw lamps,switches,solenoids
@@ -434,11 +437,12 @@ typedef struct {
    } state;
 } core_tPhysicOutput;
 
-#define CORE_SEGCOUNT 128
 #ifdef LSB_FIRST
-typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
+typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tWord;
+typedef core_tWord core_tSeg[CORE_SEGCOUNT];
 #else /* LSB_FIRST */
-typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
+typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tWord;
+typedef core_tWord core_tSeg[CORE_SEGCOUNT];
 #endif /* LSB_FIRST */
 typedef struct {
   /*-- Switches --*/
@@ -551,6 +555,7 @@ extern UINT64 core_getAllSol(void);
 extern void core_getAllPhysicSols(float* state);
 
 /*-- AC sync and PWM integration --*/
+extern void core_request_pwm_output_update();
 extern void core_set_pwm_output_type(int startIndex, int count, int type);
 extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
 extern void core_write_pwm_output(int index, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
