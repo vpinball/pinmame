@@ -555,7 +555,7 @@ src_int_to_float_array (const int * const __restrict in, float * const __restric
 #ifdef RESAMPLER_SSE_OPT
 	{
 		__m128 tmp;
-		out[i] = _mm_cvtss_f32(_mm_mul_ss(_mm_cvt_si2ss(tmp,in[i]>>7),_mm_set_ss((float)(1.0 / (1.0 * (0x80000000>>7)))));
+		out[i] = _mm_cvtss_f32(_mm_mul_ss(_mm_cvt_si2ss(tmp,in[i]>>7),_mm_set_ss((float)(1.0 / (1.0 * (0x80000000>>7))))));
 	}
 #else
 		out[i] = (float)(in[i]>>7) * (float)(1.0 / (1.0 * (0x80000000>>7))); // (float)(in[i] / (1.0 * (0x80000000>>7)));
