@@ -1646,7 +1646,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 					samlocals.LED_hack_send_garbage = 0;
 					for (int i = 0; i < samlocals.leds_per_string; i++)
-						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string].value = samlocals.tmp_leds[i] / 255.f;
+						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
 				}
 				samlocals.leds_per_string = samlocals.prev_ch1;
 				samlocals.led_row = (samlocals.prev_ch2 == 0x83) ? ((*data) == 0x80) ? 0 : 2 : ((*data) == 0x80) ? 1 : 3;
@@ -1658,7 +1658,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 				{
 					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 					for (int i = 0; i < samlocals.leds_per_string; i++)
-						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string].value = samlocals.tmp_leds[i] / 255.f;
+						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
 				}
 				samlocals.leds_per_string = 56;
 				samlocals.led_row = 0;
