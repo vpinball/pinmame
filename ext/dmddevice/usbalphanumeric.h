@@ -366,9 +366,9 @@ static void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
 }
 
 //*****************************************************
-//* Name:			_2x7Num_2x7Num_4x1Num
-//* Purpose:	2 X 7 Numeric
-//*						2 X 7 Numeric
+//* Name:			_2x6Num_2x6Num_4x1Num
+//* Purpose:	2 X 6 Numeric
+//*						2 X 6 Numeric
 //*						4 X 1 Numeric
 //* In:
 //* Out:
@@ -377,10 +377,10 @@ static void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 {
 	for (int i=0; i<12; i++) {
 		for (int j=0; j<16; j++) {
-			// 2x7 numeric
+			// 2x6 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<6)?0:4))*8, 0, 1, j, 3);
-			// 2x7 numeric
+			// 2x6 numeric
 			if ((seg_data[i+12] >> j) & 0x1) 
 				drawSegment((i+((i<6)?0:4))*8, 12, 1, j, 3);
 		}
@@ -401,7 +401,7 @@ static void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 }
 
 //*****************************************************
-//* Name:			_2x7Num_2x7Num_4x1Num
+//* Name:			_2x6Num_2x6Num_4x1Num
 //* Purpose:	2 X 6 Numeric10
 //*						2 X 6 Numeric10
 //*						4 X 1 Numeric
@@ -471,7 +471,7 @@ static void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
 }
 
 //*****************************************************
-//* Name:			_2x7Num_2x7Num_8x1Num
+//* Name:			_2x7Num_2x7Num_10x1Num
 //* Purpose:	2 X 7 Numeric
 //*						2 X 7 Numeric
 //*						10 X 1 Numeric
@@ -588,7 +588,7 @@ static void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
 }
 
 //*****************************************************
-//* Name:			_2x7Num_2x7Num_4x1Num
+//* Name:			_4x7Num10
 //* Purpose:	4 X 7 Numeric10
 //* In:
 //* Out:
@@ -610,7 +610,7 @@ static void _4x7Num10(const UINT16 *const seg_data)
 }
 
 //*****************************************************
-//* Name:			_2x7Num_2x7Num_4x1Num
+//* Name:			_6x4Num_4x1Num
 //* Purpose:	6 X 4 Numeric
 //*						4 X 1 Numeric
 //* In:
