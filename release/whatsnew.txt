@@ -134,7 +134,7 @@ STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callou
 Swords of Fury LG-2 (German)
 Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)
 Time Machine (Zaccaria, Italian Speech)
-Tommy 1.02 (Belgian), 3.01 (German)
+Tommy 1.02 (Belgian), 2.01 (Dutch), 3.01 (German)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
 Zankor (TMS5220 Italian Speech)
