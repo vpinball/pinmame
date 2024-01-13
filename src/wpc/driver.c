@@ -1246,6 +1246,7 @@ DRIVERNV(frankstg)      //             01/95 Frankenstein, Mary Shelley's (Germa
 DRIVERNV(franksti)      //             01/95 Frankenstein, Mary Shelley's (Italian)
 DRIVER  (bay,f201)      //DE/Sega MPU: 04/95 Baywatch (2.01) (French)
 DRIVER  (bay,d300)      //             04/95 Baywatch (3.00) (Dutch)
+DRIVER  (bay,g300)      //             04/95 Baywatch (3.00) (German)
 DRIVERNV(baywatch)      //             05/95 Baywatch (4.00)
 DRIVER  (bay,d400)      //             05/95 Baywatch (4.00) (Dutch)
 DRIVER  (bay,e400)      //             05/95 Baywatch (4.00) (English)

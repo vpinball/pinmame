@@ -1421,6 +1421,17 @@ DE_ROMEND
 #define input_ports_bay_d300 input_ports_baywatch
 CORE_CLONEDEFNV(bay_d300,baywatch,"Baywatch (3.00 Dutch)",1995,"Sega",de_mDEDMD64S2A,0)
 
+#define init_bay_g300 init_baywatch
+DE_ROMSTARTx0(bay_g300, "Baywatch_CPUG_C5_3.00.BIN", CRC(8f85fd10) SHA1(1fd561bf6145caf15846a776b0b92e7953fdf3ff))
+DE_DMD64ROM88(          "Baywatch_DispG_ROM0_3.00.BIN", CRC(30b0a96a) SHA1(ff0e4d4a1726ff2a553ebe4f21c0534e0a06b960),
+                        "Baywatch_DispG_ROM3_3.00.BIN", CRC(c7e50fad) SHA1(95b60855cb6718eb9c8a7231e9cd2e1c326cd1e3))
+DE2S_SOUNDROM144(       "bayw.u7"  ,   CRC(90d6d8a8) SHA1(482c5643453f21a078257aa13398845ef19cab3c),
+                        "bayw.u17" ,   CRC(b20fde56) SHA1(2f2db49245e4a6a8251cbe896b2437fcec88d42d),
+                        "bayw.u21" ,   CRC(b7598881) SHA1(19d1dde1cb6634a7c7b5cdb4fa01cd09cc7d7777))
+DE_ROMEND
+#define input_ports_bay_g300 input_ports_baywatch
+CORE_CLONEDEFNV(bay_g300,baywatch,"Baywatch (3.00 German)",1995,"Sega",de_mDEDMD64S2A,0)
+
 #define init_bay_f201 init_baywatch
 DE_ROMSTARTx0(bay_f201, "baycpuf.201", CRC(d2fddeaa) SHA1(839baca46823dc72a7ef1421764815f69f0e7084))
 DE_DMD64ROM88(          "bayrom0f.200",CRC(6dc898b6) SHA1(087b043acf64b2a16c8e4c879b90dbea1d79c614),
