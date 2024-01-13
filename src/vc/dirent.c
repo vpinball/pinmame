@@ -8,7 +8,7 @@
 
 #include "dirent.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /** open the current directory and return a structure
  *  to be used in subsequent readdir() and closedir()
