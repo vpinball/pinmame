@@ -429,6 +429,15 @@ S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c2
 S11_ROMEND
 CORE_CLONEDEF(bguns,lac,l8,"Big Guns (L-AC Competition MOD)", 2019, "Williams", s11_mS11AS,0)
 
+S11_ROMSTART48(bguns,p1a,"BigGuns_U26_ROM-2_LGx.bin", CRC(d75ca79d) SHA1(6d185cda4c62bf1cae0448c89b4f93a90aed855c), // only few bytes differ or are moved, compared to u26-p-1.rom
+                        "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf)) // matches the also dumped BigGuns_U27_ROM-1_LGx.bin
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703), // the dumped sound ROMs also matched the existing ones
+                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
+S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
+                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
+S11_ROMEND
+CORE_CLONEDEF(bguns,p1a,l8,"Big Guns (P-1 Prototype alternate / LG German?)", 1987, "Williams", s11_mS11AS,0) // dumped from a german machine
+
 S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
                         "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
 S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
@@ -1412,6 +1421,14 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
                         "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
 S11_ROMEND
 CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny's Birthday Ball (LU-2 Europe)", 1990, "Bally", s11c_one,0)
+
+S11_ROMSTART48(bbnny,lg,"Bugs_Bunny_U26_LG-2_Nova_Apparate.bin", CRC(0ba81bae) SHA1(ce56eadf26ee74a3a7b185893dceb09dc4929fa8),
+                        "Bugs_Bunny_U27_LG-2_Nova_Apparate.bin", CRC(33344679) SHA1(c504c8a85820b3ca8923513bbba5e058138be4a1))
+S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f87e61fc71bec45330c3),
+                        "bugs_u19.l1", CRC(a2084702) SHA1(ffd749387e7b52bad1e98c6a8939fb87bc67524c),
+                        "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
+S11_ROMEND
+CORE_CLONEDEF(bbnny,lg,l2,"Bugs Bunny's Birthday Ball (LG-2 German)", 1990, "Bally", s11c_one,0)
 
 // There exists also a u4 sound l1, where should this go to?
 //S11CS_SOUNDROM000(      "bugs_u4.l1",  CRC(dbfec77e) SHA1(57e2b0cfae51ed2aa3cad5ceb407260d10477068),
