@@ -436,7 +436,7 @@ S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046d
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
 S11_ROMEND
-CORE_CLONEDEF(bguns,p1a,l8,"Big Guns (P-1 Prototype alternate / LG German?)", 1987, "Williams", s11_mS11AS,0) // dumped from a german machine
+CORE_CLONEDEF(bguns,p1a,l8,"Big Guns (P-1 Prototype alternate / LG German?)", 1987, "Williams", s11_mS11AS,GAME_NOT_WORKING) // dumped from a german machine
 
 S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
                         "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
@@ -1285,6 +1285,13 @@ S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfa
                         "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
 S11_ROMEND
 
+S11_ROMSTART48(diner,g2,"dinr_u26.l2", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d), // a U26 did not come with this dump, but the LG-2 U27 works with this one
+                        "Diner_Nova_Apparate_U27_REV2.bin",CRC(74be688e) SHA1(053d32a7db72a310521781db94d6090ef8553c89)) // presumably version LG-2
+S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
+                        "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
+                        "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
+S11_ROMEND
+
 S11_ROMSTART48(diner,l2,"dinr_u26.l2", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
                         "dinr_u27.lu2",CRC(ea72f6aa) SHA1(58df02e8353dd9be2ecfbcdc78fc54981dd001e1))
 S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
@@ -1309,6 +1316,7 @@ S11_ROMEND
 CORE_GAMEDEF(diner, l4, "Diner (LA-4)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l3,l4, "Diner (LA-3)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,f2,l4, "Diner (LF-2 French)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,g2,l4, "Diner (LG-2 German)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l2,l4, "Diner (LU-2 Europe)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l1,l4, "Diner (LU-1 Europe)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,p0,l4, "Diner (PA-0 Prototype)", 1989, "Williams", s11_mS11CS,0)
