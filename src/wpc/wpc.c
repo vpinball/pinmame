@@ -872,14 +872,17 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
       {
         // Alphanumeric segment strobing change => turn off previous segment and on the ones of the new selected position
-        int prevIndex = (CORE_MODOUT_SEG0 >> 3) + wpc_data[WPC_ALPHAPOS] * 2;
-        int newIndex  = (CORE_MODOUT_SEG0 >> 3) +     data               * 2;
+        // Operation is set all segs to 0 (blanking), then strove to next column, then set segments.
+        // The delay between setting segments then blanking them is used to a rough PWM dimming
+        // Overall timing is 1ms maximum per digit over a 16ms period
+        int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
+        int newIndex  = CORE_MODOUT_SEG0 +     data               * 2 * 8;
         if (prevIndex != newIndex)
           for (int i = 0; i < 4; i++)
           {
-            int offset = i == 0 ? 0 : i == 1 ? 1 : i == 2 ? 40 : 41;
-            core_write_pwm_output_8b((newIndex  + offset) * 8, coreGlobals.binaryOutputState[prevIndex + offset]);
-            core_write_pwm_output_8b((prevIndex + offset) * 8, 0);
+            int offset = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
+            core_write_pwm_output_8b(newIndex  + offset, coreGlobals.binaryOutputState[(prevIndex + offset) >> 3]);
+            core_write_pwm_output_8b(prevIndex + offset, 0);
           }
       }
       break; /* just save position */
@@ -1166,8 +1169,9 @@ static MACHINE_INIT(wpc) {
   coreGlobals.nGI = 5;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
   if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) { // BOP, FH, HD alpahanumeric segments
-    coreGlobals.nAlphaSegs = 16*8*2;
-    core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_LED); // TODO check the schematics and physical properties. Are these LEDS or something more complex ?
+    coreGlobals.nAlphaSegs = 40 * 16;
+    core_set_pwm_output_type(CORE_MODOUT_SEG0, 16 * 16, CORE_MODOUT_VFD_STROBE_1_16MS);
+    core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20*16, 16 * 16, CORE_MODOUT_VFD_STROBE_1_16MS);
   }
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)

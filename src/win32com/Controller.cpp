@@ -8,6 +8,10 @@
 	01/08/12 (SJE): Added Warning message for game flagged with IMPERFECT SOUND
 	01/09/26 (SJE): Added Check to see if Invalid CRC games can be run.
 	03/09/22 (SJE): Added IMPERFECT GRAPHICS FLAG and reworked code to allow more than 1 message to display together
+   
+  PinMame runs on another thread than the controller without blocking synchronization primitives. Therefore when getters are called,
+  the return value is the last known state. For lazy updated values like physic outputs, getters also trigger an update that will be
+  serviced asynchronously. The theory of operation is that these getters are to be called repeatedly to update/get the actual value.
 */
 
 // Controller.cpp : Implementation of Controller and DLL registration.
@@ -396,8 +400,10 @@ STDMETHODIMP CController::get_Lamp(int nLamp, VARIANT_BOOL *pVal)
 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal= false;
-  else 
+  else {
+    core_request_pwm_output_update();
     *pVal = vp_getLamp(nLamp)?VARIANT_TRUE:VARIANT_FALSE;
+  }
 
   return S_OK;
 }
@@ -411,8 +417,10 @@ STDMETHODIMP CController::get_Solenoid(int nSolenoid, VARIANT_BOOL *pVal)
 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal= false;
-  else
+  else {
+    core_request_pwm_output_update();
     *pVal = vp_getSolenoid(nSolenoid)?VARIANT_TRUE:VARIANT_FALSE;
+  }
   return S_OK;
 }
 
@@ -485,6 +493,8 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 	
+   core_request_pwm_output_update();
+   
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 89);
 
 	VARIANT* pData;
@@ -858,6 +868,9 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
   /*-- Count changes --*/
   vp_tChgLamps chgLamps;
   int uCount = vp_getChangedLamps(chgLamps);
@@ -891,6 +904,9 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 
 	if (!pVal) return S_FALSE;
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
@@ -924,6 +940,9 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
 	/*-- Count changes --*/
 	vp_tChgSols chgSol;
 	int uCount = vp_getChangedSolenoids(chgSol);
@@ -958,6 +977,9 @@ STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
 
 	if (!pVal) return S_FALSE;
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
@@ -993,6 +1015,9 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
 	/*-- Count changes --*/
 	int uCount = vp_getChangedGI(chgGI);
 
@@ -1245,6 +1270,9 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
   /*-- Count changes --*/
   int uCount = vp_getChangedLamps(chgLamps);
 
@@ -1286,6 +1314,9 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
 
@@ -1340,6 +1371,9 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
 
@@ -1428,7 +1462,12 @@ STDMETHODIMP CController::put_Mech(int mechNo, int newVal)
 STDMETHODIMP CController::get_GIString(int nString, int *pVal) {
   if (!pVal) return S_FALSE;
 
-  *pVal = (WaitForSingleObject(m_hEmuIsRunning, 0) != WAIT_TIMEOUT) ? vp_getGI(nString) : 0;
+  if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+     *pVal = 0;
+  else {
+     core_request_pwm_output_update();
+     *pVal = vp_getGI(nString);
+  }
 
   return S_OK;
 }
@@ -1446,6 +1485,9 @@ STDMETHODIMP CController::get_ChangedGIStrings(VARIANT *pVal) {
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
   int uCount = vp_getChangedGI(chgGI);
 
   if (uCount == 0)
@@ -1489,6 +1531,9 @@ STDMETHODIMP CController::get_ChangedSolenoids(VARIANT *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ pVal->vt = 0; return S_OK; }
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
   /*-- Count changed solenoids --*/
   int uCount = vp_getChangedSolenoids(chgSol);
 
@@ -1547,6 +1592,9 @@ STDMETHODIMP CController::get_Solenoids(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 65);
 
 	VARIANT* pData;
@@ -1593,6 +1641,9 @@ STDMETHODIMP CController::get_GIStrings(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
+  /*-- Request an update that will be processed asynchronously --*/
+  core_request_pwm_output_update();
+   
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, CORE_MAXGI);
 
 	VARIANT* pData;
