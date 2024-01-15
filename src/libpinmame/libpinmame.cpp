@@ -1034,7 +1034,12 @@ PINMAMEAPI int PinmameGetMaxSolenoids()
 
 PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 {
-	return (_isRunning) ? vp_getSolenoid(solNo) : 0;
+	if (!_isRunning)
+		return 0;
+
+	core_request_pwm_output_update();
+
+	return vp_getSolenoid(solNo);
 }
 
 /******************************************************
@@ -1045,6 +1050,8 @@ PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedS
 {
 	if (!_isRunning)
 		return -1;
+
+	core_request_pwm_output_update();
 
 	vp_tChgSols chgSols;
 	const int count = vp_getChangedSolenoids(chgSols);
@@ -1068,7 +1075,12 @@ PINMAMEAPI int PinmameGetMaxLamps()
 
 PINMAMEAPI int PinmameGetLamp(const int lampNo)
 {
-	return (_isRunning) ? vp_getLamp(lampNo) : 0;
+	if (!_isRunning)
+		return 0;
+
+	core_request_pwm_output_update();
+
+	return vp_getLamp(lampNo);
 }
 
 /******************************************************
@@ -1079,6 +1091,8 @@ PINMAMEAPI int PinmameGetChangedLamps(PinmameLampState* const p_changedStates)
 {
 	if (!_isRunning)
 		return -1;
+
+	core_request_pwm_output_update();
 
 	vp_tChgLamps chgLamps;
 	const int count = vp_getChangedLamps(chgLamps);
@@ -1102,7 +1116,12 @@ PINMAMEAPI int PinmameGetMaxGIs()
 
 PINMAMEAPI int PinmameGetGI(const int giNo)
 {
-	return (_isRunning) ? vp_getGI(giNo) : 0;
+	if (!_isRunning)
+		return 0;
+
+	core_request_pwm_output_update();
+
+	return vp_getGI(giNo);
 }
 
 /******************************************************
@@ -1113,6 +1132,8 @@ PINMAMEAPI int PinmameGetChangedGIs(PinmameGIState* const p_changedStates)
 {
 	if (!_isRunning)
 		return -1;
+
+	core_request_pwm_output_update();
 
 	vp_tChgGIs chgGIs;
 	const int count = vp_getChangedGI(chgGIs);
@@ -1138,6 +1159,8 @@ PINMAMEAPI int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t mask2, 
 {
 	if (!_isRunning)
 		return -1;
+
+	core_request_pwm_output_update();
 
 	vp_tChgLED chgLEDs;
 	const int count = vp_getChangedLEDs(chgLEDs, mask, mask2);
