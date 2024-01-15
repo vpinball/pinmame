@@ -182,7 +182,7 @@ static WRITE_HANDLER( xvia_0_a_w )
 static WRITE_HANDLER( xvia_0_b_w ) {
 	// From schematics:
 	// - Rows are a simple latch (74HC273) with overcurrent comparators
-	// - Columns use two 74HS164 (8 bit shit register), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
+	// - Columns use two 74HS164 (8 bit shift register), when LSTRB is raised (low to high edge), column output are shifted (<<) and LDATA is used for lowest bit (forming a 12 bit shift sequence)
 	// - LCLR creates a short pulse (through a 555, with R=4.7k and C=0.1uF so 50us pulse) that will reset the overcurrent comparators on the row outputs (likely to cover the latching between row & column and avoid ghosting)
 	// This results in the following write sequence for strobing (observed on Cue Ball Wizard):
 	// - Set lampRow to 0 (turn off all lamps)
@@ -203,8 +203,8 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not gives any benefit
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, lampRow, 8);
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, lampRow, 4);
-	
-	
+
+
 	if (GTS3locals.alphagen)
 	{ // Alpha generation
 		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShitRegister);
@@ -265,7 +265,7 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 				GTS3locals.bitSet = 0;
 		}
 	}
-	
+
 	GTS3locals.u4pb = data;
 }
 
@@ -352,10 +352,10 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 		// TODO implement full aux board logic
 		if (data > 0 && data < 4 && GTS3locals.ax[4] == GTS3locals.ax[6])
 			coreGlobals.segments[39 + data].w = (GTS3locals.ax[6] & 0x3f) 
-		                                     | ((GTS3locals.ax[6] & 0xc0) <<  3) 
-											 | ((GTS3locals.ax[5] & 0x0f) << 11) 
-											 | ((GTS3locals.ax[5] & 0x10) <<  2) 
-											 | ((GTS3locals.ax[5] & 0x20) <<  3);
+			                                 | ((GTS3locals.ax[6] & 0xc0) <<  3) 
+			                                 | ((GTS3locals.ax[5] & 0x0f) << 11) 
+			                                 | ((GTS3locals.ax[5] & 0x10) <<  2) 
+			                                 | ((GTS3locals.ax[5] & 0x20) <<  3);
 	} else if (core_gameData->hw.lampCol > 4) { // flashers drived by auxiliary board (for example backbox lights in SF2)
 		// FIXME From the schematics, I would say that the latch only happens if ax[4] is raised up (not checked here)
 		coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = data;
@@ -471,7 +471,7 @@ static INTERRUPT_GEN(GTS3_vblank) {
 	}*/
 	GTS3locals.solenoids = coreGlobals.pulsedSolState;
   }
-  
+
   /*-- diagnostic leds --*/
   if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
 	if (GTS3_dmdlocals[0].version == 2) { //Strikes N Spares has 2 DMD LED, but no Sound Board LED
@@ -485,7 +485,7 @@ static INTERRUPT_GEN(GTS3_vblank) {
 									GTS3locals.diagnosticLed;
 	}
   }
-  
+
   core_updateSw(GTS3locals.solenoids & 0x80000000); // GameOn is solenoid #31 for all tables
 }
 
@@ -770,16 +770,16 @@ static WRITE_HANDLER(alpha_display){
 	{
 		GTS3locals.activeSegments[offset >> 1].w &= 0x063F;                // Remove bits 6..8 and 11..15
 		GTS3locals.activeSegments[offset >> 1].w |= ((data & 0x0F) << 11)  /* 8..11 => 11..14 */
-											               | ((data & 0x10) <<  2)  /*    12 =>      6 */
-											               | ((data & 0x20) <<  3)  /*    13 =>      8 */
-											               | ((data & 0x40) <<  9)  /*    14 =>     15 */
-											               | ((data & 0x80)      ); /*    15 =>      7 */
+		                                          | ((data & 0x10) <<  2)  /*    12 =>      6 */
+		                                          | ((data & 0x20) <<  3)  /*    13 =>      8 */
+		                                          | ((data & 0x40) <<  9)  /*    14 =>     15 */
+		                                          | ((data & 0x80)      ); /*    15 =>      7 */
 	}
 	else // Lo byte (0..7)
 	{
 		GTS3locals.activeSegments[offset >> 1].w &= 0xF9C0;               // Remove bits 0..5 and 9..10
 		GTS3locals.activeSegments[offset >> 1].w |= ((data & 0x3F)     )  /* 0.. 5 => 0.. 5 */
-											               | ((data & 0xC0) << 3); /* 6.. 7 => 9..10 */
+		                                          | ((data & 0xC0) << 3); /* 6.. 7 => 9..10 */
 	}
 	if (((GTS3locals.u4pb & DBLNK) == 0) && (GTS3locals.alphaNumCol < 20)) { // This should never happen since character pattern is loaded to the latch registers while DBLNK is raised
 		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16    , GTS3locals.activeSegments[0].b.lo);

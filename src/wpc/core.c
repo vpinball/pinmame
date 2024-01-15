@@ -1131,13 +1131,13 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         UINT16 tmpSeg = *seg;
         UINT8  tmpSegDim = 0;
         int tmpType = layout->type & CORE_SEGMASK;
-		
+
         if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT)) {
           // TODO this evaluates dimming as a whole for the alpha numeric display character while it should be per segment
-		    /*for (int kk = 0; kk < 16; kk++) {
-			   UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
-			   if (v > tmpSegDim) tmpSegDim = v;
-		    }*/
+          /*for (int kk = 0; kk < 16; kk++) {
+            UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
+            if (v > tmpSegDim) tmpSegDim = v;
+          }*/
           int bits = tmpSeg;
           for (int kk = 0; bits; kk++, bits >>= 1) {
             if (bits & 0x01) {
@@ -1156,7 +1156,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
 #endif
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
-		  
+
           *lastSegDim = tmpSegDim;
 
           switch (tmpType) {
@@ -1185,7 +1185,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           seg_data[seg_idx++] = tmpSeg;
 #endif
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
-             drawChar(bitmap, top, left, tmpSeg, tmpType, tmpSegDim >> 4);
+            drawChar(bitmap, top, left, tmpSeg, tmpType, tmpSegDim >> 4);
 #ifdef PROC_SUPPORT
             if (coreGlobals.p_rocEn) {
               if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
@@ -2227,8 +2227,8 @@ static MACHINE_INIT(core) {
     /*-- init PWM integration (needs to be done after coreData->init() which defines the number of outputs and the physical model to be used on each output) --*/
     //options.usemodsol = CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
 #ifdef VPINMAME
-    // If physic output is enabled and supported, we add a 1ms timer that will service physic outputs requests from other threads, that is to say the VPinMame client thread
-	 // Note that physic outputs are also updated once per frame by the core machine driver video update callback.
+    // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
+    // Note that physical outputs are also updated once per frame by the core machine driver video update callback.
     if (((options.usemodsol & CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.nSolenoids)
       || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) && (coreGlobals.nSolenoids || coreGlobals.nLamps || coreGlobals.nGI || coreGlobals.nAlphaSegs))
       ||  (options.usemodsol & CORE_MODOUT_FORCE_ON))
@@ -2561,7 +2561,7 @@ void core_update_pwm_output(float now, int index, int isFlip)
          printf("Out. #%d t=%8.5f Flip from %s to %s (elapsed since last flip: %8.5f)\n", index, now, state ? "x" : "-", (1-state) ? "x" : "-", elapsedSinceLastFlip);
       #endif
       output->lastFlipTimestamp = now;
-	   // TODO Most integrators do not uses the sub integration feature: this should be moved to the only ones using it for cleaner/better performance
+      // TODO Most integrators do not uses the sub integration feature: this should be moved to the only ones using it for cleaner/better performance
       if (integrationLength < pwmIntegrationPeriod && elapsedSinceLastFlip < coreOutputinfos[output->type].pwmSubIntegrationPeriod)
         return;
       pwmDutyCycle = output->elapsedInStateTime[1] / integrationLength;
@@ -2737,7 +2737,7 @@ void core_update_pwm_output(float now, int index, int isFlip)
          printf("LED  #%d t=%8.5f d=%8.5f r=%.2f => V=%0.3f S=%s\n", index, initialNow, initialIntegrationLength, pwmDutyCycle, output->value, state ? "x" : "-");
       #endif
    }
-                                     break;
+   break;
    case CORE_MODOUT_LED_STROBE_1_10MS:
    case CORE_MODOUT_LED: {
       // LED reacts almost instantly (<1us), the integration is based on the human eye perception, with some 
