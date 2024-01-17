@@ -485,6 +485,7 @@ static void setSSSol(int data, int solNo) {
     { coreGlobals.pulsedSolState |= bit;  locals.solenoids |= bit; }
   else
     coreGlobals.pulsedSolState &= ~bit;
+  core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo] - 1, 1, (locals.ssEn & (~data & 1)) ? 1 : 0);
 }
 
 #ifdef FIXMUX
