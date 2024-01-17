@@ -1497,14 +1497,14 @@ void core_updateSw(int flipEn) {
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
-    for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-      UINT8 v = saturatedByte(state[ii]);
-      if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
+    for (ii = 1; ii <= coreGlobals.nSolenoids; ii++) {
+      UINT8 v = saturatedByte(state[ii - 1]);
+      if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1]) {
         #ifdef LIBPINMAME
-        OnSolenoid(ii + 1, v);
+        OnSolenoid(ii, v);
         #else
-        if ((v > 128) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] <= 128)) {
-          OnSolenoid(ii + 1, v);
+        if ((v > 128) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] > 128)) {
+          OnSolenoid(ii, v);
           /*-- log solenoid number on the display (except flippers) --*/
           if ((!pmoptions.dmd_only && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL)))) {
             locals.solLog[locals.solLogCount] = ii;
@@ -1521,7 +1521,7 @@ void core_updateSw(int flipEn) {
           #endif
         }
         #endif
-        locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] = v;
+        locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] = v;
       }
     }
   }
@@ -1529,10 +1529,10 @@ void core_updateSw(int flipEn) {
     UINT64 allSol = core_getAllSol();
     UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
     locals.lastSol = allSol;
-    for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
+    for (ii = 1; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol; ii++)
     {
       if (chgSol & 0x01) {
-        OnSolenoid(ii + 1, allSol & 0x01);
+        OnSolenoid(ii, allSol & 0x01);
         /*-- log solenoid number on the display (except flippers) --*/
         if ((!pmoptions.dmd_only && (allSol & 0x01)) && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
           locals.solLog[locals.solLogCount] = ii;
