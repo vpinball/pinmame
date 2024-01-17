@@ -429,15 +429,6 @@ S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c2
 S11_ROMEND
 CORE_CLONEDEF(bguns,lac,l8,"Big Guns (L-AC Competition MOD)", 2019, "Williams", s11_mS11AS,0)
 
-S11_ROMSTART48(bguns,p1a,"BigGuns_U26_ROM-2_LGx.bin", CRC(d75ca79d) SHA1(6d185cda4c62bf1cae0448c89b4f93a90aed855c), // only few bytes differ or are moved, compared to u26-p-1.rom
-                        "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf)) // matches the also dumped BigGuns_U27_ROM-1_LGx.bin
-S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703), // the dumped sound ROMs also matched the existing ones
-                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
-S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
-                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
-S11_ROMEND
-CORE_CLONEDEF(bguns,p1a,l8,"Big Guns (P-1 Prototype alternate / LG German?)", 1987, "Williams", s11_mS11AS,GAME_NOT_WORKING) // dumped from a german machine
-
 S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
                         "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
 S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),

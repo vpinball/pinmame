@@ -2586,7 +2586,6 @@ DRIVER(f14,l1)          //          05/87 W F-14 Tomcat (L-1)
 DRIVER(fire,l2)         //S11-556:  08/87 W Fire! (L-2)
 DRIVER(fire,l3)         //          08/87 W Fire! (L-3)
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1 Prototype)
-DRIVER(bguns,p1a)       //          10/87 W Big Guns (P-1 Prototype alternate / LG German?)
 DRIVER(bguns,la)        //          10/87 W Big Guns (L-A)
 DRIVER(bguns,lac)       //          07/19 W Big Guns (L-AC Competition MOD) // patch 7472
 DRIVER(bguns,l7)        //          10/87 W Big Guns (L-7)
