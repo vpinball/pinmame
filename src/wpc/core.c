@@ -89,7 +89,7 @@ void vp_setDIP(int bank, int value) { }
 
 INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
-static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
+static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, UINT8 dimming[16]);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
 static VIDEO_UPDATE(core_status);
 
@@ -677,7 +677,7 @@ static tSegData segData[2][18] = {{
 /-------------------*/
 static struct {
   core_tSeg lastSeg;       // previous segments values
-  UINT8     lastSegDim[CORE_SEGCOUNT]; // previous segment dimming level
+  UINT8     lastSegDim[CORE_SEGCOUNT * 16]; // previous segment dimming level
   int       displaySize;   // 1=compact 2=normal
   tSegData  *segData;      // segments to use (normal/compact)
   void      *timers[5];    // allocated timers
@@ -1113,7 +1113,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int ii    = layout->length;
       UINT16 *seg     = &coreGlobals.segments[layout->start].w;
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
-      UINT8  *lastSegDim = &locals.lastSegDim[layout->start];
+      UINT8  *lastSegDim = &locals.lastSegDim[layout->start * 16];
       const int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
@@ -1126,10 +1126,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int char_width = locals.segData[layout->type & 0x0f].cols+1;
 #endif
 
-      if (step < 0) { seg += ii-1; lastSeg += ii-1; lastSegDim += ii-1; }
+      if (step < 0) { seg += ii-1; lastSeg += ii-1; lastSegDim += (ii-1)*16; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
-        UINT8  tmpSegDim = 0;
+        UINT8  tmpSegDim[16] = { 0 }, maxSegDim = 0;
         int tmpType = layout->type & CORE_SEGMASK;
 
         if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT)) {
@@ -1142,22 +1142,22 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           for (int kk = 0; bits; kk++, bits >>= 1) {
             if (bits & 0x01) {
               UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
-              if (v > tmpSegDim) tmpSegDim = v;
+              if (v > maxSegDim) maxSegDim = v;
+              tmpSegDim[kk] = 255 - v;
             }
           }
-          tmpSegDim = 255 - tmpSegDim;
         }
 
 #ifdef VPINMAME
         //SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
         if(1) {
 #else
-        if ((tmpSeg != *lastSeg) || (tmpSegDim != *lastSegDim) ||
+        if ((tmpSeg != *lastSeg) || memcmp(tmpSegDim, lastSegDim, 16) != 0 ||
             inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
 #endif
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
-          *lastSegDim = tmpSegDim;
+          memcpy(lastSegDim, tmpSegDim, 16);
 
           switch (tmpType) {
 
@@ -1181,11 +1181,11 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             break;
           }
 #if defined(VPINMAME) || defined(LIBPINMAME)
-          seg_dim[seg_idx] = tmpSegDim >> 4;
+          seg_dim[seg_idx] = (255 - maxSegDim) >> 4;
           seg_data[seg_idx++] = tmpSeg;
 #endif
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
-            drawChar(bitmap, top, left, tmpSeg, tmpType, tmpSegDim >> 4);
+            drawChar(bitmap, top, left, tmpSeg, tmpType, tmpSegDim);
 #ifdef PROC_SUPPORT
             if (coreGlobals.p_rocEn) {
               if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
@@ -2048,54 +2048,58 @@ int core_getDip(int dipBank) {
 /*--------------------
 /   Draw a LED digit
 /---------------------*/
-static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming) {
+static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
-  int palSize = sizeof(core_palette)/3;
-  UINT32 pixel[21] = {0};
-  int kk,ll;
-  int pens[4][4] = {{             0, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming },
-                    { COL_DMDOFF,    palSize-1-dimming, palSize-17-dimming, palSize-33-dimming },
-                    { COL_SEGAAOFF1, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming },
-                    { COL_SEGAAOFF2, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming }};
-
+  UINT8 pixel[21][16] = { 0 };
+  int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
+  int kk, ll;
+  int palSize = sizeof(core_palette) / 3;
   for (kk = 1; bits; kk++, bits >>= 1) {
     if (bits & 0x01) {
 #ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				if (pmoptions.alpha_on_dmd) {
-                                    	/* Draw alphanumeric segments on the DMD */
-                                    switch (row) {
-                                        case 0:
-                                            procDrawSegment(col/2, 3, kk-1);
-                                            break;
-                                        case 21:
-                                            // This is the ball/credit display on older Sys11
-                                            // Push through an 11 as the row
-                                            // number, the display routine will
-                                            // take care of repositioning
-                                            procDrawSegment(col/2,11,kk-1);
-                                            break;
-                                        case 42:
-                                            procDrawSegment(col/2, 19, kk-1);
-                                                break;
-                                        default:
-                                            break;
-
-					}
+		if (coreGlobals.p_rocEn) {
+			if (pmoptions.alpha_on_dmd) {
+            /* Draw alphanumeric segments on the DMD */
+            switch (row) {
+               case 0:
+                  procDrawSegment(col/2, 3, kk-1);
+                  break;
+               case 21:
+                  // This is the ball/credit display on older Sys11
+                  // Push through an 11 as the row
+                  // number, the display routine will
+                  // take care of repositioning
+                  procDrawSegment(col/2,11,kk-1);
+                  break;
+               case 42:
+                  procDrawSegment(col/2, 19, kk-1);
+                  break;
+               default:
+                  break;
 				}
 			}
+		}
 #endif
-      for (ll = 0; ll < s->rows; ll++)
-        pixel[ll] |= s->segs[ll][kk];
+      for (ll = 0; ll < s->rows; ll++) {
+        UINT32 row = s->segs[ll][kk];
+        for (int i = 0; i < 16; i++, row = row >> 2) {
+          if (row & 3) {
+            UINT8 v = (((3 - (row & 3)) * (255 - dimming[kk - 1]))) >> 1;
+            if (pixel[ll][i] < v) pixel[ll][i] = v;
+          }
+        }
+      }
     }
   }
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
-    // why don't the bitmap use the leftmost bits. i.e. size is limited to 15
-    UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
-
-    for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
-      *(--line) = CORE_COLOR(pens[np & 0x03][p & 0x03]);
+    UINT32 np = s->segs[kk][0]>>(30-2*s->cols);
+    for (ll = 0; ll < s->cols; ll++, np >>= 2) {
+      if (pixel[kk][ll])
+        *(--line) = CORE_COLOR(palSize - 33 + (pixel[kk][ll] >> 3));
+      else
+        *(--line) = CORE_COLOR(offPens[np & 0x03]);
+    }
   }
   osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
