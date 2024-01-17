@@ -2659,8 +2659,11 @@ DRIVER(mousn,l4c)       //          01/19 B Mousin' Around! (LA-4C Competition M
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
-DRIVER(whirl,l2)        //S11-574:  01/90 W Whirlwind (L-2)
+DRIVER(whirl,pa1)       //S11-574:  ??/?? W Whirlwind (PA-1 Prototype)
+DRIVER(whirl,l2)        //          01/90 W Whirlwind (L-2)
 DRIVER(whirl,l3)        //          01/90 W Whirlwind (L-3)
+DRIVER(whirl,g1)        //          01/90 W Whirlwind (LG-1 German)
+DRIVER(whirl,g2)        //          01/90 W Whirlwind (LG-2 German)
 DRIVER(whirl,g3)        //          01/90 W Whirlwind (LG-3 German)
 DRIVER(gs,la3)          //S11-985:  02/90 B Game Show (LA-3)
 DRIVER(gs,lu3)          //          ??/90 B Game Show (LU-3 Europe)
