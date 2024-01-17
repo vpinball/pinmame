@@ -724,7 +724,7 @@ static MACHINE_INIT(cc) {
   core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 7, 1, CORE_MODOUT_LED); // Sound Board Diagnostic LED
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1].type = CORE_MODOUT_LEGACY_SOL_CUSTOM; // GameOn solenoid for Fast Flips
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 1, CORE_MODOUT_SOL_CUSTOM); // GameOn solenoid for Fast Flips
   // Game specific hardware
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
@@ -742,8 +742,8 @@ static MACHINE_INIT(cc) {
   }
   else if (strncasecmp(gn, "bsv103", 6) == 0) { // Breakshot
     coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908;
-    coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 28 - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC; // Center pocket Flasher
-    // coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 27 - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC; // Plunger Flasher (appears in doc but was not kept in production)
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
+    // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
   }
   else if (strncasecmp(gn, "ffv104", 6) == 0) { // Flipper Football
     coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908;
