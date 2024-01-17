@@ -122,6 +122,7 @@ Farfalla (French Speech)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)
 Galaxy (7-Digit conversion, Fixes & modified rules)
+Hook 4.01 (French), 4.00 (incomplete dumps)
 Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
 Metallica 0.52
