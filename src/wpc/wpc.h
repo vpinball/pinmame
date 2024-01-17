@@ -228,7 +228,6 @@ extern WRITE_HANDLER(wpc_w);
 /*-- use this function to send FIRQ to main CPU --*/
 #define WPC_FIRQ_DMD    0x01
 #define WPC_FIRQ_SOUND  0x02
-static void wpc_firq(int set, int src);
 
 extern MACHINE_DRIVER_EXTERN(wpc_alpha);
 extern MACHINE_DRIVER_EXTERN(wpc_dmd);

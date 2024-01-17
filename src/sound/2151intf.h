@@ -52,5 +52,4 @@ void YM2151_sh_stop(void);
 void YM2151_sh_reset(void);
 void YM2151_set_mixing_levels(int chip, int l, int r);
 
-static void YM2151UpdateRequest(int chip);
 #endif

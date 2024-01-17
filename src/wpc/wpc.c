@@ -407,6 +407,16 @@ MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
 MACHINE_DRIVER_END
 
+/* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
+/* The DMD firq must be generated via the WPC but I don't how. */
+static void wpc_firq(int set, int src) {
+  if (set)
+    wpclocals.firqSrc |= src;
+  else
+    wpclocals.firqSrc &= ~src;
+  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, wpclocals.firqSrc ? HOLD_LINE : CLEAR_LINE);
+}
+
 /*--------------------------------------------------------------
 / This is generated WPC_VBLANKDIV times per frame (=60*WPC_VBLANKDIV Hz)
 / = every 32/(WPC_VBLANKDIV/2) lines.
@@ -613,16 +623,6 @@ static INTERRUPT_GEN(wpc_vblank) {
 #endif
       (wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
     core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
-}
-
-/* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
-/* The DMD firq must be generated via the WPC but I don't how. */
-static void wpc_firq(int set, int src) {
-  if (set)
-    wpclocals.firqSrc |= src;
-  else
-    wpclocals.firqSrc &= ~src;
-  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, wpclocals.firqSrc ? HOLD_LINE : CLEAR_LINE);
 }
 
 /*----------------------
@@ -880,9 +880,9 @@ WRITE_HANDLER(wpc_w) {
         if (prevIndex != newIndex)
           for (int i = 0; i < 4; i++)
           {
-            int offset = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
-            core_write_pwm_output_8b(newIndex  + offset, coreGlobals.binaryOutputState[(prevIndex + offset) >> 3]);
-            core_write_pwm_output_8b(prevIndex + offset, 0);
+            int offst = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
+            core_write_pwm_output_8b(newIndex  + offst, coreGlobals.binaryOutputState[(prevIndex + offst) >> 3]);
+            core_write_pwm_output_8b(prevIndex + offst, 0);
           }
       }
       break; /* just save position */

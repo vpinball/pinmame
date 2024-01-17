@@ -461,14 +461,14 @@ static INTERRUPT_GEN(GTS3_vblank) {
   if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
 	// FIXME ssEn is never set. Special solenoids are handled by core_updateSw triggered from GameOn directly read from solenoid #31 state
 	// Note that the code here would have a bug because it sets solenoids #23 as GameOn but this solenoid is used for other purposes by GTS3 hardware
-	/*if (GTS3locals.ssEn) { 
-	  int ii;
-	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
-	  /*-- special solenoids updated based on switches --*/
-	  /*for (ii = 0; ii < 6; ii++)
-		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-	}*/
+//	if (GTS3locals.ssEn) { 
+//	  int ii;
+//	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+//	  /*-- special solenoids updated based on switches --*/
+//	  for (ii = 0; ii < 6; ii++)
+//		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+//		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
+//	}
 	GTS3locals.solenoids = coreGlobals.pulsedSolState;
   }
 

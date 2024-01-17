@@ -807,7 +807,11 @@ static int RunMAME(int nGameIndex)
 	time_t start, end;
 	time_t elapsedtime;
 
+#ifdef __GNUC__
+	strcpy(g_szGameName, drivers[nGameIndex]->name);
+#else
 	strcpy_s(g_szGameName, sizeof(g_szGameName), drivers[nGameIndex]->name);
+#endif
 
 	CreateCommandLine(nGameIndex, pCmdLine);
 

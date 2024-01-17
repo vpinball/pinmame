@@ -555,14 +555,14 @@ extern UINT64 core_getAllSol(void);
 extern void core_getAllPhysicSols(float* state);
 
 /*-- AC sync and PWM integration --*/
-extern void core_request_pwm_output_update();
+extern void core_request_pwm_output_update(void);
 extern void core_set_pwm_output_type(int startIndex, int count, int type);
 extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
-extern void core_write_pwm_output(int index, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
-extern void core_write_pwm_output_8b(int index, UINT8 bitStates);
-extern void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask);
+extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
+extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
+extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UINT8 bitMask);
 extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
-INLINE void core_zero_cross() { coreGlobals.lastACZeroCrossTimeStamp = (float) timer_get_time(); }
+INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = (float) timer_get_time(); }
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
