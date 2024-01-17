@@ -2645,6 +2645,7 @@ DRIVER(eatpm,f1)        //          09/89 B Elvira and the Party Monsters (LF-1 
 DRIVER(eatpm,l2)        //          10/89 B Elvira and the Party Monsters (LA-2)
 DRIVER(eatpm,l4)        //          10/89 B Elvira and the Party Monsters (LA-4)
 DRIVER(eatpm,4u)        //          10/89 B Elvira and the Party Monsters (LU-4 Europe)
+DRIVER(eatpm,3g)        //          10/89 B Elvira and the Party Monsters (LG-3 German)
 DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (LG-4 German)
 DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(bcats,g4)        //          11/89 W Bad Cats (LG-4)
