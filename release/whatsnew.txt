@@ -102,8 +102,9 @@ Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
 LTD:  Space Poker
-NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
-Shadow: Fix checksum of LH-6 with wrong text index patch
+WMS:  Black Knight 2000: redumped LG-1 (German) version, startup text is no longer corrupt
+      NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
+      The Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
 Ali (7-digit conversion Free Play rev. 76)
@@ -140,7 +141,7 @@ Swords of Fury LG-2 (German)
 Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)
 Time Machine (Zaccaria, Italian Speech)
 Tommy 1.02 (Belgian), 2.01 (Dutch), 3.01 (German)
-Whirlwind LG-1 (German), LG-2 (German), PA-1 (Prototype) (at least the latter one incomplete though)
+Whirlwind LG-1 (German), LG-2 (German) (no U26 dumps available, seem to work with known one)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
 Zankor (TMS5220 Italian Speech)

@@ -772,8 +772,9 @@ S11_ROMEND
 #define input_ports_bk2k input_ports_s11
 CORE_GAMEDEF(bk2k, l4, "Black Knight 2000 (L-4)", 1989, "Williams", s11_mS11BS,0)
 
-S11_ROMSTART48(bk2k,lg1,"bk2kgu26.lg1", CRC(f916d163) SHA1(bd8cbac9345a8debd01c8c68110652f591ad9d51),
-                        "bk2kgu27.lg1", CRC(4132ac5c) SHA1(5636d4e8fb9bf5a5f4ccafe4ef035ab0e8964e8b))
+S11_ROMSTART48(bk2k,lg1,"u26-pu1.rom", CRC(2da07403) SHA1(4b48c5d7b0a03aa4593dc6053dc5e94df22d2a64),
+                        "bk2k_u27.lg1",CRC(2d6359d4) SHA1(531841dedf2acf3ac10577813f003cf077d4607d)) // redump shows a one-byte difference
+//                        "bk2kgu27.lg1",CRC(4132ac5c) SHA1(5636d4e8fb9bf5a5f4ccafe4ef035ab0e8964e8b))
 S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
                         "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
@@ -1069,21 +1070,11 @@ S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf
                         "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
 S11_ROMEND
 
-S11_ROMSTART48(whirl,pa1,"whir_u26.l3", CRC(066b8fec) SHA1(017ca12ef5ebd9bb70690b0e096064be5144a512) BAD_DUMP, // only U27/U21/U22 came with the dump, but no U26
-                        "Whirlwind_U27_PA1.bin", CRC(0310500f) SHA1(51b918eb32b42e69a76ac9d2d7026332ad50457e))
-S11XS_SOUNDROM88(       "whir_u21.l1", CRC(fa3da322) SHA1(732107eace9eecdb97eff4abb4420a2febef7425), // = matches the dumped Whirlwind_U21_PA1_SoundROM1.bin
-                        "whir_u22.l1", CRC(fcaf8c4e) SHA1(8e8cab1923a56bcef4671dce28aef1e39303c04a)) // = matches the dumped Whirlwind_U22_PA1_SoundROM2.bin
-S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf9dd013855e51a7b857),
-                        "whir_u19.l1", CRC(c63f6fe9) SHA1(947bbccb5eeae414770254d42d0a95425e2dca8c),
-                        "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
-S11_ROMEND
-
-CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(whirl,l2,l3, "Whirlwind (L-2)", 1990, "Williams", s11_mS11BS,0)
+CORE_GAMEDEF(whirl,l3, "Whirlwind (LA-3)", 1990, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(whirl,l2,l3, "Whirlwind (LU-2)", 1990, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(whirl,g1,l3, "Whirlwind (LG-1 German)", 1990, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(whirl,g2,l3, "Whirlwind (LG-2 German)", 1990, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(whirl,g3,l3, "Whirlwind (LG-3 German)", 1990, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(whirl,pa1,l3,"Whirlwind (PA-1 Prototype)", 1990, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Game Show 4/90
