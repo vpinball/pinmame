@@ -479,12 +479,12 @@ static WRITE16_HANDLER(u16_w) {
     }
     case 0x201: { // IRQ4 Line 1 frequency
       LOG_U16(("PC %08x - U16w IRQ4 f1=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
-      locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+      locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
       break;
     }
     case 0x202: { // IRQ4 Line 2 frequency
       LOG_U16(("PC %08x - U16w IRQ4 f2=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
-      locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+      locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
       break;
     }
     default:
@@ -769,11 +769,11 @@ static MACHINE_INIT(cc) {
   locals.u16IRQ4Line3timer = timer_alloc(cc_u16irq4line3);
   // defaults IRQ periods
   locals.u16IRQ1Period = TIME_IN_SEC(22668 / (double)CPU_CLOCK);
-  locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
-  locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
   // Flipper Football frequency for IRQ4 Line 3 is half of other games => likely DMD vblank since DMD has twice more lines (so 45.9Hz for FF, 91.8Hz for others)
   int defaultLine3 = (core_gameData->hw.gameSpecific1 == 9 || core_gameData->hw.gameSpecific1 == 12) ? 0x0000 : 0x0800;
-  locals.u16IRQ4Line3Period = TIME_IN_SEC(((0x1000 - (defaultLine3 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line3Period = TIME_IN_SEC(((0x1000 - (defaultLine3 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
 
 #if TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation
