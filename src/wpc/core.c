@@ -2700,6 +2700,14 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
+    case CORE_MODOUT_BULB_89_25V_DC_S11: // Flasher 25V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 1,5 Ohms serial resistor and a diode (1V voltage drop), from Police Force (and others) schematics
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 25.f - 1.0f - 1.0f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 1.5f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
     case CORE_MODOUT_LED:
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
