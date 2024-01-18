@@ -323,7 +323,7 @@ int main(int, char**)
 	//PinmameRun("t2_l8");
 	//PinmameRun("galaxy");
 
-	if (PinmameRun("galaxy") == PINMAME_STATUS_OK) {
+	if (PinmameRun("medusa") == PINMAME_STATUS_OK) {
 		while (true)
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
