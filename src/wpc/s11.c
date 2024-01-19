@@ -99,6 +99,7 @@ static struct {
 #ifndef PINMAME_NO_UNUSED
   int soundSys; /* 0 = CPU board sound, 1 = Sound board */
 #endif
+  int dispLock;
 } locals;
 
 static void s11_irqline(int state) {
@@ -388,6 +389,7 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
                              (currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
   locals.digSel = data & 0x0f;
+  locals.dispLock = 0;
   if (core_gameData->hw.display & S11_BCDDIAG)
     locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
   else
@@ -426,11 +428,21 @@ static WRITE_HANDLER(pia5a_w) { // Not used for DMD
     locals.segments[20+locals.digSel].b.hi |=
          locals.pseg[20+locals.digSel].b.hi = data;
 }
+
 static WRITE_HANDLER(pia3a_w) {
+  if (locals.dispLock) {
+    locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = 0;
+    return;
+  }
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = data;
+  locals.dispLock = 1;
 }
 static WRITE_HANDLER(pia3b_w) {
+  if (locals.dispLock) {
+    locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = 0;
+    return;
+  }
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = data;
 }
