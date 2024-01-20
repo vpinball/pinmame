@@ -236,9 +236,10 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 
 /*----------------------
 / WPC driver constants
-/-----------------------*/
-/* Solenoid numbering */
-/*       WPC          */
+/--------------------------------*/
+/*      Solenoid numbering       */
+/*                               */
+/*       WPC                     */
 /*  1-28 Standard                */
 /* 33-36 Upper flipper solenoids */
 /* 37-40 Standard (WPC95 only)   */
@@ -246,24 +247,28 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 /* 45-48 Lower flipper solenoids */
 /* 49-50 Simulated               */
 /* 51-64                         */
-/*       S9/S11            */
-/*  1- 8 Standard 'A'-side */
-/*  9-16 Standard          */
-/* 17-22 Special           */
+/*                               */
+/*       S9/S11                  */
+/*  1- 8 Standard 'A'-side       */
+/*  9-16 Standard                */
+/* 17-22 Special                 */
 /* 23    Flipper & SS Enabled Sol (fake) */
-/* 25-32 Standard 'C'-side */
-/* 37-41 Sound overlay board */
-/*       S7 */
-/*  1-16 Standard */
-/* 17-24 Special */
+/* 25-32 Standard 'C'-side       */
+/* 37-41 Sound overlay board     */
+/*                               */
+/*       S7                      */
+/*  1-16 Standard                */
+/* 17-24 Special                 */
 /* 25    Flipper & SS Enabled Sol (fake) */
-/*       BY17/BY35         */
-/*  1-15 Standard Pulse */
-/* 17-20 Standard Hold */
-/*       GTS80 */
-/*  1- 9 Standard */
-/* 10    GameOn (fake) */
-/* 11    Tilt (for GI) (fake) */
+/*                               */
+/*       BY17/BY35               */
+/*  1-15 Standard Pulse          */
+/* 17-20 Standard Hold           */
+/*                               */
+/*       GTS80                   */
+/*  1- 9 Standard                */
+/* 10    GameOn (fake)           */
+/* 11    Tilt (for GI) (fake)    */
 #define CORE_FIRSTEXTSOL   37
 #define CORE_FIRSTUFLIPSOL 33
 #define CORE_FIRSTCUSTSOL  51
