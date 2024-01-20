@@ -301,8 +301,7 @@ void vp_setModOutputType(int output, int no, int type) {
 	}
 	if (pos != -1)
 	{
-		memset(&(coreGlobals.physicOutputState[pos]), 0, sizeof(core_tPhysicOutput));
-		coreGlobals.physicOutputState[pos].type = type;
+		core_set_pwm_output_type(pos, 1, type);
 	}
 }
 

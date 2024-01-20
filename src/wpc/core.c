@@ -89,7 +89,7 @@ void vp_setDIP(int bank, int value) { }
 
 INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
-static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
+static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, UINT8 dimming[16]);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
 static VIDEO_UPDATE(core_status);
 
@@ -677,7 +677,7 @@ static tSegData segData[2][18] = {{
 /-------------------*/
 static struct {
   core_tSeg lastSeg;       // previous segments values
-  UINT8     lastSegDim[CORE_SEGCOUNT]; // previous segment dimming level
+  UINT8     lastSegDim[CORE_SEGCOUNT * 16]; // previous segment dimming level
   int       displaySize;   // 1=compact 2=normal
   tSegData  *segData;      // segments to use (normal/compact)
   void      *timers[5];    // allocated timers
@@ -1113,7 +1113,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int ii    = layout->length;
       UINT16 *seg     = &coreGlobals.segments[layout->start].w;
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
-      UINT8  *lastSegDim = &locals.lastSegDim[layout->start];
+      UINT8  *lastSegDim = &locals.lastSegDim[layout->start * 16];
       const int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
@@ -1126,10 +1126,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int char_width = locals.segData[layout->type & 0x0f].cols+1;
 #endif
 
-      if (step < 0) { seg += ii-1; lastSeg += ii-1; lastSegDim += ii-1; }
+      if (step < 0) { seg += ii-1; lastSeg += ii-1; lastSegDim += (ii-1)*16; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
-        UINT8  tmpSegDim = 0;
+        UINT8  tmpSegDim[16] = { 0 }, maxSegDim = 0;
         int tmpType = layout->type & CORE_SEGMASK;
 
         if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT)) {
@@ -1142,22 +1142,22 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           for (int kk = 0; bits; kk++, bits >>= 1) {
             if (bits & 0x01) {
               UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
-              if (v > tmpSegDim) tmpSegDim = v;
+              if (v > maxSegDim) maxSegDim = v;
+              tmpSegDim[kk] = 255 - v;
             }
           }
-          tmpSegDim = 255 - tmpSegDim;
         }
 
 #ifdef VPINMAME
         //SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
         if(1) {
 #else
-        if ((tmpSeg != *lastSeg) || (tmpSegDim != *lastSegDim) ||
+        if ((tmpSeg != *lastSeg) || memcmp(tmpSegDim, lastSegDim, 16) != 0 ||
             inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
 #endif
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
-          *lastSegDim = tmpSegDim;
+          memcpy(lastSegDim, tmpSegDim, 16);
 
           switch (tmpType) {
 
@@ -1181,11 +1181,11 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             break;
           }
 #if defined(VPINMAME) || defined(LIBPINMAME)
-          seg_dim[seg_idx] = tmpSegDim >> 4;
+          seg_dim[seg_idx] = (255 - maxSegDim) >> 4;
           seg_data[seg_idx++] = tmpSeg;
 #endif
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
-            drawChar(bitmap, top, left, tmpSeg, tmpType, tmpSegDim >> 4);
+            drawChar(bitmap, top, left, tmpSeg, tmpType, tmpSegDim);
 #ifdef PROC_SUPPORT
             if (coreGlobals.p_rocEn) {
               if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
@@ -1497,14 +1497,14 @@ void core_updateSw(int flipEn) {
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
-    for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-      UINT8 v = saturatedByte(state[ii]);
-      if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
+    for (ii = 1; ii <= coreGlobals.nSolenoids; ii++) {
+      UINT8 v = saturatedByte(state[ii - 1]);
+      if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1]) {
         #ifdef LIBPINMAME
-        OnSolenoid(ii + 1, v);
+        OnSolenoid(ii, v);
         #else
-        if ((v > 128) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] <= 128)) {
-          OnSolenoid(ii + 1, v);
+        if ((v > 128) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] > 128)) {
+          OnSolenoid(ii, v);
           /*-- log solenoid number on the display (except flippers) --*/
           if ((!pmoptions.dmd_only && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL)))) {
             locals.solLog[locals.solLogCount] = ii;
@@ -1521,7 +1521,7 @@ void core_updateSw(int flipEn) {
           #endif
         }
         #endif
-        locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] = v;
+        locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] = v;
       }
     }
   }
@@ -1529,10 +1529,10 @@ void core_updateSw(int flipEn) {
     UINT64 allSol = core_getAllSol();
     UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
     locals.lastSol = allSol;
-    for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
+    for (ii = 1; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol; ii++)
     {
       if (chgSol & 0x01) {
-        OnSolenoid(ii + 1, allSol & 0x01);
+        OnSolenoid(ii, allSol & 0x01);
         /*-- log solenoid number on the display (except flippers) --*/
         if ((!pmoptions.dmd_only && (allSol & 0x01)) && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
           locals.solLog[locals.solLogCount] = ii;
@@ -2048,75 +2048,61 @@ int core_getDip(int dipBank) {
 /*--------------------
 /   Draw a LED digit
 /---------------------*/
-static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming) {
+static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
-  int palSize = sizeof(core_palette)/3;
-  UINT32 pixel[21] = {0};
-  int kk,ll;
-  int pens[4][4] = {{             0, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming },
-                    { COL_DMDOFF,    palSize-1-dimming, palSize-17-dimming, palSize-33-dimming },
-                    { COL_SEGAAOFF1, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming },
-                    { COL_SEGAAOFF2, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming }};
-
+  UINT8 pixel[21][16] = { 0 };
+  int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
+  int kk, ll;
+  int palSize = sizeof(core_palette) / 3;
   for (kk = 1; bits; kk++, bits >>= 1) {
     if (bits & 0x01) {
 #ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				if (pmoptions.alpha_on_dmd) {
-                                    	/* Draw alphanumeric segments on the DMD */
-                                    switch (row) {
-                                        case 0:
-                                            procDrawSegment(col/2, 3, kk-1);
-                                            break;
-                                        case 21:
-                                            // This is the ball/credit display on older Sys11
-                                            // Push through an 11 as the row
-                                            // number, the display routine will
-                                            // take care of repositioning
-                                            procDrawSegment(col/2,11,kk-1);
-                                            break;
-                                        case 42:
-                                            procDrawSegment(col/2, 19, kk-1);
-                                                break;
-                                        default:
-                                            break;
-
-					}
+		if (coreGlobals.p_rocEn) {
+			if (pmoptions.alpha_on_dmd) {
+            /* Draw alphanumeric segments on the DMD */
+            switch (row) {
+               case 0:
+                  procDrawSegment(col/2, 3, kk-1);
+                  break;
+               case 21:
+                  // This is the ball/credit display on older Sys11
+                  // Push through an 11 as the row
+                  // number, the display routine will
+                  // take care of repositioning
+                  procDrawSegment(col/2,11,kk-1);
+                  break;
+               case 42:
+                  procDrawSegment(col/2, 19, kk-1);
+                  break;
+               default:
+                  break;
 				}
 			}
+		}
 #endif
-      for (ll = 0; ll < s->rows; ll++)
-        pixel[ll] |= s->segs[ll][kk];
+      for (ll = 0; ll < s->rows; ll++) {
+        UINT32 row = s->segs[ll][kk];
+        for (int i = 0; i < 16; i++, row = row >> 2) {
+          if (row & 3) {
+            UINT8 v = (((3 - (row & 3)) * (255 - dimming[kk - 1]))) >> 1;
+            if (pixel[ll][i] < v) pixel[ll][i] = v;
+          }
+        }
+      }
     }
   }
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
-    // why don't the bitmap use the leftmost bits. i.e. size is limited to 15
-    UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
-
-    for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
-      *(--line) = CORE_COLOR(pens[np & 0x03][p & 0x03]);
+    UINT32 np = s->segs[kk][0]>>(30-2*s->cols);
+    for (ll = 0; ll < s->cols; ll++, np >>= 2) {
+      if (pixel[kk][ll])
+        *(--line) = CORE_COLOR(palSize - 33 + (pixel[kk][ll] >> 3));
+      else
+        *(--line) = CORE_COLOR(offPens[np & 0x03]);
+    }
   }
   osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
-
-typedef struct {
-   float pwmIntegrationPeriod;    /* Length above which an integration should be done to keep integration accuracy */
-   float pwmSubIntegrationPeriod; /* Length under which output states flip should be accumulated as a duty ratio instead of integrated */
-   union
-   {
-      struct
-      {
-         int type;        /* bulb physical characteristics */
-         int isAC;        /* AC or DC ? */
-         float U;         /* voltage (Volts) */
-         float serial_R;  /* serial resistor (Ohms) */
-      } bulb;
-      float led_power; // Physical model of a LED
-   };
-} core_tOutputTypeInfo;
-
-static core_tOutputTypeInfo coreOutputinfos[CORE_MODOUT_NTYPES];
 
 
 /*----------------------
@@ -2216,7 +2202,7 @@ static MACHINE_INIT(core) {
 
     /*-- default output types --*/
     core_set_pwm_output_type(CORE_MODOUT_SOL0, CORE_MODOUT_SOL_MAX, CORE_MODOUT_NONE);
-    core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, CORE_MAXSOL - CORE_FIRSTCUSTSOL, CORE_MODOUT_LEGACY_SOL_CUSTOM);
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, CORE_MAXSOL - CORE_FIRSTCUSTSOL, CORE_MODOUT_SOL_CUSTOM);
     core_set_pwm_output_type(CORE_MODOUT_GI0, CORE_MODOUT_GI_MAX, CORE_MODOUT_NONE);
     core_set_pwm_output_type(CORE_MODOUT_LAMP0, CORE_MODOUT_LAMP_MAX, CORE_MODOUT_NONE);
     core_set_pwm_output_type(CORE_MODOUT_SEG0, CORE_MODOUT_SEG_MAX, CORE_MODOUT_NONE);
@@ -2225,114 +2211,15 @@ static MACHINE_INIT(core) {
     if (coreData->init) coreData->init();
 
     /*-- init PWM integration (needs to be done after coreData->init() which defines the number of outputs and the physical model to be used on each output) --*/
-    //options.usemodsol = CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
+    //options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
 #ifdef VPINMAME
     // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
     // Note that physical outputs are also updated once per frame by the core machine driver video update callback.
     if (((options.usemodsol & CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.nSolenoids)
-      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) && (coreGlobals.nSolenoids || coreGlobals.nLamps || coreGlobals.nGI || coreGlobals.nAlphaSegs))
-      ||  (options.usemodsol & CORE_MODOUT_FORCE_ON))
+     || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) && (coreGlobals.nSolenoids || coreGlobals.nLamps || coreGlobals.nGI || coreGlobals.nAlphaSegs))
+     ||  (options.usemodsol & CORE_MODOUT_FORCE_ON))
       timer_pulse(TIME_IN_HZ(1000), FALSE, core_update_pwm_outputs);
 #endif
-    memset(coreOutputinfos, 0, sizeof(coreOutputinfos));
-    // Nothing, just keep the value other code put on its output value
-    coreOutputinfos[CORE_MODOUT_NONE].pwmIntegrationPeriod = 0.0f;
-    // No integration, just the pulsed binary state
-    coreOutputinfos[CORE_MODOUT_PULSE].pwmIntegrationPeriod = 0.0f;
-    // binary output: fire as soon as a low to high transition is found, then go low if low and not pulsed
-    coreOutputinfos[CORE_MODOUT_SOL_2_STATE].pwmIntegrationPeriod = 0.001f;
-    // legacy binary output: like CORE_MODOUT_SOL_2_STATE but with legacy behavior of delaying the state by a few 'VBlank's (also used to have a bug on WPC which would only check if not pulsed but not base state)
-    coreOutputinfos[CORE_MODOUT_LEGACY_SOL_2_STATE].pwmIntegrationPeriod = 0.001f;
-    // legacy binary output: return binary value for driver's getSol function
-    coreOutputinfos[CORE_MODOUT_LEGACY_SOL_CUSTOM].pwmIntegrationPeriod = 0.0f;
-    // Legacy WPC modulated output: merge state over 2ms, then every 56ms compute average of these
-    coreOutputinfos[CORE_MODOUT_LEGACY_SOL_WPC].pwmIntegrationPeriod = 0.002f;
-    coreOutputinfos[CORE_MODOUT_LEGACY_SOL_WPC].pwmSubIntegrationPeriod = 0.002f;
-    // LED: eye integration of PWM duty ratio
-    coreOutputinfos[CORE_MODOUT_LED].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_LED].led_power = 1.f;
-    coreOutputinfos[CORE_MODOUT_LED_STROBE_1_10MS].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_LED_STROBE_1_10MS].led_power = 10.f / 1.f;
-    // VFD: Vacuum Fluorescent Display (similar response as LEDs)
-    coreOutputinfos[CORE_MODOUT_VFD_STROBE_05_20MS].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_VFD_STROBE_05_20MS].led_power = 20.f / 0.5f;
-    coreOutputinfos[CORE_MODOUT_VFD_STROBE_1_16MS].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_VFD_STROBE_1_16MS].led_power = 16.f / 1.f;
-    /*-- GI Bulbs --*/
-    // AC bulb outputs used for GI strings. Voltage drop through WPC triacs are considered as neglictible.
-    coreOutputinfos[CORE_MODOUT_BULB_44_6_3V_AC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_6_3V_AC].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_6_3V_AC].bulb.U = 6.3f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_6_3V_AC].bulb.isAC = TRUE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_6_3V_AC].bulb.serial_R = 0.0f;
-    //
-    coreOutputinfos[CORE_MODOUT_BULB_47_6_3V_AC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_47_6_3V_AC].bulb.type = BULB_47;
-    coreOutputinfos[CORE_MODOUT_BULB_47_6_3V_AC].bulb.U = 6.3f;
-    coreOutputinfos[CORE_MODOUT_BULB_47_6_3V_AC].bulb.isAC = TRUE;
-    coreOutputinfos[CORE_MODOUT_BULB_47_6_3V_AC].bulb.serial_R = 0.0f;
-    //
-    coreOutputinfos[CORE_MODOUT_BULB_86_6_3V_AC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_86_6_3V_AC].bulb.type = BULB_86;
-    coreOutputinfos[CORE_MODOUT_BULB_86_6_3V_AC].bulb.U = 6.3f;
-    coreOutputinfos[CORE_MODOUT_BULB_86_6_3V_AC].bulb.isAC = TRUE;
-    coreOutputinfos[CORE_MODOUT_BULB_86_6_3V_AC].bulb.serial_R = 0.0f;
-    // Sega/Stern Whitestar uses 5.7V AC wired to #44 bulbs for GI which leads to a (very slow) bulb equilibrium around 78% of the rated bulb brightness. Likely for less heat and longer bulb life ?
-    coreOutputinfos[CORE_MODOUT_BULB_44_5_7V_AC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_5_7V_AC].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_5_7V_AC].bulb.U = 5.7f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_5_7V_AC].bulb.isAC = TRUE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_5_7V_AC].bulb.serial_R = 0.0f;
-    /*-- Lamp Matrix Bulbs --*/
-    // 18V switched through a TIP102 and a TIP107 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from schematics (TZ, TOTAN, CFTBL, WPC95 general)
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_WPC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_WPC].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_WPC].bulb.U = 18.f - 0.7f - 0.7f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_WPC].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_WPC].bulb.serial_R = 0.22f;
-    // Switched through MOSFETs (12P06 & 12N10L, no drop), serial 3,5 Ohms, then serie with 1N4004 (0,7V drop) for bulbs / 120 Ohms with 1N4004 for LEDs, resistor from schematics (Cue Ball Wizard)
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_GTS3].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_GTS3].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_GTS3].bulb.U = 20.f - 0.7f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_GTS3].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_GTS3].bulb.serial_R = 3.5f;
-    // 18V switched through ?, resistor from schematics (Guns'n Roses)
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_S11].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_S11].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_S11].bulb.U = 18.f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_S11].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_S11].bulb.serial_R = 4.3f;
-    // 18V switched through VN02N (Solid State Relay, 0.4 Ohms resistor), a 19N06L MOSFET transitor (no drop) and a diode (0.7V drop) from Sega/Stern Whitestar schematics
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_SE].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_SE].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_SE].bulb.U = 18.f - 0.7f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_SE].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_18V_DC_SE].bulb.serial_R = 0.4f;
-    // 20V switched through VN02 (Solid State Relay, 0.4 Ohms resistor), a STP20N10L MOSFET transitor (no drop), a 0.02 Ohms resistor, and 2x 1N4004 diode (0.7V drop) from Capcom schematics
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_CC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_CC].bulb.type = BULB_44;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_CC].bulb.U = 20.f - 0.7f - 0.7f;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_CC].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_44_20V_DC_CC].bulb.serial_R = 0.4f + 0.02f;
-    /*-- Flasher Bulbs --*/
-    // 20V DC switched through a TIP102 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from WPC schematics (TZ, TOTAN, CFTBL, WPC95 general)
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_WPC].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_WPC].bulb.type = BULB_89;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_WPC].bulb.U = 20.f - 0.7f;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_WPC].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_WPC].bulb.serial_R = 0.12f;
-    // 20V DC switched through a 12N10L Mosfet (no voltage drop), resistor from schematics (Cue Ball Wizard)
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_GTS3].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_GTS3].bulb.type = BULB_89;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_GTS3].bulb.U = 20.0f;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_GTS3].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_89_20V_DC_GTS3].bulb.serial_R = 0.3f;
-    // 32V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 3 Ohms serial resistor and a diode (1V voltage drop), resistor from board photos
-    coreOutputinfos[CORE_MODOUT_BULB_89_32V_DC_S11].pwmIntegrationPeriod = 0.001f;
-    coreOutputinfos[CORE_MODOUT_BULB_89_32V_DC_S11].bulb.type = BULB_89;
-    coreOutputinfos[CORE_MODOUT_BULB_89_32V_DC_S11].bulb.U = 32.f - 1.0f - 1.0f;
-    coreOutputinfos[CORE_MODOUT_BULB_89_32V_DC_S11].bulb.isAC = FALSE;
-    coreOutputinfos[CORE_MODOUT_BULB_89_32V_DC_S11].bulb.serial_R = 3.0f;
 
     /*-- init bulb model LUTs --*/
     bulb_init();
@@ -2484,28 +2371,103 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
   }
 }
 
+/*---------- Emulation of physical/analog devices wired to binary outputs ----------*/
+
 /*
  * Physical output emulation
  * 
- * New implementation: the previous implementation lead the path but had a few drawbacks this tries to address:
- * - it was an additional implementation above normal output (not a global unique implementation) needing all drivers to be adapted
- * - it needed each driver to implement the physical model of the wired device to each output, makign things difficult to manage
- *   in a coherent manner,
- * - it relied on driver's specific timing (IRQ, VBlank,...)
- * - it was not suited for high frequency CPU (like Capcom)
- * - it did not support PWM for strobed Lamp matrix (Capcom and SAM uses this to fade lamps)
- * - it did not support additional output from auxiliary board
- * - it needed to implement output index mapping (index mixing solenoids and flipper outputs)
- * This new implementation tries to solve all that at the price of a hopefully bearable performance impact. It is meant to be 
- * used with any output and should allow to have a physical model whatever is connected to the binary PWM output. Integration
- * is performed on demand with a varying integration period. For binary switching below the integration period of the defined 
- * output, a basic average is performed before integrating.
- * 
- * The implementation is not thread safe. Since VPinMame reads state asynchronously, the integration is periodically performed
- * on a 1ms frequency to have the data prepared while limiting latency (again at the price of some performance impact).
- * 
+ * This is meant to be used with any output and should allow to have a physical model whatever is connected to the binary PWM output. 
  * Drivers must declare the number of outputs they drive of each type and push binary state change accordingly.
+ * The implementation is not thread safe. Since VPinMame reads state asynchronously, the integration is only performed if requested
+ * asynchronously through a 1ms timer.
  */
+
+//#define LOG_PWM_OUT (CORE_MODOUT_LAMP0 + 18)
+//#define LOG_PWM_OUT (CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1)
+//#define LOG_PWM_OUT (CORE_MODOUT_SEG0 + 0)
+//#define LOG_PWM_OUT (CORE_MODOUT_SOL0 + 16 - 1)
+
+// No operation output: just keep the last value directly defined by the driver
+void core_update_pwm_output_nop(const float now, const int index, const int isFlip)
+{
+}
+
+// Pulse output: simply report the binary output state without any processing
+void core_update_pwm_output_pulse(const float now, const int index, const int isFlip)
+{
+  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
+  output->value = (float) state;
+}
+
+// Custom output: update the value from the driver's custom getSol implementation
+void core_update_pwm_output_custom(const float now, const int index, const int isFlip)
+{
+  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  output->value = core_gameData->hw.getSol ? (core_gameData->hw.getSol(index - CORE_MODOUT_SOL0 + 1) ? 1.f : 0.f) : 0.f;
+  #ifdef LOG_PWM_OUT
+  if (index == LOG_PWM_OUT)
+    printf("Custom #%d t=%8.5f v=%f\n", index, now, output->value);
+  #endif
+}
+
+// Simple 2 state solenoid output
+// Flip to ON state is taken in account directly, while flip to OFF state is only reported after a delay to filter out any PWM pulses
+void core_update_pwm_output_sol_2_state(const float now, const int index, const int isFlip)
+{
+  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
+  const float prevValue = output->value;
+  if (isFlip && state == 0) {
+    // If binary output is flipping to ON state, immediatly retain and report the ON state
+    output->value = 1.0f;
+  }
+  else if ((now - output->state.sol.lastFlipTimestamp) > 0.060f) {
+    // Output is in a stable state (not PWMed since at least 60ms), just report its value
+    // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
+    output->value = (float)state;
+  }
+  #ifdef LOG_PWM_OUT
+  if (index == LOG_PWM_OUT)
+    printf("Sol #%d t=%8.5f v=%f s=%s\n", index, now, output->value, isFlip ? (state ? "x > -" : "- > x") : (state ? "    x" : "    -"));
+  #endif
+  if (isFlip)
+    output->state.sol.lastFlipTimestamp = now;
+  // Apply the legacy solenoid behavior but directly updating coreGlobals.solenoids, avoiding the latency of legacy implementation which handles PWM
+  // by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware.
+  if (output->state.sol.fastOn && (prevValue != output->value)) {
+    int sol = index - CORE_MODOUT_SOL0;
+    UINT32 state = (int)output->value;
+    if (sol == (coreGlobals.flipperCoils & 0xFF))             // Lower Left Flipper coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (state ? 0x04 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >>  8)& 0xFF)) // Lower Right Flipper coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x01) | (state ? 0x01 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >> 16) & 0xFF)) // Upper Left Flipper coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x40) | (state ? 0x40 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >> 24) & 0xFF)) // Upper Right Flipper coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x10) | (state ? 0x10 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >> 32)& 0xFF)) // Lower Left Flipper Hold coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x08) | (state ? 0x08 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >> 40) & 0xFF)) // Lower Right Flipper Hold coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x02) | (state ? 0x02 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >> 48) & 0xFF)) // Upper Left Flipper Hold coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x80) | (state ? 0x80 : 0x00);
+    else if (sol == ((coreGlobals.flipperCoils >> 56) & 0xFF)) // Upper Right Flipper Hold coil
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x20) | (state ? 0x20 : 0x00);
+    if (sol < 28)
+      coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
+    else if (sol < 32) {
+      if (core_gameData->gen & GEN_WPC95 | GEN_WPC95DCS) {
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 8))) | (state << (sol + 8));
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 12))) | (state << (sol + 12));
+      }
+      else if ((core_gameData->gen & GEN_ALLWPC) == 0)
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
+      else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA) && 40 <= sol && sol < 48)
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol - 4))) | (state << (sol - 4));
+    }
+  }
+}
 
 INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float dt, const float emission)
 {
@@ -2524,247 +2486,71 @@ INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float dt, 
    output->value = eyeIntegrationFactor * output->state.bulb.eye_integration[2] + revEyeIntegrationFactor * output->value;
 }
 
-//#define LOG_PWM_OUT (CORE_MODOUT_LAMP0 + 18)
-//#define LOG_PWM_OUT (CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1)
-//#define LOG_PWM_OUT (CORE_MODOUT_SEG0 + 0)
-
-// Update output state, taking in account of previously cumulated data and current state until now, eventually performing PWM integration
-// This function supports variable rate integration and high frequency controllers that perform fast flipping.
-//
-// To reach good stability, the algorithm try to identify stable patterns with a begin/end pulse edge front, then stable or repeted pulses, then a begin/end pulse:
-// - when binary output state is flipped after a long enough stable period, perform integration up to now (this is the begin/end pulse edge front)
-// - when called after a too short period, just accumulate the time spent in a given state for later evaluation
-// - when called after a long enough period that contains the last state flip, perform integration up to the last flip
-// - otherwise performs integration on the duty ratio
-//
-// So far, this has proven to work well for 'slow' PWM (flashers on WPC, S11,...) as well as lamp strobes (1ms over a 10ms period for Sega/Stern Whitestar, 
-// 2ms over a 16ms period for WPC) which require good alignment of the integration period with the strobe pulses.
-void core_update_pwm_output(float now, int index, int isFlip)
+// Incandescent bulb model based on Dulli Chandra Agrawal's and others publications (Heating-times of tungsten filament incandescent lamps).
+// The bulb is a varying resistor depending on filament temperature, which is heated by the current (Ohm's law)
+// and cooled by radiating energy (Planck & Stefan/Boltzmann laws). The visible emission power is then evaluated from the filament temperature.
+// Integration is performed after a 1ms delay and on each state flip (since the behavior is highly non linear and there isn't any driver that would trigger this at a high frequency)
+void core_update_pwm_output_bulb(const float now, const int index, const int isFlip)
 {
-   // Accumulate time spent in each of the 2 binary states
-   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
-   output->elapsedInStateTime[state] += (now - output->dataTimestamp);
-   output->dataTimestamp = now;
+  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  const float BULB_INTEGRATION_PERIOD = 0.001f;
+  const float U = output->state.bulb.U * (float)((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1);
+  while (output->state.bulb.integrationTimestamp < now) {
+    const float dt = (now - output->state.bulb.integrationTimestamp) > BULB_INTEGRATION_PERIOD ? BULB_INTEGRATION_PERIOD : (now - output->state.bulb.integrationTimestamp);
+	if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
+      return;
+    // Keeps T within the range of the LUT (between room temperature and melt down point)
+    output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
+    const float Ut = output->state.bulb.isAC ? (1.41421356f * sinf((float)(60.0 * 2.0 * PI) * (output->state.bulb.integrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp)) * U) : U;
+    const float dT = dt * (float) bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
+    output->state.bulb.filament_temperature += dT < 1000.0f ? dT : 1000.0f; // Limit initial current surge (1ms is a bit long when emulating this part of the heating)
+    core_eye_flicker_fusion(output, dt, (float) bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature));
+    output->state.bulb.integrationTimestamp += dt;
+  }
+  #ifdef LOG_PWM_OUT
+  if (index == LOG_PWM_OUT)
+	 printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, ((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ? "x" : "-");
+  #endif
+}
 
-   const float elapsedSinceLastFlip = now - output->lastFlipTimestamp;
-   const float pwmIntegrationPeriod = coreOutputinfos[output->type].pwmIntegrationPeriod;
-   float integrationLength = output->elapsedInStateTime[0] + output->elapsedInStateTime[1];
-   float pwmDutyCycle;
-
-   if (isFlip)
-   {
-      // If state change after a period greater than integration period (hence, likely not a PWM change), we force the integration to sync on this state change to align on it.
-      // This gives more stability to the result since for example a 2ms pulse will be integrated as 2x1ms period with a 100% duty ratio, instead of 3x1ms periods including one with 100% duty ratio but with the surrounding ones only partial, leading to some (slight) flickering.
-      #ifdef LOG_PWM_OUT
-      if (index == LOG_PWM_OUT)
-         printf("Out. #%d t=%8.5f Flip from %s to %s (elapsed since last flip: %8.5f)\n", index, now, state ? "x" : "-", (1-state) ? "x" : "-", elapsedSinceLastFlip);
-      #endif
-      output->lastFlipTimestamp = now;
-      // TODO Most integrators do not uses the sub integration feature: this should be moved to the only ones using it for cleaner/better performance
-      if (integrationLength < pwmIntegrationPeriod && elapsedSinceLastFlip < coreOutputinfos[output->type].pwmSubIntegrationPeriod)
+// LED and VFD behave similarly:
+// - LED reacts almost instantly (<1us)
+// - The documentation for the behavior of Vacuum Fluorescent Display (used by alphanum displays) is sparse, so the integrator likely needs more work. From the searchs made, it appears that:
+//   - the relative brightness (in steady state) is linear to PWM duty ratio.
+//   - the off -> on speed is very short (below 1ms), therefore ignored
+//   - the on -> off, called persistence depends a lot on used phosphor, for blue VFD uses P11 (0.5ms decay), green VFD uses P24 (0.01ms decay), therefore ignored too
+//
+// Sources:
+// - https://en.wikipedia.org/wiki/Phosphor has a large phosphor chart
+// - https://www.noritake-elec.com/technology/general-technical-information/vfd-operation states a linear relation between PWM and relative brightness
+// - http://www.futabahk.com.hk/FTS/-%20FTP_DataBase/Docs_05TechDocs/VFD/AN-1103A-EN%20%20VFD%20Characteristics%20and%20Operation%20Guide%20(EN).pdf states the same
+void core_update_pwm_output_led(const float now, const int index, const int isFlip)
+{
+  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  const float BULB_INTEGRATION_PERIOD = 0.001f;
+  const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
+  if (state == 1 && output->value >= (254.f / 255.f)) { // Steady On state
+    output->state.bulb.integrationTimestamp = now;
+	 output->value = 1.f;
+  }
+  else if (state == 0 && output->value <= (1.f / 255.f)) { // Steady Off state
+    output->state.bulb.integrationTimestamp = now;
+	 output->value = 0.f;
+  }
+  else {
+    const float power = state * output->state.bulb.relative_brightness;
+    while (output->state.bulb.integrationTimestamp < now) {
+      const float dt = (now - output->state.bulb.integrationTimestamp) > BULB_INTEGRATION_PERIOD ? BULB_INTEGRATION_PERIOD : (now - output->state.bulb.integrationTimestamp);
+	   if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
         return;
-      pwmDutyCycle = output->elapsedInStateTime[1] / integrationLength;
-      output->elapsedInStateTime[0] = output->elapsedInStateTime[1] = 0.0f;
-   }
-   else if (integrationLength < pwmIntegrationPeriod)
-   {
-     // Stable state without enough accumulated state, just continue to accumulate for performance reasons
-     return;
-   }
-   else if (elapsedSinceLastFlip < integrationLength) // integrationLength is >= pwmIntegrationPeriod but last flip happened inside the integration period
-   {
-      // Last flip happened in this integration period: perform integration up to the last flip event (to align on end of pulse if applicable), keeping the remaining for later integration
-      now -= elapsedSinceLastFlip;
-      integrationLength -= elapsedSinceLastFlip;
-      output->elapsedInStateTime[state] -= elapsedSinceLastFlip;
-      pwmDutyCycle = output->elapsedInStateTime[1] / integrationLength;
-      output->elapsedInStateTime[1 - state] = 0.0f;
-      output->elapsedInStateTime[state] = elapsedSinceLastFlip;
-   }
-   else
-   {
-      // Normal integration based on accumulated PWM duty ratio
-      pwmDutyCycle = output->elapsedInStateTime[1] / integrationLength;
-      output->elapsedInStateTime[0] = output->elapsedInStateTime[1] = 0.0f;
-   }
-   
-   #ifdef LOG_PWM_OUT
-   const double initialIntegrationLength = integrationLength, initialNow = now;
-   #endif
-
-   // Perform full physically based PWM integration
-   switch (output->type)
-   {
-   case CORE_MODOUT_NONE:
-     break;
-   case CORE_MODOUT_PULSE:
-     // No integration, just pulsed state
-     output->value = (float)state;
-     break;
-   case CORE_MODOUT_SOL_2_STATE: {
-     // Apply the legacy solenoid behavior but directly updating coreGlobals on state change avoiding the latency of legacy implementation
-     // (which used to handle PWM by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware)
-     double prevValue = output->value;
-     if (isFlip && state == 0) {
-       // If binary output is flipping to ON state, immediatly retain the ON state
-       output->value = 1.0f;
-     }
-     else if ((now - coreGlobals.physicOutputState[index].lastFlipTimestamp) > 0.060f) {
-       // Output is in a stable state (not PWMed since at least 60ms), just report its value
-       // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
-       output->value = (float)state;
-     }
-     if (prevValue != output->value) {
-       int sol = index - CORE_MODOUT_SOL0;
-       UINT32 state = (int)output->value;
-       if (sol == (coreGlobals.flipperCoils & 0xFF))             // Lower Left Flipper coil
-         coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (state ? 0x04 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >>  8)& 0xFF)) // Lower Right Flipper coil
-         coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x01) | (state ? 0x01 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >> 16) & 0xFF)) // Upper Left Flipper coil
-         coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x40) | (state ? 0x40 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >> 24) & 0xFF)) // Upper Right Flipper coil
-         coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x10) | (state ? 0x10 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >> 32)& 0xFF)) // Lower Left Flipper Hold coil
-          coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x08) | (state ? 0x08 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >> 40) & 0xFF)) // Lower Right Flipper Hold coil
-          coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x02) | (state ? 0x02 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >> 48) & 0xFF)) // Upper Left Flipper Hold coil
-          coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x80) | (state ? 0x80 : 0x00);
-       else if (sol == ((coreGlobals.flipperCoils >> 56) & 0xFF)) // Upper Right Flipper Hold coil
-          coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x20) | (state ? 0x20 : 0x00);
-
-       if (sol < 28)
-         coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
-       else if (sol < 32)
-         if (core_gameData->gen & GEN_WPC95 | GEN_WPC95DCS) {
-           coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 8))) | (state << (sol + 8));
-           coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 12))) | (state << (sol + 12));
-         }
-         else if ((core_gameData->gen & GEN_ALLWPC) == 0)
-           coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
-       else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA) && 40 <= sol && sol < 48)
-         coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol - 4))) | (state << (sol - 4));
-     }
-     break;
-   }
-   case CORE_MODOUT_LEGACY_SOL_2_STATE:
-     if (isFlip && state == 0)
-       // If binary output is flipping to ON state, immediatly retain the ON state
-       output->value = 1.0f;
-     else if ((now - coreGlobals.physicOutputState[index].lastFlipTimestamp) > 0.060f)
-       // Output is in a stable state (not PWMed since at least 60ms), just report its value
-       output->value = (float)state;
-     break;
-   case CORE_MODOUT_LEGACY_SOL_CUSTOM:
-     output->value = core_gameData->hw.getSol ? (core_gameData->hw.getSol(index - CORE_MODOUT_SOL0 + 1) ? 1.f : 0.f) : 0.f;
-     #ifdef LOG_PWM_OUT
-     if (index == LOG_PWM_OUT)
-        printf("Custom #%d t=%8.5f d=%8.5f v=%f\n", index, initialNow, initialIntegrationLength, output->value);
-     #endif
-     break;
-   case CORE_MODOUT_LEGACY_SOL_WPC:
-     /* Legacy WPC modulated solenoids for backward compatibility: sample all high output seen on the first 32 solenoids during last 2ms, then average every 28 samples, therefore updating output every 56ms */
-     if (output->elapsedInStateTime[1] > 0.0f)
-       output->state.wpc.value++;
-     output->state.wpc.nSamples++;
-     if (output->state.wpc.nSamples >= 28) {
-       output->value = output->state.wpc.value / 28.0f;
-       output->state.wpc.nSamples = 0;
-     }
-     break;
-   case CORE_MODOUT_BULB_44_5_7V_AC:
-   case CORE_MODOUT_BULB_44_6_3V_AC:
-   case CORE_MODOUT_BULB_47_6_3V_AC:
-   case CORE_MODOUT_BULB_86_6_3V_AC:
-   case CORE_MODOUT_BULB_44_18V_DC_WPC:
-   case CORE_MODOUT_BULB_44_20V_DC_GTS3:
-   case CORE_MODOUT_BULB_44_18V_DC_S11:
-   case CORE_MODOUT_BULB_44_18V_DC_SE:
-   case CORE_MODOUT_BULB_44_20V_DC_CC:
-   case CORE_MODOUT_BULB_89_20V_DC_WPC:
-   case CORE_MODOUT_BULB_89_20V_DC_GTS3:
-   case CORE_MODOUT_BULB_89_32V_DC_S11: {
-      // Incandescent bulb model based on Dulli Chandra Agrawal's and others publications (Heating-times of tungsten filament incandescent lamps).
-      // The bulb is a varying resistor depending on filament temperature, which is heated by the current (Ohm's law)
-      // and cooled by radiating energy (Planck & Stefan/Boltzmann laws). The visible emission power is then evaluated from the filament temperature.
-      const int bulb = coreOutputinfos[output->type].bulb.type;
-      const float serial_R = coreOutputinfos[output->type].bulb.serial_R;
-      const float U = coreOutputinfos[output->type].bulb.U * powf(pwmDutyCycle, 0.31044064f); // PWM duty cycle to voltage obtained by fitting simplified model curve
-      const int isAC = coreOutputinfos[output->type].bulb.isAC;
-      float integrationTime = now - integrationLength;
-      while (integrationLength > 0.0f) {
-         const float dt = integrationLength < pwmIntegrationPeriod ? integrationLength : pwmIntegrationPeriod;
-         // Keeps T within the range of the LUT (between room temperature and melt down point)
-         output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
-         const float Ut = isAC ? (1.41421356f * sinf((float)(60.0 * 2.0 * PI) * (integrationTime - coreGlobals.lastACZeroCrossTimeStamp)) * U) : U;
-         const float dT = dt * (float) bulb_heat_up_factor(bulb, output->state.bulb.filament_temperature, Ut, serial_R);
-         output->state.bulb.filament_temperature += dT < 1000.0f ? dT : 1000.0f;
-         core_eye_flicker_fusion(output, dt, (float) bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature));
-         integrationLength -= dt;
-         integrationTime += dt;
-      }
-      #ifdef LOG_PWM_OUT
-      if (index == LOG_PWM_OUT)
-         printf("Bulb #%d t=%8.5f d=%8.5f T=%5.0f e=%0.3f V=%0.3f r=%.2f S=%s\n", index, initialNow, initialIntegrationLength, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, pwmDutyCycle, state ? "x" : "-");
-      #endif
-   }
-   break;
-   case CORE_MODOUT_VFD_STROBE_05_20MS:
-   case CORE_MODOUT_VFD_STROBE_1_16MS: {
-      // Vacuum Fluorescent Display: the documentation for the behavior of this device (used by alphanum displays) is sparse, so the integrator likely needs more work
-      // From the searchs made, it appears that:
-      // - the relative brightness (in steady state) is linear to PWM duty ratio.
-      // - the off -> on speed is very short (below 1ms), therefore ignored
-      // - the on -> off, called persistence depends a lot on used phosphor, for blue VFD uses P11 (0.5ms decay), green VFD uses P24 (0.01ms decay), therefore ignored too
-      // So for the time being, just apply eye flicker/fusion model like we do for LEDs.
-      // Sources:
-      // - https://en.wikipedia.org/wiki/Phosphor has a large phosphor chart
-      // - https://www.noritake-elec.com/technology/general-technical-information/vfd-operation states a linear relation between PWM and relative brightness
-      // - http://www.futabahk.com.hk/FTS/-%20FTP_DataBase/Docs_05TechDocs/VFD/AN-1103A-EN%20%20VFD%20Characteristics%20and%20Operation%20Guide%20(EN).pdf states the same
-      float power = pwmDutyCycle * coreOutputinfos[output->type].led_power;
-      // Only perform integration if steady state is not reached
-      if (!((power > (254.0f / 255.0f) && output->value >= 0.999f) || (power < (1.0f / 255.0f) && output->value <= 0.001f))) {
-         while (integrationLength > 0.0f) {
-            const float dt = integrationLength < pwmIntegrationPeriod ? integrationLength : pwmIntegrationPeriod;
-            core_eye_flicker_fusion(output, dt /* * 0.75f */, power); // Artificially longer flicker/fusion to somewhat emulate the VFD persistence
-            integrationLength -= dt;
-         }
-      }
-      #ifdef LOG_PWM_OUT
-      if (index == LOG_PWM_OUT)
-         printf("LED  #%d t=%8.5f d=%8.5f r=%.2f => V=%0.3f S=%s\n", index, initialNow, initialIntegrationLength, pwmDutyCycle, output->value, state ? "x" : "-");
-      #endif
-   }
-   break;
-   case CORE_MODOUT_LED_STROBE_1_10MS:
-   case CORE_MODOUT_LED: {
-      // LED reacts almost instantly (<1us), the integration is based on the human eye perception, with some 
-      // flashing below 100Hz (limit between 50-100 depends on each human), dimming above (there should be 
-      // a "flicker" range in the middle).
-      float power = pwmDutyCycle * coreOutputinfos[output->type].led_power;
-      // Only perform integration if steady state is not reached
-      if (!((power > (254.0f / 255.0f) && output->value >= 0.999f) || (power < (1.0f / 255.0f) && output->value <= 0.001f))) {
-         while (integrationLength > 0.0f) {
-            const float dt = integrationLength < pwmIntegrationPeriod ? integrationLength : pwmIntegrationPeriod;
-            core_eye_flicker_fusion(output, dt, power);
-            integrationLength -= dt;
-         }
-      }
-      #ifdef LOG_PWM_OUT
-      if (index == LOG_PWM_OUT)
-         printf("LED  #%d t=%8.5f d=%8.5f r=%.2f => V=%0.3f S=%s\n", index, initialNow, initialIntegrationLength, pwmDutyCycle, output->value, state ? "x" : "-");
-      #endif
-   }
-   break;
-   default: {
-      // Unimplemented integrator
-      logerror("Unsupported physical output #%d of type %d\n", index, output->type);
-      assert(FALSE);
-   }
-   break;
-   }
+      core_eye_flicker_fusion(output, dt, power);
+      output->state.bulb.integrationTimestamp += dt;
+    }
+    #ifdef LOG_PWM_OUT
+    if (index == LOG_PWM_OUT)
+	   printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-");
+    #endif
+  }
 }
 
 // This can be called from any thread to request an update of all integrated outputs
@@ -2785,26 +2571,170 @@ void core_update_pwm_outputs(int forceUpdate)
 	   locals.pwmUpdateRequested = FALSE;
 	   float now = (float) timer_get_time();
 	   for (int i = 0; i < coreGlobals.nLamps; i++)
-		  core_update_pwm_output(now, CORE_MODOUT_LAMP0 + i, 0);
+		  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].integrator(now, CORE_MODOUT_LAMP0 + i, FALSE);
 	   for (int i = 0; i < coreGlobals.nGI; i++)
-		  core_update_pwm_output(now, CORE_MODOUT_GI0 + i, 0);
+		  coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].integrator(now, CORE_MODOUT_GI0 + i, FALSE);
 	   for (int i = 0; i < coreGlobals.nSolenoids; i++)
-		  core_update_pwm_output(now, CORE_MODOUT_SOL0 + i, 0);
+		  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].integrator(now, CORE_MODOUT_SOL0 + i, FALSE);
 	   for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
-		  core_update_pwm_output(now, CORE_MODOUT_SEG0 + i, 0);
+		  coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].integrator(now, CORE_MODOUT_SEG0 + i, FALSE);
    }
 }
 
 void core_set_pwm_output_type(int startIndex, int count, int type)
 {
-  for (int i = 0; i < count; i++)
-    coreGlobals.physicOutputState[startIndex + i].type = type;
+  for (int i = startIndex; i < startIndex + count; i++) {
+    memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    coreGlobals.physicOutputState[i].type = type;
+    switch (type) {
+    case CORE_MODOUT_NONE:
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_nop;
+	   break;
+    case CORE_MODOUT_PULSE:
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_pulse;
+	   break;
+    case CORE_MODOUT_SOL_CUSTOM:
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_custom;
+	   break;
+    case CORE_MODOUT_SOL_2_STATE:
+	   coreGlobals.physicOutputState[i].state.sol.fastOn = TRUE;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
+	  break;
+    case CORE_MODOUT_LEGACY_SOL_2_STATE:
+	   coreGlobals.physicOutputState[i].state.sol.fastOn = FALSE;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
+	   break;
+    case CORE_MODOUT_BULB_44_5_7V_AC: // Sega/Stern Whitestar uses 5.7V AC wired to #44 bulbs for GI which leads to a (very slow) bulb equilibrium around 78% of the rated bulb brightness. Likely for less heat and longer bulb life ?
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 5.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_6_3V_AC: // AC bulb outputs used for GI strings. Voltage drop through WPC triacs are considered as neglictible.
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_47_6_3V_AC:
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_47;
+      coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_86_6_3V_AC:
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_86;
+      coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_18V_DC_WPC: // Strobed bulb, 18V switched through a TIP102 and a TIP107 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from schematics (TZ, TOTAN, CFTBL, WPC95 general)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 18.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.22f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_20V_DC_GTS3: // Strobed bulb, Switched through MOSFETs (12P06 & 12N10L, no drop), serial 3,5 Ohms, then serie with 1N4004 (0,7V drop) for bulbs / 120 Ohms with 1N4004 for LEDs, resistor from schematics (Cue Ball Wizard)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 3.5f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_18V_DC_S11: // Strobed bulb, 18V switched through ?, resistor from schematics (Guns'n Roses)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 18.f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 4.3f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_18V_DC_SE: // Strobed bulb, 18V switched through VN02N (Solid State Relay, 0.4 Ohms resistor), a 19N06L MOSFET transitor (no drop) and a diode (0.7V drop) from Sega/Stern Whitestar schematics
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 18.f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.4f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_20V_DC_CC: // Strobed bulb, 20V switched through VN02 (Solid State Relay, 0.4 Ohms resistor), a STP20N10L MOSFET transitor (no drop), a 0.02 Ohms resistor, and 2x 1N4004 diode (0.7V drop) from Capcom schematics
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.4f + 0.02f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_89_20V_DC_WPC: // Flasher 20V DC switched through a TIP102 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from WPC schematics (TZ, TOTAN, CFTBL, WPC95 general)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.12f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_89_20V_DC_GTS3: // Flasher 20V DC switched through a 12N10L Mosfet (no voltage drop), resistor from schematics (Cue Ball Wizard)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.3f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_89_32V_DC_S11: // Flasher 32V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 3 Ohms serial resistor and a diode (1V voltage drop), resistor from board photos
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 32.f - 1.0f - 1.0f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 3.f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_89_25V_DC_S11: // Flasher 25V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 1,5 Ohms serial resistor and a diode (1V voltage drop), from Police Force (and others) schematics
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 25.f - 1.0f - 1.0f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 1.5f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_LED:
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
+	   break;
+    case CORE_MODOUT_LED_STROBE_1_10MS:
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 10.f / 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
+	   break;
+    case CORE_MODOUT_VFD_STROBE_05_20MS:
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 20.f / 0.5f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
+	   break;
+    case CORE_MODOUT_VFD_STROBE_1_16MS:
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 16.f / 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
+	   break;
+    default: // Unimplemented integrator
+      logerror("Unsupported physical output #%d of type %d\n", i, type);
+      assert(FALSE);
+	}
+  }
 }
 
 void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
 {
   for (int i = 0; i < count; i++)
-    coreGlobals.physicOutputState[startIndex + i].type = outputTypes[i];
+    core_set_pwm_output_type(startIndex + i, 1, outputTypes[i]);
 }
 
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
@@ -2817,7 +2747,7 @@ void core_write_pwm_output(int index, int count, UINT8 bitStates)
      const int pos = index >> 3, ofs = index & 7;
      const int prevBit = (coreGlobals.binaryOutputState[pos] >> ofs) & 1, newBit = bitStates & 1;
      if (prevBit != newBit) {
-       core_update_pwm_output(now, index, 1);
+       coreGlobals.physicOutputState[index].integrator(now, index, TRUE);
        coreGlobals.binaryOutputState[pos] ^= 1 << ofs;
      }
      bitStates = bitStates >> 1;
@@ -2830,17 +2760,15 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
    if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_FORCE_ON)) == 0)
       return;
    assert((index & 7) == 0);
-   UINT8 changeMask = coreGlobals.binaryOutputState[index >> 3] ^ bitStates; // Identify differences
+   UINT8 changeMask = coreGlobals.binaryOutputState[index >> 3] ^ bitStates;
    if (changeMask) {
+     int pos = index;
      float now = (float) timer_get_time();
-     //for (int i = 0; i < 8; i++)
-     //  if (changeMask & (1 << i))
-     //    core_update_pwm_output(now, index + i, 1);
-     while (changeMask) { // Iterate over set bits, starting from the least significant one
-       const UINT8 nextDifference = changeMask & (UINT8)(-(INT8)changeMask);
-       const int pos = index + core_BitColToNum(nextDifference);
-       core_update_pwm_output(now, pos, 1);
-       changeMask &= ~nextDifference;
+	 while (changeMask) {
+       if (changeMask & 1)
+         coreGlobals.physicOutputState[index].integrator(now, pos, TRUE);
+       changeMask >>= 1;
+       pos++;
      }
      coreGlobals.binaryOutputState[index >> 3] = bitStates;
    }
@@ -2853,15 +2781,13 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
    assert((index & 7) == 0);
    UINT8 changeMask = bitMask & (coreGlobals.binaryOutputState[index >> 3] ^ bitStates); // Identify differences
    if (changeMask) {
-     float now = (float) timer_get_time(); // Warning this call is not threadsafe (for VPinMame)
-     //for (int i = 0; i < 8; i++)
-     //  if (changeMask & (1 << i))
-     //    core_update_pwm_output(now, index + i, 1);
-     while (changeMask) { // Iterate over set bits, starting from the least significant one
-       const UINT8 nextDifference = changeMask & (UINT8)(-(INT8)changeMask);
-       const int pos = index + core_BitColToNum(nextDifference);
-       core_update_pwm_output(now, pos, 1);
-       changeMask &= ~nextDifference;
+     int pos = index;
+     float now = (float) timer_get_time();
+     while (changeMask) {
+       if (changeMask & 1)
+         coreGlobals.physicOutputState[index].integrator(now, pos, TRUE);
+       changeMask >>= 1;
+       pos++;
      }
      coreGlobals.binaryOutputState[index >> 3] = (coreGlobals.binaryOutputState[index >> 3] & ~bitMask) | (bitStates & bitMask);
    }

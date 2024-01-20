@@ -1271,11 +1271,11 @@ static MACHINE_INIT(sam) {
 	else if (strncasecmp(gn, "bdk_294", 7) == 0) { // Batman The Dark Knight
 		int flashers[] = { 18, 20, 21, 22, 24, 26, 28, 31 };
 		for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-			coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
-		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 29].type = CORE_MODOUT_NONE;
-		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 45].type = CORE_MODOUT_NONE;
-		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 59].type = CORE_MODOUT_LED_STROBE_1_10MS;
-		coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 60].type = CORE_MODOUT_LED_STROBE_1_10MS;
+			core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 29, 1, CORE_MODOUT_NONE);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 45, 1, CORE_MODOUT_NONE);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 59, 1, CORE_MODOUT_LED_STROBE_1_10MS);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60, 1, CORE_MODOUT_LED_STROBE_1_10MS);
 	}
 	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
 		// TODO no manual found on IPDB
