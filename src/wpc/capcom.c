@@ -94,7 +94,12 @@
 #define VERBOSE_U16        0
 
 // Define to 1 to patch ROM to disable error messages
+#ifdef __GNUC__
+// For some reason, MinGW builds will fail startup test and report a slightly wrong AC frequency (64Hz instead of the expected 60Hz), all of them demonstrating wrong IRQ timings
+#define SKIP_ERROR_MSG     1
+#else
 #define SKIP_ERROR_MSG     0
+#endif
 
 // Define to log lamp strobe timings
 #define LOG_LAMP_STROBE    0
