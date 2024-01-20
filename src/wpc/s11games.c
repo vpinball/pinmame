@@ -1076,6 +1076,9 @@ CORE_CLONEDEF(whirl,g1,l3, "Whirlwind (LG-1 German)", 1990, "Williams", s11_mS11
 CORE_CLONEDEF(whirl,g2,l3, "Whirlwind (LG-2 German)", 1990, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(whirl,g3,l3, "Whirlwind (LG-3 German)", 1990, "Williams", s11_mS11BS,0)
 
+// In case the PA-1 U27 will ever appear, the already dumped Whirlwind_U21_PA1_SoundROM1.bin, Whirlwind_U22_PA1_SoundROM1.bin and the PA-1 U26 also matched whir_u21.l1, whir_u22.l1 and whir_u26.l3
+// So 'only' the U27 is missing from PA-1
+
 /*--------------------
 / Game Show 4/90
 /--------------------*/
