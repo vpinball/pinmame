@@ -573,7 +573,7 @@ static void GTS3_alpha_common_init(void) {
   else if (strncasecmp(gn, "ccruise", 7) == 0) { // Caribbean Cruise
 	  // TODO No manual found
   }
-  else if (strncasecmp(gn, "deadweap", 7) == 0) { // Deadly Weapon
+  else if (strncasecmp(gn, "deadweap", 8) == 0) { // Deadly Weapon
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 8 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  for (int i = 0; i < 8; i++) // TODO check strobe timings for LED power
