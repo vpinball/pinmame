@@ -985,16 +985,12 @@ static WRITE32_HANDLER(sambank_w)
 					((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8)  && (~data & 0x10)) ||
 					((core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40)))
 				{
+					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL
 					if (core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES))
-					{
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata >> 6, 0x01); // 1 sol  to CORE_FIRSTCUSTSOL + 6
-					}
-					else
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0x7C); // 5 sols to CORE_FIRSTCUSTSOL
+						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata >> 6, 0x03); // 2 sols to CORE_FIRSTCUSTSOL + 6
 				}
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x10)))
-					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata << 2, 0x7C); // 5 sols to CORE_FIRSTCUSTSOL + 8
+					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL + 8
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)))
 				{
 					// Metallica LE has a special aux board for the coffin magnet
@@ -1249,7 +1245,7 @@ static MACHINE_INIT(sam) {
 	core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, 32, CORE_MODOUT_SOL_2_STATE); // Base 32 solenoid outputs
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1, CORE_MODOUT_NONE); // GameOn fake solenoid
-	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 8, CORE_MODOUT_SOL_2_STATE); // Aux board
+	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 16, CORE_MODOUT_SOL_2_STATE); // Aux board
 	// Game specific hardware
 	const struct GameDriver* rootDrv = Machine->gamedrv;
 	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
