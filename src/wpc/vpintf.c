@@ -85,7 +85,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   {
     UINT8 lampMatrix[CORE_MAXLAMPCOL];
     memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
-    int nCol = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2) ? 2 : core_gameData->hw.lampCol;
+    int nCol = ((core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2)) ? 2 : core_gameData->hw.lampCol;
     for (ii = 0; ii < CORE_STDLAMPCOLS + nCol; ii++) {
       int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
       if (chgLamp) {

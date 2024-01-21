@@ -57,7 +57,7 @@ static INTERRUPT_GEN(wpc_irq);
 /*-- PIC security chip emulation --*/
 static int  wpc_pic_r(void);
 static void wpc_pic_w(int data);
-static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
+static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]);
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
 PINMAME_VIDEO_UPDATE(wpcdmd_update);
@@ -408,7 +408,7 @@ MACHINE_DRIVER_START(wpc_95S)
 MACHINE_DRIVER_END
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
-/* The DMD firq must be generated via the WPC but I don't how. */
+/* The DMD firq must be generated via the WPC but I don't know how. */
 static void wpc_firq(int set, int src) {
   if (set)
     wpclocals.firqSrc |= src;
@@ -650,7 +650,6 @@ READ_HANDLER(wpc_r) {
     case WPC_SHIFTADRH:
       return wpc_data[WPC_SHIFTADRH] +
              ((wpc_data[WPC_SHIFTADRL] + (wpc_data[WPC_SHIFTBIT]>>3))>>8);
-      break;
     case WPC_SHIFTADRL:
       return (wpc_data[WPC_SHIFTADRL] + (wpc_data[WPC_SHIFTBIT]>>3)) & 0xff;
     case WPC_SHIFTBIT:
@@ -1274,7 +1273,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "hurr_l2", 7) == 0) { // Hurricane
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "i500_11r", 8) == 0) { // Indiana 500
+  else if (strncasecmp(gn, "i500_11r", 8) == 0) { // Indy 500
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
@@ -1410,7 +1409,7 @@ static MACHINE_INIT(wpc) {
   // Reset GI dimming timers
   core_zero_cross();
   for (int ii = 0,tmp= wpc_data[WPC_GILAMPS]; ii < 5; ii++, tmp >>= 1) {
-     wpclocals.gi_on_time[ii] = coreGlobals.lastACZeroCrossTimeStamp + (tmp & 0x01 ? 0 : 100);
+     wpclocals.gi_on_time[ii] = coreGlobals.lastACZeroCrossTimeStamp + (tmp & 0x01 ? 0. : 100.);
   }
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];

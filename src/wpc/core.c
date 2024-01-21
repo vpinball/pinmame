@@ -706,7 +706,6 @@ static PALETTE_INIT(core) {
   int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
   int perc66 = 67, perc33 = 33, perc0  = 20;
   int ii;
-  float diff;
 
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
     rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
@@ -764,24 +763,20 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * 33 / 10000;
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
-  diff = (float)(100 - perc0) / 15.0f;
   for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-16+ii][0] = (unsigned char)(rStart * (perc0 + diff * ii) / 100);
-    tmpPalette[palSize-16+ii][1] = (unsigned char)(gStart * (perc0 + diff * ii) / 100);
-    tmpPalette[palSize-16+ii][2] = (unsigned char)(bStart * (perc0 + diff * ii) / 100);
-    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * (perc0 + diff * ii) * 72 / 10000);
-    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * (perc0 + diff * ii) * 72 / 10000);
-    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * (perc0 + diff * ii) * 72 / 10000);
-    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * (perc0 + diff * ii) * 33 / 10000);
-    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * (perc0 + diff * ii) * 33 / 10000);
-    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * (perc0 + diff * ii) * 33 / 10000);
+    const int tmp = (15 * perc0 + ii * (100 - perc0));
+    tmpPalette[palSize-16+ii][0] = (unsigned char)(rStart * tmp / 1500);
+    tmpPalette[palSize-16+ii][1] = (unsigned char)(gStart * tmp / 1500);
+    tmpPalette[palSize-16+ii][2] = (unsigned char)(bStart * tmp / 1500);
+    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * tmp * 72 / 150000);
+    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * tmp * 72 / 150000);
+    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * tmp * 72 / 150000);
+    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * tmp * 33 / 150000);
+    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * tmp * 33 / 150000);
+    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * tmp * 33 / 150000);
   }
 
 //for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
-
-  rStart = tmpPalette[COL_DMDOFF][0];
-  gStart = tmpPalette[COL_DMDOFF][1];
-  bStart = tmpPalette[COL_DMDOFF][2];
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
@@ -794,6 +789,9 @@ static PALETTE_INIT(core) {
   { /*-- Autogenerate antialias colours --*/
     int rStep, gStep, bStep;
     rStart = gStart = bStart = 0;
+    //rStart = tmpPalette[COL_DMDOFF][0];
+    //gStart = tmpPalette[COL_DMDOFF][1];
+    //bStart = tmpPalette[COL_DMDOFF][2];
 
     rStep = (tmpPalette[COL_DMDON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
     gStep = (tmpPalette[COL_DMDON][1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
@@ -970,7 +968,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  }
 
 	  if (oldbuffer != NULL) { // detect if same frame again
-		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
+		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)) != 0)
 		  {
 			  g_needs_DMD_update = 1;
 
@@ -1082,7 +1080,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   static char seg_dim[CORE_SEGCOUNT];
   static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
   int seg_idx=0;
+#ifdef LIBPINMAME
   UINT16* last_seg_data_ptr = seg_data;
+#endif
   int total_disp=0;
 #endif
 
@@ -1326,7 +1326,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
       //
 
-      if (oldbuffer != NULL && memcmp(oldbuffer, currbuffer, g_raw_dmdx*g_raw_dmdy))
+      if (oldbuffer != NULL && memcmp(oldbuffer, currbuffer, g_raw_dmdx*g_raw_dmdy) != 0)
       {
         for (i = 0; i < g_raw_dmdx*g_raw_dmdy; ++i)
           g_raw_dmdbuffer[i] = (UINT8)((int)currbuffer[i]*100/15);
@@ -2457,7 +2457,7 @@ void core_update_pwm_output_sol_2_state(const float now, const int index, const 
     if (sol < 28)
       coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
     else if (sol < 32) {
-      if (core_gameData->gen & GEN_WPC95 | GEN_WPC95DCS) {
+      if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) {
         coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 8))) | (state << (sol + 8));
         coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 12))) | (state << (sol + 12));
       }
@@ -2474,7 +2474,7 @@ INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float dt, 
    // Compute the perceived emission using a hacky simplified eye integration model
    // We want to model the flicker-fusion eye/brain behavior while keeping the output latency low (filter delay) and limit the flicker (still keeping it, if it can be seen on the real machine)
    // Note that videos can not be used as references for fitting the model since the camera perform a different luminance integration. Comparisons are only valid with real humans looking at real PWM/strobed incandescent bulbs.
-   
+
    // The model is a 4 steps RC low pass filter. I tested it following advice from a scientific paper that suggested to use a single pass RC filter for the eye model in the flicker-fusion study (I can't find the paper anymore...)
    // The overall filter delay is around 20ms. The key factor is the 100.0 constant (lower it for more smoothness, increasing the filter delay), increase it for faster response but more flicker.
    // From my test, when you look at a steady strobed lamp from a WPC (for example, lower left insert of Monster Bash), you can clearly see that the strobe is too slow (2ms/16ms) causing noticeable flicker.
