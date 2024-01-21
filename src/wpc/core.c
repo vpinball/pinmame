@@ -2027,7 +2027,7 @@ void core_getAllPhysicSols(float* state)
   /*-- 49..50 simulated --*/
   state[48] = sim_getSol(49) ? 1.0f : 0.0f;
   //state[49] = 0.0f; // unused reserved simulated solenoid
-  /*-- 51..64 custom --*/
+  /*-- 51..66 custom --*/
   for (int i = 0; i < core_gameData->hw.custSol; i++) {
     int sol = CORE_FIRSTCUSTSOL - 1 + i;
     state[sol] = sol < coreGlobals.nSolenoids ? coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + sol].value : (core_gameData->hw.getSol ? (core_gameData->hw.getSol(sol + 1) ? 1.0f : 0.0f) : 0.0f);
@@ -2766,7 +2766,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
      float now = (float) timer_get_time();
 	 while (changeMask) {
        if (changeMask & 1)
-         coreGlobals.physicOutputState[index].integrator(now, pos, TRUE);
+         coreGlobals.physicOutputState[pos].integrator(now, pos, TRUE);
        changeMask >>= 1;
        pos++;
      }
@@ -2785,7 +2785,7 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
      float now = (float) timer_get_time();
      while (changeMask) {
        if (changeMask & 1)
-         coreGlobals.physicOutputState[index].integrator(now, pos, TRUE);
+         coreGlobals.physicOutputState[pos].integrator(now, pos, TRUE);
        changeMask >>= 1;
        pos++;
      }
