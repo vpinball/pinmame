@@ -985,21 +985,25 @@ static WRITE32_HANDLER(sambank_w)
 					((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8)  && (~data & 0x10)) ||
 					((core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40)))
 				{
+					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL
 					if (core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES))
-					{
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata >> 6, 0x01); // 1 sol  to CORE_FIRSTCUSTSOL + 6
-					}
-					else
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0x7C); // 5 sols to CORE_FIRSTCUSTSOL
+						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata >> 6, 0x03); // 2 sols to CORE_FIRSTCUSTSOL + 6
 				}
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x10)))
-					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata << 2, 0x7C); // 5 sols to CORE_FIRSTCUSTSOL + 8
-				// Metallica LE has a special aux board just for the coffin magnet! 
+					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL + 8
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)))
 				{
-					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48    , samlocals.auxdata >> 7, 0x80); // 1 sol to CORE_FIRSTCUSTSOL + 6
-					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata >> 6, 0x01); // 1 sol to CORE_FIRSTCUSTSOL + 7
+					// Metallica LE has a special aux board for the coffin magnet
+					// Operation mode is written here with the 2 highest bits D6/D7 of Aux Data wired to the board, and strobed here.
+					// 00 => Off
+					// 10 => Grab: activate magnet for 1 second then switch it off. It grabs the ball from centimeters away
+					// 01 => Detect: detect ball and report it to switch 63
+					// 11 => Detect & Hold: detect ball, if detected report to switch 63 and also grab it
+					// See https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for a detailled description:
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 6 - 1, 1, samlocals.auxdata >> 7);
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 7 - 1, 1, samlocals.auxdata >> 6);
+					//core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48    ,  samlocals.auxdata       & 0x80, 0x80); // 1 sol to CORE_FIRSTCUSTSOL + 6, from upper bit
+					//core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, (samlocals.auxdata >> 6) & 0x01, 0x01); // 1 sol to CORE_FIRSTCUSTSOL + 7, from second upper bit
 				}
 				// AC/DC LE uses a special aux board for flame lights
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (~data & 0x08)))
@@ -1241,7 +1245,7 @@ static MACHINE_INIT(sam) {
 	core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, 32, CORE_MODOUT_SOL_2_STATE); // Base 32 solenoid outputs
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1, CORE_MODOUT_NONE); // GameOn fake solenoid
-	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 8, CORE_MODOUT_SOL_2_STATE); // Aux board
+	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 16, CORE_MODOUT_SOL_2_STATE); // Aux board
 	// Game specific hardware
 	const struct GameDriver* rootDrv = Machine->gamedrv;
 	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
@@ -1299,6 +1303,8 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 6 - 1, 1, CORE_MODOUT_PULSE); // Coffin board mode bit #0
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 7 - 1, 1, CORE_MODOUT_PULSE); // Coffin board mode bit #1
 	}
 	else if (strncasecmp(gn, "mt_145h", 7) == 0) { // Mustang LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
