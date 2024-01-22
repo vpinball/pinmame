@@ -288,7 +288,7 @@ lisy_home_ss_send_led_colors(void) {
 
     int ledline, led;
 
-    for (ledline = 0; ledline <= 5; ledline++) {
+    for (ledline = 0; ledline <= 4; ledline++) {
         for (led = 0; led <= 47; led++) {
             lisyh_led_set_LED_color(ledline, led, led_rgbw_color[ledline][led].red, led_rgbw_color[ledline][led].green,
                                     led_rgbw_color[ledline][led].blue, led_rgbw_color[ledline][led].white);
@@ -480,6 +480,7 @@ lisy_home_ss_boot_event(int arg1) {
 void
 lisy_home_ss_init_event(void) {
     int i;
+    unsigned char myled;
 
     //activate scoring lights
     lisy_home_ss_special_lamp_set(15, 1);
@@ -492,9 +493,29 @@ lisy_home_ss_init_event(void) {
     //reset displays
     wheel_score_reset();
 
-    //activate GI lamps for credit, drop targets 3000 and top rollover
+    //activate GI lamps line5&6 and all special ( e.g. for credit, drop targets 3000 and top rollover )
     for (i = 0; i <= 127; i++) {
-        if (lisy_home_ss_GI_leds[i].line != 0) {
+        if (lisy_home_ss_GI_leds[i].line == 5) { //all active by default
+           myled = lisy_home_ss_GI_leds[i].led;
+           lisyh_led_set_line_GI_color( 5, led_rgbw_color[5][myled].red, led_rgbw_color[5][myled].green, led_rgbw_color[5][myled].blue);
+           if (ls80dbg.bitv.lamps) {
+                sprintf(debugbuf, "activate general GI on line 5 via led:%d line:%d RGB: %d %d %d",
+                    lisy_home_ss_GI_leds[i].led, lisy_home_ss_GI_leds[i].line,
+                    led_rgbw_color[5][myled].red, led_rgbw_color[5][myled].green, led_rgbw_color[5][myled].blue);
+                lisy80_debug(debugbuf);
+            }
+        }
+        else if (lisy_home_ss_GI_leds[i].line == 6) { //all active by default
+           myled = lisy_home_ss_GI_leds[i].led;
+           lisyh_led_set_line_GI_color( 6, led_rgbw_color[6][myled].red, led_rgbw_color[6][myled].green, led_rgbw_color[6][myled].blue);
+           if (ls80dbg.bitv.lamps) {
+                sprintf(debugbuf, "activate general GI on line 6 via led:%d line:%d RGB: %d %d %d",
+                    lisy_home_ss_GI_leds[i].led, lisy_home_ss_GI_leds[i].line,
+                    led_rgbw_color[6][myled].red, led_rgbw_color[6][myled].green, led_rgbw_color[6][myled].blue);
+                lisy80_debug(debugbuf);
+            }
+        }
+        else if (lisy_home_ss_GI_leds[i].line != 0) {
             lisyh_led_set(lisy_home_ss_GI_leds[i].led, lisy_home_ss_GI_leds[i].line, 1);
             if (ls80dbg.bitv.lamps) {
                 sprintf(debugbuf, "activate GI led:%d line:%d", lisy_home_ss_GI_leds[i].led,

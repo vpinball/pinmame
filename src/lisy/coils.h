@@ -46,6 +46,7 @@ void lisy35_coil_set_sound_raw(unsigned char value);
 void lisyh_coil_set(int coil, int action);
 void lisyh_led_set(int led, int line, int action);
 void lisyh_led_set_GI_color(int* color);
+void lisyh_led_set_line_GI_color(unsigned char line, unsigned char red, unsigned char green, unsigned char blue);
 void lisyh_led_set_LED_color(unsigned char line, unsigned char led, unsigned char red, unsigned char green,
                              unsigned char blue, unsigned char white);
 void lisyH_special_coil_set(int coil, int action);

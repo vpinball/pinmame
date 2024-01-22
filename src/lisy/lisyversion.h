@@ -1,1 +1,1 @@
-#define LISYVERSION "5.28-91-00"
+#define LISYVERSION "5.28-92-00"

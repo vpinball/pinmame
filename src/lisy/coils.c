@@ -1175,6 +1175,7 @@ lisyh_send_to_LED_driver(unsigned char mybyte) {
 }
 
 //send color values to sk6812 driver for GI
+//lisy_control version
 void
 lisyh_led_set_GI_color(int* color) {
 
@@ -1205,6 +1206,43 @@ lisyh_led_set_GI_color(int* color) {
     usleep(LED_COLOR_WAIT_TIME);
     lisyh_send_to_LED_driver(color[5]);
     usleep(LED_COLOR_WAIT_TIME);
+}
+
+
+//send color values to sk6812 driver for GI
+//rgb only ( ws type LEDs ) need to exchange value for red&green
+void
+lisyh_led_set_line_GI_color(unsigned char line, unsigned char red, unsigned char green, unsigned char blue) {
+  if (line == 5) {
+    mydata_coil.bitv5.IS_CMD = 1; //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LED_LINE5_GI_COLORS;
+    //write to PIC
+    lisyh_send_to_LED_driver(mydata_coil.byte);
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+    //now send colorcodes RGB
+    lisyh_send_to_LED_driver(green);
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver(red);
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver(blue);
+    usleep(LED_COLOR_WAIT_TIME);
+    }
+   else if (line == 6) {
+    mydata_coil.bitv5.IS_CMD = 1; //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LED_LINE6_GI_COLORS;
+    //write to PIC
+    lisyh_send_to_LED_driver(mydata_coil.byte);
+    //wait ten millisecond to give PIC time
+    usleep(LED_COLOR_WAIT_TIME);
+    //now send colorcodes RGB
+    lisyh_send_to_LED_driver(green);
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver(red);
+    usleep(LED_COLOR_WAIT_TIME);
+    lisyh_send_to_LED_driver(blue);
+    usleep(LED_COLOR_WAIT_TIME);
+  }
 }
 
 //send color values to sk6812

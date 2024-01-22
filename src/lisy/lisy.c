@@ -49,7 +49,7 @@ t_lisy_home_ss_coil_map lisy_home_ss_coil_map[20];
 t_lisy_home_ss_special_coil_map lisy_home_ss_special_coil_map[20];
 t_lisy_home_ss_sound_map lisy_home_ss_sound_map[6];
 //colortable for leds Starship array with line & led
-t_rgbw_color led_rgbw_color[6][48];
+t_rgbw_color led_rgbw_color[7][48];
 //table for GI leds Starship (max 128)
 t_lisy_home_ss_GI_leds lisy_home_ss_GI_leds[128];
 //Starship flags
