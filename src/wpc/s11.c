@@ -20,6 +20,8 @@
 #include "lisy/lisy_w.h"
 #endif /* PINMAME && LISY_SUPPORT */
 
+#define FIXMUX // DataEast Playboy 35th fix
+
 // TODO:
 // DE display layouts
 #define S11_PIA0 0
@@ -90,12 +92,13 @@ static struct {
   int    sndCmd;	/* external sound board cmd */
   int    piaIrq;
   int    deGame;	/*Flag to see if it's a Data East game running*/
+#ifdef FIXMUX
   UINT8  solBits1,solBits2;
   UINT8  solBits2prv;
+#endif
 #ifndef PINMAME_NO_UNUSED
   int soundSys; /* 0 = CPU board sound, 1 = Sound board */
 #endif
-  int dispLock;
 } locals;
 
 static void s11_irqline(int state) {
@@ -191,15 +194,26 @@ static INTERRUPT_GEN(s11_vblank) {
     /*-- but only when no P-ROC, otherwise special solenoids -- */
     /*-- lock on when controlled by direct switches          -- */
     for (ii = 0; ii < 6; ii++) {
-      if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii])) {
+      if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
         locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-        core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ii - 1, 1, 1);
-	  }
     }
 #if defined(PROC_SUPPORT) || defined(LISY_SUPPORT)
     }
 #endif
   }
+#ifdef FIXMUX
+// mux translation moved
+#else
+  if ((core_gameData->sxx.muxSol) &&
+      (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
+      locals.solenoids = (locals.solenoids & 0x00ff8fef) |
+                         ((locals.solenoids & 0x00000010)<<20) |
+                         ((locals.solenoids & 0x00007000)<<13);
+    else
+      locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
+  }
+#endif
   locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
 #if !defined(PROC_SUPPORT) && !defined(LISY_SUPPORT)
  #if S11_SOLSMOOTH != 2
@@ -374,7 +388,6 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
                              (currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
   locals.digSel = data & 0x0f;
-  locals.dispLock = 0;
   if (core_gameData->hw.display & S11_BCDDIAG)
     locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
   else
@@ -390,15 +403,9 @@ static WRITE_HANDLER(pia2b_w) {
        ....
        data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
   if (core_gameData->gen & GEN_DEDMD16) {
-    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) {
-	  locals.extSol |= locals.extSolPulse = (data ^ 0xff);
-	  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
-	}
+    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol |= locals.extSolPulse = (data ^ 0xff);
   } else if (core_gameData->gen & (GEN_DEDMD32|GEN_DEDMD64)) {
-    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) {
-	  locals.extSol |= locals.extSolPulse = data;
-	  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
-	}
+    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol |= locals.extSolPulse = data;
   }
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
@@ -419,21 +426,11 @@ static WRITE_HANDLER(pia5a_w) { // Not used for DMD
     locals.segments[20+locals.digSel].b.hi |=
          locals.pseg[20+locals.digSel].b.hi = data;
 }
-
 static WRITE_HANDLER(pia3a_w) {
-  if (locals.dispLock) {
-    locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = 0;
-    return;
-  }
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = data;
-  locals.dispLock = 1;
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (locals.dispLock) {
-    locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = 0;
-    return;
-  }
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = data;
 }
@@ -488,8 +485,9 @@ static void setSSSol(int data, int solNo) {
     { coreGlobals.pulsedSolState |= bit;  locals.solenoids |= bit; }
   else
     coreGlobals.pulsedSolState &= ~bit;
-  core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo] - 1, 1, (locals.ssEn & (~data & 1)) ? 1 : 0);
 }
+
+#ifdef FIXMUX
 
 static void updsol(void) {
   /* set new solenoids, preserve SSSol */
@@ -543,6 +541,17 @@ static WRITE_HANDLER(latch2200) {
   }
 }
 
+#else
+static WRITE_HANDLER(pia0b_w) {
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
+  locals.solenoids |= (data<<8);
+}
+static WRITE_HANDLER(latch2200) {
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
+  locals.solenoids |= data;
+}
+#endif
+
 static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data; coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1].value = data ? 0.f : 1.f; }
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
@@ -595,10 +604,7 @@ static WRITE_HANDLER(pia5cb2_w) {
   /* don't pass to sound board if a sound overlay board is available */
   if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) &&
       ((locals.sndCmd & 0xe0) == 0)) {
-    if (!data) {
-	   locals.extSol |= locals.extSolPulse = (~locals.sndCmd) & 0x1f;
-	   core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
-	 }
+    if (!data) locals.extSol |= locals.extSolPulse = (~locals.sndCmd) & 0x1f;
   }
   else sndbrd_1_ctrl_w(0,data);
 }
@@ -811,15 +817,8 @@ static MACHINE_INIT(s11) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
-  // Williams S11
-  if (strncasecmp(gn, "polic_l4", 8) == 0) { // Police Force
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 2, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield and Backbox GI output
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
-  }
   // DataEast/Sega 1
-  else if (strncasecmp(gn, "lwar_a83", 8) == 0) { // Laser War
+  if (strncasecmp(gn, "lwar_a83", 8) == 0) { // Laser War
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 1 - 1, 3, CORE_MODOUT_BULB_89_32V_DC_S11);

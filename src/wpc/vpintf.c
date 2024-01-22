@@ -85,7 +85,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   {
     UINT8 lampMatrix[CORE_MAXLAMPCOL];
     memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
-    int nCol = ((core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2)) ? 2 : core_gameData->hw.lampCol;
+    int nCol = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2) ? 2 : core_gameData->hw.lampCol;
     for (ii = 0; ii < CORE_STDLAMPCOLS + nCol; ii++) {
       int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
       if (chgLamp) {
@@ -301,7 +301,8 @@ void vp_setModOutputType(int output, int no, int type) {
 	}
 	if (pos != -1)
 	{
-		core_set_pwm_output_type(pos, 1, type);
+		memset(&(coreGlobals.physicOutputState[pos]), 0, sizeof(core_tPhysicOutput));
+		coreGlobals.physicOutputState[pos].type = type;
 	}
 }
 

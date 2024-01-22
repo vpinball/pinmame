@@ -234,15 +234,6 @@ S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b9
                         "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
 S11_ROMEND
 
-S11_ROMSTART48(eatpm,3g,"u26-lg4.rom", CRC(5e196382) SHA1(e948993ae100ab3d7e1b771f4ce22e3faaad84b4) BAD_DUMP, // the U27 came without matching U26
-                        "Elvira_U27_ROM1_LG-3_NovaApparate.bin", CRC(a3adae98) SHA1(3b94cd83ecbae1a58d780b35cac879d636c2d5b0))
-S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
-                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
-S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
-                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
-                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
-S11_ROMEND
-
 S11_ROMSTART48(eatpm,4g,"u26-lg4.rom", CRC(5e196382) SHA1(e948993ae100ab3d7e1b771f4ce22e3faaad84b4),
                         "elvi_u27.l4", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
 S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
@@ -283,7 +274,6 @@ CORE_GAMEDEF (eatpm,   l4, "Elvira and the Party Monsters (LA-4)", 1989, "Bally"
 CORE_CLONEDEF(eatpm,l1,l4, "Elvira and the Party Monsters (LA-1)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,f1,l4, "Elvira and the Party Monsters (LF-1 French)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,l2,l4, "Elvira and the Party Monsters (LA-2)", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,3g,l4, "Elvira and the Party Monsters (LG-3 German)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (LG-4 German)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (LU-4 Europe)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,p7,l4, "Elvira and the Party Monsters (PA-7 Prototype)", 1989, "Bally", elvira, 0)

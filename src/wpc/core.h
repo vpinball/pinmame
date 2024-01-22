@@ -236,10 +236,9 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 
 /*----------------------
 / WPC driver constants
-/--------------------------------*/
-/*      Solenoid numbering       */
-/*                               */
-/*       WPC                     */
+/-----------------------*/
+/* Solenoid numbering */
+/*       WPC          */
 /*  1-28 Standard                */
 /* 33-36 Upper flipper solenoids */
 /* 37-40 Standard (WPC95 only)   */
@@ -247,28 +246,24 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 /* 45-48 Lower flipper solenoids */
 /* 49-50 Simulated               */
 /* 51-64                         */
-/*                               */
-/*       S9/S11                  */
-/*  1- 8 Standard 'A'-side       */
-/*  9-16 Standard                */
-/* 17-22 Special                 */
+/*       S9/S11            */
+/*  1- 8 Standard 'A'-side */
+/*  9-16 Standard          */
+/* 17-22 Special           */
 /* 23    Flipper & SS Enabled Sol (fake) */
-/* 25-32 Standard 'C'-side       */
-/* 37-41 Sound overlay board     */
-/*                               */
-/*       S7                      */
-/*  1-16 Standard                */
-/* 17-24 Special                 */
+/* 25-32 Standard 'C'-side */
+/* 37-41 Sound overlay board */
+/*       S7 */
+/*  1-16 Standard */
+/* 17-24 Special */
 /* 25    Flipper & SS Enabled Sol (fake) */
-/*                               */
-/*       BY17/BY35               */
-/*  1-15 Standard Pulse          */
-/* 17-20 Standard Hold           */
-/*                               */
-/*       GTS80                   */
-/*  1- 9 Standard                */
-/* 10    GameOn (fake)           */
-/* 11    Tilt (for GI) (fake)    */
+/*       BY17/BY35         */
+/*  1-15 Standard Pulse */
+/* 17-20 Standard Hold */
+/*       GTS80 */
+/*  1- 9 Standard */
+/* 10    GameOn (fake) */
+/* 11    Tilt (for GI) (fake) */
 #define CORE_FIRSTEXTSOL   37
 #define CORE_FIRSTUFLIPSOL 33
 #define CORE_FIRSTCUSTSOL  51
@@ -381,9 +376,10 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 
 #define CORE_MODOUT_NONE                   0 /* just don't do anything: value defined by driver is kept unchanged by integrator */
 #define CORE_MODOUT_PULSE                  1 /* No integration, just the raw pulse state */
-#define CORE_MODOUT_SOL_2_STATE            2 /* Simple 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms */
-#define CORE_MODOUT_SOL_CUSTOM             3 /* Call drivers's custom solenoid 'getSol' implementation */
-#define CORE_MODOUT_LEGACY_SOL_2_STATE    50 /* Simple 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms, waits for a few 'VBlank' before being reported */
+#define CORE_MODOUT_SOL_2_STATE            2 /* Very basic 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms */
+#define CORE_MODOUT_LEGACY_SOL_2_STATE    50 /* Very basic 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms, waits for a few 'VBlank' before being reported */
+#define CORE_MODOUT_LEGACY_SOL_CUSTOM     51 /* Call custom solenoid implementation */
+#define CORE_MODOUT_LEGACY_SOL_WPC        52 /* Initial WPC implementation for backward compatibility: sample all high output seen on the first 32 solenoids during last 2ms, then average every 28 samples, therefore updating output every 56ms */
 #define CORE_MODOUT_BULB_44_6_3V_AC      100 /* Incandescent #44/555 Bulb connected to 6.3V, commonly used for GI */
 #define CORE_MODOUT_BULB_47_6_3V_AC      101 /* Incandescent #47 Bulb connected to 6.3V, commonly used for (darker) GI with less heat */
 #define CORE_MODOUT_BULB_86_6_3V_AC      102 /* Incandescent #86 Bulb connected to 6.3V, seldom use: TZ, CFTBL,... */
@@ -396,11 +392,11 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89/906 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89/906 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89/906 Bulb connected to 32V, used for flashers on S11 with output strobing */
-#define CORE_MODOUT_BULB_89_25V_DC_S11   304 /* Incandescent #89/906 Bulb connected to 25V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
 #define CORE_MODOUT_LED_STROBE_1_10MS    401 /* LED Strobed 1ms over 10ms for full power */
 #define CORE_MODOUT_VFD_STROBE_05_20MS   450 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
 #define CORE_MODOUT_VFD_STROBE_1_16MS    451 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
+#define CORE_MODOUT_NTYPES               CORE_MODOUT_VFD_STROBE_1_16MS + 1
 
 /*-------------------------------------------
 /  Draw data. draw lamps,switches,solenoids
@@ -421,29 +417,23 @@ typedef struct {
   core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
-typedef void (*core_tPhysOutputIntegrator)(const float, const int, const int);
-
 typedef struct {
-   int type;                              /* Type of modulation from CORE_MODOUT_ definitions */
-   float value;                           /* Last computed output main physical characteristic (relative brightness for bulbs, strength for solenoids,...) */
-   core_tPhysOutputIntegrator integrator; /* Integrator function used to update the output state */
+   int type; /* Type of modulation from CORE_MODOUT_ definitions */
+   float value; /* Last computed output main physical characteristic (relative brightness for bulbs, strength for solenoids,...) */
+   float dataTimestamp; /* Timestamp of the state data. */
+   float elapsedInStateTime[2]; /* Total amount of time spent in each binary state since last PWM integration */
+   float lastFlipTimestamp; /* Timestamp of the last state change. */
    union { /* Last PWM integration result (not taking in account elapsedInStateTime periods) */
       struct
       {
-         int bulb;                        /* bulb model */
-         int isAC;                        /* AC or DC ? */
-         float U;                         /* voltage (Volts) */
-         float serial_R;                  /* serial resistor (Ohms) */
-         float relative_brightness;       /* Relative brightness scale */
-         float integrationTimestamp;      /* last integration timestamp */
-         float filament_temperature;      /* actual filament temperature */
-         float eye_integration[4];        /* flicker/fusion eye model state */
-      } bulb; // Physical model of a bulb / LED / VFD
+         float filament_temperature;
+         float eye_integration[4];
+      } bulb; // Physical model of a bulb
       struct
       {
-         int fastOn;
-         float lastFlipTimestamp;
-      } sol; // Physical model of a solenoid
+         int nSamples;
+         int value;
+      } wpc; // Implementation of legacy WPC modulated solenoid
    } state;
 } core_tPhysicOutput;
 

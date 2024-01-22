@@ -57,7 +57,7 @@ static INTERRUPT_GEN(wpc_irq);
 /*-- PIC security chip emulation --*/
 static int  wpc_pic_r(void);
 static void wpc_pic_w(int data);
-static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]);
+static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
 PINMAME_VIDEO_UPDATE(wpcdmd_update);
@@ -408,7 +408,7 @@ MACHINE_DRIVER_START(wpc_95S)
 MACHINE_DRIVER_END
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
-/* The DMD firq must be generated via the WPC but I don't know how. */
+/* The DMD firq must be generated via the WPC but I don't how. */
 static void wpc_firq(int set, int src) {
   if (set)
     wpclocals.firqSrc |= src;
@@ -650,6 +650,7 @@ READ_HANDLER(wpc_r) {
     case WPC_SHIFTADRH:
       return wpc_data[WPC_SHIFTADRH] +
              ((wpc_data[WPC_SHIFTADRL] + (wpc_data[WPC_SHIFTBIT]>>3))>>8);
+      break;
     case WPC_SHIFTADRL:
       return (wpc_data[WPC_SHIFTADRL] + (wpc_data[WPC_SHIFTBIT]>>3)) & 0xff;
     case WPC_SHIFTBIT:
@@ -1179,23 +1180,23 @@ static MACHINE_INIT(wpc) {
   if (strncasecmp(gn, "afm_113", 7) == 0) { // Attack from Mars
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "bop_l7", 6) == 0) { // The Machine: Bride of the Pinbot
      static const int flashers[] = { 17, 18, 19, 20, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_BULB_44_18V_DC_WPC); // Helmet lights
   }
   else if (strncasecmp(gn, "br_l4", 5) == 0) { // Black Rose
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "cc_13", 5) == 0) { // Cactus Canyon
      static const int flashers[] = { 18, 19, 20, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "corv_21", 7) == 0) { // Corvette
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1203,23 +1204,23 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "cp_16", 5) == 0) { // The Champion Pub
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "cv_14", 5) == 0) { // Cirqus Voltaire
      static const int flashers[] = { 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "cftbl_l4", 8) == 0) { // Creature From The Black Lagoon
      static const int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28 }; // 28 is hologram lamp
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64, 8, CORE_MODOUT_BULB_86_6_3V_AC); // chase lights (8 strings of #86 bulbs wired between GI and solenoids outputs through triacs and a 2 bit decoder)
   }
   else if (strncasecmp(gn, "congo_21", 8) == 0) { // Congo
      static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "dh_lx2", 6) == 0) { // Dirty Harry
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1228,22 +1229,22 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "dm_lx4", 6) == 0) { // Demolition Man
      static const int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "drac_l1", 7) == 0) { // Bram Stoker's Dracula
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "dw_l2", 5) == 0) { // Doctor Who
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "fh_l9", 5) == 0) { // Fun House
      static const int flashers[] = { 17, 18, 19, 20, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "fs_lx5", 6) == 0) { // The Flintstones
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1252,20 +1253,22 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "ft_l5", 5) == 0) { // Fish Tales
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "gi_l9", 5) == 0) { // Gilligan's Island
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "gw_l5", 5) == 0) { // High Speed II: The Getaway
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "hd_l3", 5) == 0) { // Harley Davidson
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "hshot_p8", 8) == 0) { // Hot Shot
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1273,15 +1276,15 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "hurr_l2", 7) == 0) { // Hurricane
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "i500_11r", 8) == 0) { // Indy 500
+  else if (strncasecmp(gn, "i500_11r", 8) == 0) { // Indiana 500
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ij_l7", 5) == 0) { // Indiana Jones
      static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-	 core_set_pwm_output_type(CORE_MODOUT_SOL0 + 24 - 1, 1, CORE_MODOUT_LED); // Plane Guns LED
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
+     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 24 - 1].type = CORE_MODOUT_LED; // Plane Guns LED
   }
   else if (strncasecmp(gn, "jb_10r", 6) == 0) { // Jack Bot
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1289,7 +1292,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "jd_l7", 5) == 0) { // Judge Dredd
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "jm_12r", 6) == 0) { // Johnny Mnemonic
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1298,22 +1301,22 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "jy_12", 5) == 0) { // Junk Yard
      static const int flashers[] = { 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "mb_10", 5) == 0) { // Monster Bash
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "mm_10", 5) == 0) { // Medieval Madness
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "nbaf_31", 7) == 0) { // NBA Fast Break
      static const int flashers[] = { 17, 19, 20, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "nf_23x", 6) == 0) { // No Fear
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1321,17 +1324,17 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "ngg_13", 6) == 0) { // No Good Goofers
      static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "pop_lx5", 7) == 0) { // Popeye Save The Earth
      static const int flashers[] = { 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "pz_f4", 5) == 0) { // Party Zone
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "rs_l6", 5) == 0) { // Road Show
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1339,40 +1342,37 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "sc_18s11", 8) == 0) { // Safe Cracker
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "sf_l1", 5) == 0) { // SlugFest
      static const int flashers[] = { 17, 18, 19, 20, 25, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "ss_15", 5) == 0) { // Scared Stiff
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 35 + 14, 36 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "sttng_l7", 8) == 0) { // Star Trek Next Generation
      static const int flashers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 41 + 14, 42 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "totan_l4", 8) == 0) { // Tales Of The Arabian Nights
      static const int flashers[] = { 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "taf_l5", 6) == 0) { // The Addams Family
-    static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
-    for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // Playfield magnets, they are pulsed with 64ms pulses over a 524ms period
-    // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_MAGNET);
-    // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 2, CORE_MODOUT_MAGNET);
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "tafg_lx3", 8) == 0) { // The Addams Family Gold Edition
      static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "tom_13", 6) == 0) { // Theatre of Magic
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1386,7 +1386,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "tz_92", 5) == 0) { // Twilight Zone
      static const int flashers[] = { 17, 18, 19, 20, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
   else if (strncasecmp(gn, "t2_l8", 5) == 0) { // Terminator 2
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1403,13 +1403,19 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "ww_l5", 5) == 0) { // White Water
      static const int flashers[] = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + flashers[i] - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC;
   }
+  // Legacy integrator for backward compatibility: not really needed, the new one gives better result but could be uncommented if bugs are found with existing tables
+  /*if (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)
+    core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_LEGACY_SOL_WPC);
+    //for (int i = 0; i < coreGlobals.nSolenoids; i++)
+    //  if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type == CORE_MODOUT_BULB_89_20V_DC_WPC)
+    //    coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type = CORE_MODOUT_LEGACY_SOL_WPC;*/
 
   // Reset GI dimming timers
   core_zero_cross();
   for (int ii = 0,tmp= wpc_data[WPC_GILAMPS]; ii < 5; ii++, tmp >>= 1) {
-     wpclocals.gi_on_time[ii] = coreGlobals.lastACZeroCrossTimeStamp + (tmp & 0x01 ? 0. : 100.);
+     wpclocals.gi_on_time[ii] = coreGlobals.lastACZeroCrossTimeStamp + (tmp & 0x01 ? 0 : 100);
   }
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];
