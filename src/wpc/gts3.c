@@ -545,9 +545,9 @@ static void GTS3_alpha_common_init(void) {
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_20V_DC_GTS3);
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'A' relay: lightbox insert (backbox), note that schematics read 6V AC, not 6.3
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 15, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25, 1, CORE_MODOUT_BULB_44_6_3V_AC); // 'A' relay: lightbox insert (backbox), note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 1, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 1, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
   // VFD powered through 8.6V AC for the filaments, and 47V DC for grids and anodes, 0.5ms pulse every 20ms (dimmable)
   core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_VFD_STROBE_05_20MS);
   // Game specific hardware
@@ -555,21 +555,67 @@ static void GTS3_alpha_common_init(void) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
 	  rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
-  // First generation
-  if (strncasecmp(gn, "lca", 3) == 0) { // Light Camera Action
+  if (strncasecmp(gn, "bellring", 8) == 0) { // Bell Ringer
+	  // TODO No manual found
+  }
+  else if (strncasecmp(gn, "cactjack", 8) == 0) { // Cactus Jack
+	  // Made from an incomplete manual without schematics. Needs to be checked more thoroughly
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 12, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+  }
+  else if (strncasecmp(gn, "carhop", 6) == 0) { // Car Hop
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 11, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7, 1, CORE_MODOUT_BULB_44_6_3V_AC); // 'B' relay: Right GI, note that schematics read 6V AC, not 6.3
+  }
+  else if (strncasecmp(gn, "clas1812", 8) == 0) { // Class of 1812
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 13, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 0, 5, CORE_MODOUT_LED_STROBE_1_10MS); // Battometer
+  }
+  else if (strncasecmp(gn, "ccruise", 7) == 0) { // Caribbean Cruise
+	  // TODO No manual found
+  }
+  else if (strncasecmp(gn, "deadweap", 8) == 0) { // Deadly Weapon
+	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 8 * 16;
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  for (int i = 0; i < 8; i++) // TODO check strobe timings for LED power
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+  }
+  else if (strncasecmp(gn, "hoops", 5) == 0) { // Hoops
+	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 12 * 16;
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+  }
+  else if (strncasecmp(gn, "lca", 3) == 0) { // Light Camera Action
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
   }
-  // Second generation
+  else if (strncasecmp(gn, "nudgeit", 7) == 0) { // Nudge It
+	  // TODO No manual found
+  }
   else if (strncasecmp(gn, "opthund", 7) == 0) { // Operation Thunder
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Aux board flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // SPECIAL
+  }
+  else if (strncasecmp(gn, "silvslug", 8) == 0) { // Silver Slugger
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
   }
   else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf'n Safari
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4 * 8 + 4, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Left Billboard
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 5 * 8 + 2, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Right Billboard
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 7, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Monster Nostrils
+  }
+  else if (strncasecmp(gn, "tfight", 6) == 0) { // Title Fight
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 6, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+  }
+  else if (strncasecmp(gn, "vegas", 5) == 0) { // Vegas
+	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 3 * 16;
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7, 18, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2, 3 * 16, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
   }
 }
 
@@ -629,20 +675,91 @@ static void gts3dmd_init(void) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
 	  rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
-  if (strncasecmp(gn, "barbwire", 8) == 0) { // Barbwire
+  if (strncasecmp(gn, "andretti", 8) == 0) { // Mario Andretti
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  coreGlobals.nAlphaSegs = 6 * 16;
+	  for (int i = 0; i < 6; i++) // TODO check strobe timings for LED power
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+  }
+  else if (strncasecmp(gn, "barbwire", 8) == 0) { // Barbwire
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+  }
+  else if (strncasecmp(gn, "bighurt", 7) == 0) { // Big Hurt
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17, 5, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Aux board flashers
+  }
+  else if (strncasecmp(gn, "brooks", 6) == 0) { // Brooks & Dunn
+	  // TODO No manual found
   }
   else if (strncasecmp(gn, "cueball", 7) == 0) { // Cueball Wizard
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'DOUBLE' LEDs
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'WIZARD' LEDs
   }
+  else if (strncasecmp(gn, "freddy", 6) == 0) { // Freddy: A Nightmare on Elm Street
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 7, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'AWAKE' LEDs
+  }
+  else if (strncasecmp(gn, "gladiatr", 8) == 0) { // Gladiator
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'WEAPON' LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'DOUBLE' LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 9 * 8 + 4, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Left Billboard LEDs
+  }
+  else if (strncasecmp(gn, "rescu911", 8) == 0) { // Rescue 911
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 7, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Backbox flasher (from aux board)
+  }
+  else if (strncasecmp(gn, "shaqattq", 8) == 0) { // Shaq Attaq
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  coreGlobals.nAlphaSegs = 12 * 16;
+	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+  }
+  else if (strncasecmp(gn, "smb", 3) == 0) { // Super Mario Bros.
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 12, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Castle LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Billboard LEDs
+  }
+  else if (strncasecmp(gn, "smbmush", 7) == 0) { // Super Mario Bros. Mushroom World
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20, 3, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Flashers from aux board
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Wand LEDs
+  }
+  else if (strncasecmp(gn, "stargate", 8) == 0) { // Stargate
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21, 1, CORE_MODOUT_LED); // 'Rope Lights', circle of leds around Ra in backbox
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Flashers from aux board
+  }
   else if (strncasecmp(gn, "sfight2", 7) == 0) { // Street Fighter 2
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23, 15, CORE_MODOUT_PULSE);           // 'S' relay: Lower playfield GameOn
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 'FIGHTER' LEDs
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Backbox flasher (from aux board)
+  }
+  else if (strncasecmp(gn, "teedoff", 7) == 0) { // Tee'd Off
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 13, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'SKINS!' LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 5, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'GOPHER' LEDs
+  }
+  else if (strncasecmp(gn, "waterwld", 8) == 0) { // Waterworld
+	  // Made from an incomplete manual without schematics. Needs to be checked more thoroughly
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 7, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Backbox flasher (from aux board)
+  }
+  else if (strncasecmp(gn, "wcsoccer", 8) == 0) { // World Challenge Soccer
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18, 7, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Flashers from aux board
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 'SOCCER' LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 11 * 8 + 1, 6, CORE_MODOUT_LED_STROBE_1_10MS); // Challenge LEDs
+  }
+  else if (strncasecmp(gn, "wipeout", 7) == 0) { // Wipe Out
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 11, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 2, 6, CORE_MODOUT_LED_STROBE_1_10MS); // 6 LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 'SKIERS' LEDs
   }
 }
 

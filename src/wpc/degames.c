@@ -651,6 +651,22 @@ DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a5965473849062
 DE_ROMEND
 CORE_CLONEDEF(hook,401,408,"Hook (4.01)",1992,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTARTx0(hook_f401,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d)) // unknown if there is a special french CPU 4.01, as the dump only included the display
+DE_DMD16ROM2(       "Hook_Display_F401.bin",CRC(b501edbd) SHA1(df369f569243d633aa24edd4289ace645e4a9358))
+DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
+                    "hook-voi.u17" ,CRC(6ea9fcd2) SHA1(bffc66df542e06dedddaa403b5513446d9d6fc8c),
+                    "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
+DE_ROMEND
+CORE_CLONEDEF(hook,f401,408,"Hook (4.01, French Display 4.01)",1992,"Data East",de_mDEDMD16S2A,0)
+
+DE_ROMSTARTx0(hook_400,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d)) // we do not have a CPU-Version < 4.01 yet
+DE_DMD16ROM2(       "hook_dspl_4.00.bin",CRC(14d2387c) SHA1(b3e78ffa7e9bdd4bc7fe08e3a0a8631178a5fc09))
+DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
+                    "hook-voi.u17" ,CRC(6ea9fcd2) SHA1(bffc66df542e06dedddaa403b5513446d9d6fc8c),
+                    "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
+DE_ROMEND
+CORE_CLONEDEF(hook,400,408,"Hook (4.01, Display 4.00)",1992,"Data East",de_mDEDMD16S2A,0)
+
 DE_ROMSTARTx0(hook_404,"hokcpua.404",CRC(53357d8b) SHA1(4e8f5f4376418fbac782065c602da82acab06ef3))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
 DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
@@ -666,9 +682,6 @@ DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a5965473849062
                     "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
 DE_ROMEND
 CORE_CLONEDEF(hook,e406,408,"Hook (4.06 English)",1992,"Data East",de_mDEDMD16S2A,0)
-
-// There exists also a Display-ROM 4.00, but we do not have a CPU-Version < 4.01 yet
-// DE_DMD16ROM2("hook_dspl_4.00.bin",CRC(14d2387c) SHA1(b3e78ffa7e9bdd4bc7fe08e3a0a8631178a5fc09))
 
 /***********************************************************************/
 /*************** GAMES USING 128X32 DMD DISPLAY ************************/

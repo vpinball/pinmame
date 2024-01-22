@@ -14,7 +14,6 @@
 #endif
 
 #define PINMAME_MAX_PATH 512
-#define PINMAME_MAX_DISPLAYS 50
 #define PINMAME_MAX_MECHSW 20
 #define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
