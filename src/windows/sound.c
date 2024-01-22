@@ -385,7 +385,7 @@ int osd_update_audio_stream(INT16 *buffer)
 
 		if(volume_gain > 1.)
 		{
-			const float vgf = volume_gain;
+			const float vgf = (float)volume_gain;
 			int i;
 			for (i = 0; i < input_bytes; ++i)
 			{
