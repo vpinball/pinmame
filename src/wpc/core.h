@@ -383,6 +383,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_PULSE                  1 /* No integration, just the raw pulse state */
 #define CORE_MODOUT_SOL_2_STATE            2 /* Simple 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms */
 #define CORE_MODOUT_SOL_CUSTOM             3 /* Call drivers's custom solenoid 'getSol' implementation */
+#define CORE_MODOUT_CUSTOM_INTEGRATOR      4 /* Driver's custom integrator definition */
 #define CORE_MODOUT_LEGACY_SOL_2_STATE    50 /* Simple 2 state solenoid implementation: ON as soon as it is pulsed, OFF if no high state has been seen for the last 60ms, waits for a few 'VBlank' before being reported */
 #define CORE_MODOUT_BULB_44_6_3V_AC      100 /* Incandescent #44/555 Bulb connected to 6.3V, commonly used for GI */
 #define CORE_MODOUT_BULB_47_6_3V_AC      101 /* Incandescent #47 Bulb connected to 6.3V, commonly used for (darker) GI with less heat */
@@ -568,6 +569,7 @@ extern void core_getAllPhysicSols(float* state);
 extern void core_request_pwm_output_update(void);
 extern void core_set_pwm_output_type(int startIndex, int count, int type);
 extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
+extern void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int isAC, float serial_R, float relative_brightness);
 extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
 extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
 extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UINT8 bitMask);

@@ -2731,6 +2731,20 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
   }
 }
 
+void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int isAC, float serial_R, float relative_brightness)
+{
+  for (int i = startIndex; i < startIndex + count; i++) {
+    memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
+    coreGlobals.physicOutputState[i].state.bulb.bulb = bulb;
+    coreGlobals.physicOutputState[i].state.bulb.U = U;
+    coreGlobals.physicOutputState[i].state.bulb.isAC = isAC;
+    coreGlobals.physicOutputState[i].state.bulb.serial_R = serial_R;
+    coreGlobals.physicOutputState[i].state.bulb.relative_brightness = relative_brightness;
+    coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+  }
+}
+
 void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
 {
   for (int i = 0; i < count; i++)
