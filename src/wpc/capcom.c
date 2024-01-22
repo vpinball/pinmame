@@ -94,7 +94,12 @@
 #define VERBOSE_U16        0
 
 // Define to 1 to patch ROM to disable error messages
+#ifdef __GNUC__
+// For some reason, MinGW builds will fail startup test and report a slightly wrong AC frequency (64Hz instead of the expected 60Hz), all of them demonstrating wrong IRQ timings
+#define SKIP_ERROR_MSG     1
+#else
 #define SKIP_ERROR_MSG     0
+#endif
 
 // Define to log lamp strobe timings
 #define LOG_LAMP_STROBE    0
@@ -479,12 +484,12 @@ static WRITE16_HANDLER(u16_w) {
     }
     case 0x201: { // IRQ4 Line 1 frequency
       LOG_U16(("PC %08x - U16w IRQ4 f1=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
-      locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+      locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
       break;
     }
     case 0x202: { // IRQ4 Line 2 frequency
       LOG_U16(("PC %08x - U16w IRQ4 f2=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
-      locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+      locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
       break;
     }
     default:
@@ -724,7 +729,7 @@ static MACHINE_INIT(cc) {
   core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 7, 1, CORE_MODOUT_LED); // Sound Board Diagnostic LED
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1].type = CORE_MODOUT_LEGACY_SOL_CUSTOM; // GameOn solenoid for Fast Flips
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 1, CORE_MODOUT_SOL_CUSTOM); // GameOn solenoid for Fast Flips
   // Game specific hardware
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
@@ -742,8 +747,8 @@ static MACHINE_INIT(cc) {
   }
   else if (strncasecmp(gn, "bsv103", 6) == 0) { // Breakshot
     coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908;
-    coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 28 - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC; // Center pocket Flasher
-    // coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 27 - 1].type = CORE_MODOUT_BULB_89_20V_DC_WPC; // Plunger Flasher (appears in doc but was not kept in production)
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
+    // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
   }
   else if (strncasecmp(gn, "ffv104", 6) == 0) { // Flipper Football
     coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908;
@@ -769,11 +774,11 @@ static MACHINE_INIT(cc) {
   locals.u16IRQ4Line3timer = timer_alloc(cc_u16irq4line3);
   // defaults IRQ periods
   locals.u16IRQ1Period = TIME_IN_SEC(22668 / (double)CPU_CLOCK);
-  locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
-  locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
   // Flipper Football frequency for IRQ4 Line 3 is half of other games => likely DMD vblank since DMD has twice more lines (so 45.9Hz for FF, 91.8Hz for others)
   int defaultLine3 = (core_gameData->hw.gameSpecific1 == 9 || core_gameData->hw.gameSpecific1 == 12) ? 0x0000 : 0x0800;
-  locals.u16IRQ4Line3Period = TIME_IN_SEC(((0x1000 - (defaultLine3 & 0x0FFF)) * 88.7) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line3Period = TIME_IN_SEC(((0x1000 - (defaultLine3 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
 
 #if TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation

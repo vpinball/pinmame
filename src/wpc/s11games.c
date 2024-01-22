@@ -429,15 +429,6 @@ S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c2
 S11_ROMEND
 CORE_CLONEDEF(bguns,lac,l8,"Big Guns (L-AC Competition MOD)", 2019, "Williams", s11_mS11AS,0)
 
-S11_ROMSTART48(bguns,p1a,"BigGuns_U26_ROM-2_LGx.bin", CRC(d75ca79d) SHA1(6d185cda4c62bf1cae0448c89b4f93a90aed855c), // only few bytes differ or are moved, compared to u26-p-1.rom
-                        "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf)) // matches the also dumped BigGuns_U27_ROM-1_LGx.bin
-S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703), // the dumped sound ROMs also matched the existing ones
-                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
-S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
-                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
-S11_ROMEND
-CORE_CLONEDEF(bguns,p1a,l8,"Big Guns (P-1 Prototype alternate / LG German?)", 1987, "Williams", s11_mS11AS,GAME_NOT_WORKING) // dumped from a german machine
-
 S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
                         "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
 S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
@@ -781,8 +772,9 @@ S11_ROMEND
 #define input_ports_bk2k input_ports_s11
 CORE_GAMEDEF(bk2k, l4, "Black Knight 2000 (L-4)", 1989, "Williams", s11_mS11BS,0)
 
-S11_ROMSTART48(bk2k,lg1,"bk2kgu26.lg1", CRC(f916d163) SHA1(bd8cbac9345a8debd01c8c68110652f591ad9d51),
-                        "bk2kgu27.lg1", CRC(4132ac5c) SHA1(5636d4e8fb9bf5a5f4ccafe4ef035ab0e8964e8b))
+S11_ROMSTART48(bk2k,lg1,"u26-pu1.rom", CRC(2da07403) SHA1(4b48c5d7b0a03aa4593dc6053dc5e94df22d2a64),
+                        "bk2k_u27.lg1",CRC(2d6359d4) SHA1(531841dedf2acf3ac10577813f003cf077d4607d)) // redump shows a one-byte difference
+//                        "bk2kgu27.lg1",CRC(4132ac5c) SHA1(5636d4e8fb9bf5a5f4ccafe4ef035ab0e8964e8b))
 S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
                         "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
@@ -1043,7 +1035,25 @@ S11_ROMEND
 #define input_ports_whirl input_ports_s11
 
 S11_ROMSTART48(whirl,l2,"whir_u26.l3", CRC(066b8fec) SHA1(017ca12ef5ebd9bb70690b0e096064be5144a512),
-                        "wwdgu27.l2", CRC(d8fb48f3) SHA1(8c64f94cca51abd6f4a7e53ac59a6f623bd2cfd7))
+                        "wwdgu27.l2",  CRC(d8fb48f3) SHA1(8c64f94cca51abd6f4a7e53ac59a6f623bd2cfd7))
+S11XS_SOUNDROM88(       "whir_u21.l1", CRC(fa3da322) SHA1(732107eace9eecdb97eff4abb4420a2febef7425),
+                        "whir_u22.l1", CRC(fcaf8c4e) SHA1(8e8cab1923a56bcef4671dce28aef1e39303c04a))
+S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf9dd013855e51a7b857),
+                        "whir_u19.l1", CRC(c63f6fe9) SHA1(947bbccb5eeae414770254d42d0a95425e2dca8c),
+                        "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
+S11_ROMEND
+
+S11_ROMSTART48(whirl,g1,"whir_u26.l3", CRC(066b8fec) SHA1(017ca12ef5ebd9bb70690b0e096064be5144a512), // the U27 came without U26, so unknown if these 2 really match
+                        "WhirlWind_U27_LG1.bin", CRC(e85a5004) SHA1(dd88d8b26e44df1bc9304f844cf1f8cbc46f31f7))
+S11XS_SOUNDROM88(       "whir_u21.l1", CRC(fa3da322) SHA1(732107eace9eecdb97eff4abb4420a2febef7425),
+                        "whir_u22.l1", CRC(fcaf8c4e) SHA1(8e8cab1923a56bcef4671dce28aef1e39303c04a))
+S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf9dd013855e51a7b857),
+                        "whir_u19.l1", CRC(c63f6fe9) SHA1(947bbccb5eeae414770254d42d0a95425e2dca8c),
+                        "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
+S11_ROMEND
+
+S11_ROMSTART48(whirl,g2,"whir_u26.l3", CRC(066b8fec) SHA1(017ca12ef5ebd9bb70690b0e096064be5144a512), // the U27 came without U26, so unknown if these 2 really match
+                        "WhirlWind_U27_LG2.bin", CRC(49f03cd9) SHA1(ee7837861678f86d3903842e1895de358383b6b2))
 S11XS_SOUNDROM88(       "whir_u21.l1", CRC(fa3da322) SHA1(732107eace9eecdb97eff4abb4420a2febef7425),
                         "whir_u22.l1", CRC(fcaf8c4e) SHA1(8e8cab1923a56bcef4671dce28aef1e39303c04a))
 S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf9dd013855e51a7b857),
@@ -1052,7 +1062,7 @@ S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf
 S11_ROMEND
 
 S11_ROMSTART48(whirl,g3,"whir_u26.l3", CRC(066b8fec) SHA1(017ca12ef5ebd9bb70690b0e096064be5144a512),
-                        "whir_u27.lg3", CRC(94c7a45a) SHA1(617f38f14c1cf8d6cbb6a41080e2d66c7c572b7f))
+                        "whir_u27.lg3",CRC(94c7a45a) SHA1(617f38f14c1cf8d6cbb6a41080e2d66c7c572b7f))
 S11XS_SOUNDROM88(       "whir_u21.l1", CRC(fa3da322) SHA1(732107eace9eecdb97eff4abb4420a2febef7425),
                         "whir_u22.l1", CRC(fcaf8c4e) SHA1(8e8cab1923a56bcef4671dce28aef1e39303c04a))
 S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf9dd013855e51a7b857),
@@ -1060,9 +1070,14 @@ S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf
                         "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
 S11_ROMEND
 
-CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(whirl,l2,l3,"Whirlwind (L-2)", 1990, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(whirl,g3,l3,"Whirlwind (LG-3 German)", 1990, "Williams", s11_mS11BS,0)
+CORE_GAMEDEF(whirl,l3, "Whirlwind (LA-3)", 1990, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(whirl,l2,l3, "Whirlwind (LU-2)", 1990, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(whirl,g1,l3, "Whirlwind (LG-1 German)", 1990, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(whirl,g2,l3, "Whirlwind (LG-2 German)", 1990, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(whirl,g3,l3, "Whirlwind (LG-3 German)", 1990, "Williams", s11_mS11BS,0)
+
+// In case the PA-1 U27 will ever appear, the already dumped Whirlwind_U21_PA1_SoundROM1.bin, Whirlwind_U22_PA1_SoundROM1.bin and the PA-1 U26 also matched whir_u21.l1, whir_u22.l1 and whir_u26.l3
+// So 'only' the U27 is missing from PA-1
 
 /*--------------------
 / Game Show 4/90
