@@ -816,18 +816,8 @@ lisy1_throttle(void) {
             //calculate if we are above minimum sleep time
             sleeptime = g_lisy1_throttle_val - (now - last);
         } while (sleeptime > 0);
-    } else if (lisy_attract_mode_activ == 1)
-    //if we are in attract mode we do not slow down
-    {
-        //calculate how much time passed since last call
-        now = micros();
-        //beware of 'wrap' which happens each 71 minutes
-        if (now < last)
-            now = last; //we had a wrap
-
-        if (lisy1_game_not_running == 0) lisy1_attract(LISY1_ATTRACT_STEP,now - last);
     } else
-    //if no sound enabled and no attract mode use sleep routine
+    //if no sound enabled use sleep routine
     {
         //see how many micros passed
         now = micros();
@@ -839,6 +829,12 @@ lisy1_throttle(void) {
         sleeptime = g_lisy1_throttle_val - (now - last);
         if (sleeptime > 0)
             delayMicroseconds(sleeptime);
+        if ( (lisy1_game_not_running == 0) & (lisy_attract_mode_activ == 1))
+           {
+           //see how many micros passed ( again for time value in attract )
+           now = micros();
+           lisy1_attract(LISY1_ATTRACT_STEP,now - last); 
+           }
     }
 
     //store current time for next round with speed limitc
