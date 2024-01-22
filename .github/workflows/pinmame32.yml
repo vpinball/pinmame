@@ -43,12 +43,20 @@ jobs:
             platform-name: x64
             artifact-suffix: -sc
             extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
+          - platform: win-x64
+            platform-name: x64
+            artifact-suffix: -md
+            extra-flags: -D CMAKE_CXX_FLAGS=//DMAME_DEBUG
           - platform: win-x86
             platform-name: Win32
           - platform: win-x86
             platform-name: Win32
             artifact-suffix: -sc
             extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
+          - platform: win-x86
+            platform-name: Win32
+            artifact-suffix: -md
+            extra-flags: -D CMAKE_CXX_FLAGS=//DMAME_DEBUG
     steps:
       - uses: actions/checkout@v3
       - uses: ilammy/setup-nasm@v1
@@ -57,7 +65,7 @@ jobs:
 #          7z x upx.zip -oupx
 #          rm upx.zip
       - run: |
-          curl -L https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-win64.zip -o upx.zip
+          curl -L https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip -o upx.zip
           7z e upx.zip -oupx
           rm upx.zip
       - name: Build PinMAME32${{ matrix.artifact-suffix }}-${{ matrix.platform }}
