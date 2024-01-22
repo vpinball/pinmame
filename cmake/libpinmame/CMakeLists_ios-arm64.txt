@@ -20,7 +20,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(ExternalProject)
 
 ExternalProject_Add(zlib
-  URL https://zlib.net/zlib-1.3.tar.gz
+  URL https://zlib.net/zlib-1.3.1.tar.gz
   CMAKE_ARGS -DCMAKE_SYSTEM_NAME=iOS
   CMAKE_ARGS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
   CMAKE_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64
