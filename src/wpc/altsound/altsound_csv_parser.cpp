@@ -104,7 +104,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 			// DUCK
 			if (std::getline(ss, field, ',')) {
 				float val = std::stof(trim(field));
-				entry.ducking = val < 0.0f ? -1.0f : val > 100.0f ? 1.0f : val / 100.0f;
+				entry.ducking = entry.channel == 0 ? 100.0f : val < 0.0f ? -1.0f : val > 100.0f ? 1.0f : val / 100.0f;
 			}
 			else {
 				ALT_ERROR(0, "Failed to parse sample DUCK value");
