@@ -107,9 +107,10 @@ add_compile_definitions(
    XMAMEROOT="/usr/local/share/xpinmame"
    HAVE_SNPRINTF
    HAVE_GETTIMEOFDAY
-   #SYSDEP_DSP_ALSA
-   #SYSDEP_MIXER_ALSA
-   SYSDEP_DSP_OSS
+#   SYSDEP_DSP_ALSA
+#   SYSDEP_MIXER_ALSA
+   SYSDEP_DSP_SDL
+   SDL_DEBUG
 )
 
 add_executable(xpinmame
@@ -625,10 +626,11 @@ add_executable(xpinmame
    src/unix/sysdep/sysdep_mixer.c
 #   src/unix/sysdep/dsp-drivers/alsa.c
 #   src/unix/sysdep/mixer-drivers/alsa.c
-   src/unix/sysdep/dsp-drivers/oss.c
-   src/unix/video-drivers/x11.c
-   src/unix/video-drivers/xinput.c
-   src/unix/video-drivers/x11_window.c
+   src/unix/sysdep/dsp-drivers/sdl.c
+#   src/unix/video-drivers/x11.c
+#   src/unix/video-drivers/xinput.c
+#   src/unix/video-drivers/x11_window.c
+   src/unix/video-drivers/sdl.c
    src/unix/joystick-drivers/joy_i386.c
    src/unix/joystick-drivers/joy_pad.c
    src/unix/joystick-drivers/joy_x11.c
@@ -649,6 +651,10 @@ find_package(
    ALSA
 )
 
+find_package(
+   SDL2
+)
+
 target_include_directories(xpinmame PUBLIC
    src
    src/wpc
@@ -659,6 +665,7 @@ target_include_directories(xpinmame PUBLIC
    ${X11_X11_INCLUDE_PATH}
    ${X11_Xv_INCLUDE_PATH}
    ${ALSA_INCLUDE_DIRS}
+   ${SDL2_INCLUDE_DIRS}
 )
 
 target_link_libraries(xpinmame PUBLIC
@@ -667,6 +674,7 @@ target_link_libraries(xpinmame PUBLIC
    ${X11_Xv_LIB}
    ${X11_Xext_LIB}
    ${ALSA_LIBRARIES}
+   ${SDL2_LIBRARIES}
 )
 
 set_target_properties(xpinmame PROPERTIES
