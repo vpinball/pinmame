@@ -23,7 +23,7 @@ Version 3.6 (XX XXth, 2024) - "Sounds good III"
   preserving original game timing (currently dev only feature)
 - Ability to stop
 
-Updated LISY support to 5.28-91 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
+Updated LISY support to 5.28-92 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
 Fix Capcom crashes in 64bit builds
 
@@ -36,9 +36,9 @@ Added the emulation of physical bulbs & LEDs connected to binary outputs, for WP
   To be emulated correctly, devices connected to binary output must be defined. PinMAME already has the definition for lots of them 
   (to be found in MACHINE_INIT of each driver) but if the one you want is missing, or you want to modify it, use 'SolMask(xx) = type' 
   to change it, where xx is the output to be modified (see vp_setSolMask), and yy is the type (see core.h). Also see the updated core 
-  scripts coming with VPX. This also includes emulation of dimmed alphanumerical segments for GTS3 and WPC, and opens up the path for 
-  emulation of strength modulated solenoids (for example most magnets, Capcom Kingpin, or the way most modern hardware handle Power/Hold 
-  and EOS switch).
+  scripts coming with VPX 10.8+
+  This also includes emulation of dimmed alphanumerical segments for GTS3 and WPC, and opens up the path for emulation of strength
+  modulated solenoids (for example most magnets, Capcom Kingpin, or the way most modern hardware handle Power/Hold and EOS switch).
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
