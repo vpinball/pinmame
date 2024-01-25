@@ -280,29 +280,15 @@ UINT64 vp_getSolMask64(void) {
 void vp_setModOutputType(int output, int no, int type) {
 	int pos = -1;
 	if (output == VP_OUT_SOLENOID && 1 <= no && no <= coreGlobals.nSolenoids)
-	{
 		pos = CORE_MODOUT_SOL0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
-	}
 	else if (output == VP_OUT_GI && 1 <= no && no <= coreGlobals.nGI)
-	{
 		pos = CORE_MODOUT_GI0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
-	}
 	else if (output == VP_OUT_LAMP && 1 <= no && no <= coreGlobals.nLamps)
-	{
 		pos = CORE_MODOUT_LAMP0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
-	}
 	else if (output == VP_OUT_ALPHASEG && 1 <= no && no <= coreGlobals.nAlphaSegs)
-	{
 		pos = CORE_MODOUT_SEG0 + no - 1;
-		options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
-	}
 	if (pos != -1)
-	{
 		core_set_pwm_output_type(pos, 1, type);
-	}
 }
 
 int vp_getModOutputType(int output, int no) {
