@@ -844,66 +844,73 @@ void sysdep_update_keyboard()
    if (Surface) {
       while(SDL_PollEvent(&event)) {
          kevent.press = 0;
-         
+
          switch (event.type)
          {
-            case SDL_KEYDOWN:
-               kevent.press = 1;
+         case SDL_KEYDOWN:
+            kevent.press = 1;
 
-               /* ALT-Enter: toggle fullscreen */
-               if ( event.key.keysym.sym == SDLK_RETURN )
+         /* ALT-Enter: toggle fullscreen */
+            if (event.key.keysym.sym == SDLK_RETURN)
+            {
+               if (event.key.keysym.mod & KMOD_ALT)
                {
-                  if(event.key.keysym.mod & KMOD_ALT)
-                  {
-                     SDL_Window *window = SDL_GetWindowFromID(event.key.windowID);
-                     const Uint32 is_fullscreen = SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
-                     SDL_SetWindowFullscreen(window, is_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-                  }
+                  SDL_Window* window = SDL_GetWindowFromID(event.key.windowID);
+                  const Uint32 is_fullscreen = SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+                  SDL_SetWindowFullscreen(window, is_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
                }
+            }
 
-            case SDL_KEYUP:
-               printf("scancode: %d, sym: %d\n", event.key.keysym.scancode, event.key.keysym.sym);
-               kevent.unicode = 0;
-               kevent.scancode = 0;
-               kevent.scancode = sdl_keycode_to_key(event.key.keysym.sym);
-               xmame_keyboard_register_event(&kevent);
-               if(kevent.scancode == KEY_NONE)
-                  fprintf (stderr, "SDL: Unknown symbol 0x%x\n",
-                     event.key.keysym.sym);
+         case SDL_KEYUP:
+            kevent.unicode = 0;
+            kevent.scancode = sdl_keycode_to_key(event.key.keysym.sym);
+            xmame_keyboard_register_event(&kevent);
+            if (kevent.scancode == KEY_NONE)
+               fprintf(stderr, "SDL unknown symbol 0x%x scancode: %d, sym: %d\n", event.key.keysym.sym,
+                       event.key.keysym.scancode, event.key.keysym.sym);
+
 #ifdef SDL_DEBUG
-               fprintf (stderr, "Key %s %ssed\n",
-                  SDL_GetKeyName(event.key.keysym.sym),
-                  kevent.press? "pres":"relea");
+            fprintf(stderr, "Key %s %ssed\n",
+                    SDL_GetKeyName(event.key.keysym.sym),
+                    kevent.press ? "pres" : "relea");
 #endif
-               break;
-            case SDL_QUIT:
-               /* Shoult leave this to application */
-               exit(OSD_OK);
-               break;
-
-    	    case SDL_JOYAXISMOTION:   
-               if (event.jaxis.which < JOY_AXIS)
-                  joy_data[event.jaxis.which].axis[event.jaxis.axis].val = event.jaxis.value;
+            break;
+         case SDL_TEXTINPUT:
 #ifdef SDL_DEBUG
-               fprintf (stderr,"Axis=%d,value=%d\n",event.jaxis.axis ,event.jaxis.value);
+            fprintf(stderr, "SDL: Text input: %s\n", event.text.text);
 #endif
-		break;
-	    case SDL_JOYBUTTONDOWN:
+            kevent.unicode = event.text.text[0];
+            kevent.scancode = KEYCODE_OTHER;
+            xmame_keyboard_register_event(&kevent);
+            break;
+         case SDL_QUIT:
+            /* Shoult leave this to application */
+            exit(OSD_OK);
+            break;
 
-	    case SDL_JOYBUTTONUP:
-               if (event.jbutton.which < JOY_BUTTONS)
-                  joy_data[event.jbutton.which].buttons[event.jbutton.button] = event.jbutton.state;
+         case SDL_JOYAXISMOTION:
+            if (event.jaxis.which < JOY_AXIS)
+               joy_data[event.jaxis.which].axis[event.jaxis.axis].val = event.jaxis.value;
 #ifdef SDL_DEBUG
-               fprintf (stderr, "Button=%d,value=%d\n",event.jbutton.button ,event.jbutton.state);
+            fprintf(stderr, "Axis=%d,value=%d\n", event.jaxis.axis, event.jaxis.value);
 #endif
-		break;
+            break;
+         case SDL_JOYBUTTONDOWN:
 
-
-            default:
+         case SDL_JOYBUTTONUP:
+            if (event.jbutton.which < JOY_BUTTONS)
+               joy_data[event.jbutton.which].buttons[event.jbutton.button] = event.jbutton.state;
 #ifdef SDL_DEBUG
-               fprintf(stderr, "SDL: Debug: Other event %d\n", event.type);
+            fprintf(stderr, "Button=%d,value=%d\n", event.jbutton.button, event.jbutton.state);
+#endif
+            break;
+
+
+         default:
+#ifdef SDL_DEBUG
+            fprintf(stderr, "SDL: Debug: Other event %d\n", event.type);
 #endif /* SDL_DEBUG */
-               break;
+            break;
          }
     joy_evaluate_moves ();
       }
