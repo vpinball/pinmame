@@ -108,10 +108,30 @@ void sdl_update_rgb_direct_32bpp(struct mame_bitmap *bitmap);
 
 int sysdep_init(void)
 {
-   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
       fprintf (stderr, "SDL: Init error: %s\n",SDL_GetError());
       return OSD_NOT_OK;
-   } 
+   }
+   const int enabled = SDL_JoystickEventState(SDL_ENABLE);
+   if (enabled != SDL_ENABLE) {
+      fprintf (stderr, "SDL: Error enabling joystick events: %s\n", SDL_GetError());
+      SDL_Quit();
+      exit (OSD_NOT_OK);
+   }
+   // list all joysticks
+   const int num_joysticks = SDL_NumJoysticks();
+   fprintf (stderr, "SDL: Info: Found %d joysticks\n", num_joysticks);
+   for (int i = 0; i < num_joysticks; i++) {
+      SDL_Joystick *joystick = SDL_JoystickOpen(i);
+      if (joystick == NULL) {
+         fprintf (stderr, "SDL: Error opening joystick %d: %s\n", i, SDL_GetError());
+         SDL_Quit();
+         exit (OSD_NOT_OK);
+      }
+      fprintf (stderr, "SDL: Info: Joystick %d: %s\n", i, SDL_JoystickName(joystick));
+      //SDL_JoystickClose(joystick);
+   }
+
 #ifdef DIRECT_HERMES
    Hermes_Init(0);
 #endif /* DIRECT_HERMES */
@@ -136,7 +156,12 @@ int sysdep_create_display(int depth)
    int vid_mode_flag; /* Flag to set the video mode */
 
    SDL_DisplayMode current_mode;
-   SDL_GetCurrentDisplayMode(0, &current_mode);
+   int res = SDL_GetCurrentDisplayMode(0, &current_mode);
+   if (res != 0) {
+      fprintf(stderr, "SDL: Error getting current display mode: %s\n", SDL_GetError());
+      SDL_Quit();
+      exit (OSD_NOT_OK);
+   }
 
    SDL_PixelFormat *format = SDL_AllocFormat(current_mode.format);
 
