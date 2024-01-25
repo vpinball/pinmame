@@ -46,11 +46,18 @@ jobs:
           - os: macos-latest
             platform: osx-x64
             exe: xpinmame
+          - os: ubuntu-latest
+            platform: linux-x64
+            exe: xpinmame
     steps:
       - uses: actions/checkout@v3
       - if: matrix.os == 'macos-latest'
         run: |
           brew install xquartz
+
+      - if: matrix.os == 'ubuntu-latest'
+        run: |    
+          sudo apt install libx11-dev libxv-dev libasound2-dev
       - name: Build xpinmame-${{ matrix.platform }}
         run: |
           cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
