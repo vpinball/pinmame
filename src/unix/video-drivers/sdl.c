@@ -782,6 +782,54 @@ int sdl_keycode_to_key(const SDL_Keycode key_code)
          return KEY_ALT;
       case SDLK_RALT:
          return KEY_ALTGR;
+      case SDLK_CAPSLOCK:
+         return KEY_CAPSLOCK;
+      case SDLK_INSERT:
+         return KEY_INSERT;
+      case SDLK_DELETE:
+         return KEY_DEL;
+      case SDLK_HOME:
+         return KEY_HOME;
+      case SDLK_END:
+         return KEY_END;
+      case SDLK_PAGEUP:
+         return KEY_PGUP;
+      case SDLK_PAGEDOWN:
+         return KEY_PGDN;
+      case SDLK_MENU:
+         return KEY_MENU;
+      case SDLK_KP_ENTER:
+         return KEYCODE_ENTER_PAD;
+      case SDLK_KP_PLUS:
+         return KEY_PLUS_PAD;
+      case SDLK_KP_MINUS:
+         return KEY_MINUS_PAD;
+      // case SDLK_KP_MULTIPLY:
+      //    return KEY_ASTERISK;
+      case SDLK_KP_DIVIDE:
+         return KEY_SLASH_PAD;
+      // case SDLK_KP_PERIOD:
+      //    return KEY_PERIOD_PAD;
+      case SDLK_KP_0:
+         return KEY_0_PAD;
+      case SDLK_KP_1:
+         return KEY_1_PAD;
+      case SDLK_KP_2:
+         return KEY_2_PAD;
+      case SDLK_KP_3:
+         return KEY_3_PAD;
+      case SDLK_KP_4:
+         return KEY_4_PAD;
+      case SDLK_KP_5:
+         return KEY_5_PAD;
+      case SDLK_KP_6:
+         return KEY_6_PAD;
+      case SDLK_KP_7:
+         return KEY_7_PAD;
+      case SDLK_KP_8:
+         return KEY_8_PAD;
+      case SDLK_KP_9:
+         return KEY_9_PAD;
       default:
          return KEY_NONE;
       }
