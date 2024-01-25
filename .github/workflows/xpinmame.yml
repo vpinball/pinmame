@@ -62,7 +62,7 @@ jobs:
 
       - if: matrix.os == 'ubuntu-latest'
         run: |    
-          sudo apt install libx11-dev libxv-dev libasound2-dev sdl2-dev
+          sudo apt install libx11-dev libxv-dev libasound2-dev libsdl2-dev
       - name: Build xpinmame-${{ matrix.platform }}
         run: |
           cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
