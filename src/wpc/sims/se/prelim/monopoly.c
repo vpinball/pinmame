@@ -519,6 +519,7 @@ static core_tGameData monopolyGameData = {
 /*-- Solenoids --*/
 static WRITE_HANDLER(monopoly_w) {
   static const int solmaskno[] = { 8, 0, 16, 24 };
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + solmaskno[offset], data);
   UINT32 mask = ~(0xff<<solmaskno[offset]);
   UINT32 sols = data<<solmaskno[offset];
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */

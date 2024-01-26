@@ -35,6 +35,7 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 #include "cpu/at91/at91.h"
 #include "cpu/arm7/arm7core.h"
 #include "sound/wavwrite.h"
+#include "bulb.h"
 #ifdef PROC_SUPPORT
 #include "p-roc/p-roc.h"
 #endif
@@ -304,11 +305,34 @@ static MACHINE_INIT(se3) {
    while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
       rootDrv = rootDrv->clone_of;
    const char* const grn = rootDrv->name;
-   if (strncasecmp(grn, "lotr", 4) == 0) { // The Lord of The Rings
+   if (strncasecmp(grn, "elvis", 5) == 0) { // Elvis
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+   }
+   else if (strncasecmp(grn, "gprix", 5) == 0) { // Grand Prix
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+   }
+   else if (strncasecmp(grn, "lotr", 4) == 0) { // The Lord of The Rings
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+   }
+   else if ((strncasecmp(grn, "nascar", 6) == 0) || (strncasecmp(grn, "dalejr", 6) == 0)) { // Nascar & Dale Jr. (limited edition of Nascar)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+   }
+   else if (strncasecmp(grn, "ripleys", 7) == 0) { // Ripley
+      // TODO add mini DMD
+      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_PULSE); // Idol Opto LED
+      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+   }
+   else if (strncasecmp(grn, "sopranos", 8) == 0) { // Sopranos
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_LED);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
    }
 }
 
@@ -399,10 +423,106 @@ static MACHINE_INIT(se) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const grn = rootDrv->name;
-  if (strncasecmp(grn, "rctycn", 6) == 0) { // Roller Coaster Tycoon
+  if (strncasecmp(grn, "apollo13", 8) == 0) { // Apollo 13
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "austin", 6) == 0) { // Austin Powers
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 5 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "godzilla", 8) == 0) { // Godzilla
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "gldneye", 7) == 0) { // Golden Eye
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "id4", 3) == 0) { // Independance Day
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 6 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if ((strncasecmp(grn, "harl_a13", 8) == 0) || (strncasecmp(grn, "harl_a40", 8) == 0)) { // Harley Davidson
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "hirolcas", 8) == 0) { // High Roller Casino
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "jplstw22", 8) == 0) { // Jurassic Park, Lost World
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "lostspc", 7) == 0) { // Lost in Space
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "monopoly", 8) == 0) { // Monopoly
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "playboys", 8) == 0) { // Playboys
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "rctycn", 6) == 0) { // Roller Coaster Tycoon
+     // TODO add mini DMD
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "simpprty", 8) == 0) { // Simpsons Pinball Party
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 8, CORE_MODOUT_LED_STROBE_1_10MS); // Green LEDs
+  }
+  else if (strncasecmp(grn, "spacejam", 8) == 0) { // Space Jam
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "shrkysht", 8) == 0) { // Sharkey Shootout
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 32 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "sprk_103", 8) == 0) { // South Park
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "startrp", 8) == 0) { // Starship Trooper
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 49 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 57 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 65 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+  }
+  else if (strncasecmp(grn, "strikext", 8) == 0) { // Striker Extreme
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "term3", 5) == 0) { // Terminator 3
+     core_set_pwm_output_bulb(CORE_MODOUT_SOL0 + 4 - 1, 1, BULB_44, 19.f - 0.7f, TRUE, 0.f, 1.f); // Backbox GI: 19V AC switched #44 Bulbs (Sol 1-16 uses Mosfets with low voltage drop)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "twst_405", 8) == 0) { // Twister
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "viprsega", 6) == 0) { // Viper Night Driving
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 32 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+  }
+  else if (strncasecmp(grn, "xfiles", 6) == 0) { // X Files
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
 }
 
