@@ -905,7 +905,7 @@ void sysdep_update_keyboard()
             fprintf(stderr, "SDL: Text input: %s\n", event.text.text);
 #endif
             kevent.unicode = event.text.text[0];
-            kevent.scancode = KEYCODE_OTHER;
+            kevent.scancode = KEY_NONE;
             xmame_keyboard_register_event(&kevent);
             break;
          case SDL_QUIT:
