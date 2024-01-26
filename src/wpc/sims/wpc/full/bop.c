@@ -728,9 +728,9 @@ static WRITE_HANDLER(bop_wpc_w) {
     if (GET_BIT0) {
       lamps |= 1;
     }
-    parallel_0_out(0, lamps & 0xff);
-    parallel_1_out(0, lamps >> 8);
   }
+  parallel_0_out(0, lamps & 0xff);
+  parallel_1_out(0, lamps >> 8);
 }
 
 #ifdef PROC_SUPPORT
