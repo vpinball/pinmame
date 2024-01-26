@@ -421,7 +421,7 @@ static WRITE_HANDLER(pia5a_w) { // Not used for DMD
 }
 
 static WRITE_HANDLER(pia3a_w) {
-  if (locals.dispLock) {
+  if (!locals.deGame && locals.dispLock) {
     locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = 0;
     return;
   }
@@ -430,7 +430,7 @@ static WRITE_HANDLER(pia3a_w) {
   locals.dispLock = 1;
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (locals.dispLock) {
+  if (!locals.deGame && locals.dispLock) {
     locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = 0;
     return;
   }
