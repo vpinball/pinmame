@@ -161,7 +161,7 @@ static void			dsound_destroy_buffers(void);
 INLINE int bytes_in_stream_buffer(void)
 {
 	DWORD play_position, write_position;
-	HRESULT result = IDirectSoundBuffer_GetCurrentPosition(stream_buffer, &play_position, &write_position);
+	IDirectSoundBuffer_GetCurrentPosition(stream_buffer, &play_position, &write_position);
 	if (stream_buffer_in > play_position)
 		return stream_buffer_in - play_position;
 	else
@@ -399,7 +399,11 @@ int osd_update_audio_stream(INT16 *buffer)
 				else if (sample >= 32767.f)
 					samplei = 32767;
 				else
+#ifdef __GNUC__
+					samplei = (INT16)(sample + .5);
+#else
 					samplei = (INT16)(lrintf(sample));
+#endif
 #endif
 				buffer[i] = samplei;
 			}
