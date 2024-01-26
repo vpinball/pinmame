@@ -55,7 +55,6 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
-#include "machine/4094.h"
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
  #include <strings.h>
@@ -718,26 +717,19 @@ static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
   core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, data ^ 0xff);
 }
-static WRITE_HANDLER(qspin_0_out) {
-  HC4094_data_w(1, data);
-}
-
-static HC4094interface hc4094bop = {
-  2, // 2 chips
-  { parallel_0_out, parallel_1_out },
-  { qspin_0_out }
-};
 
 static WRITE_HANDLER(bop_wpc_w) {
-  static UINT8 lastVal;
+  static UINT16 lamps;
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
-    HC4094_strobe_w(0, lastVal == (data & 3));
-    HC4094_strobe_w(1, lastVal == (data & 3));
-    HC4094_data_w  (0, GET_BIT0);
-    HC4094_clock_w (0, GET_BIT1);
-    HC4094_clock_w (1, GET_BIT1);
-    lastVal = data & 3;
+    if (GET_BIT1) {
+      lamps <<= 1;
+    }
+    if (GET_BIT0) {
+      lamps |= 1;
+    }
+    parallel_0_out(0, lamps & 0xff);
+    parallel_1_out(0, lamps >> 8);
   }
 }
 
@@ -794,9 +786,6 @@ static WRITE_HANDLER(bop_wpc_w) {
 static void init_bop(void) {
   core_gameData = &bopGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, bop_wpc_w);
-  HC4094_init(&hc4094bop);
-  HC4094_oe_w(0, 1);
-  HC4094_oe_w(1, 1);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = bop_wpc_proc_solenoid_handler;
   if (coreGlobals.p_rocEn) {
