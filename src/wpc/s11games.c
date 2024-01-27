@@ -1445,7 +1445,7 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
 S11_ROMEND
 CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny's Birthday Ball (LU-2 Europe)", 1990, "Bally", s11c_one,0)
 
-S11_ROMSTART48(bbnny,lg,"Bugs_Bunny_U26_LG-2_Nova_Apparate.bin", CRC(0ba81bae) SHA1(ce56eadf26ee74a3a7b185893dceb09dc4929fa8),
+S11_ROMSTART48(bbnny,lg,"bugs_u26.l2", CRC(b4358920) SHA1(93af1cf5dc2b5442f428a621c0f73b27c197a3df),
                         "Bugs_Bunny_U27_LG-2_Nova_Apparate.bin", CRC(33344679) SHA1(c504c8a85820b3ca8923513bbba5e058138be4a1))
 S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f87e61fc71bec45330c3),
                         "bugs_u19.l1", CRC(a2084702) SHA1(ffd749387e7b52bad1e98c6a8939fb87bc67524c),
