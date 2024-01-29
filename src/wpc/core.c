@@ -222,7 +222,7 @@ static const unsigned char core_palette[48+COL_COUNT][3] = {
 typedef UINT32 tSegRow[17];
 typedef struct { int rows, cols; tSegRow *segs; } tSegData;
 
-static tSegRow segSize1C[6][20] = { /* with commas */
+static const tSegRow segSize1C[6][20] = { /* with commas */
 { /* alphanumeric display characters */
 /*                       all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*    11111111111  */{0x00555554,0x00555554,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -351,7 +351,7 @@ static tSegRow segSize1C[6][20] = { /* with commas */
 /*  11111111111 31 */{0x0555554d,0x00000000,0x00000000,0x00000000,0x05555540,0x00000000,0x00000000,0x00000000,0x0000000d,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x0000000d},
 /*                 */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize1[3][20] = { /* without commas */
+static const tSegRow segSize1[3][20] = { /* without commas */
 { /* alphanumeric display characters */
 /*                       all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000 */
 /*    11111111111  */{0x00555554,0x00555554,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -417,7 +417,7 @@ static tSegRow segSize1[3][20] = { /* without commas */
 /*  11111111111    */{0x05555540,0x00000000,0x00000000,0x00000000,0x05555540,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
 /*                 */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize2C[6][12] = { /* with commas */
+static const tSegRow segSize2C[6][12] = { /* with commas */
 { /* alphanumeric display characters */
 /*                   all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*  xxxxxxx    */{0x05554000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -498,7 +498,7 @@ static tSegRow segSize2C[6][12] = { /* with commas */
 /*  xxxxxxx  x */{0x05554100,0x00000000,0x00000000,0x00000000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000100,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000100},
 /*             */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize2[3][12] = { /* without commas */
+static const tSegRow segSize2[3][12] = { /* without commas */
 { /* alphanumeric display characters */
 /*                   all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*  xxxxxxx    */{0x05554000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -540,7 +540,7 @@ static tSegRow segSize2[3][12] = { /* without commas */
 /*  xxxxxxx    */{0x05554000,0x00000000,0x00000000,0x00000000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
 /*             */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize3C[3][8] = {
+static const tSegRow segSize3C[3][8] = {
 { /* alphanumeric display characters */
 {0} /* not possible */
 },{ /* 8 segment LED characters with commas */
@@ -563,7 +563,7 @@ static tSegRow segSize3C[3][8] = {
 /*  xxx  x */{0x05410000,0x00000000,0x00000000,0x00000000,0x05400000,0x00000000,0x00000000,0x00000000,0x00010000,0x00000000,0x00000000},
 /*      x  */{0x00040000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00040000,0x00000000,0x00000000}
 }};
-static tSegRow segSize3[3][8] = {
+static const tSegRow segSize3[3][8] = {
 { /* alphanumeric display characters */
 {0} /* not possible */
 },{ /* 8 segment LED characters without commas */
@@ -586,7 +586,7 @@ static tSegRow segSize3[3][8] = {
 /*  xxx    */{0x05400000,0x00000000,0x00000000,0x00000000,0x05400000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
 /*         */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize1S[1][20] = { /* 16 segment displays without commas but split top & bottom lines */
+static const tSegRow segSize1S[1][20] = { /* 16 segment displays without commas but split top & bottom lines */
 { /* alphanumeric display characters */
 /*                       all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*    11111311111  */{0x00557554,0x00557000,0x00003554,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -610,7 +610,7 @@ static tSegRow segSize1S[1][20] = { /* 16 segment displays without commas but sp
 /*  11111311111    */{0x05575540,0x00000000,0x00000000,0x00000000,0x00000000,0x00035540,0x05570000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
 /*                 */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but split top & bottom lines */
+static const tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but split top & bottom lines */
 { /* alphanumeric display characters */
 /*                   all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*  xxxxxxx    */{0x05754000,0x05700000,0x00354000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -627,7 +627,7 @@ static tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but sp
 /*             */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
 
-static tSegData segData[2][18] = {{
+static const tSegData segData[2][18] = {{
   {20,15,&segSize1C[0][0]},/* SEG16 */
 #ifdef PROC_SUPPORT	//TODO/PROC: Will this work in normal PinMAME build too?
   /* Use segSize2C for P-ROC's alpha_on_dmd functionality as it maps better to the DMD. */
@@ -686,7 +686,7 @@ static struct {
   int       firstSimRow, maxSimRows; // space available for simulator
   int       solLog[4];
   int       solLogCount;
-  /*-- Event reporting (used LibPinMame and on screen display) --*/
+  /*-- Event reporting (used LibPinMAME and on screen display) --*/
   UINT8     lastPhysicsOutput[CORE_MODOUT_MAX];
   UINT8     lastLampMatrix[CORE_MAXLAMPCOL];
   int       lastGI[CORE_MAXGI];
@@ -1129,7 +1129,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       if (step < 0) { seg += ii-1; lastSeg += ii-1; lastSegDim += (ii-1)*16; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
-        UINT8  tmpSegDim[16] = { 0 }, maxSegDim = 0;
+        UINT8  tmpSegDim[16] = { 0 };
+#if defined(VPINMAME) || defined(LIBPINMAME)
+        UINT8 maxSegDim = 0;
+#endif
         int tmpType = layout->type & CORE_SEGMASK;
 
         if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT)) {
@@ -1142,7 +1145,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           for (int kk = 0; bits; kk++, bits >>= 1) {
             if (bits & 0x01) {
               UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
+#if defined(VPINMAME) || defined(LIBPINMAME)
               if (v > maxSegDim) maxSegDim = v;
+#endif
               tmpSegDim[kk] = 255 - v;
             }
           }
@@ -1755,7 +1760,7 @@ static VIDEO_UPDATE(core_status) {
     BMTYPE **line = &lines[locals.firstSimRow + startRow];
     bits = coreGlobals.diagnosticLed;
 
-    // Draw LEDS Vertically
+    // Draw LEDs Vertically
     if (coreData->diagLEDs & DIAGLED_VERTICAL) {
       for (ii = 0; ii < (coreData->diagLEDs & ~DIAGLED_VERTICAL); ii++) {
         line[0][thisCol + 3] = dotColor[bits & 0x01];
@@ -1764,7 +1769,7 @@ static VIDEO_UPDATE(core_status) {
       osd_mark_dirty(thisCol + 3, locals.firstSimRow + startRow, thisCol + 4, locals.firstSimRow + startRow + ii*2);
       startRow += ii*2; if (thisCol + 4 > nextCol) nextCol = thisCol + 4;
     }
-    else { // Draw LEDS Horizontally
+    else { // Draw LEDs Horizontally
       for (ii = 0; ii < coreData->diagLEDs; ii++) {
         line[0][thisCol + ii*2] = dotColor[bits & 0x01];
         bits >>= 1;
@@ -1844,7 +1849,7 @@ int core_getSwCol(int colEn) {
 /-----------------------*/
 void core_setSw(int swNo, int value) {
   if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
-  //fprintf(stderr,"\nPinmame switch %d",swNo);
+  //fprintf(stderr,"\nPinMAME switch %d",swNo);
   coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
@@ -2336,7 +2341,7 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
 void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
   if (write)     mame_fwrite(file, mem, length); /* save */
   else if (file) mame_fread(file,  mem, length); /* load */
-  else           memset(mem, init, length);     /* first time */
+  else           memset(mem, init, length);      /* first time */
   mech_nv(file, write); /* save mech positions */
   { /*-- Load/Save DIP settings --*/
     UINT8 dips[6];
@@ -2347,7 +2352,7 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
       mame_fwrite(file, dips, sizeof(dips));
     }
     else if (file) {
-      /* set the defaults (for compabilty with older versions) */
+      /* set the defaults (for compatibility with older versions) */
       dips[0] = readinputport(CORE_COREINPORT+1) & 0xff;
       dips[1] = readinputport(CORE_COREINPORT+1)>>8;
       dips[2] = readinputport(CORE_COREINPORT+2) & 0xff;
@@ -2360,7 +2365,7 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
 
     }
     else { // always get the default from the inports
-      /* coreData not initialised yet. Don't know exact number of DIPs */
+      /* coreData not initialized yet. Don't know exact number of DIPs */
       vp_setDIP(0, readinputport(CORE_COREINPORT+1) & 0xff);
       vp_setDIP(1, readinputport(CORE_COREINPORT+1)>>8);
       vp_setDIP(2, readinputport(CORE_COREINPORT+2) & 0xff);
@@ -2378,7 +2383,7 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
  * 
  * This is meant to be used with any output and should allow to have a physical model whatever is connected to the binary PWM output. 
  * Drivers must declare the number of outputs they drive of each type and push binary state change accordingly.
- * The implementation is not thread safe. Since VPinMame reads state asynchronously, the integration is only performed if requested
+ * The implementation is not thread safe. Since VPinMAME reads state asynchronously, the integration is only performed if requested
  * asynchronously through a 1ms timer.
  */
 
@@ -2419,7 +2424,7 @@ void core_update_pwm_output_sol_2_state(const float now, const int index, const 
   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   const float prevValue = output->value;
   if (isFlip && state == 0) {
-    // If binary output is flipping to ON state, immediatly retain and report the ON state
+    // If binary output is flipping to ON state, immediately retain and report the ON state
     output->value = 1.0f;
   }
   else if ((now - output->state.sol.lastFlipTimestamp) > 0.060f) {
@@ -2531,30 +2536,30 @@ void core_update_pwm_output_led(const float now, const int index, const int isFl
   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   if (state == 1 && output->value >= (254.f / 255.f)) { // Steady On state
     output->state.bulb.integrationTimestamp = now;
-	 output->value = 1.f;
+    output->value = 1.f;
   }
   else if (state == 0 && output->value <= (1.f / 255.f)) { // Steady Off state
     output->state.bulb.integrationTimestamp = now;
-	 output->value = 0.f;
+    output->value = 0.f;
   }
   else {
     const float power = state * output->state.bulb.relative_brightness;
     while (output->state.bulb.integrationTimestamp < now) {
       const float dt = (now - output->state.bulb.integrationTimestamp) > BULB_INTEGRATION_PERIOD ? BULB_INTEGRATION_PERIOD : (now - output->state.bulb.integrationTimestamp);
-	   if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
+       if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
         return;
       core_eye_flicker_fusion(output, dt, power);
       output->state.bulb.integrationTimestamp += dt;
     }
     #ifdef LOG_PWM_OUT
     if (index == LOG_PWM_OUT)
-	   printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-");
+      printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-");
     #endif
   }
 }
 
 // This can be called from any thread to request an update of all integrated outputs
-// The call is non blocking: the main PinMame thread will schedule an update and return immediatly
+// The call is non blocking: the main PinMAME thread will schedule an update and return immediately
 void core_request_pwm_output_update()
 {
 	locals.pwmUpdateRequested = TRUE;
@@ -2612,7 +2617,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_6_3V_AC: // AC bulb outputs used for GI strings. Voltage drop through WPC triacs are considered as neglictible.
+    case CORE_MODOUT_BULB_44_6_3V_AC: // AC bulb outputs used for GI strings. Voltage drop through WPC triacs are considered as neglectable.
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
@@ -2644,7 +2649,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_20V_DC_GTS3: // Strobed bulb, Switched through MOSFETs (12P06 & 12N10L, no drop), serial 3,5 Ohms, then serie with 1N4004 (0,7V drop) for bulbs / 120 Ohms with 1N4004 for LEDs, resistor from schematics (Cue Ball Wizard)
+    case CORE_MODOUT_BULB_44_20V_DC_GTS3: // Strobed bulb, Switched through MOSFETs (12P06 & 12N10L, no drop), serial 3,5 Ohms, then series with 1N4004 (0,7V drop) for bulbs / 120 Ohms with 1N4004 for LEDs, resistor from schematics (Cue Ball Wizard)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
@@ -2660,7 +2665,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_18V_DC_SE: // Strobed bulb, 18V switched through VN02N (Solid State Relay, 0.4 Ohms resistor), a 19N06L MOSFET transitor (no drop) and a diode (0.7V drop) from Sega/Stern Whitestar schematics
+    case CORE_MODOUT_BULB_44_18V_DC_SE: // Strobed bulb, 18V switched through VN02N (Solid State Relay, 0.4 Ohms resistor), a 19N06L MOSFET transistor (no drop) and a diode (0.7V drop) from Sega/Stern Whitestar schematics
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 18.f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
@@ -2668,7 +2673,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_20V_DC_CC: // Strobed bulb, 20V switched through VN02 (Solid State Relay, 0.4 Ohms resistor), a STP20N10L MOSFET transitor (no drop), a 0.02 Ohms resistor, and 2x 1N4004 diode (0.7V drop) from Capcom schematics
+    case CORE_MODOUT_BULB_44_20V_DC_CC: // Strobed bulb, 20V switched through VN02 (Solid State Relay, 0.4 Ohms resistor), a STP20N10L MOSFET transistor (no drop), a 0.02 Ohms resistor, and 2x 1N4004 diode (0.7V drop) from Capcom schematics
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
@@ -2881,7 +2886,7 @@ void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int),
 /  Default machine driver for all games
 /----------------------------------------*/
 MACHINE_DRIVER_START(PinMAME)
-  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
   MDRV_SCREEN_SIZE(CORE_SCREENX, CORE_SCREENY)
   MDRV_VISIBLE_AREA(0, CORE_SCREENX-1, 0, CORE_SCREENY-1)
   MDRV_PALETTE_INIT(core)
