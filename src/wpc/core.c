@@ -2089,8 +2089,8 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
         UINT32 row = s->segs[ll][kk];
         for (int i = 0; i < 16; i++, row = row >> 2) {
           if (row & 3) {
-            UINT8 v = (((3 - (row & 3)) * (255 - dimming[kk - 1]))) >> 1;
-            if (pixel[ll][i] < v) pixel[ll][i] = v;
+            UINT8 v = (((3 - (row & 3)) * (255 - (dimming ? dimming[kk - 1] : 0)))) >> 1;
+            if (pixel[ll][i - 15 + s->cols] < v) pixel[ll][i - 15 + s->cols] = v;
           }
         }
       }
