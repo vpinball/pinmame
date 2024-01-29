@@ -2056,18 +2056,18 @@ int core_getDip(int dipBank) {
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
   UINT8 pixel[21][16] = { 0 };
-  int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
+  static const int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
   int kk, ll;
   int palSize = sizeof(core_palette) / 3;
   for (kk = 1; bits; kk++, bits >>= 1) {
     if (bits & 0x01) {
 #ifdef PROC_SUPPORT
-		if (coreGlobals.p_rocEn) {
-			if (pmoptions.alpha_on_dmd) {
+      if (coreGlobals.p_rocEn) {
+        if (pmoptions.alpha_on_dmd) {
             /* Draw alphanumeric segments on the DMD */
             switch (row) {
                case 0:
-                  procDrawSegment(col/2, 3, kk-1);
+                  procDrawSegment(col/2, 3,kk-1);
                   break;
                case 21:
                   // This is the ball/credit display on older Sys11
@@ -2077,17 +2077,17 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
                   procDrawSegment(col/2,11,kk-1);
                   break;
                case 42:
-                  procDrawSegment(col/2, 19, kk-1);
+                  procDrawSegment(col/2,19,kk-1);
                   break;
                default:
                   break;
-				}
-			}
-		}
+            }
+        }
+      }
 #endif
       for (ll = 0; ll < s->rows; ll++) {
         UINT32 row = s->segs[ll][kk];
-        for (int i = 0; i < 16; i++, row = row >> 2) {
+        for (int i = 0; i < 16; i++, row >>= 2) {
           if (row & 3) {
             UINT8 v = (((3 - (row & 3)) * (255 - (dimming ? dimming[kk - 1] : 0)))) >> 1;
             if (pixel[ll][i - 15 + s->cols] < v) pixel[ll][i - 15 + s->cols] = v;
@@ -2125,7 +2125,7 @@ static MACHINE_INIT(core) {
     memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
     memset(&locals.lastSegDim, 0, sizeof(locals.lastSegDim));
     coreData = (struct pinMachine *)&Machine->drv->pinmame;
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFFFFFFul;
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFFFFFFull;
     //-- initialise timers --
     if (coreData->timers[0].callback) {
       int ii;
@@ -2443,15 +2443,15 @@ void core_update_pwm_output_sol_2_state(const float now, const int index, const 
   if (output->state.sol.fastOn && (prevValue != output->value)) {
     int sol = index - CORE_MODOUT_SOL0;
     UINT32 state = (int)output->value;
-    if (sol == (coreGlobals.flipperCoils & 0xFF))             // Lower Left Flipper coil
+    if (sol == (coreGlobals.flipperCoils & 0xFF))              // Lower Left Flipper coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (state ? 0x04 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >>  8)& 0xFF)) // Lower Right Flipper coil
+    else if (sol == ((coreGlobals.flipperCoils >>  8) & 0xFF)) // Lower Right Flipper coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x01) | (state ? 0x01 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 16) & 0xFF)) // Upper Left Flipper coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x40) | (state ? 0x40 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 24) & 0xFF)) // Upper Right Flipper coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x10) | (state ? 0x10 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 32)& 0xFF)) // Lower Left Flipper Hold coil
+    else if (sol == ((coreGlobals.flipperCoils >> 32) & 0xFF)) // Lower Left Flipper Hold coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x08) | (state ? 0x08 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 40) & 0xFF)) // Lower Right Flipper Hold coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x02) | (state ? 0x02 : 0x00);

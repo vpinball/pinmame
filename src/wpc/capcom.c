@@ -107,7 +107,7 @@
 // Breakshot has a modified hardware with a single lamp matrix (B), the hardware of the other lamp matrix being used as a switch matrix, allowing to spare the switch board
 #define HAS_SWITCH_BOARD (core_gameData->hw.lampCol > 1)
 
-#define CC_ZCFREQ		120		/* Zero cross frequency for 60Hz */
+#define CC_ZCFREQ		120			/* Zero cross frequency for 60Hz */
 
 #define CPU_CLOCK		16670000	/* Main frequency of the MC68306 (design frequency, and XTal from schematics) */
 
@@ -314,7 +314,7 @@ static WRITE16_HANDLER(cc_portb_w) {
 
 /*********************************************************************************************************************/
 // U16 chip
-// 
+//
 // U16 custom Capcom chip is a programmable gate array with no available documentation. From reverse engineering performed, it is supposed to:
 // - Continuously stream data from RAM to DMD display
 // - Manage DRAM access to handle muxing access between U16 and CPU (and also address muxing for the 512ko RAM chip HM514260)
@@ -322,7 +322,7 @@ static WRITE16_HANDLER(cc_portb_w) {
 // - Provide an interrupt controller with 3 lines, 2 of the 3 being frequency adjustable, wired to CPU/IRQ4
 // - Generate the 3.6864MHz clock for the serial module of the MC68306 microcontroller (for serial output to printer, also used to measure AC frequency)
 // - Generate a general BLANK signal which turns off all outputs
-// 
+//
 // it is controlled through 2x8 bytes of input/output, mapped at $40c0000X / $40c0040X
 // Reading:
 //   $40c00000  u16????????    is read during startup, if result is not 0x00BC, code will setup u16IRQmode, u16DMDBlock and u16DMDPage, and check again for 0x00BC or fail
@@ -345,9 +345,9 @@ static WRITE16_HANDLER(cc_portb_w) {
 //                             . ??? are unknown. Breakshot, Flipper Football & KingPin always set them to 011, except if an auxiliary board is present, then it is set to 111
 //   $40C00402  u16IRQ4line1f  is IRQ4 line 1 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
 //   $40C00404  u16IRQ4line2f  is IRQ4 line 2 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
-// 
+//
 // No other access were witnessed, so others are likely unused.
-// 
+//
 // TODO:
 // - U16 Interrupt controllers are checked at startup by measuring their interrupt frequency against different settings, 
 //   which allows to identify the expected values in the specific context of startup. IRQ4 line 1 & 2 seems to be purely
@@ -738,30 +738,30 @@ static MACHINE_INIT(cc) {
   // For flashers, Capcom uses #89 bulb wired through a STP20N10L Mosfet, 0.02 ohms resistor to a 20V DC source
   // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
   if (strncasecmp(gn, "abv106", 6) == 0) { // Airborne
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   } 
   else if (strncasecmp(gn, "bbb109", 6) == 0) { // Big Bang Bar
-    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908;
+    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "bsv103", 6) == 0) { // Breakshot
-    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908;
+    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
   }
   else if (strncasecmp(gn, "ffv104", 6) == 0) { // Flipper Football
-    coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908;
+    coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "kpb105", 6) == 0) { // KingPin
     // To be checked since this is from VPX table (did not find a manual for this one)
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1,  2, CORE_MODOUT_BULB_89_20V_DC_WPC);
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "pmv112", 6) == 0) { // Pinball Magic
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908;
+    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
 
