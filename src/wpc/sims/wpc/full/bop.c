@@ -710,18 +710,19 @@ static int bop_getMech(int mechNo) {
 }
 
 static WRITE_HANDLER(parallel_0_out) {
-  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
+  coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
   core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, data ^ 0xff);
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
+  coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
   core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, data ^ 0xff);
 }
 
 static WRITE_HANDLER(bop_wpc_w) {
-  static UINT16 lamps;
+  static UINT16 prev[64], lamps;
+  int i;
   wpc_w(offset, data);
-  if (offset == WPC_SOLENOID1) {
+  if (offset == WPC_SOLENOID1 && (data & 3)) {
     if (GET_BIT1) {
       lamps <<= 1;
     }
@@ -729,8 +730,16 @@ static WRITE_HANDLER(bop_wpc_w) {
       lamps |= 1;
     }
   }
-  parallel_0_out(0, lamps & 0xff);
-  parallel_1_out(0, lamps >> 8);
+  for (i = 0; i < 64; i++) {
+    // if the lamp state is not stable for some minimal time, deny the update
+    if (prev[i] != lamps) break;
+    if (i >= 63) {
+      parallel_0_out(0, lamps & 0xff);
+      parallel_1_out(0, lamps >> 8);
+    }
+  }
+  for (i = 63; i > 0; i--) prev[i] = prev[i-1];
+  prev[0] = lamps;
 }
 
 #ifdef PROC_SUPPORT
