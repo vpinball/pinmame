@@ -811,8 +811,27 @@ static MACHINE_INIT(s11) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
+  // Williams S9
+  if (strncasecmp(gn, "comet_l5", 8) == 0) { // Comet
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  3 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  7 - 1, 3, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+  }
+  else if (strncasecmp(gn, "sorcr_l2", 8) == 0) { // Sorcerer
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  5 - 1, 3, CORE_MODOUT_BULB_89_25V_DC_S11);
+	 // Wired to a relay in the schematics, Labeled as "Flash eyes (cabinet)" but also as "Flipper Enable Relay" in the manual => left as is for the time being
+     //core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11); 
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+  }
+  else if (strncasecmp(gn, "sshtl_l7", 8) == 0) { // Space Shuttle
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+  }
+
   // Williams S11
-  if (strncasecmp(gn, "bbnny_l2", 8) == 0) { // Bugs Bunny's Birthday Ball
+  else if (strncasecmp(gn, "bbnny_l2", 8) == 0) { // Bugs Bunny's Birthday Ball
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
@@ -821,6 +840,13 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "bguns_l8", 8) == 0) { // Big Guns
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Left Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Right Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
   else if (strncasecmp(gn, "bk2k_l4", 7) == 0) { // Black Knight 2000
@@ -870,12 +896,39 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
+  else if (strncasecmp(gn, "f14_l1", 6) == 0) { // F14
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "fire_l3", 7) == 0) { // Fire
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 4, CORE_MODOUT_BULB_89_25V_DC_S11); // 4 muxed flasher outputs (Mux relay is solenoid #12)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11); // 2 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "grand_l4", 8) == 0) { // Grand Lizard
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  6 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+  }
   else if (strncasecmp(gn, "gs_lu4", 6) == 0) { // Gameshow
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "hs_l4", 5) == 0) { // High Speed
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  4 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11); // In fact, this is a relay controlling police light which is a #1628 28V bulb
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  5 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
   }
   else if (strncasecmp(gn, "jokrz_l6", 8) == 0) { // Jokerz
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
@@ -884,12 +937,25 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
+  else if (strncasecmp(gn, "milln_l3", 8) == 0) { // Millionaire
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11); // 2 muxed flasher outputs (Mux relay is solenoid #12)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_25V_DC_S11); // 5 muxed flasher outputs (Mux relay is solenoid #12)
+     }
   else if (strncasecmp(gn, "mousn_l4", 8) == 0) { // Mousin' Around!
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
+  else if (strncasecmp(gn, "pb_l5", 5) == 0) { // Pinbot
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11); // Aux board
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 7, CORE_MODOUT_BULB_89_25V_DC_S11); // 7 muxed flasher outputs (Mux relay is solenoid #12)
+   }
   else if (strncasecmp(gn, "polic_l4", 8) == 0) { // Police Force
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
@@ -909,6 +975,40 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "rollr_l2", 8) == 0) { // Rollergames
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Backbox GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "rvrbt_l3", 8) == 0) { // Riverboat Gambler
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Playfield GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "rdkng_l4", 8) == 0) { // Road King
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  5 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  7 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
+  }
+  else if (strncasecmp(gn, "spstn_l5", 8) == 0) { // Space Station
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_25V_DC_S11); // 7 muxed flasher outputs (Mux relay is solenoid #12)
+  }
+  else if (strncasecmp(gn, "swrds_l2", 8) == 0) { // Swords of Fury
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
   else if (strncasecmp(gn, "taxi_l4", 7) == 0) { // Taxi
