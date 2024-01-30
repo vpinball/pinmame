@@ -711,23 +711,23 @@ static int bop_getMech(int mechNo) {
 
 static WRITE_HANDLER(parallel_0_out) {
   coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
-  core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, data ^ 0xff);
 }
 static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
-  core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, data ^ 0xff);
 }
 
 static WRITE_HANDLER(bop_wpc_w) {
   static UINT16 prev[64], lamps;
   int i;
   wpc_w(offset, data);
-  if (offset == WPC_SOLENOID1 && (data & 3)) {
+  if (offset == WPC_SOLENOID1) {
     if (GET_BIT1) {
       lamps <<= 1;
-    }
-    if (GET_BIT0) {
-      lamps |= 1;
+      if (GET_BIT0) {
+         lamps |= 1;
+      }
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, lamps);
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, lamps >> 8);
     }
   }
   for (i = 0; i < 64; i++) {
