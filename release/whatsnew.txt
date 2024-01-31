@@ -29,7 +29,7 @@ Fix Capcom crashes in 64bit builds
 
 Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler, Algar, Alien Poker and 7 digit variants of Firepower
 
-Added the emulation of physical bulbs & LEDs connected to binary outputs, for WPC, GTS3, SAM, Whitestar, Capcom and S11 hardware.
+Added the emulation of physical bulbs & LEDs connected to binary outputs, for WPC, GTS3, SAM, Whitestar, Capcom, S9 and S11 hardware.
   This allows to dramatically improve e.g. lamp or flasher modulation (for example the pulsing lights below the princess of TOTAN,
   or the Sauron eye of LOTR, or slowly fading lamps in Breakshot). This needs to be enabled before use, the same way as for the existing
   'modulated' solenoids: by setting SolMask(2) to 1 for legacy modulated solenoids or 2 for physical model of all outputs.
