@@ -2499,10 +2499,10 @@ void core_update_pwm_output_bulb(const float now, const int index, const int isF
 {
   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
   const float BULB_INTEGRATION_PERIOD = 0.001f;
-  const float U = output->state.bulb.U * (float)((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1);
+  const float U = output->state.bulb.U * (float)(((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ^ output->state.bulb.isReversed);
   while (output->state.bulb.integrationTimestamp < now) {
     const float dt = (now - output->state.bulb.integrationTimestamp) > BULB_INTEGRATION_PERIOD ? BULB_INTEGRATION_PERIOD : (now - output->state.bulb.integrationTimestamp);
-	if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
+	 if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
       return;
     // Keeps T within the range of the LUT (between room temperature and melt down point)
     output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
@@ -2624,6 +2624,15 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_6_3V_AC_REV: // Same but reversed through a relay (S11 hardware uses this for GI)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      coreGlobals.physicOutputState[i].state.bulb.isReversed = TRUE;
       break;
     case CORE_MODOUT_BULB_47_6_3V_AC:
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_47;

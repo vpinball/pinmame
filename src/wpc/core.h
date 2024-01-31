@@ -389,6 +389,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_47_6_3V_AC      101 /* Incandescent #47 Bulb connected to 6.3V, commonly used for (darker) GI with less heat */
 #define CORE_MODOUT_BULB_86_6_3V_AC      102 /* Incandescent #86 Bulb connected to 6.3V, seldom use: TZ, CFTBL,... */
 #define CORE_MODOUT_BULB_44_5_7V_AC      103 /* Incandescent #44/555 Bulb connected to 5.7V, used for GI on Stern/Sega Whitestar as well as Stern SAM hardware (slower fading up and 78% dimmer light emission) */
+#define CORE_MODOUT_BULB_44_6_3V_AC_REV  104 /* Incandescent #44/555 Bulb connected to 6.3V, commonly used for GI, through a relay inverter: 1 is off, 0 is on */
 #define CORE_MODOUT_BULB_44_18V_DC_WPC   201 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_20V_DC_GTS3  202 /* Incandescent #44/555 Bulb connected to 20V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
@@ -433,6 +434,7 @@ typedef struct {
       {
          int bulb;                        /* bulb model */
          int isAC;                        /* AC or DC ? */
+         int isReversed;                  /* is input reversed ? */
          float U;                         /* voltage (Volts) */
          float serial_R;                  /* serial resistor (Ohms) */
          float relative_brightness;       /* Relative brightness scale */
