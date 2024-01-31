@@ -811,6 +811,9 @@ static MACHINE_INIT(s11) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
+  // Missing definitions:
+  // - Star Trax
+  
   // Williams S9
   if (strncasecmp(gn, "comet_l5", 8) == 0) { // Comet
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  3 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
@@ -1032,6 +1035,14 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 42 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11); // Sound Overlay Board #3 & 4 (1-8 -> 40-47)
   }
   
+  // DataEast Protoype
+  else if (strncasecmp(gn, "kiko_a10", 8) == 0) { // King Kong prototype
+     // Informations collected from direct discord exchanges but no schematics available
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 +  1 - 1, 9, CORE_MODOUT_BULB_89_32V_DC_S11);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 4, CORE_MODOUT_BULB_89_32V_DC_S11);
+  }
+
   // DataEast/Sega 1
   else if (strncasecmp(gn, "lwar_a83", 8) == 0) { // Laser War
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  1 - 1, 3, CORE_MODOUT_BULB_89_32V_DC_S11);
@@ -1083,7 +1094,8 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14 - 1, 2, CORE_MODOUT_BULB_89_32V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
-  }  else if (strncasecmp(gn, "tmnt_104", 8) == 0) { // Teenage Mutant Ninja Turtle
+  }
+  else if (strncasecmp(gn, "tmnt_104", 8) == 0) { // Teenage Mutant Ninja Turtle
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC); // GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 3, CORE_MODOUT_BULB_89_32V_DC_S11);

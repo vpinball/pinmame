@@ -1176,6 +1176,10 @@ static MACHINE_INIT(wpc) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
+  // Missing definitions:
+  // - Ticket Tac Toe
+  // - Phantom Haus
+  // - Rush
   if (strncasecmp(gn, "afm_113", 7) == 0) { // Attack from Mars
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
@@ -1262,7 +1266,8 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "gw_l5", 5) == 0) { // High Speed II: The Getaway
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "hd_l3", 5) == 0) { // Harley Davidson
+  else if ((strncasecmp(gn, "hd_l3", 5) == 0) // Harley Davidson
+	  || (strncasecmp(gn, "che_cho", 7) == 0)) { // Cheech & Chong: Road-Trip'pin
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);

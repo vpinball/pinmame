@@ -1023,6 +1023,8 @@ static MACHINE_INIT(romstar) {
 
   //IRQ4 clock - might be unused, still pulse it because we don't know what that U8 chip does...
   /* FIXME timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4); */
+  
+  // FIXME missing physic output definition
 }
 
 static INTERRUPT_GEN(romstar_vblank) {
