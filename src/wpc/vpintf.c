@@ -35,11 +35,7 @@ int vp_getLamp(int lampNo) {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
   if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT))
 	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
-#ifndef LIBPINMAME
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
-#else
-  return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01 ? 255 : 0;
-#endif
 }
 
 /*------------------------------------
@@ -95,11 +91,8 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
         for (jj = 0; jj < 8; jj++) {
           if (chgLamp & 0x01) {
             chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
-#ifndef LIBPINMAME
             chgStat[idx].currStat = tmpLamp & 0x01;
-#else
-            chgStat[idx].currStat = tmpLamp & 0x01 ? 255 : 0;
-#endif
+
             idx += 1;
           }
           chgLamp >>= 1;
