@@ -1251,6 +1251,8 @@ static MACHINE_INIT(sam) {
 	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
 		rootDrv = rootDrv->clone_of;
 	const char* const gn = rootDrv->name;
+	// Missing definitions:
+	// - Simpsons Kooky Carnival
 	if (strncasecmp(gn, "acd_170h", 8) == 0) { // AC DC
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1270,7 +1272,9 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "bbh_170", 7) == 0) { // Big Buck Hunter
-		// TODO no manual found on IPDB
+		// Did not find a complete manual anywhere (even Stern's downloads do not have the schematics/solenoids) so this is from the VPX table, completed with the backglass flasher map
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "bdk_294", 7) == 0) { // Batman The Dark Knight
 		int flashers[] = { 18, 20, 21, 22, 24, 26, 28, 31 };
@@ -1282,7 +1286,10 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60, 1, CORE_MODOUT_LED_STROBE_1_10MS);
 	}
 	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
-		// TODO no manual found on IPDB
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 abobe playfield #161 is 12V
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "fg_1200ag", 9) == 0) { // Family Guy [TODO crash in AT91 jit]
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1296,7 +1303,8 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "im_186ve", 8) == 0) { // Ironman
-		// TODO no manual found on IPDB
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_LED); // Led Flasher (Iron Map Vault Edition)
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // Led Flasher (Iron Map Vault Edition)
 	}
 	else if (strncasecmp(gn, "mtl_180h", 8) == 0) { // Metallica LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
@@ -1313,7 +1321,10 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "nba_802", 7) == 0) { // NBA
-		// TODO no manual found on IPDB
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "potc_600af", 10) == 0) { // Pirates of the Caribbean
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
@@ -1372,7 +1383,9 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "twenty4_150", 11) == 0) { // 24
-		// TODO no manual found on IPDB
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 26 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "wof_500", 7) == 0) { // Wheel of Fortune
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED); // Mini DMD (175 faded LEDs)

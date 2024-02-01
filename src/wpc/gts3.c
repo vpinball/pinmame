@@ -675,6 +675,10 @@ static void gts3dmd_init(void) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
 	  rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
+  // Missing definitions:
+  // - Brooks & Dunn
+  // - Nudge It
+  // - Bell Ringer
   if (strncasecmp(gn, "andretti", 8) == 0) { // Mario Andretti
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  coreGlobals.nAlphaSegs = 6 * 16;

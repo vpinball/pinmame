@@ -423,6 +423,8 @@ static MACHINE_INIT(se) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const grn = rootDrv->name;
+  // Missing definition:
+  // - Golden Cue
   if (strncasecmp(grn, "apollo13", 8) == 0) { // Apollo 13
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
@@ -504,7 +506,8 @@ static MACHINE_INIT(se) {
 	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 65 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
 	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
   }
-  else if (strncasecmp(grn, "strikext", 8) == 0) { // Striker Extreme
+  else if ((strncasecmp(grn, "nfl", 3) == 0) // NFL
+		|| (strncasecmp(grn, "strikext", 8) == 0)) { // Striker Extreme
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
