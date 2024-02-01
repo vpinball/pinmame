@@ -1286,10 +1286,10 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60, 1, CORE_MODOUT_LED_STROBE_1_10MS);
 	}
 	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 abobe playfield #161 is 12V
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 abobe playfield #161 is 12V
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "fg_1200ag", 9) == 0) { // Family Guy [TODO crash in AT91 jit]
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1321,10 +1321,10 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "nba_802", 7) == 0) { // NBA
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "potc_600af", 10) == 0) { // Pirates of the Caribbean
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
@@ -1378,14 +1378,14 @@ static MACHINE_INIT(sam) {
 	}
 	else if (strncasecmp(gn, "twd_160h", 8) == 0) { // The Walking Dead LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "twenty4_150", 11) == 0) { // 24
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 26 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "wof_500", 7) == 0) { // Wheel of Fortune
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED); // Mini DMD (175 faded LEDs)
