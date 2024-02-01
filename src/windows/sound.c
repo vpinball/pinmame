@@ -400,7 +400,7 @@ int osd_update_audio_stream(INT16 *buffer)
 					samplei = 32767;
 				else
 #ifdef __GNUC__
-					samplei = (INT16)(sample + .5);
+					samplei = (INT16)(sample + .5f);
 #else
 					samplei = (INT16)(lrintf(sample));
 #endif

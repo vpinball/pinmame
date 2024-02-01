@@ -1267,7 +1267,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if ((strncasecmp(gn, "hd_l3", 5) == 0) // Harley Davidson
-	  || (strncasecmp(gn, "che_cho", 7) == 0)) { // Cheech & Chong: Road-Trip'pin
+        || (strncasecmp(gn, "che_cho", 7) == 0)) { // Cheech & Chong: Road-Trip'pin
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1367,12 +1367,12 @@ static MACHINE_INIT(wpc) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "taf_l5", 6) == 0) { // The Addams Family
-    static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
-    for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
+     static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
+     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // Playfield magnets, they are pulsed with 64ms pulses over a 524ms period
-    // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_MAGNET);
-    // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 2, CORE_MODOUT_MAGNET);
+     // Playfield magnets, they are pulsed with 64ms pulses over a 524ms period
+     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_MAGNET);
+     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 2, CORE_MODOUT_MAGNET);
   }
   else if (strncasecmp(gn, "tafg_lx3", 8) == 0) { // The Addams Family Gold Edition
      static const int flashers[] = { 17, 18, 19, 20, 21, 22 };

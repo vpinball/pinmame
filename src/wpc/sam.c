@@ -1277,7 +1277,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "bdk_294", 7) == 0) { // Batman The Dark Knight
-		int flashers[] = { 18, 20, 21, 22, 24, 26, 28, 31 };
+		static const int flashers[] = { 18, 20, 21, 22, 24, 26, 28, 31 };
 		for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 			core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 29, 1, CORE_MODOUT_NONE);
