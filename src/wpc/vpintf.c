@@ -124,13 +124,14 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 int vp_getChangedSolenoids(vp_tChgSols chgStat) 
 {
   int ii, idx = 0;
-  if (coreGlobals.nSolenoids && (
-	  (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) 
-  || ((core_gameData->gen & GEN_ALLWPC) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
+  // The backward compatibility is not perfect here: mod sol was only available for a bunch of gnerations, and would limit modulation to the first 32 solenoids
+  if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT | CORE_MODOUT_ENABLE_MODSOL)))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
     for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
+		if ((options.usemodsol == CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii].type == CORE_MODOUT_BULB_44_6_3V_AC_REV)
+		  state[ii] = 1.0f - state[ii];
       UINT8 v = saturatedByte(state[ii]);
       if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
         chgStat[idx].solNo = ii + 1;
