@@ -273,30 +273,17 @@ static SWITCH_UPDATE(byVP) {
   if (inports) {
     coreGlobals.swMatrix[0] = inports[BYVP_COMINPORT] & 0xff;
     if (core_gameData->hw.display) { // Granny
-      coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xf3));
-      // Start Player 2
-      coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>4) & 0x10;
-      // Start Player 1
-      coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>4) & 0x20;
-      // Coin Chute #1 & #2
-      coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>10) & 0x03;
-      // Ball Tilt/Slam Tilt
-      coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>6) & 0xc0;
+      coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xf3)) | ((inports[BYVP_COMINPORT]>>6) & 0xc0) | ((inports[BYVP_COMINPORT]>>4) & 0x30) | ((inports[BYVP_COMINPORT]>>10) & 0x03);
       // Power (Does not belong in the matrix, so we start at switch #41, since 40 is last used switch)
-      coreGlobals.swMatrix[6] &= ~(0x1);
-      coreGlobals.swMatrix[6] |= (inports[BYVP_COMINPORT]>>14) & 0x1;
+      coreGlobals.swMatrix[6] = (inports[BYVP_COMINPORT]>>14) & 0x1;
     }
     else { // BabyPac
-      coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x24));
-      coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xc3));
-      // Start Player 2
-      coreGlobals.swMatrix[1] |= (inports[BYVP_COMINPORT]>>6) & 0x04;
-      // Start Player 1
-      coreGlobals.swMatrix[1] |= (inports[BYVP_COMINPORT]>>4) & 0x20;
-      // Coin Chute #1 & #2
-      coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>10) & 0x03;
-      // Ball Tilt/Slam Tilt
-      coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>6) & 0xc0;
+      coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x24)) | ((inports[BYVP_COMINPORT]>>4) & 0x20) | ((inports[BYVP_COMINPORT]>>6) & 0x04);
+      if (~coreGlobals.swMatrix[2] & (inports[BYVP_COMINPORT]>>6) & 0x80) { // clear latches on slam so game will survive; see MACHINE_RESET(byVP)
+        soundlatch_w(0, 0);
+        soundlatch2_w(0, 0);
+      }
+      coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xc3)) | ((inports[BYVP_COMINPORT]>>6) & 0xc0) | ((inports[BYVP_COMINPORT]>>10) & 0x03);
     }
   }
   /*-- Diagnostic buttons on CPU board --*/
