@@ -736,14 +736,9 @@ static WRITE_HANDLER(cs_ctrl_w) {
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
 
-void by45snd_reset(void)
-{
-	cslocals.p21 = 1;
-}
-
 void by45_p21_w(int data)
 {
-	cslocals.p21 = 0;
+	cslocals.p21 = data ? 1 : 0;
 }
 
 static READ_HANDLER(cs_port2_r) {

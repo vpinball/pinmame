@@ -222,7 +222,7 @@ extern void by45_p21_w(UINT8 data);
 static WRITE_HANDLER(pia2b_w) {
 	//printf("pb2_w = %x\n",data);
 	locals.p2_b = data & 0x0f;
-	by45_p21_w(data & 0x02);
+	by45_p21_w(0);
 }
 
 /* PIA2:B Read */
@@ -414,16 +414,17 @@ static MACHINE_INIT(byVP) {
   pia_config(BYVP_PIA2, PIA_STANDARD_ORDERING, &piaIntf[2]);
 }
 
-extern void by45snd_reset(void);
-static void by_vdp_interrupt(int state);
 static MACHINE_RESET(byVP)
 {
-	//printf("reset\n");
-	by45snd_reset();
-	pia_reset();
-	by_vdp_interrupt(0);
-	TMS9928A_reset(0);
-	pia1a_w(0,0);
+  memset(&locals, 0, sizeof(locals));
+  soundlatch_w(0, 0);
+  soundlatch2_w(0, 0);
+  sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
+  by45_p21_w(1);
+//	pia_reset();
+//	by_vdp_interrupt(0);
+  TMS9928A_reset(0); if (core_gameData->hw.display) TMS9928A_reset(1);
+//	pia1a_w(0,0);
 }
 static MACHINE_STOP(byVP) { sndbrd_0_exit(); }
 
@@ -478,7 +479,7 @@ static PINMAME_VIDEO_UPDATE(byVP_update) {
 /  Memory map for MAIN CPU board
 /------------------------------------*/
 static MEMORY_READ_START(byVP_readmem)
-  { 0x0000, 0x0080, MRA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram*/
   { 0x0088, 0x008b, pia_r(BYVP_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(BYVP_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
@@ -489,7 +490,7 @@ static MEMORY_READ_START(byVP_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_writemem)
-  { 0x0000, 0x0080, MWA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram*/
   { 0x0088, 0x008b, pia_w(BYVP_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BYVP_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MWA_RAM, &byVP_CMOS }, /* CMOS Battery Backed*/
@@ -503,20 +504,20 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-  { 0x0000, 0x1fff, soundlatch2_r },
+  { 0x0000, 0x0000, soundlatch2_r },
   { 0x2000, 0x2003, pia_r(BYVP_PIA2) }, /* U7 PIA */
   { 0x4000, 0x4000, TMS9928A_vram_0_r },  /* U16 VDP*/
   { 0x4001, 0x4001, TMS9928A_register_0_r },  /* U16 VDP*/
-  { 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+  { 0x6000, 0x63ff, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-  { 0x0000, 0x1fff, soundlatch_w },
+  { 0x0000, 0x0000, soundlatch_w },
   { 0x2000, 0x2003, pia_w(BYVP_PIA2) }, /* U7 PIA */
   { 0x4000, 0x4000, TMS9928A_vram_0_w },  /* U16 VDP*/
   { 0x4001, 0x4001, TMS9928A_register_0_w },  /* U16 VDP*/
-  { 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+  { 0x6000, 0x63ff, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
@@ -524,20 +525,19 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Deluxe Board) - G&G
 /------------------------------------------------------------------*/
 static MEMORY_READ_START(byVPGG_video_readmem)
-  { 0x0000, 0x0001, soundlatch2_r },
+  { 0x0000, 0x0000, soundlatch2_r },
   { 0x0002, 0x0002, TMS9928A_vram_0_r },  /* VDP MASTER */
   { 0x0003, 0x0003, TMS9928A_register_0_r },  /* VDP MASTER */
   { 0x0004, 0x0004, TMS9928A_vram_1_r },  /* VDP SLAVE  */
   { 0x0005, 0x0005, TMS9928A_register_1_r },  /* VDP SLAVE  */
   { 0x0008, 0x000b, pia_r(BYVP_PIA2) }, /* PIA */
-  { 0x0300, 0x031c, MRA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
   { 0x2000, 0x27ff, MRA_RAM }, /* 2K RAM */
-  { 0x2801, 0x2801, MRA_RAM }, /* ?????? */
+  { 0x2801, 0x2801, MRA_NOP }, /* ?????? */
   { 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(byVPGG_video_writemem)
-  { 0x0000, 0x0001, soundlatch_w },
+  { 0x0000, 0x0000, soundlatch_w },
   { 0x0002, 0x0002, TMS9928A_vram_0_w },  /* VDP MASTER */
   { 0x0003, 0x0003, TMS9928A_register_0_w },  /* VDP MASTER */
   { 0x0004, 0x0004, TMS9928A_vram_1_w },  /* VDP SLAVE  */
@@ -545,9 +545,7 @@ static MEMORY_WRITE_START(byVPGG_video_writemem)
   { 0x0006, 0x0006, TMS9928A_vram_01_w },  /* VDP Both  */
   { 0x0007, 0x0007, TMS9928A_register_01_w }, /* VDP Both  */
   { 0x0008, 0x000b, pia_w(BYVP_PIA2) }, /* PIA */
-  { 0x0300, 0x031c, MWA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
   { 0x2000, 0x27ff, MWA_RAM }, /* 2K RAM*/
-  { 0x2801, 0x2801, MWA_RAM }, /* ????????? */
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
