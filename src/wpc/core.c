@@ -2297,12 +2297,8 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
       if (type == CORE_IMPORT)
         { core_findSize(layout->lptr, maxX, maxY); continue; }
       if (type == CORE_DMD || type == CORE_VIDEO) {
-        tmpX = (layout->left + layout->length) * locals.segData[type].cols;
-        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows;
-        if (type == CORE_DMD) {
-          tmpX++;
-          tmpY++;
-        }
+        tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
+        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
       }
       else {
         tmpX = (layout->left + 2*layout->length) * (locals.segData[type & 0x07].cols + 1) / 2;
@@ -2331,7 +2327,7 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   locals.maxSimRows = Machine->drv->screen_height - locals.firstSimRow;
   if ((!pmoptions.dmd_only) || (maxY >= Machine->drv->screen_height))
     maxY = Machine->drv->screen_height;
-printf("%dx%d\n", maxX, maxY);
+  logerror("Resolution set to %dx%d\n", maxX, maxY);
   set_visible_area(0, maxX-1, 0, maxY-1);
   return (maxX<<16) | maxY;
 }
