@@ -2297,8 +2297,12 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
       if (type == CORE_IMPORT)
         { core_findSize(layout->lptr, maxX, maxY); continue; }
       if (type == CORE_DMD || type == CORE_VIDEO) {
-        tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
-        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
+        tmpX = (layout->left + layout->length) * locals.segData[type].cols;
+        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows;
+        if (type == CORE_DMD) {
+          tmpX++;
+          tmpY++;
+        }
       }
       else {
         tmpX = (layout->left + 2*layout->length) * (locals.segData[type & 0x07].cols + 1) / 2;
@@ -2320,20 +2324,14 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   if (layout)
     core_findSize(layout, &maxX, &maxY);
   else if (locals.displaySize > 1)
-#ifdef VPINMAME
-    { maxX = 257; maxY = 65; }
-#else
     { maxX = 256; maxY = 65; }
-#endif /* VPINMAME */
   else
     { maxX = 129; maxY = 33; }
   locals.firstSimRow = maxY + 3;
   locals.maxSimRows = Machine->drv->screen_height - locals.firstSimRow;
   if ((!pmoptions.dmd_only) || (maxY >= Machine->drv->screen_height))
     maxY = Machine->drv->screen_height;
-#ifndef VPINMAME
-  if (maxX == 257) maxX = 256;
-#endif /* VPINMAME */
+printf("%dx%d\n", maxX, maxY);
   set_visible_area(0, maxX-1, 0, maxY-1);
   return (maxX<<16) | maxY;
 }
