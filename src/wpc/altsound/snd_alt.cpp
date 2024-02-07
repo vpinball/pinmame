@@ -551,7 +551,28 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		if ((cmd_in & 0xFC) == 0xFC) // start byte of a command will ALWAYS be FF, FE, FD, FC, and never the second byte!
 			*cmd_counter = 1;
 	}
-	
+
+	// DAR@20240207 Seems to be 8-bit commands
+	if ((hardware_gen == GEN_GTS80A))  // Gottlieb System 80A
+	{
+		ALT_DEBUG(0, "Hardware Generation: GEN_GTS80A");
+
+		// DAR@29249297 It appears that this system sends 0x00 commands as a clock
+		//              signal, since we recieve a ridiculous number of them.
+		//              Filter them out
+		if (cmd_in == 0x00) // handle 0x00
+		{
+			*stored_command = 0;
+			*cmd_counter = 0;
+			*cmd_filter = 1;
+		}
+		else {
+			*cmd_counter = 0;
+			*stored_command = 0;
+			*cmd_filter = 0;
+		}
+	}
+
 	OUTDENT;
 	ALT_DEBUG(0, "END preprocess_commands()");
 }
