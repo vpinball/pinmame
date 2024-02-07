@@ -575,6 +575,13 @@ WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d
                     "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
 WPC_ROMEND
 
+/* L-8.4 MOD that supports Profanity, and more. BUT must enable profanity in the adjustments in order to work correctly. */
+WPC_ROMSTART(t2,l84,"T2_l84_9A08.rom",0x80000,CRC(7617ae61) SHA1(d99df2bff73f808458e7512b91392160cf98b2ba))
+WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                    "t2_u15.l3",   CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                    "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
+WPC_ROMEND
+
 WPC_ROMSTART(t2,l4,"u6-l4.rom",0x40000,CRC(4d8b894d) SHA1(218b3628e7709c329c2030a5391ded60301aad26))
 WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
@@ -633,7 +640,8 @@ CORE_GAMEDEF(t2,l8,"Terminator 2: Judgement Day (L-8)",1991,"Williams",wpc_mDMDS
 CORE_CLONEDEF(t2,d8,l8,"Terminator 2: Judgement Day (D-8 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l81,l8,"Terminator 2: Judgement Day (L-81 Attract Sound patch)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l82,l8,"Terminator 2: Judgement Day (L-82 Attract Score patch)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l83,l8,"Terminator 2: Judgement Day (L-83 Profanity, bugfix/MOD, LED Ghost Fix)",2022,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l83,l8,"Terminator 2: Judgement Day (L-83 Profanity, bugfix/MOD, LED Ghost Fix)",2022,"Williams/MOD",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l84,l8,"Terminator 2: Judgement Day (L-84 Profanity, bugfix/MOD, LED Ghost Fix)",2023,"Williams/MOD",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgement Day (L-6)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgement Day (D-6 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ??

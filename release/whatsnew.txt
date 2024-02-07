@@ -71,6 +71,7 @@ Improved emulation robustness when running multiple machines from the same gener
  or when resetting certain machines
 Add Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Clean-up Metallica Coffin Magnet processor board to cleanly report its mode of operation (see https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for detailed operations)
+Fixed reset and slam-tilt problems of Baby Pac-Man
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc
 New:
@@ -142,6 +143,7 @@ Spirit (initial release) & rev. 3 (MOD)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
 Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)
+Terminator 2 L-8.4 (MOD)
 Time Machine (Zaccaria, Italian Speech)
 Tommy 1.02 (Belgian), 2.01 (Dutch), 3.01 (German)
 Whirlwind LG-1 (German), LG-2 (German) (no U26 dumps available, seem to work with known one)

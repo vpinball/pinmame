@@ -130,8 +130,8 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
     for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-		if ((options.usemodsol == CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii].type == CORE_MODOUT_BULB_44_6_3V_AC_REV)
-		  state[ii] = 1.0f - state[ii];
+      if ((options.usemodsol == CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii].type == CORE_MODOUT_BULB_44_6_3V_AC_REV)
+        state[ii] = 1.0f - state[ii];
       UINT8 v = saturatedByte(state[ii]);
       if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
         chgStat[idx].solNo = ii + 1;
