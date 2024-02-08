@@ -412,9 +412,10 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 
 		ALT_DEBUG(0, "Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95");
 
-		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA)) // change volume?
-			||
-			((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00))) // glitch in command buffer?
+		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA))) // change volume?
+			// DAR@20240208 The check below is a very bad idea.  See https://github.com/vpinball/pinmame/issues/220
+			//||
+			//((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00))) // glitch in command buffer?
 		{
 			if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) { // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
 				// DAR@20230518
