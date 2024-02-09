@@ -22,6 +22,7 @@ Version 3.6 (XX XXth, 2024) - "Sounds good III"
 - Ability to playback recorded sound commands via standalone AltSound driver
   preserving original game timing (currently dev only feature)
 - Ability to stop
+- Added altsound command processing support for Gottlieb System 80A
 
 Updated LISY support to 5.28-92 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
