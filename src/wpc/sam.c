@@ -63,19 +63,20 @@ extern void libpinmame_forward_console_data(void* data, int size);
 
 #define SAM_ROMBANK0 1
 
-#define SAM_NOMINI            0x00 // all games without special stuff
-
-#define SAM_GAME_WPT             1
-#define SAM_GAME_FG              2 // +Shrek
-#define SAM_GAME_WOF             4
-#define SAM_GAME_BDK             8
-#define SAM_GAME_CSI          0x10
-#define SAM_GAME_TRON         0x20
-#define SAM_GAME_AUXSOL8      0x40
-#define SAM_GAME_AUXSOL12     0x80
-#define SAM_GAME_METALLICA_MAGNET  0x100 // Metallica LE has a special aux board just for the coffin magnet!
-#define SAM_GAME_ACDC_FLAMES  0x200 // AC/DC LE uses a special aux board for flame lights
-#define SAM_GAME_IJ4_SOL3     0x400
+				
+#define SAM_NO_AUX                 0x0000 // all games without special stuff
+#define SAM_GAME_WPT               0x0001 // Board 520-5250-14: World Poker Tour 14 block LED
+#define SAM_GAME_FG                0x0002 // Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
+#define SAM_GAME_WOF               0x0004 // Board 520-5274-00: Wheel of Fortune Playfield Mini-Dot Display (5X7) & Board 520-5283-00: Wheel of Fortune Opto, LEDs and flasher
+#define SAM_GAME_BDK               0x0008 // Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight with 3 LEDs #86, #87, #88)
+#define SAM_GAME_CSI               0x0010 // Board 520-5290-00: Opto and auxiliary LED PCB (CSI with 3 LEDs #86, #87, #88)
+#define SAM_GAME_TRON              0x0020 // Board 511-6927-01: Tron TriColor Assy strobed on C and D outputs
+#define SAM_GAME_AUXSOL8           0x0040 // Board 520-5325-00: Driver Board 8 Transistor: Avengers, AC/DC Premium/LE, X-Men LE
+#define SAM_GAME_AUXSOL6           0x0080 // Board 520-5326-01: Driver Board 6 Transistor: Metallica
+#define SAM_GAME_AUXSOL12          0x0100 // Board 520-5326-02: Driver Board 12 Transistors: used by lots of games
+#define SAM_GAME_METALLICA_MAGNET  0x0200 // Board 520-6801-00 Magnet processor: Metallica LE has a special aux board just for the coffin magnet!
+#define SAM_GAME_ACDC_FLAMES       0x0400 // Board 520-5332-00 AC/DC LE special aux board for flame lights
+#define SAM_GAME_IJ4_SOL3          0x0800 // Board 520-5289-00 used by Indiana Jones for LED flashers
 
 #define SAM_2COL   2
 #define SAM_3COL   3
@@ -792,185 +793,79 @@ static WRITE32_HANDLER(sambank_w)
 		switch (offset)
 		{
 			case 0x02400020: // SOL_A
-				// Previsou code would filter one write out of 2, in turns discarding the PWM pulses.
-				// It is just commented out for the time being to be sure there isn't something else I'm missing
-				/*++samlocals.dataWrites[0];
-				static UINT8 d;
-				if (d != data) {
-					static double prev = 0.0;
-					printf("t=%8.5f d=%8.5f SolA write %d %08x %08x\n", timer_get_time(), timer_get_time() - prev, samlocals.dataWrites[0], data, mem_mask);
-					prev = timer_get_time();
-					d = data;
-				}*/
+				assert(mem_mask == 0xFFFFFF00);
 				coreGlobals.pulsedSolState &= ~(0xFFu << 8);
 				coreGlobals.pulsedSolState |= data << 8;
 				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
 				break;
 			case 0x02400021: // SOL_B
-				//if (++samlocals.dataWrites[1] == 1)
+				assert(mem_mask == 0xFFFF00FF);
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
-					if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
-					{
-						// Special case for Wheel of Fortune.   It has a 4-way stepper motor that goes 4,6,5,7 ... but 
-						// VPM mech only supports a dual stepper motor.   OR 5 and 7 to 4 and 6 so we never miss these pulses.
-						// Need to put state into pulsedSolState for mech handling to see it.
-						coreGlobals.pulsedSolState = data | ((data & ((1u << 4) | (1u << 6))) >> 1);
-					}
-					else
-					{
-						coreGlobals.pulsedSolState &= ~(0xFFu);
-						coreGlobals.pulsedSolState |= data;
-					}
-					core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
+					// Special case for Wheel of Fortune.   It has a 4-way stepper motor that goes 4,6,5,7 ... but 
+					// VPM mech only supports a dual stepper motor.   OR 5 and 7 to 4 and 6 so we never miss these pulses.
+					// Need to put state into pulsedSolState for mech handling to see it.
+					coreGlobals.pulsedSolState = data | ((data & ((1u << 4) | (1u << 6))) >> 1);
 				}
+				else
+				{
+					coreGlobals.pulsedSolState &= ~(0xFFu);
+					coreGlobals.pulsedSolState |= data;
+				}
+				core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
 				break;
 			case 0x02400022: // SOL_C
-				//if (++samlocals.dataWrites[2] == 1)
-				{
-					coreGlobals.pulsedSolState &= ~(0xFFu << 16);
-					coreGlobals.pulsedSolState |= data << 16;
-					core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
-				}
+				assert(mem_mask == 0xFF00FFFF);
+				coreGlobals.pulsedSolState &= ~(0xFFu << 16);
+				coreGlobals.pulsedSolState |= data << 16;
+				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
 				break;
 			case 0x02400023: // FLSH_LMP
-				//if (++samlocals.dataWrites[3] == 1)
-				{
-					coreGlobals.pulsedSolState &= ~(0xFFu << 24);
-					coreGlobals.pulsedSolState |= data << 24;
-					core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
-				}
+				assert(mem_mask == 0x00FFFFFF);
+				coreGlobals.pulsedSolState &= ~(0xFFu << 24);
+				coreGlobals.pulsedSolState |= data << 24;
+				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
 				break;
-			case 0x02400026: // AUX_DRV
-				//if (++samlocals.dataWrites[4] == 1) //!! ?? or only for core_update_modulated_light case below?
-				//{
-				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
-				{
-					/* Failed attempt at getting some fading (if there is any) on the little DMD. It works but does not provide any benefit and performance is worse, so disabled
-					static UINT16 latchA, latchB, latchC, latchD, latchE, latchF, latchH, latchI, col;
-					// performed on low to high write edge, not sure how Blank impact this
-					latchI = (latchH & 0x07); // Does not really exist, made using D7/Q7 of latches E/F/H from Q4/Q5/Q6 of latch H
-					latchH = (latchF & 0x7F) | ((latchI & 0x04) << 5);
-					latchF = (latchE & 0x7F) | ((latchI & 0x01) << 7);
-					latchE = (latchD & 0x7F) | ((latchI & 0x02) << 6);
-					latchD = (latchC & 0x7F);
-					latchC = (latchB & 0x7F);
-					latchB = (latchA & 0x7F);
-					latchA = data;
-					// performed on high to low write edge so after latch waterfall (when blank is high ?)
-					if (latchA & 0x80) {
-						col = ((latchH & 0x10) >> 4)  // H5 -> Col 1
-							 | ((latchH & 0x02)     )  // H2 -> Col 2
-							 | ((latchH & 0x04)     )  // H3 -> Col 3
-							 | ((latchH & 0x08)     )  // H4 -> Col 4
-							 | ((latchH & 0x01) << 4)  // H1 -> Col 5
-							 | ((latchH & 0x80) >> 2)  // H8 -> Col 6
-							 | ((latchH & 0x20) << 1)  // H6 -> Col 7
-							 | ((latchH & 0x40) << 1)  // H7 -> Col 8
-							 | ((latchF & 0x80) << 1)  // F7 -> Col 9
-							 | ((latchE & 0x80) << 2); // E7 -> Col 10
-						col = ((core_revword(col) >> 6) & 0x03E0) | ((col >> 5) & 0x001F);
-					}
-					if ((samlocals.auxdata & ~data) >= 0x80) {
-						//	printf("%8.5f col=%d %d row=%02x %02x %02x %02x %02x %02x %02x %02x Blank=%d\n", timer_get_time(), core_BitColToNum(col), samlocals.miniDMDRow, latchA, latchB, latchC, latchD, latchE, latchF, latchH, latchI, latchA & 0x80);
-						for (int row = 0; row < 10; row++) {
-							int r = col & (1 << row);
-							//if (!r) continue;
-							int c = CORE_MODOUT_LAMP0 + 10 * 8 + 49 * row; // core_BitColToNum(col);
-							core_write_pwm_output(c     , 7, r ? (core_revbyte((UINT8)latchH) >> 1) : 0);
-							core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)latchF) >> 1) : 0);
-							core_write_pwm_output(c + 14, 7, r ? (core_revbyte((UINT8)latchE) >> 1) : 0);
-							core_write_pwm_output(c + 21, 7, r ? (core_revbyte((UINT8)latchD) >> 1) : 0);
-							core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)latchC) >> 1) : 0);
-							core_write_pwm_output(c + 35, 7, r ? (core_revbyte((UINT8)latchB) >> 1) : 0);
-							core_write_pwm_output(c + 42, 7, r ? (core_revbyte((UINT8)latchA) >> 1) : 0);
-						}
-					} */
-					if ( samlocals.miniDMDCol == 1 ) // the DMD row is decided by the bits set in the first two columns that are written to each column!
-						samlocals.miniDMDRow = rowMap[core_BitColToNum((data & 0x7F) | ((samlocals.auxdata & 0x7F) << 7))];
-					if (samlocals.miniDMDCol > 1) {
-						//samlocals.miniDMDData[samlocals.miniDMDRow][samlocals.miniDMDCol - 2] = data & 0x7F;
-						if (samlocals.miniDMDCol < 9) // miniDMDCol is 2..13, miniDMDRow is 0..9, so should be 12*10*7 but only 7 displays of 5x7 are used
-						  core_write_pwm_output(CORE_MODOUT_LAMP0 + 10 * 8 + 49 * samlocals.miniDMDRow + (samlocals.miniDMDCol - 2) * 7, 7, core_revbyte(data) >> 1);
-					}
-					if ( samlocals.miniDMDCol < 17 ) // limit the displayed column count to 16 for now
-						samlocals.miniDMDCol++;
-					if ( (~samlocals.auxdata & data) >= 0x80) // observe change low -> high to trigger the column reset
-						samlocals.miniDMDCol = 0;
-				}
-				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
-				{
-					if (data & ~samlocals.auxdata & 0x80) 
-					{ // observe change low -> high to trigger the column reset
-						samlocals.miniDMDCol = 0;
-						samlocals.miniDMDRow = core_BitColToNum(data & 0x03); // 2 rows
-					}
-					else if (samlocals.miniDMDCol < 3) 
-					{
-						const int i = 10 + samlocals.miniDMDCol + 3 * samlocals.miniDMDRow;
-						core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + i * 8, data & 0x7f);
-						samlocals.miniDMDCol++;
-					}
-				}
-				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
-				{
-					const int test = data & ~samlocals.auxdata;
-					if ( (test < 0x80) && (test >= 0) ) // observe change low -> high to trigger the column reset
-					{
-						samlocals.miniDMDCol++;
-					}
-					else
-					{
-						samlocals.WOF_minidmdflag = !samlocals.WOF_minidmdflag;
-						samlocals.miniDMDCol = 0;
-					}
-
-					if ( samlocals.WOF_minidmdflag )
-					{
-						if ( samlocals.miniDMDCol == 1 )
-						{
-							samlocals.miniDMDRow = core_BitColToNum(data & 0x1F); // 5 rows
-						}
-						if ( samlocals.miniDMDCol > 1 && samlocals.miniDMDCol < 7 )
-						{
-							//samlocals.miniDMDData[samlocals.miniDMDRow][samlocals.miniDMDCol - 2] = data & 0x7F;
-							core_write_pwm_output(CORE_MODOUT_LAMP0 + 140 + 35 * samlocals.miniDMDRow + (samlocals.miniDMDCol - 2) * 7, 7, core_revbyte(data) >> 1);
-						}
-					}
-					else
-					{
-						if ( samlocals.miniDMDCol < 6 )
-						{
-							core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + (10 + samlocals.miniDMDCol) * 8, data & 0x7f);
-						}
-					}
+			// case 0x02400024: // Unconnected
+			// case 0x02400025: // STATUS read only
+			case 0x02400026: // AUX_DRV (latched data to J2 AUX connector)
+				assert(mem_mask == 0xFF00FFFF);
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) {
+					// Indiana Jones uses 4 small LED flasher boards directly connected to AUX DATA pins (no strobe, see schematics on page 137 of manual)
+					core_write_pwm_output(CORE_MODOUT_SOL0 + 54 - 1, 1, GET_BIT3); // ark leds (2 boards)
+					core_write_pwm_output(CORE_MODOUT_SOL0 + 55 - 1, 1, GET_BIT4); // swordman
+					core_write_pwm_output(CORE_MODOUT_SOL0 + 56 - 1, 1, GET_BIT5); // skull
 				}
 				samlocals.auxdata = data;
-				//}
 				break;
+			// case 0x02400027: // AUX_IN read only from J3 connector
 			case 0x02400028: // LMP_STB & AUX_LMP (word writes)
-				//memset(samlocals.dataWrites, 0, sizeof(samlocals.dataWrites)); 
-				//samlocals.colWrites++;
-				//if(samlocals.colWrites == 1 || samlocals.colWrites == 2) //!! just the 2 case ??
-				{
-					samlocals.lampcol = core_BitColToNum(data);
-					core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,       (1 << samlocals.lampcol)       & 0x00FF, samlocals.lamprow, 8);
-					core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, ((1 << samlocals.lampcol) >> 8) & 0x00FF, samlocals.lamprow, 2);
-				}
+				samlocals.lampcol = (samlocals.lampcol & mem_mask) | data;
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,       samlocals.lampcol       & 0x00FF, samlocals.lamprow, 8);
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
+				break;
+			case 0x02400029: // AUX_LMP
+				assert(mem_mask == 0xFFFF00FF);
+				samlocals.lampcol = (samlocals.lampcol & 0x00FF) | (data << 8);
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, samlocals.lampcol & 0x00FF, samlocals.lamprow, 8);
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
 				break;
 			case 0x0240002A: // LMP_DRV
-				//samlocals.colWrites = 0;
-				//if (++samlocals.dataWrites[5] == 1)
-				//{
-					samlocals.lamprow = core_revbyte(data);
-					core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,       (1 << samlocals.lampcol)       & 0x00FF, samlocals.lamprow, 8);
-					core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, ((1 << samlocals.lampcol) >> 8) & 0x00FF, samlocals.lamprow, 2);
-				//}
+				assert(mem_mask == 0xFF00FFFF);
+				samlocals.lamprow = core_revbyte(data);
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,       samlocals.lampcol       & 0x00FF, samlocals.lamprow, 8);
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
 				break;
-			case 0x0240002B:
-				//if (++samlocals.dataWrites[6] == 1) //!! ?? or only for core_update_modulated_light cases below?
-				//{
+			case 0x0240002B: // Latched data for GI relay and AUX strobe (ASTB to ESTB on J2 and J3 connectors)
+				assert(mem_mask == 0x00FFFFFF);
+				
+				// Bit 0 is GI relay state
 				coreGlobals.gi[0] = (~data & 0x01) ? 9 : 0;
 				core_write_pwm_output_8b(CORE_MODOUT_GI0, ~data & 0x01);
+
+				// Bit 3 is beta-brite connector strobe
+				if ((~data & 0x40) && (samlocals.auxdata & 0x03))
+					LOG(("%08x: writing to betabrite: %x\n", activecpu_get_pc(), auxdata & 0x03));
 
 				// Previous versions of the code counted the number of writes to locate 
 				// the solenoid bank.  The safest way is to apply the solenoid when the target column is written here.
@@ -981,20 +876,157 @@ static WRITE32_HANDLER(sambank_w)
 				// all 8 bits for now.  Todo: Would be better to treat ACDC correctly here instead of 
 				// setting it as an aux 12 board. 
 				
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x20)) ||
-					((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8)  && (~data & 0x10)) ||
-					((core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40)))
+				// Board 511-6927-01: Tron TriColor Assembly strobed on C and D outputs
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_TRON) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+					core_write_pwm_output(CORE_MODOUT_LAMP0 + 100, 3, samlocals.auxdata >> 3); // Right RGB ramp
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_TRON) && (samlocals.auxstrb & ~data & 0x20)) // DSTB
+					core_write_pwm_output(CORE_MODOUT_LAMP0 + 103, 3, samlocals.auxdata >> 3); // Left RGB ramp
+
+				// Board 520-5250-14: 14 Block LED (World Poker Tour)
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
-					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL
-					if (core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES))
-						core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata >> 6, 0x03); // 2 sols to CORE_FIRSTCUSTSOL + 6
+					static UINT16 latchA, latchB, latchC, latchD, latchE, latchF, latchH, col;
+					if (samlocals.auxstrb & ~data & 0x80) // ASTB
+					{
+						// 2 Latches for active columns
+						col = ((latchH & 0x10) >> 4)  // H5 -> Col 1
+							| ((latchH & 0x02))  // H2 -> Col 2
+							| ((latchH & 0x04))  // H3 -> Col 3
+							| ((latchH & 0x08))  // H4 -> Col 4
+							| ((latchH & 0x01) << 4)  // H1 -> Col 5
+							| ((latchH & 0x80) >> 2)  // H8 -> Col 6
+							| ((latchH & 0x20) << 1)  // H6 -> Col 7
+							| ((latchH & 0x40) << 1)  // H7 -> Col 8
+							| ((latchF & 0x80) << 1)  // F7 -> Col 9
+							| ((latchE & 0x80) << 2); // E7 -> Col 10
+						col = ((core_revword(col) >> 6) & 0x03E0) | ((col >> 5) & 0x001F);
+						// 7 Latches for active rows
+						UINT16 latchI = (latchH & 0x07); // Does not really exist, made using D7/Q7 of latches E/F/H from Q4/Q5/Q6 of latch H
+						latchH = (latchF & 0x7F) | ((latchI & 0x04) << 5);
+						latchF = (latchE & 0x7F) | ((latchI & 0x01) << 7);
+						latchE = (latchD & 0x7F) | ((latchI & 0x02) << 6);
+						latchD = (latchC & 0x7F);
+						latchC = (latchB & 0x7F);
+						latchB = (latchA & 0x7F);
+						latchA = samlocals.auxdata;
+					}
+					for (int row = 0; row < 10; row++) {
+						int r = ((latchA & 0x80) || (~data & 0x80)) ? 0 : (col & (1 << row));
+						int c = CORE_MODOUT_LAMP0 + 10 * 8 + 49 * row;
+						core_write_pwm_output(c     , 7, r ? (core_revbyte((UINT8)latchH) >> 1) : 0);
+						core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)latchF) >> 1) : 0);
+						core_write_pwm_output(c + 14, 7, r ? (core_revbyte((UINT8)latchE) >> 1) : 0);
+						core_write_pwm_output(c + 21, 7, r ? (core_revbyte((UINT8)latchD) >> 1) : 0);
+						core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)latchC) >> 1) : 0);
+						core_write_pwm_output(c + 35, 7, r ? (core_revbyte((UINT8)latchB) >> 1) : 0);
+						core_write_pwm_output(c + 42, 7, r ? (core_revbyte((UINT8)latchA) >> 1) : 0);
+					}
+					//printf("%8.5f s=%02x d=%02x    %02x %02x %02x %02x %02x %02x %02x   Col=%03x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, latchA, latchB, latchC, latchD, latchE, latchF, latchH, col, (latchA & 0x80) ? 1 : 0);
 				}
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x10)))
-					core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, samlocals.auxdata << 2, 0xFC); // 6 sols to CORE_FIRSTCUSTSOL + 8
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)))
+
+				// Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
 				{
-					// Metallica LE has a special aux board for the coffin magnet
-					// Operation mode is written here with the 2 highest bits D6/D7 of Aux Data wired to the board, and strobed here.
+					// The board contains 4 latches which are shifted to latch row (13 bits), col (2 bits), and output enable (1 bit)
+					static UINT8 latch[4] = { 0 };
+					if (samlocals.auxstrb & ~data & 0x80) // ASTB
+					{
+						latch[3] = latch[2];
+						latch[2] = latch[1];
+						latch[1] = latch[0];
+						latch[0] = samlocals.auxdata;
+					}
+					int col = ((latch[0] & 0x80) || (~data & 0x80)) ? 0 : latch[3]; // Output disable if Bit 7 on latch 0 high or ASTB strobe high
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  80, (col & 1) ? latch[2] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  88, (col & 1) ? latch[1] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  96, (col & 1) ? latch[0] & 0x1F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, (col & 2) ? latch[2] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 112, (col & 2) ? latch[1] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 120, (col & 2) ? latch[0] & 0x1F : 0);
+					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x  out=%d\n", timer_get_time(), data, samlocals.auxdata, latch[0] & 0x1F, latch[1] &0x0F, latch[2] & 0x0F, latch[3], col & 3);
+				}
+
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
+				{
+					// Board 520-5283-00: Wheel of Fortune Opto, LEDs and flasher
+					static UINT8 ledLatch[6] = { 0 };
+					if (~samlocals.auxstrb & data & 0x08) // inversed BSTB
+					{
+						ledLatch[2] = ledLatch[1];
+						ledLatch[1] = ledLatch[0];
+						ledLatch[0] = samlocals.auxdata;
+					}
+					if (samlocals.auxstrb & ~data & 0x08) // BSTB
+					{
+						ledLatch[5] = ledLatch[4];
+						ledLatch[4] = ledLatch[3];
+						ledLatch[3] = samlocals.auxdata;
+					}
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  80, ledLatch[0] & 0x80 ? 0 : ledLatch[0] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  96, ledLatch[0] & 0x80 ? 0 : ledLatch[1] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 112, ledLatch[0] & 0x80 ? 0 : ledLatch[2] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  88, ledLatch[3] & 0x80 ? 0 : ledLatch[3] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, ledLatch[3] & 0x80 ? 0 : ledLatch[4] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 120, ledLatch[3] & 0x80 ? 0 : ledLatch[5] & 0x7f);
+					//printf("%8.5f  write %02x %02x:  %02x %02x %02x  %02x %02x %02x\n", timer_get_time(), data, samlocals.auxdata, ledLatch[0], ledLatch[1], ledLatch[2], ledLatch[3], ledLatch[4], ledLatch[5]);
+
+					// Board 520-5274-00: Playfield Mini-Dot Display (5X7) (Wheel of Fortune)
+					static UINT8 dmdLatch[6] = { 0 }, dmdOutputDisabled;
+					if (samlocals.auxstrb & ~data & 0x10) // CSTB
+					{
+						UINT8 wasOutputDisabled = dmdOutputDisabled;
+						dmdOutputDisabled = samlocals.auxdata & 0x80;
+						if (wasOutputDisabled && dmdOutputDisabled)
+						{
+							dmdLatch[5] = dmdLatch[4];
+							dmdLatch[4] = dmdLatch[3];
+							dmdLatch[3] = dmdLatch[2];
+							dmdLatch[2] = dmdLatch[1];
+							dmdLatch[1] = dmdLatch[0];
+							dmdLatch[0] = samlocals.auxdata;
+						}
+					}
+					int col = (dmdOutputDisabled || (~data & 0x80)) ? 0 : dmdLatch[5];
+					for (int row = 0; row < 5; row++) {
+						int r = col & (1 << row);
+						int c = CORE_MODOUT_LAMP0 + 140 + 35 * row;
+						core_write_pwm_output(c,      7, r ? (core_revbyte((UINT8)dmdLatch[4]) >> 1) : 0);
+						core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)dmdLatch[3]) >> 1) : 0);
+						core_write_pwm_output(c + 14, 7, r ? (core_revbyte((UINT8)dmdLatch[2]) >> 1) : 0);
+						core_write_pwm_output(c + 21, 7, r ? (core_revbyte((UINT8)dmdLatch[1]) >> 1) : 0);
+						core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)dmdLatch[0]) >> 1) : 0);
+					}
+					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x %02x  col=%02x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, dmdLatch[0], dmdLatch[1], dmdLatch[2], dmdLatch[3], dmdLatch[4], col & 0x1F, dmdOutputDisabled ? 0 : 1);
+				}
+
+				// Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight & CSI): 3 LEDs #86, #87, #88
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (samlocals.auxstrb & ~data & 0x08)) // BSTB
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
+
+				// Board 520-5325-00: 8 transistor driver board (Avengers, AC/DC Premium/LE, X-Men LE)
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 8, samlocals.auxdata);
+
+				// Board 520-5326-01: 6 transistor driver board (Metallica)
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL6) && (samlocals.auxstrb & ~data & 0x20)) // DSTB
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 6, samlocals.auxdata);
+
+				// Board 520-5326-02: 12 transistor driver board (lots of games)
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 8 - 1, 6, samlocals.auxdata);
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (samlocals.auxstrb & ~data & 0x20)) // DSTB
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 6, samlocals.auxdata);
+
+				// Board 520-5332-00: AC/DC LE special aux board for flame lights (8 LEDs)
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (samlocals.auxstrb & ~data & 0x08)) // BSTB
+					core_write_pwm_output(CORE_MODOUT_LAMP0 + 152 - 1, 8, samlocals.auxdata); // 151..158
+
+				// Board 520-6801-00: Magnet processor (Metallica)
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)) // BSTB (not sure if it is trigerred by edge or state since it uses a microcontroller)
+				{
+					// Operation mode is strobed here from the 2 highest bits D6/D7 of Aux Data
 					// 00 => Off
 					// 10 => Grab: activate magnet for 1 second then switch it off. It grabs the ball from centimeters away
 					// 01 => Detect: detect ball and report it to switch 63
@@ -1002,56 +1034,9 @@ static WRITE32_HANDLER(sambank_w)
 					// See https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for a detailled description:
 					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 6 - 1, 1, samlocals.auxdata >> 7);
 					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 7 - 1, 1, samlocals.auxdata >> 6);
-					//core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48    ,  samlocals.auxdata       & 0x80, 0x80); // 1 sol to CORE_FIRSTCUSTSOL + 6, from upper bit
-					//core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48 + 8, (samlocals.auxdata >> 6) & 0x01, 0x01); // 1 sol to CORE_FIRSTCUSTSOL + 7, from second upper bit
 				}
-				// AC/DC LE uses a special aux board for flame lights
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (~data & 0x08)))
-				{
-					int ii;
-					for (ii = 0; ii < 8; ii++)
-						samlocals.ext_leds[70 + ii] = (samlocals.auxdata & (1u << ii) ? 255 : 0);
-				}
-				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
-				{
-					if ( (data & ~samlocals.auxstrb) & 0x08 ) // LEDs
-						samlocals.WOF_minidmdflag = 0;
-					else if ( (data & ~samlocals.auxstrb) & 0x10 ) // DMD
-						samlocals.WOF_minidmdflag = 1;
-				}
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (~data & 0x08)) // extra lamp column
-				{
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
-				}
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (~data & 0x10)) // extra lamp column
-				{
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
-				}
-				if (core_gameData->hw.gameSpecific1 & SAM_GAME_TRON)
-				{
-					if ( ~data & 0x08 )
-					{
-						core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 12 * 8, core_revbyte(samlocals.auxdata), 0x0F); // Lamps 96..99 => Why do we write these ?
-					}
-					if ( ~data & 0x10 )
-					{
-						core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 11 * 8, core_revbyte(samlocals.auxdata)); // Lamps 88..95 => Why do we write these ?
-						core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 96, samlocals.auxdata << 1, 0x70); // RGB ramp (lamps 100..102), Bits 3/4/5
-					}
-					if ( ~data & 0x20 )
-					{
-						core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata)); // Lamps 80..87 => Why do we write these ?
-						core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 96, samlocals.auxdata << 4, 0x80); // RGB ramp (lamps 103..105), Bits 3
-						core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, samlocals.auxdata >> 4, 0x03); // RGB ramp (lamps 103..105), Bits 4/5
-					}
-					if ( ~data & 0x40 )
-						LOG(("Test"));
-				}
-				if ( (~data & 0x40) // writes to beta-brite connector
-					&& (samlocals.auxdata & 0x03) )
-					LOG(("%08x: writing to betabrite: %x\n",activecpu_get_pc(),auxdata & 0x03));
+
 				samlocals.auxstrb = data;
-				//}
 				break;
 			 default:
 				LOG(("error"));
@@ -1284,16 +1269,19 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 45, 1, CORE_MODOUT_NONE);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 59, 1, CORE_MODOUT_LED_STROBE_1_10MS);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60, 1, CORE_MODOUT_LED_STROBE_1_10MS);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 8, CORE_MODOUT_LED); // LEDs on opto board
 	}
 	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 abobe playfield #161 is 12V
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 8, CORE_MODOUT_LED); // LEDs on opto board
 	}
 	else if (strncasecmp(gn, "fg_1200ag", 9) == 0) { // Family Guy [TODO crash in AT91 jit]
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 3 * 2 * 8, CORE_MODOUT_LED_STROBE_8_16MS); // Mini playfield LEDs
 	}
 	else if (strncasecmp(gn, "ij4_210", 7) == 0) { // Indiana Jones
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
@@ -1301,6 +1289,9 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 54 - 1, 2, CORE_MODOUT_LED); // ark leds (2 boards)
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 55 - 1, 2, CORE_MODOUT_LED); // swordman
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 56 - 1, 2, CORE_MODOUT_LED); // skull
 	}
 	else if (strncasecmp(gn, "im_186ve", 8) == 0) { // Ironman
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_LED); // Led Flasher (Iron Map Vault Edition)
@@ -1328,6 +1319,13 @@ static MACHINE_INIT(sam) {
 	}
 	else if (strncasecmp(gn, "potc_600af", 10) == 0) { // Pirates of the Caribbean
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 24 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'H' LED
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 32 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'E' LED
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 40 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'A' LED
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 48 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'R' LED
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 56 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'T' LED
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: Heart Chest double LED
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 72 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: Heart Chest double LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1345,6 +1343,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 61 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 2 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 3*2*8, CORE_MODOUT_LED_STROBE_8_16MS); // Mini playfield LEDs
 	}
 	else if (strncasecmp(gn, "sman_261", 8) == 0) { // Spider-Man
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
@@ -1388,10 +1387,11 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
 	else if (strncasecmp(gn, "wof_500", 7) == 0) { // Wheel of Fortune
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED); // Mini DMD (175 faded LEDs)
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 48, CORE_MODOUT_LED); // Wheel LEDs
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED_STROBE_1_5MS); // Mini DMD (175 LEDs)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // 4 LED flasher at the back of the wheel
 	}
 	else if (strncasecmp(gn, "wpt_140a", 8) == 0) { // World Poker Tour
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 490, CORE_MODOUT_LED); // Mini DMD (490 LEDs, but are they really faded ?)
@@ -1400,6 +1400,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 78 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms)
 	}
 	else if (strncasecmp(gn, "xmn_151h", 8) == 0) { // XMen
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED (Looks nicer with bulbs, but it really has LEDs)
@@ -1958,7 +1959,7 @@ ROM_END
 /*-------------------------------------------------------------------
 / S.A.M. Boot Flash
 /-------------------------------------------------------------------*/
-INITGAME(sam1_flashb, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(sam1_flashb, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_BOOTFLASH(sam1_flashb_0102, "boot_102.bin", CRC(92c93cba) SHA1(aed7ba2f988df8c95e2ad08f70409152d5caa49a), 0x00100000)
 SAM1_BOOTFLASH(sam1_flashb_0106, "boot_106.bin", CRC(fe7bcece) SHA1(775590bbd52c24950db86cc231566ba3780030d8), 0x000e8ac8)
@@ -2093,10 +2094,10 @@ CORE_CLONEDEF(wpt, 140l, 140a, "World Poker Tour (V14.0 Spanish)", 2008, "Stern"
 /*-------------------------------------------------------------------
 / The Simpsons Kooky Carnival Redemption
 /-------------------------------------------------------------------*/
-INITGAME(scarn9nj, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
-INITGAME(scarn103, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
-INITGAME(scarn105, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
-INITGAME(scarn200, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(scarn9nj, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
+INITGAME(scarn103, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
+INITGAME(scarn105, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
+INITGAME(scarn200, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(scarn9nj, "scarn09nj.bin",CRC(3a9142e0) SHA1(57d75763fb52c891d1bb16e85ae170c38e6dd818), 0x0053B7CC)
 SAM1_ROM32MB(scarn103, "scarn103.bin", CRC(69f5bb8a) SHA1(436db9872d5809c7ed5fe607c4167cdc0e1b5294), 0x0053A860)
@@ -2170,7 +2171,7 @@ CORE_CLONEDEF(fg, 1200al, 1200ag, "Family Guy (V12.0 English, Spanish)", 2008, "
 /*-------------------------------------------------------------------
 / Disney's Pirates of the Caribbean
 /-------------------------------------------------------------------*/
-INITGAME(potc, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(potc, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(potc_108as, "potc_108as.bin", CRC(6c3a3f7f) SHA1(52e97a4f479f8f3f55a72c9c104fb1335a253f1a), 0x01C61F6C)
 
@@ -2251,7 +2252,7 @@ CORE_CLONEDEF(potc, 600gf, 600af, "Pirates of the Caribbean (V6.0 German, French
 /*-------------------------------------------------------------------
 / Spider-Man (Stern)
 /-------------------------------------------------------------------*/
-INITGAME(sman, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(sman, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(sman_102af, "sman_102af.bin", CRC(1e77651c) SHA1(fbce7dbe4ce70cd8bd1c01279a774f410f5aaeff), 0x00fbb834)
 SAM1_ROM32MB(sman_130af, "sman_130af.bin", CRC(6aa6a03a) SHA1(f56442e84b8789f49127bf4ba97dd05c77ea7c36), 0x017916C8)
@@ -2591,7 +2592,7 @@ CORE_CLONEDEF(csi, 230, 240, "CSI: Crime Scene Investigation (V2.3)", 2009, "Ste
 /*-------------------------------------------------------------------
 / 24
 /-------------------------------------------------------------------*/
-INITGAME(twenty4, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(twenty4, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(twenty4_130, "24_130a.bin", CRC(955a5c12) SHA1(66e33fb438c831679aeb3ba68af7b4a3c59966ef), 0x01C08280)
 SAM1_ROM32MB(twenty4_140, "24_140a.bin", CRC(bab92fb1) SHA1(07c8d9c28730411dd0f23d5960a223beb4c587b2), 0x01C08280)
@@ -2608,7 +2609,7 @@ CORE_CLONEDEF(twenty4, 144, 150, "24 (V1.44)", 2009, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / NBA
 /-------------------------------------------------------------------*/
-INITGAME(nba, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(nba, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(nba_500, "nba_500.bin", CRC(01b0c27a) SHA1(d7f4f6b24630b55559a48cde4475422905811106), 0x019112d0)
 SAM1_ROM32MB(nba_600, "nba_600.bin", CRC(af2fbcf4) SHA1(47df1992a1eb6c4cd5ec246912eab9f5636499a7), 0x019112d0)
@@ -2627,7 +2628,7 @@ CORE_CLONEDEF(nba, 801, 802, "NBA (V8.01)", 2009, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / Big Buck Hunter Pro
 /-------------------------------------------------------------------*/
-INITGAME(bbh, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(bbh, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(bbh_140, "bbh_140.bin", CRC(302e29f0) SHA1(0c500c0a5588f8476a71599be70b515ba3e19cab), 0x01bb8fa4)
 SAM1_ROM32MB(bbh_150, "bbh_150.bin", CRC(18bad072) SHA1(16e499046107baceda6f6c934d70ba2108915973), 0x01bb8fa4)
@@ -2768,7 +2769,7 @@ CORE_CLONEDEF(avr, 200,  120h, "Avatar (V2.0)", 2013, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / The Rolling Stones
 /-------------------------------------------------------------------*/
-INITGAME(rsn, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
+INITGAME(rsn, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NO_AUX)
 
 SAM1_ROM32MB(rsn_100h, "rsn_100h.bin", CRC(7cdb082a) SHA1(2f35057b80ffeec05cdbc62bc86da8a32f859425), 0x01EB50C8)
 SAM1_ROM32MB(rsn_103,  "rsn_103.bin",  CRC(2039ac97) SHA1(4cbcc758fc74dd32f5804b9548645fba3431bdce), 0x01D38788)
@@ -2787,7 +2788,7 @@ CORE_CLONEDEF(rsn, 110,  110h, "Rolling Stones, The (V1.1)", 2011, "Stern", sam1
 /*-------------------------------------------------------------------
 / AC/DC
 /-------------------------------------------------------------------*/
-INITGAME(acd, GEN_SAM, sam_dmd128x32, SAM_12COL, SAM_GAME_AUXSOL12 | SAM_GAME_ACDC_FLAMES)
+INITGAME(acd, GEN_SAM, sam_dmd128x32, SAM_12COL, SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)
  
 SAM1_ROM128MB(acd_121,   "acd_121.bin",  CRC(4f5f43e9) SHA1(19045e9cdb2522770013c24c6fed265009278dea), 0x03D8F40C)
 SAM1_ROM128MB(acd_125,   "acd_125.bin",  CRC(0307663f) SHA1(d40e3aaf94d1d314835fa59a177ce0c386399f4c), 0x03E53DEC)
@@ -2924,7 +2925,7 @@ CORE_CLONEDEF(avs, 170hc,170h, "Avengers, The Limited Edition (V1.7) (Colored MO
 /*-------------------------------------------------------------------
 / Metallica
 /-------------------------------------------------------------------*/
-INITGAME(mtl, GEN_SAM, sam_dmd128x32, SAM_9COL, SAM_GAME_AUXSOL12 | SAM_GAME_METALLICA_MAGNET)
+INITGAME(mtl, GEN_SAM, sam_dmd128x32, SAM_9COL, SAM_GAME_AUXSOL6 | SAM_GAME_METALLICA_MAGNET)
 
 SAM1_ROM128MB(mtl_052,   "mtl_052.bin",  CRC(6150be49) SHA1(0095722d2a96c58c66a78180146c358e3b859817), 80135496)
 SAM1_ROM128MB(mtl_103,   "mtl_103.bin",  CRC(9b073858) SHA1(129872e38d21d9d6d20f81388825113f13645bab), 0x04D24D04)
