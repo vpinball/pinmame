@@ -401,6 +401,8 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_89_25V_DC_S11   304 /* Incandescent #89/906 Bulb connected to 25V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
 #define CORE_MODOUT_LED_STROBE_1_10MS    401 /* LED Strobed 1ms over 10ms for full power */
+#define CORE_MODOUT_LED_STROBE_1_5MS     402 /* LED Strobed 1ms over 5ms for full power */
+#define CORE_MODOUT_LED_STROBE_8_16MS    403 /* LED Strobed 8ms over 16ms for full power */
 #define CORE_MODOUT_VFD_STROBE_05_20MS   450 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
 #define CORE_MODOUT_VFD_STROBE_1_16MS    451 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
 

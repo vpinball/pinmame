@@ -130,8 +130,8 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
     for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-      if ((options.usemodsol == CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii].type == CORE_MODOUT_BULB_44_6_3V_AC_REV)
-        state[ii] = 1.0f - state[ii];
+		if ((options.usemodsol & CORE_MODOUT_ENABLE_MODSOL) && (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii].type == CORE_MODOUT_BULB_44_6_3V_AC_REV))
+		  state[ii] = 1.0f - state[ii];
       UINT8 v = saturatedByte(state[ii]);
       if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
         chgStat[idx].solNo = ii + 1;
@@ -231,8 +231,7 @@ void vp_setSolMask(int no, int mask) {
 	{
 		// Use index 2 to turn on/off modulated solenoids, using a bit mask:
 		// 1 enable legacy "modulated solenoid"
-		// 2 enable physical solenoids outputs
-		// 4 enable lamps/GI/aLphanum segments physical outputs
+		// 2 enable physical outputs (solenoids/lamps/GI/aLphanum segments)
 		options.usemodsol = (options.usemodsol & CORE_MODOUT_FORCE_ON) | mask;
 	}
 	else if (no == 0 || no == 1)

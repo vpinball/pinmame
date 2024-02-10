@@ -2724,6 +2724,14 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 10.f / 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
 	   break;
+    case CORE_MODOUT_LED_STROBE_1_5MS:
+       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 5.f / 1.f;
+       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
+       break;
+    case CORE_MODOUT_LED_STROBE_8_16MS:
+       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 16.f / 8.f;
+       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
+       break;
     case CORE_MODOUT_VFD_STROBE_05_20MS:
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 20.f / 0.5f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
