@@ -18,7 +18,7 @@
    and send our commands there.
   -Still a # of unmapped / unhandled address writes (maybe reads as well)
   -sam_LED_hack() triggers specialized hacks to get LED updates going immediately (otherwise takes a while)
-  -IJ/CSI still have timinig issues that are worked around for now, see at91_block_timers
+  -IJ/CSI still have timing issues that are worked around for now, see at91_block_timers
 
   FIRQ frequency of 4008Hz was measured on real machine.
 
@@ -49,7 +49,7 @@ extern void libpinmame_forward_console_data(void* data, int size);
 #define SAM_USE_JIT
 #define SAM_DISPLAYSMOOTH 4
 
-#define SAM_SOL_FLIPSTART 13 
+#define SAM_SOL_FLIPSTART 13
 #define SAM_SOL_FLIPEND 16
 #define SAM_FASTFLIPSOL 33
 
@@ -59,11 +59,11 @@ extern void libpinmame_forward_console_data(void* data, int size);
 #define SAM_SOUNDFREQ 24000
 #define SAM_ZC_FREQ 120 // was 145
 // 100ms sound buffer.
-#define SNDBUFSIZE (SAM_SOUNDFREQ * 100 / 1000)    
+#define SNDBUFSIZE (SAM_SOUNDFREQ * 100 / 1000)
 
 #define SAM_ROMBANK0 1
 
-				
+
 #define SAM_NO_AUX                 0x0000 // all games without special stuff
 #define SAM_GAME_WPT               0x0001 // Board 520-5250-14: World Poker Tour 14 block LED
 #define SAM_GAME_FG                0x0002 // Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
@@ -99,11 +99,11 @@ extern void libpinmame_forward_console_data(void* data, int size);
 
 //Logging Options
 #define LOGALL 0 // set to 0 to log NOTHING
-#define LOG_RAW_SOUND_DATA			0	// Set to 1 to log all raw sample data to a file
-#define LOG_TO_SCREEN				0	// Set to 1 to print log data to screen instead of logfile
-#define LOG_SWITCH_READ_HANDLER		0	// Set to 1 to log the main Switch Read Handler
+#define LOG_RAW_SOUND_DATA			0   // Set to 1 to log all raw sample data to a file
+#define LOG_TO_SCREEN				0   // Set to 1 to print log data to screen instead of logfile
+#define LOG_SWITCH_READ_HANDLER		0   // Set to 1 to log the main Switch Read Handler
 #define LOG_SWITCH_MATRIX			0   // Set to 1 to log the Switch Matrix reads
-#define LOG_UNKNOWN1				0	// Set to 1 to log Unknown location read
+#define LOG_UNKNOWN1				0   // Set to 1 to log Unknown location read
 #define LOG_IO_STAT					0   // Set to 1 to log IO Status reads
 #define LOG_CS_W					0   // Set to 1 to log CS Writes
 #define LOG_IOPORT_W				0   // Set to 1 to log IO Port Writes
@@ -144,9 +144,7 @@ struct {
 	UINT8 samVersion; // 1 or 2
 	UINT16 value;
 	INT16 bank;
-	//UINT8 miniDMDData[14][16];
 
-	data8_t ext_leds[SAM_LEDS_MAX];
 	data8_t tmp_leds[SAM_LED_MAX_STRING_LENGTH]; // gather the serial data for the LEDs board
 
 	// IO Board:
@@ -154,11 +152,6 @@ struct {
 	int lamprow;
 	UINT8 auxstrb;
 	UINT8 auxdata;
-	UINT8 WOF_minidmdflag; // =dataBlock in original SAM.c // bool
-	int colWrites;
-	int dataWrites[6]; //!! [4] unused, see 0x02400026, maybe also need a [6], see 0x0240002B?
-	int miniDMDCol;
-	int miniDMDRow;
 
 	// Transmit Serial:
 	data8_t prev_ch1;
@@ -283,9 +276,9 @@ static int dedswitch_upper_r(void)
 #define SAM_COMPORTS \
   PORT_START /* 0 */ \
     /*Switch Col. 0*/ \
-    COREPORT_BITDEF(  0x0010, IPT_TILT,           KEYCODE_INSERT)  \
-    COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_HOME)  \
-    COREPORT_BIT   (  0x0040, "Ticket Notch",     KEYCODE_K)  \
+    COREPORT_BITDEF(  0x0010, IPT_TILT,           KEYCODE_INSERT) \
+    COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BIT   (  0x0040, "Ticket Notch",     KEYCODE_K) \
     COREPORT_BIT   (  0x0080, "Dedicated Sw#20",  KEYCODE_L) \
     COREPORT_BIT   (  0x0100, "Back",             KEYCODE_7) \
     COREPORT_BIT   (  0x0200, "Minus",            KEYCODE_8) \
@@ -295,10 +288,10 @@ static int dedswitch_upper_r(void)
     COREPORT_BIT   (  0x8000, "Start Button",     KEYCODE_1) \
     COREPORT_BIT   (  0x4000, "Tournament Start", KEYCODE_2) \
     /*Switch Col. 9*/ \
-    COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3)  \
-    COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)  \
-    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)  \
-    COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6)  \
+    COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6) \
     /*None*/ \
     COREPORT_BITTOG(  0x1000, "Coin Door",        KEYCODE_END) \
   PORT_START /* 1 */ \
@@ -391,7 +384,7 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 		
 		for (; ii < length; ++ii)
 			for (channel = 0; channel < 2; channel++)
-				buffer[channel][ii] = samlocals.lastsamp[channel];	
+				buffer[channel][ii] = samlocals.lastsamp[channel];
 	}
 }
 
@@ -629,10 +622,10 @@ static MEMORY_READ32_START(sam_readmem)
 	{ 0x0109F000, 0x010FFFFF, MRA32_RAM },					//U13 RAM - Sound Data for output
 	{ 0x01100000, 0x011FFFFF, samswitch_r },				//Various Input Signals
 	{ 0x02000000, 0x020FFFFF, MRA32_RAM },					//U9 Boot Flash Eprom
-	{ 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },	    //U11 NVRAM (128K)
+	{ 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },		//U11 NVRAM (128K)
 	{ 0x02400024, 0x02400027, samxilinx_r },				//I/O Related
 	{ 0x03000000, 0x030000FF, MRA32_RAM },					//USB Related
-	{ 0x04000000, 0x047FFFFF, MRA32_RAM }, 					//1st 8MB of Flash ROM U44 Mapped here
+	{ 0x04000000, 0x047FFFFF, MRA32_RAM },					//1st 8MB of Flash ROM U44 Mapped here
 	{ 0x04800000, 0x04FFFFFF, MRA32_BANK1 },				//Banked Access to Flash ROM U44 (including 1st 8MB ALSO!)
 	{ 0x05000000, 0x057FFFFF, MRA32_RAM },
 	{ 0x05800000, 0x05FFFFFF, MRA32_BANK1 },
@@ -1038,7 +1031,7 @@ static WRITE32_HANDLER(sambank_w)
 
 				samlocals.auxstrb = data;
 				break;
-			 default:
+			default:
 				LOG(("error"));
 				break;
 		}
@@ -1272,7 +1265,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 8, CORE_MODOUT_LED); // LEDs on opto board
 	}
 	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 abobe playfield #161 is 12V
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 above playfield #161 is 12V
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1289,13 +1282,13 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 54 - 1, 2, CORE_MODOUT_LED); // ark leds (2 boards)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 55 - 1, 2, CORE_MODOUT_LED); // swordman
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 56 - 1, 2, CORE_MODOUT_LED); // skull
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 54 - 1, 2, CORE_MODOUT_LED); // Ark leds (2 boards)
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 55 - 1, 2, CORE_MODOUT_LED); // Swordman
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 56 - 1, 2, CORE_MODOUT_LED); // Skull
 	}
-	else if (strncasecmp(gn, "im_186ve", 8) == 0) { // Ironman
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_LED); // Led Flasher (Iron Map Vault Edition)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // Led Flasher (Iron Map Vault Edition)
+	else if (strncasecmp(gn, "im_186ve", 8) == 0) { // Iron Man
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_LED); // Led Flasher (Iron Man Vault Edition)
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // Led Flasher (Iron Man Vault Edition)
 	}
 	else if (strncasecmp(gn, "mtl_180h", 8) == 0) { // Metallica LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
@@ -1402,7 +1395,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms)
 	}
-	else if (strncasecmp(gn, "xmn_151h", 8) == 0) { // XMen
+	else if (strncasecmp(gn, "xmn_151h", 8) == 0) { // X-Men
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED (Looks nicer with bulbs, but it really has LEDs)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1577,7 +1570,7 @@ static void sam_LED_hack(int usartno)
 	const char * const gn = Machine->gamedrv->name;
 
 	// Mustang and TWD LE do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.
-	
+
 	if (strncasecmp(gn, "mt_145hb", 8)==0)
 	{
 		cpu_writemem32ledw(0x01061648, 0x00);
@@ -1648,7 +1641,6 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			{
 				if (samlocals.serchar_waiting == 2)
 				{
-					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 					for (int i = 0; i < samlocals.leds_per_string; i++)
 						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
 				}
@@ -1663,7 +1655,6 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 				// TWD sends garbage data in the led string sometimes.   Only accept if it was framed properly. 
 				if (samlocals.serchar_waiting == 2)
 				{
-					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 					samlocals.LED_hack_send_garbage = 0;
 					for (int i = 0; i < samlocals.leds_per_string; i++)
 						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
@@ -1676,7 +1667,6 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			{
 				if (samlocals.serchar_waiting == 1)
 				{
-					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], samlocals.tmp_leds, samlocals.leds_per_string);
 					for (int i = 0; i < samlocals.leds_per_string; i++)
 						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
 				}
@@ -1847,15 +1837,14 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
     int ii,kk,bits;
     const int dmd_x = (layout->left-10)/7;
     const int dmd_y = (layout->top-34)/9;
-	 for (int y = 0; y < 8; y++)
-		 for (int x = 0; x < 5; x++) {
-			 //const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
-			 const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
-			 float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			 coreGlobals.dotCol[y + 1][x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
-		 }
-	 // Use the video update to output mini DMD as LED segments (somewhat hacky)
-	 for (ii = 0; ii < 5; ii++) {
+    for (int y = 0; y < 8; y++)
+		for (int x = 0; x < 5; x++) {
+			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
+			float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
+			coreGlobals.dotCol[y + 1][x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
+		}
+    // Use the video update to output mini DMD as LED segments (somewhat hacky)
+    for (ii = 0; ii < 5; ii++) {
         bits = 0;
         for (kk = 1; kk < 8; kk++)
             bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
@@ -1868,7 +1857,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
 
 static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
     int ii,jj,kk,bits;
-	 for (jj = 0; jj < 35; jj++)
+    for (jj = 0; jj < 35; jj++)
 		for (kk = 0; kk < 5; kk++) {
 			const int target = 140 + jj + (kk * 35);
 			float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
