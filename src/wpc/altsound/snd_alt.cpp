@@ -413,7 +413,11 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		ALT_DEBUG(0, "Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95");
 
 		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA))) // change volume?
-			// DAR@20240208 The check below is a very bad idea.  See https://github.com/vpinball/pinmame/issues/220
+			// DAR@20240208 The check below is dangerous.  If this is still a 
+			//              problem, it would be better to revisit it when it
+			//              reappears to implement a more robust solution that
+			//              works for all systems
+			//              See https://github.com/vpinball/pinmame/issues/220
 			//||
 			//((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00))) // glitch in command buffer?
 		{
