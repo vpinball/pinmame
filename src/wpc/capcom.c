@@ -901,7 +901,7 @@ MEMORY_END
 static MEMORY_WRITE16_START(cc_writemem)
   { 0x00000000, 0x0007ffff, MWA16_RAM, &ramptr },	/* DRAM */
   { 0x10000000, 0x10ffffff, MWA16_ROM, &rom_base },	/* ROMS */
-  { 0x30000000, 0x3001ffff, MWA16_RAM, &CMOS }		/* NVRAM */
+  { 0x30000000, 0x3001ffff, MWA16_RAM, &CMOS },		/* NVRAM */
   { 0x40000000, 0x40bfffff, io_w },					/* I/O */
   { 0x40c00000, 0x40c007ff, u16_w },				/* U16 (A10,A2,A1)*/
 MEMORY_END
