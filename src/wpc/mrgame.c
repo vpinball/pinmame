@@ -655,11 +655,7 @@ static const struct rectangle screen_visible_area =
 //Video Update - Generation #1
 PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 	size_t offs;
-	int color;
 	int colorindex = 0;
-	int tile;
-	int flipx;
-	int flipy;
 
 #ifdef MAME_DEBUG
 
@@ -697,11 +693,11 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
-			color = mrgame_objectram[colorindex];
+			unsigned int color = mrgame_objectram[colorindex];
 			locals.scrollers[sx] = -mrgame_objectram[colorindex-1];
 
-			tile = mrgame_videoram[offs]+
-			       (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
+			unsigned int tile = mrgame_videoram[offs]+
+							       (locals.vid_a11<<8) + (locals.vid_a12<<9) + (locals.vid_a13<<10) + (locals.vid_a14<<11);
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
@@ -711,7 +707,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 					0,TRANSPARENCY_NONE,0);
 		}
 	}
-	/* copy the temporary bitmap to the screen with scolling */
+	/* copy the temporary bitmap to the screen with scrolling */
 	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32, locals.scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
@@ -719,11 +715,11 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 	{
 		unsigned int sx = mrgame_objectram[offs + 3] + 1;
 		unsigned int sy = 240 - mrgame_objectram[offs];
-		flipx = mrgame_objectram[offs + 1] & 0x40;
-		flipy = mrgame_objectram[offs + 1] & 0x80;
-		tile = (mrgame_objectram[offs + 1] & 0x3f) +
-				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8);
-		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
+		unsigned int flipx = mrgame_objectram[offs + 1] & 0x40;
+		unsigned int flipy = mrgame_objectram[offs + 1] & 0x80;
+		unsigned int tile = (mrgame_objectram[offs + 1] & 0x3f) +
+							   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8);
+		unsigned int color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
 		drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
 				color+2,                    //+2 to offset from PinMAME palette entries
@@ -739,11 +735,6 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	size_t offs;
 	int colorindex = 0;
-	int tile;
-	int flipx;
-	int flipy;
-	int sx;
-	int sy;
 
 	if (locals.pout2) return 0;
 
@@ -755,15 +746,15 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 		{
 //			dirtybuffer[offs] = 0;
 
-			sx = (int)(offs % 32);
-			sy = (int)(offs / 32);
+			unsigned int sx = (unsigned int)(offs % 32);
+			unsigned int sy = (unsigned int)(offs / 32);
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
 			locals.scrollers[sx] = -mrgame_objectram[colorindex-1];
 
-			tile = mrgame_videoram[offs]+
-			       (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
+			unsigned int tile = mrgame_videoram[offs]+
+							       (locals.vid_a11<<8) + (locals.vid_a12<<9) + (locals.vid_a13<<10) + (locals.vid_a14<<11);
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
 					0,			//Always color 0 because there's no color data used
@@ -772,7 +763,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 					0,TRANSPARENCY_NONE,0);
 		}
 	}
-	/* copy the temporary bitmap to the screen with scolling */
+	/* copy the temporary bitmap to the screen with scrolling */
 	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32, locals.scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
 
@@ -780,12 +771,12 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	/* NOTE: We loop backwards in sprite memory so that we draw the last sprites first so overlapping priority is correct */
 	for (offs = 0x5f; offs > 0x3F; offs -= 4)
 	{
-		sx = mrgame_objectram[offs] + 1;
-		sy = 240 - mrgame_objectram[offs-3];
-		flipx = mrgame_objectram[offs - 2] & 0x40;
-		flipy = mrgame_objectram[offs - 2] & 0x80;
-		tile = (mrgame_objectram[offs - 2] & 0x3f) +
-				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8) + (locals.vid_a14<<9);
+		unsigned int sx = mrgame_objectram[offs] + 1;
+		unsigned int sy = 240 - mrgame_objectram[offs-3];
+		unsigned int flipx = mrgame_objectram[offs - 2] & 0x40;
+		unsigned int flipy = mrgame_objectram[offs - 2] & 0x80;
+		unsigned int tile = (mrgame_objectram[offs - 2] & 0x3f) +
+							   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8) + (locals.vid_a14<<9);
 		//Draw it
 		if (sx != 1) // seems like sprites rendered at an X offset of 1 should not be rendered?!
 			drawgfx(tmpbitmap2,Machine->gfx[1],

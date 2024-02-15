@@ -31,7 +31,7 @@
 
   Milestones:
   09/19/03-09/21/03 - U16 Test successfully bypassed, dmd and lamps working quite well
-  09/21/03-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
+  09/21/03-09/24/03 - DMD working 100% including 256x64 size, switches, solenoids working on most games except kp, and ff
   09/25/03          - First time game booted without any errors.. (Even though in reality, the U16 would still fail if not hacked around)
   11/03/03          - First time sound was working almost fully (although still some glitches and much work left to do)
   11/09/03          - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
@@ -39,7 +39,6 @@
   11/15/03          - 68306 optimized & true address mappings implemented, major speed improvements!
 
   Hacks & Issues that need to be looked into:
-  #1) Why do we need to adjust the CPU Speed to get the animations to display at correct speed? U16 related bug?
   #2) U16 Needs to be better understood and emulated more accurately (should fix IRQ4 timing problems)
   #3) IRQ4 appears to somehow control timing for 50V solenoids & Lamps in FF&KP, unknown effect in other games
   #4) Handle opto switches internally? Is this needed?
@@ -55,20 +54,20 @@
       The PowerMeter in King Pin works that way. The lower the power is on the display the lower the strength the flippers is applied.
       Also see https://m.facebook.com/story.php?story_fbid=2088173937889558&id=1034214746618821
       -> suggestion: Find mem location (as it's only one machine/ROM version after all!) and use that directly instead of trying to track/map it?
-  #11) Flippers are not implemented.  VPinMame appears to pass flipper switches through to flipper solenoids (always on).   Actual flipper solenoids
+  #11) Flippers are not implemented.  VPinMAME appears to pass flipper switches through to flipper solenoids (always on).   Actual flipper solenoids
        seem to give one very latent pulse instead of staying on.
 
  [VB 02/01/2024]
  After diving into the schematics and some 68000 disassembler, some changes:
  - Added PWM with physical model outputs (really needed, since the hardware uses this almost everywhere)
- - Replaced diagnostic leds by PWM output in an addtional lamp column (they were wrong before, and Capcom use PWM to report ok state)
+ - Replaced diagnostic leds by PWM output in an additional lamp column (they were wrong before, and Capcom use PWM to report ok state)
  - Moved back to 'normal' frequencies: CPU at 16MHz from the schematics, 120Hz for zero cross since these are things we can be sure of
  - Removed locals.driverboard read/write: from the schematics, this is an hardcoded value read from U55 (sheet 9 of driver board schematics, checked for Airborne, Breakshot,...)
  - Adjusted Line_5/Line_V to be read as expected (RC filter with comparator, the CPU measure how long it takes to pass the comparator threshold)
  - Fixed 68306 DUART counter which was counting 2 times too slow. 5V/50V measure is now right (it is used to measure Pulse/Charge/Discharge lengths and likely adjust solenoid PWM to get consistent solenoid strength accross voltage levels)
  - Removed locals.blanking since it is in fact the lamp matrix VSET1/2 which enable/disable lamp matrices (not solenoid). There is also a Blank signal from U16 which is unknown so far
  - Returns the lamp/solenoid state when read since the schematics shows that the read value is the latched one, including overcurrent reset (used in diagnostics section of DMD)
- - Zero cross (IRQ2) is now latched and manually reseted by the CPU as the schematics shows
+ - Zero cross (IRQ2) is now latched and manually resetted by the CPU as the schematics shows
  - Cleaned up a little bit of memory mapping between Breakshot and other games
  - Implemented U16 programmable interrupt controller. Startup tests are now passing.
  - Adjusted (hacked) IRQ1 timings to fulfill zero cross measurements (in audit, in ROM code, also impacts how IRQ4 line 1 is setup by game code)
@@ -264,7 +263,7 @@ static WRITE16_HANDLER(cc_porta_w) {
   // Cabinet switch voltage level comparator (either comparator from +5V with 2.2k/1.2k =>1.76V or 2.2k/3.9k => 3.20V), not sure why
   locals.vset = (data>>6) & 1;
 
-  //Manually reset the sound board on 1->0 transition (but don't do it the very first time, ie, when both cpu's first boot up)
+  // Manually reset the sound board on 1->0 transition (but don't do it the very first time, ie, when both cpu's first boot up)
   reset = (data >> 7) & 1;
   if (locals.greset && !reset) {
     if(!locals.first_sound_reset)
@@ -340,8 +339,8 @@ static WRITE16_HANDLER(cc_portb_w) {
 //                                   measured by game code (during gameplay). The only identified difference being the way the IRQ is acknowledge (delay flag ? something unspot yet ?).
 //                             . CBA is IRQ4 line enable, bit C is inverted:
 //                                 C is a fixed frequency interrupt generator, likely corresponding to DMD VBlank since it is 45.9Hz for FF (64 lines), 91.8Hz for others (32 lines), maybe this flag is DMD steobe on/off
-//                                 B use frequency defined by writting at 40C00404
-//                                 A use frequency defined by writting at 40C00402
+//                                 B use frequency defined by writing at 40C00404
+//                                 A use frequency defined by writing at 40C00402
 //                             . ??? are unknown. Breakshot, Flipper Football & KingPin always set them to 011, except if an auxiliary board is present, then it is set to 111
 //   $40C00402  u16IRQ4line1f  is IRQ4 line 1 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
 //   $40C00404  u16IRQ4line2f  is IRQ4 line 2 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
@@ -450,7 +449,7 @@ static WRITE16_HANDLER(u16_w) {
       //LOG_U16(("PC %08x - U16w IRQ ACK %02x      [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), (~data) & 0x17, offset, data, mem_mask));
       locals.u16IRQState &= data;
       u16UpdateIRQ();
-      // FIXME this is clearly a hack but we do not know what actually drives IRQ1 and the ROM code expects frequency around 4KHz when acknowledgeded with 0xFFE7 (during play) while it expects a 2.96KHz frequency when acked with 0xFFEF (during startup), so...
+      // FIXME this is clearly a hack but we do not know what actually drives IRQ1 and the ROM code expects frequency around 4KHz when acknowledged with 0xFFE7 (during play) while it expects a 2.96KHz frequency when acked with 0xFFEF (during startup), so...
       if (((data & 0x10) == 0) && (locals.u16IRQ1Adjust == (data & 0x08))) {
          locals.u16IRQ1Adjust = (~data) & 0x08;
          timer_adjust(locals.u16IRQ1timer, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period, 0, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period);
@@ -901,8 +900,8 @@ MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
   { 0x00000000, 0x0007ffff, MWA16_RAM, &ramptr },	/* DRAM */
-  { 0x10000000, 0x10ffffff, MWA16_ROM, &rom_base }, /* ROMS */
-  { 0x30000000, 0x3001ffff, MWA16_RAM, &CMOS },		/* NVRAM */
+  { 0x10000000, 0x10ffffff, MWA16_ROM, &rom_base },	/* ROMS */
+  { 0x30000000, 0x3001ffff, MWA16_RAM, &CMOS }		/* NVRAM */
   { 0x40000000, 0x40bfffff, io_w },					/* I/O */
   { 0x40c00000, 0x40c007ff, u16_w },				/* U16 (A10,A2,A1)*/
 MEMORY_END
@@ -958,7 +957,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
       UINT16 intens1 = RAM[0];
       for(jj=0;jj<8;jj++) {
          *line++ = (intens1&0xc000)>>14;
-         intens1 = intens1<<2;
+         intens1 <<= 2;
       }
       RAM+=1;
     }
@@ -986,9 +985,9 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
       UINT16 intensr = RAM[0x10];
       for(jj=0;jj<8;jj++) {
          *linel++ = (intensl&0xc000)>>14;
-         intensl = intensl<<2;
+         intensl <<= 2;
          *liner++ = (intensr&0xc000)>>14;
-         intensr = intensr<<2;
+         intensr <<= 2;
       }
       RAM+=1;
     }
