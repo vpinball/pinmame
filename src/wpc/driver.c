@@ -692,6 +692,8 @@ DRIVERNV(spirit0)       //S80a-673: 11/82 Spirit
 DRIVERNV(spirit)        //                Spirit (rev. 2)
 DRIVERNV(spirit3)       //          01/23 Spirit (rev. 3 MOD)
 DRIVERNV(striker)       //S80a-675: 11/82 Striker
+DRIVERNV(strikerg)      //                Striker (German Speech)
+//DRIVERNV(strikerf)      //                Striker (French Speech)
 DRIVERNV(punk)          //S80a-674: 12/82 Punk!
 DRIVERNV(krull)         //S80a-676: 02/83 Krull
 DRIVERNV(goinnuts)      //S80a-682: 02/83 Goin' Nuts

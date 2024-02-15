@@ -741,6 +741,16 @@ GTS80_ROMEND
 #define input_ports_striker input_ports_gts80
 CORE_CLONEDEFNV(striker,gts80a,"Striker",1982,"Gottlieb",gl_mGTS80SS,0)
 
+INIT_S80A(strikerg, dispStriker, SNDBRD_GTS80SS_VOTRAX,0)
+GTS80_1_ROMSTART  ("675.cpu",     CRC(06b66ce8) SHA1(399d98753e2da5c835c629a673069e853a4ce3c3))
+GTS80SS22_ROMSTART("675-s1.snd",  CRC(cc11c487) SHA1(fe880dd7dc03f368b2c7ea81059c4b176018b86e), // same dump as english
+                   "675-s2ge.snd",CRC(9d2acc31) SHA1(a1f2aabcfa8fc7d775d502186c232849aaef1dcf))
+GTS80_ROMEND
+#define input_ports_strikerg input_ports_gts80
+CORE_CLONEDEFNV(strikerg,gts80a,"Striker (German Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
+
+// A french speech version apparently also exists, but still needs to be dumped
+
 /*-------------------------------------------------------------------
 / Punk! (#674)
 /-------------------------------------------------------------------*/
