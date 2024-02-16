@@ -77,7 +77,6 @@ add_compile_definitions(
    HAS_SAA1099=1
    HAS_QSOUND=1
 
-   INLINE=static __inline
    LSB_FIRST
    x11
    stricmp=strcasecmp
@@ -100,6 +99,10 @@ add_compile_definitions(
    HAVE_GETTIMEOFDAY
 
    SYSDEP_DSP_COREAUDIO
+)
+
+add_definitions(
+    "-DINLINE=static inline __attribute__((always_inline))"
 )
 
 add_executable(xpinmame 
