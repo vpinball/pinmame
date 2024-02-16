@@ -61,8 +61,8 @@ jobs:
           brew install sdl2
 
       - if: matrix.os == 'ubuntu-latest'
-        run: |    
-          sudo apt install libasound2-dev libsdl2-dev
+        run: |
+          sudo apt update && sudo apt install libasound2-dev libsdl2-dev
       - name: Build xpinmame-${{ matrix.platform }}
         run: |
           cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
