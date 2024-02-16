@@ -77,7 +77,6 @@ add_compile_definitions(
    HAS_SAA1099=1
    HAS_QSOUND=1
 
-   INLINE=static __inline
    LSB_FIRST
    x11
    stricmp=strcasecmp
