@@ -95,7 +95,6 @@ static struct {
 #ifndef PINMAME_NO_UNUSED
   int soundSys; /* 0 = CPU board sound, 1 = Sound board */
 #endif
-  int dispLock;
 } locals;
 
 static void s11_irqline(int state) {
@@ -374,7 +373,6 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
                              (currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
   locals.digSel = data & 0x0f;
-  locals.dispLock = 0;
   if (core_gameData->hw.display & S11_BCDDIAG)
     locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
   else
@@ -420,22 +418,52 @@ static WRITE_HANDLER(pia5a_w) { // Not used for DMD
          locals.pseg[20+locals.digSel].b.hi = data;
 }
 
+/*
+ * A little explanation of the following hack:
+ *
+ * Some S11 games like Earthshaker or Black Knight 2000 will work even when there is a bad U26,
+ * in which case they display an error message "U26 ROM FAILURE" before entering attract mode.
+ *
+ * Now this is done in a way that first the correct segments for a digit are shown,
+ * then spending some CPU cycles by running a code loop not doing anything,
+ * followed by lighting *all* the segments in that digit,
+ * and finally extinguishing all its segments again, just two CPU instructions apart!
+ * This will work OK in the actual machine because of the latency of the display and the human eye
+ * but it causes problems for the emulation, resulting in a heavily flickering display.
+ *
+ * To circumvent the issue, we won't show the all-on digit right away.
+ * If it is immediately followed by an all-off digit, it's silently ignored.
+ * Otherwise (if enough CPU cycles have been spent in between writes), we'll show it after all.
+ * This is needed for a proper display test at least where the all-on digit is being used.
+ *
+ * NB: MAME added a similar hack, preventing further display updates once the initial data was written
+ * but doing so will flicker the first (empty) digit in the row when showing the error message!
+ */
 static WRITE_HANDLER(pia3a_w) {
-  if (!locals.deGame && locals.dispLock) {
-    locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = 0;
-    return;
-  }
+  static UINT64 prevCycles;
+  static UINT8 prevData;
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = data;
-  locals.dispLock = 1;
+  if (data != 0xff) {
+    if (!data && prevData == 0xff && activecpu_gettotalcycles64() - prevCycles > 16)
+      locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = 0xff;
+    else
+      locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = data;
+  }
+  prevCycles = activecpu_gettotalcycles64();
+  prevData = data;
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (!locals.deGame && locals.dispLock) {
-    locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = 0;
-    return;
-  }
+  static UINT64 prevCycles;
+  static UINT8 prevData;
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = data;
+  if (data != 0xff) {
+    if (!data && prevData == 0xff && activecpu_gettotalcycles64() - prevCycles > 16)
+      locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = 0xff;
+    else
+      locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = data;
+  }
+  prevCycles = activecpu_gettotalcycles64();
+  prevData = data;
 }
 
 static READ_HANDLER(pia3b_dmd_r) {
