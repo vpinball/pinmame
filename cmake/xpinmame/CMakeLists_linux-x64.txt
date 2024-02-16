@@ -103,7 +103,7 @@ add_compile_definitions(
    USE_MITSHM
    USE_XV
    USE_HWSCALE
-   DISPLAY_METHOD="x11"
+   DISPLAY_METHOD="SDL2"
    XMAMEROOT="/usr/local/share/xpinmame"
    HAVE_SNPRINTF
    HAVE_GETTIMEOFDAY
@@ -643,16 +643,16 @@ find_package(
    ZLIB REQUIRED
 )
 
-find_package(
-   X11 REQUIRED
-)
+#find_package(
+#   X11
+#)
 
 find_package(
    ALSA
 )
 
 find_package(
-   SDL2
+   SDL2 REQUIRED
 )
 
 target_include_directories(xpinmame PUBLIC
@@ -662,17 +662,17 @@ target_include_directories(xpinmame PUBLIC
    src/cpu/m68000/generated_by_m68kmake
    src/unix
    src/unix/sysdep
-   ${X11_X11_INCLUDE_PATH}
-   ${X11_Xv_INCLUDE_PATH}
+#   ${X11_X11_INCLUDE_PATH}
+#   ${X11_Xv_INCLUDE_PATH}
    ${ALSA_INCLUDE_DIRS}
    ${SDL2_INCLUDE_DIRS}
 )
 
 target_link_libraries(xpinmame PUBLIC
    ZLIB::ZLIB
-   ${X11_X11_LIB}
-   ${X11_Xv_LIB}
-   ${X11_Xext_LIB}
+#   ${X11_X11_LIB}
+#   ${X11_Xv_LIB}
+#   ${X11_Xext_LIB}
    ${ALSA_LIBRARIES}
    ${SDL2_LIBRARIES}
 )
