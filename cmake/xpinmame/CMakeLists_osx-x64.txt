@@ -102,6 +102,10 @@ add_compile_definitions(
    SYSDEP_DSP_COREAUDIO
 )
 
+add_definitions(
+   "-D__forceinline=__attribute__((always_inline)) inline"
+)
+
 add_executable(xpinmame 
    src/artwork.c
    src/artwork.h
