@@ -288,7 +288,7 @@ lisy_home_ss_send_led_colors(void) {
 
     int ledline, led;
 
-    for (ledline = 0; ledline <= 4; ledline++) {
+    for (ledline = 0; ledline <= 6; ledline++) {
         for (led = 0; led <= 47; led++) {
             lisyh_led_set_LED_color(ledline, led, led_rgbw_color[ledline][led].red, led_rgbw_color[ledline][led].green,
                                     led_rgbw_color[ledline][led].blue, led_rgbw_color[ledline][led].white);
@@ -493,6 +493,7 @@ lisy_home_ss_init_event(void) {
     //reset displays
     wheel_score_reset();
 
+/*
     //activate GI lamps line5&6 and all special ( e.g. for credit, drop targets 3000 and top rollover )
     for (i = 0; i <= 127; i++) {
         if (lisy_home_ss_GI_leds[i].line == 5) { //all active by default
@@ -515,7 +516,10 @@ lisy_home_ss_init_event(void) {
                 lisy80_debug(debugbuf);
             }
         }
-        else if (lisy_home_ss_GI_leds[i].line != 0) {
+*/
+    //activate GI lamps and all special ( e.g. for credit, drop targets 3000 and top rollover )
+    for (i = 0; i <= 127; i++) {
+        if (lisy_home_ss_GI_leds[i].line != 0) {
             lisyh_led_set(lisy_home_ss_GI_leds[i].led, lisy_home_ss_GI_leds[i].line, 1);
             if (ls80dbg.bitv.lamps) {
                 sprintf(debugbuf, "activate GI led:%d line:%d", lisy_home_ss_GI_leds[i].led,

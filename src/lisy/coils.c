@@ -1127,7 +1127,7 @@ lisyh_coil_set(int coil, int action) {
 }
 
 //set LED on LISY_Home solenoid driver board
-//4 lines with 48 LEDs each
+//6 lines with 48 LEDs each
 void
 lisyh_led_set(int led, int line, int action) {
 
