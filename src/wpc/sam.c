@@ -71,12 +71,13 @@ extern void libpinmame_forward_console_data(void* data, int size);
 #define SAM_GAME_BDK               0x0008 // Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight with 3 LEDs #86, #87, #88)
 #define SAM_GAME_CSI               0x0010 // Board 520-5290-00: Opto and auxiliary LED PCB (CSI with 3 LEDs #86, #87, #88)
 #define SAM_GAME_TRON              0x0020 // Board 511-6927-01: Tron TriColor Assy strobed on C and D outputs
-#define SAM_GAME_AUXSOL8           0x0040 // Board 520-5325-00: Driver Board 8 Transistor: Avengers, AC/DC Premium/LE, X-Men LE
-#define SAM_GAME_AUXSOL6           0x0080 // Board 520-5326-01: Driver Board 6 Transistor: Metallica
-#define SAM_GAME_AUXSOL12          0x0100 // Board 520-5326-02: Driver Board 12 Transistors: used by lots of games
-#define SAM_GAME_METALLICA_MAGNET  0x0200 // Board 520-6801-00 Magnet processor: Metallica LE has a special aux board just for the coffin magnet!
-#define SAM_GAME_ACDC_FLAMES       0x0400 // Board 520-5332-00 AC/DC LE special aux board for flame lights
-#define SAM_GAME_IJ4_SOL3          0x0800 // Board 520-5289-00 used by Indiana Jones for LED flashers
+#define SAM_GAME_AUXSOL8_CSTB      0x0040 // Board 520-5325-00: Driver Board 8 Transistor wired to CSTB: Avengers, X-Men LE
+#define SAM_GAME_AUXSOL8_DSTB      0x0080 // Board 520-5325-00: Driver Board 8 Transistor wired to DSTB: AC/DC Premium/LE
+#define SAM_GAME_AUXSOL6           0x0100 // Board 520-5326-01: Driver Board 6 Transistor: Metallica
+#define SAM_GAME_AUXSOL12          0x0200 // Board 520-5326-02: Driver Board 12 Transistors: used by lots of games
+#define SAM_GAME_METALLICA_MAGNET  0x0400 // Board 520-6801-00 Magnet processor: Metallica LE has a special aux board just for the coffin magnet!
+#define SAM_GAME_ACDC_FLAMES       0x0800 // Board 520-5332-00 AC/DC LE special aux board for flame lights
+#define SAM_GAME_IJ4_SOL3          0x1000 // Board 520-5289-00 used by Indiana Jones for LED flashers
 
 #define SAM_2COL   2
 #define SAM_3COL   3
@@ -999,7 +1000,9 @@ static WRITE32_HANDLER(sambank_w)
 					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
 
 				// Board 520-5325-00: 8 transistor driver board (Avengers, AC/DC Premium/LE, X-Men LE)
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8_CSTB) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 8, samlocals.auxdata);
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8_DSTB) && (samlocals.auxstrb & ~data & 0x20)) // DSTB
 					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 8, samlocals.auxdata);
 
 				// Board 520-5326-01: 6 transistor driver board (Metallica)
@@ -2777,7 +2780,7 @@ CORE_CLONEDEF(rsn, 110,  110h, "Rolling Stones, The (V1.1)", 2011, "Stern", sam1
 /*-------------------------------------------------------------------
 / AC/DC
 /-------------------------------------------------------------------*/
-INITGAME(acd, GEN_SAM, sam_dmd128x32, SAM_12COL, SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)
+INITGAME(acd, GEN_SAM, sam_dmd128x32, SAM_12COL, SAM_GAME_AUXSOL8_DSTB | SAM_GAME_ACDC_FLAMES)
  
 SAM1_ROM128MB(acd_121,   "acd_121.bin",  CRC(4f5f43e9) SHA1(19045e9cdb2522770013c24c6fed265009278dea), 0x03D8F40C)
 SAM1_ROM128MB(acd_125,   "acd_125.bin",  CRC(0307663f) SHA1(d40e3aaf94d1d314835fa59a177ce0c386399f4c), 0x03E53DEC)
@@ -2838,7 +2841,7 @@ CORE_CLONEDEF(acd, 170hc,170h, "AC/DC Limited Edition (V1.70.0) (Colored MOD)", 
 /*-------------------------------------------------------------------
 / X-Men // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
 /-------------------------------------------------------------------*/
-INITGAME(xmn, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL8)
+INITGAME(xmn, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL8_CSTB)
 
 SAM1_ROM32MB(xmn_100,   "xmn_100.bin",  CRC(997b2973) SHA1(68bb379860a0fe5be6a8a8f28b6fd8fe640e172a), 0x01FB7DEC)
 SAM1_ROM32MB(xmn_102,   "xmn_102.bin",  CRC(5df923e4) SHA1(28f86abc792008aa816d93e91dcd9b62fd2d01ee), 0x01FB7DEC)
@@ -2885,7 +2888,7 @@ CORE_CLONEDEF(xmn, 151hc,151h, "X-Men Limited Edition (V1.51) (Colored MOD)", 20
 /*-------------------------------------------------------------------
 / The Avengers // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
 /-------------------------------------------------------------------*/
-INITGAME(avs, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL8)
+INITGAME(avs, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL8_CSTB)
 
 SAM1_ROM32MB(avs_110,  "avs_110.bin",  CRC(2cc01e3c) SHA1(0ae7c9ced7e1d48b0bf4afadb6db508e558a7ebb), 0x01D032AC)
 SAM1_ROM32MB(avs_120h, "avs_120h.bin", CRC(a74b28c4) SHA1(35f65691312c547ec6c6bf52d0c5e330b5d464ca), 0x01E270D0)
