@@ -65,41 +65,31 @@ extern void libpinmame_forward_console_data(void* data, int size);
 
 
 #define SAM_NO_AUX                 0x0000 // all games without special stuff
-#define SAM_GAME_WPT               0x0001 // Board 520-5250-14: World Poker Tour 14 block LED
-#define SAM_GAME_FG                0x0002 // Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
-#define SAM_GAME_WOF               0x0004 // Board 520-5274-00: Wheel of Fortune Playfield Mini-Dot Display (5X7) & Board 520-5283-00: Wheel of Fortune Opto, LEDs and flasher
-#define SAM_GAME_BDK               0x0008 // Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight with 3 LEDs #86, #87, #88)
-#define SAM_GAME_CSI               0x0010 // Board 520-5290-00: Opto and auxiliary LED PCB (CSI with 3 LEDs #86, #87, #88)
-#define SAM_GAME_TRON              0x0020 // Board 511-6927-01: Tron TriColor Assy strobed on C and D outputs
-#define SAM_GAME_AUXSOL8_CSTB      0x0040 // Board 520-5325-00: Driver Board 8 Transistor wired to CSTB: Avengers, X-Men LE
-#define SAM_GAME_AUXSOL8_DSTB      0x0080 // Board 520-5325-00: Driver Board 8 Transistor wired to DSTB: AC/DC Premium/LE
-#define SAM_GAME_AUXSOL6           0x0100 // Board 520-5326-01: Driver Board 6 Transistor: Metallica
-#define SAM_GAME_AUXSOL12          0x0200 // Board 520-5326-02: Driver Board 12 Transistors: used by lots of games
-#define SAM_GAME_METALLICA_MAGNET  0x0400 // Board 520-6801-00 Magnet processor: Metallica LE has a special aux board just for the coffin magnet!
-#define SAM_GAME_ACDC_FLAMES       0x0800 // Board 520-5332-00 AC/DC LE special aux board for flame lights
-#define SAM_GAME_IJ4_SOL3          0x1000 // Board 520-5289-00 used by Indiana Jones for LED flashers
+#define SAM_GAME_TRON              0x0001 // Board 511-6927-01: Tron RGB ramps strobed on C and D outputs
+#define SAM_GAME_WPT               0x0002 // Board 520-5250-14: World Poker Tour 14 LED matrix blocks
+#define SAM_GAME_FG                0x0004 // Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
+#define SAM_GAME_WOF               0x0008 // Board 520-5274-00: Wheel of Fortune Playfield Mini-Dot Display (5X7) & Board 520-5283-00: Wheel of Fortune Opto, LEDs and flasher
+#define SAM_GAME_3LEDS_BSTB        0x0010 // Board 520-5290-00: 5 Optos and 3 LEDs #86, #87, #88 wired to BSTB for Batman The Dark Knight
+#define SAM_GAME_3LEDS_CSTB        0x0020 // Board 520-5290-00: 5 Optos and 3 LEDs #86, #87, #88 wired to CSTB fot CSI
+#define SAM_GAME_AUXSOL8_CSTB      0x0040 // Board 520-5325-00: Driver Board 8 Transistors wired to CSTB for Avengers, X-Men LE
+#define SAM_GAME_AUXSOL8_DSTB      0x0080 // Board 520-5325-00: Driver Board 8 Transistors wired to DSTB for AC/DC Premium/LE
+#define SAM_GAME_AUXSOL6           0x0100 // Board 520-5326-01: Driver Board 6 Transistors for Metallica
+#define SAM_GAME_AUXSOL12          0x0200 // Board 520-5326-02: Driver Board 12 Transistors
+#define SAM_GAME_IJ4               0x0400 // Board 520-5289-00: directly wired LED flashers used by Indiana Jones
+#define SAM_GAME_ACDC_FLAMES       0x0800 // Board 520-5332-00: AC/DC LE special aux board for flame lights (8 LEDs)
+#define SAM_GAME_METALLICA_MAGNET  0x1000 // Board 520-6801-00: Magnet processor for Metallica LE (coffin magnet)
 
 #define SAM_2COL   2
 #define SAM_3COL   3
 #define SAM_5COL   5
 #define SAM_8COL   8
-#ifdef MAME_DEBUG
 #define SAM_9COL   9
-#define SAM_12COL 12
-#define SAM_20COL 20
-#define SAM_33COL 33
-#else
-// SAM driver used to output lamps in a specific area at lamp 80+ as modulated RGB lamps, they are now included so we have to report the right number of cols
-#define SAM_9COL   9  /*2*/
-#define SAM_12COL  12 /*2*/
-#define SAM_20COL  20 /*2*/
-#define SAM_33COL  33 /*2*/
-#endif
-
-#define WOF_MINIDMD_MAX 175
+#define SAM_12COL  12
+#define SAM_20COL  20
+#define SAM_33COL  33
 
 //Logging Options
-#define LOGALL 0 // set to 0 to log NOTHING
+#define LOGALL                      0   // set to 0 to log NOTHING
 #define LOG_RAW_SOUND_DATA			0   // Set to 1 to log all raw sample data to a file
 #define LOG_TO_SCREEN				0   // Set to 1 to print log data to screen instead of logfile
 #define LOG_SWITCH_READ_HANDLER		0   // Set to 1 to log the main Switch Read Handler
@@ -504,39 +494,40 @@ static READ32_HANDLER(samswitch_r)
 }
 
 /*
- IO Status
- ---------
- Status Data Read
- D0 = Interlock 20V
- D1 = Interlock 50V
- D2 = Zero Cross Circuit
- D3 = Lamp 1 Stat*
- D4 = Lamp 2 Stat*
- D5 = NA - GND
- D6 = NA - GND
- D7 = NA - GND
-
- Lamp1 Stat is tied to Lamp Column Drivers 1,3,5,7
- Lamp2 Stat is tied to Lamp Column Drivers 2,4,6,8
-
+  U19 & U20 of IOBOARD - Address decoding (see sambank_w)
 */
-static READ32_HANDLER(samxilinx_r)
+static READ32_HANDLER(samio_r)
 {
-	data32_t data = 0;
+	const int base = 0x02400000;
+
 	const int mask = ~mem_mask;
+	const int adj = adj_offset(mask);
+	const int realoff = (offset * 4);
+	const int addr = base + realoff + adj;
 	const int logit = LOG_IO_STAT;
-	//This is read in the upper bits of the address.
-	if(mask == 0xff00)
+	offset = addr;
+
+	data32_t data = 0;
+	switch (offset)
 	{
-		// was ((6 | zc) << 2) | u1...   bits:   0 1 1 zc u1 u1
-		//                     works     bits:   0 0 0 zc u1 u1
-		//                                                u1 = solenoids have power - 1-32
-		//                                                   u1 = power switch
-		data = /*(0x1C & 0xFB)*/(7u << 3) | (samlocals.zc<<2) | (samlocals.coindoor != 0 ? 3u:0u); //!! which one is correct?
-		data = data << 8;
+	case 0x02400025: // STATUS
+		//	D0 = Interlock 20V
+		// D1 = Interlock 50V
+		// D2 = Zero Cross Circuit
+		// D3 = Lamp 1 Stat tied to Lamp Column Drivers 1,3,5,7
+		// D4 = Lamp 2 Stat tied to Lamp Column Drivers 2,4,6,8
+		// D5 = NA - GND
+		// D6 = NA - GND
+		// D7 = NA - GND
+		data = (7u << 3) | (samlocals.zc<<2) | (samlocals.coindoor != 0 ? 3u:0u);
+		break;
+	case 0x02400027: // AUX_IN data from J3 connector
+		// TODO implement for aux boards using it
+		break;
 	}
 	if(logit) LOG(("%08x: reading from: %08x = %08x (mask=%x)\n",activecpu_get_pc(),0x02400024+offset,data,mask));
-	return data;
+	const int newdata = (data << (adj * 8));
+	return newdata;
 }
 
 /*static READ32_HANDLER(nvram_r)
@@ -624,7 +615,7 @@ static MEMORY_READ32_START(sam_readmem)
 	{ 0x01100000, 0x011FFFFF, samswitch_r },				//Various Input Signals
 	{ 0x02000000, 0x020FFFFF, MRA32_RAM },					//U9 Boot Flash Eprom
 	{ 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },		//U11 NVRAM (128K)
-	{ 0x02400024, 0x02400027, samxilinx_r },				//I/O Related
+	{ 0x02400000, 0x024000FF, samio_r },				   //I/O Related
 	{ 0x03000000, 0x030000FF, MRA32_RAM },					//USB Related
 	{ 0x04000000, 0x047FFFFF, MRA32_RAM },					//1st 8MB of Flash ROM U44 Mapped here
 	{ 0x04800000, 0x04FFFFFF, MRA32_BANK1 },				//Banked Access to Flash ROM U44 (including 1st 8MB ALSO!)
@@ -739,7 +730,7 @@ static WRITE32_HANDLER(sambank_w)
 	offset = addr;
 	data = newdata;
 
-	if (offset > 0x024000FF)
+	if (offset > 0x024000FF) // CPU/Sound board
 	{
 		switch (offset)
 		{
@@ -781,19 +772,17 @@ static WRITE32_HANDLER(sambank_w)
 				break;
 		}
 	}
-	else if( offset >= 0x2400000 && offset <= 0x24000ff ) //IO Board
+	else if( offset >= 0x2400000 && offset <= 0x24000ff ) // IO Board
 	{
 		logit = LOG_IOPORT_W;
 		switch (offset)
 		{
 			case 0x02400020: // SOL_A
-				assert(mem_mask == 0xFFFFFF00);
 				coreGlobals.pulsedSolState &= ~(0xFFu << 8);
 				coreGlobals.pulsedSolState |= data << 8;
 				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
 				break;
 			case 0x02400021: // SOL_B
-				assert(mem_mask == 0xFFFF00FF);
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
 					// Special case for Wheel of Fortune.   It has a 4-way stepper motor that goes 4,6,5,7 ... but 
@@ -809,13 +798,11 @@ static WRITE32_HANDLER(sambank_w)
 				core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
 				break;
 			case 0x02400022: // SOL_C
-				assert(mem_mask == 0xFF00FFFF);
 				coreGlobals.pulsedSolState &= ~(0xFFu << 16);
 				coreGlobals.pulsedSolState |= data << 16;
 				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
 				break;
 			case 0x02400023: // FLSH_LMP
-				assert(mem_mask == 0x00FFFFFF);
 				coreGlobals.pulsedSolState &= ~(0xFFu << 24);
 				coreGlobals.pulsedSolState |= data << 24;
 				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
@@ -823,8 +810,7 @@ static WRITE32_HANDLER(sambank_w)
 			// case 0x02400024: // Unconnected
 			// case 0x02400025: // STATUS read only
 			case 0x02400026: // AUX_DRV (latched data to J2 AUX connector)
-				assert(mem_mask == 0xFF00FFFF);
-				if (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) {
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4) {
 					// Indiana Jones uses 4 small LED flasher boards directly connected to AUX DATA pins (no strobe, see schematics on page 137 of manual)
 					core_write_pwm_output(CORE_MODOUT_SOL0 + 54 - 1, 1, GET_BIT3); // ark leds (2 boards)
 					core_write_pwm_output(CORE_MODOUT_SOL0 + 55 - 1, 1, GET_BIT4); // swordman
@@ -839,37 +825,30 @@ static WRITE32_HANDLER(sambank_w)
 				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
 				break;
 			case 0x02400029: // AUX_LMP
-				assert(mem_mask == 0xFFFF00FF);
 				samlocals.lampcol = (samlocals.lampcol & 0x00FF) | (data << 8);
 				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, samlocals.lampcol & 0x00FF, samlocals.lamprow, 8);
 				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
 				break;
 			case 0x0240002A: // LMP_DRV
-				assert(mem_mask == 0xFF00FFFF);
 				samlocals.lamprow = core_revbyte(data);
 				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,       samlocals.lampcol       & 0x00FF, samlocals.lamprow, 8);
 				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
 				break;
 			case 0x0240002B: // Latched data for GI relay and AUX strobe (ASTB to ESTB on J2 and J3 connectors)
-				assert(mem_mask == 0x00FFFFFF);
-				
-				// Bit 0 is GI relay state
+
+				// Note that unlike stated in previous version of the code, beta-brite connector is wired to the serial output TXD1/RXD1 of CPU/Sound board 520-5246-00, 520-5246-02, not on the IO power driver board 520-5249-00. The following lines are just kept for reference bit will likely be removed.
+				//if ((~data & 0x40) && (samlocals.auxdata & 0x03))
+				//	LOG(("%08x: writing to betabrite: %x\n", activecpu_get_pc(), auxdata & 0x03));
+
+				// Bit 0 drives GI relay
 				coreGlobals.gi[0] = (~data & 0x01) ? 9 : 0;
 				core_write_pwm_output_8b(CORE_MODOUT_GI0, ~data & 0x01);
-
-				// Bit 3 is beta-brite connector strobe
-				if ((~data & 0x40) && (samlocals.auxdata & 0x03))
-					LOG(("%08x: writing to betabrite: %x\n", activecpu_get_pc(), auxdata & 0x03));
-
-				// Previous versions of the code counted the number of writes to locate 
-				// the solenoid bank.  The safest way is to apply the solenoid when the target column is written here.
-				// However, this makes the 8 port bank "backwards" compared to previous 
-				// versions, and makes the solenoid IDs go over 64 which is undesirable
-				// for the VPM core.   Swap them for 8 port aux boards.
-				// ACDC LE seems to use 7 of 8 ports, but on the second bank ID.  Just check
-				// all 8 bits for now.  Todo: Would be better to treat ACDC correctly here instead of 
-				// setting it as an aux 12 board. 
 				
+				// Bit 1 & 2 are unconnected on all boards
+
+				// Bit 3..7 are BSTB..ESTB then ASTB which are used to strobe auxiliary boards
+				// normal sequence is write data to AUX_DRV latch, then strobe it here by writing a pulse on the right strobe bit
+
 				// Board 511-6927-01: Tron TriColor Assembly strobed on C and D outputs
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_TRON) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
 					core_write_pwm_output(CORE_MODOUT_LAMP0 + 100, 3, samlocals.auxdata >> 3); // Right RGB ramp
@@ -994,10 +973,10 @@ static WRITE32_HANDLER(sambank_w)
 				}
 
 				// Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight & CSI): 3 LEDs #86, #87, #88
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (samlocals.auxstrb & ~data & 0x08)) // BSTB
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 10 * 8, core_revbyte(samlocals.auxdata));
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_3LEDS_BSTB) && (samlocals.auxstrb & ~data & 0x08)) // BSTB
+					core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 80, core_revbyte(samlocals.auxdata), 0xE0);
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_3LEDS_CSTB) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
+					core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 80, core_revbyte(samlocals.auxdata), 0xE0);
 
 				// Board 520-5325-00: 8 transistor driver board (Avengers, AC/DC Premium/LE, X-Men LE)
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8_CSTB) && (samlocals.auxstrb & ~data & 0x10)) // CSTB
@@ -1227,6 +1206,9 @@ static MACHINE_INIT(sam) {
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, 32, CORE_MODOUT_SOL_2_STATE); // Base 32 solenoid outputs
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1, CORE_MODOUT_NONE); // GameOn fake solenoid
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 16, CORE_MODOUT_SOL_2_STATE); // Aux board
+	// FIXME a little hack since for some tables (f.e. IJ4) the default 60ms of latency is too low, likely due to some timing bugs or something I did not spot
+	for (int ii = SAM_SOL_FLIPSTART; ii <= SAM_SOL_FLIPEND; ii++)
+		coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii - 1].state.sol.switchDownLatency = 0.100f;
 	// Game specific hardware
 	const struct GameDriver* rootDrv = Machine->gamedrv;
 	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
@@ -1734,12 +1716,12 @@ static INTERRUPT_GEN(sam_vblank) {
 	/*-- GameOn for Fast Flips --*/
 	if (samlocals.fastflipaddr > 0 && cpu_readmem32ledw(samlocals.fastflipaddr) == 0x01)
 	{
-		coreGlobals.solenoids2 |= 0x10;
+		coreGlobals.solenoids2 = 0x10; // Not sure why we do that, but kept as it used to be what is done before 3.6
 		coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1].value = 1.0f;
 	}
 	else
 	{
-		coreGlobals.solenoids2 &= ~0x10;
+		coreGlobals.solenoids2 = 0x00; // Not sure why we do that, but kept as it used to be what is done before 3.6
 		coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1].value = 0.0f;
 	}
 	core_updateSw(1);
@@ -2477,7 +2459,7 @@ CORE_CLONEDEF(shr, 130, 141, "Shrek (V1.3)", 2008, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / Indiana Jones (Stern)
 /-------------------------------------------------------------------*/
-INITGAME(ij4, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_IJ4_SOL3)
+INITGAME(ij4, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_IJ4)
 
 SAM1_ROM32MB(ij4_113,  "ij4_113.bin",  CRC(aa2bdf3e) SHA1(71fd1c970fe589cec5124237684facaae92cbf09), 0x01C6D98C)
 SAM1_ROM32MB(ij4_113f, "ij4_113f.bin", CRC(cb7b7c31) SHA1(3a2f718a9a533941c5476f8348dacf7e3523ddd0), 0x01C6D98C)
@@ -2526,7 +2508,7 @@ CORE_CLONEDEF(ij4, 210f, 210, "Indiana Jones (V2.1 French)", 2009, "Stern", sam1
 /*-------------------------------------------------------------------
 / Batman: The Dark Knight
 /-------------------------------------------------------------------*/
-INITGAME(bdk, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_BDK)
+INITGAME(bdk, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_3LEDS_BSTB)
 
 SAM1_ROM32MB(bdk_130, "bdk_130.bin", CRC(83a32958) SHA1(0326891bc142c8b92bd4f6d29bd4301bacbed0e7), 0x01BA1E94)
 SAM1_ROM32MB(bdk_150, "bdk_150.bin", CRC(ed11b88c) SHA1(534224de597cbd3632b902397d945ab725e24912), 0x018EE5E8)
@@ -2561,7 +2543,7 @@ CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00
 /*-------------------------------------------------------------------
 / CSI: Crime Scene Investigation
 /-------------------------------------------------------------------*/
-INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_CSI)
+INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_3LEDS_CSTB)
 
 SAM1_ROM32MB(csi_102, "csi_102a.bin", CRC(770f4ab6) SHA1(7670022926fcf5bb8f8848374cf1a6237803100a), 0x01e21fc0)
 SAM1_ROM32MB(csi_103, "csi_103a.bin", CRC(371bc874) SHA1(547588b85b4d6e79123178db3f3e51354e8d2229), 0x01E61C88)

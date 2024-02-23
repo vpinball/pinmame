@@ -2417,26 +2417,26 @@ void core_update_pwm_output_sol_2_state(const float now, const int index, const 
   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   const float prevValue = output->value;
+  if (isFlip)
+     output->state.sol.lastFlipTimestamp = now;
   if (isFlip && state == 0) {
-    // If binary output is flipping to ON state, immediately retain and report the ON state
-    output->value = 1.0f;
+     // If binary output is flipping to ON state, immediately retain and report the ON state
+     output->value = 1.0f;
   }
-  else if ((now - output->state.sol.lastFlipTimestamp) > 0.060f) {
-    // Output is in a stable state (not PWMed since at least 60ms), just report its value
-    // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
-    output->value = (float)state;
+  else if ((now - output->state.sol.lastFlipTimestamp) > output->state.sol.switchDownLatency) {
+     // Output is in a stable state (not PWMed since at least 60ms), just report its value
+     // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
+     output->value = (float)state;
   }
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
     printf("Sol #%d t=%8.5f v=%f s=%s\n", index, now, output->value, isFlip ? (state ? "x > -" : "- > x") : (state ? "    x" : "    -"));
   #endif
-  if (isFlip)
-    output->state.sol.lastFlipTimestamp = now;
   // Apply the legacy solenoid behavior but directly updating coreGlobals.solenoids, avoiding the latency of legacy implementation which handles PWM
   // by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware.
   if (output->state.sol.fastOn && (prevValue != output->value)) {
     int sol = index - CORE_MODOUT_SOL0;
-    UINT32 state = (int)output->value;
+    UINT32 state = output->value > 0.5 ? 1 : 0;
     if (sol == (coreGlobals.flipperCoils & 0xFF))              // Lower Left Flipper coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (state ? 0x04 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >>  8) & 0xFF)) // Lower Right Flipper coil
@@ -2597,10 +2597,12 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
 	   break;
     case CORE_MODOUT_SOL_2_STATE:
 	   coreGlobals.physicOutputState[i].state.sol.fastOn = TRUE;
+      coreGlobals.physicOutputState[i].state.sol.switchDownLatency = 0.060f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
 	  break;
     case CORE_MODOUT_LEGACY_SOL_2_STATE:
 	   coreGlobals.physicOutputState[i].state.sol.fastOn = FALSE;
+      coreGlobals.physicOutputState[i].state.sol.switchDownLatency = 0.060f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
 	   break;
     case CORE_MODOUT_BULB_44_5_7V_AC: // Sega/Stern Whitestar uses 5.7V AC wired to #44 bulbs for GI which leads to a (very slow) bulb equilibrium around 78% of the rated bulb brightness. Likely for less heat and longer bulb life ?
