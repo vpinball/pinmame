@@ -2216,7 +2216,6 @@ static MACHINE_INIT(core) {
     if (coreData->init) coreData->init();
 
     /*-- init PWM integration (needs to be done after coreData->init() which defines the number of outputs and the physical model to be used on each output) --*/
-    //options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
 #ifdef VPINMAME
     // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
     // Note that physical outputs are also updated once per frame by the core machine driver video update callback.
@@ -2424,13 +2423,12 @@ void core_update_pwm_output_sol_2_state(const float now, const int index, const 
      output->value = 1.0f;
   }
   else if ((now - output->state.sol.lastFlipTimestamp) > output->state.sol.switchDownLatency) {
-     // Output is in a stable state (not PWMed since at least 60ms), just report its value
-     // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
+     // Output is in a stable state (not PWMed since at least the defined switch down latency), just report its value
      output->value = (float)state;
   }
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
-    printf("Sol #%d t=%8.5f v=%f s=%s\n", index, now, output->value, isFlip ? (state ? "x > -" : "- > x") : (state ? "    x" : "    -"));
+    printf("Sol #%d t=%8.5f v=%f s=%s\n", index - CORE_MODOUT_SOL0 + 1, now, output->value, isFlip ? (state ? "x > -" : "- > x") : (state ? "    x" : "    -"));
   #endif
   // Apply the legacy solenoid behavior but directly updating coreGlobals.solenoids, avoiding the latency of legacy implementation which handles PWM
   // by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware.
@@ -2597,11 +2595,13 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
 	   break;
     case CORE_MODOUT_SOL_2_STATE:
 	   coreGlobals.physicOutputState[i].state.sol.fastOn = TRUE;
+      // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
       coreGlobals.physicOutputState[i].state.sol.switchDownLatency = 0.060f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
 	  break;
     case CORE_MODOUT_LEGACY_SOL_2_STATE:
 	   coreGlobals.physicOutputState[i].state.sol.fastOn = FALSE;
+      // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
       coreGlobals.physicOutputState[i].state.sol.switchDownLatency = 0.060f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
 	   break;

@@ -144,6 +144,12 @@ struct {
 	UINT8 auxstrb;
 	UINT8 auxdata;
 
+	// IJ4 Flipper Solenoid hack
+	int flipSolHackCountL;
+	data32_t flipSolHackStateL;
+	int flipSolHackCountR;
+	data32_t flipSolHackStateR;
+
 	// Transmit Serial:
 	data8_t prev_ch1;
 	data8_t prev_ch2;
@@ -504,7 +510,7 @@ static READ32_HANDLER(samio_r)
 	const int adj = adj_offset(mask);
 	const int realoff = (offset * 4);
 	const int addr = base + realoff + adj;
-	const int logit = LOG_IO_STAT;
+	int logit = LOG_IO_STAT;
 	offset = addr;
 
 	data32_t data = 0;
@@ -523,6 +529,10 @@ static READ32_HANDLER(samio_r)
 		break;
 	case 0x02400027: // AUX_IN data from J3 connector
 		// TODO implement for aux boards using it
+		logit = 1;
+		break;
+	default:
+		logit = 1;
 		break;
 	}
 	if(logit) LOG(("%08x: reading from: %08x = %08x (mask=%x)\n",activecpu_get_pc(),0x02400024+offset,data,mask));
@@ -682,43 +692,8 @@ static WRITE32_HANDLER(sam_io2_w)
   LOG(("%08x: IO2 output to %05x=%02x\n", activecpu_get_pc(), offset, data)); //!! find out what is what for LE support (but even normal TWD uses it (and more??))
 }
 
-/*
-U19 & U20 of IOBOARD - Address decoding
-A3 A2 A1 A0 (When IOSTB = 0)
----------------------------------------------------------------------------------------------
- 0  0  0  0 - 0: SOL A Driver
- 0  0  0  1 - 1: SOL B Driver
- 0  0  1  0 - 2: SOL C Driver
- 0  0  1  1 - 3: Flash Lamp Driver
- 0  1  0  1 - 5: STATUS (read)
- 0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
- 0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
- 1  0  0  0 - 8: Lamp Strobe *(See below)
- 1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
- 1  0  1  0 - a: Lamp Driver *(See below)
- 1  0  1  1 - b: Additional Strobe Driver (see below)
-
- Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
- Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
- There are 10 Lamp Rows Max
- Row 0 - From Lamp Strobe, Data Bit 0
- Row 1 - From Lamp Strobe, Data Bit 1
- Row 2 - From Lamp Strobe, Data Bit 2
- Row 3 - From Lamp Strobe, Data Bit 3
- Row 4 - From Lamp Strobe, Data Bit 4
- Row 5 - From Lamp Strobe, Data Bit 5
- Row 6 - From Lamp Strobe, Data Bit 6
- Row 7 - From Lamp Strobe, Data Bit 7
- Row 8 - From Aux Lamp Strobe Line, Data Bit 0
- Row 9 - From Aux Lamp Strobe Line, Data Bit 1
----------------------------------------------------------------------------------------------*/
-
 static WRITE32_HANDLER(sambank_w)
 {
-	// with the current technique, a maximum of 14 displayed rows is possible (WPT only uses 10),
-	// yet the amount of columns is virtually unlimited!
-	static const int rowMap[] = { 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13 };
-
 	const int base = 0x02400000;
 
 	const int mask = ~mem_mask;
@@ -768,19 +743,80 @@ static WRITE32_HANDLER(sambank_w)
 					samlocals.diagnosticLed = (samlocals.diagnosticLed & 1) | 2;
 				break;
 			default:
+				logit = 1;
 				LOG(("error"));
 				break;
 		}
 	}
 	else if( offset >= 0x2400000 && offset <= 0x24000ff ) // IO Board
 	{
+		/*
+		U19 & U20 of IOBOARD - Address decoding
+		A3 A2 A1 A0 (When IOSTB = 0)
+		---------------------------------------------------------------------------------------------
+		 0  0  0  0 - 0: SOL A Driver
+		 0  0  0  1 - 1: SOL B Driver
+		 0  0  1  0 - 2: SOL C Driver
+		 0  0  1  1 - 3: Flash Lamp Driver
+		 0  1  0  1 - 5: STATUS (read)
+		 0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
+		 0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
+		 1  0  0  0 - 8: Lamp Strobe *(See below)
+		 1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
+		 1  0  1  0 - a: Lamp Driver *(See below)
+		 1  0  1  1 - b: Additional Strobe Driver (see below)
+
+		 Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
+		 Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
+		 There are 10 Lamp Rows Max
+		 Row 0 - From Lamp Strobe, Data Bit 0
+		 Row 1 - From Lamp Strobe, Data Bit 1
+		 Row 2 - From Lamp Strobe, Data Bit 2
+		 Row 3 - From Lamp Strobe, Data Bit 3
+		 Row 4 - From Lamp Strobe, Data Bit 4
+		 Row 5 - From Lamp Strobe, Data Bit 5
+		 Row 6 - From Lamp Strobe, Data Bit 6
+		 Row 7 - From Lamp Strobe, Data Bit 7
+		 Row 8 - From Aux Lamp Strobe Line, Data Bit 0
+		 Row 9 - From Aux Lamp Strobe Line, Data Bit 1
+		---------------------------------------------------------------------------------------------*/
 		logit = LOG_IOPORT_W;
 		switch (offset)
 		{
 			case 0x02400020: // SOL_A
-				coreGlobals.pulsedSolState &= ~(0xFFu << 8);
-				coreGlobals.pulsedSolState |= data << 8;
-				core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
+				// Solenoids are written every 250us. Flippers are fully CPU controlled with a 40ms power pulse then hold with 1ms pulse every 12ms (so a PWM cycle of 48 writes during hold)
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4) {
+					// IJ4 has some emulation timing issues that will make the emulation regularly miss and delay the solenoid writes by 40 to 80ms (masked IRQ ?) leading 
+					// to flickering flippers. This is hidden for the flippers by counting the number of writes and only consider the state after the 48 writes (which means
+					// that flippers suffer from eratic latencies. Previous implementations did filter out writes and react based on write count too).
+					samlocals.flipSolHackStateL |= data;
+					samlocals.flipSolHackStateR |= data;
+					data32_t hackedData = (data & 0x3F) | (samlocals.flipSolHackStateL & 0x40) | (samlocals.flipSolHackStateR & 0x80);
+					coreGlobals.pulsedSolState &= ~(0xFFu << 8);
+					coreGlobals.pulsedSolState |= hackedData << 8;
+					core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, hackedData);
+					samlocals.flipSolHackCountL++;
+					if (data & 0x40) { // align to pulse on
+						samlocals.flipSolHackCountL = 0;
+					}
+					else if (samlocals.flipSolHackCountL >= 48) {
+						samlocals.flipSolHackCountL = 0;
+						samlocals.flipSolHackStateL = 0;
+					}
+					samlocals.flipSolHackCountR++;
+					if (data & 0x80) { // align to pulse on
+						samlocals.flipSolHackCountR = 0;
+					}
+					else if (samlocals.flipSolHackCountR >= 48) {
+						samlocals.flipSolHackCountR = 0;
+						samlocals.flipSolHackStateR = 0;
+					}
+				}
+				else {
+					coreGlobals.pulsedSolState &= ~(0xFFu << 8);
+					coreGlobals.pulsedSolState |= data << 8;
+					core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
+				}
 				break;
 			case 0x02400021: // SOL_B
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
@@ -1089,7 +1125,7 @@ static MEMORY_WRITE32_START(sam_writemem)
 	{ 0x01080000, 0x0109EFFF, MWA32_RAM },				   //U13 RAM - DMD Data for output
 	{ 0x0109F000, 0x010FFFFF, samxilinx_w },			   //U13 RAM - Sound Data for output
 	{ 0x01100000, 0x01FFFFFF, samdmdram_w },			   //Various Output Signals
-	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		   //U11 NVRAM (128K) 0x02100000,0x0211ffff
+	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		//U11 NVRAM (128K) 0x02100000,0x0211ffff
 	{ 0x02200000, 0x022fffff, sam_io2_w },				   //LE versions: more I/O stuff (mostly LED lamps)
 	{ 0x02400000, 0x02FFFFFF, sambank_w },				   //I/O Related
 	{ 0x03000000, 0x030000FF, MWA32_RAM },				   //USB Related
@@ -1206,9 +1242,10 @@ static MACHINE_INIT(sam) {
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, 32, CORE_MODOUT_SOL_2_STATE); // Base 32 solenoid outputs
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1, CORE_MODOUT_NONE); // GameOn fake solenoid
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 16, CORE_MODOUT_SOL_2_STATE); // Aux board
-	// FIXME a little hack since for some tables (f.e. IJ4) the default 60ms of latency is too low, likely due to some timing bugs or something I did not spot
+	// Flipper use a 12ms PWM duty cycle so we try to limit the latency added by the fact we do not support PWM solenoids for the time being (it impacts flipper tricks)
+	// FIXME: we set this for solenoids 13/14 which are upper flippers but not for all tables (this is not declared in the hardware)
 	for (int ii = SAM_SOL_FLIPSTART; ii <= SAM_SOL_FLIPEND; ii++)
-		coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii - 1].state.sol.switchDownLatency = 0.100f;
+		coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii - 1].state.sol.switchDownLatency = 0.014f;
 	// Game specific hardware
 	const struct GameDriver* rootDrv = Machine->gamedrv;
 	while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
