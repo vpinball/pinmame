@@ -278,7 +278,6 @@ struct rc_option core_opts[] = {
         { "crconly", NULL, rc_bool, &options.crc_only, "0", 0, 0, NULL, "use only CRC for all integrity checks" },
         { "bios", NULL, rc_string, &options.bios, "default", 0, 14, NULL, "change system bios" },
         { "at91jit", NULL, rc_int, &options.at91jit, "1", 0, 33554432, NULL, "at91 CPU JIT compiler enabled" },
-        { "modsol", NULL, rc_int, &options.usemodsol, "0", 0, 2, NULL, "physic output mode (0=disabled, 1=modulated solenoids, 2=physic outputs)" },
 
         /* config options */
         { "Configuration options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
