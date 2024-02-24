@@ -448,6 +448,7 @@ typedef struct {
       {
          int fastOn;
          float lastFlipTimestamp;
+         float switchDownLatency;
       } sol; // Physical model of a solenoid
    } state;
 } core_tPhysicOutput;

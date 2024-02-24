@@ -571,7 +571,11 @@ static WRITE_HANDLER(latch2200) {
   }
 }
 
-static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data; coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1].value = data ? 0.f : 1.f; }
+static WRITE_HANDLER(pia0cb2_w) {
+  locals.ssEn = !data;
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & ~(1 << (S11_GAMEONSOL - 1))) | (data ? 0 : (1 << (S11_GAMEONSOL - 1)));
+  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1].value = data ? 0.f : 1.f;
+}
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
 static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 1); }
