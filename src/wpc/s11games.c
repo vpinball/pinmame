@@ -901,7 +901,7 @@ S11_ROMEND
 #define input_ports_tsptr input_ports_s11
 CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0)
 
-S11_ROMSTART48(tsptr,l3,"Transporter-LA1-U26-ChecksumB412.bin", CRC(3504300f) SHA1(1a8b779b7375e4087e42b31c1aa17a8a32c6d6aa),
+S11_ROMSTART48(tsptr,l1,"Transporter-LA1-U26-ChecksumB412.bin", CRC(3504300f) SHA1(1a8b779b7375e4087e42b31c1aa17a8a32c6d6aa),
                         "Transporter-LA1-U27-Checksum01CF.bin", CRC(49635399) SHA1(8cdc700c501f0d611152010d5ae28bcd84d06861))
 S11XS_SOUNDROM88(       "Transporter-U21-ChecksumCA54.bin", CRC(2b194ca6) SHA1(20cb956143622409a7f4b918ab1699db1b6e6b07),
                         "Transporter-U22-ChecksumD84C.bin", CRC(4c7ba6d7) SHA1(0134dce454c29c572c4ee0e0139a8ad5f0249b99))
