@@ -883,7 +883,7 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
 S11_ROMEND
 CORE_CLONEDEF(polic,l2,l4,"Police Force (LA-2)", 1989, "Williams", s11_mS11BS,0)
 
-// There exists also a u4 sound l1, where should this go to?
+// There also exists a u4 sound l1, where should this go to?
 //S11CS_SOUNDROM88(       "pfrc_u4.l1",  CRC(4e7fd9aa) SHA1(5ba279ffeb6d1864c582f97fa89ee4bd2f084505),
 
 /*-----------------------------
@@ -895,16 +895,23 @@ S11_ROMSTART48(tsptr,l3,"tran_u26.l3", CRC(2d48a108) SHA1(d41bf077aab1201b08ea14
 S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
                         "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
 S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a95f822024a44371170),
-                        "tran_u19.l2", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881),
+                        "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881), // L-2/3 features the same
                         "tran_u20.l2", CRC(e9890cf1) SHA1(0ae37504c704401101c79ce49df11044f8d8caa9))
-
 S11_ROMEND
 #define input_ports_tsptr input_ports_s11
 CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0)
 
-// There exist also a u4 and u20 sound l1, where should these go to?
-//S11CS_SOUNDROM888(      "tran_u4.l1",  CRC(63e92f8b) SHA1(57f2841419415fc3560d46a63119c76f98cade9b),
-//                        "tran_u20.l1", CRC(fabddaaf) SHA1(7c014bb5b1ac8da61ffd265ba98bcb8256c5f666))
+S11_ROMSTART48(tsptr,l3,"Transporter-LA1-U26-ChecksumB412.bin", CRC(3504300f) SHA1(1a8b779b7375e4087e42b31c1aa17a8a32c6d6aa),
+                        "Transporter-LA1-U27-Checksum01CF.bin", CRC(49635399) SHA1(8cdc700c501f0d611152010d5ae28bcd84d06861))
+S11XS_SOUNDROM88(       "Transporter-U21-ChecksumCA54.bin", CRC(2b194ca6) SHA1(20cb956143622409a7f4b918ab1699db1b6e6b07),
+                        "Transporter-U22-ChecksumD84C.bin", CRC(4c7ba6d7) SHA1(0134dce454c29c572c4ee0e0139a8ad5f0249b99))
+S11CS_SOUNDROM888(      "tran_u4.l1",  CRC(63e92f8b) SHA1(57f2841419415fc3560d46a63119c76f98cade9b),
+                        "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881),
+                        "tran_u20.l1", CRC(fabddaaf) SHA1(7c014bb5b1ac8da61ffd265ba98bcb8256c5f666))
+S11_ROMEND
+CORE_CLONEDEF(tsptr,l1,l3, "Transporter the Rescue (LA-1)", 1989, "Bally", s11a_one,0)
+
+// L-2, LU-3 also exists?!
 
 /*-----------------------
 / Bad Cats 12/89
@@ -1453,7 +1460,7 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
 S11_ROMEND
 CORE_CLONEDEF(bbnny,lg,l2,"Bugs Bunny's Birthday Ball (LG-2 German)", 1990, "Bally", s11c_one,0)
 
-// There exists also a u4 sound l1, where should this go to?
+// There also exists a u4 sound l1, where should this go to?
 //S11CS_SOUNDROM000(      "bugs_u4.l1",  CRC(dbfec77e) SHA1(57e2b0cfae51ed2aa3cad5ceb407260d10477068),
 
 /*--------------------
