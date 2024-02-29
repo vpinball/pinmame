@@ -1100,7 +1100,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     if (layout->fptr)
       if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) {
         if (layout->type == CORE_VIDEO) {
+#if defined(VPINMAME) || defined(LIBPINMAME)
           has_DMD_Video = 1;
+#endif
 #ifdef LIBPINMAME
           libpinmame_update_display(g_display_index, layout, bitmap);
           g_display_index++;
