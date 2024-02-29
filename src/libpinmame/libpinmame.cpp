@@ -200,30 +200,40 @@ int GetGameNumFromString(const char* const name)
  * GetDisplayCount
  ******************************************************/
 
-int GetDisplayCount(const struct core_dispLayout* p_layout, int* const p_index)
+void GetDisplayCount(const struct core_dispLayout* p_layout, int* const p_index, bool* p_hasDMDVideo)
 {
-	bool hasDMD = false;
-	bool hasVideo = false;
-
 	for (; p_layout->length; p_layout += 1) {
-		if (p_layout->type == CORE_IMPORT) {
-			GetDisplayCount(p_layout->lptr, p_index);
-			continue;
+		switch (p_layout->type) {
+			case CORE_IMPORT:
+				GetDisplayCount(p_layout->lptr, p_index, p_hasDMDVideo);
+				break;
+			case CORE_DMD:
+			case CORE_DMD | CORE_DMDNOAA:
+			case CORE_DMD | CORE_NODISP:
+			case CORE_VIDEO:
+				*p_hasDMDVideo = true;
+			default:
+				(*p_index)++;
+				break;
 		}
-
-		if (p_layout->type == CORE_VIDEO)
-			hasVideo = true;
-
-		if ((p_layout->type & CORE_DMD) == CORE_DMD)
-			hasDMD = true;
-
-		(*p_index)++;
 	}
+}
 
-	if (!hasDMD && !hasVideo)
-		(*p_index)++;
+/******************************************************
+ * GetDisplayCount
+ ******************************************************/
 
-	return *p_index;
+int GetDisplayCount()
+{
+	int index = 0;
+	bool hasDMDOrVideo = false;
+
+	GetDisplayCount(core_gameData->lcdLayout, &index, &hasDMDOrVideo);
+
+    if (!hasDMDOrVideo)
+        index += 1;
+
+	return index;
 }
 
 /******************************************************
@@ -462,9 +472,7 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 		if (!_p_Config->cb_OnDisplayAvailable)
 			return;
 
-		int displayCountIndex = 0;
-		const int displayCount = GetDisplayCount(core_gameData->lcdLayout, &displayCountIndex);
-
+		const int displayCount = GetDisplayCount();
 		(*(_p_Config->cb_OnDisplayAvailable))(index, displayCount, &pDisplay->layout, _p_userData);
 	}
 	else {

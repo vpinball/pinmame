@@ -38,7 +38,7 @@
  static UINT8 *currbuffer = buffer1;
  static UINT8 *oldbuffer = NULL;
  static UINT32 raw_dmdoffs = 0;
- static UINT8 has_DMD = 0;
+ static UINT8 has_DMD_Video = 0;
 
  #include "gts3dmd.h"
  UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
@@ -843,7 +843,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   UINT32 palette32_16[16];
   unsigned char palette[4][3];
 
-  has_DMD = 1;
+  has_DMD_Video = 1;
 
   int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
@@ -1099,12 +1099,13 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
     if (layout->fptr)
       if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) {
-#ifdef LIBPINMAME
         if (layout->type == CORE_VIDEO) {
+          has_DMD_Video = 1;
+#ifdef LIBPINMAME
           libpinmame_update_display(g_display_index, layout, bitmap);
           g_display_index++;
-        }
 #endif
+        }
         continue;
       }
     {
@@ -1243,7 +1244,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
   // Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
   // block this from running.
-  if(!has_DMD)
+  if(!has_DMD_Video)
   {
 #ifdef LIBPINMAME
     static struct core_dispLayout segDmdDispLayout = { 0, 0, 32, 128, CORE_DMD | CORE_DMDSEG, NULL, NULL };
@@ -2263,7 +2264,7 @@ static MACHINE_STOP(core) {
   currbuffer = buffer1;
   oldbuffer = NULL;
   raw_dmdoffs = 0;
-  has_DMD = 0;
+  has_DMD_Video = 0;
 
   g_raw_gtswpc_dmdframes = 0;
 

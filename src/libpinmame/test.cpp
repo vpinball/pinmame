@@ -322,8 +322,9 @@ int main(int, char**)
 	//PinmameRun("babypac");
 	//PinmameRun("t2_l8");
 	//PinmameRun("galaxy");
+	//PinmameRun("medusa");
 
-	if (PinmameRun("medusa") == PINMAME_STATUS_OK) {
+	if (PinmameRun("motrshow") == PINMAME_STATUS_OK) {
 		while (true)
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
