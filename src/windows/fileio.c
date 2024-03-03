@@ -694,7 +694,7 @@ int osd_display_loading_rom_message(const char *name,struct rom_load_data *romda
 	if (name)
 		fprintf(stdout, "loading %-12s\r", name);
 	else
-		fprintf(stdout, "                    \r");
+		fprintf(stdout, "                                                            \r");
 	fflush(stdout);
 
 	return 0;

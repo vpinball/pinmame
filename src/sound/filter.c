@@ -272,7 +272,7 @@ void filter2_setup(const int type, const double fc, const double d, const double
 	const double two_over_T = 2.*sample_rate;
 	const double two_over_T_squared = two_over_T*two_over_T;
 
-	/* calculate digital filter coefficents */
+	/* calculate digital filter coefficients */
 	/*w = (2.0*M_PI)*fc; no pre-warping */
 	const double w = two_over_T*tan(M_PI*fc/sample_rate); /* pre-warping */ /* cutoff freq, in radians/sec */
 	const double w_squared = w*w;

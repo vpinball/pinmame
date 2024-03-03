@@ -236,7 +236,7 @@ void identify_rom(const char* name, const char* hash, int length)
 		}
 	}
 	if (!silentident)
-		printf("%s ",&name[0]);
+		printf("%s ",name);
 
 	for (i = 0; drivers[i]; i++)
 		match_roms(drivers[i],hash,&found);
@@ -325,7 +325,7 @@ void identify_file(const char* name)
 	fclose(f);
 
 	/* Compute checksum of all the available functions. Since MAME for
-	   now carries inforamtions only for CRC and SHA1, we compute only
+	   now carries information only for CRC and SHA1, we compute only
 	   these */
 	if (options.crc_only)
 		hash_compute(hash, data, length, HASH_CRC);
@@ -357,7 +357,7 @@ void identify_zip(const char* zipname)
 			sprintf(buf,"%-12s",ent->name);
 
 			/* Decompress the ROM from the ZIP, and compute all the needed
-			   checksums. Since MAME for now carries informations only for CRC and
+			   checksums. Since MAME for now carries information only for CRC and
 			   SHA1, we compute only these (actually, CRC is extracted from the
 			   ZIP header) */
 			hash_data_clear(hash);

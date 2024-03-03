@@ -190,7 +190,7 @@ INLINE void timer_list_remove(mame_timer *timer)
 		/* loop over the timer list */
 		for (t = timer_head; t && t != timer; t = t->next, tnum++) ;
 		if (t == NULL)
-			printf ("timer not found in list");
+			printf("Timer not found in list");
 	}
 	#endif
 

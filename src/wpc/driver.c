@@ -2639,7 +2639,7 @@ DRIVER(bk2k,pa5)        //          04/89 W Black Knight 2000 (PA-5 Prototype)
                         //S11:      05/89 W Pool
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue (L-3)
-DRIVER(tsptr,l1)        //          07/89 B Transporter the Rescue (LA-1)
+DRIVER(tsptr,l1)        //          06/89 B Transporter the Rescue (LA-1)
 DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)
 DRIVER(polic,l3)        //          09/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //          10/89 W Police Force (LA-4)
