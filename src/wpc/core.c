@@ -2471,21 +2471,45 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
   }
 }
 
-INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float dt, const float emission)
+INLINE float cube(const float x)
+{
+  return x * x * x;
+}
+
+static const double BULB_INTEGRATION_PERIOD = 0.001; // do the integration in a loop of small steps
+
+INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const double dt, float emission)
 {
    // Compute the perceived emission using a hacky simplified eye integration model
    // We want to model the flicker-fusion eye/brain behavior while keeping the output latency low (filter delay) and limit the flicker (still keeping it, if it can be seen on the real machine)
    // Note that videos can not be used as references for fitting the model since the camera perform a different luminance integration. Comparisons are only valid with real humans looking at real PWM/strobed incandescent bulbs.
 
-   // The model is a 4 steps RC low pass filter. I tested it following advice from a scientific paper that suggested to use a single pass RC filter for the eye model in the flicker-fusion study (I can't find the paper anymore...)
-   // The overall filter delay is around 20ms. The key factor is the 100.0 constant (lower it for more smoothness, increasing the filter delay), increase it for faster response but more flicker.
+   // The model is a 4 steps RC-IIR/decay low pass filter (with decreased ringing/rippling).
+   // I tested it following advice from a scientific paper that suggested to use a single pass RC filter for the eye model in the flicker-fusion study (I can't find the paper anymore...)
+   //  (this is oversimplifying the human vision system complexity, but is mostly good enough for our use-case)
+   // The overall filter delay is around 20ms. The key factor is the 0.1 constant (lower it for more smoothness, increasing the filter delay), increase it for faster response but more flicker.
    // From my test, when you look at a steady strobed lamp from a WPC (for example, lower left insert of Monster Bash), you can clearly see that the strobe is too slow (2ms/16ms) causing noticeable flicker.
-   // This behavior would be obtained with value of around 150.0 but I don't think this is the expected behavior so we smooth it a bit more to limit the flicker more than what it is on a real pinball.
-   const float eyeIntegrationFactor = dt * 100.0f, revEyeIntegrationFactor = 1.0f - eyeIntegrationFactor;
-   output->state.bulb.eye_integration[0] = eyeIntegrationFactor * emission + revEyeIntegrationFactor * output->state.bulb.eye_integration[0];
-   output->state.bulb.eye_integration[1] = eyeIntegrationFactor * output->state.bulb.eye_integration[0] + revEyeIntegrationFactor * output->state.bulb.eye_integration[1];
-   output->state.bulb.eye_integration[2] = eyeIntegrationFactor * output->state.bulb.eye_integration[1] + revEyeIntegrationFactor * output->state.bulb.eye_integration[2];
-   output->value = eyeIntegrationFactor * output->state.bulb.eye_integration[2] + revEyeIntegrationFactor * output->value;
+   // This behavior would be obtained with a value of around 0.15 but I don't think this is the expected behavior so we smooth it a bit more to limit the flicker more than what it is on a real pinball.
+   // By now we also use a log function to map intensities (resulting range [~0.07..~0.11], kinda magic). This is according to the Ferry-Porter law, where higher intensities need a larger frequency in order to make
+   //  flicker fusion work, and lower intensities already work at smaller ones. (main ff frequency range is roughly 20Hz to 70Hz, BUT with a lot of outlier situations)
+
+   if(dt != BULB_INTEGRATION_PERIOD)
+   {
+     const float ratio = (float)(dt*(1./BULB_INTEGRATION_PERIOD));
+     emission *= /*powf(ratio,(float)(1./1.3)) approx:*/ cube(sqrtf(sqrtf(ratio))); // pow boosts the emission artificially a bit, especially for GTS3/WPC alphaseg, as the power-on cycle is somehow too short?!?
+   }
+   const float eye_integration_old[3] = { output->state.bulb.eye_integration[0], output->state.bulb.eye_integration[1], output->state.bulb.eye_integration[2] };
+   const float eyeIntegrationFactor = /*0.1f*/ (0.07f + 0.02f * /*logf(output->value*6.f + 1.f) approx:*/ 2.f*sqrtf(fmaxf(output->value,0.f))), revEyeIntegrationFactor = 1.0f - eyeIntegrationFactor;
+   output->state.bulb.eye_integration[0] = (eyeIntegrationFactor * 0.5f) * (emission                +output->state.bulb.eye_emission_old) + revEyeIntegrationFactor * eye_integration_old[0];
+   output->state.bulb.eye_integration[1] = (eyeIntegrationFactor * 0.5f) * (output->state.bulb.eye_integration[0]+eye_integration_old[0]) + revEyeIntegrationFactor * eye_integration_old[1];
+   output->state.bulb.eye_integration[2] = (eyeIntegrationFactor * 0.5f) * (output->state.bulb.eye_integration[1]+eye_integration_old[1]) + revEyeIntegrationFactor * eye_integration_old[2];
+   output->value                         = (eyeIntegrationFactor * 0.5f) * (output->state.bulb.eye_integration[2]+eye_integration_old[2]) + revEyeIntegrationFactor * output->value;
+   output->state.bulb.eye_emission_old   = emission;
+
+#ifdef LOG_PWM_OUT
+   if (output == &coreGlobals.physicOutputState[LOG_PWM_OUT])
+     printf("Eye flicker fusion dt=%8.15f out=%0.5f in=%0.5f\n", dt, output->value, emission);
+#endif
 }
 
 // Incandescent bulb model based on Dulli Chandra Agrawal's and others publications (Heating-times of tungsten filament incandescent lamps).
@@ -2495,11 +2519,10 @@ INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float dt, 
 void core_update_pwm_output_bulb(const double now, const int index, const int isFlip)
 {
   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-  const float BULB_INTEGRATION_PERIOD = 0.001f;
   const float U = output->state.bulb.U * (float)(((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ^ output->state.bulb.isReversed);
   while (now - output->state.bulb.integrationTimestamp > 0.) {
-    const float dt = (float)(now - output->state.bulb.integrationTimestamp) > BULB_INTEGRATION_PERIOD ? BULB_INTEGRATION_PERIOD : (float)(now - output->state.bulb.integrationTimestamp);
-    if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is the initial pulse start/end
+    const float dt = (float)(now - output->state.bulb.integrationTimestamp) > (float)BULB_INTEGRATION_PERIOD ? (float)BULB_INTEGRATION_PERIOD : (float)(now - output->state.bulb.integrationTimestamp);
+    if (dt < (float)BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is the initial pulse start/end
       return;
     // Keeps T within the range of the LUT (between room temperature and melt down point)
     output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
@@ -2530,34 +2553,35 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 void core_update_pwm_output_led(const double now, const int index, const int isFlip)
 {
   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-  const float BULB_INTEGRATION_PERIOD = 0.001f;
   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   const float power = state ? output->state.bulb.relative_brightness : 0.f;
 
-  int i = 0;
-  while (now - output->state.bulb.integrationTimestamp > 0.) {
-    const float dt = (float)(now - output->state.bulb.integrationTimestamp) > BULB_INTEGRATION_PERIOD ? BULB_INTEGRATION_PERIOD : (float)(now - output->state.bulb.integrationTimestamp);
-    if (dt < BULB_INTEGRATION_PERIOD && !isFlip) // Don't perform too short integration periods unless it is a pulse start/end
-    {
-      i = 1;
-      break;
+  if(power != output->state.bulb.prevIntegrationValue // state flip?
+     || output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp >= BULB_INTEGRATION_PERIOD*20.) // or we waited long enough to get a stable discrete integration (=no 'too short' time frames)
+  {
+    double dt;
+    while ((dt = output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp) > 0.) {
+      if (dt > BULB_INTEGRATION_PERIOD) // do the integration in a loop of small steps
+        dt = BULB_INTEGRATION_PERIOD;
+      if (dt == BULB_INTEGRATION_PERIOD || output->state.bulb.prevIntegrationValue != 0.f) // if there is a 'leftover' from the discrete integration, just use it if it is in the On-state, otherwise it falsifies the integration more than it helps
+        core_eye_flicker_fusion(output, dt, output->state.bulb.prevIntegrationValue);
+      output->state.bulb.prevIntegrationTimestamp += BULB_INTEGRATION_PERIOD;
     }
-    core_eye_flicker_fusion(output, dt, power);
-    output->state.bulb.integrationTimestamp += BULB_INTEGRATION_PERIOD;
+    // No real need to do this anymore, rather let the low pass filter over/undershoot to be more 'correct'
+    /*if (output->state.bulb.prevIntegrationValue != 0.f && output->value > (float)(254./255.)) // Stabilize Steady-On state
+      output->value = 1.f;
+    else if (output->state.bulb.prevIntegrationValue == 0.f && output->value < (float)(1./255.)) // Stabilize Steady-Off state
+      output->value = 0.f;*/
+    output->state.bulb.prevIntegrationTimestamp = output->state.bulb.integrationTimestamp;
+    output->state.bulb.prevIntegrationValue = power;
   }
-  if(i == 0)
-    output->state.bulb.integrationTimestamp = now;
+  // else: wait with the integration until some more time vanished or the state will flip
+  output->state.bulb.integrationTimestamp = now;
+
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
     printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-");
   #endif
-
-  if (state == 1 && output->value > (254.f / 255.f)) { // Steady On state
-    output->value = 1.f;
-  }
-  else if (state == 0 && output->value < (1.f / 255.f)) { // Steady Off state
-    output->value = 0.f;
-  }
 }
 
 // This can be called from any thread to request an update of all integrated outputs

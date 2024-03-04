@@ -441,8 +441,11 @@ typedef struct {
          float serial_R;                  /* serial resistor (Ohms) */
          float relative_brightness;       /* Relative brightness scale */
          double integrationTimestamp;     /* last integration timestamp */
+         double prevIntegrationTimestamp; /* prev integration timestamp */
+         float prevIntegrationValue;      /* prev integration value */
          float filament_temperature;      /* actual filament temperature */
          float eye_integration[3];        /* flicker/fusion eye model state */
+         float eye_emission_old;          /* prev emission value in the eye model state */
       } bulb; // Physical model of a bulb / LED / VFD
       struct
       {
