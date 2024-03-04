@@ -11,6 +11,8 @@ The player 2 display will show the number of the installed game revision.
 System 11 games have the software revision identified with either an "L" or "P" followed by a revision number, such as L-1 or P-1.
 The "L" signifies a production ("Level") release, while the "P" signifies a Prototype version of software.
 
+Output of the revision can be enabled by switches A-up, G-down, then pressing the Test-button.
+
 Sometimes contained within the revision label is a version identifier, such as LX-1 or LA-1.
 The possible version identifiers are described below. Not all versions exist for all games.
 
@@ -28,11 +30,6 @@ G : Germany. This version contains support for special German functionality, suc
 #include "wmssnd.h"
 #include "s11.h"
 
-/*
-Issues:
-Pool: Sound loops on startup, stops after one minute?
-Jokerz: Startup sound does not stop
-*/
 #define INITGAME(name, gen, disp, mux, flip, db, gs1) \
 static core_tGameData name##GameData = { \
   gen, disp, {flip,0,0,0,0,db,gs1}, NULL, {{0}}, {mux} }; \

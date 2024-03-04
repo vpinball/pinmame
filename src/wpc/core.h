@@ -425,7 +425,7 @@ typedef struct {
   core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
-typedef void (*core_tPhysOutputIntegrator)(const float, const int, const int);
+typedef void (*core_tPhysOutputIntegrator)(const double, const int, const int);
 
 typedef struct {
    int type;                              /* Type of modulation from CORE_MODOUT_ definitions */
@@ -440,14 +440,14 @@ typedef struct {
          float U;                         /* voltage (Volts) */
          float serial_R;                  /* serial resistor (Ohms) */
          float relative_brightness;       /* Relative brightness scale */
-         float integrationTimestamp;      /* last integration timestamp */
+         double integrationTimestamp;     /* last integration timestamp */
          float filament_temperature;      /* actual filament temperature */
-         float eye_integration[4];        /* flicker/fusion eye model state */
+         float eye_integration[3];        /* flicker/fusion eye model state */
       } bulb; // Physical model of a bulb / LED / VFD
       struct
       {
          int fastOn;
-         float lastFlipTimestamp;
+         double lastFlipTimestamp;
          float switchDownLatency;
       } sol; // Physical model of a solenoid
    } state;
@@ -482,7 +482,7 @@ typedef struct {
   volatile int   gi[CORE_MAXGI];                                /* WPC GI strings state */
   /*-- Generalized outputs --*/
   int nSolenoids, nLamps, nGI, nAlphaSegs;                      /* Number of physical outputs the driver handles */
-  float lastACZeroCrossTimeStamp;                               /* Last time AC did cross 0 as reported by the driver (should be 120Hz) */
+  double lastACZeroCrossTimeStamp;                              /* Last time AC did cross 0 as reported by the driver (should be 120Hz) */
   UINT8 binaryOutputState[CORE_MODOUT_MAX / 8];                 /* Pulsed binary state */
   core_tPhysicOutput physicOutputState[CORE_MODOUT_MAX];        /* Output state, taking in account the physical device wired to the binary output */
   float lastPhysicOutputReportedValue[CORE_MODOUT_MAX];         /* Last state value reported for each of the physic outputs */
@@ -579,7 +579,7 @@ extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); /
 extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
 extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UINT8 bitMask);
 extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
-INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = (float) timer_get_time(); }
+INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = timer_get_time(); }
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
