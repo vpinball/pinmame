@@ -126,7 +126,7 @@ static struct {
   } pic;
   int pageMask;           /* page handling */
   int firqSrc;            /* source of last firq */
-  int diagnostic;
+  UINT8 diagnosticLed;
   int zc;                 /* zero cross flag */
   double gi_on_time[CORE_MAXGI]; /* Global time when GI Triac was turned on */
   volatile UINT8 conductingGITriacs; /* Current conducting triacs of WPC GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
@@ -589,8 +589,8 @@ static INTERRUPT_GEN(wpc_vblank) {
       coreGlobals.segments[15].w &= ~0x8080; coreGlobals.segments[35].w &= ~0x8080;
       memset(wpclocals.alphaSeg, 0, sizeof(wpclocals.alphaSeg));
     }
-    coreGlobals.diagnosticLed = wpclocals.diagnostic;
-    wpclocals.diagnostic = 0;
+    coreGlobals.diagnosticLed = wpclocals.diagnosticLed;
+    wpclocals.diagnosticLed = 0;
 
     //Display status of GI strings
     #if PRINT_GI_DATA
@@ -1007,7 +1007,7 @@ WRITE_HANDLER(wpc_w) {
     case WPC_PROTMEM:
       break; // just save value
     case WPC_LED:
-      wpclocals.diagnostic |= (data>>7);
+      wpclocals.diagnosticLed |= (data>>7);
       break;
     case WPC_PRINTDATA:
       break;

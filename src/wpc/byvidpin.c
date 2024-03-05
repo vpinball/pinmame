@@ -111,8 +111,8 @@ static struct {
   int p0_a, p1_a, p1_b, p0_cb2, p1_cb2, p2_a, p2_b, p2_cb2;
   int lampadr1;
   UINT32 solenoids;
-  int diagnosticLed;
-  int diagnosticLedV;		//Diagnostic LED for Vidiot Board
+  UINT8 diagnosticLed;
+  UINT8 diagnosticLedV; //Diagnostic LED for Vidiot Board
   int vblankCount;
   int phase_a;
   int irqstate; // ??? Is this really a toggle

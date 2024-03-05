@@ -43,7 +43,7 @@
 /-----------------*/
 static struct {
   int vblankCount;
-  int diagnosticLed;
+  UINT8 diagnosticLed;
   UINT32 solenoids;
   UINT16 solenoids2;
   core_tSeg segments;

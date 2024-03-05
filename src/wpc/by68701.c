@@ -46,7 +46,7 @@ static struct {
   int swCol, lampCol, strobe, commas, solEnable;
   UINT32 solenoids;
   core_tSeg segments;
-  int diagnosticLed;
+  UINT8 diagnosticLed;
   int vblankCount, zc, irq;
   int inhibit, zcSanity, dispSanity;
   int irqstate, irqstates[4];

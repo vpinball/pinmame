@@ -872,7 +872,7 @@ static WRITE_HANDLER(giaux_w) {
 // MINI DMD Type 1 (HRC) (15x7)
 PINMAME_VIDEO_UPDATE(seminidmd1_update) {
   int ii,bits;
-  UINT16 *seg = &coreGlobals.drawSeg[0];
+  UINT16 *seg = coreGlobals.drawSeg;
 
   for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
     UINT8 *line = &coreGlobals.dotCol[ii+1][0];
@@ -921,7 +921,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
 // MINI DMD Type 2 (Monopoly) (15x7)
 PINMAME_VIDEO_UPDATE(seminidmd2_update) {
   int ii,bits;
-  UINT16 *seg = &coreGlobals.drawSeg[0];
+  UINT16 *seg = coreGlobals.drawSeg;
 
   for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1) {
     UINT8 *line = &coreGlobals.dotCol[ii+1][0];
@@ -945,7 +945,7 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
 // MINI DMD Type 3 (RCT) (21x5)
 PINMAME_VIDEO_UPDATE(seminidmd3_update) {
   int ii,kk;
-  UINT16 *seg = &coreGlobals.drawSeg[0];
+  UINT16 *seg = coreGlobals.drawSeg;
 
   memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
   for (kk = 0; kk < 5; kk++) {
@@ -974,7 +974,7 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   };
   int ii;
   UINT8 *line;
-  UINT16 *seg = &coreGlobals.drawSeg[0];
+  UINT16 *seg = coreGlobals.drawSeg;
 
   for (ii=0; ii < 14; ii++) {
     UINT16 bits1 = 0;

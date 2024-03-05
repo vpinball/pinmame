@@ -97,7 +97,7 @@ static struct {
   int DispNoWait;
   int SwCol;
   int LampCol;
-  int diagnosticLED;
+  UINT8 diagnosticLED;
   int acksnd;
   int ackspk;
   int flipRead;

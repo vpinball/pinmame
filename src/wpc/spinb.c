@@ -246,7 +246,7 @@ struct {
   UINT32 solenoids;
   UINT16 lampColumn;
   int    lampRow, swCol;
-  int    diagnosticLed;
+  //int    diagnosticLed;
   int    ssEn;
   int    L16isGameOn;
   int    mainIrq;

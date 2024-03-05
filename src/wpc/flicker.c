@@ -30,7 +30,7 @@
 /-----------------*/
 static struct {
   int    vblankCount;
-  int    diagnosticLed;
+  int    diagnosticLed; //!! unused/unimplemented
   int    tmpSwCol;
   UINT32 solenoids;
   UINT8  tmpLampData;

@@ -40,7 +40,7 @@ static struct {
   int p0_a;
   int bcd[5];
   int lampaddr;
-  int diagnosticLed;
+  //int diagnosticLed;
   int vblankCount;
   int swCol;
   int disp_enable;		//Is Display Enabled

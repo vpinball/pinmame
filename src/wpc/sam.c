@@ -121,7 +121,7 @@ int at91_receive_serial(int usartno, data8_t *buf, int size);
 /-----------------*/
 struct {
 	int vblankCount;
-	int diagnosticLed;
+	UINT8 diagnosticLed;
 	int sw_stb;
 	UINT8 zc; // bool
 	int video_page[2];
@@ -1859,18 +1859,18 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 }
 
 static PINMAME_VIDEO_UPDATE(samminidmd_update) {
-    int ii,kk,bits;
+    int ii,kk;
     const int dmd_x = (layout->left-10)/7;
     const int dmd_y = (layout->top-34)/9;
     for (int y = 0; y < 8; y++)
 		for (int x = 0; x < 5; x++) {
 			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
-			float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
+			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
 			coreGlobals.dotCol[y + 1][x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 5; ii++) {
-        bits = 0;
+        int bits = 0;
         for (kk = 1; kk < 8; kk++)
             bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
         coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
@@ -1881,16 +1881,16 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
 }
 
 static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
-    int ii,jj,kk,bits;
+    int ii,jj,kk;
     for (jj = 0; jj < 35; jj++)
 		for (kk = 0; kk < 5; kk++) {
 			const int target = 140 + jj + (kk * 35);
-			float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
+			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
 			coreGlobals.dotCol[kk + 1][jj] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 35; ii++) {
-      bits = 0;
+      int bits = 0;
       for (kk = 1; kk < 6; kk++)
         bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
       coreGlobals.drawSeg[ii] = bits;

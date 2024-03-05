@@ -33,7 +33,7 @@
 /-----------------*/
 static struct {
   int    vblankCount;
-  int    diagnosticLed;
+  UINT8  diagnosticLed;
   int    soldisable;
   UINT8  testSwBits;
   UINT32 solenoids;
