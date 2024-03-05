@@ -473,14 +473,13 @@ typedef struct {
   /*-- Alphanumeric driver --*/
   core_tSeg segments;                                           /* Segments data from driver */
   UINT16 drawSeg[CORE_SEGCOUNT];                                /* Segments drawn */
-  volatile UINT8 segDim[CORE_SEGCOUNT];                         /* Segments dimming. TODO this is unsupported for the time being since it needs more work. Drop it in favor of new physic outputs ? */
   /*-- DMD --*/
   tDMDDot dotCol;                                               /* Raw DMD dots */
   /*-- Solenoids --*/
   volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
   volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
   volatile UINT32 solenoids2;                                   /* Current integrated binary On/Off value of additional solenoids, including flipper solenoids (not pulsed, averaged over a period depending on the driver) */
-  UINT64 flipperCoils;                                          /* coil mapping of flipper power/hold coils => TODO move to core_gameData */
+  UINT64 flipperCoils;                                          /* Coil mapping of flipper power/hold coils => TODO move to core_gameData */
   /*-- GI --*/
   volatile int   gi[CORE_MAXGI];                                /* WPC GI strings state */
   /*-- Generalized outputs --*/
