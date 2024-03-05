@@ -2058,7 +2058,7 @@ int core_getDip(int dipBank) {
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
   UINT32 pixel[21] = {0};
-  UINT8 dim[21][16] = {0};
+  UINT8 dim[21] = {0};
   static const int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
   int kk, ll;
   const int palSize = sizeof(core_palette) / 3;
@@ -2091,8 +2091,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
       for (ll = 0; ll < s->rows; ll++)
       {
         pixel[ll] |= s->segs[ll][kk];
-        for (int i = 0; i < 16; i++)
-          dim[ll][i - 15 + s->cols] = 255 - (dimming ? dimming[kk - 1] : 0);
+        dim[ll] = 255 - (dimming ? dimming[kk - 1] : 0);
       }
     }
   }
@@ -2104,8 +2103,8 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
-      if ((p & 0x03) && dim[kk][ll])
-        *(--line) = CORE_COLOR(palSize - 33 + (((3 - (p & 0x03)) * dim[kk][ll]) >> 4)); //!! meh, looses at least 3 bits precision due to palette
+      if ((p & 0x03) && dim[kk])
+        *(--line) = CORE_COLOR(palSize - 33 + (((3 - (p & 0x03)) * dim[kk]) >> 4)); //!! meh, looses at least 3 bits precision due to palette
       else
         *(--line) = CORE_COLOR(offPens[np & 0x03]);
     }
