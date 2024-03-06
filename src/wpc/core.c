@@ -216,6 +216,8 @@ static const unsigned char core_palette[48+COL_COUNT][3] = {
 {/* 12 */ 0x9f,0x40,0xff}  /* lpurple*/
 };
 
+static UINT16 dim_LUT[3][257];
+
 /*------------------------------
 / Display segment drawing data
 /------------------------------*/
@@ -750,31 +752,39 @@ static PALETTE_INIT(core) {
   }
 
   /*-- segment display antialias colors --*/
-  tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
-  tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;
-  tmpPalette[COL_SEGAAON1][2] = bStart * 72 / 100;
-  tmpPalette[COL_SEGAAON2][0] = rStart * 33 / 100;
-  tmpPalette[COL_SEGAAON2][1] = gStart * 33 / 100;
-  tmpPalette[COL_SEGAAON2][2] = bStart * 33 / 100;
-  tmpPalette[COL_SEGAAOFF1][0] = rStart * perc0 * 72 / 10000;
-  tmpPalette[COL_SEGAAOFF1][1] = gStart * perc0 * 72 / 10000;
-  tmpPalette[COL_SEGAAOFF1][2] = bStart * perc0 * 72 / 10000;
-  tmpPalette[COL_SEGAAOFF2][0] = rStart * perc0 * 33 / 10000;
-  tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * 33 / 10000;
-  tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * 33 / 10000;
+  tmpPalette[COL_SEGAAON1][0] = rStart * (perc66+5) / 100;
+  tmpPalette[COL_SEGAAON1][1] = gStart * (perc66+5) / 100;
+  tmpPalette[COL_SEGAAON1][2] = bStart * (perc66+5) / 100;
+  tmpPalette[COL_SEGAAON2][0] = rStart * perc33 / 100;
+  tmpPalette[COL_SEGAAON2][1] = gStart * perc33 / 100;
+  tmpPalette[COL_SEGAAON2][2] = bStart * perc33 / 100;
+  tmpPalette[COL_SEGAAOFF1][0] = rStart * perc0 * (perc66+5) / 10000;
+  tmpPalette[COL_SEGAAOFF1][1] = gStart * perc0 * (perc66+5) / 10000;
+  tmpPalette[COL_SEGAAOFF1][2] = bStart * perc0 * (perc66+5) / 10000;
+  tmpPalette[COL_SEGAAOFF2][0] = rStart * perc0 * perc33 / 10000;
+  tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * perc33 / 10000;
+  tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * perc33 / 10000;
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
   for (ii = 0; ii < 16; ii++) {
-    const int tmp = (15 * perc0 + ii * (100 - perc0));
+    const int tmp = 15 * perc0 + ii * (100 - perc0);
     tmpPalette[palSize-16+ii][0] = (unsigned char)(rStart * tmp / 1500);
     tmpPalette[palSize-16+ii][1] = (unsigned char)(gStart * tmp / 1500);
     tmpPalette[palSize-16+ii][2] = (unsigned char)(bStart * tmp / 1500);
-    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * tmp * 72 / 150000);
-    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * tmp * 72 / 150000);
-    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * tmp * 72 / 150000);
-    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * tmp * 33 / 150000);
-    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * tmp * 33 / 150000);
-    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * tmp * 33 / 150000);
+    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * tmp * (perc66+5) / 150000);
+    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * tmp * (perc66+5) / 150000);
+    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * tmp * (perc66+5) / 150000);
+    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * tmp * perc33 / 150000);
+    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * tmp * perc33 / 150000);
+    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * tmp * perc33 / 150000);
+  }
+
+  /*-- generate segment colors for dimmed segments --*/
+  for (ii = 0; ii <= 256; ii++) {
+    const int tmp = 256 * perc0 + ii * (100 - perc0);
+    dim_LUT[0][ii] = ((bStart * tmp / 25600)>>3) | (((gStart * tmp / 25600)>>3)<<5) | (((rStart * tmp / 25600)>>3)<<10);
+    dim_LUT[1][ii] = ((bStart * tmp * (perc66+5) / 2560000)>>3) | (((gStart * tmp * (perc66+5) / 2560000)>>3)<<5) | (((rStart * tmp * (perc66+5)/ 2560000)>>3)<<10);
+    dim_LUT[2][ii] = ((bStart * tmp *  perc33    / 2560000)>>3) | (((gStart * tmp *  perc33    / 2560000)>>3)<<5) | (((rStart * tmp *  perc33   / 2560000)>>3)<<10);
   }
 
 //for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
@@ -2095,7 +2105,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
           for (ll = 0; ll < s->cols; ll++, p >>= 2)
             if (p & 0x03) // segment set?
             {
-              const UINT16 tmp = (3 - (p & 0x03)) * (256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range below (32..0)
+              const UINT16 tmp = 256 - dimming[sb - 1]; // 256 instead of 255 to exploit full range (as 0 is off state)
               if (tmp > dim[kk][ll]) // always take largest value, to make the crude anti-aliasing work at least somehow per segment
                 dim[kk][ll] = tmp;
             }
@@ -2111,7 +2121,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
       if (p & 0x03) // segment set?
-        *(--line) = CORE_COLOR(palSize - 33 + (dimming ? (dim[kk][ll] >> 4) : ((3 - (p & 0x03))*16))); //!! meh, >>4 looses at least 3 bits precision due to palette
+        *(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : CORE_COLOR(palSize - 33 + (3 - (p & 0x03))*16);
       else
         *(--line) = CORE_COLOR(offPens[np & 0x03]);
     }

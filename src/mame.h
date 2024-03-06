@@ -95,7 +95,7 @@ struct RunningMachine
 	struct rectangle		absolute_visible_area;
 
 	/* remapped palette pen numbers. When you write directly to a bitmap in a
-	   non-paletteized mode, use this array to look up the pen number. For example,
+	   non-palettized mode, use this array to look up the pen number. For example,
 	   if you want to use color #6 in the palette, use pens[6] instead of just 6. */
 	pen_t *					pens;
 
