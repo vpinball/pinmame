@@ -2087,12 +2087,18 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 #endif
       for (kk = 0; kk < s->rows; kk++)
       {
-        pixel[kk] |= s->segs[kk][sb];
-        UINT32 p = s->segs[kk][sb]>>(30-2*s->cols);
-        if(dimming)
+        pixel[kk] |= s->segs[kk][sb]; // 'sum' up anti-aliasing
+
+        // to combine this with dimming fill dim[][] with weighted AA/dimming of each segment
+        UINT32 p = pixel[kk]>>(30-2*s->cols);
+        if (dimming)
           for (ll = 0; ll < s->cols; ll++, p >>= 2)
-            if (p & 0x03)
-              dim[kk][ll] |= (3 - (p & 0x03)) * (256 - dimming[sb - 1]); // 256 instead of 255 to have bits separated for the | op. The | is used as a tradeoff, as we do not have a better way to 'blend' the anti-aliased segments (i.e. legacy display code rendering :/).
+            if (p & 0x03) // segment set?
+            {
+              const UINT16 tmp = (3 - (p & 0x03)) * (256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range below (32..0)
+              if (tmp > dim[kk][ll]) // always take largest value, to make the crude anti-aliasing work at least somehow per segment
+                dim[kk][ll] = tmp;
+            }
       }
     }
   }
@@ -2104,7 +2110,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
-      if (p & 0x03)
+      if (p & 0x03) // segment set?
         *(--line) = CORE_COLOR(palSize - 33 + (dimming ? (dim[kk][ll] >> 4) : ((3 - (p & 0x03))*16))); //!! meh, >>4 looses at least 3 bits precision due to palette
       else
         *(--line) = CORE_COLOR(offPens[np & 0x03]);
