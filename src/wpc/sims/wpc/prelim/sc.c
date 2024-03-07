@@ -333,21 +333,27 @@ static core_tGameData scGameData = {
 
 static WRITE_HANDLER(parallel_0_out) {
   coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(data);
+  core_write_pwm_output_8b(10 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(data);
+  core_write_pwm_output_8b(9 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(parallel_2_out) {
   coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(data);
+  core_write_pwm_output_8b(8 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(parallel_3_out) {
   coreGlobals.lampMatrix[13] = coreGlobals.tmpLampMatrix[13] = core_revbyte(data);
+  core_write_pwm_output_8b(13 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(parallel_4_out) {
   coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = core_revbyte(data);
+  core_write_pwm_output_8b(12 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(parallel_5_out) {
   coreGlobals.lampMatrix[11] = coreGlobals.tmpLampMatrix[11] = core_revbyte(data);
+  core_write_pwm_output_8b(11 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(qspin_0_out) {
   HC4094_data_w(1, data);
