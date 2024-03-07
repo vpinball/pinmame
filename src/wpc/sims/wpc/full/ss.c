@@ -424,9 +424,11 @@ static sim_tSimData ssSimData = {
 
 static WRITE_HANDLER(parallel_0_out) {
   coreGlobals.tmpLampMatrix[9] = core_revbyte(data);
+  core_write_pwm_output_8b(9 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.tmpLampMatrix[8] = core_revbyte(data);
+  core_write_pwm_output_8b(8 * 8, core_revbyte(data));
 }
 static WRITE_HANDLER(qspin_0_out) {
   HC4094_data_w(1, data);

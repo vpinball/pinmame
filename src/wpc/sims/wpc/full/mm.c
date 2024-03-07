@@ -536,7 +536,7 @@ static void init_mm(void) {
 static void mm_handleMech(int mech) {
   /* Handle the DrawBridge - Thanx Tom! */
   if (mech & 0x01) {
-    if (core_getSol(sDBMotor) > 0)
+    if (core_getPulsedSol(sDBMotor) > 0)
       locals.drawbridgePos = (locals.drawbridgePos+MM_DRAWBRIDGETICK) % 500;
     core_setSw(swDBUp, (locals.drawbridgePos>=490) || (locals.drawbridgePos<=10));
     core_setSw(swDBDown, (locals.drawbridgePos>=240) && (locals.drawbridgePos<=260));

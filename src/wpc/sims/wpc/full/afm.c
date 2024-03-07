@@ -438,9 +438,11 @@ static core_tGameData afmGameData = {
 
 static WRITE_HANDLER(parallel_0_out) {
   coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data;
+  core_write_pwm_output_8b(8 * 8, data);
 }
 static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data;
+  core_write_pwm_output_8b(9 * 8, data);
 }
 static WRITE_HANDLER(qspin_0_out) {
   HC4094_data_w(1, data);
