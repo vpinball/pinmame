@@ -37,17 +37,7 @@ typedef void genf(void);
 #define MAX_GFX_ELEMENTS 32
 #define MAX_MEMORY_REGIONS 32
 
-#ifndef MESS
-#define APPNAME					"MAME"
-#define APPLONGNAME				"M.A.M.E."
-#else
-#define APPNAME					"MESS"
-#define APPLONGNAME				"M.E.S.S."
-#endif
-
 #ifdef PINMAME
-#undef APPNAME
-#undef APPLONGNAME
 #define APPNAME					"PinMAME"
 #define APPLONGNAME				"Pinball M.A.M.E."
 #endif

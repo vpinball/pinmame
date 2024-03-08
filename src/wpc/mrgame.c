@@ -92,15 +92,12 @@ static WRITE_HANDLER(mrgame_sndcmd);
 static struct {
   int vblankCount;
   UINT32 solenoids;
-  UINT16 sols2;
-  int irq_count;
-  int DispNoWait;
   int SwCol;
   int LampCol;
   UINT8 diagnosticLED;
   int acksnd;
   int ackspk;
-  int flipRead;
+  int flipRead; // unused
   int a0a2;
   int d0d1;
   int vid_stat;
@@ -684,10 +681,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 	/* since last time and update it accordingly. */
 	for (offs = 0; offs < videoram_size; offs++)
 	{
-		if (1) //dirtybuffer[offs])
 		{
-//			dirtybuffer[offs] = 0;
-
 			unsigned int sx = (unsigned int)offs % 32;
 			unsigned int sy = (unsigned int)offs / 32;
 
@@ -742,10 +736,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	/* since last time and update it accordingly. */
 	for (offs = 0; offs < videoram_size; offs++)
 	{
-		//if (dirtybuffer[offs])
 		{
-//			dirtybuffer[offs] = 0;
-
 			unsigned int sx = (unsigned int)(offs % 32);
 			unsigned int sy = (unsigned int)(offs / 32);
 

@@ -20,7 +20,6 @@
 #include "cpu/i4004/i4004.h"
 #include "core.h"
 
-#define NUTTING_VBLANKFREQ   60 /* VBLANK frequency in HZ */
 #define NUTTING_SOLSMOOTH     4 /* Smooth the Solenoids over this number of VBLANKS */
 #define NUTTING_LAMPSMOOTH    1 /* Smooth the lamps over this number of VBLANKS */
 #define NUTTING_DISPLAYSMOOTH 3 /* Smooth the display over this number of VBLANKS */

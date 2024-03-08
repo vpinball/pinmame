@@ -824,8 +824,8 @@ static PALETTE_INIT(core) {
 /    Generic DMD display handler
 /------------------------------------*/
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout) {
-  UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
-  UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
+  pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
+  pen_t *aaColor  = &Machine->pens[COL_DMDAA];
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
   int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
@@ -957,9 +957,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
     }
   }
-
-  osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
-                 (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
   if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
@@ -1657,7 +1654,7 @@ static VIDEO_UPDATE(core_status) {
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
     return;
 
-  dotColor[0] = CORE_COLOR(COL_DMDOFF); dotColor[1] = CORE_COLOR(COL_DMDON);
+  dotColor[0] = Machine->pens[COL_DMDOFF]; dotColor[1] = Machine->pens[COL_DMDON];
   /*--  Draw lamps --*/
   if ((core_gameData->hw.lampData) &&
       (startRow + core_gameData->hw.lampData->startpos.x + core_gameData->hw.lampData->size.x < locals.maxSimRows)) {
@@ -1681,16 +1678,13 @@ static VIDEO_UPDATE(core_status) {
           }
           else {
             const int color = drawData->lamps[num].lamppos[qq].color;
-            line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
+            line[lampx][starty + lampy] = Machine->pens[(bits & 0x01) ? color : COL_SHADE(color)];
           }
         }
         bits >>= 1;
         num++;
       }
     }
-    osd_mark_dirty(starty,  locals.firstSimRow + startRow + startx,
-                   starty + drawData->size.y,
-                   locals.firstSimRow + startRow + startx + drawData->size.x);
     startRow += startx + drawData->size.x;
     if (starty + drawData->size.y > nextCol) nextCol = starty + drawData->size.y;
   }
@@ -1709,7 +1703,6 @@ static VIDEO_UPDATE(core_status) {
         line += 2; bits >>= 1;
       }
     }
-    osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2 ,locals.firstSimRow + startRow + 16);
     startRow += 16; if (thisCol + ii*2 > nextCol) nextCol = thisCol + ii*2;
   } /* else */
 
@@ -1726,7 +1719,6 @@ static VIDEO_UPDATE(core_status) {
       line += 2; bits >>= 1;
     }
   }
-  osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 16);
   startRow += 16; if (thisCol + ii*2 > nextCol) nextCol = thisCol + ii*2;
 
   /* Draw Solenoids and Flashers */
@@ -1752,8 +1744,6 @@ static VIDEO_UPDATE(core_status) {
         allSol >>= 1;
       }
     }
-    osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + 16,
-        locals.firstSimRow + startRow + 16);
     startRow += 16; if (thisCol + 16 > nextCol) nextCol = thisCol + 16;
   }
 
@@ -1776,7 +1766,6 @@ static VIDEO_UPDATE(core_status) {
         line[0][thisCol + 3] = dotColor[bits & 0x01];
         line += 2; bits >>= 1;
       }
-      osd_mark_dirty(thisCol + 3, locals.firstSimRow + startRow, thisCol + 4, locals.firstSimRow + startRow + ii*2);
       startRow += ii*2; if (thisCol + 4 > nextCol) nextCol = thisCol + 4;
     }
     else { // Draw LEDs Horizontally
@@ -1784,7 +1773,6 @@ static VIDEO_UPDATE(core_status) {
         line[0][thisCol + ii*2] = dotColor[bits & 0x01];
         bits >>= 1;
       }
-      osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
       startRow += 1; if (thisCol + ii*2 > nextCol) nextCol = thisCol + ii*2;
     }
   }
@@ -1805,7 +1793,6 @@ static VIDEO_UPDATE(core_status) {
       else
         lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
     }
-    osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
   }
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
   /*-- draw game specific mechanics --*/
@@ -2121,12 +2108,11 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
       if (p & 0x03) // segment set?
-        *(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : CORE_COLOR(palSize - 33 + (3 - (p & 0x03))*16);
+        *(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
       else
-        *(--line) = CORE_COLOR(offPens[np & 0x03]);
+        *(--line) = Machine->pens[offPens[np & 0x03]];
     }
   }
-  osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
 
 

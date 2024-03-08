@@ -29,9 +29,6 @@ extern data32_t *buffered_spriteram32_2;
 extern size_t spriteram_size;
 extern size_t spriteram_2_size;
 extern size_t spriteram_3_size;
-extern data8_t *dirtybuffer;
-extern data16_t *dirtybuffer16;
-extern data32_t *dirtybuffer32;
 extern struct mame_bitmap *tmpbitmap;
 
 
