@@ -87,6 +87,11 @@ void vp_setDIP(int bank, int value) { }
   extern void libpinmame_update_display(const int index, const struct core_dispLayout* p_layout, const void* p_data);
 #endif
 
+#ifndef LIBPINMAME
+  #include "gts3.h"
+  extern tGTS3locals GTS3locals;
+#endif
+
 INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]);
@@ -1505,7 +1510,7 @@ void core_updateSw(int flipEn) {
   
   /*-- Report changed solenoids --*/
   if (coreGlobals.nSolenoids && 
-     ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) || (((core_gameData->gen & GEN_ALLWPC) | (core_gameData->gen & GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
+     ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) || ((core_gameData->gen & (GEN_ALLWPC | GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
@@ -2222,7 +2227,14 @@ static MACHINE_INIT(core) {
     if (coreData->init) coreData->init();
 
     /*-- init PWM integration (needs to be done after coreData->init() which defines the number of outputs and the physical model to be used on each output) --*/
-    //options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
+#ifndef LIBPINMAME // dimmed segments not wired at the moment?!
+#ifdef VPINMAME
+    if(g_fShowWinDMD || g_fShowPinDMD)
+#endif
+    // Enable PWM/dimmed segments for corresponding alphanum segment machines
+    if(((core_gameData->gen & GEN_GTS3) && GTS3locals.alphagen==1) || (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)))
+      options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
+#endif
 #ifdef VPINMAME
     // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
     // Note that physical outputs are also updated once per frame by the core machine driver video update callback.

@@ -13,8 +13,6 @@
   GV 07/27/05: Fixed the missing sound in Strikes And Spares
   SE 07/27/05: Finally got that DAMN 2nd DMD working
 
-  TODO: Segment dimming
-
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -61,35 +59,7 @@ static void dmd_vblank(int which);
 /*----------------
 / Local variables
 /-----------------*/
-struct {
-  int    alphagen;
-  int    alphaNumCol, alphaNumColShitRegister;
-  core_tWord activeSegments[2];  // Realtime active alphanum segments
-  int    vblankCount;
-  UINT32 solenoids;
-  int    lampRow, lampColumn;
-  UINT8  diagnosticLed;  // bool
-  UINT8  diagnosticLed1; // bool
-  UINT8  diagnosticLed2; // bool
-  UINT8  swDiag; // bool
-  UINT8  swTilt; // bool
-  UINT8  swSlam; // bool
-  UINT8  swPrin; // bool
-  UINT8    u4pb;
-  READ_HANDLER((*U4_PB_R));
-  WRITE_HANDLER((*DISPLAY_CONTROL));
-  WRITE_HANDLER((*AUX_W));
-  UINT8  ax[7], cx1, cx2, ex1;
-  char   extra16led; // bool
-  int    sound_data;
-  UINT8  prn[8];
-
-  int bitSet;
-  int vblank_counter;
-  UINT8 irq;
-
-  int modsol_rate_counter;
-} GTS3locals;
+tGTS3locals GTS3locals;
 
 //We need 2 structures, since Strikes N Spares has 2 DMD Displays
 GTS3_DMDlocals GTS3_dmdlocals[2];
@@ -200,7 +170,7 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
 		}
 	}
-	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not gives any benefit
+	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not provide any benefit
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, lampRow, 8);
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, lampRow, 4);
 
