@@ -177,17 +177,17 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 
 	if (GTS3locals.alphagen)
 	{ // Alpha generation
-		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShitRegister);
+		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShiftRegister);
 		if (data & ~GTS3locals.u4pb & DSTRB) // Positive edge on DSTRB: shift 20bit register and set bit0 to DDATA
 		{
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16, 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, 0);
-			GTS3locals.alphaNumColShitRegister = ((GTS3locals.alphaNumColShitRegister << 1) & 0x0ffffe) | ((data & DDATA) >> 5);
-			GTS3locals.alphaNumCol = GTS3locals.alphaNumColShitRegister == 0 ? 20 : core_BitColToNum(GTS3locals.alphaNumColShitRegister);
+			GTS3locals.alphaNumColShiftRegister = ((GTS3locals.alphaNumColShiftRegister << 1) & 0x0ffffe) | ((data & DDATA) >> 5);
+			GTS3locals.alphaNumCol = GTS3locals.alphaNumColShiftRegister == 0 ? 20 : core_BitColToNum(GTS3locals.alphaNumColShiftRegister);
 			// This should never happens but you can drive the hardware to it (multiple resets,...), this will lead to incorrect rendering
-			// assert((GTS3locals.alphaNumColShitRegister == 0) || (GTS3locals.alphaNumColShitRegister == (1 << GTS3locals.alphaNumCol)));
+			// assert((GTS3locals.alphaNumColShiftRegister == 0) || (GTS3locals.alphaNumColShiftRegister == (1 << GTS3locals.alphaNumCol)));
 		}
 		if (data & ~GTS3locals.u4pb & DBLNK) // DBlank start (positive edge)
 		{
@@ -822,11 +822,11 @@ static WRITE_HANDLER(solenoid_w)
 /*DMD Bankswitching - can handle two DMD displays*/
 static void dmdswitchbank(int which)
 {
-	int	addr =	(GTS3_dmdlocals[which].pa0 *0x04000)+
-				(GTS3_dmdlocals[which].pa1 *0x08000)+
-				(GTS3_dmdlocals[which].pa2 *0x10000)+
-				(GTS3_dmdlocals[which].pa3 *0x20000)+
-				(GTS3_dmdlocals[which].a18 *0x40000);
+	int	addr =	(GTS3_dmdlocals[which].pa0 ? 0x04000 : 0) |
+				(GTS3_dmdlocals[which].pa1 ? 0x08000 : 0) |
+				(GTS3_dmdlocals[which].pa2 ? 0x10000 : 0) |
+				(GTS3_dmdlocals[which].pa3 ? 0x20000 : 0) |
+				(GTS3_dmdlocals[which].a18 ? 0x40000 : 0);
 	cpu_setbank(which ? STATIC_BANK2 : STATIC_BANK1,
 		memory_region(which ? GTS3_MEMREG_DROM2 : GTS3_MEMREG_DROM1) + addr);
 }

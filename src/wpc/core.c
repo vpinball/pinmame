@@ -2232,7 +2232,7 @@ static MACHINE_INIT(core) {
     if(g_fShowWinDMD || g_fShowPinDMD)
 #endif
     // Enable PWM/dimmed segments for corresponding alphanum segment machines
-    if(((core_gameData->gen & GEN_GTS3) && GTS3locals.alphagen==1) || (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)))
+    if(((core_gameData->gen & GEN_GTS3) && GTS3locals.alphagen) || (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)))
       options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
 #endif
 #ifdef VPINMAME
