@@ -22,10 +22,10 @@ jobs:
             base_image: raspios_lite_arm64:latest
     steps:
       - name: Checkout pinmame
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout WiringPi
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
             repository: WiringPi/WiringPi
             ref: master
@@ -51,7 +51,7 @@ jobs:
             make -f makefile.lisy
 
       - name: Upload xmpinmame binary artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LISY xpinmame ${{ matrix.cpu_info }}
           path: xpinmame.vid_lisy

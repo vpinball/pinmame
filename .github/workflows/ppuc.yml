@@ -21,7 +21,7 @@ jobs:
       sha: ${{ steps.version.outputs.sha }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -75,30 +75,30 @@ jobs:
             type: raspi
     steps:
       - name: Checkout pinmame
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 #      - name: Checkout libserum
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          repository: zesinger/libserum
 #          path: libserum
 #      - if: matrix.type == 'pc'
 #        run: mv libserum ../libserum
       - name: Checkout libserialport
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: PPUC/libserialport
           path: libserialport
       - if: matrix.type == 'pc'
         run: mv libserialport ../libserialport
       - name: Checkout libzedmd
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: PPUC/libzedmd
           path: libzedmd
       - if: matrix.type == 'pc'
         run: mv libzedmd ../libzedmd
       - name: Checkout libppuc
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: PPUC/libppuc
           path: libppuc
@@ -172,7 +172,7 @@ jobs:
             cp build/Release/${{ matrix.ppuc }} tmp
             cp src/ppuc/README.md tmp
             cp src/ppuc/LICENSE tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ppuc-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.type }}
           path: tmp

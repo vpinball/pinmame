@@ -21,7 +21,7 @@ jobs:
       sha: ${{ steps.version.outputs.sha }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -81,7 +81,7 @@ jobs:
             platform: android-arm64-v8a
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.so
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 #      - run: |
 #          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
 #            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
@@ -126,7 +126,7 @@ jobs:
           cp release/license.txt tmp
           cp release/pinmame.txt tmp
           cp release/whatsnew.txt tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp
@@ -136,7 +136,7 @@ jobs:
     needs: [ version, build ]
     name: Build libpinmame-osx
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: |
           mkdir tmp
           cp libpinmame-${{ needs.version.outputs.tag }}-osx-x64/license.txt tmp 
@@ -146,7 +146,7 @@ jobs:
           lipo -create -output tmp/pinmame_test \
              libpinmame-${{ needs.version.outputs.tag }}-osx-x64/pinmame_test \
              libpinmame-${{ needs.version.outputs.tag }}-osx-arm64/pinmame_test 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-osx
           path: tmp
