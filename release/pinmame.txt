@@ -18,7 +18,7 @@ What is it?
 
   Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
   COM library (VPinMAME) to steer simulators like Visual Pinball 8/9/X
-  library (libPinMAME) to steer simulators like VPE
+  library (libPinMAME) to steer simulators like VPE, PPUC and VPX standalone
 
   Currently, the following pinball hardware is emulated:
 
