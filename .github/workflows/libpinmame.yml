@@ -18,7 +18,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
-      sha: ${{ steps.version.outputs.sha }}
+      sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +34,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
@@ -89,6 +90,8 @@ jobs:
 #            rm upx.zip
 #          fi
       - run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/git_version.h
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             curl -L https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip -o upx.zip
             7z e upx.zip -oupx
