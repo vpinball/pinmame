@@ -1417,6 +1417,9 @@
     <ClInclude Include="src\gfxobj.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
+    <ClInclude Include="src\git_version.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
     <ClInclude Include="src\harddisk.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
@@ -1490,6 +1493,9 @@
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\usrintrf.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\window.h">

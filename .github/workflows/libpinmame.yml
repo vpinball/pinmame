@@ -18,10 +18,10 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
-      sha: ${{ steps.version.outputs.sha }}
+      sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -34,6 +34,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
@@ -81,7 +82,7 @@ jobs:
             platform: android-arm64-v8a
             libpinmame: libpinmame.${{ needs.version.outputs.version }}.so
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 #      - run: |
 #          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
 #            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
@@ -89,6 +90,8 @@ jobs:
 #            rm upx.zip
 #          fi
       - run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/git_version.h
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             curl -L https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip -o upx.zip
             7z e upx.zip -oupx
@@ -126,7 +129,7 @@ jobs:
           cp release/license.txt tmp
           cp release/pinmame.txt tmp
           cp release/whatsnew.txt tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp
@@ -136,7 +139,7 @@ jobs:
     needs: [ version, build ]
     name: Build libpinmame-osx
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: |
           mkdir tmp
           cp libpinmame-${{ needs.version.outputs.tag }}-osx-x64/license.txt tmp 
@@ -146,7 +149,7 @@ jobs:
           lipo -create -output tmp/pinmame_test \
              libpinmame-${{ needs.version.outputs.tag }}-osx-x64/pinmame_test \
              libpinmame-${{ needs.version.outputs.tag }}-osx-arm64/pinmame_test 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: libpinmame-${{ needs.version.outputs.tag }}-osx
           path: tmp

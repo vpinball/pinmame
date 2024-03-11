@@ -18,9 +18,10 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
       sha: ${{ steps.version.outputs.sha }}
+      sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -32,7 +33,7 @@ jobs:
           TAG="${VERSION}-${REVISION}-${SHA7}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
@@ -50,7 +51,7 @@ jobs:
             platform: linux-x64
             exe: xpinmame
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - if: matrix.os == 'macos-latest'
         run: |
           brew install xquartz
@@ -70,7 +71,7 @@ jobs:
           cp release/license.txt tmp
           cp release/pinmame.txt tmp
           cp release/whatsnew.txt tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: xpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp

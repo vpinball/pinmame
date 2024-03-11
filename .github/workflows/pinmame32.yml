@@ -16,9 +16,12 @@ jobs:
     name: Version
     runs-on: ubuntu-latest
     outputs:
+      version: ${{ steps.version.outputs.version }}
+      revision: ${{ steps.version.outputs.revision }}
+      sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -27,6 +30,9 @@ jobs:
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           SHA7="${GITHUB_SHA::7}"
           TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
@@ -58,13 +64,15 @@ jobs:
             artifact-suffix: -md
             extra-flags: -D CMAKE_CXX_FLAGS=//DMAME_DEBUG
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ilammy/setup-nasm@v1
 #      - run: |
 #          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
 #          7z x upx.zip -oupx
 #          rm upx.zip
       - run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/git_version.h
           curl -L https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip -o upx.zip
           7z e upx.zip -oupx
           rm upx.zip
@@ -81,7 +89,7 @@ jobs:
           cp release/license.txt tmp
           cp release/pinmame.txt tmp
           cp release/whatsnew.txt tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: PinMAME32${{ matrix.artifact-suffix }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp

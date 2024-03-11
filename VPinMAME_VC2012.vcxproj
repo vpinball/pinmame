@@ -1628,6 +1628,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\fileio.h" />
     <ClInclude Include="src\sound\filter.h" />
     <ClInclude Include="src\gfxobj.h" />
+    <ClInclude Include="src\git_version.h" />
     <ClInclude Include="src\harddisk.h" />
     <ClInclude Include="src\hash.h" />
     <ClInclude Include="src\hiscore.h" />
@@ -1654,6 +1655,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\unzip.h" />
     <ClInclude Include="src\usrintrf.h" />
     <ClInclude Include="src\window.h" />
+    <ClInclude Include="src\version.h" />
     <ClInclude Include="src\cpu\adsp2100\adsp2100.h" />
     <ClInclude Include="src\cpu\m6809\m6809.h" />
     <ClInclude Include="src\cpu\m6800\m6800.h" />

@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -71,8 +72,8 @@ IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,6,0,0
- PRODUCTVERSION 3,6,0,0
+ FILEVERSION PM_VERSION_DIGITS
+ PRODUCTVERSION PM_VERSION_DIGITS
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,7 +89,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
-            VALUE "FileVersion", "3, 6, 0, 0"
+            VALUE "FileVersion", PM_VERSION_STRING_COMMAS
             VALUE "InternalName", "VPinMAME"
             VALUE "LegalCopyright", "© 2000-2024 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
 #ifndef _WIN64
@@ -97,7 +98,7 @@ BEGIN
             VALUE "OriginalFilename", "VPinMAME64.DLL"
 #endif
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "3.6"
+            VALUE "ProductVersion", PM_VERSION_STRING_POINTS_FULL
         END
     END
     BLOCK "VarFileInfo"
