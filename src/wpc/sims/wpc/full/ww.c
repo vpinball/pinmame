@@ -40,7 +40,6 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
-#include "machine/4094.h"
 
 /*------------------
 /  Local functions
@@ -525,30 +524,36 @@ static core_tGameData lh5GameData = {
 };
 
 static WRITE_HANDLER(parallel_0_out) {
-  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
-  core_write_pwm_output_8b(8 * 8, data ^ 0xff);
+  coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
-  core_write_pwm_output_8b(9 * 8, data ^ 0xff);
+  coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
 }
-static WRITE_HANDLER(qspin_0_out) {
-  HC4094_data_w(1, data);
-}
-
-static HC4094interface hc4094ww = {
-  2, // 2 chips
-  { parallel_0_out, parallel_1_out },
-  { qspin_0_out }
-};
 
 static WRITE_HANDLER(ww_wpc_w) {
+  static UINT16 prev[64], lamps;
+  int i;
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
-    HC4094_data_w (0, GET_BIT3);
-    HC4094_clock_w(0, GET_BIT2);
-    HC4094_clock_w(1, GET_BIT2);
+    if (GET_BIT2) {
+      lamps <<= 1;
+      if (GET_BIT3) {
+        lamps |= 1;
+      }
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, lamps);
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, lamps >> 8);
+    }
   }
+  for (i = 0; i < 64; i++) {
+    // if the lamp state is not stable for some minimal time, deny the update
+    if (prev[i] != lamps) break;
+    if (i >= 63) {
+      parallel_0_out(0, lamps & 0xff);
+      parallel_1_out(0, lamps >> 8);
+    }
+  }
+  for (i = 63; i > 0; i--) prev[i] = prev[i-1];
+  prev[0] = lamps;
 }
 
 /*---------------
@@ -558,11 +563,6 @@ static void init_ww(void) {
   // LH-5 version needs a longer GI smoothing delay, so we just check for years 2000 and up!
   core_gameData = Machine->gamedrv->year[0] == '2' ? &lh5GameData : &wwGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, ww_wpc_w);
-  HC4094_init(&hc4094ww);
-  HC4094_oe_w(0, 1);
-  HC4094_oe_w(1, 1);
-  HC4094_strobe_w(0, 1);
-  HC4094_strobe_w(1, 1);
   hc55516_set_sample_clock(0, 22372);
 }
 

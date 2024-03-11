@@ -5,7 +5,6 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
-#include "machine/4094.h"
 
 /* 150904 Added Saucer LEDs (GV) */
 /* 231100 Added Sound Support (SJE) */
@@ -437,22 +436,37 @@ static core_tGameData afmGameData = {
 };
 
 static WRITE_HANDLER(parallel_0_out) {
-  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data;
-  core_write_pwm_output_8b(8 * 8, data);
+  coreGlobals.tmpLampMatrix[8] = data;
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data;
-  core_write_pwm_output_8b(9 * 8, data);
-}
-static WRITE_HANDLER(qspin_0_out) {
-  HC4094_data_w(1, data);
+  coreGlobals.tmpLampMatrix[9] = data;
 }
 
-static HC4094interface hc4094afm = {
-  2, // 2 chips
-  { parallel_0_out, parallel_1_out },
-  { qspin_0_out }
-};
+static WRITE_HANDLER(afm_wpc_w) {
+  static UINT16 prev[64], lamps;
+  int i;
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID1) {
+    if (GET_BIT4) {
+      lamps <<= 1;
+      if (GET_BIT5) {
+        lamps |= 1;
+      }
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, ~lamps);
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, ~lamps >> 8);
+    }
+  }
+  for (i = 0; i < 64; i++) {
+    // if the lamp state is not stable for some minimal time, deny the update
+    if (prev[i] != lamps) break;
+    if (i >= 63) {
+      parallel_0_out(0, lamps & 0xff);
+      parallel_1_out(0, lamps >> 8);
+    }
+  }
+  for (i = 63; i > 0; i--) prev[i] = prev[i-1];
+  prev[0] = lamps;
+}
 
 #ifdef PROC_SUPPORT
   #include "p-roc/p-roc.h"
@@ -511,26 +525,12 @@ static HC4094interface hc4094afm = {
   }
 #endif
 
-static WRITE_HANDLER(afm_wpc_w) {
-  wpc_w(offset, data);
-  if (offset == WPC_SOLENOID1) {
-    HC4094_data_w (0, GET_BIT5);
-    HC4094_clock_w(0, GET_BIT4);
-    HC4094_clock_w(1, GET_BIT4);
-  }
-}
-
 /*---------------
 /  Game handling
 /----------------*/
 static void init_afm(void) {
   core_gameData = &afmGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, afm_wpc_w);
-  HC4094_init(&hc4094afm);
-  HC4094_oe_w(0, 1);
-  HC4094_oe_w(1, 1);
-  HC4094_strobe_w(0, 1);
-  HC4094_strobe_w(1, 1);
   wpc_set_fastflip_addr(0x80);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = afm_wpc_proc_solenoid_handler;

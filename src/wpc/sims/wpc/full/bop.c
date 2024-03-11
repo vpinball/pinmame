@@ -711,11 +711,9 @@ static int bop_getMech(int mechNo) {
 
 static WRITE_HANDLER(parallel_0_out) {
   coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
-  core_write_pwm_output_8b(8 * 8, data ^ 0xff);
 }
 static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
-  core_write_pwm_output_8b(9 * 8, data ^ 0xff);
 }
 
 static WRITE_HANDLER(bop_wpc_w) {
@@ -726,7 +724,7 @@ static WRITE_HANDLER(bop_wpc_w) {
     if (GET_BIT1) {
       lamps <<= 1;
       if (GET_BIT0) {
-         lamps |= 1;
+        lamps |= 1;
       }
       core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, lamps);
       core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, lamps >> 8);
