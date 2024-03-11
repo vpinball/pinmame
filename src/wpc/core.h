@@ -434,8 +434,8 @@ typedef struct {
       struct
       {
          int bulb;                        /* bulb model */
-         int isAC;                        /* AC or DC ? */
-         int isReversed;                  /* is input reversed ? */
+         int isAC;                        /* AC or DC ? */ // bool
+         int isReversed;                  /* is input reversed ? */ // bool
          float U;                         /* voltage (Volts) */
          float serial_R;                  /* serial resistor (Ohms) */
          float relative_brightness;       /* Relative brightness scale */
