@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "version.h"
 
 // Generated Help ID header file
 #define APSTUDIO_HIDDEN_SYMBOLS
@@ -234,8 +235,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,6,0,0
- PRODUCTVERSION 3,6,0,0
+ FILEVERSION PM_VERSION_DIGITS
+ PRODUCTVERSION PM_VERSION_DIGITS
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -254,12 +255,12 @@ BEGIN
             VALUE "Comments", "Based on MAME32 by Christopher Kirmse and Michael Soderstrom"
             VALUE "CompanyName", "PinMAME Team"
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32"
-            VALUE "FileVersion", "3, 6, 0, 0"
+            VALUE "FileVersion", PM_VERSION_STRING_COMMAS
             VALUE "InternalName", "PinMAME32"
             VALUE "LegalCopyright", "Copyright 2001-2024 by the PinMAME team"
             VALUE "OriginalFilename", "PinMAME32.exe"
             VALUE "ProductName", "PinMAME32"
-            VALUE "ProductVersion", "3.6"
+            VALUE "ProductVersion", PM_VERSION_STRING_POINTS_FULL
         END
     END
     BLOCK "VarFileInfo"
