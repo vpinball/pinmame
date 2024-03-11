@@ -224,21 +224,51 @@ extern MACHINE_DRIVER_EXTERN(gts3_22);
 #define mGTS3DMDS2      gts3_22 // uses 4_a color_mode
 
 typedef struct {
-  int    version;
-  int	 pa0;
-  int	 pa1;
-  int	 pa2;
-  int	 pa3;
-  int	 a18;
-  int	 q3;
-  int	 dmd_latch;
-  int	 diagnosticLed;
-  int	 status1;
-  int	 status2;
-  int    dstrb;
-  UINT8  dmd_visible_addr;
-  int    nextDMDFrame;
-  int    color_mode; // 4_a, 4_b or 5 (=0,1,2)
+  int   version;
+  UINT8 pa0; // bool
+  UINT8 pa1; // bool
+  UINT8 pa2; // bool
+  UINT8 pa3; // bool
+  UINT8 a18; // bool
+  UINT8 q3; // bool
+  int   dmd_latch;
+  int   diagnosticLed;
+  UINT8 status1; // bool
+  UINT8 status2; // bool
+  UINT8 dstrb; // bool
+  UINT8 dmd_visible_addr;
+  UINT8 nextDMDFrame;
+  UINT8 color_mode; // 4_a, 4_b or 5 (=0,1,2)
 } GTS3_DMDlocals;
+
+typedef struct {
+  UINT8  alphagen; //0,1,2
+  int    alphaNumCol, alphaNumColShiftRegister;
+  core_tWord activeSegments[2]; // Realtime active alphanum segments
+  int    vblankCount;
+  UINT32 solenoids;
+  int    lampRow, lampColumn;
+  UINT8  diagnosticLed;  // bool
+  UINT8  diagnosticLed1; // bool
+  UINT8  diagnosticLed2; // bool
+  UINT8  swDiag; // bool
+  UINT8  swTilt; // bool
+  UINT8  swSlam; // bool
+  UINT8  swPrin; // bool
+  UINT8  u4pb;
+  READ_HANDLER((*U4_PB_R));
+  WRITE_HANDLER((*DISPLAY_CONTROL));
+  WRITE_HANDLER((*AUX_W));
+  UINT8  ax[7], cx1, cx2, ex1;
+  UINT8  extra16led; // bool
+  UINT8  sound_data;
+  UINT8  prn[8];
+
+  int bitSet;
+  UINT8 vblank_counter;
+  UINT8 irq;
+
+  int modsol_rate_counter;
+} tGTS3locals;
 
 #endif /* INC_GTS3 */

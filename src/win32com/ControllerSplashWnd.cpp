@@ -4,7 +4,7 @@
 #include "resource.h"
 
 #include <atlwin.h>
-#include <time.h>
+#include <ctime>
 
 extern "C" BOOL cabinetMode;
 

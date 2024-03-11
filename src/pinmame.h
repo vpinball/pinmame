@@ -15,7 +15,6 @@
 #ifndef PI
  #define PI 3.1415926535897932384626433832795
 #endif
-#define osd_mark_dirty(a,b,c,d)
 #define FILETYPE_PRINTER FILETYPE_MEMCARD
 #define BMTYPE UINT16
 #define M65C02_INT_IRQ M65C02_IRQ_LINE

@@ -10,6 +10,7 @@
 #include "sim.h"
 #include "core.h"
 #include "wpc.h"
+#include "bulb.h"
 #ifdef PROC_SUPPORT
 #include "p-roc/p-roc.h"
 #endif
@@ -1181,15 +1182,16 @@ static MACHINE_INIT(wpc) {
   // - Phantom Haus
   // - Rush
   if (strncasecmp(gn, "afm_113", 7) == 0) { // Attack from Mars
-     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28 };
-     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_LED); // Auxiliary LEDs driven through solenoids 37/38
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 39 - 1, 1, CORE_MODOUT_LED); // Xenon strobe light (crudely considered as a LED since it is meant to flicker)
   }
   else if (strncasecmp(gn, "bop_l7", 6) == 0) { // The Machine: Bride of the Pinbot
-     static const int flashers[] = { 17, 18, 19, 20, 23, 24 };
-     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_BULB_44_18V_DC_WPC); // Helmet lights
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     // FIXME this is likely incorrect: I don't have the wiring for the helmet bulbs so they are defined like underpower #44 but this is very unlikely to be true (these are #555 but the power maybe from GI line 2 
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_BULB_44_5_7V_AC); // Helmet lights
   }
   else if (strncasecmp(gn, "br_l4", 5) == 0) { // Black Rose
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
@@ -1205,9 +1207,9 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "cp_16", 5) == 0) { // The Champion Pub
-     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
-     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     // Auxiliary LEDs driven through solenoids 37/38/39/40, only 24 (2x12 on each side) of the 32 outputs are used by the game (board A-21967)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 32, CORE_MODOUT_LED);
   }
   else if (strncasecmp(gn, "cv_14", 5) == 0) { // Cirqus Voltaire
      static const int flashers[] = { 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28 };
@@ -1342,9 +1344,10 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "sc_18s11", 8) == 0) { // Safe Cracker
-     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
-     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     // A-20909: 48 bulbs switched through solenoids 37..40, powered from GI string 2/4/5
+     // FIXME not yet fully emulated (only the on/off switch is emulated, needing to be crossed with the GI string at the bulb level)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 48, CORE_MODOUT_BULB_44_6_3V_AC);
   }
   else if (strncasecmp(gn, "sf_l1", 5) == 0) { // SlugFest
      static const int flashers[] = { 17, 18, 19, 20, 25, 26 };
@@ -1352,9 +1355,9 @@ static MACHINE_INIT(wpc) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ss_15", 5) == 0) { // Scared Stiff
-     static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 35 + 14, 36 + 14 };
-     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 35 + 14 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC); // Lower left/lower right flasher (use free flipper sols)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_LED); // Auxiliary LEDs driven through solenoids 37/38 (Crate eyes)
   }
   else if (strncasecmp(gn, "sttng_l7", 8) == 0) { // Star Trek Next Generation
      static const int flashers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 41 + 14, 42 + 14 };
@@ -1406,10 +1409,10 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ww_l5", 5) == 0) { // White Water
-     static const int flashers[] = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
-     for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
-  }
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 10, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     // FIXME The right bulb here would be #194 (12V x 0.27A = 4W, so more or less half of #89) wired directly through a 2N6427 between +12V DC and ground
+     core_set_pwm_output_bulb(CORE_MODOUT_LAMP0 + 8 * 8, 16, BULB_89, 13.0, FALSE, 0.0, 1.0);
+   }
 
   // Reset GI dimming timers
   core_zero_cross();

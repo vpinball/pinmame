@@ -13,7 +13,8 @@ Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
 
 COM library (VPinMAME) to steer simulators like [Visual Pinball 8/9/X](https://github.com/vpinball/vpinball)
 
-library (libPinMAME) to steer simulators like [VPE](https://github.com/freezy/VisualPinball.Engine)
+library (libPinMAME) to steer simulators like [VPE](https://github.com/freezy/VisualPinball.Engine), VPX Standalone,
+or hardware replacement solutions like [PPUC](https://github.com/PPUC)
 
 Currently, the following pinball hardware is emulated:
 
@@ -41,8 +42,8 @@ All standard MAME "functions" do work the same way in PinMAME (profiler, debugge
 record/playback, command line switches etc.).
 
 In addition, there is special compile time support for the [P-ROC](http://www.pinballcontrollers.com),
-to drive (at least) real WPC machines with PinMAME/P-ROC and LISY (Linux for Gottlieb System1 &
-System80, Bally, Atari, Williams and 'HOme' Pinballs, to drive real pinball machines via
+to drive (at least) real WPC machines with PinMAME/P-ROC, [PPUC](https://github.com/PPUC) and LISY
+(Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs, to drive real pinball machines via
 PinMAME and special hardware, see http://www.lisy80.com & http://www.lisy.dev, also README.lisy)
 platforms (see PROC and LISY_X defines in makefile.unix).
 

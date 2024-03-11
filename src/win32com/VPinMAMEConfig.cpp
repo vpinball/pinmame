@@ -1,7 +1,7 @@
 #include "StdAfx.h"
-#include <stdarg.h>
+#include <cstdarg>
 #include <ctype.h>
-#include <time.h>
+#include <ctime>
 #include "windows.h"
 #include "VPinMAMEConfig.h"
 #include "ControllerRegkeys.h"

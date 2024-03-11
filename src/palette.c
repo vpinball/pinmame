@@ -688,7 +688,7 @@ int palette_init(void)
 {
 	int i;
 
-	/* recompute the default palette and initalize the color correction table */
+	/* recompute the default palette and initialize the color correction table */
 	recompute_adjusted_palette(1);
 
 	/* now let the driver modify the initial palette and colortable */
@@ -698,7 +698,7 @@ int palette_init(void)
 	/* switch off the color mode */
 	switch (colormode)
 	{
-		/* 16-bit paletteized case */
+		/* 16-bit palettized case */
 		case PALETTIZED_16BIT:
 		{
 			/* refresh the palette to support shadows in static palette games */

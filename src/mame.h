@@ -37,17 +37,7 @@ typedef void genf(void);
 #define MAX_GFX_ELEMENTS 32
 #define MAX_MEMORY_REGIONS 32
 
-#ifndef MESS
-#define APPNAME					"MAME"
-#define APPLONGNAME				"M.A.M.E."
-#else
-#define APPNAME					"MESS"
-#define APPLONGNAME				"M.E.S.S."
-#endif
-
 #ifdef PINMAME
-#undef APPNAME
-#undef APPLONGNAME
 #define APPNAME					"PinMAME"
 #define APPLONGNAME				"Pinball M.A.M.E."
 #endif
@@ -95,7 +85,7 @@ struct RunningMachine
 	struct rectangle		absolute_visible_area;
 
 	/* remapped palette pen numbers. When you write directly to a bitmap in a
-	   non-paletteized mode, use this array to look up the pen number. For example,
+	   non-palettized mode, use this array to look up the pen number. For example,
 	   if you want to use color #6 in the palette, use pens[6] instead of just 6. */
 	pen_t *					pens;
 

@@ -87,6 +87,11 @@ void vp_setDIP(int bank, int value) { }
   extern void libpinmame_update_display(const int index, const struct core_dispLayout* p_layout, const void* p_data);
 #endif
 
+#ifndef LIBPINMAME
+  #include "gts3.h"
+  extern tGTS3locals GTS3locals;
+#endif
+
 INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]);
@@ -215,6 +220,8 @@ static const unsigned char core_palette[48+COL_COUNT][3] = {
 {/* 11 */ 0x00,0x80,0xff}, /* lblue */
 {/* 12 */ 0x9f,0x40,0xff}  /* lpurple*/
 };
+
+static UINT16 dim_LUT[3][257];
 
 /*------------------------------
 / Display segment drawing data
@@ -750,31 +757,39 @@ static PALETTE_INIT(core) {
   }
 
   /*-- segment display antialias colors --*/
-  tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
-  tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;
-  tmpPalette[COL_SEGAAON1][2] = bStart * 72 / 100;
-  tmpPalette[COL_SEGAAON2][0] = rStart * 33 / 100;
-  tmpPalette[COL_SEGAAON2][1] = gStart * 33 / 100;
-  tmpPalette[COL_SEGAAON2][2] = bStart * 33 / 100;
-  tmpPalette[COL_SEGAAOFF1][0] = rStart * perc0 * 72 / 10000;
-  tmpPalette[COL_SEGAAOFF1][1] = gStart * perc0 * 72 / 10000;
-  tmpPalette[COL_SEGAAOFF1][2] = bStart * perc0 * 72 / 10000;
-  tmpPalette[COL_SEGAAOFF2][0] = rStart * perc0 * 33 / 10000;
-  tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * 33 / 10000;
-  tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * 33 / 10000;
+  tmpPalette[COL_SEGAAON1][0] = rStart * (perc66+5) / 100;
+  tmpPalette[COL_SEGAAON1][1] = gStart * (perc66+5) / 100;
+  tmpPalette[COL_SEGAAON1][2] = bStart * (perc66+5) / 100;
+  tmpPalette[COL_SEGAAON2][0] = rStart * perc33 / 100;
+  tmpPalette[COL_SEGAAON2][1] = gStart * perc33 / 100;
+  tmpPalette[COL_SEGAAON2][2] = bStart * perc33 / 100;
+  tmpPalette[COL_SEGAAOFF1][0] = rStart * perc0 * (perc66+5) / 10000;
+  tmpPalette[COL_SEGAAOFF1][1] = gStart * perc0 * (perc66+5) / 10000;
+  tmpPalette[COL_SEGAAOFF1][2] = bStart * perc0 * (perc66+5) / 10000;
+  tmpPalette[COL_SEGAAOFF2][0] = rStart * perc0 * perc33 / 10000;
+  tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * perc33 / 10000;
+  tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * perc33 / 10000;
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
   for (ii = 0; ii < 16; ii++) {
-    const int tmp = (15 * perc0 + ii * (100 - perc0));
+    const int tmp = 15 * perc0 + ii * (100 - perc0);
     tmpPalette[palSize-16+ii][0] = (unsigned char)(rStart * tmp / 1500);
     tmpPalette[palSize-16+ii][1] = (unsigned char)(gStart * tmp / 1500);
     tmpPalette[palSize-16+ii][2] = (unsigned char)(bStart * tmp / 1500);
-    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * tmp * 72 / 150000);
-    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * tmp * 72 / 150000);
-    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * tmp * 72 / 150000);
-    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * tmp * 33 / 150000);
-    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * tmp * 33 / 150000);
-    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * tmp * 33 / 150000);
+    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * tmp * (perc66+5) / 150000);
+    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * tmp * (perc66+5) / 150000);
+    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * tmp * (perc66+5) / 150000);
+    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * tmp * perc33 / 150000);
+    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * tmp * perc33 / 150000);
+    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * tmp * perc33 / 150000);
+  }
+
+  /*-- generate segment colors for dimmed segments --*/
+  for (ii = 0; ii <= 256; ii++) {
+    const int tmp = 256 * perc0 + ii * (100 - perc0);
+    dim_LUT[0][ii] = ((bStart * tmp / 25600)>>3) | (((gStart * tmp / 25600)>>3)<<5) | (((rStart * tmp / 25600)>>3)<<10);
+    dim_LUT[1][ii] = ((bStart * tmp * (perc66+5) / 2560000)>>3) | (((gStart * tmp * (perc66+5) / 2560000)>>3)<<5) | (((rStart * tmp * (perc66+5)/ 2560000)>>3)<<10);
+    dim_LUT[2][ii] = ((bStart * tmp *  perc33    / 2560000)>>3) | (((gStart * tmp *  perc33    / 2560000)>>3)<<5) | (((rStart * tmp *  perc33   / 2560000)>>3)<<10);
   }
 
 //for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
@@ -814,8 +829,8 @@ static PALETTE_INIT(core) {
 /    Generic DMD display handler
 /------------------------------------*/
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout) {
-  UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
-  UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
+  pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
+  pen_t *aaColor  = &Machine->pens[COL_DMDAA];
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
   int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
@@ -947,9 +962,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
     }
   }
-
-  osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
-                 (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
   if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
@@ -1498,7 +1510,7 @@ void core_updateSw(int flipEn) {
   
   /*-- Report changed solenoids --*/
   if (coreGlobals.nSolenoids && 
-     ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) || (((core_gameData->gen & GEN_ALLWPC) | (core_gameData->gen & GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
+     ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT) || ((core_gameData->gen & (GEN_ALLWPC | GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
@@ -1647,7 +1659,7 @@ static VIDEO_UPDATE(core_status) {
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
     return;
 
-  dotColor[0] = CORE_COLOR(COL_DMDOFF); dotColor[1] = CORE_COLOR(COL_DMDON);
+  dotColor[0] = Machine->pens[COL_DMDOFF]; dotColor[1] = Machine->pens[COL_DMDON];
   /*--  Draw lamps --*/
   if ((core_gameData->hw.lampData) &&
       (startRow + core_gameData->hw.lampData->startpos.x + core_gameData->hw.lampData->size.x < locals.maxSimRows)) {
@@ -1671,16 +1683,13 @@ static VIDEO_UPDATE(core_status) {
           }
           else {
             const int color = drawData->lamps[num].lamppos[qq].color;
-            line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
+            line[lampx][starty + lampy] = Machine->pens[(bits & 0x01) ? color : COL_SHADE(color)];
           }
         }
         bits >>= 1;
         num++;
       }
     }
-    osd_mark_dirty(starty,  locals.firstSimRow + startRow + startx,
-                   starty + drawData->size.y,
-                   locals.firstSimRow + startRow + startx + drawData->size.x);
     startRow += startx + drawData->size.x;
     if (starty + drawData->size.y > nextCol) nextCol = starty + drawData->size.y;
   }
@@ -1699,7 +1708,6 @@ static VIDEO_UPDATE(core_status) {
         line += 2; bits >>= 1;
       }
     }
-    osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2 ,locals.firstSimRow + startRow + 16);
     startRow += 16; if (thisCol + ii*2 > nextCol) nextCol = thisCol + ii*2;
   } /* else */
 
@@ -1716,7 +1724,6 @@ static VIDEO_UPDATE(core_status) {
       line += 2; bits >>= 1;
     }
   }
-  osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 16);
   startRow += 16; if (thisCol + ii*2 > nextCol) nextCol = thisCol + ii*2;
 
   /* Draw Solenoids and Flashers */
@@ -1742,8 +1749,6 @@ static VIDEO_UPDATE(core_status) {
         allSol >>= 1;
       }
     }
-    osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + 16,
-        locals.firstSimRow + startRow + 16);
     startRow += 16; if (thisCol + 16 > nextCol) nextCol = thisCol + 16;
   }
 
@@ -1766,7 +1771,6 @@ static VIDEO_UPDATE(core_status) {
         line[0][thisCol + 3] = dotColor[bits & 0x01];
         line += 2; bits >>= 1;
       }
-      osd_mark_dirty(thisCol + 3, locals.firstSimRow + startRow, thisCol + 4, locals.firstSimRow + startRow + ii*2);
       startRow += ii*2; if (thisCol + 4 > nextCol) nextCol = thisCol + 4;
     }
     else { // Draw LEDs Horizontally
@@ -1774,7 +1778,6 @@ static VIDEO_UPDATE(core_status) {
         line[0][thisCol + ii*2] = dotColor[bits & 0x01];
         bits >>= 1;
       }
-      osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
       startRow += 1; if (thisCol + ii*2 > nextCol) nextCol = thisCol + ii*2;
     }
   }
@@ -1795,7 +1798,6 @@ static VIDEO_UPDATE(core_status) {
       else
         lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
     }
-    osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
   }
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
   /*-- draw game specific mechanics --*/
@@ -2087,12 +2089,18 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 #endif
       for (kk = 0; kk < s->rows; kk++)
       {
-        pixel[kk] |= s->segs[kk][sb];
-        UINT32 p = s->segs[kk][sb]>>(30-2*s->cols);
-        if(dimming)
+        pixel[kk] |= s->segs[kk][sb]; // 'sum' up anti-aliasing
+
+        // to combine this with dimming fill dim[][] with weighted AA/dimming of each segment
+        UINT32 p = pixel[kk]>>(30-2*s->cols);
+        if (dimming)
           for (ll = 0; ll < s->cols; ll++, p >>= 2)
-            if (p & 0x03)
-              dim[kk][ll] |= (3 - (p & 0x03)) * (256 - dimming[sb - 1]); // 256 instead of 255 to have bits separated for the | op. The | is used as a tradeoff, as we do not have a better way to 'blend' the anti-aliased segments (i.e. legacy display code rendering :/).
+            if (p & 0x03) // segment set?
+            {
+              const UINT16 tmp = 256 - dimming[sb - 1]; // 256 instead of 255 to exploit full range (as 0 is off state)
+              if (tmp > dim[kk][ll]) // always take largest value, to make the crude anti-aliasing work at least somehow per segment
+                dim[kk][ll] = tmp;
+            }
       }
     }
   }
@@ -2104,13 +2112,12 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
-      if (p & 0x03)
-        *(--line) = CORE_COLOR(palSize - 33 + (dimming ? (dim[kk][ll] >> 4) : ((3 - (p & 0x03))*16))); //!! meh, >>4 looses at least 3 bits precision due to palette
+      if (p & 0x03) // segment set?
+        *(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
       else
-        *(--line) = CORE_COLOR(offPens[np & 0x03]);
+        *(--line) = Machine->pens[offPens[np & 0x03]];
     }
   }
-  osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
 
 
@@ -2220,7 +2227,14 @@ static MACHINE_INIT(core) {
     if (coreData->init) coreData->init();
 
     /*-- init PWM integration (needs to be done after coreData->init() which defines the number of outputs and the physical model to be used on each output) --*/
-    //options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT; // Uncomment for testing
+#ifndef LIBPINMAME // dimmed segments not wired at the moment?!
+#ifdef VPINMAME
+    if(g_fShowWinDMD || g_fShowPinDMD)
+#endif
+    // Enable PWM/dimmed segments for corresponding alphanum segment machines
+    if(((core_gameData->gen & GEN_GTS3) && GTS3locals.alphagen) || (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)))
+      options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT;
+#endif
 #ifdef VPINMAME
     // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
     // Note that physical outputs are also updated once per frame by the core machine driver video update callback.

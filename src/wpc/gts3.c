@@ -13,8 +13,6 @@
   GV 07/27/05: Fixed the missing sound in Strikes And Spares
   SE 07/27/05: Finally got that DAMN 2nd DMD working
 
-  TODO: Segment dimming
-
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -61,35 +59,7 @@ static void dmd_vblank(int which);
 /*----------------
 / Local variables
 /-----------------*/
-struct {
-  int    alphagen;
-  int    alphaNumCol, alphaNumColShitRegister;
-  core_tWord activeSegments[2];  // Realtime active alphanum segments
-  int    vblankCount;
-  UINT32 solenoids;
-  int    lampRow, lampColumn;
-  UINT8  diagnosticLed;  // bool
-  UINT8  diagnosticLed1; // bool
-  UINT8  diagnosticLed2; // bool
-  UINT8  swDiag; // bool
-  UINT8  swTilt; // bool
-  UINT8  swSlam; // bool
-  UINT8  swPrin; // bool
-  UINT8    u4pb;
-  READ_HANDLER((*U4_PB_R));
-  WRITE_HANDLER((*DISPLAY_CONTROL));
-  WRITE_HANDLER((*AUX_W));
-  UINT8  ax[7], cx1, cx2, ex1;
-  char   extra16led; // bool
-  int    sound_data;
-  UINT8  prn[8];
-
-  int bitSet;
-  int vblank_counter;
-  UINT8 irq;
-
-  int modsol_rate_counter;
-} GTS3locals;
+tGTS3locals GTS3locals;
 
 //We need 2 structures, since Strikes N Spares has 2 DMD Displays
 GTS3_DMDlocals GTS3_dmdlocals[2];
@@ -200,24 +170,24 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
 		}
 	}
-	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not gives any benefit
+	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not provide any benefit
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  GTS3locals.lampColumn       & 0xFF, lampRow, 8);
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, lampRow, 4);
 
 
 	if (GTS3locals.alphagen)
 	{ // Alpha generation
-		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShitRegister);
+		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShiftRegister);
 		if (data & ~GTS3locals.u4pb & DSTRB) // Positive edge on DSTRB: shift 20bit register and set bit0 to DDATA
 		{
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16, 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, 0);
-			GTS3locals.alphaNumColShitRegister = ((GTS3locals.alphaNumColShitRegister << 1) & 0x0ffffe) | ((data & DDATA) >> 5);
-			GTS3locals.alphaNumCol = GTS3locals.alphaNumColShitRegister == 0 ? 20 : core_BitColToNum(GTS3locals.alphaNumColShitRegister);
+			GTS3locals.alphaNumColShiftRegister = ((GTS3locals.alphaNumColShiftRegister << 1) & 0x0ffffe) | ((data & DDATA) >> 5);
+			GTS3locals.alphaNumCol = GTS3locals.alphaNumColShiftRegister == 0 ? 20 : core_BitColToNum(GTS3locals.alphaNumColShiftRegister);
 			// This should never happens but you can drive the hardware to it (multiple resets,...), this will lead to incorrect rendering
-			// assert((GTS3locals.alphaNumColShitRegister == 0) || (GTS3locals.alphaNumColShitRegister == (1 << GTS3locals.alphaNumCol)));
+			// assert((GTS3locals.alphaNumColShiftRegister == 0) || (GTS3locals.alphaNumColShiftRegister == (1 << GTS3locals.alphaNumCol)));
 		}
 		if (data & ~GTS3locals.u4pb & DBLNK) // DBlank start (positive edge)
 		{
@@ -852,11 +822,11 @@ static WRITE_HANDLER(solenoid_w)
 /*DMD Bankswitching - can handle two DMD displays*/
 static void dmdswitchbank(int which)
 {
-	int	addr =	(GTS3_dmdlocals[which].pa0 *0x04000)+
-				(GTS3_dmdlocals[which].pa1 *0x08000)+
-				(GTS3_dmdlocals[which].pa2 *0x10000)+
-				(GTS3_dmdlocals[which].pa3 *0x20000)+
-				(GTS3_dmdlocals[which].a18 *0x40000);
+	int	addr =	(GTS3_dmdlocals[which].pa0 ? 0x04000 : 0) |
+				(GTS3_dmdlocals[which].pa1 ? 0x08000 : 0) |
+				(GTS3_dmdlocals[which].pa2 ? 0x10000 : 0) |
+				(GTS3_dmdlocals[which].pa3 ? 0x20000 : 0) |
+				(GTS3_dmdlocals[which].a18 ? 0x40000 : 0);
 	cpu_setbank(which ? STATIC_BANK2 : STATIC_BANK1,
 		memory_region(which ? GTS3_MEMREG_DROM2 : GTS3_MEMREG_DROM1) + addr);
 }

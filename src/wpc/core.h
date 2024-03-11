@@ -334,7 +334,6 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_FIRSTSIMROW   80 /* first free row on display */
 
 /*-- Colours --*/
-#define CORE_COLOR(x)  Machine->pens[(x)]
 #define COL_DMD        1
 #define COL_DMDOFF     (COL_DMD+0)
 #define COL_DMD33      (COL_DMD+1)

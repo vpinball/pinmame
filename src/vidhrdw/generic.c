@@ -36,9 +36,6 @@ data32_t *buffered_spriteram32_2;
 size_t spriteram_size;		/* ... here just for convenience */
 size_t spriteram_2_size;
 size_t spriteram_3_size;
-data8_t *dirtybuffer;
-data16_t *dirtybuffer16;
-data32_t *dirtybuffer32;
 struct mame_bitmap *tmpbitmap;
 
 int flip_screen_x, flip_screen_y;
@@ -46,7 +43,6 @@ static int global_attribute_changed;
 
 void video_generic_postload(void)
 {
-	memset(dirtybuffer,1,videoram_size);
 }
 
 /***************************************************************************
@@ -56,7 +52,6 @@ void video_generic_postload(void)
 ***************************************************************************/
 VIDEO_START( generic )
 {
-	dirtybuffer = 0;
 	tmpbitmap = 0;
 
 	if (videoram_size == 0)
@@ -64,10 +59,6 @@ VIDEO_START( generic )
 logerror("Error: video_start_generic() called but videoram_size not initialized\n");
 		return 1;
 	}
-
-	if ((dirtybuffer = auto_malloc(videoram_size)) == 0)
-		return 1;
-	memset(dirtybuffer,1,videoram_size);
 
 	if ((tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
 		return 1;
@@ -111,22 +102,12 @@ READ_HANDLER( colorram_r )
 
 WRITE_HANDLER( videoram_w )
 {
-	if (videoram[offset] != data)
-	{
-		dirtybuffer[offset] = 1;
-
-		videoram[offset] = data;
-	}
+	videoram[offset] = data;
 }
 
 WRITE_HANDLER( colorram_w )
 {
-	if (colorram[offset] != data)
-	{
-		dirtybuffer[offset] = 1;
-
-		colorram[offset] = data;
-	}
+	colorram[offset] = data;
 }
 
 

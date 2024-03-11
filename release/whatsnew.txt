@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.6 (XX XXth, 2024) - "Sounds good III"
+Version 3.6 (XX XXth, 2024) - "Sounds good III / Looks good"
 ------------------------------------------------------------------------------
 
 "AltSound 2.0"
@@ -38,8 +38,9 @@ Added the emulation of physical bulbs & LEDs connected to binary outputs, for WP
   (to be found in MACHINE_INIT of each driver) but if the one you want is missing, or you want to modify it, use 'SolMask(xx) = type' 
   to change it, where xx is the output to be modified (see vp_setSolMask), and yy is the type (see core.h). Also see the updated core 
   scripts coming with VPX 10.8+
-  This also includes emulation of dimmed alphanumerical segments for GTS3 and WPC, and opens up the path for emulation of strength
-  modulated solenoids (for example most magnets, Capcom Kingpin, or the way most modern hardware handle Power/Hold and EOS switch).
+  This also includes emulation of dimmed alphanumerical segments for GTS3 and WPC (for now NOT exposed via VPMs COM-API, so only visible via the
+  internal segment rendering, and partially/per-character-dimming-only via the dmddevice.dll interface), and opens up the path for emulation
+  of strength modulated solenoids (for example most magnets, Capcom Kingpin, or the way most modern hardware handle Power/Hold and EOS switch).
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
