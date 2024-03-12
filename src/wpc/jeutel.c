@@ -497,7 +497,7 @@ ROM_END
 
 INITGAME(leking,dispAlpha,FLIP_SW(FLIP_L))
 JEUTEL_COMPORTS(leking, 3)
-CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, GAME_NOT_WORKING)
+CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, 0)
 
 /*--------------------------------
 / Olympic Games
@@ -523,7 +523,7 @@ ROM_END
 
 INITGAME(olympic,dispAlpha,FLIP_SW(FLIP_L))
 JEUTEL_COMPORTS(olympic, 1)
-CORE_GAMEDEFNV(olympic, "Olympic Games", 1984, "Jeutel", jeutel, GAME_NOT_WORKING)
+CORE_GAMEDEFNV(olympic, "Olympic Games", 1984, "Jeutel", jeutel, 0)
 
 /*--------------------------------
 / Papillon
@@ -549,4 +549,4 @@ ROM_END
 
 INITGAME(jpapillon,dispAlpha,FLIP_SW(FLIP_L))
 JEUTEL_COMPORTS(jpapillon, 1)
-CORE_GAMEDEFNV(jpapillon, "Papillon (Jeutel)", 1984, "Jeutel", jeutel, GAME_NOT_WORKING)
+CORE_GAMEDEFNV(jpapillon, "Papillon (Jeutel)", 1984, "Jeutel", jeutel, 0)
