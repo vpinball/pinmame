@@ -7,7 +7,7 @@ Important steps to take before a release:
 - check the date, year and version in all .txt files!
   (bugs.txt, license.txt (and its copy LICENSE), pinmame.txt (and its derived README.md), visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
 - remove the DEBUG define in the makefile (which is probably not there anyway)!
-- edit "src/version.c" for the correct version number
+- edit "src/version.h" for the correct version number
 - edit "src/ui/PinMAME32.rc" for the correct version number and copyright years
 - edit "src/win32com/VPinMAME.cpp" for the expiration date (=next desired release date) (currently: none)
 - edit "src/win32com/VPinMAME.rc" for the correct version number, copyright years and build (MinDependency)
