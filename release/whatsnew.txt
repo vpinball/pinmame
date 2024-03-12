@@ -77,6 +77,7 @@ Fixed reset and slam-tilt problems of Baby Pac-Man
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles
 New:
+Jeutel: Papillon
 Seeben: Brooklyn (Bingo) (not working)
         Brooklyn (set 2) (Bingo) (not working)
         Continental 3 in 1 (Bingo) (not working)
@@ -142,7 +143,7 @@ Royal Flush Deluxe rev. 1
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Shadow, The LF-4 (French)
 Spirit (initial release) & rev. 3 (MOD)
-Striker (German Speech)
+Striker (German Speech), (French Speech)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
 Teenage Mutant Ninja Turtles A 0.7 VUK (Prototype)

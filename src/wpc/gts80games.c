@@ -749,7 +749,15 @@ GTS80_ROMEND
 #define input_ports_strikerg input_ports_gts80
 CORE_CLONEDEFNV(strikerg,gts80a,"Striker (German Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
 
-// A french speech version apparently also exists, but still needs to be dumped
+INIT_S80A(strikerf, dispStriker, SNDBRD_GTS80SS_VOTRAX,0)
+GTS80_1_ROMSTART  ("675.cpu",     CRC(06b66ce8) SHA1(399d98753e2da5c835c629a673069e853a4ce3c3))
+GTS80SS22_ROMSTART("675-s1.snd",  CRC(cc11c487) SHA1(fe880dd7dc03f368b2c7ea81059c4b176018b86e), // same dump as english
+                   "675-S2X.BIN", CRC(9a04d4a4) SHA1(ea69e17a75498ef405e7148fc9a04f0fdbd0327d))
+GTS80_ROMEND
+#define input_ports_strikerf input_ports_gts80
+CORE_CLONEDEFNV(strikerf,gts80a,"Striker (French Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
+
+// 675-S2Z (No hymn) also exists as flipprojets has a 675-Z ROM (=same as 675).
 
 /*-------------------------------------------------------------------
 / Punk! (#674)

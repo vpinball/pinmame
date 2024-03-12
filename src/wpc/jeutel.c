@@ -504,14 +504,14 @@ CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, GAME_NOT_WORKING)
 /-------------------------------*/
 ROM_START(olympic)
   NORMALREGION(0x10000, REGION_CPU1)
-    ROM_LOAD("game-v.bin", 0x0000, 0x1000, CRC(cd284a20) SHA1(94568e1247994c802266f9fbe4a6f6ed2b55a978))
+    ROM_LOAD("game-v.bin",   0x0000, 0x1000, CRC(cd284a20) SHA1(94568e1247994c802266f9fbe4a6f6ed2b55a978))
   NORMALREGION(0x10000, REGION_CPU2)
     ROM_LOAD("game-jo1.bin", 0x0000, 0x2000, CRC(c9f040cf) SHA1(c689f3a82d904d3f9fc8688d4c06082c51645b2f))
 
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("sound-j0.bin", 0x0000, 0x1000, CRC(5c70ce72) SHA1(b0b6cc7b6ec3ed9944d738b61a0d144b77b07000))
   NORMALREGION(0x10000, REGION_SOUND1)
-    ROM_LOAD("sound-p.bin", 0x0000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+    ROM_LOAD("sound-p.bin",  0x0000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
     ROM_RELOAD(0x2000, 0x2000)
     ROM_RELOAD(0x4000, 0x2000)
     ROM_RELOAD(0x6000, 0x2000)
@@ -524,3 +524,29 @@ ROM_END
 INITGAME(olympic,dispAlpha,FLIP_SW(FLIP_L))
 JEUTEL_COMPORTS(olympic, 1)
 CORE_GAMEDEFNV(olympic, "Olympic Games", 1984, "Jeutel", jeutel, GAME_NOT_WORKING)
+
+/*--------------------------------
+/ Papillon
+/-------------------------------*/
+ROM_START(jpapillon)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("game-v.bin",  0x0000, 0x1000, CRC(cd284a20) SHA1(94568e1247994c802266f9fbe4a6f6ed2b55a978))  // dump was the same as ones above
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("CPU_IC6.bin", 0x0000, 0x2000, CRC(9502fd05) SHA1(3369f51c56b32c8bde8b09f80c5f02bd579c5fbe))
+
+  NORMALREGION(0x10000, REGION_CPU3)
+    ROM_LOAD("sound-j0.bin", 0x0000, 0x1000, CRC(5c70ce72) SHA1(b0b6cc7b6ec3ed9944d738b61a0d144b77b07000)) // dump was the same as Olympic Games
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("sound-p.bin",  0x0000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d)) // dump was the same as Olympic Games
+    ROM_RELOAD(0x2000, 0x2000)
+    ROM_RELOAD(0x4000, 0x2000)
+    ROM_RELOAD(0x6000, 0x2000)
+    ROM_RELOAD(0x8000, 0x2000)
+    ROM_RELOAD(0xa000, 0x2000)
+    ROM_RELOAD(0xc000, 0x2000)
+    ROM_RELOAD(0xe000, 0x2000)
+ROM_END
+
+INITGAME(jpapillon,dispAlpha,FLIP_SW(FLIP_L))
+JEUTEL_COMPORTS(jpapillon, 1)
+CORE_GAMEDEFNV(jpapillon, "Papillon (Jeutel)", 1984, "Jeutel", jeutel, GAME_NOT_WORKING)

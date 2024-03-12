@@ -693,7 +693,7 @@ DRIVERNV(spirit)        //                Spirit (rev. 2)
 DRIVERNV(spirit3)       //          01/23 Spirit (rev. 3 MOD)
 DRIVERNV(striker)       //S80a-675: 11/82 Striker
 DRIVERNV(strikerg)      //                Striker (German Speech)
-//DRIVERNV(strikerf)      //                Striker (French Speech)
+DRIVERNV(strikerf)      //                Striker (French Speech)
 DRIVERNV(punk)          //S80a-674: 12/82 Punk!
 DRIVERNV(krull)         //S80a-676: 02/83 Krull
 DRIVERNV(goinnuts)      //S80a-682: 02/83 Goin' Nuts
@@ -991,8 +991,13 @@ DRIVERNV(formula1)      //Formula 1 (??/1988)
 // ----------------
 // JEUTEL OF FRANCE
 // ----------------
+                        //Excalibur (12/1981) Proto
+                        //Valkyrie (??/1982)
 DRIVERNV(leking)        //Le King (??/1983)
 DRIVERNV(olympic)       //Olympic Games (??/1984)
+DRIVERNV(jpapillon)     //Papillon (12/1984)
+                        //Apocalypse Now (??/1985)
+                        //Apocalypse Now (??/1986)
 
 // ----------------
 // JOCMATIC
