@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_SYSTEM_NAME tvOS)
 
-file(READ src/version.c version)
-string(REGEX MATCH "[0-9\\.]+" PROJECT_VERSION ${version})
+file(READ src/version.h version)
+string(REGEX MATCH "#define VERSION_MAJOR +([0-9]+).*#define VERSION_MINOR +([0-9]+).*#define VERSION_REV +([0-9]+)" _ ${version})
+
+set(PROJECT_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
+message("PROJECT_VERSION=${PROJECT_VERSION}")
 
 project(pinmame VERSION ${PROJECT_VERSION})
 

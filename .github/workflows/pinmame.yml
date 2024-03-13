@@ -18,6 +18,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
+      sha: ${{ steps.version.outputs.sha }}
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
@@ -26,12 +27,17 @@ jobs:
           fetch-depth: 0
       - id: version
         run: |
-          VERSION=$(grep -Eo "[0-9\.]+" src/version.c | head -1)
+          VERSION_MAJOR=$(grep -Eo "VERSION_MAJOR\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VERSION_MINOR\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VERSION_REV\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
+          VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
-          SHA7="${GITHUB_SHA::7}"
+          SHA="${GITHUB_SHA}"
+          SHA7="${SHA::7}"
           TAG="${VERSION}-${REVISION}-${SHA7}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
