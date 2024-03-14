@@ -99,14 +99,16 @@ interface, with details below.</TD></TR>
         <TD WIDTH="50%" ALIGN="right">Read Only</TH></TD>
     <TR><TD VALIGN=top COLSPAN=2>
             <p>Returns the version number of Visual PinMAME as an 8-digit string
-            "vvmmbbrr":<BR><BR>
+            "vvmmbbrr.bbbb":<BR><BR>
         vv = Major version<BR>
         mm = Minor version<BR>
         bb = Beta version<BR>
-        rr = Revision<BR><BR>
+        rr = Revision<BR>
+        bbbb = Build number<BR><BR>
   	Example:<BR>
-  		A result of "00990201" signifies "Version 0.99 Beta 2 Rev A<BR><BR>
-  		If (Controller.Version&lt;"00990201") Then MsgBox "You need a newer
+  		A result of "00990201.4711" signifies "Version 0.99 Beta 2 Rev A build #4711<BR><BR>
+  		It is possible to amend the build number while checking the version, but not mandatory!<BR><BR>
+  		If (Controller.Version&lt;"00990201.4711") Then MsgBox "You need a newer
 version of VPinMAME." : Exit Sub
         </TD>
     </TR>

@@ -1742,10 +1742,10 @@ STDMETHODIMP CController::get_Version(BSTR *pVal)
 	int nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3;
 	GetProductVersion(&nVersionNo0, &nVersionNo1, &nVersionNo2, &nVersionNo3);
 
-	TCHAR szVersion[9];
-	wsprintf(szVersion, _T("%02i%02i%02i00"), nVersionNo0, nVersionNo1, nVersionNo2);
-	//Should output the version number as 03060000 without build number
-	//the build number does not have enough room^^
+	TCHAR szVersion[14];
+	wsprintf(szVersion, _T("%02i%02i%02i00.%04i"), nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
+	// Should output the version number as 03060000.0980
+	// The build number is returned after the decimal sign
 
 	CComBSTR bstrVersion(szVersion);
 
