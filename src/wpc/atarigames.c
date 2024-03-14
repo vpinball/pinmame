@@ -65,8 +65,8 @@ core_tLCDLayout atari_disp2[] = {
 / The Atarians (11/1976)
 /-------------------------------------------------------------------*/
 INITGAME1(atarians, atari_disp1, FLIP_SWNO(36,37), 1, 0)
-ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b), // nuatari has exact same roms on webpage
-							"atarian.e00",	CRC(6066bd63) SHA1(e993497d0ca9f056e18838494089def8bdc265c9))
+ATARI_2_ROMSTART(atarians,	"atarian.e0",  CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b), // nuatari has exact same roms on webpage
+							"atarian.e00", CRC(6066bd63) SHA1(e993497d0ca9f056e18838494089def8bdc265c9))
 ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
 ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,0)
@@ -75,8 +75,8 @@ CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,0)
 / Time 2000 (06/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(time2000, atari_disp1, FLIPSW1920, 1, 0)
-ATARI_2_ROMSTART(time2000,	"time.e0",	CRC(1e79c133) SHA1(54ce5d59a00334fcec8b12c077d70e3629549af0), // nuatari has exact same roms on webpage
-							"time.e00",	CRC(e380f35c) SHA1(f2b4c508c8b7a2ce9924da97c05fb31d5115f36f))
+ATARI_2_ROMSTART(time2000,	"time.e0",  CRC(1e79c133) SHA1(54ce5d59a00334fcec8b12c077d70e3629549af0), // nuatari has exact same roms on webpage
+							"time.e00", CRC(e380f35c) SHA1(f2b4c508c8b7a2ce9924da97c05fb31d5115f36f))
 ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
 ATARI_ROMEND
 CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,0)
@@ -85,8 +85,8 @@ CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,0)
 / Airborne Avenger (09/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(aavenger, atari_disp1, FLIPSW1920, 1, 1)
-ATARI_2_ROMSTART(aavenger,	"airborne.e0",	CRC(44e67c54) SHA1(7f94189c12e322c41908d651cf6a3b6061426959),
-							"airborne.e00",	CRC(05ac26b8) SHA1(114d587923ade9370d606e428af02a407d272c85))
+ATARI_2_ROMSTART(aavenger,	"airborne.e0",  CRC(44e67c54) SHA1(7f94189c12e322c41908d651cf6a3b6061426959),
+							"airborne.e00", CRC(05ac26b8) SHA1(114d587923ade9370d606e428af02a407d272c85))
 ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC))
 ATARI_ROMEND
 CORE_GAMEDEFNV(aavenger,"Airborne Avenger",1977,"Atari",gl_mATARI1,0)
@@ -100,6 +100,13 @@ ATARI_2_ROMSTART(midearth,	"608.bin", CRC(28b92faf) SHA1(8585770f4059049f1dcbc0c
 ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC))
 ATARI_ROMEND
 CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
+
+INITGAME1(mideartf, atari_disp1, FLIPSW1920, 1, 2)
+ATARI_2_ROMSTART(mideartf,	"608.bin", CRC(28b92faf) SHA1(8585770f4059049f1dcbc0c6ef5718b6ff1a5431),
+							"609f.bin",CRC(3095be3c) SHA1(a19d9a2f59b732cabccebe6ebb3bfacf02f4eb19))
+ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC))
+ATARI_ROMEND
+CORE_CLONEDEFNV(mideartf,midearth,"Middle Earth (Free Play)",2024,"Atari",gl_mATARI1A,0)
 
 /*-------------------------------------------------------------------
 / Middle Earth (alternate)
@@ -118,7 +125,7 @@ CORE_CLONEDEFNV(midearta,midearth,"Middle Earth (alternate)",197?,"Atari",gl_mAT
 / Middle Earth (pre-production and/or german) //!! this is the best we got from nuatari
 /-------------------------------------------------------------------*/
 INITGAME1(mideartp, atari_disp1, FLIPSW1920, 1, 2)
-ATARI_2_ROMSTART(mideartp,	"c.e0",	CRC(553044c1) SHA1(4ad328eff48b82b32721684d181a339eae304d92) BAD_DUMP,
+ATARI_2_ROMSTART(mideartp,	"c.e0", CRC(553044c1) SHA1(4ad328eff48b82b32721684d181a339eae304d92) BAD_DUMP,
 							"c.e00",CRC(288cd68d) SHA1(d97d31f59525b785bfa4c3fc8445eb294591bde2) BAD_DUMP)
 ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) // confirmed by nuatari
 ATARI_ROMEND
@@ -128,19 +135,26 @@ CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Ata
 / Space Riders (09/1978)
 /-------------------------------------------------------------------*/
 INITGAME1(spcrider, atari_disp1, FLIPSW6667, 1, 2)
-ATARI_2_ROMSTART(spcrider,	"spacel.bin",	CRC(66ffb04e) SHA1(42d8b7fb7206b30478f631d0e947c0908dcf5419),
-							"spacer.bin",	CRC(3cf1cd73) SHA1(c46044fb815b439f12fb3e21c470c8b93ebdfd55))
+ATARI_2_ROMSTART(spcrider,	"spacel.bin", CRC(66ffb04e) SHA1(42d8b7fb7206b30478f631d0e947c0908dcf5419),
+							"spacer.bin", CRC(3cf1cd73) SHA1(c46044fb815b439f12fb3e21c470c8b93ebdfd55))
 ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 // nuatari lists 20967-01 (and claims that all the SR boards (5) he has feature that one), manual schematics and parts list 20252-01 though
 ATARI_ROMEND
 CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,0)
+
+INITGAME1(spcridef, atari_disp1, FLIPSW6667, 1, 2)
+ATARI_2_ROMSTART(spcridef,	"spacel.bin", CRC(66ffb04e) SHA1(42d8b7fb7206b30478f631d0e947c0908dcf5419),
+							"spacerf.bin",CRC(133f285e) SHA1(cab4731d135a48840bc27113cc27fd5c3abceda5))
+ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b))
+ATARI_ROMEND
+CORE_CLONEDEFNV(spcridef,spcrider,"Space Riders (Free Play)",2024,"Atari",gl_mATARI1,0)
 
 /*-------------------------------------------------------------------
 / Superman (03/1979)
 /-------------------------------------------------------------------*/
 INITGAME2(superman, atari_disp2, FLIPSW6667, 1)
-ATARI_3_ROMSTART(superman,	"supmn_k.rom",	CRC(a28091c2) SHA1(9f5e47db408da96a31cb2f3be0fa9fb1e79f8d85), // nuatari has exact same 3 roms on webpage
-							"atari_m.rom",	CRC(1bb6b72c) SHA1(dd24ed54de275aadf8dc0810a6af3ac97aea4026),
-							"atari_j.rom",	CRC(26521779) SHA1(2cf1c66441aee99b9d01859d495c12025b5ef094))
+ATARI_3_ROMSTART(superman,	"supmn_k.rom", CRC(a28091c2) SHA1(9f5e47db408da96a31cb2f3be0fa9fb1e79f8d85), // nuatari has exact same 3 roms on webpage
+							"atari_m.rom", CRC(1bb6b72c) SHA1(dd24ed54de275aadf8dc0810a6af3ac97aea4026),
+							"atari_j.rom", CRC(26521779) SHA1(2cf1c66441aee99b9d01859d495c12025b5ef094))
 ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01
 ATARI_ROMEND
 CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
@@ -151,9 +165,9 @@ CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
 / Hercules (05/1979)
 /-------------------------------------------------------------------*/
 INITGAME2(hercules, atari_disp2, FLIPSW6667, 1)
-ATARI_3_ROMSTART(hercules,	"herc_k.rom",	CRC(65e099b1) SHA1(83a06bc82e0f8f4c0655886c6a9962bb28d00c5e), // nuatari has exact same 3 roms on webpage
-							"atari_m.rom",	CRC(1bb6b72c) SHA1(dd24ed54de275aadf8dc0810a6af3ac97aea4026),
-							"atari_j.rom",	CRC(26521779) SHA1(2cf1c66441aee99b9d01859d495c12025b5ef094))
+ATARI_3_ROMSTART(hercules,	"herc_k.rom",  CRC(65e099b1) SHA1(83a06bc82e0f8f4c0655886c6a9962bb28d00c5e), // nuatari has exact same 3 roms on webpage
+							"atari_m.rom", CRC(1bb6b72c) SHA1(dd24ed54de275aadf8dc0810a6af3ac97aea4026),
+							"atari_j.rom", CRC(26521779) SHA1(2cf1c66441aee99b9d01859d495c12025b5ef094))
 ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01
 ATARI_ROMEND
 CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
@@ -162,9 +176,9 @@ CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
 / Road Runner (??/1979)
 /-------------------------------------------------------------------*/
 INITGAME3(roadrunr, atari_disp2, FLIPSW6667, 1)
-ATARI_3_ROMSTART(roadrunr,	"0000.716",	CRC(62f5f394) SHA1(ff91066d43d788119e3337788abd86e5c0bf2d92),
-							"3000.716",	CRC(2fc01359) SHA1(d3df20c764bb68a5316367bb18d34a03293e7fa6),
-							"3800.716",	CRC(77262408) SHA1(3045a732c39c96002f495f64ed752279f7d43ee7))
+ATARI_3_ROMSTART(roadrunr,	"0000.716", CRC(62f5f394) SHA1(ff91066d43d788119e3337788abd86e5c0bf2d92),
+							"3000.716", CRC(2fc01359) SHA1(d3df20c764bb68a5316367bb18d34a03293e7fa6),
+							"3800.716", CRC(77262408) SHA1(3045a732c39c96002f495f64ed752279f7d43ee7))
 ATARI_SNDSTART("20967-01.j3", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 //!! unknown so far though if using the 20967-01 is correct for Road Runner, but at least sounds good
 ATARI_ROMEND
 CORE_GAMEDEFNV(roadrunr,"Road Runner (Prototype)",1979,"Atari",gl_mATARI3,0)
@@ -187,8 +201,8 @@ static core_tGameData fourx4GameData = {0,atari_disp4,{FLIP_SWNO(0,1),0,0,0,SNDB
 static void init_fourx4(void) {
   core_gameData = &fourx4GameData;
 }
-ATARI_4x4_ROMSTART(fourx4,	"8000ce65.bin",	CRC(27341155) SHA1(c0da1fbf64f93ab163b2ea6bfbfc7b778cea819f),
-							"a0004c37.bin",	CRC(6f93102f) SHA1(d6520987ed5805b0e6b5da5653fc7cb063e86dda),
-							"c000a70c.bin",	CRC(c31ca8d3) SHA1(53f20eff0084771dc61d19db7ddae52e4423e75e))
+ATARI_4x4_ROMSTART(fourx4,	"8000ce65.bin", CRC(27341155) SHA1(c0da1fbf64f93ab163b2ea6bfbfc7b778cea819f),
+							"a0004c37.bin", CRC(6f93102f) SHA1(d6520987ed5805b0e6b5da5653fc7cb063e86dda),
+							"c000a70c.bin", CRC(c31ca8d3) SHA1(53f20eff0084771dc61d19db7ddae52e4423e75e))
 ATARI_ROMEND
 CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,GAME_NOT_WORKING)
