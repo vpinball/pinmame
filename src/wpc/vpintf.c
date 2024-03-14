@@ -237,7 +237,7 @@ void vp_setSolMask(int no, int mask) {
 		// Use index 2 to turn on/off modulated solenoids, using a bit mask:
 		// 1 enable legacy "modulated solenoid"
 		// 2 enable physical outputs (solenoids/lamps/GI/alphanum segments)
-		options.usemodsol = (options.usemodsol & CORE_MODOUT_FORCE_ON) | mask;
+		options.usemodsol = (options.usemodsol & CORE_MODOUT_FORCE_ON) | (mask==2 ? CORE_MODOUT_ENABLE_PHYSOUT_ALL : mask);
 	}
 	else if (no == 0 || no == 1)
 	{

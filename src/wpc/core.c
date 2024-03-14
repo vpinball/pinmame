@@ -1510,7 +1510,7 @@ void core_updateSw(int flipEn) {
   
   /*-- Report changed solenoids --*/
   if (coreGlobals.nSolenoids && 
-     ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS) || ((core_gameData->gen & (GEN_ALLWPC | GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
+     ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON)) || ((core_gameData->gen & (GEN_ALLWPC | GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
@@ -1888,10 +1888,10 @@ void core_updInvSw(int swNo, int inv) {
 /--------------------------------------*/
 int core_getSol(int solNo) {
   if (solNo <= 28)
-    return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
+    return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
   else if (solNo <= 32) { // 29-32
     if (core_gameData->gen & GEN_ALLS11)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
     else if (core_gameData->gen & GEN_ALLWPC) // GI circuits
       return coreGlobals.solenoids2 & (1<<(solNo-29+8)); // GameOn
   }
@@ -1910,9 +1910,9 @@ int core_getSol(int solNo) {
   }
   else if (solNo <= 44) { // 37-44 WPC95 & S11 extra
     if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) // Duplicated in 37..40 / 41..44, so always read from 41..44 (hence the |4 in the index/mask)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((solNo - 13) | 4)].value) : coreGlobals.solenoids & (1<<((solNo - 13)|4));
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((solNo - 13) | 4)].value) : coreGlobals.solenoids & (1<<((solNo - 13)|4));
     if (core_gameData->gen & GEN_ALLS11)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
     int mask = 1<<(solNo - 45);
@@ -2238,8 +2238,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
     // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
     // Note that physical outputs are also updated once per frame by the core machine driver video update callback.
-    if (((options.usemodsol & CORE_MODOUT_ENABLE_MODSOL) && coreGlobals.nSolenoids)
-     || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS) && coreGlobals.nSolenoids)
+    if (((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS)) && coreGlobals.nSolenoids)
      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) && coreGlobals.nLamps)
      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) && coreGlobals.nGI)
      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS) && coreGlobals.nAlphaSegs)
@@ -2632,14 +2631,18 @@ void core_update_pwm_outputs(int forceUpdate)
    if (locals.pwmUpdateRequested || forceUpdate) {
 	   locals.pwmUpdateRequested = FALSE;
 	   const double now = timer_get_time();
-	   for (int i = 0; i < coreGlobals.nLamps; i++)
-		  coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].integrator(now, CORE_MODOUT_LAMP0 + i, FALSE);
-	   for (int i = 0; i < coreGlobals.nGI; i++)
-		  coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].integrator(now, CORE_MODOUT_GI0 + i, FALSE);
-	   for (int i = 0; i < coreGlobals.nSolenoids; i++)
-		  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].integrator(now, CORE_MODOUT_SOL0 + i, FALSE);
-	   for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
-		  coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].integrator(now, CORE_MODOUT_SEG0 + i, FALSE);
+	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))
+   	     for (int i = 0; i < coreGlobals.nLamps; i++)
+		   coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].integrator(now, CORE_MODOUT_LAMP0 + i, FALSE);
+	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
+	     for (int i = 0; i < coreGlobals.nGI; i++)
+		   coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].integrator(now, CORE_MODOUT_GI0 + i, FALSE);
+	   if (options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON))
+	     for (int i = 0; i < coreGlobals.nSolenoids; i++)
+		   coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].integrator(now, CORE_MODOUT_SOL0 + i, FALSE);
+	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
+	     for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
+		   coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].integrator(now, CORE_MODOUT_SEG0 + i, FALSE);
    }
 }
 
