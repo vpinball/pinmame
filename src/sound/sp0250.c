@@ -49,8 +49,8 @@ static struct {
 	} filter[6];
 } sp0250;
 
-void sp0250_timer_tick(int param);
-void sp0250_update(int num, INT16* output, int length);
+static void sp0250_timer_tick(int param);
+static void sp0250_update(int num, INT16* output, int length);
 
 int sp0250_sh_start( const struct MachineSound *msound )
 {

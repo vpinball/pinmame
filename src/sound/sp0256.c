@@ -1084,7 +1084,7 @@ static void sp0256_micro(void)
     }
 }
 
-void sp0256_update(int num, INT16 *output, int length);
+static void sp0256_update(int num, INT16 *output, int length);
 
 int sp0256_sh_start( const struct MachineSound *msound )
 {
