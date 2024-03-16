@@ -1,34 +1,23 @@
+// license:BSD-3-Clause
+// copyright-holders:Joseph Zbiciak,Tim Lindner
 /*
    GI SP0256 Narrator Speech Processor
    GI SPB640 Speech Buffer
 
-   By Joe Zbiciak. Ported to MESS by tim lindner.
+   By Joe Zbiciak. Ported to MAME by tim lindner.
 
    Unimplemented:
    - Microsequencer repeat count of zero
    - Support for non bit-flipped ROMs
    - SPB-640 perpherial/RAM bus
 
- Copyright (c) 1998-2000, Joseph Zbiciak, all rights reserved.
- Copyright (c) 2006, tim lindner, all rights reserved.
-
- - This source code is released as freeware for non-commercial purposes.
- - You are free to use and redistribute this code in modified or
-   unmodified form, provided you list us in the credits.
- - If you modify this source code, you must add a notice to each
-   modified source file that it has been changed.  If you're a nice
-   person, you will clearly mark each change too.  :)
- - If you wish to use this for commercial purposes, please contact us at
-   intvnut@gmail.com (Joseph Zbiciak), tlindner@macmess.org (tim lindner)
- - This entire notice must remain in the source code.
-
  Note: Bit flipping.
     This emulation flips the bits on every byte of the memory map during
     the sp0256_start() call.
 
     If the memory map contents is modified during execution (because of ROM
-    bank switching) the sp0256_bitrevbuff() call must be called after the
-    section of ROM is modified.
+    bank switching) the sp0256_bitrevbuff() call must be called after the section
+    of ROM is modified.
 */
 
 #include <math.h>
@@ -42,7 +31,7 @@
 #else
 #define CLOCK_DIVIDER (7*6*8)
 #endif
-#define HIGH_QUALITY
+#define HIGH_QUALITY // not accurate, but more bits used for ouput
 
 #define SCBUF_SIZE   (4096)             /* Must be power of 2               */
 #define SCBUF_MASK   (SCBUF_SIZE - 1)
@@ -88,7 +77,7 @@ struct lpc12_t
 
 
 static struct {
-  int          stream;	        /* MAME core sound stream                       */
+  int          stream;            /* MAME core sound stream                       */
   void         (*drq)(int state); /* Data request callback                        */
   void         (*sby)(int state); /* Standby callback                             */
   int            sby_line;        /* Standby line state                           */
@@ -149,8 +138,8 @@ static const INT16 qtbl[128] =
 static INT16 limit(INT16 s)
 {
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
-    if (s >  8191) return  8191;
-    if (s < -8192) return -8192;
+    if (s >  2047) return  2047; // MAME has 8191/-8192, but seems fishy
+    if (s < -2048) return -2048;
 #else
     if (s >  127) return  127;
     if (s < -128) return -128;
@@ -164,8 +153,6 @@ static INT16 limit(INT16 s)
 static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *optr)
 {
     int i, j;
-    INT16 samp;
-    int do_int;
     int oidx = *optr;
 
     /* -------------------------------------------------------------------- */
@@ -177,7 +164,8 @@ static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *opt
         /* ---------------------------------------------------------------- */
         /*  Generate a series of periodic impulses, or random noise.        */
         /* ---------------------------------------------------------------- */
-        do_int = 0;
+        int do_int = 0;
+        INT16 samp;
         if (f->per)
         {
             if (f->cnt <= 0)
@@ -189,17 +177,15 @@ static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *opt
 
                 for (j = 0; j < 6; j++)
                     f->z_data[j][1] = f->z_data[j][0] = 0;
-
             } else
             {
                 samp = 0;
                 f->cnt--;
             }
-
-        } else
+        }
+        else
         {
             int bit;
-
             if (--f->cnt <= 0)
             {
                 do_int = f->interp;
@@ -212,8 +198,7 @@ static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *opt
             bit = f->rng & 1;
             f->rng = (f->rng >> 1) ^ (bit ? 0x4001 : 0);
 
-            if (bit) { samp =  f->amp; }
-            else     { samp = -f->amp; }
+            samp = bit ? f->amp : -f->amp;
         }
 
         /* ---------------------------------------------------------------- */
@@ -226,15 +211,14 @@ static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *opt
 
             f->amp   = (f->r[0] & 0x1F) << (((f->r[0] & 0xE0) >> 5) + 0);
             f->per   = f->r[1];
-
-            do_int   = 0;
         }
 
         /* ---------------------------------------------------------------- */
         /*  Stop if we expire our repeat counter and return the actual      */
         /*  number of samples we did.                                       */
         /* ---------------------------------------------------------------- */
-        if (f->rpt <= 0) break;
+        if (f->rpt <= 0)
+            break;
 
         /* ---------------------------------------------------------------- */
         /*  Each 2nd order stage looks like one of these.  The App. Manual  */
@@ -274,9 +258,9 @@ static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *opt
         }
 
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
-        out[oidx++ & SCBUF_MASK] = limit(samp) << 4;
+        out[oidx++ & SCBUF_MASK] = limit(samp) << 4; // MAME has 2, but seems fishy
 #else
-        out[oidx++ & SCBUF_MASK] = (limit(samp >> 4) << 8);
+        out[oidx++ & SCBUF_MASK] = limit(samp >> 4) << 8;
 #endif
     }
 
@@ -293,7 +277,6 @@ static const int stage_map[6] = { 0, 1, 2, 3, 4, 5 };
 static void lpc12_regdec(struct lpc12_t *f)
 {
     int i;
-
     /* -------------------------------------------------------------------- */
     /*  Decode the Amplitude and Period registers.  Force the 'cnt' to 0    */
     /*  to get an initial impulse.  We compensate elsewhere by setting      */
@@ -318,8 +301,6 @@ static void lpc12_regdec(struct lpc12_t *f)
     /*  Set the Interp flag based on whether we have interpolation parms    */
     /* -------------------------------------------------------------------- */
     f->interp = f->r[14] || f->r[15];
-
-    return;
 }
 
 /* ======================================================================== */
@@ -652,7 +633,7 @@ static const INT16 sp0256_df_idx[16 * 8] =
 /* ======================================================================== */
 /*  BITREV32       -- Bit-reverse a 32-bit number.                            */
 /* ======================================================================== */
-static UINT32 bitrev32(UINT32 val)
+INLINE UINT32 bitrev32(UINT32 val)
 {
     val = ((val & 0xFFFF0000) >> 16) | ((val & 0x0000FFFF) << 16);
     val = ((val & 0xFF00FF00) >>  8) | ((val & 0x00FF00FF) <<  8);
@@ -666,7 +647,7 @@ static UINT32 bitrev32(UINT32 val)
 /* ======================================================================== */
 /*  BITREV8       -- Bit-reverse a 8-bit number.                            */
 /* ======================================================================== */
-static UINT8 bitrev8(UINT8 val)
+INLINE UINT8 bitrev8(UINT8 val)
 {
     val = ((val & 0xF0) >>  4) | ((val & 0x0F) <<  4);
     val = ((val & 0xCC) >>  2) | ((val & 0x33) <<  2);
@@ -683,7 +664,7 @@ void sp0256_bitrevbuff(UINT8 *buffer, unsigned int start, unsigned int length)
 	unsigned int i;
 
 	for( i=start; i<length; i++ )
-		buffer[i] = bitrev8( buffer[i] );
+		buffer[i] = bitrev8(buffer[i]);
 }
 
 /* ======================================================================== */
@@ -718,7 +699,8 @@ static UINT32 sp0256_getb(int len)
             sp0256.fifo_tail++;
             sp0256.fifo_bitp -= 10;
         }
-    } else
+    }
+    else
     {
         /* ---------------------------------------------------------------- */
         /*  Figure out which ROMs are being fetched into, and grab two      */
@@ -728,8 +710,8 @@ static UINT32 sp0256_getb(int len)
         int idx0 = (sp0256.pc    ) >> 3;
         int idx1 = (sp0256.pc + 8) >> 3;
 
-		    d0 = sp0256.rom[idx0 & 0xffff];
-		    d1 = sp0256.rom[idx1 & 0xffff];
+        d0 = sp0256.rom[idx0 & 0xffff];
+        d1 = sp0256.rom[idx1 & 0xffff];
 
         data = ((d1 << 8) | d0) >> (sp0256.pc & 7);
 
@@ -772,11 +754,11 @@ static void sp0256_micro(void)
             sp0256.pc       = sp0256.ald | (0x1000 << 3);
             sp0256.fifo_sel = 0;
             sp0256.halted   = 0;
-            sp0256.lrq      = 0x8000;
+            sp0256.lrq      = 1;
             sp0256.ald      = 0;
             for (i = 0; i < 16; i++)
                 sp0256.filt.r[i] = 0;
-            if( sp0256.drq) sp0256.drq(ASSERT_LINE);
+            if(sp0256.drq) sp0256.drq(ASSERT_LINE);
         }
 
         /* ---------------------------------------------------------------- */
@@ -785,7 +767,7 @@ static void sp0256_micro(void)
         if (sp0256.halted)
         {
             sp0256.filt.rpt = 1;
-            sp0256.lrq      = 0x8000;
+            sp0256.lrq      = 1;
             sp0256.ald      = 0;
             for (i = 0; i < 16; i++)
                 sp0256.filt.r[i] = 0;
@@ -826,10 +808,11 @@ static void sp0256_micro(void)
                 if (immed4)     /* SETPAGE */
                 {
                     sp0256.page = bitrev32(immed4) >> 13;
-                } else
+                }
                 /* -------------------------------------------------------- */
                 /*  Otherwise, this is an RTS / HLT.                        */
                 /* -------------------------------------------------------- */
+                else
                 {
                     UINT32 btrg;
 
@@ -848,11 +831,12 @@ static void sp0256_micro(void)
                     {
                         sp0256.halted = 1;
                         sp0256.pc     = 0;
-                        ctrl_xfer  = 1;
-                    } else
+                        ctrl_xfer     = 1;
+                    }
+                    else
                     {
                         sp0256.pc    = btrg;
-                        ctrl_xfer = 1;
+                        ctrl_xfer    = 1;
                     }
                 }
 
@@ -866,13 +850,13 @@ static void sp0256_micro(void)
             case 0xE:
             case 0xD:
             {
-                int btrg;
+                unsigned int btrg;
 
                 /* -------------------------------------------------------- */
                 /*  Figure out our branch target.                           */
                 /* -------------------------------------------------------- */
-                btrg = sp0256.page                           |
-                       (bitrev32(immed4)             >> 17) |
+                btrg = sp0256.page                      |
+                       (bitrev32(immed4)         >> 17) |
                        (bitrev32(sp0256_getb(8)) >> 21);
                 ctrl_xfer = 1;
 
@@ -895,8 +879,7 @@ static void sp0256_micro(void)
             /* ------------------------------------------------------------ */
             case 0x1:
             {
-                sp0256.mode = ((immed4 & 8) >> 2) | (immed4 & 4) |
-                           ((immed4 & 3) << 4);
+                sp0256.mode = ((immed4 & 8) >> 2) | (immed4 & 4) | ((immed4 & 3) << 4);
                 break;
             }
 
@@ -916,7 +899,7 @@ static void sp0256_micro(void)
             /* ------------------------------------------------------------ */
             default:
             {
-                repeat    = immed4 | (sp0256.mode & 0x30);
+                repeat = immed4 | (sp0256.mode & 0x30);
                 break;
             }
         }
@@ -951,7 +934,7 @@ static void sp0256_micro(void)
                 sp0256.fifo_bitp = 0;
             }
 
-            LOG(("\n"));
+            LOG("\n");
 
             continue;
         }
@@ -1020,7 +1003,7 @@ static void sp0256_micro(void)
             }
             else
             {
-                LOG((" (no update)\n"));
+                LOG(" (no update)\n");
                 continue;
             }
 
@@ -1101,41 +1084,199 @@ static void sp0256_micro(void)
     }
 }
 
+static void sp0256_update(int num, INT16 *output, int length);
+
+int sp0256_sh_start( const struct MachineSound *msound )
+{
+  struct sp0256_interface *intf = msound->sound_interface;
+  memset(&sp0256, 0, sizeof(sp0256));
+  sp0256.drq = intf->lrq_callback;
+  sp0256.sby = intf->sby_callback;
+  if( sp0256.drq ) sp0256.drq(ASSERT_LINE);
+  if( sp0256.sby ) sp0256.sby(sp0256.sby_line = ASSERT_LINE);
+
+  sp0256.stream = stream_init("SP0256", intf->volume, intf->clock / (double)CLOCK_DIVIDER, 0, sp0256_update);
+
+  /* -------------------------------------------------------------------- */
+  /*  Configure our internal variables.                                   */
+  /* -------------------------------------------------------------------- */
+  sp0256.filt.rng = 1;
+
+  /* -------------------------------------------------------------------- */
+  /*  Allocate a scratch buffer for generating ~10kHz samples.             */
+  /* -------------------------------------------------------------------- */
+  sp0256.scratch = malloc(SCBUF_SIZE * sizeof(INT16));
+  sp0256.sc_head = sp0256.sc_tail = 0;
+
+  /* -------------------------------------------------------------------- */
+  /*  Set up the microsequencer's initial state.                          */
+  /* -------------------------------------------------------------------- */
+  sp0256.halted   = 1;
+  sp0256.filt.rpt = -1;
+  sp0256.lrq      = 1;
+  sp0256.page     = 0x1000 << 3;
+  sp0256.silent   = 1;
+
+  /* -------------------------------------------------------------------- */
+  /*  Setup the ROM.                                                      */
+  /* -------------------------------------------------------------------- */
+  if (intf->memory_region) {
+    sp0256.rom = memory_region(intf->memory_region);
+    sp0256_bitrevbuff(sp0256.rom, 0, 0xffff);
+  }
+
+  return 0;
+}
+
+void sp0256_sh_stop(void)
+{
+	free( sp0256.scratch );
+}
+
+void sp0256_reset(void)
+{
+	/* ---------------------------------------------------------------- */
+	/*  Reset the FIFO and SP0256.                                      */
+	/* ---------------------------------------------------------------- */
+	sp0256.fifo_head = sp0256.fifo_tail = sp0256.fifo_bitp = 0;
+
+	memset(&sp0256.filt, 0, sizeof(sp0256.filt));
+	sp0256.halted   = 1;
+	sp0256.filt.rpt = -1;
+	sp0256.filt.rng = 1;
+	sp0256.lrq      = 1;
+	sp0256.ald      = 0x0000;
+	sp0256.pc       = 0x0000;
+	sp0256.stack    = 0x0000;
+	sp0256.fifo_sel = 0;
+	sp0256.mode     = 0;
+	sp0256.page     = 0x1000 << 3;
+	sp0256.silent   = 1;
+	if( sp0256.drq ) sp0256.drq(ASSERT_LINE);
+	SET_SBY(ASSERT_LINE)
+}
+
+WRITE_HANDLER( sp0256_ALD_w )
+{
+	/* ---------------------------------------------------------------- */
+	/*  Drop writes to the ALD register if we're busy.                  */
+	/* ---------------------------------------------------------------- */
+	if (!sp0256.lrq)
+	{
+		LOG("sp0256: Dropped ALD write\n");
+		return;
+	}
+
+	/* ---------------------------------------------------------------- */
+	/*  Set LRQ to "busy" and load the 8 LSBs of the data into the ALD  */
+	/*  reg.  We take the command address, and multiply by 2 bytes to   */
+	/*  get the new PC address.                                         */
+	/* ---------------------------------------------------------------- */
+	sp0256.lrq = 0;
+	sp0256.ald = data << 4;
+	if( sp0256.drq ) sp0256.drq(CLEAR_LINE);
+	SET_SBY(CLEAR_LINE)
+}
+
+READ16_HANDLER( spb640_r )
+{
+    stream_update(sp0256.stream, 0);
+    offset &= 1;
+
+    /* -------------------------------------------------------------------- */
+    /*  Offset 0 returns the SP0256 LRQ status on bit 15.                   */
+    /* -------------------------------------------------------------------- */
+    if (offset == 0)
+    {
+        return sp0256.lrq << 15;
+    }
+
+    /* -------------------------------------------------------------------- */
+    /*  Offset 1 returns the SPB640 FIFO full status on bit 15.             */
+    /* -------------------------------------------------------------------- */
+    else
+    {
+        return (sp0256.fifo_head - sp0256.fifo_tail) >= 64 ? 0x8000 : 0;
+    }
+}
+
+WRITE16_HANDLER( spb640_w )
+{
+	stream_update(sp0256.stream, 0);
+	offset &= 1;
+
+	if (offset == 0)
+	{
+		sp0256_ALD_w( 0, data & 0xff );
+	}
+	else
+	{
+		/* ---------------------------------------------------------------- */
+		/*  If Bit 10 is set, reset the FIFO, and SP0256.                   */
+		/* ---------------------------------------------------------------- */
+		if (data & 0x400)
+		{
+			sp0256.fifo_head = sp0256.fifo_tail = sp0256.fifo_bitp = 0;
+			sp0256_reset();
+			return;
+		}
+
+		/* ---------------------------------------------------------------- */
+		/*  If the FIFO is full, drop the data.                             */
+		/* ---------------------------------------------------------------- */
+		if ((sp0256.fifo_head - sp0256.fifo_tail) >= 64)
+		{
+			LOG("spb640: Dropped FIFO write\n");
+			return;
+		}
+
+		/* ---------------------------------------------------------------- */
+		/*  FIFO up the lower 10 bits of the data.                          */
+		/* ---------------------------------------------------------------- */
+
+		LOG(("spb640: WR_FIFO %.3X %d.%d %d\n", data & 0x3ff,
+				sp0256.fifo_tail, sp0256.fifo_bitp, sp0256.fifo_head));
+
+		sp0256.fifo[sp0256.fifo_head++ & 63] = data & 0x3ff;
+	}
+}
+
+//-------------------------------------------------
+//  sound_stream_update - handle a stream update
+//-------------------------------------------------
+
 static void sp0256_update(int num, INT16 *output, int length)
 {
 	int output_index = 0;
-  int samples, did_samp/*, old_idx*/;
 
-	while( output_index < length )
+	while (output_index < length)
 	{
 		/* ---------------------------------------------------------------- */
 		/*  First, drain as much of our scratch buffer as we can into the   */
 		/*  sound buffer.                                                  */
 		/* ---------------------------------------------------------------- */
-
-		while( sp0256.sc_tail != sp0256.sc_head )
+		while (sp0256.sc_tail != sp0256.sc_head)
 		{
 			output[output_index++] = sp0256.scratch[sp0256.sc_tail++ & SCBUF_MASK];
 			sp0256.sc_tail &= SCBUF_MASK;
 
-			if( output_index > length )
+			if (output_index >= length)
 				break;
 		}
 
 		/* ---------------------------------------------------------------- */
 		/*  If output buffer is full, then we're done.                      */
 		/* ---------------------------------------------------------------- */
-		if( output_index > length )
+		if (output_index > length)
 			break;
 
-		samples = length - output_index;
+		int samples = length - output_index;
 
 		/* ---------------------------------------------------------------- */
 		/*  Process the current set of filter coefficients as long as the   */
 		/*  repeat count holds up and we have room in our scratch buffer.   */
 		/* ---------------------------------------------------------------- */
-		did_samp = 0;
-		//old_idx  = sp0256.sc_head;
+		int did_samp = 0;
 		if (samples > 0) do
 		{
 			int do_samp;
@@ -1162,175 +1303,15 @@ static void sp0256_update(int num, INT16 *output, int length)
 				for (x = 0; x < do_samp; x++)
 					sp0256.scratch[y++ & SCBUF_MASK] = 0;
 				sp0256.sc_head += do_samp;
-				did_samp    += do_samp;
+				did_samp += do_samp;
 			}
 			else
 			{
-				did_samp += lpc12_update(&sp0256.filt, do_samp,
-										 sp0256.scratch, &sp0256.sc_head);
+				did_samp += lpc12_update(&sp0256.filt, do_samp, sp0256.scratch, &sp0256.sc_head);
 			}
 
 			sp0256.sc_head &= SCBUF_MASK;
 
 		} while (sp0256.filt.rpt >= 0 && samples > did_samp);
-	}
-}
-
-int sp0256_sh_start( const struct MachineSound *msound )
-{
-  struct sp0256_interface *intf = msound->sound_interface;
-  memset(&sp0256, 0, sizeof(sp0256));
-  sp0256.drq = intf->lrq_callback;
-  sp0256.sby = intf->sby_callback;
-  if( sp0256.drq ) sp0256.drq(ASSERT_LINE);
-  if( sp0256.sby ) sp0256.sby(sp0256.sby_line = ASSERT_LINE);
-  
-  sp0256.stream = stream_init("SP0256", intf->volume, intf->clock / (double)CLOCK_DIVIDER, 0, sp0256_update);
-  
-  /* -------------------------------------------------------------------- */
-  /*  Configure our internal variables.                                   */
-  /* -------------------------------------------------------------------- */
-  sp0256.filt.rng = 1;
-  
-  /* -------------------------------------------------------------------- */
-  /*  Allocate a scratch buffer for generating ~10kHz samples.             */
-  /* -------------------------------------------------------------------- */
-  sp0256.scratch = malloc(SCBUF_SIZE * sizeof(INT16));
-  sp0256.sc_head = sp0256.sc_tail = 0;
-  
-  /* -------------------------------------------------------------------- */
-  /*  Set up the microsequencer's initial state.                          */
-  /* -------------------------------------------------------------------- */
-  sp0256.halted   = 1;
-  sp0256.filt.rpt = -1;
-  sp0256.lrq      = 0x8000;
-  sp0256.page     = 0x1000 << 3;
-  sp0256.silent   = 1;
-  
-  /* -------------------------------------------------------------------- */
-  /*  Setup the ROM.                                                      */
-  /* -------------------------------------------------------------------- */
-  if (intf->memory_region) {
-    sp0256.rom = memory_region(intf->memory_region);
-    sp0256_bitrevbuff(sp0256.rom, 0, 0xffff);
-  }
-  
-  return 0;
-}
-
-void sp0256_sh_stop(void)
-{
-	free( sp0256.scratch );
-}
-
-void sp0256_reset(void)
-{
-	/* ---------------------------------------------------------------- */
-	/*  Reset the FIFO and SP0256.                                      */
-	/* ---------------------------------------------------------------- */
-	sp0256.fifo_head = sp0256.fifo_tail = sp0256.fifo_bitp = 0;
-
-	memset(&sp0256.filt, 0, sizeof(sp0256.filt));
-	sp0256.halted   = 1;
-	sp0256.filt.rpt = -1;
-	sp0256.filt.rng = 1;
-	sp0256.lrq      = 0x8000;
-	sp0256.ald      = 0x0000;
-	sp0256.pc       = 0x0000;
-	sp0256.stack    = 0x0000;
-	sp0256.fifo_sel = 0;
-	sp0256.mode     = 0;
-	sp0256.page     = 0x1000 << 3;
-	sp0256.silent   = 1;
-	if( sp0256.drq ) sp0256.drq(ASSERT_LINE);
-	SET_SBY(ASSERT_LINE)
-}
-
-WRITE_HANDLER( sp0256_ALD_w )
-{
-	/* ---------------------------------------------------------------- */
-	/*  Drop writes to the ALD register if we're busy.                  */
-	/* ---------------------------------------------------------------- */
-	if (!sp0256.lrq)
-	{
-		LOG(( "sp0256: Droped ALD write\n" ));
-		return;
-	}
-
-	/* ---------------------------------------------------------------- */
-	/*  Set LRQ to "busy" and load the 8 LSBs of the data into the ALD  */
-	/*  reg.  We take the command address, and multiply by 2 bytes to   */
-	/*  get the new PC address.                                         */
-	/* ---------------------------------------------------------------- */
-	sp0256.lrq = 0;
-	sp0256.ald = (0xFF & data) << 4;
-	if( sp0256.drq ) sp0256.drq(CLEAR_LINE);
-	SET_SBY(CLEAR_LINE)
-}
-
-READ16_HANDLER( spb640_r )
-{
-    /* -------------------------------------------------------------------- */
-    /*  Offset 0 returns the SP0256 LRQ status on bit 15.                   */
-    /* -------------------------------------------------------------------- */
-    if (offset == 0)
-    {
-        return sp0256.lrq;
-    }
-
-    /* -------------------------------------------------------------------- */
-    /*  Offset 1 returns the SPB640 FIFO full status on bit 15.             */
-    /* -------------------------------------------------------------------- */
-    if (offset == 1)
-    {
-        return (sp0256.fifo_head - sp0256.fifo_tail) >= 64 ? 0x8000 : 0;
-    }
-
-    /* -------------------------------------------------------------------- */
-    /*  Just return 255 for all other addresses in our range.               */
-    /* -------------------------------------------------------------------- */
-    return 0x00FF;
-}
-
-WRITE16_HANDLER( spb640_w )
-{
-	if( offset == 0 )
-	{
-		sp0256_ALD_w( 0, data & 0xff );
-		return;
-	}
-
-	if( offset == 1 )
-	{
-		/* ---------------------------------------------------------------- */
-		/*  If Bit 10 is set, reset the FIFO, and SP0256.                   */
-		/* ---------------------------------------------------------------- */
-
-		if (data & 0x400)
-		{
-			sp0256.fifo_head = sp0256.fifo_tail = sp0256.fifo_bitp = 0;
-			sp0256_reset();
-			return;
-		}
-
-		/* ---------------------------------------------------------------- */
-		/*  If the FIFO is full, drop the data.                             */
-		/* ---------------------------------------------------------------- */
-		if ((sp0256.fifo_head - sp0256.fifo_tail) >= 64)
-		{
-			LOG(("spb640: Dropped FIFO write\n"));
-			return;
-		}
-
-		/* ---------------------------------------------------------------- */
-		/*  FIFO up the lower 10 bits of the data.                          */
-		/* ---------------------------------------------------------------- */
-
-		LOG(("spb640: WR_FIFO %.3X %d.%d %d\n", data & 0x3FF,
-				sp0256.fifo_tail, sp0256.fifo_bitp, sp0256.fifo_head));
-
-		sp0256.fifo[sp0256.fifo_head++ & 63] = data & 0x3FF;
-
-		return;
 	}
 }

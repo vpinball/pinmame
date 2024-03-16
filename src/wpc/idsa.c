@@ -27,7 +27,7 @@ static struct {
   int dispCol;
   int dispRow;
   core_tSeg segments;
-  int isV1, lrq;
+  UINT8 isV1, lrq; // bools
   mame_timer* timer;
 } locals;
 
