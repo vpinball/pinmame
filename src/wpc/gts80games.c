@@ -413,7 +413,7 @@ GTS80S1K_ROMSTART("667-a-s.snd",  CRC(894b4e2e) SHA1(d888f8e00b2b50cef5cc916d46e
                   "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_vlcno_1a input_ports_vlcno_1b
-CORE_CLONEDEFNV(vlcno_1a,vlcno_1b,"Volcano (Sound Only, alternate version)",1981,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(vlcno_1a,vlcno_1b,"Volcano (Sound Only, alternate set)",1981,"Gottlieb",gl_mGTS80S,0)
 
 INIT_S80(vlcno_1c, dispNumeric1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART ("667-1c.cpu",   CRC(e364202d) SHA1(128eaa5b390e309f4cf89f3631da0341f1419ffe))
@@ -421,7 +421,7 @@ GTS80S1K_ROMSTART("667-a-s.snd",  CRC(894b4e2e) SHA1(d888f8e00b2b50cef5cc916d46e
                   "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_vlcno_1c input_ports_vlcno_1b
-CORE_CLONEDEFNV(vlcno_1c, vlcno_1b, "Volcano (Sound Only, alternate version 2)",1981,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(vlcno_1c, vlcno_1b, "Volcano (Sound Only, alternate set 2)",1981,"Gottlieb",gl_mGTS80S,0)
 
 INIT_S80D7(vlcno_b7, dispNumeric3, SNDBRD_GTS80S)
 GTS80_1_ROMSTART ("667-1b.cpu",   CRC(a422d862) SHA1(2785388eb43c08405774a9413ffa52c1591a84f2))
@@ -608,16 +608,24 @@ GTS80_ROMEND
 #define input_ports_dvlsdre input_ports_gts80
 CORE_CLONEDEFNV(dvlsdre,gts80a,"Devil's Dare",1982,"Gottlieb",gl_mGTS80SS,0)
 
+INIT_S80A(dvlsdrea, dispDevilsdare, SNDBRD_GTS80SS_VOTRAX,0)
+GTS80_1_ROMSTART  ("670-2.cpu",  CRC(4304eefd) SHA1(0bc4d4ecde5d99a5838f4ccee1e21d4bfed367e2))
+GTS80SS22_ROMSTART("670-s1.snd", CRC(506bc22a) SHA1(3c69f8d0c38c51796c31fb38c02d00afe8a4b8c5),
+                   "670-s2.snd", CRC(f662ee4b) SHA1(0f63e01672b7c07a4913e150f0bbe07ecfc06e7c))
+GTS80_ROMEND
+#define input_ports_dvlsdrea input_ports_gts80
+CORE_CLONEDEFNV(dvlsdrea,dvlsdre,"Devil's Dare (alternate set)",1982,"Gottlieb",gl_mGTS80SS,0)
+
 /*-------------------------------------------------------------------
 / Devil's Dare (Sound Only) (#670)
 /-------------------------------------------------------------------*/
 INIT_S80A(dvlsdre2, dispDevilsdare, SNDBRD_GTS80S,0)
-GTS80_1_ROMSTART ("670-a.cpu",    CRC(353b2e18) SHA1(270365ea8276b64e38939f0bf88ddb955d59cd4d))
+GTS80_1_ROMSTART ("670-a.cpu",    CRC(353b2e18) SHA1(270365ea8276b64e38939f0bf88ddb955d59cd4d)) // 670-F2
 GTS80S1K_ROMSTART("670-a-s.snd",  CRC(f141d535) SHA1(91e4ab9ce63b5ff3e395b6447a104286327b5533),
                   "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_dvlsdre2 input_ports_gts80
-CORE_CLONEDEFNV(dvlsdre2,gts80as,"Devil's Dare (Sound Only)",1982,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1982,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Caveman (#PV-810) Pinball/Video Combo
@@ -747,7 +755,7 @@ GTS80SS22_ROMSTART("675-s1.snd",  CRC(cc11c487) SHA1(fe880dd7dc03f368b2c7ea81059
                    "675-s2ge.snd",CRC(9d2acc31) SHA1(a1f2aabcfa8fc7d775d502186c232849aaef1dcf))
 GTS80_ROMEND
 #define input_ports_strikerg input_ports_gts80
-CORE_CLONEDEFNV(strikerg,gts80a,"Striker (German Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(strikerg,striker,"Striker (German Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
 
 INIT_S80A(strikerf, dispStriker, SNDBRD_GTS80SS_VOTRAX,0)
 GTS80_1_ROMSTART  ("675.cpu",     CRC(06b66ce8) SHA1(399d98753e2da5c835c629a673069e853a4ce3c3))
@@ -755,7 +763,7 @@ GTS80SS22_ROMSTART("675-s1.snd",  CRC(cc11c487) SHA1(fe880dd7dc03f368b2c7ea81059
                    "675-S2X.BIN", CRC(9a04d4a4) SHA1(ea69e17a75498ef405e7148fc9a04f0fdbd0327d))
 GTS80_ROMEND
 #define input_ports_strikerf input_ports_gts80
-CORE_CLONEDEFNV(strikerf,gts80a,"Striker (French Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(strikerf,striker,"Striker (French Speech)",1982,"Gottlieb",gl_mGTS80SS,0)
 
 // 675-S2Z (No hymn) also exists as flipprojets has a 675-Z ROM (=same as 675).
 
@@ -832,7 +840,7 @@ GTS80SS22_ROMSTART("681-s1.snd", CRC(33455bbd) SHA1(04db645060d93d7d9faff56ead9f
                    "681-s2.snd", CRC(639c93f9) SHA1(1623fea6681a009e7a755357fa85206cf2ce6897))
 GTS80_ROMEND
 #define input_ports_rflshdlx1 input_ports_gts80
-CORE_CLONEDEFNV(rflshdlx1,gts80a,"Royal Flush Deluxe (rev. 1)",1983,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(rflshdlx1,rflshdlx,"Royal Flush Deluxe (rev. 1)",1983,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Goin' Nuts (#682)
