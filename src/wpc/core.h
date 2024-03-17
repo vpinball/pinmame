@@ -364,13 +364,13 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 
 /*-- Physical devices on binary outputs --*/
 
-#define CORE_MODOUT_ENABLE_MODSOL    1 /* Bitmask for options.usemodsol to enable legacy behavior (simple solenoid linear integration for WPC/SAM)  */
-#define CORE_MODOUT_ENABLE_PHYSOUT_LAMPS 0x04
-#define CORE_MODOUT_ENABLE_PHYSOUT_GI 0x08
+#define CORE_MODOUT_ENABLE_MODSOL            0x01 /* Bitmask for options.usemodsol to enable legacy behavior (simple solenoid linear integration for WPC/SAM)  */
+#define CORE_MODOUT_ENABLE_PHYSOUT_LAMPS     0x04
+#define CORE_MODOUT_ENABLE_PHYSOUT_GI        0x08
 #define CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS 0x10
 #define CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS 0x20
+#define CORE_MODOUT_FORCE_ON                 0x80 /* Bitmask for options.usemodsol for drivers that needs PWM integration to be performed whatever the user settings are. Note that this is internal to the driver. The exchanged value depends only on the user settings. */
 #define CORE_MODOUT_ENABLE_PHYSOUT_ALL (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS|CORE_MODOUT_ENABLE_PHYSOUT_GI|CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS|CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS) /* Bitmask for options.usemodsol to enable physics output for solenoids/Lamp/GI/AlphaSegments */
-#define CORE_MODOUT_FORCE_ON       0x80 /* Bitmask for options.usemodsol for drivers that needs PWM integration to be performed whatever the user settings are */
 
 #define CORE_MODOUT_LAMP_MAX                 (CORE_MAXLAMPCOL * 8) /* Maximum number of modulated outputs for lamps */
 #define CORE_MODOUT_SOL_MAX                                     72 /* Maximum number of modulated outputs for solenoids */

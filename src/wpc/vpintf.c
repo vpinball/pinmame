@@ -33,7 +33,7 @@ void vp_init(void) {
 int vp_getLamp(int lampNo) {
   if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON)))
+  if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
 	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
 }
@@ -53,7 +53,7 @@ int vp_getSolenoid(int solNo)
 int vp_getGI(int giNo)
 {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nGI && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON)))
+  if (coreGlobals.nGI && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI)))
 	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
   return coreGlobals.gi[giNo];
 }
@@ -65,7 +65,7 @@ int vp_getGI(int giNo)
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
   int ii, idx = 0;
   /*-- fill in array --*/
-  if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON)))
+  if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
   {
 	 for (ii = 0; ii < coreGlobals.nLamps; ii++) {
 		UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
@@ -130,7 +130,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 {
   int ii, idx = 0;
   // The backward compatibility is not perfect here: mod sol was only available for a bunch of generations, and would limit modulation to the first 32 solenoids
-  if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_MODSOL)))
+  if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)))
   {
     float state[CORE_MODOUT_SOL_MAX];
     core_getAllPhysicSols(state);
@@ -170,7 +170,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 /-------------------------------------*/
 int vp_getChangedGI(vp_tChgGIs chgStat) {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nGI && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON)))
+  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI))
   {
 	  int idx = 0;
 	  for (int i = 0; i < coreGlobals.nGI; i++) {
