@@ -793,10 +793,6 @@ SOURCE=.\src\cpu\tms9900\9900dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\9900stat.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\cpu\tms9900\99xxcore.h
 # End Source File
 # Begin Source File

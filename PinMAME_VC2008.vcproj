@@ -1832,10 +1832,6 @@
 							>
 						</File>
 						<File
-							RelativePath=".\src\cpu\tms9900\9900stat.h"
-							>
-						</File>
-						<File
 							RelativePath=".\src\cpu\tms9900\99xxcore.h"
 							>
 						</File>

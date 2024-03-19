@@ -655,7 +655,7 @@ OBJDIRS += $(OBJ)/cpu/tms9900
 CPUDEFS += -DHAS_TMS9900=1
 CPUOBJS += $(OBJ)/cpu/tms9900/tms9900.o
 DBGOBJS += $(OBJ)/cpu/tms9900/9900dasm.o
-$(OBJ)/cpu/tms9900/tms9900.o: tms9900.c tms9900.h 99xxcore.h 9900stat.h
+$(OBJ)/cpu/tms9900/tms9900.o: tms9900.c tms9900.h 99xxcore.h
 else
 CPUDEFS += -DHAS_TMS9900=0
 endif
@@ -666,7 +666,7 @@ OBJDIRS += $(OBJ)/cpu/tms9900
 CPUDEFS += -DHAS_TMS9940=1
 CPUOBJS += $(OBJ)/cpu/tms9900/tms9900.o
 DBGOBJS += $(OBJ)/cpu/tms9900/9900dasm.o
-$(OBJ)/cpu/tms9900/tms9900.o: tms9900.c tms9900.h 99xxcore.h 9900stat.h
+$(OBJ)/cpu/tms9900/tms9900.o: tms9900.c tms9900.h 99xxcore.h
 else
 CPUDEFS += -DHAS_TMS9940=0
 endif

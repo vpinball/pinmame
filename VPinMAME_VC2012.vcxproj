@@ -1707,7 +1707,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\cpu\arm7\arm7jit.h" />
     <ClInclude Include="src\cpu\cdp1802\cdp1802.h" />
     <ClInclude Include="src\cpu\cop400\cop400.h" />
-    <ClInclude Include="src\cpu\tms9900\9900stat.h" />
     <ClInclude Include="src\cpu\tms9900\99xxcore.h" />
     <ClInclude Include="src\cpu\tms9900\99xxstat.h" />
     <ClInclude Include="src\cpu\tms9900\tms9900.h" />

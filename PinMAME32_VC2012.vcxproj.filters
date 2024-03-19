@@ -1640,9 +1640,6 @@
     <ClInclude Include="src\cpu\cop400\cop400.h">
       <Filter>Source Files\MAME\CPU\COP400</Filter>
     </ClInclude>
-    <ClInclude Include="src\cpu\tms9900\9900stat.h">
-      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
-    </ClInclude>
     <ClInclude Include="src\cpu\tms9900\99xxcore.h">
       <Filter>Source Files\MAME\CPU\TMS9900</Filter>
     </ClInclude>
