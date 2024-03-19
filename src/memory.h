@@ -130,8 +130,10 @@ struct ExtMemory
 ***************************************************************************/
 
 /* ----- macros for declaring the various common memory/port handlers ----- */
-#define READ_HANDLER(name) 		data8_t  name(UNUSEDARG offs_t offset)
+#define READ_HANDLER(name)		data8_t  name(UNUSEDARG offs_t offset)
 #define WRITE_HANDLER(name) 	void     name(UNUSEDARG offs_t offset, UNUSEDARG data8_t data)
+#define READ8_HANDLER(name)		data8_t  name(UNUSEDARG offs_t offset)
+#define WRITE8_HANDLER(name) 	void     name(UNUSEDARG offs_t offset, UNUSEDARG data8_t data)
 #define READ16_HANDLER(name)	data16_t name(UNUSEDARG offs_t offset, UNUSEDARG data16_t mem_mask)
 #define WRITE16_HANDLER(name)	void     name(UNUSEDARG offs_t offset, UNUSEDARG data16_t data, UNUSEDARG data16_t mem_mask)
 #define READ32_HANDLER(name)	data32_t name(UNUSEDARG offs_t offset, UNUSEDARG data32_t mem_mask)

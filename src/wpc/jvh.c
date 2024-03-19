@@ -624,6 +624,7 @@ static MACHINE_RESET(jvh3) {
 static MACHINE_STOP(jvh3)
 {
   if (sndlocals.timer) timer_remove(sndlocals.timer);
+  sndlocals.timer = NULL;
   sndbrd_0_exit();
 }
 

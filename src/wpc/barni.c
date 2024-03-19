@@ -355,6 +355,7 @@ static struct DACinterface     snd_dacInt = { 1, { 20 }};
 
 static MACHINE_INIT(barni) {
   memset(&locals, 0, sizeof(locals));
+  memset(&sndlocals, 0, sizeof sndlocals);
   pia_config(0, PIA_STANDARD_ORDERING, &pia[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &pia[1]);
   via_config(0, &via);
