@@ -381,7 +381,13 @@ typedef struct {
 typedef struct {
 	int sndNo;
 } PinmameSoundCommand;
-	
+
+typedef struct {
+	int nvramNo;
+	uint8_t oldStat;
+	uint8_t currStat;
+} PinmameNVRAMState;
+
 typedef struct {
 	const char* name;
 	PINMAME_KEYCODE code;
@@ -466,4 +472,7 @@ PINMAMEAPI int PinmameGetMaxSoundCommands();
 PINMAMEAPI int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands);
 PINMAMEAPI int PinmameGetDIP(const int dipBank);
 PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value);
+PINMAMEAPI int PinmameGetMaxNVRAM();
+PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
+PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI void PinmameSetUserData(const void* p_userData);

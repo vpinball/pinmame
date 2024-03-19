@@ -6,6 +6,7 @@
 
 #include <thread>
 #include <vector>
+#include <algorithm>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define strcasecmp _stricmp
@@ -46,6 +47,10 @@ PinmameMechInfo _mechInfo[MECH_MAXMECH];
 
 PinmameAudioInfo _audioInfo;
 float _audioData[PINMAME_ACCUMULATOR_SAMPLES * 2];
+
+int _nvramInit = 0;
+uint8_t _nvram[CORE_MAXNVRAM];
+PinmameNVRAMState _nvramState[CORE_MAXNVRAM];
 
 typedef struct {
 	PinmameDisplayLayout layout;
@@ -1298,6 +1303,94 @@ PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value)
 		return;
 
 	vp_setDIP(dipBank, value);
+}
+
+/******************************************************
+ * PinmameGetMaxNVRAM
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetMaxNVRAM()
+{
+	return CORE_MAXNVRAM;
+}
+
+/******************************************************
+ * PinmameGetNVRAM
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates)
+{
+	if (!_isRunning)
+		return -1;
+
+	if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
+		return -1;
+
+	mame_file* nvram_file = (mame_file*)malloc(sizeof(mame_file));
+	memset(nvram_file, 0, sizeof(mame_file));
+	nvram_file->type = RAM_FILE;
+	(*Machine->drv->nvram_handler)(nvram_file, 1);
+
+	if (nvram_file->offset == 0) {
+		mame_fclose(nvram_file);
+		return -1;
+	}
+
+	int size = std::min((int)nvram_file->offset, (int)CORE_MAXNVRAM);
+	for (int i = 0; i < size; ++i) {
+		p_nvramStates[i].nvramNo = i;
+		p_nvramStates[i].currStat = nvram_file->data[i];
+		p_nvramStates[i].oldStat = 0;
+	}
+
+	return size;
+}
+
+/******************************************************
+ * PinmameGetChangedNVRAM
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
+{
+	if (!_isRunning)
+		return -1;
+
+	if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
+		return -1;
+
+	mame_file* nvram_file = (mame_file*)malloc(sizeof(mame_file));
+	memset(nvram_file, 0, sizeof(mame_file));
+	nvram_file->type = RAM_FILE;
+	(*Machine->drv->nvram_handler)(nvram_file, 1);
+
+	if (nvram_file->offset == 0) {
+		mame_fclose(nvram_file);
+		return -1;
+	}
+
+	int count = 0;
+	int size = std::min((int)nvram_file->offset, (int)CORE_MAXNVRAM);
+
+	if (_nvramInit == 0) {
+		memcpy(_nvram, nvram_file->data, size);
+		_nvramInit = 1;
+	}
+	else {
+		for (int i = 0; i < size; ++i) {
+			if (_nvram[i] != nvram_file->data[i]) {
+				p_nvramStates[count].nvramNo = i;
+				p_nvramStates[count].currStat = nvram_file->data[i];
+				p_nvramStates[count].oldStat = _nvram[i];
+				count++;
+
+				_nvram[i] = nvram_file->data[i];
+			}
+		}
+	}
+
+	mame_fclose(nvram_file);
+
+	return count;
 }
 
 /******************************************************
