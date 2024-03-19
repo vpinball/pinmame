@@ -623,7 +623,7 @@ static MACHINE_RESET(jvh3) {
 
 static MACHINE_STOP(jvh3)
 {
-  if (!sndlocals.timer) timer_remove(sndlocals.timer);
+  if (sndlocals.timer) timer_remove(sndlocals.timer);
   sndbrd_0_exit();
 }
 
@@ -837,9 +837,9 @@ MACHINE_DRIVER_START(jvh3)
   MDRV_CPU_ADD_TAG("scpu", M6809, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem3, snd_writemem3)
+  MDRV_SOUND_ADD(DISCRETE, discInt)
   MDRV_SOUND_ADD(YM2203, ym2203_interface)
   MDRV_SOUND_ADD(YM3812, ym3812_interface)
-  MDRV_SOUND_ADD(DISCRETE, discInt)
 
   MDRV_CPU_ADD_TAG("scpu2", M6809, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)

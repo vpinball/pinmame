@@ -2221,7 +2221,7 @@ void YM2203ResetChip(int num)
 	FM_STATUS_RESET(&OPN->ST, 0xff);
 
 	reset_channels( &OPN->ST , FM2203[num].CH , 3 );
-	/* reset Operator paramater */
+	/* reset Operator parameter */
 	for(i = 0xb2 ; i >= 0x30 ; i-- ) OPNWriteReg(OPN,i,0);
 	for(i = 0x26 ; i >= 0x20 ; i-- ) OPNWriteReg(OPN,i,0);
 }
