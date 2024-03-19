@@ -1,17 +1,17 @@
 /************************************************************************
 
-	ST register functions
+    ST register functions
 
 ************************************************************************/
 
 /*
-	remember that the OP ST bit is maintained in lastparity
+    remember that the OP ST bit is maintained in lastparity
 */
 
 /*
-	setstat sets the ST_OP bit according to lastparity
+    setstat sets the ST_OP bit according to lastparity
 
-	It must be called before reading the ST register.
+    It must be called before reading the ST register.
 */
 
 static void setstat(void)
@@ -34,13 +34,13 @@ static void setstat(void)
 }
 
 /*
-	getstat sets emulator's lastparity variable according to 9900's STATUS bits.
-	It must be called on interrupt return, or when, for some reason,
-	the emulated program sets the STATUS register directly.
+    getstat sets emulator's lastparity variable according to 9900's STATUS bits.
+    It must be called on interrupt return, or when, for some reason,
+    the emulated program sets the STATUS register directly.
 */
 static void getstat(void)
 {
-#if TMS99XX_MODEL <= TMS9985_ID
+#if (USE_ST_MASK)
 	I.STATUS &= ST_MASK;  /* unused bits are forced to 0 */
 #endif
 
@@ -48,23 +48,27 @@ static void getstat(void)
 		lastparity = 1;
 	else
 		lastparity = 0;
+
+#if HAS_MAPPING
+	I.cur_map = (I.STATUS & ST_MF) ? 1 : 0;
+#endif
 }
 
 /*
-	A few words about the following functions.
+    A few words about the following functions.
 
-	A big portability issue is the behavior of the ">>" instruction with the sign bit, which has
-	not been normalised.  Every compiler does whatever it thinks smartest.
-	My code assumed that when shifting right signed numbers, the operand is left-filled with a
-	copy of sign bit, and that when shifting unsigned variables, it is left-filled with 0s.
-	This is probably the most logical behaviour, and it is the behavior of CW PRO3 - most time
-	(the exception is that ">>=" instructions always copy the sign bit (!)).  But some compilers
-	are bound to disagree.
+    A big portability issue is the behavior of the ">>" instruction with the sign bit, which has
+    not been normalised.  Every compiler does whatever it thinks smartest.
+    My code assumed that when shifting right signed numbers, the operand is left-filled with a
+    copy of sign bit, and that when shifting unsigned variables, it is left-filled with 0s.
+    This is probably the most logical behaviour, and it is the behavior of CW PRO3 - most time
+    (the exception is that ">>=" instructions always copy the sign bit (!)).  But some compilers
+    are bound to disagree.
 
-	So, I had to create special functions with predefined tables included, so that this code work
-	on every compiler.  BUT this is a real slow-down.
-	So, you might have to include a few lines in assembly to make this work better.
-	Sorry about this, this problem is really unpleasant and absurd, but it is not my fault.
+    So, I had to create special functions with predefined tables included, so that this code work
+    on every compiler.  BUT this is a real slow-down.
+    So, you might have to include a few lines in assembly to make this work better.
+    Sorry about this, this problem is really unpleasant and absurd, but it is not my fault.
 */
 
 
@@ -128,7 +132,7 @@ INLINE INT16 arithmetic_right_shift(INT16 val, int c)
 
 
 /*
-	Set lae
+    Set lae
 */
 INLINE void setst_lae(INT16 val)
 {
@@ -144,7 +148,7 @@ INLINE void setst_lae(INT16 val)
 
 
 /*
-	Set laep (BYTE)
+    Set laep (BYTE)
 */
 INLINE void setst_byte_laep(INT8 val)
 {
@@ -161,7 +165,7 @@ INLINE void setst_byte_laep(INT8 val)
 }
 
 /*
-	For COC, CZC, and TB
+    For COC, CZC, and TB
 */
 INLINE void setst_e(UINT16 val, UINT16 to)
 {
@@ -172,7 +176,7 @@ INLINE void setst_e(UINT16 val, UINT16 to)
 }
 
 /*
-	For CI, C, CB
+    For CI, C, CB
 */
 INLINE void setst_c_lae(UINT16 to, UINT16 val)
 {
@@ -189,207 +193,8 @@ INLINE void setst_c_lae(UINT16 to, UINT16 val)
 	}
 }
 
-#define wadd(addr,expr) { int lval = setst_add_laeco(readword(addr), (expr)); writeword((addr),lval); }
-#define wsub(addr,expr) { int lval = setst_sub_laeco(readword(addr), (expr)); writeword((addr),lval); }
-
-#if defined(__POWERPC__) && !defined(__GNUC__)
-
-// setst_add_32_laeco :
-// - computes a+b
-// - sets L, A, E, Carry and Overflow in st
-//
-// a -> r3, b -> r4, st -> r5
-// preserve r6-r12
-
-static INT32 asm setst_add_32_laeco(register INT32 a, register INT32 b, register INT16 st)
-{
-#if (TMS99XX_MODEL == TMS9940_ID)
-  mr r6,a           // save operand
-#endif
-  addco. r3, b, a   // add, set CR0, and set CA and OV
-  clrlwi st, st, 21 // clear L, A, E, C, O flags (-> keep bits 21-31)
-  mcrxr cr1         // move XER (-> CA and CO bits) to CR1
-
-  beq- null_result  // if EQ is set, jump to null_result.  No jump is more likely than a jump.
-  bgt+ positive_result  // if GT is set, jump to positive_result.  A jump is more likely than no jump.
-  ori st, st, ST_LGT    // if result < 0, set ST_LGT
-  b next    // now set carry & overflow as needed
-
-null_result:
-  ori st, st, ST_EQ // if result == 0, set ST_EQ
-  b next
-
-positive_result:
-  ori st, st, ST_LGT | ST_AGT   // if result > 0, set ST_LGT and ST_AGT
-
-next:
-#if (TMS99XX_MODEL == TMS9940_ID)
-  andi. st, st, (~ ST_DC) & 0xFFFF
-
-  or r7,r6,b
-  and r6,r6,b
-  andc r7,r7,r3
-  or r6,r7,r6
-  andis. r6,r6,0x0800
-  beq+ nodecimalcarry
-  ori st, st, ST_DC
-nodecimalcarry:
-#endif
-
-  bf+ cr1*4+2, nocarry  // if CA is not set, jump to nocarry.  A jump is more likely than no jump.
-  ori st, st, ST_C  // else set ST_C
-nocarry:
-  bflr+ cr1*4+1     // if OV is not set, return.  A jump is more likely than no jump.
-  ori st, st, ST_OV // else set ST_OV
-  blr   // return
-}
-
-// setst_sub_32_laeco :
-// - computes a-b
-// - sets L, A, E, Carry and Overflow in ST
-//
-// a -> r3, b -> r4, st -> r5
-// preserve r6-r12
-
-static INT32 asm setst_sub_32_laeco(register INT32 a, register INT32 b, register INT16 st)
-{
-#if (TMS99XX_MODEL == TMS9940_ID)
-  mr r6,a           // save operand
-#endif
-  subco. r3, a, b   // sub, set CR0, and set CA and OV
-  clrlwi st, st, 21 // clear L, A, E, C, O flags (-> keep bits 21-31)
-  mcrxr cr1         // move XER (-> CA and CO bits) to CR1
-
-  beq- null_result  // if EQ is set, jump to null_result.  No jump is more likely than a jump.
-  bgt+ positive_result  // if GT is set, jump to positive_result.  A jump is more likely than no jump.
-  ori st, st, ST_LGT    // if result < 0, set ST_LGT
-  b next    // now set carry & overflow as needed
-
-null_result:
-  ori st, st, ST_EQ // if result == 0, set ST_EQ
-  b next
-
-positive_result:
-  ori st, st, ST_LGT | ST_AGT   // if result > 0, set ST_LGT and ST_AGT
-
-next:
-#if (TMS99XX_MODEL == TMS9940_ID)
-  andi. st, st, (~ ST_DC) & 0xFFFF
-
-  orc r7,r6,b
-  andc r6,r6,b
-  andc r7,r7,r3
-  or r6,r7,r6
-  andis. r6,r6,0x0800
-  beq- nodecimalcarry
-  ori st, st, ST_DC
-nodecimalcarry:
-#endif
-
-  bf- cr1*4+2, nocarry  // if CA is not set, jump to nocarry.  No jump is more likely than a jump.
-  ori st, st, ST_C  // else set ST_C
-nocarry:
-  bflr+ cr1*4+1     // if OV is not set, return.  A jump is more likely than no jump.
-  ori st, st, ST_OV // else set ST_OV
-  blr   // return
-}
-
-//
-// Set laeco for add
-//
-static INT16 asm setst_add_laeco(register INT16 a, register INT16 b)
-{ // a -> r3, b -> r4
-  lwz r6, I(RTOC)   // load pointer to I
-
-  slwi a, a, 16     // shift a
-  slwi b, b, 16     // shift b
-
-  lhz r5, 4(r6)     // load ST
-
-  mflr r12  // save LR (we KNOW setst_add_32_laeco will not alter this register)
-
-  bl setst_add_32_laeco // perform addition and set flags
-
-  mtlr r12  // restore LR
-  srwi r3, r3, 16   // shift back result
-  sth r5, 4(r6)     // save new ST
-  blr       // and return
-}
-
-//
-//  Set laeco for subtract
-//
-static INT16 asm setst_sub_laeco(register INT16 a, register INT16 b)
-{
-  lwz r6, I(RTOC)
-
-  slwi a, a, 16
-  slwi b, b, 16
-
-  lhz r5, 4(r6)
-
-  mflr r12
-
-  bl setst_sub_32_laeco // perform substraction and set flags
-
-  mtlr r12
-  srwi r3, r3, 16
-  sth r5, 4(r6)
-  blr
-}
-
-//
-// Set laecop for add (BYTE)
-//
-static INT8 asm setst_addbyte_laecop(register INT8 a, register INT8 b)
-{ // a -> r3, b -> r4
-  lwz r6, I(RTOC)   // load pointer to I
-
-  slwi a, a, 24     // shift a
-  slwi b, b, 24     // shift b
-
-  lhz r5, 4(r6)     // load ST
-
-  mflr r12  // save LR (we KNOW setst_add_32_laeco will not alter this register)
-
-  bl setst_add_32_laeco // perform addition and set flags
-
-  srwi r3, r3, 24   // shift back result
-  mtlr r12  // restore LR
-  sth r5, 4(r6)     // save new ST
-  stb r3, lastparity(RTOC)  // copy result to lastparity
-  blr       // and return
-}
-
-//
-// Set laecop for subtract (BYTE)
-//
-static INT8 asm setst_subbyte_laecop(register INT8 a, register INT8 b)
-{ // a -> r3, b -> r4
-  lwz r6, I(RTOC)
-
-  slwi a, a, 24
-  slwi b, b, 24
-
-  lhz r5, 4(r6)
-
-  mflr r12
-
-  bl setst_sub_32_laeco // perform substraction and set flags
-
-  srwi r3, r3, 24
-  mtlr r12
-  sth r5, 4(r6)
-  stb r3, lastparity(RTOC)
-  blr
-}
-
-#else
-
-/* Could do with some equivalent functions for non power PC's */
-
 /*
-	Set laeco for add
+    Set laeco for add
 */
 INLINE INT16 setst_add_laeco(int a, int b)
 {
@@ -406,7 +211,7 @@ INLINE INT16 setst_add_laeco(int a, int b)
 	if ((res ^ b) & (res ^ a) & 0x8000)
 		I.STATUS |= ST_OV;
 
-#if (TMS99XX_MODEL == TMS9940_ID)
+#if (TMS99XX_MODEL == TMS9940_ID) || (TMS99XX_MODEL == TMS9985_ID)
 	if (((a & b) | ((a | b) & ~ res)) & 0x0800)
 		I.STATUS |= ST_DC;
 #endif
@@ -425,7 +230,7 @@ INLINE INT16 setst_add_laeco(int a, int b)
 
 
 /*
-	Set laeco for subtract
+    Set laeco for subtract
 */
 INLINE INT16 setst_sub_laeco(int a, int b)
 {
@@ -442,7 +247,7 @@ INLINE INT16 setst_sub_laeco(int a, int b)
 	if ((a ^ b) & (a ^ res) & 0x8000)
 		I.STATUS |= ST_OV;
 
-#if (TMS99XX_MODEL == TMS9940_ID)
+#if (TMS99XX_MODEL == TMS9940_ID) || (TMS99XX_MODEL == TMS9985_ID)
 	if (((a & ~ b) | ((a | ~ b) & ~ res)) & 0x0800)
 		I.STATUS |= ST_DC;
 #endif
@@ -461,7 +266,7 @@ INLINE INT16 setst_sub_laeco(int a, int b)
 
 
 /*
-	Set laecop for add (BYTE)
+    Set laecop for add (BYTE)
 */
 INLINE INT8 setst_addbyte_laecop(int a, int b)
 {
@@ -478,7 +283,7 @@ INLINE INT8 setst_addbyte_laecop(int a, int b)
 	if ((res ^ b) & (res ^ a) & 0x80)
 		I.STATUS |= ST_OV;
 
-#if (TMS99XX_MODEL == TMS9940_ID)
+#if (TMS99XX_MODEL == TMS9940_ID) || (TMS99XX_MODEL == TMS9985_ID)
 	if (((a & b) | ((a | b) & ~ res)) & 0x08)
 		I.STATUS |= ST_DC;
 #endif
@@ -499,7 +304,7 @@ INLINE INT8 setst_addbyte_laecop(int a, int b)
 
 
 /*
-	Set laecop for subtract (BYTE)
+    Set laecop for subtract (BYTE)
 */
 INLINE INT8 setst_subbyte_laecop(int a, int b)
 {
@@ -516,7 +321,7 @@ INLINE INT8 setst_subbyte_laecop(int a, int b)
 	if ((a ^ b) & (a ^ res) & 0x80)
 		I.STATUS |= ST_OV;
 
-#if (TMS99XX_MODEL == TMS9940_ID)
+#if (TMS99XX_MODEL == TMS9940_ID) || (TMS99XX_MODEL == TMS9985_ID)
 	if (((a & ~ b) | ((a | ~ b) & ~ res)) & 0x08)
 		I.STATUS |= ST_DC;
 #endif
@@ -535,12 +340,10 @@ INLINE INT8 setst_subbyte_laecop(int a, int b)
 	return res2;
 }
 
-#endif
-
 
 
 /*
-	For NEG
+    For NEG
 */
 INLINE void setst_laeo(INT16 val)
 {
@@ -561,7 +364,7 @@ INLINE void setst_laeo(INT16 val)
 
 
 /*
-	Meat of SRA
+    Meat of SRA
 */
 INLINE UINT16 setst_sra_laec(INT16 a, UINT16 c)
 {
@@ -587,7 +390,7 @@ INLINE UINT16 setst_sra_laec(INT16 a, UINT16 c)
 
 
 /*
-	Meat of SRL.  Same algorithm as SRA, except that we fills in with 0s.
+    Meat of SRL.  Same algorithm as SRA, except that we fills in with 0s.
 */
 INLINE UINT16 setst_srl_laec(UINT16 a,UINT16 c)
 {
@@ -647,8 +450,8 @@ INLINE UINT16 setst_sla_laeco(UINT16 a, UINT16 c)
 	if (c != 0)
 	{
 		{
-			register UINT16 mask;
-			register UINT16 ousted_bits;
+			UINT16 mask;
+			UINT16 ousted_bits;
 
 			mask = 0xFFFF << (16-c-1);
 			ousted_bits = a & mask;
