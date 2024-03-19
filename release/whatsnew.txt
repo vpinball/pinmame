@@ -115,6 +115,7 @@ WMS:  Black Knight 2000: redumped LG-1 (German) version, startup text is no long
       The Shadow: Fix checksum of LH-6 with wrong text index patch
 
 Clones:
+Airborne Avenger (Free Play)
 Ali (7-digit conversion Free Play rev. 76)
 Bad Girls (alternate set)
 Baywatch 3.00 (German)
