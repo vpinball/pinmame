@@ -71,6 +71,13 @@ ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb
 ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,0)
 
+INITGAME1(atarianf, atari_disp1, FLIP_SWNO(36,37), 1, 0)
+ATARI_2_ROMSTART(atarianf,	"atarian.e0",  CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b),
+							"atarianf.e00",CRC(d9ec801c) SHA1(cf28c72e61f5940807ef34ca7a1910bd7743c47f))
+ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
+ATARI_ROMEND
+CORE_CLONEDEFNV(atarianf,atarians,"Atarians, The (Free Play)",1976,"Atari",gl_mATARI0,0)
+
 /*-------------------------------------------------------------------
 / Time 2000 (06/1977)
 /-------------------------------------------------------------------*/
