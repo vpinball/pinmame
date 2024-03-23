@@ -111,6 +111,7 @@ DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using old Stern hardware
 DRIVERNV(atarians)      //Atarians, The (November 1976)
 DRIVERNV(atarianf)      //Atarians, The (November 1976) (Free Play)
 DRIVERNV(time2000)      //Time 2000 (June 1977)
+DRIVERNV(tim2000f)      //Time 2000 (June 1977/March 2024) (Free Play)
 DRIVERNV(aavenger)      //Airborne Avenger (September 1977)
 DRIVERNV(aavengef)      //Airborne Avenger (September 1977/March 2024) (Free Play)
 DRIVERNV(midearth)      //Middle Earth (February 1978)

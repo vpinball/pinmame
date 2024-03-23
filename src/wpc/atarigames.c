@@ -88,6 +88,13 @@ ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb
 ATARI_ROMEND
 CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,0)
 
+INITGAME1(tim2000f, atari_disp1, FLIPSW1920, 1, 0)
+ATARI_2_ROMSTART(tim2000f,	"time.e0",  CRC(1e79c133) SHA1(54ce5d59a00334fcec8b12c077d70e3629549af0),
+							"timef.e00",CRC(01690a0a) SHA1(73c1ebab70437b62fa708b99c9d4e418bad92b4f))
+ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
+ATARI_ROMEND
+CORE_CLONEDEFNV(tim2000f,time2000,"Time 2000 (Free Play)",1977,"Atari",gl_mATARI1,0)
+
 /*-------------------------------------------------------------------
 / Airborne Avenger (09/1977)
 /-------------------------------------------------------------------*/
