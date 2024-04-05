@@ -378,6 +378,11 @@ DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3
                "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
                "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
+WPC_ROMSTART(ss,11,"Scared Stiff_11gamerom.bin",0x80000,CRC(210615f4) SHA1(8f376c68d072f9b276d45452133107cdd0a3ea68))
+DCS_SOUNDROM3m("Scared Stiff_10_s2.bin",CRC(964974f1) SHA1(9b86d4c192eadbad85cf7676c74feed08b680581),
+               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3), // was dumped as Scared Stiff_10_s3.bin with the 1.1 game rom and 1.0 S2 rom
+               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568)) // was dumped as Scared Stiff_10_s4.bin with the 1.1 game rom and 1.0 S2 rom
+WPC_ROMEND
 WPC_ROMSTART(ss,03,"ss_g11.0_3",0x80000,CRC(5b9755d6) SHA1(207d9ea858c76c4991747b401dc83183c1ddf7e4))
 DCS_SOUNDROM3m("sssnd_s2.22",CRC(12b92d7a) SHA1(69151ffb5d2befe28e1ed2c8153c2227552b681c),
                "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
@@ -386,13 +391,13 @@ WPC_ROMEND
 
 // The manual mentions a Sound Rev. D.41 for game D.01R, but we got a 0.25 dump
 WPC_ROMSTART(ss,01,"ss_g11.rom",0x80000,CRC(affd278f) SHA1(e6f41da169fa15c25cfaac22057f3e491da18fc5))
-DCS_SOUNDROM3m("ss_s2.rom",CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
+DCS_SOUNDROM3m("ss_s2.rom",  CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
                "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
                "sssnd_s4.21",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 
 WPC_ROMSTART(ss,01b,"ss_g11b.rom",0x80000,CRC(52b96952) SHA1(26ad686e178b2ba5c0a0650db4a9ffa4e615caf1))
-DCS_SOUNDROM3m("ss_s2.rom",CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
+DCS_SOUNDROM3m("ss_s2.rom",  CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
                "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
                "sssnd_s4.21",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
@@ -403,6 +408,7 @@ WPC_ROMEND
 CORE_GAMEDEF(ss,15,"Scared Stiff (1.5)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,14,15,"Scared Stiff (1.4)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,12,15,"Scared Stiff (1.2)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,11,15,"Scared Stiff (1.1)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,03,15,"Scared Stiff (0.3 Prototype)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,01,15,"Scared Stiff (D.01R Prototype, Sound 0.25)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D.01R Prototype Coin Play, Sound 0.25)",1996,"Bally",wpc_m95S,0)
