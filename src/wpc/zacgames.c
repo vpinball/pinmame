@@ -222,6 +222,12 @@ ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61
 ZAC_ROMEND
 CORE_GAMEDEFNV(socrking,"Soccer Kings",1982,"Zaccaria",mZAC2A,0)
 
+/*
+This ROM does not work correctly. The symptom is that the upper playfield ball ejector will
+release two balls whenever the Extra Kicks counter is greater than 1.
+This appears to be a software error in this ROM. Multiple people have
+dumped images of ROM3 with the same checksum and the same symptoms.
+*/
 INITGAME(socrkina,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
 ZAC_ROMSTART000(socrkina,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
 							"soccer.ic2",CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
@@ -231,12 +237,12 @@ ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61
 							"sound3.f",  CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
 							"sound4.g",  CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
 ZAC_ROMEND
-CORE_CLONEDEFNV(socrkina,socrking,"Soccer Kings (alternate set)",1982,"Zaccaria",mZAC2A,0)
+CORE_CLONEDEFNV(socrkina,socrking,"Soccer Kings (alternate set / upper playfield bug)",1982,"Zaccaria",mZAC2A,0)
 
 INITGAME(socrkngi,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
-ZAC_ROMSTART000(socrkngi,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
-							"soccer.ic2",CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
-							"soccer.ic3",CRC(72caac2c) SHA1(7d63e0cf699365ee1787004d6155646e715b672e))
+ZAC_ROMSTART000(socrkngi,	"soccer.ic1", CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
+							"soccer.ic2", CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
+							"soccer.ic3", CRC(72caac2c) SHA1(7d63e0cf699365ee1787004d6155646e715b672e))
 ZAC_SOUNDROM_cefg1(			"sking_it.1c",CRC(2965643f) SHA1(06de48e7afe1004ad27b805ab4b5111ef5db4380),
 							"sking_it.1e",CRC(f70ae48f) SHA1(c7aec7b54ae298d833f79f041dd9b08ec3e0ccb4),
 							"sking_it.1f",CRC(1b817503) SHA1(6efbb2c5cfeb5286d82155a4b506a2c347aebad8),
@@ -257,8 +263,8 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(socrkngg,socrking,"Soccer Kings (German Speech)",1982,"Zaccaria",mZAC2A,0)
 
 INITGAME(sockfp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
-ZAC_ROMSTART1820(sockfp,	"socfp.ic1",CRC(8053055b) SHA1(5fce1179605337da767f1f26563a564f77a39cf6),
-							"socfp.ic2",CRC(da22663a) SHA1(ceeb1593a91e5f8476ad11cf7998c7d239772034))
+ZAC_ROMSTART1820(sockfp,	"socfp.ic1", CRC(8053055b) SHA1(5fce1179605337da767f1f26563a564f77a39cf6),
+							"socfp.ic2", CRC(da22663a) SHA1(ceeb1593a91e5f8476ad11cf7998c7d239772034))
 ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
 							"sound2.e",  CRC(f9b57fd6) SHA1(50e42ed349680211eedf55ae639dbae899f3c6da),
 							"sound3.f",  CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
@@ -267,8 +273,8 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(sockfp,socrking,"Soccer Kings (Free Play)",1982,"Zaccaria",mZAC2A,0)
 
 INITGAME(sockifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
-ZAC_ROMSTART1820(sockifp,	"socfp.ic1",CRC(8053055b) SHA1(5fce1179605337da767f1f26563a564f77a39cf6),
-							"socfp.ic2",CRC(da22663a) SHA1(ceeb1593a91e5f8476ad11cf7998c7d239772034))
+ZAC_ROMSTART1820(sockifp,	"socfp.ic1",  CRC(8053055b) SHA1(5fce1179605337da767f1f26563a564f77a39cf6),
+							"socfp.ic2",  CRC(da22663a) SHA1(ceeb1593a91e5f8476ad11cf7998c7d239772034))
 ZAC_SOUNDROM_cefg1(			"sking_it.1c",CRC(2965643f) SHA1(06de48e7afe1004ad27b805ab4b5111ef5db4380),
 							"sking_it.1e",CRC(f70ae48f) SHA1(c7aec7b54ae298d833f79f041dd9b08ec3e0ccb4),
 							"sking_it.1f",CRC(1b817503) SHA1(6efbb2c5cfeb5286d82155a4b506a2c347aebad8),
@@ -277,8 +283,8 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(sockifp,socrking,"Soccer Kings (Italian Speech, Free Play)",1982,"Zaccaria",mZAC2A,0)
 
 INITGAME(sockgfp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
-ZAC_ROMSTART1820(sockgfp,	"socfp.ic1",CRC(8053055b) SHA1(5fce1179605337da767f1f26563a564f77a39cf6),
-							"socfp.ic2",CRC(da22663a) SHA1(ceeb1593a91e5f8476ad11cf7998c7d239772034))
+ZAC_ROMSTART1820(sockgfp,	"socfp.ic1", CRC(8053055b) SHA1(5fce1179605337da767f1f26563a564f77a39cf6),
+							"socfp.ic2", CRC(da22663a) SHA1(ceeb1593a91e5f8476ad11cf7998c7d239772034))
 ZAC_SOUNDROM_cefgh(			"sk-de1.c",  CRC(702e3e67) SHA1(ad4c02ef480d3923eebaedb12851018146740558),
 							"sk-de2.e",  CRC(b60eddb5) SHA1(7e335315d0b91fc67888cda644dabafdef1afa19),
 							"sk-de3.f",  CRC(2f72a94e) SHA1(912ef1e2878b61edff88e5cc1ec19d1b22d44f2d),
@@ -286,6 +292,8 @@ ZAC_SOUNDROM_cefgh(			"sk-de1.c",  CRC(702e3e67) SHA1(ad4c02ef480d3923eebaedb128
 							"sk-de5.h",  CRC(c6f0302d) SHA1(c57d36f3bc3a7e3a056b930b8e11b4cee4af0558))
 ZAC_ROMEND
 CORE_CLONEDEFNV(sockgfp,socrking,"Soccer Kings (German Speech, Free Play)",1982,"Zaccaria",mZAC2A,0)
+
+// French Speech missing
 
 /*--------------------------------
 / Pinball Champ (04/83)
