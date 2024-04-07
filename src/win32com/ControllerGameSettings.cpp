@@ -1,5 +1,6 @@
 // Settings.cpp : Implementation of CGameSettings
 #include "StdAfx.h"
+#include <osdepend.h>　
 #include "VPinMAME.h"
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
@@ -195,6 +196,8 @@ private:
 		IGameSettings *pGameSettings;
 		m_pGame->get_Settings((IGameSettings**) &pGameSettings);
 
+		pGameSettings->put_Value(CComBSTR("volume"), CComVariant(osd_get_mastervolume())); // a bit hacky way to store the mastervolume from in here :/
+
 		pGameSettings->put_Value(CComBSTR("cheat"), CComVariant((BOOL) IsDlgButtonChecked(IDC_USECHEAT)));
 		pGameSettings->put_Value(CComBSTR("sound"), CComVariant((BOOL) IsDlgButtonChecked(IDC_USESOUND)));
 		pGameSettings->put_Value(CComBSTR("samples"), CComVariant((BOOL) IsDlgButtonChecked(IDC_USESAMPLES)));
@@ -204,7 +207,7 @@ private:
 		pGameSettings->put_Value(CComBSTR("samplerate"), CComVariant((int) GetDlgItemInt(IDC_SAMPLERATE,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE)));
 
-		pGameSettings->put_Value(CComBSTR("force_stereo"), CComVariant((BOOL)IsDlgButtonChecked(IDC_MONOTOSTEREO)));
+		pGameSettings->put_Value(CComBSTR("force_stereo"), CComVariant((BOOL) IsDlgButtonChecked(IDC_MONOTOSTEREO)));
 
 		pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant((BOOL) IsDlgButtonChecked(IDC_PINDMD)));
 		pGameSettings->put_Value(CComBSTR("showwindmd"), CComVariant((BOOL) IsDlgButtonChecked(IDC_WINDMD)));
@@ -234,7 +237,7 @@ private:
 
 		pGameSettings->put_Value(CComBSTR("dmd_opacity"), CComVariant((int) GetDlgItemInt(IDC_DMDOPACITY,NULL,TRUE)));
 
-		pGameSettings->put_Value(CComBSTR("resampling_quality"), CComVariant((int)GetDlgItemInt(IDC_RESAMPLEQ, NULL, TRUE)));
+		pGameSettings->put_Value(CComBSTR("resampling_quality"), CComVariant((int) GetDlgItemInt(IDC_RESAMPLEQ,NULL,TRUE)));
 
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 		pGameSettings->put_Value(CComBSTR("sound_mode"), CComVariant((int) GetDlgItemInt(IDC_SOUNDMODE,NULL,TRUE)));
@@ -473,6 +476,16 @@ private:
 			// emulation is running?
 			if ( IsEmulationRunning() )
 				MessageBox("Your changes will not take effect until you restart Visual PinMAME!","Notice!",MB_OK | MB_ICONINFORMATION);
+		}
+		else // a bit hacky way to store the mastervolume from in here :/
+		{
+			// Get a Settings object for the game specific settings
+			IGameSettings *pGameSettings;
+			m_pGame->get_Settings((IGameSettings**) &pGameSettings);
+
+			pGameSettings->put_Value(CComBSTR("volume"), CComVariant(osd_get_mastervolume()));
+
+			pGameSettings->Release();
 		}
 
 		EndDialog(IDOK);

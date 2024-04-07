@@ -133,7 +133,7 @@ static WRITE_HANDLER(taito_sndCmd_w) {
 }
 
 static READ_HANDLER(switches_r) {
-	if ( offset==6 )
+	if (offset == 6)
 		return core_getDip(0)^0xff;
 	if (offset == 8) offset = 6;
 	return coreGlobals.swMatrix[offset+1]^0xff;
