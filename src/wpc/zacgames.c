@@ -74,6 +74,15 @@ ZAC_ROMSTART44444(wsports,	"ws1.bin",CRC(58feb058) SHA1(50216bba5be28284e63d8265
 ZAC_ROMEND
 CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,0)
 
+INITGAME1(wsportsf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311)
+ZAC_ROMSTART44444(wsportsf,	"ws1.bin", CRC(58feb058) SHA1(50216bba5be28284e63d826543297d1b6b609325),
+							"ws2.bin", CRC(ece702cb) SHA1(84cf0976b33bd7cf25976de9c66cc85808f1cd50),
+							"ws3f.bin",CRC(77a91ec4) SHA1(fd3baeab61222f28d646288d07e37a27f6b96626),
+							"ws4f.bin",CRC(8ca5cc39) SHA1(a0b632dda06664879cde9a303ad02b980dfd4b53),
+							"ws5f.bin",CRC(98f75d95) SHA1(fc9720b922c83b65cd2e78feafa4c01f09f852d8))
+ZAC_ROMEND
+CORE_CLONEDEFNV(wsportsf,wsports,"Winter Sports (Free Play)",1978,"Zaccaria",mZAC1311,0)
+
 /*--------------------------------
 // House of Diamonds (07/78)
 /-------------------------------*/
@@ -85,6 +94,15 @@ ZAC_ROMSTART44444(hod,		"hod_1.bin",CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a
 							"hod_5.bin",CRC(81b73c40) SHA1(21b80cff132becdb028e6ee895231da635189ef4))
 ZAC_ROMEND
 CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,0)
+
+INITGAME1(hodf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311)
+ZAC_ROMSTART44444(hodf,		"hod_1.bin", CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a628cefd073f29a1),
+							"hod_2.bin", CRC(956aac25) SHA1(2a59c3589d14e36ab2c61c6fbc9e8212410a385b),
+							"hodf_3.bin",CRC(43a072c7) SHA1(e47e62a34edfdc3baf8c739adaa1d28402b3b7f2),
+							"hodf_4.bin",CRC(a478a1b7) SHA1(673a281bb344722efb4a35081de7a921ae012e14),
+							"hodf_5.bin",CRC(cd106231) SHA1(68c8085f7330093b5a63cff0b7749424a2f31fb6))
+ZAC_ROMEND
+CORE_CLONEDEFNV(hodf,hod,"House of Diamonds (Free Play)",1978,"Zaccaria",mZAC1311,0)
 
 /*--------------------------------
 / Future World (10/78)
@@ -98,6 +116,15 @@ ZAC_ROMSTART44444(futurwld,	"futwld_1.lgc",CRC(d83b8793) SHA1(3bb04d8395191ecf32
 ZAC_ROMEND
 CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC1311,0)
 
+INITGAME1(futurwldf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311)
+ZAC_ROMSTART44444(futurwldf,"futwld_1.lgc", CRC(d83b8793) SHA1(3bb04d8395191ecf324b6da0bcddcf7bd8d41867),
+							"futwld_2.lgc", CRC(bdcb7e1d) SHA1(e6c0c7e8188df87937f0b22dbb0639872e03e948),
+							"futwld_3.lgcf",CRC(5b5ce15d) SHA1(a6f6dfda9c2b9e4f6eb6be08e1485b4efe9157a0),
+							"futwld_4.lgcf",CRC(6621cdba) SHA1(c287ba6f82bfc89b2386deac786f8788afeea0a5),
+							"futwld_5.lgcf",CRC(cad36a89) SHA1(ab3733e923ff52212c342da287d6746c2e4324a1))
+ZAC_ROMEND
+CORE_CLONEDEFNV(futurwldf,futurwld,"Future World (Free Play)",1978,"Zaccaria",mZAC1311,0)
+
 /*--------------------------------
 / Shooting the Rapids (04/79)
 /-------------------------------*/
@@ -109,6 +136,15 @@ ZAC_ROMSTART44444(strapids,	"rapids_1.lgc",CRC(2a30cef3) SHA1(1af0ad08316fca565a
 							"rapids_5.lgc",CRC(0dd67110) SHA1(0c32e400ef07d7243148ae280e145a3e050313e8))
 ZAC_ROMEND
 CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
+
+INITGAME1(strapidsf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
+ZAC_ROMSTART44444(strapidsf,"rapids_1.lgc", CRC(2a30cef3) SHA1(1af0ad08316fca565a6de1d308ed0495907656e7),
+							"rapids_2.lgc", CRC(04adaa14) SHA1(7819de53cee669b7e42624cd577ed1e3b771d2a9),
+							"rapids_3.lgcf",CRC(d226ad52) SHA1(047390abdb7a5ca46429d0c331e54d84d65a2bb4),
+							"rapids_4.lgcf",CRC(59fe821a) SHA1(9eb49de32c272b6500bf8f32bdaaa937b0ac83c5),
+							"rapids_5.lgc", CRC(0dd67110) SHA1(0c32e400ef07d7243148ae280e145a3e050313e8))
+ZAC_ROMEND
+CORE_CLONEDEFNV(strapidsf,strapids,"Shooting the Rapids (Free Play)",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 /*--------------------------------
 / Hot Wheels (09/79)
@@ -122,6 +158,15 @@ ZAC_ROMSTART84444(hotwheel,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 ZAC_ROMEND
 CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
 
+INITGAME1(hotwheelf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
+ZAC_ROMSTART84444(hotwheelf,"zac_boot.lgc", CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"htwhls_2.lgc", CRC(7ff870ae) SHA1(274ee7c2cb92b6710c546058e7277f06720b5e37),
+							"htwhlsf_3.lgc",CRC(34bb6465) SHA1(306171e7dd3efb0754f17d0c7a93a65e4c5f1d9c),
+							"htwhlsf_4.lgc",CRC(0c0bded9) SHA1(20beb2c370c305f63f301f1f6cb94f7c85e3e1ee),
+							"htwhls_5.lgc", CRC(e28f3c60) SHA1(eb780be60b41017d105288cef71906d15474b8fa))
+ZAC_ROMEND
+CORE_CLONEDEFNV(hotwheelf,hotwheel,"Hot Wheels (Free Play)",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
+
 /*--------------------------------
 / Fire Mountain (01/80)
 /-------------------------------*/
@@ -133,6 +178,15 @@ ZAC_ROMSTART84444(firemntn,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"firemt_5.lgc",CRC(13f11d84) SHA1(031f43467a4a01810297e3bfe0762ed2eed4e251))
 ZAC_ROMEND
 CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
+
+INITGAME1(firemntnf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
+ZAC_ROMSTART84444(firemntnf,"zac_boot.lgc", CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"firemt_2.lgc", CRC(d146253f) SHA1(69910ddd1b7f1a0a0db689e750a0288d10e92951),
+							"firemt_3.lgcf",CRC(37c55915) SHA1(63bd8e9ead0c0403a8ed61239635760835432503),
+							"firemt_4.lgcf",CRC(24be2ce7) SHA1(ccad7784b9bd03ab28e938e67cb3f9a17d859433),
+							"firemt_5.lgc", CRC(13f11d84) SHA1(031f43467a4a01810297e3bfe0762ed2eed4e251))
+ZAC_ROMEND
+CORE_CLONEDEFNV(firemntnf,firemntn,"Fire Mountain (Free Play)",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 /*--------------------------------
 / Star God (05/80)
@@ -156,6 +210,18 @@ S67S_SOUNDROMS8(			"stargod.snd", CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028
 ZAC_ROMEND
 CORE_CLONEDEFNV(stargoda,stargod,"Star God (alternate sound)",1980,"Zaccaria",mZAC1144,0)
 
+INITGAME1(stargodaf,GEN_ZAC1,dispZAC1,SNDBRD_S67S)
+ZAC_ROMSTART84444(stargodaf,"zac_boot.lgc", CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"stargod2.lgc", CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
+							"stargod3.lgcf",CRC(2de7b203) SHA1(1cd57ef041f1dc0bbd67a4f12c0a8a7ae437d051),
+							"stargod4.lgcf",CRC(f388f1f3) SHA1(7afcbe3081f87e3741d724e5c89bef7e8fb24ee4),
+							"stargod5.lgc", CRC(43ba2462) SHA1(6749bdceca4a1dc2bc90d7ee3b671f52219e1af4))
+S67S_SOUNDROMS8(			"stargod.snd",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+ZAC_ROMEND
+CORE_CLONEDEFNV(stargodaf,stargod,"Star God (alternate sound, Free Play)",1980,"Zaccaria",mZAC1144,0)
+
+// Note by David Gersic: IC2, IC3, IC4, and IC5 in this archive are different from the
+//  widely distributed images for this game. I do not yet know why.
 INITGAME1(stargodb,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
 ZAC_ROMSTART84444(stargodb,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"stargod.ic2",CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
@@ -164,6 +230,15 @@ ZAC_ROMSTART84444(stargodb,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"stargod.ic5",CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
 ZAC_ROMEND
 CORE_CLONEDEFNV(stargodb,stargod,"Star God (alternate version)",1980,"Zaccaria",mZAC1125,0)
+
+INITGAME1(stargodbf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
+ZAC_ROMSTART84444(stargodbf,"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"stargod.ic2", CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
+							"stargod.ic3f",CRC(803ac37d) SHA1(b14b75b2456440f99781835652525f2eaafb0d6d),
+							"stargod.ic4f",CRC(1a2d29ec) SHA1(89f727518a19bd36e8529b5a4e4f3cd86327bb06),
+							"stargod.ic5", CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
+ZAC_ROMEND
+CORE_CLONEDEFNV(stargodbf,stargod,"Star God (alternate version, Free Play)",1980,"Zaccaria",mZAC1125,0)
 
 /*--------------------------------
 / Space Shuttle (09/80)
@@ -178,6 +253,16 @@ ZAC_SOUNDROM_0(				"spcshtl.snd", CRC(9a61781c) SHA1(0293640653d8cc9532debd31bbb
 ZAC_ROMEND
 CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC1346,0)
 
+INITGAME1(sshtlzacf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346)
+ZAC_ROMSTART84444(sshtlzacf,"zac_boot.lgc", CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"spcshtl2.lgc", CRC(0e06771b) SHA1(f30f3727f24219e5047c871fe81c2e172a17cd38),
+							"spcshtl3.lgcf",CRC(c205d63a) SHA1(bb680c0211a5f32427768f32c5b01d165bd3e51c),
+							"spcshtl4.lgcf",CRC(1bc18b48) SHA1(cd8edd32484d6f5767e7956f1b985c982103fd81),
+							"spcshtl5.lgc", CRC(d1dabd9b) SHA1(0d28336764f43fa4d1b23d849b6ec0f60b2b4ecf))
+ZAC_SOUNDROM_0(				"spcshtl.snd",  CRC(9a61781c) SHA1(0293640653d8cc9532debd31bbb70f025b4e6d03))
+ZAC_ROMEND
+CORE_CLONEDEFNV(sshtlzacf,sshtlzac,"Space Shuttle (Zaccaria) (Free Play)",1980,"Zaccaria",mZAC1346,0)
+
 /*--------------------------------
 / Earth, Wind & Fire (04/81)
 /-------------------------------*/
@@ -191,6 +276,26 @@ ZAC_SOUNDROM_0(			"ewf.snd",     CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c8
 ZAC_ROMEND
 CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,0)
 
+INITGAME1(ewff,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346)
+ZAC_ROMSTART84444(ewff, "zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+						"ewf_2.lgc",   CRC(aa67e0b4) SHA1(4491eff7081fd5e397974fac1156992ce2012d0b),
+						"ewf_3.lgcf",  CRC(cbc18dbc) SHA1(3134dca08abcc1d5774539ac7f3afd28589a3347),
+						"ewf_4.lgcf",  CRC(8c3b5743) SHA1(4dda94fea8b941ee43650007d33c6d3642b99090),
+						"ewf_5.lgc",   CRC(f695dab6) SHA1(48ca60718cea40baa5052f690c8d69eb7ab32b0e))
+ZAC_SOUNDROM_0(			"ewf.snd",     CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
+ZAC_ROMEND
+CORE_CLONEDEFNV(ewff,ewf,"Earth, Wind & Fire (Free Play)",1981,"Zaccaria",mZAC1346,0)
+
+INITGAME1(ewfa,GEN_ZAC1,dispZAC1,SNDBRD_S67S)
+ZAC_ROMSTART84444(ewfa, "zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+						"EWF.IC2",     CRC(2f928cc1) SHA1(c0ba4a7010245c2c7911e026c450b6d0f9eb548b),
+						"EWF.IC3",     CRC(9cb65973) SHA1(9d894ed73a18f45f57d5385ff7313ba2114c8d18),
+						"EWF.IC4",     CRC(4fa1b498) SHA1(2d15faf77a6dea061715195a5659572f5ce4128f),
+						"EWF.IC5",     CRC(da46cb6b) SHA1(8d6d0f19256fce723fc81b9aed5eebf943d7b00b))
+ZAC_SOUNDROM_0(			"ewf.snd2",    CRC(42237fe6) SHA1(fc255f179ecba6c10ffc3b2b9c573fab7e25da51))
+ZAC_ROMEND
+CORE_CLONEDEFNV(ewfa,ewf,"Earth, Wind & Fire (alternate sound)",1981,"Zaccaria",mZAC1144,0)
+
 /*--------------------------------
 / Locomotion (09/81)
 /-------------------------------*/
@@ -203,6 +308,16 @@ ZAC_ROMSTART84844(locomotn,	"loc-1.fil",  CRC(8d0252a2) SHA1(964dca642fb26eef2c1
 ZAC_SOUNDROM_0(				"loc-snd.fil",CRC(51ea9d2a) SHA1(9a68687af2c1cad2a261f61a67a625d906c502e1))
 ZAC_ROMEND
 CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1146,SOUNDFLAG)
+
+INITGAME1(locomotnf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346)
+ZAC_ROMSTART84844(locomotnf,"loc-1.fil",  CRC(8d0252a2) SHA1(964dca642fb26eef2c132eca354a0ffce32e25df),
+							"locf-2.fil", CRC(df013d01) SHA1(ae244918d4b4883a45d8d619ee74181c8fa28de7),
+							"loc-3.fil",  CRC(8cadea7b) SHA1(e712add828dd22a2b495f0479f949748db21fbf7),
+							"locf-4.fil", CRC(53804d59) SHA1(87d03f616c2e96d2490a7426be23383ab1d53bb8),
+							"locf-5.fil", CRC(44971674) SHA1(9b121bdb7f64248c9bbfccb0fb69ed6a0fa3d771))
+ZAC_SOUNDROM_0(				"loc-snd.fil",CRC(51ea9d2a) SHA1(9a68687af2c1cad2a261f61a67a625d906c502e1))
+ZAC_ROMEND
+CORE_CLONEDEFNV(locomotnf,locomotn,"Locomotion (Free Play)",1981,"Zaccaria",mZAC1146,SOUNDFLAG)
 
 // Generation 2 games below
 

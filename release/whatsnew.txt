@@ -129,15 +129,21 @@ Cue Ball Wizard (older display rev.)
 Devil's Dare (Sound & Speech alternate set)
 Diner LG-2 (German)
 Dracula (One Ball MOD)
+Earth, Wind & Fire (Free Play), (alternate sound)
 Elvira and the Party Monsters LG-3 (German) (incomplete dump)
 Elvis 1.00
 Farfalla (French Speech)
+Fire Mountain (Free Play)
 Flipper Football 1.03
 Frankenstein 1.03 (Italian)
+Future World (Free Play)
 Galaxy (7-Digit conversion, Fixes & modified rules)
 Hook 4.01 (French), 4.00 (incomplete dumps)
+Hot Wheels (Free Play)
+House of Diamonds (Free Play)
 Jungle Lord (new tricks) L2 & L3beta (MOD)
 Lightning (Free Play & MOD rev. 25)
+Locomotion (Free Play)
 Metallica 0.52
 Mexico 86 (Italian Speech)
 Middle Earth (Free Play)
@@ -149,8 +155,11 @@ Royal Flush Deluxe rev. 1
 Scared Stiff 1.1
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Shadow, The LF-4 (French)
+Shooting the Rapids (Free Play)
 Space Riders (Free Play)
+Space Shuttle (Zaccaria) (Free Play)
 Spirit (initial release) & rev. 3 (MOD)
+Star God (alternate sound, Free Play), (alternate version, Free Play)
 Striker (German Speech), (French Speech)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
@@ -163,6 +172,7 @@ Transporter the Rescue LA-1, LU-3
 Whirlwind LG-1 (German), LG-2 (German) (no U26 dumps available, seem to work with known one)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
+Winter Sports (Free Play)
 Zankor (TMS5220 Italian Speech)
 
 Removed Clones:

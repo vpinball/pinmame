@@ -3221,20 +3221,32 @@ DRIVER(tf95,12)         //WPC-648:  01/95   Test fixture WPC95
 // ------------------
                         //10/77 Combat (in all probability never produced in a SS version)
 DRIVERNV(wsports)       //01/78 Winter Sports
+DRIVERNV(wsportsf)      //      Winter Sports (Free Play)
 DRIVERNV(hod)           //07/78 House of Diamonds
+DRIVERNV(hodf)          //      House of Diamonds (Free Play)
 DRIVERNV(strike)        //09/78 Strike
 DRIVERNV(skijump)       //10/78 Ski Jump
 DRIVERNV(futurwld)      //10/78 Future World
+DRIVERNV(futurwldf)     //      Future World (Free Play)
 DRIVERNV(strapids)      //04/79 Shooting the Rapids
+DRIVERNV(strapidsf)     //      Shooting the Rapids (Free Play)
 DRIVERNV(hotwheel)      //09/79 Hot Wheels
+DRIVERNV(hotwheelf)     //      Hot Wheels (Free Play)
 DRIVERNV(spacecty)      //09/79 Space City
 DRIVERNV(firemntn)      //01/80 Fire Mountain
+DRIVERNV(firemntnf)     //      Fire Mountain (Free Play)
 DRIVERNV(stargod)       //05/80 Star God
 DRIVERNV(stargoda)      //      Star God (alternate sound)
+DRIVERNV(stargodaf)     //      Star God (alternate sound, Free Play)
 DRIVERNV(stargodb)      //      Star God (alternate version)
+DRIVERNV(stargodbf)     //      Star God (alternate version, Free Play)
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
+DRIVERNV(sshtlzacf)     //      Space Shuttle (Free Play)
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
+DRIVERNV(ewff)          //      Earth, Wind & Fire (Free Play)
+DRIVERNV(ewfa)          //      Earth, Wind & Fire (alternate sound)
 DRIVERNV(locomotn)      //09/81 Locomotion
+DRIVERNV(locomotnf)     //      Locomotion (Free Play)
                         //04/82 Pinball Champ '82 (using the same roms as the '83 version)
 DRIVERNV(socrking)      //09/82 Soccer Kings
 DRIVERNV(socrkina)      //      Soccer Kings (alternate set)
