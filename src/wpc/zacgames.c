@@ -292,7 +292,7 @@ ZAC_ROMSTART84444(ewfa, "zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fd
 						"EWF.IC3",     CRC(9cb65973) SHA1(9d894ed73a18f45f57d5385ff7313ba2114c8d18),
 						"EWF.IC4",     CRC(4fa1b498) SHA1(2d15faf77a6dea061715195a5659572f5ce4128f),
 						"EWF.IC5",     CRC(da46cb6b) SHA1(8d6d0f19256fce723fc81b9aed5eebf943d7b00b))
-ZAC_SOUNDROM_0(			"ewf.snd2",    CRC(42237fe6) SHA1(fc255f179ecba6c10ffc3b2b9c573fab7e25da51))
+S67S_SOUNDROMS8(		"ewf.snd2",    CRC(42237fe6) SHA1(fc255f179ecba6c10ffc3b2b9c573fab7e25da51))
 ZAC_ROMEND
 CORE_CLONEDEFNV(ewfa,ewf,"Earth, Wind & Fire (alternate sound)",1981,"Zaccaria",mZAC1144,0)
 
