@@ -159,7 +159,7 @@ Terminator 2 L-8.4 (MOD)
 Time 2000 (Free Play)
 Time Machine (Zaccaria, Italian Speech)
 Tommy 1.02 (Belgian), 2.01 (Dutch), 3.01 (German)
-Transporter the Rescue LA-1
+Transporter the Rescue LA-1, LU-3
 Whirlwind LG-1 (German), LG-2 (German) (no U26 dumps available, seem to work with known one)
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)

@@ -898,6 +898,16 @@ S11_ROMEND
 #define input_ports_tsptr input_ports_s11
 CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0)
 
+S11_ROMSTART48(tsptr,lu3,"tran_u26.l3", CRC(2d48a108) SHA1(d41bf077aab1201b08ea14725d4a0d841ee6b919), // dump was exactly the same as L-3
+                         "Transporter-LU3-27-ChecksumD4FC.Bin", CRC(2d864cbc) SHA1(081aec83c1c4da36af18daf627a34884cdd8a348))
+S11XS_SOUNDROM88(        "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
+                         "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
+S11CS_SOUNDROM888(       "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a95f822024a44371170),
+                         "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881), // L-2/3 features the same
+                         "tran_u20.l2", CRC(e9890cf1) SHA1(0ae37504c704401101c79ce49df11044f8d8caa9))
+S11_ROMEND
+CORE_CLONEDEF(tsptr,lu3,l3, "Transporter the Rescue (LU-3)", 1989, "Bally", s11a_one,0)
+
 S11_ROMSTART48(tsptr,l1,"Transporter-LA1-U26-ChecksumB412.bin", CRC(3504300f) SHA1(1a8b779b7375e4087e42b31c1aa17a8a32c6d6aa),
                         "Transporter-LA1-U27-Checksum01CF.bin", CRC(49635399) SHA1(8cdc700c501f0d611152010d5ae28bcd84d06861))
 S11XS_SOUNDROM88(       "Transporter-U21-ChecksumCA54.bin", CRC(2b194ca6) SHA1(20cb956143622409a7f4b918ab1699db1b6e6b07),
@@ -908,7 +918,7 @@ S11CS_SOUNDROM888(      "tran_u4.l1",  CRC(63e92f8b) SHA1(57f2841419415fc3560d46
 S11_ROMEND
 CORE_CLONEDEF(tsptr,l1,l3, "Transporter the Rescue (LA-1)", 1989, "Bally", s11a_one,0)
 
-// L-2, LU-3 also exists?!
+// L-2 also exists?!
 
 /*-----------------------
 / Bad Cats 12/89
