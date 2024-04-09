@@ -207,7 +207,7 @@ ZAC_ROMSTART84444(stargodf,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"stargod.ic4f",CRC(1a2d29ec) SHA1(89f727518a19bd36e8529b5a4e4f3cd86327bb06),
 							"stargod.ic5", CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
 ZAC_ROMEND
-CORE_CLONEDEFNV(stargodf,stargod,"Star God (Free Play)",1980,"Zaccaria",mZAC1125,0)
+CORE_CLONEDEFNV(stargodf,stargod,"Star God (Free Play)",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 INITGAME1(stargoda,GEN_ZAC1,dispZAC1,SNDBRD_S67S)
 ZAC_ROMSTART84444(stargoda,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
