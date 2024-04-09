@@ -193,12 +193,21 @@ CORE_CLONEDEFNV(firemntnf,firemntn,"Fire Mountain (Free Play)",1980,"Zaccaria",m
 /-------------------------------*/
 INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
 ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
-							"stargod2.lgc",CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
-							"stargod3.lgc",CRC(95492ac0) SHA1(992ad53efc5b53020e3939dfca5431fd50b6571c),
-							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680),
-							"stargod5.lgc",CRC(43ba2462) SHA1(6749bdceca4a1dc2bc90d7ee3b671f52219e1af4))
+							"stargod.ic2", CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
+							"stargod.ic3", CRC(e677cf0d) SHA1(6aff0275148ccc56f2ac1bf5e5bd5baed64bfa7c),
+							"stargod.ic4", CRC(fdfbb31f) SHA1(b64a529a097a7e2589ff124998160d375153d16c),
+							"stargod.ic5", CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
 ZAC_ROMEND
 CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
+
+INITGAME1(stargodf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
+ZAC_ROMSTART84444(stargodf,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"stargod.ic2", CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
+							"stargod.ic3f",CRC(803ac37d) SHA1(b14b75b2456440f99781835652525f2eaafb0d6d),
+							"stargod.ic4f",CRC(1a2d29ec) SHA1(89f727518a19bd36e8529b5a4e4f3cd86327bb06),
+							"stargod.ic5", CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
+ZAC_ROMEND
+CORE_CLONEDEFNV(stargodf,stargod,"Star God (Free Play)",1980,"Zaccaria",mZAC1125,0)
 
 INITGAME1(stargoda,GEN_ZAC1,dispZAC1,SNDBRD_S67S)
 ZAC_ROMSTART84444(stargoda,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
@@ -219,26 +228,6 @@ ZAC_ROMSTART84444(stargodaf,"zac_boot.lgc", CRC(62a3da59) SHA1(db571139aff61757f
 S67S_SOUNDROMS8(			"stargod.snd",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 ZAC_ROMEND
 CORE_CLONEDEFNV(stargodaf,stargod,"Star God (alternate sound, Free Play)",1980,"Zaccaria",mZAC1144,0)
-
-// Note by David Gersic: IC2, IC3, IC4, and IC5 in this archive are different from the
-//  widely distributed images for this game. I do not yet know why.
-INITGAME1(stargodb,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
-ZAC_ROMSTART84444(stargodb,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
-							"stargod.ic2",CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
-							"stargod.ic3",CRC(e677cf0d) SHA1(6aff0275148ccc56f2ac1bf5e5bd5baed64bfa7c),
-							"stargod.ic4",CRC(fdfbb31f) SHA1(b64a529a097a7e2589ff124998160d375153d16c),
-							"stargod.ic5",CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
-ZAC_ROMEND
-CORE_CLONEDEFNV(stargodb,stargod,"Star God (alternate version)",1980,"Zaccaria",mZAC1125,0)
-
-INITGAME1(stargodbf,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125)
-ZAC_ROMSTART84444(stargodbf,"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
-							"stargod.ic2", CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
-							"stargod.ic3f",CRC(803ac37d) SHA1(b14b75b2456440f99781835652525f2eaafb0d6d),
-							"stargod.ic4f",CRC(1a2d29ec) SHA1(89f727518a19bd36e8529b5a4e4f3cd86327bb06),
-							"stargod.ic5", CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
-ZAC_ROMEND
-CORE_CLONEDEFNV(stargodbf,stargod,"Star God (alternate version, Free Play)",1980,"Zaccaria",mZAC1125,0)
 
 /*--------------------------------
 / Space Shuttle (09/80)
@@ -292,7 +281,7 @@ ZAC_ROMSTART84444(ewfa, "zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fd
 						"EWF.IC3",     CRC(9cb65973) SHA1(9d894ed73a18f45f57d5385ff7313ba2114c8d18),
 						"EWF.IC4",     CRC(4fa1b498) SHA1(2d15faf77a6dea061715195a5659572f5ce4128f),
 						"EWF.IC5",     CRC(da46cb6b) SHA1(8d6d0f19256fce723fc81b9aed5eebf943d7b00b))
-S67S_SOUNDROMS8(		"ewf.snd2",    CRC(42237fe6) SHA1(fc255f179ecba6c10ffc3b2b9c573fab7e25da51))
+S67S_SOUNDROMS8(		"ewf.snd2",    CRC(42237fe6) SHA1(fc255f179ecba6c10ffc3b2b9c573fab7e25da51) BAD_DUMP)
 ZAC_ROMEND
 CORE_CLONEDEFNV(ewfa,ewf,"Earth, Wind & Fire (alternate sound)",1981,"Zaccaria",mZAC1144,0)
 

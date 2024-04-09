@@ -3236,10 +3236,9 @@ DRIVERNV(spacecty)      //09/79 Space City
 DRIVERNV(firemntn)      //01/80 Fire Mountain
 DRIVERNV(firemntnf)     //      Fire Mountain (Free Play)
 DRIVERNV(stargod)       //05/80 Star God
+DRIVERNV(stargodf)      //      Star God (Free Play)
 DRIVERNV(stargoda)      //      Star God (alternate sound)
 DRIVERNV(stargodaf)     //      Star God (alternate sound, Free Play)
-DRIVERNV(stargodb)      //      Star God (alternate version)
-DRIVERNV(stargodbf)     //      Star God (alternate version, Free Play)
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(sshtlzacf)     //      Space Shuttle (Free Play)
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire

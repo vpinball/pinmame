@@ -114,6 +114,7 @@ LTD:  Space Poker
 WMS:  Black Knight 2000: redumped LG-1 (German) version, startup text is no longer corrupt
       NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
       The Shadow: Fix checksum of LH-6 with wrong text index patch
+Zaccaria: Star God (correct sound ROMs)
 
 Clones:
 Airborne Avenger (Free Play)
@@ -159,7 +160,7 @@ Shooting the Rapids (Free Play)
 Space Riders (Free Play)
 Space Shuttle (Zaccaria) (Free Play)
 Spirit (initial release) & rev. 3 (MOD)
-Star God (alternate sound, Free Play), (alternate version, Free Play)
+Star God (Free Play), (alternate sound, Free Play)
 Striker (German Speech), (French Speech)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
@@ -177,6 +178,7 @@ Zankor (TMS5220 Italian Speech)
 
 Removed Clones:
 NBA Fastbreak: 3.1 with Sound S1.0 (as this was just created to be able to use S1.0, which is nowadays wired to 1.1/1.15 instead)
+Star God (alternate version) (These game ROMs are the correct ones for the main set)
 Star Trek: The Next Generation S7/DS (as these were just created to be able to use a P-1 sound rom, (for now) wired to P-4 instead)
 White Water P-1/P-2 (as these were just created to be able to use the P-1 sound roms, now wired to P-6 as found on a real machine)
 
