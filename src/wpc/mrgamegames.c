@@ -43,6 +43,29 @@ MRGAME_ROMEND
 CORE_GAMEDEFNV(dakar,"Dakar",1988,"Mr. Game (Italy)",mMRGAME1,0)
 
 /*-------------------------------------------------------------------
+/ Fast Track (198?)
+/-------------------------------------------------------------------*/
+// Prototype running on rather different video hardware and simpler green-only monitor, later-on revamped and released as Motor Show
+/*
+Via http://www.zaccaria-pinball.com/mrgame/fasttrack/roms.html :
+(fasttrack, "FT_CPU13.256", CRC(675cbef6) SHA1(0561aee09bb459a79e54a903d39ef5e5288e8368),
+            "FT_CPU14.256", CRC(57a1c42f) SHA1(fbfc7527068a1e68afa4c20d5c2650399a1ee3cd))
+(           "FT_VID1.764",  CRC(cd27e2e3) SHA1(6f20dc411e473d0d3f74fcd7f19c5b2fc0fe2747),
+            "FT_VID2.532",  CRC(5145685b) SHA1(6857be53efee5d439311ddb93e9f509590ff26c9))
+Also see http://www.zaccaria-pinball.com/mrgame/video.html (STS MG88M1), sound unknown
+
+More info:
+Just scores, etc, on the monitor?
+
+From what I remember, yes. As far as I can tell, they made only one of
+these games. Mike Pacak found it and bought it, imported it in to the
+US. He brought it to Pinball Expo, where it was "working", but not in
+good condition. From there, it went to his warehouse, where it sat
+until it was not working. He sold it to Clay Harrel, last I heard of
+it. Clay was trying to get it working, but the ROMs are bad.
+*/
+
+/*-------------------------------------------------------------------
 / Motor Show (1988?)
 /-------------------------------------------------------------------*/
 INITGAME(motrshow, mrgame_disp_g1, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
