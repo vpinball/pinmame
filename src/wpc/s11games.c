@@ -308,6 +308,14 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
+S11_ROMSTART48(pb,j3,"PEMBOT_J3_U26.bin", CRC(9b442ae9) SHA1(c15571b1d8af98ab50103d7888359aab36324ace),
+                     "PEMBOT_J3_U27.bin", CRC(8c41a759) SHA1(12a6179126027bfdc0ddd0c6e204833a21636904))
+S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
+                     "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
+S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc45bf77c12b69228),
+                     "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
+S11_ROMEND
+
 CORE_GAMEDEF(pb, l5, "Pin-Bot (L-5)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l5h,l5,"Pin-Bot (L-5, Free Play / Solar Value Mod)", 2012, "Francis", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l3,l5, "Pin-Bot (L-3)", 1986, "Williams", s11_mS11XSL,0)
@@ -316,6 +324,7 @@ CORE_CLONEDEF(pb,l1,l5, "Pin-Bot (L-1)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,p4,l5, "Pin-Bot (P-4 Prototype)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,j1,l5, "Pin-Bot (PEMBOT (no relation) J-1)", 2020, "A.M. Thurnherr", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,j2,l5, "Pin-Bot (PEMBOT (no relation) J-2)", 2023, "idealjoker", s11_mS11XSL,0) // "Minor bug fixes and improvements"
+CORE_CLONEDEF(pb,j3,l5, "Pin-Bot (PEMBOT (no relation) J-3)", 2023, "idealjoker", s11_mS11XSL,0) // "Knocker did not fire on match awards"
 
 /*--------------------
 / F-14 Tomcat 5/87

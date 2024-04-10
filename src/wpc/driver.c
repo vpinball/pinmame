@@ -1131,6 +1131,7 @@ DRIVERNV(monrobwl)      //Stars & Strikes (1979?)
 // MR. GAME
 // ----------------
 DRIVERNV(dakar)         //Dakar (1988?)
+                        //Fast Track (Prototype)
 DRIVERNV(motrshow)      //Motor Show (1988?)
 DRIVERNV(motrshwa)      //Motor Show (alternate set)
 DRIVERNV(macattck)      //Mac Attack (1989?)
@@ -1144,11 +1145,11 @@ DRIVERNV(comeback)      //Come Back (198?)
 // ----------------
 // NSM GAMES
 // ----------------
-DRIVERNV(gamesnsm)      //The Games (06/85)
+DRIVERNV(gamesnsm)      //The Games (06/1985)
 DRIVERNV(cosflnsm)      //Cosmic Flash (10/1985)
 DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
-                        //Tag-Team Pinball (??/86)
-                        //Amazon Hunt (??/8?)
+                        //Tag-Team Pinball (??/1986)
+                        //Amazon Hunt (??/198?)
 
 // ----------------
 // PEYPER
@@ -2591,6 +2592,7 @@ DRIVER(pb,l5)           //          10/86 W Pin-Bot (L-5)
 DRIVER(pb,l5h)          //          08/12   Pin-Bot (L-5, Freeplay / solar value mod)
 DRIVER(pb,j1)           //          11/20   Pin-Bot (PEMBOT (no relation) J-1)
 DRIVER(pb,j2)           //          01/23   Pin-Bot (PEMBOT (no relation) J-2)
+DRIVER(pb,j3)           //          02/23   Pin-Bot (PEMBOT (no relation) J-3)
 DRIVER(tts,l1)          //S11-919:  ??/86 W Tic-Tac-Strike (L-1, Shuffle)
 DRIVER(tts,l2)          //          ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
