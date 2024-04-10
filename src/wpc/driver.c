@@ -2526,6 +2526,7 @@ DRIVER(bk,f4)           //          11/80 W Black Knight (L-4 French Speech)
 DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
 DRIVER(jngld,l2)        //          02/81 W Jungle Lord (L-2)
 DRIVER(jngld,nt)        //          09/13   Jungle Lord New Tricks
+DRIVER(jngld,ntl2b)     //          ??/21   Jungle Lord New Tricks L-2beta
 DRIVER(jngld,ntl2)      //          ??/2?   Jungle Lord New Tricks L-2 (2021 or 2022)
 DRIVER(jngld,ntl3)      //          ??/2?   Jungle Lord New Tricks L-3beta (2021 or 2022)
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh (L-2)
