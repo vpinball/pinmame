@@ -113,6 +113,7 @@ Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illeg
 LTD:  Space Poker
 WMS:  Black Knight 2000: redumped LG-1 (German) version, startup text is no longer corrupt
       NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0
+      Scared Stiff: The publically available S2 sound ROM is named 1.1, but actually contains 1.0. Game versions 1.2, 1.4 & 1.5 now use the proper 1.1 S2 ROM.
       The Shadow: Fix checksum of LH-6 with wrong text index patch
 Zaccaria: Star God (correct sound ROMs)
 
@@ -153,7 +154,7 @@ Odin (Prototype)
 Pinball Champ (French Speech)
 Pin-Bot J-2, J-3 (PEMBOT (no relation)) (MOD)
 Royal Flush Deluxe rev. 1
-Scared Stiff 1.1
+Scared Stiff 1.1, 1.1 with Sound 1.0
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Shadow, The LF-4 (French)
 Shooting the Rapids (Free Play)

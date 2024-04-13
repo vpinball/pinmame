@@ -23,6 +23,9 @@ Hardware from 1994-2006
 Issues:
 DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood.
 
+TOPS feature: mainly time keeping upgrade chip, see https://drive.google.com/drive/folders/1yAyZNsNdm2fuIsHeWo1hxn0S0IWW-19d
+              and https://github.com/mamedev/mame/blob/master/src/devices/machine/timekpr.h
+
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"

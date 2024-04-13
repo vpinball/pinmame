@@ -179,7 +179,7 @@ Whirl L-O-R-D letters with Magna-Save buttons to improve odds with the mini ball
 These new tricks are intended to add fun and to encourage lower playfield play and risk taking. Scoring potential of the new Combo Shots and MB Bonus Frenzy are similar to those of Double Trouble and maxed out bonus in the original game.
 */
 
-// Also note that some of these versions may require different/additional lamp mappings (most likely only the 2013 one)
+// Also note that some of these versions may require different/additional lamp mappings (most likely only the 2013 one though)
 S7_ROMSTART8088(jngld,nt, "ic14.bin",   CRC(714bfdaa) SHA1(6d566578d1f6e445bf66e917699c99e91f4f9aca),
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
@@ -200,7 +200,7 @@ S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7e
                           "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
                           "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
 S7_ROMEND
-CORE_CLONEDEF(jngld,ntl2b,l2,"Jungle Lord (New Tricks L-2beta)",2021,"idealjoker",s7_mS7S,0)
+CORE_CLONEDEF(jngld,ntl2b,l2,"Jungle Lord (New Tricks L-2beta)",2021,"idealjoker",s7_mS7S,0) // rev. 23
 
 // "Fairly important fixes for a couple of light problems; correct EPROM checksums"
 S7_ROMSTART8088(jngld,ntl2,"JLnt_L2_U14.bin",CRC(3fdc7726) SHA1(738b6d39aad4d197eb9f5144fa843474514ee50a),
@@ -212,7 +212,7 @@ S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7e
                           "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
                           "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
 S7_ROMEND
-CORE_CLONEDEF(jngld,ntl2,l2,"Jungle Lord (New Tricks L-2)",2022,"idealjoker",s7_mS7S,0)
+CORE_CLONEDEF(jngld,ntl2,l2,"Jungle Lord (New Tricks L-2)",2022,"idealjoker",s7_mS7S,0) // rev. 33?
 
 // The next one is considered a beta as it was still WIP when idealjoker sold his machine,
 //  but it was also the version he sold it with, so it should(!) be save to have it running on real machines, too
@@ -227,7 +227,7 @@ S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7e
                           "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
                           "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
 S7_ROMEND
-CORE_CLONEDEF(jngld,ntl3,l2,"Jungle Lord (New Tricks L-3beta)",2022,"idealjoker",s7_mS7S,0)
+CORE_CLONEDEF(jngld,ntl3,l2,"Jungle Lord (New Tricks L-3beta)",2022,"idealjoker",s7_mS7S,0) // rev. 33?
 
 /*--------------------------------
 / Pharaoh - Sys.7 (Game #504)

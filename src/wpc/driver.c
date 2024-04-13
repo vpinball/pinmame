@@ -3164,6 +3164,7 @@ DRIVER(ss,01)           //WPC-548:  09/96 B Scared Stiff (D0.1R Prototype with s
 DRIVER(ss,01b)          //          09/96 B Scared Stiff (D0.1R Prototype with sound rev.25 Coin Play)
 DRIVER(ss,03)           //          09/96 B Scared Stiff (0.3 Prototype)
 //DRIVER(ss,10)
+DRIVER(ss,11s10)        //          09/96 B Scared Stiff (1.1 with sound rev.1.0)
 DRIVER(ss,11)           //          09/96 B Scared Stiff (1.1)
 DRIVER(ss,12)           //          10/96 B Scared Stiff (1.2)
 //DRIVER(ss,13)

@@ -23,15 +23,15 @@
      -  Upper Slingshot
    WED  Jet Bumpers
      C  Crate
-	 S  Spider Hole
+     S  Spider Hole
    JKL  Skull Lanes
      A  Secret Passage
-	 V  Extra Ball Lane
+     V  Extra Ball Lane
    FGH  Leaper Targets
    BNM  Spell Targets
      R  Missed Right Ramp Target
-	 T  Telepathetic Ratget
-	 Q  SDTM (Drain Ball)
+     T  Telepathetic Ratget
+     Q  SDTM (Drain Ball)
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -63,31 +63,31 @@ WPC_INPUT_PORTS_START(ss,4)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"L/R Ramp",			KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
+    COREPORT_BIT(0x0010,"L/R Slingshot",	KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
     COREPORT_BIT(0x0040,"L/R Loop",			KEYCODE_L)
-    COREPORT_BIT(0x0080,"Upper Jet",			KEYCODE_W)
+    COREPORT_BIT(0x0080,"Upper Jet",		KEYCODE_W)
     COREPORT_BIT(0x0100,"Center Jet",		KEYCODE_E)
-    COREPORT_BIT(0x0200,"Lower Jet",			KEYCODE_D)
+    COREPORT_BIT(0x0200,"Lower Jet",		KEYCODE_D)
     COREPORT_BIT(0x0400,"Upper Slingshot",	KEYCODE_MINUS)
-    COREPORT_BIT(0x0800,"Hit Crate",			KEYCODE_C)
+    COREPORT_BIT(0x0800,"Hit Crate",		KEYCODE_C)
     COREPORT_BIT(0x1000,"Spider Hole",		KEYCODE_S)
-    COREPORT_BIT(0x2000,"L. Skull Lane",		KEYCODE_J)
-    COREPORT_BIT(0x4000,"C. Skull Lane",		KEYCODE_K)
-    COREPORT_BIT(0x8000,"R. Skull Lane",		KEYCODE_L)
+    COREPORT_BIT(0x2000,"L. Skull Lane",	KEYCODE_J)
+    COREPORT_BIT(0x4000,"C. Skull Lane",	KEYCODE_K)
+    COREPORT_BIT(0x8000,"R. Skull Lane",	KEYCODE_L)
 
   PORT_START /* 1 */
     COREPORT_BIT(0x0001,"Secret Passage",	KEYCODE_A)
-    COREPORT_BIT(0x0002,"Ex. Ball Lane",		KEYCODE_V)
+    COREPORT_BIT(0x0002,"Ex. Ball Lane",	KEYCODE_V)
     COREPORT_BIT(0x0008,"Left Leaper",		KEYCODE_F)
-    COREPORT_BIT(0x0004,"Center Leaper",		KEYCODE_G)
+    COREPORT_BIT(0x0004,"Center Leaper",	KEYCODE_G)
     COREPORT_BIT(0x0010,"Right Leaper",		KEYCODE_H)
     COREPORT_BIT(0x0020,"Lower Spell",		KEYCODE_B)
     COREPORT_BIT(0x0040,"Middle Spell",		KEYCODE_N)
     COREPORT_BIT(0x0080,"Upper Spell",		KEYCODE_M)
-    COREPORT_BIT(0x0100,"Missed Right Ramp",	KEYCODE_R)
+    COREPORT_BIT(0x0100,"Missed Right Ramp",KEYCODE_R)
     COREPORT_BIT(0x0200,"Telepathetic",		KEYCODE_T)
-    COREPORT_BIT(0x0400,"Drain",				KEYCODE_Q)
+    COREPORT_BIT(0x0400,"Drain",			KEYCODE_Q)
 
 WPC_INPUT_PORTS_END
 
@@ -96,8 +96,8 @@ WPC_INPUT_PORTS_END
 /--------------------*/
 #define swNotUsed0		11
 #define swWheelIndex	12
-#define swStart      	13
-#define swTilt       	14
+#define swStart			13
+#define swTilt			14
 #define swNotUsed1		15
 #define swLeftOutlane	16
 #define swRightInlane	17
@@ -105,7 +105,7 @@ WPC_INPUT_PORTS_END
 
 #define swSlamTilt		21
 #define swCoinDoor		22
-#define swNotUsed2     	23
+#define swNotUsed2		23
 #define swAlwaysClosed	24
 #define swExtraBallLane	25
 #define swLeftInlane	26
@@ -184,7 +184,7 @@ WPC_INPUT_PORTS_END
 /  Ball state handling
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
-      stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stUpperJet, stCenterJet, stLowerJet, stUpperSling,
+	  stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stUpperJet, stCenterJet, stLowerJet, stUpperSling,
 
 	  stLRampEnter, stLRampDone,
 	  stRRampEnter, stRRampDone,
@@ -201,7 +201,7 @@ enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDra
 	  stSpiderHole, stLSkullLane, stCSkullLane, stRSkullLane,
 	  stSecretPassage1, stSecretPassage2, stExtraBallLane,
 	  stLowerSpell, stMiddleSpell, stUpperSpell,
-          stLeftLeaper, stCenterLeaper, stRightLeaper, stRRamp10pt, stTelepathetic
+	  stLeftLeaper, stCenterLeaper, stRightLeaper, stRRamp10pt, stTelepathetic
 	  };
 
 static sim_tState ss_stateDef[] = {
@@ -300,11 +300,11 @@ static int ss_handleBallState(sim_tBallStatus *ball, int *inports) {
 		if (ball->speed < 40)
 			return setState(stSkillHole,10);
 		if (ball->speed < 51)
-			return setState(stFree,51);		/*Ball goes to stFree*/
+			return setState(stFree,51);			/*Ball goes to stFree*/
 		break;
 	}
-    return 0;
-  }
+	return 0;
+}
 
 /*---------------------------
 /  Keyboard conversion table
@@ -363,39 +363,46 @@ static void ss_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
+// Note: The S2 ROM available on ipdb and PP named "_11" actually reports-as/is revision 1.0! (state 04/2024)
+// We use the proper revisions for all sound ROMs here instead, thus the checksums may differ with the ones downloaded from there!
 WPC_ROMSTART(ss,15,"ss_g11.1_5",0x80000,CRC(5de8d0a0) SHA1(91cdd5f4e1654fd4dbde8b9cb03db935cba5d876))
-DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
-               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
-               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(964974f1) SHA1(9b86d4c192eadbad85cf7676c74feed08b680581),
+               "sssnd_10.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_10.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 WPC_ROMSTART(ss,14,"stiffg11.1_4",0x80000,CRC(17359ed6) SHA1(2ae549064a3666ea8b0b09aff9f5551db906d1d2))
-DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
-               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
-               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(964974f1) SHA1(9b86d4c192eadbad85cf7676c74feed08b680581),
+               "sssnd_10.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_10.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 WPC_ROMSTART(ss,12,"stiffg11.1_2",0x80000,CRC(70eca59c) SHA1(07d50a32a4fb287780c4e6c1cb6fbeba97480219))
-DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
-               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
-               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(964974f1) SHA1(9b86d4c192eadbad85cf7676c74feed08b680581),
+               "sssnd_10.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_10.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 WPC_ROMSTART(ss,11,"Scared Stiff_11gamerom.bin",0x80000,CRC(210615f4) SHA1(8f376c68d072f9b276d45452133107cdd0a3ea68))
-DCS_SOUNDROM3m("Scared Stiff_10_s2.bin",CRC(964974f1) SHA1(9b86d4c192eadbad85cf7676c74feed08b680581),
-               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3), // was dumped as Scared Stiff_10_s3.bin with the 1.1 game rom and 1.0 S2 rom
-               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568)) // was dumped as Scared Stiff_10_s4.bin with the 1.1 game rom and 1.0 S2 rom
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(964974f1) SHA1(9b86d4c192eadbad85cf7676c74feed08b680581),
+               "sssnd_10.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3), // was dumped as Scared Stiff_10_s3.bin with the 1.1 game rom and 1.1 S2 rom
+               "sssnd_10.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568)) // was dumped as Scared Stiff_10_s4.bin with the 1.1 game rom and 1.1 S2 rom
+WPC_ROMEND
+// we do not know where Sound S2 1.0 should actually go, as even game 1.0 could've used S2 1.1 (given the dates of both), so we duplicate game 1.1 with it for now!
+WPC_ROMSTART(ss,11s10,"Scared Stiff_11gamerom.bin",0x80000,CRC(210615f4) SHA1(8f376c68d072f9b276d45452133107cdd0a3ea68))
+DCS_SOUNDROM3m("sssnd_10.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
+               "sssnd_10.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_10.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 WPC_ROMSTART(ss,03,"ss_g11.0_3",0x80000,CRC(5b9755d6) SHA1(207d9ea858c76c4991747b401dc83183c1ddf7e4))
-DCS_SOUNDROM3m("sssnd_s2.22",CRC(12b92d7a) SHA1(69151ffb5d2befe28e1ed2c8153c2227552b681c),
+DCS_SOUNDROM3m("sssnd_s2.22",CRC(12b92d7a) SHA1(69151ffb5d2befe28e1ed2c8153c2227552b681c), // = 0.22, came with the game 0.3 dump like this
                "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
                "sssnd_s4.21",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 
-// The manual mentions a Sound Rev. D.41 for game D.01R, but we got a 0.25 dump
+// The manual mentions a Sound Rev. D.41 for game D.01R, but we actually got a 0.25 dump along with it, so we keep it like this for now
 WPC_ROMSTART(ss,01,"ss_g11.rom",0x80000,CRC(affd278f) SHA1(e6f41da169fa15c25cfaac22057f3e491da18fc5))
 DCS_SOUNDROM3m("ss_s2.rom",  CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
                "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
                "sssnd_s4.21",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
-
 WPC_ROMSTART(ss,01b,"ss_g11b.rom",0x80000,CRC(52b96952) SHA1(26ad686e178b2ba5c0a0650db4a9ffa4e615caf1))
 DCS_SOUNDROM3m("ss_s2.rom",  CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
                "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
@@ -409,6 +416,7 @@ CORE_GAMEDEF(ss,15,"Scared Stiff (1.5)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,14,15,"Scared Stiff (1.4)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,12,15,"Scared Stiff (1.2)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,11,15,"Scared Stiff (1.1)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,11s10,15,"Scared Stiff (1.1, Sound 1.0)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,03,15,"Scared Stiff (0.3 Prototype)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,01,15,"Scared Stiff (D.01R Prototype, Sound 0.25)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D.01R Prototype Coin Play, Sound 0.25)",1996,"Bally",wpc_m95S,0)
@@ -417,11 +425,11 @@ CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D.01R Prototype Coin Play, Sound 0.25)",1
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData ssSimData = {
-  2,    					/* 2 game specific input ports */
+  2,						/* 2 game specific input ports */
   ss_stateDef,				/* Definition of all states */
   ss_inportData,			/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
-  ss_initSim, 				/* init */
+  ss_initSim,				/* init */
   ss_handleBallState,		/* Function to handle ball state changes*/
   ss_drawStatic,			/* Function to handle mechanical state changes*/
   TRUE, 					/* Simulate manual shooter */
