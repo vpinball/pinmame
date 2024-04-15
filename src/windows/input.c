@@ -255,6 +255,7 @@ static int key_trans_table[][4] =
 	{ KEYCODE_COLON, 		DIK_SEMICOLON,		0xba,			';' },
 	{ KEYCODE_QUOTE, 		DIK_APOSTROPHE,		0xde,			'\'' },
 	{ KEYCODE_TILDE, 		DIK_GRAVE, 			0xc0,			'`' },
+	{ KEYCODE_YEN, 			DIK_YEN , 			'\\'	,		'\\' },
 	{ KEYCODE_LSHIFT, 		DIK_LSHIFT, 		VK_SHIFT, 		0 },
 	{ KEYCODE_BACKSLASH,	DIK_BACKSLASH, 		0xdc,			'\\' },
 	{ KEYCODE_Z, 			DIK_Z,				'Z',			'Z' },

@@ -42,6 +42,8 @@ Added the emulation of physical bulbs & LEDs connected to binary outputs, for WP
   internal segment rendering, and partially/per-character-dimming-only via the dmddevice.dll interface), and opens up the path for emulation
   of strength modulated solenoids (for example most magnets, Capcom Kingpin, or the way most modern hardware handle Power/Hold and EOS switch).
 
+In addition to the TILDE key, now also the YEN key on respective keyboard mappings will work to bring up the internal PinMAME menu
+
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
 Reworked Capcom emulation & timings, allowing all tables to behave 'normally' (no more delay on Flipper Football, DMD's animation at the right speed,...)
