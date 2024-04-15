@@ -1036,8 +1036,8 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(poolcfp,poolcham,"Pool Champion (Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME2(poolchaifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,0)
-ZAC_ROMSTART020(poolchaifp,	"poolcifp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390) BAD_DUMP,
-							"poolcifp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed) BAD_DUMP)
+ZAC_ROMSTART1820(poolchaifp,"poolcifp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390),
+							"poolcifp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed))
 ZAC_SOUNDROM_e2f4(			"poolc_it.1e", CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177),
 							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad))
 ZAC_ROMEND
