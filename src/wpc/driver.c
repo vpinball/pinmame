@@ -3275,6 +3275,7 @@ DRIVERNV(pinc7ffp)      //      Pinball Champ (7 digits, French Speech Free Play
 DRIVERNV(pinc7gfp)      //      Pinball Champ (7 digits, German Speech Free Play)
 DRIVERNV(pinc7ifp)      //      Pinball Champ (7 digits, Italian Speech Free Play)
 DRIVERNV(tmachzac)      //04/83 Time Machine
+DRIVERNV(tmachzaca)     //      Time Machine (alternate)
 DRIVERNV(tmacgzac)      //      Time Machine (German Speech)
 DRIVERNV(tmacfzac)      //      Time Machine (French Speech)
 DRIVERNV(tmacizac)      //      Time Machine (Italian Speech)
@@ -3283,9 +3284,13 @@ DRIVERNV(tmacgfp)       //      Time Machine (German Speech Free Play)
 DRIVERNV(tmacffp)       //      Time Machine (French Speech Free Play)
 DRIVERNV(tmacifp)       //      Time Machine (Italian Speech Free Play)
 DRIVERNV(farfalla)      //09/83 Farfalla
+DRIVERNV(farfallaa)     //      Farfalla (alternate)
 DRIVERNV(farfalli)      //      Farfalla (Italian Speech)
+DRIVERNV(farfallia)     //      Farfalla (alternate, Italian Speech)
 DRIVERNV(farfallf)      //      Farfalla (French Speech)
+DRIVERNV(farfallfa)     //      Farfalla (alternate, French Speech)
 DRIVERNV(farfallg)      //      Farfalla (German Speech)
+DRIVERNV(farfallga)     //      Farfalla (alternate, German Speech)
 DRIVERNV(farffp)        //      Farfalla (Free Play)
 DRIVERNV(farfifp)       //      Farfalla (Italian Speech Free Play)
 DRIVERNV(farfffp)       //      Farfalla (French Speech Free Play)
@@ -3297,6 +3302,7 @@ DRIVERNV(dvlridef)      //      Devil Riders (French Speech)
 DRIVERNV(dvlrdfp)       //      Devil Riders (Free Play)
 DRIVERNV(dvlrdifp)      //      Devil Riders (Italian Speech Free Play))
 DRIVERNV(dvlrdgfp)      //      Devil Riders (German Speech Free Play)
+DRIVERNV(dvlrdffp)      //      Devil Riders (French Speech Free Play)
 DRIVERNV(mcastle)       //09/84 Magic Castle
 DRIVERNV(mcastlei)      //      Magic Castle (Italian Speech)
 DRIVERNV(mcastleg)      //      Magic Castle (German Speech)
@@ -3318,6 +3324,7 @@ DRIVERNV(clownfp)       //      Clown (Free Play)
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(poolchai)      //      Pool Champion (Italian Speech)
 DRIVERNV(poolcfp)       //      Pool Champion (Free Play)
+DRIVERNV(poolchaifp)    //      Pool Champion (Italian Speech, Free Play)
 DRIVERNV(myststar)      //??/86 Mystic Star
 DRIVERNV(bbeltzac)      //03/86 Black Belt
 DRIVERNV(bbeltzai)      //      Black Belt (Italian Speech)
@@ -3335,7 +3342,8 @@ DRIVERNV(zankor)        //12/86 Zankor (TMS5200 Italian Speech)
 DRIVERNV(zankorfp)      //      Zankor (TMS5200 Italian Speech, Free Play)
 DRIVERNV(zankor2i)      //      Zankor (TMS5220 Italian Speech)
 DRIVERNV(zank2ifp)      //      Zankor (TMS5220 Italian Speech, Free Play)
-                        //      Zankor (German Speech) // ROMs do exist but they have been misdumped
+DRIVERNV(zankorg)       //      Zankor (German Speech)
+DRIVERNV(zankorgfp)     //      Zankor (German Speech, Free Play)
 DRIVERNV(spooky)        //04/87 Spooky
 DRIVERNV(spookyi)       //      Spooky (Italian Speech)
 DRIVERNV(spookyfp)      //      Spooky (Free Play)
