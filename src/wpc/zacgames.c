@@ -590,7 +590,7 @@ ZAC_SOUNDROM_de1g(			"sound1.d",    CRC(efc1d724) SHA1(f553767c053e4854fe7839f8c
 							"sound2.e",    CRC(41881a1d) SHA1(42f8dd13c38e11c0dd3cf59c64751baaacb00ac1),
 							"sound3.g",    CRC(b7b872da) SHA1(dfeb48a683c6d249101488f244b26509a4c4d81d))
 ZAC_ROMEND
-CORE_GAMEDEFNV(tmachzaca,"Time Machine (Zaccaria) (alternate)",1983,"Zaccaria",mZAC2X,0)
+CORE_CLONEDEFNV(tmachzaca,tmachzac,"Time Machine (Zaccaria) (alternate)",1983,"Zaccaria",mZAC2X,0)
 
 INITGAME(tmacgzac,GEN_ZAC2,dispZAC2,SNDBRD_ZAC13136,0)
 ZAC_ROMSTART1820(tmacgzac,	"timemach.ic1",CRC(d88f424b) SHA1(a0c51f894d604504253f66e49298a9d836e25308),
@@ -1021,7 +1021,7 @@ ZAC_ROMEND
 CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME2(poolchai,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,0)
-ZAC_ROMSTART020(poolchai,	"poolchai.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153) BAD_DUMP,
+ZAC_ROMSTART020(poolchai,	"poolchai.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153) BAD_DUMP, //!!?
 							"poolchai.ic2",CRC(267a2a02) SHA1(049ada7bfcf0d8560ac03effd3fbb02ead51933c) BAD_DUMP)
 ZAC_SOUNDROM_e2f4(			"poolc_it.1e", CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177),
 							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad))
@@ -1036,7 +1036,7 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(poolcfp,poolcham,"Pool Champion (Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME2(poolchaifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,0)
-ZAC_ROMSTART1820(poolchaifp,"poolcifp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390),
+ZAC_ROMSTART1820(poolchaifp,"poolcifp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390), //!!? also bad dump?
 							"poolcifp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed))
 ZAC_SOUNDROM_e2f4(			"poolc_it.1e", CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177),
 							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad))
