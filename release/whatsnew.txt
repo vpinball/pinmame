@@ -157,7 +157,7 @@ Mr. & Mrs. Pac-Man Pinball (alternate version)
 Odin (Prototype)
 Pinball Champ (French Speech)
 Pin-Bot J-2, J-3 (PEMBOT (no relation)) (MOD)
-Pool Champion (Italian Speech, Free Play)
+Pool Champion (Italian Speech, Free Play) (incomplete dump)
 Royal Flush Deluxe rev. 1
 Scared Stiff 1.1, 1.1 with Sound 1.0
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
@@ -180,7 +180,7 @@ Whirlwind LG-1 (German), LG-2 (German) (no U26 dumps available, seem to work wit
 White Water P-6 (Prototype)
 Wildfyre (One Ball MOD)
 Winter Sports (Free Play)
-Zankor (TMS5220 Italian Speech), (German Speech, and German Speech Free Play)
+Zankor (TMS5220 Italian Speech), (German Speech, and German Speech Free Play) (the latter being an incomplete dump)
 
 Removed Clones:
 NBA Fastbreak: 3.1 with Sound S1.0 (as this was just created to be able to use S1.0, which is nowadays wired to 1.1/1.15 instead)

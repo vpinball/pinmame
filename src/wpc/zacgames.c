@@ -1021,10 +1021,10 @@ ZAC_ROMEND
 CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME2(poolchai,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,0)
-ZAC_ROMSTART020(poolchai,	"poolchai.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153) BAD_DUMP, //!!?
+ZAC_ROMSTART020(poolchai,	"poolchai.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153) BAD_DUMP, // no speech triggered with these roms, so CPU and Sound does not match
 							"poolchai.ic2",CRC(267a2a02) SHA1(049ada7bfcf0d8560ac03effd3fbb02ead51933c) BAD_DUMP)
 ZAC_SOUNDROM_e2f4(			"poolc_it.1e", CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177),
-							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad))
+							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad)) // Note that the also available POOLC_IT.1F is 0.5x the necessary size, but also otherwise identical
 ZAC_ROMEND
 CORE_CLONEDEFNV(poolchai,poolcham,"Pool Champion (Italian Speech)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
@@ -1036,10 +1036,10 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(poolcfp,poolcham,"Pool Champion (Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME2(poolchaifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,0)
-ZAC_ROMSTART1820(poolchaifp,"poolcifp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390), //!!? also bad dump?
-							"poolcifp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed))
+ZAC_ROMSTART1820(poolchaifp,"poolcifp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390) BAD_DUMP, // no speech triggered with these roms, so CPU and Sound does not match
+							"poolcifp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed) BAD_DUMP)
 ZAC_SOUNDROM_e2f4(			"poolc_it.1e", CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177),
-							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad))
+							"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad)) // Note that the also available POOLC_IT.1F is 0.5x the necessary size, but also otherwise identical
 ZAC_ROMEND
 CORE_CLONEDEFNV(poolchaifp,poolcham,"Pool Champion (Italian Speech, Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
@@ -1197,8 +1197,8 @@ CORE_CLONEDEFNV(zank2ifp,zankor,"Zankor (alternate sound, TMS5220 Italian Speech
 INITGAME2(zankorg,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178_13181,0)
 ZAC_ROMSTART1820(zankorg,	"zan_ic1.764",CRC(e7ba5acf) SHA1(48b64921dd8a22c2483162db571512cad8cbb072),
 							"zan_ic2.764",CRC(5804ff10) SHA1(fc3c4acb183c5c3e0a6504583c78f25a7a322cce))
-ZAC_SOUNDROM_e2f4(			"ZANKR_DE.1E",CRC(eeb10989) SHA1(ae04b2ee5dac0b238ffd209040b5a16f54543664) BAD_DUMP, //!!?
-							"zan_1f.128", CRC(74fcadc9) SHA1(efd6fc99d7a3ed8e59fbbafbee161af6fb527028)) // also BAD_DUMP as same as italian?
+ZAC_SOUNDROM_e2f4(			"ZANKR_DE.1E", NO_DUMP, // dump from zaccaria-pinball is bad
+							"zan_1f.128", CRC(74fcadc9) SHA1(efd6fc99d7a3ed8e59fbbafbee161af6fb527028)) // NO_DUMP, as same as italian?
 ZAC_SOUNDROM_456(			"zan_ic4.128",CRC(f34a2aaa) SHA1(5e415874f68586aa30dba9fff0dc8990c636cecd),
 							"zan_ic5.128",CRC(bf61aab0) SHA1(939266696d0562f255f0fa5068280fe6a4cf8267),
 							"zan_ic6.128",CRC(13a5b8d4) SHA1(d8c976b3f5e9c7cded0922feefa1531c59432515))
@@ -1208,8 +1208,8 @@ CORE_CLONEDEFNV(zankorg,zankor,"Zankor (German Speech)",1986,"Zaccaria",mZAC2XS2
 INITGAME2(zankorgfp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178_13181,0)
 ZAC_ROMSTART1820(zankorgfp,	"zankorfp.ic1",CRC(9955ed8d) SHA1(636528e05d930b4cb680a4763a0ace4bb5e0cd0c),
 							"zankorfp.ic2",CRC(3a253be7) SHA1(20d506686b811dbe0f931c86e7bcc7b689068148))
-ZAC_SOUNDROM_e2f4(			"ZANKR_DE.1E", CRC(eeb10989) SHA1(ae04b2ee5dac0b238ffd209040b5a16f54543664) BAD_DUMP, //!!?
-							"zan_1f.128",  CRC(74fcadc9) SHA1(efd6fc99d7a3ed8e59fbbafbee161af6fb527028)) // also BAD_DUMP as same as italian?
+ZAC_SOUNDROM_e2f4(			"ZANKR_DE.1E", NO_DUMP, // dump from zaccaria-pinball is bad
+							"zan_1f.128",  CRC(74fcadc9) SHA1(efd6fc99d7a3ed8e59fbbafbee161af6fb527028)) // NO_DUMP, as same as italian?
 ZAC_SOUNDROM_456(			"zan_ic4.128", CRC(f34a2aaa) SHA1(5e415874f68586aa30dba9fff0dc8990c636cecd),
 							"zan_ic5.128", CRC(bf61aab0) SHA1(939266696d0562f255f0fa5068280fe6a4cf8267),
 							"zan_ic6.128", CRC(13a5b8d4) SHA1(d8c976b3f5e9c7cded0922feefa1531c59432515))
