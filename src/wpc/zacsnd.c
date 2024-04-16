@@ -455,8 +455,10 @@ static void initTMS(void) {
 }
 
 static void sns_init(struct sndbrdData *brdData) {
+  int oldCh = snslocals.channel;
   if (snslocals.fadeTimer) timer_remove(snslocals.fadeTimer);
   memset(&snslocals, 0, sizeof(snslocals));
+  snslocals.channel = oldCh;
   snslocals.brdData = *brdData;
 
   if (!(core_gameData->hw.soundBoard & 0x02)) {
