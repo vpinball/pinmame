@@ -87,8 +87,10 @@ static void play2s_timer_callback(int n) {
 }
 
 static void play2s_init(struct sndbrdData *brdData) {
+  int oldCh = sndlocals.channel;
   if (sndlocals.timer) timer_remove(sndlocals.timer);
   memset(&sndlocals, 0, sizeof sndlocals);
+  sndlocals.channel = oldCh;
   sndlocals.timer = timer_alloc(play2s_timer_callback);
 }
 

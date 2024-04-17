@@ -185,7 +185,9 @@ static WRITE_HANDLER(hnks_manCmd_w) {
 
 static void hnks_init(struct sndbrdData *brdData)
 {
+  int oldCh = hnks_locals.channel;
   memset(&hnks_locals, 0x00, sizeof(hnks_locals));
+  hnks_locals.channel = oldCh;
   hnks_locals.brdData = *brdData;
 
   hnks_locals.pia0b_w = 0xff;
