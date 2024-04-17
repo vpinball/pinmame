@@ -85,7 +85,7 @@ void streams_sh_update(void)
 						buf[i] = (UINT8*)(stream_buffer[channel+i]) + stream_buffer_pos[channel+i]*(stream_is_float[channel+i] ? sizeof(float) : sizeof(INT16));
 					}
 
-					(*stream_callback_multi[channel])(stream_param[channel],buf,buflen);
+					(*stream_callback_multi[channel])(stream_param[channel],(INT16**)buf,buflen);
 				}
 
 				for (i = 0;i < stream_joined_channels[channel];i++)
@@ -250,7 +250,7 @@ void stream_update(int channel,int min_interval)
 				buf[i] = (UINT8*)(stream_buffer[channel+i]) + stream_buffer_pos[channel+i] * (stream_is_float[channel+i] ? sizeof(float) : sizeof(INT16));
 
 			profiler_mark(PROFILER_SOUND);
-			(*stream_callback_multi[channel])(stream_param[channel],buf,buflen);
+			(*stream_callback_multi[channel])(stream_param[channel],(INT16**)buf,buflen);
 			profiler_mark(PROFILER_END);
 
 			for (i = 0;i < stream_joined_channels[channel];i++)
