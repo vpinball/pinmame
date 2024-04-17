@@ -17,6 +17,23 @@
 		SOUND:   2 x AY8912 (same as AY8910 but one I/O port only)
 ************************************************************************************************/
 
+/*
+How to start things:
+
+Enter Testmode via Keys '9' and '7'.
+
+Press '4' on the Numblock for "Table",
+then '1' and ENTER for the basic programming.
+Wait a bit.
+Then press '9' to end the test menue.
+
+Now one can insert coins and start the game.
+
+Remember to close the Outhole.
+For cosflnsm and gamesnsm its Nr. 75 (X-F via keyboard).
+For firebird its in addition Nr. 25 (R-A), 2-Baller.
+*/
+
 #include "driver.h"
 #include "cpu/tms9900/tms9900.h"
 #include "machine/4094.h"
