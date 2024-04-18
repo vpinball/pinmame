@@ -1032,7 +1032,7 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
 DE_ROMEND
 CORE_CLONEDEF(lah,l108,112,"Last Action Hero (1.08 Spanish, Display 1.04)",1993,"Data East",de_mDEDMD32S2A,0)
 
-DE_ROMSTARTx0(lah_l108_105,"lahcpua.108",NO_DUMP) // seems like that display needs something else
+DE_ROMSTARTx0(lah_l108_105,"lahcpua.108",NO_DUMP) // seems like that display needs something else, the display date is even 1 day later than CPU 1.12
 DE_DMD32ROM8x(      "lahdispl.105",CRC(eb861132) SHA1(46786c55256bd6da491bacbf53c4fac444d9d3d4)) // we don't know where this rom is supposed to go, so parked here for now, doesn't display anything though, neither with any other known CPU rom :/
 DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
                     "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
