@@ -1022,15 +1022,7 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
                     "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
                     "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
 DE_ROMEND
-CORE_CLONEDEF(lah,107,112,"Last Action Hero (1.07, Display 1.04)",1993,"Data East",de_mDEDMD32S2A,0)
-
-DE_ROMSTARTx0(lah_107_105,"lahcpua.107",CRC(f777fc1b) SHA1(a1a645df907e1e88123113823d3edf12c4e1e5df))
-DE_DMD32ROM8x(      "lahdispl.105",CRC(eb861132) SHA1(46786c55256bd6da491bacbf53c4fac444d9d3d4)) // we don't know where this rom is supposed to go, so parked here for now
-DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
-                    "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
-                    "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
-DE_ROMEND
-CORE_CLONEDEF(lah,107_105,112,"Last Action Hero (1.07, Display 1.05)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(lah,107,112,"Last Action Hero (1.07)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lah_l108,"lahcpua.108",CRC(8942794b) SHA1(f023ca040d6d4c6da80b58a162f1d217e571ed81))
 DE_DMD32ROM8x(      "lahdispl.104",CRC(6b1e51a7) SHA1(ad17507b63f2da8aa0651401ccb8d449c15aa46c))
@@ -1038,7 +1030,15 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
                     "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
                     "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
 DE_ROMEND
-CORE_CLONEDEF(lah,l108,112,"Last Action Hero (1.08 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(lah,l108,112,"Last Action Hero (1.08 Spanish, Display 1.04)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(lah_l108_105,"lahcpua.108",NO_DUMP) // seems like that display needs something else
+DE_DMD32ROM8x(      "lahdispl.105",CRC(eb861132) SHA1(46786c55256bd6da491bacbf53c4fac444d9d3d4)) // we don't know where this rom is supposed to go, so parked here for now, doesn't display anything though, neither with any other known CPU rom :/
+DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
+                    "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
+                    "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
+DE_ROMEND
+CORE_CLONEDEF(lah,l108_105,112,"Last Action Hero (1.08 Spanish, Display 1.05)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lah_110,"lahcpua.110",CRC(d1861dc2) SHA1(288bd06b6ae346d1f6a17a642d5533f1a9a3bf5e))
 DE_DMD32ROM8x(      "lahdispa.106",CRC(ca6cfec5) SHA1(5e2081387d76bed17c14120cd347d6aaf435276b))
