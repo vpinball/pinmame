@@ -131,7 +131,7 @@ S6_ROMSTART(tmwrp,l3ff,"twarp_l3.716",CRC(1234710a) SHA1(a33e9edb79b6ea4c5982d28
                      "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
 S67S_SOUNDROMS8(     "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
-CORE_GAMEDEF(tmwrp,l3ff,l3,"Time Warp (L-3 Free Play Fix)",1979,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(tmwrp,l3ff,l3,"Time Warp (L-3 Free Play Fix)",1979,"Williams",s6_mS6S,0)
 
 S6_ROMSTART(tmwrp,l2,"gamerom.716",CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
