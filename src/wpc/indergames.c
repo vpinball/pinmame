@@ -49,7 +49,7 @@ CORE_GAMEDEFNV(brvteam,"Brave Team",1985,"Inder (Spain)",gl_mINDER0,0)
 
 #define init_brvteafp init_brvteam
 #define input_ports_brvteafp input_ports_brvteam
-INDER_ROMSTART(brvteafp,	"brvteam.fp0", CRC(e10a5800) SHA1(48311b354089531a50de3ee8a2f0f507ade5509e),
+INDER_ROMSTART(brvteafp,"brvteam.fp0", CRC(e10a5800) SHA1(48311b354089531a50de3ee8a2f0f507ade5509e),
 						"brvteam.fp1", CRC(368b5a28) SHA1(8545897ced58a81b0bee097445535e01c50b14e6))
 INDER_ROMEND
 CORE_CLONEDEFNV(brvteafp,brvteam,"Brave Team (Free Play)",1985,"Inder (Spain)",gl_mINDER0,0)
@@ -121,7 +121,7 @@ CORE_CLONEDEFNV(moonlifp,moonlght,"Moon Light (Free Play)",1987,"Inder (Spain)",
 / Clown (1988)
 /-------------------------------------------------------------------*/
 INITGAME(pinclown, inderDisp7, 0, 0,0,0,0,0)
-INDER_ROMSTART1(pinclown,"clown_a.bin", CRC(b7c3f9ab) SHA1(89ede10d9e108089da501b28f53cd7849f791a00))
+INDER_ROMSTART1(pinclown,"clown_a.bin",CRC(b7c3f9ab) SHA1(89ede10d9e108089da501b28f53cd7849f791a00))
 INDER_SNDROM4(			"clown_b.bin", CRC(c223c961) SHA1(ed5180505b6ebbfb9451f67a44d07df3555c8f8d),
 						"clown_c.bin", CRC(dff89319) SHA1(3745a02c3755d11ea7fb552f7a5df2e8bbee2c29),
 						"clown_d.bin", CRC(cce4e1dc) SHA1(561c9331d2d110d34cf250cd7b25be16a72a1d79),
@@ -132,7 +132,7 @@ CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS1,0)
 
 #define init_pinclofp init_pinclown
 #define input_ports_pinclofp input_ports_pinclown
-INDER_ROMSTART1(pinclofp,"clown_fp.bin", CRC(f020a0e3) SHA1(5a4abc58d5e21b602082bcd2d67947266cae41b6))
+INDER_ROMSTART1(pinclofp,"clown_fp.bin",CRC(f020a0e3) SHA1(5a4abc58d5e21b602082bcd2d67947266cae41b6))
 INDER_SNDROM4(			"clown_b.bin", CRC(c223c961) SHA1(ed5180505b6ebbfb9451f67a44d07df3555c8f8d),
 						"clown_c.bin", CRC(dff89319) SHA1(3745a02c3755d11ea7fb552f7a5df2e8bbee2c29),
 						"clown_d.bin", CRC(cce4e1dc) SHA1(561c9331d2d110d34cf250cd7b25be16a72a1d79),
@@ -145,7 +145,7 @@ CORE_CLONEDEFNV(pinclofp,pinclown,"Clown (Inder, Free Play)",1988,"Inder (Spain)
 / Corsario (1989)
 /-------------------------------------------------------------------*/
 INITGAME(corsario, inderDisp7a, 0, 0,0x10,0,0,0)
-INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
+INDER_ROMSTART1(corsario,"0-corsar.bin",CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
 						"c-corsar.bin", CRC(047fd722) SHA1(2385507459f85c68141adc7084cb51dfa02462f6),
@@ -156,7 +156,7 @@ CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS1,0)
 
 #define init_corsarfp init_corsario
 #define input_ports_corsarfp input_ports_corsario
-INDER_ROMSTART1(corsarfp,"fpcorsar.bin", CRC(d7df80f0) SHA1(073eb24137d3510e89b08e42716c955d81de0ce1))
+INDER_ROMSTART1(corsarfp,"fpcorsar.bin",CRC(d7df80f0) SHA1(073eb24137d3510e89b08e42716c955d81de0ce1))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
 						"c-corsar.bin", CRC(047fd722) SHA1(2385507459f85c68141adc7084cb51dfa02462f6),
@@ -199,7 +199,7 @@ CORE_CLONEDEFNV(mundiafp,mundial,"Mundial 90 (Free Play)",1990,"Inder (Spain)",g
 / Atleta (1991)
 /-------------------------------------------------------------------*/
 INITGAME(atleta, inderDisp7a, 0, 0,0,0,0,0x10)
-INDER_ROMSTART2(atleta,"atleta0.cpu", CRC(5f27240f) SHA1(8b77862fa311d703b3af8a1db17e13b17dca7ec6),
+INDER_ROMSTART2(atleta, "atleta0.cpu", CRC(5f27240f) SHA1(8b77862fa311d703b3af8a1db17e13b17dca7ec6),
 						"atleta1.cpu", CRC(12bef582) SHA1(45e1da318141d9228bc91a4e09fff6bf6f194235))
 INDER_SNDROM4(			"atletaa.snd", CRC(051c5329) SHA1(339115af4a2e3f1f2c31073cbed1842518d5916e),
 						"atletab.snd", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
@@ -213,7 +213,7 @@ CORE_GAMEDEFNV(atleta,"Atleta",1991,"Inder (Spain)",gl_mINDERS1,0)
 / 250 c.c. (1992)
 /-------------------------------------------------------------------*/
 INITGAME(ind250cc, inderDisp7a, 0, 0,0,0,0,0)
-INDER_ROMSTART1(ind250cc,"0-250cc.bin", CRC(753d82ec) SHA1(61950336ba571f9f75f2fc31ccb7beaf4e05dddc))
+INDER_ROMSTART1(ind250cc,"0-250cc.bin",CRC(753d82ec) SHA1(61950336ba571f9f75f2fc31ccb7beaf4e05dddc))
 INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bcf455183d5a0),
 						"b-250cc.bin", CRC(884c31c8) SHA1(23a838f1f0cb4905fa8552579b5452134f0fc9cc),
 						"c-250cc.bin", CRC(5a1dfa1d) SHA1(4957431d87be0bb6d27910b718f7b7edcd405fff),
@@ -226,8 +226,8 @@ CORE_GAMEDEFNV(ind250cc,"250 c.c.",1992,"Inder (Spain)",gl_mINDERS1,0)
 / Metal Man (1992)
 /-------------------------------------------------------------------*/
 INITGAME(metalman, inderDisp7a, 8, 0,0,0,0,0)
-INDER_ROMSTART2(metalman,	"cpu_0.bin", CRC(7fe4335b) SHA1(52ef2efa29337eebd8c2c9a8aec864356a6829b6),
-						"cpu_1.bin", CRC(2cca735e) SHA1(6a76017dfbcac0d57fcec8f07f92d5e04dd3e00b))
+INDER_ROMSTART2(metalman,"cpu_0.bin", CRC(7fe4335b) SHA1(52ef2efa29337eebd8c2c9a8aec864356a6829b6),
+						 "cpu_1.bin", CRC(2cca735e) SHA1(6a76017dfbcac0d57fcec8f07f92d5e04dd3e00b))
 NORMALREGION(0x10000, REGION_CPU2)
   ROM_LOAD("sound_e1.bin", 0x0000, 0x2000, CRC(55e889e8) SHA1(0a240868c1b17762588c0ed9a14f568a6e50f409))
 NORMALREGION(0x80000, REGION_USER1)

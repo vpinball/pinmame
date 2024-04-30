@@ -121,6 +121,18 @@ Zaccaria: Devil Riders (French speech correct sound ROMs)
           Star God (correct sound ROMs)
 
 Clones:
+Free Play Knocker sound fixes for all System 6 games/variants:
+ Algar
+ Alien Poker
+ Blackout
+ Firepower
+ Flash
+ Gorgar
+ Laser Ball
+ Scorpion
+ Time Warp
+ Tri Zone
+
 Airborne Avenger (Free Play)
 Ali (7-digit conversion Free Play rev. 76)
 Atarians (Free Play)

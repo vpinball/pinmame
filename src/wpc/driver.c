@@ -980,6 +980,7 @@ DRIVERNV(pinclown)      //Clown (1988)
 DRIVERNV(pinclofp)      //Clown (Free Play)
 DRIVERNV(corsario)      //Corsario (1989)
 DRIVERNV(corsarfp)      //Corsario (Free Play)
+                        //Flip VI https://www.recreativas.org/flip-vi-949-inder (1990) Proto?
 DRIVERNV(mundial )      //Mundial 90 (1990)
 DRIVERNV(mundiafp)      //Mundial 90 (Free Play)
 DRIVERNV(larana  )      //La Rana (1990)
@@ -2473,9 +2474,11 @@ DRIVER(disco,l1)        //S3-483:   08/78 W Disco Fever
 DRIVER(pkrno,l1)        //S4-488:   10/78 W Pokerino
 DRIVER(phnix,l1)        //S4-485:   11/78 W Phoenix
 DRIVER(flash,l1)        //S4-486:   ??/79 W Flash (Sys.6 L-1, green flipper ROMs)
+DRIVER(flash,l1ff)      //          ??/79 W Flash (Sys.6 L-1, green flipper ROMs, Free Play Fix)
 //DRIVER(flash,l1y)     //          01/79 W Flash (Sys.4 L-1, yellow flipper ROMs)
 DRIVER(flash,l2)        //          01/79 W Flash (Sys.4 L-2, yellow flipper ROMs)
 DRIVER(flash,t1)        //                  Flash (Sys.6 T-1 /10 Scoring Ted Estes)
+DRIVER(flash,t1ff)      //                  Flash (Sys.6 T-1 /10 Scoring Ted Estes, Free Play Fix)
 DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
 //System 5
@@ -2485,38 +2488,60 @@ DRIVER(arist,l1)        //S5-???:   ??/79 W Aristocrat (Shuffle)
 DRIVER(taurs,l1)        //S5-???:   ??/79 W Taurus (Shuffle)
 DRIVER(kingt,l1)        //S5-???:   ??/79 W King Tut (Shuffle)
 //System 6
-DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
-DRIVER(trizn,t1)        //                  TriZone /10 Scoring Ted Estes
+DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone (L-1)
+DRIVER(trizn,l1ff)      //          07/79 W TriZone (L-1 Free Play Fix)
+DRIVER(trizn,t1)        //                  TriZone (T-1 /10 Scoring Ted Estes)
+DRIVER(trizn,t1ff)      //                  TriZone (T-1 /10 Scoring Ted Estes, Free Play Fix)
 DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp (L-2)
-DRIVER(tmwrp,t2)        //                  Time Warp (L-2 /10 Scoring Ted Estes)
+DRIVER(tmwrp,l2ff)      //          09/79 W Time Warp (L-2 Free Play Fix)
+DRIVER(tmwrp,t2)        //                  Time Warp (T-2 /10 Scoring Ted Estes)
+DRIVER(tmwrp,t2ff)      //                  Time Warp (T-2 /10 Scoring Ted Estes, Free Play Fix)
 DRIVER(tmwrp,l3)        //                  Time Warp (L-3)
-DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
-DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
-DRIVER(grgar,c1)        //                  Gorgar (Lane Change MOD)
-DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
+DRIVER(tmwrp,l3ff)      //                  Time Warp (L-3 Free Play Fix)
+DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar (L-1)
+DRIVER(grgar,l1ff)      //          11/79 W Gorgar (L-1 Free Play Fix)
+DRIVER(grgar,t1)        //                  Gorgar (T-1 /10 Scoring Ted Estes)
+DRIVER(grgar,t1ff)      //                  Gorgar (T-1 /10 Scoring Ted Estes, Free Play Fix)
+DRIVER(grgar,c1)        //                  Gorgar (C-1 Lane Change MOD)
+DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball (L-2)
+DRIVER(lzbal,l2ff)      //          12/79 W Laser Ball (L-2 Free Play Fix)
 DRIVER(lzbal,l2sp)      //                  Laser Ball (L-2, PROM sound)
-DRIVER(lzbal,t2)        //                  Laser Ball /10 Scoring Ted Estes
+DRIVER(lzbal,l2spff)    //                  Laser Ball (L-2, PROM sound, Free Play Fix)
+DRIVER(lzbal,t2)        //                  Laser Ball (T-2 /10 Scoring Ted Estes)
+DRIVER(lzbal,t2ff)      //                  Laser Ball (T-2 /10 Scoring Ted Estes, Free Play Fix)
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
+DRIVER(frpwr,l2ff)      //          02/80 W Firepower (L-2 Free Play Fix)
 DRIVER(frpwr,l6)        //          02/80 W Firepower (L-6)
-DRIVER(frpwr,t6)        //                  Firepower (L-6) /10 Scoring Ted Estes
-DRIVER(frpwr,a6)        //          10/05   Firepower (Sys.6/6-Digit Custom Rev. 31)
-DRIVER(frpwr,b6)        //          12/03   Firepower (Sys.6 7-digit conversion)
-DRIVER(frpwr,c6)        //          10/05   Firepower (Sys.6/7-Digit Custom Rev. 31)
+DRIVER(frpwr,l6ff)      //          02/80 W Firepower (L-6 Free Play Fix)
+DRIVER(frpwr,t6)        //                  Firepower (T-6 /10 Scoring Ted Estes)
+DRIVER(frpwr,t6ff)      //                  Firepower (T-6 /10 Scoring Ted Estes, Free Play Fix)
+DRIVER(frpwr,a6)        //          10/05   Firepower (Sys.6/6-digit Custom Rev. 31)
+DRIVER(frpwr,b6)        //          12/03   Firepower (Sys.6/7-digit conversion)
+DRIVER(frpwr,c6)        //          10/05   Firepower (Sys.6/7-digit Custom Rev. 31)
 DRIVER(frpwr,d6)        //                  Firepower (Sys.6/6-digit /10 Scoring Rev. 31)
 DRIVER(omni,l1)         //          04/80 W Omni (Shuffle)
-DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
-DRIVER(blkou,f1)        //          06/80 W Blackout, French speech
-DRIVER(blkou,t1)        //                  Blackout /10 Scoring Ted Estes
-DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
-DRIVER(scrpn,t1)        //                  Scorpion /10 Scoring Ted Estes
-DRIVER(algar,l1)        //S6-499:   09/80 W Algar
-DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
-DRIVER(alpok,l6)        //          10/80 W Alien Poker L-6
+DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout (L-1)
+DRIVER(blkou,l1ff)      //          06/80 W Blackout (L-1 Free Play Fix)
+DRIVER(blkou,f1)        //          06/80 W Blackout (L-1 French speech)
+DRIVER(blkou,f1ff)      //          06/80 W Blackout (L-1 French speech, Free Play Fix)
+DRIVER(blkou,t1)        //                  Blackout (T-1 /10 Scoring Ted Estes)
+DRIVER(blkou,t1ff)      //                  Blackout (T-1 /10 Scoring Ted Estes, Free Play Fix)
+DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion (L-1)
+DRIVER(scrpn,l1ff)      //          07/80 W Scorpion (L-1 Free Play Fix)
+DRIVER(scrpn,t1)        //                  Scorpion (T-1 /10 Scoring Ted Estes)
+DRIVER(scrpn,t1ff)      //                  Scorpion (T-1 /10 Scoring Ted Estes, Free Play Fix)
+DRIVER(algar,l1)        //S6-499:   09/80 W Algar (L-1)
+DRIVER(algar,l1ff)      //          09/80 W Algar (L-1 Free Play Fix)
+DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker (L-2)
+DRIVER(alpok,l2ff)      //          10/80 W Alien Poker (L-2 Free Play Fix)
+DRIVER(alpok,l6)        //          10/80 W Alien Poker (L-6)
+DRIVER(alpok,l6ff)      //          10/80 W Alien Poker (L-6 Free Play Fix)
 DRIVER(alpok,f6)        //          10/80 W Alien Poker (L-6, French Speech)
+DRIVER(alpok,f6ff)      //          10/80 W Alien Poker (L-6, French Speech, Free Play Fix)
 DRIVER(alpok,b6)        //          11/06   Alien Poker Multiball mod
 //System 7
-DRIVER(frpwr,a7)        //S7-497:   10/05   Firepower (Sys.7/6-digit Custom Rev. 31)
-DRIVER(frpwr,b7)        //          12/03   Firepower (Sys.7 7-digit conversion)
+DRIVER(frpwr,a7)        //S7-497:   10/05 W Firepower (Sys.7/6-digit Custom Rev. 31)
+DRIVER(frpwr,b7)        //          12/03   Firepower (Sys.7/7-digit conversion)
 DRIVER(frpwr,c7)        //          11/06   Firepower (Sys.7/7-digit Custom Rev. 38)
 DRIVER(frpwr,d7)        //          10/05   Firepower (Sys.7/7-digit Custom Rev. 31)
 DRIVER(frpwr,e7)        //          10/05   Firepower (Sys.7/6-digit /10 Scoring Rev. 31)
