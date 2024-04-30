@@ -225,8 +225,9 @@ static void wpc_zc(int data) {
    core_zero_cross();
 
    // More precise implementation with better physic emulation
-   core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
-   if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
+   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
+      core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
+   if (core_gameData->hw.gameSpecific2 == WPC_CFTBL && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))) // CFTBL chase lights
    {
       int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
       int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
@@ -803,14 +804,16 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
       {
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
-        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
+        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
+          core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
       }
       break;
     case WPC_ALPHA2HI:
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
       {
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
-        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + ((20 + wpc_data[WPC_ALPHAPOS]) * 2 + 1) * 8, data);
+        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
+          core_write_pwm_output_8b(CORE_MODOUT_SEG0 + ((20 + wpc_data[WPC_ALPHAPOS]) * 2 + 1) * 8, data);
       }
       break;
     case WPC_LAMPROW: /* row and column can be written in any order */
@@ -837,8 +840,9 @@ WRITE_HANDLER(wpc_w) {
 
       // Loop over each GI Triac Bit and turn on according Triacs
       wpclocals.conductingGITriacs |= data; // Triac that were turned on before will continue to conduct until next zero cross, therefore we 'or' them with previous pulsed state
-      core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
-      if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
+      if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
+         core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
+      if (core_gameData->hw.gameSpecific2 == WPC_CFTBL && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))) // CFTBL chase lights
       {
          int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
          int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
@@ -875,15 +879,18 @@ WRITE_HANDLER(wpc_w) {
         // Operation is set all segs to 0 (blanking), then strove to next column, then set segments.
         // The delay between setting segments then blanking them is used to a rough PWM dimming
         // Overall timing is 1ms maximum per digit over a 16ms period
-        int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
-        int newIndex  = CORE_MODOUT_SEG0 +     data               * 2 * 8;
-        if (prevIndex != newIndex)
-          for (int i = 0; i < 4; i++)
-          {
-            int offst = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
-            core_write_pwm_output_8b(newIndex  + offst, coreGlobals.binaryOutputState[(prevIndex + offst) >> 3]);
-            core_write_pwm_output_8b(prevIndex + offst, 0);
-          }
+        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
+        {
+          int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
+          int newIndex  = CORE_MODOUT_SEG0 +     data               * 2 * 8;
+          if (prevIndex != newIndex)
+            for (int i = 0; i < 4; i++)
+            {
+              int offst = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
+              core_write_pwm_output_8b(newIndex  + offst, coreGlobals.binaryOutputState[(prevIndex + offst) >> 3]);
+              core_write_pwm_output_8b(prevIndex + offst, 0);
+            }
+        }
       }
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
@@ -899,7 +906,8 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
       {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
-        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8, data);
+        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
+          core_write_pwm_output_8b(CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8, data);
       }
       break;
     case WPC_EXTBOARD3:
@@ -921,29 +929,34 @@ WRITE_HANDLER(wpc_w) {
       //DBGLOG(("W:DIPSWITCH %x\n",data));
       break; /* just save value */
     case WPC_SOLENOID1:
-      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
+      if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID2:
-      core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
+      if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID3:
-      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
+      if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
       data |= wpc_data[offset];
       if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
       {
          int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
          int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
-         core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi & (0x11 << chase_2b));
+         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))
+           core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi & (0x11 << chase_2b));
          coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = 0x11 << chase_2b;
       }
       break;
     case WPC_SOLENOID4:
-      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
+      if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
       data |= wpc_data[offset];
       break;

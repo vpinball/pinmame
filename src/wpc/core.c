@@ -1985,7 +1985,7 @@ UINT64 core_getAllSol(void) {
 /--------------------------------------------------*/
 void core_getAllPhysicSols(float* state)
 {
-  assert(coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON)));
+  assert(coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)));
   memset(state, 0, CORE_MODOUT_SOL_MAX * sizeof(float)); // To avoid reporting garbage states for unused solenoid slots
   /*-- 1..32, hardware solenoids --*/
   if (core_gameData->gen & GEN_ALLWPC) {
@@ -2238,7 +2238,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
     // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
     // Note that physical outputs are also updated once per frame by the core machine driver video update callback.
-    if (((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS)) && coreGlobals.nSolenoids)
+    if (((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) && coreGlobals.nSolenoids)
      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) && coreGlobals.nLamps)
      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) && coreGlobals.nGI)
      || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS) && coreGlobals.nAlphaSegs)
@@ -2592,7 +2592,7 @@ void core_update_pwm_output_led(const double now, const int index, const int isF
       countf = 1.f;
     const int count = (int)countf;
     const float dt = dt_diff/countf;
-  	const float dt_ratio = dt*(float)(1./BULB_INTEGRATION_PERIOD);
+    const float dt_ratio = dt*(float)(1./BULB_INTEGRATION_PERIOD);
     const float emission = output->state.bulb.prevIntegrationValue * /*powf(dt_ratio,(float)(1./1.3)) approx:*/ cube(sqrtf(sqrtf(dt_ratio))); // pow boosts the emission artificially a bit, especially for GTS3/WPC alphaseg, as the power-on cycle is somehow too short?!?
     for(int i = 0; i < count; ++i)
       core_eye_flicker_fusion(output, emission);
@@ -2632,17 +2632,17 @@ void core_update_pwm_outputs(int forceUpdate)
 	   locals.pwmUpdateRequested = FALSE;
 	   const double now = timer_get_time();
 	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))
-   	     for (int i = 0; i < coreGlobals.nLamps; i++)
-		   coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].integrator(now, CORE_MODOUT_LAMP0 + i, FALSE);
+	    for (int i = 0; i < coreGlobals.nLamps; i++)
+	      coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].integrator(now, CORE_MODOUT_LAMP0 + i, FALSE);
 	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
 	     for (int i = 0; i < coreGlobals.nGI; i++)
-		   coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].integrator(now, CORE_MODOUT_GI0 + i, FALSE);
-	   if (options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON))
+	      coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].integrator(now, CORE_MODOUT_GI0 + i, FALSE);
+	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
 	     for (int i = 0; i < coreGlobals.nSolenoids; i++)
-		   coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].integrator(now, CORE_MODOUT_SOL0 + i, FALSE);
+	       coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].integrator(now, CORE_MODOUT_SOL0 + i, FALSE);
 	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
 	     for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
-		   coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].integrator(now, CORE_MODOUT_SEG0 + i, FALSE);
+	       coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].integrator(now, CORE_MODOUT_SEG0 + i, FALSE);
    }
 }
 
@@ -2840,7 +2840,7 @@ void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_FORCE_ON)) == 0)
+   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) == 0)
      return;
    const double now = timer_get_time();
    for (int i = 0; i < count; i++) {
@@ -2857,7 +2857,7 @@ void core_write_pwm_output(int index, int count, UINT8 bitStates)
 
 void core_write_pwm_output_8b(int index, UINT8 bitStates)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_FORCE_ON)) == 0)
+   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) == 0)
      return;
    assert((index & 7) == 0);
    UINT8 changeMask = coreGlobals.binaryOutputState[index >> 3] ^ bitStates;
@@ -2876,7 +2876,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
 
 void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_FORCE_ON)) == 0)
+   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) == 0)
      return;
    assert((index & 7) == 0);
    UINT8 changeMask = bitMask & (coreGlobals.binaryOutputState[index >> 3] ^ bitStates); // Identify differences
@@ -2896,11 +2896,20 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
 // Write a 8xn lamp matrix, taking care of PWM integration based on physical model of connected device
 void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols)
 {
-   //core_setLamp(coreGlobals.tmpLampMatrix, columns << ((startIndex - CORE_MODOUT_LAMP0) / 8), rows);
-   for (int col = 0; col < nCols; col++) {
-      UINT8 row = columns & (1 << col) ? rows : 0;
-      coreGlobals.tmpLampMatrix[col + (startIndex - CORE_MODOUT_LAMP0) / 8] |= row;
-      core_write_pwm_output_8b(startIndex + col * 8, row);
+   if (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)
+   {
+      for (const int endIndex = startIndex + nCols * 8; startIndex < endIndex; columns >>= 1, startIndex += 8) {
+         if (columns & 1) {
+            coreGlobals.tmpLampMatrix[(startIndex - CORE_MODOUT_LAMP0) >> 3] |= rows;
+            core_write_pwm_output_8b(startIndex, rows);
+         }
+         else {
+            core_write_pwm_output_8b(startIndex, 0);
+         }
+      }
+   }
+   else {
+      core_setLamp(coreGlobals.tmpLampMatrix, columns << ((startIndex - CORE_MODOUT_LAMP0) / 8), rows);
    }
 }
 
