@@ -136,7 +136,7 @@ Free Play Knocker sound fixes for all System 6 games/variants:
 Airborne Avenger (Free Play)
 Ali (7-digit conversion Free Play rev. 76)
 Atarians (Free Play)
-Attack From Mars (0.3 with 0.X Sound Prototype)
+Attack From Mars (0.3 with 0.6 Sound Prototype)
 Bad Girls (alternate set)
 Baywatch 3.00 (German)
 Beavis and Butt-Head (Class of 1812 MOD)

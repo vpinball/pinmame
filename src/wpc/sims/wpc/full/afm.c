@@ -356,8 +356,8 @@ DCS_SOUNDROM3m(	"afm_1_00.s2",CRC(610ff107) SHA1(9590f809a05cb2bda4979fa16f165e2
 		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
 WPC_ROMEND
 
-WPC_ROMSTART(afm,03, "AFM_Game_03.bin", 0x080000,CRC(5bf0818d) SHA1(6ed6e4b0349eb3eb996d04a16b66f6fa0dc33abd))
-DCS_SOUNDROM3m(	"AFM_Sound_L2.bin",CRC(1a4d5457) SHA1(24319323d8f47e223c65b731e1c344835268688e),
+WPC_ROMSTART(afm,03, "AFM_G11_03.bin", 0x080000,CRC(8c6d4026) SHA1(5061ffd8f60b1091b946ac64d9abd99f49700d1c))
+DCS_SOUNDROM3m(	"AFM_Sound_S2.bin",CRC(1a4d5457) SHA1(24319323d8f47e223c65b731e1c344835268688e),
 		"afm_s3.l1",CRC(1cbce9b1) SHA1(7f258bfe1904a879a2cb007419483f4fee91e072),
 		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
 WPC_ROMEND
@@ -395,13 +395,13 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF( afm,113,"Attack From Mars (1.13 / S1.1)", 1995, "Bally",wpc_m95S,0)
-CORE_CLONEDEF(afm,113b,113,"Attack From Mars (1.13b / S1.1)", 1995, "Bally",wpc_m95S,0)
-CORE_CLONEDEF(afm,11,113,"Attack From Mars (1.1 / S1.0)", 1995, "Bally",wpc_m95S,0)
+CORE_GAMEDEF( afm,113,"Attack From Mars (1.13 / S1.1)", 1999, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,113b,113,"Attack From Mars (1.13b / S1.1)", 1999, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,11,113,"Attack From Mars (1.1 / S1.0)", 1996, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,11u,113,"Attack From Mars (1.1 Ultrapin / S1.1)", 2006, "Global VR",wpc_m95S,0)
 CORE_CLONEDEF(afm,11pfx,113,"Attack From Mars (1.1 Pinball FX / S1.1)", 2018, "Zen Studios",wpc_m95S,0)
-CORE_CLONEDEF(afm,10,113,"Attack From Mars (1.0 / S1.0)", 1995, "Bally",wpc_m95S,0)
-CORE_CLONEDEF(afm,03,113,"Attack From Mars (0.3 / S0.X Prototype)", 1995, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,10,113,"Attack From Mars (1.0 / S1.0)", 1996, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,03,113,"Attack From Mars (0.3 / S0.6 Prototype)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,f10,113,"Attack From Mars (FreeWPC 0.10)", 1995, "FreeWPC",wpc_m95S,0)
 CORE_CLONEDEF(afm,f20,113,"Attack From Mars (FreeWPC 0.20)", 1995, "FreeWPC",wpc_m95S,0)
 CORE_CLONEDEF(afm,f32,113,"Attack From Mars (FreeWPC 0.32)", 1995, "FreeWPC",wpc_m95S,0)
