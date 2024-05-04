@@ -2896,7 +2896,7 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
 // Write a 8xn lamp matrix, taking care of PWM integration based on physical model of connected device
 void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols)
 {
-   if (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)
+   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))
    {
       for (const int endIndex = startIndex + nCols * 8; startIndex < endIndex; columns >>= 1, startIndex += 8) {
          if (columns & 1) {

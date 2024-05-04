@@ -1377,7 +1377,7 @@ static MACHINE_INIT(wpc) {
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "totan_l4", 8) == 0) { // Tales Of The Arabian Nights
+  else if (strncasecmp(gn, "totan_14", 8) == 0) { // Tales Of The Arabian Nights
      static const int flashers[] = { 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
