@@ -1185,6 +1185,14 @@ S11CS_SOUNDROM000(      "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c4
 S11_ROMEND
 CORE_CLONEDEF(rollr,ex,l2, "Rollergames (EXPERIMENTAL)", 1991, "Williams", s11_mS11CS,0)
 
+S11_ROMSTART48(rollr,l1,"RG_U26.512",   CRC(8808dc0c) SHA1(19239e0884859e17e4c6f4de4d1e06f9e9913777), // original dump came as 512 (=4x16kb duped), we stripped it down to 16kb
+                        "RG_U27.512",   CRC(7e816a7b) SHA1(546dd3b12f2152148749de501b2540f4a2506c32)) // original dump came as 512 (=2x32kb duped), we stripped it down to 32kb
+S11CS_SOUNDROM000(      "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c45cc81a18f13e1a8f8da),
+                        "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
+                        "rolr_u20.l3",  CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
+S11_ROMEND
+CORE_CLONEDEF(rollr,l1,l2, "Rollergames (LA-1)", 1991, "Williams", s11_mS11CS,0)
+
 S11_ROMSTART48(rollr,e1,"rolr_u26.pe1", CRC(56620505) SHA1(2df9097e52178f246148a40e0ad4a6e6a5cdb5d4),
                         "rolr_u27.pe1", CRC(724d0af2) SHA1(5de5596f4e594c0e6b8448817de6ff46ffc7194b))
 S11CS_SOUNDROM000(      "rolr_u4.pe1",  CRC(8c383b24) SHA1(5c738e5ec566f7fa5706cd4c33e5d706fa76c72d),

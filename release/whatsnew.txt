@@ -172,6 +172,7 @@ Odin (Prototype)
 Pinball Champ (French Speech)
 Pin-Bot J-2, J-3 (PEMBOT (no relation)) (MOD)
 Pool Champion (Italian Speech, Free Play) (incomplete dump)
+Rollergames LA-1
 Royal Flush Deluxe rev. 1
 Scared Stiff 1.1, 1.1 with Sound 1.0
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
