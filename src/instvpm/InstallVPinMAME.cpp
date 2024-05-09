@@ -50,7 +50,7 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 
 		DLLREGISTERSERVER* DllRegisterServer = (DLLREGISTERSERVER*) GetProcAddress(hModule, "DllRegisterServer");
 		if ( !DllRegisterServer ) {
-			DisplayError(hWnd, GetLastError(), "Can't find the registering function (DllRegisterServer) in the " VPMDLLNAME ".", "Please check if you have a valid vpinmame.dll!");
+			DisplayError(hWnd, GetLastError(), "Can't find the registering function (DllRegisterServer) in the " VPMDLLNAME ".", "Please check if you have a valid " VPMDLLNAME "!");
 			FreeLibrary(hModule);
 			return 0;
 		}
@@ -86,7 +86,7 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 
 		DLLUNREGISTERSERVER* DllUnregisterServer = (DLLUNREGISTERSERVER*) GetProcAddress(hModule, "DllUnregisterServer");
 		if ( !DllUnregisterServer ) {
-			DisplayError(hWnd, GetLastError(), "Can't find the unregistering function (DllUnegisterServer) in the " VPMDLLNAME ".", "Please check if you have a valid vpinmame.dll!");
+			DisplayError(hWnd, GetLastError(), "Can't find the unregistering function (DllUnegisterServer) in the " VPMDLLNAME ".", "Please check if you have a valid " VPMDLLNAME "!");
 			FreeLibrary(hModule);
 			return 0;
 		}
