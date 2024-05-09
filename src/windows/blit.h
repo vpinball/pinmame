@@ -76,6 +76,6 @@ struct win_blit_params
 //	PROTOTYPES
 //============================================================
 
-int win_perform_blit(const struct win_blit_params *blit, int update);
+int win_perform_blit(const struct win_blit_params * const blit, int update);
 
 #endif
