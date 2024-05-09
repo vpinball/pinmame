@@ -78,8 +78,9 @@ Improved emulation robustness when running multiple machines from the same gener
 Add Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Clean-up Metallica Coffin Magnet processor board to cleanly report its mode of operation (see https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for detailed operations)
 Fixed reset and slam-tilt problems of Baby Pac-Man
+Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads!
 
-*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123
+*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Paulo Gordinho
 New:
 Jeutel: Papillon
 Seeben: Brooklyn (Bingo) (not working)
@@ -112,6 +113,7 @@ X-Files 3.04 (unofficial MOD)
 Correct Dumps:
 Bell: Cosmic Flash (sound ROM - might need a redump because it contains an illegal instruction in one byte?)
       Super Bowl (sound ROM redump showed one byte of difference)
+Gottlieb: All System 1 based games now use the correct A1752CF dump
 LTD:  Space Poker
 WMS:  Black Knight 2000: redumped LG-1 (German) version, startup text is no longer corrupt
       NBA Fastbreak: Changed 2.1, 2.2 & 2.3 to also use the newer sound ROM S3.0

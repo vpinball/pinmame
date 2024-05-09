@@ -18,8 +18,8 @@ static core_tGameData name##GameData = {GEN_GTS1,dsp,{FLIP_SW(FLIP_L),0,0,0,SNDB
 static void init_##name(void) { \
 	core_gameData = &name##GameData; \
 } \
-GTS1_2_ROMSTART(name, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203bc6ca866492345), \
-                      "u4_ce.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
+GTS1_2_ROMSTART(name, "A1752CF.bin", CRC(614a3bd9) SHA1(febca18fb6f96037ca82e515dd161dfcb0e4c776), \
+                      "A1753CE.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
 
 #define INIT_S1S(name, dsp) \
 GTS1S_INPUT_PORTS_START(name, 1) GTS1_INPUT_PORTS_END \
@@ -27,8 +27,8 @@ static core_tGameData name##GameData = {GEN_GTS1,dsp,{FLIP_SW(FLIP_L),0,0,0,SNDB
 static void init_##name(void) { \
 	core_gameData = &name##GameData; \
 } \
-GTS1_2_ROMSTART(name, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203bc6ca866492345), \
-                      "u4_ce.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
+GTS1_2_ROMSTART(name, "A1752CF.bin", CRC(614a3bd9) SHA1(febca18fb6f96037ca82e515dd161dfcb0e4c776), \
+                      "A1753CE.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
 
 INIT_S1(gts1, sys1_disp) GTS1_ROMEND
 GAMEX(1977,gts1,0,GTS1C,gts1,gts1,ROT0,"Gottlieb","System 1",NOT_A_DRIVER)
@@ -225,8 +225,8 @@ static core_tGameData sahaloveGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,0,0,SND
 static void init_sahalove(void) {
   core_gameData = &sahaloveGameData;
 }
-GTS1_2_ROMSTART(sahalove, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203bc6ca866492345),
-                          "u4_ce.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
+GTS1_2_ROMSTART(sahalove, "A1752CF.bin", CRC(614a3bd9) SHA1(febca18fb6f96037ca82e515dd161dfcb0e4c776),
+                          "A1753CE.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
 GTS1_1_ROMSTART(sahalove, "412.cpu",   CRC(84a86b83) SHA1(f331f2ffd7d1b279b4ffbb939aa8649e723f5fac))
 SOUNDREGION(0x10000, REGION_CPU2)
 ROM_LOAD("sahalove.bin",  0,  0x2000,  CRC(3512840a) SHA1(eb36bb78bbf2f8610bc1d71a6651b937db3a5c69))
@@ -251,8 +251,8 @@ static core_tGameData hexagoneGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,0,0,SND
 static void init_hexagone(void) {
 	core_gameData = &hexagoneGameData;
 }
-GTS1_2_ROMSTART(hexagone, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203bc6ca866492345),
-                          "u4_ce.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
+GTS1_2_ROMSTART(hexagone, "A1752CF.bin", CRC(614a3bd9) SHA1(febca18fb6f96037ca82e515dd161dfcb0e4c776),
+                          "A1753CE.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
 GTS1_1_ROMSTART(hexagone, "435.cpu",   CRC(7749fd92) SHA1(9cd3e799842392e3939877bf295759c27f199e58))
 SOUNDREGION(0x10000, REGION_CPU2)
 ROM_LOAD("hexagone.bin",  0,  0x4000,  CRC(002b5464) SHA1(e2d971c4e85b4fb6580c2d3945c9946ea0cebc2e))

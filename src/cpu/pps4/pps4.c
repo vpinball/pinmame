@@ -156,8 +156,7 @@ INLINE void execute_one(UINT8 opcode)
 			I.AB = I.BX;
 			break;
 		case 0x09: /* ADSK */
-			I.accu += I.carry + RM(0x1000 | I.AB.w.l); // This is exactly the same as ADCSK, so where's the difference?
-//			I.accu += RM(0x1000 | I.AB.w.l); // This should actually be correct, but apparently it is not!?
+			I.accu += RM(0x1000 | I.AB.w.l);
 			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
 			I.AB = I.BX;
