@@ -2073,7 +2073,7 @@ void start_led(void)
 	if (!use_keyboard_leds)
 		return;
 
-	// retrive windows version
+	// retrieve windows version
 	GetVersionEx(&osinfo);
 
 	// nt/2k/xp
@@ -2102,8 +2102,6 @@ void start_led(void)
 
 	// remember the initial LED states
 	original_leds = osd_get_leds();
-
-	return;
 }
 
 
@@ -2139,8 +2137,6 @@ void stop_led(void)
 			return;
 		}
 	}
-
-	return;
 }
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
@@ -2168,7 +2164,7 @@ static int proc_trans_table[][2] =
 static void add_procInputList_entry(const char *name, int code, int *proccount)
 {
 	int standardcode = PROCCODE_OTHER;
- 	struct ik *temp;
+	struct ik *temp;
 
 	// copy the name
 	char *namecopy = (char *)(malloc(strlen(name) + 1));
