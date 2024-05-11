@@ -573,7 +573,7 @@ extern int core_getSwCol(int colEn);
 extern int core_getSol(int solNo);
 extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
-extern void core_getAllPhysicSols(float* state);
+extern void core_getAllPhysicSols(float* const state);
 
 /*-- AC sync and PWM integration --*/
 extern void core_request_pwm_output_update(void);

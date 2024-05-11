@@ -17,7 +17,7 @@ typedef struct {
 /*-------------------
 /  local variables
 /-------------------*/
-static int initialized = FALSE;
+static int initialized = 0;
 
 static struct {
   double                      t_to_p[BULB_T_MAX + 1 - 1500];
@@ -62,7 +62,7 @@ void bulb_init()
 {
    if (initialized)
       return;
-   initialized = TRUE;
+   initialized = 1;
 
    // Compute filament temperature to visible emission power LUT, normalized by visible emission power at T=2700K, according 
    // to the formula from "Luminous radiation from a black body and the mechanical equivalentt of light" by W.W.Coblentz and W.B.Emerson
