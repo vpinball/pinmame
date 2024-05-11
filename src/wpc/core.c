@@ -92,7 +92,15 @@ void vp_setDIP(int bank, int value) { }
   extern tGTS3locals GTS3locals;
 #endif
 
-INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
+INLINE UINT8 saturatedByte(float v)
+{
+  v *= 255.f;
+  if(v < 0.f)
+    v = 0.f;
+  if(v > 255.f)
+    v = 255.f;
+  return (UINT8)v;
+}
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
@@ -1983,7 +1991,7 @@ UINT64 core_getAllSol(void) {
 /*-------------------------------------------------
 /  Get the modulated value of all solenoids in the provided array
 /--------------------------------------------------*/
-void core_getAllPhysicSols(float* state)
+void core_getAllPhysicSols(float* const state)
 {
   assert(coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)));
   memset(state, 0, CORE_MODOUT_SOL_MAX * sizeof(float)); // To avoid reporting garbage states for unused solenoid slots
@@ -2414,15 +2422,15 @@ void core_update_pwm_output_nop(const double now, const int index, const int isF
 // Pulse output: simply report the binary output state without any processing
 void core_update_pwm_output_pulse(const double now, const int index, const int isFlip)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
-  output->value = (float) state;
+  output->value = state ? 1.f : 0.f;
 }
 
 // Custom output: update the value from the driver's custom getSol implementation
 void core_update_pwm_output_custom(const double now, const int index, const int isFlip)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
   output->value = core_gameData->hw.getSol ? (core_gameData->hw.getSol(index - CORE_MODOUT_SOL0 + 1) ? 1.f : 0.f) : 0.f;
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
@@ -2434,7 +2442,7 @@ void core_update_pwm_output_custom(const double now, const int index, const int 
 // Flip to ON state is taken in account directly, while flip to OFF state is only reported after a delay to filter out any PWM pulses
 void core_update_pwm_output_sol_2_state(const double now, const int index, const int isFlip)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
   const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   const float prevValue = output->value;
   if (isFlip)
@@ -2445,7 +2453,7 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
   }
   else if ((float)(now - output->state.sol.lastFlipTimestamp) > output->state.sol.switchDownLatency) {
      // Output is in a stable state (not PWMed since at least the defined switch down latency), just report its value
-     output->value = (float)state;
+     output->value = state ? 1.f : 0.f;
   }
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
@@ -2454,8 +2462,8 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
   // Apply the legacy solenoid behavior but directly updating coreGlobals.solenoids, avoiding the latency of legacy implementation which handles PWM
   // by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware.
   if (output->state.sol.fastOn && (prevValue != output->value)) {
-    int sol = index - CORE_MODOUT_SOL0;
-    UINT32 state = output->value > 0.5 ? 1 : 0;
+    const int sol = index - CORE_MODOUT_SOL0;
+    const UINT32 state = output->value > 0.5f ? 1 : 0;
     if (sol == (coreGlobals.flipperCoils & 0xFF))              // Lower Left Flipper coil
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (state ? 0x04 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >>  8) & 0xFF)) // Lower Right Flipper coil
@@ -2476,7 +2484,7 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
       coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
     else if (sol < 32) {
       if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) {
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 8))) | (state << (sol + 8));
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol +  8))) | (state << (sol + 8));
         coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 12))) | (state << (sol + 12));
       }
       else if ((core_gameData->gen & GEN_ALLWPC) == 0)
@@ -2547,9 +2555,9 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
       // Keeps T within the range of the LUT (between room temperature and melt down point)
       output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
       const float Ut = output->state.bulb.isAC ? (1.41421356f * sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp)) * output->state.bulb.prevIntegrationValue) : output->state.bulb.prevIntegrationValue;
-      const float dT = dt * (float)bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
+      const float dT = dt * bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
       output->state.bulb.filament_temperature += dT < 1000.0f ? dT : 1000.0f; // Limit initial current surge (1ms is a bit long when emulating this part of the heating)
-      core_eye_flicker_fusion(output, (float)bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature));
+      core_eye_flicker_fusion(output, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature));
       output->state.bulb.prevIntegrationTimestamp += dt;
     }
     output->state.bulb.prevIntegrationTimestamp = output->state.bulb.integrationTimestamp;
