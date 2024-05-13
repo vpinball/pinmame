@@ -1414,6 +1414,10 @@ static int read_rom_data(struct rom_load_data *romdata, const struct RomModule *
 		return -1;
 	}
 #endif /* PINMAME */
+#ifdef PINMAME
+	/* only use simple loading if ROM is not reversed */
+	if (!reversed)
+#endif /* PINMAME */
 	/* special case for simple loads */
 	if (datamask == 0xff && (groupsize == 1 || !reversed) && skip == 0)
 		return rom_fread(romdata, base, numbytes);
@@ -1439,6 +1443,13 @@ static int read_rom_data(struct rom_load_data *romdata, const struct RomModule *
 		{
 			/* non-grouped data */
 			if (groupsize == 1)
+#ifdef PINMAME
+				if (reversed) {
+					/* load 8-bit reversed ROM (needed for PPS-4 CPU games) */
+					for (i = bytesleft - 1; i >= 0; i -= skip)
+						base[i] = *bufptr++;
+				} else
+#endif /* PINMAME */
 				for (i = 0; i < bytesleft; i++, base += skip)
 					*base = *bufptr++;
 

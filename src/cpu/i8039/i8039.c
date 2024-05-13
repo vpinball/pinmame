@@ -240,11 +240,6 @@ INLINE void M_ILLEGAL(void)
 	logerror("I8039:  PC = %04x,  Illegal opcode = %02x\n", R.PC.w.l-1, M_RDMEM(R.PC.w.l-1));
 }
 
-INLINE void M_UNDEFINED(void)
-{
-	logerror("I8039:  PC = %04x,  Unimplemented opcode = %02x\n", R.PC.w.l-1, M_RDMEM(R.PC.w.l-1));
-}
-
 static void illegal(void)	 { M_ILLEGAL(); }
 
 static void add_a_n(void)	 { M_ADD(M_RDMEM_OPCODE()); }
@@ -323,8 +318,8 @@ static void djnz_r5(void)	{ UINT8 i=M_RDMEM_OPCODE(); R5--; if (R5 != 0) { R.PC.
 static void djnz_r6(void)	{ UINT8 i=M_RDMEM_OPCODE(); R6--; if (R6 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
 static void djnz_r7(void)	{ UINT8 i=M_RDMEM_OPCODE(); R7--; if (R7 != 0) { R.PC.w.l = ((R.PC.w.l-1) & 0xf00) | i; } else ADJUST_CYCLES }
 static void en_i(void)		 { R.xirq_en = 1; if (R.irq_state == I8039_EXTERNAL_INT) { R.irq_extra_cycles += Ext_IRQ(); } }
-static void en_tcnti(void)	 { R.tirq_en = 1; }
-static void ento_clk(void)	 { M_UNDEFINED(); }
+static void en_tcnt1(void)	 { R.tirq_en = 1; }
+static void ent0_clk(void)	 { /* enables clock for T0 output */ }
 static void in_a_p1(void)	 { R.A = port_r(1) & R.P1; }
 static void in_a_p2(void)	 { R.A = port_r(2) & R.P2; }
 static void ins_a_bus(void)	 { R.A = bus_r(); }
@@ -516,7 +511,7 @@ static const s_opcode opcode_main[256]=
 	{2, ins_a_bus  },{2, in_a_p1	},{2, in_a_p2	 },{1, illegal	  },{2, movd_a_p4  },{2, movd_a_p5	},{2, movd_a_p6  },{2, movd_a_p7  },
 	{1, inc_xr0    },{1, inc_xr1	},{2, jb_0		 },{2, adc_a_n	  },{2, call	   },{1, dis_i		},{2, jtf		 },{1, inc_a	  },
 	{1, inc_r0	   },{1, inc_r1 	},{1, inc_r2	 },{1, inc_r3	  },{1, inc_r4	   },{1, inc_r5 	},{1, inc_r6	 },{1, inc_r7	  },
-	{1, xch_a_xr0  },{1, xch_a_xr1	},{1, illegal	 },{2, mov_a_n	  },{2, jmp_1	   },{1, en_tcnti	},{2, jnt_0 	 },{1, clr_a	  },
+	{1, xch_a_xr0  },{1, xch_a_xr1	},{1, illegal	 },{2, mov_a_n	  },{2, jmp_1	   },{1, en_tcnt1	},{2, jnt_0 	 },{1, clr_a	  },
 	{1, xch_a_r0   },{1, xch_a_r1	},{1, xch_a_r2	 },{1, xch_a_r3   },{1, xch_a_r4   },{1, xch_a_r5	},{1, xch_a_r6	 },{1, xch_a_r7   },
 	{1, xchd_a_xr0 },{1, xchd_a_xr1 },{2, jb_1		 },{1, illegal	  },{2, call_1	   },{1, dis_tcnti	},{2, jt_0		 },{1, cpl_a	  },
 	{0, illegal    },{2, outl_p1_a	},{2, outl_p2_a  },{1, illegal	  },{2, movd_p4_a  },{2, movd_p5_a	},{2, movd_p6_a  },{2, movd_p7_a  },
@@ -526,7 +521,7 @@ static const s_opcode opcode_main[256]=
 	{1, anl_a_r0   },{1, anl_a_r1	},{1, anl_a_r2	 },{1, anl_a_r3   },{1, anl_a_r4   },{1, anl_a_r5	},{1, anl_a_r6	 },{1, anl_a_r7   },
 	{1, add_a_xr0  },{1, add_a_xr1	},{1, mov_t_a	 },{1, illegal	  },{2, jmp_3	   },{1, stop_tcnt	},{1, illegal	 },{1, rrc_a	  },
 	{1, add_a_r0   },{1, add_a_r1	},{1, add_a_r2	 },{1, add_a_r3   },{1, add_a_r4   },{1, add_a_r5	},{1, add_a_r6	 },{1, add_a_r7   },
-	{1, adc_a_xr0  },{1, adc_a_xr1	},{2, jb_3		 },{1, illegal	  },{2, call_3	   },{1, ento_clk	},{2, jf1		 },{1, rr_a 	  },
+	{1, adc_a_xr0  },{1, adc_a_xr1	},{2, jb_3		 },{1, illegal	  },{2, call_3	   },{1, ent0_clk	},{2, jf1		 },{1, rr_a 	  },
 	{1, adc_a_r0   },{1, adc_a_r1	},{1, adc_a_r2	 },{1, adc_a_r3   },{1, adc_a_r4   },{1, adc_a_r5	},{1, adc_a_r6	 },{1, adc_a_r7   },
 	{2, movx_a_xr0 },{2, movx_a_xr1 },{1, illegal	 },{2, ret		  },{2, jmp_4	   },{1, clr_f0 	},{2, jni		 },{1, illegal	  },
 	{2, orl_bus_n  },{2, orl_p1_n	},{2, orl_p2_n	 },{1, illegal	  },{2, orld_p4_a  },{2, orld_p5_a	},{2, orld_p6_a  },{2, orld_p7_a  },
@@ -604,6 +599,7 @@ void i8039_reset (void *param)
 	R.timerON = R.countON = 0;
 	R.irq_extra_cycles = 0;
 	R.masterClock = 0;
+	sel_rb0();
 }
 
 
@@ -1004,7 +1000,7 @@ READ_HANDLER(i8035_internal_r) {
 #if (HAS_I8048)
 /* Layout of the registers in the debugger */
 static UINT8 i8048_reg_layout[] = {
-	I8048_PC, I8048_SP, I8048_PSW, I8048_A, I8048_IRQ_STATE,    I8048_TC, I8048_P1, I8048_P2, -1,
+	I8048_PC, I8048_SP, I8048_PSW, I8048_A, I8048_TC, I8048_P1, I8048_P2, -1,
 	I8048_R0, I8048_R1, I8048_R2, I8048_R3, I8048_R4, I8048_R5, I8048_R6, I8048_R7, 0
 };
 
@@ -1064,7 +1060,7 @@ READ_HANDLER(i8048_internal_r) {
 #if (HAS_N7751)
 /* Layout of the registers in the debugger */
 static UINT8 n7751_reg_layout[] = {
-	N7751_PC, N7751_SP, N7751_PSW, N7751_A, N7751_IRQ_STATE,    N7751_TC, N7751_P1, N7751_P2, -1,
+	N7751_PC, N7751_SP, N7751_PSW, N7751_A, N7751_TC, N7751_P1, N7751_P2, -1,
 	N7751_R0, N7751_R1, N7751_R2, N7751_R3, N7751_R4, N7751_R5, N7751_R6, N7751_R7, 0
 };
 
