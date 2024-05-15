@@ -415,7 +415,7 @@ INLINE void execute_one(UINT8 opcode)
 	}
 	if (I.skip) {
 		opcode = ROP();
-		I.PC.w.l += words[opcode] - 1;
+//		I.PC.w.l += words[opcode] - 1; // skips actually one byte only - so TL won't be correctly skipped after RTNSK or such!
 		PPS4_ICount -= words[opcode];
 	}
 	if (!sagSet) I.sag = 0;
@@ -586,7 +586,7 @@ const char *PPS4_info(void *context, int regnum)
 		case CPU_INFO_REG+PPS4_SA: sprintf(buffer[which], "SA:%03X", r->SA.w.l); break;
 		case CPU_INFO_REG+PPS4_SB: sprintf(buffer[which], "SB:%03X", r->SB.w.l); break;
 		case CPU_INFO_REG+PPS4_BX: sprintf(buffer[which], "BX:%03X", r->BX.w.l); break;
-		case CPU_INFO_REG+PPS4_AB: sprintf(buffer[which], "AB:%03X", r->AB.w.l); break;
+		case CPU_INFO_REG+PPS4_AB: sprintf(buffer[which], "AB:%03X", r->AB.w.l & (I.sag ? 0x00f : 0xfff)); break;
 		case CPU_INFO_REG+PPS4_DB: sprintf(buffer[which], "DB:%02X", I.DB); break;
 		case CPU_INFO_REG+PPS4_A: sprintf(buffer[which], "A:%X", I.accu); break;
 		case CPU_INFO_REG+PPS4_C: sprintf(buffer[which], "C:%X", I.carry); break;
