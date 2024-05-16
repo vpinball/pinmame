@@ -2824,6 +2824,7 @@ SAM1_ROM128MB(acd_168,   "acd_168.bin",  CRC(9fdcb32e) SHA1(f36b289e1868a051f430
 SAM1_ROM128MB(acd_168h,  "acd_168h.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x07223FA0)
 SAM1_ROM128MB(acd_170,   "acd_170.bin",  CRC(f44e175c) SHA1(8d355511bc22a489f7820057d3b32e1548864612), 0x07228E48)
 SAM1_ROM128MB(acd_170h,  "acd_170h.bin", CRC(c2979275) SHA1(581db92af267095d2fc92bdc8aa9ff6595219ffe), 0x07228E48)
+SAM1_ROM128MB(acd_170_ac,"acd_170_ac.bin",CRC(94984c1e) SHA1(72c9cdd309bd1c1986849b549c4e4d6b46cb2198), 0x07228E48)
 #ifdef SAM_INCLUDE_COLORED
 SAM1_ROM128MB(acd_168c,  "acd_168c.bin", NO_DUMP, 0x077FFFF0)
 SAM1_ROM128MB(acd_168hc, "acd_168hc.bin",NO_DUMP, 0x077FFFF0)
@@ -2853,6 +2854,7 @@ CORE_CLONEDEF(acd, 165h, 170h, "AC/DC Limited Edition (V1.65)", 2013, "Stern", s
 CORE_CLONEDEF(acd, 168,  170h, "AC/DC (V1.68)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(acd, 168h, 170h, "AC/DC Limited Edition (V1.68)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(acd, 170,  170h, "AC/DC (V1.70.0)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 170_ac,170h,"American Country (AC/DC MOD)", 2024, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
 CORE_CLONEDEF(acd, 168c, 170h, "AC/DC (V1.68) (Colored MOD)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(acd, 168hc,170h, "AC/DC Limited Edition (V1.68) (Colored MOD)", 2014, "Stern", sam2, 0)

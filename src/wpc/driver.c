@@ -2194,6 +2194,7 @@ DRIVER(acd,168)         //        06/14 AC/DC - V1.68
 DRIVER(acd,168h)        //        06/14 AC/DC - V1.68 Limited Edition
 DRIVER(acd,170)         //        02/18 AC/DC - V1.70.0
 DRIVER(acd,170h)        //        02/18 AC/DC - V1.70.0 Limited Edition
+DRIVER(acd,170_ac)      //        04/24 AC/DC - V1.70.0 American Country MOD
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(acd,168c)        // pinball browser colorized using extend memory
 DRIVER(acd,168hc)       // pinball browser colorized using extend memory
@@ -2718,9 +2719,9 @@ DRIVER(gs,lg6)          //          ??/90 B Game Show (LG-6 German)
 DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)
 DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1 Prototype Europe)
 DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
-DRIVER(rollr,l1)        //          0?/90 W Rollergames (LA-1)
-DRIVER(rollr,l2)        //          04/90 W Rollergames (L-2)
-DRIVER(rollr,l2c)       //          04/19 W Rollergames (L-2C Competition MOD)
+DRIVER(rollr,l1)        //          04/90 W Rollergames (LA-1)
+DRIVER(rollr,l2)        //          04/90 W Rollergames (LA-2)
+DRIVER(rollr,l2c)       //          04/19 W Rollergames (LA-2C Competition MOD)
 DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3 Europe)
 DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3 German)
 DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2 French)

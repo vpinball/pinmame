@@ -137,6 +137,7 @@ Free Play Knocker sound fixes for all System 6 games/variants:
 
 Airborne Avenger (Free Play)
 Ali (7-digit conversion Free Play rev. 76)
+American Country (ACDC MOD)
 Atarians (Free Play)
 Attack From Mars (0.3 with 0.6 Sound Prototype)
 Bad Girls (alternate set)
