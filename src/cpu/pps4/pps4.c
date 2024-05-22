@@ -372,7 +372,7 @@ INLINE void execute_one(UINT8 opcode)
 
 		case 0xb0: case 0xb1: case 0xb2: case 0xb3: case 0xb4: case 0xb5: case 0xb6: case 0xb7:
 		case 0xb8: case 0xb9: case 0xba: case 0xbb: case 0xbc: case 0xbd: case 0xbe: case 0xbf:
-			I.PC.w.l = (I.PC.w.l & 0xfc0) | (opcode & 0x3f);
+			I.PC.w.l = ((I.PC.w.l - 1) & 0xfc0) | (opcode & 0x3f);
 			change_pc16(I.PC.d);
 			break;
 
@@ -414,9 +414,9 @@ INLINE void execute_one(UINT8 opcode)
 			break;
 	}
 	if (I.skip) {
-		opcode = ROP();
+		/* opcode = */ ROP();
 //		I.PC.w.l += words[opcode] - 1; // skips actually one byte only - so TL won't be correctly skipped after RTNSK or such!
-		PPS4_ICount -= words[opcode];
+//		PPS4_ICount -= words[opcode];
 	}
 	if (!sagSet) I.sag = 0;
 }
