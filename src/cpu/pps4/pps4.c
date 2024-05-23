@@ -65,19 +65,23 @@ static const int words[] = {
 
 static UINT8 ROP(void)
 {
+	UINT8 retVal = cpu_readop(I.PC.w.l);
+	I.PC.w.l = (I.PC.w.l & 0xfc0) | ((I.PC.w.l + 1) & 0x3f);
 #if INVERT_DATA
-	return (~cpu_readop(I.PC.w.l++)) & 0xff;
+	return ~retVal & 0xff;
 #else
-	return cpu_readop(I.PC.w.l++);
+	return retVal;
 #endif
 }
 
 static UINT8 ARG(void)
 {
+	UINT8 retVal = cpu_readop_arg(I.PC.w.l);
+	I.PC.w.l = (I.PC.w.l & 0xfc0) | ((I.PC.w.l + 1) & 0x3f);
 #if INVERT_DATA
-	return (~cpu_readop_arg(I.PC.w.l++)) & 0xff;
+	return ~retVal & 0xff;
 #else
-	return cpu_readop_arg(I.PC.w.l++);
+	return retVal;
 #endif
 }
 
@@ -372,7 +376,7 @@ INLINE void execute_one(UINT8 opcode)
 
 		case 0xb0: case 0xb1: case 0xb2: case 0xb3: case 0xb4: case 0xb5: case 0xb6: case 0xb7:
 		case 0xb8: case 0xb9: case 0xba: case 0xbb: case 0xbc: case 0xbd: case 0xbe: case 0xbf:
-			I.PC.w.l = ((I.PC.w.l - 1) & 0xfc0) | (opcode & 0x3f);
+			I.PC.w.l = (I.PC.w.l & 0xfc0) | (opcode & 0x3f);
 			change_pc16(I.PC.d);
 			break;
 
