@@ -71,3 +71,8 @@ rockyle,ali
 safeaus,HighHand_1973
 Class1984,seawitch
 geniecbbb,genie
+godzillabwpup,godzilla
+lostwrld_gunship,lostwrld
+incredibles,panther7
+goldfinger,bond
+mtl_180hcm,mtl_180hc
