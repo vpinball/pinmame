@@ -199,6 +199,14 @@ S11CS_SOUNDROM8(        "lzrd_u4.l1",  CRC(4baafc11) SHA1(3507f5f37e02688fa56cf5
 S11_ROMEND
 CORE_CLONEDEF(grand, l3, l4, "Grand Lizard (L-3)", 1986, "Williams", s11_mS11XS,0)
 
+S11_ROMSTART28(grand,l1,"grand lizard U26 L1.bin", CRC(540c80c3) SHA1(9da1f9683be5bc6b82cd5fb53dd9e74010a6c92b),
+                        "grand lizard U27 L1.bin", CRC(63072df5) SHA1(57f39f8b80e71cc3df0d5a186d7227af3c0ed4cc))
+S11XS_SOUNDROM44(       "lzrd_u21.l1", CRC(98859d37) SHA1(08429b9e6a3b3007815373dc280b985e3441aa9f),
+                        "lzrd_u22.l1", CRC(4e782eba) SHA1(b44ab499128300175bdb57f07ffe2992c82e47e4))
+S11CS_SOUNDROM8(        "lzrd_u4.l1",  CRC(4baafc11) SHA1(3507f5f37e02688fa56cf5bb303eaccdcedede06))
+S11_ROMEND
+CORE_CLONEDEF(grand, l1, l4, "Grand Lizard (L-1)", 1986, "Williams", s11_mS11XS,0)
+
 /*--------------------
 / Road Kings 07/86
 /--------------------*/
@@ -1167,7 +1175,7 @@ S11CS_SOUNDROM000(      "rolr_u4.l3",  CRC(d366c705) SHA1(76018305b5040b2e5d8c45
                         "rolr_u20.l3", CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
 S11_ROMEND
 #define input_ports_rollr input_ports_s11
-CORE_GAMEDEF(rollr, l2, "Rollergames (L-2)", 1990, "Williams", s11_mS11CS,0)
+CORE_GAMEDEF(rollr, l2, "Rollergames (LA-2)", 1990, "Williams", s11_mS11CS,0)
 
 S11_ROMSTART48(rollr,l2c,"Rollergames U26 game ROM rev LA-2 patch a06e.rom", CRC(1b056830) SHA1(398974ef60b37e5b3acf44f3c91332f781a801cc),
                          "Rollergames U27 game ROM rev LA-2 patch a06e.rom", CRC(d25a95ea) SHA1(ae0499add94dbad6a458f8af7841a8d0d0e21762))
@@ -1175,7 +1183,7 @@ S11CS_SOUNDROM000(       "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c
                          "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
                          "rolr_u20.l3",  CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
 S11_ROMEND
-CORE_CLONEDEF(rollr,l2c,l2, "Rollergames (L-2C Competition MOD)", 2019, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(rollr,l2c,l2, "Rollergames (LA-2C Competition MOD)", 2019, "Williams", s11_mS11CS,0)
 
 S11_ROMSTART48(rollr,ex,"rolr_u26.ea3", CRC(78c3c1ad) SHA1(04e4370548b3ba85c49634402a0ea166e3643f68),
                         "rolr_u27.ea3", CRC(18685158) SHA1(d1a79fbe1185fb9e1ae1d9e2b2751429f487bb4c))
@@ -1269,7 +1277,7 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
-CORE_CLONEDEF(pool,l5,l7,"Pool Sharks (L-5)", 1989, "Bally", s11c_one,0)
+CORE_CLONEDEF(pool,l5,l7,"Pool Sharks (LA-5)", 1989, "Bally", s11c_one,0)
 
 S11_ROMSTART48(pool,l6, "pool_u26.la6",CRC(fec70d5a) SHA1(bc155a590f64f2b43b8799c1a6d2336dde45a10c),
                         "pool_u27.la6",CRC(91fb5231) SHA1(538ddc66a5885e4b7a840d35a1e62b92f73b39ad))
