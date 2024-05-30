@@ -707,11 +707,7 @@ static struct {
   UINT8     lastLampMatrix[CORE_MAXLAMPCOL];
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
-  /*-- Multithreaded synchronization of physics output --*/
-  int       pwmUpdateRequested; // Flag set to request an update of all physic outputs
 } locals;
-
-void core_update_pwm_outputs(int forceUpdate);
 
 /*-------------------------------
 /  Initialize the game palette
@@ -1387,8 +1383,13 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 VIDEO_UPDATE(core_gen) {
   int count = 0;
 
+#if !defined(LIBPINMAME) && !defined(VPINMAME)
   /*-- Update all physic output at least once per frame --*/
-  core_update_pwm_outputs(TRUE);
+  core_update_pwm_gis();
+  core_update_pwm_lamps();
+  core_update_pwm_segments();
+  core_update_pwm_solenoids();
+#endif
 
 #ifdef PROC_SUPPORT
   int alpha = (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_ALLS11)) != 0;
@@ -2243,16 +2244,6 @@ static MACHINE_INIT(core) {
     if(((core_gameData->gen & GEN_GTS3) && GTS3locals.alphagen) || (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)))
       options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS; // use CORE_MODOUT_ENABLE_PHYSOUT_ALL to enable/test all physical/PWM outputs
 #endif
-#ifdef VPINMAME
-    // If physical output is enabled and supported, we add a 1ms timer that will service physical outputs requests from other threads, that is to say the VPinMAME client thread
-    // Note that physical outputs are also updated once per frame by the core machine driver video update callback.
-    if (((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) && coreGlobals.nSolenoids)
-     || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) && coreGlobals.nLamps)
-     || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) && coreGlobals.nGI)
-     || ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS) && coreGlobals.nAlphaSegs)
-     ||  (options.usemodsol & CORE_MODOUT_FORCE_ON))
-      timer_pulse(TIME_IN_HZ(1000), FALSE, core_update_pwm_outputs);
-#endif
 
     /*-- init bulb model LUTs --*/
     bulb_init();
@@ -2415,35 +2406,31 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
 //#define LOG_PWM_OUT (CORE_MODOUT_SOL0 + 16 - 1)
 
 // No operation output: just keep the last value directly defined by the driver
-void core_update_pwm_output_nop(const double now, const int index, const int isFlip)
+void core_update_pwm_output_nop(const double now, const int index, const int isFlip, const int state)
 {
 }
 
 // Pulse output: simply report the binary output state without any processing
-void core_update_pwm_output_pulse(const double now, const int index, const int isFlip)
+void core_update_pwm_output_pulse(const double now, const int index, const int isFlip, const int state)
 {
-  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
-  const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
-  output->value = state ? 1.f : 0.f;
+  coreGlobals.physicOutputState[index].value = state ? 1.f : 0.f;
 }
 
 // Custom output: update the value from the driver's custom getSol implementation
-void core_update_pwm_output_custom(const double now, const int index, const int isFlip)
+void core_update_pwm_output_custom(const double now, const int index, const int isFlip, const int state)
 {
-  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
-  output->value = core_gameData->hw.getSol ? (core_gameData->hw.getSol(index - CORE_MODOUT_SOL0 + 1) ? 1.f : 0.f) : 0.f;
+  coreGlobals.physicOutputState[index].value = core_gameData->hw.getSol ? (core_gameData->hw.getSol(index - CORE_MODOUT_SOL0 + 1) ? 1.f : 0.f) : 0.f;
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
-    printf("Custom #%d t=%8.5f v=%f\n", index, now, output->value);
+    printf("Custom #%d t=%8.5f v=%f\n", index, now, coreGlobals.physicOutputState[index].value);
   #endif
 }
 
 // Simple 2 state solenoid output
 // Flip to ON state is taken in account directly, while flip to OFF state is only reported after a delay to filter out any PWM pulses
-void core_update_pwm_output_sol_2_state(const double now, const int index, const int isFlip)
+void core_update_pwm_output_sol_2_state(const double now, const int index, const int isFlip, const int state)
 {
   core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
-  const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   const float prevValue = output->value;
   if (isFlip)
      output->state.sol.lastFlipTimestamp = now;
@@ -2536,10 +2523,10 @@ static const double BULB_INTEGRATION_PERIOD = 0.001; // do the integration in a 
 // and cooled by radiating energy (Planck & Stefan/Boltzmann laws). The visible emission power is then evaluated from the filament temperature.
 // Integration is performed after (roughly) 1ms delay in (roughly) 1ms cycles
 // isFlip signals a state flip, BUT we track this internally anyways now
-void core_update_pwm_output_bulb(const double now, const int index, const int isFlip)
+void core_update_pwm_output_bulb(const double now, const int index, const int isFlip, const int state)
 {
   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-  const float U = (((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
+  const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
   const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
 
   if(U != output->state.bulb.prevIntegrationValue        // state flip?
@@ -2568,7 +2555,8 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
-    printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, ((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ? "x" : "-");
+    printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s F=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-", isFlip ? "/" : ".");
+    //printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, ((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ? "x" : "-");
   #endif
 }
 
@@ -2584,10 +2572,9 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 // - https://www.noritake-elec.com/technology/general-technical-information/vfd-operation states a linear relation between PWM and relative brightness
 // - http://www.futabahk.com.hk/FTS/-%20FTP_DataBase/Docs_05TechDocs/VFD/AN-1103A-EN%20%20VFD%20Characteristics%20and%20Operation%20Guide%20(EN).pdf states the same
 // isFlip signals a state flip, BUT we track this internally anyways now
-void core_update_pwm_output_led(const double now, const int index, const int isFlip)
+void core_update_pwm_output_led(const double now, const int index, const int isFlip, const int state)
 {
   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-  const int state = (coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1;
   const float power = state ? output->state.bulb.relative_brightness : 0.f;
   const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
 
@@ -2622,42 +2609,11 @@ void core_update_pwm_output_led(const double now, const int index, const int isF
   #endif
 }
 
-// This can be called from any thread to request an update of all integrated outputs
-// The call is non blocking: the main PinMAME thread will schedule an update and return immediately
-void core_request_pwm_output_update()
-{
-	locals.pwmUpdateRequested = TRUE;
-}
-
-// Actually perform PWM integration on all outputs:
-// - called periodically with forceUpdate=FALSE to check if a client thread requested the update
-// - or called with forceUpdate=TRUE when used in a single threaded environment
-// Note that the need of explicit integration call depends on the output type. For example, some solenoids
-// have immediate response and do not rely on integration.
-void core_update_pwm_outputs(int forceUpdate)
-{
-   if (locals.pwmUpdateRequested || forceUpdate) {
-	   locals.pwmUpdateRequested = FALSE;
-	   const double now = timer_get_time();
-	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))
-	    for (int i = 0; i < coreGlobals.nLamps; i++)
-	      coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].integrator(now, CORE_MODOUT_LAMP0 + i, FALSE);
-	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
-	     for (int i = 0; i < coreGlobals.nGI; i++)
-	      coreGlobals.physicOutputState[CORE_MODOUT_GI0 + i].integrator(now, CORE_MODOUT_GI0 + i, FALSE);
-	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
-	     for (int i = 0; i < coreGlobals.nSolenoids; i++)
-	       coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].integrator(now, CORE_MODOUT_SOL0 + i, FALSE);
-	   if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
-	     for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
-	       coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].integrator(now, CORE_MODOUT_SEG0 + i, FALSE);
-   }
-}
-
 void core_set_pwm_output_type(int startIndex, int count, int type)
 {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = type;
     switch (type) {
     case CORE_MODOUT_NONE:
@@ -2829,6 +2785,7 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
 {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
     coreGlobals.physicOutputState[i].state.bulb.bulb = bulb;
     coreGlobals.physicOutputState[i].state.bulb.U = U;
@@ -2841,64 +2798,81 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
 
 void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
 {
-  for (int i = 0; i < count; i++)
-    core_set_pwm_output_type(startIndex + i, 1, outputTypes[i]);
+   for (int i = 0; i < count; i++)
+      core_set_pwm_output_type(startIndex + i, 1, outputTypes[i]);
+}
+
+// Perform emulation of the requested physical outputs from the stored PWM digital output states
+// Initial implementation was performing this task upon digital output writes causing DMD animation stutters and sound buffer underflow.
+// This is now performed on physic output reads, moving the CPU load to the caller thread. The client is responsible and has the ability
+// to manage this load according to its use. It also allows to limit the update to the requested outputs (physics should be updated 
+// according to physic engine constants while visual should be updated according to output display characteristics).
+void core_update_pwm_outputs(const int startIndex, const int count)
+{
+   const double now = timer_get_time();
+   for (int i = 0; i < count; i++)
+   {
+      const unsigned int index = startIndex + i;
+      core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
+      // Perform integration of flip states that appended since last integration and before now if any
+      while (output->lastIntegrationFlipPos != output->flipBufferPos)
+      {
+         output->lastIntegrationFlipPos = (output->lastIntegrationFlipPos + 1) % FLIP_BUFFER_SIZE;
+         output->integrator(output->flipTimeStamps[output->lastIntegrationFlipPos], index, TRUE, (output->lastIntegrationFlipPos & 1) ^ 1);
+      }
+      // Perform integration of stable state up to now
+      output->integrator(now, index, FALSE, output->lastIntegrationFlipPos & 1);
+   }
 }
 
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) == 0)
-     return;
-   const double now = timer_get_time();
-   for (int i = 0; i < count; i++) {
-     const int pos = index >> 3, ofs = index & 7;
-     const int prevBit = (coreGlobals.binaryOutputState[pos] >> ofs) & 1, newBit = bitStates & 1;
-     if (prevBit != newBit) {
-       coreGlobals.physicOutputState[index].integrator(now, index, TRUE);
-       coreGlobals.binaryOutputState[pos] ^= 1 << ofs;
-     }
-     bitStates = bitStates >> 1;
-     index++;
+   const float now = (float) timer_get_time();
+   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+   for (int i = 0; i < count; i++, bitStates = bitStates >> 1, index++, output++) {
+      const int pos = index >> 3, ofs = index & 7;
+      if (((coreGlobals.binaryOutputState[pos] >> ofs) & 1) != (bitStates & 1)) {
+         const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
+         output->flipTimeStamps[bufferPos] = now;
+         output->flipBufferPos = bufferPos;
+         coreGlobals.binaryOutputState[pos] ^= 1 << ofs;
+      }
    }
 }
 
 void core_write_pwm_output_8b(int index, UINT8 bitStates)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) == 0)
-     return;
    assert((index & 7) == 0);
    UINT8 changeMask = coreGlobals.binaryOutputState[index >> 3] ^ bitStates;
-   if (changeMask) {
-     int pos = index;
-     const double now = timer_get_time();
-     while (changeMask) {
-       if (changeMask & 1)
-         coreGlobals.physicOutputState[pos].integrator(now, pos, TRUE);
-       changeMask >>= 1;
-       pos++;
-     }
-     coreGlobals.binaryOutputState[index >> 3] = bitStates;
-   }
+   if (!changeMask)
+      return;
+   const float now = (float) timer_get_time();
+   for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
+      if (changeMask & 1)
+      {
+         const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
+         output->flipTimeStamps[bufferPos] = now;
+         output->flipBufferPos = bufferPos;
+      } 
+   coreGlobals.binaryOutputState[index >> 3] = bitStates;
 }
 
 void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
 {
-   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALL | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) == 0)
-     return;
    assert((index & 7) == 0);
    UINT8 changeMask = bitMask & (coreGlobals.binaryOutputState[index >> 3] ^ bitStates); // Identify differences
-   if (changeMask) {
-     int pos = index;
-     const double now = timer_get_time();
-     while (changeMask) {
-       if (changeMask & 1)
-         coreGlobals.physicOutputState[pos].integrator(now, pos, TRUE);
-       changeMask >>= 1;
-       pos++;
-     }
-     coreGlobals.binaryOutputState[index >> 3] = (coreGlobals.binaryOutputState[index >> 3] & ~bitMask) | (bitStates & bitMask);
-   }
+   if (!changeMask)
+      return;
+   const float now = (float) timer_get_time();
+   for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
+      if (changeMask & 1)
+      {
+         const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
+         output->flipTimeStamps[bufferPos] = now;
+         output->flipBufferPos = bufferPos;
+      }
+   coreGlobals.binaryOutputState[index >> 3] = (coreGlobals.binaryOutputState[index >> 3] & ~bitMask) | (bitStates & bitMask);
 }
 
 // Write a 8xn lamp matrix, taking care of PWM integration based on physical model of connected device
