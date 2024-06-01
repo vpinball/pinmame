@@ -1068,7 +1068,8 @@ PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 	if (!_isRunning)
 		return 0;
 
-	core_request_pwm_output_update();
+   if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + solNo - 1, 1);
 
 	return vp_getSolenoid(solNo);
 }
@@ -1082,7 +1083,7 @@ PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedS
 	if (!_isRunning)
 		return -1;
 
-	core_request_pwm_output_update();
+   core_update_pwm_solenoids();
 
 	vp_tChgSols chgSols;
 	const int count = vp_getChangedSolenoids(chgSols);
@@ -1109,7 +1110,8 @@ PINMAMEAPI int PinmameGetLamp(const int lampNo)
 	if (!_isRunning)
 		return 0;
 
-	core_request_pwm_output_update();
+   if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
+      core_update_pwm_outputs(CORE_MODOUT_LAMP0 + lampNo - 1, 1);
 
 	return vp_getLamp(lampNo);
 }
@@ -1123,7 +1125,7 @@ PINMAMEAPI int PinmameGetChangedLamps(PinmameLampState* const p_changedStates)
 	if (!_isRunning)
 		return -1;
 
-	core_request_pwm_output_update();
+   core_update_pwm_lamps();
 
 	vp_tChgLamps chgLamps;
 	const int count = vp_getChangedLamps(chgLamps);
@@ -1149,8 +1151,9 @@ PINMAMEAPI int PinmameGetGI(const int giNo)
 {
 	if (!_isRunning)
 		return 0;
-
-	core_request_pwm_output_update();
+   
+   if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI))
+      core_update_pwm_outputs(CORE_MODOUT_GI0 + giNo - 1, 1);
 
 	return vp_getGI(giNo);
 }
@@ -1164,7 +1167,7 @@ PINMAMEAPI int PinmameGetChangedGIs(PinmameGIState* const p_changedStates)
 	if (!_isRunning)
 		return -1;
 
-	core_request_pwm_output_update();
+   core_update_pwm_gis();
 
 	vp_tChgGIs chgGIs;
 	const int count = vp_getChangedGI(chgGIs);
@@ -1191,7 +1194,7 @@ PINMAMEAPI int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t mask2, 
 	if (!_isRunning)
 		return -1;
 
-	core_request_pwm_output_update();
+   core_update_pwm_segments();
 
 	vp_tChgLED chgLEDs;
 	const int count = vp_getChangedLEDs(chgLEDs, mask, mask2);

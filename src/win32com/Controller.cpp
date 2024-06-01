@@ -401,7 +401,8 @@ STDMETHODIMP CController::get_Lamp(int nLamp, VARIANT_BOOL *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal= false;
   else {
-    core_request_pwm_output_update();
+    if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
+      core_update_pwm_outputs(CORE_MODOUT_LAMP0 + nLamp - 1, 1);
     *pVal = vp_getLamp(nLamp)?VARIANT_TRUE:VARIANT_FALSE;
   }
 
@@ -418,7 +419,8 @@ STDMETHODIMP CController::get_Solenoid(int nSolenoid, VARIANT_BOOL *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal= false;
   else {
-    core_request_pwm_output_update();
+    if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + nSolenoid - 1, 1);
     *pVal = vp_getSolenoid(nSolenoid)?VARIANT_TRUE:VARIANT_FALSE;
   }
   return S_OK;
@@ -493,13 +495,13 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
-	core_request_pwm_output_update();
-
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 89);
 
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
 	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+   if (!timeout)
+     core_update_pwm_lamps();
 	for (int i = timeout ? 11 : 0; i < 89; ++i)
 	{
 		pData[i].vt = VT_BOOL;
@@ -868,8 +870,7 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
 
-  /*-- Request an update that will be processed asynchronously --*/
-  core_request_pwm_output_update();
+  core_update_pwm_lamps();
 
   /*-- Count changes --*/
   vp_tChgLamps chgLamps;
@@ -904,17 +905,16 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 
 	if (!pVal) return S_FALSE;
 
-	/*-- Request an update that will be processed asynchronously --*/
-	core_request_pwm_output_update();
-
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
+   // FIXME this implementation supposes that the lamp array has 89 lamps which is wrong
 	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
 		for (int ix=0; ix<89; ix++)
 			*(dst++) = 0;
 	}
 	else {
+      core_update_pwm_lamps();
 		for (int ix=0; ix<89; ix++)
 			*(dst++) = vp_getLamp(ix) ? 1:0;
 	}
@@ -940,8 +940,7 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
 
-	/*-- Request an update that will be processed asynchronously --*/
-	core_request_pwm_output_update();
+   core_update_pwm_solenoids();
 
 	/*-- Count changes --*/
 	vp_tChgSols chgSol;
@@ -977,9 +976,6 @@ STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
 
 	if (!pVal) return S_FALSE;
 
-	/*-- Request an update that will be processed asynchronously --*/
-	core_request_pwm_output_update();
-
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
@@ -988,6 +984,7 @@ STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
 			*(dst++) = 0;
 	}
 	else {
+      core_update_pwm_solenoids();
 		for (int ix=0; ix<65; ix++)
 			*(dst++) = vp_getSolenoid(ix);
 	}
@@ -1015,8 +1012,7 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
 
-	/*-- Request an update that will be processed asynchronously --*/
-	core_request_pwm_output_update();
+   core_update_pwm_gis();
 
 	/*-- Count changes --*/
 	int uCount = vp_getChangedGI(chgGI);
@@ -1270,8 +1266,7 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
-  /*-- Request an update that will be processed asynchronously --*/
-  core_request_pwm_output_update();
+  core_update_pwm_lamps();
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLamps(chgLamps);
@@ -1314,8 +1309,7 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
-  /*-- Request an update that will be processed asynchronously --*/
-  core_request_pwm_output_update();
+  core_update_pwm_segments();
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
@@ -1371,8 +1365,7 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
 
-  /*-- Request an update that will be processed asynchronously --*/
-  core_request_pwm_output_update();
+  core_update_pwm_segments();
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
@@ -1465,7 +1458,8 @@ STDMETHODIMP CController::get_GIString(int nString, int *pVal) {
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal = 0;
   else {
-    core_request_pwm_output_update();
+    if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI))
+      core_update_pwm_outputs(CORE_MODOUT_GI0 + nString - 1, 1);
     *pVal = vp_getGI(nString);
   }
 
@@ -1485,9 +1479,8 @@ STDMETHODIMP CController::get_ChangedGIStrings(VARIANT *pVal) {
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
-  /*-- Request an update that will be processed asynchronously --*/
-  core_request_pwm_output_update();
-
+  core_update_pwm_gis();
+  
   int uCount = vp_getChangedGI(chgGI);
 
   if (uCount == 0)
@@ -1531,8 +1524,7 @@ STDMETHODIMP CController::get_ChangedSolenoids(VARIANT *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ pVal->vt = 0; return S_OK; }
 
-  /*-- Request an update that will be processed asynchronously --*/
-  core_request_pwm_output_update();
+  core_update_pwm_solenoids();
 
   /*-- Count changed solenoids --*/
   int uCount = vp_getChangedSolenoids(chgSol);
@@ -1592,14 +1584,13 @@ STDMETHODIMP CController::get_Solenoids(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
-	/*-- Request an update that will be processed asynchronously --*/
-	core_request_pwm_output_update();
-
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 65);
 
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
 	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+   if (!timeout)
+      core_update_pwm_solenoids();
 	for (int i = 0; i < 65; ++i)
 	{
 		pData[i].vt = VT_BOOL;
@@ -1641,14 +1632,13 @@ STDMETHODIMP CController::get_GIStrings(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
-	/*-- Request an update that will be processed asynchronously --*/
-	core_request_pwm_output_update();
-
 	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, CORE_MAXGI);
 
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
 	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+   if (!timeout)
+      core_update_pwm_gis();
 	for (int i = 0; i < CORE_MAXGI; ++i)
 	{
 		pData[i].vt = VT_I4;
