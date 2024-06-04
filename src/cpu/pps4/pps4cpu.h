@@ -17,7 +17,6 @@
 	cpu_writeport16(no, val);
 
 #define M_JMP(hibyte) {											\
-	PPS4_ICount--;												\
 	I.PC.w.l = ARG();											\
 	I.PC.b.h = hibyte;											\
 	change_pc16(I.PC.d);										\
