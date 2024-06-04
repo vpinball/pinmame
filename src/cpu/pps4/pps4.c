@@ -43,8 +43,8 @@ int PPS4_ICount = 0;
 static int wasLB = 0;
 static int wasLDI = 0;
 
-/* Word count for all opcodes */
-static const int words[] = {
+/* Cycle count for all opcodes */
+static const int cycleCount[] = {
 	2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -57,10 +57,10 @@ static const int words[] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
 };
 
 static UINT8 ROP(void)
@@ -102,7 +102,7 @@ INLINE void execute_one(UINT8 opcode)
 	PAIR tmpPair;
 	int tmp, sagSet = 0;
 
-	PPS4_ICount -= words[opcode];
+	PPS4_ICount -= cycleCount[opcode];
 	if (wasLB) wasLB--;
 	if (wasLDI) wasLDI--;
 	I.skip = 0;
@@ -418,9 +418,8 @@ INLINE void execute_one(UINT8 opcode)
 			break;
 	}
 	if (I.skip) {
-		/* opcode = */ ROP();
-//		I.PC.w.l += words[opcode] - 1; // skips actually one byte only - so TL won't be correctly skipped after RTNSK or such!
-//		PPS4_ICount -= words[opcode];
+		ROP(); // skips actually one byte only - so TL won't be correctly skipped after RTNSK or such!
+		PPS4_ICount--;
 	}
 	if (!sagSet) I.sag = 0;
 }
