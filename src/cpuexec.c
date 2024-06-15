@@ -809,8 +809,38 @@ void cpunum_set_halt_line(int cpunum, int state)
  *
  *************************************/
 
+#if defined(_WIN32) || defined(_WIN64)
+// Sadly Windows does not offer a microsecond precise sleep function like unix does
+// using uSleep (from ticker.c) or Sleep results in bad precision and/or high CPU use
+// Taken from https://www.c-plusplus.net/forum/topic/109539/usleep-unter-windows
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+void usleep(unsigned int usec)
+{
+	HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+	if (timer)
+	{
+		LARGE_INTEGER ft;
+		ft.QuadPart = -(10 * (__int64)usec);
+		SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+		WaitForSingleObject(timer, INFINITE);
+		CloseHandle(timer);
+	}
+	else Sleep(0);
+}
+#else
+#include <unistd.h>
+#endif
+
 static void cpu_timeslice(void)
 {
+	// PinMame: allow external synchronization by suspending emulation when a time fence is reached
+	if (options.time_fence != 0.0 && timer_get_time() >= options.time_fence)
+	{
+		usleep(100);
+		return;
+	}
+
 	double target = timer_time_until_next_timer();
 	int cpunum, ran;
 	

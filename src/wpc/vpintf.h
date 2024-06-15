@@ -117,6 +117,11 @@ void vp_setModOutputType(int output, int no, int type);
 int vp_getModOutputType(int output, int no);
 
 /*-----------
+/  set a time fence where emulation is suspended when reached
+/-----------*/
+void vp_setTimeFence(double timeInS);
+
+/*-----------
 / Mechanics
 /------------*/
 void vp_setMechData(int para, int data);

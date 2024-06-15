@@ -304,6 +304,11 @@ int vp_getModOutputType(int output, int no) {
 	return coreGlobals.physicOutputState[pos].type;
 }
 
+void vp_setTimeFence(double fenceInS)
+{
+	options.time_fence = fenceInS;
+}
+
 int vp_getMech(int mechNo) {
 #if defined(VPINMAME) || defined(LIBPINMAME)
   extern int g_fHandleMechanics;
