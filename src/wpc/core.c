@@ -2809,7 +2809,10 @@ void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
 // according to physic engine constants while visual should be updated according to output display characteristics).
 void core_update_pwm_outputs(const int startIndex, const int count)
 {
-   const double now = timer_get_time();
+   // HACK timer_get_time is not thread safe and can only be called from emulation thread. Therefore we use a fake timer with timer_starttime which is thread safe as a workaround.
+   // const double now = timer_get_time();
+   mame_timer fake_timer = { 0 };
+   const double now = timer_starttime(&fake_timer);
    for (int i = 0; i < count; i++)
    {
       const unsigned int index = startIndex + i;
