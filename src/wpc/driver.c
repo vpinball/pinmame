@@ -457,6 +457,7 @@ DRIVER(lwar,e90)        //               05/87 Laser War (9.0 Europe)
 //4 x 2 x 7 (mixed) A/N Display
 DRIVER(ssvc,a26)        //Data East MPU: 03/88 Secret Service (2.6)
 DRIVER(ssvc,b26)        //               03/88 Secret Service (2.6 Alternate Sound)
+DRIVER(ssvc,e40)        //               03/88 Secret Service (4.0 Europe)
 DRIVER(ssvc,a42)        //               03/88 Secret Service (4.2 Alternate Sound)
 DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley (2.1 Europe)
 DRIVER(torp,a16)        //               08/88 Torpedo Alley (1.6)

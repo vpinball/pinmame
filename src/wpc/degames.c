@@ -171,6 +171,14 @@ DE1S_SOUNDROM244(  "sssndf7b.rom",CRC(4bd6b16a) SHA1(b9438a16cd35820628fe6eb8228
 DE_ROMEND
 CORE_CLONEDEF(ssvc,a42,a26,"Secret Service (4.2, alternate sound)",1988,"Data East",de_mDEAS1, 0)
 
+DE_ROMSTART88(ssvc_e40,"ssvce4-0.b5",CRC(1109be9b) SHA1(b0058d63868d6b97967fe8ee681f0a807d55cdaf),
+                   "ssvce4-0.c5", CRC(4162833b) SHA1(1699287c7b25262053ce42bf38e5608bb8b0670c))
+DE1S_SOUNDROM244(  "sssndf7.rom",CRC(980778d0) SHA1(7c1f14d327b6d0e6d0fef058f96bb1cb440c9330),      //F7 on schem (sound)
+                   "ssv1f6.rom", CRC(ccbc72f8) SHA1(c5c13fb8d05d7fb4005636655073d88b4d12d65e),       //F6 on schem (voice1)
+                   "ssv2f4.rom", CRC(53832d16) SHA1(2227eb784e0221f1bf2bdf7ea48ecd122433f1ea))       //F4 on schem (voice2)
+DE_ROMEND
+CORE_CLONEDEF(ssvc,e40,a26,"Secret Service (4.0 Europe)",1988,"Data East",de_mDEAS1, 0)
+
 /*-----------------------------------------------------------------------
 / Torpedo Alley - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32/64K Sound Roms
 /------------------------------------------------------------------------*/
