@@ -1051,6 +1051,15 @@ PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PI
 }
 
 /******************************************************
+ * PinmameSetTimeFence
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetTimeFence(const double timeInS)
+{
+	vp_setTimeFence(timeInS);
+}
+
+/******************************************************
  * PinmameGetMaxSolenoids
  ******************************************************/
 

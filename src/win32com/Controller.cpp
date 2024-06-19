@@ -380,6 +380,9 @@ STDMETHODIMP CController::Stop()
 	if ( m_hThreadRun==INVALID_HANDLE_VALUE )
 		return S_OK;
 
+	// Disable time fence that could prevent the machine to stop
+	options.time_fence = 0.0;
+
 	PostMessage(win_video_window, WM_CLOSE, 0, 0);
 	WaitForSingleObject(m_hThreadRun,INFINITE);
 	
@@ -1717,6 +1720,17 @@ STDMETHODIMP CController::put_ModOutputType(int output, int no, int newVal)
 		return S_FALSE;
 
 	vp_setModOutputType(output, no, newVal);
+
+	return S_OK;
+}
+
+/****************************************************************************
+ * IController.TimeFence property: sets a time marker that suspend the 
+ * emulation when reached until the time fence is moved further away.
+ ****************************************************************************/
+STDMETHODIMP CController::put_TimeFence(double timeInS)
+{
+	vp_setTimeFence(timeInS);
 
 	return S_OK;
 }

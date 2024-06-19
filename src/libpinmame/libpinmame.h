@@ -454,6 +454,7 @@ PINMAMEAPI uint32_t PinmameGetSolenoidMask(const int low);
 PINMAMEAPI void PinmameSetSolenoidMask(const int low, const uint32_t mask);
 PINMAMEAPI PINMAME_MOD_OUTPUT_TYPE PinmameGetModOutputType(const int output, const int no);
 PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PINMAME_MOD_OUTPUT_TYPE type);
+PINMAMEAPI void PinmameSetTimeFence(const double timeInS);
 PINMAMEAPI int PinmameGetMaxSolenoids();
 PINMAMEAPI int PinmameGetSolenoid(const int solNo);
 PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates);

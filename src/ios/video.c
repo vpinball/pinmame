@@ -238,6 +238,10 @@ static void throttle_speed(void) {
 	cycles_t curr;
 	cycles_t cps;
 
+	// if we're only syncing on an emulation fence, bail now
+	if (options.time_fence != 0)
+		return;
+
 	profiler_mark(PROFILER_IDLE);
 
 	curr = osd_cycles();

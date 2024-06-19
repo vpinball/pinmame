@@ -223,8 +223,9 @@ struct GameOptions
 	int		debug_height;	/* requested height of debugger bitmap */
 	int		debug_depth;	/* requested depth of debugger bitmap */
 
-	int		at91jit;
-	int		usemodsol; 
+	int		at91jit;       /* PinMame: enable AT91 just in time compiler (x86 only) */
+	int		usemodsol;     /* PinMame: enable & setup physic model tied to binary outputs */
+	double	time_fence;    /* PinMame: enable & setup cpu time limit when using external synchronization */
 
 	#ifdef MESS
 	UINT32 ram;
