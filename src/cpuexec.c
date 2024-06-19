@@ -205,6 +205,8 @@ static void *interleave_boost_timer;
 static void *interleave_boost_timer_end;
 static double perfect_interleave;
 
+// PinMame: time fence global offset
+static double time_fence_global_offset;
 
 
 /*************************************
@@ -409,6 +411,7 @@ void cpu_run(void)
 
 		/* loop until the user quits or resets */
 		time_to_reset = 0;
+		time_fence_global_offset = 0.0;
 		while (!time_to_quit && !time_to_reset)
 		{
 			profiler_mark(PROFILER_EXTRA);
@@ -835,10 +838,20 @@ void usleep(unsigned int usec)
 static void cpu_timeslice(void)
 {
 	// PinMame: allow external synchronization by suspending emulation when a time fence is reached
-	if (options.time_fence != 0.0 && timer_get_time() >= options.time_fence)
+	// When synchronization is lost, adjust global offset of external clock to resync on it.
+	if (options.time_fence != 0.0)
 	{
-		usleep(100);
-		return;
+		const double now = timer_get_time();
+		if (now >= time_fence_global_offset + options.time_fence)
+		{
+			if (now >= time_fence_global_offset + options.time_fence + 1.0)
+				time_fence_global_offset = now - options.time_fence;
+			else
+				usleep(100);
+			return;
+		}
+		else if (now < time_fence_global_offset + options.time_fence - 1.0)
+			time_fence_global_offset = now - options.time_fence;
 	}
 
 	double target = timer_time_until_next_timer();
