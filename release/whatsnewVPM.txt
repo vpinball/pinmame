@@ -7,6 +7,8 @@ Version 3.6 (XX XXth, 2024) - "Sounds good III / Looks good"
 ------------------------------------------------------------------------------
 - Add 'ModOutputType' to COM-API for new PWM support (see whatsnew.txt and https://github.com/vpinball/pinmame/pull/89 for details and usage)
 
+- Add 'TimeFence' to COM-API for setting a time marker that suspends the emulation when reached until the time fence is moved further away
+
 - Add new 'Extend Mono sound to Stereo' option, to help multi channel (e.g. 5.1 or 7.1 speaker setup) sound system users
 
 - RawDmdPixels can now also feature alpha-segments, if running a non-DMD based machine
