@@ -7,6 +7,7 @@
 ***************************************************************************/
 
 #include <math.h>
+#include <stdbool.h>
 
 #ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
 #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
@@ -450,6 +451,7 @@ void cpu_run(void)
  *
  *************************************/
 
+void time_fence_exit();
 void cpu_exit(void)
 {
 	int cpunum;
@@ -457,6 +459,9 @@ void cpu_exit(void)
 	/* shut down the CPU cores */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 		cpuintrf_exit_cpu(cpunum);
+
+	// PinMame
+	time_fence_exit();
 }
 
 
@@ -817,47 +822,136 @@ void cpunum_set_halt_line(int cpunum, int state)
  *
  *************************************/
 
-#if defined(_WIN32)
-// Sadly Windows does not offer a microsecond precise sleep function like unix does.
-// Using the precise uSleep() (from ticker.c) results in high CPU use, while Sleep() results in bad precision
-// The implementation here potentially overshoots by 0.5msec (Win10+, maybe less on future OS) or 1msec (Win8-).
-// Requires a set timeBeginPeriod(1) on Win8 and below
+#if defined(_WIN32) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-static void usleep(const unsigned int usec)
+static HANDLE time_fence_semaphore;
+
+int time_fence_is_supported()
 {
-	HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
-	if (!timer)
-		timer = CreateWaitableTimerExW(NULL, NULL, 0, TIMER_ALL_ACCESS); // requires a set timeBeginPeriod(1), ~1msec resolution then
-	if (timer)
+	if (time_fence_semaphore == NULL)
 	{
-		LARGE_INTEGER ft;
-		ft.QuadPart = -10 * (LONGLONG)usec;
-		SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-		WaitForSingleObject(timer, INFINITE);
-		CloseHandle(timer);
+		time_fence_semaphore = CreateSemaphore(NULL, 0, LONG_MAX, NULL);
+		return time_fence_semaphore != NULL;
 	}
-	else
-		Sleep(usec/1000);
+	return 1;
 }
+
+void time_fence_post()
+{
+	if (time_fence_is_supported())
+		ReleaseSemaphore(time_fence_semaphore, 1, NULL);
+}
+
+int time_fence_wait()
+{
+	return time_fence_is_supported() && (WaitForSingleObject(time_fence_semaphore, 16) == WAIT_OBJECT_0);
+}
+
+void time_fence_exit()
+{
+	if (time_fence_semaphore != NULL)
+		CloseHandle(time_fence_semaphore);
+	time_fence_semaphore = NULL;
+}
+
+
+#elif defined(__APPLE__)
+
+#include <dispatch/dispatch.h>
+static dispatch_semaphore_t time_fence_semaphore;
+static int time_fence_initialized = 0;
+
+int time_fence_is_supported()
+{
+	if (!time_fence_initialized)
+	{
+		time_fence_initialized = 1;
+		time_fence_semaphore = dispatch_semaphore_create(0);
+	}
+	return 1;
+}
+
+void time_fence_post()
+{
+	if (time_fence_is_supported())
+		dispatch_semaphore_signal(time_fence_semaphore);
+}
+
+int time_fence_wait()
+{
+	dispatch_time_t wait_length = dispatch_time(DISPATCH_TIME_NOW, 16000000);
+	return time_fence_is_supported() && (dispatch_semaphore_wait(time_fence_semaphore, wait_length) == 0);
+}
+
+void time_fence_exit()
+{
+	if (time_fence_initialized)
+	{
+		dispatch_release(time_fence_semaphore);
+		time_fence_initialized = 0;
+	}
+}
+
 #else
-#include <unistd.h> // could use udelay or nanosleep instead of usleep if usec < ~10 needed!
+
+#include <semaphore.h>
+static sem_t time_fence_semaphore;
+static int time_fence_initialized = 0;
+
+int time_fence_is_supported()
+{
+	if (!time_fence_initialized)
+	{
+		time_fence_initialized = 1;
+		if (sem_init(&time_fence_semaphore, 0, 0) != 0)
+			return 0;
+	}
+	return 1;
+}
+
+void time_fence_post()
+{
+	if (time_fence_is_supported())
+		sem_post(&time_fence_semaphore);
+}
+
+int time_fence_wait()
+{
+	struct timespec wait_length;
+	wait_length.tv_sec = 0ul;
+	wait_length.tv_nsec = 16000000l;
+	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &wait_length) == 0);
+}
+
+void time_fence_exit()
+{
+	if (time_fence_initialized)
+	{
+		sem_destroy(&time_fence_semaphore);
+		time_fence_initialized = 0;
+	}
+}
+
 #endif
 
 static void cpu_timeslice(void)
 {
 	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached
 	// When synchronization is lost, adjust global offset of external clock to resync on it.
-	if (options.time_fence != 0.0)
+	if (options.time_fence != 0.0 && time_fence_is_supported())
 	{
 		const double now = timer_get_time();
 		if (now >= time_fence_global_offset + options.time_fence)
 		{
 			if (now >= time_fence_global_offset + options.time_fence + 1.0)
 				time_fence_global_offset = now - options.time_fence;
-			else
-				usleep(100);
-			return;
+			else if (time_fence_wait())
+			{
+				// Check if we are still ahead of the new time fence
+				if (now >= time_fence_global_offset + options.time_fence)
+					return;
+			}
 		}
 		else if (now < time_fence_global_offset + options.time_fence - 1.0)
 			time_fence_global_offset = now - options.time_fence;
