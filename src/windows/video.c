@@ -734,6 +734,7 @@ static void throttle_speed(void)
 // to flipper input.  By distributing the emulation more evenly over a frame, it creates more opportunities
 // for the emulated machine to "see" the input and respond to it before the pinball simulator starts to draw its frame.
 
+extern int time_fence_is_supported();
 void throttle_speed_part(int part, int totalparts)
 {
 	static double ticks_per_sleep_msec = 0;
@@ -744,7 +745,7 @@ void throttle_speed_part(int part, int totalparts)
 		return;
 
 	// if we're only syncing on an emulation fence, bail now
-	if (options.time_fence != 0.0)
+	if (options.time_fence != 0.0 && time_fence_is_supported())
 		return;
 
 	// this counts as idle time

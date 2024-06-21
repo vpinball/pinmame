@@ -304,9 +304,14 @@ int vp_getModOutputType(int output, int no) {
 	return coreGlobals.physicOutputState[pos].type;
 }
 
+extern void time_fence_post(); // in cpuexec.c
 void vp_setTimeFence(double fenceInS)
 {
-	options.time_fence = fenceInS;
+	if (options.time_fence != fenceInS)
+	{
+		options.time_fence = fenceInS;
+		time_fence_post();
+	}
 }
 
 int vp_getMech(int mechNo) {

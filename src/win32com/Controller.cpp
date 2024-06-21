@@ -381,7 +381,7 @@ STDMETHODIMP CController::Stop()
 		return S_OK;
 
 	// Disable time fence that could prevent the machine to stop
-	options.time_fence = 0.0;
+	put_TimeFence(0.0);
 
 	PostMessage(win_video_window, WM_CLOSE, 0, 0);
 	WaitForSingleObject(m_hThreadRun,INFINITE);
