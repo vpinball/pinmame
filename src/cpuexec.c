@@ -7,6 +7,11 @@
 ***************************************************************************/
 
 #include <math.h>
+
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+
 #include "driver.h"
 #include "timer.h"
 #include "state.h"
