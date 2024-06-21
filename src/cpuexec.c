@@ -812,32 +812,36 @@ void cpunum_set_halt_line(int cpunum, int state)
  *
  *************************************/
 
-#if defined(_WIN32) || defined(_WIN64)
-// Sadly Windows does not offer a microsecond precise sleep function like unix does
-// using uSleep (from ticker.c) or Sleep results in bad precision and/or high CPU use
-// Taken from https://www.c-plusplus.net/forum/topic/109539/usleep-unter-windows
+#if defined(_WIN32)
+// Sadly Windows does not offer a microsecond precise sleep function like unix does.
+// Using the precise uSleep() (from ticker.c) results in high CPU use, while Sleep() results in bad precision
+// The implementation here potentially overshoots by 0.5msec (Win10+, maybe less on future OS) or 1msec (Win8-).
+// Requires a set timeBeginPeriod(1) on Win8 and below
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-void usleep(unsigned int usec)
+static void usleep(const unsigned int usec)
 {
-	HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+	HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+	if (!timer)
+		timer = CreateWaitableTimerExW(NULL, NULL, 0, TIMER_ALL_ACCESS); // requires a set timeBeginPeriod(1), ~1msec resolution then
 	if (timer)
 	{
 		LARGE_INTEGER ft;
-		ft.QuadPart = -(10 * (__int64)usec);
+		ft.QuadPart = -10 * (LONGLONG)usec;
 		SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
 		WaitForSingleObject(timer, INFINITE);
 		CloseHandle(timer);
 	}
-	else Sleep(0);
+	else
+		Sleep(usec/1000);
 }
 #else
-#include <unistd.h>
+#include <unistd.h> // could use udelay or nanosleep instead of usleep if usec < ~10 needed!
 #endif
 
 static void cpu_timeslice(void)
 {
-	// PinMame: allow external synchronization by suspending emulation when a time fence is reached
+	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached
 	// When synchronization is lost, adjust global offset of external clock to resync on it.
 	if (options.time_fence != 0.0)
 	{
@@ -856,7 +860,7 @@ static void cpu_timeslice(void)
 
 	double target = timer_time_until_next_timer();
 	int cpunum, ran;
-	
+
 	LOG(("------------------\n"));
 	LOG(("cpu_timeslice: target = %.9f\n", target));
 	
@@ -902,7 +906,7 @@ static void cpu_timeslice(void)
 			}
 		}
 	}
-	
+
 	/* update the local times of all CPUs */
 	for (cpunum = 0; Machine->drv->cpu[cpunum].cpu_type != CPU_DUMMY; cpunum++)
 	{
@@ -927,7 +931,7 @@ static void cpu_timeslice(void)
 		/* adjust to be relative to the global time */
 		cpu[cpunum].localtime -= target;
 	}
-	
+
 	/* update the global time */
 	timer_adjust_global_time(target);
 
@@ -952,10 +956,10 @@ static void cpu_timeslice(void)
 void activecpu_abort_timeslice(void)
 {
 	int current_icount;
-	
+
 	VERIFY_EXECUTINGCPU_VOID(activecpu_abort_timeslice);
 	LOG(("activecpu_abort_timeslice (CPU=%d, cycles_left=%d)\n", cpu_getexecutingcpu(), activecpu_get_icount() + 1));
-	
+
 	/* swallow the remaining cycles */
 	current_icount = activecpu_get_icount() + 1;
 	cycles_stolen += current_icount;
@@ -976,7 +980,7 @@ void activecpu_abort_timeslice(void)
 double cpunum_get_localtime(int cpunum)
 {
 	double result;
-	
+
 	VERIFY_CPUNUM(0, cpunum_get_localtime);
 
 	/* if we're active, add in the time from the current slice */
@@ -1002,7 +1006,7 @@ void cpunum_suspend(int cpunum, int reason, int eatcycles)
 {
 	VERIFY_CPUNUM_VOID(cpunum_suspend);
 	LOG(("cpunum_suspend (CPU=%d, r=%X, eat=%d)\n", cpunum, reason, eatcycles));
-	
+
 	/* set the pending suspend bits, and force a resync */
 	cpu[cpunum].nextsuspend |= reason;
 	cpu[cpunum].nexteatcycles = eatcycles;
