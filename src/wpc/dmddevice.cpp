@@ -24,7 +24,9 @@ static UINT16  seg_data2[CORE_SEGCOUNT] = {};
 #define WINVER _WIN32_WINNT
 #endif
 #include <windows.h>
+#ifndef VPINMAME
 #include <libloaderapi.h>
+#endif
 #include "driver.h"
 #include "gen.h"
 #include "core.h"
