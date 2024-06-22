@@ -32,7 +32,6 @@
   #define WINVER _WIN32_WINNT
   #endif
   #include <Windows.h>
-  #include <timeapi.h>
  #endif
  #include "dmddevice.h"
  #include "../../ext/dmddevice/usbalphanumeric.h"
@@ -1010,7 +1009,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  char *ptr;
 				  char DumpFilename[MAX_PATH];
 
-				  const DWORD tick = timeGetTime();
+				  const DWORD tick = GetTickCount();
 #ifndef _WIN64
 				  const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
 #else
