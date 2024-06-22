@@ -14,8 +14,8 @@ static UINT16  seg_data2[CORE_SEGCOUNT] = {};
 #endif
 #ifndef _WIN32_WINNT
 #if _MSC_VER >= 1800
- // Windows 2000 _WIN32_WINNT_WIN2K
- #define _WIN32_WINNT 0x0500
+ // Windows XP _WIN32_WINNT_WINXP
+ #define _WIN32_WINNT 0x0501
 #elif _MSC_VER < 1600
  #define _WIN32_WINNT 0x0400
 #else
@@ -24,9 +24,6 @@ static UINT16  seg_data2[CORE_SEGCOUNT] = {};
 #define WINVER _WIN32_WINNT
 #endif
 #include <windows.h>
-#ifndef VPINMAME
-#include <libloaderapi.h>
-#endif
 #include "driver.h"
 #include "gen.h"
 #include "core.h"
