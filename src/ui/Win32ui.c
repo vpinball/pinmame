@@ -29,7 +29,20 @@
 #endif
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef _WIN32_WINNT
+#if _MSC_VER >= 1800
+ // Windows 2000 _WIN32_WINNT_WIN2K
+ #define _WIN32_WINNT 0x0500
+#elif _MSC_VER < 1600
+ #define _WIN32_WINNT 0x0400
+#else
+ #define _WIN32_WINNT 0x0403
+#endif
+#define WINVER _WIN32_WINNT
+#endif
 #include <windows.h>
 #include <windowsx.h>
 #include <shellapi.h>
@@ -566,7 +579,7 @@ const char* column_names[COLUMN_MAX] =
 	"Manufacturer",
 	"Year",
 	"Clone Of",
-    "Source",
+	"Source",
 	"Play Time"
 };
 
@@ -1418,7 +1431,7 @@ int GetDriverIndex(const struct GameDriver *driver)
 
 int GetGameNameIndex(const char *name)
 {
-    driver_data_type *driver_index_info;
+	driver_data_type *driver_index_info;
 	driver_data_type key;
 	key.name = name;
 
@@ -1445,7 +1458,7 @@ int GetIndexFromSortedIndex(int sorted_index)
 // used for our sorted array of game names
 int CLIB_DECL DriverDataCompareFunc(const void *arg1,const void *arg2)
 {
-    return strcmp( ((driver_data_type *)arg1)->name, ((driver_data_type *)arg2)->name );
+	return strcmp( ((driver_data_type *)arg1)->name, ((driver_data_type *)arg2)->name );
 }
 
 static void ResetTabControl(void)
@@ -1705,7 +1718,7 @@ static BOOL Win32UI_init(HINSTANCE hInstance, LPSTR lpCmdLine, int nCmdShow)
 					hHeaderCtrlFont = GetWindowFont( hwndHeaderCtrl);
 				}
 
-    			SetWindowFont(hwndList, hFont, FALSE);
+				SetWindowFont(hwndList, hFont, FALSE);
 
 				/* Reset header ctrl font back to original font */
 
@@ -1917,7 +1930,7 @@ static void Win32UI_exit()
 	FreeFolders();
 	SetViewMode(current_view_id - ID_VIEW_LARGE_ICON);
 
-    /* DestroyTree(hTreeView); */
+	/* DestroyTree(hTreeView); */
 
 	FreeScreenShot();
 
@@ -2096,14 +2109,14 @@ static LRESULT WINAPI MameWindowProc(HWND hWnd, UINT message, UINT_PTR wParam, L
 
 			/* hide window to prevent orphan empty rectangles on the taskbar */
 			/* ShowWindow(hWnd,SW_HIDE); */
-            DestroyWindow( hWnd );
+			DestroyWindow( hWnd );
 
 			/* PostQuitMessage(0); */
 			break;
 		}
 
 	case WM_DESTROY:
-        PostQuitMessage(0);
+		PostQuitMessage(0);
 		return 0;
 
 	case WM_LBUTTONDOWN:
@@ -2130,20 +2143,20 @@ static LRESULT WINAPI MameWindowProc(HWND hWnd, UINT message, UINT_PTR wParam, L
 		if (MouseHasBeenMoved())
 			ShowCursor(TRUE);
 
-	    if (g_listview_dragging)
-		   MouseMoveListViewDrag(p);
+		if (g_listview_dragging)
+			MouseMoveListViewDrag(p);
 		else
-		   /* for splitters */
-		   OnMouseMove(hWnd, (UINT)wParam, p);
+			/* for splitters */
+			OnMouseMove(hWnd, (UINT)wParam, p);
 		break;
 	}
 
 	case WM_LBUTTONUP:
-	    if (g_listview_dragging)
-		    ButtonUpListViewDrag(p);
+		if (g_listview_dragging)
+			ButtonUpListViewDrag(p);
 		else
-		   /* for splitters */
-		   OnLButtonUp(hWnd, (UINT)wParam, p);
+			/* for splitters */
+			OnLButtonUp(hWnd, (UINT)wParam, p);
 		break;
 
 	case WM_NOTIFY:
@@ -2197,9 +2210,9 @@ static BOOL PumpMessage()
 static BOOL PumpAndReturnMessage(MSG *pmsg)
 {
 	if (!(GetMessage(pmsg, NULL, 0, 0)))
-    {
+	{
 		return FALSE;
-    }
+	}
 
 	if (IsWindow(hMain))
 	{
@@ -2455,7 +2468,7 @@ static void ProgressBarHide()
 		return;
 	}
 
-    hDC = GetDC(hProgWnd);
+	hDC = GetDC(hProgWnd);
 
 	ShowWindow(hProgWnd, SW_HIDE);
 
@@ -2827,7 +2840,7 @@ static BOOL PickerHitTest(HWND hWnd)
 	DWORD			res = GetMessagePos();
 	LVHITTESTINFO	htInfo;
 
-    ZeroMemory(&htInfo,sizeof(LVHITTESTINFO));
+	ZeroMemory(&htInfo,sizeof(LVHITTESTINFO));
 #if defined(__GNUC__)	// MAKEPOINTS macro workaround (gcc 4.4.0)
 	p.x = LOWORD(res);
 	p.y = HIWORD(res);
@@ -2880,7 +2893,7 @@ static BOOL MamePickerNotify(NMHDR *nm)
 
 			if (pDispInfo->item.mask & LVIF_IMAGE)
 			{
-			   pDispInfo->item.iImage = GetIconForDriver(nItem);
+				pDispInfo->item.iImage = GetIconForDriver(nItem);
 			}
 
 			if (pDispInfo->item.mask & LVIF_STATE)
@@ -2918,20 +2931,20 @@ static BOOL MamePickerNotify(NMHDR *nm)
 					pDispInfo->item.pszText = (char*)drivers[nItem]->name;
 					break;
 
-                case COLUMN_SRCDRIVERS:
+				case COLUMN_SRCDRIVERS:
 					/* Source drivers */
 					pDispInfo->item.pszText = (char *)GetDriverFilename(nItem);
 					break;
 
-                case COLUMN_PLAYTIME:
+				case COLUMN_PLAYTIME:
 					/* Source drivers */
 					GetTextPlayTime(nItem, pDispInfo->item.pszText);
 					break;
 
 				case COLUMN_TYPE:
-                {
-                    struct InternalMachineDriver drv;
-                    expand_machine_driver(drivers[nItem]->drv,&drv);
+				{
+					struct InternalMachineDriver drv;
+					expand_machine_driver(drivers[nItem]->drv,&drv);
 
 					/* Vector/Raster */
 					if (drv.video_attributes & VIDEO_TYPE_VECTOR)
@@ -2939,7 +2952,7 @@ static BOOL MamePickerNotify(NMHDR *nm)
 					else
 						pDispInfo->item.pszText = (char *)"Raster";
 					break;
-                }
+				}
 				case COLUMN_TRACKBALL:
 					/* Trackball */
 					if (DriverUsesTrackball(nItem))
@@ -3423,11 +3436,11 @@ static void ResetListView()
 
 	if (bListReady)
 	{
-	    /* If last folder was empty, select the first item in this folder */
-	    if (no_selection)
-		    SetSelectedPick(0);
+		/* If last folder was empty, select the first item in this folder */
+		if (no_selection)
+			SetSelectedPick(0);
 		else
-		    SetSelectedPickItem(current_game);
+			SetSelectedPickItem(current_game);
 	}
 
 	/*RS Instead of the Arrange Call that was here previously on all Views
@@ -3493,9 +3506,9 @@ static void PickFont(void)
 		COLORREF textColor = cf.rgbColors;
 
 		if (textColor == RGB(255,255,255))
-        {
+		{
 			textColor = RGB(240, 240, 240);
-        }
+		}
 
         hwndHeaderCtrl = GetDlgItem( hwndList, 0 );
         if ( hwndHeaderCtrl )
@@ -3854,7 +3867,7 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
         {
 			// these may have been changed
 			SaveDefaultOptions();
-            DestroyWindow(hwnd);
+			DestroyWindow(hwnd);
 			PostQuitMessage(0);
         }
 		return TRUE;
@@ -4483,24 +4496,24 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		value = _stricmp(drivers[index1]->name, drivers[index2]->name);
 		break;
 
-   	case COLUMN_SRCDRIVERS:
+	case COLUMN_SRCDRIVERS:
 		if (_stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12) == 0)
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
 		value = _stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12);
 		break;
 	case COLUMN_PLAYTIME:
-	   value = GetPlayTime((int)index1) - GetPlayTime((int)index2);
-	   if (value == 0)
-		  return BasicCompareFunc(index1, index2, COLUMN_GAMES);
+		value = (int)(GetPlayTime((int)index1) - GetPlayTime((int)index2));
+		if (value == 0)
+			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-	   break;
+		break;
 
 	case COLUMN_TYPE:
-    {
-        struct InternalMachineDriver drv1,drv2;
-        expand_machine_driver(drivers[index1]->drv,&drv1);
-        expand_machine_driver(drivers[index2]->drv,&drv2);
+	{
+		struct InternalMachineDriver drv1,drv2;
+		expand_machine_driver(drivers[index1]->drv,&drv1);
+		expand_machine_driver(drivers[index2]->drv,&drv2);
 
 		if ((drv1.video_attributes & VIDEO_TYPE_VECTOR) ==
 			(drv2.video_attributes & VIDEO_TYPE_VECTOR))
@@ -4509,7 +4522,7 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		value = (drv1.video_attributes & VIDEO_TYPE_VECTOR) -
 				(drv2.video_attributes & VIDEO_TYPE_VECTOR);
 		break;
-    }
+	}
 	case COLUMN_TRACKBALL:
 		if (DriverUsesTrackball((int)index1) == DriverUsesTrackball((int)index2))
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
@@ -4518,11 +4531,11 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		break;
 
 	case COLUMN_PLAYED:
-	   value = GetPlayCount((int)index1) - GetPlayCount((int)index2);
-	   if (value == 0)
-		  return BasicCompareFunc(index1, index2, COLUMN_GAMES);
+		value = GetPlayCount((int)index1) - GetPlayCount((int)index2);
+		if (value == 0)
+			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-	   break;
+		break;
 
 	case COLUMN_MANUFACTURER:
 		if (_stricmp(drivers[index1]->manufacturer, drivers[index2]->manufacturer) == 0)
@@ -5360,7 +5373,7 @@ static LRESULT CALLBACK HistoryWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	{
 		switch (uMsg)
 		{
-	    case WM_MOUSEMOVE:
+		case WM_MOUSEMOVE:
 		{
 			if (MouseHasBeenMoved())
 				ShowCursor(TRUE);
@@ -5390,11 +5403,11 @@ static LRESULT CALLBACK PictureFrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 	switch (uMsg)
 	{
 	case WM_MOUSEMOVE:
-    {
+	{
 		if (MouseHasBeenMoved())
 			ShowCursor(TRUE);
 		break;
-    }
+	}
 
 	case WM_NCHITTEST :
 	{
@@ -5677,7 +5690,7 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 		/* indent width of icon + the space between the icon and text
 		 * so left of clone icon starts at text of parent
-         */
+		 */
 		indent_space = rect.right - rect.left + offset;
 	}
 
@@ -5847,7 +5860,7 @@ static LRESULT CALLBACK ListViewWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	{
 		switch (uMsg)
 		{
-	    case WM_MOUSEMOVE:
+		case WM_MOUSEMOVE:
 		{
 			if (MouseHasBeenMoved())
 				ShowCursor(TRUE);
@@ -6328,7 +6341,7 @@ void RemoveGameCustomFolder(int driver_index)
 
 void BeginListViewDrag(NM_LISTVIEW *pnmv)
 {
-    LV_ITEM lvi;
+	LV_ITEM lvi;
 	POINT pt;
 
 	lvi.iItem = pnmv->iItem;
@@ -6342,22 +6355,22 @@ void BeginListViewDrag(NM_LISTVIEW *pnmv)
 
 	/* Tell the list view control to create an image to use
 	   for dragging. */
-    himl_drag = ListView_CreateDragImage(hwndList,pnmv->iItem,&pt);
+	himl_drag = ListView_CreateDragImage(hwndList,pnmv->iItem,&pt);
 
-    /* Start the drag operation. */
-    ImageList_BeginDrag(himl_drag, 0, 0, 0);
+	/* Start the drag operation. */
+	ImageList_BeginDrag(himl_drag, 0, 0, 0);
 
 	pt = pnmv->ptAction;
 	ClientToScreen(hwndList,&pt);
 	ImageList_DragEnter(GetDesktopWindow(),pt.x,pt.y);
 
-    /* Hide the mouse cursor, and direct mouse input to the
+	/* Hide the mouse cursor, and direct mouse input to the
 	   parent window. */
-    SetCapture(hMain);
+	SetCapture(hMain);
 
 	prev_drag_drop_target = NULL;
 
-    g_listview_dragging = TRUE;
+	g_listview_dragging = TRUE;
 
 }
 
@@ -6401,8 +6414,8 @@ void ButtonUpListViewDrag(POINTS p)
 
 	ReleaseCapture();
 
-    ImageList_DragLeave(hwndList);
-    ImageList_EndDrag();
+	ImageList_DragLeave(hwndList);
+	ImageList_EndDrag();
 	ImageList_Destroy(himl_drag);
 
 	TreeView_SelectDropTarget(hTreeView,NULL);
@@ -6652,8 +6665,8 @@ void SwitchFullScreenMode(void)
 
 BOOL MouseHasBeenMoved(void)
 {
-    static int mouse_x = -1;
-    static int mouse_y = -1;
+	static int mouse_x = -1;
+	static int mouse_y = -1;
 	POINT p;
 
 	GetCursorPos(&p);

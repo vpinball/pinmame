@@ -48,9 +48,9 @@ OSOBJS += $(OBJ)/ui/PinMAME32.res
 DEFS += -DDIRECTSOUND_VERSION=0x0300 \
         -DDIRECTINPUT_VERSION=0x0700 \
         -DDIRECTDRAW_VERSION=0x0300 \
-        -DWINVER=0x0400 \
+        -DWINVER=0x0500 \
         -D_WIN32_IE=0x0500 \
-        -D_WIN32_WINNT=0x0400 \
+        -D_WIN32_WINNT=0x0500 \
         -DWIN32 \
         -UWINNT \
 	-DCLIB_DECL=__cdecl \

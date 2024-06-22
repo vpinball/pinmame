@@ -1,5 +1,6 @@
 // Settings.cpp : Implementation of CGameSettings
 #include "StdAfx.h"
+#include <commdlg.h>
 #include <osdepend.h>
 #include "VPinMAME.h"
 #include "VPinMAMEAboutDlg.h"

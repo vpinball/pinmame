@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <shellapi.h>
 #include "VPinMAMEAboutDlg.h"
 
 #include "resource.h"

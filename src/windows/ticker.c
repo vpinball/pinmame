@@ -5,7 +5,20 @@
 //============================================================
 
 // standard windows headers
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef _WIN32_WINNT
+#if _MSC_VER >= 1800
+ // Windows 2000 _WIN32_WINNT_WIN2K
+ #define _WIN32_WINNT 0x0500
+#elif _MSC_VER < 1600
+ #define _WIN32_WINNT 0x0400
+#else
+ #define _WIN32_WINNT 0x0403
+#endif
+#define WINVER _WIN32_WINNT
+#endif
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -204,6 +217,11 @@ static LONGLONG OneMSTimerTicks;
 static LONGLONG TwoMSTimerTicks;
 static char highrestimer;
 
+#if _WIN32_WINNT < 0x0600
+typedef HANDLE(WINAPI* pCWTEA)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
+static pCWTEA CreateWaitableTimerEx = NULL;
+#endif
+
 static void wintimer_init(void)
 {
 	sTimerInit = 1;
@@ -213,10 +231,23 @@ static void wintimer_init(void)
 	TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
 	QueryPerformanceCounter(&sTimerStart);
 
-	HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+#if _WIN32_WINNT >= 0x0600
+	HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
 	highrestimer = !!timer;
 	if (timer)
 		CloseHandle(timer);
+#else
+	CreateWaitableTimerEx = (pCWTEA)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CreateWaitableTimerExA");
+	if (CreateWaitableTimerEx)
+	{
+		HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+		highrestimer = !!timer;
+		if (timer)
+			CloseHandle(timer);
+	}
+	else
+		highrestimer = 0;
+#endif
 }
 
 // tries(!) to be as exact as possible at the cost of potentially causing trouble with other threads/cores due to OS madness
@@ -239,7 +270,7 @@ void uSleep(const UINT64 u)
 			Sleep(1); // really pause thread for 1-2ms (depending on OS)
 		else if (highrestimer && ((TimerEnd.QuadPart - TimerNow.QuadPart) > OneMSTimerTicks)) // pause thread for 0.5-1ms
 		{
-			HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+			HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
 			LARGE_INTEGER ft;
 			ft.QuadPart = -10 * 500; // 500 usec //!! we could go lower if some future OS (>win10) actually supports this
 			SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
