@@ -32,6 +32,7 @@
   #define WINVER _WIN32_WINNT
   #endif
   #include <Windows.h>
+  #include <timeapi.h>
  #endif
  #include "dmddevice.h"
  #include "../../ext/dmddevice/usbalphanumeric.h"
