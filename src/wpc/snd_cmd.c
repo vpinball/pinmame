@@ -65,6 +65,7 @@
  #define WINVER _WIN32_WINNT
  #endif
  #include <windows.h>
+ #include <timeapi.h>
  #include <direct.h>
  #if !defined(__MINGW32__) || defined(VPINMAME)
   #define timeGetTime2 timeGetTime
