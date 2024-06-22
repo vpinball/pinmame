@@ -9,7 +9,7 @@
 	01/09/26 (SJE): Added Check to see if Invalid CRC games can be run.
 	03/09/22 (SJE): Added IMPERFECT GRAPHICS FLAG and reworked code to allow more than 1 message to display together
 
-  PinMame runs on another thread than the controller without blocking synchronization primitives. Therefore when getters are called,
+  PinMAME runs on another thread than the controller without blocking synchronization primitives. Therefore when getters are called,
   the return value is the last known state. For lazy updated values like physic outputs, getters also trigger an update that will be
   serviced asynchronously. The theory of operation is that these getters are to be called repeatedly to update/get the actual value.
 */
@@ -48,8 +48,6 @@ extern int g_cpu_affinity_mask;
 extern char g_fShowWinDMD;
 extern char g_szGameName[256];
 
-// from ticker.c
-extern void uSleep(const UINT64 u);
 // from snd_alt.h
 #ifdef VPINMAME_ALTSOUND
  extern void alt_sound_pause(BOOL pause);
@@ -100,7 +98,7 @@ void CController::GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVe
 	HANDLE  hVersionInfo;
 	LPVOID  lpEntryInfo;
 	UINT    wVarSize;
-	
+
 	VS_FIXEDFILEINFO *pFixedFileInfo;
 
 	char szFilename[MAX_PATH];
@@ -229,7 +227,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 	GetProductVersion(&nVersionNo0, &nVersionNo1, NULL, NULL);
 
 	if ( (nVersionNo0*100+nVersionNo1)<nMinVersion )
-		return Error(TEXT("You need a newer version of Visual PinMame to run this emulation!"));
+		return Error(TEXT("You need a newer version of Visual PinMAME to run this emulation!"));
 
 	if ( m_hThreadRun!=INVALID_HANDLE_VALUE ) {
 		if ( WaitForSingleObject(m_hThreadRun, 0)==WAIT_TIMEOUT )
@@ -486,7 +484,7 @@ STDMETHODIMP CController::get_WPCNumbering(/*[out, retval]*/ VARIANT_BOOL *pVal)
 		*pVal= 0;
 	else
 		*pVal = vp_getWPCNumbering()?VARIANT_TRUE:VARIANT_FALSE;
-	
+
 	return S_OK;
 }
 
@@ -503,8 +501,8 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
 	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
-   if (!timeout)
-     core_update_pwm_lamps();
+	if (!timeout)
+		core_update_pwm_lamps();
 	for (int i = timeout ? 11 : 0; i < 89; ++i)
 	{
 		pData[i].vt = VT_BOOL;
@@ -740,7 +738,7 @@ STDMETHODIMP CController::get_RawDmdColoredPixels(VARIANT *pVal)
 		pVal->parray = psa;
 
 		g_needs_DMD_update = 0;
-		
+
 		return S_OK;
 	}
 	else
@@ -862,11 +860,11 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
  *****************************************************************************************/
 STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
 {
-	if(!buf)
-	{
-		*pVal = 0;
-		return S_FALSE;
-	}
+  if(!buf)
+  {
+    *pVal = 0;
+    return S_FALSE;
+  }
 
   if (!pVal) return S_FALSE;
 
@@ -911,13 +909,13 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
-   // FIXME this implementation supposes that the lamp array has 89 lamps which is wrong
+	// FIXME this implementation supposes that the lamp array has 89 lamps which is wrong
 	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
 		for (int ix=0; ix<89; ix++)
 			*(dst++) = 0;
 	}
 	else {
-      core_update_pwm_lamps();
+		core_update_pwm_lamps();
 		for (int ix=0; ix<89; ix++)
 			*(dst++) = vp_getLamp(ix) ? 1:0;
 	}
@@ -943,7 +941,7 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
 
-   core_update_pwm_solenoids();
+	core_update_pwm_solenoids();
 
 	/*-- Count changes --*/
 	vp_tChgSols chgSol;
@@ -987,7 +985,7 @@ STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
 			*(dst++) = 0;
 	}
 	else {
-      core_update_pwm_solenoids();
+		core_update_pwm_solenoids();
 		for (int ix=0; ix<65; ix++)
 			*(dst++) = vp_getSolenoid(ix);
 	}
@@ -1015,7 +1013,7 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
 	{ *pVal = 0; return S_OK; }
 
-   core_update_pwm_gis();
+	core_update_pwm_gis();
 
 	/*-- Count changes --*/
 	int uCount = vp_getChangedGI(chgGI);
@@ -1483,7 +1481,7 @@ STDMETHODIMP CController::get_ChangedGIStrings(VARIANT *pVal) {
     { pVal->vt = 0; return S_OK; }
 
   core_update_pwm_gis();
-  
+
   int uCount = vp_getChangedGI(chgGI);
 
   if (uCount == 0)
@@ -1592,8 +1590,8 @@ STDMETHODIMP CController::get_Solenoids(VARIANT *pVal)
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
 	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
-   if (!timeout)
-      core_update_pwm_solenoids();
+	if (!timeout)
+		core_update_pwm_solenoids();
 	for (int i = 0; i < 65; ++i)
 	{
 		pData[i].vt = VT_BOOL;
@@ -1640,8 +1638,8 @@ STDMETHODIMP CController::get_GIStrings(VARIANT *pVal)
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
 	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
-   if (!timeout)
-      core_update_pwm_gis();
+	if (!timeout)
+		core_update_pwm_gis();
 	for (int i = 0; i < CORE_MAXGI; ++i)
 	{
 		pData[i].vt = VT_I4;
