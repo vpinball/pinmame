@@ -65,12 +65,9 @@
  #define WINVER _WIN32_WINNT
  #endif
  #include <windows.h>
- #ifndef VPINMAME
- #include <timeapi.h>
- #endif
  #include <direct.h>
  #if !defined(__MINGW32__) || defined(VPINMAME)
-  #define timeGetTime2 timeGetTime
+  #define timeGetTime2 GetTickCount
  #else
   static DWORD timeGetTime2(void) {
     return (DWORD)(timer_get_time()*1000.); //!! meh!
