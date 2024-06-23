@@ -263,7 +263,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	// perform processor initialization (load samples, etc)
 	processor->init();
 
-	// intialize the command bookkeeping structure
+	// initialize the command bookkeeping structure
 	cmds_out->cmd_counter = 0;
 	cmds_out->stored_command = -1;
 	cmds_out->cmd_filter = 0;
@@ -419,6 +419,8 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 
 		if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] >= 0xAB) && (cmd_buffer[2] <= 0xB0) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) // per-DCS-channel mixing level, but on our interpretation level we do not have any knowledge about the internal channel structures of DCS
 		{
+			ALT_DEBUG(0, "Change volume pc %u %u", cmd_buffer[2], cmd_buffer[1]);
+
 			for (int i = 0; i < ALT_MAX_CMDS; ++i)
 				cmd_buffer[i] = ~0;
 
@@ -470,15 +472,13 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 				// Answer: This is according to the DCS format reference, see e.g.
 				// http://mjrnet.org/pinscape/dcsref/DCS_format_reference.html#SpecialCommands
 				if (processor->romControlsVol()) {
-					processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f)); //!! input is 0..255 (or ..248 in practice) though?
-					// use
-					//   (cmd_buffer[1] == 0) ? 0.f : pow(0.981201, 255 - cmd_buffer[1])
-					// instead?
-					ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
+					//processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f)); //!! input is 0..255 (or ..248 in practice? BUT at least MM triggers 255 at max volume in the menu) though, not just 0..127!
+					processor->setGlobalVol((cmd_buffer[1] == 0) ? 0.f : std::min(powf(0.981201f, (float)(255u - cmd_buffer[1])) * 4.0f,1.0f)); //!! *4 is magic, similar to the *2 above
+					ALT_INFO(0, "Change volume %.02f (%u)", processor->getGlobalVol(), cmd_buffer[1]);
 				}
 			}
 			else
-				ALT_DEBUG(0, "filtered command %02X %02X %02X %02X", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
+				ALT_DEBUG(0, "Command filtered %02X %02X %02X %02X", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
 
 			for (int i = 0; i < ALT_MAX_CMDS; ++i)
 				cmd_buffer[i] = ~0;

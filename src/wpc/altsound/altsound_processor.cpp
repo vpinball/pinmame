@@ -271,6 +271,29 @@ void AltsoundProcessor::init()
 	ALT_DEBUG(0, "END AltsoundProcessor::init()");
 }
 
+// ----------------------------------------------------------------------------
+
+void AltsoundProcessorBase::setGlobalVol(const float vol_in)
+{
+	std::vector<float> vol(channel_stream.size());
+
+	for (size_t index = 0; index < channel_stream.size(); ++index) {
+		const auto stream = channel_stream[index];
+		if (stream) {
+			vol[index] = getStreamVolume(stream->hstream);
+		}
+	}
+
+	global_vol = vol_in;
+
+	for (size_t index = 0; index < channel_stream.size(); ++index) {
+		const auto stream = channel_stream[index];
+		if (stream) {
+			setStreamVolume(stream->hstream, vol[index]);
+		}
+	}
+}
+
 // ---------------------------------------------------------------------------
 
 bool AltsoundProcessor::loadSamples()

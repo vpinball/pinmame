@@ -40,7 +40,7 @@ public:
 	// Copy constructor
 	AltsoundProcessorBase(AltsoundProcessorBase&) = delete;
 
-	// Standard Constructor
+	// Standard constructor
 	AltsoundProcessorBase(const std::string& game_name, const std::string& vpm_path);
 
 	// Destructor
@@ -52,7 +52,7 @@ public:
 	// external interface to stop playback of the current music stream
 	virtual bool stopMusic() = 0;
 
-	// ROM volume control accessor/nutator
+	// ROM volume control accessor/mutator
 	void romControlsVol(const bool use_rom_vol);
 	bool romControlsVol();
 
@@ -72,10 +72,10 @@ public:
 
 	// command skip count accessor/mutator
 	void setSkipCount(const unsigned int skip_count_in);
-	const unsigned int getSkipCount() const;
-	
+	unsigned int getSkipCount() const;
+
 public: // data
-	
+
 protected: // functions
 
 	// populate sample data
@@ -104,6 +104,9 @@ protected: // functions
 
 	// set volume on provided stream
 	static bool setStreamVolume(HSTREAM stream_in, const float vol_in);
+
+	// get volume on provided stream, -FLT_MAX on error
+	static float getStreamVolume(HSTREAM stream_in);
 
 	// Return ROM shortname
 	const std::string& getGameName();
@@ -176,19 +179,13 @@ inline float AltsoundProcessorBase::getMasterVol() {
 
 // ----------------------------------------------------------------------------
 
-inline void AltsoundProcessorBase::setGlobalVol(const float vol_in) {
-	global_vol = vol_in;
-}
-
-// ----------------------------------------------------------------------------
-
 inline float AltsoundProcessorBase::getGlobalVol() {
 	return global_vol;
 }
 
 // ----------------------------------------------------------------------------
 
-inline const unsigned int AltsoundProcessorBase::getSkipCount() const {
+inline unsigned int AltsoundProcessorBase::getSkipCount() const {
 	return skip_count;
 }
 

@@ -802,7 +802,7 @@ void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWOR
 		behavior = music_behavior;
 		// DAR@20230706
 		// This callback gets hit when the sample ends even if it's set to loop.
-		// If it's cleaned up here, it will not loop. This not desirable.  A future
+		// If it's cleaned up here, it will not loop. This is not desirable.  A future
 		// use may be to create an independent music callback that can limit the
 		// number of loops.
 		//cur_mus_stream_idx = UNSET_IDX;
