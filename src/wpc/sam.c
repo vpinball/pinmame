@@ -75,9 +75,10 @@ extern void libpinmame_forward_console_data(void* data, int size);
 #define SAM_GAME_AUXSOL8_DSTB      0x0080 // Board 520-5325-00: Driver Board 8 Transistors wired to DSTB for AC/DC Premium/LE
 #define SAM_GAME_AUXSOL6           0x0100 // Board 520-5326-01: Driver Board 6 Transistors for Metallica
 #define SAM_GAME_AUXSOL12          0x0200 // Board 520-5326-02: Driver Board 12 Transistors
-#define SAM_GAME_IJ4               0x0400 // Board 520-5289-00: directly wired LED flashers used by Indiana Jones
-#define SAM_GAME_ACDC_FLAMES       0x0800 // Board 520-5332-00: AC/DC LE special aux board for flame lights (8 LEDs)
-#define SAM_GAME_METALLICA_MAGNET  0x1000 // Board 520-6801-00: Magnet processor for Metallica LE (coffin magnet)
+#define SAM_GAME_IJ4               0x0400 // Flipper bats timing hack & Board 520-5289-00: directly wired LED flashers used by Indiana Jones
+#define SAM_GAME_CSI               0x0800 // Flipper bats timing hack
+#define SAM_GAME_ACDC_FLAMES       0x1000 // Board 520-5332-00: AC/DC LE special aux board for flame lights (8 LEDs)
+#define SAM_GAME_METALLICA_MAGNET  0x2000 // Board 520-6801-00: Magnet processor for Metallica LE (coffin magnet)
 
 #define SAM_2COL   2
 #define SAM_3COL   3
@@ -144,11 +145,13 @@ struct {
 	UINT8 auxstrb;
 	UINT8 auxdata;
 
-	// IJ4 Flipper Solenoid hack
+	// IJ4 & CSI Flipper Solenoid hack
 	int flipSolHackCountL;
 	data32_t flipSolHackStateL;
 	int flipSolHackCountR;
 	data32_t flipSolHackStateR;
+	int flipSolHackCountUL;
+	data32_t flipSolHackStateUL;
 
 	// Transmit Serial:
 	data8_t prev_ch1;
@@ -785,13 +788,28 @@ static WRITE32_HANDLER(sambank_w)
 		{
 			case 0x02400020: // SOL_A
 				// Solenoids are written every 250us. Flippers are fully CPU controlled with a 40ms power pulse then hold with 1ms pulse every 12ms (so a PWM cycle of 48 writes during hold)
-				if (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4) {
-					// IJ4 has some emulation timing issues that will make the emulation regularly miss and delay the solenoid writes by 40 to 80ms (masked IRQ ?) leading 
-					// to flickering flippers. This is hidden for the flippers by counting the number of writes and only consider the state after the 48 writes (which means
-					// that flippers suffer from eratic latencies. Previous implementations did filter out writes and react based on write count too).
+				if (core_gameData->hw.gameSpecific1 & (SAM_GAME_IJ4 | SAM_GAME_CSI)) {
+					// FIXME IJ4 & CSI have some emulation timing issues that will make the emulation regularly miss and delay the solenoid writes by 40 to 80ms (masked IRQ ?) 
+					// leading to flickering flippers. This is hidden for the flippers by counting the number of writes and only consider the state after the 48 writes (which 
+					// means that flippers suffer from eratic latencies. Previous implementations did filter out writes and react based on write count too).
 					samlocals.flipSolHackStateL |= data;
 					samlocals.flipSolHackStateR |= data;
-					data32_t hackedData = (data & 0x3F) | (samlocals.flipSolHackStateL & 0x40) | (samlocals.flipSolHackStateR & 0x80);
+					data32_t hackedData;
+					if (core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) { // CSI also have an upper flipper on solenoid #14
+						samlocals.flipSolHackStateUL |= data;
+						hackedData = (data & 0x1F) | (samlocals.flipSolHackStateUL & 0x20) | (samlocals.flipSolHackStateL & 0x40) | (samlocals.flipSolHackStateR & 0x80);
+						if (data & 0x20) { // align to pulse on
+							samlocals.flipSolHackCountUL = 0;
+						}
+						else if (samlocals.flipSolHackCountUL >= 48) {
+							samlocals.flipSolHackCountUL = 0;
+							samlocals.flipSolHackStateUL = 0;
+						}
+					}
+					else
+					{
+						hackedData = (data & 0x3F) | (samlocals.flipSolHackStateL & 0x40) | (samlocals.flipSolHackStateR & 0x80);
+					}
 					coreGlobals.pulsedSolState &= ~(0xFFu << 8);
 					coreGlobals.pulsedSolState |= hackedData << 8;
 					core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, hackedData);
@@ -2583,7 +2601,7 @@ CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00
 /*-------------------------------------------------------------------
 / CSI: Crime Scene Investigation
 /-------------------------------------------------------------------*/
-INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_3LEDS_CSTB)
+INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_3LEDS_CSTB | SAM_GAME_CSI)
 
 SAM1_ROM32MB(csi_102, "csi_102a.bin", CRC(770f4ab6) SHA1(7670022926fcf5bb8f8848374cf1a6237803100a), 0x01e21fc0)
 SAM1_ROM32MB(csi_103, "csi_103a.bin", CRC(371bc874) SHA1(547588b85b4d6e79123178db3f3e51354e8d2229), 0x01E61C88)
