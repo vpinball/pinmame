@@ -178,7 +178,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 
 	//DAR@20230522 I don't know what this does yet
 	postprocess_commands(cmd_combined);
-	
+
 	OUTDENT;
 	ALT_DEBUG(0, "END alt_sound_handle()");
 	ALT_DEBUG(0, "");
@@ -263,7 +263,7 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	// perform processor initialization (load samples, etc)
 	processor->init();
 
-	// intialize the command bookkeeping structure
+	// initialize the command bookkeeping structure
 	cmds_out->cmd_counter = 0;
 	cmds_out->stored_command = -1;
 	cmds_out->cmd_filter = 0;
@@ -410,32 +410,78 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 	{
 		// For future improvements, also check https://github.com/mjrgh/DCSExplorer/ for a lot of new info on the DCS inner workings
 
+		// E.g.: One more note on command processing: each byte of a command sequence must be received on the DCS side within 100ms of the previous byte.
+		//   The DCS software clears any buffered bytes if more than 100ms elapses between consecutive bytes.
+		//   This implies that a sender can wait a little longer than 100ms before sending the first byte of a new command if it wants to essentially reset the network connection,
+		//   ensuring that the DCS receiver doesn't think it's in the middle of some earlier partially-sent command sequence. 
+
 		ALT_DEBUG(0, "Hardware Generation: GEN_WPCDCS, GEN_WPCSECURITY, GEN_WPC95DCS, GEN_WPC95");
 
-		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA))) // change volume?
+		if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] >= 0xAB) && (cmd_buffer[2] <= 0xB0) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) // per-DCS-channel mixing level, but on our interpretation level we do not have any knowledge about the internal channel structures of DCS
+		{
+			ALT_DEBUG(0, "Change volume pc %u %u", cmd_buffer[2], cmd_buffer[1]);
+
+			for (int i = 0; i < ALT_MAX_CMDS; ++i)
+				cmd_buffer[i] = ~0;
+
+			*cmd_counter = 0;
+			*cmd_filter = 1;
+		}
+		else
+		if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xC2)) // DCS software major version number
+		{
+			for (int i = 0; i < ALT_MAX_CMDS; ++i)
+				cmd_buffer[i] = ~0;
+
+			*cmd_counter = 0;
+			*cmd_filter = 1;
+		}
+		else
+		if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xC3)) // DCS software minor version number
+		{
+			for (int i = 0; i < ALT_MAX_CMDS; ++i)
+				cmd_buffer[i] = ~0;
+
+			*cmd_counter = 0;
+			*cmd_filter = 1;
+		}
+		else
+		if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] >= 0xBA) && (cmd_buffer[2] <= 0xC1) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) // mystery command, see http://mjrnet.org/pinscape/dcsref/DCS_format_reference.html#SpecialCommands
+		{
+			for (int i = 0; i < ALT_MAX_CMDS; ++i)
+				cmd_buffer[i] = ~0;
+
+			*cmd_counter = 0;
+			*cmd_filter = 1;
+		}
+		else
+		if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA))) // change master volume?
 			// DAR@20240208 The check below is dangerous.  If this is still a 
 			//              problem, it would be better to revisit it when it
 			//              reappears to implement a more robust solution that
 			//              works for all systems
 			//              See https://github.com/vpinball/pinmame/issues/220
+			// Maybe implementing the 'nothing happened in >100ms' reset queue (see above) would also resolve this??
 			//||
 			//((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00))) // glitch in command buffer?
 		{
 			if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) { // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
 				// DAR@20230518
 				// I don't know why this is nerfing the volume.  It does not
-				// appear to work correctly in all cases. 
+				// appear to work correctly in all cases.
+				// Answer: This is according to the DCS format reference, see e.g.
+				// http://mjrnet.org/pinscape/dcsref/DCS_format_reference.html#SpecialCommands
 				if (processor->romControlsVol()) {
-					processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f));
-					ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
+					//processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f)); //!! input is 0..255 (or ..248 in practice? BUT at least MM triggers 255 at max volume in the menu) though, not just 0..127!
+					processor->setGlobalVol((cmd_buffer[1] == 0) ? 0.f : std::min(powf(0.981201f, (float)(255u - cmd_buffer[1])) * 4.0f,1.0f)); //!! *4 is magic, similar to the *2 above
+					ALT_INFO(0, "Change volume %.02f (%u)", processor->getGlobalVol(), cmd_buffer[1]);
 				}
 			}
 			else
-				ALT_DEBUG(0, "filtered command %02X %02X %02X %02X", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
+				ALT_DEBUG(0, "Command filtered %02X %02X %02X %02X", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
 
-			for (int i = 0; i < ALT_MAX_CMDS; ++i) {
+			for (int i = 0; i < ALT_MAX_CMDS; ++i)
 				cmd_buffer[i] = ~0;
-			}
 
 			*cmd_counter = 0;
 			*cmd_filter = 1;
@@ -625,7 +671,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 			processor->stopMusic();
 		}
 	}
-	
+
 	OUTDENT;
 	ALT_DEBUG(0, "END postprocess_commands()");
 }

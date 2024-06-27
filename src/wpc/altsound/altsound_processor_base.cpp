@@ -199,6 +199,20 @@ bool AltsoundProcessorBase::setStreamVolume(HSTREAM stream_in, const float vol_i
 
 // ----------------------------------------------------------------------------
 
+float AltsoundProcessorBase::getStreamVolume(HSTREAM stream_in)
+{
+	if (stream_in == BASS_NO_STREAM)
+		return -FLT_MAX;
+
+	float vol;
+	if (!BASS_ChannelGetAttribute(stream_in, BASS_ATTRIB_VOL, &vol))
+		return -FLT_MAX;
+	else
+		return vol/(global_vol * master_vol);
+}
+
+// ----------------------------------------------------------------------------
+
 bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* stream_out)
 {
 	ALT_DEBUG(0, "BEGIN AltsoundProcessorBase::createStream()");
