@@ -535,7 +535,7 @@ int win_init_window(void)
 	if (!win_video_window)
 		return 1;
 
-#if(_WIN32_WINNT >= 0x0500)
+#if (!defined(__GNUC__) && _WIN32_WINNT >= 0x0500)
 	if (pmoptions.dmd_opacity < 100)
 		SetLayeredWindowAttributes(win_video_window,0,pmoptions.dmd_opacity*255/100,LWA_ALPHA);
 #endif
