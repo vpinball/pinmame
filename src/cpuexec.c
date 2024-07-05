@@ -831,6 +831,9 @@ void cpunum_set_halt_line(int cpunum, int state)
 #endif
 #define WINVER _WIN32_WINNT
 #endif
+#if defined(__GNUC__)
+#define LONG_MAX 2147483647
+#endif
 #include <windows.h>
 static HANDLE time_fence_semaphore;
 

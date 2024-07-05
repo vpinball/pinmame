@@ -87,10 +87,11 @@ add_compile_definitions(
    NAME="LIBPINMAME"
 
    LSB_FIRST
-   INLINE=static __inline__
    PI=M_PI
    UNIX
 )
+
+add_definitions( "-DINLINE=static inline __attribute__((always_inline))" )
 
 add_library(pinmame SHARED
    src/artwork.c
