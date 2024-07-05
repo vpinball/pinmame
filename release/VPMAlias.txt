@@ -76,3 +76,5 @@ lostwrld_gunship,lostwrld
 incredibles,panther7
 goldfinger,bond
 mtl_180hcm,mtl_180hc
+star_tours,alpok_f6
+swrds_l2FO,swrds_l2
