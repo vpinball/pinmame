@@ -23,6 +23,7 @@ Version 3.6 (XX XXth, 2024) - "Sounds good III / Looks good"
   preserving original game timing (currently dev only feature)
 - Ability to stop
 - Added altsound command processing support for Gottlieb System 80A
+- Improved master/rom volume processing for DCS machines
 
 Updated LISY support to 5.28-93 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
