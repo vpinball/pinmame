@@ -1348,7 +1348,7 @@ DRIVER  (harl,l13)      //           10/99 Harley-Davidson (Sega, 1.03 Spanish)
 // ----------------
 DRIVERNV(bikerace)      // 1992 - Bike Race
 DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
-DRIVERNV(sleicpin)      // 1993 - Pin-Ball
+DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
 DRIVERNV(iomoon)        // 1994 - Io Moon
                         // 1996 - Dona Elvira 2
 

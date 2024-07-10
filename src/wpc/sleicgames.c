@@ -43,7 +43,7 @@ SLEIC_ROMEND
 CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)",gl_mSLEIC3,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
-/ Pin-Ball (1993)
+/ Sleic Pin-Ball (1993)
 /-------------------------------------------------------------------*/
 INITGAME(sleicpin, sleic_dispDMD, 1)
 SLEIC_ROMSTART4(sleicpin,"sp01-1_1.rom", CRC(240015bb) SHA1(0e647718173ad59dafbf3b5bc84bef3c33886e23),
@@ -51,7 +51,7 @@ SLEIC_ROMSTART4(sleicpin,"sp01-1_1.rom", CRC(240015bb) SHA1(0e647718173ad59dafbf
 						 "sp03-1_1.rom", CRC(261b0ae4) SHA1(e7d9d1c2cab7776afb732701b0b8697b62a8d990),
 						 "sp04-1_1.rom", CRC(84514cfa) SHA1(6aa87b86892afa534cf963821f08286c126b4245))
 SLEIC_ROMEND
-CORE_GAMEDEFNV(sleicpin,"Pin-Ball",1993,"Sleic (Spain)",gl_mSLEIC1,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(sleicpin,"Sleic Pin-Ball",1993,"Sleic (Spain)",gl_mSLEIC1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Io Moon (1994)
