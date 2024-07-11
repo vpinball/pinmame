@@ -102,6 +102,7 @@ struct rc_option pinmame_opts[] = {
 #endif /* PROC_SUPPORT */
         { "vgmwrite", NULL, rc_bool, &pmoptions.vgmwrite, "0", 0, 0, NULL, "Enable to write a VGM of the current session (name is based on romname)" },
         { "force_stereo", NULL, rc_bool, &pmoptions.force_mono_to_stereo, "0", 0, 0, NULL, "Always force stereo output (e.g. to better support multi channel sound systems)" },
+        { "serial_device", NULL, rc_string, &pmoptions.serial_device, NULL, 0, 0, NULL, "COM port mapped to WPC95 UART" },
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 #endif /* PINMAME */

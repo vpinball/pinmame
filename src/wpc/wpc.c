@@ -11,6 +11,7 @@
 #include "core.h"
 #include "wpc.h"
 #include "bulb.h"
+#include "uart_16c450.h"
 #ifdef PROC_SUPPORT
 #include "p-roc/p-roc.h"
 #endif
@@ -631,7 +632,14 @@ static INTERRUPT_GEN(wpc_vblank) {
 / Emulate the WPC chip
 /-----------------------*/
 READ_HANDLER(wpc_r) {
-  switch (offset) {
+  if (offset < 8
+      && (core_gameData->gen & GENWPC_HASWPC95)
+      && pmoptions.serial_device != NULL)
+  {
+    /* Emulated UART(16C450) on WPC95 AV board */
+    return uart_16c450_read(offset);
+  }
+  else switch (offset) {
     case WPC_FLIPPERS: /* Flipper switches */
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0)
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
@@ -770,7 +778,14 @@ WRITE_HANDLER(wpc_w) {
   }
 #endif
 
-  switch (offset) {
+  if (offset < 8
+      && (core_gameData->gen & GENWPC_HASWPC95)
+      && pmoptions.serial_device != NULL)
+  {
+    /* Emulated UART(16C450) on WPC95 AV board */
+    uart_16c450_write(offset, data);
+  }
+  else switch (offset) {
     case WPC_ROMBANK: { /* change rom bank */
       int bank = data & wpclocals.pageMask;
       cpu_setbank(1, memory_region(WPC_ROMREGION)+ bank * 0x4000);
@@ -1172,6 +1187,12 @@ static MACHINE_INIT(wpc) {
     case GEN_WPC95DCS:
       //Sound board initialization
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
+      if (pmoptions.serial_device != NULL) {
+        // use default baud rate; game will set a baud rate at startup
+        if (uart_open(pmoptions.serial_device, 9600) < 0) {
+          pmoptions.serial_device = NULL;       // open failed, disable UART
+        }
+      }
   }
 
   // Initialize outputs
