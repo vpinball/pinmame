@@ -3,16 +3,41 @@
 #include <math.h>
 #include "bulb.h"
 
+// 2024.07.29 - Changes:
+// * replace bulb characteristics by values based on real bulb resistance measures using the following method:
+//   . collect U and I ratings, compute R at (unknown) stability temperature (T): R = U/I
+//   . measure R0 at room temperature (T0) with a multimeter on a set of real bulbs
+//   . estimate stability temperature (T) from the ratio between R and R0 using the 2 following equations:
+//      R = p(T).L/A with p = resisitivity, L = filament length, A = wire section surface (Pi.r²)
+//        we suppose L/A constant (limited dilatation), so R/R0 = p/p0 and therefore p = p0.R/R0.
+//        knowing that p0 of tungsten is 5.65x10-8 Ohm.m at T0 = 293K
+//      (p - p0) = a.p0.(T - T0) with a = temperature to resistivity of tungsten, approximated to 0.0045
+//   . select a stability temperature from previous estimate, and compute back a corrected corresponding R0 using the previous equations
+//   . select a filament radius, compute the corresponding filament length since we know L/A = R0/p0 = L/(PI.r²) so L = PI.r².R0/p0
+//   . simulate the heating up to a stable state using the implementation provided in this module
+//   . adjust filament radius until the resulting stability temperature correspond to the selected one
+// * replace filament resistance model with a simpler one R = R0.(1 + 0.0045 (T-T0)) instead of R = R0 * (T/T0)^1.215 since it matches the model used to evaluate bulb characteristicvs and gives better results
+// * add #906 bulb
+
+
 /*-------------------
 /  Bulb characteristics and precomputed LUTs
 /-------------------*/
 typedef struct {
+  double rating_u; /* voltage rating for nominal operation */
+  double rating_i; /* current rating for nominal operation */
+  double rating_T; /* temperature rating for nominal operation */
+  double r0; /* resistance at 293K */
   double surface; /* filament surface in m² */
   double mass;	/* filament mass in kg */
-  double r0; /* resistance at 293K, but premultiplied by (1/293)^1.215 */
   double cool_down[BULB_T_MAX + 1]; /* precomputed cool down factor */
   double heat_factor[BULB_T_MAX + 1]; /* precomputed heat factor = 1.0 / (R * Mass * Specific Heat) */
 } bulb_tLampCharacteristics;
+
+// This used to be the following formula, r0 being already divided by pow(T0, 1.215), that is to say multiplied by 0.00100636573473889440796764003454
+// #define BULB_R(bulb, T) (bulbs[bulb].r0 * pow(T, 1.215))
+// This new formula seems to give more accurate results, with a supposed slightly lower performance impact
+#define BULB_R(bulb, T) (bulbs[bulb].r0 * (1.0 + 0.0045 * (T - 293.0)))
 
 /*-------------------
 /  local variables
@@ -25,12 +50,12 @@ static struct {
   double                      specific_heat[BULB_T_MAX + 1];
 } locals;
 
-// Bulb characteristics, estimated by fitting ratings (U,I,P) at a supposed steady state temperature of 2700K, then validating against high FPS video
 static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
-   { 0.000001549619403110030, 0.000000203895434417560, 1.70020865326503000 * 0.00100636573473889440796764003454 }, // #44 Bulb characteristics (6.3V, 250mA, 1.26W, 5lm)
-   { 0.000000929872857822516, 0.000000087040748856477, 2.83368108877505000 * 0.00100636573473889440796764003454 }, // #47 Bulb characteristics (6.3V, 150mA, 0.95W, 6.3lm)
-   { 0.000001239604749734440, 0.000000140555683560514, 2.12526081658129000 * 0.00100636573473889440796764003454 }, // #86 Bulb characteristics (6.3V, 200mA, 1.58W, 11.3lm)
-   { 0.000007413493071564570, 0.000001709095572478890, 1.51222718202281000 * 0.00100636573473889440796764003454 }, // #89 Bulb characteristics (13V, 580mA, 7.54W, 75.4lm)
+   {  6.3, 0.250, 2700.0, 2.12990745045007, 0.000001614540092669770, 0.000000201702717783132 }, //  #44 ( 33ms from 10% to 90%)
+   {  6.3, 0.150, 2500.0, 3.84210767049353, 0.000001202491253698990, 0.000000111862951366603 }, //  #47 ( 31ms from 10% to 90%)
+   {  6.3, 0.200, 2200.0, 3.28758545112978, 0.000003380553637833940, 0.000000467510791873652 }, //  #86 ( 99ms from 10% to 90%)
+   { 13.0, 0.577, 2700.0, 1.90452041865641, 0.000007161323996498170, 0.000001525794698449980 }, //  #89 ( 57ms from 10% to 90%)
+   { 13.0, 0.690, 2400.0, 1.79750796261460, 0.000015511737502181100, 0.000004359371396813600 }, // #906 (113ms from 10% to 90%)
 };
 
 // Linear RGB tint of a blackbody for temperatures ranging from 1500 to 3000K. The values are normalized for a relative luminance of 1.
@@ -71,21 +96,20 @@ void bulb_init()
       double T = 1500.0 + i;
       locals.t_to_p[i] = 1.247/pow(1.0+129.05/T, 204.0) + 0.0678/pow(1.0+78.85/T, 404.0) + 0.0489/pow(1.0+23.52/T, 1004.0) + 0.0406/pow(1.0+13.67/T, 2004.0);
    }
-   double P2700 = locals.t_to_p[2700 - 1500];
-   for (int i=0; i <= BULB_T_MAX - 1500; i++)
-   {
-      locals.t_to_p[i] /= P2700;
-   }
+
    // Compute visible emission power to filament temperature LUT, normalized for a relative power of 255 for visible emission power at T=2700K
    // For the time being we simply search in the previously created LUT
    int t_pos = 0;
+   double P2700 = locals.t_to_p[2700 - 1500];
    for (int i=0; i<512; i++)
    {
       double p = i / 255.0;
-      while (locals.t_to_p[t_pos] < p)
+      while (locals.t_to_p[t_pos] < p * P2700)
          t_pos++;
       locals.p_to_t[i] = 1500 + t_pos;
    }
+
+   // Precompute main parameters of the heating/cooldown model for each of the supported bulbs
    for (int i=0; i <= BULB_T_MAX; i++)
    {
       double T = i;
@@ -97,23 +121,23 @@ void bulb_init()
          // pow(T, 5.0796) is pow(T, 4) from Stefan/Boltzmann multiplied by tungsten overall (all wavelengths) emissivity which is 0.0000664*pow(T,1.0796)
          double delta_energy = -0.00000005670374419 * bulbs[j].surface * 0.0000664 * pow(T, 5.0796);
          bulbs[j].cool_down[i] = delta_energy / (locals.specific_heat[i] * bulbs[j].mass);
-         bulbs[j].heat_factor[i] = 1.0 / (bulbs[j].r0 * pow(T, 1.215) * locals.specific_heat[i] * bulbs[j].mass);
+         bulbs[j].heat_factor[i] = 1.0 / (BULB_R(j, T) * locals.specific_heat[i] * bulbs[j].mass);
       }
    }
 }
 
 /*-------------------------------
-/  Returns relative visible emission power for a given filament temperature. Result is relative to the emission power at 2700K
+/  Returns relative visible emission power for a given filament temperature. Result is relative to the emission power at the bulb rated stability temperature
 /-------------------------------*/
-float bulb_filament_temperature_to_emission(const float T)
+float bulb_filament_temperature_to_emission(const int bulb, const float T)
 {
    if (T < 1500.0f) return 0.f;
    if (T >= (float)BULB_T_MAX) return (float)locals.t_to_p[BULB_T_MAX - 1500];
-   return (float)locals.t_to_p[(int)T - 1500];
+   return (float)(locals.t_to_p[(int)T - 1500] / locals.t_to_p[(int)(bulbs[bulb].rating_T) - 1500]);
    // Linear interpolation is not worth its cost
    // int lower_T = (int) T, upper_T = lower_T+1;
    // float alpha = T - (float)lower_T;
-   // return (1.0f - alpha) * (float)locals.t_to_p[lower_T - 1500] + alpha * (float)locals.t_to_p[upper_T - 1500];
+   // return (1.0f - alpha) * (float)((locals.t_to_p[lower_T - 1500] + alpha * locals.t_to_p[upper_T - 1500])  / locals.t_to_p[(int)(bulbs[bulb].rating_T) - 1500]));
 }
 
 /*-------------------------------
@@ -189,10 +213,9 @@ float bulb_heat_up_factor(const int bulb, const float T, const float U, const fl
    double U1 = U;
    if (serial_R != 0.f)
    {
-      double R = bulbs[bulb].r0 * powf(T, 1.215f);
+      const double R = BULB_R(bulb, T);
       U1 *= R / (R + serial_R);
    }
-
    return (float)(U1 * U1 * bulbs[bulb].heat_factor[(int)T] + bulbs[bulb].cool_down[(int)T]);
 }
 
@@ -208,7 +231,7 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
       double U1 = U;
       if (serial_R != 0.f)
       {
-         const double R = bulbs[bulb].r0 * pow(T, 1.215);
+         const double R = BULB_R(bulb, T);
          U1 *= R / (R + serial_R);
       }
       energy = U1 * U1 * bulbs[bulb].heat_factor[(int)T] + bulbs[bulb].cool_down[(int)T];
