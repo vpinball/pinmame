@@ -82,6 +82,7 @@ add_compile_definitions(
    MAMEVER=7300
    PINMAME
    PINMAME_NO_UNUSED
+   PINMAME_HOST_UART
    SAM_INCLUDE_COLORED
    NAME="xpinmame"
 
@@ -568,6 +569,11 @@ add_executable(xpinmame
    src/wpc/taitos.c
    src/wpc/taitos.h
    src/wpc/techno.c
+   src/wpc/uart_16c450.c
+   src/wpc/uart_16c450.h
+   src/wpc/uart_8251.c
+   src/wpc/uart_8251.h
+   src/wpc/uart_host.h
    src/wpc/vd.c
    src/wpc/vpintf.c
    src/wpc/vpintf.h
@@ -609,6 +615,7 @@ add_executable(xpinmame
    src/unix/effect.c
    src/unix/ticker.c
    src/unix/parallel.c
+   src/unix/serial.c
    src/unix/sysdep/rc.c
    src/unix/sysdep/misc.c
    src/unix/sysdep/plugin_manager.c

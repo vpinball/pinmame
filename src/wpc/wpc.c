@@ -1215,7 +1215,11 @@ static MACHINE_INIT(wpc) {
   if (pmoptions.serial_device != NULL) {
     // use default baud rate; game will set a baud rate at startup
     if (uart_open(pmoptions.serial_device, 9600) < 0) {
+      printf("serial_device: failed to open %s.\n", pmoptions.serial_device);
       pmoptions.serial_device = NULL;       // open failed, disable UART
+    }
+    else {
+      printf("serial_device: WPC serial port redirected to %s.\n", pmoptions.serial_device);
     }
   }
 #endif

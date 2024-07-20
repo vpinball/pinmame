@@ -93,6 +93,9 @@ struct rc_option pinmame_opts[] = {
 	{ "p-roc",NULL, rc_string,&pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },
 	{ "virtual_dmd", NULL, rc_bool,&pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
 #endif
+#ifdef PINMAME_HOST_UART
+	{ "serial_device", NULL, rc_string, &pmoptions.serial_device, NULL, 0, 0, NULL, "COM port mapped to WPC95 UART" },
+#endif
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 #endif /* PINMAME */
