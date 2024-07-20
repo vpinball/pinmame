@@ -12,11 +12,3 @@
 // 16C450 emulation
 data8_t uart_16c450_read(int reg);
 int uart_16c450_write(int reg, data8_t value);
-
-/*  Platform-specific code to connect with an actual serial port,
-    Provided by either windows/serial.c or unix/serial.c.
-*/
-int uart_open(const char *device, data32_t baudrate);
-int uart_baudrate(data32_t baudrate);
-int uart_getch(void);
-int uart_putch(data8_t value);

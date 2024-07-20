@@ -5,6 +5,10 @@
     NBA Fastbreak and the printout features from the service menu.  For
     example, it does not include any code for interrupts.
 
+    But, unlike the 8251 UART emulator, we attempt to simulate the baudrate
+    for outbound bytes in case it matters for the Championship Link feature
+    of NBA Fastbreak.
+
     Written July 2024 by Tom Collins <tom@tomlogic.com>
 */
 
@@ -13,6 +17,7 @@
 #include <stdio.h>
 
 #include "uart_16c450.h"
+#include "uart_host.h"
 
 #include "timer.h"
 

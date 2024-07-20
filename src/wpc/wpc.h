@@ -159,9 +159,9 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_PRINTBUSY     (0x3fc0 - WPC_BASE) /* xxxxx  R: Printer ready ??? */
 #define WPC_PRINTDATA     (0x3fc1 - WPC_BASE) /* xxxxx  W: send to printer */
 #define WPC_PRINTDATAX    (0x3fc2 - WPC_BASE) /* xxxxx  W: 0: Printer data available */
-#define WPC_SERIAL_DATA   (0x3fc3 - WPC_BASE)
-#define WPC_SERIAL_CTRL   (0x3fc4 - WPC_BASE)
-#define WPC_SERIAL_BAUD   (0x3fc5 - WPC_BASE)
+#define WPC_SERIAL_DATA   (0x3fc3 - WPC_BASE) /* xxxxx  8251 UART of WPC Printer Option Kit */
+#define WPC_SERIAL_CTRL   (0x3fc4 - WPC_BASE) /* xxxxx  8251 UART of WPC Printer Option Kit */
+#define WPC_SERIAL_BAUD   (0x3fc5 - WPC_BASE) /* xxxxx  baud rate divider (0=9600, 1=4800, ..., 5=300) */
 /* Ticket dispenser board */
 #define WPC_TICKET_DISP   (0x3fc6 - WPC_BASE)
 /* Fliptronics 2 Board */
