@@ -82,6 +82,7 @@ add_compile_definitions(
    MAMEVER=7300
    PINMAME
    PINMAME_NO_UNUSED
+   PINMAME_HOST_UART
 
    LSB_FIRST
    DIRECTINPUT_VERSION=0x0700
@@ -553,6 +554,11 @@ add_executable(pinmame WIN32
    src/wpc/taitos.c
    src/wpc/taitos.h
    src/wpc/techno.c
+   src/wpc/uart_16c450.c
+   src/wpc/uart_16c450.h
+   src/wpc/uart_8251.c
+   src/wpc/uart_8251.h
+   src/wpc/uart_host.h
    src/wpc/vd.c
    src/wpc/vpintf.c
    src/wpc/vpintf.h
@@ -595,6 +601,7 @@ add_executable(pinmame WIN32
    src/windows/pattern.h
    src/windows/rc.c
    src/windows/rc.h
+   src/windows/serial.c
    src/windows/sound.c
    src/windows/ticker.c
    src/windows/video.c
