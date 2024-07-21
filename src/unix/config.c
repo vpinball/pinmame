@@ -94,7 +94,7 @@ struct rc_option pinmame_opts[] = {
 	{ "virtual_dmd", NULL, rc_bool,&pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
 #endif
 #ifdef PINMAME_HOST_UART
-	{ "serial_device", NULL, rc_string, &pmoptions.serial_device, NULL, 0, 0, NULL, "COM port mapped to WPC95 UART" },
+	{ "serial_device", NULL, rc_string, &pmoptions.serial_device, NULL, 0, 0, NULL, "/dev/tty serial port mapped to WPC UART" },
 #endif
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
