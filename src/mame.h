@@ -187,18 +187,18 @@ struct GameOptions
 	mame_file *	playback;		/* handle to file to playback input from */
 	mame_file *	language_file;	/* handle to file for localization */
 
-	int		mame_debug;		/* 1 to enable debugging */
-	int		cheat;			/* 1 to enable cheating */
-	int 	gui_host;		/* 1 to tweak some UI-related things for better GUI integration */
+	int		mame_debug;			/* 1 to enable debugging */
+	int		cheat;				/* 1 to enable cheating */
+	int 	gui_host;			/* 1 to tweak some UI-related things for better GUI integration */
 	int 	skip_disclaimer;	/* 1 to skip the disclaimer screen at startup */
 	int 	skip_gameinfo;		/* 1 to skip the game info screen at startup */
 
 	int		samplerate;		/* sound sample playback rate, in Hz */
 	int		use_samples;	/* 1 to enable external .wav samples */
-	//int		use_filter;		/* 1 to enable FIR filter on final mixer output */
+	//int		use_filter;	/* 1 to enable FIR filter on final mixer output */
 
 	float	brightness;		/* brightness of the display */
-	float	pause_bright;		/* additional brightness when in pause */
+	float	pause_bright;	/* additional brightness when in pause */
 	float	gamma;			/* gamma correction of the display */
 	int		color_depth;	/* 15, 16, or 32, any other value means auto */
 	int		vector_width;	/* requested width for vector games; 0 means default (640) */
@@ -209,23 +209,23 @@ struct GameOptions
 	float	vector_flicker;	/* vector beam flicker effect control */
 	float	vector_intensity;/* vector beam intensity */
 	int		translucency;	/* 1 to enable translucency on vectors */
-	int 	antialias;		/* 1 to enable antialiasing on vectors */
+	int		antialias;		/* 1 to enable antialiasing on vectors */
 
 	int		use_artwork;	/* bitfield indicating which artwork pieces to use */
 	int		artwork_res;	/* 1 for 1x game scaling, 2 for 2x */
 	int		artwork_crop;	/* 1 to crop artwork to the game screen */
 
 	char	savegame;		/* character representing a savegame to load */
-	int     crc_only;       /* specify if only CRC should be used as checksum */
+	int		crc_only;		/* specify if only CRC should be used as checksum */
 	char *	bios;			/* specify system bios (if used), 0 is default */
 
 	int		debug_width;	/* requested width of debugger bitmap */
 	int		debug_height;	/* requested height of debugger bitmap */
 	int		debug_depth;	/* requested depth of debugger bitmap */
 
-	int		at91jit;       /* PinMame: enable AT91 just in time compiler (x86 only) */
-	int		usemodsol;     /* PinMame: enable & setup physic model tied to binary outputs */
-	double	time_fence;    /* PinMame: enable & setup cpu time limit when using external synchronization */
+	int		at91jit;		/* PinMame: enable AT91 just in time compiler (x86 only) */
+	int		usemodsol;		/* PinMame: enable & setup physic model tied to binary outputs */
+	volatile double	time_fence; /* PinMame: enable & setup cpu time limit when using external synchronization */
 
 	#ifdef MESS
 	UINT32 ram;

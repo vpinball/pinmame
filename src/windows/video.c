@@ -741,7 +741,7 @@ static void throttle_speed(void)
 	throttle_speed_part(1,1);
 }
 
-// Throttle code changed to support parital frame syncing.
+// Throttle code changed to support partial frame syncing.
 // The emulated machine can often read, and respond to input by firing flippers in less than 10ms, but
 // if the emulation only runs in 60hz "chunks", we may need multiple frames to read and respond 
 // to flipper input.  By distributing the emulation more evenly over a frame, it creates more opportunities
