@@ -208,7 +208,7 @@ static void *interleave_boost_timer_end;
 static double perfect_interleave;
 
 // PinMame: time fence global offset
-static double time_fence_global_offset;
+static double time_fence_global_offset = 0.0;
 
 
 /*************************************
@@ -835,7 +835,7 @@ void cpunum_set_halt_line(int cpunum, int state)
 #define LONG_MAX 2147483647
 #endif
 #include <windows.h>
-static HANDLE time_fence_semaphore;
+static HANDLE time_fence_semaphore = NULL;
 
 int time_fence_is_supported()
 {
@@ -952,23 +952,23 @@ static void cpu_timeslice(void)
 	if (options.time_fence != 0.0 && time_fence_is_supported())
 	{
 		const double now = timer_get_time();
-		if (now >= time_fence_global_offset + options.time_fence)
+		if (now - options.time_fence >= time_fence_global_offset)
 		{
-			if (now >= time_fence_global_offset + options.time_fence + 1.0)
+			if (now - options.time_fence >= time_fence_global_offset + 1.0)
 				time_fence_global_offset = now - options.time_fence;
 			else if (time_fence_wait())
 			{
 				// Check if we are still ahead of the new time fence
-				if (now >= time_fence_global_offset + options.time_fence)
+				if (now - options.time_fence >= time_fence_global_offset)
 					return;
 			}
 		}
-		else if (now < time_fence_global_offset + options.time_fence - 1.0)
+		else if (now - options.time_fence < time_fence_global_offset - 1.0)
 			time_fence_global_offset = now - options.time_fence;
 	}
 
 	double target = timer_time_until_next_timer();
-	int cpunum, ran;
+	int cpunum;
 
 	LOG(("------------------\n"));
 	LOG(("cpu_timeslice: target = %.9f\n", target));
@@ -995,6 +995,7 @@ static void cpu_timeslice(void)
 			/* run for the requested number of cycles */
 			if (cycles_running > 0)
 			{
+				int ran;
 				profiler_mark(PROFILER_CPU1 + cpunum);
 				cycles_stolen = 0;
 				ran = cpunum_execute(cpunum, cycles_running);
