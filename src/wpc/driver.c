@@ -434,6 +434,7 @@ DRIVERNV(ffv104)        // 10/96    Flipper Football (1.04)
 DRIVERNV(bbb108)        // 11/96    Big Bang Bar (Beta 1.8)
 DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta 1.9)
 DRIVERNV(kpb105)        // 12/96    Kingpin (Beta 1.05)
+                        // 12/96    Zingy Bingy (whitewood, but basic rule ROM exists)
 
 // ----------------
 // CICPLAY GAMES
