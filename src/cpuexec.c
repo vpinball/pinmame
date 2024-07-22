@@ -7,7 +7,6 @@
 ***************************************************************************/
 
 #include <math.h>
-#include <stdbool.h>
 
 #include "driver.h"
 #include "timer.h"
@@ -208,7 +207,7 @@ static void *interleave_boost_timer_end;
 static double perfect_interleave;
 
 // PinMame: time fence global offset
-static double time_fence_global_offset = 0.0;
+volatile double time_fence_global_offset = 0.0;
 
 
 /*************************************
@@ -413,7 +412,7 @@ void cpu_run(void)
 
 		/* loop until the user quits or resets */
 		time_to_reset = 0;
-		time_fence_global_offset = 0.0;
+		time_fence_global_offset = -options.time_fence;
 		while (!time_to_quit && !time_to_reset)
 		{
 			profiler_mark(PROFILER_EXTRA);
@@ -684,7 +683,7 @@ void cpu_loadsave_reset(void)
 	don't call it at least once every 3 seconds, the machine
 	will be reset.
 
-	The 3 seconds delay is targeted at qzshowby, which otherwise
+	The 3 seconds delay is targeted at qzshowby, which otherwise //!!
 	would reset at the start of a game.
 
 --------------------------------------------------------------*/
@@ -842,20 +841,20 @@ int time_fence_is_supported()
 	if (time_fence_semaphore == NULL)
 	{
 		time_fence_semaphore = CreateSemaphore(NULL, 0, LONG_MAX, NULL);
-		return time_fence_semaphore != NULL;
+		return (time_fence_semaphore != NULL);
 	}
 	return 1;
 }
 
 void time_fence_post()
 {
-	if (time_fence_is_supported())
+	if (time_fence_semaphore != NULL)
 		ReleaseSemaphore(time_fence_semaphore, 1, NULL);
 }
 
-int time_fence_wait()
+int time_fence_wait(double secs)
 {
-	return time_fence_is_supported() && (WaitForSingleObject(time_fence_semaphore, 16) == WAIT_OBJECT_0);
+	return time_fence_is_supported() && (WaitForSingleObject(time_fence_semaphore, max((int)ceil(secs * 1000.), 1)) == WAIT_OBJECT_0);
 }
 
 void time_fence_exit()
@@ -863,6 +862,9 @@ void time_fence_exit()
 	if (time_fence_semaphore != NULL)
 		CloseHandle(time_fence_semaphore);
 	time_fence_semaphore = NULL;
+
+	options.time_fence = 0.0;
+	time_fence_global_offset = 0.0;
 }
 
 
@@ -884,13 +886,14 @@ int time_fence_is_supported()
 
 void time_fence_post()
 {
-	if (time_fence_is_supported())
+	if (time_fence_initialized)
 		dispatch_semaphore_signal(time_fence_semaphore);
 }
 
-int time_fence_wait()
+int time_fence_wait(double secs)
 {
-	dispatch_time_t wait_length = dispatch_time(DISPATCH_TIME_NOW, 16000000);
+	int ms = max((int)ceil(secs * 1000.), 1);
+	dispatch_time_t wait_length = dispatch_time(DISPATCH_TIME_NOW, ms*1000000ul);
 	return time_fence_is_supported() && (dispatch_semaphore_wait(time_fence_semaphore, wait_length) == 0);
 }
 
@@ -913,24 +916,25 @@ int time_fence_is_supported()
 {
 	if (!time_fence_initialized)
 	{
-		time_fence_initialized = 1;
 		if (sem_init(&time_fence_semaphore, 0, 0) != 0)
 			return 0;
+		time_fence_initialized = 1;
 	}
 	return 1;
 }
 
 void time_fence_post()
 {
-	if (time_fence_is_supported())
+	if (time_fence_initialized)
 		sem_post(&time_fence_semaphore);
 }
 
-int time_fence_wait()
+int time_fence_wait(double secs)
 {
+	int ms = max((int)ceil(secs * 1000.), 1);
 	struct timespec wait_length;
 	wait_length.tv_sec = 0ul;
-	wait_length.tv_nsec = 16000000l;
+	wait_length.tv_nsec = ms * 1000000l;
 	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &wait_length) == 0);
 }
 
@@ -948,23 +952,25 @@ void time_fence_exit()
 static void cpu_timeslice(void)
 {
 	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached
-	// When synchronization is lost, adjust global offset of external clock to resync on it.
+	// NOTE: if debugging stutter issues or the like, disable this mechanism in the core scripts, or directly here
 	if (options.time_fence != 0.0 && time_fence_is_supported())
 	{
 		const double now = timer_get_time();
-		if (now - options.time_fence >= time_fence_global_offset)
+		if (now - options.time_fence - time_fence_global_offset > 0.)
 		{
-			if (now - options.time_fence >= time_fence_global_offset + 1.0)
-				time_fence_global_offset = now - options.time_fence;
-			else if (time_fence_wait())
+			// We are ahead, so wait for the specified time OR until a new time fence value arrives
+			if (time_fence_wait(now - options.time_fence - time_fence_global_offset))
 			{
-				// Check if we are still ahead of the new time fence
-				if (now - options.time_fence >= time_fence_global_offset)
+				// Check if we are even ahead of the newly received time fence, if yes then exit
+				if (now - options.time_fence - time_fence_global_offset > 0.)
 					return;
 			}
+			else
+			{
+				// We waited for the specified time, but no new time fence value arrived, so set the fence offset to respect that
+				time_fence_global_offset = now - options.time_fence;
+			}
 		}
-		else if (now - options.time_fence < time_fence_global_offset - 1.0)
-			time_fence_global_offset = now - options.time_fence;
 	}
 
 	double target = timer_time_until_next_timer();
@@ -972,7 +978,7 @@ static void cpu_timeslice(void)
 
 	LOG(("------------------\n"));
 	LOG(("cpu_timeslice: target = %.9f\n", target));
-	
+
 	/* process any pending suspends */
 	for (cpunum = 0; Machine->drv->cpu[cpunum].cpu_type != CPU_DUMMY; cpunum++)
 	{
@@ -1001,12 +1007,12 @@ static void cpu_timeslice(void)
 				ran = cpunum_execute(cpunum, cycles_running);
 				ran -= cycles_stolen;
 				profiler_mark(PROFILER_END);
-				
+
 				/* account for these cycles */
 				cpu[cpunum].totalcycles += ran;
 				cpu[cpunum].localtime += TIME_IN_CYCLES(ran, cpunum);
 				LOG(("         %d ran, %d total, time = %.9f\n", ran, (INT32)cpu[cpunum].totalcycles, cpu[cpunum].localtime));
-				
+
 				/* if the new local CPU time is less than our target, move the target up */
 				if (cpu[cpunum].localtime < target && cpu[cpunum].localtime > 0)
 				{
@@ -1031,7 +1037,7 @@ static void cpu_timeslice(void)
 			cpu[cpunum].localtime += TIME_IN_CYCLES(cycles_running, cpunum);
 			LOG(("         %d skipped, %d total, time = %.9f\n", cycles_running, (INT32)cpu[cpunum].totalcycles, cpu[cpunum].localtime));
 		}
-		
+
 		/* update the suspend state */
 		if (cpu[cpunum].suspend != cpu[cpunum].nextsuspend)
 			LOG(("--> updated CPU%d suspend from %X to %X\n", cpunum, cpu[cpunum].suspend, cpu[cpunum].nextsuspend));
@@ -1261,20 +1267,6 @@ int cycles_left_to_run(void)
  *	for the active CPU or for a given CPU.
  *
  *************************************/
-
-/*--------------------------------------------------------------
-
-	IMPORTANT: this value wraps around in a relatively short
-	time. For example, for a 6MHz CPU, it will wrap around in
-	2^32/6000000 = 716 seconds = 12 minutes.
-
-	Make sure you don't do comparisons between values returned
-	by this function, but only use the difference (which will
-	be correct regardless of wraparound).
-
-	Alternatively, use the new 64-bit variants instead.
-
---------------------------------------------------------------*/
 
 UINT64 activecpu_gettotalcycles64(void)
 {
@@ -1695,7 +1687,7 @@ static void cpu_vblankreset(void)
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
 		if (!(cpu[cpunum].suspend & SUSPEND_REASON_DISABLE))
-			cpu[cpunum].iloops = (int)(Machine->drv->cpu[cpunum].vblank_interrupts_per_frame - 1 + 0.5);
+			cpu[cpunum].iloops = (int)(Machine->drv->cpu[cpunum].vblank_interrupts_per_frame + (- 1 + 0.5));
 		else
 			cpu[cpunum].iloops = -1;
 	}
@@ -1737,8 +1729,8 @@ static void cpu_vblankcallback(int param)
 {
 	int cpunum;
 
-   if (vblank_countdown == 1)
-      vblank = 1;
+	if (vblank_countdown == 1)
+		vblank = 1;
 
 	/* loop over CPUs */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
@@ -2061,4 +2053,3 @@ static void cpu_inittimers(void)
 	}
 	timer_set(first_time, 0, cpu_firstvblankcallback);
 }
-

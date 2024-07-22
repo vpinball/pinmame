@@ -305,10 +305,13 @@ int vp_getModOutputType(int output, int no) {
 }
 
 extern void time_fence_post(); // in cpuexec.c
+extern volatile double time_fence_global_offset;
 void vp_setTimeFence(double timeInS)
 {
 	if (options.time_fence != timeInS)
 	{
+		if (options.time_fence == 0.0)
+			time_fence_global_offset = -timeInS;
 		options.time_fence = timeInS;
 		time_fence_post();
 	}

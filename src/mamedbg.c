@@ -1793,7 +1793,7 @@ static void trace_output( void )
 			if( TRACE.regs[0] )
 			{
 #ifdef CONFIG_FOR_FREEWPC
-				dst += sprintf (dst, "#%u ", activecpu_gettotalcycles ());
+				dst += sprintf (dst, "#%u ", activecpu_gettotalcycles64 ());
 #endif
 				for( i = 0; i < MAX_REGS && TRACE.regs[i]; i++ )
 					dst += sprintf( dst, "%s ", activecpu_dump_reg(TRACE.regs[i]) );
