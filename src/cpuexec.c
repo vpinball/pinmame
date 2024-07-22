@@ -896,8 +896,8 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	int ms = max((int)ceil(secs * 1000.), 1);
-	dispatch_time_t wait_length = dispatch_time(DISPATCH_TIME_NOW, ms*1000000ul);
+	int ns = max((int)ceil(secs * 1000000000.), 1);
+	dispatch_time_t wait_length = dispatch_time(DISPATCH_TIME_NOW, ns);
 	return time_fence_is_supported() && (dispatch_semaphore_wait(time_fence_semaphore, wait_length) == 0);
 }
 
@@ -939,10 +939,10 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	int ms = max((int)ceil(secs * 1000.), 1);
+	int ns = max((int)ceil(secs * 1000000000.), 1);
 	struct timespec wait_length;
 	wait_length.tv_sec = 0ul;
-	wait_length.tv_nsec = ms * 1000000l;
+	wait_length.tv_nsec = ns;
 	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &wait_length) == 0);
 }
 
