@@ -873,6 +873,10 @@ void time_fence_exit()
 #include <dispatch/dispatch.h>
 static dispatch_semaphore_t time_fence_semaphore;
 static int time_fence_initialized = 0;
+static int max(int a, int b)
+{
+	return a > b ? a : b;
+}
 
 int time_fence_is_supported()
 {
@@ -911,6 +915,10 @@ void time_fence_exit()
 #include <semaphore.h>
 static sem_t time_fence_semaphore;
 static int time_fence_initialized = 0;
+static int max(int a, int b)
+{
+	return a > b ? a : b;
+}
 
 int time_fence_is_supported()
 {
