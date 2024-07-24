@@ -130,7 +130,7 @@ int uart_8251_write(int reg, data8_t value)
             break;
 
         case REG_BAUD:
-            baud = 9600 / (value + 1);
+            baud = 9600 / (1 << value);
             DEBUG_OUT("%ubps\n", baud);
             break;
     }
