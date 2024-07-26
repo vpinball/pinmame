@@ -72,7 +72,7 @@ private: // functions
 	bool parseDuckingProfile(const IniSection& ducking_section, ProfileMap& profiles);
 
 	// determine altsound format from installed data
-	std::string get_altound_format(const std::string& path_in);
+	std::string get_altsound_format(const std::string& path_in);
 
 	// Create altsound.ini file
 	bool create_altsound_ini(const std::string& path_in);
