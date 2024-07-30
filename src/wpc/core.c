@@ -2558,7 +2558,7 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
       const float Ut = output->state.bulb.isAC ? (1.41421356f * sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp)) * output->state.bulb.prevIntegrationValue) : output->state.bulb.prevIntegrationValue;
       const float dT = dt * bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
       output->state.bulb.filament_temperature += dT < 1000.0f ? dT : 1000.0f; // Limit initial current surge (1ms is a bit long when emulating this part of the heating)
-      core_eye_flicker_fusion(output, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature));
+      core_eye_flicker_fusion(output, bulb_filament_temperature_to_emission(output->state.bulb.bulb, output->state.bulb.filament_temperature));
       output->state.bulb.prevIntegrationTimestamp += dt;
     }
     output->state.bulb.prevIntegrationTimestamp = output->state.bulb.integrationTimestamp;
@@ -2569,8 +2569,8 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
-    printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s F=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-", isFlip ? "/" : ".");
-    //printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, ((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ? "x" : "-");
+    printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s F=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.bulb, output->state.bulb.filament_temperature), output->value, state ? "x" : "-", isFlip ? "/" : ".");
+    //printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.bulb, output->state.bulb.filament_temperature), output->value, ((coreGlobals.binaryOutputState[index >> 3] >> (index & 7)) & 1) ? "x" : "-");
   #endif
 }
 
@@ -2619,7 +2619,7 @@ void core_update_pwm_output_led(const double now, const int index, const int isF
 
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
-    printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.filament_temperature), output->value, state ? "x" : "-");
+    printf("Output #%d t=%8.5f T=%5.0f e=%0.3f V=%0.3f S=%s\n", index, now, output->state.bulb.filament_temperature, bulb_filament_temperature_to_emission(output->state.bulb.bulb, output->state.bulb.filament_temperature), output->value, state ? "x" : "-");
   #endif
 }
 
