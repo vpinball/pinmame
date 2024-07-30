@@ -77,7 +77,6 @@ add_compile_definitions(
    HAS_SAA1099=1
    HAS_QSOUND=1
 
-   INLINE=static __inline
    LSB_FIRST
    x11
    stricmp=strcasecmp
@@ -93,12 +92,16 @@ add_compile_definitions(
    USE_XV
    USE_HWSCALE
    NAME="xpinmame"
-   DISPLAY_METHOD="x11"
+   DISPLAY_METHOD="SDL2"
    XMAMEROOT="/usr/local/share/xpinmame"
    HAVE_SNPRINTF
    HAVE_GETTIMEOFDAY
 
    SYSDEP_DSP_COREAUDIO
+)
+
+add_definitions(
+    "-DINLINE=static inline __attribute__((always_inline))"
 )
 
 add_executable(xpinmame 
@@ -605,9 +608,10 @@ add_executable(xpinmame
    src/unix/sysdep/sysdep_dsp.c 
    src/unix/sysdep/sysdep_mixer.c 
    src/unix/sysdep/dsp-drivers/coreaudio.c 
-   src/unix/video-drivers/x11.c 
-   src/unix/video-drivers/xinput.c 
-   src/unix/video-drivers/x11_window.c 
+#   src/unix/video-drivers/x11.c
+#   src/unix/video-drivers/xinput.c
+#   src/unix/video-drivers/x11_window.c
+   src/unix/video-drivers/sdl.c
    src/unix/joystick-drivers/joy_i386.c 
    src/unix/joystick-drivers/joy_pad.c 
    src/unix/joystick-drivers/joy_x11.c 
@@ -620,8 +624,12 @@ find_package(
    ZLIB
 )
 
+#find_package(
+#   X11
+#)
+
 find_package(
-   X11
+   SDL2 REQUIRED
 )
 
 find_library(
@@ -634,16 +642,18 @@ target_include_directories(xpinmame PUBLIC
    src/cpu/m68000
    src/cpu/m68000/generated_by_m68kmake
    src/unix
-   ${X11_X11_INCLUDE_PATH}
-   ${X11_Xv_INCLUDE_PATH}
+#   ${X11_X11_INCLUDE_PATH}
+#   ${X11_Xv_INCLUDE_PATH}
+   ${SDL2_INCLUDE_DIRS}
 )
 
 target_link_libraries(xpinmame PUBLIC
    ZLIB::ZLIB
-   ${X11_X11_LIB}
-   ${X11_Xv_LIB} 
-   ${X11_Xext_LIB}
+ #  ${X11_X11_LIB}
+ #  ${X11_Xv_LIB}
+ #  ${X11_Xext_LIB}
    ${COREAUDIO_FRAMEWORK}
+   ${SDL2_LIBRARIES}
 )
 
 set_target_properties(xpinmame PROPERTIES
