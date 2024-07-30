@@ -1,24 +1,36 @@
 // license:GPLv3+
 
 #include <math.h>
-#include "bulb.h"
 
-// 2024.07.29 - Changes:
-// * replace bulb characteristics by values based on real bulb resistance measures using the following method:
-//   . collect U and I ratings, compute R at (unknown) stability temperature (T): R = U/I
-//   . measure R0 at room temperature (T0) with a multimeter on a set of real bulbs
-//   . estimate stability temperature (T) from the ratio between R and R0 using the 2 following equations:
-//      R = p(T).L/A with p = resisitivity, L = filament length, A = wire section surface (Pi.r²)
-//        we suppose L/A constant (limited dilatation), so R/R0 = p/p0 and therefore p = p0.R/R0.
-//        knowing that p0 of tungsten is 5.65x10-8 Ohm.m at T0 = 293K
-//      (p - p0) = a.p0.(T - T0) with a = temperature to resistivity of tungsten, approximated to 0.0045
-//   . select a stability temperature from previous estimate, and compute back a corrected corresponding R0 using the previous equations
-//   . select a filament radius, compute the corresponding filament length since we know L/A = R0/p0 = L/(PI.r²) so L = PI.r².R0/p0
-//   . simulate the heating up to a stable state using the implementation provided in this module
-//   . adjust filament radius until the resulting stability temperature correspond to the selected one
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+// 2024.07.30 - Changes:
+// * replace bulb characteristics by values based on real bulb resistance measures using the algorithm given at the end of this file
 // * replace filament resistance model with a simpler one R = R0.(1 + 0.0045 (T-T0)) instead of R = R0 * (T/T0)^1.215 since it matches the model used to evaluate bulb characteristicvs and gives better results
 // * add #906 bulb
 
+
+// Set to 1 to compute bulb characteristics
+#define ENABLE_COMPUTE_CHARACTERISTICS 0
+
+
+#if ENABLE_COMPUTE_CHARACTERISTICS
+// Copied from bulb.h to allow running this as a single file in any C interpreter
+#define BULB_44   0
+#define BULB_47   1
+#define BULB_86   2
+#define BULB_89   3
+#define BULB_906  4
+#define BULB_MAX  5
+
+#define BULB_T_MAX 3400
+
+#else
+#include "bulb.h"
+
+#endif
 
 /*-------------------
 /  Bulb characteristics and precomputed LUTs
@@ -27,16 +39,28 @@ typedef struct {
   double rating_u; /* voltage rating for nominal operation */
   double rating_i; /* current rating for nominal operation */
   double rating_T; /* temperature rating for nominal operation */
-  double r0; /* resistance at 293K */
-  double surface; /* filament surface in m² */
-  double mass;	/* filament mass in kg */
-  double cool_down[BULB_T_MAX + 1]; /* precomputed cool down factor */
+  double surface;  /* filament surface in m², computed from previous ratings */
+  double mass;     /* filament mass in kg, computed from previous ratings */
+  double r0;       /* resistance at 293K, computed from previous ratings */
+  double cool_factor[BULB_T_MAX + 1]; /* precomputed cool down factor = Energy / (Mass * Specific Heat) */
   double heat_factor[BULB_T_MAX + 1]; /* precomputed heat factor = 1.0 / (R * Mass * Specific Heat) */
 } bulb_tLampCharacteristics;
 
-// This used to be the following formula, r0 being already divided by pow(T0, 1.215), that is to say multiplied by 0.00100636573473889440796764003454
-// #define BULB_R(bulb, T) (bulbs[bulb].r0 * pow(T, 1.215))
-// This new formula seems to give more accurate results, with a supposed slightly lower performance impact
+// Impact of coil form factor approximated values based on "The Coiling Factor in the Tungsten Filament Lamps" by D. C. Agrawal
+#define RESISTIVITY_COIL_FACTOR 0.97  // Impact on resistivity equation R = p.L/A
+#define EMISSIVITY_COIL_FACTOR 0.6865 // Impact on emissivity (since part of the emitted energy hit back the filament)
+
+// Impact of base and wire temperature convection based on "The Coiling Factor in the Tungsten Filament Lamps" by D. C. Agrawal
+#define BASE_WIRE_LOSS 0.07
+
+// Physic constants
+#define STEPHAN_BOLTZMAN 5.670374419e-8  // Stephan Blotzman constant used in Planck's law
+#define RESISTIVITY_293K 5.65e-8         // Resistivity (Ohm.m) of tungsten at 293K
+#define TUNGSTEN_DENSITY 19300.0         // tungsten density of 19300 g/m3
+
+// This used to be the following formula (r0 would already be divided by pow(T0, 1.215), that is to say multiplied by 0.00100636573473889440796764003454)
+//#define BULB_R(bulb, T) (bulbs[bulb].r0 * pow(T/293.0, 1.215))
+// The new linear matching formula gives more accurate results, with a supposed slightly lower performance impact
 #define BULB_R(bulb, T) (bulbs[bulb].r0 * (1.0 + 0.0045 * (T - 293.0)))
 
 /*-------------------
@@ -47,15 +71,14 @@ static int initialized = 0;
 static struct {
   double                      t_to_p[BULB_T_MAX + 1 - 1500];
   double                      p_to_t[512];
-  double                      specific_heat[BULB_T_MAX + 1];
 } locals;
 
 static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
-   {  6.3, 0.250, 2700.0, 2.12990745045007, 0.000001614540092669770, 0.000000201702717783132 }, //  #44 ( 33ms from 10% to 90%)
-   {  6.3, 0.150, 2500.0, 3.84210767049353, 0.000001202491253698990, 0.000000111862951366603 }, //  #47 ( 31ms from 10% to 90%)
-   {  6.3, 0.200, 2200.0, 3.28758545112978, 0.000003380553637833940, 0.000000467510791873652 }, //  #86 ( 99ms from 10% to 90%)
-   { 13.0, 0.577, 2700.0, 1.90452041865641, 0.000007161323996498170, 0.000001525794698449980 }, //  #89 ( 57ms from 10% to 90%)
-   { 13.0, 0.690, 2400.0, 1.79750796261460, 0.000015511737502181100, 0.000004359371396813600 }, // #906 (113ms from 10% to 90%)
+   {  6.3, 0.250, 2700.0,  2.2666574033e-6, 0.3203100541e-6 }, //  #44 ( 56ms from 10% to 90%, 36ms cool down)
+   {  6.3, 0.150, 2500.0,  2.0125667137e-6, 0.2245536788e-6 }, //  #47 ( 58ms from 10% to 90%, 34ms cool down)
+   {  6.3, 0.200, 2200.0,  5.1313152375e-6, 0.8238640431e-6 }, //  #86 (131ms from 10% to 90%, 66ms cool down)
+   { 13.0, 0.577, 2700.0, 10.8024847652e-6, 2.6666454515e-6 }, //  #89 ( 97ms from 10% to 90%, 63ms cool down)
+   { 13.0, 0.690, 2600.0, 15.6708532230e-6, 4.5884736473e-6 }, // #906 (132ms from 10% to 90%, 82ms cool down)
 };
 
 // Linear RGB tint of a blackbody for temperatures ranging from 1500 to 3000K. The values are normalized for a relative luminance of 1.
@@ -89,6 +112,13 @@ void bulb_init()
       return;
    initialized = 1;
 
+   // Compute resistance at room temperature from other ratings U, I and T
+   for (int bulb = 0; bulb < BULB_MAX; bulb++)
+   {
+     bulbs[bulb].r0 = 1.0;
+     bulbs[bulb].r0 = (bulbs[bulb].rating_u / bulbs[bulb].rating_i) / BULB_R(bulb, bulbs[bulb].rating_T);
+   }
+
    // Compute filament temperature to visible emission power LUT, normalized by visible emission power at T=2700K, according 
    // to the formula from "Luminous radiation from a black body and the mechanical equivalentt of light" by W.W.Coblentz and W.B.Emerson
    for (int i=0; i <= BULB_T_MAX - 1500; i++)
@@ -110,18 +140,29 @@ void bulb_init()
    }
 
    // Precompute main parameters of the heating/cooldown model for each of the supported bulbs
+   double specific_heat[BULB_T_MAX + 1];
    for (int i=0; i <= BULB_T_MAX; i++)
    {
       double T = i;
-      // Compute Tungsten specific heat (energy to temperature transfer, depending on temperature) according to formula from "Heating-times of tungsten filament incandescent lamps" by Dulli Chandra Agrawal
-      locals.specific_heat[i] = 3.0 * 45.2268 * (1.0 - 310.0 * 310.0 / (20.0 * T*T)) + (2.0 * 0.0045549 * T) + (4 * 0.000000000577874 * T*T*T);
+      
+      // Compute Tungsten specific heat in J.kg-1 (energy to temperature transfer, depending on temperature) according to formula from "Heating-times of tungsten filament incandescent lamps" by Dulli Chandra Agrawal
+      //  Rg = 45.2268 J.kg-1.K-1 is gas constant for tungsten
+      //  310 K is a constant called the Debye temperature for tungsten at room temperature
+      specific_heat[i] = 3.0 * 45.2268 * (1.0 - (310.0 * 310.0) / (20.0 * T*T)) + (2.0 * 4.5549e-3 * T) + (4.0 * 5.77874e-10 * T*T*T);
+      
       // Compute cooldown and heat up factor for the predefined bulbs
-      for (int j=0; j<BULB_MAX; j++)
+      for (int bulb=0; bulb<BULB_MAX; bulb++)
       {
-         // pow(T, 5.0796) is pow(T, 4) from Stefan/Boltzmann multiplied by tungsten overall (all wavelengths) emissivity which is 0.0000664*pow(T,1.0796)
-         double delta_energy = -0.00000005670374419 * bulbs[j].surface * 0.0000664 * pow(T, 5.0796);
-         bulbs[j].cool_down[i] = delta_energy / (locals.specific_heat[i] * bulbs[j].mass);
-         bulbs[j].heat_factor[i] = 1.0 / (BULB_R(j, T) * locals.specific_heat[i] * bulbs[j].mass);
+         // Radiated energy, using Plank's law, corrected by the coil factor (energy radiated that hit back the filament)
+         const double emissivity = EMISSIVITY_COIL_FACTOR * 0.0000689 * pow(T, 1.0748); // tungsten emissivity over all wavelengths. Other paper gives (no significant impact): 0.0000664 * pow(T, 1.0796);
+         bulbs[bulb].cool_factor[i] = - STEPHAN_BOLTZMAN * bulbs[bulb].surface * emissivity * (pow(T, 4.0) - pow(293.0 + 30.0, 4.0));
+         // Energy lost by convection in the bulb base and wires, estimated as a percentage of the power at the bulb rating (this could be neglected)
+         bulbs[bulb].cool_factor[i] += - BASE_WIRE_LOSS * ((i - 293.0)/bulbs[bulb].rating_T) / BULB_R(bulb, T);
+         // Electric energy P=U²/R, but U² is not included in the precomputed LUT since it can be modulated
+         bulbs[bulb].heat_factor[i] = 1.0 / BULB_R(bulb, T);
+         // Pre-divide energy by M.C
+         bulbs[bulb].cool_factor[i] /= bulbs[bulb].mass * specific_heat[i];
+         bulbs[bulb].heat_factor[i] /= bulbs[bulb].mass * specific_heat[i];
       }
    }
 }
@@ -184,7 +225,7 @@ double bulb_emission_to_filament_temperature(const double p)
 /-------------------------------*/
 double bulb_cool_down_factor(const int bulb, const double T)
 {
-   return bulbs[bulb].cool_down[(int) T];
+   return bulbs[bulb].cool_factor[(int) T];
 }
 
 /*-------------------------------
@@ -195,7 +236,7 @@ double bulb_cool_down(const int bulb, double T, float duration)
    while (duration > 0.0f)
    {
       float dt = duration > 0.001f ? 0.001f : duration;
-      T += dt * bulbs[bulb].cool_down[(int) T];
+      T += dt * bulbs[bulb].cool_factor[(int) T];
       if (T <= 294.0)
       {
          return 293.0;
@@ -216,7 +257,7 @@ float bulb_heat_up_factor(const int bulb, const float T, const float U, const fl
       const double R = BULB_R(bulb, T);
       U1 *= R / (R + serial_R);
    }
-   return (float)(U1 * U1 * bulbs[bulb].heat_factor[(int)T] + bulbs[bulb].cool_down[(int)T]);
+   return (float)(U1 * U1 * bulbs[bulb].heat_factor[(int)T] + bulbs[bulb].cool_factor[(int)T]);
 }
 
 /*-------------------------------
@@ -234,10 +275,10 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
          const double R = BULB_R(bulb, T);
          U1 *= R / (R + serial_R);
       }
-      energy = U1 * U1 * bulbs[bulb].heat_factor[(int)T] + bulbs[bulb].cool_down[(int)T];
+      energy = U1 * U1 * bulbs[bulb].heat_factor[(int)T] + bulbs[bulb].cool_factor[(int)T];
       if (-10 < energy && energy < 10)
       {
-         // Stable state reached since electric heat (roughly) equals radiation cool down
+         // Stable state reached since electric heat (roughly) equals radiation and base/wire losses cool down
          return T;
       }
       float dt;
@@ -256,3 +297,117 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
    }
    return T;
 }
+
+#if ENABLE_COMPUTE_CHARACTERISTICS
+
+// The following code computes filament geometry parameters needed by the bulb 
+// model from the bulb ratings U, I and T. The temperature T is usually not
+// known, but it can be deduced by measuring the resistance of a cool unlit
+// bulb at room temperature, R0. Then try admissible value for T and compare
+// to the computed R0, then select the temperature for which computed and 
+// measured resistances matches.
+//
+// The method used to evaluate the characteristics is the following:
+//   . collect U and I ratings, compute R at stability temperature (T): R = U/I
+//   . measure R0 at room temperature (T0) with a multimeter on a set of real bulbs
+//   . select a stability temperature (T), and compute corresponding R0 using the the 2 following equations:
+//      R = p(T).L/A with p = resisitivity, L = filament length, A = wire section surface (Pi.r²)
+//        we suppose L/A constant (limited dilatation), so R/R0 = p/p0 and therefore p = p0.R/R0.
+//        knowing that p0 of tungsten is 5.65x10-8 Ohm.m at T0 = 293K
+//      (p - p0) = a.p0.(T - T0) with a = temperature to resistivity of tungsten, approximated to 0.0045
+//   . validate that the selected stability temperature gives a R0 matching the one measured previously
+//   . select a filament radius, compute the corresponding filament length since we know L/A = R0/p0 = L/(PI.r²) so L = PI.r².R0/p0
+//   . simulate the heating up to a stable state using the model provided in this module
+//   . adjust filament radius until the resulting stability temperature correspond to the selected one
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    bulb_init();
+    char* bulb_names[] = {"#44", "#47", "#86", "#89", "#906" };
+
+    for (int bulb = 0; bulb < BULB_MAX; bulb++)
+    {
+       // search filament radius corresponding to bulb rating between 1 to 100 micrometer, using a simple dichotomy
+       double rMin = 1.0e-6, rMax = 100.0e-6; 
+       int n = 1;
+       while (n < 50)
+       {
+          double r = (rMin + rMax) * 0.5; // filament radius (dichotomy search)
+          double a = M_PI * r * r; // area of the filament section
+          double l = bulbs[bulb].r0 * RESISTIVITY_COIL_FACTOR * a / RESISTIVITY_293K; // length of filament, using R = p.L/A applied at T0 = 293K, applying a coil coefficient
+          bulbs[bulb].surface = l * 2.0 * M_PI * r; // exterior surface of filament (radiating surface) computed as a linear cylinder (this could benefit from a coil factor)
+          bulbs[bulb].mass = l * a * TUNGSTEN_DENSITY; // mass of filament
+
+          // Force update of the precomputed LUTs
+          initialized = 0;
+          bulb_init();
+          double T = bulb_heat_up(bulb, 293.0, 100.0, bulbs[bulb].rating_u, 0.0);
+          //printf("r(µm)=%f T=%f r0=%f l(mm)=%f s(mm²)=%f m(µg)=%f\n", r*1e6, T, bulbs[bulb].r0, l*1e3, bulbs[bulb].surface*1e6, bulbs[bulb].mass*1e6);
+
+          if (abs(T - bulbs[bulb].rating_T) < 1e-4)
+          {
+             printf("Bulb: %s (%d iterations)\n", bulb_names[bulb], n);
+             printf("T  = %4.0f K (temperature of lit filament)\n", bulbs[bulb].rating_T);
+             printf("R0 = %13.10f Ohms (resistance of unlit bulb at 293K)\n", bulbs[bulb].r0);
+             printf("r  = %13.10f µm (radius of filament)\n", r*1e6);
+             printf("l  = %13.10f mm (length of filament)\n", l*1e3);
+             printf("s  = %13.10fe-6 m² (surface of filament)\n", bulbs[bulb].surface*1e6);
+             printf("m  = %13.10fe-6 kg (mass of filament)\n", bulbs[bulb].mass*1e6);
+             break;
+          }
+
+          n++;
+          if (T < bulbs[bulb].rating_T)
+             rMax = r;
+          else
+             rMin = r;
+       }
+
+       // Evaluate heating time to go from 10% to 90% of relative visible emission
+       double T = 293.0, t = 0.0, t10 = 0.0, dt = 0.0005;
+       n = 1;
+       while (n < 1000)
+       {
+          T = bulb_heat_up(bulb, T, dt, bulbs[bulb].rating_u, 0.0);
+          t += dt;
+          float p = bulb_filament_temperature_to_emission(bulb, T);
+          if (t10 == 0.0 && p >= 0.1)
+             t10 = t;
+          else if (t10 != 0.0 && p >= 0.9)
+          {
+             printf("Delay from 10%% to 90%%: %5.1fms\n", (t - t10)*1e3);
+             break;
+          }
+       }
+
+       // Evaluate cooling time to go from 90% to 10% of relative visible emission
+       T = bulbs[bulb].rating_T;
+       t = 0.0;
+       t10 = 0.0;
+       n = 1;
+       while (n < 1000)
+       {
+          T = bulb_cool_down(bulb, T, dt);
+          t += dt;
+          float p = bulb_filament_temperature_to_emission(bulb, T);
+          if (t10 == 0.0 && p <= 0.9)
+             t10 = t;
+          else if (t10 != 0.0 && p <= 0.1)
+          {
+             printf("Delay from 90%% to 10%%: %5.1fms\n", (t - t10)*1e3);
+             break;
+          }
+       }
+
+       printf("\n");
+    }
+    
+    printf("Done.\n");
+    return 0;
+}
+
+#endif
