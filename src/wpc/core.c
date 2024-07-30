@@ -2764,6 +2764,38 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
+    case CORE_MODOUT_BULB_906_20V_DC_WPC: // Flasher 20V DC switched through a TIP102 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from WPC schematics (TZ, TOTAN, CFTBL, WPC95 general)
+       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
+       coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.12f;
+       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+       break;
+    case CORE_MODOUT_BULB_906_20V_DC_GTS3: // Flasher 20V DC switched through a 12N10L Mosfet (no voltage drop), resistor from schematics (Cue Ball Wizard)
+       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
+       coreGlobals.physicOutputState[i].state.bulb.U = 20.f;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.3f;
+       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+       break;
+    case CORE_MODOUT_BULB_906_32V_DC_S11: // Flasher 32V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 3 Ohms serial resistor and a diode (1V voltage drop), resistor from board photos
+       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
+       coreGlobals.physicOutputState[i].state.bulb.U = 32.f - 1.0f - 1.0f;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.serial_R = 3.f;
+       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+       break;
+    case CORE_MODOUT_BULB_906_25V_DC_S11: // Flasher 25V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 1,5 Ohms serial resistor and a diode (1V voltage drop), from Police Force (and others) schematics
+       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
+       coreGlobals.physicOutputState[i].state.bulb.U = 25.f - 1.0f - 1.0f;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.serial_R = 1.5f;
+       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+       break;
     case CORE_MODOUT_LED:
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
