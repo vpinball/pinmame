@@ -398,10 +398,14 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_SE    204 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_20V_DC_CC    205 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
-#define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89/906 Bulb connected to 20V, commonly used for flashers */
-#define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89/906 Bulb connected to 20V, commonly used for flashers */
-#define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89/906 Bulb connected to 32V, used for flashers on S11 with output strobing */
-#define CORE_MODOUT_BULB_89_25V_DC_S11   304 /* Incandescent #89/906 Bulb connected to 25V, used for flashers on S11 with output strobing */
+#define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
+#define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
+#define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89 Bulb connected to 32V, used for flashers on S11 with output strobing */
+#define CORE_MODOUT_BULB_89_25V_DC_S11   304 /* Incandescent #89 Bulb connected to 25V, used for flashers on S11 with output strobing */
+#define CORE_MODOUT_BULB_906_20V_DC_WPC  311 /* Incandescent #906 Bulb connected to 20V, commonly used for flashers */
+#define CORE_MODOUT_BULB_906_20V_DC_GTS3 312 /* Incandescent #906 Bulb connected to 20V, commonly used for flashers */
+#define CORE_MODOUT_BULB_906_32V_DC_S11  313 /* Incandescent #906 Bulb connected to 32V, used for flashers on S11 with output strobing */
+#define CORE_MODOUT_BULB_906_25V_DC_S11  314 /* Incandescent #906 Bulb connected to 25V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
 #define CORE_MODOUT_LED_STROBE_1_10MS    401 /* LED Strobed 1ms over 10ms for full power */
 #define CORE_MODOUT_LED_STROBE_1_5MS     402 /* LED Strobed 1ms over 5ms for full power */
