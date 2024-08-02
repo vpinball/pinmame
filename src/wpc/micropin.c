@@ -30,7 +30,6 @@ static struct {
 
   double volume;
   UINT8  irq, inhibitIrq;
-  UINT8  out[16];
 } locals;
 
 
@@ -366,46 +365,38 @@ static INTERRUPT_GEN(mp2_vblank) {
     coreGlobals.segments[62 - i * 2].w = core_bcd2seg7[mem >> 4];
     coreGlobals.segments[63 - i * 2].w = core_bcd2seg7[mem & 0x0f];
   }
-  coreGlobals.lampMatrix[16] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
-  coreGlobals.lampMatrix[17] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
+  coreGlobals.lampMatrix[8] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
+  coreGlobals.lampMatrix[9] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
 
   core_updateSw(TRUE);
 }
 
 static INTERRUPT_GEN(mp2_irq) {
+  static UINT8 swMade[16];
+  int i;
   if (!locals.inhibitIrq) {
     cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
     cpu_set_irq_line(0, I8085_RST65_LINE, !locals.irq ? ASSERT_LINE : CLEAR_LINE);
     locals.irq = !locals.irq;
   }
 
-  if (coreGlobals.swMatrix[6] & 0x08) { // bonus collect must be set here???
-    memory_region(REGION_CPU1)[0x21ae] |= 1;
+  for (i = 0; i < 16; i++) {
+    if (!swMade[i] && core_getSw(49 + i)) {
+      swMade[i] = 1;
+      memory_region(REGION_CPU1)[0x21a0 + i] = 1;
+    } else if (swMade[i] && !core_getSw(49 + i)) {
+      swMade[i] = 0;
+    }
   }
 }
 
 static SWITCH_UPDATE(MICROPIN2) {
-  int i, sw, offset;
-
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x40, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x40, 5);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x01, 0);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xf0, 9);
   }
   cpu_set_irq_line(0, IRQ_LINE_NMI, (coreGlobals.swMatrix[0] & 1) ? ASSERT_LINE : CLEAR_LINE);
-
-  for (sw = 0; sw < 4; sw++) {
-    for (i = 0; i < 8; i++) {
-      offset = 0x2193 + sw * 8 + i;
-      if (offset < 0x21ae) { // exclude bonus collect and all beyond
-        if (coreGlobals.swMatrix[3 + sw] & (1 << i)) {
-          memory_region(REGION_CPU1)[offset] |= 1;
-        } else {
-          memory_region(REGION_CPU1)[offset] &= 0xfe;
-        }
-      }
-    }
-  }
 }
 
 static WRITE_HANDLER(mxxxx_w) {
@@ -431,24 +422,41 @@ static void control_sound(int enable) {
 }
 
 static WRITE_HANDLER(mp2_out) {
-  if (offset == 9) { // tone enable and duration
-    if ((data ^ 0xff) > 1) {
-      discrete_sound_w(2, 1);
-      locals.inhibitIrq = 1;
-      timer_adjust(locals.sndTimer, TIME_IN_MSEC(5 * (data ^ 0xff)), 0, TIME_NEVER);
-    } else {
-      control_sound(data & 1);
-    }
-    return;
-  } else if (offset == 0x0a) { // tone pitch
-    // if HSTD is beaten, the game will play "Call to the Post", use it to fine-tune. :)
-    discrete_sound_w(1, 100 * (data ^ 0xff) / 220 - 8);
-    return;
+  switch (offset) {
+    case 0: case 1: case 2: case 3: case 4:
+      coreGlobals.lampMatrix[offset] = ~data;
+      break;
+    case 5:
+      coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
+      break;
+    case 6:
+      coreGlobals.solenoids = (coreGlobals.solenoids & 0xffff00ff) | ((data ^ 0xff) << 8);
+      break;
+    case 7:
+      coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00ffff) | ((data ^ 0xff) << 16);
+      break;
+    case 8:
+      coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ffffff) | ((data ^ 0xff) << 24);
+      break;
+    case 9: // tone enable and duration
+      if ((data ^ 0xff) > 1) {
+        discrete_sound_w(2, 1);
+        locals.inhibitIrq = 1;
+        timer_adjust(locals.sndTimer, TIME_IN_MSEC(5 * (data ^ 0xff)), 0, TIME_NEVER);
+      } else {
+        control_sound(data & 1);
+      }
+      break;
+    case 0x0a: // tone pitch
+      // if HSTD is beaten, the game will play "Call to the Post", use it to fine-tune. :)
+      discrete_sound_w(1, 100 * (data ^ 0xff) / 220 - 8);
+      break;
+    case 0x0d: case 0x0e: case 0x0f:
+      coreGlobals.lampMatrix[offset - 8] = ~data;
+      break;
+    default:
+      logerror("out %x: %02x\n", offset, data);
   }
-
-  coreGlobals.lampMatrix[offset] = ~data;
-  if (locals.out[offset] != data) logerror("out %x: %02x\n", offset, data);
-  locals.out[offset] = data;
 #ifdef MAME_DEBUG
   if (offset == 0x0d) {
     coreGlobals.segments[64].w = core_bcd2seg7[data ^ 0xff];
@@ -464,9 +472,32 @@ static WRITE_HANDLER(mp2_out) {
 }
 
 static READ_HANDLER(mp2_sw) {
-  if (coreGlobals.swMatrix[1 + offset])
-    return coreGlobals.swMatrix[1 + offset];
-  return 0x01;
+  static UINT8 swStatus[32];
+  if (!offset) {
+    int i;
+    if (coreGlobals.swMatrix[5]) return coreGlobals.swMatrix[5];
+    for (i = 0; i < 32; i++) {
+      if (core_getSw(1 + i)) {
+        if (!swStatus[i]) {
+          swStatus[i] = 1;
+          memory_region(REGION_CPU1)[0x23e0 + i] = 0x80; // most switches are read using DMA
+          memory_region(REGION_CPU1)[0x2190] &= 0xfb; // no score otherwise (tilt flag?)
+          return 0x02; // activates switch matrix scan
+        } else if (swStatus[i] == 1) {
+          swStatus[i] = 2;
+          return 0x02;
+        } else if (core_getSw(19) || core_getSw(21) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
+          // saucers need to keep the matrix scan active until solenoids are fired
+          return 0x02;
+        }
+      } else if (swStatus[i]) {
+        swStatus[i] = 0;
+        memory_region(REGION_CPU1)[0x23e0 + i] = 0;
+      }
+    }
+    return 0x01; // returning 0 would halt the game!?
+  }
+  return coreGlobals.swMatrix[6]; // bumpers and slingshots only become active if switches 22 or 27 are made before?
 }
 
 static READ_HANDLER(mp2_dip) {
@@ -503,8 +534,8 @@ static DISCRETE_SOUND_START(mp2_discInt)
   DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
   DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
   DISCRETE_MULTADD(NODE_03,1,NODE_01,10,200)
-  DISCRETE_TRIANGLEWAVE(NODE_04,NODE_02,NODE_03,20000,10000,0)
-  DISCRETE_GAIN(NODE_05,NODE_04,12)
+  DISCRETE_SQUAREWAVE(NODE_04,NODE_02,NODE_03,2,50,0,0)
+  DISCRETE_GAIN(NODE_05,NODE_04,7500)
   DISCRETE_OUTPUT(NODE_05,50)
 DISCRETE_SOUND_END
 
@@ -514,7 +545,7 @@ MACHINE_DRIVER_START(pentacp2)
   MDRV_CPU_ADD_TAG("mcpu", 8085A, 1500000) // probably 3 MHz clock, internal /2 divider
   MDRV_CPU_MEMORY(mp2_readmem, mp2_writemem)
   MDRV_CPU_PORTS(mp2_readport, mp2_writeport)
-  MDRV_CPU_PERIODIC_INT(mp2_irq, 250)
+  MDRV_CPU_PERIODIC_INT(mp2_irq, 227) // timer @$219f runs in sync with this value
   MDRV_CPU_VBLANK_INT(mp2_vblank, 1)
   MDRV_SWITCH_UPDATE(MICROPIN2)
   MDRV_DIPS(48)
@@ -527,12 +558,12 @@ INPUT_PORTS_START(pentacp2)
   CORE_PORTS
   SIM_PORTS(1)
   PORT_START /* 0 */
-    COREPORT_BIT   (0x0010, "Coin",          KEYCODE_5)
-    COREPORT_BIT   (0x4000, "Start",         KEYCODE_1)
-    COREPORT_BIT   (0x0080, "Tilt",          KEYCODE_DEL)
-    COREPORT_BIT   (0x0040, "Show previous", KEYCODE_9)
-    COREPORT_BIT   (0x0020, "Clear NVRAM",   KEYCODE_0)
-    COREPORT_BIT   (0x0001, "Reset",         KEYCODE_HOME)
+    COREPORT_BIT   (0x0010, "Coin",              KEYCODE_5)
+    COREPORT_BIT   (0x4000, "Enter Players",     KEYCODE_1)
+    COREPORT_BIT   (0x0080, "Start Ball",        KEYCODE_DEL)
+    COREPORT_BIT   (0x0040, "Display last Game", KEYCODE_9)
+    COREPORT_BIT   (0x0020, "Clear NVRAM",       KEYCODE_0)
+    COREPORT_BIT   (0x0001, "Reset",             KEYCODE_HOME)
   PORT_START /* 1 */
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1")
       COREPORT_DIPSET(0x0000, "0" )
@@ -586,17 +617,17 @@ INPUT_PORTS_END
 
 core_tLCDLayout mp2_disp[] = {
   { 0, 6,58,3,CORE_SEG7}, { 0,13,61,3,CORE_SEG7}, { 0,27,12,3,CORE_SEG7}, { 0,34,15,3,CORE_SEG7},
-  { 3, 0, 0,2,CORE_SEG7}, { 3, 7,10,2,CORE_SEG7}, { 3,14, 9,1,CORE_SEG7},
-  { 3,19,46,3,CORE_SEG7}, { 3,26,49,3,CORE_SEG7}, { 3,35,32,3,CORE_SEG7}, { 3,42,35,3,CORE_SEG7},
-  { 6,19,52,3,CORE_SEG7}, { 6,26,55,3,CORE_SEG7}, { 6,35,26,3,CORE_SEG7}, { 6,42,29,3,CORE_SEG7},
-  { 9,16, 4,1,CORE_SEG7}, { 9,19, 5,3,CORE_SEG7}, { 9,35,20,3,CORE_SEG7}, { 9,42,23,3,CORE_SEG7},
+  { 4, 0, 0,2,CORE_SEG7}, { 4, 7,10,2,CORE_SEG7}, { 4,14, 9,1,CORE_SEG7},
+  { 4,19,46,3,CORE_SEG7}, { 4,26,49,3,CORE_SEG7}, { 4,35,32,3,CORE_SEG7}, { 4,42,35,3,CORE_SEG7},
+  { 7,19,52,3,CORE_SEG7}, { 7,26,55,3,CORE_SEG7}, { 7,35,26,3,CORE_SEG7}, { 7,42,29,3,CORE_SEG7},
+  {10,16, 4,1,CORE_SEG7}, {10,19, 5,3,CORE_SEG7}, {10,35,20,3,CORE_SEG7}, {10,42,23,3,CORE_SEG7},
 #ifdef MAME_DEBUG
-  {12,14,39,7,CORE_SEG7}, {12,28,19,1,CORE_SEG7}, {12,30, 8,1,CORE_SEG7},
-  {12, 0,64,1,CORE_SEG7}, {12, 4,65,1,CORE_SEG7}, {12, 8,66,2,CORE_SEG7},
+  {13,14,39,7,CORE_SEG7}, {13,28,19,1,CORE_SEG7}, {13,30, 8,1,CORE_SEG7},
+  {13, 0,64,1,CORE_SEG7}, {13, 4,65,1,CORE_SEG7}, {13, 8,66,2,CORE_SEG7},
 #endif
   {0}
 };
-static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(73,65),0,10},NULL,{"",{0,0,0,0x01}}};
+static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(73,65),0,2}};
 static void init_pentacp2(void) {
   core_gameData = &pentacup2GameData;
 }
