@@ -176,7 +176,7 @@
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -231,7 +231,7 @@
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -270,7 +270,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -310,7 +310,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -349,7 +349,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -397,7 +397,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -436,7 +436,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -476,7 +476,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;ext\dinput\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -1120,6 +1120,24 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <ClCompile Include="src\windows\serial.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
     <ClCompile Include="src\windows\sound.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
@@ -1370,6 +1388,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\taitogames.c" />
     <ClCompile Include="src\wpc\taitos.c" />
     <ClCompile Include="src\wpc\techno.c" />
+    <ClCompile Include="src\wpc\uart_16c450.c" />
+    <ClCompile Include="src\wpc\uart_8251.c" />
     <ClCompile Include="src\wpc\vd.c" />
     <ClCompile Include="src\wpc\vpintf.c" />
     <ClCompile Include="src\wpc\wico.c" />

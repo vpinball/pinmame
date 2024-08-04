@@ -11,6 +11,11 @@
 #include "core.h"
 #include "wpc.h"
 #include "bulb.h"
+#ifdef PINMAME_HOST_UART
+#include "uart_16c450.h"
+#include "uart_8251.h"
+#include "uart_host.h"
+#endif
 #ifdef PROC_SUPPORT
 #include "p-roc/p-roc.h"
 #endif
@@ -631,6 +636,16 @@ static INTERRUPT_GEN(wpc_vblank) {
 / Emulate the WPC chip
 /-----------------------*/
 READ_HANDLER(wpc_r) {
+#ifdef PINMAME_HOST_UART
+  if (offset < 8
+      && (core_gameData->gen & GENWPC_HASWPC95)
+      && pmoptions.serial_device != NULL)
+  {
+    /* Emulated UART(16C450) on WPC95 AV board */
+    return uart_16c450_read(offset);
+  }
+  else 
+#endif
   switch (offset) {
     case WPC_FLIPPERS: /* Flipper switches */
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0)
@@ -720,6 +735,15 @@ READ_HANDLER(wpc_r) {
       return sndbrd_0_ctrl_r(0);
     case WPC_PRINTBUSY:
       return 0;
+    case WPC_SERIAL_DATA:
+    case WPC_SERIAL_CTRL:
+    case WPC_SERIAL_BAUD:
+#ifdef PINMAME_HOST_UART
+        if (pmoptions.serial_device != NULL) {
+          return uart_8251_read(offset);
+        }
+#endif
+        break;
     case DMD_VISIBLEPAGE:
       break;
     case DMD_PAGE3000:
@@ -770,6 +794,16 @@ WRITE_HANDLER(wpc_w) {
   }
 #endif
 
+#ifdef PINMAME_HOST_UART
+  if (offset < 8
+      && (core_gameData->gen & GENWPC_HASWPC95)
+      && pmoptions.serial_device != NULL)
+  {
+    /* Emulated UART(16C450) on WPC95 AV board */
+    uart_16c450_write(offset, data);
+  }
+  else
+#endif
   switch (offset) {
     case WPC_ROMBANK: { /* change rom bank */
       int bank = data & wpclocals.pageMask;
@@ -1038,10 +1072,13 @@ WRITE_HANDLER(wpc_w) {
       }
       break;
     case WPC_SERIAL_DATA:
-      break;
     case WPC_SERIAL_CTRL:
-      break;
     case WPC_SERIAL_BAUD:
+#ifdef PINMAME_HOST_UART
+      if (pmoptions.serial_device != NULL) {
+        uart_8251_write(offset, data);
+      }
+#endif
       break;
     default:
       DBGLOG(("wpc_w %4x %2x\n", offset+WPC_BASE, data));
@@ -1173,6 +1210,19 @@ static MACHINE_INIT(wpc) {
       //Sound board initialization
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
+
+#ifdef PINMAME_HOST_UART
+  if (pmoptions.serial_device != NULL) {
+    // use default baud rate; game will set a baud rate at startup
+    if (uart_open(pmoptions.serial_device, 9600) < 0) {
+      printf("serial_device: failed to open %s.\n", pmoptions.serial_device);
+      pmoptions.serial_device = NULL;       // open failed, disable UART
+    }
+    else {
+      printf("serial_device: WPC serial port redirected to %s.\n", pmoptions.serial_device);
+    }
+  }
+#endif
 
   // Initialize outputs
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;

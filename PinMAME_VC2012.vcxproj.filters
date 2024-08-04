@@ -648,6 +648,9 @@
     <ClCompile Include="src\windows\rc.c">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\windows\serial.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\windows\snprintf.c">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
@@ -981,6 +984,12 @@
     <ClCompile Include="src\wpc\techno.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="src\wpc\uart_16c450.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\uart_8251.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
     <ClCompile Include="src\wpc\vd.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
@@ -1036,6 +1045,9 @@
       <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\full\dd_wpc.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\dm.c">
       <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\full\drac.c">
@@ -1117,9 +1129,6 @@
       <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\prelim\dh.c">
-      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\sims\wpc\full\dm.c">
       <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\prelim\dw.c">

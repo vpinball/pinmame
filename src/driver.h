@@ -101,6 +101,9 @@ typedef struct {
 #endif /* PROC_SUPPORT */
   int vgmwrite; // bool
   int force_mono_to_stereo; // bool
+#ifdef PINMAME_HOST_UART
+  char *serial_device;         /* COM or /dev/tty mapped to WPC95 UART */
+#endif
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {

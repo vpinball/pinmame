@@ -47,7 +47,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -135,7 +135,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -225,7 +225,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;MAME_DEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -313,7 +313,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PINMAME_HOST_UART;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -3126,6 +3126,46 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\windows\serial.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\src\windows\sound.c"
 					>
 					<FileConfiguration
@@ -4079,6 +4119,14 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\techno.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\uart_16c450.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\uart_8251.c"
 					>
 				</File>
 				<File
