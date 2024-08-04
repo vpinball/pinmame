@@ -963,31 +963,28 @@ static void cpu_timeslice(void)
 	// NOTE: if debugging stutter issues or the like, disable this mechanism in the core scripts, or directly here
 	if (options.time_fence != 0.0 && time_fence_is_supported())
 	{
-		static int running = 1;
 		const double now = timer_get_time();
 		if (now - options.time_fence - time_fence_global_offset >= 0.)
 		{
+			int waitForMasterClock = 1;
 			// We are ahead by a large amount: realign external clock 
 			if (now - options.time_fence - time_fence_global_offset >= 1.0)
+			{
 				time_fence_global_offset = now - options.time_fence;
-			// Wait for a new time fence value to arrive OR when a screen update would be needed
-			// When emulation is known as running, we delay forced screen update quite a lot to gracefully handle stutters from master clock
-			else if (time_fence_wait(running ? 0.5 : (1.0 / 60.0)))
-			{
-				running = 1; // We received a new time fence, so master clock is running
-				// exit if we are still ahead of the master clock
-				if (now - options.time_fence - time_fence_global_offset >= 0.)
-					return;
+				waitForMasterClock = 0;
 			}
-			else
+			// Wait for a new time fence that would unpause us to arrive
+			else if (time_fence_wait(1.0 / 120.0) && (now - options.time_fence - time_fence_global_offset < 0.))
 			{
-				// We waited, but no new time fence value arrived, so master clock seems to be paused: emulation must not be updated 
-				// but we still need to process screen (normally, this would be called by CPU VBlank callback if the emulation was 
-				// not stalled, the code here is derived from how pause is handled in usrintf.c / handle_user_interface())
-				running = 0;
-				draw_screen();
-				update_video_and_audio();
-				reset_partial_updates();
+				waitForMasterClock = 0;
+			}
+			if (waitForMasterClock)
+			{
+				#if defined(VPINMAME) && (defined(_WIN32) || defined(_WIN64))
+				// COM component must always pump its message loop
+				extern void win_process_events_periodic(void);
+				win_process_events_periodic();
+				#endif
 				return;
 			}
 		}
