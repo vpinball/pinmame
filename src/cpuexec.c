@@ -854,7 +854,8 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	return time_fence_is_supported() && (WaitForSingleObject(time_fence_semaphore, max((int)ceil(secs * 1000.), 1)) == WAIT_OBJECT_0);
+	// Wait for the time fence semaphore (returns WAIT_OBJECT_0) or a Windows message (returns WAIT_OBJECT_0+1)
+	return time_fence_is_supported() && (MsgWaitForMultipleObjects(1, &time_fence_semaphore, FALSE, /*INFINITE*/ max((int)ceil(secs * 1000.), 1), QS_ALLINPUT) == WAIT_OBJECT_0);
 }
 
 void time_fence_exit()
@@ -959,6 +960,13 @@ void time_fence_exit()
 
 static void cpu_timeslice(void)
 {
+#if defined(VPINMAME)
+	// Continuously pump message loop, otherwise it creates stutters between COM server and client (VPinMame locks VPX scripts until message are processed)
+	// It also causes a deadlock if using a TimeFence since messages are normally processed by a CPU callback that may not happen depending on the TimeFence.
+	extern void win_process_events(void);
+	win_process_events();
+#endif
+
 	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached
 	// NOTE: if debugging stutter issues or the like, disable this mechanism in the core scripts, or directly here
 	if (options.time_fence != 0.0 && time_fence_is_supported())
@@ -966,25 +974,20 @@ static void cpu_timeslice(void)
 		const double now = timer_get_time();
 		if (now - options.time_fence - time_fence_global_offset >= 0.)
 		{
-			int waitForMasterClock = 1;
-			// We are ahead by a large amount: realign external clock 
 			if (now - options.time_fence - time_fence_global_offset >= 1.0)
 			{
+				// We are ahead by a large amount: realign external clock 
 				time_fence_global_offset = now - options.time_fence;
-				waitForMasterClock = 0;
 			}
-			// Wait for a new time fence that would unpause us to arrive
-			else if (time_fence_wait(1.0 / 120.0) && (now - options.time_fence - time_fence_global_offset < 0.))
+			else if (time_fence_wait(1.0))
 			{
-				waitForMasterClock = 0;
+				// We waited and received a new time fence but if we are still ahead of it, just return
+				if (now - options.time_fence - time_fence_global_offset >= 0.)
+					return;
 			}
-			if (waitForMasterClock)
+			else
 			{
-				#if defined(VPINMAME) && (defined(_WIN32) || defined(_WIN64))
-				// COM component must always pump its message loop
-				extern void win_process_events_periodic(void);
-				win_process_events_periodic();
-				#endif
+				// We waited and did not received a new time fence but timed out or just received an OS message, then just return
 				return;
 			}
 		}
