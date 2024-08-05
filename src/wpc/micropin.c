@@ -383,9 +383,10 @@ static INTERRUPT_GEN(mp2_irq) {
   for (i = 0; i < 16; i++) {
     if (!swMade[i] && core_getSw(49 + i)) {
       swMade[i] = 1;
-      memory_region(REGION_CPU1)[0x21a0 + i] = 1;
+      memory_region(REGION_CPU1)[0x21a0 + i] |= 1;
     } else if (swMade[i] && !core_getSw(49 + i)) {
       swMade[i] = 0;
+      memory_region(REGION_CPU1)[0x21a0 + i] = 0;
     }
   }
 }
