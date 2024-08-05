@@ -82,8 +82,8 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   {
     UINT8 lampMatrix[CORE_MAXLAMPCOL];
     memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
-    int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
-    int nCol = CORE_STDLAMPCOLS + (hasSAMModulatedLeds ? 2 : core_gameData->hw.lampCol);
+    const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+    const int nCol = CORE_STDLAMPCOLS + (hasSAMModulatedLeds ? 2 : core_gameData->hw.lampCol);
     int ii;
     for (ii = 0; ii < nCol; ii++) {
       int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
@@ -95,7 +95,6 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
           if (chgLamp & 0x01) {
             chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
             chgStat[idx].currStat = tmpLamp & 0x01;
-
             idx++;
           }
           chgLamp >>= 1;
@@ -107,11 +106,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
     // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
     if (hasSAMModulatedLeds) {
       for (ii = 80; ii < coreGlobals.nLamps; ii++) {
-        UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
-        // Horrible hack for Family Guy and Shrek: previous implementation returned modulated value for LEDs except for these 3.
-        // TODO So backward compatibility needs this (to be removed when updated tables using PWM will be out).
-        if (core_gameData->hw.gameSpecific1 & 0x0004/*SAM_GAME_FG*/)
-          val = val > 128 ? 1 : 0;
+        const UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
         if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
           chgStat[idx].lampNo = ii + 1;
           chgStat[idx].currStat = val;
