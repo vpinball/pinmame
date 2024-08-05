@@ -474,7 +474,7 @@ static READ_HANDLER(pia3b_dmd_r) {
   return 0;
 }
 
-//NOTE: Unusued in Data East Alpha Games
+//NOTE: Unused in Data East Alpha Games
 static WRITE_HANDLER(pia2ca2_w) {
   data = data ? 0x80 : 0x00;
   if (core_gameData->gen & GEN_S9) {

@@ -976,18 +976,18 @@ static void cpu_timeslice(void)
 		{
 			if (now - options.time_fence - time_fence_global_offset >= 1.0)
 			{
-				// We are ahead by a large amount: realign external clock 
+				// We are ahead by a large amount: realign external clock
 				time_fence_global_offset = now - options.time_fence;
 			}
 			else if (time_fence_wait(1.0))
 			{
-				// We waited and received a new time fence but if we are still ahead of it, just return
+				// We waited and received a new time fence, but if we are still ahead of it, just return
 				if (now - options.time_fence - time_fence_global_offset >= 0.)
 					return;
 			}
 			else
 			{
-				// We waited and did not received a new time fence but timed out or just received an OS message, then just return
+				// We waited and did not receive a new time fence, but timed out or just received an OS message, then just return
 				return;
 			}
 		}
@@ -1017,7 +1017,7 @@ static void cpu_timeslice(void)
 			/* compute how long to run */
 			cycles_running = TIME_TO_CYCLES(cpunum, target - cpu[cpunum].localtime);
 			LOG(("  cpu %d: %d cycles\n", cpunum, cycles_running));
-		
+
 			/* run for the requested number of cycles */
 			if (cycles_running > 0)
 			{
@@ -1235,7 +1235,7 @@ void cpu_boost_interleave(double timeslice_time, double boost_duration)
 	/* if you pass 0 for the timeslice_time, it means pick something reasonable */
 	if (timeslice_time < perfect_interleave)
 		timeslice_time = perfect_interleave;
-	
+
 	LOG(("cpu_boost_interleave(%.9f, %.9f)\n", timeslice_time, boost_duration));
 
 	/* adjust the interleave timer */
@@ -1505,7 +1505,7 @@ int cpu_getcurrentframe(void)
 void cpu_trigger(int trigger)
 {
 	int cpunum;
-	
+
 	/* cause an immediate resynchronization */
 	if (cpu_getexecutingcpu() >= 0)
 		activecpu_abort_timeslice();

@@ -34,7 +34,7 @@ int vp_getLamp(int lampNo) {
   if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
   if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
-	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
+    return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
 }
 
@@ -54,7 +54,7 @@ int vp_getGI(int giNo)
 {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
   if (coreGlobals.nGI && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI)))
-	 return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
+    return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
   return coreGlobals.gi[giNo];
 }
 
@@ -63,26 +63,28 @@ int vp_getGI(int giNo)
 /  returns number of changed lamps
 /-------------------------------------*/
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
-  int ii, idx = 0;
+  int idx = 0;
   /*-- fill in array --*/
   if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
   {
-	 for (ii = 0; ii < coreGlobals.nLamps; ii++) {
-		UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
-		if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
-		  chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp((ii / 8) + 1, ii & 7) : 0;
-		  chgStat[idx].currStat = val;
-		  idx += 1;
-		  locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
-		}
-	 }
+    int ii;
+    for (ii = 0; ii < coreGlobals.nLamps; ii++) {
+      const UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
+      if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
+        chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp((ii / 8) + 1, ii & 7) : 0;
+        chgStat[idx].currStat = val;
+        idx++;
+        locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
+      }
+    }
   }
   else
   {
     UINT8 lampMatrix[CORE_MAXLAMPCOL];
     memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
-	 int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+    int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
     int nCol = CORE_STDLAMPCOLS + (hasSAMModulatedLeds ? 2 : core_gameData->hw.lampCol);
+    int ii;
     for (ii = 0; ii < nCol; ii++) {
       int chgLamp = lampMatrix[ii] ^ locals.lastLampMatrix[ii];
       if (chgLamp) {
@@ -94,30 +96,30 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
             chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
             chgStat[idx].currStat = tmpLamp & 0x01;
 
-            idx += 1;
+            idx++;
           }
           chgLamp >>= 1;
           tmpLamp >>= 1;
         }
       }
     }
-	 memcpy(locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
-	 // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
-	 if (hasSAMModulatedLeds) {
-	   for (ii = 80; ii < coreGlobals.nLamps; ii++) {
-		  UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
-		  // Horrible hack for Wheel of Fortune, Family Guy and Shrek: previous implementation returned modulated value for LEDs except for these 3.
-		  // TODO So backward compatibility needs this (to be removed when updated tables using PWM will be out).
-		  if ((core_gameData->hw.gameSpecific1 & 0x0004) || (core_gameData->hw.gameSpecific1 & 0x0008))
-			  val = val > 128 ? 1 : 0;
-		  if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
-		    chgStat[idx].lampNo = ii + 1;
-		    chgStat[idx].currStat = val;
-		    idx += 1;
-		    locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
-		  }
-	   }
-	 }
+    memcpy(locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
+    // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
+    if (hasSAMModulatedLeds) {
+      for (ii = 80; ii < coreGlobals.nLamps; ii++) {
+        UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
+        // Horrible hack for Family Guy and Shrek: previous implementation returned modulated value for LEDs except for these 3.
+        // TODO So backward compatibility needs this (to be removed when updated tables using PWM will be out).
+        if (core_gameData->hw.gameSpecific1 & 0x0004/*SAM_GAME_FG*/)
+          val = val > 128 ? 1 : 0;
+        if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
+          chgStat[idx].lampNo = ii + 1;
+          chgStat[idx].currStat = val;
+          idx++;
+          locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
+        }
+      }
+    }
   }
   return idx;
 }
@@ -141,7 +143,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
       if (v != locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii]) {
         chgStat[idx].solNo = ii + 1;
         chgStat[idx].currStat = v;
-        idx += 1;
+        idx++;
         locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii] = v;
       }
     }
@@ -155,7 +157,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 		if (chgSol & 0x01) {
 		  chgStat[idx].solNo = ii+1; // Solenoid number
 		  chgStat[idx].currStat = (allSol & 0x01);
-		  idx += 1;
+		  idx++;
 		}
 		chgSol >>= 1;
 		allSol >>= 1;
@@ -179,7 +181,7 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
 			  chgStat[idx].giNo = i;
 			  chgStat[idx].currStat = val;
 			  locals.lastPhysicsOutput[CORE_MODOUT_GI0 + i] = val;
-			  idx += 1;
+			  idx++;
 		  }
 	  }
 	  return idx;
@@ -192,9 +194,9 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   memcpy(allGI, coreGlobals.gi, sizeof(allGI));
   for (ii = 0; ii < CORE_MAXGI; ii++) {
     if (allGI[ii] != locals.lastGI[ii]) {
-		chgStat[idx].giNo     = ii;
-		chgStat[idx].currStat = allGI[ii];
-		idx += 1;
+      chgStat[idx].giNo     = ii;
+      chgStat[idx].currStat = allGI[ii];
+      idx++;
     }
   }
   memcpy(locals.lastGI, allGI, sizeof(allGI));
@@ -372,7 +374,7 @@ int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask, UINT64 mask2) {
       chgStat[idx].ledNo = ii;
       chgStat[idx].chgSeg = chgSeg;
       chgStat[idx].currStat = coreGlobals.drawSeg[ii];
-      idx += 1;
+      idx++;
     }
   }
   memcpy(locals.lastSeg, coreGlobals.drawSeg, sizeof(locals.lastSeg));
