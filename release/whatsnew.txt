@@ -45,7 +45,8 @@ Added the emulation of physical bulbs & LEDs connected to binary outputs, for WP
 
 In addition to the TILDE key, now also the YEN key on respective keyboard mappings will work to bring up the internal PinMAME menu
 
-Support WPC UARTs (8251 from Printer Option Kit & 16C450 from WPC95), also making the 'Championship Link' mode of NBAFB work (incl. PinMAME <-> real machine)
+Support WPC UARTs (8251 from Printer Option Kit & 16C450 from WPC95), also enabling the 'Championship Link' mode of NBAFB  (incl. PinMAME <-> real machine).  Configured via `-serial_device` command-line option.
+  Note that the NBAFB Championship Link usually gets out of sync and aborts when connected to a real machine.  If trying to link two copies of PinMAME, it's necessary to have different WPC serial numbers (hardcoded in nbaf.c) for each instance of PinMAME.
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
