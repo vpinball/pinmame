@@ -185,6 +185,8 @@ Instructions
 
 Command line switches
 ---------------------
+  For a full list of command-line options, pass `-showusage` to PinMAME.
+  
   These options can be set on the command line or in mame.cfg:
 
   -[no]dmd_compact   off = Display a more DMD like display (space between dots)
@@ -253,6 +255,12 @@ PinMAME Specific Command line switches
   -dmd_blue0        (Amount of blue displayed for not being lit)
 
   (for more information on the settings above, see "Changing the Look of the DMD")
+  
+  -[no]force_stereo     (Always force stereo output to better support multi-channel sound)
+  -serial_device <dev>  ("COMx" on Windows or "/dev/ttyXXX" on Unix; the device mapped to
+                         the WPC serial port of the Printer Kit or WPC95 AV board)
+  -sound_mode 0-3       (Sound processing mode; 0=PinMAME, 1=Alternative, 2=PinSound,
+                         3=PinSound + Recordings)
 
 VGM sound file dump
 -------------------
