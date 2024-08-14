@@ -362,8 +362,8 @@ static INTERRUPT_GEN(mp2_vblank) {
   int i;
   for (i = 0; i < 32; i++) {
     UINT8 mem = memory_region(REGION_CPU1)[0x23c0 + i];
-    coreGlobals.segments[62 - i * 2].w = core_bcd2seg7[mem >> 4];
-    coreGlobals.segments[63 - i * 2].w = core_bcd2seg7[mem & 0x0f];
+    coreGlobals.segments[62 - i * 2].w = core_bcd2seg7a[mem >> 4];
+    coreGlobals.segments[63 - i * 2].w = core_bcd2seg7a[mem & 0x0f];
   }
   coreGlobals.lampMatrix[8] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
   coreGlobals.lampMatrix[9] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
@@ -460,14 +460,14 @@ static WRITE_HANDLER(mp2_out) {
   }
 #ifdef MAME_DEBUG
   if (offset == 0x0d) {
-    coreGlobals.segments[64].w = core_bcd2seg7[data ^ 0xff];
+    coreGlobals.segments[64].w = core_bcd2seg7a[data ^ 0xff];
   }
   if (offset == 0x0e) {
-    coreGlobals.segments[65].w = core_bcd2seg7[data ^ 0xff];
+    coreGlobals.segments[65].w = core_bcd2seg7a[data ^ 0xff];
   }
   if (offset == 0x0f) {
-    coreGlobals.segments[66].w = core_bcd2seg7[data >> 4];
-    coreGlobals.segments[67].w = core_bcd2seg7[data & 0x0f];
+    coreGlobals.segments[66].w = core_bcd2seg7a[data >> 4];
+    coreGlobals.segments[67].w = core_bcd2seg7a[data & 0x0f];
   }
 #endif
 }
@@ -487,7 +487,7 @@ static READ_HANDLER(mp2_sw) {
         } else if (swStatus[i] == 1) {
           swStatus[i] = 2;
           return 0x02;
-        } else if (core_getSw(19) || core_getSw(21) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
+        } else if (core_getSw(15) || core_getSw(19) || core_getSw(21) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
           // saucers need to keep the matrix scan active until solenoids are fired
           return 0x02;
         }
