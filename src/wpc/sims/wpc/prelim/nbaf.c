@@ -90,42 +90,98 @@ WPC_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-/* Standard Switches */
-#define swStart        13
-#define swTilt         14
-#define swSlamTilt     21
-#define swCoinDoor     22
-#define swTicket       23
 
-/* Other switches */
-#define swLaunch       11
-#define swShooter      15
-#define swLeftInlane   16
-#define swRightInlane  17
-#define swRightJet     23
-#define swLeftOutlane  26
-#define swRightOutlane 27
-#define swTroughJam    31
-#define swTrough1      32
-#define swTrough2      33
-#define swTrough3      34
-#define swTrough4      35
-#define swLeftSling    57
-#define swRightSling   58
-#define swLeftJet      61
-#define swMiddleJet    62
+#define swLaunch        11
+#define swBackboxBasket 12
+#define swStart         13
+#define swTilt          14
+#define swShooter       15
+#define swLeftInlane    16
+#define swRightInlane   17
+#define swStandupLow    18
+
+#define swSlamTilt      21
+#define swCoinDoor      22
+#define swRightJet      23
+#define swAlwaysClosed  24
+#define swEjectHole     25
+#define swLeftOutlane   26
+#define swRightOutlane  27
+#define swStandupHigh   28
+
+#define swTroughJam     31
+#define swTrough1       32
+#define swTrough2       33
+#define swTrough3       34
+#define swTrough4       35
+#define swCenterRamp    36
+#define swRLoopEnter    37
+#define swRLoopExit     38
+
+#define swStandup3      41
+#define swStandupP      42
+#define swStandupT      43
+#define swRRampEnter    44
+#define swLRampEnter    45
+#define swLRampExit     46
+#define swLLoopEnter    47
+#define swLLoopExit     48
+
+#define swDefender4     51
+#define swDefender3     52
+#define swDefenderLock  53
+#define swDefender2     54
+#define swDefender1     55
+#define swJetsDrain     56   /* ball leaving jets */
+#define swLeftSling     57
+#define swRightSling    58
+
+#define swLeftJet       61
+#define swMiddleJet     62
+#define swLLoopRampExit 63
+#define swRRampExit     64
+#define swInThePaint4   65
+#define swInThePaint3   66
+#define swInThePaint2   67
+#define swInThePaint1   68
+
+/* Switches 71 to 88 not used. */
 
 /*---------------------
 / Solenoid definitions
 /----------------------*/
-#define sLaunch		1
-#define sKnocker	7
-#define sTrough		9
-#define sLeftSling	10
-#define sRightSling	11
-#define sLeftJet	12
-#define sMiddleJet	13
-#define sRightJet	14
+#define sLaunch         1
+/* Solenoid 2 unused */
+#define sLRampDiverter  3
+#define sRLoopDiverter  4
+#define sEject          5
+#define sLoopGate       6
+#define sBackboxFlipper 7
+#define sBallCatchMag   8
+#define sTrough         9
+#define sLeftSling      10
+#define sRightSling     11
+#define sLeftJet        12
+#define sMiddleJet      13
+#define sRightJet       14
+#define sPassRight2     15
+#define sPassLeft2      16
+/* 17-24 are flashers */
+#define sPassRight1     25
+#define sPassLeft3      26
+#define sPassRight3     27
+#define sPassLeft4      28
+
+/* 29-32 are lower right/left flippers */
+#define sShoot1         33
+#define sShoot2         34
+#define sShoot3         35
+#define sShoot4         36
+
+#define sMotorEnable    37
+#define sMotorDirection 38
+#define sShotClockEn    39
+#define sShotClockCount 40
 
 /*---------------------
 /  Ball state handling
@@ -227,7 +283,52 @@ static sim_tInportData nbaf_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void nbaf_drawStatic(BMTYPE **line) {
+
+/* macro for a single lamp */
+#define LMP1(x, y, c)               {1, {{y, x, c}}}
+
+/* macro for two lamps */
+#define LMP2(x1, y1, x2, y2, c)     {2, {{y1, x1, c}, {y2, x2, c}}}
+
+static core_tLampDisplay nbaf_lampPos = {
+{ 0,  0}, /* top left */
+{25, 29}, /* size */
+{
+    /* Lamp 11 to 18 */
+    LMP1(15, 21, WHITE),    LMP1(14, 24, LPURPLE),  LMP1(12, 25, LPURPLE),  LMP1(10, 24, LPURPLE),
+    LMP1(12, 23, LPURPLE),  LMP1(9, 21, LBLUE),     LMP1(8, 23, LBLUE),     LMP1(7, 25, LBLUE),
+
+    /* Lamp 21 to 28 */
+    LMP1(15, 18, GREEN),    LMP1(15, 15, RED),      LMP1(13, 14, RED),      LMP1(11, 14, RED),
+    LMP1(12, 16, RED), LMP2(12, 19, 12, 20, YELLOW),LMP1(9, 15, RED),       LMP1(9, 18, YELLOW),
+
+    /* Lamp 31 to 38 */
+    LMP1(16, 16, GREEN),    LMP1(17, 14, GREEN),    LMP1(18, 12, GREEN),    LMP1(19, 10, GREEN),
+    LMP1(20, 8, RED),       LMP1(21, 6, WHITE),     LMP1(22, 4, ORANGE),    LMP1(2, 17, LBLUE),
+
+    /* Lamp 41 to 48 */
+    LMP1(21, 12, RED),      LMP1(21, 14, LBLUE),    LMP1(22, 17, LBLUE),    LMP1(23, 15, WHITE),
+    LMP1(23, 13, GREEN),    LMP1(24, 9, YELLOW),    LMP1(23, 7, YELLOW),    LMP1(0, 21, YELLOW),
+
+    /* Lamp 51 to 58 */
+    LMP1(7, 16, YELLOW),    LMP1(6, 14, YELLOW),    LMP1(5, 12, RED),       LMP1(4, 10, YELLOW),
+    LMP1(3, 8, ORANGE),     LMP1(2, 6, RED),  LMP2(24, 20, 24, 21, GREEN),  LMP1(12, 27, ORANGE),
+
+    /* Lamp 61 to 68 */
+    LMP2(11, 9, 12, 12, LPURPLE), LMP1(12, 10, RED), LMP1(12, 8, RED),      LMP1(12, 6, RED),
+    LMP1(12, 4, LPURPLE),   LMP1(12, 2, ORANGE),    LMP1(18, 0, YELLOW),    LMP1(14, 0, YELLOW),
+
+    /* Lamp 71 to 78 */
+    LMP1(10, 7, RED),       LMP1(9, 5, RED),        LMP1(8, 3, RED),        LMP1(15, 7, RED),
+    LMP1(16, 5, RED),       LMP1(17, 3, ORANGE),    LMP1(6, 0, YELLOW),     LMP1(10, 0, YELLOW),
+
+    /* Lamp 81 to 88 */
+    LMP1(6, 8, RED),        LMP1(5, 6, WHITE),      LMP1(4, 4, ORANGE),     LMP1(10, 2, LPURPLE),
+    LMP1(14, 2, LPURPLE),   LMP1(19, 4, LPURPLE),   LMP1(19, 27, ORANGE),   LMP1(2, 27, YELLOW)
+}
+};
+
+static void nbaf_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -333,8 +434,12 @@ static struct core_dispLayout nbaf_dispDMD[] = {
 static core_tGameData nbafGameData = {
   GEN_WPC95, nbaf_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,0,0,1
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),    /* TODO: upper flipper solenoids (33-36) used for Shoot 1-4 */
+    0,0,0,  /* custom switch columns, lamp columns, solenoids */
+    0,0,    /* sound board, display */
+    1,0,    /* gameSpecific1 (unknown why we set this -- unused on WPC?), gameSpecific2 */
+    NULL, NULL, NULL, NULL, /* getSol, handleMech, getMech, drawMech */
+    &nbaf_lampPos,          /* lampData */
   },
   &nbafSimData,
   {
@@ -349,6 +454,9 @@ static core_tGameData nbafGameData = {
 static WRITE_HANDLER(nbaf_wpc_w) {
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
+    /* solenoids 24-28 and 37-40 */
+
+    /* solenoids sShotClockCount (40/BIT7) and sShotClockEn (39/BIT6) */
 	if (GET_BIT7 && !locals.lastBit7) {
 	  if (locals.count > 0) locals.count--;
 	}
