@@ -20,6 +20,8 @@ What is it?
   COM library (VPinMAME) to steer simulators like Visual Pinball 8/9/X
   library (libPinMAME) to steer simulators like VPE, PPUC and VPX standalone
 
+  Supported platforms: Windows (x86), Linux (x86/Arm, incl. RaspberryPi and RK3588), macOS, iOS/tvOS, Android
+
   Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
