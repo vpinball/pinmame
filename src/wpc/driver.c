@@ -1109,7 +1109,8 @@ DRIVERNV(mmmaster)      //Master (1988)
 // MICROPIN GAMES
 // ----------------
 DRIVERNV(pentacup)      //Pentacup (rev. 1, 1978)
-DRIVERNV(pentacp2)      //Pentacup (rev. 2, 1980)
+DRIVERNV(pentacpt)      //Pentacup (rev. T, 1980)
+DRIVERNV(pentacp2)      //Pentacup (rev. 2, 1981)
 
 // ----------------
 // MIDWAY GAMES

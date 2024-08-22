@@ -85,7 +85,7 @@ Clean-up Metallica Coffin Magnet processor board to cleanly report its mode of o
 Fixed reset and slam-tilt problems of Baby Pac-Man
 Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads! Also, regular instructions only increase the six lowest PC bits.
 
-*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho
+*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho, Matt Walsh
 New:
 Jeutel: Papillon
 Seeben: Brooklyn (Bingo) (not working)
@@ -180,6 +180,7 @@ Mr. & Mrs. Pac-Man Pinball (alternate version)
 Odin (Prototype)
 Pinball Champ (French Speech)
 Pin-Bot J-2, J-3 (PEMBOT (no relation)) (MOD)
+Pentacup (rev. T)
 Pool Champion (Italian Speech, Free Play) (incomplete dump)
 Rollergames LA-1
 Royal Flush Deluxe rev. 1
