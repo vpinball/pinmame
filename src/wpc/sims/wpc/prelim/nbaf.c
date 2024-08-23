@@ -33,15 +33,24 @@
 /  Local functions
 /-------------------*/
 static int  nbaf_handleBallState(sim_tBallStatus *ball, int *inports);
+static void nbaf_handleMech(int mech);
+static void nbaf_drawMech(BMTYPE **line);
 static void nbaf_drawStatic(BMTYPE **line);
 static void init_nbaf(void);
+static int  nbaf_getSol(int solNo);
 
 /*-----------------------
   local static variables
  ------------------------*/
+#define NBAF_DEFENDER_MAX       80      // rightmost position of defender
+#define NBAF_DEFENDER_SW_WIDTH  4       // positions that register for each defender location
+#define NBAF_BACKBOX_COUNTDOWN  100     // countdown time for backbox game
 /* Uncomment if you wish to use locals. type variables */
 static struct {
   int count, lastBit7, lastBit6;
+  int defenderPos;  /* Defender position, 0 for leftmost, NBAF_DEFENDER_MAX for rightmost */
+  int defenderDir;  /* Defender direction, -1 for left, +1 for right, 0 for stopped */
+  int backboxPos;   /* Position of ball in backbox, 0=on flipper, otherwise countdown */
 } locals;
 
 /*--------------------------
@@ -68,21 +77,21 @@ WPC_INPUT_PORTS_START(nbaf,4)
     COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
 
   PORT_START /* 1 */
-    COREPORT_BIT(0x0001,"",					KEYCODE_S)
-    COREPORT_BIT(0x0002,"",					KEYCODE_D)
-    COREPORT_BIT(0x0004,"",					KEYCODE_F)
-    COREPORT_BIT(0x0008,"",					KEYCODE_G)
-    COREPORT_BIT(0x0010,"",					KEYCODE_H)
+    COREPORT_BIT(0x0001,"Left Loop (S)",	KEYCODE_S)
+    COREPORT_BIT(0x0002,"Left Ramp (H)",	KEYCODE_D)
+    COREPORT_BIT(0x0004,"Center Ramp (O)",	KEYCODE_F)
+    COREPORT_BIT(0x0008,"Right Ramp (O)",	KEYCODE_G)
+    COREPORT_BIT(0x0010,"Right Loop (T)",	KEYCODE_H)
     COREPORT_BIT(0x0020,"",					KEYCODE_J)
     COREPORT_BIT(0x0040,"",					KEYCODE_K)
     COREPORT_BIT(0x0080,"",					KEYCODE_L)
     COREPORT_BIT(0x0100,"",					KEYCODE_Z)
-    COREPORT_BIT(0x0200,"",					KEYCODE_X)
-    COREPORT_BIT(0x0400,"",					KEYCODE_C)
-    COREPORT_BIT(0x0800,"",					KEYCODE_V)
-    COREPORT_BIT(0x1000,"",					KEYCODE_B)
-    COREPORT_BIT(0x2000,"",					KEYCODE_N)
-    COREPORT_BIT(0x4000,"",					KEYCODE_M)
+    COREPORT_BIT(0x0200,"(3)PT Standup",	KEYCODE_X)
+    COREPORT_BIT(0x0400,"3(P)T Standup",	KEYCODE_C)
+    COREPORT_BIT(0x0800,"3P(T) Standup",	KEYCODE_V)
+    COREPORT_BIT(0x1000,"Crazy Bob's",		KEYCODE_B)
+    COREPORT_BIT(0x2000,"Kickback 1",		KEYCODE_N)
+    COREPORT_BIT(0x4000,"Kickback 2",		KEYCODE_M)
     COREPORT_BIT(0x8000,"",					KEYCODE_COMMA)
 
 WPC_INPUT_PORTS_END
@@ -147,6 +156,10 @@ WPC_INPUT_PORTS_END
 
 /* Switches 71 to 88 not used. */
 
+/* Special switches */
+#define swBasketMade    WPC_swF5
+#define swBasketHold    WPC_swF7
+
 /*---------------------
 / Solenoid definitions
 /----------------------*/
@@ -187,7 +200,13 @@ WPC_INPUT_PORTS_END
 /  Ball state handling
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
-      stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stMiddleJet, stRightJet
+      stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane,
+      stLeftSling, stRightSling, stLeftJet, stMiddleJet, stRightJet,
+      stCrazyBob, stShooter1, stShooter2, stShooter3, stShooter4,
+      stBlockedShot, stBasketMade, stBasketHold, stBallCatch,
+      stBumpers, stBumpers2, stBumpers3, stBumpersExit,
+      stLeftLoopEnter, stLeftLoopMade, stLLoopRampExit, stLeftRampEnter, stLeftRampMade,
+      stCenterRamp, stRightRampEnter, stRightRampMade, stRightLoopEnter, stRightLoopMade,
      };
 
 static sim_tState nbaf_stateDef[] = {
@@ -210,27 +229,122 @@ static sim_tState nbaf_stateDef[] = {
   {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
   {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
   {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
+
+  /*Line 3*/
   {"Left Slingshot",1,swLeftSling,	 0,		stFree,		1},
   {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
   {"Left Bumper",	1,swLeftJet,	 0,		stFree,		1},
   {"Middle Bumper",	1,swMiddleJet,	 0,		stFree,		1},
   {"Right Bumper",	1,swRightJet,	 0,		stFree,		1},
 
-  /*Line 3*/
-
   /*Line 4*/
+  {"Crazy Bob's",   1,swEjectHole,   sEject,        stFree,     1},
+  // In The Paint handled entirely in nbaf_handleBallState()
+  {"Shooter 1",     1,swInThePaint1},
+  {"Shooter 2",     1,swInThePaint2},
+  {"Shooter 3",     1,swInThePaint3},
+  {"Shooter 4",     1,swInThePaint4},
 
   /*Line 5*/
+  {"Blocked Shot",  1,0,             0,                 stBumpers,      5},
+  {"Basket Made",   1,swBasketMade,  0,                 stBasketHold,   10},
+  {"Basket Hold",   1,swBasketHold,  swDefenderLock,    stBallCatch,    5, 0, 0, SIM_STSWOFF},
+  // nbaf_handleBallState will advance out of stBallCatch when magnet off
+  {"Ball Catch"},
 
   /*Line 6*/
+  {"Pop Bumpers",   1, swLeftJet,    0,     stBumpers2,     3},
+  {"Pop Bumpers",   1, swRightJet,   0,     stBumpers3,     3},
+  {"Pop Bumpers",   1, swMiddleJet,  0,     stBumpersExit,  3},
+  {"Bumper Exit",   1, swJetsDrain,  0,     stFree,         1},
+
+  /*Line 7*/
+  {"Left Loop Enter",   1, swLLoopEnter,    0,  stLeftLoopMade,     10},
+  {"Left Loop Made",    1, swLLoopExit},    // hand off to handleBallState
+
+  // left loop sent to ramp instead of "in the paint"
+  {"L. Loop Ramp Exit", 1, swLLoopRampExit, 0, stLeftInlane,        10},
+
+  {"Left Ramp Enter",   1, swLRampEnter},   // hand off to handleBallState
+  {"Left Ramp Made",    1, swLRampExit,     0,  stLeftInlane,       10},
+
+  /*Line 8*/
+  {"Center Ramp",       1, swCenterRamp,    0,  stBasketMade,       10},
+
+  {"Right Ramp Enter",  1, swRRampEnter,    0,  stRightRampMade,    10},
+  {"Right Ramp Made",   1, swRRampExit,     0,  stRightInlane,      10},
+
+  {"Right Loop Enter",  1, swRLoopEnter},   // hand off to handleBallState
+  {"Right Loop Made",   1, swRLoopExit,     0,  stShooter4,         10},
 
   {0}
 };
 
 static int nbaf_handleBallState(sim_tBallStatus *ball, int *inports) {
-  switch (ball->state)
-	{
-	}
+  switch (ball->state) {
+  case stShooter1:
+      if (core_getSol(sPassRight1)) {
+          return setState(stShooter2, 5);
+      }
+      else if (core_getSol(sShoot1)) {
+          return setState(core_getSw(swDefender1) ? stBlockedShot : stBasketMade, 10);
+      }
+      break;
+
+  case stShooter2:
+      if (core_getSol(sPassRight2)) {
+          return setState(core_getSol(sBallCatchMag) ? stBallCatch : stShooter3, 5);
+      }
+      else if (core_getSol(sPassLeft2)) {
+          return setState(stShooter1, 5);
+      }
+      else if (core_getSol(sShoot2)) {
+          return setState(core_getSw(swDefender2) ? stBlockedShot : stBasketMade, 10);
+      }
+      break;
+
+  case stShooter3:
+      if (core_getSol(sPassRight3)) {
+          return setState(stShooter4, 5);
+      }
+      else if (core_getSol(sPassLeft3)) {
+          return setState(core_getSol(sBallCatchMag) ? stBallCatch : stShooter2, 5);
+      }
+      else if (core_getSol(sShoot3)) {
+          return setState(core_getSw(swDefender3) ? stBlockedShot : stBasketMade, 10);
+      }
+      break;
+
+  case stShooter4:
+      if (core_getSol(sPassLeft4)) {
+          return setState(stShooter3, 5);
+      }
+      else if (core_getSol(sShoot4)) {
+          return setState(core_getSw(swDefender4) ? stBlockedShot : stBasketMade, 10);
+      }
+      break;
+
+  case stBallCatch:
+      // release ball if magnet is off
+      if (!core_getSol(sBallCatchMag)) {
+          return setState(stBumpers, 5);
+      }
+      break;
+
+  case stLeftLoopMade:
+      // if gate up, complete loop to ramp, otherwise feed In The Paint
+      return setState(core_getSol(sLoopGate) ? stLLoopRampExit : stShooter2, 10);
+      break;
+
+  case stLeftRampEnter:
+      return setState(core_getSol(sLRampDiverter) ? stBasketMade : stLeftRampMade, 10);
+      break;
+
+  case stRightLoopEnter:
+      // if diverter up, feed right loop exit then in the paint, otherwise feed to pops
+      return setState(core_getSol(sRLoopDiverter) ? stBumpers : stRightLoopMade, 10);
+      break;
+  }
   return 0;
 }
 
@@ -261,21 +375,21 @@ static sim_tInportData nbaf_inportData[] = {
   {0, 0x8000, stDrain},
 
 /* Port 1 */
-//  {1, 0x0001, st},
-//  {1, 0x0002, st},
-//  {1, 0x0004, st},
-//  {1, 0x0008, st},
-//  {1, 0x0010, st},
+  {1, 0x0001, stLeftLoopEnter},
+  {1, 0x0002, stLeftRampEnter},
+  {1, 0x0004, stCenterRamp},
+  {1, 0x0008, stRightRampEnter},
+  {1, 0x0010, stRightLoopEnter},
 //  {1, 0x0020, st},
 //  {1, 0x0040, st},
 //  {1, 0x0080, st},
 //  {1, 0x0100, st},
-//  {1, 0x0200, st},
-//  {1, 0x0400, st},
-//  {1, 0x0800, st},
-//  {1, 0x1000, st},
-//  {1, 0x2000, st},
-//  {1, 0x4000, st},
+  {1, 0x0200, swStandup3},
+  {1, 0x0400, swStandupP},
+  {1, 0x0800, swStandupT},
+  {1, 0x1000, stCrazyBob},
+  {1, 0x2000, swStandupHigh},
+  {1, 0x4000, swStandupLow},
 //  {1, 0x8000, st},
   {0}
 };
@@ -292,7 +406,7 @@ static sim_tInportData nbaf_inportData[] = {
 
 static core_tLampDisplay nbaf_lampPos = {
 { 0,  0}, /* top left */
-{25, 29}, /* size */
+{29, 25}, /* size */
 {
     /* Lamp 11 to 18 */
     LMP1(15, 21, WHITE),    LMP1(14, 24, LPURPLE),  LMP1(12, 25, LPURPLE),  LMP1(10, 24, LPURPLE),
@@ -336,9 +450,9 @@ static void nbaf_drawStatic(BMTYPE **line) {
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
-  core_textOutf(30,100,BLACK,"");
-  core_textOutf(30,110,BLACK,"");
-  core_textOutf(30,120,BLACK,"");
+  core_textOutf(30,100,BLACK,"S/D/F/G/H = S-H-O-O-T Loops/Ramps");
+  core_textOutf(30,110,BLACK,"B = Crazy Bob's, X/C/V = 3PT Targets");
+  core_textOutf(30,120,BLACK,"N/M = Kickback Targets");
   core_textOutf(30,130,BLACK,"      *** PRELIMINARY ***");
   core_textOutf(30,140,BLACK,"");
   core_textOutf(30,150,BLACK,"");
@@ -434,11 +548,11 @@ static struct core_dispLayout nbaf_dispDMD[] = {
 static core_tGameData nbafGameData = {
   GEN_WPC95, nbaf_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),    /* TODO: upper flipper solenoids (33-36) used for Shoot 1-4 */
+    FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),     // other switches/solenoids used for non-flippers
     0,0,0,  /* custom switch columns, lamp columns, solenoids */
     0,0,    /* sound board, display */
     1,0,    /* gameSpecific1 (unknown why we set this -- unused on WPC?), gameSpecific2 */
-    NULL, NULL, NULL, NULL, /* getSol, handleMech, getMech, drawMech */
+    nbaf_getSol, nbaf_handleMech, NULL, nbaf_drawMech,
     &nbaf_lampPos,          /* lampData */
   },
   &nbafSimData,
@@ -453,21 +567,19 @@ static core_tGameData nbafGameData = {
 
 static WRITE_HANDLER(nbaf_wpc_w) {
   wpc_w(offset, data);
-  if (offset == WPC_SOLENOID1) {
-    /* solenoids 24-28 and 37-40 */
-
+  if (offset == WPC_SOLENOID1) {    
     /* solenoids sShotClockCount (40/BIT7) and sShotClockEn (39/BIT6) */
-	if (GET_BIT7 && !locals.lastBit7) {
-	  if (locals.count > 0) locals.count--;
+	if (GET_BIT7 && !locals.lastBit7 && locals.count) {
+	  locals.count--;
 	}
 	if (GET_BIT6) {
 	  coreGlobals.segments[0].w = core_bcd2seg7[locals.count / 10];
 	  coreGlobals.segments[1].w = core_bcd2seg7[locals.count % 10];
 	}
-	if (!(GET_BIT6) && locals.lastBit6) {
+	else if (locals.lastBit6) {
 	  locals.count = 24;
 	}
-	if (!(GET_BIT6) && !(GET_BIT7) && !locals.lastBit6 && !locals.lastBit7) {
+	if (!(GET_BIT6 || GET_BIT7 || locals.lastBit6 || locals.lastBit7)) {
 	  coreGlobals.segments[0].w = coreGlobals.segments[1].w = 0;
 	}
 	locals.lastBit6 = GET_BIT6;
@@ -481,7 +593,86 @@ static WRITE_HANDLER(nbaf_wpc_w) {
 static void init_nbaf(void) {
   core_gameData = &nbafGameData;
   memset(&locals, 0, sizeof(locals));
+
+  // defender starts at lock position
+  locals.defenderPos = NBAF_DEFENDER_MAX / 2;
+
   locals.count = 24;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, nbaf_wpc_w);
   wpc_set_fastflip_addr(0x7b);
+}
+
+static int nbaf_getSol(int solNo) {
+    if (solNo >= 33 && solNo <= 40) {
+        return (wpc_data[WPC_FLIPPERCOIL95] >> (solNo - 33)) & 0x1;
+    }
+    return 0;
+}
+
+
+static void nbaf_drawMech(BMTYPE **line) {
+    if (coreGlobals.simAvail) {
+        // Defender Position
+        core_textOutf(30, 0, BLACK, "Defender: %3u %c",
+                      locals.defenderPos,
+                      core_getSw(swDefender1) ? '1' :
+                      core_getSw(swDefender2) ? '2' :
+                      core_getSw(swDefenderLock) ? '*' :
+                      core_getSw(swDefender3) ? '3' :
+                      core_getSw(swDefender4) ? '4' : ' ');
+        // Backbox basketball position
+        core_textOutf(30, 10, BLACK, "Backbox: %3u %c",
+                      locals.backboxPos,
+                      core_getSw(swBackboxBasket) ? '*' : ' ');
+    }
+}
+
+// TRUE if <pos> is withing NBAF_DEFENDER_SW_WIDTH positions of target
+#define DEFENDER_AT(pos) (abs(locals.defenderPos - pos) <= NBAF_DEFENDER_SW_WIDTH / 2)
+#define BACKBOX_AT(pos)  (abs(locals.backboxPos - pos) <= 2)
+
+static void nbaf_handleMech(int mech) {
+    // Defender
+    if (mech & 0x01) {
+        // read pulsed solenoid values instead of smoothed values
+        if (core_getPulsedSol(sMotorEnable)) {
+            locals.defenderDir = core_getPulsedSol(sMotorDirection) ? +1 : -1;
+            locals.defenderPos += locals.defenderDir;
+            if (locals.defenderPos < 0) {
+                locals.defenderPos = 0;
+            }
+            else if (locals.defenderPos > NBAF_DEFENDER_MAX) {
+                locals.defenderPos = NBAF_DEFENDER_MAX;
+            }
+            core_setSw(swDefender1, DEFENDER_AT(NBAF_DEFENDER_SW_WIDTH / 2));
+            core_setSw(swDefender2, DEFENDER_AT(NBAF_DEFENDER_MAX / 3));
+            core_setSw(swDefenderLock, DEFENDER_AT(NBAF_DEFENDER_MAX / 2));
+            core_setSw(swDefender3, DEFENDER_AT(NBAF_DEFENDER_MAX * 2 / 3));
+            core_setSw(swDefender4, DEFENDER_AT(NBAF_DEFENDER_MAX - NBAF_DEFENDER_SW_WIDTH / 2));
+        }
+        else {
+            locals.defenderDir = 0;
+        }
+    }
+
+    // Backbox game
+    if (mech & 0x02) {
+        if (core_getSol(sBackboxFlipper)) {
+            if (locals.backboxPos == 0) {
+                locals.backboxPos = NBAF_BACKBOX_COUNTDOWN;
+            }
+            else if (locals.backboxPos < 10) {
+                // flipped too soon
+                locals.backboxPos = NBAF_BACKBOX_COUNTDOWN / 2 - 5;
+            }
+            else {
+                // flipped when the ball wasn't close to the flipper
+            }
+        }
+        // update the ball position for the backbox game
+        if (locals.backboxPos) {
+            --locals.backboxPos;
+            core_setSw(swBackboxBasket, BACKBOX_AT(NBAF_BACKBOX_COUNTDOWN / 2));
+        }
+    }
 }
