@@ -1734,6 +1734,36 @@ STDMETHODIMP CController::put_TimeFence(double timeInS)
 }
 
 /****************************************************************************
+ * IController.get_StateBlock: returns a shared memory block name which holds
+ * a global state block prepended by the memory block size as an unsigned int
+ ****************************************************************************/
+STDMETHODIMP CController::get_StateBlock(/*[out, retval]*/ BSTR* pVal)
+{
+	if (!pVal)
+		return E_POINTER;
+	if (!Machine)
+		return E_FAIL;
+	if (core_getOutputState(PINMAME_STATE_REQMASK_ALL) == NULL)
+		return E_FAIL;
+	CComBSTR bsStateSharedMemName(TEXT("Local\\VPinMameStateBlock"));
+	*pVal = bsStateSharedMemName.Detach();
+	return S_OK;
+}
+
+/****************************************************************************
+ * IController.UpdateStateBlock: Update requested outputs of the global state
+ * block
+ ****************************************************************************/
+STDMETHODIMP CController::UpdateStateBlock(/*[in, defaultvalue(0x3F)]*/ unsigned int updateMask)
+{
+	if (!Machine)
+		return E_FAIL;
+	if (core_getOutputState(updateMask) == NULL)
+		return E_FAIL;
+	return S_OK;
+}
+
+/****************************************************************************
  * IController.Version (read-only): gets the program version of VPM
  ****************************************************************************/
 STDMETHODIMP CController::get_Version(BSTR *pVal)
