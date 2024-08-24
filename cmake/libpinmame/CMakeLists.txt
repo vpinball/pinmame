@@ -504,6 +504,7 @@ set(PINMAME_SOURCES
    src/wpc/peyper.c
    src/wpc/peyper.h
    src/wpc/peypergames.c
+   src/libpinmame/pinmamedef.h
    src/wpc/play.c
    src/wpc/play.h
    src/wpc/playgames.c
