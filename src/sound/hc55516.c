@@ -750,11 +750,14 @@ static void process_bit_HC555XX(struct hc55516_data *chip, const UINT8 bit, cons
 	// shift the bit into the shift register
 	chip->shiftreg = ((chip->shiftreg << 1) | bit) & SHIFTMASK;
 
-	// apply the syllabic filter charge update (in floating-point terms,
+	// Apply the syllabic filter charge update (in floating-point terms,
 	// this is calculating syl *= 31/32 or syl *= 63/64, depending upon
-	// the charge_mask/charge_shift parameters)
+	// the charge_mask/charge_shift parameters).  This part is common to
+	// coincidence (last 3 bits were the same) or non-coincidence.
 	chip->filter.intg.syl_reg += (~chip->filter.intg.syl_reg & chip->filter.intg.charge_mask) >> chip->filter.intg.charge_shift;
-	if ((chip->shiftreg ^ SHIFTMASK) != 0)
+
+	// add extra charge on non-coincidence
+	if (chip->shiftreg != 0 && chip->shiftreg != SHIFTMASK)
 		chip->filter.intg.syl_reg += chip->filter.intg.charge_add;
 
 	// mask the syllabic filter register to 12 bits, per the HC555XX hardware
@@ -1279,9 +1282,16 @@ int hc55516_sh_start(const struct MachineSound *msound)
 			chip->compress_loudness = flat_loudness;
 
 			// Populate the filter parameters according to the chip type
-			if (intf->chip_type == 55516)
+			if (intf->chip_type == 55516 || intf->chip_type == 55536 || intf->chip_type == 55564)
 			{
-				// 55516 parameters
+				// 55516 parameters.  These were obtained from the MAME decap analysis.
+				// 
+				// The 55536 and 55564 use the same parameters, or so it seems from the 
+				// data sheets (this hasn't been verified by decap analysis).  These
+				// chips are also believed to include a fix for a bug in the -16 that 
+				// prevented it from reaching a constant 0V at the output, which caused 
+				// a known noise ("humming") bug with the older chip.  (I'm not sure
+				// whether or not the MAME algorithm implemented here includes the fix.)
 				chip->filter.intg.charge_mask = 0xFC0;
 				chip->filter.intg.charge_shift = 6;
 				chip->filter.intg.charge_add = 0xFC1;
@@ -1289,24 +1299,11 @@ int hc55516_sh_start(const struct MachineSound *msound)
 
 				chip->filter.intg.syl_reg = 0x3F;
 			}
-			else if (intf->chip_type == 55532 || intf->chip_type == 55536 || intf->chip_type == 55564)
+			else if (intf->chip_type == 55532)
 			{
-				// 55532 parameters.
-				//
-				// The MAME/decap analysis had nothing to say about the 55536 variant, but
-				// from the data sheet, it appears that the 55536 is identical to the
-				// 55532 except that the encoder stage isn't included.  So we'll take
-				// the decoder filter parameters to be identical to the '32.
-				//
-				// The same goes for the '64.  That chip appears to be identical to
-				// the '32 except that it's rated for higher maximum bit clock rates.
-				//
-				// Note that the newer revision '36/'64 may(!) have had some additional bugfixes
-				// where the older chips did not fully allow to get a constant 0 output,
-				// which may have lead to a 'humming' issue with these.
-				//
-				// Also note that the following 55532 params are not verified by a real
-				// decap yet, but are derived from implicit information from the 55516 decap.
+				// 55532 parameters.  The MAME decap analysis didn't include this chip,
+				// so these are only inferred, based on the chip's optimization for 
+				// 32 kHz clocking.
 				chip->filter.intg.charge_mask = 0xF80;
 				chip->filter.intg.charge_shift = 7;
 				chip->filter.intg.charge_add = 0xFE1;
