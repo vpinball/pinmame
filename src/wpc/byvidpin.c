@@ -459,6 +459,12 @@ static VIDEO_STOP(byVP) {
 
 static PINMAME_VIDEO_UPDATE(byVP_update) {
   TMS9928A_refresh((core_gameData->hw.display ? 2 : 1), bitmap, 1);
+  struct rectangle bounds;
+  bounds.min_x = 0;
+  bounds.min_y = 0;
+  bounds.max_x = 192;
+  bounds.max_y = 256;
+  core_display_video_update(bitmap, &bounds, layout, 1);
   return 0;
 }
 

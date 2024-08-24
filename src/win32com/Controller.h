@@ -205,6 +205,9 @@ public:
 	STDMETHOD(put_ModOutputType)(/*[in]*/ int output, /*[in]*/ int no, /*[in]*/ int newVal);
 
 	STDMETHOD(put_TimeFence)(/*[in]*/ double fenceIns);
+
+	STDMETHOD(get_StateBlock)(/*[out, retval]*/ BSTR* pVal);
+	STDMETHOD(UpdateStateBlock)(/*[in, defaultvalue(0x1F)]*/ unsigned int updateMask);
 };
 
 #endif // !defined(AFX_Controller_H__D2811491_40D6_4656_9AA7_8FF85FD63543__INCLUDED_)

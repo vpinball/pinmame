@@ -793,16 +793,14 @@ WRITE_HANDLER(wpc_w) {
       {
         //static double prev; printf("WPC_ALPHA2LO %8.5fms %02x %02x\n", timer_get_time() - prev, wpc_data[WPC_ALPHAPOS], data); prev = timer_get_time();
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
-        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
-          core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
       }
       break;
     case WPC_ALPHA2HI:
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
       {
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
-        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
-          core_write_pwm_output_8b(CORE_MODOUT_SEG0 + ((20 + wpc_data[WPC_ALPHAPOS]) * 2 + 1) * 8, data);
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + ((20 + wpc_data[WPC_ALPHAPOS]) * 2 + 1) * 8, data);
       }
       break;
     case WPC_LAMPROW: /* row and column can be written in any order */
@@ -869,17 +867,14 @@ WRITE_HANDLER(wpc_w) {
         // The delay between setting segments then blanking them is used to a rough PWM dimming
         // Overall timing is 1ms maximum per digit over a 16ms period
         //static double prev; printf("WPC_ALPHAPOS %8.5fms %02x\n", timer_get_time() - prev, data); prev = timer_get_time();
-        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
-        {
-          int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
-          int newIndex  = CORE_MODOUT_SEG0 +     data               * 2 * 8;
-          if (prevIndex != newIndex)
-            for (int i = 0; i < 4; i++)
-            {
-              int offst = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
-              core_write_pwm_output_8b(newIndex  + offst, coreGlobals.binaryOutputState[(prevIndex + offst) >> 3]);
-              core_write_pwm_output_8b(prevIndex + offst, 0);
-            }
+        int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
+        int newIndex  = CORE_MODOUT_SEG0 +     data               * 2 * 8;
+        if (prevIndex != newIndex) {
+          for (int i = 0; i < 4; i++) {
+            int offst = i == 0 ? 0 : i == 1 ? 8 : i == 2 ? 320 : 328;
+            core_write_pwm_output_8b(newIndex  + offst, coreGlobals.binaryOutputState[(prevIndex + offst) >> 3]);
+            core_write_pwm_output_8b(prevIndex + offst, 0);
+          }
         }
       }
       break; /* just save position */
@@ -896,8 +891,7 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA1LO
       {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
-        if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
-          core_write_pwm_output_8b(CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8, data);
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8, data);
       }
       break;
     case WPC_EXTBOARD3: /* WPC_ALPHA1HI */

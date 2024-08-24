@@ -2252,7 +2252,9 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
             bits = (bits << 1) | (coreGlobals.dmdDotRaw[y * 5 + x] ? 1 : 0);
         coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + x] = bits;
     }
+#ifndef VPINMAME
     if (!pmoptions.dmd_only)
+#endif
         core_dmd_video_update(bitmap, cliprect, layout, NULL);
     return 0;
 }
@@ -2274,8 +2276,10 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
         bits = (bits<<1) | (coreGlobals.dmdDotRaw[kk * layout->length + ii] ? 1 : 0);
       coreGlobals.drawSeg[ii] = bits;
     }
-    if (!pmoptions.dmd_only)
-      core_dmd_video_update(bitmap, cliprect, layout, NULL);
+#ifndef VPINMAME
+	 if (!pmoptions.dmd_only)
+#endif
+		 core_dmd_video_update(bitmap, cliprect, layout, NULL);
     return 0;
 }
 

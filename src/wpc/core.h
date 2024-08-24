@@ -10,6 +10,10 @@
 #include "gen.h"
 #include "sim.h"
 
+#include "drawgfx.h"
+
+#include "../libpinmame/pinmamedef.h"
+
 /*-- some convenience macros --*/
 #ifndef FALSE
   #define FALSE (0)
@@ -172,24 +176,24 @@
 /  Generic Display layout data
 /------------------------------*/
 /* The different kind of display units */
-#define CORE_SEG16    0 // 16 segments
-#define CORE_SEG16R   1 // 16 segments with comma and period reversed
-#define CORE_SEG10    2 // 9  segments and comma
-#define CORE_SEG9     3 // 9  segments
-#define CORE_SEG8     4 // 7  segments and comma
-#define CORE_SEG8D    5 // 7  segments and period
-#define CORE_SEG7     6 // 7  segments
-#define CORE_SEG87    7 // 7  segments, comma every three
-#define CORE_SEG87F   8 // 7  segments, forced comma every three
-#define CORE_SEG98    9 // 9  segments, comma every three
-#define CORE_SEG98F  10 // 9  segments, forced comma every three
-#define CORE_SEG7S   11 // 7  segments, small
-#define CORE_SEG7SC  12 // 7  segments, small, with comma
+#define CORE_SEG16    0 // 14 segments with comma and period
+#define CORE_SEG16R   1 // 14 segments with comma and period reversed
+#define CORE_SEG10    2 //  9 segments and comma
+#define CORE_SEG9     3 //  9 segments
+#define CORE_SEG8     4 //  7 segments and comma
+#define CORE_SEG8D    5 //  7 segments and period
+#define CORE_SEG7     6 //  7 segments
+#define CORE_SEG87    7 //  7 segments, comma every three
+#define CORE_SEG87F   8 //  7 segments, forced comma every three
+#define CORE_SEG98    9 //  9 segments, comma every three
+#define CORE_SEG98F  10 //  9 segments, forced comma every three
+#define CORE_SEG7S   11 //  7 segments, small
+#define CORE_SEG7SC  12 //  7 segments, small, with comma
 #define CORE_SEG16S  13 // 16 segments with split top and bottom line
 #define CORE_DMD     14 // DMD Display
 #define CORE_VIDEO   15 // VIDEO Display
-#define CORE_SEG16N  16 // 16 segments without commas
-#define CORE_SEG16D  17 // 16 segments with periods only
+#define CORE_SEG16N  16 // 14 segments (no dot nor comma)
+#define CORE_SEG16D  17 // 14 segments with period but no comma
 
 #define CORE_SEGALL   0x1f // maximum segment definition number
 #define CORE_IMPORT   0x20 // Link to another display layout
@@ -229,7 +233,7 @@ struct core_dispLayout {
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 // Overall alphanumeric display layout. Used externally by VPinMame's dmddevice. Don't change order
 typedef enum {
-   CORE_SEGLAYOUT_None,
+   CORE_SEGLAYOUT_None = 0,
    CORE_SEGLAYOUT_2x16Alpha,
    CORE_SEGLAYOUT_2x20Alpha,
    CORE_SEGLAYOUT_2x7Alpha_2x7Num,
@@ -247,7 +251,7 @@ typedef enum {
    CORE_SEGLAYOUT_1x7Num_1x16Alpha_1x16Num,
    CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num_1x4Num,
    CORE_SEGLAYOUT_Invalid
-} core_segOverallLayout_t;
+} core_tSegOverallLayout;
 
 
 #define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
@@ -607,6 +611,9 @@ extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
 extern void core_getAllPhysicSols(float* const state);
 
+/*-- full output state --*/
+extern pinmame_tMachineOutputState* core_getOutputState(const unsigned int updateMask);
+
 /*-- AC sync and PWM integration --*/
 extern void core_update_pwm_outputs(const int startIndex, const int count);
 INLINE void core_update_pwm_gis(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI)) core_update_pwm_outputs(CORE_MODOUT_GI0, coreGlobals.nGI); }
@@ -668,6 +675,8 @@ extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
 extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes);
 extern void core_dmd_update_pwm(core_tDMDPWMState* dmd_state);
 extern void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state);
+
+extern void core_display_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout, const int rotation);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
