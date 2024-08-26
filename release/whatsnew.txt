@@ -67,6 +67,7 @@ Refined Bally-32 sound emulation (so it also does not require the sample package
 Improved SP0250 and SP0256 sound emulation, most notably in Technoplays Scramble, and ManilaMatics Top Sound and Master
 Disabled mechanical sample use (solenoids, bumpers, etc) via the pinmame.zip sample package if running VPinMAME or libPinMAME (as this should be handled by the table itself then)
 Fixed 6 million dollar man 7 digit conversion display
+Fixed CRTC6845 <-> GTS3 DMD interaction (e.g. leading to fixed Tee'd Off DMD timings)
 Fixed inverted switches for ffv101
 Fixed fast flip detection for im_185 and trn_174h
 Implemented fast flips for avr_120h, avs_170h, im_186, im_186ve, mt_145, mt_145hb, mtl_180, rsn_110, sman_261, st_162, st_162h, trn_174, wof_602h and xmn_151
