@@ -41,6 +41,8 @@ typedef struct {
 	int cursor;
 	int light_pen;
 	int page_flip;		/* This seems to be present in the HD46505 */
+	mame_timer* vsync_timer;
+	double clock_freq;
 } CRTC6845;
 
 static CRTC6845 crtc6845[MAX_6845];
@@ -48,6 +50,35 @@ static CRTC6845 crtc6845[MAX_6845];
 void crtc6845_init(int chipnum)
 {
 	memset(&crtc6845[chipnum],0,sizeof(CRTC6845));
+}
+
+void update_vsync_timer(int chipnum)
+{
+	if (crtc6845[chipnum].vsync_timer)
+	{
+		// Each scanline is (horiz_total+1) clock cycles
+		// VSync happens after (vert_total+1) rows of characters + vert_total_adj scanlines, each character is made of (max_ras_addr+1) scanlines
+		int nCycles = (crtc6845[chipnum].horiz_total + 1) * ((crtc6845[chipnum].vert_total + 1) * (crtc6845[chipnum].max_ras_addr + 1) + crtc6845[chipnum].vert_total_adj);
+		double period = nCycles / crtc6845[chipnum].clock_freq;
+		if (period < 1e-3) // Hack: disable timer if values are too low (less than 1ms here)
+			timer_enable(crtc6845[chipnum].vsync_timer, 0);
+		else
+			timer_adjust(crtc6845[chipnum].vsync_timer, period, chipnum, period);
+		//if (period > 1e-3) printf("CRT #%d PC %04x: VSync freq:%5.1fHz\n", chipnum, activecpu_get_pc(), 1.0 / period);
+	}
+}
+
+void crtc6845_set_vsync(int chipnum, double clockFreq, void (*handler)(int))
+{
+	if (crtc6845[chipnum].vsync_timer != NULL)
+		timer_remove(crtc6845[chipnum].vsync_timer);
+	crtc6845[chipnum].vsync_timer = NULL;
+	crtc6845[chipnum].clock_freq = clockFreq;
+	if (handler && clockFreq > 0.)
+	{
+		crtc6845[chipnum].vsync_timer = timer_alloc(handler);
+		update_vsync_timer(chipnum);
+	}
 }
 
 READ_HANDLER( crtc6845_register_r )
@@ -132,6 +163,7 @@ LOG(("CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",activecpu_get_pc(),crtc684
 	{
 		case 0:
 			crtc6845[offset].horiz_total=data;
+			update_vsync_timer(offset);
 			break;
 		case 1:
 			crtc6845[offset].horiz_disp=data;
@@ -144,9 +176,11 @@ LOG(("CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",activecpu_get_pc(),crtc684
 			break;
 		case 4:
 			crtc6845[offset].vert_total=data&0x7f;
+			update_vsync_timer(offset);
 			break;
 		case 5:
 			crtc6845[offset].vert_total_adj=data&0x1f;
+			update_vsync_timer(offset);
 			break;
 		case 6:
 			crtc6845[offset].vert_disp=data&0x7f;
@@ -159,6 +193,7 @@ LOG(("CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",activecpu_get_pc(),crtc684
 			break;
 		case 9:
 			crtc6845[offset].max_ras_addr=data&0x1f;
+			update_vsync_timer(offset);
 			break;
 		case 10:
 			crtc6845[offset].cursor_start_ras=data&0x7f;

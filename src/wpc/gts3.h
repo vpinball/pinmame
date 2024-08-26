@@ -264,8 +264,6 @@ typedef struct {
   UINT8  sound_data;
   UINT8  prn[8];
 
-  int bitSet;
-  UINT8 vblank_counter;
   UINT8 irq;
 
   int modsol_rate_counter;
