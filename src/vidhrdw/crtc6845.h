@@ -13,6 +13,7 @@
 #define MAX_6845 2
 
 void crtc6845_init(int chipnum);
+void crtc6845_set_vsync(int chipnum, double clockFreq, void (*handler)(int));
 
 /*Direct handlers*/
 READ_HANDLER( crtc6845_register_r );
