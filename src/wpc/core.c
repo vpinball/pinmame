@@ -55,7 +55,7 @@
  static UINT8 has_DMD_Video = 0;
 
  #include "gts3dmd.h"
- UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
+ UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES*0x200];
  UINT32 g_raw_gtswpc_dmdframes = 0;
 
  UINT8 g_needs_DMD_update = 1;
@@ -854,9 +854,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int ii, jj;
 
   // prepare all brightness & color/palette tables for mappings from internal DMD representation:
-  const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
-	  // extended handling also for some GTS3 games (SMB, SMBMW and CBW):
-	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
+  const int shade_16_enabled = (core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2|GEN_GTS3)) != 0;
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
 

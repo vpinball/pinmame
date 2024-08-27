@@ -3,28 +3,15 @@
 #include "gts3.h"
 #include "gts3dmd.h"
 
-//#define DEBUGSWAP
-
-extern UINT8 DMDFrames [GTS3DMD_FRAMES_5C][0x200];
-extern UINT8 DMDFrames2[GTS3DMD_FRAMES_5C][0x200];
+extern UINT8 DMDFrames [GTS3DMD_FRAMES][0x200];
+extern UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];
 extern GTS3_DMDlocals GTS3_dmdlocals[2];
 
-#ifdef DEBUGSWAP
-extern int crtc6845_start_addr;
-#endif
-
-//static const int level4_a[9]  = { 0, 1, 5, 5, 5, 5, 5, 5, 15 }; // mapping for 4 color roms, mode a
-//static const int level4_b[16] = { 0, 1, 1, 1, 5, 5, 5, 10, 10, 10, 15, 15, 15, 15, 15, 15 }; // mapping for 4 color roms, mode b
-//static const int level4_a[16] = { 0, 3, 3, 3, 6, 6, 6, 8, 8, 9, 10, 11, 12, 13, 14, 15 };
-static const int level4_a[7] = { 0, 1, 2, 2, 2, 2, 3 }; // 4 colors
-static const int level4_a2[7] = { 0, 1, 1, 2, 2, 2, 3 }; // 4 colors
-static const int level4_b[9] = { 0, 1, 2, 2, 2, 2, 2, 2, 3 }; // 4 colors
-static const int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 colors
-//static const int level5[19] = { 0, 3, 3, 4, 5, 5, 5, 7, 8, 9, 11, 11, 11, 12, 13, 14, 15, 15, 15 };
-//static const int level[25]  = { 0, 0, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15 }; // temporary mapping for both 4 and 5 color roms // deprecated
+// Shaded frame computed from stored PWMed DMD frames
+UINT16 accumulatedFrame[32][128];
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
-extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
+extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES*0x200];
 extern UINT32 g_raw_gtswpc_dmdframes;
 
 static const unsigned char lookup[16] = {
@@ -37,106 +24,85 @@ INLINE UINT8 reverse(UINT8 n) {
 }
 #endif
 
-//DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
-PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
-  UINT8 *frameData = &DMDFrames2[0][0];
-  int ii,jj,kk,ll;
-  int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
-  int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
-#if defined(VPINMAME) || defined(LIBPINMAME)
-  int i = 0;
-#endif
+// GTS3 hardware creates shades by quickly switching frames (PWM).
+// It uses 24 frames at 376Hz to create the PWM pattern, so we need
+// to store these 24 frames to avoid sampling artefact resulting
+// in some residual flickering. Then we apply a low pass filter, 
+// here a FIR based on a Kaiser window (other filter are commented
+// out since I don't think that they give better results).
+//
+// Previous version had an optimized implementation, storing as little frames as
+// possible for each GTS3 game (see commit 9b9ac9a5c2bfedac13ca382ff6669837882c129d).
+// This was needed because each game had a different (somewhat wrong) VSync frequency.
+// This lead to better performance since less frames were accumulated but had 2 side effects:
+// - there were some occasional residual flickers,
+// - DMD luminance were not fully coherent between GTS3 games (some 4 shades, some other 5 shades).
 
-  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
-  for (ii = 0; ii < frames; ii++) {
-    for (jj = 1; jj <= 32; jj++) {           // 32 lines
-      UINT8 *line = &coreGlobals.dotCol[jj][0];
-      for (kk = 0; kk < 16; kk++) {          // 16 columns/line
-        UINT8 data = *frameData++;
-#if defined(VPINMAME) || defined(LIBPINMAME)
-        g_raw_gtswpc_dmd[i] = reverse(data);
-        i++;
-#endif
-        for (ll = 0; ll < 8; ll++)          // 8 pixels/column
-          { (*line++) += (data>>7); data <<= 1; }
-      }
+/*const int fir_weights[] = {1, 1, 1, 1, 1, 1, 1, 1,            // Moving average
+                             1, 1, 1, 1, 1, 1, 1, 1,            // Overall sum = 24
+                             1, 1, 1, 1, 1, 1, 1, 1 };          //*/
+/*const int fir_weights[] = {30, 39, 47,  56,  64, 72, 80, 86,  // Octave: w = kaiser(24,2.5);
+                             91, 96, 98, 100, 100, 98, 96, 91,
+                             86, 80, 72,  64,  56, 47, 39, 30 };//*/
+/*const int fir_weights[] = { 4,  9, 15,  24,  34, 46, 58, 70,  // Octave: w = kaiser(24,5.0);
+                             81, 90, 96, 100, 100, 96, 90, 81,
+                             70, 58, 46,  34,  26, 15,  9,  4 };//*/
+const int fir_weights[] = {  1,  3,  6,  13,  21, 32, 46, 60,   // Octave: w = kaiser(24,7.0);
+                            74, 86, 95, 100, 100, 95, 86, 74,   // Overall sum = 1074
+                            60, 46, 32,  21,  13,  6,  3,  1 };
+const int fir_sum = 1074;
+
+int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout)
+{
+  int ii,jj,kk,ll;
+  const int frames = GTS3DMD_FRAMES;
+  UINT8* dmdFrames = which == 0 ? &DMDFrames[0][0] : &DMDFrames2[0][0];
+
+  /* int fir_sum = 0;
+  for (ii = 0; ii < frames; ii++)
+     fir_sum += fir_weights[ii]; //*/
+
+  #if defined(VPINMAME) || defined(LIBPINMAME)
+  int i = 0;
+  g_raw_gtswpc_dmdframes = 5; // Only send the last 5 raw frames
+  UINT8* rawData = &g_raw_gtswpc_dmd[0];
+  for (ii = 0; ii < (int)g_raw_gtswpc_dmdframes; ii++) {
+    UINT8* frameData = dmdFrames + ((GTS3_dmdlocals[0].nextDMDFrame + (GTS3DMD_FRAMES - 1) + (GTS3DMD_FRAMES - ii)) % GTS3DMD_FRAMES) * 0x200;
+    for (jj = 0; jj < 32 * 16; jj++) {      // 32 lines of 16 columns of 8 pixels
+      UINT8 data = *frameData++;
+      *rawData = reverse(data);
+      rawData++;
     }
   }
+  #endif
 
-  // detect special case for some otherwise flickering frames
-  if (frames == GTS3DMD_FRAMES_4C_a) {
-	  for (ii = 1; ii <= 32; ii++)               // 32 lines
-		  for (jj = 0; jj < 128; jj++) {         // 128 pixels/line
-			  if (coreGlobals.dotCol[ii][jj] == 4){
-				  level = level4_a2;
-				  break;
-			  }
-		  }
-  }
-
-  for (ii = 1; ii <= 32; ii++)               // 32 lines
-    for (jj = 0; jj < 128; jj++) {           // 128 pixels/line
-      UINT8 data = coreGlobals.dotCol[ii][jj];
-      coreGlobals.dotCol[ii][jj] = level[data];
-  }
-
-  video_update_core_dmd(bitmap, cliprect, layout);
-  return 0;
-}
-
-PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
-  UINT8 *frameData = &DMDFrames[0][0];
-  int ii,jj,kk,ll;
-  int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
-  int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
-
-#if defined(VPINMAME) || defined(LIBPINMAME)
-  int i = 0;
-  g_raw_gtswpc_dmdframes = frames;
-#endif
-
-#ifdef DEBUGSWAP
-  char temp[250];
-  sprintf(temp,"location=%04x   %04x",0x1000+(crtc6845_start_addr>>2), crtc6845_start_addr);
-  core_textOutf(50,50,1,temp);
-#endif
-
-  /* Drawing is not optimized so just clear everything */
-  // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
+  // Apply low pass filter over 24 frames
+  memset(accumulatedFrame, 0, sizeof(accumulatedFrame));
   for (ii = 0; ii < frames; ii++) {
+    UINT8* frameData = dmdFrames + ((GTS3_dmdlocals[0].nextDMDFrame + (GTS3DMD_FRAMES - 1) + (GTS3DMD_FRAMES - ii)) % GTS3DMD_FRAMES) * 0x200;
     for (jj = 1; jj <= 32; jj++) {          // 32 lines
-      UINT8 *line = &coreGlobals.dotCol[jj][0];
+      UINT16* line = &accumulatedFrame[jj - 1][0];
       for (kk = 0; kk < 16; kk++) {         // 16 columns/line
         UINT8 data = *frameData++;
-#if defined(VPINMAME) || defined(LIBPINMAME)
-        g_raw_gtswpc_dmd[i] = reverse(data);
-        i++;
-#endif
-        for (ll = 0; ll < 8; ll++)          // 8 pixels/column
-          { (*line++) += (data>>7); data <<= 1; }
+        for (ll = 0; ll < 8; ll++) {        // 8 pixels/column
+          (*line++) += (UINT16)(data>>7) * (UINT16) fir_weights[ii]; data <<= 1;
+        }
       }
     }
   }
 
-
-  // detect special case for some otherwise flickering frames
-  if (frames == GTS3DMD_FRAMES_4C_a) {
-	  for (ii = 1; ii <= 32; ii++)               // 32 lines
-		  for (jj = 0; jj < 128; jj++) {         // 128 pixels/line
-			  if (coreGlobals.dotCol[ii][jj] == 4) {
-				  level = level4_a2;
-				  break;
-			  }
-		  }
-  }
-
+  // Scale down to 16 shades. This is somewhat wrong since the PWM pattern is made of 24 frames, so we should 
+  // use 25 shades. But, while we need the 24 frames to avoid sampling artefacts, it does not seem to be really 
+  // used and 16 shades looks good enough.
   for (ii = 1; ii <= 32; ii++)              // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
-      UINT8 data = coreGlobals.dotCol[ii][jj];
-      coreGlobals.dotCol[ii][jj] = level[data];
-  }
+      UINT16 data = accumulatedFrame[ii-1][jj];
+      coreGlobals.dotCol[ii][jj] = (15 * (unsigned int) data) / fir_sum;
+    }
 
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
+
+PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) { return gts3_dmd128x32(0, bitmap, cliprect, layout); }
+PINMAME_VIDEO_UPDATE(gts3_dmd128x32b) { return gts3_dmd128x32(1, bitmap, cliprect, layout); }
