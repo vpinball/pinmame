@@ -285,9 +285,7 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 	dmd_height = height;
 	dmd_hasDMD = true;
 
-	if ((gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
-		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
-		(strncasecmp(GameName, "smb", 3) == 0) || (strncasecmp(GameName, "cueball", 7) == 0)) {
+	if ((gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_GTS3)) != 0) {
 		if (noOfRawFrames != 0) {
 			if (DmdDev_Render_16_Shades_with_Raw) {
 				DmdDev_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
@@ -324,9 +322,7 @@ void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* currbuffe
 	dmd_height = height;
 	dmd_hasDMD = true;
 
-	if ((gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2)) ||
-		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
-		(strncasecmp(GameName, "smb", 3) == 0) || (strncasecmp(GameName, "cueball", 7) == 0)) {
+	if ((gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_GTS3)) != 0) {
 		if (noOfRawFrames != 0) {
 			if (DmdScr_Render_16_Shades_with_Raw) {
 				DmdScr_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
