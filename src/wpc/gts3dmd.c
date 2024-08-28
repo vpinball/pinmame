@@ -25,11 +25,9 @@ INLINE UINT8 reverse(UINT8 n) {
 #endif
 
 // GTS3 hardware creates shades by quickly switching frames (PWM).
-// It uses 24 frames at 376Hz to create the PWM pattern, so we need
-// to store these 24 frames to avoid sampling artefact resulting
-// in some residual flickering. Then we apply a low pass filter, 
-// here a FIR based on a Kaiser window (other filter are commented
-// out since I don't think that they give better results).
+// It uses pattern of 3, 6, 8 or 10 frames at 376Hz to create the 
+// PWM pattern. We store the last 24 frames and apply a FIR low pass 
+// filter computed with GNU Octave (script is given below).
 //
 // Previous version had an optimized implementation, storing as little frames as
 // possible for each GTS3 game (see commit 9b9ac9a5c2bfedac13ca382ff6669837882c129d).
@@ -38,29 +36,34 @@ INLINE UINT8 reverse(UINT8 n) {
 // - there were some occasional residual flickers,
 // - DMD luminance were not fully coherent between GTS3 games (some 4 shades, some other 5 shades).
 
-/*const int fir_weights[] = {1, 1, 1, 1, 1, 1, 1, 1,            // Moving average
-                             1, 1, 1, 1, 1, 1, 1, 1,            // Overall sum = 24
-                             1, 1, 1, 1, 1, 1, 1, 1 };          //*/
-/*const int fir_weights[] = {30, 39, 47,  56,  64, 72, 80, 86,  // Octave: w = kaiser(24,2.5);
-                             91, 96, 98, 100, 100, 98, 96, 91,
-                             86, 80, 72,  64,  56, 47, 39, 30 };//*/
-/*const int fir_weights[] = { 4,  9, 15,  24,  34, 46, 58, 70,  // Octave: w = kaiser(24,5.0);
-                             81, 90, 96, 100, 100, 96, 90, 81,
-                             70, 58, 46,  34,  26, 15,  9,  4 };//*/
-const int fir_weights[] = {  1,  3,  6,  13,  21, 32, 46, 60,   // Octave: w = kaiser(24,7.0);
-                            74, 86, 95, 100, 100, 95, 86, 74,   // Overall sum = 1074
-                            60, 46, 32,  21,  13,  6,  3,  1 };
-const int fir_sum = 1074;
+/* The following script allows to compute and display the filter applied to some PWM pattern in GNU Octave:
+pkg load signal
+fc = 15; % Cut-off frequency (Hz)
+fs = 376; % Sampling rate (Hz)
+data=[repmat([0;0;1],100,1),repmat([0;0;0;1;1;1],50,1),repmat([0;0;0;0;1;1;1;1;1;1],30,1),repmat([0;0;0;0;0;0;0;0;0;1],30,1)];
+b = fir1(23, fc/(fs/2));
+filtered = filter(b,1,data);
+clf
+subplot ( columns ( filtered ), 1, 1)
+plot(filtered(:,1),";1/3 - 3;")
+subplot ( columns ( filtered ), 1, 2 )
+plot(filtered(:,2),";1/2 - 6;")
+subplot ( columns ( filtered ), 1, 3 )
+plot(filtered(:,3),";6/10 - 10;")
+subplot ( columns ( filtered ), 1, 4 )
+plot(filtered(:,4),";1/10 - 10;")
+bp = 10000 * b; % scaled filter used for PinMame integer math
+*/
+
+const UINT16 fir_weights[] = {  8,  19,  44,  91, 168, 274, 405, 552,   // Octave: b = fir1(23, fc/(fs/2)); with fc = 15; and fs = 376;
+                              699, 830, 928, 981, 981, 928, 830, 699,
+                              552, 405, 274, 168,  91,  44,  19,   8 };
+const UINT16 fir_sum = 9998;
 
 int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout)
 {
   int ii,jj,kk,ll;
-  const int frames = GTS3DMD_FRAMES;
   UINT8* dmdFrames = which == 0 ? &DMDFrames[0][0] : &DMDFrames2[0][0];
-
-  /* int fir_sum = 0;
-  for (ii = 0; ii < frames; ii++)
-     fir_sum += fir_weights[ii]; //*/
 
   #if defined(VPINMAME) || defined(LIBPINMAME)
   int i = 0;
@@ -78,26 +81,26 @@ int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle
 
   // Apply low pass filter over 24 frames
   memset(accumulatedFrame, 0, sizeof(accumulatedFrame));
-  for (ii = 0; ii < frames; ii++) {
+  for (ii = 0; ii < sizeof(fir_weights)/sizeof(fir_weights[0]); ii++) {
+    const UINT16 frame_weight = fir_weights[ii];
     UINT8* frameData = dmdFrames + ((GTS3_dmdlocals[0].nextDMDFrame + (GTS3DMD_FRAMES - 1) + (GTS3DMD_FRAMES - ii)) % GTS3DMD_FRAMES) * 0x200;
     for (jj = 1; jj <= 32; jj++) {          // 32 lines
       UINT16* line = &accumulatedFrame[jj - 1][0];
       for (kk = 0; kk < 16; kk++) {         // 16 columns/line
         UINT8 data = *frameData++;
         for (ll = 0; ll < 8; ll++) {        // 8 pixels/column
-          (*line++) += (UINT16)(data>>7) * (UINT16) fir_weights[ii]; data <<= 1;
+          (*line++) += frame_weight * (UINT16)(data>>7);
+          data <<= 1;
         }
       }
     }
   }
 
-  // Scale down to 16 shades. This is somewhat wrong since the PWM pattern is made of 24 frames, so we should 
-  // use 25 shades. But, while we need the 24 frames to avoid sampling artefacts, it does not seem to be really 
-  // used and 16 shades looks good enough.
+  // Scale down to 16 shades (note that precision matters and is needed to avoid flickering)
   for (ii = 1; ii <= 32; ii++)              // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT16 data = accumulatedFrame[ii-1][jj];
-      coreGlobals.dotCol[ii][jj] = (15 * (unsigned int) data) / fir_sum;
+      coreGlobals.dotCol[ii][jj] = ((UINT8)((255 * (unsigned int) data) / fir_sum)) >> 4;
     }
 
   video_update_core_dmd(bitmap, cliprect, layout);
