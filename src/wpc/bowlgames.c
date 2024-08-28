@@ -414,7 +414,7 @@ ROM_START(larana2)
   NORMALREGION(0x40000, REGION_USER1)
     ROM_LOAD("sound_b_200690.bin",0x0000,0x10000,CRC(3aaa7c7d) SHA1(4a8531b6859fc1f2a4bb63a51da35e9081b7e88b))
 ROM_END
-CORE_CLONEDEFNV(larana2,"La Rana (alternate set)",1990,"Inder (Spain)",INDERS1RANA,0)
+CORE_CLONEDEFNV(larana2,larana,"La Rana (alternate set)",1990,"Inder (Spain)",INDERS1RANA,0)
 
 /*-------------------------------------------------------------------
 / Gun Shot
