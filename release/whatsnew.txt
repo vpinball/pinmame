@@ -51,7 +51,9 @@ Support WPC UARTs (8251 from Printer Option Kit & 16C450 from WPC95), also enabl
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
 Fixed SAM FG/Shrek and WOF modulated LEDs behavior (now work the same as the rest)
+Added Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Reworked Capcom emulation & timings, allowing all tables to behave 'normally' (no more delay on Flipper Football, DMD's animation at the right speed,...)
+Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 (always mapping to 16 instead of 4 or 5 levels, note that 24/25 would be optimal, but not really necessary)
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Fixed Zaccaria strsphnx sound, background music works correctly now
@@ -81,7 +83,6 @@ Made it possible to increase the volume slider setting (e.g. using the Tilde key
 Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
 Improved emulation robustness when running multiple machines from the same generation (e.g. System11) one after another (e.g. from within VPX)
  or when resetting certain machines
-Add Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Clean-up Metallica Coffin Magnet processor board to cleanly report its mode of operation (see https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for detailed operations)
 Fixed reset and slam-tilt problems of Baby Pac-Man
 Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads! Also, regular instructions only increase the six lowest PC bits.
