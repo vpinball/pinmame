@@ -29,7 +29,7 @@ static struct {
   mame_timer *resetTimer;
 
   double volume;
-  UINT8  irq, inhibitIrq;
+  UINT8  irq;
 } locals;
 
 
@@ -365,8 +365,10 @@ static INTERRUPT_GEN(mp2_vblank) {
     coreGlobals.segments[62 - i * 2].w = core_bcd2seg7a[mem >> 4];
     coreGlobals.segments[63 - i * 2].w = core_bcd2seg7a[mem & 0x0f];
   }
+  coreGlobals.segments[5].w |= 0x80;
   coreGlobals.lampMatrix[8] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
   coreGlobals.lampMatrix[9] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
+  coreGlobals.diagnosticLed = memory_region(REGION_CPU1)[0x2247] >> 7;
   cpu_set_irq_line(0, IRQ_LINE_NMI, core_getSw(-7) ? ASSERT_LINE : CLEAR_LINE);
 
   core_updateSw(~coreGlobals.lampMatrix[1] & 0x80);
@@ -375,11 +377,9 @@ static INTERRUPT_GEN(mp2_vblank) {
 static INTERRUPT_GEN(mp2_irq) {
   static UINT8 swMade[16];
   int i;
-  if (!locals.inhibitIrq) {
-    cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
-    cpu_set_irq_line(0, I8085_RST65_LINE, !locals.irq ? ASSERT_LINE : CLEAR_LINE);
-    locals.irq = !locals.irq;
-  }
+  cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, I8085_RST65_LINE, !locals.irq ? ASSERT_LINE : CLEAR_LINE);
+  locals.irq = !locals.irq;
 
   for (i = 0; i < 16; i++) {
     if (!swMade[i] && core_getSw(49 + i)) {
@@ -394,9 +394,9 @@ static INTERRUPT_GEN(mp2_irq) {
 
 static SWITCH_UPDATE(MICROPIN2) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x64, 5);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x44, 5);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x01, 0);
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x70, 9);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x10, 9);
   }
 }
 
@@ -419,7 +419,6 @@ static void control_sound(int enable) {
     discrete_sound_w(1, 0);
     discrete_sound_w(2, 0);
   }
-  locals.inhibitIrq = 0;
 }
 
 static WRITE_HANDLER(mp2_out) {
@@ -442,15 +441,14 @@ static WRITE_HANDLER(mp2_out) {
     case 9: // tone enable and duration
       if ((data ^ 0xff) > 1) {
         discrete_sound_w(2, 1);
-        locals.inhibitIrq = 1;
-        timer_adjust(locals.sndTimer, TIME_IN_MSEC(5 * (data ^ 0xff)), 0, TIME_NEVER);
+        timer_adjust(locals.sndTimer, TIME_IN_MSEC(10 * (data ^ 0xff)), 0, TIME_NEVER);
       } else {
         control_sound(data & 1);
       }
       break;
     case 0x0a: // tone pitch
       // if HSTD is beaten, the game will play "Call to the Post", use it to fine-tune. :)
-      discrete_sound_w(1, 100 * (data ^ 0xff) / 220 - 8);
+      discrete_sound_w(1, 150 * (data ^ 0xff) / 220 - 8);
       break;
     case 0x0d: case 0x0e: case 0x0f:
       coreGlobals.lampMatrix[offset - 8] = ~data;
@@ -491,7 +489,6 @@ static READ_HANDLER(mp2_sw) {
         if (!swStatus[i]) {
           swStatus[i] = 1;
           memory_region(REGION_CPU1)[0x23e0 + i] = 0x80; // most switches are read using DMA
-          memory_region(REGION_CPU1)[0x2190] &= 0xfb; // no score otherwise (tilt flag?)
           return 0x02; // activates switch matrix scan
         } else if (swStatus[i] == 1) {
           swStatus[i] = 2;
@@ -507,7 +504,7 @@ static READ_HANDLER(mp2_sw) {
     }
     return 0x01; // returning 0 would halt the game!?
   }
-  return coreGlobals.swMatrix[6]; // bumpers and slingshots only become active if one of the "standup" switches - 22..24, 27, or 29 - are made before!
+  return coreGlobals.swMatrix[6];
 }
 
 static READ_HANDLER(mp2_dip) {
@@ -570,8 +567,6 @@ INPUT_PORTS_START(pentacp2)
   PORT_START /* 0 */
     COREPORT_BIT   (0x0010, "Add Credit",        KEYCODE_5)
     COREPORT_BIT   (0x4000, "Enter Players",     KEYCODE_1)
-    COREPORT_BIT   (0x0040, "Display last Game", KEYCODE_9)
-    COREPORT_BIT   (0x0020, "Clear NVRAM",       KEYCODE_0)
     COREPORT_BIT   (0x0001, "Reset",             KEYCODE_HOME)
   PORT_START /* 1 */
     COREPORT_DIPNAME( 0x0003, 0x0000, "Balls / Game")
@@ -623,18 +618,20 @@ INPUT_PORTS_START(pentacp2)
 INPUT_PORTS_END
 
 core_tLCDLayout mp2_disp[] = {
-  { 0, 6,58,3,CORE_SEG7}, { 0,13,61,3,CORE_SEG7}, { 0,27,12,3,CORE_SEG7}, { 0,34,15,3,CORE_SEG7},
+  { 0, 6,58,3,CORE_SEG7}, { 0,13,61,3,CORE_SEG7}, { 0,29,12,3,CORE_SEG7}, { 0,36,15,3,CORE_SEG7},
   { 4, 0, 0,2,CORE_SEG7}, { 4, 7,10,2,CORE_SEG7}, { 4,14, 9,1,CORE_SEG7},
-  { 4,19,46,3,CORE_SEG7}, { 4,26,49,3,CORE_SEG7}, { 4,35,32,3,CORE_SEG7}, { 4,42,35,3,CORE_SEG7},
-  { 7,19,52,3,CORE_SEG7}, { 7,26,55,3,CORE_SEG7}, { 7,35,26,3,CORE_SEG7}, { 7,42,29,3,CORE_SEG7},
-  {10,16, 4,1,CORE_SEG7}, {10,19, 5,3,CORE_SEG7}, {10,35,20,3,CORE_SEG7}, {10,42,23,3,CORE_SEG7},
+  { 4,20,46,3,CORE_SEG7}, { 4,27,49,3,CORE_SEG7}, { 4,38,32,3,CORE_SEG7}, { 4,45,35,3,CORE_SEG7},
+  { 7,20,52,3,CORE_SEG7}, { 7,27,55,3,CORE_SEG7}, { 7,38,26,3,CORE_SEG7}, { 7,45,29,3,CORE_SEG7},
+  {10,17,39,1,CORE_SEG7}, {10,20,40,3,CORE_SEG7}, {10,38,20,3,CORE_SEG7}, {10,45,23,3,CORE_SEG7},
+  {10, 0, 4,1,CORE_SEG7}, {10, 2, 5,1,CORE_SEG8D},{10, 4, 6,2,CORE_SEG7},
 #ifdef MAME_DEBUG
-  {13,14,39,7,CORE_SEG7}, {13,28,19,1,CORE_SEG7}, {13,30, 8,1,CORE_SEG7},
+  {10,27,43,3,CORE_SEG7}, {10,35,19,1,CORE_SEG7},
+  {13,14, 8,1,CORE_SEG7},
   {13, 0,64,1,CORE_SEG7}, {13, 4,65,1,CORE_SEG7}, {13, 8,66,2,CORE_SEG7},
 #endif
   {0}
 };
-static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SW(FLIP_L),0,2}};
+static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(71,70),0,2}};
 static void init_pentacp2(void) {
   core_gameData = &pentacup2GameData;
 }
@@ -646,7 +643,7 @@ ROM_START(pentacp2)
   ROM_LOAD("micro_3.bin", 0x1000, 0x0800, CRC(9d5d04d1) SHA1(1af32c418b73ee457f06ee9a8362cfec75e61f30))
   ROM_LOAD("micro_4.bin", 0x1800, 0x0800, CRC(358ffd6a) SHA1(f5299e39d991bf882f827a62a1d9bb18e46dbcfc))
 ROM_END
-CORE_GAMEDEFNV(pentacp2,"Pentacup (rev. 2)",1981,"Micropin",pentacp2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(pentacp2,"Pentacup (rev. 2)",1981,"Micropin",pentacp2,0)
 
 INPUT_PORTS_START(pentacpt)
   CORE_PORTS
@@ -654,8 +651,6 @@ INPUT_PORTS_START(pentacpt)
   PORT_START /* 0 */
     COREPORT_BIT   (0x0400, "Add Credit",        KEYCODE_5)
     COREPORT_BIT   (0x4000, "Enter Players",     KEYCODE_1)
-    COREPORT_BIT   (0x2000, "Display last Game", KEYCODE_9)
-    COREPORT_BIT   (0x0020, "Clear NVRAM",       KEYCODE_0)
     COREPORT_BIT   (0x0001, "Reset",             KEYCODE_HOME)
   PORT_START /* 1 */
     COREPORT_DIPNAME( 0x0003, 0x0000, "Balls / Game")
@@ -712,14 +707,14 @@ core_tLCDLayout mpt_disp[] = {
   { 4,20,46,3,CORE_SEG7}, { 4,27,49,3,CORE_SEG7}, { 4,38,32,3,CORE_SEG7}, { 4,45,35,3,CORE_SEG7},
   { 7,20,52,3,CORE_SEG7}, { 7,27,55,3,CORE_SEG7}, { 7,38,26,3,CORE_SEG7}, { 7,45,29,3,CORE_SEG7},
   {10,17,39,1,CORE_SEG7}, {10,20,40,3,CORE_SEG7}, {10,27,43,3,CORE_SEG7}, {10,35,19,1,CORE_SEG7}, {10,38,20,3,CORE_SEG7}, {10,45,23,3,CORE_SEG7},
-  {10, 0, 4,4,CORE_SEG7},
+  {10, 0, 4,1,CORE_SEG7}, {10, 2, 5,1,CORE_SEG8D},{10, 4, 6,2,CORE_SEG7},
 #ifdef MAME_DEBUG
   {13,14, 8,1,CORE_SEG7},
   {13, 0,64,1,CORE_SEG7}, {13, 4,65,1,CORE_SEG7}, {13, 8,66,2,CORE_SEG7},
 #endif
   {0}
 };
-static core_tGameData pentacuptGameData = {0,mpt_disp,{FLIP_SW(FLIP_L),0,2}};
+static core_tGameData pentacuptGameData = {0,mpt_disp,{FLIP_SWNO(38,70),0,2}};
 static void init_pentacpt(void) {
   core_gameData = &pentacuptGameData;
 }
@@ -731,4 +726,4 @@ ROM_START(pentacpt)
   ROM_LOAD("microt_3.bin", 0x1000, 0x0800, CRC(cefb0966) SHA1(836491745417fc0d5f88c01a9c69a5c322d194be))
   ROM_LOAD("microt_4.bin", 0x1800, 0x0800, CRC(6f691929) SHA1(a18352312706e0f0af14a33fac31c3f5f7156ba8))
 ROM_END
-CORE_CLONEDEFNV(pentacpt,pentacp2,"Pentacup (rev. T)",1980,"Micropin",pentacp2,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(pentacpt,pentacp2,"Pentacup (rev. T)",1980,"Micropin",pentacp2,0)
