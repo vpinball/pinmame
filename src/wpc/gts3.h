@@ -234,7 +234,7 @@ typedef struct {
   UINT8  alphagen; //0,1,2
   int    alphaNumCol, alphaNumColShiftRegister;
   core_tWord activeSegments[2]; // Realtime active alphanum segments
-  int    vblankCount;
+  int    interfaceUpdateCount;
   UINT32 solenoids;
   int    lampRow, lampColumn;
   UINT8  diagnosticLed;  // bool
