@@ -8,20 +8,11 @@ extern UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];
 extern GTS3_DMDlocals GTS3_dmdlocals[2];
 
 // Shaded frame computed from stored PWMed DMD frames
-UINT16 accumulatedFrame[32][128];
+UINT16 GTS3_accumulatedFrame[32][128];
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
 extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES*0x200];
 extern UINT32 g_raw_gtswpc_dmdframes;
-
-static const unsigned char lookup[16] = {
-0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
-0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf, };
-
-INLINE UINT8 reverse(UINT8 n) {
-  // Reverse the top and bottom nibble then swap them.
-  return (lookup[n & 0x0f] << 4) | lookup[n >> 4];
-}
 #endif
 
 // GTS3 hardware creates shades by quickly switching frames (PWM).
@@ -55,13 +46,13 @@ plot(filtered(:,4),";1/10 - 10;")
 bp = 10000 * b; % scaled filter used for PinMame integer math
 */
 
-const UINT16 fir_weights[] = {  8,  19,  44,  91, 168, 274, 405, 552,   // Octave: b = fir1(23, fc/(fs/2)); with fc = 15; and fs = 376;
-                              699, 830, 928, 981, 981, 928, 830, 699,
-                              552, 405, 274, 168,  91,  44,  19,   8 };
-const UINT16 fir_sum = 9998;
-
 int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout)
 {
+  static const UINT16 fir_weights[] = {  8,  19,  44,  91, 168, 274, 405, 552,   // Octave: b = fir1(23, fc/(fs/2)); with fc = 15; and fs = 376;
+                                       699, 830, 928, 981, 981, 928, 830, 699,
+                                       552, 405, 274, 168,  91,  44,  19,   8 };
+  const UINT16 fir_sum = 9998;
+
   int ii,jj,kk,ll;
   UINT8* dmdFrames = which == 0 ? &DMDFrames[0][0] : &DMDFrames2[0][0];
 
@@ -73,19 +64,19 @@ int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle
     UINT8* frameData = dmdFrames + ((GTS3_dmdlocals[0].nextDMDFrame + (GTS3DMD_FRAMES - 1) + (GTS3DMD_FRAMES - ii)) % GTS3DMD_FRAMES) * 0x200;
     for (jj = 0; jj < 32 * 16; jj++) {      // 32 lines of 16 columns of 8 pixels
       UINT8 data = *frameData++;
-      *rawData = reverse(data);
+      *rawData = core_revbyte(data);
       rawData++;
     }
   }
   #endif
 
   // Apply low pass filter over 24 frames
-  memset(accumulatedFrame, 0, sizeof(accumulatedFrame));
+  memset(GTS3_accumulatedFrame, 0, sizeof(GTS3_accumulatedFrame));
   for (ii = 0; ii < sizeof(fir_weights)/sizeof(fir_weights[0]); ii++) {
     const UINT16 frame_weight = fir_weights[ii];
     UINT8* frameData = dmdFrames + ((GTS3_dmdlocals[0].nextDMDFrame + (GTS3DMD_FRAMES - 1) + (GTS3DMD_FRAMES - ii)) % GTS3DMD_FRAMES) * 0x200;
     for (jj = 1; jj <= 32; jj++) {          // 32 lines
-      UINT16* line = &accumulatedFrame[jj - 1][0];
+      UINT16* line = &GTS3_accumulatedFrame[jj - 1][0];
       for (kk = 0; kk < 16; kk++) {         // 16 columns/line
         UINT8 data = *frameData++;
         for (ll = 0; ll < 8; ll++) {        // 8 pixels/column
@@ -99,7 +90,7 @@ int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle
   // Scale down to 16 shades (note that precision matters and is needed to avoid flickering)
   for (ii = 1; ii <= 32; ii++)              // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
-      UINT16 data = accumulatedFrame[ii-1][jj];
+      UINT16 data = GTS3_accumulatedFrame[ii-1][jj];
       coreGlobals.dotCol[ii][jj] = ((UINT8)((255 * (unsigned int) data) / fir_sum)) >> 4;
     }
 

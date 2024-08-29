@@ -28,13 +28,13 @@
 UINT8 DMDFrames [GTS3DMD_FRAMES][0x200];
 UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200]; //2nd DMD Display for Strikes N Spares
 
-#define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
-#define GTS3_IRQFREQ       1500 /* IRQ Frequency (Guessed)*/
-#define GTS3_ALPHANMIFREQ  1000 /* Alpha NMI Frequency (Guessed)*/
+#define GTS3_INTERFACE_UPD_PER_FRAME    1 /* interface update frequency per 60Hz frame */
+#define GTS3_IRQFREQ                 1500 /* IRQ Frequency (Guessed) */
+#define GTS3_ALPHANMIFREQ            1000 /* Alpha NMI Frequency (Guessed)*/
 
 #define GTS3_CPUNO	0
-#define GTS3_DCPUNO 1
-#define GTS3_SCPUNO 2
+#define GTS3_DCPUNO  1
+#define GTS3_SCPUNO  2
 #define GTS3_DCPUNO2 2
 
 #if 1
@@ -399,15 +399,15 @@ static struct via6522_interface via_1_interface =
 	/*irq                  */ 0 /* GTS3_irq */
 };
 
-static INTERRUPT_GEN(GTS3_vblank) {
+static INTERRUPT_GEN(GTS3_interface_update) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  GTS3locals.vblankCount++;
+  GTS3locals.interfaceUpdateCount++;
 
   /*-- solenoids --*/
   coreGlobals.solenoids = GTS3locals.solenoids;
-  if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
+  if ((GTS3locals.interfaceUpdateCount % GTS3_SOLSMOOTH) == 0) {
 	// FIXME ssEn is never set. Special solenoids are handled by core_updateSw triggered from GameOn directly read from solenoid #31 state
 	// Note that the code here would have a bug because it sets solenoids #23 as GameOn but this solenoid is used for other purposes by GTS3 hardware
 //	if (GTS3locals.ssEn) { 
@@ -422,7 +422,7 @@ static INTERRUPT_GEN(GTS3_vblank) {
   }
 
   /*-- diagnostic leds --*/
-  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
+  if ((GTS3locals.interfaceUpdateCount % GTS3_DISPLAYSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
 	if (GTS3_dmdlocals[0].has2DMD) { //Strikes N Spares has 2 DMD LED, but no Sound Board LED
 		coreGlobals.diagnosticLed = GTS3locals.diagnosticLed |
 									(GTS3_dmdlocals[0].diagnosticLed << 1) |
@@ -1078,7 +1078,7 @@ MACHINE_DRIVER_START(gts3)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD(M65C02, 2000000) // XTAL(4'000'000) / 2
   MDRV_CPU_MEMORY(GTS3_readmem, GTS3_writemem)
-  MDRV_CPU_VBLANK_INT(GTS3_vblank, GTS3_VBLANKFREQ)
+  MDRV_CPU_VBLANK_INT(GTS3_interface_update, GTS3_INTERFACE_UPD_PER_FRAME)
   MDRV_CPU_PERIODIC_INT(alphanmi, GTS3_ALPHANMIFREQ)
   MDRV_TIMER_ADD(GTS3_irq, GTS3_IRQFREQ)
   MDRV_NVRAM_HANDLER(gts3)
