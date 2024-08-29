@@ -127,6 +127,7 @@ extern const core_tLCDLayout wpc_dispDMD[];
 / The WPC registers I know about
 / Some registers were moved in later
 / WPC generations. These end with "95"
+/ See https://www.scottkirvan.com/FreeWPC/The-WPC-Hardware.html for a detailed presentation
 /-----------------------------------*/
 /*----------------------------------
 /  WPC_FLIPPERS write (active low)
@@ -154,7 +155,17 @@ extern const core_tLCDLayout wpc_dispDMD[];
 / Dr. Who is the only game testing the shifter.
 /------------------------------------------------------------------------------
 /------------------------------------------------AMFDS9-------------------------*/
-/* 3fc0 - 3fdf External IO. */
+/* 3fb0 .. 3fb7 - RS232 on WPC95 Audio/Video Board (used for NBA fastbreak linking and debugging) */
+/* 3fb8 .. 3fbf - DMD controller board */
+#define WPC_DMD_PAGE3200  (0x3fb8 - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3000  (0x3fb9 - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3600  (0x3fba - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3400  (0x3fbb - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3A00  (0x3fbc - WPC_BASE) /*        W: CPU access memory bank select (HIGHPAGEWR in schematics 16.9148.1) */
+#define WPC_DMD_FIRQLINE  (0x3fbd - WPC_BASE) /*        R: Bit7 FIRQ state W: ack DMD FIRQ and write row number to raise next FIRQ (FIRQRD/ROW_IRQ in schematics 16.9148.1) */
+#define WPC_DMD_PAGE3800  (0x3fbe - WPC_BASE) /*        W: CPU access memory bank select (LOWPAGEWR in schematics 16.9148.1) */
+#define WPC_DMD_SHOWPAGE  (0x3fbf - WPC_BASE) /*        W: page to rasterize on next VBlank (DISPAGEWR in schematics 16.9148.1) */
+/* 3fc0 .. 3fdf - External IO boards */
 /* Printer board */
 #define WPC_PRINTBUSY     (0x3fc0 - WPC_BASE) /* xxxxx  R: Printer ready ??? */
 #define WPC_PRINTDATA     (0x3fc1 - WPC_BASE) /* xxxxx  W: send to printer */
@@ -164,12 +175,17 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_SERIAL_BAUD   (0x3fc5 - WPC_BASE) /* xxxxx  baud rate divider (0=9600, 1=4800, ..., 5=300) */
 /* Ticket dispenser board */
 #define WPC_TICKET_DISP   (0x3fc6 - WPC_BASE)
+/* S11 Sound board */
+#define WPC_SND_S11_DATA0 (0x3fd0 - WPC_BASE) /*         */
+#define WPC_SND_S11_DATA1 (0x3fd1 - WPC_BASE) /*         */
+#define WPC_SND_S11_CTRL  (0x3fd2 - WPC_BASE) /*         */
+#define WPC_SND_S11_UNK   (0x3fd3 - WPC_BASE) /*         */
 /* Fliptronics 2 Board */
 #define WPC_FLIPPERS      (0x3fd4 - WPC_BASE) /*   xxx  R: switches W: Solenoids */
-/* Sound board */
-#define WPC_SOUNDIF       (0x3fdc - WPC_BASE) /* xxx    RW: Sound board interface */
-#define WPC_SOUNDBACK     (0x3fdd - WPC_BASE) /* xxx    RW: R: Sound data availble, W: Reset soundboard ? */
-
+/* WPC and DCS Sound board 0x3fd8-0x3fdf */
+#define WPC_SND_DATA      (0x3fdc - WPC_BASE) /* xxx    RW: Sound board interface */
+#define WPC_SND_CTRL      (0x3fdd - WPC_BASE) /* xxx    RW: R: Sound data available, W: Reset soundboard ? */
+/* Power driver board and misc. features */
 #define WPC_SOLENOID1     (0x3fe0 - WPC_BASE) /* xxxxxx W: Solenoid 25-28 */
 #define WPC_SOLENOID2     (0x3fe1 - WPC_BASE) /* xxxxxx W: Solenoid  1- 8 */
 #define WPC_SOLENOID3     (0x3fe2 - WPC_BASE) /* xxxxxx W: Solenoid 17-24 */
@@ -201,13 +217,13 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_SHIFTADRL     (0x3ff5 - WPC_BASE) /* xxxxxx RW: See above */
 #define WPC_SHIFTBIT      (0x3ff6 - WPC_BASE) /* xxxxxx RW: See above */
 #define WPC_SHIFTBIT2     (0x3ff7 - WPC_BASE) /* xxxxxx RW: See above */
-#define WPC_FIRQSRC       (0x3ff8 - WPC_BASE) /*   xxxx R: bit 7 0=DMD, 1=SOUND? W: Clear FIRQ line */
+#define WPC_HIGHRESTIMER  (0x3ff8 - WPC_BASE) /* xxxxxx guessed: R: bit 7=1 if counter is 0 (and FIRQ is raised) W: Clear FIRQ line and restart counter */
 #define WPC_RTCHOUR       (0x3ffa - WPC_BASE) /* xxxxxx RW: Real time clock: hour */
 #define WPC_RTCMIN        (0x3ffb - WPC_BASE) /* xxxxxx RW: Real time clock: minute */
 #define WPC_ROMBANK       (0x3ffc - WPC_BASE) /* xxxxxx W: Rombank switch */
 #define WPC_PROTMEM       (0x3ffd - WPC_BASE) /* xxxxxx W: enabled/disable protected memory */
 #define WPC_PROTMEMCTRL   (0x3ffe - WPC_BASE) /* xxxxxx W: Set protected memory area */
-#define WPC_WATCHDOG      (0x3fff - WPC_BASE) /* xxxxxx W: Watchdog */
+#define WPC_ZC_IRQ_ACK    (0x3fff - WPC_BASE) /* xxxxxx R: Bit7 zero cross state, Bit2 IRQ timer enabled W: Bit7 Ack IRQ, Bit2 enable IRQ timer, Bit1 reset watchdog */
 
 /*-- the internal state of the WPC chip. Should only be used in memory handlers --*/
 extern UINT8 *wpc_data;
@@ -224,10 +240,6 @@ extern WRITE_HANDLER(orkin_w);
 /*-- use this if a fallback is required in a custom memory handler --*/
 extern READ_HANDLER(wpc_r);
 extern WRITE_HANDLER(wpc_w);
-
-/*-- use this function to send FIRQ to main CPU --*/
-#define WPC_FIRQ_DMD    0x01
-#define WPC_FIRQ_SOUND  0x02
 
 extern MACHINE_DRIVER_EXTERN(wpc_alpha);
 extern MACHINE_DRIVER_EXTERN(wpc_dmd);
