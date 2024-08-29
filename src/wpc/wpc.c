@@ -24,12 +24,14 @@
 #define DEBUG_GI           0 /* debug GI PWM code - more printf stuff basically */
 #define DEBUG_GI_W         0 /* debug GI write - even more printf stuff */
 #define WPC_FAST_FLIP      1
-#define WPC_VBLANKDIV      32/* This steers how precise the DMD FIRQ interrupt is (as it depends on the DMD_FIRQLINE) */
-                             /* Best should be 64, but this leads to instability for some machines DMD (e.g. T2)      */
-                             /* Also see notes above the wpc_vblank routine for DMD timings */
+#ifdef PROC_SUPPORT
+#define WPC_INTERFACE_UPD_PER_FRAME      32 // Not sure how PROC handles its input/output so keep the value before interrupt refactoring
+#else
+#define WPC_INTERFACE_UPD_PER_FRAME       1 // For regular lib/V/PinMame, one interface update at 60Hz should be enough (it's what most other drivers do)
+#endif
 /*-- no of DMD frames to add together to create shades --*/
 /*-- (hardcoded, do not change)                        --*/
-#define DMD_FRAMES         3 /* Some early machines like T2 could in some few animations (like T2 attract mode) profit from more shades, but very tricky to get right without flicker ! */
+#define DMD_FRAMES         8 /* Some early machines like T2 could in some few animations (like T2 attract mode) profit from more shades, but very tricky to get right without flicker ! */
 
 /*-- Smoothing values --*/
 #if defined(PROC_SUPPORT) || defined(PPUC_SUPPORT)
@@ -46,6 +48,8 @@
 /*-- IRQ frequency, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ        (8000000./8192.) /* IRQ Frequency-Timed by JD (976) */
 
+#define DMD_ROWFREQ        (2000000./(16.*16.*2.)) // DMD row frequency deduced from schematics 16.9148.1 (half of length is horizontal blanking)
+
 #define GENWPC_HASDMD      (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))
 #define GENWPC_HASFLIPTRON (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
 #define GENWPC_HASWPC95    (GEN_WPC95 | GEN_WPC95DCS)
@@ -57,17 +61,20 @@
 /  local WPC functions
 /----------------------*/
 /*-- interrupt handling --*/
-static INTERRUPT_GEN(wpc_vblank);
 static INTERRUPT_GEN(wpc_irq);
+static void wpc_highres_timer(int param);
 
 /*-- PIC security chip emulation --*/
 static int  wpc_pic_r(void);
 static void wpc_pic_w(int data);
 static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]);
+
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
-PINMAME_VIDEO_UPDATE(wpcdmd_update);
+static void wpc_dmd_hsync(int);
+PINMAME_VIDEO_UPDATE(wpcdmd_update32);
 PINMAME_VIDEO_UPDATE(wpcdmd_update64);
+
 /*-- protected memory --*/
 static WRITE_HANDLER(wpc_ram_w);
 
@@ -77,17 +84,9 @@ static MACHINE_STOP(wpc);
 static NVRAM_HANDLER(wpc);
 static SWITCH_UPDATE(wpc);
 
-/*------------------------
-/  DMD display registers
-/-------------------------*/
-#define DMD_PAGE3000    (0x3fb9 - WPC_BASE)
-#define DMD_PAGE3200    (0x3fb8 - WPC_BASE)
-#define DMD_PAGE3400    (0x3fbb - WPC_BASE)
-#define DMD_PAGE3600    (0x3fba - WPC_BASE)
-#define DMD_PAGE3A00    (0x3fbc - WPC_BASE)
-#define DMD_PAGE3800    (0x3fbe - WPC_BASE)
-#define DMD_VISIBLEPAGE (0x3fbf - WPC_BASE)
-#define DMD_FIRQLINE    (0x3fbd - WPC_BASE)
+/*-- external interfaces (input, display, PROC,...) --*/
+static INTERRUPT_GEN(wpc_interface_update);
+
 
 /*---------------------
 /  Global variables
@@ -105,7 +104,7 @@ const struct core_dispLayout wpc_dispAlpha[] = {
   {0}
 };
 const struct core_dispLayout wpc_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update,NULL}, {0}
+  {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update32,NULL}, {0}
 };
 const struct core_dispLayout wpc_dispDMD64[] = {
   {0,0, 0,5,CORE_SEG7},
@@ -120,7 +119,7 @@ static struct {
   UINT32  solData;        /* current value of solenoids 1-28 */
   UINT8   solFlip, solFlipPulse;  /* current value of flipper solenoids */
   UINT8   nonFlipBits;    /* flipper solenoids not used for flipper (smoothed) */
-  int     vblankCount;    /* vblank interrupt counter */
+  int     interfaceUpdateCount;    /* interface update per frame counter */
   core_tSeg alphaSeg;
   struct {
     UINT8 sData[16];
@@ -131,7 +130,6 @@ static struct {
     int   codeW;
   } pic;
   int pageMask;           /* page handling */
-  int firqSrc;            /* source of last firq */
   UINT8 diagnosticLed;
   int zc;                 /* zero cross flag */
   double gi_on_time[CORE_MAXGI]; /* Global time when GI Triac was turned on */
@@ -139,8 +137,9 @@ static struct {
   UINT32 solenoidbits[64];
   int modsol_count;
   int modsol_sample;
-
-  UINT8 frameNo;
+  mame_timer* highres_timer;
+  int wpcFIRQ;            // State of the WPC chip high res timer FIRQ output
+  int sndFIRQ;            // State of the FIRQ output of the sound board
 } wpclocals;
 
 // Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
@@ -148,7 +147,11 @@ static int wpc_modsol_aux_board = 0;
 static int wpc_fastflip_addr = 0;
 
 static struct {
-  UINT8 *DMDFrames[DMD_FRAMES];
+  int    visiblePage;            // rasterized memory page
+  int    row;                    // Rasterizer row position
+  int    firq;                   // State of FIRQ output line to CPU
+  UINT8  DMDFrames[DMD_FRAMES][0x400]; // Buffer for raw frames
+  UINT16 accumulatedFrame[64][128]; // Shaded frame computed from stored PWMed DMD frames
   int    nextDMDFrame;
 } dmdlocals;
 
@@ -161,28 +164,28 @@ UINT8 *wpc_ram = NULL;
 /----------------------------*/
 static MEMORY_READ_START(wpc_readmem)
   { 0x0000, 0x2fff, MRA_RAM },
-  { 0x3000, 0x31ff, MRA_BANK4 },  /* DMD */
-  { 0x3200, 0x33ff, MRA_BANK5 },  /* DMD */
-  { 0x3400, 0x35ff, MRA_BANK6 },  /* DMD */
-  { 0x3600, 0x37ff, MRA_BANK7 },  /* DMD */
+  { 0x3000, 0x31ff, MRA_BANK4 },  /* DMD WPC-95 only */
+  { 0x3200, 0x33ff, MRA_BANK5 },  /* DMD WPC-95 only */
+  { 0x3400, 0x35ff, MRA_BANK6 },  /* DMD WPC-95 only */
+  { 0x3600, 0x37ff, MRA_BANK7 },  /* DMD WPC-95 only */
   { 0x3800, 0x39ff, MRA_BANK2 },  /* DMD */
   { 0x3A00, 0x3bff, MRA_BANK3 },  /* DMD */
   { 0x3c00, 0x3faf, MRA_RAM },
-  { 0x3fb0, 0x3fff, wpc_r },
-  { 0x4000, 0x7fff, MRA_BANK1 },
+  { 0x3fb0, 0x3fff, wpc_r },      /* WPC chip and IO/DMD/aux boards */
+  { 0x4000, 0x7fff, MRA_BANK1 },  /* bank switched ROM */
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(wpc_writemem)
   { 0x0000, 0x2fff, wpc_ram_w, &wpc_ram },
-  { 0x3000, 0x31ff, MWA_BANK4 },  /* DMD */
-  { 0x3200, 0x33ff, MWA_BANK5 },  /* DMD */
-  { 0x3400, 0x35ff, MWA_BANK6 },  /* DMD */
-  { 0x3600, 0x37ff, MWA_BANK7 },  /* DMD */
-  { 0x3800, 0x39ff, MWA_BANK2 },  /* DMD */
-  { 0x3A00, 0x3bff, MWA_BANK3 },  /* DMD */
+  { 0x3000, 0x31ff, MWA_BANK4 },        /* DMD WPC-95 only */
+  { 0x3200, 0x33ff, MWA_BANK5 },        /* DMD WPC-95 only */
+  { 0x3400, 0x35ff, MWA_BANK6 },        /* DMD WPC-95 only */
+  { 0x3600, 0x37ff, MWA_BANK7 },        /* DMD WPC-95 only */
+  { 0x3800, 0x39ff, MWA_BANK2 },        /* DMD */
+  { 0x3A00, 0x3bff, MWA_BANK3 },        /* DMD */
   { 0x3c00, 0x3faf, MWA_RAM },
-  { 0x3fb0, 0x3fff, wpc_w, &wpc_data },
+  { 0x3fb0, 0x3fff, wpc_w, &wpc_data }, /* WPC chip and IO/DMD/aux boards */
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
@@ -366,7 +369,7 @@ static MACHINE_DRIVER_START(wpc)
   MDRV_CORE_INIT_RESET_STOP(wpc,NULL,wpc)
   MDRV_CPU_ADD(M6809, 2000000) // MC6809E, 68B09E XTAL8/4
   MDRV_CPU_MEMORY(wpc_readmem, wpc_writemem)
-  MDRV_CPU_VBLANK_INT(wpc_vblank, WPC_VBLANKDIV)
+  MDRV_CPU_VBLANK_INT(wpc_interface_update, WPC_INTERFACE_UPD_PER_FRAME)
   MDRV_CPU_PERIODIC_INT(wpc_irq, WPC_IRQFREQ)
   MDRV_NVRAM_HANDLER(wpc)
   MDRV_DIPS(8)
@@ -394,86 +397,60 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_dmd)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
+  MDRV_TIMER_ADD(wpc_dmd_hsync,DMD_ROWFREQ)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dmdS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
+  MDRV_TIMER_ADD(wpc_dmd_hsync,DMD_ROWFREQ)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dcsS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
+  MDRV_TIMER_ADD(wpc_dmd_hsync,DMD_ROWFREQ)
   MDRV_IMPORT_FROM(wmssnd_dcs1)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
+  MDRV_TIMER_ADD(wpc_dmd_hsync,DMD_ROWFREQ)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
 MACHINE_DRIVER_END
 
-/* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
-/* The DMD firq must be generated via the WPC but I don't know how. */
-static void wpc_firq(int set, int src) {
-  if (set)
-    wpclocals.firqSrc |= src;
-  else
-    wpclocals.firqSrc &= ~src;
-  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, wpclocals.firqSrc ? HOLD_LINE : CLEAR_LINE);
+// The FIRQ line is wired to 3 sources:
+// - the WPC FIRQ output, which is triggered by its internal high res timer
+// - the sound board FIRQ output
+// - the programmable DMD FIRQ output (raise when a given row is reached, clear when the FIRS row is defined)
+static void update_firq() {
+  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, (wpclocals.wpcFIRQ | wpclocals.sndFIRQ | dmdlocals.firq) ? HOLD_LINE : CLEAR_LINE);
+}
+
+// High resolution timer provided by the WPC chip. Used by alpha gen games to dim segments
+// For example, BOP uses it to dim/blink entries in the service menu
+static void wpc_highres_timer(int param) {
+  // printf("%8.5f High res timer FIRQ\n", timer_get_time());
+  wpclocals.wpcFIRQ = 1;
+  update_firq();
 }
 
 /*--------------------------------------------------------------
-/ This is generated WPC_VBLANKDIV times per frame (=60*WPC_VBLANKDIV Hz)
-/ = every 32/(WPC_VBLANKDIV/2) lines.
-/ Generate a FIRQ if it matches the DMD line (DMD_FIRQLINE), so = 120Hz //!! note that on real machines one gets 122.1 (measured by lucky1) (8000000./65536.), BUT implementing this via a separate timer always leads to flicker on all kinds of machines!
-/ Also do the smoothing of the solenoids and lamps
+/ This is generated WPC_INTERFACE_UPD_PER_FRAME times per frame (=60*WPC_INTERFACE_UPD_PER_FRAME Hz)
+/ to handle overall bookkeeping (switch update, PROC management, smoothing of the solenoids and lamps, ...)
 /--------------------------------------------------------------*/
-static INTERRUPT_GEN(wpc_vblank) {
-#ifdef PROC_SUPPORT
-	static int gi_last[CORE_MAXGI];
-	int changed_gi[CORE_MAXGI];
+static INTERRUPT_GEN(wpc_interface_update) {
+  #ifdef PROC_SUPPORT
+	 static int gi_last[CORE_MAXGI];
+	 int changed_gi[CORE_MAXGI];
+	  if (coreGlobals.p_rocEn) {
+		 procTickleWatchdog();
+	  }
+  #endif
 
-	if (coreGlobals.p_rocEn) {
-		procTickleWatchdog();
-	}
-#endif
-
-  wpclocals.vblankCount++;
-
-  if (core_gameData->gen & GENWPC_HASDMD) {
-    /*-- check if the DMD line (roughly) matches the requested interrupt line */
-    if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == (wpc_data[DMD_FIRQLINE]*(WPC_VBLANKDIV/2)/32))
-      wpc_firq(TRUE, WPC_FIRQ_DMD);
-    if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == 0) {
-      /*-- This is the real VBLANK interrupt --*/
-      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: DMD is toggled between half and full page size using DMD_FIRQLINE register bit
-        if (wpc_data[DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
-          dmdlocals.DMDFrames[0] = dmdlocals.DMDFrames[1] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200 + (wpc_data[DMD_VISIBLEPAGE] % 2) * 0x200;
-        } else { // full page
-          dmdlocals.DMDFrames[wpclocals.frameNo] = memory_region(WPC_DMDREGION) + wpc_data[DMD_VISIBLEPAGE] * 0x400;
-        }
-        wpclocals.frameNo = 1 - wpclocals.frameNo;
-      } else {
-        dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
-      }
-#ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: reasonable guess on how to handle two frames only
-					procFillDMDSubFrame(3 - frameNo, dmdlocals.DMDFrames[1 - frameNo], 0x400);
-				} else {
-					/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
-					procFillDMDSubFrame(dmdlocals.nextDMDFrame+1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
-				}
-			}
-
-			/* Don't explicitly update the DMD from here. The P-ROC code
-			   will update after the next DMD event. */
-#endif
-      dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
-    }
-  }
+  wpclocals.interfaceUpdateCount++;
 
   /*--------------------------------------------------------
   /  Most solenoids don't have a holding coil so the software
@@ -483,14 +460,12 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  and only turn the solenoid off if it has not been pulsed
   /  during that time.
   /-------------------------------------------------------------*/
-  if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_SOLSMOOTH)) == 0) {
-
+  if ((wpclocals.interfaceUpdateCount % (WPC_INTERFACE_UPD_PER_FRAME*WPC_SOLSMOOTH)) == 0) {
     coreGlobals.solenoids = (wpc_data[WPC_SOLENOID1] << 24) |
                             (wpc_data[WPC_SOLENOID3] << 16) |
                             (wpc_data[WPC_SOLENOID4] <<  8) |
                              wpc_data[WPC_SOLENOID2];
-
-#ifdef PROC_SUPPORT
+    #ifdef PROC_SUPPORT
     //TODO/PROC: Check implementation
     if (coreGlobals.p_rocEn) {
       int ii;
@@ -522,28 +497,27 @@ static INTERRUPT_GEN(wpc_vblank) {
         }
       }
     }
-#endif
+    #endif
 
     wpc_data[WPC_SOLENOID1] = wpc_data[WPC_SOLENOID2] = 0;
     wpc_data[WPC_SOLENOID3] = wpc_data[WPC_SOLENOID4] = 0;
+
     // Move top 3 GI to solenoids -> gameOn = sol31
     coreGlobals.solenoids2 = (wpc_data[WPC_GILAMPS] & 0xe0)<<3;
     if (core_gameData->gen & GENWPC_HASFLIPTRON) {
       coreGlobals.solenoids2 |= wpclocals.solFlip;
       wpclocals.solFlip = wpclocals.solFlipPulse;
     }
-    // If fastflipaddr is set, we want sol31 to be triggered by a nonzero value
-    // in that location
+
+    // If fastflipaddr is set, we want sol31 to be triggered by a nonzero value in that location
     if (wpc_fastflip_addr > 0)
     {
       coreGlobals.solenoids2 &= ~(0x400);
       if (wpc_ram[wpc_fastflip_addr] > 0)
         coreGlobals.solenoids2 |= 0x400;
     }
-
   }
-  else if (((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) &&
-           (core_gameData->gen & GENWPC_HASFLIPTRON)) {
+  else if (((wpclocals.interfaceUpdateCount % WPC_INTERFACE_UPD_PER_FRAME) == 0) && (core_gameData->gen & GENWPC_HASFLIPTRON)) {
     coreGlobals.solenoids2 = (coreGlobals.solenoids2 & (0xffffff00 | wpclocals.nonFlipBits)) | wpclocals.solFlip;
     wpclocals.solFlip = (wpclocals.solFlip & wpclocals.nonFlipBits) | wpclocals.solFlipPulse;
   }
@@ -565,8 +539,8 @@ static INTERRUPT_GEN(wpc_vblank) {
   / For the game it doesn't really matter but it confused me when
   / the lamp code here worked for 9.2 but not in 9.4.
   /-------------------------------------------------------------*/
-  if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_LAMPSMOOTH)) == 0) {
-#ifdef PROC_SUPPORT
+  if ((wpclocals.interfaceUpdateCount % (WPC_INTERFACE_UPD_PER_FRAME*WPC_LAMPSMOOTH)) == 0) {
+    #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
 			int col, row, procLamp;
 			for(col = 0; col < CORE_STDLAMPCOLS; col++) {
@@ -586,11 +560,13 @@ static INTERRUPT_GEN(wpc_vblank) {
 			}
 			procFlush();
 		}
-#endif
+    #endif
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
-  if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_DISPLAYSMOOTH)) == 0) {
+
+  // Update segments & diagnostic leds accumulated over a few 'frames'
+  if ((wpclocals.interfaceUpdateCount % (WPC_INTERFACE_UPD_PER_FRAME*WPC_DISPLAYSMOOTH)) == 0) {
     if ((core_gameData->gen & GENWPC_HASDMD) == 0) {
       memcpy(coreGlobals.segments, wpclocals.alphaSeg, sizeof(coreGlobals.segments));
       coreGlobals.segments[15].w &= ~0x8080; coreGlobals.segments[35].w &= ~0x8080;
@@ -598,38 +574,23 @@ static INTERRUPT_GEN(wpc_vblank) {
     }
     coreGlobals.diagnosticLed = wpclocals.diagnosticLed;
     wpclocals.diagnosticLed = 0;
-
-    //Display status of GI strings
-    #if PRINT_GI_DATA
-    {
-      int i;
-      for(i=0;i<CORE_MAXGI;i++)
-        printf("GI[%d]=%d ",i,coreGlobals.gi[i]);
-      printf("\n");
-    }
-    #endif
   }
 
-#ifdef PROC_SUPPORT
-	// Check for any coils that need to be disabled due to inactivity.
-	if (coreGlobals.p_rocEn) {
-		procCheckActiveCoils();
-		procFullTroughDisablesFlippers();
-	}
-#endif
+  #ifdef PROC_SUPPORT
+  // Check for any coils that need to be disabled due to inactivity.
+  if (coreGlobals.p_rocEn) {
+    procCheckActiveCoils();
+    procFullTroughDisablesFlippers();
+  }
+  #endif
 
   /*------------------------------
-  /  Update switches every vblank; or on every pass when using P-ROC
+  /  Update switches every vblank or on every interface update when using P-ROC
   /-------------------------------*/
-  if (
-#ifdef LIBPINMAME
-      1 ||
-#endif
-#ifdef PROC_SUPPORT
-      coreGlobals.p_rocEn ||
-#endif
-      (wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
-    core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
+  #ifdef PROC_SUPPORT
+    if (coreGlobals.p_rocEn || (wpclocals.interfaceUpdateCount % WPC_INTERFACE_UPD_PER_FRAME) == 0))
+  #endif
+  core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
 }
 
 /*----------------------
@@ -672,9 +633,9 @@ READ_HANDLER(wpc_r) {
     case WPC_SHIFTBIT:
     case WPC_SHIFTBIT2:
       return 1<<(wpc_data[offset] & 0x07);
-    case WPC_FIRQSRC: /* FIRQ source */
-      //DBGLOG(("R:FIRQSRC\n"));
-      return (wpclocals.firqSrc & WPC_FIRQ_DMD) ? 0x00 : 0x80;
+    case WPC_HIGHRESTIMER:
+      //DBGLOG(("R:WPC_HIGHRESTIMER\n"));
+      return (wpclocals.wpcFIRQ != 0) ? 0x80 : 0x00;
     case WPC_DIPSWITCH:
       return core_getDip(0);
     case WPC_RTCHOUR: {
@@ -717,21 +678,35 @@ READ_HANDLER(wpc_r) {
       }
       return systime->tm_min;
     }
-    case WPC_WATCHDOG:
-      //Zero cross detection flag is read from Bit 8.
+    case WPC_ZC_IRQ_ACK:
+      // Bit7: zero cross state (latched value reseted on read)
+      // Bit2: periodic IRQ enabled
       wpc_data[offset] = (wpclocals.zc<<7) | (wpc_data[offset] & 0x7f);
-      #if DEBUG_GI
-      if (wpclocals.zc)
-         printf("[%f] Zero Cross CPU read\n", timer_get_time());
-      #endif
-      //Reset flag now that it's been read.
+      // FIXME it seems that the zero cross should just be the live zc state, not a latched value reseted on read
       wpclocals.zc = 0;
       break;
-    case WPC_SOUNDIF:
+    case WPC_SND_S11_DATA0:
+      if (sndbrd_0_type() == SNDBRD_S11CS) {
+        DBGLOG(("DD_DATA_R: %04x %02x\n", activecpu_get_pc(), sndbrd_0_data_r(0)));
+        return sndbrd_0_data_r(0);
+      }
+      break;
+    case WPC_SND_S11_CTRL:
+      if (sndbrd_0_type() == SNDBRD_S11CS) {
+        DBGLOG(("DD_CTRL_R: %04x %02x\n", activecpu_get_pc(), sndbrd_0_ctrl_r(0)));
+        return sndbrd_0_ctrl_r(0);
+      }
+      break;
+    case WPC_SND_S11_UNK:
+      if (sndbrd_0_type() == SNDBRD_S11CS) {
+        DBGLOG(("DD_UNKNOWN_R: %04x\n", activecpu_get_pc()));
+        UINT8 dd_unknown = sndbrd_0_ctrl_r(0) & 0x10 ? 0x81 : 0;
+        return dd_unknown;
+      }
+      break;
+    case WPC_SND_DATA:
       return sndbrd_0_data_r(0);
-    case WPC_SOUNDBACK:
-      if (core_gameData->gen & (GEN_WPCALPHA_2|GEN_WPCDMD|GEN_WPCFLIPTRON))
-        wpc_firq(FALSE, WPC_FIRQ_SOUND); // Ack FIRQ on read?
+    case WPC_SND_CTRL:
       return sndbrd_0_ctrl_r(0);
     case WPC_PRINTBUSY:
       return 0;
@@ -744,39 +719,28 @@ READ_HANDLER(wpc_r) {
         }
 #endif
         break;
-    case DMD_VISIBLEPAGE:
+    case WPC_DMD_SHOWPAGE:
       break;
-    case DMD_PAGE3000:
-    case DMD_PAGE3200:
-    case DMD_PAGE3400:
-    case DMD_PAGE3600:
-    case DMD_PAGE3800:
-    case DMD_PAGE3A00:
+    case WPC_DMD_PAGE3000:
+    case WPC_DMD_PAGE3200:
+    case WPC_DMD_PAGE3400:
+    case WPC_DMD_PAGE3600:
+    case WPC_DMD_PAGE3800:
+    case WPC_DMD_PAGE3A00:
       return 0; /* these can't be read */
-    case DMD_FIRQLINE:
-      return (wpclocals.firqSrc & WPC_FIRQ_DMD) ? 0x80 : 0x00;
-    case 0x3fd0-WPC_BASE:
-      if (sndbrd_0_type() == SNDBRD_S11CS) {
-        DBGLOG(("DD_DATA_R: %04x %02x\n", activecpu_get_pc(), sndbrd_0_data_r(0)));
-        return sndbrd_0_data_r(0);
-      }
-      break;
-    case 0x3fd2-WPC_BASE:
-      if (sndbrd_0_type() == SNDBRD_S11CS) {
-        DBGLOG(("DD_CTRL_R: %04x %02x\n", activecpu_get_pc(), sndbrd_0_ctrl_r(0)));
-        return sndbrd_0_ctrl_r(0);
-      }
-      break;
-    case 0x3fd3-WPC_BASE:
-      if (sndbrd_0_type() == SNDBRD_S11CS) {
-        DBGLOG(("DD_UNKNOWN_R: %04x\n", activecpu_get_pc()));
-        UINT8 dd_unknown = sndbrd_0_ctrl_r(0) & 0x10 ? 0x81 : 0;
-        return dd_unknown;
-      }
-      break;
+    case WPC_DMD_FIRQLINE: // Read state of DMD controller board FIRQ
+      return dmdlocals.firq ? 0x80 : 0x00;
     default:
       DBGLOG(("wpc_r %4x\n", offset+WPC_BASE));
       break;
+  }
+  // All reads from sound board seem to perform a ack on the sound board FIRQ
+  // since SndBoard U16 chips decodes the address in the given range, and 
+  // produce the CpuRd* signal which happens to ack the FIRQ board output
+  if (wpclocals.sndFIRQ != 0 && (0x3fd8-WPC_BASE <= offset) && (0x3fdf-WPC_BASE <= offset))
+  {
+    wpclocals.sndFIRQ = 0;
+    update_firq();
   }
   return wpc_data[offset];
 }
@@ -994,55 +958,69 @@ WRITE_HANDLER(wpc_w) {
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
       data |= wpc_data[offset];
       break;
-    case 0x3fd1-WPC_BASE:
+    case WPC_SND_S11_DATA1:
       //DBGLOG(("sdataX:%2x\n",data));
       if (core_gameData->gen & GEN_WPCALPHA_1) {
         sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
       }
       break;
-    case WPC_SOUNDIF:
+    case WPC_SND_DATA:
       //DBGLOG(("sdata:%2x\n",data));
       if (sndbrd_0_type() != SNDBRD_S11CS)
         sndbrd_0_data_w(0,data);
       break;
-    case WPC_SOUNDBACK:
+    case WPC_SND_CTRL:
       //DBGLOG(("sctrl:%2x\n",data));
       if (sndbrd_0_type() == SNDBRD_S11CS)
         { sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
       else sndbrd_0_ctrl_w(0,data);
       break;
-    case WPC_WATCHDOG:
-      //Increment irq count - This is the best way to know an IRQ was serviced as this register is written immediately during the IRQ code.
-      //Only do this if bit 8 is set, as WW_L5 sometimes writes 0x06 here during the interrupt code.
-      if(data & 0x80)
-      {
-        //Clear the IRQ now
+    case WPC_ZC_IRQ_ACK:
+      // Bit 7: IRQ ACK
+      if(data & 0x80) // IRQ acknowledge
         cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
-      }
+      // Bit 2: Periodic timer on IRQ enable
+      //  Noop as it is checked when interrupt is raised
+      // Bit 1(?): Watchdog reset (write only)
+      //  Noop as we do not have a watchdog here :)
       break;
-    case WPC_FIRQSRC:
-      /* CPU writes here after a non-dmd firq. Don't know what happens */
+    case WPC_HIGHRESTIMER:
+      // Ack previous high res timer FIRQ if any
+      if (wpclocals.wpcFIRQ != 0) {
+        wpclocals.wpcFIRQ = 0;
+        update_firq();
+      }
+      // Eventually starts a new timer from the given value. The clock frequency is a wild guess as schematic has a 32.768 kHz oscillator 
+      // and this makes the blinking in BOP service menu looks okish compared to this video: https://www.youtube.com/watch?v=wXY63U1mSZk.
+      if (data > 0)
+        timer_adjust(wpclocals.highres_timer, data / 32768., 0, 0.);
+      else if (timer_enabled(wpclocals.highres_timer))
+        timer_enable(wpclocals.highres_timer, 0);
+      // if (wpc_data[offset] != 0 || data != 0) printf("%8.5f High res timer: %02x\n", timer_get_time(), data);
       break;
     case WPC_IRQACK:
-//      cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
+      // cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
       DBGLOG(("WPC_IRQACK. PC=%04x d=%02x\n",activecpu_get_pc(), data));
       break;
-    case DMD_PAGE3000: /* set the page that is visible at 0x3000 */
+    case WPC_DMD_PAGE3000: /* set the page that is visible at 0x3000 (WPC-95 only) */
       cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case DMD_PAGE3200: /* set the page that is visible at 0x3200 */
+    case WPC_DMD_PAGE3200: /* set the page that is visible at 0x3200 (WPC-95 only) */
       cpu_setbank(5, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case DMD_PAGE3400: /* set the page that is visible at 0x3400 */
+    case WPC_DMD_PAGE3400: /* set the page that is visible at 0x3400 (WPC-95 only) */
       cpu_setbank(6, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case DMD_PAGE3600: /* set the page that is visible at 0x3600 */
+    case WPC_DMD_PAGE3600: /* set the page that is visible at 0x3600 (WPC-95 only) */
       cpu_setbank(7, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case DMD_PAGE3800: /* set the page that is visible at 0x3800 */
+    case WPC_DMD_PAGE3800: /* set the page that is visible at 0x3800 */
       cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case DMD_PAGE3A00: /* set the page that is visible at 0x3A00 */
+    case WPC_DMD_PAGE3A00: /* set the page that is visible at 0x3A00 */
       cpu_setbank(3, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case DMD_FIRQLINE: /* set the line to generate FIRQ at. */
-      wpc_firq(FALSE, WPC_FIRQ_DMD);
+    case WPC_DMD_FIRQLINE: /* acknowledge raised DMD FIRQ if any, and set the line to generate the next FIRQ (>31 disable it) */
+      if (dmdlocals.firq != 0) {
+        dmdlocals.firq = 0;
+        update_firq();
+      }
       break;
-    case DMD_VISIBLEPAGE: /* set the visible page */
+    case WPC_DMD_SHOWPAGE: /* set the page that will be rasterized after next DMD vblank */
       break;
     case WPC_RTCHOUR:
     case WPC_RTCMIN:
@@ -1142,7 +1120,9 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
-  cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
+  // Only raise line if periodic IRQ is enabled on WPC chip
+  if (wpc_data[WPC_ZC_IRQ_ACK] & 0x04)
+    cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
 }
 
 static SWITCH_UPDATE(wpc) {
@@ -1171,7 +1151,10 @@ static SWITCH_UPDATE(wpc) {
 }
 
 static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
-  wpc_firq(TRUE, WPC_FIRQ_SOUND);
+  if (wpclocals.sndFIRQ != 1) {
+    wpclocals.sndFIRQ = 1;
+    update_firq();
+  }
 }
 
 static MACHINE_INIT(wpc) {
@@ -1180,6 +1163,8 @@ static MACHINE_INIT(wpc) {
   const size_t romLength = memory_region_length(WPC_ROMREGION);
 
   memset(&wpclocals, 0, sizeof(wpclocals));
+
+  wpclocals.highres_timer = timer_alloc(wpc_highres_timer);
 
   // map dmd banks to standard ram for games that don't use it
   cpu_setbank(4, memory_region(WPC_CPUREGION) + 0x3000);
@@ -1505,7 +1490,7 @@ static MACHINE_INIT(wpc) {
          memory_region(WPC_ROMREGION) + romLength - 0x8000, 0x8000);
 
   /*-- sync counter with vblank --*/
-  wpclocals.vblankCount = 1;
+  wpclocals.interfaceUpdateCount = 1;
 
   coreGlobals.swMatrix[2] |= 0x08; /* Always closed switch */
 
@@ -1587,94 +1572,100 @@ static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]) {
 /* Williams WPC 128x32 DMD Handling */
 /*----------------------------------*/
 static VIDEO_START(wpc_dmd) {
-  UINT8 *RAM = memory_region(WPC_DMDREGION);
-  int ii;
-
-  for (ii = 0; ii < DMD_FRAMES; ii++)
-    dmdlocals.DMDFrames[ii] = RAM;
-  dmdlocals.nextDMDFrame = 0;
+  memset(&dmdlocals, 0, sizeof(dmdlocals));
   return 0;
 }
 
-PINMAME_VIDEO_UPDATE(wpcdmd_update) {
-  int ii,kk;
-
-#if defined(VPINMAME) || defined(LIBPINMAME)
-  g_raw_gtswpc_dmdframes = DMD_FRAMES;
-#endif
-
-  /* Create a temporary buffer with all pixels */
-  for (kk = 0, ii = 1; ii < 33; ii++) {
-    UINT8 *line = &coreGlobals.dotCol[ii][0];
-    int jj;
-    for (jj = 0; jj < 16; jj++) {
-      /* Intensity depends on how many times the pixel */
-      /* been on in the last DMD_FRAMES frames         */
-      const unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
-                                    (dmdlocals.DMDFrames[1][kk] & 0x55) +
-                                    (dmdlocals.DMDFrames[2][kk] & 0x55));
-      const unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
-                                    (dmdlocals.DMDFrames[1][kk] & 0xaa) +
-                                    (dmdlocals.DMDFrames[2][kk] & 0xaa));
-
-#if defined(VPINMAME) || defined(LIBPINMAME)
-      g_raw_gtswpc_dmd[kk        ] = dmdlocals.DMDFrames[0][kk];
-      g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
-      g_raw_gtswpc_dmd[kk + 0x400] = dmdlocals.DMDFrames[2][kk];
-#endif
-
-      *line++ =  intens1     & 0x03;
-      *line++ = (intens2>>1) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2>>3) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>5) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>7) & 0x03;
-
-      kk++;
+// The DMD controller constantly rasterize the content of a page of RAM.
+// It is driven by the main CPU clock at 2MHz and use freq dividers to generate
+// all timings. In the end, page are rasterized at 2Mz / (128*32*2*2) = 122.07Hz
+// where the first 2 divider is the dot clock divider and the second is the 
+// VBlank divider. All of this was deduced from the pre WPC-95 schematics.
+// lucky1 measured on the real machines to 122.1Hz which validates it.
+// CPU may ask the DMD board to raise FIRQ when a given row is reached.
+// The FIRQ is then acked (pulled down) by writing again the requested FIRQ row 
+// to the corresponding register (if >31, it disables DMD FIRQ).
+static void wpc_dmd_hsync(int param) {
+  dmdlocals.row = (dmdlocals.row + 1) % 32;
+  if (dmdlocals.row == 0) // VSYNC
+  {
+    if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: DMD is toggled between half and full page size using WPC_DMD_FIRQLINE register bit
+      if (wpc_data[WPC_DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
+         memcpy(dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200 + (dmdlocals.visiblePage % 2) * 0x200, 0x200);
+      } else { // full page
+         memcpy(dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 0x400);
+      }
+      #ifdef PROC_SUPPORT
+        if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
+          procFillDMDSubFrame(dmdlocals.nextDMDFrame + 1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x400);
+      #endif
+    } else {
+      memcpy(dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 0x200);
+      #ifdef PROC_SUPPORT
+        if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
+          procFillDMDSubFrame(dmdlocals.nextDMDFrame + 1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
+        /* Don't explicitly update the DMD from here. The P-ROC code will update after the next DMD event. */
+      #endif
     }
-    *line = 0; /* to simplify antialiasing */
+    dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
+    // Move to next page (latched while rasterizing this page)
+    dmdlocals.visiblePage = wpc_data[WPC_DMD_SHOWPAGE];
   }
+  if (dmdlocals.row == wpc_data[WPC_DMD_FIRQLINE] && dmdlocals.firq != 1)
+  {
+    dmdlocals.firq = 1;
+    update_firq();
+  }
+}
+
+int wpcdmd_update(int height, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout) {
+  int ii,jj,kk,ll;
+  UINT8* dmdFrames = &dmdlocals.DMDFrames[0][0];
+
+  static const UINT16 fir_weights[] = { 4, 39, 161, 295, 295, 161, 39, 4 }; // 15Hz low pass filter
+  static const UINT16 fir_sum = 1000;
+
+  #if defined(VPINMAME) || defined(LIBPINMAME)
+  int i = 0;
+  g_raw_gtswpc_dmdframes = 5; // Only send the last 5 raw frames
+  UINT8* rawData = &g_raw_gtswpc_dmd[0];
+  for (ii = 0; ii < (int)g_raw_gtswpc_dmdframes; ii++) {
+    UINT8* frameData = dmdFrames + ((dmdlocals.nextDMDFrame + (DMD_FRAMES - 1) + (DMD_FRAMES - ii)) % DMD_FRAMES) * 0x400;
+    for (jj = 0; jj < height * 16; jj++) {      // 32 or 64 lines of 16 columns of 8 pixels
+      UINT8 data = *frameData++;
+      *rawData = data;
+      rawData++;
+    }
+  }
+  #endif
+
+  // Apply low pass filter over 24 frames
+  memset(dmdlocals.accumulatedFrame, 0, sizeof(dmdlocals.accumulatedFrame));
+  for (ii = 0; ii < sizeof(fir_weights)/sizeof(fir_weights[0]); ii++) {
+    const UINT16 frame_weight = fir_weights[ii];
+    UINT8* frameData = dmdFrames + ((dmdlocals.nextDMDFrame + (DMD_FRAMES - 1) + (DMD_FRAMES - ii)) % DMD_FRAMES) * 0x400;
+    for (jj = 1; jj <= height; jj++) {      // 32 or 64 lines
+      UINT16* line = &dmdlocals.accumulatedFrame[jj - 1][0];
+      for (kk = 0; kk < 16; kk++) {         // 16 columns/line
+        UINT8 data = core_revbyte(*frameData++);
+        for (ll = 0; ll < 8; ll++) {        // 8 pixels/column
+          (*line++) += frame_weight * (UINT16)(data>>7);
+          data <<= 1;
+        }
+      }
+    }
+  }
+
+  // Scale down to 4 shades (note that precision matters and is needed to avoid flickering)
+  for (ii = 1; ii <= height; ii++)          // 32 or 64 lines
+    for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
+      UINT16 data = dmdlocals.accumulatedFrame[ii-1][jj];
+      coreGlobals.dotCol[ii][jj] = ((UINT8)((255 * (unsigned int) data) / fir_sum)) >> 6;
+    }
+
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
-PINMAME_VIDEO_UPDATE(wpcdmd_update64) {
-  int ii,kk;
-
-  // Phantom Haus can only use 3 brightness levels (off and 2 on states)
-#if defined(VPINMAME) || defined(LIBPINMAME)
-  g_raw_gtswpc_dmdframes = 2;
-#endif
-
-  for (kk = 0, ii = 1; ii < 65; ii++) {
-    UINT8 *line = &coreGlobals.dotCol[ii][0];
-    int jj;
-    for (jj = 0; jj < 16; jj++) {
-      const unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
-                                    (dmdlocals.DMDFrames[1][kk] & 0x55));
-      const unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
-                                    (dmdlocals.DMDFrames[1][kk] & 0xaa));
-
-#if defined(VPINMAME) || defined(LIBPINMAME)
-      g_raw_gtswpc_dmd[kk]         = dmdlocals.DMDFrames[0][kk];
-      g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
-#endif
-
-      *line++ =  intens1    &3 ?  (intens1    &3) + 1 : 0;
-      *line++ = (intens2>>1)&3 ? ((intens2>>1)&3) + 1 : 0;
-      *line++ = (intens1>>2)&3 ? ((intens1>>2)&3) + 1 : 0;
-      *line++ = (intens2>>3)&3 ? ((intens2>>3)&3) + 1 : 0;
-      *line++ = (intens1>>4)&3 ? ((intens1>>4)&3) + 1 : 0;
-      *line++ = (intens2>>5)&3 ? ((intens2>>5)&3) + 1 : 0;
-      *line++ = (intens1>>6)&3 ? ((intens1>>6)&3) + 1 : 0;
-      *line++ = (intens2>>7)&3 ? ((intens2>>7)&3) + 1 : 0;
-
-      kk++;
-    }
-    *line = 0;
-  }
-  video_update_core_dmd(bitmap, cliprect, layout);
-  return 0;
-}
+PINMAME_VIDEO_UPDATE(wpcdmd_update32) { return wpcdmd_update(32, bitmap, cliprect, layout); }
+PINMAME_VIDEO_UPDATE(wpcdmd_update64) { return wpcdmd_update(64, bitmap, cliprect, layout); }
