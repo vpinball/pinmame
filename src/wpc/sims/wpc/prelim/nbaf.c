@@ -548,7 +548,7 @@ static struct core_dispLayout nbaf_dispDMD[] = {
 static core_tGameData nbafGameData = {
   GEN_WPC95, nbaf_dispDMD,
   {
-    FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),     // other switches/solenoids used for non-flippers
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),     // other switches/solenoids used for non-flippers
     0,0,0,  /* custom switch columns, lamp columns, solenoids */
     0,0,    /* sound board, display */
     1,0,    /* gameSpecific1 (unknown why we set this -- unused on WPC?), gameSpecific2 */
