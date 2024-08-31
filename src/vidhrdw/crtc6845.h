@@ -23,6 +23,10 @@ WRITE_HANDLER( crtc6845_register_w );
 //Return current video start address
 int crtc6845_start_address_r(int offset);
 
+//Return rasterization size
+int crtc6845_get_rasterized_height(int offset);
+int crtc6845_get_rasterized_width(int offset);
+
 /*Convenience handlers*/
 READ_HANDLER( crtc6845_register_0_r );
 WRITE_HANDLER( crtc6845_address_0_w );

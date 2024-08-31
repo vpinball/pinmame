@@ -4,8 +4,6 @@
 #pragma once
 #endif
 
-#define GTS3DMD_FRAMES	24  //# of Frames to capture
-
 VIDEO_UPDATE(gts3_dmd128x32a);
 VIDEO_UPDATE(gts3_dmd128x32b);
 

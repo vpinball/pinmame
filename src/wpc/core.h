@@ -598,6 +598,31 @@ extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UIN
 extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
 INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = timer_get_time(); }
 
+/*-- DMD PWM integration --*/
+typedef struct {
+   int     width;              // DMD width
+   int     height;             // DMD height
+   int     revByte;            // Is bitset reversed ?
+   int     legacyColorization; // Is legacy coloriation backward compatibility enabled ?
+   int     rawFrameSize;       // Size of a raw DMD frame in bytes (width * height / 8)
+   UINT8*  rawFrames;          // Buffer for raw frames
+   UINT16* shadedFrame;        // Shaded frame computed from raw frames
+   int     nextFrame;          // Position in circular buffer to store next raw frame
+   int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
+   int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
+   UINT16* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
+   unsigned int fir_sum;       // Sum of filter weights
+   unsigned int frame_index;   // Raw frame index
+} core_tDMDPWMState;
+#define CORE_DMD_PWM_FILTER_DE   0
+#define CORE_DMD_PWM_FILTER_GTS3 1
+#define CORE_DMD_PWM_FILTER_WPC  2
+#define CORE_DMD_PWM_FILTER_ALVG 3
+extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter);
+extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
+extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame);
+extern void core_dmd_update_pwm(core_tDMDPWMState* dmd_state);
+
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
 /*-- nvram handling --*/

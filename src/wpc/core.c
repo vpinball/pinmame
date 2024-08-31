@@ -54,9 +54,9 @@
  static UINT32 raw_dmdoffs = 0;
  static UINT8 has_DMD_Video = 0;
 
- #include "gts3dmd.h"
- UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES*0x200];
- UINT32 g_raw_gtswpc_dmdframes = 0;
+#define CORE_MAX_RAW_DMD_FRAMES 5
+ UINT8  raw_dmd_frames[CORE_MAX_RAW_DMD_FRAMES * DMD_MAXX * DMD_MAXY / 8];
+ UINT32 raw_dmd_frame_count = 0;
 
  UINT8 g_needs_DMD_update = 1;
 #endif
@@ -854,7 +854,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int ii, jj;
 
   // prepare all brightness & color/palette tables for mappings from internal DMD representation:
-  const int shade_16_enabled = (core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2|GEN_GTS3)) != 0;
+  const int shade_16_enabled = (core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG|GEN_ALVG_DMD2|GEN_GTS3)) != 0;
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
 
@@ -940,7 +940,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
   }
 #endif
-
+  // The PWM DMD implementation is always returning a full byte, so we shift it down here to return the expected value to existing code
+  const int shift = ((core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) != 0) ? 4 /* 256 to 16 shades */ : ((core_gameData->gen & (GEN_ALLWPC | GEN_DEDMD32 | GEN_ALLWS)) != 0) ? 6 /* 256 to 4 shades */ : 0;
   memset(&coreGlobals.dotCol[layout->start+1][0], 0, sizeof(coreGlobals.dotCol[0][0])*layout->length+1);
   memset(&coreGlobals.dotCol[0][0], 0, sizeof(coreGlobals.dotCol[0][0])*layout->length+1); // clear above
   for (ii = 0; ii < layout->start+1; ii++) {
@@ -948,7 +949,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     coreGlobals.dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
-        const UINT8 col = coreGlobals.dotCol[ii][jj];
+        const UINT8 col = coreGlobals.dotCol[ii][jj] >> shift;
 #if defined(VPINMAME) || defined(LIBPINMAME)
         const int offs = (ii-1)*layout->length + jj;
         currbuffer[offs] = col;
@@ -963,14 +964,14 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 #endif
         *line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
-          *line++ = noaa ? 0 : aaColor[col + coreGlobals.dotCol[ii][jj+1]];
+          *line++ = noaa ? 0 : aaColor[col + (coreGlobals.dotCol[ii][jj+1] >> shift)];
       }
     }
     if (locals.displaySize > 1) {
-      int col1 = coreGlobals.dotCol[ii][0] + coreGlobals.dotCol[ii+1][0];
+      int col1 = (coreGlobals.dotCol[ii][0] >> shift) + (coreGlobals.dotCol[ii+1][0] >> shift);
       line = (*lines++) + (layout->left*locals.displaySize);
       for (jj = 0; jj < layout->length; jj++) {
-        int col2 = coreGlobals.dotCol[ii][jj+1] + coreGlobals.dotCol[ii+1][jj+1];
+        int col2 = (coreGlobals.dotCol[ii][jj+1] >> shift) + (coreGlobals.dotCol[ii+1][jj+1] >> shift);
         *line++ = noaa ? 0 : aaColor[col1];
         if (jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[2*(col1 + col2)/5];
@@ -987,12 +988,12 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
           if (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0)
           {
               if (layout->top != 0)
-                  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+                  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
               else
-                  render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+                  render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
           } else {
-              renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
-              render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
+              renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
+              render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
           }
 	  }
 
@@ -1018,7 +1019,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  strcpy_s(ptr + 1, 11, "DmdDump\\");
 				  strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
 
-				  if (g_raw_gtswpc_dmdframes != 0) {
+				  if (raw_dmd_frame_count != 0) {
 					  FILE* fr;
 					  char RawFilename[MAX_PATH];
 					  strcpy_s(RawFilename, MAX_PATH, DumpFilename);
@@ -1039,13 +1040,13 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 							  fputc(0x01, fr);
 							  fputc(layout->length, fr);
 							  fputc(layout->start, fr);
-							  fputc(g_raw_gtswpc_dmdframes, fr);
+							  fputc(raw_dmd_frame_count, fr);
 						  }
 					  }
 					  if(fr)
 					  {
 						  fwrite(&tick, 1, 4, fr);
-						  fwrite(g_raw_gtswpc_dmd, 1, (layout->length * layout->start / 8 * g_raw_gtswpc_dmdframes), fr);
+						  fwrite(raw_dmd_frames, 1, (layout->length * layout->start / 8 * raw_dmd_frame_count), fr);
 						  fclose(fr);
 					  }
 				  }
@@ -1069,7 +1070,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		  }
 	  }
 
-	  g_raw_gtswpc_dmdframes = 0;
+	  raw_dmd_frame_count = 0;
 
 	  // swap buffers
 	  if (currbuffer == buffer1) {
@@ -2297,7 +2298,7 @@ static MACHINE_STOP(core) {
   raw_dmdoffs = 0;
   has_DMD_Video = 0;
 
-  g_raw_gtswpc_dmdframes = 0;
+  raw_dmd_frame_count = 0;
 
   g_needs_DMD_update = 1;
 #endif
@@ -2941,6 +2942,202 @@ void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows
       core_setLamp(coreGlobals.tmpLampMatrix, columns << ((startIndex - CORE_MODOUT_LAMP0) / 8), rows);
    }
 }
+
+
+//
+//
+//
+
+/* Generic DMD PWM integration.
+
+  All hardware so far (Alvin G, Data East, Sega/Stern Whitestar, GTS3, WPC, SAM, Capcom, Sleic (Spain), Spinball)
+  creates shades using PWM on a plasma or LED display (later Stern games). Therefore, PinMame offers access to the
+  raw high frequency frames (f.e. for coloring) or to a PWM integrated view (f.e. for rendering). Sadly some colorization
+  plugins used the legacy preshaded frames to identify and color frame, so access to these legacy shades is also provided
+  for backward compatibility.
+
+  Unlike lamps which have varying strobe periods, DMD are rasterized at a fixed frequency. Therefore, the implementation
+  simply stores the frames at this frequency and apply a (simple) low pass filter to account for the eye flicker-fusion limit.
+  The integration period (number of frame to store) and cut-off frequency are selected from the observed PWM pattern of 
+  common hardware: WPC is 122/3 = 40.7Hz, GTS3 is 376/10 = 37.6Hz, so an overall plasma inertia & flicker fusion period
+  of around 40ms (25Hz).
+
+  Filters are computed using the following script in GNU Octave:
+
+pkg load signal
+
+fc = 15; % Cut-off frequency (Hz), PWM patterns/frequency suggests something below 35Hz
+int_factor = 65000; % Integer arithmetic fixed point scaling
+
+
+% Data East DMD 32
+n = 16
+fs = 2*236.68; % Sampling rate (Hz) = DMD VBlank
+data=[repmat([0;1],100,1), repmat([0;1;0;0],50,1), repmat([0;1;0;0;0;0;0;1],25,1)];
+
+% GTS3
+n = 24
+fs = 376; % Sampling rate (Hz) = DMD VBlank
+data=[repmat([0;0;0;0;0;0;0;1],30,1), repmat([0;0;0;0;0;1;1;1],30,1)];
+
+% WPC
+n = 8
+fs = 122.1; % Sampling rate (Hz) = DMD VBlank
+data=[repmat([0;0;1],100,1),repmat([0;1;1],100,1)];
+
+% Alvin G
+n = 8
+fs = 293.; % Sampling rate (Hz) = DMD VBlank
+data=[repmat([0;0;0;1],100,1),repmat([0;1;0;1],100,1),repmat([0;0;1;1],100,1),repmat([0;1;1;1],100,1)];
+
+b = fir1(n, fc/(fs/2));
+b = round(int_factor * b) / int_factor
+
+filtered = filter(b,1,data);
+
+clf
+x = (0:(max(size(data))-1)) / fs;
+filtered = round(255*filtered)
+for i_plot = 1:size(data,2)
+  subplot ( columns ( filtered ), 1, i_plot)
+  stairs(x, filtered(:,i_plot),";PWM Pattern;")
+endfor
+
+fprintf('n=%i (suggested n=%i from fs/fc)\n', n+1, round(fs/fc));
+fprintf('filter=[');
+fprintf('%i, ', int_factor * b);
+fprintf(']\n');
+fprintf('sum=%i\n', sum(int_factor * b));
+*/
+
+// TODO for the time being, DMD are always updated from core/updateDisplay, running at a fixed 60Hz. This may lead to stutters
+// as it is not aligned with real display refresh rate. We should update DMD on request but this needs to make these functions
+// thread safe.
+
+void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter) {
+  dmd_state->width = width;
+  dmd_state->height = height;
+  dmd_state->rawFrameSize = width * height / 8;
+  assert(dmd_state->rawFrameSize * 8 == width * height);
+  switch (filter)
+  {
+  case CORE_DMD_PWM_FILTER_DE: // Data East & Whitestar: 473Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern (are we sure of that ? at least 2 frames, but maybe more)
+    if (dmd_state->legacyColorization)
+    {
+      // Data East & Whitestar previous implementation would weight the first rasterized frame twice more than the second and would only share this
+      // preshaded version of the frame with the colorization plugin (no raw frames), so we recreate here for backward compatibility.
+      static const UINT16 fir_colorization_2_frames[] = { 20000, 20000, 20000 };
+      dmd_state->fir_weights = fir_colorization_2_frames;
+      dmd_state->fir_sum = 60000;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_2_frames) / sizeof(UINT16);
+    } else {
+      static const UINT16 fir_473_15[] = { 460, 765, 1614, 2962, 4619, 6291, 7648, 8408, 8409, 7648, 6291, 4619, 2962, 1614, 765, 460 };
+      dmd_state->fir_weights = fir_473_15;
+      dmd_state->fir_sum = 65535;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_473_15) / sizeof(UINT16);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_GTS3: // GTS3: 376Hz refresh rate / 15Hz low pass filter / 1,3,6,8,10 frames PWM pattern
+    {
+      static const UINT16 fir_376_15[] = { 233, 321, 544, 921, 1452, 2115, 2868, 3651, 4396, 5032, 5495, 5739, 5740, 5495, 5032, 4396, 3651, 2868, 2115, 1452, 921, 544, 321, 233 };
+      dmd_state->fir_weights = fir_376_15;
+      dmd_state->fir_sum = 65535;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_376_15) / sizeof(UINT16);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_WPC: // WPC: 122Hz refresh rate / 15Hz low pass filter / 3 frames PWM pattern (there seems to be longer PWM patterns, see T2 gun animation sequence)
+    {
+      static const UINT16 fir_122_15[] = { 269, 2570, 10580, 19348, 19349, 10580, 2570, 269 };
+      dmd_state->fir_weights = fir_122_15;
+      dmd_state->fir_sum = 65535;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_122_15) / sizeof(UINT16);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_ALVG: // Alvin G.: 293Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
+    if (dmd_state->legacyColorization)
+    {
+      // Al's Garage Band previous implementation would weight the first rasterized frame half less than the second and would only share this
+      // preshaded version of the frame with the colorization plugin (no raw frames), so we recreate here for backward compatibility.
+      static const UINT16 fir_colorization_2_frames[] = { 20000, 20000, 20000 };
+      dmd_state->fir_weights = fir_colorization_2_frames;
+      dmd_state->fir_sum = 60000;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_2_frames) / sizeof(UINT16);
+    } else {
+      static const UINT16 fir_293_15[] = { 1258, 4169, 10900, 16440, 16440, 10900, 4169, 1258 };
+      dmd_state->fir_weights = fir_293_15;
+      dmd_state->fir_sum = 65534;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_293_15) / sizeof(UINT16);
+    }
+    break;
+  default:
+    assert(0); // Unsupported filter
+  }
+  dmd_state->rawFrames = malloc(dmd_state->nFrames * dmd_state->rawFrameSize);
+  dmd_state->shadedFrame = malloc(dmd_state->width * dmd_state->height * sizeof(UINT16));
+  assert(dmd_state->rawFrames != NULL && dmd_state->shadedFrame != NULL);
+  memset(dmd_state->rawFrames, 0, dmd_state->nFrames * dmd_state->rawFrameSize);
+  memset(dmd_state->shadedFrame, 0, dmd_state->width * dmd_state->height * sizeof(UINT16));
+  dmd_state->nextFrame = 0;
+}
+
+void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state) {
+   free(dmd_state->rawFrames);
+   dmd_state->rawFrames = NULL;
+   free(dmd_state->shadedFrame);
+   dmd_state->shadedFrame = NULL;
+}
+
+void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame) {
+   memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
+   dmd_state->nextFrame = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
+   dmd_state->frame_index++;
+}
+
+void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
+  int ii, jj, kk;
+
+  // Store raw frames for colorization (TODO strangely, this is only done for GTS3, WPC and Alvin G => cleanup & extend to all ? at least DE and Whitestar ?)
+  #if defined(VPINMAME) || defined(LIBPINMAME)
+  if (core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) {
+    raw_dmd_frame_count = dmd_state->nFrames > CORE_MAX_RAW_DMD_FRAMES ? CORE_MAX_RAW_DMD_FRAMES : dmd_state->nFrames;
+    UINT8* rawData = &raw_dmd_frames[0];
+    for (int frame = 0; frame < (int)raw_dmd_frame_count; frame++) {
+      UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1) + (dmd_state->nFrames - frame)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+        *rawData = dmd_state->revByte ? (*frameData++) : core_revbyte(*frameData++);
+        rawData++;
+      }
+    }
+  }
+  #endif
+
+  // Apply low pass filter over stored frames
+  memset(dmd_state->shadedFrame, 0, dmd_state->width * dmd_state->height * sizeof(UINT16));
+  for (ii = 0; ii < dmd_state->fir_size; ii++) {
+    const UINT16 frame_weight = dmd_state->fir_weights[ii];
+    UINT16* line = dmd_state->shadedFrame;
+    UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1) + (dmd_state->nFrames - ii)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+    for (jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+      UINT8 data = *frameData++;
+      if (dmd_state->revByte) {
+        for (kk = 0; kk < 8; kk++, data >>= 1, line++)
+          if (data & 0x01) (*line) += frame_weight;
+      } else {
+        for (kk = 0; kk < 8; kk++, data <<= 1, line++)
+          if (data & 0x80) (*line) += frame_weight;
+      }
+    }
+  }
+
+  // Scale down to final shades
+  UINT16* line = dmd_state->shadedFrame;
+  for (ii = 1; ii <= dmd_state->height; ii++)
+    for (jj = 0; jj < dmd_state->width; jj++) {
+      unsigned int data = (unsigned int) (*line++); // unsigned int precision is needed here
+      coreGlobals.dotCol[ii][jj] = (UINT8)((255u * data) / dmd_state->fir_sum);
+    }
+}
+
 
 //
 //

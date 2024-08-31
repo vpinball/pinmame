@@ -29,9 +29,6 @@
 #else
 #define WPC_INTERFACE_UPD_PER_FRAME       1 // For regular lib/V/PinMame, one interface update at 60Hz should be enough (it's what most other drivers do)
 #endif
-/*-- no of DMD frames to add together to create shades --*/
-/*-- (hardcoded, do not change)                        --*/
-#define DMD_FRAMES         8 /* Some early machines like T2 could in some few animations (like T2 attract mode) profit from more shades, but very tricky to get right without flicker ! */
 
 /*-- Smoothing values --*/
 #if defined(PROC_SUPPORT) || defined(PPUC_SUPPORT)
@@ -93,11 +90,6 @@ static INTERRUPT_GEN(wpc_interface_update);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 
-#if defined(VPINMAME) || defined(LIBPINMAME)
-extern UINT8  g_raw_gtswpc_dmd[];
-extern UINT32 g_raw_gtswpc_dmdframes;
-#endif
-
 const struct core_dispLayout wpc_dispAlpha[] = {
   {0,0, 0,13,CORE_SEG16R},{0,26,13,2,CORE_SEG16D},{0,30,15,1,CORE_SEG16N},
   {4,0,20,13,CORE_SEG16R},{4,26,33,2,CORE_SEG16D},{4,30,35,1,CORE_SEG16N},
@@ -150,9 +142,7 @@ static struct {
   int    visiblePage;            // rasterized memory page
   int    row;                    // Rasterizer row position
   int    firq;                   // State of FIRQ output line to CPU
-  UINT8  DMDFrames[DMD_FRAMES][0x400]; // Buffer for raw frames
-  UINT16 accumulatedFrame[64][128]; // Shaded frame computed from stored PWMed DMD frames
-  int    nextDMDFrame;
+  core_tDMDPWMState pwm_state;
 } dmdlocals;
 
 /*-- pointers --*/
@@ -1196,6 +1186,13 @@ static MACHINE_INIT(wpc) {
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
 
+  // Init DMD PWM shading
+  if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
+  {
+    core_dmd_pwm_init(&dmdlocals.pwm_state, 128, (core_gameData->hw.gameSpecific2 == WPC_PH) ? 64 : 32, CORE_DMD_PWM_FILTER_WPC);
+    dmdlocals.pwm_state.revByte = 1;
+  }
+
 #ifdef PINMAME_HOST_UART
   if (pmoptions.serial_device != NULL) {
     // use default baud rate; game will set a baud rate at startup
@@ -1513,6 +1510,8 @@ static MACHINE_INIT(wpc) {
 
 static MACHINE_STOP(wpc) {
   sndbrd_0_exit();
+  if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
+      core_dmd_pwm_exit(&dmdlocals.pwm_state);
   if (wpc_printfile)
     { mame_fclose(wpc_printfile); wpc_printfile = NULL; }
 }
@@ -1591,23 +1590,29 @@ static void wpc_dmd_hsync(int param) {
   {
     if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: DMD is toggled between half and full page size using WPC_DMD_FIRQLINE register bit
       if (wpc_data[WPC_DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
-         memcpy(dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200 + (dmdlocals.visiblePage % 2) * 0x200, 0x200);
+        UINT8 full_frame[0x400]; // Somewhat overkill (2 copies)
+        memcpy(full_frame, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200 + (dmdlocals.visiblePage % 2) * 0x200, 0x200);
+        memset(&full_frame[0x200], 0, 0x200);
+        core_dmd_submit_frame(&dmdlocals.pwm_state, full_frame);
+        #ifdef PROC_SUPPORT
+          if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
+            procFillDMDSubFrame(dmd_state->frame_index % 3, full_frame, 0x400);
+        #endif
       } else { // full page
-         memcpy(dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 0x400);
+        core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400);
+        #ifdef PROC_SUPPORT
+          if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
+            procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 0x400);
+        #endif
       }
-      #ifdef PROC_SUPPORT
-        if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
-          procFillDMDSubFrame(dmdlocals.nextDMDFrame + 1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x400);
-      #endif
     } else {
-      memcpy(dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 0x200);
+      core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200);
       #ifdef PROC_SUPPORT
         if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
-          procFillDMDSubFrame(dmdlocals.nextDMDFrame + 1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
+          procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 0x200);
         /* Don't explicitly update the DMD from here. The P-ROC code will update after the next DMD event. */
       #endif
     }
-    dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
     // Move to next page (latched while rasterizing this page)
     dmdlocals.visiblePage = wpc_data[WPC_DMD_SHOWPAGE];
   }
@@ -1619,50 +1624,7 @@ static void wpc_dmd_hsync(int param) {
 }
 
 int wpcdmd_update(int height, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout) {
-  int ii,jj,kk,ll;
-  UINT8* dmdFrames = &dmdlocals.DMDFrames[0][0];
-
-  static const UINT16 fir_weights[] = { 4, 39, 161, 295, 295, 161, 39, 4 }; // 15Hz low pass filter
-  static const UINT16 fir_sum = 1000;
-
-  #if defined(VPINMAME) || defined(LIBPINMAME)
-  int i = 0;
-  g_raw_gtswpc_dmdframes = 5; // Only send the last 5 raw frames
-  UINT8* rawData = &g_raw_gtswpc_dmd[0];
-  for (ii = 0; ii < (int)g_raw_gtswpc_dmdframes; ii++) {
-    UINT8* frameData = dmdFrames + ((dmdlocals.nextDMDFrame + (DMD_FRAMES - 1) + (DMD_FRAMES - ii)) % DMD_FRAMES) * 0x400;
-    for (jj = 0; jj < height * 16; jj++) {      // 32 or 64 lines of 16 columns of 8 pixels
-      UINT8 data = *frameData++;
-      *rawData = data;
-      rawData++;
-    }
-  }
-  #endif
-
-  // Apply low pass filter over 24 frames
-  memset(dmdlocals.accumulatedFrame, 0, sizeof(dmdlocals.accumulatedFrame));
-  for (ii = 0; ii < sizeof(fir_weights)/sizeof(fir_weights[0]); ii++) {
-    const UINT16 frame_weight = fir_weights[ii];
-    UINT8* frameData = dmdFrames + ((dmdlocals.nextDMDFrame + (DMD_FRAMES - 1) + (DMD_FRAMES - ii)) % DMD_FRAMES) * 0x400;
-    for (jj = 1; jj <= height; jj++) {      // 32 or 64 lines
-      UINT16* line = &dmdlocals.accumulatedFrame[jj - 1][0];
-      for (kk = 0; kk < 16; kk++) {         // 16 columns/line
-        UINT8 data = core_revbyte(*frameData++);
-        for (ll = 0; ll < 8; ll++) {        // 8 pixels/column
-          (*line++) += frame_weight * (UINT16)(data>>7);
-          data <<= 1;
-        }
-      }
-    }
-  }
-
-  // Scale down to 4 shades (note that precision matters and is needed to avoid flickering)
-  for (ii = 1; ii <= height; ii++)          // 32 or 64 lines
-    for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
-      UINT16 data = dmdlocals.accumulatedFrame[ii-1][jj];
-      coreGlobals.dotCol[ii][jj] = ((UINT8)((255 * (unsigned int) data) / fir_sum)) >> 6;
-    }
-
+  core_dmd_update_pwm(&dmdlocals.pwm_state);
   video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
