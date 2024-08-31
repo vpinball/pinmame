@@ -28,6 +28,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
+#include "mech.h"
 
 /*------------------
 /  Local functions
@@ -35,6 +36,7 @@
 static int  nbaf_handleBallState(sim_tBallStatus *ball, int *inports);
 static void nbaf_handleMech(int mech);
 static void nbaf_drawMech(BMTYPE **line);
+static int nbaf_getMech(int mechNo);
 static void nbaf_drawStatic(BMTYPE **line);
 static void init_nbaf(void);
 static int  nbaf_getSol(int solNo);
@@ -42,14 +44,10 @@ static int  nbaf_getSol(int solNo);
 /*-----------------------
   local static variables
  ------------------------*/
-#define NBAF_DEFENDER_MAX       80      // rightmost position of defender
-#define NBAF_DEFENDER_SW_WIDTH  4       // positions that register for each defender location
 #define NBAF_BACKBOX_COUNTDOWN  100     // countdown time for backbox game
 /* Uncomment if you wish to use locals. type variables */
 static struct {
   int count, lastBit7, lastBit6;
-  int defenderPos;  /* Defender position, 0 for leftmost, NBAF_DEFENDER_MAX for rightmost */
-  int defenderDir;  /* Defender direction, -1 for left, +1 for right, 0 for stopped */
   int backboxPos;   /* Position of ball in backbox, 0=on flipper, otherwise countdown */
 } locals;
 
@@ -453,7 +451,7 @@ static void nbaf_drawStatic(BMTYPE **line) {
   core_textOutf(30,100,BLACK,"S/D/F/G/H = S-H-O-O-T Loops/Ramps");
   core_textOutf(30,110,BLACK,"B = Crazy Bob's, X/C/V = 3PT Targets");
   core_textOutf(30,120,BLACK,"N/M = Kickback Targets");
-  core_textOutf(30,130,BLACK,"      *** PRELIMINARY ***");
+  core_textOutf(30,130,BLACK,"");
   core_textOutf(30,140,BLACK,"");
   core_textOutf(30,150,BLACK,"");
   core_textOutf(30,160,BLACK,"");
@@ -552,7 +550,7 @@ static core_tGameData nbafGameData = {
     0,0,0,  /* custom switch columns, lamp columns, solenoids */
     0,0,    /* sound board, display */
     1,0,    /* gameSpecific1 (unknown why we set this -- unused on WPC?), gameSpecific2 */
-    nbaf_getSol, nbaf_handleMech, NULL, nbaf_drawMech,
+    nbaf_getSol, nbaf_handleMech, nbaf_getMech, nbaf_drawMech,
     &nbaf_lampPos,          /* lampData */
   },
   &nbafSimData,
@@ -587,6 +585,25 @@ static WRITE_HANDLER(nbaf_wpc_w) {
   }
 }
 
+#define NBAF_DEFENDER_MAX       80      // rightmost position of defender
+#define NBAF_DEFENDER_SW_WIDTH  4       // positions that register for each defender location
+#define DEFEND_POS(x)   (x) - (NBAF_DEFENDER_SW_WIDTH / 2), (x) + (NBAF_DEFENDER_SW_WIDTH / 2)
+// Defender uses an enable and direction solenoid output to sweep from
+// shooter 1 to 4 (100%, 66%, 33%, 0%) with an extra switch for the "lock"
+// position (50%).  Starts in the lock position.
+static mech_tInitData nbaf_defender_mech = {
+    sMotorEnable, sMotorDirection,
+    MECH_LINEAR | MECH_STOPEND | MECH_ONEDIRSOL,
+    NBAF_DEFENDER_MAX, NBAF_DEFENDER_MAX,
+    {
+        { swDefender4, 0, NBAF_DEFENDER_SW_WIDTH },
+        { swDefender3, DEFEND_POS(NBAF_DEFENDER_MAX / 3) },
+        { swDefenderLock, DEFEND_POS(NBAF_DEFENDER_MAX / 2) },
+        { swDefender2, DEFEND_POS(NBAF_DEFENDER_MAX * 2 / 3) },
+        { swDefender1, NBAF_DEFENDER_MAX - NBAF_DEFENDER_SW_WIDTH, NBAF_DEFENDER_MAX - 1 },
+    }, NBAF_DEFENDER_MAX / 2
+};
+
 /*---------------
 /  Game handling
 /----------------*/
@@ -594,8 +611,7 @@ static void init_nbaf(void) {
   core_gameData = &nbafGameData;
   memset(&locals, 0, sizeof(locals));
 
-  // defender starts at lock position
-  locals.defenderPos = NBAF_DEFENDER_MAX / 2;
+  mech_add(0, &nbaf_defender_mech);
 
   locals.count = 24;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, nbaf_wpc_w);
@@ -609,12 +625,11 @@ static int nbaf_getSol(int solNo) {
     return 0;
 }
 
-
 static void nbaf_drawMech(BMTYPE **line) {
     if (coreGlobals.simAvail) {
         // Defender Position
         core_textOutf(30, 0, BLACK, "Defender: %3u %c",
-                      locals.defenderPos,
+                      mech_getPos(0),
                       core_getSw(swDefender1) ? '1' :
                       core_getSw(swDefender2) ? '2' :
                       core_getSw(swDefenderLock) ? '*' :
@@ -627,36 +642,11 @@ static void nbaf_drawMech(BMTYPE **line) {
     }
 }
 
-// TRUE if <pos> is withing NBAF_DEFENDER_SW_WIDTH positions of target
-#define DEFENDER_AT(pos) (abs(locals.defenderPos - pos) <= NBAF_DEFENDER_SW_WIDTH / 2)
 #define BACKBOX_AT(pos)  (abs(locals.backboxPos - pos) <= 2)
-
 static void nbaf_handleMech(int mech) {
-    // Defender
+    // Simulate the backbox game by tracking ball position
+    // and scoring a basket when appropriate.
     if (mech & 0x01) {
-        // read pulsed solenoid values instead of smoothed values
-        if (core_getPulsedSol(sMotorEnable)) {
-            locals.defenderDir = core_getPulsedSol(sMotorDirection) ? +1 : -1;
-            locals.defenderPos += locals.defenderDir;
-            if (locals.defenderPos < 0) {
-                locals.defenderPos = 0;
-            }
-            else if (locals.defenderPos > NBAF_DEFENDER_MAX) {
-                locals.defenderPos = NBAF_DEFENDER_MAX;
-            }
-            core_setSw(swDefender1, DEFENDER_AT(NBAF_DEFENDER_SW_WIDTH / 2));
-            core_setSw(swDefender2, DEFENDER_AT(NBAF_DEFENDER_MAX / 3));
-            core_setSw(swDefenderLock, DEFENDER_AT(NBAF_DEFENDER_MAX / 2));
-            core_setSw(swDefender3, DEFENDER_AT(NBAF_DEFENDER_MAX * 2 / 3));
-            core_setSw(swDefender4, DEFENDER_AT(NBAF_DEFENDER_MAX - NBAF_DEFENDER_SW_WIDTH / 2));
-        }
-        else {
-            locals.defenderDir = 0;
-        }
-    }
-
-    // Backbox game
-    if (mech & 0x02) {
         if (core_getSol(sBackboxFlipper)) {
             if (locals.backboxPos == 0) {
                 locals.backboxPos = NBAF_BACKBOX_COUNTDOWN;
@@ -675,4 +665,9 @@ static void nbaf_handleMech(int mech) {
             core_setSw(swBackboxBasket, BACKBOX_AT(NBAF_BACKBOX_COUNTDOWN / 2));
         }
     }
+}
+
+static int nbaf_getMech(int mechNo)
+{
+    return mech_getPos(mechNo);
 }
