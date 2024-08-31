@@ -12,8 +12,6 @@ extern MACHINE_DRIVER_EXTERN(test8031);
 #endif
 
 extern PINMAME_VIDEO_UPDATE(alvgdmd_update);
-extern PINMAME_VIDEO_UPDATE(alvgdmd_update2);
-extern PINMAME_VIDEO_UPDATE(alvgdmd_update3);
 
 /* HELPER MACROS */
 

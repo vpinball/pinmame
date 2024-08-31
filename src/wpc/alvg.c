@@ -394,7 +394,7 @@ void UpdateLampCol(void) {
    Second, it writes the lamp column data first, then the lamp data itself.
    The other games write the lamp data first, then the lamp column data. - */
 WRITE_HANDLER(u14_porta_w) {
-	if (core_gameData->hw.gameSpecific1)
+	if (core_gameData->hw.gameSpecific1 == 1)
 		alvglocals.lampColumn = (alvglocals.lampColumn&0x0f01) | ((data & 0x7f)<<1);
 	else {
 		alvglocals.lampColumn = (alvglocals.lampColumn&0x0f80) | (data & 0x7f);
@@ -403,7 +403,7 @@ WRITE_HANDLER(u14_porta_w) {
 	//printf("LAMP STROBE(1-7):  data = %x\n",data&0x7f);
 }
 WRITE_HANDLER(u14_portb_w) {
-	if (core_gameData->hw.gameSpecific1)
+	if (core_gameData->hw.gameSpecific1 == 1)
 		alvglocals.lampColumn = (alvglocals.lampColumn&0x00fe) | ((data & 0x0f)<<8) | ((data & 0x10)>>4);
 	else {
 		alvglocals.lampColumn = (alvglocals.lampColumn&0x007f) | ((data & 0x1f)<<7);
@@ -413,7 +413,7 @@ WRITE_HANDLER(u14_portb_w) {
 }
 WRITE_HANDLER(u14_portc_w) {
 	alvglocals.lampRow = data;
-	if (core_gameData->hw.gameSpecific1)
+	if (core_gameData->hw.gameSpecific1 == 1)
 		UpdateLampCol();
 	//printf("LAMP RETURN: data = %x\n",data);
 }
