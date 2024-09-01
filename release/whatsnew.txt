@@ -53,7 +53,9 @@ Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI 
 Fixed SAM FG/Shrek and WOF modulated LEDs behavior (now work the same as the rest)
 Added Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Reworked Capcom emulation & timings, allowing all tables to behave 'normally' (no more delay on Flipper Football, DMD's animation at the right speed,...)
+Fixed CRTC6845 <-> GTS3 DMD interaction (e.g. leading to fixed Tee'd Off DMD timings)
 Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 (always mapping to 16 instead of 4 or 5 levels, note that 24/25 would be optimal, but not really necessary)
+Improved DMD brightness level mapping for WPC (fixing fading e.g. in T2 and other flickering)
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Fixed Zaccaria strsphnx sound, background music works correctly now
@@ -69,7 +71,6 @@ Refined Bally-32 sound emulation (so it also does not require the sample package
 Improved SP0250 and SP0256 sound emulation, most notably in Technoplays Scramble, and ManilaMatics Top Sound and Master
 Disabled mechanical sample use (solenoids, bumpers, etc) via the pinmame.zip sample package if running VPinMAME or libPinMAME (as this should be handled by the table itself then)
 Fixed 6 million dollar man 7 digit conversion display
-Fixed CRTC6845 <-> GTS3 DMD interaction (e.g. leading to fixed Tee'd Off DMD timings)
 Fixed inverted switches for ffv101
 Fixed fast flip detection for im_185 and trn_174h
 Implemented fast flips for avr_120h, avs_170h, im_186, im_186ve, mt_145, mt_145hb, mtl_180, rsn_110, sman_261, st_162, st_162h, trn_174, wof_602h and xmn_151
@@ -86,6 +87,7 @@ Improved emulation robustness when running multiple machines from the same gener
 Clean-up Metallica Coffin Magnet processor board to cleanly report its mode of operation (see https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for detailed operations)
 Fixed reset and slam-tilt problems of Baby Pac-Man
 Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads! Also, regular instructions only increase the six lowest PC bits.
+Improved WPC emulation: implementing FIRQ and the highres timer
 
 *** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho, Matt Walsh
 New:
