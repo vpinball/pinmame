@@ -54,7 +54,7 @@ Fixed SAM FG/Shrek and WOF modulated LEDs behavior (now work the same as the res
 Added Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Reworked Capcom emulation & timings, allowing all tables to behave 'normally' (no more delay on Flipper Football, DMD's animation at the right speed,...)
 Fixed CRTC6845 <-> GTS3 DMD interaction (e.g. leading to fixed Tee'd Off DMD timings)
-Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 (always mapping to 16 instead of 4 or 5 levels, note that 24/25 would be optimal, but not really necessary)
+Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 (always mapping to 16 instead of 4 or 5 levels, improving e.g. waterworlds DMD fading; note that 24/25 would be optimal, but not really necessary)
 Improved DMD brightness level mapping for WPC (fixing fading e.g. in T2 and other flickering)
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
