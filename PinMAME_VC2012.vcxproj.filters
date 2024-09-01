@@ -1080,6 +1080,9 @@
     <ClCompile Include="src\wpc\sims\wpc\full\mm.c">
       <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
     </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\nbaf.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\full\ngg.c">
       <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
     </ClCompile>
@@ -1150,9 +1153,6 @@
       <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\prelim\mb.c">
-      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
-    </ClCompile>
-    <ClCompile Include="src\wpc\sims\wpc\prelim\nbaf.c">
       <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\prelim\nf.c">

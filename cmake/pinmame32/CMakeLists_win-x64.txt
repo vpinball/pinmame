@@ -507,7 +507,7 @@ add_executable(pinmame32 WIN32
    src/wpc/sims/wpc/prelim/wd.c
    src/wpc/sims/wpc/prelim/jm.c
    src/wpc/sims/wpc/prelim/i500.c
-   src/wpc/sims/wpc/prelim/nbaf.c
+   src/wpc/sims/wpc/full/nbaf.c
    src/wpc/sims/wpc/prelim/corv.c
    src/wpc/sims/wpc/prelim/fs.c
    src/wpc/sims/wpc/prelim/sc.c
