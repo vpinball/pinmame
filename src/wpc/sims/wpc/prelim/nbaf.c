@@ -280,6 +280,14 @@ static sim_tState nbaf_stateDef[] = {
 
 static int nbaf_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state) {
+  case stFree:
+      // Automatically drain any balls on the playfield (and not held somewhere)
+      // when the flippers are turned off.
+      if (!core_getSol(31)) {
+          return setState(stDrain, 5);
+      }
+      break;
+
   case stShooter1:
       if (core_getSol(sPassRight1)) {
           return setState(stShooter2, 5);
