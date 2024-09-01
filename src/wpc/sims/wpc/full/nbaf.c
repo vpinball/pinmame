@@ -3,8 +3,10 @@
 /*******************************************************************************
  Preliminary NBA Fastbreak (Bally, 1997) Pinball Simulator
 
- by Marton Larrosa (marton@mail.com)
+ Preliminary version by Marton Larrosa (marton@mail.com)
  Dec. 24, 2000
+
+ Full simulation by Tom Collins (tom@tomlogic.com), August 2024
 
  Read PZ.c or FH.c if you like more help.
 
@@ -18,9 +20,10 @@
     +-  L/R Slingshot
      Q  SDTM (Drain Ball)
    WER  Jet Bumpers
-
-   More to be added...
-
+  SDFGH S-H-O-O-T shots (l. loop, l. ramp, center ramp, r. ramp, r.loop)
+   XCV  3-P-T Standups
+     B  Crazy Bob's
+    NM  Kickback standups
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -45,7 +48,6 @@ static int  nbaf_getSol(int solNo);
   local static variables
  ------------------------*/
 #define NBAF_BACKBOX_COUNTDOWN  100     // countdown time for backbox game
-/* Uncomment if you wish to use locals. type variables */
 static struct {
   int count, lastBit7, lastBit6;
   int backboxPos;   /* Position of ball in backbox, 0=on flipper, otherwise countdown */
@@ -451,7 +453,6 @@ static core_tLampDisplay nbaf_lampPos = {
 static void nbaf_drawStatic(BMTYPE **line) {
 
 /* Help */
-
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
@@ -459,11 +460,7 @@ static void nbaf_drawStatic(BMTYPE **line) {
   core_textOutf(30,100,BLACK,"S/D/F/G/H = S-H-O-O-T Loops/Ramps");
   core_textOutf(30,110,BLACK,"B = Crazy Bob's, X/C/V = 3PT Targets");
   core_textOutf(30,120,BLACK,"N/M = Kickback Targets");
-  core_textOutf(30,130,BLACK,"");
-  core_textOutf(30,140,BLACK,"");
-  core_textOutf(30,150,BLACK,"");
-  core_textOutf(30,160,BLACK,"");
-  }
+}
 
 #define NBAF_SOUND1 \
 DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044), \
