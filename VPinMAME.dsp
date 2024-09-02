@@ -1965,6 +1965,10 @@ SOURCE=.\src\wpc\sims\wpc\full\dd_wpc.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\sims\wpc\full\dm.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\sims\wpc\full\drac.c
 # End Source File
 # Begin Source File
@@ -2002,6 +2006,10 @@ SOURCE=.\src\wpc\sims\wpc\full\jd.c
 # Begin Source File
 
 SOURCE=.\src\wpc\sims\wpc\full\mm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\sims\wpc\full\nbaf.c
 # End Source File
 # Begin Source File
 
@@ -2077,10 +2085,6 @@ SOURCE=.\src\wpc\sims\wpc\prelim\dh.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sims\wpc\full\dm.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\wpc\sims\wpc\prelim\dw.c
 # End Source File
 # Begin Source File
@@ -2106,10 +2110,6 @@ SOURCE=.\src\wpc\sims\wpc\prelim\jy.c
 # Begin Source File
 
 SOURCE=.\src\wpc\sims\wpc\prelim\mb.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\sims\wpc\prelim\nbaf.c
 # End Source File
 # Begin Source File
 

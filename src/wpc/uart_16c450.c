@@ -21,6 +21,9 @@
 
 #include "timer.h"
 
+// Set to 1 to emulate the time it would take to transmit a byte at the given baudrate.
+#define EMULATE_TX_TIME         0
+
 #if 0
 #define DEBUG_OUT(...)  printf(__VA_ARGS__)
 #else
@@ -45,7 +48,10 @@ static data8_t reg_RBR, reg_THR, reg_IER, reg_IIR = 0x01, reg_LCR,
                reg_MCR, reg_LSR = 0x60, reg_MSR, reg_SCR;
 static data16_t reg_divisor;
 static data32_t byte_time_us;       // time (in uS) to send a byte at the current baudrate
+
+#if EMULATE_TX_TIME
 static double THR_clear, TX_clear;
+#endif
 
 #define REGBIT(reg, bit)    ((reg_ ## reg >> bit) & 1)
 
@@ -98,6 +104,8 @@ const char *uart_16c450_regname(int reg, int write)
 static data8_t update_LSR(void)
 {
     int byte_read;
+
+#if EMULATE_TX_TIME
     double now;
 
     now = timer_get_time();
@@ -107,6 +115,10 @@ static data8_t update_LSR(void)
     if (now > TX_clear) {
         reg_LSR |= (1 << 6);        // set TEMPT (Transmitter Empty)
     }
+#else
+    // We can accept another byte, so set both THRE and TEMPT.
+    reg_LSR |= ((1 << 5) | (1 << 6));
+#endif
 
     // If we don't already have a byte waiting in RBR, attempt to load one
     if (!DR) {
@@ -122,9 +134,8 @@ static data8_t update_LSR(void)
 
 static void uart_send(data8_t value)
 {
+#if EMULATE_TX_TIME
     double now;
-
-    uart_putch(value);          // Send the byte out on the UART interface
 
     // Set up timers to simulate the time necessary to clear the Transmit Holding
     // Register and the actual transmitter shift register.
@@ -149,6 +160,9 @@ static void uart_send(data8_t value)
         // record an error?  overwrite the outbound byte?
         DEBUG_OUT("uart: sending when THR in use\n");
     }
+#endif
+
+    uart_putch(value);          // Send the byte out on the UART interface
 }
 
 data8_t uart_16c450_read(int reg)
@@ -201,9 +215,16 @@ int uart_16c450_write(int reg, data8_t value)
         break;
 
     case MCR:       reg_MCR = value;    break;
-    case LSR:       reg_LSR = value;    break;
+    case LSR:
+        // The line status register is intended for read operations only;
+        // writing to this register is not recommended outside of a factory
+        // testing environment.
+        //reg_LSR = value;   
+        break;
+
     case MSR:       reg_MSR = value;    break;
     case SCR:       reg_SCR = value;    break;
+
     default:
         if (DLAB) {
             switch (reg) {

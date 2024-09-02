@@ -4251,6 +4251,10 @@
 								>
 							</File>
 							<File
+								RelativePath=".\src\wpc\sims\wpc\full\dm.c"
+								>
+							</File>
+							<File
 								RelativePath=".\src\wpc\sims\wpc\full\drac.c"
 								>
 							</File>
@@ -4288,6 +4292,10 @@
 							</File>
 							<File
 								RelativePath=".\src\wpc\sims\wpc\full\mm.c"
+								>
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\nbaf.c"
 								>
 							</File>
 							<File
@@ -4363,10 +4371,6 @@
 								>
 							</File>
 							<File
-								RelativePath=".\src\wpc\sims\wpc\full\dm.c"
-								>
-							</File>
-							<File
 								RelativePath=".\src\wpc\sims\wpc\prelim\dw.c"
 								>
 							</File>
@@ -4392,10 +4396,6 @@
 							</File>
 							<File
 								RelativePath=".\src\wpc\sims\wpc\prelim\mb.c"
-								>
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\nbaf.c"
 								>
 							</File>
 							<File
