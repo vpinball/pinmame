@@ -45,8 +45,9 @@ Added the emulation of physical bulbs & LEDs connected to binary outputs, for WP
 
 In addition to the TILDE key, now also the YEN key on respective keyboard mappings will work to bring up the internal PinMAME menu
 
-Support WPC UARTs (8251 from Printer Option Kit & 16C450 from WPC95), also enabling the 'Championship Link' mode of NBAFB  (incl. PinMAME <-> real machine).  Configured via `-serial_device` command-line option.
+Support WPC UARTs (8251 from Printer Option Kit & 16C450 from WPC95), also enabling the 'Championship Link' mode of NBAFB (incl. PinMAME <-> real machine).  Configured via `-serial_device` command-line option.
   Note that the NBAFB Championship Link usually gets out of sync and aborts when connected to a real machine.  If trying to link two copies of PinMAME, it's necessary to have different WPC serial numbers (hardcoded in nbaf.c) for each instance of PinMAME.
+Also, NBAFB now supports a full builtin simulator instead of only a preliminary one
 
 *** CORE/CPU ***
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
@@ -54,8 +55,9 @@ Fixed SAM FG/Shrek and WOF modulated LEDs behavior (now work the same as the res
 Added Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Reworked Capcom emulation & timings, allowing all tables to behave 'normally' (no more delay on Flipper Football, DMD's animation at the right speed,...)
 Fixed CRTC6845 <-> GTS3 DMD interaction (e.g. leading to fixed Tee'd Off DMD timings)
-Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 (always mapping to 16 instead of 4 or 5 levels, improving e.g. waterworlds DMD fading; note that 24/25 would be optimal, but not really necessary)
+Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 & AlvinG. (always mapping to 16 instead of 4 or 5 levels, improving e.g. waterworlds DMD fading; note that 24/25 would be optimal, but not really necessary)
 Improved DMD brightness level mapping for WPC (fixing fading e.g. in T2 and other flickering)
+Improved DMD brightness level mapping for DataEast/Whitestar (fixing brightness levels and DMD timings)
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Fixed Zaccaria strsphnx sound, background music works correctly now
