@@ -2970,10 +2970,10 @@ fc = 15; % Cut-off frequency (Hz), PWM patterns/frequency suggests something bel
 int_factor = 65000; % Integer arithmetic fixed point scaling
 
 
-% Data East DMD 32
+% Data East DMD 128x32 & Sega/Stern Whitestar
 n = 16
-fs = 2*236.68; % Sampling rate (Hz) = DMD VBlank
-data=[repmat([0;1],100,1), repmat([0;1;0;0],50,1), repmat([0;1;0;0;0;0;0;1],25,1)];
+fs = 233.5; % Sampling rate (Hz) = DMD VBlank
+data=[repmat([0;0;1],100,1), repmat([1;1;0],100,1), repmat([1;1;1],100,1)];
 
 % GTS3
 n = 24
@@ -3031,9 +3031,9 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
       dmd_state->fir_sum = 60000;
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_2_frames) / sizeof(UINT16);
     } else {
-      static const UINT16 fir_473_15[] = { 460, 765, 1614, 2962, 4619, 6291, 7648, 8408, 8409, 7648, 6291, 4619, 2962, 1614, 765, 460 };
+      static const UINT16 fir_473_15[] = { 800, 2673, 7764, 13510, 16039, 13510, 7764, 2673, 800 };
       dmd_state->fir_weights = fir_473_15;
-      dmd_state->fir_sum = 65535;
+      dmd_state->fir_sum = 65533;
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_473_15) / sizeof(UINT16);
     }
     break;
