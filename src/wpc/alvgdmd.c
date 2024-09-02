@@ -107,7 +107,7 @@ static WRITE_HANDLER(control_w)
 		case 0xf000:
 			LOG(("setsync=%x\n", data));
 			dmdlocals.selsync = 0;
-			printf("%8.5f selsync off\n", timer_get_time());
+			//printf("%8.5f selsync off\n", timer_get_time());
 			break;
 
 		default:
@@ -304,8 +304,8 @@ static READ_HANDLER(dmd32_latch_r) {
 // PCA020A rasterize 128 rows at once (so 4 frames), with a main VCLOCK of  3MHz (Pistol Poker and Mystery Castle)
 static INTERRUPT_GEN(dmd32_firq) {
   if (!IS_PCA020 && (dmdlocals.selsync == 0)) { // VCLOCK is disabled so FIRQ may not happen [not present on Al's Garage Band Hardware]
-	LOG(("Skipping INT1\n"));
-	return;
+    LOG(("Skipping INT1\n"));
+    return;
   }
   //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 4 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 4. / (timer_get_time() - prev)); prev = timer_get_time();
   //Pulse the INT1 Line (wired to /ROWDATA so pulsed when vertical blanking after a sequence of PWM frames)
@@ -315,18 +315,18 @@ static INTERRUPT_GEN(dmd32_firq) {
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
   const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
   if (dmdlocals.pwm_state.legacyColorization) {
-    // For backward compatibility regarding colorization, previous implementation:
-    // - for Al's Garage submited first frame with a weight of 1, and second (same as first if plans_enable = 0) with a weight of 2 => 4 shades (with unbalanced luminance between frames)
-    // - for PP & MC submited a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
-	assert(IS_PCA020); // PCA020A doe snot need this and is not supported
-	core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
-	core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
-	core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
+    // For backwards compatibility regarding colorization, previous implementation:
+    // - for Al's Garage submitted first frame with a weight of 1, and second (same as first if plans_enable = 0) with a weight of 2 => 4 shades (with unbalanced luminance between frames)
+    // - for PP & MC submitted a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
+    assert(IS_PCA020); // PCA020A does not need this and is not supported
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
   } else {
     core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
-	core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
-	core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
-	core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
   }
 }
 
