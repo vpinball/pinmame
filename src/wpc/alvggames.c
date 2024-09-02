@@ -167,7 +167,7 @@ ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c
 ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396df515bcbbb89),
 						"mcastle.du5", CRC(9095c367) SHA1(9d3e9416f662ee2aad891eef059278c530448fcc))
 ALVG_ROMEND
-CORE_GAMEDEFNV(mystcast,"Mystery Castle (R02)",1993,"Alvin G",mALVGS2DMD3,0)
+CORE_GAMEDEFNV(mystcast,"Mystery Castle (R02)",1993,"Alvin G",mALVGS2DMD2,0)
 
 // R03 has game ID EPC081
 INITGAME2(mystcasa, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 2)
@@ -181,7 +181,7 @@ ALVGDMD_ROM(			"u4.bin", CRC(a6969efc) SHA1(82da976cb3d30d6fb1576e4c67febd7235f7
 						"u5.bin", CRC(e5126980) SHA1(2c6d412c87bf27098dae4351958d84e8f9348423),
 						"u6.bin", CRC(eb241633) SHA1(8e5db75b32ed2ea74088615bbe1403d4c8feafbd))
 ALVG_ROMEND
-CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (R03)",199?,"Alvin G",mALVGS2DMD3,0)
+CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (R03)",199?,"Alvin G",mALVGS2DMD2,0)
 
 /*-------------------------------------------------------------------
 / Pistol Poker (AG10)
