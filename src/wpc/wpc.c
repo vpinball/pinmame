@@ -1575,12 +1575,12 @@ static VIDEO_START(wpc_dmd) {
   return 0;
 }
 
-// The DMD controller constantly rasterize the content of a page of RAM.
-// It is driven by the main CPU clock at 2MHz and use freq dividers to generate
-// all timings. In the end, page are rasterized at 2Mz / (128*32*2*2) = 122.07Hz
-// where the first 2 divider is the dot clock divider and the second is the 
+// The DMD controller constantly rasterizes the content of a page of RAM.
+// It is driven by the main CPU clock at 2MHz and uses freq dividers to generate
+// all timings. In the end, pages are rasterized at 2MHz / (128*32*2*2) = 122.07Hz
+// where the first 2 dividers are the dot clock divider and the second is the 
 // VBlank divider. All of this was deduced from the pre WPC-95 schematics.
-// lucky1 measured on the real machines to 122.1Hz which validates it.
+// lucky1 measured on a real machine 122.1Hz which validates it.
 // CPU may ask the DMD board to raise FIRQ when a given row is reached.
 // The FIRQ is then acked (pulled down) by writing again the requested FIRQ row 
 // to the corresponding register (if >31, it disables DMD FIRQ).

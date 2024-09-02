@@ -1433,7 +1433,7 @@ int osd_is_joy_pressed(int joycode)
 //	osd_analogjoy_read
 //============================================================
 
-void osd_analogjoy_read(int player, int analog_axis[], InputCode analogjoy_input[])
+void osd_analogjoy_read(int player, int analog_axis[MAX_ANALOG_AXES], InputCode analogjoy_input[MAX_ANALOG_AXES])
 {
 	LONG top, bottom, middle;
 	int i;

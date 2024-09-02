@@ -970,8 +970,7 @@ void joy_evaluate_moves(void)
  * sdevaux 02/2003 : Updated from windows code.
  * sdevaux 04/2003 : fix y-axis not seen as analog (reported by Paul Rahme)
  */
-void osd_analogjoy_read(int player, int analog_axis[],
-		InputCode analogjoy_input[])
+void osd_analogjoy_read(int player, int analog_axis[MAX_ANALOG_AXES], InputCode analogjoy_input[MAX_ANALOG_AXES])
 {
 	int i, j;
 	/* is player var enough to select joystick : what if joystick 2 is mapped to
