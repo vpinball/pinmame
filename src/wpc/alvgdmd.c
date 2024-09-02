@@ -35,7 +35,8 @@ static struct {
 /*declarations*/
 static WRITE_HANDLER(dmd32_bank_w);
 static READ_HANDLER(dmd32_latch_r);
-static INTERRUPT_GEN(dmd32_firq);
+static INTERRUPT_GEN(dmd32_firq1);
+static INTERRUPT_GEN(dmd32_firq2);
 static WRITE_HANDLER(dmd32_data_w);
 static void dmd32_init(struct sndbrdData *brdData);
 static void dmd32_exit(int boardNo);
@@ -107,7 +108,6 @@ static WRITE_HANDLER(control_w)
 		case 0xf000:
 			LOG(("setsync=%x\n", data));
 			dmdlocals.selsync = 0;
-			//printf("%8.5f selsync off\n", timer_get_time());
 			break;
 
 		default:
@@ -229,36 +229,35 @@ static PORT_WRITE_START( alvgdmd_writeport )
 	{ 0x00,0xff, port_w },
 PORT_END
 
+// Rasterization timing explanation (from reading the schematics, no verification on real hardware):
+//
+// CPU Clock @12MHz directly drives VCLOCK on PCA020 (Al's Garage Band) while it is divided by 4 on PCA020A (Mystery Castle & Pistol Poker)
+// - Rows: VCLOCK is divided by 384 per row: 256 for the 128 DOTCLOCK [U26/U21] + 128 for the COLLATCH [U23]
+// - Frame: row signal is divided by 128 to generate INT1 [U22/U26B], therefore after rasterizing 4 frames of 32 rows
+// 
+// Rasterized memory address A0..A14 is computed like this:
+// - A0 .. A3 is reseted at each row start with col address stored in the COLSTART register (as well as an initial bit shift which seems unused)
+// - A4 .. A8 is reseted each 4 frames (on INT1) with the frame address stored in the ROWSTART register
+// - A9 ..A10 is reseted each 4 frames (on INT1) either with 0 if PLANSENABLE=0 or with Bit67 of ROWSTART register on PCA020 or 01 on PCA020A
+// - A11..A14 is directly defined by the CODEPAGE register (can be changed directly while rasterizing, but I doubt this is ever done)
+
 // Al's Garage Band Goes On A World Tour
-// CPU Clock, directly drives VCLOCK, then divided by 640 (ROWCLOCK = 512 for DOTCLOCK [U26/U21] + 128 for COLLATCH [U23]), then by 256 for INT1 [U22])
 MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(640.*256.))
+  MDRV_CPU_PERIODIC_INT(dmd32_firq1, 12000000./(384.*128.)) // 244.14Hz for 4 frames => 976.56Hz per frame (!)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
 // Pistol Poker & Mystery Castle
-// CPU Clock, divided by 4 (VCLOCK), then by 640 (ROWCLOCK = 512 for DOTCLOCK [U26/U21] + 128 for COLLATCH [U23]), then by 256 for INT1 [U22])
-// This leads to fairly slow animation, but seems ot match the real pin (f.e. see https://www.youtube.com/watch?v=KY_spGpQC-Q)
 MACHINE_DRIVER_START(alvgdmd2)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  //MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*640.*256.))
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(640.*256.)) // HACK: U36 divide main clock by 4 but this leads to slow animation, so skipped here
+  MDRV_CPU_PERIODIC_INT(dmd32_firq2, 12000000./(4.*384.*128.)) // 61.03Hz for 4 frames => 244.14Hz per frame
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
-MACHINE_DRIVER_START(alvgdmd3)
-  MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
-  MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
-  MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  //MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*640.*256.))
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(640.*256.)) // HACK: U36 divide main clock by 4 but this leads to slow animation, so skipped here
-  MDRV_INTERLEAVE(50)
-MACHINE_DRIVER_END
-
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
@@ -266,7 +265,7 @@ MACHINE_DRIVER_START(test8031)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000. / (640. * 256.))
+  MDRV_CPU_PERIODIC_INT(dmd32_firq2, 12000000. / (4.*384.*128.))
 MACHINE_DRIVER_END
 #endif
 
@@ -275,8 +274,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
   dmdlocals.brdData = *brdData;
   dmd32_bank_w(0,0);			//Set DMD Bank to 0
   dmdlocals.selsync = 1;		//Start Sync @ 1
-  // Init PWM shading
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, CORE_DMD_PWM_FILTER_ALVG);
+  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2);
 }
 
 static void dmd32_exit(int boardNo) {
@@ -301,24 +299,16 @@ static READ_HANDLER(dmd32_latch_r) {
   return dmdlocals.cmd;
 }
 
-// PCA020A rasterize 128 rows at once (so 4 frames), with a main VCLOCK of  3MHz (Pistol Poker and Mystery Castle)
-static INTERRUPT_GEN(dmd32_firq) {
-  if (!IS_PCA020 && (dmdlocals.selsync == 0)) { // VCLOCK is disabled so FIRQ may not happen [not present on Al's Garage Band Hardware]
-    LOG(("Skipping INT1\n"));
-    return;
-  }
+//Pulse the INT1 Line (wired to /ROWDATA so pulsed when vertical blanking after a sequence of 4 PWM frames)
+static INTERRUPT_GEN(dmd32_firq1) {
   //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 4 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 4. / (timer_get_time() - prev)); prev = timer_get_time();
-  //Pulse the INT1 Line (wired to /ROWDATA so pulsed when vertical blanking after a sequence of PWM frames)
   LOG(("INT1 Pulse\n"));
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
   assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
   const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
   if (dmdlocals.pwm_state.legacyColorization) {
-    // For backwards compatibility regarding colorization, previous implementation:
-    // - for Al's Garage submitted first frame with a weight of 1, and second (same as first if plans_enable = 0) with a weight of 2 => 4 shades (with unbalanced luminance between frames)
-    // - for PP & MC submitted a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
-    assert(IS_PCA020); // PCA020A does not need this and is not supported
+    // For backwards compatibility regarding colorization, previous implementation submitted first frame with a weight of 1, and second (same as first if plans_enable = 0) with a weight of 2 => 4 shades (with unbalanced luminance between frames)
     core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
     core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
     core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
@@ -328,6 +318,24 @@ static INTERRUPT_GEN(dmd32_firq) {
     core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
     core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
   }
+}
+
+static INTERRUPT_GEN(dmd32_firq2) {
+  if (dmdlocals.selsync == 0) { // VCLOCK is disabled so FIRQ may not happen [not present on Al's Garage Band Hardware]
+	LOG(("Skipping INT1\n"));
+	return;
+  }
+  //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 4 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 4. / (timer_get_time() - prev)); prev = timer_get_time();
+  LOG(("INT1 Pulse\n"));
+  cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
+  assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
+  const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
+  const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
+  // For backwards compatibility regarding colorization, previous implementation submitted a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {

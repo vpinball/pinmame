@@ -615,6 +615,8 @@ static MACHINE_INIT(alvg) {
   install_mem_write_handler(0, 0x2c00, 0x2c00, LED_LATCH);
   install_mem_write_handler(0, 0x2c80, 0x2c83, LED_DATA);
 }
+
+// Al's Garage Band (PCA020 DMD driver board)
 static MACHINE_INIT(alvgdmd1) {
   init_common();
   /* Init the dmd board */
@@ -622,22 +624,13 @@ static MACHINE_INIT(alvgdmd1) {
   sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
 }
 
-//Pistol Poker
+//Pistol Poker & Mystery Castle (PCA020A DMD driver board)
 static MACHINE_INIT(alvgdmd2) {
   init_common();
   /* Init the dmd board */
   install_mem_write_handler(0, 0x2c00, 0x2fff, DMD_LATCH);
   sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
 }
-
-//Mystery Castle, exactly same as Pistol Poker, but different clock rate
-static MACHINE_INIT(alvgdmd3) {
-  init_common();
-  /* Init the dmd board */
-  install_mem_write_handler(0, 0x2c00, 0x2fff, DMD_LATCH);
-  sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
-}
-
 
 static MACHINE_STOP(alvg) {
   sndbrd_0_exit();
@@ -725,25 +718,19 @@ MACHINE_DRIVER_END
 
 extern void construct_alvgdmd1(struct InternalMachineDriver *machine); // workaround to fix confusion in the linker, as this is defined in alvgdmd.c
 extern void construct_alvgdmd2(struct InternalMachineDriver *machine);
-extern void construct_alvgdmd3(struct InternalMachineDriver *machine);
 
-//Main CPU, DMD, Sound hardware Driver (Generation #2)
+//Main CPU, DMD (Generation #1: part PCA020), Sound hardware Driver (Generation #2)
 MACHINE_DRIVER_START(alvgs2dmd1)
   MDRV_IMPORT_FROM(alvgs2)
   MDRV_IMPORT_FROM(alvgdmd1)
   MDRV_CORE_INIT_RESET_STOP(alvgdmd1,NULL,alvg)
 MACHINE_DRIVER_END
 
+//Main CPU, DMD (Generation #2: part PCA020A), Sound hardware Driver (Generation #2)
 MACHINE_DRIVER_START(alvgs2dmd2)
   MDRV_IMPORT_FROM(alvgs2)
   MDRV_IMPORT_FROM(alvgdmd2)
   MDRV_CORE_INIT_RESET_STOP(alvgdmd2,NULL,alvg)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(alvgs2dmd3)
-  MDRV_IMPORT_FROM(alvgs2)
-  MDRV_IMPORT_FROM(alvgdmd3)
-  MDRV_CORE_INIT_RESET_STOP(alvgdmd3,NULL,alvg)
 MACHINE_DRIVER_END
 
 //Use only to test 8031 core

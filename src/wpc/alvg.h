@@ -75,14 +75,12 @@ extern MACHINE_DRIVER_EXTERN(alvgs1);
 extern MACHINE_DRIVER_EXTERN(alvgs2);
 extern MACHINE_DRIVER_EXTERN(alvgs2dmd1);
 extern MACHINE_DRIVER_EXTERN(alvgs2dmd2);
-extern MACHINE_DRIVER_EXTERN(alvgs2dmd3);
 
 #define mALVG         alvg
 #define mALVGS1       alvgs1
 #define mALVGS2       alvgs2
 #define mALVGS2DMD1   alvgs2dmd1
 #define mALVGS2DMD2   alvgs2dmd2
-#define mALVGS2DMD3   alvgs2dmd3
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
