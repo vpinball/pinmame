@@ -3053,7 +3053,7 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_122_15) / sizeof(UINT16);
     }
     break;
-  case CORE_DMD_PWM_FILTER_ALVG1: // Alvin G. DMD Generation 1: 976Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
+  case CORE_DMD_PWM_FILTER_ALVG1: // Alvin G. DMD Generation 1: 1194.4Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
     if (dmd_state->legacyColorization)
     {
       // Al's Garage Band previous implementation would weight the first rasterized frame half less than the second and would only share this
@@ -3063,18 +3063,18 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
       dmd_state->fir_sum = 60000;
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_2_frames) / sizeof(UINT16);
     } else {
-      static const UINT16 fir_976_15[] = { 928, 1973, 4725, 8162, 10962, 12035, 10962, 8162, 4725, 1973, 928 };
-      dmd_state->fir_weights = fir_976_15;
+      static const UINT16 fir_1194_15[] = { 938, 1985, 4737, 8160, 10943, 12009, 10943, 8160, 4737, 1985, 938 };
+      dmd_state->fir_weights = fir_1194_15;
       dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_976_15) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_1194_15) / sizeof(UINT16);
     }
     break;
-  case CORE_DMD_PWM_FILTER_ALVG2: // Alvin G. DMD Generation 2: 244Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
+  case CORE_DMD_PWM_FILTER_ALVG2: // Alvin G. DMD Generation 2: 298.6Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
     {
-      static const UINT16 fir_244_15[] = { 521, 1451, 4187, 8183, 11798, 13255, 11798, 8183, 4187, 1451, 521 };
-      dmd_state->fir_weights = fir_244_15;
+      static const UINT16 fir_299_15[] = { 656, 1633, 4384, 8185, 11501, 12817, 11501, 8185, 4384, 1633, 656 };
+      dmd_state->fir_weights = fir_299_15;
       dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_244_15) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_299_15) / sizeof(UINT16);
     }
     break;
   default:
