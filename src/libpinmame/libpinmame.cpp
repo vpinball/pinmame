@@ -455,9 +455,7 @@ extern "C" void libpinmame_update_display(const int index, const struct core_dis
 			if (p_layout->type & CORE_DMDSEG)
 				pDisplay->layout.depth = 2;
 			else {
-				const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG_DMD2))
-					|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0)
-					|| (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0));
+				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG|GEN_ALVG_DMD2|GEN_GTS3)) != 0;
 				pDisplay->layout.depth = shade_16_enabled ? 4 : 2;
 			}
 
