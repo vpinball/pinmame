@@ -121,12 +121,12 @@ static void dmd32_init(struct sndbrdData *brdData) {
   /* copy last 16K of ROM into last 16K of CPU region*/
   memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
          memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
-  
+
   // Init 6845
   crtc6845_init(0);
   //crtc6845_set_vsync(0, /* 8000000 from 6809 E clock output */, dmd32_vblank); // we can not use the default implementation as the clock divider is toggled after each HSYNC
   // The theory of operation given above would lead to a refresh rate of 80.1Hz (half of the frame with a CRTC6845 clocked at 1MHz, the other half at 500KHz)
-  // Measures on the real hardware shows that a few additional cycles are consumed while switching clock divider, this behavior having changed between initial revision (Data East)
+  // Measures on the real hardware show that a few additional cycles are consumed while switching clock divider, this behavior having changed between initial revision (Data East)
   // and later ones (Sega/Stern Whitestar).
   if ((core_gameData->gen & GEN_DEDMD32) != 0) // Board 520-5055-00
   {
@@ -135,11 +135,11 @@ static void dmd32_init(struct sndbrdData *brdData) {
     while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
       rootDrv = rootDrv->clone_of;
     const char* const gn = rootDrv->name;
-    if ((strncasecmp(gn, "stwr_104", 8) == 0) // Star Wars
-       || (strncasecmp(gn, "rab_320", 7) == 0)  // Adventures of Rocky and Bullwinkle and Friends
-       || (strncasecmp(gn, "aar_101", 7) == 0) // Aaron Spelling
-       || (strncasecmp(gn, "lw3_208", 7) == 0) // Lethal Weapon 3
-       || (strncasecmp(gn, "mj_130", 6) == 0)) // Michael Jordan
+    if ((strncasecmp(gn, "stwr_", 5) == 0)  // Star Wars
+       || (strncasecmp(gn, "rab_", 4) == 0) // Adventures of Rocky and Bullwinkle and Friends
+       || (strncasecmp(gn, "aar_", 4) == 0) // Aaron Spelling
+       || (strncasecmp(gn, "lw3_", 4) == 0) // Lethal Weapon 3
+       || (strncasecmp(gn, "mj_", 3) == 0)) // Michael Jordan
       timer_pulse(1. / 86.20689655172414, 0, dmd32_vblank);
     else
       // Measured at 78.07Hz for the 3 PWM frames (234.21Hz fps)
@@ -360,7 +360,7 @@ static READ_HANDLER(dmd16_port_r);
 static WRITE_HANDLER(dmd16_port_w);
 
 static MEMORY_READ_START(dmd16_readmem)
-  { 0x0000, 0x3fff, MRA_ROM },	              /* Z80 ROM CODE*/
+  { 0x0000, 0x3fff, MRA_ROM },                 /* Z80 ROM CODE*/
   { 0x4000, 0x7fff, MRA_BANKNO(DMD16_BANK0) }, /* ROM BANK*/
   { 0x8000, 0x9fff, MRA_RAM },
 MEMORY_END

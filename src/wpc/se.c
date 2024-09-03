@@ -450,7 +450,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if ((strncasecmp(grn, "harl_a13", 8) == 0) || (strncasecmp(grn, "harl_a40", 8) == 0)) { // Harley Davidson
+  else if (strncasecmp(grn, "harl_", 5) == 0) { // Harley Davidson
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
@@ -497,7 +497,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 32 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(grn, "sprk_103", 8) == 0) { // South Park
+  else if (strncasecmp(grn, "sprk_", 5) == 0) { // South Park
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -519,7 +519,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_bulb(CORE_MODOUT_SOL0 + 4 - 1, 1, BULB_44, 19.f - 0.7f, TRUE, 0.f, 1.f); // Backbox GI: 19V AC switched #44 Bulbs (Sol 1-16 uses Mosfets with low voltage drop)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(grn, "twst_405", 8) == 0) { // Twister
+  else if (strncasecmp(grn, "twst_", 5) == 0) { // Twister
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }

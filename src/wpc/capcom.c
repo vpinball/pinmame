@@ -736,30 +736,30 @@ static MACHINE_INIT(cc) {
   const char* const gn = rootDrv->name;
   // For flashers, Capcom uses #89 bulb wired through a STP20N10L Mosfet, 0.02 ohms resistor to a 20V DC source
   // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
-  if (strncasecmp(gn, "abv106", 6) == 0) { // Airborne
+  if (strncasecmp(gn, "abv", 3) == 0) { // Airborne
     coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   } 
-  else if (strncasecmp(gn, "bbb109", 6) == 0) { // Big Bang Bar
+  else if (strncasecmp(gn, "bbb", 3) == 0) { // Big Bang Bar
     coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "bsv103", 6) == 0) { // Breakshot
+  else if (strncasecmp(gn, "bsv", 3) == 0) { // Breakshot
     coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
   }
-  else if (strncasecmp(gn, "ffv104", 6) == 0) { // Flipper Football
+  else if (strncasecmp(gn, "ffv", 3) == 0) { // Flipper Football
     coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "kpb105", 6) == 0) { // KingPin
+  else if (strncasecmp(gn, "kpb", 3) == 0) { // KingPin
     // To be checked since this is from VPX table (did not find a manual for this one)
     coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1,  2, CORE_MODOUT_BULB_89_20V_DC_WPC);
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(gn, "pmv112", 6) == 0) { // Pinball Magic
+  else if (strncasecmp(gn, "pmv", 3) == 0) { // Pinball Magic
     coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }

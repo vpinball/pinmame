@@ -1271,30 +1271,30 @@ static MACHINE_INIT(sam) {
 	const char* const gn = rootDrv->name;
 	// Missing definitions:
 	// - Simpsons Kooky Carnival
-	if (strncasecmp(gn, "acd_170h", 8) == 0) { // AC DC
+	if (strncasecmp(gn, "acd_", 4) == 0) { // AC DC
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // LED flasher
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "avs_170h", 8) == 0) { // Avengers
+	else if (strncasecmp(gn, "avs_", 4) == 0) { // Avengers
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "avr_120h", 8) == 0) { // Avatar
+	else if (strncasecmp(gn, "avr_", 4) == 0) { // Avatar
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "bbh_170", 7) == 0) { // Big Buck Hunter
+	else if (strncasecmp(gn, "bbh_", 4) == 0) { // Big Buck Hunter
 		// Did not find a complete manual anywhere (even Stern's downloads do not have the schematics/solenoids) so this is from the VPX table, completed with the backglass flasher map
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "bdk_294", 7) == 0) { // Batman The Dark Knight
+	else if (strncasecmp(gn, "bdk_", 4) == 0) { // Batman The Dark Knight
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1307,19 +1307,19 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60, 1, CORE_MODOUT_LED_STROBE_1_10MS);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 8, CORE_MODOUT_LED); // LEDs on opto board
 	}
-	else if (strncasecmp(gn, "csi_240", 7) == 0) { // CSI
+	else if (strncasecmp(gn, "csi_", 4) == 0) { // CSI
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Note that #22 is 2 #89 under playfield and 1 #161 above playfield #161 is 12V
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 8, CORE_MODOUT_LED); // LEDs on opto board
 	}
-	else if (strncasecmp(gn, "fg_1200ag", 9) == 0) { // Family Guy [TODO crash in AT91 jit]
+	else if (strncasecmp(gn, "fg_", 3) == 0) { // Family Guy [TODO crash in AT91 jit]
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 3 * 2 * 8, CORE_MODOUT_LED_STROBE_8_16MS); // Mini playfield LEDs
 	}
-	else if (strncasecmp(gn, "ij4_210", 7) == 0) { // Indiana Jones
+	else if (strncasecmp(gn, "ij4_", 4) == 0) { // Indiana Jones
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1329,11 +1329,11 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 55 - 1, 2, CORE_MODOUT_LED); // Swordman
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 56 - 1, 2, CORE_MODOUT_LED); // Skull
 	}
-	else if (strncasecmp(gn, "im_186ve", 8) == 0) { // Iron Man
+	else if (strncasecmp(gn, "im_", 3) == 0) { // Iron Man
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_LED); // Led Flasher (Iron Man Vault Edition)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // Led Flasher (Iron Man Vault Edition)
 	}
-	else if (strncasecmp(gn, "mtl_180h", 8) == 0) { // Metallica LE
+	else if (strncasecmp(gn, "mtl_", 4) == 0) { // Metallica LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1341,19 +1341,19 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 6 - 1, 1, CORE_MODOUT_PULSE); // Coffin board mode bit #0
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 7 - 1, 1, CORE_MODOUT_PULSE); // Coffin board mode bit #1
 	}
-	else if (strncasecmp(gn, "mt_145h", 7) == 0) { // Mustang LE
+	else if (strncasecmp(gn, "mt_", 3) == 0) { // Mustang LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "nba_802", 7) == 0) { // NBA
+	else if (strncasecmp(gn, "nba_", 4) == 0) { // NBA
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "potc_600af", 10) == 0) { // Pirates of the Caribbean
+	else if (strncasecmp(gn, "potc_", 5) == 0) { // Pirates of the Caribbean
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 24 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'H' LED
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 32 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Board 520-5258-00: 'E' LED
@@ -1366,70 +1366,70 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "rsn_110h", 8) == 0) { // Rolling Stones
+	else if (strncasecmp(gn, "rsn_", 4) == 0) { // Rolling Stones
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "scarn200", 8) == 0) { // Simpsons Kooky Carnival
+	else if (strncasecmp(gn, "scarn", 5) == 0) { // Simpsons Kooky Carnival
 		// TODO no manual found
 	}
-	else if (strncasecmp(gn, "shr_141", 7) == 0) { // Shrek
+	else if (strncasecmp(gn, "shr_", 4) == 0) { // Shrek
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 61 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 2 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 3*2*8, CORE_MODOUT_LED_STROBE_8_16MS); // Mini playfield LEDs
 	}
-	else if (strncasecmp(gn, "sman_261", 8) == 0) { // Spider-Man
+	else if (strncasecmp(gn, "sman_", 5) == 0) { // Spider-Man
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "smanve_101", 10) == 0) { // Spider-Man Vault Edition
+	else if (strncasecmp(gn, "smanve_", 7) == 0) { // Spider-Man Vault Edition
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "st_162h", 7) == 0) { // Star Trek LE
+	else if (strncasecmp(gn, "st_", 3) == 0) { // Star Trek LE
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "tf_180h", 7) == 0) { // Transformers
+	else if (strncasecmp(gn, "tf_", 3) == 0) { // Transformers
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 58 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Megatron
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "trn_174h", 8) == 0) { // Tron Legacy
+	else if (strncasecmp(gn, "trn_", 4) == 0) { // Tron Legacy
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 100, 6, CORE_MODOUT_LED); // Ramp RGB LEDs
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "twd_160h", 8) == 0) { // The Walking Dead LE
+	else if (strncasecmp(gn, "twd_", 4) == 0) { // The Walking Dead LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "twenty4_150", 11) == 0) { // 24
+	else if (strncasecmp(gn, "twenty4_", 8) == 0) { // 24
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	else if (strncasecmp(gn, "wof_500", 7) == 0) { // Wheel of Fortune
+	else if (strncasecmp(gn, "wof_", 4) == 0) { // Wheel of Fortune
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 48, CORE_MODOUT_LED); // Wheel LEDs
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED_STROBE_1_5MS); // Mini DMD (175 LEDs)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // 4 LED flasher at the back of the wheel
 	}
-	else if (strncasecmp(gn, "wpt_140a", 8) == 0) { // World Poker Tour
+	else if (strncasecmp(gn, "wpt_", 4) == 0) { // World Poker Tour
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 490, CORE_MODOUT_LED); // Mini DMD (490 LEDs, but are they really faded ?)
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 62 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 70 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
@@ -1438,7 +1438,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms)
 	}
-	else if (strncasecmp(gn, "xmn_151h", 8) == 0) { // X-Men
+	else if (strncasecmp(gn, "xmn_", 4) == 0) { // X-Men
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED (Looks nicer with bulbs, but it really has LEDs)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);

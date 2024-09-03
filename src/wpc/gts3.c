@@ -10,7 +10,7 @@
   //Cueball: CPU0: RST = FEF0, IRQ=462F, NMI=477A
 
   GV 07/20/05: Finally found the typo that prevented the extra displays from working perfectly!
-  GV 07/27/05: Fixed the missing sound in Strikes And Spares
+  GV 07/27/05: Fixed the missing sound in Strikes N Spares
   SE 07/27/05: Finally got that DAMN 2nd DMD working
 
 *************************************************************************************************/
@@ -29,7 +29,7 @@
 #define GTS3_IRQFREQ                 1500 /* IRQ Frequency (Guessed) */
 #define GTS3_ALPHANMIFREQ            1000 /* Alpha NMI Frequency (Guessed)*/
 
-#define GTS3_CPUNO	0
+#define GTS3_CPUNO   0
 #define GTS3_DCPUNO  1
 #define GTS3_SCPUNO  2
 #define GTS3_DCPUNO2 2
@@ -672,15 +672,15 @@ static void gts3dmd_init(void) {
 	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
 		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
   }
-  else if (strncasecmp(gn, "smb", 3) == 0) { // Super Mario Bros.
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 12, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
-	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Castle LEDs
-	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Billboard LEDs
-  }
   else if (strncasecmp(gn, "smbmush", 7) == 0) { // Super Mario Bros. Mushroom World
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20, 3, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Flashers from aux board
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Wand LEDs
+  }
+  else if (strncasecmp(gn, "smb", 3) == 0) { // Super Mario Bros.
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 12, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Castle LEDs
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 Billboard LEDs
   }
   else if (strncasecmp(gn, "stargate", 8) == 0) { // Stargate
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21, 1, CORE_MODOUT_LED); // 'Rope Lights', circle of leds around Ra in backbox
