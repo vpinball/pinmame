@@ -229,24 +229,38 @@ static PORT_WRITE_START( alvgdmd_writeport )
 	{ 0x00,0xff, port_w },
 PORT_END
 
-// Rasterization timing explanation (from reading the schematics, no verification on real hardware):
-//
-// CPU Clock @12MHz directly drives VCLOCK on PCA020 (Al's Garage Band) while it is divided by 4 on PCA020A (Mystery Castle & Pistol Poker)
-// - Rows: VCLOCK is divided by 384 per row: 256 for the 128 DOTCLOCK [U26/U21] + 128 for the COLLATCH [U23]
-// - Frame: row signal is divided by 128 to generate INT1 [U22/U26B], therefore after rasterizing 4 frames of 32 rows
-// 
-// Rasterized memory address A0..A14 is computed like this:
-// - A0 .. A3 is reseted at each row start with col address stored in the COLSTART register (as well as an initial bit shift which seems unused)
-// - A4 .. A8 is reseted each 4 frames (on INT1) with the frame address stored in the ROWSTART register
-// - A9 ..A10 is reseted each 4 frames (on INT1) either with 0 if PLANSENABLE=0 or with Bit67 of ROWSTART register on PCA020 or 01 on PCA020A
-// - A11..A14 is directly defined by the CODEPAGE register (can be changed directly while rasterizing, but I doubt this is ever done)
+/*
+ Rasterization explanation
+ [Disclaimer, the following has been deduced from schematics analysis/simulation, so maybe entirely wrong]
+
+ The board is built around discrete chips designed to rasterize frames with PWM shading: 
+ - Each row is rasterized 4 times, either with the same pattern if PLANS_ENABLE is false or from 4 block of RAM.
+ - Rasterized RAM address is built from the data latched in colstart and rowstart registers:
+    COLSTART0..2 - Bit shift (0..7) [unimplemented as it is unused by any hardware]
+    COLSTART3..6 - A0..A3
+    ROWTSART0..4 - A4..A8
+    GPLAN0..1    - A9..A10 (GPLAN0..1 is ROWSTART5..6 for PCA020, while for PCA020A GPLAN0=1 and GLPAN1=0)
+    CODEPAGE0..1 - A11..A14 (can be changed directly while rasterizing, but I doubt this is ever done)
+ - When rasterizing, in order to rasterize each row 4 times before moving to the next row, the row counter 
+   is built with GPLAN at its lowest bits, unlike the RAM address:
+    GPLAN0..1    - Counter Bit 0..1
+    ROWTSART0..4 - Counter Bit 2..6
+ - On PCA020A, CPU Clock @12MHz is divided by 4 to drive VCLOCK (Mystery Castle & Pistol Poker)
+    Each row is made up of 4 x 314 VCLOCK: 256 used to send the data (to generate 128 DOTCLOCK [U26/U21]), then 58 for the end of row COLLATCH,... [U23])
+    Each frame is made of 32 rows, after which the INT1 is generated [U22/U26B], therefore after rasterizing 4 frames of 32 rows, corresponding
+    to 4 x 32 x 314 = 40192 VCLOCK cycles, leading to a INT1 frequency of 74.6Hz and a refresh rate before PWM of 298.6Hz
+	 lucky1 measured on a real hardware a frequency of 74.5Hz which validates this.
+ - On PCA020, CPU Clock @12MHz directly drives VCLOCK (Al's Garage Band)
+    The digital logic is slightly different and likely lead to different cycle count.
+	 For the time being, we use the data gathered for PCA020A (which happens to look and play good)
+*/
 
 // Al's Garage Band Goes On A World Tour
 MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq1, 12000000./(384.*128.)) // 244.14Hz for 4 frames => 976.56Hz per frame (!)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq1, 12000000./(4.*32.*314.)) // FIXME likely wrong as the board is slightly different and the cycle count form PCA020A can not be taken as is
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -255,7 +269,7 @@ MACHINE_DRIVER_START(alvgdmd2)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq2, 12000000./(4.*384.*128.)) // 61.03Hz for 4 frames => 244.14Hz per frame
+  MDRV_CPU_PERIODIC_INT(dmd32_firq2, 12000000./(4.*4.*32.*314.)) // 12MHz divided by 4, triggering INT1 every 4 (frames) x 32 (rows) x 314 (cycles per row)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -273,7 +287,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
   dmd32_bank_w(0,0);			//Set DMD Bank to 0
-  dmdlocals.selsync = 1;		//Start Sync @ 1
+  dmdlocals.selsync = 1;	//Start Sync @ 1 (PCA020A only)
   core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2);
 }
 
@@ -325,17 +339,17 @@ static INTERRUPT_GEN(dmd32_firq2) {
 	LOG(("Skipping INT1\n"));
 	return;
   }
+  // TODO if needed for backwards compatibility regarding colorization, previous implementation submitted a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
   //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 4 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 4. / (timer_get_time() - prev)); prev = timer_get_time();
   LOG(("INT1 Pulse\n"));
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
   assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
   const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
-  // For backwards compatibility regarding colorization, previous implementation submitted a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
   core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
   core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
   core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {

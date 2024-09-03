@@ -88,7 +88,7 @@ MACHINE_DRIVER_END
 
  The board is built around a CRTC6845 [U9] which clock is driven by a custom PAL chip [U2]. This design allows to create 4 full shades: 
  - Each row is rasterized twice by the CRTC6845, first with a 500KHz clock, then with a 1MHz clock. To do so, the PAL chip toggles the 
-   clock divider on each HSYNC from the CRTC6845.
+   clock divider on each HSYNC from the CRTC6845. RA0 is likely used to toggle the clock divider inside U2.
  - Data is fed from RAM at offset X for first frame (double PWM length) then at X+0x200 for second frame (single PWM length). To do so,
    a memory mapping is applied to the linear rasterization performed by the CRTC6845, MA is the memory address output, RA is the character
    output. Character is used as the PWM frame selector and wired to bit 9 of the memory address allowing to render a line of each frame
@@ -99,10 +99,8 @@ MACHINE_DRIVER_END
     MA7      - A8      => DMD row highest bit [unimplemented in PinMame]
     RA0      - A9      => used to toggle between frame while rasterizing each row
     MA8..12  - A10..14
- - VSYNC signal from CRTC6845 is not used (not sure why), but the CURSOR signal is wired to U2, and the cursor register seems to always 
-   point to the start of the rasterization (so triggered when looping), maybe serving the VSYNC purpose and allowing to fire the FIRQ to
-   the DMD CPU.
- */
+ - ROWCLOCK is RA0 (so advanced one every 2 rasterized rows)
+  */
 static void dmd32_vblank(int which) {
   //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 3 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 3. / (timer_get_time() - prev)); prev = timer_get_time();
   // Store 2 next rasterized frame, as the CRTC is setup to render 2 contiguous full frames for each VBLANK
