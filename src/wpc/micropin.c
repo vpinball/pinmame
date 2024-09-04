@@ -371,7 +371,7 @@ static INTERRUPT_GEN(mp2_vblank) {
   coreGlobals.diagnosticLed = memory_region(REGION_CPU1)[0x2247] >> 7;
   cpu_set_irq_line(0, IRQ_LINE_NMI, core_getSw(-7) ? ASSERT_LINE : CLEAR_LINE);
 
-  core_updateSw(~coreGlobals.lampMatrix[1] & 0x80);
+  core_updateSw(TRUE);
 }
 
 static INTERRUPT_GEN(mp2_irq) {
@@ -394,9 +394,9 @@ static INTERRUPT_GEN(mp2_irq) {
 
 static SWITCH_UPDATE(MICROPIN2) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x44, 5);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xcc, 5);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x01, 0);
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x10, 9);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x70, 9);
   }
 }
 
@@ -441,7 +441,7 @@ static WRITE_HANDLER(mp2_out) {
     case 9: // tone enable and duration
       if ((data ^ 0xff) > 1) {
         discrete_sound_w(2, 1);
-        timer_adjust(locals.sndTimer, TIME_IN_MSEC(10 * (data ^ 0xff)), 0, TIME_NEVER);
+        timer_adjust(locals.sndTimer, TIME_IN_MSEC(5 + 10 * (data ^ 0xff)), 0, TIME_NEVER);
       } else {
         control_sound(data & 1);
       }
@@ -472,23 +472,16 @@ static WRITE_HANDLER(mp2_out) {
 
 static READ_HANDLER(mp2_sw) {
   static UINT8 swStatus[32];
+  static UINT8 lastSw5;
   if (!offset) {
     int i;
-    if (coreGlobals.swMatrix[5]) {
-      for (i = 0; i < 32; i++) {
-        if (core_getSw(1 + i)) {
-          memory_region(REGION_CPU1)[0x23e0 + i] = 0x80; // most switches are read using DMA
-        } else {
-          memory_region(REGION_CPU1)[0x23e0 + i] = 0;
-        }
-      }
-      return coreGlobals.swMatrix[5];
+    for (i = 0; i < 32; i++) {
+      memory_region(REGION_CPU1)[0x23e0 + i] = core_getSw(1 + i) ? 0x80 : 0; // most switches are read using DMA
     }
     for (i = 0; i < 32; i++) {
       if (core_getSw(1 + i)) {
         if (!swStatus[i]) {
           swStatus[i] = 1;
-          memory_region(REGION_CPU1)[0x23e0 + i] = 0x80; // most switches are read using DMA
           return 0x02; // activates switch matrix scan
         } else if (swStatus[i] == 1) {
           swStatus[i] = 2;
@@ -499,10 +492,13 @@ static READ_HANDLER(mp2_sw) {
         }
       } else if (swStatus[i]) {
         swStatus[i] = 0;
-        memory_region(REGION_CPU1)[0x23e0 + i] = 0;
       }
     }
-    return 0x01; // returning 0 would halt the game!?
+    if (lastSw5 != coreGlobals.swMatrix[5] || (coreGlobals.swMatrix[5] & 0x30)) {
+      lastSw5 = coreGlobals.swMatrix[5];
+      return lastSw5;
+    }
+    return 0xff; // returning 0 would halt the game!?
   }
   return coreGlobals.swMatrix[6];
 }
@@ -567,6 +563,9 @@ INPUT_PORTS_START(pentacp2)
   PORT_START /* 0 */
     COREPORT_BIT   (0x0010, "Add Credit",        KEYCODE_5)
     COREPORT_BIT   (0x4000, "Enter Players",     KEYCODE_1)
+    COREPORT_BIT   (0x0020, "Launch Ball",       KEYCODE_ENTER)
+    COREPORT_BIT   (0x0040, "Show Last Score",   KEYCODE_END)
+    COREPORT_BIT   (0x8800, "Tilt",              KEYCODE_DEL)
     COREPORT_BIT   (0x0001, "Reset",             KEYCODE_HOME)
   PORT_START /* 1 */
     COREPORT_DIPNAME( 0x0003, 0x0000, "Balls / Game")
@@ -631,7 +630,7 @@ core_tLCDLayout mp2_disp[] = {
 #endif
   {0}
 };
-static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(71,70),0,2}};
+static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(38,37),0,2}};
 static void init_pentacp2(void) {
   core_gameData = &pentacup2GameData;
 }
@@ -651,6 +650,8 @@ INPUT_PORTS_START(pentacpt)
   PORT_START /* 0 */
     COREPORT_BIT   (0x0400, "Add Credit",        KEYCODE_5)
     COREPORT_BIT   (0x4000, "Enter Players",     KEYCODE_1)
+    COREPORT_BIT   (0x0020, "Launch Ball",       KEYCODE_ENTER)
+    COREPORT_BIT   (0x8800, "Tilt",              KEYCODE_DEL)
     COREPORT_BIT   (0x0001, "Reset",             KEYCODE_HOME)
   PORT_START /* 1 */
     COREPORT_DIPNAME( 0x0003, 0x0000, "Balls / Game")
@@ -714,7 +715,7 @@ core_tLCDLayout mpt_disp[] = {
 #endif
   {0}
 };
-static core_tGameData pentacuptGameData = {0,mpt_disp,{FLIP_SWNO(38,70),0,2}};
+static core_tGameData pentacuptGameData = {0,mpt_disp,{FLIP_SWNO(38,37),0,2}};
 static void init_pentacpt(void) {
   core_gameData = &pentacuptGameData;
 }
