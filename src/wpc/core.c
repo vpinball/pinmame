@@ -941,7 +941,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 #endif
   // The PWM DMD implementation is always returning a full byte, so we shift it down here to return the expected value to existing code
-  const int shift = ((core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) != 0) ? 4 /* 256 to 16 shades */ : ((core_gameData->gen & (GEN_ALLWPC | GEN_DEDMD32 | GEN_ALLWS)) != 0) ? 6 /* 256 to 4 shades */ : 0;
+  const int shift = ((core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) != 0) ? 4 /* 256 to 16 shades */ : ((core_gameData->gen & (GEN_ALLWPC | GEN_DEDMD16 | GEN_DEDMD32 | GEN_ALLWS)) != 0) ? 6 /* 256 to 4 shades */ : 0;
   memset(&coreGlobals.dotCol[layout->start+1][0], 0, sizeof(coreGlobals.dotCol[0][0])*layout->length+1);
   memset(&coreGlobals.dotCol[0][0], 0, sizeof(coreGlobals.dotCol[0][0])*layout->length+1); // clear above
   for (ii = 0; ii < layout->start+1; ii++) {
@@ -3019,17 +3019,32 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
   dmd_state->height = height;
   dmd_state->rawFrameSize = width * height / 8;
   assert(dmd_state->rawFrameSize * 8 == width * height);
+  static const UINT16 fir_colorization_3_frames[] = { 20000, 20000, 20000 };
   switch (filter)
   {
-  case CORE_DMD_PWM_FILTER_DE: // Data East & Whitestar: 473Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern (are we sure of that ? at least 2 frames, but maybe more)
+  case CORE_DMD_PWM_FILTER_DE_128x16: // Data East 128x16: 177.5Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern
     if (dmd_state->legacyColorization)
     {
       // Data East & Whitestar previous implementation would weight the first rasterized frame twice more than the second and would only share this
       // preshaded version of the frame with the colorization plugin (no raw frames), so we recreate here for backward compatibility.
-      static const UINT16 fir_colorization_2_frames[] = { 20000, 20000, 20000 };
-      dmd_state->fir_weights = fir_colorization_2_frames;
+      dmd_state->fir_weights = fir_colorization_3_frames;
       dmd_state->fir_sum = 60000;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_2_frames) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_3_frames) / sizeof(UINT16);
+    } else {
+      static const UINT16 fir_177_15[] = { 549, 2291, 7523, 13954, 16901, 13954, 7523, 2291, 549 };
+      dmd_state->fir_weights = fir_177_15;
+      dmd_state->fir_sum = 65535;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_177_15) / sizeof(UINT16);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_DE_128x32: // Data East & Whitestar: 473Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern (are we sure of that ? at least 2 frames, but maybe more)
+    if (dmd_state->legacyColorization)
+    {
+      // Data East & Whitestar previous implementation would weight the first rasterized frame twice more than the second and would only share this
+      // preshaded version of the frame with the colorization plugin (no raw frames), so we recreate here for backward compatibility.
+      dmd_state->fir_weights = fir_colorization_3_frames;
+      dmd_state->fir_sum = 60000;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_colorization_3_frames) / sizeof(UINT16);
     } else {
       static const UINT16 fir_473_15[] = { 800, 2673, 7764, 13510, 16039, 13510, 7764, 2673, 800 };
       dmd_state->fir_weights = fir_473_15;
