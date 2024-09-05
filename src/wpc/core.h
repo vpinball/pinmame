@@ -614,11 +614,13 @@ typedef struct {
    unsigned int fir_sum;       // Sum of filter weights
    unsigned int frame_index;   // Raw frame index
 } core_tDMDPWMState;
-#define CORE_DMD_PWM_FILTER_DE    0
-#define CORE_DMD_PWM_FILTER_GTS3  1
-#define CORE_DMD_PWM_FILTER_WPC   2
-#define CORE_DMD_PWM_FILTER_ALVG1 3
-#define CORE_DMD_PWM_FILTER_ALVG2 4
+#define CORE_DMD_PWM_FILTER_DE_128x16   0
+#define CORE_DMD_PWM_FILTER_DE_128x32   1
+#define CORE_DMD_PWM_FILTER_DE_192x64   2
+#define CORE_DMD_PWM_FILTER_GTS3        3
+#define CORE_DMD_PWM_FILTER_WPC         4
+#define CORE_DMD_PWM_FILTER_ALVG1       5
+#define CORE_DMD_PWM_FILTER_ALVG2       6
 extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter);
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
 extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame);
