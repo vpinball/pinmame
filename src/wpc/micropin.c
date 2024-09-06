@@ -473,7 +473,9 @@ static WRITE_HANDLER(mp2_out) {
 static READ_HANDLER(mp2_sw) {
   static UINT8 swStatus[32];
   static UINT8 lastSw5;
+  static int count;
   if (!offset) {
+    UINT8 retVal = 0x01; // returning 0 would halt the game!?
     int i;
     for (i = 0; i < 32; i++) {
       memory_region(REGION_CPU1)[0x23e0 + i] = core_getSw(1 + i) ? 0x80 : 0; // most switches are read using DMA
@@ -482,23 +484,37 @@ static READ_HANDLER(mp2_sw) {
       if (core_getSw(1 + i)) {
         if (!swStatus[i]) {
           swStatus[i] = 1;
-          return 0x02; // activates switch matrix scan
+          retVal = 0x02; // activates switch matrix scan
+          break;
         } else if (swStatus[i] == 1) {
           swStatus[i] = 2;
-          return 0x02;
-        } else if (core_getSw(15) || core_getSw(19) || core_getSw(21) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
-          // saucers need to keep the matrix scan active until solenoids are fired
-          return 0x02;
+          retVal = 0x02; // every switch needs at least two scans to register
+          break;
+        } else if (core_getSw(15) || core_getSw(19) || core_getSw(21) || core_getSw(25) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
+          // saucers and outhole need to keep the matrix scan active longer but eventually need to release again!?
+          if (swStatus[i] > 2) { // means switch is still on but time ran out
+            break;
+          }
+          count++;
+          if (count < 225) {
+            retVal = 0x02; // keep switch closed
+          } else { // timeout reached
+            swStatus[i] = 3;
+            count = 0;
+          }
+          break;
         }
       } else if (swStatus[i]) {
         swStatus[i] = 0;
+        count = 0;
       }
     }
     if (lastSw5 != coreGlobals.swMatrix[5] || (coreGlobals.swMatrix[5] & 0x30)) {
       lastSw5 = coreGlobals.swMatrix[5];
-      return lastSw5;
+      retVal |= lastSw5;
+      retVal &= 0xfe;
     }
-    return 0xff; // returning 0 would halt the game!?
+    return retVal;
   }
   return coreGlobals.swMatrix[6];
 }
@@ -509,7 +525,7 @@ static READ_HANDLER(mp2_dip) {
       return ~core_getDip(4);
     case 3: // 00..70 cents
       return ~core_getDip(2);
-    case 4: // 8+9 cents, 80+90 cents, coin, show previous, NVRAM protect, unknown switch
+    case 4: // 8+9 cents, 80+90 cents, coin, launch ball, show last score, endless tilt
       return ~((core_getDip(5) & 0x03) | ((core_getDip(3) & 0x03) << 2) | (~coreGlobals.swMatrix[9] & 0xf0));
     default: // real dips
       return ~core_getDip(0);
