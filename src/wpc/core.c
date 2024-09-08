@@ -854,7 +854,7 @@ static PALETTE_INIT(core) {
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout) {
   int ii, jj;
 
-  #define DMD_OFS(row, col) (row*layout->length + col)
+  #define DMD_OFS(row, col) ((row)*layout->length + col)
 
   // Dedicated processing for hardware generations using core PWM luminance computation since they prepare both raw frames and luminance data
   if (core_gameData->gen & (/*GEN_SAM | GEN_SPA |*/ GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_ALLWPC | GEN_DEDMD16 | GEN_DEDMD32 | GEN_ALLWS)) {
