@@ -1,7 +1,15 @@
-#ifndef LIBPINMAME
-static UINT8 AlphaNumericFrameBuffer[2048] = {0};
+
+
+#if defined(LIBPINMAME) || defined(VPINMAME)
+  // Encode frame with a UINT8 per dot (0..3 value)
+  #define ANFB_USE_BITPLANES 0
+  #define ANFB_USE_LUMINANCE 1
+  static UINT8 AlphaNumericFrameBuffer[128*32] = {0};
 #else
-static UINT8 AlphaNumericFrameBuffer[4096] = {0};
+  // Custom encoding for PinDMD devices, using 4 bit planes to encode dot state
+  #define ANFB_USE_BITPLANES 1
+  #define ANFB_USE_LUMINANCE 0
+  static UINT8 AlphaNumericFrameBuffer[128*32*4/8] = {0};
 #endif
 
 static const UINT8 segSizes[8][16] = {
@@ -172,13 +180,12 @@ static const UINT8 segs[8][17][5][2] = {
 //*****************************************************
 static UINT8 getPixel(const int x, const int y)
 {
-#ifndef LIBPINMAME
+#if ANFB_USE_BITPLANES
    const int v = (y*16)+(x/8);
    const int z = 1<<(x%8);
    // just check high buff
-
    return ((AlphaNumericFrameBuffer[v+512]&z)!=0);
-#else
+#elif ANFB_USE_LUMINANCE
    return (AlphaNumericFrameBuffer[y * 128 + x] != 0);
 #endif
 }
@@ -191,7 +198,7 @@ static UINT8 getPixel(const int x, const int y)
 //*****************************************************
 static void drawPixel(const int x, const int y, const UINT8 colour)
 {
-#ifndef LIBPINMAME
+#if ANFB_USE_BITPLANES
    const int v = (y*16)+(x/8);
    const int z = 1<<(x%8);
    // clear both low and high buffer pixel
@@ -221,7 +228,7 @@ static void drawPixel(const int x, const int y, const UINT8 colour)
 		AlphaNumericFrameBuffer[v+1024] |= z;
 		AlphaNumericFrameBuffer[v+1536] ^= z;
    }
-#else
+#elif ANFB_USE_LUMINANCE
    AlphaNumericFrameBuffer[y * 128 + x] = colour;
 #endif
 }

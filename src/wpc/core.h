@@ -211,8 +211,6 @@
 #define DMD_MAXX 256
 #define DMD_MAXY 64
 
-typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
-
 /* Shortcuts for some common display sizes */
 #define DISP_SEG_16(row,type)    {4*(row), 0, 20*(row), 16, type}
 #define DISP_SEG_7(row,col,type) {4*(row),16*(col),(row)*20+(col)*8+1,7,type}
@@ -485,7 +483,8 @@ typedef struct {
   core_tSeg segments;                                           /* Segments data from driver */
   UINT16 drawSeg[CORE_SEGCOUNT];                                /* Segments drawn */
   /*-- DMD --*/
-  tDMDDot dotCol;                                               /* Raw DMD dots */
+  UINT8 dmdDotRaw[DMD_MAXY * DMD_MAXX];                         /* DMD: 'raw' dots, that is to say frame built up from rasterized frames (depends on each driver), stable result that can be used for post processing (colorization, ...) */
+  UINT8 dmdDotLum[DMD_MAXY * DMD_MAXX];                         /* DMD: perceived linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable) */
   /*-- Solenoids --*/
   volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
   volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
@@ -603,17 +602,18 @@ typedef struct {
    int     width;              // DMD width
    int     height;             // DMD height
    int     revByte;            // Is bitset reversed ?
-   int     legacyColorization; // Is legacy coloriation backward compatibility enabled ?
    int     rawFrameSize;       // Size of a raw DMD frame in bytes (width * height / 8)
-   UINT8*  rawFrames;          // Buffer for raw frames
+   UINT8*  rawFrames;          // Buffer for incoming raw frames
    UINT16* shadedFrame;        // Shaded frame computed from raw frames
    int     nextFrame;          // Position in circular buffer to store next raw frame
    int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
+   int     raw_combiner;       // Enum (see CORE_DMD_PWM_COMBINER_...) that defines how to combine bitplane to create multi plane raw frame for colorization plugin
    int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
    UINT16* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
    unsigned int fir_sum;       // Sum of filter weights
    unsigned int frame_index;   // Raw frame index
 } core_tDMDPWMState;
+
 #define CORE_DMD_PWM_FILTER_DE_128x16   0
 #define CORE_DMD_PWM_FILTER_DE_128x32   1
 #define CORE_DMD_PWM_FILTER_DE_192x64   2
@@ -621,9 +621,17 @@ typedef struct {
 #define CORE_DMD_PWM_FILTER_WPC         4
 #define CORE_DMD_PWM_FILTER_ALVG1       5
 #define CORE_DMD_PWM_FILTER_ALVG2       6
-extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter);
+
+#define CORE_DMD_PWM_COMBINER_LUM_4   0
+#define CORE_DMD_PWM_COMBINER_LUM_16  1
+#define CORE_DMD_PWM_COMBINER_SUM_3   2
+#define CORE_DMD_PWM_COMBINER_SUM_2_1 3
+#define CORE_DMD_PWM_COMBINER_SUM_1_2 4
+#define CORE_DMD_PWM_COMBINER_SUM_4   5
+
+extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner);
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
-extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame);
+extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes);
 extern void core_dmd_update_pwm(core_tDMDPWMState* dmd_state);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);

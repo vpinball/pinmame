@@ -1189,7 +1189,7 @@ static MACHINE_INIT(wpc) {
   // Init DMD PWM shading
   if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
   {
-    core_dmd_pwm_init(&dmdlocals.pwm_state, 128, (core_gameData->hw.gameSpecific2 == WPC_PH) ? 64 : 32, CORE_DMD_PWM_FILTER_WPC);
+    core_dmd_pwm_init(&dmdlocals.pwm_state, 128, (core_gameData->hw.gameSpecific2 == WPC_PH) ? 64 : 32, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
     dmdlocals.pwm_state.revByte = 1;
   }
 
@@ -1593,20 +1593,20 @@ static void wpc_dmd_hsync(int param) {
         UINT8 full_frame[0x400]; // Somewhat overkill (2 copies)
         memcpy(full_frame, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200 + (dmdlocals.visiblePage % 2) * 0x200, 0x200);
         memset(&full_frame[0x200], 0, 0x200);
-        core_dmd_submit_frame(&dmdlocals.pwm_state, full_frame);
+        core_dmd_submit_frame(&dmdlocals.pwm_state, full_frame, 1);
         #ifdef PROC_SUPPORT
           if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
             procFillDMDSubFrame(dmd_state->frame_index % 3, full_frame, 0x400);
         #endif
       } else { // full page
-        core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400);
+        core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 1);
         #ifdef PROC_SUPPORT
           if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
             procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 0x400);
         #endif
       }
     } else {
-      core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200);
+      core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 1);
       #ifdef PROC_SUPPORT
         if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
           procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 0x200);
