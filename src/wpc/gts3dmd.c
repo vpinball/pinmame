@@ -15,7 +15,7 @@ extern GTS3_DMDlocals GTS3_dmdlocals[2];
 // This was needed because each game had a different (somewhat wrong) VSync frequency.
 // This lead to better performance since less frames were accumulated but had 2 side effects:
 // - there were some occasional residual flickers,
-// - DMD luminance was not fully coherent between GTS3 games (some 4 shades, some other 5 shades).
+// - DMD luminance was not fully coherent between GTS3 games.
 int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout)
 {
   core_dmd_update_pwm(&GTS3_dmdlocals[which].pwm_state);

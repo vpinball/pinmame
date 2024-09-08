@@ -53,10 +53,10 @@ typedef void(*DmdDev_Set_4_Colors_Palette_t)(rgb24 color0, rgb24 color33, rgb24 
 typedef void(*DmdDev_Console_Data_t)(UINT8 data);
 typedef int(*DmdDev_Console_Input_t)(UINT8 *buf, int size);
 typedef int(*DmdDev_Console_Input_Ptr_t)(DmdDev_Console_Input_t ptr);
-typedef void(*DmdDev_Render_16_Shades_t)(UINT16 width, UINT16 height, UINT8 *currbuffer);
-typedef void(*DmdDev_Render_4_Shades_t)(UINT16 width, UINT16 height, UINT8 *currbuffer);
-typedef void(*DmdDev_Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
-typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
+typedef void(*DmdDev_Render_16_Shades_t)(UINT16 width, UINT16 height, UINT8 *frame);
+typedef void(*DmdDev_Render_4_Shades_t)(UINT16 width, UINT16 height, UINT8 *frame);
+typedef void(*DmdDev_Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8 *frame, UINT32 noOfRawFrames, UINT8 *rawbuffer);
+typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8 *frame, UINT32 noOfRawFrames, UINT8 *rawbuffer);
 typedef void(*DmdDev_render_PM_Alphanumeric_Frame_t)(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 typedef void(*DmdDev_render_PM_Alphanumeric_Dim_Frame_t)(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2);
 
@@ -279,78 +279,41 @@ void pindmdDeInit() {
 	free(tmpbuffer);
 }
 
-void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8 *rawbuffer) {
-
+void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *frame, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8 *rawbuffer) {
 	dmd_width = width; // store for DeInit
 	dmd_height = height;
 	dmd_hasDMD = true;
-
-	if ((gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3)) != 0) {
-		if (noOfRawFrames != 0) {
-			if (DmdDev_Render_16_Shades_with_Raw) {
-				DmdDev_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
-			}
-			else {
-				if (DmdDev_Render_16_Shades)
-					DmdDev_Render_16_Shades(width, height, currbuffer);
-			}
-		}
-		else {
-			if (DmdDev_Render_16_Shades)
-				DmdDev_Render_16_Shades(width, height, currbuffer);
-		}
-	} else {
-		if (noOfRawFrames != 0) {
-			if (DmdDev_Render_4_Shades_with_Raw) {
-				DmdDev_Render_4_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
-			}
-			else {
-				if (DmdDev_Render_4_Shades)
-					DmdDev_Render_4_Shades(width, height, currbuffer);
-			}
-		}
-		else {
-			if (DmdDev_Render_4_Shades)
-				DmdDev_Render_4_Shades(width, height, currbuffer);
-		}
+	// 16 shades based on hardware generation and extended to some GTS3 games using long PWM pattern (SMB, SMBMW and CBW)
+	if ((gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(GameName, "smb", 3) == 0) || (strncasecmp(GameName, "cueball", 7) == 0)) {
+		if ((noOfRawFrames != 0) && DmdDev_Render_16_Shades_with_Raw)
+			DmdDev_Render_16_Shades_with_Raw(width, height, frame, noOfRawFrames, rawbuffer);
+		else if (DmdDev_Render_16_Shades)
+			DmdDev_Render_16_Shades(width, height, frame);
+	}
+	else {
+		if ((noOfRawFrames != 0) && DmdDev_Render_4_Shades_with_Raw)
+			DmdDev_Render_4_Shades_with_Raw(width, height, frame, noOfRawFrames, rawbuffer);
+		else if (DmdDev_Render_4_Shades)
+			DmdDev_Render_4_Shades(width, height, frame);
 	}
 }
 
-void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* currbuffer, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8* rawbuffer) {
-
+void render2ndDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8* frame, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8* rawbuffer) {
 	dmd_width = width; // store for DeInit
 	dmd_height = height;
 	dmd_hasDMD = true;
-
-	if ((gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3)) != 0) {
-		if (noOfRawFrames != 0) {
-			if (DmdScr_Render_16_Shades_with_Raw) {
-				DmdScr_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
-			}
-			else {
-				if (DmdScr_Render_16_Shades)
-					DmdScr_Render_16_Shades(width, height, currbuffer);
-			}
-		}
-		else {
-			if (DmdScr_Render_16_Shades)
-				DmdScr_Render_16_Shades(width, height, currbuffer);
-		}
+	// 16 shades based on hardware generation and extended to some GTS3 games using long PWM pattern (SMB, SMBMW and CBW)
+	if ((gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(GameName, "smb", 3) == 0) || (strncasecmp(GameName, "cueball", 7) == 0)) {
+		if ((noOfRawFrames != 0) && DmdScr_Render_16_Shades_with_Raw)
+			DmdScr_Render_16_Shades_with_Raw(width, height, frame, noOfRawFrames, rawbuffer);
+		else if (DmdScr_Render_16_Shades)
+			DmdScr_Render_16_Shades(width, height, frame);
 	}
 	else {
-		if (noOfRawFrames != 0) {
-			if (DmdScr_Render_4_Shades_with_Raw) {
-				DmdScr_Render_4_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
-			}
-			else {
-				if (DmdScr_Render_4_Shades)
-					DmdScr_Render_4_Shades(width, height, currbuffer);
-			}
-		}
-		else {
-			if (DmdScr_Render_4_Shades)
-				DmdScr_Render_4_Shades(width, height, currbuffer);
-		}
+		if ((noOfRawFrames != 0) && DmdScr_Render_4_Shades_with_Raw)
+			DmdScr_Render_4_Shades_with_Raw(width, height, frame, noOfRawFrames, rawbuffer);
+		else if (DmdScr_Render_4_Shades)
+			DmdScr_Render_4_Shades(width, height, frame);
 	}
 }
 

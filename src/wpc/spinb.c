@@ -1438,7 +1438,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 
 #ifdef MAME_DEBUG
   core_textOutf(50,20,1,"offset=%08x", offset);
-  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
+  memset(coreGlobals.dmdDotRaw,0,sizeof(coreGlobals.dmdDotRaw));
 
   if(!debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
@@ -1464,8 +1464,8 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   RAM2 += offset;
 #endif
 
-  for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &coreGlobals.dotCol[ii][0];
+  for (ii = 0; ii < 32; ii++) {
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
     for (jj = 0; jj < (128/8); jj++) {
 	  UINT8 intens1, intens2, dot1, dot2;
 	  dot1 = core_revbyte(RAM[0]);
@@ -1505,10 +1505,10 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   UINT8   *line;
   UINT8   d1,d2,d3;
 
-  memset(coreGlobals.dotCol, 0, sizeof(coreGlobals.dotCol));
+  memset(coreGlobals.dmdDotRaw, 0, sizeof(coreGlobals.dmdDotRaw));
   for (row=0; row < 32; row++)
   {
-    line = &coreGlobals.dotCol[row+1][0];
+    line = &coreGlobals.dmdDotRaw[row * layout->length];
     for (col=0; col < 16; col++)
     {
       d1=dmd32RAM[0][row][col];

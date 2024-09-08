@@ -109,9 +109,8 @@ static void dmd32_vblank(int which) {
   unsigned int base = crtc6845_start_address_r(0); // MA0..13
   assert((base & 0x00FF) == 0); // As the mapping of lowest 8 bits is not implemented (would need complex data copy and does not seem to be used by any game)
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + src);            // First frame has been displayed 2/3 of the time
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + src);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + (src | 0x0200)); // Second frame has been displayed 1/3 of the time
+  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + src, 2);            // First frame has been displayed 2/3 of the time
+  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
 }
 
@@ -156,8 +155,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
     assert(0); // Unsupported board revision
 
   // Init PWM shading
-  dmdlocals.pwm_state.legacyColorization = 1; // FIXME Needed to avoid breaking colorization, but somewhat breaks DMD shading => make this an option
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, CORE_DMD_PWM_FILTER_DE_128x32);
+  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_SUM_2_1);
 }
 
 static void dmd32_exit(int boardNo) {
@@ -308,8 +306,8 @@ PINMAME_VIDEO_UPDATE(dedmd64_update) {
   const UINT8 *RAM2 = RAM + 0x800;
   int ii;
 
-  for (ii = 1; ii <= 64; ii++) {
-    UINT8 *line = &coreGlobals.dotCol[ii][0];
+  for (ii = 0; ii < 64; ii++) {
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
     int jj;
     for (jj = 0; jj < (192/16); jj++) {
       const UINT8 intens1 = 2*(RAM[1] & 0x55) + (RAM2[1] & 0x55);
@@ -424,8 +422,7 @@ static void dmd16_init(struct sndbrdData *brdData) {
   dmd16_reset();
 
   // Init PWM shading
-  //dmdlocals.pwm_state.legacyColorization = 1; // FIXME Needed to avoid breaking colorization, but somewhat breaks DMD shading => make this an option
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 16, CORE_DMD_PWM_FILTER_DE_128x16);
+  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 16, CORE_DMD_PWM_FILTER_DE_128x16, CORE_DMD_PWM_COMBINER_SUM_1_2);
 }
 
 static void dmd16_exit(int boardNo) {
@@ -464,9 +461,8 @@ static void dmd16_updrow() {
   }
   if (dmdlocals.blnk && dmdlocals.row_latch == 0) {
     //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 3 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 3. / (timer_get_time() - prev)); prev = timer_get_time();
-    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[0]); // First frame has been displayed 1/3 of the time
-    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[1]); // Second frame has been displayed 2/3 of the time
-    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[1]);
+    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[0], 1); // First frame has been displayed 1/3 of the time
+    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[1], 2); // Second frame has been displayed 2/3 of the time
   }
 }
 

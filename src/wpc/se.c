@@ -879,7 +879,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
   UINT16 *seg = coreGlobals.drawSeg;
 
   for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
-    UINT8 *line = &coreGlobals.dotCol[ii+1][0];
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
     int jj,kk;
     for (jj = 2; jj >= 0; jj--)
       for (kk = 0; kk < 5; kk++) {
@@ -891,7 +891,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
     int jj;
     bits = 0;
     for (jj = 0; jj < 7; jj++)
-      bits = (bits<<2) | coreGlobals.dotCol[jj+1][ii];
+      bits = (bits<<2) | coreGlobals.dmdDotRaw[jj * layout->length + ii];
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
@@ -905,7 +905,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
   UINT16 *seg = &coreGlobals.drawSeg[5*(2-jj)];
 
   for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
-    UINT8 *line = &coreGlobals.dotCol[ii+1][0];
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
     int kk;
     for (kk = 0; kk < 5; kk++)
       *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
@@ -915,7 +915,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
     int kk;
     bits = 0;
     for (kk = 0; kk < 7; kk++)
-      bits = (bits<<2) | coreGlobals.dotCol[kk+1][ii];
+      bits = (bits<<2) | coreGlobals.dmdDotRaw[kk * layout->length + ii];
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
@@ -928,7 +928,7 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
   UINT16 *seg = coreGlobals.drawSeg;
 
   for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1) {
-    UINT8 *line = &coreGlobals.dotCol[ii+1][0];
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
     int jj,kk;
     for (jj = 0; jj < 3; jj++)
       for (kk = 4; kk >= 0; kk--)
@@ -939,7 +939,7 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
     int jj;
     bits = 0;
     for (jj = 0; jj < 7; jj++)
-      bits = (bits<<2) | coreGlobals.dotCol[jj+1][ii];
+      bits = (bits<<2) | coreGlobals.dmdDotRaw[jj * layout->length + ii];
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
@@ -951,9 +951,9 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
   int ii,kk;
   UINT16 *seg = coreGlobals.drawSeg;
 
-  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
+  memset(coreGlobals.dmdDotRaw,0,sizeof(coreGlobals.dmdDotRaw));
   for (kk = 0; kk < 5; kk++) {
-    UINT8 *line = &coreGlobals.dotCol[kk+1][0];
+    UINT8 *line = &coreGlobals.dmdDotRaw[kk * layout->length];
     int jj,bits;
     for (jj = 0; jj < 3; jj++)
       for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1)
@@ -964,7 +964,7 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
     int bits = 0;
     int jj;
     for (jj = 0; jj < 5; jj++)
-      bits = (bits<<2) | coreGlobals.dotCol[jj+1][ii];
+      bits = (bits<<2) | coreGlobals.dmdDotRaw[jj * layout->length + ii];
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
@@ -988,12 +988,12 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
       int isRed = (selocals.minidmd[0][ii/7][ii%7] & bits) > 0;
       int isGrn = (selocals.minidmd[1][ii/7][ii%7] & bits) > 0;
       bits1 = (bits1 << 2) | (isGrn << 1) | isRed;
-      line = &coreGlobals.dotCol[ii+1][kk];
+      line = &coreGlobals.dmdDotRaw[ii * layout->length + kk];
       *line = color[isRed][isGrn];
       isRed = (selocals.minidmd[2][ii/7][ii%7] & bits) > 0;
       isGrn = (selocals.minidmd[3][ii/7][ii%7] & bits) > 0;
       bits2 = (bits2 << 2) | (isGrn << 1) | isRed;
-      line = &coreGlobals.dotCol[ii+1][7+kk];
+      line = &coreGlobals.dmdDotRaw[ii * layout->length + 7+kk];
       *line = color[isRed][isGrn];
     }
     *seg++ = bits1;

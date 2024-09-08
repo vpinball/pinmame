@@ -1843,11 +1843,22 @@ MACHINE_DRIVER_END
 /*  DMD Section  */
 /*****************/
 
-/*-- SAM DMD display uses 32 x 128 pixels by accessing 0x1000 bytes per page.
-     That's 8 bits for each pixel, but they are distributed into 4 brightness
-     bits (16 colors), and 4 translucency bits that perform the masking of the
-     secondary or "background" page that will "shine through" if the mask bits
-     of the foreground are set.
+/*-- 
+  SAM DMD display uses 32 x 128 pixels by accessing 0x1000 bytes per page.
+  That's 8 bits for each pixel, but they are distributed into 4 brightness
+  bits (16 colors), and 4 translucency bits that perform the masking of the
+  secondary or "background" page that will "shine through" if the mask bits
+  of the foreground are set.
+
+  SAM rasterizer renders each line 4 times with different display lengths 
+  to create shades. Each line is therefore made up of a pattern of 12 x 41.55us, 
+  with the 4 planes corresponding to combination of 1 / 2 / 4 / 5 of these 12 
+  time slots. The resulting frame rate is 1e6/(32x12x41.55) = 62.67Hz which 
+  has been validated with real hardware measure. The flicker/fusion threshold 
+  is supposed to be somewhere around 25-30Hz based on the fact that other 
+  hardwares like GTS3 and WPC have PWM pattern around these frequencies.
+  Therefore, to get the final luminance, we should perform integration of 
+  at least 24 frames.
 --*/
 static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	//static const UINT8 hew[16] = { 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
@@ -1855,7 +1866,7 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	int ii;
 	for( ii = 0; ii < 32; ii++ )
 	{
-		UINT8 *line = &coreGlobals.dotCol[ii+1][0];
+		UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
 		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
 		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
 		int jj;
@@ -1884,13 +1895,13 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
 		for (int x = 0; x < 5; x++) {
 			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dotCol[y + 1][x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
+			coreGlobals.dmdDotRaw[y * layout->length + x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 5; ii++) {
         int bits = 0;
-        for (kk = 1; kk < 8; kk++)
-            bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
+        for (kk = 0; kk < 7; kk++) // FIXME this does not match y in the for loop just above
+            bits = (bits<<1) | (coreGlobals.dmdDotRaw[kk * layout->length + ii] ? 1 : 0);
         coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
     }
     if (!pmoptions.dmd_only)
@@ -1904,13 +1915,13 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (kk = 0; kk < 5; kk++) {
 			const int target = 140 + jj + (kk * 35);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dotCol[kk + 1][jj] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
+			coreGlobals.dmdDotRaw[kk * layout->length + jj] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 35; ii++) {
       int bits = 0;
-      for (kk = 1; kk < 6; kk++)
-        bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
+      for (kk = 0; kk < 5; kk++)
+        bits = (bits<<1) | (coreGlobals.dmdDotRaw[kk * layout->length + ii] ? 1 : 0);
       coreGlobals.drawSeg[ii] = bits;
     }
     if (!pmoptions.dmd_only)

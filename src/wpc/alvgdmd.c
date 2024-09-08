@@ -288,7 +288,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
   dmdlocals.brdData = *brdData;
   dmd32_bank_w(0,0);			//Set DMD Bank to 0
   dmdlocals.selsync = 1;	//Start Sync @ 1 (PCA020A only)
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2);
+  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2, CORE_DMD_PWM_COMBINER_SUM_4);
 }
 
 static void dmd32_exit(int boardNo) {
@@ -321,17 +321,10 @@ static INTERRUPT_GEN(dmd32_firq1) {
   assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
   const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
-  if (dmdlocals.pwm_state.legacyColorization) {
-    // For backwards compatibility regarding colorization, previous implementation submitted first frame with a weight of 1, and second (same as first if plans_enable = 0) with a weight of 2 => 4 shades (with unbalanced luminance between frames)
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
-  } else {
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
-  }
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4), 1);
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4), 1);
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4), 1);
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4), 1);
 }
 
 static INTERRUPT_GEN(dmd32_firq2) {
@@ -346,10 +339,10 @@ static INTERRUPT_GEN(dmd32_firq2) {
   assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
   const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4));
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4));
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4));
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4));
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4), 1);
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4), 1);
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4), 1);
+  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4), 1);
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {

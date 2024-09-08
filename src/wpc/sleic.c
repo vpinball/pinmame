@@ -304,8 +304,8 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
   UINT16 *RAM;
 
   RAM = (void *)(memory_region(SLEIC_MEMREG_CPU) + 0x60410);
-  for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &coreGlobals.dotCol[ii][0];
+  for (ii = 0; ii < 32; ii++) {
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
     for (jj = 0; jj < 16; jj++) {
       for (kk = 7; kk >= 0; kk--) {
         *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;

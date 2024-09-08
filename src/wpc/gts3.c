@@ -591,7 +591,8 @@ static void gts3dmd_init(void) {
   crtc6845_set_vsync(0, 3579545. / 2., dmd_vblank);
 
   // Setup PWM shading
-  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3);
+  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, 
+	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0) ? CORE_DMD_PWM_COMBINER_LUM_16 : CORE_DMD_PWM_COMBINER_LUM_4);
 
   /*DMD*/
   /*copy last 32K of ROM into last 32K of CPU region*/
@@ -732,7 +733,7 @@ static MACHINE_INIT(gts3dmd2) {
   crtc6845_set_vsync(1, 3579545. / 2., dmd_vblank);
 
   // Setup PWM shading
-  core_dmd_pwm_init(&GTS3_dmdlocals[1].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3);
+  core_dmd_pwm_init(&GTS3_dmdlocals[1].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_LUM_16);
 
   /*copy last 32K of DMD ROM into last 32K of CPU region*/
   if (memory_region(GTS3_MEMREG_DCPU2)) {
@@ -960,7 +961,7 @@ static WRITE_HANDLER(dmd_aux) {
 static void dmd_vblank(int which) {
 	const UINT8* RAM = memory_region(which ? GTS3_MEMREG_DCPU2 : GTS3_MEMREG_DCPU1) + 0x1000 + (crtc6845_start_address_r(which) >> 2);
 	//static double prev; printf("DMD VBlank %6.2fHz: %02x %02x %02x %02x\n", 1. / (timer_get_time() - prev), RAM[20 * 16 + 2], RAM[20 * 16 + 6], RAM[20 * 16 + 10], RAM[20 * 16 + 14]); prev = timer_get_time();
-	core_dmd_submit_frame(&GTS3_dmdlocals[which].pwm_state, RAM);
+	core_dmd_submit_frame(&GTS3_dmdlocals[which].pwm_state, RAM, 1);
 	cpu_set_nmi_line(which ? GTS3_DCPUNO2 : GTS3_DCPUNO, PULSE_LINE);
 }
 

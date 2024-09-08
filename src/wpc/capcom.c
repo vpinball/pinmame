@@ -951,8 +951,8 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
 
   UINT32 offset = locals.visible_page ? 0x800 * locals.visible_page - 0x10 : 0;
   RAM = ramptr+offset;
-  for (ii = 0; ii <= 32; ii++) {
-    UINT8 *line = &coreGlobals.dotCol[ii][0];
+  for (ii = 0; ii < 32; ii++) {
+    UINT8 *line = &coreGlobals.dmdDotRaw[ii*layout->length];
     for (kk = 0; kk < 16; kk++) {
       UINT16 intens1 = RAM[0];
       for(jj=0;jj<8;jj++) {
@@ -977,9 +977,9 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 
   UINT32 offset = locals.visible_page ? 0x800 * locals.visible_page - 0x20 : 0;
   RAM = ramptr+offset;
-  for (ii = 0; ii <= 64; ii++) {
-    UINT8 *linel = &coreGlobals.dotCol[ii][0];
-    UINT8 *liner = &coreGlobals.dotCol[ii][128];
+  for (ii = 0; ii < 64; ii++) {
+    UINT8 *linel = &coreGlobals.dmdDotRaw[ii * layout->length];
+    UINT8 *liner = &coreGlobals.dmdDotRaw[ii * layout->length + 128];
     for (kk = 0; kk < 16; kk++) {
       UINT16 intensl = RAM[0];
       UINT16 intensr = RAM[0x10];
