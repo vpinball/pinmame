@@ -124,19 +124,19 @@ READ_HANDLER( crtc6845_register_r )
 			retval=crtc6845[offset].cursor_end_ras;
 			break;
 		case 12:
-			retval=(crtc6845[offset].start_addr&0x3f)>>8;
+			retval=(crtc6845[offset].start_addr >> 8) & 0x003f;
 			break;
 		case 13:
 			retval=crtc6845[offset].start_addr&0xff;
 			break;
 		case 14:
-			retval=(crtc6845[offset].cursor&0x3f)>>8;
+			retval=(crtc6845[offset].cursor >> 8) & 0x003f;
 			break;
 		case 15:
 			retval=crtc6845[offset].cursor&0xff;
 			break;
 		case 16:
-			retval=(crtc6845[offset].light_pen&0x3f)>>8;
+			retval=(crtc6845[offset].light_pen >> 8) & 0x003f;
 			break;
 		case 17:
 			retval=crtc6845[offset].light_pen&0xff;
@@ -144,7 +144,8 @@ READ_HANDLER( crtc6845_register_r )
 		default:
 			break;
 	}
-        return retval;
+	LOG(("%8.5f CRT #0 PC %04x: READ reg 0x%02x data 0x%02x\n", timer_get_time(), activecpu_get_pc(), crtc6845[offset].address_latch, retval));
+	return retval;
 }
 
 
@@ -156,9 +157,7 @@ WRITE_HANDLER( crtc6845_address_w )
 
 WRITE_HANDLER( crtc6845_register_w )
 {
-
-LOG(("CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",activecpu_get_pc(),crtc6845[offset].address_latch,data));
-
+	LOG(("%8.5f CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",timer_get_time(),activecpu_get_pc(),crtc6845[offset].address_latch,data));
 	switch(crtc6845[offset].address_latch)
 	{
 		case 0:
@@ -202,29 +201,23 @@ LOG(("CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",activecpu_get_pc(),crtc684
 			crtc6845[offset].cursor_end_ras=data&0x1f;
 			break;
 		case 12:
-			crtc6845[offset].start_addr&=0x00ff;
-			crtc6845[offset].start_addr|=(data&0x3f)<<8;
-			crtc6845[offset].page_flip=data&0x40;
+			crtc6845[offset].start_addr = ((data & 0x003f) << 8) | (crtc6845[offset].start_addr & 0x00ff);
+			crtc6845[offset].page_flip = data&0x40;
 			break;
 		case 13:
-			crtc6845[offset].start_addr&=0xff00;
-			crtc6845[offset].start_addr|=data;
+			crtc6845[offset].start_addr = (crtc6845[offset].start_addr & 0xff00) | data;
 			break;
 		case 14:
-			crtc6845[offset].cursor&=0x00ff;
-			crtc6845[offset].cursor|=(data&0x3f)<<8;
+			crtc6845[offset].cursor = ((data & 0x003f) << 8) | (crtc6845[offset].cursor & 0x00ff);
 			break;
 		case 15:
-			crtc6845[offset].cursor&=0xff00;
-			crtc6845[offset].cursor|=data;
+			crtc6845[offset].cursor = (crtc6845[offset].cursor & 0xff00) | data;
 			break;
 		case 16:
-			crtc6845[offset].light_pen&=0x00ff;
-			crtc6845[offset].light_pen|=(data&0x3f)<<8;
+			crtc6845[offset].light_pen = ((data & 0x003f) << 8) | (crtc6845[offset].light_pen & 0x00ff);
 			break;
 		case 17:
-			crtc6845[offset].light_pen&=0xff00;
-			crtc6845[offset].light_pen|=data;
+			crtc6845[offset].light_pen = (crtc6845[offset].light_pen & 0xff00) | data;
 			break;
 		default:
 			break;

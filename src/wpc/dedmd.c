@@ -87,7 +87,7 @@ MACHINE_DRIVER_END
  Data East and Sega/Stern Whitestar share the (mostly) same DMD board: 520-5055-00 for Data East, 520-5055-01 to 520-5055-03 for Whitestar
  [Disclaimer, large parts of the following have been deduced from digital recordings and schematics analysis, so may be entirely wrong]
 
- The board is built around a CRTC6845 [U9] which clock is driven by a custom PAL chip [U2]. This design allows to create 0/25/50/75/100 shades: 
+ The board is built around a CRTC6845 [U9] which clock is driven by a custom PAL chip [U2]. This design allows to create 0/33/66/100 shades: 
  - Each row is rasterized twice by the CRTC6845, first with a 500KHz clock, then with a 1MHz clock. To do so, the PAL chip toggles the 
    clock divider of the CRTC6845. RA0 is likely used to toggle the clock divider inside U2.
  - Data is fed from RAM at offset X for first frame (double PWM length) then at X+0x200 for second frame (single PWM length). To do so,
@@ -100,10 +100,13 @@ MACHINE_DRIVER_END
     MA7      - A8      => DMD row highest bit [unimplemented in PinMame]
     RA0      - A9      => used to toggle between frame while rasterizing each row
     MA8..12  - A10..14
- - ROWCLOCK is RA0 (so advanced one every 2 rasterized rows)
-  */
+ - RA0 is also wired to ROWCLOCK, therefore row is advanced once every 2 rasterized rows
+ - The start address can be either 0x2000 or 0x2100 (i.e. MA13 is always set), with CURSOR always being defined on 0x2000 / row 0, which led 
+   to guess that CURSOR signal is used to generate FIRQ (frame IRQ to CPU, trigerring some animation update). Results looks good but this would 
+   be nice to check this assumption on real hardware.
+   */
 static void dmd32_vblank(int which) {
-  //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 3 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 3. / (timer_get_time() - prev)); prev = timer_get_time();
+  //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz Base address: %04x\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), crtc6845_start_address_r(0)); prev = timer_get_time();
   // Store 2 next rasterized frame, as the CRTC is setup to render 2 contiguous full frames for each VBLANK
   assert(crtc6845_get_rasterized_height(0) == 64);
   unsigned int base = crtc6845_start_address_r(0); // MA0..13
@@ -111,7 +114,8 @@ static void dmd32_vblank(int which) {
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
   core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + src, 2);            // First frame has been displayed 2/3 of the time
   core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
+  if (base = 0x2000) // Guessing that the CURSOR signal is used to generate FIRQ
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 }
 
 static void dmd32_init(struct sndbrdData *brdData) {
@@ -126,31 +130,14 @@ static void dmd32_init(struct sndbrdData *brdData) {
   crtc6845_init(0);
   //crtc6845_set_vsync(0, /* 8000000 from 6809 E clock output */, dmd32_vblank); // we can not use the default implementation as the clock divider is toggled after each HSYNC
   // The theory of operation given above would lead to a refresh rate of 80.1Hz (half of the frame with a CRTC6845 clocked at 1MHz, the other half at 500KHz)
-  // Measures on the real hardware show that a few additional cycles are consumed while switching clock divider, this behavior having changed between initial revision (Data East)
-  // and later ones (Sega/Stern Whitestar).
+  // Measures on the real hardware show that a few additional cycles are consumed while switching clock divider, this behavior having changed between initial revision 
+  // (Data East, 25620 cycles per frame) and later ones (Sega/Stern Whitestar, 25720 cycles per frame).
   if ((core_gameData->gen & GEN_DEDMD32) != 0) // Board 520-5055-00
-  {
-    // I can't reproduce the glitch anymore (disappearing score) so this is disabled but kept if it appears again
-    #if 0
-    // FIXME hacked 86.20689655172414 Hz from previous implementation to account for glitches for LW3/AS/R&B/SW (score disappears)
-    const struct GameDriver* rootDrv = Machine->gamedrv;
-    while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
-      rootDrv = rootDrv->clone_of;
-    const char* const gn = rootDrv->name;
-    if ((strncasecmp(gn, "stwr_", 5) == 0)  // Star Wars
-       || (strncasecmp(gn, "rab_", 4) == 0) // Adventures of Rocky and Bullwinkle and Friends
-       || (strncasecmp(gn, "aar_", 4) == 0) // Aaron Spelling
-       || (strncasecmp(gn, "lw3_", 4) == 0) // Lethal Weapon 3
-       || (strncasecmp(gn, "mj_", 3) == 0)) // Michael Jordan
-      timer_pulse(1. / 86.20689655172414, 0, dmd32_vblank);
-    else
-    #endif
     // Measured at 78.07Hz for the 3 PWM frames (234.21Hz fps)
-    timer_pulse((32.*0.3921+0.2610) / 1000., 0, dmd32_vblank);
-  }
+    timer_pulse(25620. / 2000000., 0, dmd32_vblank);
   else if ((core_gameData->gen & GEN_ALLWS) != 0) // Board 520-5055-01 to 520-5055-03
     // Measured at 77.77Hz for the 3 PWM frames (233.31Hz fps)
-    timer_pulse((32.*0.3896+0.3896) / 1000., 0, dmd32_vblank);
+    timer_pulse(25720. / 2000000., 0, dmd32_vblank);
   else
     assert(0); // Unsupported board revision
 
