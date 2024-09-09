@@ -230,7 +230,6 @@ typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 
 #define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
 typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);
-extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);
 
 /*----------------------
 / WPC driver constants
@@ -599,19 +598,25 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = timer
 
 /*-- DMD PWM integration --*/
 typedef struct {
-   int     width;              // DMD width
-   int     height;             // DMD height
-   int     revByte;            // Is bitset reversed ?
-   int     rawFrameSize;       // Size of a raw DMD frame in bytes (width * height / 8)
-   UINT8*  rawFrames;          // Buffer for incoming raw frames
-   UINT16* shadedFrame;        // Shaded frame computed from raw frames
-   int     nextFrame;          // Position in circular buffer to store next raw frame
-   int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
-   int     raw_combiner;       // Enum (see CORE_DMD_PWM_COMBINER_...) that defines how to combine bitplane to create multi plane raw frame for colorization plugin
-   int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
-   UINT16* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
-   unsigned int fir_sum;       // Sum of filter weights
-   unsigned int frame_index;   // Raw frame index
+  // Definition initialized at startup using 'core_dmd_pwm_init' then unmutable
+  int     width;              // DMD width
+  int     height;             // DMD height
+  int     revByte;            // Is bitset reversed ?
+  int     frameSize;          // Size of a DMD frame in bytes (width * height)
+  int     rawFrameSize;       // Size of a raw DMD frame in bytes (width * height / 8)
+  int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
+  int     raw_combiner;       // CORE_DMD_PWM_COMBINER_... enum that defines how to combine bitplanes to create multi plane raw frame for colorization plugin
+  int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  UINT16* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  unsigned int fir_sum;       // Sum of filter weights
+  // Data acquisition, feeded by the driver through 'core_dmd_submit_frame'
+  UINT8*  rawFrames;          // Buffer for incoming raw frames
+  int     nextFrame;          // Position in circular buffer to store next raw frame
+  UINT16* shadedFrame;        // Shaded frame computed from raw frames
+  unsigned int frame_index;   // Raw frame index
+  // Integrated data, computed by 'core_dmd_update_pwm'
+  UINT8*  bitplaneFrame;      // DMD: bitplane frame built up from raw rasterized frames (depends on each driver, stable result that can be used for post processing like colorization, ...)
+  UINT8*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable accross PinMame builds)
 } core_tDMDPWMState;
 
 #define CORE_DMD_PWM_FILTER_DE_128x16   0
@@ -633,6 +638,7 @@ extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, con
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
 extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes);
 extern void core_dmd_update_pwm(core_tDMDPWMState* dmd_state);
+extern void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

@@ -895,7 +895,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, layout);
+    core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 // MINI DMD Type 1 (Ripley's) (3 x 5x7)
@@ -919,7 +919,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, layout);
+    core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 // MINI DMD Type 2 (Monopoly) (15x7)
@@ -943,7 +943,7 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, layout);
+    core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 // MINI DMD Type 3 (RCT) (21x5)
@@ -968,7 +968,7 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, layout);
+    core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 // 3-Color MINI DMD Type 4 (Simpsons) (14x10)
@@ -1000,7 +1000,7 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
     *seg++ = bits2;
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, layout);
+    core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 

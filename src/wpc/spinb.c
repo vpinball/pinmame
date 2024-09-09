@@ -1485,7 +1485,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 
@@ -1524,7 +1524,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 
 }

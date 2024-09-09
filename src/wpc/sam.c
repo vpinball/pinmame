@@ -628,7 +628,7 @@ static MEMORY_READ32_START(sam_readmem)
 	{ 0x01100000, 0x011FFFFF, samswitch_r },				//Various Input Signals
 	{ 0x02000000, 0x020FFFFF, MRA32_RAM },					//U9 Boot Flash Eprom
 	{ 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },		//U11 NVRAM (128K)
-	{ 0x02400000, 0x024000FF, samio_r },				   //I/O Related
+	{ 0x02400000, 0x024000FF, samio_r },				    //I/O Related
 	{ 0x03000000, 0x030000FF, MRA32_RAM },					//USB Related
 	{ 0x04000000, 0x047FFFFF, MRA32_RAM },					//1st 8MB of Flash ROM U44 Mapped here
 	{ 0x04800000, 0x04FFFFFF, MRA32_BANK1 },				//Banked Access to Flash ROM U44 (including 1st 8MB ALSO!)
@@ -1143,7 +1143,7 @@ static MEMORY_WRITE32_START(sam_writemem)
 	{ 0x01080000, 0x0109EFFF, MWA32_RAM },				   //U13 RAM - DMD Data for output
 	{ 0x0109F000, 0x010FFFFF, samxilinx_w },			   //U13 RAM - Sound Data for output
 	{ 0x01100000, 0x01FFFFFF, samdmdram_w },			   //Various Output Signals
-	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		//U11 NVRAM (128K) 0x02100000,0x0211ffff
+	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		   //U11 NVRAM (128K) 0x02100000,0x0211ffff
 	{ 0x02200000, 0x022fffff, sam_io2_w },				   //LE versions: more I/O stuff (mostly LED lamps)
 	{ 0x02400000, 0x02FFFFFF, sambank_w },				   //I/O Related
 	{ 0x03000000, 0x030000FF, MWA32_RAM },				   //USB Related
@@ -1743,10 +1743,10 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 }
 
 
-/********************/
-/*  VBLANK Section  */
-/********************/
-static INTERRUPT_GEN(sam_vblank) {
+/******************************/
+/*  Interface update Section  */
+/******************************/
+static INTERRUPT_GEN(sam_interface_update) {
 	/*-------------------------------
 	/  copy local data to interface
 	/--------------------------------*/
@@ -1814,7 +1814,7 @@ static MACHINE_DRIVER_START(sam1)
     MDRV_CPU_ADD(AT91, SAM_CPUFREQ) // AT91R40008
     MDRV_CPU_MEMORY(sam_readmem, sam_writemem)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
-    MDRV_CPU_VBLANK_INT(sam_vblank, 1)
+    MDRV_CPU_VBLANK_INT(sam_interface_update, 1)
     MDRV_CPU_PERIODIC_INT(sam_irq, SAM_IRQFREQ)
     MDRV_CORE_INIT_RESET_STOP(sam, sam1, sam)
     MDRV_DIPS(8)
@@ -1883,7 +1883,7 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 		}
 	}
 
-	video_update_core_dmd(bitmap, cliprect, layout);
+	core_dmd_video_update(bitmap, cliprect, layout, NULL);
 	return 0;
 }
 
@@ -1905,7 +1905,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
         coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
     }
     if (!pmoptions.dmd_only)
-        video_update_core_dmd(bitmap, cliprect, layout);
+        core_dmd_video_update(bitmap, cliprect, layout, NULL);
     return 0;
 }
 
@@ -1925,7 +1925,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
       coreGlobals.drawSeg[ii] = bits;
     }
     if (!pmoptions.dmd_only)
-      video_update_core_dmd(bitmap, cliprect, layout);
+      core_dmd_video_update(bitmap, cliprect, layout, NULL);
     return 0;
 }
 
