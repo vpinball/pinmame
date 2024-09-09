@@ -3139,10 +3139,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
       dmdDotLum[ii] = dmdDotRaw[ii] << shift;
   }
 
-  #if defined(PINMAME)
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
-  
-  #elif defined(LIBPINMAME)
+  #if defined(LIBPINMAME)
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
     if (isMainDMD) {
       core_dmd_render_lpm(layout->length, layout->start, dmdDotLum, dmdDotRaw);
@@ -3159,6 +3156,10 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
       core_dmd_capture_frame(layout->length, layout->start, dmdDotRaw, raw_dmd_frame_count ,raw_dmd_frames);
       has_DMD_Video = 1;
     }
+  
+  #elif defined(PINMAME)
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+
   #endif
 }
 
