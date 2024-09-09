@@ -857,7 +857,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   #define DMD_OFS(row, col) ((row)*layout->length + col)
 
   // Dedicated processing for hardware generations using core PWM luminance computation since they prepare both raw frames and luminance data
-  if (core_gameData->gen & (/*GEN_SAM | GEN_SPA |*/ GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_ALLWPC | GEN_DEDMD16 | GEN_DEDMD32 | GEN_ALLWS)) {
+  if (core_gameData->gen & (/*GEN_SAM | GEN_SPA |*/ GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_ALLWPC | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64 | GEN_ALLWS)) {
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
     const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
 
@@ -3148,12 +3148,13 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_177_15) / sizeof(UINT16);
     }
     break;
-  case CORE_DMD_PWM_FILTER_DE_128x32: // Data East & Whitestar: 473Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern (are we sure of that ? at least 2 frames, but maybe more)
+  case CORE_DMD_PWM_FILTER_DE_128x32: // Data East & Sega/Stern Whitestar: 234Hz refresh rate / 15Hz low pass filter / 2 frames (2/3 - 1/3 length) PWM pattern
+  case CORE_DMD_PWM_FILTER_DE_192x64: // Sega: 224Hz refresh rate / 15Hz low pass filter / 2 frames (2/3 - 1/3 length) PWM pattern
     {
-      static const UINT16 fir_473_15[] = { 800, 2673, 7764, 13510, 16039, 13510, 7764, 2673, 800 };
-      dmd_state->fir_weights = fir_473_15;
+      static const UINT16 fir_230_15[] = { 789, 2657, 7755, 13529, 16075, 13529, 7755, 2657, 789 };
+      dmd_state->fir_weights = fir_230_15;
       dmd_state->fir_sum = 65533;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_473_15) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_230_15) / sizeof(UINT16);
     }
     break;
   case CORE_DMD_PWM_FILTER_GTS3: // GTS3: 376Hz refresh rate / 15Hz low pass filter / 1,3,6,8,10 frames PWM pattern
