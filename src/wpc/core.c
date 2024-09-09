@@ -130,7 +130,7 @@ const core_tGameData *core_gameData = NULL;  /* data about the running game */
 /*---------------------
 /  Global constants
 /----------------------*/
-static const int core_bcd2seg7[16] = {
+const int core_bcd2seg7[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 #ifdef MAME_DEBUG
@@ -139,7 +139,7 @@ static const int core_bcd2seg7[16] = {
 #endif /* MAME_DEBUG */
 };
 // including the 0x0a to 0x0e characters of a SN5446A type BCD-to-7-segment encoder
-static const int core_bcd2seg7e[16] = {
+const int core_bcd2seg7e[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,
 /* A    B    C    D    E */
@@ -150,7 +150,7 @@ static const int core_bcd2seg7e[16] = {
 #endif /* MAME_DEBUG */
 };
 // missing top line for 6 and bottom line for 9 numbers (e.g. Atari)
-static const int core_bcd2seg7a[16] = {
+const int core_bcd2seg7a[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7c,0x07,0x7f,0x67
 #ifdef MAME_DEBUG
@@ -158,7 +158,7 @@ static const int core_bcd2seg7a[16] = {
  ,0x77,0x7c,0x39,0x5e,0x79
 #endif /* MAME_DEBUG */
 };
-static const int core_bcd2seg9[16] = {
+const int core_bcd2seg9[16] = {
 /* 0    1     2    3    4    5    6    7    8    9  */
   0x3f,0x300,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 #ifdef MAME_DEBUG
@@ -167,7 +167,7 @@ static const int core_bcd2seg9[16] = {
 #endif /* MAME_DEBUG */
 };
 // missing top line for 6 and bottom line for 9 numbers, and including the 0x0a to 0x0e characters (e.g. Gottlieb Sys80/a)
-static const int core_bcd2seg9a[16] = {
+const int core_bcd2seg9a[16] = {
 /* 0    1     2    3    4    5    6    7    8    9  */
   0x3f,0x300,0x5b,0x4f,0x66,0x6d,0x7c,0x07,0x7f,0x67,
 #ifdef MAME_DEBUG
@@ -180,7 +180,7 @@ static const int core_bcd2seg9a[16] = {
 };
 
 // patterns taken from Rockwell 10939 datasheet and adjusted to match regular 16 segments layout
-static const UINT16 core_ascii2seg16[] = {
+const UINT16 core_ascii2seg16[] = {
   /* 0x00-0x07 */ 0x0000, 0x0000, 0x44BF, 0x2280, 0x08DB, 0x08CF, 0x08E6, 0x08ED, //   012345 with commas
   /* 0x08-0x0f */ 0x08FD, 0x0087, 0x08FF, 0x08EF, 0xC43F, 0xA200, 0x885B, 0x884F, // 67890123 with commas / dots
   /* 0x10-0x17 */ 0x8866, 0x886D, 0x887D, 0x8007, 0x887F, 0x886F, 0xC4BF, 0xA280, // 45678901 with dots / semicolons
@@ -200,7 +200,7 @@ static const UINT16 core_ascii2seg16[] = {
 };
 
 // patterns taken from Rockwell 10939 datasheet and adjusted to match 16 segments layout with split top / bottom lines
-static const UINT16 core_ascii2seg16s[] = {
+const UINT16 core_ascii2seg16s[] = {
   /* 0x00-0x07 */ 0x0000, 0x0000, 0x44ff, 0x2200, 0x8877, 0x883f, 0x888c, 0x88bb, //   012345 with commas (no bits for these)
   /* 0x08-0x0f */ 0x88fb, 0x000f, 0x88ff, 0x88bf, 0x44ff, 0x2200, 0x8877, 0x883f, // 67890123 with commas / dots (no bits for these)
   /* 0x10-0x17 */ 0x888c, 0x88bb, 0x88fb, 0x000f, 0x88ff, 0x88bf, 0x44ff, 0x2200, // 45678901 with dots / semicolons (no bits for these)
