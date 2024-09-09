@@ -2861,7 +2861,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      for (kk = 0; kk < dmd_state->rawFrameSize; kk++) {
+      for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         const unsigned int intens1 = (frame0[kk] & 0x55) + (frame1[kk] & 0x55) + (frame2[kk] & 0x55); // 0x55 = 01010101 binary mask
         const unsigned int intens2 = (frame0[kk] & 0xaa) + (frame1[kk] & 0xaa) + (frame2[kk] & 0xaa); // 0xaa = 10101010 binary mask
         *rawData++ =  intens1       & 0x03;
@@ -2884,7 +2884,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
         frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       }
-      else //if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_1_2) { // double length frame are the 2 last ones, single length frame is the one before (Data East 128x16)
+      else { //if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_1_2) { // double length frame are the 2 last ones, single length frame is the one before (Data East 128x16)
         frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       }
@@ -2909,7 +2909,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame3 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      for (kk = 0; kk < dmd_state->rawFrameSize; kk++) {
+      for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         UINT8 v0 = frame0[kk], v1 = frame1[kk], v2 = frame2[kk], v3 = frame3[kk];
         for (ii = 0; ii < 8; ii++, v0 >>= 1, v1 >>= 1, v2 >>= 1, v3 >>= 1)
           *rawData++ = (v0 & 0x01) + (v1 & 0x01) + (v1 & 0x02) + (v3 & 0x01);
