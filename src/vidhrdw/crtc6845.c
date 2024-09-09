@@ -248,19 +248,25 @@ WRITE_HANDLER( crtc6845_register_1_w )
 {
 	crtc6845_register_w(1,data);
 }
+
 //Return current video start address
 int crtc6845_start_address_r(int offset)
 {
 	return crtc6845[offset].start_addr;
 }
+int crtc6845_cursor_address_r(int offset)
+{
+	return crtc6845[offset].cursor;
+}
+
 //Return rasterization size
-int crtc6845_get_rasterized_height(int offset)
+int crtc6845_rasterized_height_r(int offset)
 {
 	// height in scanlines is the number of displayed character line * number of scanlines per character
 	return crtc6845[offset].vert_disp * (crtc6845[offset].max_ras_addr + 1);
 }
 
-int crtc6845_get_rasterized_width(int offset)
+int crtc6845_rasterized_width_r(int offset)
 {
 	return crtc6845[offset].horiz_disp;
 }
