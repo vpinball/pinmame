@@ -964,7 +964,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
     *line++ = 0;
     RAM+=16;
   }
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 
@@ -993,7 +993,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
     }
     RAM+=16;
   }
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
 

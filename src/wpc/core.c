@@ -721,7 +721,7 @@ static struct {
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
   /*-- VPinMame specifics --*/
-  #ifdef VPINMAME
+  #if defined(VPINMAME) || defined(LIBPINMAME)
     UINT8   vpm_dmd_last_lum[DMD_MAXY * DMD_MAXX];
     UINT8   vpm_dmd_luminance_lut[256];
     UINT32  vpm_dmd_color_lut[256];
@@ -849,407 +849,8 @@ static PALETTE_INIT(core) {
 }
 
 /*-----------------------------------
-/    Generic DMD display handler
+/  Generic segment display handler
 /------------------------------------*/
-void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout) {
-  int ii, jj;
-
-  #define DMD_OFS(row, col) ((row)*layout->length + col)
-
-  // Dedicated processing for hardware generations using core PWM luminance computation since they prepare both raw frames and luminance data
-  if (core_gameData->gen & (/*GEN_SAM | GEN_SPA |*/ GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_ALLWPC | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64 | GEN_ALLWS)) {
-    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
-    const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-
-    // Render to internal display, using computed luminance, if there is a visible display (PinMame and VPinMame with its window shown)
-    // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
-    // FIXME apply colors ?
-    #if defined(PINMAME) || defined(VPINMAME)
-      #define DMD_PAL(x) ((int)sizeof(core_palette) / 3 - 48 + ((3 * (int)x) >> 4)) // The trail of PinMame palette has 48 DMD dot shades
-      //#define DMD_PAL(x) = dmdColor[63 + (x >> 4)]
-      pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
-      BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top * locals.displaySize);
-      for (ii = 0; ii < layout->start; ii++) {
-        BMTYPE *line = (*lines) + (layout->left * locals.displaySize);
-        for (jj = 0; jj < layout->length; jj++) {
-           int p = coreGlobals.dmdDotLum[DMD_OFS(ii, jj)], q = DMD_PAL(coreGlobals.dmdDotLum[DMD_OFS(ii, jj)]);
-          *line = DMD_PAL(coreGlobals.dmdDotLum[DMD_OFS(ii, jj)]);
-          line += locals.displaySize;
-        }
-        lines += locals.displaySize;
-      }
-      // Apply antialiasing if enabled or clear pixels between dots
-      assert((locals.displaySize == 1) || (locals.displaySize == 2));
-      if (locals.displaySize == 2) {
-        int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
-        lines = ((BMTYPE **)bitmap->line) + (layout->top * locals.displaySize);
-        for (ii = 0; ii < layout->start * 2 - 1; ii++) {
-          BMTYPE *line = (*lines) + layout->left;
-          for (jj = 0; jj < layout->length *  2 - 1; jj++) {
-            int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
-            if (noaa) {
-              if ((ii & 1) || (jj & 1))
-                *line = DMD_PAL(0);
-            } else if ((ii & 1) && (jj & 1)) { // Corner point
-              int lum = ((int)coreGlobals.dmdDotLum[DMD_OFS(pi, pj)] + (int)coreGlobals.dmdDotLum[DMD_OFS(pi+1, pj)] + (int)coreGlobals.dmdDotLum[DMD_OFS(pi, pj+1)] + (int)coreGlobals.dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
-              *line = DMD_PAL(lum);
-            } else if (ii & 1) { // Vertical side point
-              int lum = ((int)coreGlobals.dmdDotLum[DMD_OFS(pi, pj+1)] + (int)coreGlobals.dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
-              *line = DMD_PAL(lum);
-            } else if (jj & 1) { // Horizontal side point
-              int lum = ((int)coreGlobals.dmdDotLum[DMD_OFS(pi+1, pj)] + (int)coreGlobals.dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
-              *line = DMD_PAL(lum);
-            }
-            line ++;
-          }
-          lines ++;
-        }
-      }
-      #undef DMD_PAL
-    #endif
-
-    // Prepare data for VPinMame interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
-    #ifdef VPINMAME
-      if (isMainDMD) {
-        g_raw_dmdx = layout->length;
-        g_raw_dmdy = layout->start;
-        if (memcmp(locals.vpm_dmd_last_lum, coreGlobals.dmdDotLum, layout->length * layout->start) != 0) {
-          g_needs_DMD_update = 1;
-          UINT8* rawLum = g_raw_dmdbuffer;
-          UINT32* rawCol = g_raw_colordmdbuffer;
-          for (ii = 0; ii < layout->start; ii++) {
-            for (jj = 0; jj < layout->length; jj++) {
-              UINT8 lum = coreGlobals.dmdDotLum[DMD_OFS(ii, jj)];
-              (*rawLum++) = locals.vpm_dmd_luminance_lut[lum];
-              (*rawCol++) = locals.vpm_dmd_color_lut[lum];
-            }
-          }
-          memcpy(locals.vpm_dmd_last_lum, coreGlobals.dmdDotLum, layout->length * layout->start);
-        }
-      }
-    #endif
-
-    // Send main DMDs raw frame to dmddevice plugins
-    #ifdef VPINMAME
-      if (isMainDMD && g_fShowPinDMD) {
-        if (isStrikeNSpares) {
-          if (layout->top != 0)
-            renderDMDFrame(core_gameData->gen, layout->length, layout->start, (UINT8*)coreGlobals.dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-          else
-            render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, (UINT8*)coreGlobals.dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-        }
-        else {
-          renderDMDFrame(core_gameData->gen, layout->length, layout->start, (UINT8*)coreGlobals.dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-          render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, (UINT8*)coreGlobals.dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-        }
-      }
-    #endif
-
-    // Capture main DMDs raw frame
-    // TODO this is disabled for Strikes'n Spares which has 2 DMDs
-    // TODO not sure to understand why frame capture is performed if dmddevice is enabled simultaneously with virtual DMD. Remove it ?
-    #ifdef VPINMAME
-      if (isMainDMD && !isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
-        FILE *f;
-        char *ptr;
-        char DumpFilename[MAX_PATH];
-        const DWORD tick = GetTickCount();
-        #ifndef _WIN64
-          const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
-        #else
-          const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
-        #endif
-        GetModuleFileName(hInst, DumpFilename, MAX_PATH);
-        ptr = strrchr(DumpFilename, '\\');
-        strcpy_s(ptr + 1, 11, "DmdDump\\");
-        strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
-
-        // Additional single bitplane raw frames for GTS3, WPC and Alvin G.
-        if (raw_dmd_frame_count != 0) {
-          FILE* fr;
-          char RawFilename[MAX_PATH];
-          strcpy_s(RawFilename, MAX_PATH, DumpFilename);
-          strcat_s(RawFilename, MAX_PATH, ".raw");
-          fr = fopen(RawFilename, "rb");
-          if (fr) {
-            fclose(fr);
-            fr = fopen(RawFilename, "ab");
-          }
-          else {
-            fr = fopen(RawFilename, "ab");
-            if (fr) {
-              fputc(0x52, fr);
-              fputc(0x41, fr);
-              fputc(0x57, fr);
-              fputc(0x00, fr);
-              fputc(0x01, fr);
-              fputc(layout->length, fr);
-              fputc(layout->start, fr);
-              fputc(raw_dmd_frame_count, fr);
-            }
-          }
-          if (fr) {
-            fwrite(&tick, 1, 4, fr);
-            fwrite(raw_dmd_frames, 1, (layout->length * layout->start / 8 * raw_dmd_frame_count), fr);
-            fclose(fr);
-          }
-        }
-
-        // Raw frames (multiple bitplanes, combined from PWM pattern)
-        strcat_s(DumpFilename, MAX_PATH, ".txt");
-        f = fopen(DumpFilename, "a");
-        if (f) {
-          fprintf(f, "0x%08x\n", tick);
-          for (jj = 0; jj < layout->start; jj++) {
-            for (ii = 0; ii < layout->length; ii++)
-              fprintf(f, "%01x", coreGlobals.dmdDotRaw[DMD_OFS(ii, jj)]);
-            fprintf(f, "\n");
-          }
-          fprintf(f, "\n");
-          fclose(f);
-        }
-      }
-    #endif
-  }
-
-  // Processing for drivers that are not yet using the core PWM implementation
-  else {
-    pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
-    pen_t *aaColor  = &Machine->pens[COL_DMDAA];
-    BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
-    int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
-
-  // prepare all brightness & color/palette tables for mappings from internal DMD representation:
-  const int shade_16_enabled = (core_gameData->gen & (GEN_SAM|GEN_SPA|GEN_ALVG|GEN_ALVG_DMD2|GEN_GTS3)) != 0;
-
-#if defined(VPINMAME) || defined(LIBPINMAME)
-
-  const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
-  const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
-  const UINT8 perc2 = (pmoptions.dmd_perc66 > 0) ? pmoptions.dmd_perc66 : 67;
-  const UINT8 perc3 = 100;
-
-  static const int levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
-  static const int levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
-
-  const int * const level = (core_gameData->gen & (GEN_SAM|GEN_SPA)) ? levelsam : levelgts3;
-
-  const UINT8 raw_4[4]   = {perc0,perc1,perc2,perc3};
-  const UINT8 raw_16[16] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15]};
-
-  UINT32 palette32_4[4];
-  UINT32 palette32_16[16];
-  unsigned char palette[4][3];
-
-  int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
-  if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
-     rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
-  }
-
-  /*-- Autogenerate DMD Color Shades--*/
-  palette[0][0] = rStart * perc0 / 100;
-  palette[0][1] = gStart * perc0 / 100;
-  palette[0][2] = bStart * perc0 / 100;
-  palette[1][0] = rStart * perc1 / 100;
-  palette[1][1] = gStart * perc1 / 100;
-  palette[1][2] = bStart * perc1 / 100;
-  palette[2][0] = rStart * perc2 / 100;
-  palette[2][1] = gStart * perc2 / 100;
-  palette[2][2] = bStart * perc2 / 100;
-  palette[3][0] = rStart * perc3 / 100;
-  palette[3][1] = gStart * perc3 / 100;
-  palette[3][2] = bStart * perc3 / 100;
-
-  /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
-  if (pmoptions.dmd_colorize) {
-     if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
-        palette[0][0] = pmoptions.dmd_red0;
-        palette[0][1] = pmoptions.dmd_green0;
-        palette[0][2] = pmoptions.dmd_blue0;
-     }
-     if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
-        palette[1][0] = pmoptions.dmd_red33;
-        palette[1][1] = pmoptions.dmd_green33;
-        palette[1][2] = pmoptions.dmd_blue33;
-     }
-     if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
-        palette[2][0] = pmoptions.dmd_red66;
-        palette[2][1] = pmoptions.dmd_green66;
-        palette[2][2] = pmoptions.dmd_blue66;
-     }
-  }
-
-  for (ii = 0; ii < 4; ++ii)
-     palette32_4[ii] = (UINT32)palette[ii][0] | (((UINT32)palette[ii][1]) << 8) | (((UINT32)palette[ii][2]) << 16);
-
-  for(ii = 0; ii < 16; ++ii)
-     palette32_16[ii] = (rStart*level[ii]/100) | ((gStart*level[ii]/100) << 8) | ((bStart*level[ii]/100) << 16);
-
-  //
-
-  if(layout->length >= 128) // Main DMD (don't send mini DMDs)
-  {
-      g_raw_dmdx = layout->length;
-      g_raw_dmdy = layout->start;
-
-      // Strikes N' Spares has 2 standard DMDs
-      if (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0)
-      {
-          g_raw_dmdy = 64;
-          // shift offset into the raw DMDs, depending on which display is updated in here
-          if (layout->top != 0)
-              raw_dmdoffs = 128 * 32;
-          else
-              raw_dmdoffs = 0;
-      }
-  }
-#endif
-
-  for (ii = 0; ii < layout->start; ii++) {
-    BMTYPE *line = (*lines++) + (layout->left*locals.displaySize);
-    for (jj = 0; jj < layout->length; jj++) {
-      const int offs = DMD_OFS(ii, jj);
-      const UINT8 col = coreGlobals.dmdDotRaw[offs];
-      #if defined(VPINMAME) || defined(LIBPINMAME)
-        currbuffer[offs] = col;
-        #ifdef LIBPINMAME
-          g_raw_dmdbuffer[offs] = (g_fDmdMode == 0) ? (shade_16_enabled ? raw_16[col] : raw_4[col]) : col;
-        #else
-          if (layout->length >= 128) { // Main DMD (don't send mini DMDs)
-            g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
-            g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
-          }
-        #endif
-      #endif
-      *line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
-      if (locals.displaySize > 1 && jj < layout->length-1)
-        *line++ = noaa ? 0 : aaColor[col + (coreGlobals.dmdDotRaw[DMD_OFS(ii, jj+1)])];
-    }
-    if (locals.displaySize > 1) {
-      int col1 = (coreGlobals.dmdDotRaw[DMD_OFS(ii,0)]) + (coreGlobals.dmdDotRaw[DMD_OFS(ii+1,0)]);
-      line = (*lines++) + (layout->left*locals.displaySize);
-      for (jj = 0; jj < layout->length; jj++) {
-        int col2 = (coreGlobals.dmdDotRaw[DMD_OFS(ii,jj+1)]) + (coreGlobals.dmdDotRaw[DMD_OFS(ii+1,jj+1)]);
-        *line++ = noaa ? 0 : aaColor[col1];
-        if (jj < layout->length-1)
-          *line++ = noaa ? 0 : aaColor[2*(col1 + col2)/5];
-        col1 = col2;
-      }
-    }
-  }
-
-#ifdef VPINMAME
-  if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // Don't send mini DMD to dmddevice
-     //external dmd
-     if (g_fShowPinDMD)
-     {
-          if (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0)
-          {
-              if (layout->top != 0)
-                  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-              else
-                  render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-          } else {
-              renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-              render2ndDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-          }
-     }
-
-     if (oldbuffer != NULL) { // detect if same frame again
-        if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)) != 0)
-        {
-           g_needs_DMD_update = 1;
-
-           if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames) // output dump frame to .txt
-           {
-              FILE *f;
-              char *ptr;
-              char DumpFilename[MAX_PATH];
-
-              const DWORD tick = GetTickCount();
-#ifndef _WIN64
-              const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
-#else
-              const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
-#endif
-              GetModuleFileName(hInst, DumpFilename, MAX_PATH);
-              ptr = strrchr(DumpFilename, '\\');
-              strcpy_s(ptr + 1, 11, "DmdDump\\");
-              strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
-
-              if (raw_dmd_frame_count != 0) {
-                 FILE* fr;
-                 char RawFilename[MAX_PATH];
-                 strcpy_s(RawFilename, MAX_PATH, DumpFilename);
-                 strcat_s(RawFilename, MAX_PATH, ".raw");
-                 fr = fopen(RawFilename, "rb");
-                 if (fr) {
-                    fclose(fr);
-                    fr = fopen(RawFilename, "ab");
-                 }
-                 else {
-                    fr = fopen(RawFilename, "ab");
-                    if(fr)
-                    {
-                       fputc(0x52, fr);
-                       fputc(0x41, fr);
-                       fputc(0x57, fr);
-                       fputc(0x00, fr);
-                       fputc(0x01, fr);
-                       fputc(layout->length, fr);
-                       fputc(layout->start, fr);
-                       fputc(raw_dmd_frame_count, fr);
-                    }
-                 }
-                 if(fr)
-                 {
-                    fwrite(&tick, 1, 4, fr);
-                    fwrite(raw_dmd_frames, 1, (layout->length * layout->start / 8 * raw_dmd_frame_count), fr);
-                    fclose(fr);
-                 }
-              }
-
-              strcat_s(DumpFilename, MAX_PATH, ".txt");
-              f = fopen(DumpFilename, "a");
-              if (f) {
-                 fprintf(f, "0x%08x\n", tick);
-                 for (jj = 0; jj < layout->start; jj++) {
-                    for (ii = 0; ii < layout->length; ii++)
-                    {
-                       const UINT8 col = currbuffer[jj*layout->length + ii];
-                       fprintf(f, "%01x", col);
-                    }
-                    fprintf(f, "\n");
-                 }
-                 fprintf(f, "\n");
-                 fclose(f);
-              }
-           }
-        }
-     }
-
-     raw_dmd_frame_count = 0;
-
-     // swap buffers
-     if (currbuffer == buffer1) {
-        currbuffer = buffer2;
-        oldbuffer = buffer1;
-     }
-     else {
-        currbuffer = buffer1;
-        oldbuffer = buffer2;
-     }
-  }
-#endif
-  }
-
-  #undef DMD_OFS
-
-  #ifdef VPINMAME
-    has_DMD_Video = 1;
-  #endif
-}
-
 #ifdef VPINMAME
 #  define inRect(r,l,t,w,h) FALSE
 #else /* VPINMAME */
@@ -1259,9 +860,6 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 }
 #endif /* VPINMAME */
 
-/*-----------------------------------
-/  Generic segment display handler
-/------------------------------------*/
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout_array)
 {
   if (layout_array == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
@@ -3069,9 +2667,7 @@ void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows
 
   All hardware so far (Alvin G, Data East, Sega/Stern Whitestar, GTS3, WPC, SAM, Capcom, Sleic (Spain), Spinball)
   creates shades using PWM on a plasma or LED display (later Stern games). Therefore, PinMame offers access to the
-  raw high frequency frames (f.e. for coloring) or to a PWM integrated view (f.e. for rendering). Sadly some colorization
-  plugins used the legacy preshaded frames to identify and color frame, so access to these legacy shades is also provided
-  for backward compatibility.
+  raw high frequency frames (f.e. for coloring) or to a PWM integrated view (f.e. for rendering).
 
   Unlike lamps which have varying strobe periods, DMD are rasterized at a fixed frequency. Therefore, the implementation
   simply stores the frames at this frequency and apply a (simple) low pass filter to account for the eye flicker-fusion limit.
@@ -3127,16 +2723,13 @@ fprintf(']\n');
 fprintf('sum=%i\n', sum(int_factor * b));
 */
 
-// TODO for the time being, DMD are always updated from core/updateDisplay, running at a fixed 60Hz. This may lead to stutters
-// as it is not aligned with real display refresh rate. We should update DMD on request but this needs to make these functions
-// thread safe.
-
 void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner) {
+  assert((width & 0x0007) == 0);
   dmd_state->width = width;
   dmd_state->height = height;
-  dmd_state->rawFrameSize = width * height / 8;
+  dmd_state->frameSize = width * height;
+  dmd_state->rawFrameSize = dmd_state->frameSize / 8;
   dmd_state->raw_combiner = raw_combiner;
-  assert(dmd_state->rawFrameSize * 8 == width * height);
   static const UINT16 fir_colorization_3_frames[] = { 20000, 20000, 20000 };
   switch (filter)
   {
@@ -3193,10 +2786,14 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
     assert(0); // Unsupported filter
   }
   dmd_state->rawFrames = malloc(dmd_state->nFrames * dmd_state->rawFrameSize);
-  dmd_state->shadedFrame = malloc(dmd_state->width * dmd_state->height * sizeof(UINT16));
-  assert(dmd_state->rawFrames != NULL && dmd_state->shadedFrame != NULL);
+  dmd_state->shadedFrame = malloc(dmd_state->frameSize * sizeof(UINT16));
+  dmd_state->bitplaneFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
+  dmd_state->luminanceFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
+  assert(dmd_state->rawFrames != NULL && dmd_state->shadedFrame != NULL && dmd_state->bitplaneFrame != NULL && dmd_state->luminanceFrame != NULL);
   memset(dmd_state->rawFrames, 0, dmd_state->nFrames * dmd_state->rawFrameSize);
-  memset(dmd_state->shadedFrame, 0, dmd_state->width * dmd_state->height * sizeof(UINT16));
+  memset(dmd_state->shadedFrame, 0, dmd_state->frameSize * sizeof(UINT16));
+  memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize * sizeof(UINT8));
+  memset(dmd_state->luminanceFrame, 0, dmd_state->frameSize * sizeof(UINT8));
   dmd_state->nextFrame = 0;
 }
 
@@ -3205,20 +2802,28 @@ void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state) {
    dmd_state->rawFrames = NULL;
    free(dmd_state->shadedFrame);
    dmd_state->shadedFrame = NULL;
+   free(dmd_state->bitplaneFrame);
+   dmd_state->bitplaneFrame = NULL;
+   free(dmd_state->luminanceFrame);
+   dmd_state->luminanceFrame = NULL;
 }
 
+// TODO for the time being, DMD are always updated from core/updateDisplay, running at a fixed 60Hz. This may lead to stutters
+// as it is not aligned with real display refresh rate. We should update DMD on request but this needs to make these functions
+// thread safe. To avoid synchronization, a simple loop model with consumer accesing data before barrier, and provider pushing
+// data after the barrier should be enough.
 void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes) {
-   for (int i = 0; i < ntimes; i++) {
-      memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
-      dmd_state->nextFrame = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
-      dmd_state->frame_index++;
-   }
+  for (int i = 0; i < ntimes; i++) {
+    memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
+    dmd_state->nextFrame = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
+    dmd_state->frame_index++;
+  }
 }
 
 void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   int ii, jj, kk;
 
-  // Apply low pass filter over stored frames
+  // Apply low pass filter over stored frames then scale down to final shades
   memset(dmd_state->shadedFrame, 0, dmd_state->width * dmd_state->height * sizeof(UINT16));
   for (ii = 0; ii < dmd_state->fir_size; ii++) {
     const UINT16 frame_weight = dmd_state->fir_weights[ii];
@@ -3235,29 +2840,26 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       }
     }
   }
-
-  // Scale down to final shades
   UINT16* line = dmd_state->shadedFrame;
   for (ii = 0; ii < dmd_state->height * dmd_state->width; ii++) {
     unsigned int data = (unsigned int) (*line++); // unsigned int precision is needed here
-    coreGlobals.dmdDotLum[ii] = (UINT8)((255u * data) / dmd_state->fir_sum);
+    dmd_state->luminanceFrame[ii] = (UINT8)((255u * data) / dmd_state->fir_sum);
   }
 
-  // Store raw bitplane frames for colorization plugins in a backward compatible manner
+  // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   #if defined(VPINMAME) || defined(LIBPINMAME)
-  // Compute combined bitplane frame as they used to be for backward compatibility with colorization plugins
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_COMBINER_LUM_4:
     for (ii = 0; ii < dmd_state->height * dmd_state->width; ii++)
-      coreGlobals.dmdDotRaw[ii] = coreGlobals.dmdDotLum[ii] >> 6;
+      dmd_state->bitplaneFrame[ii] = dmd_state->luminanceFrame[ii] >> 6;
     break;
   case CORE_DMD_PWM_COMBINER_LUM_16: // GTS3 never had a stable combiner since PWM patterns vary over 1/3/6/8/10 frames, hence it provided raw 1 bitplane frame and not really stable combined one
     for (ii = 0; ii < dmd_state->height * dmd_state->width; ii++)
-      coreGlobals.dmdDotRaw[ii] = coreGlobals.dmdDotLum[ii] >> 4;
+      dmd_state->bitplaneFrame[ii] = dmd_state->luminanceFrame[ii] >> 4;
     break;
   case CORE_DMD_PWM_COMBINER_SUM_3: // Sum of the last 3 raw frames seen (WPC)
     {
-      UINT8* rawData = &coreGlobals.dmdDotRaw[0];
+      UINT8* rawData = &dmd_state->bitplaneFrame[0];
       UINT8* frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       UINT8* frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       UINT8* frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3278,7 +2880,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   case CORE_DMD_PWM_COMBINER_SUM_2_1: // high bit for double length frame, low bit for single length frame
   case CORE_DMD_PWM_COMBINER_SUM_1_2:
     {
-      UINT8 *rawData = &coreGlobals.dmdDotRaw[0], *frame0, *frame1;
+      UINT8 *rawData = &dmd_state->bitplaneFrame[0], *frame0, *frame1;
       if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_2_1) { // double length frame are the 2 before last one, single length frame is the last one (Data East 128x32, Sega/Stern Whitestar)
         frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3303,7 +2905,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
     break;
   case CORE_DMD_PWM_COMBINER_SUM_4: // Sum of the last 4 frames (Alvin G. for Pistol Poker & Mystery Castle)
     {
-      UINT8* rawData = &coreGlobals.dmdDotRaw[0];
+      UINT8* rawData = &dmd_state->bitplaneFrame[0];
       UINT8* frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       UINT8* frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       UINT8* frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3318,7 +2920,11 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   default:
     assert(0); // Unsupported combiner
   }
-  // For GTS3, WPC and Alvin G. 2 also store raw single bitplane frame
+  #endif
+
+  // For GTS3, WPC and Alvin G. 2 also store raw single bitplane frame for backward compatibility with colorization plugins
+  // TODO move these data to dmd_state struct (for cleanup and to fix multiple DMD support for GTS3 Strikes N' Spares)
+  #if defined(VPINMAME) || defined(LIBPINMAME)
   if (core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_ALVG_DMD2)) {
     raw_dmd_frame_count = dmd_state->nFrames > CORE_MAX_RAW_DMD_FRAMES ? CORE_MAX_RAW_DMD_FRAMES : dmd_state->nFrames;
     UINT8* rawData = &raw_dmd_frames[0];
@@ -3333,6 +2939,226 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   else {
     raw_dmd_frame_count = 0;
   }
+  #endif
+}
+
+// Render to internal display, using provided luminance, if there is a visible display (PinMame always, and VPinMame when its window is shown)
+// FIXME apply colors LUT ?
+#if defined(PINMAME) || defined(VPINMAME)
+void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* dmdDotLum, const int apply_aa) {
+  #define DMD_OFS(row, col) ((row)*width + col)
+  #define DMD_PAL(x) ((int)sizeof(core_palette) / 3 - 48 + ((3 * (int)x) >> 4)) // The trail of PinMame palette has 48 DMD dot shades
+  //#define DMD_PAL(x) = dmdColor[63 + (x >> 4)]
+  int ii, jj;
+  pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
+  BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
+  for (ii = 0; ii < height; ii++) {
+    BMTYPE *line = (*lines) + (x * locals.displaySize);
+    for (jj = 0; jj < width; jj++) {
+       int p = dmdDotLum[DMD_OFS(ii, jj)], q = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      line += locals.displaySize;
+    }
+    lines += locals.displaySize;
+  }
+  // Apply antialiasing if enabled or clear pixels between dots
+  assert((locals.displaySize == 1) || (locals.displaySize == 2));
+  if (locals.displaySize == 2) {
+    lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
+    for (ii = 0; ii < height * 2 - 1; ii++) {
+      BMTYPE *line = (*lines) + x;
+      for (jj = 0; jj < width *  2 - 1; jj++) {
+        int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
+        if (!apply_aa) {
+          if ((ii & 1) || (jj & 1))
+            *line = DMD_PAL(0);
+        } else if ((ii & 1) && (jj & 1)) { // Corner point
+          int lum = ((int)dmdDotLum[DMD_OFS(pi, pj)] + (int)dmdDotLum[DMD_OFS(pi+1, pj)] + (int)dmdDotLum[DMD_OFS(pi, pj+1)] + (int)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
+          *line = DMD_PAL(lum);
+        } else if (ii & 1) { // Vertical side point
+          int lum = ((int)dmdDotLum[DMD_OFS(pi, pj+1)] + (int)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          *line = DMD_PAL(lum);
+        } else if (jj & 1) { // Horizontal side point
+          int lum = ((int)dmdDotLum[DMD_OFS(pi+1, pj)] + (int)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          *line = DMD_PAL(lum);
+        }
+        line ++;
+      }
+      lines ++;
+    }
+  }
+  #undef DMD_OFS
+  #undef DMD_PAL
+}
+#endif
+
+// Prepare data for VPinMame interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
+#ifdef VPINMAME
+void core_dmd_render_vpm(const int width, const int height, const UINT8* dmdDotLum) {
+  const int size = width * height;
+  g_raw_dmdx = width;
+  g_raw_dmdy = height;
+  if (memcmp(locals.vpm_dmd_last_lum, dmdDotLum, size) != 0) {
+    memcpy(locals.vpm_dmd_last_lum, dmdDotLum, size);
+    UINT8* rawLum = g_raw_dmdbuffer;
+    UINT32* rawCol = g_raw_colordmdbuffer;
+    for (int ii = 0; ii < size; ii++) {
+      UINT8 lum = dmdDotLum[ii];
+      (*rawLum++) = locals.vpm_dmd_luminance_lut[lum];
+      (*rawCol++) = locals.vpm_dmd_color_lut[lum];
+    }
+    g_needs_DMD_update = 1;
+  }
+}
+#endif
+
+// Prepare data for LibPinMame interface (similar to VPinMame but without color LUT, and with a global flag to select luminance/bitplanes)
+#ifdef LIBPINMAME
+void core_dmd_render_lpm(const int width, const int height, const UINT8* dmdDotLum, const UINT8* dmdDotRaw) {
+  const int size = width * height;
+  g_raw_dmdx = width;
+  g_raw_dmdy = height;
+  if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
+    if (memcmp(locals.vpm_dmd_last_lum, dmdDotLum, size) != 0) {
+      memcpy(locals.vpm_dmd_last_lum, dmdDotLum, size);
+      UINT8* rawLum = g_raw_dmdbuffer;
+      for (int ii = 0; ii < size; ii++)
+        (*rawLum++) = locals.vpm_dmd_luminance_lut[dmdDotLum[ii]];
+      g_needs_DMD_update = 1;
+	}
+  }
+  else if (g_fDmdMode == 1) {// PINMAME_DMD_MODE_RAW
+    if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
+      memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
+      g_needs_DMD_update = 1;
+	}
+  }
+}
+#endif
+
+// Send main DMD bitplane frame to dmddevice plugins
+#ifdef VPINMAME
+void core_dmd_render_dmddevice(const int width, const int height, const UINT8* dmdDotRaw, const int isDMD2) {
+  if (g_fShowPinDMD) {
+    const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
+    if (isStrikeNSpares) {
+      if (isDMD2)
+        renderDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
+      else
+        render2ndDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
+    }
+    else {
+      renderDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
+      render2ndDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
+    }
+  }
+}
+#endif
+
+// Save main DMD bitplane and raw frames to a capture file
+// TODO this is disabled for Strikes'n Spares which has 2 DMDs
+// TODO not sure to understand why frame capture is performed if dmddevice is enabled simultaneously with virtual DMD. Remove it ?
+#ifdef VPINMAME
+void core_dmd_capture_frame(const int width, const int height, const UINT8* dmdDotRaw, const int rawFrameCount, const UINT8* rawFrame) {
+  const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
+  if (!isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
+    FILE *f;
+    char *ptr;
+    char DumpFilename[MAX_PATH];
+    const DWORD tick = GetTickCount();
+    #ifndef _WIN64
+      const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+    #else
+      const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+    #endif
+    GetModuleFileName(hInst, DumpFilename, MAX_PATH);
+    ptr = strrchr(DumpFilename, '\\');
+    strcpy_s(ptr + 1, 11, "DmdDump\\");
+    strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+
+    // Additional single bitplane raw frames for GTS3, WPC and Alvin G.
+    if (rawFrameCount != 0) {
+      FILE* fr;
+      char RawFilename[MAX_PATH];
+      strcpy_s(RawFilename, MAX_PATH, DumpFilename);
+      strcat_s(RawFilename, MAX_PATH, ".raw");
+      fr = fopen(RawFilename, "rb");
+      if (fr) {
+        fclose(fr);
+        fr = fopen(RawFilename, "ab");
+      }
+      else {
+        fr = fopen(RawFilename, "ab");
+        if (fr) {
+          fputc(0x52, fr);
+          fputc(0x41, fr);
+          fputc(0x57, fr);
+          fputc(0x00, fr);
+          fputc(0x01, fr);
+          fputc(width, fr);
+          fputc(height, fr);
+          fputc(rawFrameCount, fr);
+        }
+      }
+      if (fr) {
+        fwrite(&tick, 1, 4, fr);
+        fwrite(rawFrame, 1, (width * height / 8 * rawFrameCount), fr);
+        fclose(fr);
+      }
+    }
+
+    // Bitplane frame combined from PWM pattern of raw frames
+    strcat_s(DumpFilename, MAX_PATH, ".txt");
+    f = fopen(DumpFilename, "a");
+    if (f) {
+      fprintf(f, "0x%08x\n", tick);
+      for (int jj = 0; jj < height; jj++) {
+        for (int ii = 0; ii < width; ii++)
+          fprintf(f, "%01x", dmdDotRaw[jj*width + ii]);
+        fprintf(f, "\n");
+      }
+      fprintf(f, "\n");
+      fclose(f);
+    }
+  }
+}
+#endif
+
+void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state) {
+  UINT8 *dmdDotRaw, *dmdDotLum;
+  
+  if (dmd_state) { // Full DMD state with luminance and bitplane state
+    dmdDotRaw = dmd_state->bitplaneFrame;
+    dmdDotLum = dmd_state->luminanceFrame;
+  }
+  else { // Only bitplane state: consider luminance equal to (scaled) bitplane output
+    dmdDotRaw = &coreGlobals.dmdDotRaw[0];
+    dmdDotLum = &coreGlobals.dmdDotLum[0];
+    const int shift = (core_gameData->gen & (GEN_SAM|GEN_SPA)) != 0 ? 4 : 6;
+    for (int ii = 0; ii < layout->length; ii++)
+      dmdDotLum[ii] = dmdDotRaw[ii] << shift;
+  }
+
+  #if defined(PINMAME)
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+  
+  #elif defined(LIBPINMAME)
+    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
+    if (isMainDMD) {
+      core_dmd_render_lpm(layout->length, layout->start, dmdDotLum, dmdDotRaw);
+      has_DMD_Video = 1;
+    }
+
+  #elif defined(VPINMAME)
+    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
+    // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+    if (isMainDMD) {
+      core_dmd_render_vpm(layout->length, layout->start, dmdDotLum);
+      core_dmd_render_dmddevice(layout->length, layout->start, dmdDotRaw, layout->top != 0);
+      core_dmd_capture_frame(layout->length, layout->start, dmdDotRaw, raw_dmd_frame_count ,raw_dmd_frames);
+      has_DMD_Video = 1;
+    }
   #endif
 }
 

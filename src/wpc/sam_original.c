@@ -182,7 +182,7 @@ static PINMAME_VIDEO_UPDATE(sam1_dmd32_update) {
       }
     }
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  core_dmd_video_update(bitmap, cliprect, dotCol, layout, NULL);
 
   return 0;
 }
@@ -1031,7 +1031,7 @@ static PINMAME_VIDEO_UPDATE(sam1_minidmd_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+    core_dmd_video_update(bitmap, cliprect, dotCol, layout, NULL);
   return 0;
 }
 
@@ -1071,7 +1071,7 @@ static PINMAME_VIDEO_UPDATE(sam1_minidmd2_update) {
       | (dotCol[3][ii] ? 4 : 0) | (dotCol[4][ii] ? 2 : 0) | (dotCol[5][ii] ? 1 : 0);
   }
   if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+    core_dmd_video_update(bitmap, cliprect, dotCol, layout, NULL);
   return 0;
 }
 

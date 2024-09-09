@@ -1625,7 +1625,7 @@ static void wpc_dmd_hsync(int param) {
 
 int wpcdmd_update(int height, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout) {
   core_dmd_update_pwm(&dmdlocals.pwm_state);
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
 

@@ -347,6 +347,6 @@ static INTERRUPT_GEN(dmd32_firq2) {
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   core_dmd_update_pwm(&dmdlocals.pwm_state);
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }

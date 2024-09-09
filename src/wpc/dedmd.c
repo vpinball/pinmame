@@ -101,7 +101,7 @@ MACHINE_DRIVER_END
     RA0      - A9      => used to toggle between frame while rasterizing each row
     MA8..12  - A10..14
  - RA0 is also wired to ROWCLOCK, therefore row is advanced once every 2 rasterized rows
- - The start address can be either 0x2000 or 0x2100 (i.e. MA13 is always set), with CURSOR always being defined on 0x2000 / row 0, which led 
+ - The start address is usually either 0x2000 or 0x2100 (i.e. with MA13 set), with CURSOR always being defined on one of these / row 0, which led
    to guess that CURSOR signal is used to generate FIRQ (frame IRQ to CPU, trigerring some animation update). Results looks good but this would 
    be nice to check this assumption on real hardware.
    */
@@ -110,7 +110,6 @@ static void dmd32_vblank(int which) {
   // Store 2 next rasterized frame, as the CRTC is setup to render 2 contiguous full frames for each VBLANK
   unsigned int base = crtc6845_start_address_r(0); // MA0..13
   assert((base & 0x00FF) == 0x0000); // As the mapping of lowest 8 bits is not implemented (would need complex data copy and does not seem to be used by any game)
-  assert((base & 0x2000) == 0x2000); // As the implementation supposed this to be always true
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
   core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
@@ -210,7 +209,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 	}
   #endif
   core_dmd_update_pwm(&dmdlocals.pwm_state);
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
 
@@ -316,7 +315,7 @@ static void dmd64_vblank(int which) {
 
 PINMAME_VIDEO_UPDATE(dedmd64_update) {
   core_dmd_update_pwm(&dmdlocals.pwm_state);
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
 
@@ -557,6 +556,6 @@ static void dmd16_setbank(int bit, int value) {
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd16_update) {
   core_dmd_update_pwm(&dmdlocals.pwm_state);
-  video_update_core_dmd(bitmap, cliprect, layout);
+  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
