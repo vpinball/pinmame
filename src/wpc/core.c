@@ -2911,7 +2911,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       const UINT8* const frame3 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         UINT8 v0 = frame0[kk], v1 = frame1[kk], v2 = frame2[kk], v3 = frame3[kk];
-        for (ii = 0; ii < 8; ii++, v0 >>= 1, v1 >>= 1, v2 >>= 1, v3 >>= 1)
+        for (int ii = 0; ii < 8; ii++, v0 >>= 1, v1 >>= 1, v2 >>= 1, v3 >>= 1)
           *rawData++ = (v0 & 0x01) + (v1 & 0x01) + (v1 & 0x02) + (v3 & 0x01);
       }
     }
@@ -2949,11 +2949,10 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
   #define DMD_PAL(x) ((int)sizeof(core_palette) / 3 - 48 + ((3 * (int)x) >> 4)) // The trail of PinMame palette has 48 DMD dot shades
   //#define DMD_PAL(x) = dmdColor[63 + (x >> 4)]
   //pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
-  int ii, jj;
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
-  for (ii = 0; ii < height; ii++) {
+  for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
-    for (jj = 0; jj < width; jj++) {
+    for (int jj = 0; jj < width; jj++) {
       //const int p = dmdDotLum[DMD_OFS(ii, jj)], q = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       line += locals.displaySize;
@@ -2964,9 +2963,9 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
   if (locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
-    for (ii = 0; ii < height * 2 - 1; ii++) {
+    for (int ii = 0; ii < height * 2 - 1; ii++) {
       BMTYPE *line = (*lines) + x;
-      for (jj = 0; jj < width *  2 - 1; jj++) {
+      for (int jj = 0; jj < width *  2 - 1; jj++) {
         const int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
         if (!apply_aa) {
           if ((ii & 1) || (jj & 1))
