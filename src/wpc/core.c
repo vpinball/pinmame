@@ -902,12 +902,16 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         #if defined(VPINMAME) || defined(LIBPINMAME)
           has_DMD_Video = 1;
         #endif
-      }
-      #ifdef LIBPINMAME
-        if ((layout->type == CORE_VIDEO) || ((layout->type & CORE_SEGALL) == CORE_DMD)) {
+        #ifdef LIBPINMAME
           libpinmame_update_display(display_index, layout, bitmap);
           display_index++;
-        }
+        #endif
+      }
+      #ifdef LIBPINMAME
+      else if ((layout->type & CORE_SEGALL) == CORE_DMD) {
+         libpinmame_update_display(display_index, layout, g_raw_dmdbuffer);
+         display_index++;
+      }
       #endif
       continue;
     }
