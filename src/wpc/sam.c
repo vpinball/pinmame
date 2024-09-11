@@ -1857,16 +1857,19 @@ MACHINE_DRIVER_END
   has been validated with real hardware measure. The flicker/fusion threshold 
   is supposed to be somewhere around 25-30Hz based on the fact that other 
   hardwares like GTS3 and WPC have PWM pattern around these frequencies.
-  Therefore, to get the final luminance, we should perform integration of 
-  at least 24 frames.
+  Therefore, to get the final luminance, we need to perform integration of at
+  least the last 24 frames. For the time being we only apply a LUT corresponding
+  to the 1 / 2 / 4 / 5 pattern.
 --*/
 static PINMAME_VIDEO_UPDATE(samdmd_update) {
-	//static const UINT8 hew[16] = { 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
-
+	// This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
+	// this leads to a non monotonic ramp which is a bit suspicious but result looks good.
+	static const UINT8 lumLUT[16] = { 0, 21, 43, 64, 85, 106, 128, 149, 106, 128, 149, 170, 191, 213, 234, 255};
 	int ii;
 	for( ii = 0; ii < 32; ii++ )
 	{
-		UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
+		UINT8 *dotRaw = &coreGlobals.dmdDotRaw[ii * layout->length];
+		UINT8 *dotLum = &coreGlobals.dmdDotLum[ii * layout->length];
 		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
 		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
 		int jj;
@@ -1877,15 +1880,17 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 			const UINT8 mix = RAM1 >> 4;
 			const UINT8 temp = (RAM2 & mix) | (RAM1 & (mix^0xF)); //!! is this correct or is mix rather a multiplier/ratio/alphavalue??
 			if ((mix != 0xF) && (mix != 0x0)) //!! happens e.g. in POTC in extra ball explosion animation: RAM1 values triggering this: 223, 190, 175, 31, 25, 19, 17 with RAM2 being always 0. But is this just wrong game data (as its a converted animation)?!
-				LOG(("Special DMD Bitmask %01X",mix));
-			*line = /*hew[*/temp/*]*/;
-			line++;
+				LOG(("Special DMD Bitmask %01X RAM1=%02x RAM2=%02x pix@(%3dx%2d)", mix, RAM1, RAM2, jj, ii));
+			*dotRaw++ = temp;
+			*dotLum++ = lumLUT[temp];
 		}
 	}
-
 	core_dmd_video_update(bitmap, cliprect, layout, NULL);
 	return 0;
 }
+
+#define SAT_NYB(v) (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
+#define SAT_BYTE(v) (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 
 static PINMAME_VIDEO_UPDATE(samminidmd_update) {
     int ii,kk;
@@ -1895,7 +1900,8 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
 		for (int x = 0; x < 5; x++) {
 			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dmdDotRaw[y * layout->length + x] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
+			coreGlobals.dmdDotRaw[y * layout->length + x] = SAT_NYB(v);
+			coreGlobals.dmdDotLum[y * layout->length + x] = SAT_BYTE(v);
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 5; ii++) {
@@ -1915,7 +1921,8 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (kk = 0; kk < 5; kk++) {
 			const int target = 140 + jj + (kk * 35);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dmdDotRaw[kk * layout->length + jj] = (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v));
+			coreGlobals.dmdDotRaw[kk * layout->length + jj] = SAT_NYB(v);
+			coreGlobals.dmdDotLum[kk * layout->length + jj] = SAT_BYTE(v);
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 35; ii++) {
@@ -1930,7 +1937,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 }
 
 static struct core_dispLayout sam_dmd128x32[] = {
-	{0, 0, 32, 128, CORE_DMD|CORE_DMDNOAA, (genf *)samdmd_update},
+	{0, 0, 32, 128, CORE_DMD/*| CORE_DMDNOAA*/, (genf*)samdmd_update},
 	{0}
 };
 

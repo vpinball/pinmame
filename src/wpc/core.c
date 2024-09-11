@@ -795,16 +795,15 @@ static PALETTE_INIT(core) {
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
   for (ii = 0; ii < 16; ii++) {
-    const int tmp = 15 * perc0 + ii * (100 - perc0);
-    tmpPalette[palSize-16+ii][0] = (unsigned char)(rStart * tmp / 1500);
-    tmpPalette[palSize-16+ii][1] = (unsigned char)(gStart * tmp / 1500);
-    tmpPalette[palSize-16+ii][2] = (unsigned char)(bStart * tmp / 1500);
-    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * tmp * (perc66+5) / 150000);
-    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * tmp * (perc66+5) / 150000);
-    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * tmp * (perc66+5) / 150000);
-    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * tmp * perc33 / 150000);
-    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * tmp * perc33 / 150000);
-    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * tmp * perc33 / 150000);
+    tmpPalette[palSize-48+ii][0] = (UINT8)((rStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
+    tmpPalette[palSize-48+ii][1] = (UINT8)((gStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
+    tmpPalette[palSize-48+ii][2] = (UINT8)((bStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
+    tmpPalette[palSize-32+ii][0] = (UINT8)((rStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
+    tmpPalette[palSize-32+ii][1] = (UINT8)((gStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
+    tmpPalette[palSize-32+ii][2] = (UINT8)((bStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
+    tmpPalette[palSize-16+ii][0] = (UINT8)((rStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+    tmpPalette[palSize-16+ii][1] = (UINT8)((gStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+    tmpPalette[palSize-16+ii][2] = (UINT8)((bStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
   }
 
   /*-- generate segment colors for dimmed segments --*/
@@ -1360,6 +1359,7 @@ static VIDEO_UPDATE(core_status) {
   int startRow = 0, nextCol = 0, thisCol = 0;
   int ii, jj;
   BMTYPE dotColor[2];
+  #define DOT_PAL(x) (sizeof(core_palette)/3 - 48 + ((unsigned int)(x) * 47) / 255) // The trail of PinMame palette has 48 DMD dot shades
 
   /*-- anything to do ? --*/
   if ((pmoptions.dmd_only) || (locals.maxSimRows < 16) ||
@@ -1386,7 +1386,7 @@ static VIDEO_UPDATE(core_status) {
           const int lampy = drawData->lamps[num].lamppos[qq].y;
           if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON)) {
             UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii * 8 + jj].value);
-            line[lampx][starty + lampy] = 64 + (v >> 4);
+            line[lampx][starty + lampy] = DOT_PAL(v);
           }
           else {
             const int color = drawData->lamps[num].lamppos[qq].color;
@@ -1409,7 +1409,7 @@ static VIDEO_UPDATE(core_status) {
       for (jj = 0; jj < 8; jj++) {
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON)) {
           UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii * 8 + jj].value);
-          line[0][thisCol + ii * 2] = 64 + (v >> 4);
+          line[0][thisCol + ii * 2] = DOT_PAL(v);
         } else
           line[0][thisCol + ii * 2] = dotColor[bits & 0x01];
         line += 2; bits >>= 1;
@@ -1445,7 +1445,7 @@ static VIDEO_UPDATE(core_status) {
       float state[CORE_MODOUT_SOL_MAX];
       core_getAllPhysicSols(state);
       for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-         line[(ii / 8) * 2][thisCol + (ii % 8) * 2] = 64 + (int) (15 * state[ii]);
+         line[(ii / 8) * 2][thisCol + (ii % 8) * 2] = DOT_PAL(saturatedByte(state[ii]));
       }
     }
     else
@@ -1498,7 +1498,7 @@ static VIDEO_UPDATE(core_status) {
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
       {
         UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + ii].value);
-        lines[locals.firstSimRow + startRow][thisCol + ii * 2] = 64 + (v >> 4);
+        lines[locals.firstSimRow + startRow][thisCol + ii * 2] = DOT_PAL(v);
       }
       else if (coreGlobals.gi[ii] == 8)
         lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
@@ -1509,6 +1509,8 @@ static VIDEO_UPDATE(core_status) {
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
   /*-- draw game specific mechanics --*/
   if (core_gameData->hw.drawMech) core_gameData->hw.drawMech((void *)&bitmap->line[locals.firstSimRow]);
+
+  #undef DOT_PAL
 }
 
 /*-- lamp handling --*/
@@ -2676,38 +2678,52 @@ void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows
   Unlike lamps, which have varying strobe periods, DMDs are rasterized at a fixed frequency. Therefore, the implementation
   simply stores the frames at this frequency and applies a (simple) low pass filter to account for the eye flicker-fusion limit.
   The integration period (number of frames to store) and cut-off frequency are selected from the observed PWM pattern of 
-  common hardware: WPC is 122/3 = 40.7Hz, GTS3 is 376/10 = 37.6Hz, so an overall plasma inertia & flicker fusion period
-  of around 40ms (25Hz).
+  common hardware: WPC is 122/3 = 40.7Hz, GTS3 is 376/10 = 37.6Hz, WPC Phantom Haus limit pattern length to 2 to stay above 30Hz,
+  so an overall plasma inertia & flicker fusion period of around 30ms (33Hz).
 
   Filters are computed using the following script in GNU Octave:
 
 pkg load signal
 
-fc = 15; % Cut-off frequency (Hz), PWM patterns/frequency suggests something below 35Hz
-int_factor = 65000; % Integer arithmetic fixed point scaling
+fc = 15; % Cut-off frequency (Hz), PWM patterns/frequency suggests something around 33Hz
+int_factor = 65535*65530; % Integer arithmetic fixed point scaling
 
 
-% Data East DMD 128x32 & Sega/Stern Whitestar
-n = 16
-fs = 233.5; % Sampling rate (Hz) = DMD VBlank
-data=[repmat([0;0;1],100,1), repmat([1;1;0],100,1), repmat([1;1;1],100,1)];
-
-% GTS3
-n = 24
-fs = 376; % Sampling rate (Hz) = DMD VBlank
-data=[repmat([0;0;0;0;0;0;0;1],30,1), repmat([0;0;0;0;0;1;1;1],30,1)];
+% WPC Phantom Haus
+%n = 10
+%fs = 61.05; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([0;1],100,1)];
 
 % WPC
-n = 8
-fs = 122.1; % Sampling rate (Hz) = DMD VBlank
-data=[repmat([0;0;1],100,1),repmat([0;1;1],100,1)];
+%n = 8
+%fs = 122.1; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([0;0;1],100,1),repmat([0;1;1],100,1)];
+
+% Data East DMD 128x16
+%n = 8
+%fs = 177.5; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([0;0;1],100,1), repmat([1;1;0],100,1), repmat([1;1;1],100,1)];
+
+% Data East DMD 128x32 & Sega/Stern Whitestar & Sega 192x64
+%n = 8
+%fs = 230.; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([0;0;1],100,1), repmat([1;1;0],100,1), repmat([1;1;1],100,1)];
+
+% GTS3
+%n = 24
+%fs = 376.; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([0;0;0;0;0;0;0;1],30,1), repmat([0;0;0;0;0;1;1;1],30,1)];
 
 % Alvin G
-n = 8
-fs = 293.; % Sampling rate (Hz) = DMD VBlank
-data=[repmat([0;0;0;1],100,1),repmat([0;1;0;1],100,1),repmat([0;0;1;1],100,1),repmat([0;1;1;1],100,1)];
+%n = 10
+%fs = 298.6; % Sampling rate (Hz) = DMD VBlank
+%fs = 1194.4; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([0;0;0;1],100,1),repmat([0;1;0;1],100,1),repmat([0;0;1;1],100,1),repmat([0;1;1;1],100,1)];
 
-b = fir1(n, fc/(fs/2));
+%fs = 230.;
+%n = floor(fs/fc) + 1
+
+b = fir1(n - 1, fc/(fs/2));
 b = round(int_factor * b) / int_factor
 
 filtered = filter(b,1,data);
@@ -2720,82 +2736,79 @@ for i_plot = 1:size(data,2)
   stairs(x, filtered(:,i_plot),";PWM Pattern;")
 endfor
 
-fprintf('n=%i (suggested n=%i from fs/fc)\n', n+1, round(fs/fc));
+fprintf('n=%i (suggested n=%i from fs/fc with fs=%d fc=%d)\n', n, floor(fs/fc)+1, fs, fc);
 fprintf('filter=[');
 fprintf('%i, ', int_factor * b);
 fprintf(']\n');
-fprintf('sum=%i\n', sum(int_factor * b));
 */
 
 void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner) {
   assert((width & 0x0007) == 0);
+  memset(dmd_state, 0, sizeof(core_tDMDPWMState));
   dmd_state->width = width;
   dmd_state->height = height;
   dmd_state->frameSize = width * height;
   dmd_state->rawFrameSize = dmd_state->frameSize / 8;
   dmd_state->raw_combiner = raw_combiner;
-  static const UINT16 fir_colorization_3_frames[] = { 20000, 20000, 20000 };
   switch (filter)
   {
+  case CORE_DMD_PWM_FILTER_WPC_PH: // WPC Phantom Haus: 61Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern
+    {
+      static const UINT32 fir_61_15[] = { 255, 255 };
+      dmd_state->fir_weights = fir_61_15;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_61_15) / sizeof(UINT32);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_WPC: // WPC: 122Hz refresh rate / 15Hz low pass filter / 3 frames PWM pattern (there seems to be longer PWM patterns, see T2 gun animation sequence)
+    {
+      static const UINT32 fir_122_15[] = { 2171530, 86962941, 442229424, 985918760, 1259943241, 985918760, 442229424, 86962941, 2171530 };
+      dmd_state->fir_weights = fir_122_15;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_122_15) / sizeof(UINT32);
+    }
+    break;
   case CORE_DMD_PWM_FILTER_DE_128x16: // Data East 128x16: 177.5Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern
     {
-      static const UINT16 fir_177_15[] = { 549, 2291, 7523, 13954, 16901, 13954, 7523, 2291, 549 };
+      static const UINT32 fir_177_15[] = { 5806203, 39898456, 162292893, 397050141, 675509028, 866697553, 866697553, 675509028, 397050141, 162292893, 39898456, 5806203 };
       dmd_state->fir_weights = fir_177_15;
-      dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_177_15) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_177_15) / sizeof(UINT32);
     }
     break;
   case CORE_DMD_PWM_FILTER_DE_128x32: // Data East & Sega/Stern Whitestar: 234Hz refresh rate / 15Hz low pass filter / 2 frames (2/3 - 1/3 length) PWM pattern
   case CORE_DMD_PWM_FILTER_DE_192x64: // Sega: 224Hz refresh rate / 15Hz low pass filter / 2 frames (2/3 - 1/3 length) PWM pattern
     {
-      static const UINT16 fir_230_15[] = { 789, 2657, 7755, 13529, 16075, 13529, 7755, 2657, 789 };
+      static const UINT32 fir_230_15[] = { 5683808, 23123723, 77603279, 187082483, 344389128, 514464295, 646635594, 696543928, 646635594, 514464295, 344389128, 187082483, 77603279, 23123723, 5683808 };
       dmd_state->fir_weights = fir_230_15;
-      dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_230_15) / sizeof(UINT16);
-    }
-    break;
-  case CORE_DMD_PWM_FILTER_GTS3: // GTS3: 376Hz refresh rate / 15Hz low pass filter / 1,3,6,8,10 frames PWM pattern
-    {
-      static const UINT16 fir_376_15[] = { 233, 321, 544, 921, 1452, 2115, 2868, 3651, 4396, 5032, 5495, 5739, 5740, 5495, 5032, 4396, 3651, 2868, 2115, 1452, 921, 544, 321, 233 };
-      dmd_state->fir_weights = fir_376_15;
-      dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_376_15) / sizeof(UINT16);
-    }
-    break;
-  case CORE_DMD_PWM_FILTER_WPC: // WPC: 122Hz refresh rate / 15Hz low pass filter / 3 frames PWM pattern (there seems to be longer PWM patterns, see T2 gun animation sequence)
-    {
-      static const UINT16 fir_122_15[] = { 269, 2570, 10580, 19348, 19349, 10580, 2570, 269 };
-      dmd_state->fir_weights = fir_122_15;
-      dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_122_15) / sizeof(UINT16);
-    }
-    break;
-  case CORE_DMD_PWM_FILTER_ALVG1: // Alvin G. DMD Generation 1: 1194.4Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
-    {
-      static const UINT16 fir_1194_15[] = { 938, 1985, 4737, 8160, 10943, 12009, 10943, 8160, 4737, 1985, 938 };
-      dmd_state->fir_weights = fir_1194_15;
-      dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_1194_15) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_230_15) / sizeof(UINT32);
     }
     break;
   case CORE_DMD_PWM_FILTER_ALVG2: // Alvin G. DMD Generation 2: 298.6Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
     {
-      static const UINT16 fir_299_15[] = { 656, 1633, 4384, 8185, 11501, 12817, 11501, 8185, 4384, 1633, 656 };
+      static const UINT32 fir_299_15[] = { 2410896, 9610314, 28210405, 66396021, 128313971, 211717997, 307413991, 400841556, 475445398, 516893726, 516893726, 475445398, 400841556, 307413991, 211717997, 128313971, 66396021, 28210405, 9610314, 2410896 };
       dmd_state->fir_weights = fir_299_15;
-      dmd_state->fir_sum = 65535;
-      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_299_15) / sizeof(UINT16);
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_299_15) / sizeof(UINT32);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_GTS3: // GTS3: 376Hz refresh rate / 15Hz low pass filter / 1,3,6,8,10 frames PWM pattern
+  case CORE_DMD_PWM_FILTER_ALVG1: // FIXME frame rate seems too high to be true (so we use the 376Hz) / Alvin G. DMD Generation 1: 1194.4Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
+    {
+      static const UINT32 fir_376_15[] = { 487657, 3888687, 10976383, 24969201, 48529031, 83073390, 128267628, 181813266, 239594638, 296177312, 345582023, 382201229, 401693831, 401693831, 382201229, 345582023, 296177312, 239594638, 181813266, 128267628, 83073390, 48529031, 24969201, 10976383, 3888687, 487657 };
+      dmd_state->fir_weights = fir_376_15;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_376_15) / sizeof(UINT32);
     }
     break;
   default:
     assert(0); // Unsupported filter
   }
+  for (int i = 0; i < dmd_state->fir_size; i++)
+    dmd_state->fir_sum += dmd_state->fir_weights[i];
+  dmd_state->fir_sum /= 255;
   dmd_state->rawFrames = malloc(dmd_state->nFrames * dmd_state->rawFrameSize);
-  dmd_state->shadedFrame = malloc(dmd_state->frameSize * sizeof(UINT16));
+  dmd_state->shadedFrame = malloc(dmd_state->frameSize * sizeof(UINT32));
   dmd_state->bitplaneFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
   dmd_state->luminanceFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
   assert(dmd_state->rawFrames != NULL && dmd_state->shadedFrame != NULL && dmd_state->bitplaneFrame != NULL && dmd_state->luminanceFrame != NULL);
   memset(dmd_state->rawFrames, 0, dmd_state->nFrames * dmd_state->rawFrameSize);
-  memset(dmd_state->shadedFrame, 0, dmd_state->frameSize * sizeof(UINT16));
+  memset(dmd_state->shadedFrame, 0, dmd_state->frameSize * sizeof(UINT32));
   memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize * sizeof(UINT8));
   memset(dmd_state->luminanceFrame, 0, dmd_state->frameSize * sizeof(UINT8));
   dmd_state->nextFrame = 0;
@@ -2826,10 +2839,10 @@ void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, con
 
 void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   // Apply low pass filter over stored frames then scale down to final shades
-  memset(dmd_state->shadedFrame, 0, dmd_state->width * dmd_state->height * sizeof(UINT16));
+  memset(dmd_state->shadedFrame, 0, dmd_state->width * dmd_state->height * sizeof(UINT32));
   for (int ii = 0; ii < dmd_state->fir_size; ii++) {
-    const UINT16 frame_weight = dmd_state->fir_weights[ii];
-    UINT16* line = dmd_state->shadedFrame;
+    const UINT32 frame_weight = dmd_state->fir_weights[ii];
+    UINT32* line = dmd_state->shadedFrame;
     const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1) + (dmd_state->nFrames - ii)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
     for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
       UINT8 data = *frameData++;
@@ -2842,10 +2855,10 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       }
     }
   }
-  const UINT16* line = dmd_state->shadedFrame;
+  const UINT32* line = dmd_state->shadedFrame;
   for (int ii = 0; ii < dmd_state->height * dmd_state->width; ii++) {
     const unsigned int data = (unsigned int) (*line++); // unsigned int precision is needed here
-    dmd_state->luminanceFrame[ii] = (UINT8)((255u * data) / dmd_state->fir_sum);
+    dmd_state->luminanceFrame[ii] = (UINT8)(data / dmd_state->fir_sum);
   }
 
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
@@ -2858,6 +2871,25 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   case CORE_DMD_PWM_COMBINER_LUM_16: // GTS3 never had a stable combiner since PWM patterns vary over 1/3/6/8/10 frames, hence it provided raw 1 bitplane frame and not really stable combined one
     for (int ii = 0; ii < dmd_state->height * dmd_state->width; ii++)
       dmd_state->bitplaneFrame[ii] = dmd_state->luminanceFrame[ii] >> 4;
+    break;
+  case CORE_DMD_PWM_COMBINER_SUM_2: // Sum of the last 2 raw frames seen (WPC/Phantom Haus)
+    {
+      UINT8* rawData = &dmd_state->bitplaneFrame[0];
+      const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
+        const unsigned int intens1 = (frame0[kk] & 0x55) + (frame1[kk] & 0x55); // 0x55 = 01010101 binary mask
+        const unsigned int intens2 = (frame0[kk] & 0xaa) + (frame1[kk] & 0xaa); // 0xaa = 10101010 binary mask
+        *rawData++ =  intens1       & 0x03;
+        *rawData++ = (intens2 >> 1) & 0x03;
+        *rawData++ = (intens1 >> 2) & 0x03;
+        *rawData++ = (intens2 >> 3) & 0x03;
+        *rawData++ = (intens1 >> 4) & 0x03;
+        *rawData++ = (intens2 >> 5) & 0x03;
+        *rawData++ = (intens1 >> 6) & 0x03;
+        *rawData++ = (intens2 >> 7) & 0x03;
+      }
+    }
     break;
   case CORE_DMD_PWM_COMBINER_SUM_3: // Sum of the last 3 raw frames seen (WPC)
     {
@@ -2950,20 +2982,18 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
 #if defined(PINMAME) || defined(VPINMAME)
 void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* dmdDotLum, const int apply_aa) {
   #define DMD_OFS(row, col) ((row)*width + col)
-  #define DMD_PAL(x) ((int)sizeof(core_palette) / 3 - 48 + ((3 * (int)x) >> 4)) // The trail of PinMame palette has 48 DMD dot shades
-  //#define DMD_PAL(x) = dmdColor[63 + (x >> 4)]
-  //pen_t *dmdColor = &Machine->pens[COL_DMDOFF];
+  #define DMD_PAL(x) (sizeof(core_palette)/3 - 48 + ((unsigned int)(x) * 47) / 255) // The trail of PinMame palette has 48 DMD dot shades
+  //#define DMD_PAL(x) = Machine->pens[COL_DMDOFF][63 + (x >> 4)]
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
     for (int jj = 0; jj < width; jj++) {
-      //const int p = dmdDotLum[DMD_OFS(ii, jj)], q = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       line += locals.displaySize;
     }
     lines += locals.displaySize;
   }
-  // Apply antialiasing if enabled or clear pixels between dots
+  // Apply antialiasing if enabled or clear pixels between dots otherwise
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
   if (locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
@@ -2975,13 +3005,16 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
           if ((ii & 1) || (jj & 1))
             *line = DMD_PAL(0);
         } else if ((ii & 1) && (jj & 1)) { // Corner point
-          const int lum = ((int)dmdDotLum[DMD_OFS(pi, pj)] + (int)dmdDotLum[DMD_OFS(pi+1, pj)] + (int)dmdDotLum[DMD_OFS(pi, pj+1)] + (int)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
+          const UINT16 lum = ((UINT16)dmdDotLum[DMD_OFS(pi, pj)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT16)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
+          assert(0 <= lum && lum <= 255);
           *line = DMD_PAL(lum);
         } else if (ii & 1) { // Vertical side point
-          const int lum = ((int)dmdDotLum[DMD_OFS(pi, pj+1)] + (int)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          const UINT16 lum = ((UINT16)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          assert(0 <= lum && lum <= 255);
           *line = DMD_PAL(lum);
         } else if (jj & 1) { // Horizontal side point
-          const int lum = ((int)dmdDotLum[DMD_OFS(pi+1, pj)] + (int)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          const UINT16 lum = ((UINT16)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          assert(0 <= lum && lum <= 255);
           *line = DMD_PAL(lum);
         }
         line++;
@@ -3136,9 +3169,11 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   else { // Only bitplane state: consider luminance equal to (scaled) bitplane output
     dmdDotRaw = &coreGlobals.dmdDotRaw[0];
     dmdDotLum = &coreGlobals.dmdDotLum[0];
-    const int shift = (core_gameData->gen & (GEN_SAM|GEN_SPA)) != 0 ? 4 : 6;
-    for (int ii = 0; ii < layout->length; ii++)
-      dmdDotLum[ii] = dmdDotRaw[ii] << shift;
+    if ((core_gameData->gen & GEN_SAM) == 0) {
+      const int shift = (core_gameData->gen & GEN_SPA) != 0 ? 4 : 6;
+      for (int ii = 0; ii < layout->length; ii++)
+        dmdDotLum[ii] = dmdDotRaw[ii] << shift;
+    }
   }
 
   #if defined(LIBPINMAME)

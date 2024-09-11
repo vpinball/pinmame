@@ -607,12 +607,12 @@ typedef struct {
   int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
   int     raw_combiner;       // CORE_DMD_PWM_COMBINER_... enum that defines how to combine bitplanes to create multi plane raw frame for colorization plugin
   int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
-  UINT16* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
-  unsigned int fir_sum;       // Sum of filter weights
+  UINT32* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  UINT32  fir_sum;            // Sum of filter weights
   // Data acquisition, feeded by the driver through 'core_dmd_submit_frame'
   UINT8*  rawFrames;          // Buffer for incoming raw frames
   int     nextFrame;          // Position in circular buffer to store next raw frame
-  UINT16* shadedFrame;        // Shaded frame computed from raw frames
+  UINT32* shadedFrame;        // Shaded frame computed from raw frames
   unsigned int frame_index;   // Raw frame index
   // Integrated data, computed by 'core_dmd_update_pwm'
   UINT8*  bitplaneFrame;      // DMD: bitplane frame built up from raw rasterized frames (depends on each driver, stable result that can be used for post processing like colorization, ...)
@@ -624,15 +624,17 @@ typedef struct {
 #define CORE_DMD_PWM_FILTER_DE_192x64   2
 #define CORE_DMD_PWM_FILTER_GTS3        3
 #define CORE_DMD_PWM_FILTER_WPC         4
-#define CORE_DMD_PWM_FILTER_ALVG1       5
-#define CORE_DMD_PWM_FILTER_ALVG2       6
+#define CORE_DMD_PWM_FILTER_WPC_PH      5
+#define CORE_DMD_PWM_FILTER_ALVG1       6
+#define CORE_DMD_PWM_FILTER_ALVG2       7
 
 #define CORE_DMD_PWM_COMBINER_LUM_4   0
 #define CORE_DMD_PWM_COMBINER_LUM_16  1
-#define CORE_DMD_PWM_COMBINER_SUM_3   2
-#define CORE_DMD_PWM_COMBINER_SUM_2_1 3
-#define CORE_DMD_PWM_COMBINER_SUM_1_2 4
-#define CORE_DMD_PWM_COMBINER_SUM_4   5
+#define CORE_DMD_PWM_COMBINER_SUM_2   2
+#define CORE_DMD_PWM_COMBINER_SUM_3   3
+#define CORE_DMD_PWM_COMBINER_SUM_2_1 4
+#define CORE_DMD_PWM_COMBINER_SUM_1_2 5
+#define CORE_DMD_PWM_COMBINER_SUM_4   6
 
 extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner);
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
