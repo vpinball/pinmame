@@ -45,7 +45,7 @@
 /*-- IRQ frequency, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ        (8000000./8192.) /* IRQ Frequency-Timed by JD (976) */
 
-#define DMD_ROWFREQ        (2000000./(16.*16.*2.)) // DMD row frequency deduced from schematics 16.9148.1 (half of length is horizontal blanking)
+#define DMD_ROWFREQ        (2000000./(16.*16.*2.)) // DMD row frequency deduced from schematics 16.9148.1 (half of length is serial dot shift then column latch)
 
 #define GENWPC_HASDMD      (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))
 #define GENWPC_HASFLIPTRON (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
@@ -1004,7 +1004,8 @@ WRITE_HANDLER(wpc_w) {
       cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
     case WPC_DMD_PAGE3A00: /* set the page that is visible at 0x3A00 */
       cpu_setbank(3, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case WPC_DMD_FIRQLINE: /* acknowledge raised DMD FIRQ if any, and set the line to generate the next FIRQ (>31 disable it) */
+    case WPC_DMD_FIRQLINE: /* acknowledge raised DMD FIRQ if any, and set the line to generate the next FIRQ (0xFF to ack and disable) */
+      //printf("%8.5f FIRQ ROW: %02x PC: %04x\n", timer_get_time(), data, activecpu_get_pc());
       if (dmdlocals.firq != 0) {
         dmdlocals.firq = 0;
         update_firq();
@@ -1189,7 +1190,8 @@ static MACHINE_INIT(wpc) {
   // Init DMD PWM shading
   if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
   {
-    core_dmd_pwm_init(&dmdlocals.pwm_state, 128, (core_gameData->hw.gameSpecific2 == WPC_PH) ? 64 : 32, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
+    const int isPH = core_gameData->hw.gameSpecific2 == WPC_PH;
+    core_dmd_pwm_init(&dmdlocals.pwm_state, 128, isPH ? 64 : 32, isPH ? CORE_DMD_PWM_FILTER_WPC_PH : CORE_DMD_PWM_FILTER_WPC, isPH ? CORE_DMD_PWM_COMBINER_SUM_2 : CORE_DMD_PWM_COMBINER_SUM_3);
     dmdlocals.pwm_state.revByte = 1;
   }
 
@@ -1575,49 +1577,38 @@ static VIDEO_START(wpc_dmd) {
   return 0;
 }
 
-// The DMD controller constantly rasterizes the content of a page of RAM.
+// The DMD controller constantly rasterizes the content of a page of RAM (while 
+// CPU prepare next frame in another page).
+// 
 // It is driven by the main CPU clock at 2MHz and uses freq dividers to generate
 // all timings. In the end, pages are rasterized at 2MHz / (128*32*2*2) = 122.07Hz
 // where the first 2 dividers are the dot clock divider and the second is the 
 // VBlank divider. All of this was deduced from the pre WPC-95 schematics.
 // lucky1 measured on a real machine 122.1Hz which validates it.
+//
+// Most WPC games uses a 3 frame PWM pattern to create 0/33/66/100 shades.
+// For Phantom Haus, the DMD is bigger with 64 rows instead of 32, therefore
+// the rasterizer timings are 2MHz / (128*64*2*2) = 61.04Hz. The PWM pattern 
+// used is therefore limited to 2 frames (30.5Hz) with 0/50/100 shades to avoid 
+// flickering.
+// 
 // CPU may ask the DMD board to raise FIRQ when a given row is reached.
 // The FIRQ is then acked (pulled down) by writing again the requested FIRQ row 
 // to the corresponding register (if >31, it disables DMD FIRQ).
 static void wpc_dmd_hsync(int param) {
-  dmdlocals.row = (dmdlocals.row + 1) % 32;
-  if (dmdlocals.row == 0) // VSYNC
-  {
-    if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: DMD is toggled between half and full page size using WPC_DMD_FIRQLINE register bit
-      if (wpc_data[WPC_DMD_FIRQLINE] & 0x20) { // half page (used by menu system)
-        UINT8 full_frame[0x400]; // Somewhat overkill (2 copies)
-        memcpy(full_frame, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200 + (dmdlocals.visiblePage % 2) * 0x200, 0x200);
-        memset(&full_frame[0x200], 0, 0x200);
-        core_dmd_submit_frame(&dmdlocals.pwm_state, full_frame, 1);
-        #ifdef PROC_SUPPORT
-          if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
-            procFillDMDSubFrame(dmd_state->frame_index % 3, full_frame, 0x400);
-        #endif
-      } else { // full page
-        core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 1);
-        #ifdef PROC_SUPPORT
-          if (coreGlobals.p_rocEn) // PH: reasonable guess on how to handle two frames only
-            procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + dmdlocals.visiblePage * 0x400, 0x400);
-        #endif
-      }
-    } else {
-      core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 1);
-      #ifdef PROC_SUPPORT
-        if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
-          procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * 0x200, 0x200);
-        /* Don't explicitly update the DMD from here. The P-ROC code will update after the next DMD event. */
-      #endif
-    }
-    // Move to next page (latched while rasterizing this page)
+  dmdlocals.row = (dmdlocals.row + 1) % dmdlocals.pwm_state.height; // FIXME Phantom Haus uses the same AV card than other WPC95 but with a 64 row display, therefore the CPU must tell the rasterizer that it is 64 row high somewhere we don't know
+  if (dmdlocals.row == 0) { // VSYNC
+    // Rasterize next page (latched while rasterizing the previous page)
     dmdlocals.visiblePage = wpc_data[WPC_DMD_SHOWPAGE];
+    core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * dmdlocals.pwm_state.rawFrameSize, 1);
+    #ifdef PROC_SUPPORT
+      if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
+        procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * dmdlocals.pwm_state.rawFrameSize, dmdlocals.pwm_state.rawFrameSize);
+      /* Don't explicitly update the DMD from here. The P-ROC code will update after the next DMD event. */
+    #endif
   }
-  if (dmdlocals.row == wpc_data[WPC_DMD_FIRQLINE] && dmdlocals.firq != 1)
-  {
+  if (dmdlocals.row == wpc_data[WPC_DMD_FIRQLINE] && dmdlocals.firq != 1) {
+    // printf("%8.5f FIRQ RAISED\n", timer_get_time());
     dmdlocals.firq = 1;
     update_firq();
   }
