@@ -1970,29 +1970,45 @@ static MACHINE_INIT(core) {
     if ((pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0)) {
       perc66 = pmoptions.dmd_perc66; perc33 = pmoptions.dmd_perc33; perc00 = pmoptions.dmd_perc0;
     }
-    int r100 = rStart, g100 = gStart, b100 = bStart;
-    int r00, g00, b00, r33, g33, b33, r66, g66, b66;
-    if (pmoptions.dmd_colorize) {
-      r00 = pmoptions.dmd_red0;  g00 = pmoptions.dmd_green0;  b00 = pmoptions.dmd_blue0;
-      r33 = pmoptions.dmd_red33; g33 = pmoptions.dmd_green33; b33 = pmoptions.dmd_blue33;
-      r66 = pmoptions.dmd_red66; g66 = pmoptions.dmd_green66; b66 = pmoptions.dmd_blue66;
+    if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) {
+      // Backward compatibility: 16 shades mode has no colorization and fixed lighting levels ranging from 0 to 100
+      //static const UINT8 levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
+      //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
+      //const UINT8* const level = (core_gameData->gen & (GEN_SAM|GEN_SPA)) ? levelsam : levelgts3;
+      for (int i = 0; i < 256; i++) {
+        float v = i / 255.f; // level[i >> 4] / 100.f;
+        locals.vpm_dmd_luminance_lut[i] = (UINT8)(v * 100.f);
+        UINT32 r = (UINT32)(rStart * v);
+        UINT32 g = (UINT32)(gStart * v);
+        UINT32 b = (UINT32)(bStart * v);
+        locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);;
+      }
     }
     else {
-      r00 = rStart * perc00 / 100; g00 = gStart * perc00 / 100; b00 = bStart * perc00 / 100;
-      r33 = rStart * perc33 / 100; g33 = gStart * perc33 / 100; b33 = bStart * perc33 / 100;
-      r66 = rStart * perc66 / 100; g66 = gStart * perc66 / 100; b66 = bStart * perc66 / 100;
+      int r100 = rStart, g100 = gStart, b100 = bStart;
+      int r00, g00, b00, r33, g33, b33, r66, g66, b66;
+      if (pmoptions.dmd_colorize) {
+        r00 = pmoptions.dmd_red0;  g00 = pmoptions.dmd_green0;  b00 = pmoptions.dmd_blue0;
+        r33 = pmoptions.dmd_red33; g33 = pmoptions.dmd_green33; b33 = pmoptions.dmd_blue33;
+        r66 = pmoptions.dmd_red66; g66 = pmoptions.dmd_green66; b66 = pmoptions.dmd_blue66;
+      }
+      else {
+        r00 = (rStart * perc00) / 100; g00 = (gStart * perc00) / 100; b00 = (bStart * perc00) / 100;
+        r33 = (rStart * perc33) / 100; g33 = (gStart * perc33) / 100; b33 = (bStart * perc33) / 100;
+        r66 = (rStart * perc66) / 100; g66 = (gStart * perc66) / 100; b66 = (bStart * perc66) / 100;
+      }
+      #define LERP0(p, a, b) ((1.-(double)p)*(double)a + (double)p*(double)b)
+      #define LERP(i, v0, v33, v66, v100) (i < 85 ? LERP0(((double)i)/85., v0, v33) : (i < 170 ? LERP0(((double)i-85.)/85., v33, v66) : LERP0(((double)i-170.)/85., v66, v100)))
+      for (int i = 0; i < 256; i++) {
+        locals.vpm_dmd_luminance_lut[i] = (UINT8) LERP(i, perc00, perc33, perc66, 100);
+        UINT32 r = (UINT32) LERP(i, r00, r33, r66, rStart);
+        UINT32 g = (UINT32) LERP(i, g00, g33, g66, gStart);
+        UINT32 b = (UINT32) LERP(i, b00, b33, b66, bStart);
+        locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);;
+      }
+      #undef LERP0
+      #undef LERP
     }
-    #define LERP0(p, a, b) ((1.-(double)p)*(double)a + (double)p*(double)b)
-    #define LERP(i, v0, v33, v66, v100) (i < 85 ? LERP0(((double)i)/85., v0, v33) : (i < 170 ? LERP0(((double)i-85.)/170., v33, v66) : LERP0(((double)i-170.)/255., v66, v100)))
-    for (int i = 0; i < 256; i++) {
-      locals.vpm_dmd_luminance_lut[i] = (UINT8) LERP(i, perc00, perc33, perc66, 100);
-      UINT32 r = (UINT32) LERP(i, r00, r33, r66, rStart);
-      UINT32 g = (UINT32) LERP(i, g00, g33, g66, gStart);
-      UINT32 b = (UINT32) LERP(i, b00, b33, b66, bStart);
-      locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);;
-    }
-    #undef LERP0
-    #undef LERP
   }
   #endif
 
