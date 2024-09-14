@@ -27,6 +27,7 @@ static struct {
   int vid_page;
   int last;
   core_tDMDPWMState pwm_state;
+  UINT8 blank_frame[0x200];
 } dmdlocals;
 
 // Identify PCA020 (Al's Garage Band) vs PCA020A board (Pistol Poker & Mystery Castle)
@@ -35,8 +36,7 @@ static struct {
 /*declarations*/
 static WRITE_HANDLER(dmd32_bank_w);
 static READ_HANDLER(dmd32_latch_r);
-static INTERRUPT_GEN(dmd32_firq1);
-static INTERRUPT_GEN(dmd32_firq2);
+static INTERRUPT_GEN(dmd32_firq);
 static WRITE_HANDLER(dmd32_data_w);
 static void dmd32_init(struct sndbrdData *brdData);
 static void dmd32_exit(int boardNo);
@@ -155,8 +155,10 @@ static READ_HANDLER(control_r)
 static READ_HANDLER(port_r)
 {
 	//Port 1 is read in the wait for interrupt loop.. Not sure why this is done.
-	if(offset == 1)
+	if (offset == 1)
 		return dmdlocals.vid_page;
+	else if (offset == 3)
+      return IS_PCA020 ? 0x10 : 0x00; // Port3.4 T0 is used to adjust operation to hardware gen (schematics shows it unwired for PCA020 but hgidra shows code adjust ROWSTART as it would for it, wired to 0 after)
 	else
 		LOG(("port read @ %x\n",offset));
 	return 0;
@@ -185,11 +187,12 @@ static WRITE_HANDLER(port_w)
 			P3.3 = INT1 (Not used as output)
 			P3.4 = TO   (Not used as output)
 			P3.5 = DISENABLE (Display Enable)
-			P3.6 = /WR  (Used Internally only?)
-			P3.7 = /RD  (Used Internally only?) */
+			P3.6 = /WR Write to RAM (U7 chip) and suspend rasterization
+			P3.7 = /RD Read from RAM (U7 chip) and suspend rasterization */
 		case 3:
 			dmdlocals.plans_enable = data & 0x01;
 			alvg_UpdateSoundLEDS(1,(data&0x02)>>1);
+			//if (dmdlocals.disenable != ((data & 0x20) >> 5)) printf("%8.5f DISENABLE:%d\n", timer_get_time(), !dmdlocals.disenable);
 			dmdlocals.disenable = ((data & 0x20) >> 5);
 			break;
 		default:
@@ -250,9 +253,11 @@ PORT_END
     Each frame is made of 32 rows, after which the INT1 is generated [U22/U26B], therefore after rasterizing 4 frames of 32 rows, corresponding
     to 4 x 32 x 314 = 40192 VCLOCK cycles, leading to a INT1 frequency of 74.6Hz and a refresh rate before PWM of 298.6Hz
 	 lucky1 measured on a real hardware a frequency of 74.5Hz which validates this.
- - On PCA020, CPU Clock @12MHz directly drives VCLOCK (Al's Garage Band)
-    The digital logic is slightly different and likely lead to different cycle count.
-	 For the time being, we use the data gathered for PCA020A (which happens to look and play good)
+ - On PCA020, CPU Clock @12MHz directly drives VCLOCK (Al's Garage Band) on the schematics, but users report that an additional board with 4 clock divider 
+    has been added (f.e.: https://www.aussiearcade.com/topic/82810-alvin-g-amp-co-als-garage-band-goes-on-a-world-tour/). The digital logic is slightly different
+	 and leads to different cycle count (measured using discrete chip digital simulation).
+ - Note that these cycle counts are somewhat imprecise as rasterization is suspended through SELSYNC signal when CPU access video RAM, slowing down all this
+    a bit. This is also likely the reason why CPU always access video RAM by writing a full row at once.
 */
 
 // Al's Garage Band Goes On A World Tour
@@ -260,7 +265,7 @@ MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq1, 12000000./(4.*32.*314.)) // FIXME likely wrong as the board is slightly different and the cycle count form PCA020A can not be taken as is
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*4.*32.*282.)) // 12MHz divided by 4, triggering INT1 every 4 x 32 rows (each row rasterized 4 times) x 282 cycles per row
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -269,7 +274,7 @@ MACHINE_DRIVER_START(alvgdmd2)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq2, 12000000./(4.*4.*32.*314.)) // 12MHz divided by 4, triggering INT1 every 4 (frames) x 32 (rows) x 314 (cycles per row)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*4.*32.*314.)) // 12MHz divided by 4, triggering INT1 every 4 x 32 rows (each row rasterized 4 times) x 314 cycles per row
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -279,7 +284,7 @@ MACHINE_DRIVER_START(test8031)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq2, 12000000. / (4.*384.*128.))
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000. / (4.*4.*32.*314.))
 MACHINE_DRIVER_END
 #endif
 
@@ -313,24 +318,11 @@ static READ_HANDLER(dmd32_latch_r) {
   return dmdlocals.cmd;
 }
 
-//Pulse the INT1 Line (wired to /ROWDATA so pulsed when vertical blanking after a sequence of 4 PWM frames)
-static INTERRUPT_GEN(dmd32_firq1) {
-  //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 4 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 4. / (timer_get_time() - prev)); prev = timer_get_time();
-  LOG(("INT1 Pulse\n"));
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
-  assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
-  const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
-  const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4), 1);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4), 1);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4), 1);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4), 1);
-}
-
-static INTERRUPT_GEN(dmd32_firq2) {
-  if (dmdlocals.selsync == 0) { // VCLOCK is disabled so FIRQ may not happen [not present on Al's Garage Band Hardware]
-	LOG(("Skipping INT1\n"));
-	return;
+// Pulse the INT1 Line (wired to /ROWDATA so pulsed on vertical blanking after rasterizing each row 4 times for PWM shades)
+static INTERRUPT_GEN(dmd32_firq) {
+  if (!IS_PCA020 && dmdlocals.selsync == 0) { // VCLOCK is disabled (rasterization is suspended) so FIRQ may not happen [not present on Al's Garage Band Hardware]
+    LOG(("Skipping INT1\n"));
+    return;
   }
   // TODO if needed for backwards compatibility regarding colorization, previous implementation submitted a 16 shade frame made up of the 4 frames (if plans_enable = 0, four time the same frame) => 16 shades (with balanced luminance between frames)
   //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 4 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 4. / (timer_get_time() - prev)); prev = timer_get_time();
@@ -338,11 +330,18 @@ static INTERRUPT_GEN(dmd32_firq2) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
   assert((dmdlocals.colstart & 0x07) == 0); // Lowest 3 bits are actually loaded to the shift register, so it is possible to perform a dot shift, but we don't support it
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
-  const unsigned int plan_mask = dmdlocals.plans_enable ? 0x7F : 0x1F; // either render 4 different frames or 4 times the same
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x20) & plan_mask) << 4), 1);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x40) & plan_mask) << 4), 1);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x60) & plan_mask) << 4), 1);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((dmdlocals.rowstart + 0x00) & plan_mask) << 4), 1);
+  const int rowstart = IS_PCA020 ? dmdlocals.rowstart + 1 : dmdlocals.rowstart; // PCA020 inc row before start
+  if (dmdlocals.disenable) // Hardware uses the display enable signal to fade/adjust brightness of monochrome frames
+    core_dmd_submit_frame(&dmdlocals.pwm_state, &dmdlocals.blank_frame[0], 4);
+  else if (!dmdlocals.plans_enable)
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x00) & 0x1F) << 4), 4);
+  else {
+    // Note for Al's Garage Band the frame sequence is 0 first (no visible impact)
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x20) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x40) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x60) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x00) & 0x7F) << 4), 1);
+  }
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
