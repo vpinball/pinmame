@@ -2963,8 +2963,8 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       const UINT8* const frame3 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         UINT8 v0 = frame0[kk], v1 = frame1[kk], v2 = frame2[kk], v3 = frame3[kk];
-        for (int ii = 0; ii < 8; ii++, v0 >>= 1, v1 >>= 1, v2 >>= 1, v3 >>= 1)
-          *rawData++ = (v0 & 0x01) + (v1 & 0x01) + (v1 & 0x02) + (v3 & 0x01);
+        for (int ii = 0; ii < 8; ii++, v0 <<= 1, v1 <<= 1, v2 <<= 1, v3 <<= 1)
+          *rawData++ = ((v0 >> 7) & 0x01) + ((v1 >> 7) & 0x01) + ((v1 >> 7) & 0x02) + ((v3 >> 7) & 0x01);
       }
     }
     break;
