@@ -9,11 +9,21 @@
 #include "p-roc/p-roc.h"
 #endif
 
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+#else
+#define LOG(x)
+#endif
+
 /*--------- Common DMD stuff ----------*/
 static struct {
   struct sndbrdData brdData;
   int cmd, ncmd, busy, status, ctrl, bank;
   core_tDMDPWMState pwm_state;
+  
+  // dmd32 stuff
+  UINT8* RAM;
+  UINT8* RAMbankPtr;
   
   // dmd16 stuff
   UINT8 framedata[2][16][2][8]; // 2 PWM frames of 16 rows of 128 bits
@@ -44,31 +54,26 @@ const struct sndbrdIntf dedmd32Intf = {
   dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
-static WRITE_HANDLER(dmd32_bank_w);
-static WRITE_HANDLER(dmd32_status_w);
-static READ_HANDLER(dmd32_latch_r);
-static INTERRUPT_GEN(dmd32_firq);
+static READ_HANDLER(dmd32_io_r);
+static WRITE_HANDLER(dmd32_io_w);
+static WRITE_HANDLER(dmd32_status_w) { sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0x0f); }
+static READ_HANDLER(dmd32_RAMbank_r) { return dmdlocals.RAMbankPtr[offset]; }
+static WRITE_HANDLER(dmd32_RAMbank_w) { dmdlocals.RAMbankPtr[offset] = data; }
 
 static MEMORY_READ_START(dmd32_readmem)
-  { 0x0000, 0x1fff, MRA_RAM },
-  { 0x2000, 0x2fff, MRA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each */
-  { 0x3000, 0x3000, crtc6845_register_0_r },
-  { 0x3001, 0x3002, MRA_NOP },
-  { 0x3003, 0x3003, dmd32_latch_r },
-  { 0x3004, 0x3fff, MRA_NOP },
-  { 0x4000, 0x7fff, MRA_BANKNO(DMD32_BANK0) }, /* Banked ROM */
-  { 0x8000, 0xffff, MRA_ROM },
+  { 0x0000, 0x1fff, MRA_RAM },                 /* Static RAM (U16 uses CORE/ZA0 signal to map last 8k of RAM) */
+  { 0x2000, 0x2fff, dmd32_RAMbank_r },         /* Banked RAM (8 x 4k) */
+  { 0x3000, 0x3fff, dmd32_io_r },              /* CRTC6845 and IO latch */
+  { 0x4000, 0x7fff, MRA_BANKNO(DMD32_BANK0) }, /* Banked ROM (32 x 16k) */
+  { 0x8000, 0xffff, MRA_ROM },                 /* Static ROM (U16 uses CORE/ZA0 signal to map last 16k of ROM) */
 MEMORY_END
 
 static MEMORY_WRITE_START(dmd32_writemem)
-  { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2fff, MWA_RAM, &dmd32RAM }, /* DMD RAM PAGE 0-7 512 bytes each*/
-  { 0x3000, 0x3000, crtc6845_address_0_w },
-  { 0x3001, 0x3001, crtc6845_register_0_w },
-  { 0x3002, 0x3002, dmd32_bank_w }, /* DMD Bank Switching*/
-  { 0x3003, 0x3fff, MWA_NOP },
-  { 0x4000, 0x4000, dmd32_status_w },   /* DMD Status*/
-  { 0x4001, 0xffff, MWA_NOP },
+  { 0x0000, 0x1fff, MWA_RAM },                 /* Static RAM (U16 uses CORE/ZA0 signal to map last 8k of RAM) */
+  { 0x2000, 0x2fff, dmd32_RAMbank_w },         /* Banked RAM (8 x 4k) */
+  { 0x3000, 0x3fff, dmd32_io_w },              /* CRTC6845 and ROM/RAM bank switching */
+  { 0x4000, 0x7fff, dmd32_status_w },          /* Status */
+  { 0x8000, 0xffff, MWA_NOP },
 MEMORY_END
 
 MACHINE_DRIVER_START(de_dmd32) // Board Part 520-5055-00
@@ -83,6 +88,53 @@ MACHINE_DRIVER_START(se_dmd32) // Board Part 520-5055-01 to 520-5055-03
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
+static READ_HANDLER(dmd32_io_r) {
+  switch (offset & 0x0003) {
+  // /CRTCCS: CRTC6845 chip access
+  case 0:
+    // Invalid operation: reading from address register is unsupported (see datasheet)
+    // Strangely enough, all CRTC write sequences are followed by a read of CRTC register which the datasheet state as unsupported
+	 //LOG(("%8.5f DEDMD32 PC %04x: Invalid read at 0x%04x\n", timer_get_time(), activecpu_get_pc(), offset + 0x3000));
+    break;
+  case 1:
+    return crtc6845_register_0_r(0);
+  // /PORTIN: Read CPU data latch, and clear IRQ/busy line
+  case 2:
+  case 3:
+    sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0);
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
+    return dmdlocals.cmd;
+  }
+  return 0;
+}
+
+static WRITE_HANDLER(dmd32_io_w) {
+  switch (offset & 0x0003) {
+  // /CRTCCS: CRTC6845 chip access
+  case 0: crtc6845_address_0_w(0, data); break;
+  case 1: crtc6845_register_0_w(0, data); break;
+  // /BSE: latch XA0..7, used to define ROM and RAM banks (RAM bank seems to be unused)
+  case 2:
+    // if (data & 0xe0) { LOG(("%8.5f DEDMD32 PC %04x: Switch RAM Bank 0x%02x\n", timer_get_time(), activecpu_get_pc(), data >> 5)); }
+    dmdlocals.RAMbankPtr = dmdlocals.RAM + (data >> 5) * 0x1000;
+    cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion + (data & 0x1f) * 0x4000);
+    break;
+  }
+}
+
+static WRITE_HANDLER(dmd32_ctrl_w) {
+  if (~dmdlocals.ctrl & data & 0x01) { // Cmd ready
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
+    sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
+    dmdlocals.cmd = dmdlocals.ncmd;
+  }
+  if (dmdlocals.ctrl & ~data & 0x02) { // Reset
+    cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
+    dmd32_io_w(0x0003, 0); // set ROM and RAM bank to 0
+  }
+  dmdlocals.ctrl = data;
+}
+
 /*
  Data East and Sega/Stern Whitestar share the (mostly) same DMD board: 520-5055-00 for Data East, 520-5055-01 to 520-5055-03 for Whitestar
  [Disclaimer, large parts of the following have been deduced from digital recordings and schematics analysis, so may be entirely wrong]
@@ -94,16 +146,18 @@ MACHINE_DRIVER_END
    a memory mapping is applied to the linear rasterization performed by the CRTC6845, MA is the memory address output, RA is the character
    output. Character is used as the PWM frame selector and wired to bit 9 of the memory address allowing to render a line of each frame
    alternatively:
-    MA0..2   - Bit shift (0..7)
-    MA3..6   - A0..3      [unimplemented in PinMame]
-    RA1..4   - A4..7   => DMD row lowest 4 bits from character row address (always starts at 0)
-    MA7      - A8      => DMD row highest bit [unimplemented in PinMame]
-    RA0      - A9      => used to toggle between frame while rasterizing each row
-    MA8..12  - A10..14
+    CA0..2   - Bit shift (0..7)  [always starts at 0, unimplemented in PinMame]
+    CA3..6   - MA0..3            [always starts at 0, unimplemented in PinMame]
+    RA1..4   - MA4..7   => DMD row lowest 4 bits from character row address (always starts at 0)
+    CA7      - MA8      => DMD row highest bit [always starts at 0, unimplemented in PinMame]
+    RA0      - MA9      => used to toggle between PWM frame while rasterizing each row
+    CA8..9   - MA10..11
+	ZA0      - MA12     => RAM bank (decoded by U16)
+	XA6..7   - MA13..14 => RAM bank (decoded by U16)
  - RA0 is also wired to ROWCLOCK, therefore row is advanced once every 2 rasterized rows
- - The start address is usually either 0x2000 or 0x2100 (i.e. with MA13 set), with CURSOR always being defined on one of these / row 0, which led
-   to guess that CURSOR signal is used to generate FIRQ (frame IRQ to CPU, trigerring some animation update). Results looks good but this would 
-   be nice to check this assumption on real hardware.
+ - The start address is usually either 0x2000 or 0x2100 (i.e. with CA13 set while it is not wire to RAM but to U2), with CURSOR always
+   being defined to 0x2000 / row 0, which led to guess that CURSOR signal is used to generate FIRQ (frame IRQ to CPU, trigerring
+   some animation update). Results looks good but this would be nice to check this assumption on real hardware.
    */
 static void dmd32_vblank(int which) {
   //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz Base address: %04x\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), crtc6845_start_address_r(0)); prev = timer_get_time();
@@ -112,8 +166,8 @@ static void dmd32_vblank(int which) {
   assert((base & 0x00FF) == 0x0000); // As the mapping of lowest 8 bits is not implemented (would need complex data copy and does not seem to be used by any game)
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmd32RAM + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
+  core_dmd_submit_frame(&dmdlocals.pwm_state, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
+  core_dmd_submit_frame(&dmdlocals.pwm_state, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
   if (base = crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 }
@@ -121,10 +175,10 @@ static void dmd32_vblank(int which) {
 static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
-  cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion);
   /* copy last 16K of ROM into last 16K of CPU region*/
-  memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
-         memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
+  memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000, memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
+  dmdlocals.RAM = malloc(8 * 4096); // TODO move to default MAME memory management
+  dmd32_io_w(0x0003, 0); // set ROM and RAM bank to 0
 
   // Init 6845
   crtc6845_init(0);
@@ -146,47 +200,15 @@ static void dmd32_init(struct sndbrdData *brdData) {
 }
 
 static void dmd32_exit(int boardNo) {
-  core_dmd_pwm_exit(&dmdlocals.pwm_state);
-}
-
-static WRITE_HANDLER(dmd32_ctrl_w) {
-  if ((data | dmdlocals.ctrl) & 0x01) {
-    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
-    if (data & 0x01) {
-      sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
-      dmdlocals.cmd = dmdlocals.ncmd;
-    }
-  }
-  else if (~data & dmdlocals.ctrl & 0x02) {
-    cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
-    cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion);
-  }
-  dmdlocals.ctrl = data;
-}
-
-static WRITE_HANDLER(dmd32_status_w) {
-  sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0x0f);
-}
-
-static WRITE_HANDLER(dmd32_bank_w) {
-  cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion + (data & 0x1f)*0x4000);
-}
-
-static READ_HANDLER(dmd32_latch_r) {
-  sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0); // Clear Busy
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
-  return dmdlocals.cmd;
-}
-
-static INTERRUPT_GEN(dmd32_firq) {
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
+   free(dmdlocals.RAM);
+   core_dmd_pwm_exit(&dmdlocals.pwm_state);
 }
 
 PINMAME_VIDEO_UPDATE(dedmd32_update) {
   #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
-      /* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
-	     has 4 subframes for up to 16 colors. Experimentation has showed
+    /* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
+	    has 4 subframes for up to 16 colors. Experimentation has showed
 		 using P-ROC subframe 2 and 3 provides a pretty good color match. */
 	  const int procSubFrame0 = 2;
 	  const int procSubFrame1 = 3;
@@ -195,8 +217,8 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 	  procClearDMD();
 
 	  /* Fill the P-ROC subframes from the video RAM */
-      const UINT8* RAM = ((UINT8*)dmd32RAM) + ((crtc6845_start_address_r(0) & 0x0100) << 2);
-      procFillDMDSubFrame(procSubFrame0, RAM        , 0x200);
+     const UINT8* RAM = ((UINT8*)dmdlocals.RAMbankPtr) + ((crtc6845_start_address_r(0) & 0x0100) << 2);
+     procFillDMDSubFrame(procSubFrame0, RAM        , 0x200);
 	  procFillDMDSubFrame(procSubFrame1, RAM + 0x200, 0x200);
 
 	  /* Each byte is reversed in the video RAM relative to the bit order the P-ROC
@@ -225,9 +247,9 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
  - 16 bit shift register to SDATA is load on each RCO pulse, then serialized at 3MHz
  - /RA0 is wired to row clock while rows are rasterized 3 times each, this leads to rasterizing twice the first row and once the third row.
  - Memory is mapped to rasterizer through:
-    MA0..9   - A0..9 [always starts at 0, therefore mapping is not implemented in PinMame]
+    CA0..9   - A0..9 [always starts at 0, therefore mapping is not implemented in PinMame]
     RA1      - A10
-    MA10..13 - A11..A14
+    CA10..13 - A11..A14
 	Therefore, 2 first frames are rasterized from base address, while third one is rasterized from base + 0x0400*2 (since this a 16 bit arch)
  - ROWDATA is generated by a little PAL (VSYNC from CRTC is unwired), maybe something like /ROWDATA = HS & /DE ?
  - IRQ2 to CPU is raised by ROWDATA when starting a new frame. It is acknowledged on R/W access from CPU to CCRT.
@@ -291,7 +313,7 @@ static WRITE_HANDLER(dmd64_ctrl_w) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
     dmdlocals.cmd = dmdlocals.ncmd;
   }
-  if (~dmdlocals.ctrl & data & 0x02) // Reset
+  if (dmdlocals.ctrl & ~data & 0x02) // Reset
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   dmdlocals.ctrl = data;
 }
