@@ -946,23 +946,18 @@ MACHINE_DRIVER_END
 /*** 128 X 32 NORMAL SIZE DMD ***/
 /********************************/
 PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
-  int ii, jj, kk;
-  UINT16 *RAM;
-
-  UINT32 offset = locals.visible_page ? 0x800 * locals.visible_page : 0;
-  RAM = ramptr+offset;
-  for (ii = 0; ii < 32; ii++) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[ii*layout->length];
-    for (kk = 0; kk < 16; kk++) {
+  UINT16* RAM = ramptr + 0x800 * locals.visible_page + 0x10;
+  UINT8* line = &coreGlobals.dmdDotRaw[0];
+  for (int ii = 0; ii < 32; ii++) {
+    for (int kk = 0; kk < 16; kk++) {
       UINT16 intens1 = RAM[0];
-      for(jj=0;jj<8;jj++) {
-         *line++ = (intens1&0xc000)>>14;
+      for(int jj = 0; jj < 8; jj++) {
+         *line++ = (intens1 >> 14) & 0x0003;
          intens1 <<= 2;
       }
-      RAM+=1;
+      RAM += 1;
     }
-    *line++ = 0;
-    RAM+=16;
+    RAM += 16;
   }
   core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
@@ -972,26 +967,22 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
 /*** 256 X 64 SUPER HUGE DMD ***/
 /*******************************/
 PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
-  int ii, jj, kk;
-  UINT16 *RAM;
-
-  UINT32 offset = locals.visible_page ? 0x800 * locals.visible_page : 0;
-  RAM = ramptr+offset;
-  for (ii = 0; ii < 64; ii++) {
+  UINT16 *RAM = ramptr + 0x800 * locals.visible_page;
+  for (int ii = 0; ii < 64; ii++) {
     UINT8 *linel = &coreGlobals.dmdDotRaw[ii * layout->length];
     UINT8 *liner = &coreGlobals.dmdDotRaw[ii * layout->length + 128];
-    for (kk = 0; kk < 16; kk++) {
+    for (int kk = 0; kk < 16; kk++) {
       UINT16 intensl = RAM[0];
       UINT16 intensr = RAM[0x10];
-      for(jj=0;jj<8;jj++) {
-         *linel++ = (intensl&0xc000)>>14;
+      for(int jj=0;jj<8;jj++) {
+         *linel++ = (intensl >> 14) & 0x0003;
          intensl <<= 2;
-         *liner++ = (intensr&0xc000)>>14;
+         *liner++ = (intensr >> 14) & 0x0003;
          intensr <<= 2;
       }
-      RAM+=1;
+      RAM += 1;
     }
-    RAM+=16;
+    RAM += 16;
   }
   core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
