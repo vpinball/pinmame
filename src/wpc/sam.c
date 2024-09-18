@@ -1863,8 +1863,8 @@ MACHINE_DRIVER_END
 --*/
 static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	// This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
-	// this leads to a non monotonic ramp which is a bit suspicious but result looks good.
-	static const UINT8 lumLUT[16] = { 0, 21, 43, 64, 85, 106, 128, 149, 106, 128, 149, 170, 191, 213, 234, 255};
+	// RAM never contains 8/9/10/11 which creates a monotonic LUT, but with a discontinuity as the hardware has 13 shades while the code uses 12.
+	static const UINT8 lumLUT[16] = { 0, 21, 43, 64, 85, 106, 128, 149, 106 /*unused*/, 128 /*unused*/, 149 /*unused*/, 170 /*unused*/, 191, 213, 234, 255};
 	int ii;
 	for( ii = 0; ii < 32; ii++ )
 	{
