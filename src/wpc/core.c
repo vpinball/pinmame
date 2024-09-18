@@ -3187,7 +3187,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     dmdDotLum = &coreGlobals.dmdDotLum[0];
     if ((core_gameData->gen & GEN_SAM) == 0) {
       const int shift = (core_gameData->gen & GEN_SPA) != 0 ? 4 : 6;
-      for (int ii = 0; ii < layout->length; ii++)
+      for (int ii = 0; ii < layout->length * layout->start; ii++)
         dmdDotLum[ii] = dmdDotRaw[ii] << shift;
     }
   }
