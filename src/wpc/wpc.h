@@ -154,17 +154,18 @@ extern const core_tLCDLayout wpc_dispDMD[];
 /
 / Dr. Who is the only game testing the shifter.
 /------------------------------------------------------------------------------
+/ A = Alpha, M = ?, F = Fliptronics, D = DCS, S = Security, 9 = WPC95
 /------------------------------------------------AMFDS9-------------------------*/
 /* 3fb0 .. 3fb7 - RS232 on WPC95 Audio/Video Board (used for NBA fastbreak linking and debugging) */
 /* 3fb8 .. 3fbf - DMD controller board */
-#define WPC_DMD_PAGE3200  (0x3fb8 - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
-#define WPC_DMD_PAGE3000  (0x3fb9 - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
-#define WPC_DMD_PAGE3600  (0x3fba - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
-#define WPC_DMD_PAGE3400  (0x3fbb - WPC_BASE) /*        W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
-#define WPC_DMD_PAGE3A00  (0x3fbc - WPC_BASE) /*        W: CPU access memory bank select (HIGHPAGEWR in schematics 16.9148.1) */
-#define WPC_DMD_FIRQLINE  (0x3fbd - WPC_BASE) /*        R: Bit7 FIRQ state W: ack DMD FIRQ and write row number to raise next FIRQ (FIRQRD/ROW_IRQ in schematics 16.9148.1) */
-#define WPC_DMD_PAGE3800  (0x3fbe - WPC_BASE) /*        W: CPU access memory bank select (LOWPAGEWR in schematics 16.9148.1) */
-#define WPC_DMD_SHOWPAGE  (0x3fbf - WPC_BASE) /*        W: page to rasterize on next VBlank (DISPAGEWR in schematics 16.9148.1) */
+#define WPC_DMD_PAGE3200  (0x3fb8 - WPC_BASE) /*      x W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3000  (0x3fb9 - WPC_BASE) /*      x W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3600  (0x3fba - WPC_BASE) /*      x W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3400  (0x3fbb - WPC_BASE) /*      x W: CPU access memory bank select (added with WPC-95 as discrete IC was replaced by a custom chip) */
+#define WPC_DMD_PAGE3A00  (0x3fbc - WPC_BASE) /*      x W: CPU access memory bank select (HIGHPAGEWR in schematics 16.9148.1) */
+#define WPC_DMD_FIRQLINE  (0x3fbd - WPC_BASE) /*   xxxx R: Bit7 FIRQ state W: ack DMD FIRQ and write row number to raise next FIRQ (FIRQRD/ROW_IRQ in schematics 16.9148.1) */
+#define WPC_DMD_PAGE3800  (0x3fbe - WPC_BASE) /*   xxxx W: CPU access memory bank select (LOWPAGEWR in schematics 16.9148.1) */
+#define WPC_DMD_SHOWPAGE  (0x3fbf - WPC_BASE) /*   xxxx W: page to rasterize on next VBlank (DISPAGEWR in schematics 16.9148.1) */
 /* 3fc0 .. 3fdf - External IO boards */
 /* Printer board */
 #define WPC_PRINTBUSY     (0x3fc0 - WPC_BASE) /* xxxxx  R: Printer ready ??? */
@@ -192,25 +193,27 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_SOLENOID4     (0x3fe3 - WPC_BASE) /* xxxxxx W: Solenoid  9-16 */
 #define WPC_LAMPROW       (0x3fe4 - WPC_BASE) /* xxxxxx W: Lamp row */
 #define WPC_LAMPCOLUMN    (0x3fe5 - WPC_BASE) /* xxxxxx W: Lamp column enable */
-#define WPC_GILAMPS       (0x3fe6 - WPC_BASE) /*        W: GI lights ?? */
+#define WPC_GILAMPS       (0x3fe6 - WPC_BASE) /*        W: GI Triac driver */
 #define WPC_DIPSWITCH     (0x3fe7 - WPC_BASE) /* xxxxxx R: CPU board dip-switches */
 #define WPC_SWCOINDOOR    (0x3fe8 - WPC_BASE) /* xxxxxx W: Coin door switches */
 #define WPC_SWROWREAD     (0x3fe9 - WPC_BASE) /* xxxx   R: Switch row read */
-#define WPC_PICREAD       (0x3fe9 - WPC_BASE) /*     xx R: PIC data */
+#define WPC_PICREAD       (0x3fe9 - WPC_BASE) /*     xx R: PIC data (include switch read) */
 #define WPC_SWCOLSELECT   (0x3fea - WPC_BASE) /* xxxx   W: Switch column enable */
-#define WPC_PICWRITE      (0x3fea - WPC_BASE) /*     xx R: PIC data */
+#define WPC_PICWRITE      (0x3fea - WPC_BASE) /*     xx R: PIC data (include switch strobe) */
+/* External board / Alphanum display / WPC95 flippers 0x3feb-0x3fef */
 #define WPC_EXTBOARD1     (0x3feb - WPC_BASE) /*   x    W: Extension Driver Board 1 */
-#define WPC_ALPHAPOS      (0x3feb - WPC_BASE) /* x      W: Select alphanumeric position */
+#define WPC_ALPHAPOS      (0x3feb - WPC_BASE) /* x      W: Alphanumeric column /DIS_STROBE */
 #define WPC_EXTBOARD2     (0x3fec - WPC_BASE) /*   x    W: Extension Driver Board 2 */
-#define WPC_ALPHA1HI      (0x3fec - WPC_BASE) /* x      W: Display 1st row hi bits */
+#define WPC_ALPHA1LO      (0x3fec - WPC_BASE) /* x      W: Alphanumeric 1st row lo bits /DIS_1 */
 #define WPC_EXTBOARD3     (0x3fed - WPC_BASE) /*   x    W: Extension Driver Board 3 */
-#define WPC_ALPHA1LO      (0x3fed - WPC_BASE) /* x      W: Display 1st row lo bits */
+#define WPC_ALPHA1HI      (0x3fed - WPC_BASE) /* x      W: Alphanumeric 1st row hi bits /DIS_2 */
 #define WPC_EXTBOARD4     (0x3fee - WPC_BASE) /*   x    W: Extension Driver Board 4 */
 #define WPC_FLIPPERCOIL95 (0x3fee - WPC_BASE) /*      x W: Flipper Solenoids */
-#define WPC_ALPHA2HI      (0x3fef - WPC_BASE) /* x      W: Display 2nd row hi bits */
-#define WPC_ALPHA2LO      (0x3fee - WPC_BASE) /* x      W:           b 2nd row lo bits */
+#define WPC_ALPHA2LO      (0x3fee - WPC_BASE) /* x      W: Alphanumeric 2nd row lo bits /DIS_3 */
 #define WPC_EXTBOARD5     (0x3fef - WPC_BASE) /*   x    W: Extension Driver Board 5 */
 #define WPC_FLIPPERSW95   (0x3fef - WPC_BASE) /*      x R: Flipper switches */
+#define WPC_ALPHA2HI      (0x3fef - WPC_BASE) /* x      W: Alphanumeric 2nd row hi bits /DIS_4 */
+/* CPU board features 0x3ff0 - 0x3fff */
 #define WPC_LED           (0x3ff2 - WPC_BASE) /* xxxxxx W: CPU LED (bit 7) */
 #define WPC_IRQACK        (0x3ff3 - WPC_BASE) /*        W: IRQ Ack ??? */
 #define WPC_SHIFTADRH     (0x3ff4 - WPC_BASE) /* xxxxxx RW: See above */

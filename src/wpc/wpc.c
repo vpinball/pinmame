@@ -762,19 +762,19 @@ WRITE_HANDLER(wpc_w) {
     case WPC_ROMBANK: { /* change rom bank */
       int bank = data & wpclocals.pageMask;
       cpu_setbank(1, memory_region(WPC_ROMREGION)+ bank * 0x4000);
-#ifdef PINMAME
-/* Bank support for CODELIST */
-      cpu_bankid[1] = bank + ( 0x3F ^ wpclocals.pageMask );
-#endif /* PINMAME */
+      #ifdef PINMAME
+        /* Bank support for CODELIST */
+        cpu_bankid[1] = bank + ( 0x3F ^ wpclocals.pageMask );
+      #endif /* PINMAME */
       break;
     }
     case WPC_FLIPPERS: /* Flipper coils */
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = ~data;
-#ifdef WPC_FAST_FLIP
-        coreGlobals.solenoids2 |= wpclocals.solFlip;
-#endif
+        #ifdef WPC_FAST_FLIP
+          coreGlobals.solenoids2 |= wpclocals.solFlip;
+        #endif
       }
       break;
     case WPC_FLIPPERCOIL95: /* WPC_EXTBOARD4 */
@@ -782,15 +782,16 @@ WRITE_HANDLER(wpc_w) {
         if (data != 0xff) {
           coreGlobals.segments[core_BitColToNum(0xff ^ data)].w = wpclocals.alphaSeg[core_BitColToNum(0xff ^ data)].w = core_bcd2seg7[wpc_data[WPC_EXTBOARD1]];
         }
-      } else if (core_gameData->gen & GENWPC_HASWPC95) {
+      } else if (core_gameData->gen & GENWPC_HASWPC95) { // WPC_FLIPPERCOIL95
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
-#ifdef WPC_FAST_FLIP
-        coreGlobals.solenoids2 |= wpclocals.solFlip;
-#endif
+        #ifdef WPC_FAST_FLIP
+          coreGlobals.solenoids2 |= wpclocals.solFlip;
+        #endif
       }
-      else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      else if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA2LO
       {
+        static double prev; printf("WPC_ALPHA2LO %8.5fms %02x %02x\n", timer_get_time() - prev, wpc_data[WPC_ALPHAPOS], data); prev = timer_get_time();
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
           core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
@@ -861,12 +862,13 @@ WRITE_HANDLER(wpc_w) {
         core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, data << 2, 0xFC); // Write 50..55
         core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 56, data >> 6, 0x03); // Write 56..57
       }
-      else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      else if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHAPOS
       {
         // Alphanumeric segment strobing change => turn off previous segment and on the ones of the new selected position
         // Operation is set all segs to 0 (blanking), then strove to next column, then set segments.
         // The delay between setting segments then blanking them is used to a rough PWM dimming
         // Overall timing is 1ms maximum per digit over a 16ms period
+        static double prev; printf("WPC_ALPHAPOS %8.5fms %02x\n", timer_get_time() - prev, data); prev = timer_get_time();
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
         {
           int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
@@ -881,7 +883,7 @@ WRITE_HANDLER(wpc_w) {
         }
       }
       break; /* just save position */
-    case WPC_EXTBOARD2: /* WPC_ALPHA1 */
+    case WPC_EXTBOARD2: /* WPC_ALPHA1LO */
       if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: lamps 65 .. 128 (data is row of 2nd matrix)
         core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, wpc_data[WPC_LAMPCOLUMN], data, 8);
       }
@@ -891,18 +893,18 @@ WRITE_HANDLER(wpc_w) {
         core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 48, data << 2, 0xFC); // Write 50..55
         core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 56, data >> 6, 0x03); // Write 56..57
       }
-      else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      else if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA1LO
       {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
           core_write_pwm_output_8b(CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8, data);
       }
       break;
-    case WPC_EXTBOARD3:
+    case WPC_EXTBOARD3: /* WPC_ALPHA1HI */
       if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: lamps 129 .. 192 (data is row of 3rd matrix)
         core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 128, wpc_data[WPC_LAMPCOLUMN], data, 8);
       }
-      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+      if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA1HI
       {
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.hi |= data;
         core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (wpc_data[WPC_ALPHAPOS] * 2 + 1) * 8, data);

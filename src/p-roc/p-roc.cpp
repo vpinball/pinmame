@@ -95,12 +95,12 @@ PRMachineType getRomMachineType() {
 	switch (core_gameData->gen) {
 		case GEN_WPCALPHA_1:
 		case GEN_WPCALPHA_2:
-                case GEN_DE:
-                case GEN_S4:
-                case GEN_S11A:
-                case GEN_S11:
-                case GEN_S11B2:
-                case GEN_S11C:
+		case GEN_DE:
+		case GEN_S4:
+		case GEN_S11A:
+		case GEN_S11:
+		case GEN_S11B2:
+		case GEN_S11C:
 			if (pmoptions.alpha_on_dmd) {
 				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
 				return kPRMachineWPC;

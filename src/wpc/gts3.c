@@ -158,11 +158,9 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 	// - LCLR H->L / LCLR L->H
 	// We do not simulate the LCLR signals since the pulse is too short (50us) for the output resolution
 	//printf("t=%8.5f Col=%3x STRB=%d DATA=%d LCLR=%d\n", timer_get_time(), GTS3locals.lampColumn, data & LSTRB, data & LDATA, data & LCLR);
-	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
-	{
+	if (~GTS3locals.u4pb & data & LSTRB) { // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
 		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0ffe) | (data & LDATA);
-		if (GTS3locals.lampColumn == 0x001) // Simple strobe emulation: accumulate lamp matrix until strobe restarts from first column
-		{
+		if (GTS3locals.lampColumn == 0x001) { // Simple strobe emulation: accumulate lamp matrix until strobe restarts from first column
 			memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
 		}
@@ -172,11 +170,8 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 	core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (GTS3locals.lampColumn >> 8) & 0x0F, lampRow, 4);
 
 
-	if (GTS3locals.alphagen)
-	{ // Alpha generation
-		//printf("%8.5f Alpha Strobe %02x %05x\n", timer_get_time(), data, GTS3locals.alphaNumColShiftRegister);
-		if (data & ~GTS3locals.u4pb & DSTRB) // Positive edge on DSTRB: shift 20bit register and set bit0 to DDATA
-		{
+	if (GTS3locals.alphagen) { // Alpha generation
+		if (~GTS3locals.u4pb & data & DSTRB) { // Positive edge on DSTRB: shift 20bit register and set bit0 to DDATA
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16, 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, 0);
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , 0);
@@ -186,29 +181,21 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 			// This should never happens but you can drive the hardware to it (multiple resets,...), this will lead to incorrect rendering
 			// assert((GTS3locals.alphaNumColShiftRegister == 0) || (GTS3locals.alphaNumColShiftRegister == (1 << GTS3locals.alphaNumCol)));
 		}
-		if (data & ~GTS3locals.u4pb & DBLNK) // DBlank start (positive edge)
-		{
+		if (~GTS3locals.u4pb & data & DBLNK) { // DBlank start (positive edge)
 			for (int i = 0; i < 20 * 2 * 2; i++)
 				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i * 8, 0);
 		}
-		else if (GTS3locals.alphaNumCol < 20) {
-			if (~data & GTS3locals.u4pb & DBLNK) // DBlank end (negative edge)
-			{
-				// Basic non dimmed segments emulation: just use the column and value defined during DBLNK
-				coreGlobals.segments[GTS3locals.alphaNumCol + 20].w = GTS3locals.activeSegments[0].w;
-				coreGlobals.segments[GTS3locals.alphaNumCol     ].w = GTS3locals.activeSegments[1].w;
-			}
-			if ((data & DBLNK) == 0)
-			{
-				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16    , GTS3locals.activeSegments[0].b.lo);
-				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, GTS3locals.activeSegments[0].b.hi);
-				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , GTS3locals.activeSegments[1].b.lo);
-				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, GTS3locals.activeSegments[1].b.hi);
-			}
+		else if (GTS3locals.u4pb & ~data & DBLNK && GTS3locals.alphaNumCol < 20) { // DBlank end (negative edge)
+			// Non dimmed segments emulation: use the column and value defined during DBLNK
+			coreGlobals.segments[GTS3locals.alphaNumCol + 20].w = GTS3locals.activeSegments[0].w;
+			coreGlobals.segments[GTS3locals.alphaNumCol     ].w = GTS3locals.activeSegments[1].w;
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16    , GTS3locals.activeSegments[0].b.lo);
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, GTS3locals.activeSegments[0].b.hi);
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , GTS3locals.activeSegments[1].b.lo);
+			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, GTS3locals.activeSegments[1].b.hi);
 		}
 	}
-	else
-	{ // DMD generation
+	else { // DMD generation
 		GTS3_dmdlocals[0].dstrb = (data & DSTRB) != 0;
 	}
 
@@ -821,25 +808,23 @@ static WRITE_HANDLER(display_control) { GTS3locals.DISPLAY_CONTROL(offset,data);
 */
 static WRITE_HANDLER(alpha_display){
 	/* Adjust the 16 Segment Layout to match the output order expected by core.c */
-	if (offset & 1) // Hi byte (8..15)
-	{
+	if (offset & 1) { // Hi byte (8..15)
 		GTS3locals.activeSegments[offset >> 1].w &= 0x063F;                // Remove bits 6..8 and 11..15
 		GTS3locals.activeSegments[offset >> 1].w |= ((data & 0x0F) << 11)  /* 8..11 => 11..14 */
-		                                          | ((data & 0x10) <<  2)  /*    12 =>      6 */
-		                                          | ((data & 0x20) <<  3)  /*    13 =>      8 */
-		                                          | ((data & 0x40) <<  9)  /*    14 =>     15 */
-		                                          | ((data & 0x80)      ); /*    15 =>      7 */
+		                                         |  ((data & 0x10) <<  2)  /*    12 =>      6 */
+		                                         |  ((data & 0x20) <<  3)  /*    13 =>      8 */
+		                                         |  ((data & 0x40) <<  9)  /*    14 =>     15 */
+		                                         |  ((data & 0x80)      ); /*    15 =>      7 */
 	}
-	else // Lo byte (0..7)
-	{
+	else { // Lo byte (0..7)
 		GTS3locals.activeSegments[offset >> 1].w &= 0xF9C0;               // Remove bits 0..5 and 9..10
 		GTS3locals.activeSegments[offset >> 1].w |= ((data & 0x3F)     )  /* 0.. 5 => 0.. 5 */
-		                                          | ((data & 0xC0) << 3); /* 6.. 7 => 9..10 */
+		                                         |  ((data & 0xC0) << 3); /* 6.. 7 => 9..10 */
 	}
 	if (((GTS3locals.u4pb & DBLNK) == 0) && (GTS3locals.alphaNumCol < 20)) { // This should never happen since character pattern is loaded to the latch registers while DBLNK is raised
 		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16    , GTS3locals.activeSegments[0].b.lo);
 		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol + 20) * 16 + 8, GTS3locals.activeSegments[0].b.hi);
-		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , GTS3locals.activeSegments[0].b.lo);
+		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16    , GTS3locals.activeSegments[1].b.lo);
 		core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, GTS3locals.activeSegments[1].b.hi);
 	}
 }

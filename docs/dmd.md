@@ -12,8 +12,7 @@ accurately (mainly for backward compatibility, since this was the only thing ava
 
 All DMD control board use Pulse Width Modulation (PWM) to create shades: they quickly toggle the dots on and 
 off, and the observer eye perceive a shade between fully off and fully on. The limit between perceiving flicker vs perceiving
-a stable shade is called the flicker/fusion limit and has lots of scientific documentation as this is a key point when 
-designing a display. It depends mainly on 2 factors:
+a stable shade is called the [flicker/fusion threshold](https://en.wikipedia.org/wiki/Flicker_fusion_threshold). It depends mainly on 2 factors:
 - the speed at which the dots switch on/off (do they ramp up/down quickly or do they fade more slowly),
 - the device luminance level, which impacts how the human eye perceive light (Ferry/Porter law).
 
