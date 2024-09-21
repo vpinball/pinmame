@@ -897,7 +897,7 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	int ns = max((int)ceil(secs * 1000000000.), 1);
+	int64_t ns = max((int64_t)ceil(secs * 1000000000.), (int64_t)1);
 	dispatch_time_t wait_length = dispatch_time(DISPATCH_TIME_NOW, ns);
 	return time_fence_is_supported() && (dispatch_semaphore_wait(time_fence_semaphore, wait_length) == 0);
 }
@@ -965,6 +965,12 @@ static void cpu_timeslice(void)
 	// It also causes a deadlock if using a TimeFence since messages are normally processed by a CPU callback that may not happen depending on the TimeFence.
 	extern void win_process_events(void);
 	win_process_events();
+#endif
+
+#if defined(LIBPINMAME)
+	extern int libpinmame_time_to_quit(void);
+	if (libpinmame_time_to_quit())
+		time_to_quit = 1;
 #endif
 
 	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached

@@ -45,10 +45,6 @@ extern unsigned int coinlockedout[COIN_COUNTERS];
 static int game_paused = 0; /* not zero if the game is paused */
 #endif
 
-#if defined(LIBPINMAME)
-extern int libpinmame_time_to_quit(void);
-#endif
-
 
 
 /***************************************************************************
@@ -3877,9 +3873,6 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	    || code_pressed(PROC_ESC_SEQ)
 #endif /* PINMAME && PROC_SUPPORT */
-#if defined(LIBPINMAME)
-	    || libpinmame_time_to_quit()
-#endif /* LIBPINMAME_SUPPORT */
 #if defined(LISY_SUPPORT)
         //check in lisy for SIGUSR1
         //and quit if we received it
