@@ -365,7 +365,7 @@ static INTERRUPT_GEN(mp2_vblank) {
     coreGlobals.segments[62 - i * 2].w = core_bcd2seg7a[mem >> 4];
     coreGlobals.segments[63 - i * 2].w = core_bcd2seg7a[mem & 0x0f];
   }
-  coreGlobals.segments[5].w |= 0x80;
+  if (coreGlobals.segments[5].w) coreGlobals.segments[5].w |= 0x80;
   coreGlobals.lampMatrix[8] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
   coreGlobals.lampMatrix[9] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
   coreGlobals.diagnosticLed = memory_region(REGION_CPU1)[0x2247] >> 7;
@@ -496,7 +496,7 @@ static READ_HANDLER(mp2_sw) {
             break;
           }
           count++;
-          if (count < 225) {
+          if (count < 201) { // pentacpt will not eject the ball from the right-hand saucer but keeps adding bonus over and over?!
             retVal = 0x02; // keep switch closed
           } else { // timeout reached
             swStatus[i] = 3;
@@ -509,7 +509,7 @@ static READ_HANDLER(mp2_sw) {
         count = 0;
       }
     }
-    if (lastSw5 != coreGlobals.swMatrix[5] || (coreGlobals.swMatrix[5] & 0x30)) {
+    if (lastSw5 != coreGlobals.swMatrix[5] || coreGlobals.swMatrix[5] & 0x02) {
       lastSw5 = coreGlobals.swMatrix[5];
       retVal |= lastSw5;
       retVal &= 0xfe;
@@ -674,9 +674,9 @@ INPUT_PORTS_START(pentacpt)
       COREPORT_DIPSET(0x0000, "3" )
       COREPORT_DIPSET(0x0001, "4" )
       COREPORT_DIPSET(0x0003, "5" )
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3")
-      COREPORT_DIPSET(0x0000, "0" )
-      COREPORT_DIPSET(0x0004, "1" )
+    COREPORT_DIPNAME( 0x0004, 0x0004, "Show highest scores")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0004, DEF_STR(On))
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4")
       COREPORT_DIPSET(0x0000, "0" )
       COREPORT_DIPSET(0x0008, "1" )
