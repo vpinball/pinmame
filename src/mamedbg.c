@@ -3506,7 +3506,7 @@ static int edit_cmds_parse( char *cmdline )
 		if( !strncmp( cmdline, commands[i].name, l ) && !isalnum( cmdline[l] ) )
 		{
 			while( cmdline[l] && isspace( cmdline[l] ) ) l++;
-			strcpy( cmdline, cmdline + l );
+			memmove( cmdline, cmdline + l, strlen(cmdline+l) + 1);
 			return i;
 		}
 		if( commands[i].alias )
@@ -3515,7 +3515,7 @@ static int edit_cmds_parse( char *cmdline )
 			if( !strncmp( cmdline, commands[i].alias, l ) && !isalnum( cmdline[l] ) )
 			{
 				while( cmdline[l] && isspace( cmdline[l] ) ) l++;
-				strcpy( cmdline, cmdline + l );
+				memmove( cmdline, cmdline + l, strlen(cmdline+l) + 1);
 				return i;
 			}
 		}
