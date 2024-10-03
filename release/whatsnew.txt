@@ -27,6 +27,8 @@ Version 3.6 (XX XXth, 2024) - "Sounds good III / Looks good"
 
 Updated LISY support to 5.28-93 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'Home' Pinballs)
 
+Fix crashes in debugger command handling
+
 Fix Capcom crashes in 64bit builds
 
 Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler, Algar, Alien Poker and 7 digit variants of Firepower
