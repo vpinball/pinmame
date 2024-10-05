@@ -131,7 +131,6 @@ static struct {
   int modsol_sample;
   mame_timer* highres_timer;
   int wpcFIRQ;            // State of the WPC chip high res timer FIRQ output
-  int sndFIRQ;            // State of the FIRQ output of the sound board
 } wpclocals;
 
 // Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
@@ -139,7 +138,6 @@ static int wpc_modsol_aux_board = 0;
 static int wpc_fastflip_addr = 0;
 
 static struct {
-  int    visiblePage;            // rasterized memory page
   int    row;                    // Rasterizer row position
   int    firq;                   // State of FIRQ output line to CPU
   core_tDMDPWMState pwm_state;
@@ -416,7 +414,7 @@ MACHINE_DRIVER_END
 // - the sound board FIRQ output
 // - the programmable DMD FIRQ output (raise when a given row is reached, clear when the FIRS row is defined)
 static void update_firq() {
-  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, (wpclocals.wpcFIRQ | wpclocals.sndFIRQ | dmdlocals.firq) ? HOLD_LINE : CLEAR_LINE);
+  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, (wpclocals.wpcFIRQ | dmdlocals.firq) ? HOLD_LINE : CLEAR_LINE);
 }
 
 // High resolution timer provided by the WPC chip. Used by alpha gen games to dim segments
@@ -724,14 +722,6 @@ READ_HANDLER(wpc_r) {
       DBGLOG(("wpc_r %4x\n", offset+WPC_BASE));
       break;
   }
-  // All reads from sound board seem to perform a ack on the sound board FIRQ
-  // since SndBoard U16 chips decodes the address in the given range, and 
-  // produce the CpuRd* signal which happens to ack the FIRQ board output
-  if (wpclocals.sndFIRQ != 0 && (0x3fd8-WPC_BASE <= offset) && (0x3fdf-WPC_BASE <= offset))
-  {
-    wpclocals.sndFIRQ = 0;
-    update_firq();
-  }
   return wpc_data[offset];
 }
 
@@ -994,17 +984,17 @@ WRITE_HANDLER(wpc_w) {
       // cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
       DBGLOG(("WPC_IRQACK. PC=%04x d=%02x\n",activecpu_get_pc(), data));
       break;
-    case WPC_DMD_PAGE3000: /* set the page that is visible at 0x3000 (WPC-95 only) */
-      cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case WPC_DMD_PAGE3200: /* set the page that is visible at 0x3200 (WPC-95 only) */
-      cpu_setbank(5, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case WPC_DMD_PAGE3400: /* set the page that is visible at 0x3400 (WPC-95 only) */
-      cpu_setbank(6, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case WPC_DMD_PAGE3600: /* set the page that is visible at 0x3600 (WPC-95 only) */
-      cpu_setbank(7, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case WPC_DMD_PAGE3800: /* set the page that is visible at 0x3800 */
+    case WPC_DMD_PAGE3000: /* set the page that is accessed by CPU at 0x3000 (WPC-95 only) */
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case WPC_DMD_PAGE3200: /* set the page that is accessed by CPU at 0x3200 (WPC-95 only) */
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(5, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case WPC_DMD_PAGE3400: /* set the page that is accessed by CPU at 0x3400 (WPC-95 only) */
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(6, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case WPC_DMD_PAGE3600: /* set the page that is accessed by CPU at 0x3600 (WPC-95 only) */
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(7, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case WPC_DMD_PAGE3800: /* set the page that is accessed by CPU at 0x3800 */
       cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
-    case WPC_DMD_PAGE3A00: /* set the page that is visible at 0x3A00 */
+    case WPC_DMD_PAGE3A00: /* set the page that is accessed by CPU at 0x3A00 */
       cpu_setbank(3, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
     case WPC_DMD_FIRQLINE: /* acknowledge raised DMD FIRQ if any, and set the line to generate the next FIRQ (0xFF to ack and disable) */
       //printf("%8.5f FIRQ ROW: %02x PC: %04x\n", timer_get_time(), data, activecpu_get_pc());
@@ -1014,6 +1004,7 @@ WRITE_HANDLER(wpc_w) {
       }
       break;
     case WPC_DMD_SHOWPAGE: /* set the page that will be rasterized after next DMD vblank */
+      //{ static double prev = 0.; printf("%8.5f Set page: %02x PC: %04x elapsed:%8.5f\n", timer_get_time(), data, activecpu_get_pc(), timer_get_time()-prev); prev = timer_get_time(); }
       break;
     case WPC_RTCHOUR:
     case WPC_RTCMIN:
@@ -1143,13 +1134,6 @@ static SWITCH_UPDATE(wpc) {
 #endif
 }
 
-static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
-  if (wpclocals.sndFIRQ != 1) {
-    wpclocals.sndFIRQ = 1;
-    update_firq();
-  }
-}
-
 static MACHINE_INIT(wpc) {
                                     /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
@@ -1172,7 +1156,7 @@ static MACHINE_INIT(wpc) {
     case GEN_WPCALPHA_2:
     case GEN_WPCDMD:
     case GEN_WPCFLIPTRON:
-      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION),snd_data_cb,NULL);
+      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
@@ -1601,16 +1585,17 @@ static void wpc_dmd_hsync(int param) {
   dmdlocals.row = (dmdlocals.row + 1) % dmdlocals.pwm_state.height; // FIXME Phantom Haus uses the same AV card than other WPC95 but with a 64 row display, therefore the CPU must tell the rasterizer that it is 64 row high somewhere we don't know
   if (dmdlocals.row == 0) { // VSYNC
     // Rasterize next page (latched while rasterizing the previous page)
-    dmdlocals.visiblePage = wpc_data[WPC_DMD_SHOWPAGE];
-    core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * dmdlocals.pwm_state.rawFrameSize, 1);
+    const int rasterizedPage = wpc_data[WPC_DMD_SHOWPAGE] & 0x0f;
+    //printf("%8.5f Rnd page: %02x\n", timer_get_time(), rasterizedPage);
+    core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + rasterizedPage * dmdlocals.pwm_state.rawFrameSize, 1);
     #ifdef PROC_SUPPORT
       if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
-        procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + (dmdlocals.visiblePage & 0x0f) * dmdlocals.pwm_state.rawFrameSize, dmdlocals.pwm_state.rawFrameSize);
+        procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + rasterizedPage * dmdlocals.pwm_state.rawFrameSize, dmdlocals.pwm_state.rawFrameSize);
       /* Don't explicitly update the DMD from here. The P-ROC code will update after the next DMD event. */
     #endif
   }
   if (dmdlocals.row == wpc_data[WPC_DMD_FIRQLINE] && dmdlocals.firq != 1) {
-    // printf("%8.5f FIRQ RAISED\n", timer_get_time());
+    //printf("%8.5f FIRQ at row %02x\n", timer_get_time(), dmdlocals.row);
     dmdlocals.firq = 1;
     update_firq();
   }

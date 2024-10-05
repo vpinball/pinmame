@@ -54,9 +54,13 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 
 ## WPC
 
-WPC simply renders frame at 122.1Hz, expecting the viewer eye to merge the 3 last rasterized frame. 
+WPC continuously renders frame at 122.1Hz. The game code uses this to render sequences of 
+either 1 (0/100), 2 (0/50/100), or 3 (0/33/66/100) frames, expecting the viewer eye to 
+merge these frames into shades. For example, Terminator 2 uses a 2 frame PWM pattern while
+Creature from the Black Lagoon uses a 3 frame PWM pattern.
 
-Phantom Haus uses a double height DMD which is therefore rasterized at half frequency: 61.5Hz. As a consequence, the game only uses a PWM pattern limited to 2 frame patterns, likely to avoid flicker.
+Phantom Haus uses a double height DMD which is rasterized by the same hardware at half frequency: 61.5Hz.
+As a consequence, the game only uses a 2 frame PWM pattern, likely to avoid flicker.
 
 
 ## Alvin G
