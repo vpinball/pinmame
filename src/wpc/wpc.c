@@ -272,7 +272,7 @@ void wpc_set_fastflip_addr(int addr)
       if (solNum > 27 && (core_gameData->gen & GEN_ALLWPC)) { // 29-32 GameOn
         switch (solNum) {
           case 28:
-            fprintf(stderr, "SOL28: %s\n", enabled ? "game over" : "start game");
+            //fprintf(stderr, "SOL28: %s\n", enabled ? "game over" : "start game");
             // If game supports this "GameOver" solenoid, it's safe to disable the
             // flippers here (something that happens when the game starts up) and
             // rely on solenoid 30 telling us when to enable them.
@@ -284,7 +284,7 @@ void wpc_set_fastflip_addr(int addr)
             }
             break;
           case 30:
-            fprintf(stderr, "SOL30: %s flippers\n", enabled ? "enable" : "disable");
+            //fprintf(stderr, "SOL30: %s flippers\n", enabled ? "enable" : "disable");
             procConfigureFlipperSwitchRules(enabled);
             // enable flippers on pre-fliptronic games (with no PRFlippers)
             if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) {
@@ -292,7 +292,7 @@ void wpc_set_fastflip_addr(int addr)
             }
             break;
           default:
-            fprintf(stderr, "SOL%d (%s) does not map\n", solNum, enabled ? "on" : "off");
+            //fprintf(stderr, "SOL%d (%s) does not map\n", solNum, enabled ? "on" : "off");
             return;
         }
       } else {
@@ -323,7 +323,7 @@ void wpc_set_fastflip_addr(int addr)
       // note that this maps to same P-ROC coils as SOL 36-43 on non-WPC95
       procDriveCoil(solNum+94, enabled);
     } else {
-      fprintf(stderr, "SOL%d (%s) does not map\n", solNum, enabled ? "on" : "off");
+      //fprintf(stderr, "SOL%d (%s) does not map\n", solNum, enabled ? "on" : "off");
       return;
     }
     // TODO:PROC: Upper flipper circuits in WPC-95. (Is this still the case?)
@@ -466,7 +466,7 @@ static INTERRUPT_GEN(wpc_interface_update) {
         for (ii=0; ii<64; ii++) {
           if (chgSol & 0x1) {
             if (mame_debug) {
-              fprintf( stderr,"Drive SOL%02d %s\n", ii, (allSol & 0x1) ? "on" : "off");
+              //fprintf( stderr,"Drive SOL%02d %s\n", ii, (allSol & 0x1) ? "on" : "off");
             }
             wpc_proc_solenoid_handler(ii, allSol & 0x1, TRUE);
           }
@@ -781,7 +781,7 @@ WRITE_HANDLER(wpc_w) {
       }
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA2LO
       {
-        static double prev; printf("WPC_ALPHA2LO %8.5fms %02x %02x\n", timer_get_time() - prev, wpc_data[WPC_ALPHAPOS], data); prev = timer_get_time();
+        //static double prev; printf("WPC_ALPHA2LO %8.5fms %02x %02x\n", timer_get_time() - prev, wpc_data[WPC_ALPHAPOS], data); prev = timer_get_time();
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
           core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + wpc_data[WPC_ALPHAPOS]) * 2 * 8, data);
@@ -858,7 +858,7 @@ WRITE_HANDLER(wpc_w) {
         // Operation is set all segs to 0 (blanking), then strove to next column, then set segments.
         // The delay between setting segments then blanking them is used to a rough PWM dimming
         // Overall timing is 1ms maximum per digit over a 16ms period
-        static double prev; printf("WPC_ALPHAPOS %8.5fms %02x\n", timer_get_time() - prev, data); prev = timer_get_time();
+        //static double prev; printf("WPC_ALPHAPOS %8.5fms %02x\n", timer_get_time() - prev, data); prev = timer_get_time();
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS | CORE_MODOUT_FORCE_ON))
         {
           int prevIndex = CORE_MODOUT_SEG0 + wpc_data[WPC_ALPHAPOS] * 2 * 8;
