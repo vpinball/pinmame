@@ -580,6 +580,8 @@ static WRITE_HANDLER(ci23_porta_w0) {
 }
 static WRITE_HANDLER(ci23_portb_w0) {
   coreGlobals.lampMatrix[0] = data;
+  coreGlobals.lampMatrix[8] = memory_region(REGION_USER2)[data]; 
+  coreGlobals.lampMatrix[9] = memory_region(REGION_USER3)[data]; 
 }
 static WRITE_HANDLER(ci23_portc_w0) {
   int i;
