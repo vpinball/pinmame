@@ -409,10 +409,9 @@ MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
 MACHINE_DRIVER_END
 
-// The FIRQ line is wired to 3 sources:
+// The FIRQ line is wired to 2 sources:
 // - the WPC FIRQ output, which is triggered by its internal high res timer
-// - the sound board FIRQ output
-// - the programmable DMD FIRQ output (raise when a given row is reached, clear when the FIRS row is defined)
+// - the programmable DMD FIRQ output (raised when a choosen row is reached, cleared when the FIRQ row is defined)
 static void update_firq() {
   cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, (wpclocals.wpcFIRQ | dmdlocals.firq) ? HOLD_LINE : CLEAR_LINE);
 }
@@ -1572,7 +1571,7 @@ static VIDEO_START(wpc_dmd) {
 // VBlank divider. All of this was deduced from the pre WPC-95 schematics.
 // lucky1 measured on a real machine 122.1Hz which validates it.
 //
-// Most WPC games uses a 3 frame PWM pattern to create 0/33/66/100 shades.
+// WPC games uses either a 2 or 3 frame PWM pattern to create 0/50/100 or 0/33/66/100 shades.
 // For Phantom Haus, the DMD is bigger with 64 rows instead of 32, therefore
 // the rasterizer timings are 2MHz / (128*64*2*2) = 61.04Hz. The PWM pattern 
 // used is therefore limited to 2 frames (30.5Hz) with 0/50/100 shades to avoid 
@@ -1580,7 +1579,7 @@ static VIDEO_START(wpc_dmd) {
 // 
 // CPU may ask the DMD board to raise FIRQ when a given row is reached.
 // The FIRQ is then acked (pulled down) by writing again the requested FIRQ row 
-// to the corresponding register (if >31, it disables DMD FIRQ).
+// to the corresponding register (game code use 0xFF to disables DMD FIRQ).
 static void wpc_dmd_hsync(int param) {
   dmdlocals.row = (dmdlocals.row + 1) % dmdlocals.pwm_state.height; // FIXME Phantom Haus uses the same AV card than other WPC95 but with a 64 row display, therefore the CPU must tell the rasterizer that it is 64 row high somewhere we don't know
   if (dmdlocals.row == 0) { // VSYNC

@@ -31,7 +31,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 
 | Name                                                        | PWM FPS / Disp.FPS     | PWM pattern | Emulation comments                                             |
 |-------------------------------------------------------------|------------------------|-------------|----------------------------------------------------------------|
-|[WPC](#wpc)                                                  | **122.1** / 40.7       | 3 frames    |                                                                |
+|[WPC](#wpc)                                                  | **122.1** / 40.7       | 2/3 frames  |                                                                |
 |[WPC Phantom Haus](#wpc)                                     | 61.05 / 30.1           | 2 frames    |                                                                |
 |[Data East 128x16](#data-east-128x16)                        | 177.5 / **59.2**       | 2u row      |                                                                |
 |[Data East 128x32](#data-east-128x32-segastern-whitestar)    | 234.2 / **78.1**       | 2u row      |                                                                |
