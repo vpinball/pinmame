@@ -1357,7 +1357,7 @@ static int open_rom_file(struct rom_load_data *romdata, const struct RomModule *
 
 /*-------------------------------------------------
 	rom_fread - cheesy fread that fills with
-	random data for a NULL file
+	random data for a NULL file (in DEBUG mode only)
 -------------------------------------------------*/
 
 static int rom_fread(struct rom_load_data *romdata, UINT8 *buffer, int length)
@@ -1365,11 +1365,11 @@ static int rom_fread(struct rom_load_data *romdata, UINT8 *buffer, int length)
 	/* files just pass through */
 	if (romdata->file)
 		return mame_fread(romdata->file, buffer, length);
-
+#if MAME_DEBUG
 	/* otherwise, fill with randomness */
 	else
 		fill_random(buffer, length);
-
+#endif
 	return length;
 }
 

@@ -103,10 +103,10 @@ INDER_SNDROM4(			"ci-11.bin", CRC(a0732fe4) SHA1(54f62cd81bdb7e1924acb67ddbe43eb
 						"ci-23.bin", CRC(eac346da) SHA1(7c4c26ae089dda0dcd7300fd1ecabf5a91099c41),
 						"ci-22.bin", CRC(379740da) SHA1(83ad13ab7f1f37c78397d8e830bd74c5a7aea758),
 						"ci-21.bin", CRC(0febb4a7) SHA1(e6cc1b26ddfe9cd58da29de2a50a83ce50afe323))
-  NORMALREGION(0x10000, REGION_USER2)
-    ROM_LOAD("inder_sa_m17_moon_ligh_bonus_rom_1.ci1", 0x0000, 0x2000, CRC(2c45fd1e) SHA1(4cd1336271d77d9acb7c81a5461546842e946dc3))
-  NORMALREGION(0x10000, REGION_USER3)
-    ROM_LOAD("inder_sa_m17_moon_ligh_bonus_rom_2.ci2", 0x0000, 0x2000, CRC(c0dc1523) SHA1(511657cc01fbbb5146e32ef26a9b259250df3fb6))
+  NORMALREGIONE(0x2000, REGION_USER2)
+    ROM_LOAD_OPTIONAL("inder_sa_m17_moon_ligh_bonus_rom_1.ci1", 0x0000, 0x2000, CRC(2c45fd1e) SHA1(4cd1336271d77d9acb7c81a5461546842e946dc3))
+  NORMALREGIONE(0x2000, REGION_USER3)
+    ROM_LOAD_OPTIONAL("inder_sa_m17_moon_ligh_bonus_rom_2.ci2", 0x0000, 0x2000, CRC(c0dc1523) SHA1(511657cc01fbbb5146e32ef26a9b259250df3fb6))
 INDER_ROMEND
 CORE_GAMEDEFNV(moonlght,"Moon Light",1987,"Inder (Spain)",gl_mINDERS0,0)
 
@@ -118,10 +118,10 @@ INDER_SNDROM4(			"ci-11.bin", CRC(a0732fe4) SHA1(54f62cd81bdb7e1924acb67ddbe43eb
 						"ci-23.bin", CRC(eac346da) SHA1(7c4c26ae089dda0dcd7300fd1ecabf5a91099c41),
 						"ci-22.bin", CRC(379740da) SHA1(83ad13ab7f1f37c78397d8e830bd74c5a7aea758),
 						"ci-21.bin", CRC(0febb4a7) SHA1(e6cc1b26ddfe9cd58da29de2a50a83ce50afe323))
-  NORMALREGION(0x10000, REGION_USER2)
-    ROM_LOAD("inder_sa_m17_moon_ligh_bonus_rom_1.ci1", 0x0000, 0x2000, CRC(2c45fd1e) SHA1(4cd1336271d77d9acb7c81a5461546842e946dc3))
-  NORMALREGION(0x10000, REGION_USER3)
-    ROM_LOAD("inder_sa_m17_moon_ligh_bonus_rom_2.ci2", 0x0000, 0x2000, CRC(c0dc1523) SHA1(511657cc01fbbb5146e32ef26a9b259250df3fb6))
+  NORMALREGIONE(0x2000, REGION_USER2)
+    ROM_LOAD_OPTIONAL("inder_sa_m17_moon_ligh_bonus_rom_1.ci1", 0x0000, 0x2000, CRC(2c45fd1e) SHA1(4cd1336271d77d9acb7c81a5461546842e946dc3))
+  NORMALREGIONE(0x2000, REGION_USER3)
+    ROM_LOAD_OPTIONAL("inder_sa_m17_moon_ligh_bonus_rom_2.ci2", 0x0000, 0x2000, CRC(c0dc1523) SHA1(511657cc01fbbb5146e32ef26a9b259250df3fb6))
 INDER_ROMEND
 CORE_CLONEDEFNV(moonlifp,moonlght,"Moon Light (Free Play)",1987,"Inder (Spain)",gl_mINDERS0,0)
 
