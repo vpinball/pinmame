@@ -266,23 +266,28 @@ const struct sndbrdIntf dedmd64Intf = {
 
 static WRITE16_HANDLER(crtc6845_msb_address_w)  { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); if (ACCESSING_MSB) crtc6845_address_0_w(offset,data>>8);  }
 static WRITE16_HANDLER(crtc6845_msb_register_w) { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); if (ACCESSING_MSB) crtc6845_register_0_w(offset,data>>8); }
-static READ16_HANDLER(crtc6845_msb_register_r)  { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); return crtc6845_register_0_r(offset)<<8; }
-static WRITE16_HANDLER(dmd64_status_w)          { if (ACCESSING_LSB) sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0x0f); }
+static READ16_HANDLER(crtc6845_msb_address_r)   { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); return 0; }
+static READ16_HANDLER(crtc6845_msb_register_r)  { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); return ACCESSING_MSB ? crtc6845_register_0_r(offset)<<8 : 0; }
+static WRITE16_HANDLER(dmd64_status_w)          { if (ACCESSING_LSB) sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0xff); }
 static READ16_HANDLER(dmd64_latch_r);
 static READ16_HANDLER(dmd64_ram_r)              { const UINT16 v = dmd64RAM[offset]; return (v >> 8) | (v << 8); }
 static WRITE16_HANDLER(dmd64_ram_w)             { const UINT16 rev_data = (data >> 8) | (data << 8); const UINT16 rev_mask = (mem_mask >> 8) | (mem_mask << 8); dmd64RAM[offset] = (dmd64RAM[offset] & rev_mask) | (rev_data & ~rev_mask); }
 
+// Address decoding is performed by U26, a little PAL chip (no flip flop), using A21/A22 for RAM/ROM/Ext chip, then A3/A4 for chip select
+// 00 => ROM 1Mb (can be physically switched by R1 jumper between 2 EPROM sets)
+// 01 => ROM (not used, therefore not implemented)
+// 10 => RAM 128kb
+// 11 => Ext Chip: A3 = CRTC / A4 = Board IO (use synchronous data transfer, with VPA/VMA instead of asynchronous with DTACK)
 static MEMORY_READ16_START(dmd64_readmem)
-  { 0x00000000, 0x000fffff, MRA16_ROM }, /* ROM (2 X 512K)*/
-  //{ 0x00800000, 0x0080ffff, MRA16_RAM}, /* RAM - 0x800000 Page 0, 0x801000 Page 1 */
+  { 0x00000000, 0x000fffff, MRA16_ROM}, /* ROM (2 X 512K)*/
   { 0x00800000, 0x0080ffff, dmd64_ram_r}, /* RAM - 0x800000 Page 0, 0x801000 Page 1 - Reversed endianness */
-  { 0x00c00010, 0x00c00011, crtc6845_msb_register_r },
-  { 0x00c00020, 0x00c00021, dmd64_latch_r }, /* Read the Latch from CPU*/
+  { 0x00c00010, 0x00c00011, crtc6845_msb_address_r},
+  { 0x00c00012, 0x00c00013, crtc6845_msb_register_r},
+  { 0x00c00020, 0x00c00021, dmd64_latch_r}, /* Read the Latch from CPU*/
 MEMORY_END
 
 static MEMORY_WRITE16_START(dmd64_writemem)
   { 0x00000000, 0x000fffff, MWA16_ROM},	 /* ROM (2 X 512K)*/
-  // { 0x00800000, 0x0080ffff, MWA16_RAM, &dmd64RAM},	 /* RAM - 0x800000 Page 0, 0x801000 Page 1 */
   { 0x00800000, 0x0080ffff, dmd64_ram_w, &dmd64RAM},	 /* RAM - 0x800000 Page 0, 0x801000 Page 1 - Reversed endianness */
   { 0x00c00010, 0x00c00011, crtc6845_msb_address_w},
   { 0x00c00012, 0x00c00013, crtc6845_msb_register_w},
@@ -299,7 +304,7 @@ static void dmd64_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
   crtc6845_init(0);
-  crtc6845_set_vsync(0, (12000000. / 4.) / 16., dmd64_vblank); // See explanation for frequency explanation (12MHz -> 3MHz -> 3MHz/16)
+  crtc6845_set_vsync(0, (12000000. / 4.) / 16., dmd64_vblank); // See explanation above for frequency (12MHz -> 3MHz -> 3MHz/16)
   core_dmd_pwm_init(&dmdlocals.pwm_state, 192, 64, CORE_DMD_PWM_FILTER_DE_192x64, CORE_DMD_PWM_COMBINER_SUM_2_1);
 }
 
@@ -313,7 +318,7 @@ static WRITE_HANDLER(dmd64_ctrl_w) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
     dmdlocals.cmd = dmdlocals.ncmd;
   }
-  if (dmdlocals.ctrl & ~data & 0x02) // Reset
+  if (dmdlocals.ctrl & ~data & 0x02) // Reset (applied at falling edge)
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   dmdlocals.ctrl = data;
 }
