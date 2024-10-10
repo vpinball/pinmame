@@ -436,6 +436,9 @@ static sim_tSimData ssSimData = {
   NULL  					/* no key conditions */
 };
 
+// Prototype 0.1 had a 16 LED Skull driver board assembly A-20781 which was not kept in production build
+// This board is a simple 16 bit shift register made from 2x4094 and drivers.
+
 static WRITE_HANDLER(parallel_0_out) {
   coreGlobals.tmpLampMatrix[9] = core_revbyte(data);
   core_write_pwm_output_8b(9 * 8, core_revbyte(data));
@@ -461,7 +464,9 @@ static core_tGameData ssGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,2,0,0,0,1,0, // 2 extra lamp columns for the LEDs of rev. 0.1
+    // 2 extra lamp columns for the LEDs of rev. 0.1
+    // Why do we set gameSpecific1 as this is unused on WPC ?
+    /*swCol*/0,/*lampCol*/2,/*custSol*/0,/*soundBoard*/0,/*display*/0,/*gameSpecific1*/1,/*gameSpecific2*/0,
     NULL, ss_handleMech, ss_getMech, ss_drawMech,
     NULL
 #ifdef ENABLE_MECHANICAL_SAMPLES
@@ -486,7 +491,7 @@ static mech_tInitData ss_wheelMech = {
 
 static WRITE_HANDLER(ss_wpc_w) {
   wpc_w(offset, data);
-  if (offset == WPC_SOLENOID1) {
+  if (offset == WPC_SOLENOID1) { // J110-3 AUX.LAMP DATA and J110-1 AUX.LAMP CLOCK
     HC4094_data_w (0, GET_BIT5);
     HC4094_clock_w(0, GET_BIT4);
     HC4094_clock_w(1, GET_BIT4);

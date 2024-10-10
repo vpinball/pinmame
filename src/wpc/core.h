@@ -231,41 +231,45 @@ typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 #define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
 typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);
 
-/*----------------------
+/*---------------------------------------
 / WPC driver constants
-/--------------------------------*/
-/*      Solenoid numbering       */
-/*                               */
-/*       WPC                     */
-/*  1-28 Standard                */
-/* 33-36 Upper flipper solenoids */
-/* 37-40 Standard (WPC95 only)   */
-/* 41-44 - "" - Copy of above    */
-/* 45-48 Lower flipper solenoids */
-/* 49-50 Simulated               */
-/* 51-64                         */
-/*                               */
-/*       S9/S11                  */
-/*  1- 8 Standard 'A'-side       */
-/*  9-16 Standard                */
-/* 17-22 Special                 */
-/* 23    Flipper & SS Enabled Sol (fake) */
-/* 25-32 Standard 'C'-side       */
-/* 37-41 Sound overlay board     */
-/*                               */
-/*       S7                      */
-/*  1-16 Standard                */
-/* 17-24 Special                 */
+/----------------------------------------*/
+/*      Solenoid numbering               */
+/*                                       */
+/*       WPC                             */
+/*  1-28 Standard                        */
+/* 29-31 GameOn (3 highest bit of GI reg)*/
+/* 32    Unused (always 0)               */
+/* 33-36 Upper flipper solenoids         */
+/* 37-40 LPDC WPC95 controlled outputs   */
+/* 41-44 Copy of 37-40 for backward comp.*/
+/* 45-48 Lower flipper solenoids         */
+/* 49    Fake solenoid for ball shooter  */
+/* 50    Reserved                        */
+/* 51-58 8 drivers Aux Board or custom   */
+/* 59-64 custom                          */
+/*                                       */
+/*       S9/S11                          */
+/*  1- 8 Standard 'A'-side               */
+/*  9-16 Standard                        */
+/* 17-22 Special                         */
+/* 23    Flipper & Switched Sol. Enable  */
+/* 25-32 Standard 'C'-side               */
+/* 37-41 Sound overlay board             */
+/*                                       */
+/*       S7                              */
+/*  1-16 Standard                        */
+/* 17-24 Special                         */
 /* 25    Flipper & SS Enabled Sol (fake) */
-/*                               */
-/*       BY17/BY35               */
-/*  1-15 Standard Pulse          */
-/* 17-20 Standard Hold           */
-/*                               */
-/*       GTS80                   */
-/*  1- 9 Standard                */
-/* 10    GameOn (fake)           */
-/* 11    Tilt (for GI) (fake)    */
+/*                                       */
+/*       BY17/BY35                       */
+/*  1-15 Standard Pulse                  */
+/* 17-20 Standard Hold                   */
+/*                                       */
+/*       GTS80                           */
+/*  1- 9 Standard                        */
+/* 10    GameOn (fake)                   */
+/* 11    Tilt (for GI) (fake)            */
 #define CORE_FIRSTEXTSOL   37
 #define CORE_FIRSTUFLIPSOL 33
 #define CORE_FIRSTCUSTSOL  51
