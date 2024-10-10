@@ -757,13 +757,15 @@ WRITE_HANDLER(wpc_w) {
       #endif /* PINMAME */
       break;
     }
-    case WPC_FLIPPERS: /* Flipper coils */
+    case WPC_FLIPPERS: /* Flipper coils of Fliptronics 2 Board */
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = ~data;
         #ifdef WPC_FAST_FLIP
           coreGlobals.solenoids2 |= wpclocals.solFlip;
         #endif
+        core_write_pwm_output(CORE_MODOUT_SOL0 + 45 - 1, 4, ~data);
+        core_write_pwm_output(CORE_MODOUT_SOL0 + 33 - 1, 4, ~data >> 4);
       }
       break;
     case WPC_FLIPPERCOIL95: /* WPC_EXTBOARD4 */
@@ -777,6 +779,8 @@ WRITE_HANDLER(wpc_w) {
         #ifdef WPC_FAST_FLIP
           coreGlobals.solenoids2 |= wpclocals.solFlip;
         #endif
+        core_write_pwm_output(CORE_MODOUT_SOL0 + 45 - 1, 4, data);
+        core_write_pwm_output(CORE_MODOUT_SOL0 + 33 - 1, 4, data >> 4);
       }
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA2LO
       {
@@ -1197,6 +1201,11 @@ static MACHINE_INIT(wpc) {
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_WPC);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol; // Auxiliary solenoid board adding 8 outputs are already included in the base solenoid span (see core_gelAllModSol) (WPC Fliptronics: TZ / WPC DCS: DM, IJ, STTNG / WPC Security : RS / WPC 95: NGG)
+  coreGlobals.flipperCoils = 0x21232D2F20222C2Eull; // Hold: 33/35/45/47 Pow: 32/34/44/46 sol number is 0 based (offset from SOL0), order is UR/UL/LR/LL
+  if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) /* No upper right flipper */
+    coreGlobals.flipperCoils |= 0xFF000000FF000000ull;
+  if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) /* No upper left flipper */
+    coreGlobals.flipperCoils |= 0x00FF000000FF0000ull;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   coreGlobals.nGI = 5;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
@@ -1250,7 +1259,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "cftbl_", 6) == 0) { // Creature From The Black Lagoon
      static const int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28 }; // 28 is hologram lamp
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		 core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64, 8, CORE_MODOUT_BULB_86_6_3V_AC); // chase lights (8 strings of #86 bulbs wired between GI and solenoids outputs through triacs and a 2 bit decoder)
   }
   else if (strncasecmp(gn, "congo_", 6) == 0) { // Congo
@@ -1263,7 +1272,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "dm_", 3) == 0) { // Demolition Man
-     static const int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 };
+     static const int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 }; // Aux Driver board
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
@@ -1321,7 +1330,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_906_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Aux Driver board
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 24 - 1, 1, CORE_MODOUT_LED); // Plane Guns LED
   }
   else if (strncasecmp(gn, "jb_", 3) == 0) { // Jack Bot
@@ -1368,7 +1377,7 @@ static MACHINE_INIT(wpc) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ngg_", 4) == 0) { // No Good Goofers
-     static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 };
+     static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 }; // Aux Driver board
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
@@ -1383,7 +1392,7 @@ static MACHINE_INIT(wpc) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "rs_", 3) == 0) { // Road Show
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC); // Aux Driver board
   }
   else if (strncasecmp(gn, "sc_", 3) == 0) { // Safe Cracker
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1398,15 +1407,15 @@ static MACHINE_INIT(wpc) {
   }
   else if (strncasecmp(gn, "ss_", 3) == 0) { // Scared Stiff
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 35 + 14 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC); // Lower left/lower right flasher (use free flipper sols)
-     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_LED); // Auxiliary LEDs driven through solenoids 37/38 (Crate eyes)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 35 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC); // Lower left/lower right flasher (use free upper flipper sol outputs)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 8 * 8, 16, CORE_MODOUT_LED); // 16 auxiliary Skull LEDs driven through solenoids 37/38 (only used in prototype 0.1, removed for later prototype and production builds)
   }
   else if (strncasecmp(gn, "sttng_", 6) == 0) { // Star Trek Next Generation
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 2, CORE_MODOUT_BULB_906_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 3, CORE_MODOUT_BULB_906_20V_DC_WPC);
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 41 + 14 - 1, 1, CORE_MODOUT_BULB_906_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 41 + 14 - 1, 1, CORE_MODOUT_BULB_906_20V_DC_WPC); // Aux Driver board
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 42 + 14 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "totan_", 6) == 0) { // Tales Of The Arabian Nights
@@ -1440,7 +1449,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "tz_", 3) == 0) { // Twilight Zone
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 4, CORE_MODOUT_BULB_906_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_906_20V_DC_WPC);
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 5, CORE_MODOUT_BULB_906_20V_DC_WPC);
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 5, CORE_MODOUT_BULB_906_20V_DC_WPC); // Aux Driver board
   }
   else if (strncasecmp(gn, "t2_", 3) == 0) { // Terminator 2
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_906_20V_DC_WPC);
