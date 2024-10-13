@@ -35,7 +35,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |[WPC Phantom Haus](#wpc)                                     | 61.05 / 30.1           | 2 frames    |                                                                |
 |[Data East 128x16](#data-east-128x16)                        | 177.5 / **59.2**       | 2u row      |                                                                |
 |[Data East 128x32](#data-east-128x32-segastern-whitestar)    | 234.2 / **78.1**       | 2u row      |                                                                |
-|Sega 192x64                                                  | 224.2 / 74.73          | 2u row      |Timing issues leading to seldom display of bootup screen        |
+|Sega 192x64                                                  | 224.2 / 74.73          | 2u row      |                                                                |
 |Gottlieb GTS3                                                | **375.9** / 125.3-37.6 | 3/6/8/10    |                                                                |
 |[Alvin G. 1](#alvin-g)                                       | 332.4 / 83.1           | 4 row       |Still a little flicker on the title screen                      |
 |[Alvin G. 2](#alvin-g)                                       | 298.6 / **74.6**       | 4 row       |                                                                |
