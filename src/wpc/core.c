@@ -2969,6 +2969,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
     break;
   case CORE_DMD_PWM_COMBINER_SUM_4: // Sum of the last 4 frames (Alvin G. for Pistol Poker & Mystery Castle)
     {
+      static UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
       UINT8* rawData = &dmd_state->bitplaneFrame[0];
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -2977,7 +2978,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         UINT8 v0 = frame0[kk], v1 = frame1[kk], v2 = frame2[kk], v3 = frame3[kk];
         for (int ii = 0; ii < 8; ii++, v0 <<= 1, v1 <<= 1, v2 <<= 1, v3 <<= 1)
-          *rawData++ = ((v0 >> 7) & 0x01) + ((v1 >> 7) & 0x01) + ((v1 >> 7) & 0x02) + ((v3 >> 7) & 0x01);
+          *rawData++ = level[((v0 >> 7) & 0x01) + ((v1 >> 7) & 0x01) + ((v1 >> 7) & 0x02) + ((v3 >> 7) & 0x01)];
       }
     }
     break;
