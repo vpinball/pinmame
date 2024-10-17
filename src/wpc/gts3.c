@@ -577,9 +577,19 @@ static void gts3dmd_init(void) {
   crtc6845_init(0);
   crtc6845_set_vsync(0, 3579545. / 2., dmd_vblank);
 
-  // Setup PWM shading
-  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, 
-	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0) ? CORE_DMD_PWM_COMBINER_LUM_16 : CORE_DMD_PWM_COMBINER_LUM_4);
+  // Setup PWM shading, with a backward compatible combiner
+  if ((strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0))
+	  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_5C); // Used to be '_5C' games: SMB, SMB Mushroom, Cueball
+  else if ((strncasecmp(Machine->gamedrv->name, "stargat", 7) == 0)
+	  || (strncasecmp(Machine->gamedrv->name, "bighurt", 7) == 0)
+	  || (strncasecmp(Machine->gamedrv->name, "waterwl", 7) == 0)
+	  || (strncasecmp(Machine->gamedrv->name, "andrett", 7) == 0)
+	  || (strncasecmp(Machine->gamedrv->name, "barbwire", 8) == 0)
+	  || (strncasecmp(Machine->gamedrv->name, "brooks", 6) == 0)
+	  || (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0))
+	  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_B); // Used to be '_4C_b' games
+  else
+	  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_A); // Used to be '_4C_a' games
 
   /*DMD*/
   /*copy last 32K of ROM into last 32K of CPU region*/
@@ -720,7 +730,7 @@ static MACHINE_INIT(gts3dmd2) {
   crtc6845_set_vsync(1, 3579545. / 2., dmd_vblank);
 
   // Setup PWM shading
-  core_dmd_pwm_init(&GTS3_dmdlocals[1].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_LUM_16);
+  core_dmd_pwm_init(&GTS3_dmdlocals[1].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_B); // Used to be '_4C_b' games
 
   /*copy last 32K of DMD ROM into last 32K of CPU region*/
   if (memory_region(GTS3_MEMREG_DCPU2)) {
