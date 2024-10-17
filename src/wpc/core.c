@@ -2893,13 +2893,38 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   #if defined(VPINMAME) || defined(LIBPINMAME)
   switch (dmd_state->raw_combiner) {
-  case CORE_DMD_PWM_COMBINER_LUM_4:
-    for (int ii = 0; ii < dmd_state->height * dmd_state->width; ii++)
-      dmd_state->bitplaneFrame[ii] = dmd_state->luminanceFrame[ii] >> 6;
-    break;
-  case CORE_DMD_PWM_COMBINER_LUM_16: // GTS3 never had a stable combiner since PWM patterns vary over 1/3/6/8/10 frames, hence it provided raw 1 bitplane frame and not really stable combined one
-    for (int ii = 0; ii < dmd_state->height * dmd_state->width; ii++)
-      dmd_state->bitplaneFrame[ii] = dmd_state->luminanceFrame[ii] >> 4;
+  case CORE_DMD_PWM_COMBINER_GTS3_4C_A: // Reproduce previous (somewhat hacky) frame combiner used by GTS3 driver
+  case CORE_DMD_PWM_COMBINER_GTS3_4C_B:
+  case CORE_DMD_PWM_COMBINER_GTS3_5C:
+    {
+      static const int level4_a[7]  = { 0, 1, 2, 2, 2, 2, 3 }; // 4 colors
+      static const int level4_a2[7] = { 0, 1, 1, 2, 2, 2, 3 }; // 4 colors
+      static const int level4_b[9]  = { 0, 1, 2, 2, 2, 2, 2, 2, 3 }; // 4 colors
+      static const int level5[13]   = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 colors
+      int* level = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? level4_a
+                 : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? level4_b
+                 :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  level5;
+      int nFrames = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? 6
+                  : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? 8
+                  :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  12;
+      memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize);
+      for (int i = 0; i < nFrames; i++)
+      {
+        UINT8* rawData = &dmd_state->bitplaneFrame[0];
+        const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - i)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        for (int kk = 0; kk < dmd_state->rawFrameSize; kk++)
+          for (UINT8 ll = 0, data = *frameData++; ll < 8; ll++, data <<= 1)
+            (*rawData++) += (data >> 7);
+      }
+      if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A)
+        for (int kk = 0; kk < dmd_state->frameSize; kk++)
+          if (dmd_state->bitplaneFrame[kk] == 4) {
+            level = level4_a2;
+            break;
+          }
+      for (int kk = 0; kk < dmd_state->frameSize; kk++)
+        dmd_state->bitplaneFrame[kk] = level[dmd_state->bitplaneFrame[kk]];
+    }
     break;
   case CORE_DMD_PWM_COMBINER_SUM_2: // Sum of the last 2 raw frames seen (WPC/Phantom Haus)
     {

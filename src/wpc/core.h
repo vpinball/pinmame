@@ -632,13 +632,14 @@ typedef struct {
 #define CORE_DMD_PWM_FILTER_ALVG1       6
 #define CORE_DMD_PWM_FILTER_ALVG2       7
 
-#define CORE_DMD_PWM_COMBINER_LUM_4   0
-#define CORE_DMD_PWM_COMBINER_LUM_16  1
-#define CORE_DMD_PWM_COMBINER_SUM_2   2
-#define CORE_DMD_PWM_COMBINER_SUM_3   3
-#define CORE_DMD_PWM_COMBINER_SUM_2_1 4
-#define CORE_DMD_PWM_COMBINER_SUM_1_2 5
-#define CORE_DMD_PWM_COMBINER_SUM_4   6
+#define CORE_DMD_PWM_COMBINER_GTS3_4C_A 0
+#define CORE_DMD_PWM_COMBINER_GTS3_4C_B 1
+#define CORE_DMD_PWM_COMBINER_GTS3_5C   2
+#define CORE_DMD_PWM_COMBINER_SUM_2     3
+#define CORE_DMD_PWM_COMBINER_SUM_3     4
+#define CORE_DMD_PWM_COMBINER_SUM_2_1   5
+#define CORE_DMD_PWM_COMBINER_SUM_1_2   6
+#define CORE_DMD_PWM_COMBINER_SUM_4     7
 
 extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner);
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
