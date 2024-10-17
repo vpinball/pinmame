@@ -105,6 +105,13 @@ void vp_setDIP(int bank, int value) { }
   extern tGTS3locals GTS3locals;
 #endif
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+#ifndef MAX
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#endif
+
 INLINE UINT8 saturatedByte(float v)
 {
   v *= 255.f;
@@ -720,7 +727,28 @@ static struct {
   UINT8     lastLampMatrix[CORE_MAXLAMPCOL];
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
+  /*-- Global output state block --*/
+  core_tGlobalOutputState* outputStateBlock;          // Global output state block, shared with clients of PinMame
+  struct {                                            // Map between display layout (DMD/Video) and corresponding output frame
+     struct core_dispLayout* layout;
+     core_tFrameState* frame;
+     core_tFrameState* raw;
+  } displayStateBlocks[32];
+  struct {                                            // Map between alpha layout and corresponding output device
+     struct core_dispLayout* layout;
+     core_tDeviceSingleState* state;                  // Pointer to the first device state
+  } alphaStateBlocks[32];
+  struct
+  {
+     int type;                                // Bit0 = unused/wired, Bit1 = Solenoid/GI, Bit2 = core_getSol or coreGlobals.GI/coreGlobals.physicOutputState
+     int solIndex;                            // Solenoid index (note that this is 1 based, so 1..CORE_MODOUT_SOL_MAX)
+     int physOutIndex;                        // Physic Output index, see CORE_MODOUT_SOL0, CORE_MODOUT_GI0,...
+     int giIndex;                             // GI index (note that this is 0 based)
+  } controlledOutputMapping[CORE_MODOUT_SOL_MAX + CORE_MODOUT_GI_MAX]; // Map between state block output and internal GI/Sol/PhysicOutput (see core_getAllSol): Positive = physic output / Negative = index for core_getSol() or coreGlobals.gi if <= -1000 / Unwired if -2000
   /*-- VPinMame specifics --*/
+  #if defined(VPINMAME)
+    HANDLE  outputStateSharedMem;      // handle to the shared memory block used to share output states
+  #endif
   #if defined(VPINMAME) || defined(LIBPINMAME)
     UINT8   vpm_dmd_last_lum[DMD_MAXY * DMD_MAXX];
     UINT8   vpm_dmd_luminance_lut[256];
@@ -1772,6 +1800,464 @@ int core_getDip(int dipBank) {
 #endif /* VPINMAME */
 }
 
+/*-------------------------------------------------
+/  Lazily create and update a mem block holding output state
+/--------------------------------------------------*/
+void core_createStateBlock()
+{
+   assert(locals.outputStateBlock == NULL);
+
+   const unsigned int headerSize = sizeof(core_tGlobalOutputState);
+   const unsigned int controlledOutputBinarySize = sizeof(core_tBinaryState) + ((((CORE_MODOUT_SOL_MAX + 7) / 8) + 3) & ~3);
+   const unsigned int controlledOutputDeviceSize = sizeof(core_tDeviceState) + CORE_MODOUT_SOL_MAX * sizeof(core_tDeviceSingleState); // 
+   const unsigned int lampMatrixDeviceSize = sizeof(core_tDeviceState) + (1 + CORE_MAXLAMPCOL * 8) * sizeof(core_tDeviceSingleState); // TODO CORE_MAXLAMPCOL does not really correspond to the lamp matrix it is also used by some drivers for other outputs (move to DMD or controlled outputs ?)
+   const unsigned int alphaDisplayDeviceSize = sizeof(core_tDeviceState) + CORE_MODOUT_SEG_MAX * sizeof(core_tDeviceSingleState); //
+   const unsigned int displayStateSize = sizeof(core_tDisplayState) + 5 * (sizeof(core_tFrameState) + (DMD_MAXX * DMD_MAXY));
+   const unsigned int size = headerSize
+      + controlledOutputBinarySize
+      + controlledOutputDeviceSize
+      + lampMatrixDeviceSize
+      + alphaDisplayDeviceSize
+      + displayStateSize
+      + displayStateSize;
+
+   #ifdef VPINMAME
+      // VPinMame uses Windows shared memory to share the state block, so we need to allocate & map it as such
+      static TCHAR szName[] = TEXT("Local\\VPinMameStateBlock");
+      locals.outputStateSharedMem = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, size + sizeof(unsigned int), szName);
+      if (locals.outputStateSharedMem == NULL)
+         return;
+      UINT8* sharedMem = (UINT8*)MapViewOfFile(locals.outputStateSharedMem, FILE_MAP_WRITE, 0, 0, size + sizeof(unsigned int));
+      if (sharedMem == NULL)
+      {
+         CloseHandle(locals.outputStateSharedMem);
+         locals.outputStateSharedMem = INVALID_HANDLE_VALUE;
+         return;
+      }
+      *((unsigned int*)sharedMem) = size;
+      locals.outputStateBlock = (core_tGlobalOutputState*)(sharedMem + sizeof(unsigned int));
+   #else
+      locals.outputStateBlock = (core_tGlobalOutputState*)malloc(size);
+   #endif
+   UINT8* data = (UINT8*)locals.outputStateBlock;
+   memset(data, 0, size);
+
+   // Overall header. We use a version id here instead of the main PinMame version to allow changing it during development phase
+   locals.outputStateBlock->versionID = 1;
+   data += headerSize;
+
+   // Controlled outputs: all general purpose controlled outputs (usually solenoids, but also flashers, motors, child boards, GI,...) with a fairly messy mapping
+   locals.outputStateBlock->controlledOutputBinaryState = (core_tBinaryState*)data;
+   locals.outputStateBlock->controlledOutputBinaryState->nOutputs = MIN(32, coreGlobals.nGI + (coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol)));
+   data += controlledOutputBinarySize;
+   locals.outputStateBlock->controlledOutputDeviceState = (core_tDeviceState*)data;
+   locals.outputStateBlock->controlledOutputDeviceState->nDevices = coreGlobals.nGI + (coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol));
+   locals.outputStateBlock->controlledOutputDeviceState->dataStride = sizeof(core_tDeviceSingleState);
+   data += controlledOutputDeviceSize;
+   memset(locals.controlledOutputMapping, 0, sizeof(locals.controlledOutputMapping));
+   if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)))
+   {
+      /*-- 1..32, hardware solenoids --*/
+      if (core_gameData->gen & GEN_ALLWPC) {
+         for (int i = 0; i < 28; i++)
+         {
+            locals.controlledOutputMapping[i].type = 5;
+            locals.controlledOutputMapping[i].solIndex = i + 1;
+            locals.controlledOutputMapping[i].physOutIndex = CORE_MODOUT_SOL0 + i;
+         }
+         // 29..32 GameOn (not modulated, stored in 0x0F00 of solenoids2)
+         for (int i = 28; i < 32; i++)
+         {
+            locals.controlledOutputMapping[i].type = 1;
+            locals.controlledOutputMapping[i].solIndex = i + 1; // mapping from 29..32 to solenoids2 bit is done in core_getSol
+         }
+      }
+      else
+         for (int i = 0; i < 32; i++)
+         {
+            locals.controlledOutputMapping[i].type = 5;
+            locals.controlledOutputMapping[i].solIndex = i + 1;
+            locals.controlledOutputMapping[i].physOutIndex = CORE_MODOUT_SOL0 + i;
+         }
+      /*-- 33..36 upper flipper solenoids (not modulated for the time being) --*/
+      for (int i = 32; i < 36; i++)
+      {
+         locals.controlledOutputMapping[i].type = 1;
+         locals.controlledOutputMapping[i].solIndex = i + 1;
+      }
+      /*-- 37..44, extra solenoids --*/
+      if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) { // 37-44 WPC95 extra (duplicated 37..40 / 41..44)
+         for (int i = 36; i < 44; i++)
+         {
+            locals.controlledOutputMapping[i].type = 5;
+            locals.controlledOutputMapping[i].solIndex = 29 + ((i - 36) & 3); // Maps to 29..32
+            locals.controlledOutputMapping[i].physOutIndex = CORE_MODOUT_SOL0 + 28 + ((i - 36) & 3);
+         }
+      }
+      else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
+         for (int i = 36; i < 44; i++)
+         {
+            locals.controlledOutputMapping[i].type = 5;
+            locals.controlledOutputMapping[i].solIndex = i + 4;
+            locals.controlledOutputMapping[i].physOutIndex = CORE_MODOUT_SOL0 + i + 4;
+         }
+      /*-- 45..48 lower flipper solenoids (not modulated for the time being) --*/
+      for (int i = 44; i < 48; i++)
+      {
+         locals.controlledOutputMapping[i].type = 1;
+         locals.controlledOutputMapping[i].solIndex = i + 1;
+      }
+      /*-- 49..50 simulated (50 is unused so far) --*/
+      {
+         locals.controlledOutputMapping[48].type = 1;
+         locals.controlledOutputMapping[48].solIndex = 49;
+      }
+      /*-- 51..66 custom --*/
+      for (int i = CORE_FIRSTCUSTSOL - 1; i < CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol; i++)
+      {
+         locals.controlledOutputMapping[i].type = i < coreGlobals.nSolenoids ? 5 : 1;
+         locals.controlledOutputMapping[i].solIndex = i + 1;
+         locals.controlledOutputMapping[i].physOutIndex = CORE_MODOUT_SOL0 + i;
+      }
+   }
+   else
+   {
+      for (int i = 0; i < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; i++)
+      {
+         locals.controlledOutputMapping[i].type = 1;
+         locals.controlledOutputMapping[i].solIndex = i + 1;
+      }
+   }
+   /*-- WPC, Sega/Stern Whitestar and Stern SAM GI are added to the tail --*/
+   // GI are controlled outputs dedicated to GI that WPC and Sega/Stern Whitestar drivers declare (other drivers do not declare them separately and treat them as regular controlled outputs)
+   // . 3 to 5 are declared for WPC with a 'modulated' value between 0 and 8 (legacy implementation is somewhat buggy regarding this value)
+   // . 1 is declared for Sega/Stern Whitestar and Stern SAM with a value of either 0 or 9
+   for (int i = 0; i < coreGlobals.nGI; i++)
+   {
+      locals.controlledOutputMapping[CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol + i].type = (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI)) ? 7 : 3;
+      locals.controlledOutputMapping[CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol + i].giIndex = i;
+      locals.controlledOutputMapping[CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol + i].physOutIndex = CORE_MODOUT_GI0 + i;
+   }
+   for (unsigned int i = 0; i < locals.outputStateBlock->controlledOutputDeviceState->nDevices; i++)
+   {
+      const int outputType = locals.controlledOutputMapping[i].type;
+      if ((outputType & 5) == 1) // 'Legacy' Solenoid & GI
+         locals.outputStateBlock->controlledOutputDeviceState->states[i].deviceType = CORE_DEVICE_STATE_TYPE_CUSTOM;
+      else if ((outputType & 5) == 5) // Physic Output Solenoid & GI
+      {
+         const int output = locals.controlledOutputMapping[i].physOutIndex;
+         const int type = coreGlobals.physicOutputState[output].type;
+         if (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)
+            locals.outputStateBlock->controlledOutputDeviceState->states[i].deviceType = CORE_DEVICE_STATE_TYPE_CUSTOM;
+         else if (type >= CORE_MODOUT_BULB_44_6_3V_AC && type <= CORE_MODOUT_BULB_906_25V_DC_S11)
+            locals.outputStateBlock->controlledOutputDeviceState->states[i].deviceType = CORE_DEVICE_STATE_TYPE_BULB;
+         else if (type >= CORE_MODOUT_LED && type <= CORE_MODOUT_VFD_STROBE_1_16MS)
+            locals.outputStateBlock->controlledOutputDeviceState->states[i].deviceType = CORE_DEVICE_STATE_TYPE_LED;
+         else
+            locals.outputStateBlock->controlledOutputDeviceState->states[i].deviceType = CORE_DEVICE_STATE_TYPE_CUSTOM;
+      }
+   }
+
+   // Lamp matrix: strobed lamp matrix (but some drivers also uses this for additional lamps/outputs)
+   locals.outputStateBlock->lampMatrixState = (core_tDeviceState*)data;
+   locals.outputStateBlock->lampMatrixState->nDevices = 0;
+   const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+   const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
+   for (int i = 0; i < nLamps; i++)
+   {
+      const unsigned int lampNo = coreData->m2lamp ? coreData->m2lamp((i / 8) + 1, i & 7) : i;
+      locals.outputStateBlock->lampMatrixState->nDevices = MAX(locals.outputStateBlock->lampMatrixState->nDevices, lampNo);
+      assert(locals.outputStateBlock->lampMatrixState->nDevices < (1 + CORE_MAXLAMPCOL * 8)); // This assert is needed since we can not guarantee that the driver will map the lamps inside the max range
+      if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
+      {
+         const int type = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].type;
+         if (type >= CORE_MODOUT_BULB_44_6_3V_AC && type <= CORE_MODOUT_BULB_906_25V_DC_S11)
+            locals.outputStateBlock->controlledOutputDeviceState->states[lampNo].deviceType = CORE_DEVICE_STATE_TYPE_BULB;
+         else if (type >= CORE_MODOUT_LED && type <= CORE_MODOUT_VFD_STROBE_1_16MS)
+            locals.outputStateBlock->controlledOutputDeviceState->states[lampNo].deviceType = CORE_DEVICE_STATE_TYPE_LED;
+         else
+            locals.outputStateBlock->controlledOutputDeviceState->states[lampNo].deviceType = CORE_DEVICE_STATE_TYPE_CUSTOM;
+      }
+      else
+         locals.outputStateBlock->controlledOutputDeviceState->states[lampNo].deviceType = CORE_DEVICE_STATE_TYPE_CUSTOM;
+   }
+   locals.outputStateBlock->lampMatrixState->dataStride = sizeof(core_tDeviceSingleState);
+   data += lampMatrixDeviceSize;
+
+   // Alpha numeric segment displays
+   locals.outputStateBlock->alphaDisplayState = (core_tDeviceState*)data;
+   locals.outputStateBlock->alphaDisplayState->nDevices = 0; // FIXME implement
+   locals.outputStateBlock->alphaDisplayState->dataStride = sizeof(core_tDeviceSingleState);
+   data += alphaDisplayDeviceSize;
+   struct core_dispLayout *layout, *parent_layout;
+   for (layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+      switch (layout->type & CORE_SEGMASK)
+      {
+      case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->lptr - 1; break;
+      case CORE_VIDEO: break; // Video display for games like Baby PacMan, frames are stored as RGB8
+      case CORE_DMD: break; // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
+      default: // Alphanumeric segment displays
+         locals.alphaStateBlocks[locals.outputStateBlock->alphaDisplayState->nDevices].layout = layout;
+         locals.alphaStateBlocks[locals.outputStateBlock->alphaDisplayState->nDevices].state = &(locals.outputStateBlock->alphaDisplayState->states[locals.outputStateBlock->alphaDisplayState->nDevices]);
+         locals.outputStateBlock->alphaDisplayState->states[locals.outputStateBlock->alphaDisplayState->nDevices].segment.type = layout->type & CORE_SEGALL;
+         locals.outputStateBlock->alphaDisplayState->nDevices++;
+         break;
+      }
+   }
+
+   // Displays: this includes main DMD but also small LED matrix display (WOF, WPT, RBION,...) and video displays (Caveman, MrGame machines,...)
+   locals.outputStateBlock->displayState = (core_tDisplayState*)data;
+   locals.outputStateBlock->displayState->nDisplays = 0;
+   data += displayStateSize;
+   core_tFrameState* nextDisplayFrame = (core_tFrameState*)((UINT8*)locals.outputStateBlock->displayState + sizeof(core_tDisplayState));
+   for (layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+      switch (layout->type & CORE_SEGMASK)
+      {
+      case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->lptr - 1; break;
+      case CORE_VIDEO: // Video display for games like Baby PacMan, frames are stored as RGB8
+      case CORE_DMD: // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
+         locals.displayStateBlocks[locals.outputStateBlock->displayState->nDisplays].layout = layout;
+         locals.displayStateBlocks[locals.outputStateBlock->displayState->nDisplays].frame = nextDisplayFrame;
+         nextDisplayFrame->displayId = locals.outputStateBlock->displayState->nDisplays;
+         nextDisplayFrame->width = layout->length;
+         nextDisplayFrame->height = layout->start;
+         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO) {
+           nextDisplayFrame->dataFormat = CORE_FRAME_RGB;
+           nextDisplayFrame->structSize = sizeof(core_tFrameState) + layout->length * layout->start * 3;
+         }
+         else {
+           nextDisplayFrame->dataFormat = CORE_FRAME_LUM;
+           nextDisplayFrame->structSize = sizeof(core_tFrameState) + layout->length * layout->start;
+         }
+         nextDisplayFrame = (core_tFrameState*)(((UINT8*)nextDisplayFrame) + nextDisplayFrame->structSize);
+         data += nextDisplayFrame->structSize;
+         assert(((UINT8*)nextDisplayFrame - (UINT8*)locals.outputStateBlock->displayState) < displayStateSize);
+         locals.outputStateBlock->displayState->nDisplays++;
+         break;
+      default: break; // Alphanumeric segment displays
+      }
+   }
+
+   // Raw DMD frames used for frame identification to perform colorization or drive PuP Packs
+   locals.outputStateBlock->rawDMDState = (core_tDisplayState*)data;
+   locals.outputStateBlock->rawDMDState->nDisplays = 0;
+   data += displayStateSize;
+   nextDisplayFrame = (core_tFrameState*)((UINT8*)locals.outputStateBlock->rawDMDState + sizeof(core_tDisplayState));
+   int dspIndex = 0;
+   for (layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+      switch (layout->type & CORE_SEGMASK)
+      {
+      case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->lptr - 1; break;
+      case CORE_VIDEO: dspIndex++; break; // Video display for games like Baby PacMan, frames are stored as RGB8
+      case CORE_DMD: // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
+         locals.displayStateBlocks[dspIndex].raw = nextDisplayFrame;
+         nextDisplayFrame->displayId = dspIndex;
+         nextDisplayFrame->width = layout->length;
+         nextDisplayFrame->height = layout->start;
+         nextDisplayFrame->dataFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CORE_FRAME_BP4 : CORE_FRAME_BP2;
+         nextDisplayFrame->structSize = sizeof(core_tFrameState) + layout->length * layout->start;
+         nextDisplayFrame = (core_tFrameState*)(((UINT8*)nextDisplayFrame) + nextDisplayFrame->structSize);
+         data += nextDisplayFrame->structSize;
+         assert(((UINT8*)nextDisplayFrame - (UINT8*)locals.outputStateBlock->rawDMDState) < displayStateSize);
+         locals.outputStateBlock->rawDMDState->nDisplays++;
+         dspIndex++;
+         break;
+      default: break; // Alphanumeric segment displays
+      }
+   }
+}
+
+core_tGlobalOutputState* core_getOutputState(const unsigned int updateMask)
+{
+   if (locals.outputStateBlock == NULL)
+   {
+      core_createStateBlock();
+      if (locals.outputStateBlock == NULL)
+         return NULL;
+   }
+
+   // HACK as timer_get_time is not thread safe and can only be called from emulation thread.
+   // We use a fake timer with timer_starttime which is thread safe as a workaround.
+   // const double now = timer_get_time();
+   mame_timer fake_timer = { 0 };
+   const double now = timer_starttime(&fake_timer);
+
+   if (updateMask & CORE_STATE_REQMASK_GPOUTPUT_BINARY_STATE)
+   {
+      locals.outputStateBlock->controlledOutputBinaryState->updateTimestamp = now;
+      locals.outputStateBlock->controlledOutputBinaryState->outputBitset[0] = 0;
+      for (unsigned int i = 0; i < locals.outputStateBlock->controlledOutputBinaryState->nOutputs; i++)
+      {
+         if ((locals.controlledOutputMapping[i].type == 1 || locals.controlledOutputMapping[i].type == 3) // Only for solenoids
+            && core_getPulsedSol(locals.controlledOutputMapping[i].solIndex)) // We need core_getPulsedSol to perform its mapping for WPC hardware
+            locals.outputStateBlock->controlledOutputBinaryState->outputBitset[0] |= 1 << i;
+      }
+   }
+
+   if (updateMask & CORE_STATE_REQMASK_GPOUTPUT_DEVICE_STATE)
+   {
+      core_update_pwm_solenoids();
+      core_update_pwm_gis();
+      locals.outputStateBlock->controlledOutputDeviceState->updateTimestamp = now;
+      for (unsigned int i = 0; i < locals.outputStateBlock->controlledOutputDeviceState->nDevices; i++)
+      {
+         switch (locals.controlledOutputMapping[i].type)
+         {
+         case 1: // Solenoid using core_getSol
+            locals.outputStateBlock->controlledOutputDeviceState->states[i].customState = core_getSol(locals.controlledOutputMapping[i].solIndex) ? 1 : 0;
+            break;
+         case 3: // GI using coreGlobals.gi
+            locals.outputStateBlock->controlledOutputDeviceState->states[i].customState = coreGlobals.gi[locals.controlledOutputMapping[i].solIndex];
+            break;
+         case 5: // Solenoid using physic output
+         case 7: // GI using physic output
+         {
+            const int output = locals.controlledOutputMapping[i].physOutIndex;
+            const int type = coreGlobals.physicOutputState[output].type;
+            if (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)
+               locals.outputStateBlock->controlledOutputDeviceState->states[i].customState = saturatedByte(coreGlobals.physicOutputState[output].value);
+            else if (type >= CORE_MODOUT_BULB_44_6_3V_AC && type <= CORE_MODOUT_BULB_906_25V_DC_S11)
+            {
+               locals.outputStateBlock->controlledOutputDeviceState->states[i].bulb.luminance = coreGlobals.physicOutputState[output].value;
+               locals.outputStateBlock->controlledOutputDeviceState->states[i].bulb.filamentTemperature = 0.f; // Not yet implemented
+            }
+            else if (type >= CORE_MODOUT_LED && type <= CORE_MODOUT_VFD_STROBE_1_16MS)
+               locals.outputStateBlock->controlledOutputDeviceState->states[i].ledLuminance = coreGlobals.physicOutputState[output].value;
+            else
+               locals.outputStateBlock->controlledOutputDeviceState->states[i].customState = saturatedByte(coreGlobals.physicOutputState[output].value);
+         }
+         break;
+         }
+      }
+   }
+
+   if (updateMask & CORE_STATE_REQMASK_LAMP_DEVICE_STATE)
+   {
+      core_update_pwm_lamps();
+      locals.outputStateBlock->lampMatrixState->updateTimestamp = now;
+      if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
+      {
+         for (unsigned int i = 0; i < locals.outputStateBlock->lampMatrixState->nDevices; i++)
+         {
+            const unsigned int lampNo = coreData->m2lamp ? coreData->m2lamp((i / 8) + 1, i & 7) : i;
+            const int type = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].type;
+            if (type >= CORE_MODOUT_BULB_44_6_3V_AC && type <= CORE_MODOUT_BULB_906_25V_DC_S11)
+               locals.outputStateBlock->lampMatrixState->states[lampNo].bulb.luminance = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].value;
+            else if (type >= CORE_MODOUT_LED && type <= CORE_MODOUT_VFD_STROBE_1_16MS)
+               locals.outputStateBlock->lampMatrixState->states[lampNo].ledLuminance = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].value;
+            else
+               locals.outputStateBlock->lampMatrixState->states[lampNo].customState = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].value);
+         }
+      }
+      else
+      {
+         const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+         const unsigned int nCol = CORE_STDLAMPCOLS + (hasSAMModulatedLeds ? 2 : core_gameData->hw.lampCol);
+         for (unsigned int col = 0; col < nCol; col++)
+            for (unsigned int row = 0, rowLamp = coreGlobals.lampMatrix[col]; row < 8; row++, rowLamp >>= 1)
+            {
+               const unsigned int lampNo = coreData->m2lamp ? coreData->m2lamp(col + 1, row) : (col * 8 + row);
+               locals.outputStateBlock->lampMatrixState->states[lampNo].customState = rowLamp & 0x01;
+            }
+         // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
+         if (hasSAMModulatedLeds)
+            for (unsigned int i = 80; i < (unsigned int)coreGlobals.nLamps; i++)
+               locals.outputStateBlock->lampMatrixState->states[i].customState = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i].value);
+      }
+   }
+
+   if (updateMask & CORE_STATE_REQMASK_ALPHA_DEVICE_STATE)
+   {
+      static int nSegments[] = { 16, 16, 9, 9, 7, 7, 7, 7, 7, 9, 9, 7, 7, 16, -1, -1, 16, 16 };
+      core_update_pwm_segments();
+      locals.outputStateBlock->alphaDisplayState->updateTimestamp = now;
+      for (unsigned int i = 0; i < locals.outputStateBlock->alphaDisplayState->nDevices; i++)
+      {
+         struct core_dispLayout* layout = locals.alphaStateBlocks[i].layout;
+         core_tDeviceSingleState* state = locals.alphaStateBlocks[i].state;
+         const int nSegs = nSegments[layout->type];
+         assert(nSegs >= 7 && nSegs <= 16);
+         assert(layout->type != CORE_DMD && layout->type != CORE_VIDEO);
+         if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))
+         {
+            // FIXME implement hibit
+            // FIXME implement forced comma (rely on client to handle them ?)
+            // FIXME implement 9 to 8 segments display conversion for modulated alpha display (rely on client to handle this ?)
+            const int step = (layout->type & CORE_SEGREV) ? -16 : 16;
+            int pos = CORE_MODOUT_SEG0 + layout->start * 16;
+            if (layout->type & CORE_SEGREV) { pos += (layout->length - 1) * 16; }
+            for (int i = 0; i < layout->length; i++, pos += step) // Loop over each character (up to 20)
+            {
+               for (int j = 0; j < nSegs; j++) // Loop over each segments of the current character (up to 16)
+                  state->segment.luminance[j] = coreGlobals.physicOutputState[pos + j].value;
+               state++;
+            }
+         }
+         else
+         {
+            UINT16* seg = &coreGlobals.segments[layout->start].w;
+            if (layout->type & CORE_SEGREV) { seg += layout->length - 1; }
+            const int step = (layout->type & CORE_SEGREV) ? -1 : 1;
+            const int type = layout->type & CORE_SEGMASK;
+            for (int i = 0; i < layout->length; i++) // Loop over each character (up to 20)
+            {
+               UINT16 tmpSeg = *seg;
+               if (layout->type & CORE_SEGHIBIT) tmpSeg >>= 8;
+               switch (layout->type & CORE_SEGMASK) {
+               case CORE_SEG87:
+               case CORE_SEG87F:
+                  if (tmpSeg && (type == CORE_SEG87F) && (i > 0) && (i % 3 == 0)) tmpSeg |= 0x80; // Forced comma every 3 digits if at least one segment is on
+                  break;
+               case CORE_SEG98:
+               case CORE_SEG98F:
+                  if (tmpSeg && (type == CORE_SEG98F) && (i > 0) && (i % 3 == 0)) tmpSeg |= 0x80; // Forced comma every 3 digits if at least one segment is on
+               case CORE_SEG9:
+                  tmpSeg |= (tmpSeg & 0x100) << 1; // The 9th segment is driven by the 8th (rely on client to handle this ?)
+                  break;
+               }
+               for (int j = 0; j < nSegs; j++, tmpSeg >>= 1) // Loop over each segments of the current character (up to 16)
+                  state->segment.luminance[j] = (tmpSeg & 1) ? 1.f : 0.f;
+               seg += step;
+               state++;
+            }
+         }
+      }
+   }
+
+   if (updateMask & CORE_STATE_REQMASK_DISPLAY_STATE)
+   {
+      //const struct rectangle* cliprect;
+      for (unsigned int i = 0; i < locals.outputStateBlock->displayState->nDisplays; i++)
+      {
+         struct core_dispLayout* layout = locals.displayStateBlocks[i].layout;
+         if (layout->fptr && (layout->type & CORE_SEGALL) == CORE_DMD)
+         {
+            // Nothing to do for DMD and LED matrix as they are directly updated in core_dmd_video_update (to get the raw data instead of rendered one, needed for correct shading and coloring plugins)
+            // TODO we should perform DMD update here, on request, to get less animation stuterring (for the time being, we update at 60Hz while the emulated DMD has a higher refresh rate and the user 
+            // display wan have any display rate, so we end up creating stutters), but this design would need DMD update to be thread safe as core_getOutputState can be called from another thread than 
+            // the emulation thread.
+            //if (((ptPinMAMEvidUpdate)(layout->fptr))(Machine->scrbitmap, &cliprect, layout) == 0)
+            {
+            }
+         }
+         else if (layout->fptr && (layout->type & CORE_SEGALL) == CORE_VIDEO)
+         {
+            // FIXME implement
+            //if (((ptPinMAMEvidUpdate)(layout->fptr))(Machine->scrbitmap, cliprect, layout) == 0)
+            {
+               core_tFrameState* frame = locals.displayStateBlocks[i].frame;
+               frame->updateTimestamp = now;
+            }
+         }
+      }
+   }
+
+   return locals.outputStateBlock;
+}
+
 /*--------------------
 /   Draw a LED digit
 /---------------------*/
@@ -1970,6 +2456,9 @@ static MACHINE_INIT(core) {
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
     pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
+
+  locals.outputStateBlock = NULL;
+  locals.outputStateSharedMem = INVALID_HANDLE_VALUE;
 #endif
 
   /*-- Generate LUTs for VPinMame DMD --*/
@@ -2038,6 +2527,21 @@ static MACHINE_STOP(core) {
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
     pindmdDeInit();
+
+  if (locals.outputStateSharedMem != INVALID_HANDLE_VALUE)
+  {
+     UINT8* sharedMem = (UINT8*)(locals.outputStateBlock) - sizeof(unsigned int);
+     UnmapViewOfFile(sharedMem);
+     CloseHandle(locals.outputStateSharedMem);
+     locals.outputStateSharedMem = INVALID_HANDLE_VALUE;
+     locals.outputStateBlock = NULL;
+  }
+#else
+  if (locals.outputStateBlock)
+  {
+     free(locals.outputStateBlock);
+     locals.outputStateBlock = NULL;
+  }
 #endif
 #if defined(VPINMAME) || defined(LIBPINMAME)
   g_raw_dmdx = ~0u;
@@ -3145,6 +3649,34 @@ void core_dmd_render_dmddevice(const int width, const int height, const UINT8* d
 }
 #endif
 
+// Prepare data for VPinMame state block
+#ifdef VPINMAME
+void core_dmd_update_state_block(const struct core_dispLayout* layout, const UINT8* dmdDotRaw, const UINT8* dmdDotLum) {
+  if (locals.outputStateBlock && locals.outputStateBlock->displayState) {
+    for (unsigned int i = 0; i < locals.outputStateBlock->displayState->nDisplays; i++) {
+      if (locals.displayStateBlocks[i].layout == layout) {
+        const unsigned int size = layout->start * layout->length;
+        locals.displayStateBlocks[i].frame->updateTimestamp = timer_get_time();
+        if (memcmp(locals.displayStateBlocks[i].frame->frameData, dmdDotLum, size) != 0)
+          locals.displayStateBlocks[i].frame->frameId++;
+        memcpy(locals.displayStateBlocks[i].frame->frameData, dmdDotLum, size);
+        locals.displayStateBlocks[i].raw->updateTimestamp = timer_get_time();
+        if (memcmp(locals.displayStateBlocks[i].raw->frameData, dmdDotRaw, size) != 0)
+          locals.displayStateBlocks[i].raw->frameId++;
+        memcpy(locals.displayStateBlocks[i].raw->frameData, dmdDotRaw, size);
+        /*int frameChanged = 0;
+        for (int offs = 0; offs < layout->start * layout->length; offs++) {
+          const UINT8 col = dmdDotLum[offs];
+          frameChanged |= locals.displayStateBlocks[i].frame->frameData[offs] != col;
+          locals.displayStateBlocks[i].frame->frameData[offs] = col;
+        }*/
+        return;
+      }
+    }
+  }
+}
+#endif
+
 // Save main DMD bitplane and raw frames to a capture file
 // TODO this is disabled for Strikes'n Spares which has 2 DMDs
 // TODO not sure why frame capture is performed if dmddevice is enabled simultaneously with virtual DMD. Remove it ?
@@ -3244,6 +3776,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
     if (isMainDMD) {
       core_dmd_render_vpm(layout->length, layout->start, dmdDotLum);
+      core_dmd_update_state_block(layout, dmdDotRaw, dmdDotLum);
       core_dmd_render_dmddevice(layout->length, layout->start, dmdDotRaw, layout->top != 0);
       core_dmd_capture_frame(layout->length, layout->start, dmdDotRaw, raw_dmd_frame_count ,raw_dmd_frames);
       has_DMD_Video = 1;
