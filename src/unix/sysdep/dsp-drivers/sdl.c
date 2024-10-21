@@ -42,7 +42,7 @@ Version 0.1, January 2002
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "SDL2/SDL.h"
+#include <SDL3/SDL.h>
 #include "sysdep/sysdep_dsp.h"
 #include "sysdep/sysdep_dsp_priv.h"
 #include "sysdep/plugin_manager.h"
@@ -70,7 +70,7 @@ const struct plugin_struct sysdep_dsp_sdl = {
 };
 
 struct sdl_info {
-   SDL_AudioDeviceID id;
+   SDL_AudioStream *stream;
 };
 
 /* public methods (static but exported through the sysdep_dsp or plugin
@@ -107,7 +107,7 @@ static void *sdl_dsp_create(const void *flags)
    dsp->hw_info.samplerate = params->samplerate;
 
    audiospec->format = (dsp->hw_info.type & SYSDEP_DSP_16BIT)?
-   							AUDIO_S16SYS : AUDIO_S8;
+   							SDL_AUDIO_S16 : SDL_AUDIO_S8;
    audiospec->channels = (dsp->hw_info.type & SYSDEP_DSP_STEREO)? 2:1;
    audiospec->freq = dsp->hw_info.samplerate;
 
@@ -121,38 +121,30 @@ static void *sdl_dsp_create(const void *flags)
 	fprintf(stderr, "sdl info: driver = %s\n", SDL_GetCurrentAudioDriver());
 
 	// get audio subsystem and open a queue with above spec
-	SDL_AudioSpec *obtained;
-	if (!(obtained = calloc(1, sizeof(SDL_AudioSpec))))
-	{
-		fprintf(stderr, "sdl error: malloc failed for SDL_AudioSpec\n");
-		sdl_dsp_destroy(dsp);
-		return NULL;
-	}
-
-	const SDL_AudioDeviceID id = SDL_OpenAudioDevice(NULL, 0, audiospec, obtained, 0);
-	if (id == 0) {
+	SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, audiospec, NULL, NULL);
+	if (stream == NULL) {
 		fprintf(stderr, "sdl error: SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
 		return NULL;
 	}
 
+	const SDL_AudioDeviceID device_id = SDL_GetAudioStreamDevice(stream);
+	SDL_ResumeAudioDevice(device_id);
+
+	// get the actual obtained spec
+	SDL_GetAudioStreamFormat(stream, audiospec, NULL);
+
+	// print the id
+	fprintf(stderr, "sdl info: device id = %d\n", device_id);
+	// print the obtained contents
+	fprintf(stderr, "sdl info: obtained->format = %d\n", audiospec->format);
+	fprintf(stderr, "sdl info: obtained->channels = %d\n", audiospec->channels);
+	fprintf(stderr, "sdl info: obtained->freq = %d\n", audiospec->freq);
+
 	// free the spec
 	free(audiospec);
 
-	// print the id
-	fprintf(stderr, "sdl info: device id = %d\n", id);
-	// print the obtained contents
-	fprintf(stderr, "sdl info: obtained->format = %d\n", obtained->format);
-	fprintf(stderr, "sdl info: obtained->channels = %d\n", obtained->channels);
-	fprintf(stderr, "sdl info: obtained->freq = %d\n", obtained->freq);
-	fprintf(stderr, "sdl info: obtained->samples = %d\n", obtained->samples);
-	fprintf(stderr, "sdl info: obtained->callback = %p\n", obtained->callback);
-	fprintf(stderr, "sdl info: obtained->userdata = %p\n", obtained->userdata);
-
-	// resume playing on device
-	SDL_PauseAudioDevice(id, 0);
-
 	struct sdl_info *info = (struct sdl_info *)calloc(1, sizeof(struct sdl_info));
-	info->id = id;
+	info->stream = stream;
 
 	dsp->_priv = info;
    
@@ -165,9 +157,9 @@ static void *sdl_dsp_create(const void *flags)
 }
 
 static void sdl_dsp_destroy(struct sysdep_dsp_struct *dsp)
-{ 
-   SDL_CloseAudio();
-    
+{
+   const struct sdl_info *info = (struct sdl_info *)dsp->_priv;
+   SDL_DestroyAudioStream(info->stream);
    free(dsp);
 }
    
@@ -178,13 +170,12 @@ static int sdl_dsp_write(struct sysdep_dsp_struct *dsp, unsigned char *data,
 	// count is the number of samples to write
 	const int len = (dsp->hw_info.type & SYSDEP_DSP_STEREO)? count * 4 : count * 2;
 
-	// get device id from dsp
+	// get stream from dsp
 	const struct sdl_info *info = (struct sdl_info *)dsp->_priv;
-	const SDL_AudioDeviceID dev = info->id;
 
-	const int result = SDL_QueueAudio(dev, data, len);
-	if (result != 0) {
-		fprintf(stderr, "error: SDL_QueueAudio() failed: %s\n", SDL_GetError());
+	const bool success = SDL_PutAudioStreamData(info->stream, data, len);
+	if (!success) {
+		fprintf(stderr, "error: SDL_PutAudioStreamData() failed: %s\n", SDL_GetError());
 		return 0;
 	}
 	return	count;

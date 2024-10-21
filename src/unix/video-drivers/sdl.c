@@ -41,7 +41,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include "xmame.h"
 #include "devices.h"
 #include "keyboard.h"
@@ -62,7 +62,7 @@ static int hardware=1;
 static int mode_number=-1;
 static int start_fullscreen=0;
 SDL_Color *Colors=NULL;
-static int cursor_state; /* previous mouse cursor state */
+static bool cursor_state; /* previous mouse cursor state */
 
 #ifdef DIRECT_HERMES
 HermesHandle   H_PaletteHandle;
@@ -112,25 +112,30 @@ int sysdep_init(void)
       fprintf (stderr, "SDL: Init error: %s\n",SDL_GetError());
       return OSD_NOT_OK;
    }
-   const int enabled = SDL_JoystickEventState(SDL_ENABLE);
-   if (enabled != SDL_ENABLE) {
+   SDL_SetJoystickEventsEnabled(true);
+   const bool enabled = SDL_JoystickEventsEnabled();
+   if (!enabled) {
       fprintf (stderr, "SDL: Error enabling joystick events: %s\n", SDL_GetError());
       SDL_Quit();
       exit (OSD_NOT_OK);
    }
    // list all joysticks
-   const int num_joysticks = SDL_NumJoysticks();
+   int num_joysticks = 0;
+   SDL_JoystickID *joysticks =  SDL_GetJoysticks(&num_joysticks);
    fprintf (stderr, "SDL: Info: Found %d joysticks\n", num_joysticks);
    for (int i = 0; i < num_joysticks; i++) {
-      SDL_Joystick *joystick = SDL_JoystickOpen(i);
+      // get the id
+      SDL_JoystickID id = joysticks[i];
+      SDL_Joystick *joystick = SDL_OpenJoystick(id);
       if (joystick == NULL) {
          fprintf (stderr, "SDL: Error opening joystick %d: %s\n", i, SDL_GetError());
          SDL_Quit();
          exit (OSD_NOT_OK);
       }
-      fprintf (stderr, "SDL: Info: Joystick %d: %s\n", i, SDL_JoystickName(joystick));
+      fprintf (stderr, "SDL: Info: Joystick %d: %s\n", i, SDL_GetJoystickName(joystick));
       //SDL_JoystickClose(joystick);
    }
+   SDL_free(joysticks);
 
 #ifdef DIRECT_HERMES
    Hermes_Init(0);
@@ -147,6 +152,19 @@ void sysdep_close(void)
 
 int sysdep_create_display(int depth)
 {
+   // print all video drivers and mark the one in use
+   int num_drivers = SDL_GetNumVideoDrivers();
+   const char *driver_name = SDL_GetCurrentVideoDriver();
+   fprintf(stderr, "SDL: Info: Found %d video drivers\n", num_drivers);
+   for (int i = 0; i < num_drivers; i++) {
+      const char *driver = SDL_GetVideoDriver(i);
+      fprintf(stderr, "SDL: Info: Video driver %d: %s", i, driver);
+      if (strcmp(driver, driver_name) == 0) {
+         fprintf(stderr, " (in use)");
+      }
+      fprintf(stderr, "\n");
+   }
+
    fprintf(stderr, "SDL: Info: Create display with depth %d\n", depth);
    int vid_modes_i;
 #ifdef DIRECT_HERMES 
@@ -155,15 +173,15 @@ int sysdep_create_display(int depth)
 #endif /* DIRECT_HERMES */
    int vid_mode_flag; /* Flag to set the video mode */
 
-   SDL_DisplayMode current_mode;
-   int res = SDL_GetCurrentDisplayMode(0, &current_mode);
-   if (res != 0) {
+   const SDL_DisplayID display = SDL_GetPrimaryDisplay();
+   const SDL_DisplayMode *current_mode = SDL_GetCurrentDisplayMode(display);
+   if (current_mode == NULL) {
       fprintf(stderr, "SDL: Error getting current display mode: %s\n", SDL_GetError());
       SDL_Quit();
       exit (OSD_NOT_OK);
    }
 
-   SDL_PixelFormat *format = SDL_AllocFormat(current_mode.format);
+   const SDL_PixelFormatDetails *format = SDL_GetPixelFormatDetails(current_mode->format);
 
 #ifdef SDL_DEBUG
    fprintf (stderr,"SDL: create_display(%d): \n",depth);
@@ -175,24 +193,23 @@ int sysdep_create_display(int depth)
       // video_info->blit_hw,
       // video_info->blit_sw,
       // video_info->video_mem,
-      format->BitsPerPixel);
+      format->bits_per_pixel);
 #endif
 
    // get SDL_PixelFormat from mode.format
 
-   Vid_depth = format->BitsPerPixel;
+   Vid_depth = format->bits_per_pixel;
 
    // TODO how do we know if hardware acceleration is available?
    // hardware = video_info->hw_available;
 
-
-   const int display_index = 0;
-   const int modes_count = SDL_GetNumDisplayModes(display_index);
+   int modes_count = 0;
+   SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &modes_count);
    /* Best video mode found */
    int best_vid_mode = -1;
    int best_width = -1;
    int best_height = -1;
-   if (modes_count < 1)
+   if (modes_count == 0 || modes == NULL)
    {
 #ifdef SDL_DEBUG
       fprintf (stderr, "SDL: Error listing display modes: %s\n",SDL_GetError());
@@ -207,30 +224,27 @@ int sysdep_create_display(int depth)
 #endif
 
 
-      for (int mode_index = 0; mode_index <= modes_count; mode_index++)
+      // last mode is NULL,
+      for (int mode_index = 0; mode_index < modes_count; mode_index++)
       {
-         SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
-
-         if (SDL_GetDisplayMode(display_index, mode_index, &mode) == 0)
-         {
-            SDL_Log(" %i bpp\t%i x %i @ %iHz",
-                SDL_BITSPERPIXEL(mode.format), mode.w, mode.h, mode.refresh_rate);
+         const SDL_DisplayMode mode = *modes[mode_index];
+         SDL_Log(" %i bpp\t%i x %i @ %fHz",
+             SDL_BITSPERPIXEL(mode.format), mode.w, mode.h, mode.refresh_rate);
 
 #ifdef SDL_DEBUG
-            fprintf (stderr, "SDL: Info: Found mode %d x %d\n", mode.w, mode.h);
+         fprintf (stderr, "SDL: Info: Found mode %d x %d\n", mode.w, mode.h);
 #endif /* SDL_DEBUG */
 
-            /* If width and height too small, skip to next mode */
-            if ((mode.w < visual_width*widthscale) || (mode.h < visual_height*heightscale)) {
-               continue;
-            }
+         /* If width and height too small, skip to next mode */
+         if ((mode.w < visual_width*widthscale) || (mode.h < visual_height*heightscale)) {
+            continue;
+         }
 
-            /* If width or height smaller than current best, keep it */
-            if ((mode.w < best_width) || (mode.h < best_height)) {
-               best_vid_mode = mode_index;
-               best_width = mode.w;
-               best_height = mode.h;
-            }
+         /* If width or height smaller than current best, keep it */
+         if ((mode.w < best_width) || (mode.h < best_height)) {
+            best_vid_mode = mode_index;
+            best_width = mode.w;
+            best_height = mode.h;
          }
       }
 
@@ -258,6 +272,7 @@ int sysdep_create_display(int depth)
          Vid_height = best_height;
       }
    }
+   SDL_free(modes);
 
    if( depth == 16 )
    {
@@ -301,7 +316,7 @@ int sysdep_create_display(int depth)
 
 
    /* Set video mode according to flags */
-   vid_mode_flag = SDL_WINDOW_SHOWN;
+   vid_mode_flag = 0;
    if (start_fullscreen) {
       vid_mode_flag |= SDL_WINDOW_FULLSCREEN;
    }
@@ -315,8 +330,7 @@ int sysdep_create_display(int depth)
 
    // TODO set Vid_dep?
 
-   if(! (Window = SDL_CreateWindow(title,SDL_WINDOWPOS_UNDEFINED,
-                          SDL_WINDOWPOS_UNDEFINED,Vid_width, Vid_height, vid_mode_flag))) {
+   if(! (Window = SDL_CreateWindow(title,Vid_width, Vid_height, vid_mode_flag))) {
       fprintf (stderr, "SDL: Error: Setting video mode failed\n");
       SDL_Quit();
       exit (OSD_NOT_OK);
@@ -326,7 +340,8 @@ int sysdep_create_display(int depth)
    Surface = SDL_GetWindowSurface(Window);
 
 #ifndef DIRECT_HERMES
-   Offscreen_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,Vid_width,Vid_height,Vid_depth,0,0,0,0); 
+   Offscreen_surface = SDL_CreateSurface(Vid_width, Vid_height,
+              SDL_GetPixelFormatForMasks(Vid_depth, 0, 0, 0, 0));
    if(Offscreen_surface==NULL) {
       SDL_Quit();
       exit (OSD_NOT_OK);
@@ -347,8 +362,8 @@ int sysdep_create_display(int depth)
 
 
    /* Creating event mask */
-   SDL_EventState(SDL_KEYUP, SDL_ENABLE);
-   SDL_EventState(SDL_KEYDOWN, SDL_ENABLE);
+   SDL_SetEventEnabled(SDL_EVENT_KEY_UP, true);
+   SDL_SetEventEnabled(SDL_EVENT_KEY_DOWN, true);
 
    // TODO no longer exists
    //SDL_EnableUNICODE(1);
@@ -370,7 +385,8 @@ int sysdep_create_display(int depth)
     };
 
    /* Hide mouse cursor and save its previous status */
-   cursor_state = SDL_ShowCursor(0);
+   cursor_state = SDL_GetCursor();
+   SDL_HideCursor();
 
    effect_init2(depth, Vid_depth, Vid_width);
 
@@ -390,7 +406,7 @@ static int sdl_mapkey(struct rc_option *option, const char *arg, int priority)
    {
       /* perform tests */
       /* fprintf(stderr,"trying to map %x to %x\n", from, to); */
-      if (from < SDL_NUM_SCANCODES && to <= 127)
+      if (from < SDL_SCANCODE_COUNT && to <= 127)
       {
          klookup[from] = to;
 	 return OSD_OK;
@@ -662,10 +678,13 @@ void sysdep_update_display(struct mame_bitmap *bitmap)
 void sysdep_display_close(void)
 {
    fprintf(stderr, "SDL: Info: Shutting down display\n");
-   SDL_FreeSurface(Offscreen_surface);
+   SDL_DestroySurface(Offscreen_surface);
 
    /* Restore cursor state */
-   SDL_ShowCursor(cursor_state);
+   if (cursor_state)
+      SDL_ShowCursor();
+   else
+      SDL_HideCursor();
 
    // close the window
    SDL_DestroyWindow(Window);
@@ -692,7 +711,8 @@ int sysdep_display_alloc_palette(int totalcolors)
       (Colors + i)->g = 0x00;
       (Colors + i)->b = 0x00;
    }
-   SDL_SetPaletteColors (Offscreen_surface->format->palette,Colors,0,totalcolors-1);
+   SDL_Palette *palette = SDL_CreateSurfacePalette(Offscreen_surface);
+   SDL_SetPaletteColors (palette,Colors,0,totalcolors-1);
 #else /* DIRECT_HERMES */
    H_PaletteHandle = Hermes_PaletteInstance();
    if ( !(H_Palette = Hermes_PaletteGet(H_PaletteHandle)) ) {
@@ -717,7 +737,8 @@ int sysdep_display_set_pen(int pen,unsigned char red, unsigned char green, unsig
       (Colors + pen)->r = red;
       (Colors + pen)->g = green;
       (Colors + pen)->b = blue;
-      if ( (! SDL_SetPaletteColors(Offscreen_surface->format->palette, Colors + pen, pen,1)) && (! warned)) {
+      SDL_Palette *palette = SDL_CreateSurfacePalette(Offscreen_surface);
+      if ( (! SDL_SetPaletteColors(palette, Colors + pen, pen,1)) && (! warned)) {
          printf ("Color allocation failed, or > 8 bit display\n");
          warned = 0;
       }
@@ -735,11 +756,11 @@ int sysdep_display_set_pen(int pen,unsigned char red, unsigned char green, unsig
 
 void sysdep_mouse_poll (void)
 {
-   int x,y;
+   float x,y;
 
    Uint8 buttons = SDL_GetRelativeMouseState(&x, &y);
-   mouse_data[0].deltas[0] = x;
-   mouse_data[0].deltas[1] = y;
+   mouse_data[0].deltas[0] = (int)x;
+   mouse_data[0].deltas[1] = (int)y;
    for(int i = 0;i<MOUSE_BUTTONS;i++) {
       mouse_data[0].buttons[i] = buttons & (0x01 << i);
    }
@@ -872,35 +893,35 @@ void sysdep_update_keyboard()
 
          switch (event.type)
          {
-         case SDL_KEYDOWN:
+         case SDL_EVENT_KEY_DOWN:
             kevent.press = 1;
 
          /* ALT-Enter: toggle fullscreen */
-            if (event.key.keysym.sym == SDLK_RETURN)
+            if (event.key.key == SDLK_RETURN)
             {
-               if (event.key.keysym.mod & KMOD_ALT)
+               if (event.key.mod & SDL_KMOD_ALT)
                {
                   SDL_Window* window = SDL_GetWindowFromID(event.key.windowID);
-                  const Uint32 is_fullscreen = SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
-                  SDL_SetWindowFullscreen(window, is_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                  const bool is_fullscreen = SDL_GetWindowFullscreenMode(window) != NULL;
+                  SDL_SetWindowFullscreen(window, !is_fullscreen);
                }
             }
 
-         case SDL_KEYUP:
+         case SDL_EVENT_KEY_UP:
             kevent.unicode = 0;
-            kevent.scancode = sdl_keycode_to_key(event.key.keysym.sym);
+            kevent.scancode = sdl_keycode_to_key(event.key.key);
             xmame_keyboard_register_event(&kevent);
             if (kevent.scancode == KEY_NONE)
-               fprintf(stderr, "SDL unknown symbol 0x%x scancode: %d, sym: %d\n", event.key.keysym.sym,
-                       event.key.keysym.scancode, event.key.keysym.sym);
+               fprintf(stderr, "SDL unknown symbol 0x%x scancode: %d, sym: %d\n", event.key.key,
+                       event.key.scancode, event.key.key);
 
 #ifdef SDL_DEBUG
             fprintf(stderr, "Key %s %ssed\n",
-                    SDL_GetKeyName(event.key.keysym.sym),
+                    SDL_GetKeyName(event.key.key),
                     kevent.press ? "pres" : "relea");
 #endif
             break;
-         case SDL_TEXTINPUT:
+         case SDL_EVENT_TEXT_INPUT:
 #ifdef SDL_DEBUG
             fprintf(stderr, "SDL: Text input: %s\n", event.text.text);
 #endif
@@ -908,25 +929,25 @@ void sysdep_update_keyboard()
             kevent.scancode = KEY_NONE;
             xmame_keyboard_register_event(&kevent);
             break;
-         case SDL_QUIT:
+         case SDL_EVENT_QUIT:
             /* Shoult leave this to application */
             exit(OSD_OK);
             break;
 
-         case SDL_JOYAXISMOTION:
+         case SDL_EVENT_JOYSTICK_AXIS_MOTION:
             if (event.jaxis.which < JOY_AXIS)
                joy_data[event.jaxis.which].axis[event.jaxis.axis].val = event.jaxis.value;
 #ifdef SDL_DEBUG
             fprintf(stderr, "Axis=%d,value=%d\n", event.jaxis.axis, event.jaxis.value);
 #endif
             break;
-         case SDL_JOYBUTTONDOWN:
+         case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 
-         case SDL_JOYBUTTONUP:
+         case SDL_EVENT_JOYSTICK_BUTTON_UP:
             if (event.jbutton.which < JOY_BUTTONS)
-               joy_data[event.jbutton.which].buttons[event.jbutton.button] = event.jbutton.state;
+               joy_data[event.jbutton.which].buttons[event.jbutton.button] = event.jbutton.down;
 #ifdef SDL_DEBUG
-            fprintf(stderr, "Button=%d,value=%d\n", event.jbutton.button, event.jbutton.state);
+            fprintf(stderr, "Button=%d,value=%d\n", event.jbutton.button, event.jbutton.down);
 #endif
             break;
 
@@ -942,20 +963,27 @@ void sysdep_update_keyboard()
    }
 }
 
-/* added funcions */
+/* added functions */
 int sysdep_display_16bpp_capable(void)
 {
-   SDL_DisplayMode mode;
-   SDL_GetCurrentDisplayMode(0, &mode);
-   return ( mode.format >=16);
+   const SDL_DisplayID display = SDL_GetPrimaryDisplay();
+   const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display);
+   if (mode == NULL)
+   {
+      fprintf(stderr, "SDL: Error getting current display mode: %s\n", SDL_GetError());
+      return false;
+   }
+   const int bpp = SDL_BITSPERPIXEL(mode->format);
+   return ( bpp >=16);
 }
 
 int list_sdl_modes(struct rc_option *option, const char *arg, int priority)
 {
     // TODO we might want to go over all displays
    const int display_index = 0;
-   const int modes_count = SDL_GetNumDisplayModes(display_index);
-   if (modes_count < 1)
+   int modes_count = 0;
+   SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display_index, &modes_count);
+   if (modes == NULL || modes_count == 0)
    {
       printf("This option only works in a full-screen mode (eg: linux's framebuffer)\n");
       return - 1;
@@ -966,17 +994,13 @@ int list_sdl_modes(struct rc_option *option, const char *arg, int priority)
 
    for (int mode_index = 0; mode_index <= modes_count; mode_index++)
    {
-      SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
-
-      if (SDL_GetDisplayMode(display_index, mode_index, &mode) == 0)
-      {
-         printf("\t%d) Mode %d x %d @ %iHz\n",
-             mode_index,
-             mode.w,
-             mode.h,
-             mode.refresh_rate
-             );
-      }
+      const SDL_DisplayMode mode = *modes[mode_index];
+      printf("\t%d) Mode %d x %d @ %fHz\n",
+          mode_index,
+          mode.w,
+          mode.h,
+          mode.refresh_rate
+          );
    }
 
    return -1;
