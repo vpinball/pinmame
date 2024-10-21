@@ -35,8 +35,8 @@ CACHE_NAME="SDL-${SDL_VERSION}_002"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL/releases/download/preview-${SDL_VERSION}/SDL3-${SDL_VERSION}.tar.xz -o SDL3-${SDL_VERSION}.tar.xz
-   tar -xf SDL3-3.1.3.tar.xz
-   cd SDL3-3.1.3
+   tar -xf SDL3-${SDL_VERSION}.tar.xz
+   cd SDL3-${SDL_VERSION}
    cmake \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
