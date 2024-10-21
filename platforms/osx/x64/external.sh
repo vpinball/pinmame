@@ -50,7 +50,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3
    cp -r include/SDL3/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.{so,so.*} ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
 
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
