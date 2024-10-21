@@ -56,5 +56,5 @@ fi
 
 mkdir -p ../external/include/SDL3
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3/* ../external/include/SDL3
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib
+cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 
