@@ -1425,6 +1425,7 @@ DRIVERNV(pinball)       //MPU-100: 07/77 Pinball
 DRIVERNV(pinbalfp)      //         07/77 Pinball (Free Play)
 DRIVERNV(stars)         //MPU-100: 03/78 Stars
 DRIVERNV(starsfp)       //         03/78 Stars (Free Play)
+DRIVERNV(starsb)        //         10/24 Stars (MOD rev. 103)
 DRIVERNV(memlane)       //MPU-100: 06/78 Memory Lane
 DRIVERNV(memlanfp)      //         06/78 Memory Lane (Free Play)
 // MPU-100 - Sound Board: SB-100
@@ -1477,6 +1478,7 @@ DRIVERNV(galaxyc)       //         03/23 Galaxy (7-Digit conversion, Fixes & mod
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(alifp)         //         03/80 Ali (Free Play)
 DRIVERNV(alib)          //         03/23 Ali (7-Digit conversion Free Play rev. 76)
+DRIVERNV(alic)          //         05/23 Ali (7-Digit conversion Free Play rev. 85)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //         03/80 Big Game (Free Play)
 DRIVERNV(biggameb)      //         11/19 Big Game (MOD rev. 7)
@@ -1489,15 +1491,19 @@ DRIVERNV(seawitcha)     //         10/21 Seawitch (MOD rev. 5)
 DRIVERNV(seawitchb)     //         11/21 Seawitch (MOD rev. 6)
 DRIVERNV(seawitchc)     //         11/21 Seawitch (MOD rev. 7)
 DRIVERNV(seawitchd)     //         11/21 Seawitch (MOD rev. 8)
+DRIVERNV(seawitche)     //         04/23 Seawitch (MOD rev. 9)
+DRIVERNV(seawitchf)     //         01/24 Seawitch (MOD rev. 9.3)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah (Black cabinet)
 DRIVERNV(cheetahb)      //         06/80 Cheetah (Blue cabinet)
 DRIVERNV(cheetafp)      //         06/80 Cheetah (Black cabinet Free Play)
 DRIVERNV(cheetah1)      //         06/80 Cheetah (Black cabinet Bonus shot 1/game)
 DRIVERNV(cheetah2)      //         03/11 Cheetah (Black cabinet Bonus shot 1/ball)
 DRIVERNV(cheetahb2)     //         06/18 Cheetah (Blue cabinet Bonus shot 1/ball)
+DRIVERNV(cheetah84)     //         10/23 Cheetah (Prototype Sounds + MOD 84)
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
 DRIVERNV(quicksfp)      //         06/80 Quicksilver (Free Play)
 DRIVERNV(quicksib)      //         05/21 Quicksilver (Free Play & modified rules rev. 07D)
+DRIVERNV(quicksic)      //         01/24 Quicksilver (Free Play & modified rules rev. 8.1)
 DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
 DRIVERNV(stargzfp)      //         08/80 Star Gazer (Free Play)
 DRIVERNV(stargzrb)      //         03/06 Star Gazer (modified rules rev. 9)
@@ -1533,6 +1539,8 @@ DRIVERNV(dragfib2)      //         01/82 Dragonfist (MOD 2 - modified to match i
 DRIVERNV(dragfis3)      //         03/20 Dragonfist (MOD 3 rev. 1105)
 DRIVERNV(dragfis3b)     //         06/20 Dragonfist (MOD 3 rev. 1109)
 DRIVERNV(dragfis14)     //         09/21 Dragonfist (MOD 14)
+DRIVERNV(dragfis15)     //         04/23 Dragonfist (MOD 15)
+DRIVERNV(dragfis16)     //         09/24 Dragonfist (MOD 16)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //         04/82 Orbitor 1 (Free Play)
 DRIVERNV(orbitora)      //         04/82 Orbitor 1 (MOD)

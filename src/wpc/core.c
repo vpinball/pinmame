@@ -1989,16 +1989,16 @@ static MACHINE_INIT(core) {
       //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
       //const UINT8* const level = (core_gameData->gen & (GEN_SAM|GEN_SPA)) ? levelsam : levelgts3;
       for (int i = 0; i < 256; i++) {
-        float v = i / 255.f; // level[i >> 4] / 100.f;
+        const float v = (float)i * (float)(1.0/255.); // level[i >> 4] / 100.f;
         locals.vpm_dmd_luminance_lut[i] = (UINT8)(v * 100.f);
-        UINT32 r = (UINT32)(rStart * v);
-        UINT32 g = (UINT32)(gStart * v);
-        UINT32 b = (UINT32)(bStart * v);
-        locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);;
+        const UINT32 r = (UINT32)(rStart * v);
+        const UINT32 g = (UINT32)(gStart * v);
+        const UINT32 b = (UINT32)(bStart * v);
+        locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);
       }
     }
     else {
-      int r100 = rStart, g100 = gStart, b100 = bStart;
+      const int r100 = rStart, g100 = gStart, b100 = bStart;
       int r00, g00, b00, r33, g33, b33, r66, g66, b66;
       if (pmoptions.dmd_colorize) {
         r00 = pmoptions.dmd_red0;  g00 = pmoptions.dmd_green0;  b00 = pmoptions.dmd_blue0;
@@ -2006,18 +2006,18 @@ static MACHINE_INIT(core) {
         r66 = pmoptions.dmd_red66; g66 = pmoptions.dmd_green66; b66 = pmoptions.dmd_blue66;
       }
       else {
-        r00 = (rStart * perc00) / 100; g00 = (gStart * perc00) / 100; b00 = (bStart * perc00) / 100;
-        r33 = (rStart * perc33) / 100; g33 = (gStart * perc33) / 100; b33 = (bStart * perc33) / 100;
-        r66 = (rStart * perc66) / 100; g66 = (gStart * perc66) / 100; b66 = (bStart * perc66) / 100;
+        r00 = (r100 * perc00) / 100; g00 = (g100 * perc00) / 100; b00 = (b100 * perc00) / 100;
+        r33 = (r100 * perc33) / 100; g33 = (g100 * perc33) / 100; b33 = (b100 * perc33) / 100;
+        r66 = (r100 * perc66) / 100; g66 = (g100 * perc66) / 100; b66 = (b100 * perc66) / 100;
       }
-      #define LERP0(p, a, b) ((1.-(double)p)*(double)a + (double)p*(double)b)
+      #define LERP0(p, a, b) ((1.-(double)(p))*(double)(a) + (double)(p)*(double)(b))
       #define LERP(i, v0, v33, v66, v100) (i < 85 ? LERP0(((double)i)/85., v0, v33) : (i < 170 ? LERP0(((double)i-85.)/85., v33, v66) : LERP0(((double)i-170.)/85., v66, v100)))
       for (int i = 0; i < 256; i++) {
         locals.vpm_dmd_luminance_lut[i] = (UINT8) LERP(i, perc00, perc33, perc66, 100);
-        UINT32 r = (UINT32) LERP(i, r00, r33, r66, rStart);
-        UINT32 g = (UINT32) LERP(i, g00, g33, g66, gStart);
-        UINT32 b = (UINT32) LERP(i, b00, b33, b66, bStart);
-        locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);;
+        const UINT32 r = (UINT32) LERP(i, r00, r33, r66, r100);
+        const UINT32 g = (UINT32) LERP(i, g00, g33, g66, g100);
+        const UINT32 b = (UINT32) LERP(i, b00, b33, b66, b100);
+        locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);
       }
       #undef LERP0
       #undef LERP
@@ -2901,12 +2901,12 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
       static const int level4_a2[7] = { 0, 1, 1, 2, 2, 2, 3 }; // 4 colors
       static const int level4_b[9]  = { 0, 1, 2, 2, 2, 2, 2, 2, 3 }; // 4 colors
       static const int level5[13]   = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 colors
-      int* level = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? level4_a
-                 : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? level4_b
-                 :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  level5;
-      int nFrames = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? 6
-                  : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? 8
-                  :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  12;
+      const int* level = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? level4_a
+                       : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? level4_b
+                       :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  level5;
+      const int nFrames = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? 6
+                        : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? 8
+                        :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  12;
       memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize);
       for (int i = 0; i < nFrames; i++)
       {
@@ -2994,7 +2994,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
     break;
   case CORE_DMD_PWM_COMBINER_SUM_4: // Sum of the last 4 frames (Alvin G. for Pistol Poker & Mystery Castle)
     {
-      static UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
+      static const UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
       UINT8* rawData = &dmd_state->bitplaneFrame[0];
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3032,12 +3032,12 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   #endif
 }
 
-// Render to internal display, using provided luminance, if there is a visible display (PinMame always, and VPinMame when its window is shown)
+// Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
 // FIXME apply colors LUT ?
 #if defined(PINMAME) || defined(VPINMAME)
-void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* dmdDotLum, const int apply_aa) {
+void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa) {
   #define DMD_OFS(row, col) ((row)*width + col)
-  #define DMD_PAL(x) (sizeof(core_palette)/3 - 48 + ((unsigned int)(x) * 47) / 255) // The trail of PinMame palette has 48 DMD dot shades
+  #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
   //#define DMD_PAL(x) = Machine->pens[COL_DMDOFF][63 + (x >> 4)]
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
@@ -3048,27 +3048,27 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
     }
     lines += locals.displaySize;
   }
-  // Apply antialiasing if enabled or clear pixels between dots otherwise
+  // Apply antialiasing if enabled, or clear pixels between dots otherwise
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
   if (locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
     for (int ii = 0; ii < height * 2 - 1; ii++) {
       BMTYPE *line = (*lines) + x;
-      for (int jj = 0; jj < width *  2 - 1; jj++) {
+      for (int jj = 0; jj < width * 2 - 1; jj++) {
         const int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
         if (!apply_aa) {
           if ((ii & 1) || (jj & 1))
             *line = DMD_PAL(0);
         } else if ((ii & 1) && (jj & 1)) { // Corner point
-          const UINT16 lum = ((UINT16)dmdDotLum[DMD_OFS(pi, pj)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT16)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
+          const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
           assert(0 <= lum && lum <= 255);
           *line = DMD_PAL(lum);
         } else if (ii & 1) { // Vertical side point
-          const UINT16 lum = ((UINT16)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
           assert(0 <= lum && lum <= 255);
           *line = DMD_PAL(lum);
         } else if (jj & 1) { // Horizontal side point
-          const UINT16 lum = ((UINT16)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT16)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
+          const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
           assert(0 <= lum && lum <= 255);
           *line = DMD_PAL(lum);
         }
@@ -3084,7 +3084,7 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
 
 // Prepare data for VPinMame interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
 #ifdef VPINMAME
-void core_dmd_render_vpm(const int width, const int height, const UINT8* dmdDotLum) {
+void core_dmd_render_vpm(const int width, const int height, const UINT8* const dmdDotLum) {
   const int size = width * height;
   g_raw_dmdx = width;
   g_raw_dmdy = height;
@@ -3104,7 +3104,7 @@ void core_dmd_render_vpm(const int width, const int height, const UINT8* dmdDotL
 
 // Prepare data for LibPinMame interface (similar to VPinMame but without color LUT, and with a global flag to select luminance/bitplanes)
 #ifdef LIBPINMAME
-void core_dmd_render_lpm(const int width, const int height, const UINT8* dmdDotLum, const UINT8* dmdDotRaw) {
+void core_dmd_render_lpm(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw) {
   const int size = width * height;
   g_raw_dmdx = width;
   g_raw_dmdy = height;
@@ -3128,7 +3128,7 @@ void core_dmd_render_lpm(const int width, const int height, const UINT8* dmdDotL
 
 // Send main DMD bitplane frame to dmddevice plugins
 #ifdef VPINMAME
-void core_dmd_render_dmddevice(const int width, const int height, const UINT8* dmdDotRaw, const int isDMD2) {
+void core_dmd_render_dmddevice(const int width, const int height, const UINT8* const dmdDotRaw, const int isDMD2) {
   if (g_fShowPinDMD) {
     const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
     if (isStrikeNSpares) {
@@ -3149,7 +3149,7 @@ void core_dmd_render_dmddevice(const int width, const int height, const UINT8* d
 // TODO this is disabled for Strikes'n Spares which has 2 DMDs
 // TODO not sure why frame capture is performed if dmddevice is enabled simultaneously with virtual DMD. Remove it ?
 #ifdef VPINMAME
-void core_dmd_capture_frame(const int width, const int height, const UINT8* dmdDotRaw, const int rawFrameCount, const UINT8* rawFrame) {
+void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
   const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
   if (!isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
     FILE *f;
@@ -3215,8 +3215,9 @@ void core_dmd_capture_frame(const int width, const int height, const UINT8* dmdD
 #endif
 
 void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state) {
-  UINT8 *dmdDotRaw, *dmdDotLum;
-  
+  const UINT8 *dmdDotRaw;
+  UINT8 *dmdDotLum;
+
   if (dmd_state) { // Full DMD state with luminance and bitplane state
     dmdDotRaw = dmd_state->bitplaneFrame;
     dmdDotLum = dmd_state->luminanceFrame;

@@ -406,7 +406,7 @@ static INTERRUPT_GEN(GTS3_interface_update) {
   }
 
   /*-- diagnostic leds --*/
-  if ((GTS3locals.interfaceUpdateCount % GTS3_DISPLAYSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
+  if ((GTS3locals.interfaceUpdateCount % GTS3_LEDSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
 	if (GTS3_dmdlocals[0].has2DMD) { //Strikes N Spares has 2 DMD LED, but no Sound Board LED
 		coreGlobals.diagnosticLed = GTS3locals.diagnosticLed |
 									(GTS3_dmdlocals[0].diagnosticLed << 1) |

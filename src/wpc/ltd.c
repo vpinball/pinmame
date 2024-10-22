@@ -196,7 +196,7 @@ static WRITE_HANDLER(peri_w) {
     }
   } else if (offset == 0x06) { // either lamps or solenoids, or a mix of both!
     coreGlobals.tmpLampMatrix[6] = data;
-    if (cpu_gettotalcpu() > 1 && strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) { // for Ekky sound module
+    if (cpu_gettotalcpu() > 1 && strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) { // for Ekky sound module, all games except Space Poker (as its sound works different, see peri_w)
       locals.auxData = data & 0x7f; // mask out "Happy birthday" tune for the Ekky module
       if (locals.auxData) {
         cpu_set_nmi_line(LTD_CPU_EKKY, PULSE_LINE);

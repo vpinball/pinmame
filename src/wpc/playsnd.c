@@ -144,7 +144,7 @@ static void delay(int x) {
 }
 
 static WRITE_HANDLER(play3s_man_w) {
-  if (!strncasecmp(Machine->gamedrv->name, "cerberus", 8)) {
+  if (strncasecmp(Machine->gamedrv->name, "cerberus", 8) == 0) {
     cpu_boost_interleave(TIME_IN_USEC(40), TIME_IN_USEC(1000));
     play3s_data_w(offset, data >> 4);
     delay(3);

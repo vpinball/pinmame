@@ -946,7 +946,7 @@ MACHINE_DRIVER_END
 /*** 128 X 32 NORMAL SIZE DMD ***/
 /********************************/
 PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
-  UINT16* RAM = ramptr + 0x800 * locals.visible_page + 0x10;
+  const UINT16 *RAM = ramptr + 0x800 * locals.visible_page + 0x10;
   UINT8* line = &coreGlobals.dmdDotRaw[0];
   for (int ii = 0; ii < 32; ii++) {
     for (int kk = 0; kk < 16; kk++) {
@@ -967,7 +967,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
 /*** 256 X 64 SUPER HUGE DMD ***/
 /*******************************/
 PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
-  UINT16 *RAM = ramptr + 0x800 * locals.visible_page;
+  const UINT16 *RAM = ramptr + 0x800 * locals.visible_page;
   for (int ii = 0; ii < 64; ii++) {
     UINT8 *linel = &coreGlobals.dmdDotRaw[ii * layout->length];
     UINT8 *liner = &coreGlobals.dmdDotRaw[ii * layout->length + 128];

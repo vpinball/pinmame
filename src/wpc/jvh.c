@@ -350,7 +350,7 @@ const struct sndbrdIntf jvhIntf = {
   "JVH", jvh_init, NULL, NULL, jvh_data_w, jvh_data_w
 };
 
-static struct AY8910interface jvh_ay8912Int  = { 1, 1000000, {25} };
+static struct AY8910interface jvh_ay8912Int = { 1, 1000000, {25} };
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x007f, MRA_RAM },

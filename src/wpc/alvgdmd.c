@@ -6,7 +6,7 @@
 #include "alvgdmd.h"
 
 #ifdef VERBOSE
-#define LOG(x)	logerror x
+#define LOG(x) logerror x
 #else
 #define LOG(x)
 #endif
@@ -16,7 +16,7 @@
 /*---------------------------*/
 #define DMD32_BANK0    1
 
-/*static vars*/
+// static vars
 static UINT8  *dmd32RAM;
 
 static struct {
@@ -33,7 +33,7 @@ static struct {
 // Identify PCA020 (Al's Garage Band) vs PCA020A board (Pistol Poker & Mystery Castle)
 #define IS_PCA020 (core_gameData->hw.gameSpecific1 == 0)
 
-/*declarations*/
+// declarations
 static WRITE_HANDLER(dmd32_bank_w);
 static READ_HANDLER(dmd32_latch_r);
 static INTERRUPT_GEN(dmd32_firq);
@@ -46,7 +46,7 @@ static READ_HANDLER(control_r);
 static WRITE_HANDLER(port_w);
 static READ_HANDLER(port_r);
 
-/*Interface*/
+// Interface
 const struct sndbrdIntf alvgdmdIntf = {
   NULL, dmd32_init, dmd32_exit, NULL,NULL,
   dmd32_data_w, NULL, dmd32_ctrl_w, NULL, SNDBRD_NOTSOUND
@@ -278,7 +278,7 @@ MACHINE_DRIVER_START(alvgdmd2)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
-//Use only for testing the 8031 core emulation
+// Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
 MACHINE_DRIVER_START(test8031)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
@@ -291,8 +291,8 @@ MACHINE_DRIVER_END
 static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
-  dmd32_bank_w(0,0);			//Set DMD Bank to 0
-  dmdlocals.selsync = 1;	//Start Sync @ 1 (PCA020A only)
+  dmd32_bank_w(0,0);     // Set DMD Bank to 0
+  dmdlocals.selsync = 1; // Start Sync @ 1 (PCA020A only)
   core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2, CORE_DMD_PWM_COMBINER_SUM_4);
 }
 
@@ -302,16 +302,16 @@ static void dmd32_exit(int boardNo) {
 
 // Main CPU sends command to DMD
 static WRITE_HANDLER(dmd32_data_w) {
-	dmdlocals.cmd = data;
+  dmdlocals.cmd = data;
 }
 
-//Send data from Main CPU to latch - Set's the INT0 Line
+// Send data from Main CPU to latch - Set's the INT0 Line
 static WRITE_HANDLER(dmd32_ctrl_w) {
-	LOG(("INT0: Sending DMD Strobe - current command = %x\n",dmdlocals.cmd));
-	cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, HOLD_LINE);
+  LOG(("INT0: Sending DMD Strobe - current command = %x\n",dmdlocals.cmd));
+  cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, HOLD_LINE);
 }
 
-//Read data from latch sent by Main CPU - Clear's the INT0 Line
+// Read data from latch sent by Main CPU - Clear's the INT0 Line
 static READ_HANDLER(dmd32_latch_r) {
   LOG(("INT0: reading latch: data = %x\n",dmdlocals.cmd));
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);

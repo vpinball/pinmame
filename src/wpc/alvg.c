@@ -624,7 +624,7 @@ static MACHINE_INIT(alvgdmd1) {
   sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
 }
 
-//Pistol Poker & Mystery Castle (PCA020A DMD driver board)
+// Pistol Poker & Mystery Castle (PCA020A DMD driver board)
 static MACHINE_INIT(alvgdmd2) {
   init_common();
   /* Init the dmd board */

@@ -57,9 +57,9 @@ Fixed SAM FG/Shrek and WOF modulated LEDs behavior (now work the same as the res
 Added Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
 Reworked Capcom emulation & timings, allowing all tables to behave 'normally' (no more delay on Flipper Football, DMD's animation at the right speed,...)
 Fixed CRTC6845 <-> GTS3 DMD interaction (e.g. leading to fixed Tee'd Off DMD timings)
-Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 & AlvinG. (always mapping to 16 instead of 4 or 5 levels, improving e.g. waterworlds DMD fading; note that 24/25 would be optimal, but not really necessary)
+Improved DMD brightness level mapping (once more :)) for Gottlieb GTS3 & AlvinG. (always mapping to 16 instead of 4 or 5 levels, improving e.g. Waterworlds or Mystery Castles DMD fading; note that 24/25 would be optimal, but not really necessary)
 Improved DMD brightness level mapping for WPC (fixing fading e.g. in T2 and other flickering)
-Improved DMD brightness level mapping for DataEast/Whitestar (fixing brightness levels and DMD timings)
+Improved DMD brightness level mapping for DataEast/Whitestar, incl. 128x16/192x64 DMDs (fixing brightness levels and DMD timings, incl. video modes and the like)
 Added Cosmic Flash sound emulation (Bell stole it from Bally's Squalk&Talk, but removed speech and DAC chips)
 Improved Zaccaria 11178 sound emulation a little (clown, poolcham, bbeltzac, mexico, zankor, spooky)
 Fixed Zaccaria strsphnx sound, background music works correctly now
@@ -150,7 +150,7 @@ Free Play Knocker sound fixes for all System 6 games/variants:
  Tri Zone
 
 Airborne Avenger (Free Play)
-Ali (7-digit conversion Free Play rev. 76)
+Ali (7-digit conversion Free Play rev. 76), (7-Digit conversion Free Play rev. 85)
 American Country (ACDC MOD)
 Atarians (Free Play)
 Attack From Mars (0.3 with 0.6 Sound Prototype)
@@ -160,11 +160,13 @@ Beavis and Butt-Head (Class of 1812 MOD)
 Big Game (MOD rev. 12)
 Black Knight L-2
 Bugs Bunny's Birthday Ball LG-2 (German)
+Cheetah (Prototype Sounds + MOD 84)
 Cue Ball Wizard (older display rev.)
 Devil Riders (French speech, Free Play)
 Devil's Dare (Sound & Speech alternate set)
 Diner LG-2 (German)
 Dracula (One Ball MOD)
+Dragonfist (MOD 15), (MOD 16)
 Earth, Wind & Fire (Free Play), (alternate sound)
 Elvira and the Party Monsters LG-3 (German) (incomplete dump)
 Elvis 1.00
@@ -192,9 +194,11 @@ Pinball Champ (French Speech)
 Pin-Bot J-2, J-3 (PEMBOT (no relation)) (MOD)
 Pentacup (rev. T)
 Pool Champion (Italian Speech, Free Play) (incomplete dump)
+Quicksilver (Free Play & modified rules rev. 8.1)
 Rollergames LA-1
 Royal Flush Deluxe rev. 1
 Scared Stiff 1.1, 1.1 with Sound 1.0
+Seawitch (MOD rev. 9), (MOD rev. 9.3)
 Secret Service 4.0 Europe
 Sexy Girl (exact clone of Bally Playboy but using an additional image projector)
 Shadow, The LF-4 (French)
@@ -203,6 +207,7 @@ Space Riders (Free Play)
 Space Shuttle (Zaccaria) (Free Play)
 Spirit (initial release) & rev. 3 (MOD)
 Star God (Free Play), (alternate sound, Free Play)
+Stars (MOD rev. 103)
 Striker (German Speech), (French Speech)
 STTNG LX-8 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Swords of Fury LG-2 (German)
