@@ -1668,6 +1668,17 @@ DE_ROMEND
 #define init_bmf_nl        init_batmanf
 CORE_CLONEDEFNV(bmf_nl,batmanf,"Batman Forever (4.0 Dutch)",1995,"Sega",de_mDEDMD64S2A,0)
 
+DE_ROMSTARTx0(bmf_nl302,"batman_3.02_Dutch.bin",CRC(844c7f6a) SHA1(8c035848644329d121780081a12d16721454cb8c))
+DE_DMD64ROM88(        "bfdrom0f.401",CRC(e7473f6f) SHA1(f5951a9b6a8776073adf10e38b9d68d6d444240a), // the CPU dump came without matching display ROMs
+                      "bfdrom3f.401",CRC(f7951709) SHA1(ace5b374d1e382d6f612b2bafc0e9fdde9e21014))
+DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282598b4949ac97de12b),
+                      "bmfu17.bin" ,CRC(edcd5c10) SHA1(561f22fb7817f64e09ef6adda646f58f31b80bf4),
+                      "bmfu21.bin" ,CRC(e41a516d) SHA1(9c41803a01046e57f8bd8759fe5e62ad6abaa80c))
+DE_ROMEND
+#define input_ports_bmf_nl302 input_ports_batmanf
+#define init_bmf_nl302        init_batmanf
+CORE_CLONEDEFNV(bmf_nl302,batmanf,"Batman Forever (3.02 Dutch, Display 4.0)",1995,"Sega",de_mDEDMD64S2A,0)
+
 /*-------------------------------------------------------------
 / Batman Forever (IT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
