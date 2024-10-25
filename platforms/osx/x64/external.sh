@@ -31,7 +31,7 @@ cd tmp
 # build SDL3, SDL_image, SDL_ttf and copy to external
 #
 
-CACHE_NAME="SDL-${SDL_VERSION}_002"
+CACHE_NAME="SDL-${SDL_VERSION}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL/releases/download/preview-${SDL_VERSION}/SDL3-${SDL_VERSION}.tar.xz -o SDL3-${SDL_VERSION}.tar.xz

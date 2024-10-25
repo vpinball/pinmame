@@ -5,4 +5,5 @@ build/
 /obj/
 /release/
 
+/external/
 /platforms/**/external/

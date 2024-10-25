@@ -655,7 +655,7 @@ target_include_directories(xpinmame PUBLIC
 #   ${X11_X11_INCLUDE_PATH}
 #   ${X11_Xv_INCLUDE_PATH}
 #   ${SDL2_INCLUDE_DIRS}
-   ${CMAKE_SOURCE_DIR}/platforms/osx/x64/external/include
+   ${CMAKE_SOURCE_DIR}/external/include
 )
 
 target_link_libraries(xpinmame PUBLIC
@@ -668,7 +668,7 @@ target_link_libraries(xpinmame PUBLIC
 )
 
 target_link_directories(xpinmame PUBLIC
-   ${CMAKE_SOURCE_DIR}/platforms/osx/x64/external/lib
+   ${CMAKE_SOURCE_DIR}/external/lib
 )
 
 set_target_properties(xpinmame PROPERTIES

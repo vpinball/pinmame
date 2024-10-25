@@ -41,7 +41,7 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
-    name: Build xpinmame-${{ matrix.platform }}
+    name: Build xpinmame-${{ matrix.platform }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     needs: [ version ]
     strategy:
