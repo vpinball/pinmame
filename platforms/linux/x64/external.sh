@@ -23,10 +23,6 @@ CACHE_DIR="external/cache/${BUILD_TYPE}"
 rm -rf external/include external/lib
 mkdir -p external/include external/lib ${CACHE_DIR}
 
-rm -rf tmp
-mkdir tmp
-cd tmp
-
 #
 # build SDL3, SDL_image, SDL_ttf and copy to external
 #
@@ -57,4 +53,3 @@ fi
 mkdir -p ../external/include/SDL3
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3/* ../external/include/SDL3
 cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib
-rm -rf tmp
