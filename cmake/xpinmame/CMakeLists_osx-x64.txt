@@ -96,7 +96,7 @@ add_compile_definitions(
    USE_XV
    USE_HWSCALE
    NAME="xpinmame"
-   DISPLAY_METHOD="SDL2"
+   DISPLAY_METHOD="SDL3"
    XMAMEROOT="/usr/local/share/xpinmame"
    HAVE_SNPRINTF
    HAVE_GETTIMEOFDAY
