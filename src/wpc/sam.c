@@ -37,10 +37,11 @@
 #include "video.h"
 #include "cpu/at91/at91.h"
 #include "sndbrd.h"
-#include "dmddevice.h"
 #include "mech.h"
 
-#ifdef LIBPINMAME
+#if defined(VPINMAME)
+#include "dmddevice.h"
+#elif defined(LIBPINMAME)
 extern void libpinmame_forward_console_data(void* data, int size);
 #endif
 
@@ -1654,12 +1655,11 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 	while (size > 0)
 	{
 		if (usartno == 1) {
-#ifdef VPINMAME
 			//console messages
+#if defined(VPINMAME)
 			while(size--)
 				FwdConsoleData((*(data++)));
-#endif
-#ifdef LIBPINMAME
+#elif defined(LIBPINMAME)
 			libpinmame_forward_console_data(data, size);
 #endif
 			return;

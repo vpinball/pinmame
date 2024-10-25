@@ -3,7 +3,7 @@
 Emulating the DMD pursues the following purposes:
 - providing emulators (PinMame, VPX,...) with informations allowing rendering of a virtual DMD as accurately as possible,
 - driving modern DMD hardware which implements their own shading capabilities,
-- providing frames that can be uniquely identified to perform colorization.
+- providing frames that can be uniquely identified to perform colorization or trigger events (f.e. PinUp display events).
 
 These aims lead the DMD emulation to evaluate 2 different things:
 - luminance frames, which are suited for accurate rendering, but may vary as the luminance model improves,
@@ -31,12 +31,12 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 
 | Name                                                        | PWM FPS / Disp.FPS     | PWM pattern | Emulation comments                                             |
 |-------------------------------------------------------------|------------------------|-------------|----------------------------------------------------------------|
-|[WPC](#wpc)                                                  | **122.1** / 40.7       | 2/3 frames  |                                                                |
+|[WPC](#wpc)                                                  | **122.1** / 61.1-40.7  | 2/3 frames  |                                                                |
 |[WPC Phantom Haus](#wpc)                                     | 61.05 / 30.1           | 2 frames    |                                                                |
 |[Data East 128x16](#data-east-128x16)                        | 177.5 / **59.2**       | 2u row      |                                                                |
 |[Data East 128x32](#data-east-128x32-segastern-whitestar)    | 234.2 / **78.1**       | 2u row      |                                                                |
 |Sega 192x64                                                  | 224.2 / 74.73          | 2u row      |                                                                |
-|Gottlieb GTS3                                                | **375.9** / 125.3-37.6 | 3/6/8/10    |                                                                |
+|Gottlieb GTS3                                                | **375.9** / 125.3-37.6 | 3/6/8/10 frames |                                                            |
 |[Alvin G. 1](#alvin-g)                                       | 332.4 / 83.1           | 4 row       |Still a little flicker on the title screen                      |
 |[Alvin G. 2](#alvin-g)                                       | 298.6 / **74.6**       | 4 row       |                                                                |
 |[Sega/Stern Whitestar](#data-east-128x32-segastern-whitestar)| 233.3 / **77.8**       | 2u row      |                                                                |
@@ -44,12 +44,12 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |Sleic                                                        | ?                      | ?           |Review in progress                                              |
 |Spinball                                                     | **132.9**              | ?           |Review in progress                                              |
 |Capcom                                                       | **508.6** / 127.2 ?    | 4 ?         |Review in progress                                              |
-|[Stern SAM](#stern-sam)                                      | 751.2 / **62.6**       | 4u row      |Needs interframe emulation, shade validation, fix back/front mix|            
-|[Stern Spike 1](#stern-spike-1)                              | 952.4 / **63.5**       | 4u          |Unsupported hardware |            
+|[Stern SAM](#stern-sam)                                      | 751.2 / **62.6**       | 4u row      |Needs overall emulation timing fixes, interframe emulation, shade validation, back/front mix validation|
+|[Stern Spike 1](#stern-spike-1)                              | 952.4 / **63.5**       | 4u frames   |Unsupported hardware                                            |            
 
 - 'u' stands for 'unbalanced': each row/frame has a different display length.
 - All FPS are expressed in Hz (same as frame per second), the one in **bold** have been verified on real hardware.
-- PWM can be performed per row or per frame (PWM FPS is computed considering equivalent per frame FPS).
+- PWM can be performed per row or per frame (PWM FPS is computed considering equivalent per frame FPS). When done per frame, the game code may dynamically change the PWM pattern length.
 
 
 ## WPC
