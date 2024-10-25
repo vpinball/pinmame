@@ -8,6 +8,9 @@ message("PROJECT_VERSION=${PROJECT_VERSION}")
 
 project(xpinmame VERSION ${PROJECT_VERSION})
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 14.0)
+set(CMAKE_OSX_ARCHITECTURES x86_64)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 99)
 
@@ -635,9 +638,9 @@ find_package(
 #   X11
 #)
 
-find_package(
-   SDL2 REQUIRED
-)
+#find_package(
+#   SDL2 REQUIRED
+#)
 
 find_library(
    COREAUDIO_FRAMEWORK NAMES CoreAudio
@@ -651,7 +654,8 @@ target_include_directories(xpinmame PUBLIC
    src/unix
 #   ${X11_X11_INCLUDE_PATH}
 #   ${X11_Xv_INCLUDE_PATH}
-   ${SDL2_INCLUDE_DIRS}
+#   ${SDL2_INCLUDE_DIRS}
+   ${CMAKE_SOURCE_DIR}/platforms/osx/x64/external/include
 )
 
 target_link_libraries(xpinmame PUBLIC
@@ -660,7 +664,11 @@ target_link_libraries(xpinmame PUBLIC
  #  ${X11_Xv_LIB}
  #  ${X11_Xext_LIB}
    ${COREAUDIO_FRAMEWORK}
-   ${SDL2_LIBRARIES}
+   SDL3
+)
+
+target_link_directories(xpinmame PUBLIC
+   ${CMAKE_SOURCE_DIR}/platforms/osx/x64/external/lib
 )
 
 set_target_properties(xpinmame PROPERTIES

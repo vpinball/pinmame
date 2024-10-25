@@ -48,12 +48,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
-            platform: osx
-            arch: x64
-            exe: xpinmame
           - os: ubuntu-latest
             platform: linux
+            arch: x64
+            exe: xpinmame
+          - os: macos-latest
+            platform: osx
+            arch: aarch64
+            exe: xpinmame
+          - os: macos-latest
+            platform: osx
             arch: x64
             exe: xpinmame
     steps:

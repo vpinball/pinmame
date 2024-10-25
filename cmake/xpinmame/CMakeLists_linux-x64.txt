@@ -679,7 +679,6 @@ target_link_libraries(xpinmame PUBLIC
 #   ${X11_Xv_LIB}
 #   ${X11_Xext_LIB}
    ${ALSA_LIBRARIES}
-#   ${SDL2_LIBRARIES}
    SDL3
 )
 
