@@ -1677,7 +1677,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_nl302 input_ports_batmanf
 #define init_bmf_nl302        init_batmanf
-CORE_CLONEDEFNV(bmf_nl302,batmanf,"Batman Forever (3.02 Dutch, Display 4.0)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_nl302,batmanf,"Batman Forever (3.02 Dutch, Display 4.01)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (IT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1734,6 +1734,20 @@ DE_ROMEND
 #define input_ports_bmf_time input_ports_batmanf
 #define init_bmf_time        init_batmanf
 CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (4.0 Timed Play)",1995,"Sega",de_mDEDMD64S2A,0)
+
+/*-------------------------------------------------------------
+/ Batman Forever 5.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+DE_ROMSTARTx0(batmanf5, "BMF-CPU.500", CRC(35816a2e) SHA1(3c801786f0eaada84cf3f45029b9657840779c53))
+DE_DMD64ROM88(          "BMF-DISPLAY0.500",CRC(2e2f8f5c) SHA1(897bdf6359e27b981b68ea376b94fa7e97879660),
+                        "BMF-DISPLAY3.500",CRC(32e3e0aa) SHA1(ca53b720042bfe6f1e4f6223d54ce40030a418f4))
+DE2S_SOUNDROM144(       "bmfu7.bin"  , CRC(58c0d144) SHA1(88a404d3625c7c154892282598b4949ac97de12b),
+                        "bmfu17.bin" , CRC(edcd5c10) SHA1(561f22fb7817f64e09ef6adda646f58f31b80bf4),
+                        "bmfu21.bin" , CRC(e41a516d) SHA1(9c41803a01046e57f8bd8759fe5e62ad6abaa80c))
+DE_ROMEND
+#define input_ports_batmanf5 input_ports_batmanf
+#define init_batmanf5        init_batmanf
+CORE_CLONEDEFNV(batmanf5,batmanf,"Batman Forever (5.0 unofficial MOD)",2024,"Sega",de_mDEDMD64S2A,0)
 
 
 /***********************************************************************/
