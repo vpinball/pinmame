@@ -763,6 +763,15 @@ static MACHINE_INIT(cc) {
     coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
+  // Defaults to 2 state legacy integrator for better backward compatibility
+  if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
+     for (int i = 0; i < coreGlobals.nSolenoids; i++)
+        if (coreGlobals.physicOutputState[i].type != CORE_MODOUT_SOL_2_STATE)
+           core_set_pwm_output_type(CORE_MODOUT_SOL0, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
+  if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80 /*coreGlobals.nLamps*/, CORE_MODOUT_LEGACY_SOL_2_STATE);
+  if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) == 0)
+     core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_LEGACY_SOL_2_STATE);
 
   //Init soundboard
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
