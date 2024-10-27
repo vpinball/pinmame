@@ -3126,21 +3126,12 @@ void core_dmd_render_lpm(const int width, const int height, const UINT8* const d
 }
 #endif
 
-// Send main DMD bitplane frame to dmddevice plugins
+// Send main DMD to dmddevice plugins
 #ifdef VPINMAME
-void core_dmd_render_dmddevice(const int width, const int height, const UINT8* const dmdDotRaw, const int isDMD2) {
+void core_dmd_render_dmddevice(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw, const int isDMD2) {
   if (g_fShowPinDMD) {
     const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-    if (isStrikeNSpares) {
-      if (isDMD2)
-        renderDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-      else
-        render2ndDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-    }
-    else {
-      renderDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-      render2ndDMDFrame(core_gameData->gen, width, height, dmdDotRaw, g_fDumpFrames, Machine->gamedrv->name, raw_dmd_frame_count, raw_dmd_frames);
-    }
+    renderDMDFrame(width, height, dmdDotLum, dmdDotRaw, raw_dmd_frame_count, raw_dmd_frames, isStrikeNSpares ? (isDMD2 ? 2 : 1) : 3);
   }
 }
 #endif
@@ -3245,7 +3236,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
     if (isMainDMD) {
       core_dmd_render_vpm(layout->length, layout->start, dmdDotLum);
-      core_dmd_render_dmddevice(layout->length, layout->start, dmdDotRaw, layout->top != 0);
+      core_dmd_render_dmddevice(layout->length, layout->start, dmdDotLum, dmdDotRaw, layout->top != 0);
       core_dmd_capture_frame(layout->length, layout->start, dmdDotRaw, raw_dmd_frame_count ,raw_dmd_frames);
       has_DMD_Video = 1;
     }
