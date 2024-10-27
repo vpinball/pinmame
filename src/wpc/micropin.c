@@ -526,7 +526,7 @@ static READ_HANDLER(mp2_dip) {
     case 3: // 00..70 cents
       return ~core_getDip(2);
     case 4: // 8+9 cents, 80+90 cents, coin, launch ball, show last score, endless tilt
-      return ~((core_getDip(5) & 0x03) | ((core_getDip(3) & 0x03) << 2) | (~coreGlobals.swMatrix[9] & 0xf0));
+      return ~((core_getDip(5) & 0x03) | ((core_getDip(3) & 0x03) << 2) | (~coreGlobals.swMatrix[9] & 0xf0)) | (core_getDip(6) << 7); 
     default: // real dips
       return ~core_getDip(0);
   }
@@ -630,6 +630,11 @@ INPUT_PORTS_START(pentacp2)
       COREPORT_DIPSET(0x0080, "7" )
       COREPORT_DIPSET(0x0100, "8" )
       COREPORT_DIPSET(0x0200, "9" )
+  PORT_START /* 4 */
+    // pentacpt machines seem to hold bit 7 of port 4 high
+    COREPORT_DIPNAME( 0x0003, 0x0000, "Endless Tilt")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
 
 core_tLCDLayout mp2_disp[] = {
