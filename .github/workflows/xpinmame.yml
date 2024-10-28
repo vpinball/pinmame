@@ -65,9 +65,6 @@ jobs:
       - if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update && sudo apt install libasound2-dev
-      - name: Build external dependencies
-        run: |
-          ./platforms/${{ matrix.platform }}/${{ matrix.arch }}/external.sh
       - name: Build xpinmame-${{ matrix.platform }}-${{ matrix.arch }}
         run: |
           cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}-${{ matrix.arch}}.txt CMakeLists.txt
