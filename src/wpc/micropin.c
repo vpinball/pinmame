@@ -567,7 +567,7 @@ MACHINE_DRIVER_START(pentacp2)
   MDRV_CPU_PERIODIC_INT(mp2_irq, 227) // timer @$219f runs in sync with this value
   MDRV_CPU_VBLANK_INT(mp2_vblank, 1)
   MDRV_SWITCH_UPDATE(MICROPIN2)
-  MDRV_DIPS(48)
+  MDRV_DIPS(49)
   MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SOUND_ADD(DISCRETE, mp2_discInt)
@@ -631,8 +631,7 @@ INPUT_PORTS_START(pentacp2)
       COREPORT_DIPSET(0x0100, "8" )
       COREPORT_DIPSET(0x0200, "9" )
   PORT_START /* 4 */
-    // pentacpt machines seem to hold bit 7 of port 4 high
-    COREPORT_DIPNAME( 0x0003, 0x0000, "Endless Tilt")
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Endless Tilt")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
@@ -721,6 +720,11 @@ INPUT_PORTS_START(pentacpt)
       COREPORT_DIPSET(0x0080, "7" )
       COREPORT_DIPSET(0x0100, "8" )
       COREPORT_DIPSET(0x0200, "9" )
+  PORT_START /* 4 */
+    // pentacpt machines seem to hold bit 7 of port 4 high
+    COREPORT_DIPNAME( 0x0001, 0x0001, "Endless Tilt")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
 
 core_tLCDLayout mpt_disp[] = {
