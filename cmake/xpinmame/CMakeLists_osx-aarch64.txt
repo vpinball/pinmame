@@ -121,7 +121,9 @@ add_compile_definitions(
    HAVE_SNPRINTF
    HAVE_GETTIMEOFDAY
 
-   SYSDEP_DSP_COREAUDIO
+   # Only headphones work for me with coreaudio
+   #SYSDEP_DSP_COREAUDIO
+   SYSDEP_DSP_SDL
 )
 
 add_definitions(
@@ -612,42 +614,43 @@ add_executable(xpinmame
    ext/ymfm/ymfm_opm.cpp
    ext/ymfm/ymfm_opm.h
 
-   src/unix/main.c 
-   src/unix/sound.c 
-   src/unix/keyboard.c 
-   src/unix/devices.c 
-   src/unix/video.c 
-   src/unix/mode.c 
-   src/unix/fileio.c 
-   src/unix/dirio.c 
-   src/unix/config.c 
-   src/unix/fronthlp.c 
-   src/unix/ident.c 
-   src/unix/network.c 
-   src/unix/snprintf.c 
-   src/unix/nec765_dummy.c 
-   src/unix/effect.c 
-   src/unix/ticker.c 
-   src/unix/parallel.c 
+   src/unix/main.c
+   src/unix/sound.c
+   src/unix/keyboard.c
+   src/unix/devices.c
+   src/unix/video.c
+   src/unix/mode.c
+   src/unix/fileio.c
+   src/unix/dirio.c
+   src/unix/config.c
+   src/unix/fronthlp.c
+   src/unix/ident.c
+   src/unix/network.c
+   src/unix/snprintf.c
+   src/unix/nec765_dummy.c
+   src/unix/effect.c
+   src/unix/ticker.c
+   src/unix/parallel.c
    src/unix/serial.c
-   src/unix/sysdep/rc.c 
-   src/unix/sysdep/misc.c 
-   src/unix/sysdep/plugin_manager.c 
-   src/unix/sysdep/sound_stream.c 
-   src/unix/sysdep/sysdep_palette.c 
-   src/unix/sysdep/sysdep_dsp.c 
-   src/unix/sysdep/sysdep_mixer.c 
-   src/unix/sysdep/dsp-drivers/coreaudio.c 
+   src/unix/sysdep/rc.c
+   src/unix/sysdep/misc.c
+   src/unix/sysdep/plugin_manager.c
+   src/unix/sysdep/sound_stream.c
+   src/unix/sysdep/sysdep_palette.c
+   src/unix/sysdep/sysdep_dsp.c
+   src/unix/sysdep/sysdep_mixer.c
+#   src/unix/sysdep/dsp-drivers/coreaudio.c
+   src/unix/sysdep/dsp-drivers/sdl.c
 #   src/unix/video-drivers/x11.c
 #   src/unix/video-drivers/xinput.c
 #   src/unix/video-drivers/x11_window.c
    src/unix/video-drivers/sdl.c
-   src/unix/joystick-drivers/joy_i386.c 
-   src/unix/joystick-drivers/joy_pad.c 
-   src/unix/joystick-drivers/joy_x11.c 
-   src/unix/joystick-drivers/joy_usb.c 
-   src/unix/frameskip-drivers/dos.c 
-   src/unix/frameskip-drivers/barath.c 
+   src/unix/joystick-drivers/joy_i386.c
+   src/unix/joystick-drivers/joy_pad.c
+   src/unix/joystick-drivers/joy_x11.c
+   src/unix/joystick-drivers/joy_usb.c
+   src/unix/frameskip-drivers/dos.c
+   src/unix/frameskip-drivers/barath.c
 )
 
 find_package(
