@@ -8,6 +8,9 @@ message("PROJECT_VERSION=${PROJECT_VERSION}")
 
 project(xpinmame VERSION ${PROJECT_VERSION})
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 14.0)
+set(CMAKE_OSX_ARCHITECTURES x86_64)
+
 # Dependencies
 include(FetchContent)
 
@@ -25,9 +28,6 @@ FetchContent_Declare(SDL3
 
 FetchContent_MakeAvailable(SDL3)
 
-
-set(CMAKE_OSX_DEPLOYMENT_TARGET 14.0)
-set(CMAKE_OSX_ARCHITECTURES x86_64)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 99)
