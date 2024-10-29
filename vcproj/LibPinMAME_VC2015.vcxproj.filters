@@ -1269,9 +1269,6 @@
     <ClCompile Include="..\src\wpc\altsound\snd_alt.cpp">
       <Filter>Source Files\PinMAME\altsound</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext\vgm\vgmwrite.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\wpc\dmddevice.cpp">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>

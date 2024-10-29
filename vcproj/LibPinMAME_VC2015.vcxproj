@@ -1138,7 +1138,6 @@
     <ClCompile Include="..\src\wpc\sims\se\prelim\harley.c" />
     <ClCompile Include="..\src\wpc\sims\se\prelim\monopoly.c" />
     <ClCompile Include="..\src\vc\dirent.c" />
-    <ClCompile Include="..\ext\vgm\vgmwrite.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ext\vgm\vgmwrite.h" />
@@ -1368,7 +1367,6 @@
     <ClInclude Include="..\src\wpc\altsound\snd_alt.h" />
     <ClInclude Include="..\src\vc\dirent.h" />
     <ClInclude Include="..\src\vc\unistd.h" />
-    <ClInclude Include="..\ext\vgm\vgmwrite.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\sound\vtxsmpls.inc" />
