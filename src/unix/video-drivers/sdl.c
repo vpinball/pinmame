@@ -165,7 +165,7 @@ int sysdep_create_display(int depth)
       fprintf(stderr, "\n");
    }
 
-   fprintf(stderr, "SDL: Info: Create display with depth %d\n", depth);
+   fprintf(stderr, "SDL: Info: Create display with depth %d for %ix%i\n", depth, visual_width*widthscale, visual_height*heightscale);
    int vid_modes_i;
 #ifdef DIRECT_HERMES 
    HermesFormat* H_src_format;
@@ -228,8 +228,8 @@ int sysdep_create_display(int depth)
       for (int mode_index = 0; mode_index < modes_count; mode_index++)
       {
          const SDL_DisplayMode mode = *modes[mode_index];
-         SDL_Log(" %i bpp\t%i x %i @ %fHz",
-             SDL_BITSPERPIXEL(mode.format), mode.w, mode.h, mode.refresh_rate);
+         SDL_Log(" %i bpp\t%i x %i (%.1fx) @ %fHz",
+             SDL_BITSPERPIXEL(mode.format), mode.w, mode.h, mode.pixel_density, mode.refresh_rate);
 
 #ifdef SDL_DEBUG
          fprintf (stderr, "SDL: Info: Found mode %d x %d\n", mode.w, mode.h);
@@ -321,14 +321,9 @@ int sysdep_create_display(int depth)
       vid_mode_flag |= SDL_WINDOW_FULLSCREEN;
    }
 
-   // TODO set scaling factor on canvas
-   // enable hidpi/scaling support
-   // on Linux this requires SDL_VIDEODRIVER=wayland
-   // vid_mode_flag |= SDL_WINDOW_ALLOW_HIGHDPI;
-
-   // https://nlguillemot.wordpress.com/2016/12/11/high-dpi-rendering/
-
-   // TODO set Vid_dep?
+   // Enable hidpi/scaling support
+   // On Linux this requires SDL_VIDEODRIVER=wayland
+   vid_mode_flag |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
    if(! (Window = SDL_CreateWindow(title,Vid_width, Vid_height, vid_mode_flag))) {
       fprintf (stderr, "SDL: Error: Setting video mode failed\n");
@@ -337,6 +332,15 @@ int sysdep_create_display(int depth)
    } else {
       fprintf (stderr, "SDL: Info: Video mode set as %d x %d, depth %d\n", Vid_width, Vid_height, Vid_depth);
    }
+
+   // If this is a hdpi window we scale the window to the correct size as we want physical pixels,
+   // not content scale. We can only do this after window creation as there is no way to know
+   // the density before that.
+   // This will only affect MacOS and iOS
+   // see https://wiki.libsdl.org/SDL3/README/highdpi
+   const float density = SDL_GetWindowPixelDensity(Window);
+   SDL_SetWindowSize(Window, Vid_width / density, Vid_height / density);
+
    Surface = SDL_GetWindowSurface(Window);
 
 #ifndef DIRECT_HERMES
