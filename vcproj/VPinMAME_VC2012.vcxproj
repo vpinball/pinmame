@@ -1080,10 +1080,61 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\vidhrdw\tms9928a.c" />
     <ClCompile Include="..\src\vidhrdw\vector.c" />
     <ClCompile Include="..\src\windows\blit.c" />
-    <ClCompile Include="..\src\windows\config.c" />
-    <ClCompile Include="..\src\windows\fileio.c" />
+    <ClCompile Include="..\src\windows\config.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\fileio.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
     <ClCompile Include="..\src\windows\fronthlp.c" />
-    <ClCompile Include="..\src\windows\input.c" />
+    <ClCompile Include="..\src\windows\input.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
     <ClCompile Include="..\src\windows\jit.c" />
     <ClCompile Include="..\src\windows\jitemit.c" />
     <ClCompile Include="..\src\windows\misc.c" />
@@ -1104,7 +1155,24 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\windows\wind3d.c" />
     <ClCompile Include="..\src\windows\wind3dfx.c" />
     <ClCompile Include="..\src\windows\winddraw.c" />
-    <ClCompile Include="..\src\windows\window.c" />
+    <ClCompile Include="..\src\windows\window.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
     <ClCompile Include="..\src\wpc\allied.c" />
     <ClCompile Include="..\src\wpc\alvg.c" />
     <ClCompile Include="..\src\wpc\alvgdmd.c" />
