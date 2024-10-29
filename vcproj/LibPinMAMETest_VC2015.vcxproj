@@ -35,7 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\libpinmame\test.cpp" />
+    <ClCompile Include="..\src\libpinmame\test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>LibPinMAMETest</ProjectName>
@@ -178,7 +178,7 @@ rem "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(Projec
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -217,7 +217,7 @@ rem "$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(Projec
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;_XKEYCHECK_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -260,7 +260,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -300,7 +300,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -320,7 +320,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalDependencies>winmm.lib;dxguid.lib;dinput64.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2015vcd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -339,7 +339,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -377,7 +377,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -397,7 +397,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalDependencies>winmm.lib;dxguid.lib;dinput64.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2015md.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -416,7 +416,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -456,7 +456,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -476,7 +476,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalDependencies>winmm.lib;dxguid.lib;dinput64.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2015vcmd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>

@@ -216,30 +216,30 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="src\instvpm\Globals.cpp"
+				RelativePath="..\src\instvpm\Globals.cpp"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\InstallVPinMAME.cpp"
+				RelativePath="..\src\instvpm\InstallVPinMAME.cpp"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\InstallVPinMAME.rc"
+				RelativePath="..\src\instvpm\InstallVPinMAME.rc"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\TestVPinMAME.cpp"
+				RelativePath="..\src\instvpm\TestVPinMAME.cpp"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\Utils.cpp"
+				RelativePath="..\src\instvpm\Utils.cpp"
 				>
 			</File>
 			<Filter
 				Name="VPinMAME"
 				>
 				<File
-					RelativePath="src\win32com\VPinMAME.idl"
+					RelativePath="..\src\win32com\VPinMAME.idl"
 					>
 				</File>
 			</Filter>
@@ -249,19 +249,19 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="src\instvpm\Globals.h"
+				RelativePath="..\src\instvpm\Globals.h"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\resource.h"
+				RelativePath="..\src\instvpm\resource.h"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\TestVPinMAME.h"
+				RelativePath="..\src\instvpm\TestVPinMAME.h"
 				>
 			</File>
 			<File
-				RelativePath="src\instvpm\Utils.h"
+				RelativePath="..\src\instvpm\Utils.h"
 				>
 			</File>
 		</Filter>
@@ -270,7 +270,7 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="src\instvpm\Res\InstallVPinMAME.ICO"
+				RelativePath="..\src\instvpm\Res\InstallVPinMAME.ICO"
 				>
 			</File>
 		</Filter>

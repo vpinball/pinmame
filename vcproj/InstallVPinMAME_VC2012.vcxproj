@@ -290,25 +290,25 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\instvpm\Globals.cpp" />
-    <ClCompile Include="src\instvpm\InstallVPinMAME.cpp" />
-    <ClCompile Include="src\instvpm\TestVPinMAME.cpp" />
-    <ClCompile Include="src\instvpm\Utils.cpp" />
+    <ClCompile Include="..\src\instvpm\Globals.cpp" />
+    <ClCompile Include="..\src\instvpm\InstallVPinMAME.cpp" />
+    <ClCompile Include="..\src\instvpm\TestVPinMAME.cpp" />
+    <ClCompile Include="..\src\instvpm\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\instvpm\InstallVPinMAME.rc" />
+    <ResourceCompile Include="..\src\instvpm\InstallVPinMAME.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="src\win32com\VPinMAME.idl" />
+    <Midl Include="..\src\win32com\VPinMAME.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\instvpm\Globals.h" />
-    <ClInclude Include="src\instvpm\resource.h" />
-    <ClInclude Include="src\instvpm\TestVPinMAME.h" />
-    <ClInclude Include="src\instvpm\Utils.h" />
+    <ClInclude Include="..\src\instvpm\Globals.h" />
+    <ClInclude Include="..\src\instvpm\resource.h" />
+    <ClInclude Include="..\src\instvpm\TestVPinMAME.h" />
+    <ClInclude Include="..\src\instvpm\Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="src\instvpm\Res\InstallVPinMAME.ICO" />
+    <Image Include="..\src\instvpm\Res\InstallVPinMAME.ICO" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

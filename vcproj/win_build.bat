@@ -87,7 +87,7 @@ call :print_globals
 if %GEN_ALTSOUND% == YES (
    set OUTPATH=build/altsound/%PLATFORM%/
 
-   pushd src\wpc\altsound
+   pushd ..\src\wpc\altsound
    cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD%==YES (
@@ -102,7 +102,7 @@ if %GEN_ALTSOUND% == YES (
 if %GEN_INSTVPM% == YES (
    set OUTPATH=build/instvpm/%PLATFORM%/
 
-   copy /Y cmake\instvpm\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+   copy /Y ..\cmake\instvpm\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
    cmake %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD%==YES (
@@ -117,7 +117,7 @@ if %errorlevel% neq 0 (goto :failed)
 if %GEN_LIBPINMAME% == YES (
    set OUTPATH=build/libpinmame/%PLATFORM%/
     
-   copy /Y cmake\libpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+   copy /Y ..\cmake\libpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
    cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
@@ -132,7 +132,7 @@ if %errorlevel% neq 0 (goto :failed)
 if %GEN_PINMAME% == YES (
     set OUTPATH=build/pinmame/%PLATFORM%/
     
-    copy /Y cmake\pinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+    copy /Y ..\cmake\pinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
     cmake %OPTIONS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
@@ -147,7 +147,7 @@ if %errorlevel% neq 0 (goto :failed)
 if %GEN_PINMAME32% == YES (
     set OUTPATH=build/pinmame32/%PLATFORM%/
 
-    copy /Y cmake\pinmame32\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+    copy /Y ..\cmake\pinmame32\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
     cmake %OPTIONS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
@@ -162,7 +162,7 @@ if %errorlevel% neq 0 (goto :failed)
 if %GEN_VPINMAME% == YES (
     set OUTPATH=build/vpinmame/%PLATFORM%/
 
-    copy /Y cmake\vpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+    copy /Y ..\cmake\vpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
     cmake %OPTIONS% %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
     
     if %BUILD% == YES (
