@@ -30,6 +30,12 @@ static struct {
 
   double volume;
   UINT8  irq;
+
+  UINT8 lastSw5;
+  UINT8 swStatus[32];
+  int   read_count;
+
+  UINT8 swMade[16];
 } locals;
 
 
@@ -375,18 +381,17 @@ static INTERRUPT_GEN(mp2_vblank) {
 }
 
 static INTERRUPT_GEN(mp2_irq) {
-  static UINT8 swMade[16];
   int i;
   cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
   cpu_set_irq_line(0, I8085_RST65_LINE, !locals.irq ? ASSERT_LINE : CLEAR_LINE);
   locals.irq = !locals.irq;
 
   for (i = 0; i < 16; i++) {
-    if (!swMade[i] && core_getSw(49 + i)) {
-      swMade[i] = 1;
+    if (!locals.swMade[i] && core_getSw(49 + i)) {
+      locals.swMade[i] = 1;
       memory_region(REGION_CPU1)[0x21a0 + i] |= 1;
-    } else if (swMade[i] && !core_getSw(49 + i)) {
-      swMade[i] = 0;
+    } else if (locals.swMade[i] && !core_getSw(49 + i)) {
+      locals.swMade[i] = 0;
       memory_region(REGION_CPU1)[0x21a0 + i] = 0;
     }
   }
@@ -471,9 +476,6 @@ static WRITE_HANDLER(mp2_out) {
 }
 
 static READ_HANDLER(mp2_sw) {
-  static UINT8 swStatus[32];
-  static UINT8 lastSw5;
-  static int count;
   if (!offset) {
     UINT8 retVal = 0x01; // returning 0 would halt the game!?
     int i;
@@ -482,36 +484,36 @@ static READ_HANDLER(mp2_sw) {
     }
     for (i = 0; i < 32; i++) {
       if (core_getSw(1 + i)) {
-        if (!swStatus[i]) {
-          swStatus[i] = 1;
+        if (!locals.swStatus[i]) {
+          locals.swStatus[i] = 1;
           retVal = 0x02; // activates switch matrix scan
           break;
-        } else if (swStatus[i] == 1) {
-          swStatus[i] = 2;
+        } else if (locals.swStatus[i] == 1) {
+          locals.swStatus[i] = 2;
           retVal = 0x02; // every switch needs at least two scans to register
           break;
         } else if (core_getSw(15) || core_getSw(19) || core_getSw(21) || core_getSw(25) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
           // saucers and outhole need to keep the matrix scan active longer but eventually need to release again!?
-          if (swStatus[i] > 2) { // means switch is still on but time ran out
+          if (locals.swStatus[i] > 2) { // means switch is still on but time ran out
             break;
           }
-          count++;
-          if (count < 201) { // pentacpt will not eject the ball from the right-hand saucer but keeps adding bonus over and over?!
+          locals.read_count++;
+          if (locals.read_count < 201) { // pentacpt will not eject the ball from the right-hand saucer but keeps adding bonus over and over?!
             retVal = 0x02; // keep switch closed
           } else { // timeout reached
-            swStatus[i] = 3;
-            count = 0;
+            locals.swStatus[i] = 3;
+            locals.read_count = 0;
           }
           break;
         }
-      } else if (swStatus[i]) {
-        swStatus[i] = 0;
-        count = 0;
+      } else if (locals.swStatus[i]) {
+        locals.swStatus[i] = 0;
+        locals.read_count = 0;
       }
     }
-    if (lastSw5 != coreGlobals.swMatrix[5] || coreGlobals.swMatrix[5] & 0x02) {
-      lastSw5 = coreGlobals.swMatrix[5];
-      retVal |= lastSw5;
+    if (locals.lastSw5 != coreGlobals.swMatrix[5] || coreGlobals.swMatrix[5] & 0x02) {
+      locals.lastSw5 = coreGlobals.swMatrix[5];
+      retVal |= locals.lastSw5;
       retVal &= 0xfe;
     }
     return retVal;
@@ -744,6 +746,18 @@ static core_tGameData pentacuptGameData = {0,mpt_disp,{FLIP_SWNO(38,37),0,2}};
 static void init_pentacpt(void) {
   core_gameData = &pentacuptGameData;
 }
+
+// The Rev T game has some drastic differences from the 1981 release version
+// shown at https://www.ipdb.org/machine.cgi?id=3822
+
+// See the game's display panel for comparison.
+// Also:
+// - No HSTD feature
+// - Panels for team scores with an extra million digit
+// - Some input contacts were moved to different places
+// - DIP switch #8 will toggle between 1 and 4 games added per push of the credits button
+
+// The ROM labels just say "[1-4] REV. T" so I named the ROMs similar to the existing set but with a T each.
 
 ROM_START(pentacpt)
   NORMALREGION(0x10000, REGION_CPU1)
