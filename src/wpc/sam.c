@@ -154,6 +154,18 @@ struct {
 	int flipSolHackCountUL;
 	data32_t flipSolHackStateUL;
 
+	// WPT
+	UINT16 latchA, latchB, latchC, latchD, latchE, latchF, latchH;
+	UINT16 col;
+
+	// Shrek,FG
+	UINT8 latch[4];
+
+	// WOF
+	UINT8 ledLatch[6];
+	UINT8 dmdLatch[6];
+	UINT8 dmdOutputDisabled; // bool
+
 	// Transmit Serial:
 	data8_t prev_ch1;
 	data8_t prev_ch2;
@@ -913,118 +925,115 @@ static WRITE32_HANDLER(sambank_w)
 				// Board 520-5250-14: 14 Block LED (World Poker Tour)
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
-					static UINT16 latchA, latchB, latchC, latchD, latchE, latchF, latchH, col;
 					if (samlocals.auxstrb & ~data & 0x80) // ASTB
 					{
 						// 2 Latches for active columns
-						col = ((latchH & 0x10) >> 4)  // H5 -> Col 1
-							| ((latchH & 0x02))  // H2 -> Col 2
-							| ((latchH & 0x04))  // H3 -> Col 3
-							| ((latchH & 0x08))  // H4 -> Col 4
-							| ((latchH & 0x01) << 4)  // H1 -> Col 5
-							| ((latchH & 0x80) >> 2)  // H8 -> Col 6
-							| ((latchH & 0x20) << 1)  // H6 -> Col 7
-							| ((latchH & 0x40) << 1)  // H7 -> Col 8
-							| ((latchF & 0x80) << 1)  // F7 -> Col 9
-							| ((latchE & 0x80) << 2); // E7 -> Col 10
-						col = ((core_revword(col) >> 6) & 0x03E0) | ((col >> 5) & 0x001F);
+						samlocals.col =
+							  ((samlocals.latchH & 0x10) >> 4)  // H5 -> Col 1
+							| ((samlocals.latchH & 0x02))       // H2 -> Col 2
+							| ((samlocals.latchH & 0x04))       // H3 -> Col 3
+							| ((samlocals.latchH & 0x08))       // H4 -> Col 4
+							| ((samlocals.latchH & 0x01) << 4)  // H1 -> Col 5
+							| ((samlocals.latchH & 0x80) >> 2)  // H8 -> Col 6
+							| ((samlocals.latchH & 0x20) << 1)  // H6 -> Col 7
+							| ((samlocals.latchH & 0x40) << 1)  // H7 -> Col 8
+							| ((samlocals.latchF & 0x80) << 1)  // F7 -> Col 9
+							| ((samlocals.latchE & 0x80) << 2); // E7 -> Col 10
+						samlocals.col = ((core_revword(samlocals.col) >> 6) & 0x03E0) | ((samlocals.col >> 5) & 0x001F);
 						// 7 Latches for active rows
-						UINT16 latchI = (latchH & 0x07); // Does not really exist, made using D7/Q7 of latches E/F/H from Q4/Q5/Q6 of latch H
-						latchH = (latchF & 0x7F) | ((latchI & 0x04) << 5);
-						latchF = (latchE & 0x7F) | ((latchI & 0x01) << 7);
-						latchE = (latchD & 0x7F) | ((latchI & 0x02) << 6);
-						latchD = (latchC & 0x7F);
-						latchC = (latchB & 0x7F);
-						latchB = (latchA & 0x7F);
-						latchA = samlocals.auxdata;
+						const UINT16 latchI = (samlocals.latchH & 0x07); // Does not really exist, made using D7/Q7 of latches E/F/H from Q4/Q5/Q6 of latch H
+						samlocals.latchH = (samlocals.latchF & 0x7F) | ((latchI & 0x04) << 5);
+						samlocals.latchF = (samlocals.latchE & 0x7F) | ((latchI & 0x01) << 7);
+						samlocals.latchE = (samlocals.latchD & 0x7F) | ((latchI & 0x02) << 6);
+						samlocals.latchD = (samlocals.latchC & 0x7F);
+						samlocals.latchC = (samlocals.latchB & 0x7F);
+						samlocals.latchB = (samlocals.latchA & 0x7F);
+						samlocals.latchA = samlocals.auxdata;
 					}
 					for (int row = 0; row < 10; row++) {
-						int r = ((latchA & 0x80) || (~data & 0x80)) ? 0 : (col & (1 << row));
+						int r = ((samlocals.latchA & 0x80) || (~data & 0x80)) ? 0 : (samlocals.col & (1 << row));
 						int c = CORE_MODOUT_LAMP0 + 10 * 8 + 49 * row;
-						core_write_pwm_output(c     , 7, r ? (core_revbyte((UINT8)latchH) >> 1) : 0);
-						core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)latchF) >> 1) : 0);
-						core_write_pwm_output(c + 14, 7, r ? (core_revbyte((UINT8)latchE) >> 1) : 0);
-						core_write_pwm_output(c + 21, 7, r ? (core_revbyte((UINT8)latchD) >> 1) : 0);
-						core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)latchC) >> 1) : 0);
-						core_write_pwm_output(c + 35, 7, r ? (core_revbyte((UINT8)latchB) >> 1) : 0);
-						core_write_pwm_output(c + 42, 7, r ? (core_revbyte((UINT8)latchA) >> 1) : 0);
+						core_write_pwm_output(c     , 7, r ? (core_revbyte((UINT8)samlocals.latchH) >> 1) : 0);
+						core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)samlocals.latchF) >> 1) : 0);
+						core_write_pwm_output(c + 14, 7, r ? (core_revbyte((UINT8)samlocals.latchE) >> 1) : 0);
+						core_write_pwm_output(c + 21, 7, r ? (core_revbyte((UINT8)samlocals.latchD) >> 1) : 0);
+						core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)samlocals.latchC) >> 1) : 0);
+						core_write_pwm_output(c + 35, 7, r ? (core_revbyte((UINT8)samlocals.latchB) >> 1) : 0);
+						core_write_pwm_output(c + 42, 7, r ? (core_revbyte((UINT8)samlocals.latchA) >> 1) : 0);
 					}
-					//printf("%8.5f s=%02x d=%02x    %02x %02x %02x %02x %02x %02x %02x   Col=%03x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, latchA, latchB, latchC, latchD, latchE, latchF, latchH, col, (latchA & 0x80) ? 1 : 0);
+					//printf("%8.5f s=%02x d=%02x    %02x %02x %02x %02x %02x %02x %02x   Col=%03x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.latchA, samlocals.latchB, samlocals.latchC, samlocals.latchD, samlocals.latchE, samlocals.latchF, samlocals.latchH, col, (samlocals.latchA & 0x80) ? 1 : 0);
 				}
 
 				// Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
 				{
 					// The board contains 4 latches which are shifted to latch row (13 bits), col (2 bits), and output enable (1 bit)
-					static UINT8 latch[4] = { 0 };
 					if (samlocals.auxstrb & ~data & 0x80) // ASTB
 					{
-						latch[3] = latch[2];
-						latch[2] = latch[1];
-						latch[1] = latch[0];
-						latch[0] = samlocals.auxdata;
+						samlocals.latch[3] = samlocals.latch[2];
+						samlocals.latch[2] = samlocals.latch[1];
+						samlocals.latch[1] = samlocals.latch[0];
+						samlocals.latch[0] = samlocals.auxdata;
 					}
-					int col = ((latch[0] & 0x80) || (~data & 0x80)) ? 0 : latch[3]; // Output disable if Bit 7 on latch 0 high or ASTB strobe high
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  80, (col & 1) ? latch[2] & 0x0F : 0);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  88, (col & 1) ? latch[1] & 0x0F : 0);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  96, (col & 1) ? latch[0] & 0x1F : 0);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, (col & 2) ? latch[2] & 0x0F : 0);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 112, (col & 2) ? latch[1] & 0x0F : 0);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 120, (col & 2) ? latch[0] & 0x1F : 0);
-					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x  out=%d\n", timer_get_time(), data, samlocals.auxdata, latch[0] & 0x1F, latch[1] &0x0F, latch[2] & 0x0F, latch[3], col & 3);
+					int col = ((samlocals.latch[0] & 0x80) || (~data & 0x80)) ? 0 : samlocals.latch[3]; // Output disable if Bit 7 on latch 0 high or ASTB strobe high
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  80, (col & 1) ? samlocals.latch[2] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  88, (col & 1) ? samlocals.latch[1] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  96, (col & 1) ? samlocals.latch[0] & 0x1F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, (col & 2) ? samlocals.latch[2] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 112, (col & 2) ? samlocals.latch[1] & 0x0F : 0);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 120, (col & 2) ? samlocals.latch[0] & 0x1F : 0);
+					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x  out=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.latch[0] & 0x1F, samlocals.latch[1] &0x0F, samlocals.latch[2] & 0x0F, samlocals.latch[3], col & 3);
 				}
 
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
 					// Board 520-5283-00: Wheel of Fortune Opto, LEDs and flasher
-					static UINT8 ledLatch[6] = { 0 };
 					if (~samlocals.auxstrb & data & 0x08) // inversed BSTB
 					{
-						ledLatch[2] = ledLatch[1];
-						ledLatch[1] = ledLatch[0];
-						ledLatch[0] = samlocals.auxdata;
+						samlocals.ledLatch[2] = samlocals.ledLatch[1];
+						samlocals.ledLatch[1] = samlocals.ledLatch[0];
+						samlocals.ledLatch[0] = samlocals.auxdata;
 					}
 					if (samlocals.auxstrb & ~data & 0x08) // BSTB
 					{
-						ledLatch[5] = ledLatch[4];
-						ledLatch[4] = ledLatch[3];
-						ledLatch[3] = samlocals.auxdata;
+						samlocals.ledLatch[5] = samlocals.ledLatch[4];
+						samlocals.ledLatch[4] = samlocals.ledLatch[3];
+						samlocals.ledLatch[3] = samlocals.auxdata;
 					}
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  80, ledLatch[0] & 0x80 ? 0 : ledLatch[0] & 0x7f);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  96, ledLatch[0] & 0x80 ? 0 : ledLatch[1] & 0x7f);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 112, ledLatch[0] & 0x80 ? 0 : ledLatch[2] & 0x7f);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  88, ledLatch[3] & 0x80 ? 0 : ledLatch[3] & 0x7f);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, ledLatch[3] & 0x80 ? 0 : ledLatch[4] & 0x7f);
-					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 120, ledLatch[3] & 0x80 ? 0 : ledLatch[5] & 0x7f);
-					//printf("%8.5f  write %02x %02x:  %02x %02x %02x  %02x %02x %02x\n", timer_get_time(), data, samlocals.auxdata, ledLatch[0], ledLatch[1], ledLatch[2], ledLatch[3], ledLatch[4], ledLatch[5]);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  80, samlocals.ledLatch[0] & 0x80 ? 0 : samlocals.ledLatch[0] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  96, samlocals.ledLatch[0] & 0x80 ? 0 : samlocals.ledLatch[1] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 112, samlocals.ledLatch[0] & 0x80 ? 0 : samlocals.ledLatch[2] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 +  88, samlocals.ledLatch[3] & 0x80 ? 0 : samlocals.ledLatch[3] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 104, samlocals.ledLatch[3] & 0x80 ? 0 : samlocals.ledLatch[4] & 0x7f);
+					core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 120, samlocals.ledLatch[3] & 0x80 ? 0 : samlocals.ledLatch[5] & 0x7f);
+					//printf("%8.5f  write %02x %02x:  %02x %02x %02x  %02x %02x %02x\n", timer_get_time(), data, samlocals.auxdata, samlocals.ledLatch[0], samlocals.ledLatch[1], samlocals.ledLatch[2], samlocals.ledLatch[3], samlocals.ledLatch[4], samlocals.ledLatch[5]);
 
 					// Board 520-5274-00: Playfield Mini-Dot Display (5X7) (Wheel of Fortune)
-					static UINT8 dmdLatch[6] = { 0 }, dmdOutputDisabled;
 					if (samlocals.auxstrb & ~data & 0x10) // CSTB
 					{
-						UINT8 wasOutputDisabled = dmdOutputDisabled;
-						dmdOutputDisabled = samlocals.auxdata & 0x80;
-						if (wasOutputDisabled && dmdOutputDisabled)
+						UINT8 wasOutputDisabled = samlocals.dmdOutputDisabled;
+						samlocals.dmdOutputDisabled = samlocals.auxdata & 0x80;
+						if (wasOutputDisabled && samlocals.dmdOutputDisabled)
 						{
-							dmdLatch[5] = dmdLatch[4];
-							dmdLatch[4] = dmdLatch[3];
-							dmdLatch[3] = dmdLatch[2];
-							dmdLatch[2] = dmdLatch[1];
-							dmdLatch[1] = dmdLatch[0];
-							dmdLatch[0] = samlocals.auxdata;
+							samlocals.dmdLatch[5] = samlocals.dmdLatch[4];
+							samlocals.dmdLatch[4] = samlocals.dmdLatch[3];
+							samlocals.dmdLatch[3] = samlocals.dmdLatch[2];
+							samlocals.dmdLatch[2] = samlocals.dmdLatch[1];
+							samlocals.dmdLatch[1] = samlocals.dmdLatch[0];
+							samlocals.dmdLatch[0] = samlocals.auxdata;
 						}
 					}
-					int col = (dmdOutputDisabled || (~data & 0x80)) ? 0 : dmdLatch[5];
+					int col = (samlocals.dmdOutputDisabled || (~data & 0x80)) ? 0 : samlocals.dmdLatch[5];
 					for (int row = 0; row < 5; row++) {
 						int r = col & (1 << row);
 						int c = CORE_MODOUT_LAMP0 + 140 + 35 * row;
-						core_write_pwm_output(c,      7, r ? (core_revbyte((UINT8)dmdLatch[4]) >> 1) : 0);
-						core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)dmdLatch[3]) >> 1) : 0);
-						core_write_pwm_output(c + 14, 7, r ? (core_revbyte((UINT8)dmdLatch[2]) >> 1) : 0);
-						core_write_pwm_output(c + 21, 7, r ? (core_revbyte((UINT8)dmdLatch[1]) >> 1) : 0);
-						core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)dmdLatch[0]) >> 1) : 0);
+						core_write_pwm_output(c,      7, r ? (core_revbyte(samlocals.dmdLatch[4]) >> 1) : 0);
+						core_write_pwm_output(c +  7, 7, r ? (core_revbyte(samlocals.dmdLatch[3]) >> 1) : 0);
+						core_write_pwm_output(c + 14, 7, r ? (core_revbyte(samlocals.dmdLatch[2]) >> 1) : 0);
+						core_write_pwm_output(c + 21, 7, r ? (core_revbyte(samlocals.dmdLatch[1]) >> 1) : 0);
+						core_write_pwm_output(c + 28, 7, r ? (core_revbyte(samlocals.dmdLatch[0]) >> 1) : 0);
 					}
-					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x %02x  col=%02x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, dmdLatch[0], dmdLatch[1], dmdLatch[2], dmdLatch[3], dmdLatch[4], col & 0x1F, dmdOutputDisabled ? 0 : 1);
+					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x %02x  col=%02x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.dmdLatch[0], samlocals.dmdLatch[1], samlocals.dmdLatch[2], samlocals.dmdLatch[3], samlocals.dmdLatch[4], col & 0x1F, samlocals.dmdOutputDisabled ? 0 : 1);
 				}
 
 				// Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight & CSI): 3 LEDs #86, #87, #88
