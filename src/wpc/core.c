@@ -2626,7 +2626,7 @@ void core_update_pwm_outputs(const int startIndex, const int count)
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
-   const float now = (float) timer_get_time();
+   const double now = timer_get_time();
    core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
    for (int i = 0; i < count; i++, bitStates = bitStates >> 1, index++, output++) {
       const int pos = index >> 3, ofs = index & 7;
@@ -2645,7 +2645,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
    UINT8 changeMask = coreGlobals.binaryOutputState[index >> 3] ^ bitStates;
    if (!changeMask)
       return;
-   const float now = (float) timer_get_time();
+   const double now = timer_get_time();
    for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
       {
@@ -2662,7 +2662,7 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
    UINT8 changeMask = bitMask & (coreGlobals.binaryOutputState[index >> 3] ^ bitStates); // Identify differences
    if (!changeMask)
       return;
-   const float now = (float) timer_get_time();
+   const double now = timer_get_time();
    for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
       {

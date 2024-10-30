@@ -463,7 +463,7 @@ typedef struct {
          float switchDownLatency;
       } sol; // Physical model of a solenoid
    } state;
-   float flipTimeStamps[FLIP_BUFFER_SIZE];
+   double flipTimeStamps[FLIP_BUFFER_SIZE];
    unsigned int flipBufferPos;
    unsigned int lastIntegrationFlipPos;
 } core_tPhysicOutput;
@@ -654,12 +654,11 @@ extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 in
 
 /* makes it easier to swap bits */
 extern const UINT8 core_swapNyb[16];
-INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf]<<4)|(core_swapNyb[x>>4]); }
+INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf] << 4)|(core_swapNyb[x >> 4]); }
 INLINE UINT8 core_revnyb(UINT8 x) { return core_swapNyb[x]; }
 INLINE UINT16 core_revword(UINT16 x) {
-	UINT8 lo,hi;
-	lo = core_revbyte(x & 0x00ff);
-	hi = core_revbyte((x & 0xff00)>>8);
+	UINT8 lo = core_revbyte(x & 0x00ff);
+	UINT8 hi = core_revbyte((x >> 8) & 0x00ff);
 	return ((lo<<8) | hi);
 }
 
