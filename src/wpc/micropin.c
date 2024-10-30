@@ -31,10 +31,8 @@ static struct {
   double volume;
   UINT8  irq;
 
-  UINT8 lastSw5;
+  UINT8 lastSw5, retVal, laneMade;
   UINT8 swStatus[32];
-  int   read_count;
-
   UINT8 swMade[16];
 } locals;
 
@@ -477,46 +475,33 @@ static WRITE_HANDLER(mp2_out) {
 
 static READ_HANDLER(mp2_sw) {
   if (!offset) {
-    UINT8 retVal = 0x01; // returning 0 would halt the game!?
     int i;
-    for (i = 0; i < 32; i++) {
-      memory_region(REGION_CPU1)[0x23e0 + i] = core_getSw(1 + i) ? 0x80 : 0; // most switches are read using DMA
+    locals.retVal = locals.retVal == 0x01 ? 0x02 : 0x01;
+    if (!locals.swStatus[24] && core_getSw(25)) { // the outhole works like a flip-flop!
+      memory_region(REGION_CPU1)[0x23e0 + 24] ^= 0x80;
     }
     for (i = 0; i < 32; i++) {
-      if (core_getSw(1 + i)) {
-        if (!locals.swStatus[i]) {
-          locals.swStatus[i] = 1;
-          retVal = 0x02; // activates switch matrix scan
-          break;
-        } else if (locals.swStatus[i] == 1) {
-          locals.swStatus[i] = 2;
-          retVal = 0x02; // every switch needs at least two scans to register
-          break;
-        } else if (core_getSw(15) || core_getSw(19) || core_getSw(21) || core_getSw(25) || core_getSw(26) || core_getSw(28) || core_getSw(30)) {
-          // saucers and outhole need to keep the matrix scan active longer but eventually need to release again!?
-          if (locals.swStatus[i] > 2) { // means switch is still on but time ran out
-            break;
-          }
-          locals.read_count++;
-          if (locals.read_count < 201) { // pentacpt will not eject the ball from the right-hand saucer but keeps adding bonus over and over?!
-            retVal = 0x02; // keep switch closed
-          } else { // timeout reached
-            locals.swStatus[i] = 3;
-            locals.read_count = 0;
-          }
-          break;
-        }
-      } else if (locals.swStatus[i]) {
-        locals.swStatus[i] = 0;
-        locals.read_count = 0;
+      if (i != 24) {
+        memory_region(REGION_CPU1)[0x23e0 + i] = core_getSw(1 + i) ? 0x80 : 0; // most switches are read using DMA
       }
+      if (locals.laneMade > 4 && (i == 0 || i == 15 || i == 31)) { // lanes may only be triggered shortly
+        memory_region(REGION_CPU1)[0x23e0 + i] = 0;
+      }
+      if (core_getSw(1 + i)) {
+        if (i == 0 || i == 15 || i == 31) { // lanes block scoring for other lanes
+          if (locals.laneMade < 5) {
+            locals.laneMade++;
+          }
+        } else {
+          locals.laneMade = 0;
+        }
+      }
+      locals.swStatus[i] = core_getSw(1 + i);
     }
-    if (locals.lastSw5 != coreGlobals.swMatrix[5] || coreGlobals.swMatrix[5] & 0x02) {
-      locals.lastSw5 = coreGlobals.swMatrix[5];
-      retVal |= locals.lastSw5;
-      retVal &= 0xfe;
+    if (locals.lastSw5 != coreGlobals.swMatrix[5]) {
+      locals.retVal = locals.lastSw5 = coreGlobals.swMatrix[5];
     }
-    return retVal;
+    return locals.retVal;
   }
   return coreGlobals.swMatrix[6];
 }
@@ -528,7 +513,7 @@ static READ_HANDLER(mp2_dip) {
     case 3: // 00..70 cents
       return ~core_getDip(2);
     case 4: // 8+9 cents, 80+90 cents, coin, launch ball, show last score, endless tilt
-      return ~((core_getDip(5) & 0x03) | ((core_getDip(3) & 0x03) << 2) | (~coreGlobals.swMatrix[9] & 0xf0)) | (core_getDip(6) << 7); 
+      return ~((core_getDip(5) & 0x03) | ((core_getDip(3) & 0x03) << 2) | (~coreGlobals.swMatrix[9] & 0xf0)) | (core_getDip(1) << 7); 
     default: // real dips
       return ~core_getDip(0);
   }
@@ -566,10 +551,10 @@ MACHINE_DRIVER_START(pentacp2)
   MDRV_CPU_ADD_TAG("mcpu", 8085A, 1500000) // probably 3 MHz clock, internal /2 divider
   MDRV_CPU_MEMORY(mp2_readmem, mp2_writemem)
   MDRV_CPU_PORTS(mp2_readport, mp2_writeport)
-  MDRV_CPU_PERIODIC_INT(mp2_irq, 227) // timer @$219f runs in sync with this value
+  MDRV_CPU_PERIODIC_INT(mp2_irq, 227*2) // timer @$219f runs in sync with this value
   MDRV_CPU_VBLANK_INT(mp2_vblank, 1)
   MDRV_SWITCH_UPDATE(MICROPIN2)
-  MDRV_DIPS(49)
+  MDRV_DIPS(48)
   MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SOUND_ADD(DISCRETE, mp2_discInt)
@@ -608,6 +593,9 @@ INPUT_PORTS_START(pentacp2)
     COREPORT_DIPNAME( 0x0080, 0x0000, "S8")
       COREPORT_DIPSET(0x0000, "0" )
       COREPORT_DIPSET(0x0080, "1" )
+    COREPORT_DIPNAME( 0x0100, 0x0000, "Endless Tilt")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0100, DEF_STR(On))
   PORT_START /* 2 */
     COREPORT_DIPNAME( 0xffff, 0x0004, "10 cents x")
       COREPORT_DIPSET(0x0001, "0" )
@@ -632,10 +620,6 @@ INPUT_PORTS_START(pentacp2)
       COREPORT_DIPSET(0x0080, "7" )
       COREPORT_DIPSET(0x0100, "8" )
       COREPORT_DIPSET(0x0200, "9" )
-  PORT_START /* 4 */
-    COREPORT_DIPNAME( 0x0001, 0x0000, "Endless Tilt")
-      COREPORT_DIPSET(0x0000, DEF_STR(Off))
-      COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
 
 core_tLCDLayout mp2_disp[] = {
@@ -698,6 +682,10 @@ INPUT_PORTS_START(pentacpt)
     COREPORT_DIPNAME( 0x0080, 0x0000, "Credits / Token")
       COREPORT_DIPSET(0x0000, "1" )
       COREPORT_DIPSET(0x0080, "4" )
+    // pentacpt machines seem to hold bit 7 of port 4 high
+    COREPORT_DIPNAME( 0x0100, 0x0100, "Endless Tilt")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0100, DEF_STR(On))
   PORT_START /* 2 */
     COREPORT_DIPNAME( 0xffff, 0x0004, "10 cents x")
       COREPORT_DIPSET(0x0001, "0" )
@@ -722,11 +710,6 @@ INPUT_PORTS_START(pentacpt)
       COREPORT_DIPSET(0x0080, "7" )
       COREPORT_DIPSET(0x0100, "8" )
       COREPORT_DIPSET(0x0200, "9" )
-  PORT_START /* 4 */
-    // pentacpt machines seem to hold bit 7 of port 4 high
-    COREPORT_DIPNAME( 0x0001, 0x0001, "Endless Tilt")
-      COREPORT_DIPSET(0x0000, DEF_STR(Off))
-      COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
 
 core_tLCDLayout mpt_disp[] = {
@@ -766,4 +749,4 @@ ROM_START(pentacpt)
   ROM_LOAD("microt_3.bin", 0x1000, 0x0800, CRC(cefb0966) SHA1(836491745417fc0d5f88c01a9c69a5c322d194be))
   ROM_LOAD("microt_4.bin", 0x1800, 0x0800, CRC(6f691929) SHA1(a18352312706e0f0af14a33fac31c3f5f7156ba8))
 ROM_END
-CORE_CLONEDEFNV(pentacpt,pentacp2,"Pentacup (rev. T)",1980,"Micropin",pentacp2,0)
+CORE_CLONEDEFNV(pentacpt,pentacp2,"Pentacup (rev. T)",1980,"Micropin",pentacp2,GAME_NOT_WORKING) // until a solution is found for the collect bonus bug
