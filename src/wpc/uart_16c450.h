@@ -10,5 +10,6 @@
 #include "memory.h"
 
 // 16C450 emulation
+void uart_16c450_reset();
 data8_t uart_16c450_read(int reg);
 int uart_16c450_write(int reg, data8_t value);

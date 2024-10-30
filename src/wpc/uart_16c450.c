@@ -44,23 +44,34 @@ enum uart_16c450_reg {
     SCR = 7,
 };
 
-static data8_t reg_RBR, reg_THR, reg_IER, reg_IIR = 0x01, reg_LCR, 
-               reg_MCR, reg_LSR = 0x60, reg_MSR, reg_SCR;
-static data16_t reg_divisor;
-static data32_t byte_time_us;       // time (in uS) to send a byte at the current baudrate
+static struct {
+    data8_t reg_RBR;
+    //data8_t reg_THR;
+    data8_t reg_IER;
+    /*const*/ data8_t reg_IIR;
+    data8_t reg_LCR;
+    data8_t reg_MCR;
+    data8_t reg_LSR;
+    data8_t reg_MSR;
+    data8_t reg_SCR;
+
+    data16_t reg_divisor;
+    data32_t byte_time_us;       // time (in uS) to send a byte at the current baudrate
 
 #if EMULATE_TX_TIME
-static double THR_clear, TX_clear;
+    double THR_clear;
+    double TX_clear;
 #endif
+} locals;
 
-#define REGBIT(reg, bit)    ((reg_ ## reg >> bit) & 1)
+#define REGBIT(reg, bit)    ((locals.reg_ ## reg >> bit) & 1)
 
 #define ERBF    REGBIT(IER, 0)
 #define ETBE    REGBIT(IER, 1)
 #define ELSI    REGBIT(IER, 2)
 #define EDSSI   REGBIT(IER, 3)
 
-#define WLS     (reg_LCR & 0x03)
+#define WLS     (locals.reg_LCR & 0x03)
 #define STB     REGBIT(LCR, 2)
 #define PEN     REGBIT(LCR, 3)
 #define EPS     REGBIT(LCR, 4)
@@ -76,6 +87,17 @@ static double THR_clear, TX_clear;
 #define THRE    REGBIT(LSR, 5)
 #define TEMT    REGBIT(LSR, 6)
 
+
+void uart_16c450_reset()
+{
+    memset(&locals, 0, sizeof(locals));
+    locals.reg_IIR = 0x01; // const
+    locals.reg_LSR = 0x60;
+
+#if EMULATE_TX_TIME
+    THR_clear = TX_clear = timer_get_time();
+#endif
+}
 
 const char *uart_16c450_regname(int reg, int write)
 {
@@ -103,58 +125,52 @@ const char *uart_16c450_regname(int reg, int write)
 
 static data8_t update_LSR(void)
 {
-    int byte_read;
-
 #if EMULATE_TX_TIME
-    double now;
-
-    now = timer_get_time();
-    if (now > THR_clear) {
-        reg_LSR |= (1 << 5);        // set THRE (Transmit Holding Register Empty)
+    double now = timer_get_time();
+    if (now > locals.THR_clear) {
+        locals.reg_LSR |= (1 << 5);        // set THRE (Transmit Holding Register Empty)
     }
-    if (now > TX_clear) {
-        reg_LSR |= (1 << 6);        // set TEMPT (Transmitter Empty)
+    if (now > locals.TX_clear) {
+        locals.reg_LSR |= (1 << 6);        // set TEMPT (Transmitter Empty)
     }
 #else
     // We can accept another byte, so set both THRE and TEMPT.
-    reg_LSR |= ((1 << 5) | (1 << 6));
+    locals.reg_LSR |= ((1 << 5) | (1 << 6));
 #endif
 
     // If we don't already have a byte waiting in RBR, attempt to load one
     if (!DR) {
-        byte_read = uart_getch();
+        int byte_read = uart_getch();
         if (byte_read >= 0) {
-            reg_RBR = (data8_t) byte_read;
-            reg_LSR |= (1 << 0);    // set DR (Data Ready)
+            locals.reg_RBR = (data8_t) byte_read;
+            locals.reg_LSR |= (1 << 0);    // set DR (Data Ready)
         }
     }
 
-    return reg_LSR;
+    return locals.reg_LSR;
 }
 
 static void uart_send(data8_t value)
 {
 #if EMULATE_TX_TIME
-    double now;
-
     // Set up timers to simulate the time necessary to clear the Transmit Holding
     // Register and the actual transmitter shift register.
-    now = timer_get_time();
-    if (now > TX_clear) {
+    double now = timer_get_time();
+    if (now > locals.TX_clear) {
         // can go straight into transmitter
-        TX_clear = now + TIME_IN_USEC(byte_time_us);
-        reg_LSR &= ~(1 << 6);         // clear transmitter empty (TEMPT) bit
+        locals.TX_clear = now + TIME_IN_USEC(locals.byte_time_us);
+        locals.reg_LSR &= ~(1 << 6);         // clear transmitter empty (TEMPT) bit
     }
-    else if (now > THR_clear) {
+    else if (now > locals.THR_clear) {
         // Byte goes into Transmit Holding Register, then passed to transmitter once
         // it's done sending the current byte.
-        THR_clear = TX_clear;
+        locals.THR_clear = locals.TX_clear;
 
         // transmitter now has an extra byte to send
-        TX_clear += TIME_IN_USEC(byte_time_us);
+        locals.TX_clear += TIME_IN_USEC(locals.byte_time_us);
 
         // clear holding register & transmitter empty (THRE/TEMPT) bits
-        reg_LSR &= ~(1 << 5 | 1 << 6);              
+        locals.reg_LSR &= ~(1 << 5 | 1 << 6);
     }
     else {
         // record an error?  overwrite the outbound byte?
@@ -170,22 +186,22 @@ data8_t uart_16c450_read(int reg)
     //DEBUG_OUT("r %s\n", uart_16c450_regname(reg, 0));
 
     switch (reg) {
-    case IIR:       return reg_IIR;
-    case LCR:       return reg_LCR;
-    case MCR:       return reg_MCR;
+    case IIR:       return locals.reg_IIR;
+    case LCR:       return locals.reg_LCR;
+    case MCR:       return locals.reg_MCR;
     case LSR:       return update_LSR();
-    case MSR:       return reg_MSR;
-    case SCR:       return reg_SCR;
+    case MSR:       return locals.reg_MSR;
+    case SCR:       return locals.reg_SCR;
     default:
         if (DLAB) switch (reg) {
-        case DLL:   return reg_divisor >> 8;
-        case DLM:   return reg_divisor & 0xFF;
+        case DLL:   return locals.reg_divisor >> 8;
+        case DLM:   return locals.reg_divisor & 0xFF;
         }
         else switch (reg) {
         case RBR:   // read stored byte
-            reg_LSR &= ~0x01;       // clear data ready (DR) bit
-            return reg_RBR;
-        case IER:   return reg_IER;
+            locals.reg_LSR &= ~0x01;       // clear data ready (DR) bit
+            return locals.reg_RBR;
+        case IER:   return locals.reg_IER;
         }
     }
     DEBUG_OUT("uart: unhandled register\n");
@@ -194,56 +210,54 @@ data8_t uart_16c450_read(int reg)
 
 int uart_16c450_write(int reg, data8_t value)
 {
-    int baudrate;
-
     if (reg < 0 || reg > 7) {
         return -EINVAL;
     }
 //    DEBUG_OUT("w %s=0x%02x\n", uart_16c450_regname(reg, 1), value);
     switch (reg) {
     case LCR:
-        if ((reg_LCR & 0x40) != (value & 0x40)) {
+        if ((locals.reg_LCR & 0x40) != (value & 0x40)) {
             DEBUG_OUT(" uart %s break\n", (value & 0x40) ? "set" : "clear");
         }
-        if ((reg_LCR & 0x80) != (value & 0x80)) {
+        if ((locals.reg_LCR & 0x80) != (value & 0x80)) {
             DEBUG_OUT(" uart %s DLAB\n", (value & 0x80) ? "set" : "clear");
         }
-        reg_LCR = value;
+        locals.reg_LCR = value;
         DEBUG_OUT(" uart %u bits, %u stop, %s parity\n",
                   5 + WLS, 1 + STB,
                   PEN ? (MRKSPC ? (EPS ? "mark" : "space") : (EPS ? "even" : "odd")) : "no");
         break;
 
-    case MCR:       reg_MCR = value;    break;
+    case MCR:       locals.reg_MCR = value;    break;
     case LSR:
         // The line status register is intended for read operations only;
         // writing to this register is not recommended outside of a factory
         // testing environment.
-        //reg_LSR = value;   
+        //locals.reg_LSR = value;   
         break;
 
-    case MSR:       reg_MSR = value;    break;
-    case SCR:       reg_SCR = value;    break;
+    case MSR:       locals.reg_MSR = value;    break;
+    case SCR:       locals.reg_SCR = value;    break;
 
     default:
         if (DLAB) {
             switch (reg) {
             case DLL:
-                reg_divisor = (reg_divisor & 0xFF00) | value;
+                locals.reg_divisor = (locals.reg_divisor & 0xFF00) | value;
                 break;
             case DLM:
-                reg_divisor = (reg_divisor & 0x00FF) | (value << 8);
+                locals.reg_divisor = (locals.reg_divisor & 0x00FF) | (value << 8);
                 break;
             }
-            if (reg_divisor) {
+            if (locals.reg_divisor) {
                 // 2MHz system clock, 16x oversampling by UART
-                baudrate = 2000000 / (16 * reg_divisor);
+                int baudrate = 2000000 / (16 * locals.reg_divisor);
 
                 // estimate byte time based on 10 bits/byte (start + data + stop)
-                // (1,000,000 us/s) / (baudrate bits/s / 10 bits/byte) 
-                byte_time_us = 1000000 / (baudrate / 10);
+                // (1,000,000 us/s) / (baudrate bits/s / 10 bits/byte)
+                locals.byte_time_us = 1000000 / (baudrate / 10);
 
-                DEBUG_OUT("divisor=%u (%ubps)\n", reg_divisor, baudrate);
+                DEBUG_OUT("divisor=%u (%ubps)\n", locals.reg_divisor, baudrate);
 
                 // round baudrate to a multiple of 100 for our serial port
                 baudrate = ((baudrate + 50) / 100) * 100;
@@ -252,7 +266,7 @@ int uart_16c450_write(int reg, data8_t value)
         }
         else switch (reg) {
         case THR:   uart_send(value); break;
-        case IER:   reg_IER = value;    break;
+        case IER:   locals.reg_IER = value; break;
         }
     }
 

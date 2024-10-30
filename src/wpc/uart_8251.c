@@ -64,35 +64,42 @@
 #define STATUS_DSR          (1 >> 7)
 
 
-static int mode_loaded = 0;
+static struct {
+    int mode_loaded;
 
-static data8_t mode, command;
-static data8_t rx_byte;
-static data8_t status = (STATUS_DSR | STATUS_TX_READY | STATUS_TX_EMPTY);
-static int baud = 9600;
-static int rx_ready = 0;
+    data8_t mode;
+    data8_t command;
+    data8_t rx_byte;
+    data8_t status;
+    int baud;
+} locals;
+
+void uart_8251_reset()
+{
+    memset(&locals, 0, sizeof(locals));
+    locals.status = (STATUS_DSR | STATUS_TX_READY | STATUS_TX_EMPTY);
+    locals.baud = 9600;
+}
 
 data8_t uart_8251_read(int reg)
 {
-    int byte_read;
-
 //    DEBUG_OUT("r 0x%x\n", reg);
     switch (reg) {
     case REG_CTRL:
         // if we don't already have a byte ready, try to read one
-        if (!(status & STATUS_RX_READY)) {
-            byte_read = uart_getch();
+        if (!(locals.status & STATUS_RX_READY)) {
+            int byte_read = uart_getch();
             if (byte_read >= 0) {
-                rx_byte = (data8_t)byte_read;
-                status |= STATUS_RX_READY;
+                locals.rx_byte = (data8_t)byte_read;
+                locals.status |= STATUS_RX_READY;
             }
         }
         return status;
 
     case REG_DATA:
         // clear the RX_READY bit and return the buffered byte
-        status &= ~STATUS_RX_READY;
-        return rx_byte;
+        locals.status &= ~STATUS_RX_READY;
+        return locals.rx_byte;
     }
 
     // ROM should never read REG_BAUD.  We need a copy of the schematic to
@@ -104,18 +111,18 @@ int uart_8251_write(int reg, data8_t value)
 {
     switch (reg) {
         case REG_CTRL:
-            if (!mode_loaded) {
-                mode_loaded = 1;
-                mode = value;
-                DEBUG_OUT("mode=0x%02x\n", mode);
+            if (!locals.mode_loaded) {
+                locals.mode_loaded = 1;
+                locals.mode = value;
+                DEBUG_OUT("mode=0x%02x\n", locals.mode);
             }
             else {
-                command = value;
-                if (CMD_CHIP_RESET(command)) {
+                locals.command = value;
+                if (CMD_CHIP_RESET(locals.command)) {
                     // next write will set a new mode
-                    mode_loaded = 0;
+                    locals.mode_loaded = 0;
                 }
-                DEBUG_OUT("cmd=0x%02x\n", command);
+                DEBUG_OUT("cmd=0x%02x\n", locals.command);
             }
             break;
 
@@ -130,8 +137,8 @@ int uart_8251_write(int reg, data8_t value)
             break;
 
         case REG_BAUD:
-            baud = 9600 / (1 << value);
-            DEBUG_OUT("%ubps\n", baud);
+            locals.baud = 9600 / (1 << value);
+            DEBUG_OUT("%ubps\n", locals.baud);
             break;
     }
     return 0;

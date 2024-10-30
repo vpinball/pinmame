@@ -1186,6 +1186,9 @@ static MACHINE_INIT(wpc) {
 
 #ifdef PINMAME_HOST_UART
   if (pmoptions.serial_device != NULL) {
+    uart_16c450_reset();
+    uart_8251_reset();
+
     // use default baud rate; game will set a baud rate at startup
     if (uart_open(pmoptions.serial_device, 9600) < 0) {
       printf("serial_device: failed to open %s.\n", pmoptions.serial_device);
