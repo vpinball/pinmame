@@ -503,6 +503,9 @@ static READ_HANDLER(mp2_sw) {
     }
     return locals.retVal;
   }
+  if (coreGlobals.swMatrix[6]) {
+    locals.laneMade = 0;
+  }
   return coreGlobals.swMatrix[6];
 }
 
