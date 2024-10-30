@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "uart_8251.h"
 #include "uart_host.h"
@@ -94,7 +95,7 @@ data8_t uart_8251_read(int reg)
                 locals.status |= STATUS_RX_READY;
             }
         }
-        return status;
+        return locals.status;
 
     case REG_DATA:
         // clear the RX_READY bit and return the buffered byte
