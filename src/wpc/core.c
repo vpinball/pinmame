@@ -852,6 +852,7 @@ static PALETTE_INIT(core) {
 /------------------------------------*/
 #ifdef VPINMAME
 #  define inRect(r,l,t,w,h) FALSE
+void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame);
 #else /* VPINMAME */
 INLINE int inRect(const struct rectangle *r, int left, int top, int width, int height) {
   return (r->max_x >= left) && (r->max_y >= top) &&
@@ -1066,6 +1067,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             g_raw_dmdbuffer[i] = (UINT8)((int)AlphaNumericFrameBuffer[i] * 100 / 3);
           if (memcmp(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
             memcpy(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
+            core_dmd_capture_frame(128, 32, AlphaNumericFrameBuffer, 0, NULL);
             g_needs_DMD_update = 1;
           }
         #endif
@@ -3189,17 +3191,22 @@ void core_dmd_capture_frame(const int width, const int height, const UINT8* cons
     }
 
     // Bitplane frame combined from PWM pattern of raw frames
-    strcat_s(DumpFilename, MAX_PATH, ".txt");
-    f = fopen(DumpFilename, "a");
-    if (f) {
-      fprintf(f, "0x%08x\n", tick);
-      for (int jj = 0; jj < height; jj++) {
-        for (int ii = 0; ii < width; ii++)
-          fprintf(f, "%01x", dmdDotRaw[jj*width + ii]);
-        fprintf(f, "\n");
-      }
-      fprintf(f, "\n");
-      fclose(f);
+    static UINT8 lastCapture[DMD_MAXX * DMD_MAXY] = { 0 };
+    if (memcmp(lastCapture, dmdDotRaw, width * height) != 0)
+    {
+       memcpy(lastCapture, dmdDotRaw, width * height);
+       strcat_s(DumpFilename, MAX_PATH, ".txt");
+       f = fopen(DumpFilename, "a");
+       if (f) {
+          fprintf(f, "0x%08x\n", tick);
+          for (int jj = 0; jj < height; jj++) {
+             for (int ii = 0; ii < width; ii++)
+                fprintf(f, "%01x", dmdDotRaw[jj * width + ii]);
+             fprintf(f, "\n");
+          }
+          fprintf(f, "\n");
+          fclose(f);
+       }
     }
   }
 }
