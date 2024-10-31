@@ -51,9 +51,12 @@ layout_t layoutAlphanumericFrame(UINT64 gen, UINT16* seg_data, UINT16* seg_data_
 		case GEN_WPCALPHA_2:
 		case GEN_S11C:
 		case GEN_S11B2:
-			layout = __2x16Alpha;
-			if (strncasecmp(GameName, "rvrbt", 5) == 0)
+			if (strncasecmp(GameName, "rvrbt", 5) == 0) // Additional displays for Riverboat Gambler
 				layout = __1x16Alpha_1x16Num_1x7Num_1x4Num;
+			else if (strncasecmp(GameName, "polic", 5) == 0) // Police force has an additional display (jackpot)
+				layout = __1x7Num_1x16Alpha_1x16Num;
+			else
+				layout = __2x16Alpha;
 			break;
 		case GEN_S11:
 			layout = __6x4Num_4x1Num;
