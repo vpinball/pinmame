@@ -396,8 +396,6 @@ add_library(vpinmame SHARED
    src/wpc/degames.c
    src/wpc/desound.c
    src/wpc/desound.h
-   src/wpc/dmddevice.cpp
-   src/wpc/dmddevice.h
    src/wpc/driver.c
    src/wpc/efo.c
    src/wpc/efosnd.c
@@ -623,6 +621,7 @@ add_library(vpinmame SHARED
    src/win32com/Controller.rgs
    src/win32com/ControllerDisclaimerDlg.cpp
    src/win32com/ControllerDisclaimerDlg.h
+   src/win32com/ControllerDmdDevice.cpp
    src/win32com/ControllerGame.cpp
    src/win32com/ControllerGame.h
    src/win32com/ControllerGames.cpp

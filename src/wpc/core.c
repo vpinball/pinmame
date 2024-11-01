@@ -34,7 +34,6 @@
   #include <Windows.h>
  #endif
 
- #include "dmddevice.h"
  #include "../../ext/dmddevice/usbalphanumeric.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
@@ -853,12 +852,174 @@ static PALETTE_INIT(core) {
 #ifdef VPINMAME
 #  define inRect(r,l,t,w,h) FALSE
 void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame);
+
+// VPinMame function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
+// Note that this part of the header is not used externally of VPinMame (move it to something like core_dmdevice.h/core_dmddevice.c ?)
+extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
+extern void dmddeviceRenderDMDFrame(const int width, const int height, UINT8* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
+extern void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2, char* seg_dim);
+extern void dmddeviceFwdConsoleData(UINT8 data);
+extern void dmddeviceDeInit(void);
+
 #else /* VPINMAME */
 INLINE int inRect(const struct rectangle *r, int left, int top, int width, int height) {
   return (r->max_x >= left) && (r->max_y >= top) &&
          (r->min_x <= left + width) && (r->min_y <= top + height);
 }
 #endif /* VPINMAME */
+
+core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
+   // TODO this should be moved to the driver's definition, or MACHINE_INIT, setting it once and for all at machine startup from core_gameData->lcdLayout
+	core_segOverallLayout_t layout = CORE_SEGLAYOUT_None;
+
+	// switch to current game tech
+	switch(gen){
+		// williams
+		case GEN_S3:
+		case GEN_S3C:
+		case GEN_S4:
+		case GEN_S6:
+			layout = CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num;
+			if ((strncasecmp(GameName, "algar", 5) == 0) || // Sys6A with 7 digit displays
+				(strncasecmp(GameName, "alpok", 5) == 0) ||
+				(strncasecmp(GameName, "frpwr_b6", 8) == 0) ||
+				(strncasecmp(GameName, "frpwr_c6", 8) == 0))
+				layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7;
+			break;
+		case GEN_S7:
+			//CORE_SEGLAYOUT_2x7Num_4x1Num_1x16Alpha;		//!! hmm i did this for a reason??
+			layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7;
+			break;
+		case GEN_S9:
+			layout = CORE_SEGLAYOUT_2x7Num10_2x7Num10_4x1Num;
+			break;
+
+		case GEN_WPCALPHA_1:
+		case GEN_WPCALPHA_2:
+		case GEN_S11C:
+		case GEN_S11B2:
+			if (strncasecmp(GameName, "rvrbt", 5) == 0) // Additional displays for Riverboat Gambler
+				layout = CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num_1x4Num;
+			else if (strncasecmp(GameName, "polic", 5) == 0) // Police force has an additional display (jackpot)
+				layout = CORE_SEGLAYOUT_1x7Num_1x16Alpha_1x16Num;
+			else
+				layout = CORE_SEGLAYOUT_2x16Alpha;
+			break;
+		case GEN_S11:
+			layout = CORE_SEGLAYOUT_6x4Num_4x1Num;
+			break;
+		case GEN_S11X: // incl. GEN_S11A, GEN_S11B
+			switch(total_disp){
+				case 2:
+					layout = CORE_SEGLAYOUT_2x16Alpha;
+					break;
+				case 3:
+					layout = CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num;
+					break;
+				case 4:
+					layout = CORE_SEGLAYOUT_2x7Alpha_2x7Num;
+					break;
+				case 8:
+					layout = CORE_SEGLAYOUT_2x7Alpha_2x7Num_4x1Num;
+					break;
+			}
+			if (strncasecmp(GameName, "polic", 5) == 0)
+				layout = CORE_SEGLAYOUT_1x7Num_1x16Alpha_1x16Num;
+			break;
+
+		// dataeast
+		case GEN_DE:
+			switch(total_disp){
+				case 2:
+					layout = CORE_SEGLAYOUT_2x16Alpha;
+					break;
+				case 4:
+					layout = CORE_SEGLAYOUT_2x7Alpha_2x7Num;
+					break;
+				case 8:
+					layout = CORE_SEGLAYOUT_2x7Alpha_2x7Num_4x1Num;
+					break;
+			}
+			break;
+
+		// gottlieb
+		case GEN_GTS1:
+		case GEN_GTS80:
+			switch(disp_num_segs[0]){
+				case 6:
+					layout = CORE_SEGLAYOUT_2x6Num10_2x6Num10_4x1Num;
+					break;
+				case 7:
+					layout = CORE_SEGLAYOUT_2x7Num10_2x7Num10_4x1Num;
+					break;
+			}
+			break;
+		case GEN_GTS80B:
+		case GEN_GTS3:
+			layout = CORE_SEGLAYOUT_2x20Alpha;
+			break;
+
+		// stern
+		case GEN_STMPU100:
+		case GEN_STMPU200:
+			switch(disp_num_segs[0]){
+				case 6:
+					layout = CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num;
+					break;
+				case 7:
+					layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num;
+					break;
+			}
+			break;
+
+		// bally
+		case GEN_BY17:
+		case GEN_BY35:
+			// check for   total:8 = 6x6num + 4x1num
+			if(total_disp==8){
+				//!! ??
+			}else{
+				switch(disp_num_segs[0]){
+					case 6:
+						layout = CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num;
+						break;
+					case 7:
+                  if (strncasecmp(GameName, "medusa", 6) == 0)
+                     layout = CORE_SEGLAYOUT_2x7Num_2x7Num_10x1Num;
+						else
+							layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num;
+						break;
+				}
+			}
+			break;
+		case GEN_BY6803:
+		case GEN_BY6803A:
+			layout = CORE_SEGLAYOUT_4x7Num10;
+			break;
+		case GEN_BYPROTO:
+			layout = CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num;
+			break;
+
+		// hankin
+		case GEN_HNK:
+			layout = CORE_SEGLAYOUT_2x20Alpha;
+			break;
+
+		//!! unsupported so far:
+		// astro
+		case GEN_ASTRO:
+			break;
+		case GEN_BOWLING:
+			break;
+		// zaccaria
+		case GEN_ZAC1:
+			break;
+		case GEN_ZAC2:
+			break;
+	}
+
+	return layout;
+}
 
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout_array)
 {
@@ -1026,55 +1187,61 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     #endif
   }
 
-  // Sends segment data to dmddevice plugin
-  #ifdef VPINMAME
-    if(g_fShowPinDMD)
-      renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, n_seg_layouts, disp_num_segs, Machine->gamedrv->name);
-  #endif
-
-  // Render segments into a virtual DMD (at the moment only to pass easily to VP, e.g. tournament mode verification)
+  // Sends/Renders segment data
   #if defined(VPINMAME) || defined(LIBPINMAME)
     // Some GTS3 games like Teed Off update both empty alpha and real DMD. If a DMD frame has been seen, block this from running.
     if(!has_DMD_Video)
     {
-      static UINT16 seg_data2[CORE_SEGCOUNT] = {0};
-      const layout_t alpha_layout = layoutAlphanumericFrame(core_gameData->gen, seg_data, seg_data2, n_seg_layouts, disp_num_segs, Machine->gamedrv->name);
-      if (alpha_layout != __Invalid) {
-        memset(AlphaNumericFrameBuffer,0,sizeof(AlphaNumericFrameBuffer));
-        switch (alpha_layout) {
-          case __2x16Alpha: _2x16Alpha(seg_data); break;
-          case __2x20Alpha: _2x20Alpha(seg_data); break;
-          case __2x7Alpha_2x7Num: _2x7Alpha_2x7Num(seg_data); break;
-          case __2x7Alpha_2x7Num_4x1Num: _2x7Alpha_2x7Num_4x1Num(seg_data); break;
-          case __2x7Num_2x7Num_4x1Num: _2x7Num_2x7Num_4x1Num(seg_data); break;
-          case __2x7Num_2x7Num_10x1Num: _2x7Num_2x7Num_10x1Num(seg_data,seg_data2); break;
-          case __2x7Num_2x7Num_4x1Num_gen7: _2x7Num_2x7Num_4x1Num_gen7(seg_data); break;
-          case __2x7Num10_2x7Num10_4x1Num: _2x7Num10_2x7Num10_4x1Num(seg_data); break;
-          case __2x6Num_2x6Num_4x1Num: _2x6Num_2x6Num_4x1Num(seg_data); break;
-          case __2x6Num10_2x6Num10_4x1Num: _2x6Num10_2x6Num10_4x1Num(seg_data); break;
-          case __4x7Num10: _4x7Num10(seg_data); break;
-          case __6x4Num_4x1Num: _6x4Num_4x1Num(seg_data); break;
-          case __2x7Num_4x1Num_1x16Alpha: _2x7Num_4x1Num_1x16Alpha(seg_data); break;
-          case __1x16Alpha_1x16Num_1x7Num: _1x16Alpha_1x16Num_1x7Num(seg_data); break;
-          case __1x7Num_1x16Alpha_1x16Num: _1x7Num_1x16Alpha_1x16Num(seg_data); break;
-          case __1x16Alpha_1x16Num_1x7Num_1x4Num : _1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data); break;
-          default: break;
-        }
-        #ifdef VPINMAME
-          g_raw_dmdx = 128;
-          g_raw_dmdy = 32;
-          for (unsigned int i = 0; i < g_raw_dmdx * g_raw_dmdy; ++i)
-            g_raw_dmdbuffer[i] = (UINT8)((int)AlphaNumericFrameBuffer[i] * 100 / 3);
-          if (memcmp(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
-            memcpy(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
-            core_dmd_capture_frame(128, 32, AlphaNumericFrameBuffer, 0, NULL);
-            g_needs_DMD_update = 1;
-          }
-        #endif
+      // Identify alphaseg layout
+      const core_segOverallLayout_t alpha_layout = layoutAlphanumericFrame(core_gameData->gen, n_seg_layouts, disp_num_segs, Machine->gamedrv->name);
+      assert(alpha_layout != CORE_SEGLAYOUT_Invalid);
+
+      // Port of legacy hack that would call updateDisplay twice, once with the default display (4x7 and 2x2) then once for the additional display (3x2)
+      // Now, all of these are processed at once, but we still need to copy the data for external dmddevice.dll backward compatibility
+      static UINT16 seg_data2[CORE_SEGCOUNT] = { 0 };
+      if ((core_gameData->gen == GEN_BY35) && (disp_num_segs[0] == 7) && (strncasecmp(Machine->gamedrv->name, "medusa", 6) == 0))
+         memcpy(seg_data2, seg_data + 4 * 7 + 2 * 2, 3 * 2 * sizeof(UINT16));
+      
+      // Sends segment data to dmddevice plugin
+      #ifdef VPINMAME
+        if(g_fShowPinDMD)
+           dmddeviceRenderAlphanumericFrame(alpha_layout, seg_data, seg_data2, seg_dim);
+      #endif
+
+      // Render segments into a virtual DMD (at the moment only to pass easily to VP, e.g. tournament mode verification)
+      memset(AlphaNumericFrameBuffer,0,sizeof(AlphaNumericFrameBuffer));
+      switch (alpha_layout) {
+        case CORE_SEGLAYOUT_2x16Alpha: _2x16Alpha(seg_data); break;
+        case CORE_SEGLAYOUT_2x20Alpha: _2x20Alpha(seg_data); break;
+        case CORE_SEGLAYOUT_2x7Alpha_2x7Num: _2x7Alpha_2x7Num(seg_data); break;
+        case CORE_SEGLAYOUT_2x7Alpha_2x7Num_4x1Num: _2x7Alpha_2x7Num_4x1Num(seg_data); break;
+        case CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num: _2x7Num_2x7Num_4x1Num(seg_data); break;
+        case CORE_SEGLAYOUT_2x7Num_2x7Num_10x1Num: _2x7Num_2x7Num_10x1Num(seg_data,seg_data2); break;
+        case CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7: _2x7Num_2x7Num_4x1Num_gen7(seg_data); break;
+        case CORE_SEGLAYOUT_2x7Num10_2x7Num10_4x1Num: _2x7Num10_2x7Num10_4x1Num(seg_data); break;
+        case CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num: _2x6Num_2x6Num_4x1Num(seg_data); break;
+        case CORE_SEGLAYOUT_2x6Num10_2x6Num10_4x1Num: _2x6Num10_2x6Num10_4x1Num(seg_data); break;
+        case CORE_SEGLAYOUT_4x7Num10: _4x7Num10(seg_data); break;
+        case CORE_SEGLAYOUT_6x4Num_4x1Num: _6x4Num_4x1Num(seg_data); break;
+        case CORE_SEGLAYOUT_2x7Num_4x1Num_1x16Alpha: _2x7Num_4x1Num_1x16Alpha(seg_data); break;
+        case CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num: _1x16Alpha_1x16Num_1x7Num(seg_data); break;
+        case CORE_SEGLAYOUT_1x7Num_1x16Alpha_1x16Num: _1x7Num_1x16Alpha_1x16Num(seg_data); break;
+        case CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num_1x4Num : _1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data); break;
+        default: break;
       }
-      #ifdef LIBPINMAME
+      #ifdef VPINMAME
+        g_raw_dmdx = 128;
+        g_raw_dmdy = 32;
+        for (unsigned int i = 0; i < g_raw_dmdx * g_raw_dmdy; ++i)
+          g_raw_dmdbuffer[i] = (UINT8)((int)AlphaNumericFrameBuffer[i] * 100 / 3);
+        if (memcmp(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
+          memcpy(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
+          core_dmd_capture_frame(128, 32, AlphaNumericFrameBuffer, 0, NULL);
+          g_needs_DMD_update = 1;
+        }
+      #elif defined(LIBPINMAME)
         static struct core_dispLayout segDmdDispLayout = { 0, 0, 32, 128, CORE_DMD | CORE_DMDSEG, NULL, NULL };
-        libpinmame_update_display(display_index, &segDmdDispLayout, alpha_layout != __Invalid ? AlphaNumericFrameBuffer : NULL);
+        libpinmame_update_display(display_index, &segDmdDispLayout, AlphaNumericFrameBuffer);
         display_index++;
       #endif
     }
@@ -1971,7 +2138,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-    pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
+    dmddeviceInit(g_szGameName, core_gameData->gen, &pmoptions);
 #endif
 
   /*-- Generate LUTs for VPinMame DMD --*/
@@ -2039,7 +2206,7 @@ static MACHINE_STOP(core) {
 #ifdef VPINMAME
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
-    pindmdDeInit();
+   dmddeviceDeInit();
 #endif
 #if defined(VPINMAME) || defined(LIBPINMAME)
   g_raw_dmdx = ~0u;
@@ -3133,14 +3300,16 @@ void core_dmd_render_lpm(const int width, const int height, const UINT8* const d
 void core_dmd_render_dmddevice(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw, const int isDMD2) {
   if (g_fShowPinDMD) {
     const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-    renderDMDFrame(width, height, dmdDotLum, dmdDotRaw, raw_dmd_frame_count, raw_dmd_frames, isStrikeNSpares ? (isDMD2 ? 2 : 1) : 3);
+    dmddeviceRenderDMDFrame(width, height, dmdDotLum, dmdDotRaw, raw_dmd_frame_count, raw_dmd_frames, isStrikeNSpares ? (isDMD2 ? 2 : 1) : 3);
   }
 }
 #endif
 
 // Save main DMD bitplane and raw frames to a capture file
-// TODO this is disabled for Strikes'n Spares which has 2 DMDs
-// TODO not sure why frame capture is performed if dmddevice is enabled simultaneously with virtual DMD. Remove it ?
+// DMD frame capture can be enabled either by:
+// - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
+// - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMame rendering) simultaneously
+// TODO this is not yet implemented for Strikes'n Spares which has 2 DMDs
 #ifdef VPINMAME
 void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
   const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
@@ -3242,10 +3411,10 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
     if (isMainDMD) {
+      has_DMD_Video = 1;
       core_dmd_render_vpm(layout->length, layout->start, dmdDotLum);
       core_dmd_render_dmddevice(layout->length, layout->start, dmdDotLum, dmdDotRaw, layout->top != 0);
       core_dmd_capture_frame(layout->length, layout->start, dmdDotRaw, raw_dmd_frame_count ,raw_dmd_frames);
-      has_DMD_Video = 1;
     }
   
   #elif defined(PINMAME)
