@@ -15,9 +15,9 @@
 #ifdef _MSC_VER
 #include <intrin.h>
 #ifdef _M_ARM64
-#include <armintr.h>
+#include <arm64intr.h>
 #endif
-#elif !defined(__aarch64__)
+#elif (defined(__x86_64__) || defined(__i386__))
 #include <x86intrin.h>
 #endif
 
@@ -609,7 +609,7 @@ INLINE unsigned int swap_byteorder_32(unsigned int x)
 INLINE unsigned char __brevnyb(unsigned char i)
 {
 #if defined(_M_ARM64) && defined(_MSC_VER)
-    return _arm_rbit(i) >> 28;
+    return __rbit(i) >> 28;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit(i) >> 28;
 #elif defined(__clang__)
@@ -624,7 +624,7 @@ INLINE unsigned char __brevnyb(unsigned char i)
 INLINE unsigned char __brevc(unsigned char i)
 {
 #if defined(_M_ARM64) && defined(_MSC_VER)
-    return _arm_rbit(i) >> 24;
+    return __rbit(i) >> 24;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit(i) >> 24;
 #elif defined(__clang__)
@@ -641,7 +641,7 @@ INLINE unsigned char __brevc(unsigned char i)
 INLINE unsigned short __brev14(unsigned short i)
 {
 #if defined(_M_ARM64) && defined(_MSC_VER)
-    return _arm_rbit(i) >> 18;
+    return __rbit(i) >> 18;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit(i) >> 18;
 #elif defined(__clang__)
@@ -657,7 +657,7 @@ INLINE unsigned short __brev14(unsigned short i)
 INLINE unsigned short __brevs(unsigned short i)
 {
 #if defined(_M_ARM64) && defined(_MSC_VER)
-    return _arm_rbit(i) >> 16;
+    return __rbit(i) >> 16;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet //!! use arm_acle.h ? __rev or something?
     return __builtin_arm_rbit(i) >> 16;
 #elif defined(__clang__)
@@ -673,7 +673,7 @@ INLINE unsigned short __brevs(unsigned short i)
 INLINE unsigned int __brev(unsigned int i)
 {
 #if defined(_M_ARM64) && defined(_MSC_VER)
-    return _arm_rbit(i);
+    return __rbit(i);
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet //!! use arm_acle.h ? __rev or something?
     return __builtin_arm_rbit(i);
 #elif defined(__clang__)
@@ -700,9 +700,9 @@ INLINE unsigned int __brev(unsigned int i)
 INLINE unsigned long long __brevll(unsigned long long i)
 {
 #if defined(_M_ARM64) && defined(_MSC_VER)
-    return ((unsigned long long)_arm_rbit(i & 0xFFFFFFFFull) << 32) | _arm_rbit(i >> 32);
+    return __rbitll(i);
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
-    return ((unsigned long long)__builtin_arm_rbit(i & 0xFFFFFFFFull) << 32) | __builtin_arm_rbit(i >> 32);
+    return __builtin_arm_rbit64(i);
 #elif defined(__clang__)
     return __builtin_bitreverse64(i);
 #else
