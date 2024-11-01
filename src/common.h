@@ -14,6 +14,8 @@
 
 #ifdef _MSC_VER
 #include <intrin.h>
+#elif !defined(__aarch64__)
+#include <x86intrin.h>
 #endif
 
 #include "hash.h"
@@ -532,10 +534,9 @@ INLINE unsigned long long rotl_64(const unsigned long long x, const unsigned int
 {
 #ifdef _MSC_VER
     return _rotl64(x, count);
-#elif defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__)
+#elif !defined(__aarch64__) && (defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__))
     return __rolq(x, count);
 #else
-    //count &= 63;
     return (x<<count) | (x>>( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
 #endif
 }
@@ -555,7 +556,7 @@ INLINE unsigned long long rotr_64(const unsigned long long x, const unsigned int
 {
 #ifdef _MSC_VER
     return _rotr64(x, count);
-#elif defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__)
+#elif !defined(__aarch64__) && (defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__))
     return __rorq(x, count);
 #else
     return (x>>count) | (x<<( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
@@ -568,7 +569,6 @@ INLINE unsigned int rotr_32(const unsigned int x, const unsigned int count)
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
     return _rotr(x, count);
 #else
-    //count &= 31;
     return (x>>count) | (x<<( (unsigned int)(-(int)count)&31 )); // -count&31 instead of 32-count to handle count==0
 #endif
 }
