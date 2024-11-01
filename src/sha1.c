@@ -76,12 +76,8 @@ void WRITE_UINT32(unsigned char* data, uint32_t val)
 #define h3init  0x10325476L
 #define h4init  0xC3D2E1F0L
 
-/* 32-bit rotate left - kludged with shifts */
-#ifdef _MSC_VER
-#define ROTL(n,X)  _lrotl(X, n)
-#else
-#define ROTL(n,X)  ( ( (X) << (n) ) | ( (X) >> ( 32 - (n) ) ) )
-#endif
+/* 32-bit rotate left */
+#define ROTL(n,X) rotl_32(X, n)
 
 /* The initial expanding function.  The hash function is defined over an
    80-word expanded input array W, where the first 16 are copies of the input

@@ -218,11 +218,13 @@ const UINT16 core_ascii2seg16s[] = {
   /* 0x78-0x7f */ 0x02ff, 0x06ff, 0x0eff, 0x1eff, 0x3eff, 0x7eff, 0xfeff, 0xffff, // all segments, accumulating
 };
 
+#if !(defined(_M_ARM64) || defined(__aarch64__))
 /* makes it easier to swap bits */
                               // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
 const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
-/* Palette */
+#endif
 
+/* Palette */
 static const unsigned char core_palette[48+COL_COUNT][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */

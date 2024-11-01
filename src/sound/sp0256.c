@@ -633,28 +633,12 @@ static const INT16 sp0256_df_idx[16 * 8] =
 /* ======================================================================== */
 /*  BITREV32       -- Bit-reverse a 32-bit number.                            */
 /* ======================================================================== */
-INLINE UINT32 bitrev32(UINT32 val)
-{
-    val = ((val & 0xFFFF0000) >> 16) | ((val & 0x0000FFFF) << 16);
-    val = ((val & 0xFF00FF00) >>  8) | ((val & 0x00FF00FF) <<  8);
-    val = ((val & 0xF0F0F0F0) >>  4) | ((val & 0x0F0F0F0F) <<  4);
-    val = ((val & 0xCCCCCCCC) >>  2) | ((val & 0x33333333) <<  2);
-    val = ((val & 0xAAAAAAAA) >>  1) | ((val & 0x55555555) <<  1);
-
-    return val;
-}
+#define bitrev32 __brev
 
 /* ======================================================================== */
 /*  BITREV8       -- Bit-reverse a 8-bit number.                            */
 /* ======================================================================== */
-INLINE UINT8 bitrev8(UINT8 val)
-{
-    val = ((val & 0xF0) >>  4) | ((val & 0x0F) <<  4);
-    val = ((val & 0xCC) >>  2) | ((val & 0x33) <<  2);
-    val = ((val & 0xAA) >>  1) | ((val & 0x55) <<  1);
-
-    return val;
-}
+#define bitrev8 __brevc
 
 /* ======================================================================== */
 /*  BITREVBUFF       -- Bit-reverse a buffer.                               */

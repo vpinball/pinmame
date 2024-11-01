@@ -2035,24 +2035,9 @@ UINT32 dcs_speedup(UINT32 pc) {
 }
 
 
-/*static UINT16 reverse_bits(UINT16 b)
-{
-    return ((b >> 13) & 0x0001)
-        | ((b >> 11) & 0x0002)
-        | ((b >> 9)  & 0x0004)
-        | ((b >> 7)  & 0x0008)
-        | ((b >> 5)  & 0x0010)
-        | ((b >> 3)  & 0x0020)
-        | ((b >> 1)  & 0x0040)
-        | ((b << 1)  & 0x0080)
-        | ((b << 3)  & 0x0100)
-        | ((b << 5)  & 0x0200)
-        | ((b << 7)  & 0x0400)
-        | ((b << 9)  & 0x0800)
-        | ((b << 11) & 0x1000)
-        | ((b << 13) & 0x2000);
-}*/
-
+#if defined(_M_ARM64) || defined(__aarch64__)
+#define reverse_bits __brev14
+#else
 static const UINT16 reverse_table[0x2008] = {
 	0x0, 0x2000, 0x1000, 0x3000, 0x800, 0x2800, 0x1800, 0x3800, 0x400, 0x2400, 0x1400, 0x3400, 0xC00, 0x2C00, 0x1C00, 0x3C00,
 	0x200, 0x2200, 0x1200, 0x3200, 0xA00, 0x2A00, 0x1A00, 0x3A00, 0x600, 0x2600, 0x1600, 0x3600, 0xE00, 0x2E00, 0x1E00, 0x3E00,
@@ -2569,6 +2554,7 @@ static const UINT16 reverse_table[0x2008] = {
 	0x1, 0x2001, 0x1001, 0x3001, 0x801, 0x2801, 0x1801, 0x3801 };
 
 #define reverse_bits(b) reverse_table[b]
+#endif
 
 /*
  *   Speedup for DCS games from 1993.  This is a special version of the

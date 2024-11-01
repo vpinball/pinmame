@@ -515,6 +515,203 @@ void printromlist(const struct RomModule *romp,const char *name);
 		 (BIT(val, B0) <<  0))
 
 
+/***************************************************************************
+
+	Useful functions to deal with bit rotations/byte swaps/bit reversals
+
+***************************************************************************/
+
+// cyclic left shift, aka <<<
+INLINE unsigned long long rotl_64(const unsigned long long x, const unsigned int count)
+{
+#ifdef _MSC_VER
+    return _rotl64(x, count);
+#elif defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__)
+    return __rolq(x, count);
+#else
+    //count &= 63;
+    return (x<<count) | (x>>( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
+#endif
+}
+
+INLINE unsigned int rotl_32(const unsigned int x, const unsigned int count)
+{
+    //assert(count < 32);
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+    return _rotl(x, count);
+#else
+    return (x<<count) | (x>>( (unsigned int)(-(int)count)&31 )); // -count&31 instead of 32-count to handle count==0
+#endif
+}
+
+// cyclic right shift, aka >>>
+INLINE unsigned long long rotr_64(const unsigned long long x, const unsigned int count)
+{
+#ifdef _MSC_VER
+    return _rotr64(x, count);
+#elif defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__)
+    return __rorq(x, count);
+#else
+    return (x>>count) | (x<<( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
+#endif
+}
+
+INLINE unsigned int rotr_32(const unsigned int x, const unsigned int count)
+{
+    //assert(count < 32);
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+    return _rotr(x, count);
+#else
+    //count &= 31;
+    return (x>>count) | (x<<( (unsigned int)(-(int)count)&31 )); // -count&31 instead of 32-count to handle count==0
+#endif
+}
+
+//
+
+INLINE unsigned long long swap_byteorder(unsigned long long x)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_bswap64(x);
+#elif defined(_MSC_VER)
+    return _byteswap_uint64(x);
+#else
+    x = ((x <<  8) & 0xFF00FF00FF00FF00ull) | ((x >>  8) & 0x00FF00FF00FF00FFull);
+    x = ((x << 16) & 0xFFFF0000FFFF0000ull) | ((x >> 16) & 0x0000FFFF0000FFFFull);
+    return (x << 32) | (x >> 32);
+#endif
+}
+
+INLINE unsigned int swap_byteorder(unsigned int x)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_bswap32(x);
+#elif defined(_MSC_VER)
+    return _byteswap_ulong(x);
+#else
+    x = ((x << 8) & 0xFF00FF00u) | ((x >> 8) & 0xFF00FFu);
+    return (x << 16) | (x >> 16);
+#endif
+}
+
+//
+
+// input limited to 0..15! (slower than using a lookup table)
+INLINE unsigned char __brevnyb(unsigned char i)
+{
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return _arm_rbit(i) >> 28;
+#elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
+    return __builtin_arm_rbit(i) >> 28;
+#elif defined(__clang__)
+    return __builtin_bitreverse32(i) >> 28;
+#else
+    i = ((i >> 1) & 0x5u) | ((i & 0x5u)*2);
+    return (i*4 | (i >> 2)) & 0xfu;
+#endif
+}
+
+// (slower than using a small lookup table)
+INLINE unsigned char __brevc(unsigned char i)
+{
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return _arm_rbit(i) >> 24;
+#elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
+    return __builtin_arm_rbit(i) >> 24;
+#elif defined(__clang__)
+    return __builtin_bitreverse8(i);
+#else
+    i = ((i >> 1) & 0x55u) | ((i & 0x55u)*2);
+    i = ((i >> 2) & 0x33u) | ((i & 0x33u)*4);
+    return i*16 | (i >> 4);
+    //return (unsigned char)((((i * 0x80200802ull) & 0x0884422110ull) * 0x0101010101ull) >> 32);
+#endif
+}
+
+// input limited to 14bits!
+INLINE unsigned short __brev14(unsigned short i)
+{
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return _arm_rbit(i) >> 18;
+#elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
+    return __builtin_arm_rbit(i) >> 18;
+#elif defined(__clang__)
+    return __builtin_bitreverse32(i) >> 18;
+#else
+    i = ((i >> 1) & 0x5555u) | ((i & 0x5555u)*2);
+    i = ((i >> 2) & 0x3333u) | ((i & 0x3333u)*4);
+    i = ((i >> 4) & 0x0f0fu) | ((i & 0x0f0fu)*16);
+    return i*64 | (i >> 10);
+#endif
+}
+
+INLINE unsigned short __brevs(unsigned short i)
+{
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return _arm_rbit(i) >> 16;
+#elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet //!! use arm_acle.h ? __rev or something?
+    return __builtin_arm_rbit(i) >> 16;
+#elif defined(__clang__)
+    return __builtin_bitreverse16(i);
+#else
+    i = ((i >> 1) & 0x5555u) | ((i & 0x5555u)*2);
+    i = ((i >> 2) & 0x3333u) | ((i & 0x3333u)*4);
+    i = ((i >> 4) & 0x0f0fu) | ((i & 0x0f0fu)*16);
+    return i*256 | (i >> 8);
+#endif
+}
+
+INLINE unsigned int __brev(unsigned int i)
+{
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return _arm_rbit(i);
+#elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet //!! use arm_acle.h ? __rev or something?
+    return __builtin_arm_rbit(i);
+#elif defined(__clang__)
+    return __builtin_bitreverse32(i);
+#else
+    /*i = i*65536 | (i >> 16);
+    i =    ((i & 0x00ff00ffu)*256)  | ((i & 0xff00ff00u) >> 8);
+    i =    ((i & 0x0f0f0f0fu)*16)   | ((i & 0xf0f0f0f0u) >> 4);
+    i =    ((i & 0x33333333u)*4)    | ((i & 0xccccccccu) >> 2);
+    return ((i & 0x55555555u)*2) | ((i & 0xaaaaaaaau) >> 1);*/
+    /*i = ((i >> 1) & 0x55555555u) | ((i & 0x55555555u)*2);
+    i = ((i >> 2) & 0x33333333u) | ((i & 0x33333333u)*4);
+    i = ((i >> 4) & 0x0f0f0f0fu) | ((i & 0x0f0f0f0fu)*16);
+    i = ((i >> 8) & 0x00ff00ffu) | ((i & 0x00ff00ffu)*256);
+    return i*65536 | (i >> 16);*/
+    i = rotr_32(i & 0xaaaaaaaau, 2) | (i & 0x55555555u);
+    i = rotr_32(i & 0x66666666u, 4) | (i & 0x99999999u);
+    i = rotr_32(i & 0x1e1e1e1eu, 8) | (i & 0xe1e1e1e1u);
+    i = rotl_32(i, 7);
+    return swap_byteorder(i);
+#endif
+}
+
+INLINE unsigned long long __brevll(unsigned long long i)
+{
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return ((unsigned long long)_arm_rbit(i & 0xFFFFFFFFull) << 32) | _arm_rbit(i >> 32);
+#elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
+    return ((unsigned long long)__builtin_arm_rbit(i & 0xFFFFFFFFull) << 32) | __builtin_arm_rbit(i >> 32);
+#elif defined(__clang__)
+    return __builtin_bitreverse64(i);
+#else
+    /*i = (i << 32) | (i >> 32);
+    i =    ((i & 0x0000ffff0000ffffull)*65536) | ((i & 0xffff0000ffff0000ull) >> 16);
+    i =    ((i & 0x00ff00ff00ff00ffull) * 256) | ((i & 0xff00ff00ff00ff00ull) >>  8);
+    i =    ((i & 0x0f0f0f0f0f0f0f0full) *  16) | ((i & 0xf0f0f0f0f0f0f0f0ull) >>  4);
+    i =    ((i & 0x3333333333333333ull) *   4) | ((i & 0xccccccccccccccccull) >>  2);
+    return ((i & 0x5555555555555555ull) *   2) | ((i & 0xaaaaaaaaaaaaaaaaull) >>  1);*/
+    i = rotr_64(i & 0xaaaaaaaaaaaaaaaaull, 2) | (i & 0x5555555555555555ull);
+    i = rotr_64(i & 0x6666666666666666ull, 4) | (i & 0x9999999999999999ull);
+    i = rotr_64(i & 0x1e1e1e1e1e1e1e1eull, 8) | (i & 0xe1e1e1e1e1e1e1e1ull);
+    i = rotl_64(i, 7);
+    return swap_byteorder(i);
+#endif
+}
+
+
 #ifdef __cplusplus
 }
 #endif

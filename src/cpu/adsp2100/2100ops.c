@@ -527,7 +527,11 @@ INLINE void data_write_dag1(UINT32 op, INT32 val)
 
 	if ( adsp2100.mstat & MSTAT_REVERSE )
 	{
+#if defined(_M_ARM64) || defined(__aarch64__)
+		UINT32 ir = __brev14( i & 0x3fff );
+#else
 		UINT32 ir = reverse_table[ i & 0x3fff ];
+#endif
 		WWORD_DATA(ir, val);
 	}
 	else
@@ -552,7 +556,11 @@ INLINE UINT32 data_read_dag1(UINT32 op)
 
 	if (adsp2100.mstat & MSTAT_REVERSE)
 	{
+#if defined(_M_ARM64) || defined(__aarch64__)
+		UINT32 ir = __brev14(i & 0x3fff);
+#else
 		UINT32 ir = reverse_table[i & 0x3fff];
+#endif
 		res = RWORD_DATA(ir);
 	}
 	else
