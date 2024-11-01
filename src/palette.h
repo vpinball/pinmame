@@ -73,6 +73,9 @@
 #pragma once
 #endif
 
+#include "osd_cpu.h"
+#include "memory.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

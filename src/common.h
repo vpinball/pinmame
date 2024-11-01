@@ -12,7 +12,13 @@
 #pragma once
 #endif
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #include "hash.h"
+#include "palette.h"
+#include "fileio.h"
 
 #ifdef __cplusplus
 extern "C" {
