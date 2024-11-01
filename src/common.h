@@ -569,7 +569,7 @@ INLINE unsigned int rotr_32(const unsigned int x, const unsigned int count)
 
 //
 
-INLINE unsigned long long swap_byteorder(unsigned long long x)
+INLINE unsigned long long swap_byteorder_64(unsigned long long x)
 {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap64(x);
@@ -582,7 +582,7 @@ INLINE unsigned long long swap_byteorder(unsigned long long x)
 #endif
 }
 
-INLINE unsigned int swap_byteorder(unsigned int x)
+INLINE unsigned int swap_byteorder_32(unsigned int x)
 {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap32(x);
@@ -684,7 +684,7 @@ INLINE unsigned int __brev(unsigned int i)
     i = rotr_32(i & 0x66666666u, 4) | (i & 0x99999999u);
     i = rotr_32(i & 0x1e1e1e1eu, 8) | (i & 0xe1e1e1e1u);
     i = rotl_32(i, 7);
-    return swap_byteorder(i);
+    return swap_byteorder_32(i);
 #endif
 }
 
@@ -707,7 +707,7 @@ INLINE unsigned long long __brevll(unsigned long long i)
     i = rotr_64(i & 0x6666666666666666ull, 4) | (i & 0x9999999999999999ull);
     i = rotr_64(i & 0x1e1e1e1e1e1e1e1eull, 8) | (i & 0xe1e1e1e1e1e1e1e1ull);
     i = rotl_64(i, 7);
-    return swap_byteorder(i);
+    return swap_byteorder_64(i);
 #endif
 }
 
