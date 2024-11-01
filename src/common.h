@@ -14,6 +14,9 @@
 
 #ifdef _MSC_VER
 #include <intrin.h>
+#ifdef _M_ARM64
+#include <armintr.h>
+#endif
 #elif !defined(__aarch64__)
 #include <x86intrin.h>
 #endif
