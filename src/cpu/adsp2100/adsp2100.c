@@ -114,6 +114,7 @@
 #  include "cpuexec.h"
 #endif /* WPCDCSSPEEDUP */
 #include "mamedbg.h"
+#include "common.h"
 #include "adsp2100.h"
 
 
