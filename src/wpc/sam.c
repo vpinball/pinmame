@@ -40,7 +40,7 @@
 #include "mech.h"
 
 #if defined(VPINMAME)
-#include "dmddevice.h"
+extern void dmddeviceFwdConsoleData(UINT8 data);
 #elif defined(LIBPINMAME)
 extern void libpinmame_forward_console_data(void* data, int size);
 #endif
@@ -1676,7 +1676,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			//console messages
 #if defined(VPINMAME)
 			while(size--)
-				FwdConsoleData((*(data++)));
+				dmddeviceFwdConsoleData((*(data++)));
 #elif defined(LIBPINMAME)
 			libpinmame_forward_console_data(data, size);
 #endif

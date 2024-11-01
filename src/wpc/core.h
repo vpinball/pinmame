@@ -227,6 +227,28 @@ struct core_dispLayout {
   const struct core_dispLayout *lptr;	// for DISP_SEG_IMPORT(x) with flag CORE_IMPORT
 };
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
+// Overall alphanumeric display layout. Used externally by VPinMame's dmddevice. Don't change order
+typedef enum {
+   CORE_SEGLAYOUT_None,
+   CORE_SEGLAYOUT_2x16Alpha,
+   CORE_SEGLAYOUT_2x20Alpha,
+   CORE_SEGLAYOUT_2x7Alpha_2x7Num,
+   CORE_SEGLAYOUT_2x7Alpha_2x7Num_4x1Num,
+   CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num,
+   CORE_SEGLAYOUT_2x7Num_2x7Num_10x1Num,
+   CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7,
+   CORE_SEGLAYOUT_2x7Num10_2x7Num10_4x1Num,
+   CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num,
+   CORE_SEGLAYOUT_2x6Num10_2x6Num10_4x1Num,
+   CORE_SEGLAYOUT_4x7Num10,
+   CORE_SEGLAYOUT_6x4Num_4x1Num,
+   CORE_SEGLAYOUT_2x7Num_4x1Num_1x16Alpha,
+   CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num,
+   CORE_SEGLAYOUT_1x7Num_1x16Alpha_1x16Num,
+   CORE_SEGLAYOUT_1x16Alpha_1x16Num_1x7Num_1x4Num,
+   CORE_SEGLAYOUT_Invalid
+} core_segOverallLayout_t;
+
 
 #define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
 typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);

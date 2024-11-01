@@ -1202,7 +1202,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\wpc\dedmd.c" />
     <ClCompile Include="..\src\wpc\degames.c" />
     <ClCompile Include="..\src\wpc\desound.c" />
-    <ClCompile Include="..\src\wpc\dmddevice.cpp" />
     <ClCompile Include="..\src\wpc\driver.c" />
     <ClCompile Include="..\src\wpc\efo.c" />
     <ClCompile Include="..\src\wpc\efosnd.c" />
@@ -1360,6 +1359,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\win32com\Alias.cpp" />
     <ClCompile Include="..\src\win32com\Controller.cpp" />
     <ClCompile Include="..\src\win32com\ControllerDisclaimerDlg.cpp" />
+    <ClCompile Include="..\src\win32com\ControllerDmdDevice.cpp" />
     <ClCompile Include="..\src\win32com\ControllerGame.cpp" />
     <ClCompile Include="..\src\win32com\ControllerGames.cpp" />
     <ClCompile Include="..\src\win32com\ControllerGameSettings.cpp" />
@@ -1574,7 +1574,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="..\src\wpc\core.h" />
     <ClInclude Include="..\src\wpc\dedmd.h" />
     <ClInclude Include="..\src\wpc\desound.h" />
-    <ClInclude Include="..\src\wpc\dmddevice.h" />
     <ClInclude Include="..\src\wpc\gen.h" />
     <ClInclude Include="..\src\wpc\gp.h" />
     <ClInclude Include="..\src\wpc\gpsnd.h" />

@@ -61,18 +61,32 @@ extern "C"
 {
 #endif
 
+// ----- External device setup
 DMDDEV int Open();
 DMDDEV bool Close();
 DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100);
 DMDDEV void Set_16_Colors_Palette(rgb24 *color);
 DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options);
+
+// ----- Main DMD display data
+// Render_Lum_And_Raw was added in later revision of this interface and superseeds the deprecated Render_xx_Shades and Render_xx_Shades_with_Raw.
+// The host will check if the newer API is implemented. If so, it will only call the new API.
+// Render_xx_Shades_with_Raw were variants introduced for better frame identification. They are deprecated in favor of Render_Lum_And_Raw
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
 //!! DMDDEV void Render_4_Shades_with_Raw(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
 //!! DMDDEV void Render_16_Shades_with_Raw(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer);
+//!! DMDDEV void Render_Lum_And_Raw(UINT16 width, UINT16 height, UINT8 *lumBuffer, UINT8 *identifyBuffer, UINT32 noOfRawFrames, UINT8 *rawFrames);
+
+// ----- Alphanumeric segment data
+// Render_PM_Alphanumeric_Dim_Frame was added in later revision of this interface and superseeds the deprecated Render_PM_Alphanumeric_Frame.
+// The host will check if the newer API is implemented. If so, it will only call the new API.
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 //!! DMDDEV void Render_PM_Alphanumeric_Dim_Frame(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2);
+
+// ----- Console input.output
+// This is implemented for SAM hardware. Input pointer was added in latest revision of this interface
 DMDDEV void Console_Data(UINT8 data);
 //!! DMDDEV void Console_Input_Ptr(Console_Input_t ptr);
 

@@ -1205,6 +1205,9 @@
     <ClCompile Include="..\src\win32com\ControllerDisclaimerDlg.cpp">
       <Filter>Source Files\VPinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\win32com\ControllerDmdDevice.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\win32com\ControllerGame.cpp">
       <Filter>Source Files\VPinMAME</Filter>
     </ClCompile>

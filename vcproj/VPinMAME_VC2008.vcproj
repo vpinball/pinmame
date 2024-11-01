@@ -3661,14 +3661,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\..\src\wpc\dmddevice.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\..\src\wpc\dmddevice.h"
-					>
-				</File>
-				<File
 					RelativePath=".\..\src\wpc\driver.c"
 					>
 				</File>
@@ -4470,6 +4462,10 @@
 				</File>
 				<File
 					RelativePath=".\..\src\win32com\ControllerDisclaimerDlg.h"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\win32com\ControllerDmdDevice.cpp"
 					>
 				</File>
 				<File

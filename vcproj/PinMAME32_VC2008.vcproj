@@ -3656,14 +3656,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\..\src\wpc\dmddevice.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\..\src\wpc\dmddevice.h"
-					>
-				</File>
-				<File
 					RelativePath=".\..\src\wpc\driver.c"
 					>
 				</File>
