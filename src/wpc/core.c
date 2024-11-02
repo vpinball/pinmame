@@ -77,7 +77,6 @@ void vp_setDIP(int bank, int value) { }
 
 #if defined(VPINMAME) || defined(LIBPINMAME)
   #include "vpintf.h"
-  extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
   extern char g_fShowWinDMD;
   extern char g_fShowPinDMD; /* pinDMD */
