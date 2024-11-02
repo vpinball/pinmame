@@ -985,7 +985,7 @@ static void cpu_timeslice(void)
 				// We are ahead by a large amount: realign external clock
 				time_fence_global_offset = now - options.time_fence;
 			}
-			else if (time_fence_wait(1.0))
+			else if (time_fence_wait(0.250))
 			{
 				// We waited and received a new time fence, but if we are still ahead of it, just return
 				if (now - options.time_fence - time_fence_global_offset >= 0.)
@@ -994,9 +994,11 @@ static void cpu_timeslice(void)
 			else
 			{
 				// We waited and did not receive a new time fence, but timed out or just received an OS message, then just return
+				mame_pause(1); // we timed-out to get there, so we are stuck waiting for master clock: suspend sound (buffer would loop) and give user feedback (dimmed rendering)
 				return;
 			}
 		}
+		mame_pause(0);
 	}
 
 	double target = timer_time_until_next_timer();
