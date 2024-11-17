@@ -412,10 +412,10 @@ static INTERRUPT_GEN(GTS3_interface_update) {
 									(GTS3_dmdlocals[0].diagnosticLed << 1) |
 									(GTS3_dmdlocals[1].diagnosticLed << 2);
 	} else {
-		coreGlobals.diagnosticLed = (GTS3locals.diagnosticLed2<<3) |
-									(GTS3locals.diagnosticLed1<<2) |
-									(GTS3_dmdlocals[0].diagnosticLed<<1) |
-									GTS3locals.diagnosticLed;
+		coreGlobals.diagnosticLed = GTS3locals.diagnosticLed |
+			                        (GTS3_dmdlocals[0].diagnosticLed << 1) |
+			                        (GTS3locals.diagnosticLed1 << 2) |
+			                        (GTS3locals.diagnosticLed2 << 3);
 	}
   }
 
@@ -888,7 +888,7 @@ static WRITE_HANDLER(dmd_outport)
 	GTS3_dmdlocals[offset].a18=GTS3_dmdlocals[offset].q3;
 	GTS3_dmdlocals[offset].status1=(data>>5)&1;
 	GTS3_dmdlocals[offset].status2=(data>>6)&1;
-	GTS3_dmdlocals[offset].diagnosticLed = data>>7;
+	GTS3_dmdlocals[offset].diagnosticLed = 1 - (data>>7); // DMD LED polarity : negative
 	dmdswitchbank(offset);
 }
 
@@ -1043,40 +1043,40 @@ MEMORY_END
 /  Memory map for DMD CPU
 /----------------------------*/
 static MEMORY_READ_START(GTS3_dmdreadmem)
-{0x0000,0x1fff, MRA_RAM},
-{0x2000,0x2000, crtc6845_register_0_r},
-{0x3000,0x3000, dmdlatch_r}, /*Input Enable*/
-{0x4000,0x7fff, MRA_BANK1},
-{0x8000,0xffff, MRA_ROM},
+{0x0000,0x1fff, MRA_RAM},               /* DMD RAM         */
+{0x2801,0x2801, crtc6845_register_0_r}, /* CRTC index      */
+{0x3000,0x3000, dmdlatch_r},            /* Input Port      */
+{0x4000,0x7fff, MRA_BANK1},             /* Paginated ROM   */
+{0x8000,0xffff, MRA_ROM},               /* ROM             */
 MEMORY_END
 
 static MEMORY_WRITE_START(GTS3_dmdwritemem)
-{0x0000,0x0fff, MWA_RAM},
-{0x1000,0x1fff, MWA_RAM},    /*DMD Display RAM*/
-{0x2800,0x2800, crtc6845_address_0_w},
-{0x2801,0x2801, crtc6845_register_0_w},
-{0x3800,0x3800, dmdoport},   /*Output Enable*/
-{0x4000,0x7fff, MWA_BANK1},
-{0x8000,0xffff, MWA_ROM},
+{0x0000,0x0fff, MWA_RAM},               /* DMD RAM         */
+{0x1000,0x1fff, MWA_RAM},               /* DMD Display RAM */
+{0x2800,0x2800, crtc6845_address_0_w},  /* CRTC index      */
+{0x2801,0x2801, crtc6845_register_0_w}, /* CRTC registers  */
+{0x3800,0x3800, dmdoport},              /* Output Port     */
+{0x4000,0x7fff, MWA_BANK1},             /* Paginated ROM   */
+{0x8000,0xffff, MWA_ROM},               /* ROM             */
 MEMORY_END
 
 //NOTE: DMD #2 for Strikes N Spares - Identical to DMD #1 hardware & memory map
 static MEMORY_READ_START(GTS3_dmdreadmem2)
-{0x0000,0x1fff, MRA_RAM},
-{0x2000,0x2000, crtc6845_register_1_r},
-{0x3000,0x3000, dmdlatch2_r}, /*Input Enable*/
-{0x4000,0x7fff, MRA_BANK2},
-{0x8000,0xffff, MRA_ROM},
+{0x0000,0x1fff, MRA_RAM},               /* DMD RAM         */
+{0x2801,0x2801, crtc6845_register_1_r}, /* CRTC index      */
+{0x3000,0x3000, dmdlatch2_r},           /* Input Port      */
+{0x4000,0x7fff, MRA_BANK2},             /* Paginated ROM   */
+{0x8000,0xffff, MRA_ROM},               /* ROM             */
 MEMORY_END
 
 static MEMORY_WRITE_START(GTS3_dmdwritemem2)
-{0x0000,0x0fff, MWA_RAM},
-{0x1000,0x1fff, MWA_RAM},    /*DMD Display RAM*/
-{0x2800,0x2800, crtc6845_address_1_w},
-{0x2801,0x2801, crtc6845_register_1_w},
-{0x3800,0x3800, dmdoport2},  /*Output Enable*/
-{0x4000,0x7fff, MWA_BANK2},
-{0x8000,0xffff, MWA_ROM},
+{0x0000,0x0fff, MWA_RAM},               /* DMD RAM         */
+{0x1000,0x1fff, MWA_RAM},               /* DMD Display RAM */
+{0x2800,0x2800, crtc6845_address_1_w},  /* CRTC index      */
+{0x2801,0x2801, crtc6845_register_1_w}, /* CRTC registers  */
+{0x3800,0x3800, dmdoport2},             /* Output Port     */
+{0x4000,0x7fff, MWA_BANK2},             /* Paginated ROM   */
+{0x8000,0xffff, MWA_ROM},               /* ROM             */
 MEMORY_END
 
 MACHINE_DRIVER_START(gts3)

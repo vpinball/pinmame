@@ -85,49 +85,51 @@ READ_HANDLER( crtc6845_register_r )
 {
 	int retval=0;
 
+	// Most 6845 registers are write-only, except R14/R15 (cursor) and R16/R17 (lightpen).
+
 	switch(crtc6845[offset].address_latch)
 	{
 		case 0:
-			retval=crtc6845[offset].horiz_total;
+			// retval=crtc6845[offset].horiz_total;                  // write-only register
 			break;
 		case 1:
-			retval=crtc6845[offset].horiz_disp;
+			// retval=crtc6845[offset].horiz_disp;                   // write-only register
 			break;
 		case 2:
-			retval=crtc6845[offset].horiz_sync_pos;
+			// retval=crtc6845[offset].horiz_sync_pos;               // write-only register
 			break;
 		case 3:
-			retval=crtc6845[offset].sync_width;
+			// retval=crtc6845[offset].sync_width;                   // write-only register
 			break;
 		case 4:
-			retval=crtc6845[offset].vert_total;
+			// retval=crtc6845[offset].vert_total;                   // write-only register
 			break;
 		case 5:
-			retval=crtc6845[offset].vert_total_adj;
+			// retval=crtc6845[offset].vert_total_adj;               // write-only register
 			break;
 		case 6:
-			retval=crtc6845[offset].vert_disp;
+			// retval=crtc6845[offset].vert_disp;                    // write-only register
 			break;
 		case 7:
-			retval=crtc6845[offset].vert_sync_pos;
+			// retval=crtc6845[offset].vert_sync_pos;                // write-only register
 			break;
 		case 8:
-			retval=crtc6845[offset].intl_skew;
+			// retval=crtc6845[offset].intl_skew;                    // write-only register
 			break;
 		case 9:
-			retval=crtc6845[offset].max_ras_addr;
+			// retval=crtc6845[offset].max_ras_addr;                 // write-only register
 			break;
 		case 10:
-			retval=crtc6845[offset].cursor_start_ras;
+			// retval=crtc6845[offset].cursor_start_ras;             // write-only register
 			break;
 		case 11:
-			retval=crtc6845[offset].cursor_end_ras;
+			// retval=crtc6845[offset].cursor_end_ras;               // write-only register
 			break;
 		case 12:
-			retval=(crtc6845[offset].start_addr >> 8) & 0x003f;
+			// retval=(crtc6845[offset].start_addr >> 8) & 0x003f;   // write-only register
 			break;
 		case 13:
-			retval=crtc6845[offset].start_addr&0xff;
+			// retval=crtc6845[offset].start_addr&0xff;              // write-only register
 			break;
 		case 14:
 			retval=(crtc6845[offset].cursor >> 8) & 0x003f;
@@ -158,6 +160,9 @@ WRITE_HANDLER( crtc6845_address_w )
 WRITE_HANDLER( crtc6845_register_w )
 {
 	LOG(("%8.5f CRT #0 PC %04x: WRITE reg 0x%02x data 0x%02x\n",timer_get_time(),activecpu_get_pc(),crtc6845[offset].address_latch,data));
+
+	// Most 6845 registers can be written, except R16/R17 (lightpen) that are read-only.
+
 	switch(crtc6845[offset].address_latch)
 	{
 		case 0:
@@ -214,10 +219,10 @@ WRITE_HANDLER( crtc6845_register_w )
 			crtc6845[offset].cursor = (crtc6845[offset].cursor & 0xff00) | data;
 			break;
 		case 16:
-			crtc6845[offset].light_pen = ((data & 0x003f) << 8) | (crtc6845[offset].light_pen & 0x00ff);
+			// crtc6845[offset].light_pen = ((data & 0x003f) << 8) | (crtc6845[offset].light_pen & 0x00ff);  // read-only register
 			break;
 		case 17:
-			crtc6845[offset].light_pen = (crtc6845[offset].light_pen & 0xff00) | data;
+			// crtc6845[offset].light_pen = (crtc6845[offset].light_pen & 0xff00) | data;                    // read-only register
 			break;
 		default:
 			break;
