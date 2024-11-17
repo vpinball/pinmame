@@ -681,6 +681,15 @@ BY35_ROMEND
 #define input_ports_biggamee input_ports_st
 CORE_CLONEDEFNV(biggamee,biggame,"Big Game (MOD rev. 12)",2023,"Stern / Idleman",by35_mST200,0)
 
+INITGAME(biggamef,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(biggamef,"biggame_13-u1.716", CRC(a05b5a3e) SHA1(dfedcc5faf06ce37c4487ca574c56f3285458a36),
+                            "biggame_V12-u5.716",CRC(44a9a2ba) SHA1(b7ef9b565c90ec71dd8779220203c3b203658904),
+                            "biggame_13-u2.716", CRC(4c321f34) SHA1(923b43a6dcd2e714fbc13aeb28651325885e4220),
+                            "biggame_V12-u6.716",CRC(7a7e67e4) SHA1(7a964db3f92775ea7fc50a90e77fb846fa3f9d9f))
+BY35_ROMEND
+#define input_ports_biggamef input_ports_st
+CORE_CLONEDEFNV(biggamef,biggame,"Big Game (MOD rev. 13)",2024,"Stern / Idleman",by35_mST200,0)
+
 /*--------------------------------
 / Seawitch
 /-------------------------------*/

@@ -1487,6 +1487,7 @@ DRIVERNV(biggameb)      //         11/19 Big Game (MOD rev. 7)
 DRIVERNV(biggamec)      //         10/20 Big Game (MOD rev. 8)
 DRIVERNV(biggamed)      //         09/21 Big Game (MOD rev. 9)
 DRIVERNV(biggamee)      //         12/23 Big Game (MOD rev. 12)
+DRIVERNV(biggamef)      //         11/24 Big Game (MOD rev. 13)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //         05/80 Seawitch (Free Play)
 DRIVERNV(seawitcha)     //         10/21 Seawitch (MOD rev. 5)
