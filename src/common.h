@@ -17,7 +17,7 @@
 #ifdef _M_ARM64
 #include <arm64intr.h>
 #endif
-#elif !defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__) || defined(__clang__))
+#elif (!defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
 #include <x86intrin.h>
 #endif
 
