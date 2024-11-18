@@ -17,7 +17,7 @@
 #ifdef _M_ARM64
 #include <arm64intr.h>
 #endif
-#elif (defined(__x86_64__) || defined(__i386__))
+#elif !defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
 #include <x86intrin.h>
 #endif
 
@@ -537,7 +537,7 @@ INLINE unsigned long long rotl_64(const unsigned long long x, const unsigned int
 {
 #ifdef _MSC_VER
     return _rotl64(x, count);
-#elif !defined(__aarch64__) && (defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__))
+#elif !defined(__aarch64__) && (defined(__INTEL_COMPILER) || defined(__clang__))
     return __rolq(x, count);
 #else
     return (x<<count) | (x>>( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
@@ -559,7 +559,7 @@ INLINE unsigned long long rotr_64(const unsigned long long x, const unsigned int
 {
 #ifdef _MSC_VER
     return _rotr64(x, count);
-#elif !defined(__aarch64__) && (defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__))
+#elif !defined(__aarch64__) && (defined(__INTEL_COMPILER) || defined(__clang__))
     return __rorq(x, count);
 #else
     return (x>>count) | (x<<( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
@@ -580,7 +580,7 @@ INLINE unsigned int rotr_32(const unsigned int x, const unsigned int count)
 
 INLINE unsigned long long swap_byteorder_64(unsigned long long x)
 {
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__clang__)
     return __builtin_bswap64(x);
 #elif defined(_MSC_VER)
     return _byteswap_uint64(x);
@@ -593,7 +593,7 @@ INLINE unsigned long long swap_byteorder_64(unsigned long long x)
 
 INLINE unsigned int swap_byteorder_32(unsigned int x)
 {
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__clang__)
     return __builtin_bswap32(x);
 #elif defined(_MSC_VER)
     return _byteswap_ulong(x);
