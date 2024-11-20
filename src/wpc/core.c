@@ -3205,14 +3205,18 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
 // Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
 // FIXME apply colors LUT ?
 #if defined(PINMAME) || defined(VPINMAME)
-void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa) {
+void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa, const int keepColor) {
   #define DMD_OFS(row, col) ((row)*width + col)
   #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
     for (int jj = 0; jj < width; jj++) {
-      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      if (keepColor) { // mini DMDs, don't change their colors
+        *line = coreGlobals.dmdDotRaw[ii * width + jj] + 1; // +1 needed because the entire palette was shifted!?
+      } else {
+        *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      }
       line += locals.displaySize;
     }
     lines += locals.displaySize;
@@ -3406,7 +3410,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   #elif defined(VPINMAME)
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
     // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA), layout->type & CORE_NODISP);
     if (isMainDMD) {
       has_DMD_Video = 1;
       core_dmd_render_vpm(layout->length, layout->start, dmdDotLum);
@@ -3415,7 +3419,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     }
   
   #elif defined(PINMAME)
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA), layout->type & CORE_NODISP);
 
   #endif
 }
