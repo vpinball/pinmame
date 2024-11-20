@@ -3208,7 +3208,6 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
 void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa) {
   #define DMD_OFS(row, col) ((row)*width + col)
   #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
-  //#define DMD_PAL(x) = Machine->pens[COL_DMDOFF][63 + (x >> 4)]
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
@@ -3220,27 +3219,24 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
   }
   // Apply antialiasing if enabled, or clear pixels between dots otherwise
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
-  if (locals.displaySize == 2) {
+  if (apply_aa && locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
     for (int ii = 0; ii < height * 2 - 1; ii++) {
       BMTYPE *line = (*lines) + x;
       for (int jj = 0; jj < width * 2 - 1; jj++) {
         const int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
-        if (!apply_aa) {
-          if ((ii & 1) || (jj & 1))
-            *line = DMD_PAL(0);
-        } else if ((ii & 1) && (jj & 1)) { // Corner point
+        if ((ii & 1) && (jj & 1)) { // Corner point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
           assert(0 <= lum && lum <= 255);
-          *line = DMD_PAL(lum);
+          *line = lum == 0 ? 0 : DMD_PAL(lum);
         } else if (ii & 1) { // Vertical side point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
           assert(0 <= lum && lum <= 255);
-          *line = DMD_PAL(lum);
+          *line = lum == 0 ? 0 : DMD_PAL(lum);
         } else if (jj & 1) { // Horizontal side point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
           assert(0 <= lum && lum <= 255);
-          *line = DMD_PAL(lum);
+          *line = lum == 0 ? 0 : DMD_PAL(lum);
         }
         line++;
       }
