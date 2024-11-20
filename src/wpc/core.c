@@ -3224,9 +3224,9 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
   // Apply antialiasing if enabled, or clear pixels between dots otherwise
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
   if (apply_aa && locals.displaySize == 2) {
-    lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
+    lines = ((BMTYPE **)bitmap->line) + (y * 2);
     for (int ii = 0; ii < height * 2 - 1; ii++) {
-      BMTYPE *line = (*lines) + x;
+      BMTYPE *line = (*lines) + (x * 2);
       for (int jj = 0; jj < width * 2 - 1; jj++) {
         const int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
         if ((ii & 1) && (jj & 1)) { // Corner point
