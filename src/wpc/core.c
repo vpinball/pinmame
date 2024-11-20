@@ -3228,15 +3228,15 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
         if ((ii & 1) && (jj & 1)) { // Corner point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
           assert(0 <= lum && lum <= 255);
-          *line = lum == 0 ? 0 : DMD_PAL(lum);
+          *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
         } else if (ii & 1) { // Vertical side point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
           assert(0 <= lum && lum <= 255);
-          *line = lum == 0 ? 0 : DMD_PAL(lum);
+          *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
         } else if (jj & 1) { // Horizontal side point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
           assert(0 <= lum && lum <= 255);
-          *line = lum == 0 ? 0 : DMD_PAL(lum);
+          *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
         }
         line++;
       }
