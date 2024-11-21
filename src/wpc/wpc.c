@@ -131,6 +131,7 @@ static struct {
   int modsol_sample;
   mame_timer* highres_timer;
   int wpcFIRQ;            // State of the WPC chip high res timer FIRQ output
+  int sndFIRQ;            // State of the FIRQ from pre DCS sound board (part number A-12738)
 } wpclocals;
 
 // Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
@@ -409,11 +410,12 @@ MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
 MACHINE_DRIVER_END
 
-// The FIRQ line is wired to 2 sources:
+// The FIRQ line is wired to 2 or 3 sources:
 // - the WPC FIRQ output, which is triggered by its internal high res timer
 // - the programmable DMD FIRQ output (raised when a choosen row is reached, cleared when the FIRQ row is defined)
+// - the FIRQ from pre DCS sound board (sound board part A-12738)
 static void update_firq() {
-  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, (wpclocals.wpcFIRQ | dmdlocals.firq) ? HOLD_LINE : CLEAR_LINE);
+  cpu_set_irq_line(WPC_CPUNO, M6809_FIRQ_LINE, (wpclocals.wpcFIRQ | wpclocals.sndFIRQ | dmdlocals.firq) ? HOLD_LINE : CLEAR_LINE);
 }
 
 // High resolution timer provided by the WPC chip. Used by alpha gen games to dim segments
@@ -692,6 +694,11 @@ READ_HANDLER(wpc_r) {
       }
       break;
     case WPC_SND_DATA:
+      if (wpclocals.sndFIRQ != 0)
+      {
+        wpclocals.sndFIRQ = 0;
+        update_firq();
+      }
       return sndbrd_0_data_r(0);
     case WPC_SND_CTRL:
       return sndbrd_0_ctrl_r(0);
@@ -1137,6 +1144,13 @@ static SWITCH_UPDATE(wpc) {
 #endif
 }
 
+static WRITE_HANDLER(snd_data_cb) { // Pre DCS sound board A-12738 generates FIRQ on data ready
+  if (wpclocals.sndFIRQ != 1) {
+    wpclocals.sndFIRQ = 1;
+    update_firq();
+  }
+}
+
 static MACHINE_INIT(wpc) {
                                     /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
@@ -1159,7 +1173,7 @@ static MACHINE_INIT(wpc) {
     case GEN_WPCALPHA_2:
     case GEN_WPCDMD:
     case GEN_WPCFLIPTRON:
-      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION),NULL,NULL);
+      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION), snd_data_cb, NULL);
       break;
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
