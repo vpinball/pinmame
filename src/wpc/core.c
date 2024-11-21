@@ -1774,8 +1774,8 @@ int core_getSol(int solNo) {
     else if (core_gameData->gen & GEN_ALLWPC) // WPC GameOn
       return coreGlobals.solenoids2 & (1<<(solNo-29+8));
   }
-  else if (solNo <= 36) { // 33-36 Upper flipper (WPC only)
-    if (core_gameData->gen & GEN_ALLWPC) {
+  else if (solNo <= 36) { // 33-36 driver specific sols
+    if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper 
       if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
 	    return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
       int mask;
@@ -1788,6 +1788,8 @@ int core_getSol(int solNo) {
         mask = 1<<(solNo - 33 + 4);
       return coreGlobals.solenoids2 & mask;
     }
+    else if (core_gameData->gen & GEN_SAM) // SAM only: fake GameOn solenoid for fast flips
+       return coreGlobals.solenoids2 & 0x10;
   }
   else if (solNo <= 44) { // 37-44 WPC95 & S11 extra
     if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) // Duplicated in 37..40 / 41..44, so always read from 41..44 (hence the |4 in the index/mask)
@@ -1836,18 +1838,23 @@ UINT64 core_getAllSol(void) {
     UINT64 tmp = coreGlobals.solenoids & 0xf0000000;
     sol |= (tmp<<12)|(tmp<<8);
   }
-  if (core_gameData->gen & (GEN_ALLS11|GEN_SAM|GEN_SPA)) // 37-44 S11, SAM extra
-    sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00))<<28;
-  { // 33-36, 45-48 flipper solenoids
-    UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
+  if (core_gameData->gen & GEN_ALLWPC) { // 33-36 WPC upper flipper solenoids (hold coil is set if either coil is set)
     UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
-    // hold coil is set if either coil is set
-    lFlip |= (lFlip & 0x05)<<1;
     if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
       uFlip |= (uFlip & 0x10)<<1;
     if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL))
       uFlip |= (uFlip & 0x40)<<1;
-    sol |= (((UINT64)lFlip)<<44) | (((UINT64)uFlip)<<28);
+    sol |= (((UINT64)uFlip)<<28);
+  }
+  else if (core_gameData->gen & GEN_SAM) { // 33 SAM fake GameOn sol for fast flips
+     sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
+  }
+  if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
+     sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00)) << 28;
+  { // 45-48 flipper solenoids (hold coil is set if either coil is set)
+    UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
+    lFlip |= (lFlip & 0x05)<<1;
+    sol |= (((UINT64)lFlip)<<44);
   }
   /*-- simulated --*/
   sol |= sim_getSol(49) ? (((UINT64)1)<<48) : 0;
@@ -1882,7 +1889,7 @@ void core_getAllPhysicSols(float* const state)
      /*-- 29..32, hardware solenoids --*/
      for (int i = 0; i < 32; i++)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-  /*-- 33..36 upper flipper solenoids (WPC only) --*/
+  /*-- 33..36 [WPC only] upper flipper solenoids --*/
   if (core_gameData->gen & GEN_ALLWPC) {
     if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
       for (int i = 32; i < 36; i++)
@@ -1899,6 +1906,9 @@ void core_getAllPhysicSols(float* const state)
       state[35] = uFlip & 0x80 ? 1.0f : 0.0f;
     }
   }
+  /*-- 33 [SAM only] fake GameOn solenoid for fast flips --*/
+  if (core_gameData->gen & GEN_SAM)
+    state[32] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 33 - 1].value;
   /*-- 37..44, extra solenoids --*/
   if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) { // 37-44 WPC95 extra (duplicated 37..40 / 41..44)
     for (int i = 28; i < 32; i++) {
