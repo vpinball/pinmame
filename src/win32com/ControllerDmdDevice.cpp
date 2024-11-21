@@ -182,8 +182,7 @@ extern "C" void dmddeviceDeInit() {
 		if (dmd_hasDMD && dmdDevices[i].Render_4_Shades) {
 			UINT8* tmpbuffer = (UINT8*)malloc(dmd_width * dmd_height);
 			memset(tmpbuffer, 0x00, dmd_width * dmd_height);
-			for (int i = 0; i < 2; i++)
-				dmdDevices[i].Render_4_Shades(dmd_width, dmd_height, tmpbuffer); //clear screen
+			dmdDevices[i].Render_4_Shades(dmd_width, dmd_height, tmpbuffer); //clear screen
 			free(tmpbuffer);
 		}
 		if (dmdDevices[i].Close)
