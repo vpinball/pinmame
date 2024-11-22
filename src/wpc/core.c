@@ -780,6 +780,11 @@ static PALETTE_INIT(core) {
   }
 
   /*-- segment display antialias colors --*/
+  // reset to default values, DMD levels should not applied to segments
+  perc66 = 67;
+  perc33 = 33;
+  perc0  = 20;
+
   tmpPalette[COL_SEGAAON1][0] = rStart * (perc66+5) / 100;
   tmpPalette[COL_SEGAAON1][1] = gStart * (perc66+5) / 100;
   tmpPalette[COL_SEGAAON1][2] = bStart * (perc66+5) / 100;
