@@ -780,7 +780,7 @@ static PALETTE_INIT(core) {
   }
 
   /*-- segment display antialias colors --*/
-  // reset to default values, DMD levels should not applied to segments
+  // reset to default values, DMD levels should not be applied to segments
   perc66 = 67;
   perc33 = 33;
   perc0  = 20;
@@ -875,7 +875,7 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 #endif /* VPINMAME */
 
 core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
-   // TODO this should be moved to the driver's definition, or MACHINE_INIT, setting it once and for all at machine startup from core_gameData->lcdLayout
+	// TODO this should be moved to the driver's definition, or MACHINE_INIT, setting it once and for all at machine startup from core_gameData->lcdLayout
 	core_segOverallLayout_t layout = CORE_SEGLAYOUT_None;
 
 	// switch to current game tech
@@ -990,8 +990,8 @@ core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UI
 						layout = CORE_SEGLAYOUT_2x6Num_2x6Num_4x1Num;
 						break;
 					case 7:
-                  if (strncasecmp(GameName, "medusa", 6) == 0)
-                     layout = CORE_SEGLAYOUT_2x7Num_2x7Num_10x1Num;
+						if (strncasecmp(GameName, "medusa", 6) == 0)
+							layout = CORE_SEGLAYOUT_2x7Num_2x7Num_10x1Num;
 						else
 							layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num;
 						break;
@@ -1207,7 +1207,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       static UINT16 seg_data2[CORE_SEGCOUNT] = { 0 };
       if ((core_gameData->gen == GEN_BY35) && (disp_num_segs[0] == 7) && (strncasecmp(Machine->gamedrv->name, "medusa", 6) == 0))
          memcpy(seg_data2, seg_data + 4 * 7 + 2 * 2, 3 * 2 * sizeof(UINT16));
-      
+
       // Sends segment data to dmddevice plugin
       #ifdef VPINMAME
         if(g_fShowPinDMD)
@@ -1308,7 +1308,6 @@ void core_updateSw(int flipEn) {
     for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
       inports[ii] = readinputport(ii);
 
-
     /*-- buttons --*/
     swFlip = 0;
     if (inports[CORE_FLIPINPORT] & CORE_LLFLIPKEY) swFlip |= CORE_SWLLFLIPBUTBIT;
@@ -1388,7 +1387,7 @@ void core_updateSw(int flipEn) {
     sim_run(inports, CORE_COREINPORT+(coreData->coreDips+31)/16,
             (inports[CORE_SIMINPORT] & SIM_SWITCHKEY) == 0,
             (SIM_BALLS(inports[CORE_SIMINPORT])));
-  
+
   /*-- Report changed solenoids --*/
   if (coreGlobals.nSolenoids && 
      ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON)) || ((core_gameData->gen & (GEN_ALLWPC | GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
@@ -1782,7 +1781,7 @@ int core_getSol(int solNo) {
   else if (solNo <= 36) { // 33-36 driver specific sols
     if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper 
       if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
-	    return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
+        return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
       int mask;
       /*-- flipper coils --*/
       if      ((solNo == sURFlip) && (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)))
@@ -1838,7 +1837,7 @@ int core_getPulsedSol(int solNo) {
 UINT64 core_getAllSol(void) {
   UINT64 sol = coreGlobals.solenoids;
   if (core_gameData->gen & GEN_ALLWPC) // 29-32 GameOn
-    sol = (sol & 0x0fffffff) | ((coreGlobals.solenoids2 & 0x0f00)<<20);
+    sol = (sol & 0x0fffffffull) | ((coreGlobals.solenoids2 & 0x0f00ull)<<20);
   if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) { // 37-44 WPC95 extra, duplicated at 0x......XX........
     UINT64 tmp = coreGlobals.solenoids & 0xf0000000;
     sol |= (tmp<<12)|(tmp<<8);
@@ -1963,7 +1962,7 @@ int core_getDip(int dipBank) {
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
   UINT32 pixel[20] = {0}; // max 20 rows
-  UINT16 dim[20][15] = {0}; // max 20 rows, 15 cols
+  UINT16 dim[20][15] = {{0}}; // max 20 rows, 15 cols
   static const int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
   int sb, kk, ll;
   const int palSize = sizeof(core_palette) / 3;
@@ -2323,7 +2322,6 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
 
       mame_fread(file, dips, sizeof(dips));
       for (ii = 0; ii < 6; ii++) vp_setDIP(ii, dips[ii]);
-
     }
     else { // always get the default from the inports
       /* coreData not initialized yet. Don't know exact number of DIPs */
