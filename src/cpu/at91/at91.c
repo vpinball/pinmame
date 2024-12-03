@@ -234,21 +234,24 @@ int at91_irqstackpos = 0;
 
 typedef struct 
 { 	
-	data32_t US_IER; 
+	data32_t US_MR;
+	data32_t US_IMR;
 	data32_t US_CSR;
 	data32_t US_TPR;
 	data32_t US_TCR;
 	data32_t US_RPR;
 	data32_t US_THR;
+	data32_t US_BRGR;
 	data32_t US_RCR;
+	int pending_THR;
+	// Internal AT91 receive buffer (circular buffer)
 	int at91_rbuf_head;
 	int at91_rbuf_tail;
-
 	data8_t at91_receivebuf[AT91_RECEIVE_BUFFER_SIZE];
-
 } AT91_REGS_USART;
 
-static AT91_REGS_USART at91usart[2] = {{ 0, US_TXRDY | US_TXEMPTY | US_ENDTX,0,0,0,0,0,0 }, { 0, US_TXRDY | US_TXEMPTY | US_ENDTX,0,0,0,0,0,0 }};
+static AT91_REGS_USART at91usart[2];
+
 
 /* include the arm7 core */
 #include "../arm7/arm7core.c"
@@ -410,7 +413,7 @@ void update_pio_pins(int data)
 		at91.aic_irqpending |= 0x100;
 }
 
-mame_timer* at91_serial_timer=NULL;
+mame_timer* at91_serial_timer[2] = { NULL, NULL };
 
 static void serial_timer_event(int timer_num);
 
@@ -419,102 +422,115 @@ void at91_irqcheck(void)
 	arm7_check_irq_state();
 }
 
-void at91_pending_serial(int usartno, int delaytime)
+void at91_adjust_serial_baud_rate(int usartno)
 {
-	// We can't process serial output immediately, the code will get confused and loop.
-	// So we set up a timer to process it a little bit later.
-	// I'm picking 60 * 60, because it needs to be able to write 
-	// 54 characters 60 times per second.  If this gets behind 
-	// things lag.   If this is too fast then it starts blocking
-	// timer interrupts
-	// The longer serial multi-byte strings seem to get hung up unless there is more delay
-	// so added a delaytime parameter.  This became more apparent when I added more
-	// nimble IRQ handling.  *Sigh*. 
-	int freq = delaytime * 60;  
-	timer_adjust(at91_serial_timer, TIME_IN_HZ(freq), 0, TIME_IN_HZ(freq));
-}
-
-static void serial_timer_event(int timer_num)
-{
-	unsigned int usartno, i;
-	timer_adjust(at91_serial_timer, TIME_NEVER, 0, TIME_NEVER);
-
-	for (usartno = 0; usartno < 2; usartno++)
+	if (at91usart[usartno].US_BRGR)
 	{
-		// Doing a buffered transmit?
-		if (at91usart[usartno].US_TCR > 0 && (at91usart[usartno].US_CSR & US_ENDTX) == 0)
-		{
-			if (at91_transmit_serial)
-			{
-				// TODO: There ought to be a way to get to the memory pointer and just pass it. 
-				// (memory_region?) 
-
-				data8_t *pData = (data8_t *)malloc(sizeof(data8_t) * at91usart[usartno].US_TCR);
-				for (i = 0; i < at91usart[usartno].US_TCR; i++)
-				{
-					pData[i] = cpu_readmem32ledw(at91usart[usartno].US_TPR + i);
-				}
-				at91_transmit_serial(usartno, pData, at91usart[usartno].US_TCR);
-				free(pData);
-			}
-
-			// Move pointer forward
-			at91usart[usartno].US_TPR += at91usart[usartno].US_TCR;
-			// Clear counter
-			at91usart[usartno].US_TCR = 0x0;
-			// Channel status TX complete + TX Ready
-			at91usart[usartno].US_CSR |= US_TXRDY | US_TXEMPTY | US_ENDTX;
-			// if irq enabled fire.
-			if (at91usart[usartno].US_IER & (US_TXRDY | US_ENDTX))
-			{
-				at91_fire_irq(AT91_USART_IRQ(usartno));
-			}
-		}
-		else
-		{
-			// Doing a character-by-character transmit? 
-			if (at91usart[usartno].US_TPR == 0 && (at91usart[usartno].US_CSR & US_TXEMPTY) == 0)
-			{
-				if (at91_transmit_serial)
-				{
-					at91_transmit_serial(usartno, (data8_t*)&(at91usart[usartno].US_THR), 1);
-				}
-				// Channel status TX complete + TX Ready
-				at91usart[usartno].US_CSR |= US_TXRDY + US_TXEMPTY;
-
-				// Fire AIC IRQ for USART1.
-				if ((at91usart[usartno].US_IER & (US_TXEMPTY | US_TXRDY)) > 0)
-				{
-					at91_fire_irq(AT91_USART_IRQ(usartno));
-				}
-			}
-		}
-		// Are there characters in the output buffer waiting, and AT91 has set up a buffered receive pointer? 
-		while (at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head && at91usart[usartno].US_RPR != 0 && at91usart[usartno].US_RCR > 0)
-		{
-			cpu_writemem32ledw(at91usart[usartno].US_RPR++, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail]);
-			if (at91usart[usartno].at91_rbuf_tail == AT91_RECEIVE_BUFFER_SIZE - 1)
-				at91usart[usartno].at91_rbuf_tail = 0;
-			at91usart[usartno].US_RCR--;
-			at91usart[usartno].US_CSR |= US_ENDRX;
-		}
+		data32_t USCLKS = (at91usart[usartno].US_MR >> 4) & 0x3; // USCLKS: Clock Selection (Baud Rate Generator Input Clock)
+		data32_t CHRL = (at91usart[usartno].US_MR >> 6) & 0x3; // CHRL: Character Length
+		data32_t SYNC = (at91usart[usartno].US_MR >> 8) & 0x1; // SYNC: Synchronous Mode Select (Code Label US_SYNC)
+		data32_t NBSTOP = (at91usart[usartno].US_MR >> 12) & 0x3; // NBSTOP: Number of Stop Bits
+		data32_t MODE9 = (at91usart[usartno].US_MR >> 17) & 0x1; // MODE9: 9-bit Character Length (Code Label US_MODE9)
+		int divider = SYNC == 0 ? (16 * at91usart[usartno].US_BRGR) : at91usart[usartno].US_BRGR;
+		double uartClock = USCLKS == 0 ? (at91rs.cpu_freq / divider)        // MCK
+							  : USCLKS == 1 ? (at91rs.cpu_freq / (8 * divider))  // MCK / 8
+					        : 9600;                                            // SCK (external clock, not implemented)
+		double bitPerByte = (MODE9 ? 9 : (CHRL + 5)) + (NBSTOP / 2.0);
+		LOG(("%08x: AT91-USART%d BYTE RATE = %8.1f bytes per second\n", activecpu_get_pc(), usartno + 1, uartClock / bitPerByte));
+		timer_adjust(at91_serial_timer[usartno], TIME_IN_HZ(uartClock / bitPerByte), usartno, TIME_IN_HZ(uartClock / bitPerByte));
+	}
+	else
+	{
+		LOG(("%08x: AT91-USART%d BYTE RATE = 0 (disabled)\n", activecpu_get_pc(), usartno + 1));
+		timer_enable(at91_serial_timer[usartno], 0);
 	}
 }
 
+static data8_t at91_serial_receive_next_byte(int usartno)
+{
+	assert(at91usart[usartno].at91_rbuf_head != at91usart[usartno].at91_rbuf_tail);
+	data8_t rcvByte = at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail];
+	at91usart[usartno].at91_rbuf_tail++;
+	if (at91usart[usartno].at91_rbuf_tail == AT91_RECEIVE_BUFFER_SIZE - 1)
+		at91usart[usartno].at91_rbuf_tail = 0;
+	if (at91usart[usartno].at91_rbuf_head == at91usart[usartno].at91_rbuf_tail)
+	{
+		at91usart[usartno].US_CSR &= ~US_RXRDY; // No more data to read (internally)
+		if (at91_serial_receive_ready) // Ready to receive more data (externally)
+			at91_serial_receive_ready(usartno);
+	}
+	return rcvByte;
+}
+
+static void at91_serial_timer_event(int usartno)
+{
+	data32_t csrSetFlag = 0;
+
+	// Transmit
+	if (at91usart[usartno].US_TCR > 0)
+	{
+		// Peripheral Data Controller has pending data
+		if (at91_transmit_serial)
+		{
+			data8_t data = cpu_readmem32ledw(at91usart[usartno].US_TPR);
+			LOG(("AT91-USART%d Transmit %02x (PDC) [t=%8.6f]\n", usartno + 1, data, timer_get_time()));
+			at91_transmit_serial(usartno, &data, 1);
+		}
+		at91usart[usartno].US_TPR++;
+		at91usart[usartno].US_TCR--;
+		if (at91usart[usartno].US_TCR == 0)
+		{
+			csrSetFlag |= ~at91usart[usartno].US_CSR & US_ENDTX;
+		}
+	}
+	else if (at91usart[usartno].pending_THR)
+	{
+		// Transmit Holding Register has a pending byte
+		at91usart[usartno].pending_THR = 0;
+		if (at91_transmit_serial)
+		{
+			LOG(("AT91-USART%d Transmit %02x (THR)\n", usartno + 1, at91usart[usartno].US_THR));
+			at91_transmit_serial(usartno, (data8_t*)&(at91usart[usartno].US_THR), 1);
+		}
+	}
+	if ((at91usart[usartno].US_TCR == 0) && (at91usart[usartno].pending_THR == 0))
+	{
+		// PDC finished and no pending THR => both TXEMPTY and TXREADY (since we do not emulate the shift register)
+		csrSetFlag |= ~at91usart[usartno].US_CSR & (US_TXEMPTY | US_TXRDY);
+	}
+
+	// Receive
+	if ((at91usart[usartno].US_RCR > 0) && (at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head))
+	{
+		LOG(("AT91-USART%d Receive %02x (PDC write at %08x) [t=%8.6f]\n", usartno + 1, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail], at91usart[usartno].US_RPR, timer_get_time()));
+		data8_t data = at91_serial_receive_next_byte(usartno);
+		cpu_writemem32ledw(at91usart[usartno].US_RPR, data);
+		at91usart[usartno].US_RPR++;
+		at91usart[usartno].US_RCR--;
+		if (at91usart[usartno].US_RCR == 0)
+		{
+			csrSetFlag |= ~at91usart[usartno].US_CSR & US_ENDRX;
+		}
+	}
+
+	// Apply CSR flag changes and eventually fire IRQ
+	at91usart[usartno].US_CSR |= csrSetFlag;
+	if (at91usart[usartno].US_IMR & csrSetFlag)
+	{
+		at91_fire_irq(AT91_USART_IRQ(usartno));
+	}
+}
 
 int at91_receive_serial(int usartno, data8_t *buf, int size)
 {
 	int remaining = size;
-
-	if (remaining==0)
-		return 0;
-
 	while(remaining)
 	{	
-		// Is buffer full? 
+		// Store data in the internal buffer that will be pushed to the AT91 at the selected baud rate
 		if ((at91usart[usartno].at91_rbuf_tail == 0 && at91usart[usartno].at91_rbuf_head == AT91_RECEIVE_BUFFER_SIZE-1) ||
 			(at91usart[usartno].at91_rbuf_tail-1 == at91usart[usartno].at91_rbuf_head))
 		{
+			LOG(("ERROR: internal serial buffer overflow"));
 			break;
 		}
 		at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_head++] = *(buf++);
@@ -522,25 +538,45 @@ int at91_receive_serial(int usartno, data8_t *buf, int size)
 			at91usart[usartno].at91_rbuf_head = 0;
 		remaining--;
 	}
-	// Let the ROM know there's something pending. 
-	// TODO: Implement PDC buffer mode, check if receive buffer configured 
-	// TODO: This should be moved into its own block of code too. 
-	if (!(at91usart[usartno].US_CSR & (US_RXRDY | US_ENDRX)))
-	{
-		at91usart[usartno].US_CSR |= (US_RXRDY | US_ENDRX);
-		at91_fire_irq(AT91_USART_IRQ(usartno));
-	}
 	return remaining;
 }
-
 
 void at91_usart_read(int usartno, int addr, data32_t *pData)
 {
 	switch ((addr & 0xff) / 4)
 	{
+	case 0x01: // Mode Register
+		// unimplemented
+		break;
+	case 0x04:  // Interrupt mask
+		*pData = at91usart[usartno].US_IMR;
+		break;
+	case 0x05:  // Channel status 
+		*pData = at91usart[usartno].US_CSR;
+		break;
+	case 0x06:  // Receiver holding register
+		assert(at91usart[usartno].US_CSR & US_RXRDY); // Invalid Read (done while RXRDY is not set)
+		if (at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head)
+		{
+			LOG(("AT91-USART%d Receive %02x (RHR)\n", usartno + 1, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail]));
+			*pData = at91_serial_receive_next_byte(usartno);
+		}
+		else
+		{
+			assert(0);
+			*pData = 0;
+		}
+		break;
+	case 0x08:  // Baud Rate Generator Register
+		*pData = at91usart[usartno].US_BRGR;
+		break;
+	case 0x09:  // Receiver Time-out Register
+		// unimplemented
+		break;
+	case 0x0a:  // Transmitter Time-guard Register
+		// unimplemented
+		break;
 	case 0x0c:  // Receive pointer
-		if (at91_serial_receive_ready && at91usart[usartno].US_RPR == 0x00)
-			at91_serial_receive_ready(usartno);
 		*pData = at91usart[usartno].US_RPR;
 		break;
 	case 0x0d:  // Receive counter
@@ -552,27 +588,12 @@ void at91_usart_read(int usartno, int addr, data32_t *pData)
 	case 0x0f:  // Transmit counter
 		*pData = at91usart[usartno].US_TCR;
 		break;
-	case 0x06:  // Receiver holding register 
-		*pData = at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail++];
-		if (at91usart[usartno].at91_rbuf_tail == AT91_RECEIVE_BUFFER_SIZE-1)
-			at91usart[usartno].at91_rbuf_tail = 0;
-		// No more characters left in buffer?  Clear rxready. 
-		if (at91usart[usartno].at91_rbuf_head == at91usart[usartno].at91_rbuf_tail) 
-			at91usart[usartno].US_CSR &= ~(US_RXRDY | US_ENDRX);
-		break;
-	case 0x05:  // Channel status 
-		*pData = at91usart[usartno].US_CSR;
-		break;
-	case 0x04:  // Interrupt mask
-		*pData = at91usart[usartno].US_IER & at91usart[usartno].US_CSR;
-		break;
 	default:
+		assert(0); // Write only register
 		break;
 	}
 	LOG(("%08x: AT91-USART%d READ: %s (%08x) = %08x\n", activecpu_get_pc(), usartno+1, GetUARTOffset(addr), addr, *pData));
-
 }
-
 
 void at91_usart_write(int usartno, int addr, data32_t outdata)
 {
@@ -580,38 +601,70 @@ void at91_usart_write(int usartno, int addr, data32_t outdata)
 	LOG(("%08x: AT91-USART%d WRITE: %s (%08x) = %08x\n", activecpu_get_pc(), usartno+1, GetUARTOffset(addr), addr, outdata));
 	switch ((addr & 0xff) / 4)
 	{
+	case 0x00: // Control Register (write only)
+		// unimplemented
+		break;
+	case 0x01: // Mode Register
+		// Only partially implemented
+		at91usart[usartno].US_MR = outdata;
+		{
+			data32_t USCLKS = (outdata >>  4) & 0x3; // USCLKS: Clock Selection (Baud Rate Generator Input Clock)
+			data32_t CHRL   = (outdata >>  6) & 0x3; // CHRL: Character Length
+			data32_t SYNC   = (outdata >>  8) & 0x1; // SYNC: Synchronous Mode Select (Code Label US_SYNC)
+			data32_t PAR    = (outdata >>  9) & 0x7; // PAR: Parity Type
+			data32_t NBSTOP = (outdata >> 12) & 0x3; // NBSTOP: Number of Stop Bits
+			data32_t CHMODE = (outdata >> 14) & 0x3; // CHMODE: Channel Mode
+			data32_t MODE9  = (outdata >> 17) & 0x1; // MODE9: 9-bit Character Length (Code Label US_MODE9)
+			data32_t CLKO   = (outdata >> 18) & 0x1; // CKLO: Clock Output Select (Code Label US_CLKO)
+			LOG(("%08x: AT91-USART%d WRITE: %s (%08x) = %08x Parity=%d Mode9=%d\n", activecpu_get_pc(), usartno + 1, GetUARTOffset(addr), addr, outdata, PAR, MODE9));
+		}
+		at91_adjust_serial_baud_rate(usartno);
+		break;
 	case 0x02: // Interrupt Enable
 		// If we just enabled interrupts on something that would fire, we appear to need to fire here.
 		// Without this, the transmit loop never begins in some cases. 
-		if ((~at91usart[usartno].US_IER & outdata) & at91usart[usartno].US_CSR)
+		if ((~at91usart[usartno].US_IMR & outdata) & at91usart[usartno].US_CSR)
 		{
 			at91_fire_irq(AT91_USART_IRQ(usartno));
 		}
-		at91usart[usartno].US_IER |= outdata;
-		
+		at91usart[usartno].US_IMR |= outdata;
 		break;
-	case 0x03:
-		at91usart[usartno].US_IER &= (~outdata);
+	case 0x03: // Interrupt Disable
+		at91usart[usartno].US_IMR &= (~outdata);
 		break;
-	case 0x07:
-		at91usart[usartno].US_THR = outdata; // Transmit character
-		at91usart[usartno].US_CSR &= ~(US_TXRDY | US_TXEMPTY); 
-		at91_pending_serial(usartno, 60);
+	case 0x07: // Transmitter Holding Register
+		at91usart[usartno].pending_THR = 1;
+		at91usart[usartno].US_THR = outdata;
+		at91usart[usartno].US_CSR &= ~(US_TXRDY | US_TXEMPTY);
+		break;
+	case 0x08:  // Baud Rate Generator Register
+		at91usart[usartno].US_BRGR = outdata;
+		at91_adjust_serial_baud_rate(usartno);
+		break;
+	case 0x09:  // Receiver Time-out Register
+		// unimplemented
+		break;
+	case 0x0a:  // Transmitter Time-guard Register
+		// unimplemented
 		break;
 	case 0x0c:
 		at91usart[usartno].US_RPR = outdata; // Receive pointer
 		break;
 	case 0x0d:
 		at91usart[usartno].US_RCR = outdata; // Receive counter
-		at91usart[usartno].US_CSR &= ~(US_ENDRX); 
+		if (outdata > 0)
+			at91usart[usartno].US_CSR &= ~US_ENDRX;
 		break;
 	case 0x0e:  // Transmit pointer
 		at91usart[usartno].US_TPR = outdata;
 		break;
 	case 0x0f:  // Transmit counter
 		at91usart[usartno].US_TCR = outdata;
-		at91usart[usartno].US_CSR &= ~(US_ENDTX); 
-		at91_pending_serial(usartno, 40);
+		if (outdata > 0)
+			at91usart[usartno].US_CSR &= ~(US_ENDTX | US_TXRDY | US_TXEMPTY);
+		break;
+	default:
+		assert(0); // Read only registers
 		break;
 	}
 }
@@ -1598,7 +1651,8 @@ void at91_exit(void)
 		if(at91rs.timer[i])
 			timer_remove(at91rs.timer[i]);
 	}
-	timer_remove(at91_serial_timer);
+	timer_remove(at91_serial_timer[0]);
+	timer_remove(at91_serial_timer[1]);
 	//core cleanup
 	arm7_core_exit();
 }
@@ -1926,12 +1980,22 @@ void at91_init(void)
 	{
 		at91rs.timer[i] = timer_alloc(timer_trigger_event);
 	}
-	at91_serial_timer = timer_alloc(serial_timer_event);
+	at91_serial_timer[0] = timer_alloc(at91_serial_timer_event);
+	at91_serial_timer[1] = timer_alloc(at91_serial_timer_event);
 
 	//Store the cpu clock frequency (is there any easier way to get this?)
 	at91rs.cpu_freq = Machine->drv->cpu[activecpu].cpu_clock;
 	at91rs.cpunum = activecpu;
 	at91_build_priority_map();
+
+	//Default serial state
+	for (int i = 0; i < 2; i++)
+	{
+		memset(&at91usart[i], 0, sizeof(AT91_REGS_USART));
+		//at91usart[i].US_CSR = US_ENDTX | US_ENDRX; // On reset, according to datasheet, only ENDTX and ENDRX are set but we also need TXRDY/US_TXEMPTY to be defined (I guess they would be set after USART setup by AT91)
+		at91usart[i].US_CSR = US_ENDTX | US_ENDRX | US_TXRDY | US_TXEMPTY;
+	}
+
 	return;
 }
 
