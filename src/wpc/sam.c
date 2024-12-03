@@ -166,17 +166,6 @@ struct {
 	UINT8 dmdLatch[6];
 	UINT8 dmdOutputDisabled; // bool
 
-	// Transmit Serial:
-	data8_t prev_ch1;
-	data8_t prev_ch2;
-	int led_col;
-	int led_row;
-	int target_row;
-	int serchar_waiting;
-	UINT8 leds_per_string;
-
-	UINT8 LED_hack_send_garbage; // bool
-
 	UINT32 fastflipaddr;
 } samlocals;
 
@@ -361,8 +350,12 @@ static int dedswitch_upper_r(void)
 
 #define SAM_COMINPORT CORE_COREINPORT
 
-static void sam_LED_hack(int usartno);
-static void sam_transmit_serial(int usartno, data8_t *data, int size);
+#define SAM_NB_ACDC_METALLICA           0
+#define SAM_NB_STARTREK                 1
+#define SAM_NB_MUSTANG                  2
+#define SAM_NB_TWD                      3
+static void sam_init_nodeboard(int bridge);
+static void sam_nodebus_transmit(int usartno, data8_t* data, int size);
 
 static int sam_getSol(int solNo)
 {
@@ -1243,8 +1236,7 @@ PORT_END
 
 static MACHINE_INIT(sam) {
 	at91_set_ram_pointers(sam_reset_ram, sam_page0_ram);
-	at91_set_transmit_serial(sam_transmit_serial);
-	at91_set_serial_receive_ready(sam_LED_hack);
+	at91_set_transmit_serial(sam_nodebus_transmit);
 #ifdef SAM_USE_JIT
 	if (options.at91jit)
 	{
@@ -1265,7 +1257,7 @@ static MACHINE_INIT(sam) {
 	coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
 	core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_BULB_44_18V_DC_SE);
 	// For auxiliary LEDs board (LED fading level is directly sent through serial link, no integrator needed, just use it)
-	core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, CORE_MODOUT_LAMP_MAX - 80, CORE_MODOUT_NONE);
+	core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, CORE_MODOUT_LAMP_MAX - CORE_MODOUT_LAMP0 - 80, CORE_MODOUT_NONE);
 	core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, 32, CORE_MODOUT_SOL_2_STATE); // Base 32 solenoid outputs
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1, CORE_MODOUT_NONE); // GameOn fake solenoid
@@ -1287,6 +1279,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // LED flasher
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		sam_init_nodeboard(SAM_NB_ACDC_METALLICA);
 	}
 	else if (strncasecmp(gn, "avs_", 4) == 0) { // Avengers
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
@@ -1350,12 +1343,14 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 6 - 1, 1, CORE_MODOUT_PULSE); // Coffin board mode bit #0
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 7 - 1, 1, CORE_MODOUT_PULSE); // Coffin board mode bit #1
+		sam_init_nodeboard(SAM_NB_ACDC_METALLICA);
 	}
 	else if (strncasecmp(gn, "mt_", 3) == 0) { // Mustang LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		sam_init_nodeboard(SAM_NB_MUSTANG);
 	}
 	else if (strncasecmp(gn, "nba_", 4) == 0) { // NBA
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1407,6 +1402,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		sam_init_nodeboard(SAM_NB_STARTREK);
 	}
 	else if (strncasecmp(gn, "tf_", 3) == 0) { // Transformers
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 58 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Megatron
@@ -1426,6 +1422,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		sam_init_nodeboard(SAM_NB_TWD);
 	}
 	else if (strncasecmp(gn, "twenty4_", 8) == 0) { // 24
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1472,7 +1469,6 @@ void sam_init(void)
 	memset(&samlocals, 0, sizeof(samlocals));
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
-	samlocals.led_row = -1;
 
 	//!! timing hacks for CSI and IJ
 	if (strncasecmp(gn, "csi_", 4) == 0 || strncasecmp(gn, "ij4_", 4) == 0)
@@ -1626,137 +1622,478 @@ static SWITCH_UPDATE(sam) {
 	}
 }
 
+// -- High level emulation of nodeboards --
+// 
+//   This is built from reading main gamecode, as well as nodeboard firmware and schematics
+//
+//   The 5 first games using these boards were more or less beta version from ACDC & Metallica which have a very basic 
+//   protocol to TWD and Miustang which implement most of it and are very similar to Spike nodeboards.
+// 
+// - ACDC LE (2012) tested with acd_170h
+// - Metallica Premium Monsters (2013) tested with mtl_180h
+//   Board 520-5331-00: Grinder Multi-Color LED driver
+//     Single board with the bridge and the single child node into the same little controller (ATtiny4313-SU), driving 4 GI outputs and
+//     some LED drivers. DOes not implement the full communication protocol (see below)
+// 
+// - Star Trek LE (2013) tested with st_162h
+//   Board 520-6812-00: top board, bridge and child board 5
+//   Board 520-6811-00: bill Premium / LE Left, child board 6
+//   Board 520-6808-00: bill Premium / LE Center, child board 7
+//   Board 520-5322-00: 32 LEDs, 32 switch, child board 8
+//   Implements the communication protocol but Star Trek gamecode just sends LED state of the 4 nodeboards every 32ms
+// 
+// - Mustang LE (2014) tested with mt_145h
+//   Board 520-6822-00 Board 5: Bridge (ATtiny2313A-SU) and child (LPC1112FHN33/xxx) on the same board
+//   Gamecode runs a little startyp sequence to validate bridge communication and setup nodeboards then simply send Led states
+// 
+// - The Walking Dead LE (2014) tested with twd_160h
+//   Board 520-6937-00: bridge & child Board 3 (10 onboard LEDs, 14 driven outputs)
+//   Board 520-5322-00: 32 LEDs, 32 switch, child board 8
+//   TWD gamecode runs a startup sequence with bridge setup (03/05 broadcasts), then nodeboards setup (F1/FE/FF/FB messages), 
+//   then send LED data at a 16ms pace (no fading, 2 messages per board)
+// 
+//   The architecture is designed around the Main CPU, a very simple 'Bridge node' and several 'Child nodes'.
+//   The bridge node is often located on a board that also have a child node. Bridge is a very basic function
+//   built with an ATtiny2313A controller which makes the bridge between CPU (simple point to point communication)
+//   and child nodes (RS485 multi drop communication that support addressing messages).
+// 
+//   Child Nodeboard firmwares are partially available in main CPU ROM likely used to update the nodeboards.
+//   But when updating the nodeboard firmware, the CPU only write to the flash ROM after the first 0x1000 bytes
+//   These 4Kb of memory contains static informations which are likely flashed in factory and never changed.
+//   Therefore values for these are guessed by reverse engineering what the CPU expects when reading. These
+//   could also be obtained from real boards, or exploiting the 0xF5 GetChecksum command but noone has done
+//   that yet.
+//
+//   The child nodeboards use LPC11xx/LPC13xx controllers, for which there has been an attempt to reverse engineer
+//   the boot loader here: https://github.com/domenpk/lpc13xx_boot_analysis/blob/master/boot_disassembly.txt
+//   This boot loader is 16kb mapped at 0x1fff0000
+//
+// Communication protocol between CPU and bridge is the following:
+//   CPU->Bridge command:
+//    . Bridge command (Bit7=0, Bit6/5=unknown, Bit0..4=command)
+//    . Payload Size (number of bytes after this one)
+//    . Payload Data
+//   CPU->Bridge to broadcast to node:
+//    . Node address (Bit7=1), Bit4..6=unknown, Bit0..3=board address)
+//    . Payload Size (number of bytes after this one)
+//    . Payload Data
+//    . Payload Data Checksum (TWD only)
+//    . Expected Response Size (TWD only)
+//   Bridge->CPU: Data then Checksum
+//    . CPU and Bridge know the length of the response so the protocol is just the corresponding data with a (negative) checksum
+// 
+// Communication between bridge and child nodeboards is not emulated here since the high level emulation is done at the bridhe node.
 
-static void sam_LED_hack(int usartno)
-{
-	const char * const gn = Machine->gamedrv->name;
+#define SAM_NB_TYPE_520_5331_00           0 // Metallica Premium Monsters, Grinder Multi-Color LED driver
+#define SAM_NB_TYPE_520_6937_10           1 // TWD with a LPC1112HN33/101 (schematics in the TWD LE manual, using firmware included in the main CPU gamecode)
+#define SAM_NB_TYPE_520_5322_10           2 // TWD, 32 LEDs, 32 switch, child board 8
+#define SAM_NB_TYPE_520_5322_20           3 // Star Trek, 32 LEDs, 32 switch, child board 8
+#define SAM_NB_TYPE_520_6808_00           4 // Star Trek, bill Premium / LE Center, child board 7
+#define SAM_NB_TYPE_520_6811_00           5 // Star Trek, bill Premium / LE Left, child board 6
+#define SAM_NB_TYPE_520_6812_00           6 // Star Trek, top board, bridge and child board 5
+#define SAM_NB_TYPE_520_6822_00           7 // Mustang with a LPC1112HN33/101 (schematics in the Mustang LE manual, using firmware included in the main CPU gamecode)
 
-	// Mustang and TWD LE do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.
+#define SAM_NB_STATUS_RESET_POR           0x0001 // Last reset cause: reset from POR (power on reset)
+#define SAM_NB_STATUS_RESET_WDG           0x0004 // Last reset cause: watchdog (or F1 command)
+#define SAM_NB_STATUS_RESET_BOD           0x0008 // Last reset cause: reset from BOD (brown-out detect: supply voltage went below minimum causing a reset)
+#define SAM_NB_STATUS_UART_OVERRUN        0x0010 // UART overrun error
+#define SAM_NB_STATUS_UART_FRAMING_ERR    0x0020 // UART framing eroor
+#define SAM_NB_STATUS_UART_BREAK_INT      0x0040 // UART break interrupt
+#define SAM_NB_STATUS_FAULT               0x0080 // Fault on board output (/FAULT signal)
+#define SAM_NB_STATUS_MSG_LENGTH_OVERFLOW 0x0100 // Message length overflow (message is too long)
+#define SAM_NB_STATUS_MSG_COUNT_OVERFLOW  0x0400 // Message count overflow (there are too many messages pending)
+#define SAM_NB_STATUS_ISENSE              0x1000 // ISense signal (ADC comparator)
+#define SAM_NB_STATUS_MSG_CHECKSUM_ERROR  0x2000 // Message received with invalid checksum
+#define SAM_NB_STATUS_UNK1                0x4000 // 
+#define SAM_NB_STATUS_UNK2                0x8000 // 
 
-	if (strncasecmp(gn, "mt_145hb", 8)==0)
-	{
-		cpu_writemem32ledw(0x01061648, 0x00);
-	}
-	else if (strncasecmp(gn, "mt_145h", 7)==0)
-	{
-		cpu_writemem32ledw(0x01061728, 0x00);
-	}
-	else if (strncasecmp(gn, "mt_145", 6)==0)
-	{
-		cpu_writemem32ledw_dword(0x1eb0, 0xe1a00000);
-	}
-	else // The default implementation is to blast some data at it.  This seems to work for Walking Dead LE, but not Mustang.
-	{
-		samlocals.LED_hack_send_garbage = 1;
-	}
+#define LOG_NODEBOARD 0
 
-	at91_set_serial_receive_ready(NULL); // disable hack after triggering it once in here
+typedef struct sam_nodeboard {
+	UINT8        address;
+	int          type;
+	UINT32       lpcPartId;     // LPC11xx part ID see LPC11 manual section 26.5.11 Part Identification number for a comprehensive list
+	UINT32       status;
+	UINT32       nMsgReceived;
+	int          ledCount;
+	int          ledMap[64];
+} sam_nodeboard_t;
+
+struct {
+	// Nodebus setup
+	int             bridge;
+	int             bridgeVersionId;
+	sam_nodeboard_t nodeboards[16];
+	// Buffer for message sent by the main CPU board
+	int             rcvMsgPos;
+	UINT8           rcvChecksum;
+	UINT8           rcvMsg[256];
+	// Buffer for messages sent from nodeboards
+	int             sendMsgPos;
+	UINT8           sendChecksum;
+	UINT8           sendMsg[1024];
+} nblocals;
+
+static void sam_set_nodeboard(UINT8 address, int type);
+
+static void sam_init_nodeboard(int bridge) {
+	memset(&nblocals, 0, sizeof(nblocals));
+	nblocals.bridge = bridge;
+	switch (bridge)
+	{
+	case SAM_NB_ACDC_METALLICA:
+		// Not really a nodeboard since it uses a dedicated, non addressed (single board) communication protocol
+		sam_set_nodeboard(0, SAM_NB_TYPE_520_5331_00);
+		// The 48 Leds used to be mapped to 81..128, and the 4 GI strings to 130, 132, 134, 136
+		for (int i = 0; i < 48; i++)
+			nblocals.nodeboards[0].ledMap[i] = CORE_MODOUT_LAMP0 + 80 + i;
+		break;
+	case SAM_NB_STARTREK:
+		sam_set_nodeboard(5, SAM_NB_TYPE_520_6812_00);
+		sam_set_nodeboard(6, SAM_NB_TYPE_520_6811_00);
+		sam_set_nodeboard(7, SAM_NB_TYPE_520_6808_00);
+		sam_set_nodeboard(8, SAM_NB_TYPE_520_5322_20);
+		// Led mapping for backward compatibility
+		for (int i = 0; i < 64; i++) {
+			nblocals.nodeboards[5].ledMap[i] = CORE_MODOUT_LAMP0 + 80       + i;
+			nblocals.nodeboards[6].ledMap[i] = CORE_MODOUT_LAMP0 + 80 +  65 + i;
+			nblocals.nodeboards[7].ledMap[i] = CORE_MODOUT_LAMP0 + 80 + 130 + i;
+			nblocals.nodeboards[8].ledMap[i] = CORE_MODOUT_LAMP0 + 80 + 195 + i;
+		}
+		break;
+	case SAM_NB_MUSTANG:
+		nblocals.bridgeVersionId = 0x000805;
+		sam_set_nodeboard(5, SAM_NB_TYPE_520_6822_00);
+		for (int i = 0; i < 64; i++)
+			nblocals.nodeboards[5].ledMap[i] = CORE_MODOUT_LAMP0 + 80 + i;
+		break;
+	case SAM_NB_TWD:
+		nblocals.bridgeVersionId = 0x000d05;
+		// Board #3 drives directly 18 onboard Leds as well as 14 outputs, and additional Leds through chained serial boards 3A, 3B, 3C
+		// Board #8 drives directly 32 outputs, and additional Leds through chained serial boards 8A, 8B, 8C, 8D
+		// Chained serial Led boards are:
+		// - 520-6827-00A (6 onboard Leds, 2 outputs) for board 3A, 3C, 8A, 8B, 8C
+		// - 520-6829-00A (6 onboard Leds, 2 outputs) for board 3B
+		// - 520-6830-00A (7 onboard Leds, 1 outputs) for board 8D
+		sam_set_nodeboard(3, SAM_NB_TYPE_520_6937_10);
+		sam_set_nodeboard(8, SAM_NB_TYPE_520_5322_10);
+		// Backward compatible light number mapping:
+		for (int i = 0; i < 32; i++) {
+			nblocals.nodeboards[3].ledMap[i     ] = CORE_MODOUT_LAMP0 +  81 + i;
+			nblocals.nodeboards[8].ledMap[i     ] = CORE_MODOUT_LAMP0 + 116 + i;
+			nblocals.nodeboards[3].ledMap[i + 32] = CORE_MODOUT_LAMP0 + 151 + i;
+			nblocals.nodeboards[8].ledMap[i + 32] = CORE_MODOUT_LAMP0 + 186 + i;
+		}
+		break;
+	}
 }
 
-// The serial LED boards seem to receive a 3 byte header (85 + address, 41, 80),
-// then a 65 byte long array of bytes that represent the LEDs.
-// Walking Dead LE seems to use a different format, two strings (83, 88 but with only 0x23 leds).
+static void sam_set_nodeboard(UINT8 address, int type) {
+	nblocals.nodeboards[address].address = address;
+	nblocals.nodeboards[address].type = type;
+	nblocals.nodeboards[address].status = SAM_NB_STATUS_RESET_POR;
+	nblocals.nodeboards[address].lpcPartId = 0x042D502B; // LPC1112FHN33/101, part id can be either 0x042D502B or 0x2524D02B
+	//nblocals.nodeboards[address].lpcPartId = 0x2524D02B; // LPC1112FHN33/101, part id can be either 0x042D502B or 0x2524D02B
+	if (type == SAM_NB_TYPE_520_5331_00)
+		nblocals.nodeboards[address].ledCount = 48; // Metallica
+	else
+		nblocals.nodeboards[address].ledCount = 64; // All other boards drive 64 outputs (including serial childs)
+	for (int i = 0; i < 64; i++)
+		nblocals.nodeboards[address].ledMap[i] = i;
+}
 
-static void sam_transmit_serial(int usartno, data8_t *data, int size)
-{
-#if 0//def _DEBUG
-	int i;
-	for (i = 0; i < size; i++)
-	{
-		char s[16];
-		sprintf(s, "%02x", data[i]);
-		OutputDebugString(s);
+static void sam_nodebus_send_byte(UINT8 data) {
+	nblocals.sendMsg[nblocals.sendMsgPos] = data;
+	nblocals.sendMsgPos++;
+	nblocals.sendChecksum = nblocals.sendChecksum - data;
+}
+
+static void sam_nodebus_send_word(UINT16 data) {
+	sam_nodebus_send_byte(data & 0xFF);
+	sam_nodebus_send_byte((data >> 8) & 0xFF);
+}
+
+static void sam_nodebus_send_dword(UINT32 data) {
+	sam_nodebus_send_byte( data        & 0xFF);
+	sam_nodebus_send_byte((data >>  8) & 0xFF);
+	sam_nodebus_send_byte((data >> 16) & 0xFF);
+	sam_nodebus_send_byte((data >> 24) & 0xFF);
+}
+
+static void sam_nodebus_send_flush(sam_nodeboard_t* nodeboard, int reqResponseSize) {
+	#if LOG_NODEBOARD
+		printf("%6.3f   ", timer_get_time());
+		for (int i = 0; i < nblocals.sendMsgPos; i++)
+			printf("%02x ", nblocals.sendMsg[i]);
+	#endif
+
+	// Response checksum
+	// TWD only ? also for other nodeboards ?
+	if ((nblocals.bridge == SAM_NB_TWD) && nodeboard) {
+		nblocals.sendMsg[nblocals.sendMsgPos] = nblocals.sendChecksum;
+		nblocals.sendMsgPos++;
+		#if LOG_NODEBOARD
+			printf("[Chk = %02x] ", nblocals.sendMsg[nblocals.sendMsgPos - 1]);
+		#endif
 	}
-	OutputDebugString("\n");
-#endif
 
-	while (size > 0)
+	// Status of response (added by bridge)
+	// ....XX.. => error flags (set by bridge, unknown reasons yet: invalid response length? com error with child ?...)
+	// 1....... => flag that the byte contains a valid bridge status (to be reused instead of sending a GetBridgeStatus request)
+	// .???..?? => unknown status flags
+	if (nodeboard)
 	{
-		if (usartno == 1) {
-			//console messages
+		nblocals.sendMsg[nblocals.sendMsgPos] = 0x80;
+		nblocals.sendMsgPos++;
+		#if LOG_NODEBOARD
+			printf("[Status = %02x] ", nblocals.sendMsg[nblocals.sendMsgPos-1]);
+		#endif
+	}
+
+	// TWD bridge only forward valid response, or set an error flags in the status byte
+	assert((reqResponseSize == -1) || (reqResponseSize = nblocals.sendMsgPos));
+
+	#if LOG_NODEBOARD
+		printf("\n");
+	#endif
+
+	int remaining = at91_receive_serial(0, nblocals.sendMsg, nblocals.sendMsgPos);
+	#if LOG_NODEBOARD
+		if (remaining)
+			printf("Transmit failed: %d remaining bytes\n", remaining);
+	#endif
+	nblocals.sendMsgPos = 0;
+	nblocals.sendChecksum = 0;
+}
+
+static void sam_nodebus_msg_received()
+{
+	int msgLength;
+	if (nblocals.bridge == SAM_NB_ACDC_METALLICA)
+		// Metallica has a very simple protocol: either one of the GI output address+state, or the 48 LED string + command + values
+		msgLength = (nblocals.rcvMsg[0] == 0x80) ? (2 + 48) : 2;
+	else
+		// Size = Cmd + Payload Size + Payload. Broadcasted messages have an additional expected response length byte which is not included in the payload length
+		msgLength = ((nblocals.rcvMsg[0] & 0x80) != 0) ? (2 + nblocals.rcvMsg[1] + 1) : (2 + nblocals.rcvMsg[1]);
+	
+	// Bridge command
+	if ((nblocals.rcvMsg[0] & 0x80) == 0) {
+		#if LOG_NODEBOARD
+			printf("%6.3f > ", timer_get_time());
+			for (int i = 0; i < msgLength; i++)
+				printf("%02x ", nblocals.rcvMsg[i]);
+			printf("[Bridge Cmd]\n");
+		#endif
+		switch (nblocals.rcvMsg[0])
+		{
+		case 0x03: // GetBridgeVersion
+			sam_nodebus_send_byte((nblocals.bridgeVersionId >> 16) & 0xFF);
+			sam_nodebus_send_byte((nblocals.bridgeVersionId >>  8) & 0xFF);
+			sam_nodebus_send_byte( nblocals.bridgeVersionId        & 0xFF);
+			sam_nodebus_send_flush(NULL, -1);
+			break;
+		case 0x05: // GetBridgeStatus
+			sam_nodebus_send_byte(0x80); //
+			sam_nodebus_send_flush(NULL, -1);
+			break;
+		}
+	}
+	// Nodeboard addressed command
+	// These commands are still processed by the bridge that will broadcast them using RS485 multi drop
+	// addressing mode, and will buffer the response untl the requested size is reached.
+	else
+	{
+		#if LOG_NODEBOARD
+			printf("%6.3f > ", timer_get_time());
+			for (int i = 0; i < msgLength - 1; i++)
+				if ((nblocals.bridge == SAM_NB_TWD) && (i == msgLength - 2))
+					printf("[Chk = %02x] ", nblocals.rcvMsg[i]);
+				else
+					printf("%02x ", nblocals.rcvMsg[i]);
+			if (nblocals.bridge == SAM_NB_ACDC_METALLICA)
+				printf("%02x ", nblocals.rcvMsg[msgLength - 1]);
+			else
+				printf("[Response Length = %d]", nblocals.rcvMsg[msgLength - 1]);
+			printf("\n");
+		#endif
+
+		if (nblocals.bridge == SAM_NB_ACDC_METALLICA) {
+			UINT8 cmd = nblocals.rcvMsg[0];
+			switch (cmd & 0xF0)
+			{
+			case 0x80:
+				// 48 outputs driving 16 RGB Leds. Intensity is expressed as 0..100 (so 101 levels)
+				// nblocals.rcvMsg[1] is likely a fade command but I have only witnessed 0x00 there
+				for (int i = 0; i < 48; i++)
+					coreGlobals.physicOutputState[nblocals.nodeboards[0].ledMap[i]].value = nblocals.rcvMsg[2 + i] / 100.f;
+				break;
+			case 0x90:
+				// GI Outputs, for backward compatibility we map them to lamps 130/132/134/136, intensity goes from 0..50 (51 levels)
+				coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 129 + ((cmd & 0x0F) * 2)].value = nblocals.rcvMsg[1] / 50.f;
+				break;
+			}
+		}
+		else {
+			UINT8 address = nblocals.rcvMsg[0] & 0x7F;
+			if (address > 15) {
+				assert(FALSE); // Invalid address (should be 4 bits only)
+				return;
+			}
+
+			sam_nodeboard_t* nodeboard = &nblocals.nodeboards[address];
+			if (nodeboard->address != address) {
+				assert(FALSE); // missing nodeboard
+				return;
+			}
+			nodeboard->nMsgReceived++;
+
+			int reqResponseSize = nblocals.rcvMsg[msgLength - 1];
+
+			UINT8 payload = nblocals.rcvMsg[1];
+			if (payload == 0) {
+				assert(FALSE); // No payload => invalid as we do not have any information beside the nodeboard address
+				return;
+			}
+
+			if ((nblocals.bridge == SAM_NB_TWD) && (nblocals.rcvChecksum != nblocals.rcvMsg[msgLength - 1])) { // Requested response length is not part of the checksum
+				assert(FALSE); // Invalid checksum
+				return;
+			}
+
+			UINT8 cmd = nblocals.rcvMsg[2];
+			if ((cmd & 0xC0) == 0x80) {
+				// 0x80/0x90/0xA0/0xB0: Set/Fade LED command
+				int startLedIndex = cmd & 0x3F;
+				if ((nblocals.bridge == SAM_NB_STARTREK) || (nblocals.bridge == SAM_NB_MUSTANG) ) {
+					int ledCount = payload - 1;
+					for (int i = 0; i < ledCount; i++)
+						coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = nblocals.rcvMsg[3 + i] / 255.f;
+				}
+				else {
+					int ledCount = payload - 3;
+					// TODO implement fadeMode to get smoother light shading (320Hz fading & PWM, instead of update at communication rate which seems to vary from 30 to 60Hz)
+					UINT8 fadeMode = nblocals.rcvMsg[3];
+					if (fadeMode == 0xFF) { // Per Led fade mode
+						ledCount /= 2;
+						assert((ledCount * 2) == (payload - 3));
+						for (int i = 0; i < ledCount; i++)
+							// nblocals.rcvMsg[4 + i * 2 + 0] is the fade mode per Led (not implemented)
+							coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = nblocals.rcvMsg[4 + i * 2 + 1] / 255.f;
+					}
+					else { // Global fade mode
+						for (int i = 0; i < ledCount; i++)
+							coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = nblocals.rcvMsg[4 + i] / 255.f;
+					}
+				}
+			}
+			else {
+				switch (cmd) {
+				case 0x20: // SSPWriteAndTriggerRead: write provided output to external ouput serial port and trigger a serial port read
+					break;
+				case 0x21: // SSPRead: return the last data read after a SSPWriteAndTriggerRead
+					break;
+				case 0xF0: // ??
+					break;
+				case 0xF1: // Reset nodeboard
+					nodeboard->nMsgReceived = 0;
+					nodeboard->status = SAM_NB_STATUS_RESET_WDG;
+					for (int i = 0; i < nodeboard->ledCount; i++)
+						coreGlobals.physicOutputState[nodeboard->ledMap[i]].value = 0.f;
+					break;
+				case 0xF2: // ??
+					sam_nodebus_send_byte(4);
+					sam_nodebus_send_flush(nodeboard, reqResponseSize);
+					break;
+				case 0xF3: // ??
+					break;
+				case 0xF4: // Unimplemented in firmware
+					break;
+				case 0xF5: // GetChecksum
+					// Unimplemented, performs a checksum of a requested area of the flash RAM
+					break;
+				case 0xF6: // Unimplemented in firmware
+				case 0xF7:
+				case 0xF9:
+					break;
+				case 0xF8: // GetBootStatus (seems unimplemented in TWD firmware but part of the boot sequence, handled by bridge ? not the right firmware ?)
+					sam_nodebus_send_dword(0x00000001);
+					sam_nodebus_send_flush(nodeboard, reqResponseSize);
+					break;
+				case 0xFA:
+					break;
+				case 0xFB: // Disable OC
+					break;
+				case 0xFC: // GetBoardID
+					break;
+				case 0xFD: // GetVersion
+					break;
+				case 0xFE: // GetBoardInfo
+					//sam_nodebus_send_byte(nodeboard->address | 0x80);
+					sam_nodebus_send_byte(nodeboard->address);
+					sam_nodebus_send_byte((nblocals.bridgeVersionId >> 16) & 0xFF);
+					sam_nodebus_send_byte((nblocals.bridgeVersionId >>  8) & 0xFF);
+					sam_nodebus_send_byte( nblocals.bridgeVersionId        & 0xFF);
+					sam_nodebus_send_dword(nodeboard->lpcPartId);
+					sam_nodebus_send_byte(0x00); // Boot code version major (here from TWD 160h)
+					sam_nodebus_send_byte(0x05); // Boot code version minor (here from TWD 160h)
+					sam_nodebus_send_flush(nodeboard, reqResponseSize);
+					break;
+				case 0xFF: // GetAndResetStatus
+					if (nodeboard->type == SAM_NB_TYPE_520_5322_10) {
+						sam_nodebus_send_dword(nodeboard->nMsgReceived); // Increased before response
+						sam_nodebus_send_dword(nodeboard->status);
+					}
+					else if (nodeboard->type == SAM_NB_TYPE_520_6822_00) {
+						sam_nodebus_send_dword(nodeboard->nMsgReceived-1); // Increased after response
+						sam_nodebus_send_word(nodeboard->status);
+					}
+					sam_nodebus_send_flush(nodeboard, reqResponseSize);
+					nodeboard->status = 0;
+					break;
+				}
+			}
+		}
+	}
+}
+
+static void sam_nodebus_transmit(int usartno, data8_t *data, int size)
+{
+	// Nodebus messages
+	if (usartno == 0) {
+		for (; size > 0; size--, data++) {
+			UINT8 rcvByte = *data;
+			nblocals.rcvChecksum += rcvByte;
+			nblocals.rcvMsg[nblocals.rcvMsgPos] = rcvByte;
+			int msgLength;
+			if (nblocals.bridge == SAM_NB_ACDC_METALLICA)
+				// Metallica has a very simple protocol: either one of the GI output (address + state), or the 48 LED string (address + command + states)
+				msgLength = (nblocals.rcvMsg[0] == 0x80) ? (2 + 48) : 2;
+			else
+				// Broadcasted messages have an additional expected response length byte which is not included in the payload length
+				msgLength = ((nblocals.rcvMsg[0] & 0x80) != 0) ? (2 + nblocals.rcvMsg[1] + 1) : (2 + nblocals.rcvMsg[1]);
+			if (nblocals.rcvMsgPos == msgLength - 1) {
+				sam_nodebus_msg_received();
+				nblocals.rcvMsgPos = 0;
+				nblocals.rcvChecksum = 0;
+			}
+			else {
+				nblocals.rcvMsgPos++;
+				if (nblocals.rcvMsgPos >= 256) {
+					// Bug: we overflowed the reception buffer. We are likely out of sync and did not detect the start/end of a message.
+					nblocals.rcvMsgPos = 0;
+					nblocals.rcvChecksum = 0;
+				}
+			}
+		}
+	}
+	// Console messages
+	else if (usartno == 1) {
 #if defined(VPINMAME)
-			while(size--)
-				dmddeviceFwdConsoleData((*(data++)));
+		while(size--)
+			dmddeviceFwdConsoleData(*(data++));
 #elif defined(LIBPINMAME)
-			libpinmame_forward_console_data(data, size);
+		libpinmame_forward_console_data(data, size);
 #endif
-			return;
-		}
-
-		// Walking Dead LE is waiting for some sort of non-zero response
-		// from the led string.  Continue sending a block of garbage in response until we see
-		// a valid LED string.   Mustang has the same issue, but we have a hack in place that skips the check.
-		if (samlocals.LED_hack_send_garbage)
-		{
-			data8_t tmp[0x40];
-			memset(tmp, 0x01, sizeof(tmp));
-			at91_receive_serial(0, tmp, sizeof(tmp));
-		}
-
-		if (samlocals.led_row == -1)
-		{
-			// Looking for the header.
-
-			// All Mustangs and Star Trek LE
-			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41)
-			{
-				if (samlocals.serchar_waiting == 2)
-				{
-					for (int i = 0; i < samlocals.leds_per_string; i++)
-						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
-				}
-				samlocals.leds_per_string = samlocals.prev_ch1;
-				samlocals.led_row = samlocals.prev_ch2 - 0x85;
-				if (samlocals.led_row > SAM_LEDS_MAX_STRINGS)
-					samlocals.led_row = -1;
-			}
-			// Walking Dead LE
-			if (((*data) == 0x80 || (*data) == 0xa0) && samlocals.prev_ch1 == 0x23 && (samlocals.prev_ch2 == 0x83 || samlocals.prev_ch2 == 0x88))
-			{
-				// TWD sends garbage data in the led string sometimes.   Only accept if it was framed properly. 
-				if (samlocals.serchar_waiting == 2)
-				{
-					samlocals.LED_hack_send_garbage = 0;
-					for (int i = 0; i < samlocals.leds_per_string; i++)
-						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
-				}
-				samlocals.leds_per_string = samlocals.prev_ch1;
-				samlocals.led_row = (samlocals.prev_ch2 == 0x83) ? ((*data) == 0x80) ? 0 : 2 : ((*data) == 0x80) ? 1 : 3;
-			}	
-			// AC/DC LE and Metallica LE
-			if ((*data) == 0x00 && samlocals.prev_ch1 == 0x80 && strncasecmp(Machine->gamedrv->name, "twd_", 4) != 0) // to prevent TWD from entering here initially
-			{
-				if (samlocals.serchar_waiting == 1)
-				{
-					for (int i = 0; i < samlocals.leds_per_string; i++)
-						coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 80 + samlocals.target_row * samlocals.leds_per_string + i].value = samlocals.tmp_leds[i] / 255.f;
-				}
-				samlocals.leds_per_string = 56;
-				samlocals.led_row = 0;
-			}
-			samlocals.led_col = 0;
-			samlocals.serchar_waiting++;
-			samlocals.prev_ch2 = samlocals.prev_ch1;
-			samlocals.prev_ch1 = *(data++);
-			size--;
-		}
-		else
-		{
-			const int count = size > (samlocals.leds_per_string - samlocals.led_col) ? samlocals.leds_per_string - samlocals.led_col : size;
-			int i;
-			for(i=0;i<count;i++)
-			{
-				samlocals.tmp_leds[samlocals.led_col++] = *(data++);
-			}
-			size -= count;
-			if (samlocals.led_col >= samlocals.leds_per_string)
-			{
-				samlocals.prev_ch1 = 0;
-				samlocals.target_row = samlocals.led_row;
-				samlocals.led_row = -1;
-				samlocals.serchar_waiting = 0;
-			}
-		}
 	}
 }
 
