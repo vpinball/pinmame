@@ -31,7 +31,7 @@ Fix crashes in debugger command handling
 
 Fix Capcom crashes in 64bit builds
 
-Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler, Algar, Alien Poker and 7 digit variants of Firepower
+Fix some external DMD alphanumeric mappings: GTS80B, GTS3, Hankin, Police Force, Riverboat Gambler, Algar, Alien Poker, Hyperball and 7 digit variants of Firepower
 
 Added the emulation of physical bulbs & LEDs connected to binary outputs, for WPC, GTS3, SAM, Whitestar, Capcom, S9 and S11 hardware.
   This allows to dramatically improve e.g. lamp or flasher modulation (for example the pulsing lights below the princess of TOTAN,

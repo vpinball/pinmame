@@ -893,8 +893,10 @@ core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UI
 				layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7;
 			break;
 		case GEN_S7:
-			//CORE_SEGLAYOUT_2x7Num_4x1Num_1x16Alpha;		//!! hmm i did this for a reason??
-			layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7;
+			if (strncasecmp(GameName, "hypbl", 5) == 0) // Hyperball
+				layout = CORE_SEGLAYOUT_2x7Num_4x1Num_1x16Alpha;
+			else
+				layout = CORE_SEGLAYOUT_2x7Num_2x7Num_4x1Num_gen7;
 			break;
 		case GEN_S9:
 			layout = CORE_SEGLAYOUT_2x7Num10_2x7Num10_4x1Num;
