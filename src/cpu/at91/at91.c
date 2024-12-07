@@ -426,15 +426,15 @@ void at91_adjust_serial_baud_rate(int usartno)
 {
 	if (at91usart[usartno].US_BRGR)
 	{
-		data32_t USCLKS = (at91usart[usartno].US_MR >> 4) & 0x3; // USCLKS: Clock Selection (Baud Rate Generator Input Clock)
-		data32_t CHRL = (at91usart[usartno].US_MR >> 6) & 0x3; // CHRL: Character Length
-		data32_t SYNC = (at91usart[usartno].US_MR >> 8) & 0x1; // SYNC: Synchronous Mode Select (Code Label US_SYNC)
+		data32_t USCLKS = (at91usart[usartno].US_MR >>  4) & 0x3; // USCLKS: Clock Selection (Baud Rate Generator Input Clock)
+		data32_t CHRL   = (at91usart[usartno].US_MR >>  6) & 0x3; // CHRL: Character Length
+		data32_t SYNC   = (at91usart[usartno].US_MR >>  8) & 0x1; // SYNC: Synchronous Mode Select (Code Label US_SYNC)
 		data32_t NBSTOP = (at91usart[usartno].US_MR >> 12) & 0x3; // NBSTOP: Number of Stop Bits
-		data32_t MODE9 = (at91usart[usartno].US_MR >> 17) & 0x1; // MODE9: 9-bit Character Length (Code Label US_MODE9)
-		int divider = SYNC == 0 ? (16 * at91usart[usartno].US_BRGR) : at91usart[usartno].US_BRGR;
+		data32_t MODE9  = (at91usart[usartno].US_MR >> 17) & 0x1; // MODE9: 9-bit Character Length (Code Label US_MODE9)
+		unsigned int divider = SYNC == 0 ? (16 * at91usart[usartno].US_BRGR) : at91usart[usartno].US_BRGR;
 		double uartClock = USCLKS == 0 ? (at91rs.cpu_freq / divider)        // MCK
-							  : USCLKS == 1 ? (at91rs.cpu_freq / (8 * divider))  // MCK / 8
-					        : 9600;                                            // SCK (external clock, not implemented)
+		                 : USCLKS == 1 ? (at91rs.cpu_freq / (8 * divider))  // MCK / 8
+		                 : 9600;                                            // SCK (external clock, not implemented)
 		double bitPerByte = (MODE9 ? 9 : (CHRL + 5)) + (NBSTOP / 2.0);
 		LOG(("%08x: AT91-USART%d BYTE RATE = %8.1f bytes per second\n", activecpu_get_pc(), usartno + 1, uartClock / bitPerByte));
 		timer_adjust(at91_serial_timer[usartno], TIME_IN_HZ(uartClock / bitPerByte), usartno, TIME_IN_HZ(uartClock / bitPerByte));

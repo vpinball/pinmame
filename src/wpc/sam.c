@@ -1627,13 +1627,13 @@ static SWITCH_UPDATE(sam) {
 //   This is built from reading main gamecode, as well as nodeboard firmware and schematics
 //
 //   The 5 first games using these boards were more or less beta version from ACDC & Metallica which have a very basic 
-//   protocol to TWD and Miustang which implement most of it and are very similar to Spike nodeboards.
+//   protocol, to TWD and Mustang which implement most of it and are very similar to Spike nodeboards.
 // 
 // - ACDC LE (2012) tested with acd_170h
 // - Metallica Premium Monsters (2013) tested with mtl_180h
 //   Board 520-5331-00: Grinder Multi-Color LED driver
 //     Single board with the bridge and the single child node into the same little controller (ATtiny4313-SU), driving 4 GI outputs and
-//     some LED drivers. DOes not implement the full communication protocol (see below)
+//     some LED drivers. Does not implement the full communication protocol (see below)
 // 
 // - Star Trek LE (2013) tested with st_162h
 //   Board 520-6812-00: top board, bridge and child board 5
@@ -1644,22 +1644,22 @@ static SWITCH_UPDATE(sam) {
 // 
 // - Mustang LE (2014) tested with mt_145h
 //   Board 520-6822-00 Board 5: Bridge (ATtiny2313A-SU) and child (LPC1112FHN33/xxx) on the same board
-//   Gamecode runs a little startyp sequence to validate bridge communication and setup nodeboards then simply send Led states
+//   Gamecode runs a little startup sequence to validate bridge communication and setup nodeboards then simply send Led states
 // 
 // - The Walking Dead LE (2014) tested with twd_160h
 //   Board 520-6937-00: bridge & child Board 3 (10 onboard LEDs, 14 driven outputs)
 //   Board 520-5322-00: 32 LEDs, 32 switch, child board 8
 //   TWD gamecode runs a startup sequence with bridge setup (03/05 broadcasts), then nodeboards setup (F1/FE/FF/FB messages), 
-//   then send LED data at a 16ms pace (no fading, 2 messages per board)
+//   then sends LED data at a 16ms pace (no fading, 2 messages per board)
 // 
 //   The architecture is designed around the Main CPU, a very simple 'Bridge node' and several 'Child nodes'.
-//   The bridge node is often located on a board that also have a child node. Bridge is a very basic function
+//   The bridge node is often located on a board that also has a child node. Bridge is a very basic function
 //   built with an ATtiny2313A controller which makes the bridge between CPU (simple point to point communication)
 //   and child nodes (RS485 multi drop communication that support addressing messages).
 // 
 //   Child Nodeboard firmwares are partially available in main CPU ROM likely used to update the nodeboards.
-//   But when updating the nodeboard firmware, the CPU only write to the flash ROM after the first 0x1000 bytes
-//   These 4Kb of memory contains static informations which are likely flashed in factory and never changed.
+//   But when updating the nodeboard firmware, the CPU only writes to the flash ROM after the first 0x1000 bytes.
+//   These 4Kb of memory contains static information which is likely flashed in factory and never changed.
 //   Therefore values for these are guessed by reverse engineering what the CPU expects when reading. These
 //   could also be obtained from real boards, or exploiting the 0xF5 GetChecksum command but noone has done
 //   that yet.
@@ -1900,7 +1900,7 @@ static void sam_nodebus_msg_received()
 	}
 	// Nodeboard addressed command
 	// These commands are still processed by the bridge that will broadcast them using RS485 multi drop
-	// addressing mode, and will buffer the response untl the requested size is reached.
+	// addressing mode, and will buffer the response until the requested size is reached.
 	else
 	{
 		#if LOG_NODEBOARD
@@ -2066,7 +2066,7 @@ static void sam_nodebus_transmit(int usartno, data8_t *data, int size)
 			nblocals.rcvMsg[nblocals.rcvMsgPos] = rcvByte;
 			int msgLength;
 			if (nblocals.bridge == SAM_NB_ACDC_METALLICA)
-				// Metallica has a very simple protocol: either one of the GI output (address + state), or the 48 LED string (address + command + states)
+				// Metallica has a very simple protocol: either one of the GI outputs (address + state), or the 48 LED string (address + command + states)
 				msgLength = (nblocals.rcvMsg[0] == 0x80) ? (2 + 48) : 2;
 			else
 				// Broadcasted messages have an additional expected response length byte which is not included in the payload length

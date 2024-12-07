@@ -89,6 +89,8 @@ Fixed regression/crashes for Elvis and Monopoly (introduced in 3.1)
 Improved emulation robustness when running multiple machines from the same generation (e.g. System11) one after another (e.g. from within VPX)
  or when resetting certain machines
 Clean-up Metallica Coffin Magnet processor board to cleanly report its mode of operation (see https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for detailed operations)
+Rewrite SAM nodeboard emulation (ACDC LE, MTL Premium, ST LE, Mustang LE, TWD LE)
+Fixed AT91 USART emulation
 Fixed reset and slam-tilt problems of Baby Pac-Man
 Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads! Also, regular instructions only increase the six lowest PC bits.
 Improved WPC emulation: implementing FIRQ and the highres timer
