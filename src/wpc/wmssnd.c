@@ -1078,6 +1078,7 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
+  { 0xc000, 0xffff, MWA_NOP },
 MEMORY_END
 
 #else
@@ -1099,6 +1100,7 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
+  { 0xc000, 0xffff, MWA_NOP },
 MEMORY_END
 #endif
 
