@@ -1177,7 +1177,7 @@ static MACHINE_INIT(wpc) {
       // and inspected gamecode only managed FIRQ coming from WPC or DMD. Moreover, if enabling, this would break the DMD timing as the gamecode
       // would mistakenly consider sound FIRQ as a DMD FIRQ, breaking display during score in lots of games.
       // sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION), snd_data_cb, NULL);
-      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(DCS_ROMREGION), NULL, NULL);
+      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION), NULL, NULL);
       break;
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
