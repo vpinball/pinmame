@@ -1526,6 +1526,7 @@ DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(lightnfp)      //         03/81 Lightning (Free Play)
 DRIVERNV(lightnib)      //         09/21 Lightning (Free Play & MOD rev. 19)
 DRIVERNV(lightnic)      //         10/22 Lightning (Free Play & MOD rev. 25)
+DRIVERNV(lightnid)      //         12/24 Lightning (Free Play & MOD rev. 27)
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
 DRIVERNV(splitsfp)      //         08/81 Split Second (Free Play)
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb

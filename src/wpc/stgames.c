@@ -1096,6 +1096,17 @@ BY35_ROMEND
 #define input_ports_lightnic input_ports_st
 CORE_CLONEDEFNV(lightnic,lightnin,"Lightning (Free Play & MOD rev. 25)",2022,"Stern / Idleman",by35_mST200v,0)
 
+INITGAME(lightnid,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(lightnid,"light_V27-u1.716",CRC(41ff4fae) SHA1(796bda930e2a010d18491a803b32af8e6acae304),
+                            "light_V27-u5.716",CRC(7b0875cf) SHA1(c91090a7c8e177579b6509ac7537c492aead3f08),
+                            "light_V27-u2.716",CRC(c125f224) SHA1(421c6446ed4af8fc3a771e2d58f11858f6dc1326),
+                            "light_V27-u6.716",CRC(2e8acbcb) SHA1(41f00404268676dadd05dd64cf32c97b35c5fb4c))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",      CRC(00ffa77c) SHA1(242efd800731a7f84369c6ce54298d0a227dd8ba),
+                            "snd_u10.716",     CRC(80fe9158) SHA1(20fcdb4c09b25e494f02bbfb20c07ff2870d5798))
+BY35_ROMEND
+#define input_ports_lightnid input_ports_st
+CORE_CLONEDEFNV(lightnid,lightnin,"Lightning (Free Play & MOD rev. 27)",2024,"Stern / Idleman",by35_mST200v,0)
+
 /*--------------------------------
 / Split Second
 /-------------------------------*/
