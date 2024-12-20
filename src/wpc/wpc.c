@@ -491,7 +491,7 @@ static INTERRUPT_GEN(wpc_interface_update) {
     wpc_data[WPC_SOLENOID1] = wpc_data[WPC_SOLENOID2] = 0;
     wpc_data[WPC_SOLENOID3] = wpc_data[WPC_SOLENOID4] = 0;
 
-    // Move top 3 GI to solenoids -> gameOn = sol31
+    // Move top 3 GI to solenoids -> gameOn
     coreGlobals.solenoids2 = (wpc_data[WPC_GILAMPS] & 0xe0)<<3;
     if (core_gameData->gen & GENWPC_HASFLIPTRON) {
       coreGlobals.solenoids2 |= wpclocals.solFlip;
@@ -772,7 +772,7 @@ WRITE_HANDLER(wpc_w) {
           coreGlobals.solenoids2 |= wpclocals.solFlip;
         #endif
         core_write_pwm_output(CORE_MODOUT_SOL0 + 45 - 1, 4, ~data);
-        core_write_pwm_output(CORE_MODOUT_SOL0 + 33 - 1, 4, ~data >> 4);
+        core_write_pwm_output(CORE_MODOUT_SOL0 + 33 - 1, 4, (~data) >> 4);
       }
       break;
     case WPC_FLIPPERCOIL95: /* WPC_EXTBOARD4 */
@@ -1221,11 +1221,14 @@ static MACHINE_INIT(wpc) {
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_WPC);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol; // Auxiliary solenoid board adding 8 outputs are already included in the base solenoid span (see core_gelAllModSol) (WPC Fliptronics: TZ / WPC DCS: DM, IJ, STTNG / WPC Security : RS / WPC 95: NGG)
-  coreGlobals.flipperCoils = 0x21232D2F20222C2Eull; // Hold: 33/35/45/47 Pow: 32/34/44/46 sol number is 0 based (offset from SOL0), order is UR/UL/LR/LL
-  if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) /* No upper right flipper */
-    coreGlobals.flipperCoils |= 0xFF000000FF000000ull;
-  if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) /* No upper left flipper */
-    coreGlobals.flipperCoils |= 0x00FF000000FF0000ull;
+  if (core_gameData->gen & (GENWPC_HASFLIPTRON | GENWPC_HASWPC95))
+  {
+    coreGlobals.flipperCoils = 0x21232D2F20222C2Eull; // Hold: 33/35/45/47 Pow: 32/34/44/46 sol number is 0 based (offset from SOL0), order is UR/UL/LR/LL
+    if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) /* No upper right flipper */
+      coreGlobals.flipperCoils |= 0xFF000000FF000000ull;
+    if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) /* No upper left flipper */
+      coreGlobals.flipperCoils |= 0x00FF000000FF0000ull;
+  }
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   coreGlobals.nGI = 5;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
