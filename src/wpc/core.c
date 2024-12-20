@@ -1782,7 +1782,7 @@ int core_getSol(int solNo) {
   }
   else if (solNo <= 36) { // 33-36 driver specific sols
     if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper 
-      if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+      if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
         return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
       int mask;
       /*-- flipper coils --*/
@@ -1804,7 +1804,7 @@ int core_getSol(int solNo) {
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
-    if ((core_gameData->gen & GEN_ALLWPC) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
+    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
       return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
     int mask = 1<<(solNo - 45);
     /*-- Game must have lower flippers but for symmetry we check anyway --*/
@@ -1897,7 +1897,7 @@ void core_getAllPhysicSols(float* const state)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 33..36 [WPC only] upper flipper solenoids --*/
   if (core_gameData->gen & GEN_ALLWPC) {
-    if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
       for (int i = 32; i < 36; i++)
         state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
     else {
@@ -1926,16 +1926,19 @@ void core_getAllPhysicSols(float* const state)
     for (int i = 40; i < 48; i++)
       state[i - 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 45..48 lower flipper solenoids (only modulated for WPC) --*/
-  if ((core_gameData->gen & GEN_ALLWPC) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
-    for (int i = 44; i < 48; i++)
-      state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-  else {
-    UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
-    lFlip |= (lFlip & 0x05)<<1; // hold coil is set if either coil is set
-    state[44] = lFlip & 0x01 ? 1.0f : 0.0f;
-    state[45] = lFlip & 0x02 ? 1.0f : 0.0f;
-    state[46] = lFlip & 0x04 ? 1.0f : 0.0f;
-    state[47] = lFlip & 0x08 ? 1.0f : 0.0f;
+  if (core_gameData->gen & GEN_ALLWPC)
+  {
+    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
+      for (int i = 44; i < 48; i++)
+        state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
+    else {
+      UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
+      lFlip |= (lFlip & 0x05)<<1; // hold coil is set if either coil is set
+      state[44] = lFlip & 0x01 ? 1.0f : 0.0f;
+      state[45] = lFlip & 0x02 ? 1.0f : 0.0f;
+      state[46] = lFlip & 0x04 ? 1.0f : 0.0f;
+      state[47] = lFlip & 0x08 ? 1.0f : 0.0f;
+    }
   }
   /*-- 49..50 simulated --*/
   state[48] = sim_getSol(49) ? 1.0f : 0.0f;
