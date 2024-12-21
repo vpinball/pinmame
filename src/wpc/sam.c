@@ -2247,11 +2247,12 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 #define SAT_NYB(v) (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 #define SAT_BYTE(v) (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 
+// Little 5x7 led matrix used in World Poker Tour (2 rows of 7 each)
 static PINMAME_VIDEO_UPDATE(samminidmd_update) {
     int ii,kk;
     const int dmd_x = (layout->left-10)/7;
     const int dmd_y = (layout->top-34)/9;
-    for (int y = 0; y < 8; y++)
+    for (int y = 0; y < 7; y++)
 		for (int x = 0; x < 5; x++) {
 			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
@@ -2261,7 +2262,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
     for (ii = 0; ii < 5; ii++) {
         int bits = 0;
-        for (kk = 0; kk < 7; kk++) // FIXME this does not match y in the for loop just above
+        for (kk = 0; kk < 7; kk++)
             bits = (bits<<1) | (coreGlobals.dmdDotRaw[kk * layout->length + ii] ? 1 : 0);
         coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
     }
@@ -2270,6 +2271,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
     return 0;
 }
 
+// Wheel of Fortune Led matrix display
 static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
     int ii,jj,kk;
     for (jj = 0; jj < 35; jj++)
