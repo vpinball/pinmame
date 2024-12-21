@@ -2013,6 +2013,8 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     }
   }
 
+  #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
+  const UINT8 lum4[] = { 0, 85, 170, 255 };
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // size is limited to 15 cols
@@ -2021,11 +2023,13 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
       if (p & 0x03) // segment set?
-        *(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
+        //*(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
+        *(--line) = dimming ? DMD_PAL((dim[kk][ll] * (4u - (p & 3))) / 3u) : DMD_PAL(((4u - (p & 3)) * 255u) / 3u);
       else
         *(--line) = Machine->pens[offPens[np & 0x03]];
     }
   }
+  #undef DMD_PAL
 }
 
 
