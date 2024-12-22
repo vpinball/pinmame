@@ -101,7 +101,6 @@ S11_INPUT_PORTS_END
 
 /* Solenoids, The rest are flashes I think */
 #define sOuthole 1
-#define sDummy   S11_CSOL(1) /* this is just an example of a C line solenoid */
 #define sRelease 2
 #define sDropRel 3
 #define sEject   5
