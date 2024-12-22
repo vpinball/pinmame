@@ -971,10 +971,11 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
     core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
-// 3-Color MINI DMD Type 4 (Simpsons) (14x10)
+// 3-Color MINI DMD Type 4 (Simpsons) (2 color R/G Led matrix 14x10)
+// > encode the expected color by its index in the PinMame color palette
 PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   static const int color[2][2] = {
-    { 0, 6 }, { 7, 9 } // off, green, red, yellow
+    { 0, 7 }, { 8, 10 } // off, green, red, yellow
   };
   int ii;
   UINT8 *line;
@@ -1000,7 +1001,24 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
     *seg++ = bits2;
   }
   if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout, NULL);
+  {
+    // Don't use core update as it expects a raw/luminance frame instead of a colored frame
+    // core_dmd_video_update(bitmap, cliprect, layout, NULL);
+    const int x = layout->left;
+    const int y = layout->top;
+    const int width = layout->length;
+    const int height = layout->start;
+    const int displaySize = pmoptions.dmd_compact ? 1 : 2;
+    BMTYPE** lines = ((BMTYPE**)bitmap->line) + (y * displaySize);
+    for (int ii = 0; ii < height; ii++) {
+      BMTYPE* line = (*lines) + (x * displaySize);
+      for (int jj = 0; jj < width; jj++) {
+        *line = coreGlobals.dmdDotRaw[ii*width + jj];
+        line += displaySize;
+      }
+      lines += displaySize;
+    }
+  }
   return 0;
 }
 

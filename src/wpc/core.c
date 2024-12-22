@@ -224,7 +224,7 @@ const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15}
 #endif
 
 /* Palette */
-static const unsigned char core_palette[48+COL_COUNT][3] = {
+static const unsigned char core_palette[COL_COUNT+48+48][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
@@ -234,15 +234,18 @@ static const unsigned char core_palette[48+COL_COUNT][3] = {
 /* -- PLAYFIELD LAMP COLORS -- */
 {/*  5 */ 0x00,0x00,0x00}, /* Black */
 {/*  6 */ 0xff,0xff,0xff}, /* White */
-{/*  7 */ 0x40,0xff,0x00}, /* green */
+{/*  7 */ 0x40,0xff,0x00}, /* Green */
 {/*  8 */ 0xff,0x00,0x00}, /* Red */
-{/*  9 */ 0xff,0x80,0x00}, /* orange */
-{/* 10 */ 0xff,0xff,0x00}, /* yellow */
-{/* 11 */ 0x00,0x80,0xff}, /* lblue */
-{/* 12 */ 0x9f,0x40,0xff}  /* lpurple*/
+{/*  9 */ 0xff,0x80,0x00}, /* Orange */
+{/* 10 */ 0xff,0xff,0x00}, /* Yellow */
+{/* 11 */ 0x00,0x80,0xff}, /* Blue */
+{/* 12 */ 0x9f,0x40,0xff}  /* Purple*/
+// Followed by 48 DMD shades
+// Followed by 48 Alphanum shades
 };
+#define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 96u + ((unsigned int)(x) * 47u) / 255u)
+#define ALPHA_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u)
 
-static UINT16 dim_LUT[3][257];
 
 /*------------------------------
 /  Display segment drawing data
@@ -779,6 +782,19 @@ static PALETTE_INIT(core) {
     }
   }
 
+  /*-- generate 16 shades of the dmd color for all antialiased or shaded dots --*/
+  for (ii = 0; ii < 16; ii++) {
+    tmpPalette[palSize-48-48+ii][0] = (UINT8)((rStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
+    tmpPalette[palSize-48-48+ii][1] = (UINT8)((gStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
+    tmpPalette[palSize-48-48+ii][2] = (UINT8)((bStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
+    tmpPalette[palSize-48-32+ii][0] = (UINT8)((rStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
+    tmpPalette[palSize-48-32+ii][1] = (UINT8)((gStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
+    tmpPalette[palSize-48-32+ii][2] = (UINT8)((bStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
+    tmpPalette[palSize-48-16+ii][0] = (UINT8)((rStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+    tmpPalette[palSize-48-16+ii][1] = (UINT8)((gStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+    tmpPalette[palSize-48-16+ii][2] = (UINT8)((bStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+  }
+
   /*-- segment display antialias colors --*/
   // reset to default values, DMD levels should not be applied to segments
   perc66 = 67;
@@ -798,7 +814,10 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * perc33 / 10000;
   tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * perc33 / 10000;
 
-  /*-- generate 16 shades of the segment color for all antialiased segments --*/
+  /*-- generate 16 shades of the segment color for all antialiased or shaded segments --*/
+  perc66 = 66;
+  perc33 = 33;
+  perc0 = 0;
   for (ii = 0; ii < 16; ii++) {
     tmpPalette[palSize-48+ii][0] = (UINT8)((rStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
     tmpPalette[palSize-48+ii][1] = (UINT8)((gStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
@@ -810,16 +829,6 @@ static PALETTE_INIT(core) {
     tmpPalette[palSize-16+ii][1] = (UINT8)((gStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
     tmpPalette[palSize-16+ii][2] = (UINT8)((bStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
   }
-
-  /*-- generate segment colors for dimmed segments --*/
-  for (ii = 0; ii <= 256; ii++) {
-    const int tmp = 256 * perc0 + ii * (100 - perc0);
-    dim_LUT[0][ii] = ((bStart * tmp / 25600)>>3) | (((gStart * tmp / 25600)>>3)<<5) | (((rStart * tmp / 25600)>>3)<<10);
-    dim_LUT[1][ii] = ((bStart * tmp * (perc66+5) / 2560000)>>3) | (((gStart * tmp * (perc66+5) / 2560000)>>3)<<5) | (((rStart * tmp * (perc66+5)/ 2560000)>>3)<<10);
-    dim_LUT[2][ii] = ((bStart * tmp *  perc33    / 2560000)>>3) | (((gStart * tmp *  perc33    / 2560000)>>3)<<5) | (((rStart * tmp *  perc33   / 2560000)>>3)<<10);
-  }
-
-//for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
@@ -1970,7 +1979,6 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
   UINT16 dim[20][15] = {{0}}; // max 20 rows, 15 cols
   static const int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
   int sb, kk, ll;
-  const int palSize = sizeof(core_palette) / 3;
   for (sb = 1; seg_bits; sb++, seg_bits >>= 1) { // loop over each segment
     if (seg_bits & 0x01) {
       #ifdef PROC_SUPPORT
@@ -2013,23 +2021,22 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     }
   }
 
-  #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
+  #define ALPHA_OFF_LUM 48u
+  #define ALPHA_ON_LUM (255u - ALPHA_OFF_LUM)
   const UINT8 lum4[] = { 0, 85, 170, 255 };
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // size is limited to 15 cols
     UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
-
+    unsigned int aa[] = { 0, 100, 66, 33 }; // AA factor
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
-      if (p & 0x03) // segment set?
-        //*(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
-        *(--line) = dimming ? DMD_PAL((dim[kk][ll] * (4u - (p & 3))) / 3u) : DMD_PAL(((4u - (p & 3)) * 255u) / 3u);
+      if (p & 3) // segment set?
+        *(--line) = dimming ? ALPHA_PAL(ALPHA_OFF_LUM + (dim[kk][ll] * aa[p & 3] * ALPHA_ON_LUM) / 25500u) : ALPHA_PAL(ALPHA_OFF_LUM + (255u * aa[p & 3] * ALPHA_ON_LUM) / 25500u);
       else
-        *(--line) = Machine->pens[offPens[np & 0x03]];
+        *(--line) = ALPHA_PAL((ALPHA_OFF_LUM * aa[np&3]) / 100u);
     }
   }
-  #undef DMD_PAL
 }
 
 
@@ -3229,7 +3236,6 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
 #if defined(PINMAME) || defined(VPINMAME)
 void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa) {
   #define DMD_OFS(row, col) ((row)*width + col)
-  #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
@@ -3266,7 +3272,6 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
     }
   }
   #undef DMD_OFS
-  #undef DMD_PAL
 }
 #endif
 
@@ -3412,7 +3417,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     dmdDotRaw = &coreGlobals.dmdDotRaw[0];
     dmdDotLum = &coreGlobals.dmdDotLum[0];
     if ((core_gameData->gen & GEN_SAM) == 0) {
-      const UINT8 lum4[] = { 0, 85, 170, 255};
+      const UINT8 lum4[] = { 0, 85, 170, 255 };
       const UINT8 lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
       const UINT8* lum = (core_gameData->gen & GEN_SPA) != 0 ? lum16 : lum4;
       for (int ii = 0; ii < layout->length * layout->start; ii++)
