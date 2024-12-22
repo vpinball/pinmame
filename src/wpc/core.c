@@ -1782,7 +1782,7 @@ int core_getSol(int solNo) {
   }
   else if (solNo <= 36) { // 33-36 driver specific sols
     if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper 
-      if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+      if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
         return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
       int mask;
       /*-- flipper coils --*/
@@ -1804,7 +1804,7 @@ int core_getSol(int solNo) {
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
-    if ((core_gameData->gen & GEN_ALLWPC) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
+    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
       return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
     int mask = 1<<(solNo - 45);
     /*-- Game must have lower flippers but for symmetry we check anyway --*/
@@ -1897,7 +1897,7 @@ void core_getAllPhysicSols(float* const state)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 33..36 [WPC only] upper flipper solenoids --*/
   if (core_gameData->gen & GEN_ALLWPC) {
-    if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
       for (int i = 32; i < 36; i++)
         state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
     else {
@@ -1926,16 +1926,19 @@ void core_getAllPhysicSols(float* const state)
     for (int i = 40; i < 48; i++)
       state[i - 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 45..48 lower flipper solenoids (only modulated for WPC) --*/
-  if ((core_gameData->gen & GEN_ALLWPC) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
-    for (int i = 44; i < 48; i++)
-      state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-  else {
-    UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
-    lFlip |= (lFlip & 0x05)<<1; // hold coil is set if either coil is set
-    state[44] = lFlip & 0x01 ? 1.0f : 0.0f;
-    state[45] = lFlip & 0x02 ? 1.0f : 0.0f;
-    state[46] = lFlip & 0x04 ? 1.0f : 0.0f;
-    state[47] = lFlip & 0x08 ? 1.0f : 0.0f;
+  if (core_gameData->gen & GEN_ALLWPC)
+  {
+    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
+      for (int i = 44; i < 48; i++)
+        state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
+    else {
+      UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
+      lFlip |= (lFlip & 0x05)<<1; // hold coil is set if either coil is set
+      state[44] = lFlip & 0x01 ? 1.0f : 0.0f;
+      state[45] = lFlip & 0x02 ? 1.0f : 0.0f;
+      state[46] = lFlip & 0x04 ? 1.0f : 0.0f;
+      state[47] = lFlip & 0x08 ? 1.0f : 0.0f;
+    }
   }
   /*-- 49..50 simulated --*/
   state[48] = sim_getSol(49) ? 1.0f : 0.0f;
@@ -2010,6 +2013,8 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     }
   }
 
+  #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
+  const UINT8 lum4[] = { 0, 85, 170, 255 };
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // size is limited to 15 cols
@@ -2018,11 +2023,13 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
       if (p & 0x03) // segment set?
-        *(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
+        //*(--line) = dimming ? dim_LUT[(p & 0x03)-1][dim[kk][ll]] : Machine->pens[palSize - 33 + (3 - (p & 0x03))*16];
+        *(--line) = dimming ? DMD_PAL((dim[kk][ll] * (4u - (p & 3))) / 3u) : DMD_PAL(((4u - (p & 3)) * 255u) / 3u);
       else
         *(--line) = Machine->pens[offPens[np & 0x03]];
     }
   }
+  #undef DMD_PAL
 }
 
 
@@ -3220,18 +3227,14 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
 // Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
 // FIXME apply colors LUT ?
 #if defined(PINMAME) || defined(VPINMAME)
-void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa, const int keepColor) {
+void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa) {
   #define DMD_OFS(row, col) ((row)*width + col)
   #define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u) // The trail of PinMAME palette has 48 DMD dot shades
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
     for (int jj = 0; jj < width; jj++) {
-      if (keepColor) { // mini DMDs, don't change their colors
-        *line = coreGlobals.dmdDotRaw[ii * width + jj] + 1; // +1 needed because the entire palette was shifted!?
-      } else {
-        *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
-      }
+      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       line += locals.displaySize;
     }
     lines += locals.displaySize;
@@ -3409,9 +3412,11 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     dmdDotRaw = &coreGlobals.dmdDotRaw[0];
     dmdDotLum = &coreGlobals.dmdDotLum[0];
     if ((core_gameData->gen & GEN_SAM) == 0) {
-      const int shift = (core_gameData->gen & GEN_SPA) != 0 ? 4 : 6;
+      const UINT8 lum4[] = { 0, 85, 170, 255};
+      const UINT8 lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
+      const UINT8* lum = (core_gameData->gen & GEN_SPA) != 0 ? lum16 : lum4;
       for (int ii = 0; ii < layout->length * layout->start; ii++)
-        dmdDotLum[ii] = dmdDotRaw[ii] << shift;
+        dmdDotLum[ii] = lum[dmdDotRaw[ii]];
     }
   }
 
@@ -3425,7 +3430,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   #elif defined(VPINMAME)
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
     // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA), layout->type & CORE_NODISP);
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
     if (isMainDMD) {
       has_DMD_Video = 1;
       core_dmd_render_vpm(layout->length, layout->start, dmdDotLum);
@@ -3434,7 +3439,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     }
   
   #elif defined(PINMAME)
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA), layout->type & CORE_NODISP);
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
 
   #endif
 }
