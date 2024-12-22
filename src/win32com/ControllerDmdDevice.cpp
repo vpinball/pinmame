@@ -79,7 +79,7 @@ typedef struct {
 static bool        dmd_hasDMD = false; // Used to send a black frame for clean close
 static UINT16      dmd_width = 0; // Only valid if dmd_hasDMD is set
 static UINT16      dmd_height = 0; // Only valid if dmd_hasDMD is set
-static dmddevice_t dmdDevices[2] = { 0 };
+static dmddevice_t dmdDevices[2] = { {0} };
 
 extern "C"
 {
@@ -218,8 +218,8 @@ extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, UINT8
 			if (core_gameData->gen & GEN_GTS3) {
 				const int shift = is16Shades ? 4 : 6;
 				frame = (UINT8*)malloc(width * height);
-				for (int i = 0; i < width * height; i++)
-					frame[i] = dmdDotLum[i] >> shift;
+				for (int i2 = 0; i2 < width * height; i2++)
+					frame[i2] = dmdDotLum[i2] >> shift;
 			}
 			if (is16Shades) {
 				if ((noOfRawFrames != 0) && dmdDevices[i].Render_16_Shades_with_Raw)
