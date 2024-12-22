@@ -90,12 +90,8 @@ int s11_m2sw(int col, int row);
     SIM_PORTS(balls) \
     DE_COMPORTS2
 
-/*-- To access C-side multiplexed solenoid/flasher --*/
-#define S11_CSOL(x) ((x)+(WPC_FIRSTFLIPPERSOL-1))
-#define DE_CSOL(x) ((x)+24)
 /*-- GameOn solenoids --*/
 #define S11_GAMEONSOL 23
-#define DE_GAMEONSOL  23
 
 /*-- DE switch numbers --*/
 #define DE_SWADVANCE     -7

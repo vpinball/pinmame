@@ -86,10 +86,11 @@ static struct {
   int    digSel;
   int    diagnosticLed;
   int    swCol;
-  int    ssEn;		/* Special solenoids and flippers enabled ? */
-  int    sndCmd;	/* external sound board cmd */
+  int    ssEn;		  /* Enable switched solenoids (solenoids that can be fired by a switch or a solenoid output) */
+  int    switchedSol; /* Output state for switched solenoid (which may be enabled/disabled by ssEn), usually slingshots, bumpers,... */
+  int    sndCmd;	  /* External sound board cmd */
   int    piaIrq;
-  int    deGame;	/*Flag to see if it's a Data East game running*/
+  int    deGame;	  /* Flag to see if it's a Data East game running */
   UINT8  solBits1,solBits2;
   UINT8  solBits2prv;
 #ifndef PINMAME_NO_UNUSED
@@ -206,7 +207,7 @@ static INTERRUPT_GEN(s11_vblank) {
  #endif
 #endif
   coreGlobals.solenoids  = locals.solsmooth[0] | locals.solsmooth[1];
-  coreGlobals.solenoids2 = locals.extSol << 8;
+  coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xFFFF00FF) | (locals.extSol << 8);
 #if defined(LISY_SUPPORT)
    lisy_w_solenoid_handler( ); //RTH: need to add solnoids2 ?
 #endif
@@ -512,11 +513,21 @@ static void setSSSol(int data, int solNo) {
                                     /*    WMS          DE */
   static const int ssSolNo[2][6] = {{5,4,1,2,0,3},{3,4,5,1,0,2}};
   int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo]);
-  if (locals.ssEn & (~data & 1))
-    { coreGlobals.pulsedSolState |= bit;  locals.solenoids |= bit; }
+  if (~data & 1)
+    locals.switchedSol |= bit;
   else
+    locals.switchedSol &= ~bit;
+  if (locals.ssEn & (~data & 1))
+  {
+    coreGlobals.pulsedSolState |= bit;
+    locals.solenoids |= bit;
+    core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo] - 1, 1, 1);
+  }
+  else
+  {
     coreGlobals.pulsedSolState &= ~bit;
-  core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo] - 1, 1, (locals.ssEn & (~data & 1)) ? 1 : 0);
+    core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo] - 1, 1, 0);
+  }
 }
 
 static void updsol(void) {
@@ -574,7 +585,8 @@ static WRITE_HANDLER(latch2200) {
 static WRITE_HANDLER(pia0cb2_w) {
   locals.ssEn = !data;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & ~(1 << (S11_GAMEONSOL - 1))) | (data ? 0 : (1 << (S11_GAMEONSOL - 1)));
-  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1].value = data ? 0.f : 1.f;
+  core_write_pwm_output(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, locals.ssEn ? 1.f : 0.f);
+  core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL, 6, locals.ssEn ? locals.switchedSol : 0);
 }
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
@@ -834,7 +846,7 @@ static MACHINE_INIT(s11) {
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_S11);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, CORE_MODOUT_NONE); // GameOn output for fast flips
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, CORE_MODOUT_PULSE);
   if (core_gameData->sxx.muxSol)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + core_gameData->sxx.muxSol - 1, 1, CORE_MODOUT_PULSE); // K1 mux relay
   const struct GameDriver* rootDrv = Machine->gamedrv;
