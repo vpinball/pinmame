@@ -236,7 +236,7 @@ void gts80s_diag(int state) {
 
 static WRITE_HANDLER(gts80s_data_w)
 {
-	// logerror("sound latch: 0x%02x\n", data);
+  // logerror("sound latch: 0x%02x\n", data);
   if (Machine->drv->pinmame.coreDips < 32) { // this is a System1 game, so use all the bits!
 	riot6530_set_input_b(0, data);
   } else {
@@ -971,8 +971,8 @@ static WRITE_HANDLER( s80bs_dac2_data_w )
 //Process command from Main CPU
 WRITE_HANDLER(gts80b_data_w)
 {
-    // ignore the first byte (probably comes in too early)
-    if (!GTS80BS_locals.firstCmd) { GTS80BS_locals.firstCmd = 1; return; }
+	// ignore the first byte (probably comes in too early)
+	if (!GTS80BS_locals.firstCmd) { GTS80BS_locals.firstCmd = 1; return; }
 	data ^= 0xff;	/*Data is inverted from main cpu*/
 	s80bs_sh_w(0,data);
 //	snd_cmd_log(data);
@@ -1114,7 +1114,7 @@ static struct YM2151interface GTS80BS_ym2151Int =
 /* System 3 Sound:
 
    Hardware is almost the same as Generation 3 System 80b boards,
-   except for an additonal board with an OKI 6295 chip on it.
+   except for an additional board with an OKI 6295 chip on it.
 
    CPU: 2x(6502): DAC: 1x(AD7528): DSP: 1x(YM2151): OTHER: OKI6295 (Speech)
 */
@@ -1218,7 +1218,7 @@ static WRITE_HANDLER(sound_control_w)
 
 	/*
 		U3 - LS374 (Data is fed from the U2 Latch)
-	   ----------
+		----------
 		D0 = VUP/DOWN?? - Connects to optional U12 (volume control?)
 		D1 = VSTEP??    - Connects to optional U12 (volume control?)
 		D2 = 6295 Chip Select (Active Low)
@@ -1470,7 +1470,7 @@ static struct {
   int    ay_latch;			// Data Latch to AY-8913 chips
   int    nmi_rate;			// Programmable NMI rate
   void   *nmi_timer;		// Timer for NMI (NOT USED ANYMORE?)
-  int	 nmi_enable;		// Enable NMI triggered by Programmable Circuit
+  int    nmi_enable;		// Enable NMI triggered by Programmable Circuit
   int    snd_data;			// Command from cpu
   UINT8  dac_volume;
   UINT8  dac_data;
