@@ -405,6 +405,8 @@ struct hc55516_data
 			int charge_shift;
 			int charge_add;
 			int decay_shift;
+
+			double gain;
 		} intg;
 
 		// Floating-point arithmetic, used in original MAME implementation
@@ -815,7 +817,7 @@ static void process_bit_HC555XX(struct hc55516_data *chip, const UINT8 bit, cons
 // any range compression.
 static float flat_loudness(struct hc55516_data *chip, double sample)
 {
-	return (float)sample;
+	return (float)(sample * chip->filter.intg.gain);
 }
 
 // ---------------------------------------------------------------------------
@@ -1159,12 +1161,19 @@ void hc55516_clock_w(int num, int state)
 
 // Set the gain, as a multiple of the default gain.  The default gain
 // yields a 1:1 mapping from the full dynamic range of the HC55516 to
-// the full dynamic range of the MAME stream.  This only applies when
-// using the old PinMAME implementation - it's ignored for the new
-// decap chip logic version.
-void hc55516_set_gain(int num, double gain)
+// the full dynamic range of the MAME stream.
+void hc55516_set_mixing_level(int num, double gain)
 {
-	hc55516[num].filter.dbl.gain = gain * DEFAULT_GAIN;
+	if (gain < 1.0)
+	{
+		mixer_set_mixing_level(hc55516[num].channel, (int)(gain * 100.));
+		gain = 1.0;
+	}
+	else
+		mixer_set_mixing_level(hc55516[num].channel, 100);
+
+	hc55516[num].filter.dbl.gain = gain * DEFAULT_GAIN; // for hc55516_use_chip_logic == 0
+	hc55516[num].filter.intg.gain = gain; // for hc55516_use_chip_logic == 1
 }
 
 // Set the data bit input.  This just latches the bit for later processing,
@@ -1281,6 +1290,12 @@ int hc55516_sh_start(const struct MachineSound *msound)
 			chip->process_bit = process_bit_HC555XX;
 			chip->compress_loudness = flat_loudness;
 
+			// set the default parameters for this version of the filter
+			if (intf->volume[i] > 100)
+				chip->filter.intg.gain = intf->volume[i]/100.0;
+			else
+				chip->filter.intg.gain = 1.0;
+
 			// Populate the filter parameters according to the chip type
 			if (intf->chip_type == 55516 || intf->chip_type == 55536 || intf->chip_type == 55564)
 			{
@@ -1333,7 +1348,10 @@ int hc55516_sh_start(const struct MachineSound *msound)
 			chip->compress_loudness = compress_loudness;
 
 			// set the default parameters for this version of the filter
-			chip->filter.dbl.gain = DEFAULT_GAIN;
+			if (intf->volume[i] > 100)
+				chip->filter.dbl.gain = DEFAULT_GAIN * intf->volume[i] / 100.0;
+			else
+				chip->filter.dbl.gain = DEFAULT_GAIN;
 		}
 
 		// create the output stream
@@ -1346,7 +1364,7 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		default:    sprintf(name, "unknown HC555XX #%d", i); break;
 		}
 
-		chip->channel = stream_init_float(name, intf->volume[i], Machine->sample_rate, i, hc55516_update, 1); // pick output sample rate for max quality, also saves an additional filtering step in the mixer!
+		chip->channel = stream_init_float(name, MIN(intf->volume[i],100), Machine->sample_rate, i, hc55516_update, 1); // pick output sample rate for max quality, also saves an additional filtering step in the mixer!
 		chip->stream_update_time = timer_get_time();
 		chip->output_dt = 1.0 / Machine->sample_rate;
 		if (chip->channel == -1)
