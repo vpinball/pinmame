@@ -2023,12 +2023,12 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 
   #define ALPHA_OFF_LUM 48u
   #define ALPHA_ON_LUM (255u - ALPHA_OFF_LUM)
-  const UINT8 lum4[] = { 0, 85, 170, 255 };
+  static const UINT8 lum4[] = { 0, 85, 170, 255 };
+  static const unsigned int aa[] = { 0, 100, 66, 33 }; // AA factor
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // size is limited to 15 cols
     UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
-    unsigned int aa[] = { 0, 100, 66, 33 }; // AA factor
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
       if (p & 3) // segment set?
@@ -2191,9 +2191,9 @@ static MACHINE_INIT(core) {
       for (int i = 0; i < 256; i++) {
         const float v = (float)i * (float)(1.0/255.); // level[i >> 4] / 100.f;
         locals.vpm_dmd_luminance_lut[i] = (UINT8)(v * 100.f);
-        const UINT32 r = (UINT32)(rStart * v);
-        const UINT32 g = (UINT32)(gStart * v);
-        const UINT32 b = (UINT32)(bStart * v);
+        const UINT32 r = (UINT32)((float)rStart * v);
+        const UINT32 g = (UINT32)((float)gStart * v);
+        const UINT32 b = (UINT32)((float)bStart * v);
         locals.vpm_dmd_color_lut[i] = r | (g << 8) | (b << 16);
       }
     }
@@ -3253,7 +3253,7 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
       BMTYPE *line = (*lines) + (x * 2);
       for (int jj = 0; jj < width * 2 - 1; jj++) {
         const int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
-        if ((ii & 1) && (jj & 1)) { // Corner point
+        if ((ii & 1) & (jj & 1)) { // Corner point
           const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
           assert(0 <= lum && lum <= 255);
           *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
@@ -3417,9 +3417,9 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     dmdDotRaw = &coreGlobals.dmdDotRaw[0];
     dmdDotLum = &coreGlobals.dmdDotLum[0];
     if ((core_gameData->gen & GEN_SAM) == 0) {
-      const UINT8 lum4[] = { 0, 85, 170, 255 };
-      const UINT8 lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
-      const UINT8* lum = (core_gameData->gen & GEN_SPA) != 0 ? lum16 : lum4;
+      static const UINT8 lum4[] = { 0, 85, 170, 255 };
+      static const UINT8 lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
+      const UINT8* const lum = (core_gameData->gen & GEN_SPA) != 0 ? lum16 : lum4;
       for (int ii = 0; ii < layout->length * layout->start; ii++)
         dmdDotLum[ii] = lum[dmdDotRaw[ii]];
     }

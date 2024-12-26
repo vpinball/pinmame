@@ -95,7 +95,7 @@ Fixed reset and slam-tilt problems of Baby Pac-Man
 Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads! Also, regular instructions only increase the six lowest PC bits.
 Improved WPC emulation: implementing FIRQ and the highres timer
 
-*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho, Matt Walsh, jordigahan
+*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, João Pedras & João Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho, Matt Walsh, jordigahan, Corrado Tomaselli
 New:
 Jeutel: Papillon
 Seeben: Brooklyn (Bingo) (not working)
@@ -158,7 +158,7 @@ American Country (ACDC MOD)
 Atarians (Free Play)
 Attack From Mars (0.3 with 0.6 Sound Prototype)
 Bad Girls (alternate set)
-Batman Forever (3.02 Dutch, unfortunately without matching display ROMs)
+Batman Forever (3.02 Dutch, unfortunately without matching display ROMs), (4.0 Italian (Sep 1995)), (4.0 Italian (Sep 1995), Early sound)
 Baywatch 3.00 (German)
 Beavis and Butt-Head (Class of 1812 MOD)
 Big Game (MOD rev. 12), (MOD rev. 13)
