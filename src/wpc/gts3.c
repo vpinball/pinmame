@@ -279,25 +279,40 @@ static WRITE_HANDLER( xvia_1_a_w )
 		AX4     = Latch the Data (set by aux write handler)
 */
 static WRITE_HANDLER( xvia_1_b_w ) {
-	// FIXME this looks somewhat wrong to me: I think the 6522 VIA is supposed to latch the data on its programmable inpout/output parallel port,
-	// then the CPU trigger AX4/5/6 for the aux board to handle it. Here we are doing the opposite
 	if (GTS3locals.extra16led) { // used for the 3 playfield alpha digit displays on Vegas only
 		// TODO implement full aux board logic
 		if (data > 0 && data < 4 && GTS3locals.ax[4] == GTS3locals.ax[6])
-			coreGlobals.segments[39 + data].w = (GTS3locals.ax[6] & 0x3f) 
-			                                 | ((GTS3locals.ax[6] & 0xc0) <<  3) 
-			                                 | ((GTS3locals.ax[5] & 0x0f) << 11) 
-			                                 | ((GTS3locals.ax[5] & 0x10) <<  2) 
-			                                 | ((GTS3locals.ax[5] & 0x20) <<  3);
+		{
+			core_tWord val;
+			val.w = (GTS3locals.ax[6] & 0x3f)
+				| ((GTS3locals.ax[6] & 0xc0) << 3)
+				| ((GTS3locals.ax[5] & 0x0f) << 11)
+				| ((GTS3locals.ax[5] & 0x10) << 2)
+				| ((GTS3locals.ax[5] & 0x20) << 3);
+			coreGlobals.segments[39 + data].w = val.w;
+			for (int i = 1; i < 4; i++)
+			{
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (39 + i) * 16, i == data ? val.b.lo : 0);
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (39 + i) * 16 + 8, i == data ? val.b.hi : 0);
+			}
+		}
 	} else if (core_gameData->hw.lampCol > 4) { // flashers drived by auxiliary board (for example backbox lights in SF2)
 		// FIXME From the schematics, I would say that the latch only happens if ax[4] is raised up (not checked here)
 		coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = data;
 		core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 12 * 8, data);
 	} else if (!(GTS3locals.ax[4] & 1)) { // LEDs
 		if (GTS3locals.alphagen)
+		{
 			coreGlobals.segments[40 + (data >> 4)].w = core_bcd2seg[data & 0x0f];
+			for (int i = 0; i < 12; i++)
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (40 + i) * 16, i == (data >> 4) ? core_bcd2seg[data & 0x0f] : 0);
+		}
 		else
+		{
 			coreGlobals.segments[data >> 4].w = core_bcd2seg[data & 0x0f];
+			for (int i = 0; i < 12; i++)
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i * 16, i == (data >> 4) ? core_bcd2seg[data & 0x0f] : 0);
+		}
 	}
 }
 
@@ -509,15 +524,15 @@ static void GTS3_alpha_common_init(void) {
   else if (strncasecmp(gn, "deadweap", 8) == 0) { // Deadly Weapon
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 8 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  for (int i = 0; i < 8; i++) // TODO check strobe timings for LED power
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+	  for (int i = 0; i < 8; i++)
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "hoops", 5) == 0) { // Hoops
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 12 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+	  for (int i = 0; i < 12; i++)
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 12ms period)
   }
   else if (strncasecmp(gn, "lca", 3) == 0) { // Light Camera Action
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
@@ -532,8 +547,8 @@ static void GTS3_alpha_common_init(void) {
   }
   else if (strncasecmp(gn, "silvslug", 8) == 0) { // Silver Slugger
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+	  for (int i = 0; i < 12; i++)
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf'n Safari
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
@@ -548,7 +563,7 @@ static void GTS3_alpha_common_init(void) {
   else if (strncasecmp(gn, "vegas", 5) == 0) { // Vegas
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 3 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7, 18, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2, 3 * 16, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+	  core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2, 3 * 16, CORE_MODOUT_LED_STROBE_1_5MS); // Additional LED display (1ms strobe over 3ms period)
   }
 }
 
@@ -629,8 +644,8 @@ static void gts3dmd_init(void) {
   if (strncasecmp(gn, "andretti", 8) == 0) { // Mario Andretti
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  coreGlobals.nAlphaSegs = 6 * 16;
-	  for (int i = 0; i < 6; i++) // TODO check strobe timings for LED power
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+	  for (int i = 0; i < 6; i++)
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "barbwire", 8) == 0) { // Barbwire
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
@@ -667,8 +682,8 @@ static void gts3dmd_init(void) {
   else if (strncasecmp(gn, "shaqattq", 8) == 0) { // Shaq Attaq
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
 	  coreGlobals.nAlphaSegs = 12 * 16;
-	  for (int i = 0; i < 12; i++) // TODO check strobe timings for LED power
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_VFD_STROBE_05_20MS); // Additional VFD display
+	  for (int i = 0; i < 12; i++)
+		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 12ms period)
   }
   else if (strncasecmp(gn, "smbmush", 7) == 0) { // Super Mario Bros. Mushroom World
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20, 3, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
