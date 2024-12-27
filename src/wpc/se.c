@@ -171,16 +171,14 @@ static INTERRUPT_GEN(se_vblank) {
 	coreGlobals.solenoids = selocals.solenoids;
 	// Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
 	// unused because it is remapped to VPM flipper constants.  
-   if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr - 1] > 0) {
-     coreGlobals.solenoids |= 0x4000;
-     coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) / 8] |= 0x40;
-     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 1.0f;
-   }
-   else
-   {
-     coreGlobals.binaryOutputState[(CORE_MODOUT_SOL0 + 8) / 8] &= ~0x40;
-     coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 14].value = 0.0f;
-   }
+    if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr - 1] > 0) {
+      coreGlobals.solenoids |= 0x4000;
+      core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 1);
+    }
+    else
+    {
+      core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 0);
+    }
 	selocals.solenoids = coreGlobals.pulsedSolState;
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
@@ -301,7 +299,7 @@ static MACHINE_INIT(se3) {
       core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 6 * 8, CORE_MODOUT_LED);
    coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
    core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 2, CORE_MODOUT_NONE); // Fake solenoids for fast flip
+   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
    coreGlobals.nGI = 1;
    core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
    const struct GameDriver* rootDrv = Machine->gamedrv;
@@ -419,7 +417,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 6 * 8, CORE_MODOUT_LED);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 2, CORE_MODOUT_NONE); // Fake solenoids for fast flip
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
   coreGlobals.nGI = 1;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
   // Game specific hardware
@@ -591,6 +589,7 @@ static WRITE_HANDLER(lampdriv_w) {
   core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0     ,  selocals.lampColumn       & 0x00FF, selocals.lampRow, 8);
   core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (selocals.lampColumn >> 8) & 0x00FF, selocals.lampRow, 2);
 }
+static READ_HANDLER(lampdriv_r) { return core_revbyte(selocals.lampRow); } // GoldenEye reads from here (while it is a write location), so wire it up
 static WRITE_HANDLER(lampstrb_w) {
   //core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0xff00) | data, selocals.lampRow);
   selocals.lampColumn = (selocals.lampColumn & 0xff00) | data;
@@ -1032,6 +1031,7 @@ static MEMORY_READ_START(se_readmem)
   { 0x2007, 0x2007, auxboard_r },
   { 0x2008, 0x2008, lampstrb_r },
   { 0x2009, 0x2009, auxlamp_r },
+  { 0x200a, 0x200a, lampdriv_r },
   { 0x3000, 0x3000, dedswitch_r },
   { 0x3100, 0x3100, dip_r },
   { 0x3400, 0x3400, switch_r },
