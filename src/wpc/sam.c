@@ -138,8 +138,6 @@ struct {
 	UINT16 value;
 	INT16 bank;
 
-	data8_t tmp_leds[SAM_LED_MAX_STRING_LENGTH]; // gather the serial data for the LEDs board
-
 	// IO Board:
 	int lampcol;
 	int lamprow;
@@ -943,7 +941,7 @@ static WRITE32_HANDLER(sambank_w)
 						samlocals.latchB = (samlocals.latchA & 0x7F);
 						samlocals.latchA = samlocals.auxdata;
 					}
-					for (int row = 0; row < 10; row++) {
+					for (int row = 0; row < 10; row++) { // 2 rows of 7 LED matrix, each matrix being 7 cols x 5 rows (so 10 rows, 49 cols)
 						int r = ((samlocals.latchA & 0x80) || (~data & 0x80)) ? 0 : (samlocals.col & (1 << row));
 						int c = CORE_MODOUT_LAMP0 + 10 * 8 + 49 * row;
 						core_write_pwm_output(c     , 7, r ? (core_revbyte((UINT8)samlocals.latchH) >> 1) : 0);
@@ -1437,13 +1435,12 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // 4 LED flasher at the back of the wheel
 	}
 	else if (strncasecmp(gn, "wpt_", 4) == 0) { // World Poker Tour
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 490, CORE_MODOUT_LED); // Mini DMD (490 LEDs, but are they really faded ?)
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 62 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 70 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 78 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms)
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms, but are they really faded ?)
 	}
 	else if (strncasecmp(gn, "xmn_", 4) == 0) { // X-Men
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED (Looks nicer with bulbs, but it really has LEDs)
@@ -2385,7 +2382,7 @@ CORE_CLONEDEF(sam1_flashb, 0230, 0310, "S.A.M. System Flash Boot (V2.3)", 2007, 
 /*-------------------------------------------------------------------
 / World Poker Tour
 /-------------------------------------------------------------------*/
-INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL + 62, SAM_GAME_WPT) // 62 additinal columns for Mini DMD (5*7 displays * 14)
+INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL + 60, SAM_GAME_WPT) // 62 additinal columns for Mini DMD (5*7 displays * 14)
 
 SAM1_ROM32MB(wpt_103a, "wpt_103a.bin", CRC(cd5f80bc) SHA1(4aaab2bf6b744e1a3c3509dc9dd2416ff3320cdb), 0x019bb1dc)
 
