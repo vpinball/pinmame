@@ -288,7 +288,7 @@ void uSleep(const UINT64 u)
 	}
 }
 
-// can sleep too long by 1000 to 2000 (=1 to 2ms)
+// can sleep too long by 500-1000 (=0.5 to 1ms) or 1000-2000 (=1 to 2ms) on older windows versions
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
 // but MAME code does this already
 void uOverSleep(const UINT64 u)
@@ -304,7 +304,18 @@ void uOverSleep(const UINT64 u)
 
 	while (TimerNow.QuadPart < TimerEnd.QuadPart)
 	{
-		Sleep(1); // really pause thread for 1-2ms (depending on OS)
+		if (!highrestimer || (TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
+			Sleep(1); // really pause thread for 1-2ms (depending on OS)
+		else // pause thread for 0.5-1ms
+		{
+			HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+			LARGE_INTEGER ft;
+			ft.QuadPart = -10 * 500; // 500 usec //!! we could go lower if some future OS (>win10) actually supports this
+			SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+			WaitForSingleObject(timer, INFINITE);
+			CloseHandle(timer);
+		}
+
 		QueryPerformanceCounter(&TimerNow);
 	}
 }
