@@ -299,7 +299,7 @@ static MACHINE_INIT(se3) {
       core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 6 * 8, CORE_MODOUT_LED);
    coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
    core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
+   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
    coreGlobals.nGI = 1;
    core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
    const struct GameDriver* rootDrv = Machine->gamedrv;
@@ -417,7 +417,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 6 * 8, CORE_MODOUT_LED);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
   coreGlobals.nGI = 1;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
   // Game specific hardware
@@ -638,12 +638,16 @@ static READ_HANDLER(dip_r) { return ~core_getDip(0); }
 /*-- Solenoids --*/
 static const int solmaskno[] = { 8, 0, 16, 24 };
 static WRITE_HANDLER(solenoid_w) {
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + solmaskno[offset], data);
   UINT32 mask = ~(0xff<<solmaskno[offset]);
   UINT32 sols = data<<solmaskno[offset];
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
     selocals.flipsol |= selocals.flipsolPulse = ((data & 0x80)>>7) | ((data & 0x40)>>4);
     sols &= 0xffff3fff; /* mask off flipper solenoids */
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + solmaskno[offset], data, 0x3F);
+  }
+  else
+  {
+    core_write_pwm_output_8b(CORE_MODOUT_SOL0 + solmaskno[offset], data);
   }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
   selocals.solenoids |= sols;
