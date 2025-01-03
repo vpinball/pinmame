@@ -1,4 +1,4 @@
-****** As of Version 3.6 (XX XXth, 2024) ******
+****** As of Version 3.6 (XX XXth, 2025) ******
 
 Major bugs in PinMAME that we are aware of:
 -------------------------------------------
@@ -19,7 +19,7 @@ Major bugs in PinMAME that we are aware of:
      (~24 and above, for example on Nascar and Grand Prix, or even ~20 on LOTR, so avoid this)
      This seems to happen on real machines (verified on 2 different Grand Prix pinballs), too.
 
- #6) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate for all machines.
+ #6) Data East/Sega/Stern/Gottlieb/Alvin G DMD timing is not 100% accurate for all machines.
 
  #7) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally.
 
@@ -34,5 +34,3 @@ Major bugs in PinMAME that we are aware of:
 #11) AT91 JIT is 32-bit and x86 only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
      ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
      but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
-
-#12) Segment based displays should also feature different brightness levels, just like the DMD to be able to have flickering/fade-in&out effects for certain machines like BOP, etc.
