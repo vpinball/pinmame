@@ -608,23 +608,26 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 		if (blit->dstyscale > 1) //!! due to hack above, make bottom black
 			memset(dst, 0, blit->dstpitch*(asmblit_srcheight / 2));
 #else
-		UINT32 c;
 		const UINT8 * __restrict src = asmblit_srcdata;
 		UINT8 * __restrict dst = asmblit_dstdata;
 
-		for (c = 0; c < asmblit_srcheight; ++c)
+		INT32 valuefixups[32]; // asm rely on 32 bit register arithmetic, we reuse the same 'fixup' values but need them as signed values for x64
+		compute_source_fixups(blit, (UINT32*)valuefixups);
+
+		for (int c = 0; c < blit_srcheight; ++c) // y loop
 		{
 			int c2,c2d=0;
-			for (c2 = 0; c2 < blit->srcwidth; ++c2)
+			const UINT8* __restrict pushed_src = src;
+			for (c2 = 0; c2 < blit_srcwidth; ++c2) // x loop
 			{
-				const UINT16 col = blit->srclookup[((UINT16*)src)[c2]];
-				int s;
-				for (s = 0; s < blit->dstxscale; ++s,++c2d)
+				const UINT16 col = blit->srclookup[*(UINT16*)src];
+				for (int s = 0; s < blit->dstxscale; ++s,++c2d)
 					((UINT16*)dst)[c2d] = col;
+				src += valuefixups[FIXUPVAL_SRCBYTES1];
 			}
 			for (c2 = 1; c2 < blit->dstyscale; ++c2)
 				memcpy(dst + blit->dstpitch*c2, dst, blit->dstpitch);
-			src += blit->srcpitch;
+			src = pushed_src + valuefixups[FIXUPVAL_SRCADVANCE];
 			dst += blit->dstpitch * blit->dstyscale;
 		}
 #endif
