@@ -168,18 +168,18 @@ static INTERRUPT_GEN(se_vblank) {
     selocals.flipsol = selocals.flipsolPulse;
   }
   if ((selocals.vblankCount % (VBLANK*SE_SOLSMOOTH)) == 0) {
-	coreGlobals.solenoids = selocals.solenoids;
-	// Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
-	// unused because it is remapped to VPM flipper constants.  
+	 coreGlobals.solenoids = selocals.solenoids;
+	 // Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
+	 // unused because it is remapped to VPM flipper constants.  
     if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr - 1] > 0) {
-      coreGlobals.solenoids |= 0x4000;
-      core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 1);
+       coreGlobals.solenoids |= 0x4000;
+       core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 1);
     }
     else
     {
-      core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 0);
+       core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 0);
     }
-	selocals.solenoids = coreGlobals.pulsedSolState;
+	 selocals.solenoids = coreGlobals.pulsedSolState;
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
 			static UINT64 lastSol = 0;
@@ -637,7 +637,7 @@ static READ_HANDLER(dip_r) { return ~core_getDip(0); }
 
 /*-- Solenoids --*/
 static const int solmaskno[] = { 8, 0, 16, 24 };
-static WRITE_HANDLER(solenoid_w) {
+WRITE_HANDLER(se_solenoid_w) {
   UINT32 mask = ~(0xff<<solmaskno[offset]);
   UINT32 sols = data<<solmaskno[offset];
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
@@ -1049,7 +1049,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(se_writemem)
   { 0x0000, 0x1fff, ram_w },
-  { 0x2000, 0x2003, solenoid_w },
+  { 0x2000, 0x2003, se_solenoid_w },
   { 0x2006, 0x2007, auxboard_w },
   { 0x2008, 0x2008, lampstrb_w },
   { 0x2009, 0x2009, auxlamp_w },
