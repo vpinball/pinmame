@@ -19,7 +19,8 @@ Major bugs in PinMAME that we are aware of:
      (~24 and above, for example on Nascar and Grand Prix, or even ~20 on LOTR, so avoid this)
      This seems to happen on real machines (verified on 2 different Grand Prix pinballs), too.
 
- #6) Data East/Sega/Stern/Gottlieb/Alvin G DMD timing is not 100% accurate for all machines.
+ #6) Some Data East have slow DMD startups (Star Wars,...), Sega 192x64 timing is not 100% accurate and 
+     sometimes shows startup screen, Alvin G. has timings issues resulting in some flicker.
 
  #7) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally.
 
@@ -31,6 +32,7 @@ Major bugs in PinMAME that we are aware of:
 #10) Some setups crash when using the AT91 JIT compiled code (e.g. Whitestar II and SAM), disable AT91 JIT
      by setting "at91jit" to 0 in the registry.
 
-#11) AT91 JIT is 32-bit and x86 only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
-     ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
-     but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
+#11) AT91 JIT is 32-bit and x86 only. The non-JIT core doesn't have tight IRQ timing that may cause emulation issues.
+     It would be possible to tighten up the timing in the interpreted core, but it causes a huge performance hit
+     (have to keep checking on memory writes whether an IRQ needs to fire).
+

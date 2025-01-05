@@ -517,17 +517,10 @@ static core_tGameData monopolyGameData = {
 };
 
 /*-- Solenoids --*/
+extern WRITE_HANDLER(se_solenoid_w);
 static WRITE_HANDLER(monopoly_w) {
-  static const int solmaskno[] = { 8, 0, 16, 24 };
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + solmaskno[offset], data);
-  UINT32 mask = ~(0xff<<solmaskno[offset]);
-  UINT32 sols = data<<solmaskno[offset];
-  if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
-    selocals.flipsol |= selocals.flipsolPulse = ((data & 0x80)>>7) | ((data & 0x40)>>4);
-    sols &= 0xffff3fff; /* mask off flipper solenoids */
-  }
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
-  selocals.solenoids |= sols;
+  se_solenoid_w(offset, data);
+
   if (offset == 3) {
     locals.flipperDir = ((data & 0x04) >> 1) - 1; // so +1 for cw, -1 for ccw
 	if (data & 0x01) { // increase flipper speed if set

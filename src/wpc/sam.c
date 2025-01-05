@@ -139,8 +139,8 @@ struct {
 	INT16 bank;
 
 	// IO Board:
-	int lampcol;
-	int lamprow;
+	UINT16 lampcol;
+	UINT8 lamprow;
 	UINT8 auxstrb;
 	UINT8 auxdata;
 
@@ -884,7 +884,7 @@ static WRITE32_HANDLER(sambank_w)
 				break;
 			case 0x02400029: // AUX_LMP
 				samlocals.lampcol = (samlocals.lampcol & 0x00FF) | (data << 8);
-				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, samlocals.lampcol & 0x00FF, samlocals.lamprow, 8);
+				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0,       samlocals.lampcol       & 0x00FF, samlocals.lamprow, 8);
 				core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, (samlocals.lampcol >> 8) & 0x0003, samlocals.lamprow, 2);
 				break;
 			case 0x0240002A: // LMP_DRV
@@ -2246,22 +2246,25 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 
 // Little 5x7 led matrix used in World Poker Tour (2 rows of 7 each)
 static PINMAME_VIDEO_UPDATE(samminidmd_update) {
-    int ii,kk;
     const int dmd_x = (layout->left-10)/7;
     const int dmd_y = (layout->top-34)/9;
+    assert(layout->length == 5);
+    assert(layout->start == 7);
+    assert(0 <= dmd_x && dmd_x < 7);
+    assert(0 <= dmd_y && dmd_y < 2);
     for (int y = 0; y < 7; y++)
 		for (int x = 0; x < 5; x++) {
 			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dmdDotRaw[y * layout->length + x] = SAT_NYB(v);
-			coreGlobals.dmdDotLum[y * layout->length + x] = SAT_BYTE(v);
+			coreGlobals.dmdDotRaw[y * 5 + x] = SAT_NYB(v); // TODO raw value should not be tied to the PWM integration
+			coreGlobals.dmdDotLum[y * 5 + x] = SAT_BYTE(v);
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
-    for (ii = 0; ii < 5; ii++) {
+    for (int x = 0; x < 5; x++) {
         int bits = 0;
-        for (kk = 0; kk < 7; kk++)
-            bits = (bits<<1) | (coreGlobals.dmdDotRaw[kk * layout->length + ii] ? 1 : 0);
-        coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
+        for (int y = 0; y < 7; y++)
+            bits = (bits << 1) | (coreGlobals.dmdDotRaw[y * 5 + x] ? 1 : 0);
+        coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + x] = bits;
     }
     if (!pmoptions.dmd_only)
         core_dmd_video_update(bitmap, cliprect, layout, NULL);
@@ -2275,7 +2278,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (kk = 0; kk < 5; kk++) {
 			const int target = 140 + jj + (kk * 35);
 			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dmdDotRaw[kk * layout->length + jj] = SAT_NYB(v);
+			coreGlobals.dmdDotRaw[kk * layout->length + jj] = SAT_NYB(v); // TODO raw value should not be tied to the PWM integration
 			coreGlobals.dmdDotLum[kk * layout->length + jj] = SAT_BYTE(v);
 		}
     // Use the video update to output mini DMD as LED segments (somewhat hacky)
