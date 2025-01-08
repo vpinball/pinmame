@@ -797,6 +797,8 @@ static WRITE_HANDLER(giaux_w) {
 #endif
   coreGlobals.gi[0]=(~data & 0x01) ? 9 : 0;
   core_write_pwm_output_8b(CORE_MODOUT_GI0, ~data & 0x01);
+
+  // High Roller Casino, RollerCoaster Tycoon & Monopoly Mini DMDs
   if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
@@ -822,6 +824,7 @@ static WRITE_HANDLER(giaux_w) {
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | ((data & 0x38) << 1);
     selocals.lastgiaux = data;
   }
+  // The Simpsons Pinball Party mini DMD
   else if (core_gameData->hw.display & SE_MINIDMD2) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.miniidx = (selocals.miniidx + 1) % 7;
@@ -843,6 +846,7 @@ static WRITE_HANDLER(giaux_w) {
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = data;
   }
+  // Terminator 3, Lord of The Ring, Sopranos, Nascar / Dale Jr / Grand Prix
   else if (core_gameData->hw.display & SE_LED) { // map 6x8 LEDs as extra lamp columns
     static const int order[] = { 6, 2, 4, 5, 1, 3, 0 };
     if (selocals.auxdata == 0x30 && (selocals.lastgiaux & 0x40)) selocals.miniidx = 0;
@@ -859,6 +863,7 @@ static WRITE_HANDLER(giaux_w) {
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = selocals.auxdata;
   }
+  // Titanic (coin dropper)
   else if (core_gameData->hw.display & SE_LED2) { // a whole lotta extra lamps...
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.miniidx = (selocals.miniidx + 1) % 32;
@@ -869,14 +874,25 @@ static WRITE_HANDLER(giaux_w) {
       core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8 + selocals.miniidx * 8, selocals.auxdata);
     }
     selocals.lastgiaux = data;
-  } else if (core_gameData->hw.display & SE_DIGIT) {
+  }
+  // Apollo 13 additional alpha num display
+  else if (core_gameData->hw.display & SE_DIGIT) {
     coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (core_revbyte(selocals.auxdata & 0xf0) << 2);
     coreGlobals.segments[0].w = core_bcd2seg7[selocals.auxdata & 0x0f];
-  } else
-    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
+  }
+  // All other extension boards: on any strobe, latch aux data to extended solenoids
+  else {
+     coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
+     core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 32 - 1, selocals.auxdata << 4); // Solenoids 33..36
+     // Notes:
+     // - Independance Day:
+     //    ESTB strobes data on auxdata. Alien head is controlled by servo board 520-5152-00 (1 bit to toggle between 2 positions)
+     //    but controller also sends data to allow using Tommy's Blinder servo board 520-5078-00 as a spare (2 bits, Clear/Set, to
+     //    toggle between 2 positions). Sol 34 can be used to identify position 2 versus position 1.
+  }
 }
 
-// MINI DMD Type 1 (HRC) (15x7)
+// MINI DMD Type 1 (High Roller Casino) (15x7)
 PINMAME_VIDEO_UPDATE(seminidmd1_update) {
   int ii,bits;
   UINT16 *seg = coreGlobals.drawSeg;
@@ -901,6 +917,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
     core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
+
 // MINI DMD Type 1 (Ripley's) (3 x 5x7)
 PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
   int ii,bits;
@@ -925,6 +942,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
     core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
+
 // MINI DMD Type 2 (Monopoly) (15x7)
 PINMAME_VIDEO_UPDATE(seminidmd2_update) {
   int ii,bits;
@@ -949,7 +967,8 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
     core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
-// MINI DMD Type 3 (RCT) (21x5)
+
+// MINI DMD Type 3 (Roller Coaster Tycoon) (21x5)
 PINMAME_VIDEO_UPDATE(seminidmd3_update) {
   int ii,kk;
   UINT16 *seg = coreGlobals.drawSeg;
@@ -974,6 +993,7 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
     core_dmd_video_update(bitmap, cliprect, layout, NULL);
   return 0;
 }
+
 // 3-Color MINI DMD Type 4 (Simpsons) (2 color R/G Led matrix 14x10)
 // > encode the expected color by its index in the PinMame color palette
 PINMAME_VIDEO_UPDATE(seminidmd4_update) {
