@@ -465,8 +465,7 @@ static core_tGameData ssGameData = {
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     // 2 extra lamp columns for the LEDs of rev. 0.1
-    // Why do we set gameSpecific1 as this is unused on WPC ?
-    /*swCol*/0,/*lampCol*/2,/*custSol*/0,/*soundBoard*/0,/*display*/0,/*gameSpecific1*/1,/*gameSpecific2*/0,
+    /*swCol*/0,/*lampCol*/2,/*custSol*/0,/*soundBoard*/0,/*display*/0,/*gameSpecific1*/0,/*gameSpecific2*/0,
     NULL, ss_handleMech, ss_getMech, ss_drawMech,
     NULL
 #ifdef ENABLE_MECHANICAL_SAMPLES

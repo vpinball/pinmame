@@ -554,7 +554,7 @@ static core_tGameData nbafGameData = {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),     // other switches/solenoids used for non-flippers
     0,0,0,  /* custom switch columns, lamp columns, solenoids */
     0,0,    /* sound board, display */
-    1,0,    /* gameSpecific1 (unknown why we set this -- unused on WPC?), gameSpecific2 */
+    0,0,    /* gameSpecific1, gameSpecific2 */
     nbaf_getSol, nbaf_handleMech, nbaf_getMech, nbaf_drawMech,
     &nbaf_lampPos,          /* lampData */
   },

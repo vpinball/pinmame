@@ -351,7 +351,7 @@ static core_tGameData ccGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,0,0,1,0,
+    0,0,0,0,0,0,0,
     NULL,NULL,NULL,NULL,&cc_lampPos
 #ifdef ENABLE_MECHANICAL_SAMPLES
     ,NULL
