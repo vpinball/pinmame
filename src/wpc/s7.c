@@ -222,7 +222,7 @@ static void updsol(void) {
   if (core_gameData->sxx.muxSol) {
     if (coreGlobals.pulsedSolState & (1 << (core_gameData->sxx.muxSol - 1))) {
       /* active mux */
-      UINT32 muxsol = core_gameData->hw.gameSpecific2; // mux affected solenoids
+      UINT32 muxsol = core_gameData->hw.gameSpecific2; // mux affected solenoids (for Defender only so far)
       s7locals.custSol            = coreGlobals.pulsedSolState & muxsol;
       coreGlobals.pulsedSolState &= ~muxsol;
     }

@@ -406,7 +406,7 @@ S7_ROMEND
 CORE_GAMEDEF(splbn,l0,"Spellbinder (L-0 BETA)",1982,"Williams / Jess M. Askey",s7_mS7S,0)
 
 /*----------------------------------
-/Time Fantasy - Sys.7 (Game #515)
+/ Time Fantasy - Sys.7 (Game #515)
 /----------------------------------*/
 // MOVED TO tmfnt.c
 
@@ -429,7 +429,7 @@ CORE_GAMEDEF(wrlok,l3,"Warlok (L-3)",1982,"Williams",s7_mS7S,0)
 // Multiplex solenoid requires custom solenoid handler.
 extern int dfndrCustSol(int);
 static core_tGameData dfndrGameData = {
- GEN_S7, s7_dispS7, {FLIP_SWNO(0,59),0,0,10,0,0,0,0x3FF,dfndrCustSol},
+ GEN_S7, s7_dispS7, {FLIP_SWNO(0,59),0,0,10,0,0,0,0x3FF,dfndrCustSol}, // gameSpecific2 encodes the muxed solenoid mask
  NULL,{{0}},{11,{55,56,57,58,0,0}}
 };
 static void init_dfndr(void) { core_gameData = &dfndrGameData; }

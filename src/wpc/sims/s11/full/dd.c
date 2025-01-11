@@ -425,13 +425,13 @@ CORE_CLONEDEF(dd,p6, l2, "Dr. Dude (PA-6 Prototype)", 1990, "Bally", s11c_one,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData ddSimData = {
-  2,    				/* 2 game specific input ports */
-  dd_stateDef,				/* Definition of all states */
-  dd_inportData,			/* Keyboard Entries */
-  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
+  2,					/* 2 game specific input ports */
+  dd_stateDef,			/* Definition of all states */
+  dd_inportData,		/* Keyboard Entries */
+  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain }, /*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  dd_handleBallState,		        /*Function to handle ball state changes*/
-  dd_drawStatic,			/*Function to handle mechanical state changes*/
+  dd_handleBallState,	/*Function to handle ball state changes*/
+  dd_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };

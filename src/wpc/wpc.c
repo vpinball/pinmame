@@ -224,7 +224,7 @@ static void wpc_zc(int data) {
    // More precise implementation with better physic emulation
    if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
       core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
-   if (core_gameData->hw.gameSpecific2 == WPC_CFTBL && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))) // CFTBL chase lights
+   if ((core_gameData->hw.gameSpecific1 & WPC_CFTBL) && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))) // CFTBL chase lights
    {
       int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
       int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
@@ -602,7 +602,7 @@ READ_HANDLER(wpc_r) {
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_FLIPPERSW95:
-      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: reel switches
+      if (core_gameData->hw.gameSpecific1 & WPC_PH) { // PH: reel switches
         return ~coreGlobals.swMatrix[3];
       }
       if (core_gameData->gen & GENWPC_HASWPC95)
@@ -776,7 +776,7 @@ WRITE_HANDLER(wpc_w) {
       }
       break;
     case WPC_FLIPPERCOIL95: /* WPC_EXTBOARD4 */
-      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: LED digits
+      if (core_gameData->hw.gameSpecific1 & WPC_PH) { // PH: LED digits
         if (data != 0xff) {
           coreGlobals.segments[core_BitColToNum(0xff ^ data)].w = wpclocals.alphaSeg[core_BitColToNum(0xff ^ data)].w = core_bcd2seg7[wpc_data[WPC_EXTBOARD1]];
         }
@@ -810,7 +810,7 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_LAMPCOLUMN: /* row and column can be written in any order */
       core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0, data, wpc_data[WPC_LAMPROW], 8);
-      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH uses 192 lamps
+      if (core_gameData->hw.gameSpecific1 & WPC_PH) { // PH uses 192 lamps
         core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 +  64, data, wpc_data[WPC_EXTBOARD2], 8);
         core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 128, data, wpc_data[WPC_EXTBOARD3], 8);
       }
@@ -831,7 +831,7 @@ WRITE_HANDLER(wpc_w) {
       wpclocals.conductingGITriacs |= data; // Triac that were turned on before will continue to conduct until next zero cross, therefore we 'or' them with previous pulsed state
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
          core_write_pwm_output_8b(CORE_MODOUT_GI0, wpclocals.conductingGITriacs & 0x1F);
-      if (core_gameData->hw.gameSpecific2 == WPC_CFTBL && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))) // CFTBL chase lights
+      if ((core_gameData->hw.gameSpecific1 & WPC_CFTBL) && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))) // CFTBL chase lights
       {
          int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
          int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
@@ -884,7 +884,7 @@ WRITE_HANDLER(wpc_w) {
       }
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1LO */
-      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: lamps 65 .. 128 (data is row of 2nd matrix)
+      if (core_gameData->hw.gameSpecific1 & WPC_PH) { // PH: lamps 65 .. 128 (data is row of 2nd matrix)
         core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 64, wpc_data[WPC_LAMPCOLUMN], data, 8);
       }
       else if (wpc_modsol_aux_board == 2)
@@ -901,7 +901,7 @@ WRITE_HANDLER(wpc_w) {
       }
       break;
     case WPC_EXTBOARD3: /* WPC_ALPHA1HI */
-      if (core_gameData->hw.gameSpecific2 == WPC_PH) { // PH: lamps 129 .. 192 (data is row of 3rd matrix)
+      if (core_gameData->hw.gameSpecific1 & WPC_PH) { // PH: lamps 129 .. 192 (data is row of 3rd matrix)
         core_write_pwm_output_lamp_matrix(CORE_MODOUT_LAMP0 + 128, wpc_data[WPC_LAMPCOLUMN], data, 8);
       }
       if ((core_gameData->gen & GENWPC_HASDMD) == 0) // WPC_ALPHA1HI
@@ -935,7 +935,7 @@ WRITE_HANDLER(wpc_w) {
         core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
       data |= wpc_data[offset];
-      if (core_gameData->hw.gameSpecific2 == WPC_CFTBL) // CFTBL chase lights
+      if (core_gameData->hw.gameSpecific1 & WPC_CFTBL) // CFTBL chase lights
       {
          int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
          int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
@@ -1183,7 +1183,7 @@ static MACHINE_INIT(wpc) {
       sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPC95:
-      //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
+      // WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
       //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
       wpc_data[WPC_GILAMPS] = 0x18;
       coreGlobals.gi[CORE_MAXGI-2] = 8;
@@ -1196,7 +1196,7 @@ static MACHINE_INIT(wpc) {
   // Init DMD PWM shading
   if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
   {
-    const int isPH = core_gameData->hw.gameSpecific2 == WPC_PH;
+    const int isPH = (core_gameData->hw.gameSpecific1 & WPC_PH);
     core_dmd_pwm_init(&dmdlocals.pwm_state, 128, isPH ? 64 : 32, isPH ? CORE_DMD_PWM_FILTER_WPC_PH : CORE_DMD_PWM_FILTER_WPC, isPH ? CORE_DMD_PWM_COMBINER_SUM_2 : CORE_DMD_PWM_COMBINER_SUM_3);
     dmdlocals.pwm_state.revByte = 1;
   }

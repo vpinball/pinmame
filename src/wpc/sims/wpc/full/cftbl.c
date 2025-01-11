@@ -254,9 +254,9 @@ static int cftbl_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:
+		case stBallLane:
 		if (ball->speed < 15)
-			return setState(stNotEnough,15);	/*Ball not plunged hard enough*/
+			return setState(stNotEnough,15);/*Ball not plunged hard enough*/
 		if (ball->speed < 22)
 			return setState(stpaiD,22);		/*Ball rolled down 'D' Letter*/
 		if (ball->speed < 29)
@@ -266,7 +266,7 @@ static int cftbl_handleBallState(sim_tBallStatus *ball, int *inports) {
 		if (ball->speed < 43)
 			return setState(stPaid,43);		/*Ball rolled down 'P' Letter*/
 		if (ball->speed < 51)
-			return setState(stDownFromLeft,51);	/*Ball rolled down from left*/
+			return setState(stDownFromLeft,51);/*Ball rolled down from left*/
 		break;
 
 		/*-----------------
@@ -450,10 +450,10 @@ static sim_tSimData cftblSimData = {
   2,					/* 2 game specific input ports */
   cftbl_stateDef,		/* Definition of all states */
   cftbl_inportData,		/* Keyboard Entries */
-  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
+  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain }, /* Position where balls start.. Max 7 Balls Allowed */
   NULL, 				/* no init */
-  cftbl_handleBallState,/*Function to handle ball state changes*/
-  cftbl_drawStatic,		/*Function to handle mechanical state changes*/
+  cftbl_handleBallState,/* Function to handle ball state changes */
+  cftbl_drawStatic,		/* Function to handle mechanical state changes */
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
@@ -465,7 +465,7 @@ static core_tGameData cftblGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,1,0,0,0,0,WPC_CFTBL, // 8 ramp lights 'Chase Light' wired between GI outputs 1/4 and 2 bit decoder wired on solenoid outputs 20/24 => directly handled in main WPC driver
+    0,1,0,0,0,WPC_CFTBL,0, // 8 ramp lights 'Chase Light' wired between GI outputs 1/4 and 2 bit decoder wired on solenoid outputs 20/24 => directly handled in main WPC driver
     NULL, cftbl_handleMech, NULL, cftbl_drawMech,
     NULL
 #ifdef ENABLE_MECHANICAL_SAMPLES

@@ -265,9 +265,9 @@ extern MACHINE_DRIVER_EXTERN(wpc_95S);
 #define wpc_m95S         wpc_95S
 
 // Game specific options
-#define WPC_CFTBL       0x01 // CFTBL specific hardware: chase light 2 bit decoder from solenoid #3 output, wired through triacs to 2 GI outputs, leading to 8 additional PWM controlled GI
-#define WPC_PH          0x02 // Phantom Haus specific hardware (not really a pinball)
-
+#define WPC_CFTBL        0x01 // CFTBL specific hardware: chase light 2 bit decoder from solenoid #3 output, wired through triacs to 2 GI outputs, leading to 8 additional PWM controlled GI
+#define WPC_PH           0x02 // Phantom Haus specific hardware (not really a pinball)
+// next: 0x04
 
 int wpc_m2sw(int col, int row);
 void wpc_set_modsol_aux_board(int board);

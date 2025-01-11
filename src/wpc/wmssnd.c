@@ -356,6 +356,8 @@ static void s67s_init(struct sndbrdData *brdData) {
 
   // Note that the speech board games featured a potentiometer on the separate speech board to mix speech and sound (so it could be tweaked by the operator!).
   // For the moment, the mixing sounds okay as-is.
+
+  // If ever passing in per-game mixing levels via hw.gameSpecific2 (like done for Sys9/11/WPC), then note that we use that for Defender already, for its muxed solenoids.
 }
 
 static WRITE_HANDLER(s67s_ctrl_w) {
@@ -1173,6 +1175,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
   int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
   int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
   int dacvol = ((core_gameData->hw.gameSpecific2) >> 25) & 0x7f;
+
   locals.brdData = *brdData;
   /* the non-paged ROM is at the end of the image. move it to its correct place */
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);

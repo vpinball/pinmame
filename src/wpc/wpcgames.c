@@ -23,7 +23,7 @@ WPC_INPUT_PORTS_START(wpc, 0) WPC_INPUT_PORTS_END
 /--------------*/
 static core_tGameData tttGameData = {
   GEN_WPC95, wpc_dispDMD,
-  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L), 0,0,0,0,0,1 },
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L), 0,0,0,0,0,0,0 },
   NULL,
   {
     "905 123456 12345 123",
@@ -60,7 +60,7 @@ static void ph_drawMech(BMTYPE **line) {
 }
 static core_tGameData phGameData = {
   GEN_WPC95, wpc_dispDMD64,
-  { FLIP_SWNO(0,0), 0,16,0,0,0,0,WPC_PH, NULL, NULL, mech_getPos, ph_drawMech },
+  { FLIP_SWNO(0,0), 0,16,0,0,0,WPC_PH,0, NULL, NULL, mech_getPos, ph_drawMech },
   NULL,
   {
     "901 100031 64739 123",
@@ -155,7 +155,7 @@ CORE_GAMEDEF(tfdmd,l3,"WPC Test Fixture: DMD (L-3)",1991,"Bally",wpc_mDMD,GAME_N
 /---------------*/
 static core_tGameData tfsGameData = {
   GEN_WPCSECURITY, wpc_dispDMD,
-  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), 0,0,0,0,0,1 },
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), 0,0,0,0,0,0,0 },
   NULL,
   {
     "648 123456 12345 123",
@@ -178,7 +178,7 @@ CORE_GAMEDEF(tfs,12,"WPC Test Fixture: Security (1.2)",1994,"Bally",wpc_mSecurit
 /---------------*/
 static core_tGameData tf95GameData = {
   GEN_WPC95, wpc_dispDMD,
-  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), 0,0,0,0,0,1 },
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), 0,0,0,0,0,0,0 },
   NULL,
   {
     "648 123456 12345 123",
@@ -223,7 +223,7 @@ CORE_GAMEDEF(tfa,13,"WPC Test Fixture: Alphanumeric (L-3)",1990,"Bally",wpc_mAlp
 /-------------------*/
 static core_tGameData rushGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
-  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L), 0,0,0,0,0,1 },
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L), 0,0,0,0,0,0,0 },
   NULL,
   {
     "",
