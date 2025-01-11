@@ -314,7 +314,7 @@ CORE_CLONEDEFNV(esclwrlg,esclwrld,"Escape from the Lost World (German)",1987,"Ba
 /*------------------------------------
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
-static core_tGameData black100GameData = {GEN_BY6803A,dispBy104,{FLIP6803,0,4,0,SNDBRD_BYSD, BY6803_DISPALPHA, 1}};
+static core_tGameData black100GameData = {GEN_BY6803A,dispBy104,{FLIP6803,0,4,0,SNDBRD_BYSD, BY6803_DISPALPHA, 1}}; // set gameSpecific1 to 1 (see hack in by35snd, WRITE_HANDLER(sd_pia0cb2_w))
 static void init_black100(void) { core_gameData = &black100GameData; }
 BY6803_ROMSTART44(black100, "u2.cpu", CRC(411fa773) SHA1(9756c7eee0f78792823a0b0379d2baac28cb03e8),
                             "u3.cpu", CRC(d6f6f890) SHA1(8fe4dae471f4c89f2fd72c6e647ead5206881c63))
