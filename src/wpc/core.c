@@ -2817,6 +2817,29 @@ void core_update_pwm_outputs(const int startIndex, const int count)
       // Perform integration of stable state up to now
       output->integrator(now, index, FALSE, output->lastIntegrationFlipPos & 1);
    }
+   // Also update non PWM data structure if needed
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+   {
+      if (((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0) && (startIndex < CORE_MODOUT_LAMP0 + CORE_MODOUT_LAMP_MAX) && (startIndex + count >= CORE_MODOUT_LAMP0))
+      {
+         for (int i = 0; i < 8 + core_gameData->hw.lampCol; i++)
+         {
+            UINT8 col = 0;
+            for (int j = 0; j < 8; j++)
+               if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1f)
+                  col |= 1 << j;
+            coreGlobals.lampMatrix[i] = col;
+         }
+      }
+      if (((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS)) == 0) && (startIndex < CORE_MODOUT_SOL0 + CORE_MODOUT_SOL_MAX) && (startIndex + count >= CORE_MODOUT_SOL0))
+      {
+         UINT32 sols = 0;
+         for (int i = 0; i < 32; i++)
+            if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
+               sols |= 1 << i;
+         coreGlobals.solenoids = sols;
+      }
+   }
 }
 
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device

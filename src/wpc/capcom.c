@@ -141,24 +141,6 @@ static NVRAM_HANDLER(cc);
 static void Skip_Error_Msg(void);
 
 static INTERRUPT_GEN(cc_vblank) {
-  /*-------------------------------
-  /  copy local data to interface
-  /--------------------------------*/
-  // TODO Why do we delay lamps/solenoids until VBLANK ? this creates artificial latency, direct set/callback would be better at least for solenoids
-
-  /*-- lamps --*/
-  memset(coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
-  for (int i = 0; i < 8 + core_gameData->hw.lampCol; i++)
-    for (int j = 0; j < 8; j++)
-      if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1f)
-        coreGlobals.lampMatrix[i] |= 1 << j;
-
-  /*-- solenoids --*/
-  coreGlobals.solenoids = 0;
-  for (int i = 0; i < 32; i++)
-    if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
-      coreGlobals.solenoids |= 1 << i;
-
   /*-- update leds (they are PWM faded, so uses physic output) --*/
   coreGlobals.diagnosticLed = (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8    ].value >= 0.5f ? 1 : 0)
                             | (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 8 * 8 + (core_gameData->hw.lampCol - 1) * 8 + 1].value >= 0.5f ? 2 : 0);

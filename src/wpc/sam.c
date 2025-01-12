@@ -1453,10 +1453,6 @@ static MACHINE_INIT(sam) {
 		for (int i = 0; i < coreGlobals.nSolenoids; i++)
 			if (coreGlobals.physicOutputState[i].type != CORE_MODOUT_SOL_2_STATE)
 				core_set_pwm_output_type(CORE_MODOUT_SOL0, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
-	if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0)
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80 /*coreGlobals.nLamps*/, CORE_MODOUT_LEGACY_SOL_2_STATE);
-	if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) == 0)
-		core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_LEGACY_SOL_2_STATE);
 }
 
 void sam_init(void)
@@ -2104,24 +2100,11 @@ static INTERRUPT_GEN(sam_interface_update) {
 	/--------------------------------*/
 	samlocals.vblankCount++;
 
-	/*-- lamps --*/
-	memset(coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
-	for (int i = 0; i < 8 + core_gameData->hw.lampCol; i++)
-		for (int j = 0; j < 8; j++)
-			if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.25f)
-				coreGlobals.lampMatrix[i] |= 1 << j;
-
 	/*-- display --*/
 	if ((samlocals.vblankCount % SAM_DISPLAYSMOOTH) == 0) {
 		coreGlobals.diagnosticLed = samlocals.diagnosticLed;
 		samlocals.diagnosticLed = 0;
 	}
-
-   /*-- solenoids --*/
-   coreGlobals.solenoids = 0;
-   for (int i = 0; i < 32; i++)
-      if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
-         coreGlobals.solenoids |= 1 << i;
 
 	/*-- GameOn for Fast Flips --*/
 	if (samlocals.fastflipaddr > 0 && cpu_readmem32ledw(samlocals.fastflipaddr) == 0x01)
