@@ -402,8 +402,7 @@ STDMETHODIMP CController::get_Lamp(int nLamp, VARIANT_BOOL *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal= false;
   else {
-    if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
-      core_update_pwm_outputs(CORE_MODOUT_LAMP0 + nLamp - 1, 1);
+    core_update_pwm_lamps();
     *pVal = vp_getLamp(nLamp)?VARIANT_TRUE:VARIANT_FALSE;
   }
 
@@ -420,8 +419,7 @@ STDMETHODIMP CController::get_Solenoid(int nSolenoid, VARIANT_BOOL *pVal)
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal= false;
   else {
-    if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
-      core_update_pwm_outputs(CORE_MODOUT_SOL0 + nSolenoid - 1, 1);
+    core_update_pwm_solenoids();
     *pVal = vp_getSolenoid(nSolenoid)?VARIANT_TRUE:VARIANT_FALSE;
   }
   return S_OK;
@@ -1459,8 +1457,7 @@ STDMETHODIMP CController::get_GIString(int nString, int *pVal) {
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     *pVal = 0;
   else {
-    if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI))
-      core_update_pwm_outputs(CORE_MODOUT_GI0 + nString - 1, 1);
+    core_update_pwm_gis();
     *pVal = vp_getGI(nString);
   }
 
