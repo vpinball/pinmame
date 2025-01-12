@@ -1411,9 +1411,12 @@ static MACHINE_INIT(sam) {
 	}
 	else if (strncasecmp(gn, "trn_", 4) == 0) { // Tron Legacy
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 100, 6, CORE_MODOUT_LED); // Ramp RGB LEDs
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		if (rootDrv->name[strlen(rootDrv->name)-1] == 'h')
+			core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // Limited Edition: All LED
+		else
+			core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Pro: #555 except for bumper LEDs
 	}
 	else if (strncasecmp(gn, "twd_", 4) == 0) { // The Walking Dead LE
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED
