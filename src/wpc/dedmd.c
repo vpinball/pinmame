@@ -34,7 +34,6 @@ static struct {
 } dmdlocals;
 
 static UINT16 *dmd64RAM;
-static UINT8  *dmd32RAM;
 
 static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; }
 static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
@@ -168,7 +167,7 @@ static void dmd32_vblank(int which) {
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
   core_dmd_submit_frame(&dmdlocals.pwm_state, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
   core_dmd_submit_frame(&dmdlocals.pwm_state, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
-  if (base = crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
+  if (crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 }
 
@@ -406,7 +405,7 @@ static void dmd16_updbusy(int evt);
 static void dmd16_setbank(int bit, int value);
 static void dmd16_nmi(int _) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
 
-static void dmd16_reset() {
+static void dmd16_reset(void) {
    // U4 outputs
    dmd16_setbank(0x07, 0x07);
    dmdlocals.blnk    = 0;
@@ -449,7 +448,7 @@ INLINE void dmd16_interlace(UINT64 v, UINT8* row)
   row[0] = (v >> 56) & 0x00FF;
 }
 
-static void dmd16_updrow() {
+static void dmd16_updrow(void) {
   if (dmdlocals.blnk && dmdlocals.row_latch) {
     // row_latch always has a single bit set, the rasterized row/side, which is odd for left 64x16 panel and even for right 64x16 panel
     assert(dmdlocals.row_latch == (dmdlocals.row_latch - (dmdlocals.row_latch & dmdlocals.row_latch - 1))); // check that we only have one bit set
@@ -563,7 +562,6 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
 }
 
 static void dmd16_updbusy(int evt) {
-  const int prev_busy = dmdlocals.busy;
   // TODO CLR_PULSE will reset the flip flop to 0 even while PRESET is pulled down. This does not match the datasheet which states
   // that in this situation both output would be high (so keep BUSY at 1, but also trigger INT1).
   if (evt == BUSY_CLR_PULSE)
