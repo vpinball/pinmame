@@ -363,15 +363,6 @@ CORE_GAMEDEFNV(pentacup,"Pentacup (rev. 1)",1978,"Micropin",pentacup,0)
 /* 1980 Version */
 
 static INTERRUPT_GEN(mp2_vblank) {
-  int i;
-  for (i = 0; i < 32; i++) {
-    UINT8 mem = memory_region(REGION_CPU1)[0x23c0 + i];
-    coreGlobals.segments[62 - i * 2].w = core_bcd2seg7a[mem >> 4];
-    coreGlobals.segments[63 - i * 2].w = core_bcd2seg7a[mem & 0x0f];
-  }
-  if (coreGlobals.segments[5].w) coreGlobals.segments[5].w |= 0x80;
-  coreGlobals.lampMatrix[8] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
-  coreGlobals.lampMatrix[9] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
   coreGlobals.diagnosticLed = memory_region(REGION_CPU1)[0x2247] >> 7;
   cpu_set_irq_line(0, IRQ_LINE_NMI, core_getSw(-7) ? ASSERT_LINE : CLEAR_LINE);
 
@@ -380,7 +371,9 @@ static INTERRUPT_GEN(mp2_vblank) {
 
 static INTERRUPT_GEN(mp2_irq) {
   int i;
-  cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
+  if (!coreGlobals.swMatrix[0] && !coreGlobals.swMatrix[1] && !coreGlobals.swMatrix[2] && !coreGlobals.swMatrix[3]) { // don't call RST55 as long as any contact is made!
+    cpu_set_irq_line(0, I8085_RST55_LINE, locals.irq ? ASSERT_LINE : CLEAR_LINE);
+  }
   cpu_set_irq_line(0, I8085_RST65_LINE, !locals.irq ? ASSERT_LINE : CLEAR_LINE);
   locals.irq = !locals.irq;
 
@@ -407,8 +400,25 @@ static WRITE_HANDLER(mxxxx_w) {
   logerror("%04x: Write to %04x: %02x\n", activecpu_get_pc(), offset, data);
 }
 
+static WRITE_HANDLER(disp_w) {
+  coreGlobals.segments[62 - offset * 2].w = core_bcd2seg7a[data >> 4];
+  coreGlobals.segments[63 - offset * 2].w = core_bcd2seg7a[data & 0x0f];
+  if (coreGlobals.segments[5].w) coreGlobals.segments[5].w |= 0x80;
+  if (offset == 0x16) {
+    coreGlobals.lampMatrix[8] = (coreGlobals.lampMatrix[8] & 0x0f) | (data & 0xf0);
+  }
+  if (offset == 0x0c) {
+    coreGlobals.lampMatrix[9] = (coreGlobals.lampMatrix[9] & 0x0f) | (data & 0xf0);
+  }
+  if (offset == 0x1e) {
+    coreGlobals.lampMatrix[8] = (coreGlobals.lampMatrix[8] & 0xf0) | (data >> 4);
+    coreGlobals.lampMatrix[9] = (coreGlobals.lampMatrix[9] & 0xf0) | (data & 0x0f);
+  }
+}
+
 static MEMORY_WRITE_START(mp2_writemem)
   { 0x0000, 0x1fff, mxxxx_w },
+  { 0x23c0, 0x23df, disp_w },
   { 0x2000, 0x23ff, MWA_RAM, &generic_nvram, &generic_nvram_size },
 MEMORY_END
 
@@ -738,7 +748,7 @@ static void init_pentacpt(void) {
 
 // See the game's display panel for comparison.
 // Also:
-// - No HSTD feature
+// - No HSTD feature, but remembers the top two scores without giving replays for beating them
 // - Panels for team scores with an extra million digit
 // - Some input contacts were moved to different places
 // - DIP switch #8 will toggle between 1 and 4 games added per push of the credits button
@@ -752,4 +762,85 @@ ROM_START(pentacpt)
   ROM_LOAD("microt_3.bin", 0x1000, 0x0800, CRC(cefb0966) SHA1(836491745417fc0d5f88c01a9c69a5c322d194be))
   ROM_LOAD("microt_4.bin", 0x1800, 0x0800, CRC(6f691929) SHA1(a18352312706e0f0af14a33fac31c3f5f7156ba8))
 ROM_END
-CORE_CLONEDEFNV(pentacpt,pentacp2,"Pentacup (rev. T)",1980,"Micropin",pentacp2,GAME_NOT_WORKING) // until a solution is found for the collect bonus bug
+CORE_CLONEDEFNV(pentacpt,pentacp2,"Pentacup (rev. T)",1980,"Micropin",pentacp2,0)
+
+INPUT_PORTS_START(pentacps)
+  CORE_PORTS
+  SIM_PORTS(1)
+  PORT_START /* 0 */
+    COREPORT_BIT   (0x0400, "Add Credit",        KEYCODE_5)
+    COREPORT_BIT   (0x4000, "Enter Players",     KEYCODE_1)
+    COREPORT_BIT   (0x0020, "Launch Ball",       KEYCODE_ENTER)
+    COREPORT_BIT   (0x8800, "Tilt",              KEYCODE_DEL)
+    COREPORT_BIT   (0x0001, "Reset",             KEYCODE_HOME)
+  PORT_START /* 1 */
+    COREPORT_DIPNAME( 0x0003, 0x0000, "Balls / Game")
+      COREPORT_DIPSET(0x0000, "3" )
+      COREPORT_DIPSET(0x0001, "4" )
+      COREPORT_DIPSET(0x0003, "5" )
+    COREPORT_DIPNAME( 0x0004, 0x0004, "Show highest scores")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0004, DEF_STR(On))
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0008, "1" )
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0010, "1" )
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0020, "1" )
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0040, "1" )
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Credits / Token")
+      COREPORT_DIPSET(0x0000, "1" )
+      COREPORT_DIPSET(0x0080, "4" )
+    // pentacps machines seem to hold bit 7 of port 4 high
+    COREPORT_DIPNAME( 0x0100, 0x0100, "Endless Tilt")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0100, DEF_STR(On))
+  PORT_START /* 2 */
+    COREPORT_DIPNAME( 0xffff, 0x0004, "10 cents x")
+      COREPORT_DIPSET(0x0001, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+      COREPORT_DIPSET(0x0004, "2" )
+      COREPORT_DIPSET(0x0008, "3" )
+      COREPORT_DIPSET(0x0010, "4" )
+      COREPORT_DIPSET(0x0020, "5" )
+      COREPORT_DIPSET(0x0040, "6" )
+      COREPORT_DIPSET(0x0080, "7" )
+      COREPORT_DIPSET(0x0100, "8" )
+      COREPORT_DIPSET(0x0200, "9" )
+  PORT_START /* 3 */
+    COREPORT_DIPNAME( 0xffff, 0x0020, " 1 cent  x")
+      COREPORT_DIPSET(0x0001, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+      COREPORT_DIPSET(0x0004, "2" )
+      COREPORT_DIPSET(0x0008, "3" )
+      COREPORT_DIPSET(0x0010, "4" )
+      COREPORT_DIPSET(0x0020, "5" )
+      COREPORT_DIPSET(0x0040, "6" )
+      COREPORT_DIPSET(0x0080, "7" )
+      COREPORT_DIPSET(0x0100, "8" )
+      COREPORT_DIPSET(0x0200, "9" )
+INPUT_PORTS_END
+
+static void init_pentacps(void) {
+  core_gameData = &pentacuptGameData;
+}
+
+// The Rev S game is more or less a copy of the T model.
+// Only difference we could spot:
+// When you beat the top score you are awarded two replays, one when you beat the second-highest score.
+
+// The ROM labels just say "[1-4] REV. S" so I named the ROMs similar to the existing set but with an S each.
+
+ROM_START(pentacps)
+  NORMALREGION(0x10000, REGION_CPU1)
+  ROM_LOAD("micros_1.bin", 0x0000, 0x0800, CRC(c563c419) SHA1(b4e6711125c8222f4b299e23ee12edfe1c92b52f))
+  ROM_LOAD("micros_2.bin", 0x0800, 0x0800, CRC(46ffd9bf) SHA1(4feae6e8fe6929481d89b00d743fca02e40fb7b8))
+  ROM_LOAD("microt_3.bin", 0x1000, 0x0800, CRC(cefb0966) SHA1(836491745417fc0d5f88c01a9c69a5c322d194be)) // same as for rev. T
+  ROM_LOAD("micros_4.bin", 0x1800, 0x0800, CRC(c7fcb6d8) SHA1(2f6f7aa5705e938a9fedfa4e357e720a1f743a26))
+ROM_END
+CORE_CLONEDEFNV(pentacps,pentacp2,"Pentacup (rev. S)",1980,"Micropin",pentacp2,0)
