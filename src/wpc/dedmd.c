@@ -562,6 +562,7 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
 }
 
 static void dmd16_updbusy(int evt) {
+  //const int prev_busy = dmdlocals.busy;
   // TODO CLR_PULSE will reset the flip flop to 0 even while PRESET is pulled down. This does not match the datasheet which states
   // that in this situation both output would be high (so keep BUSY at 1, but also trigger INT1).
   if (evt == BUSY_CLR_PULSE)

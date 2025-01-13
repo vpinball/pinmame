@@ -2827,7 +2827,7 @@ void core_update_pwm_outputs(const int startIndex, const int count)
             UINT8 col = 0;
             for (int j = 0; j < 8; j++)
                if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1f)
-                  col |= 1 << j;
+                  col |= (UINT8)1 << j;
             coreGlobals.lampMatrix[i] = col;
          }
       }
@@ -2836,7 +2836,7 @@ void core_update_pwm_outputs(const int startIndex, const int count)
          UINT32 sols = 0;
          for (int i = 0; i < 32; i++)
             if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
-               sols |= 1 << i;
+               sols |= 1u << i;
          coreGlobals.solenoids = sols;
       }
    }
