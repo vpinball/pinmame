@@ -1297,6 +1297,7 @@ DRIVER  (bmf,sv)        //             07/95 Batman Forever (Swedish)
 DRIVER  (bmf,jp)        //             07/95 Batman Forever (Japanese)
 DRIVER  (bmf,time)      //             07/95 Batman Forever (Timed Version)
 DRIVERNV(batmanf5)      //             07/24 Batman Forever (5.0 unofficial MOD)
+DRIVERNV(batmanf501)    //             01/25 Batman Forever (5.01 unofficial MOD)
 DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
 //Whitestar Hardware, DMD 128x32
 DRIVERNV(apollo1)       //Whitestar: 11/95 Apollo 13 (1.00)
