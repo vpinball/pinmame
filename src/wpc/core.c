@@ -3127,7 +3127,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
                         : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? 8
                         :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  12;
       memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize);
-      for (int i = 0; i < nFrames; i++)
+      for (int i = 1; i <= nFrames; i++)
       {
         UINT8* rawData = &dmd_state->bitplaneFrame[0];
         const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - i)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
