@@ -243,8 +243,8 @@ static const unsigned char core_palette[COL_COUNT+48+48][3] = {
 // Followed by 48 DMD shades
 // Followed by 48 Alphanum shades
 };
-#define DMD_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 96u + ((unsigned int)(x) * 47u) / 255u)
-#define ALPHA_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + ((unsigned int)(x) * 47u) / 255u)
+#define DMD_PAL(x,m,d) ((unsigned int)sizeof(core_palette)/3u - 96u + (unsigned int)(x) * ((m)*47u) / ((d)*255u))
+#define ALPHA_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + (unsigned int)(x) * 47u / 255u)
 
 
 /*------------------------------
@@ -766,19 +766,19 @@ static PALETTE_INIT(core) {
   /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
   if (pmoptions.dmd_colorize) {
     if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
-      tmpPalette[COL_DMDOFF][0]   = pmoptions.dmd_red0;
-      tmpPalette[COL_DMDOFF][1]   = pmoptions.dmd_green0;
-      tmpPalette[COL_DMDOFF][2]   = pmoptions.dmd_blue0;
+      tmpPalette[COL_DMDOFF][0] = pmoptions.dmd_red0;
+      tmpPalette[COL_DMDOFF][1] = pmoptions.dmd_green0;
+      tmpPalette[COL_DMDOFF][2] = pmoptions.dmd_blue0;
     }
     if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
-      tmpPalette[COL_DMD33][0]    = pmoptions.dmd_red33;
-      tmpPalette[COL_DMD33][1]    = pmoptions.dmd_green33;
-      tmpPalette[COL_DMD33][2]    = pmoptions.dmd_blue33;
+      tmpPalette[COL_DMD33][0]  = pmoptions.dmd_red33;
+      tmpPalette[COL_DMD33][1]  = pmoptions.dmd_green33;
+      tmpPalette[COL_DMD33][2]  = pmoptions.dmd_blue33;
     }
     if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
-      tmpPalette[COL_DMD66][0]    = pmoptions.dmd_red66;
-      tmpPalette[COL_DMD66][1]    = pmoptions.dmd_green66;
-      tmpPalette[COL_DMD66][2]    = pmoptions.dmd_blue66;
+      tmpPalette[COL_DMD66][0]  = pmoptions.dmd_red66;
+      tmpPalette[COL_DMD66][1]  = pmoptions.dmd_green66;
+      tmpPalette[COL_DMD66][2]  = pmoptions.dmd_blue66;
     }
   }
 
@@ -1863,7 +1863,7 @@ UINT64 core_getAllSol(void) {
   }
   else if (core_gameData->gen & GEN_SAM) // 33 SAM fake GameOn sol for fast flips
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
-  else  if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
+  else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
   if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00)) << 28;
@@ -3265,31 +3265,44 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
     for (int jj = 0; jj < width; jj++) {
-      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)],1,1);
       line += locals.displaySize;
     }
     lines += locals.displaySize;
   }
-  // Apply antialiasing if enabled, or clear pixels between dots otherwise
+  // Apply antialiasing if enabled, or clear pixels between dots otherwise, do via a steep triangle filter:
+  // 1 3 1
+  // 3 9 3
+  // 1 3 1
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
   if (apply_aa && locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * 2);
     for (int ii = 0; ii < height * 2 - 1; ii++) {
+      const int pi = (ii - 1) >> 1;
       BMTYPE *line = (*lines) + (x * 2);
       for (int jj = 0; jj < width * 2 - 1; jj++) {
-        const int pi = (ii - 1) >> 1, pj = (jj - 1) >> 1;
+        const int pj = (jj - 1) >> 1;
         if ((ii & 1) & (jj & 1)) { // Corner point
-          const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 6;
-          assert(0 <= lum && lum <= 255);
-          *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
+          // x 0 x
+          // 0 0 0
+          // x 0 x
+          const UINT32 lum = (UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)];
+          assert(0 <= lum/25 && lum/25 <= 255);
+          *line = lum/25 == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias,1,25u*100);
         } else if (ii & 1) { // Vertical side point
-          const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
-          assert(0 <= lum && lum <= 255);
-          *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
+          // 0 x 0
+          // 0 0 0
+          // 0 x 0
+          const UINT32 lum = (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)];
+          assert(0 <= lum*3/25 && lum*3/25 <= 255);
+          *line = lum*3/25 == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias,3,25u*100);
         } else if (jj & 1) { // Horizontal side point
-          const UINT32 lum = ((UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)]) / 3;
-          assert(0 <= lum && lum <= 255);
-          *line = lum == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias / 100);
+          // 0 0 0
+          // x 0 x
+          // 0 0 0
+          const UINT32 lum = (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)];
+          assert(0 <= lum*3/25 && lum*3/25 <= 255);
+          *line = lum*3/25 == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias,3,25u*100);
         }
         line++;
       }
