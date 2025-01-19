@@ -738,7 +738,7 @@ static PALETTE_INIT(core) {
   const int palSize = sizeof(core_palette)/3;
   unsigned char tmpPalette[sizeof(core_palette)/3][3];
   int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
-  int perc66 = 67, perc33 = 33, perc0  = 20;
+  int perc66 = 67, perc33 = 33, perc0 = 20;
   int ii;
 
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
@@ -782,18 +782,22 @@ static PALETTE_INIT(core) {
     }
   }
 
-  /*-- generate 16 shades of the dmd color for all antialiased or shaded dots --*/
+  /*-- generate 3*16 shades of the dmd color for all antialiased or faded dots --*/
   for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-48-48+ii][0] = (UINT8)((rStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
-    tmpPalette[palSize-48-48+ii][1] = (UINT8)((gStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
-    tmpPalette[palSize-48-48+ii][2] = (UINT8)((bStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
-    tmpPalette[palSize-48-32+ii][0] = (UINT8)((rStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
-    tmpPalette[palSize-48-32+ii][1] = (UINT8)((gStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
-    tmpPalette[palSize-48-32+ii][2] = (UINT8)((bStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
-    tmpPalette[palSize-48-16+ii][0] = (UINT8)((rStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
-    tmpPalette[palSize-48-16+ii][1] = (UINT8)((gStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
-    tmpPalette[palSize-48-16+ii][2] = (UINT8)((bStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+    tmpPalette[palSize-48-48+ii][0] = (UINT8)((rStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48-48+ii][1] = (UINT8)((gStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48-48+ii][2] = (UINT8)((bStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48-32+ii][0] = (UINT8)((rStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-48-32+ii][1] = (UINT8)((gStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-48-32+ii][2] = (UINT8)((bStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-48-16+ii][0] = (UINT8)((rStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-48-16+ii][1] = (UINT8)((gStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-48-16+ii][2] = (UINT8)((bStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
   }
+  // as aboves interpolation does end 'one entry too early', force last entry to 100%
+  tmpPalette[palSize-48-16+15][0] = (UINT8)rStart;
+  tmpPalette[palSize-48-16+15][1] = (UINT8)gStart;
+  tmpPalette[palSize-48-16+15][2] = (UINT8)bStart;
 
   /*-- segment display antialias colors --*/
   // reset to default values, DMD levels should not be applied to segments
@@ -814,21 +818,25 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * perc33 / 10000;
   tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * perc33 / 10000;
 
-  /*-- generate 16 shades of the segment color for all antialiased or shaded segments --*/
+  /*-- generate 3*16 shades of the segment color for all antialiased or dimmed segments --*/
   perc66 = 66;
   perc33 = 33;
   perc0 = 0;
   for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-48+ii][0] = (UINT8)((rStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
-    tmpPalette[palSize-48+ii][1] = (UINT8)((gStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
-    tmpPalette[palSize-48+ii][2] = (UINT8)((bStart * ((15 - ii) * perc0  + ii * perc33)) / 1500);
-    tmpPalette[palSize-32+ii][0] = (UINT8)((rStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
-    tmpPalette[palSize-32+ii][1] = (UINT8)((gStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
-    tmpPalette[palSize-32+ii][2] = (UINT8)((bStart * ((15 - ii) * perc33 + ii * perc66)) / 1500);
-    tmpPalette[palSize-16+ii][0] = (UINT8)((rStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
-    tmpPalette[palSize-16+ii][1] = (UINT8)((gStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
-    tmpPalette[palSize-16+ii][2] = (UINT8)((bStart * ((15 - ii) * perc66 + ii *    100)) / 1500);
+    tmpPalette[palSize-48+ii][0] = (UINT8)((rStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48+ii][1] = (UINT8)((gStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48+ii][2] = (UINT8)((bStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-32+ii][0] = (UINT8)((rStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-32+ii][1] = (UINT8)((gStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-32+ii][2] = (UINT8)((bStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-16+ii][0] = (UINT8)((rStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-16+ii][1] = (UINT8)((gStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-16+ii][2] = (UINT8)((bStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
   }
+  // as aboves interpolation does end 'one entry too early', force last entry to 100%
+  tmpPalette[palSize-16+15][0] = (UINT8)rStart;
+  tmpPalette[palSize-16+15][1] = (UINT8)gStart;
+  tmpPalette[palSize-16+15][2] = (UINT8)bStart;
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
