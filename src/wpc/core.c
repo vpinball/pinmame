@@ -1119,7 +1119,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           UINT8 maxSegDim = 0;
         #endif
         int tmpType = layout->type & CORE_SEGMASK;
-        if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)) {
+        if (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))) {
           int bits = tmpSeg;
           for (int kk = 0; bits; kk++, bits >>= 1) { // loop over max 16 segments of each character
             if (bits & 0x01) {
@@ -1167,7 +1167,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             seg_data[seg_idx++] = tmpSeg;
           #endif
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
-            drawChar(bitmap, top, left, tmpSeg, tmpType, (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)) ? tmpSegDim : NULL);
+            drawChar(bitmap, top, left, tmpSeg, tmpType, (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))) ? tmpSegDim : NULL);
             #ifdef PROC_SUPPORT
               if (coreGlobals.p_rocEn) {
                 if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd)) {
