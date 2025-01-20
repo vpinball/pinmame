@@ -224,13 +224,13 @@ const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15}
 #endif
 
 /* Palette */
-static const unsigned char core_palette[COL_COUNT+48+48][3] = {
+static const unsigned char core_palette[COL_COUNT+48+48+48][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
 {/*  2 */ 0x00,0x00,0x00}, /* Intensity  33% - Filled in @ Run Time */
 {/*  3 */ 0x00,0x00,0x00}, /* Intensity  66% - Filled in @ Run Time */
-{/*  4 */ 0xff,0xe0,0x20}, /* Intensity 100% - Changed @ Run Time to match config vars*/
+{/*  4 */ 0xff,0xe0,0x20}, /* Intensity 100% - Changed @ Run Time to match config vars */
 /* -- PLAYFIELD LAMP COLORS -- */
 {/*  5 */ 0x00,0x00,0x00}, /* Black */
 {/*  6 */ 0xff,0xff,0xff}, /* White */
@@ -240,12 +240,18 @@ static const unsigned char core_palette[COL_COUNT+48+48][3] = {
 {/* 10 */ 0xff,0xff,0x00}, /* Yellow */
 {/* 11 */ 0x00,0x80,0xff}, /* Blue */
 {/* 12 */ 0x9f,0x40,0xff}  /* Purple*/
-// Followed by 48 DMD shades
+// Followed by 48 DMD (and UI-lamp) shades
+// Followed by 48 DMD AA shades
 // Followed by 48 Alphanum shades
 };
-#define DMD_PAL(x,m,d) ((unsigned int)sizeof(core_palette)/3u - 96u + (unsigned int)(x) * ((m)*47u) / ((d)*255u))
+#define DMD_PAL(x)  ((unsigned int)sizeof(core_palette)/3u - (48u+48u+48u) + (unsigned int)(x) * 47u / 255u)
+#define LAMP_PAL(x) ((unsigned int)sizeof(core_palette)/3u - (48u+48u+48u) + (unsigned int)(x) * 47u / 255u) // (ab)use DMD shades
+static UINT32 TRAFO_AA(const UINT32 x)
+{
+	return (x == 0 ? 0 : (x*(47-12)/255 + 12)); // off stays counted as off, otherwise trafo from 0..255 -> 12..47 to map the DMD luminance into the DMD AA shade world (as DMD AA also maps 0..perc0)
+}
+#define DMD_AA_PAL(x,m,d) ((unsigned int)sizeof(core_palette)/3u - (48u+48u) + (unsigned int)(x) * (m) / (d))
 #define ALPHA_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + (unsigned int)(x) * 47u / 255u)
-
 
 /*------------------------------
 /  Display segment drawing data
@@ -723,7 +729,7 @@ static struct {
   UINT8     lastLampMatrix[CORE_MAXLAMPCOL];
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
-  /*-- VPinMame specifics --*/
+  /*-- VPinMAME specifics --*/
   #if defined(VPINMAME) || defined(LIBPINMAME)
     UINT8   vpm_dmd_last_lum[DMD_MAXY * DMD_MAXX];
     UINT8   vpm_dmd_luminance_lut[256];
@@ -750,9 +756,9 @@ static PALETTE_INIT(core) {
   memcpy(tmpPalette, core_palette, sizeof(core_palette));
 
   /*-- Autogenerate DMD Color Shades--*/
-  tmpPalette[COL_DMDOFF][0]   = rStart * perc0 / 100;
-  tmpPalette[COL_DMDOFF][1]   = gStart * perc0 / 100;
-  tmpPalette[COL_DMDOFF][2]   = bStart * perc0 / 100;
+  tmpPalette[COL_DMDOFF][0]   = rStart * perc0  / 100;
+  tmpPalette[COL_DMDOFF][1]   = gStart * perc0  / 100;
+  tmpPalette[COL_DMDOFF][2]   = bStart * perc0  / 100;
   tmpPalette[COL_DMD33][0]    = rStart * perc33 / 100;
   tmpPalette[COL_DMD33][1]    = gStart * perc33 / 100;
   tmpPalette[COL_DMD33][2]    = bStart * perc33 / 100;
@@ -782,22 +788,42 @@ static PALETTE_INIT(core) {
     }
   }
 
-  /*-- generate 3*16 shades of the dmd color for all antialiased or faded dots --*/
+  /*-- generate 3*16 shades of the dmd color for all faded dots --*/
   for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-48-48+ii][0] = (UINT8)((rStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
-    tmpPalette[palSize-48-48+ii][1] = (UINT8)((gStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
-    tmpPalette[palSize-48-48+ii][2] = (UINT8)((bStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
-    tmpPalette[palSize-48-32+ii][0] = (UINT8)((rStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
-    tmpPalette[palSize-48-32+ii][1] = (UINT8)((gStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
-    tmpPalette[palSize-48-32+ii][2] = (UINT8)((bStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
-    tmpPalette[palSize-48-16+ii][0] = (UINT8)((rStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
-    tmpPalette[palSize-48-16+ii][1] = (UINT8)((gStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
-    tmpPalette[palSize-48-16+ii][2] = (UINT8)((bStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-48-48-48+ii][0] = (UINT8)((rStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48-48-48+ii][1] = (UINT8)((gStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48-48-48+ii][2] = (UINT8)((bStart * ((16 - ii) * perc0  + ii * perc33)) / 1600);
+    tmpPalette[palSize-48-48-32+ii][0] = (UINT8)((rStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-48-48-32+ii][1] = (UINT8)((gStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-48-48-32+ii][2] = (UINT8)((bStart * ((16 - ii) * perc33 + ii * perc66)) / 1600);
+    tmpPalette[palSize-48-48-16+ii][0] = (UINT8)((rStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-48-48-16+ii][1] = (UINT8)((gStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
+    tmpPalette[palSize-48-48-16+ii][2] = (UINT8)((bStart * ((16 - ii) * perc66 + ii *    100)) / 1600);
   }
   // as aboves interpolation does end 'one entry too early', force last entry to 100%
-  tmpPalette[palSize-48-16+15][0] = (UINT8)rStart;
-  tmpPalette[palSize-48-16+15][1] = (UINT8)gStart;
-  tmpPalette[palSize-48-16+15][2] = (UINT8)bStart;
+  tmpPalette[palSize-48-48-16+15][0] = (UINT8)rStart;
+  tmpPalette[palSize-48-48-16+15][1] = (UINT8)gStart;
+  tmpPalette[palSize-48-48-16+15][2] = (UINT8)bStart;
+
+  /*-- generate 4*12 shades of the dmd color for all antialiased dots --*/
+  for (ii = 0; ii < 12; ii++) {
+    tmpPalette[palSize-48-48+ii][0] = (UINT8)((rStart * ((12 - ii) *     0  + ii * perc0 )) / 1200);
+    tmpPalette[palSize-48-48+ii][1] = (UINT8)((gStart * ((12 - ii) *     0  + ii * perc0 )) / 1200);
+    tmpPalette[palSize-48-48+ii][2] = (UINT8)((bStart * ((12 - ii) *     0  + ii * perc0 )) / 1200);
+    tmpPalette[palSize-48-36+ii][0] = (UINT8)((rStart * ((12 - ii) * perc0  + ii * perc33)) / 1200);
+    tmpPalette[palSize-48-36+ii][1] = (UINT8)((gStart * ((12 - ii) * perc0  + ii * perc33)) / 1200);
+    tmpPalette[palSize-48-36+ii][2] = (UINT8)((bStart * ((12 - ii) * perc0  + ii * perc33)) / 1200);
+    tmpPalette[palSize-48-24+ii][0] = (UINT8)((rStart * ((12 - ii) * perc33 + ii * perc66)) / 1200);
+    tmpPalette[palSize-48-24+ii][1] = (UINT8)((gStart * ((12 - ii) * perc33 + ii * perc66)) / 1200);
+    tmpPalette[palSize-48-24+ii][2] = (UINT8)((bStart * ((12 - ii) * perc33 + ii * perc66)) / 1200);
+    tmpPalette[palSize-48-12+ii][0] = (UINT8)((rStart * ((12 - ii) * perc66 + ii *    100)) / 1200);
+    tmpPalette[palSize-48-12+ii][1] = (UINT8)((gStart * ((12 - ii) * perc66 + ii *    100)) / 1200);
+    tmpPalette[palSize-48-12+ii][2] = (UINT8)((bStart * ((12 - ii) * perc66 + ii *    100)) / 1200);
+  }
+  // as aboves interpolation does end 'one entry too early', force last entry to 100%
+  tmpPalette[palSize-48-12+12][0] = (UINT8)rStart;
+  tmpPalette[palSize-48-12+12][1] = (UINT8)gStart;
+  tmpPalette[palSize-48-12+12][2] = (UINT8)bStart;
 
   /*-- segment display antialias colors --*/
   // reset to default values, DMD levels should not be applied to segments
@@ -876,7 +902,7 @@ static PALETTE_INIT(core) {
 #  define inRect(r,l,t,w,h) FALSE
 void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame);
 
-// VPinMame function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
+// VPinMAME function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
 // Note that this part of the header is not used externally of VPinMame (move it to something like core_dmdevice.h/core_dmddevice.c ?)
 extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
 extern void dmddeviceRenderDMDFrame(const int width, const int height, UINT8* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
@@ -1056,8 +1082,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
     int seg_idx = 0;
     int n_seg_layouts = 0;
-    memset(seg_data, 0, CORE_SEGCOUNT*sizeof(UINT16));
-    memset(seg_dim, 0, CORE_SEGCOUNT*sizeof(UINT8));
+    memset(seg_data, 0, sizeof(seg_data));
+    memset(seg_dim, 0, sizeof(seg_dim));
     disp_num_segs[0] = 0;
   #endif
   #ifdef LIBPINMAME
@@ -1261,7 +1287,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           g_raw_dmdbuffer[i] = (UINT8)((int)AlphaNumericFrameBuffer[i] * 100 / 3);
         if (memcmp(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
           memcpy(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
-          core_dmd_capture_frame(128, 32, AlphaNumericFrameBuffer, 0, NULL);
+          core_dmd_capture_frame(g_raw_dmdx, g_raw_dmdy, AlphaNumericFrameBuffer, 0, NULL);
           g_needs_DMD_update = 1;
         }
       #elif defined(LIBPINMAME)
@@ -1552,7 +1578,6 @@ static VIDEO_UPDATE(core_status) {
   int startRow = 0, nextCol = 0, thisCol = 0;
   int ii, jj;
   BMTYPE dotColor[2];
-  #define DOT_PAL(x) (sizeof(core_palette)/3 - 48 + ((unsigned int)(x) * 47) / 255) // The trail of PinMame palette has 48 DMD dot shades
 
   /*-- anything to do ? --*/
   if ((pmoptions.dmd_only) || (locals.maxSimRows < 16) ||
@@ -1579,7 +1604,7 @@ static VIDEO_UPDATE(core_status) {
           const int lampy = drawData->lamps[num].lamppos[qq].y;
           if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON)) {
             UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii * 8 + jj].value);
-            line[lampx][starty + lampy] = DOT_PAL(v);
+            line[lampx][starty + lampy] = LAMP_PAL(v);
           }
           else {
             const int color = drawData->lamps[num].lamppos[qq].color;
@@ -1602,7 +1627,7 @@ static VIDEO_UPDATE(core_status) {
       for (jj = 0; jj < 8; jj++) {
         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON)) {
           UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii * 8 + jj].value);
-          line[0][thisCol + ii * 2] = DOT_PAL(v);
+          line[0][thisCol + ii * 2] = LAMP_PAL(v);
         } else
           line[0][thisCol + ii * 2] = dotColor[bits & 0x01];
         line += 2; bits >>= 1;
@@ -1638,7 +1663,7 @@ static VIDEO_UPDATE(core_status) {
       float state[CORE_MODOUT_SOL_MAX];
       core_getAllPhysicSols(state);
       for (ii = 0; ii < coreGlobals.nSolenoids; ii++) {
-         line[(ii / 8) * 2][thisCol + (ii % 8) * 2] = DOT_PAL(saturatedByte(state[ii]));
+         line[(ii / 8) * 2][thisCol + (ii % 8) * 2] = LAMP_PAL(saturatedByte(state[ii]));
       }
     }
     else
@@ -1691,7 +1716,7 @@ static VIDEO_UPDATE(core_status) {
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
       {
         UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + ii].value);
-        lines[locals.firstSimRow + startRow][thisCol + ii * 2] = DOT_PAL(v);
+        lines[locals.firstSimRow + startRow][thisCol + ii * 2] = LAMP_PAL(v);
       }
       else if (coreGlobals.gi[ii] == 8)
         lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
@@ -1702,8 +1727,6 @@ static VIDEO_UPDATE(core_status) {
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
   /*-- draw game specific mechanics --*/
   if (core_gameData->hw.drawMech) core_gameData->hw.drawMech((void *)&bitmap->line[locals.firstSimRow]);
-
-  #undef DOT_PAL
 }
 
 /*-- lamp handling --*/
@@ -3273,15 +3296,16 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
     for (int jj = 0; jj < width; jj++) {
-      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)],1,1);
+      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       line += locals.displaySize;
     }
     lines += locals.displaySize;
   }
-  // Apply antialiasing if enabled, or clear pixels between dots otherwise, do via a steep triangle filter:
-  // 1 3 1
-  // 3 9 3
-  // 1 3 1
+  // Apply antialiasing if enabled, or clear pixels between dots otherwise, do via a triangle filter:
+  // 1 2 1
+  // 2 4 2
+  // 1 2 1
+  // Note that pixels which are off are always counted as contributing 0 (so NOT the 'off-color/brightness')
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
   if (apply_aa && locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * 2);
@@ -3294,23 +3318,20 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
           // x 0 x
           // 0 0 0
           // x 0 x
-          const UINT32 lum = (UINT32)dmdDotLum[DMD_OFS(pi, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)];
-          assert(0 <= lum/25 && lum/25 <= 255);
-          *line = lum/25 == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias,1,25u*100);
+          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj+1)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
+          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,1,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
         } else if (ii & 1) { // Vertical side point
           // 0 x 0
           // 0 0 0
           // 0 x 0
-          const UINT32 lum = (UINT32)dmdDotLum[DMD_OFS(pi, pj+1)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)];
-          assert(0 <= lum*3/25 && lum*3/25 <= 255);
-          *line = lum*3/25 == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias,3,25u*100);
+          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj+1)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
+          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,2,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
         } else if (jj & 1) { // Horizontal side point
           // 0 0 0
           // x 0 x
           // 0 0 0
-          const UINT32 lum = (UINT32)dmdDotLum[DMD_OFS(pi+1, pj)] + (UINT32)dmdDotLum[DMD_OFS(pi+1, pj+1)];
-          assert(0 <= lum*3/25 && lum*3/25 <= 255);
-          *line = lum*3/25 == 0 ? 0 : DMD_PAL(lum * pmoptions.dmd_antialias,3,25u*100);
+          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
+          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,2,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
         }
         line++;
       }
@@ -3378,8 +3399,8 @@ void core_dmd_render_dmddevice(const int width, const int height, const UINT8* c
 // Save main DMD bitplane and raw frames to a capture file
 // DMD frame capture can be enabled either by:
 // - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
-// - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMame rendering) simultaneously
-// TODO this is not yet implemented for Strikes'n Spares which has 2 DMDs
+// - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMAME rendering) simultaneously
+// TODO this is not yet implemented for Strikes N' Spares which has 2 DMDs
 #ifdef VPINMAME
 void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
   const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
@@ -3472,14 +3493,14 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 
   #if defined(LIBPINMAME)
-    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
+    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
     if (isMainDMD) {
       core_dmd_render_lpm(layout->length, layout->start, dmdDotLum, dmdDotRaw);
       has_DMD_Video = 1;
     }
 
   #elif defined(VPINMAME)
-    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strike'n Spares which has 2)
+    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
     // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
     if (isMainDMD) {
