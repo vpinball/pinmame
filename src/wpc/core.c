@@ -100,6 +100,10 @@ void vp_setDIP(int bank, int value) { }
   extern tGTS3locals GTS3locals;
 #endif
 
+#ifndef MIN
+ #define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+
 INLINE UINT8 saturatedByte(float v)
 {
   v *= 255.f;
@@ -1515,7 +1519,7 @@ void core_updateSw(int flipEn) {
 /*--------------------------
 / Write text on the screen
 /---------------------------*/
-void core_textOut(char *buf, int length, int x, int y, int color) {
+void core_textOut(const char *buf, int length, int x, int y, int color) {
   if (y < locals.maxSimRows) {
     int ii;
 
@@ -2025,7 +2029,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
           for (ll = 0; ll < s->cols; ll++, p >>= 2)
             if (p & 0x03) // segment set?
             {
-              const UINT8 tmp = min(255,256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range (as 0 is off state)
+              const UINT8 tmp = MIN(255,256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range (as 0 is off state)
               if (tmp > dim[kk][ll]) // always take largest value, to make the crude anti-aliasing work at least somehow per segment
                 dim[kk][ll] = tmp;
             }

@@ -586,7 +586,7 @@ extern const UINT16 core_ascii2seg16s[]; /* BCD to 16 segment display with split
 void core_updateSw(int flipEn);
 
 /*-- text output functions --*/
-void core_textOut(char *buf, int length, int x, int y, int color);
+void core_textOut(const char *buf, int length, int x, int y, int color);
 void CLIB_DECL core_textOutf(int x, int y, int color, const char *text, ...);
 
 /*-- lamp handling --*/
@@ -633,7 +633,7 @@ typedef struct {
   int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
   int     raw_combiner;       // CORE_DMD_PWM_COMBINER_... enum that defines how to combine bitplanes to create multi plane raw frame for colorization plugin
   int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
-  UINT32* fir_weights;        // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  const UINT32* fir_weights;  // Selected filter (depends on hardware refresh frequency and number of stored frames)
   UINT32  fir_sum;            // Sum of filter weights
   // Data acquisition, feeded by the driver through 'core_dmd_submit_frame'
   UINT8*  rawFrames;          // Buffer for incoming raw frames
