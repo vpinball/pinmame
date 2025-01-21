@@ -45,16 +45,15 @@
   extern int g_fDmdMode;
  #endif
 
- static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
- static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
- static UINT8 *currbuffer = buffer1;
- static UINT8 *oldbuffer = NULL;
- static UINT32 raw_dmdoffs = 0;
+ #ifdef VPINMAME
+  static UINT8 old_g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+ #endif
+
  static UINT8 has_DMD_Video = 0;
 
 #define CORE_MAX_RAW_DMD_FRAMES 5
- UINT8  raw_dmd_frames[CORE_MAX_RAW_DMD_FRAMES * DMD_MAXX * DMD_MAXY / 8];
- UINT32 raw_dmd_frame_count = 0;
+ static UINT8  raw_dmd_frames[CORE_MAX_RAW_DMD_FRAMES * DMD_MAXX*DMD_MAXY / 8];
+ static UINT32 raw_dmd_frame_count = 0;
 
  UINT8 g_needs_DMD_update = 1;
 #endif
@@ -66,7 +65,6 @@ int g_fHandleKeyboard = 1, g_fHandleMechanics = 1, g_fMechSamples = 1;
 void OnSolenoid(int nSolenoid, int IsActive) {}
 void OnStateChange(int nChange) {}
 UINT64 vp_getSolMask64(void) { return -1; }
-void vp_updateMech(void) {};
 int vp_getDip(int bank) { return 0; }
 void vp_setDIP(int bank, int value) { }
 #endif
@@ -90,7 +88,6 @@ void vp_setDIP(int bank, int value) { }
   #define OnSolenoid(nSolenoid, IsActive)
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
-  #define vp_updateMech()
   #define vp_setDIP(x,y)
 #endif
 
@@ -239,7 +236,7 @@ static const unsigned char core_palette[COL_COUNT+48+48+48][3] = {
 {/*  9 */ 0xff,0x80,0x00}, /* Orange */
 {/* 10 */ 0xff,0xff,0x00}, /* Yellow */
 {/* 11 */ 0x00,0x80,0xff}, /* Blue */
-{/* 12 */ 0x9f,0x40,0xff}  /* Purple*/
+{/* 12 */ 0x9f,0x40,0xff}  /* Purple */
 // Followed by 48 DMD (and UI-lamp) shades
 // Followed by 48 DMD AA shades
 // Followed by 48 Alphanum shades
@@ -714,8 +711,6 @@ static const tSegData segData[2][18] = {{
 /  local variables
 /-------------------*/
 static struct {
-  core_tSeg lastSeg;       // previous segments values
-  UINT8     lastSegDim[CORE_SEGCOUNT * 16]; // previous segment dimming level
   int       displaySize;   // 1=compact 2=normal
   tSegData  *segData;      // segments to use (normal/compact)
   void      *timers[5];    // allocated timers
@@ -733,6 +728,8 @@ static struct {
   #if defined(VPINMAME) || defined(LIBPINMAME)
     UINT8   vpm_dmd_last_lum[DMD_MAXY * DMD_MAXX];
     UINT8   vpm_dmd_luminance_lut[256];
+  #endif
+  #if defined(VPINMAME)
     UINT32  vpm_dmd_color_lut[256];
   #endif
 } locals;
@@ -879,9 +876,9 @@ static PALETTE_INIT(core) {
     //gStart = tmpPalette[COL_DMDOFF][1];
     //bStart = tmpPalette[COL_DMDOFF][2];
 
-    rStep = (tmpPalette[COL_DMDON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
-    gStep = (tmpPalette[COL_DMDON][1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
-    bStep = (tmpPalette[COL_DMDON][2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
+    rStep = (tmpPalette[COL_DMDON][0] * pmoptions.dmd_antialias / 100 - rStart) / (COL_DMDAACOUNT-1);
+    gStep = (tmpPalette[COL_DMDON][1] * pmoptions.dmd_antialias / 100 - gStart) / (COL_DMDAACOUNT-1);
+    bStep = (tmpPalette[COL_DMDON][2] * pmoptions.dmd_antialias / 100 - bStart) / (COL_DMDAACOUNT-1);
 
     for (ii = 1; ii < COL_DMDAACOUNT; ii++) { // first is black
       tmpPalette[COL_DMDAA+ii][0] = rStart;
@@ -899,22 +896,15 @@ static PALETTE_INIT(core) {
 /  Generic segment display handler
 /------------------------------------*/
 #ifdef VPINMAME
-#  define inRect(r,l,t,w,h) FALSE
 void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame);
 
 // VPinMAME function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
-// Note that this part of the header is not used externally of VPinMame (move it to something like core_dmdevice.h/core_dmddevice.c ?)
+// Note that this part of the header is not used externally of VPinMAME (move it to something like core_dmdevice.h/core_dmddevice.c ?)
 extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
 extern void dmddeviceRenderDMDFrame(const int width, const int height, UINT8* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
 extern void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2, char* seg_dim);
 extern void dmddeviceFwdConsoleData(UINT8 data);
 extern void dmddeviceDeInit(void);
-
-#else /* VPINMAME */
-INLINE int inRect(const struct rectangle *r, int left, int top, int width, int height) {
-  return (r->max_x >= left) && (r->max_y >= top) &&
-         (r->min_x <= left + width) && (r->min_y <= top + height);
-}
 #endif /* VPINMAME */
 
 core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UINT8 *disp_num_segs, const char* GameName) {
@@ -1092,8 +1082,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   #endif
 
   int pos = 0;
-  struct core_dispLayout* layout = layout_array;
-  struct core_dispLayout* parent_layout = NULL;
+  const struct core_dispLayout* layout = layout_array;
+  const struct core_dispLayout* parent_layout = NULL;
   for (; layout->length || (parent_layout && parent_layout->length); layout += 1) {
     // Recursive import
     if (layout->length == 0)
@@ -1130,13 +1120,11 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
     // Alphanumeric Segment display
     {
-      int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols+1) / 2;
+      int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
       int top  = layout->top  * (locals.segData[0].rows + 1) / 2;
       int ii   = layout->length;
-      UINT16 *seg     = &coreGlobals.segments[layout->start].w;
-      UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
-      UINT8  *lastSegDim = &locals.lastSegDim[layout->start * 16];
-      const int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
+      UINT16 *seg    = &coreGlobals.segments[layout->start].w;
+      const int step = (layout->type & CORE_SEGREV) ? -1 : 1;
       #if defined(VPINMAME) || defined(LIBPINMAME)
         disp_num_segs[n_seg_layouts++] = (UINT8)layout->length;
       #endif
@@ -1145,7 +1133,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         static UINT16 proc_bottom[16];
         int char_width = locals.segData[layout->type & 0x0f].cols+1;
       #endif
-      if (step < 0) { seg += ii-1; lastSeg += ii-1; lastSegDim += (ii-1)*16; }
+      if (step < 0) { seg += ii-1; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
         UINT8  tmpSegDim[16] = { 0 }; // each of the 16 segments per character can be separately dimmed
@@ -1167,15 +1155,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           }
         }
 
-#ifdef VPINMAME
-        //SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
+        // Force an update of the segments ALWAYS (originally only in VPM - corrected Pause Display Bugs)
         if(1) {
-#else
-        if ((tmpSeg != *lastSeg) || memcmp(tmpSegDim, lastSegDim, sizeof(tmpSegDim)) != 0 ||
-            inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
-#endif
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
-          memcpy(lastSegDim, tmpSegDim, sizeof(tmpSegDim));
           switch (tmpType) {
           case CORE_SEG87: case CORE_SEG87F:
             if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
@@ -1223,7 +1205,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         }
         pos++;
         left += locals.segData[layout->type & CORE_SEGALL].cols+1;
-        seg += step; lastSeg += step; lastSegDim += step;
+        seg += step;
       }
       #ifdef PROC_SUPPORT
         if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd))
@@ -1285,8 +1267,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         g_raw_dmdy = 32;
         for (unsigned int i = 0; i < g_raw_dmdx * g_raw_dmdy; ++i)
           g_raw_dmdbuffer[i] = (UINT8)((int)AlphaNumericFrameBuffer[i] * 100 / 3);
-        if (memcmp(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
-          memcpy(buffer1, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
+        if (memcmp(old_g_raw_dmdbuffer, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
+          memcpy(old_g_raw_dmdbuffer, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
           core_dmd_capture_frame(g_raw_dmdx, g_raw_dmdy, AlphaNumericFrameBuffer, 0, NULL);
           g_needs_DMD_update = 1;
         }
@@ -1297,16 +1279,14 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       #endif
     }
   #endif
-
-  memcpy(locals.lastSeg, coreGlobals.segments, sizeof(locals.lastSeg));
 }
 
 VIDEO_UPDATE(core_gen) {
   // Update physic output state:
-  // - PinMame: at 60Hz on display update
+  // - PinMAME: at 60Hz on display update
   // - PROC: at 60Hz on display update
-  // - VPinMame: on request
-  // - LibPinMame: on request
+  // - VPinMAME: on request
+  // - LibPinMAME: on request
   #if !defined(LIBPINMAME) && !defined(VPINMAME)
     core_update_pwm_gis();
     core_update_pwm_lamps();
@@ -1315,10 +1295,10 @@ VIDEO_UPDATE(core_gen) {
   #endif
 
   // Update displays (alphanumeric segments, video display, large and mini DMDs):
-  // - PinMame: at 60Hz on display update
+  // - PinMAME: at 60Hz on display update
   // - PROC: at 60Hz on display update if virtual DMD is enabled
-  // - VPinMame: at 60Hz on display update TODO should update here if virtual DMD is enabled, but also update on DMD frame request (at requester pace to  limit stuttering)
-  // - LibPinMame: at 60Hz on display update TODO to be defined more precisely
+  // - VPinMAME: at 60Hz on display update TODO should update here if virtual DMD is enabled, but also update on DMD frame request (at requester pace to  limit stuttering)
+  // - LibPinMAME: at 60Hz on display update TODO to be defined more precisely
   int need_display_update = 1;
   #ifdef PROC_SUPPORT
     int alpha = (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_ALLS11)) != 0;
@@ -2009,8 +1989,7 @@ int core_getDip(int dipBank) {
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
   UINT32 pixel[20] = {0}; // max 20 rows
-  UINT16 dim[20][15] = {{0}}; // max 20 rows, 15 cols
-  static const int offPens[4] = { 0, COL_DMDOFF, COL_SEGAAOFF1, COL_SEGAAOFF2 };
+  UINT8 dim[20][15] = {{0}}; // max 20 rows, 15 cols
   int sb, kk, ll;
   for (sb = 1; seg_bits; sb++, seg_bits >>= 1) { // loop over each segment
     if (seg_bits & 0x01) {
@@ -2046,7 +2025,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
           for (ll = 0; ll < s->cols; ll++, p >>= 2)
             if (p & 0x03) // segment set?
             {
-              const UINT16 tmp = 256 - dimming[sb - 1]; // 256 instead of 255 to exploit full range (as 0 is off state)
+              const UINT8 tmp = min(255,256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range (as 0 is off state)
               if (tmp > dim[kk][ll]) // always take largest value, to make the crude anti-aliasing work at least somehow per segment
                 dim[kk][ll] = tmp;
             }
@@ -2056,16 +2035,15 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 
   #define ALPHA_OFF_LUM 48u
   #define ALPHA_ON_LUM (255u - ALPHA_OFF_LUM)
-  static const UINT8 lum4[] = { 0, 85, 170, 255 };
-  static const unsigned int aa[] = { 0, 100, 66, 33 }; // AA factor
+  static const UINT8 aa[] = { 0, 100, 66, 33 }; // AA factor
   for (kk = 0; kk < s->rows; kk++) {
-    BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
+    BMTYPE * __restrict line = &(((BMTYPE **)bitmap->line)[row+kk][col + s->cols]);
     // size is limited to 15 cols
     UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
     for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
     {
       if (p & 3) // segment set?
-        *(--line) = dimming ? ALPHA_PAL(ALPHA_OFF_LUM + (dim[kk][ll] * aa[p & 3] * ALPHA_ON_LUM) / 25500u) : ALPHA_PAL(ALPHA_OFF_LUM + (255u * aa[p & 3] * ALPHA_ON_LUM) / 25500u);
+        *(--line) = dimming ? ALPHA_PAL(ALPHA_OFF_LUM + (ALPHA_ON_LUM * dim[kk][ll] * aa[p&3]) / 25500u) : ALPHA_PAL(ALPHA_OFF_LUM + (ALPHA_ON_LUM * 255u * aa[p&3]) / 25500u);
       else
         *(--line) = ALPHA_PAL((ALPHA_OFF_LUM * aa[np&3]) / 100u);
     }
@@ -2085,8 +2063,6 @@ static MACHINE_INIT(core) {
     /*-- init variables --*/
     memset(&coreGlobals, 0, sizeof(coreGlobals));
     memset(&locals, 0, sizeof(locals));
-    memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
-    memset(&locals.lastSegDim, 0, sizeof(locals.lastSegDim));
     coreData = (struct pinMachine *)&Machine->drv->pinmame;
     coreGlobals.flipperCoils = 0xFFFFFFFFFFFFFFFFull;
     //-- initialise timers --
@@ -2205,7 +2181,7 @@ static MACHINE_INIT(core) {
     dmddeviceInit(g_szGameName, core_gameData->gen, &pmoptions);
 #endif
 
-  /*-- Generate LUTs for VPinMame DMD --*/
+  /*-- Generate LUTs for VPinMAME DMD --*/
   #ifdef VPINMAME
   {
     int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
@@ -2276,9 +2252,6 @@ static MACHINE_STOP(core) {
   g_raw_dmdx = ~0u;
   g_raw_dmdy = ~0u;
 
-  currbuffer = buffer1;
-  oldbuffer = NULL;
-  raw_dmdoffs = 0;
   has_DMD_Video = 0;
 
   raw_dmd_frame_count = 0;
@@ -3342,7 +3315,7 @@ void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int
 }
 #endif
 
-// Prepare data for VPinMame interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
+// Prepare data for VPinMAME interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
 #ifdef VPINMAME
 void core_dmd_render_vpm(const int width, const int height, const UINT8* const dmdDotLum) {
   const int size = width * height;
@@ -3362,7 +3335,7 @@ void core_dmd_render_vpm(const int width, const int height, const UINT8* const d
 }
 #endif
 
-// Prepare data for LibPinMame interface (similar to VPinMame but without color LUT, and with a global flag to select luminance/bitplanes)
+// Prepare data for LibPinMAME interface (similar to VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
 #ifdef LIBPINMAME
 void core_dmd_render_lpm(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw) {
   const int size = width * height;
@@ -3390,8 +3363,8 @@ void core_dmd_render_lpm(const int width, const int height, const UINT8* const d
 #ifdef VPINMAME
 void core_dmd_render_dmddevice(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw, const int isDMD2) {
   if (g_fShowPinDMD) {
-    const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-    dmddeviceRenderDMDFrame(width, height, dmdDotLum, dmdDotRaw, raw_dmd_frame_count, raw_dmd_frames, isStrikeNSpares ? (isDMD2 ? 2 : 1) : 3);
+    const int isStrikesNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
+    dmddeviceRenderDMDFrame(width, height, dmdDotLum, dmdDotRaw, raw_dmd_frame_count, raw_dmd_frames, isStrikesNSpares ? (isDMD2 ? 2 : 1) : 3);
   }
 }
 #endif

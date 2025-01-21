@@ -10,7 +10,7 @@
   //Cueball: CPU0: RST = FEF0, IRQ=462F, NMI=477A
 
   GV 07/20/05: Finally found the typo that prevented the extra displays from working perfectly!
-  GV 07/27/05: Fixed the missing sound in Strikes N Spares
+  GV 07/27/05: Fixed the missing sound in Strikes N' Spares
   SE 07/27/05: Finally got that DAMN 2nd DMD working
 
 *************************************************************************************************/
@@ -58,7 +58,7 @@ static void dmd_vblank(int which);
 /-----------------*/
 tGTS3locals GTS3locals;
 
-//We need 2 structures, since Strikes N Spares has 2 DMD Displays
+//We need 2 structures, since Strikes N' Spares has 2 DMD Displays
 GTS3_DMDlocals GTS3_dmdlocals[2];
 
 /* U4 */
@@ -226,7 +226,7 @@ static READ_HANDLER( xvia_1_a_r )
 }
 
 //Data to A1P6 Auxilary - Not Used
-//Strikes & Spares reads the DMD #2 status line as the 8th bit.
+//Strikes N' Spares reads the DMD #2 status line as the 8th bit.
 static READ_HANDLER( xvia_1_b_r )
 {
 	// logerror1("via_1_b_r\n");
@@ -267,7 +267,7 @@ static WRITE_HANDLER( xvia_1_a_w )
 	// SJE - data commands to sound cpu need to be inverted.
 	GTS3locals.sound_data = data^0xff;
 
-	//Unless it's Strikes N Spares, send the sound command now!
+	//Unless it's Strikes N' Spares, send the sound command now!
 	if (GTS3_dmdlocals[0].has2DMD == 0)
 		sndbrd_0_data_w(0, GTS3locals.sound_data);
 }
@@ -376,7 +376,7 @@ IRQ:  IRQ to Main CPU
 U5:
 --
 (O)PA0-7: SD0-7 - A1P4 (Sound data)
-(O)PB0-7: DX0-7 - A1P6 (Auxilary) - DMD #2 Data on Strikes & Spares
+(O)PB0-7: DX0-7 - A1P6 (Auxilary) - DMD #2 Data on Strikes N' Spares
 (I)CA1:   Sound Return/Status
 (O)CA2:   LED
 (I)CB1:   CX1 - A1P6 (Auxilary)
@@ -422,7 +422,7 @@ static INTERRUPT_GEN(GTS3_interface_update) {
 
   /*-- diagnostic leds --*/
   if ((GTS3locals.interfaceUpdateCount % GTS3_LEDSMOOTH) == 0) { // TODO it seems that diag LEDs are PWMed => move to a lamp
-	if (GTS3_dmdlocals[0].has2DMD) { //Strikes N Spares has 2 DMD LED, but no Sound Board LED
+	if (GTS3_dmdlocals[0].has2DMD) { //Strikes N' Spares has 2 DMD LED, but no Sound Board LED
 		coreGlobals.diagnosticLed = GTS3locals.diagnosticLed |
 									(GTS3_dmdlocals[0].diagnosticLed << 1) |
 									(GTS3_dmdlocals[1].diagnosticLed << 2);
@@ -734,7 +734,7 @@ static MACHINE_INIT(gts3dmd) {
 	gts3dmd_init();
 }
 
-/* Strikes n' Spares: this game uses TWO complete DMD boards! */
+/* Strikes N' Spares: this game uses TWO complete DMD boards! */
 static MACHINE_INIT(gts3dmd2) {
   gts3dmd_init();
   memset(&GTS3_dmdlocals[1], 0, sizeof(GTS3_DMDlocals));
@@ -950,7 +950,7 @@ static WRITE_HANDLER(dmd_aux) {
 	//Store it since the data is referred elsewhere
 	GTS3locals.ax[4+offset] = data;
 
-	//Strikes N Spares Stuff
+	//Strikes N' Spares Stuff
 	if (GTS3_dmdlocals[0].has2DMD)
 	{
 		//AX4 Line - Clocks in a new DMD command for Display #2
@@ -1075,7 +1075,7 @@ static MEMORY_WRITE_START(GTS3_dmdwritemem)
 {0x8000,0xffff, MWA_ROM},               /* ROM             */
 MEMORY_END
 
-//NOTE: DMD #2 for Strikes N Spares - Identical to DMD #1 hardware & memory map
+//NOTE: DMD #2 for Strikes N' Spares - Identical to DMD #1 hardware & memory map
 static MEMORY_READ_START(GTS3_dmdreadmem2)
 {0x0000,0x1fff, MRA_RAM},               /* DMD RAM         */
 {0x2801,0x2801, crtc6845_register_1_r}, /* CRTC index      */
@@ -1158,7 +1158,7 @@ MACHINE_DRIVER_START(gts3_21)
   MDRV_IMPORT_FROM(gts80s_s3)
 MACHINE_DRIVER_END
 
-//Sound Interface for Strikes N Spares
+//Sound Interface for Strikes N' Spares
 static struct OKIM6295interface sns_okim6295_interface = {
 	1,					/* 1 chip */
 	{ 2000000./132. },	/* sampling frequency at 2MHz chip clock */
@@ -1166,7 +1166,7 @@ static struct OKIM6295interface sns_okim6295_interface = {
 	{ 75 }				/* volume */
 };
 
-// 2nd DMD CPU for Strikes n' Spares
+// 2nd DMD CPU for Strikes N' Spares
 MACHINE_DRIVER_START(gts3_22)
   MDRV_IMPORT_FROM(gts3)
   MDRV_CPU_ADD(M65C02, 3579545./2.)

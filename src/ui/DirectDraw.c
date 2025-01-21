@@ -15,7 +15,7 @@
 	directdraw.c
 
 	Direct Draw routines.
- 
+
  ***************************************************************************/
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -277,7 +277,7 @@ void DirectDraw_Close(void)
 		
 	}
 	g_nNumDisplays = 0;
-	
+
 	/*
 		Destroy any lingering IDirectDraw object.
 	*/
@@ -344,7 +344,7 @@ static BOOL WINAPI DDEnumInfo(GUID FAR *lpGUID,
 {
 	g_Displays[g_nNumDisplays].name = malloc(strlen(lpDriverDescription) + 1);
 	strcpy(g_Displays[g_nNumDisplays].name, lpDriverDescription);
-	
+
 	if (lpGUID == NULL)
 		g_Displays[g_nNumDisplays].lpguid = NULL;
 	else
@@ -352,7 +352,7 @@ static BOOL WINAPI DDEnumInfo(GUID FAR *lpGUID,
 		g_Displays[g_nNumDisplays].lpguid = (LPGUID)malloc(sizeof(GUID));
 		memcpy(g_Displays[g_nNumDisplays].lpguid, lpGUID, sizeof(GUID));
 	}
-	
+
 	g_nNumDisplays++;
 	if (g_nNumDisplays == MAX_DISPLAYS)
 		return DDENUMRET_CANCEL;
@@ -409,7 +409,7 @@ static HRESULT CALLBACK EnumDisplayModesCallback2(DDSURFACEDESC2* pddsd2, LPVOID
 		if (pddsd2->DUMMYUNIONNAMEN(2).dwRefreshRate != 0)
 			g_bRefresh = TRUE;
 	}
-	
+
 	if (pDisplayModes->m_nNumModes == MAXMODES)
 		return DDENUMRET_CANCEL;
 	else
@@ -426,5 +426,3 @@ static void CalculateDisplayModes(void)
 	if (g_pDirectDraw2)
 		IDirectDraw2_EnumDisplayModes(g_pDirectDraw2, 0, NULL, &g_DisplayModes, EnumDisplayModesCallback);
 }
-
-
