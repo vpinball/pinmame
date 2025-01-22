@@ -78,7 +78,7 @@ static READ_HANDLER( xvia_0_b_r ) { return GTS3locals.U4_PB_R(offset); }
 */
 static READ_HANDLER(alpha_u4_pb_r)
 {
-	int data = 0;
+	data8_t data = 0;
 	//Gen 1 checks Slam switch here
 	if(GTS3locals.alphagen==1)
 		data |= (GTS3locals.swSlam << 3); //Slam Switch (NOT INVERTED!)
@@ -99,7 +99,7 @@ static READ_HANDLER(alpha_u4_pb_r)
 */
 static READ_HANDLER(dmd_u4_pb_r)
 {
-	int data = 0;
+	data8_t data = 0;
 	data |= (GTS3locals.swDiag << 3);   //Diag Switch (NOT INVERTED!)
 	data |= (GTS3locals.swTilt << 4);   //Tilt Switch (NOT INVERTED!)
 	data |= (GTS3_dmdlocals[0].status1 << 5);
@@ -296,7 +296,7 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (39 + i) * 16 + 8, i == data ? val.b.hi : 0);
 			}
 		}
-	} else if (core_gameData->hw.lampCol > 4) { // flashers drived by auxiliary board (for example backbox lights in SF2)
+	} else if (core_gameData->hw.lampCol > 4) { // flashers driven by auxiliary board (for example backbox lights in SF2)
 		// FIXME From the schematics, I would say that the latch only happens if ax[4] is raised up (not checked here)
 		coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = data;
 		core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 12 * 8, data);
@@ -550,7 +550,7 @@ static void GTS3_alpha_common_init(void) {
 	  for (int i = 0; i < 12; i++)
 		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
   }
-  else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf'n Safari
+  else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf 'n Safari
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4 * 8 + 4, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Left Billboard
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 5 * 8 + 2, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Right Billboard
@@ -865,7 +865,7 @@ static WRITE_HANDLER(alpha_display){
 static WRITE_HANDLER(dmd_display){
 	/*
 	 CPU board - DMD communication:
-	  - CPU sends data by writing bytes to to 0x2020, triggering DS0 (DMD board latch data and set IRQ to process it)
+	  - CPU sends data by writing bytes to 0x2020, triggering DS0 (DMD board latch data and set IRQ to process it)
 	  - DMD board acq received data by toggling PB5 pin
 	  Note that the written data is latched on the CPU board on all CPU writes, not just the ones to dmd, but the dmd
 	  board only latches it when DS0 is fired (so the emulation here is not perfect).

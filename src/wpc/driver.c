@@ -1433,6 +1433,7 @@ DRIVERNV(pinbalfp)      //         07/77 Pinball (Free Play)
 DRIVERNV(stars)         //MPU-100: 03/78 Stars
 DRIVERNV(starsfp)       //         03/78 Stars (Free Play)
 DRIVERNV(starsb)        //         10/24 Stars (MOD rev. 103)
+DRIVERNV(starsb7)       //         01/25 Stars (MOD rev. 103, 7-digit conversion)
 DRIVERNV(memlane)       //MPU-100: 06/78 Memory Lane
 DRIVERNV(memlanfp)      //         06/78 Memory Lane (Free Play)
 // MPU-100 - Sound Board: SB-100

@@ -409,7 +409,7 @@ static struct mame_bitmap *uioverlay;
 static UINT32 *uioverlayhint;
 static struct rectangle uibounds, last_uibounds;
 
-static UINT32 *palette_lookup;
+static UINT32 palette_lookup[65536];
 
 static int original_attributes;
 static UINT8 global_artwork_enable;
@@ -426,7 +426,7 @@ static const struct overlay_piece *overlay_list;
 
 static int artwork_prep(void);
 static int artwork_load(const struct GameDriver *gamename, int width, int height, const struct artwork_callbacks *callbacks);
-static int compute_rgb_components(int depth, UINT32 rgb_components[3], UINT32 rgb32_components[3]);
+static void compute_rgb_components(int depth, UINT32 rgb_components[3], UINT32 rgb32_components[3]);
 static int load_bitmap(const char *gamename, struct artwork_piece *piece);
 static int load_alpha_bitmap(const char *gamename, struct artwork_piece *piece, const struct png_info *original);
 static int scale_bitmap(struct artwork_piece *piece, int newwidth, int newheight);
@@ -596,7 +596,7 @@ INLINE UINT32 blend_over(UINT32 game, UINT32 pre, UINT32 yrgb)
 	to osd_create_display
 -------------------------------------------------*/
 
-int artwork_create_display(struct osd_create_params *params, UINT32 *rgb_components, const struct artwork_callbacks *callbacks)
+int artwork_create_display(struct osd_create_params *params, UINT32 rgb_components[3], const struct artwork_callbacks *callbacks)
 {
 	int original_width = params->width;
 	int original_height = params->height;
@@ -703,11 +703,7 @@ int artwork_create_display(struct osd_create_params *params, UINT32 *rgb_compone
 		return 1;
 
 	/* fill in our own RGB components */
-	if (compute_rgb_components(original_depth, rgb_components, rgb32_components))
-	{
-		osd_close_display();
-		return 1;
-	}
+	compute_rgb_components(original_depth, rgb_components, rgb32_components);
 
 	/* now compute all the artwork pieces' coordinates */
 	for (piece = artwork_list; piece; piece = piece->next)
@@ -3095,7 +3091,7 @@ static int parse_art_file(mame_file *file)
 	components
 -------------------------------------------------*/
 
-static int compute_rgb_components(int depth, UINT32 rgb_components[3], UINT32 rgb32_components[3])
+static void compute_rgb_components(int depth, UINT32 rgb_components[3], UINT32 rgb32_components[3])
 {
 	UINT32 temp;
 	int r, g, b;
@@ -3116,11 +3112,6 @@ static int compute_rgb_components(int depth, UINT32 rgb_components[3], UINT32 rg
 
 	/* compute a transparent color; this is in the premultiplied space, so alpha is inverted */
 	transparent_color = ASSEMBLE_ARGB(0xff,0x00,0x00,0x00);
-
-	/* allocate a palette lookup */
-	palette_lookup = auto_malloc(65536 * sizeof(palette_lookup[0]));
-	if (!palette_lookup)
-		return 1;
 
 	/* switch off the depth */
 	switch (depth)
@@ -3152,8 +3143,6 @@ static int compute_rgb_components(int depth, UINT32 rgb_components[3], UINT32 rg
 					}
 			break;
 	}
-
-	return 0;
 }
 
 

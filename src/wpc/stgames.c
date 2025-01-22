@@ -113,6 +113,13 @@ BY35_ROMEND
 #define input_ports_starsb input_ports_st
 CORE_CLONEDEFNV(starsb,stars,"Stars (MOD rev. 103)",2024,"Stern / slochar",by35_mST100,GAME_USES_CHIMES)
 
+INITGAME(starsb7,GEN_STMPU100,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(starsb7,"STARS_72.U2",CRC(83064fe5) SHA1(83d6fdf8f4375bd354c7ae101cebc095ec775da8),
+                         "STARS_72.U6",CRC(a34f4226) SHA1(7d9a5b9f80b41b6d7754d67ec8989105e7815957))
+BY35_ROMEND
+#define input_ports_starsb7 input_ports_st
+CORE_CLONEDEFNV(starsb7,stars,"Stars (MOD rev. 103, 7-digit conversion)",2025,"Stern / slochar",by35_mST100,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Memory Lane
 /-------------------------------*/

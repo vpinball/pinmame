@@ -178,7 +178,7 @@ static UINT8 video_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *video_dib_info = (BITMAPINFO *)video_dib_info_data;
 static UINT8 debug_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *debug_dib_info = (BITMAPINFO *)debug_dib_info_data;
-static UINT8 *converted_bitmap = NULL;
+static UINT8 converted_bitmap[MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4];
 
 // video bounds
 static double aspect_ratio;
@@ -569,7 +569,7 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 
 #ifdef PINMAME
 	// clear the last drawn bitmaps
-	last_video_bitmap  = NULL;
+	last_video_bitmap = NULL;
 	last_debug_bitmap = NULL;
 #endif
 
@@ -584,11 +584,7 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 	if (!win_video_window)
 		return 1;
 
-	// allocate a temporary bitmap in case we need it
-	converted_bitmap = malloc(MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4);
-	memset(converted_bitmap,0,MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4);
-	if (!converted_bitmap)
-		return 1;
+	memset(converted_bitmap,0,sizeof(converted_bitmap));
 
 	// adjust the window position
 	set_aligned_window_pos(win_video_window, NULL, 20, 20,
@@ -670,7 +666,7 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 			result = win_ddraw_init(width, height, depth, attributes, &effect_table[win_blit_effect]);
 	}
 
-	// warn the user if effects for an inactive/possibly inapropriate effects engine are selected
+	// warn the user if effects for an inactive/possibly inappropriate effects engine are selected
 	if (win_use_directx == USE_D3D)
 	{
 		if (win_blit_effect)
@@ -711,10 +707,6 @@ void win_destroy_window(void)
 	upscale_bitmap = NULL;
 	upscale_bitmap_size = 0;
 #endif
-
-	if (converted_bitmap)
-		free(converted_bitmap);
-	converted_bitmap = NULL;
 }
 
 
@@ -739,10 +731,8 @@ void win_update_cursor_state(void)
 
 static void update_system_menu(void)
 {
-	HMENU menu;
-
 	// revert the system menu
-	menu = GetSystemMenu(win_video_window, TRUE);
+	HMENU menu = GetSystemMenu(win_video_window, TRUE);
 
 	// add to the system menu
 	menu = GetSystemMenu(win_video_window, FALSE);
@@ -1264,7 +1254,7 @@ void win_toggle_maximize(void)
 
 	if (win_default_constraints)
 	{
-		// toggle between maximised, contrained, and normal sizes
+		// toggle between maximised, constrained, and normal sizes
 		if ((current.right - current.left) >= (maximum.right - maximum.left) ||
 			(current.bottom - current.top) >= (maximum.bottom - maximum.top))
 		{
@@ -1300,7 +1290,7 @@ void win_toggle_maximize(void)
 	}
 	else
 	{
-		// toggle between maximised and mormal sizes
+		// toggle between maximised and normal sizes
 		if ((current.right - current.left) >= (maximum.right - maximum.left) ||
 			(current.bottom - current.top) >= (maximum.bottom - maximum.top))
 		{
@@ -1386,7 +1376,7 @@ void win_toggle_full_screen(void)
 		InvalidateRect(0, NULL, FALSE);
 		UpdateWindow(0);
 
-		// let the VPM window set his right window style (title, etc.)
+		// let the VPM window set its right window style (title, etc.)
 		PostMessage(win_video_window, RegisterWindowMessage("VPinMAMEAdjustWindowMsg"), 0, 0);
 #else
 		// adjust the style
@@ -1642,6 +1632,12 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	params.flipy		= blit_flipy;
 	params.swapxy		= blit_swapxy;
 
+	if (params.dstpitch * params.srcheight * params.dstyscale > sizeof(converted_bitmap))
+	{
+		MessageBox(NULL,"converted_bitmap size too small", "dib_draw_window", MB_OK | MB_ICONERROR);
+		return;
+	}
+
 	// adjust for more optimal bounds
 	if (bounds && !update && !vector_dirty_pixels)
 	{
@@ -1679,6 +1675,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 		                  converted_bitmap, video_dib_info, DIB_RGB_COLORS);
 	else
 #ifdef FAST_NN_BLIT
+	{
 	//!! SetStretchBltMode(dc, HALFTONE); // Does not really work. Internet says this could be due to some heuristic which does not do filtering on small images, but maybe also because its (unsupported) 15/16bit input?
 #ifndef VPINMAME
 	StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
@@ -1687,6 +1684,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 #endif
 				  0, 0, win_visible_width * xmult, win_visible_height * ymult,
 				  converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
+	}
 #else
 	{
 		if (upscale_bitmap_size < video_dib_info->bmiHeader.biWidth * (client.bottom - client.top))
