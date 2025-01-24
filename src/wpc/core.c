@@ -56,6 +56,10 @@
  static UINT32 raw_dmd_frame_count = 0;
 
  UINT8 g_needs_DMD_update = 1;
+
+ #ifdef VPINMAME
+  UINT8 g_VPM_pwm_segments_updated = 0;
+ #endif
 #endif
 
 /* stuff to test VPINMAME */
@@ -1297,8 +1301,9 @@ VIDEO_UPDATE(core_gen) {
     core_update_pwm_segments();
     core_update_pwm_solenoids();
   #elif defined(VPINMAME) // TODO this works around the missing updated dimmed segments if the VPM-window is running with 'legacy' tables, or when testing it separately
-    if (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)))
+    if (!g_VPM_pwm_segments_updated && coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)))
       core_update_pwm_segments();
+    g_VPM_pwm_segments_updated = 0;
   #endif
 
   // Update displays (alphanumeric segments, video display, large and mini DMDs):
@@ -3089,7 +3094,7 @@ void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state) {
   dmd_state->luminanceFrame = NULL;
 }
 
-// TODO for the time being, DMD are always updated from core/updateDisplay, running at a fixed 60Hz. This may lead to stutters
+// TODO for the time being, DMDs are always updated from core/updateDisplay, running at a fixed 60Hz. This may lead to stutters
 // as it is not aligned with real display refresh rate. We should update DMD on request but this needs to make these functions
 // thread safe. To avoid synchronization, a simple loop model with consumer accesing data before barrier, and provider pushing
 // data after the barrier should be enough.

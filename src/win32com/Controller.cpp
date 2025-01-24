@@ -48,6 +48,8 @@ extern int g_cpu_affinity_mask;
 extern char g_fShowWinDMD;
 extern char g_szGameName[256];
 
+extern UINT8 g_VPM_pwm_segments_updated;
+
 // from snd_alt.h
 #ifdef VPINMAME_ALTSOUND
  extern void alt_sound_pause(BOOL pause);
@@ -94,7 +96,7 @@ STDMETHODIMP CController::InterfaceSupportsErrorInfo(REFIID riid)
 void CController::GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVersionNo2, int *nVersionNo3)
 {
 	DWORD   dwVerHandle; 
-	DWORD	dwInfoSize;
+	DWORD   dwInfoSize;
 	HANDLE  hVersionInfo;
 	LPVOID  lpEntryInfo;
 	UINT    wVarSize;
@@ -311,7 +313,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 		return Error(TEXT(szTemp));
 	}
 
-		//Any game messages to display (messages that allow game to continue)
+	//Any game messages to display (messages that allow game to continue)
 	if ( drivers[m_nGameNo]->flags )
 	{
 		sprintf(szTemp,"");
@@ -1309,6 +1311,7 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
     { pVal->vt = 0; return S_OK; }
 
   core_update_pwm_segments();
+  g_VPM_pwm_segments_updated = 1;
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
@@ -1365,6 +1368,7 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
     { *pVal = 0; return S_OK; }
 
   core_update_pwm_segments();
+  g_VPM_pwm_segments_updated = 1;
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
