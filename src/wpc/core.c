@@ -757,18 +757,18 @@ static PALETTE_INIT(core) {
   memcpy(tmpPalette, core_palette, sizeof(core_palette));
 
   /*-- Autogenerate DMD Color Shades--*/
-  tmpPalette[COL_DMDOFF][0]   = rStart * perc0  / 100;
-  tmpPalette[COL_DMDOFF][1]   = gStart * perc0  / 100;
-  tmpPalette[COL_DMDOFF][2]   = bStart * perc0  / 100;
-  tmpPalette[COL_DMD33][0]    = rStart * perc33 / 100;
-  tmpPalette[COL_DMD33][1]    = gStart * perc33 / 100;
-  tmpPalette[COL_DMD33][2]    = bStart * perc33 / 100;
-  tmpPalette[COL_DMD66][0]    = rStart * perc66 / 100;
-  tmpPalette[COL_DMD66][1]    = gStart * perc66 / 100;
-  tmpPalette[COL_DMD66][2]    = bStart * perc66 / 100;
-  tmpPalette[COL_DMDON][0]    = rStart;
-  tmpPalette[COL_DMDON][1]    = gStart;
-  tmpPalette[COL_DMDON][2]    = bStart;
+  tmpPalette[COL_DMDOFF][0]   = (unsigned char)(rStart * perc0  / 100);
+  tmpPalette[COL_DMDOFF][1]   = (unsigned char)(gStart * perc0  / 100);
+  tmpPalette[COL_DMDOFF][2]   = (unsigned char)(bStart * perc0  / 100);
+  tmpPalette[COL_DMD33][0]    = (unsigned char)(rStart * perc33 / 100);
+  tmpPalette[COL_DMD33][1]    = (unsigned char)(gStart * perc33 / 100);
+  tmpPalette[COL_DMD33][2]    = (unsigned char)(bStart * perc33 / 100);
+  tmpPalette[COL_DMD66][0]    = (unsigned char)(rStart * perc66 / 100);
+  tmpPalette[COL_DMD66][1]    = (unsigned char)(gStart * perc66 / 100);
+  tmpPalette[COL_DMD66][2]    = (unsigned char)(bStart * perc66 / 100);
+  tmpPalette[COL_DMDON][0]    = (unsigned char)rStart;
+  tmpPalette[COL_DMDON][1]    = (unsigned char)gStart;
+  tmpPalette[COL_DMDON][2]    = (unsigned char)bStart;
 
   /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
   if (pmoptions.dmd_colorize) {
@@ -832,18 +832,18 @@ static PALETTE_INIT(core) {
   perc33 = 33;
   perc0  = 20;
 
-  tmpPalette[COL_SEGAAON1][0] = rStart * (perc66+5) / 100;
-  tmpPalette[COL_SEGAAON1][1] = gStart * (perc66+5) / 100;
-  tmpPalette[COL_SEGAAON1][2] = bStart * (perc66+5) / 100;
-  tmpPalette[COL_SEGAAON2][0] = rStart * perc33 / 100;
-  tmpPalette[COL_SEGAAON2][1] = gStart * perc33 / 100;
-  tmpPalette[COL_SEGAAON2][2] = bStart * perc33 / 100;
-  tmpPalette[COL_SEGAAOFF1][0] = rStart * perc0 * (perc66+5) / 10000;
-  tmpPalette[COL_SEGAAOFF1][1] = gStart * perc0 * (perc66+5) / 10000;
-  tmpPalette[COL_SEGAAOFF1][2] = bStart * perc0 * (perc66+5) / 10000;
-  tmpPalette[COL_SEGAAOFF2][0] = rStart * perc0 * perc33 / 10000;
-  tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * perc33 / 10000;
-  tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * perc33 / 10000;
+  tmpPalette[COL_SEGAAON1] [0] = (unsigned char)(rStart * (perc66+5) / 100);
+  tmpPalette[COL_SEGAAON1] [1] = (unsigned char)(gStart * (perc66+5) / 100);
+  tmpPalette[COL_SEGAAON1] [2] = (unsigned char)(bStart * (perc66+5) / 100);
+  tmpPalette[COL_SEGAAON2] [0] = (unsigned char)(rStart * perc33 / 100);
+  tmpPalette[COL_SEGAAON2] [1] = (unsigned char)(gStart * perc33 / 100);
+  tmpPalette[COL_SEGAAON2] [2] = (unsigned char)(bStart * perc33 / 100);
+  tmpPalette[COL_SEGAAOFF1][0] = (unsigned char)(rStart * perc0 * (perc66+5) / 10000);
+  tmpPalette[COL_SEGAAOFF1][1] = (unsigned char)(gStart * perc0 * (perc66+5) / 10000);
+  tmpPalette[COL_SEGAAOFF1][2] = (unsigned char)(bStart * perc0 * (perc66+5) / 10000);
+  tmpPalette[COL_SEGAAOFF2][0] = (unsigned char)(rStart * perc0 * perc33 / 10000);
+  tmpPalette[COL_SEGAAOFF2][1] = (unsigned char)(gStart * perc0 * perc33 / 10000);
+  tmpPalette[COL_SEGAAOFF2][2] = (unsigned char)(bStart * perc0 * perc33 / 10000);
 
   /*-- generate 3*16 shades of the segment color for all antialiased or dimmed segments --*/
   perc66 = 66;
@@ -885,9 +885,9 @@ static PALETTE_INIT(core) {
     bStep = (tmpPalette[COL_DMDON][2] * pmoptions.dmd_antialias / 100 - bStart) / (COL_DMDAACOUNT-1);
 
     for (ii = 1; ii < COL_DMDAACOUNT; ii++) { // first is black
-      tmpPalette[COL_DMDAA+ii][0] = rStart;
-      tmpPalette[COL_DMDAA+ii][1] = gStart;
-      tmpPalette[COL_DMDAA+ii][2] = bStart;
+      tmpPalette[COL_DMDAA+ii][0] = (unsigned char)rStart;
+      tmpPalette[COL_DMDAA+ii][1] = (unsigned char)gStart;
+      tmpPalette[COL_DMDAA+ii][2] = (unsigned char)bStart;
       rStart += rStep; gStart += gStep; bStart += bStep;
     }
   }
@@ -1296,12 +1296,15 @@ VIDEO_UPDATE(core_gen) {
     core_update_pwm_lamps();
     core_update_pwm_segments();
     core_update_pwm_solenoids();
+  #elif defined(VPINMAME) // TODO this works around the missing updated dimmed segments if the VPM-window is running with 'legacy' tables, or when testing it separately
+    if (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)))
+      core_update_pwm_segments();
   #endif
 
   // Update displays (alphanumeric segments, video display, large and mini DMDs):
   // - PinMAME: at 60Hz on display update
   // - PROC: at 60Hz on display update if virtual DMD is enabled
-  // - VPinMAME: at 60Hz on display update TODO should update here if virtual DMD is enabled, but also update on DMD frame request (at requester pace to  limit stuttering)
+  // - VPinMAME: at 60Hz on display update TODO should update here if virtual DMD is enabled, but also update on DMD frame request (at requester pace to limit stuttering)
   // - LibPinMAME: at 60Hz on display update TODO to be defined more precisely
   int need_display_update = 1;
   #ifdef PROC_SUPPORT
@@ -2114,7 +2117,7 @@ static MACHINE_INIT(core) {
 
     /*-- masks bit used by flippers --*/
     {
-      const int flip = core_gameData->hw.flippers;
+      const UINT32 flip = core_gameData->hw.flippers;
       locals.flipMask = CORE_SWLRFLIPBUTBIT | CORE_SWLLFLIPBUTBIT |
          ((flip & FLIP_SW(FLIP_UL)) ? CORE_SWULFLIPBUTBIT : 0) |
          ((flip & FLIP_SW(FLIP_UR)) ? CORE_SWURFLIPBUTBIT : 0) |
@@ -3129,13 +3132,13 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
   case CORE_DMD_PWM_COMBINER_GTS3_4C_B:
   case CORE_DMD_PWM_COMBINER_GTS3_5C:
     {
-      static const int level4_a[7]  = { 0, 1, 2, 2, 2, 2, 3 }; // 4 colors
-      static const int level4_a2[7] = { 0, 1, 1, 2, 2, 2, 3 }; // 4 colors
-      static const int level4_b[9]  = { 0, 1, 2, 2, 2, 2, 2, 2, 3 }; // 4 colors
-      static const int level5[13]   = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 colors
-      const int* level = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? level4_a
-                       : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? level4_b
-                       :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  level5;
+      static const UINT8 level4_a[7]  = { 0, 1, 2, 2, 2, 2, 3 }; // 4 colors
+      static const UINT8 level4_a2[7] = { 0, 1, 1, 2, 2, 2, 3 }; // 4 colors
+      static const UINT8 level4_b[9]  = { 0, 1, 2, 2, 2, 2, 2, 2, 3 }; // 4 colors
+      static const UINT8 level5[13]   = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 colors
+      const UINT8* level = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? level4_a
+                         : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? level4_b
+                         :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  level5;
       const int nFrames = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? 6
                         : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? 8
                         :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  12;
@@ -3268,7 +3271,7 @@ void core_dmd_update_pwm(core_tDMDPWMState* dmd_state) {
 // FIXME apply colors LUT ?
 #if defined(PINMAME) || defined(VPINMAME)
 void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const UINT8* const dmdDotLum, const int apply_aa) {
-  #define DMD_OFS(row, col) ((row)*width + col)
+  #define DMD_OFS(row, col) ((row)*width + (col))
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);

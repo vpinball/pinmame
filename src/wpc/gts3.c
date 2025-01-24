@@ -178,7 +178,7 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 			core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (GTS3locals.alphaNumCol     ) * 16 + 8, 0);
 			GTS3locals.alphaNumColShiftRegister = ((GTS3locals.alphaNumColShiftRegister << 1) & 0x0ffffe) | ((data & DDATA) >> 5);
 			GTS3locals.alphaNumCol = GTS3locals.alphaNumColShiftRegister == 0 ? 20 : core_BitColToNum(GTS3locals.alphaNumColShiftRegister);
-			// This should never happens but you can drive the hardware to it (multiple resets,...), this will lead to incorrect rendering
+			// This should never happen but you can drive the hardware to it (multiple resets,...), this will lead to incorrect rendering
 			// assert((GTS3locals.alphaNumColShiftRegister == 0) || (GTS3locals.alphaNumColShiftRegister == (1 << GTS3locals.alphaNumCol)));
 		}
 		if (~GTS3locals.u4pb & data & DBLNK) { // DBlank start (positive edge)

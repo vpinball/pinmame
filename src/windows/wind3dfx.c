@@ -22,12 +22,10 @@
 #define WINVER _WIN32_WINNT
 #endif
 #include <windows.h>
-#ifdef VPINMAME
-#define NONAMELESSUNION 
-#endif // VPINMAME
-#ifdef __GNUC__
+#if defined(VPINMAME) || defined(__GNUC__)
 #define NONAMELESSUNION
-#endif
+#endif // VPINMAME
+
 #include <ddraw.h>
 #include <d3d.h>
 

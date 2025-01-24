@@ -19,15 +19,11 @@
 #endif
 #define WINVER _WIN32_WINNT
 #endif
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(__GNUC__)
 #define NONAMELESSUNION
 #endif // VPINMAME
+
 #include <windows.h>
-
-#ifdef __GNUC__
-#define NONAMELESSUNION
-#endif
-
 #include <ddraw.h>
 
 // standard C headers
