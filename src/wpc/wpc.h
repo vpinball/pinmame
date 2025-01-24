@@ -152,7 +152,7 @@ extern const core_tLCDLayout wpc_dispDMD[];
 / SHIFTBIT2 works in the same way but the address is unaffected
 /   SHIFTBIT2 = 1<<(SHIFTBIT2 & 7)
 /
-/ Dr. Who is the only game testing the shifter.
+/ Doctor Who is the only game testing the shifter.
 /------------------------------------------------------------------------------
 / A = Alpha, M = ?, F = Fliptronics, D = DCS, S = Security, 9 = WPC95
 /------------------------------------------------AMFDS9-------------------------*/

@@ -337,12 +337,12 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(dw,l2,"Dr. Who (L-2)",1992, "Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(dw,d2,l2,"Dr. Who (D-2 LED Ghost Fix)",1992, "Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(dw,l1,l2,"Dr. Who (L-1)",1992, "Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(dw,d1,l2,"Dr. Who (D-1 LED Ghost Fix)",1992, "Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(dw,p5,l2,"Dr. Who (P-5 Prototype)",1992, "Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(dw,p6,l2,"Dr. Who (P-6 LED Ghost Fix)",1992, "Bally",wpc_mFliptronS,0)
+CORE_GAMEDEF(dw,l2,"Doctor Who (L-2)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,d2,l2,"Doctor Who (D-2 LED Ghost Fix)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,l1,l2,"Doctor Who (L-1)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,d1,l2,"Doctor Who (D-1 LED Ghost Fix)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,p5,l2,"Doctor Who (P-5 Prototype)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,p6,l2,"Doctor Who (P-6 LED Ghost Fix)",1992, "Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
