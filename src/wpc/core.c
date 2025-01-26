@@ -58,7 +58,7 @@
  UINT8 g_needs_DMD_update = 1;
 
  #ifdef VPINMAME
-  UINT8 g_VPM_pwm_segments_updated = 0;
+  UINT8 g_VPM_ignore_pwm_segments_update = 0; // workaround if both the VPM/external DMD is running AND the table script also renders/pulls the segment data
  #endif
 #endif
 
@@ -1301,9 +1301,9 @@ VIDEO_UPDATE(core_gen) {
     core_update_pwm_segments();
     core_update_pwm_solenoids();
   #elif defined(VPINMAME) // TODO this works around the missing updated dimmed segments if the VPM-window is running with 'legacy' tables, or when testing it separately
-    if (!g_VPM_pwm_segments_updated && coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)))
+    g_VPM_ignore_pwm_segments_update = (g_fShowWinDMD || g_fShowPinDMD);
+    if (g_VPM_ignore_pwm_segments_update && coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)))
       core_update_pwm_segments();
-    g_VPM_pwm_segments_updated = 0;
   #endif
 
   // Update displays (alphanumeric segments, video display, large and mini DMDs):

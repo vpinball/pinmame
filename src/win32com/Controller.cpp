@@ -48,7 +48,7 @@ extern int g_cpu_affinity_mask;
 extern char g_fShowWinDMD;
 extern char g_szGameName[256];
 
-extern UINT8 g_VPM_pwm_segments_updated;
+extern UINT8 g_VPM_ignore_pwm_segments_update;
 
 // from snd_alt.h
 #ifdef VPINMAME_ALTSOUND
@@ -1310,8 +1310,8 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { pVal->vt = 0; return S_OK; }
 
-  core_update_pwm_segments();
-  g_VPM_pwm_segments_updated = 1;
+  if (!g_VPM_ignore_pwm_segments_update)
+    core_update_pwm_segments();
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
@@ -1367,8 +1367,8 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
     { *pVal = 0; return S_OK; }
 
-  core_update_pwm_segments();
-  g_VPM_pwm_segments_updated = 1;
+  if (!g_VPM_ignore_pwm_segments_update)
+    core_update_pwm_segments();
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
