@@ -3,7 +3,7 @@
 #include "git_version.h"
 
 #define VERSION_MAJOR    3 // X Digits
-#define VERSION_MINOR    6 // Max 2 Digits
+#define VERSION_MINOR    7 // Max 2 Digits
 #define VERSION_REV      0 // Max 1 Digit
 
 #define _STR(x)    #x
@@ -17,7 +17,7 @@
 
 // Complete version string for log, crash handler,...
 #define PM_VERSION_STRING_FULL_LITERAL "v" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_REV) \
-	" Final (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " " GET_PLATFORM_BITS "bits)"
+	" Beta (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " " GET_PLATFORM_BITS "bits)"
 
 #define PASTE2(a,b) a##b
 #define PASTE(a,b) PASTE2(a,b)

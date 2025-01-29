@@ -3,6 +3,11 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
+Version 3.7 (XX XXth, 2025) - ""
+------------------------------------------------------------------------------
+
+
+
 Version 3.6 (January 29th, 2025) - "Sounds good III / Looks good"
 ------------------------------------------------------------------------------
 

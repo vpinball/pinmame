@@ -1,4 +1,4 @@
-****** As of Version 3.6 (January 29th, 2025) ******
+****** As of Version 3.7 (XX XXth, 2025) ******
 
 Major bugs in PinMAME that we are aware of:
 -------------------------------------------
