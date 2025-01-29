@@ -17,7 +17,7 @@
 
 // Complete version string for log, crash handler,...
 #define PM_VERSION_STRING_FULL_LITERAL "v" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_REV) \
-	" Beta (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " " GET_PLATFORM_BITS "bits)"
+	" Final (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " " GET_PLATFORM_BITS "bits)"
 
 #define PASTE2(a,b) a##b
 #define PASTE(a,b) PASTE2(a,b)
