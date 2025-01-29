@@ -8,7 +8,7 @@ on:
 
 env:
   ACTIONS_API_URL: https://api.github.com/repos/${GITHUB_REPOSITORY}/actions
-  VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
+  VERSION_START_SHA: 79345956d1807e3188f0e895379466c7c4caae72
 
 jobs:
   version:

@@ -1,20 +1,68 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.25)
 
-set(CMAKE_SYSTEM_NAME Android)
-set(CMAKE_SYSTEM_VERSION 30)
-set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
+set(PLATFORM "win" CACHE STRING "Platform")
+set(ARCH "x64" CACHE STRING "Arch")
+
+option(BUILD_SHARED "Option to build shared library" ON)
+option(BUILD_STATIC "Option to build static library" ON)
+
+message(STATUS "PLATFORM: ${PLATFORM}")
+message(STATUS "ARCH: ${ARCH}")
+
+message(STATUS "BUILD_SHARED: ${BUILD_SHARED}")
+message(STATUS "BUILD_STATIC: ${BUILD_STATIC}")
+
+if(PLATFORM STREQUAL "macos")
+   set(CMAKE_OSX_DEPLOYMENT_TARGET 14.0)
+elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
+   set(CMAKE_SYSTEM_NAME iOS)
+   if (PLATFORM STREQUAL "ios-simulator")
+      set(CMAKE_OSX_SYSROOT iphonesimulator)
+   endif()
+   set(CMAKE_OSX_DEPLOYMENT_TARGET 17.0)
+elseif(PLATFORM STREQUAL "tvos")
+   set(CMAKE_SYSTEM_NAME tvOS)
+   set(CMAKE_OSX_DEPLOYMENT_TARGET 17.0)
+elseif(PLATFORM STREQUAL "android")
+   set(CMAKE_SYSTEM_NAME Android)
+   set(CMAKE_SYSTEM_VERSION 30)
+   set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
+endif()
 
 file(READ src/version.h version)
-string(REGEX MATCH "#define VERSION_MAJOR +([0-9]+).*#define VERSION_MINOR +([0-9]+).*#define VERSION_REV +([0-9]+)" _ ${version})
+string(REGEX MATCH "VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_MAJOR "${CMAKE_MATCH_1}")
+string(REGEX MATCH "VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_MINOR "${CMAKE_MATCH_1}")
+string(REGEX MATCH "VERSION_REV[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_REV "${CMAKE_MATCH_1}")
 
-set(PROJECT_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
-message("PROJECT_VERSION=${PROJECT_VERSION}")
+project(pinmame VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   DESCRIPTION "Cross-platform PinMAME library")
 
-project(pinmame VERSION ${PROJECT_VERSION})
+if(PLATFORM STREQUAL "win")
+   if(ARCH STREQUAL "x86")
+      add_compile_definitions(WIN32)
+   endif()
+elseif(PLATFORM STREQUAL "macos")
+   if (ARCH STREQUAL "arm64")
+      set(CMAKE_OSX_ARCHITECTURES arm64)
+   elseif(ARCH STREQUAL "x64")
+      set(CMAKE_OSX_ARCHITECTURES x86_64)
+   endif()
+   set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+   set(CMAKE_INSTALL_RPATH "@executable_path")
+elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "tvos")
+   set(CMAKE_OSX_ARCHITECTURES arm64)
+elseif(PLATFORM STREQUAL "linux" OR PLATFORM STREQUAL "android")
+   set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+   set(CMAKE_INSTALL_RPATH "$ORIGIN")
+endif()
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 add_compile_definitions(
@@ -88,16 +136,24 @@ add_compile_definitions(
    PINMAME_NO_UNUSED
    LIBPINMAME
    SAM_INCLUDE_COLORED
-   NAME="LIBPINMAME"
 
    LSB_FIRST
    PI=M_PI
-   UNIX
 )
+
+if(PLATFORM STREQUAL "win")
+   add_compile_definitions(
+      __LP64__
+   )
+else()
+   add_compile_definitions(
+      HAVE_UNISTD_H=1
+   )
+endif()
 
 add_definitions( "-DINLINE=static inline __attribute__((always_inline))" )
 
-add_library(pinmame SHARED
+set(PINMAME_SOURCES
    src/artwork.c
    src/artwork.h
    src/audit.c
@@ -576,7 +632,6 @@ add_library(pinmame SHARED
    src/libpinmame/fileio.c
    src/libpinmame/misc.c
    src/libpinmame/misc.h
-   src/libpinmame/ticker.c
    src/libpinmame/libpinmame.cpp
    src/libpinmame/libpinmame.h
 
@@ -585,25 +640,122 @@ add_library(pinmame SHARED
 
    ext/ymfm/ymfm_opm.cpp
    ext/ymfm/ymfm_opm.h
+
+   ext/zlib/adler32.c
+   ext/zlib/compress.c
+   ext/zlib/crc32.c
+   ext/zlib/deflate.c
+   ext/zlib/gzclose.c
+   ext/zlib/gzlib.c
+   ext/zlib/gzread.c
+   ext/zlib/gzwrite.c
+   ext/zlib/infback.c
+   ext/zlib/inffast.c
+   ext/zlib/inflate.c
+   ext/zlib/inftrees.c
+   ext/zlib/trees.c
+   ext/zlib/uncompr.c
+   ext/zlib/zutil.c
 )
 
-target_include_directories(pinmame PUBLIC
+if(PLATFORM STREQUAL "win")
+   list(APPEND PINMAME_SOURCES
+      src/vc/dirent.c
+      src/vc/dirent.h
+      src/vc/unistd.h
+
+      src/windows/jit.c
+      src/windows/jit.h
+      src/windows/jitemit.c
+      src/windows/jitemit.h
+      src/windows/ticker.c
+   )
+else()
+   list(APPEND PINMAME_SOURCES
+      src/libpinmame/ticker.c
+   )
+endif()
+   
+set(PINMAME_INCLUDE_DIRS
    src
    src/wpc
    src/cpu/m68000/generated_by_m68kmake
    src/unix
    src/unix/sysdep
-   src/libpinmame
 )
 
-find_package(ZLIB)
+if(PLATFORM STREQUAL "win")
+   list(APPEND PINMAME_INCLUDE_DIRS
+      src/vc
+      src/windows
+      ext/zlib
+   )
+endif()
 
-target_link_libraries(pinmame
-   ZLIB::ZLIB
-)
+if(BUILD_SHARED)
+   add_library(pinmame_shared SHARED ${PINMAME_SOURCES})
 
-set_target_properties(pinmame PROPERTIES
-   VERSION ${PROJECT_VERSION}
-   SUFFIX ".${PROJECT_VERSION}.so"
-   LINK_FLAGS_RELEASE -s
-)
+   target_include_directories(pinmame_shared PUBLIC ${PINMAME_INCLUDE_DIRS})
+
+   if(PLATFORM STREQUAL "win")
+      target_link_libraries(pinmame_shared PUBLIC winmm)
+   endif()
+
+   if(PLATFORM STREQUAL "win" AND ARCH STREQUAL "x64")
+      set(PINMAME_OUTPUT_NAME "pinmame64")
+   else()
+      set(PINMAME_OUTPUT_NAME "pinmame")
+   endif()
+
+   set_target_properties(pinmame_shared PROPERTIES
+      OUTPUT_NAME ${PINMAME_OUTPUT_NAME}
+      VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
+   )
+
+   install(TARGETS pinmame_shared
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+   )
+
+   install(FILES src/libpinmame/libpinmame.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+
+   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
+      add_executable(pinmame_test
+         src/libpinmame/test.cpp
+      )
+      target_link_libraries(pinmame_test PUBLIC pinmame_shared)
+   endif()
+endif()
+
+if(BUILD_STATIC)
+   add_library(pinmame_static STATIC ${PINMAME_SOURCES})
+
+   target_include_directories(pinmame_static PUBLIC ${PINMAME_INCLUDE_DIRS})
+
+   if(PLATFORM STREQUAL "win")
+      set_target_properties(pinmame_static PROPERTIES
+         OUTPUT_NAME "pinmame_static"
+      )
+   else()
+      set_target_properties(pinmame_static PROPERTIES
+         OUTPUT_NAME "pinmame"
+      )
+   endif()
+
+   install(TARGETS pinmame_static
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+   )
+
+   install(FILES src/libpinmame/libpinmame.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+
+   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
+      add_executable(pinmame_test_s
+         src/libpinmame/test.cpp
+      )
+
+      if(PLATFORM STREQUAL "win")
+         target_link_libraries(pinmame_test_s PUBLIC pinmame_static winmm)
+      else()
+         target_link_libraries(pinmame_test_s PUBLIC pinmame_static)
+      endif()
+   endif()
+endif()
