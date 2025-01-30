@@ -4,8 +4,7 @@ on:
   pull_request:
 
 env:
-  VERSION_START_SHA: e87be0e3cfa66411976ca04a72dd29e36c483966
-  UPX_ARTIFACT: 345209471
+  VERSION_START_SHA: 79345956d1807e3188f0e895379466c7c4caae72
 
 defaults:
   run:
@@ -30,11 +29,11 @@ jobs:
           VERSION_MAJOR=$(grep -Eo "VERSION_MAJOR\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
           VERSION_MINOR=$(grep -Eo "VERSION_MINOR\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VERSION_REV\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
-          VERSION="${VERSION_MAJOR}.${VERSION_MINOR}"
+          VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           SHA="${GITHUB_SHA}"
           SHA7="${SHA::7}"
-          TAG="${VERSION}.${VERSION_REV}-${REVISION}-${SHA7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
@@ -42,134 +41,133 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
-    name: Build libpinmame-${{ matrix.platform }}
+    name: Build libpinmame-${{ matrix.platform }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            platform: win-x64
-            platform-name: x64
-            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
-            pinmame-test: pinmame_test.exe
-          - os: windows-latest
-            platform: win-x86
-            platform-name: Win32
-            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
-            pinmame-test: pinmame_test.exe
-          - os: windows-latest
-            platform: win-arm64
-            platform-name: ARM64
-            libpinmame: libpinmame-${{ needs.version.outputs.version }}.dll
-            pinmame-test: pinmame_test.exe
-          - os: macos-latest
-            platform: osx-x64
-            libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
-            pinmame-test: pinmame_test
-          - os: macos-latest
-            platform: osx-arm64
-            libpinmame: libpinmame.${{ needs.version.outputs.version }}.dylib
-            pinmame-test: pinmame_test
-          - os: macos-latest
-            platform: ios-arm64
-            libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
-          - os: macos-latest
-            platform: tvos-arm64
-            libpinmame: libpinmame.${{ needs.version.outputs.version }}.a
-          - os: ubuntu-latest
-            platform: linux-x64
-            libpinmame: libpinmame.so.${{ needs.version.outputs.version }}
-            pinmame-test: pinmame_test
-          - os: ubuntu-latest
-            platform: android-arm64-v8a
-            libpinmame: libpinmame.${{ needs.version.outputs.version }}.so
+          - { os: windows-latest, platform: win, arch: x64 }
+          - { os: windows-latest, platform: win, arch: x86 }
+          - { os: windows-latest, platform: win, arch: arm64 }
+          - { os: macos-latest, platform: macos, arch: x64 }
+          - { os: macos-latest, platform: macos, arch: arm64 }
+          - { os: ubuntu-latest, platform: linux, arch: x64 }
+          - { os: ubuntu-24.04-arm, platform: linux, arch: aarch64 }
+          - { os: ubuntu-latest, platform: android, arch: arm64-v8a }
+          - { os: macos-latest, platform: ios, arch: arm64 }
+          - { os: macos-latest, platform: ios-simulator, arch: arm64 }
+          - { os: macos-latest, platform: tvos, arch: arm64 }
     steps:
       - uses: actions/checkout@v4
-#      - run: |
-#          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-#            curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
-#            7z x upx.zip -oupx
-#            rm upx.zip
-#          fi
-      - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/git_version.h
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            curl -L https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip -o upx.zip
-            7z e upx.zip -oupx
-            rm upx.zip
-          fi
-      - name: Build libpinmame-${{ matrix.platform }}
+      - name: Build libpinmame-${{ matrix.platform }}-${{ matrix.arch }}
         run: |
-          cp cmake/libpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cmake -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -B build
-            cmake --build build --config Release
-            if [[ "${{ matrix.platform }}" != "win-arm64" ]]; then 
-              ./upx/upx.exe --best --lzma build/Release/${{ matrix.libpinmame }}
-            fi
+          cp cmake/libpinmame/CMakeLists.txt .
+          if [[ "${{ matrix.platform }}" == "win" ]]; then
+             if [[ "${{ matrix.arch }}" == "x64" ]]; then
+                cmake -G "Visual Studio 17 2022" -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+             elif [[ "${{ matrix.arch }}" == "x86" ]]; then
+                cmake -G "Visual Studio 17 2022" -A Win32 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+             elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
+                cmake -G "Visual Studio 17 2022" -A ARM64 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+             fi
+             cmake --build build --config Release
           else
-            cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
-            cmake --build build/Release
-            if [[ "${{ matrix.platform }}" == "linux-x64" ]]; then
-              upx --best --lzma build/Release/${{ matrix.libpinmame }}
-            fi
+             if [[ "$(uname)" == "Darwin" ]]; then
+                NUM_PROCS=$(sysctl -n hw.ncpu)
+             else
+                NUM_PROCS=$(nproc)
+             fi
+             cmake -DCMAKE_BUILD_TYPE=Release -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+             cmake --build build -- -j${NUM_PROCS}
           fi
-      - run: |
+      - name: Prepare artifacts
+        id: artifacts
+        run: |
           mkdir tmp
-          cp build/Release/${{ matrix.libpinmame }} tmp
-          if [[ "${{ matrix.platform }}" == "ios-arm64" ]]; then
-            cp build/Release/zlib-prefix/src/zlib-build/libz.a tmp
+          if [[ "${{ matrix.platform }}" == "win" ]]; then
+             ARTIFACT_PATH="tmp"
+             if [[ "${{ matrix.arch }}" == "x64" ]]; then
+                cp build/Release/*64.lib tmp
+                cp build/Release/*64.dll tmp
+             else
+                cp build/Release/*.lib tmp
+                cp build/Release/*.dll tmp
+             fi
+             cp build/Release/pinmame_static.lib tmp
+             cp build/Release/pinmame_test_s.exe tmp
+             cp build/Release/pinmame_test.exe tmp
+          else
+            ARTIFACT_PATH="libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz"
+            if [[ "${{ matrix.platform }}" == "macos" ]]; then
+               cp build/libpinmame.a tmp
+               cp -a build/*.dylib tmp
+               cp build/pinmame_test_s tmp
+               cp build/pinmame_test tmp
+            elif [[ "${{ matrix.platform }}" == "linux" ]]; then
+               cp build/libpinmame.a tmp
+               cp -a build/*.{so,so.*} tmp
+               cp build/pinmame_test_s tmp
+               cp build/pinmame_test tmp
+            elif [[ "${{ matrix.platform }}" == "ios" || "${{ matrix.platform }}" == "ios-simulator" || "${{ matrix.platform }}" == "tvos" ]]; then
+               cp build/libpinmame.a tmp
+               cp -a build/*.dylib tmp
+            elif [[ "${{ matrix.platform }}" == "android" ]]; then
+               cp build/libpinmame.a tmp
+               cp build/libpinmame.so tmp
+            fi
+            cp release/gamelist.txt tmp
+            cp release/license.txt tmp
+            cp release/pinmame.txt tmp
+            cp release/whatsnew.txt tmp
+            cd tmp
+            tar -czvf ../${ARTIFACT_PATH} *
           fi
-          if [[ "${{ matrix.platform }}" == "tvos-arm64" ]]; then
-            cp build/Release/zlib-prefix/src/zlib-build/libz.a tmp
-          fi
-          if [[ "${{ matrix.pinmame-test }}" ]]; then
-            cp build/Release/${{ matrix.pinmame-test }} tmp
-          fi
-          cp release/gamelist.txt tmp
-          cp release/license.txt tmp
-          cp release/pinmame.txt tmp
-          cp release/whatsnew.txt tmp
-      - uses: actions/upload-artifact@v4
+          echo "artifact_path=${ARTIFACT_PATH}" >> $GITHUB_OUTPUT    
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
-          path: tmp
+          name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ steps.artifacts.outputs.artifact_path }}
 
   post-build:
     runs-on: macos-latest
     needs: [ version, build ]
-    name: Build libpinmame-osx
+    name: Build libpinmame-macos
     steps:
       - uses: actions/download-artifact@v4
-      - run: |
+      - name: Unpack artifacts
+        run: |
+          cd libpinmame-${{ needs.version.outputs.tag }}-macos-x64
+          tar -xzvf libpinmame-${{ needs.version.outputs.tag }}-macos-x64.tar.gz
+          cd ..
+          cd libpinmame-${{ needs.version.outputs.tag }}-macos-arm64
+          tar -xzvf libpinmame-${{ needs.version.outputs.tag }}-macos-arm64.tar.gz
+      - name: Combine macos architectures
+        run: |
           mkdir tmp
-          cp libpinmame-${{ needs.version.outputs.tag }}-osx-x64/license.txt tmp 
-          lipo -create -output tmp/libpinmame.${{ needs.version.outputs.version }}.dylib \
-             libpinmame-${{ needs.version.outputs.tag }}-osx-x64/libpinmame.${{ needs.version.outputs.version }}.dylib \
-             libpinmame-${{ needs.version.outputs.tag }}-osx-arm64/libpinmame.${{ needs.version.outputs.version }}.dylib 
-          lipo -create -output tmp/pinmame_test \
-             libpinmame-${{ needs.version.outputs.tag }}-osx-x64/pinmame_test \
-             libpinmame-${{ needs.version.outputs.tag }}-osx-arm64/pinmame_test 
-      - uses: actions/upload-artifact@v4
+          find "libpinmame-${{ needs.version.outputs.tag }}-macos-arm64" -name "*.dylib" | while read -r file; do
+            if [ -L "$file" ]; then
+              cp -a "$file" "tmp/"
+            elif [ -f "$file" ]; then
+              filename=$(basename "$file")
+              lipo -create -output "tmp/$filename" \
+                "libpinmame-${{ needs.version.outputs.tag }}-macos-arm64/$filename" \
+                "libpinmame-${{ needs.version.outputs.tag }}-macos-x64/$filename"
+            fi
+          done
+          for filename in pinmame_test_s pinmame_test; do
+            lipo -create -output "tmp/$filename" \
+               "libpinmame-${{ needs.version.outputs.tag }}-macos-arm64/$filename" \
+               "libpinmame-${{ needs.version.outputs.tag }}-macos-x64/$filename"
+          done
+      - name: Prepare artifacts
+        run: |
+          cd tmp
+          tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-macos.tar.gz *
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: libpinmame-${{ needs.version.outputs.tag }}-osx
-          path: tmp
-          
-  dispatch:
-    runs-on: ubuntu-latest
-    needs: [ version, post-build ]
-    if: github.repository == 'vpinball/pinmame' && github.ref == 'refs/heads/master' && github.event_name == 'push'
-    steps:
-      - uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.GH_PAT }}
-          repository: vpinball/pinmame-dotnet
-          event-type: update-libpinmame
-          client-payload: '{ "run_id": "${{ github.run_id }}",
-            "version": "${{ needs.version.outputs.version }}",
-            "revision": "${{ needs.version.outputs.revision }}",
-            "sha": "${{ needs.version.outputs.sha }}",
-            "tag": "${{ needs.version.outputs.tag }}" }'
+          name: libpinmame-${{ needs.version.outputs.tag }}-macos
+          path: libpinmame-${{ needs.version.outputs.tag }}-macos.tar.gz
