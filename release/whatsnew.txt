@@ -6,6 +6,10 @@ What's new in PinMAME:
 Version 3.7 (XX XXth, 2025) - ""
 ------------------------------------------------------------------------------
 
+*** ROM SUPPORT *** Thanks to Tom Collins
+Clones:
+Victory (1.1 multiplayer MOD)
+
 
 
 Version 3.6 (January 29th, 2025) - "Sounds good III / Looks good"

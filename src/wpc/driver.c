@@ -818,6 +818,7 @@ DRIVERNV(victrgfp)      //                Victory (German Free Play)
 DRIVERNV(victoryf)      //                Victory (French)
 DRIVERNV(victrffp)      //                Victory (French Free Play)
 DRIVERNV(victr101)      //                Victory (1.01 multiplayer MOD)
+DRIVERNV(victr11)       //                Victory (1.1 multiplayer MOD)
 DRIVERNV(diamond)       //S80b-711: 02/88 Diamond Lady
 DRIVERNV(diamonfp)      //                Diamond Lady (Free Play)
 DRIVERNV(diamondg)      //                Diamond Lady (German)
