@@ -155,3 +155,30 @@ For more information, please refer to [simulation.txt](release/simulation.txt) f
 # Note from the PinMAME Development team
 
 We're working hard to improve this great emulator, and welcome your feedback!! Please do not hesitate to contact us with questions, bug reports, suggestions, code patches, whatever!
+
+## Development
+
+Below some basic instructions to build PinMAME on different platforms. For more detailed instructions, you can always have a look at the ci scripts in the [.github/workflows](.github/workflows) directory.
+
+### macOS
+
+```shell
+cp ./cmake/xpinmame/CMakeLists_osx-aarch64.txt ./CMakeLists.txt
+# or
+cp ./cmake/xpinmame/CMakeLists_osx-x64.txt ./CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(sysctl -n hw.ncpu)
+# Run Terminator 2
+./build/xpinmame -rompath ~/.pinmame/roms -nvram_directory ~/.pinmame/nvram -scale 2  t2_l8
+```
+
+### Linux
+
+```shell
+sudo apt update && sudo apt install libasound2-dev
+cp ./cmake/xpinmame/CMakeLists_linux-x64.txt ./CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(sysctl -n hw.ncpu)
+# Run Terminator 2
+./build/xpinmame -rompath ~/.pinmame/roms -nvram_directory ~/.pinmame/nvram -scale 2  t2_l8
+```
