@@ -51,8 +51,8 @@ typedef void(*DmdDev_Render_16_Shades_t)(UINT16 width, UINT16 height, UINT8* fra
 typedef void(*DmdDev_Render_4_Shades_t)(UINT16 width, UINT16 height, UINT8* frame);
 typedef void(*DmdDev_Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
-typedef void(*DmdDev_Render_PM_Alphanumeric_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const UINT16* const seg_data2);
-typedef void(*DmdDev_Render_PM_Alphanumeric_Dim_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const char* const seg_dim, const UINT16* const seg_data2);
+typedef void(*DmdDev_Render_PM_Alphanumeric_Frame_t)(core_tSegOverallLayout layout, const UINT16* const seg_data, const UINT16* const seg_data2);
+typedef void(*DmdDev_Render_PM_Alphanumeric_Dim_Frame_t)(core_tSegOverallLayout layout, const UINT16* const seg_data, const char* const seg_dim, const UINT16* const seg_data2);
 typedef void(*DmdDev_Render_Lum_And_Raw_t)(UINT16 width, UINT16 height, UINT8* lumFrame, UINT8* rawFrame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 
 typedef struct {
@@ -239,7 +239,7 @@ extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, UINT8
 	}
 }
 
-extern "C" void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2, char* seg_dim) {
+extern "C" void dmddeviceRenderAlphanumericFrame(core_tSegOverallLayout layout, UINT16* seg_data, UINT16* seg_data2, char* seg_dim) {
 	for (int i = 0; i < 2; i++)
 	{
 		if (dmdDevices[i].Render_PM_Alphanumeric_Dim_Frame)
