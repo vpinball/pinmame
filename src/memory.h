@@ -948,13 +948,13 @@ do {																					\
 /* ----- bank switching macro ----- */
 #define cpu_setbank(bank, base) 														\
 do {																					\
-	if (bank >= STATIC_BANK1 && bank <= STATIC_BANKMAX)									\
+	if ((bank) >= STATIC_BANK1 && (bank) <= STATIC_BANKMAX)								\
 	{																					\
 		cpu_bankbase[bank] = (UINT8 *)(base);											\
-		if (opcode_entry == bank && cpu_getactivecpu() >= 0)							\
+		if (opcode_entry == (bank) && cpu_getactivecpu() >= 0)							\
 		{																				\
 			opcode_entry = 0xff;														\
-			activecpu_set_op_base(activecpu_get_pc_byte());											\
+			activecpu_set_op_base(activecpu_get_pc_byte());								\
 		}																				\
 	}																					\
 } while (0)
@@ -966,4 +966,3 @@ do {																					\
 #endif
 
 #endif	/* !_MEMORY_H */
-
