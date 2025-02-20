@@ -766,10 +766,9 @@ static WRITE_HANDLER(sam1cb2_w) {
   pia_set_input_cb1(4, data); // J4-10
 }
 static READ_HANDLER(sam2a_r) {
-  int lastbcd;
   logerror("2A %04x %x %02x %02x %02x\n", activecpu_get_pc(), locals.ca20, locals.a0, locals.a1, locals.lastbcd);
   if (locals.ca20) {
-    lastbcd = locals.lastbcd;
+    int lastbcd = locals.lastbcd;
     locals.lastbcd = 1;
     return lastbcd ? 0x80 : 0x00;
   }

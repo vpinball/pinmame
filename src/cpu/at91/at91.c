@@ -1965,8 +1965,6 @@ unsigned at91_dasm(char *buffer, unsigned int pc)
 
 void at91_init(void)
 {
-	int i;
-
 	//clear out static data - since for VPM this code can be re-run with values from last game run which causes issues
 	memset(&at91, 0, sizeof(at91));
 	memset(&at91rs, 0, sizeof(at91rs));
@@ -1976,7 +1974,7 @@ void at91_init(void)
 	arm7_core_init("at91");
 
 	//allocate timers
-	for(i=0;i<MAX_TIMER;i++)
+	for(int i=0;i<MAX_TIMER;i++)
 	{
 		at91rs.timer[i] = timer_alloc(timer_trigger_event);
 	}
@@ -1995,8 +1993,6 @@ void at91_init(void)
 		//at91usart[i].US_CSR = US_ENDTX | US_ENDRX; // On reset, according to datasheet, only ENDTX and ENDRX are set but we also need TXRDY/US_TXEMPTY to be defined (I guess they would be set after USART setup by AT91)
 		at91usart[i].US_CSR = US_ENDTX | US_ENDRX | US_TXRDY | US_TXEMPTY;
 	}
-
-	return;
 }
 
 #if USE_MAME_TIMERS

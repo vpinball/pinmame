@@ -1000,11 +1000,9 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   static const int color[2][2] = {
     { 0, 7 }, { 8, 10 } // off, green, red, yellow
   };
-  int ii;
-  UINT8 *line;
   UINT16 *seg = coreGlobals.drawSeg;
 
-  for (ii=0; ii < 14; ii++) {
+  for (int ii=0; ii < 14; ii++) {
     UINT16 bits1 = 0;
     UINT16 bits2 = 0;
     int kk, bits;
@@ -1012,7 +1010,7 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
       int isRed = (selocals.minidmd[0][ii/7][ii%7] & bits) > 0;
       int isGrn = (selocals.minidmd[1][ii/7][ii%7] & bits) > 0;
       bits1 = (bits1 << 2) | (isGrn << 1) | isRed;
-      line = &coreGlobals.dmdDotRaw[ii * layout->length + kk];
+      UINT8* line = &coreGlobals.dmdDotRaw[ii * layout->length + kk];
       *line = color[isRed][isGrn];
       isRed = (selocals.minidmd[2][ii/7][ii%7] & bits) > 0;
       isGrn = (selocals.minidmd[3][ii/7][ii%7] & bits) > 0;

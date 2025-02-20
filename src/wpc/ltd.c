@@ -156,7 +156,6 @@ static void snd_stop(int param) {
  */
 static WRITE_HANDLER(peri_w) {
   static const int freq[] = { 105, 70, 40, 30, 21, 15, 10, 5 };
-  int seg;
   if (offset < 0x06) {
     if (!strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) {
       if (offset == 5) { // extra strobe for more lamps
@@ -210,7 +209,7 @@ static WRITE_HANDLER(peri_w) {
     coreGlobals.solenoids = locals.solenoids;
     locals.vblankCount = 0;
   } else if (offset == 0x08) {
-    seg = 9 - (locals.strobe & 0x0f);
+    int seg = 9 - (locals.strobe & 0x0f);
     locals.segments[seg].w = core_bcd2seg7a[data >> 4];
     locals.segments[10 + seg].w = core_bcd2seg7a[data & 0x0f];
     if (core_gameData->hw.gameSpecific1 & (1 << seg)) {

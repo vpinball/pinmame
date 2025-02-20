@@ -3390,7 +3390,6 @@ void core_dmd_render_dmddevice(const int width, const int height, const UINT8* c
 void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
   const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
   if (!isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
-    FILE *f;
     char *ptr;
     char DumpFilename[MAX_PATH];
     const DWORD tick = GetTickCount();
@@ -3439,6 +3438,7 @@ void core_dmd_capture_frame(const int width, const int height, const UINT8* cons
     static UINT8 lastCapture[DMD_MAXX * DMD_MAXY] = { 0 };
     if (memcmp(lastCapture, dmdDotRaw, width * height) != 0)
     {
+       FILE *f;
        memcpy(lastCapture, dmdDotRaw, width * height);
        strcat_s(DumpFilename, MAX_PATH, ".txt");
        f = fopen(DumpFilename, "a");

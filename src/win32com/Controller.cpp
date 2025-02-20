@@ -291,7 +291,6 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 		if(!cabinetMode) {
 		if ( fFirstTime ) {
-			char szTemp[256];
 			sprintf(szTemp,"This is the first time you use: %s\nPlease specify options for this game by clicking \"OK\"!",drivers[m_nGameNo]->description);
 			MessageBox(GetActiveWindow(),szTemp,"Notice!",MB_OK | MB_ICONINFORMATION);
 			m_pGameSettings->ShowSettingsDlg(0);
@@ -618,7 +617,7 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 		uCount = min((size_t)nvram_file->offset, CORE_MAXNVRAM);
 		for (size_t i = 0; i < uCount; ++i)
 		{
-			chgNVRAMs[i].nvramNo = i;
+			chgNVRAMs[i].nvramNo = (int)i;
 			chgNVRAMs[i].oldStat = 0; //!!
 			chgNVRAMs[i].currStat = nvram_file->data[i];
 		}
@@ -641,7 +640,7 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 		{
 			if (oldNVRAM[i] != nvram_file->data[i])
 			{
-				chgNVRAMs[uCount].nvramNo = i;
+				chgNVRAMs[uCount].nvramNo = (int)i;
 				chgNVRAMs[uCount].oldStat = oldNVRAM[i];
 				chgNVRAMs[uCount].currStat = nvram_file->data[i];
 				uCount++;

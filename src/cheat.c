@@ -4949,7 +4949,6 @@ static int DoSearchMenu(struct mame_bitmap * bitmap, int selection, int startNew
 	};
 
 	INT32			sel;
-	static INT32	submenuChoice = 0;
 	const char		* menu_item[kMenu_Max + 2] =	{ 0 };
 	const char		* menu_subitem[kMenu_Max + 2] =	{ 0 };
 	char			flagBuf[kMenu_Max + 2] = { 0 };
@@ -5243,7 +5242,6 @@ static int DoSearchMenu(struct mame_bitmap * bitmap, int selection, int startNew
 					break;
 
 				case kMenu_Return:
-					submenuChoice = 0;
 					sel = -1;
 					break;
 
@@ -8126,7 +8124,7 @@ static void BuildSearchRegions(SearchInfo * info)
 			}
 			else if(info->targetIdx < cpu_gettotalcpu())
 			{
-				const struct Memory_WriteAddress	* mwa = NULL;
+				const struct Memory_WriteAddress	* mwa;
 				SearchRegion						* traverse;
 				int									count = 0;
 
@@ -10213,10 +10211,9 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 {
 	int		isOneShot =	1;
 	int		isNull =	1;
-	int		flags =		0;
 	int		i;
 
-	flags = entry->flags & kCheatFlag_PersistentMask;
+	int flags = entry->flags & kCheatFlag_PersistentMask;
 
 	if(	(EXTRACT_FIELD(entry->actionList[0].type, LocationType) == kLocation_Custom) &&
 		(EXTRACT_FIELD(entry->actionList[0].type, LocationParameter) == kCustomLocation_Select))
@@ -10226,12 +10223,10 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 	{
 		CheatAction	* action =		&entry->actionList[i];
 		//int			isActionNull =	0;
-		UINT32		size;
-		UINT32		operation;
 		UINT32		actionFlags = action->flags & kActionFlag_PersistentMask;
 
-		size = EXTRACT_FIELD(action->type, BytesUsed);
-		operation = EXTRACT_FIELD(action->type, Operation) | EXTRACT_FIELD(action->type, OperationExtend) << 2;
+		UINT32 size = EXTRACT_FIELD(action->type, BytesUsed);
+		UINT32 operation = EXTRACT_FIELD(action->type, Operation) | EXTRACT_FIELD(action->type, OperationExtend) << 2;
 
 		if(	(EXTRACT_FIELD(action->type, LocationType) == kLocation_Custom) &&
 			(EXTRACT_FIELD(action->type, LocationParameter) == kCustomLocation_Comment))

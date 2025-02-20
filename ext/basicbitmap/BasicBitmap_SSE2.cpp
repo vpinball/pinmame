@@ -1663,11 +1663,10 @@ static int _x86_cpuid(int op, int *eax, int *ebx, int *ecx, int *edx)
 static int _x86_cpu_detect_feature(unsigned int *features)
 {
 	int eax = 0, ebx = 0, ecx = 0, edx = 0;
-	int level = 0;
 	features[0] = features[1] = features[2] = features[3] = 0;
 	features[4] = features[5] = features[6] = features[7] = 0;
 	if (_x86_cpuid(0, &eax, &ebx, &ecx, &edx) != 0) return -1;
-	level = eax;
+	int level = eax;
 #if (!defined(__x86_64__)) && (!defined(__amd64__)) && (!defined(_M_X64))
 	if (level < 1) level = 1;
 #endif

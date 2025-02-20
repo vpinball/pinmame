@@ -633,8 +633,6 @@ int dst_op_amp_filt_reset(struct node_description *node)
 
 int dst_op_amp_filt_init(struct node_description *node)
 {
-	struct dst_op_amp_filt_context *context = (struct dst_op_amp_filt_context*)node->context;
-
 	/* Allocate memory for the context array and the node execution order array */
 	if((node->context=malloc(sizeof(struct dst_op_amp_filt_context)))==NULL)
 	{

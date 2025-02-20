@@ -572,8 +572,6 @@ int dst_mixer_reset(struct node_description *node)
 
 int dst_mixer_init(struct node_description *node)
 {
-	struct dst_mixer_context*context = (struct dst_mixer_context*)node->context;
-
 	/* Allocate memory for the context array and the node execution order array */
 	if((node->context=malloc(sizeof(struct dst_mixer_context)))==NULL)
 	{

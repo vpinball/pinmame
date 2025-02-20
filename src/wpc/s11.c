@@ -585,7 +585,7 @@ static WRITE_HANDLER(latch2200) {
 static WRITE_HANDLER(pia0cb2_w) {
   locals.ssEn = !data;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & ~(1 << (S11_GAMEONSOL - 1))) | (data ? 0 : (1 << (S11_GAMEONSOL - 1)));
-  core_write_pwm_output(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, locals.ssEn ? 1.f : 0.f);
+  core_write_pwm_output(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, locals.ssEn ? 1 : 0);
   core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL, 6, locals.ssEn ? locals.switchedSol : 0);
 }
 

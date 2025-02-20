@@ -158,7 +158,7 @@ import "ocidl.idl";
 	]
 	interface IController : IDispatch
 	{
-		[id(1), helpstring("method Run")] HRESULT Run([in,defaultvalue(0)] LONG_PTR hParentWnd, [in,defaultvalue(99)] int nMinVersion);
+		[id(1), helpstring("method Run")] HRESULT Run([in,defaultvalue(0)] LONG_PTR hParentWnd, [in,defaultvalue(100)] int nMinVersion);
 		[id(2), helpstring("method Stop")] HRESULT Stop();
 /* ! */	[id(3), helpstring("method ShowOptsDialog")] HRESULT ShowOptsDialog([in,defaultvalue(0)] LONG_PTR hParentWnd);
 /* ! */	[id(4), helpstring("method ShowAboutDialog")] HRESULT ShowAboutDialog([in,defaultvalue(0)] LONG_PTR hParentWnd);

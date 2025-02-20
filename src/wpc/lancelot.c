@@ -183,11 +183,11 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(col_w) {
-  int i, seg;
+  int i;
   locals.col = data & 0x0f;
   if (locals.col) {
     for (i = 0; i < 6; i++) {
-    	seg = (5 - i) * 8 + 8 - locals.col;
+      int seg = (5 - i) * 8 + 8 - locals.col;
       coreGlobals.segments[seg].w = locals.dispData[5 - i];
       // make up for a silly flaw in code; comma segment is contained in another digit!
       if (seg == 41 || seg == 44 || seg == 47) {

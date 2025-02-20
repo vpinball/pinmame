@@ -46,7 +46,6 @@ static int colForBit(UINT8 data) {
 }
 
 static WRITE_HANDLER(riot_portc_w) {
-  int strobe;
   int col = colForBit(data);
   if (col) {
     if (data & 1)
@@ -58,7 +57,7 @@ static WRITE_HANDLER(riot_portc_w) {
       case 1:
       case 2:
         if (locals.bitCnt > 15) {
-          strobe = (locals.latch & 0x1000) ? 1 : 0; // this is probably how additional displays are accessed, needs other games to confirm
+          int strobe = (locals.latch & 0x1000) ? 1 : 0; // this is probably how additional displays are accessed, needs other games to confirm
           coreGlobals.segments[strobe + 16 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch)];
           coreGlobals.segments[strobe + 18 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch >> 4)];
           coreGlobals.segments[strobe + 20 - 8 * col].w = core_bcd2seg7[core_revnyb(0x0f & locals.latch >> 8)];
