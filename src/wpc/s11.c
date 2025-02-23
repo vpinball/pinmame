@@ -373,6 +373,10 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
                              data = 0x04, CN2-Pin 1 (Enable) goes low
                              (currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
+  // To keep things simple, we only emulate PWM by turning to 0 when digit change, then latching the lit segments. This is not fully right but okish enough.
+  //printf("%8.5f Digit: %02d\n", timer_get_time(), data & 0x0f);
+  for (int i = 0; i < (coreGlobals.nAlphaSegs / 8); i+= 8)
+    core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i, 0);
   locals.digSel = data & 0x0f;
   if (core_gameData->hw.display & S11_BCDDIAG)
     locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
@@ -406,17 +410,27 @@ static WRITE_HANDLER(pia2b_w) {
            locals.pseg[locals.digSel].w = core_bcd2seg[data&0x0f];
       locals.segments[20+locals.digSel].w |=
            locals.pseg[20+locals.digSel].w = core_bcd2seg[data>>4];
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16, core_bcd2seg[data & 0x0f]);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16 + 8, core_bcd2seg[data & 0x0f] >> 8);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16, core_bcd2seg[data >> 4]);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16 + 8, core_bcd2seg[data >> 4] >> 8);
     }
     else
+    {
       locals.segments[20+locals.digSel].b.lo |=
           locals.pseg[20+locals.digSel].b.lo = data;
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16, data);
+    }
   }
 }
 static WRITE_HANDLER(pia5a_w) { // Not used for DMD
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   if (core_gameData->hw.display & S11_LOWALPHA)
+  {
     locals.segments[20+locals.digSel].b.hi |=
          locals.pseg[20+locals.digSel].b.hi = data;
+    core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16 + 8, data);
+  }
 }
 
 /*
@@ -450,6 +464,7 @@ static WRITE_HANDLER(pia3a_w) {
     else
       locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = data;
   }
+  core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16 + 8, data);
   prevCycles = activecpu_gettotalcycles64();
   prevData = data;
 }
@@ -463,6 +478,7 @@ static WRITE_HANDLER(pia3b_w) {
     else
       locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = data;
   }
+  core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16, data);
   prevCycles = activecpu_gettotalcycles64();
   prevData = data;
 }
@@ -481,9 +497,11 @@ static WRITE_HANDLER(pia2ca2_w) {
   if (core_gameData->gen & GEN_S9) {
     locals.segments[1+locals.digSel].b.lo |= data;
     locals.pseg[1+locals.digSel].b.lo = (locals.pseg[1+locals.digSel].b.lo & 0x7f) | data;
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SEG0 + (1+locals.digSel) * 16, data, 0x80);
   } else {
     locals.segments[20+locals.digSel].b.lo |= data;
     locals.pseg[20+locals.digSel].b.lo = (locals.pseg[20+locals.digSel].b.lo & 0x7f) | data;
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16, data, 0x80);
   }
 }
 //NOTE: Pin 10 of CN3 for Data East DMD Games (Currently we don't need to read this value)
@@ -492,9 +510,11 @@ static WRITE_HANDLER(pia2cb2_w) {
   if (core_gameData->gen & GEN_S9) {
     locals.segments[21+locals.digSel].b.lo |= data;
     locals.pseg[21+locals.digSel].b.lo = (locals.pseg[21+locals.digSel].b.lo & 0x7f) | data;
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SEG0 + (21 + locals.digSel) * 16, data, 0x80);
   } else {
     locals.segments[locals.digSel].b.lo |= data;
     locals.pseg[locals.digSel].b.lo = (locals.pseg[locals.digSel].b.lo & 0x7f) | data;
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16, data, 0x80);
   }
 }
 
@@ -849,6 +869,21 @@ static MACHINE_INIT(s11) {
   core_set_pwm_output_type(CORE_MODOUT_SOL0 + S11_GAMEONSOL - 1, 1, CORE_MODOUT_PULSE);
   if (core_gameData->sxx.muxSol)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + core_gameData->sxx.muxSol - 1, 1, CORE_MODOUT_PULSE); // K1 mux relay
+  coreGlobals.nAlphaSegs = 0;
+  struct core_dispLayout* layout, * parent_layout;
+  for (layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+     if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+     switch (layout->type & CORE_SEGMASK)
+     {
+     case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->lptr - 1; break;
+     case CORE_DMD: break;
+     case CORE_VIDEO: break;
+     default: if (coreGlobals.nAlphaSegs < (layout->start + layout->length) * 16) coreGlobals.nAlphaSegs = (layout->start + layout->length) * 16; break;
+     }
+  }
+  core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_VFD_STROBE_1_16MS);
+  for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
+     coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].state.bulb.relative_brightness = 15.f / 1.f;
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
