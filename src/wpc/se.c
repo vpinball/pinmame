@@ -1006,7 +1006,7 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
     UINT16 bits1 = 0;
     UINT16 bits2 = 0;
     int kk, bits;
-    for (kk=0, bits = 0x40; kk < 7; kk++, bits >>= 1) {
+    for (kk = 0, bits = 0x40; kk < 7; kk++, bits >>= 1) {
       int isRed = (selocals.minidmd[0][ii/7][ii%7] & bits) > 0;
       int isGrn = (selocals.minidmd[1][ii/7][ii%7] & bits) > 0;
       bits1 = (bits1 << 2) | (isGrn << 1) | isRed;
@@ -1031,10 +1031,11 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
     const int height = layout->start;
     const int displaySize = pmoptions.dmd_compact ? 1 : 2;
     BMTYPE** lines = ((BMTYPE**)bitmap->line) + (y * displaySize);
+    unsigned int o = 0;
     for (int ii = 0; ii < height; ii++) {
       BMTYPE* line = (*lines) + (x * displaySize);
-      for (int jj = 0; jj < width; jj++) {
-        *line = coreGlobals.dmdDotRaw[ii*width + jj];
+      for (int jj = 0; jj < width; jj++,o++) {
+        *line = coreGlobals.dmdDotRaw[o];
         line += displaySize;
       }
       lines += displaySize;
