@@ -259,6 +259,8 @@ import "ocidl.idl";
 		[propget, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [out, retval] int *pVal);
 		[propput, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [in] int newVal);
 		[propput, id(89), helpstring("property TimeFence")] HRESULT TimeFence([in] double timeInS);
+		[propget, id(90), helpstring("property StateBlock")] HRESULT StateBlock([out, retval] BSTR* pVal);
+		[id(91), helpstring("method UpdateStateBlock")] HRESULT UpdateStateBlock([in, defaultvalue(0x3F)] unsigned int updateMask);
 	};
 
 	// WSHDlg and related interfaces
