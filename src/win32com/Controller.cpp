@@ -1757,6 +1757,24 @@ STDMETHODIMP CController::get_Version(BSTR *pVal)
 }
 
 /****************************************************************************
+ * IController.Version (read-only): gets the program version of VPM as double
+ ****************************************************************************/
+ STDMETHODIMP CController::get_PMBuildVersion(double *pVal)
+ {
+	 if ( !pVal )
+		 return S_FALSE;
+
+	
+	 int nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3;
+	 GetProductVersion(&nVersionNo0, &nVersionNo1, &nVersionNo2, &nVersionNo3);
+	
+	 *pVal = nVersionNo0 * 1000 + nVersionNo1 * 100 + nVersionNo2 + nVersionNo3 / 10000.0;
+	 //Should output the version number as 30600 with build number as decimal
+ 
+	 return S_OK;
+ }
+ 
+/****************************************************************************
  * IController.Games (read-only): hands out a pointer to a games-objects
  ****************************************************************************/
 STDMETHODIMP CController::get_Games(IGames* *pVal)
