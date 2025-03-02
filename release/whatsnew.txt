@@ -8,7 +8,7 @@ Version 3.7 (XX XXth, 2025) - ""
 
 *** ROM SUPPORT *** Thanks to Tom Collins
 Clones:
-Victory (1.1 multiplayer MOD)
+Victory (1.1 multiplayer MOD), (1.2 multiplayer MOD)
 
 
 
