@@ -1,4 +1,5 @@
-# These are all the aliases pre-defined in the VPinMame executable. You do not need to add them to your local version (unless you want to override something).
+# These are all the aliases pre-defined in the VPinMame executable.
+# You do not need to add them to your local version (unless you want to override something).
 acdcluci,acd_170hc
 rockyle,ali
 thething,ali

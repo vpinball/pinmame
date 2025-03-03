@@ -53,7 +53,12 @@ const char* checkGameAlias(const char* aRomName) {
 			char line[128];
 			while (fgets(line, sizeof(line), f) != NULL)
 			{
+				// Skip lines that start with "#"
+				if (line[0] == '#') {
+					continue;
+				}
 				char *token = strtok(line, ", ");
+				
 				if (_stricmp(token, aRomName) == 0)
 				{
 					strcpy_s(alias_from_file, sizeof(alias_from_file), strtok(NULL, " ,\n#;'"));
