@@ -819,6 +819,7 @@ DRIVERNV(victoryf)      //                Victory (French)
 DRIVERNV(victrffp)      //                Victory (French Free Play)
 DRIVERNV(victr101)      //                Victory (1.01 multiplayer MOD)
 DRIVERNV(victr11)       //                Victory (1.1 multiplayer MOD)
+DRIVERNV(victr12)       //          03/25 Victory (1.2 multiplayer MOD)
 DRIVERNV(diamond)       //S80b-711: 02/88 Diamond Lady
 DRIVERNV(diamonfp)      //                Diamond Lady (Free Play)
 DRIVERNV(diamondg)      //                Diamond Lady (German)
@@ -1259,6 +1260,7 @@ DRIVERNV(ggatea)        // 19?? - Golden Gate (set 2) (Bingo)
 // 1978 - MONTE ROSA
 // 1978 - CHA-CHA-CHA
 // 1979 - ADVENTURE
+// 1979 - RODEO (4P)
 
 //Data East Hardware, DMD 192x64
 DRIVER  (mav,100)       //DE/Sega MPU: 10/94 Maverick, The Movie (1.00)

@@ -10,7 +10,7 @@ Add windows COM method PMBuildVersion returning 30700.4711 with build number as 
 
 *** ROM SUPPORT *** Thanks to Tom Collins
 Clones:
-Victory (1.1 multiplayer MOD)
+Victory (1.1 multiplayer MOD), (1.2 multiplayer MOD)
 
 
 

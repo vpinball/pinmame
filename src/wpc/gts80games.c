@@ -1932,6 +1932,15 @@ GTS80_ROMEND
 #define input_ports_victr11 input_ports_victory
 CORE_CLONEDEFNV(victr11,victory, "Victory (1.1 multiplayer MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
 
+INITGAME(victr12, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(victr12, "prom2_11.cpu", CRC(fbcd3463) SHA1(328f8eec56b30966f65e4558f67b984f6dac1a1e), // same as 1.1
+                            "prom1_12.cpu", CRC(0c24e956) SHA1(c1dcf92b069c639bf3b9878d8f613a88c25c38d0)) // adds Free Play on DIP switch 30
+GTS80BSSOUND3232(           "drom1.snd",    CRC(4ab6dab7) SHA1(7e21e69029e60052112ddd5c7481582ea6684dc1),
+                            "yrom1.snd",    CRC(921a100e) SHA1(0c3c7eae4ceeb5a1a8150bac52203d3f1e8f917e))
+GTS80_ROMEND
+#define input_ports_victr12 input_ports_victory
+CORE_CLONEDEFNV(victr12,victory, "Victory (1.2 multiplayer MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
+
 /*-------------------------------------------------------------------
 / Diamond Lady (#711)
 /-------------------------------------------------------------------*/
