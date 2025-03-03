@@ -84,9 +84,14 @@ jobs:
 #          curl -L https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip -o upx.zip
 #          7z e upx.zip -oupx
 #          rm upx.zip
-      - run: |
+      - name: Update buildnumber
+        run: |
           perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/git_version.h
+      - name: Integrate VPMAlias.txt into Alias.cpp
+        run: |
+          output=$(awk -F, '!/^#/ {printf "  { \"%s\", \"%s\" },\n", $1, $2}' release/VPMAlias.txt)
+          sed -i '/\/\*VPMALIAS\*\//r/dev/stdin' src/win32com/Alias.cpp <<< "$output"
       - name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
           cp cmake/vpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
@@ -105,7 +110,7 @@ jobs:
           cp release/license.txt tmp
           cp release/pinmame.txt tmp
           cp "release/visual pinmame.txt" tmp
-          cp release/VPMAlias.txt tmp
+          cp release/VPMAlias.txt tmp/VPMAlias_template.txt
           cp release/whatsnew.txt tmp
           cp release/whatsnewVPM.txt tmp
       - uses: actions/upload-artifact@v4

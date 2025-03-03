@@ -5,6 +5,12 @@ What's new in Visual PinMAME:
 
 Version 3.7 (XX XXth, 2025) - ""
 ------------------------------------------------------------------------------
+- Easier to upgrade: There is a file called VPMAlias_template.txt which contains all builtin (compiled in) aliases. There is no VPMAlias.txt contained in the installation anymore.
+  VPMAlias.txt now only need your personal entries: If you create a VPMAlias.txt file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom.
+  Format example:
+   mytallica,mtl_180hc
+   myacdc,acd_170hc
+  This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
 
 Version 3.6 (January 29th, 2025) - "Sounds good III / Looks good"
 ------------------------------------------------------------------------------
@@ -47,6 +53,7 @@ Version 3.3 (December 24th, 2020) - "20 years already?"
    mytallica,mtl_180hc
    myacdc,acd_170hc
   This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
+  There is a file called VPMAlias_template.txt which contains all builtin aliases. (from Version 3.7)
 
 - Fix the additional .raw/non-averaged file output dumping of GTS3 DMDs
 
