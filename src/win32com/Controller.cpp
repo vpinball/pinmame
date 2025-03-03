@@ -1768,8 +1768,8 @@ STDMETHODIMP CController::get_Version(BSTR *pVal)
 	 int nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3;
 	 GetProductVersion(&nVersionNo0, &nVersionNo1, &nVersionNo2, &nVersionNo3);
 	
-	 *pVal = nVersionNo0 * 1000 + nVersionNo1 * 100 + nVersionNo2 + nVersionNo3 / 10000.0;
-	 //Should output the version number as 30600 with build number as decimal
+	 *pVal = nVersionNo0 * 10000 + nVersionNo1 * 100 + nVersionNo2 + nVersionNo3 / 10000.0;
+	 //Should output the version number as 30600.4711 with build number as decimal
  
 	 return S_OK;
  }
