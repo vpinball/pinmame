@@ -29,8 +29,8 @@ interface, with details below.</TD></TR>
             <TR><TD WIDTH="50%">ShowTitle</TD><TD WIDTH="50%">HandleKeyboard</TD></TR>
             <TR><TD WIDTH="50%">ShowDMDOnly</TD><TD WIDTH="50%">SampleRate</TD></TR>
             <TR><TD WIDTH="50%">Antialias</TD><TD WIDTH="50%">LockDisplay</TD></TR>
-            <TR><TD WIDTH="50%">Version</TD><TD WIDTH="50%">ChangedLEDs</TD></TR>
-            <TR><TD WIDTH="50%">Hidden</TD><TD WIDTH="50%">&nbsp;</TD></TR>
+            <TR><TD WIDTH="50%">Version</TD><TD WIDTH="50%">PMBuildVersion</TD></TR>
+            <TR><TD WIDTH="50%">Hidden</TD><TD WIDTH="50%">ChangedLEDs</TD></TR>
             </TABLE>
         </TD>
         <TD VALIGN=top><TABLE WIDTH="100%" BORDER=0>
@@ -99,14 +99,31 @@ interface, with details below.</TD></TR>
         <TD WIDTH="50%" ALIGN="right">Read Only</TH></TD>
     <TR><TD VALIGN=top COLSPAN=2>
             <p>Returns the version number of Visual PinMAME as an 8-digit string
-            "vvmmbbrr":<BR><BR>
+            "vvmmrr00":<BR><BR>
         vv = Major version<BR>
-        mm = Minor version<BR>
         bb = Beta version<BR>
         rr = Revision<BR><BR>
   	Example:<BR>
-  		A result of "00990201" signifies "Version 0.99 Beta 2 Rev A<BR><BR>
+  		A result of "03070000" signifies "Version 3.7.0<BR><BR>
   		If (Controller.Version&lt;"00990201") Then MsgBox "You need a newer
+version of VPinMAME." : Exit Sub
+        </TD>
+    </TR>
+    </TABLE>
+
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>PMBuildVersion</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+            <p>Returns the version number of Visual PinMAME as an double value
+            vvmmbbrr.xxxx:<BR><BR>
+        vv = Major version<BR>
+        mm = Minor version<BR>
+        rr = Revision<BR><BR>
+        xx = Build Number<BR><BR>
+  	Example:<BR>
+  		A result of 30700.0012 signifies "Version 3.7.0 Build 12<BR><BR>
+  		If (Controller.PMBuildVersion&lt;30700.0012) Then MsgBox "You need a newer
 version of VPinMAME." : Exit Sub
         </TD>
     </TR>
