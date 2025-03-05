@@ -6,8 +6,6 @@ What's new in PinMAME:
 Version 3.7 (XX XXth, 2025) - ""
 ------------------------------------------------------------------------------
 
-Add windows COM method PMBuildVersion returning 30700.4711 with build number as decimal.
-
 *** ROM SUPPORT *** Thanks to Tom Collins
 Clones:
 Victory (1.1 multiplayer MOD), (1.2 multiplayer MOD)
