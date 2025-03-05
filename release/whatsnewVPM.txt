@@ -5,8 +5,10 @@ What's new in Visual PinMAME:
 
 Version 3.7 (XX XXth, 2025) - ""
 ------------------------------------------------------------------------------
-- Easier to upgrade: There is a file called VPMAlias_template.txt which contains all builtin (compiled in) aliases. There is no VPMAlias.txt contained in the installation anymore.
-  VPMAlias.txt now only need your personal entries: If you create a VPMAlias.txt file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom.
+- Add windows COM-API method 'PMBuildVersion' returning e.g. 30700.4711 with build number (e.g. 4711) as decimal
+
+- Easier to upgrade: There is now a file called 'VPMAlias_template.txt' which contains all builtin (compiled in) aliases. There is no 'VPMAlias.txt' provided with the installation anymore.
+  'VPMAlias.txt' now only needs your personal entries: If you create a 'VPMAlias.txt' file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom.
   Format example:
    mytallica,mtl_180hc
    myacdc,acd_170hc
@@ -49,11 +51,11 @@ Version 3.3 (December 24th, 2020) - "20 years already?"
 ------------------------------------------------------------------------------
 - New logos by tictox
 
-- If you create a VPMAlias.txt file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom. Format example:
+- If you create a 'VPMAlias.txt' file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom. Format example:
    mytallica,mtl_180hc
    myacdc,acd_170hc
   This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
-  There is a file called VPMAlias_template.txt which contains all builtin aliases. (from Version 3.7)
+  EDIT: There is nowadays a file called 'VPMAlias_template.txt' which contains all builtin aliases (from version 3.7 up).
 
 - Fix the additional .raw/non-averaged file output dumping of GTS3 DMDs
 
