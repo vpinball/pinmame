@@ -1687,7 +1687,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	}
 #else
 	{
-		if (upscale_bitmap_size < video_dib_info->bmiHeader.biWidth * (client.bottom - client.top))
+		if ((LONG)upscale_bitmap_size < video_dib_info->bmiHeader.biWidth * (client.bottom - client.top))
 		{
 			upscale_bitmap_size = video_dib_info->bmiHeader.biWidth * (client.bottom - client.top);
 			if (upscale_bitmap)

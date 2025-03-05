@@ -31,7 +31,7 @@ void vp_init(void) {
 /  get status of a lamp (0=off, 1=on)
 /-------------------------------------*/
 int vp_getLamp(int lampNo) {
-  if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
+  if (coreData && coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
   if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
     return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
@@ -71,7 +71,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
     for (ii = 0; ii < coreGlobals.nLamps; ii++) {
       const UINT8 val = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + ii].value);
       if (val != locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii]) {
-        chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp((ii / 8) + 1, ii & 7) : 0;
+        chgStat[idx].lampNo = coreData && coreData->m2lamp ? coreData->m2lamp((ii / 8) + 1, ii & 7) : 0;
         chgStat[idx].currStat = val;
         idx++;
         locals.lastPhysicsOutput[CORE_MODOUT_LAMP0 + ii] = val;
@@ -93,7 +93,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 
         for (jj = 0; jj < 8; jj++) {
           if (chgLamp & 0x01) {
-            chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
+            chgStat[idx].lampNo = coreData && coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
             chgStat[idx].currStat = tmpLamp & 0x01;
             idx++;
           }

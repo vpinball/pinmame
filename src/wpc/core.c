@@ -127,7 +127,7 @@ static VIDEO_UPDATE(core_status);
 /----------------------------*/
 tPMoptions            pmoptions; /* PinMAME specific options */
 core_tGlobals         coreGlobals;
-struct pinMachine    *coreData;
+volatile struct pinMachine *coreData = NULL;
 const core_tGameData *core_gameData = NULL;  /* data about the running game */
 
 /*---------------------
@@ -1341,8 +1341,8 @@ void core_updateSw(int flipEn) {
   int ii;
 
   if (g_fHandleKeyboard) {
-
-    for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
+    const int n = CORE_COREINPORT+(coreData->coreDips+31)/16;
+    for (ii = 0; ii < n; ii++)
       inports[ii] = readinputport(ii);
 
     /*-- buttons --*/
@@ -1684,14 +1684,16 @@ static VIDEO_UPDATE(core_status) {
 
     // Draw LEDs Vertically
     if (coreData->diagLEDs & DIAGLED_VERTICAL) {
-      for (ii = 0; ii < (coreData->diagLEDs & ~DIAGLED_VERTICAL); ii++) {
+      const int n = (coreData->diagLEDs & ~DIAGLED_VERTICAL);
+      for (ii = 0; ii < n; ii++) {
         line[0][thisCol + 3] = dotColor[bits & 0x01];
         line += 2; bits >>= 1;
       }
       startRow += ii*2; if (thisCol + 4 > nextCol) nextCol = thisCol + 4;
     }
     else { // Draw LEDs Horizontally
-      for (ii = 0; ii < coreData->diagLEDs; ii++) {
+      const int n = coreData->diagLEDs;
+      for (ii = 0; ii < n; ii++) {
         line[0][thisCol + ii*2] = dotColor[bits & 0x01];
         bits >>= 1;
       }
@@ -2284,7 +2286,7 @@ static MACHINE_STOP(core) {
     procDeinitialize();
   }
 #endif
-  coreData = NULL;
+  coreData = NULL; //!! FIXME this can still be in use when reading lamps via VPM / VPX-script
 }
 
 static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *maxY) {

@@ -535,7 +535,7 @@ typedef struct {
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */
 #define cg coreGlobals
-extern struct pinMachine *coreData;
+extern volatile struct pinMachine *coreData;
 /*Exported variables*/
 /*-- There are no custom fields in the game driver --*/
 /*-- so I have to invent some by myself. Each driver --*/
@@ -552,7 +552,7 @@ typedef struct {
     int  (*getSol)(int solNo);        /* get state of custom solenoid */
     void (*handleMech)(int mech);     /* update switches depending on playfield mechanics */
     int  (*getMech)(int mechNo);      /* get status of mechanics */
-    void (*drawMech)(BMTYPE **line); /* draw game specific hardware */
+    void (*drawMech)(BMTYPE **line);  /* draw game specific hardware */
     core_tLampDisplay *lampData;      /* lamp layout */
 #ifdef ENABLE_MECHANICAL_SAMPLES
     wpc_tSamSolMap   *solsammap;      /* solenoids samples */
@@ -573,12 +573,12 @@ typedef struct {
 } core_tGameData;
 extern const core_tGameData *core_gameData;
 
-extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
+extern const int core_bcd2seg9[];  /* BCD to 9 segment display */
 extern const int core_bcd2seg9a[]; /* BCD to 9 segment display, missing 6 top line */
-extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
+extern const int core_bcd2seg7[];  /* BCD to 7 segment display */
 extern const int core_bcd2seg7a[]; /* BCD to 7 segment display, missing 6 top line */
 extern const int core_bcd2seg7e[]; /* BCD to 7 segment display with A to E letters */
-extern const UINT16 core_ascii2seg16[]; /* BCD to regular 16 segment display */
+extern const UINT16 core_ascii2seg16[];  /* BCD to regular 16 segment display */
 extern const UINT16 core_ascii2seg16s[]; /* BCD to 16 segment display with split top / botom lines */
 #define core_bcd2seg  core_bcd2seg7
 

@@ -459,7 +459,7 @@ static WRITE_HANDLER(afm_wpc_w) {
       if (GET_BIT5) {
         lamps |= 1;
       }
-      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, lamps);
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * 8, lamps & 0xff);
       core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 9 * 8, lamps >> 8);
     }
   }
