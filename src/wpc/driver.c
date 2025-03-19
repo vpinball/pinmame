@@ -12,7 +12,7 @@ const struct GameDriver driver_0 = {
 #  undef DRIVERNV
 #  define DRIVER(name, ver) &driver_##name##_##ver,
 #  define DRIVERNV(name) &driver_##name,
-struct GameDriver *drivers[] = {
+const struct GameDriver *drivers[] = {
 #  include "driver.c"
 0 /* end of array */
 };
