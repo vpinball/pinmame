@@ -316,7 +316,8 @@ CORE_CLONEDEFNV(locomotnf,locomotn,"Locomotion (Free Play)",1981,"Zaccaria",mZAC
 / Soccer Kings (09/82)
 /-------------------------------*/
 INITGAME(socrking,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
-ZAC_ROMSTART000(socrking,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
+//ZAC_ROMSTART000(socrking,	"fgsoccer.ic1",CRC(16066ff5) SHA1(88ba1658430f70efa72f165803abc643efd74fe4), // serial # 0349
+ZAC_ROMSTART000(socrking,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9), // serial # 0730
 							"soccer.ic2",CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
 							"soccer.ic3",CRC(72caac2c) SHA1(7d63e0cf699365ee1787004d6155646e715b672e))
 ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
@@ -341,7 +342,23 @@ ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61
 							"sound3.f",  CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
 							"sound4.g",  CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
 ZAC_ROMEND
-CORE_CLONEDEFNV(socrkina,socrking,"Soccer Kings (alternate set / upper playfield bug)",1982,"Zaccaria",mZAC2A,0)
+CORE_CLONEDEFNV(socrkina,socrking,"Soccer Kings (alternate set / upper playfield bug)",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING)
+
+/*
+Dumping notes:
+IC's 1 and 2 were Zaccaria Soccer Kings labeled "02" using Motorola 2532
+IC3 wasn't a Zaccaria label but an "AL" label TMS2532 that's often Associated Leisure in the UK.
+*/
+INITGAME(socrkin2,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
+ZAC_ROMSTART000(socrkin2,	"SK-02-1.bin",CRC(9c0802f0) SHA1(81f65920576f686a489529975e583aa8b82eca26), // serial # 4183
+							"SK-02-2.bin",CRC(23a6bb94) SHA1(55d042c6ccd56fbccf6c0e7e240b92e8f065368b),
+							"SK-AL-3.bin",CRC(f22a79d9) SHA1(6156d37e5693c617ba48bd9f22a8d415df790b12))
+ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
+							"sound2.e",  CRC(f9b57fd6) SHA1(50e42ed349680211eedf55ae639dbae899f3c6da),
+							"sound3.f",  CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
+							"sound4.g",  CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
+ZAC_ROMEND
+CORE_CLONEDEFNV(socrkin2,socrking,"Soccer Kings (alternate set 2)",1982,"Zaccaria",mZAC2A,0)
 
 INITGAME(socrkngi,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
 ZAC_ROMSTART000(socrkngi,	"soccer.ic1", CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),

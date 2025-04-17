@@ -3307,7 +3307,8 @@ DRIVERNV(locomotn)      //09/81 Locomotion
 DRIVERNV(locomotnf)     //      Locomotion (Free Play)
                         //04/82 Pinball Champ '82 (using the same roms as the '83 version)
 DRIVERNV(socrking)      //09/82 Soccer Kings
-DRIVERNV(socrkina)      //      Soccer Kings (alternate set)
+DRIVERNV(socrkina)      //      Soccer Kings (alternate set / upper playfield bug)
+DRIVERNV(socrkin2)      //      Soccer Kings (alternate set 2)
 DRIVERNV(socrkngi)      //      Soccer Kings (Italian Speech)
 DRIVERNV(socrkngg)      //      Soccer Kings (German Speech)
 DRIVERNV(sockfp)        //      Soccer Kings (Free Play)
