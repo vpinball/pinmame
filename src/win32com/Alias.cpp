@@ -21,16 +21,13 @@ extern "C" {
 #include <windows.h>
 #include "Alias.h"
 
+// do not remove, the following array is being filled by vpinmame.yml via VPMAlias.txt
 static const struct tAliasTable { const char* alias; const char* real; } aliasTable[] = {
 /*VPMALIAS*/
 	  { NULL, NULL }
 };
 
 static char alias_from_file[50];
-
-static const char* crcOfGamesNotSupported[] = {
-	NULL
-};
 
 const char* checkGameAlias(const char* aRomName) {
 	char AliasFilename[MAX_PATH];
@@ -72,10 +69,4 @@ const char* checkGameAlias(const char* aRomName) {
 	for (const tAliasTable* ii = aliasTable; ii->alias; ++ii)
 		if (_stricmp(aRomName, ii->alias) == 0) return ii->real;
 	return aRomName;
-}
-
-bool checkGameNotSupported(const struct GameDriver* aGameDriver) {
-  for (const char** ii = crcOfGamesNotSupported; *ii; ++ii)
-    if (RomInSet(aGameDriver, *ii)) return true;
-  return false;
 }

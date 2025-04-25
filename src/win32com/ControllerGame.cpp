@@ -472,6 +472,6 @@ STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, LONG_PTR hParentWnd, int *pVal
 
 STDMETHODIMP CGame::get_IsSupported(VARIANT_BOOL *pVal) {
   if (!pVal) return S_FALSE;
-  *pVal = ((!m_gamedrv) || checkGameNotSupported(m_gamedrv)) ? VARIANT_FALSE : VARIANT_TRUE;
+  *pVal = (!m_gamedrv) ? VARIANT_FALSE : VARIANT_TRUE;
   return S_OK;
 }

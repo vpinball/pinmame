@@ -7,12 +7,14 @@ Version 3.7 (XX XXth, 2025) - ""
 ------------------------------------------------------------------------------
 - Add windows COM-API method 'PMBuildVersion' returning e.g. 30700.4711 with build number (e.g. 4711) as decimal
 
-- Easier to upgrade: There is now a file called 'VPMAlias_template.txt' which contains all builtin (compiled in) aliases. There is no 'VPMAlias.txt' provided with the installation anymore.
-  'VPMAlias.txt' now only needs your personal entries: If you create a 'VPMAlias.txt' file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom.
-  Format example:
-   mytallica,mtl_180hc
-   myacdc,acd_170hc
-  This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
+- Easier to upgrade game/rom aliases: There is now a default alias file called 'VPMAlias_template.txt', which contains all builtin (actually compiled into the library itself) aliases,
+  so there is no need for a 'VPMAlias.txt' provided with the installation anymore.
+  An optionally created 'VPMAlias.txt' only needs your very personal entries from now on:
+   If you create a 'VPMAlias.txt' file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom.
+   Format example:
+    mytallica,mtl_180hc
+    myacdc,acd_170hc
+   This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
 
 Version 3.6 (January 29th, 2025) - "Sounds good III / Looks good"
 ------------------------------------------------------------------------------
