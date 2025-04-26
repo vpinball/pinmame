@@ -48,7 +48,7 @@ int vp_getSolenoid(int solNo)
 
 /*-------------------------------------------
 /  get status of a GIString (0=off, !0=on)
-/ (WPC games only)
+/ (WPC, Whitestar and SAM games only)
 /-------------------------------------*/
 int vp_getGI(int giNo)
 {
