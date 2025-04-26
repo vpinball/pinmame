@@ -2258,6 +2258,10 @@ static MACHINE_INIT(core) {
 static MACHINE_STOP(core) {
   int ii;
 
+#if defined(LIBPINMAME)
+  OnStateChange(3); // Stopping
+#endif
+
 #ifdef VPINMAME
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
@@ -3376,23 +3380,49 @@ void core_dmd_render_vpm(const int width, const int height, const UINT8* const d
 
 // Prepare data for LibPinMAME interface (similar to VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
 #ifdef LIBPINMAME
-void core_dmd_render_lpm(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw) {
-  const int size = width * height;
-  g_raw_dmdx = width;
-  g_raw_dmdy = height;
-  if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
-    if (memcmp(locals.vpm_dmd_last_lum, dmdDotLum, size) != 0) {
-      memcpy(locals.vpm_dmd_last_lum, dmdDotLum, size);
-      UINT8* rawLum = g_raw_dmdbuffer;
-      for (int ii = 0; ii < size; ii++)
-        (*rawLum++) = locals.vpm_dmd_luminance_lut[dmdDotLum[ii]];
-      g_needs_DMD_update = 1;
+void core_dmd_render_lpm(const struct core_dispLayout *layout, core_tDMDPWMState* dmdState, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw) {
+  const unsigned int width = layout->length;
+  const unsigned int height = layout->start;
+  if (width >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
+    const int size = width * height;
+    g_raw_dmdx = width;
+    g_raw_dmdy = height;
+    if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
+      if (memcmp(locals.vpm_dmd_last_lum, dmdDotLum, size) != 0) {
+        memcpy(locals.vpm_dmd_last_lum, dmdDotLum, size);
+        UINT8* rawLum = g_raw_dmdbuffer;
+        for (int ii = 0; ii < size; ii++)
+          (*rawLum++) = locals.vpm_dmd_luminance_lut[dmdDotLum[ii]]; // Simply 0..255 => 0.f..100.f (is it worth a LUT ?)
+        g_needs_DMD_update = 1;
+      }
     }
+    else if (g_fDmdMode == 1) {// PINMAME_DMD_MODE_RAW
+      if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
+        memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
+        g_needs_DMD_update = 1;
+      }
+    }
+    has_DMD_Video = 1;
   }
-  else if (g_fDmdMode == 1) {// PINMAME_DMD_MODE_RAW
-    if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
-      memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
-      g_needs_DMD_update = 1;
+  
+  for (int i = 0; (i < 8) && (coreGlobals.dmdStates[i].layout != NULL); i++) {
+    if (coreGlobals.dmdStates[i].layout == layout) {
+      if (coreGlobals.dmdStates[i].dmdDotRaw == NULL || coreGlobals.dmdStates[i].dmdDotLum == NULL)
+        break;
+      assert(coreGlobals.dmdStates[i].width == width);
+      assert(coreGlobals.dmdStates[i].height == height);
+      const int size = width * height;
+      UINT8* lum = dmdState ? dmdState->luminanceFrame : dmdDotLum;
+      if (memcmp(coreGlobals.dmdStates[i].dmdDotLum, lum, size) != 0) {
+        memcpy(coreGlobals.dmdStates[i].dmdDotLum, lum, size);
+        coreGlobals.dmdStates[i].lumFrameId++;
+      }
+      UINT8* raw = dmdState ? dmdState->bitplaneFrame : dmdDotRaw;
+      if (memcmp(coreGlobals.dmdStates[i].dmdDotRaw, raw, size) != 0) {
+        memcpy(coreGlobals.dmdStates[i].dmdDotRaw, raw, size);
+        coreGlobals.dmdStates[i].rawFrameId++;
+      }
+      break;
     }
   }
 }
@@ -3505,11 +3535,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 
   #if defined(LIBPINMAME)
-    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
-    if (isMainDMD) {
-      core_dmd_render_lpm(layout->length, layout->start, dmdDotLum, dmdDotRaw);
-      has_DMD_Video = 1;
-    }
+    core_dmd_render_lpm(layout, dmd_state, dmdDotLum, dmdDotRaw);
 
   #elif defined(VPINMAME)
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
@@ -3525,6 +3551,54 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   #elif defined(PINMAME)
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
 
+  #endif
+}
+
+void core_display_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout, const int rotation) {
+  #if defined(LIBPINMAME)
+    for (int i = 0; (i < 8) && (coreGlobals.dmdStates[i].layout != NULL); i++)
+    {
+      if (coreGlobals.dmdStates[i].layout == layout)
+      {
+        if (coreGlobals.dmdStates[i].dmdDotLum == NULL)
+          break;
+        // FIXME modifying display characteristic here is invalid, as they are static and advertised through display src messages
+        switch (rotation)
+        {
+        case 0:
+           coreGlobals.dmdStates[i].width = layout->length;
+           coreGlobals.dmdStates[i].height = layout->start;
+           break;
+        case 1:
+           coreGlobals.dmdStates[i].width = layout->start;
+           coreGlobals.dmdStates[i].height = layout->length;
+           break;
+        case 3:
+           coreGlobals.dmdStates[i].width = layout->start;
+           coreGlobals.dmdStates[i].height = layout->length;
+           break;
+        default:
+           assert(FALSE);
+           break;
+        }
+        for (int y = 0; y < layout->start; y++) {
+          for (int x = 0; x < layout->length; x++) {
+            int pos;
+            switch (rotation)
+            {
+            case 0: pos = (x + y * layout->length) * 3; break;
+            case 1: pos = ((layout->start - 1 - y) + x * layout->start) * 3; break;
+            case 2: pos = (y + (layout->length - 1 - x) * layout->start) * 3; break;
+            }
+            palette_get_color(bitmap->read(bitmap, cliprect->min_x + x, cliprect->min_y + y),
+              &coreGlobals.dmdStates[i].dmdDotLum[pos    ],
+              &coreGlobals.dmdStates[i].dmdDotLum[pos + 1],
+              &coreGlobals.dmdStates[i].dmdDotLum[pos + 2]);
+          }
+        }
+        break;
+      }
+    }
   #endif
 }
 
