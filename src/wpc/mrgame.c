@@ -722,6 +722,14 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 				0,TRANSPARENCY_PEN,0);
 	}
 	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
+
+	struct rectangle bounds;
+	bounds.min_x = 0;
+	bounds.min_y = 0;
+	bounds.max_x = 248;
+	bounds.max_y = 256;
+	core_display_video_update(bitmap, &bounds, layout, 0);
+
 	return 0;
 }
 
@@ -778,6 +786,13 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 				0,TRANSPARENCY_PEN,0);
 	}
 	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
+
+	struct rectangle bounds;
+	bounds.min_x = 0;
+	bounds.min_y = 0;
+	bounds.max_x = 248;
+	bounds.max_y = 256;
+	core_display_video_update(bitmap, &bounds, layout, 0);
 
 	return 0;
 }
