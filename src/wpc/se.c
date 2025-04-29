@@ -883,7 +883,7 @@ static WRITE_HANDLER(giaux_w) {
   // All other extension boards: on any strobe, latch aux data to extended solenoids
   else {
      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
-     core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, selocals.auxdata << 4); // Solenoids 33..36
+     core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, selocals.auxdata, 0x0F); // Solenoids 33..36
      // Notes:
      // - Independance Day:
      //    ESTB strobes data on auxdata. Alien head is controlled by servo board 520-5152-00 (1 bit to toggle between 2 positions)
