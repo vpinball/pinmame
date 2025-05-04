@@ -150,11 +150,18 @@ S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243
 S11_ROMEND
 #define input_ports_hs input_ports_s11
 
-S11_ROMSTART28(hs,l3,"u26-l3.rom", CRC(fd587959) SHA1(20fe6d7bd617b1fa886362ce520393a25be9a632),
+S11_ROMSTART28(hs,l3,"u26-l3.rom",CRC(fd587959) SHA1(20fe6d7bd617b1fa886362ce520393a25be9a632),
                      "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594))
 S11XS_SOUNDROM88(    "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
                      "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
 S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
+S11_ROMEND
+
+S11_ROMSTART48(hs,p4g,"U26Proto4DE.BIN", CRC(c7d33a52) SHA1(bbf84d6927215c25bd7952fda6ad18c6b4657625), // had sticker with 'PROTO4' on it, but reports as G-4. Board came with a L-4 U27. Setting #51 changes text to german (which is stored in the additional 8k, compared to the english ROM sets).
+                      "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594))
+S11XS_SOUNDROM88(     "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
+                      "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
+S11CS_SOUNDROM8(      "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
 S11_ROMEND
 
 /* older competition MOD (6b05)
@@ -175,6 +182,7 @@ S11_ROMEND
 
 CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l3,l4, "High Speed (L-3)", 1986, "Williams", s11_mS11XS,0)
+CORE_CLONEDEF(hs,p4g,l4, "High Speed (G-4 / German PROTO4)", 1985, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l4c,l4, "High Speed (L-4C Competition MOD)", 2018, "Williams", s11_mS11XS,0)
 
 /*--------------------
