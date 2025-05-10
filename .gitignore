@@ -4,3 +4,6 @@ build/
 /.vs/
 /obj/
 /release/
+
+/external/
+/platforms/**/external/
