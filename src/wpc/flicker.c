@@ -63,7 +63,7 @@ static INTERRUPT_GEN(NUTTING_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % NUTTING_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)locals.lampMatrix, sizeof(locals.lampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % (NUTTING_SOLSMOOTH)) == 0)

@@ -182,7 +182,8 @@ S11_ROMEND
 
 CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l3,l4, "High Speed (L-3)", 1986, "Williams", s11_mS11XS,0)
-CORE_CLONEDEF(hs,p4g,l4, "High Speed (G-4 / German PROTO4)", 1985, "Williams", s11_mS11XS,0)
+// there was a G-3 for sure (german handbook mentions it)
+CORE_CLONEDEF(hs,p4g,l4, "High Speed (G-4 / German PROTO4)", 1986, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l4c,l4, "High Speed (L-4C Competition MOD)", 2018, "Williams", s11_mS11XS,0)
 
 /*--------------------

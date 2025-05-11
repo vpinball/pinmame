@@ -59,7 +59,7 @@ static INTERRUPT_GEN(WICO_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   /*-- diag. LED --*/

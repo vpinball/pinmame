@@ -49,7 +49,7 @@ static INTERRUPT_GEN(LANCELOT_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 
   if ((locals.vblankCount % 4) == 0) {
     coreGlobals.solenoids &= 0xffff0000;

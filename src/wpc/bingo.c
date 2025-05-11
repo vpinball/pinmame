@@ -17,7 +17,7 @@ static INTERRUPT_GEN(vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
   coreGlobals.solenoids = locals.solenoids;
   coreGlobals.solenoids2 = locals.sols2;

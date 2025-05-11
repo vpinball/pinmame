@@ -62,7 +62,7 @@ static INTERRUPT_GEN(JP_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % JP_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((++locals.solCount % JP_SOLSMOOTH) == 0)
@@ -383,7 +383,7 @@ MACHINE_DRIVER_END
 static INTERRUPT_GEN(JP2_vblank) {
 
   /*-- lamps --*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   /*-- display --*/

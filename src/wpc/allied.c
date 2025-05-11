@@ -45,7 +45,7 @@ static struct {
 } locals;
 
 static INTERRUPT_GEN(vblank) {
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
   coreGlobals.solenoids = locals.solenoids;
   core_updateSw(core_getSol(25));

@@ -348,15 +348,17 @@ CORE_CLONEDEFNV(socrkina,socrking,"Soccer Kings (alternate set / upper playfield
 Dumping notes:
 IC's 1 and 2 were Zaccaria Soccer Kings labeled "02" using Motorola 2532
 IC3 wasn't a Zaccaria label but an "AL" label TMS2532 that's often Associated Leisure in the UK.
+
+It's most likely a complete rewrite (newest version?)
 */
 INITGAME(socrkin2,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,0)
 ZAC_ROMSTART000(socrkin2,	"SK-02-1.bin",CRC(9c0802f0) SHA1(81f65920576f686a489529975e583aa8b82eca26), // serial # 4183
 							"SK-02-2.bin",CRC(23a6bb94) SHA1(55d042c6ccd56fbccf6c0e7e240b92e8f065368b),
 							"SK-AL-3.bin",CRC(f22a79d9) SHA1(6156d37e5693c617ba48bd9f22a8d415df790b12))
-ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
-							"sound2.e",  CRC(f9b57fd6) SHA1(50e42ed349680211eedf55ae639dbae899f3c6da),
-							"sound3.f",  CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
-							"sound4.g",  CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
+ZAC_SOUNDROM_cefg1(			"sound1.c",   CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
+							"sound2.e",   CRC(f9b57fd6) SHA1(50e42ed349680211eedf55ae639dbae899f3c6da),
+							"sound3.f",   CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
+							"sound4.g",   CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
 ZAC_ROMEND
 CORE_CLONEDEFNV(socrkin2,socrking,"Soccer Kings (alternate set 2)",1982,"Zaccaria",mZAC2A,0)
 

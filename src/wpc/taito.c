@@ -57,7 +57,7 @@ static INTERRUPT_GEN(taito_vblank) {
 
 	// -- lamps --
 	if ((TAITOlocals.vblankCount % TAITO_LAMPSMOOTH) == 0) {
-		memcpy(coreGlobals.lampMatrix, TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
+		memcpy((void*)coreGlobals.lampMatrix, (void*)TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
 	}
 
 	// -- display --

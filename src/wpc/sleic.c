@@ -58,7 +58,7 @@ static INTERRUPT_GEN(SLEIC_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % SLEIC_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
 

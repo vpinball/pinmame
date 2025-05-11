@@ -525,9 +525,9 @@ static INTERRUPT_GEN(alvg_vblank) {
   alvglocals.vblankCount++;
 
   /*-- lamps --*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   if ((alvglocals.vblankCount % ALVG_LAMPSMOOTH) == 0) {
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   if ((alvglocals.vblankCount % ALVG_SOLSMOOTH) == 0) {

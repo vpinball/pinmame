@@ -81,7 +81,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   else
   {
     UINT8 lampMatrix[CORE_MAXLAMPCOL];
-    memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
+    memcpy(lampMatrix, (void*)coreGlobals.lampMatrix, sizeof(lampMatrix));
     const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
     const int nCol = CORE_STDLAMPCOLS + (hasSAMModulatedLeds ? 2 : core_gameData->hw.lampCol);
     int ii;
@@ -102,7 +102,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
         }
       }
     }
-    memcpy(locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
+    memcpy((void*)locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
     // Backward compatibility for modulated LED & RGB LEDs of SAM hardware
     if (hasSAMModulatedLeds) {
       for (ii = 80; ii < coreGlobals.nLamps; ii++) {

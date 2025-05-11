@@ -590,8 +590,8 @@ void core_textOut(const char *buf, int length, int x, int y, int color);
 void CLIB_DECL core_textOutf(int x, int y, int color, const char *text, ...);
 
 /*-- lamp handling --*/
-void core_setLamp(UINT8 *lampMatrix, int col, int row);
-void core_setLampBlank(UINT8 *lampMatrix, int col, int row);
+void core_setLamp(volatile UINT8 *lampMatrix, int col, int row);
+void core_setLampBlank(volatile UINT8 *lampMatrix, int col, int row);
 
 /*-- switch handling --*/
 extern void core_setSw(int swNo, int value);

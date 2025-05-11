@@ -54,7 +54,7 @@ static INTERRUPT_GEN(vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
   coreGlobals.tmpLampMatrix[8] = 0;
   core_updateSw(TRUE);

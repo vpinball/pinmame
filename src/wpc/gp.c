@@ -63,7 +63,7 @@ static void GP_dispStrobe(int mask) {
 }
 
 static void GP_lampStrobe1(int lampadr, int lampdata) {
-  UINT8 *matrix1, *matrix2;
+  volatile UINT8 *matrix1, *matrix2;
   int bit, select;
   lampdata &= 0x07;	//3 Enable Lines
   select = lampdata>>1;
@@ -77,7 +77,7 @@ static void GP_lampStrobe1(int lampadr, int lampdata) {
 }
 
 static void GP_lampStrobe2(int lampadr, int lampdata) {
-  UINT8 *matrix1, *matrix2;
+  volatile UINT8 *matrix1, *matrix2;
   int bit, select;
   lampdata &= 0x0f;	//4 Enable Lines
   select = lampdata>>1;
@@ -132,8 +132,8 @@ static INTERRUPT_GEN(GP_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % GP_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/

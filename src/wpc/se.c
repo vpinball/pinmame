@@ -140,7 +140,7 @@ static INTERRUPT_GEN(se_vblank) {
 				}
 			}
 		}
-	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+	memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 #else
     int i;
     for (i = 0; i < 10; ++i) {
@@ -150,8 +150,8 @@ static INTERRUPT_GEN(se_vblank) {
     }
     if ((selocals.vblankCount % (VBLANK*SE_LAMPSMOOTH)) == 0)
     {
-        memcpy(coreGlobals.lampMatrix+10, coreGlobals.tmpLampMatrix+10, sizeof(coreGlobals.tmpLampMatrix)-10);
-        memset(coreGlobals.lampMatrix, 0, 10);
+        memcpy((void*)(coreGlobals.lampMatrix+10), (void*)(coreGlobals.tmpLampMatrix+10), sizeof(coreGlobals.tmpLampMatrix)-10);
+        memset((void*)coreGlobals.lampMatrix, 0, 10);
         for (i = 0; i < 10; ++i) {
             int i2;
             for (i2 = 0; i2 < 8; ++i2)
@@ -160,7 +160,7 @@ static INTERRUPT_GEN(se_vblank) {
         memset(selocals.lampstate, 0, sizeof(selocals.lampstate));
     }
 #endif
-    memset(coreGlobals.tmpLampMatrix, 0, 10);
+    memset((void*)coreGlobals.tmpLampMatrix, 0, 10);
   }
   /*-- solenoids --*/
   if ((selocals.vblankCount % VBLANK) == 0) {

@@ -45,7 +45,7 @@ static INTERRUPT_GEN(INDERP_vblank) {
     discrete_sound_w(0x40, 0);
     discrete_sound_w(0x80, 0);
   }
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 
   core_updateSw(core_getSol(9));
 }

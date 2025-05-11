@@ -333,7 +333,7 @@ static void vblank_all(void) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY6803_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/

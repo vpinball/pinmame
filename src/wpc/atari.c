@@ -101,7 +101,7 @@ static INTERRUPT_GEN(ATARI2_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % ATARI_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/

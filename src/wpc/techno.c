@@ -85,7 +85,7 @@ static INTERRUPT_GEN(vblank) {
   /--------------------------------*/
   locals.vblankCount += 1;
 
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 
   coreGlobals.solenoids = locals.solenoids;

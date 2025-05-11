@@ -182,7 +182,7 @@ static INTERRUPT_GEN(vblank) {
   /*-- lamps --*/
   if ((locals.vblankCount % MRGAME_LAMPSMOOTH) == 0) {
     locals.gameOn = (coreGlobals.tmpLampMatrix[2]>>4) & 1;	// lamp 21 is game on
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/

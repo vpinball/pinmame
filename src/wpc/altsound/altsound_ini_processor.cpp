@@ -101,11 +101,11 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 			ALT_INFO(0, "Parsed \"cmd_skip_count\": %d", skip_count);
 		}
 	}
-	catch (const std::invalid_argument& e) {
+	catch (const std::invalid_argument& /*e*/) {
 		ALT_ERROR(0, "Invalid number format while parsing cmd_skip_count value: %s\n", skip_count_str.c_str());
 		return false;
 	}
-	catch (const std::out_of_range& e) {
+	catch (const std::out_of_range& /*e*/) {
 		ALT_ERROR(0, "Number out of range while parsing cmd_skip_count value: %s\n", skip_count_str.c_str());
 		return false;
 	}
@@ -366,11 +366,11 @@ bool AltsoundIniProcessor::parseVolumeValue(const IniSection& section, const std
 		const int val = std::stoi(parsed_value);
 		volume = (float)clamp(val, 0, 100) / 100.f;
 	}
-	catch (const std::invalid_argument& e) {
+	catch (const std::invalid_argument& /*e*/) {
 		ALT_ERROR(0, "Invalid number format while parsing volume value: %s\n", parsed_value.c_str());
 		return false;
 	}
-	catch (const std::out_of_range& e) {
+	catch (const std::out_of_range& /*e*/) {
 		ALT_ERROR(0, "Number out of range while parsing volume value: %s\n", parsed_value.c_str());
 		return false;
 	}
@@ -410,7 +410,7 @@ bool AltsoundIniProcessor::parseDuckingProfile(const IniSection& ducking_section
 		try {
 			profile_number = std::stoi(key.substr(subkey.size()));
 		}
-		catch (std::invalid_argument& e) {
+		catch (std::invalid_argument& /*e*/) {
 			ALT_ERROR(1, "Invalid profile number: %s", key.substr(subkey.size()).c_str());
 
 			OUTDENT;

@@ -59,7 +59,7 @@ static INTERRUPT_GEN(GTS1_vblank) {
 	locals.vblankCount++;
 	/*-- lamps --*/
 	if ((locals.vblankCount % GTS1_LAMPSMOOTH) == 0)
-		memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.lampMatrix));
+		memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.lampMatrix));
 	/*-- solenoids --*/
 	coreGlobals.solenoids = locals.solenoids;
 

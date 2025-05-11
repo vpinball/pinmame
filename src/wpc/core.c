@@ -262,7 +262,7 @@ static UINT32 TRAFO_AA(const UINT32 x)
 /  Display segment drawing data
 /------------------------------*/
 typedef UINT32 tSegRow[17];
-typedef struct { int rows, cols; tSegRow *segs; } tSegData;
+typedef struct { int rows, cols; const tSegRow *segs; } tSegData;
 
 static const tSegRow segSize1C[6][20] = { /* with commas */
 { /* alphanumeric display characters */
@@ -720,7 +720,7 @@ static const tSegData segData[2][18] = {{
 /-------------------*/
 static struct {
   int       displaySize;   // 1=compact 2=normal
-  tSegData  *segData;      // segments to use (normal/compact)
+  const tSegData *segData; // segments to use (normal/compact)
   void      *timers[5];    // allocated timers
   int       flipTimer[4];  // time since flipper was activated (used for EOS simulation)
   UINT8     flipMask;      // Flipper bits used for flippers
@@ -1724,14 +1724,14 @@ static VIDEO_UPDATE(core_status) {
 }
 
 /*-- lamp handling --*/
-void core_setLamp(UINT8 *lampMatrix, int col, int row) {
+void core_setLamp(volatile UINT8 *lampMatrix, int col, int row) {
   while (col) {
     if (col & 0x01) *lampMatrix |= row;
     col >>= 1;
     lampMatrix += 1;
   }
 }
-void core_setLampBlank(UINT8 *lampMatrix, int col, int row) {
+void core_setLampBlank(volatile UINT8 *lampMatrix, int col, int row) {
   while (col) {
     if (col & 0x01) *lampMatrix = row;
     col >>= 1;
@@ -2094,8 +2094,8 @@ static MACHINE_INIT(core) {
       }
     }
     /*-- init switch matrix --*/
-    memcpy(coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
-    memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
+    memcpy((void*)coreGlobals.invSw, (void*)core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
+    memcpy((void*)coreGlobals.swMatrix, (void*)coreGlobals.invSw, sizeof(coreGlobals.invSw));
 #ifdef PROC_SUPPORT
     /*-- P-ROC operation requires a YAML.  Disable P-ROC operation
      * if no YAML is specified. --*/

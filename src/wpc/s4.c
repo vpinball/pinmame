@@ -365,11 +365,11 @@ static INTERRUPT_GEN(s4_vblank) {
       procFlush();
     }
 #endif
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 #if defined(LISY_SUPPORT)
     lisy_w_lamp_handler();
 #endif
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/

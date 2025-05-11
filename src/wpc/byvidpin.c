@@ -123,8 +123,8 @@ static void byVP_lampStrobe(int board, int lampadr) {
     //int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03; //only 2 lamp drivers
 	int lampdata = ((~locals.p0_a)>>6) & 0x03; //only 2 lamp drivers
 //    logerror("byvp lampstrobe %d lampdadr %x\n",board,lampadr);
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
-    int bit = 1<<(lampadr & 0x07);
+    volatile UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
+    const int bit = 1<<(lampadr & 0x07);
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -252,8 +252,8 @@ static INTERRUPT_GEN(byVP_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % BYVP_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
     coreGlobals.diagnosticLed = (locals.diagnosticLedV<<1) | (locals.diagnosticLed);
     locals.diagnosticLed = locals.diagnosticLedV = 0;
   }

@@ -59,7 +59,7 @@ static INTERRUPT_GEN(ZAC_vblank_old) {
 
   // lamps
   if ((locals.vblankCount % ZAC_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   // solenoids
@@ -86,7 +86,7 @@ static INTERRUPT_GEN(ZAC_vblank) {
 
   // lamps
   if ((locals.vblankCount % ZAC_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   // solenoids

@@ -134,7 +134,7 @@ static void by35_lampStrobe(int board, int lampadr) {
 #ifdef LISY_SUPPORT
     if ( lampdata ) lisy35_lamp_handler( 0, board, lampadr, lampdata);
 #endif
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
+    volatile UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
     int bit = 1<<(lampadr & 0x07);
 
     while (lampdata) {
@@ -353,8 +353,8 @@ static INTERRUPT_GEN(by35_vblank) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY35_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
 #ifdef LISY_SUPPORT
     lisy35_lamp_handler( 1, 0, 0, 0); //tell the lamp handler that we blank lamps
 #endif

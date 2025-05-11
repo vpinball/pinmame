@@ -70,7 +70,7 @@ static INTERRUPT_GEN(MIDWAY_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+  memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   if (!(locals.vblankCount % MIDWAY_SOLSMOOTH)) {
     locals.solenoids = 0;

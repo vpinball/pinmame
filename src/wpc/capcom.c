@@ -1069,7 +1069,7 @@ static WRITE16_HANDLER(lamp_w) {
 
 static WRITE16_HANDLER(col_w) {
   if (!data) {
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   locals.swCol = data ? 7 - core_BitColToNum(data & 0xff) : -1;
 }

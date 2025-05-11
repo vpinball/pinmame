@@ -81,11 +81,11 @@ static INTERRUPT_GEN(s7_vblank) {
   s7locals.vblankCount++;
   /*-- lamps --*/
   if ((s7locals.vblankCount % S7_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 #if defined(LISY_SUPPORT)
     lisy_w_lamp_handler( );
 #endif
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   if (s7locals.ssEn) {

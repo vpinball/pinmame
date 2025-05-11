@@ -161,8 +161,8 @@ static WRITE_HANDLER( xvia_0_b_w ) {
 	if (~GTS3locals.u4pb & data & LSTRB) { // Positive edge on LSTRB: shift 12bit register and set bit0 to LDATA
 		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0ffe) | (data & LDATA);
 		if (GTS3locals.lampColumn == 0x001) { // Simple strobe emulation: accumulate lamp matrix until strobe restarts from first column
-			memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-			memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+			memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+			memset((void*)coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
 		}
 	}
 	const UINT8 lampRow = GTS3locals.lampRow; // data & LCLR ? 0 : GTS3locals.lampRow; // Not emulated as it does not provide any benefit
