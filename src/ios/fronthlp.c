@@ -1631,11 +1631,11 @@ j = 0;	// count only the main cpu
 
 
 		case LIST_INFO: /* list all info */
-			print_mame_info( stdout, drivers );
+			print_mame_info( stdout, (const struct GameDriver **)drivers );
 			return 0;
 
 		case LIST_XML: /* list all info */
-			print_mame_xml( stdout, drivers );
+			print_mame_xml( stdout, (const struct GameDriver **)drivers );
 			return 0;
 	}
 

@@ -334,10 +334,10 @@ int frontend_list(char *gamename)
 			return frontend_list_clones(gamename);
 			/* listinfo is handled by the core */
 		case LIST_INFO: /* list all info */
-			print_mame_info( stdout_file, drivers ); 
+			print_mame_info( stdout_file, (const struct GameDriver **)drivers ); 
 			return OSD_OK;
 		case LIST_XML: /* list all info */
-			print_mame_xml( stdout_file, drivers );
+			print_mame_xml( stdout_file, (const struct GameDriver **)drivers );
 			return OSD_OK;
 		case LIST_CPU:
 			return frontend_list_cpu();
