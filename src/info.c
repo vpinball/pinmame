@@ -564,7 +564,7 @@ static void print_game_rom(int OUTPUT_XML, FILE* out, const struct GameDriver* g
 				case REGION_USER7: fprintf(out, SELECT(L2P "region user7" L2N, " region=\"user7\"")); break;
 				case REGION_USER8: fprintf(out, SELECT(L2P "region user8" L2N, " region=\"user8\"")); break;
 				case REGION_DISKS: fprintf(out, SELECT(L2P "region disks" L2N, " region=\"disks\"")); break;
-				default: fprintf(out, SELECT(L2P "region 0x%x" L2N, " region=\"0x%x\""), ROMREGION_GETTYPE(region));
+				default: fprintf(out, SELECT(L2P "region 0x%zx" L2N, " region=\"0x%zx\""), ROMREGION_GETTYPE(region));
 		}
 
 		if (!is_disk)

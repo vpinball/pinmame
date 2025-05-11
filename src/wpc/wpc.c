@@ -995,17 +995,23 @@ WRITE_HANDLER(wpc_w) {
       DBGLOG(("WPC_IRQACK. PC=%04x d=%02x\n",activecpu_get_pc(), data));
       break;
     case WPC_DMD_PAGE3000: /* set the page that is accessed by CPU at 0x3000 (WPC-95 only) */
-      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200);
+      break;
     case WPC_DMD_PAGE3200: /* set the page that is accessed by CPU at 0x3200 (WPC-95 only) */
-      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(5, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(5, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200);
+      break;
     case WPC_DMD_PAGE3400: /* set the page that is accessed by CPU at 0x3400 (WPC-95 only) */
-      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(6, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(6, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200);
+      break;
     case WPC_DMD_PAGE3600: /* set the page that is accessed by CPU at 0x3600 (WPC-95 only) */
-      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(7, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+      if (core_gameData->gen & (GEN_WPC95DCS | GEN_WPC95)) cpu_setbank(7, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200);
+      break;
     case WPC_DMD_PAGE3800: /* set the page that is accessed by CPU at 0x3800 */
-      cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+      cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200);
+      break;
     case WPC_DMD_PAGE3A00: /* set the page that is accessed by CPU at 0x3A00 */
-      cpu_setbank(3, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+      cpu_setbank(3, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200);
+      break;
     case WPC_DMD_FIRQLINE: /* acknowledge raised DMD FIRQ if any, and set the line to generate the next FIRQ (0xFF to ack and disable) */
       //printf("%8.5f FIRQ ROW: %02x PC: %04x\n", timer_get_time(), data, activecpu_get_pc());
       if (dmdlocals.firq != 0) {

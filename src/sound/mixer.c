@@ -98,9 +98,9 @@ struct mixer_channel_data
 	bool is_looping;
 	bool is_16bit;
 	bool is_float;
-	void* data_start;
-	void* data_end;
-	void* data_current;
+	const void* data_start;
+	const void* data_end;
+	const void* data_current;
 
 	int frac; // resample fixed point state (used if filter is not active or for the oldskool-path of samples playback)
 
@@ -1278,7 +1278,7 @@ void mixer_play_sample(const int ch, const INT8 * const data, const int len, con
 	/* now determine where to mix it */
 	channel->data_start = data;
 	channel->data_current = data;
-	channel->data_end = (UINT8 *)data + len;
+	channel->data_end = (const UINT8 *)data + len;
 	channel->is_playing = 1;
 	channel->is_looping = loop;
 	channel->is_16bit = 0;
@@ -1307,7 +1307,7 @@ void mixer_play_sample_16(const int ch, const INT16 * const data, const int len,
 	/* now determine where to mix it */
 	channel->data_start = data;
 	channel->data_current = data;
-	channel->data_end = (UINT8 *)data + len;
+	channel->data_end = (const UINT8 *)data + len;
 	channel->is_playing = 1;
 	channel->is_looping = loop;
 	channel->is_16bit = 1;

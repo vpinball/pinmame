@@ -244,8 +244,8 @@ static void by6803_lampStrobe(void) {
   int lampadr = locals.lampadr;
   if (lampadr != locals.old_lampadr) {
     int i, lampdata = (locals.p0_a>>5)^0x07;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*(locals.phase_a-1)];
-    int bit = 1<<(lampadr & 0x07);
+    volatile UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*(locals.phase_a-1)];
+    const int bit = 1<<(lampadr & 0x07);
 
     //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     /*if (bit)*/ for (i=0; i < 3; i++) {

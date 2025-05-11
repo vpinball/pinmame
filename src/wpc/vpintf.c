@@ -186,7 +186,7 @@ int vp_getChangedGI(vp_tChgGIs chgStat) {
   int allGI[CORE_MAXGI];
   int idx = 0;
   int ii;
-  memcpy(allGI, coreGlobals.gi, sizeof(allGI));
+  memcpy(allGI, (void*)coreGlobals.gi, sizeof(allGI));
   for (ii = 0; ii < CORE_MAXGI; ii++) {
     if (allGI[ii] != locals.lastGI[ii]) {
       chgStat[idx].giNo     = ii;

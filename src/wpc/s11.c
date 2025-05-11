@@ -870,7 +870,7 @@ static MACHINE_INIT(s11) {
   if (core_gameData->sxx.muxSol)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + core_gameData->sxx.muxSol - 1, 1, CORE_MODOUT_PULSE); // K1 mux relay
   coreGlobals.nAlphaSegs = 0;
-  struct core_dispLayout* layout, * parent_layout;
+  const struct core_dispLayout* layout, * parent_layout;
   for (layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
      switch (layout->type & CORE_SEGMASK)
