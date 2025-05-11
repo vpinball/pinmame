@@ -368,6 +368,16 @@ GTS3SOUND32256(			"yrom1.bin",CRC(c22f5cc5) SHA1(a5bfbc1824bc483eecc961851bd411c
 GTS3_ROMEND
 CORE_CLONEDEFNV(cueball3, cueball,"Cue Ball Wizard (rev. 3)",1992,"Gottlieb",mGTS3DMDS, 0)
 
+INITGAME2(cueballv, DMD, FLIP8182, 3, SNDBRD_GTS3, 4)
+GTS3ROMSTART(cueballv,	"cue_ball_wizard_734_bx_gprom.u2",CRC(e14b378d) SHA1(d815d302a8d82d22d986214e55b24914a69a49d6))
+GTS3_DMD256_ROMSTART(	"wizard_espanol_dsprom.u3",CRC(21e60313) SHA1(fb343dfe65ce5f23f616756959d998053b8c77f6))
+GTS3SOUND32256(			"yrom1.bin",CRC(c22f5cc5) SHA1(a5bfbc1824bc483eecc961851bd411cb0dbcdc4a),
+						"drom1.bin",CRC(9fd04109) SHA1(27864fe4e9c248dce6221c9e56861967d089b216),
+						"arom1.bin",CRC(476bb11c) SHA1(ce546df59933cc230a6671dec493bbbe71146dee),
+						"arom2.bin",CRC(23708ad9) SHA1(156fcb19403f9845404af1a4ac4edfd3fcde601d))
+GTS3_ROMEND
+CORE_CLONEDEFNV(cueballv, cueball,"Cue Ball Wizard (Spanish / Vifico license)",1992,"Gottlieb / Vifico",mGTS3DMDS, 0)
+
 //rev 4 exists? see http://tiltforums.com/t/list-of-games-with-their-current-code-number-wiki/3615
 
 /************************************************/

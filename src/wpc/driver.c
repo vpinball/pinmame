@@ -901,6 +901,7 @@ DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
 DRIVERNV(cueball1)      //          10/92 Cue Ball Wizard (older display rev.)
 DRIVERNV(cueball2)      //          10/92 Cue Ball Wizard (rev.2)
 DRIVERNV(cueball3)      //          10/92 Cue Ball Wizard (rev.3)
+DRIVERNV(cueballv)      //          ??/92 Cue Ball Wizard (Spanish / Vifico license)
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
 DRIVERNV(sfight2a)      //                Street Fighter II (rev.1)
 DRIVERNV(sfight2b)      //                Street Fighter II (rev.2)
