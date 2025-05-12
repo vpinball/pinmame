@@ -502,7 +502,7 @@ int config_init (int argc, char *argv[])
 		if (end == 0)
 			len = strlen(begin);
 		else
-			len = end - begin;            
+			len = end - begin;
 
 		for (i = 0; drivers[i]; i++)
 		{
@@ -521,7 +521,7 @@ int config_init (int argc, char *argv[])
 			}
 		}
 	}
-#endif                                
+#endif
 
 	/* educated guess on what the user wants to play */
 	if ( (game_index == -1) && use_fuzzycmp)
@@ -541,12 +541,11 @@ int config_init (int argc, char *argv[])
 				/* game is a clone */
 				if (drivers[i]->clone_of != 0 && !(drivers[i]->clone_of->flags & NOT_A_DRIVER))
 				{
-					if ((!drivers[game_index]->flags & GAME_NOT_WORKING) || (drivers[i]->flags & GAME_NOT_WORKING))
+					if ((!(drivers[game_index]->flags & GAME_NOT_WORKING)) || (drivers[i]->flags & GAME_NOT_WORKING))
 						continue;
 				}
 				else continue;
 			}
-
 
 			/* we found a better match */
 			game_index = i;
