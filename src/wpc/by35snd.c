@@ -736,7 +736,7 @@ static WRITE_HANDLER(cs_ctrl_w) {
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
 
-void by45_p21_w(int data)
+void by45_p21_w(UINT8 data)
 {
 	cslocals.p21 = data ? 1 : 0;
 }
