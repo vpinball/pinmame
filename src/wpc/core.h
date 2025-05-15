@@ -510,6 +510,15 @@ typedef struct {
   /*-- DMD --*/
   UINT8 dmdDotRaw[DMD_MAXY * DMD_MAXX];                         /* DMD: 'raw' dots, that is to say frame built up from rasterized frames (depends on each driver), stable result that can be used for post processing (colorization, ...) */
   UINT8 dmdDotLum[DMD_MAXY * DMD_MAXX];                         /* DMD: perceived linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable) */
+#ifdef LIBPINMAME
+  struct {
+    const struct core_dispLayout *layout;
+    const UINT8* dmdDotLum;
+    const UINT8* dmdDotRaw;
+	unsigned int width, height;
+    int needFreeing;
+  } dmdStates[8];
+#endif
   /*-- Solenoids --*/
   volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
   volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
@@ -668,6 +677,8 @@ extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
 extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes);
 extern void core_dmd_update_pwm(core_tDMDPWMState* dmd_state);
 extern void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state);
+
+extern void core_display_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout, const int rotation);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

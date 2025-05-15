@@ -2262,6 +2262,15 @@ static MACHINE_STOP(core) {
   if(g_fShowPinDMD && !time_to_reset)
    dmddeviceDeInit();
 #endif
+#if defined(LIBPINMAME)
+  for (int i = 0; i < 8; i++)
+  {
+    if (coreGlobals.dmdStates[i].needFreeing > 0)
+      free(coreGlobals.dmdStates[i].dmdDotRaw);
+    if (coreGlobals.dmdStates[i].needFreeing == 1)
+      free(coreGlobals.dmdStates[i].dmdDotLum); // Unshared with raw
+  }
+#endif
 #if defined(VPINMAME) || defined(LIBPINMAME)
   g_raw_dmdx = ~0u;
   g_raw_dmdy = ~0u;
@@ -3351,23 +3360,53 @@ void core_dmd_render_vpm(const int width, const int height, const UINT8* const d
 
 // Prepare data for LibPinMAME interface (similar to VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
 #ifdef LIBPINMAME
-void core_dmd_render_lpm(const int width, const int height, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw) {
-  const int size = width * height;
-  g_raw_dmdx = width;
-  g_raw_dmdy = height;
-  if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
-    if (memcmp(locals.vpm_dmd_last_lum, dmdDotLum, size) != 0) {
-      memcpy(locals.vpm_dmd_last_lum, dmdDotLum, size);
-      UINT8* rawLum = g_raw_dmdbuffer;
-      for (int ii = 0; ii < size; ii++)
-        (*rawLum++) = locals.vpm_dmd_luminance_lut[dmdDotLum[ii]];
-      g_needs_DMD_update = 1;
+void core_dmd_render_lpm(const struct core_dispLayout *layout, core_tDMDPWMState* dmdState, const UINT8* const dmdDotLum, const UINT8* const dmdDotRaw) {
+  const unsigned int width = layout->length;
+  const unsigned int height = layout->start;
+  if (width >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
+    const int size = width * height;
+    g_raw_dmdx = width;
+    g_raw_dmdy = height;
+    if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
+      if (memcmp(locals.vpm_dmd_last_lum, dmdDotLum, size) != 0) {
+        memcpy(locals.vpm_dmd_last_lum, dmdDotLum, size);
+        UINT8* rawLum = g_raw_dmdbuffer;
+        for (int ii = 0; ii < size; ii++)
+          (*rawLum++) = locals.vpm_dmd_luminance_lut[dmdDotLum[ii]]; // Simply 0..255 => 0.f..100.f (is it worth a LUT ?)
+        g_needs_DMD_update = 1;
+      }
     }
+    else if (g_fDmdMode == 1) {// PINMAME_DMD_MODE_RAW
+      if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
+        memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
+        g_needs_DMD_update = 1;
+      }
+    }
+    has_DMD_Video = 1;
   }
-  else if (g_fDmdMode == 1) {// PINMAME_DMD_MODE_RAW
-    if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
-      memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
-      g_needs_DMD_update = 1;
+  for (int i = 0; (i < 8) && (coreGlobals.dmdStates[i].layout != NULL); i++)
+  {
+    if (coreGlobals.dmdStates[i].layout == layout)
+    {
+      coreGlobals.dmdStates[i].width = width;
+      coreGlobals.dmdStates[i].height = height;
+      if (dmdState)
+      {
+        coreGlobals.dmdStates[i].dmdDotRaw = dmdState->bitplaneFrame;
+        coreGlobals.dmdStates[i].dmdDotLum = dmdState->luminanceFrame;
+      }
+      else
+      {
+        if (coreGlobals.dmdStates[i].dmdDotRaw == NULL)
+        {
+          coreGlobals.dmdStates[i].needFreeing = 1;
+          coreGlobals.dmdStates[i].dmdDotRaw = (UINT8*)malloc(width * height);
+          coreGlobals.dmdStates[i].dmdDotLum = (UINT8*)malloc(width * height);
+        }
+        memcpy(coreGlobals.dmdStates[i].dmdDotRaw, dmdDotRaw, width * height);
+        memcpy(coreGlobals.dmdStates[i].dmdDotLum, dmdDotLum, width * height);
+      }
+      break;
     }
   }
 }
@@ -3480,11 +3519,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 
   #if defined(LIBPINMAME)
-    const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
-    if (isMainDMD) {
-      core_dmd_render_lpm(layout->length, layout->start, dmdDotLum, dmdDotRaw);
-      has_DMD_Video = 1;
-    }
+    core_dmd_render_lpm(layout, dmd_state, dmdDotLum, dmdDotRaw);
 
   #elif defined(VPINMAME)
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
@@ -3500,6 +3535,57 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   #elif defined(PINMAME)
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
 
+  #endif
+}
+
+void core_display_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout, const int rotation) {
+  #if defined(LIBPINMAME)
+    for (int i = 0; (i < 8) && (coreGlobals.dmdStates[i].layout != NULL); i++)
+    {
+      if (coreGlobals.dmdStates[i].layout == layout)
+      {
+        switch (rotation)
+        {
+        case 0:
+           coreGlobals.dmdStates[i].width = layout->length;
+           coreGlobals.dmdStates[i].height = layout->start;
+           break;
+        case 1:
+           coreGlobals.dmdStates[i].width = layout->start;
+           coreGlobals.dmdStates[i].height = layout->length;
+           break;
+        case 3:
+           coreGlobals.dmdStates[i].width = layout->start;
+           coreGlobals.dmdStates[i].height = layout->length;
+           break;
+        default:
+           assert(FALSE);
+           break;
+        }
+        if (coreGlobals.dmdStates[i].dmdDotRaw == NULL)
+        {
+          coreGlobals.dmdStates[i].needFreeing = 2; // Shared buffer
+          coreGlobals.dmdStates[i].dmdDotRaw = (UINT8*)malloc(layout->start * layout->length * 3);
+          coreGlobals.dmdStates[i].dmdDotLum = coreGlobals.dmdStates[i].dmdDotRaw;
+        }
+        for (int y = 0; y < layout->start; y++) {
+          for (int x = 0; x < layout->length; x++) {
+            int pos;
+            switch (rotation)
+            {
+            case 0: pos = (x + y * layout->length) * 3; break;
+            case 1: pos = ((layout->start - 1 - y) + x * layout->start) * 3; break;
+            case 2: pos = (y + (layout->length - 1 - x) * layout->start) * 3; break;
+            }
+            palette_get_color(bitmap->read(bitmap, x, y),
+              &coreGlobals.dmdStates[i].dmdDotRaw[pos    ],
+              &coreGlobals.dmdStates[i].dmdDotRaw[pos + 1],
+              &coreGlobals.dmdStates[i].dmdDotRaw[pos + 2]);
+          }
+        }
+        break;
+      }
+    }
   #endif
 }
 
