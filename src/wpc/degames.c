@@ -490,8 +490,8 @@ CORE_CLONEDEF(tmnt,a07,104,"Teenage Mutant Ninja Turtles (A 0.7 VUK Prototype)",
 INITGAMES11(btmn,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16, 0)
 DE_ROMSTART48(btmn_103,"batcpub5.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
                     "batcpuc5.103",CRC(8588c5a8) SHA1(41b159c9e4ca523b37f0b893e57f166c85e812e9))
-DE_DMD16ROM2(       "batdsp.102",CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550))
-DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+DE_DMD16ROM2(       "batdsp.102" ,CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550))
+DE2S_SOUNDROM021(   "batman.u7"  ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
                     "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
                     "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
 DE_ROMEND
@@ -500,8 +500,8 @@ CORE_GAMEDEF(btmn,103,"Batman (1.03)",1991,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTART88(btmn_101,"batcpub5.101",CRC(a7f5754e) SHA1(2c24cab4cc5f1e05539d2843a49b4b1a8d507630),
                     "batcpuc5.101",CRC(1fcb85ca) SHA1(daf1e1297975b9b577c796d50b973885f925508e))
-DE_DMD16ROM2(       "batdsp.102",CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550))
-DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+DE_DMD16ROM2(       "batdsp.102" ,CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550))
+DE2S_SOUNDROM021(   "batman.u7"  ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
                     "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
                     "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
 DE_ROMEND
@@ -510,7 +510,7 @@ CORE_CLONEDEF(btmn,101,103,"Batman (1.01)",1991,"Data East",de_mDEDMD16S2A,0)
 DE_ROMSTART48(btmn_f13,"batcpub5.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
                     "batccpuf.103",CRC(6f654fb4) SHA1(4901326f92aab1f5a2cdf9032511bef8b197f7e4))
 DE_DMD16ROM2(       "bat_dspf.103",CRC(747be2e6) SHA1(47ac64b91eabc24be57e376035ef8da95259587d))
-DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+DE2S_SOUNDROM021(   "batman.u7"  ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
                     "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
                     "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
 DE_ROMEND
@@ -519,7 +519,7 @@ CORE_CLONEDEF(btmn,f13,103,"Batman (1.03 French)",1991,"Data East",de_mDEDMD16S2
 DE_ROMSTART48(btmn_g13,"batcpub5.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
                     "batccpug.103",CRC(a199ab0f) SHA1(729dab10fee708a18b7be5a2b9b904aa211b233a))
 DE_DMD16ROM2(       "bat_dspg.104",CRC(1581819f) SHA1(88facfad2e74dd44b71fd19df685a4c2378d26de))
-DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+DE2S_SOUNDROM021(   "batman.u7"  ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
                     "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
                     "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
 DE_ROMEND
@@ -527,8 +527,8 @@ CORE_CLONEDEF(btmn,g13,103,"Batman (1.03 German)",1991,"Data East",de_mDEDMD16S2
 
 DE_ROMSTART48(btmn_106,"b5_a106.128",CRC(5aa7fbe3) SHA1(587be4fd18ad730e675e720923e00d1775a4560e),
                     "c5_a106.256",CRC(79e86ccd) SHA1(430ac436bd1c8841950986af80747285a7d25942))
-DE_DMD16ROM2(       "batdsp.106",CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550))
-DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+DE_DMD16ROM2(       "batdsp.102" ,CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550)) // was named 1.06, but most likely because it came from either Stern like that, or from a 1.06-CPU machine
+DE2S_SOUNDROM021(   "batman.u7"  ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
                     "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
                     "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
 DE_ROMEND
