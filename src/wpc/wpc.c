@@ -1280,7 +1280,7 @@ static MACHINE_INIT(wpc) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "cftbl_", 6) == 0) { // Creature From The Black Lagoon
-     static const int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28 }; // 28 is hologram lamp
+     static const int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28, 33, 34, 35, 36 }; // 28 is hologram lamp, 33-36 are flashers inside backglass using Fliptronic upper flippers (not mentionned in manual)
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
 		 core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64, 8, CORE_MODOUT_BULB_86_6_3V_AC); // chase lights (8 strings of #86 bulbs wired between GI and solenoids outputs through triacs and a 2 bit decoder)
