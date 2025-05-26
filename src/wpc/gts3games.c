@@ -312,6 +312,16 @@ GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba07
 GTS3_ROMEND
 CORE_CLONEDEFNV(smb3,smb,"Super Mario Bros. (rev. 3)",1992,"Gottlieb",mGTS3DMDS, 0)
 
+INITGAME1(smbv, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
+GTS3ROMSTART(smbv,   "gprom_v.bin", CRC(a50f1b45) SHA1(5ac95e92b13d3205f0d94382f10e3a57fb5af357))
+GTS3_DMD256_ROMSTART("dsp733-1.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877)) // unfortunately, that one was damaged on the PCB, so taking the Rev2 version for now (as CPU dump seems to match CPU Rev2 the best??)
+GTS3SOUND32256(      "yrom1.bin",   CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
+                     "drom1.bin",   CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
+                     "arom1.bin",   CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
+                     "arom2.bin",   CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
+GTS3_ROMEND
+CORE_CLONEDEFNV(smbv,smb,"Super Mario Bros. (Spanish / Vifico license)",1992,"Gottlieb / Vifico",mGTS3DMDS, 0)
+
 /*-------------------------------------------------------------------
 / Super Mario Bros. Mushroom World (#N105)
 /-------------------------------------------------------------------*/
