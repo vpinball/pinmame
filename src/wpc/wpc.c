@@ -126,6 +126,7 @@ static struct {
   int zc;                 /* zero cross flag */
   double gi_on_time[CORE_MAXGI]; /* Global time when GI Triac was turned on */
   volatile UINT8 conductingGITriacs; /* Current conducting triacs of WPC GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
+  volatile UINT8 conductingChaseLightTriacs; /* Current conducting triacs of CFTBL Chase light GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
   UINT32 solenoidbits[64];
   int modsol_count;
   int modsol_sample;
@@ -228,7 +229,8 @@ static void wpc_zc(int data) {
    {
       int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
       int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
-      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi & (0x11 << chase_2b));
+      wpclocals.conductingChaseLightTriacs = chase_gi & (0x11 << chase_2b);
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, wpclocals.conductingChaseLightTriacs);
    }
 }
 
@@ -835,7 +837,8 @@ WRITE_HANDLER(wpc_w) {
       {
          int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
          int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
-         core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi& (0x11 << chase_2b));
+         wpclocals.conductingChaseLightTriacs |= chase_gi & (0x11 << chase_2b);
+         core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, wpclocals.conductingChaseLightTriacs);
       }
       double write_time = timer_get_time();
       for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
@@ -939,8 +942,8 @@ WRITE_HANDLER(wpc_w) {
       {
          int chase_2b = ((coreGlobals.pulsedSolState >> 22) & 2) | ((coreGlobals.pulsedSolState >> 19) & 1); // 2 bit decoder => select one of the 4 chase light strings
          int chase_gi = ((wpclocals.conductingGITriacs & 1) ? 0x0F : 0x00) | ((wpclocals.conductingGITriacs & 8) ? 0xF0 : 0x00); // GI outputs
-         if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS | CORE_MODOUT_FORCE_ON))
-           core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, chase_gi & (0x11 << chase_2b));
+         wpclocals.conductingChaseLightTriacs |= chase_gi & (0x11 << chase_2b);
+         core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, wpclocals.conductingChaseLightTriacs);
          coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = 0x11 << chase_2b;
       }
       break;
