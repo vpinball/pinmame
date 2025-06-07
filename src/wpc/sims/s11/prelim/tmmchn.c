@@ -94,73 +94,66 @@ S11_INPUT_PORTS_END
 /--------------------*/
 #define swTilt		1
 #define swStart		3
-#define swSlamTilt	7
-#define swShooter	9
-#define swOutHole	10
-#define swRTrough	11
-#define swCTrough	12
-#define swLTrough	13
-#define swHeart		14
-#define swEnterRamp	15
-#define swRampMade	16
-#define swLeftOutlane	17
-#define swRightOutlane	18
-#define swRightInlane	19
-#define swLeftInlane	20
-#define swRDrop1	21 /* Top */
-#define swRDrop2	22
-#define swRDrop3	23
-#define swRDrop4	24 /* Bottom */
-#define swrefleX	25
-#define swreflEx	26
-#define swrefLex	27
-#define swreFlex	28
-#define swrEflex	29
-#define swReflex	30
-#define swBigShot	31
-#define swRPopper	32
-#define swMixerGabT	33
-#define swMixerGabM	34
-#define swMixerGabB	35
-#define swMixerHeartL	36
-#define swMixerHeartM	37
-#define swMixerHeartR	38
-#define swTopLeft10	39
-#define swMixerMagT	41
-#define swMixerMagM	42
-#define swMixerMagB	43
-#define swMidMid10	46
-#define swMidBot10	47
-#define swMidTop10	48
-#define swITest		49
-#define swMagnet	50
-#define swLPopper	51
-#define swLeftJet	52
-#define swRightJet	53
-#define swBottomJet	54
-#define swLeftSling	55
-#define swRightSling	56
-#define swRFlip		57
-#define swLFlip		58
-#define swRLoop		59
+#define swRightCoin 4
+#define swCenterCoin 5
+#define swLeftCoin 6
+#define swSlamTilt 7
+#define swOutHole 10
+#define swRTrough 11
+#define swCTrough 12
+#define swLTrough 13
+#define swShooterLane 14
+#define swLTEOS 15
+#define swRTEOS 16
+#define swLTOutlane 17
+#define swLTInlane 18
+#define swRTOutlane 19
+#define swRTInlane 20
+#define swLTSling 21
+#define swRTSling 22
+#define swLane1 25
+#define swLane2 26
+#define swLane3 27
+#define swLTRamp 28
+#define swCTRamp 29
+#define swRTRamp 30
+#define swLTRollover 31
+#define swRTRollover 32
+#define swLTBank1 33
+#define swLTBank2 34
+#define swLTBank3 35
+#define swLock1 36
+#define swLock2 37
+#define swLock3 38
+#define swCTBank1 41
+#define swCTBank2 42
+#define swCTBank3 43
+#define swSubway 44
+#define swVUK 45
+#define swLTPop 46
+#define swCTPop 47
+#define swRTPop 48
+#define swRTBank1 49
+#define swRTBank2 50
+#define swRTBank3 51
 
-/*---------------------
-/ Solenoid definitions
-/----------------------*/
-#define sOutHole	1
-#define sTrough		2
-#define sLPopper	3
-#define sRPopper	4
-#define sKnocker	6
-#define sRDrop		7
-#define sMagnet		13
-#define sBigShot	14
-#define sMotor		16
-#define sLeftJet	17
-#define sLeftSling	18
-#define sRightJet	19
-#define sRightSling	20
-#define sBottomJet	21
+  /*---------------------
+  / Solenoid definitions
+  /----------------------*/
+#define sOutHole 1
+#define sTrough 2
+#define sLPopper 3
+#define sRPopper 4
+#define sKnocker 6
+#define sRDrop 7
+#define sMagnet 13
+#define sBigShot 14
+#define sMotor 16
+#define sLeftJet 17
+#define sLeftSling 18
+#define sRightJet 19
+#define sRightSling 20
+#define sBottomJet 21
 
 
 /*---------------------
@@ -168,105 +161,38 @@ S11_INPUT_PORTS_END
 /----------------------*/
 enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet,
-      stRamp, stRampMade, stGabT, stGabM, stGabB, stHeartL, stHeartM, stHeartR, stMagT, stMagM, stMagB, stInReel,
-      stITest, stRDrop1, stRDrop2, stRDrop3, stRDrop4,
-      stReflex, strEflex, streFlex, strefLex, streflEx, strefleX, stHeart, stBigShot, stMagnet, stInMagnet,
-      stRLoop, stITest2, stLJet, stRJet, stBJet, stTopLeft10, stMidTop10, stMidMid10, stMidBot10, stRLoopFall,
-      stLPopper, stInReel2, stRPopper
 	  };
 
-static sim_tState tm_stateDef[] = {
-  {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
-  {"Moving"},
-  {"Playfield",		0,0,		 0,		0,		0,	0,	0,	SIM_STNOTEXCL},
+  static sim_tState tm_stateDef[] = {
+      {"Not Installed", 0, 0, 0, stDrain, 0, 0, 0, SIM_STNOTEXCL},
+      {"Moving"},
+      {"Playfield", 0, 0, 0, 0, 0, 0, 0, SIM_STNOTEXCL},
 
-  /*Line 1*/
-  {"Right Trough",	1,swRTrough,	 sTrough,	stShooter,	5},
-  {"Center Trough",	1,swCTrough,	 0,		stRTrough,	1},
-  {"Left Trough",	1,swLTrough,	 0,		stCTrough,	1},
-  {"Outhole",		1,swOutHole,	 sOutHole,	stLTrough,	5},
-  {"Drain",		1,0,		 0,		stOutHole,	0,	0,	0,	SIM_STNOTEXCL},
+      /*Line 1*/
+      {"Right Trough", 1, swRTrough, sTrough, stShooter, 5},
+      {"Center Trough", 1, swCTrough, 0, stRTrough, 1},
+      {"Left Trough", 1, swLTrough, 0, stCTrough, 1},
+      {"Outhole", 1, swOutHole, sOutHole, stLTrough, 5},
+      {"Drain", 1, 0, 0, stOutHole, 0, 0, 0, SIM_STNOTEXCL},
 
-  /*Line 2*/
-  {"Shooter",		1,swShooter,	 sShooterRel,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
-  {"Ball Lane",		1,0,		 0,		0,		2,	0,	0,	SIM_STNOTEXCL},
-  {"No Strength",	1,0,		 0,		stShooter,	3},
-  {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
-  {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
-  {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
-  {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
-  {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
-  {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
-  {"Left Bumper",	1,swLeftJet,	 0,		stFree,		1},
-  {"Right Bumper",	1,swRightJet,	 0,		stFree,		1},
-  {"Bottom Bumper",	1,swBottomJet,	 0,		stFree,		1},
+      /*Line 2*/
+      {"Shooter", 1, swShooterLane, sShooterRel, stBallLane, 0, 0, 0, SIM_STNOTEXCL | SIM_STSHOOT},
+      {"Ball Lane", 1, 0, 0, 0, 2, 0, 0, SIM_STNOTEXCL},
+      {"No Strength", 1, 0, 0, stShooter, 3},
+      {"Right Outlane", 1, swRTOutlane, 0, stDrain, 15},
+      {"Left Outlane", 1, swLTOutlane, 0, stDrain, 15},
+      {"Right Inlane", 1, swRTInlane, 0, stFree, 5},
+      {"Left Inlane", 1, swLTInlane, 0, stFree, 5},
+      {"Left Slingshot", 1, swLTSling, 0, stFree, 1},
+      {"Rt Slingshot", 1, swRTSling, 0, stFree, 1},
+      {"Left Bumper", 1, swLTPop, 0, stFree, 1},
+      {"Right Bumper", 1, swRTPop, 0, stFree, 1},
+      {"Bottom Bumper", 1, swCTPop, 0, stFree, 1}
 
-  /*Line 3*/
-  {"Enter MixMastr",	1,swEnterRamp,   0,		stRampMade,	7},
-  {"MixMaster Made",	1,swRampMade,	 0,		stGabT,		5},
-  {"Gab Top Tgt",	1,swMixerGabT,	 0,		stGabM,		1},
-  {"Gab Mid Tgt",	1,swMixerGabM,	 0,		stGabB,		1},
-  {"Gab Bot Tgt",	1,swMixerGabB,	 0,		stHeartL,	1},
-  {"Heart L. Tgt",	1,swMixerHeartL, 0,		stHeartM,	1},
-  {"Heart M. Tgt",	1,swMixerHeartM, 0,		stHeartR,	1},
-  {"Heart R. Tgt",	1,swMixerHeartR, 0,		stMagT,		1},
-  {"Magnet Top Tgt",	1,swMixerMagT,	 0,		stMagM,		1},
-  {"Magnet Mid Tgt",	1,swMixerMagM,	 0,		stMagB,		1},
-  {"Magnet Bot Tgt",	1,swMixerMagB,	 0,		stInReel,	1},
-  {"Habitrail",		1,0,		 0,		stRightInlane,	11},
-
-  /*Line 4*/
-  {"I Test Target",	1,swITest,	 0,		stFree,		8},
-  {"Right Drop 1",	1,swRDrop1,	 0,		stFree,		2,0,0,SIM_STSWKEEP},
-  {"Right Drop 2",	1,swRDrop2,	 0,		stFree,		2,0,0,SIM_STSWKEEP},
-  {"Right Drop 3",	1,swRDrop3,	 0,		stFree,		2,0,0,SIM_STSWKEEP},
-  {"Right Drop 4",	1,swRDrop4,	 0,		stFree,		2,0,0,SIM_STSWKEEP},
-
-  /*Line 5*/
-  {"Reflex - R",	1,swReflex,	 0,		stFree,		3},
-  {"Reflex - E",	1,swrEflex,	 0,		stFree,		3},
-  {"Reflex - F",	1,swreFlex,	 0,		stFree,		3},
-  {"Reflex - L",	1,swrefLex,	 0,		stFree,		3},
-  {"Reflex - E",	1,swreflEx,	 0,		stFree,		3},
-  {"Reflex - X",	1,swrefleX,	 0,		stFree,		3},
-  {"Heart Target",	1,swHeart,	 0,		stFree,		3},
-  {"Big Shot Tgt",	1,swBigShot,	 0,		stFree,		3},
-  {"Magnet Target",	1,swMagnet,	 0,		stInMagnet,	3},
-  {"In Magnet",		1,0,		 0,		stFree,		12},
-
-  /*Line 6*/
-  {"Right Loop",	1,swRLoop,	 0,		stITest2,	5},
-  {"I Test Target",	1,swITest,	 0,		stLJet,		3},
-  {"Left Bumper",	1,swLeftJet,	 0,		stRJet,		1},
-  {"Right Bumper",	1,swRightJet,	 0,		stBJet,		1},
-  {"Bottom Bumper",	1,swBottomJet,	 0,		stTopLeft10,	1},
-  {"Top Left 10Pts",	1,swTopLeft10,	 0,		stMidTop10,	1},
-  {"Mid. Top 10Pts",	1,swMidTop10,	 0,		stMidMid10,	1},
-  {"Mid. Mid 10Pts",	1,swMidMid10,	 0,		stMidBot10,	1},
-  {"Mid. Bot 10Pts",	1,swMidBot10,	 0,		stFree,		2},
-  {"Down F. Right",	1,0,		 0,		stFree,		5},
-
-  /*Line 7*/
-  {"Bag of T. Hole",	1,swLPopper,	 sLPopper,	stInReel2,	0},
-  {"Habitrail",		1,0,		 0,		stLeftInlane,	18},
-  {"Gift of Gab H.",	1,swRPopper,	 sRPopper,	stInReel,	0},
-
-  {0}
 };
 
-static int tm_handleBallState(sim_tBallStatus *ball, int *inports) {
-  switch (ball->state)
-	{
-	/* Ball in Shooter Lane */
-		case stBallLane:
-		if (ball->speed < 15)
-			return setState(stNotEnough,40);	/*Ball not plunged hard enough*/
-		if (ball->speed < 30)
-			return setState(stRLoopFall,60);	/*Ball falls from Right Loop*/
-		if (ball->speed < 51)
-			return setState(stRLoop,40);		/*Ball Hits I Test Target*/
-		break;
-	}
+  static int tm_handleBallState(sim_tBallStatus *ball, int *inports)
+  {
     return 0;
   }
 
@@ -386,14 +312,11 @@ static MACHINE_DRIVER_START(s11c_one)
 MACHINE_DRIVER_END
 
 CORE_GAMEDEF (dd,    l2, "Dr. Dude (LA-2)", 1990, "Bally", s11c_one,0)
-CORE_CLONEDEF(dd,lu1,l2, "Dr. Dude (LU-1 Europe)", 1990, "Bally", s11c_one,0)
-CORE_CLONEDEF(dd,l3c,l2, "Dr. Dude (LA-3C Competition MOD)", 2016,"Bally", s11c_one,0)
-CORE_CLONEDEF(dd,p6, l2, "Dr. Dude (PA-6 Prototype)", 1990, "Bally", s11c_one,0)
 
 /*-----------------------
 / Simulation Definitions
 /-----------------------*/
-static sim_tSimData ddSimData = {
+static sim_tSimData tmSimData = {
   2,					/* 2 game specific input ports */
   tm_stateDef,			/* Definition of all states */
   tm_inportData,		/* Keyboard Entries */
@@ -440,11 +363,11 @@ static void tm_handleMech(int mech) {
      --	Get Up the Right Drop Target Bank  --
      ---------------------------------------- */
   /*-- if the RaiseTargets (sRDrop) Solenoid is firing, raise the targets --*/
-  if ((mech & 0x01) && core_getSol(sRDrop)) {
-    core_setSw(swRDrop1,0);
-    core_setSw(swRDrop2,0);
-    core_setSw(swRDrop3,0);
-    core_setSw(swRDrop4,0);
-  }
+  // if ((mech & 0x01) && core_getSol(sRDrop)) {
+  //   core_setSw(swRDrop1,0);
+  //   core_setSw(swRDrop2,0);
+  //   core_setSw(swRDrop3,0);
+  //   core_setSw(swRDrop4,0);
+  // }
 
 }
