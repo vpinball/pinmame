@@ -161,6 +161,8 @@ S11_INPUT_PORTS_END
 /----------------------*/
 enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet,
+      stLock1, stLock2, stLock3,
+      stLTRamp, stRTRamp, stCTRamp, stSubway, stVUK
 	  };
 
   static sim_tState tm_stateDef[] = {
@@ -187,8 +189,19 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       {"Rt Slingshot", 1, swRTSling, 0, stFree, 1},
       {"Left Bumper", 1, swLTPop, 0, stFree, 1},
       {"Right Bumper", 1, swRTPop, 0, stFree, 1},
-      {"Bottom Bumper", 1, swCTPop, 0, stFree, 1}
+      {"Bottom Bumper", 1, swCTPop, 0, stFree, 1},
 
+      /*lock states*/
+      {"Lock 1", 1, swLock1, sLock, stFree, 0},
+      {"Lock 2", 1, swLock2, 0, stLock1, 0},
+      {"Lock 3", 1, swLock3, 0, stLock2, 0},
+
+      /*ramp states*/
+      {"Left Ramp", 1, swLTRamp, 0, stLock3, 2},
+      {"Right Ramp", 1, swRTRamp, 0, stLock3, 2},
+      {"Center Ramp", 1, swCTRamp, 0, stSubway, 2},
+      {"Subway", 1, swSubway, 0, stVUK, 1},
+      {"Super VUK", 1, swVUK, sVUK, stRightInlane, 1}
 };
 
   static int tm_handleBallState(sim_tBallStatus *ball, int *inports)
