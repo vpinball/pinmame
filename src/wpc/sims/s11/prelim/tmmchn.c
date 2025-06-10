@@ -155,6 +155,8 @@ S11_INPUT_PORTS_END
 #define sRightSling 20
 #define sBottomJet 21
 
+#define sVUK 0
+#define sLock 0
 
 /*---------------------
 /  Ball state handling
@@ -216,8 +218,6 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
 static sim_tInportData tm_inportData[] = {
 
 /* Port 0 */
-  {0, 0x0005, stRamp},
-  {0, 0x0006, stRamp},
   {0, 0x0009, stLeftOutlane},
   {0, 0x000a, stRightOutlane},
   {0, 0x0011, stLeftSling},
@@ -227,28 +227,7 @@ static sim_tInportData tm_inportData[] = {
   {0, 0x0040, stLeftJet},
   {0, 0x0100, stBottomJet},
   {0, 0x0200, stRightJet},
-  {0, 0x0400, stITest},
-  {0, 0x0800, stRDrop1},
-  {0, 0x1000, stRDrop2},
-  {0, 0x2000, stRDrop3},
-  {0, 0x4000, stRDrop4},
   {0, 0x8000, stDrain},
-
-/* Port 1 */
-  {1, 0x0001, stReflex},
-  {1, 0x0002, strEflex},
-  {1, 0x0004, streFlex},
-  {1, 0x0008, strefLex},
-  {1, 0x0010, streflEx},
-  {1, 0x0020, strefleX},
-  {1, 0x0040, stHeart},
-  {1, 0x0080, stMagnet},
-  {1, 0x0100, stBigShot},
-  {1, 0x0200, stLPopper},
-  {1, 0x0400, stRPopper},
-  {1, 0x0800, stRLoop},
-
-/* Port 2 */
 
   {0}
 };
@@ -358,7 +337,7 @@ static core_tGameData ddGameData = {
     , tm_samsolmap
 #endif
   },
-  &ddSimData,
+  &tmSimData,
   {{ 0 }},
   {12}
 };
