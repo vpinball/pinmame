@@ -49,12 +49,12 @@ ASDFGH  Reflex Targets
 static int  tm_handleBallState(sim_tBallStatus *ball, int *inports);
 static void tm_handleMech(int mech);
 static void tm_drawStatic(BMTYPE **line);
-static void init_dd(void);
+static void init_tmac(void);
 
 /*--------------------------
 / Game specific input ports
 /---------------------------*/
-S11_INPUT_PORTS_START(dd,3)
+S11_INPUT_PORTS_START(tmac,3)
 
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
@@ -303,7 +303,7 @@ static MACHINE_DRIVER_START(s11c_one)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
 
-CORE_GAMEDEF (dd,    l2, "Dr. Dude (LA-2)", 1990, "Bally", s11c_one,0)
+// CORE_GAMEDEF (tmac,    a24, "Time Machine (R02-4)", 1988, "Data East", s11c_one,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -326,10 +326,10 @@ static sim_tSimData tmSimData = {
 static core_tLCDLayout disp16oneline[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-static core_tGameData ddGameData = {
+static core_tGameData tmGameData = {
   GEN_S11C, disp16oneline,
   {
-    FLIP_SWNO(swLFlip,swRFlip),
+    FLIP_SWNO(swLTEOS,swRTEOS),
     0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2,0,
     NULL, tm_handleMech, NULL, NULL,
     &tm_lampPos
@@ -345,8 +345,8 @@ static core_tGameData ddGameData = {
 /*---------------
 /  Game handling
 /----------------*/
-static void init_dd(void) {
-  core_gameData = &ddGameData;
+static void init_tmac(void) {
+  core_gameData = &tmGameData;
 }
 
 static void tm_handleMech(int mech) {
