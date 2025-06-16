@@ -54,7 +54,7 @@ static void init_tmac(void);
 /*--------------------------
 / Game specific input ports
 /---------------------------*/
-S11_INPUT_PORTS_START(tmac,3)
+DE_INPUT_PORTS_START(tmac,3)
 
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
@@ -87,7 +87,7 @@ S11_INPUT_PORTS_START(tmac,3)
     COREPORT_BIT(0x0400,"RPopper",		KEYCODE_X)
     COREPORT_BIT(0x0800,"Rt Loop",		KEYCODE_C)
 
-S11_INPUT_PORTS_END
+DE_INPUT_PORTS_END
 
 /*-------------------
 / Switch definitions
@@ -261,7 +261,7 @@ static core_tLampDisplay tm_lampPos = {
 
 /* Help */
 
-  static void tm_drawStatic(BMTYPE **line) {
+static void tm_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Ctrl+R = MixMaster Ramp");
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
@@ -272,7 +272,7 @@ static core_tLampDisplay tm_lampPos = {
   core_textOutf(30,120,BLACK,"A/S/D/F/G/H = R/E/F/L/E/X Targets");
   core_textOutf(30,130,BLACK,"L = Big Shot Target, C = Right Loop");
   core_textOutf(30,140,BLACK,"Z/X = Bag of Tricks/Gift of Gab Hole");
-  }
+}
 
 /* Solenoid-to-sample handling */
 #ifdef ENABLE_MECHANICAL_SAMPLES
@@ -346,20 +346,11 @@ static core_tGameData tmGameData = {
 /  Game handling
 /----------------*/
 static void init_tmac(void) {
+  printf("initializing Time Machine");
   core_gameData = &tmGameData;
 }
 
 static void tm_handleMech(int mech) {
 
-  /* ----------------------------------------
-     --	Get Up the Right Drop Target Bank  --
-     ---------------------------------------- */
-  /*-- if the RaiseTargets (sRDrop) Solenoid is firing, raise the targets --*/
-  // if ((mech & 0x01) && core_getSol(sRDrop)) {
-  //   core_setSw(swRDrop1,0);
-  //   core_setSw(swRDrop2,0);
-  //   core_setSw(swRDrop3,0);
-  //   core_setSw(swRDrop4,0);
-  // }
 
 }
