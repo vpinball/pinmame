@@ -41,31 +41,33 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
-    name: Build xpinmame-${{ matrix.platform }}
+    name: Build xpinmame-${{ matrix.platform }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
-            platform: osx-x64
-            exe: xpinmame
           - os: ubuntu-latest
-            platform: linux-x64
+            platform: linux
+            arch: x64
+            exe: xpinmame
+          - os: macos-latest
+            platform: osx
+            arch: aarch64
+            exe: xpinmame
+          - os: macos-latest
+            platform: osx
+            arch: x64
             exe: xpinmame
     steps:
       - uses: actions/checkout@v4
-      - if: matrix.os == 'macos-latest'
-        run: |
-          brew install xquartz
-
       - if: matrix.os == 'ubuntu-latest'
-        run: |    
-          sudo apt install libx11-dev libxv-dev libasound2-dev
-      - name: Build xpinmame-${{ matrix.platform }}
         run: |
-          cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
+          sudo apt update && sudo apt install libasound2-dev
+      - name: Build xpinmame-${{ matrix.platform }}-${{ matrix.arch }}
+        run: |
+          cp cmake/xpinmame/CMakeLists_${{ matrix.platform }}-${{ matrix.arch}}.txt CMakeLists.txt
           cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
           cmake --build build/Release
       - run: |
@@ -77,5 +79,5 @@ jobs:
           cp release/whatsnew.txt tmp
       - uses: actions/upload-artifact@v4
         with:
-          name: xpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
+          name: xpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
           path: tmp
