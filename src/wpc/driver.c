@@ -897,7 +897,8 @@ DRIVERNV(smb)           //S3-733:   04/92 Super Mario Bros.
 DRIVERNV(smb1)          //                Super Mario Bros. (rev.1)
 DRIVERNV(smb2)          //                Super Mario Bros. (rev.2)
 DRIVERNV(smb3)          //                Super Mario Bros. (rev.3)
-DRIVERNV(smbv)          //                Super Mario Bros. (Spanish / Vifico license)
+DRIVERNV(smbv1)         //                Super Mario Bros. (Spanish / Vifico license) (rev.1)
+DRIVERNV(smbv2)         //                Super Mario Bros. (Spanish / Vifico license) (most likely rev.2)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
 DRIVERNV(cueball1)      //          10/92 Cue Ball Wizard (older display rev.)
