@@ -1921,7 +1921,7 @@ GTS80BSSOUND3232(           "drom1.snd",    CRC(4ab6dab7) SHA1(7e21e69029e600521
                             "yrom1.snd",    CRC(921a100e) SHA1(0c3c7eae4ceeb5a1a8150bac52203d3f1e8f917e))
 GTS80_ROMEND
 #define input_ports_victr101 input_ports_victory
-CORE_CLONEDEFNV(victr101,victory, "Victory (1.01 multiplayer MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
+CORE_CLONEDEFNV(victr101,victory, "Victory (1.01 tournament/competition MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
 
 INITGAME(victr11, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(victr11, "prom2_11.cpu", CRC(fbcd3463) SHA1(328f8eec56b30966f65e4558f67b984f6dac1a1e),
@@ -1930,7 +1930,7 @@ GTS80BSSOUND3232(           "drom1.snd",    CRC(4ab6dab7) SHA1(7e21e69029e600521
                             "yrom1.snd",    CRC(921a100e) SHA1(0c3c7eae4ceeb5a1a8150bac52203d3f1e8f917e))
 GTS80_ROMEND
 #define input_ports_victr11 input_ports_victory
-CORE_CLONEDEFNV(victr11,victory, "Victory (1.1 multiplayer MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
+CORE_CLONEDEFNV(victr11,victory, "Victory (1.1 tournament/competition MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
 
 INITGAME(victr12, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(victr12, "prom2_11.cpu", CRC(fbcd3463) SHA1(328f8eec56b30966f65e4558f67b984f6dac1a1e), // same as 1.1
@@ -1939,7 +1939,21 @@ GTS80BSSOUND3232(           "drom1.snd",    CRC(4ab6dab7) SHA1(7e21e69029e600521
                             "yrom1.snd",    CRC(921a100e) SHA1(0c3c7eae4ceeb5a1a8150bac52203d3f1e8f917e))
 GTS80_ROMEND
 #define input_ports_victr12 input_ports_victory
-CORE_CLONEDEFNV(victr12,victory, "Victory (1.2 multiplayer MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
+CORE_CLONEDEFNV(victr12,victory, "Victory (1.2 tournament/competition MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
+
+// Extends DIP switch 32's existing liberal/conservative setting to control FUEL drop target behavior.
+// The "liberal" setting (switch on) is the default behavior of resetting after hitting a flashing "L" or dropping all targets.
+// The "conservative" setting (switch off) removes the behavior of resetting the bank when all targets are down,
+// but resets the targets on any completed shot to the upper right ramp (100K shot) or orbit (checkpoint 3).
+// With this change, it shouldn't be necessary to disable the upper-right flipper to prevent chopping wood with a "drop targets all day" strategy.
+INITGAME(victr13, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(victr13, "prom2_13.cpu", CRC(37554592) SHA1(6028c05fb4ce332abe55188b358709324b3817af),
+                            "prom1_13.cpu", CRC(c94d420a) SHA1(6e547542f377b4332c27e175d80a17daf160f529))
+GTS80BSSOUND3232(           "drom1.snd",    CRC(4ab6dab7) SHA1(7e21e69029e60052112ddd5c7481582ea6684dc1),
+                            "yrom1.snd",    CRC(921a100e) SHA1(0c3c7eae4ceeb5a1a8150bac52203d3f1e8f917e))
+GTS80_ROMEND
+#define input_ports_victr13 input_ports_victory
+CORE_CLONEDEFNV(victr13,victory, "Victory (1.3 tournament/competition MOD)",1987,"Gottlieb / Tom Collins",gl_mGTS80BS2,0)
 
 /*-------------------------------------------------------------------
 / Diamond Lady (#711)
