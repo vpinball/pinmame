@@ -961,6 +961,15 @@ S11CS_SOUNDROM888(      "cats_u4.l1",  CRC(18c62813) SHA1(a4fb69cfedd0b92c22b599
 S11_ROMEND
 #define input_ports_bcats input_ports_s11
 
+S11_ROMSTART48(bcats,f1,"cats_u26.lf1",CRC(e7f3552b) SHA1(fbef003e62b624c80b6f6705599ad6982c901834),
+                        "cats_u27.lf1",CRC(73f50ce7) SHA1(b13eff5c9ca5a3565c47eb7de2a525a291c00303))
+S11XS_SOUNDROM88(       "cats_u21.l1", CRC(04110d08) SHA1(4b44b26983cb5d14a93c16a19dc2bdbaa665dc69),
+                        "cats_u22.l1", CRC(7e152c78) SHA1(b4ab770fdd9420a5d35e55bf8fb84c99ac544b8b))
+S11CS_SOUNDROM888(      "cats_u4.l1",  CRC(18c62813) SHA1(a4fb69cfedd0b92c22b599913df3cdf8b3eef42c),
+                        "cats_u19.l1", CRC(f2fea68b) SHA1(9a41823e71342b7a162420378f122bba34ce0636),
+                        "cats_u20.l1", CRC(bf4dc35a) SHA1(9920ce90d93fb6ecf98792c35bb6eb8862a969f3))
+S11_ROMEND
+
 S11_ROMSTART48(bcats,l2,"bcgu26.la2",  CRC(206c7cf8) SHA1(34eb128d46a0e1ba943f4e37aa95fa6d81aefb0e),
                         "bcgu27.la2",  CRC(911981c6) SHA1(0d5b5c6d8399c6337300c789a0466242f91eaf94))
 S11XS_SOUNDROM88(       "cats_u21.l1", CRC(04110d08) SHA1(4b44b26983cb5d14a93c16a19dc2bdbaa665dc69),
@@ -1007,8 +1016,9 @@ S11CS_SOUNDROM888(      "cats_u4.l1",     CRC(18c62813) SHA1(a4fb69cfedd0b92c22b
 S11_ROMEND
 
 CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bcats,f1,l5,"Bad Cats (LF-1 French)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,l2,l5,"Bad Cats (LA-2)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bcats,g4,l5,"Bad Cats (LG-4)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bcats,g4,l5,"Bad Cats (LG-4 German)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,tcm,l5,"Bad Cats (The Cat's Meow)", 2023, "idealjoker", s11_mS11BS,0) //The Cat's Meow -- a new home ROM for Bad Cats https://pinside.com/pinball/forum/topic/the-cat-s-meow-a-new-home-rom-for-bad-cats
 CORE_CLONEDEF(bcats,tcm12,l5,"Bad Cats (The Cat's Meow 1.2)", 2024, "idealjoker", s11_mS11BS,0)
 CORE_CLONEDEF(bcats,tcm13,l5,"Bad Cats (The Cat's Meow 1.3)", 2025, "idealjoker", s11_mS11BS,0)
