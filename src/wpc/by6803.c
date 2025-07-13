@@ -124,6 +124,8 @@ static struct {
 
   int old_lampadr;
   UINT8 last;
+  core_tWord lampDrivers[3]; // The lamp SCR drivers state
+  core_tWord lampConduct[3]; // The lamp SCR conducting state
 } locals;
 
 static NVRAM_HANDLER(by6803);
@@ -244,7 +246,7 @@ static void by6803_lampStrobe(void) {
   int lampadr = locals.lampadr;
   if (lampadr != locals.old_lampadr) {
     int i, lampdata = (locals.p0_a>>5)^0x07;
-    volatile UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*(locals.phase_a-1)];
+    volatile UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3) + 6 * (1 - locals.phase_a)];
     const int bit = 1<<(lampadr & 0x07);
 
     //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
@@ -256,6 +258,33 @@ static void by6803_lampStrobe(void) {
   locals.old_lampadr = lampadr;
 }
 
+static void update_lamps(void) {
+
+  // Lamps column is latched through PIA0:CB2 (15 outputs, 16th is unconnected, so used as all off)
+  // Lamps bank is directly enabled by PA5..7 (inverted)
+  // All of this is done in sync with zero cross to drive 2 lamps per output (handled in PWM integration, so we update both indifferently for PWM)
+  // The lamps are driven by SCR which turns off when AC goes through zero cross (like triacs but conducting only in one current diection)
+  UINT8 lampBank = (locals.p0_a >> 5) ^ 0x07; // Selected banks
+  int pos = CORE_MODOUT_LAMP0;
+  for (int i = 0; i < 3; i++)
+  {
+    core_tWord prev = locals.lampConduct[i];
+    locals.lampDrivers[i].w = (lampBank & (1 << i)) ? (1 << locals.lampadr) & 0x7FFF : 0;
+    locals.lampConduct[i].w |= locals.lampDrivers[i].w;
+    if (prev.w != locals.lampConduct[i].w)
+    {
+      //printf("%8.5f %04x  d=%8.5fms  l=%8.5fms  Phase: %d\n", timer_get_time(), locals.lampConduct[i].w, timer_get_time() - coreGlobals.lastACZeroCrossTimeStamp, 1.0/120.0 - (timer_get_time() - coreGlobals.lastACZeroCrossTimeStamp), locals.phase_a);
+      // Phase A lamps
+      core_write_pwm_output_8b(pos + 0, locals.lampConduct[i].b.lo);
+      core_write_pwm_output_8b(pos + 8, locals.lampConduct[i].b.hi);
+      // Phase B lamps
+      core_write_pwm_output_8b(pos + 48, locals.lampConduct[i].b.lo);
+      core_write_pwm_output_8b(pos + 56, locals.lampConduct[i].b.hi);
+    }
+    pos += 16;
+  }
+}
+
 /* PIA0:A-W  Control what is read from PIA0:B
 (out) PA0-3: Display Latch Strobe (Select 1 of 4 display modules)			(SAME AS BALLY MPU35 - Only 2 Strobes used instead of 4)
 (out) PA4-7: BCD Lamp Data													(SAME AS BALLY MPU35)
@@ -265,6 +294,9 @@ static WRITE_HANDLER(pia0a_w) {
   locals.DISPDATA(offset,data);
   locals.p0_a = data;
   if (locals.lampadr != 0x0f) by6803_lampStrobe();
+
+  //printf("%8.5f PIA0 PAx: %02x PC=%04x\n", timer_get_time(), data, activecpu_get_pc());
+  update_lamps();
 }
 
 /* PIA1:A-W  0,2-7 Display handling:
@@ -291,6 +323,9 @@ static WRITE_HANDLER(pia0cb2_w) {
   //DBGLOG(("PIA0:CB2=%d PC=%4x\n",data,cpu_get_pc()));
   if (locals.p0_cb2 & ~data) locals.lampadr = locals.p0_a & 0x0f;
   locals.p0_cb2 = data;
+
+  //printf("%8.5f PIA0 CB2: %02x PC=%04x\n", timer_get_time(), data, activecpu_get_pc());
+  update_lamps();
 }
 /* PIA1:CA2-W Diagnostic LED (earlier games) */
 #ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
@@ -316,6 +351,13 @@ static WRITE_HANDLER(pia1b_w) {
   data ^= 0xf0;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | ((data & 0xf0)<<12);
   locals.solenoids |= (data & 0xf0)<<12;
+  
+  core_tWord switchedSol;
+  switchedSol.w = locals.p1_cb2 ? 0 : ((1 << (data & 0x0f)) & 0x7fff);
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0, switchedSol.b.lo);
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, switchedSol.b.hi);
+  core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 16, (data & 0xf0) >> 4, 0x0f);
+
   //DBGLOG(("PIA1:bw=%d\n",data));
 }
 
@@ -448,11 +490,26 @@ static WRITE_HANDLER(by6803_soundCmd) {
 #endif
 
 
+// Zero cross
+// Phase A and B are derived from main AC voltage with a slight delay:
+// - Phase A is wired to M6803 and causes a timer capture interrupt
+// - Phase B is wired to PIA0/CB1 which causes an IRQ interrupt
+// In turn, these 2 interrupts allow to setup lamp SCR just after zero cross (and they will continue conducting until next zero cross)
 static void by6803_zeroCross(int data) {
-  /*- toggle zero/detection circuit-*/
-  locals.phase_a = (locals.phase_a + 1) & 3;
-  pia_set_input_cb1(BY6803_PIA0, !((locals.phase_a == 1) || (locals.phase_a == 2)));
-  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+  locals.phase_a = 1 - locals.phase_a;
+
+  // Phase A drives M6803 interrupt if enabled through inverted P21
+  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+
+  // Phase B drives PIA0:CB1 interrupt
+  pia_set_input_cb1(BY6803_PIA0, !locals.phase_a);
+
+  // Synchronize core PWM integration AC signal, reset SCR conducting state
+  core_zero_cross();
+  for (int i = 0; i < 3; i++)
+    locals.lampConduct[i].w = locals.lampDrivers[i].w;
+  update_lamps();
+
   //DBGLOG(("phase=%d\n",locals.phase_a));
 }
 
@@ -473,6 +530,21 @@ static MACHINE_INIT(by6803) {
     locals.SEGWRITE = by6803_segwrite1;
     locals.DISPDATA = by6803_dispdata1;
   }
+
+  // Initialize PWM outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, 48, CORE_MODOUT_BULB_44_20V_AC_POS_BY);
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 48, 48, CORE_MODOUT_BULB_44_20V_AC_NEG_BY);
+  if (coreGlobals.nLamps > 96) // Should always be 96 (3x15 x 2 phases), just put there for safety, but the lamps are wrong
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 96, coreGlobals.nLamps - 96, CORE_MODOUT_BULB_44_20V_DC_CC);
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  //coreGlobals.nAlphaSegs = xx * 16;
+  //core_set_pwm_output_type(CORE_MODOUT_SEG0, xx, CORE_MODOUT_VFD_STROBE_1_xx6MS); // 1ms strobing
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+     rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
 }
 static MACHINE_RESET(by6803) {
   pia_reset();
@@ -486,15 +558,23 @@ static MACHINE_STOP(by6803) {
 static READ_HANDLER(port1_r) { return 0; }
 
 //Read Phase A Status? (Not sure if this is used)
-//JW7 (PB3) should not be set, which breaks the gnd connection, so we set the line high.
-static READ_HANDLER(port2_r) { return (locals.phase_a && !locals.p21) | 0x18; }
+//JW7 (P23) should not be set, which breaks the gnd connection, so we set the line high.
+static READ_HANDLER(port2_r) {
+   UINT8 data = 0;
+   data |= (locals.phase_a && !locals.p21) ? 0x01 : 0; // P20 = Phase A if P21 is low
+   // data |= locals.p21 ? 0x02 : 0; // P21 = low to enable Phase A reading on P20
+   // data |= 0x04; // P22 ?
+   data |= 0x08; // P23 = 1 unless JW7 installed
+   data |= 0x10; // P24 = 1 is hold high unless we are in sound interrupt mode
+   return data;
+}
 
-//Diagnostic LED & Sound Interrupt
+//Diagnostic LED, Sound Interrupt and PhaseB interrupt control
 static WRITE_HANDLER(port2_w) {
   coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x02) | ((data>>2) & 0x01);
   sndbrd_0_ctrl_w(0, (data & 0x10) >> 4);
   locals.p21 = data & 0x02;
-  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static WRITE_HANDLER(by6803_soundLED) { coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x01) | (data << 1); }
@@ -514,8 +594,8 @@ Port 1:
 (out)P16 = J5-13 ->NA?
 (out)P17 = J5-14 ->NA?
 Port 2:
-(in) P20 = Measure Phase A (In conjunction w/P21 output?)
-(in) P21 = NA?
+(in) P20 = Measure Phase A when P21 is low
+(in) P21 = low to enable Phase A reading on P20
 (in) P22 = NA?
 (in) P23 = 1 Unless JW7 Installed?
 (out)P20 = NA?
@@ -563,7 +643,7 @@ static MACHINE_DRIVER_START(by6803)
   MDRV_NVRAM_HANDLER(by6803)
   MDRV_SWITCH_UPDATE(by6803)
   MDRV_DIAGNOSTIC_LEDH(2)
-  MDRV_TIMER_ADD(by6803_zeroCross,BY6803_ZCFREQ*2)
+  MDRV_TIMER_ADD(by6803_zeroCross, BY6803_ZCFREQ)
   MDRV_SOUND_CMD(by6803_soundCmd)
   MDRV_SOUND_CMDHEADING("by6803")
   MDRV_DIPS(1) // needed for extra core inport!

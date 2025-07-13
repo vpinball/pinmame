@@ -421,6 +421,8 @@ typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_SE    204 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_20V_DC_CC    205 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
+#define CORE_MODOUT_BULB_44_20V_AC_POS_BY 206 /* Incandescent #44/555 Bulb connected to AC 20V with a diode for positive half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_20V_AC_NEG_BY 207 /* Incandescent #44/555 Bulb connected to AC 20V with a diode for negative half (Bally 6803) */
 #define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89 Bulb connected to 32V, used for flashers on S11 with output strobing */
@@ -466,7 +468,7 @@ typedef struct {
       struct
       {
          int bulb;                        /* bulb model */
-         int isAC;                        /* AC or DC ? */ // bool
+         int isAC;                        /* DC=0, AC=1, AC positive=2, AC negative=3 */
          int isReversed;                  /* is input reversed ? */ // bool
          float U;                         /* voltage (Volts) */
          float serial_R;                  /* serial resistor (Ohms) */
