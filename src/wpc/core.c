@@ -104,8 +104,9 @@ void vp_setDIP(int bank, int value) { }
   extern tGTS3locals GTS3locals;
 #endif
 
-#ifndef MIN
- #define MIN(x,y) ((x)<(y)?(x):(y))
+#if (!defined _MSC_VER)
+#define min(x,y) ((x)<(y)?(x):(y))
+#define max(x,y) ((x)>(y)?(x):(y))
 #endif
 
 INLINE UINT8 saturatedByte(float v)
@@ -2039,7 +2040,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
           for (ll = 0; ll < s->cols; ll++, p >>= 2)
             if (p & 0x03) // segment set?
             {
-              const UINT8 tmp = MIN(255,256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range (as 0 is off state)
+              const UINT8 tmp = min(255,256 - dimming[sb - 1]); // 256 instead of 255 to exploit full range (as 0 is off state)
               if (tmp > dim[kk][ll]) // always take largest value, to make the crude anti-aliasing work at least somehow per segment
                 dim[kk][ll] = tmp;
             }
@@ -2523,7 +2524,15 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
     for(int i = 0; i < count; ++i) {
       // Keeps T within the range of the LUT (between room temperature and melt down point)
       output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
-      const float Ut = output->state.bulb.isAC ? (1.41421356f * sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp)) * output->state.bulb.prevIntegrationValue) : output->state.bulb.prevIntegrationValue;
+      float Ut;
+      switch (output->state.bulb.isAC)
+      {
+      case 0: Ut = output->state.bulb.prevIntegrationValue; break;
+      case 1: Ut =  1.41421356f *           sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))  * output->state.bulb.prevIntegrationValue; break;
+      case 2: Ut =  1.41421356f * max(0.f,  sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
+      case 3: Ut = -1.41421356f * max(0.f, -sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
+      default: assert(FALSE); Ut = 0.f; break;
+      }
       const float dT = dt * bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
       output->state.bulb.filament_temperature += dT < 1000.0f ? dT : 1000.0f; // Limit initial current surge (1ms is a bit long when emulating this part of the heating)
       core_eye_flicker_fusion(output, bulb_filament_temperature_to_emission(output->state.bulb.bulb, output->state.bulb.filament_temperature));
@@ -2622,7 +2631,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_5_7V_AC: // Sega/Stern Whitestar uses 5.7V AC wired to #44 bulbs for GI which leads to a (very slow) bulb equilibrium around 78% of the rated bulb brightness. Likely for less heat and longer bulb life ?
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 5.7f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 1;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2630,7 +2639,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_6_3V_AC: // AC bulb outputs used for GI strings. Voltage drop through WPC triacs are considered as neglectable.
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 1;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2638,7 +2647,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_6_3V_AC_REV: // Same but reversed through a relay (S11 hardware uses this for GI)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 1;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2647,7 +2656,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_47_6_3V_AC:
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_47;
       coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 1;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2655,7 +2664,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_86_6_3V_AC:
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_86;
       coreGlobals.physicOutputState[i].state.bulb.U = 6.3f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = TRUE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 1;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.0f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2663,7 +2672,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_18V_DC_WPC: // Strobed bulb, 18V switched through a TIP102 and a TIP107 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from schematics (TZ, TOTAN, CFTBL, WPC95 general)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 18.f - 0.7f - 0.7f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.22f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2671,7 +2680,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_20V_DC_GTS3: // Strobed bulb, Switched through MOSFETs (12P06 & 12N10L, no drop), serial 3,5 Ohms, then series with 1N4004 (0,7V drop) for bulbs / 120 Ohms with 1N4004 for LEDs, resistor from schematics (Cue Ball Wizard)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 3.5f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2679,7 +2688,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_18V_DC_S11: // Strobed bulb, 18V switched through ?, resistor from schematics (Guns'n Roses)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 18.f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 4.3f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2687,7 +2696,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_18V_DC_SE: // Strobed bulb, 18V switched through VN02N (Solid State Relay, 0.4 Ohms resistor), a 19N06L MOSFET transistor (no drop) and a diode (0.7V drop) from Sega/Stern Whitestar schematics
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 18.f - 0.7f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.4f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2695,15 +2704,31 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_44_20V_DC_CC: // Strobed bulb, 20V switched through VN02 (Solid State Relay, 0.4 Ohms resistor), a STP20N10L MOSFET transistor (no drop), a 0.02 Ohms resistor, and 2x 1N4004 diode (0.7V drop) from Capcom schematics
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.4f + 0.02f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_20V_AC_POS_BY: // Strobed bulb, 20V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 2;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_44_20V_AC_NEG_BY: // Strobed bulb, 20V AC switched through a SCR and a diode limiting to negative half of the AC sine (Bally 6803)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 3;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
     case CORE_MODOUT_BULB_89_20V_DC_WPC: // Flasher 20V DC switched through a TIP102 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from WPC schematics (TZ, TOTAN, CFTBL, WPC95 general)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.12f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2711,7 +2736,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_89_20V_DC_GTS3: // Flasher 20V DC switched through a 12N10L Mosfet (no voltage drop), resistor from schematics (Cue Ball Wizard)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.3f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2719,7 +2744,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_89_32V_DC_S11: // Flasher 32V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 3 Ohms serial resistor and a diode (1V voltage drop), resistor from board photos
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
       coreGlobals.physicOutputState[i].state.bulb.U = 32.f - 1.0f - 1.0f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 3.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2727,7 +2752,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_89_25V_DC_S11: // Flasher 25V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 1,5 Ohms serial resistor and a diode (1V voltage drop), from Police Force (and others) schematics
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
       coreGlobals.physicOutputState[i].state.bulb.U = 25.f - 1.0f - 1.0f;
-      coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 1.5f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2735,7 +2760,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_906_20V_DC_WPC: // Flasher 20V DC switched through a TIP102 (voltage drop supposed of 0.7V per semiconductor switch, datasheet states Vcesat=2V for I=3A), resistor from WPC schematics (TZ, TOTAN, CFTBL, WPC95 general)
        coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
        coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f;
-       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
        coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.12f;
        coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
        coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2743,7 +2768,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_906_20V_DC_GTS3: // Flasher 20V DC switched through a 12N10L Mosfet (no voltage drop), resistor from schematics (Cue Ball Wizard)
        coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
        coreGlobals.physicOutputState[i].state.bulb.U = 20.f;
-       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
        coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.3f;
        coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
        coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2751,7 +2776,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_906_32V_DC_S11: // Flasher 32V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 3 Ohms serial resistor and a diode (1V voltage drop), resistor from board photos
        coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
        coreGlobals.physicOutputState[i].state.bulb.U = 32.f - 1.0f - 1.0f;
-       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
        coreGlobals.physicOutputState[i].state.bulb.serial_R = 3.f;
        coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
        coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
@@ -2759,7 +2784,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
     case CORE_MODOUT_BULB_906_25V_DC_S11: // Flasher 25V DC switched through a TIP 122 (Vcesat max= 2 to 4V, 1V used here) with a 1,5 Ohms serial resistor and a diode (1V voltage drop), from Police Force (and others) schematics
        coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_906;
        coreGlobals.physicOutputState[i].state.bulb.U = 25.f - 1.0f - 1.0f;
-       coreGlobals.physicOutputState[i].state.bulb.isAC = FALSE;
+       coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
        coreGlobals.physicOutputState[i].state.bulb.serial_R = 1.5f;
        coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
        coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
