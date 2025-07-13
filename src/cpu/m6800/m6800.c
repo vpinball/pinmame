@@ -142,6 +142,9 @@ typedef struct
 	UINT8	port4_data;
 	UINT8	tcsr;			/* Timer Control and Status Register */
 	UINT8	pending_tcsr;	/* pending IRQ flag for clear IRQflag process */
+#ifdef PINMAME
+	UINT8	pending_tcsr2; /* pending IRQ flag clear, fixing original MAME behavior with following the sequence (from manual): read TCSR (latch for clear) then read MSB of ICR/TCR or write OCR (apply clear) */
+#endif
 	UINT8	irq2;			/* IRQ2 flags */
 	UINT8	ram_ctrl;
 	PAIR	counter;		/* free running counter */
@@ -2434,14 +2437,25 @@ READ_HANDLER( m6803_internal_registers_r )
 					| (m6800.port4_data & m6800.port4_ddr);
 		case 0x08:
 			m6800.pending_tcsr = 0;
+#ifdef PINMAME
+			m6800.pending_tcsr2 = m6800.tcsr;
+#endif
 			//LOG(("CPU #%d PC %04x: warning - read TCSR register\n",cpu_getactivecpu(),activecpu_get_pc()));
 			return m6800.tcsr;
 		case 0x09:
-			if(!(m6800.pending_tcsr&TCSR_TOF))
+#ifdef PINMAME
+			if (m6800.pending_tcsr2 & TCSR_TOF)
 			{
 				m6800.tcsr &= ~TCSR_TOF;
 				MODIFIED_tcsr;
 			}
+#else
+			if (!(m6800.pending_tcsr & TCSR_TOF))
+			{
+				m6800.tcsr &= ~TCSR_TOF;
+				MODIFIED_tcsr;
+			}
+#endif
 			return m6800.counter.b.h;
 		case 0x0a:
 			return m6800.counter.b.l;
@@ -2464,11 +2478,19 @@ READ_HANDLER( m6803_internal_registers_r )
 #endif /* PINMAME */
 			return m6800.output_compare.b.l;
 		case 0x0d:
+#ifdef PINMAME
+			if (m6800.pending_tcsr2 & TCSR_ICF)
+			{
+				m6800.tcsr &= ~TCSR_ICF;
+				MODIFIED_tcsr;
+			}
+#else
 			if(!(m6800.pending_tcsr&TCSR_ICF))
 			{
 				m6800.tcsr &= ~TCSR_ICF;
 				MODIFIED_tcsr;
 			}
+#endif /* PINMAME */
 			return (m6800.input_capture >> 0) & 0xff;
 		case 0x0e:
 			return (m6800.input_capture >> 8) & 0xff;
@@ -2601,7 +2623,7 @@ WRITE_HANDLER( m6803_internal_registers_w )
 #endif
 			break;
 		case 0x08:
-			m6800.tcsr = data;
+			m6800.tcsr = (m6800.tcsr & 0xe0) | (data & 0x1f); // Bit 5..7 are read only
 			m6800.pending_tcsr &= m6800.tcsr;
 			MODIFIED_tcsr;
 			if( !(CC & 0x10) )
@@ -2621,7 +2643,7 @@ WRITE_HANDLER( m6803_internal_registers_w )
 			break;
 		case 0x0b:
 #ifdef PINMAME
-			if(!(m6800.pending_tcsr&TCSR_OCF))
+			if (m6800.pending_tcsr2 & TCSR_OCF)
 			{
 				m6800.tcsr &= ~TCSR_OCF;
 				MODIFIED_tcsr;
