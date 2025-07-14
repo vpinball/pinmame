@@ -211,6 +211,11 @@ static MACHINE_INIT(ZAC1) {
     ram1[0xf7] = 0x05; ram1[0xf8] = 0x0a; // validate data
   }
 
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_6_3V_AC); // More precisely, the hardware uses a 6.5V AC source through a bridge rectifier
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+
   ZAC_soundInit();
 }
 
@@ -224,6 +229,12 @@ static MACHINE_INIT(ZAC2) {
   locals.read_bitno = 7;
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
+
+  // The hardware uses a 6.5V AC source through a bridge rectifier without any regulation (for the SCR drivers) but does not seem to be synchronized on zerocross
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_6_3V_AC);
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
 
   ZAC_soundInit();
 }
@@ -351,7 +362,8 @@ static READ_HANDLER(ram_r) {
 static WRITE_HANDLER(ram_w) {
 	ram[offset] = data;
 	if (offset > 0x43f && offset < 0x460) {
-		UINT32 sol = 1 << (offset - 0x440);
+		offset -= 0x440;
+		UINT32 sol = 1 << offset;
 		if (data)
 		{
 			locals.solenoids |= sol;
@@ -359,6 +371,7 @@ static WRITE_HANDLER(ram_w) {
 		}
 		else
 			coreGlobals.pulsedSolState &= ~sol;
+		core_write_pwm_output(CORE_MODOUT_SOL0 + offset, 1, data & 0x01);
 	} else if (offset > 0x45f && offset < 0x470) {
 		UINT16 sol2 = 1 << (offset - 0x460);
 		if (data)
@@ -371,6 +384,7 @@ static WRITE_HANDLER(ram_w) {
 			coreGlobals.tmpLampMatrix[offset/8] |= 1 << (offset%8);
 		else
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
+		core_write_pwm_output(CORE_MODOUT_LAMP0 + offset, 1, data & 0x01);
 	} else if (offset > 0x4bf && offset < 0x4e8) {
 		offset = 0x4e7 - offset;
 		locals.segments[offset].w = core_bcd2seg7a[data & 0x0f];
@@ -402,6 +416,7 @@ static WRITE_HANDLER(ram1_w) {
 		}
 		else
 			coreGlobals.pulsedSolState &= ~sol;
+		core_write_pwm_output(CORE_MODOUT_SOL0 + offset, 1, data & 0x01);
 		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24)
 			discrete_sound_w(1 << (offset-20), data);
 	} else if (offset > 0x7f && offset < 0xc0) {
@@ -410,6 +425,7 @@ static WRITE_HANDLER(ram1_w) {
 			coreGlobals.tmpLampMatrix[offset/8] |= (1 << (offset%8));
 		else
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
+		core_write_pwm_output(CORE_MODOUT_LAMP0 + offset, 1, data & 0x01);
 	}
 }
 
