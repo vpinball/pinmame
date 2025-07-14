@@ -166,6 +166,7 @@ static WRITE_HANDLER(solenoid_w)
 			LOG(("Solenoid_W Logic Error\n"));
 	}
 	alvglocals.solenoids |= coreGlobals.pulsedSolState;
+	core_write_pwm_output_8b(CORE_MODOUT_SOL0 + offset * 8, data);
 }
 
 //See U7-PB Read for more info
@@ -387,6 +388,11 @@ void UpdateLampCol(void) {
 	//printf("LampColumn = %d\n",data);
 }
 
+void UpdatePWMLamp(void) {
+	for (int lampStrobe = 0, pos = CORE_MODOUT_LAMP0, col = 1; lampStrobe < 12; lampStrobe++, pos += 8, col <<= 1)
+		core_write_pwm_output_8b(pos, (alvglocals.lampColumn & col) ? alvglocals.lampRow : 0);
+}
+
 /* - Lamp Handling -
    -----------------
    It seems Pistol Poker handles lamps differently from the other games.
@@ -401,6 +407,7 @@ WRITE_HANDLER(u14_porta_w) {
 		UpdateLampCol();
 	}
 	//printf("LAMP STROBE(1-7):  data = %x\n",data&0x7f);
+	UpdatePWMLamp();
 }
 WRITE_HANDLER(u14_portb_w) {
 	if (core_gameData->hw.gameSpecific1 == 1)
@@ -410,12 +417,14 @@ WRITE_HANDLER(u14_portb_w) {
 		UpdateLampCol();
 	}
 	//printf("LAMP STROBE(8-12): data = %x\n",data);
+	UpdatePWMLamp();
 }
 WRITE_HANDLER(u14_portc_w) {
 	alvglocals.lampRow = data;
 	if (core_gameData->hw.gameSpecific1 == 1)
 		UpdateLampCol();
 	//printf("LAMP RETURN: data = %x\n",data);
+	UpdatePWMLamp();
 }
 
 /*
@@ -606,6 +615,15 @@ static void init_common(void) {
 
   /*watchdog*/
   //watchdog_reset_w(0,0);
+
+  // Initialize PWM outputs
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, 96, CORE_MODOUT_BULB_44_20V_DC_GTS3); // Actually #555 with a 3 Ohms resistor switched by 2 IRF530 but close enough
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  // Flashers are switched without resistor, by an IRF530 but close enough to GTS3 wiring
+  // All tables have the same wiring with 8 flashers on solenoid outputs 17..24
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_906_20V_DC_GTS3);
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, ALVGS_CPUNO,   memory_region(ALVGS_ROMREGION)  ,NULL,NULL);
