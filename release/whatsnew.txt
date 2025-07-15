@@ -15,6 +15,9 @@ Workaround a crash / race-condition when reading PinMAME state, e.g. when exitin
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added PWM segment support to System 11 games
 Added PWM support to CFTBL backglass flashers
+Added PWM lamps & solenoids support to Bally 6803 games
+Added PWM lamps & solenoids support to Zaccaria games
+Added PWM support to Alvin G. games
 
 *** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org
 Correct Dumps:
