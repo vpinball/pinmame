@@ -43,7 +43,7 @@ jobs:
 
   build:
     name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
-    runs-on: windows-2019
+    runs-on: windows-2022
     needs: [ version ]
     strategy:
       fail-fast: false
@@ -95,11 +95,11 @@ jobs:
       - name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
         run: |
           cp cmake/vpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
-          cmake ${{ matrix.extra-flags }} -T v141_xp -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/vpinmame
+          cmake ${{ matrix.extra-flags }} -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -B build/vpinmame
           cmake --build build/vpinmame --config Release
           # ./upx/upx.exe --best --lzma build/vpinmame/Release/${{ matrix.vpinmame }}
           cp cmake/instvpm/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
-          cmake -T v141_xp -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build/instvpm
+          cmake -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -B build/instvpm
           cmake --build build/instvpm --config Release
       - run: |
           mkdir tmp
