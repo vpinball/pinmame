@@ -685,7 +685,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(spaceinb,spaceinv,"Space Invaders (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
-/ Nitro Groundshaker
+/ Nitro Ground Shaker
 /-------------------------------*/
 // tournament/multiball MOD exists (allentownpinball)
 INITGAME(ngndshkr,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
@@ -695,7 +695,7 @@ BY35_ROMSTART888(ngndshkr,"776-17_1.716",CRC(f2d44235) SHA1(282106767b5ec5180fa8
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkr input_ports_by35
-CORE_GAMEDEFNV(ngndshkr,"Nitro Groundshaker",1980,"Bally",by35_mBY35_51S,0)
+CORE_GAMEDEFNV(ngndshkr,"Nitro Ground Shaker",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(ngndshkb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(ngndshkb,"nitr2732.u2", CRC(3b8d62ef) SHA1(da9652de8930bdd092928775a886252798ce6bf8),
@@ -703,7 +703,7 @@ BY35_ROMSTARTx00(ngndshkb,"nitr2732.u2", CRC(3b8d62ef) SHA1(da9652de8930bdd09292
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkb input_ports_ngndshkr
-CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Groundshaker (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Ground Shaker (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 INITGAME(ngndshkm,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(ngndshkm,"nitr2732s.u2",CRC(e034598c) SHA1(27e2f7db52e4d90028a83da75e51afef82eb8292),
@@ -711,7 +711,7 @@ BY35_ROMSTARTx00(ngndshkm,"nitr2732s.u2",CRC(e034598c) SHA1(27e2f7db52e4d90028a8
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkm input_ports_ngndshkr
-CORE_CLONEDEFNV(ngndshkm,ngndshkr,"Nitro Groundshaker (7-digit conversion with siren patch)",2019,"Bally / Oliver / Martin",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(ngndshkm,ngndshkr,"Nitro Ground Shaker (7-digit conversion with siren patch)",2019,"Bally / Oliver / Martin",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
 / Silverball Mania
