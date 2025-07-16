@@ -793,7 +793,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(mysticb,mystic,"Mystic (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
-/ Hot Doggin
+/ Hotdoggin'
 /-------------------------------*/
 INITGAME(hotdoggn,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTART888(hotdoggn,"809-05_1.716",CRC(2744abcb) SHA1(b45bd58c365785d12f9bec381574058e29f33fd2),
@@ -802,7 +802,7 @@ BY35_ROMSTART888(hotdoggn,"809-05_1.716",CRC(2744abcb) SHA1(b45bd58c365785d12f9b
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdoggn input_ports_by35
-CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,0)
+CORE_GAMEDEFNV(hotdoggn,"Hotdoggin'",1980,"Bally",by35_mBY35_51S,0)
 
 // credit display is always on
 // dip switch 25 = on and dip switch 26 = on enables freegame
@@ -814,7 +814,7 @@ BY35_ROMSTARTx00(hotdogga,"hot2un.u2",   CRC(65699a74) SHA1(b9894d3ed1f78228139c
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdogga input_ports_hotdoggn
-CORE_CLONEDEFNV(hotdogga,hotdoggn,"Hot Doggin (modified rules rev. 2 Free Play)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(hotdogga,hotdoggn,"Hotdoggin' (modified rules rev. 2 Free Play)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 
 INITGAME(hotdoggb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782dae3007db3e5036003e00),
@@ -822,7 +822,7 @@ BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782d
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdoggb input_ports_hotdoggn
-CORE_CLONEDEFNV(hotdoggb,hotdoggn,"Hot Doggin (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(hotdoggb,hotdoggn,"Hotdoggin' (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
 / Viking
