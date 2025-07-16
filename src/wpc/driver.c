@@ -1446,9 +1446,9 @@ DRIVERNV(memlanfp)      //         06/78 Memory Lane (Free Play)
 // MPU-100 - Sound Board: SB-100
 DRIVERNV(lectrono)      //MPU-100: 08/78 Lectronamo
 DRIVERNV(lectrofp)      //         08/78 Lectronamo (Free Play)
-DRIVERNV(wildfyre)      //MPU-100: 10/78 Wildfyre
-DRIVERNV(wildfyfp)      //         10/78 Wildfyre (Free Play)
-DRIVERNV(wildfyrc)      //         10/22 Wildfyre (One Ball MOD)
+DRIVERNV(wildfyre)      //MPU-100: 10/78 Wild Fyre
+DRIVERNV(wildfyfp)      //         10/78 Wild Fyre (Free Play)
+DRIVERNV(wildfyrc)      //         10/22 Wild Fyre (One Ball MOD)
 DRIVERNV(nugent)        //MPU-100: 11/78 Nugent
 DRIVERNV(nugentfp)      //         11/78 Nugent (Free Play)
 DRIVERNV(dracula)       //MPU-100: 01/79 Dracula

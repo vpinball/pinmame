@@ -159,28 +159,28 @@ BY35_ROMEND
 CORE_CLONEDEFNV(lectrofp,lectrono,"Lectronamo (Free Play)",1978,"Stern",by35_mST100s,0)
 
 /*--------------------------------
-/ Wildfyre
+/ Wild Fyre
 /-------------------------------*/
 INITGAME(wildfyre,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
 BY17_ROMSTARTx88(wildfyre,"cpu_u2.716",CRC(063f8b5e) SHA1(80434de549102bff829b474603d6736b839b8999),
                           "cpu_u6.716",CRC(00336fbc) SHA1(d2c360b8a80b209ecf4ec02ee19a5234c0364504))
 BY35_ROMEND
 #define input_ports_wildfyre input_ports_st
-CORE_GAMEDEFNV(wildfyre,"Wildfyre",1978,"Stern",by35_mST100s,0)
+CORE_GAMEDEFNV(wildfyre,"Wild Fyre",1978,"Stern",by35_mST100s,0)
 
 INITGAME(wildfyfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
 BY17_ROMSTARTx88(wildfyfp,"fpwldf_2.716",CRC(c53b2f2b) SHA1(e722239167abf160ff1b3dcdd5971ae51d5d5d21),
                           "fpwldf_6.716",CRC(fa3c8b9a) SHA1(627f569495c86885a2c45c2f8c65bf8c433bab61))
 BY35_ROMEND
 #define input_ports_wildfyfp input_ports_st
-CORE_CLONEDEFNV(wildfyfp,wildfyre,"Wildfyre (Free Play)",1978,"Stern",by35_mST100s,0)
+CORE_CLONEDEFNV(wildfyfp,wildfyre,"Wild Fyre (Free Play)",1978,"Stern",by35_mST100s,0)
 
 INITGAME(wildfyrc,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
 BY17_ROMSTARTx88(wildfyrc,"DRAC_ONE_BALL_CPU_U2.716",CRC(4f760e53) SHA1(42c87e8f41b78f81f025fcb00f7ff8b9098726f6),
                           "DRAC_ONE_BALL_CPU_U6.716",CRC(bf92e905) SHA1(5f82e30d8d43d307cb10ed0b708acd5f065b4d74))
 BY35_ROMEND
 #define input_ports_wildfyrc input_ports_st
-CORE_CLONEDEFNV(wildfyrc,wildfyre,"Wildfyre (One Ball MOD)",2022,"Stern / Idleman",by35_mST100s,0)
+CORE_CLONEDEFNV(wildfyrc,wildfyre,"Wild Fyre (One Ball MOD)",2022,"Stern / Idleman",by35_mST100s,0)
 
 /*--------------------------------
 / Nugent (uses same ROMs as Lectronamo)
@@ -200,7 +200,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(nugentfp,nugent,"Nugent (Free Play)",1978,"Stern",by35_mST100s,0)
 
 /*--------------------------------
-/ Dracula (uses same ROMs as Wildfyre)
+/ Dracula (uses same ROMs as Wild Fyre)
 /-------------------------------*/
 // tournament MOD exists "Stern Dracula Tournament Rom V4" https://zacaj.com/p.php?id=19&title=Stern+Dracula+Tournament+Rom+V4
 INITGAME(dracula,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
