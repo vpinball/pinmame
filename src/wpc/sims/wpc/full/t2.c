@@ -1,7 +1,7 @@
 // license:BSD-3-Clause
 
 /********************************************************************************************
- Williams Terminator 2: Judgement Day (1991) Pinball Simulator
+ Williams Terminator 2: Judgment Day (1991) Pinball Simulator
 
  by Steve Ellenoff (sellenoff@hotmail.com)
  Nov.2, 2000
@@ -636,25 +636,25 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(t2,l8,"Terminator 2: Judgement Day (L-8)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,d8,l8,"Terminator 2: Judgement Day (D-8 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l81,l8,"Terminator 2: Judgement Day (L-81 Attract Sound patch)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l82,l8,"Terminator 2: Judgement Day (L-82 Attract Score patch)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l83,l8,"Terminator 2: Judgement Day (L-83 Profanity, bugfix/MOD, LED Ghost Fix)",2022,"Williams/MOD",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l84,l8,"Terminator 2: Judgement Day (L-84 Profanity, bugfix/MOD, LED Ghost Fix)",2023,"Williams/MOD",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgement Day (L-6)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgement Day (D-6 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ??
-CORE_CLONEDEF(t2,p2g,l8,"Terminator 2: Judgement Day (P-2G Profanity, LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgement Day (L-4)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,d4,l8,"Terminator 2: Judgement Day (D-4 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgement Day (L-3)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,d3,l8,"Terminator 2: Judgement Day (D-3 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,l2,l8,"Terminator 2: Judgement Day (L-2)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,d2,l8,"Terminator 2: Judgement Day (D-2 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,f19,l8,"Terminator 2: Judgement Day (FreeWPC 0.19)",1991,"FreeWPC",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,f20,l8,"Terminator 2: Judgement Day (FreeWPC 0.20)",1991,"FreeWPC",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,f32,l8,"Terminator 2: Judgement Day (FreeWPC 0.32)",1991,"FreeWPC",wpc_mDMDS,0)
+CORE_GAMEDEF(t2,l8,"Terminator 2: Judgment Day (L-8)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d8,l8,"Terminator 2: Judgment Day (D-8 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l81,l8,"Terminator 2: Judgment Day (L-81 Attract Sound patch)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l82,l8,"Terminator 2: Judgment Day (L-82 Attract Score patch)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l83,l8,"Terminator 2: Judgment Day (L-83 Profanity, bugfix/MOD, LED Ghost Fix)",2022,"Williams/MOD",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l84,l8,"Terminator 2: Judgment Day (L-84 Profanity, bugfix/MOD, LED Ghost Fix)",2023,"Williams/MOD",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgment Day (L-6)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgment Day (D-6 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgment Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ??
+CORE_CLONEDEF(t2,p2g,l8,"Terminator 2: Judgment Day (P-2G Profanity, LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgment Day (L-4)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d4,l8,"Terminator 2: Judgment Day (D-4 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgment Day (L-3)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d3,l8,"Terminator 2: Judgment Day (D-3 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l2,l8,"Terminator 2: Judgment Day (L-2)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d2,l8,"Terminator 2: Judgment Day (D-2 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,f19,l8,"Terminator 2: Judgment Day (FreeWPC 0.19)",1991,"FreeWPC",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,f20,l8,"Terminator 2: Judgment Day (FreeWPC 0.20)",1991,"FreeWPC",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,f32,l8,"Terminator 2: Judgment Day (FreeWPC 0.32)",1991,"FreeWPC",wpc_mDMDS,0)
 
 /*-----------------------
 / Simulation Definitions

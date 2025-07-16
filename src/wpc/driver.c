@@ -2831,25 +2831,25 @@ DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
 DRIVER(sf,d1)           //                  SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)
 DRIVER(hurr,d2)         //                  Hurricane (D-2) LED Ghost Fix
-DRIVER(t2,l2)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-2)
-DRIVER(t2,d2)           //                  Terminator 2: Judgement Day (D-2) LED Ghost Fix
-DRIVER(t2,l3)           //          10/91 W Terminator 2: Judgement Day (L-3)
-DRIVER(t2,d3)           //                  Terminator 2: Judgement Day (D-3) LED Ghost Fix
-DRIVER(t2,l4)           //          10/91 W Terminator 2: Judgement Day (L-4)
-DRIVER(t2,d4)           //                  Terminator 2: Judgement Day (D-4) LED Ghost Fix
-DRIVER(t2,l6)           //          10/91 W Terminator 2: Judgement Day (L-6)
-DRIVER(t2,d6)           //                  Terminator 2: Judgement Day (D-6) LED Ghost Fix
-DRIVER(t2,l8)           //          12/91 W Terminator 2: Judgement Day (L-8)
-DRIVER(t2,d8)           //                  Terminator 2: Judgement Day (D-8) LED Ghost Fix
-DRIVER(t2,l81)          //                  Terminator 2: Judgement Day (L-81) Attract Sound Fix
-DRIVER(t2,l82)          //                  Terminator 2: Judgement Day (L-82) Hacked attract routines
-DRIVER(t2,l83)          //          06/22   Terminator 2: Judgement Day (L-83) Profanity and bugfixes/MOD and LED Ghost Fix
-DRIVER(t2,l84)          //          05/23   Terminator 2: Judgement Day (L-84) Profanity and bugfixes/MOD and LED Ghost Fix
-DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
-DRIVER(t2,p2g)          //                  Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
-DRIVER(t2,f19)          //          ??/??   Terminator 2: Judgement Day (FreeWPC 0.19)
-DRIVER(t2,f20)          //          ??/??   Terminator 2: Judgement Day (FreeWPC 0.20)
-DRIVER(t2,f32)          //          ??/??   Terminator 2: Judgement Day (FreeWPC 0.32)
+DRIVER(t2,l2)           //WPC-513:  10/91 W Terminator 2: Judgment Day (L-2)
+DRIVER(t2,d2)           //                  Terminator 2: Judgment Day (D-2) LED Ghost Fix
+DRIVER(t2,l3)           //          10/91 W Terminator 2: Judgment Day (L-3)
+DRIVER(t2,d3)           //                  Terminator 2: Judgment Day (D-3) LED Ghost Fix
+DRIVER(t2,l4)           //          10/91 W Terminator 2: Judgment Day (L-4)
+DRIVER(t2,d4)           //                  Terminator 2: Judgment Day (D-4) LED Ghost Fix
+DRIVER(t2,l6)           //          10/91 W Terminator 2: Judgment Day (L-6)
+DRIVER(t2,d6)           //                  Terminator 2: Judgment Day (D-6) LED Ghost Fix
+DRIVER(t2,l8)           //          12/91 W Terminator 2: Judgment Day (L-8)
+DRIVER(t2,d8)           //                  Terminator 2: Judgment Day (D-8) LED Ghost Fix
+DRIVER(t2,l81)          //                  Terminator 2: Judgment Day (L-81) Attract Sound Fix
+DRIVER(t2,l82)          //                  Terminator 2: Judgment Day (L-82) Hacked attract routines
+DRIVER(t2,l83)          //          06/22   Terminator 2: Judgment Day (L-83) Profanity and bugfixes/MOD and LED Ghost Fix
+DRIVER(t2,l84)          //          05/23   Terminator 2: Judgment Day (L-84) Profanity and bugfixes/MOD and LED Ghost Fix
+DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgment Day (Profanity Speech version)
+DRIVER(t2,p2g)          //                  Terminator 2: Judgment Day (Profanity Speech version) LED Ghost Fix
+DRIVER(t2,f19)          //          ??/??   Terminator 2: Judgment Day (FreeWPC 0.19)
+DRIVER(t2,f20)          //          ??/??   Terminator 2: Judgment Day (FreeWPC 0.20)
+DRIVER(t2,f32)          //          ??/??   Terminator 2: Judgment Day (FreeWPC 0.32)
 DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
 DRIVER(gi,d3)           //                  Gilligan's Island (D-3) LED Ghost Fix
 DRIVER(gi,l4)           //          07/91 B Gilligan's Island (L-4)
