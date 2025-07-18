@@ -41,7 +41,7 @@ ASDFGH  Reflex Targets
 #include "core.h"
 #include "s11.h"
 #include "sim.h"
-#include "wmssnd.h"
+#include "sndbrd.h"
 
 /*------------------
 /  Local functions
@@ -323,24 +323,15 @@ static sim_tSimData tmSimData = {
 /*----------------------
 / Game Data Information
 /----------------------*/
-static core_tLCDLayout disp16oneline[] = { \
-  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+#define FLIP1516 FLIP_SWNO(15, 16)
+
+static struct core_dispLayout de_dispAlpha2[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
+  DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
+  DISP_SEG_7(1,0, CORE_SEG8),  DISP_SEG_7(1,1, CORE_SEG8), {0}
 };
+
 static core_tGameData tmacGameData = {
-  GEN_S11C, disp16oneline,
-  {
-    FLIP_SWNO(swLTEOS,swRTEOS),
-    0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2,0,
-    NULL, tm_handleMech, NULL, NULL,
-    &tm_lampPos
-#ifdef ENABLE_MECHANICAL_SAMPLES
-    , tm_samsolmap
-#endif
-  },
-  &tmSimData,
-  {{ 0 }},
-  {12}
-};
+    GEN_DE, de_dispAlpha2, {FLIP1516, 0, 0, 0, SNDBRD_DE1S, 0, 0}, &tmSimData, {{0}}, {10}};
 
 /*---------------
 /  Game handling
