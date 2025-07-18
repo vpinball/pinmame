@@ -181,7 +181,7 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
 
       /*Line 2*/
       {"Shooter", 1, swShooterLane, sShooterRel, stBallLane, 0, 0, 0, SIM_STNOTEXCL | SIM_STSHOOT},
-      {"Ball Lane", 1, 0, 0, 0, 2, 0, 0, SIM_STNOTEXCL},
+      {"Ball Lane", 1, swRTRollover, 0, stFree, 2, 0, 0, SIM_STNOTEXCL},
       {"No Strength", 1, 0, 0, stShooter, 3},
       {"Right Outlane", 1, swRTOutlane, 0, stDrain, 15},
       {"Left Outlane", 1, swLTOutlane, 0, stDrain, 15},
@@ -227,7 +227,7 @@ static sim_tInportData tm_inportData[] = {
   {0, 0x0040, stLeftJet},
   {0, 0x0100, stBottomJet},
   {0, 0x0200, stRightJet},
-  {0, 0x8000, stDrain},
+  {0, 0x8000, stOutHole},
 
   {0}
 };
@@ -312,7 +312,7 @@ static MACHINE_DRIVER_START(s11c_one)
         2,                                         /* 2 game specific input ports */
         tm_stateDef,                               /* Definition of all states */
         tm_inportData,                             /* Keyboard Entries */
-        {stDrain, stDrain, stDrain, 0, 0, 0, 0}, /*Position where balls start.. Max 7 Balls Allowed*/
+        {stRTrough, stCTrough, stLTrough, 0, 0, 0, 0}, /*Position where balls start.. Max 7 Balls Allowed*/
         NULL,                                      /* no init */
         tm_handleBallState,                        /*Function to handle ball state changes*/
         tm_drawStatic,                             /*Function to handle mechanical state changes*/
