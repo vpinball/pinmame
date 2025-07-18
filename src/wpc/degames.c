@@ -203,7 +203,8 @@ CORE_CLONEDEF(torp,a16,e21,"Torpedo Alley (1.6)",1988,"Data East",de_mDEAS1, 0)
 /*--------------------------------------------------------------------------
 / Time Machine - CPU Rev 2 /Alpha Type 2 16/32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------*/
-INITGAMES11(tmac, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
+// INITGAMES11(tmac, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
+void init_tmac(void);
 DE_ROMSTART48(tmac_a24,"tmach2-4.b5",CRC(6ef3cf07) SHA1(3fabfbb2166273bf5bfab06d92fff094d3331d1a),
                     "tmach2-4.c5",CRC(b61035f5) SHA1(08436b68f37323f50c1fec86aba303a1690af653))
 DE1S_SOUNDROM244(   "tmachf7.rom",CRC(0f518bd4) SHA1(05e24ca0e76d576c65d9d2a01417f1ad2aa984bb),      //F7 on schem (sound)

@@ -99,7 +99,7 @@ TARGET = pinmame
 
 #CC	= /usr/i686-pc-linux-gnu/gcc-bin/3.4.6/gcc
 #CC	= gcc-3.4.6
-CC    = cc
+CC    = gcc
 # CC	= icc
 # CC	= c89
 
@@ -132,6 +132,7 @@ CPPFLAGS += -std=gnu++11
 ###########################################################################
 
 CFLAGS = -fomit-frame-pointer -Wall -Wno-unused
+CFLAGS += -g3
 
 # gcc on x86 with some optimizations
 # CFLAGS = -O2 -Wall -Wno-unused -mcpu=i686 -fomit-frame-pointer \
@@ -210,7 +211,7 @@ ifneq (,$(findstring gcc,$(CC)))
   # Optimization level -- choose one of these.
   # Use -O1 if you suspect that -O2 is producing bad code; use -O3 for a 
   # possible speedup; use -Os for a smaller executable.
-CFLAGS += -O2
+# CFLAGS += -O2
   # CFLAGS += -O1
   # CFLAGS += -O3
   # CFLAGS += -Os
@@ -372,7 +373,7 @@ IL	= '-DINLINE=static __inline__'
 
 # Normal linking.
 #LD	= $(CC) -Wl,-s
-LD	= g++ -Wl,-s
+LD	= g++
 
 # For the Intel C++ Compiler -- expect large link time due to -ipo 
 # optimization.

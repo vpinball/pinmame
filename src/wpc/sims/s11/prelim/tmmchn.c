@@ -49,7 +49,7 @@ ASDFGH  Reflex Targets
 static int  tm_handleBallState(sim_tBallStatus *ball, int *inports);
 static void tm_handleMech(int mech);
 static void tm_drawStatic(BMTYPE **line);
-static void init_tmac(void);
+void init_tmac(void);
 
 /*--------------------------
 / Game specific input ports
@@ -262,7 +262,7 @@ static core_tLampDisplay tm_lampPos = {
 /* Help */
 
 static void tm_drawStatic(BMTYPE **line) {
-  core_textOutf(30, 50,BLACK,"Help on this Simulator:");
+  core_textOutf(30, 50,BLACK,"Help on this bingus bongus:");
   core_textOutf(30, 60,BLACK,"L/R Ctrl+R = MixMaster Ramp");
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
@@ -345,9 +345,9 @@ static core_tGameData tmacGameData = {
 /*---------------
 /  Game handling
 /----------------*/
-static void init_tmac(void) {
+void init_tmac(void) {
   printf("initializing Time Machine");
-  core_gameData = &tmGameData;
+  core_gameData = &tmacGameData;
 }
 
 static void tm_handleMech(int mech) {
