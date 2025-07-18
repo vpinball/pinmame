@@ -77,7 +77,7 @@ static core_tGameData name##GameData = { \
   gen, disptype, {flippers,0,0,0,sb,db,gs1}, NULL, {{0}},{10}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-DE_INPUT_PORTS_START(des11, 1) DE_INPUT_PORTS_END
+DE_INPUT_PORTS_START(des11, 3) DE_INPUT_PORTS_END
 DE_INPUT_PORTS_START2(des112, 1) DE_INPUT_PORTS_END
 
 /*Common Flipper Switch Settings*/

@@ -298,26 +298,26 @@ static wpc_tSamSolMap tm_samsolmap[] = {
 /  Game drivers
 /---------------*/
 static MACHINE_DRIVER_START(s11c_one)
-  MDRV_IMPORT_FROM(s11_s11cS)
-  MDRV_SCREEN_SIZE(640, 400)
-  MDRV_VISIBLE_AREA(0, 639, 0, 399)
-MACHINE_DRIVER_END
+    MDRV_IMPORT_FROM(s11_s11cS)
+        MDRV_SCREEN_SIZE(640, 400)
+            MDRV_VISIBLE_AREA(0, 639, 0, 399)
+                MACHINE_DRIVER_END
 
-// CORE_GAMEDEF (tmac,    a24, "Time Machine (R02-4)", 1988, "Data East", s11c_one,0)
+    // CORE_GAMEDEF (tmac,    a24, "Time Machine (R02-4)", 1988, "Data East", s11c_one,0)
 
-/*-----------------------
-/ Simulation Definitions
-/-----------------------*/
-static sim_tSimData tmSimData = {
-  2,					/* 2 game specific input ports */
-  tm_stateDef,			/* Definition of all states */
-  tm_inportData,		/* Keyboard Entries */
-  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain }, /*Position where balls start.. Max 7 Balls Allowed*/
-  NULL, 				/* no init */
-  tm_handleBallState,	/*Function to handle ball state changes*/
-  tm_drawStatic,		/*Function to handle mechanical state changes*/
-  TRUE, 				/* Simulate manual shooter? */
-  NULL  				/* Custom key conditions? */
+    /*-----------------------
+    / Simulation Definitions
+    /-----------------------*/
+    static sim_tSimData tmSimData = {
+        2,                                         /* 2 game specific input ports */
+        tm_stateDef,                               /* Definition of all states */
+        tm_inportData,                             /* Keyboard Entries */
+        {stDrain, stDrain, stDrain, 0, 0, 0, 0}, /*Position where balls start.. Max 7 Balls Allowed*/
+        NULL,                                      /* no init */
+        tm_handleBallState,                        /*Function to handle ball state changes*/
+        tm_drawStatic,                             /*Function to handle mechanical state changes*/
+        TRUE,                                      /* Simulate manual shooter? */
+        NULL                                       /* Custom key conditions? */
 };
 
 /*----------------------
