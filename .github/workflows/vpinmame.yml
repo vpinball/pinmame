@@ -43,7 +43,7 @@ jobs:
 
   build:
     name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
-    runs-on: windows-2022
+    runs-on: windows-latest
     needs: [ version ]
     strategy:
       fail-fast: false
