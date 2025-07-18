@@ -326,7 +326,7 @@ static sim_tSimData tmSimData = {
 static core_tLCDLayout disp16oneline[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-static core_tGameData tmGameData = {
+static core_tGameData tmacGameData = {
   GEN_S11C, disp16oneline,
   {
     FLIP_SWNO(swLTEOS,swRTEOS),
