@@ -685,7 +685,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(spaceinb,spaceinv,"Space Invaders (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
-/ Nitro Groundshaker
+/ Nitro Ground Shaker
 /-------------------------------*/
 // tournament/multiball MOD exists (allentownpinball)
 INITGAME(ngndshkr,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
@@ -695,7 +695,7 @@ BY35_ROMSTART888(ngndshkr,"776-17_1.716",CRC(f2d44235) SHA1(282106767b5ec5180fa8
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkr input_ports_by35
-CORE_GAMEDEFNV(ngndshkr,"Nitro Groundshaker",1980,"Bally",by35_mBY35_51S,0)
+CORE_GAMEDEFNV(ngndshkr,"Nitro Ground Shaker",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(ngndshkb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(ngndshkb,"nitr2732.u2", CRC(3b8d62ef) SHA1(da9652de8930bdd092928775a886252798ce6bf8),
@@ -703,7 +703,7 @@ BY35_ROMSTARTx00(ngndshkb,"nitr2732.u2", CRC(3b8d62ef) SHA1(da9652de8930bdd09292
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkb input_ports_ngndshkr
-CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Groundshaker (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Ground Shaker (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 INITGAME(ngndshkm,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(ngndshkm,"nitr2732s.u2",CRC(e034598c) SHA1(27e2f7db52e4d90028a83da75e51afef82eb8292),
@@ -711,7 +711,7 @@ BY35_ROMSTARTx00(ngndshkm,"nitr2732s.u2",CRC(e034598c) SHA1(27e2f7db52e4d90028a8
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkm input_ports_ngndshkr
-CORE_CLONEDEFNV(ngndshkm,ngndshkr,"Nitro Groundshaker (7-digit conversion with siren patch)",2019,"Bally / Oliver / Martin",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(ngndshkm,ngndshkr,"Nitro Ground Shaker (7-digit conversion with siren patch)",2019,"Bally / Oliver / Martin",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
 / Silverball Mania
@@ -793,7 +793,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(mysticb,mystic,"Mystic (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
-/ Hot Doggin
+/ Hotdoggin'
 /-------------------------------*/
 INITGAME(hotdoggn,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTART888(hotdoggn,"809-05_1.716",CRC(2744abcb) SHA1(b45bd58c365785d12f9bec381574058e29f33fd2),
@@ -802,7 +802,7 @@ BY35_ROMSTART888(hotdoggn,"809-05_1.716",CRC(2744abcb) SHA1(b45bd58c365785d12f9b
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdoggn input_ports_by35
-CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,0)
+CORE_GAMEDEFNV(hotdoggn,"Hotdoggin'",1980,"Bally",by35_mBY35_51S,0)
 
 // credit display is always on
 // dip switch 25 = on and dip switch 26 = on enables freegame
@@ -814,7 +814,7 @@ BY35_ROMSTARTx00(hotdogga,"hot2un.u2",   CRC(65699a74) SHA1(b9894d3ed1f78228139c
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdogga input_ports_hotdoggn
-CORE_CLONEDEFNV(hotdogga,hotdoggn,"Hot Doggin (modified rules rev. 2 Free Play)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(hotdogga,hotdoggn,"Hotdoggin' (modified rules rev. 2 Free Play)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 
 INITGAME(hotdoggb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782dae3007db3e5036003e00),
@@ -822,7 +822,7 @@ BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782d
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdoggb input_ports_hotdoggn
-CORE_CLONEDEFNV(hotdoggb,hotdoggn,"Hot Doggin (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(hotdoggb,hotdoggn,"Hotdoggin' (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
 /*--------------------------------
 / Viking
