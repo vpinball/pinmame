@@ -57,32 +57,32 @@ void init_tmac(void);
 DE_INPUT_PORTS_START(tmac,3)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"MixMaster",	        KEYCODE_R)
-    COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",	KEYCODE_MINUS)
-    COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"Left Jet",		KEYCODE_W)
-    COREPORT_BIT(0x0100,"Right Jet",		KEYCODE_E)
-    COREPORT_BIT(0x0200,"Bottom Jet",		KEYCODE_R)
-    COREPORT_BIT(0x0400,"Top Target",		KEYCODE_T)
-    COREPORT_BIT(0x0800,"RDrop1",		KEYCODE_Y)
-    COREPORT_BIT(0x1000,"RDrop2",		KEYCODE_U)
-    COREPORT_BIT(0x2000,"RDrop3",		KEYCODE_I)
-    COREPORT_BIT(0x4000,"RDrop4",		KEYCODE_O)
-    COREPORT_BIT(0x8000,"Drain",		KEYCODE_Q)
+    COREPORT_BIT(0x0001,"Left Ramp",	    KEYCODE_Q)
+    COREPORT_BIT(0x0002,"Right Ramp",	    KEYCODE_CLOSEBRACE)
+    COREPORT_BIT(0x0004,"STARWARP Ramp",	KEYCODE_W)
+    COREPORT_BIT(0x0008,"Left Outlane",		KEYCODE_Z)
+    COREPORT_BIT(0x0010,"Right Outlane",	KEYCODE_SLASH)
+    COREPORT_BIT(0x0020,"Left Inlane",		KEYCODE_X)
+    COREPORT_BIT(0x0040,"Right Inlane",		KEYCODE_STOP)
+    COREPORT_BIT(0x0100,"Right Pop",		  KEYCODE_U)
+    COREPORT_BIT(0x0200,"Left Pop",		    KEYCODE_Y)
+    COREPORT_BIT(0x0400,"Bottom Pop",		  KEYCODE_H)
+    COREPORT_BIT(0x0800,"Left Sling",		  KEYCODE_S)
+    COREPORT_BIT(0x1000,"Right Sling",		KEYCODE_COLON)
+    COREPORT_BIT(0x2000,"Left Lane",		  KEYCODE_6)
+    COREPORT_BIT(0x4000,"Center Lane",		KEYCODE_7)
+    COREPORT_BIT(0x8000,"Right Lane",		  KEYCODE_8)
 
   PORT_START /* 1 */
-    COREPORT_BIT(0x0001,"Reflex",		KEYCODE_A)
-    COREPORT_BIT(0x0002,"rEflex",		KEYCODE_S)
-    COREPORT_BIT(0x0004,"reFlex",		KEYCODE_D)
-    COREPORT_BIT(0x0008,"refLex",		KEYCODE_F)
-    COREPORT_BIT(0x0010,"reflEx",		KEYCODE_G)
-    COREPORT_BIT(0x0020,"refleX",		KEYCODE_H)
-    COREPORT_BIT(0x0040,"Heart Target",		KEYCODE_J)
-    COREPORT_BIT(0x0080,"Magnet",		KEYCODE_K)
-    COREPORT_BIT(0x0100,"Big Shot",		KEYCODE_L)
+    COREPORT_BIT(0x0001,"Left Bank 70s",		KEYCODE_A)
+    COREPORT_BIT(0x0002,"Left Bank 60s",		KEYCODE_S)
+    COREPORT_BIT(0x0004,"Left Bank 50s",		KEYCODE_D)
+    COREPORT_BIT(0x0008,"Center Bank 70s",	KEYCODE_V)
+    COREPORT_BIT(0x0010,"Center Bank 60s",	KEYCODE_B)
+    COREPORT_BIT(0x0020,"Center Bank 50s",	KEYCODE_N)
+    COREPORT_BIT(0x0040,"Right Bank 70s",		KEYCODE_J)
+    COREPORT_BIT(0x0080,"Right Bank 60s",	  KEYCODE_K)
+    COREPORT_BIT(0x0100,"Right Bank 50s",		KEYCODE_L)
     COREPORT_BIT(0x0200,"LPopper",		KEYCODE_Z)
     COREPORT_BIT(0x0400,"RPopper",		KEYCODE_X)
     COREPORT_BIT(0x0800,"Rt Loop",		KEYCODE_C)
@@ -194,11 +194,12 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       {"Bottom Bumper", 1, swCTPop, 0, stFree, 1},
 
       /*lock states*/
+      //TODO determine the number for the lock solenoid when it fires
       {"Lock 1", 1, swLock1, sLock, stFree, 0},
       {"Lock 2", 1, swLock2, 0, stLock1, 0},
       {"Lock 3", 1, swLock3, 0, stLock2, 0},
 
-      /*ramp states*/
+      //TODO determine the number for the VUK solenoid
       {"Left Ramp", 1, swLTRamp, 0, stLock3, 2},
       {"Right Ramp", 1, swRTRamp, 0, stLock3, 2},
       {"Center Ramp", 1, swCTRamp, 0, stSubway, 2},
@@ -303,12 +304,12 @@ static MACHINE_DRIVER_START(s11c_one)
             MDRV_VISIBLE_AREA(0, 639, 0, 399)
                 MACHINE_DRIVER_END
 
-    // CORE_GAMEDEF (tmac,    a24, "Time Machine (R02-4)", 1988, "Data East", s11c_one,0)
+// CORE_GAMEDEF (tmac,    a24, "Time Machine (R02-4)", 1988, "Data East", s11c_one,0)
 
-    /*-----------------------
-    / Simulation Definitions
-    /-----------------------*/
-    static sim_tSimData tmSimData = {
+/*-----------------------
+/ Simulation Definitions
+/-----------------------*/
+static sim_tSimData tmSimData = {
         2,                                         /* 2 game specific input ports */
         tm_stateDef,                               /* Definition of all states */
         tm_inportData,                             /* Keyboard Entries */
