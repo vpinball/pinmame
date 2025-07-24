@@ -164,7 +164,8 @@ DE_INPUT_PORTS_END
 enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet,
       stLock1, stLock2, stLock3,
-      stLTRamp, stRTRamp, stCTRamp, stSubway, stVUK
+      stLTRamp, stRTRamp, stCTRamp, stSubway, stVUK,
+      stLTLane, stRTLane, stCTLane
 	  };
 
   static sim_tState tm_stateDef[] = {
@@ -205,6 +206,7 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
       {"Center Ramp", 1, swCTRamp, 0, stSubway, 2},
       {"Subway", 1, swSubway, 0, stVUK, 1},
       {"Super VUK", 1, swVUK, sVUK, stRightInlane, 1}
+
 };
 
   static int tm_handleBallState(sim_tBallStatus *ball, int *inports)
@@ -219,18 +221,36 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOutHole, stDrain,
 static sim_tInportData tm_inportData[] = {
 
 /* Port 0 */
-  {0, 0x0009, stLeftOutlane},
-  {0, 0x000a, stRightOutlane},
-  {0, 0x0011, stLeftSling},
-  {0, 0x0012, stRightSling},
-  {0, 0x0021, stLeftInlane},
-  {0, 0x0022, stRightInlane},
-  {0, 0x0040, stLeftJet},
-  {0, 0x0100, stBottomJet},
-  {0, 0x0200, stRightJet},
-  {0, 0x8000, stOutHole},
+  {0, 0x0001, stLTRamp},
+  {0, 0x0002, stRTRamp},
+  {0, 0x0004, stCTRamp},
+  {0, 0x0008, stLeftOutlane},
+  {0, 0x0010, stRightOutlane},
+  {0, 0x0020, stLeftInlane},
+  {0, 0x0040, stRightInlane},
+  {0, 0x0100, stRightJet},
+  {0, 0x0200, stLeftJet},
+  {0, 0x0400, stBottomJet},
+  {0, 0x0800, stLeftSling},
+  {0, 0x1000, stRightSling},
+  
+  // Switches may be directly activated, their numbers are < the state numbers
+  {0, 0x2000, swLane1},
+  {0, 0x4000, swLane2},
+  {0, 0x8000, swLane3},
 
-  {0}
+
+  {1, 0x0001, swLTBank1},
+  {1, 0x0002, swLTBank2},
+  {1, 0x0004, swLTBank3},
+
+  {1, 0x0008, swCTBank1},
+  {1, 0x0010, swCTBank2},
+  {1, 0x0020, swCTBank3},
+
+  {1, 0x0040, swRTBank1},
+  {1, 0x0080, swRTBank2},
+  {1, 0x0100, swRTBank3}
 };
 
 /*--------------------
