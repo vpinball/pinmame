@@ -51,43 +51,6 @@ static void tm_handleMech(int mech);
 static void tm_drawStatic(BMTYPE **line);
 void init_tmac(void);
 
-/*--------------------------
-/ Game specific input ports
-/---------------------------*/
-DE_INPUT_PORTS_START(tmac,3)
-
-  PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Ramp",	    KEYCODE_Q)
-    COREPORT_BIT(0x0002,"Right Ramp",	    KEYCODE_CLOSEBRACE)
-    COREPORT_BIT(0x0004,"STARWARP Ramp",	KEYCODE_W)
-    COREPORT_BIT(0x0008,"Left Outlane",		KEYCODE_Z)
-    COREPORT_BIT(0x0010,"Right Outlane",	KEYCODE_SLASH)
-    COREPORT_BIT(0x0020,"Left Inlane",		KEYCODE_X)
-    COREPORT_BIT(0x0040,"Right Inlane",		KEYCODE_STOP)
-    COREPORT_BIT(0x0100,"Right Pop",		  KEYCODE_U)
-    COREPORT_BIT(0x0200,"Left Pop",		    KEYCODE_Y)
-    COREPORT_BIT(0x0400,"Bottom Pop",		  KEYCODE_H)
-    COREPORT_BIT(0x0800,"Left Sling",		  KEYCODE_S)
-    COREPORT_BIT(0x1000,"Right Sling",		KEYCODE_COLON)
-    COREPORT_BIT(0x2000,"Left Lane",		  KEYCODE_6)
-    COREPORT_BIT(0x4000,"Center Lane",		KEYCODE_7)
-    COREPORT_BIT(0x8000,"Right Lane",		  KEYCODE_8)
-
-  PORT_START /* 1 */
-    COREPORT_BIT(0x0001,"Left Bank 70s",		KEYCODE_A)
-    COREPORT_BIT(0x0002,"Left Bank 60s",		KEYCODE_S)
-    COREPORT_BIT(0x0004,"Left Bank 50s",		KEYCODE_D)
-    COREPORT_BIT(0x0008,"Center Bank 70s",	KEYCODE_V)
-    COREPORT_BIT(0x0010,"Center Bank 60s",	KEYCODE_B)
-    COREPORT_BIT(0x0020,"Center Bank 50s",	KEYCODE_N)
-    COREPORT_BIT(0x0040,"Right Bank 70s",		KEYCODE_J)
-    COREPORT_BIT(0x0080,"Right Bank 60s",	  KEYCODE_K)
-    COREPORT_BIT(0x0100,"Right Bank 50s",		KEYCODE_L)
-    COREPORT_BIT(0x0200,"LPopper",		KEYCODE_Z)
-    COREPORT_BIT(0x0400,"RPopper",		KEYCODE_X)
-    COREPORT_BIT(0x0800,"Rt Loop",		KEYCODE_C)
-
-DE_INPUT_PORTS_END
 
 /*-------------------
 / Switch definitions
