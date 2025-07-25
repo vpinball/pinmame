@@ -213,7 +213,9 @@ static sim_tInportData tm_inportData[] = {
 
   {1, 0x0040, swRTBank1},
   {1, 0x0080, swRTBank2},
-  {1, 0x0100, swRTBank3}
+  {1, 0x0100, swRTBank3},
+
+  {0}
 };
 
 /*--------------------
