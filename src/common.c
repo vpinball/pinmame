@@ -1226,7 +1226,7 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 		if (romdata->errors)
 		{
 			strcat(romdata->errorbuf, "ERROR: required files are missing, the game cannot be run.");
-			// bailing = 1;
+			bailing = 1;
 		}
 		else
 			strcat(romdata->errorbuf, "WARNING: the game might not run correctly.");
