@@ -9,6 +9,16 @@
 					"label": ""
 				}
 			]
+		},
+		{
+			"path": "src/inptport.c",
+			"bookmarks": [
+				{
+					"line": 2440,
+					"column": 0,
+					"label": "scan input ports"
+				}
+			]
 		}
 	]
 }
