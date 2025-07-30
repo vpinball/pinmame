@@ -7,6 +7,11 @@
 					"line": 63,
 					"column": 0,
 					"label": ""
+				},
+				{
+					"line": 69,
+					"column": 0,
+					"label": ""
 				}
 			]
 		},
@@ -17,6 +22,41 @@
 					"line": 2440,
 					"column": 0,
 					"label": "scan input ports"
+				}
+			]
+		},
+		{
+			"path": "xpinmame.obj/wpc/degames.i",
+			"bookmarks": [
+				{
+					"line": 71,
+					"column": 0,
+					"label": "beakpoint here for debug"
+				}
+			]
+		},
+		{
+			"path": "src/wpc/core.c",
+			"bookmarks": [
+				{
+					"line": 1423,
+					"column": 0,
+					"label": "run simulator"
+				},
+				{
+					"line": 1490,
+					"column": 0,
+					"label": "use sim keys?"
+				}
+			]
+		},
+		{
+			"path": "src/wpc/sim.h",
+			"bookmarks": [
+				{
+					"line": 139,
+					"column": 0,
+					"label": "this doesn't make sense"
 				}
 			]
 		}
