@@ -944,6 +944,16 @@ S11CS_SOUNDROM888(      "tran_u4.l1",  CRC(63e92f8b) SHA1(57f2841419415fc3560d46
 S11_ROMEND
 CORE_CLONEDEF(tsptr,l1,l3, "Transporter the Rescue (LA-1)", 1989, "Bally", s11a_one,0)
 
+S11_ROMSTART48(tsptr,l3fj,"tran_u26.l3",CRC(2d48a108) SHA1(d41bf077aab1201b08ea14725d4a0d841ee6b919),
+                        "tran_u27.l3fixedjackpot",CRC(dbc5181a) SHA1(c56da64414d2a72f1c6157695128159edaf100b1))
+S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
+                        "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
+S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a95f822024a44371170),
+                        "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881), // L-2/3 features the same
+                        "tran_u20.l2", CRC(e9890cf1) SHA1(0ae37504c704401101c79ce49df11044f8d8caa9))
+S11_ROMEND
+CORE_CLONEDEF(tsptr,l3fj,l3, "Transporter the Rescue (L-3 Fixed Jackpot MOD)", 2025, "Bally", s11a_one,0)
+
 // L-2 also exists?!
 
 /*-----------------------
