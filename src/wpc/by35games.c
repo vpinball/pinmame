@@ -762,7 +762,7 @@ BY35_ROMSTART888(rollston,"796-17_1.716",CRC(51a826d7) SHA1(6811149c8948066b85b4
 BY51_SOUNDROM8(           "796-19_4.716",CRC(b740d047) SHA1(710edb6bbba0a03e4f516b501f019493a3a4033e))
 BY35_ROMEND
 #define input_ports_rollston input_ports_by35
-CORE_GAMEDEFNV(rollston,"Rolling Stones",1980,"Bally",by35_mBY35_51S,0)
+CORE_GAMEDEFNV(rollston,"Rolling Stones (V17)",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(rollstob,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(rollstob,"roll2732.u2", CRC(28c48275) SHA1(578f774bbeca228ef381531563d1d56dc9b612e5),
@@ -770,7 +770,24 @@ BY35_ROMSTARTx00(rollstob,"roll2732.u2", CRC(28c48275) SHA1(578f774bbeca228ef381
 BY51_SOUNDROM8(           "796-19_4.716",CRC(b740d047) SHA1(710edb6bbba0a03e4f516b501f019493a3a4033e))
 BY35_ROMEND
 #define input_ports_rollstob input_ports_rollston
-CORE_CLONEDEFNV(rollstob,rollston,"Rolling Stones (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
+CORE_CLONEDEFNV(rollstob,rollston,"Rolling Stones (V17, 7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
+
+// V21 of the U1 ROM for Ballys 1980 Rolling Stones pinball, it turned up with some ROMs that were originally at Alladins Castle arcade (Ballys test site).
+// This alternate version replaces the current V17 dump of U1.
+//
+// The offset 378 is a jump address, using $5786 instead of $520D. The code directly before this jump awards a special,
+// so the jump does something after the special is awarded. Specifically, the candycane left/right specials.
+// It plays one sound effect running through the sound dips for settings. (The -17 version).
+// The new -21 version plays the game over tune when you hit the special (First part of the song (I Can't Get No) Satisfaction).
+// Since Rolling Stones has A LOT of specials this may have been added as a variation, as Satisfaction plays only at power up and game over?
+INITGAME(rollst21,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTART888(rollst21,"E-796-21-U1.BIN",CRC(35141d40) SHA1(22283ff6f15e91838edbe6260faa0c1059499917),
+                          "796-18_2.716",CRC(08c75b1a) SHA1(792a535514fe4d9476914f7f61c696a7a1bdb549),
+                          "720-35_6.716",CRC(78d6d289) SHA1(47c3005790119294309f12ea68b7e573f360b9ef))
+BY51_SOUNDROM8(           "796-19_4.716",CRC(b740d047) SHA1(710edb6bbba0a03e4f516b501f019493a3a4033e))
+BY35_ROMEND
+#define input_ports_rollst21 input_ports_rollston
+CORE_CLONEDEFNV(rollst21,rollston,"Rolling Stones (V21)",1980,"Bally",by35_mBY35_51S,0)
 
 /*--------------------------------
 / Mystic

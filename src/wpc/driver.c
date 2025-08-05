@@ -219,8 +219,9 @@ DRIVERNV(slbmanic)      //          12/13 Silverball Mania (Horseshoe Spot MOD r
 DRIVERNV(slbmanid)      //          12/13 Silverball Mania (Horseshoe No Spotting MOD rev. 13)
 DRIVERNV(spaceinv)      //BY35-792: 04/80 Space Invaders
 DRIVERNV(spaceinb)      //          11/02 Space Invaders (7-digit conversion)
-DRIVERNV(rollston)      //BY35-796: 05/80 Rolling Stones
-DRIVERNV(rollstob)      //          11/02 Rolling Stones (7-digit conversion)
+DRIVERNV(rollston)      //BY35-796: 05/80 Rolling Stones (V17)
+DRIVERNV(rollst21)      //          ??/80 Rolling Stones (V21)
+DRIVERNV(rollstob)      //          11/02 Rolling Stones (V17, 7-digit conversion)
 DRIVERNV(mystic  )      //BY35-798: 06/80 Mystic
 DRIVERNV(mysticb )      //          11/02 Mystic (7-digit conversion)
 DRIVERNV(viking  )      //BY35-802: 07/80 Viking
