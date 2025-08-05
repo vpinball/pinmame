@@ -355,6 +355,7 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
 S6_ROMEND
 CORE_CLONEDEF(grgar,t1ff,l1,"Gorgar (T-1 Ted Estes, Free Play Fix)",1979,"Williams",s6_mS6S,0)
 
+// Lane Change, triggered by slam tilt switch
 S6_ROMSTART(grgar,c1,  "gameromc.716",CRC(8997edb7) SHA1(f3808ee0a32c38a60fe5566d415cd7a4e66709a5),
                        "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                        "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2)) // release was bundled with green2a.716 from T-1 though (so /10 scoring)
@@ -364,6 +365,21 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
                        "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
 S6_ROMEND
 CORE_CLONEDEF(grgar,c1,l1,"Gorgar (C-1 Lane Change MOD)",1979,"Williams / Francis",s6_mS6S,0)
+
+// L-2, official from Williams. "Technically this is slightly modified, because the original still reported as 'L1'.
+//  The difference is a patch to see if the coil stack is full before adding the pit flasher to it.
+//  As far as known never released, or maybe some places that have L1 listed have this version instead of the other."
+// (Only few bytes differ from L-1)
+// "No idea if this actually works in a (real) game since I don't have a Gorgar available."
+S6_ROMSTART(grgar,l2,  "gorgar_L2_u14.716",CRC(96792d51) SHA1(d2b2cae396309bf8030f0930708460fec3fdc446),
+                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e8eb1322ec9e7cc9d6),
+                       "v_ic5.532" ,  CRC(0ceaef37) SHA1(33b5f5286b8588162d56dbc5c9a8ccb70d3b9090),
+                       "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
+S6_ROMEND
+CORE_CLONEDEF(grgar,l2,l1,"Gorgar (L-2)",1979,"Williams",s6_mS6S,0)
 
 /*-------------------------------
 / Firepower - Sys.6 (Game #497)
