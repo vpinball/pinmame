@@ -13,7 +13,7 @@ defaults:
 jobs:
   version:
     name: Version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
@@ -48,17 +48,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: windows-latest, platform: win, arch: x64 }
-          - { os: windows-latest, platform: win, arch: x86 }
-          - { os: windows-latest, platform: win, arch: arm64 }
-          - { os: macos-latest, platform: macos, arch: x64 }
-          - { os: macos-latest, platform: macos, arch: arm64 }
-          - { os: ubuntu-latest, platform: linux, arch: x64 }
+          - { os: windows-2025, platform: win, arch: x64 }
+          - { os: windows-2025, platform: win, arch: x86 }
+          - { os: windows-2025, platform: win, arch: arm64 }
+          - { os: macos-15, platform: macos, arch: x64 }
+          - { os: macos-15, platform: macos, arch: arm64 }
+          - { os: ubuntu-24.04, platform: linux, arch: x64 }
           - { os: ubuntu-24.04-arm, platform: linux, arch: aarch64 }
-          - { os: ubuntu-latest, platform: android, arch: arm64-v8a }
-          - { os: macos-latest, platform: ios, arch: arm64 }
-          - { os: macos-latest, platform: ios-simulator, arch: arm64 }
-          - { os: macos-latest, platform: tvos, arch: arm64 }
+          - { os: ubuntu-24.04, platform: android, arch: arm64-v8a }
+          - { os: macos-15, platform: ios, arch: arm64 }
+          - { os: macos-15, platform: ios-simulator, arch: arm64 }
+          - { os: macos-15, platform: tvos, arch: arm64 }
     steps:
       - uses: actions/checkout@v4
       - name: Build libpinmame-${{ matrix.platform }}-${{ matrix.arch }}
@@ -66,11 +66,25 @@ jobs:
           cp cmake/libpinmame/CMakeLists.txt .
           if [[ "${{ matrix.platform }}" == "win" ]]; then
              if [[ "${{ matrix.arch }}" == "x64" ]]; then
-                cmake -G "Visual Studio 17 2022" -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+                cmake \
+                   -G "Visual Studio 17 2022" \
+                   -DPLATFORM=${{ matrix.platform }} \
+                   -DARCH=${{ matrix.arch }} \
+                   -B build
              elif [[ "${{ matrix.arch }}" == "x86" ]]; then
-                cmake -G "Visual Studio 17 2022" -A Win32 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+                cmake \
+                   -G "Visual Studio 17 2022" \
+                   -A Win32 \
+                   -DPLATFORM=${{ matrix.platform }} \
+                   -DARCH=${{ matrix.arch }} \
+                   -B build
              elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
-                cmake -G "Visual Studio 17 2022" -A ARM64 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+                cmake \
+                   -G "Visual Studio 17 2022" \
+                   -A ARM64 \
+                   -DPLATFORM=${{ matrix.platform }} \
+                   -DARCH=${{ matrix.arch }} \
+                   -B build
              fi
              cmake --build build --config Release
           else
@@ -79,7 +93,11 @@ jobs:
              else
                 NUM_PROCS=$(nproc)
              fi
-             cmake -DCMAKE_BUILD_TYPE=Release -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -B build
+             cmake \
+                -DPLATFORM=${{ matrix.platform }} \
+                -DARCH=${{ matrix.arch }} \
+                -DCMAKE_BUILD_TYPE=Release \
+                -B build
              cmake --build build -- -j${NUM_PROCS}
           fi
       - name: Prepare artifacts
@@ -132,7 +150,7 @@ jobs:
           path: ${{ steps.artifacts.outputs.artifact_path }}
 
   post-build:
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: [ version, build ]
     name: Build libpinmame-macos
     steps:
