@@ -2,8 +2,13 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdarg.h>
+#ifdef __cplusplus
+ #include <cstdint>
+ #include <cstdarg>
+#else
+ #include <stdint.h>
+ #include <stdarg.h>
+#endif
 
 #ifdef _MSC_VER
 #define PINMAMEAPI extern "C" __declspec(dllexport)
