@@ -1702,11 +1702,11 @@ static VIDEO_UPDATE(core_status) {
     }
   }
   /*-- GI Strings --*/
-  if (core_gameData->gen & GEN_ALLWPC) {
+  if (coreGlobals.nGI > 0) {
     startRow += 3;
     if (startRow + 2 >= locals.maxSimRows) { startRow = 0; thisCol = nextCol + 5; }
 
-    for (ii = 0; ii < CORE_MAXGI; ii++)
+    for (ii = 0; ii < coreGlobals.nGI; ii++)
     {
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
       {

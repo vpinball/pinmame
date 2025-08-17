@@ -306,14 +306,17 @@ static WRITE_HANDLER(riot6532_2a_w) {
   if (data & 0x20) { /* solenoids 1-4 */
     GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffff0) | (1<<(data & 0x03));
     core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, 1 << (data & 0x03), 0x0f);
+    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 48, 0x10 << (data & 0x03), 0xf0); // Also output as Lamp 53..56 as solenoids are often also used to drive flashers in parallel
   }
   else if (data & 0x40) { /* solenoid 5-8 */
     GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff0f) | (0x10 <<((data>>2) & 0x03));
     core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, 0x10 << ((data >> 2) & 0x03), 0xf0);
+    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 56, 0x01 << ((data >> 2) & 0x03), 0x0f); // Also output as Lamp 57..60 as solenoids are often also used to drive flashers in parallel
   }
   else { /* solenoid 9 */
     GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffeff) | ((data & 0x80)<<1);
     core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data >> 7, 0x01);
+    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 56, (data >> 3) & 0x10, 0x10); // Also output as Lamp 61 as solenoids are often also used to drive flashers in parallel
   }
 
   if (core_gameData->hw.soundBoard == SNDBRD_GTS80B) {
@@ -334,7 +337,7 @@ static WRITE_HANDLER(riot6532_2b_w) {
   if (column >= 0) {
     if (column & 1) {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0x0f) | (data<<4);
-      core_write_masked_pwm_output_8b(8 * (column >> 1), data << 4, 0xf0);
+      core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * (column >> 1), data << 4, 0xf0);
       if (column == 11) { // Additional 13th column corresponding to inverted 12th column
         coreGlobals.lampMatrix[6] = data ^ 0x0f;
         core_write_pwm_output_8b(48, data ^ 0x0f);
@@ -342,7 +345,9 @@ static WRITE_HANDLER(riot6532_2b_w) {
     }
     else {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0xf0) | data;
-      core_write_masked_pwm_output_8b(8 * (column >> 1), data, 0x0f);
+      core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * (column >> 1), data, 0x0f);
+      if (column == 0) // Duplicate lamp 0 to GI string as it drives the Tilt relay that in turn drives the main GI
+        core_write_masked_pwm_output_8b(CORE_MODOUT_GI0, data, 0x01);
     }
     if (core_gameData->hw.display & GTS80_DISPVIDEO) {
       if (column == 1)      GTS80locals.vidPlayer = data;
@@ -541,6 +546,8 @@ static MACHINE_INIT(gts80) {
   GTS80locals.seg2State.nDigitCycle = 64; // At startup, defaults to 64 cycles per digit
 
   // Hardware supports 48 low power output (lamps and other uses), not strobed, and 9 high power (solenoids)
+  coreGlobals.nGI = 1;
+  core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC_REV);
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_6_3V_AC); // More precisely, the hardware uses a 6V DC source but this is close enough
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
@@ -551,21 +558,45 @@ static MACHINE_INIT(gts80) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const gn = rootDrv->name;
-  if (strncasecmp(gn, "genes", 5) == 0) {
-    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0, 1, CORE_MODOUT_SOL_2_STATE); // GameOver relay
-    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1, 1, CORE_MODOUT_SOL_2_STATE); // Tilt relay
-    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4, 1, CORE_MODOUT_SOL_2_STATE); // Sound
-    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12, 1, CORE_MODOUT_SOL_2_STATE); // Motor relay
-    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13, 1, CORE_MODOUT_SOL_2_STATE); // Aux.Lamp relay
-    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 14, 1, CORE_MODOUT_SOL_2_STATE); // Ball Release
-    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 4 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left Ramp flashers (2 #67 with 4 Ohms resistor under +24DC with a 0.1-0.3 voltage drop in the 2N5879 driver)
-    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left Ramp flashers (2 #67 with 4 Ohms resistor under +24DC with a 0.1-0.3 voltage drop in the 2N5879 driver)
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0, 1, CORE_MODOUT_SOL_2_STATE); // GameOver relay (Q)
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1, 1, CORE_MODOUT_SOL_2_STATE); // Tilt relay (T)
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4, 1, CORE_MODOUT_SOL_2_STATE); // Sound 16
+  if (strncasecmp(gn, "amazonh2", 8) == 0 || strncasecmp(gn, "amazn2fp", 8) == 0) { // Amazon Hunt II
+     // no special wiring
+  }
+  else if (strncasecmp(gn, "badg", 4) == 0) { // Bad Girls
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 3 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Large Hat (6 lamps as 2 prrallel strings of 3 lamps)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 52, 7, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Flashers triggered simultaneously with solenoids
+  }
+  else if (strncasecmp(gn, "bigh", 4) == 0) { // Big House
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13, 1, CORE_MODOUT_SOL_2_STATE); // Auger motor relay (A)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 14, 1, CORE_MODOUT_SOL_2_STATE); // Ball Gate Relay
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 3 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left top flashers (#67 with 8 Ohms resistor under +24DC with a 0.1-0.3 voltage drop of the driver)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 4 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Right top flashers (#67 with 8 Ohms resistor under +24DC with a 0.1-0.3 voltage drop of the driver)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Right side flashers (#67 with 8 Ohms resistor under +24DC with a 0.1-0.3 voltage drop of the driver)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 16, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Center flashers (#67 with 8 Ohms resistor under +24DC with a 0.1-0.3 voltage drop of the driver)
+  }
+  else if (strncasecmp(gn, "bount", 5) == 0) { // Bounty Hunter
+     // no special wiring
+  }
+  else if (strncasecmp(gn, "genes", 5) == 0) { // Genesis
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12, 1, CORE_MODOUT_SOL_2_STATE); // Motor relay
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13, 1, CORE_MODOUT_SOL_2_STATE); // Aux.Lamp relay
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 14, 1, CORE_MODOUT_SOL_2_STATE); // Ball Release
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 4 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left Ramp flashers (2 #67 with 4 Ohms resistor under +24DC with a 0.1-0.3 voltage drop in the 2N5879 driver)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left Ramp flashers (2 #67 with 4 Ohms resistor under +24DC with a 0.1-0.3 voltage drop in the 2N5879 driver)
+  }
+  else if (strncasecmp(gn, "rock", 4) == 0) { // Rock
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Relay A (switch between light strings)
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13, 1, CORE_MODOUT_BULB_44_6_3V_AC); // Relay B (switch between light strings)
+     // GI has 4 lines:
+     // - reversed T relay + A relay (=> Special illumination)
+     // - reversed T relay + reversed A relay
+     // - reversed T relay + B relay (=> Extraball)
+     // - reversed T relay + reversed B relay
   }
   else {
-    // Not yet implemented hardware (we need proper output definition as the low power output are used for other purposes)
-    coreGlobals.nLamps = 0;
-    coreGlobals.nSolenoids = 0;
-    coreGlobals.nAlphaSegs = 0;
+    // TODO Not yet implemented hardware (we need proper output definition as the low power output are also used for other purposes)
   }
 }
 
