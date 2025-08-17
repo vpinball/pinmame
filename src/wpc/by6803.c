@@ -541,10 +541,10 @@ static MACHINE_INIT(by6803) {
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   //coreGlobals.nAlphaSegs = xx * 16;
   //core_set_pwm_output_type(CORE_MODOUT_SEG0, xx, CORE_MODOUT_VFD_STROBE_1_xx6MS); // 1ms strobing
-  const struct GameDriver* rootDrv = Machine->gamedrv;
-  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
-     rootDrv = rootDrv->clone_of;
-  const char* const gn = rootDrv->name;
+  //const struct GameDriver* rootDrv = Machine->gamedrv;
+  //while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+  //   rootDrv = rootDrv->clone_of;
+  //const char* const gn = rootDrv->name;
 }
 static MACHINE_RESET(by6803) {
   pia_reset();

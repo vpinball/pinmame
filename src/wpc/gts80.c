@@ -33,21 +33,35 @@
 #define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
+// Rockwell 10939/10941 Segment Rasterizer
+typedef struct Rockwell10939State {
+   int coreSegPos; // position of output in coreGlobals.segments
+   int corePWMSegPos; // position of PWM output in coreGlobals
+   int nHalted; // Halt state (display driver start halted then refresh process is started)
+   int isCtrlDataWord; // Next data is a control word
+   UINT8 nDigits; // Number of driven digits
+   UINT8 nWriteCol;
+   UINT8 nDigitCycle; // 16, 32 or 64 cycles per digit
+   UINT8 dutyCycle; // brightness duty cycle relative to nDigitCycle - 1 (0..63)
+   UINT8 display[20]; // 16 segments encoded as 8 bits character codes (see core_ascii2seg16)
+} Rockwell10939State;
+
 /*----------------
 /  Local variables
 /-----------------*/
 static struct {
   int    riot0b, riot1a, riot1b, riot2b;
   UINT8  slamSw;
-  int    alphaData;
+  UINT8  alphaData;
   int    vblankCount;
   UINT32 solenoids;
-  core_tSeg segments,pseg;
+  core_tSeg segments;
   int    seg1, seg2, seg3;
   int    segPos1, segPos2;
   int    vidCmd, vidPlayer;
   struct rectangle vidClip;
   int    buf8212int;
+  Rockwell10939State seg1State, seg2State;
 } GTS80locals;
 /*----------
 / Pointers
@@ -85,10 +99,10 @@ static INTERRUPT_GEN(GTS80_vblank) {
     GTS80locals.solenoids = coreGlobals.pulsedSolState;
     coreGlobals.pulsedSolState = 0;
   }
-  /*-- display --*/
-  if ((GTS80locals.vblankCount % GTS80_DISPLAYSMOOTH) == 0) {
+  /*-- display (only BCD version as the alphanum directly drive core outputs) --*/
+  if ((core_gameData->hw.display & GTS80_DISPALPHA) == 0 && (GTS80locals.vblankCount % GTS80_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, GTS80locals.segments, sizeof(coreGlobals.segments));
-    memcpy(GTS80locals.segments, GTS80locals.pseg, sizeof(GTS80locals.segments));
+    memset(GTS80locals.segments, 0, sizeof(GTS80locals.segments));
   }
   core_updateSw(gameOn & 0x01);
 }
@@ -231,27 +245,47 @@ static WRITE_HANDLER(riot6532_1a_w) {
 #endif /* PINMAME && LISY_SUPPORT */
 }
 
+static void rockwell10939_ld(Rockwell10939State* state, UINT8 data) {
+   if (state->isCtrlDataWord == 0 && data == 0x01) {
+      state->isCtrlDataWord = 1; // Next data is a control word
+   }
+   else if (state->isCtrlDataWord == 1 && data != 0x01) {
+      state->isCtrlDataWord = 0;
+      if (data == 0x05)
+         state->nDigitCycle = 16;
+      else if (data == 0x06)
+         state->nDigitCycle = 32;
+      else if (data == 0x07)
+         state->nDigitCycle = 64;
+      // 0x08 0x09 0x0A are cusrsor control mode (not implemented)
+      else if (data == 0x0e)
+         state->nHalted = 0; // Start Display Refresh Cycle (start display strobing, also start second slave display driver)
+      else if (data >= 0x40 && data <= 0x7F)
+         state->dutyCycle = data & 0x7F; // Duty cycle (brightness, relative to nDigitCycle - 1)
+      else if (data >= 0x80 && data <= 0x9F)
+         state->nDigits = data == 0x80 ? 32 : (data & 0x1F); // Digit Counter Register: number of digits to drive
+      else if (data >= 0xC0 && data <= 0xD3)
+         state->nWriteCol = data & 0x1F; // Next write column
+      //if (data != 0xc0)
+      //   printf("%8.5f Driver %02d: Control data word 1: %02x\n", timer_get_time(), state->coreSegPos, data);
+   }
+   else if (state->nDigits) {
+      //printf("%8.5f Driver %02d: %02x\n", timer_get_time(), state->coreSegPos + state->nWriteCol, data);
+      const UINT16 seg16 = core_ascii2seg16[data & 0x7f];
+      coreGlobals.segments[state->coreSegPos + state->nWriteCol].w = seg16;
+      const float brightness = (state->dutyCycle == 0) ? 1.f : (float)(state->dutyCycle + 1) / (float)state->nDigitCycle;
+      for (int i = 0, pos = state->corePWMSegPos + state->nWriteCol * 16; i < 16; i++, pos++)
+        coreGlobals.physicOutputState[pos].value = (seg16 & (1 << i)) ? brightness : 0.f;
+      state->display[state->nWriteCol] = data;
+      state->nWriteCol = (state->nWriteCol + 1) % state->nDigits;
+   }
+}
+
 static WRITE_HANDLER(riot6532_1b_w) {
-  const int alpha = GTS80locals.alphaData  & 0x7f; // shortcut
-  if (data & ~GTS80locals.riot1b & 0x10) { // LD1 (falling edge)
-    GTS80locals.segments[GTS80locals.segPos1].w |= (GTS80locals.alphaData & 0x80);
-    if (alpha == 0x01) {
-      GTS80locals.segPos1 = -2;
-      GTS80locals.segPos2 = 0;
-    }
-    else if (GTS80locals.segPos1 >= 0)
-      GTS80locals.segments[GTS80locals.segPos1].w |= GTS80locals.pseg[GTS80locals.segPos1].w = core_ascii2seg16[alpha];
-    if (GTS80locals.segPos1 < 19) GTS80locals.segPos1 = (GTS80locals.segPos1 + 1) % 0x14;
-  } else if (data & ~GTS80locals.riot1b & 0x20) { // LD2
-    GTS80locals.segments[20+GTS80locals.segPos2].w |= (GTS80locals.alphaData & 0x80);
-    if (alpha == 0x01) {
-      GTS80locals.segPos1 = -2;
-      GTS80locals.segPos2 = 0;
-    }
-    else if (GTS80locals.segPos2 >= 0)
-      GTS80locals.segments[20+GTS80locals.segPos2].w |= GTS80locals.pseg[20+GTS80locals.segPos2].w = core_ascii2seg16[alpha];
-    GTS80locals.segPos2 = (GTS80locals.segPos2 + 1) % 0x14;
-  }
+  if (data & ~GTS80locals.riot1b & 0x10) // LD1 (falling edge)
+    rockwell10939_ld(&GTS80locals.seg1State, GTS80locals.alphaData);
+  if (data & ~GTS80locals.riot1b & 0x20) // LD2
+    rockwell10939_ld(&GTS80locals.seg2State, GTS80locals.alphaData);
   GTS80locals.riot1b = data;
 #if defined(PINMAME) && defined(LISY_SUPPORT)
   //send port B to lisy80
@@ -269,12 +303,18 @@ static WRITE_HANDLER(riot6532_2a_w) {
   lisy80_coil_handler_a( data);
 #endif /* PINMAME && LISY_SUPPORT */
   data = ~data;
-  if (data & 0x20)  /* solenoids 1-4 */
+  if (data & 0x20) { /* solenoids 1-4 */
     GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffff0) | (1<<(data & 0x03));
-  if (data & 0x40)  /* solenoid 5-8 */
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, 1 << (data & 0x03), 0x0f);
+  }
+  else if (data & 0x40) { /* solenoid 5-8 */
     GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff0f) | (0x10 <<((data>>2) & 0x03));
-  /* solenoid 9 */
-  GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffeff) | ((data & 0x80)<<1);
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, 0x10 << ((data >> 2) & 0x03), 0xf0);
+  }
+  else { /* solenoid 9 */
+    GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffeff) | ((data & 0x80)<<1);
+    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data >> 7, 0x01);
+  }
 
   if (core_gameData->hw.soundBoard == SNDBRD_GTS80B) {
     if (data&0x10) GTS80_sndCmd_w(0, (coreGlobals.lampMatrix[0]&0x10) | (data&0x0f));
@@ -292,11 +332,18 @@ static WRITE_HANDLER(riot6532_2b_w) {
   GTS80locals.riot2b = data;
   data &= 0x0f;
   if (column >= 0) {
-    if (column & 1)
+    if (column & 1) {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0x0f) | (data<<4);
-    else
+      core_write_masked_pwm_output_8b(8 * (column >> 1), data << 4, 0xf0);
+      if (column == 11) { // Additional 13th column corresponding to inverted 12th column
+        coreGlobals.lampMatrix[6] = data ^ 0x0f;
+        core_write_pwm_output_8b(48, data ^ 0x0f);
+      }
+    }
+    else {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0xf0) | data;
-    if (column == 11) coreGlobals.lampMatrix[6] = data ^ 0x0f;
+      core_write_masked_pwm_output_8b(8 * (column >> 1), data, 0x0f);
+    }
     if (core_gameData->hw.display & GTS80_DISPVIDEO) {
       if (column == 1)      GTS80locals.vidPlayer = data;
       else if (column == 3) GTS80locals.vidCmd = data;
@@ -484,6 +531,42 @@ static MACHINE_INIT(gts80) {
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 
   riot6532_reset();
+
+  // Segment display rasterizers
+  GTS80locals.seg1State.coreSegPos = 0;
+  GTS80locals.seg1State.corePWMSegPos = CORE_MODOUT_SEG0;
+  GTS80locals.seg1State.nDigitCycle = 64; // At startup, defaults to 64 cycles per digit
+  GTS80locals.seg2State.coreSegPos = 20;
+  GTS80locals.seg2State.corePWMSegPos = CORE_MODOUT_SEG0 + 20 * 16;
+  GTS80locals.seg2State.nDigitCycle = 64; // At startup, defaults to 64 cycles per digit
+
+  // Hardware supports 48 low power output (lamps and other uses), not strobed, and 9 high power (solenoids)
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_6_3V_AC); // More precisely, the hardware uses a 6V DC source but this is close enough
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  coreGlobals.nAlphaSegs = 2 * 20 * 16;
+  core_set_pwm_output_type(CORE_MODOUT_SEG0, 2 * 20 * 16, CORE_MODOUT_NONE); // No eye flicker fusion, just the direct PWM duty ratio from the display driver
+  const struct GameDriver* rootDrv = Machine->gamedrv;
+  while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
+     rootDrv = rootDrv->clone_of;
+  const char* const gn = rootDrv->name;
+  if (strncasecmp(gn, "genes", 5) == 0) {
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0, 1, CORE_MODOUT_SOL_2_STATE); // GameOver relay
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 1, 1, CORE_MODOUT_SOL_2_STATE); // Tilt relay
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4, 1, CORE_MODOUT_SOL_2_STATE); // Sound
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12, 1, CORE_MODOUT_SOL_2_STATE); // Motor relay
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 13, 1, CORE_MODOUT_SOL_2_STATE); // Aux.Lamp relay
+    core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 14, 1, CORE_MODOUT_SOL_2_STATE); // Ball Release
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 4 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left Ramp flashers (2 #67 with 4 Ohms resistor under +24DC with a 0.1-0.3 voltage drop in the 2N5879 driver)
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Left Ramp flashers (2 #67 with 4 Ohms resistor under +24DC with a 0.1-0.3 voltage drop in the 2N5879 driver)
+  }
+  else {
+    // Not yet implemented hardware (we need proper output definition as the low power output are used for other purposes)
+    coreGlobals.nLamps = 0;
+    coreGlobals.nSolenoids = 0;
+    coreGlobals.nAlphaSegs = 0;
+  }
 }
 
 static MACHINE_STOP(gts80) {
