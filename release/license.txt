@@ -6,6 +6,9 @@ the inherited 'old MAME' license (listed directly below) by
 the 3-Clause BSD License (which is listed at the very end of this file),
 similar to the achievement of the current MAME team.
 
+So note that all new contributions (e.g. via pull requests) being made will
+automatically be considered as 3-Clause BSD based.
+
 Each source file that is already under the BSD-3-Clause will have its
 very first line marked with
 // license:BSD-3-Clause
