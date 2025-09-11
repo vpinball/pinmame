@@ -2518,12 +2518,16 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 int showgamewarnings(struct mame_bitmap *bitmap)
 {
 	int i;
+	UINT32 mask;
 	char buf[2048];
 
-	if (Machine->gamedrv->flags &
-			(GAME_NOT_WORKING | GAME_UNEMULATED_PROTECTION | GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS |
-			  GAME_NO_SOUND | GAME_IMPERFECT_SOUND | GAME_IMPERFECT_GRAPHICS | GAME_NO_COCKTAIL))
-	{
+	mask = GAME_NOT_WORKING | GAME_UNEMULATED_PROTECTION | GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS |
+		GAME_NO_SOUND | GAME_IMPERFECT_SOUND | GAME_IMPERFECT_GRAPHICS | GAME_NO_COCKTAIL;
+	if (options.samplerate == 0) {
+		// If sound is disabled, ignore warnings about no/imperfect sound
+		mask &= ~(GAME_NO_SOUND | GAME_IMPERFECT_SOUND);
+	}
+	if (Machine->gamedrv->flags & mask) {
 		int done;
 
 		strcpy(buf, ui_getstring (UI_knownproblems));
