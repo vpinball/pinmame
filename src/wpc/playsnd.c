@@ -255,7 +255,7 @@ static UINT8 snd_ef3(void) {
 }
 
 static void snd_q(int data) {
-  // sound enable maybe? but seems unused...
+  sndlocals.enSn = !data;
 }
 
 static READ_HANDLER(in_snd_3) {
@@ -263,7 +263,7 @@ static READ_HANDLER(in_snd_3) {
 }
 
 static WRITE_HANDLER(out_snd_3) {
-  tms5220_data_w(0, data);
+  if (sndlocals.enSn) tms5220_data_w(0, data);
 }
 
 static CDP1802_CONFIG playsound_config3 =
