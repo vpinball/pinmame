@@ -251,9 +251,9 @@ static UINT8 snd_ef3(void) {
   sndlocals.ef[1] = !tms5220_ready_r();
   sndlocals.ef[3] = ((val & 0x40) >> 6);
   sndlocals.ef[4] = ((val & 0x80) >> 7);
-  if (sndlocals.ef[4] && sndlocals.oldData == 0x57) {
+  if (sndlocals.ef[4] && sndlocals.oldData) {
     sndlocals.ef[0]++;
-    if (sndlocals.ef[0] > 200) {
+    if (sndlocals.ef[0] > 20000) {
       logerror("TMS chip is stuck talking, resetting it!\n");
       tms5220_reset();
       tms5220_set_variant(TMS5220_IS_5200);
@@ -274,7 +274,7 @@ static READ_HANDLER(in_snd_3) {
 static WRITE_HANDLER(out_snd_3) {
   if (sndlocals.enSn) tms5220_data_w(0, data);
   sndlocals.oldData = data;
-  if (data == 0x57) sndlocals.ef[0] = 0; // using unused ef[0] as counter to see if TMS is stuck talking
+  sndlocals.ef[0] = 0; // using unused ef[0] as counter to see if TMS is stuck talking
 }
 
 static CDP1802_CONFIG playsound_config3 =
