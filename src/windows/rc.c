@@ -105,17 +105,17 @@ static void rc_free_stuff(struct rc_option *option)
             break;
          case rc_string:
             if(*(char **)option[i].dest)
-			{
+            {
                free(*(char **)option[i].dest);
-			   *(char **)option[i].dest = NULL;
-			}
+               *(char **)option[i].dest = NULL;
+            }
             break;
          case rc_file:
             if(*(FILE **)option[i].dest)
-			{
+            {
                fclose(*(FILE **)option[i].dest);
-			   *(FILE **)option[i].dest = NULL;
-			}
+               *(FILE **)option[i].dest = NULL;
+            }
             break;
       }
    }
@@ -310,12 +310,12 @@ int rc_read(struct rc_struct *rc, FILE *f, const char *description,
 
       /* get complete rest of line */
       arg = strtok(NULL, "\r\n");
-	  if (!arg)
-	  {
-		  fprintf(stderr, "error: garbage \"%s\" on line %d of file: %s\n",
-			  buf, line, description);
-		  continue;
-	  }
+      if (!arg)
+      {
+          fprintf(stderr, "error: garbage \"%s\" on line %d of file: %s\n",
+              buf, line, description);
+          continue;
+      }
 
       /* ignore white space */
       for (; (*arg == '\t' || *arg == ' '); arg++) {}
@@ -740,8 +740,8 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
                return -1;
             }
             strcpy(str, arg);
-            if(*(char **)option->dest)
-               free(*(char **)option->dest);
+            //if(*(char **)option->dest)
+               //free(*(char **)option->dest); //!! this works around a cheat option crash here when pressing install in setup :/
             *(char **)option->dest = str;
          }
          break;
@@ -886,7 +886,7 @@ int rc_check_and_create_dir(const char *name)
       {
          /* doesn't exist letts create it ;) */
 #ifdef BSD43
-	 if (mkdir(name, 0775))
+         if (mkdir(name, 0775))
 #else
          if (mkdir(name, S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH))
 #endif

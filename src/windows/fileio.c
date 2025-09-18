@@ -64,7 +64,7 @@ extern const char *history_filename;
 extern const char *mameinfo_filename;
 
 // from cheat.c
-extern char *cheatfile;
+extern const char *cheatfile;
 
 
 
@@ -108,7 +108,7 @@ struct rc_option fileio_opts[] =
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	{ "procpath", NULL, rc_string, &pathlist[FILETYPE_PROC].rawpath, "proc", 0, 0, NULL, "path to P-ROC files" },
 #endif /* PINMAME && PROC_SUPPORT */
-#ifdef __WIN32__
+#ifdef _WIN32
 	{ "inipath", NULL, rc_string, &pathlist[FILETYPE_INI].rawpath, ".;ini", 0, 0, NULL, "path to ini files" },
 #else
 	{ "inipath", NULL, rc_string, &pathlist[FILETYPE_INI].rawpath, "$HOME/.mame;.;ini", 0, 0, NULL, "path to ini files" },
