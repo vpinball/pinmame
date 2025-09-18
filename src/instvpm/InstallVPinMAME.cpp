@@ -162,8 +162,13 @@ int DisplayDialogs(HWND hWnd, int nDialog)
 	}
 	
 	VARIANT varParam;
+#ifdef _WIN64
+	varParam.vt    = VT_I8;
+	varParam.llVal = (long long) hWnd;
+#else
 	varParam.vt   = VT_I4;
 	varParam.lVal = (long) hWnd;
+#endif
 
 	DISPPARAMS DispParams = {&varParam,NULL,1,0};
 	EXCEPINFO ExcepInfo;

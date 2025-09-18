@@ -83,25 +83,25 @@ public:
 			return OnStateChange(pDispParams->rgvarg[0].intVal);
 
 		}
-		return S_FALSE; 
-	};
+		return S_FALSE;
+	}
 
 private:
 	ULONG m_uRef;
-	HWND  m_hWnd;	
+	HWND  m_hWnd;
 	IController* m_pController;
 
 private:
-	STDMETHODIMP_(long) OnSolenoid(int nSolenoid, int IsActive) { return S_OK; };
-	
+	STDMETHODIMP_(long) OnSolenoid(int nSolenoid, int IsActive) { return S_OK; }
+
 	STDMETHODIMP_(long) OnStateChange(int nState) { 
 		EnableButtons(m_hWnd, m_pController);
 		return S_OK; 
 	};
 
 public:
-	CControllerEvents(HWND hWnd, IController* pController) : m_uRef(0) { m_hWnd = hWnd; m_pController = pController; };
-	~CControllerEvents() {};
+	CControllerEvents(HWND hWnd, IController* pController) : m_uRef(0) { m_hWnd = hWnd; m_pController = pController; }
+	~CControllerEvents() {}
 };
 
 const char* GetInstalledVersion(char* szVersion, int iSize)
@@ -184,7 +184,7 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 	hr = pGames->get__NewEnum((IUnknown**) &pUnk);
 	if ( FAILED(hr) )
 		pGames->Release();
-	
+
 	/* we got an IUnknow interface, but we need IEnumGames */
 	IEnumGames* pEnumGames;
 	hr = pUnk->QueryInterface(__uuidof(IEnumGames), (void**) &pEnumGames);
@@ -307,7 +307,7 @@ void RunGame(HWND hWnd, IController *pController)
 /* Checks the roms /*
 /***************************************************************************************/
 void CheckRoms(HWND hWnd, IController *pController)
-{   
+{
 	LRESULT iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
 
 	if ( iIndex<0 )
@@ -323,7 +323,7 @@ void CheckRoms(HWND hWnd, IController *pController)
 	SysFreeString(sGameName);
 
 	VARIANT_BOOL fResult;
-	if ( FAILED(pController->CheckROMS(0, (long) hWnd, &fResult)) )
+	if ( FAILED(pController->CheckROMS(0, (LONG_PTR) hWnd, &fResult)) )
 		DisplayCOMError(pController, __uuidof(IController));
 
 	SysFreeString(sGameName);
@@ -334,7 +334,7 @@ void CheckRoms(HWND hWnd, IController *pController)
 /* Displays the game options /*
 /***************************************************************************************/
 void GameOptions(HWND hWnd, IController *pController)
-{   
+{
 	LRESULT iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
 
 	if ( iIndex<0 )
@@ -349,7 +349,7 @@ void GameOptions(HWND hWnd, IController *pController)
 	pController->put_GameName(sGameName);
 	SysFreeString(sGameName);
 
-	if ( FAILED(pController->ShowOptsDialog((long) hWnd)) ) 
+	if ( FAILED(pController->ShowOptsDialog((LONG_PTR) hWnd)) )
 		DisplayCOMError(pController, __uuidof(IController));
 
 	SysFreeString(sGameName);
