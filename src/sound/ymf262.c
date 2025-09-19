@@ -68,9 +68,6 @@ differences between OPL2 and OPL3 shown in datasheets:
 #define PI 3.1415926535897932384626433832795
 #endif
 
-// old code that had rate not necessarily meet clock/(8*36)
-//#define YMF262_NOT_EXACT_RATE
-
 /* output final shift */
 #if (OPL3_SAMPLE_BITS==16)
 	#define FINAL_SH	(0)
@@ -287,9 +284,6 @@ typedef struct {
 	UINT8 type;						/* chip type					*/
 	double clock;					/* master clock  (Hz)			*/
 	int rate;						/* sampling rate (Hz)			*/
-#ifdef YMF262_NOT_EXACT_RATE
-	double freqbase;				/* frequency base				*/
-#endif
 	double TimerBase;				/* Timer base time (==sampling time)*/
 
 	unsigned short vgm_idx;
@@ -1316,13 +1310,8 @@ static void OPL3_initalize(OPL3 *chip)
 {
 	int i;
 
-#ifdef YMF262_NOT_EXACT_RATE
-	/* frequency base */
-	chip->freqbase = (chip->rate) ? ((double)chip->clock / (8*36)) / chip->rate : 0;
-#else
 	// make sure that rate really matches
 	chip->rate = (int)(chip->clock/(8*36) + 0.5);
-#endif
 
 	/* logerror("YMF262: freqbase=%f\n", chip->freqbase); */
 
@@ -1333,11 +1322,7 @@ static void OPL3_initalize(OPL3 *chip)
 	for( i=0 ; i < 1024 ; i++ )
 	{
 		/* opn phase increment counter = 20bit */
-#ifdef YMF262_NOT_EXACT_RATE
-		chip->fn_tab[i] = (UINT32)( (double)(i * 64 * (1<<(FREQ_SH-10))) * chip->freqbase ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
-#else
 		chip->fn_tab[i] = i * 64 * (1<<(FREQ_SH-10)); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
-#endif
 #if 0
 		logerror("YMF262.C: fn_tab[%4i] = %08x (dec=%8i)\n",
 				 i, chip->fn_tab[i]>>6, chip->fn_tab[i]>>6 );
@@ -1364,20 +1349,6 @@ static void OPL3_initalize(OPL3 *chip)
 
 
 	/* Amplitude modulation: 27 output levels (triangle waveform); 1 level takes one of: 192, 256 or 448 samples */
-#ifdef YMF262_NOT_EXACT_RATE
-	/* One entry from LFO_AM_TABLE lasts for 64 samples */
-	chip->lfo_am_inc = (1.0 / 64.0 ) * (1<<LFO_SH) * chip->freqbase;
-
-	/* Vibrato: 8 output levels (triangle waveform); 1 level takes 1024 samples */
-	chip->lfo_pm_inc = (1.0 / 1024.0) * (1<<LFO_SH) * chip->freqbase;
-
-	/*logerror ("chip->lfo_am_inc = %8x ; chip->lfo_pm_inc = %8x\n", chip->lfo_am_inc, chip->lfo_pm_inc);*/
-
-	/* Noise generator: a step takes 1 sample */
-	chip->noise_f = (1.0 / 1.0) * (1<<FREQ_SH) * chip->freqbase;
-
-	chip->eg_timer_add  = (1<<EG_SH)  * chip->freqbase;
-#else
 	/* One entry from LFO_AM_TABLE lasts for 64 samples */
 	chip->lfo_am_inc = (1 << LFO_SH) / 64;
 
@@ -1390,7 +1361,6 @@ static void OPL3_initalize(OPL3 *chip)
 	chip->noise_f = (1 << FREQ_SH) / 1;
 
 	chip->eg_timer_add = (1 << EG_SH);
-#endif
 
 	chip->eg_timer_overflow = ( 1 ) * (1<<EG_SH);
 	/*logerror("YMF262init eg_timer_add=%8x eg_timer_overflow=%8x\n", chip->eg_timer_add, chip->eg_timer_overflow);*/
