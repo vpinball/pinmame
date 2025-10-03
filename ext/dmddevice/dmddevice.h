@@ -77,7 +77,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
 //!! DMDDEV void Render_4_Shades_with_Raw(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
 //!! DMDDEV void Render_16_Shades_with_Raw(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer);
-//!! DMDDEV void Render_Lum_And_Raw(UINT16 width, UINT16 height, UINT8 *lumBuffer, UINT8 *identifyBuffer, UINT32 noOfRawFrames, UINT8 *rawFrames);
+//!! DMDDEV void Render_Lum_And_Raw(UINT16 width, UINT16 height, UINT8 *lumBuffer, UINT8 *identifyBuffer, UINT8 identifyBitLength);
 
 // ----- Alphanumeric segment data
 // Render_PM_Alphanumeric_Dim_Frame was added in later revision of this interface and superseeds the deprecated Render_PM_Alphanumeric_Frame.
