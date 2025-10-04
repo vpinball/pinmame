@@ -18,6 +18,8 @@ Added PWM support to CFTBL backglass flashers
 Added PWM lamps & solenoids support to Bally 6803 games
 Added PWM lamps & solenoids support to Zaccaria games
 Added PWM support to Alvin G. games
+Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
+Slightly improved YM262 sound for Sir Lancelot
 
 *** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles
 Correct Dumps:
@@ -27,7 +29,7 @@ Clones:
 Bad Cats LF-1 (French)
 Bad Cats (The Cat's Meow) (MOD 1.2 & 1.3)
 Cue Ball Wizard (Spanish / Vifico license)
-Gorgar L-2 (unreleased so far, makes it the newest version available)
+Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
 High Speed (G-4 aka German PROTO4)
 Rolling Stones V21 (unreleased so far, makes it the newest version available)
 Soccer Kings (alternate set 2)

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+// copyright-holders:Aaron Giles
 /*
  *   streaming ADPCM driver
  *   by Aaron Giles
@@ -58,7 +60,7 @@
 #include "msm5205.h"
 
 /*
- * ADPCM lockup tabe
+ * ADPCM lookup table
  */
 
 /* step size index shift table */
@@ -115,7 +117,7 @@ static void ComputeTables (void)
 struct MSM5205Voice
 {
 	int stream;             /* number of stream system      */
-	void *timer;              /* VCLK callback timer          */
+	void *timer;            /* VCLK callback timer          */
 	int data;               /* next adpcm data              */
 	int vclk;               /* vclk signal (external mode)  */
 	int reset;              /* reset pin signal             */
@@ -123,6 +125,7 @@ struct MSM5205Voice
 	int bitwidth;           /* bit width selector -3B/4B    */
 	int signal;             /* current ADPCM signal         */
 	int step;               /* current ADPCM step           */
+	int dac_bits;           /* msm6585: 12, msm5205: 10     */
 };
 
 static const struct MSM5205interface *msm5205_intf;
@@ -134,9 +137,10 @@ static void MSM5205_update(int chip,INT16 *buffer,int length)
 	struct MSM5205Voice *voice = &msm5205[chip];
 
 	/* if this voice is active */
-	if(voice->signal)
+	if (voice->signal)
 	{
-		const INT16 val = voice->signal * 16;
+		const int dac_mask = (voice->dac_bits >= 12) ? 0 : (1 << (12 - voice->dac_bits)) - 1;
+		const INT16 val = (voice->signal & ~dac_mask) * 16;
 		int i;
 		for (i = 0; i < length; i++)
 			buffer[i] = val;
@@ -145,17 +149,18 @@ static void MSM5205_update(int chip,INT16 *buffer,int length)
 		memset (buffer,0,length*sizeof(INT16));
 }
 
-/* timer callback at VCLK low eddge */
+// timer callback at VCLK low edge
 static void MSM5205_vclk_callback(int num)
 {
 	struct MSM5205Voice *voice = &msm5205[num];
 	int val;
 	int new_signal;
-	/* callback user handler and latch next data */
+
+	// callback user handler and latch next data
 	if(msm5205_intf->vclk_callback[num]) (*msm5205_intf->vclk_callback[num])(num);
 
-	/* reset check at last hieddge of VCLK */
-	if(voice->reset)
+	// reset check at last hiedge of VCLK
+	if (voice->reset)
 	{
 		new_signal = 0;
 		voice->step = 0;
@@ -165,15 +170,19 @@ static void MSM5205_vclk_callback(int num)
 		/* update signal */
 		/* !! MSM5205 has internal 12bit decoding, signal width is 0 to 8191 !! */
 		val = voice->data;
-		new_signal = voice->signal + diff_lookup[voice->step * 16 + (val & 15)];
+		new_signal = (voice->signal * 245 + (diff_lookup[voice->step * 16 + (val & 15)] << 8)) >> 8;
+
 		if (new_signal > 2047) new_signal = 2047;
 		else if (new_signal < -2048) new_signal = -2048;
+
 		voice->step += index_shift[val & 7];
+
 		if (voice->step > 48) voice->step = 48;
 		else if (voice->step < 0) voice->step = 0;
 	}
+
 	/* update when signal changed */
-	if( voice->signal != new_signal)
+	if(voice->signal != new_signal)
 	{
 		stream_update(voice->stream,0);
 		voice->signal = new_signal;
@@ -203,7 +212,7 @@ int MSM5205_sh_start (const struct MachineSound *msound)
 		char name[20];
 		sprintf(name,"MSM5205 #%d",i);
 		voice->stream = stream_init(name,msm5205_intf->mixing_level[i],
-                                Machine->sample_rate,i,
+		                        Machine->sample_rate,i,
 		                        MSM5205_update);
 		voice->timer = timer_alloc(MSM5205_vclk_callback);
 	}
@@ -250,6 +259,7 @@ void MSM5205_sh_reset(void)
 		voice->reset   = 0;
 		voice->signal  = 0;
 		voice->step    = 0;
+		voice->dac_bits = (msm5205_intf->variant[i] == 0) ? 10 : 12;
 		/* timer and bitwidth set */
 		MSM5205_playmode_w(i,msm5205_intf->select[i]);
 	}
@@ -267,13 +277,13 @@ void MSM5205_vclk_w (int num, int vclk)
 		logerror("error: MSM5205_vclk_w() called with chip = %d, but only %d chips allocated\n", num, msm5205_intf->num);
 		return;
 	}
-	if( msm5205[num].prescaler != 0 )
+	if (msm5205[num].prescaler != 0)
 	{
 		logerror("error: MSM5205_vclk_w() called with chip = %d, but VCLK selected master mode\n", num);
 	}
 	else
 	{
-		if( msm5205[num].vclk != vclk)
+		if (msm5205[num].vclk != vclk)
 		{
 			msm5205[num].vclk = vclk;
 			if( !vclk ) MSM5205_vclk_callback(num);
@@ -302,10 +312,10 @@ void MSM5205_reset_w (int num, int reset)
 
 void MSM5205_data_w (int num, int data)
 {
-	if( msm5205[num].bitwidth == 4)
+	if (msm5205[num].bitwidth == 4)
 		msm5205[num].data = data & 0x0f;
 	else
-		msm5205[num].data = (data & 0x07)<<1; /* unknown */
+		msm5205[num].data = (data & 0x07) << 1; /* unknown */
 }
 
 /*
@@ -318,13 +328,12 @@ void MSM5205_playmode_w(int num,int select)
 	static const int prescaler_table[2][4] =
 	{
 		{ 96, 48, 64,  0},
-		{160, 40, 80, 20}
+		{160, 40, 80, 20} // msm6585
 	};
 	int prescaler = prescaler_table[select >> 3 & 1][select & 3];
 	int bitwidth = (select & 4) ? 4 : 3;
 
-
-	if( voice->prescaler != prescaler )
+	if (voice->prescaler != prescaler)
 	{
 		stream_update(voice->stream,0);
 
@@ -339,7 +348,7 @@ void MSM5205_playmode_w(int num,int select)
 			timer_adjust(voice->timer, TIME_NEVER, 0, 0);
 	}
 
-	if( voice->bitwidth != bitwidth )
+	if (voice->bitwidth != bitwidth)
 	{
 		stream_update(voice->stream,0);
 

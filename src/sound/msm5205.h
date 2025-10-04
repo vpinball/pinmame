@@ -8,23 +8,31 @@
 
 #define MAX_MSM5205 4
 
-/* priscaler selector defines   */
-/* default master clock is 384KHz */
-#define MSM5205_S96_3B 0     /* prsicaler 1/96(4KHz) , data 3bit */
-#define MSM5205_S48_3B 1     /* prsicaler 1/48(8KHz) , data 3bit */
-#define MSM5205_S64_3B 2     /* prsicaler 1/64(6KHz) , data 3bit */
+/* prescaler selector defines   */
+/* default master clock is 384kHz */
+#define MSM5205_S96_3B 0     /* prescaler 1/96(4KHz) , data 3bit */
+#define MSM5205_S48_3B 1     /* prescaler 1/48(8KHz) , data 3bit */
+#define MSM5205_S64_3B 2     /* prescaler 1/64(6KHz) , data 3bit */
 #define MSM5205_SEX_3B 3     /* VCLK slave mode      , data 3bit */
-#define MSM5205_S96_4B 4     /* prsicaler 1/96(4KHz) , data 4bit */
-#define MSM5205_S48_4B 5     /* prsicaler 1/48(8KHz) , data 4bit */
-#define MSM5205_S64_4B 6     /* prsicaler 1/64(6KHz) , data 4bit */
+#define MSM5205_S96_4B 4     /* prescaler 1/96(4KHz) , data 4bit */
+#define MSM5205_S48_4B 5     /* prescaler 1/48(8KHz) , data 4bit */
+#define MSM5205_S64_4B 6     /* prescaler 1/64(6KHz) , data 4bit */
 #define MSM5205_SEX_4B 7     /* VCLK slave mode      , data 4bit */
+
+#define MSM6585_S160_4B (4|8)/* prescaler 1/160(4KHz), data 4bit */
+#define MSM6585_S40_4B (5|8) /* prescaler 1/40(16KHz), data 4bit */
+#define MSM6585_S80_4B (6|8) /* prescaler 1/80(8KHz) , data 4bit */
+#define MSM6585_S20_4B (7|8) /* prescaler 1/20(32KHz), data 4bit */
+
+// | 8 = msm6585, but only 4 bit modes and master clock 640kHz
 
 struct MSM5205interface
 {
 	int num;                       /* total number of chips                 */
-	double baseclock;              /* master clock (default = 384KHz)       */
-	void (*vclk_callback[MAX_MSM5205])(int);   /* VCLK callback  			*/
+	double baseclock;              /* master clock (default = 384KHz)       */ //640 for msm6585
+	void (*vclk_callback[MAX_MSM5205])(int);   /* VCLK callback             */
 	int select[MAX_MSM5205];       /* prescaler / bit width selector        */
+	int variant[MAX_MSM5205];      /* 0=msm5205, 1=msm6585                  */
 	int mixing_level[MAX_MSM5205]; /* master volume                         */
 };
 

@@ -329,6 +329,7 @@ static struct MSM5205interface JP_msm5205Int = {
 	384000,				//Clock Frequency
 	{JP_msmIrq},		//VCLK Int. Callback
 	{MSM5205_S48_4B},	//Sample Mode
+	{0},
 	{60}				//Volume
 };
 

@@ -319,27 +319,30 @@ static ppi8255_interface ppi8255_intf =
 	{ci20_portc_w, ci23_portc_w, ci22_portc_w, ci21_portc_w, snd1_portc_w, snd2_portc_w},		/* Port C write */
 };
 /* MSM5205 ADPCM CHIP INTERFACE */
-static struct MSM5205interface SPINB_msm5205Int = {
+static struct MSM5205interface SPINB_msm5205Int = { // Bushido, Mach 2
 	2,										//# of chips
 	384000,									//384Khz Clock Frequency
 	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
 	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{0,0},
 	{100,75}								//Volume
 };
 /* MSM6585 ADPCM CHIP INTERFACE */
-static struct MSM5205interface SPINB_msm6585Int = {
+static struct MSM5205interface SPINB_msm6585Int = { // Jolly Park
 	2,										//# of chips
 	640000,									//640Khz Clock Frequency
 	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
-	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{MSM6585_S40_4B, MSM6585_S40_4B},		//Sample Mode // 16KHz 4-bit
+	{1,1},
 	{100,75}								//Volume
 };
 /* MSM6585 ADPCM CHIP INTERFACE */
-static struct MSM5205interface SPINB_msm6585Int2 = {
+static struct MSM5205interface SPINB_msm6585Int2 = { // Verne's World
 	2,										//# of chips
-	720000,									//720Khz Clock Frequency
+	640000,									//640Khz Clock Frequency
 	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
-	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{MSM6585_S40_4B, MSM6585_S40_4B},		//Sample Mode // 16KHz 4-bit
+	{1,1},
 	{100,75}								//Volume
 };
 /* Sound board */
@@ -1347,7 +1350,7 @@ MACHINE_DRIVER_START(spinb)
   MDRV_SWITCH_CONV(spinb_sw2m,spinb_m2sw)
 MACHINE_DRIVER_END
 
-//Main CPU without NMI, DMD, Sound hardware Driver
+//Main CPU without NMI, DMD, Sound hardware Driver (Bushido, Mach2)
 MACHINE_DRIVER_START(spinbs1)
   MDRV_IMPORT_FROM(spinb)
   MDRV_IMPORT_FROM(spinbdmd)
@@ -1356,7 +1359,7 @@ MACHINE_DRIVER_START(spinbs1)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
 
-//Main CPU with NMI, DMD, Sound hardware Driver
+//Main CPU with NMI, DMD, Sound hardware Driver (Jolly Park)
 MACHINE_DRIVER_START(spinbs1n)
   MDRV_IMPORT_FROM(spinb)
   MDRV_CPU_MODIFY("mcpu")
@@ -1368,7 +1371,7 @@ MACHINE_DRIVER_START(spinbs1n)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
 
-//Main CPU with NMI, DMD, Sound hardware Driver, extended DMD memory
+//Main CPU with NMI, DMD, Sound hardware Driver, extended DMD memory (Verne's World)
 MACHINE_DRIVER_START(spinbs1n2)
   MDRV_IMPORT_FROM(spinb)
   MDRV_CPU_MODIFY("mcpu")
@@ -1399,6 +1402,7 @@ static struct MSM5205interface gunshot_msm6585Int = {
   384000,
   {SPINB_S1_msmIrq},
   {MSM5205_S48_4B},
+  {0},
   {50}
 };
 MACHINE_DRIVER_START(gunshot)

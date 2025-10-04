@@ -113,10 +113,11 @@ static void mac_msmIrq(int data) {
 }
 
 static struct MSM5205interface MAC_msm5205Int = {
-  1,					//# of chips
-  384000,				//384Khz Clock Frequency
+  1,				//# of chips
+  384000,			//384Khz Clock Frequency
   {mac_msmIrq},		//VCLK Int. Callback
   {MSM5205_S48_4B},	//Sample Mode
+  {0},
   {100}				//Volume
 };
 

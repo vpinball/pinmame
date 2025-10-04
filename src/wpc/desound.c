@@ -45,7 +45,7 @@ const struct sndbrdIntf de1sIntf = {
 
 static struct MSM5205interface de1s_msm5205Int = {
 /* chip          interrupt */
-     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 60 }
+     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 60 }
 };
 
 static struct YM2151interface de1s_ym2151Int = {

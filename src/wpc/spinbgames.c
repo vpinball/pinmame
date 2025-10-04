@@ -30,7 +30,7 @@ static struct core_dispLayout spinb_dispDMD[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ Bushido (1993) - (Last game by Inder - before becomming Spinball - but same hardware)
+/ Bushido (1993) - (Last game by Inder - before becoming Spinball - but same hardware)
 /-------------------------------------------------------------------*/
 // Note that bushido has (at least) different Trough-Switches compared to bushidoa and bushidob
 INITGAME(bushido, spinb_dispDMD, FLIP_SWNO(0,0), 3, SNDBRD_SPINB, SPINB_DSP1, SPINB_GS1(0x11,0x0C,0,FALSE), 175)

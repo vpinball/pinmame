@@ -185,6 +185,7 @@ static struct MSM5205interface zsu_msm5205Int = {
   0, //500000, // connected but not needed because VCLK pin is being used, saves a timer
   {NULL},
   {MSM5205_SEX_4B},
+  {0},
   {50}
 };
 
