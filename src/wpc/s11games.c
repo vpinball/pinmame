@@ -1234,6 +1234,15 @@ S11CS_SOUNDROM000(       "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c
 S11_ROMEND
 CORE_CLONEDEF(rollr,l2c,l2, "Rollergames (LA-2C Competition MOD)", 2019, "Williams", s11_mS11CS,0)
 
+// the following is similar to LA-2C but restores the removed adjustments (mostly) and keeps scores a bit longer on screen in attract mode
+S11_ROMSTART48(rollr,ta2,"rollergames-mod-ta2.u26", CRC(D97152BB) SHA1(c72953b51bf9b8d753950ebb163a0761ec2741fd),
+                         "rollergames-mod-ta2.u27", CRC(98A91030) SHA1(38e2ce0b7091cec5fe06ddded9494392c23be582))
+S11CS_SOUNDROM000(       "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c45cc81a18f13e1a8f8da),
+                         "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
+                         "rolr_u20.l3",  CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
+S11_ROMEND
+CORE_CLONEDEF(rollr,ta2,l2, "Rollergames (LA-2C Competition MOD Tournament Edition)", 2025, "Williams", s11_mS11CS,0)
+
 S11_ROMSTART48(rollr,ex,"rolr_u26.ea3", CRC(78c3c1ad) SHA1(04e4370548b3ba85c49634402a0ea166e3643f68),
                         "rolr_u27.ea3", CRC(18685158) SHA1(d1a79fbe1185fb9e1ae1d9e2b2751429f487bb4c))
 S11CS_SOUNDROM000(      "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c45cc81a18f13e1a8f8da),

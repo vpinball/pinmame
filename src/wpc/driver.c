@@ -2741,7 +2741,7 @@ DRIVER(rvrbt,p7)        //          11/89 W Riverboat Gambler (PA-7 Prototype)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (LA-1)
 DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (LA-4)
-DRIVER(mousn,l4c)       //          01/19 B Mousin' Around! (LA-4C Competition MOD)
+DRIVER(mousn,l4c)       //          01/19   Mousin' Around! (LA-4C Competition MOD)
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
@@ -2759,7 +2759,8 @@ DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1 Prototype Europe)
 DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(rollr,l1)        //          04/90 W Rollergames (LA-1)
 DRIVER(rollr,l2)        //          04/90 W Rollergames (LA-2)
-DRIVER(rollr,l2c)       //          04/19 W Rollergames (LA-2C Competition MOD)
+DRIVER(rollr,l2c)       //          04/19   Rollergames (LA-2C Competition MOD)
+DRIVER(rollr,ta2)       //          09/25   Rollergames (LA-2C Competition MOD Tournament Edition)
 DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3 Europe)
 DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3 German)
 DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2 French)
