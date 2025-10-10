@@ -170,13 +170,15 @@ const char* get_bass_err()
 		"BASS_ERROR_BUSY",
 		"BASS_ERROR_UNSTREAMABLE",
 		"BASS_ERROR_PROTOCOL",
-		"BASS_ERROR_DENIED"
-		//   [BASS_ERROR_UNKNOWN]      = ""
+		"BASS_ERROR_DENIED",
+		"BASS_ERROR_FREEING",
+		"BASS_ERROR_CANCEL"
+		//[BASS_ERROR_UNKNOWN]
 	};
 
 	// returns string representation of BASS error codes
 	const int err = BASS_ErrorGetCode();
-	if (err < 0) {
+	if (err < 0 || err >= std::size(bass_err_names)) {
 		return "BASS_ERROR_UNKNOWN";
 	}
 	else {
