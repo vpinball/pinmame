@@ -122,8 +122,8 @@ struct AY8910interface IDSA_ay8910Int = {
 	2,					/* 2 chips */
 	2000000,			/* 2 MHz */
 	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
-	{ NULL },
-	{ NULL },
+	{ NULL, NULL },
+	{ NULL, NULL },
 	{ ay8910_0_portA_w, ay8910_1_portA_w },	/* Output Port A callback */
 	{ ay8910_0_portB_w, ay8910_1_portB_w },	/* Output Port B callback */
 };

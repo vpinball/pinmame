@@ -224,8 +224,8 @@ static WRITE_HANDLER(qs1pin_2_out) {
 static HC4094interface hc4094jp = {
   4, // 4 chips
   { parallel_0_out, parallel_1_out, parallel_2_out, parallel_3_out },
-  { 0 },
-  { qs1pin_0_out, qs1pin_1_out, qs1pin_2_out }
+  { 0, 0, 0, 0 },
+  { qs1pin_0_out, qs1pin_1_out, qs1pin_2_out, NULL }
 };
 
 static WRITE_HANDLER(ay8910_ctrl_w) { AY8910Write(0,0,data); }
@@ -417,8 +417,8 @@ struct AY8910interface JP2_ay8910Int2 = {
     2,              /* 2 chips */
     2000000,        /* 2 MHz ? */
     { MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },     /* Volume */
-    { NULL },
-    { NULL },
+    { NULL, NULL },
+    { NULL, NULL },
     { ay8910_0_portA_w, ay8910_1_portA_w },
     { ay8910_0_portB_w, ay8910_1_portB_w },
 };

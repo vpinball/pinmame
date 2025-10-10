@@ -643,7 +643,7 @@ static WRITE_HANDLER(sns_data_w) {
       break;
     case SNDBRD_ZAC11178_13181:
       pia_set_input_ca1(SNS_PIA1, (data & 0xc0) == 0xc0); // CA1 is fed by DB6 & DB7 from daughter board (same signals as on main board though)
-      // cpu reads command from adress b0 after nmi !!!
+      // cpu reads command from address b0 after nmi !!!
       if ((~data & 0x40) && (data & 0x80)) cpu_set_nmi_line(ZACSND_CPUB, PULSE_LINE);
       break;
     case SNDBRD_ZAC13181x3:

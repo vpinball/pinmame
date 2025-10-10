@@ -81,7 +81,7 @@ struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
 	LTD_CPUFREQ,		/* 895 kHz */
 	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
-	{ NULL }, { NULL },
+	{ NULL, NULL }, { NULL, NULL },
 	{ port_0a_w, port_1a_w }, { port_0b_w, port_1b_w },
 };
 

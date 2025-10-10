@@ -248,10 +248,10 @@ struct AY8910interface TAITO_ay8910Int = {
 	2,			/* 2 chips */
 	2000000,	/* 2 MHz */  //!! MAME has XTAL(3'579'545)/2 as guess
 	{ 30, 30 }, /* Volume */
-	{ 0 },
-	{ 0 },
-	{ 0 },
-	{ 0 }
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 }
 };
 
 MEMORY_READ_START(taitospp_readmem)

@@ -167,9 +167,9 @@ static struct AY8910interface nsm_ay8912Int = {
   2,			/* 2 chips */
   11052000. / 8.,		/* 1.3815 MHz */
   { 20, 20 },	/* Volume */
-  { 0 }, { 0 },
-  { ay8912_0_port_w },
-  { ay8912_1_port_w },
+  { 0, 0 }, { 0, 0 },
+  { ay8912_0_port_w, 0 },
+  { ay8912_1_port_w, 0 },
 };
 
 static READ_HANDLER(read_ba) {

@@ -217,7 +217,7 @@ static struct AY8910interface JOCTRONIC_ay8910Int2 = {
   2,
   1500000,
   { MIXER(30,MIXER_PAN_RIGHT), MIXER(30,MIXER_PAN_LEFT) },
-  { 0 }, { 0 },
+  { 0, 0 }, { 0, 0 },
   { 0, DAC_0_data_w }, { 0, DAC_1_data_w },
 };
 

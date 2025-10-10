@@ -18,7 +18,7 @@ static struct core_dispLayout spinb_dispDMD[] = {
 #define SPINB_DSP3 3
 
 #define SPINB_GS1(solInvert0,solInvert1,solInvert2,lamp16isGameOn) \
-(((UINT8)(solInvert0)<<24) | ((UINT8)(solInvert1)<<16) | ((UINT8)(solInvert2)<<8) | ((UINT8)(lamp16isGameOn)))
+(((UINT32)(UINT8)(solInvert0)<<24) | ((UINT32)(UINT8)(solInvert1)<<16) | ((UINT32)(UINT8)(solInvert2)<<8) | ((UINT32)(UINT8)(lamp16isGameOn)))
 
 #define INITGAME(name, disptype, flippers, balls, sb, db, gs1, gs2) \
 	SPINB_INPUT_PORTS_START(name, balls) SPINB_INPUT_PORTS_END \

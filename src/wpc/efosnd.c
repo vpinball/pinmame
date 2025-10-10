@@ -176,7 +176,7 @@ struct AY8910interface zsu_8910Int = {
   2,
   2000000,
   { 30, 30 },
-  { NULL }, { NULL },
+  { NULL, NULL }, { NULL, NULL },
   { ay8910_0_a_w, ay8910_1_a_w }
 };
 

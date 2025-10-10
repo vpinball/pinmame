@@ -2433,34 +2433,34 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
   // by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware.
   if (output->state.sol.fastOn && (prevValue != output->value)) {
     const int sol = index - CORE_MODOUT_SOL0;
-    const UINT32 state = output->value > 0.5f ? 1 : 0;
+    const UINT32 statel = output->value > 0.5f ? 1 : 0;
     if (sol == (coreGlobals.flipperCoils & 0xFF))              // Lower Left Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (state ? 0x04 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (statel ? 0x04 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >>  8) & 0xFF)) // Lower Right Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x01) | (state ? 0x01 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x01) | (statel ? 0x01 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 16) & 0xFF)) // Upper Left Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x40) | (state ? 0x40 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x40) | (statel ? 0x40 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 24) & 0xFF)) // Upper Right Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x10) | (state ? 0x10 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x10) | (statel ? 0x10 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 32) & 0xFF)) // Lower Left Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x08) | (state ? 0x08 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x08) | (statel ? 0x08 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 40) & 0xFF)) // Lower Right Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x02) | (state ? 0x02 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x02) | (statel ? 0x02 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 48) & 0xFF)) // Upper Left Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x80) | (state ? 0x80 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x80) | (statel ? 0x80 : 0x00);
     else if (sol == ((coreGlobals.flipperCoils >> 56) & 0xFF)) // Upper Right Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x20) | (state ? 0x20 : 0x00);
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x20) | (statel ? 0x20 : 0x00);
     if (sol < 28)
-      coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
+      coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (statel << sol);
     else if (sol < 32) {
       if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) {
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol +  8))) | (state << (sol + 8));
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 12))) | (state << (sol + 12));
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol +  8))) | (statel << (sol + 8));
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol + 12))) | (statel << (sol + 12));
       }
       else if ((core_gameData->gen & GEN_ALLWPC) == 0)
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (state << sol);
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << sol)) | (statel << sol);
       else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA) && 40 <= sol && sol < 48)
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol - 4))) | (state << (sol - 4));
+        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (sol - 4))) | (statel << (sol - 4));
     }
   }
 }

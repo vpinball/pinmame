@@ -45,7 +45,7 @@ static WRITE_HANDLER(gpss1_data_w)
 { // tone frequencies          C    E             A    A low
   static const double voltage[16] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
   data &= 0x0f;
-  if (voltage[data]) {
+  if (voltage[data] != 0.) {
     SN76477_set_vco_voltage(0, voltage[data]);
     SN76477_enable_w(0, 0);
   } else {
@@ -182,7 +182,7 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_enable_w(0, 0);
       break;
   }
-  if (voltage[data]) {
+  if (voltage[data] != 0.) {
     SN76477_set_vco_voltage(2, voltage[data]);
     SN76477_enable_w(2, 0);
   } else {
@@ -319,7 +319,7 @@ static WRITE_HANDLER(gpss4_data_w)
       SN76477_enable_w(0, 0);
       break;
   }
-  if (voltage[data]) {
+  if (voltage[data] != 0.) {
     SN76477_set_vco_voltage(2, voltage[data]);
     SN76477_enable_w(2, 0);
   } else {

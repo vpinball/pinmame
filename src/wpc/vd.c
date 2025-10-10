@@ -74,7 +74,7 @@ struct AY8910interface VD_ay8910Int = {
   2,         /* 2 chips ? */
   2000000,   /* 2 MHz ? */
   { MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) }, /* Volume */
-  { port_a_r }, { port_b_r },
+  { port_a_r, 0 }, { port_b_r, 0 },
 };
 
 static READ_HANDLER(clr_r) {

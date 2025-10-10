@@ -454,7 +454,7 @@ static WRITE_HANDLER(qspin_0_out) {
 static HC4094interface hc4094ss = {
   2, // 2 chips
   { parallel_0_out, parallel_1_out },
-  { qspin_0_out }
+  { qspin_0_out, NULL }
 };
 
 /*----------------------

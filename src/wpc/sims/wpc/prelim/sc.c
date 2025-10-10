@@ -371,7 +371,7 @@ static WRITE_HANDLER(qspin_4_out) {
 static HC4094interface hc4094sc = {
   6, // 6 chips
   { parallel_0_out, parallel_1_out, parallel_2_out, parallel_3_out, parallel_4_out, parallel_5_out },
-  { qspin_0_out, qspin_1_out, NULL, qspin_3_out, qspin_4_out }
+  { qspin_0_out, qspin_1_out, NULL, qspin_3_out, qspin_4_out, NULL }
 };
 
 static WRITE_HANDLER(sc_wpc_w) {
