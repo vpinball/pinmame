@@ -13,6 +13,10 @@
 #include <iomanip>
 
 #include "altsound_logger.hpp"
+extern "C"
+{
+#include "driver.h"
+}
 
 extern AltsoundLogger alog;
 extern StreamArray channel_stream;
@@ -157,13 +161,13 @@ bool AltsoundProcessorBase::findFreeChannel(unsigned int& channel_out)
 	if (it != channel_stream.end()) {
 		channel_out = static_cast<unsigned int>(std::distance(channel_stream.begin(), it));
 		ALT_INFO(1, "Found free channel: %02u", channel_out);
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END: AltsoundProcessorBase::findFreeChannel()");
 		return true;
 	}
 	ALT_ERROR(1, "No free channels available!");
-	
+
 	OUTDENT;
 	ALT_DEBUG(0, "END AltsoundProcessorBase::findFreeChannel()");
 	return false;
@@ -220,10 +224,10 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 
 	const std::string short_path = getShortPath(stream_out->sample_path);
 	unsigned int ch_idx;
-	
+
 	if (!ALT_CALL(findFreeChannel(ch_idx))) {
 		ALT_ERROR(1, "FAILED AltsoundProcessorBase::findFreeChannel()");
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END AltsoundProcessorBase::createStream()");
 		return false;
@@ -232,16 +236,24 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	stream_out->channel_idx = ch_idx; // store channel assignment
 	const bool loop = stream_out->loop;
 
-    // Create playback stream
+	// Create playback stream
 	HSTREAM hstream = BASS_StreamCreateFile(FALSE, stream_out->sample_path.c_str(), 0, 0, loop ? BASS_SAMPLE_LOOP : 0);
 
 	if (hstream == BASS_NO_STREAM) {
 		// Failed to create stream
 		ALT_ERROR(1, "FAILED BASS_StreamCreateFile(%s): %s", short_path.c_str(), get_bass_err());
-		
+
 		OUTDENT;
 		ALT_DEBUG(0, "END: AltsoundProcessorBase::createStream()");
 		return false;
+	}
+
+	const bool success = BASS_ChannelSetAttribute(hstream, BASS_ATTRIB_SRC, (pmoptions.resampling_quality == 0) ? 2.f : 3.f) != 0;
+	if (!success) {
+		ALT_ERROR(1, "FAILED BASS_ChannelSetAttribute(BASS_ATTRIB_SRC)");
+	}
+	else {
+		ALT_INFO(1, "SUCCESS BASS_ChannelSetAttribute(BASS_ATTRIB_SRC)");
 	}
 
 	// Set callback to execute when sample playback ends
@@ -256,7 +268,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 			// Failed to set sync
 			ALT_ERROR(1, "FAILED BASS_ChannelSetSync(): STREAM: %u ERROR: %s", hstream, get_bass_err());
 			freeStream(hstream);
-			
+
 			OUTDENT;
 			ALT_DEBUG(0, "END: AltsoundProcessorBase::createStream()");
 			return false;
@@ -339,7 +351,7 @@ bool AltsoundProcessorBase::stopAllStreams()
 			ALT_ERROR(0, "FAILED stopStream(%u)", stream->hstream);
 		}
 	}
-	
+
 	ALT_DEBUG(0, "END AltsoundProcessorBase::stopAllStreams()");
 	return success;
 }

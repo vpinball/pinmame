@@ -51,7 +51,7 @@ public:
 	GSoundProcessor(const std::string& game_name, const std::string& vpm_path);
 
 	// Destructor
-	~GSoundProcessor();
+	~GSoundProcessor() override;
 
 	// External interface to stop MUSIC stream
 	bool stopMusic() override;
@@ -95,10 +95,10 @@ private: // functions
 
 	// determine lowest ducking volume impacts on stream_type
 	static float findLowestDuckVolume(AltsoundSampleType stream_type);
-	
+
 	// process PAUSED behavior impacts for all streams
 	static bool processPausedStreams();
-	
+
 	// resume paused playback on streams that no longer need to be paused
 	static bool tryResumeStream(const AltsoundStreamInfo& stream);
 
