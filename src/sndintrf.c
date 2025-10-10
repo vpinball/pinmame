@@ -422,18 +422,6 @@ int M114S_num(const struct MachineSound *msound) { return ((struct M114Sinterfac
 #endif
 #endif /* PINMAME */
 
-#ifdef MESS
-#if (HAS_BEEP)
-int beep_num(const struct MachineSound *msound) { return ((struct beep_interface*)msound->sound_interface)->num; }
-#endif
-#if (HAS_SPEAKER)
-int speaker_num(const struct MachineSound *msound) { return ((struct Speaker_interface*)msound->sound_interface)->num; }
-#endif
-#if (HAS_WAVE)
-int wave_num(const struct MachineSound *msound) { return ((struct Wave_interface*)msound->sound_interface)->num; }
-#endif
-#endif
-
 struct snd_interface sndintf[] =
 {
 	{
@@ -1246,46 +1234,6 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #endif /* PINMAME */
-
-#ifdef MESS
-#if (HAS_BEEP)
-	{
-		SOUND_BEEP,
-		"Beep",
-		beep_num,
-		0,
-		beep_sh_start,
-		beep_sh_stop,
-		beep_sh_update,
-		0
-	},
-#endif
-#if (HAS_SPEAKER)
-	{
-		SOUND_SPEAKER,
-		"Speaker",
-		speaker_num,
-		0,
-		speaker_sh_start,
-		speaker_sh_stop,
-		speaker_sh_update,
-		0
-	},
-#endif
-#if (HAS_WAVE)
-	{
-		SOUND_WAVE,
-		"Cassette",
-		wave_num,
-		0,
-		wave_sh_start,
-		wave_sh_stop,
-		wave_sh_update,
-		0
-	},
-#endif
-#endif
-
 };
 
 

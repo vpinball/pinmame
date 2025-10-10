@@ -272,7 +272,7 @@ void CreateEventWindow(CController* pController)
 
 	if ( !fEventWindowClassCreated )
 	{
-		WNDCLASS wc = { 0 };
+		WNDCLASS wc = { };
 
 		// initialize the description of the window class
 		wc.lpszClassName 	= "VPINMAMEEVENTWND";

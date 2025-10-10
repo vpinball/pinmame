@@ -1773,17 +1773,6 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 					seq_set_2 (&idef->seq, KEYCODE_LALT, KEYCODE_ENTER);
 				break;
 
-#ifdef MESS
-				case IPT_OSD_2:
-					if (options.disable_normal_ui)
-					{
-						idef->type = next_reserved;
-						idef->name = "Toggle menubar";
-						seq_set_1 (&idef->seq, KEYCODE_SCRLOCK);
-					}
-				break;
-#endif /* MESS */
-
 				default:
 				break;
 			}
@@ -1796,14 +1785,6 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 		{
 			seq_copy(&idef->seq, &no_alt_tab_seq);
 		}
-
-#ifdef MESS
-		if (idef->type == IPT_UI_THROTTLE)
-		{
-			static InputSeq empty_seq = SEQ_DEF_0;
-			seq_copy(&idef->seq, &empty_seq);
-		}
-#endif /* MESS */
 
 		// find the next one
 		idef++;

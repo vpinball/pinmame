@@ -82,15 +82,11 @@ static volatile UINT8 profiler_thread_exit;
 #endif
 
 #ifndef WINUI
-#ifndef MESS
 #ifdef PINMAME
 static const char helpfile[] = "pinmame.txt";
 #else
 static const char helpfile[] = "docs\\windows.txt";
 #endif /* PINMAME */
-#else
-static const char helpfile[] = "mess.chm";
-#endif
 #endif
 
 
@@ -143,7 +139,6 @@ int main(int argc, char **argv)
 		int button;
 		FILE* fp;
 
-#ifndef MESS
 #ifdef PINMAME
 		snprintf(message_text, sizeof(message_text), APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
 							  "\n"
@@ -169,13 +164,6 @@ int main(int argc, char **argv)
 							  "Would you like to open the documentation now?"
 							  , build_version);
 #endif /* PINMAME */
-#else /* MESS */
-		snprintf(message_text, sizeof(message_text), APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
-							  "\n"
-							  "Please consult the documentation for more information.\n"
-							  "\n"
-							  "Would you like to open the documentation now?");
-#endif /* MESS */
 
 		// pop up a messagebox with some information
 		button = MessageBox(NULL, message_text, APPLONGNAME " usage information...", MB_YESNO | MB_ICONASTERISK);

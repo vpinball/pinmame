@@ -36,10 +36,6 @@
 #include "window.h"
 #include "rc.h"
 
-#ifdef MESS
-#include "menu.h"
-#endif
-
 
 //============================================================
 //	IMPORTS
@@ -694,12 +690,6 @@ static void check_inputs(void)
 	// check for toggling fullscreen mode
 	if (input_ui_pressed(IPT_OSD_1))
 		win_toggle_full_screen();
-
-#ifdef MESS
-	// check for toggling menu bar
-	if (input_ui_pressed(IPT_OSD_2))
-		win_toggle_menubar();
-#endif
 }
 
 

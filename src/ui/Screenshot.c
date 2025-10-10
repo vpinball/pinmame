@@ -150,43 +150,19 @@ static BOOL DrawDIB(HWND hWnd, HDC hDC, HGLOBAL hDIB, HPALETTE hPal)
 #endif
 
 
-#ifdef MESS
-static BOOL LoadSoftwareScreenShot(const struct GameDriver *drv, LPCSTR lpSoftwareName, int nType)
-{
-	char *s = alloca(strlen(drv->name) + 1 + strlen(lpSoftwareName) + 5);
-	sprintf(s, "%s/%s.png", drv->name, lpSoftwareName);
-	return LoadDIB(s, &m_hDIB, &m_hPal, nType);
-}
-#endif /* MESS */
-
 /* Allow us to pre-load the DIB once for future draws */
-#ifdef MESS
-BOOL LoadScreenShotEx(int nGame, LPCSTR lpSoftwareName, int nType)
-#else /* !MESS */
 BOOL LoadScreenShot(int nGame, int nType)
-#endif /* MESS */
 {
 	BOOL loaded = FALSE;
 
 	/* No need to reload the same one again */
-#ifndef MESS
 	if (nGame == current_image_game && nType == current_image_type)
 		return TRUE;
-#endif
 
 	/* Delete the last ones */
 	FreeScreenShot();
 
 	/* Load the DIB */
-#ifdef MESS
-	if (lpSoftwareName)
-	{
-		loaded = LoadSoftwareScreenShot(drivers[nGame], lpSoftwareName, nType);
-		if (!loaded && (drivers[nGame]->clone_of && !(drivers[nGame]->clone_of->flags & NOT_A_DRIVER)))
-			loaded = LoadSoftwareScreenShot(drivers[nGame]->clone_of, lpSoftwareName, nType);
-	}
-	if (!loaded)
-#endif /* MESS */
 	{
 		loaded = LoadDIB(drivers[nGame]->name, &m_hDIB, &m_hPal, nType);
 	}
@@ -518,12 +494,5 @@ static int png_read_bitmap(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *pPAL)
 
 	return 1;
 }
-
-#ifdef MESS
-BOOL LoadScreenShot(int nGame, int nType)
-{
-	return LoadScreenShotEx(nGame, NULL, nType);
-}
-#endif
 
 /* End of source */

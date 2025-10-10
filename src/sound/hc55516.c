@@ -1338,7 +1338,7 @@ int hc55516_sh_start(const struct MachineSound *msound)
 			// corresponding loudness compression curve.  (Dynamic range compression
 			// is required with this filter simulation because it doesn't have any
 			// internal clipping, which allows its effective dynamic range to exceed
-			// the 16-bit range of the the MAME stream.)
+			// the 16-bit range of the MAME stream.)
 			//
 			// An alternative to the non-linear compression curve that would be truer
 			// to the original HC55516 logic would be to clip the sample to the 16-bit

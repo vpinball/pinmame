@@ -88,9 +88,9 @@ static void TimerHandler(int n,int c,int count,double stepTime)
 #endif
 
 /* update request from fm.c */
-static void YM2151UpdateRequest(int chip)
+static void YM2151UpdateRequest(int chip_num)
 {
-	stream_update(stream[chip],0);
+	stream_update(stream[chip_num],0);
 }
 
 #if (HAS_YM2151_NUKED)
@@ -274,10 +274,10 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 	return 1;
 }
 
-void YM2151_set_mixing_levels(int chip, int l, int r)
+void YM2151_set_mixing_levels(int chip_num, int l, int r)
 {
-	mixer_set_mixing_level(stream[chip], l);
-	mixer_set_mixing_level(stream[chip] + 1, r);
+	mixer_set_mixing_level(stream[chip_num], l);
+	mixer_set_mixing_level(stream[chip_num] + 1, r);
 }
 
 #if (HAS_YM2151)

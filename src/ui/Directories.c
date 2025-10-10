@@ -67,11 +67,7 @@ typedef union
  ***************************************************************************/
 
 static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
-#ifdef MESS
-BOOL BrowseForDirectory(HWND hwnd, const char* pStartDir, char* pResult);
-#else
 static BOOL         BrowseForDirectory(HWND hwnd, const char* pStartDir, char* pResult);
-#endif
 
 static void     DirInfo_SetDir(tDirInfo *pInfo, int nType, int nItem, const char* pText);
 static char*    DirInfo_Dir(tDirInfo *pInfo, int nType);

@@ -19,7 +19,6 @@
  *   gamma (is already osd_)
  *   sound (enable/disable sound)
  *   volume
-  * - get rid of #ifdef MESS's by providing appropriate hooks
  */
 
 #include <stdarg.h>
@@ -51,10 +50,6 @@ extern struct rc_option fileio_opts[];
 extern struct rc_option input_opts[];
 extern struct rc_option sound_opts[];
 extern struct rc_option video_opts[];
-
-#ifdef MESS
-#include "configms.h"
-#endif
 
 #ifdef _MSC_VER
 #include "msc.h"
@@ -237,10 +232,6 @@ static struct rc_option opts[] = {
 };
 struct rc_option core_opts[] = {
 #endif /* PINMAME */
-#ifdef MESS
-        { NULL, NULL, rc_link, mess_opts, NULL, 0,      0, NULL, NULL },
-#endif
-
         /* options supported by the mame core */
         /* video */
         { "Mame CORE video options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
@@ -507,20 +498,12 @@ int cli_frontend_init (int argc, char **argv)
 
         snprintf (buffer, sizeof(buffer), "%s.ini", cmd_name);
 
-        /* parse mame.ini/mess.ini even if called with another name */
-#ifdef MESS
-        if (strcmp(cmd_name, "mess") != 0)
-        {
-                if (parse_config ("mess.ini", NULL))
-                        exit(1);
-        }
-#else
+        /* parse mame.ini even if called with another name */
         if (strcmp(cmd_name, "mame") != 0)
         {
                 if (parse_config ("mame.ini", NULL))
                         exit(1);
         }
-#endif
 
         /* parse cmd_name.ini */
         if (parse_config (buffer, NULL))
@@ -836,7 +819,6 @@ static int config_handle_arg(char *arg)
 {
         static int got_gamename = 0;
 
-        /* notice: for MESS game means system */
         if (got_gamename)
         {
                 fprintf(stderr,"error: duplicate gamename: %s\n", arg);

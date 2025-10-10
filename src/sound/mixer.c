@@ -60,7 +60,7 @@
 
 static UINT8 mixer_sound_enabled;
 
-/* holds all the data for the a mixer channel */
+/* holds all the data for a mixer channel */
 struct mixer_channel_data
 {
 	char name[40];
@@ -256,7 +256,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* const chann
 	unsigned dst_pos = dst_base;
 
 	const INT16* __restrict src = *psrc;
-	const float* __restrict srcf = (float*)*psrc;
+	const float* __restrict srcf = (const float*)*psrc;
 
 	SRC_DATA data;
 	long i;
@@ -286,7 +286,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* const chann
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			++srcf;
 		}
-		*psrc = (INT16*)srcf;
+		*psrc = (const INT16*)srcf;
 		}
 		else
 		{
@@ -363,7 +363,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* const chann
 			frac += (int)(srcf - src_end) << FRACTION_BITS;
 			srcf = src_end;
 		}
-		*psrc = (INT16*)srcf;
+		*psrc = (const INT16*)srcf;
 		}
 		else
 		{
@@ -425,7 +425,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* const chann
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
-	*psrc = channel->is_float ? (INT16*)(srcf+data.input_frames_used) : (src+data.input_frames_used);
+	*psrc = channel->is_float ? (const INT16*)(srcf+data.input_frames_used) : (src+data.input_frames_used);
 	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
 }
 
@@ -630,7 +630,7 @@ void mix_sample_8(struct mixer_channel_data * const channel, int samples_to_gene
 
 			/* if we're looping, wrap to the beginning */
 			else
-				source -= (INT8 *)source_end - (INT8 *)channel->data_start;
+				source -= (const INT8 *)source_end - (const INT8 *)channel->data_start;
 		}
 	}
 
@@ -678,7 +678,7 @@ void mix_sample_16(struct mixer_channel_data * const channel, int samples_to_gen
 
 			/* if we're looping, wrap to the beginning */
 			else
-				source -= (INT16 *)source_end - (INT16 *)channel->data_start;
+				source -= (const INT16 *)source_end - (const INT16 *)channel->data_start;
 		}
 	}
 

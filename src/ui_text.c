@@ -20,11 +20,7 @@ const char * default_text[] =
 #ifdef PINMAME
 	"PIN"
 #endif /* PINMAME */
-#ifndef MESS
 	"MAME",
-#else
-	"MESS",
-#endif
 	/* copyright stuff */
 	"Usage of emulators in conjunction with ROMs you don't own is forbidden by copyright law.",
 	"IF YOU ARE NOT LEGALLY ENTITLED TO PLAY \"%s\" ON THIS EMULATOR, PRESS ESC.",
@@ -58,11 +54,7 @@ const char * default_text[] =
 	"Vector Intensity",
 	"Overclock",
 	"ALL CPUS",
-#ifndef MESS
 	"History not available",
-#else
-	"System Info not available",
-#endif
 
 	/* special characters */
 	"\x11",
@@ -73,36 +65,17 @@ const char * default_text[] =
 	"\x1b",
 
 	/* known problems */
-#ifndef MESS
 	"There are known problems with this game:",
-#else
-	"There are known problems with this system",
-#endif
 	"The colors aren't 100% accurate.",
 	"The colors are completely wrong.",
 	"The video emulation isn't 100% accurate.",
 	"The sound emulation isn't 100% accurate.",
 	"The game lacks sound.",
 	"Screen flipping in cocktail mode is not supported.",
-#ifndef MESS
 	"THIS GAME DOESN'T WORK PROPERLY",
-#else
-	"THIS SYSTEM DOESN'T WORK PROPERLY",
-#endif
 	"The game has protection which isn't fully emulated.",
 	"There are working clones of this game. They are:",
 	"Type OK to continue",
-#ifdef MESS
-	"The emulated system is a computer: ",
-	"The keyboard emulation may not be 100% accurate.",
-	"Keyboard Emulation Status",
-	"-------------------------",
-	"Mode: PARTIAL Emulation",
-	"Mode: FULL Emulation",
-	"UI:   Enabled",
-	"UI:   Disabled",
-	"**Use ScrLock to toggle**",
-#endif
 
 	/* main menu */
 	"Input (general)",
@@ -110,50 +83,11 @@ const char * default_text[] =
 	"Analog Controls",
 	"Calibrate Joysticks",
 	"Bookkeeping Info",
-#ifndef MESS
 	"Input (this game)",
 	"Game Information",
 	"Game History",
 	"Reset Game",
 	"Return to Game",
-#else
-	"Input (this machine)",
-	"Machine Information",
-	"Machine Usage & History",
-	"Reset Machine",
-	"Return to Machine",
-	"Image Information",
-	"File Manager",
-	"Tape Control",
-	"recording",
-	"playing",
-	"(recording)",
-	"(playing)",
-	"stopped",
-	"Pause/Stop",
-	"Record",
-	"Play",
-	"Rewind",
-	"Fast Forward",
-	"Mount",
-	"Unmount",
-	"[empty slot]",
-	"Configuration",
-	"Quit Fileselector",
-	"File Specification",	/* IMPORTANT: be careful to ensure that the following */
-	"Cartridge",		/* device list matches the order found in device.h    */
-	"Floppy Disk",		/* and is ALWAYS placed after "File Specification"    */
-	"Hard Disk",
-	"Cylinder",
-	"Cassette",
-	"Punched Card",
-	"Punched Tape",
-	"Printer",
-	"Serial Port",
-	"Parallel Port",
-	"Snapshot",
-	"Quickload",
-#endif
 	"Cheat",
 	"Memory Card",
 
@@ -171,9 +105,6 @@ const char * default_text[] =
 	"Load Memory Card",
 	"Eject Memory Card",
 	"Create Memory Card",
-#ifdef MESS
-	"Call Memory Card Manager (RESET)",
-#endif
 	"Failed To Load Memory Card!",
 	"Load OK!",
 	"Memory Card Ejected!",

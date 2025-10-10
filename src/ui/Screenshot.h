@@ -23,10 +23,6 @@ typedef struct _mybitmapinfo
 	int bmColors;
 } MYBITMAPINFO, *LPMYBITMAPINFO;
 
-#ifdef MESS
-extern BOOL LoadScreenShotEx(int nGame, LPCSTR lpSoftwareName, int nType);
-#endif /* MESS */
-
 extern BOOL LoadScreenShot(int nGame, int nType);
 extern HANDLE GetScreenShotHandle(void);
 extern int GetScreenShotWidth(void);

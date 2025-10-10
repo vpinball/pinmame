@@ -885,14 +885,10 @@ int png_write_bitmap(mame_file *fp, struct mame_bitmap *bitmap)
 {
 	char text[1024];
 
-#ifdef MESS
-	sprintf (text, "MESS %s", build_version);
-#else
 #ifdef PINMAME
 	sprintf (text, "PinMAME %s", build_version);
 #else
 	sprintf (text, "MAME %s", build_version);
-#endif
 #endif
 	png_add_text("Software", text);
 	sprintf (text, "%s %s", Machine->gamedrv->manufacturer, Machine->gamedrv->description);

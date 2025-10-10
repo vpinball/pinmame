@@ -15,11 +15,6 @@
 #include "ui_text.h"
 #include "state.h"
 
-#ifdef MESS
-  #include "mess.h"
-#include "mesintrf.h"
-#endif
-
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
@@ -2203,7 +2198,6 @@ static int settraksettings(struct mame_bitmap *bitmap,int selected)
 	return sel + 1;
 }
 
-#ifndef MESS
 static int mame_stats(struct mame_bitmap *bitmap,int selected)
 {
 	char temp[10];
@@ -2275,7 +2269,6 @@ static int mame_stats(struct mame_bitmap *bitmap,int selected)
 
 	return sel + 1;
 }
-#endif
 
 int showcopyright(struct mame_bitmap *bitmap)
 {
@@ -2533,16 +2526,6 @@ int showgamewarnings(struct mame_bitmap *bitmap)
 		strcpy(buf, ui_getstring (UI_knownproblems));
 		strcat(buf, "\n\n");
 
-#ifdef MESS
-		if (Machine->gamedrv->flags & GAME_COMPUTER)
-		{
-			strcpy(buf, ui_getstring (UI_comp1));
-			strcat(buf, "\n\n");
-			strcat(buf, ui_getstring (UI_comp2));
-			strcat(buf, "\n");
-		}
-#endif
-
 		if (Machine->gamedrv->flags & GAME_IMPERFECT_COLORS)
 		{
 			strcat(buf, ui_getstring (UI_imperfectcolors));
@@ -2660,13 +2643,6 @@ int showgameinfo(struct mame_bitmap *bitmap)
 	{
 		update_video_and_audio();
 	}
-
-	#ifdef MESS
-	while (displayimageinfo(bitmap,0) == 1)
-	{
-		update_video_and_audio();
-	}
-	#endif
 
 	erase_screen(bitmap);
 	/* make sure that the screen is really cleared, in case autoframeskip kicked in */
@@ -2951,15 +2927,9 @@ static int displayhistory (struct mame_bitmap *bitmap, int selected)
 }
 
 
-#ifndef MESS
 enum { UI_SWITCH = 0,UI_DEFCODE,UI_CODE,UI_ANALOG,UI_CALIBRATE,
 		UI_STATS,UI_GAMEINFO, UI_HISTORY,
 		UI_CHEAT,UI_RESET,UI_MEMCARD,UI_RAPIDFIRE,UI_EXIT };
-#else
-enum { UI_SWITCH = 0,UI_DEFCODE,UI_CODE,UI_ANALOG,UI_CALIBRATE,
-		UI_GAMEINFO, UI_IMAGEINFO,UI_FILEMANAGER,UI_TAPECONTROL,
-		UI_HISTORY,UI_CHEAT,UI_RESET,UI_MEMCARD,UI_RAPIDFIRE,UI_EXIT };
-#endif
 
 
 #ifdef XMAME
@@ -3041,18 +3011,9 @@ static void setup_menu_init(void)
 		menu_item[menu_total] = ui_getstring (UI_calibrate); menu_action[menu_total++] = UI_CALIBRATE;
 	}
 
-#ifndef MESS
 	menu_item[menu_total] = ui_getstring (UI_bookkeeping); menu_action[menu_total++] = UI_STATS;
 	menu_item[menu_total] = ui_getstring (UI_gameinfo); menu_action[menu_total++] = UI_GAMEINFO;
 	menu_item[menu_total] = ui_getstring (UI_history); menu_action[menu_total++] = UI_HISTORY;
-#else
-	menu_item[menu_total] = ui_getstring (UI_imageinfo); menu_action[menu_total++] = UI_IMAGEINFO;
-	menu_item[menu_total] = ui_getstring (UI_filemanager); menu_action[menu_total++] = UI_FILEMANAGER;
-#if HAS_WAVE
-	menu_item[menu_total] = ui_getstring (UI_tapecontrol); menu_action[menu_total++] = UI_TAPECONTROL;
-#endif
-	menu_item[menu_total] = ui_getstring (UI_history); menu_action[menu_total++] = UI_HISTORY;
-#endif
 
 	if (options.cheat)
 	{
@@ -3099,27 +3060,12 @@ static int setup_menu(struct mame_bitmap *bitmap, int selected)
 			case UI_CALIBRATE:
 				res = calibratejoysticks(bitmap, sel >> SEL_BITS);
 				break;
-#ifndef MESS
 			case UI_STATS:
 				res = mame_stats(bitmap, sel >> SEL_BITS);
 				break;
 			case UI_GAMEINFO:
 				res = displaygameinfo(bitmap, sel >> SEL_BITS);
 				break;
-#endif
-#ifdef MESS
-			case UI_IMAGEINFO:
-				res = displayimageinfo(bitmap, sel >> SEL_BITS);
-				break;
-			case UI_FILEMANAGER:
-				res = filemanager(bitmap, sel >> SEL_BITS);
-				break;
-#if HAS_WAVE
-			case UI_TAPECONTROL:
-				res = tapecontrol(bitmap, sel >> SEL_BITS);
-				break;
-#endif /* HAS_WAVE */
-#endif
 			case UI_HISTORY:
 				res = displayhistory(bitmap, sel >> SEL_BITS);
 				break;
@@ -3160,15 +3106,8 @@ static int setup_menu(struct mame_bitmap *bitmap, int selected)
 			case UI_CODE:
 			case UI_ANALOG:
 			case UI_CALIBRATE:
-			#ifndef MESS
 			case UI_STATS:
 			case UI_GAMEINFO:
-			#else
-			case UI_GAMEINFO:
-			case UI_IMAGEINFO:
-			case UI_FILEMANAGER:
-			case UI_TAPECONTROL:
-			#endif
 			case UI_HISTORY:
 			case UI_CHEAT:
 			case UI_MEMCARD:
@@ -3860,10 +3799,6 @@ void ui_display_fps(struct mame_bitmap *bitmap)
 
 int handle_user_interface(struct mame_bitmap *bitmap)
 {
-#ifdef MESS
-	extern int mess_pause_for_ui;
-#endif
-
 	/* if the user pressed F12, save the screen to a file */
 	if (input_ui_pressed(IPT_UI_SNAPSHOT))
 		save_screen_snapshot(bitmap);

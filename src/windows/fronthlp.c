@@ -16,7 +16,6 @@
 #endif
 #endif
 
-#ifndef MESS
 enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
 		LIST_LMR, LIST_DETAILS, LIST_GAMELIST,
 		LIST_GAMES, LIST_CLONES,
@@ -24,16 +23,6 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, L
 		LIST_WRONGMERGE, LIST_ROMSIZE, LIST_ROMDISTRIBUTION, LIST_ROMNUMBER, LIST_PALETTESIZE,
 		LIST_CPU, LIST_CPUCLASS, LIST_NOSOUND, LIST_SOUND, LIST_NVRAM, LIST_SOURCEFILE,
 		LIST_GAMESPERSOURCEFILE };
-#else
-#include "messwin.h"
-enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
-		LIST_LMR, LIST_DETAILS, LIST_GAMELIST,
-		LIST_GAMES, LIST_CLONES,
-		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_SHA1, LIST_MD5, LIST_DUPCRC, LIST_WRONGMERGE,
-		LIST_ROMSIZE, LIST_ROMDISTRIBUTION, LIST_ROMNUMBER, LIST_PALETTESIZE,
-		LIST_CPU, LIST_CPUCLASS, LIST_NOSOUND, LIST_SOUND, LIST_NVRAM, LIST_SOURCEFILE,
-		LIST_GAMESPERSOURCEFILE, LIST_MESSTEXT, LIST_MESSDEVICES, LIST_MESSCREATEDIR };
-#endif
 
 #define VERIFY_ROMS		0x00000001
 #define VERIFY_SAMPLES	0x00000002
@@ -45,13 +34,8 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, L
 #define KNOWN_NONE  2
 #define KNOWN_SOME  3
 
-#ifndef MESS
 #define YEAR_BEGIN 1974
 #define YEAR_END   2025
-#else
-#define YEAR_BEGIN 1950
-#define YEAR_END   2025
-#endif
 
 static int list = 0;
 static int listclones = 1;
@@ -98,11 +82,6 @@ struct rc_option frontend_opts[] = {
 	{ "wrongorientation", NULL, rc_set_int, &list, NULL, LIST_WRONGORIENTATION, 0, NULL, "wrong orientation" },
 	{ "wrongfps", NULL, rc_set_int, &list, NULL, LIST_WRONGFPS, 0, NULL, "wrong fps" },
 	{ "clones", NULL, rc_bool, &listclones, "1", 0, 0, NULL, "enable/disable clones" },
-#ifdef MESS
-	{ "listdevices", NULL, rc_set_int, &list, NULL, LIST_MESSDEVICES, 0, NULL, "list available devices" },
-	{ "listtext", NULL, rc_set_int, &list, NULL, LIST_MESSTEXT, 0, NULL, "list available file extensions" },
-	{ "createdir", NULL, rc_set_int, &list, NULL, LIST_MESSCREATEDIR, 0, NULL, NULL },
-#endif
 	{ "listroms", NULL, rc_set_int, &list, NULL, LIST_ROMS, 0, NULL, "list required roms for a driver" },
 	{ "listsamples", NULL, rc_set_int, &list, NULL, LIST_SAMPLES, 0, NULL, "list optional samples for a driver" },
 	{ "verifyroms", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS, 0, NULL, "report romsets that have problems" },
@@ -472,7 +451,6 @@ int frontend_help (const char *gamename)
 
 	if (help)  /* brief help - useful to get current version info */
 	{
-		#ifndef MESS
 #ifdef PINMAME
 		char tmp[80];
 
@@ -506,9 +484,6 @@ int frontend_help (const char *gamename)
 				"MS-DOS:   msdos.txt\n"
 				"Windows:  windows.txt\n");
 #endif /* PINMAME */
-		#else
-		showmessinfo();
-		#endif
 		return 0;
 	}
 
@@ -533,41 +508,12 @@ int frontend_help (const char *gamename)
 
 	switch (list)  /* front-end utilities ;) */
 	{
-
-        #ifdef MESS
-		case LIST_MESSTEXT: /* all mess specific calls here */
-		{
-			/* send the gamename and arg to mess.c */
-			list_mess_info(gamename, "-listtext", listclones);
-			return 0;
-			break;
-		}
-		case LIST_MESSDEVICES:
-		{
-			/* send the gamename and arg to mess.c */
-			list_mess_info(gamename, "-listdevices", listclones);
-			return 0;
-			break;
-		}
-		case LIST_MESSCREATEDIR:
-		{
-			/* send the gamename and arg to mess.c */
-			list_mess_info(gamename, "-createdir", listclones);
-			return 0;
-			break;
-		}
-		#endif
-
 		case LIST_SHORT: /* simple games list */
-#ifndef MESS
 	#ifdef PINMAME
 			printf("\nPinMAME currently supports the following games:\n\n");
 	#else
 			printf("\nMAME currently supports the following games:\n\n");
 	#endif
-#else
-			printf("\nMESS currently supports the following systems:\n\n");
-#endif
 			for (i = j = 0; drivers[i]; i++)
 				if ((listclones || drivers[i]->clone_of == 0
 						|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)
@@ -581,12 +527,8 @@ int frontend_help (const char *gamename)
 			if (j % 8) printf("\n");
 			printf("\n");
 			if (j != i) printf("Total ROM sets displayed: %4d - ", j);
-			#ifndef MESS
 			printf("Total ROM sets supported: %4d\n", i);
-			#else
-			printf("Total Systems supported: %4d\n", i);
-			#endif
-            return 0;
+			return 0;
 			break;
 
 		case LIST_FULL: /* games list with descriptions */
@@ -748,13 +690,8 @@ int frontend_help (const char *gamename)
 
 					printf("%-8s ",drivers[i]->name);
 
-					#ifndef MESS
 					/* source file (skip the leading "src/drivers/" */
 					printf("%-10s ",&drivers[i]->source_file[12]);
-					#else
-					/* source file (skip the leading "src/mess/systems/" */
-					printf("%-10s ",&drivers[i]->source_file[17]);
-					#endif
 
 					/* Then, cpus */
 

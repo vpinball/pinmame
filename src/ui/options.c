@@ -393,9 +393,6 @@ static GAMEVARIABLE_OPTION gamevariable_options[] =
         { "play_time",          RO_INT,         offsetof(game_variables_type, play_time),                               NULL,                           (const void *) 0},
         { "rom_audit",          RO_INT,         offsetof(game_variables_type, rom_audit_results),               NULL,                           (const void *) UNKNOWN },
         { "samples_audit",      RO_INT,         offsetof(game_variables_type, samples_audit_results),   DriverUsesSamples,      (const void *) UNKNOWN },
-#ifdef MESS
-        { "extra_software",     RO_STRING,      offsetof(game_variables_type, extra_software_paths),    NULL,                           (const void *) "" }
-#endif
 };
 
 // Screen shot Page tab control text
@@ -868,9 +865,6 @@ BOOL OptionsInit()
 #if defined(PINMAME) && defined(PROC_SUPPORT)
         set_pathlist(FILETYPE_PROC,_strdup(settings.procdirs));
 #endif /* PINMAME && PROC_SUPPORT */
-#ifdef MESS
-        set_pathlist(FILETYPE_CRC,_strdup(settings.crcdir));
-#endif
         return TRUE;
 
 }

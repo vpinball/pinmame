@@ -50,9 +50,6 @@ enum
 	FILETYPE_LANGUAGE,
 	FILETYPE_CTRLR,
 	FILETYPE_INI,
-#ifdef MESS
-	FILETYPE_CRC,
-#endif
 	FILETYPE_end /* dummy last entry */
 };
 

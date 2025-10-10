@@ -3901,7 +3901,7 @@ void BasicBitmap::RowStoreWithPalette(int x, int y, IUINT32 *card, int w,
 //---------------------------------------------------------------------
 int BasicBitmap::BestfitColor(const BasicColor *pal, int r, int g, int b, int size)
 {
-	static IUINT32 diff_lookup[512 * 3] = { 0 };
+	static IUINT32 diff_lookup[512 * 3] = { };
 	long lowest = 0x7FFFFFFF, bestfit = 0;
 	long i;
 	const BasicColor *rgb;

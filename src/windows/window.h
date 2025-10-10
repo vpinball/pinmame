@@ -17,11 +17,7 @@
 //	PARAMETERS
 //============================================================
 
-#ifndef MESS
 #define HAS_WINDOW_MENU			FALSE
-#else
-#define HAS_WINDOW_MENU			TRUE
-#endif
 
 
 

@@ -10,10 +10,6 @@
 #include "driver.h"
 #include "unzip.h"
 
-#ifdef MESS
-#include "image.h"
-#endif
-
 #ifdef _MSC_VER
 #include "msc.h"
 #endif
@@ -72,9 +68,7 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 	{
 		/* read-only cases */
 		case FILETYPE_ROM:
-#ifndef MESS
 		case FILETYPE_IMAGE:
-#endif
 		case FILETYPE_SAMPLE:
 		case FILETYPE_HIGHSCORE_DB:
 		case FILETYPE_ARTWORK:
@@ -759,11 +753,9 @@ static const char *get_extension_for_filetype(int filetype)
 			extension = NULL;
 			break;
 
-#ifndef MESS
 		case FILETYPE_IMAGE:		/* disk image files */
 			extension = "chd";
 			break;
-#endif
 
 		case FILETYPE_IMAGE_DIFF:	/* differencing drive images */
 			extension = "dif";

@@ -214,7 +214,7 @@
 /*                                                                      */
 /*  Define an adjustment slider that has a default value of 2.5 and     */
 /*  can be adjusted between 0.0 and 5.0 via the user interface.         */
-/*  Adujstment scaling is Linear.                                       */
+/*  Adjustment scaling is Linear.                                       */
 /*                                                                      */
 /************************************************************************/
 /*                                                                      */

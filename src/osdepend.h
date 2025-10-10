@@ -440,10 +440,6 @@ int osd_net_game_init(void);
 int osd_net_game_exit(void);
 #endif /* MAME_NET */
 
-#ifdef MESS
-/* this is here to follow the current mame file hierarchy style */
-#include "osd_mess.h"
-#endif
 #if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
 #ifdef __GNUC__
 void CLIB_DECL logerror(const char *text,...)

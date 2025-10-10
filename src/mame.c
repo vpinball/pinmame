@@ -627,11 +627,6 @@ static void shutdown_machine(void)
 
 	vgm_stop();
 
-#ifdef MESS
-	/* close down any devices */
-	devices_exit();
-#endif
-
 	/* release any allocated memory */
 	memory_shutdown();
 
@@ -734,11 +729,7 @@ static int vh_open(void)
 	params.video_attributes = Machine->drv->video_attributes;
 	params.orientation = Machine->orientation;
 
-#ifdef MESS
-	artcallbacks = &mess_artwork_callbacks;
-#else
 	artcallbacks = &mame_artwork_callbacks;
-#endif
 
 	/* initialize the display through the artwork (and eventually the OSD) layer */
 	if (artwork_create_display(&params, direct_rgb_components, artcallbacks))
@@ -1328,13 +1319,11 @@ static void recompute_fps(int skipped_it)
 	vfcount++;
 	if (vfcount >= (int)Machine->drv->frames_per_second)
 	{
-#ifndef MESS
 		/* from vidhrdw/avgdvg.c */
 		extern int vector_updates;
 
 		performance.vector_updates_last_second = vector_updates;
 		vector_updates = 0;
-#endif
 		vfcount -= (int)Machine->drv->frames_per_second;
 	}
 }

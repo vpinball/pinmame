@@ -69,15 +69,6 @@
  #define DWL_MSGRESULT   0
 #endif
 
-#ifdef MESS
-/* done like this until I figure out a better idea */
-#include "ui/resourcems.h"
-
-void MessOptionsToProp(int nGame, HWND hWnd, options_type *o);
-BOOL MessPropertiesCommand(int nGame, HWND hWnd, WORD wNotifyCode, WORD wID, BOOL *changed);
-void MessPropToOptions(int nGame, HWND hWnd, options_type *o);
-#endif
-
 // missing win32 api defines
 #ifndef TBCD_TICS
 #define TBCD_TICS 1
@@ -635,12 +626,7 @@ const char *GameInfoStatus(int driver_index)
 	}
 
 	// audit result is no
-
-#ifdef MESS
-		return "BIOS missing";
-#else
-		return "ROMs missing";
-#endif
+	return "ROMs missing";
 }
 
 /* Build game manufacturer string */
@@ -905,11 +891,6 @@ INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 				break;
 
 			default:
-#ifdef MESS
-				if (MessPropertiesCommand(g_nGame, hDlg, wNotifyCode, wID, &changed))
-					break;
-#endif
-
 				if (wNotifyCode == BN_CLICKED)
 				{
 					switch (wID)
@@ -1138,9 +1119,6 @@ static void PropToOptions(HWND hWnd, options_type *o)
 		FreeIfAllocated(&o->aspect);
 		o->aspect = _strdup(buffer);
 	}
-#ifdef MESS
-	MessPropToOptions(g_nGame, hWnd, o);
-#endif
 }
 
 /* Populate controls that are not handled in the DataMap */
@@ -1407,9 +1385,6 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		result = ComboBox_SetCurSel(hCtrl, g_nInputIndex);
 	}
 
-#ifdef MESS
-	MessOptionsToProp(g_nGame, hWnd, o);
-#endif
 #ifdef PINMAME
 	hCtrl = GetDlgItem(hWnd, IDC_DMD_RED_DISP);
 	if (hCtrl)
@@ -1903,9 +1878,6 @@ static void BuildDataMap(void)
 	DataMapAdd(IDC_OLD_TIMING,    DM_BOOL, CT_BUTTON,   &tmp,                      DM_BOOL, &tmp,                      0, 0, 0); //unsupported
 	DataMapAdd(IDC_LEDS,          DM_BOOL, CT_BUTTON,   &pGameOpts->leds,          DM_BOOL, &pGameOpts->leds,          0, 0, 0);
 	DataMapAdd(IDC_BIOS,          DM_INT,  CT_COMBOBOX, &pGameOpts->bios,          DM_INT,  &pGameOpts->bios,          0, 0, 0);
-#ifdef MESS
-	DataMapAdd(IDC_USE_NEW_UI,    DM_BOOL, CT_BUTTON,   &pGameOpts->use_new_ui,    DM_BOOL, &pGameOpts->use_new_ui, 0, 0, 0);
-#endif
 #ifdef PINMAME
 	DataMapAdd(IDC_DMD_RED,       DM_INT,  CT_SLIDER,   &pGameOpts->dmd_red,       DM_INT,  &pGameOpts->dmd_red,       0, 0, 0);
 	DataMapAdd(IDC_DMD_GREEN,     DM_INT,  CT_SLIDER,   &pGameOpts->dmd_green,     DM_INT,  &pGameOpts->dmd_green,     0, 0, 0);

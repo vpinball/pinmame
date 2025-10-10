@@ -166,19 +166,6 @@ struct RunningMachine
 #define ARTWORK_USE_BEZELS		0x04
 
 
-#ifdef MESS
-#define MAX_IMAGES	32
-/*
- * This is a filename and it's associated peripheral type
- * The types are defined in mess.h (IO_...)
- */
-struct ImageFile
-{
-	const char *name;
-	int type;
-};
-#endif
-
 /* The host platform should fill these fields with the preferences specified in the GUI */
 /* or on the commandline. */
 struct GameOptions
@@ -226,17 +213,6 @@ struct GameOptions
 	int		at91jit;		/* PinMame: enable AT91 just in time compiler (x86 only) */
 	int		usemodsol;		/* PinMame: enable & setup physic model tied to binary outputs */
 	volatile double	time_fence; /* PinMame: enable & setup cpu time limit when using external synchronization */
-
-	#ifdef MESS
-	UINT32 ram;
-	struct ImageFile image_files[MAX_IMAGES];
-	int		image_count;
-	int		(*mess_printf_output)(const char *fmt, va_list arg);
-	int disable_normal_ui;
-
-	int		min_width;		/* minimum width for the display */
-	int		min_height;		/* minimum height for the display */
-	#endif
 };
 
 
@@ -374,9 +350,5 @@ const struct performance_info *mame_get_performance_info(void);
 
 /* return the index of the given CPU, or -1 if not found */
 int mame_find_cpu_index(const char *tag);
-
-#ifdef MESS
-#include "mess.h"
-#endif /* MESS */
 
 #endif

@@ -28,10 +28,6 @@
 #include "unzip.h"
 #include "rc.h"
 
-#ifdef MESS
-#include "image.h"
-#endif
-
 /* Older versions of Platform SDK don't define these */
 #ifndef INVALID_FILE_ATTRIBUTES
 #define INVALID_FILE_ATTRIBUTES 0xffffffff
@@ -355,11 +351,9 @@ static const char *get_path_for_filetype(int filetype, int pathindex, DWORD *cou
 	// handle aliasing of some paths
 	switch (filetype)
 	{
-#ifndef MESS
 		case FILETYPE_IMAGE:
 			list = &pathlist[FILETYPE_ROM];
 			break;
-#endif
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 		case FILETYPE_PROC_YAML:

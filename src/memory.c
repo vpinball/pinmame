@@ -1125,14 +1125,6 @@ static int init_cpudata(void)
 			if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_16BIT_PORT))
 				cpudata[cpunum].port.mask = 0xff;
 #endif
-#ifdef MESS
-#if HAS_Z80_MSX
-		 /* Z80_MSX port mask kludge */
-		 if (cputype == CPU_Z80_MSX)
-			 if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_16BIT_PORT))
-				 cpudata[cpunum].port.mask = 0xff;
-#endif
-#endif
 #if HAS_Z180
 		/* Z180 port mask kludge */
 		if (cputype == CPU_Z180)

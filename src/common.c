@@ -1958,10 +1958,6 @@ void printromlist(const struct RomModule *romp,const char *basename)
 
 	if (!romp) return;
 
-#ifdef MESS
-	if (!strcmp(basename,"nes")) return;
-#endif
-
 	printf("This is the list of the ROMs required for driver \"%s\".\n"
 			"Name            Size Checksum\n",basename);
 

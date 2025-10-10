@@ -196,41 +196,6 @@
 #include "cpu/e132xs/e132xs.h"
 #endif
 
-#ifdef MESS
-
-#if (HAS_APEXC)
-#include "cpu/apexc/apexc.h"
-#endif
-#if (HAS_CDP1802)
-#include "cpu/cdp1802/cdp1802.h"
-#endif
-#if (HAS_CP1600)
-#include "cpu/cp1600/cp1600.h"
-#endif
-#if (HAS_F8)
-#include "cpu/f8/f8.h"
-#endif
-#if (HAS_LH5801)
-#include "cpu/lh5801/lh5801.h"
-#endif
-#if (HAS_PDP1)
-#include "cpu/pdp1/pdp1.h"
-#endif
-#if (HAS_SATURN)
-#include "cpu/saturn/saturn.h"
-#endif
-#if (HAS_SC61860)
-#include "cpu/sc61860/sc61860.h"
-#endif
-#if (HAS_Z80GB)
-#include "cpu/z80gb/z80gb.h"
-#endif
-#if (HAS_Z80_MSX)
-#include "cpu/z80/z80_msx.h"
-#endif
-
-#endif
-
 
 
 /*************************************
@@ -741,46 +706,6 @@ const struct cpu_interface cpuintrf[] =
 #endif
 #if (HAS_E132XS)
 	CPU0(E132XS,   e132xs, 	 1,0,1.00, 32, 32bedw,	  0,32,BE,2, 6	),
-#endif
-
-#ifdef MESS
-#if (HAS_APEXC)
-	CPU0(APEXC,    apexc,	 0,  0,1.00,32,18bedw, 0,18,LE,1, 1	),
-#endif
-#if (HAS_CDP1802)
-#define cdp1802_ICount cdp1802_icount
-	CPU0(CDP1802,  cdp1802,  1,  0,1.00, 8, 16,	  0,16,BE,1, 3	),
-#endif
-#if (HAS_CP1600)
-#define cp1600_ICount cp1600_icount
-	CPU0(CP1600,   cp1600,	 4,  0,1.00, 16, 24bew,  -1,17,BE,2,3	),
-#endif
-#if (HAS_F8)
-#define f8_ICount f8_icount
-	CPU4(F8,	   f8,		 1,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
-#endif
-#if (HAS_LH5801)
-#define lh5801_ICount lh5801_icount
-	CPU0(LH5801,   lh5801,	 1,  0,1.00, 8, 17,	  0,17,BE,1, 5	),
-#endif
-#if (HAS_PDP1)
-	//CPU0(PDP1,	   pdp1,	 0,  0,1.00, 8, 16,	  0,18,LE,1, 3	),
-	CPU0(PDP1,	   pdp1,	 0,  0,1.00,32,18bedw,0,18,LE,1, 3	),
-#endif
-#if (HAS_SATURN)
-#define saturn_ICount saturn_icount
-	CPU0(SATURN,   saturn,	 1,  0,1.00, 8,20,	  0,20,LE,1, 21 ),
-#endif
-#if (HAS_SC61860)
-	#define sc61860_ICount sc61860_icount
-	CPU0(SC61860,  sc61860,  1,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
-#endif
-#if (HAS_Z80GB)
-	CPU0(Z80GB,    z80gb,	 5,255,1.00, 8, 16,	  0,16,LE,1, 4	),
-#endif
-#if (HAS_Z80_MSX)
-	CPU1(Z80_MSX,  z80_msx,	 1,255,1.00, 8, 16,	  0,16,LE,1, 4	),
-#endif
 #endif
 };
 

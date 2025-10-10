@@ -772,7 +772,7 @@ INLINE void FM_IRQMASK_SET(FM_ST *ST,int flag)
 #if FM_BUSY_FLAG_SUPPORT
 INLINE UINT8 FM_STATUS_FLAG(FM_ST *ST)
 {
-	if( ST->BusyExpire )
+	if( ST->BusyExpire != 0. )
 	{
 		if( (ST->BusyExpire - FM_GET_TIME_NOW()) > 0)
 			return ST->status | 0x80;	/* with busy */
@@ -1694,7 +1694,7 @@ static void FMsave_state_channel(const char *name,int num,FM_CH *CH,int num_ch)
 {
 	int slot , ch;
 	char state_name[20];
-	const char slot_array[4] = { 1 , 3 , 2 , 4 };
+	static const char slot_array[4] = { 1 , 3 , 2 , 4 };
 
 	for(ch=0;ch<num_ch;ch++,CH++)
 	{
