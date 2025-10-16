@@ -78,7 +78,7 @@ MACHINE_DRIVER_START(zac1125)
 MACHINE_DRIVER_END
 
 static struct {
-  UINT8 ctrl;
+  //UINT8 ctrl;
   double ne555_voltage;
   mame_timer *ne555;
 } s1125locals;
@@ -757,7 +757,6 @@ static UINT8 sawtoothWave45[64];
 
 static int sns_sh_start(const struct MachineSound *msound) {
   UINT8 i;
-  int mixing_levels[4] = {MIXER(15,MIXER_PAN_LEFT),MIXER(15,MIXER_PAN_LEFT),MIXER(15,MIXER_PAN_RIGHT),MIXER(15,MIXER_PAN_RIGHT)};
   for (i=0; i < 64; i++) {  // reverse waves
     triangleWaver[63-i]=triangleWave[i];
     sawtoothWaver[63-i]=sawtoothWave[i];
@@ -774,6 +773,7 @@ static int sns_sh_start(const struct MachineSound *msound) {
   UpdateZACSoundLED(1, 1);
   if (!snslocals.channel) {
     // allocate channels
+    static const int mixing_levels[4] = {MIXER(15,MIXER_PAN_LEFT),MIXER(15,MIXER_PAN_LEFT),MIXER(15,MIXER_PAN_RIGHT),MIXER(15,MIXER_PAN_RIGHT)};
     snslocals.channel = mixer_allocate_channels(4, mixing_levels);
     mixer_set_name  (snslocals.channel,   "CEM 3374 A TR");
     mixer_set_name  (snslocals.channel+1, "CEM 3374 A SA");

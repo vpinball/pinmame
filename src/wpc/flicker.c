@@ -30,10 +30,10 @@
 static struct {
   int    vblankCount;
   int    diagnosticLed; //!! unused/unimplemented
-  int    tmpSwCol;
+  //int    tmpSwCol;
   UINT32 solenoids;
-  UINT8  tmpLampData;
-  UINT8  swMatrix[CORE_MAXSWCOL];
+  //UINT8  tmpLampData;
+  //UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments;
 } locals;

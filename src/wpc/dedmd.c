@@ -29,7 +29,7 @@ static struct {
   UINT8 framedata[2][16][2][8]; // 2 PWM frames of 16 rows of 128 bits
   UINT32 row_latch, last_row_latch;
   UINT64 dot_latch, dot_shift;
-  int blnk, rowdata, rowclk, test, laststat;
+  int blnk, rowdata, rowclk, test;// , laststat;
   mame_timer* nmi_timer;
 } dmdlocals;
 

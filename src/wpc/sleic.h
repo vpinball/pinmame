@@ -1,13 +1,7 @@
 // license:BSD-3-Clause
-
-#ifndef INC_SLEIC
-#define INC_SLEIC
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4) // GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 /*-------------------------
@@ -126,5 +120,3 @@ extern MACHINE_DRIVER_EXTERN(SLEIC3);
 #define gl_mSLEIC1      SLEIC1
 #define gl_mSLEIC2      SLEIC2
 #define gl_mSLEIC3      SLEIC3
-
-#endif /* INC_SLEIC */

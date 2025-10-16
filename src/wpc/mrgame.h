@@ -1,11 +1,6 @@
-#ifndef INC_MRGAME
-#define INC_MRGAME
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 #define MRGAME_CPUNO	0
@@ -160,5 +155,3 @@ extern MACHINE_DRIVER_EXTERN(mrgame_g2);
 
 extern PINMAME_VIDEO_UPDATE(mrgame_update_g1);
 extern PINMAME_VIDEO_UPDATE(mrgame_update_g2);
-
-#endif /* INC_MRGAME */

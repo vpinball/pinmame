@@ -78,7 +78,7 @@ static INTERRUPT_GEN(JP_vblank) {
 
 static SWITCH_UPDATE(JP) {
 #ifdef MAME_DEBUG
-  static char s[4];
+  static char s[3];
   static int sndcmd = 3;
   int i;
   if (cpu_gettotalcpu() > 1) {
@@ -145,7 +145,7 @@ static void dispStrobe(void) {
   default:
     // all player scores, match & credits displays
     for (i=0; i < 32; i++)
-      if (locals.dispData & (1 << i)) locals.segments[pos[i]].w &= ~(1 << (locals.sixColumns ? data : 6 - data));
+      if (locals.dispData & (1 << i)) locals.segments[pos[i]].w &= ~(1u << (locals.sixColumns ? data : 6 - data));
     // fake single points zero digits
     for (i=0; i < 4; i++)
       locals.segments[i*7 + 6].w = (locals.segments[i*7 + 5].w) ? core_bcd2seg7[0] : 0;

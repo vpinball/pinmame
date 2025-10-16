@@ -1,11 +1,6 @@
-#ifndef INC_ATARI
-#define INC_ATARI
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 #include "sndbrd.h"
 
@@ -391,5 +386,3 @@ extern MACHINE_DRIVER_EXTERN(atari1s);
 #define gl_mATARI2		ATARI2
 #define gl_mATARI3		ATARI3
 #define gl_mATARI4		ATARI4
-
-#endif /* INC_ATARI */

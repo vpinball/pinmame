@@ -7,7 +7,7 @@
 		CPU:     PPS/4 @ 198.864 kHz
 		IO:      PPS/4 Ports
 		DISPLAY: 4 x 6 Digit 9 segment panels, 1 x 4 Digit 7 segment panels
-		SOUND:	 3x NE555 oscillator, System80 sound only board on later games
+		SOUND:   3x NE555 oscillator, System80 sound only board on later games
 ************************************************************************************************/
 
 #include <stdarg.h>

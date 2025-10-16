@@ -108,7 +108,7 @@ static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data | 0x0f; }
 
 
 static struct {
-  int p0_a, p1_a, p1_b, p0_cb2, p1_cb2, p2_a, p2_b, p2_cb2;
+  int p0_a, p1_a, p1_b, p0_cb2, p1_cb2, p2_a, p2_b;// , p2_cb2;
   int lampadr1;
   UINT32 solenoids;
   UINT8 diagnosticLed;

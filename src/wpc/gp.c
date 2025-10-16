@@ -39,7 +39,7 @@ static WRITE_HANDLER(GP_soundCmd)  { }
 static struct {
   int p0_a;
   int bcd[5];
-  int lampaddr;
+  //int lampaddr;
   //int diagnosticLed;
   int vblankCount;
   int swCol;
@@ -273,9 +273,9 @@ PORT A WRITE
 	12-15) Dip Column Strobes
 */
 static WRITE_HANDLER(mpu2_pa_w) {
-	int addrdata = data & 0x0f;	//Take P0-P3
-	int tmpdata =  data>>4;		//Take P4-P7
-	int disp_clk = tmpdata - 7;	//Track Display Clock line
+	const int addrdata = data & 0x0f;	//Take P0-P3
+	const int tmpdata =  data>>4;		//Take P4-P7
+	const int disp_clk = tmpdata - 7;	//Track Display Clock line
 	locals.p0_a = data;
 
 	/*Pin 1 not connected, but is used after a display clock line goes low

@@ -17,7 +17,7 @@
 / 
 / (the wavetable ROM is mapped to f000-f1ff 
    and the main rom is repeated at f800-ffff
-   for the interupt vectors)
+   for the interrupt vectors)
 /-----------------------------------------*/
 
 #define BASE_FREQUENCY 16000
@@ -31,7 +31,7 @@
 
 static struct {
   struct sndbrdData brdData;
-  int sndCmd;
+  //int sndCmd;
 
   int     div2;
   int     counterSpeed;

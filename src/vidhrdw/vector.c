@@ -142,13 +142,13 @@ INLINE int vec_div(int parm1, int parm2)
 /* MLR 990316 new gamma handling added */
 void vector_set_gamma(float _gamma)
 {
-	int i, h;
+	int i;
 
 	gamma_correction = _gamma;
 
 	for (i = 0; i < 256; i++)
 	{
-		h = (int)(255.0*pow(i/255.0, 1.0/gamma_correction));
+		int h = (int)(255.0*pow(i/255.0, 1.0/gamma_correction));
 		if( h > 255) h = 255;
 		Tgamma[i] = Tgammar[255-i] = h;
 	}

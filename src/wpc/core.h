@@ -1,14 +1,13 @@
-#ifndef INC_CORE
-#define INC_CORE
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include <assert.h>
 
-#include "wpcsam.h"
 #include "gen.h"
 #include "sim.h"
+
+#ifdef ENABLE_MECHANICAL_SAMPLES
+#include "wpcsam.h"
+#endif
 
 /*-- some convenience macros --*/
 #ifndef FALSE
@@ -34,14 +33,14 @@
   #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY|ROMREGION_ERASE)
 
 /*-- convenience macro for handling bits --*/
-#define GET_BIT0 (data & 0x01) >> 0
-#define GET_BIT1 (data & 0x02) >> 1
-#define GET_BIT2 (data & 0x04) >> 2
-#define GET_BIT3 (data & 0x08) >> 3
-#define GET_BIT4 (data & 0x10) >> 4
-#define GET_BIT5 (data & 0x20) >> 5
-#define GET_BIT6 (data & 0x40) >> 6
-#define GET_BIT7 (data & 0x80) >> 7
+#define GET_BIT0 ((data & 0x01) >> 0)
+#define GET_BIT1 ((data & 0x02) >> 1)
+#define GET_BIT2 ((data & 0x04) >> 2)
+#define GET_BIT3 ((data & 0x08) >> 3)
+#define GET_BIT4 ((data & 0x10) >> 4)
+#define GET_BIT5 ((data & 0x20) >> 5)
+#define GET_BIT6 ((data & 0x40) >> 6)
+#define GET_BIT7 ((data & 0x80) >> 7)
 
 
 /*-- default screen size */
@@ -110,7 +109,7 @@
     COREPORT_BIT(0x0001, "Left Flipper",   KEYCODE_LSHIFT)  \
     COREPORT_BIT(0x0002, "Right Flipper",  KEYCODE_RSHIFT) \
     COREPORT_BIT(0x0004, "U Left Flipper",  KEYCODE_A)  \
-    COREPORT_BIT(0x0008, "Y Right Flipper", KEYCODE_L)
+    COREPORT_BIT(0x0008, "U Right Flipper", KEYCODE_L)
 
 /*-----------------------
 / Access to common ports
@@ -302,7 +301,7 @@ typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct recta
 #define CORE_SSFLIPENSOL  23
 #define CORE_FIRSTSSSOL   17
 
-#define CORE_SOLBIT(x) (1<<((x)-1))
+#define CORE_SOLBIT(x) (1u<<((x)-1))
 
 /*  Flipper Solenoid numbers */
 #define sLRFlip     (CORE_FIRSTLFLIPSOL+1)
@@ -421,8 +420,8 @@ typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_SE    204 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_20V_DC_CC    205 /* Incandescent #44/555 Bulb connected to 20V, commonly used for lamp matrix with short strobing */
-#define CORE_MODOUT_BULB_44_20V_AC_POS_BY 206 /* Incandescent #44/555 Bulb connected to AC 20V with a diode for positive half (Bally 6803) */
-#define CORE_MODOUT_BULB_44_20V_AC_NEG_BY 207 /* Incandescent #44/555 Bulb connected to AC 20V with a diode for negative half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_20V_AC_POS_BY 206/* Incandescent #44/555 Bulb connected to AC 20V with a diode for positive half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_20V_AC_NEG_BY 207/* Incandescent #44/555 Bulb connected to AC 20V with a diode for negative half (Bally 6803) */
 #define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89 Bulb connected to 32V, used for flashers on S11 with output strobing */
@@ -581,7 +580,7 @@ extern const int core_bcd2seg7[];  /* BCD to 7 segment display */
 extern const int core_bcd2seg7a[]; /* BCD to 7 segment display, missing 6 top line */
 extern const int core_bcd2seg7e[]; /* BCD to 7 segment display with A to E letters */
 extern const UINT16 core_ascii2seg16[];  /* BCD to regular 16 segment display */
-extern const UINT16 core_ascii2seg16s[]; /* BCD to 16 segment display with split top / botom lines */
+extern const UINT16 core_ascii2seg16s[]; /* BCD to 16 segment display with split top / bottom lines */
 #define core_bcd2seg  core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
@@ -644,7 +643,7 @@ typedef struct {
   unsigned int frame_index;   // Raw frame index
   // Integrated data, computed by 'core_dmd_update_pwm'
   UINT8*  bitplaneFrame;      // DMD: bitplane frame built up from raw rasterized frames (depends on each driver, stable result that can be used for post processing like colorization, ...)
-  UINT8*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable accross PinMame builds)
+  UINT8*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable across PinMame builds)
 } core_tDMDPWMState;
 
 #define CORE_DMD_PWM_FILTER_DE_128x16   0
@@ -705,4 +704,3 @@ INLINE int core_BitColToNum(int tmp)
 }
 
 extern MACHINE_DRIVER_EXTERN(PinMAME);
-#endif /* INC_CORE */

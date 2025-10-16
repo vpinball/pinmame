@@ -1,13 +1,7 @@
 // license:BSD-3-Clause
-
-#ifndef INC_PLAYMATIC
-#define INC_PLAYMATIC
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 /*-------------------------
@@ -318,5 +312,3 @@ extern MACHINE_DRIVER_EXTERN(PLAYMATICS2);
 extern MACHINE_DRIVER_EXTERN(PLAYMATICS3);
 extern MACHINE_DRIVER_EXTERN(PLAYMATICS4);
 extern MACHINE_DRIVER_EXTERN(PLAYMATICSZ);
-
-#endif /* INC_PLAYMATIC */

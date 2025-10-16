@@ -33,7 +33,7 @@
 #define PIA3 2
 
 static struct {
-  int a1, b1, a2, b2, cb12, a3;
+  int a1, b1, /*a2,*/ b2, cb12, a3;
   int dspIrq, zc, regNo, lampCol;
   UINT8 segs[6];
 } locals;

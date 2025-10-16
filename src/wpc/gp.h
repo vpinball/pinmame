@@ -1,8 +1,4 @@
-#ifndef INC_GP
-#define INC_GP
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* DIP SWITCH SETTINGS:
 
@@ -53,7 +49,6 @@
 
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 #define GP_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
@@ -260,5 +255,3 @@ extern MACHINE_DRIVER_EXTERN(GP2SM3);
 #define mGP2S4   GP2S4
 #define mGP2SM   GP2SM
 #define mGP2SM3  GP2SM3
-
-#endif /* INC_GP */

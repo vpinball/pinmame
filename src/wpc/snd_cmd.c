@@ -119,14 +119,14 @@ static struct cmds {
 
 static struct {
   struct cmds *currCmd;
-  int sndCmd;
+  //int sndCmd;
   int soundMode;
   int digitMode;
   int currDigit;
   int digits[MAX_CMD_LENGTH*2];
   int cmdLog[MAX_CMD_LOG];
   int firstLog;
-  mem_write_handler soundCmd;
+  //mem_write_handler soundCmd;
   int boards; // 0 = none, 1 = board0, 2 = board1, 3 = both
   int rollover; 
   int cmdIdx;
@@ -328,7 +328,7 @@ static void pinsound_exit()
 	// send stop-all command to the PinSound Studio
 	if (pinsound_studio_enabled)
 	{
-		TCHAR cmd_to_pinsound_studio[3];
+		TCHAR cmd_to_pinsound_studio[100];
 		_stprintf( cmd_to_pinsound_studio, _T("00") );
 		// double because we don't know if we are talking 8bits or 16bits instructions
 		sendToSlot(hFilePinSound, cmd_to_pinsound_studio);

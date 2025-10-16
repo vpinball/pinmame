@@ -574,7 +574,7 @@ static float brown_noise(const float scale)
 
 
 static int st300_sh_start(const struct MachineSound *msound) {
-	int mixing_levels[3] = {30,30,30};
+	static const int mixing_levels[3] = {30,30,30};
 	int i,j;
 	//int s = 0;
 

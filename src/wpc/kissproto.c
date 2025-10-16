@@ -6,7 +6,7 @@
 #include "core.h"
 
 static struct {
-  int swCol, lampCol;
+  //int swCol, lampCol;
   UINT32 solenoids;
   core_tSeg segments;
   int vblankCount;

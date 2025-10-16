@@ -70,7 +70,7 @@ static char * DispClaw(void);
   local static variables
  ------------------------*/
 static struct {
-  int droptargetPos;     /* Drop Target Position */
+  //int droptargetPos; /* Drop Target Position */
   int armPos;		 /* Arm Position  */
   int globePos;		 /* Globe Position*/
   int jdtPos;		 /* "J"udge DT Position*/

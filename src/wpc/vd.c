@@ -24,7 +24,7 @@
 /  Local variables
 /-----------------*/
 static struct {
-  int    vblankCount, solCount;
+  int    vblankCount; //, solCount;
   UINT32 solenoids;
   core_tSeg segments;
   int    col;

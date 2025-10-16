@@ -43,7 +43,7 @@ static struct {
   int vblankCount;
   core_tSeg segments;
   UINT32 solenoids;
-  UINT16 sols2;
+  //UINT16 sols2;
   int irq_count;
   int DispNoWait;
   int DispCol;

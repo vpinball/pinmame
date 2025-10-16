@@ -1,14 +1,9 @@
-#ifndef INC_ALVG
-#define INC_ALVG
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
-#define ALVG_CPUNO	0
+#define ALVG_CPUNO 0
 
 /*-------------------------
 / Machine driver constants
@@ -19,20 +14,20 @@
 #define ALVG_COMPORTS \
   PORT_START /* 0 */ \
       /* Switch Column 1 */ \
-	COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3) \
-	COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4) \
+    COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4) \
     COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5) \
     COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6) \
-	COREPORT_BIT(     0x0010, "Slam Tilt",        KEYCODE_HOME) \
-	/* Switch Column 2 */ \
+    COREPORT_BIT(     0x0010, "Slam Tilt",        KEYCODE_HOME) \
+    /* Switch Column 2 */ \
     COREPORT_BITDEF(  0x0020, IPT_START1,         IP_KEY_DEFAULT) \
-	COREPORT_BIT(     0x0040, "Ball Tilt",        KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0040, "Ball Tilt",        KEYCODE_INSERT) \
     COREPORT_BIT(     0x0800, "Volume +",         KEYCODE_9) \
-	COREPORT_BIT(     0x1000, "Volume -",         KEYCODE_0) \
+    COREPORT_BIT(     0x1000, "Volume -",         KEYCODE_0) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
-    COREPORT_BIT(     0x0100, "Test",			  KEYCODE_7) \
-    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8) \
-    COREPORT_BITTOG(  0x0400, "Ticket",			  KEYCODE_END)
+    COREPORT_BIT(     0x0100, "Test",             KEYCODE_7) \
+    COREPORT_BIT(     0x0200, "Enter",            KEYCODE_8) \
+    COREPORT_BITTOG(  0x0400, "Ticket",           KEYCODE_END)
 
 /*-- Standard input ports --*/
 #define ALVG_INPUT_PORTS_START(name,balls) \
@@ -52,9 +47,9 @@
 #define ALVG_CSOL(x) ((x)+24)
 
 /*-- switch numbers --*/
-#define ALVG_SWTEST     -7
-#define ALVG_SWENTER    -6
-#define ALVG_SWTICKET   -5
+#define ALVG_SWTEST     (-7)
+#define ALVG_SWENTER    (-6)
+#define ALVG_SWTICKET   (-5)
 
 /*-- Memory regions --*/
 #define ALVG_MEMREG_CPU		REGION_CPU1
@@ -85,7 +80,5 @@ extern MACHINE_DRIVER_EXTERN(alvgs2dmd2);
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
   extern MACHINE_DRIVER_EXTERN(alvg_test8031);
-  #define mTEST8031	  alvg_test8031
+  #define mTEST8031   alvg_test8031
 #endif
-
-#endif /* INC_ALVG */

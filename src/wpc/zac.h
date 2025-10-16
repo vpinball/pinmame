@@ -1,11 +1,6 @@
-#ifndef INC_ZAC
-#define INC_ZAC
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 /*-- Common Inports for ZAC Games --*/
@@ -395,5 +390,3 @@ extern MACHINE_DRIVER_EXTERN(TECHNO);
 #define mZAC2XS2A ZAC2XS2A
 #define mZAC2XS3  ZAC2XS3
 #define mTECHNO   TECHNO
-
-#endif /* INC_ZAC */

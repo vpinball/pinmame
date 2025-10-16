@@ -1,13 +1,7 @@
 // license:BSD-3-Clause
-
-#ifndef INC_LTD
-#define INC_LTD
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 /*-------------------------
@@ -129,5 +123,3 @@ extern MACHINE_DRIVER_EXTERN(LTD4HH);
 #define gl_mLTD3A  LTD3A
 #define gl_mLTD4   LTD4
 #define gl_mLTD4HH LTD4HH
-
-#endif /* INC_LTD */

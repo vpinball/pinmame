@@ -167,8 +167,6 @@ extern void stream_free(int channel);
 
 void gts80s_init(struct sndbrdData *brdData) {
 	int i;
-	UINT8 *pMem;
-
 	memset(&GTS80S_locals, 0x00, sizeof GTS80S_locals);
 
 	GTS80S_locals.boardData = *brdData;
@@ -191,7 +189,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 		/* clear the upper 4 bits, some ROM images aren't 0 */
 		/* the 6530 RIOT ROM is not used by the boards which have a PiggyPack installed */
 		UINT8* mr = memory_region(GTS80S_locals.boardData.cpuNo);
-		pMem = mr+0x0400;
+		UINT8* pMem = mr+0x0400;
 		for(i=0x0400; i<0x0bff; i++)
 			*pMem++ &= 0x0f;
 

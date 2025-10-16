@@ -1,11 +1,6 @@
-#ifndef INC_GTS3
-#define INC_GTS3
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 /*-------------------------
@@ -256,5 +251,3 @@ typedef struct {
 
   int modsol_rate_counter;
 } tGTS3locals;
-
-#endif /* INC_GTS3 */

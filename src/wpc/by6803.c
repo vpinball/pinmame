@@ -115,7 +115,7 @@ static struct {
   int lampadr;
   UINT32 solenoids;
   core_tSeg segments, pseg;
-  int dispcol, disprow, commacol;
+  int dispcol, disprow;// , commacol;
   int vblankCount;
   int phase_a, p21;
   void (*DISPSTROBE)(int mask);

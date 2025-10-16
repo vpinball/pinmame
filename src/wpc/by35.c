@@ -63,8 +63,8 @@ static WRITE_HANDLER(snd300_wex) {
 }
 
 static struct {
-  int a0, a1, b0, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
-  int swData;
+  int a0, a1, b0, b1, /*ca10,*/ ca11, ca20, ca21, cb10, /*cb11,*/ cb20, cb21;
+  //int swData;
   int bcd[7], lastbcd;
   const int *bcd2seg;
   int lampadr1, lampadr2;

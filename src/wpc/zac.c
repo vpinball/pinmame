@@ -108,7 +108,7 @@ static INTERRUPT_GEN(ZAC_vblank) {
 
 #ifdef MAME_DEBUG
 static void adjust_timer(int offset) {
-  static char s[4];
+  static char s[5];
   locals.irqfreq += offset;
   if (locals.irqfreq < 1) locals.irqfreq = 1;
   sprintf(s, "%4d", locals.irqfreq);
@@ -363,7 +363,7 @@ static WRITE_HANDLER(ram_w) {
 	ram[offset] = data;
 	if (offset > 0x43f && offset < 0x460) {
 		offset -= 0x440;
-		UINT32 sol = 1 << offset;
+		UINT32 sol = 1u << offset;
 		if (data)
 		{
 			locals.solenoids |= sol;
@@ -408,7 +408,7 @@ static WRITE_HANDLER(ram1_w) {
 	} else if (offset > 0x3f && offset < 0x60) {
 		UINT32 sol;
 		offset -= 0x40;
-		sol = 1 << offset;
+		sol = 1u << offset;
 		if (data)
 		{
 			locals.solenoids |= sol;

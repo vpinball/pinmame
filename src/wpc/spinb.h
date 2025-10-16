@@ -1,11 +1,6 @@
-#ifndef INC_SPINB
-#define INC_SPINB
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
-#include "wpcsam.h"
 #include "sim.h"
 
 #define SPINB_CPU_GAME 0
@@ -237,5 +232,3 @@ extern MACHINE_DRIVER_EXTERN(spinbs1n2);
 #define mSPINBSNMI2	  spinbs1n2
 
 extern PINMAME_VIDEO_UPDATE(SPINBdmd_update);
-
-#endif /* INC_SPINB */
