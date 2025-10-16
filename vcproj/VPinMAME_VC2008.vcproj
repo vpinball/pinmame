@@ -2572,14 +2572,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\..\src\sound\ym2151.c"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\sound\ym2151.h"
-						>
-					</File>
-					<File
 						RelativePath=".\..\src\sound\ymdeltat.c"
 						>
 					</File>

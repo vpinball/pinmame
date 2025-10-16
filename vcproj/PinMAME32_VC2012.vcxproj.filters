@@ -612,9 +612,6 @@
     <ClCompile Include="..\src\sound\votrax.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\sound\ym2151.c">
-      <Filter>Source Files\MAME\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\sound\ymdeltat.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -1779,9 +1776,6 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\src\sound\votrax.h">
-      <Filter>Source Files\MAME\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\sound\ym2151.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\src\sound\ymdeltat.h">

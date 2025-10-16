@@ -1238,14 +1238,6 @@ SOURCE=.\src\sound\vtxsmpls.inc
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\ym2151.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ym2151.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\sound\ymdeltat.c
 # End Source File
 # Begin Source File

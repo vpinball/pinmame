@@ -373,8 +373,6 @@ set(PINMAME_SOURCES
    src/sound/tms5220.h
    src/sound/votrax.c
    src/sound/votrax.h
-   src/sound/ym2151.c
-   src/sound/ym2151.h
    src/sound/ymdeltat.c
    src/sound/ymdeltat.h
    src/sound/ymf262.c

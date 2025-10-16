@@ -1071,7 +1071,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\sound\votrax.c" />
-    <ClCompile Include="..\src\sound\ym2151.c" />
     <ClCompile Include="..\src\sound\ymdeltat.c" />
     <ClCompile Include="..\src\sound\ymf262.c" />
     <ClCompile Include="..\src\vidhrdw\avgdvg.c" />
@@ -1538,7 +1537,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="..\src\sound\tms5110.h" />
     <ClInclude Include="..\src\sound\tms5220.h" />
     <ClInclude Include="..\src\sound\votrax.h" />
-    <ClInclude Include="..\src\sound\ym2151.h" />
     <ClInclude Include="..\src\sound\ymdeltat.h" />
     <ClInclude Include="..\src\sound\ymf262.h" />
     <ClInclude Include="..\src\vidhrdw\avgdvg.h" />
