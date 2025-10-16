@@ -5124,7 +5124,7 @@ int BasicBitmap::SavePPM(const char *filename) const
 	const BasicBitmap *dst = this;
 	BasicBitmap *tmp = NULL;
 
-	if (fmt != A8R8G8B8 || fmt != X8R8G8B8) {
+	if (fmt != A8R8G8B8 && fmt != X8R8G8B8) {
 		tmp = new BasicBitmap(_w, _h, A8R8G8B8);
 		/*if (tmp == NULL) {
 			fclose(fp);
