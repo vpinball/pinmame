@@ -494,7 +494,7 @@ int state_save_load_begin(mame_file *file)
 	ss_dump_file = file;
 	mame_fread(ss_dump_file, ss_dump_array, ss_dump_size);
 
-	if(memcmp(ss_dump_array, "MAMESAVE", 8)) {
+	if(ss_dump_size < 8 || memcmp(ss_dump_array, "MAMESAVE", 8)) {
 		usrintf_showmessage("Error: This is not a mame save file");
 		goto bad;
 	}

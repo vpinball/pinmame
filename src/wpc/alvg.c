@@ -382,8 +382,8 @@ void UpdateLampCol(void) {
 		if(tmp&1) lmpCol+=i;
 		tmp = tmp>>1;
 	}
-	coreGlobals.tmpLampMatrix[lmpCol-1] =
-		(coreGlobals.tmpLampMatrix[lmpCol-1]&0xff) | alvglocals.lampRow;
+	if (lmpCol != 0)
+		coreGlobals.tmpLampMatrix[lmpCol-1] = (coreGlobals.tmpLampMatrix[lmpCol-1]&0xff) | alvglocals.lampRow;
 	//printf("COL = %x LampColumn = %d\n",alvglocals.lampColumn,data);
 	//printf("LampColumn = %d\n",data);
 }
