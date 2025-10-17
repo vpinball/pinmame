@@ -79,7 +79,7 @@ typedef struct {
 static bool        dmd_hasDMD = false; // Used to send a black frame for clean close
 static UINT16      dmd_width = 0; // Only valid if dmd_hasDMD is set
 static UINT16      dmd_height = 0; // Only valid if dmd_hasDMD is set
-static dmddevice_t dmdDevices[2] = { {0} };
+static dmddevice_t dmdDevices[2] = { };
 
 extern "C"
 {
@@ -129,7 +129,6 @@ extern "C" int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, co
 		// look for the DmdDevice(64).dll and DmdScreen(64).dll in the path of vpinmame.dll/libpinmame-X.X.dll
 		char filename[MAX_PATH];
 		GetModuleFileName(hCurrentModule, filename, MAX_PATH);
-		strcpy(filename, filename);
 		char* ptr = strrchr(filename, '\\');
 #ifdef _WIN64
 		strcpy(ptr + 1, i == 0 ? "DmdDevice64.dll" : "DmdScreen64.dll");
