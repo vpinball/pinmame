@@ -158,7 +158,7 @@ static INTERRUPT_GEN(s11_vblank) {
           if (chgLamps & 0x01) {
             procDriveLamp(procLamp, tmpLamps & 0x01);
           }
-          // If this lamp was defined in the YAML file as one showng kickback status,
+          // If this lamp was defined in the YAML file as one showing kickback status,
           // then call to the kickback routine to update information
           if (coreGlobals.isKickbackLamp[procLamp]) {
             procKickbackCheck(procLamp);
@@ -206,10 +206,13 @@ static INTERRUPT_GEN(s11_vblank) {
  #  error "Need to update smooth formula"
  #endif
 #endif
-  coreGlobals.solenoids  = locals.solsmooth[0] | locals.solsmooth[1];
+  coreGlobals.solenoids = locals.solsmooth[0];
+#if S11_SOLSMOOTH > 1
+  coreGlobals.solenoids |= locals.solsmooth[1];
+#endif
   coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xFFFF00FF) | (locals.extSol << 8);
 #if defined(LISY_SUPPORT)
-   lisy_w_solenoid_handler( ); //RTH: need to add solnoids2 ?
+   lisy_w_solenoid_handler( ); //RTH: need to add solenoids2 ?
 #endif
   locals.solenoids = coreGlobals.pulsedSolState;
   locals.extSol = locals.extSolPulse;
@@ -218,7 +221,7 @@ static INTERRUPT_GEN(s11_vblank) {
   if (coreGlobals.p_rocEn) {
   /*
    * Now this code is kind of complicated.  Basically on each iteration, we examine the state of the coils
-   * as pinmame has them at the moment.  We compare that to the state of the coils on the previous iteration.
+   * as PinMAME has them at the moment.  We compare that to the state of the coils on the previous iteration.
    * So in theory we know which coils have changed and need to be updated on the P-ROC.
    * However, sometimes we catch the iteration just as the A/C select solenoid was going to be
    * pulsed and we don't always have quite the right list of coils.
@@ -890,7 +893,7 @@ static MACHINE_INIT(s11) {
   const char* const gn = rootDrv->name;
   // Missing definitions:
   // - Star Trax
-  
+
   // Williams S9
   if (strncasecmp(gn, "comet_", 6) == 0) { // Comet
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  3 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11);
@@ -900,7 +903,7 @@ static MACHINE_INIT(s11) {
   }
   else if (strncasecmp(gn, "sorcr_", 6) == 0) { // Sorcerer
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  5 - 1, 3, CORE_MODOUT_BULB_89_25V_DC_S11);
-	  // Wired to a relay in the schematics, Labeled as "Flash eyes (cabinet)" but also as "Flipper Enable Relay" in the manual => left as is for the time being
+     // Wired to a relay in the schematics, Labeled as "Flash eyes (cabinet)" but also as "Flipper Enable Relay" in the manual => left as is for the time being
      //core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11); 
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // GI output
   }
@@ -938,7 +941,7 @@ static MACHINE_INIT(s11) {
   else if (strncasecmp(gn, "bnzai_", 6) == 0) { // Banzai Run
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Lower Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Upper Playfield GI output
-	 core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Upper Lamp GI output
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Upper Lamp GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
   else if (strncasecmp(gn, "cycln_", 6) == 0) { // Cyclone
@@ -946,7 +949,7 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Playfield GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Backbox GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11);
-	 core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_25V_DC_S11); // 8 muxed flasher outputs (Mux relay is solenoid #12)
   }
   else if (strncasecmp(gn, "dd_", 3) == 0) { // Dr. Dude
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // Playfield GI output
@@ -1111,7 +1114,7 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 40 - 1, 2, CORE_MODOUT_BULB_89_25V_DC_S11); // Sound Overlay Board #1 (1-8 -> 40-47)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 42 - 1, 1, CORE_MODOUT_BULB_89_25V_DC_S11); // Sound Overlay Board #3 & 4 (1-8 -> 40-47)
   }
-  
+
   // DataEast Protoype
   else if (strncasecmp(gn, "kiko_", 5) == 0) { // King Kong prototype
      // Informations collected from direct discord exchanges but no schematics available
@@ -1178,14 +1181,14 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12 - 1, 3, CORE_MODOUT_BULB_89_32V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
   }
-  
+
   // DataEast/Sega 3
   else if ((strncasecmp(gn, "gnr_",  4) == 0) // Guns'n Roses
         || (strncasecmp(gn, "tftc_", 5) == 0) // Tales from The Crypt
         || (strncasecmp(gn, "stwr_", 5) == 0) // Star Wars
         || (strncasecmp(gn, "jupk_", 5) == 0) // Jurassic Park
         || (strncasecmp(gn, "rab_",  4) == 0) // Adventures of Rocky and Bullwinkle and Friends
-	 ) {
+    ) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
   }
@@ -1215,7 +1218,7 @@ static MACHINE_INIT(s11) {
   else if ((strncasecmp(gn, "aar_", 4) == 0) // Aaron Spelling
         || (strncasecmp(gn, "lw3_", 4) == 0) // Lethal Weapon 3
         || (strncasecmp(gn, "mj_", 3) == 0)  // Michael Jordan
-	 ) {
+    ) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 +  9 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_BULB_89_32V_DC_S11);
@@ -1242,7 +1245,7 @@ static MACHINE_INIT(s11) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 11 - 1, 1, CORE_MODOUT_BULB_44_6_3V_AC_REV); // GI output
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_32V_DC_S11); // 8 muxed flasher outputs (K1 relay is solenoid #10)
   }
-  
+
   // DataEast/Sega 3b
   else if ((strncasecmp(gn, "batmanf", 7) == 0) // Batman Forever
      || (strncasecmp(gn, "baywatch", 8) == 0)   // Baywatch
