@@ -315,7 +315,7 @@ static const struct pia6821_interface sp_pia = {
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b;
-  UINT8 lastcmd, cmd[2], lastctrl;
+  UINT8 lastcmd, /*cmd[2],*/ lastctrl;
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
@@ -529,7 +529,7 @@ static void snt2_irq(int state);
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia1ca2;
-  UINT8 cmd[2], lastcmd, lastctrl;
+  UINT8 /*cmd[2],*/ lastcmd;// , lastctrl;
 } sntlocals;
 
 static const struct pia6821_interface snt_pia[] = {{
@@ -552,6 +552,7 @@ static const struct pia6821_interface snt_pia[] = {{
 
 static void snt_init(struct sndbrdData *brdData) {
   int i;
+  memset(&sntlocals, 0, sizeof(sntlocals));
   sntlocals.brdData = *brdData;
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
