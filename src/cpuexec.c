@@ -7,6 +7,7 @@
 ***************************************************************************/
 
 #include <math.h>
+#include <assert.h>
 
 #include "driver.h"
 #include "timer.h"
