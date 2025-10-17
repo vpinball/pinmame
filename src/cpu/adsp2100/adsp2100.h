@@ -8,15 +8,10 @@
 
 ***************************************************************************/
 
-#ifndef _ADSP2100_H
-#define _ADSP2100_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "memory.h"
 #include "osd_cpu.h"
-
 
 /*###################################################################################################
 **	GLOBAL CONSTANTS
@@ -229,5 +224,3 @@ extern void adsp2115_set_tx_callback( TX_CALLBACK cb );
 extern void adsp2115_load_boot_data(data8_t *srcdata, data32_t *dstdata);
 
 #endif
-
-#endif /* _ADSP2100_H */

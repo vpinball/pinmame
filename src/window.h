@@ -1,8 +1,4 @@
-#ifndef _WINDOW_H_
-#define	_WINDOW_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "osd_cpu.h"
 #include "mamedbg.h"
@@ -176,5 +172,3 @@ extern UINT8 win_get_prio(UINT32 idx);
 extern void win_set_prio(UINT32 idx, UINT8 prio);
 extern void win_move(UINT32 idx, UINT32 dwX, UINT32 dwY);
 extern void win_invalidate_video(void);
-
-#endif

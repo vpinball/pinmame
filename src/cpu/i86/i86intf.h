@@ -1,9 +1,5 @@
 /* ASG 971222 -- rewrote this interface */
-#ifndef __I86INTRF_H_
-#define __I86INTRF_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "memory.h"
 #include "osd_cpu.h"
@@ -34,6 +30,4 @@ extern const char *i86_info(void *context, int regnum);
 
 #ifdef MAME_DEBUG
 extern unsigned DasmI86(char* buffer, unsigned pc);
-#endif
-
 #endif

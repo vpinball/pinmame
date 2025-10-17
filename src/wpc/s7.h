@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_S7
-#define INC_S7
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- Common Inports for S7Games --*/
 #define S7_COMPORTS \
@@ -157,4 +152,3 @@ extern MACHINE_DRIVER_EXTERN(s7RR);
 #define s7_mS7RR       s7RR
 
 extern const core_tLCDLayout s7_6digit_disp[],s7_dispS7[];
-#endif /* INC_S7 */

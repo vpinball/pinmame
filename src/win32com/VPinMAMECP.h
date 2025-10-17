@@ -1,9 +1,4 @@
-#ifndef _VPINMAMECP_H_
-#define _VPINMAMECP_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 template <class T>
 class CProxy_IControllerEvents : public IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>
@@ -17,7 +12,7 @@ public:
 		int nConnectionIndex;
 		CComVariant* pvars = new CComVariant[2];
 		int nConnections = IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>::m_vec.GetSize();
-		
+
 		for (nConnectionIndex = 0; nConnectionIndex < nConnections; nConnectionIndex++)
 		{
 			pT->Lock();
@@ -35,7 +30,7 @@ public:
 		}
 		delete[] pvars;
 		return varResult.scode;
-	
+
 	}
 	HRESULT Fire_OnStateChange(INT nState)
 	{
@@ -44,7 +39,7 @@ public:
 		int nConnectionIndex;
 		CComVariant* pvars = new CComVariant[1];
 		int nConnections = IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>::m_vec.GetSize();
-		
+
 		for (nConnectionIndex = 0; nConnectionIndex < nConnections; nConnectionIndex++)
 		{
 			pT->Lock();
@@ -61,7 +56,6 @@ public:
 		}
 		delete[] pvars;
 		return varResult.scode;
-	
+
 	}
 };
-#endif

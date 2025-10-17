@@ -23,11 +23,7 @@
  *
  *****************************************************************************/
 
-#ifndef ARM7CORE_H
-#define ARM7CORE_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "driver.h"
 #include "arm7jit.h"
@@ -204,14 +200,14 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define F_BIT	6
 #define T_BIT	5	//Thumb mode
 
-#define N_MASK	((data32_t)(1<<N_BIT)) /* Negative flag */
-#define Z_MASK	((data32_t)(1<<Z_BIT)) /* Zero flag */
-#define C_MASK	((data32_t)(1<<C_BIT)) /* Carry flag */
-#define V_MASK	((data32_t)(1<<V_BIT)) /* oVerflow flag */
-#define Q_MASK  ((data32_t)(1<<Q_BIT)) /* signed overflow for QADD, MAC */
-#define I_MASK	((data32_t)(1<<I_BIT)) /* Interrupt request disable */
-#define F_MASK	((data32_t)(1<<F_BIT)) /* Fast interrupt request disable */
-#define T_MASK	((data32_t)(1<<T_BIT)) /* Thumb Mode flag */
+#define N_MASK	((data32_t)(1u<<N_BIT)) /* Negative flag */
+#define Z_MASK	((data32_t)(1u<<Z_BIT)) /* Zero flag */
+#define C_MASK	((data32_t)(1u<<C_BIT)) /* Carry flag */
+#define V_MASK	((data32_t)(1u<<V_BIT)) /* Overflow flag */
+#define Q_MASK  ((data32_t)(1u<<Q_BIT)) /* Signed overflow for QADD, MAC */
+#define I_MASK	((data32_t)(1u<<I_BIT)) /* Interrupt request disable */
+#define F_MASK	((data32_t)(1u<<F_BIT)) /* Fast interrupt request disable */
+#define T_MASK	((data32_t)(1u<<T_BIT)) /* Thumb Mode flag */
 
 #define N_IS_SET(pc)	((pc) & N_MASK)
 #define Z_IS_SET(pc)	((pc) & Z_MASK)
@@ -338,7 +334,7 @@ enum
 #define SET_CPSR(v)				(GET_CPSR = (v))
 #define MODE_FLAG				0xF									//Mode bits are 4:0 of CPSR, but we ignore bit 4.
 #define GET_MODE				(GET_CPSR & MODE_FLAG)				
-#define SIGN_BIT				((data32_t)(1<<31))
+#define SIGN_BIT				((data32_t)(1u<<31))
 
 // These cover macros are in case these ever need to be CPU implementation specific.  Currently they're
 // not, so we define these for all implementations here.
@@ -387,5 +383,3 @@ EXTERN char *(*arm7_dasm_cop_dt_callback)( char *pBuf, data32_t opcode, char *pC
 EXTERN char *(*arm7_dasm_cop_rt_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
 EXTERN char *(*arm7_dasm_cop_do_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
 #endif
-
-#endif /* ARM7CORE_H */

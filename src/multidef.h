@@ -4,11 +4,7 @@
 //
 //============================================================
 
-#ifndef __MULTIDEF__
-#define __MULTIDEF__
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*
  The MinGW implementations of windef.h and winuser.h define
@@ -37,5 +33,3 @@
 
 #define COMPILE_MULTIMON_STUBS
 #include <multimon.h>
-
-#endif /* __MULTIDEF__ */

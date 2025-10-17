@@ -1,8 +1,4 @@
-#ifndef INC_ALVGSOUND
-#define INC_ALVGSOUND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define ALVGS_CPUNO 1
 #define ALVGS_CPUREGION (REGION_CPU1+ALVGS_CPUNO)
@@ -24,18 +20,18 @@ extern MACHINE_DRIVER_EXTERN(alvg_s2);
 #define ALVGS_SOUNDROM(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
   SOUNDREGION(0x10000, ALVGS_CPUREGION) \
     ROM_LOAD(n1, 0x0000,  0x10000, chk1) \
-	SOUNDREGION(0x400000, ALVGS_ROMREGION) \
-	ALVGS_ROMLOAD4(0x000000, n2, chk2) \
-	ALVGS_ROMLOAD4(0x100000, n3, chk3) \
-	ALVGS_ROMLOAD4(0x200000, n4, chk4) \
-	ALVGS_ROMLOAD4(0x300000, n5, chk5)
+  SOUNDREGION(0x400000, ALVGS_ROMREGION) \
+    ALVGS_ROMLOAD4(0x000000, n2, chk2) \
+    ALVGS_ROMLOAD4(0x100000, n3, chk3) \
+    ALVGS_ROMLOAD4(0x200000, n4, chk4) \
+    ALVGS_ROMLOAD4(0x300000, n5, chk5)
 
 /*-- 64K Sound CPU Rom, 1 X 256K Voice Roms --*/
 #define ALVGS_SOUNDROM11(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, ALVGS_CPUREGION) \
     ROM_LOAD(n1, 0x0000,  0x10000, chk1) \
-	SOUNDREGION(0x400000, ALVGS_ROMREGION) \
-	ALVGS_ROMLOAD4(0x000000, n2, chk2)
+  SOUNDREGION(0x400000, ALVGS_ROMREGION) \
+    ALVGS_ROMLOAD4(0x000000, n2, chk2)
 
 /*-- 64K Sound CPU Rom, 2 X 256K Voice Roms --*/
 #define ALVGS_SOUNDROM12(n1,chk1,n2,chk2,n3,chk3) \
@@ -44,5 +40,3 @@ extern MACHINE_DRIVER_EXTERN(alvg_s2);
   SOUNDREGION(0x400000, ALVGS_ROMREGION) \
     ALVGS_ROMLOAD4(0x000000, n2, chk2) \
     ALVGS_ROMLOAD4(0x100000, n3, chk3)
-
-#endif /* INC_ALVGSOUND */

@@ -1,8 +1,4 @@
-#ifndef INPTPORT_H
-#define INPTPORT_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "memory.h"
 #include "input.h"
@@ -495,7 +491,4 @@ void seq_set_string(InputSeq* a, const char *buf);
 
 #ifdef __cplusplus
 }
-#endif
-
-
 #endif

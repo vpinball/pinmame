@@ -1,8 +1,4 @@
-#ifndef YM2203INTF_H
-#define YM2203INTF_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "ay8910.h"
 
@@ -45,5 +41,3 @@ void YM2203_sh_stop(void);
 void YM2203_sh_reset(void);
 
 void YM2203UpdateRequest(int chip);
-
-#endif

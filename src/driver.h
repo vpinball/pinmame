@@ -6,12 +6,7 @@
 
 ***************************************************************************/
 
-#ifndef DRIVER_H
-#define DRIVER_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)     // GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 /***************************************************************************
 
@@ -616,5 +611,3 @@ const struct GameDriver driver_##NAME =         \
 
 extern struct GameDriver *drivers[];
 extern const struct GameDriver *test_drivers[];
-
-#endif

@@ -15,18 +15,12 @@
 *   XXX_R_A_B, where XXX - 3 letter operation code (ADD, SUB, etc.)			   *
 *					 R   - The type	of the result							   *
 *					 A   - The type of operand 1							   *
-*			         B   - The type of operand 2 (if binary operation)		   *
+*					 B   - The type of operand 2 (if binary operation)		   *
 *																			   *
-*				     Each type is one of: U8,8,U16,16,U32,32,U64,64			   *
+*					 Each type is one of: U8,8,U16,16,U32,32,U64,64			   *
 *																			   *
 *******************************************************************************/
-
-
-#ifndef OSD_CPU_H
-#define OSD_CPU_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #ifdef PINMAME
 #include "pinmame.h"
@@ -103,5 +97,3 @@ typedef union {
 #endif
 	UINT32 d;
 }	PAIR;
-
-#endif	/* defined OSD_CPU_H */

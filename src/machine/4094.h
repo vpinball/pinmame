@@ -6,19 +6,14 @@
  *
  **********************************************************************************************/
 
-
-#ifndef HC4094_H
-#define HC4094_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_HC4094         16
 #define MAX_CASCADE_HC4094 4	// 4 chips cascaded = 32 bit number
 
 typedef struct
 {
-        int num;											/* total number of chips */
+		int num;											/* total number of chips */
 		mem_write_handler parallel_data_out[MAX_HC4094];	/* Parallel Data Out Callback */
 		mem_write_handler qspin_data_out[MAX_HC4094];		/* QS Serial Data Out Callback */
 		mem_write_handler qs1pin_data_out[MAX_HC4094];		/* QS1 Serial Data Out Callback */
@@ -30,5 +25,3 @@ WRITE_HANDLER( HC4094_data_w );
 WRITE_HANDLER( HC4094_oe_w );
 WRITE_HANDLER( HC4094_clock_w );
 WRITE_HANDLER( HC4094_strobe_w );
-#endif
-

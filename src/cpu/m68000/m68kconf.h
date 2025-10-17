@@ -19,14 +19,7 @@
  * http://kstenerud.cjb.net
  */
 
-
-
-#ifndef M68KCONF__HEADER
-#define M68KCONF__HEADER
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 /* Configuration switches.
  * Use OPT_SPECIFY_HANDLER for configuration options that allow callbacks.
@@ -182,5 +175,3 @@
 /* ======================================================================== */
 /* ============================== END OF FILE ============================= */
 /* ======================================================================== */
-
-#endif /* M68KCONF__HEADER */

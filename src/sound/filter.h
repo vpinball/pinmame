@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef __FILTER_H
-#define __FILTER_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "osd_cpu.h"
 
@@ -253,5 +248,3 @@ void filter_active_lp_setup(const double R1, const double R2, const double R3, c
 //
 void filter_sallen_key_lp_setup(const double R1, const double R2, const double C1, const double C2,
 	filter2_context * const __restrict context, const double sample_rate);
-
-#endif

@@ -1,8 +1,4 @@
-#ifndef _MAMEDBG_H
-#define _MAMEDBG_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "mame.h"
 
@@ -145,5 +141,3 @@ void dbg_put_screen_char (int ch, int attr, int x, int y);
 #define debugger_idle 0
 
 #endif  /* !MAME_DEBUG */
-
-#endif

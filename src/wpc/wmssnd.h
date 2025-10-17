@@ -1,12 +1,7 @@
-#ifndef INC_WMSSND
-#define INC_WMSSND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* DCS sound needs this one */
 #include "cpu/adsp2100/adsp2100.h"
-
 
 /*----------------------------------------------------------------------
 / For System 11C and WPC89 (pre-DCS) sound boards, optionally fill
@@ -417,5 +412,3 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_dcs2);
    DCS_ROMLOADx(0x500000,n7,chk7) \
    DCS_ROMLOADx(0x600000,n8,chk8) \
    DCS_ROMLOADx(0x700000,n9,chk9)
-
-#endif /* INC_WMSSND */

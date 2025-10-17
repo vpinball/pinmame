@@ -1,8 +1,4 @@
-#ifndef _STATE_H
-#define _STATE_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "osd_cpu.h"
 #include "fileio.h"
@@ -48,5 +44,3 @@ void state_save_load_finish(void);
 
 /* Display function */
 void state_save_dump_registry(void);
-
-#endif

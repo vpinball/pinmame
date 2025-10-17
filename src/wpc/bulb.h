@@ -1,9 +1,5 @@
 // license:GPLv3+
-#ifndef INC_BULB
-#define INC_BULB
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define BULB_44   0
 #define BULB_47   1
@@ -22,5 +18,3 @@ extern double bulb_cool_down_factor(const int bulb, const double T);
 extern double bulb_cool_down(const int bulb, double T, float duration);
 extern float bulb_heat_up_factor(const int bulb, const float T, const float U, const float serial_R);
 extern double bulb_heat_up(const int bulb, double T, float duration, const float U, const float serial_R);
-
-#endif /* INC_BULB */

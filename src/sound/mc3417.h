@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef MC3417_H
-#define MC3417_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_MC3417		2
 
@@ -43,6 +38,3 @@ WRITE_HANDLER( mc3417_1_clock_w );
 WRITE_HANDLER( mc3417_1_clock_clear_w );
 WRITE_HANDLER( mc3417_1_clock_set_w );
 WRITE_HANDLER( mc3417_1_digit_clock_clear_w );
-
-
-#endif

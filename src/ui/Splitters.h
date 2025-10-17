@@ -12,16 +12,7 @@
 
 /* Written by Mike Haaland <mhaaland@hypertech.com> */
 
-#ifndef SPLITTER_H
-#define SPLITTER_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
-#if !defined(MAX)
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
 
 enum eSplitterHits
 {
@@ -65,6 +56,3 @@ typedef struct
 } SPLITTERINFO;
 
 extern const SPLITTERINFO g_splitterInfo[];
-
-
-#endif /* SPLITTER_H */

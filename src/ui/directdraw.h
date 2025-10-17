@@ -9,12 +9,7 @@
   that you have read the license and understand and accept it fully.
 
  ***************************************************************************/
-
-#ifndef DIRECTDRAW_H
-#define DIRECTDRAW_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include <ddraw.h>
 
@@ -44,5 +39,3 @@ extern int            DirectDraw_GetNumDisplays(void);
 extern BOOL           DirectDraw_HasHWStretch(void);
 extern BOOL           DirectDraw_HasRefresh(void);
 extern const char*    DirectDraw_GetDisplayName(int num_display);
-
-#endif

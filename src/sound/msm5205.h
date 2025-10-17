@@ -1,8 +1,4 @@
-#ifndef MSM5205_H
-#define MSM5205_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* an interface for the MSM5205 and similar chips */
 
@@ -53,5 +49,3 @@ void MSM5205_vclk_w (int num, int reset);
 void MSM5205_playmode_w(int num,int _select);
 
 void MSM5205_set_volume(int num,int volume);
-
-#endif

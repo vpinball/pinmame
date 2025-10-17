@@ -3,13 +3,7 @@
 //	blit.h - Win32 blit handling
 //
 //============================================================
-
-#ifndef __WIN_BLIT__
-#define __WIN_BLIT__
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 //============================================================
 //	PARAMETERS
@@ -64,7 +58,7 @@ struct win_blit_params
 	int			srcheight;
 
 	void *		vecdirty;
-	
+
 	int			flipx;
 	int			flipy;
 	int			swapxy;
@@ -77,5 +71,3 @@ struct win_blit_params
 //============================================================
 
 int win_perform_blit(const struct win_blit_params * const blit, int update);
-
-#endif

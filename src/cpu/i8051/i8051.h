@@ -30,11 +30,7 @@
  *
  *****************************************************************************/
 
-#ifndef _I8051_H
-#define _I8051_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "cpuintrf.h"
 #include "osd_cpu.h"
@@ -150,8 +146,3 @@ extern void i8752_set_serial_rx_callback(int (*callback)(void));
 WRITE_HANDLER( i8752_internal_w );
 READ_HANDLER( i8752_internal_r );
 #endif	//(HAS_I8752)
-
-
-#endif /* _I8051_H */
-
-

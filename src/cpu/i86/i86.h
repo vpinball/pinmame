@@ -3,11 +3,8 @@
 /*           (initial work based on David Hedley's pcemu)                   */
 /*                                                                          */
 /****************************************************************************/
-#ifndef __I86_H_
-#define __I86_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+
 #pragma once
-#endif
 
 /* compile with V20,V30,V33 when configured (HAS_V20,...) */
 //#define INCLUDE_V20
@@ -120,5 +117,3 @@ typedef enum { AH,AL,CH,CL,DH,DL,BH,BL,SPH,SPL,BPH,BPL,SIH,SIL,DIH,DIL } BREGS;
 	  I.DirVal = ((f) & 1024) ? -1 : 1; \
 	  I.OverVal = (f) & 2048; \
 }
-#endif
-

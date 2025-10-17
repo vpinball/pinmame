@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_S4
-#define INC_S4
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- Common Inports for S3 Games --*/
 #define S3_COMPORTS \
@@ -213,6 +208,3 @@ extern MACHINE_DRIVER_EXTERN(s3S);
 
 /* standard 6 digit display layout */
 extern const core_tLCDLayout s4_disp[];
-
-#endif /* INC_S4 */
-

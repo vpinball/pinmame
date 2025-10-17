@@ -1,11 +1,6 @@
 // license:BSD-3-Clause
 // copyright-holders:Carsten Wächter
-
-#ifndef SND_ALT_H
-#define SND_ALT_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #ifdef __cplusplus
 #if _MSC_VER >= 1700
@@ -53,10 +48,10 @@
 #endif
   // Main entrypoint for AltSound handling
   void alt_sound_handle(int boardNo, int cmd);
-  
+
   // Pause/Resume all streams
   void alt_sound_pause(BOOL pause);
-  
+
   // Exit AltSound processing and clean up
   void alt_sound_exit();
 #ifdef __cplusplus
@@ -75,5 +70,3 @@ void preprocess_commands(CmdData* cmds_out, int cmd);
 
 // Function to process combined commands based on ROM hardware platform
 void postprocess_commands(const unsigned int combined_cmd);
-
-#endif //SND_ALT_H

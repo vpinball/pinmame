@@ -23,11 +23,7 @@
  * MA 02111-1307, USA.
  */
  
-#ifndef NETTLE_SHA1_H_INCLUDED
-#define NETTLE_SHA1_H_INCLUDED
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #ifndef _STDINT_H
 typedef unsigned int uint32_t;
@@ -63,5 +59,3 @@ void
 sha1_digest(const struct sha1_ctx *ctx,
 	    unsigned length,
 	    uint8_t *digest);
-
-#endif /* NETTLE_SHA1_H_INCLUDED */

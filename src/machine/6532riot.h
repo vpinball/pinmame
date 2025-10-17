@@ -7,11 +7,7 @@
 
 **********************************************************************/
 
-#ifndef RIOT_6532
-#define RIOT_6532
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_RIOT_6532 8
 
@@ -137,6 +133,4 @@ READ_HANDLER( riot6532_7_portb_r );
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

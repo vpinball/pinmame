@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_S6
-#define INC_S6
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- Common Inports for S6 Games --*/
 #define S6_COMPORTS \
@@ -147,6 +142,3 @@ extern MACHINE_DRIVER_EXTERN(s6S);
 #define s6_mS6S     s6S
 /* standard 6 digit display layout */
 extern const core_tLCDLayout s6_6digit_disp[],s6_7digit_disp[];
-
-#endif /* INC_S6 */
-

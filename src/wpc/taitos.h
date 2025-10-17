@@ -1,8 +1,4 @@
-#ifndef INC_TAITOSND
-#define INC_TAITOSND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* Taito Sound Hardware Info:
 
@@ -64,7 +60,3 @@ extern MACHINE_DRIVER_EXTERN(taitos_sintevoxpp);
     ROM_LOAD(rom2, 0x6000, 0x1000, chk2) \
     ROM_LOAD(rom3, 0x7000, 0x1000, chk3) \
       ROM_RELOAD(  0xf000, 0x1000)
-
-#endif /* INC_TAITOSND */
-
-

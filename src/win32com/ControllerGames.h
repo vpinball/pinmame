@@ -1,10 +1,5 @@
 // ControllerGames.h : Declaration of the CGames
-
-#ifndef __CONTROLLERGAMES_H_
-#define __CONTROLLERGAMES_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "resource.h"       // main symbols
 #include "ControllerGame.h"
@@ -44,5 +39,3 @@ private:
 	CComObject<CGame>*  *m_pGamesList;
 	long				m_lGames;
 };
-
-#endif //__CONTROLLERGAMES_H_

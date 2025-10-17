@@ -6,11 +6,7 @@
 
 *********************************************************************/
 
-#ifndef USRINTRF_H
-#define USRINTRF_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 struct DisplayText
 {
@@ -75,6 +71,4 @@ void CLIB_DECL usrintf_showmessage_secs(int seconds, const char *text,...)
 #else
 void CLIB_DECL usrintf_showmessage(const char *text,...);
 void CLIB_DECL usrintf_showmessage_secs(int seconds, const char *text,...);
-#endif
-
 #endif

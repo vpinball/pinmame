@@ -1,10 +1,6 @@
 /*** m6809: Portable 6809 emulator ******************************************/
 
-#ifndef _M6809_H
-#define _M6809_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "memory.h"
 #include "osd_cpu.h"
@@ -69,5 +65,3 @@ extern unsigned m6809_dasm(char *buffer, unsigned pc);
 #ifdef MAME_DEBUG
 extern unsigned Dasm6809 (char *buffer, unsigned pc);
 #endif
-
-#endif /* _M6809_H */

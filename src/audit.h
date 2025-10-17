@@ -1,8 +1,4 @@
-#ifndef AUDIT_H
-#define AUDIT_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* return values from VerifyRomSet and VerifySampleSet */
 #define CORRECT				0
@@ -53,5 +49,3 @@ int AuditSampleSet (int game, tMissingSample **audit);
 int VerifySampleSet(int game,verify_printf_proc verify_printf);
 int RomInSet (const struct GameDriver *gamedrv, const char* hash);
 int RomsetMissing (int game);
-
-#endif

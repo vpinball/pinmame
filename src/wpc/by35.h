@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_BY35
-#define INC_BY35
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- Common Inports for BY35 Games --*/
 #define BY35_COMPORTS \
@@ -323,7 +318,7 @@
     NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD(  n1, 0x1000, 0x0800, chk1) \
       ROM_LOAD(  n2, 0x1800, 0x0800, chk2) \
-	    ROM_RELOAD(  0xf800, 0x0800)
+        ROM_RELOAD(  0xf800, 0x0800)
 
 #define PS_ROMSTART8K(name,n1,chk1) \
   ROM_START(name) \
@@ -332,7 +327,7 @@
       ROM_CONTINUE(  0x5000, 0x0800) \
       ROM_CONTINUE(  0x1800, 0x0800) \
       ROM_CONTINUE(  0x5800, 0x0800) \
-	    ROM_RELOAD(  0xe000, 0x2000)
+        ROM_RELOAD(  0xe000, 0x2000)
 
 #define BY35_ROMEND ROM_END
 #define BY17_ROMEND ROM_END
@@ -391,6 +386,3 @@ extern MACHINE_DRIVER_EXTERN(by6802_61S);
 #define BY35GD_ALPHA    0x10 // alphanumeric display for Nuova Bell games
 #define BY35GD_MARAUDER 0x20 // flag for Midnight Marauders
 #define BY35GD_REVERB   0x40 // flag for speech reverb (Centaur)
-
-#endif /* INC_BY35 */
-

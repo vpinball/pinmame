@@ -6,11 +6,7 @@
 
 ***************************************************************************/
 
-#ifndef MACHINE_H
-#define MACHINE_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -350,5 +346,3 @@ const struct performance_info *mame_get_performance_info(void);
 
 /* return the index of the given CPU, or -1 if not found */
 int mame_find_cpu_index(const char *tag);
-
-#endif

@@ -1,11 +1,7 @@
 /*
  * Microsoft [Visual] C/C++ handling
  */
-#ifndef MSC_H
-#define MSC_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	/* GCC supports "pragma once" correctly since 3.4 */
 #pragma once
-#endif
 
 #ifdef _MSC_VER
 
@@ -29,5 +25,3 @@
 #define snprintf _snprintf	// last check: VS2008 = 1500
 
 #endif	/* _MSC_VER */
-
-#endif	/* MSC_H */

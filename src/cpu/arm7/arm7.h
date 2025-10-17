@@ -23,10 +23,10 @@
  *
  *****************************************************************************/
 
-#ifndef ARM7_H
-#define ARM7_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
+
+#ifndef ARM7_H
+ #define ARM7_H
 #endif
 
 #include "driver.h"
@@ -59,5 +59,3 @@ extern void arm7_set_irq_line(int irqline, int state);
 extern void arm7_set_irq_callback(int (*callback)(int irqline));
 extern const char *arm7_info(void *context, int regnum);
 extern unsigned arm7_dasm(char *buffer, unsigned pc);
-
-#endif /* ARM7_H */

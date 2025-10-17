@@ -1,8 +1,4 @@
-#ifndef YM2151INTF_H
-#define YM2151INTF_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_2151 3
 
@@ -51,5 +47,3 @@ int YM2151_sh_start(const struct MachineSound *msound);
 void YM2151_sh_stop(void);
 void YM2151_sh_reset(void);
 void YM2151_set_mixing_levels(int chip, int l, int r);
-
-#endif

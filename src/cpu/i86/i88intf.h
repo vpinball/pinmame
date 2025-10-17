@@ -1,8 +1,4 @@
-#ifndef __I88INTR_H_
-#define __I88INTR_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "memory.h"
 #include "osd_cpu.h"
@@ -25,5 +21,3 @@
 #define i88_set_irq_callback i86_set_irq_callback
 extern const char *i88_info(void *context, int regnum);
 #define i88_dasm i86_dasm
-
-#endif

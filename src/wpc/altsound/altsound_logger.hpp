@@ -6,12 +6,7 @@
 // license:BSD-3-Clause
 // copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
-
-#ifndef ALTSOUND_LOGGER_H
-#define ALTSOUND_LOGGER_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -176,5 +171,3 @@ inline void AltsoundLogger::outdent()
 		--base_indent;
 	}
 }
-
-#endif //ALTSOUND_LOGGER_H

@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_WPC
-#define INC_WPC
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- Common Inports for WPCGames --*/
 #define WPC_COMPORTS \
@@ -278,5 +273,3 @@ void wpc_set_fastflip_addr(int addr);
   void default_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed);
   extern wpc_proc_solenoid_handler_t wpc_proc_solenoid_handler;
 #endif
-
-#endif /* INC_WPC */

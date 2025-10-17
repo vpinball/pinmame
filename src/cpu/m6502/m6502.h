@@ -22,11 +22,7 @@
  *****************************************************************************/
 /* 2.February 2000 PeT added 65sc02 subtype */
 
-#ifndef _M6502_H
-#define _M6502_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "cpuintrf.h"
 #include "osd_cpu.h"
@@ -366,6 +362,3 @@ extern unsigned deco16_dasm(char *buffer, unsigned pc);
 #ifdef MAME_DEBUG
 extern unsigned Dasm6502( char *dst, unsigned pc );
 #endif
-
-#endif /* _M6502_H */
-

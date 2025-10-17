@@ -1,8 +1,4 @@
-#ifndef INC_GPSND
-#define INC_GPSND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* Game Plan Sound Hardware Info:
 
@@ -36,5 +32,3 @@ extern MACHINE_DRIVER_EXTERN(gpMSU3);
     ROM_LOAD  (u9, 0x3800, 0x0800, chk9) \
       ROM_CONTINUE(0x7800, 0x0800) \
       ROM_RELOAD  (0xf000, 0x1000)
-
-#endif /* INC_GPSND */

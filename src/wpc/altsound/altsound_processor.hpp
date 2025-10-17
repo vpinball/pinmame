@@ -7,12 +7,7 @@
 // license:BSD-3-Clause
 // copyright-holders: Dave Roscoe, Carsten Wächter
 // ---------------------------------------------------------------------------
-
-#ifndef ALTSOUND_PROCESSOR_H
-#define ALTSOUND_PROCESSOR_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -104,9 +99,3 @@ private: // data
 	bool is_stable; // future use
 	std::vector<AltsoundSampleInfo> samples;
 };
-
-// ---------------------------------------------------------------------------
-// Inline functions
-// ---------------------------------------------------------------------------
-
-#endif // ALTSOUND_PROCESSOR_H

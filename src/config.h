@@ -6,17 +6,11 @@
 
 ***************************************************************************/
 
-#ifndef CONFIG_H
-#define CONFIG_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "inptport.h"
 #include "fileio.h"
 #include "sound/mixer.h"
-
-
 
 /***************************************************************************
 
@@ -81,5 +75,3 @@ int config_write_coin_and_ticket_counters(config_file *file, const unsigned int 
 
 /* writes mixer configuration */
 int config_write_mixer_config(config_file *file, const struct mixer_config *mixercfg);
-
-#endif /* CONFIG_H */

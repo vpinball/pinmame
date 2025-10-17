@@ -1,8 +1,4 @@
-#ifndef INC_SIM
-#define INC_SIM
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "osdepend.h"
 
@@ -179,4 +175,3 @@ void sim_draw(int firstRow);
 void sim_run(int *inports, int firstGameInport, int useSimKeys, int noOfBalls);
 int sim_getSol(int solNo);
 int sim_init(sim_tSimData *gameSimData, int *inports, int firstGameInport);
-#endif /* INC_SIM */

@@ -3,15 +3,9 @@
 //	wind3d.h - Win32 Direct3D 7 (with DirectDraw 7) code
 //
 //============================================================
-
-#ifndef __WIN32_D3D__
-#define __WIN32_D3D__
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "window.h"
-
 
 //============================================================
 //	GLOBAL VARIABLES
@@ -34,7 +28,3 @@ int win_d3d_init(int width, int height, int depth, int attributes, double aspect
 void win_d3d_kill(void);
 int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update);
 void win_d3d_wait_vsync(void);
-
-
-
-#endif

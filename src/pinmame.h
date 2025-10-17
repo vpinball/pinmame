@@ -1,9 +1,4 @@
-#ifndef INC_PINMAME
-#define INC_PINMAME
-
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define WPCDCSSPEEDUP   1 // DCS Speedup added to MAME ADSP emulation
 #define DBG_BPR         1 // BPR command added to debugger
@@ -144,5 +139,3 @@
 #undef INLINE
 #define INLINE static
 #endif
-
-#endif /* INC_PINMAME */

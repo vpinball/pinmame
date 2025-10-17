@@ -1,8 +1,4 @@
-#ifndef PPS4_H
-#define PPS4_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "osd_cpu.h"
 
@@ -30,6 +26,4 @@ extern unsigned PPS4_dasm(char *buffer, unsigned pc);
 
 #ifdef	MAME_DEBUG
 extern unsigned DasmPPS4(char *buffer, unsigned pc);
-#endif
-
 #endif

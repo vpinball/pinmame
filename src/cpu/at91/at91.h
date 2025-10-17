@@ -26,11 +26,8 @@
  *  #3) Arm 2/3/6 emulator By Bryan McPhail (bmcphail@tendril.co.uk) and Phil Stroffolino (MAME CORE 0.76)
  *
  *****************************************************************************/
-#ifndef AT91_H
-#define AT91_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+
 #pragma once
-#endif
 
 #include "driver.h"
 
@@ -95,5 +92,3 @@ extern void at91_set_serial_receive_ready(void(*fp)(int usartno));
 extern void at91_fire_irq(int irqline);
 
 void at91_usart_read(int usartno, int addr, data32_t *pData);
-
-#endif /* AT91_H */

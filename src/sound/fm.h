@@ -2,11 +2,7 @@
   File: fm.h -- header file for software emulation for FM sound generator
 
 */
-#ifndef _H_FM_FM_
-#define _H_FM_FM_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* --- select emulation chips --- */
 #define BUILD_YM2203  (HAS_YM2203)		/* build YM2203(OPN)   emulator */
@@ -24,7 +20,7 @@
 #define FM_INTERNAL_TIMER 0
 
 /* --- speedup optimize --- */
-/* busy flag enulation , The definition of FM_GET_TIME_NOW() is necessary. */
+/* busy flag emulation , The definition of FM_GET_TIME_NOW() is necessary. */
 #define FM_BUSY_FLAG_SUPPORT 1
 
 /* --- external SSG(YM2149/AY-3-8910)emulator interface port */
@@ -33,7 +29,7 @@
 /* SSGClk   : Set SSG Clock      */
 /* int n    = chip number        */
 /* int clk  = MasterClock(Hz)    */
-/* int rate = sample rate(Hz) */
+/* int rate = sample rate(Hz)    */
 #define SSGClk(chip,clock) AY8910_set_clock((chip)+ay8910_index_ym,clock)
 
 /* SSGWrite : Write SSG port     */
@@ -51,7 +47,7 @@
 /* int n    = chip number   */
 #define SSGReset(chip) AY8910_reset((chip)+ay8910_index_ym)
 
-/* --- external callback funstions for realtime update --- */
+/* --- external callback functions for realtime update --- */
 
 /* for busy flag emulation , function FM_GET_TIME_NOW() should */
 /* return present time in seconds with "double" precision  */
@@ -117,7 +113,7 @@ typedef void (*FM_IRQHANDLER)(int n,int irq);
 /* int n          = chip number                  */
 /* int c          = Channel 0=TimerA,1=TimerB    */
 /* int count      = timer count (0=stop)         */
-/* doube stepTime = step time of one count (sec.)*/
+/* double stepTime = step time of one count (sec.)*/
 
 /* FM_IRQHHANDLER : IRQ level changing sense     */
 /* int n       = chip number                     */
@@ -236,5 +232,3 @@ int YM2151Write(int n,int a,unsigned char v);
 unsigned char YM2151Read(int n,int a);
 int YM2151TimerOver(int n,int c);
 #endif /* BUILD_YM2151 */
-
-#endif /* _H_FM_FM_ */

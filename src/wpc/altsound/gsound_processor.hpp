@@ -7,12 +7,7 @@
 // license:BSD-3-Clause
 // copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
-
-#ifndef GSOUND_PROCESSOR_H
-#define GSOUND_PROCESSOR_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -109,9 +104,3 @@ private: // data
 	std::vector<GSoundSampleInfo> samples;
 	std::mt19937 generator; // mersenne twister
 };
-
-// ---------------------------------------------------------------------------
-// Inline functions
-// ---------------------------------------------------------------------------
-
-#endif // GSOUND_PROCESSOR_H

@@ -1,8 +1,4 @@
-#ifndef intf5220_h
-#define intf5220_h
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 struct TMS5220interface
 {
@@ -34,6 +30,3 @@ void tms5220_set_frequency(double frequency);
 #ifdef PINMAME
 void tms5220_set_reverb_filter(float delay, float force);
 #endif
-
-#endif
-

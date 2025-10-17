@@ -1,8 +1,4 @@
-#ifndef M68KMAME__HEADER
-#define M68KMAME__HEADER
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* ======================================================================== */
 /* ============================== MAME STUFF ============================== */
@@ -167,5 +163,3 @@ INLINE void m68kx_write_memory_32_pd(unsigned int address, unsigned int value)
 /* ======================================================================== */
 /* ============================== END OF FILE ============================= */
 /* ======================================================================== */
-
-#endif /* M68KMAME__HEADER */

@@ -1,9 +1,4 @@
-#ifndef SNDINTRF_H
-#define SNDINTRF_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 struct MachineSound
 {
@@ -491,6 +486,3 @@ WRITE_HANDLER( soundlatch4_clear_w );
    something other than 0x00, use this function from machine_init. Note
    that this one call effects all 4 latches */
 void soundlatch_setclearedvalue(int value);
-
-
-#endif

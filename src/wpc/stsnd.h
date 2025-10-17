@@ -1,8 +1,4 @@
-#ifndef INC_STSND
-#define INC_STSND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- St300 interface --*/
 struct sndbrdst300 {
@@ -28,7 +24,3 @@ extern struct sndbrdst300 snddatst300;
   SOUNDREGION(0x10000, VSU100_ROMREGION) \
     ROM_LOAD(u9, 0x0000, 0x0800, chk9) \
     ROM_LOAD(u10,0x0800, 0x0800, chk10)
-
-#endif /* INC_STSND */
-
-

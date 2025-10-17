@@ -1,8 +1,4 @@
-#ifndef INC_CAPCOM
-#define INC_CAPCOM
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "core.h"
 #include "sim.h"
@@ -43,7 +39,7 @@ extern void cap_UpdateSoundLEDS(int data);
     ROM_REGION16_BE(0x00100000, REGION_USER1,0) \
       ROM_LOAD16_BYTE(n1, 0x000001, 0x80000, chk1) \
       ROM_LOAD16_BYTE(n2, 0x000000, 0x80000, chk2) \
-	NORMALREGION(0x00100000, REGION_CPU1)
+    NORMALREGION(0x00100000, REGION_CPU1)
 
 #define CC_ROMSTART_4(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
   ROM_START(name) \
@@ -65,14 +61,14 @@ extern void cap_UpdateSoundLEDS(int data);
       ROM_LOAD16_BYTE(n6, 0x800000, 0x80000, chk6) \
       ROM_LOAD16_BYTE(n7, 0xc00001, 0x80000, chk7) \
       ROM_LOAD16_BYTE(n8, 0xc00000, 0x80000, chk8) \
-	NORMALREGION(0x00d00000, REGION_CPU1) 
+    NORMALREGION(0x00d00000, REGION_CPU1) 
 
 #define CC_ROMSTART_2X(name, n1, chk1, n2, chk2) \
-   ROM_START(name) \
-     ROM_REGION16_BE(0x00500000, REGION_USER1,0) \
-       ROM_LOAD(n1, 0x000000, 0x100000, chk1) \
-       ROM_LOAD(n2, 0x400000, 0x100000, chk2) \
-     NORMALREGION(0x00500000, REGION_CPU1)
+  ROM_START(name) \
+    ROM_REGION16_BE(0x00500000, REGION_USER1,0) \
+      ROM_LOAD(n1, 0x000000, 0x100000, chk1) \
+      ROM_LOAD(n2, 0x400000, 0x100000, chk2) \
+    NORMALREGION(0x00500000, REGION_CPU1)
 
 #define CC_ROMEND ROM_END
 
@@ -80,5 +76,3 @@ extern MACHINE_DRIVER_EXTERN(cc);
 extern MACHINE_DRIVER_EXTERN(cc1);
 extern MACHINE_DRIVER_EXTERN(cc2);
 extern MACHINE_DRIVER_EXTERN(romstar);
-
-#endif /* INC_CAPCOM */

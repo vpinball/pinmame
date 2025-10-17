@@ -1,8 +1,4 @@
-#ifndef _CDP1802_H
-#define _CDP1802_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "mame.h"
 #include "cpuintrf.h"
@@ -95,5 +91,3 @@ typedef struct
 	UINT8 (*dma_r)(int offset);
 	void (*dma_w)(int offset, UINT8 data);
 } CDP1802_CONFIG;
-
-#endif

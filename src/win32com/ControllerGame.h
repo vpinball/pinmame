@@ -1,10 +1,5 @@
 // ControllerGame.h : Declaration of the CGame
-
-#ifndef __CONTROLLERGAME_H_
-#define __CONTROLLERGAME_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "ControllerRoms.h"
 
@@ -69,5 +64,3 @@ BOOL  GameUsedTheFirstTime(const char* const pszROMName);
 
 BOOL GameWasNeverStarted(char* pszROMName);
 void SetGameWasStarted(char* pszROMName);
-
-#endif // __CONTROLLERGAME_H_

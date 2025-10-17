@@ -4,11 +4,7 @@
   C Header file for TMS9900 core
 */
 
-#ifndef TMS9900_H
-#define TMS9900_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include <stdio.h>
 #include "driver.h"
@@ -342,7 +338,3 @@ typedef struct tms99110areset_param
 #ifdef MAME_DEBUG
 extern unsigned Dasm9900 (char *buffer, unsigned pc);
 #endif
-
-#endif
-
-

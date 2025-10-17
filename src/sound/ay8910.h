@@ -1,11 +1,7 @@
-#ifndef AY8910_H
-#define AY8910_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_8910 5
-#define ALL_8910_CHANNELS -1
+#define ALL_8910_CHANNELS (-1)
 
 struct AY8910interface
 {
@@ -93,4 +89,3 @@ extern int ay8910_index_ym;
 
 void AY8910_sh_stop_ym(void);
 int AY8910_sh_start_ym(const struct MachineSound *msound);
-#endif

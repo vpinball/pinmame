@@ -1,8 +1,4 @@
-#ifndef SAMPLES_H
-#define SAMPLES_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 struct Samplesinterface
 {
@@ -27,6 +23,4 @@ int sample_playing(int channel);
 int samples_sh_start(const struct MachineSound *msound);
 #ifdef PINMAME
 void samples_sh_stop(void);
-#endif
-
 #endif

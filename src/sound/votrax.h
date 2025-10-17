@@ -1,8 +1,4 @@
-#ifndef VOTRAX_H
-#define VOTRAX_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_VOTRAXSC01 1
 
@@ -26,5 +22,3 @@ READ_HANDLER(votraxsc01_status_r);
 void votraxsc01_set_base_frequency(double baseFrequency); // OLD_VOTRAX
 void votraxsc01_set_clock(UINT32 newfreq); // new one
 void votraxsc01_set_volume(int volume);
-
-#endif

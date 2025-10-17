@@ -1,10 +1,6 @@
 /*** m6800: Portable 6800 class emulator *************************************/
 
-#ifndef _M6800_H
-#define _M6800_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "osd_cpu.h"
 #include "memory.h"
@@ -19,11 +15,11 @@ enum {
 
 
 #define M6800_IRQ_LINE	0			/* IRQ line number */
-#define M6800_TIN_LINE	1			/* P20/Tin Input Capture line (eddge sense)     */
-									/* Active eddge is selecrable by internal reg.  */
-									/* raise eddge : CLEAR_LINE  -> ASSERT_LINE     */
-									/* fall  eddge : ASSERT_LINE -> CLEAR_LINE      */
-									/* it is usuali to use PULSE_LINE state         */
+#define M6800_TIN_LINE	1			/* P20/Tin Input Capture line (edge sense)     */
+									/* Active edge is selectable by internal reg.  */
+									/* raise edge : CLEAR_LINE  -> ASSERT_LINE     */
+									/* fall  edge : ASSERT_LINE -> CLEAR_LINE      */
+									/* it is usual to use PULSE_LINE state         */
 /* PUBLIC GLOBALS */
 extern int m6800_ICount;
 
@@ -306,5 +302,3 @@ unsigned nsc8105_dasm(char *buffer, unsigned pc);
 #ifdef	MAME_DEBUG
 unsigned Dasm680x(int subtype, char *buf, unsigned pc);
 #endif
-
-#endif /* _M6800_H */

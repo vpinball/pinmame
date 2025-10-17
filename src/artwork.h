@@ -6,12 +6,7 @@
 
 *********************************************************************/
 
-#ifndef ARTWORK_H
-#define ARTWORK_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 /***************************************************************************
 
@@ -99,5 +94,3 @@ void artwork_set_overlay(const struct overlay_piece *overlist);
 void artwork_show(const char *tag, int show);
 
 mame_file *artwork_load_artwork_file(const struct GameDriver **driver);
-
-#endif /* ARTWORK_H */

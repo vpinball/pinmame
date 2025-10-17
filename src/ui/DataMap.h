@@ -1,9 +1,4 @@
-
-#ifndef DATAMAP_H
-#define DATAMAP_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 enum 
 {
@@ -51,5 +46,3 @@ BOOL ReadControl(HWND hWnd, DWORD dwCtrlId);
 int GetControlID(HWND hDlg,HWND hwnd);
 int GetControlType(HWND hDlg,HWND hwnd);
 BOOL IsControlDifferent(HWND hDlg,HWND hwnd_ctrl,options_type *o,options_type *base);
-
-#endif /* DATAMAP_H */

@@ -1,8 +1,4 @@
-#ifndef INC_GEN
-#define INC_GEN
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if defined(__GNUC__)
 #define U64(x) __extension__ x##LL
@@ -73,5 +69,3 @@
 #define GEN_ALLBY35     U64(0x0000047e00000) /* All Bally35 and derivatives */
 #define GEN_ALLS80      U64(0x0000600000000) /* All GTS80 */
 #define GEN_ALLWS       U64(0x001c000000000) /* All Whitestar */
-
-#endif /* INC_GEN */

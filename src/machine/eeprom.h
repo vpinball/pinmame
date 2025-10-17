@@ -1,8 +1,4 @@
-#ifndef EEPROM_H
-#define EEPROM_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 struct EEPROM_interface
 {
@@ -35,5 +31,3 @@ UINT8 * EEPROM_get_data_pointer(int * length);
 /* 93C46 */
 extern struct EEPROM_interface eeprom_interface_93C46;
 void nvram_handler_93C46(mame_file *file,int read_or_write);
-
-#endif

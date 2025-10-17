@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_BY35SND
-#define INC_BY35SND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*Bally Sound Hardware Info:
 
@@ -224,5 +219,3 @@ extern MACHINE_DRIVER_EXTERN(bySD);
   SOUNDREGION(0x01000000, BYSD_CPUREGION) \
     ROM_LOAD16_BYTE(n1, 0x00001, 0x10000, chk1) \
     ROM_LOAD16_BYTE(n2, 0x00000, 0x10000, chk2)
-
-#endif /* INC_BY35SND */

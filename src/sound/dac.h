@@ -1,8 +1,4 @@
-#ifndef DAC_H
-#define DAC_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +36,4 @@ WRITE_HANDLER( DAC_1_signed_data_w );
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

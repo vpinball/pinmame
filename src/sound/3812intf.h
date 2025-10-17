@@ -1,9 +1,4 @@
-#ifndef YM3812INTF_H
-#define YM3812INTF_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
-
 
 #define MAX_3812 2
 #define MAX_3526 MAX_3812
@@ -77,5 +72,3 @@ WRITE_HANDLER( Y8950_write_port_1_w );
 int Y8950_sh_start(const struct MachineSound *msound);
 void Y8950_sh_stop(void);
 void Y8950_sh_reset(void);
-
-#endif

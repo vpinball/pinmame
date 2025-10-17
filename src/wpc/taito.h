@@ -1,28 +1,24 @@
-#ifndef INC_TAITO
-#define INC_TAITO
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*-- Common Inports for Taito Games --*/
 #define TAITO_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 ( 0 in game) */ \
     COREPORT_BITDEF(  0x0001, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0002, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0004, "Slam Tilt",        KEYCODE_HOME)  \
+    COREPORT_BITDEF(  0x0002, IPT_START1,         IP_KEY_DEFAULT) \
+    COREPORT_BIT(     0x0004, "Slam Tilt",        KEYCODE_HOME) \
     COREPORT_BITDEF(  0x0008, IPT_TILT,           KEYCODE_INSERT) \
-    COREPORT_BITTOG(  0x0010, "Reset",			  KEYCODE_DEL)  \
-    COREPORT_BITTOG(  0x0020, "Coin Door",        KEYCODE_END)  \
-    COREPORT_BITTOG(  0x0040, "Box  Door",        KEYCODE_PGDN)  \
+    COREPORT_BITTOG(  0x0010, "Reset",            KEYCODE_DEL) \
+    COREPORT_BITTOG(  0x0020, "Coin Door",        KEYCODE_END) \
+    COREPORT_BITTOG(  0x0040, "Box  Door",        KEYCODE_PGDN) \
     COREPORT_BITDEF(  0x0080, IPT_COIN2,          IP_KEY_DEFAULT) \
     /* Switch Column 8 (7 in game) */ \
-    COREPORT_BIT(     0x0100, "Diagnostics",	  KEYCODE_6) \
-    COREPORT_BIT(     0x0200, "Statistics",	      KEYCODE_7) \
-    COREPORT_BIT(     0x0400, "Adjustments",	  KEYCODE_8) \
+    COREPORT_BIT(     0x0100, "Diagnostics",      KEYCODE_6) \
+    COREPORT_BIT(     0x0200, "Statistics",       KEYCODE_7) \
+    COREPORT_BIT(     0x0400, "Adjustments",      KEYCODE_8) \
     COREPORT_BIT(     0x0800, "Configurations",   KEYCODE_9) \
-    COREPORT_BIT(     0x1000, "Enter",			  KEYCODE_0) \
-    COREPORT_BIT(     0x8000, "Sound Test",		  KEYCODE_PGUP) \
+    COREPORT_BIT(     0x1000, "Enter",            KEYCODE_0) \
+    COREPORT_BIT(     0x8000, "Sound Test",       KEYCODE_PGUP) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "Adjust 1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -153,6 +149,3 @@ extern MACHINE_DRIVER_EXTERN(taito_sintetizadorpp);
 extern MACHINE_DRIVER_EXTERN(taito_sintetizadorpp_nmi);
 extern MACHINE_DRIVER_EXTERN(taito_sintevox);
 extern MACHINE_DRIVER_EXTERN(taito_sintevoxpp);
-
-#endif /* INC_TAITO */
-

@@ -9,11 +9,7 @@
 // license:BSD-3-Clause
 // copyright-holders:Dave Roscoe
 // ---------------------------------------------------------------------------
-#ifndef ALTSOUND_DATA_H
-#define ALTSOUND_DATA_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -143,5 +139,3 @@ std::string trim(const std::string& str);
 
 // convert string to lowercase
 std::string toLowerCase(const std::string& str);
-
-#endif // ALTSOUND_DATA_H

@@ -9,12 +9,7 @@
   that you have read the license and understand and accept it fully.
 
  ***************************************************************************/
-
-#ifndef DIJOYSTICK_H
-#define DIJOYSTICK_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /*
   limits:
@@ -71,5 +66,3 @@ extern char* DIJoystick_GetPhysicalJoystickName(int num_joystick);
 
 extern int   DIJoystick_GetNumPhysicalJoystickAxes(int num_joystick);
 extern char* DIJoystick_GetPhysicalJoystickAxisName(int num_joystick, int num_axis);
-
-#endif

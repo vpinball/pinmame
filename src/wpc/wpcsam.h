@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef INC_WPCSAM
-#define INC_WPCSAM
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include "pinmame.h"
 
@@ -77,4 +72,3 @@ extern struct Samplesinterface samples_interface;
 #define SAM_SOLENOID_OFF	WPCSAM_SOLENOID_OFF	/* sol is deactivated and gets to it's rest position, should be used with WPCSAM_F_ONOFF */
 
 #endif
-#endif /* INC_WPCSAM */

@@ -1,10 +1,5 @@
 /* tilemap.h */
-
-#ifndef TILEMAP_H
-#define TILEMAP_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 struct tilemap; /* appease compiler */
 
@@ -168,6 +163,4 @@ UINT32 tilemap_scan_rows_flip_xy( UINT32 col, UINT32 row, UINT32 num_cols, UINT3
 UINT32 tilemap_count( void );
 void tilemap_nb_size( UINT32 number, UINT32 *width, UINT32 *height );
 void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, UINT32 scrolly );
-#endif
-
 #endif

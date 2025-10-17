@@ -10,11 +10,7 @@
 
  ***************************************************************************/
 
-#ifndef M32UTIL_H
-#define M32UTIL_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 extern void __cdecl ErrorMsg(const char* fmt, ...);
 extern void __cdecl dprintf(const char* fmt, ...);
@@ -50,5 +46,3 @@ void FlushFileCaches(void);
 void FreeIfAllocated(char **s);
 
 BOOL StringIsSuffixedBy(const char *s, const char *suffix);
-
-#endif /* MAME32UTIL_H */

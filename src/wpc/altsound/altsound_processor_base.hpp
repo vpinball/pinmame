@@ -7,12 +7,7 @@
 // license:BSD-3-Clause
 // copyright-holders: Dave Roscoe
 // ---------------------------------------------------------------------------
-
-#ifndef ALTSOUND_PROCESSOR_BASE_HPP
-#define ALTSOUND_PROCESSOR_BASE_HPP
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -194,5 +189,3 @@ inline unsigned int AltsoundProcessorBase::getSkipCount() const {
 inline void AltsoundProcessorBase::setSkipCount(const unsigned int skip_count_in) {
 	skip_count = skip_count_in;
 }
-
-#endif // ALTSOUND_PROCESSOR_BASE_HPP

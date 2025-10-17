@@ -1,8 +1,4 @@
-#ifndef INPUT_H
-#define INPUT_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 typedef unsigned InputCode;
 
@@ -208,5 +204,3 @@ int input_ui_pressed_repeat(int code, int speed);
 
 int is_joystick_axis_code(unsigned code);
 int return_os_joycode(InputCode code);
-
-#endif

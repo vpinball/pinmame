@@ -10,11 +10,7 @@
 
  ***************************************************************************/
 
-#ifndef PROPERTIES_H
-#define PROPERTIES_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* Get title string to display in the top of the property page,
  * Called also in Audit32.c
@@ -51,5 +47,3 @@ BOOL PropSheetFilter_Vector(const struct InternalMachineDriver *drv, const struc
 
 INT_PTR CALLBACK GamePropertiesDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
-
-#endif

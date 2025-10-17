@@ -7,11 +7,7 @@
  *        Please, notify me, if you make any changes to this file         *
  **************************************************************************/
 
-#ifndef _I8039_H
-#define _I8039_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #ifndef INLINE
 #ifdef PX_ZEN
@@ -22,7 +18,6 @@
 #endif
 
 #include "osd_cpu.h"
-
 
 /**************************************************************************
     Internal Clock divisor
@@ -238,5 +233,3 @@ extern READ_HANDLER(n7751_internal_r);
 #ifdef  MAME_DEBUG
 int 	Dasm8039(char *dst, unsigned pc);
 #endif
-
-#endif  /* _I8039_H */

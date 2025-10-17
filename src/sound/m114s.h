@@ -12,11 +12,7 @@
  *   Code based largely on Aaron Gile's BSMT2000 driver.
  **********************************************************************************************/
 
-#ifndef M114S_H
-#define M114S_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_M114S 1
 
@@ -34,5 +30,3 @@ void M114S_sh_stop(void);
 void M114S_sh_reset(void);
 
 WRITE_HANDLER( M114S_data_w );
-
-#endif

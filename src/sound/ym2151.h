@@ -30,12 +30,7 @@
 **
 ** Ishmair - for the datasheet and motivation.
 */
-
-#ifndef _H_YM2151_
-#define _H_YM2151_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 /* 16- and 8-bit samples (signed) are supported*/
 #define SAMPLE_BITS 16
@@ -87,5 +82,3 @@ void YM2151SetPortWriteHandler(int n, mem_write_handler handler);
 /*return 1 if 2151 is outputting any data*/
 int YM2151ReadOutputFlag(int n);
 #endif
-
-#endif /*_H_YM2151_*/

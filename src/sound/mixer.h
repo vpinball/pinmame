@@ -1,10 +1,5 @@
 // license:BSD-3-Clause
-
-#ifndef MIXER_H
-#define MIXER_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MIXER_MAX_CHANNELS 25
 
@@ -127,5 +122,3 @@ void mixer_set_stereo_volume(const int ch, const int l_vol, const int r_vol);
 void mixer_set_reverb_filter(const int ch, const float delay, const float force);
 
 void mixer_set_channel_legacy_resample(const int ch, const UINT8 enable);
-
-#endif

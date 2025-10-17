@@ -1,8 +1,4 @@
-#ifndef _8255PPI_H_
-#define _8255PPI_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_8255 8
 
@@ -55,4 +51,3 @@ WRITE_HANDLER( ppi8255_4_w );
 WRITE_HANDLER( ppi8255_5_w );
 WRITE_HANDLER( ppi8255_6_w );
 WRITE_HANDLER( ppi8255_7_w );
-#endif

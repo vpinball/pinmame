@@ -1,8 +1,4 @@
-#ifndef INC_ZACSND
-#define INC_ZACSND
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define ZACSND_CPUA       1
 #define ZACSND_CPUB       2
@@ -124,4 +120,3 @@ extern MACHINE_DRIVER_EXTERN(techno);
     ROM_LOAD(n5, 0x8000, 0x8000, chk5) \
     ROM_LOAD(n4, 0x10000, 0x8000, chk4) \
     ROM_LOAD(n3, 0x18000, 0x8000, chk3)
-#endif /* INC_ZACSND */

@@ -24,11 +24,7 @@
 	magnitudes, eg. 220k = RES_K(220), 47nF = CAP_N(47)
 
  *****************************************************************************/
-#ifndef SN76477_SOUND_H
-#define SN76477_SOUND_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #define MAX_SN76477 4
 
@@ -120,5 +116,3 @@ void SN76477_set_vco_voltage(int chip, double data);
 int SN76477_sh_start(const struct MachineSound *msound);
 void SN76477_sh_stop(void);
 void SN76477_sh_update(void);
-
-#endif

@@ -22,7 +22,7 @@
 
 /*
 
-  Tree, spliiter, list, splitter, pict
+  Tree, splitter, list, splitter, pict
 
 */
 
@@ -51,6 +51,11 @@
 #include "resource.h"
 #include "Screenshot.h"
 #include "win32ui.h"
+
+#if !defined(MAX)
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 /* Local Variables */
 static BOOL         bTracking = 0;

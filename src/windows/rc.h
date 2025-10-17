@@ -17,11 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 */
-#ifndef __RC_H
-#define __RC_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include <stdio.h>
 #include "fileio.h"
@@ -126,5 +122,3 @@ struct rc_option *rc_get_options(struct rc_struct *rc);
    but seem to fit here well */
 int rc_check_and_create_dir(const char *name);
 char *rc_get_home_dir(void);
-
-#endif /* ifndef __RC_H */

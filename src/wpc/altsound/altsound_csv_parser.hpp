@@ -6,11 +6,7 @@
 // license:BSD-3-Clause
 // copyright-holders:Carsten Wächter, Dave Roscoe
 // ---------------------------------------------------------------------------
-#ifndef ALTSOUND_CSV_PARSER_HPP
-#define ALTSOUND_CSV_PARSER_HPP
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -55,5 +51,3 @@ private: // data
 	std::string altsound_path;
 	std::string filename;
 };
-
-#endif // ALTSOUND_CSV_PARSER_HPP

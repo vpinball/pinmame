@@ -1,8 +1,4 @@
-#ifndef VPINMAMECONFIG_H
-#define VPINMAMECONFIG_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 extern void vpm_frontend_init(void);
 extern void vpm_frontend_exit(void);
@@ -30,5 +26,3 @@ BOOL PutSetting(const char* const pszGameName, const char* const pszName, VARIAN
 BOOL GetSetting(const char* const pszGameName, const char* const pszName, VARIANT *pVal);
 
 BOOL SettingAffectsRunningGame(const char* const pszName);
-
-#endif // VPINMAMECONFIG_H
