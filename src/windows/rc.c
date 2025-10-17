@@ -645,7 +645,7 @@ int rc_verify_power_of_2(struct rc_option *option, const char *arg,
    value = *(int *)option->dest;
 
    for(i=0; i<(sizeof(int)*8); i++)
-      if(((int)0x01 << i) == value)
+      if((0x01u << i) == value)
          break;
    if(i == (sizeof(int)*8))
    {
