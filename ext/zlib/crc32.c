@@ -155,7 +155,7 @@ local z_word_t byte_swap(z_word_t word) {
 local z_crc_t multmodp(z_crc_t a, z_crc_t b) {
     z_crc_t m, p;
 
-    m = (z_crc_t)1 << 31;
+    m = (z_crc_t)1u << 31;
     p = 0;
     for (;;) {
         if (a & m) {
@@ -176,7 +176,7 @@ local z_crc_t multmodp(z_crc_t a, z_crc_t b) {
 local z_crc_t x2nmodp(z_off64_t n, unsigned k) {
     z_crc_t p;
 
-    p = (z_crc_t)1 << 31;           /* x^0 == 1 */
+    p = (z_crc_t)1u << 31;           /* x^0 == 1 */
     while (n) {
         if (n & 1)
             p = multmodp(x2n_table[k & 31], p);

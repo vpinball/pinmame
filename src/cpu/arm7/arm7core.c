@@ -220,7 +220,7 @@ INLINE data8_t arm7_cpu_read8( int addr )
 
 //Long ALU Functions use bit 63 
 #define HandleLongALUNZFlags(rd) \
-  ((((rd) & ((UINT64)1<<63))>>32) | (((rd)==0) ? Z_MASK : 0))
+  ((((rd) & (1ull<<63))>>32) | (((rd)==0) ? Z_MASK : 0))
 
 #define HandleALULogicalFlags(rd, sc) \
   if (insn & INSN_S) \

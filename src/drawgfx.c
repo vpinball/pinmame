@@ -908,7 +908,7 @@ void pdrawgfx(struct mame_bitmap *dest,const struct GfxElement *gfx,
 		const struct rectangle *clip,int transparency,int transparent_color,UINT32 priority_mask)
 {
 	profiler_mark(PROFILER_DRAWGFX);
-	common_drawgfx(dest,gfx,code,color,flipx,flipy,sx,sy,clip,transparency,transparent_color,priority_bitmap,priority_mask | (1<<31));
+	common_drawgfx(dest,gfx,code,color,flipx,flipy,sx,sy,clip,transparency,transparent_color,priority_bitmap,priority_mask | (1u<<31));
 	profiler_mark(PROFILER_END);
 }
 
@@ -3440,7 +3440,7 @@ void pdrawgfxzoom( struct mame_bitmap *dest_bmp,const struct GfxElement *gfx,
 {
 	profiler_mark(PROFILER_DRAWGFX);
 	common_drawgfxzoom(dest_bmp,gfx,code,color,flipx,flipy,sx,sy,
-			clip,transparency,transparent_color,scalex,scaley,priority_bitmap,priority_mask | (1<<31));
+			clip,transparency,transparent_color,scalex,scaley,priority_bitmap,priority_mask | (1u<<31));
 	profiler_mark(PROFILER_END);
 }
 
