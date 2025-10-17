@@ -567,8 +567,8 @@ static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
 }
 static WRITE_HANDLER(s11s_bankSelect) {
-  cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion + 0x8000+((data&0x01)<<14));
-  cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion + 0x0000+((data&0x02)<<13));
+  cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion + 0x8000+((UINT32)(data&0x01)<<14));
+  cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion + 0x0000+((UINT32)(data&0x02)<<13));
 }
 
 static void s11s_piaIrq(int state) {
@@ -1340,9 +1340,9 @@ const struct sndbrdIntf dcsIntf = { "DCS", dcs_init, NULL, NULL, dcs_data_w, dcs
 /  Bank handlers
 /----------------*/
 #define DCS1_ROMBANKBASE(bank) \
-  (dcslocals.brdData.romRegion + (((bank) & 0x7ff)<<12))
+  (dcslocals.brdData.romRegion + ((UINT32)((bank) & 0x7ff)<<12))
 #define DCS2_ROMBANKBASE(bankH, bankL) \
-  (dcslocals.brdData.romRegion + (((bankH) & 0x1c)<<18) + (((bankH) & 0x01)<<19) + (((bankL) & 0xff)<<11))
+  (dcslocals.brdData.romRegion + ((UINT32)((bankH) & 0x1c)<<18) + ((UINT32)((bankH) & 0x01)<<19) + ((UINT32)((bankL) & 0xff)<<11))
 #define DCS2_RAMBANKBASE(bank) \
   ((UINT16 *)(((bank) & 0x08) ? memory_region(DCS_BANKREGION) : \
               (dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x2000<<1))))

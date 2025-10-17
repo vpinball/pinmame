@@ -1524,9 +1524,9 @@ void votraxsc01_set_base_frequency(double baseFrequency)
 void votraxsc01_set_volume(int volume) // currently just (ab)used to en/disable the output (e.g. volume = 0 or 100 only)
 {
 #ifdef OLD_VOTRAX
-	int i;
 	if (volume >= 0)
 	{
+		int i;
 		for (i = 0; i < 4; i++)
 			mixer_set_volume(votraxsc01_locals.channels[i], volume);
 	}

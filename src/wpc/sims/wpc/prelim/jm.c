@@ -286,8 +286,8 @@ CORE_CLONEDEF(jm,12b,12r,"Johnny Mnemonic (1.2B Belgian)",1995,"Williams",wpc_mS
 CORE_CLONEDEF(jm,05r,12r,"Johnny Mnemonic (0.5R Prototype)",1995,"Williams",wpc_mSecurityS,0) // is this actually the 0.4 mentioned in the version history?
 
 static void jm_handleMech(int mech) {
-	static UINT8 twobits_x, twobits_y;
-	UINT8 sols = wpc_data[WPC_SOLENOID3] >> 4; /* The normal solenoids are smoothed too much */
+	static UINT8 twobits_x = 0, twobits_y = 0;
+	const UINT8 sols = wpc_data[WPC_SOLENOID3] >> 4; /* The normal solenoids are smoothed too much */
 
 	core_setSw(68, core_getSw(118));
 	core_setSw(67, core_getSw(116));

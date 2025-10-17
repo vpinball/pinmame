@@ -173,9 +173,9 @@ static WRITE_HANDLER(port_w)
 		case 1:
 			dmdlocals.vid_page = data & 0x0f;
 			if(dmdlocals.last != data) {
-				dmdlocals.last = data;
 				LOG(("port write @ %x, data=%x\n",offset,data));
 			}
+			dmdlocals.last = data;
 			break;
 		case 2:
 			LOG(("writing to port %x data = %x\n",offset,data));

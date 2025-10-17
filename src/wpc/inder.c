@@ -668,10 +668,9 @@ static READ_HANDLER(ci20_portb_r2) {
 // display strobes are reversed on Metal Man
 static WRITE_HANDLER(ci23_portc_w2) {
   int i;
-  if ((data & 0x0f) < 7) {
+  if ((data & 0x0f) < 7)
     for (i=0; i < 7; i++)
       coreGlobals.segments[8*i + 7 - (data & 0x07)].w = locals.dispSeg[i];
-  }
 }
 
 /*

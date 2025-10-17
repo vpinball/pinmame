@@ -328,11 +328,9 @@ static UINT32 voice_base_offset[MAX_ADPCM]; /*we cannot save the pointer - this 
 static void adpcm_state_save_base_store (void)
 {
 	int i;
-	struct ADPCMVoice *voice;
-
 	for (i=0; i<num_voices; i++)
 	{
-		voice = &adpcm[i];
+		struct ADPCMVoice* voice = &adpcm[i];
 		voice_base_offset[i] = (UINT32)(voice->base - voice->region_base);
 	}
 }
@@ -340,11 +338,9 @@ static void adpcm_state_save_base_store (void)
 static void adpcm_state_save_base_refresh (void)
 {
 	int i;
-	struct ADPCMVoice *voice;
-
 	for (i=0; i<num_voices; i++)
 	{
-		voice = &adpcm[i];
+		struct ADPCMVoice* voice = &adpcm[i];
 		voice->base = &voice->region_base[ voice_base_offset[i] ];
 	}
 }
@@ -909,10 +905,11 @@ static void OKIM6295_data_w(int num, int data)
 	/* otherwise, this is a silence command */
 	else
 	{
-		int voicemask = data >> 3, i;
+		int voicemask = data >> 3;
 		// TODO either mute all channels or only one - fixes some sound in GTS3 games!?
 		if (voicemask == 0x0f || voicemask == 0x08 || voicemask == 0x04 || voicemask == 0x02 || voicemask == 0x01) {
 			/* determine which voice(s) (voice is set by a 1 bit in bits 3-6 of the command */
+			int i;
 			for (i = 0; i < 4; i++, voicemask >>= 1)
 			{
 				if (voicemask & 1)

@@ -534,7 +534,7 @@ void TMS9928A_refresh (int num_chips, struct mame_bitmap *bmp, int full_refresh)
 	for (which = 0; which < num_chips; which++) {
 		if (tms[which].Change) {
 			c = tms[which].Regs[7] & 15;
-			if (tms[which].BackColour != c) tms[which].BackColour = c;
+			tms[which].BackColour = c;
 		}
 
 //		if (palette_recalc() ) {
@@ -604,7 +604,7 @@ void TMS9928A_refresh_test (int num_chips, struct mame_bitmap *bmp, int full_ref
 	for (which = 0; which < MAX_VDP; which++) {
 		if (tms[which].Change) {
 			c = tms[which].Regs[7] & 15;
-			if (tms[which].BackColour != c) tms[which].BackColour = c;
+			tms[which].BackColour = c;
 		}
 
 //		if (palette_recalc() ) {
@@ -944,7 +944,7 @@ static void _TMS9928A_modebogus (int which, struct mame_bitmap *bmp) {
 }
 
 /*
-** This function renders the sprites. Sprite collision is calculated in
+** This function renders the sprites. Sprite collision is calculated
 ** in a back buffer (tms.dBackMem), because sprite collision detection
 ** is rather complicated (transparent sprites also cause the sprite
 ** collision bit to be set, and ``illegal'' sprites do not count

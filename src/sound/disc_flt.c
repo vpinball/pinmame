@@ -678,7 +678,7 @@ int dst_rcfilter_step(struct node_description *node)
 	/* Next Value = PREV + (INPUT_VALUE - PREV)*(1-(EXP(-TIMEDELTA/RC)))    */
 	/************************************************************************/
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=node->output+((node->input[1]-node->output)*node->input[5]);
 	}
@@ -725,7 +725,7 @@ int dst_rcdisc_step(struct node_description *node)
 
 	switch (context->state) {
 		case 0:     /* waiting for trigger  */
-			if(node->input[0]) {
+			if(node->input[0] != 0.) {
 				context->state = 1;
 				context->t = 0;
 			}
@@ -733,7 +733,7 @@ int dst_rcdisc_step(struct node_description *node)
 			break;
 
 		case 1:
-			if (node->input[0]) {
+			if(node->input[0] != 0.) {
 				node->output=node->input[1] * exp(context->t / context->exponent0);
 				context->t += context->step;
 			} else {

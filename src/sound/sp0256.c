@@ -81,8 +81,8 @@ static struct {
   void         (*drq)(int state); /* Data request callback                        */
   void         (*sby)(int state); /* Standby callback                             */
   int            sby_line;        /* Standby line state                           */
-  INT16         *cur_buf;         /* Current sound buffer.                        */
-  int            cur_len;         /* Fullness of current sound buffer.            */
+  //INT16         *cur_buf;         /* Current sound buffer.                        */
+  //int            cur_len;         /* Fullness of current sound buffer.            */
 
   int            silent;          /* Flag: SP0256 is silent.                      */
 

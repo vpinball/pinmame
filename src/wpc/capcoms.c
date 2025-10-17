@@ -94,9 +94,11 @@ static struct {
   int rombase_offset;	//Offset into current rom
   int rombase;			//Points to current rom
   int bof_line[2];		//Track status of bof line for each tms chip
+#if !DISABLE_BOF_HACK
   int bof_last[2];		//Track previous state of bof line
+#endif
   int sreq_line[2];		//Track status of sreq line for each tms chip
-  int cbof_line[2];		//Clear BOF Line (8752 controlled)
+  //int cbof_line[2];		//Clear BOF Line (8752 controlled)
   int cts;				//Clear to send (If 1, cpu will not send data)
   int rts;				//Request to send (If 1, sender will not send data)
   int scl;				//SCL line
@@ -443,7 +445,6 @@ static WRITE_HANDLER(port_w)
 //Return a byte from the bankswitched roms
 READ_HANDLER(rom_rd)
 {
-	int data;
 	UINT8* base = (UINT8*)memory_region(REGION_SOUND1);	//Get pointer to 1st ROM..
 	offset&=0xffff;	//strip off top bit
 	//Is a valid rom set for reading?
@@ -451,6 +452,7 @@ READ_HANDLER(rom_rd)
 		return 0;
 	}
 	else {
+		int data;
 		base+=(locals.rombase+locals.rombase_offset+offset);//Do bankswitching
 		data = (int)*base;
 		return data;
@@ -463,12 +465,14 @@ READ_HANDLER(ram_r)
 	if(offset > 0xffff)
 		return locals.ram[offset-0x18000];
 	//Return normal address range for offsets < 0xffff
+	assert(offset < sizeof(locals.ram));
 	return locals.ram[offset];
 }
 
 WRITE_HANDLER(ram_w)
 {
 	offset&=0xffff;	//strip off top bit
+	assert(offset < sizeof(locals.ram));
 	locals.ram[offset] = data;
 	/* 8752 CAN EXECUTE CODE FROM RAM - SO WE MUST COPY TO CPU REGION STARTING @ 0x8000 */
 	*((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + offset +0x8000)) = data;
@@ -499,9 +503,9 @@ WRITE_HANDLER(bankswitch)
 void calc_rombase(int data)
 {
 	int activerom = (~data&0x0f);
-	int chipnum;
 	if(activerom) {
 		//got to be an easier way than this hack?
+		int chipnum;
 		if(activerom==8)	chipnum = 3;
 		else				chipnum = activerom>>1;
 		locals.rombase = 0x100000*(chipnum);

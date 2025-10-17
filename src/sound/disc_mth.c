@@ -93,7 +93,7 @@ struct dst_samphold_context
 /************************************************************************/
 int dst_adder_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=node->input[1] + node->input[2] + node->input[3] + node->input[4];
 	}
@@ -139,7 +139,7 @@ double dst_transform_push(double *stack,int *pointer,double value)
 int dst_transform_step(struct node_description *node)
 {
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		double trans_stack[MAX_TRANS_STACK];
 		double result,number1,number2;
@@ -233,7 +233,7 @@ int dst_transform_step(struct node_description *node)
 /************************************************************************/
 int dst_gain_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=node->input[1] * node->input[2];
 		node->output+=node->input[3];
@@ -603,7 +603,7 @@ int dst_mixer_init(struct node_description *node)
 /************************************************************************/
 int dst_divide_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		if(node->input[2]==0)
 		{
@@ -636,10 +636,10 @@ int dst_divide_step(struct node_description *node)
 /************************************************************************/
 int dst_switch_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		/* Input 1 switches between input[0]/input[2] */
-		node->output=(node->input[1])?node->input[3]:node->input[2];
+		node->output=(node->input[1] != 0.)?node->input[3]:node->input[2];
 	}
 	else
 	{
@@ -667,7 +667,7 @@ int dst_ramp_step(struct node_description *node)
 	struct dss_ramp_context *context;
 	context=(struct dss_ramp_context*)node->context;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		if (!context->last_en)
 		{
@@ -745,7 +745,7 @@ int dst_oneshot_step(struct node_description *node)
 	switch(context->state)
 	{
 		case 0:		/* Waiting for trigger */
-			if(node->input[1])
+			if(node->input[1] != 0.)
 			{
 				context->state=1;
 				context->countdown=node->input[4];
@@ -756,7 +756,7 @@ int dst_oneshot_step(struct node_description *node)
 
 		case 1:		/* Triggered */
 			node->output=node->input[3];
-			if(node->input[1] && node->input[2])
+			if(node->input[1] != 0. && node->input[2] != 0.)
 			{
 				// Dont start the countdown if we're still triggering
 				// and we've got a reset signal as well
@@ -775,7 +775,7 @@ int dst_oneshot_step(struct node_description *node)
 
 		case 2:		/* Waiting for reset */
 		default:
-			if(node->input[2]) context->state=0;
+			if(node->input[2] != 0.) context->state=0;
 		 	node->output=0;
 			break;
 	}
@@ -832,7 +832,7 @@ int dst_clamp_step(struct node_description *node)
 	//struct dss_ramp_context *context;
 	//context=(struct dss_ramp_context*)node->context;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		if(node->input[1] < node->input[2]) node->output=node->input[2];
 		else if(node->input[1] > node->input[3]) node->output=node->input[3];
@@ -958,7 +958,7 @@ int dst_samphold_step(struct node_description *node)
 {
 	struct dst_samphold_context *context = (struct dst_samphold_context*)node->context;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		switch(context->clocktype)
 		{
@@ -972,7 +972,7 @@ int dst_samphold_step(struct node_description *node)
 				break;
 			case DISC_SAMPHOLD_HLATCH:
 				/* Output follows input if clock != 0 */
-				if(node->input[2]) node->output=node->input[1];
+				if(node->input[2] != 0.) node->output=node->input[1];
 				break;
 			case DISC_SAMPHOLD_LLATCH:
 				/* Output follows input if clock == 0 */
@@ -1037,9 +1037,9 @@ int dst_samphold_init(struct node_description *node)
 /************************************************************************/
 int dst_logic_inv_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
-		node->output=(node->input[1])?0.0:1.0;
+		node->output=(node->input[1] != 0.)?0.0:1.0;
 	}
 	else
 	{
@@ -1062,7 +1062,7 @@ int dst_logic_inv_step(struct node_description *node)
 /************************************************************************/
 int dst_logic_and_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=(node->input[1] && node->input[2] && node->input[3] && node->input[4])?1.0:0.0;
 	}
@@ -1087,7 +1087,7 @@ int dst_logic_and_step(struct node_description *node)
 /************************************************************************/
 int dst_logic_nand_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=(node->input[1] && node->input[2] && node->input[3] && node->input[4])?0.0:1.0;
 	}
@@ -1112,7 +1112,7 @@ int dst_logic_nand_step(struct node_description *node)
 /************************************************************************/
 int dst_logic_or_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=(node->input[1] || node->input[2] || node->input[3] || node->input[4])?1.0:0.0;
 	}
@@ -1137,7 +1137,7 @@ int dst_logic_or_step(struct node_description *node)
 /************************************************************************/
 int dst_logic_nor_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=(node->input[1] || node->input[2] || node->input[3] || node->input[4])?0.0:1.0;
 	}
@@ -1162,7 +1162,7 @@ int dst_logic_nor_step(struct node_description *node)
 /************************************************************************/
 int dst_logic_xor_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=((node->input[1] && !node->input[2]) || (!node->input[1] && node->input[2]))?1.0:0.0;
 	}
@@ -1187,7 +1187,7 @@ int dst_logic_xor_step(struct node_description *node)
 /************************************************************************/
 int dst_logic_nxor_step(struct node_description *node)
 {
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=((node->input[1] && !node->input[2]) || (!node->input[1] && node->input[2]))?0.0:1.0;
 	}

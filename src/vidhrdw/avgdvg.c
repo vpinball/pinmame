@@ -251,7 +251,7 @@ static int dvg_generate_vector_list(void)
 		opcode = firstwd >> 12;
 
 		/* the DVCTR and DLABS opcodes take two words */
-		if (opcode >= 0 && opcode <= DLABS)
+		if (/*opcode >= 0 &&*/ opcode <= DLABS)
 			secondwd = vector_word(pc++);
 
 		/* debugging */

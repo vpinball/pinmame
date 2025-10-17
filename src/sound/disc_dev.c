@@ -140,7 +140,7 @@ int dsd_555_astbl_step(struct node_description *node)
 					context->flip_flop = 1;
 				}
 			}
-		} while(t);
+		} while(t != 0.);
 
 		context->cWaveform = vC;
 
@@ -237,7 +237,7 @@ int dsd_squarew555_step(struct node_description *node)
 	/* Keep the new phasor in the 2Pi range.*/
 	context->phase = fmod(newphase, 2.0 * M_PI);
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		if(context->phase>context->trigger)
 		{
@@ -416,7 +416,7 @@ int dsd_trianglew566_step(struct node_description *node)
 	newphase=fmod(newphase,2.0*M_PI);
 	context->phase=newphase;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=newphase < M_PI ? (node->input[2] * (newphase / (M_PI/2.0) - 1.0))/2.0 :
 									(node->input[2] * (3.0 - newphase / (M_PI/2.0)))/2.0 ;

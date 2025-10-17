@@ -83,7 +83,7 @@ int dss_sinewave_step(struct node_description *node)
 	struct dss_sinewave_context *context=(struct dss_sinewave_context*)node->context;
 
 	/* Set the output */
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=(node->input[2]/2.0) * sin(context->phase);
 		/* Add DC Bias component */
@@ -164,7 +164,7 @@ int dss_squarewave_step(struct node_description *node)
 	context->trigger=((100-node->input[3])/100)*(2.0*M_PI);
 
 	/* Set the output */
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		if(context->phase>context->trigger)
 			node->output=(node->input[2]/2.0);
@@ -257,7 +257,7 @@ int dss_squarewfix_step(struct node_description *node)
 	}
 //discrete_log("Step out - tLeft:%f FF:%d",context->tLeft,context->flip_flop);
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 //discrete_log("Step in - F:%f D:%f tOff:%f tOn:%f tSample:%f tLeft:%f FF:%d",node->input1,node->input3,tOff,tOn,context->sampleStep,context->tLeft,context->flip_flop);
 //		context->tLeft += context->sampleStep;
@@ -377,7 +377,7 @@ int dss_squarewave2_step(struct node_description *node)
 	/* Keep the new phasor in the 2Pi range.*/
 	context->phase = fmod(newphase, 2.0 * M_PI);
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		if(context->phase>context->trigger)
 			node->output=(node->input[1]/2.0);
@@ -450,7 +450,7 @@ int dss_trianglewave_step(struct node_description *node)
 {
 	struct dss_trianglewave_context *context=(struct dss_trianglewave_context*)node->context;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=context->phase < M_PI ? (node->input[2] * (context->phase / (M_PI/2.0) - 1.0))/2.0 :
 									(node->input[2] * (3.0 - context->phase / (M_PI/2.0)))/2.0 ;
@@ -530,7 +530,7 @@ int dss_sawtoothwave_step(struct node_description *node)
 {
 	struct dss_sawtoothwave_context *context=(struct dss_sawtoothwave_context*)node->context;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		node->output=(context->type==0)?context->phase*(node->input[2]/(2.0*M_PI)):node->input[2]-(context->phase*(node->input[2]/(2.0*M_PI)));
 		node->output-=node->input[2]/2.0;
@@ -567,7 +567,7 @@ int dss_sawtoothwave_reset(struct node_description *node)
 	context->phase=fmod(start,2.0*M_PI);
 
 	/* Invert gradient depending on sawtooth type /|/|/|/|/| or |\|\|\|\|\ */
-	context->type=(node->input[4])?1:0;
+	context->type=(node->input[4] != 0.)?1:0;
 
 	/* Step the node to set the output */
 	dss_sawtoothwave_step(node);
@@ -614,7 +614,7 @@ int dss_noise_step(struct node_description *node)
 	struct dss_noise_context *context;
 	context=(struct dss_noise_context*)node->context;
 
-	if(node->input[0])
+	if(node->input[0] != 0.)
 	{
 		/* Only sample noise on rollover to next cycle */
 		if(context->phase>(2.0*M_PI))
@@ -756,7 +756,7 @@ int dss_lfsr_step(struct node_description *node)
 	lfsr_desc=(struct discrete_lfsr_desc*)(node->custom);
 
 	/* Reset everything if necessary */
-	if((node->input[1] ? 1 : 0) == ((lfsr_desc->flags & DISC_LFSR_FLAG_RESET_TYPE_H) ? 1 : 0))
+	if((node->input[1] != 0. ? 1 : 0) == ((lfsr_desc->flags & DISC_LFSR_FLAG_RESET_TYPE_H) ? 1 : 0))
 	{
 		dss_lfsr_reset(node);
 	}
@@ -776,7 +776,7 @@ int dss_lfsr_step(struct node_description *node)
 		fbresult=((context->lfsr_reg)>>(lfsr_desc->bitlength))&0x01;
 
 		/* Stage 2 feedback combine fbresultNew with infeed bit */
-		fbresult=dss_lfsr_function(lfsr_desc->feedback_function1,fbresult,((node->input[4])?0x01:0x00),0x01);
+		fbresult=dss_lfsr_function(lfsr_desc->feedback_function1,fbresult,((node->input[4] != 0.)?0x01:0x00),0x01);
 
 		/* Stage 3 first we setup where the bit is going to be shifted into */
 		fbresult=fbresult*lfsr_desc->feedback_function2_mask;
@@ -797,16 +797,16 @@ int dss_lfsr_step(struct node_description *node)
 		node->output=((context->lfsr_reg)>>(lfsr_desc->output_bit))&0x01;
 
 		/* Final inversion if required */
-		if(lfsr_desc->flags & DISC_LFSR_FLAG_OUT_INVERT) node->output=(node->output)?0.0:1.0;
+		if(lfsr_desc->flags & DISC_LFSR_FLAG_OUT_INVERT) node->output=(node->output != 0.)?0.0:1.0;
 
 		/* Gain stage */
-		node->output=(node->output)?(node->input[3])/2:-(node->input[3])/2;
+		node->output=(node->output != 0.)?(node->input[3])/2:-(node->input[3])/2;
 		/* Bias input as required */
 		node->output=node->output+node->input[5];
 	}
 
 	/* If disabled then clamp the output to DC Bias */
-	if(!node->input[0])
+	if(node->input[0] == 0.)
 	{
 		node->output=node->input[5];
 	}
@@ -831,10 +831,10 @@ int dss_lfsr_reset(struct node_description *node)
 	node->output=((context->lfsr_reg)>>(lfsr_desc->output_bit))&0x01;
 
 	/* Final inversion if required */
-	if(lfsr_desc->flags&DISC_LFSR_FLAG_OUT_INVERT) node->output=(node->output)?0.0:1.0;
+	if(lfsr_desc->flags&DISC_LFSR_FLAG_OUT_INVERT) node->output=(node->output != 0.)?0.0:1.0;
 
 	/* Gain stage */
-	node->output=(node->output)?(node->input[3])/2:-(node->input[3])/2;
+	node->output=(node->output != 0.)?(node->input[3])/2:-(node->input[3])/2;
 	/* Bias input as required */
 	node->output=node->output+node->input[5];
 
