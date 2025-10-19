@@ -926,6 +926,14 @@ DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba
 DE_ROMEND
 CORE_CLONEDEF(rab,130,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.30)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(rab_110be,"Rocky-Bull_1.10_Belgium-C5.bin",CRC(195BC8E4) SHA1(bfcb8f0881a0638d4502f4df332629c401ee905e))
+DE_DMD32ROM8x(     "Rocky-Bull_1.03_Disp-rom0.bin",CRC(76F50541) SHA1(f79f1ce7f1cb17f295eaca7349676a8777f689ec))
+DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba7ea71c094),
+                   "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
+                   "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
+DE_ROMEND
+CORE_CLONEDEF(rab,110be,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.10 Belgian)",1993,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(rab_103,"rabcpu.103",CRC(d5fe3184) SHA1(dc1ca938f15240d1c15ee5724d29a3538418f8de))
 DE_DMD32ROM8x(     "rabdspsp.103",CRC(02624948) SHA1(069ef69d6ce193d73954935b378230c05b83b8fc))
 DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba7ea71c094),
@@ -1323,6 +1331,15 @@ DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca6
                  "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
 DE_ROMEND
 CORE_CLONEDEF(mav,401,402,"Maverick, The Movie (4.04, Display 4.01)",1994,"Sega",de_mDEDMD64S2A,0)
+
+DE_ROMSTARTx0(mav_404g, "mav_C5_404.bin",CRC(F5A07F88) SHA1(180e5aaa6d46d4c83d1a5a2a58b68a9ba8117391))
+DE_DMD64ROM88(   "mav_rom0.bin",CRC(2C3B776D) SHA1(507d2bf5267b93dab740572b3854f05271c65e71),
+                 "mav_rom3.bin",CRC(E94ABE3C) SHA1(61ff20677ef407c7fda68e2bbd808e793b038941))
+DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca667f797f29b1),
+                 "mavu17.dat" , CRC(cba377b8) SHA1(b7551b6cb64357cdacf1a96cedfccbabf4bd070a),
+                 "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
+DE_ROMEND
+CORE_CLONEDEF(mav,404g,402,"Maverick, The Movie (4.04 German, Display 4.00)",1994,"Sega",de_mDEDMD64S2A,0)
 
 DE_ROMSTARTx0(mav_400, "mavgc5.400",CRC(e2d0a88b) SHA1(d1571edba47aecc871ac0cfdaabca31774f70fa1))
 DE_DMD64ROM88(   "mavdisp0.400",CRC(b6069484) SHA1(2878d9a0151194bd4a0e12e2f75b02a5d7316b68),
