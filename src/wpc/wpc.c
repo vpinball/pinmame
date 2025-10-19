@@ -503,7 +503,7 @@ static INTERRUPT_GEN(wpc_interface_update) {
     // If fastflipaddr is set, we want sol31 to be triggered by a nonzero value in that location
     if (wpc_fastflip_addr > 0)
     {
-      coreGlobals.solenoids2 &= ~(0x400);
+      coreGlobals.solenoids2 &= ~0x400;
       if (wpc_ram[wpc_fastflip_addr] > 0)
         coreGlobals.solenoids2 |= 0x400;
     }

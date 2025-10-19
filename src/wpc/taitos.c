@@ -12,7 +12,7 @@
 / Taito uses four different sound boards:
 / - sintetizador
 / - sintevox (sintetizador with an additional SC-01A)
-/    Hudson performs maintenance  on Taito machines. In all the machines that he worked until today he only found Chip SC01A. According to him, if Taito had used the SC01, it would be in the Cavaleiro Negro and Fire Action machines.
+/    Hudson performs maintenance on Taito machines. In all the machines that he worked until today he only found Chip SC01A. According to him, if Taito had used the SC01, it would be in the Cavaleiro Negro and Fire Action machines.
 / - sintetizador with a daughter board installed
 / - sintevox with a daughter board installed
 /

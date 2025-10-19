@@ -679,7 +679,7 @@ static WRITE_HANDLER(m6840_w ) {
   m6840d.ax[offset]=data;
   if (offset == 3) {
 	int w1;
-	gps_locals.timlat1 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
+	gps_locals.timlat1 = m6840d.ax[offset] + m6840d.ax[offset-1] * 256;
 	m6840d.timer1 = gps_locals.timlat1;
 	w1 = MSU1_INTCLOCK / (2 * (m6840d.timer1 + 1));
 	gps_locals.tfre1 = w1;
@@ -691,7 +691,7 @@ static WRITE_HANDLER(m6840_w ) {
 	}
   }
   if (offset == 5) {
-	gps_locals.timlat2 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
+	gps_locals.timlat2 = m6840d.ax[offset] + m6840d.ax[offset-1] * 256;
 	m6840d.timer2 = gps_locals.timlat2;
 	gps_locals.tfre2 = MSU1_INTCLOCK / (2 * (m6840d.timer2 + 1));
 	logerror("%04x: m6840_w  timlat2 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat2,gps_locals.tfre2);
@@ -702,7 +702,7 @@ static WRITE_HANDLER(m6840_w ) {
 	}
   }
   if (offset == 7) {
-	gps_locals.timlat3 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
+	gps_locals.timlat3 = m6840d.ax[offset] + m6840d.ax[offset-1] * 256;
 	m6840d.timer3 = gps_locals.timlat3;
 	gps_locals.tfre3 = (MSU1_INTCLOCK / (2 * (m6840d.timer3 + 1)));
 	logerror("%04x: m6840_w  timlat3 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat3,gps_locals.tfre3);
@@ -715,8 +715,6 @@ static WRITE_HANDLER(m6840_w ) {
   if (offset == 1) {
 	gps_locals.cr2= m6840d.ax[offset];
 	logerror("%04x: m6840_w  CR2 %02x       ", activecpu_get_previouspc(), gps_locals.cr2);
-	if ((gps_locals.cr2 & 0x80) == 0) {
-	}
 	if (gps_locals.cr2 & 0x80)  {
 		logerror ("Output enabl ");
 		if (gps_locals.timlat2 != gps_locals.timlats2) {

@@ -159,4 +159,3 @@ STDAPI DllUnregisterServer(void)
 #endif
     return _Module.UnregisterServer(TRUE);
 }
-

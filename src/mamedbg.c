@@ -2,7 +2,7 @@
  *	MAME debugger V0.54
  *	Juergen Buchmueller <pullmoll@t-online.de>
  *
- *	Based on code found in the preivous version of the MAME debugger
+ *	Based on code found in the previous version of the MAME debugger
  *	written by: Martin Scragg, John Butler, Mirko Buffoni
  *	Chris Moore, Aaron Giles, Ernesto Corvi
  *
@@ -1510,7 +1510,7 @@ static unsigned get_option_or_value( char **parg, int *size, const char *opt_lis
 	char *p = *parg;
 	const char *opt;
 	unsigned result = 0, opt_count = 0;
-	int length = 0;
+	int length;
 
 	/* length of the next argument */
 	while( isalnum(*p) ) p++;
@@ -1688,13 +1688,12 @@ static unsigned get_register_or_value( char **parg, int *size )
  **************************************************************************/
 static void trace_init( const char *filename, UINT8 *regs )
 {
-	char name[100];
-
 	if( trace_on )
 		return;
 
 	for( tracecpu = 0; tracecpu < total_cpu; tracecpu++ )
 	{
+		char name[100];
 		sprintf( name, "%s.%d", filename, tracecpu );
 		TRACE.file = fopen(name,"w");
 		if( tracecpu == active_cpu )
@@ -1941,7 +1940,7 @@ static void bpr_set(void) {
 /**************************************************************************
  * hit_brk_regs
  * Return non zero if the register breakpoint for the active CPU
- * was hit (ie. monitored register changed)
+ * was hit (i.e. monitored register changed)
  **************************************************************************/
 static int hit_brk_regs(void)
 {
@@ -2080,7 +2079,7 @@ static const char *name_rdmem( unsigned base )
 				||  (FPTR)mr->handler == (FPTR)MRA_BANK14
 				||  (FPTR)mr->handler == (FPTR)MRA_BANK15
 				||  (FPTR)mr->handler == (FPTR)MRA_BANK16 )
-					sprintf(dst, "BANK%d+%04X", 1 + (int)(MRA_BANK1) - (int)(mr->handler), lshift(offset) );
+					sprintf(dst, "BANK%llu+%04X", 1 + (size_t)(MRA_BANK1) - (size_t)(mr->handler), lshift(offset) );
 				else
 				if( (FPTR)mr->handler == (FPTR)MRA_NOP )
 					sprintf(dst, "NOP%d+%04X", nop_cnt, lshift(offset) );
@@ -2218,7 +2217,7 @@ static const char *name_wrmem( unsigned base )
 				||  (FPTR)mw->handler == (FPTR)MWA_BANK14
 				||  (FPTR)mw->handler == (FPTR)MWA_BANK15
 				||  (FPTR)mw->handler == (FPTR)MWA_BANK16 )
-					sprintf(dst, "BANK%d+%04X", 1 + (int)(MWA_BANK1) - (int)(mw->handler), lshift(base - mw->start) );
+					sprintf(dst, "BANK%llu+%04X", 1 + (size_t)(MWA_BANK1) - (size_t)(mw->handler), lshift(base - mw->start) );
 				else
 				if( (FPTR)mw->handler == (FPTR)MWA_NOP )
 					sprintf(dst, "NOP%d+%04X", nop_cnt, lshift(base - mw->start) );
@@ -2277,9 +2276,8 @@ static const char *name_memory( unsigned base )
 static int win_create(int n, UINT8 prio, int x, int y, int w, int h,
 	UINT8 co_text, UINT8 co_frame, UINT8 chr, UINT32 attributes)
 {
-	struct sWindow win;
+	struct sWindow win = { 0 };
 	/* fill in the default values for window creation */
-	memset( &win, 0, sizeof(struct sWindow) );
 	win.filler = chr;
 	win.prio = prio;
 	win.x = x;
@@ -2624,7 +2622,6 @@ static void dump_regs( void )
 			{
 				/* Only CPU # and name fit into the caption */
 				sprintf( title, "CPU #%d %-8s", active_cpu, name );
-				l = strlen(title);
 				win_set_title( win, title );
 				if( y < h )
 				{
@@ -4889,7 +4886,6 @@ static void cmd_trace_to_file( void )
 	static char regname[10];
 	int length;
 	char *s, *d;
-	int l;
 
 	filename = get_file_name( &cmd, &length );
 
@@ -4903,6 +4899,7 @@ static void cmd_trace_to_file( void )
 		UINT8 regs[MAX_REGS];
 		while( *cmd )
 		{
+			int l;
 			for( l = 0, s = cmd, d = regname; *s && (isalnum(*s)); l++ )
 				*d++ = *s++;
 
@@ -5812,8 +5809,6 @@ static void codelist_init( const char *given_filename )
 	int prevcpu;
 	char *filename;
 
-	char name[100];
-
 	if( codelist_on )
 		return;
 
@@ -5827,6 +5822,7 @@ static void codelist_init( const char *given_filename )
 	prevcpu = activecpu;
 	for( tracecpu = 0; tracecpu < total_cpu; tracecpu++ )
 	{
+		char name[100];
 		sprintf( name, "%s.codelist.cpu%d", filename, tracecpu );
 		TRACE.codelistfile = fopen(name,"w");
 		TRACE.codelist = NULL;
@@ -5845,7 +5841,7 @@ static void codelist_init( const char *given_filename )
  * codelist_done
  * Closes the codelist output files
  **************************************************************************/
-void codelist_done(void)
+static void codelist_done(void)
 {
 	struct s_codelist	*codelist, *prevlist;
 	struct s_codeblock	*codeblock, *prevblock;

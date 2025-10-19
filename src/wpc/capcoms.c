@@ -166,7 +166,7 @@ int data_to_8752(void)
 }
 
 //Track state of BOF 
-void cap_bof(int chipnum,int state)
+static void cap_bof(int chipnum,int state)
 {
 	//Store the state..
 	locals.bof_line[chipnum]=state;
@@ -192,7 +192,7 @@ void cap_bof(int chipnum,int state)
 }
 
 //Track state of SREQ
-void cap_sreq(int chipnum,int state)
+static void cap_sreq(int chipnum,int state)
 {
 	locals.sreq_line[chipnum]=state;
 //	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
@@ -508,7 +508,7 @@ void calc_rombase(int data)
 		int chipnum;
 		if(activerom==8)	chipnum = 3;
 		else				chipnum = activerom>>1;
-		locals.rombase = 0x100000*(chipnum);
+		locals.rombase = 0x100000*chipnum;
 	}
 	else
 		locals.rombase = -1;

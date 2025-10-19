@@ -699,7 +699,7 @@ static WRITE_HANDLER(st300_data_w) {
 	int w;
 	if (data == 3) {
 		int w1;
-		st300loc.timlat1 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
+		st300loc.timlat1 = snddatst300.ax[data] + snddatst300.ax[data-1] * 256;
 		snddatst300.timer1 = st300loc.timlat1;
 		w1 = ST300_INTCLOCK / (2 * (snddatst300.timer1 + 1));
 		st300loc.tfre1 = w1;
@@ -710,13 +710,13 @@ static WRITE_HANDLER(st300_data_w) {
 		}
 	}
 	if (data == 5) {
-		st300loc.timlat2 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
+		st300loc.timlat2 = snddatst300.ax[data] + snddatst300.ax[data-1] * 256;
 		snddatst300.timer2 = st300loc.timlat2;
 		st300loc.tfre2 = ST300_INTCLOCK / (2 * (snddatst300.timer2 + 1));
 //		logerror("%04x: st300_data_w timlat2 loaded %04x freq %04d \n", activecpu_get_previouspc(), st300loc.timlat2,st300loc.tfre2);
 	}
 	if (data == 7) {
-		st300loc.timlat3 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
+		st300loc.timlat3 = snddatst300.ax[data] + snddatst300.ax[data-1] * 256;
 		snddatst300.timer3 = st300loc.timlat3;
 		st300loc.tfre3 = (ST300_INTCLOCK / (2 * (snddatst300.timer3 + 1)));
 		logerror("%04x: st300_data_w timlat3 loaded %04x freq %04d \n", activecpu_get_previouspc(), st300loc.timlat3,st300loc.tfre3);

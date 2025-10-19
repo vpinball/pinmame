@@ -25,7 +25,7 @@ Enter Testmode via Keys '9' and '7'.
 Press '4' on the Numblock for "Table",
 then '1' and ENTER for the basic programming.
 Wait a bit.
-Then press '9' to end the test menue.
+Then press '9' to end the test menu.
 
 Now one can insert coins and start the game.
 

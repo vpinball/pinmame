@@ -151,7 +151,7 @@ static void GTS80S_Update(int num, INT16 * const buffer, int length) // El Dorad
 		length--;
 		dCurrentClock += dInterval;
 
-		while ( (GTS80S_locals.clock[i+1]<=dCurrentClock) )
+		while ( GTS80S_locals.clock[i+1]<=dCurrentClock )
 			i++;
 	}
 

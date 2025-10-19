@@ -33,7 +33,7 @@ void vp_init(void) {
 int vp_getLamp(int lampNo) {
   if (coreData && coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
     return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
 }
@@ -53,7 +53,7 @@ int vp_getSolenoid(int solNo)
 int vp_getGI(int giNo)
 {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
-  if (coreGlobals.nGI && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI)))
+  if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI))
     return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
   return coreGlobals.gi[giNo];
 }
@@ -65,7 +65,7 @@ int vp_getGI(int giNo)
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
   int idx = 0;
   /*-- fill in array --*/
-  if (coreGlobals.nLamps && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)))
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
   {
     int ii;
     for (ii = 0; ii < coreGlobals.nLamps; ii++) {

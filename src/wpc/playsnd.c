@@ -105,7 +105,7 @@ static WRITE_HANDLER(play2s_ctrl_w) {
   if (!sndlocals.enSn && (data & 1)) { // sound on to full volume
     timer_adjust(sndlocals.timer, TIME_NEVER, 0, 0);
     if (!mixer_is_sample_playing(sndlocals.channel)) {
-      mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000. / 4. / (sndlocals.freq + 1), 1);
+      mixer_play_sample(sndlocals.channel, (const signed char *)squareWave, sizeof(squareWave), 2950000. / 4. / (sndlocals.freq + 1), 1);
     }
     sndlocals.volume = 100;
     mixer_set_volume(sndlocals.channel, sndlocals.volume);

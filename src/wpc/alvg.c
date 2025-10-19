@@ -595,7 +595,7 @@ static WRITE_HANDLER(DMD_LATCH) {
 //Send data to the display segments
 // Hi seg row B
 static WRITE_HANDLER(LED_LATCH) {
-  coreGlobals.segments[20+alvglocals.dispCol].w = segMapper(data << 8);
+  coreGlobals.segments[20+alvglocals.dispCol].w = segMapper((UINT16)data << 8);
 }
 static WRITE_HANDLER(LED_DATA) {
   ppi8255_3_w(3-offset, data);

@@ -136,9 +136,9 @@ bit 7 = 0 = CLEAR NMI
 static WRITE_HANDLER(de1s_chipsel_w) {
   static const int prescaler[] = { MSM5205_S96_4B, MSM5205_S48_4B, MSM5205_S64_4B, 0};
   int addr = (((data>>0)&0x01)*0x4000) +
-	     (((data>>1)&0x01)*0x8000) +
-	     (((data>>3)&0x01)*0x10000) +
-	     (((data>>2)&0x01)*0x20000);
+             (((data>>1)&0x01)*0x8000) +
+             (((data>>3)&0x01)*0x10000) +
+             (((data>>2)&0x01)*0x20000);
 
   cpu_setbank(DE1S_BANK0, de1slocals.brdData.romRegion+addr);
   MSM5205_playmode_w(0, prescaler[(data & 0x30)>>4]); /* bit 4&5 */
@@ -384,7 +384,7 @@ static INTERRUPT_GEN(de2s_firq) {
 /* by Steve Ellenoff ( 10/11/2004 - 10/28/2004 )
 
    Hardware: CPU/Sound Bd. II w/ ATMEL Processor
-			 SPI Part Nº: 520-5300-00
+             SPI Part Nº: 520-5300-00
 
    Uses an Atmel AT9140008 CPU (ARM7TDMI Core) and Xilinx FPGA for sound.
    Board is 100% compatible with previous generation hardware (all games using 8Mb roms)
@@ -518,7 +518,7 @@ static READ32_HANDLER(csr0roms_r)
 	{
 		// keep bottom 
 		int romaddr = offset;
-		data = (data8_t)*((memory_region(DE2S_CPUREGION) + romaddr + 0x400000));
+		data = (data8_t)*(memory_region(DE2S_CPUREGION) + romaddr + 0x400000);
 	}
 	//Adjust for Mask
 	return data << (8*mask_adjust);
@@ -554,11 +554,11 @@ static READ32_HANDLER(csr2roms_r)
 		//remove a29 & a22
 		int romaddr = offset & 0xDFBFFFFF;
 		//determine which chip (combine A21 & A0 into 2 bit #)
-		int romchip = rommap[(((romaddr & 0x200000)>>20)|(romaddr&1))];
+		int romchip = rommap[((romaddr & 0x200000)>>20)|(romaddr&1)];
 		//remove a21 and >>1 the address
 		romaddr = (romaddr&0xFFDFFFFF)>>1;
 
-		data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+		data = (data8_t)*(memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000));
 		#if AT91IMP_LOG_ROMS_U17_U37
 		LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
 		#endif
@@ -915,9 +915,9 @@ MACHINE_DRIVER_END
 static MACHINE_INIT(lotrsnd) {
 	de2slocals.brdData.cpuNo = 0;
 	setup_at91();
-    #if REMOVE_LED_CODE
-    	remove_led_code();
-    #endif
+	#if REMOVE_LED_CODE
+		remove_led_code();
+	#endif
 }
 
 static core_tGameData lotrsndGameData = {0, 0};
@@ -938,11 +938,11 @@ INPUT_PORTS_START(lotrsnd)
 INPUT_PORTS_END
 
 ROM_START(lotrsnd) \
-    ROM_REGION32_LE(0x600000, REGION_CPU1, ROMREGION_ERASEMASK) \
-    ROM_LOAD("bios.u8", 0x400000, 0x200000, CRC(c049bf99))\
+	ROM_REGION32_LE(0x600000, REGION_CPU1, ROMREGION_ERASEMASK) \
+	ROM_LOAD("bios.u8", 0x400000, 0x200000, CRC(c049bf99))\
 	ROM_RELOAD(0x0,0x100000)\
 	ROM_REGION(0x010000, REGION_SOUND1,0) \
-    ROM_LOAD("lotr-u7.101",0x0000,0x10000,CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470)) \
+	ROM_LOAD("lotr-u7.101",0x0000,0x10000,CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470)) \
 ROM_END
 
 CORE_GAMEDEFNV(lotrsnd, "LOTR Sound CPU Test", 2003, "Stern", lotrsnd, 0)
@@ -1067,9 +1067,9 @@ static MACHINE_INIT(seflashb) {
 	de2slocals.brdData.cpuNo = 0;
 	//because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
 	at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
-    //this crap is needed because for some reason installing memory handlers fails to work properly
-    at91_cs_callback_r(0x00400000,0x8fffffff,flashb_cs_r);
-    at91_cs_callback_w(0x00400000,0x8fffffff,flashb_cs_w);
+	//this crap is needed because for some reason installing memory handlers fails to work properly
+	at91_cs_callback_r(0x00400000,0x8fffffff,flashb_cs_r);
+	at91_cs_callback_w(0x00400000,0x8fffffff,flashb_cs_w);
 	//Patch out the LED flashing routine
 #if 0
 	//Sound OS Version 5

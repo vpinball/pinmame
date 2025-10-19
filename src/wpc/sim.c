@@ -15,7 +15,7 @@
 
 #define SIM_SHOOTRELTIME   3 /* how long the fake solenoid is active VBLANKS */
 #define SIM_TIMEFACTOR     6 /* multiplier for VBLANK to simulator timing */
-#define SIM_MAXSPIN        2 /* spinners in parallell */
+#define SIM_MAXSPIN        2 /* spinners in parallel */
 
 static void sim_startSpin(int swNo, int time);
 static void sim_updateSpin(void);

@@ -2582,7 +2582,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
     int ii;
     UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x0135-0x00e8)<<2)];
     UINT16 *ram = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET);
-    UINT16 volume = ram[((volumeOP>>4)&0x3fff)];
+    UINT16 volume = ram[(volumeOP>>4)&0x3fff];
     /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
 
     {

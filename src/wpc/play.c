@@ -270,11 +270,11 @@ static WRITE_HANDLER(out2_n) {
           coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
         else
           coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
-        if ((locals.lampCol & 0x08)) {
+        if (locals.lampCol & 0x08) {
           locals.solenoids |= 1 << abcData;
           coreGlobals.solenoids = locals.solenoids;
         }
-        if ((locals.lampCol & 0x10)) {
+        if (locals.lampCol & 0x10) {
           locals.solenoids |= 0x100 << abcData;
           coreGlobals.solenoids = locals.solenoids;
         }
