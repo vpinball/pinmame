@@ -638,7 +638,10 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 #ifdef PINMAME // OKI6376 has only 2 voices per chip, activated by num <= 0!
 	if (intf->num < 1) { OKIM6295_VOICES = 2; num_voices = 2; } else
 #endif
-	num_voices = intf->num * OKIM6295_VOICES;
+	{
+		OKIM6295_VOICES = 4;
+		num_voices = intf->num * OKIM6295_VOICES;
+	}
 	compute_tables();
 
 	/* initialize the voices */
@@ -677,14 +680,13 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		vgm_header_set(okim6295_vgm_idx[0], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
 		vgm_dump_sample_rom(okim6295_vgm_idx[0], 0x01, intf->region[0]);
 	} else
-#else
+#endif
 	for (i = 0; i < intf->num; i++)
 	{
 		okim6295_vgm_idx[i] = vgm_open(VGMC_OKIM6295, intf->frequency[i]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
 		vgm_header_set(okim6295_vgm_idx[i], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
 		vgm_dump_sample_rom(okim6295_vgm_idx[i], 0x01, intf->region[i]);
 	}
-#endif
 
 	okim6295_state_save_register();
 
