@@ -1925,7 +1925,7 @@ void core_getAllPhysicSols(float* const state)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
     // 29..32 GameOn (not modulated, stored in 0x0700 of solenoids2)
     for (int i = 28; i < 32; i++)
-      state[i] = coreGlobals.solenoids2 & (1 << (i - 28 + 8)) ? 1.0f : 0.0f;
+      state[i] = (coreGlobals.solenoids2 & (1u << (i - 28 + 8))) ? 1.0f : 0.0f;
   }
   else
      /*-- 29..32, hardware solenoids --*/

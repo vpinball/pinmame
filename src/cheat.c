@@ -10275,7 +10275,7 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 		entry->flags &= ~kCheatFlag_Dirty;
 }
 
-static int IsAddressInRange(CheatAction * action, UINT32 length)
+static int IsAddressInRange(CheatAction * action, size_t length)
 {
 	UINT8	bytes = EXTRACT_FIELD(action->type, BytesUsed) + 1;
 

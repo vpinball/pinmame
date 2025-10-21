@@ -94,7 +94,7 @@ void __cdecl ErrorMsg(const char* fmt, ...)
 	strcat(buf2,buf);
 	strcat(buf2, "\n");
 
-	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), buf2, strlen(buf2), &dwWritten, NULL);
+	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), buf2, (DWORD)strlen(buf2), &dwWritten, NULL);
 
 	if (pFile == NULL)
 		pFile = fopen("debug.txt", "wt");
@@ -228,7 +228,7 @@ void DisplayTextFile(HWND hWnd, const char *cName)
 	default:
 		msg = "Unknown error.";
 	}
- 
+
 	MessageBox(NULL, msg, cName, MB_OK); 
 }
 
@@ -237,18 +237,18 @@ char* MyStrStrI(const char* pFirst, const char* pSrch)
 	char* cp = (char*)pFirst;
 	char* s1;
 	char* s2;
-	
+
 	while (*cp)
 	{
 		s1 = cp;
 		s2 = (char*)pSrch;
-		
+
 		while (*s1 && *s2 && !_strnicmp(s1, s2, 1))
 			s1++, s2++;
-		
+
 		if (!*s2)
 			return cp;
-		
+
 		cp++;
 	}
 	return NULL;
@@ -281,17 +281,17 @@ char * ConvertToWindowsNewlines(const char *source)
  */
 const char * GetDriverFilename(int nIndex)
 {
-    static char tmp[40];
-    char *ptmp;
+	static char tmp[40];
+	char *ptmp;
 
 	const char *s = drivers[nIndex]->source_file;
 
-    tmp[0] = '\0';
+	tmp[0] = '\0';
 
 	ptmp = strrchr(s, '\\');
 	if (ptmp == NULL)
 		ptmp = strrchr(s, '/');
-    if (ptmp == NULL)
+	if (ptmp == NULL)
 		return s;
 
 	ptmp++;
@@ -331,15 +331,15 @@ BOOL DriverHasOptionalBIOS(int driver_index)
 
 BOOL DriverIsStereo(int driver_index)
 {
-    struct InternalMachineDriver drv;
-    expand_machine_driver(drivers[driver_index]->drv, &drv);
+	struct InternalMachineDriver drv;
+	expand_machine_driver(drivers[driver_index]->drv, &drv);
 	return (drv.sound_attributes & SOUND_SUPPORTS_STEREO) != 0;
 }
 
 BOOL DriverIsVector(int driver_index)
 {
-    struct InternalMachineDriver drv;
-    expand_machine_driver(drivers[driver_index]->drv, &drv);
+	struct InternalMachineDriver drv;
+	expand_machine_driver(drivers[driver_index]->drv, &drv);
 	return (drv.video_attributes & VIDEO_TYPE_VECTOR) != 0;
 }
 
@@ -359,7 +359,7 @@ BOOL DriverUsesSamples(int driver_index)
 #if (HAS_SAMPLES == 1) || (HAS_VLM5030 == 1)
 
 	int i;
-    struct InternalMachineDriver drv;
+	struct InternalMachineDriver drv;
 
 	expand_machine_driver(drivers[driver_index]->drv,&drv);
 
@@ -372,12 +372,12 @@ BOOL DriverUsesSamples(int driver_index)
 			samplenames = ((struct Samplesinterface *)drv.sound[i].sound_interface)->samplenames;
 #endif
 
-        /*
+		/*
 #if (HAS_VLM5030 == 1)
 		if (drv.sound[i].sound_type == SOUND_VLM5030)
 			samplenames = ((struct VLM5030interface *)drv.sound[i].sound_interface)->samplenames;
 #endif
-        */
+		*/
 		if (samplenames != 0 && samplenames[0] != 0)
 			return TRUE;
 	}
@@ -391,12 +391,12 @@ BOOL DriverUsesTrackball(int driver_index)
 {
     const struct InputPortTiny *input_ports;
 
-	if (drivers[driver_index]->input_ports == NULL)
+    if (drivers[driver_index]->input_ports == NULL)
         return FALSE;
 
     input_ports = drivers[driver_index]->input_ports;
 
-	while (1)
+    while (1)
     {
         UINT32 type;
 
@@ -408,12 +408,12 @@ BOOL DriverUsesTrackball(int driver_index)
         type &= ~IPF_MASK;
         
         if (type == IPT_DIAL || type == IPT_PADDLE || 
-			type == IPT_TRACKBALL_X || type == IPT_TRACKBALL_Y ||
+            type == IPT_TRACKBALL_X || type == IPT_TRACKBALL_Y ||
             type == IPT_AD_STICK_X || type == IPT_AD_STICK_Y)
         {
             return TRUE;
         }
-        
+
         input_ports++;
     }
 
@@ -424,25 +424,25 @@ BOOL DriverUsesLightGun(int driver_index)
 {
     const struct InputPortTiny *input_ports;
 
-	if (drivers[driver_index]->input_ports == NULL)
+    if (drivers[driver_index]->input_ports == NULL)
         return FALSE;
 
     input_ports = drivers[driver_index]->input_ports;
 
-	while (1)
+    while (1)
     {
         UINT32 type;
 
         type = input_ports->type;
 
         if (type == IPT_END)
-			break;
+            break;
 
-		type &= ~IPF_MASK;
-        
-		if (type == IPT_LIGHTGUN_X || type == IPT_LIGHTGUN_Y)
+        type &= ~IPF_MASK;
+
+        if (type == IPT_LIGHTGUN_X || type == IPT_LIGHTGUN_Y)
             return TRUE;
-        
+
         input_ports++;
     }
 
@@ -469,4 +469,3 @@ BOOL StringIsSuffixedBy(const char *s, const char *suffix)
 /***************************************************************************
 	Internal functions
  ***************************************************************************/
-

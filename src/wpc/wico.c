@@ -30,8 +30,8 @@ static struct {
   int    vblankCount;
   int    firqtimer;
   UINT32 solenoids, solenoids2;
-  UINT8	 gtIRQEnable;
-  UINT8	 diagnosticLed;
+  UINT8  gtIRQEnable;
+  UINT8  diagnosticLed;
 } locals;
 
 static UINT8 *shared_ram;
@@ -133,22 +133,22 @@ static WRITE_HANDLER(io_w) {
         locals.solenoids &= 0x000000ff;
         locals.solenoids2 = coreGlobals.tmpLampMatrix[16] = coreGlobals.tmpLampMatrix[17] = coreGlobals.tmpLampMatrix[18] = 0;
       } else if (data < 0x10) {
-        locals.solenoids = (locals.solenoids & 0xffffc0ff) | (0x100 << (data - 0x09));
+        locals.solenoids = (locals.solenoids & 0xffffc0ff) | (0x100u << (data - 0x09));
       } else if (data < 0x18) {
-        locals.solenoids = (locals.solenoids & 0xfff03fff) | (0x4000 << (data - 0x11));
+        locals.solenoids = (locals.solenoids & 0xfff03fff) | (0x4000u << (data - 0x11));
       } else if (data < 0x20) {
-        locals.solenoids = (locals.solenoids & 0xfc0fffff) | (0x100000 << (data - 0x19));
+        locals.solenoids = (locals.solenoids & 0xfc0fffff) | (0x100000u << (data - 0x19));
       } else if (data < 0x28) {
-        locals.solenoids = (locals.solenoids & 0x03ffffff) | (0x4000000 << (data - 0x21));
+        locals.solenoids = (locals.solenoids & 0x03ffffff) | (0x4000000u << (data - 0x21));
       } else if (data < 0x30) {
-        coreGlobals.tmpLampMatrix[16] = 1 << (data - 0x29);
-        locals.solenoids2 = (locals.solenoids2 & 0xffffffc0) | (1 << (data - 0x29));
+        coreGlobals.tmpLampMatrix[16] = 1u << (data - 0x29);
+        locals.solenoids2 = (locals.solenoids2 & 0xffffffc0) | (1u << (data - 0x29));
       } else if (data < 0x38) {
-        coreGlobals.tmpLampMatrix[17] = 1 << (data - 0x31);
-        locals.solenoids2 = (locals.solenoids2 & 0xfffff03f) | (0x40 << (data - 0x31));
+        coreGlobals.tmpLampMatrix[17] = 1u << (data - 0x31);
+        locals.solenoids2 = (locals.solenoids2 & 0xfffff03f) | (0x40u << (data - 0x31));
       } else {
-        coreGlobals.tmpLampMatrix[18] = 1 << (data - 0x39);
-        locals.solenoids2 = (locals.solenoids2 & 0xfffc0fff) | (0x1000 << (data - 0x39));
+        coreGlobals.tmpLampMatrix[18] = 1u << (data - 0x39);
+        locals.solenoids2 = (locals.solenoids2 & 0xfffc0fff) | (0x1000u << (data - 0x39));
       }
       break;
     case 5: // sound
@@ -180,7 +180,7 @@ static WRITE_HANDLER(shared_ram_w) {
   shared_ram[offset] = data;
 
   if (offset > 0x45 && offset < 0x56) {
-  	coreGlobals.tmpLampMatrix[offset - 0x46] = data;
+    coreGlobals.tmpLampMatrix[offset - 0x46] = data;
   }
 }
 

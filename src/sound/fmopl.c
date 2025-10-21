@@ -648,7 +648,7 @@ static const INT8 lfo_pm_table[8*8*2] = {
 
 
 /* lock level of common table */
-static int num_lock = 0;
+static volatile int num_lock = 0;
 
 
 #define SLOT7_1 (&OPL->P_CH[7].SLOT[SLOT1])
@@ -810,7 +810,7 @@ INLINE void advance(FM_OPL *OPL)
 				{
 					op->volume += eg_inc[op->eg_sel_dr + ((OPL->eg_cnt>>op->eg_sh_dr)&7)];
 
-					if ( op->volume >= op->sl )
+					if ( op->volume >= (INT32)op->sl )
 						op->state = EG_SUS;
 
 				}

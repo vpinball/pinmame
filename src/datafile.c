@@ -561,7 +561,7 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
                         }
 
                         /* Get length of text to add to the buffer */
-                        len = strlen(s);
+                        len = (int)strlen(s);
 
                         /* Check for buffer overflow */
                         /* For some reason we can get a crash if we try */
@@ -569,7 +569,7 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
                         if ((bufsize - offset) - len <= 45)
                         {
                             strcpy (s, " ...[TRUNCATED]");
-                            len = strlen(s);
+                            len = (int)strlen(s);
                             strcpy (buffer, s);
                             buffer += len;
                             offset += len;
@@ -668,7 +668,7 @@ int load_driver_history (const struct GameDriver *drv, char *buffer, int bufsize
                         do
                         {
                                 err = load_datafile_text (gdrv, buffer+len, bufsize-len,
-                                                                                  mame_idx, DATAFILE_TAG_MAME);
+                                                          mame_idx, DATAFILE_TAG_MAME);
                                 gdrv = gdrv->clone_of;
                         } while (err && gdrv);
 

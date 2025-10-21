@@ -66,7 +66,7 @@ struct ADPCMVoice
 	UINT32 step;			/* current ADPCM step */
 	UINT32 volume;			/* output volume */
 #ifdef PINMAME
-	int is6376;
+	int is6376; // bool
 #endif
 };
 

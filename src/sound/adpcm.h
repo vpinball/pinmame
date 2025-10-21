@@ -8,10 +8,10 @@
 
 struct ADPCMinterface
 {
-	int num;			       /* total number of ADPCM decoders in the machine */
-	int frequency;             /* playback frequency */
-	int region;                /* memory region where the samples come from */
-	int mixing_level[MAX_ADPCM];     /* master volume */
+	int num;                     // total number of ADPCM decoders in the machine
+	int frequency;               // playback frequency
+	int region;                  // memory region where the samples come from
+	int mixing_level[MAX_ADPCM]; // master volume
 };
 
 int ADPCM_sh_start(const struct MachineSound *msound);
@@ -29,15 +29,15 @@ int ADPCM_playing(int num);
 /*
   Note about the playback frequency: the external clock is internally divided,
   depending on pin 7, by 132 (high) or 165 (low). This isn't handled by the
-  emulation, so you have to provide the didvided internal clock instead of the
+  emulation, so you have to provide the divided internal clock instead of the
   external clock.
 */
 struct OKIM6295interface
 {
-	int num;                  		/* total number of chips */
-	double frequency[MAX_OKIM6295];	/* playback frequency */
-	int region[MAX_OKIM6295];		/* memory region where the sample ROM lives */
-	int mixing_level[MAX_OKIM6295];	/* master volume */
+	int num;                        // total number of chips
+	double frequency[MAX_OKIM6295]; // playback frequency
+	int region[MAX_OKIM6295];       // memory region where the sample ROM lives
+	int mixing_level[MAX_OKIM6295]; // master volume
 };
 
 int OKIM6295_sh_start(const struct MachineSound *msound);

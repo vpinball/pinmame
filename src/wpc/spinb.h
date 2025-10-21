@@ -17,15 +17,15 @@
 #define SPINB_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
-	COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3)\
-/*	COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)\	commented out as it interferes with Bushido's trough switches,
-	COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)\	and it doesn't seem to be connected on Jolly Park either!?
-*/	COREPORT_BIT(     0x0008, "Ball Tilt",        KEYCODE_INSERT)\
+    COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3)\
+/*  COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)\	commented out as it interferes with Bushido's trough switches,
+    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)\	and it doesn't seem to be connected on Jolly Park either!?
+*/  COREPORT_BIT(     0x0008, "Ball Tilt",        KEYCODE_INSERT)\
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT)\
     COREPORT_BIT(     0x0020, "Puesta A Cero",    KEYCODE_HOME)\
-    COREPORT_BIT(     0x0040, "Test Economico",	  KEYCODE_9)\
-    COREPORT_BIT(     0x0080, "Test Tecnico",	  KEYCODE_8)\
-	COREPORT_BIT(     0x0100, "Test Contacto",	  KEYCODE_7)\
+    COREPORT_BIT(     0x0040, "Test Economico",   KEYCODE_9)\
+    COREPORT_BIT(     0x0080, "Test Tecnico",     KEYCODE_8)\
+    COREPORT_BIT(     0x0100, "Test Contacto",    KEYCODE_7)\
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
       COREPORT_DIPSET(0x0000, "25 ptas 2 Games" ) \
@@ -44,12 +44,12 @@
       COREPORT_DIPSET(0x000b, "100 esc 1 Game, 200 esc 3 Games" ) \
       COREPORT_DIPSET(0x0007, "100 esc 1 Game, 200 esc 3 Games" ) \
       COREPORT_DIPSET(0x000f, "100 esc 2 Games, 200 esc 5 Games" ) \
-	COREPORT_DIPNAME( 0x0030, 0x0000, "First Replay Score") \
+    COREPORT_DIPNAME( 0x0030, 0x0000, "First Replay Score") \
       COREPORT_DIPSET(0x0000, "300 Million" ) \
       COREPORT_DIPSET(0x0010, "400 Million" ) \
       COREPORT_DIPSET(0x0020, "500 Million" ) \
       COREPORT_DIPSET(0x0030, "600 Million" ) \
-	COREPORT_DIPNAME( 0x0040, 0x0000, "Reserved") \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Reserved") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "Game Type") \
@@ -66,12 +66,12 @@
       COREPORT_DIPSET(0x0800, "750 Million" )\
       COREPORT_DIPSET(0x0400, "800 Million" )\
       COREPORT_DIPSET(0x0c00, "850 Million" )\
-	COREPORT_DIPNAME( 0x3000, 0x0000, "Time of New Ticket")\
+    COREPORT_DIPNAME( 0x3000, 0x0000, "Time of New Ticket")\
       COREPORT_DIPSET(0x0000, "Disabled" )\
       COREPORT_DIPSET(0x1000, "Short" )\
       COREPORT_DIPSET(0x2000, "Medium" )\
       COREPORT_DIPSET(0x3000, "Long" )\
-	COREPORT_DIPNAME( 0x4000, 0x0000, "Reserved")\
+    COREPORT_DIPNAME( 0x4000, 0x0000, "Reserved")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x4000, "1" )\
     COREPORT_DIPNAME( 0x8000, 0x0000, "Reserved")\
@@ -98,7 +98,7 @@
       COREPORT_DIPSET(0x0000, "Easy" )\
       COREPORT_DIPSET(0x0040, "Hard" )\
     COREPORT_DIPNAME( 0x0080, 0x0000, "Reserved")\
-	  COREPORT_DIPSET(0x0000, "0" )\
+      COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0080, "1" )
 
 /*-- Standard input ports --*/
@@ -123,7 +123,7 @@
 #define SPINB_SWTEST     -8
 
 /*-- Memory regions --*/
-#define SPINB_MEMREG_CPU		REGION_CPU1
+#define SPINB_MEMREG_CPU        REGION_CPU1
 #define SPINB_MEMREG_DMD        REGION_CPU2
 #define SPINB_MEMREG_SND1       REGION_CPU3
 #define SPINB_MEMREG_SND2       REGION_CPU4
@@ -135,13 +135,13 @@
    ROM_START(name) \
    NORMALREGION(0x10000, SPINB_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x2000, chk1) \
-	   ROM_LOAD(n2, 0x2000, 0x2000, chk2)
+       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
 
 #define SPINB_ROMSTART2(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
    NORMALREGION(0x10000, SPINB_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x4000, chk1) \
-	   ROM_LOAD(n2, 0x4000, 0x4000, chk2)
+       ROM_LOAD(n2, 0x4000, 0x4000, chk2)
 
 /*-- DMD ROMS --*/
 //NOTE: DMD board requires a trick to make them all fit into the 8051 memory region
@@ -227,8 +227,8 @@ extern MACHINE_DRIVER_EXTERN(spinbs1n);
 extern MACHINE_DRIVER_EXTERN(spinbs1n2);
 
 #define mSPINB        spinb
-#define mSPINBS		  spinbs1
-#define mSPINBSNMI	  spinbs1n
-#define mSPINBSNMI2	  spinbs1n2
+#define mSPINBS       spinbs1
+#define mSPINBSNMI    spinbs1n
+#define mSPINBSNMI2   spinbs1n2
 
 extern PINMAME_VIDEO_UPDATE(SPINBdmd_update);
