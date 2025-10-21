@@ -25,9 +25,7 @@
 
 #pragma once
 
-#ifndef ARM7_H
- #define ARM7_H
-#endif
+#define ARM7_H
 
 #include "driver.h"
 

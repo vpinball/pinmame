@@ -11,7 +11,7 @@
  #define uint32_t unsigned int
  #define uint64_t unsigned long long
 #else
- #include <stdint.h>
+ #include <cstdint>
 #endif
 
 #include "BasicBitmap.h"

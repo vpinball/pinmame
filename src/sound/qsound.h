@@ -4,8 +4,7 @@
 
 *********************************************************/
 
-#ifndef __QSOUND_H__
-#define __QSOUND_H__
+#pragma once
 
 #define QSOUND_CLOCK  60000000  /* default 60MHz clock */
 
@@ -23,5 +22,3 @@ WRITE_HANDLER( qsound_data_h_w );
 WRITE_HANDLER( qsound_data_l_w );
 WRITE_HANDLER( qsound_cmd_w );
 READ_HANDLER( qsound_status_r );
-
-#endif /* __QSOUND_H__ */

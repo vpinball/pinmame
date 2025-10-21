@@ -1,6 +1,4 @@
-
-#ifndef ASTROCADE_H
-#define ASTROCADE_H
+#pragma once
 
 #define MAX_ASTROCADE_CHIPS 2   /* max number of emulated chips */
 
@@ -17,5 +15,3 @@ void astrocade_sh_update(void);
 
 WRITE_HANDLER( astrocade_sound1_w );
 WRITE_HANDLER( astrocade_sound2_w );
-
-#endif

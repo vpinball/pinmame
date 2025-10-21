@@ -25,10 +25,7 @@
  
 #pragma once
 
-#ifndef _STDINT_H
-typedef unsigned int uint32_t;
-typedef unsigned char uint8_t;
-#endif
+#include <stdint.h>
 
 #define SHA1_DIGEST_SIZE 20
 #define SHA1_DATA_SIZE 64

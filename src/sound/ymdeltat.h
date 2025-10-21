@@ -1,5 +1,4 @@
-#ifndef __YMDELTAT_H_
-#define __YMDELTAT_H_
+#pragma once
 
 #define YM_DELTAT_SHIFT    (16)
 
@@ -24,7 +23,7 @@ typedef struct deltat_adpcm_state {     /* AT: rearranged and tightened structur
 	int	output_range;
 	UINT32	address_mask;
 	UINT32	now_addr;		/* current address		*/
-	UINT32	now_step;		/* current step         */
+	UINT32	now_step;		/* current step			*/
 	UINT32	step;			/* step					*/
 	UINT32	start;			/* start address		*/
 	UINT32	limit;			/* limit address		*/
@@ -36,12 +35,12 @@ typedef struct deltat_adpcm_state {     /* AT: rearranged and tightened structur
 	INT32	adpcml;			/* current value		*/
 	INT32	prev_acc;		/* leveling value		*/
 	UINT8	now_data;		/* current rom data		*/
-	UINT8   CPU_data;       /* current data from reg 08 */
+	UINT8	CPU_data;		/* current data from reg 08 */
 	UINT8	portstate;		/* port status			*/
 	UINT8	control2;		/* control reg: SAMPLE, DA/AD, RAM TYPE (x8bit / x1bit), ROM/RAM */
 	UINT8	portshift_base;	/* address bits shift-left:
 							** 8 for YM2610,
-                            ** 5 for Y8950 and YM2608 */
+							** 5 for Y8950 and YM2608 */
 	UINT8	now_portshift;	/* current address bits shift-left */
 
 	UINT8	memread;		/* needed for reading/writing external memory */
@@ -80,5 +79,3 @@ void YM_DELTAT_savestate(const char *statename,int num,YM_DELTAT *DELTAT);
 #define YM_INLINE_BLOCK
 #include "ymdeltat.c" /* include inline function section */
 #undef  YM_INLINE_BLOCK
-
-#endif

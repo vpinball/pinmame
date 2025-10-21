@@ -1,6 +1,4 @@
-#ifndef YMF262INTF_H
-#define YMF262INTF_H
-
+#pragma once
 
 #define MAX_262 2
 
@@ -42,6 +40,3 @@ WRITE_HANDLER( YMF262_data_B_1_w );
 int YMF262_sh_start(const struct MachineSound *msound);
 void YMF262_sh_stop(void);
 void YMF262_sh_reset(void);
-
-
-#endif

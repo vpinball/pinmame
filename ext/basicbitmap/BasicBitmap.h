@@ -61,13 +61,12 @@
 // 2011.2.13  skywind  immigrate tga/bmp loader
 //
 //=====================================================================
-#ifndef _BASIC_BITMAP_H_
-#define _BASIC_BITMAP_H_
+#pragma once
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 
 #ifndef __cplusplus
 #error This file must be compiled in C++ mode !!
@@ -925,5 +924,3 @@ protected:
 	unsigned char *_bits;
 	unsigned char **_lines;
 };
-
-#endif

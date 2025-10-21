@@ -5,8 +5,7 @@
     SSi TSI S14001A speech IC emulator
 */
 
-#ifndef __S14001A_H__
-#define __S14001A_H__
+#pragma once
 
 struct S14001A_interface
 {
@@ -21,5 +20,3 @@ void S14001A_reg_0_w(int data);		/* write to input latch (6-bit word) */
 void S14001A_rst_0_w(int data);		/* write to RESET/START pin (pin 10) */
 void S14001A_set_rate(double newrate); /* set VSU-1000 clock divider */
 //!! DECLARE_READ_LINE_MEMBER(romen_r); // ROM /EN (pin 9)
-
-#endif /* __S14001A_H__ */

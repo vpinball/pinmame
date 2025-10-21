@@ -28,9 +28,6 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef YMFM_OPM_H
-#define YMFM_OPM_H
-
 #pragma once
 
 #include "ymfm.h"
@@ -317,6 +314,3 @@ public:
 };
 
 }
-
-
-#endif // YMFM_OPM_H

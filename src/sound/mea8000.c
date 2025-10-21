@@ -110,7 +110,7 @@ static struct
 #define SUPERSAMPLING 8
 
 /* actual output pediod */
-#define SAMPLING TIME_IN_HZ((SUPERSAMPLING*F0))
+#define SAMPLING TIME_IN_HZ(SUPERSAMPLING*F0)
 
 
 /************************* quantization tables ***********************/

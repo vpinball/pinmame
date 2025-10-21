@@ -4,8 +4,7 @@
  *                   Copyright (C) 2006 MAME Team                         *
  **************************************************************************/
 
-#ifndef _COP400_H
-#define _COP400_H
+#pragma once
 
 #ifndef INLINE
 #ifdef PX_ZEN
@@ -69,7 +68,7 @@ int 	DasmCOP420(char *dst, unsigned pc);
 
 typedef struct
 {
-	UINT10 	R_PC;
+	UINT10	R_PC;
 	UINT10	R_PREVPC;
 	UINT4	R_A;
 	UINT6	R_B;
@@ -80,15 +79,13 @@ typedef struct
 	UINT10	R_SA, R_SB, R_SC;
 	UINT4	R_SIO;
 	UINT1	R_SKL;
-	UINT8   R_skip, R_skipLBI;
+	UINT8	R_skip, R_skipLBI;
 	UINT1	timerlatch;
 	UINT10	counter;
 	UINT4	R_RAM[64];
 	UINT8	G_mask;
 	UINT8	D_mask;
 	UINT4	IL;
-	UINT4 in[4];
+	UINT4	in[4];
 	int		last_skip;
 } COP420_Regs;
-
-#endif  /* _COP400_H */

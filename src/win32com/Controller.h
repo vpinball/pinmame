@@ -5,9 +5,7 @@
 #if !defined(AFX_Controller_H__D2811491_40D6_4656_9AA7_8FF85FD63543__INCLUDED_)
 #define AFX_Controller_H__D2811491_40D6_4656_9AA7_8FF85FD63543__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 #include "VPinMAMECP.h"
