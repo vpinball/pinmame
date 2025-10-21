@@ -2522,7 +2522,8 @@ static void vgm_flush_pcm(VGM_CHIP* VC)
 	VGM_INF* VI;
 	VGM_PCMCACHE* VPC;
 	uint8_t SingleWrt;
-	uint8_t CmdType;
+	uint8_t blkType = 0xFF;
+	uint8_t cmdType = 0xFF;
 	uint32_t finalsize;
 	
 	VI = &VgmFile[VC->VgmID];
@@ -2535,52 +2536,32 @@ static void vgm_flush_pcm(VGM_CHIP* VC)
 	//logerror("Flushing PCM Data: Chip %02X, Addr %06X, Size %06X\n",
 	//			VC->ChipType, VPC->Start, VPC->Pos);
 	
-	if (VPC->Pos == 0x01 && (VC->ChipType & 0x7F) != VGMC_SCSP)
+	switch(VC->ChipType & 0x7F)
+	{
+	case VGMC_RF5C68:
+		cmdType = 0xC1;
+		blkType = 0xC0;
+		break;
+	case VGMC_RF5C164:
+		cmdType = 0xC2;
+		blkType = 0xC1;
+		break;
+	case VGMC_SCSP:
+		blkType = 0xE0;
+		break;
+	case VGMC_ES5503:
+		blkType = 0xE1;
+		break;
+	}
+	if (VPC->Pos == 0x01 && cmdType != 0xFF)
 		SingleWrt = 0x01;
 	else
 		SingleWrt = 0x00;
 	
 	if (SingleWrt)
 	{
-		switch(VC->ChipType & 0x7F)
-		{
-		case VGMC_RF5C68:
-			CmdType = 0xC1;
-			break;
-		case VGMC_RF5C164:
-			CmdType = 0xC2;
-			break;
-		default:
-			CmdType = 0xFF;
-			break;
-		}
-	}
-	else
-	{
-		switch(VC->ChipType & 0x7F)
-		{
-		case VGMC_RF5C68:
-			CmdType = 0xC0;
-			break;
-		case VGMC_RF5C164:
-			CmdType = 0xC1;
-			break;
-		case VGMC_SCSP:
-			CmdType = 0xE0;
-			break;
-		case VGMC_ES5503:
-			CmdType = 0xE1;
-			break;
-		default:
-			CmdType = 0xFF;
-			break;
-		}
-	}
-	
-	if (SingleWrt)
-	{
 		// it would be a waste of space to write a data block for 1 byte of data
-		fputc(CmdType, VI->hFile);		// Write Memory
+		fputc(cmdType, VI->hFile);		// Write Memory
 		fputc((VPC->Start >> 0) & 0xFF, VI->hFile);	// offset low
 		fputc((VPC->Start >> 8) & 0xFF, VI->hFile);	// offset high
 		fputc(VPC->CacheData[0x00], VI->hFile);		// Data
@@ -2588,12 +2569,11 @@ static void vgm_flush_pcm(VGM_CHIP* VC)
 	}
 	else
 	{
-		// calling vgm_write_large_data doesn't work if vgm_flush_pcm is
-		// called from vgm_write_delay
+		// calling vgm_write_large_data doesn't work if vgm_flush_pcm is called from vgm_write_delay
 		fputc(0x67, VI->hFile);
 		fputc(0x66, VI->hFile);
-		fputc(CmdType, VI->hFile);
-		if (! (CmdType & 0x20))
+		fputc(blkType, VI->hFile);
+		if (! (blkType & 0x20))
 		{
 			finalsize = 0x02 + VPC->Pos;
 			finalsize |= (VC->ChipType & 0x80) << 24;
