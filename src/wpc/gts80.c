@@ -57,7 +57,7 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments;
   int    seg1, seg2, seg3;
-  int    segPos1, segPos2;
+  //int    segPos1, segPos2;
   int    vidCmd, vidPlayer;
   struct rectangle vidClip;
   int    buf8212int;
@@ -124,13 +124,13 @@ static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 
 static SWITCH_UPDATE(GTS80) {
   int isSlammed;
-  int invPattern = coreGlobals.invSw[0];
+  UINT8 invPattern = coreGlobals.invSw[0];
 
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
     // All the matrix switches come from LISY80, so we only want to read
     // the first column from the keyboard if we are not using the LISY80
-    // at teh moment we keep it as it is, as we do switch reading via Riot0
+    // at the moment we keep it as it is, as we do switch reading via Riot0
     // Sound test
     CORE_SETKEYSW(inports[GTS80_COMINPORT] >> 8, 0x10, 0);
     // Set slam switch

@@ -29,7 +29,7 @@
 static struct {
   int    vblankCount;
   UINT32 solenoids;
-  UINT8  sndCmd;
+  //UINT8  sndCmd;
   UINT8  swCol;
   UINT8  lampCol;
 } locals;
@@ -67,7 +67,7 @@ static INTERRUPT_GEN(SLEIC_vblank) {
 
 #ifdef MAME_DEBUG
 static void showData(int data) {
-  static char s[2];
+  static char s[3];
   sprintf(s, "%02x", data);
   core_textOut(s, 6, 25, 2, 5);
 }
@@ -90,9 +90,9 @@ static SWITCH_UPDATE(SLEIC) {
   else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
     showData(data += 16);
   else if (keyboard_pressed_memory_repeat(KEYCODE_SPACE, 2)) {
-	  OKIM6376_data_0_w(0, data);
-	  OKIM6376_data_0_w(0, 0x10);
-	}
+    OKIM6376_data_0_w(0, data);
+    OKIM6376_data_0_w(0, 0x10);
+  }
 #endif /* MAME_DEBUG */
 }
 
@@ -115,15 +115,15 @@ static struct YM3812interface SLEIC_ym3812_intf =
 };
 static struct OKIM6295interface SLEIC_okim6376_intf =
 {
-	0,					/* 1 chip (but use 0 to indicate 6374 chip) */
+	0,					/* 1 chip (but use 0 to indicate 6376 chip) */
 	{ 2000000./132. },	/* sampling frequency at 2MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };
 static struct OKIM6295interface SLEIC_okim6376_intf2 =
 {
-	0,					/* 1 chip (but use 0 to indicate 6374 chip)  */
-	{ 4000000./132. },  /* sampling frequency at 4MHz chip clock */
+	0,					/* 1 chip (but use 0 to indicate 6376 chip)  */
+	{ 4000000./132. },	/* sampling frequency at 4MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };

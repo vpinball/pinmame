@@ -183,9 +183,9 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(col_w) {
-  int i;
   locals.col = data & 0x0f;
   if (locals.col) {
+    int i;
     for (i = 0; i < 6; i++) {
       int seg = (5 - i) * 8 + 8 - locals.col;
       coreGlobals.segments[seg].w = locals.dispData[5 - i];
