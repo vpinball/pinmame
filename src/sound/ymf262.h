@@ -1,20 +1,7 @@
-#ifndef YMF262_H
-#define YMF262_H
+#pragma once
 
+#define BUILD_YMF262 HAS_YMF262
 
-#define BUILD_YMF262 (HAS_YMF262)
-
-
-/* compiler dependence */
-#ifndef OSD_CPU_H
-#define OSD_CPU_H
-typedef unsigned char	UINT8;   /* unsigned  8bit */
-typedef unsigned short	UINT16;  /* unsigned 16bit */
-typedef unsigned int	UINT32;  /* unsigned 32bit */
-typedef signed char		INT8;    /* signed  8bit   */
-typedef signed short	INT16;   /* signed 16bit   */
-typedef signed int		INT32;   /* signed 32bit   */
-#endif
 
 typedef void (*OPL3_TIMERHANDLER)(int channel,double interval_Sec);
 typedef void (*OPL3_IRQHANDLER)(int param,int irq);
@@ -41,6 +28,3 @@ void ymf262_set_volume(void* chip, INT32 volume);
 void ymf262_set_vol_lr(void* chip, INT32 volLeft, INT32 volRight);
 
 #endif
-
-
-#endif /* YMF262_H */
