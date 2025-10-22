@@ -188,7 +188,7 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_SOLENOID4     (0x3fe3 - WPC_BASE) /* xxxxxx W: Solenoid  9-16 */
 #define WPC_LAMPROW       (0x3fe4 - WPC_BASE) /* xxxxxx W: Lamp row */
 #define WPC_LAMPCOLUMN    (0x3fe5 - WPC_BASE) /* xxxxxx W: Lamp column enable */
-#define WPC_GILAMPS       (0x3fe6 - WPC_BASE) /*        W: GI Triac driver */
+#define WPC_GILAMPS       (0x3fe6 - WPC_BASE) /*        W: GI Triac driver, GameOn for pre-Fliptronics, GPIO on J111 */
 #define WPC_DIPSWITCH     (0x3fe7 - WPC_BASE) /* xxxxxx R: CPU board dip-switches */
 #define WPC_SWCOINDOOR    (0x3fe8 - WPC_BASE) /* xxxxxx W: Coin door switches */
 #define WPC_SWROWREAD     (0x3fe9 - WPC_BASE) /* xxxx   R: Switch row read */
