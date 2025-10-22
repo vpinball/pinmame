@@ -18,7 +18,7 @@ Added PWM support to CFTBL backglass flashers
 Added PWM lamps & solenoids support to Bally 6803 games
 Added PWM lamps & solenoids support to Zaccaria games
 Added PWM support to Alvin G. games
-Fixed PWM GameOn and J11 outputs for WPC games
+Fixed PWM GameOn and J111 outputs for WPC games
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
