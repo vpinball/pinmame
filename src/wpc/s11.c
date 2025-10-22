@@ -572,10 +572,11 @@ static void updsol(void) {
   }
 
   // Simple implementation of modulated solenoids by pushing the pulsed state taking in account muxing to the physics emulation
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0     ,  coreGlobals.pulsedSolState        & 0x0FF);
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (coreGlobals.pulsedSolState >> 8)  & 0x0FF);
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, (coreGlobals.pulsedSolState >> 16) & 0x0FF);
-  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, (coreGlobals.pulsedSolState >> 24) & 0x0FF); // Muxed solenoids
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0     ,  coreGlobals.pulsedSolState        & 0x0FF); // Standard 'A'-side
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (coreGlobals.pulsedSolState >> 8)  & 0x0FF); // Standard
+  // 17..22 are 6 special sol, processed either in fake VBlank if switch driven, or in setSSSol if PIA driven
+  // 23 is GameOn, processed in pia0cb2_w (also filters out switched solenoids)
+  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, (coreGlobals.pulsedSolState >> 24) & 0x0FF); // Standard 'C'-side (Muxed solenoids)
 
   locals.solenoids |= coreGlobals.pulsedSolState;
 }
