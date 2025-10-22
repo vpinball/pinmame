@@ -24,6 +24,7 @@
 #define DEBUG_GI           0 /* debug GI PWM code - more printf stuff basically */
 #define DEBUG_GI_W         0 /* debug GI write - even more printf stuff */
 #define WPC_FAST_FLIP      1
+#define WPC_N_GI           5 // Number of GI lines (5 lines, but 2 are always on WPC95)
 #ifdef PROC_SUPPORT
 #define WPC_INTERFACE_UPD_PER_FRAME      32 // Not sure how PROC handles its input/output so keep the value before interrupt refactoring
 #else
@@ -124,7 +125,7 @@ static struct {
   int pageMask;           /* page handling */
   UINT8 diagnosticLed;
   int zc;                 /* zero cross flag */
-  double gi_on_time[CORE_MAXGI]; /* Global time when GI Triac was turned on */
+  double gi_on_time[WPC_N_GI]; /* Global time when GI Triac was turned on */
   volatile UINT8 conductingGITriacs; /* Current conducting triacs of WPC GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
   volatile UINT8 conductingChaseLightTriacs; /* Current conducting triacs of CFTBL Chase light GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
   UINT32 solenoidbits[64];
@@ -213,7 +214,7 @@ static void wpc_zc(int data) {
       }
       #if DEBUG_GI
       printf("[%8f] Zero Cross: ", timer_get_time());
-      for (int i = 0; i < CORE_MAXGI; i++)
+      for (int i = 0; i < WPC_N_GI; i++)
          printf("GI[%d]=%d ", i, coreGlobals.gi[i]);
       printf("\n");
       #endif
@@ -434,8 +435,8 @@ static void wpc_highres_timer(int param) {
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_interface_update) {
   #ifdef PROC_SUPPORT
-	 static int gi_last[CORE_MAXGI];
-	 int changed_gi[CORE_MAXGI];
+	 static int gi_last[WPC_N_GI];
+	 int changed_gi[WPC_N_GI];
 	  if (coreGlobals.p_rocEn) {
 		 procTickleWatchdog();
 	  }
@@ -479,7 +480,7 @@ static INTERRUPT_GEN(wpc_interface_update) {
       }
 
       // GI
-      for (ii = 0; ii < CORE_MAXGI; ii++) {
+      for (ii = 0; ii < WPC_N_GI; ii++) {
         changed_gi[ii] = gi_last[ii] != coreGlobals.gi[ii];
         gi_last[ii] = coreGlobals.gi[ii];
 
@@ -493,19 +494,33 @@ static INTERRUPT_GEN(wpc_interface_update) {
     wpc_data[WPC_SOLENOID1] = wpc_data[WPC_SOLENOID2] = 0;
     wpc_data[WPC_SOLENOID3] = wpc_data[WPC_SOLENOID4] = 0;
 
-    // Move top 3 GI to solenoids -> gameOn
-    coreGlobals.solenoids2 = (wpc_data[WPC_GILAMPS] & 0xe0)<<3;
+    // GameOn Solenoid (solenoid #31) and other state bits (solenoids #29 and #30):
+    // - We always mirror the state of 2 out of the 3 GPIO on J111 to solenoids #29 and #30
+    // - Before fliptronic: real game on solenoid, controlled by CPU through the high bit of WPC_GILAMPS
+    //   CPU board: U4 - J121 / Power driver board: J113 - Relay - J110 - Cabinet switch - J109 / Flippers
+    // - Starting with fliptronic, no GameOn solenoid as flippers are ROM controlled:
+    //   We use state of FastFlip address as a fake GameOn (letting the client decide to use it or not)
+    //   If Fastflip is missing, we default to mirroring the high bit of WPC_GILAMPS
+    // Note that these states are stored in solenoids2 (sol 33..35) but are remapped to solenoid 29..31 in core.c
+    if (wpc_fastflip_addr == 0)
+    {
+      coreGlobals.solenoids2 = (wpc_data[WPC_GILAMPS] & 0xe0) << 3;
+      core_write_pwm_output(CORE_MODOUT_SOL0 + 29 - 1, 3, wpc_data[WPC_GILAMPS] >> 5);
+    }
+    else
+    {
+      assert(core_gameData->gen & GENWPC_HASFLIPTRON);
+      coreGlobals.solenoids2 = (wpc_data[WPC_GILAMPS] & 0x60) << 3;
+      core_write_pwm_output(CORE_MODOUT_SOL0 + 29 - 1, 2, wpc_data[WPC_GILAMPS] >> 5);
+      if (wpc_ram[wpc_fastflip_addr] > 0)
+        coreGlobals.solenoids2 |= 0x400;
+      core_write_pwm_output(CORE_MODOUT_SOL0 + 31 - 1, 1, wpc_ram[wpc_fastflip_addr] > 0 ? 1 : 0);
+    }
+
+    // ROM controlled flipper coils when using FlipTronics
     if (core_gameData->gen & GENWPC_HASFLIPTRON) {
       coreGlobals.solenoids2 |= wpclocals.solFlip;
       wpclocals.solFlip = wpclocals.solFlipPulse;
-    }
-
-    // If fastflipaddr is set, we want sol31 to be triggered by a nonzero value in that location
-    if (wpc_fastflip_addr > 0)
-    {
-      coreGlobals.solenoids2 &= ~0x400;
-      if (wpc_ram[wpc_fastflip_addr] > 0)
-        coreGlobals.solenoids2 |= 0x400;
     }
   }
   else if (((wpclocals.interfaceUpdateCount % WPC_INTERFACE_UPD_PER_FRAME) == 0) && (core_gameData->gen & GENWPC_HASFLIPTRON)) {
@@ -824,6 +839,8 @@ WRITE_HANDLER(wpc_w) {
     case WPC_GILAMPS: {
       int ii, tmp;
 
+      // Note that WPC_GILAMPS also controls the 3 GPIO outputs on J111 (3 highest bits) and the GameOn relay of pre-Fliptronics (highest bit)
+
       //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
       //  We simulate this here by forcing the bits on
       if (core_gameData->gen & GEN_WPC95)
@@ -841,7 +858,7 @@ WRITE_HANDLER(wpc_w) {
          core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 64, wpclocals.conductingChaseLightTriacs);
       }
       double write_time = timer_get_time();
-      for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+      for (ii = 0, tmp = data; ii < WPC_N_GI; ii++, tmp >>= 1) {
          // If Bit is set, Triac is turned on (if it was not already on).
          // We save turn on time to compute dimming ratio on next zero cross.
          if ((tmp & 0x01) && write_time < wpclocals.gi_on_time[ii])
@@ -850,7 +867,7 @@ WRITE_HANDLER(wpc_w) {
 
       #if DEBUG_GI_W
       printf("[%8f] GI_W PC=%4x, data=%2x > GI State/On time ", write_time, activecpu_get_pc(), data);
-      for (ii = 0, tmp = data; ii < CORE_MAXGI; ii++, tmp >>= 1) {
+      for (ii = 0, tmp = data; ii < WPC_N_GI; ii++, tmp >>= 1) {
         printf(" || GI[%d]=%d => %8f", ii, tmp & 0x01, wpclocals.gi_on_time[ii]);
       }
       printf("\n");
@@ -1195,8 +1212,8 @@ static MACHINE_INIT(wpc) {
       // WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
       //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
       wpc_data[WPC_GILAMPS] = 0x18;
-      coreGlobals.gi[CORE_MAXGI-2] = 8;
-      coreGlobals.gi[CORE_MAXGI-1] = 8;
+      coreGlobals.gi[WPC_N_GI-2] = 8;
+      coreGlobals.gi[WPC_N_GI-1] = 8;
     case GEN_WPC95DCS:
       //Sound board initialization
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
@@ -1239,6 +1256,7 @@ static MACHINE_INIT(wpc) {
       coreGlobals.flipperCoils |= 0x00FF000000FF0000ull;
   }
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 -1, 3, CORE_MODOUT_PULSE); // GameOn/FastFlip and J111 GPIO
   coreGlobals.nGI = 5;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
   if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) { // BOP, FH, HD alpahanumeric segments
