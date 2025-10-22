@@ -656,6 +656,13 @@ static WRITE16_HANDLER(io_w) {
       coreGlobals.pulsedSolState = (soldata & 0xff00)>>0;
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24,  soldata       & 0xFF);
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (soldata >> 8) & 0xFF);
+      // Mirror solenoids 8..11 to PinMAME standard flipper solenoids outputs (8/9 are used for lower flippers and 10/11 are either used for flippers or modulated lights)
+      // Commented out as this would push the legacy PinMAME specific mapping forward while it does not correspond to manuals or any other reference
+      // System using this driver must use the native output 8..11
+      // core_write_pwm_output(CORE_MODOUT_SOL0 + sLRFlipPow - 1, 1, (soldata >> 8) & 0x01);
+      // core_write_pwm_output(CORE_MODOUT_SOL0 + sLLFlipPow - 1, 1, (soldata >> 9) & 0x01);
+      // core_write_pwm_output(CORE_MODOUT_SOL0 + sURFlipPow - 1, 1, (soldata >> 10) & 0x01);
+      // core_write_pwm_output(CORE_MODOUT_SOL0 + sULFlipPow - 1, 1, (soldata >> 11) & 0x01);
       break;
 
     ////////////////////////////// SWITCH0 => 16 Cabinet switches
@@ -709,6 +716,7 @@ static MACHINE_INIT(cc) {
   core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 8, 1, CORE_MODOUT_LED); // CPU Board Diagnostic LED
   core_set_pwm_output_type(CORE_MODOUT_LAMP0 + coreGlobals.nLamps - 7, 1, CORE_MODOUT_LED); // Sound Board Diagnostic LED
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
+  coreGlobals.hasModulatedFlippers = TRUE;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 1, CORE_MODOUT_SOL_CUSTOM); // GameOn solenoid for Fast Flips
   // Game specific hardware
@@ -719,30 +727,24 @@ static MACHINE_INIT(cc) {
   // For flashers, Capcom uses #89 bulb wired through a STP20N10L Mosfet, 0.02 ohms resistor to a 20V DC source
   // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
   if (strncasecmp(gn, "abv", 3) == 0) { // Airborne
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   } 
   else if (strncasecmp(gn, "bbb", 3) == 0) { // Big Bang Bar
-    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "bsv", 3) == 0) { // Breakshot
-    coreGlobals.flipperCoils = 0xFFFFFFFFFF0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
   }
   else if (strncasecmp(gn, "ffv", 3) == 0) { // Flipper Football
-    coreGlobals.flipperCoils = 0xFFFFFFFF0B0A0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "kpb", 3) == 0) { // KingPin
     // To be checked since this is from VPX table (did not find a manual for this one)
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1,  2, CORE_MODOUT_BULB_89_20V_DC_WPC);
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "pmv", 3) == 0) { // Pinball Magic
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFF0908ull;
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   // Defaults to 2 state legacy integrator for better backward compatibility

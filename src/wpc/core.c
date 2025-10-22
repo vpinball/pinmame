@@ -1812,13 +1812,13 @@ int core_getSol(int solNo) {
   else if (solNo <= 32) { // 29-32
     if (core_gameData->gen & GEN_ALLS11)
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
-    else if (core_gameData->gen & GEN_ALLWPC) // WPC GameOn
+    else if (core_gameData->gen & GEN_ALLWPC) // Remap WPC GameOn/J111 GPIO (hacky)
       return coreGlobals.solenoids2 & (1<<(solNo-29+8));
   }
   else if (solNo <= 36) { // 33-36 driver specific sols
-    if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper 
-      if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
-        return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
+    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+      return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value); // Fliptronics are implemented through PWM (needed as these are used to drive flashers on some games)
+    if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper (note that other systems also have upper flippers, they just don't implement the legacy PinMAME flipper output mapping)
       int mask;
       /*-- flipper coils --*/
       if      ((solNo == sURFlip) && (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)))
@@ -1833,14 +1833,18 @@ int core_getSol(int solNo) {
        return coreGlobals.solenoids2 & 0x10;
   }
   else if (solNo <= 44) { // 37-44 WPC95 & S11 extra
-    if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) // Duplicated in 37..40 / 41..44, so always read from 41..44 (hence the |4 in the index/mask)
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((solNo - 13) | 4)].value) : coreGlobals.solenoids & (1<<((solNo - 13)|4));
+    if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) { // Duplicated in 37..40 / 41..44, so always read from 41..44 (hence the |4 in the index/mask) for solenoids, and 37..40 for PWM outputs
+      if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+        return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + (solNo <= 40 ? solNo : (solNo - 4))-1].value);
+      else
+        return coreGlobals.solenoids & (1<<((solNo - 13)|4));
+    }
     if (core_gameData->gen & GEN_ALLS11)
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
-    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
-      return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value);
+    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+      return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value); // Fliptronics are implemented through PWM
     int mask = 1<<(solNo - 45);
     /*-- Game must have lower flippers but for symmetry we check anyway --*/
     if      /*(*/(solNo == sLRFlip) //&& (core_gameData->hw.flippers & FLIP_SOL(FLIP_LR)))
@@ -1919,54 +1923,42 @@ void core_getAllPhysicSols(float* const state)
 {
   assert(coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)));
   memset(state, 0, CORE_MODOUT_SOL_MAX * sizeof(float)); // To avoid reporting garbage states for unused solenoid slots
-  if (core_gameData->gen & GEN_ALLWPC) {
-     /*-- 1..28, hardware solenoids --*/
-     for (int i = 0; i < 28; i++)
+  // 1..32 solenoids (for WPC also GameOn and J111 GPIO)
+  for (int i = 0; i < 32; i++)
+    state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
+  /*-- 33..36 [WPC & Capcom only] upper flipper solenoids --*/
+  if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+    for (int i = 32; i < 36; i++)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-    // 29..32 GameOn (not modulated, stored in 0x0700 of solenoids2)
-    for (int i = 28; i < 32; i++)
-      state[i] = (coreGlobals.solenoids2 & (1u << (i - 28 + 8))) ? 1.0f : 0.0f;
-  }
-  else
-     /*-- 29..32, hardware solenoids --*/
-     for (int i = 0; i < 32; i++)
-      state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-  /*-- 33..36 [WPC only] upper flipper solenoids --*/
-  if (core_gameData->gen & GEN_ALLWPC) {
-    if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
-      for (int i = 32; i < 36; i++)
-        state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-    else {
-      UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS | CORE_ULFLIPSOLBITS));
-      if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
-        uFlip |= ((uFlip & 0x10)<<1);
-      if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL))
-        uFlip |= ((uFlip & 0x40)<<1);
-      state[32] = uFlip & 0x10 ? 1.0f : 0.0f;
-      state[33] = uFlip & 0x20 ? 1.0f : 0.0f;
-      state[34] = uFlip & 0x40 ? 1.0f : 0.0f;
-      state[35] = uFlip & 0x80 ? 1.0f : 0.0f;
-    }
+  else {
+    UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS | CORE_ULFLIPSOLBITS));
+    if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
+      uFlip |= ((uFlip & 0x10)<<1);
+    if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL))
+      uFlip |= ((uFlip & 0x40)<<1);
+    state[32] = uFlip & 0x10 ? 1.0f : 0.0f;
+    state[33] = uFlip & 0x20 ? 1.0f : 0.0f;
+    state[34] = uFlip & 0x40 ? 1.0f : 0.0f;
+    state[35] = uFlip & 0x80 ? 1.0f : 0.0f;
   }
   /*-- 33 [SAM only] fake GameOn solenoid for fast flips --*/
-  else if (core_gameData->gen & GEN_SAM)
+  if (core_gameData->gen & GEN_SAM)
     state[32] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 33 - 1].value;
   /*-- 33..36 Whitestar various aux board outputs --*/
   else if (core_gameData->gen & GEN_ALLWS)
      for (int i = 32; i < 36; i++)
         state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 37..44, extra solenoids --*/
-  if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) { // 37-44 WPC95 extra (duplicated 37..40 / 41..44)
-    for (int i = 28; i < 32; i++) {
-      state[i +  8] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-      state[i + 12] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
+  if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) // 37-44 WPC95 extra (duplicated 37..40 / 41..44)
+    for (int i = 36; i < 40; i++) {
+      state[i    ] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
+      state[i + 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
     }
-  }
   else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
     for (int i = 40; i < 48; i++)
       state[i - 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-  /*-- 45..48 lower flipper solenoids (only modulated for WPC) --*/
-  if ((core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) && (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))))
+  /*-- 45..48 lower flipper solenoids --*/
+  if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
     for (int i = 44; i < 48; i++)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   else {
@@ -2079,7 +2071,6 @@ static MACHINE_INIT(core) {
     memset(&coreGlobals, 0, sizeof(coreGlobals));
     memset(&locals, 0, sizeof(locals));
     coreData = (struct pinMachine *)&Machine->drv->pinmame;
-    coreGlobals.flipperCoils = 0xFFFFFFFFFFFFFFFFull;
     //-- initialise timers --
     if (coreData->timers[0].callback) {
       int ii;
@@ -2432,36 +2423,15 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
   // Apply the legacy solenoid behavior but directly updating coreGlobals.solenoids, avoiding the latency of legacy implementation which handles PWM
   // by 'or'ing solenoids states for a few 'VBlank's then deliver them, 'VBlank' being a custom 60Hz interrupt not corresponding to any hardware.
   if (output->state.sol.fastOn && (prevValue != output->value)) {
-    const int sol = index - CORE_MODOUT_SOL0;
+    // We simply push solenoid to the corresponding solenoids/solenoids2 (the driver is responsible to map things correctly from the start, without relying on an additional remap by core.c)
+    const int sol = (index - CORE_MODOUT_SOL0) & 0x1F;
     const UINT32 statel = output->value > 0.5f ? 1 : 0;
-    if (sol == (coreGlobals.flipperCoils & 0xFF))              // Lower Left Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x04) | (statel ? 0x04 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >>  8) & 0xFF)) // Lower Right Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x01) | (statel ? 0x01 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 16) & 0xFF)) // Upper Left Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x40) | (statel ? 0x40 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 24) & 0xFF)) // Upper Right Flipper coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x10) | (statel ? 0x10 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 32) & 0xFF)) // Lower Left Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x08) | (statel ? 0x08 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 40) & 0xFF)) // Lower Right Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x02) | (statel ? 0x02 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 48) & 0xFF)) // Upper Left Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x80) | (statel ? 0x80 : 0x00);
-    else if (sol == ((coreGlobals.flipperCoils >> 56) & 0xFF)) // Upper Right Flipper Hold coil
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0x20) | (statel ? 0x20 : 0x00);
-    if (sol < 28)
+    if (index < CORE_MODOUT_SOL0 + 32)
       coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << sol)) | (statel << sol);
-    else if (sol < 32) {
-      if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) {
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << (sol +  8))) | (statel << (sol + 8));
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << (sol + 12))) | (statel << (sol + 12));
-      }
-      else if ((core_gameData->gen & GEN_ALLWPC) == 0)
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << sol)) | (statel << sol);
-      else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA) && 40 <= sol && sol < 48)
-        coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << (sol - 4))) | (statel << (sol - 4));
-    }
+    else if (index < CORE_MODOUT_SOL0 + 64)
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~(1u << sol)) | (statel << sol);
+    else
+      assert(FALSE);
   }
 }
 

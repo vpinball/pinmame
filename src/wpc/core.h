@@ -515,11 +515,11 @@ typedef struct {
   volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
   volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
   volatile UINT32 solenoids2;                                   /* Current integrated binary On/Off value of additional solenoids, including flipper solenoids (not pulsed, averaged over a period depending on the driver) */
-  UINT64 flipperCoils;                                          /* Coil mapping of flipper power/hold coils => TODO move to core_gameData */
   /*-- GI --*/
   volatile int   gi[CORE_MAXGI];                                /* WPC, Whitestar and SAM GI strings state */
   /*-- Generalized outputs --*/
   int nSolenoids, nLamps, nGI, nAlphaSegs;                      /* Number of physical outputs the driver handles */
+  int hasModulatedFlippers;                                     /* Non 0 if flippers are implemented through modulated outputs instead of standard solenoids/solenoids2 bitmasks */
   double lastACZeroCrossTimeStamp;                              /* Last time AC did cross 0 as reported by the driver (should be 120Hz) */
   UINT8 binaryOutputState[CORE_MODOUT_MAX / 8];                 /* Pulsed binary state */
   core_tPhysicOutput physicOutputState[CORE_MODOUT_MAX];        /* Output state, taking in account the physical device wired to the binary output */

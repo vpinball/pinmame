@@ -940,7 +940,11 @@ WRITE_HANDLER(wpc_w) {
       break; /* just save value */
     case WPC_SOLENOID1:
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
-        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data);
+      {
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data, 0x0F); // 25..28 are standard solenoids
+        // 4 additional GPIO (J122 / J123 / J124) which appear as LPDC outputs 37..40 in manuals (29..32 are used for J111 GPIO and GameOn)
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 32, data, 0xF0); // 37..40 are GPIO added in later generations
+      }
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
       data |= wpc_data[offset];
       break;
@@ -1247,16 +1251,16 @@ static MACHINE_INIT(wpc) {
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_WPC);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol; // Auxiliary solenoid board adding 8 outputs are already included in the base solenoid span (see core_gelAllModSol) (WPC Fliptronics: TZ / WPC DCS: DM, IJ, STTNG / WPC Security : RS / WPC 95: NGG)
-  if (core_gameData->gen & (GENWPC_HASFLIPTRON | GENWPC_HASWPC95))
-  {
-    coreGlobals.flipperCoils = 0x21232D2F20222C2Eull; // Hold: 33/35/45/47 Pow: 32/34/44/46 sol number is 0 based (offset from SOL0), order is UR/UL/LR/LL
-    if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) /* No upper right flipper */
-      coreGlobals.flipperCoils |= 0xFF000000FF000000ull;
-    if ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) /* No upper left flipper */
-      coreGlobals.flipperCoils |= 0x00FF000000FF0000ull;
-  }
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 -1, 3, CORE_MODOUT_PULSE); // GameOn/FastFlip and J111 GPIO
+  if (core_gameData->gen & GENWPC_HASFLIPTRON)
+  {
+     coreGlobals.hasModulatedFlippers = TRUE;
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 45 - 1, 2, CORE_MODOUT_SOL_2_STATE); // LR flipper
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 47 - 1, 2, CORE_MODOUT_SOL_2_STATE); // LL flipper
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 33 - 1, 2, ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) ? CORE_MODOUT_NONE : CORE_MODOUT_SOL_2_STATE); // UR flipper
+     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 35 - 1, 2, ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) ? CORE_MODOUT_NONE : CORE_MODOUT_SOL_2_STATE); // UL flipper
+  }
   coreGlobals.nGI = 5;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
   if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) { // BOP, FH, HD alpahanumeric segments
