@@ -941,22 +941,22 @@ WRITE_HANDLER(wpc_w) {
     case WPC_SOLENOID1:
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
       {
-        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 24, data, 0x0F); // 25..28 are standard solenoids
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 25 - 1, data, 0x0F); // 25..28 are standard solenoids
         // 4 additional GPIO (J122 / J123 / J124) which appear as LPDC outputs 37..40 in manuals (29..32 are used for J111 GPIO and GameOn)
-        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 32, data, 0xF0); // 37..40 are GPIO added in later generations
+        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, data, 0xF0); // 37..40 are GPIO added in later generations
       }
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID2:
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
-        core_write_pwm_output_8b(CORE_MODOUT_SOL0, data);
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0, data); // 1..8
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID3:
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
-        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 16, data);
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 17 - 1, data); // 17..24
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
       data |= wpc_data[offset];
       if (core_gameData->hw.gameSpecific1 & WPC_CFTBL) // CFTBL chase lights
@@ -970,7 +970,7 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_SOLENOID4:
       if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
-        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data);
+        core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 9 - 1, data); // 9..16
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
       data |= wpc_data[offset];
       break;
@@ -1256,10 +1256,11 @@ static MACHINE_INIT(wpc) {
   if (core_gameData->gen & GENWPC_HASFLIPTRON)
   {
      coreGlobals.hasModulatedFlippers = TRUE;
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 45 - 1, 2, CORE_MODOUT_SOL_2_STATE); // LR flipper
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 47 - 1, 2, CORE_MODOUT_SOL_2_STATE); // LL flipper
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 33 - 1, 2, ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) ? CORE_MODOUT_NONE : CORE_MODOUT_SOL_2_STATE); // UR flipper
-     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 35 - 1, 2, ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) ? CORE_MODOUT_NONE : CORE_MODOUT_SOL_2_STATE); // UL flipper
+     // We always use the 2 state integrator, eventually overriden by a flasher integrator below, as some tables use these outputs for solenoids (Medieval Madness for example) and a full review of all schematics with per table definition was not yet performed
+     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 45 - 1, 2, CORE_MODOUT_SOL_2_STATE); // LR flipper
+     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 47 - 1, 2, CORE_MODOUT_SOL_2_STATE); // LL flipper
+     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 33 - 1, 2, ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)) == 0) ? CORE_MODOUT_NONE : CORE_MODOUT_SOL_2_STATE); // UR flipper
+     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 35 - 1, 2, ((core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)) == 0) ? CORE_MODOUT_NONE : CORE_MODOUT_SOL_2_STATE); // UL flipper
   }
   coreGlobals.nGI = 5;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
