@@ -1184,7 +1184,7 @@ INLINE void OPL_CALC_RH( FM_OPL *OPL, OPL_CH *CH, unsigned int noise )
 
 
 /* generic table initialize */
-static int init_tables(void)
+static void init_tables(void)
 {
 	signed int i,x;
 	signed int n;
@@ -1282,8 +1282,6 @@ static int init_tables(void)
 #ifdef SAVE_SAMPLE
 	sample[0]=fopen("sampsum.pcm","wb");
 #endif
-
-	return 1;
 }
 
 static void OPLCloseTable( void )
@@ -1791,11 +1789,7 @@ static int OPL_LockTable(void)
 	/* first time */
 
 	/* allocate total level table (128kb space) */
-	if( !init_tables() )
-	{
-		num_lock--;
-		return -1;
-	}
+	init_tables();
 
 	if (LOG_CYM_FILE)
 	{

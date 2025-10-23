@@ -1441,7 +1441,7 @@ void core_updateSw(int flipEn) {
         if ((v > 128) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] > 128)) {
           OnSolenoid(ii, v);
           /*-- log solenoid number on the display (except flippers) --*/
-          if ((!pmoptions.dmd_only && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL)))) {
+          if (!pmoptions.dmd_only && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
             locals.solLog[locals.solLogCount] = ii;
             core_textOutf(Machine->visible_area.max_x - 12 * 8, 0, BLACK, "%2d %2d %2d %2d",
               locals.solLog[(locals.solLogCount + 1) & 3],
@@ -2430,8 +2430,8 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
       coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << sol)) | (statel << sol);
     else if (index < CORE_MODOUT_SOL0 + 64)
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~(1u << sol)) | (statel << sol);
-    else
-      assert(FALSE);
+    else {
+      assert(FALSE); }
   }
 }
 

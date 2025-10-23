@@ -122,7 +122,7 @@ static struct OKIM6295interface SLEIC_okim6376_intf =
 };
 static struct OKIM6295interface SLEIC_okim6376_intf2 =
 {
-	0,					/* 1 chip (but use 0 to indicate 6376 chip)  */
+	0,					/* 1 chip (but use 0 to indicate 6376 chip) */
 	{ 4000000./132. },	/* sampling frequency at 4MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */

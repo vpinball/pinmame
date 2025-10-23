@@ -206,7 +206,7 @@ static WRITE_HANDLER(port_w) {
 					locals.accu = 0x08 ^ (coreGlobals.swMatrix[7] >> 4);
 				}
 			}
-			if (rw && ((group & 4)))
+			if (rw && (group & 4))
 			{
 				TRACE(("%03x: I/O on U3: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));
 			}
