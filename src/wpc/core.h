@@ -420,12 +420,14 @@ typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_SE    204 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_20V_DC_CC    205 /* Incandescent #44/555 Bulb connected to 20V, commonly used for lamp matrix with short strobing */
-#define CORE_MODOUT_BULB_44_20V_AC_POS_BY 206/* Incandescent #44/555 Bulb connected to AC 20V with a diode for positive half (Bally 6803) */
-#define CORE_MODOUT_BULB_44_20V_AC_NEG_BY 207/* Incandescent #44/555 Bulb connected to AC 20V with a diode for negative half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_20V_AC_POS_BY 206/* Incandescent #44/555 Bulb connected to AC 20.5V with a diode for positive half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_20V_AC_NEG_BY 207/* Incandescent #44/555 Bulb connected to AC 20.5V with a diode for negative half (Bally 6803) */
 #define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89 Bulb connected to 32V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_BULB_89_25V_DC_S11   304 /* Incandescent #89 Bulb connected to 25V, used for flashers on S11 with output strobing */
+#define CORE_MODOUT_BULB_89_48V_AC_POS_BY 305/* Incandescent #89 Bulb connected to AC 48V with a diode for positive half (Bally 6803) */
+#define CORE_MODOUT_BULB_89_48V_AC_NEG_BY 306/* Incandescent #89 Bulb connected to AC 48V with a diode for negative half (Bally 6803) */
 #define CORE_MODOUT_BULB_906_20V_DC_WPC  311 /* Incandescent #906 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_906_20V_DC_GTS3 312 /* Incandescent #906 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_906_32V_DC_S11  313 /* Incandescent #906 Bulb connected to 32V, used for flashers on S11 with output strobing */
@@ -616,6 +618,7 @@ extern void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float 
 extern void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness); // Relative brightness should be (pulse length / period length)
 extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
 extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
+INLINE void core_write_pwm_output_16b(int index, UINT16 bitStates) { core_write_pwm_output_8b(index, bitStates & 0xFF); core_write_pwm_output_8b(index + 8, bitStates >> 8); }
 extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UINT8 bitMask);
 extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
 INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = timer_get_time(); }

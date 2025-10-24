@@ -17,6 +17,8 @@ static const core_tLCDLayout dispBy7C[] = {
 
 /* 4 x 7 digit 9 Segment Display */
 static const core_tLCDLayout dispBy104[] = {
+  // For backward compatibility we keep an old ordering bug (see in driver to see how it is recreated).
+  // This should have been: {0, 0, 7,7,CORE_SEG98}, {0,16, 0,7,CORE_SEG98}, {0,32,27,7,CORE_SEG98}, {0,48,20,7,CORE_SEG98}, {0}
   {0, 0, 9,7,CORE_SEG98}, {0,16, 2,7,CORE_SEG98},
   {0,32,28,7,CORE_SEG98}, {0,48,35,1,CORE_SEG10}, {0,50,22,6,CORE_SEG98}, {0}
 };
