@@ -2692,17 +2692,17 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_20V_AC_POS_BY: // Strobed bulb, 20V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
+    case CORE_MODOUT_BULB_44_20V_AC_POS_BY: // Strobed bulb, 20.5V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
-      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.5f - 0.7f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = 2;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_20V_AC_NEG_BY: // Strobed bulb, 20V AC switched through a SCR and a diode limiting to negative half of the AC sine (Bally 6803)
+    case CORE_MODOUT_BULB_44_20V_AC_NEG_BY: // Strobed bulb, 20.5V AC switched through a SCR and a diode limiting to negative half of the AC sine (Bally 6803)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
-      coreGlobals.physicOutputState[i].state.bulb.U = 20.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.U = 20.5f - 0.7f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = 3;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
@@ -2737,6 +2737,22 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.U = 25.f - 1.0f - 1.0f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = 0;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 1.5f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_89_48V_AC_POS_BY: // Strobed bulb, 48V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 48.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 2;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
+      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
+      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+      break;
+    case CORE_MODOUT_BULB_89_48V_AC_NEG_BY: // Strobed bulb, 48V AC switched through a SCR and a diode limiting to negative half of the AC sine (Bally 6803)
+      coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_89;
+      coreGlobals.physicOutputState[i].state.bulb.U = 48.f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.isAC = 3;
+      coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
