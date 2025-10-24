@@ -2482,25 +2482,38 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
   const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
   const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
 
-  if(U != output->state.bulb.prevIntegrationValue        // state flip?
-     || dt_diff >= (float)(BULB_INTEGRATION_PERIOD*20.)) // or we waited long enough to get a stable discrete integration
-  {
-    // do the integration in a loop of small steps, roughly in BULB_INTEGRATION_PERIOD sized steps (but rounded up/down to have same sized cycles in here)
-    float countf = floorf(dt_diff*(float)(1./BULB_INTEGRATION_PERIOD) + 0.5f);
-    if(countf < 1.f) // single cycle/short pulses need to use the 'original' cycle time as a workaround
+  float countf;
+  if (U != output->state.bulb.prevIntegrationValue) {
+    // state flip? do not delay integration but do the integration in a loop of small steps, roughly in BULB_INTEGRATION_PERIOD sized steps (but rounded up/down to have same sized cycles in here)
+    countf = floorf(dt_diff * (float)(1. / BULB_INTEGRATION_PERIOD));
+    // ensure that we always perform the integration, evzentually with a single scaled period
+    if (countf < 1.f)
       countf = 1.f;
+  }
+  else if (dt_diff >= (float)(4.0 * BULB_INTEGRATION_PERIOD)) {
+    // We waited long enough to perform at least one full integration step, just perform integration up to last step before now
+    // This improves the fading behavior, as it allows to get a consistant state of all bulbs when the client application wants it to be rasterized
+    // We still always keep at least a few integration periods, to better weight the previous situation (adjusted period on state flip) but not too much as it would lead to visual artefacts.
+    countf = floorf(dt_diff * (float)(1. / BULB_INTEGRATION_PERIOD));
+  }
+  else {
+    // No state flip and not enough time elapsed ? just delay integration
+    countf = 0;
+  }
+
+  if (countf > 0.f)
+  {
     const int count = (int)countf;
     const float dt = dt_diff/countf;
     for(int i = 0; i < count; ++i) {
       // Keeps T within the range of the LUT (between room temperature and melt down point)
       output->state.bulb.filament_temperature = output->state.bulb.filament_temperature < 293.0f ? 293.0f : output->state.bulb.filament_temperature > (float) BULB_T_MAX ? (float) BULB_T_MAX : output->state.bulb.filament_temperature;
       float Ut;
-      switch (output->state.bulb.isAC)
-      {
+      switch (output->state.bulb.isAC) {
       case 0: Ut = output->state.bulb.prevIntegrationValue; break;
-      case 1: Ut =  1.41421356f *           sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))  * output->state.bulb.prevIntegrationValue; break;
-      case 2: Ut =  1.41421356f * max(0.f,  sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
-      case 3: Ut = -1.41421356f * max(0.f, -sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
+      case 1: Ut = 1.41421356f *          sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))  * output->state.bulb.prevIntegrationValue; break;
+      case 2: Ut = 1.41421356f * max(0.f, sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
+      case 3: Ut = 1.41421356f * min(0.f, sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
       default: assert(FALSE); Ut = 0.f; break;
       }
       const float dT = dt * bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
