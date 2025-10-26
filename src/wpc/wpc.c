@@ -125,6 +125,7 @@ static struct {
   int pageMask;           /* page handling */
   UINT8 diagnosticLed;
   int zc;                 /* zero cross flag */
+  int phase;
   double gi_on_time[WPC_N_GI]; /* Global time when GI Triac was turned on */
   volatile UINT8 conductingGITriacs; /* Current conducting triacs of WPC GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
   volatile UINT8 conductingChaseLightTriacs; /* Current conducting triacs of CFTBL Chase light GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
@@ -189,6 +190,8 @@ int wpc_m2sw(int col, int row) { return col*10+row+1; }
 
 // Zero Cross: a voltage comparator triggers when +5V AC reaches +5V or -5V, so at 120Hz in US (would be 100Hz in Europe), leading to around ~8.3ms period
 static void wpc_zc(int data) {
+   wpclocals.phase = (wpclocals.phase + 1) & 1;
+
    // Set Zero Cross flag (it's reset when read)
    wpclocals.zc = 1;
 
@@ -220,8 +223,9 @@ static void wpc_zc(int data) {
       #endif
    }
 
-   // Synchronize core PWM integration AC signal
-   core_zero_cross();
+   // Synchronize core PWM integration AC signal (keeping the phase right to avoid breaking AC intergation)
+   if (wpclocals.phase)
+      core_zero_cross();
 
    // More precise implementation with better physic emulation
    if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_GI | CORE_MODOUT_FORCE_ON))
