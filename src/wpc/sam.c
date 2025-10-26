@@ -1318,7 +1318,7 @@ static MACHINE_INIT(sam) {
 	else if (strncasecmp(gn, "fg_", 3) == 0) { // Family Guy [TODO crash in AT91 jit]
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 3 * 2 * 8, CORE_MODOUT_LED_STROBE_8_16MS); // Mini playfield LEDs
+		core_set_pwm_output_led_vfd(CORE_MODOUT_LAMP0 + 80, 3 * 2 * 8, 0, 16.f / 8.f); // Mini playfield LEDs (8ms pulse over 16ms period)
 	}
 	else if (strncasecmp(gn, "ij4_", 4) == 0) { // Indiana Jones
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 27 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 3 LEDs
@@ -1382,7 +1382,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 61 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper 2 LEDs
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 3*2*8, CORE_MODOUT_LED_STROBE_8_16MS); // Mini playfield LEDs
+		core_set_pwm_output_led_vfd(CORE_MODOUT_LAMP0 + 80, 3*2*8, 0, 16.f / 8.f); // Mini playfield LEDs (8ms pulse over 16ms period)
 	}
 	else if (strncasecmp(gn, "sman_", 5) == 0) { // Spider-Man
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
@@ -1433,7 +1433,7 @@ static MACHINE_INIT(sam) {
 	else if (strncasecmp(gn, "wof_", 4) == 0) { // Wheel of Fortune
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 60 - 1, 3, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LEDs
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 48, CORE_MODOUT_LED); // Wheel LEDs
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 140, 175, CORE_MODOUT_LED_STROBE_1_5MS); // Mini DMD (175 LEDs)
+		core_set_pwm_output_led_vfd(CORE_MODOUT_LAMP0 + 140, 175, 0, 5.f / 1.f); // Mini DMD (175 LEDs, 1ms pulse over 5ms period)
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_LED); // 4 LED flasher at the back of the wheel
 	}

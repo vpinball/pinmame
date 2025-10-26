@@ -2780,22 +2780,6 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 10.f / 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
       break;
-    case CORE_MODOUT_LED_STROBE_1_5MS:
-       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 5.f / 1.f;
-       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
-       break;
-    case CORE_MODOUT_LED_STROBE_8_16MS:
-       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 16.f / 8.f;
-       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
-       break;
-    case CORE_MODOUT_VFD_STROBE_05_20MS:
-      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 20.f / 0.5f;
-      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
-      break;
-    case CORE_MODOUT_VFD_STROBE_1_16MS:
-      coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 16.f / 1.f;
-      coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
-      break;
     default: // Unimplemented integrator
       logerror("Unsupported physical output #%d of type %d\n", i, type);
       assert(FALSE);
@@ -2815,6 +2799,16 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
     coreGlobals.physicOutputState[i].state.bulb.serial_R = serial_R;
     coreGlobals.physicOutputState[i].state.bulb.relative_brightness = relative_brightness;
     coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
+  }
+}
+
+void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness) {
+  for (int i = startIndex; i < startIndex + count; i++) {
+    memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
+    coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
+    coreGlobals.physicOutputState[i].state.bulb.relative_brightness = relative_brightness;
+    coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
   }
 }
 

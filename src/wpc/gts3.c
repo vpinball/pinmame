@@ -497,7 +497,7 @@ static void GTS3_alpha_common_init(void) {
   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 1, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 1, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
   // VFD powered through 8.6V AC for the filaments, and 47V DC for grids and anodes, 0.5ms pulse every 20ms (dimmable)
-  core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_VFD_STROBE_05_20MS);
+  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, 1, 20.f / 0.5f);
   // Game specific hardware
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
@@ -525,14 +525,14 @@ static void GTS3_alpha_common_init(void) {
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 8 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  for (int i = 0; i < 8; i++)
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
+		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, 0, 8.f / 1.f); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "hoops", 5) == 0) { // Hoops
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 12 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  for (int i = 0; i < 12; i++)
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 12ms period)
+		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, 0, 12.f / 1.f); // Additional LED display (1ms strobe over 12ms period)
   }
   else if (strncasecmp(gn, "lca", 3) == 0) { // Light Camera Action
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
@@ -548,7 +548,7 @@ static void GTS3_alpha_common_init(void) {
   else if (strncasecmp(gn, "silvslug", 8) == 0) { // Silver Slugger
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  for (int i = 0; i < 12; i++)
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
+		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, 0, 8.f / 1.f); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf 'n Safari
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
@@ -563,7 +563,7 @@ static void GTS3_alpha_common_init(void) {
   else if (strncasecmp(gn, "vegas", 5) == 0) { // Vegas
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 3 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 7, 18, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20 * 16 * 2, 3 * 16, CORE_MODOUT_LED_STROBE_1_5MS); // Additional LED display (1ms strobe over 3ms period)
+	  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2, 3 * 16, 0, 3.f / 1.f); // Additional LED display (1ms strobe over 3ms period)
   }
 }
 
@@ -645,7 +645,7 @@ static void gts3dmd_init(void) {
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  coreGlobals.nAlphaSegs = 6 * 16;
 	  for (int i = 0; i < 6; i++)
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 8ms period)
+		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + i * 16, 7, 0, 12.f / 1.f); // Additional LED display (1ms strobe over 12ms period)
   }
   else if (strncasecmp(gn, "barbwire", 8) == 0) { // Barbwire
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 13, 2, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
@@ -683,7 +683,7 @@ static void gts3dmd_init(void) {
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 12, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
 	  coreGlobals.nAlphaSegs = 12 * 16;
 	  for (int i = 0; i < 12; i++)
-		core_set_pwm_output_type(CORE_MODOUT_SEG0 + i * 16, 7, CORE_MODOUT_LED_STROBE_1_10MS); // Additional LED display (1ms strobe over 12ms period)
+        core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + i * 16, 7, 0, 12.f / 1.f); // Additional LED display (1ms strobe over 12ms period)
   }
   else if (strncasecmp(gn, "smbmush", 7) == 0) { // Super Mario Bros. Mushroom World
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20, 3, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
