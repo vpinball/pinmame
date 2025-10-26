@@ -1266,8 +1266,8 @@ static MACHINE_INIT(wpc) {
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC);
   if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) { // BOP, FH, HD alpahanumeric segments
     coreGlobals.nAlphaSegs = 40 * 16;
-    core_set_pwm_output_type(CORE_MODOUT_SEG0, 16 * 16, CORE_MODOUT_VFD_STROBE_1_16MS);
-    core_set_pwm_output_type(CORE_MODOUT_SEG0 + 20*16, 16 * 16, CORE_MODOUT_VFD_STROBE_1_16MS);
+    core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0, 16 * 16, 1, 16.f / 1.f);
+    core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16, 16 * 16, 1, 16.f / 1.f);
   }
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)

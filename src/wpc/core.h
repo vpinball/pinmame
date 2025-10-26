@@ -432,10 +432,6 @@ typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_906_25V_DC_S11  314 /* Incandescent #906 Bulb connected to 25V, used for flashers on S11 with output strobing */
 #define CORE_MODOUT_LED                  400 /* LED PWM (in fact mostly human eye reaction, since LED are nearly instantaneous) */
 #define CORE_MODOUT_LED_STROBE_1_10MS    401 /* LED Strobed 1ms over 10ms for full power */
-#define CORE_MODOUT_LED_STROBE_1_5MS     402 /* LED Strobed 1ms over 5ms for full power */
-#define CORE_MODOUT_LED_STROBE_8_16MS    403 /* LED Strobed 8ms over 16ms for full power */
-#define CORE_MODOUT_VFD_STROBE_05_20MS   450 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
-#define CORE_MODOUT_VFD_STROBE_1_16MS    451 /* Vacuum Fluorescent Display used for alpha numeric segment displays */
 
 /*-------------------------------------------
 /  Draw data. draw lamps,switches,solenoids
@@ -617,6 +613,7 @@ INLINE void core_update_pwm_lamps(void) { if (options.usemodsol & (CORE_MODOUT_F
 extern void core_set_pwm_output_type(int startIndex, int count, int type);
 extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
 extern void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int isAC, float serial_R, float relative_brightness);
+extern void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness); // Relative brightness should be (pulse length / period length)
 extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
 extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
 extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UINT8 bitMask);

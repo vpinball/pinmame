@@ -885,7 +885,7 @@ static MACHINE_INIT(s11) {
      default: if (coreGlobals.nAlphaSegs < (layout->start + layout->length) * 16) coreGlobals.nAlphaSegs = (layout->start + layout->length) * 16; break;
      }
   }
-  core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_VFD_STROBE_1_16MS);
+  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, 1, 16.f / 1.f);
   for (int i = 0; i < coreGlobals.nAlphaSegs; i++)
      coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + i].state.bulb.relative_brightness = 15.f / 1.f;
   const struct GameDriver* rootDrv = Machine->gamedrv;
