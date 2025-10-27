@@ -2511,9 +2511,9 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
       float Ut;
       switch (output->state.bulb.isAC) {
       case 0: Ut = output->state.bulb.prevIntegrationValue; break;
-      case 1: Ut = 1.41421356f *          sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))  * output->state.bulb.prevIntegrationValue; break;
-      case 2: Ut = 1.41421356f * max(0.f, sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
-      case 3: Ut = 1.41421356f * min(0.f, sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
+      case 1: Ut = 1.41421356f *          sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACPositiveZeroCrossTimeStamp))  * output->state.bulb.prevIntegrationValue; break;
+      case 2: Ut = 1.41421356f * max(0.f, sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACPositiveZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
+      case 3: Ut = 1.41421356f * min(0.f, sinf((float)(60.0 * 2.0 * PI) * (float)(output->state.bulb.prevIntegrationTimestamp - coreGlobals.lastACPositiveZeroCrossTimeStamp))) * output->state.bulb.prevIntegrationValue; break;
       default: assert(FALSE); Ut = 0.f; break;
       }
       const float dT = dt * bulb_heat_up_factor(output->state.bulb.bulb, output->state.bulb.filament_temperature, Ut, output->state.bulb.serial_R);
