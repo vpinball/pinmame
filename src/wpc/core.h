@@ -518,7 +518,7 @@ typedef struct {
   /*-- Generalized outputs --*/
   int nSolenoids, nLamps, nGI, nAlphaSegs;                      /* Number of physical outputs the driver handles */
   int hasModulatedFlippers;                                     /* Non 0 if flippers are implemented through modulated outputs instead of standard solenoids/solenoids2 bitmasks */
-  double lastACZeroCrossTimeStamp;                              /* Last time AC did cross 0 as reported by the driver (should be 120Hz) */
+  double lastACPositiveZeroCrossTimeStamp;                      /* Last time AC did cross 0 toward positive voltage, as reported by the driver (should be 60Hz) */
   UINT8 binaryOutputState[CORE_MODOUT_MAX / 8];                 /* Pulsed binary state */
   core_tPhysicOutput physicOutputState[CORE_MODOUT_MAX];        /* Output state, taking in account the physical device wired to the binary output */
   float lastPhysicOutputReportedValue[CORE_MODOUT_MAX];         /* Last state value reported for each of the physic outputs */
@@ -621,7 +621,7 @@ extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
 INLINE void core_write_pwm_output_16b(int index, UINT16 bitStates) { core_write_pwm_output_8b(index, bitStates & 0xFF); core_write_pwm_output_8b(index + 8, bitStates >> 8); }
 extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UINT8 bitMask);
 extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
-INLINE void core_zero_cross(void) { coreGlobals.lastACZeroCrossTimeStamp = timer_get_time(); }
+INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp = timer_get_time(); }
 
 /*-- DMD PWM integration --*/
 typedef struct {
