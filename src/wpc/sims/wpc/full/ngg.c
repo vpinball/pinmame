@@ -78,11 +78,11 @@ enum {DOWN=0,UP};
 WPC_INPUT_PORTS_START(ngg,6)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
+    COREPORT_BIT(0x0001,"Left Qualifier",        KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",       KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"L/R Ramp",              KEYCODE_R)
-    COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
+    COREPORT_BIT(0x0008,"L/R Outlane",           KEYCODE_O)
+    COREPORT_BIT(0x0010,"L/R Slingshot",         KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L1/L2/R Inlane",        KEYCODE_I)
     COREPORT_BIT(0x0040,"L/R Loop",              KEYCODE_L)
     COREPORT_BIT(0x0080,"Putt Out",              KEYCODE_T)
@@ -90,7 +90,7 @@ WPC_INPUT_PORTS_START(ngg,6)
     COREPORT_BIT(0x0200,"Golf Cart",             KEYCODE_Y)
     COREPORT_BIT(0x1000,"Hole In One",           KEYCODE_STOP)
     COREPORT_BIT(0x4000,"Jet Advance",           KEYCODE_A)
-    COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
+    COREPORT_BIT(0x8000,"Drain",                 KEYCODE_Q)
 
   PORT_START /* 1 */
     COREPORT_BIT(0x0001,"Top Jet",               KEYCODE_S)
@@ -116,19 +116,19 @@ WPC_INPUT_PORTS_END
 /* Standard Switches */
 // not used             11
 #define swLRampMake     12
-#define swStart      	13
-#define swTilt       	14
+#define swStart         13
+#define swTilt          14
 #define swCRampMake     15
 #define swLeftOutlane   16
-#define swRightInlane	17
-#define swShooter	18
+#define swRightInlane   17
+#define swShooter       18
 
-#define swSlamTilt	21
-#define swCoinDoor	22
+#define swSlamTilt      21
+#define swCoinDoor      22
 #define swJetAdvance    23
 #define swUnderGPass    25
 #define swLeftInlane    26
-#define swRightOutlane	27
+#define swRightOutlane  27
 #define swKickback      28
 
 #define swTroughJam     31 // Opto
@@ -149,11 +149,11 @@ WPC_INPUT_PORTS_END
 #define swLRampDown     47
 #define swRRampDown     48
 
-#define swLeftSling	51
-#define swRightSling	52
-#define swTopJet	53
-#define swMiddleJet	54
-#define swBottomJet	55
+#define swLeftSling     51
+#define swRightSling    52
+#define swTopJet        53
+#define swMiddleJet     54
+#define swBottomJet     55
 #define swTopSkill      56
 #define swMiddleSkill   57
 #define swBottomSkill   58
@@ -188,19 +188,19 @@ WPC_INPUT_PORTS_END
 /*---------------------
 / Solenoid definitions
 /----------------------*/
-#define sLaunch		1
-#define sKickBack	2
+#define sLaunch         1
+#define sKickBack       2
 #define sClubhouse      3
 #define sLGoferUp       4
 #define sRGoferUp       5
 #define sJetPopper      6
 #define sLeftEject      7
 #define sRightEject     8
-#define sTrough		9
-#define sLeftSling	10
-#define sRightSling	11
-#define sTopJet		12
-#define sMiddleJet	13
+#define sTrough         9
+#define sLeftSling      10
+#define sRightSling     11
+#define sTopJet         12
+#define sMiddleJet      13
 #define sBottomJet      14
 #define sLGoferDown     15
 #define sRGoferDown     16
@@ -244,19 +244,19 @@ static sim_tState ngg_stateDef[] = {
   /*Line 2*/
   {"Shooter",           1,swShooter,     0,             0,              0,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
   {"Ball Lane",         1,0,             0,             0,              2,0,0,SIM_STNOTEXCL},
-  {"No Strength",	1,0,		 0,		stShooter,	3},
-  {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
-  {"Left Outlane",      1,swKickback,    0,             stDrain,        15, sKickBack, stFree, 5},
-  {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
+  {"No Strength",       1,0,             0,           stShooter,        3},
+  {"Right Outlane",     1,swRightOutlane,0,            stDrain,        15},
+  {"Left Outlane",      1,swKickback,    0,            stDrain,        15, sKickBack, stFree, 5},
+  {"Right Inlane",      1,swRightInlane, 0,             stFree,         5},
   {"Left Inlane",       1,swLeftOutlane, 0,             stFree,         5},
   {"Left I.Inlane",     1,swLeftInlane,  0,             stFree,         5},
 
   /*Line 3*/
-  {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
-  {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
-  {"Top Bumper",	1,swTopJet,	 0,		stFree,		1},
-  {"Middle Bumper",	1,swMiddleJet,	 0,		stFree,		1},
-  {"Bottom Bumper",	1,swBottomJet,	 0,		stFree,		1},
+  {"Left Slingshot",    1,swLeftSling,   0,             stFree,         1},
+  {"Rt Slingshot",      1,swRightSling,  0,             stFree,         1},
+  {"Top Bumper",        1,swTopJet,      0,             stFree,         1},
+  {"Middle Bumper",     1,swMiddleJet,   0,             stFree,         1},
+  {"Bottom Bumper",     1,swBottomJet,   0,             stFree,         1},
 
   /*Line 4*/
   {"Left Ramp",         1,swLRampMake,   0,             stLeft2Inlane,  1},
@@ -332,11 +332,11 @@ static void ngg_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls)
 
 
 static int ngg_handleBallState(sim_tBallStatus *ball, int *inports) {
-  switch (ball->state)
+	switch (ball->state)
 	{
-        // NGG has both, manual and auto plunger
+	// NGG has both, manual and auto plunger
 	case stShooter:
-                if (core_getSol(sLaunch)) {
+		if (core_getSol(sLaunch)) {
 			ball->speed = 50;
 			return setState(stBallLane,1);
 		}
@@ -346,65 +346,62 @@ static int ngg_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:
-                if (ball->speed < 10)
-                        return setState(stNotEnough,25);        /*Ball not plunged hard enough*/
-                if (ball->speed < 25)
-			return setState(stFree,51);		/*Ball goes to stFree*/
-                if (ball->speed < 30)
-                        return setState(stBottomSkill,25);      /*Ball hits bottom skill shot target*/
-                if (ball->speed < 35)
-                        return setState(stMiddleSkill,25);      /*Ball hits middle skill shot target*/
-                if (ball->speed < 40)
-                        return setState(stTopSkill,25);         /*Ball hits top skill shot target*/
-                if (ball->speed < 45)
-			return setState(stFree,51);		/*Ball goes to stFree*/
-                if (ball->speed < 51)
-                        return setState(stLeftRamp,25);         /*Ball goes up left ramp*/
+	case stBallLane:
+		if (ball->speed < 10)
+			return setState(stNotEnough,25);        /*Ball not plunged hard enough*/
+		if (ball->speed < 25)
+			return setState(stFree,51);             /*Ball goes to stFree*/
+		if (ball->speed < 30)
+			return setState(stBottomSkill,25);      /*Ball hits bottom skill shot target*/
+		if (ball->speed < 35)
+			return setState(stMiddleSkill,25);      /*Ball hits middle skill shot target*/
+		if (ball->speed < 40)
+			return setState(stTopSkill,25);         /*Ball hits top skill shot target*/
+		if (ball->speed < 45)
+			return setState(stFree,51);             /*Ball goes to stFree*/
+		if (ball->speed < 51)
+			return setState(stLeftRamp,25);         /*Ball goes up left ramp*/
 		break;
 
-        // Centre ramp, Gofer Hit or Lock
-        // We have to test for this before we trigger any switches as the
-        // software will drop the gofers for a lock, as soon as the first
-        // switch is made (relying on the mechanical delay of the mechanism).
-        // Without this test first we would lock the ball on every gofer hit!
-        case stCRampTest:
-                if (locals.ramppos[0] == DOWN)
-                  return setState(stLGofer2R,1);
-                else
-                  if (locals.goferpos[0] == DOWN)
-                        return setState(stLGofer2L,1);
-                return setState(stLGofer2H,1);
-                break;
+	// Centre ramp, Gofer Hit or Lock
+	// We have to test for this before we trigger any switches as the
+	// software will drop the gofers for a lock, as soon as the first
+	// switch is made (relying on the mechanical delay of the mechanism).
+	// Without this test first we would lock the ball on every gofer hit!
+	case stCRampTest:
+		if (locals.ramppos[0] == DOWN)
+			return setState(stLGofer2R,1);
+		if (locals.goferpos[0] == DOWN)
+			return setState(stLGofer2L,1);
+		return setState(stLGofer2H,1);
+		break;
 
-        // Right ramp, Gofer Hit or Lock (Same as Centre Ramp!)
-        case stRRampTest:
-                if (locals.ramppos[1] == DOWN)
-                  return setState(stRGofer2R,1);
-                else
-                  if (locals.goferpos[1] == DOWN)
-                        return setState(stRGofer2L,1);
-                return setState(stRGofer2H,1);
-                break;
+	// Right ramp, Gofer Hit or Lock (Same as Centre Ramp!)
+	case stRRampTest:
+		if (locals.ramppos[1] == DOWN)
+			return setState(stRGofer2R,1);
+		if (locals.goferpos[1] == DOWN)
+			return setState(stRGofer2L,1);
+		return setState(stRGofer2H,1);
+		break;
 
-        // Ball can leave Putt Out by one of two solenoids
-        case stPuttOut:
-                if (core_getSol(sClubhouse))
-                        return setState(stFree,1);
-                if (core_getSol(sUGroundPass))
-                        return setState(stUGroundPass,1);
-                break;
+	// Ball can leave Putt Out by one of two solenoids
+	case stPuttOut:
+		if (core_getSol(sClubhouse))
+			return setState(stFree,1);
+		if (core_getSol(sUGroundPass))
+			return setState(stUGroundPass,1);
+		break;
 
-        // We can only hit a hole in one if the slam ramp is down
-        case stHoleInOneTest:
-                if (locals.slampos==UP)
-                        return setState(stFree,1);
-                else
-                        return setState(stHoleInOne,1);
-                break;
+	// We can only hit a hole in one if the slam ramp is down
+	case stHoleInOneTest:
+		if (locals.slampos==UP)
+			return setState(stFree,1);
+		return setState(stHoleInOne,1);
+		break;
 	}
-    return 0;
-  }
+	return 0;
+}
 
 /*---------------------------
 /  Keyboard conversion table
@@ -534,17 +531,16 @@ static const char* WheelText[] =
 
 static const char* SlamText[] = {"Down","Up"};
 
-  static void ngg_drawMech(BMTYPE **line) {
-
+static void ngg_drawMech(BMTYPE **line) {
 /* Help */
-
   core_textOutf(30, 30,BLACK,"Centre Ramp: %-10s", showramp(0));
   core_textOutf(30, 40,BLACK,"Right Ramp: %-10s", showramp(1));
   if ((NGG_WHEEL_POS) / 4 < sizeof(WheelText)/ sizeof(WheelText[0]))
-	core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(NGG_WHEEL_POS)/4]);
+    core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(NGG_WHEEL_POS)/4]);
   core_textOutf(30, 60,BLACK,"Slam Ramp: %s  ", SlamText[locals.slampos]);
 }
-  static void ngg_drawStatic(BMTYPE **line) {
+
+static void ngg_drawStatic(BMTYPE **line) {
   core_textOutf(30, 80,BLACK,"Help on this Simulator:");
   core_textOutf(30, 89,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 98,BLACK,"L/R Ctrl+L/O = L/R Loops/Outlane");
@@ -555,7 +551,7 @@ static const char* SlamText[] = {"Down","Up"};
   core_textOutf(30,143,BLACK,"Z = Advance Trap X = Sand Trap");
   core_textOutf(30,152,BLACK,"C = Captive Ball V = Advance Kick");
   core_textOutf(30,161,BLACK,"Y = Golf Cart Hit . = Hole in One");
-  }
+}
 
 /*-----------------
 /  ROM definitions
@@ -676,7 +672,7 @@ static WRITE_HANDLER(ngg_wpc_w) {
 // also, an intermittent 0 byte write has to be avoided.
   if (offset == WPC_FLIPPERCOIL95) {
     if (locals.lastFlip & data) wpc_w(WPC_FLIPPERCOIL95, data);
-    if (!locals.lastFlip & !data) wpc_w(WPC_FLIPPERCOIL95, 0);
+    if (!locals.lastFlip && !data) wpc_w(WPC_FLIPPERCOIL95, 0);
     locals.lastFlip = data;
   } else
     wpc_w(offset, data);
@@ -771,14 +767,14 @@ static void ngg_handleMech(int mech) {
 // with a much lower duty cycle than regular solenoids so we need
 // some extra smoothing on this coil
   if (mech & 0x08) {
-    if (core_getSol(sSlamRamp)) {       // if the solenoid is energised
-      locals.slampos = DOWN;            // the ramp needs to be down
-      locals.slamdelay = 0;             // and we reset the delay counter
+    if (core_getSol(sSlamRamp)) {      // if the solenoid is energised
+      locals.slampos = DOWN;           // the ramp needs to be down
+      locals.slamdelay = 0;            // and we reset the delay counter
     }
     else if (locals.slamdelay < 16)    // the solenoid is not energised
       locals.slamdelay++;              // and the delay has not expired
     else                               // once the delay has expired
-      locals.slampos = UP;    // the ramp goes back up
+      locals.slampos = UP;             // the ramp goes back up
   }
 }
 
