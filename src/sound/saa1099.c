@@ -1,5 +1,8 @@
 // license:BSD-3-Clause
 // copyright-holders:Juergen Buchmueller, Manuel Abadia
+
+// mixture of MAME and VGM
+
 /***************************************************************************
 
 	Philips SAA1099 Sound driver
@@ -73,6 +76,8 @@
 
 #include "../ext/vgm/vgmwrite.h"
 
+static const int clock_divider = 256;
+
 #define LEFT	0x00
 #define RIGHT	0x01
 
@@ -81,12 +86,12 @@
 /* this structure defines a channel */
 struct saa1099_channel
 {
-	UINT8 frequency;		/* frequency (0x00..0xff) */
-	BOOL freq_enable;		/* frequency enable */
-	BOOL noise_enable;		/* noise enable */
-	UINT8 octave; 			/* octave (0x00..0x07) */
-	UINT16 amplitude[2];	/* amplitude (0x00..0x0f) */
-	UINT8 envelope[2];		/* envelope (0x00..0x0f or 0x10 == off) */
+	UINT8 frequency;        /* frequency (0x00..0xff) */
+	BOOL freq_enable;       /* frequency enable */
+	BOOL noise_enable;      /* noise enable */
+	UINT8 octave;           /* octave (0x00..0x07) */
+	UINT16 amplitude[2];    /* amplitude (0x00..0x0f) */
+	UINT8 envelope[2];      /* envelope (0x00..0x0f or 0x10 == off) */
 
 	/* vars to simulate the square wave */
 	int counter;
@@ -100,25 +105,25 @@ struct saa1099_noise
 	/* vars to simulate the noise generator output */
 	int counter;
 	int freq;
-	UINT32 level;					/* noise polynomal shifter */
+	UINT32 level;                   /* noise polynomal shifter */
 };
 
 /* this structure defines a SAA1099 chip */
 struct SAA1099
 {
-	int stream;						/* our stream */
-	UINT8 noise_params[2];			/* noise generators parameters */
-	BOOL env_enable[2];				/* envelope generators enable */
-	BOOL env_reverse_right[2];		/* envelope reversed for right channel */
-	UINT8 env_mode[2];				/* envelope generators mode */
-	BOOL env_bits[2];				/* non zero = 3 bits resolution */
-	BOOL env_clock[2];				/* envelope clock mode (non-zero external) */
-	UINT8 env_step[2];				/* current envelope step */
-	BOOL all_ch_enable;				/* all channels enable */
-	BOOL sync_state;				/* sync all channels */
-	UINT8 selected_reg;				/* selected register */
-	struct saa1099_channel channels[6];	/* channels */
-	struct saa1099_noise noise[2];	/* noise generators */
+	int stream;                     /* our stream */
+	UINT8 noise_params[2];          /* noise generators parameters */
+	BOOL env_enable[2];             /* envelope generators enable */
+	BOOL env_reverse_right[2];      /* envelope reversed for right channel */
+	UINT8 env_mode[2];              /* envelope generators mode */
+	BOOL env_bits[2];               /* non zero = 3 bits resolution */
+	BOOL env_clock[2];              /* envelope clock mode (non-zero external) */
+	UINT8 env_step[2];              /* current envelope step */
+	BOOL all_ch_enable;             /* all channels enable */
+	BOOL sync_state;                /* sync all channels */
+	UINT8 selected_reg;             /* selected register */
+	struct saa1099_channel channels[6]; /* channels */
+	struct saa1099_noise noise[2];  /* noise generators */
 	double master_clock;
 
 	unsigned short vgm_idx;
@@ -128,10 +133,10 @@ struct SAA1099
 static struct SAA1099 saa1099[MAX_SAA1099];
 
 static const UINT16 amplitude_lookup[16] = {
-	 0*32767/16,  1*32767/16,  2*32767/16,  3*32767/16,
-	 4*32767/16,  5*32767/16,  6*32767/16,  7*32767/16,
-	 8*32767/16,  9*32767/16, 10*32767/16, 11*32767/16,
-	12*32767/16, 13*32767/16, 14*32767/16, 15*32767/16
+	 0*32768u/16,  1*32768u/16,  2*32768u/16,  3*32768u/16,
+	 4*32768u/16,  5*32768u/16,  6*32768u/16,  7*32768u/16,
+	 8*32768u/16,  9*32768u/16, 10*32768u/16, 11*32768u/16,
+	12*32768u/16, 13*32768u/16, 14*32768u/16, 15*32768u/16
 };
 
 static const UINT8 envelope[8][64] = {
@@ -179,34 +184,26 @@ static const UINT8 envelope[8][64] = {
 
 static void saa1099_envelope(int chip, int ch)
 {
-	struct SAA1099 *saa = &saa1099[chip];
+	struct SAA1099 * const saa = &saa1099[chip];
 	if (saa->env_enable[ch])
 	{
-		int step, mode, mask;
-		mode = saa->env_mode[ch];
+		const UINT8 mode = saa->env_mode[ch];
 		/* step from 0..63 and then loop in steps 32..63 */
-		step = saa->env_step[ch] =
+		const UINT8 step = saa->env_step[ch] =
 			((saa->env_step[ch] + 1) & 0x3f) | (saa->env_step[ch] & 0x20);
 
-		mask = 15;
-		if (saa->env_bits[ch])
-			mask &= ~1; 	/* 3 bit resolution, mask LSB */
+		const UINT8 mask = (saa->env_bits[ch]) ? 14 /* 3 bit resolution, mask LSB */
+		                                       : 15;
 
+		UINT8 envval = envelope[mode][step] & mask;
 		saa->channels[ch*3+0].envelope[ LEFT] =
 		saa->channels[ch*3+1].envelope[ LEFT] =
-		saa->channels[ch*3+2].envelope[ LEFT] = envelope[mode][step] & mask;
-		if (saa->env_reverse_right[ch])
-		{
-			saa->channels[ch*3+0].envelope[RIGHT] =
-			saa->channels[ch*3+1].envelope[RIGHT] =
-			saa->channels[ch*3+2].envelope[RIGHT] = (15 - envelope[mode][step]) & mask;
-		}
-		else
-		{
-			saa->channels[ch*3+0].envelope[RIGHT] =
-			saa->channels[ch*3+1].envelope[RIGHT] =
-			saa->channels[ch*3+2].envelope[RIGHT] = envelope[mode][step] & mask;
-		}
+		saa->channels[ch*3+2].envelope[ LEFT] = envval;
+		if (saa->env_reverse_right[ch] & 0x01)
+			envval = (15 - envval) & mask;
+		saa->channels[ch*3+0].envelope[RIGHT] =
+		saa->channels[ch*3+1].envelope[RIGHT] =
+		saa->channels[ch*3+2].envelope[RIGHT] = envval;
 	}
 	else
 	{
@@ -223,15 +220,15 @@ static void saa1099_envelope(int chip, int ch)
 
 static void saa1099_update(int chip, INT16 **buffer, int length)
 {
-	struct SAA1099 *saa = &saa1099[chip];
-	int j, ch;
-	//int clk2div512;
+	struct SAA1099 * const saa = &saa1099[chip];
+	UINT32 j, ch;
+	//INT32 clk2div512;
 
 	/* if the channels are disabled we're done */
 	if (!saa->all_ch_enable)
 	{
 		/* init output data */
-		memset(buffer[LEFT],0,length*sizeof(INT16));
+		memset(buffer[ LEFT],0,length*sizeof(INT16));
 		memset(buffer[RIGHT],0,length*sizeof(INT16));
 		return;
 	}
@@ -249,7 +246,7 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 
 	// clock fix thanks to http://www.vogons.org/viewtopic.php?p=344227#p344227
 	//old: clk2div512 = 2 * saa->master_clock / 512;
-	//new/fixed: clk2div512 = (saa->master_clock + 128) / 256;
+	//new/fixed: clk2div512 = (saa->master_clock + 128) / clock_divider;
 
 	/* fill all data needed */
 	for( j = 0; j < length; j++ )
@@ -259,82 +256,47 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 		/* for each channel */
 		for (ch = 0; ch < 6; ch++)
 		{
-			UINT8 level = 0; // output level (0...2, 0 = off, 1 = 100%, 2 = 50%)
-			UINT8 noise_out;
-			UINT8 tone_out;
+			struct saa1099_channel* const saach = &saa->channels[ch];
+			int outlvl;
 
 			/* check the actual position in the square wave */
-			while (saa->channels[ch].counter <= 0)
+			while (saach->counter <= 0)
 			{
-				saa->channels[ch].counter += freq(saa->channels[ch]);
-				saa->channels[ch].level ^= 1;
+				saach->counter += freq(saa->channels[ch]);
+				saach->level ^= 1;
 
 				/* eventually clock the envelope counters */
 				if (ch == 1 && saa->env_clock[0] == 0)
 					saa1099_envelope(chip, 0);
-				if (ch == 4 && saa->env_clock[1] == 0)
+				else if (ch == 4 && saa->env_clock[1] == 0)
 					saa1099_envelope(chip, 1);
 			}
-			saa->channels[ch].counter -= 256;
+			saach->counter -= clock_divider;
 
-			// if the noise is enabled
-			noise_out = saa->noise[ch/3].level & 1; // noise output (noise 0: chan 0-2, noise 1: chan 3-5)
-			tone_out = saa->channels[ch].level & 1; // tone output
-			if (saa->channels[ch].noise_enable)
-			{
-				// if both noise and square wave are enabled, output is tone output
-				if (saa->channels[ch].freq_enable)
-				{
-					// half amplitude if the noise level is high
-					if (noise_out)
-						level = tone_out << 1;
-					else
-						level = tone_out;
-				}
-				else
-				{
-					// output is noise output
-					level = noise_out;
-				}
-			}
-			// if the square wave is enabled
-			else if (saa->channels[ch].freq_enable)
-			{
-				// output is tone output
-				level = tone_out;
-			}
-
-			// if the output level is high
-			if (level > 0)
-			{
-#if 0
-				output_l += (int)saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 16 / level;
-				output_r += (int)saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 16 / level;
-#else
 			// Now with bipolar output. -Valley Bell
-				output_l += (int)saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32 / level;
-				output_r += (int)saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32 / level;
-			}
-			else
-			{
-				output_l -= (int)saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32 / level;
-				output_r -= (int)saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32 / level;
-#endif
-			}
+			outlvl = 0;
+			if (saach->noise_enable)
+				outlvl += (saa->noise[ch/3].level & 1) ? +1 : -1;
+			if (saach->freq_enable)
+				outlvl += (saach->level & 1) ? +1 : -1;
+			output_l += outlvl * saach->amplitude[ LEFT] * saach->envelope[ LEFT] / 32;
+			output_r += outlvl * saach->amplitude[RIGHT] * saach->envelope[RIGHT] / 32;
 		}
 
 		for (ch = 0; ch < 2; ch++)
 		{
-			/* check the actual position in noise generator */
+			/* update the state of the noise generator
+			 * polynomial is x^18 + x^11 + x (i.e. 0x20400) and is a plain XOR, initial state is probably all 1s
+			 * see http://www.vogons.org/viewtopic.php?f=9&t=51695 */
 			while (saa->noise[ch].counter <= 0)
 			{
 				saa->noise[ch].counter += saa->noise[ch].freq; // clock / ((511 - frequency) * 2^(8 - octave)) or clock / 2^(8 + noise period)
-				if( ((saa->noise[ch].level & 0x4000) == 0) == ((saa->noise[ch].level & 0x0040) == 0) )
+				if( ((saa->noise[ch].level & 0x20000) == 0) != ((saa->noise[ch].level & 0x0400) == 0) )
 					saa->noise[ch].level = (saa->noise[ch].level << 1) | 1;
 				else
 					saa->noise[ch].level <<= 1;
 			}
-			saa->noise[ch].counter -= 256;
+			saa->noise[ch].counter -= clock_divider;
 		}
 		/* write sound data to the buffer */
 		buffer[LEFT][j] = output_l / 6;
@@ -346,13 +308,13 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 
 int saa1099_sh_start(const struct MachineSound *msound)
 {
-	int i, j;
+	int i;
 	const struct SAA1099_interface *intf = msound->sound_interface;
-
 
 	/* for each chip allocate one stream */
 	for (i = 0; i < intf->numchips; i++)
 	{
+		int j;
 		int vol[2];
 		double sample_rate;
 		char buf[2][64];
@@ -362,7 +324,7 @@ int saa1099_sh_start(const struct MachineSound *msound)
 		memset(saa, 0, sizeof(struct SAA1099));
 
 		saa->master_clock = 7159090.5; // = XTAL(14'318'181) / 2 //!! 4000000 8000000 6000000 ?
-		sample_rate = saa->master_clock / 256.; // current MAME
+		sample_rate = saa->master_clock / clock_divider; // current MAME
 		//sample_rate = saa->master_clock / 128.0 * 8; // previously / VGMPlay
 
 		for (j = 0; j < 2; j++)
@@ -385,7 +347,7 @@ void saa1099_sh_stop(void)
 
 static void saa1099_control_port_w( int chip, int reg, int data )
 {
-	struct SAA1099 *saa = &saa1099[chip];
+	struct SAA1099 * const saa = &saa1099[chip];
 
 	if ((data & 0xff) > 0x1c)
 	{
@@ -407,7 +369,7 @@ static void saa1099_control_port_w( int chip, int reg, int data )
 
 static void saa1099_write_port_w( int chip, int offset, int data )
 {
-	struct SAA1099 *saa = &saa1099[chip];
+	struct SAA1099 * const saa = &saa1099[chip];
 	const int reg = saa->selected_reg;
 	int ch;
 
@@ -419,19 +381,19 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 	switch (reg)
 	{
 	/* channel i amplitude */
-	case 0x00:	case 0x01:	case 0x02:	case 0x03:	case 0x04:	case 0x05:
+	case 0x00:  case 0x01:  case 0x02:  case 0x03:  case 0x04:  case 0x05:
 		ch = reg & 7;
 		saa->channels[ch].amplitude[LEFT] = amplitude_lookup[data & 0x0f];
 		saa->channels[ch].amplitude[RIGHT] = amplitude_lookup[(data >> 4) & 0x0f];
 		break;
 	/* channel i frequency */
-	case 0x08:	case 0x09:	case 0x0a:	case 0x0b:	case 0x0c:	case 0x0d:
+	case 0x08:  case 0x09:  case 0x0a:  case 0x0b:  case 0x0c:  case 0x0d:
 		ch = reg & 7;
 		saa->channels[ch].frequency = data & 0xff;
 		break;
 	/* channel i octave */
-	case 0x10:	case 0x11:	case 0x12:
-		ch = (reg - 0x10) << 1;
+	case 0x10:  case 0x11:  case 0x12:
+		ch = (reg - 0x10) << 1; // (reg & 0x03) << 1;
 		saa->channels[ch + 0].octave = data & 0x07;
 		saa->channels[ch + 1].octave = (data >> 4) & 0x07;
 		break;
@@ -459,8 +421,8 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 		saa->noise_params[1] = (data >> 4) & 0x03;
 		break;
 	/* envelope generators parameters */
-	case 0x18:	case 0x19:
-		ch = reg - 0x18;
+	case 0x18:  case 0x19:
+		ch = reg - 0x18; // reg & 0x01;
 		saa->env_reverse_right[ch] = data & 0x01;
 		saa->env_mode[ch] = (data >> 1) & 0x07;
 		saa->env_bits[ch] = (data & 0x10) ? 1 : 0;
@@ -486,7 +448,7 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 			}
 		}
 		break;
-	default:	/* Error! */
+	default:    /* Error! */
 		logerror("%04x: (SAA1099 #%d) Unknown operation (reg:%02x, data:%02x)\n",activecpu_get_pc(), chip, reg, data);
 		break;
 	}
