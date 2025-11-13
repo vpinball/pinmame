@@ -58,12 +58,13 @@ GEN: Sets the CMake generator to use for project generation, referenced by
      [9]  = "Visual Studio 15 2017"
      [10] = "Visual Studio 16 2019"
      [11] = "Visual Studio 17 2022"
-     
+     [12] = "Visual Studio 17 2026"
+
 BLD: Sets preference to compile and link the generated project(s)
      Y|ES: Compile and link generated project(s). See (PRJ:) for
             information on output path of build artifacts
      N|O : Generate project files only.  Do not compile/link
-    
+
 CFG: Sets preference for build type
      D|EBUG   : Build non-optimized artifacts for debugging and testing
      R|ELEASE : Build optimized artifacts for deployment

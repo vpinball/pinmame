@@ -11,6 +11,8 @@ to attach to the WPC/WPC95 serial printer interface.
 
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
+VS2026 build support
+
 *** CORE/CPU ***
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added PWM segment support to System 11 games
@@ -19,6 +21,10 @@ Added PWM lamps & solenoids support to Bally 6803 games
 Added PWM lamps & solenoids support to Zaccaria games
 Added PWM support to Alvin G. games
 Fixed PWM GameOn and J111 outputs for WPC games
+Fixed PWM GameOn & switched solenoid state being overwritten for S11 games
+Fixed some potential general solenoid issues with PWM
+Improved PWM bulb integration
+Improved BY6803 emulation, and add dimmed segments support, and bright PWM lights
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)

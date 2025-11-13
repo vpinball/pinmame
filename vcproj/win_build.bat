@@ -339,6 +339,7 @@ exit /b %errorlevel%
     set GEN[9]="Visual Studio 15 2017"
     set GEN[10]="Visual Studio 16 2019"
     set GEN[11]="Visual Studio 17 2022"
+    set GEN[12]="Visual Studio 18 2026"
 
     if defined GEN[%1] (
         set GENERATOR=!GEN[%1]!
