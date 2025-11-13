@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug with MAME Debugger" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release with MAME Debugger" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="InstallVPinMAME_VC2026.vcxproj" Id="9a61d1f7-f96c-4529-be6e-4acd7e3780b7" />
+  <Project Path="PinMAME_VC2026.vcxproj" Id="20db3784-cefd-43b8-8b62-e1e10854bf18" />
+  <Project Path="PinMAME32_VC2026.vcxproj" Id="5fb38c5b-8593-43f8-b6ac-1daa58df7cf5" />
+  <Project Path="VPinMAME_VC2026.vcxproj" Id="5ab254c3-9b91-4045-8a03-152a9fb1bf30" />
+</Solution>
