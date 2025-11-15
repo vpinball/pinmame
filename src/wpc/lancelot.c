@@ -101,14 +101,14 @@ static void timer_callback(int n) {
 static WRITE_HANDLER(snd_w) {
   if (!data || data == 0x80) return;
   if (data > 0x80 && data < 0x90) { // music, probably won't play at all without the microcontroller's ROM
-    locals.musicStart = memory_region(REGION_USER2)[data - 0x80] + ((UINT16)memory_region(REGION_USER2)[1 + data - 0xf80] << 8);
-    locals.musicStop = memory_region(REGION_USER2)[4 + data - 0x80] + ((UINT16)memory_region(REGION_USER2)[5 + data - 0x80] << 8);
+    locals.musicStart = (UINT16)memory_region(REGION_USER2)[data - 0x80] | ((UINT16)memory_region(REGION_USER2)[1 + data - 0xf80] << 8);
+    locals.musicStop = (UINT16)memory_region(REGION_USER2)[4 + data - 0x80] | ((UINT16)memory_region(REGION_USER2)[5 + data - 0x80] << 8);
     timer_adjust(locals.sndtimer2, 0, 0, 0.001);
     return;
   }
   if (data >= 0xf0) { // music, probably won't play at all without the microcontroller's ROM
-    locals.musicStart = memory_region(REGION_USER2)[data - 0xf0] + ((UINT16)memory_region(REGION_USER2)[1 + data - 0xf0] << 8);
-    locals.musicStop = memory_region(REGION_USER2)[4 + data - 0xf0] + ((UINT16)memory_region(REGION_USER2)[5 + data - 0xf0] << 8);
+    locals.musicStart = (UINT16)memory_region(REGION_USER2)[data - 0xf0] | ((UINT16)memory_region(REGION_USER2)[1 + data - 0xf0] << 8);
+    locals.musicStop = (UINT16)memory_region(REGION_USER2)[4 + data - 0xf0] | ((UINT16)memory_region(REGION_USER2)[5 + data - 0xf0] << 8);
     timer_adjust(locals.sndtimer2, 0, 0, 0.001);
     return;
   }
