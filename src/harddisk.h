@@ -42,8 +42,8 @@
  *************************************/
 
 #define HARD_DISK_HEADER_VERSION	1
-#define HARD_DISK_V1_HEADER_SIZE	76
-#define HARD_DISK_V2_HEADER_SIZE	80
+#define HARD_DISK_V1_HEADER_SIZE	76u
+#define HARD_DISK_V2_HEADER_SIZE	80u
 #define HARD_DISK_MAX_HEADER_SIZE	80
 
 #define HDFLAGS_HAS_PARENT			0x00000001

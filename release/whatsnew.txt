@@ -25,6 +25,7 @@ Fixed PWM GameOn & switched solenoid state being overwritten for S11 games
 Fixed some potential general solenoid issues with PWM
 Improved PWM bulb integration
 Improved BY6803 emulation, and add dimmed segments support, and bright PWM lights
+Fixed trolls in Medieval Madness
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)

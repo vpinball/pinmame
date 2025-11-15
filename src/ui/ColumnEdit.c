@@ -421,7 +421,7 @@ INT_PTR InternalColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 						lvi.pszText  = 0;
 						lvi.iItem    = i;
 						ListView_GetItem(hShown, &lvi);
-						order[nCount++]   = lvi.lParam;
+						order[nCount++]   = (int)lvi.lParam;
 						shown[lvi.lParam] = TRUE;
 					}
 					for (i = 0; i < nAvail; i++)
@@ -431,7 +431,7 @@ INT_PTR InternalColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 						lvi.pszText  = 0;
 						lvi.iItem    = i;
 						ListView_GetItem(hAvailable, &lvi);
-						order[nCount++]   = lvi.lParam;
+						order[nCount++]   = (int)lvi.lParam;
 						shown[lvi.lParam] = FALSE;
 					}
 #if 0

@@ -146,7 +146,7 @@ void ReadControls(HWND hWnd)
 			break;
 
 		case CT_SLIDER:
-			lpDmap->nValue = SendMessage(hCtrl, TBM_GETPOS, 0, 0);
+			lpDmap->nValue = (int)SendMessage(hCtrl, TBM_GETPOS, 0, 0);
 			validate(hCtrl, lpDmap);
 			break;
 
@@ -186,7 +186,7 @@ BOOL ReadControl(HWND hWnd, DWORD dwCtrlId)
 			return validate(hCtrl, lpDmap);
 
 		case CT_SLIDER:
-			lpDmap->nValue = SendMessage(hCtrl, TBM_GETPOS, 0, 0);
+			lpDmap->nValue = (int)SendMessage(hCtrl, TBM_GETPOS, 0, 0);
 			return validate(hCtrl, lpDmap);
 
 		case CT_NONE:

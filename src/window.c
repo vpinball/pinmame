@@ -381,28 +381,28 @@ void win_update(UINT32 idx)
 	{
 		/* If we've got a title, let's put that in, too... */
 		if( pwin->title )
-        {
+		{
 			UINT32 i, j, length1, length2;
 			char *p = strchr(pwin->title, '\t');
 
 			/* If the title contains a tab, split it into two parts */
-            if( p )
+			if( p )
 			{
-                i = 0;
-                j = 1;
+				i = 0;
+				j = 1;
 				length1 = (UINT32)(p - pwin->title);
-				length2 = strlen(p + j);
+				length2 = (UINT32)strlen(p + j);
 
 				for( x = x0; x < screen_w && x < (x0 + pwin->w); x++ )
 				{
 					if( p_prio_map[x + (pwin->y * screen_w)] < pwin->prio )
 						continue;
 					color = pwin->co_frame;
-                    if( x < (x0 + 1) )
+					if( x < (x0 + 1) )
 					{
 						ch = FRAME_H;
 					}
-                    else
+					else
 					if( x > (x0 + 1 + length1 + 1) )
 					{
 						if( x < (x0 + pwin->w - 1 - length2 - 1) )
@@ -418,7 +418,7 @@ void win_update(UINT32 idx)
 								ch = CAPTION_L;
 							else
 							{
-                                color = pwin->co_title;
+								color = pwin->co_title;
 								ch = p[j++];
 							}
 						}
@@ -432,24 +432,24 @@ void win_update(UINT32 idx)
 							ch = CAPTION_R;
 						else
 						{
-                            color = pwin->co_title;
+							color = pwin->co_title;
 							ch = pwin->title[i++];
 						}
 					}
 					win_out(ch, color, x, pwin->y, idx);
-                }
-            }
+				}
+			}
 			else
 			{
 				/* Draw a top border with a title in the left part */
-				length1 = strlen(pwin->title);
+				length1 = (UINT32)strlen(pwin->title);
 				i = 0;
 				for( x = x0; x < screen_w && x < (x0 + pwin->w); x++ )
 				{
 					if( p_prio_map[x + (pwin->y * screen_w)] < pwin->prio )
 						continue;
 					color = pwin->co_frame;
-                    if( x < (x0 + 1) || x > (x0 + 1 + length1 + 1) )
+					if( x < (x0 + 1) || x > (x0 + 1 + length1 + 1) )
 					{
 						ch = FRAME_H;
 					}
@@ -1014,7 +1014,7 @@ INT32 win_internal_putchar(UINT32 idx, UINT8 ch)
 		break;
 
 	case '\r':  /* Carriage return */
-		rel = - pwin->cx;
+		rel = - (INT32)pwin->cx;
 		pwin->cx = 0;
 		break;
 
@@ -1022,7 +1022,7 @@ INT32 win_internal_putchar(UINT32 idx, UINT8 ch)
 #if NEWLINE_ERASE_EOL
 		win_erase_eol( idx, ' ' );
 #endif
-		rel = - pwin->cx;
+		rel = - (INT32)pwin->cx;
 		pwin->cx = 0;
 		pwin->cy++;
 		if( pwin->cy >= pwin->h )

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
    Bally prototype machines (by gaston, 03/2008)
    ------------------------

@@ -832,7 +832,7 @@ void *memory_get_write_ptr(int cpunum, offs_t offset)
 
 UINT8 get_handler_index(struct handler_data *table, genf *handler, offs_t start)
 {
-	int i;
+	UINT8 i;
 
 	/* all static handlers are hardcoded */
 	if (HANDLER_IS_STATIC(handler))
@@ -1677,8 +1677,8 @@ void register_banks(void)
 		if (!IS_SPARSE(bits))
 		{
 			UINT32 size = memory_region_length(REGION_CPU1 + cpunum);
-			if (size > (1<<bits))
-				size = 1 << bits;
+			if (size > (1u<<bits))
+				size = 1u << bits;
 			rg_add_entry(0, size-1, RG_SAVE_READ|RG_SAVE_WRITE);
 		}
 

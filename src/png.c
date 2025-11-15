@@ -37,7 +37,7 @@ static UINT32 convert_from_network_order (UINT8 *v)
 
 int png_unfilter(struct png_info *p)
 {
-	int i, j, bpp;
+	UINT32 i, j, bpp;
 	INT32 prediction, pA, pB, pC, dA, dB, dC;
 	UINT8 *src, *dst;
 
@@ -458,7 +458,7 @@ int png_expand_buffer_8bit (struct png_info *p)
 {
 	if (p->bit_depth < 8)
 	{
-		int i;
+		UINT32 i;
 		UINT8 *inp, *outp, *outbuf;
 
 		if ((outbuf = (UINT8 *)malloc(p->width*p->height))==NULL)
@@ -472,7 +472,7 @@ int png_expand_buffer_8bit (struct png_info *p)
 
 		for (i = 0; i < p->height; i++)
 		{
-			int j;
+			UINT32 j;
 			for(j = 0; j < p->width / ( 8 / p->bit_depth); j++)
 			{
 				int k;
@@ -496,7 +496,8 @@ int png_expand_buffer_8bit (struct png_info *p)
 
 void png_delete_unused_colors (struct png_info *p)
 {
-	int i, tab[256], pen=0, trns=0;
+	UINT32 i;
+	int tab[256], pen = 0, trns = 0;
 	UINT8 ptemp[3*256], ttemp[256];
 
 	memset (tab, 0, 256*sizeof(int));
@@ -673,7 +674,7 @@ int png_write_datastream(mame_file *fp, struct png_info *p)
 
 int png_filter(struct png_info *p)
 {
-	int i;
+	UINT32 i;
 	UINT8 *src, *dst;
 
 	if((p->fimage = (UINT8 *)malloc (p->height*(p->rowbytes+1)))==NULL)
@@ -721,13 +722,13 @@ static int png_pack_buffer (struct png_info *p)
 {
 	if (p->bit_depth < 8)
 	{
-		int i;
+		UINT32 i;
 		UINT8 *outp, *inp;
 
 		outp = inp = p->image;
 		for (i=0; i<p->height; i++)
 		{
-			int j;
+			UINT32 j;
 			for(j=0; j<p->width/(8/p->bit_depth); j++)
 			{
 				int k;
@@ -760,7 +761,7 @@ static int png_pack_buffer (struct png_info *p)
 
 static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 {
-	int i, j;
+	UINT32 i, j;
 	struct png_info p;
 
 	memset (&p, 0, sizeof (struct png_info));

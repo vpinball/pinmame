@@ -571,14 +571,12 @@ int osd_feof(osd_file *file)
 UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 {
 	UINT32 bytes_left = length;
-	int bytes_to_copy;
-	DWORD result;
 
 	// handle data from within the buffer
 	if (file->offset >= file->bufferbase && file->offset < file->bufferbase + file->bufferbytes)
 	{
 		// copy as much as we can
-		bytes_to_copy = file->bufferbase + file->bufferbytes - file->offset;
+		UINT64 bytes_to_copy = file->bufferbase + file->bufferbytes - file->offset;
 		if (bytes_to_copy > length)
 			bytes_to_copy = length;
 		memcpy(buffer, &file->buffer[file->offset - file->bufferbase], bytes_to_copy);
@@ -597,7 +595,7 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 	if (file->offset != file->filepos)
 	{
 		LONG upperPos = file->offset >> 32;
-		result = SetFilePointer(file->handle, (UINT32)file->offset, &upperPos, FILE_BEGIN);
+		DWORD result = SetFilePointer(file->handle, (UINT32)file->offset, &upperPos, FILE_BEGIN);
 		if (result == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR)
 		{
 			file->filepos = ~0;
@@ -611,12 +609,12 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 	{
 		// read as much of the buffer as we can
 		file->bufferbase = file->offset;
-		file->bufferbytes = 0;
-		ReadFile(file->handle, file->buffer, FILE_BUFFER_SIZE, &file->bufferbytes, NULL);
+		if(!ReadFile(file->handle, file->buffer, FILE_BUFFER_SIZE, &file->bufferbytes, NULL))
+			file->bufferbytes = 0;
 		file->filepos += file->bufferbytes;
 
 		// copy it out
-		bytes_to_copy = bytes_left;
+		UINT32 bytes_to_copy = bytes_left;
 		if (bytes_to_copy > file->bufferbytes)
 			bytes_to_copy = file->bufferbytes;
 		memcpy(buffer, file->buffer, bytes_to_copy);
@@ -631,7 +629,9 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 	else
 	{
 		// do the read
-		ReadFile(file->handle, buffer, bytes_left, &result, NULL);
+		DWORD result;
+		if(!ReadFile(file->handle, buffer, bytes_left, &result, NULL))
+			result = 0;
 		file->filepos += result;
 
 		// adjust the pointers and return

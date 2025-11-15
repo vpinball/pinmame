@@ -5415,7 +5415,7 @@ void BasicBitmap::InitDIBInfo(void *ptr, int width, int height, PixelFmt fmt)
 	info->bmiHeader.biClrImportant = 0;
 
 	if (bpp < 15) {
-		palsize = (1 << bpp) * sizeof(PALETTEENTRY);
+		palsize = (1 << bpp) * (int)sizeof(PALETTEENTRY);
 	}
 	else if (bpp == 16 || bpp == 32 || bpp == 24) {
 		bitfield = 3 * sizeof(RGBQUAD);

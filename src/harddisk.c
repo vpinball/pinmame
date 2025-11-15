@@ -1361,7 +1361,8 @@ static int write_header(void *file, const struct hard_disk_header *header)
 static int read_sector_map(struct hard_disk_info *info)
 {
 	mapentry_t cookie;
-	int i, err;
+	UINT32 i;
+	int err;
 	UINT32 count;
 
 	/* first allocate memory */

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #define VERBOSE 0
 
 #include "driver.h"

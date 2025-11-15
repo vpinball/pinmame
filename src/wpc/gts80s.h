@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #pragma once
 
 /*
@@ -8,7 +10,7 @@
     - System 80/80A Sound & Speech Board
 
     - System 80A Sound Board with a PiggyPack installed
-	  (thanks goes to Peter Hall for providing some very usefull information)
+      (thanks goes to Peter Hall for providing some very useful information)
 
     - System 80B Sound Board (3 generations)
 
@@ -19,9 +21,9 @@
 /*-- Sound Board, 1 X 1K Sound Rom, 6530 System sound rom --*/
 #define GTS80S1K_ROMSTART(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU1) \
-	ROM_LOAD(n1, 0x0400,  0x0400, chk1) \
+    ROM_LOAD(n1, 0x0400,  0x0400, chk1) \
     ROM_RELOAD(  0x0800,  0x0400) \
-	ROM_LOAD(n2, 0x0c00,  0x0400, chk2) \
+    ROM_LOAD(n2, 0x0c00,  0x0400, chk2) \
     ROM_RELOAD(  0xfc00,  0x0400) /* reset vector */
 
 /*-- Sound Board, 1 X 2K Sound Rom --*/
@@ -38,8 +40,8 @@ extern MACHINE_DRIVER_EXTERN(gts80s_sp);
 /*-- Sound & Speeh Board, 2 X 2K Voice/Sound Roms --*/
 #define GTS80SS22_ROMSTART(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU1) \
-	ROM_LOAD(n1, 0x7000,  0x0800, chk1) \
-	ROM_LOAD(n2, 0x7800,  0x0800, chk2)
+    ROM_LOAD(n1, 0x7000,  0x0800, chk1) \
+    ROM_LOAD(n2, 0x7800,  0x0800, chk2)
 
 extern MACHINE_DRIVER_EXTERN(gts80s_ss_old);
 extern MACHINE_DRIVER_EXTERN(gts80s_ss);
@@ -132,7 +134,7 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x10000, REGION_CPU2) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 //This code did not work for the 128K Rom games
 #if 0
@@ -154,10 +156,10 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD1(0x00000, n3, chk3) \
-	GTS3S_ROMLOAD1(0x20000, n4, chk4) \
+    GTS3S_ROMLOAD1(0x00000, n3, chk3) \
+    GTS3S_ROMLOAD1(0x20000, n4, chk4) \
   SOUNDREGION(0x10000, REGION_CPU2) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 /*-- 2 x 32K Sound CPU Roms, 1 x 256K Voice Rom --*/
 //Purposely load in n2 first!
@@ -175,10 +177,10 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD2(0x00000, n3, chk3) \
-	GTS3S_ROMLOAD2(0x80000, n4, chk4) \
+    GTS3S_ROMLOAD2(0x00000, n3, chk3) \
+    GTS3S_ROMLOAD2(0x80000, n4, chk4) \
   SOUNDREGION(0x10000, REGION_CPU2) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 /*-- 2 x 32K Sound CPU Roms, 2 x 256K Voice Roms --*/
 //Purposely load in n2 first!
@@ -186,10 +188,10 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD2(0x00000, n3, chk3) \
-	GTS3S_ROMLOAD2(0x80000, n4, chk4) \
+    GTS3S_ROMLOAD2(0x00000, n3, chk3) \
+    GTS3S_ROMLOAD2(0x80000, n4, chk4) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 /*-- 2 x 32K Sound CPU Roms, 1 x 512K Voice Rom --*/
 //Purposely load in n2 first!
@@ -197,10 +199,10 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD4(0x00000, n3, chk3) \
-	  ROM_RELOAD(0x80000, 0x80000) \
+    GTS3S_ROMLOAD4(0x00000, n3, chk3) \
+      ROM_RELOAD(0x80000, 0x80000) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 /*-- 2 x 32K Sound CPU Roms, 1 x 512K, 1 x 256K Voice Roms --*/
 //Purposely load in n2 first!
@@ -208,10 +210,10 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD4(0x00000, n3, chk3) \
-	GTS3S_ROMLOAD2(0x80000, n4, chk4) \
+    GTS3S_ROMLOAD4(0x00000, n3, chk3) \
+    GTS3S_ROMLOAD2(0x80000, n4, chk4) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 /*-- 2 x 32K Sound CPU Roms, 2 x 512K Voice Roms --*/
 //Purposely load in n2 first!
@@ -219,20 +221,20 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD4(0x00000, n3, chk3) \
-	GTS3S_ROMLOAD4(0x80000, n4, chk4) \
+    GTS3S_ROMLOAD4(0x00000, n3, chk3) \
+    GTS3S_ROMLOAD4(0x80000, n4, chk4) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
 /*-- unknown Sound & Voice CPU Roms --*/
 #define GTS3SOUNDX(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
-	ROM_LOAD(n1, 0x8000,  0, chk1) \
+    ROM_LOAD(n1, 0x8000,  0, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	ROM_LOAD(n3, 0x00000, 0, chk3) \
-	ROM_LOAD(n4, 0x80000, 0, chk4) \
+    ROM_LOAD(n3, 0x00000, 0, chk3) \
+    ROM_LOAD(n4, 0x80000, 0, chk4) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
-	ROM_LOAD(n2, 0x8000,  0, chk2)
+    ROM_LOAD(n2, 0x8000,  0, chk2)
 
 extern MACHINE_DRIVER_EXTERN(gts80s_s3);
 extern MACHINE_DRIVER_EXTERN(gts80s_s3_no);

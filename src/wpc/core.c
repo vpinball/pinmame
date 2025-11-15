@@ -2668,7 +2668,7 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_18V_DC_S11: // Strobed bulb, 18V switched through ?, resistor from schematics (Guns'n Roses)
+    case CORE_MODOUT_BULB_44_18V_DC_S11: // Strobed bulb, 18V switched through ?, resistor from schematics (Guns n' Roses)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 18.f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = 0;

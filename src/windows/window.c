@@ -247,7 +247,7 @@ INLINE int wnd_extra_width(void)
 	if (!win_window_mode)
 		return 0;
 #ifdef VPINMAME
-	AdjustWindowRectEx(&window, GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
+	AdjustWindowRectEx(&window, (DWORD)GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), (DWORD)GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
 #else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 #endif
@@ -266,7 +266,7 @@ INLINE int wnd_extra_height(void)
 	if (!win_window_mode)
 		return 0;
 #ifdef VPINMAME
-	AdjustWindowRectEx(&window, GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
+	AdjustWindowRectEx(&window, (DWORD)GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), (DWORD)GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
 #else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 #endif

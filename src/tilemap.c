@@ -143,7 +143,7 @@ static int PenToPixel_Init( struct tilemap *tilemap )
 		If performance is an issue, we can always (re)introduce
 		customized code for each case and forgo tables.
 	*/
-	int i,x,y,tx,ty;
+	UINT32 i,x,y,tx,ty;
 	UINT32 *pPenToPixel;
 	int lError;
 
@@ -278,7 +278,7 @@ UINT32 tilemap_scan_cols_flip_xy( UINT32 col, UINT32 row, UINT32 num_cols, UINT3
 
 static int mappings_create( struct tilemap *tilemap )
 {
-	int max_memory_offset = 0;
+	UINT32 max_memory_offset = 0;
 	UINT32 col,row;
 	UINT32 num_logical_rows = tilemap->num_logical_rows;
 	UINT32 num_logical_cols = tilemap->num_logical_cols;
@@ -804,7 +804,6 @@ struct tilemap *tilemap_create(
 	int num_cols, int num_rows )
 {
 	struct tilemap *tilemap;
-	UINT32 row;
 	int num_tiles;
 
 	tilemap = calloc( 1,sizeof( struct tilemap ) );
@@ -861,6 +860,8 @@ struct tilemap *tilemap_create(
 			tilemap->transparency_bitmap &&
 			(mappings_create( tilemap )==0) )
 		{
+			int row;
+
 			tilemap->pixmap_pitch_line = tilemap->pixmap->rowpixels;
 			tilemap->pixmap_pitch_row = tilemap->pixmap_pitch_line*tile_height;
 

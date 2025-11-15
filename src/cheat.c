@@ -8671,7 +8671,7 @@ static void DisposeCheatDatabase(void)
 static void SaveCheat(CheatEntry * entry)
 {
 	mame_file * theFile;
-	UINT32	i;
+	INT32	i;
 	char	buf[4096];
 
 	if(!entry || !entry->actionList)
@@ -9139,7 +9139,8 @@ static void UpdateSearch(SearchInfo * search)
 
 static void DoSearch(SearchInfo * search)
 {
-	int	i, j;
+	INT32 i;
+	UINT32 j;
 
 	search->numResults = 0;
 
@@ -9721,7 +9722,7 @@ static void WriteData(CheatAction * action, UINT32 data)
 
 static void WatchCheatEntry(CheatEntry * entry, UINT8 associate)
 {
-	UINT32		i;
+	INT32		i;
 	CheatEntry	* associateEntry = NULL;
 
 	if(associate)

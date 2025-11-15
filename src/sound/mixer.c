@@ -339,7 +339,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* const chann
 	if (channel->legacy_resample || channel->lr_silence[left_right] || scale_copy == 0.f)
 	{
 		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-		const int step = ((unsigned long long)(channel->from_frequency+0.5) << FRACTION_BITS) / (unsigned long long)(channel->to_frequency+0.5);
+		const int step = (int)(((unsigned long long)(channel->from_frequency+0.5) << FRACTION_BITS) / (unsigned long long)(channel->to_frequency+0.5));
 		int frac = channel->frac;
 
 		if (channel->is_float)
@@ -476,7 +476,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data * const chann
 		const INT8* const __restrict src_end = src + src_len;
 		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
-		const int step = ((unsigned long long)(channel->from_frequency+0.5) << FRACTION_BITS) / (unsigned long long)(channel->to_frequency+0.5);
+		const int step = (int)(((unsigned long long)(channel->from_frequency+0.5) << FRACTION_BITS) / (unsigned long long)(channel->to_frequency+0.5));
 		int frac = channel->frac;
 		src += frac >> FRACTION_BITS;
 		frac &= FRACTION_MASK;

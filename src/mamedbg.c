@@ -1629,7 +1629,7 @@ static unsigned get_register_id( char **parg, int *size )
 	int i;
 	for( i = 0; i < DBGREGS.count; i++ )
 	{
-		int l = strlen( DBGREGS.name[i] );
+		int l = (int)strlen( DBGREGS.name[i] );
 		if( l > 0 && !stringcasecmp( *parg, DBGREGS.name[i] ) )
 		{
 			if( !isalnum( (*parg)[l] ) )
@@ -2562,7 +2562,7 @@ static void dump_regs( void )
 			UINT32 width;
 			if( reg[i] == -1 )
 				continue;		/* skip row breaks */
-			width = strlen( activecpu_dump_reg(reg[i]) );
+			width = (UINT32)strlen( activecpu_dump_reg(reg[i]) );
 			if( width >= regs->max_width )
 				regs->max_width = width + 1;
 		}
@@ -2572,7 +2572,7 @@ static void dump_regs( void )
 	y = 0;
 	win_set_curpos( win, 0, 0 );
 	sprintf( title, "CPU #%d %-8s Flags:%s  Cycles:%6u", active_cpu, name, flags, activecpu_get_icount() );
-	l = strlen(title);
+	l = (int)strlen(title);
 	if( l + 2 < w )
 	{
 		/* Everything should fit into the caption */
@@ -2585,7 +2585,7 @@ static void dump_regs( void )
 	{
 		/* At least CPU # and flags should fit into the caption */
 		sprintf( title, "CPU #%d %-8s Flags:%s", active_cpu, name, flags );
-		l = strlen(title);
+		l = (int)strlen(title);
 		if( l + 2 < w )
 		{
 			if( l + 4 < w )
@@ -2600,7 +2600,7 @@ static void dump_regs( void )
 		else
 		{
 			sprintf( title, "CPU #%d %-8s Cyc:%6u", active_cpu, name, activecpu_get_icount() );
-			l = strlen(title);
+			l = (int)strlen(title);
 			if( l + 2 < w )
 			{
 				if( l + 4 < w )
@@ -2690,12 +2690,12 @@ static void dump_regs( void )
 				pedit->x = x;
 				pedit->y = y + regs->base;
 				if( strlen(name) >= regs->max_width )
-					regs->max_width = strlen(name) + 1;
+					regs->max_width = (UINT32)strlen(name) + 1;
 				/* Find a colon */
 				p = strchr( name, ':' );
 				if( p )
 				{
-					pedit->w = strlen( p + 1 );
+					pedit->w = (UINT8)strlen( p + 1 );
 				}
 				else
 				{
@@ -2705,21 +2705,21 @@ static void dump_regs( void )
 					{
 						/* Include the apostrophe in the name! */
 						++p;
-						pedit->w = strlen( p );
+						pedit->w = (UINT8)strlen( p );
 					}
 					else
 					{
 						/* TODO: other characters to delimit a register name from it's value? */
 						/* this is certainly wrong :( */
 						p = name;
-						pedit->w = strlen( p );
+						pedit->w = (UINT8)strlen( p );
 					}
 				}
 				/* length of the name (total length - length of nibbles) */
-				pedit->n = strlen( name ) - pedit->w;
+				pedit->n = (UINT8)strlen( name ) - pedit->w;
 
 				/* strip trailing spaces */
-				l = p - name;
+				l = (int)(p - name);
 				while( l != 0 && name[ l - 1 ] == ' ' )
 				{
 					l--;
@@ -2740,7 +2740,7 @@ static void dump_regs( void )
 				if( reg[1] != -1 )
 					win_printf( win, "%*s", regs->max_width - pedit->w - pedit->n, "" );
 			}
-			x += strlen( name ) + regs->max_width - pedit->w - pedit->n;
+			x += (int)strlen( name ) + regs->max_width - pedit->w - pedit->n;
 			pedit++;
 			val++;
 			old++;
@@ -3499,7 +3499,7 @@ static int edit_cmds_parse( char *cmdline )
 	{
 		if( !commands[i].name )
 			continue;
-		l = strlen( commands[i].name );
+		l = (int)strlen( commands[i].name );
 		if( !strncmp( cmdline, commands[i].name, l ) && !isalnum( cmdline[l] ) )
 		{
 			while( cmdline[l] && isspace( cmdline[l] ) ) l++;
@@ -3508,7 +3508,7 @@ static int edit_cmds_parse( char *cmdline )
 		}
 		if( commands[i].alias )
 		{
-			l = strlen( commands[i].alias );
+			l = (int)strlen( commands[i].alias );
 			if( !strncmp( cmdline, commands[i].alias, l ) && !isalnum( cmdline[l] ) )
 			{
 				while( cmdline[l] && isspace( cmdline[l] ) ) l++;
@@ -3563,7 +3563,7 @@ static void edit_cmds(void)
 
 	i = readkey();
 	k = keyboard_name(i);
-	l = strlen(k);
+	l = (int)strlen(k);
 
 	if( l == 1 )
 		edit_cmds_append(k);

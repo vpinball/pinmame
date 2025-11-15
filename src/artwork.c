@@ -1308,7 +1308,7 @@ static void cmy_blend_intersecting_rect(
 
 static void update_palette_lookup(struct mame_display *display)
 {
-	int i, j;
+	UINT32 i, j;
 
 	/* loop over dirty colors in batches of 32 */
 	for (i = 0; i < display->game_palette_entries; i += 32)
@@ -2120,7 +2120,7 @@ static int load_bitmap(const char *gamename, struct artwork_piece *piece)
 {
 	struct png_info png;
 	UINT8 *src;
-	int x, y;
+	UINT32 x, y;
 
 	/* if we already have a bitmap, don't bother trying to read a file */
 	if (piece->rawbitmap)
@@ -2207,7 +2207,7 @@ static int load_alpha_bitmap(const char *gamename, struct artwork_piece *piece, 
 {
 	struct png_info png;
 	UINT8 *src;
-	int x, y;
+	UINT32 x, y;
 
 	/* if no file, we succeeded */
 	if (!piece->alpha_filename)

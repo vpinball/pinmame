@@ -1184,7 +1184,7 @@ static MACHINE_INIT(s11) {
   }
 
   // DataEast/Sega 3
-  else if ((strncasecmp(gn, "gnr_",  4) == 0) // Guns'n Roses
+  else if ((strncasecmp(gn, "gnr_",  4) == 0) // Guns n' Roses
         || (strncasecmp(gn, "tftc_", 5) == 0) // Tales from The Crypt
         || (strncasecmp(gn, "stwr_", 5) == 0) // Star Wars
         || (strncasecmp(gn, "jupk_", 5) == 0) // Jurassic Park

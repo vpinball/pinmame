@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // Kiss 8035 prototype
 
 #include "driver.h"

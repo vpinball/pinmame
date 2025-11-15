@@ -1301,7 +1301,7 @@ static void region_post_process(struct rom_load_data *romdata, const struct RomM
 	/* if the region is inverted, do that now */
 	if (ROMREGION_ISINVERTED(regiondata))
 	{
-		int i;
+		UINT32 i;
 		debugload("+ Inverting region\n");
 		for (i = 0, base = romdata->regionbase; i < romdata->regionlength; i++)
 			*base++ ^= 0xff;
@@ -1314,7 +1314,7 @@ static void region_post_process(struct rom_load_data *romdata, const struct RomM
 	if (datawidth > 1 && littleendian)
 #endif
 	{
-		int i;
+		UINT32 i;
 		debugload("+ Byte swapping region\n");
 		for (i = 0, base = romdata->regionbase; i < romdata->regionlength; i += datawidth)
 		{

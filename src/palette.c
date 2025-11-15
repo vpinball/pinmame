@@ -686,7 +686,7 @@ static int palette_alloc(void)
 
 int palette_init(void)
 {
-	int i;
+	UINT32 i;
 
 	/* recompute the default palette and initialize the color correction table */
 	recompute_adjusted_palette(1);
@@ -758,7 +758,7 @@ int palette_init(void)
 		if (color < total_colors)
 			Machine->remapped_colortable[i] = Machine->pens[color];
 		else
-			usrintf_showmessage("colortable[%d] (=%d) out of range (total_colors = %d)",
+			usrintf_showmessage("colortable[%u] (=%d) out of range (total_colors = %d)",
 					i,color,total_colors);
 	}
 
@@ -996,7 +996,7 @@ static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new 
 
 static void recompute_adjusted_palette(int brightness_or_gamma_changed)
 {
-	int i;
+	UINT32 i;
 
 	/* regenerate the color correction table if needed */
 	if (brightness_or_gamma_changed)
@@ -1911,7 +1911,7 @@ PALETTE_INIT( black_and_white )
 
 PALETTE_INIT( RRRR_GGGG_BBBB )
 {
-	int i;
+	UINT32 i;
 
 
 	for (i = 0;i < Machine->drv->total_colors;i++)

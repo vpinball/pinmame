@@ -331,8 +331,12 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 
 	// print the exception type and address
 	fprintf(stderr, "\n-----------------------------------------------------\n");
+#ifdef __LP64__
+	fprintf(stderr, "Exception at EIP=%016llX%s: %s\n", (UINT64)info->ExceptionRecord->ExceptionAddress,
+#else
 	fprintf(stderr, "Exception at EIP=%08X%s: %s\n", (UINT32)info->ExceptionRecord->ExceptionAddress,
-			lookup_symbol((UINT32)info->ExceptionRecord->ExceptionAddress), exception_table[i].string);
+#endif
+			lookup_symbol(info->ExceptionRecord->ExceptionAddress), exception_table[i].string);
 
 	// for access violations, print more info
 	if (info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
@@ -359,12 +363,12 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 #else
 	// print the state of the CPU
 	fprintf(stderr, "-----------------------------------------------------\n");
-	fprintf(stderr, "RAX=%16X RBX=%16X RCX=%16X RDX=%16X\n",
+	fprintf(stderr, "RAX=%016llX RBX=%016llX RCX=%016llX RDX=%016llX\n",
 			(UINT64)info->ContextRecord->Rax,
 			(UINT64)info->ContextRecord->Rbx,
 			(UINT64)info->ContextRecord->Rcx,
 			(UINT64)info->ContextRecord->Rdx);
-	fprintf(stderr, "RSI=%16X RDI=%16X RBP=%16X RSP=%16X\n",
+	fprintf(stderr, "RSI=%016llX RDI=%016llX RBP=%016llX RSP=%016llX\n",
 			(UINT64)info->ContextRecord->Rsi,
 			(UINT64)info->ContextRecord->Rdi,
 			(UINT64)info->ContextRecord->Rbp,
@@ -376,8 +380,8 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 	if (get_code_base_size(&code_start, &code_size))
 	{
 		char prev_symbol[1024], curr_symbol[1024];
-		UINT32 last_call = (UINT32)info->ExceptionRecord->ExceptionAddress;
 #ifdef __LP64__
+		UINT64 last_call = (UINT64)info->ExceptionRecord->ExceptionAddress;
 #if defined(_M_ARM64)
 #pragma message ( "Warning: No CPU state debug output implemented yet" )
 		UINT64 esp_start = 0;
@@ -387,6 +391,7 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 		UINT64 esp_end = (esp_start | 0xffff) + 1;
 		UINT64 esp;
 #else
+		UINT32 last_call = (UINT32)info->ExceptionRecord->ExceptionAddress;
 		UINT32 esp_start = info->ContextRecord->Esp;
 		UINT32 esp_end = (esp_start | 0xffff) + 1;
 		UINT32 esp;
@@ -394,18 +399,31 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 		// reprint the actual exception address
 		fprintf(stderr, "-----------------------------------------------------\n");
 		fprintf(stderr, "Stack crawl:\n");
+#ifdef __LP64__
+		fprintf(stderr, "exception-> %016llX%s\n", last_call, strcpy(prev_symbol, lookup_symbol(last_call)));
+#else
 		fprintf(stderr, "exception-> %08X%s\n", last_call, strcpy(prev_symbol, lookup_symbol(last_call)));
+#endif
 
 		// crawl the stack until we hit the next 64k boundary
+#ifdef __LP64__
+		for (esp = esp_start; esp < esp_end; esp += 8)
+		{
+			UINT64 stack_val = *(UINT64 *)esp;
+#else
 		for (esp = esp_start; esp < esp_end; esp += 4)
 		{
 			UINT32 stack_val = *(UINT32 *)esp;
-
+#endif
 			// if the value on the stack points within the code block, check it out
 			if (stack_val >= code_start && stack_val < code_start + code_size)
 			{
 				UINT8 *return_addr = (UINT8 *)stack_val;
+#ifdef __LP64__
+				UINT64 call_target = 0;
+#else
 				UINT32 call_target = 0;
+#endif
 
 				// make sure the code that we think got us here is actually a CALL instruction
 				if (return_addr[-5] == 0xe8)
@@ -428,7 +446,11 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 					if (stop_compare == NULL || strncmp(curr_symbol, prev_symbol, stop_compare - prev_symbol))
 					{
 						strcpy(prev_symbol, curr_symbol);
+#ifdef __LP64__
+						fprintf(stderr, "  %016llX: %016llX%s\n", esp, stack_val, curr_symbol);
+#else
 						fprintf(stderr, "  %08X: %08X%s\n", esp, stack_val, curr_symbol);
+#endif
 						last_call = stack_val;
 					}
 				}

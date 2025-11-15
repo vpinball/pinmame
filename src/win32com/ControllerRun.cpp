@@ -419,7 +419,7 @@ void SetWindowStyle(HWND hWnd, int iWindowStyle)
 	Rect.right = iWidth * (dmd_scalefactor ? dmd_scalefactor : 1);
 	Rect.bottom = iHeight * (dmd_scalefactor ? dmd_scalefactor : 1);
 
-	AdjustWindowRect(&Rect, lNewStyle, FALSE);
+	AdjustWindowRect(&Rect, (DWORD)lNewStyle, FALSE);
 
 	SetWindowPos(hWnd, 0, 0, 0, Rect.right-Rect.left, Rect.bottom-Rect.top, SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE);
 	InvalidateRect(hWnd, NULL, true);

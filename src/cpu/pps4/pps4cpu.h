@@ -1,10 +1,12 @@
+// license:BSD-3-Clause
+
 /*******************************************************
  *
  *      Portable PPS/4 emulator
  *
  *      Written by G. Volkenborn for use with PinMAME
  *
- *		Partially based on Z80Em by Marcel De Kogel
+ *      Partially based on Z80Em by Marcel De Kogel
  *
  *      CPU related macros
  *
