@@ -624,7 +624,7 @@ struct AY8910
 	write8_handler PortBwrite;
 	UINT8 register_latch;
 	UINT8 Regs[16];
-	INT16 lastEnable;
+	UINT8 lastEnable;
 	INT32 PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
 	INT32 CountA,CountB,CountC,CountN,CountE;
 	UINT32 VolA,VolB,VolC,VolE;
@@ -721,23 +721,24 @@ static void _AYWriteReg(int n, int r, int v)
 		if (PSG->CountN <= 0) PSG->CountN = 1;
 		break;
 	case AY_ENABLE:
-		if ((PSG->lastEnable == -1) ||
-		    ((PSG->lastEnable & 0x40) != (PSG->Regs[AY_ENABLE] & 0x40)))
+		{
+		UINT8 enable = PSG->Regs[AY_ENABLE] & 0x40;
+		if (enable != (PSG->lastEnable & 0x40))
 		{
 			/* write out 0xff if port set to input */
 			if (PSG->PortAwrite)
-				(*PSG->PortAwrite)(0, (PSG->Regs[AY_ENABLE] & 0x40) ? PSG->Regs[AY_PORTA] : 0xff);
+				(*PSG->PortAwrite)(0, enable ? PSG->Regs[AY_PORTA] : 0xff);
 		}
-
-		if ((PSG->lastEnable == -1) ||
-		    ((PSG->lastEnable & 0x80) != (PSG->Regs[AY_ENABLE] & 0x80)))
+		enable = PSG->Regs[AY_ENABLE] & 0x80;
+		if (enable != (PSG->lastEnable & 0x80))
 		{
 			/* write out 0xff if port set to input */
 			if (PSG->PortBwrite)
-				(*PSG->PortBwrite)(0, (PSG->Regs[AY_ENABLE] & 0x80) ? PSG->Regs[AY_PORTB] : 0xff);
+				(*PSG->PortBwrite)(0, enable ? PSG->Regs[AY_PORTB] : 0xff);
 		}
 
-		PSG->lastEnable = PSG->Regs[AY_ENABLE];
+		PSG->lastEnable = PSG->Regs[AY_ENABLE] & 0xC0;
+		}
 		break;
 	case AY_AVOL:
 		PSG->Regs[AY_AVOL] &= 0x1f;
@@ -1325,7 +1326,7 @@ void AY8910_reset(int chip)
 	PSG->OutputB = 0;
 	PSG->OutputC = 0;
 	PSG->OutputN = 0xff;
-	PSG->lastEnable = -1;	/* force a write */
+	PSG->lastEnable = 0xC0;	/* force a write */
 	for (i = 0;i < AY_PORTA;i++)
 		_AYWriteReg(chip,i,0);	/* AYWriteReg() uses the timer system; we cannot */
 								/* call it at this time because the timer system */
@@ -1452,7 +1453,7 @@ static void AY8910_statesave(int chip)
 
 	state_save_register_UINT8("AY8910",  chip, "register_latch", &PSG->register_latch, 1);
 	state_save_register_UINT8("AY8910",  chip, "Regs",           PSG->Regs,            8);
-	state_save_register_INT16("AY8910",  chip, "lastEnable",     &PSG->lastEnable,     1);
+	state_save_register_UINT8("AY8910",  chip, "lastEnable",     &PSG->lastEnable,     1);
 
 	state_save_register_INT32("AY8910",  chip, "PeriodA",        &PSG->PeriodA,        1);
 	state_save_register_INT32("AY8910",  chip, "PeriodB",        &PSG->PeriodB,        1);
