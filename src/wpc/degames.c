@@ -928,13 +928,23 @@ DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba
 DE_ROMEND
 CORE_CLONEDEF(rab,130,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.30)",1993,"Data East",de_mDEDMD32S2A,0)
 
-DE_ROMSTARTx0(rab_110be,"Rocky-Bull_1.10_Belgium-C5.bin",CRC(195BC8E4) SHA1(bfcb8f0881a0638d4502f4df332629c401ee905e))
-DE_DMD32ROM8x(     "Rocky-Bull_1.03_Disp-rom0.bin",CRC(76F50541) SHA1(f79f1ce7f1cb17f295eaca7349676a8777f689ec))
+// "Rocky-Bull_1.10_Belgium-C5.bin" (CPU) and "Rocky-Bull_1.03_Italian_Disp-rom0.bin" (Display) came in one dump,
+// but most likely were not intended to be used together, thus we improvise with the 2 following sets:
+DE_ROMSTARTx0(rab_110be,"Rocky-Bull_1.10_Belgium-C5.bin",CRC(195BC8E4) SHA1(bfcb8f0881a0638d4502f4df332629c401ee905e)) // unknown so far if there are special 1.10 CPU roms for each language (rom was labelled as 'B1.10' though)
+DE_DMD32ROM8x(     "rbdspa.130",CRC(b6e2176e) SHA1(9ccbb30dc0f386fcf5e5255c9f80c720e601565f)) // so, as we do not have many other options, use the 1.30 display rom from above
 DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba7ea71c094),
                    "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
                    "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
 DE_ROMEND
-CORE_CLONEDEF(rab,110be,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.10 Belgian)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(rab,110be,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.10 Belgian(?), Display 1.30)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(rab_103it,"rabcpu.103",CRC(d5fe3184) SHA1(dc1ca938f15240d1c15ee5724d29a3538418f8de)) // taken from the spanish 1.03 dump below, unknown so far if there are special 1.03 CPU roms for each language
+DE_DMD32ROM8x(     "Rocky-Bull_1.03_Italian_Disp-rom0.bin",CRC(76F50541) SHA1(f79f1ce7f1cb17f295eaca7349676a8777f689ec))
+DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba7ea71c094),
+                   "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
+                   "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
+DE_ROMEND
+CORE_CLONEDEF(rab,103it,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.03 Italian)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(rab_103,"rabcpu.103",CRC(d5fe3184) SHA1(dc1ca938f15240d1c15ee5724d29a3538418f8de))
 DE_DMD32ROM8x(     "rabdspsp.103",CRC(02624948) SHA1(069ef69d6ce193d73954935b378230c05b83b8fc))
