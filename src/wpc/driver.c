@@ -2703,8 +2703,8 @@ DRIVER(esha,la1)        //          02/89 W Earthshaker LA-1
 DRIVER(esha,lg1)        //          02/89 W Earthshaker LG-1 (German)
 DRIVER(esha,lg2)        //          02/89 W Earthshaker LG-2 (German)
 DRIVER(esha,la3)        //          02/89 W Earthshaker LA-3
-DRIVER(esha,l4c)        //          06/16 W Earthshaker LA-4C Competition MOD
-DRIVER(esha,ma3)        //                  Earthshaker LA-3 (Metallica)
+DRIVER(esha,l4c)        //          06/16   Earthshaker LA-4C Competition MOD
+DRIVER(esha,ma3)        //          ??/??   Earthshaker LA-3 (Metallica)
 DRIVER(esha,pr4)        //          02/89 W Earthshaker Family version
 DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1 Prototype Europe)
 DRIVER(bk2k,pf1)        //          04/89 W Black Knight 2000 (PF-1 Prototype French)
@@ -2717,7 +2717,9 @@ DRIVER(bk2k,pa5)        //          04/89 W Black Knight 2000 (PA-5 Prototype)
                         //S11:      05/89 W Pool
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue (L-3)
-DRIVER(tsptr,l3fj)      //          07/25 B Transporter the Rescue (L-3 Fixed Jackpot MOD)
+DRIVER(tsptr,l3fj)      //          07/25   Transporter the Rescue (L-3 Fixed Jackpot MOD)
+DRIVER(tsptr,lx4)       //          11/25   Transporter the Rescue (LX-4 Tournament MOD)
+DRIVER(tsptr,lx4b)      //          11/25   Transporter the Rescue (LX-4 Tournament MOD clean)
 DRIVER(tsptr,lu3)       //          07/89 B Transporter the Rescue (LU-3)
 DRIVER(tsptr,l1)        //          06/89 B Transporter the Rescue (LA-1)
 DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)

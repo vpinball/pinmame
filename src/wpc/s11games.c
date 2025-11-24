@@ -954,6 +954,27 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
 S11_ROMEND
 CORE_CLONEDEF(tsptr,l3fj,l3, "Transporter the Rescue (L-3 Fixed Jackpot MOD)", 2025, "Bally", s11a_one,0)
 
+//                        "TRAN_U27_LX4.L3",CRC(917E178A) SHA1(53adcbcc6a0c257ac364dd18e8dfd5d9839c232e)) // old version, missed some version text/date changes
+S11_ROMSTART48(tsptr,lx4,"TRAN_U26_LX4.L3",CRC(F6D59BE2) SHA1(50f63b23cd2bea6eb1b354de6a89a494533268e8),
+                        "TRAN_U27_LX4.L3",CRC(5B932901) SHA1(3a3dbf6a754ca5528a20dd911849c2054f676866))
+S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
+                        "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
+S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a95f822024a44371170),
+                        "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881), // L-2/3 features the same
+                        "tran_u20.l2", CRC(e9890cf1) SHA1(0ae37504c704401101c79ce49df11044f8d8caa9))
+S11_ROMEND
+CORE_CLONEDEF(tsptr,lx4,l3, "Transporter the Rescue (LX-4 Competition MOD)", 2025, "Bally", s11a_one,0)
+
+S11_ROMSTART48(tsptr,lx4b,"TRAN_U26_LX4.L3",CRC(F6D59BE2) SHA1(50f63b23cd2bea6eb1b354de6a89a494533268e8),
+                        "TRAN_U27_LX4_clean.L3",CRC(1765F0DC) SHA1(a3ec0c1898bf7a8d322c84cccfd06f04dce0c910))
+S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
+                        "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
+S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a95f822024a44371170),
+                        "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881), // L-2/3 features the same
+                        "tran_u20.l2", CRC(e9890cf1) SHA1(0ae37504c704401101c79ce49df11044f8d8caa9))
+S11_ROMEND
+CORE_CLONEDEF(tsptr,lx4b,l3, "Transporter the Rescue (LX-4 Competition MOD clean)", 2025, "Bally", s11a_one,0) // f#%king -> hecking
+
 // L-2 also exists?!
 
 /*-----------------------
