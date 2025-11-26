@@ -79,7 +79,7 @@ static core_tGameData name##GameData = { \
   gen, disptype, {flippers,0,0,0,sb,db,gs1}, NULL, {{0}},{10}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-DE_INPUT_PORTS_START(des11, 1) DE_INPUT_PORTS_END
+DE_INPUT_PORTS_START(des11, 3) DE_INPUT_PORTS_END
 DE_INPUT_PORTS_START2(des112, 1) DE_INPUT_PORTS_END
 
 /*Common Flipper Switch Settings*/
@@ -205,14 +205,48 @@ CORE_CLONEDEF(torp,a16,e21,"Torpedo Alley (1.6)",1988,"Data East",de_mDEAS1, 0)
 /*--------------------------------------------------------------------------
 / Time Machine - CPU Rev 2 /Alpha Type 2 16/32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------*/
-INITGAMES11(tmac, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
+// INITGAMES11(tmac, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
+void init_tmac(void);
 DE_ROMSTART48(tmac_a24,"tmach2-4.b5",CRC(6ef3cf07) SHA1(3fabfbb2166273bf5bfab06d92fff094d3331d1a),
                     "tmach2-4.c5",CRC(b61035f5) SHA1(08436b68f37323f50c1fec86aba303a1690af653))
 DE1S_SOUNDROM244(   "tmachf7.rom",CRC(0f518bd4) SHA1(05e24ca0e76d576c65d9d2a01417f1ad2aa984bb),      //F7 on schem (sound)
                     "tmachf6.rom",CRC(47e61641) SHA1(93cd946ebc9f69d82512429a9ae5f2754499b00a),      //F6 on schem (voice1)
                     "tmachf4.rom",CRC(51e3aade) SHA1(38fc0f3a9c727bfd07fbcb16c3ca6d0560dc65c3))      //F4 on schem (voice2)
 DE_ROMEND
-#define input_ports_tmac input_ports_des11
+DE_INPUT_PORTS_START(tmac,3)
+
+  PORT_START /* 0 */
+    COREPORT_BIT(0x0001,"Left Ramp",	    KEYCODE_Q)
+    COREPORT_BIT(0x0002,"Right Ramp",	    KEYCODE_CLOSEBRACE)
+    COREPORT_BIT(0x0004,"STARWARP Ramp",	KEYCODE_W)
+    COREPORT_BIT(0x0008,"Left Outlane",		KEYCODE_Z)
+    COREPORT_BIT(0x0010,"Right Outlane",	KEYCODE_SLASH)
+    COREPORT_BIT(0x0020,"Left Inlane",		KEYCODE_X)
+    COREPORT_BIT(0x0040,"Right Inlane",		KEYCODE_STOP)
+    COREPORT_BIT(0x0100,"Right Pop",		  KEYCODE_U)
+    COREPORT_BIT(0x0200,"Left Pop",		    KEYCODE_Y)
+    COREPORT_BIT(0x0400,"Bottom Pop",		  KEYCODE_H)
+    COREPORT_BIT(0x0800,"Left Sling",		  KEYCODE_S)
+    COREPORT_BIT(0x1000,"Right Sling",		KEYCODE_COLON)
+    COREPORT_BIT(0x2000,"Left Lane",		  KEYCODE_6)
+    COREPORT_BIT(0x4000,"Center Lane",		KEYCODE_7)
+    COREPORT_BIT(0x8000,"Right Lane",		  KEYCODE_8)
+
+  PORT_START /* 1 */
+    COREPORT_BIT(0x0001,"Left Bank 70s",		KEYCODE_A)
+    COREPORT_BIT(0x0002,"Left Bank 60s",		KEYCODE_S)
+    COREPORT_BIT(0x0004,"Left Bank 50s",		KEYCODE_D)
+    COREPORT_BIT(0x0008,"Center Bank 70s",	KEYCODE_V)
+    COREPORT_BIT(0x0010,"Center Bank 60s",	KEYCODE_B)
+    COREPORT_BIT(0x0020,"Center Bank 50s",	KEYCODE_N)
+    COREPORT_BIT(0x0040,"Right Bank 70s",		KEYCODE_J)
+    COREPORT_BIT(0x0080,"Right Bank 60s",	  KEYCODE_K)
+    COREPORT_BIT(0x0100,"Right Bank 50s",		KEYCODE_L)
+    COREPORT_BIT(0x0200,"LPopper",		KEYCODE_Z)
+    COREPORT_BIT(0x0400,"RPopper",		KEYCODE_X)
+    COREPORT_BIT(0x0800,"Rt Loop",		KEYCODE_C)
+
+DE_INPUT_PORTS_END
 CORE_GAMEDEF(tmac,a24,"Time Machine (2.4)",1988,"Data East",de_mDEAS1, 0)
 
 DE_ROMSTART48(tmac_a18,"tmach1-8.b5",CRC(5dabdc4c) SHA1(67fe261888ddaa088abe2f8a331eaa5ac34be92e),
