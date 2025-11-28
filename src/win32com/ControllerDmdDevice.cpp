@@ -53,7 +53,7 @@ typedef void(*DmdDev_Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, U
 typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 typedef void(*DmdDev_Render_PM_Alphanumeric_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const UINT16* const seg_data2);
 typedef void(*DmdDev_Render_PM_Alphanumeric_Dim_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const char* const seg_dim, const UINT16* const seg_data2);
-typedef void(*DmdDev_Render_Lum_And_Raw_t)(UINT16 width, UINT16 height, UINT8* lumFrame, UINT8* rawFrame, UINT8 rawBitSize);
+typedef void(*DmdDev_Render_Lum_And_Raw_t)(UINT16 width, UINT16 height, float* lumFrame, UINT8* rawFrame, UINT8 rawBitSize);
 
 typedef struct {
 	HMODULE hModule;
@@ -191,7 +191,7 @@ extern "C" void dmddeviceDeInit() {
 	}
 }
 
-extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, UINT8* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2) {
+extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, float* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2) {
 	// 16 shades based on hardware generation and extended to some GTS3 games using long PWM pattern (SMB, SMBMW and CBW)
 	const int is16Shades = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
 	dmd_width = width; // store for DeInit
@@ -215,10 +215,10 @@ extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, UINT8
 			// This is somewhat hacky but needed until all external dmddevice.dll are updated to the new implementation
 			UINT8* frame = dmdDotRaw;
 			if (core_gameData->gen & GEN_GTS3) {
-				const int shift = is16Shades ? 4 : 6;
+				const float scale = is16Shades ? 15.f : 3.f;
 				frame = (UINT8*)malloc(width * height);
 				for (int i2 = 0; i2 < width * height; i2++)
-					frame[i2] = dmdDotLum[i2] >> shift;
+					frame[i2] = (UINT8)(dmdDotLum[i2] * scale);
 			}
 			if (is16Shades) {
 				if ((noOfRawFrames != 0) && dmdDevices[i].Render_16_Shades_with_Raw)

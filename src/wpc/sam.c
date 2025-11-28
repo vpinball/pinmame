@@ -2202,12 +2202,12 @@ MACHINE_DRIVER_END
 static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	// This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
 	// RAM never contains 8/9/10/11 which creates a monotonic LUT, but with a discontinuity as the hardware has 13 shades while the code uses 12.
-	static const UINT8 lumLUT[16] = { 0, 21, 43, 64, 85, 106, 128, 149, 106 /*unused*/, 128 /*unused*/, 149 /*unused*/, 170 /*unused*/, 191, 213, 234, 255};
+	static const float lumLUT[16] = { 0.f, 1.f/12.f, 2.f/12.f, 3.f/12.f, 4.f/12.f, 5.f/12.f, 6.f/12.f, 7.f/12.f, 5.f/12.f /*unused*/, 6.f/12.f /*unused*/, 7.f/12.f /*unused*/, 8.f/12.f /*unused*/, 9.f/12.f, 10.f/12.f, 11.f/12.f, 1.f};
 	int ii;
 	for( ii = 0; ii < 32; ii++ )
 	{
 		UINT8 *dotRaw = &coreGlobals.dmdDotRaw[ii * layout->length];
-		UINT8 *dotLum = &coreGlobals.dmdDotLum[ii * layout->length];
+		float *dotLum = &coreGlobals.dmdDotLum[ii * layout->length];
 		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
 		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
 		int jj;

@@ -18,7 +18,6 @@ extern GTS3_DMDlocals GTS3_dmdlocals[2];
 // - DMD luminance was not fully coherent between GTS3 games.
 int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout)
 {
-  core_dmd_update_pwm(&GTS3_dmdlocals[which].pwm_state);
   core_dmd_video_update(bitmap, cliprect, layout, &GTS3_dmdlocals[which].pwm_state);
   return 0;
 }

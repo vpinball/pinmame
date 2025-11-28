@@ -198,7 +198,6 @@
 #define CORE_SEGREV   0x80
 #define CORE_DMDNOAA  0x100
 #define CORE_NODISP   0x200
-#define CORE_DMDSEG   0x400
 
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
 #define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
@@ -508,7 +507,7 @@ typedef struct {
   UINT16 drawSeg[CORE_SEGCOUNT];                                /* Segments drawn */
   /*-- DMD --*/
   UINT8 dmdDotRaw[DMD_MAXY * DMD_MAXX];                         /* DMD: 'raw' dots, that is to say frame built up from rasterized frames (depends on each driver), stable result that can be used for post processing (colorization, ...) */
-  UINT8 dmdDotLum[DMD_MAXY * DMD_MAXX];                         /* DMD: perceived linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable) */
+  float dmdDotLum[DMD_MAXY * DMD_MAXX];                         /* DMD: perceived linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable) */
   /*-- Solenoids --*/
   volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
   volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
@@ -635,7 +634,7 @@ typedef struct {
   int     raw_combiner;       // CORE_DMD_PWM_COMBINER_... enum that defines how to combine bitplanes to create multi plane raw frame for colorization plugin
   int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
   const UINT32* fir_weights;  // Selected filter (depends on hardware refresh frequency and number of stored frames)
-  UINT32  fir_sum;            // Sum of filter weights
+  float   fir_sum;            // Sum of filter weights
   // Data acquisition, feeded by the driver through 'core_dmd_submit_frame'
   UINT8*  rawFrames;          // Buffer for incoming raw frames
   int     nextFrame;          // Position in circular buffer to store next raw frame
@@ -643,7 +642,7 @@ typedef struct {
   unsigned int frame_index;   // Raw frame index
   // Integrated data, computed by 'core_dmd_update_pwm'
   UINT8*  bitplaneFrame;      // DMD: bitplane frame built up from raw rasterized frames (depends on each driver, stable result that can be used for post processing like colorization, ...)
-  UINT8*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable across PinMame builds)
+  float*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable across PinMame builds)
 } core_tDMDPWMState;
 
 #define CORE_DMD_PWM_FILTER_DE_128x16   0
@@ -667,7 +666,6 @@ typedef struct {
 extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner);
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
 extern void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes);
-extern void core_dmd_update_pwm(core_tDMDPWMState* dmd_state);
 extern void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
