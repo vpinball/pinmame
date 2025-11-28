@@ -229,7 +229,6 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 	     will update after the next DMD event. */
 	}
   #endif
-  core_dmd_update_pwm(&dmdlocals.pwm_state);
   core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
@@ -340,7 +339,6 @@ static void dmd64_vblank(int which) {
 }
 
 PINMAME_VIDEO_UPDATE(dedmd64_update) {
-  core_dmd_update_pwm(&dmdlocals.pwm_state);
   core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
@@ -581,7 +579,6 @@ static void dmd16_setbank(int bit, int value) {
 
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd16_update) {
-  core_dmd_update_pwm(&dmdlocals.pwm_state);
   core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
   return 0;
 }
