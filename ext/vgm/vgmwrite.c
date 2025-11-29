@@ -2591,22 +2591,26 @@ void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uin
 	
 	if (! VI->WroteHeader)
 	{
+		BOOL doWrite = 0;
 		switch(blk_type & 0xC0)
 		{
 		case 0x80:	// ROM Image
-			if (VI->DataCount < 0x20)
-			{
-				VR = &VI->DataBlk[VI->DataCount];
-				VI->DataCount ++;
-				
-				VR->Type = blk_type;
-				VR->dstart_msb = dstart_msb;
-				VR->DataSize = datasize | ((VgmChip[chip_id].ChipType & 0x80) << 24);
-				VR->Data = data;
-			}
+			doWrite = 1;
 			break;
 		case 0xC0:	// RAM Writes
+			if (blk_type == 0xC3)
+				doWrite = 1;	// save/rewrite this as well
 			break;
+		}
+		if (doWrite && VI->DataCount < 0x20)
+		{
+			VR = &VI->DataBlk[VI->DataCount];
+			VI->DataCount ++;
+			
+			VR->Type = blk_type;
+			VR->dstart_msb = dstart_msb;
+			VR->DataSize = datasize | ((VgmChip[chip_id].ChipType & 0x80) << 24);
+			VR->Data = data;
 		}
 		return;
 	}
