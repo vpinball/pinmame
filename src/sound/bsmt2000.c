@@ -21,6 +21,7 @@
 #include <math.h>
 
 #include "driver.h"
+#include "../ext/vgm/vgmwrite.h"
 
 #ifndef MIN
  #define MIN(x,y) ((x)<(y)?(x):(y))
@@ -49,6 +50,7 @@ static const UINT8 regmap[8][7] = {
 
 /* NOTE: the original chip did not support interpolation, but music usually sounds */
 /* nicer if you enable it. For accuracy's sake, we leave it off by default, also sound effects sound clearer without it. */
+// Note that for example Tales from the Crypt partially relies on having interpolation off, otherwise some sounds sound weird
 #define ENABLE_INTERPOLATION 0
 
 // Whacky ADPCM interpolation, better leave off for now
@@ -117,6 +119,9 @@ struct BSMT2000Chip
     bool        right_volume_set;       /* Monopoly, RCT do never set right volume although its supposed to be stereo */
 #endif
 };
+
+static uint16_t m_vgm_idx[MAX_BSMT2000];
+static uint16_t m_reg_vgm[MAX_BSMT2000];
 
 
 /**********************************************************************************************
@@ -500,6 +505,10 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		if (bsmt2000[i].stream == -1)
 			return 1;
 
+		m_reg_vgm[i] = 0; //!!?
+		m_vgm_idx[i] = vgm_open(VGMC_BSMT2000, intf->baseclock[i]);
+		vgm_dump_sample_rom(m_vgm_idx[i], 0x01, intf->region[i]);
+
 		/* initialize the regions */
 		bsmt2000[i].region_base = (INT8 *)memory_region(intf->region[i]);
 		bsmt2000[i].total_banks = (int)(memory_region_length(intf->region[i]) / 0x10000);
@@ -545,6 +554,7 @@ void BSMT2000_sh_reset(void)
 	int i;
 	for (i = 0; i < MAX_BSMT2000; i++)
 	{
+		vgm_write(m_vgm_idx[i], 0x01, 0x00, m_reg_vgm[i] & 0x7f);
 		init_all_voices(&bsmt2000[i]);
 		reset_compression_flags(&bsmt2000[i]);
 		set_mode(&bsmt2000[i],i);
@@ -567,7 +577,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip * const chip, offs_t offset, 
 
     if (offset >= 0x80)
         return;
-        
+
     /* force an update */
     stream_update(chip->stream, 0);
 
@@ -700,5 +710,8 @@ static void bsmt2000_reg_write(struct BSMT2000Chip * const chip, offs_t offset, 
 
 WRITE16_HANDLER( BSMT2000_data_0_w )
 {
+	m_reg_vgm[0] = offset;
+	vgm_write(m_vgm_idx[0], 0x00, data, offset & 0x7f);
+
 	bsmt2000_reg_write(&bsmt2000[0], offset, data, mem_mask);
 }

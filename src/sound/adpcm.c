@@ -676,14 +676,14 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 
 #ifdef PINMAME
 	if (intf->num < 1) {
-		okim6295_vgm_idx[0] = vgm_open(VGMC_OKIM6295, intf->frequency[0]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
+		okim6295_vgm_idx[0] = vgm_open(VGMC_MSM6295, intf->frequency[0]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
 		vgm_header_set(okim6295_vgm_idx[0], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
 		vgm_dump_sample_rom(okim6295_vgm_idx[0], 0x01, intf->region[0]);
 	} else
 #endif
 	for (i = 0; i < intf->num; i++)
 	{
-		okim6295_vgm_idx[i] = vgm_open(VGMC_OKIM6295, intf->frequency[i]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
+		okim6295_vgm_idx[i] = vgm_open(VGMC_MSM6295, intf->frequency[i]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
 		vgm_header_set(okim6295_vgm_idx[i], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
 		vgm_dump_sample_rom(okim6295_vgm_idx[i], 0x01, intf->region[i]);
 	}

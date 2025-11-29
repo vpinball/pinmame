@@ -50,8 +50,8 @@ void vgm_dump_sample_rom(uint16_t chip_id, uint8_t type, int region);
 #define VGMC_NESAPU		0x14
 #define VGMC_MULTIPCM	0x15
 #define VGMC_UPD7759	0x16
-#define VGMC_OKIM6258	0x17
-#define VGMC_OKIM6295	0x18
+#define VGMC_MSM6258	0x17
+#define VGMC_MSM6295	0x18
 #define VGMC_K051649	0x19
 #define VGMC_K054539	0x1A
 #define VGMC_C6280		0x1B
@@ -69,6 +69,14 @@ void vgm_dump_sample_rom(uint16_t chip_id, uint8_t type, int region);
 #define VGMC_X1_010		0x26
 #define VGMC_C352		0x27
 #define VGMC_GA20		0x28
+// v1.72
+#define VGMC_MIKEY		0x29
+#define VGMC_K007232	0x2A
+#define VGMC_K005289	0x2B
+#define VGMC_MSM5205	0x2C
+#define VGMC_MSM5232	0x2D
+#define VGMC_BSMT2000	0x2E
+#define VGMC_ICS2115	0x2F
 
 //#define VGMC_OKIM6376	0xFF
 #endif /* __VGMWRITE_H__ */

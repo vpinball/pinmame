@@ -86,12 +86,19 @@ struct _vgm_file_header
 	uint8_t bytES5503Chns;
 	uint8_t bytES5506Chns;
 	uint8_t bytC352ClkDiv;
-	uint8_t bytESReserved;
+	uint8_t bytOKI5205Flags;
 	uint32_t lngHzX1_010;
 	uint32_t lngHzC352;
 	
 	uint32_t lngHzGA20;
-	uint8_t bytReserved[0x1C];
+	uint32_t lngHzMikey;
+	uint32_t lngHzK007232;
+	uint32_t lngHzK005289;
+	uint32_t lngHzOKIM5205;
+	uint32_t lngHzMSM5232;
+	uint32_t lngHzBSMT2000;
+	uint32_t lngHzICS2115;
+	//uint8_t bytReserved[0x0C];
 };	// -> 0x100 Bytes
 typedef struct _vgm_gd3_tag GD3_TAG;
 struct _vgm_gd3_tag
@@ -506,12 +513,12 @@ void vgm_stop(void)
 			case VGMC_UPD7759:
 				VH->lngHzUPD7759 &= clock_mask;
 				break;
-			case VGMC_OKIM6258:
+			case VGMC_MSM6258:
 				VH->lngHzOKIM6258 &= clock_mask;
 				if (! clock_mask)
 					VH->bytOKI6258Flags = 0x00;
 				break;
-			case VGMC_OKIM6295:
+			case VGMC_MSM6295:
 				VH->lngHzOKIM6295 &= clock_mask;
 				break;
 			case VGMC_K051649:
@@ -572,9 +579,30 @@ void vgm_stop(void)
 			case VGMC_GA20:
 				VH->lngHzGA20 &= clock_mask;
 				break;
+			case VGMC_MIKEY:
+				VH->lngHzMikey &= clock_mask;
+				break;
+			case VGMC_K007232:
+				VH->lngHzK007232 &= clock_mask;
+				break;
+			case VGMC_K005289:
+				VH->lngHzK005289 &= clock_mask;
+				break;
+			case VGMC_MSM5205:
+				VH->lngHzOKIM5205 &= clock_mask;
+				break;
+			case VGMC_MSM5232:
+				VH->lngHzMSM5232 &= clock_mask;
+				break;
 		//	case VGMC_OKIM6376:
 		//		VH->lngHzOKIM6376 &= clock_mask;
 		//		break;
+			case VGMC_BSMT2000:
+				VH->lngHzBSMT2000 &= clock_mask;
+				break;
+			case VGMC_ICS2115:
+				VH->lngHzICS2115 &= clock_mask;
+				break;
 			}
 		}
 		if (VC->PCMCache != NULL && VC->PCMCache->CacheData != NULL)
@@ -849,10 +877,10 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 		case VGMC_UPD7759:
 			chip_val = VgmFile[curvgm].Header.lngHzUPD7759;
 			break;
-		case VGMC_OKIM6258:
+		case VGMC_MSM6258:
 			chip_val = VgmFile[curvgm].Header.lngHzOKIM6258;
 			break;
-		case VGMC_OKIM6295:
+		case VGMC_MSM6295:
 			chip_val = VgmFile[curvgm].Header.lngHzOKIM6295;
 			break;
 		case VGMC_K051649:
@@ -906,10 +934,31 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 		case VGMC_GA20:
 			chip_val = VgmFile[curvgm].Header.lngHzGA20;
 			break;
+		case VGMC_MIKEY:
+			chip_val = VgmFile[curvgm].Header.lngHzMikey;
+			break;
+		case VGMC_K007232:
+			chip_val = VgmFile[curvgm].Header.lngHzK007232;
+			break;
+		case VGMC_K005289:
+			chip_val = VgmFile[curvgm].Header.lngHzK005289;
+			break;
+		case VGMC_MSM5205:
+			chip_val = VgmFile[curvgm].Header.lngHzOKIM5205;
+			break;
+		case VGMC_MSM5232:
+			chip_val = VgmFile[curvgm].Header.lngHzMSM5232;
+			break;
 	//	case VGMC_OKIM6376:
 	//		chip_val = VgmFile[curvgm].Header.lngHzOKIM6376;
 	//		use_two = 0x00;
 	//		break;
+		case VGMC_BSMT2000:
+			chip_val = VgmFile[curvgm].Header.lngHzBSMT2000;
+			break;
+		case VGMC_ICS2115:
+			chip_val = VgmFile[curvgm].Header.lngHzICS2115;
+			break;
 		default:
 			return 0xFFFF;	// unknown chip - don't log
 		}
@@ -1045,10 +1094,10 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 	case VGMC_UPD7759:
 		VgmFile[chip_file].Header.lngHzUPD7759 = clock;
 		break;
-	case VGMC_OKIM6258:
+	case VGMC_MSM6258:
 		VgmFile[chip_file].Header.lngHzOKIM6258 = clock;
 		break;
-	case VGMC_OKIM6295:
+	case VGMC_MSM6295:
 		VgmFile[chip_file].Header.lngHzOKIM6295 = clock;
 		break;
 	case VGMC_K051649:
@@ -1103,9 +1152,30 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 	case VGMC_GA20:
 		VgmFile[chip_file].Header.lngHzGA20 = clock;
 		break;
+	case VGMC_MIKEY:
+		VgmFile[chip_file].Header.lngHzMikey = clock;
+		break;
+	case VGMC_K007232:
+		VgmFile[chip_file].Header.lngHzK007232 = clock;
+		break;
+	case VGMC_K005289:
+		VgmFile[chip_file].Header.lngHzK005289 = clock;
+		break;
+	case VGMC_MSM5205:
+		VgmFile[chip_file].Header.lngHzOKIM5205 = clock;
+		break;
+	case VGMC_MSM5232:
+		VgmFile[chip_file].Header.lngHzMSM5232 = clock;
+		break;
 //	case VGMC_OKIM6376:
 //		VgmFile[chip_file].Header.lngHzOKIM6376 = clock;
 //		break;
+	case VGMC_BSMT2000:
+		VgmFile[chip_file].Header.lngHzBSMT2000 = clock;
+		break;
+	case VGMC_ICS2115:
+		VgmFile[chip_file].Header.lngHzICS2115 = clock;
+		break;
 	}
 	
 	switch(chip_type & 0x7F)
@@ -1138,8 +1208,8 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 	case VGMC_NESAPU:
 	case VGMC_MULTIPCM:
 	case VGMC_UPD7759:
-	case VGMC_OKIM6258:
-	case VGMC_OKIM6295:
+	case VGMC_MSM6258:
+	case VGMC_MSM6295:
 	case VGMC_K051649:
 	case VGMC_K054539:
 	case VGMC_C6280:
@@ -1164,6 +1234,15 @@ uint16_t vgm_open(uint8_t chip_type, double clockd)
 		break;
 	case VGMC_GA20:
 		vgm_header_sizecheck(chip_file, 0x171, 0x100);
+		break;
+	case VGMC_MIKEY:
+	case VGMC_K007232:
+	case VGMC_K005289:
+	case VGMC_MSM5205:
+	case VGMC_MSM5232:
+	case VGMC_BSMT2000:
+	case VGMC_ICS2115:
+		vgm_header_sizecheck(chip_file, 0x172, 0x100);
 		break;
 	}
 	
@@ -1368,7 +1447,7 @@ void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data)
 			break;
 		}
 		break;
-	case VGMC_OKIM6258:
+	case VGMC_MSM6258:
 		switch(attr)
 		{
 		case 0x00:	// Reserved
@@ -1387,7 +1466,7 @@ void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data)
 			break;
 		}
 		break;
-	case VGMC_OKIM6295:
+	case VGMC_MSM6295:
 		switch(attr)
 		{
 		case 0x00:	// Chip Type (pin 7 state)
@@ -1470,8 +1549,50 @@ void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data)
 		break;
 	case VGMC_GA20:
 		break;
+	case VGMC_MIKEY:
+		break;
+	case VGMC_K007232:
+		break;
+	case VGMC_K005289:
+		break;
+	case VGMC_MSM5205:
+		switch(attr)
+		{
+		case 0x00:	// Chip Type (0 = MSM5205, 1 = MSM6585)
+			VH->lngHzOKIM5205 = (VH->lngHzOKIM5205 & 0x7FFFFFFF) | (data << 31);
+			break;
+		case 0x01:	// Clock Divider
+			VH->bytOKI5205Flags &= ~(0x03 << 0);
+			VH->bytOKI5205Flags |= (data & 0x03) << 0;
+			break;
+		case 0x02:	// ADPCM Type
+			VH->bytOKI5205Flags &= ~(0x01 << 2);
+			VH->bytOKI5205Flags |= (data & 0x01) << 2;
+			break;
+		}
+		break;
+	case VGMC_MSM5232:
+		switch(attr)
+		{
+		case 0x10:	// External Capacitors
+		case 0x11:
+		case 0x12:
+		case 0x13:
+		case 0x14:
+		case 0x15:
+		case 0x16:
+		case 0x17:
+			// 1.0e-6 == 0x10000
+			logerror("MSM5232: External Capacitor %hu = 0x%X (%g)\n", attr & 0x0F, data, data / 1.0e+6 / 0x10000);
+			break;
+		}
+		break;
 //	case VGMC_OKIM6376:
 //		break;
+	case VGMC_BSMT2000:
+		break;
+	case VGMC_ICS2115:
+		break;
 	}
 	
 	return;
@@ -1809,13 +1930,13 @@ void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v)
 		WriteCmd.Data[0x02] = v;
 		WriteCmd.CmdLen = 0x03;
 		break;
-	case VGMC_OKIM6258:
+	case VGMC_MSM6258:
 		WriteCmd.Data[0x00] = 0xB7;
 		WriteCmd.Data[0x01] = r | (VC->ChipType & 0x80);
 		WriteCmd.Data[0x02] = v;
 		WriteCmd.CmdLen = 0x03;
 		break;
-	case VGMC_OKIM6295:
+	case VGMC_MSM6295:
 		WriteCmd.Data[0x00] = 0xB8;
 		WriteCmd.Data[0x01] = r | (VC->ChipType & 0x80);
 		WriteCmd.Data[0x02] = v;
@@ -2009,11 +2130,67 @@ void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v)
 		WriteCmd.Data[0x02] = v;
 		WriteCmd.CmdLen = 0x03;
 		break;
+	case VGMC_MIKEY:
+		WriteCmd.Data[0x00] = 0x40;
+		WriteCmd.Data[0x01] = r | (VC->ChipType & 0x80);
+		WriteCmd.Data[0x02] = v;
+		WriteCmd.CmdLen = 0x03;
+		break;
+	case VGMC_K007232:
+		WriteCmd.Data[0x00] = 0x41;
+		WriteCmd.Data[0x01] = r | (VC->ChipType & 0x80);
+		WriteCmd.Data[0x02] = v;
+		WriteCmd.CmdLen = 0x03;
+		break;
+	case VGMC_K005289:
+		WriteCmd.Data[0x00] = 0x42;
+		WriteCmd.Data[0x01] = (VC->ChipType & 0x80) | (port << 4) | ((r & 0xF00) >> 8);
+		WriteCmd.Data[0x02] = r & 0xFF;
+		WriteCmd.CmdLen = 0x03;
+		break;
+	case VGMC_MSM5205:
+		WriteCmd.Data[0x00] = 0x32;
+		WriteCmd.Data[0x01] = (VC->ChipType & 0x80) | ((r & 0x07) << 4) | (v & 0x0F);
+		WriteCmd.CmdLen = 0x02;
+		break;
+	case VGMC_MSM5232:
+		WriteCmd.Data[0x00] = 0x43;
+		WriteCmd.Data[0x01] = r | (VC->ChipType & 0x80);
+		WriteCmd.Data[0x02] = v;
+		WriteCmd.CmdLen = 0x03;
+		break;
 //	case VGMC_OKIM6376:
 //		WriteCmd.Data[0x00] = 0x31;
 //		WriteCmd.Data[0x01] = v;
 //		WriteCmd.CmdLen = 0x02;
 //		break;
+	case VGMC_BSMT2000:
+		switch(port)
+		{
+		case 0:	// Register write
+			if (v >= 0x7F)
+				return;
+			WriteCmd.Data[0x00] = 0xC9;
+			WriteCmd.Data[0x01] = v | (VC->ChipType & 0x80);	// offset
+			WriteCmd.Data[0x02] = (r & 0xFF00) >> 8;	// Data MSB
+			WriteCmd.Data[0x03] = (r & 0x00FF) >> 0;	// Data LSB
+			WriteCmd.CmdLen = 0x04;
+			break;
+		case 1:	// Mode change
+			WriteCmd.Data[0x00] = 0xC9;
+			WriteCmd.Data[0x01] = 0x7F | (VC->ChipType & 0x80);	// special offset
+			WriteCmd.Data[0x02] = 0x00;	// mode change
+			WriteCmd.Data[0x03] = v;	// value
+			WriteCmd.CmdLen = 0x04;
+			break;
+		}
+		break;
+	case VGMC_ICS2115:
+		WriteCmd.Data[0x00] = 0x44;
+		WriteCmd.Data[0x01] = r | (VC->ChipType & 0x80);
+		WriteCmd.Data[0x02] = v;
+		WriteCmd.CmdLen = 0x03;
+		break;
 	}
 	
 	vgm_write_delay(VC->VgmID);
@@ -2036,11 +2213,11 @@ void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v)
 			if (r >= 0x2D && r <= 0x2F)
 				cm = 0x01;	// Prescaler Select
 			break;
-		case VGMC_OKIM6258:
+		case VGMC_MSM6258:
 			if (r >= 0x08 && r <= 0x0F)
 				cm = 0x01;	// OKIM6258 clock change
 			break;
-		case VGMC_OKIM6295:
+		case VGMC_MSM6295:
 			if (r >= 0x08 && r <= 0x0F)
 				cm = 0x01;	// OKIM6295 clock change and configuration
 			break;
@@ -2222,9 +2399,9 @@ void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uin
 			break;
 		}
 		break;
-	case VGMC_OKIM6258:
+	case VGMC_MSM6258:
 		break;
-	case VGMC_OKIM6295:
+	case VGMC_MSM6295:
 		switch(type)
 		{
 		case 0x00:
@@ -2346,6 +2523,32 @@ void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uin
 			break;
 		}
 		break;
+	case VGMC_MIKEY:
+		break;
+	case VGMC_K007232:
+		switch(type)
+		{
+		case 0x00:
+			break;
+		case 0x01:	// ROM Data
+			blk_type = 0x94;	// Type: K007232 ROM Data
+			break;
+		}
+		break;
+	case VGMC_K005289:
+		switch(type)
+		{
+		case 0x00:
+			break;
+		case 0x01:	// ROM Data
+			blk_type = 0xC3;	// Type: K005289 ROM Data (treated as RAM due to being small and fixed-size)
+			break;
+		}
+		break;
+	case VGMC_MSM5205:
+		break;
+	case VGMC_MSM5232:
+		break;
 //	case VGMC_OKIM6376:
 //		switch(type)
 //		{
@@ -2356,6 +2559,26 @@ void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uin
 //			break;
 //		}
 //		break;
+	case VGMC_BSMT2000:
+		switch(type)
+		{
+		case 0x00:
+			break;
+		case 0x01:	// ROM Data
+			blk_type = 0x95;	// Type: BSMT2000 ROM Data
+			break;
+		}
+		break;
+	case VGMC_ICS2115:
+		switch(type)
+		{
+		case 0x00:
+			break;
+		case 0x01:	// ROM Data
+			blk_type = 0x96;	// Type: ICS2115 ROM Data
+			break;
+		}
+		break;
 	}
 	
 	if (! blk_type)
