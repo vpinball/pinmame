@@ -2591,7 +2591,7 @@ void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uin
 	
 	if (! VI->WroteHeader)
 	{
-		BOOL doWrite = 0;
+		uint8_t doWrite = 0;
 		switch(blk_type & 0xC0)
 		{
 		case 0x80:	// ROM Image
