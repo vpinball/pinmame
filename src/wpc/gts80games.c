@@ -1525,6 +1525,16 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(mntecrfp,mntecrlo, "Monte Carlo (Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 // #708Y
+GTS80B_2K_ROMSTART(mntecrlga,"prom2ga.cpu",CRC(C02844AA) SHA1(37031dad120febb257eece692b84c72c2875ac3e),
+                             "prom1ga.cpu",CRC(89943521) SHA1(52e2242a2acd93352cba44786d586e29aa58951f))
+GTS80BSSOUND888(             "drom1.snd",  CRC(1a53ac15) SHA1(f2751664a09431e908873580ddf4f44df9b4eda7),
+                             "yrom1.snd",  CRC(6e234c49) SHA1(fdb4126ecdaac378d144e9dd3c29b4e79290da2a),
+                             "yrom2.snd",  CRC(a95d1a6b) SHA1(91946ef7af0e4dd96db6d2d6f4f2e9a3a7279b81))
+GTS80_ROMEND
+#define init_mntecrlga init_mntecrlo
+#define input_ports_mntecrlga input_ports_mntecrlo
+CORE_CLONEDEFNV(mntecrlga,mntecrlo, "Monte Carlo (German)",1987,"Gottlieb",gl_mGTS80BS1,0) // derived from rev. 0?
+
 GTS80B_2K_ROMSTART(mntecrlg, "prom2g.cpu", CRC(2a5e0c4f) SHA1(b386168bd911b9977104c47da962d0248f22614b),
                              "prom1g.cpu", CRC(25e015f1) SHA1(4b1467438def657eac3b8a858d7b17c102e14f0d))
 GTS80BSSOUND888(             "drom1.snd",  CRC(1a53ac15) SHA1(f2751664a09431e908873580ddf4f44df9b4eda7),
@@ -1533,7 +1543,7 @@ GTS80BSSOUND888(             "drom1.snd",  CRC(1a53ac15) SHA1(f2751664a09431e908
 GTS80_ROMEND
 #define init_mntecrlg init_mntecrlo
 #define input_ports_mntecrlg input_ports_mntecrlo
-CORE_CLONEDEFNV(mntecrlg,mntecrlo, "Monte Carlo (German)",1987,"Gottlieb",gl_mGTS80BS1,0) // derived from rev. 1
+CORE_CLONEDEFNV(mntecrlg,mntecrlo, "Monte Carlo (German rev. 1)",1987,"Gottlieb",gl_mGTS80BS1,0) // derived from rev. 1
 
 GTS80B_2K_ROMSTART(mntcrgfp, "prom2g.cpu",   CRC(2a5e0c4f) SHA1(b386168bd911b9977104c47da962d0248f22614b),
                              "prom1g_fp.cpu",CRC(bcf93933) SHA1(846c7d7c1da7516dbe0d19b4fc87eecfb69b13c1))
@@ -1543,7 +1553,7 @@ GTS80BSSOUND888(             "drom1.snd",    CRC(1a53ac15) SHA1(f2751664a09431e9
 GTS80_ROMEND
 #define init_mntcrgfp init_mntecrlo
 #define input_ports_mntcrgfp input_ports_mntecrlo
-CORE_CLONEDEFNV(mntcrgfp,mntecrlo, "Monte Carlo (German Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(mntcrgfp,mntecrlo, "Monte Carlo (German rev. 1 Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(mntcrgmfp,"prom2g_mfp.cpu",CRC(4c01707e) SHA1(71b9f3edecf4e04ed7891b966e645018df8baee1),
                              "prom1g_mfp.cpu",CRC(14ed10c7) SHA1(9a753e306ad8430a53daa4368f4a7f16d8b839f9))
@@ -1553,7 +1563,7 @@ GTS80BSSOUND888(             "drom1.snd",     CRC(1a53ac15) SHA1(f2751664a09431e
 GTS80_ROMEND
 #define init_mntcrgmfp init_mntecrlo
 #define input_ports_mntcrgmfp input_ports_mntecrlo
-CORE_CLONEDEFNV(mntcrgmfp,mntecrlo, "Monte Carlo (German Millions option, Free Play)",2021,"Flipprojets",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(mntcrgmfp,mntecrlo, "Monte Carlo (German rev. 1 Millions option, Free Play)",2021,"Flipprojets",gl_mGTS80BS1,0)
 
 // #708X
 GTS80B_2K_ROMSTART(mntecrlf, "prom2f.cpu", CRC(f6842631) SHA1(7447994d2055c7fa12aaf35e93436ee829f5b7ae),
