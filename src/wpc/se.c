@@ -427,6 +427,7 @@ static MACHINE_INIT(se) {
   const char* const grn = rootDrv->name;
   // Missing definition:
   // - Golden Cue
+  // - Star Wars Trilogy
   if (strncasecmp(grn, "apollo13", 8) == 0) { // Apollo 13
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
