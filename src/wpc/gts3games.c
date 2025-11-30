@@ -210,7 +210,6 @@ GTS3SOUND32128(        "yrom1.bin",CRC(4554ed0d) SHA1(df0a9225f961e0ee876c3e63ad
                        "drom1.bin",CRC(78c099e1) SHA1(953111237fdc3e20562d823eb2b6430e5a4afe4d),
                        "arom1.bin",CRC(c890475f) SHA1(1cf6ed0dbd003a76a5cf889f62b489c0a62e9d25),
                        "arom2.bin",CRC(aba8fd98) SHA1(81b8af4d2d8e40b5b44f114c095371afe5539549))
-
 GTS3_ROMEND
 CORE_GAMEDEFNV(cactjack,"Cactus Jack's",1991,"Gottlieb",mGTS3S,0)
 
@@ -250,6 +249,15 @@ GTS3SOUND32256A(       "yrom1.bin",CRC(a0480418) SHA1(a982564d5dbf52275c2e722368
                        "arom2.bin",CRC(224c2021) SHA1(6b426097a2870b3b32d786be6e66ba6be9f54c29))
 GTS3_ROMEND
 CORE_GAMEDEFNV(surfnsaf,"Surf 'n Safari",1991,"Gottlieb",mGTS3BS,0)
+
+INITGAME1(surfnsat, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
+GTS3ROMSTART(surfnsat, "GTB_SNS_TOURN_4E10.512",CRC(DD0988A0) SHA1(791a0da187a0e336f1eb714278933d8f5e684a28))
+GTS3SOUND32256A(       "yrom1.bin",CRC(a0480418) SHA1(a982564d5dbf52275c2e7223687b07cf4ca0a115),
+                       "drom1.bin",CRC(ec8fc963) SHA1(247e76d87beb3339e7d55292f9eadd2351621cfa),
+                       "arom1.bin",CRC(38b569b2) SHA1(93be47916a92541d097233b60a42eb7ca587ce52),
+                       "arom2.bin",CRC(224c2021) SHA1(6b426097a2870b3b32d786be6e66ba6be9f54c29))
+GTS3_ROMEND
+CORE_CLONEDEFNV(surfnsat,surfnsaf,"Surf 'n Safari (Tournament MOD)",2022,"Gottlieb",mGTS3BS,0) // unknown so far who did the MOD
 
 /*-------------------------------------------------------------------
 / Operation Thunder (#732)

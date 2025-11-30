@@ -895,6 +895,7 @@ DRIVERNV(cactjack)      //S3-729:   04/91 Cactus Jack's
 DRIVERNV(clas1812)      //S3-730:   08/91 Class of 1812
 DRIVERNV(beav_butt)     //          11/23 Beavis and Butt-Head (Class of 1812 MOD)
 DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf 'n Safari
+DRIVERNV(surfnsat)      //          10/22 Surf 'n Safari (Tournament MOD)
 DRIVERNV(opthund)       //S3-732:   02/92 Operation: Thunder
 //System 3 128x32 DMD
 DRIVERNV(smb)           //S3-733:   04/92 Super Mario Bros.

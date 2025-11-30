@@ -550,7 +550,7 @@ static void GTS3_alpha_common_init(void) {
 	  for (int i = 0; i < 12; i++)
 		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, 0, 8.f / 1.f); // Additional LED display (1ms strobe over 8ms period)
   }
-  else if (strncasecmp(gn, "surfnsaf", 8) == 0) { // Surf 'n Safari
+  else if (strncasecmp(gn, "surfnsa", 7) == 0) { // Surf 'n Safari
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 4 * 8 + 4, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Left Billboard
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 5 * 8 + 2, 4, CORE_MODOUT_LED_STROBE_1_10MS); // Right Billboard
