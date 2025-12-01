@@ -482,6 +482,15 @@ DE1S_SOUNDROM288(      "tmntf7.rom",   CRC(59ba0153) SHA1(e7b02a656c67a0d866020a
 DE_ROMEND
 CORE_CLONEDEF(tmnt,a07,104,"Teenage Mutant Ninja Turtles (A 0.7 VUK Prototype)",1991,"Data East",de_mDEDMD16S1,0)
 
+DE_ROMSTART48(tmnt_200, "tmntb5a.200",CRC(FF9A0DBB) SHA1(31eb194c919425ea643207fc59bf6101b235e507),
+                        "tmntc5a.200",CRC(9E8D828F) SHA1(8c2cfac72442ac3e6ae3c8584c96c461a2b19210))
+DE_DMD16ROM1(           "tmntdsp.200",CRC(D98631A1) SHA1(0d95527c2848662b48044a6dc2f68e6e4ce52056))
+DE1S_SOUNDROM288(       "tmntf7.rom" ,CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
+                        "tmntf6.rom" ,CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
+                        "tmntf4.rom" ,CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
+DE_ROMEND
+CORE_CLONEDEF(tmnt,200,104,"Teenage Mutant Ninja Turtles (2.00 unofficial MOD)",2025,"Data East",de_mDEDMD16S1,0)
+
 /***************************************************************************/
 /** ALL FOLLOWING GAMES BELOW STARTED USING NEW SOUND BOARD WITH BSMT2000 **/
 /***************************************************************************/

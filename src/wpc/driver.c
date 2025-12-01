@@ -491,6 +491,7 @@ DRIVER(tmnt,101)        //               05/91 Teenage Mutant Ninja Turtles (1.0
 DRIVER(tmnt,103)        //               05/91 Teenage Mutant Ninja Turtles (1.03)
 DRIVER(tmnt,104)        //               05/91 Teenage Mutant Ninja Turtles (1.04)
 DRIVER(tmnt,104g)       //               05/91 Teenage Mutant Ninja Turtles (1.04 German)
+DRIVER(tmnt,200)        //               11/25 Teenage Mutant Ninja Turtles (2.00 unofficial MOD)
 //BSMT2000 Sound chip
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //               ??/91 Batman (1.03)

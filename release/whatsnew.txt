@@ -30,14 +30,17 @@ Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in gen
 Slightly improved YM262 sound for Sir Lancelot
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Fixed VGM recording for machines using OKI6295 sound
-Added VGM recording for machines using BSMT2000 sound
+Added VGM recording for machines using BSMT2000 sound (WIP, as support is also WIP in libvgm,MAME-vgmplay,etc)
 
-*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez
+*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))
 Gottlieb: renamed Monte Carlo (German) to German rev.1
           renamed Monte Carlo (German Free Play) to German rev.1 Free Play
           renamed Monte Carlo (German Millions option, Free Play) to German rev.1 Millions option, Free Play
+
+Kinda new:
+Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
 
 Clones:
 Adventures of Rocky and Bullwinkle and Friends 1.03 (Italian), 1.10 (Belgian) (note that both dumps are incomplete, the italian set may be correct though, but the belgian one misses the display, so does not feature belgian text)
