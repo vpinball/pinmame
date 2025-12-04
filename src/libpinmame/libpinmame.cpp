@@ -42,6 +42,8 @@ static PinmameConfig* _p_Config = nullptr;
 static std::thread* _p_gameThread = nullptr;
 static void* _p_userData = nullptr;
 
+static char _aliasFromFile[50];
+
 static int _mechInit[MECH_MAXMECH];
 static PinmameMechInfo _mechInfo[MECH_MAXMECH];
 
@@ -182,15 +184,55 @@ char* ComposePath(const char* const path, const char* const file)
 }
 
 /******************************************************
+ * CheckGameAlias
+ ******************************************************/
+
+const char* CheckGameAlias(const char* const romName)
+{
+	if (!_p_Config || !_p_Config->vpmPath[0])
+		return romName;
+
+	char aliasPath[PINMAME_MAX_PATH];
+	strcpy(aliasPath, _p_Config->vpmPath);
+	const size_t len = strlen(_p_Config->vpmPath);
+	if (len > 0 && aliasPath[len - 1] != '/' && aliasPath[len - 1] != '\\')
+		strcat(aliasPath, "/");
+	strcat(aliasPath, "alias.txt");
+
+	FILE* file = fopen(aliasPath, "r");
+
+	if (file != NULL) {
+		char line[128];
+		while (fgets(line, sizeof(line), file)) {
+			// Skip lines that start with "#"
+			if (line[0] == '#')
+				continue;
+
+			char* token = strtok(line, ", ");
+
+			if (!strcasecmp(token, romName))
+			{
+				strcpy(_aliasFromFile,  strtok(NULL, " ,\n#;'"));
+				fclose(file);
+				return _aliasFromFile;
+			}
+		}
+		fclose(file);
+	}
+	return romName;
+}
+
+/******************************************************
  * GetGameNumFromString
  ******************************************************/
 
 int GetGameNumFromString(const char* const name)
 {
 	int gameNum = 0;
+	const char* gameName = CheckGameAlias(name);
 
 	while (drivers[gameNum]) {
-		if (!strcasecmp(drivers[gameNum]->name, name))
+		if (!strcasecmp(drivers[gameNum]->name, gameName))
 			break;
 		gameNum++;
 	}
