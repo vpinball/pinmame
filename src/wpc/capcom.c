@@ -118,7 +118,7 @@ extern void capcoms_manual_reset(void);
 
 static struct {
   UINT32 solenoids; // romstar only
-  UINT8 visible_page;
+  UINT32 dmdRasterizerAddress;
   int zero_cross, zero_acq; // Raised by zero cross comparator (120Hz) latched, acked when IRQ2 is processed
   int swCol; // Breakshot only: active switch column
   int vset;
@@ -130,6 +130,10 @@ static struct {
   int lampAColDisable, lampBColDisable;
   UINT16 lampA, lampB;
 
+  core_tDMDPWMState dmdState;
+  mame_timer* u16DMDtimer;
+  UINT8 pwmDmdFrames[256 * 8 * 3];
+
   UINT16 u16a[4], u16b[4];
   int irq1State, irq4State;
   int u16IRQ4Mask, u16IRQState, u16IRQ1Adjust;
@@ -139,6 +143,7 @@ static struct {
 
 static NVRAM_HANDLER(cc);
 static void Skip_Error_Msg(void);
+static void cc_dmd_rasterizer_sync(int param);
 
 static INTERRUPT_GEN(cc_vblank) {
   /*-- update leds (they are PWM faded, so uses physic output) --*/
@@ -439,14 +444,14 @@ static WRITE16_HANDLER(u16_w) {
       break;
     }
 
-    case 0x002: // DMD Visible Block offset
+    case 0x002: // DMD rasterizer block address (upper 16 bits)
       LOG_U16(("PC %08x - U16w DMD block  %04x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data & 0x0FFF, offset, data, mem_mask));
-      locals.visible_page = (locals.visible_page & 0x0f) | (data << 4);
+      locals.dmdRasterizerAddress = (locals.dmdRasterizerAddress & 0x0000FFFF) | (data << 16);
       break;
 
-    case 0x003: // DMD Visible Page offset
+    case 0x003: // DMD rasterizer block address (lower 16 bits)
       LOG_U16(("PC %08x - U16w DMD page   %04x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data >> 12, offset, data, mem_mask));
-      locals.visible_page = (locals.visible_page & 0xf0) | (data >> 12);
+      locals.dmdRasterizerAddress = (locals.dmdRasterizerAddress & 0xffff0000) | data;
       break;
 
     case 0x200: { // IRQ1 Frequency, IRQ4 line 1/2/3 enable
@@ -709,6 +714,11 @@ static MACHINE_INIT(cc) {
   //Copy 1st 0x100 bytes of rom into RAM for vector table
   memcpy(ramptr, memory_region(REGION_USER1), 0x100);
 
+  const int dmdWidth = core_gameData->lcdLayout->length;
+  const int dmdHeight = core_gameData->lcdLayout->start;
+  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
+  timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
+
   // Initialize outputs
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8; // Lamp Matrix A & B, +1 col for PWM diag LED
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps - 8, CORE_MODOUT_BULB_44_20V_DC_CC);
@@ -780,7 +790,8 @@ static MACHINE_INIT(cc) {
 
 static MACHINE_STOP(cc)
 {
-  sndbrd_0_exit();
+   core_dmd_pwm_exit(&locals.dmdState);
+   sndbrd_0_exit();
 }
 
 // Show Sound & DMD Diagnostic LEDS
@@ -934,50 +945,57 @@ MACHINE_DRIVER_START(cc2)
   MDRV_IMPORT_FROM(capcom2s)
 MACHINE_DRIVER_END
 
-
-/********************************/
-/*** 128 X 32 NORMAL SIZE DMD ***/
-/********************************/
-PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
-  const UINT16 *RAM = ramptr + 0x800 * locals.visible_page + 0x10;
-  UINT8* line = &coreGlobals.dmdDotRaw[0];
-  for (int ii = 0; ii < 32; ii++) {
-    for (int kk = 0; kk < 16; kk++) {
-      UINT16 intens1 = RAM[0];
-      for(int jj = 0; jj < 8; jj++) {
-         *line++ = (intens1 >> 14) & 0x0003;
-         intens1 <<= 2;
+// DMD rasterization is performed by U16 custom chip.
+// Readings and reverse engineering shows that the chip read data from RAM and rasterizes it, creating 3 PWM frames.
+// Each line is made of 256 dots, each dot being 2 bits. On 128x32 displays, the first 128 dots are ignored by the display.
+// The rasterizer converts the 2 bit values into 3 PWM frames (therefore 4 shades) but the CPU may also quickly
+// change pages, leading to longer PWM patterns (multiple groups of 3 frames) leading to more shades.
+// The (measured) timings are the followings:
+// - 128x32: 1.965ms per frame, 61.417µs per line, dots are 250/250/250/208ns (per group of 4)
+// - 256x64: 3.931ms per frame, 61.417µs per line, dots are 250/250/250/208ns (per group of 4)
+// Therefore we setup a timer with teh right timing which decodes the 2 bit data into 3 frames and submit them for PWM integration
+static void cc_dmd_rasterizer_sync(int param) {
+   const int dmdWidth = core_gameData->lcdLayout->length / 8;
+   const int dmdHeight = core_gameData->lcdLayout->start;
+   const int rowOffset = (dmdWidth == (128 / 8)) ? 0x10 : 0; // Skip first 128 dots of each line for 128x32 DMD
+   const UINT16* RAM = ramptr + (locals.dmdRasterizerAddress >> 1) + rowOffset;
+   UINT8* pwm0 = &locals.pwmDmdFrames[0 * 256 * 8];
+   UINT8* pwm1 = &locals.pwmDmdFrames[1 * 256 * 8];
+   UINT8* pwm2 = &locals.pwmDmdFrames[2 * 256 * 8];
+   for (int ii = 0; ii < dmdHeight; ii++, RAM += rowOffset) {
+      for (int kk = 0; kk < dmdWidth; kk++) {
+         const UINT16 lum = *RAM++; // 16 bits corresponding to 8 dots of 2 bits rasterized into 3 bitplanes
+         const UINT8 lum0 =
+              (lum & 0x0001)
+            | (lum & 0x0004) >> 1
+            | (lum & 0x0010) >> 2
+            | (lum & 0x0040) >> 3
+            | (lum & 0x0100) >> 4
+            | (lum & 0x0400) >> 5
+            | (lum & 0x1000) >> 6
+            | (lum & 0x4000) >> 7;
+         const UINT8 lum1 =
+              (lum & 0x0002) >> 1
+            | (lum & 0x0008) >> 2
+            | (lum & 0x0020) >> 3
+            | (lum & 0x0080) >> 4
+            | (lum & 0x0200) >> 5
+            | (lum & 0x0800) >> 6
+            | (lum & 0x2000) >> 7
+            | (lum & 0x8000) >> 8;
+         *pwm0++ = lum0 | lum1;
+         *pwm1++ = lum1;
+         *pwm2++ = lum0 & lum1;
       }
-      RAM += 1;
-    }
-    RAM += 16;
-  }
-  core_dmd_video_update(bitmap, cliprect, layout, NULL);
-  return 0;
+   }
+   // U16 rasterizer decodes and produces 3 equal length frames
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[0 * 256 * 8], 1);
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[1 * 256 * 8], 1);
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[2 * 256 * 8], 1);
 }
 
-/*******************************/
-/*** 256 X 64 SUPER HUGE DMD ***/
-/*******************************/
-PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
-  const UINT16 *RAM = ramptr + 0x800 * locals.visible_page;
-  for (int ii = 0; ii < 64; ii++) {
-    UINT8 *linel = &coreGlobals.dmdDotRaw[ii * layout->length];
-    UINT8 *liner = &coreGlobals.dmdDotRaw[ii * layout->length + 128];
-    for (int kk = 0; kk < 16; kk++) {
-      UINT16 intensl = RAM[0];
-      UINT16 intensr = RAM[0x10];
-      for(int jj=0;jj<8;jj++) {
-         *linel++ = (intensl >> 14) & 0x0003;
-         intensl <<= 2;
-         *liner++ = (intensr >> 14) & 0x0003;
-         intensr <<= 2;
-      }
-      RAM += 1;
-    }
-    RAM += 16;
-  }
-  core_dmd_video_update(bitmap, cliprect, layout, NULL);
+PINMAME_VIDEO_UPDATE(cc_dmd) {
+  core_dmd_video_update(bitmap, cliprect, layout, &locals.dmdState);
   return 0;
 }
 
@@ -1007,6 +1025,11 @@ static MACHINE_INIT(romstar) {
   //IRQ4 clock - might be unused, still pulse it because we don't know what that U8 chip does...
   /* FIXME timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4); */
   
+  const int dmdWidth = core_gameData->lcdLayout->length;
+  const int dmdHeight = core_gameData->lcdLayout->start;
+  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
+  timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
+
   // FIXME missing physics output definition
 }
 
@@ -1054,7 +1077,7 @@ static WRITE16_HANDLER(vol_w) {
 }
 
 static WRITE16_HANDLER(disp_w) {
-  if (!offset) locals.visible_page = 0x70 | data;
+  if (!offset) locals.dmdRasterizerAddress = 0x00070000 | data;
 }
 
 static WRITE16_HANDLER(sol_w) {

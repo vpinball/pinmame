@@ -645,14 +645,16 @@ typedef struct {
   float*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable across PinMame builds)
 } core_tDMDPWMState;
 
-#define CORE_DMD_PWM_FILTER_DE_128x16   0
-#define CORE_DMD_PWM_FILTER_DE_128x32   1
-#define CORE_DMD_PWM_FILTER_DE_192x64   2
-#define CORE_DMD_PWM_FILTER_GTS3        3
-#define CORE_DMD_PWM_FILTER_WPC         4
-#define CORE_DMD_PWM_FILTER_WPC_PH      5
-#define CORE_DMD_PWM_FILTER_ALVG1       6
-#define CORE_DMD_PWM_FILTER_ALVG2       7
+#define CORE_DMD_PWM_FILTER_DE_128x16     0
+#define CORE_DMD_PWM_FILTER_DE_128x32     1
+#define CORE_DMD_PWM_FILTER_DE_192x64     2
+#define CORE_DMD_PWM_FILTER_GTS3          3
+#define CORE_DMD_PWM_FILTER_WPC           4
+#define CORE_DMD_PWM_FILTER_WPC_PH        5
+#define CORE_DMD_PWM_FILTER_ALVG1         6
+#define CORE_DMD_PWM_FILTER_ALVG2         7
+#define CORE_DMD_PWM_FILTER_CAPCOM_128x32 8
+#define CORE_DMD_PWM_FILTER_CAPCOM_256x64 9
 
 #define CORE_DMD_PWM_COMBINER_GTS3_4C_A 0
 #define CORE_DMD_PWM_COMBINER_GTS3_4C_B 1

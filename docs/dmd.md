@@ -43,7 +43,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |Inder                                                        | **134.8** / ?          | ?           |Review in progress                                              |
 |Sleic                                                        | ?                      | ?           |Review in progress                                              |
 |Spinball                                                     | **132.9**              | ?           |Review in progress                                              |
-|Capcom                                                       | **508.6** / 127.2 ?    | 4 ?         |Review in progress                                              |
+|[Capcom](#capcom)                                            | **508.7**              | 3/6/9/... frames |                                                           |
 |[Stern SAM](#stern-sam)                                      | 751.2 / **62.6**       | 4u row      |Needs overall emulation timing fixes, interframe emulation, shade validation, back/front mix validation|
 |[Stern Spike 1](#stern-spike-1)                              | 952.4 / **63.5**       | 4u frames   |Unsupported hardware                                            |
 
@@ -117,6 +117,17 @@ Its behavior is still largely unknown.
 |/CRTCCS         |N.C.           |Q |Internal Clock/2                                           |
 |CA0 from 6845   |/PCLOCK        |IO|                                                           |
 |CA13 from 6845  |CLATCH         |IO|Derived from HSYNC                                         |
+
+
+## Capcom
+
+Precise signal recordings are available from [PPUC DMD reader project](https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer). They show 
+that each row is rasterized once per frame, hence the PWM pattern is formed by a group of frames like WPC or GTS3. Unlike WPC or GTS3, the 
+CPU is not the only one in charge of PWM pattern generation: a custom chip (U16) is in charge of the rasterization which is done by
+reading 2 bits per dot and generating 3 frames from these. These 3 frames would lead to 4 shades (0/33/66/100) but the CPU may also
+dynamically toggles pages leading to more complex PWM patterns and hence more perceived shades.
+
+The U16 always rasterizes 256 dots per row, even if the DMD is only 128 dots wide. The extra dots are simply not processed by the display.
 
 
 ## Stern SAM
