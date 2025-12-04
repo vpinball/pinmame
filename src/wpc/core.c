@@ -3011,6 +3011,22 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_376_15) / sizeof(UINT32);
     }
     break;
+  case CORE_DMD_PWM_FILTER_CAPCOM_128x32: // Capcom 128x32: 508.733Hz refresh rate / 15Hz low pass filter / 3 frame PWM pattern but also uses longer patterns (multiple of 3)
+    {
+      // n=34 is better but seems somewhat heavy for our usecase
+      // static const UINT32 fir_508_15[] = { 1049808, 2911857, 6143559, 11789924, 20825356, 34023014, 51836988, 74311480, 101028694, 131103153, 163225280, 195751606, 226833801, 254574206, 277192388, 293185732, 301467429, 301467429, 293185732, 277192388, 254574206, 226833801, 195751606, 163225280, 131103153, 101028694, 74311480, 51836988, 34023014, 20825356, 11789924, 6143559, 2911857, 1049808 };
+      static const UINT32 fir_508_15[] = { 12732291, 18426458, 32339015, 56319814, 90859564, 134856344, 185622765, 239144387, 290558747, 334787168, 367224814, 384382908, 384382908, 367224814, 334787168, 290558747, 239144387, 185622765, 134856344, 90859564, 56319814, 32339015, 18426458, 12732291 };
+      dmd_state->fir_weights = fir_508_15;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_508_15) / sizeof(UINT32);
+    }
+    break;
+  case CORE_DMD_PWM_FILTER_CAPCOM_256x64: // Capcom 256x64: 254.364Hz refresh rate / 15Hz low pass filter / 3 frame PWM pattern but also uses longer patterns (multiple of 3)
+    {
+      static const UINT32 fir_254_15[] = { 3297601, 14786304, 48300768, 117825529, 225575583, 357894749, 487689237, 582921132, 617926745, 582921132, 487689237, 357894749, 225575583, 117825529, 48300768, 14786304, 3297601 };
+      dmd_state->fir_weights = fir_254_15;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_254_15) / sizeof(UINT32);
+    }
+    break;
   default:
     assert(0); // Unsupported filter
   }

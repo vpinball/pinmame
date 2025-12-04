@@ -3,8 +3,7 @@
 #include "core.h"
 #include "sim.h"
 
-extern PINMAME_VIDEO_UPDATE(cc_dmd128x32);
-extern PINMAME_VIDEO_UPDATE(cc_dmd256x64);
+extern PINMAME_VIDEO_UPDATE(cc_dmd);
 extern void cap_UpdateSoundLEDS(int data);
 
 #define CC_COMPORTS \
