@@ -75,7 +75,7 @@ static struct OKIM6295interface alvgs1_okim6295_intf =
 	1,						/* 1 chip */
 	{ 1000000./132. },		/* sample rate at 1MHz clock */
 	{ ALVGS_ROMREGION },	/* ROM REGION */
-	{ 50 }					/* Volume */
+	{ 50 }					/* volume */
 };
 
 /* Sound board */
@@ -222,7 +222,7 @@ static READ_HANDLER(alvgs_ctrl_r);
 /* 12 Voice Style BSMT Chip */
 /* Schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips, so we use 0 */
 static struct BSMT2000interface alvgs_bsmt2000Int = {
-  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, 0, 0, 1 // should be BSMT2000 mode 5, as it does not trigger ADPCM commands //!! does not trigger reset, thus cannot set BSMT2000 mode itself currently
+  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, 0, 0, 0 // should be BSMT2000 mode 5, as it does not trigger ADPCM commands //!! does not trigger reset, thus cannot set BSMT2000 mode itself currently
 };
 
 /* Sound board */

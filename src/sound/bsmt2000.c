@@ -10,9 +10,9 @@
  *
  *             - TODO: 1)Batman,ST25th and Hook set Mode 0 (after setting Mode 1), but still use reg mapping of Mode 1
  *             -       2)Remove DE Rom loading flag & fix in the drivers themselves.
- *             -       3)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
- *             -       4)Command 0x77 could be the sample rate/'pitch' for ADPCM? Or volume like it is now implemented (e.g. sound played when BSMT DMD animation comes on in stereo games: https://www.youtube.com/watch?v=2FtzLzbapZs)
- *             - DONE: 5)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
+ *                       This should also fix VGM recording (but needs sync with libvgm and MAME playback code!)
+ *             -       3)Command 0x77 could be the sample rate/'pitch' for ADPCM? Or volume like it is now implemented (e.g. sound played when BSMT DMD animation comes on in stereo games: https://www.youtube.com/watch?v=2FtzLzbapZs)
+ *             - DONE: 4)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
  **********************************************************************************************/
 
 #include <stdio.h>
