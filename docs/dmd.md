@@ -125,7 +125,7 @@ Precise signal recordings are available from [PPUC DMD reader project](https://g
 that each row is rasterized once per frame, hence the PWM pattern is formed by a group of frames like WPC or GTS3. Unlike WPC or GTS3, the 
 CPU is not the only one in charge of PWM pattern generation: a custom chip (U16) is in charge of the rasterization which is done by
 reading 2 bits per dot and generating 3 frames from these. These 3 frames would lead to 4 shades (0/33/66/100) but the CPU may also
-dynamically toggles pages leading to more complex PWM patterns and hence more perceived shades.
+dynamically toggle pages, leading to more complex PWM patterns and hence more perceived shades.
 
 The U16 always rasterizes 256 dots per row, even if the DMD is only 128 dots wide. The extra dots are simply not processed by the display.
 

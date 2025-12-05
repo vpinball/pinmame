@@ -15,6 +15,7 @@ VS2026 build support
 
 *** CORE/CPU ***
 Fixed a potential small problem with Bally VideoPins sound emulation
+Added physical/PWM DMD support to Capcom games (potentially leading to more brightness levels being displayed if the CPU triggers it)
 Added physical/PWM segment support to System 11 games
 Fixed physical/PWM GameOn & switched solenoid state being overwritten for System 11 games
 Fixed physical/PWM GameOn and J111 outputs for WPC games
