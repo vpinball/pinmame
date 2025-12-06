@@ -331,11 +331,6 @@ static void dmd64_vblank(int which) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE); // Note that IRQ2 is not caused by VSYNC (unwired) but generated from ROWDATA, but this seems precise enough
 }
 
-PINMAME_VIDEO_UPDATE(dedmd64_update) {
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}
-
 /*------------------------------*/
 /*Data East 128x16 DMD Handling*/
 /*------------------------------*/
@@ -563,10 +558,4 @@ static void dmd16_updbusy(int evt) {
 static void dmd16_setbank(int bit, int value) {
   dmdlocals.bank = (dmdlocals.bank & ~bit) | (value ? bit : 0);
   cpu_setbank(DMD16_BANK0, dmdlocals.brdData.romRegion + (dmdlocals.bank & 0x07)*0x4000);
-}
-
-/*-- update display --*/
-PINMAME_VIDEO_UPDATE(dedmd16_update) {
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
 }

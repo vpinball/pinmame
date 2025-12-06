@@ -535,12 +535,11 @@ static sim_tSimData nbafSimData = {
   NULL  				/* Custom key conditions? */
 };
 
-extern PINMAME_VIDEO_UPDATE(wpcdmd_update32);
 static PINMAME_VIDEO_UPDATE(led_update) {
   return 1;
 }
 static core_tLCDLayout nbaf_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update32,NULL},
+  {0,0,32,128,CORE_DMD,NULL,NULL},
   {7,0, 0,  2,CORE_SEG7 | CORE_NODISP,(genf *)led_update,NULL},
   {0}
 };

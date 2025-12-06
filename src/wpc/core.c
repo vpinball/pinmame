@@ -1133,9 +1133,11 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         libpinmame_update_display(display_index, bitmap);
       #endif
     }
-    else if ((layout->type & CORE_SEGALL) == CORE_DMD) { // Per driver renderer for DMD
-      if (layout->fptr)
+    else if ((layout->type & CORE_SEGALL) == CORE_DMD) {
+      if (layout->fptr) // Custom renderer
         ((ptPinMAMEvidUpdate)(layout->fptr))(bitmap, cliprect, layout);
+      else // Or default core one
+        core_dmd_video_update(bitmap, cliprect, layout);
       #if defined(VPINMAME) || defined(LIBPINMAME)
         has_DMD_Video = 1;
       #endif
@@ -3591,7 +3593,7 @@ void core_dmd_capture_frame(const int width, const int height, const UINT8* cons
 }
 #endif
 
-void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout) {
+PINMAME_VIDEO_UPDATE(core_dmd_video_update) {
   core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
   const UINT8* dmdDotRaw;
   if (dmd_state) { // Full DMD state with luminance and bitplane state
@@ -3671,6 +3673,8 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
 
   #endif
+
+  return 0;
 }
 
 //

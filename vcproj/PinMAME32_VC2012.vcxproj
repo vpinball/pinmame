@@ -1087,7 +1087,6 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="..\src\wpc\gts1.c" />
     <ClCompile Include="..\src\wpc\gts1games.c" />
     <ClCompile Include="..\src\wpc\gts3.c" />
-    <ClCompile Include="..\src\wpc\gts3dmd.c" />
     <ClCompile Include="..\src\wpc\gts3games.c" />
     <ClCompile Include="..\src\wpc\gts80.c" />
     <ClCompile Include="..\src\wpc\gts80games.c" />
@@ -1449,7 +1448,6 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="..\src\wpc\gpsnd.h" />
     <ClInclude Include="..\src\wpc\gts1.h" />
     <ClInclude Include="..\src\wpc\gts3.h" />
-    <ClInclude Include="..\src\wpc\gts3dmd.h" />
     <ClInclude Include="..\src\wpc\gts80.h" />
     <ClInclude Include="..\src\wpc\gts80s.h" />
     <ClInclude Include="..\src\wpc\hnks.h" />

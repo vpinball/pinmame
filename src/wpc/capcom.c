@@ -996,11 +996,6 @@ static void cc_dmd_rasterizer_sync(int param) {
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
 }
 
-PINMAME_VIDEO_UPDATE(cc_dmd) {
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}
-
 // Goofy Hoops - using Q-Sound chip and different memory / port mapping on 68306 MPU 
 
 static data16_t *rom_base2;

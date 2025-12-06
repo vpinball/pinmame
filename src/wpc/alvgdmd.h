@@ -11,8 +11,6 @@
 extern MACHINE_DRIVER_EXTERN(test8031);
 #endif
 
-extern PINMAME_VIDEO_UPDATE(alvgdmd_update);
-
 /* HELPER MACROS */
 
 //NOTE: DMD CPU requires 128K of region space, since the ROM is mapped in the lower 64K, and the RAM in the upper 64K
