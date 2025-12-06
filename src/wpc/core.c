@@ -246,9 +246,9 @@ static const unsigned char core_palette[COL_COUNT+48+48+48][3] = {
 // Followed by 48 DMD AA shades
 // Followed by 48 Alphanum shades
 };
-#define DMD_PAL(x)  ((UINT16)sizeof(core_palette)/3u - (48u+48u+48u) + (UINT16)(x * 47.f))
+#define DMD_PAL(x)  ((UINT16)sizeof(core_palette)/3u - (48u+48u+48u) + (UINT16)((x) * 47.f))
 #define LAMP_PAL(x) ((unsigned int)sizeof(core_palette)/3u - (48u+48u+48u) + (unsigned int)(x) * 47u / 255u) // (ab)use DMD shades
-static UINT32 TRAFO_AA(const float x)
+INLINE UINT32 TRAFO_AA(const float x)
 {
   return x == 0.f ? 0 : (12 + (UINT8)(x*(47.f-12.f))); // off stays counted as off, otherwise trafo from 0..255 -> 12..47 to map the DMD luminance into the DMD AA shade world (as DMD AA also maps 0..perc0)
 }
@@ -797,19 +797,19 @@ static PALETTE_INIT(core) {
   /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
   if (pmoptions.dmd_colorize) {
     if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
-      tmpPalette[COL_DMDOFF][0] = pmoptions.dmd_red0;
-      tmpPalette[COL_DMDOFF][1] = pmoptions.dmd_green0;
-      tmpPalette[COL_DMDOFF][2] = pmoptions.dmd_blue0;
+      tmpPalette[COL_DMDOFF][0] = (unsigned char)pmoptions.dmd_red0;
+      tmpPalette[COL_DMDOFF][1] = (unsigned char)pmoptions.dmd_green0;
+      tmpPalette[COL_DMDOFF][2] = (unsigned char)pmoptions.dmd_blue0;
     }
     if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
-      tmpPalette[COL_DMD33][0]  = pmoptions.dmd_red33;
-      tmpPalette[COL_DMD33][1]  = pmoptions.dmd_green33;
-      tmpPalette[COL_DMD33][2]  = pmoptions.dmd_blue33;
+      tmpPalette[COL_DMD33][0]  = (unsigned char)pmoptions.dmd_red33;
+      tmpPalette[COL_DMD33][1]  = (unsigned char)pmoptions.dmd_green33;
+      tmpPalette[COL_DMD33][2]  = (unsigned char)pmoptions.dmd_blue33;
     }
     if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
-      tmpPalette[COL_DMD66][0]  = pmoptions.dmd_red66;
-      tmpPalette[COL_DMD66][1]  = pmoptions.dmd_green66;
-      tmpPalette[COL_DMD66][2]  = pmoptions.dmd_blue66;
+      tmpPalette[COL_DMD66][0]  = (unsigned char)pmoptions.dmd_red66;
+      tmpPalette[COL_DMD66][1]  = (unsigned char)pmoptions.dmd_green66;
+      tmpPalette[COL_DMD66][2]  = (unsigned char)pmoptions.dmd_blue66;
     }
   }
 
@@ -916,7 +916,7 @@ static PALETTE_INIT(core) {
     }
   }
 
-  for (ii = 0; ii < sizeof(tmpPalette)/3; ii++)
+  for (ii = 0; ii < (int)sizeof(tmpPalette)/3; ii++)
     palette_set_color(ii, tmpPalette[ii][0], tmpPalette[ii][1], tmpPalette[ii][2]);
 }
 
@@ -2487,13 +2487,13 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
   if (U != output->state.bulb.prevIntegrationValue) {
     // state flip? do not delay integration but do the integration in a loop of small steps, roughly in BULB_INTEGRATION_PERIOD sized steps (but rounded up/down to have same sized cycles in here)
     countf = floorf(dt_diff * (float)(1. / BULB_INTEGRATION_PERIOD));
-    // ensure that we always perform the integration, evzentually with a single scaled period
+    // ensure that we always perform the integration, eventually with a single scaled period
     if (countf < 1.f)
       countf = 1.f;
   }
   else if (dt_diff >= (float)(4.0 * BULB_INTEGRATION_PERIOD)) {
     // We waited long enough to perform at least one full integration step, just perform integration up to last step before now
-    // This improves the fading behavior, as it allows to get a consistant state of all bulbs when the client application wants it to be rasterized
+    // This improves the fading behavior, as it allows to get a consistent state of all bulbs when the client application wants it to be rasterized
     // We still always keep at least a few integration periods, to better weight the previous situation (adjusted period on state flip) but not too much as it would lead to visual artefacts.
     countf = floorf(dt_diff * (float)(1. / BULB_INTEGRATION_PERIOD));
   }
@@ -2967,8 +2967,8 @@ void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows
 
   Unlike lamps, which have varying strobe periods, DMDs are rasterized at a fixed frequency. Therefore, the implementation
   simply stores the frames at this frequency and applies a (simple) low pass filter to account for the eye flicker-fusion limit.
-  The integration period (number of frames to store) and cut-off frequency are selected from the observed PWM pattern of 
-  common hardware: WPC is 122/3 = 40.7Hz, GTS3 is 376/10 = 37.6Hz, WPC Phantom Haus limit pattern length to 2 to stay above 30Hz,
+  The integration period (number of frames to store) and cut-off frequency is selected from the observed PWM pattern of 
+  common hardware: WPC is 122/3 = 40.7Hz, GTS3 is 376/10 = 37.6Hz, WPC Phantom Haus limits pattern length to 2 to stay above 30Hz,
   so an overall plasma inertia & flicker fusion period of around 30ms (33Hz).
 
   Filters are computed using the following script in GNU Octave:
@@ -3112,7 +3112,7 @@ void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const in
     assert(0); // Unsupported filter
   }
   for (int i = 0; i < dmd_state->fir_size; i++)
-    dmd_state->fir_sum += dmd_state->fir_weights[i];
+    dmd_state->fir_sum += (float)dmd_state->fir_weights[i];
   dmd_state->rawFrames = malloc(dmd_state->nFrames * dmd_state->rawFrameSize);
   dmd_state->shadedFrame = malloc(dmd_state->frameSize * sizeof(UINT32));
   dmd_state->bitplaneFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
@@ -3138,9 +3138,9 @@ void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, co
 
 // PWM update must be done at the render frequency, therefore this function may be called concurrently from the 
 // frame submission by the emulated hardware. To avoid synchronization, a simple circular buffer with consumer
-// accesing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
+// accessing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
 // not use synchronization primitives, so this can fail if instructions are reordered).
-void core_dmd_update_pwm(const core_tDMDPWMState* dmd_state, UINT32* shadedFrame, float* luminanceFrame) {
+static void core_dmd_update_pwm(const core_tDMDPWMState* const dmd_state, UINT32* shadedFrame, float* luminanceFrame) {
   // Apply low pass filter over stored frames then scale down to final shades
   int framePos = dmd_state->nextFrame; // Circular buffer position, note that this may be changed concurrently from core_dmd_submit_frame
   memset(shadedFrame, 0, dmd_state->frameSize * sizeof(UINT32));
@@ -3170,7 +3170,7 @@ void core_dmd_update_pwm(const core_tDMDPWMState* dmd_state, UINT32* shadedFrame
     luminanceFrame[ii] = (float)(*line++) / dmd_state->fir_sum; // Linear luminance
 }
 
-static void core_dmd_update_identify(core_tDMDPWMState* dmd_state, UINT8* bitplaneFrame)
+static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, UINT8* bitplaneFrame)
 {
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   switch (dmd_state->raw_combiner) {
@@ -3402,9 +3402,9 @@ static void core_dmd_render_vpm(const int width, const int height, const float* 
     }
   }
   else {
-    #define LERP(p, a, b) (UINT8) ((1.f - (p)) * a + (p) * b)
+    #define LERP(p, a, b) (UINT8)((a) + (p) * ((b) - (a)))
     if (pmoptions.dmd_colorize) {
-      UINT32 cols[4] = {
+      const UINT32 cols[4] = {
          (pmoptions.dmd_red0) | (pmoptions.dmd_green0 << 8) | (pmoptions.dmd_blue0 << 16),
          (pmoptions.dmd_red33) | (pmoptions.dmd_green33 << 8) | (pmoptions.dmd_blue33 << 16),
          (pmoptions.dmd_red66) | (pmoptions.dmd_green66 << 8) | (pmoptions.dmd_blue66 << 16),
@@ -3435,26 +3435,28 @@ static void core_dmd_render_vpm(const int width, const int height, const float* 
       const float g100 = gStart;
       const float b100 = bStart;
       for (int ii = 0; ii < size; ii++) {
-        const float lum = dmdDotLum[ii] * 3.f;
+        float lum = dmdDotLum[ii] * 3.f;
         if (lum < 1.f) {
           (*rawLum++) = LERP(lum, perc00, perc33);
-          const UINT32 r = (UINT32)LERP(lum, r00, r33);
-          const UINT32 g = (UINT32)LERP(lum, g00, g33);
-          const UINT32 b = (UINT32)LERP(lum, b00, b33);
+          const UINT32 r = LERP(lum, r00, r33);
+          const UINT32 g = LERP(lum, g00, g33);
+          const UINT32 b = LERP(lum, b00, b33);
           (*rawCol++) = r | (g << 8) | (b << 16);
         }
         else if (lum < 2.f) {
-          (*rawLum++) = LERP(lum - 1.f, perc33, perc66);
-          const UINT32 r = (UINT32)LERP(lum - 1.f, r33, r66);
-          const UINT32 g = (UINT32)LERP(lum - 1.f, g33, g66);
-          const UINT32 b = (UINT32)LERP(lum - 1.f, b33, b66);
+          lum -= 1.f;
+          (*rawLum++) = LERP(lum, perc33, perc66);
+          const UINT32 r = LERP(lum, r33, r66);
+          const UINT32 g = LERP(lum, g33, g66);
+          const UINT32 b = LERP(lum, b33, b66);
           (*rawCol++) = r | (g << 8) | (b << 16);
         }
         else {
-          (*rawLum++) = LERP(lum - 2.f, perc66, 100.f);
-          const UINT32 r = (UINT32)LERP(lum - 2.f, r66, r100);
-          const UINT32 g = (UINT32)LERP(lum - 2.f, g66, g100);
-          const UINT32 b = (UINT32)LERP(lum - 2.f, b66, b100);
+          lum -= 2.f;
+          (*rawLum++) = LERP(lum, perc66, 100.f);
+          const UINT32 r = LERP(lum, r66, r100);
+          const UINT32 g = LERP(lum, g66, g100);
+          const UINT32 b = LERP(lum, b66, b100);
           (*rawCol++) = r | (g << 8) | (b << 16);
         }
       }
