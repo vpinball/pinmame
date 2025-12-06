@@ -717,6 +717,7 @@ static MACHINE_INIT(cc) {
   const int dmdWidth = core_gameData->lcdLayout->length;
   const int dmdHeight = core_gameData->lcdLayout->start;
   core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
+  locals.dmdState.revByte = 1;
   timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
 
   // Initialize outputs
@@ -966,23 +967,23 @@ static void cc_dmd_rasterizer_sync(int param) {
       for (int kk = 0; kk < dmdWidth; kk++) {
          const UINT16 lum = *RAM++; // 16 bits corresponding to 8 dots of 2 bits rasterized into 3 bitplanes
          const UINT8 lum0 =
-              (lum & 0x0001)
-            | (lum & 0x0004) >> 1
-            | (lum & 0x0010) >> 2
-            | (lum & 0x0040) >> 3
-            | (lum & 0x0100) >> 4
-            | (lum & 0x0400) >> 5
-            | (lum & 0x1000) >> 6
-            | (lum & 0x4000) >> 7;
+              (lum & 0x0001) << 7
+            | (lum & 0x0004) << 4
+            | (lum & 0x0010) << 1
+            | (lum & 0x0040) >> 2
+            | (lum & 0x0100) >> 5
+            | (lum & 0x0400) >> 8
+            | (lum & 0x1000) >> 11
+            | (lum & 0x4000) >> 14;
          const UINT8 lum1 =
-              (lum & 0x0002) >> 1
-            | (lum & 0x0008) >> 2
-            | (lum & 0x0020) >> 3
-            | (lum & 0x0080) >> 4
-            | (lum & 0x0200) >> 5
-            | (lum & 0x0800) >> 6
-            | (lum & 0x2000) >> 7
-            | (lum & 0x8000) >> 8;
+              (lum & 0x0002) << 6
+            | (lum & 0x0008) << 3
+            | (lum & 0x0020) 
+            | (lum & 0x0080) >> 3
+            | (lum & 0x0200) >> 6
+            | (lum & 0x0800) >> 9
+            | (lum & 0x2000) >> 12
+            | (lum & 0x8000) >> 15;
          *pwm0++ = lum0 | lum1;
          *pwm1++ = lum1;
          *pwm2++ = lum0 & lum1;
