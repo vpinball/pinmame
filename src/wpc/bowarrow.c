@@ -369,7 +369,7 @@ MACHINE_DRIVER_END
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" )
 
-static const core_tLCDLayout dispBA[] = {
+static core_tLCDLayout dispBA[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
   {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
   {4, 2,34,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},{0}

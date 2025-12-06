@@ -207,4 +207,4 @@ extern MACHINE_DRIVER_EXTERN(s3S);
 #define s3_mS3S     s3S
 
 /* standard 6 digit display layout */
-extern const core_tLCDLayout s4_disp[];
+extern core_tLCDLayout s4_disp[];

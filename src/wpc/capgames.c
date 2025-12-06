@@ -8,13 +8,13 @@
 #define FLIP    (FLIP_SWNO(5,6) + FLIP_SOL(FLIP_LL | FLIP_LR | FLIP_UR | FLIP_UL))
 
 /*-- DMD 128 X 32 --*/
-const core_tLCDLayout cc_dispDMD128x32[] = {
+static core_tLCDLayout cc_dispDMD128x32[] = {
   {0,0,32,128,CORE_DMD,(genf *)cc_dmd,NULL},
   {0}
 };
 
 /*-- DMD 256 X 64 --*/
-const core_tLCDLayout cc_dispDMD256x64[] = {
+static core_tLCDLayout cc_dispDMD256x64[] = {
   {0,0,64,256,CORE_DMD,(genf *)cc_dmd,NULL},
   {0}
 };
@@ -77,7 +77,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 /*-------------------------------------------------------------------
 / Goofy Hoops (Romstar game) (04/94)
 /-------------------------------------------------------------------*/
-const core_tLCDLayout romstar_dispDMD256x64[] = {
+static core_tLCDLayout romstar_dispDMD256x64[] = {
   {0,0,64,256,CORE_DMD,(genf *)cc_dmd,NULL}, {0}
 };
 static core_tGameData ghvGameData = {0,romstar_dispDMD256x64,{FLIP_SWNO(17,18),0,0,0,SNDBRD_ROMSTAR,0,0},NULL,{"", capInvSw0}};

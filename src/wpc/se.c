@@ -915,7 +915,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout, NULL);
+    core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -940,7 +940,7 @@ PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout, NULL);
+    core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -965,7 +965,7 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout, NULL);
+    core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -991,7 +991,7 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
     *seg++ = bits;
   }
   if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout, NULL);
+    core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 

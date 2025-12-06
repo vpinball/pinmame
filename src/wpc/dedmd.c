@@ -19,7 +19,6 @@
 static struct {
   struct sndbrdData brdData;
   int cmd, ncmd, busy, status, ctrl, bank;
-  core_tDMDPWMState pwm_state;
   
   // dmd32 stuff
   UINT8* RAM;
@@ -165,8 +164,8 @@ static void dmd32_vblank(int which) {
   assert((base & 0x00FF) == 0x0000); // As the mapping of lowest 8 bits is not implemented (would need complex data copy and does not seem to be used by any game)
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
-  core_dmd_submit_frame(&dmdlocals.pwm_state, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
+  core_dmd_submit_frame(core_gameData->lcdLayout, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
+  core_dmd_submit_frame(core_gameData->lcdLayout, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
   if (crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 }
@@ -195,12 +194,11 @@ static void dmd32_init(struct sndbrdData *brdData) {
     assert(0); // Unsupported board revision
 
   // Init PWM shading
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_SUM_2_1);
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
 }
 
 static void dmd32_exit(int boardNo) {
    free(dmdlocals.RAM);
-   core_dmd_pwm_exit(&dmdlocals.pwm_state);
 }
 
 PINMAME_VIDEO_UPDATE(dedmd32_update) {
@@ -229,7 +227,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 	     will update after the next DMD event. */
 	}
   #endif
-  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -254,11 +252,10 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
   -----------------------------*/
 static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
-static void dmd64_exit(int boardNo);
 static void dmd64_vblank(int which);
 
 const struct sndbrdIntf dedmd64Intf = {
-  NULL, dmd64_init, dmd64_exit, NULL,NULL,
+  NULL, dmd64_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -303,11 +300,7 @@ static void dmd64_init(struct sndbrdData *brdData) {
   dmdlocals.brdData = *brdData;
   crtc6845_init(0);
   crtc6845_set_vsync(0, (12000000. / 4.) / 16., dmd64_vblank); // See explanation above for frequency (12MHz -> 3MHz -> 3MHz/16)
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 192, 64, CORE_DMD_PWM_FILTER_DE_192x64, CORE_DMD_PWM_COMBINER_SUM_2_1);
-}
-
-static void dmd64_exit(int boardNo) {
-   core_dmd_pwm_exit(&dmdlocals.pwm_state);
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_DE_192x64, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
@@ -333,13 +326,13 @@ static void dmd64_vblank(int which) {
   unsigned int base = crtc6845_start_address_r(0); // MA0..13
   assert((base & 0x03FF) == 0x0000); // As the mapping of lowest 10 bits is not implemented (would need complex data copy and does not seem to be used by any game)
   unsigned int src = (base & 0x3C00) << 2;
-  core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*)dmd64RAM +  src,           2); // First frame has been displayed 2/3 of the time
-  core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*)dmd64RAM + (src | 0x0800), 1); // Second frame has been displayed 1/3 of the time
+  core_dmd_submit_frame(core_gameData->lcdLayout, (UINT8*)dmd64RAM +  src,           2); // First frame has been displayed 2/3 of the time
+  core_dmd_submit_frame(core_gameData->lcdLayout, (UINT8*)dmd64RAM + (src | 0x0800), 1); // Second frame has been displayed 1/3 of the time
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE); // Note that IRQ2 is not caused by VSYNC (unwired) but generated from ROWDATA, but this seems precise enough
 }
 
 PINMAME_VIDEO_UPDATE(dedmd64_update) {
-  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -355,12 +348,11 @@ PINMAME_VIDEO_UPDATE(dedmd64_update) {
 // Doesn't seems to happen anymore (lots of things have been fixed since, so hopefully fixed too)
 
 static void dmd16_init(struct sndbrdData *brdData);
-static void dmd16_exit(int boardNo);
 
 static WRITE_HANDLER(dmd16_ctrl_w);
 
 const struct sndbrdIntf dedmd16Intf = {
-  NULL, dmd16_init, dmd16_exit, NULL,NULL,
+  NULL, dmd16_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd16_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND | SNDBRD_NODATASYNC | SNDBRD_NOCTRLSYNC | SNDBRD_NOCBSYNC
 };
 
@@ -427,11 +419,7 @@ static void dmd16_init(struct sndbrdData *brdData) {
   dmd16_reset();
 
   // Init PWM shading
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 16, CORE_DMD_PWM_FILTER_DE_128x16, CORE_DMD_PWM_COMBINER_SUM_1_2);
-}
-
-static void dmd16_exit(int boardNo) {
-   core_dmd_pwm_exit(&dmdlocals.pwm_state);
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_DE_128x16, CORE_DMD_PWM_COMBINER_SUM_1_2, 0);
 }
 
 INLINE void dmd16_interlace(UINT64 v, UINT8* row)
@@ -466,8 +454,8 @@ static void dmd16_updrow(void) {
   }
   if (dmdlocals.blnk && dmdlocals.row_latch == 0) {
     //static double prev; printf("DMD VBlank %8.5fms => %8.5fHz for 3 frames so %8.5fHz\n", timer_get_time() - prev, 1. / (timer_get_time() - prev), 3. / (timer_get_time() - prev)); prev = timer_get_time();
-    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[0], 1); // First frame has been displayed 1/3 of the time
-    core_dmd_submit_frame(&dmdlocals.pwm_state, (UINT8*) dmdlocals.framedata[1], 2); // Second frame has been displayed 2/3 of the time
+    core_dmd_submit_frame(core_gameData->lcdLayout, (UINT8*) dmdlocals.framedata[0], 1); // First frame has been displayed 1/3 of the time
+    core_dmd_submit_frame(core_gameData->lcdLayout, (UINT8*) dmdlocals.framedata[1], 2); // Second frame has been displayed 2/3 of the time
   }
 }
 
@@ -579,6 +567,6 @@ static void dmd16_setbank(int bit, int value) {
 
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd16_update) {
-  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }

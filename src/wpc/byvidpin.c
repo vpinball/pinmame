@@ -536,10 +536,10 @@ static MEMORY_WRITE_START(byVPGG_video_writemem)
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
-const struct core_dispLayout byVP_dispBabyPac[] = {
+core_tLCDLayout byVP_dispBabyPac[] = {
   {0,0,192,256,CORE_VIDEO,(genf *)byVP_update,NULL}, {0}
 };
-const struct core_dispLayout byVP_dispGranny[] = {
+core_tLCDLayout byVP_dispGranny[] = {
   {0,0,192,256,CORE_VIDEO,(genf *)byVP_update,NULL}, {0}
 };
 /*--------------------*/

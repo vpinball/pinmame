@@ -322,7 +322,7 @@ MACHINE_DRIVER_END
       COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
       COREPORT_DIPSET(0x0080, DEF_STR(On))
 
-static const core_tLCDLayout dispBoom[] = {
+static core_tLCDLayout dispBoom[] = {
   {0, 0, 6,6,CORE_SEG7}, {0,16,12,6,CORE_SEG7},
   {3, 0,18,6,CORE_SEG7}, {3,16,24,6,CORE_SEG7},
   {6, 8,30,2,CORE_SEG7}, {6,16,34,2,CORE_SEG7},

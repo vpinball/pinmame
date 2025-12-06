@@ -221,7 +221,6 @@ typedef struct {
   UINT8 status2; // bool
   UINT8 dstrb; // bool
   UINT8 dmd_visible_addr;
-  core_tDMDPWMState pwm_state;
 } GTS3_DMDlocals;
 
 typedef struct {

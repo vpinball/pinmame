@@ -498,7 +498,7 @@ S6_ROMEND
 #define input_ports_frpwr_d6 input_ports_frpwr_l2
 CORE_CLONEDEFNV(frpwr_d6,frpwr_l6,"Firepower (Sys.6/6-digit /10 Scoring rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
-static const struct core_dispLayout fp_7digit_disp[] = {
+static core_tLCDLayout fp_7digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,7,CORE_SEG7}, {0,18, 7,7,CORE_SEG7},
   // Player 3            Player 4

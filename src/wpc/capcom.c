@@ -130,7 +130,6 @@ static struct {
   int lampAColDisable, lampBColDisable;
   UINT16 lampA, lampB;
 
-  core_tDMDPWMState dmdState;
   mame_timer* u16DMDtimer;
   UINT8 pwmDmdFrames[256 * 8 * 3];
 
@@ -714,10 +713,8 @@ static MACHINE_INIT(cc) {
   //Copy 1st 0x100 bytes of rom into RAM for vector table
   memcpy(ramptr, memory_region(REGION_USER1), 0x100);
 
-  const int dmdWidth = core_gameData->lcdLayout->length;
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1, 1);
   const int dmdHeight = core_gameData->lcdLayout->start;
-  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1);
-  locals.dmdState.revByte = 1;
   timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
 
   // Initialize outputs
@@ -791,7 +788,6 @@ static MACHINE_INIT(cc) {
 
 static MACHINE_STOP(cc)
 {
-   core_dmd_pwm_exit(&locals.dmdState);
    sndbrd_0_exit();
 }
 
@@ -947,14 +943,14 @@ MACHINE_DRIVER_START(cc2)
 MACHINE_DRIVER_END
 
 // DMD rasterization is performed by U16 custom chip.
-// Readings and reverse engineering shows that the chip read data from RAM and rasterizes it, creating 3 PWM frames.
+// Readings and reverse engineering shows that the chip read data from RAM and rasterizes it, creating 4 PWM frames.
 // Each line is made of 256 dots, each dot being 2 bits. On 128x32 displays, the first 128 dots are ignored by the display.
-// The rasterizer converts the 2 bit values into 3 PWM frames (therefore 4 shades) but the CPU may also quickly
+// The rasterizer converts the 2 bit values into 4 PWM frames (leading to 4 shades) but the CPU may also quickly
 // change pages, leading to longer PWM patterns (multiple groups of 3 frames) leading to more shades.
 // The (measured) timings are the followings:
 // - 128x32: 1.965ms per frame, 61.417µs per line, dots are 250/250/250/208ns (per group of 4)
 // - 256x64: 3.931ms per frame, 61.417µs per line, dots are 250/250/250/208ns (per group of 4)
-// Therefore we setup a timer with teh right timing which decodes the 2 bit data into 3 frames and submit them for PWM integration
+// Therefore we setup a timer with the right timing which decodes the 2 bit data into frames and submit them for PWM integration
 static void cc_dmd_rasterizer_sync(int param) {
    const int dmdWidth = core_gameData->lcdLayout->length / 8;
    const int dmdHeight = core_gameData->lcdLayout->start;
@@ -994,14 +990,14 @@ static void cc_dmd_rasterizer_sync(int param) {
    // 1 => 1 / 0 / 0 / 0
    // 2 => 0 / 1 / 0 / 1
    // 3 => 1 / 1 / 1 / 1
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
+   core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
+   core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
+   core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
+   core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
 }
 
 PINMAME_VIDEO_UPDATE(cc_dmd) {
-  core_dmd_video_update(bitmap, cliprect, layout, &locals.dmdState);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -1031,9 +1027,8 @@ static MACHINE_INIT(romstar) {
   //IRQ4 clock - might be unused, still pulse it because we don't know what that U8 chip does...
   /* FIXME timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4); */
   
-  const int dmdWidth = core_gameData->lcdLayout->length;
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1, 1);
   const int dmdHeight = core_gameData->lcdLayout->start;
-  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1);
   timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
 
   // FIXME missing physics output definition

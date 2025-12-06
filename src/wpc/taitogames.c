@@ -5,7 +5,7 @@
 #include "taito.h"
 #include "taitos.h"
 
-static const core_tLCDLayout dispTaito[] = {
+static core_tLCDLayout dispTaito[] = {
   { 0, 0,  0, 6, CORE_SEG7 },
   { 3, 0,  6, 6, CORE_SEG7 },
   { 6, 0, 12, 6, CORE_SEG7 },
@@ -14,7 +14,7 @@ static const core_tLCDLayout dispTaito[] = {
   {0}
 };
 
-static const core_tLCDLayout dispTaito2[] = {
+static core_tLCDLayout dispTaito2[] = {
   { 3, 0,  0, 6, CORE_SEG7 },
   { 6, 0,  6, 6, CORE_SEG7 },
   { 9, 0, 12, 6, CORE_SEG7 },

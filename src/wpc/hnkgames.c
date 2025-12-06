@@ -11,7 +11,7 @@
 (34)(35)(36)(37)(39)(40)
 */
 #if 1
-static const core_tLCDLayout dispHNK[] = {
+static core_tLCDLayout dispHNK[] = {
   {0, 0, 2,6,CORE_SEG9}, {0,16,10,6,CORE_SEG9},
   {2, 0,18,6,CORE_SEG9}, {2,16,26,6,CORE_SEG9},
   {4, 4,35,2,CORE_SEG9}, {4,10,38,2,CORE_SEG9},{0}

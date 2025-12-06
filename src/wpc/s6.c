@@ -39,7 +39,7 @@
   16-21 =	Player 3
   24-29 =	Player 4
 */
-const struct core_dispLayout s6_6digit_disp[] = {
+core_tLCDLayout s6_6digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
@@ -66,7 +66,7 @@ const struct core_dispLayout s6_6digit_disp[] = {
   24 =		Right Side Right Digit
   25-31 =	Player 4 (Digits 1-7) */
 
-const struct core_dispLayout s6_7digit_disp[] = {
+core_tLCDLayout s6_7digit_disp[] = {
   // Player 1 Segment    Player 2 Segment
   {0, 0, 1,7,CORE_SEG7},{0,18, 9,7,CORE_SEG7},
   // Player 3 Segment    Player 4 Segment

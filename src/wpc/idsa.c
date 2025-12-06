@@ -353,7 +353,7 @@ INPUT_PORTS_START(idsa)
       COREPORT_DIPSET(0x8000, "1" )
 INPUT_PORTS_END
 
-core_tLCDLayout v1_disp[] = {
+static core_tLCDLayout v1_disp[] = {
   {0, 0,20, 6, CORE_SEG7}, {0,20,14, 6, CORE_SEG7},
   {3, 0, 8, 6, CORE_SEG7}, {3,20, 2, 6, CORE_SEG7},
   {3,14, 0, 2, CORE_SEG7},
@@ -407,7 +407,7 @@ ROM_START(v1)
 ROM_END
 CORE_GAMEDEFNV(v1, "V.1", 1985, "IDSA (Spain)", v1, 0)
 
-core_tLCDLayout idsa_disp[] = {
+static core_tLCDLayout idsa_disp[] = {
   {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},
   {3, 0,16, 7, CORE_SEG7}, {3,16,23, 7, CORE_SEG7},
   {6, 6,36, 1, CORE_SEG7}, {6,10,38, 2, CORE_SEG7}, {6,16,41, 1, CORE_SEG7}, {6,20,43, 2, CORE_SEG7},

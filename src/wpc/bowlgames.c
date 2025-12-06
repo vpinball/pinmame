@@ -34,32 +34,32 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 
 S4_INPUT_PORTS_START(bowl, 1) S4_INPUT_PORTS_END
 
-static const core_tLCDLayout dispS5[] = {
+static core_tLCDLayout dispS5[] = {
   { 0, 0, 0, 4, CORE_SEG7 }, { 0,12, 4, 4, CORE_SEG7 },
   { 2, 0, 8, 4, CORE_SEG7 }, { 2,12,20, 4, CORE_SEG7 },
   { 4, 0,24, 4, CORE_SEG7 }, { 4,12,28, 4, CORE_SEG7 },
   { 6, 4,12, 2, CORE_SEG7 }, { 6,12,14, 2, CORE_SEG7 }, {0}
 };
 
-static const core_tLCDLayout dispS10[] = {
+static core_tLCDLayout dispS10[] = {
   { 0, 0,22, 4, CORE_SEG7 }, { 0,12,30, 4, CORE_SEG7 },
   { 2, 0, 2, 4, CORE_SEG7 }, { 2,12,10, 4, CORE_SEG7 },
   { 4, 0,26, 2, CORE_SEG7 }, { 4, 4,34, 2, CORE_SEG7 }, { 4,12, 6, 2, CORE_SEG7 }, { 4,16,14, 2, CORE_SEG7 },
   { 6, 4, 0, 1, CORE_SEG7 }, { 6, 6, 8, 1, CORE_SEG7 }, { 6,12,20, 1, CORE_SEG7 }, { 6,14,28, 1, CORE_SEG7 }, {0}
 };
 
-static const core_tLCDLayout dispBowl[] = {
+static core_tLCDLayout dispBowl[] = {
   { 0, 0, 4, 4, CORE_SEG7 }, { 0,12,12, 4, CORE_SEG7 },
   { 2, 0,20, 4, CORE_SEG7 }, { 2,12,28, 4, CORE_SEG7 },
   { 4, 0,36, 4, CORE_SEG7 }, { 4,12,44, 4, CORE_SEG7 },
   { 6, 4,54, 2, CORE_SEG7 }, { 6,12,52, 2, CORE_SEG7 }, {0}
 };
 
-static struct core_dispLayout de_dmd192x64[] = {
+static core_tLCDLayout de_dmd192x64[] = {
   {0,0,64,192,CORE_DMD,(genf *)dedmd64_update}, {0}
 };
 
-static struct core_dispLayout se_dmd128x32[] = {
+static core_tLCDLayout se_dmd128x32[] = {
   {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update}, {0}
 };
 
@@ -224,7 +224,7 @@ static MACHINE_DRIVER_START(marauders)
   MDRV_IMPORT_FROM(by35_61S)
   MDRV_SWITCH_UPDATE(marauders)
 MACHINE_DRIVER_END
-static const core_tLCDLayout dispMM[] = {
+static core_tLCDLayout dispMM[] = {
   {0, 0, 7,1,CORE_SEG7}, {0, 2, 6,1,CORE_SEG7}, {0, 4, 5,1,CORE_SEG7},
   {0, 6, 4,1,CORE_SEG7}, {0, 8, 3,1,CORE_SEG7}, {0,10, 2,1,CORE_SEG7}, {0}
 };
@@ -278,7 +278,7 @@ CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3 Prototype)", 1984, "Wi
 /*--------------------
 / Still Crazy (#534)
 /--------------------*/
-static const core_tLCDLayout dispCrzy[] = {
+static core_tLCDLayout dispCrzy[] = {
   {0, 0,21,7,CORE_SEG87}, {0}
 };
 INITGAME_S10(scrzy, GEN_S9, dispCrzy, S9_BREAKPIA, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
@@ -627,7 +627,7 @@ CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper) (D-4 LED Ghost Fix)
 /*-------------------------------------------------------------------
 / Strikes N' Spares (#N111)
 /-------------------------------------------------------------------*/
-static struct core_dispLayout GTS3_dispDMD[] = {
+static core_tLCDLayout GTS3_dispDMD[] = {
   {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32a},
   {34,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32b},
   {0}

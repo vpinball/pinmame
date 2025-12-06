@@ -594,7 +594,7 @@ static void gts3dmd_init(void) {
 
   // Setup PWM shading, with a backward compatible combiner
   if ((strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0))
-	  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_5C); // Used to be '_5C' games: SMB, SMB Mushroom, Cueball
+	  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_5C, 0); // Used to be '_5C' games: SMB, SMB Mushroom, Cueball
   else if ((strncasecmp(Machine->gamedrv->name, "stargat", 7) == 0)
 	  || (strncasecmp(Machine->gamedrv->name, "bighurt", 7) == 0)
 	  || (strncasecmp(Machine->gamedrv->name, "waterwl", 7) == 0)
@@ -602,9 +602,9 @@ static void gts3dmd_init(void) {
 	  || (strncasecmp(Machine->gamedrv->name, "barbwire", 8) == 0)
 	  || (strncasecmp(Machine->gamedrv->name, "brooks", 6) == 0)
 	  || (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0))
-	  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_B); // Used to be '_4C_b' games
+	  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_B, 0); // Used to be '_4C_b' games
   else
-	  core_dmd_pwm_init(&GTS3_dmdlocals[0].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_A); // Used to be '_4C_a' games
+	  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_A, 0); // Used to be '_4C_a' games
 
   /*DMD*/
   /*copy last 32K of ROM into last 32K of CPU region*/
@@ -745,7 +745,7 @@ static MACHINE_INIT(gts3dmd2) {
   crtc6845_set_vsync(1, 3579545. / 2., dmd_vblank);
 
   // Setup PWM shading
-  core_dmd_pwm_init(&GTS3_dmdlocals[1].pwm_state, 128, 32, CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_B); // Used to be '_4C_b' games
+  core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_GTS3, CORE_DMD_PWM_COMBINER_GTS3_4C_B, 0); // Used to be '_4C_b' games
 
   /*copy last 32K of DMD ROM into last 32K of CPU region*/
   if (memory_region(GTS3_MEMREG_DCPU2)) {
@@ -760,13 +760,10 @@ static MACHINE_STOP(gts3) {
 
 static MACHINE_STOP(gts3dmd) {
   sndbrd_0_exit();
-  core_dmd_pwm_exit(&GTS3_dmdlocals[0].pwm_state);
 }
 
 static MACHINE_STOP(gts3dmd2) {
   sndbrd_0_exit();
-  core_dmd_pwm_exit(&GTS3_dmdlocals[0].pwm_state);
-  core_dmd_pwm_exit(&GTS3_dmdlocals[1].pwm_state);
 }
 
 /*Solenoids - Need to verify correct solenoid # here!*/
@@ -971,7 +968,7 @@ static WRITE_HANDLER(dmd_aux) {
 static void dmd_vblank(int which) {
 	const UINT8* RAM = memory_region(which ? GTS3_MEMREG_DCPU2 : GTS3_MEMREG_DCPU1) + 0x1000 + (crtc6845_start_address_r(which) >> 2);
 	//static double prev; printf("DMD VBlank %6.2fHz: %02x %02x %02x %02x\n", 1. / (timer_get_time() - prev), RAM[20 * 16 + 2], RAM[20 * 16 + 6], RAM[20 * 16 + 10], RAM[20 * 16 + 14]); prev = timer_get_time();
-	core_dmd_submit_frame(&GTS3_dmdlocals[which].pwm_state, RAM, 1);
+	core_dmd_submit_frame(&core_gameData->lcdLayout[which], RAM, 1);
 	cpu_set_nmi_line(which ? GTS3_DCPUNO2 : GTS3_DCPUNO, PULSE_LINE);
 }
 

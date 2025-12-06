@@ -9,14 +9,14 @@
 
 /* 4 x 7 digit 7 Segment Display (6 Scoring Digits, & 1 Comma Digit)
    AND 1 x 6 digit 7 Segment for Ball & Credit (But appears as 2 x 2 digit*/
-static const core_tLCDLayout dispBy7C[] = {
+static core_tLCDLayout dispBy7C[] = {
   {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87},  {4,10,38,2,CORE_SEG87},{0}
 };
 
 /* 4 x 7 digit 9 Segment Display */
-static const core_tLCDLayout dispBy104[] = {
+static core_tLCDLayout dispBy104[] = {
   // For backward compatibility we keep an old ordering bug (see in driver to see how it is recreated).
   // This should have been: {0, 0, 7,7,CORE_SEG98}, {0,16, 0,7,CORE_SEG98}, {0,32,27,7,CORE_SEG98}, {0,48,20,7,CORE_SEG98}, {0}
   {0, 0, 9,7,CORE_SEG98}, {0,16, 2,7,CORE_SEG98},

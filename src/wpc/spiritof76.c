@@ -129,7 +129,7 @@ static MACHINE_DRIVER_START(spirit)
   MDRV_NVRAM_HANDLER(generic_0fill)
 MACHINE_DRIVER_END
 
-static const core_tLCDLayout disp[] = {
+static core_tLCDLayout disp[] = {
   {2, 0, 0,5,CORE_SEG7}, {2,10,17,1,CORE_SEG7},
   {2,18,10,6,CORE_SEG7},
   {0,13, 8,2,CORE_SEG7},

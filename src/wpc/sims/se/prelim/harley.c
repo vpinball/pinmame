@@ -591,7 +591,7 @@ CORE_CLONEDEF(harl,l18,a40,"Harley-Davidson (Stern, 1.08 Spanish)",2003,"Stern",
 
 
 
-static struct core_dispLayout se_dmd128x32[] = {
+static core_tLCDLayout se_dmd128x32[] = {
   {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update}, {0}
 };
 

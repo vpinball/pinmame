@@ -2223,7 +2223,7 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 			*dotLum++ = lumLUT[temp];
 		}
 	}
-	core_dmd_video_update(bitmap, cliprect, layout, NULL);
+	core_dmd_video_update(bitmap, cliprect, layout);
 	return 0;
 }
 
@@ -2253,7 +2253,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd_update) {
         coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + x] = bits;
     }
     if (!pmoptions.dmd_only)
-        core_dmd_video_update(bitmap, cliprect, layout, NULL);
+        core_dmd_video_update(bitmap, cliprect, layout);
     return 0;
 }
 
@@ -2275,7 +2275,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
       coreGlobals.drawSeg[ii] = bits;
     }
     if (!pmoptions.dmd_only)
-      core_dmd_video_update(bitmap, cliprect, layout, NULL);
+      core_dmd_video_update(bitmap, cliprect, layout);
     return 0;
 }
 

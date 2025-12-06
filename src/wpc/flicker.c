@@ -292,7 +292,7 @@ INPUT_PORTS_START(flicker)
       COREPORT_DIPSET(0x8000, "1" )
 INPUT_PORTS_END
 
-core_tLCDLayout flicker_disp[] = {
+static core_tLCDLayout flicker_disp[] = {
   {0, 0, 0,6,CORE_SEG7}, {0,14, 7,6,CORE_SEG7},
   {3, 4,14,2,CORE_SEG7}, {3,12, 6,1,CORE_SEG7},
   {3,18,13,1,CORE_SEG7}, {3,20,16,1,CORE_SEG7}, {0}

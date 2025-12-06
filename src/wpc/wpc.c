@@ -91,15 +91,15 @@ static INTERRUPT_GEN(wpc_interface_update);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 
-const struct core_dispLayout wpc_dispAlpha[] = {
+core_tLCDLayout wpc_dispAlpha[] = {
   {0,0, 0,13,CORE_SEG16R},{0,26,13,2,CORE_SEG16D},{0,30,15,1,CORE_SEG16N},
   {4,0,20,13,CORE_SEG16R},{4,26,33,2,CORE_SEG16D},{4,30,35,1,CORE_SEG16N},
   {0}
 };
-const struct core_dispLayout wpc_dispDMD[] = {
+core_tLCDLayout wpc_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update32,NULL}, {0}
 };
-const struct core_dispLayout wpc_dispDMD64[] = {
+core_tLCDLayout wpc_dispDMD64[] = {
   {0,0, 0,5,CORE_SEG7},
   {11,0,64,128,CORE_DMD,(genf *)wpcdmd_update64,NULL}, {0}
 };
@@ -145,7 +145,6 @@ static int wpc_fastflip_addr = 0;
 static struct {
   int    row;                    // Rasterizer row position
   int    firq;                   // State of FIRQ output line to CPU
-  core_tDMDPWMState pwm_state;
 } dmdlocals;
 
 /*-- pointers --*/
@@ -1233,8 +1232,7 @@ static MACHINE_INIT(wpc) {
   if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
   {
     const int isPH = (core_gameData->hw.gameSpecific1 & WPC_PH);
-    core_dmd_pwm_init(&dmdlocals.pwm_state, 128, isPH ? 64 : 32, isPH ? CORE_DMD_PWM_FILTER_WPC_PH : CORE_DMD_PWM_FILTER_WPC, isPH ? CORE_DMD_PWM_COMBINER_SUM_2 : CORE_DMD_PWM_COMBINER_SUM_3);
-    dmdlocals.pwm_state.revByte = 1;
+    core_dmd_pwm_init(core_gameData->lcdLayout, isPH ? CORE_DMD_PWM_FILTER_WPC_PH : CORE_DMD_PWM_FILTER_WPC, isPH ? CORE_DMD_PWM_COMBINER_SUM_2 : CORE_DMD_PWM_COMBINER_SUM_3, 1);
   }
 
 #ifdef PINMAME_HOST_UART
@@ -1567,8 +1565,6 @@ static MACHINE_INIT(wpc) {
 
 static MACHINE_STOP(wpc) {
   sndbrd_0_exit();
-  if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
-      core_dmd_pwm_exit(&dmdlocals.pwm_state);
   if (wpc_printfile)
     { mame_fclose(wpc_printfile); wpc_printfile = NULL; }
 }
@@ -1651,15 +1647,17 @@ static VIDEO_START(wpc_dmd) {
 // The FIRQ is then acked (pulled down) by writing again the requested FIRQ row 
 // to the corresponding register (game code use 0xFF to disables DMD FIRQ).
 static void wpc_dmd_hsync(int param) {
-  dmdlocals.row = (dmdlocals.row + 1) % dmdlocals.pwm_state.height; // FIXME Phantom Haus uses the same AV card than other WPC95 but with a 64 row display, therefore the CPU must tell the rasterizer that it is 64 row high somewhere we don't know
+  const int dmdHeight = core_gameData->lcdLayout->start;
+  const int rawFrameSize = dmdHeight * 128 / 8;
+  dmdlocals.row = (dmdlocals.row + 1) % dmdHeight; // FIXME Phantom Haus uses the same AV card than other WPC95 but with a 64 row display, therefore the CPU must tell the rasterizer that it is 64 row high somewhere we don't know
   if (dmdlocals.row == 0) { // VSYNC
     // Rasterize next page (latched while rasterizing the previous page)
     const int rasterizedPage = wpc_data[WPC_DMD_SHOWPAGE] & 0x0f;
     //printf("%8.5f Rnd page: %02x\n", timer_get_time(), rasterizedPage);
-    core_dmd_submit_frame(&dmdlocals.pwm_state, memory_region(WPC_DMDREGION) + rasterizedPage * dmdlocals.pwm_state.rawFrameSize, 1);
+    core_dmd_submit_frame(core_gameData->lcdLayout, memory_region(WPC_DMDREGION) + rasterizedPage * rawFrameSize, 1);
     #ifdef PROC_SUPPORT
       if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
-        procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + rasterizedPage * dmdlocals.pwm_state.rawFrameSize, dmdlocals.pwm_state.rawFrameSize);
+        procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + rasterizedPage * rawFrameSize, rawFrameSize);
       /* Don't explicitly update the DMD from here. The P-ROC code will update after the next DMD event. */
     #endif
   }
@@ -1670,8 +1668,8 @@ static void wpc_dmd_hsync(int param) {
   }
 }
 
-int wpcdmd_update(int height, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout) {
-  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
+int wpcdmd_update(int height, struct mame_bitmap* bitmap, const struct rectangle* cliprect, core_tLCDLayout* layout) {
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 

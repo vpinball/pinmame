@@ -262,7 +262,7 @@ INPUT_PORTS_START(rotation)
     COREPORT_BIT(     0x0008, "Keypad 7",          KEYCODE_7_PAD)
 INPUT_PORTS_END
 
-core_tLCDLayout rot_disp[] = {
+static core_tLCDLayout rot_disp[] = {
   {0, 0, 0, 6,CORE_SEG7}, {0,16, 7, 6,CORE_SEG7},
   {2, 0,14, 6,CORE_SEG7}, {2,16,21, 6,CORE_SEG7},
   {4, 8,35, 6,CORE_SEG7}, {0}

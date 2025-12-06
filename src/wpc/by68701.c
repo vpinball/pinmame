@@ -382,13 +382,13 @@ MACHINE_DRIVER_END
     COREPORT_BIT(   0x0100, "Slam Tilt",    KEYCODE_HOME) \
   INPUT_PORTS_END
 
-static const core_tLCDLayout dispFG[] = {
+static core_tLCDLayout dispFG[] = {
   {0, 0, 1,7,CORE_SEG98},{0,18, 9,7,CORE_SEG98},
   {6, 0,17,7,CORE_SEG98},{6,18,25,7,CORE_SEG98},
   {3,24,35,1,CORE_SEG9}, {3,26,36,1,CORE_SEG10},{3,30,38,2,CORE_SEG9}, {3,20,33,1,CORE_SEG10},{3,22,34,1,CORE_SEG9}, {3,28,37,1,CORE_SEG9}, {0}
 };
 
-static const core_tLCDLayout dispEBD[] = {
+static core_tLCDLayout dispEBD[] = {
   {0, 0, 1,7,CORE_SEG98},{0,18, 9,7,CORE_SEG98},
   {6, 0,17,7,CORE_SEG98},{6,18,25,7,CORE_SEG98},
   {3,30,35,2,CORE_SEG7S},{3,36,38,2,CORE_SEG7S},{0}
