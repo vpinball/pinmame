@@ -2181,6 +2181,10 @@ static MACHINE_INIT(core) {
 static MACHINE_STOP(core) {
   int ii;
 
+#if defined(LIBPINMAME)
+  OnStateChange(3); // Stopping
+#endif
+
 #ifdef VPINMAME
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
@@ -3403,6 +3407,8 @@ static void core_dmd_render_vpm(const int width, const int height, const float* 
 void core_dmd_render_lpm(const struct core_dispLayout* dmdLayout, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
   const struct core_dispLayout* layout = core_gameData->lcdLayout;
   const struct core_dispLayout* parent_layout = NULL;
+  const int size = layout->length * layout->start;
+
   for (int displayIndex = 0; layout->length || (parent_layout && parent_layout->length); layout += 1, displayIndex++) {
      if (layout->length == 0) { // Recursive import
         layout = parent_layout;
@@ -3414,7 +3420,6 @@ void core_dmd_render_lpm(const struct core_dispLayout* dmdLayout, const float* c
         layout = layout->lptr - 1;
      }
      else if ((layout->type & CORE_DMD) == CORE_DMD && layout == dmdLayout) {
-        const int size = layout->length * layout->start;
         if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
            UINT8* rawLum = g_raw_dmdbuffer;
            for (int ii = 0; ii < size; ii++)
@@ -3429,6 +3434,22 @@ void core_dmd_render_lpm(const struct core_dispLayout* dmdLayout, const float* c
               memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
               libpinmame_update_display(displayIndex, g_raw_dmdbuffer);
            }
+        }
+        break;
+     }
+  }
+
+  for (int i = 0; (i < 8) && (coreGlobals.dmdStates[i].layout != NULL); i++) {
+     if (coreGlobals.dmdStates[i].layout == layout) {
+        if (coreGlobals.dmdStates[i].rawFrame == NULL || coreGlobals.dmdStates[i].dmdDotLum == NULL)
+           break;
+        if (memcmp(coreGlobals.dmdStates[i].dmdDotLum, dmdDotLum, size * 4) != 0) {
+           memcpy(coreGlobals.dmdStates[i].dmdDotLum, dmdDotLum, size * 4);
+           coreGlobals.dmdStates[i].lumFrameId++;
+        }
+        if (memcmp(coreGlobals.dmdStates[i].rawFrame, dmdDotRaw, size) != 0) {
+           memcpy(coreGlobals.dmdStates[i].rawFrame, dmdDotRaw, size);
+           coreGlobals.dmdStates[i].rawFrameId++;
         }
         break;
      }
@@ -3554,7 +3575,7 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
 
   float* dmdDotLum = NULL;
   #if defined(LIBPINMAME)
-    const int needsLum = libpinmame_needs_update_display() && (g_fDmdMode == 0);
+  const int needsLum = 1; // libpinmame_needs_update_display() && (g_fDmdMode == 0);
   #elif defined(VPINMAME)
     const int needsLum = 1;
   #elif defined(PINMAME)
@@ -3581,11 +3602,11 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 
   #if defined(LIBPINMAME)
-    if (libpinmame_needs_update_display()) {
+    //if (libpinmame_needs_update_display()) {
       const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
       if (isMainDMD) // libPinMAME legacy display only supports the first display
         core_dmd_render_lpm(layout, dmdDotLum, dmdDotRaw);
-    }
+    //}
 
   #elif defined(VPINMAME)
     const int isMainDMD = layout->length >= 128; // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
@@ -3600,6 +3621,55 @@ void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *c
   #elif defined(PINMAME)
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, dmdDotLum, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
 
+  #endif
+}
+
+void core_display_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout, const int rotation) {
+  #if defined(LIBPINMAME)
+    for (int i = 0; (i < 8) && (coreGlobals.dmdStates[i].layout != NULL); i++)
+    {
+      if (coreGlobals.dmdStates[i].layout == layout)
+      {
+        if (coreGlobals.dmdStates[i].rawFrame == NULL)
+          break;
+        // FIXME modifying display characteristic here is invalid, as they are static and advertised through display src messages
+        switch (rotation)
+        {
+        case 0:
+           coreGlobals.dmdStates[i].width = layout->length;
+           coreGlobals.dmdStates[i].height = layout->start;
+           break;
+        case 1:
+           coreGlobals.dmdStates[i].width = layout->start;
+           coreGlobals.dmdStates[i].height = layout->length;
+           break;
+        case 3:
+           coreGlobals.dmdStates[i].width = layout->start;
+           coreGlobals.dmdStates[i].height = layout->length;
+           break;
+        default:
+           assert(FALSE);
+           break;
+        }
+        for (int y = 0; y < layout->start; y++) {
+          for (int x = 0; x < layout->length; x++) {
+            int pos;
+            switch (rotation)
+            {
+            case 0: pos = (x + y * layout->length) * 3; break;
+            case 1: pos = ((layout->start - 1 - y) + x * layout->start) * 3; break;
+            case 2: pos = (y + (layout->length - 1 - x) * layout->start) * 3; break;
+            }
+            palette_get_color(bitmap->read(bitmap, cliprect->min_x + x, cliprect->min_y + y),
+              &coreGlobals.dmdStates[i].rawFrame[pos    ],
+              &coreGlobals.dmdStates[i].rawFrame[pos + 1],
+              &coreGlobals.dmdStates[i].rawFrame[pos + 2]);
+          }
+        }
+        coreGlobals.dmdStates[i].rawFrameId++;
+        break;
+      }
+    }
   #endif
 }
 
