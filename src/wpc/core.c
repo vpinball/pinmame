@@ -3217,6 +3217,26 @@ static void core_dmd_update_identify(core_tDMDPWMState* dmd_state, UINT8* bitpla
       }
     }
     break;
+  case CORE_DMD_PWM_COMBINER_SUM_1_2_1: // Sum of the 3 out of the last 4 raw frames seen (Capcom as the PWM pattern is 0 1 2 1 with identify built from the 3 first frames)
+    {
+      UINT8* rawData = &bitplaneFrame[0]; // Note that we are always well aligned as the frames are pushed 4 by 4 since they are processed by a dedicated rasterizer chip
+      const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
+        const unsigned int intens1 = (frame0[kk] & 0x55) + (frame1[kk] & 0x55) + (frame2[kk] & 0x55); // 0x55 = 01010101 binary mask
+        const unsigned int intens2 = (frame0[kk] & 0xaa) + (frame1[kk] & 0xaa) + (frame2[kk] & 0xaa); // 0xaa = 10101010 binary mask
+        *rawData++ =  intens1       & 0x03;
+        *rawData++ = (intens2 >> 1) & 0x03;
+        *rawData++ = (intens1 >> 2) & 0x03;
+        *rawData++ = (intens2 >> 3) & 0x03;
+        *rawData++ = (intens1 >> 4) & 0x03;
+        *rawData++ = (intens2 >> 5) & 0x03;
+        *rawData++ = (intens1 >> 6) & 0x03;
+        *rawData++ = (intens2 >> 7) & 0x03;
+      }
+    }
+    break;
   default:
     assert(0); // Unsupported combiner
   }

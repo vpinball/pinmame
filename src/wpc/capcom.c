@@ -716,7 +716,7 @@ static MACHINE_INIT(cc) {
 
   const int dmdWidth = core_gameData->lcdLayout->length;
   const int dmdHeight = core_gameData->lcdLayout->start;
-  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
+  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1);
   locals.dmdState.revByte = 1;
   timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
 
@@ -989,10 +989,15 @@ static void cc_dmd_rasterizer_sync(int param) {
          *pwm2++ = lum0 & lum1;
       }
    }
-   // U16 rasterizer decodes and produces 3 equal length frames
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[0 * 256 * 8], 1);
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[1 * 256 * 8], 1);
-   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[2 * 256 * 8], 1);
+   // U16 rasterizer decodes and produces 4 frames with the following order: 0,1,2,1 leading to 0 / 25 / 50 / 100 luminance levels as the PWM patterns are the followings:
+   // 0 => 0 / 0 / 0 / 0
+   // 1 => 1 / 0 / 0 / 0
+   // 2 => 0 / 1 / 0 / 1
+   // 3 => 1 / 1 / 1 / 1
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
+   core_dmd_submit_frame(&locals.dmdState, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
 }
 
 PINMAME_VIDEO_UPDATE(cc_dmd) {
@@ -1028,7 +1033,7 @@ static MACHINE_INIT(romstar) {
   
   const int dmdWidth = core_gameData->lcdLayout->length;
   const int dmdHeight = core_gameData->lcdLayout->start;
-  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_3);
+  core_dmd_pwm_init(&locals.dmdState, dmdWidth, dmdHeight, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1);
   timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
 
   // FIXME missing physics output definition

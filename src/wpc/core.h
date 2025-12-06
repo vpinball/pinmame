@@ -664,6 +664,7 @@ typedef struct {
 #define CORE_DMD_PWM_COMBINER_SUM_2_1   5
 #define CORE_DMD_PWM_COMBINER_SUM_1_2   6
 #define CORE_DMD_PWM_COMBINER_SUM_4     7
+#define CORE_DMD_PWM_COMBINER_SUM_1_2_1 8
 
 extern void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner);
 extern void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state);
