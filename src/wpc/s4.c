@@ -61,7 +61,7 @@ static data8_t *s4_CMOS;
 	   (14)(15)   (06)(97)
 */
 //Structure is: top, left, start, length, type
-const struct core_dispLayout s4_disp[] = {
+core_tLCDLayout s4_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4

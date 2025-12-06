@@ -206,7 +206,7 @@ INPUT_PORTS_START(cirsa)
     COREPORT_BIT(     0x0100, "Test", KEYCODE_0)
 INPUT_PORTS_END
 
-core_tLCDLayout cirsa_disp[] = {
+static core_tLCDLayout cirsa_disp[] = {
   {0, 0, 0, 7,CORE_SEG8D}, {0,16, 7, 7,CORE_SEG8D},
   {3, 0,14, 7,CORE_SEG8D}, {3,16,21, 7,CORE_SEG8D},
   {6, 8,28, 2,CORE_SEG8D}, {6,14,30, 1,CORE_SEG8D}, {6,18,31, 2,CORE_SEG8D},

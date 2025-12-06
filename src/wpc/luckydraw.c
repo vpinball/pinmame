@@ -188,7 +188,7 @@ MACHINE_DRIVER_START(mirco)
   MDRV_NVRAM_HANDLER(generic_0fill)
 MACHINE_DRIVER_END
 
-static const core_tLCDLayout disp[] = {
+static core_tLCDLayout disp[] = {
   {0, 0, 0,6,CORE_SEG7}, {0,28, 8,6,CORE_SEG7},
   {5, 0,16,6,CORE_SEG7}, {5,28,24,6,CORE_SEG7},
   {3,14,32,2,CORE_SEG7}, {3,22,36,2,CORE_SEG7},

@@ -10,7 +10,7 @@ static PINMAME_VIDEO_UPDATE(led_update) {
   return 1;
 }
 
-static struct core_dispLayout se_dmd128x32[] = {
+static core_tLCDLayout se_dmd128x32[] = {
   {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL}, {0}
 };
 
@@ -28,7 +28,7 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 /*-------------------------------------------------------------------
 / Apollo 13
 /-------------------------------------------------------------------*/
-static struct core_dispLayout se_apollo[] = {
+static core_tLCDLayout se_apollo[] = {
   {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL},
   {7,0,  0,  1, CORE_SEG7 | CORE_NODISP, (genf *)led_update, NULL},
   {0}
@@ -669,7 +669,7 @@ DE2S_SOUNDROM18888("hrsndu7.100", CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded2
                    "hrsndu36.100",CRC(5634eb4e) SHA1(8c76f49423fc0d7887aa5c57ad029b7371372739), \
                    "hrsndu37.100",CRC(d4d23c00) SHA1(c574dc4553bff693d9216229ce38a55f69e7368a))
 
-static struct core_dispLayout dispHRC[] = {
+static core_tLCDLayout dispHRC[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 7, 15, CORE_DMD | CORE_NODISP, (genf *)seminidmd1_update, NULL}, {0}
 };
@@ -1041,7 +1041,7 @@ DE2S_SOUNDROM1888("rcsndu7.100", CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2
                   "rcsndu21.100",CRC(64b19c11) SHA1(9ac714d372437cf1d8c4e01512c0647f13e40ddb), \
                   "rcsndu36.100",CRC(05c8bac9) SHA1(0771a393d5361c9a35d42a18b6c6a105b7752e03))
 
-static struct core_dispLayout dispRCT[] = {
+static core_tLCDLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 5,21, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)seminidmd3_update, NULL}, {0}
 };
@@ -1206,7 +1206,7 @@ DE2S_SOUNDROM18888("spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598c
                    "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a), \
                    "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 
-static struct core_dispLayout dispSPP[] = {
+static core_tLCDLayout dispSPP[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10,10,14, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)seminidmd4_update, NULL}, {0}
 };
@@ -1905,7 +1905,7 @@ DE3S_SOUNDROM18888("ripsndi.u7", CRC(86b1b2b2) SHA1(9e2cf7368b31531998d546a1be2a
                    "ripsndi.u36",CRC(6a124fa6) SHA1(752c3d227b9a98dd859e4778ddd527edaa3cf512), \
                    "ripsndi.u37",CRC(7933c102) SHA1(f736ee86d7c67dab82c634d125d73a2453249706))
 
-static struct core_dispLayout dispBION[] = {
+static core_tLCDLayout dispBION[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 7, 5, CORE_DMD | CORE_NODISP, (genf *)seminidmd1s_update},
   {34,18, 7, 5, CORE_DMD | CORE_NODISP, (genf *)seminidmd1s_update},

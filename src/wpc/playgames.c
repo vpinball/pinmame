@@ -49,7 +49,7 @@
     core_gameData = &name##GameData; \
   }
 
-core_tLCDLayout play_dispOld[] = {
+static core_tLCDLayout play_dispOld[] = {
   { 0, 0, 0,2,CORE_SEG7 }, { 0, 4, 2,1,CORE_SEG8D}, { 0, 6, 3,3,CORE_SEG7 },
   { 3, 0, 6,2,CORE_SEG7 }, { 3, 4, 8,1,CORE_SEG8D}, { 3, 6, 9,1,CORE_SEG7 }, { 3, 8, 4,2,CORE_SEG7 },
   { 6, 0,10,2,CORE_SEG7 }, { 6, 4,12,1,CORE_SEG8D}, { 6, 6,13,1,CORE_SEG7 }, { 6, 8, 4,2,CORE_SEG7 },
@@ -58,7 +58,7 @@ core_tLCDLayout play_dispOld[] = {
   {0}
 };
 
-core_tLCDLayout play_disp6[] = {
+static core_tLCDLayout play_disp6[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 },
   { 3, 0,29,1,CORE_SEG7 }, { 3, 2,24,5,CORE_SEG7 },
   { 6, 0,21,1,CORE_SEG7 }, { 6, 2,16,5,CORE_SEG7 },
@@ -67,7 +67,7 @@ core_tLCDLayout play_disp6[] = {
   {0}
 };
 
-core_tLCDLayout play_disp7[] = {
+static core_tLCDLayout play_disp7[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
   { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 }, { 6,12,51,1,CORE_SEG7 },
   { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 }, { 0,32,50,1,CORE_SEG7 },
@@ -76,7 +76,7 @@ core_tLCDLayout play_disp7[] = {
   {0}
 };
 
-core_tLCDLayout play_disp7a[] = {
+static core_tLCDLayout play_disp7a[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
   { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 }, { 6,12,51,1,CORE_SEG7 },
   { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 }, { 0,32,50,1,CORE_SEG7 },
@@ -390,7 +390,7 @@ CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATI
 /*-------------------------------------------------------------------
 / ??/?? Miss Disco (Bingo machine)
 /-------------------------------------------------------------------*/
-core_tLCDLayout play_disp_bingo[] = {
+static core_tLCDLayout play_disp_bingo[] = {
   {0} // no digits
 };
 INPUT_PORTS_START(msdisco) CORE_PORTS SIM_PORTS(1)
@@ -462,7 +462,7 @@ CORE_GAMEDEFNV(storm,"Storm",1979,"Sonic (Spain)",gl_mPLAYMATIC2,0)
 /*-------------------------------------------------------------------
 / ??/84 Flashman (Sport Matic)
 /-------------------------------------------------------------------*/
-core_tLCDLayout dispFM[] = {
+static core_tLCDLayout dispFM[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
   { 0,18,29,1,CORE_SEG7 }, { 0,20,24,5,CORE_SEG7 }, { 0,30,51,1,CORE_SEG7 },
   { 3,18,21,1,CORE_SEG7 }, { 3,20,16,5,CORE_SEG7 }, { 3,30,50,1,CORE_SEG7 },
@@ -498,7 +498,7 @@ CORE_GAMEDEFNV(ironball,"Iron Balls",1987,"Stargame",gl_mPLAYMATIC4,0)
 /*-------------------------------------------------------------------
 / ??/87 Terrific Lake (Sport Matic)
 /-------------------------------------------------------------------*/
-core_tLCDLayout dispSM[] = {
+static core_tLCDLayout dispSM[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
   { 3, 0,29,1,CORE_SEG7 }, { 3, 2,24,5,CORE_SEG7 }, { 3,12,51,1,CORE_SEG7 },
   { 6, 0,21,1,CORE_SEG7 }, { 6, 2,16,5,CORE_SEG7 }, { 6,12,50,1,CORE_SEG7 },

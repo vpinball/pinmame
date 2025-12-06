@@ -318,6 +318,6 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
     *line = 0;
   }
 
-  core_dmd_video_update(bitmap, cliprect, layout, NULL);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }

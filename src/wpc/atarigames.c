@@ -28,7 +28,7 @@
 	}
 
 /* 4 X 6 Segments, 2 X 2 Segments */
-core_tLCDLayout atari_disp1[] = {
+static core_tLCDLayout atari_disp1[] = {
   { 0, 0, 2, 3, CORE_SEG87 }, { 0, 6, 5, 3, CORE_SEG87 },
   { 3, 0,10, 3, CORE_SEG87 }, { 3, 6,13, 3, CORE_SEG87 },
   { 6, 0,18, 3, CORE_SEG87 }, { 6, 6,21, 3, CORE_SEG87 },
@@ -39,7 +39,7 @@ core_tLCDLayout atari_disp1[] = {
 
 #define DISP_SEG_6(row,col,type) {4*row,16*col,row*20+col*8+2,6,type}
 
-core_tLCDLayout atari_disp2[] = {
+static core_tLCDLayout atari_disp2[] = {
   DISP_SEG_6(0,0,CORE_SEG7), DISP_SEG_6(0,1,CORE_SEG7),
   DISP_SEG_6(1,0,CORE_SEG7), DISP_SEG_6(1,1,CORE_SEG7),
   DISP_SEG_CREDIT(42,43,CORE_SEG7), DISP_SEG_BALLS(46,47,CORE_SEG7), {0}
@@ -212,7 +212,7 @@ CORE_GAMEDEFNV(roadrunr,"Road Runner (Prototype)",1979,"Atari",gl_mATARI3,0)
 /*-------------------------------------------------------------------
 / 4x4 (10/1982)
 /-------------------------------------------------------------------*/
-core_tLCDLayout atari_disp4[] = {
+static core_tLCDLayout atari_disp4[] = {
   { 0, 0, 0,16, CORE_SEG87 },
   { 2, 0,16,16, CORE_SEG87 },
   { 0 }

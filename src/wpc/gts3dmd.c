@@ -16,9 +16,9 @@ extern GTS3_DMDlocals GTS3_dmdlocals[2];
 // This lead to better performance since less frames were accumulated but had 2 side effects:
 // - there were some occasional residual flickers,
 // - DMD luminance was not fully coherent between GTS3 games.
-int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, const struct core_dispLayout* layout)
+int gts3_dmd128x32(int which, struct mame_bitmap* bitmap, const struct rectangle* cliprect, core_tLCDLayout* layout)
 {
-  core_dmd_video_update(bitmap, cliprect, layout, &GTS3_dmdlocals[which].pwm_state);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
 

@@ -8,7 +8,7 @@
 #define GEN_SPINB 0
 
 /* Dot-Matrix display */
-static struct core_dispLayout spinb_dispDMD[] = {
+static core_tLCDLayout spinb_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(genf *)SPINBdmd_update,NULL}, {0}
 };
 

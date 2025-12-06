@@ -12,12 +12,12 @@ The player 2 display will show the number of the installed game revision.
 #include "wmssnd.h"
 #include "s7.h"
 
-const core_tLCDLayout s7_dispS7[] = {
+core_tLCDLayout s7_dispS7[] = {
   DISP_SEG_7(1,0,CORE_SEG87),DISP_SEG_7(1,1,CORE_SEG87),
   DISP_SEG_7(0,0,CORE_SEG87),DISP_SEG_7(0,1,CORE_SEG87),
   DISP_SEG_BALLS(0,8,CORE_SEG7S),DISP_SEG_CREDIT(20,28,CORE_SEG7S),{0}
 };
-const struct core_dispLayout s7_6digit_disp[] = {
+core_tLCDLayout s7_6digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
@@ -36,7 +36,7 @@ S7_INPUT_PORTS_START(s7, 1) S7_INPUT_PORTS_END
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion
 /------------------------------*/
-static const struct core_dispLayout fp_7digit_disp[] = {
+static core_tLCDLayout fp_7digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,7,CORE_SEG7}, {0,18, 7,7,CORE_SEG7},
   // Player 3            Player 4

@@ -12,19 +12,19 @@
 #define FLIP78    FLIP_SWNO(7,8)
 
 /* Dot-Matrix display (128 x 32) */
-static struct core_dispLayout alvg_dispDMD[] = {
+static core_tLCDLayout alvg_dispDMD[] = {
   {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)alvgdmd_update,NULL}, {0}
 };
 
 /* Alpha Numeric Display (2 X 20 Alpha-Numeric) */
-static const core_tLCDLayout alvg_alpha[] = {
+static core_tLCDLayout alvg_alpha[] = {
   {0,0, 0,20,CORE_SEG16},
   {3,0,20,20,CORE_SEG16},
   {0}
 };
 
 /* Alpha Numeric Display (1 X 20 Alpha-Numeric) */
-static const core_tLCDLayout alvg_alpha1[] = {
+static core_tLCDLayout alvg_alpha1[] = {
   {0,0, 0,20,CORE_SEG16},
   {0}
 };

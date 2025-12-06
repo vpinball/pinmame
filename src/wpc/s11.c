@@ -53,21 +53,21 @@ static MACHINE_STOP(s11);
 static NVRAM_HANDLER(s11);
 static NVRAM_HANDLER(de);
 //top, left, start, length, type
-const struct core_dispLayout s11_dispS9[] = {
+core_tLCDLayout s11_dispS9[] = {
   {4, 0, 1,7, CORE_SEG87}, {4,16, 9,7, CORE_SEG87},
   {0, 0,21,7, CORE_SEG87}, {0,16,29,7, CORE_SEG87},
   DISP_SEG_CREDIT(0,8,CORE_SEG7S),DISP_SEG_BALLS(20,28,CORE_SEG7S),{0}
 };
-const struct core_dispLayout s11_dispS11[] = {
+core_tLCDLayout s11_dispS11[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
   DISP_SEG_7(1,0,CORE_SEG8), DISP_SEG_7(1,1,CORE_SEG8),
   {2,8,0,1,CORE_SEG7S},{2,10,8,1,CORE_SEG7S}, {2,2,20,1,CORE_SEG7S},{2,4,28,1,CORE_SEG7S}, {0}
 };
-const struct core_dispLayout s11_dispS11a[] = {
+core_tLCDLayout s11_dispS11a[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
   DISP_SEG_7(1,0,CORE_SEG8), DISP_SEG_7(1,1,CORE_SEG8) ,{0}
 };
-const struct core_dispLayout s11_dispS11b2[] = {
+core_tLCDLayout s11_dispS11b2[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
 
@@ -874,7 +874,7 @@ static MACHINE_INIT(s11) {
   if (core_gameData->sxx.muxSol)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + core_gameData->sxx.muxSol - 1, 1, CORE_MODOUT_PULSE); // K1 mux relay
   coreGlobals.nAlphaSegs = 0;
-  const struct core_dispLayout* layout, * parent_layout;
+  core_tLCDLayout* layout, * parent_layout;
   for (layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
      switch (layout->type & CORE_SEGMASK)

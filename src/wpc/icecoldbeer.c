@@ -292,7 +292,7 @@ MACHINE_DRIVER_END
     core_gameData = &name##GameData; \
   }
 
-core_tLCDLayout icb_disp[] = {
+static core_tLCDLayout icb_disp[] = {
   {0, 0, 7, 1, CORE_SEG7},
   {3, 0, 4, 3, CORE_SEG7},
   {6, 0, 0, 4, CORE_SEG7}, {0}

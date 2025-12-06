@@ -180,7 +180,7 @@ MACHINE_DRIVER_END
 
 // Break (1986)
 
-static const core_tLCDLayout dispVD[] = {
+static core_tLCDLayout dispVD[] = {
   { 0, 0, 0, 7, CORE_SEG87 },
   { 3, 0, 8, 7, CORE_SEG87 },
   { 6, 0,16, 7, CORE_SEG87 },
@@ -248,7 +248,7 @@ CORE_GAMEDEFNV(break, "Break", 1986, "Video Dens", VD, 0)
 
 // Papillon (1986)
 
-static const core_tLCDLayout dispVD2[] = {
+static core_tLCDLayout dispVD2[] = {
   { 0, 0, 0, 7, CORE_SEG87 },
   { 3, 0, 8, 7, CORE_SEG87 },
   { 6, 0,16, 7, CORE_SEG87 },

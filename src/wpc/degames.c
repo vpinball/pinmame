@@ -88,30 +88,30 @@ DE_INPUT_PORTS_START2(des112, 1) DE_INPUT_PORTS_END
 #define FLIP1516    FLIP_SWNO(15,16)
 #define FLIP6364    FLIP_SWNO(63,64)
 
-static struct core_dispLayout de_dispAlpha1[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows, 1 X 4 Numeric*/
+static core_tLCDLayout de_dispAlpha1[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows, 1 X 4 Numeric*/
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
   DISP_SEG_7(1,0, CORE_SEG8),  DISP_SEG_7(1,1, CORE_SEG8),
   DISP_SEG_CREDIT(20,28,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7), {0}
 };
 
-static struct core_dispLayout de_dispAlpha2[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
+static core_tLCDLayout de_dispAlpha2[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
   DISP_SEG_7(1,0, CORE_SEG8),  DISP_SEG_7(1,1, CORE_SEG8), {0}
 };
 
-static struct core_dispLayout de_dispAlpha3[] = { /* 2 X 16 AlphaNumeric Rows */
+static core_tLCDLayout de_dispAlpha3[] = { /* 2 X 16 AlphaNumeric Rows */
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
 
-static struct core_dispLayout de_128x16DMD[] = { /* 128x16 DMD OUTPUT */
+static core_tLCDLayout de_128x16DMD[] = { /* 128x16 DMD OUTPUT */
   {0,0,16,128,CORE_DMD,(genf *)dedmd16_update,NULL}, {0}
 };
 
-static struct core_dispLayout de_128x32DMD[] = { /* 128x32 DMD OUTPUT */
+static core_tLCDLayout de_128x32DMD[] = { /* 128x32 DMD OUTPUT */
   {0,0,32,128,CORE_DMD,(genf *)dedmd32_update,NULL}, {0}
 };
 
-static struct core_dispLayout de_192x64DMD[] = { /* 192x64 DMD OUTPUT */
+static core_tLCDLayout de_192x64DMD[] = { /* 192x64 DMD OUTPUT */
   {0,0,64,192,CORE_DMD,(genf *)dedmd64_update,NULL}, {0}
 };
 
@@ -1827,7 +1827,7 @@ CORE_CLONEDEFNV(batmanf501,batmanf,"Batman Forever (5.01 unofficial MOD)",2025,"
 /*************** SPECIAL TEST CHIP - NO DISPLAY ************************/
 /***********************************************************************/
 /* NO OUTPUT */
-static struct core_dispLayout de_NoOutput[] = {{0}};
+static core_tLCDLayout de_NoOutput[] = {{0}};
 /*-------------------------------------------------------------
 / Data East Test Chip 64K ROM
 /------------------------------------------------------------*/

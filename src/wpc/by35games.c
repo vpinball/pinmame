@@ -9,7 +9,7 @@
 
 //#define DISPLAYALL
 #ifdef DISPLAYALL
-static const core_tLCDLayout dispBy6[] = {
+static core_tLCDLayout dispBy6[] = {
   { 0, 0, 0, 16, CORE_SEG87 }, { 2, 0,16, 16, CORE_SEG87 },
   { 4, 0,32, 16, CORE_SEG87 }, {0}
 };

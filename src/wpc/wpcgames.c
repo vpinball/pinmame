@@ -45,7 +45,7 @@ CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
 /*-------------
 / Phantom Haus
 /--------------*/
-extern const core_tLCDLayout wpc_dispDMD64[];
+extern core_tLCDLayout wpc_dispDMD64[];
 static mech_tInitData ph_reelMech[] = {{
   38,39, MECH_LINEAR | MECH_CIRCLE | MECH_TWOSTEPSOL, 48,48, {{36, 1,47}}
 },{

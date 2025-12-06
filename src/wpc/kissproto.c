@@ -141,7 +141,7 @@ MACHINE_DRIVER_START(by8035)
   MDRV_SOUND_ADD(AY8910, kiss_ay8910Int)
 MACHINE_DRIVER_END
 
-static const core_tLCDLayout dispBy6p[] = {
+static core_tLCDLayout dispBy6p[] = {
   {0, 0, 0,16,CORE_SEG10},
   {2, 0,16,16,CORE_SEG10},
   {4, 0,32,16,CORE_SEG10},

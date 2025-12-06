@@ -141,4 +141,4 @@ extern MACHINE_DRIVER_EXTERN(s6S);
 #define s6_mS6      s6
 #define s6_mS6S     s6S
 /* standard 6 digit display layout */
-extern const core_tLCDLayout s6_6digit_disp[],s6_7digit_disp[];
+extern core_tLCDLayout s6_6digit_disp[],s6_7digit_disp[];

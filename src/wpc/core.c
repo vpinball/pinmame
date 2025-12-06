@@ -116,7 +116,7 @@ INLINE UINT8 saturatedByte(float v)
 }
 
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]);
-static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
+static UINT32 core_initDisplaySize(const core_tLCDLayout *layout);
 static VIDEO_UPDATE(core_status);
 
 /*---------------------------
@@ -712,6 +712,31 @@ static const tSegData segData[2][18] = {{
   {12,11,&segSize2C[5][0]} /* SEG16D */
 }};
 
+/*-- DMD state for PWM integration --*/
+typedef struct {
+  // Definition initialized at startup using 'core_dmd_pwm_init' then unmutable
+  core_ptLCDLayout layout;    // DMD layout
+  int     width;              // DMD width (alias from layout)
+  int     height;             // DMD height (alias from layout)
+  int     revByte;            // Is bitset reversed ?
+  int     frameSize;          // Size of a DMD frame in bytes (width * height)
+  int     rawFrameSize;       // Size of a raw DMD frame in bytes (width * height / 8)
+  int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
+  int     raw_combiner;       // CORE_DMD_PWM_COMBINER_... enum that defines how to combine bitplanes to create multi plane raw frame for colorization plugin
+  int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  const UINT32* fir_weights;  // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  float   fir_sum;            // Sum of filter weights
+  // Data acquisition, fed by the driver through 'core_dmd_submit_frame'
+  UINT8*  rawFrames;          // Buffer for incoming raw frames
+  int     nextFrame;          // Position in circular buffer to store next raw frame
+  unsigned int frame_index;   // Raw frame index
+  // Integrated data, computed by 'core_dmd_update_pwm' / 'core_dmd_update_identify'
+  // FIXME to be removed as this should be per requester to avoid conflict when called asynchronously
+  UINT32* shadedFrame;        // Shaded frame computed from raw frames
+  UINT8*  bitplaneFrame;      // DMD: bitplane frame built up from raw rasterized frames (depends on each driver, stable result that can be used for post processing like colorization, ...)
+  float*  luminanceFrame;     // DMD: linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable across PinMame builds)
+} core_tDMDPWMState;
+
 /*-------------------
 /  local variables
 /-------------------*/
@@ -729,6 +754,8 @@ static struct {
   UINT8     lastLampMatrix[CORE_MAXLAMPCOL];
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
+  // DMD state for PWM integration
+  core_tDMDPWMState* dmdStates[16];                             /* DMD: state structure where frames are pushed and kept to be processed for luminance/identify evaluation */
   /*-- VPinMAME specifics --*/
   #if defined(VPINMAME)
     UINT8   vpm_dmd_last_dmd[DMD_MAXY * DMD_MAXX];
@@ -1063,7 +1090,7 @@ core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UI
 	return layout;
 }
 
-static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout_array)
+static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout_array)
 {
   if (layout_array == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
@@ -1084,8 +1111,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   #endif
 
   int segPos = 0;
-  const struct core_dispLayout* layout = layout_array;
-  const struct core_dispLayout* parent_layout = NULL;
+  const core_tLCDLayout* layout = layout_array;
+  const core_tLCDLayout* parent_layout = NULL;
   for (; layout->length || (parent_layout && parent_layout->length); layout += 1) {
     if (layout->length == 0) { // End of import, move up to parent
       layout = parent_layout;
@@ -2124,6 +2151,41 @@ static MACHINE_INIT(core) {
     if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate != 0.)
       coreGlobals.soundEn = TRUE;
 
+    /*-- Setup displays: setups display ids and performs some additional validation --*/
+    if (core_gameData->lcdLayout) {
+      for (core_ptLCDLayout layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+        if (layout->length == 0) {
+          layout = parent_layout;
+          parent_layout = NULL;
+        }
+        if ((layout->type & CORE_SEGMASK) == CORE_IMPORT) {
+          assert(layout->lptr); // Import must be defined
+          assert((layout->lptr->type & CORE_SEGALL) == CORE_IMPORT); // Imported layout must not be an import itself (no import recursion)
+          assert(parent_layout == NULL); // Redundant with above
+          parent_layout = layout + 1;
+          layout->index = -1;
+          layout = layout->lptr - 1;
+          layout->index = -1;
+        }
+        else {
+          assert(layout->lptr == NULL); // Not an import
+          layout->index = -1;
+        }
+      }
+      int index = 0;
+      for (core_ptLCDLayout layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+        if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+        if ((layout->type & CORE_SEGMASK) == CORE_IMPORT) {
+          parent_layout = layout + 1;
+          layout = layout->lptr - 1;
+        } else {
+          assert(layout->index == -1); // Ensure that a display layout is only used once to avoid conflicts (could fail due to import)
+          layout->index = index;
+          index++;
+        }
+      }
+    }
+
     /*-- init simulator --*/
     if (g_fHandleKeyboard && core_gameData->simData) {
       int inports[CORE_MAXPORTS];
@@ -2204,10 +2266,21 @@ static MACHINE_STOP(core) {
     procDeinitialize();
   }
 #endif
+
+  for (int i = 0; i < 16; i++) {
+    if (locals.dmdStates[i]) {
+      free(locals.dmdStates[i]->rawFrames);
+      free(locals.dmdStates[i]->shadedFrame);
+      free(locals.dmdStates[i]->bitplaneFrame);
+      free(locals.dmdStates[i]->luminanceFrame);
+      free(locals.dmdStates[i]);
+    }
+  }
+
   coreData = NULL; //!! FIXME this can still be in use when reading lamps via VPM / VPX-script
 }
 
-static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *maxY) {
+static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
   if (layout) {
     for (; layout->length; layout += 1) {
       int tmpX, tmpY, type = layout->type & CORE_SEGMASK;
@@ -2233,7 +2306,7 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
   }
 }
 
-static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
+static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
   int maxX = 0, maxY = 0;
 
   locals.segData = &segData[locals.displaySize == 1][0];
@@ -2957,14 +3030,20 @@ fprintf('%i, ', int_factor * b);
 fprintf(']\n');
 */
 
-void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int height, const int filter, const int raw_combiner) {
-  assert((width & 0x0007) == 0);
+void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const int raw_combiner, const int isReversedByte) {
+  assert(layout->index >= 0);
+  assert((layout->type & CORE_SEGALL) == CORE_DMD);
+  core_tDMDPWMState* dmd_state = (core_tDMDPWMState*)malloc(sizeof(core_tDMDPWMState));
   memset(dmd_state, 0, sizeof(core_tDMDPWMState));
-  dmd_state->width = width;
-  dmd_state->height = height;
-  dmd_state->frameSize = width * height;
+  locals.dmdStates[layout->index] = dmd_state;
+  dmd_state->layout = layout;
+  dmd_state->revByte = isReversedByte;
+  dmd_state->width = layout->length;
+  dmd_state->height = layout->start;
+  dmd_state->frameSize = dmd_state->width * dmd_state->height;
   dmd_state->rawFrameSize = dmd_state->frameSize / 8;
   dmd_state->raw_combiner = raw_combiner;
+  assert((dmd_state->width & 0x0007) == 0);
   switch (filter)
   {
   case CORE_DMD_PWM_FILTER_WPC_PH: // WPC Phantom Haus: 61Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern
@@ -3044,18 +3123,8 @@ void core_dmd_pwm_init(core_tDMDPWMState* dmd_state, const int width, const int 
   dmd_state->nextFrame = 0;
 }
 
-void core_dmd_pwm_exit(core_tDMDPWMState* dmd_state) {
-  free(dmd_state->rawFrames);
-  dmd_state->rawFrames = NULL;
-  free(dmd_state->shadedFrame);
-  dmd_state->shadedFrame = NULL;
-  free(dmd_state->bitplaneFrame);
-  dmd_state->bitplaneFrame = NULL;
-  free(dmd_state->luminanceFrame);
-  dmd_state->luminanceFrame = NULL;
-}
-
-void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, const int ntimes) {
+void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, const int ntimes) {
+  core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
   for (int i = 0; i < ntimes; i++) {
     memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
     // Update circular buffer position after writing the frame to allow concurrent PWM update
@@ -3069,7 +3138,7 @@ void core_dmd_submit_frame(core_tDMDPWMState* dmd_state, const UINT8* frame, con
 // frame submission by the emulated hardware. To avoid synchronization, a simple circular buffer with consumer
 // accesing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
 // not use synchronization primitives, so this can fail if instructions are reordered).
-static void core_dmd_update_pwm(const core_tDMDPWMState* dmd_state, UINT32* shadedFrame, float* luminanceFrame) {
+void core_dmd_update_pwm(const core_tDMDPWMState* dmd_state, UINT32* shadedFrame, float* luminanceFrame) {
   // Apply low pass filter over stored frames then scale down to final shades
   int framePos = dmd_state->nextFrame; // Circular buffer position, note that this may be changed concurrently from core_dmd_submit_frame
   memset(shadedFrame, 0, dmd_state->frameSize * sizeof(UINT32));
@@ -3400,9 +3469,9 @@ static void core_dmd_render_vpm(const int width, const int height, const float* 
 
 // Prepare data for LibPinMAME interface (similar to VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
 #ifdef LIBPINMAME
-void core_dmd_render_lpm(const struct core_dispLayout* dmdLayout, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
-  const struct core_dispLayout* layout = core_gameData->lcdLayout;
-  const struct core_dispLayout* parent_layout = NULL;
+void core_dmd_render_lpm(const core_tLCDLayout* dmdLayout, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
+  core_tLCDLayout* layout = core_gameData->lcdLayout;
+  core_tLCDLayout* parent_layout = NULL;
   for (int displayIndex = 0; layout->length || (parent_layout && parent_layout->length); layout += 1, displayIndex++) {
      if (layout->length == 0) { // Recursive import
         layout = parent_layout;
@@ -3522,7 +3591,8 @@ void core_dmd_capture_frame(const int width, const int height, const UINT8* cons
 }
 #endif
 
-void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout, core_tDMDPWMState* dmd_state) {
+void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout) {
+  core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
   const UINT8* dmdDotRaw;
   if (dmd_state) { // Full DMD state with luminance and bitplane state
     // This is called at a fixed 60Hz update frequency for backward compatibility

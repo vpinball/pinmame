@@ -105,7 +105,7 @@ int s11_m2sw(int col, int row);
 #define S11_CPUREGION		REGION_CPU1
 
 /*-- standard display layouts --*/
-extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_dispS11b2[];
+extern core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_dispS11b2[];
 #define s11_dispS11b1 s11_dispS11a
 #define s11_dispS11c  s11_dispS11b2
 

@@ -336,7 +336,7 @@ INPUT_PORTS_START(pentacup)
     COREPORT_BIT   (0x8000, "Alarm/Tilt",  KEYCODE_9)
 INPUT_PORTS_END
 
-core_tLCDLayout mp_disp[] = {
+static core_tLCDLayout mp_disp[] = {
   {0, 0,33, 2, CORE_SEG7}, {0, 6,35, 1, CORE_SEG7}, {0,10,17, 3, CORE_SEG7}, {0,16, 1, 3, CORE_SEG7}, {0,24, 4, 6, CORE_SEG7}, {0,38,10, 6, CORE_SEG7},
   {3, 8,57, 7, CORE_SEG7}, {3,24,20, 6, CORE_SEG7}, {3,38,26, 6, CORE_SEG7},
   {6, 8,50, 7, CORE_SEG7}, {6,24,36, 6, CORE_SEG7}, {6,38,42, 6, CORE_SEG7}, {0}
@@ -635,7 +635,7 @@ INPUT_PORTS_START(pentacp2)
       COREPORT_DIPSET(0x0200, "9" )
 INPUT_PORTS_END
 
-core_tLCDLayout mp2_disp[] = {
+static core_tLCDLayout mp2_disp[] = {
   { 0, 6,58,3,CORE_SEG7}, { 0,13,61,3,CORE_SEG7}, { 0,29,12,3,CORE_SEG7}, { 0,36,15,3,CORE_SEG7},
   { 4, 0, 0,2,CORE_SEG7}, { 4, 7,10,2,CORE_SEG7}, { 4,14, 9,1,CORE_SEG7},
   { 4,20,46,3,CORE_SEG7}, { 4,27,49,3,CORE_SEG7}, { 4,38,32,3,CORE_SEG7}, { 4,45,35,3,CORE_SEG7},
@@ -725,7 +725,7 @@ INPUT_PORTS_START(pentacpt)
       COREPORT_DIPSET(0x0200, "9" )
 INPUT_PORTS_END
 
-core_tLCDLayout mpt_disp[] = {
+static core_tLCDLayout mpt_disp[] = {
   { 0, 6,58,3,CORE_SEG7}, { 0,13,61,3,CORE_SEG7}, { 0,29,12,3,CORE_SEG7}, { 0,36,15,3,CORE_SEG7},
   { 4, 0, 0,2,CORE_SEG7}, { 4, 7,10,2,CORE_SEG7}, { 4,14, 9,1,CORE_SEG7},
   { 4,20,46,3,CORE_SEG7}, { 4,27,49,3,CORE_SEG7}, { 4,38,32,3,CORE_SEG7}, { 4,45,35,3,CORE_SEG7},

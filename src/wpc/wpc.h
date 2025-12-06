@@ -94,8 +94,8 @@
 #define WPC_ROMREGION       REGION_USER2
 
 /*-- standard display layout --*/
-extern const core_tLCDLayout wpc_dispAlpha[];
-extern const core_tLCDLayout wpc_dispDMD[];
+extern core_tLCDLayout wpc_dispAlpha[];
+extern core_tLCDLayout wpc_dispDMD[];
 
 /*-- Main CPU regions and ROM --*/
 #define WPC_ROMSTART(name, ver, n1, size, chk1) \

@@ -26,7 +26,6 @@ static struct {
   int rowstart, colstart;
   int vid_page;
   int last;
-  core_tDMDPWMState pwm_state;
   UINT8 blank_frame[0x200];
 } dmdlocals;
 
@@ -39,7 +38,6 @@ static READ_HANDLER(dmd32_latch_r);
 static INTERRUPT_GEN(dmd32_firq);
 static WRITE_HANDLER(dmd32_data_w);
 static void dmd32_init(struct sndbrdData *brdData);
-static void dmd32_exit(int boardNo);
 static WRITE_HANDLER(dmd32_ctrl_w);
 static WRITE_HANDLER(control_w);
 static READ_HANDLER(control_r);
@@ -48,7 +46,7 @@ static READ_HANDLER(port_r);
 
 // Interface
 const struct sndbrdIntf alvgdmdIntf = {
-  NULL, dmd32_init, dmd32_exit, NULL,NULL,
+  NULL, dmd32_init, NULL, NULL,NULL,
   dmd32_data_w, NULL, dmd32_ctrl_w, NULL, SNDBRD_NOTSOUND
 };
 
@@ -293,11 +291,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
   dmdlocals.brdData = *brdData;
   dmd32_bank_w(0,0);     // Set DMD Bank to 0
   dmdlocals.selsync = 1; // Start Sync @ 1 (PCA020A only)
-  core_dmd_pwm_init(&dmdlocals.pwm_state, 128, 32, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2, CORE_DMD_PWM_COMBINER_SUM_4);
-}
-
-static void dmd32_exit(int boardNo) {
-  core_dmd_pwm_exit(&dmdlocals.pwm_state);
+  core_dmd_pwm_init(core_gameData->lcdLayout, IS_PCA020 ? CORE_DMD_PWM_FILTER_ALVG1 : CORE_DMD_PWM_FILTER_ALVG2, CORE_DMD_PWM_COMBINER_SUM_4, 0);
 }
 
 // Main CPU sends command to DMD
@@ -332,19 +326,19 @@ static INTERRUPT_GEN(dmd32_firq) {
   const UINT8* RAM = (UINT8*)dmd32RAM + (dmdlocals.vid_page << 11) + ((dmdlocals.colstart >> 3) & 0x0F);
   const int rowstart = IS_PCA020 ? dmdlocals.rowstart + 1 : dmdlocals.rowstart; // PCA020 inc row before start
   if (dmdlocals.disenable) // Hardware uses the display enable signal to fade/adjust brightness of monochrome frames
-    core_dmd_submit_frame(&dmdlocals.pwm_state, &dmdlocals.blank_frame[0], 4);
+    core_dmd_submit_frame(core_gameData->lcdLayout, &dmdlocals.blank_frame[0], 4);
   else if (!dmdlocals.plans_enable)
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x00) & 0x1F) << 4), 4);
+    core_dmd_submit_frame(core_gameData->lcdLayout, RAM + (((rowstart + 0x00) & 0x1F) << 4), 4);
   else {
     // Note for Al's Garage Band the frame sequence is 0 first (no visible impact)
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x20) & 0x7F) << 4), 1);
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x40) & 0x7F) << 4), 1);
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x60) & 0x7F) << 4), 1);
-    core_dmd_submit_frame(&dmdlocals.pwm_state, RAM + (((rowstart + 0x00) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(core_gameData->lcdLayout, RAM + (((rowstart + 0x20) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(core_gameData->lcdLayout, RAM + (((rowstart + 0x40) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(core_gameData->lcdLayout, RAM + (((rowstart + 0x60) & 0x7F) << 4), 1);
+    core_dmd_submit_frame(core_gameData->lcdLayout, RAM + (((rowstart + 0x00) & 0x7F) << 4), 1);
   }
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
-  core_dmd_video_update(bitmap, cliprect, layout, &dmdlocals.pwm_state);
+  core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }

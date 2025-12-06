@@ -4,12 +4,12 @@
 #include "sndbrd.h"
 #include "stsnd.h"
 
-static const core_tLCDLayout dispst6[] = {
+static core_tLCDLayout dispst6[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
   {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
   {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
 };
-static const core_tLCDLayout dispst7[] = {
+static core_tLCDLayout dispst7[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
@@ -1378,7 +1378,7 @@ CORE_CLONEDEFNV(orbitorc,orbitor1,"Orbitor 1 (MOD No Timed Game)",1982,"Stern",b
 /*--------------------------------
 / Cue (Proto - Never released)
 /-------------------------------*/
-static const core_tLCDLayout dispCue[] = {
+static core_tLCDLayout dispCue[] = {
   {0,16, 1,7,CORE_SEG87F},
   {3, 3,34,1,CORE_SEG7}, {3, 6,35,1,CORE_SEG7}, {3, 9,36,2,CORE_SEG7}, {3, 14,38,2,CORE_SEG7},{0}
 };
@@ -1406,7 +1406,7 @@ CORE_GAMEDEFNV(lazrlord,"Lazer Lord (Prototype)",1984,"Stern",by35_mST200,0)
 /*----------------------------------
 / SAM (Service Assistance Module) Test Bench
 /---------------------------------*/
-static const core_tLCDLayout dispBench[] = {
+static core_tLCDLayout dispBench[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
   {4, 0,33,7,CORE_SEG87}, {4,16,40,4,CORE_SEG7},  {0}

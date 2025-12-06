@@ -18,16 +18,16 @@
 #define FLIP8283 FLIP_SWNO(82,83)
 
 /* Dot-Matrix display */
-static struct core_dispLayout GTS3_dispDMD[] = {
+static core_tLCDLayout GTS3_dispDMD[] = {
   {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32a,NULL}, {0}
 };
 
 /* 2 X 20 AlphaNumeric Rows */
-static struct core_dispLayout GTS3_dispAlpha[] = {
+static core_tLCDLayout GTS3_dispAlpha[] = {
   {0, 0, 0,20,CORE_SEG16}, {2, 0,20,20,CORE_SEG16}, {0}
 };
 /* 2 X 20 AlphaNumeric Rows, 4 X 2 7-seg displays */
-static struct core_dispLayout GTS3_dispAlphaLED[] = {
+static core_tLCDLayout GTS3_dispAlphaLED[] = {
   DISP_SEG_IMPORT(GTS3_dispAlpha),
   {5, 0,40,2,CORE_SEG7}, {5,12,42,2,CORE_SEG7}, {5,24,44,2,CORE_SEG7}, {5,36,46,2,CORE_SEG7}, {0}
 };
@@ -66,7 +66,7 @@ static struct core_dispLayout GTS3_dispAlphaLED[] = {
 / Blank game template - the company name "Toptronic HGmbH, D-W 4044 Kaarst 1" also comes up on other games when set to German
 /-------------------------------------------------------------------*/
 /* 2 X 20 AlphaNumeric Rows, 8 X 7-seg digits? */
-static struct core_dispLayout dispTemplate[] = {
+static core_tLCDLayout dispTemplate[] = {
   DISP_SEG_IMPORT(GTS3_dispAlpha),
   {5,12,40,8,CORE_SEG7}, {0}
 };
@@ -135,7 +135,7 @@ CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S80B3,0)
 / Vegas (#723)
 /-------------------------------------------------------------------*/
 /* 2 X 20 AlphaNumeric Rows, 3 X 14-seg alpha digits (without commas) */
-static struct core_dispLayout dispVegas[] = {
+static core_tLCDLayout dispVegas[] = {
   DISP_SEG_IMPORT(GTS3_dispAlpha),
   {5,16,40,1,CORE_SEG16}, {5,19,41,1,CORE_SEG16}, {5,22,42,1,CORE_SEG16}, {0}
 };
@@ -190,7 +190,7 @@ CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S80B3,0)
 / Hoops (#727)
 /-------------------------------------------------------------------*/
 /* 2 X 20 AlphaNumeric Rows, 4 X 3 7-seg displays */
-static struct core_dispLayout dispHoops[] = {
+static core_tLCDLayout dispHoops[] = {
   DISP_SEG_IMPORT(GTS3_dispAlpha),
   {5, 0,40,3,CORE_SEG7}, {5,11,43,3,CORE_SEG7}, {5,23,46,3,CORE_SEG7}, {5,34,49,3,CORE_SEG7}, {0}
 };
@@ -579,7 +579,7 @@ CORE_CLONEDEFNV(freddy4,freddy,"Freddy: A Nightmare on Elm Street (rev. 4)",1994
 /*-------------------------------------------------------------------
 / Shaq Attaq (#743)
 /-------------------------------------------------------------------*/
-static struct core_dispLayout dispShaq[] = {
+static core_tLCDLayout dispShaq[] = {
   DISP_SEG_IMPORT(GTS3_dispDMD),
   {7, 1, 0,3,CORE_SEG7}, {7, 9, 3,3,CORE_SEG7}, {7,17, 6,3,CORE_SEG7}, {7,25, 9,3,CORE_SEG7}, {0}
 };
@@ -715,7 +715,7 @@ CORE_CLONEDEFNV(waterwl5,waterwld,"Waterworld (rev. 5)",1995,"Gottlieb",mGTS3DMD
 /*-------------------------------------------------------------------
 / Mario Andretti (#747)
 /-------------------------------------------------------------------*/
-static struct core_dispLayout dispAndretti[] = {
+static core_tLCDLayout dispAndretti[] = {
   DISP_SEG_IMPORT(GTS3_dispDMD),
   { 7, 0,0,2,CORE_SEG7}, {10, 0,2,2,CORE_SEG7}, {13, 0,4,2,CORE_SEG7}, {0}
 };

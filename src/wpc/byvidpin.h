@@ -397,8 +397,8 @@
 
 #define BYVP_ROMEND ROM_END
 
-extern const struct core_dispLayout byVP_dispBabyPac[];
-extern const struct core_dispLayout byVP_dispGranny[];
+extern core_tLCDLayout byVP_dispBabyPac[];
+extern core_tLCDLayout byVP_dispGranny[];
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(byVP1);
