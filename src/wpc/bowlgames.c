@@ -56,7 +56,7 @@ static core_tLCDLayout dispBowl[] = {
 };
 
 static core_tLCDLayout de_dmd192x64[] = {
-  {0,0,64,192,CORE_DMD,(genf *)dedmd64_update}, {0}
+  {0,0,64,192,CORE_DMD,NULL}, {0}
 };
 
 static core_tLCDLayout se_dmd128x32[] = {
@@ -628,8 +628,8 @@ CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper) (D-4 LED Ghost Fix)
 / Strikes N' Spares (#N111)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32a},
-  {34,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32b},
+  {0,0,32,128,CORE_DMD|CORE_DMDNOAA,NULL},
+  {34,0,32,128,CORE_DMD|CORE_DMDNOAA,NULL},
   {0}
 };
 static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_NONE,0}};

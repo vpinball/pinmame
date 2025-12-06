@@ -22,7 +22,6 @@
 #include "sndbrd.h"
 #include "gts3.h"
 #include "vidhrdw/crtc6845.h"
-#include "gts3dmd.h"
 #include "gts80s.h"
 
 #define GTS3_INTERFACE_UPD_PER_FRAME    1 /* interface update frequency per 60Hz frame */

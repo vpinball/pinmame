@@ -337,8 +337,3 @@ static INTERRUPT_GEN(dmd32_firq) {
     core_dmd_submit_frame(core_gameData->lcdLayout, RAM + (((rowstart + 0x00) & 0x7F) << 4), 1);
   }
 }
-
-PINMAME_VIDEO_UPDATE(alvgdmd_update) {
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}

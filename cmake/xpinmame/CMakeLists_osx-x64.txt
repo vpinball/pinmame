@@ -409,8 +409,6 @@ add_executable(xpinmame
    src/wpc/gts1games.c
    src/wpc/gts3.c
    src/wpc/gts3.h
-   src/wpc/gts3dmd.c
-   src/wpc/gts3dmd.h
    src/wpc/gts3games.c
    src/wpc/gts80.c
    src/wpc/gts80.h

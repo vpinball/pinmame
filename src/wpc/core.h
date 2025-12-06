@@ -649,7 +649,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 
 extern void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const int raw_combiner, const int isReversedByte);
 extern void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, const int ntimes);
-extern void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout);
+extern PINMAME_VIDEO_UPDATE(core_dmd_video_update);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

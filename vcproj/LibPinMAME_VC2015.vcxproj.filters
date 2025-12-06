@@ -735,9 +735,6 @@
     <ClCompile Include="..\src\wpc\gts3.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\wpc\gts3dmd.c">
-      <Filter>Source Files\PinMAME</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\wpc\gts3games.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
@@ -1752,9 +1749,6 @@
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\wpc\gts3.h">
-      <Filter>Source Files\PinMAME</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\wpc\gts3dmd.h">
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\wpc\gts80.h">

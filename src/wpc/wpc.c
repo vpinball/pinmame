@@ -70,8 +70,6 @@ static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]);
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
 static void wpc_dmd_hsync(int);
-PINMAME_VIDEO_UPDATE(wpcdmd_update32);
-PINMAME_VIDEO_UPDATE(wpcdmd_update64);
 
 /*-- protected memory --*/
 static WRITE_HANDLER(wpc_ram_w);
@@ -97,11 +95,11 @@ core_tLCDLayout wpc_dispAlpha[] = {
   {0}
 };
 core_tLCDLayout wpc_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update32,NULL}, {0}
+  {0,0,32,128,CORE_DMD,NULL,NULL}, {0}
 };
 core_tLCDLayout wpc_dispDMD64[] = {
   {0,0, 0,5,CORE_SEG7},
-  {11,0,64,128,CORE_DMD,(genf *)wpcdmd_update64,NULL}, {0}
+  {11,0,64,128,CORE_DMD,NULL,NULL}, {0}
 };
 
 /*------------------
@@ -1667,11 +1665,3 @@ static void wpc_dmd_hsync(int param) {
     update_firq();
   }
 }
-
-int wpcdmd_update(int height, struct mame_bitmap* bitmap, const struct rectangle* cliprect, core_tLCDLayout* layout) {
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}
-
-PINMAME_VIDEO_UPDATE(wpcdmd_update32) { return wpcdmd_update(32, bitmap, cliprect, layout); }
-PINMAME_VIDEO_UPDATE(wpcdmd_update64) { return wpcdmd_update(64, bitmap, cliprect, layout); }
