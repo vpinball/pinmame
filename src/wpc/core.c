@@ -2162,7 +2162,7 @@ static MACHINE_INIT(core) {
         }
         if ((layout->type & CORE_SEGMASK) == CORE_IMPORT) {
           assert(layout->lptr); // Import must be defined
-          assert((layout->lptr->type & CORE_SEGALL) == CORE_IMPORT); // Imported layout must not be an import itself (no import recursion)
+          assert((layout->lptr->type & CORE_SEGALL) != CORE_IMPORT); // Imported layout must not be an import itself (no import recursion)
           assert(parent_layout == NULL); // Redundant with above
           parent_layout = layout + 1;
           layout->index = -1;
@@ -3048,6 +3048,13 @@ void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const in
   assert((dmd_state->width & 0x0007) == 0);
   switch (filter)
   {
+  case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames
+  case CORE_DMD_PWM_PREINTEGRATED_SAM:
+     dmd_state->rawFrameSize = dmd_state->frameSize; // Raw frame is already preintegrated, one byte per pixel
+     dmd_state->fir_weights = NULL;
+     dmd_state->fir_size = 0;
+     dmd_state->nFrames = 2; // 2 frames to allow double buffering between driver writing and requester reading
+     break;
   case CORE_DMD_PWM_FILTER_WPC_PH: // WPC Phantom Haus: 61Hz refresh rate / 15Hz low pass filter / 2 frames PWM pattern
     {
       static const UINT32 fir_61_15[] = { 255, 255 };
@@ -3141,39 +3148,69 @@ void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, co
 // accessing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
 // not use synchronization primitives, so this can fail if instructions are reordered).
 static void core_dmd_update_pwm(const core_tDMDPWMState* const dmd_state, UINT32* shadedFrame, float* luminanceFrame) {
-  // Apply low pass filter over stored frames then scale down to final shades
-  int framePos = dmd_state->nextFrame; // Circular buffer position, note that this may be changed concurrently from core_dmd_submit_frame
-  memset(shadedFrame, 0, dmd_state->frameSize * sizeof(UINT32));
-  for (int ii = 0; ii < dmd_state->fir_size; ii++) {
-    framePos--;
-    if (framePos < 0)
-      framePos = dmd_state->nFrames - 1;
-    const UINT8* frameData = dmd_state->rawFrames + framePos * dmd_state->rawFrameSize;
-    const UINT32 frame_weight = dmd_state->fir_weights[ii];
-    UINT32* line = shadedFrame;
-    if (dmd_state->revByte) {
-      for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-        UINT8 data = *frameData++;
-        for (int kk = 0; kk < 8; kk++, data >>= 1, line++)
-          if (data & 0x01) (*line) += frame_weight;
+   switch (dmd_state->raw_combiner) {
+   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4:
+   {
+      static const float lumLUT[4] = { 0.f, 1.f / 3.f,  2.f / 3.f, 1.f };
+      const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      for (int jj = 0; jj < dmd_state->frameSize; jj++)
+         luminanceFrame[jj] = lumLUT[frameData[jj]];
+      break;
+   }
+   
+   case CORE_DMD_PWM_PREINTEGRATED_SAM:
+   {
+      // This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
+      // RAM never contains 8/9/10/11 which creates a monotonic LUT, but with a discontinuity as the hardware has 13 shades while the code uses 12.
+      static const float lumLUT[16] = { 0.f, 1.f / 12.f, 2.f / 12.f, 3.f / 12.f, 4.f / 12.f, 5.f / 12.f, 6.f / 12.f, 7.f / 12.f, 5.f / 12.f /*unused*/, 6.f / 12.f /*unused*/, 7.f / 12.f /*unused*/, 8.f / 12.f /*unused*/, 9.f / 12.f, 10.f / 12.f, 11.f / 12.f, 1.f };
+      const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      for (int jj = 0; jj < dmd_state->frameSize; jj++)
+         luminanceFrame[jj] = lumLUT[frameData[jj]];
+      break;
+   }
+
+   default: // Apply low pass filter over stored frames then scale down to final shades
+   {
+      int framePos = dmd_state->nextFrame; // Circular buffer position, note that this may be changed concurrently from core_dmd_submit_frame
+      memset(shadedFrame, 0, dmd_state->frameSize * sizeof(UINT32));
+      for (int ii = 0; ii < dmd_state->fir_size; ii++) {
+         framePos--;
+         if (framePos < 0)
+            framePos = dmd_state->nFrames - 1;
+         const UINT8* frameData = dmd_state->rawFrames + framePos * dmd_state->rawFrameSize;
+         const UINT32 frame_weight = dmd_state->fir_weights[ii];
+         UINT32* line = shadedFrame;
+         if (dmd_state->revByte) {
+            for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+               UINT8 data = *frameData++;
+               for (int kk = 0; kk < 8; kk++, data >>= 1, line++)
+                  if (data & 0x01) (*line) += frame_weight;
+            }
+         }
+         else {
+            for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+               UINT8 data = *frameData++;
+               for (int kk = 0; kk < 8; kk++, data <<= 1, line++)
+                  if (data & 0x80) (*line) += frame_weight;
+            }
+         }
       }
-    } else {
-      for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-        UINT8 data = *frameData++;
-        for (int kk = 0; kk < 8; kk++, data <<= 1, line++)
-          if (data & 0x80) (*line) += frame_weight;
-      }
-    }
-  }
-  const UINT32* line = shadedFrame;
-  for (int ii = 0; ii < dmd_state->frameSize; ii++)
-    luminanceFrame[ii] = (float)(*line++) / dmd_state->fir_sum; // Linear luminance
+      const UINT32* line = shadedFrame;
+      for (int ii = 0; ii < dmd_state->frameSize; ii++)
+         luminanceFrame[ii] = (float)(*line++) / dmd_state->fir_sum; // Linear luminance
+      break;
+   }
+   }
 }
 
 static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, UINT8* bitplaneFrame)
 {
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   switch (dmd_state->raw_combiner) {
+  case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
+  case CORE_DMD_PWM_PREINTEGRATED_SAM:
+     memcpy(bitplaneFrame, dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
+     break;
   case CORE_DMD_PWM_COMBINER_GTS3_4C_A: // Reproduce previous (somewhat hacky) frame combiner used by GTS3 driver
   case CORE_DMD_PWM_COMBINER_GTS3_4C_B:
   case CORE_DMD_PWM_COMBINER_GTS3_5C:

@@ -297,6 +297,7 @@ struct {
   int    nmiSeries;
   int    dmdframes;
   UINT8  dmdP1;
+  UINT8  rawDMD[128 * 32];
 } SPINBlocals;
 
 // meaning of the DMD stat0/1 lines and a macro to evaluate them
@@ -887,6 +888,8 @@ static MACHINE_INIT(spinb) {
   /* Setup DMD Serial Port Callback */
   i8051_set_serial_tx_callback(dmd_serial_callback);
 
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
+
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
   SPINBlocals.nmiSeries = 0;
@@ -1433,7 +1436,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 
 #ifdef MAME_DEBUG
   core_textOutf(50,20,1,"offset=%08x", offset);
-  memset(coreGlobals.dmdDotRaw,0,sizeof(coreGlobals.dmdDotRaw));
+  memset(SPINBlocals.rawDMD,0,sizeof(SPINBlocals.rawDMD));
 
   if(!debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
@@ -1460,7 +1463,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 #endif
 
   for (ii = 0; ii < 32; ii++) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
+    UINT8 *line = &SPINBlocals.rawDMD[ii * layout->length];
     for (jj = 0; jj < (128/8); jj++) {
 	  UINT8 intens1, intens2, dot1, dot2;
 	  dot1 = core_revbyte(RAM[0]);
@@ -1500,10 +1503,9 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   UINT8   *line;
   UINT8   d1,d2,d3;
 
-  memset(coreGlobals.dmdDotRaw, 0, sizeof(coreGlobals.dmdDotRaw));
   for (row=0; row < 32; row++)
   {
-    line = &coreGlobals.dmdDotRaw[row * layout->length];
+    line = &SPINBlocals.rawDMD[row * layout->length];
     for (col=0; col < 16; col++)
     {
       d1=dmd32RAM[0][row][col];
@@ -1519,6 +1521,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
+  core_dmd_submit_frame(layout, SPINBlocals.rawDMD, 1);
   core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 

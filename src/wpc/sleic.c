@@ -32,6 +32,7 @@ static struct {
   //UINT8  sndCmd;
   UINT8  swCol;
   UINT8  lampCol;
+  UINT8  rawDMD[128 * 32];
 } locals;
 
 // switches start at 50 for column 1, and each column adds 10.
@@ -242,6 +243,7 @@ MEMORY_END
 
 static MACHINE_INIT(SLEIC) {
   memset(&locals, 0, sizeof locals);
+  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
 }
 
 static MACHINE_DRIVER_START(SLEIC)
@@ -305,7 +307,7 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
 
   RAM = (void *)(memory_region(SLEIC_MEMREG_CPU) + 0x60410);
   for (ii = 0; ii < 32; ii++) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
+    UINT8 *line = &locals.rawDMD[ii * layout->length];
     for (jj = 0; jj < 16; jj++) {
       for (kk = 7; kk >= 0; kk--) {
         *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
@@ -317,7 +319,7 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
     }
     *line = 0;
   }
-
+  core_dmd_submit_frame(layout, locals.rawDMD, 1);
   core_dmd_video_update(bitmap, cliprect, layout);
   return 0;
 }
