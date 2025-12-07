@@ -156,8 +156,9 @@ struct {
 	data32_t flipSolHackStateUL;
 
 	// WPT
-	UINT16 latchA, latchB, latchC, latchD, latchE, latchF, latchH;
-	UINT16 col;
+	UINT8 latchA, latchB, latchC, latchD, latchE, latchF, latchH;
+	UINT16 col, prevCol;
+	UINT8 wptLEDs[14][7];
 
 	// Shrek,FG
 	UINT8 latch[4];
@@ -919,9 +920,11 @@ static WRITE32_HANDLER(sambank_w)
 				// Board 520-5250-14: 14 Block LED (World Poker Tour)
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
+					// This is a simple software rasterizer: turn blank to 1, select a single row and fill in the shift register (49 bits), turn blank to 0, wait and go for next row
+               // The timings are 2ms per row, therefore 20ms for the complete 10 rows display (2 lines of 5 rows)
 					if (samlocals.auxstrb & ~data & 0x80) // ASTB
 					{
-						// 2 Latches for active columns
+						// Active column built from 3 of the serial register latches
 						samlocals.col =
 							  ((samlocals.latchH & 0x10) >> 4)  // H5 -> Col 1
 							| ((samlocals.latchH & 0x02))       // H2 -> Col 2
@@ -944,8 +947,62 @@ static WRITE32_HANDLER(sambank_w)
 						samlocals.latchB = (samlocals.latchA & 0x7F);
 						samlocals.latchA = samlocals.auxdata;
 					}
-					for (int row = 0; row < 10; row++) { // 2 rows of 7 LED matrix, each matrix being 7 cols x 5 rows (so 10 rows, 49 cols)
-						int r = ((samlocals.latchA & 0x80) || (~data & 0x80)) ? 0 : (samlocals.col & (1 << row));
+					// There have been 3 implementations:
+               // - initial was to outpût the matrix state in the display segment outputs, which is maintained for backward compatibility
+               // - a second based on PWM physic outputs, which is more flexible but somewhat overkill for a simple LED matrix, and disabled
+               // - the third one, which uses the core DMD system to render the matrix as a mini DMD display, is now the default
+					const int blank = (samlocals.latchA & 0x80) || (~data & 0x80);
+					if (blank == 0) {
+						if (samlocals.prevCol != samlocals.col) {
+							int display, row;
+							switch (samlocals.col) {
+							case 0x0001: display = 0; row = 0; break;
+							case 0x0002: display = 0; row = 1; break;
+							case 0x0004: display = 0; row = 2; break;
+							case 0x0008: display = 0; row = 3; break;
+							case 0x0010: display = 0; row = 4; break;
+							case 0x0020: display = 7; row = 0; break;
+							case 0x0040: display = 7; row = 1; break;
+							case 0x0080: display = 7; row = 2; break;
+							case 0x0100: display = 7; row = 3; break;
+							case 0x0200: display = 7; row = 4; break;
+							default: assert(FALSE); break;
+							}
+							samlocals.wptLEDs[display    ][row] = samlocals.latchH;
+							samlocals.wptLEDs[display + 1][row] = samlocals.latchF;
+							samlocals.wptLEDs[display + 2][row] = samlocals.latchE;
+							samlocals.wptLEDs[display + 3][row] = samlocals.latchD;
+							samlocals.wptLEDs[display + 4][row] = samlocals.latchC;
+							samlocals.wptLEDs[display + 5][row] = samlocals.latchB;
+							samlocals.wptLEDs[display + 6][row] = samlocals.latchA;
+							if (samlocals.col == 0x200) { // Last row, submit frame
+								for (int i = 0; i < 14; i++) {
+									const core_tLCDLayout* layout = &core_gameData->lcdLayout[1 + i];
+                           // Submit to core DMD handler: we need to swap rows & columns
+									UINT8 rot[7] = { 0, 0, 0, 0, 0, 0, 0 };
+									for (int k = 0; k < 7; k++)
+										for (int j = 0; j < 5; j++)
+											rot[k] = (rot[k] << 1) | ((samlocals.wptLEDs[i][j] >> k) & 0x01);
+									for (int k = 0; k < 7; k++)
+										samlocals.wptLEDs[i][k] = rot[6 - k] << 3;
+									core_dmd_submit_frame(layout, samlocals.wptLEDs[i], 1);
+									// Output mini DMD as LED segments (backward compatibility)
+									const int dmd_x = (layout->left - 10) / 7;
+									const int dmd_y = (layout->top - 34) / 9;
+									for (int x = 0; x < 5; x++) {
+										int bits = 0;
+										for (int y = 0; y < 7; y++)
+                                 bits = (bits << 1) | ((samlocals.wptLEDs[i][y] >> (3 + x)) & 0x01);
+										coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + x] = bits;
+									}
+								}
+							}
+						}
+						samlocals.prevCol = samlocals.col;
+					}
+               // Previous implementation using PWM physic outputs (somewhat overkill for LED matrix, but works)
+					/*for (int row = 0; row < 10; row++) { // 2 rows of 7 LED matrix, each matrix being 7 cols x 5 rows (so 10 rows, 49 cols)
+						int r = blank ? 0 : (samlocals.col & (1 << row));
 						int c = CORE_MODOUT_LAMP0 + 10 * 8 + 49 * row;
 						core_write_pwm_output(c     , 7, r ? (core_revbyte((UINT8)samlocals.latchH) >> 1) : 0);
 						core_write_pwm_output(c +  7, 7, r ? (core_revbyte((UINT8)samlocals.latchF) >> 1) : 0);
@@ -954,8 +1011,8 @@ static WRITE32_HANDLER(sambank_w)
 						core_write_pwm_output(c + 28, 7, r ? (core_revbyte((UINT8)samlocals.latchC) >> 1) : 0);
 						core_write_pwm_output(c + 35, 7, r ? (core_revbyte((UINT8)samlocals.latchB) >> 1) : 0);
 						core_write_pwm_output(c + 42, 7, r ? (core_revbyte((UINT8)samlocals.latchA) >> 1) : 0);
-					}
-					//printf("%8.5f s=%02x d=%02x    %02x %02x %02x %02x %02x %02x %02x   Col=%03x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.latchA, samlocals.latchB, samlocals.latchC, samlocals.latchD, samlocals.latchE, samlocals.latchF, samlocals.latchH, col, (samlocals.latchA & 0x80) ? 1 : 0);
+					}*/
+					//printf("%8.5f s=%02x d=%02x    %02x %02x %02x %02x %02x %02x %02x   Col=%03x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.latchA, samlocals.latchB, samlocals.latchC, samlocals.latchD, samlocals.latchE, samlocals.latchF, samlocals.latchH, samlocals.col, blank);
 				}
 
 				// Board 520-5264-00: Family Guy & Shrek mini playfield LEDs
@@ -1251,7 +1308,14 @@ static MACHINE_INIT(sam) {
 	#endif
 
 	// Intialize DMDs
-	core_dmd_pwm_init(core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+	if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT) {
+		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+		for (int i = 0; i < 14; i++)
+			core_dmd_pwm_init(&core_gameData->lcdLayout[i + 1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
+	}
+	else {
+		core_dmd_pwm_init(core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+	}
 
 	// Initialize outputs
 	// Force physical output emulation since we use them to compute solenoids
@@ -1449,7 +1513,8 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 78 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Bumper LED
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
-		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms, but are they really faded ?)
+		// Removed in favor of DMD implementation
+		// core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80 - 1, 49 * 10, CORE_MODOUT_LED_STROBE_1_10MS); // 14 Block LED (actually 2ms strobe every 20ms, but are they really faded ?)
 	}
 	else if (strncasecmp(gn, "xmn_", 4) == 0) { // X-Men
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80, CORE_MODOUT_LED_STROBE_1_10MS); // All LED (Looks nicer with bulbs, but it really has LEDs)
@@ -2230,33 +2295,6 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 #define SAT_NYB(v) (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 #define SAT_BYTE(v) (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 
-// Little 5x7 led matrix used in World Poker Tour (2 rows of 7 each)
-static PINMAME_VIDEO_UPDATE(samminidmd_update) {
-    const int dmd_x = (layout->left-10)/7;
-    const int dmd_y = (layout->top-34)/9;
-    assert(layout->length == 5);
-    assert(layout->start == 7);
-    assert(0 <= dmd_x && dmd_x < 7);
-    assert(0 <= dmd_y && dmd_y < 2);
-    for (int y = 0; y < 7; y++)
-		for (int x = 0; x < 5; x++) {
-			const int target = 10 * 8 + (dmd_y * 5 + x) * 49 + (dmd_x * 7 + y);
-			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dmdDotRaw[y * 5 + x] = SAT_NYB(v); // TODO raw value should not be tied to the PWM integration
-			coreGlobals.dmdDotLum[y * 5 + x] = SAT_BYTE(v);
-		}
-    // Use the video update to output mini DMD as LED segments (somewhat hacky)
-    for (int x = 0; x < 5; x++) {
-        int bits = 0;
-        for (int y = 0; y < 7; y++)
-            bits = (bits << 1) | (coreGlobals.dmdDotRaw[y * 5 + x] ? 1 : 0);
-        coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + x] = bits;
-    }
-    if (!pmoptions.dmd_only)
-        core_dmd_video_update(bitmap, cliprect, layout);
-    return 0;
-}
-
 // Wheel of Fortune Led matrix display
 static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
     int ii,jj,kk;
@@ -2286,20 +2324,20 @@ static struct core_dispLayout sam_dmd128x32[] = {
 
 static struct core_dispLayout sammini1_dmd128x32[] = {
 	DISP_SEG_IMPORT(sam_dmd128x32),
-	{34, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{34, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{34, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{34, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{34, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{34, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{34, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
-	{43, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 10, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{34, 17, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{34, 24, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{34, 31, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{34, 38, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{34, 45, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{34, 52, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 10, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 17, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 24, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 31, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 38, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 45, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
+	{43, 52, 7, 5, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
 	{0}
 };
 
@@ -2371,7 +2409,7 @@ CORE_CLONEDEF(sam1_flashb, 0230, 0310, "S.A.M. System Flash Boot (V2.3)", 2007, 
 /*-------------------------------------------------------------------
 / World Poker Tour
 /-------------------------------------------------------------------*/
-INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL + 60, SAM_GAME_WPT) // 62 additinal columns for Mini DMD (5*7 displays * 14)
+INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL, SAM_GAME_WPT)
 
 SAM1_ROM32MB(wpt_103a, "wpt_103a.bin", CRC(cd5f80bc) SHA1(4aaab2bf6b744e1a3c3509dc9dd2416ff3320cdb), 0x019bb1dc)
 

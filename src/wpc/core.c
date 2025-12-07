@@ -3042,10 +3042,9 @@ void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const in
   dmd_state->revByte = isReversedByte;
   dmd_state->width = layout->length;
   dmd_state->height = layout->start;
-  dmd_state->frameSize = dmd_state->width * dmd_state->height;
-  dmd_state->rawFrameSize = dmd_state->frameSize / 8;
+  dmd_state->frameSize = dmd_state->height * dmd_state->width;
+  dmd_state->rawFrameSize = dmd_state->height * ((dmd_state->width + 7) / 8);
   dmd_state->raw_combiner = raw_combiner;
-  assert((dmd_state->width & 0x0007) == 0);
   switch (filter)
   {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames
@@ -3180,18 +3179,45 @@ static void core_dmd_update_pwm(const core_tDMDPWMState* const dmd_state, UINT32
          const UINT8* frameData = dmd_state->rawFrames + framePos * dmd_state->rawFrameSize;
          const UINT32 frame_weight = dmd_state->fir_weights[ii];
          UINT32* line = shadedFrame;
+         const int width_remaining = dmd_state->width & 7;
          if (dmd_state->revByte) {
-            for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-               UINT8 data = *frameData++;
-               for (int kk = 0; kk < 8; kk++, data >>= 1, line++)
-                  if (data & 0x01) (*line) += frame_weight;
+            if (width_remaining == 0) {
+               for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+                  UINT8 data = *frameData++;
+                  for (int kk = 0; kk < 8; kk++, data >>= 1, line++)
+                     if (data & 0x01) (*line) += frame_weight;
+               }
+            }
+            else {
+               const int width_bytes = (dmd_state->width + 7) / 8;
+               for (int kk = 0; kk < dmd_state->height; kk++) {
+                  for (int jj = 0; jj < width_bytes; jj++) {
+                     UINT8 data = *frameData++;
+                     const int n = (jj == width_bytes - 1) ? width_remaining : 8;
+                     for (int ll = 0; ll < n; ll++, data >>= 1, line++)
+                        if (data & 0x01) (*line) += frame_weight;
+                  }
+               }
             }
          }
          else {
-            for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-               UINT8 data = *frameData++;
-               for (int kk = 0; kk < 8; kk++, data <<= 1, line++)
-                  if (data & 0x80) (*line) += frame_weight;
+            if (width_remaining == 0) {
+               for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+                  UINT8 data = *frameData++;
+                  for (int kk = 0; kk < 8; kk++, data <<= 1, line++)
+                     if (data & 0x80) (*line) += frame_weight;
+               }
+            }
+            else {
+               const int width_bytes = (dmd_state->width + 7) / 8;
+               for (int kk = 0; kk < dmd_state->height; kk++) {
+                  for (int jj = 0; jj < width_bytes; jj++) {
+                     UINT8 data = *frameData++;
+                     const int n = (jj == width_bytes - 1) ? width_remaining : 8;
+                     for (int ll = 0; ll < n; ll++, data <<= 1, line++)
+                        if (data & 0x80) (*line) += frame_weight;
+                  }
+               }
             }
          }
       }
@@ -3209,12 +3235,39 @@ static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, U
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
+     assert(dmd_state->rawFrameSize == dmd_state->frameSize);
      memcpy(bitplaneFrame, dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
+     break;
+  case CORE_DMD_PWM_COMBINER_1: // Simple 1 monochrome frame id
+     {
+        UINT8* rawData = &bitplaneFrame[0];
+        const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        const int width_remaining = dmd_state->width & 7;
+        if (width_remaining == 0) {
+           for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+              UINT8 data = *frameData++;
+              for (int kk = 0; kk < 8; kk++, data <<= 1, rawData++)
+                 (*rawData) = data & 0x01;
+           }
+        }
+        else {
+           const int width_bytes = (dmd_state->width + 7) / 8;
+           for (int kk = 0; kk < dmd_state->height; kk++) {
+              for (int jj = 0; jj < width_bytes; jj++) {
+                 UINT8 data = *frameData++;
+                 const int n = (jj == width_bytes - 1) ? width_remaining : 8;
+                 for (int ll = 0; ll < n; ll++, data <<= 1, rawData++)
+                    (*rawData) = data & 0x01;
+              }
+           }
+        }
+     }
      break;
   case CORE_DMD_PWM_COMBINER_GTS3_4C_A: // Reproduce previous (somewhat hacky) frame combiner used by GTS3 driver
   case CORE_DMD_PWM_COMBINER_GTS3_4C_B:
   case CORE_DMD_PWM_COMBINER_GTS3_5C:
     {
+      assert((dmd_state->width & 7) == 0);
       static const UINT8 level4_a[7]  = { 0, 1, 2, 2, 2, 2, 3 }; // 4 colors
       static const UINT8 level4_a2[7] = { 0, 1, 1, 2, 2, 2, 3 }; // 4 colors
       static const UINT8 level4_b[9]  = { 0, 1, 2, 2, 2, 2, 2, 2, 3 }; // 4 colors
@@ -3246,6 +3299,7 @@ static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, U
     break;
   case CORE_DMD_PWM_COMBINER_SUM_2: // Sum of the last 2 raw frames seen (WPC/Phantom Haus)
     {
+      assert((dmd_state->width & 7) == 0);
       UINT8* rawData = &bitplaneFrame[0];
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3265,6 +3319,7 @@ static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, U
     break;
   case CORE_DMD_PWM_COMBINER_SUM_3: // Sum of the last 3 raw frames seen (WPC)
     {
+      assert((dmd_state->width & 7) == 0);
       UINT8* rawData = &bitplaneFrame[0];
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3286,6 +3341,7 @@ static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, U
   case CORE_DMD_PWM_COMBINER_SUM_2_1: // high bit for double length frame, low bit for single length frame
   case CORE_DMD_PWM_COMBINER_SUM_1_2:
     {
+      assert((dmd_state->width & 7) == 0);
       UINT8 *rawData = &bitplaneFrame[0];
       const UINT8 *frame0, *frame1;
       if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_2_1) { // double length frame are the 2 before last one, single length frame is the last one (Data East 128x32, Sega/Stern Whitestar)
@@ -3312,6 +3368,7 @@ static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, U
     break;
   case CORE_DMD_PWM_COMBINER_SUM_4: // Sum of the last 4 frames (Alvin G. for Pistol Poker & Mystery Castle)
     {
+      assert((dmd_state->width & 7) == 0);
       static const UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
       UINT8* rawData = &bitplaneFrame[0];
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3327,6 +3384,7 @@ static void core_dmd_update_identify(const core_tDMDPWMState* const dmd_state, U
     break;
   case CORE_DMD_PWM_COMBINER_SUM_1_2_1: // Sum of the 3 out of the last 4 raw frames seen (Capcom as the PWM pattern is 0 1 2 1 with identify built from the 3 first frames)
     {
+      assert((dmd_state->width & 7) == 0);
       UINT8* rawData = &bitplaneFrame[0]; // Note that we are always well aligned as the frames are pushed 4 by 4 since they are processed by a dedicated rasterizer chip
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
