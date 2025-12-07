@@ -646,6 +646,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 #define CORE_DMD_PWM_COMBINER_SUM_1_2            6
 #define CORE_DMD_PWM_COMBINER_SUM_4              7
 #define CORE_DMD_PWM_COMBINER_SUM_1_2_1          8
+#define CORE_DMD_PWM_COMBINER_1                  9
 
 #define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
 #define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101
