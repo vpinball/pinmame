@@ -1483,8 +1483,8 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
+  core_dmd_submit_frame(layout, SPINBlocals.rawDMD, 1);
+  return core_dmd_video_update(bitmap, cliprect, layout);
 }
 
 #else
@@ -1522,8 +1522,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     *line = 0;
   }
   core_dmd_submit_frame(layout, SPINBlocals.rawDMD, 1);
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
+  return core_dmd_video_update(bitmap, cliprect, layout);
 
 }
 #endif
