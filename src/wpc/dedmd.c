@@ -164,8 +164,9 @@ static void dmd32_vblank(int which) {
   assert((base & 0x00FF) == 0x0000); // As the mapping of lowest 8 bits is not implemented (would need complex data copy and does not seem to be used by any game)
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
-  core_dmd_submit_frame(core_gameData->lcdLayout, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
-  core_dmd_submit_frame(core_gameData->lcdLayout, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
+  const core_tLCDLayout* layout = core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout;
+  core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
+  core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
   if (crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 }
@@ -194,7 +195,8 @@ static void dmd32_init(struct sndbrdData *brdData) {
     assert(0); // Unsupported board revision
 
   // Init PWM shading
-  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
+  const core_tLCDLayout* layout = core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout;
+  core_dmd_pwm_init(layout, CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
 }
 
 static void dmd32_exit(int boardNo) {
@@ -227,8 +229,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 	     will update after the next DMD event. */
 	}
   #endif
-  core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
+  return core_dmd_video_update(bitmap, cliprect, layout);
 }
 
 /*-----------------------------

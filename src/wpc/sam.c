@@ -994,12 +994,12 @@ static WRITE32_HANDLER(sambank_w)
 										int bits = 0;
 										for (int y = 0; y < 7; y++)
                                  bits = (bits << 1) | ((samlocals.wptLEDs[i][y] >> (3 + x)) & 0x01);
-										coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + x] = bits;
+										coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + 4 - x] = bits;
 									}
 								}
 							}
+							samlocals.prevCol = samlocals.col;
 						}
-						samlocals.prevCol = samlocals.col;
 					}
                // Previous implementation using PWM physic outputs (somewhat overkill for LED matrix, but works)
 					/*for (int row = 0; row < 10; row++) { // 2 rows of 7 LED matrix, each matrix being 7 cols x 5 rows (so 10 rows, 49 cols)
@@ -1094,28 +1094,26 @@ static WRITE32_HANDLER(sambank_w)
 							case 0x0010: row = 4; break;
 							default: assert(FALSE); break;
 							}
-							if (row >= 0)
-							{
-								samlocals.wofLEDs[row][0] = (samlocals.dmdLatch[4] << 1) | ((samlocals.dmdLatch[3] >> 6) & 0x01);
-								samlocals.wofLEDs[row][1] = (samlocals.dmdLatch[3] << 2) | ((samlocals.dmdLatch[2] >> 5) & 0x03);
-								samlocals.wofLEDs[row][2] = (samlocals.dmdLatch[2] << 3) | ((samlocals.dmdLatch[1] >> 4) & 0x07);
-								samlocals.wofLEDs[row][3] = (samlocals.dmdLatch[1] << 4) | ((samlocals.dmdLatch[0] >> 3) & 0x0F);
-								samlocals.wofLEDs[row][4] = (samlocals.dmdLatch[0] << 5);
-								if (samlocals.col == 0x010) { // Last row, submit frame
-									const core_tLCDLayout* layout = &core_gameData->lcdLayout[1];
-									// Submit to core DMD handler
-									core_dmd_submit_frame(layout, &samlocals.wofLEDs[0][0], 1);
-									// Output mini DMD as LED segments (backward compatibility)
-									for (int ii = 0; ii < 35; ii++) {
-										UINT16 bits = 0;
-										for (int kk = 0; kk < 5; kk++)
-											bits = (bits << 1) | ((samlocals.wofLEDs[kk][ii / 8] >> (ii & 7)) & 0x01);
-										coreGlobals.drawSeg[ii] = bits;
-									}
+							samlocals.wofLEDs[row][0] = (samlocals.dmdLatch[4] << 1) | ((samlocals.dmdLatch[3] >> 6) & 0x01);
+							samlocals.wofLEDs[row][1] = (samlocals.dmdLatch[3] << 2) | ((samlocals.dmdLatch[2] >> 5) & 0x03);
+							samlocals.wofLEDs[row][2] = (samlocals.dmdLatch[2] << 3) | ((samlocals.dmdLatch[1] >> 4) & 0x07);
+							samlocals.wofLEDs[row][3] = (samlocals.dmdLatch[1] << 4) | ((samlocals.dmdLatch[0] >> 3) & 0x0F);
+							samlocals.wofLEDs[row][4] = (samlocals.dmdLatch[0] << 5);
+							if (samlocals.col == 0x010) { // Last row, submit frame
+								const core_tLCDLayout* layout = &core_gameData->lcdLayout[1];
+								// Submit to core DMD handler
+								core_dmd_submit_frame(layout, &samlocals.wofLEDs[0][0], 1);
+								// Output mini DMD as LED segments (backward compatibility)
+								for (int ii = 0; ii < 35; ii++) {
+									UINT16 bits = 0;
+									const int c = ii / 8, shift = 7 - (ii & 7);
+									for (int kk = 0; kk < 5; kk++)
+										bits = (bits << 1) | ((samlocals.wofLEDs[kk][c] >> shift) & 0x01);
+									coreGlobals.drawSeg[ii] = bits;
 								}
 							}
+							samlocals.prevCol = samlocals.col;
 						}
-						samlocals.prevCol = samlocals.col;
 					}
 					// Previous implementation using PWM physic outputs (somewhat overkill for LED matrix, but works)
 					/*int col = blank ? 0 : samlocals.dmdLatch[5];
