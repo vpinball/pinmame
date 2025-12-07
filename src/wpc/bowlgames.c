@@ -737,7 +737,7 @@ CORE_GAMEDEFNV(wackadoo,"Wack-A-Doodle-Doo (Redemption)",1998,"Sega",de_mSES1,0)
 / Titanic (Coin dropper)
 /-------------------------------------------------------------------*/
 static core_tGameData coinGameData = {
-  GEN_WS, se_dmd128x32, {0, 0, 34, 0, 0, SE_LED2}
+  GEN_WS, se_dmd128x32, {0, 0, 34, 0, 0, SE_BOARDID_TITANIC}
 };
 static void init_titanic(void) { core_gameData = &coinGameData; }
 SE128_ROMSTART(titanic, "titacpu.101",CRC(4217becf) SHA1(8b7aacbe75717f13623f6ceaa4ba2de61b1b732a))

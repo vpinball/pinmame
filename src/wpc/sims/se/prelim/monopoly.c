@@ -476,7 +476,7 @@ static core_tGameData monopolyGameData = {
   GEN_WS, dispMonopoly,
   {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
-    0, 2, 0, 0, SE_MINIDMD, 0, 0,
+    0, 2, 0, 0, SE_BOARDID_520_5192_00 | SE_BOARDID_520_5197_00, 0, 0,
     0, 0, monopoly_getMech, monopoly_drawMech
   },
   &monopolySimData,

@@ -197,7 +197,7 @@
 #define CORE_SEGHIBIT 0x40
 #define CORE_SEGREV   0x80
 #define CORE_DMDNOAA  0x100
-#define CORE_NODISP   0x200
+#define CORE_NODISP   0x200 // VPinMAME only: if flag is set, the dispay is not included in VPinMAME window
 
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
 #define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
@@ -674,17 +674,25 @@ INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf] << 4) | (core
 //  Get the status of a DIP bank (8 dips)
 extern int core_getDip(int dipBank);
 
-/*-- Easy Bit Column to Number conversion
- *   Convert Bit Column Data to corresponding #, ie, if Bit 3=1, return 3 - Zero Based (Bit1=1 returns 0)
- *   Assumes only 1 bit is set at a time. --*/
-INLINE int core_BitColToNum(int tmp)
+// Compute index of the first trailing set bit (0 based)
+// 0x0001 returns 0, 0x0040 returns 6, note 0x0000 returns 0
+INLINE int core_BitColToNum32(int n)
 {
-	int data=0, i=0;
+   static const int MultiplyDeBruijnBitPosition32[32] = { 0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9 };
+   return MultiplyDeBruijnBitPosition32[((UINT32)(n * 0x077CB531U)) >> 27];
+}
+INLINE int core_BitColToNum(int tmp) // This variant assumes only 1 bit is set at a time.
+{
+   int data=0, i=0;
 	do {
 		if (tmp & 1) data += i;
 		i++;
 	} while (tmp >>= 1);
 	return data;
 }
+
+//
+INLINE int core_lowToHigh(UINT8 prev, UINT8 state, UINT8 mask) { return ~prev & state & mask; }
+INLINE int core_highToLow(UINT8 prev, UINT8 state, UINT8 mask) { return prev & ~state & mask; }
 
 extern MACHINE_DRIVER_EXTERN(PinMAME);

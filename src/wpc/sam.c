@@ -922,7 +922,7 @@ static WRITE32_HANDLER(sambank_w)
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
 					// This is a simple software rasterizer: turn blank to 1, select a single row and fill in the shift register (49 bits), turn blank to 0, wait and go for next row
-               // The timings are 2ms per row, therefore 20ms for the complete 10 rows display (2 lines of 5 rows) => 50Hz refresh rate
+					// The timings are 2ms per row, therefore 20ms for the complete 10 rows display (2 lines of 5 rows) => 50Hz refresh rate
 					if (samlocals.auxstrb & ~data & 0x80) // ASTB
 					{
 						// Active column built from 3 of the serial register latches
@@ -949,9 +949,9 @@ static WRITE32_HANDLER(sambank_w)
 						samlocals.latchA = samlocals.auxdata;
 					}
 					// There have been 3 implementations:
-               // - initial was to outpût the matrix state in the display segment outputs, which is maintained for backward compatibility
-               // - a second based on PWM physic outputs, which is more flexible but somewhat overkill for a simple LED matrix, and disabled
-               // - the third one, which uses the core DMD system to render the matrix as a mini DMD display, is now the default
+					// - initial was to output the matrix state in the display segment outputs, which is maintained for backward compatibility
+					// - a second based on PWM physic outputs, which is more flexible but somewhat overkill for a simple LED matrix, and disabled
+					// - the third one, which uses the core DMD system to render the matrix as a mini DMD display, is now the default
 					const int blank = (samlocals.latchA & 0x80) || (~data & 0x80);
 					if (blank == 0) {
 						if (samlocals.prevCol != samlocals.col) {
@@ -979,7 +979,7 @@ static WRITE32_HANDLER(sambank_w)
 							if (samlocals.col == 0x200) { // Last row, submit frame
 								for (int i = 0; i < 14; i++) {
 									const core_tLCDLayout* layout = &core_gameData->lcdLayout[1 + i];
-                           // Submit to core DMD handler: we need to swap rows & columns
+									// Submit to core DMD handler: we need to swap rows & columns
 									UINT8 rot[7] = { 0, 0, 0, 0, 0, 0, 0 };
 									for (int k = 0; k < 7; k++)
 										for (int j = 0; j < 5; j++)
@@ -1001,7 +1001,7 @@ static WRITE32_HANDLER(sambank_w)
 							samlocals.prevCol = samlocals.col;
 						}
 					}
-               // Previous implementation using PWM physic outputs (somewhat overkill for LED matrix, but works)
+					// Previous implementation using PWM physic outputs (somewhat overkill for LED matrix, but works)
 					/*for (int row = 0; row < 10; row++) { // 2 rows of 7 LED matrix, each matrix being 7 cols x 5 rows (so 10 rows, 49 cols)
 						int r = blank ? 0 : (samlocals.col & (1 << row));
 						int c = CORE_MODOUT_LAMP0 + 10 * 8 + 49 * row;
@@ -1085,15 +1085,7 @@ static WRITE32_HANDLER(sambank_w)
 					if (blank == 0) {
 						samlocals.col = samlocals.dmdLatch[5] & 0x1F;
 						if (samlocals.prevCol != samlocals.col) {
-							int row;
-							switch (samlocals.col) {
-							case 0x0001: row = 0; break;
-							case 0x0002: row = 1; break;
-							case 0x0004: row = 2; break;
-							case 0x0008: row = 3; break;
-							case 0x0010: row = 4; break;
-							default: assert(FALSE); break;
-							}
+							const int row = core_BitColToNum32(samlocals.col);
 							samlocals.wofLEDs[row][0] = (samlocals.dmdLatch[4] << 1) | ((samlocals.dmdLatch[3] >> 6) & 0x01);
 							samlocals.wofLEDs[row][1] = (samlocals.dmdLatch[3] << 2) | ((samlocals.dmdLatch[2] >> 5) & 0x03);
 							samlocals.wofLEDs[row][2] = (samlocals.dmdLatch[2] << 3) | ((samlocals.dmdLatch[1] >> 4) & 0x07);

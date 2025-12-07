@@ -93,19 +93,30 @@ extern MACHINE_DRIVER_EXTERN(se2aS);
 extern MACHINE_DRIVER_EXTERN(se2bS);
 extern MACHINE_DRIVER_EXTERN(se2tS);
 extern MACHINE_DRIVER_EXTERN(se3aS);
-extern PINMAME_VIDEO_UPDATE(seminidmd4_update);
+extern PINMAME_VIDEO_UPDATE(seminidmd_update);
 #define de_mSES1 se2aS
 #define de_mSES2 se2bS
 #define de_mSES2T se2tS
 #define de_mSES3 se3aS
 
 /* Hardware variants */
-#define SE_MINIDMD    0x01
-#define SE_MINIDMD2   0x02
-#define SE_LED        0x04
-#define SE_MINIDMD3   0x08
-#define SE_DIGIT      0x10
-#define SE_LED2       0x20
+#define SE_BOARDID_520_5068_01 0x0001 // Auxiliary driver board with 3 latched solenoid outputs
+#define SE_BOARDID_520_5078_00 0x0002 // Tommy blinder driver but also used as a replacement part for Independence Day servo controller board
+#define SE_BOARDID_520_5130_06 0x0004 // Appollo 13 extra 7 segment display + modulated magnet driver
+#define SE_BOARDID_520_5143_00 0x0008 // Golden Eye & Twister double magnets processor
+#define SE_BOARDID_520_5152_00 0x0010 // Independence Day servo controller board
+#define SE_BOARDID_520_5192_00 0x0020 // Auxiliary driver board for 3 solenoid outputs (not latched)
+#define SE_BOARDID_520_5197_00 0x0040 // High Roller & Monopoly Casino Mini DMD
+#define SE_BOARDID_520_5219_00 0x0080 // The Simpson's Pinball Party Mini DMD
+#define SE_BOARDID_520_5221_00 0x0100 // RollerCoaster Tycoon Mini DMD
+#define SE_BOARDID_520_5236_00 0x0200 // Ripley's Believe It or Not Mini DMD
+#define SE_BOARDID_520_5242_00 0x0400 // Lord of The Rings 19 LED Board
+#define SE_BOARDID_TITANIC     0x0800 // Titanic Redemption game extension board
+#define SE_LED                 SE_BOARDID_520_5242_00 | SE_BOARDID_520_5068_01
+
+
+
+
 
 #ifdef PROC_SUPPORT
 int se_m2sw(int col, int row);

@@ -33,7 +33,7 @@ static core_tLCDLayout se_apollo[] = {
   {7,0,  0,  1, CORE_SEG7 | CORE_NODISP, (genf *)led_update, NULL},
   {0}
 };
-INITGAME(apollo13,GEN_WS,se_apollo,SE_DIGIT)
+INITGAME(apollo13,GEN_WS,se_apollo, SE_BOARDID_520_5130_06)
 SE128_ROMSTART(apollo13,"apolcpu.501",CRC(5afb8801) SHA1(65608148817f487c384dd36c221138962f1d9824))
 DE_DMD32ROM8x(    "a13dspa.500", CRC(bf8e3249) SHA1(5e04681901ca794feb970f5388cb355427cf9a9a))
 DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
@@ -44,7 +44,7 @@ SE_ROMEND
 #define input_ports_apollo13 input_ports_se
 CORE_GAMEDEFNV(apollo13,"Apollo 13 (5.01, Display 5.00)",1995,"Sega",de_mSES1,0)
 
-INITGAME(apollo1,GEN_WS,se_apollo,SE_DIGIT)
+INITGAME(apollo1,GEN_WS,se_apollo, SE_BOARDID_520_5130_06)
 SE128_ROMSTART(apollo1,"a13cpu.100",CRC(5971e956) SHA1(89853912fc569480e66bec4cef369d8320c3a07d))
 DE_DMD32ROM8x(    "a13dps.100",  CRC(224f6149) SHA1(b2a1786adc358834615989fce8835e0f039abb24))
 DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
@@ -55,7 +55,7 @@ SE_ROMEND
 #define input_ports_apollo1 input_ports_apollo13
 CORE_CLONEDEFNV(apollo1,apollo13,"Apollo 13 (1.00)",1995,"Sega",de_mSES1,0)
 
-INITGAME(apollo2,GEN_WS,se_apollo,SE_DIGIT)
+INITGAME(apollo2,GEN_WS,se_apollo, SE_BOARDID_520_5130_06)
 SE128_ROMSTART(apollo2,"a13cpu.203",CRC(4af048fc) SHA1(c82459247707a6cf07a10cc884f1391d0ca536a3))
 DE_DMD32ROM8x(    "a13dps.201",  CRC(ab97a71c) SHA1(1e01d3c2ac1b9153fb4f3f888fe01fcebbf853d7))
 DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
@@ -66,7 +66,7 @@ SE_ROMEND
 #define input_ports_apollo2 input_ports_apollo13
 CORE_CLONEDEFNV(apollo2,apollo13,"Apollo 13 (2.03)",1995,"Sega",de_mSES1,0)
 
-INITGAME(apollo14,GEN_WS,se_apollo,SE_DIGIT)
+INITGAME(apollo14,GEN_WS,se_apollo, SE_BOARDID_520_5130_06)
 SE128_ROMSTART(apollo14,"apolcpu.501",CRC(5afb8801) SHA1(65608148817f487c384dd36c221138962f1d9824))
 DE_DMD32ROM8x(    "a13dspa.401", CRC(6516ee16) SHA1(17011df142707917af2e0ec77c0e5ae78df91c0d))
 DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
@@ -80,7 +80,7 @@ CORE_CLONEDEFNV(apollo14,apollo13,"Apollo 13 (5.01, Display 4.01)",1995,"Sega",d
 /*-------------------------------------------------------------------
 / Goldeneye
 /-------------------------------------------------------------------*/
-INITGAME(gldneye,GEN_WS,se_dmd128x32,0)
+INITGAME(gldneye,GEN_WS,se_dmd128x32,SE_BOARDID_520_5143_00)
 SE128_ROMSTART(gldneye, "bondcpu.404",CRC(5aa6ffcc) SHA1(0c8ffcfe008a650060c42d385e91addf44f5d88e))
 DE_DMD32ROM8x(   "bondispa.400",CRC(9cc0c710) SHA1(3c6df97d881aed9d1d08cc2a5d0c4ec020295902))
 DE2S_SOUNDROM144("bondu7.bin" ,CRC(7581a349) SHA1(493236bdc52b601a08009f9b03d64b6047d52661),
@@ -100,7 +100,7 @@ DE2S_SOUNDROM144("twstsnd.u7" ,CRC(5ccf0798) SHA1(ac591c508de8e9687c20b01c298084
                  "twstsnd.u17",CRC(0e35d640) SHA1(ce38a03fcc321cd9af07d24bf7aa35f254b629fc), \
                  "twstsnd.u21",CRC(c3eae590) SHA1(bda3e0a725339069c49c4282676a07b4e0e8d2eb))
 
-INITGAME(twst,GEN_WS,se_dmd128x32,0)
+INITGAME(twst,GEN_WS,se_dmd128x32,SE_BOARDID_520_5143_00)
 SE128_ROMSTART(twst_405, "twstcpu.405",CRC(8c3ea1a8) SHA1(d495b7dc79186d442a89b6382a6dc1c83e64ef95))
 DE_DMD32ROM8x(   "twstdspa.400",CRC(a6a3d41d) SHA1(ad42b3390ceeeea43c1cd47f300bcd4b4a4d2558))
 TWST_SND
@@ -125,7 +125,7 @@ CORE_CLONEDEF(twst,300,405,"Twister (3.00)",1996,"Sega",de_mSES1,0)
 /*-------------------------------------------------------------------
 / ID4: Independence Day
 /-------------------------------------------------------------------*/
-INITGAME(id4,GEN_WS,se_dmd128x32,0)
+INITGAME(id4,GEN_WS,se_dmd128x32,SE_BOARDID_520_5152_00)
 SE128_ROMSTART(id4, "id4cpu.202",CRC(108d88fd) SHA1(8317944201acfb97dadfdd364696c9e81a21d2c5))
 DE_DMD32ROM8x(    "id4dspa.200",CRC(2d3fbcc4) SHA1(0bd69ebb68ae880ac9aae40916f13e1ff84ecfaa))
 DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
@@ -135,7 +135,7 @@ SE_ROMEND
 #define input_ports_id4 input_ports_se
 CORE_GAMEDEFNV(id4,"ID4: Independence Day (2.02)",1996,"Sega",de_mSES1,0)
 
-INITGAME(id4f,GEN_WS,se_dmd128x32,0)
+INITGAME(id4f,GEN_WS,se_dmd128x32,SE_BOARDID_520_5152_00)
 SE128_ROMSTART(id4f, "id4cpu.202",CRC(108d88fd) SHA1(8317944201acfb97dadfdd364696c9e81a21d2c5))
 DE_DMD32ROM8x(    "id4dspf.200",CRC(4b52676b) SHA1(a881efb28d8bab424d8c12be2c16b8afc7472208))
 DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
@@ -145,7 +145,7 @@ SE_ROMEND
 #define input_ports_id4f input_ports_se
 CORE_CLONEDEFNV(id4f,id4,"ID4: Independence Day (2.02 French)",1996,"Sega",de_mSES1,0)
 
-INITGAME(id4_201,GEN_WS,se_dmd128x32,0)
+INITGAME(id4_201,GEN_WS,se_dmd128x32,SE_BOARDID_520_5152_00)
 SE128_ROMSTART(id4_201, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
 DE_DMD32ROM8x(    "id4dspa.200",CRC(2d3fbcc4) SHA1(0bd69ebb68ae880ac9aae40916f13e1ff84ecfaa))
 DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
@@ -155,7 +155,7 @@ SE_ROMEND
 #define input_ports_id4_201 input_ports_se
 CORE_CLONEDEFNV(id4_201,id4,"ID4: Independence Day (2.01)",1996,"Sega",de_mSES1,0)
 
-INITGAME(id4_201f,GEN_WS,se_dmd128x32,0)
+INITGAME(id4_201f,GEN_WS,se_dmd128x32,SE_BOARDID_520_5152_00)
 SE128_ROMSTART(id4_201f, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
 DE_DMD32ROM8x(    "id4dspf.200",CRC(4b52676b) SHA1(a881efb28d8bab424d8c12be2c16b8afc7472208))
 DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
@@ -514,7 +514,7 @@ CORE_CLONEDEF(sprk,090,103,"South Park (0.90 Prototype)",1999,"Sega",de_mSES1,0)
 /*-------------------------------------------------------------------
 / Striker Xtreme
 /-------------------------------------------------------------------*/
-INITGAME(strikext,GEN_WS,se_dmd128x32,0)
+INITGAME(strikext,GEN_WS,se_dmd128x32,SE_BOARDID_520_5192_00)
 SE128_ROMSTART(strikext,"sxcpua.102", CRC(5e5f0fb8) SHA1(1425d66064e59193ce7cacb496c12ae956670435))
 DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
 DE2S_SOUNDROM18888("sxsnda.u7", CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f77d159bb1911),
@@ -619,7 +619,7 @@ DE2S_SOUNDROM1888("sssndu7.101", CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5929
                   "sssndu21.100",CRC(e1fa3f2a) SHA1(08731fd53ef81453a8f20602e76d435c6771bbb9), \
                   "sssndu36.100",CRC(d22fcfa3) SHA1(3fa407f72ecc64f9d00b92122c4e4d85022e4202))
 
-INITGAME(shrkysht,GEN_WS_1,se_dmd128x32,0)
+INITGAME(shrkysht,GEN_WS_1,se_dmd128x32, SE_BOARDID_520_5192_00)
 SE128_ROMSTART(shrkysht,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
 DE_DMD32ROM8x(        "ssdispa.201",CRC(3360300b) SHA1(3169651a49bb7168fc04b2ae678b696ec6a21c85))
 SSHOT_SND
@@ -673,7 +673,7 @@ static core_tLCDLayout dispHRC[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 7, 15, CORE_DMD | CORE_NODISP, NULL, NULL}, {0}
 };
-INITGAME(hirolcas,GEN_WS,dispHRC,SE_MINIDMD)
+INITGAME(hirolcas,GEN_WS,dispHRC, SE_BOARDID_520_5192_00 | SE_BOARDID_520_5197_00)
 SE128_ROMSTART(hirolcas,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
 DE_DMD32ROM8x(        "hrcdispa.300",CRC(099ccaf0) SHA1(2e0c2706881208f08e8a1d30915424c8f9b1cf67))
 HIROL_SND
@@ -739,7 +739,7 @@ DE2S_SOUNDROM18888("apsndu7.100", CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a55
                    "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605), \
                    "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
 
-INITGAME(austin,GEN_WS,se_dmd128x32,0)
+INITGAME(austin,GEN_WS,se_dmd128x32,SE_BOARDID_520_5192_00)
 SE128_ROMSTART(austin,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(      "apdsp-a.300",CRC(ecf2c3bb) SHA1(952a7873067b8c70043a38a39a8f65089103336b))
 AUSTIN_SND
@@ -823,7 +823,7 @@ DE2S_SOUNDROM18888("pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc465f63
                    "pbsndu36.100", CRC(d10f14a3) SHA1(972b480c23d484b627ecdce0322c08fe760a127f), \
                    "pbsndu37.100", CRC(6642524a) SHA1(9d0c0be5887cf4510c11243ee47b11c08cbae17c))
 
-INITGAME(playboys,GEN_WS,se_dmd128x32,0)
+INITGAME(playboys,GEN_WS,se_dmd128x32,SE_BOARDID_520_5192_00)
 SE128_ROMSTART(playboys, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispa.500",  CRC(40450165) SHA1(80295466838cb08fe1499b19a98bf759fb7a306e))
 PLAY_SND
@@ -1045,7 +1045,7 @@ static core_tLCDLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 5,21, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, {0}
 };
-INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD3)
+INITGAME(rctycn, GEN_WS, dispRCT, SE_BOARDID_520_5192_00 | SE_BOARDID_520_5221_00)
 SE128_ROMSTART(rctycn, "rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdispa.701",CRC(0d527f13) SHA1(954116a79578b2a7679c401a2bb99b5bbfb603f2))
 RCT_SND
@@ -1208,10 +1208,13 @@ DE2S_SOUNDROM18888("spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598c
 
 static core_tLCDLayout dispSPP[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10,10,14, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)seminidmd4_update, NULL}, {0}
+  {34,30,10,14, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, // MiniDMD: Green Leds
+  {34,50,10,14, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, // MiniDMD: Red Leds
+  {34,10,10,14, CORE_VIDEO, (genf *)seminidmd_update, NULL}, // MiniDMD: custom color renderer for internal renderer
+  {0}
 };
 static core_tGameData simpprtyGameData = { \
-  GEN_WS, dispSPP, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 4, 0, 0, SE_MINIDMD2}}; \
+  GEN_WS, dispSPP, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 4, 0, 0, SE_BOARDID_520_5068_01 | SE_BOARDID_520_5219_00 }}; \
 static void init_simpprty(void) { core_gameData = &simpprtyGameData; }
 SE128_ROMSTART(simpprty, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
 DE_DMD32ROM8x(           "sppdispa.500",CRC(c6db83ec) SHA1(6079981e19b4651a074b0005eca85faf0eebcec0))
@@ -1366,7 +1369,7 @@ DE2S_SOUNDROM18888("t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9
                    "t3100.u36", CRC(9eb512e9) SHA1(fa2fecf6cb0c1af3c6db244f9d94ba53d13e10fc), \
                    "t3100.u37", CRC(3efb0c19) SHA1(6894295eef05891d64c7274512ba27f2b63ca3ec))
 
-INITGAME(term3,GEN_WS,se_dmd128x32,SE_LED)
+INITGAME(term3,GEN_WS,se_dmd128x32,SE_BOARDID_520_5068_01)
 SE128_ROMSTART(term3, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
 DE_DMD32ROM8x(      "t3dispa.400", CRC(6b7cc4f8) SHA1(214e9b3e45b778841fc166acf4ff5fd634ae2670))
 T3_SND
@@ -1498,7 +1501,7 @@ DE3S_SOUNDROM18888("lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74
                    "lotrlu37.100",CRC(61f21c6d) SHA1(3e9781b4981bd18cdb8c59c55b9942de6ae286db))
 
 static core_tGameData lotrGameData = { \
-  GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
+  GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_BOARDID_520_5068_01 | SE_BOARDID_520_5242_00 }}; \
 static void init_lotr(void) { core_gameData = &lotrGameData; }
 SE128_ROMSTART(lotr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c6a3a118a9120bcb))
@@ -1911,7 +1914,7 @@ static core_tLCDLayout dispBION[] = {
   {34,18, 7, 5, CORE_DMD | CORE_NODISP, NULL },
   {34,26, 7, 5, CORE_DMD | CORE_NODISP, NULL }, {0}
 };
-INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD3)
+INITGAME(ripleys,GEN_WS,dispBION, SE_BOARDID_520_5068_01 | SE_BOARDID_520_5236_00)
 SE128_ROMSTART(ripleys, "ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
 RBION_SND
@@ -2151,7 +2154,7 @@ DE3SC_SOUNDROM18888("sopsndi.u7",  CRC(afb9c474) SHA1(fd184e8cd6afff61fd2874b08f
                     "sopsndi.u36", CRC(71568348) SHA1(516d5ea35f8323e247c25000cb223f3539796ea1), \
                     "sopsndi.u37", CRC(b34c0a5f) SHA1(b84979d6eef7d23e6dd5410993d83fba2121bc6a))
 
-INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_LED)
+INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_BOARDID_520_5068_01)
 SE128_ROMSTART(sopranos, "sopcpua.500", CRC(e3430f28) SHA1(3b942922087cca41701ef70fbc84baaffe8da90d))
 DE_DMD32ROM8x(      "sopdspa.500", CRC(170bd8d1) SHA1(df8d240425ac2c1aa4bea560ecdd3d64120faeb7))
 SOP_SND
@@ -2364,7 +2367,7 @@ DE3SC_SOUNDROM18888("nascsp.u7",   CRC(03a34394) SHA1(d1e3a1a8e14525c40e9f8a5441
                     "nassndl.u37", CRC(63f084ab) SHA1(519807bf6e868df6f756ad30af2f6636804f167c))
 
 
-INITGAME(nascar,GEN_WS,se_dmd128x32,SE_LED)
+INITGAME(nascar,GEN_WS,se_dmd128x32,SE_BOARDID_520_5068_01)
 SE128_ROMSTART(nascar, "nascpua.450", CRC(da902e01) SHA1(afc6ace2b31c8682fb4d05e1b472c2ec30e7559b))
 DE_DMD32ROM8x(      "nasdspa.400", CRC(364878bf) SHA1(a1fb477a37459a3583d3767386f87aa620e31e34))
 NASCAR_SND
@@ -2463,7 +2466,7 @@ CORE_CLONEDEFNV(nas301l,nascar,"NASCAR (3.01 Spanish)",2005,"Stern",de_mSES3,0)
 /*-------------------------------------------------------------------
 / Dale Jr. (NASCAR 5.00)
 /-------------------------------------------------------------------*/
-INITGAME(dalejr,GEN_WS,se_dmd128x32,SE_LED)
+INITGAME(dalejr,GEN_WS,se_dmd128x32,SE_BOARDID_520_5068_01)
 SE128_ROMSTART(dalejr, "dalecpu.500", CRC(b723b7db) SHA1(ee5f96599f8ccb0fda0695e5e8af438c3f559df3))
 DE_DMD32ROM8x(      "daledisp.500", CRC(5dad91cd) SHA1(ef9ce5573f580abc720a184625c96672b5337191))
 NASCAR_SND
@@ -2509,7 +2512,7 @@ DE3SC_SOUNDROM18888("gpsndi.u7",  CRC(37d66e66) SHA1(219fd734d3a19407d9d47de1984
                     "gpsndi.u36", CRC(f8558b24) SHA1(ceb3880b026fb7fcc69eb8d94e33e30c56c24de8), \
                     "gpsndi.u37", CRC(a76c6682) SHA1(6d319a8f07c10fe392fc0b8e177cc6abbce0b536))
 
-INITGAME(gprix,GEN_WS,se_dmd128x32,SE_LED)
+INITGAME(gprix,GEN_WS,se_dmd128x32,SE_BOARDID_520_5068_01)
 SE128_ROMSTART(gprix, "gpcpua.450", CRC(3e5ae527) SHA1(27d50a0460b1733c6c857968b85da492fa2ad544))
 DE_DMD32ROM8x(      "gpdspa.400", CRC(ce431306) SHA1(2573049b52b928052f196371dbc3a5236ce8cfc3))
 GP_SND
