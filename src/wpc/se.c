@@ -79,10 +79,15 @@ struct {
   int    sst0;			//SST0 bit from sound section
   int    plin;			//Plasma In (not connected prior to LOTR Hardware)
   UINT8 *ram8000;
-  int    auxdata;
+  UINT8  auxdata;
   /* Mini DMD stuff */
   int    lastgiaux, miniidx, miniframe;
   int    minidata[7], minidmd[4][3][8];
+  UINT8  miniDMDcol, prevMiniDMDCol;
+  UINT8  miniDMDLatches[4];
+  UINT8  miniDMD21x5[5][3]; // RCT
+  UINT16 miniDMD15x7[7]; // HRC, Monopoly
+  UINT8  miniDMD5x7[3][7]; // Ripleys (3 displays of 5x7 dots)
   /* trace ram related */
 #if SUPPORT_TRACERAM
   UINT8 *traceRam;
@@ -326,9 +331,11 @@ static MACHINE_INIT(se3) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
    }
    else if (strncasecmp(grn, "ripleys", 7) == 0) { // Ripley
-      // TODO add mini DMD
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_PULSE); // Idol Opto LED
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+      core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
+      core_dmd_pwm_init(&core_gameData->lcdLayout[2], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
+      core_dmd_pwm_init(&core_gameData->lcdLayout[3], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
    }
    else if (strncasecmp(grn, "sopranos", 8) == 0) { // Sopranos
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -457,6 +464,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_1, 0);
   }
   else if (strncasecmp(grn, "jplstw22", 8) == 0) { // Jurassic Park, Lost World
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -469,15 +477,16 @@ static MACHINE_INIT(se) {
   else if (strncasecmp(grn, "monopoly", 8) == 0) { // Monopoly
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
   }
   else if (strncasecmp(grn, "playboys", 8) == 0) { // Playboy
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(grn, "rctycn", 6) == 0) { // Roller Coaster Tycoon
-     // TODO add mini DMD
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+     core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
   }
   else if (strncasecmp(grn, "simpprty", 8) == 0) { // Simpsons Pinball Party
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -799,24 +808,109 @@ static WRITE_HANDLER(giaux_w) {
   coreGlobals.gi[0]=(~data & 0x01) ? 9 : 0;
   core_write_pwm_output_8b(CORE_MODOUT_GI0, ~data & 0x01);
 
-  // High Roller Casino, RollerCoaster Tycoon & Monopoly Mini DMDs
+  // High Roller Casino, RollerCoaster Tycoon, Ripley & Monopoly Mini DMDs
   if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
-    if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
-      selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
-      selocals.miniidx = (selocals.miniidx + 1) % 4;
-      if (!(selocals.auxdata & 0x80)) { /* enabled column? */
-        int tmp = selocals.minidata[selocals.miniidx] & 0x1f;
-        if (tmp) {
-          int col = 1;
-          while (tmp >>= 1) col += 1;
-          selocals.minidmd[selocals.miniframe][0][col-1] = selocals.minidata[(selocals.miniidx + 1) % 4];
-          selocals.minidmd[selocals.miniframe][1][col-1] = selocals.minidata[(selocals.miniidx + 2) % 4];
-          selocals.minidmd[selocals.miniframe][2][col-1] = selocals.minidata[(selocals.miniidx + 3) % 4];
-          // Should find a better way to detect different frames but columns seem
-          // to always be updated in order 1-5 so this works
-          if (col == 5) selocals.miniframe = (selocals.miniframe + 1) % 3;
-        }
-      }
+    if (data & ~selocals.lastgiaux & 0x80) {
+       // clock in data to minidmd (4 cascaded latches used like a large shift register)
+       selocals.miniDMDLatches[3] = selocals.miniDMDLatches[2];
+       selocals.miniDMDLatches[2] = selocals.miniDMDLatches[1];
+       selocals.miniDMDLatches[1] = selocals.miniDMDLatches[0];
+       selocals.miniDMDLatches[0] = selocals.auxdata;
+       const int blank = (selocals.auxdata & 0x80) || (~data & 0x80);
+       if (blank == 0) {
+          // HRC: 2ms strobe per column => 10ms per frame of 5 columns, column order is 01/02/04/08/10
+          // RCT: 4ms strobe per column => 20ms per frame of 5 columns, column order is 10/08/04/02/01
+          // Monopoly: 4ms strobe per column => 20ms per frame of 5 columns, column order is 01/02/04/08/10
+          // Ripley's: 4ms strobe per column => 20ms per frame of 5 columns, column order is 01/02/04/08/10
+          // Note that during startup, the CPU suspends the rasterization which causes a little glitch as the core implementation expects a continuous frmae stream (noticeable on Ripleys)
+          selocals.miniDMDcol = selocals.miniDMDLatches[3] & 0x1f;
+          int row;
+          switch (selocals.miniDMDcol) {
+          case 0x0001: row = 0; break;
+          case 0x0002: row = 1; break;
+          case 0x0004: row = 2; break;
+          case 0x0008: row = 3; break;
+          case 0x0010: row = 4; break;
+          default: row = -1; break; // May happen during startup
+          }
+          if (row >= 0) {
+             if (selocals.prevMiniDMDCol != selocals.miniDMDcol) {
+                selocals.miniDMD21x5[row][0] = selocals.miniDMDLatches[0];
+                selocals.miniDMD21x5[row][1] = selocals.miniDMDLatches[1];
+                selocals.miniDMD21x5[row][2] = selocals.miniDMDLatches[2];
+                // Store frame when we reach the last line (note that depending on the gamecode rasterizaiotn is either done 0x01..0x10 or 0x10..0x01)
+                if ((selocals.prevMiniDMDCol == 0x08 && selocals.miniDMDcol == 0x10)
+                   || (selocals.prevMiniDMDCol == 0x02 && selocals.miniDMDcol == 0x01)) {
+                   const core_tLCDLayout* layout = &core_gameData->lcdLayout[1];
+                   if (layout->length == 21) { // RCT is 21x5 so we just have to remove the 8th bits and pack these
+                      for (int r = 0; r < 5; r++)
+                      {
+                         selocals.miniDMD21x5[r][0] = (selocals.miniDMD21x5[r][0] << 1) | ((selocals.miniDMD21x5[r][1] >> 6) & 0x01);
+                         selocals.miniDMD21x5[r][1] = (selocals.miniDMD21x5[r][1] << 2) | ((selocals.miniDMD21x5[r][2] >> 5) & 0x03);
+                         selocals.miniDMD21x5[r][2] = (selocals.miniDMD21x5[r][2] << 3);
+                      }
+                      core_dmd_submit_frame(layout, &selocals.miniDMD21x5[0][0], 1);
+                      // Output mini DMD as LED segments (backward compatibility, but not fully as it used to be a 2 bit value corresponding to the sum of the last 3 frames, independently of the refresh rate)
+                      UINT16* seg = coreGlobals.drawSeg;
+                      for (int ii = 0; ii < 21; ii++) {
+                         UINT16 bits = 0;
+                         const int c = (20 - ii) / 8, shift = 7 - ((20 - ii) & 7);
+                         for (int jj = 0; jj < 5; jj++)
+                            bits = (bits << 2) | ((selocals.miniDMD21x5[jj][c] >> shift) & 0x01);
+                         *seg++ = bits;
+                      }
+                   }
+                   else if (layout->length == 5) { // Ripley's has 3 5x7 independent mini DMDs, so they need to be rotated and submitted separately
+                      for (int l = 0; l < 3; l++) {
+                         layout = &core_gameData->lcdLayout[1 + 2 - l];
+                         for (int k = 0; k < 7; k++) {
+                            for (int j = 0; j < 5; j++)
+                               selocals.miniDMD5x7[l][k] = (selocals.miniDMD5x7[l][k] << 1) | ((selocals.miniDMD21x5[j][2 - l] >> (6 - k)) & 0x01);
+                            selocals.miniDMD5x7[l][k] <<= 3;
+                         }
+                         core_dmd_submit_frame(layout, selocals.miniDMD5x7[l], 1);
+                         // Output mini DMD as LED segments (backward compatibility, but not fully as it used to be a 2 bit value corresponding to the sum of the last 3 frames, independently of the refresh rate)
+                         UINT16* seg = &coreGlobals.drawSeg[5 * (2 - l)];
+                         for (int ii = 0; ii < 5; ii++) {
+                            UINT16 bits = 0;
+                            for (int jj = 0; jj < 7; jj++)
+                               bits = (bits << 2) | ((selocals.miniDMD5x7[l][jj] >> (7 - ii)) & 0x01);
+                            *seg++ = bits;
+                         }
+                      }
+                   }
+                   else if (layout->length == 15) { // Monopoly & HRC are 15x7 so they need to be rotated (they also have different orientations)
+                      for (int k = 0; k < 7; k++) {
+                         if (Machine->gamedrv->name[0] == 'm') // Monopoly (somewhat hacky => use an hardware flag)
+                            for (int l = 0; l < 3; l++)
+                               for (int j = 0; j < 5; j++)
+                                  selocals.miniDMD15x7[k] = (selocals.miniDMD15x7[k] << 1) | ((selocals.miniDMD21x5[4 - j][2 - l] >> k) & 0x01);
+                         else // HRC
+                            for (int l = 0; l < 3; l++)
+                               for (int j = 0; j < 5; j++)
+                                  selocals.miniDMD15x7[k] = (selocals.miniDMD15x7[k] << 1) | ((selocals.miniDMD21x5[j][l] >> (6 - k)) & 0x01);
+                         selocals.miniDMD15x7[k] <<= 1;
+                         selocals.miniDMD15x7[k] = (selocals.miniDMD15x7[k] >> 8) | (selocals.miniDMD15x7[k] << 8);
+                      }
+                      core_dmd_submit_frame(layout, (UINT8*)selocals.miniDMD15x7, 1);
+                      // Output mini DMD as LED segments (backward compatibility, but not fully as it used to be a 2 bit value corresponding to the sum of the last 3 frames, independently of the refresh rate)
+                      UINT16* seg = coreGlobals.drawSeg;
+                      for (int ii = 0; ii < 15; ii++) {
+                         UINT16 bits = 0;
+                         for (int jj = 0; jj < 7; jj++) {
+                            UINT16 v = (selocals.miniDMD15x7[jj] >> 8) | (selocals.miniDMD15x7[jj] << 8);
+                            bits = (bits << 2) | ((v >> (15 - ii)) & 0x01);
+                         }
+                         *seg++ = bits;
+                      }
+                   }
+                   // static double lastFrameTime = 0.0; printf("MiniDMD FPS: %8.5f\n", 1.0 / (timer_get_time() - lastFrameTime)); lastFrameTime = timer_get_time();
+                }
+                selocals.prevMiniDMDCol = selocals.miniDMDcol;
+             }
+          }
+       }
+       //printf("%8.5f MiniDMD Col %02x Data %02x %02x %02x %02x Blank: %d\n", timer_get_time(), selocals.miniDMDcol, selocals.miniDMDLatches[0], selocals.miniDMDLatches[1], selocals.miniDMDLatches[2], selocals.miniDMDLatches[3], blank);
     }
     if (core_gameData->hw.display & SE_MINIDMD3) {
       if (data == 0xbe)	coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
@@ -891,108 +985,6 @@ static WRITE_HANDLER(giaux_w) {
      //    but controller also sends data to allow using Tommy's Blinder servo board 520-5078-00 as a spare (2 bits, Clear/Set, to
      //    toggle between 2 positions). Sol 34 can be used to identify position 2 versus position 1.
   }
-}
-
-// MINI DMD Type 1 (High Roller Casino) (15x7)
-PINMAME_VIDEO_UPDATE(seminidmd1_update) {
-  int ii,bits;
-  UINT16 *seg = coreGlobals.drawSeg;
-
-  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
-    int jj,kk;
-    for (jj = 2; jj >= 0; jj--)
-      for (kk = 0; kk < 5; kk++) {
-        *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
-                   (selocals.minidmd[2][jj][kk] & bits))/bits;
-      }
-  }
-  for (ii = 0; ii < 15; ii++) {
-    int jj;
-    bits = 0;
-    for (jj = 0; jj < 7; jj++)
-      bits = (bits<<2) | coreGlobals.dmdDotRaw[jj * layout->length + ii];
-    *seg++ = bits;
-  }
-  if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}
-
-// MINI DMD Type 1 (Ripley's) (3 x 5x7)
-PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
-  int ii,bits;
-  int jj = 2-(layout->left-10)/8;
-  UINT16 *seg = &coreGlobals.drawSeg[5*(2-jj)];
-
-  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
-    int kk;
-    for (kk = 0; kk < 5; kk++)
-      *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
-                 (selocals.minidmd[2][jj][kk] & bits))/bits;
-  }
-  for (ii = 0; ii < 5; ii++) {
-    int kk;
-    bits = 0;
-    for (kk = 0; kk < 7; kk++)
-      bits = (bits<<2) | coreGlobals.dmdDotRaw[kk * layout->length + ii];
-    *seg++ = bits;
-  }
-  if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}
-
-// MINI DMD Type 2 (Monopoly) (15x7)
-PINMAME_VIDEO_UPDATE(seminidmd2_update) {
-  int ii,bits;
-  UINT16 *seg = coreGlobals.drawSeg;
-
-  for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[ii * layout->length];
-    int jj,kk;
-    for (jj = 0; jj < 3; jj++)
-      for (kk = 4; kk >= 0; kk--)
-        *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
-                   (selocals.minidmd[2][jj][kk] & bits))/bits;
-  }
-  for (ii = 0; ii < 15; ii++) {
-    int jj;
-    bits = 0;
-    for (jj = 0; jj < 7; jj++)
-      bits = (bits<<2) | coreGlobals.dmdDotRaw[jj * layout->length + ii];
-    *seg++ = bits;
-  }
-  if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
-}
-
-// MINI DMD Type 3 (Roller Coaster Tycoon) (21x5)
-PINMAME_VIDEO_UPDATE(seminidmd3_update) {
-  int ii,kk;
-  UINT16 *seg = coreGlobals.drawSeg;
-
-  memset(coreGlobals.dmdDotRaw,0,sizeof(coreGlobals.dmdDotRaw));
-  for (kk = 0; kk < 5; kk++) {
-    UINT8 *line = &coreGlobals.dmdDotRaw[kk * layout->length];
-    int jj,bits;
-    for (jj = 0; jj < 3; jj++)
-      for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1)
-        *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
-                   (selocals.minidmd[2][jj][kk] & bits))/bits;
-  }
-  for (ii = 0; ii < 21; ii++) {
-    int bits = 0;
-    int jj;
-    for (jj = 0; jj < 5; jj++)
-      bits = (bits<<2) | coreGlobals.dmdDotRaw[jj * layout->length + ii];
-    *seg++ = bits;
-  }
-  if (!pmoptions.dmd_only)
-    core_dmd_video_update(bitmap, cliprect, layout);
-  return 0;
 }
 
 // 3-Color MINI DMD Type 4 (Simpsons) (2 color R/G Led matrix 14x10)

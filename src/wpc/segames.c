@@ -671,7 +671,7 @@ DE2S_SOUNDROM18888("hrsndu7.100", CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded2
 
 static core_tLCDLayout dispHRC[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 15, CORE_DMD | CORE_NODISP, (genf *)seminidmd1_update, NULL}, {0}
+  {34,10, 7, 15, CORE_DMD | CORE_NODISP, NULL, NULL}, {0}
 };
 INITGAME(hirolcas,GEN_WS,dispHRC,SE_MINIDMD)
 SE128_ROMSTART(hirolcas,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
@@ -1043,7 +1043,7 @@ DE2S_SOUNDROM1888("rcsndu7.100", CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2
 
 static core_tLCDLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 5,21, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)seminidmd3_update, NULL}, {0}
+  {34,10, 5,21, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, {0}
 };
 INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD3)
 SE128_ROMSTART(rctycn, "rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
@@ -1907,9 +1907,9 @@ DE3S_SOUNDROM18888("ripsndi.u7", CRC(86b1b2b2) SHA1(9e2cf7368b31531998d546a1be2a
 
 static core_tLCDLayout dispBION[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 5, CORE_DMD | CORE_NODISP, (genf *)seminidmd1s_update},
-  {34,18, 7, 5, CORE_DMD | CORE_NODISP, (genf *)seminidmd1s_update},
-  {34,26, 7, 5, CORE_DMD | CORE_NODISP, (genf *)seminidmd1s_update}, {0}
+  {34,10, 7, 5, CORE_DMD | CORE_NODISP, NULL },
+  {34,18, 7, 5, CORE_DMD | CORE_NODISP, NULL },
+  {34,26, 7, 5, CORE_DMD | CORE_NODISP, NULL }, {0}
 };
 INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD3)
 SE128_ROMSTART(ripleys, "ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))

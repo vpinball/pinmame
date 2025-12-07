@@ -495,7 +495,7 @@ static sim_tSimData monopolySimData = {
 /----------------------*/
 static core_tLCDLayout dispMonopoly[] = {
   { 0, 0,32,128,CORE_DMD, (genf *)dedmd32_update, NULL},
-  {34,10, 7, 15,CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (genf *)seminidmd2_update, NULL},
+  {34,10, 7, 15,CORE_DMD | CORE_DMDNOAA| CORE_NODISP, NULL, NULL},
   {0}
 };
 static core_tGameData monopolyGameData = {
