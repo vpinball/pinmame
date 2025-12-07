@@ -1025,7 +1025,7 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   if (!pmoptions.dmd_only)
   {
     // Don't use core update as it expects a raw/luminance frame instead of a colored frame
-    // core_dmd_video_update(bitmap, cliprect, layout, NULL);
+    // core_dmd_video_update(bitmap, cliprect, layout);
     const int x = layout->left;
     const int y = layout->top;
     const int width = layout->length;

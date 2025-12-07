@@ -144,6 +144,9 @@ struct {
 	UINT8 auxstrb;
 	UINT8 auxdata;
 
+	// DMD state
+	UINT8 rawDMD[128 * 32];
+
 	// IJ4 & CSI Flipper Solenoid hack
 	int flipSolHackCountL;
 	data32_t flipSolHackStateL;
@@ -1247,6 +1250,9 @@ static MACHINE_INIT(sam) {
 		LOG(("Unable to create sam_snd.raw file\n"));
 	#endif
 
+	// Intialize DMDs
+	core_dmd_pwm_init(core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+
 	// Initialize outputs
 	// Force physical output emulation since we use them to compute solenoids
 	options.usemodsol |= CORE_MODOUT_FORCE_ON;
@@ -2195,23 +2201,17 @@ MACHINE_DRIVER_END
   has been validated with real hardware measure. The flicker/fusion threshold 
   is supposed to be somewhere around 25-30Hz based on the fact that other 
   hardwares like GTS3 and WPC have PWM pattern around these frequencies.
-  Therefore, to get the final luminance, we need to perform integration of at
-  least the last 24 frames. For the time being we only apply a LUT corresponding
-  to the 1 / 2 / 4 / 5 pattern.
+  Therefore, to get the final luminance, we would need to perform integration 
+  of at least the last 24 frames. As this leads to very little inter PWM frame
+  interaction, we simply apply a LUT corresponding to the 1 / 2 / 4 / 5 pattern.
 --*/
 static PINMAME_VIDEO_UPDATE(samdmd_update) {
-	// This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
-	// RAM never contains 8/9/10/11 which creates a monotonic LUT, but with a discontinuity as the hardware has 13 shades while the code uses 12.
-	static const float lumLUT[16] = { 0.f, 1.f/12.f, 2.f/12.f, 3.f/12.f, 4.f/12.f, 5.f/12.f, 6.f/12.f, 7.f/12.f, 5.f/12.f /*unused*/, 6.f/12.f /*unused*/, 7.f/12.f /*unused*/, 8.f/12.f /*unused*/, 9.f/12.f, 10.f/12.f, 11.f/12.f, 1.f};
-	int ii;
-	for( ii = 0; ii < 32; ii++ )
+	for(int ii = 0; ii < 32; ii++ )
 	{
-		UINT8 *dotRaw = &coreGlobals.dmdDotRaw[ii * layout->length];
-		float *dotLum = &coreGlobals.dmdDotLum[ii * layout->length];
+		UINT8 *dotRaw = &samlocals.rawDMD[ii * layout->length];
 		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
 		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
-		int jj;
-		for( jj = 0; jj < 128; jj++ )
+		for(int jj = 0; jj < 128; jj++ )
 		{
 			const UINT8 RAM1 = offs1[jj];
 			const UINT8 RAM2 = offs2[jj];
@@ -2220,9 +2220,9 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 			if ((mix != 0xF) && (mix != 0x0)) //!! happens e.g. in POTC in extra ball explosion animation: RAM1 values triggering this: 223, 190, 175, 31, 25, 19, 17 with RAM2 being always 0. But is this just wrong game data (as its a converted animation)?!
 				LOG(("Special DMD Bitmask %01X RAM1=%02x RAM2=%02x pix@(%3dx%2d)", mix, RAM1, RAM2, jj, ii));
 			*dotRaw++ = temp;
-			*dotLum++ = lumLUT[temp];
 		}
 	}
+   core_dmd_submit_frame(layout, samlocals.rawDMD, 1);
 	core_dmd_video_update(bitmap, cliprect, layout);
 	return 0;
 }

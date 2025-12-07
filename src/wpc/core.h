@@ -626,26 +626,29 @@ extern void core_write_masked_pwm_output_8b(int startIndex, UINT8 bitStates, UIN
 extern void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows, int nCols);
 INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp = timer_get_time(); }
 
-#define CORE_DMD_PWM_FILTER_DE_128x16     0
-#define CORE_DMD_PWM_FILTER_DE_128x32     1
-#define CORE_DMD_PWM_FILTER_DE_192x64     2
-#define CORE_DMD_PWM_FILTER_GTS3          3
-#define CORE_DMD_PWM_FILTER_WPC           4
-#define CORE_DMD_PWM_FILTER_WPC_PH        5
-#define CORE_DMD_PWM_FILTER_ALVG1         6
-#define CORE_DMD_PWM_FILTER_ALVG2         7
-#define CORE_DMD_PWM_FILTER_CAPCOM_128x32 8
-#define CORE_DMD_PWM_FILTER_CAPCOM_256x64 9
+#define CORE_DMD_PWM_FILTER_DE_128x16            0
+#define CORE_DMD_PWM_FILTER_DE_128x32            1
+#define CORE_DMD_PWM_FILTER_DE_192x64            2
+#define CORE_DMD_PWM_FILTER_GTS3                 3
+#define CORE_DMD_PWM_FILTER_WPC                  4
+#define CORE_DMD_PWM_FILTER_WPC_PH               5
+#define CORE_DMD_PWM_FILTER_ALVG1                6
+#define CORE_DMD_PWM_FILTER_ALVG2                7
+#define CORE_DMD_PWM_FILTER_CAPCOM_128x32        8
+#define CORE_DMD_PWM_FILTER_CAPCOM_256x64        9
 
-#define CORE_DMD_PWM_COMBINER_GTS3_4C_A 0
-#define CORE_DMD_PWM_COMBINER_GTS3_4C_B 1
-#define CORE_DMD_PWM_COMBINER_GTS3_5C   2
-#define CORE_DMD_PWM_COMBINER_SUM_2     3
-#define CORE_DMD_PWM_COMBINER_SUM_3     4
-#define CORE_DMD_PWM_COMBINER_SUM_2_1   5
-#define CORE_DMD_PWM_COMBINER_SUM_1_2   6
-#define CORE_DMD_PWM_COMBINER_SUM_4     7
-#define CORE_DMD_PWM_COMBINER_SUM_1_2_1 8
+#define CORE_DMD_PWM_COMBINER_GTS3_4C_A          0
+#define CORE_DMD_PWM_COMBINER_GTS3_4C_B          1
+#define CORE_DMD_PWM_COMBINER_GTS3_5C            2
+#define CORE_DMD_PWM_COMBINER_SUM_2              3
+#define CORE_DMD_PWM_COMBINER_SUM_3              4
+#define CORE_DMD_PWM_COMBINER_SUM_2_1            5
+#define CORE_DMD_PWM_COMBINER_SUM_1_2            6
+#define CORE_DMD_PWM_COMBINER_SUM_4              7
+#define CORE_DMD_PWM_COMBINER_SUM_1_2_1          8
+
+#define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
+#define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101
 
 extern void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const int raw_combiner, const int isReversedByte);
 extern void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, const int ntimes);
