@@ -167,6 +167,7 @@ struct {
 	UINT8 ledLatch[6];
 	UINT8 dmdLatch[6];
 	UINT8 dmdOutputDisabled; // bool
+	UINT8 wofLEDs[5][5]; // 5 rows of 35 dots
 
 	UINT32 fastflipaddr;
 } samlocals;
@@ -921,7 +922,7 @@ static WRITE32_HANDLER(sambank_w)
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
 					// This is a simple software rasterizer: turn blank to 1, select a single row and fill in the shift register (49 bits), turn blank to 0, wait and go for next row
-               // The timings are 2ms per row, therefore 20ms for the complete 10 rows display (2 lines of 5 rows)
+               // The timings are 2ms per row, therefore 20ms for the complete 10 rows display (2 lines of 5 rows) => 50Hz refresh rate
 					if (samlocals.auxstrb & ~data & 0x80) // ASTB
 					{
 						// Active column built from 3 of the serial register latches
@@ -1060,6 +1061,8 @@ static WRITE32_HANDLER(sambank_w)
 					//printf("%8.5f  write %02x %02x:  %02x %02x %02x  %02x %02x %02x\n", timer_get_time(), data, samlocals.auxdata, samlocals.ledLatch[0], samlocals.ledLatch[1], samlocals.ledLatch[2], samlocals.ledLatch[3], samlocals.ledLatch[4], samlocals.ledLatch[5]);
 
 					// Board 520-5274-00: Playfield Mini-Dot Display (5X7) (Wheel of Fortune)
+					// This is a simple software rasterizer: turn blank to 1, select a single row and fill in the shift register (49 bits), turn blank to 0, wait and go for next row
+					// The timings are 1ms per row, therefore 5ms for the complete 5 rows display (5 rows of 35 dots) => 200Hz refresh rate
 					if (samlocals.auxstrb & ~data & 0x10) // CSTB
 					{
 						UINT8 wasOutputDisabled = samlocals.dmdOutputDisabled;
@@ -1074,7 +1077,48 @@ static WRITE32_HANDLER(sambank_w)
 							samlocals.dmdLatch[0] = samlocals.auxdata;
 						}
 					}
-					int col = (samlocals.dmdOutputDisabled || (~data & 0x80)) ? 0 : samlocals.dmdLatch[5];
+					// There have been 3 implementations:
+					// - initial was to outpût the matrix state in the display segment outputs, which is maintained for backward compatibility
+					// - a second based on PWM physic outputs, which is more flexible but somewhat overkill for a simple LED matrix, and disabled
+					// - the third one, which uses the core DMD system to render the matrix as a mini DMD display, is now the default
+					const int blank = samlocals.dmdOutputDisabled || (~data & 0x80);
+					if (blank == 0) {
+						samlocals.col = samlocals.dmdLatch[5] & 0x1F;
+						if (samlocals.prevCol != samlocals.col) {
+							int row;
+							switch (samlocals.col) {
+							case 0x0001: row = 0; break;
+							case 0x0002: row = 1; break;
+							case 0x0004: row = 2; break;
+							case 0x0008: row = 3; break;
+							case 0x0010: row = 4; break;
+							default: assert(FALSE); break;
+							}
+							if (row >= 0)
+							{
+								samlocals.wofLEDs[row][0] = (samlocals.dmdLatch[4] << 1) | ((samlocals.dmdLatch[3] >> 6) & 0x01);
+								samlocals.wofLEDs[row][1] = (samlocals.dmdLatch[3] << 2) | ((samlocals.dmdLatch[2] >> 5) & 0x03);
+								samlocals.wofLEDs[row][2] = (samlocals.dmdLatch[2] << 3) | ((samlocals.dmdLatch[1] >> 4) & 0x07);
+								samlocals.wofLEDs[row][3] = (samlocals.dmdLatch[1] << 4) | ((samlocals.dmdLatch[0] >> 3) & 0x0F);
+								samlocals.wofLEDs[row][4] = (samlocals.dmdLatch[0] << 5);
+								if (samlocals.col == 0x010) { // Last row, submit frame
+									const core_tLCDLayout* layout = &core_gameData->lcdLayout[1];
+									// Submit to core DMD handler
+									core_dmd_submit_frame(layout, &samlocals.wofLEDs[0][0], 1);
+									// Output mini DMD as LED segments (backward compatibility)
+									for (int ii = 0; ii < 35; ii++) {
+										UINT16 bits = 0;
+										for (int kk = 0; kk < 5; kk++)
+											bits = (bits << 1) | ((samlocals.wofLEDs[kk][ii / 8] >> (ii & 7)) & 0x01);
+										coreGlobals.drawSeg[ii] = bits;
+									}
+								}
+							}
+						}
+						samlocals.prevCol = samlocals.col;
+					}
+					// Previous implementation using PWM physic outputs (somewhat overkill for LED matrix, but works)
+					/*int col = blank ? 0 : samlocals.dmdLatch[5];
 					for (int row = 0; row < 5; row++) {
 						int r = col & (1 << row);
 						int c = CORE_MODOUT_LAMP0 + 140 + 35 * row;
@@ -1083,8 +1127,8 @@ static WRITE32_HANDLER(sambank_w)
 						core_write_pwm_output(c + 14, 7, r ? (core_revbyte(samlocals.dmdLatch[2]) >> 1) : 0);
 						core_write_pwm_output(c + 21, 7, r ? (core_revbyte(samlocals.dmdLatch[1]) >> 1) : 0);
 						core_write_pwm_output(c + 28, 7, r ? (core_revbyte(samlocals.dmdLatch[0]) >> 1) : 0);
-					}
-					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x %02x  col=%02x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.dmdLatch[0], samlocals.dmdLatch[1], samlocals.dmdLatch[2], samlocals.dmdLatch[3], samlocals.dmdLatch[4], col & 0x1F, samlocals.dmdOutputDisabled ? 0 : 1);
+					}*/
+					//printf("%8.5f  write %02x %02x: %02x %02x %02x %02x %02x  col=%02x Blank=%d\n", timer_get_time(), data, samlocals.auxdata, samlocals.dmdLatch[0], samlocals.dmdLatch[1], samlocals.dmdLatch[2], samlocals.dmdLatch[3], samlocals.dmdLatch[4], col & 0x1F, blank);
 				}
 
 				// Board 520-5290-00: Opto and auxiliary LED PCB (Batman The Dark Knight & CSI): 3 LEDs #86, #87, #88
@@ -1310,11 +1354,15 @@ static MACHINE_INIT(sam) {
 	// Intialize DMDs
 	if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT) {
 		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
-		for (int i = 0; i < 14; i++)
-			core_dmd_pwm_init(&core_gameData->lcdLayout[i + 1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
+      for (int i = 0; i < 14; i++) // 14 WPT mini DMDs (7x5 LED matrix)
+			core_dmd_pwm_init(&core_gameData->lcdLayout[i + 1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0); // WPC_PH is 61Hz and the mini DMD are 50Hz, so it is ok
+	}
+	else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF) {
+		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+      core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_1, 0); // WOF mini DMD (35x5 LED matrix), DE_128x32 is 224Hz and the mini DMD is 200Hz, so it is ok
 	}
 	else {
-		core_dmd_pwm_init(core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
 	}
 
 	// Initialize outputs
@@ -2295,28 +2343,6 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 #define SAT_NYB(v) (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 #define SAT_BYTE(v) (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
 
-// Wheel of Fortune Led matrix display
-static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
-    int ii,jj,kk;
-    for (jj = 0; jj < 35; jj++)
-		for (kk = 0; kk < 5; kk++) {
-			const int target = 140 + jj + (kk * 35);
-			const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + target].value;
-			coreGlobals.dmdDotRaw[kk * layout->length + jj] = SAT_NYB(v); // TODO raw value should not be tied to the PWM integration
-			coreGlobals.dmdDotLum[kk * layout->length + jj] = SAT_BYTE(v);
-		}
-    // Use the video update to output mini DMD as LED segments (somewhat hacky)
-    for (ii = 0; ii < 35; ii++) {
-      int bits = 0;
-      for (kk = 0; kk < 5; kk++)
-        bits = (bits<<1) | (coreGlobals.dmdDotRaw[kk * layout->length + ii] ? 1 : 0);
-      coreGlobals.drawSeg[ii] = bits;
-    }
-    if (!pmoptions.dmd_only)
-      core_dmd_video_update(bitmap, cliprect, layout);
-    return 0;
-}
-
 static struct core_dispLayout sam_dmd128x32[] = {
 	{0, 0, 32, 128, CORE_DMD/*| CORE_DMDNOAA*/, (genf*)samdmd_update},
 	{0}
@@ -2343,7 +2369,7 @@ static struct core_dispLayout sammini1_dmd128x32[] = {
 
 static struct core_dispLayout sammini2_dmd128x32[] = {
 	DISP_SEG_IMPORT(sam_dmd128x32),
-	{34, 10, 5, 35, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd2_update},
+	{34, 10, 5, 35, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL },
 	{0}
 };
 
@@ -2805,8 +2831,8 @@ static void wof_drawMech(BMTYPE **line) {
 	core_textOutf(35, 10, BLACK, "Wheel Pos   : %3d", wof_getMech(0));
 }
 
-static core_tGameData wofGameData = { // 62 additional LED columns for MiniDMD (35x14 DMD = 490 LEDs)
-	GEN_SAM, sammini2_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, SAM_8COL + 62, 16, 0, 0, SAM_GAME_WOF ,0, sam_getSol, wof_handleMech, wof_getMech, wof_drawMech}
+static core_tGameData wofGameData = {
+	GEN_SAM, sammini2_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, SAM_8COL, 16, 0, 0, SAM_GAME_WOF ,0, sam_getSol, wof_handleMech, wof_getMech, wof_drawMech}
 };
 
 static void init_wof(void) { 
