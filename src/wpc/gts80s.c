@@ -839,8 +839,8 @@ WRITE_HANDLER(s80bs_sh_w)
 	}
 	else
 	{
-		clear_irq = ((data&0x0f)==0x0f); /* interrupt trigered by four low bits (not all 1's) - Not sure if this is TRUE, comes from the MAME driver*/
-		data &= 0x3f;					 //Not sure if this is needed for ALL generations (but definitely not gts3!)
+		clear_irq = ((data&0x0f)==0x0f); // Interrupt triggered by four low bits (not all 1's) - Not sure if this is TRUE, comes from the MAME driver
+		data &= 0x3f;					 // Not sure if this is needed for ALL generations (but definitely not gts3!)
 	}
 
 	if (clear_irq) 	{
@@ -1136,8 +1136,8 @@ static struct YM2151interface GTS80BS_ym2151Int =
   -----------
     0   0   0 = Y0 = RAM Enable (0x1fff)
     0   1   0 = Y2 = S4-14 = 2151 Enable  (0x4000)
-	1   1   0 = Y3 = S2-LS139 Enable(0x6000)
-	1   0   1 = Y5 = Enable G3-LS377 (0xA000)
+    1   1   0 = Y3 = S2-LS139 Enable(0x6000)
+    1   0   1 = Y5 = Enable G3-LS377 (0xA000)
 
   CPU #2 (D-CPU):
   ---------------
@@ -1317,7 +1317,7 @@ MEMORY_END
 static struct DACinterface GTS3_dacInt =
 {
   2,			/*2 Chips - but it seems we only access 1?*/
- {50,50}		/* Volume */
+  {50,50}		/* Volume */
 };
 
 static struct OKIM6295interface GTS3_okim6295_interface = {

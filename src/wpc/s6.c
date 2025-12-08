@@ -84,7 +84,7 @@ static struct {
   UINT32 solsmooth[S6_SOLSMOOTH];
   core_tSeg segments,pseg;
   int    lampRow, lampColumn;
-  int    diagnosticLed;
+  UINT8  diagnosticLed;
   int    swCol;
   int    ssEn;
   int    piaIrq;
@@ -167,9 +167,9 @@ static WRITE_HANDLER(s6_swcol_w) {
 /*****************/
 static WRITE_HANDLER(s6_alpha_w) {
   s6locals.segments[s6locals.alphapos].w |=
-      s6locals.pseg[s6locals.alphapos].w = core_bcd2seg[data>>4];
+      s6locals.pseg[s6locals.alphapos].w = core_bcd2seg7[data>>4];
   s6locals.segments[20+s6locals.alphapos].w |=
-      s6locals.pseg[20+s6locals.alphapos].w = core_bcd2seg[data&0x0f];
+      s6locals.pseg[20+s6locals.alphapos].w = core_bcd2seg7[data&0x0f];
 }
 
 static WRITE_HANDLER(s6_pa_w) {

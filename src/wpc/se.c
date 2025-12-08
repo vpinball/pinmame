@@ -66,13 +66,14 @@ static WRITE_HANDLER(mcpu_ram8000_w);
 static READ_HANDLER(mcpu_ram8000_r);
 
 /*----------------
-/ Local variables, if changing, sync with elvis and monopoly, too!!
+/ Local variables
 /-----------------*/
-struct {
+static struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
-  int    lampRow, lampColumn;
+  UINT8  lampRow;
+  UINT16 lampColumn;
   int    diagnosticLed;
   int    swCol;
   int    flipsol, flipsolPulse;
@@ -86,8 +87,8 @@ struct {
   UINT8  miniDMDcol, prevMiniDMDCol;
   UINT8  miniDMDLatches[4];
   UINT8  miniDMD21x5[5][3]; // RCT
-  UINT16 miniDMD15x7[7]; // HRC, Monopoly
-  UINT8  miniDMD5x7[3][7]; // Ripleys (3 displays of 5x7 dots)
+  UINT16 miniDMD15x7[7];    // HRC, Monopoly
+  UINT8  miniDMD5x7[3][7];  // Ripleys (3 displays of 5x7 dots)
   /* trace ram related */
 #if SUPPORT_TRACERAM
   UINT8 *traceRam;
@@ -173,9 +174,9 @@ static INTERRUPT_GEN(se_vblank) {
     selocals.flipsol = selocals.flipsolPulse;
   }
   if ((selocals.vblankCount % (VBLANK*SE_SOLSMOOTH)) == 0) {
-	 coreGlobals.solenoids = selocals.solenoids;
-	 // Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
-	 // unused because it is remapped to VPM flipper constants.  
+    coreGlobals.solenoids = selocals.solenoids;
+    // Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is
+    // unused because it is remapped to VPM flipper constants.
     if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr - 1] > 0) {
        coreGlobals.solenoids |= 0x4000;
        core_write_pwm_output(CORE_MODOUT_SOL0 + 15 - 1, 1, 1);
@@ -259,7 +260,7 @@ static MACHINE_INIT(se3) {
 	sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
 	sndbrd_1_init(SNDBRD_DE3S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
 
-	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
+	// Fast flips support.   My process for finding these, is to load them in pinmame32 in VC debugger.  
 	// Debug and break on this line:
 	//  return memory_region(SE_CPUREGION)[offset];
 	//
@@ -524,7 +525,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(grn, "term3", 5) == 0) { // Terminator 3
-     core_set_pwm_output_bulb(CORE_MODOUT_SOL0 + 4 - 1, 1, BULB_44, 19.f - 0.7f, TRUE, 0.f, 1.f); // Backbox GI: 19V AC switched #44 Bulbs (Sol 1-16 uses Mosfets with low voltage drop)
+     core_set_pwm_output_bulb(CORE_MODOUT_SOL0 + 4 - 1, 1, BULB_44, (float)(19. - 0.7), TRUE, 0.f, 1.f); // Backbox GI: 19V AC switched #44 Bulbs (Sol 1-16 uses Mosfets with low voltage drop)
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 26 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(grn, "twst_", 5) == 0) { // Twister
@@ -664,7 +665,7 @@ WRITE_HANDLER(se_solenoid_w) {
 }
 // Some Whitestar II ROMS read from the solenoid ports
 static READ_HANDLER(solenoid_r) {
-  int data = (coreGlobals.pulsedSolState >> solmaskno[offset]) & 0xff;
+  data8_t data = (coreGlobals.pulsedSolState >> solmaskno[offset]) & 0xff;
   if (offset == 0) {
     data &= 0x3f;
     data |= ((selocals.flipsolPulse & 0x01) << 7); // Bit 16
@@ -737,12 +738,12 @@ void set_at91_data(int plin, int sst0, int led)
   D7 = CN8-26 -> DMD BUSY
 */
 static READ_HANDLER(dmdstatus_r) {
-  int data = (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3) | (selocals.sst0<<1);
+  data8_t data = (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3) | (selocals.sst0<<1);
   return data;
 }
 
 /* PLIN - Plasma? In Data Latch
-   Not connected prior to LOTR Hardare
+   Not connected prior to LOTR Hardware
    U404 - HC245 of 520-5300-00(ATMEL 91)
    Ironically not used for Plasma info, but Sound Info, but probably called that when designed way back
    in the initial Whitestar system design
@@ -751,7 +752,7 @@ static READ_HANDLER(dmdie_r) {
 	return selocals.plin;
 }
 
-/* U203 - HC245 - Read Data from J3 (Aux In) - Pins 1-7 (D0-D6) - D7 from LST (Lamp Strobe?) Line)
+/* U203 - HC245 - Read Data from J3 (Aux In) - Pins 1-7 (D0-D6) - D7 from LST (Lamp Strobe?) Line
 
    So far, it seems this port is only used when combined with the TOPS system for reading status
    of the DUART found on the TSIB board.
@@ -760,7 +761,7 @@ static READ_HANDLER(dmdie_r) {
    Bit 6 = DUART Transmit Empty & Ready for Transmission
 */
 static READ_HANDLER(auxboard_r) {
-	int data = selocals.auxdata;
+	data8_t data = selocals.auxdata;
 	// Did D Strobe just go low? If so, TSIB board wants to read DUART status.
 	if((selocals.lastgiaux & 0x20) == 0) {
 		data = 0x40;						//signal that TOPS Duart is ready to receive
@@ -822,7 +823,7 @@ static WRITE_HANDLER(giaux_w) {
           // RCT: 4ms strobe per column => 20ms per frame of 5 columns, column order is 10/08/04/02/01
           // Monopoly: 4ms strobe per column => 20ms per frame of 5 columns, column order is 01/02/04/08/10
           // Ripley's: 4ms strobe per column => 20ms per frame of 5 columns, column order is 01/02/04/08/10
-          // Note that during startup, the CPU suspends the rasterization which causes a little glitch as the core implementation expects a continuous frmae stream (noticeable on Ripleys)
+          // Note that during startup, the CPU suspends the rasterization which causes a little glitch as the core implementation expects a continuous frame stream (noticeable on Ripleys)
           selocals.miniDMDcol = selocals.miniDMDLatches[3] & 0x1f;
           int row;
           switch (selocals.miniDMDcol) {
@@ -838,7 +839,7 @@ static WRITE_HANDLER(giaux_w) {
                 selocals.miniDMD21x5[row][0] = selocals.miniDMDLatches[0];
                 selocals.miniDMD21x5[row][1] = selocals.miniDMDLatches[1];
                 selocals.miniDMD21x5[row][2] = selocals.miniDMDLatches[2];
-                // Store frame when we reach the last line (note that depending on the gamecode rasterizaiotn is either done 0x01..0x10 or 0x10..0x01)
+                // Store frame when we reach the last line (note that depending on the gamecode rasterization is either done 0x01..0x10 or 0x10..0x01)
                 if ((selocals.prevMiniDMDCol == 0x08 && selocals.miniDMDcol == 0x10)
                    || (selocals.prevMiniDMDCol == 0x02 && selocals.miniDMDcol == 0x01)) {
                    const core_tLCDLayout* layout = &core_gameData->lcdLayout[1];
@@ -881,7 +882,7 @@ static WRITE_HANDLER(giaux_w) {
                    }
                    else if (layout->length == 15) { // Monopoly & HRC are 15x7 so they need to be rotated (they also have different orientations)
                       for (int k = 0; k < 7; k++) {
-                         if (Machine->gamedrv->name[0] == 'm') // Monopoly (somewhat hacky => use an hardware flag)
+                         if (Machine->gamedrv->name[0] == 'm') // Monopoly (somewhat hacky => use a hardware flag)
                             for (int l = 0; l < 3; l++)
                                for (int j = 0; j < 5; j++)
                                   selocals.miniDMD15x7[k] = (selocals.miniDMD15x7[k] << 1) | ((selocals.miniDMD21x5[4 - j][2 - l] >> k) & 0x01);
@@ -941,7 +942,7 @@ static WRITE_HANDLER(giaux_w) {
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = data;
   }
-  // Terminator 3, Lord of The Ring, Sopranos, Nascar / Dale Jr / Grand Prix
+  // Terminator 3, Lord of The Rings, Sopranos, Nascar / Dale Jr / Grand Prix
   else if (core_gameData->hw.display & SE_LED) { // map 6x8 LEDs as extra lamp columns
     static const int order[] = { 6, 2, 4, 5, 1, 3, 0 };
     if (selocals.auxdata == 0x30 && (selocals.lastgiaux & 0x40)) selocals.miniidx = 0;
@@ -980,7 +981,7 @@ static WRITE_HANDLER(giaux_w) {
      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
      core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, selocals.auxdata, 0x0F); // Solenoids 33..36
      // Notes:
-     // - Independance Day:
+     // - Independence Day:
      //    ESTB strobes data on auxdata. Alien head is controlled by servo board 520-5152-00 (1 bit to toggle between 2 positions)
      //    but controller also sends data to allow using Tommy's Blinder servo board 520-5078-00 as a spare (2 bits, Clear/Set, to
      //    toggle between 2 positions). Sol 34 can be used to identify position 2 versus position 1.

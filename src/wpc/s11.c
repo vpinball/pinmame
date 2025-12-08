@@ -84,7 +84,7 @@ static struct {
   int    ac_select, ac_state;
 #endif
   int    digSel;
-  int    diagnosticLed;
+  UINT8  diagnosticLed;
   int    swCol;
   int    ssEn;		  /* Enable switched solenoids (solenoids that can be fired by a switch or a solenoid output) */
   int    switchedSol; /* Output state for switched solenoid (which may be enabled/disabled by ssEn), usually slingshots, bumpers,... */
@@ -382,7 +382,7 @@ static WRITE_HANDLER(pia2a_w) {
     core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i, 0);
   locals.digSel = data & 0x0f;
   if (core_gameData->hw.display & S11_BCDDIAG)
-    locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
+    locals.diagnosticLed |= core_bcd2seg7[(data & 0x70)>>4];
   else
     locals.diagnosticLed |= (data & 0x10)>>4;
 }
@@ -410,13 +410,13 @@ static WRITE_HANDLER(pia2b_w) {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
     if (core_gameData->hw.display & S11_BCDDISP) {
       locals.segments[locals.digSel].w |=
-           locals.pseg[locals.digSel].w = core_bcd2seg[data&0x0f];
+           locals.pseg[locals.digSel].w = core_bcd2seg7[data&0x0f];
       locals.segments[20+locals.digSel].w |=
-           locals.pseg[20+locals.digSel].w = core_bcd2seg[data>>4];
-      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16, core_bcd2seg[data & 0x0f]);
-      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16 + 8, core_bcd2seg[data & 0x0f] >> 8);
-      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16, core_bcd2seg[data >> 4]);
-      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16 + 8, core_bcd2seg[data >> 4] >> 8);
+           locals.pseg[20+locals.digSel].w = core_bcd2seg7[data>>4];
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16, core_bcd2seg7[data & 0x0f]);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16 + 8, core_bcd2seg7[data & 0x0f] >> 8);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16, core_bcd2seg7[data >> 4]);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16 + 8, core_bcd2seg7[data >> 4] >> 8);
     }
     else
     {

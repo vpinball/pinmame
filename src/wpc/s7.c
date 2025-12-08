@@ -41,7 +41,7 @@ static struct {
   UINT16 alphaSegs;
   int    lampRow, lampColumn;
   int    digSel;
-  int    diagnosticLed;
+  UINT8  diagnosticLed;
   int    swCol;
   int    ssEn; /* Special solenoids and flippers enabled ? */
   int    piaIrq;
@@ -145,13 +145,12 @@ static WRITE_HANDLER(pia3ca2_w) {
 }
 
 static WRITE_HANDLER(pia3b_w) {
-  int seg7;
-  seg7 = core_bcd2seg[data >> 4] & 0x7F;
+  UINT16 seg7 = core_bcd2seg7[data >> 4] & 0x7F;
   if (seg7) {
     s7locals.segments[   s7locals.digSel].w &= 0x80;
     s7locals.segments[   s7locals.digSel].w |= seg7;
   }
-  seg7 = core_bcd2seg[data & 15] & 0x7F;
+  seg7 = core_bcd2seg7[data & 15] & 0x7F;
   if (seg7) {
     s7locals.segments[20+s7locals.digSel].w &= 0x80;
     s7locals.segments[20+s7locals.digSel].w |= seg7;

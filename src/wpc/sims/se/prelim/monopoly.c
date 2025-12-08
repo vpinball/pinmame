@@ -5,7 +5,7 @@
 
  by Gerrit Volkenborn (gaston@yomail.de)
  Sep 22, 2004
- updated Dec 26, 2005 by Brian Smith (destruk@vpforums.com)
+ updated Dec 26, 2005 by Brian Smith (destruk)
 
  Read PZ.c or FH.c if you like more help.
 
@@ -18,7 +18,7 @@
     +O  L/R Outlane
     +-  L/R Slingshot
      Q  SDTM (Drain Ball)
-	
+
    More to be added...
 
 ------------------------------------------------------------------------------*/
@@ -43,32 +43,6 @@ static int  monopoly_getMech(int mech);
 static void monopoly_handleMech(int mech);
 #endif
 
-extern struct {
-  int    vblankCount;
-  int    initDone;
-  UINT32 solenoids;
-  int    lampRow, lampColumn;
-  int    diagnosticLed;
-  int    swCol;
-  int    flipsol, flipsolPulse;
-  int    sst0;			//SST0 bit from sound section
-  int    plin;			//Plasma In (not connected prior to LOTR Hardware)
-  UINT8 *ram8000;
-  int    auxdata;
-  /* Mini DMD stuff */
-  int    lastgiaux, miniidx, miniframe;
-  int    minidata[7], minidmd[4][3][8];
-  /* trace ram related */
-#if SUPPORT_TRACERAM
-  UINT8 *traceRam;
-#endif
-  UINT8  curBank;                   /* current bank select */
-  #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
-  int fastflipaddr;
-
-  UINT8 lampstate[80];
-} selocals;
-
 /*-----------------------
   local static variables
  ------------------------*/
@@ -90,19 +64,19 @@ SE_INPUT_PORTS_START(monopoly,4)
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"",		        KEYCODE_D)
+    COREPORT_BIT(0x0004,"",					KEYCODE_D)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
+    COREPORT_BIT(0x0010,"L/R Slingshot",	KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"Roll n Win Lane",			KEYCODE_W)
-    COREPORT_BIT(0x0080,"Roll n Win Saucer",			KEYCODE_E)
-    COREPORT_BIT(0x0100,"Right Ramp",			KEYCODE_R)
-    COREPORT_BIT(0x0200,"",			KEYCODE_T)
-    COREPORT_BIT(0x0400,"",			KEYCODE_Y)
-    COREPORT_BIT(0x0800,"",			KEYCODE_U)
-    COREPORT_BIT(0x1000,"",			KEYCODE_I)
-    COREPORT_BIT(0x2000,"",			KEYCODE_O)
-    COREPORT_BIT(0x4000,"",			KEYCODE_A)
+    COREPORT_BIT(0x0040,"Roll n Win Lane",	KEYCODE_W)
+    COREPORT_BIT(0x0080,"Roll n Win Saucer",KEYCODE_E)
+    COREPORT_BIT(0x0100,"Right Ramp",		KEYCODE_R)
+    COREPORT_BIT(0x0200,"",					KEYCODE_T)
+    COREPORT_BIT(0x0400,"",					KEYCODE_Y)
+    COREPORT_BIT(0x0800,"",					KEYCODE_U)
+    COREPORT_BIT(0x1000,"",					KEYCODE_I)
+    COREPORT_BIT(0x2000,"",					KEYCODE_O)
+    COREPORT_BIT(0x4000,"",					KEYCODE_A)
     COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
 
   PORT_START /* 1 */
@@ -141,9 +115,9 @@ SE_INPUT_PORTS_END
 #define swTroughJam	15
 #define swShooter	16
 
-#define swRnWLane       27
-#define swRightRamp     48
-#define swRnWSaucer     52
+#define swRnWLane	27
+#define swRightRamp	48
+#define swRnWSaucer	52
 
 #define swLeftOutlane	57
 #define swLeftInlane	58
@@ -166,8 +140,8 @@ SE_INPUT_PORTS_END
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
       stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling,
-	  stRnWLane,stRnWSaucer,stRightRamp
-	  };
+      stRnWLane,stRnWSaucer,stRightRamp
+     };
 
 static sim_tState monopoly_stateDef[] = {
   {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
@@ -178,7 +152,7 @@ static sim_tState monopoly_stateDef[] = {
   {"Trough 4",		1,swTrough4,	0,		stTrough3,	1},
   {"Trough 3",		1,swTrough3,	0,		stTrough2,	1},
   {"Trough 2",		1,swTrough2,	0,		stTrough1,	1},
-  {"Trough 1",		1,swTrough1,	sTrough,	stTrough,	1},
+  {"Trough 1",		1,swTrough1,	sTrough,stTrough,	1},
   {"Trough Jam",	1,swTroughJam,  0,		stShooter,	1},
   {"Drain",		1,0,		0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
 
@@ -190,10 +164,10 @@ static sim_tState monopoly_stateDef[] = {
   {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
   {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
   {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
-  {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
+  {"Left Slingshot",	1,swLeftSling,	 0,	stFree,		1},
   {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
-  {"Roll n Win Lane",	1,swRnWLane,	 0,		stFree,	5},
-  {"Roll n Win Saucer",	1,swRnWSaucer,	 sRnW,		stFree,		5},
+  {"Roll n Win Lane",	1,swRnWLane,	 0,	stFree,	5},
+  {"Roll n Win Saucer",	1,swRnWSaucer,	 sRnW,	stFree,		5},
   {"Right Ramp",	1,swRightRamp, 0,		stFree,		5},
 
   /*Line 3*/
@@ -210,7 +184,7 @@ static sim_tState monopoly_stateDef[] = {
 static int monopoly_handleBallState(sim_tBallStatus *ball, int *inports) {
 	switch (ball->state) {
 	case stShooter:
-		if (core_getSol(sAutoplunger)) {		/* Monopoly has both, manual and auto plunger */
+		if (core_getSol(sAutoplunger)) {	/* Monopoly has both, manual and auto plunger */
 			ball->speed = 50;
 			return setState(stBallLane,1);
 		}
@@ -228,8 +202,8 @@ static int monopoly_handleBallState(sim_tBallStatus *ball, int *inports) {
 			return setState(stFree,51);		/*Ball goes to stFree*/
 		break;
 	}
-    return 0;
-  }
+	return 0;
+}
 
 /*---------------------------
 /  Keyboard conversion table
@@ -479,7 +453,7 @@ CORE_CLONEDEFNV(monop233,monopoly,"Monopoly (2.33)",2002,"Stern",de_mSES1,GAME_N
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData monopolySimData = {
-  2,    				/* 2 game specific input ports */
+  2,					/* 2 game specific input ports */
   monopoly_stateDef,	/* Definition of all states */
   monopoly_inportData,	/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed */
@@ -523,7 +497,7 @@ static WRITE_HANDLER(monopoly_w) {
 
   if (offset == 3) {
     locals.flipperDir = ((data & 0x04) >> 1) - 1; // so +1 for cw, -1 for ccw
-	if (data & 0x01) { // increase flipper speed if set
+    if (data & 0x01) { // increase flipper speed if set
       if (locals.flipperSpeed < 4) locals.flipperSpeed++;
     } else { // decrease flipper speed if not set
       if (locals.flipperSpeed) locals.flipperSpeed--;

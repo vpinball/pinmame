@@ -19,11 +19,11 @@
 static struct {
   struct sndbrdData brdData;
   int cmd, ncmd, busy, status, ctrl, bank;
-  
+
   // dmd32 stuff
   UINT8* RAM;
   UINT8* RAMbankPtr;
-  
+
   // dmd16 stuff
   UINT8 framedata[2][16][2][8]; // 2 PWM frames of 16 rows of 128 bits
   UINT32 row_latch, last_row_latch;
@@ -92,7 +92,7 @@ static READ_HANDLER(dmd32_io_r) {
   case 0:
     // Invalid operation: reading from address register is unsupported (see datasheet)
     // Strangely enough, all CRTC write sequences are followed by a read of CRTC register which the datasheet state as unsupported
-	 //LOG(("%8.5f DEDMD32 PC %04x: Invalid read at 0x%04x\n", timer_get_time(), activecpu_get_pc(), offset + 0x3000));
+    //LOG(("%8.5f DEDMD32 PC %04x: Invalid read at 0x%04x\n", timer_get_time(), activecpu_get_pc(), offset + 0x3000));
     break;
   case 1:
     return crtc6845_register_0_r(0);
@@ -150,11 +150,11 @@ static WRITE_HANDLER(dmd32_ctrl_w) {
     CA7      - MA8      => DMD row highest bit [always starts at 0, unimplemented in PinMame]
     RA0      - MA9      => used to toggle between PWM frame while rasterizing each row
     CA8..9   - MA10..11
-	ZA0      - MA12     => RAM bank (decoded by U16)
-	XA6..7   - MA13..14 => RAM bank (decoded by U16)
+    ZA0      - MA12     => RAM bank (decoded by U16)
+    XA6..7   - MA13..14 => RAM bank (decoded by U16)
  - RA0 is also wired to ROWCLOCK, therefore row is advanced once every 2 rasterized rows
  - The start address is usually either 0x2000 or 0x2100 (i.e. with CA13 set while it is not wire to RAM but to U2), with CURSOR always
-   being defined to 0x2000 / row 0, which led to guess that CURSOR signal is used to generate FIRQ (frame IRQ to CPU, trigerring
+   being defined to 0x2000 / row 0, which led to guess that CURSOR signal is used to generate FIRQ (frame IRQ to CPU, triggering
    some animation update). Results looks good but this would be nice to check this assumption on real hardware.
    */
 static void dmd32_vblank(int which) {
@@ -205,7 +205,7 @@ static void dmd32_exit(int boardNo) {
 
 PINMAME_VIDEO_UPDATE(dedmd32_update) {
   #ifdef PROC_SUPPORT
-	if (coreGlobals.p_rocEn) {
+    if (coreGlobals.p_rocEn) {
     /* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
 	    has 4 subframes for up to 16 colors. Experimentation has showed
 		 using P-ROC subframe 2 and 3 provides a pretty good color match. */
@@ -216,8 +216,8 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 	  procClearDMD();
 
 	  /* Fill the P-ROC subframes from the video RAM */
-     const UINT8* RAM = ((UINT8*)dmdlocals.RAMbankPtr) + ((crtc6845_start_address_r(0) & 0x0100) << 2);
-     procFillDMDSubFrame(procSubFrame0, RAM        , 0x200);
+	  const UINT8* RAM = ((UINT8*)dmdlocals.RAMbankPtr) + ((crtc6845_start_address_r(0) & 0x0100) << 2);
+	  procFillDMDSubFrame(procSubFrame0, RAM        , 0x200);
 	  procFillDMDSubFrame(procSubFrame1, RAM + 0x200, 0x200);
 
 	  /* Each byte is reversed in the video RAM relative to the bit order the P-ROC

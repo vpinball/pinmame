@@ -50,32 +50,6 @@ static struct {
   int direction, position, arms, legs;
 } locals;
 
-extern struct {
-  int    vblankCount;
-  int    initDone;
-  UINT32 solenoids;
-  int    lampRow, lampColumn;
-  int    diagnosticLed;
-  int    swCol;
-  int    flipsol, flipsolPulse;
-  int    sst0;			//SST0 bit from sound section
-  int    plin;			//Plasma In (not connected prior to LOTR Hardware)
-  UINT8 *ram8000;
-  int    auxdata;
-  /* Mini DMD stuff */
-  int    lastgiaux, miniidx, miniframe;
-  int    minidata[7], minidmd[4][3][8];
-  /* trace ram related */
-#if SUPPORT_TRACERAM
-  UINT8 *traceRam;
-#endif
-  UINT8  curBank;                   /* current bank select */
-  #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
-  int fastflipaddr;
-
-  UINT8 lampstate[80];
-} selocals;
-
 /*--------------------------
 / Game specific input ports
 /---------------------------*/
@@ -154,7 +128,7 @@ SE_INPUT_PORTS_END
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
       stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling
-	  };
+     };
 
 static sim_tState elvis_stateDef[] = {
   {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
@@ -479,12 +453,12 @@ CORE_CLONEDEFNV(elv100,elvis,"Elvis (1.00)",2004,"Stern",de_mSES3,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData elvisSimData = {
-  2,    				/* 2 game specific input ports */
+  2,					/* 2 game specific input ports */
   elvis_stateDef,		/* Definition of all states */
   elvis_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed */
   NULL, 				/* no init */
-  elvis_handleBallState,	/*Function to handle ball state changes */
+  elvis_handleBallState,/*Function to handle ball state changes */
   elvis_drawStatic,		/* Function to handle mechanical state changes */
   FALSE,				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
@@ -521,13 +495,13 @@ static WRITE_HANDLER(elvis_w) {
    
   if (offset == 3) {
     int pos = data & 0x0f;
-	 locals.legs = (data & 0x10) ? 1 : 0;
-	 locals.arms = (data & 0x20) ? 1 : 0;
+    locals.legs = (data & 0x10) ? 1 : 0;
+    locals.arms = (data & 0x20) ? 1 : 0;
     if (pos) {
       if (locals.lastPos != pos) {
         if ((locals.lastPos == 0x0c && pos == 0x06) || (locals.lastPos == 0x06 && pos == 0x03) || (locals.lastPos == 0x03 && pos == 0x09) || (locals.lastPos == 0x09 && pos == 0x0c)) {
           locals.position++;
-		  locals.direction = 1;
+          locals.direction = 1;
         } else if ((locals.lastPos == 0x06 && pos == 0x0c) || (locals.lastPos == 0x0c && pos == 0x09) || (locals.lastPos == 0x09 && pos == 0x03) || (locals.lastPos == 0x03 && pos == 0x06)) {
           locals.direction = -1;
           if (locals.position) locals.position--;

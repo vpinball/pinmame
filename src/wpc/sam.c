@@ -800,7 +800,7 @@ static WRITE32_HANDLER(sambank_w)
 				if (core_gameData->hw.gameSpecific1 & (SAM_GAME_IJ4 | SAM_GAME_CSI)) {
 					// FIXME IJ4 & CSI have some emulation timing issues that will make the emulation regularly miss and delay the solenoid writes by 40 to 80ms (masked IRQ ?) 
 					// leading to flickering flippers. This is hidden for the flippers by counting the number of writes and only consider the state after the 48 writes (which 
-					// means that flippers suffer from eratic latencies. Previous implementations did filter out writes and react based on write count too).
+					// means that flippers suffer from erratic latencies. Previous implementations did filter out writes and react based on write count too).
 					samlocals.flipSolHackStateL |= data;
 					samlocals.flipSolHackStateR |= data;
 					data32_t hackedData;
@@ -1078,7 +1078,7 @@ static WRITE32_HANDLER(sambank_w)
 						}
 					}
 					// There have been 3 implementations:
-					// - initial was to outpût the matrix state in the display segment outputs, which is maintained for backward compatibility
+					// - initial was to output the matrix state in the display segment outputs, which is maintained for backward compatibility
 					// - a second based on PWM physic outputs, which is more flexible but somewhat overkill for a simple LED matrix, and disabled
 					// - the third one, which uses the core DMD system to render the matrix as a mini DMD display, is now the default
 					const int blank = samlocals.dmdOutputDisabled || (~data & 0x80);
@@ -1156,14 +1156,14 @@ static WRITE32_HANDLER(sambank_w)
 					core_write_pwm_output(CORE_MODOUT_LAMP0 + 152 - 1, 8, samlocals.auxdata); // 151..158
 
 				// Board 520-6801-00: Magnet processor (Metallica)
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)) // BSTB (not sure if it is trigerred by edge or state since it uses a microcontroller)
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)) // BSTB (not sure if it is triggered by edge or state since it uses a microcontroller)
 				{
 					// Operation mode is strobed here from the 2 highest bits D6/D7 of Aux Data
 					// 00 => Off
 					// 10 => Grab: activate magnet for 1 second then switch it off. It grabs the ball from centimeters away
 					// 01 => Detect: detect ball and report it to switch 63
-					// 11 => Detect & Hold: detect ball, if detected report to switch 63 and also grab it
-					// See https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for a detailled description:
+					// 11 => Detect & Hold: detect ball, if detected, report to switch 63 and also grab it
+					// See https://missionpinball.org/mechs/magnets/stern_magnet_pcb/ for a detailed description:
 					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 6 - 1, 1, samlocals.auxdata >> 7);
 					core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL + 7 - 1, 1, samlocals.auxdata >> 6);
 				}
@@ -1349,15 +1349,15 @@ static MACHINE_INIT(sam) {
 		LOG(("Unable to create sam_snd.raw file\n"));
 	#endif
 
-	// Intialize DMDs
+	// Initialize DMDs
 	if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT) {
 		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
-      for (int i = 0; i < 14; i++) // 14 WPT mini DMDs (7x5 LED matrix)
+		for (int i = 0; i < 14; i++) // 14 WPT mini DMDs (7x5 LED matrix)
 			core_dmd_pwm_init(&core_gameData->lcdLayout[i + 1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0); // WPC_PH is 61Hz and the mini DMD are 50Hz, so it is ok
 	}
 	else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF) {
 		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
-      core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_1, 0); // WOF mini DMD (35x5 LED matrix), DE_128x32 is 224Hz and the mini DMD is 200Hz, so it is ok
+		core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_1, 0); // WOF mini DMD (35x5 LED matrix), DE_128x32 is 224Hz and the mini DMD is 200Hz, so it is ok
 	}
 	else {
 		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
@@ -1589,7 +1589,7 @@ void sam_init(void)
 	else
 		at91_block_timers = 0;
 
-	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.
+	// Fast flips support.   My process for finding these, is to load them in pinmame32 in VC debugger.
 	// Load the balls in trough (E+SDFG(maybe also HJ)), start the game.
 	// Use CheatEngine to find byte memory locations that are 1.
 	// Enter service menu.  Use cheatengine to find memory locations that are 0.
@@ -1774,7 +1774,7 @@ static SWITCH_UPDATE(sam) {
 //   But when updating the nodeboard firmware, the CPU only writes to the flash ROM after the first 0x1000 bytes.
 //   These 4Kb of memory contains static information which is likely flashed in factory and never changed.
 //   Therefore values for these are guessed by reverse engineering what the CPU expects when reading. These
-//   could also be obtained from real boards, or exploiting the 0xF5 GetChecksum command but noone has done
+//   could also be obtained from real boards, or exploiting the 0xF5 GetChecksum command but no-one has done
 //   that yet.
 //
 //   The child nodeboards use LPC11xx/LPC13xx controllers, for which there has been an attempt to reverse engineer
@@ -1795,7 +1795,7 @@ static SWITCH_UPDATE(sam) {
 //   Bridge->CPU: Data then Checksum
 //    . CPU and Bridge know the length of the response so the protocol is just the corresponding data with a (negative) checksum
 // 
-// Communication between bridge and child nodeboards is not emulated here since the high level emulation is done at the bridhe node.
+// Communication between bridge and child nodeboards is not emulated here since the high level emulation is done at the bridge node.
 
 #define SAM_NB_TYPE_520_5331_00           0 // Metallica Premium Monsters, Grinder Multi-Color LED driver
 #define SAM_NB_TYPE_520_6937_10           1 // TWD with a LPC1112HN33/101 (schematics in the TWD LE manual, using firmware included in the main CPU gamecode)
@@ -1810,7 +1810,7 @@ static SWITCH_UPDATE(sam) {
 #define SAM_NB_STATUS_RESET_WDG           0x0004 // Last reset cause: watchdog (or F1 command)
 #define SAM_NB_STATUS_RESET_BOD           0x0008 // Last reset cause: reset from BOD (brown-out detect: supply voltage went below minimum causing a reset)
 #define SAM_NB_STATUS_UART_OVERRUN        0x0010 // UART overrun error
-#define SAM_NB_STATUS_UART_FRAMING_ERR    0x0020 // UART framing eroor
+#define SAM_NB_STATUS_UART_FRAMING_ERR    0x0020 // UART framing error
 #define SAM_NB_STATUS_UART_BREAK_INT      0x0040 // UART break interrupt
 #define SAM_NB_STATUS_FAULT               0x0080 // Fault on board output (/FAULT signal)
 #define SAM_NB_STATUS_MSG_LENGTH_OVERFLOW 0x0100 // Message length overflow (message is too long)
@@ -2038,11 +2038,11 @@ static void sam_nodebus_msg_received()
 				// 48 outputs driving 16 RGB Leds. Intensity is expressed as 0..100 (so 101 levels)
 				// nblocals.rcvMsg[1] is likely a fade command but I have only witnessed 0x00 there
 				for (int i = 0; i < 48; i++)
-					coreGlobals.physicOutputState[nblocals.nodeboards[0].ledMap[i]].value = nblocals.rcvMsg[2 + i] / 100.f;
+					coreGlobals.physicOutputState[nblocals.nodeboards[0].ledMap[i]].value = (float)nblocals.rcvMsg[2 + i] / 100.f;
 				break;
 			case 0x90:
 				// GI Outputs, for backward compatibility we map them to lamps 130/132/134/136, intensity goes from 0..50 (51 levels)
-				coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 129 + ((cmd & 0x0F) * 2)].value = nblocals.rcvMsg[1] / 50.f;
+				coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + 129 + ((cmd & 0x0F) * 2)].value = (float)nblocals.rcvMsg[1] / 50.f;
 				break;
 			}
 		}
@@ -2080,7 +2080,7 @@ static void sam_nodebus_msg_received()
 				if ((nblocals.bridge == SAM_NB_STARTREK) || (nblocals.bridge == SAM_NB_MUSTANG) ) {
 					int ledCount = payload - 1;
 					for (int i = 0; i < ledCount; i++)
-						coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = nblocals.rcvMsg[3 + i] / 255.f;
+						coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = (float)nblocals.rcvMsg[3 + i] / 255.f;
 				}
 				else {
 					int ledCount = payload - 3;
@@ -2091,11 +2091,11 @@ static void sam_nodebus_msg_received()
 						assert((ledCount * 2) == (payload - 3));
 						for (int i = 0; i < ledCount; i++)
 							// nblocals.rcvMsg[4 + i * 2 + 0] is the fade mode per Led (not implemented)
-							coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = nblocals.rcvMsg[4 + i * 2 + 1] / 255.f;
+							coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = (float)nblocals.rcvMsg[4 + i * 2 + 1] / 255.f;
 					}
 					else { // Global fade mode
 						for (int i = 0; i < ledCount; i++)
-							coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = nblocals.rcvMsg[4 + i] / 255.f;
+							coreGlobals.physicOutputState[nodeboard->ledMap[startLedIndex + i]].value = (float)nblocals.rcvMsg[4 + i] / 255.f;
 					}
 				}
 			}
@@ -2311,7 +2311,7 @@ MACHINE_DRIVER_END
   time slots. The resulting frame rate is 1e6/(32x12x41.55) = 62.67Hz which 
   has been validated with real hardware measure. The flicker/fusion threshold 
   is supposed to be somewhere around 25-30Hz based on the fact that other 
-  hardwares like GTS3 and WPC have PWM pattern around these frequencies.
+  hardware like GTS3 and WPC feature PWM patterns around these frequencies.
   Therefore, to get the final luminance, we would need to perform integration 
   of at least the last 24 frames. As this leads to very little inter PWM frame
   interaction, we simply apply a LUT corresponding to the 1 / 2 / 4 / 5 pattern.
@@ -2338,8 +2338,8 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	return 0;
 }
 
-#define SAT_NYB(v) (UINT8)(15.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
-#define SAT_BYTE(v) (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v))
+#define SAT_NYB(v) (UINT8)(15.0f * ((v) < 0.0f ? 0.0f : (v) > 1.0f ? 1.0f : (v)))
+#define SAT_BYTE(v) (UINT8)(255.0f * ((v) < 0.0f ? 0.0f : (v) > 1.0f ? 1.0f : (v)))
 
 static struct core_dispLayout sam_dmd128x32[] = {
 	{0, 0, 32, 128, CORE_DMD/*| CORE_DMDNOAA*/, (genf*)samdmd_update},
@@ -2889,7 +2889,7 @@ CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0 Spanish)", 2007, "Stern", 
 
 // V6.00I missing, compiled by Keith for tournaments/IFPA:
 /*
-I released a version of software, “6.00I” (for IFPA, I don’t remember what tournament it was for) or some such,
+I released a version of software, "6.00I" (for IFPA, I don’t remember what tournament it was for) or some such,
 that basically added some competition mode stuff (derandomized wild card and big spin).
 Those are the ONLY changes from 5.00 which is the last public release I did while at Stern.
 6.00I was circulated a fair amount amongst tournament types, mostly those running tournaments.
@@ -2897,21 +2897,21 @@ Those are the ONLY changes from 5.00 which is the last public release I did whil
 
 CORE_CLONEDEF(wof, 602h, 500, "Wheel of Fortune (V6.02 Home Rom)", 2009, "Stern", sam1, 0) // unofficial version, but apparently compiled by Stern
 /*
-As someone stated, the main gameplay change that is noticeable is that there are “mode goals.”
+As someone stated, the main gameplay change that is noticeable is that there are "mode goals."
 The goal is simply to score x points before time runs out. If you get the goal, you won, great.
-The next mode, the goal would be higher. If you didn’t win, oh well, the next mode, the goal would be lower.
+The next mode, the goal would be higher. If you didn't win, oh well, the next mode, the goal would be lower.
 Also, you could replay the mode you failed, at 2x points.
 If you failed the same mode twice, you could play it a 3rd time for 3x points.
-If you failed 3 times, the game gave up. Oh, also for each mode you won, you got a “winnings x” for that ball’s bonus.
-IIRC there’s no logic for completing the wheel yet, but the reward was going to be something like 10M for each mode won on try #1,
+If you failed 3 times, the game gave up. Oh, also for each mode you won, you got a "winnings x" for that ball's bonus.
+IIRC there's no logic for completing the wheel yet, but the reward was going to be something like 10M for each mode won on try #1,
 5M for each on try #2, 2.5M for each on try #3, and 1M for failed modes.
 If by some unfathomable stroke of luck you completed every mode on the first try, you’d get a bonus to round up the total to 100M.
 */
 /*
-The mode stuff is basically there’s a common goal of points (starts at 5M).
+The mode stuff is basically there's a common goal of points (starts at 5M).
 If you finish a mode, the goal goes up, if you lose a mode, the goal goes down.
-If you don’t finish a mode, it stays in the rotation, and if you play it again it scores 2x, and if you fail and play again it’s 3x.
-If you don’t hit the goal after 3x, it stops trying. Winning a mode also gives you a winnings x for that ball.
+If you don't finish a mode, it stays in the rotation, and if you play it again it scores 2x, and if you fail and play again it's 3x.
+If you don't hit the goal after 3x, it stops trying. Winning a mode also gives you a winnings x for that ball.
 This was all meant to lead up to a payout for hitting the goal in every mode:
 10M/5M/2.5M/1M for finishing in 1 try / 2 tries / 3 tries / DNF.
 If you finished every goal on the first try (somehow), the bonus would get augmented to 100M.

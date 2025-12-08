@@ -98,7 +98,7 @@ static READ_HANDLER(rom2_r) {
 
 /* display (16 digits) */
 static WRITE_HANDLER(rom1_w) {
-  locals.segments[15 - offset].w = core_bcd2seg[data];
+  locals.segments[15 - offset].w = core_bcd2seg7[data];
   // These next lines make up for a flaw in the rom code:
   // when you first make a 10 pt target in the game, and a
   // 1000 pt target thereafter, the 100s digit in between
@@ -106,9 +106,9 @@ static WRITE_HANDLER(rom1_w) {
   // on the prototype by wiring the segments accordingly;
   // maybe they also rewrote some of the code to fix it later on?
   if (locals.segments[2].w && !locals.segments[3].w)
-    locals.segments[3].w = core_bcd2seg[0];
+    locals.segments[3].w = core_bcd2seg7[0];
   if (locals.segments[9].w && !locals.segments[10].w)
-    locals.segments[10].w = core_bcd2seg[0];
+    locals.segments[10].w = core_bcd2seg7[0];
 }
 
 /* lamps (up to 64 are possible) */
@@ -119,7 +119,7 @@ static WRITE_HANDLER(rom2_w) {
   locals.solenoids = (locals.solenoids & 0x7fff) | (((locals.lampMatrix[0] & 0x05) == 0x05) << 15);
   // Display the "0" at the single match units.
   if (locals.lampMatrix[5] & 0x01)
-    locals.segments[16].w = core_bcd2seg[0];
+    locals.segments[16].w = core_bcd2seg7[0];
 }
 
 /* solenoids 1-15 & test switch reading */

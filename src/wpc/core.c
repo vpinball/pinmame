@@ -130,7 +130,7 @@ const core_tGameData *core_gameData = NULL;  /* data about the running game */
 /*---------------------
 /  Global constants
 /----------------------*/
-const int core_bcd2seg7[16] = {
+const UINT16 core_bcd2seg7[16] = { // could be UINT8, but used as UINT16* in by35.c
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 #ifdef MAME_DEBUG
@@ -139,7 +139,7 @@ const int core_bcd2seg7[16] = {
 #endif /* MAME_DEBUG */
 };
 // including the 0x0a to 0x0e characters of a SN5446A type BCD-to-7-segment encoder
-const int core_bcd2seg7e[16] = {
+const UINT8 core_bcd2seg7e[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,
 /* A    B    C    D    E */
@@ -150,7 +150,7 @@ const int core_bcd2seg7e[16] = {
 #endif /* MAME_DEBUG */
 };
 // missing top line for 6 and bottom line for 9 numbers (e.g. Atari)
-const int core_bcd2seg7a[16] = {
+const UINT8 core_bcd2seg7a[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7c,0x07,0x7f,0x67
 #ifdef MAME_DEBUG
@@ -158,7 +158,7 @@ const int core_bcd2seg7a[16] = {
  ,0x77,0x7c,0x39,0x5e,0x79
 #endif /* MAME_DEBUG */
 };
-const int core_bcd2seg9[16] = {
+const UINT16 core_bcd2seg9[16] = {
 /* 0    1     2    3    4    5    6    7    8    9  */
   0x3f,0x300,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 #ifdef MAME_DEBUG
@@ -167,7 +167,7 @@ const int core_bcd2seg9[16] = {
 #endif /* MAME_DEBUG */
 };
 // missing top line for 6 and bottom line for 9 numbers, and including the 0x0a to 0x0e characters (e.g. Gottlieb Sys80/a)
-const int core_bcd2seg9a[16] = {
+const UINT16 core_bcd2seg9a[16] = {
 /* 0    1     2    3    4    5    6    7    8    9  */
   0x3f,0x300,0x5b,0x4f,0x66,0x6d,0x7c,0x07,0x7f,0x67,
 #ifdef MAME_DEBUG
@@ -2010,8 +2010,10 @@ int core_getDip(int dipBank) {
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bits, int type, UINT8 dimming[16]) {
   const tSegData *s = &locals.segData[type];
   UINT32 pixel[20] = {0}; // max 20 rows
-  UINT8 dim[20][15] = {{0}}; // max 20 rows, 15 cols
+  UINT8 dim[20][15]; // max 20 rows, 15 cols
   int sb, kk, ll;
+  if (dimming)
+    memset(&dim[0][0], 0, sizeof(dim));
   for (sb = 1; seg_bits; sb++, seg_bits >>= 1) { // loop over each segment
     if (seg_bits & 0x01) {
       #ifdef PROC_SUPPORT

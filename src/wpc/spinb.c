@@ -241,12 +241,12 @@ static void spinb_z80int(int data);
 /*----------------
 / Local variables
 /-----------------*/
-struct {
+static struct {
   int    vblankCount;
   UINT32 solenoids;
   UINT16 lampColumn;
   int    lampRow, swCol;
-  //int    diagnosticLed;
+  //UINT8  diagnosticLed;
   int    ssEn;
   int    L16isGameOn;
   int    mainIrq;

@@ -48,7 +48,7 @@ static WRITE_HANDLER(piab_w) {
 	int off;
 	locals.piab = data;
 	if (data & 0x80) {
-		coreGlobals.segments[data & 0x0f].w = core_bcd2seg[locals.piaa & 0x0f];
+		coreGlobals.segments[data & 0x0f].w = core_bcd2seg7[locals.piaa & 0x0f];
 		// seg 16: zero for match digit
 		coreGlobals.segments[16].w = coreGlobals.segments[6].w ? core_bcd2seg7[0] : 0;
 		// seg 17: always zero

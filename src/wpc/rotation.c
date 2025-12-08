@@ -133,8 +133,8 @@ static WRITE_HANDLER(sol_w) {
 }
 
 static WRITE_HANDLER(disp_w) {
-  locals.pseg[2 * offset].w = core_bcd2seg[data >> 4];
-  locals.pseg[2 * offset + 1].w = core_bcd2seg[data & 0x0f];
+  locals.pseg[2 * offset].w = core_bcd2seg7[data >> 4];
+  locals.pseg[2 * offset + 1].w = core_bcd2seg7[data & 0x0f];
   if (locals.tmpSwCol < 7) {
     int ii;
     for (ii = 0; ii < 6; ii++) {

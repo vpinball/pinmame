@@ -31,7 +31,7 @@ struct cfg_format
 	char def_string[8];
 	int (*read_input_port)(mame_file *, struct InputPort *);
 	int (*read_seq)(mame_file *, InputSeq *);
-	int coin_counters;
+	int coin_counters; //unused
 };
 
 struct _config_file

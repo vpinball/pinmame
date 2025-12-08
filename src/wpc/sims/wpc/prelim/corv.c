@@ -8,7 +8,7 @@
 
  Read PZ.c or FH.c if you like more help.
 
- Mech Handling by Destruk (destruk@vpforums.com) and Steve Ellenoff(sellenoff@hotmail.com)
+ Mech Handling by Destruk (destruk) and Steve Ellenoff(sellenoff@hotmail.com)
  Additional engine mech by Gaston (gaston@yomail.de) and WPCMame (wpcmame@hotmail.com)
  ******************************************************************************/
 
@@ -186,7 +186,7 @@ WPC_INPUT_PORTS_END
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
       stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet,stPitstopPopper
-	  };
+     };
 
 static sim_tState corv_stateDef[] = {
   {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
@@ -408,12 +408,12 @@ CORE_CLONEDEF(corv,f61,21,"Corvette (FreeWPC 0.61)",1994,"FreeWPC",wpc_mSecurity
 /-----------------------*/
 static sim_tSimData corvSimData = {
   2,    				/* 2 game specific input ports */
-  corv_stateDef,				/* Definition of all states */
-  corv_inportData,			/* Keyboard Entries */
+  corv_stateDef,		/* Definition of all states */
+  corv_inportData,		/* Keyboard Entries */
   { stTrough1, stTrough2, stTrough3, stTrough4, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  corv_handleBallState,			/*Function to handle ball state changes*/
-  corv_drawStatic,			/*Function to handle mechanical state changes*/
+  corv_handleBallState,	/*Function to handle ball state changes*/
+  corv_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };

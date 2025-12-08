@@ -302,15 +302,15 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 	} else if (!(GTS3locals.ax[4] & 1)) { // LEDs
 		if (GTS3locals.alphagen)
 		{
-			coreGlobals.segments[40 + (data >> 4)].w = core_bcd2seg[data & 0x0f];
+			coreGlobals.segments[40 + (data >> 4)].w = core_bcd2seg7[data & 0x0f];
 			for (int i = 0; i < 12; i++)
-				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (40 + i) * 16, i == (data >> 4) ? core_bcd2seg[data & 0x0f] : 0);
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (40 + i) * 16, i == (data >> 4) ? core_bcd2seg7[data & 0x0f] : 0);
 		}
 		else
 		{
-			coreGlobals.segments[data >> 4].w = core_bcd2seg[data & 0x0f];
+			coreGlobals.segments[data >> 4].w = core_bcd2seg7[data & 0x0f];
 			for (int i = 0; i < 12; i++)
-				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i * 16, i == (data >> 4) ? core_bcd2seg[data & 0x0f] : 0);
+				core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i * 16, i == (data >> 4) ? core_bcd2seg7[data & 0x0f] : 0);
 		}
 	}
 }

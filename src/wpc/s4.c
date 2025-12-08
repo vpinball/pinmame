@@ -41,7 +41,7 @@ static struct {
   UINT32 solsmooth[S4_SOLSMOOTH];
   core_tSeg segments;
   int    lampRow, lampColumn;
-  int    diagnosticLed;
+  UINT8  diagnosticLed;
   int    swCol;
   int    ssEn;
 } s4locals;
@@ -159,9 +159,9 @@ static WRITE_HANDLER(s4_swcol_w) {
 /*DISPLAY ALPHA  */
 /*****************/
 static WRITE_HANDLER(s4_alpha_w) {
-  int seg7 = core_bcd2seg[data >> 4];
+  UINT16 seg7 = core_bcd2seg7[data >> 4];
   if (seg7) s4locals.segments[   s4locals.alphapos].w = seg7;
-  seg7 = core_bcd2seg[data & 15];
+  seg7 = core_bcd2seg7[data & 15];
   if (seg7) s4locals.segments[20+s4locals.alphapos].w = seg7;
 }
 

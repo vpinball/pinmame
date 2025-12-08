@@ -282,7 +282,7 @@ ea_info_struct g_ea_info_table[13] =
 };
 
 
-const char* g_cc_table[16][2] =
+static const char* g_cc_table[16][2] =
 {
 	{ "t",  "T"}, /* 0000 */
 	{ "f",  "F"}, /* 0001 */
@@ -303,7 +303,7 @@ const char* g_cc_table[16][2] =
 };
 
 /* size to index translator (0 -> 0, 8 and 16 -> 1, 32 -> 2) */
-int g_size_select_table[33] =
+static const int g_size_select_table[33] =
 {
 	0,												/* unsized */
 	0, 0, 0, 0, 0, 0, 0, 1,							/*    8    */
@@ -312,7 +312,7 @@ int g_size_select_table[33] =
 };
 
 /* Extra cycles required for certain EA modes */
-int g_ea_cycle_table[13][NUM_CPUS][3] =
+static const int g_ea_cycle_table[13][NUM_CPUS][3] =
 {/*       000           010           020   */
 	{{ 0,  0,  0}, { 0,  0,  0}, { 0,  0,  0}}, /* EA_MODE_NONE */
 	{{ 0,  4,  8}, { 0,  4,  8}, { 0,  4,  4}}, /* EA_MODE_AI   */
@@ -330,7 +330,7 @@ int g_ea_cycle_table[13][NUM_CPUS][3] =
 };
 
 /* Extra cycles for JMP instruction (000, 010) */
-int g_jmp_cycle_table[13] =
+static const int g_jmp_cycle_table[13] =
 {
 	 0, /* EA_MODE_NONE */
 	 4, /* EA_MODE_AI   */
@@ -348,7 +348,7 @@ int g_jmp_cycle_table[13] =
 };
 
 /* Extra cycles for JSR instruction (000, 010) */
-int g_jsr_cycle_table[13] =
+static const int g_jsr_cycle_table[13] =
 {
 	 0, /* EA_MODE_NONE */
 	 4, /* EA_MODE_AI   */
@@ -366,7 +366,7 @@ int g_jsr_cycle_table[13] =
 };
 
 /* Extra cycles for LEA instruction (000, 010) */
-int g_lea_cycle_table[13] =
+static const int g_lea_cycle_table[13] =
 {
 	 0, /* EA_MODE_NONE */
 	 4, /* EA_MODE_AI   */
@@ -384,7 +384,7 @@ int g_lea_cycle_table[13] =
 };
 
 /* Extra cycles for PEA instruction (000, 010) */
-int g_pea_cycle_table[13] =
+static const int g_pea_cycle_table[13] =
 {
 	 0, /* EA_MODE_NONE */
 	 4, /* EA_MODE_AI   */
@@ -402,7 +402,7 @@ int g_pea_cycle_table[13] =
 };
 
 /* Extra cycles for MOVES instruction (010) */
-int g_moves_cycle_table[13][3] =
+static const int g_moves_cycle_table[13][3] =
 {
 	{ 0,  0,  0}, /* EA_MODE_NONE */
 	{ 0,  4,  6}, /* EA_MODE_AI   */
@@ -420,7 +420,7 @@ int g_moves_cycle_table[13][3] =
 };
 
 /* Extra cycles for CLR instruction (010) */
-int g_clr_cycle_table[13][3] =
+static const int g_clr_cycle_table[13][3] =
 {
 	{ 0,  0,  0}, /* EA_MODE_NONE */
 	{ 0,  4,  6}, /* EA_MODE_AI   */

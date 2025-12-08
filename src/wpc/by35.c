@@ -66,11 +66,11 @@ static struct {
   int a0, a1, b0, b1, /*ca10,*/ ca11, ca20, ca21, cb10, /*cb11,*/ cb20, cb21;
   //int swData;
   int bcd[7], lastbcd;
-  const int *bcd2seg;
+  const UINT16 *bcd2seg;
   int lampadr1, lampadr2;
   UINT32 solenoids;
   core_tSeg segments,pseg;
-  int diagnosticLed;
+  UINT8 diagnosticLed;
   int vblankCount;
   int hw;
   int irqstates[4];
@@ -559,17 +559,17 @@ static MACHINE_INIT(by35) {
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
     locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
-    locals.bcd2seg = core_bcd2seg;
+    locals.bcd2seg = core_bcd2seg7;
   }
   else if (core_gameData->gen & GEN_BY35) {
     locals.hw = BY35HW_DIP4;
     if ((core_gameData->hw.gameSpecific1 & BY35GD_NOSOUNDE) == 0)
       locals.hw |= BY35HW_SOUNDE;
-    locals.bcd2seg = core_bcd2seg;
+    locals.bcd2seg = core_bcd2seg7;
   }
   else if (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO)) {
     locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
-    locals.bcd2seg = core_bcd2seg;
+    locals.bcd2seg = core_bcd2seg7;
   }
   else if (core_gameData->gen & GEN_HNK) {
     locals.hw = BY35HW_REVSW|BY35HW_SCTRL|BY35HW_INVDISP4;
@@ -876,7 +876,7 @@ static MACHINE_INIT(sam) {
   pia_set_input_ca1(1, 1);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, sb_ctrl_cb);
   locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
-  locals.bcd2seg = core_bcd2seg;
+  locals.bcd2seg = core_bcd2seg7;
   install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);
   install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);
   install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);

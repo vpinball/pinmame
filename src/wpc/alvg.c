@@ -86,7 +86,7 @@ WRITE_HANDLER(alvg_sndCmd_w);
 /*----------------
 / Local variables
 /-----------------*/
-struct {
+static struct {
   int    vblankCount;
   UINT32 solenoids;
   UINT16 lampColumn, swColumn;

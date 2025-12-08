@@ -19,19 +19,19 @@
   You see Bally came up with this neat idea:
   Take the xero-crossing (which occurs 120 times/sec for a 60Hz AC wave, and
   generate two 180 degree phase shifted signals - each occuring 60 times/sec.
-  They then used this principle to generate two seperate phase controllers.
+  They then used this principle to generate two separate phase controllers.
   The first phase controller had phases A and B for the feature lamps, and the
   second had phases C and D for the solenoids/flashers.
-  The two phase controllers were totally independant of each other
+  The two phase controllers were totally independent of each other
   (tapped from different secondary windings).
   This way, Bally were able to wire two feature lamps or two solenoids to the
   same driver circuit and toggle them on different phases.
   For instance, the Extra ball lamp and the Multi-ball lamp could be wired to the
   same driver circuit. The EB lamp would be "on" for phase A and "off" for phase B,
-  the Multi-ball lamp would be "off" for phase A but "on" for phase B.
+  the Multi-ball lamp would be "off" for phase A, but "on" for phase B.
   The driver transistor was obviously on for both phases.
   Bally where able to double their lamps and coils/flashers by using the same
-  hardware without resorting to auxillary lamp or solenoid driver boards.
+  hardware without resorting to auxiliary lamp or solenoid driver boards.
   Simple...but brilliant.
 
   Display:
@@ -83,7 +83,7 @@
 #define BY6803_PIA0 0
 #define BY6803_PIA1 1
 
-#define BY6803_ZCFREQ      50*60 /* Zero cross builder frequency (60Hz, divide in 50 steps to implement 2% Schmitt trigger delay) */
+#define BY6803_ZCFREQ    (50*60) /* Zero cross builder frequency (60Hz, divide in 50 steps to implement 2% Schmitt trigger delay) */
 
 #define BY6803_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 #define BY6803_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
@@ -138,7 +138,7 @@ static void by6803_dispUpdate1(void) {
   // 7 highest PIA1_Ax is digit select
   if (locals.p0_ca2 == 0) {
     const int latchSelect = ((locals.p0_a & 0x0F) | ((locals.p1_a & 0x01) << 4)) ^ 0x1F;
-    UINT8 bcd = (UINT8) core_bcd2seg[locals.p0_a >> 4]; // 7 segments + comma => 8 bits
+    UINT8 bcd = (UINT8)core_bcd2seg7[locals.p0_a >> 4]; // 7 segments + comma => 8 bits
     if (bcd & 0x24) bcd |= 0x80; // Comma is on when segments 'c' or 'e' are
     for (int display = 0; display < 5; display++) {
       if (latchSelect & (0x01 << display))
@@ -167,7 +167,7 @@ static void by6803_dispUpdate1(void) {
 
 static void by6803_dispUpdate2(void) {
   // Recreate legacy ordering bug (see dispBy104 in by6803games.c), this should be: 13 - locals.dispDigitSelect;
-  const int colPos[2][16] = {
+  static const int colPos[2][16] = {
     {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, /* unuseds */ 0, 0},
     {14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 15, /* unuseds */ 0, 0},
   };
@@ -445,12 +445,12 @@ static WRITE_HANDLER(by6803_soundCmd) {
 #endif
 
 static void by6803_update_phaseAEdgeSense() {
-  int phaseAEdgseSense = locals.enablePhaseAEdgeSense && locals.phase_a;
-  if (~locals.prevPhaseAEdgeSense && phaseAEdgseSense)
+  int phaseAEdgeSense = locals.enablePhaseAEdgeSense && locals.phase_a;
+  if (~locals.prevPhaseAEdgeSense && phaseAEdgeSense)
     cpu_set_irq_line(0, M6800_TIN_LINE, ASSERT_LINE);
-  else if (locals.prevPhaseAEdgeSense && ~phaseAEdgseSense)
+  else if (locals.prevPhaseAEdgeSense && ~phaseAEdgeSense)
     cpu_set_irq_line(0, M6800_TIN_LINE, CLEAR_LINE);
-  locals.prevPhaseAEdgeSense = phaseAEdgseSense;
+  locals.prevPhaseAEdgeSense = phaseAEdgeSense;
 }
 
 // Zero cross
@@ -460,7 +460,7 @@ static void by6803_update_phaseAEdgeSense() {
 // In turn, these 2 interrupts allow to setup lamp SCR just after zero cross (and they will continue conducting until next zero cross)
 // 
 // The signals are built from the raw 20.5V AC sinewave, passed through Schmitt Triggers (14584 U12) with threshold around 2.5V.
-// This correspond to a delay of roughly 2% of the period, so this timer is called 50 x 60Hz, and we rebuild Phase A and Phase B from it
+// This corresponds to a delay of roughly 2% of the period, so this timer is called 50 x 60Hz, and we rebuild Phase A and Phase B from it
 static void by6803_zeroCross(int data) {
   // printf("%8.5f --- ZeroCross IRQ ---\n", timer_get_time());
   locals.zcCount++;
@@ -486,7 +486,7 @@ static void by6803_zeroCross(int data) {
   // Phase A drives M6803 timer interrupt if enabled through inverted P21
   by6803_update_phaseAEdgeSense();
 
-  // Phase B drives PIA0:CB1 interrupt (in turn trigerring M6803 IRQ interrupt)
+  // Phase B drives PIA0:CB1 interrupt (in turn triggering M6803 IRQ interrupt)
   pia_set_input_cb1(BY6803_PIA0, locals.phase_b);
 
   // Copy local data to interface at 60Hz (used to be a fake VBlank, moved here to be in sync with gamecode)
@@ -585,7 +585,7 @@ static WRITE_HANDLER(by6803_soundLED) {
 // 1 (out) State of the timer compare register, enable phase A input on P20. This bit is managed by Mame 6803 CPU core (TCSR_OLVL)
 // 2 (out) The diagnostic led output
 // 3 (in)  JW7 state. JW7 should not be set, which breaks the gnd connection, so we set the line high.
-// 4 (out) Sound inteerupt: it is hold high unless we are in sound interrupt mode
+// 4 (out) Sound interrupt: it is hold high unless we are in sound interrupt mode
 static READ_HANDLER(port2_r) {
   UINT8 data = 0x00;
   data |= (locals.enablePhaseAEdgeSense && locals.phase_a) ? 0x01 : 0x00;
