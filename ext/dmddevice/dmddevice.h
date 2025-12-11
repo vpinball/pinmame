@@ -80,10 +80,7 @@ DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer);
 //!! DMDDEV void Render_Lum_And_Raw(UINT16 width, UINT16 height, UINT8 *lumBuffer, UINT8 *identifyBuffer, UINT8 identifyBitLength);
 
 // ----- Alphanumeric segment data
-// Render_PM_Alphanumeric_Dim_Frame was added in later revision of this interface and superseeds the deprecated Render_PM_Alphanumeric_Frame.
-// The host will check if the newer API is implemented. If so, it will only call the new API.
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
-//!! DMDDEV void Render_PM_Alphanumeric_Dim_Frame(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2);
 
 // ----- Console input.output
 // This is implemented for SAM hardware. Input pointer was added in latest revision of this interface

@@ -41,7 +41,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |[Alvin G. 2](#alvin-g)                                       | 298.6 / **74.6**       | 4 row       |                                                                |
 |[Sega/Stern Whitestar](#data-east-128x32-segastern-whitestar)| 233.3 / **77.8**       | 2u row      |                                                                |
 |Inder                                                        | **134.8** / ?          | ?           |Review in progress                                              |
-|Sleic                                                        | ?                      | ?           |Review in progress                                              |
+|Sleic                                                        | 244.1                  | ?           |Review in progress                                              |
 |Spinball                                                     | **132.9**              | ?           |Review in progress                                              |
 |[Capcom](#capcom)                                            | **508.7** / 127.2-42.4 | 3/6/9u frames |                                                              |
 |[Stern SAM](#stern-sam)                                      | 751.2 / **62.6**       | 4u row      |Needs overall emulation timing fixes, interframe emulation, shade validation, back/front mix validation|

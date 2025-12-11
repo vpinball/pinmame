@@ -244,46 +244,6 @@ int GetGameNumFromString(const char* const name)
 }
 
 /******************************************************
- * GetDisplayCount
- ******************************************************/
-
-void GetDisplayCount(const struct core_dispLayout* p_layout, int* const p_index, bool* p_hasDMDVideo)
-{
-	for (; p_layout->length; p_layout += 1) {
-		switch (p_layout->type) {
-			case CORE_IMPORT:
-				GetDisplayCount(p_layout->lptr, p_index, p_hasDMDVideo);
-				break;
-			case CORE_DMD:
-			case CORE_DMD | CORE_DMDNOAA:
-			case CORE_DMD | CORE_NODISP:
-			case CORE_VIDEO:
-				*p_hasDMDVideo = true;
-			default:
-				(*p_index)++;
-				break;
-		}
-	}
-}
-
-/******************************************************
- * GetDisplayCount
- ******************************************************/
-
-int GetDisplayCount()
-{
-	int index = 0;
-	bool hasDMDOrVideo = false;
-
-	GetDisplayCount(core_gameData->lcdLayout, &index, &hasDMDOrVideo);
-
-	if (!hasDMDOrVideo)
-		index += 1;
-
-	return index;
-}
-
-/******************************************************
  * UpdatePinmameDisplayBitmap
  ******************************************************/
 
@@ -472,10 +432,14 @@ extern "C" int libpinmame_time_to_quit(void)
 
 extern "C" int libpinmame_needs_update_display() { return _p_Config->cb_OnDisplayUpdated != nullptr; }
 
-extern "C" void libpinmame_update_display(const int index, void* p_data)
+extern "C" void libpinmame_update_display(int index, void* p_data)
 {
 	if (!_p_Config->cb_OnDisplayUpdated)
 		return;
+
+   // If index is -1, update the custom DMD generated from alphanumeric segment displays
+	if (index == -1)
+		index = _displays.size() - 1;
 
 	PinmameDisplay* pDisplay = _displays[index];
 	if (pDisplay->layout.type == CORE_VIDEO) {
@@ -535,11 +499,9 @@ extern "C" void OnStateChange(const int state)
 
 	if (state == 1)
 	{
+		int displayCount = 0;
 		bool hasDMDOrVideo = false;
-		const int displayCount = GetDisplayCount();
-		const struct core_dispLayout* layout = core_gameData->lcdLayout;
-		const struct core_dispLayout* parent_layout = NULL;
-		for (; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+      for (const struct core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
 			if (layout->length == 0) { // Recursive import
 				layout = parent_layout;
 				parent_layout = NULL;
@@ -547,7 +509,26 @@ extern "C" void OnStateChange(const int state)
 			if (layout->type == CORE_IMPORT) {
 				assert(parent_layout == NULL); // IMPORT of IMPORT is not currently supported as it is not used by any driver so far
 				parent_layout = layout + 1;
-				layout = layout->lptr - 1;
+				layout = layout->importedLayout - 1;
+				continue;
+			}
+			hasDMDOrVideo |= (layout->type == CORE_VIDEO) || ((layout->type & CORE_DMD) == CORE_DMD);
+         if (displayCount <= layout->index)
+            displayCount = layout->index + 1;
+      }
+      if (hasDMDOrVideo)
+         displayCount++;
+      _displays.resize(displayCount);
+      
+      for (const struct core_dispLayout* layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+			if (layout->length == 0) { // Recursive import
+				layout = parent_layout;
+				parent_layout = NULL;
+			}
+			if (layout->type == CORE_IMPORT) {
+				assert(parent_layout == NULL); // IMPORT of IMPORT is not currently supported as it is not used by any driver so far
+				parent_layout = layout + 1;
+				layout = layout->importedLayout - 1;
 				continue;
 			}
 
@@ -561,7 +542,6 @@ extern "C" void OnStateChange(const int state)
 				pDisplay->layout.height = layout->start;
 				pDisplay->layout.depth = 24;
 				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height * 3;
-				hasDMDOrVideo = true;
 			}
 			else if ((layout->type & CORE_DMD) == CORE_DMD) {
 				pDisplay->layout.width = layout->length;
@@ -569,7 +549,6 @@ extern "C" void OnStateChange(const int state)
 				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3)) != 0;
 				pDisplay->layout.depth = shade_16_enabled ? 4 : 2;
 				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height;
-				hasDMDOrVideo = true;
 			}
 			else {
 				pDisplay->layout.length = layout->length;
@@ -578,10 +557,10 @@ extern "C" void OnStateChange(const int state)
 			pDisplay->pData = malloc(pDisplay->size);
 			memset(pDisplay->pData, 0, pDisplay->size);
 
-			_displays.push_back(pDisplay);
+			_displays[layout->index] = pDisplay;
 
 			if (_p_Config->cb_OnDisplayAvailable)
-				(*(_p_Config->cb_OnDisplayAvailable))((int)(_displays.size() - 1), displayCount, &pDisplay->layout, _p_userData);
+				(*(_p_Config->cb_OnDisplayAvailable))(layout->index, displayCount, &pDisplay->layout, _p_userData);
 		}
 		// Additional DMD generated from segment data
 		if (!hasDMDOrVideo)
@@ -597,9 +576,9 @@ extern "C" void OnStateChange(const int state)
 			pDisplay->size = pDisplay->layout.width * pDisplay->layout.height;
 			pDisplay->pData = malloc(pDisplay->size);
 			memset(pDisplay->pData, 0, pDisplay->size);
-			_displays.push_back(pDisplay);
+			_displays[displayCount - 1] = pDisplay;
 			if (_p_Config->cb_OnDisplayAvailable)
-				(*(_p_Config->cb_OnDisplayAvailable))((int)(_displays.size() - 1), displayCount, &pDisplay->layout, _p_userData);
+				(*(_p_Config->cb_OnDisplayAvailable))(displayCount - 1, displayCount, &pDisplay->layout, _p_userData);
 		}
 	}
 }

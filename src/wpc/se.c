@@ -1049,7 +1049,7 @@ static WRITE_HANDLER(giaux_w) {
    selocals.lastgiaux = data;
 }
 
-// Curstom video renderer for the 3-Color MINI DMD Type 4 (Simpsons) (2 color R/G Led matrix 14x10)
+// Custom video renderer for the 3-Color MINI DMD Type 4 (Simpsons) (2 color R/G Led matrix 14x10)
 PINMAME_VIDEO_UPDATE(seminidmd_update) {
    if (pmoptions.dmd_only)
       return 0;

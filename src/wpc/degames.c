@@ -108,7 +108,7 @@ static core_tLCDLayout de_128x16DMD[] = { /* 128x16 DMD OUTPUT */
 };
 
 static core_tLCDLayout de_128x32DMD[] = { /* 128x32 DMD OUTPUT */
-  {0,0,32,128,CORE_DMD,(genf *)dedmd32_update,NULL}, {0}
+  {0,0,32,128,CORE_DMD,NULL,NULL}, {0}
 };
 
 static core_tLCDLayout de_192x64DMD[] = { /* 192x64 DMD OUTPUT */

@@ -5,13 +5,8 @@
 #include "se.h"
 #include "vpintf.h"
 
-/* NO OUTPUT */
-static PINMAME_VIDEO_UPDATE(led_update) {
-  return 1;
-}
-
 static core_tLCDLayout se_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL}, {0}
+  {0,0, 32,128, CORE_DMD, NULL, NULL}, {0}
 };
 
 #define INITGAME(name, gen, disp, hw) \
@@ -29,8 +24,8 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 / Apollo 13
 /-------------------------------------------------------------------*/
 static core_tLCDLayout se_apollo[] = {
-  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL},
-  {7,0,  0,  1, CORE_SEG7 | CORE_NODISP, (genf *)led_update, NULL},
+  {0,0, 32,128, CORE_DMD, NULL, NULL},
+  {7,0,  0,  1, CORE_SEG7 | CORE_NODISP, NULL, NULL},
   {0}
 };
 INITGAME(apollo13,GEN_WS,se_apollo, SE_BOARDID_520_5130_06)

@@ -9,7 +9,7 @@
 
 /* Dot-Matrix display */
 static core_tLCDLayout spinb_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)SPINBdmd_update,NULL}, {0}
+  {0,0,32,128,CORE_DMD,NULL,NULL}, {0}
 };
 
 // DMD frames per picture

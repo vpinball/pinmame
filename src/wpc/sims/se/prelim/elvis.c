@@ -468,7 +468,7 @@ static sim_tSimData elvisSimData = {
 / Game Data Information
 /----------------------*/
 static core_tLCDLayout dispElvis[] = {
-  { 0, 0,32,128,CORE_DMD, (genf *)dedmd32_update, NULL}, {0}
+  { 0, 0,32,128,CORE_DMD, NULL, NULL}, {0}
 };
 static core_tGameData elvisGameData = {
   GEN_WS, dispElvis,
