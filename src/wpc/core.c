@@ -1084,6 +1084,17 @@ core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UI
 //
 
 static void core_dmd_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const core_tLCDLayout* layout);
+#if defined(VPINMAME)
+// VPinMAME function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
+// Note that this part of the header is not used externally of VPinMAME (move it to something like core_dmdevice.h/core_dmddevice.c ?)
+extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
+extern void dmddeviceRenderDMDFrame(const int width, const int height, float* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
+extern void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2);
+extern void dmddeviceFwdConsoleData(UINT8 data);
+extern void dmddeviceDeInit(void);
+
+void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame);
+#endif
 
 static void updateDisplay(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const core_tLCDLayout* layout_array)
 {
@@ -3584,14 +3595,6 @@ static void core_dmd_send_vpm(const int width, const int height, const float* co
 
 // Send main DMD to dmddevice plugins
 #ifdef VPINMAME
-// VPinMAME function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
-// Note that this part of the header is not used externally of VPinMAME (move it to something like core_dmdevice.h/core_dmddevice.c ?)
-extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
-extern void dmddeviceRenderDMDFrame(const int width, const int height, float* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
-extern void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2);
-extern void dmddeviceFwdConsoleData(UINT8 data);
-extern void dmddeviceDeInit(void);
-
 void core_dmd_send_dmddevice(const int width, const int height, const float* const dmdDotLum, const UINT8* const dmdDotRaw, const int isDMD2) {
    if (g_fShowPinDMD) {
       const int isStrikesNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
