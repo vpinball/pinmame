@@ -302,7 +302,6 @@ int main(int, char**)
 	PinmameSetHandleMechanics(0);
 
 	PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
-	PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
 
 	PinmameGetGames(&Game, NULL);
 	PinmameGetGame("fourx4", &Game, NULL);

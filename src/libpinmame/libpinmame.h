@@ -22,6 +22,12 @@
 #define PINMAME_MAX_MECHSW 20
 #define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
+#define UINT32 uint32_t
+#define UINT8  uint8_t
+
+#include "plugins/MsgPlugin.h"
+
+
 typedef enum {
 	PINMAME_LOG_LEVEL_DEBUG = 0,
 	PINMAME_LOG_LEVEL_INFO = 1,
@@ -50,11 +56,6 @@ typedef enum {
 	PINMAME_DMD_MODE_BRIGHTNESS = 0,
 	PINMAME_DMD_MODE_RAW = 1
 } PINMAME_DMD_MODE;
-
-typedef enum {
-	PINMAME_SOUND_MODE_DEFAULT = 0,
-	PINMAME_SOUND_MODE_ALTSOUND = 1
-} PINMAME_SOUND_MODE;
 
 typedef enum {
 	PINMAME_AUDIO_FORMAT_INT16 = 0,
@@ -443,8 +444,6 @@ PINMAMEAPI int PinmameGetHandleMechanics();
 PINMAMEAPI void PinmameSetHandleMechanics(const int handleMechanics);
 PINMAMEAPI PINMAME_DMD_MODE PinmameGetDmdMode();
 PINMAMEAPI void PinmameSetDmdMode(const PINMAME_DMD_MODE dmdMode);
-PINMAMEAPI PINMAME_SOUND_MODE PinmameGetSoundMode();
-PINMAMEAPI void PinmameSetSoundMode(const PINMAME_SOUND_MODE soundMode);
 PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name);
 PINMAMEAPI int PinmameIsRunning();
 PINMAMEAPI PINMAME_STATUS PinmamePause(const int pause);
@@ -482,3 +481,6 @@ PINMAMEAPI int PinmameGetMaxNVRAM();
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);
+
+// If defined, libPinMame will implement the core controller messages for display, input & output state queries
+PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgPluginAPI, unsigned int endpointId);

@@ -27,11 +27,10 @@ extern int autoframeskip;
 extern int allow_sleep;
 
 int g_fHandleKeyboard = 0;
-int g_fHandleMechanics = 0;
+int g_fHandleMechanics = 0xFF;
 int g_fDumpFrames = 0;
 int g_fPause = 0;
 PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE_BRIGHTNESS;
-PINMAME_SOUND_MODE g_fSoundMode = PINMAME_SOUND_MODE_DEFAULT;
 
 char g_szGameName[256] = {}; //!! not set yet
 }
@@ -169,6 +168,77 @@ static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "MENU", PINMAME_KEYCODE_MENU, KEYCODE_MENU }
 };
 
+// Controller plugin message support
+
+#include "plugins/ControllerPlugin.h"
+
+typedef enum DeviceMappingType {
+   LPM_DM_CORE_SOL1,         // srcId = bit mask against coreGlobals.nSolenoids
+   LPM_DM_CORE_SOL2,         // srcId = bit mask against coreGlobals.nSolenoids2
+   LPM_DM_CORE_CUST_SOL,     // srcId = index to use in call to core_gameData->hw.getSol(srcId), core_gameData->hw.getSol may not be null is used
+   LPM_DM_CORE_GI,           // srcId = GI index (note that this is 0 based)
+   LPM_DM_CORE_LAMP,         // srcId = lamp index (note that this is 0 based)
+   LPM_DM_CORE_MECH,         // srcId = mech index (note that this is 0 based)
+   LPM_DM_CUSTOM_MECH_POS,   // srcId = mech index (note that user defined mech start at MECH_MAXMECH/2 = 5)
+   LPM_DM_CUSTOM_MECH_SPEED, // srcId = mech index (note that user defined mech start at MECH_MAXMECH/2 = 5)
+   LPM_DM_PHYSOUT,           // srcId = physic output index (ee CORE_MODOUT_SOL0, CORE_MODOUT_GI0,...)
+   LPM_DM_PHYSOUT_HOLD,      // srcId = index of flipper hold solenoid, which must be followed by the power solenoid
+} DeviceMappingType;
+
+typedef struct DeviceMapping
+{
+   DeviceMappingType type;
+   int srcId;  
+} DeviceMapping;
+
+static struct
+{
+   MsgPluginAPI* msgApi;
+   unsigned int endpointId;
+   bool registered;
+
+   unsigned int onGameStartId, onGameEndId;
+
+   unsigned int onInputSrcChangedId, getInputSrcId;
+   InputSrcId inputDef;
+
+   unsigned int onDevSrcChangedId, getDevSrcId;
+   DevSrcId deviceDef;
+   DeviceMapping* deviceMap;
+
+   int nSegDisplays; // Number of block displays
+   struct
+   {
+      SegSrcId srcId;
+      int sortedSegPos; // Position of first element in sortedSegLayout
+      unsigned int segFrameId;
+   } segDisplays[16];
+   int nSortedSegLayout;
+   struct {
+      const core_dispLayout* srcLayout;
+      int srcType;                        // source CORE_SEGxx after performing conversions
+      int displayIndex;                   // Index of this display
+      int nElements;                      // Number of elements forming this display
+      int elementIndex;                   // Index of this element inside display
+      int statePos;                       // Position of state
+      SegElementType segType;
+   } sortedSegLayout[CORE_SEGCOUNT]; // Sorted individual segment element
+   unsigned int onSegSrcChangedId, getSegSrcId;
+   float segLuminances[CORE_SEGCOUNT * 16];
+   float segPrevLuminances[CORE_SEGCOUNT * 16];
+
+   int nDisplays = 0;
+   struct
+   {
+      DisplaySrcId srcId;
+      const core_tLCDLayout* layout;
+   } displays[8];
+   unsigned int onDisplaySrcChangedId, getDisplaySrcId;
+
+   unsigned int onSoundCommandId;
+} msgLocals = { 0 };
+
+
 /******************************************************
  * ComposePath
  ******************************************************/
@@ -299,7 +369,7 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 		}
 	}
 	else {
-		for(int j = 0; j < pDisplay->layout.height; j++) {
+      for(int j = 0; j < pDisplay->layout.height; j++) {
 			const UINT32* __restrict src = (UINT32*)p_bitmap->line[j];
 			for(int i=0; i < pDisplay->layout.width; i++) {
 				UINT8 r,g,b;
@@ -381,7 +451,7 @@ extern "C" int osd_start_audio_stream(const int stereo)
 
 extern "C" int osd_update_audio_stream(INT16* p_buffer)
 {
-	if(!_p_Config->cb_OnAudioUpdated || g_fSoundMode != PINMAME_SOUND_MODE_DEFAULT)
+	if(!_p_Config->cb_OnAudioUpdated)
 		return 0;
 
 	const int samplesThisFrame = mixer_samples_this_frame();
@@ -483,12 +553,26 @@ extern "C" void libpinmame_update_display(const struct core_dispLayout* layout, 
  * libpinmame_snd_cmd_log
  ******************************************************/
 
+static void OnSoundCommand(void* userData)
+{
+	CtlOnSoundCommandMsg* msg = static_cast<CtlOnSoundCommandMsg*>(userData);
+	if (msgLocals.registered)
+		msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onSoundCommandId, msg);
+	delete msg;
+}
+
 extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd)
 {
-	if (!_p_Config->cb_OnSoundCommand)
-		return;
+	if (_p_Config->cb_OnSoundCommand)
+		(*(_p_Config->cb_OnSoundCommand))(boardNo, cmd, _p_userData);
 
-	(*(_p_Config->cb_OnSoundCommand))(boardNo, cmd, _p_userData);
+	if (msgLocals.msgApi != NULL && msgLocals.registered)
+	{
+		CtlOnSoundCommandMsg* msg = new CtlOnSoundCommandMsg();
+		msg->boardNo = static_cast<unsigned int>(boardNo);
+		msg->cmd = static_cast<unsigned int>(cmd);
+		msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, OnSoundCommand, msg);
+	}
 }
 
 /******************************************************
@@ -506,11 +590,25 @@ extern "C" void libpinmame_forward_console_data(void* p_data, int size)
 /******************************************************
  * OnStateChange
  ******************************************************/
-
+static void OnGameStart(void*);
+static void OnGameEnd(void*);
 extern "C" void OnStateChange(const int state)
 {
-	_isRunning = state;
+   if (_isRunning == state)
+      return;
 
+   _isRunning = state;
+
+   if (msgLocals.msgApi != NULL)
+   {
+      switch (state)
+      {
+      case 0: msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, OnGameEnd, nullptr); break;
+      case 1: msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, OnGameStart, nullptr); break;
+      case 2: break; // Starting, just wait to be started, nothing to do
+      case 3: break; // Stopping, it is invalid to call PinMAME emulation state but we are still registered
+      }
+   }
 	if (_p_Config->cb_OnStateUpdated)
 		(*(_p_Config->cb_OnStateUpdated))(state, _p_userData);
 
@@ -906,24 +1004,6 @@ PINMAMEAPI PINMAME_DMD_MODE PinmameGetDmdMode()
 }
 
 /******************************************************
- * PinmameGetSoundMode
- ******************************************************/
-
-PINMAMEAPI PINMAME_SOUND_MODE PinmameGetSoundMode()
-{
-	return g_fSoundMode;
-}
-
-/******************************************************
- * PinmameSetSoundMode
- ******************************************************/
-
-PINMAMEAPI void PinmameSetSoundMode(const PINMAME_SOUND_MODE soundMode)
-{
-	g_fSoundMode = soundMode;
-}
-
-/******************************************************
  * PinmameRun
  ******************************************************/
 
@@ -939,6 +1019,8 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 
 	if (gameNum < 0)
 		return PINMAME_STATUS_GAME_NOT_FOUND;
+
+	OnStateChange(2); // Starting state (in between stopped and started)
 
 	vp_init();
 
@@ -1474,4 +1556,943 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
 PINMAMEAPI void PinmameSetUserData(void* const p_userData)
 {
 	_p_userData = (void*)p_userData;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PinmameSetMsgAPI and Core MsgAPI implementation
+//
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Controller inputs
+
+static void OnGetInputSrc(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   GetInputSrcMsg* msg = (GetInputSrcMsg*)msgData;
+   if (msgLocals.inputDef.nInputs > 0)
+   {
+      if (msg->count < msg->maxEntryCount)
+         memcpy(&msg->entries[msg->count], &msgLocals.inputDef, sizeof(InputSrcId));
+      msg->count++;
+   }
+}
+
+int GetInputState(const unsigned int index)
+{
+   if (index >= msgLocals.inputDef.nInputs || _isRunning != 1)
+      return 0;
+
+   switch (msgLocals.inputDef.inputDefs[index].groupId)
+   {
+   case 0x0001:
+      return core_getSw(msgLocals.inputDef.inputDefs[index].deviceId);
+   
+   case 0x0002:
+   {
+      const UINT8 bank = vp_getDIP(msgLocals.inputDef.inputDefs[index].deviceId / 8);
+      const UINT8 mask = 1 << (msgLocals.inputDef.inputDefs[index].deviceId & 7);
+      return (bank & mask) != 0;
+   }
+   
+   default:
+      return 0;
+   }
+}
+
+void SetInputState(const unsigned int index, const int isSet)
+{
+   if (index >= msgLocals.inputDef.nInputs || _isRunning != 1)
+      return;
+
+   switch (msgLocals.inputDef.inputDefs[index].groupId)
+   {
+   case 0x0001:
+      core_setSw(msgLocals.inputDef.inputDefs[index].deviceId, isSet);
+      break;
+   
+   case 0x0002:
+   {
+      const UINT8 bank = vp_getDIP(msgLocals.inputDef.inputDefs[index].deviceId / 8);
+      const UINT8 mask = 1 << (msgLocals.inputDef.inputDefs[index].deviceId & 7);
+      if (isSet)
+         vp_setDIP(bank, vp_getDIP(bank) | mask);
+      else
+         vp_setDIP(bank, vp_getDIP(bank) & ~mask);
+      break;
+   }
+   
+   default:
+      break;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Device state
+
+static void OnGetDevSrc(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   GetDevSrcMsg* msg = (GetDevSrcMsg*)msgData;
+   if (msgLocals.deviceDef.nDevices > 0)
+   {
+      if (msg->count < msg->maxEntryCount)
+         memcpy(&msg->entries[msg->count], &msgLocals.deviceDef, sizeof(DevSrcId));
+      msg->count++;
+   }
+}
+
+INLINE UINT8 saturatedByte(float v) { return (UINT8)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
+
+static uint8_t GetDeviceByteState(const unsigned int index)
+{
+   if (index >= msgLocals.deviceDef.nDevices || _isRunning != 1)
+      return 0;
+
+   switch (msgLocals.deviceMap[index].type)
+   {
+   case LPM_DM_CORE_SOL1:
+      return (coreGlobals.solenoids & msgLocals.deviceMap[index].srcId) ? 255: 0;
+
+   case LPM_DM_CORE_SOL2:
+      return (coreGlobals.solenoids2 & msgLocals.deviceMap[index].srcId) ? 255 : 0;
+      
+   case LPM_DM_CORE_CUST_SOL:
+      // TODO core_gameData->hw.getSol is supposed to return 0..255, but this would need to be checked on each driver...
+      return core_gameData->hw.getSol(msgLocals.deviceMap[index].srcId);
+      
+   case LPM_DM_CORE_GI:
+      if (core_gameData->gen & GEN_ALLWPC) // WPC GI level is 0..8
+         return (coreGlobals.gi[msgLocals.deviceMap[index].srcId] * 255) / 8;
+      else // Whitestar and SAM GI levels are either 0 or 9
+         return coreGlobals.gi[msgLocals.deviceMap[index].srcId] == 0 ? 0 : 255;
+      
+   case LPM_DM_CORE_LAMP:
+      return ((coreGlobals.lampMatrix[msgLocals.deviceMap[index].srcId / 8] >> (msgLocals.deviceMap[index].srcId % 8)) & 0x01) ? 255 : 0;
+  
+   case LPM_DM_PHYSOUT:
+      core_update_pwm_outputs(msgLocals.deviceMap[index].srcId, 1);
+      return saturatedByte(coreGlobals.physicOutputState[msgLocals.deviceMap[index].srcId].value);
+      
+   case LPM_DM_CORE_MECH:
+      return core_gameData->hw.getMech ? core_gameData->hw.getMech(msgLocals.deviceMap[index].srcId) : 0;
+
+   case LPM_DM_CUSTOM_MECH_POS:
+      return mech_getPos(msgLocals.deviceMap[index].srcId);
+
+   case LPM_DM_CUSTOM_MECH_SPEED:
+      return mech_getSpeed(msgLocals.deviceMap[index].srcId);
+
+   default:
+      return 0;
+   }
+}
+
+static float GetDeviceFloatState(const unsigned int index)
+{
+   if (index >= msgLocals.deviceDef.nDevices || _isRunning != 1)
+      return 0.f;
+
+   switch (msgLocals.deviceMap[index].type)
+   {
+   case LPM_DM_CORE_SOL1:
+      return (coreGlobals.solenoids & msgLocals.deviceMap[index].srcId) ? 1.f : 0.f;
+
+   case LPM_DM_CORE_SOL2:
+      return (coreGlobals.solenoids2 & msgLocals.deviceMap[index].srcId) ? 1.f : 0.f;
+      
+   case LPM_DM_CORE_CUST_SOL:
+      // TODO core_gameData->hw.getSol is supposed to return 0..255, but this would need to be checked on each driver...
+      return ((float)core_gameData->hw.getSol(msgLocals.deviceMap[index].srcId)) / 255.f;
+      
+   case LPM_DM_CORE_GI:
+      if (core_gameData->gen & GEN_ALLWPC) // WPC GI level is 0..8
+         return ((float)coreGlobals.gi[msgLocals.deviceMap[index].srcId]) / 8.f;
+      else // Whitestar and SAM GI levels are either 0 or 9
+         return coreGlobals.gi[msgLocals.deviceMap[index].srcId] == 0 ? 0.f : 1.f;
+      
+   case LPM_DM_CORE_LAMP:
+      return ((coreGlobals.lampMatrix[msgLocals.deviceMap[index].srcId / 8] >> (msgLocals.deviceMap[index].srcId % 8)) & 0x01) ? 1.f : 0.f;
+  
+   case LPM_DM_PHYSOUT:
+      core_update_pwm_outputs(msgLocals.deviceMap[index].srcId, 1);
+      return coreGlobals.physicOutputState[msgLocals.deviceMap[index].srcId].value;
+      
+   case LPM_DM_CORE_MECH:
+      return (float)(core_gameData->hw.getMech ? core_gameData->hw.getMech(msgLocals.deviceMap[index].srcId) : 0);
+
+   case LPM_DM_CUSTOM_MECH_POS:
+      return mech_getFloatPos(msgLocals.deviceMap[index].srcId);
+
+   case LPM_DM_CUSTOM_MECH_SPEED:
+      return mech_getFloatSpeed(msgLocals.deviceMap[index].srcId);
+
+   default:
+      return 0.f;
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Alphanumeric segment displays
+
+static void OnGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   GetSegSrcMsg* msg = (GetSegSrcMsg*)msgData;
+   for (unsigned int index = 0; index < msgLocals.nSegDisplays; index++, msg->count++)
+      if (msg->count < msg->maxEntryCount)
+         memcpy(&msg->entries[msg->count], &msgLocals.segDisplays[index].srcId, sizeof(SegSrcId));
+}
+
+static SegDisplayFrame GetSegDisplay(const CtlResId id)
+{
+   assert(id.endpointId == msgLocals.endpointId);
+   assert(id.resId < msgLocals.nSegDisplays);
+   
+   const int startElement = msgLocals.segDisplays[id.resId].sortedSegPos;
+   const int nElements = msgLocals.segDisplays[id.resId].srcId.nElements;
+   
+   if (_isRunning != 1)
+      return { msgLocals.segDisplays[id.resId].segFrameId, msgLocals.segLuminances + (startElement * 16) };
+   
+   static int nSegments[] = { 16, 16, 10, 9, 8, 8, 7, 8, 7, 10, 9, 7, 8, 16, 0, 0, 15, 15 }; // Number of segments (including dot/comma) corresponding to CORE_SEGxx
+   for (int i = startElement; i < startElement + nElements; i++)
+   {
+      const int type = msgLocals.sortedSegLayout[i].srcLayout->type & CORE_SEGALL;
+      assert(type < sizeof(nSegments) / sizeof(nSegments[0]));
+      const int nSegs = nSegments[type];
+      if (coreGlobals.nAlphaSegs) // Always return modulated value if available
+      {
+         int pos = CORE_MODOUT_SEG0 + msgLocals.sortedSegLayout[i].statePos * 16;
+         if (msgLocals.sortedSegLayout[i].srcLayout->type & CORE_SEGHIBIT) pos += 8;
+         for (int j = 0; j < nSegs; j++, pos++) // Loop over each segments of the current character (up to 16)
+         {
+            core_update_pwm_outputs(pos, 1);
+            msgLocals.segLuminances[i * 16 + j] = coreGlobals.physicOutputState[pos].value;
+         }
+      }
+      else
+      {
+         UINT16 segs = coreGlobals.segments[msgLocals.sortedSegLayout[i].statePos].w;
+         if (msgLocals.sortedSegLayout[i].srcLayout->type & CORE_SEGHIBIT) segs >>= 8;
+         for (int j = 0; j < nSegs; j++, segs >>= 1) // Loop over each segments of the current character (up to 16)
+            msgLocals.segLuminances[i * 16 + j] = (segs & 1) ? 1.f : 0.f;
+      }
+      
+      if ((type == CORE_SEG9) || (type == CORE_SEG98) || (type == CORE_SEG98F)) {
+         // Bottom half of vertical center is controlled by upper half
+         msgLocals.segLuminances[i * 16 + 9] = msgLocals.segLuminances[i * 16 + 8];
+      }
+      if (type == CORE_SEG16R) {
+         // Reverse comma / dot
+         float v = msgLocals.segLuminances[i * 16 + 15];
+         msgLocals.segLuminances[i * 16 + 15] = msgLocals.segLuminances[i * 16 + 7];
+         msgLocals.segLuminances[i * 16 + 7] = v;
+      }
+      if ((type == CORE_SEG98F) || (type == CORE_SEG87F)) {
+         // Comma is lit if at least one segment is on
+         msgLocals.segLuminances[i * 16 + 7] = 0.f;
+         for (int j = 0; j < nSegs; j++)
+            if (msgLocals.segLuminances[i * 16 + j] > msgLocals.segLuminances[i * 16 + 7])
+               msgLocals.segLuminances[i * 16 + 7] = msgLocals.segLuminances[i * 16 + j];
+      }
+   }
+   
+   if (memcmp(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * 16 * sizeof(float)) != 0)
+   {
+      memcpy(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * 16 * sizeof(float));
+      msgLocals.segDisplays[id.resId].segFrameId++;
+   }
+   
+   return { msgLocals.segDisplays[id.resId].segFrameId, msgLocals.segLuminances + (startElement * 16) };
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Video & Dot Matrix Displays
+
+static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   GetDisplaySrcMsg* msg = static_cast<GetDisplaySrcMsg*>(msgData);
+   for (unsigned int index = 0; index < msgLocals.nDisplays; index++, msg->count++)
+      if (msg->count < msg->maxEntryCount)
+         memcpy(&msg->entries[msg->count], &msgLocals.displays[index].srcId, sizeof(DisplaySrcId));
+}
+
+static DisplayFrame GetDisplayFrame(const CtlResId id)
+{
+   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (_isRunning != 1))
+      return { 0, nullptr };
+   if ((msgLocals.displays[id.resId].layout->type & CORE_SEGMASK) == CORE_VIDEO) {
+      const PinmameDisplay* pDisplay = _displays[msgLocals.displays[id.resId].layout->index];
+      return { pDisplay->frameId, pDisplay->pData };
+   }
+   else {
+      unsigned int frameId;
+      const float* lumFrame = core_dmd_update_pwm(msgLocals.displays[id.resId].layout, &frameId);
+      return { frameId, lumFrame };
+   }
+}
+
+static DisplayFrame GetDisplayIdFrame(const CtlResId id)
+{
+   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (_isRunning != 1))
+      return { 0, nullptr };
+   unsigned int frameId;
+   const UINT8* rawFrame = core_dmd_update_identify(msgLocals.displays[id.resId].layout, &frameId);
+   return { frameId, rawFrame };
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Overall game messages
+
+static char* fmtString(const char *format, ...) {
+    va_list args;
+
+    va_start(args, format);
+    int size = vsnprintf(NULL, 0, format, args) + 1; // +1 for the null terminator
+    va_end(args);
+
+    va_start(args, format);
+    char *formatted_string = new char[size];
+    vsnprintf(formatted_string, size, format, args);
+    va_end(args);
+
+    return formatted_string;
+}
+
+static void SetupMsgApi()
+{
+   assert(msgLocals.msgApi != nullptr);
+
+   // For the time being, the API only covers a running controller (the setup/info part is not yet exposed), so we do not have anything to register if we are not running
+   if (_isRunning != 1)
+      return;
+
+   assert(!msgLocals.registered);
+   msgLocals.registered = true;
+
+   msgLocals.onGameStartId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START);
+   msgLocals.onGameEndId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END);
+   msgLocals.onSoundCommandId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_SOUND_COMMAND);
+
+   // -- Prepare data structures for displays
+   msgLocals.nDisplays = 0;
+   int nSegLayouts = 0;
+   const core_tLCDLayout* segLayout[128] = { 0 };
+   memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
+   for (const core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout++) {
+      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+      switch (layout->type & CORE_SEGMASK)
+      {
+      case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->importedLayout - 1; break;
+      case CORE_DMD: // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
+      case CORE_VIDEO: // Video display for games like Baby PacMan, frames are stored as RGB8
+         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
+         {
+            if (layout->type & CORE_VIDEO_ROT90)
+            {
+               msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->start;
+               msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->length;
+            }
+            else
+            {
+               msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->length;
+               msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->start;
+            }
+         }
+         else
+         {
+            msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->length;
+            msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->start;
+         }
+         msgLocals.displays[msgLocals.nDisplays].layout = layout;
+         msgLocals.displays[msgLocals.nDisplays].srcId.id = { msgLocals.endpointId, static_cast<uint32_t>(msgLocals.nDisplays) };
+         msgLocals.displays[msgLocals.nDisplays].srcId.groupId = { msgLocals.endpointId, 0 };
+         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY;
+         else if ((layout->length < 128) || (layout->start < 16))
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN; // Mini display, usually LEDs
+         else if (core_gameData->gen == GEN_SAM)
+            // TODO return the right information:
+            // - Before POTC, all tables used Neon Plasma display
+            // - Then, due to RoHS, european versions of POTC to Family Guy use a modified PinLED display
+            //   Then the 520-5052-05 red led matrix is used
+            //   Then, starting with Tranformers, the 520-5052-15 orange/red led matrix is used
+            // - All US Stern games before AC/DC use a 128 x 32 neon plasma (520-5052-00), then LED (520-5052-15)
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
+         else if (core_gameData->gen == GEN_SPA)
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
+         else
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
+         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) == CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM32F;
+         msgLocals.displays[msgLocals.nDisplays].srcId.GetRenderFrame = &GetDisplayFrame;
+         if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
+         {
+            msgLocals.displays[msgLocals.nDisplays].srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2;
+            msgLocals.displays[msgLocals.nDisplays].srcId.GetIdentifyFrame = &GetDisplayIdFrame;
+         }
+         msgLocals.nDisplays++;
+         break;
+      default: // Alphanumeric segment displays
+         segLayout[nSegLayouts] = layout;
+         nSegLayouts++;
+         break; 
+      }
+   }
+   if (msgLocals.nDisplays > 0)
+   {
+      msgLocals.onDisplaySrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
+      msgLocals.getDisplaySrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getDisplaySrcId, OnGetDisplaySrc, NULL);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDisplaySrcChangedId, NULL);
+   }
+   
+   // -- Prepare data structures for segment displays
+   // Layout declaration in drivers were originaly made for rendering and are (sadly) also used to unswizzle alphanum segment data.
+   // We need to interpret them to build back the displays list with their individual components (for example see Space Gambler or WPC).
+   // The CORE_SEG mask also mix segment layouts (number of segment, with/without dot & comma, ...) with segment addressing (which output
+   // drive the segment, is the segment driven together with another segment, ...). The CORE_SEG mask can also include a comma every 
+   // three digit information, and the CORE_SEGREV flag which indicates that the memory position is in reversed order.
+   // We resolve all these to simply expose physical layouts, with stable output order. To do so, we convert them to individual 
+   // elements and group them based on their declaration order and render position, then process the additional flags at setup here,
+   // or when accessing data (for example, to process shared segment command).
+   msgLocals.nSortedSegLayout = 0;
+   memset(msgLocals.sortedSegLayout, 0, sizeof(msgLocals.sortedSegLayout));
+   for (int i = 0; i < nSegLayouts; i++)
+   {
+      // Split layout into individual components, converting type to the plugin API enum, eventually applying forced commas and reversed order
+      for (int j = 0; j < segLayout[i]->length; j++)
+      {
+         assert(msgLocals.nSortedSegLayout < CORE_SEGCOUNT);
+         msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcLayout = segLayout[i];
+         msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = segLayout[i]->type;
+         SegElementType type;
+         int isThousands = ((segLayout[i]->length - 1 - j) > 0) && ((segLayout[i]->length - 1 - j) % 3 == 0);
+         switch (segLayout[i]->type & CORE_SEGALL) {
+         case CORE_SEG7:   type = CTLPI_SEG_LAYOUT_7; break;
+         case CORE_SEG7S:  type = CTLPI_SEG_LAYOUT_7; break;
+         case CORE_SEG7SC: type = CTLPI_SEG_LAYOUT_7; break;
+         case CORE_SEG87F:
+            type = isThousands ? CTLPI_SEG_LAYOUT_7C : CTLPI_SEG_LAYOUT_7;
+            if (!isThousands)
+               msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = CORE_SEG7 | (segLayout[i]->type & ~CORE_SEGALL);
+            break;
+         case CORE_SEG87:
+            type = isThousands ? CTLPI_SEG_LAYOUT_7C : CTLPI_SEG_LAYOUT_7; break;
+            if (!isThousands)
+               msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = CORE_SEG7 | (segLayout[i]->type & ~CORE_SEGALL);
+            else
+               msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = CORE_SEG8 | (segLayout[i]->type & ~CORE_SEGALL);
+            break;
+         case CORE_SEG8:   type = CTLPI_SEG_LAYOUT_7C; break;
+         case CORE_SEG8D:  type = CTLPI_SEG_LAYOUT_7D; break;
+         case CORE_SEG9:   type = CTLPI_SEG_LAYOUT_9; break;
+         case CORE_SEG10:  type = CTLPI_SEG_LAYOUT_9C; break;
+         case CORE_SEG98F:
+            type = isThousands ? CTLPI_SEG_LAYOUT_9C : CTLPI_SEG_LAYOUT_9;
+            if (!isThousands)
+               msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = CORE_SEG9 | (segLayout[i]->type & ~CORE_SEGALL);
+            break;
+         case CORE_SEG98:
+            type = isThousands ? CTLPI_SEG_LAYOUT_9C : CTLPI_SEG_LAYOUT_9;
+            if (!isThousands)
+               msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = CORE_SEG9 | (segLayout[i]->type & ~CORE_SEGALL);
+            else
+               msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].srcType = CORE_SEG10 | (segLayout[i]->type & ~CORE_SEGALL);
+            break;
+         case CORE_SEG16N: type = CTLPI_SEG_LAYOUT_14; break;
+         case CORE_SEG16D: type = CTLPI_SEG_LAYOUT_14D; break;
+         case CORE_SEG16:  type = CTLPI_SEG_LAYOUT_14DC; break;
+         case CORE_SEG16R: type = CTLPI_SEG_LAYOUT_14DC; break;
+         case CORE_SEG16S: type = CTLPI_SEG_LAYOUT_16; break;
+         }
+         msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].segType = type;
+         msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].displayIndex = segLayout[i]->left + j * 2;
+         if (segLayout[i]->type & CORE_SEGREV)
+            msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].statePos = segLayout[i]->start + segLayout[i]->length - 1 - j;
+         else
+            msgLocals.sortedSegLayout[msgLocals.nSortedSegLayout].statePos = segLayout[i]->start + j;
+         msgLocals.nSortedSegLayout++;
+      }
+   }
+   msgLocals.nSegDisplays = 0;
+   int segDisplayStart = 0;
+   memset(msgLocals.segDisplays, 0, sizeof(msgLocals.segDisplays));
+   for (int i = 0; i < msgLocals.nSortedSegLayout; i++)
+   {
+      if ((i == msgLocals.nSortedSegLayout - 1) // Last element
+         || (msgLocals.sortedSegLayout[i].srcLayout->top != msgLocals.sortedSegLayout[i + 1].srcLayout->top) // Next element is on another line
+         || (msgLocals.sortedSegLayout[i].displayIndex + 2 != msgLocals.sortedSegLayout[i + 1].displayIndex)) // There is gap before next element
+         // end of block could also be a change of element size (based on element type) but does not seems to be used
+      {
+         msgLocals.segDisplays[msgLocals.nSegDisplays].sortedSegPos = segDisplayStart;
+         msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.id = { msgLocals.endpointId, static_cast<uint32_t>(msgLocals.nSegDisplays) };
+         msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.groupId = { msgLocals.endpointId, 0 };
+         msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements = i + 1 - segDisplayStart;
+         msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.GetState = &GetSegDisplay;
+         switch (core_gameData->gen)
+         { // TODO review and implement more hardware hints (and maybe move all hardware definitions to drivers)
+         case GEN_BY17:
+         case GEN_BY35:
+         case GEN_BY6803:
+         case GEN_BY6803A:
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
+            break;
+
+         case GEN_S3:
+         case GEN_S3C:
+         case GEN_S4:
+         case GEN_S6:
+         case GEN_S7:
+         case GEN_S9:
+         case GEN_S11:
+         case GEN_S11X: // GEN_S11A & GEN_S11B
+         case GEN_S11B2:
+         case GEN_S11C:
+         case GEN_DE:
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
+            break;
+            
+         case GEN_WPCALPHA_1:
+         case GEN_WPCALPHA_2:
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
+            break;
+            
+         case GEN_STMPU100:
+         case GEN_STMPU200:
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
+            break;
+
+         case GEN_GTS1:
+         case GEN_GTS80:
+         case GEN_GTS80B:
+         case GEN_GTS3:
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 4 ? CTLPI_SEG_HARDWARE_GTS1_4DIGIT
+                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 2 ? CTLPI_SEG_HARDWARE_GTS1_4DIGIT // Ball & Credit, reported as 2x2 (while hardware is 1x4 with a space in between)
+                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 6 ? CTLPI_SEG_HARDWARE_GTS1_6DIGIT
+                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 7 ? CTLPI_SEG_HARDWARE_GTS80A_7DIGIT
+                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 20 ? CTLPI_SEG_HARDWARE_GTS80B_20DIGIT
+                                                                         : CTLPI_SEG_HARDWARE_UNKNOWN; // This one should not happen but need to be checked (some playfield LED displays maybe ?)
+            break;
+            
+         default:
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_UNKNOWN;
+            break;
+         }
+         for (int j = segDisplayStart; j <= i; j++)
+         {
+            msgLocals.sortedSegLayout[j].displayIndex = msgLocals.nSegDisplays;
+            msgLocals.sortedSegLayout[j].elementIndex = j - segDisplayStart;
+            msgLocals.sortedSegLayout[j].nElements = msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements;
+            msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.elementType[j - segDisplayStart] = msgLocals.sortedSegLayout[j].segType;
+         }
+         segDisplayStart = i + 1;
+         msgLocals.nSegDisplays++;
+      }
+   }
+   if (msgLocals.nSegDisplays > 0)
+   {
+      msgLocals.onSegSrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
+      msgLocals.getSegSrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
+      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getSegSrcId, OnGetSegSrc, nullptr);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onSegSrcChangedId, nullptr);
+   }
+
+   // -- Controlled devices
+   // The existing output layout is the result of years of evolution, starting with the WPC hardware (hence
+   // the dedicated GI outputs with 0..8 values), then adding different levels of device emulation (merging
+   // binary output states over a given period, some smoothing, physic model,...) and solving conflicts
+   // by moving the outputs to free slots. This 'legacy' mapping is preserved for backward compatibility:
+   // - First devices correspond to 'legacy' solenoids outputs, keeping the existing ordering,
+   // - Followed by GI bulbs, identified by their group id, with the original ordering,
+   // - Followed by lamp matrix, identified by their group Id and device Id which match the lamp number in
+   //   the matrix (which has always been different from the lamp index, as lamps are organized by rows of
+   //   8 lamps, for example, first lamp is usually lamp #11)
+   //
+   // The following group ids are defined and used by PinMame:
+   // - 0x0000 unwired
+   // - 0x0001 solenoids/flashers driven by power driver board (main high/low current outputs)
+   // - 0x0002 auxiliary boards (magnets, outputs, WPC fliptronics, ...)
+   // - 0x0003 custom driver outputs (see CORE_FIRSTCUSTSOL)
+   // - 0x0010 PinMame internal state: for example emulated plunger, or fake 'game on' solenoid used for fast flippers, ...
+   // - 0x0100 GI driven by power driver board (WPC, Whitestar & SAM are the only one with dedicated GI
+   //          outputs, other hardwares use generic outputs to drive a GI relay/thyristor)
+   // - 0x0200 lamp matrix driven by power driver board
+   // - 0x0300 emulated mechanical parts
+   //
+   // Existing state access is implemented in core_getSol, core_getAllSol and core_getAllPhysicSols. Sadly,
+   // these functions do not always return the same value. When difference exists, the implementation of 
+   // core_getAllSol is taken as it is supposed to be the most widely used.
+   //
+   const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+   const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
+   const int nSols = (coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol));
+   msgLocals.deviceDef.id.endpointId = msgLocals.endpointId;
+   msgLocals.deviceDef.id.resId = 0;
+   msgLocals.deviceDef.GetByteState = &GetDeviceByteState;
+   msgLocals.deviceDef.GetFloatState = &GetDeviceFloatState;
+   msgLocals.deviceDef.nDevices = nSols + coreGlobals.nGI + nLamps + MECH_MAXMECH;
+   msgLocals.deviceDef.deviceDefs = new DeviceDef[msgLocals.deviceDef.nDevices];
+   memset(msgLocals.deviceDef.deviceDefs, 0, msgLocals.deviceDef.nDevices * sizeof(DeviceDef));
+   msgLocals.deviceMap = new DeviceMapping[msgLocals.deviceDef.nDevices];
+   memset(msgLocals.deviceMap, 0, msgLocals.deviceDef.nDevices * sizeof(DeviceMapping));
+   const int isPhysSol = (coreGlobals.nSolenoids > 0) && ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) != 0);
+   // 1..28, solenoid/flasher outputs from driver board
+   for (int i = 0; i < 28; i++)
+   {
+      msgLocals.deviceDef.deviceDefs[i].name = fmtString("Sol #%02d", i + 1);
+      msgLocals.deviceDef.deviceDefs[i].groupId = 0x0001;
+      msgLocals.deviceDef.deviceDefs[i].deviceId = i + 1;
+      msgLocals.deviceMap[i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL1;
+      msgLocals.deviceMap[i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + i) : (1 << i);
+   }
+   // 29..32, WPC: fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2, why 4 bits (actually only 3) ?)
+   if (core_gameData->gen & GEN_ALLWPC)
+   {
+      for (int i = 28; i < 32; i++)
+      {
+         msgLocals.deviceDef.deviceDefs[i].name = fmtString("WPC Fake GameOn #%d", i + 1);
+         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0010;
+         msgLocals.deviceDef.deviceDefs[i].deviceId = i + 1;
+         msgLocals.deviceMap[i].type = LPM_DM_CORE_SOL2;
+         msgLocals.deviceMap[i].srcId = 1 << (i - 28 + 8);
+      }
+   }
+   // 29..32, solenoid outputs from driver board
+   // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
+   else // if (core_gameData->gen & GEN_ALLS11)
+   {
+      for (int i = 28; i < 32; i++)
+      {
+         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Sol #%02d", i + 1);
+         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0001;
+         msgLocals.deviceDef.deviceDefs[i].deviceId = i + 1;
+         msgLocals.deviceMap[i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL1;
+         msgLocals.deviceMap[i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + i) : (1 << i);
+      }
+   }
+   // 33, SAM: fake GameOn solenoid for fast flip
+   // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
+   if (core_gameData->gen & GEN_SAM)
+   {
+      msgLocals.deviceDef.deviceDefs[32].name = fmtString("SAM Fake GameOn");
+      msgLocals.deviceDef.deviceDefs[32].groupId = 0x0010;
+      msgLocals.deviceDef.deviceDefs[32].deviceId = 0;
+      msgLocals.deviceMap[32].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
+      msgLocals.deviceMap[32].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 32) : 0x00000010;
+   }
+   // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
+   // Note: core_getSol does not implement this while core_getAllSol does
+   else if (core_gameData->gen & GEN_ALLWS)
+   {
+      for (int i = 32; i < 36; i++)
+      {
+         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Ext Sol #%02d", i - 32 + 1);
+         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0002;
+         msgLocals.deviceDef.deviceDefs[i].deviceId = i - 32 + 1;
+         msgLocals.deviceMap[i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
+         msgLocals.deviceMap[i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + i) : (1 << (i - 32 + 4));
+      }
+   }
+   // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs
+   // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
+   else if (core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
+   {
+      // TODO Ensure earlier generation do not have ext board in this area (they do not have upper flipper)
+      // GEN_WPCALPHA_1: dd / fh
+      // GEN_WPCALPHA_2: fh / bop / hd
+      // GEN_WPCDMD: t2 / gi / Slugfest
+      for (int i = 0; i < 4; i++)
+      {
+         int isFlipperSol = (i < 2) ? (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
+                                    : (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL));
+         if (isFlipperSol)
+         {
+            // Note: WPC fliptronics and later implement modulated outputs on these (not really modulated though)
+            const int isCPU = (i < 2) ? (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
+                                      : (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL));
+            msgLocals.deviceDef.deviceDefs[32 + i].name = fmtString("Upper %s Flipper: %s solenoid %s",
+               (i < 2) ? "Right" : "Left",
+               (i & 1) ? "Hold|Power" : "Power",
+               isCPU ? "(CPU controlled)" : "(emulated wired)");
+            msgLocals.deviceDef.deviceDefs[32 + i].groupId = 0x0002;
+            msgLocals.deviceDef.deviceDefs[32 + i].deviceId = 33 + i;
+            msgLocals.deviceMap[32 + i].type = LPM_DM_CORE_SOL2;
+            msgLocals.deviceMap[32 + i].srcId = isCPU ? (((i & 1) ? 0x30 : 0x10) << (i & 2))  // Power bit or Power|Hold bits
+                                                      : ((                 0x10) << (i    )); // Not CPU controlled, just return emulated state
+         }
+         else
+         {
+            msgLocals.deviceDef.deviceDefs[32 + i].name = fmtString("Sol #%02d (%s)", 29 + i, (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) ? "WPC95" : "Fliptronic");
+            msgLocals.deviceDef.deviceDefs[32 + i].groupId = 0x0002;
+            msgLocals.deviceDef.deviceDefs[32 + i].deviceId = 33 + i;
+            msgLocals.deviceMap[32 + i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
+            msgLocals.deviceMap[32 + i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 32 + i) : (1 << (i + 4));
+         }
+      }
+   }
+   // 37..44, WPC95: 4 low power digital outputs (duplicated 37..40 / 41..44, stored in 0xF0000000 of solenoids)
+   if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
+   {
+      for (int i = 0; i < 8; i++)
+      {
+         msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("WPC95 LPDC #%02d", 37 + (i & 3));
+         msgLocals.deviceDef.deviceDefs[36 + i].groupId = 0x0001;
+         msgLocals.deviceDef.deviceDefs[36 + i].deviceId = 37 + (i & 3);
+         msgLocals.deviceMap[36 + i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL1;
+         msgLocals.deviceMap[36 + i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 36 + (i & 3)) : (1 << (36 + (i & 3)));
+      }
+   }
+   // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
+   else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
+   {
+      for (int i = 0; i < 8; i++)
+      {
+         if (core_gameData->gen & GEN_ALLS11)
+            msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("S11 Ext Sol #%d", i + 1);
+         else if (core_gameData->gen & GEN_SAM)
+            msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("SAM Ext Sol #%d", i + 1);
+         else
+            msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("SPA Ext Sol #%d", i + 1);
+         msgLocals.deviceDef.deviceDefs[36 + i].groupId = 0x0002;
+         msgLocals.deviceDef.deviceDefs[36 + i].deviceId = i + 1;
+         msgLocals.deviceMap[36 + i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
+         msgLocals.deviceMap[36 + i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 40 + i) : (1 << (i + 8));
+      }
+   }
+   // 45..48, lower flipper solenoids
+   // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power coil is set
+   // Note: WPC fliptronics and later implement modulated outputs on these (not really modulated though)
+   for (int i = 0; i < 4; i++)
+   {
+      const int isCPU = (i < 2) ? (core_gameData->hw.flippers & FLIP_SOL(FLIP_LR))
+                                : (core_gameData->hw.flippers & FLIP_SOL(FLIP_LL));
+      msgLocals.deviceDef.deviceDefs[44 + i].name = fmtString("Lower %s Flipper: %s solenoid %s",
+         (i < 2) ? "Right" : "Left",
+         (i & 1) ? "Hold|Power" : "Power",
+         isCPU ? "(CPU controlled)" : "(Emulated wired)");
+      msgLocals.deviceDef.deviceDefs[44 + i].groupId = 0x0002;
+      msgLocals.deviceDef.deviceDefs[44 + i].deviceId = (core_gameData->gen & GEN_ALLWPC) ? (29 + i) : (45 + i);
+      msgLocals.deviceMap[44 + i].type = LPM_DM_CORE_SOL2;
+      msgLocals.deviceMap[44 + i].srcId = isCPU ? (((i & 1) ? 0x03 : 0x01) << (i & 2))  // Power bit or Power|Hold bits
+                                                : ((                 0x01) << (i    )); // Not CPU controlled, just return emulated state
+   }
+   // 49, simulated fake plunger, not broadcasted
+   // 50, unused, reserved
+   // 51..66, custom through core_gameData->hw.getSol or physic model
+   for (int i = CORE_FIRSTCUSTSOL - 1; i < nSols; i++)
+   {
+      const int isCusPhysSol = isPhysSol && (i < coreGlobals.nSolenoids);
+      if ((isCusPhysSol == 0) && (core_gameData->hw.getSol == NULL))
+         continue;
+      if (isCusPhysSol && (core_gameData->gen & GEN_ALLWPC))
+      {
+         int id = (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) ? (42 + i - (CORE_FIRSTCUSTSOL - 1))  // WPC95 extension board maps to Sol 42..49 (1..28 base sols, 29..36 flippers, 37..40 LPDC, 41 unknown)
+                                                                    : (37 + i - (CORE_FIRSTCUSTSOL - 1)); // WPC extension board maps to Sol 37..44 (1..28 base sols, 29..36 fliptronics)
+         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Ext Sol #%02d", id);
+         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0002;
+         msgLocals.deviceDef.deviceDefs[i].deviceId = id;
+      }
+      else
+      {
+         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Custom Sol #%02d", i);
+         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0004;
+         msgLocals.deviceDef.deviceDefs[i].deviceId = i - (CORE_FIRSTCUSTSOL - 1) + 1;
+      }
+      msgLocals.deviceMap[i].type = isCusPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_CUST_SOL;
+      msgLocals.deviceMap[i].srcId = isCusPhysSol ? (CORE_MODOUT_SOL0 + i) : (i + 1);
+   }
+   // GI dedicated drivers (WPC, Whitestar, SAM)
+   const int isPhysGI = (coreGlobals.nGI > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) != 0);
+   for (int i = 0; i < coreGlobals.nGI; i++)
+   {
+      msgLocals.deviceDef.deviceDefs[nSols + i].name = fmtString("GI #%d", i + 1);
+      msgLocals.deviceDef.deviceDefs[nSols + i].groupId = 0x0100;
+      msgLocals.deviceDef.deviceDefs[nSols + i].deviceId = i + 1;
+      msgLocals.deviceMap[nSols + i].type = isPhysGI ? LPM_DM_PHYSOUT : LPM_DM_CORE_GI;
+      msgLocals.deviceMap[nSols + i].srcId = isPhysGI ? (CORE_MODOUT_GI0 + i) : i;
+   }   
+   // Lamp matrix
+   const int isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
+   for (int i = 0; i < nLamps; i++)
+   {
+      int l = coreData->m2lamp ? coreData->m2lamp((i / 8) + 1, i & 7) : i;
+      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + i].name = fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1);
+      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + i].groupId = 0x0200;
+      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + i].deviceId = l;
+      msgLocals.deviceMap[nSols + coreGlobals.nGI + i].type = isPhysLamp ? LPM_DM_PHYSOUT : LPM_DM_CORE_LAMP;
+      msgLocals.deviceMap[nSols + coreGlobals.nGI + i].srcId = isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i;
+   }   
+   // Emulated mechanical devices (we don't know which ones are available so always declare all of them)
+   // This is somewhat hacky as the definition depends on g_fHandleMechanics and we do not update if it changes (it must be defined before)
+   for (int i = 0; i < MECH_MAXMECH; i++)
+   {
+      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].groupId = 0x0300;
+      if (g_fHandleMechanics == 0)
+      {
+         if (i < MECH_MAXMECH/2)
+         {
+            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].name = fmtString("User Mech Pos #%02d", i);
+            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].deviceId = i + 1;
+            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].type = LPM_DM_CUSTOM_MECH_POS;
+            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].srcId = MECH_MAXMECH/2 + i;
+         }
+         else
+         {
+            int j = i - MECH_MAXMECH/2;
+            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].name = fmtString("User Mech Speed #%02d", j);
+            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].deviceId = -(j + 1);
+            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].type = LPM_DM_CUSTOM_MECH_SPEED;
+            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].srcId = MECH_MAXMECH/2 + j;
+         }
+      }
+      else
+      {
+         msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].name = fmtString("PinMame Mech #%02d", i);
+         msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].deviceId = i;
+         msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].type = LPM_DM_CORE_MECH;
+         msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].srcId = i;
+      }
+   }
+   if (msgLocals.deviceDef.nDevices > 0)
+   {
+      msgLocals.onDevSrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
+      msgLocals.getDevSrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
+      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getDevSrcId, OnGetDevSrc, NULL);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDevSrcChangedId, NULL);
+   }
+   
+   // -- Inputs: cabinet, matrix & dip switches
+   const int nSwitches = (CORE_STDSWCOLS + core_gameData->hw.swCol) * 8;
+   const int nDips = coreData->coreDips;
+   msgLocals.inputDef.id.endpointId = msgLocals.endpointId;
+   msgLocals.inputDef.id.resId = 0;
+   msgLocals.inputDef.GetInputState = &GetInputState;
+   msgLocals.inputDef.SetInputState = &SetInputState;
+   msgLocals.inputDef.nInputs = nSwitches + nDips;
+   msgLocals.inputDef.inputDefs = new DeviceDef[msgLocals.inputDef.nInputs];
+   memset(msgLocals.inputDef.inputDefs, 0, msgLocals.inputDef.nInputs * sizeof(DeviceDef));
+   for (int i = 0; i < nSwitches; i++)
+   {
+      int l = coreData->m2sw ? coreData->m2sw((i / 8) + 1, i & 7) : i;
+      msgLocals.inputDef.inputDefs[i].name = fmtString("Switch #%02x", l);
+      msgLocals.inputDef.inputDefs[i].groupId = 0x0001;
+      msgLocals.inputDef.inputDefs[i].deviceId = l;
+   }
+   for (int i = 0; i < nDips; i++)
+   {
+      msgLocals.inputDef.inputDefs[nSwitches + i].name = fmtString("DIP #%02d", i + 1);
+      msgLocals.inputDef.inputDefs[nSwitches + i].groupId = 0x0002;
+      msgLocals.inputDef.inputDefs[nSwitches + i].deviceId = i + 1;
+   }
+   if (msgLocals.inputDef.nInputs > 0)
+   {
+      msgLocals.onInputSrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
+      msgLocals.getInputSrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
+      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getInputSrcId, OnGetInputSrc, NULL);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onInputSrcChangedId, NULL);
+   }
+}
+
+static void ReleaseMsgApi()
+{
+   assert(msgLocals.msgApi != nullptr);
+
+   // Only release if we actually registered (we had a running machine)
+   if (!msgLocals.registered)
+      return;
+
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onGameStartId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onGameEndId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onSoundCommandId);
+
+   if (msgLocals.nDisplays > 0)
+   {
+      msgLocals.msgApi->UnsubscribeMsg(msgLocals.getDisplaySrcId, OnGetDisplaySrc);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDisplaySrcChangedId, nullptr);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.onDisplaySrcChangedId);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.getDisplaySrcId);
+      msgLocals.nDisplays = 0;
+   }
+   
+   if (msgLocals.nSegDisplays > 0)
+   {
+      msgLocals.msgApi->UnsubscribeMsg(msgLocals.getSegSrcId, OnGetSegSrc);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onSegSrcChangedId, nullptr);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.onSegSrcChangedId);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.getSegSrcId);
+      msgLocals.nSegDisplays = 0;
+   }
+   
+   if (msgLocals.deviceDef.nDevices > 0)
+   {
+      msgLocals.msgApi->UnsubscribeMsg(msgLocals.getDevSrcId, OnGetDevSrc);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDevSrcChangedId, nullptr);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.onDevSrcChangedId);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.getDevSrcId);
+      for (int i = 0; i < msgLocals.deviceDef.nDevices; i++)
+         if (msgLocals.deviceDef.deviceDefs[i].name)
+            delete[] msgLocals.deviceDef.deviceDefs[i].name;
+      msgLocals.deviceDef.nDevices = 0;
+      delete[] msgLocals.deviceDef.deviceDefs;
+      delete[] msgLocals.deviceMap;
+   }
+   
+   if (msgLocals.inputDef.nInputs > 0)
+   {
+      msgLocals.msgApi->UnsubscribeMsg(msgLocals.getInputSrcId, OnGetInputSrc);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onInputSrcChangedId, nullptr);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.onInputSrcChangedId);
+      msgLocals.msgApi->ReleaseMsgID(msgLocals.getInputSrcId);
+      for (int i = 0; i < msgLocals.inputDef.nInputs; i++)
+         if (msgLocals.inputDef.inputDefs[i].name)
+            delete[] msgLocals.inputDef.inputDefs[i].name;
+      msgLocals.inputDef.nInputs = 0;
+      delete[] msgLocals.inputDef.inputDefs;
+   }
+
+   // Clear everything but the Msg API setup
+   MsgPluginAPI* msgApi = msgLocals.msgApi;
+   unsigned int endpointId = msgLocals.endpointId;
+   memset(&msgLocals, 0, sizeof(msgLocals));
+   msgLocals.msgApi = msgApi;
+   msgLocals.endpointId = endpointId;
+}
+
+static void OnGameStart(void*)
+{
+   SetupMsgApi();
+   CtlOnGameStartMsg msg = { Machine->gamedrv->name, core_gameData->gen };
+   if (msgLocals.registered)
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onGameStartId, reinterpret_cast<void*>(&msg));
+}
+
+static void OnGameEnd(void*)
+{
+   if (msgLocals.registered)
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onGameEndId, nullptr);
+   ReleaseMsgApi();
+}
+
+PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgApi, unsigned int endpointId)
+{
+   if (msgLocals.msgApi)
+      ReleaseMsgApi();
+   msgLocals.msgApi = msgApi;
+   msgLocals.endpointId = endpointId;
+   if (msgLocals.msgApi)
+      SetupMsgApi();
 }

@@ -29,7 +29,6 @@
 #endif
 
 #ifdef LIBPINMAME
-  extern int g_fSoundMode;
   extern void libpinmame_snd_cmd_log(int boardNo, int cmd);
 #endif
 
@@ -538,8 +537,7 @@ void snd_cmd_log(int boardNo, int cmd) {
     alt_sound_handle(boardNo, cmd);
 #endif
 #ifdef LIBPINMAME
-  if (options.samplerate != 0 && g_fSoundMode == 1)
-    libpinmame_snd_cmd_log(boardNo, cmd);
+  libpinmame_snd_cmd_log(boardNo, cmd);
 #endif
 #ifdef VPINMAME_PINSOUND
   if (options.samplerate != 0 && (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3))
