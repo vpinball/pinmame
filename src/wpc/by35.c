@@ -14,6 +14,7 @@
 
 #if defined(PINMAME) && defined(LISY_SUPPORT)
  #include "lisy/lisy35.h"
+ #include "lisy/coils.h"
 #endif /* PINMAME && LISY_SUPPORT */
 
 #define BY35_DEBUG_KEY_SUPPORT 0
