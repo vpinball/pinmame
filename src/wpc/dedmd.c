@@ -164,11 +164,37 @@ static void dmd32_vblank(int which) {
   assert((base & 0x00FF) == 0x0000); // As the mapping of lowest 8 bits is not implemented (would need complex data copy and does not seem to be used by any game)
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
-  const core_tLCDLayout* layout = core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout;
+  const core_tLCDLayout* layout = core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout;
   core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
   core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
   if (crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
+
+  #ifdef PROC_SUPPORT
+    if (coreGlobals.p_rocEn) {
+    /* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
+	    has 4 subframes for up to 16 colors. Experimentation has showed
+		 using P-ROC subframe 2 and 3 provides a pretty good color match. */
+	  const int procSubFrame0 = 2;
+	  const int procSubFrame1 = 3;
+
+	  /* Start with an empty frame buffer */
+	  procClearDMD();
+
+	  /* Fill the P-ROC subframes from the video RAM */
+	  const UINT8* RAM = ((UINT8*)dmdlocals.RAMbankPtr) + ((crtc6845_start_address_r(0) & 0x0100) << 2);
+	  procFillDMDSubFrame(procSubFrame0, RAM        , 0x200);
+	  procFillDMDSubFrame(procSubFrame1, RAM + 0x200, 0x200);
+
+	  /* Each byte is reversed in the video RAM relative to the bit order the P-ROC
+	     expects. So reverse each byte. */
+	  procReverseSubFrameBytes(procSubFrame0);
+	  procReverseSubFrameBytes(procSubFrame1);
+	  procUpdateDMD();
+	  /* Don't explicitly update the DMD from here. The P-ROC code
+	     will update after the next DMD event. */
+	}
+  #endif
 }
 
 static void dmd32_init(struct sndbrdData *brdData) {
@@ -195,41 +221,12 @@ static void dmd32_init(struct sndbrdData *brdData) {
     assert(0); // Unsupported board revision
 
   // Init PWM shading
-  const core_tLCDLayout* layout = core_gameData->lcdLayout->lptr ? core_gameData->lcdLayout->lptr : core_gameData->lcdLayout;
+  const core_tLCDLayout* layout = core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout;
   core_dmd_pwm_init(layout, CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
 }
 
 static void dmd32_exit(int boardNo) {
    free(dmdlocals.RAM);
-}
-
-PINMAME_VIDEO_UPDATE(dedmd32_update) {
-  #ifdef PROC_SUPPORT
-    if (coreGlobals.p_rocEn) {
-    /* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
-	    has 4 subframes for up to 16 colors. Experimentation has showed
-		 using P-ROC subframe 2 and 3 provides a pretty good color match. */
-	  const int procSubFrame0 = 2;
-	  const int procSubFrame1 = 3;
-
-	  /* Start with an empty frame buffer */
-	  procClearDMD();
-
-	  /* Fill the P-ROC subframes from the video RAM */
-	  const UINT8* RAM = ((UINT8*)dmdlocals.RAMbankPtr) + ((crtc6845_start_address_r(0) & 0x0100) << 2);
-	  procFillDMDSubFrame(procSubFrame0, RAM        , 0x200);
-	  procFillDMDSubFrame(procSubFrame1, RAM + 0x200, 0x200);
-
-	  /* Each byte is reversed in the video RAM relative to the bit order the P-ROC
-	     expects. So reverse each byte. */
-	  procReverseSubFrameBytes(procSubFrame0);
-	  procReverseSubFrameBytes(procSubFrame1);
-	  procUpdateDMD();
-	  /* Don't explicitly update the DMD from here. The P-ROC code
-	     will update after the next DMD event. */
-	}
-  #endif
-  return core_dmd_video_update(bitmap, cliprect, layout);
 }
 
 /*-----------------------------

@@ -111,7 +111,6 @@ ROM_START(name) \
     ROM_LOAD(n6, 0x20000, 0x20000, chk6)
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern PINMAME_VIDEO_UPDATE(sleic_dmd_update);
 
 extern MACHINE_DRIVER_EXTERN(SLEIC1);
 extern MACHINE_DRIVER_EXTERN(SLEIC2);

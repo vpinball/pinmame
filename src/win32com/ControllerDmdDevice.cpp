@@ -52,7 +52,6 @@ typedef void(*DmdDev_Render_4_Shades_t)(UINT16 width, UINT16 height, UINT8* fram
 typedef void(*DmdDev_Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 typedef void(*DmdDev_Render_PM_Alphanumeric_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const UINT16* const seg_data2);
-typedef void(*DmdDev_Render_PM_Alphanumeric_Dim_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const char* const seg_dim, const UINT16* const seg_data2);
 typedef void(*DmdDev_Render_Lum_And_Raw_t)(UINT16 width, UINT16 height, float* lumFrame, UINT8* rawFrame, UINT8 rawBitSize);
 
 typedef struct {
@@ -73,7 +72,6 @@ typedef struct {
 	DmdDev_Render_Lum_And_Raw_t Render_Lum_And_Raw;
 	// ALphanum rendering
 	DmdDev_Render_PM_Alphanumeric_Frame_t Render_PM_Alphanumeric_Frame;
-	DmdDev_Render_PM_Alphanumeric_Dim_Frame_t Render_PM_Alphanumeric_Dim_Frame;
 } dmddevice_t;
 
 static bool        dmd_hasDMD = false; // Used to send a black frame for clean close
@@ -153,7 +151,6 @@ extern "C" int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, co
 			dmdDevices[i].Render_16_Shades_with_Raw = (DmdDev_Render_16_Shades_with_Raw_t)GetProcAddress(dmdDevices[i].hModule, "Render_16_Shades_with_Raw");
 			dmdDevices[i].Render_Lum_And_Raw = (DmdDev_Render_Lum_And_Raw_t)GetProcAddress(dmdDevices[i].hModule, "Render_Lum_And_Raw");
 			dmdDevices[i].Render_PM_Alphanumeric_Frame = (DmdDev_Render_PM_Alphanumeric_Frame_t)GetProcAddress(dmdDevices[i].hModule, "Render_PM_Alphanumeric_Frame");
-			dmdDevices[i].Render_PM_Alphanumeric_Dim_Frame = (DmdDev_Render_PM_Alphanumeric_Dim_Frame_t)GetProcAddress(dmdDevices[i].hModule, "Render_PM_Alphanumeric_Dim_Frame");
 			dmdDevices[i].Set_4_Colors_Palette = (DmdDev_Set_4_Colors_Palette_t)GetProcAddress(dmdDevices[i].hModule, "Set_4_Colors_Palette");
 			dmdDevices[i].Console_Data = (DmdDev_Console_Data_t)GetProcAddress(dmdDevices[i].hModule, "Console_Data");
 			dmdDevices[i].Console_Input_Ptr = (DmdDev_Console_Input_Ptr_t)GetProcAddress(dmdDevices[i].hModule, "Console_Input_Ptr");
@@ -238,12 +235,8 @@ extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, float
 	}
 }
 
-extern "C" void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2, char* seg_dim) {
+extern "C" void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2) {
 	for (int i = 0; i < 2; i++)
-	{
-		if (dmdDevices[i].Render_PM_Alphanumeric_Dim_Frame)
-			dmdDevices[i].Render_PM_Alphanumeric_Dim_Frame(layout, seg_data, seg_dim, seg_data2);
-		else if (dmdDevices[i].Render_PM_Alphanumeric_Frame) // older interface without dimming
+		if (dmdDevices[i].Render_PM_Alphanumeric_Frame)
 			dmdDevices[i].Render_PM_Alphanumeric_Frame(layout, seg_data, seg_data2);
-	}
 }

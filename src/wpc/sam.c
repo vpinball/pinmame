@@ -56,7 +56,7 @@ extern void libpinmame_forward_console_data(void* data, int size);
 
 #define SAM_CPUFREQ 40000000
 #define SAM_IRQFREQ 4008
-
+#define SAM_DMDFREQ 62.67
 #define SAM_SOUNDFREQ 24000
 #define SAM_ZC_FREQ 120 // was 145
 // 100ms sound buffer.
@@ -1343,16 +1343,16 @@ static MACHINE_INIT(sam) {
 
 	// Initialize DMDs
 	if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT) {
-		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+		core_dmd_pwm_init(core_gameData->lcdLayout->importedLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
 		for (int i = 0; i < 14; i++) // 14 WPT mini DMDs (7x5 LED matrix)
 			core_dmd_pwm_init(&core_gameData->lcdLayout[i + 1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0); // WPC_PH is 61Hz and the mini DMD are 50Hz, so it is ok
 	}
 	else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF) {
-		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+		core_dmd_pwm_init(core_gameData->lcdLayout->importedLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
 		core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_1, 0); // WOF mini DMD (35x5 LED matrix), DE_128x32 is 224Hz and the mini DMD is 200Hz, so it is ok
 	}
 	else {
-		core_dmd_pwm_init(core_gameData->lcdLayout->lptr, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+		core_dmd_pwm_init(core_gameData->lcdLayout->importedLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
 	}
 
 	// Initialize outputs
@@ -2252,6 +2252,44 @@ static INTERRUPT_GEN(sam_irq)
 	at91_fire_irq(AT91_FIQ_IRQ);
 }
 
+/*-- 
+  SAM DMD display uses 32 x 128 pixels by accessing 0x1000 bytes per page.
+  That's 8 bits for each pixel, but they are distributed into 4 brightness
+  bits (16 colors), and 4 translucency bits that perform the masking of the
+  secondary or "background" page that will "shine through" if the mask bits
+  of the foreground are set.
+
+  SAM rasterizer renders each line 4 times with different display lengths 
+  to create shades. Each line is therefore made up of a pattern of 12 x 41.55us, 
+  with the 4 planes corresponding to combination of 1 / 2 / 4 / 5 of these 12 
+  time slots. The resulting frame rate is 1e6/(32x12x41.55) = 62.67Hz which 
+  has been validated with real hardware measure. The flicker/fusion threshold 
+  is supposed to be somewhere around 25-30Hz based on the fact that other 
+  hardware like GTS3 and WPC feature PWM patterns around these frequencies.
+  Therefore, to get the final luminance, we would need to perform integration 
+  of at least the last 24 frames. As this leads to very little inter PWM frame
+  interaction, we simply apply a LUT corresponding to the 1 / 2 / 4 / 5 pattern.
+--*/
+static INTERRUPT_GEN(sam_dmd) {
+	for(int ii = 0; ii < 32; ii++ )
+	{
+		UINT8 *dotRaw = &samlocals.rawDMD[ii * 128];
+		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
+		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
+		for(int jj = 0; jj < 128; jj++ )
+		{
+			const UINT8 RAM1 = offs1[jj];
+			const UINT8 RAM2 = offs2[jj];
+			const UINT8 mix = RAM1 >> 4;
+			const UINT8 temp = (RAM2 & mix) | (RAM1 & (mix^0xF)); //!! is this correct or is mix rather a multiplier/ratio/alphavalue??
+			if ((mix != 0xF) && (mix != 0x0)) //!! happens e.g. in POTC in extra ball explosion animation: RAM1 values triggering this: 223, 190, 175, 31, 25, 19, 17 with RAM2 being always 0. But is this just wrong game data (as its a converted animation)?!
+				LOG(("Special DMD Bitmask %01X RAM1=%02x RAM2=%02x pix@(%3dx%2d)", mix, RAM1, RAM2, jj, ii));
+			*dotRaw++ = temp;
+		}
+	}
+   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, samlocals.rawDMD, 1);
+}
+
 /*********************************************/
 /* S.A.M. Generation #1 - Machine Definition */
 /*********************************************/
@@ -2263,6 +2301,7 @@ static MACHINE_DRIVER_START(sam1)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
     MDRV_CPU_VBLANK_INT(sam_interface_update, 1)
     MDRV_CPU_PERIODIC_INT(sam_irq, SAM_IRQFREQ)
+    MDRV_CPU_PERIODIC_INT(sam_dmd, SAM_DMDFREQ)
     MDRV_CORE_INIT_RESET_STOP(sam, sam1, sam)
     MDRV_DIPS(8)
     MDRV_NVRAM_HANDLER(sam)
@@ -2286,55 +2325,8 @@ MACHINE_DRIVER_END
 		gen, disp, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, lampcol, 16, 0, 0, hw,0, sam_getSol}}; \
 	static void init_##name(void) { core_gameData = &name##GameData; }
 
-/*****************/
-/*  DMD Section  */
-/*****************/
-
-/*-- 
-  SAM DMD display uses 32 x 128 pixels by accessing 0x1000 bytes per page.
-  That's 8 bits for each pixel, but they are distributed into 4 brightness
-  bits (16 colors), and 4 translucency bits that perform the masking of the
-  secondary or "background" page that will "shine through" if the mask bits
-  of the foreground are set.
-
-  SAM rasterizer renders each line 4 times with different display lengths 
-  to create shades. Each line is therefore made up of a pattern of 12 x 41.55us, 
-  with the 4 planes corresponding to combination of 1 / 2 / 4 / 5 of these 12 
-  time slots. The resulting frame rate is 1e6/(32x12x41.55) = 62.67Hz which 
-  has been validated with real hardware measure. The flicker/fusion threshold 
-  is supposed to be somewhere around 25-30Hz based on the fact that other 
-  hardware like GTS3 and WPC feature PWM patterns around these frequencies.
-  Therefore, to get the final luminance, we would need to perform integration 
-  of at least the last 24 frames. As this leads to very little inter PWM frame
-  interaction, we simply apply a LUT corresponding to the 1 / 2 / 4 / 5 pattern.
---*/
-static PINMAME_VIDEO_UPDATE(samdmd_update) {
-	for(int ii = 0; ii < 32; ii++ )
-	{
-		UINT8 *dotRaw = &samlocals.rawDMD[ii * layout->length];
-		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
-		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
-		for(int jj = 0; jj < 128; jj++ )
-		{
-			const UINT8 RAM1 = offs1[jj];
-			const UINT8 RAM2 = offs2[jj];
-			const UINT8 mix = RAM1 >> 4;
-			const UINT8 temp = (RAM2 & mix) | (RAM1 & (mix^0xF)); //!! is this correct or is mix rather a multiplier/ratio/alphavalue??
-			if ((mix != 0xF) && (mix != 0x0)) //!! happens e.g. in POTC in extra ball explosion animation: RAM1 values triggering this: 223, 190, 175, 31, 25, 19, 17 with RAM2 being always 0. But is this just wrong game data (as its a converted animation)?!
-				LOG(("Special DMD Bitmask %01X RAM1=%02x RAM2=%02x pix@(%3dx%2d)", mix, RAM1, RAM2, jj, ii));
-			*dotRaw++ = temp;
-		}
-	}
-   core_dmd_submit_frame(layout, samlocals.rawDMD, 1);
-	core_dmd_video_update(bitmap, cliprect, layout);
-	return 0;
-}
-
-#define SAT_NYB(v) (UINT8)(15.0f * ((v) < 0.0f ? 0.0f : (v) > 1.0f ? 1.0f : (v)))
-#define SAT_BYTE(v) (UINT8)(255.0f * ((v) < 0.0f ? 0.0f : (v) > 1.0f ? 1.0f : (v)))
-
 static struct core_dispLayout sam_dmd128x32[] = {
-	{0, 0, 32, 128, CORE_DMD/*| CORE_DMDNOAA*/, (genf*)samdmd_update},
+	{0, 0, 32, 128, CORE_DMD/*| CORE_DMDNOAA*/, NULL },
 	{0}
 };
 

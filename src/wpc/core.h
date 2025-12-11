@@ -220,13 +220,13 @@
    handles all kinds of displays so we call it dispLayout.
    Keep the typedef of core_tLCDLayout for some time. */
 struct core_dispLayout {
-  const UINT16 top, left;              // Internal renderer position
-  const UINT16 start;                  // For segment displays: start position in the display memory (in digits), For DMD/VIDEO: height of the display (in lines)
-  const UINT16 length;                 // For segment displays: number of digits, For DMD/VIDEO: width of the display (in pixels)
-  const UINT16 type;
-  genf* fptr;                          // Custom renderer function for CORE_VIDEO
-  const struct core_dispLayout * lptr; // for DISP_SEG_IMPORT(x) with flag CORE_IMPORT
-  int index;                           // index of this layout in the overall layout (evaluated when machine is started)
+  const UINT16 top, left;                        // Internal renderer position
+  const UINT16 start;                            // For segment displays: start position in the display memory (in digits), For DMD/VIDEO: height of the display (in lines)
+  const UINT16 length;                           // For segment displays: number of digits, For DMD/VIDEO: width of the display (in pixels)
+  const UINT16 type;                             // Display type
+  genf* videoRenderer;                           // CORE_VIDEO renderer
+  const struct core_dispLayout * importedLayout; // CORE_IMPORT layout (see DISP_SEG_IMPORT)
+  int index;                                     // index of this layout in the overall layout list (evaluated when machine is started)
 };
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 // Overall alphanumeric display layout. Used externally by VPinMame's dmddevice. Don't change order
@@ -509,9 +509,6 @@ typedef struct {
   /*-- Alphanumeric driver --*/
   core_tSeg segments;                                           /* Segments data from driver */
   UINT16 drawSeg[CORE_SEGCOUNT];                                /* Segments drawn */
-  /*-- DMD state (drivers not using the PWM implementation) --*/
-  UINT8 dmdDotRaw[DMD_MAXY * DMD_MAXX];                         /* DMD: 'raw' dots, that is to say frame built up from rasterized frames (depends on each driver), stable result that can be used for post processing (colorization, ...) */
-  float dmdDotLum[DMD_MAXY * DMD_MAXX];                         /* DMD: perceived linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable) */
   /*-- Solenoids --*/
   volatile UINT32 pulsedSolState;                               /* Current pulse binary value of solenoids on driver board */
   volatile UINT32 solenoids;                                    /* Current integrated binary On/Off value of solenoids on driver board (not pulsed, averaged over a period depending on the driver) */
@@ -652,7 +649,8 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 
 extern void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const int raw_combiner, const int isReversedByte);
 extern void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, const int ntimes);
-extern PINMAME_VIDEO_UPDATE(core_dmd_video_update);
+extern void core_dmd_update_identify(const core_ptLCDLayout layout, UINT8* bitplaneFrame);
+extern void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuffer, float* luminanceFrame);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

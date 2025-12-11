@@ -230,5 +230,3 @@ extern MACHINE_DRIVER_EXTERN(spinbs1n2);
 #define mSPINBS       spinbs1
 #define mSPINBSNMI    spinbs1n
 #define mSPINBSNMI2   spinbs1n2
-
-extern PINMAME_VIDEO_UPDATE(SPINBdmd_update);

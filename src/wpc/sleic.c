@@ -45,6 +45,25 @@ static INTERRUPT_GEN(SLEIC_irq_i80188) {
 
 static INTERRUPT_GEN(SLEIC_irq_i8039) {
   cpu_set_irq_line(SLEIC_DISPLAY_CPU, 0, PULSE_LINE);
+
+  // The IRQ is the VSYNC, as we are not emulating the rasterizer, we process the video frames here
+  int ii, jj, kk;
+  UINT16 *RAM;
+  RAM = (void *)(memory_region(SLEIC_MEMREG_CPU) + 0x60410);
+  for (ii = 0; ii < 32; ii++) {
+    UINT8 *line = &locals.rawDMD[ii * 128];
+    for (jj = 0; jj < 16; jj++) {
+      for (kk = 7; kk >= 0; kk--) {
+        *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
+      }
+      for (kk = 15; kk > 7; kk--) {
+        *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
+      }
+      RAM++;
+    }
+    *line = 0;
+  }
+  core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
 
 static INTERRUPT_GEN(SLEIC_irq_z80) {
@@ -54,12 +73,13 @@ static INTERRUPT_GEN(SLEIC_irq_z80) {
 /*-------------------------------
 /  copy local data to interface
 /--------------------------------*/
-static INTERRUPT_GEN(SLEIC_vblank) {
+static INTERRUPT_GEN(SLEIC_interface_update) {
   locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % SLEIC_LAMPSMOOTH) == 0)
     memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
 
@@ -259,7 +279,7 @@ static MACHINE_DRIVER_START(SLEIC)
   MDRV_CPU_ADD_TAG("mcpu", I188, 8000000)
   MDRV_CPU_MEMORY(SLEIC_80188_readmem, SLEIC_80188_writemem)
   MDRV_CPU_PORTS(SLEIC_80188_readport, SLEIC_80188_writeport)
-  MDRV_CPU_VBLANK_INT(SLEIC_vblank, 1)
+  MDRV_CPU_VBLANK_INT(SLEIC_interface_update, 1)
   MDRV_CPU_PERIODIC_INT(SLEIC_irq_i80188, 120)
 
   // I/O section
@@ -276,7 +296,7 @@ MACHINE_DRIVER_START(SLEIC1)
   MDRV_CPU_ADD_TAG("dcpu", I8039, 2000000)
   MDRV_CPU_MEMORY(SLEIC_8039_readmem, SLEIC_8039_writemem)
   MDRV_CPU_PORTS(SLEIC_8039_readport, SLEIC_8039_writeport)
-  MDRV_CPU_PERIODIC_INT(SLEIC_irq_i8039, 2000000/8192.)
+  MDRV_CPU_PERIODIC_INT(SLEIC_irq_i8039, 2000000/8192.) // DMD VSYNC at 244.14Hz
 
   MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
   MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf)
@@ -300,25 +320,3 @@ MACHINE_DRIVER_START(SLEIC3)
   MDRV_CPU_PORTS(SLEIC_8039_readport, SLEIC_8039_writeport)
   MDRV_CPU_PERIODIC_INT(SLEIC_irq_i8039, 2000000/8192.)
 MACHINE_DRIVER_END
-
-PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
-  int ii, jj, kk;
-  UINT16 *RAM;
-
-  RAM = (void *)(memory_region(SLEIC_MEMREG_CPU) + 0x60410);
-  for (ii = 0; ii < 32; ii++) {
-    UINT8 *line = &locals.rawDMD[ii * layout->length];
-    for (jj = 0; jj < 16; jj++) {
-      for (kk = 7; kk >= 0; kk--) {
-        *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
-      }
-      for (kk = 15; kk > 7; kk--) {
-        *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
-      }
-      RAM++;
-    }
-    *line = 0;
-  }
-  core_dmd_submit_frame(layout, locals.rawDMD, 1);
-  return core_dmd_video_update(bitmap, cliprect, layout);
-}

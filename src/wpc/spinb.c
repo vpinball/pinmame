@@ -230,6 +230,7 @@ static READ_HANDLER(SPINB_S2_MSM5205_READROM);
 static WRITE_HANDLER(SPINB_S1_MSM5205_w);
 static WRITE_HANDLER(SPINB_S2_MSM5205_w);
 static void spinb_z80int(int data);
+static INTERRUPT_GEN(SPINBdmd_update);
 
 #if DMD_FROM_RAM
 	static UINT8  *dmd32RAM;
@@ -1305,6 +1306,8 @@ static MACHINE_DRIVER_START(spinbdmd)
   MDRV_CPU_ADD(I8051, SPINB_8051CPU_FREQ)	/*16 Mhz*/
   MDRV_CPU_MEMORY(spinbdmd_readmem, spinbdmd_writemem)
   MDRV_CPU_PORTS(spinbdmd_readport, spinbdmd_writeport)
+  // FIXME Correctly implement PWM DMD implementation (This is a quick hack with flickering issues)
+  MDRV_CPU_PERIODIC_INT(SPINBdmd_update, 60)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -1423,7 +1426,7 @@ MACHINE_DRIVER_END
 //DRAW DMD FROM RAM OPTION
 
 #if DMD_FROM_RAM
-PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
+static INTERRUPT_GEN(SPINBdmd_update) {
 #ifdef MAME_DEBUG
   static int offset = 0;
 #endif
@@ -1484,7 +1487,6 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     *line = 0;
   }
   core_dmd_submit_frame(layout, SPINBlocals.rawDMD, 1);
-  return core_dmd_video_update(bitmap, cliprect, layout);
 }
 
 #else
@@ -1498,14 +1500,14 @@ static const int intens[3][4]= {
  {0,1,2,3}
 };
 
-PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
+static INTERRUPT_GEN(SPINBdmd_update) {
   int     row,col,bit,dot;
   UINT8   *line;
   UINT8   d1,d2,d3;
 
   for (row=0; row < 32; row++)
   {
-    line = &SPINBlocals.rawDMD[row * layout->length];
+    line = &SPINBlocals.rawDMD[row * 128];
     for (col=0; col < 16; col++)
     {
       d1=dmd32RAM[0][row][col];
@@ -1521,8 +1523,6 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
-  core_dmd_submit_frame(layout, SPINBlocals.rawDMD, 1);
-  return core_dmd_video_update(bitmap, cliprect, layout);
-
+  core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, SPINBlocals.rawDMD, 1);
 }
 #endif

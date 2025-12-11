@@ -879,7 +879,7 @@ static MACHINE_INIT(s11) {
      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
      switch (layout->type & CORE_SEGMASK)
      {
-     case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->lptr - 1; break;
+     case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->importedLayout - 1; break;
      case CORE_DMD: break;
      case CORE_VIDEO: break;
      default: if (coreGlobals.nAlphaSegs < (layout->start + layout->length) * 16) coreGlobals.nAlphaSegs = (layout->start + layout->length) * 16; break;
