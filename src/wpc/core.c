@@ -3146,7 +3146,7 @@ void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, co
 // frame submission by the emulated hardware. To avoid synchronization, a simple circular buffer with consumer
 // accessing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
 // not use synchronization primitives, so this can fail if instructions are reordered).
-static void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuffer, float* luminanceFrame) {
+void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuffer, float* luminanceFrame) {
    const core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
    switch (dmd_state->raw_combiner) {
    case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4:
@@ -3157,7 +3157,7 @@ static void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuf
          luminanceFrame[jj] = lumLUT[frameData[jj]];
       break;
    }
-   
+
    case CORE_DMD_PWM_PREINTEGRATED_SAM:
    {
       // This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
@@ -3230,10 +3230,10 @@ static void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuf
    }
 }
 
-static void core_dmd_update_identify(const core_ptLCDLayout layout, UINT8* bitplaneFrame)
+void core_dmd_update_identify(const core_ptLCDLayout layout, UINT8* bitplaneFrame)
 {
   const core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
-  
+
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)

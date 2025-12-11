@@ -2263,7 +2263,7 @@ static INTERRUPT_GEN(sam_irq)
   to create shades. Each line is therefore made up of a pattern of 12 x 41.55us, 
   with the 4 planes corresponding to combination of 1 / 2 / 4 / 5 of these 12 
   time slots. The resulting frame rate is 1e6/(32x12x41.55) = 62.67Hz which 
-  has been validated with real hardware measure. The flicker/fusion threshold 
+  has been validated with real hardware measures. The flicker/fusion threshold 
   is supposed to be somewhere around 25-30Hz based on the fact that other 
   hardware like GTS3 and WPC feature PWM patterns around these frequencies.
   Therefore, to get the final luminance, we would need to perform integration 
