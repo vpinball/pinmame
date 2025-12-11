@@ -715,7 +715,7 @@ static const tSegData segData[2][18] = {{
 /*-- DMD state for PWM integration --*/
 typedef struct {
   // Definition initialized at startup using 'core_dmd_pwm_init' then unmutable
-  core_ptLCDLayout layout;    // DMD layout
+  core_tLCDLayout* layout;    // DMD layout
   int     width;              // DMD width (alias from layout)
   int     height;             // DMD height (alias from layout)
   int     revByte;            // Is bitset reversed ?
@@ -2148,7 +2148,7 @@ static MACHINE_INIT(core) {
 
     /*-- Setup displays: setups display ids and performs some additional validation --*/
     if (core_gameData->lcdLayout) {
-      for (core_ptLCDLayout layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+      for (core_tLCDLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
         if (layout->length == 0) {
           layout = parent_layout;
           parent_layout = NULL;
@@ -2175,7 +2175,7 @@ static MACHINE_INIT(core) {
         }
       }
       int index = 0;
-      for (core_ptLCDLayout layout = core_gameData->lcdLayout, parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+      for (core_tLCDLayout* layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
         if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
         if ((layout->type & CORE_SEGMASK) == CORE_IMPORT) {
           parent_layout = layout + 1;
@@ -3032,7 +3032,7 @@ fprintf('%i, ', int_factor * b);
 fprintf(']\n');
 */
 
-void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const int raw_combiner, const int isReversedByte) {
+void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const int raw_combiner, const int isReversedByte) {
   assert(layout->index >= 0);
   assert((layout->type & CORE_SEGALL) == CORE_DMD);
   core_tDMDPWMState* dmd_state = (core_tDMDPWMState*)malloc(sizeof(core_tDMDPWMState));
@@ -3131,7 +3131,7 @@ void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const in
   dmd_state->nextFrame = 0;
 }
 
-void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, const int ntimes) {
+void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, const int ntimes) {
   core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
   for (int i = 0; i < ntimes; i++) {
     memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
@@ -3146,7 +3146,7 @@ void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, co
 // frame submission by the emulated hardware. To avoid synchronization, a simple circular buffer with consumer
 // accessing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
 // not use synchronization primitives, so this can fail if instructions are reordered).
-void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuffer, float* luminanceFrame) {
+void core_dmd_update_pwm(const core_tLCDLayout* layout, UINT32* dmdFIRBuffer, float* luminanceFrame) {
    const core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
    switch (dmd_state->raw_combiner) {
    case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4:
@@ -3230,7 +3230,7 @@ void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuffer, fl
    }
 }
 
-void core_dmd_update_identify(const core_ptLCDLayout layout, UINT8* bitplaneFrame)
+void core_dmd_update_identify(const core_tLCDLayout* layout, UINT8* bitplaneFrame)
 {
   const core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 

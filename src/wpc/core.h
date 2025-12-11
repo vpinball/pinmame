@@ -225,7 +225,7 @@ struct core_dispLayout {
   const UINT16 length;                           // For segment displays: number of digits, For DMD/VIDEO: width of the display (in pixels)
   const UINT16 type;                             // Display type
   genf* videoRenderer;                           // CORE_VIDEO renderer
-  const struct core_dispLayout * importedLayout; // CORE_IMPORT layout (see DISP_SEG_IMPORT)
+  struct core_dispLayout * const importedLayout; // CORE_IMPORT layout (see DISP_SEG_IMPORT)
   int index;                                     // index of this layout in the overall layout list (evaluated when machine is started)
 };
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
@@ -541,7 +541,7 @@ extern volatile struct pinMachine *coreData;
 /*-- fills in one of these in the game_init function --*/
 typedef struct {
   const UINT64  gen;                /* Hardware Generation */
-  const core_tLCDLayout *lcdLayout; /* LCD display layout */
+  core_tLCDLayout *lcdLayout;       /* LCD display layout */
   const struct {
     UINT32  flippers;      /* flippers installed (see defines below) */
     int     swCol, lampCol, custSol; /* Custom switch columns, lamp columns and solenoids */
@@ -647,10 +647,10 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 #define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
 #define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101
 
-extern void core_dmd_pwm_init(const core_ptLCDLayout layout, const int filter, const int raw_combiner, const int isReversedByte);
-extern void core_dmd_submit_frame(const core_ptLCDLayout layout, const UINT8* frame, const int ntimes);
-extern void core_dmd_update_identify(const core_ptLCDLayout layout, UINT8* bitplaneFrame);
-extern void core_dmd_update_pwm(const core_ptLCDLayout layout, UINT32* dmdFIRBuffer, float* luminanceFrame);
+extern void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const int raw_combiner, const int isReversedByte);
+extern void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, const int ntimes);
+extern void core_dmd_update_identify(const core_tLCDLayout* layout, UINT8* bitplaneFrame);
+extern void core_dmd_update_pwm(const core_tLCDLayout* layout, UINT32* dmdFIRBuffer, float* luminanceFrame);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

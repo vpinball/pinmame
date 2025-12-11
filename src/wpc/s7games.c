@@ -312,7 +312,7 @@ CORE_CLONEDEF(thund,p3,p1,"Thunderball (P-3 Prototype)",1982,"Williams",s7_mS7SN
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
 /-------------------------------*/
-static const core_tLCDLayout dispHypbl[] = {
+static core_tLCDLayout dispHypbl[] = {
   { 0, 0, 1, 7,CORE_SEG87 }, { 0,16, 9, 7,CORE_SEG87 },
   { 2,10,20, 1,CORE_SEG87 }, { 2,12,28, 1,CORE_SEG87 },
   { 2,16, 0, 1,CORE_SEG87 }, { 2,18, 8, 1,CORE_SEG87 },
