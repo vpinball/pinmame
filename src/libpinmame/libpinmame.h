@@ -22,6 +22,12 @@
 #define PINMAME_MAX_MECHSW 20
 #define PINMAME_ACCUMULATOR_SAMPLES 8192 // from mixer.c
 
+#define UINT32 uint32_t
+#define UINT8  uint8_t
+
+#include "plugins/MsgPlugin.h"
+
+
 typedef enum {
 	PINMAME_LOG_LEVEL_DEBUG = 0,
 	PINMAME_LOG_LEVEL_INFO = 1,
@@ -482,3 +488,6 @@ PINMAMEAPI int PinmameGetMaxNVRAM();
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);
+
+// If defined, libPinMame will implement the core controller messages for display, input & output state queries
+PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgPluginAPI, unsigned int endpointId);
