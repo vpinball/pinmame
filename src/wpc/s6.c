@@ -113,7 +113,7 @@ static void s6_piaIrq(int state) {
 static INTERRUPT_GEN(s6_irq) {
   s6_irqline(1);
 #if defined(LISY_SUPPORT)
- static count = 0;
+ static int count = 0;
  //get the switches from LISY_mini (needed in test/diag mode)
  lisy_w_switch_handler();
  //reduced call to throttle in order not to interfere with timing
