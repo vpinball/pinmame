@@ -722,7 +722,6 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 				0,TRANSPARENCY_PEN,0);
 	}
 	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
-	return 0;
 }
 
 //Video Update - Generation #2
@@ -730,7 +729,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	size_t offs;
 	int colorindex = 0;
 
-	if (locals.pout2) return 0;
+	if (locals.pout2) return;
 
 	/* for every character in the Video RAM, check if it has been modified */
 	/* since last time and update it accordingly. */
@@ -778,8 +777,6 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 				0,TRANSPARENCY_PEN,0);
 	}
 	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
-
-	return 0;
 }
 
 

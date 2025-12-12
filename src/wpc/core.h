@@ -252,7 +252,7 @@ typedef enum {
 } core_segOverallLayout_t;
 
 
-#define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, core_tLCDLayout *layout)
+#define PINMAME_VIDEO_UPDATE(name) void (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, core_tLCDLayout *layout)
 typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout);
 
 /*---------------------------------------
@@ -649,8 +649,8 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 
 extern void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const int raw_combiner, const int isReversedByte);
 extern void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, const int ntimes);
-extern void core_dmd_update_identify(const core_tLCDLayout* layout, UINT8* bitplaneFrame);
-extern void core_dmd_update_pwm(const core_tLCDLayout* layout, UINT32* dmdFIRBuffer, float* luminanceFrame);
+extern UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * rawFrameId);
+extern float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int* lumFrameId);
 
 extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 

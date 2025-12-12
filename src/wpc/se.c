@@ -1052,7 +1052,7 @@ static WRITE_HANDLER(giaux_w) {
 // Custom video renderer for the 3-Color MINI DMD Type 4 (Simpsons) (2 color R/G Led matrix 14x10)
 PINMAME_VIDEO_UPDATE(seminidmd_update) {
    if (pmoptions.dmd_only)
-      return 0;
+      return;
    static const UINT16 colors[4] = { 0, 7, 8, 10 }; // off, green, red, yellow
    const UINT16 *seg = coreGlobals.drawSeg;
    const int x = layout->left;
@@ -1073,7 +1073,6 @@ PINMAME_VIDEO_UPDATE(seminidmd_update) {
       }
       lines += displaySize;
    }
-   return 0;
 }
 
 /*---------------------------

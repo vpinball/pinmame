@@ -693,7 +693,7 @@ int StartGame(const int gameNum)
  * PinmameGetGame
  ******************************************************/
 
-PINMAMEAPI PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, const void* p_userData)
+PINMAMEAPI PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, void* const p_userData)
 {
 	if (!_p_Config)
 		return PINMAME_STATUS_CONFIG_NOT_SET;
@@ -725,7 +725,7 @@ PINMAMEAPI PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCa
  * PinmameGetGames
  ******************************************************/
 
-PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, const void* p_userData)
+PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, void* const p_userData)
 {
 	if (!_p_Config)
 		return PINMAME_STATUS_CONFIG_NOT_SET;
@@ -1446,7 +1446,7 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
  * PinmameSetUserData
  ******************************************************/
 
-PINMAMEAPI void PinmameSetUserData(const void* p_userData)
+PINMAMEAPI void PinmameSetUserData(void* const p_userData)
 {
 	_p_userData = (void*)p_userData;
 }
