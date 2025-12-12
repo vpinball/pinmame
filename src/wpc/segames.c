@@ -73,7 +73,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(apollo14,apollo13,"Apollo 13 (5.01, Display 4.01)",1995,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
-/ Goldeneye
+/ GoldenEye
 /-------------------------------------------------------------------*/
 INITGAME(gldneye,GEN_WS,se_dmd128x32,SE_BOARDID_520_5143_00)
 SE128_ROMSTART(gldneye, "bondcpu.404",CRC(5aa6ffcc) SHA1(0c8ffcfe008a650060c42d385e91addf44f5d88e))
@@ -83,7 +83,7 @@ DE2S_SOUNDROM144("bondu7.bin" ,CRC(7581a349) SHA1(493236bdc52b601a08009f9b03d64b
                  "bondu21.bin",CRC(5be0f205) SHA1(aaef8f6ee6c8d5ebf08f90368061288adf850a18))
 SE_ROMEND
 #define input_ports_gldneye input_ports_se
-CORE_GAMEDEFNV(gldneye,"Goldeneye",1996,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(gldneye,"GoldenEye",1996,"Sega",de_mSES1,0)
 
 /* Stereo? Speaker test shows Left Channel & Both Speaker Test Only */
 

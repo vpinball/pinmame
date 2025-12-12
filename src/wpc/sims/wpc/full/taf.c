@@ -560,7 +560,7 @@ static sim_tSimData tafSimData = {
 #ifdef NEWSHOOT
   {{{10, "Swamp",      stULock,  10},
     {20, "Thing Hole", stThHole, 15},
-    {25, "Loop",       stRLoopDn,20)
+    {25, "Loop",       stRLoopDn,20}
   }}
 #else
   TRUE, /* simulate manual shooter */

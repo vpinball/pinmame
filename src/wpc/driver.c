@@ -1318,7 +1318,7 @@ DRIVERNV(apollo1)       //Whitestar: 11/95 Apollo 13 (1.00)
 DRIVERNV(apollo2)       //           11/95 Apollo 13 (2.03)
 DRIVERNV(apollo13)      //           11/95 Apollo 13 (5.01)
 DRIVERNV(apollo14)      //           11/95 Apollo 13 (5.01, Display 4.01)
-DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
+DRIVERNV(gldneye)       //Whitestar: 02/96 GoldenEye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
 DRIVER  (twst,404)      //           05/96 Twister (4.04)
 DRIVER  (twst,405)      //           05/96 Twister (4.05)

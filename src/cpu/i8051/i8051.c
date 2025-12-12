@@ -2083,7 +2083,7 @@ INLINE void update_timer(int cyc)
 	if(GET_TR0) {
 		//Determine Mode
 		int mode = (GET_M0_1<<1) | GET_M0_0;
-		int overflow;
+		UINT32 overflow;
 		UINT16 count;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
@@ -2097,7 +2097,7 @@ INLINE void update_timer(int cyc)
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
 					//Any overflow from cycles?
-					cyc-= (overflow-count)*12;
+					cyc-= (int)(overflow-count)*12;
 					count = 0;
 					SET_TF0(1);
 				}
@@ -2125,7 +2125,7 @@ INLINE void update_timer(int cyc)
 				overflow = 0xff;
 				count = R_TL0;
 				//Check for overflow
-				if(count+(cyc/12)>overflow) {
+				if((UINT32)(count+(cyc/12))>overflow) {
                     SET_TF0(1);
 					//Reload
 					count = R_TH0+(overflow-count);
@@ -2140,7 +2140,7 @@ INLINE void update_timer(int cyc)
 				overflow = 0xff;
 				count = R_TL0;
 				//Check for overflow
-                if(count+(cyc/12)>overflow) {
+                if((UINT32)(count+(cyc/12))>overflow) {
 					count = overflow-count;
                     SET_TF0(1);
                 }
@@ -2154,7 +2154,7 @@ INLINE void update_timer(int cyc)
 				    overflow = 0xff;
 				    count = R_TH0;
 				    //Check for overflow
-                    if(count+(cyc/12)>overflow) {
+                    if((UINT32)(count+(cyc/12))>overflow) {
 					    count = overflow-count;
                         SET_TF1(1);
                     }
@@ -2171,7 +2171,7 @@ INLINE void update_timer(int cyc)
 	if(GET_TR1) {
 		//Determine Mode
 		int mode = (GET_M1_1<<1) | GET_M1_0;
-		int overflow;
+		UINT32 overflow;
 		UINT16 count;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
@@ -2188,7 +2188,7 @@ INLINE void update_timer(int cyc)
 					//TODO: Timer 1 can be set as Serial Baud Rate in the 8051 only... process bits here..
 
 					//Any overflow from cycles?
-					cyc-= (overflow-count)*12;
+					cyc-= (int)(overflow-count)*12;
 					count = 0;
 					SET_TF1(1);
 				}
@@ -2216,7 +2216,7 @@ INLINE void update_timer(int cyc)
 				overflow = 0xff;
 				count = R_TL1;
 				//Check for overflow
-				if(count+(cyc/12)>overflow) {
+				if((UINT32)(count+(cyc/12))>overflow) {
                     SET_TF1(1);
 					//Reload
 					count = R_TH1+(overflow-count);
@@ -2234,9 +2234,9 @@ INLINE void update_timer(int cyc)
 #if (HAS_I8052 || HAS_I8752)
 	//Update Timer 2
 	if(GET_TR2) {
-		int timerinc, overflow;
+		int timerinc = 0;
+		UINT32 overflow = 0;
 		UINT16 count = ((R_TH2<<8) | R_TL2);
-		timerinc = overflow = 0;
 
 		//Are we in counter mode?
 		if(GET_CT2)		{

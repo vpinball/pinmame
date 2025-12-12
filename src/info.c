@@ -86,7 +86,7 @@ static const char *xml_normalize_string(const int OUTPUT_XML, const char *string
 					if (*string >= ' ' && *string <= '~')
 						*d++ = *string;
 					else
-						d += sprintf(d, "&#%d;", (unsigned)(unsigned char)*string);
+						d += sprintf(d, "&#%u;", (unsigned)(unsigned char)*string);
 			}
 			++string;
 		}
@@ -143,7 +143,7 @@ static void print_free_string(int OUTPUT_XML, FILE* out, const char* s)
 						if (*s>=' ' && *s<='~')
 							fprintf(out, "%c", *s);
 						else
-							fprintf(out, "&#%d;", (unsigned)(unsigned char)*s);
+							fprintf(out, "&#%u;", (unsigned)(unsigned char)*s);
 				}
 				++s;
 			}

@@ -715,7 +715,7 @@ static const tSegData segData[2][18] = {{
 /*-- DMD state for PWM integration --*/
 typedef struct {
   // Definition initialized at startup using 'core_dmd_pwm_init' then unmutable
-  core_tLCDLayout* layout;    // DMD layout
+  const core_tLCDLayout* layout; // DMD layout
   int     width;              // DMD width (alias from layout)
   int     height;             // DMD height (alias from layout)
   int     revByte;            // Is bitset reversed ?
@@ -724,7 +724,7 @@ typedef struct {
   int     nFrames;            // Number of frames to store and consider to create shades (depends on hardware refresh frequency and used PWM patterns)
   int     raw_combiner;       // CORE_DMD_PWM_COMBINER_... enum that defines how to combine bitplanes to create multi plane raw frame for colorization plugin
   int     fir_size;           // Selected filter (depends on hardware refresh frequency and number of stored frames)
-  const UINT32* fir_weights;  // Selected filter (depends on hardware refresh frequency and number of stored frames)
+  const UINT32* fir_weights;  // Selected filter weights (depends on hardware refresh frequency and number of stored frames)
   float   fir_sum;            // Sum of filter weights
   // Data acquisition, fed by the driver through 'core_dmd_submit_frame'
   UINT8*  rawFrames;          // Buffer for incoming raw frames

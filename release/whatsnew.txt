@@ -23,6 +23,8 @@ Added physical/PWM support to CFTBL backglass flashers
 Added physical/PWM lamps & solenoids support to Bally 6803 games
 Added physical/PWM lamps & solenoids support to Zaccaria games
 Added physical/PWM support to Alvin G. games
+Added physical/PWM support to Star Wars Trilogy and Titanic
+Added physical/PWM support to games employing mini-DMDs and the like
 Fixed some potential general solenoid issues with physical/PWM
 Improved physical/PWM bulb integration
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights

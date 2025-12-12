@@ -103,7 +103,7 @@ extern PINMAME_VIDEO_UPDATE(seminidmd_update);
 #define SE_BOARDID_520_5068_01 0x0001 // Auxiliary driver board with 3 latched solenoid outputs
 #define SE_BOARDID_520_5078_00 0x0002 // Tommy blinder driver but also used as a replacement part for Independence Day servo controller board
 #define SE_BOARDID_520_5130_06 0x0004 // Appollo 13 extra 7 segment display + modulated magnet driver
-#define SE_BOARDID_520_5143_00 0x0008 // Golden Eye & Twister double magnets processor
+#define SE_BOARDID_520_5143_00 0x0008 // GoldenEye & Twister double magnets processor
 #define SE_BOARDID_520_5152_00 0x0010 // Independence Day servo controller board
 #define SE_BOARDID_520_5192_00 0x0020 // Auxiliary driver board for 3 solenoid outputs (not latched)
 #define SE_BOARDID_520_5197_00 0x0040 // High Roller & Monopoly Casino Mini DMD
