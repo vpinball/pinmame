@@ -679,7 +679,11 @@ INLINE unsigned int core_BitColToNum(unsigned int n)
 {
    if (n == 0) return 0;
 #ifdef _MSC_VER
+#if (defined(_M_ARM) || defined(_M_ARM64))
+   return _CountTrailingZeros(n);
+#else
    return _tzcnt_u32(n); // counts trailing zeros
+#endif
 #else
    return __builtin_ctz(n);
 #endif
