@@ -1352,7 +1352,7 @@ static MACHINE_INIT(sam) {
 		core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_DE_128x32, CORE_DMD_PWM_COMBINER_1, 0); // WOF mini DMD (35x5 LED matrix), DE_128x32 is 224Hz and the mini DMD is 200Hz, so it is ok
 	}
 	else {
-		core_dmd_pwm_init(core_gameData->lcdLayout->importedLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
+		core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_SAM, CORE_DMD_PWM_PREINTEGRATED_SAM, 0);
 	}
 
 	// Initialize outputs
