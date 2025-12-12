@@ -90,8 +90,8 @@ static struct {
   UINT8  miniDMDLatches[6];
   UINT8  miniDMD21x5[5][3];   // RCT
   UINT16 miniDMD15x7[7];      // HRC, Monopoly
-  UINT8  miniDMD5x7[3][7];    // Ripleys (3 displays of 5x7 dots)
-  UINT16 miniDMD14x10[2][10]; // Simpson (14x10 bicolor displays, 1 red and 1 green)
+  UINT8  miniDMD5x7[3][7];    // Ripley's (3 displays of 5x7 dots)
+  UINT16 miniDMD14x10[2][10]; // Simpsons (14x10 bicolor displays, 1 red and 1 green)
   /* trace ram related */
 #if SUPPORT_TRACERAM
   UINT8 *traceRam;
@@ -333,7 +333,7 @@ static MACHINE_INIT(se3) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
    }
-   else if (strncasecmp(grn, "ripleys", 7) == 0) { // Ripley
+   else if (strncasecmp(grn, "ripleys", 7) == 0) { // Ripley's
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 22 - 1, 1, CORE_MODOUT_PULSE); // Idol Opto LED
       core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
       core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0);
@@ -446,7 +446,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(grn, "gldneye", 7) == 0) { // Golden Eye
+  else if (strncasecmp(grn, "gldneye", 7) == 0) { // GoldenEye
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(grn, "id4", 3) == 0) { // Independence Day
@@ -480,7 +480,7 @@ static MACHINE_INIT(se) {
   else if (strncasecmp(grn, "playboys", 8) == 0) { // Playboy
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  else if (strncasecmp(grn, "rctycn", 6) == 0) { // Roller Coaster Tycoon
+  else if (strncasecmp(grn, "rctycn", 6) == 0) { // RollerCoaster Tycoon
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -490,7 +490,7 @@ static MACHINE_INIT(se) {
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31 - 1, 2, CORE_MODOUT_BULB_89_20V_DC_WPC);
-	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 8, CORE_MODOUT_LED_STROBE_1_10MS); // Green LEDs
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 8, CORE_MODOUT_LED_STROBE_1_10MS); // Green LEDs
      core_dmd_pwm_init(&core_gameData->lcdLayout[1], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0); // Green
      core_dmd_pwm_init(&core_gameData->lcdLayout[2], CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_1, 0); // Red
   }
@@ -513,16 +513,16 @@ static MACHINE_INIT(se) {
   else if (strncasecmp(grn, "startrp", 7) == 0) { // Starship Troopers
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
-	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 49 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
-	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 57 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
-	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 65 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
-	 core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 49 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 57 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 65 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 73 - 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 7 LED segments
   }
   else if (strncasecmp(grn, "swtril", 6) == 0) { // Star Wars Trilogy
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if ((strncasecmp(grn, "nfl", 3) == 0) // NFL
-		|| (strncasecmp(grn, "strikext", 8) == 0)) { // Striker Extreme
+        || (strncasecmp(grn, "strikext", 8) == 0)) { // Striker Extreme
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
@@ -893,14 +893,14 @@ static WRITE_HANDLER(giaux_w) {
       }
    }
 
-   // Board 520-5143-00: Golden eye & Twister double magnet processor (drive magnet but also perform ball detection and report it on the switch matrix)
+   // Board 520-5143-00: GoldenEye & Twister double magnet processor (drive magnet but also perform ball detection and report it on the switch matrix)
    if (core_gameData->hw.display & SE_BOARDID_520_5143_00) {
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
       core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, selocals.auxdata, 0x03); // Solenoids 33..34: magnet 1 & 2 enable states
       core_write_pwm_output(CORE_MODOUT_SOL0 + 35 - 1, 1, data >> 7); // Solenoids 35: ASTB (reset processor)
    }
 
-   // High Roller Casino, RollerCoaster Tycoon, Ripley & Monopoly Mini DMDs
+   // High Roller Casino, RollerCoaster Tycoon, Ripley's & Monopoly Mini DMDs
    if ((core_gameData->hw.display & (SE_BOARDID_520_5197_00 | SE_BOARDID_520_5221_00 | SE_BOARDID_520_5236_00)) && (core_lowToHigh(selocals.lastgiaux, data, 0x80))) { // ASTB clock in data to minidmd
       // clock in data to minidmd (4 cascaded latches used like a large shift register)
       selocals.miniDMDLatches[3] = selocals.miniDMDLatches[2];
@@ -913,8 +913,8 @@ static WRITE_HANDLER(giaux_w) {
          // RCT: 4ms strobe per column => 20ms per frame of 5 columns, column order is 10/08/04/02/01
          // Monopoly: 4ms strobe per column => 20ms per frame of 5 columns, column order is 01/02/04/08/10
          // Ripley's: 4ms strobe per column => 20ms per frame of 5 columns, column order is 01/02/04/08/10
-         // Note that during startup, the CPU suspends the rasterization which causes a little glitch as the core implementation expects a continuous frame stream (noticeable on Ripleys)
-         selocals.miniDMDcol = core_BitColToNum32(selocals.miniDMDLatches[3] & 0x1f);
+         // Note that during startup, the CPU suspends the rasterization which causes a little glitch as the core implementation expects a continuous frame stream (noticeable on Ripley's)
+         selocals.miniDMDcol = core_BitColToNum(selocals.miniDMDLatches[3] & 0x1f);
          if (selocals.miniDMDcol < 5 && selocals.prevMiniDMDCol != selocals.miniDMDcol) {
             selocals.miniDMD21x5[selocals.miniDMDcol][0] = selocals.miniDMDLatches[0];
             selocals.miniDMD21x5[selocals.miniDMDcol][1] = selocals.miniDMDLatches[1];
@@ -1010,7 +1010,7 @@ static WRITE_HANDLER(giaux_w) {
       const int blank = (selocals.auxdata & 0x80) || (~data & 0x80);
       if (blank == 0) { // 2ms strobe per column => 20ms per frame of 10 columns
          const UINT16 colMask = ((selocals.miniDMDLatches[5] & 0x7) << 7) | (selocals.miniDMDLatches[4] & 0x7F);
-         selocals.miniDMDcol = core_BitColToNum32(colMask);
+         selocals.miniDMDcol = core_BitColToNum(colMask);
          if (selocals.miniDMDcol < 10 && selocals.prevMiniDMDCol != selocals.miniDMDcol) {
             const UINT16 greenLEDs = ((selocals.miniDMDLatches[0] & 0x7F) << 9) | ((selocals.miniDMDLatches[2] & 0x7F) << 2);
             selocals.miniDMD14x10[0][selocals.miniDMDcol] = (greenLEDs >> 8) | (greenLEDs << 8);
@@ -1090,7 +1090,7 @@ static MEMORY_READ_START(se_readmem)
   { 0x3000, 0x3000, dedswitch_r },
   { 0x3100, 0x3100, dip_r },
   { 0x3400, 0x3400, switch_r },
-  { 0x3406, 0x3407, gilamp_r }, // GI lamps on SPP?
+  { 0x3406, 0x3407, gilamp_r }, // GI lamps on Simpsons?
   { 0x3500, 0x3500, dmdie_r },
   { 0x3700, 0x3700, dmdstatus_r },
   { 0x200c, 0x3fff, unknown_r }, // unknown ports from $200c to $3fff, excluding known ports mapped above
@@ -1109,7 +1109,7 @@ static MEMORY_WRITE_START(se_writemem)
 //{ 0x201a, 0x201a, x201a_w },    // Golden Cue unknown device
   { 0x3200, 0x3200, mcpu_bank_w },
   { 0x3300, 0x3300, switch_w },
-  { 0x3406, 0x3407, gilamp_w }, // GI lamps on SPP?
+  { 0x3406, 0x3407, gilamp_w }, // GI lamps on Simpsons?
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
   { 0x3800, 0x3800, sndbrd_1_data_w },

@@ -1085,7 +1085,7 @@ static WRITE32_HANDLER(sambank_w)
 					if (blank == 0) {
 						samlocals.col = samlocals.dmdLatch[5] & 0x1F;
 						if (samlocals.prevCol != samlocals.col) {
-							const int row = core_BitColToNum32(samlocals.col);
+							const int row = core_BitColToNum(samlocals.col);
 							samlocals.wofLEDs[row][0] = (samlocals.dmdLatch[4] << 1) | ((samlocals.dmdLatch[3] >> 6) & 0x01);
 							samlocals.wofLEDs[row][1] = (samlocals.dmdLatch[3] << 2) | ((samlocals.dmdLatch[2] >> 5) & 0x03);
 							samlocals.wofLEDs[row][2] = (samlocals.dmdLatch[2] << 3) | ((samlocals.dmdLatch[1] >> 4) & 0x07);

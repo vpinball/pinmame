@@ -431,7 +431,7 @@ static void dmd16_updrow(void) {
   if (dmdlocals.blnk && dmdlocals.row_latch) {
     // row_latch always has a single bit set, the rasterized row/side, which is odd for left 64x16 panel and even for right 64x16 panel
     assert(dmdlocals.row_latch == (dmdlocals.row_latch - (dmdlocals.row_latch & dmdlocals.row_latch - 1))); // check that we only have one bit set
-    const int row_n_side = core_BitColToNum32(dmdlocals.row_latch);
+    const int row_n_side = core_BitColToNum(dmdlocals.row_latch);
     const int row = row_n_side >> 1;
     const int side = row_n_side & 1;
     //printf("%08x %2d %d %I64x\n", dmdlocals.row_latch, row, side, interlace(dmdlocals.hv5408, dmdlocals.hv5308));
