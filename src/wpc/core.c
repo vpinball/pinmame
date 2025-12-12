@@ -1183,35 +1183,33 @@ static void updateDisplay(struct mame_bitmap* bitmap, const struct rectangle* cl
             }
             coreGlobals.drawSeg[segPos] = tmpSeg;
 
-            if (!pmoptions.dmd_only) {
-               // Evaluate dimming
-               UINT8  tmpSegDim[16] = { 0 }; // each of the 16 segments per character can be separately dimmed
-               if (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))) {
-                  int bits = tmpSeg;
-                  for (int kk = 0; bits; kk++, bits >>= 1) { // loop over max 16 segments of each character
-                     if (bits & 0x01) {
-                        UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
-                        tmpSegDim[kk] = 255 - v; // per segment
-                     }
+            // Evaluate dimming
+            UINT8  tmpSegDim[16] = { 0 }; // each of the 16 segments per character can be separately dimmed
+            if (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))) {
+               int bits = tmpSeg;
+               for (int kk = 0; bits; kk++, bits >>= 1) { // loop over max 16 segments of each character
+                  if (bits & 0x01) {
+                     UINT8 v = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value);
+                     tmpSegDim[kk] = 255 - v; // per segment
                   }
                }
-               drawChar(bitmap, top, left, tmpSeg, tmpType, (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))) ? tmpSegDim : NULL);
-
-               #ifdef PROC_SUPPORT
-                  if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd)) {
-                     switch (top) {
-                     case 0: proc_top[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
-                     case 21:  // This is the ball/credit display if fitted, so work out which position
-                        if (left == 12) proc_bottom[0] = tmpSeg;
-                        else if (left == 24) proc_bottom[8] = tmpSeg;
-                        else if (left == 48) proc_top[0] = tmpSeg;
-                        else proc_top[8] = tmpSeg;
-                        break;
-                     default: proc_bottom[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
-                     }
-                  }
-               #endif
             }
+            drawChar(bitmap, top, left, tmpSeg, tmpType, (coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS))) ? tmpSegDim : NULL);
+
+            #ifdef PROC_SUPPORT
+               if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd)) {
+                  switch (top) {
+                  case 0: proc_top[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
+                  case 21:  // This is the ball/credit display if fitted, so work out which position
+                     if (left == 12) proc_bottom[0] = tmpSeg;
+                     else if (left == 24) proc_bottom[8] = tmpSeg;
+                     else if (left == 48) proc_top[0] = tmpSeg;
+                     else proc_top[8] = tmpSeg;
+                     break;
+                  default: proc_bottom[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
+                  }
+               }
+            #endif
 
             segPos++;
             left += locals.segData[layout->type & CORE_SEGALL].cols + 1;
