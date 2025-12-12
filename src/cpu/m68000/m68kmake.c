@@ -641,9 +641,9 @@ opcode_struct* find_opcode(char* name, int size, char* spec_proc, char* spec_ea)
 	opcode_struct* op;
 
 
-	for(op = g_opcode_input_table;op->name != NULL;op++)
+	for(op = g_opcode_input_table;;op++)
 	{
-		if(	strcmp(name, op->name) == 0 &&
+		if(strcmp(name, op->name) == 0 &&
 			(size == op->size) &&
 			strcmp(spec_proc, op->spec_proc) == 0 &&
 			strcmp(spec_ea, op->spec_ea) == 0)
@@ -657,7 +657,7 @@ opcode_struct* find_illegal_opcode(void)
 {
 	opcode_struct* op;
 
-	for(op = g_opcode_input_table;op->name != NULL;op++)
+	for(op = g_opcode_input_table;;op++)
 	{
 		if(strcmp(op->name, "illegal") == 0)
 			return op;

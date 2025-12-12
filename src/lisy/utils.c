@@ -192,11 +192,11 @@ lisy80_debug(char* message) {
     last = now;
 
     //we want only the last three digits of seconds
-    sprintf(str_seconds, "%ld", now.tv_sec);
+    sprintf(str_seconds, "%lld", now.tv_sec);
     sprintf(my_str_seconds, "%s", &str_seconds[strlen(str_seconds)] - 3);
 
     //we print seconds plus MICROseconds, first elapsed time, second time elapsed since last debug output
-    fprintf(stderr, "[%s.%06ld][%ld.%06ld] %s\n\r", my_str_seconds, now.tv_usec, seconds, useconds, message);
+    fprintf(stderr, "[%s.%06lld][%ld.%06ld] %s\n\r", my_str_seconds, now.tv_usec, seconds, useconds, message);
 }
 
 //set the new sig handler

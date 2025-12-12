@@ -1230,7 +1230,7 @@ int osd_skip_this_frame(void)
 struct mame_bitmap *osd_override_snapshot(struct mame_bitmap *bitmap,
                 struct rectangle *bounds)
 {
-        struct mame_bitmap *copy;
+        struct mame_bitmap *copy = NULL;
         return copy;
 }
 #endif
