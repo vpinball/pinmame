@@ -459,7 +459,6 @@ static VIDEO_STOP(byVP) {
 
 static PINMAME_VIDEO_UPDATE(byVP_update) {
   TMS9928A_refresh((core_gameData->hw.display ? 2 : 1), bitmap, 1);
-  return 0;
 }
 
 /*-----------------------------------

@@ -763,7 +763,6 @@ static PINMAME_VIDEO_UPDATE(caveman_update) {
     GTS80locals.vidClip.max_y = layout->top + layout->start;
   }
   copybitmap(bitmap,tmpbitmap,0,0,0,0,&GTS80locals.vidClip,TRANSPARENCY_NONE,0);
-  return 0;
 }
 
 /* port 0xx = Interrupt Controller */
