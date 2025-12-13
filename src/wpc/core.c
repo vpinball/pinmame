@@ -2585,6 +2585,10 @@ static MACHINE_INIT(core) {
 static MACHINE_STOP(core) {
   int ii;
 
+#if defined(LIBPINMAME)
+  OnStateChange(3); // Stopping
+#endif
+
 #ifdef VPINMAME
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
