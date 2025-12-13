@@ -673,17 +673,24 @@ INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf] << 4) | (core
 //  Get the status of a DIP bank (8 dips)
 extern int core_getDip(int dipBank);
 
+INLINE int singleBitSet(unsigned int b)
+{
+   return (b!=0) && ((b & (b-1))==0);
+}
+
 // Compute index of the first trailing set bit (0 based)
 // 0x0001 returns 0, 0x0040 returns 6, note 0x0000 returns 0
 // (so implicitly assumes that only 1 bit should be set at a time)
 INLINE unsigned int core_BitColToNum(unsigned int n)
 {
    if (n == 0) return 0;
+   assert(singleBitSet(n));
+   // count trailing zeros
 #ifdef _MSC_VER
 #if (defined(_M_ARM) || defined(_M_ARM64))
    return _CountTrailingZeros(n);
 #else
-   return _tzcnt_u32(n); // counts trailing zeros
+   return _tzcnt_u32(n);
 #endif
 #else
    return __builtin_ctz(n);

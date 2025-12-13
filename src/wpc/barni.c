@@ -144,10 +144,6 @@ static void showSegment(int num, UINT8 data) {
     return cnt;
 }*/
 
-static int singleBitSet(UINT8 b) {
-  return (b!=0) && ((b & (b-1))==0);
-}
-
 static WRITE_HANDLER(via0b_w) {
   switch (locals.via_a >> 4) {
     case 0:
