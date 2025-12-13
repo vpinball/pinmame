@@ -1085,6 +1085,92 @@ core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UI
 	return layout;
 }
 
+static void core_seg_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const core_tLCDLayout* layout, int segPos) {
+   #ifdef PROC_SUPPORT
+      static UINT16 proc_top[16];
+      static UINT16 proc_bottom[16];
+      int char_width = locals.segData[layout->type & 0x0f].cols + 1;
+   #endif
+   const int useDimmedSeg = coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS));
+   int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
+   int top = layout->top * (locals.segData[0].rows + 1) / 2;
+   int ii = layout->length;
+   const UINT16* seg = &coreGlobals.segments[layout->start].w;
+   const int step = (layout->type & CORE_SEGREV) ? -1 : 1;
+   if (step < 0) { seg += ii - 1; }
+   while (ii--) {
+
+      // Apply comma handling and reversed display ordering (from coreGlobals.segments -> coreGlobals.drawSeg)
+      int tmpType = layout->type & CORE_SEGMASK;
+      UINT16 tmpSeg = *seg;
+      tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
+      switch (tmpType) {
+      case CORE_SEG87: case CORE_SEG87F:
+         if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
+            if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
+            tmpType = CORE_SEG8;
+         }
+         else
+            tmpType = CORE_SEG7;
+         break;
+      case CORE_SEG98: case CORE_SEG98F:
+         tmpSeg |= (tmpSeg & 0x100) << 1;
+         if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
+            if ((tmpType == CORE_SEG98F) && tmpSeg) tmpSeg |= 0x80;
+            tmpType = CORE_SEG10;
+         }
+         else
+            tmpType = CORE_SEG9;
+         break;
+      case CORE_SEG9:
+         tmpSeg |= (tmpSeg & 0x100) << 1;
+         break;
+      }
+      coreGlobals.drawSeg[segPos] = tmpSeg;
+      segPos++;
+
+      // Render to internal window
+      #if defined(PINMAME) || defined(VPINMAME)
+         UINT8  tmpSegDim[16] = { 0 }; // each of the 16 segments per character can be separately dimmed
+         if (useDimmedSeg) {
+            for (int bits = tmpSeg, kk = 0; bits; kk++, bits >>= 1) // loop over max 16 segments of each character
+               if (bits & 0x01)
+                  tmpSegDim[kk] = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value); // per segment
+         }
+         drawChar(bitmap, top, left, tmpSeg, tmpType, useDimmedSeg ? tmpSegDim : NULL);
+      #endif
+
+      #ifdef PROC_SUPPORT
+         if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd)) {
+            switch (top) {
+            case 0: proc_top[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
+            case 21:  // This is the ball/credit display if fitted, so work out which position
+               if (left == 12) proc_bottom[0] = tmpSeg;
+               else if (left == 24) proc_bottom[8] = tmpSeg;
+               else if (left == 48) proc_top[0] = tmpSeg;
+               else proc_top[8] = tmpSeg;
+               break;
+            default: proc_bottom[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
+            }
+         }
+      #endif
+
+      left += locals.segData[layout->type & CORE_SEGALL].cols + 1;
+
+      seg += step;
+   }
+
+   #ifdef LIBPINMAME
+      libpinmame_update_display(layout->index, coreGlobals.drawSeg + segPos - layout->length);
+   #endif
+
+   #ifdef PROC_SUPPORT
+      if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd))
+         procUpdateAlphaDisplay(proc_top, proc_bottom);
+   #endif
+}
+
+
 //
 //
 //
@@ -1104,7 +1190,6 @@ void core_dmd_capture_frame(const int width, const int height, const UINT8* cons
 
 static void updateDisplay(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const core_tLCDLayout* layout_array)
 {
-   const int useDimmedSeg = coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS));
    int segPos = 0;
    #if defined(VPINMAME) || defined(LIBPINMAME)
       static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
@@ -1112,21 +1197,18 @@ static void updateDisplay(struct mame_bitmap* bitmap, const struct rectangle* cl
       disp_num_segs[0] = 0;
       UINT8 has_DMD_Video = 0;
    #endif
-   #ifdef LIBPINMAME
-      UINT16* last_seg_data_ptr = coreGlobals.drawSeg;
-   #endif
 
    for (const core_tLCDLayout* layout = layout_array, *parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
       if (layout->length == 0) { // End of import, move up to parent
          layout = parent_layout;
          parent_layout = NULL;
       }
-      if (layout->type == CORE_IMPORT) { // Import a definition block
+      switch (layout->type & CORE_SEGMASK) {
+      case CORE_IMPORT: // Import a definition block
          parent_layout = layout + 1;
          layout = layout->importedLayout - 1;
-         continue;
-      }
-      switch (layout->type & CORE_SEGALL) {
+         break;
+
       case CORE_VIDEO: // Video display renderer (per driver renderer)
          assert(layout->videoRenderer != NULL);
          ((ptPinMAMEvidUpdate)(layout->videoRenderer))(bitmap, cliprect, layout);
@@ -1146,90 +1228,12 @@ static void updateDisplay(struct mame_bitmap* bitmap, const struct rectangle* cl
          break;
 
       default: // Alphanumeric Segment display
-      {
-         int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
-         int top = layout->top * (locals.segData[0].rows + 1) / 2;
-         int ii = layout->length;
-         const UINT16* seg = &coreGlobals.segments[layout->start].w;
-         const int step = (layout->type & CORE_SEGREV) ? -1 : 1;
+         core_seg_video_update(bitmap, cliprect, layout, segPos);
+         segPos += layout->length;
          #if defined(VPINMAME) || defined(LIBPINMAME)
             disp_num_segs[n_seg_layouts++] = (UINT8)layout->length;
          #endif
-         #ifdef PROC_SUPPORT
-            static UINT16 proc_top[16];
-            static UINT16 proc_bottom[16];
-            int char_width = locals.segData[layout->type & 0x0f].cols + 1;
-         #endif
-         if (step < 0) { seg += ii - 1; }
-         while (ii--) {
-            // Apply comma handling (from coreGlobals.segments -> coreGlobals.drawSeg)
-            int tmpType = layout->type & CORE_SEGMASK;
-            UINT16 tmpSeg = *seg;
-            tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
-            switch (tmpType) {
-            case CORE_SEG87: case CORE_SEG87F:
-               if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
-                  if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
-                  tmpType = CORE_SEG8;
-               }
-               else
-                  tmpType = CORE_SEG7;
-               break;
-            case CORE_SEG98: case CORE_SEG98F:
-               tmpSeg |= (tmpSeg & 0x100) << 1;
-               if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
-                  if ((tmpType == CORE_SEG98F) && tmpSeg) tmpSeg |= 0x80;
-                  tmpType = CORE_SEG10;
-               }
-               else
-                  tmpType = CORE_SEG9;
-               break;
-            case CORE_SEG9:
-               tmpSeg |= (tmpSeg & 0x100) << 1;
-               break;
-            }
-            coreGlobals.drawSeg[segPos] = tmpSeg;
-
-            // Evaluate dimming and draw char
-            UINT8  tmpSegDim[16] = { 0 }; // each of the 16 segments per character can be separately dimmed
-            if (useDimmedSeg) {
-               for (int bits = tmpSeg, kk = 0; bits; kk++, bits >>= 1) // loop over max 16 segments of each character
-                  if (bits & 0x01)
-                     tmpSegDim[kk] = saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SEG0 + (layout->start + layout->length - 1 - ii) * 16 + kk].value); // per segment
-            }
-            drawChar(bitmap, top, left, tmpSeg, tmpType, useDimmedSeg ? tmpSegDim : NULL);
-
-            #ifdef PROC_SUPPORT
-               if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd)) {
-                  switch (top) {
-                  case 0: proc_top[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
-                  case 21:  // This is the ball/credit display if fitted, so work out which position
-                     if (left == 12) proc_bottom[0] = tmpSeg;
-                     else if (left == 24) proc_bottom[8] = tmpSeg;
-                     else if (left == 48) proc_top[0] = tmpSeg;
-                     else proc_top[8] = tmpSeg;
-                     break;
-                  default: proc_bottom[left / char_width + (doubleAlpha == 0)] = tmpSeg; break;
-                  }
-               }
-            #endif
-
-            segPos++;
-            left += locals.segData[layout->type & CORE_SEGALL].cols + 1;
-            seg += step;
-         }
-
-         #ifdef PROC_SUPPORT
-            if (coreGlobals.p_rocEn && (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) && (!pmoptions.alpha_on_dmd))
-               procUpdateAlphaDisplay(proc_top, proc_bottom);
-         #endif
-
-         #ifdef LIBPINMAME
-            libpinmame_update_display(layout->index, last_seg_data_ptr);
-            last_seg_data_ptr += layout->length;
-         #endif
          break;
-      }
       }
    }
 
