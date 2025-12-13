@@ -59,8 +59,9 @@ typedef struct {
   int acc;        /* acceleration */
   int ret;
   mech_tSwData swPos[MECH_MAXMECHSW]; /* switches activated */
-  int pos;      /* current position */
-  int speed;    /* current speed -acc -> acc */
+  int pos;        /* current position */
+  float floatPos; /* current position (more precise) */
+  int speed;      /* current speed -acc -> acc */
   int anglePos;
   int last;
 } mech_tMechData, *ptMechData;
@@ -72,4 +73,6 @@ extern void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, i
 extern void mech_add(int mechNo, mech_ptInitData id);
 extern int  mech_getPos(int mechNo);
 extern int  mech_getSpeed(int mechNo);
+extern float mech_getFloatPos(int mechNo);
+extern float mech_getFloatSpeed(int mechNo);
 extern void mech_nv(void *file, int write);
