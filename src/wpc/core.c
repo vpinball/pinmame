@@ -96,7 +96,7 @@ void vp_setDIP(int bank, int value) { }
 
 #ifdef LIBPINMAME
   extern int libpinmame_needs_update_display();
-  extern void libpinmame_update_display(const int index, const void* p_data);
+  extern void libpinmame_update_display(const struct core_dispLayout* layout, const void* p_data);
 #endif
 
 #ifndef LIBPINMAME
@@ -1008,13 +1008,13 @@ void core_dmd_send_libpinmame(const core_tLCDLayout* dmdLayout, const float* con
          (*rawLum++) = (UINT8)(255.f * dmdDotLum[ii]); // Legacy API with quantization issues
       if (memcmp(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size) != 0) {
          memcpy(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size);
-         libpinmame_update_display(layout->index, g_raw_dmdbuffer);
+         libpinmame_update_display(layout, g_raw_dmdbuffer);
       }
    }
    else if (g_fDmdMode == 1) { // PINMAME_DMD_MODE_RAW
       if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
          memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
-         libpinmame_update_display(layout->index, g_raw_dmdbuffer);
+         libpinmame_update_display(layout, g_raw_dmdbuffer);
       }
    }
 }
@@ -1493,7 +1493,7 @@ static void core_seg_video_update(struct mame_bitmap* bitmap, const struct recta
    }
 
    #ifdef LIBPINMAME
-      libpinmame_update_display(layout->index, coreGlobals.drawSeg + segPos - layout->length);
+      libpinmame_update_display(layout, coreGlobals.drawSeg + segPos - layout->length);
    #endif
 
    #ifdef PROC_SUPPORT
@@ -1553,7 +1553,7 @@ static void core_seg_render_dmd() {
          g_needs_DMD_update = 1;
       }
    #elif defined(LIBPINMAME)
-      libpinmame_update_display(-1, AlphaNumericFrameBuffer);
+      libpinmame_update_display(NULL, AlphaNumericFrameBuffer);
    #endif
 }
 #endif
@@ -1568,7 +1568,7 @@ void core_display_video_update(struct mame_bitmap* bitmap, const struct rectangl
    ((ptPinMAMEvidUpdate)(layout->videoRenderer))(bitmap, cliprect, layout);
 
    #ifdef LIBPINMAME
-      libpinmame_update_display(layout->index, bitmap);
+      libpinmame_update_display(layout, bitmap);
    #endif
 }
 
