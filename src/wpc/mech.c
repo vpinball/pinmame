@@ -42,6 +42,12 @@ int mech_getPos(int mechNo) {
 int mech_getSpeed(int mechNo) {
   return (locals.mechData[mechNo].ret != 0) ? locals.mechData[mechNo].speed / locals.mechData[mechNo].ret : 0;
 }
+float mech_getFloatPos(int mechNo) {
+  return locals.mechData[mechNo].floatPos;
+}
+float mech_getFloatSpeed(int mechNo) {
+  return (float)mech_getSpeed(mechNo);
+}
 
 void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int steps, mech_tSwData sw[], int initialpos) {
   if ((locals.mechTimer == NULL) && locals.emuRunning) {
@@ -70,6 +76,7 @@ void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int step
       }
     } while (sw[ii++].swNo);
     md->pos = -1; /* not initialized */
+    md->floatPos = -1.f;
 	if (initialpos > 0)
 		md->anglePos = initialpos-1;
   }
@@ -107,8 +114,6 @@ static void mech_update(int mechNo) {
   int dir = 0;
   int currPos, ii;
 
-
-
   { /*-- check power direction -1, 0, 1 --*/
      if ((md->type & 0x70) == MECH_FOURSTEPSOL)
      {
@@ -143,6 +148,7 @@ static void mech_update(int mechNo) {
         md->last = sol;
      }
   }
+  
   { /*-- update speed --*/
     if (dir == 0) {
       if (speed > 0)      { speed -= 1; }
@@ -154,6 +160,7 @@ static void mech_update(int mechNo) {
       { speed += (speed < 0) + md->ret; if (speed >  md->acc*md->ret) speed =  md->acc*md->ret; }
     md->speed = speed;
   }
+
   /*-- update position --*/
   if (speed || (md->pos < 0)) {
     int anglePos = md->anglePos + speed * MECH_STEP / md->acc / md->ret;
@@ -175,6 +182,7 @@ static void mech_update(int mechNo) {
       currPos = (anglePos >= md->length*MECH_STEP) ? md->length*2*MECH_STEP-anglePos : anglePos;
     md->anglePos = anglePos;
     md->pos = currPos * md->steps / md->length / MECH_STEP;
+    md->floatPos = currPos * md->steps / (float) md->length / (float) MECH_STEP;
     /*-- update switches --*/
     currPos = (md->type & MECH_LENGTHSW) ? currPos / MECH_STEP : md->pos;
 
