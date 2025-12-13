@@ -194,10 +194,11 @@
 #define CORE_IMPORT   0x20 // Link to another display layout
 #define CORE_SEGMASK  0x3f // Note that CORE_IMPORT must be part of the segmask as well!
 
-#define CORE_SEGHIBIT 0x40
-#define CORE_SEGREV   0x80
-#define CORE_DMDNOAA  0x100
-#define CORE_NODISP   0x200 // VPinMAME only: if flag is set, the display is not included in VPinMAME window
+#define CORE_SEGHIBIT     0x040
+#define CORE_SEGREV       0x080
+#define CORE_DMDNOAA      0x100
+#define CORE_NODISP       0x200 // VPinMAME only: if flag is set, the display is not included in VPinMAME window
+#define CORE_VIDEO_ROT90  0x400 // Video is rotated 90 degrees
 
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
 #define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
