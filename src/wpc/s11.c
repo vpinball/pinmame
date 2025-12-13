@@ -191,10 +191,12 @@ static INTERRUPT_GEN(s11_vblank) {
     /*-- but only when no P-ROC, otherwise special solenoids -- */
     /*-- lock on when controlled by direct switches          -- */
     for (ii = 0; ii < 6; ii++) {
-      if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii])) {
-        locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-        core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ii - 1, 1, 1);
-	  }
+      if (core_gameData->sxx.ssSw[ii]) {
+        int switchState = core_getSw(core_gameData->sxx.ssSw[ii]);
+        if (switchState)
+          locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
+        core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ii - 1, 1, switchState);
+      }
     }
 #if defined(PROC_SUPPORT) || defined(LISY_SUPPORT)
     }
