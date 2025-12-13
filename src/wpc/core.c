@@ -54,6 +54,10 @@
   #define CORE_MAX_RAW_DMD_FRAMES 5
   static UINT8  raw_dmd_frames[CORE_MAX_RAW_DMD_FRAMES * DMD_MAXX*DMD_MAXY / 8];
   static UINT32 g_raw_dmd_frame_count = 0;
+
+  // VPinMAME function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
+  extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
+  extern void dmddeviceDeInit(void);
  #endif
 #endif
 
@@ -937,15 +941,322 @@ static PALETTE_INIT(core) {
 // DMD display handler
 //
 
-static void core_dmd_video_update(struct mame_bitmap* bitmap, const struct rectangle* cliprect, const core_tLCDLayout* layout);
-#if defined(VPINMAME)
-// VPinMAME function to send DMD/Alphanumeric information to an external dmddevice/dmdscreen.dll plugin
-// Note that this part of the header is not used externally of VPinMAME (move it to something like core_dmdevice.h/core_dmddevice.c ?)
-extern int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions* Options);
-extern void dmddeviceFwdConsoleData(UINT8 data);
-extern void dmddeviceDeInit(void);
-static void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame);
+// Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
+// FIXME apply colors LUT ?
+#if defined(PINMAME) || defined(VPINMAME)
+static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const float* const dmdDotLum, const int apply_aa) {
+  #define DMD_OFS(row, col) ((row)*width + (col))
+  BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
+  for (int ii = 0; ii < height; ii++) {
+    BMTYPE *line = (*lines) + (x * locals.displaySize);
+    for (int jj = 0; jj < width; jj++) {
+      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      line += locals.displaySize;
+    }
+    lines += locals.displaySize;
+  }
+  // Apply antialiasing if enabled, or clear pixels between dots otherwise, do via a triangle filter:
+  // 1 2 1
+  // 2 4 2
+  // 1 2 1
+  // Note that pixels which are off are always counted as contributing 0 (so NOT the 'off-color/brightness')
+  assert((locals.displaySize == 1) || (locals.displaySize == 2));
+  if (apply_aa && locals.displaySize == 2) {
+    lines = ((BMTYPE **)bitmap->line) + (y * 2);
+    for (int ii = 0; ii < height * 2 - 1; ii++) {
+      const int pi = (ii - 1) >> 1;
+      BMTYPE *line = (*lines) + (x * 2);
+      for (int jj = 0; jj < width * 2 - 1; jj++) {
+        const int pj = (jj - 1) >> 1;
+        if ((ii & 1) & (jj & 1)) { // Corner point
+          // x 0 x
+          // 0 0 0
+          // x 0 x
+          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj+1)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
+          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,1,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
+        } else if (ii & 1) { // Vertical side point
+          // 0 x 0
+          // 0 0 0
+          // 0 x 0
+          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj+1)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
+          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,2,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
+        } else if (jj & 1) { // Horizontal side point
+          // 0 0 0
+          // x 0 x
+          // 0 0 0
+          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
+          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,2,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
+        }
+        line++;
+      }
+      lines++;
+    }
+  }
+  #undef DMD_OFS
+}
 #endif
+
+// Send data to legacy LibPinMAME callbacks (similar processing as VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
+#ifdef LIBPINMAME
+void core_dmd_send_libpinmame(const core_tLCDLayout* dmdLayout, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
+   core_tLCDLayout* layout = core_gameData->lcdLayout;
+   core_tLCDLayout* parent_layout = NULL;
+   const int size = layout->length * layout->start;
+   if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
+      UINT8* rawLum = g_raw_dmdbuffer;
+      for (int ii = 0; ii < size; ii++)
+         (*rawLum++) = (UINT8)(255.f * dmdDotLum[ii]); // Legacy API with quantization issues
+      if (memcmp(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size) != 0) {
+         memcpy(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size);
+         libpinmame_update_display(layout->index, g_raw_dmdbuffer);
+      }
+   }
+   else if (g_fDmdMode == 1) { // PINMAME_DMD_MODE_RAW
+      if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
+         memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
+         libpinmame_update_display(layout->index, g_raw_dmdbuffer);
+      }
+   }
+}
+#endif
+
+// Prepare data for VPinMAME interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
+#ifdef VPINMAME
+static void core_dmd_send_vpm(const int width, const int height, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
+  g_raw_dmdx = width;
+  g_raw_dmdy = height;
+  const int size = width * height;
+  UINT8* rawLum = g_raw_dmdbuffer;
+  UINT32* rawCol = g_raw_colordmdbuffer;
+
+  const int hasColors = (pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0);
+  const float rStart = hasColors ? (float)pmoptions.dmd_red : 255.f;
+  const float gStart = hasColors ? (float)pmoptions.dmd_green : 224.f;
+  const float bStart = hasColors ? (float)pmoptions.dmd_blue : 32.f;
+
+  const int hasPercents = (pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0);
+  const float perc00 = hasPercents ? (float)pmoptions.dmd_perc0 : 20.f;
+  const float perc33 = hasPercents ? (float)pmoptions.dmd_perc33 : 33.f;
+  const float perc66 = hasPercents ? (float)pmoptions.dmd_perc66 : 67.f;
+
+  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) {
+    // Backward compatibility: 16 shades mode has no colorization and fixed lighting levels ranging from 0 to 100
+    //static const UINT8 levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
+    //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
+    //const UINT8* const level = (core_gameData->gen & (GEN_SAM|GEN_SPA)) ? levelsam : levelgts3;
+    for (int ii = 0; ii < size; ii++) {
+      const float lum = dmdDotLum[ii];
+      (*rawLum++) = (UINT8)(lum * 100.f);
+      const UINT32 r = (UINT32)(rStart * lum);
+      const UINT32 g = (UINT32)(gStart * lum);
+      const UINT32 b = (UINT32)(bStart * lum);
+      (*rawCol++) = r | (g << 8) | (b << 16);
+    }
+  }
+  else {
+    #define LERP(p, a, b) (UINT8)((a) + (p) * ((b) - (a)))
+    if (pmoptions.dmd_colorize) {
+      const UINT32 cols[4] = {
+         (pmoptions.dmd_red0) | (pmoptions.dmd_green0 << 8) | (pmoptions.dmd_blue0 << 16),
+         (pmoptions.dmd_red33) | (pmoptions.dmd_green33 << 8) | (pmoptions.dmd_blue33 << 16),
+         (pmoptions.dmd_red66) | (pmoptions.dmd_green66 << 8) | (pmoptions.dmd_blue66 << 16),
+         ((UINT32)rStart) | ((UINT32)gStart << 8) | ((UINT32)bStart << 16) };
+      for (int ii = 0; ii < size; ii++) {
+        const float lum = dmdDotLum[ii] * 3.f;
+        if (lum < 1.f)
+          (*rawLum++) = LERP(lum, perc00, perc33);
+        else if (lum < 2.f)
+          (*rawLum++) = LERP(lum - 1.f, perc33, perc66);
+        else
+          (*rawLum++) = LERP(lum - 2.f, perc66, 100.f);
+        // Colorization is somewhat rough and not meant ot be applied on luminance but on 4 shade identification frames
+        (*rawCol++) = cols[dmdDotRaw[ii]];
+      }
+    }
+    else {
+      const float r00 = (rStart * perc00) / 100.f;
+      const float g00 = (gStart * perc00) / 100.f;
+      const float b00 = (bStart * perc00) / 100.f;
+      const float r33 = (rStart * perc33) / 100.f;
+      const float g33 = (gStart * perc33) / 100.f;
+      const float b33 = (bStart * perc33) / 100.f;
+      const float r66 = (rStart * perc66) / 100.f;
+      const float g66 = (gStart * perc66) / 100.f;
+      const float b66 = (bStart * perc66) / 100.f;
+      const float r100 = rStart;
+      const float g100 = gStart;
+      const float b100 = bStart;
+      for (int ii = 0; ii < size; ii++) {
+        float lum = dmdDotLum[ii] * 3.f;
+        if (lum < 1.f) {
+          (*rawLum++) = LERP(lum, perc00, perc33);
+          const UINT32 r = LERP(lum, r00, r33);
+          const UINT32 g = LERP(lum, g00, g33);
+          const UINT32 b = LERP(lum, b00, b33);
+          (*rawCol++) = r | (g << 8) | (b << 16);
+        }
+        else if (lum < 2.f) {
+          lum -= 1.f;
+          (*rawLum++) = LERP(lum, perc33, perc66);
+          const UINT32 r = LERP(lum, r33, r66);
+          const UINT32 g = LERP(lum, g33, g66);
+          const UINT32 b = LERP(lum, b33, b66);
+          (*rawCol++) = r | (g << 8) | (b << 16);
+        }
+        else {
+          lum -= 2.f;
+          (*rawLum++) = LERP(lum, perc66, 100.f);
+          const UINT32 r = LERP(lum, r66, r100);
+          const UINT32 g = LERP(lum, g66, g100);
+          const UINT32 b = LERP(lum, b66, b100);
+          (*rawCol++) = r | (g << 8) | (b << 16);
+        }
+      }
+    }
+    #undef LERP
+  }
+
+  if (memcmp(locals.vpm_dmd_last_dmd, g_raw_dmdbuffer, size) != 0) {
+    memcpy(locals.vpm_dmd_last_dmd, g_raw_dmdbuffer, size);
+    g_needs_DMD_update = 1;
+  }
+}
+#endif
+
+// Send main DMD to dmddevice plugins
+#ifdef VPINMAME
+extern void dmddeviceRenderDMDFrame(const int width, const int height, float* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
+void core_dmd_send_dmddevice(const int width, const int height, const float* const dmdDotLum, const UINT8* const dmdDotRaw, const int isDMD2) {
+   if (g_fShowPinDMD) {
+      const int isStrikesNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
+      dmddeviceRenderDMDFrame(width, height, dmdDotLum, dmdDotRaw, g_raw_dmd_frame_count, raw_dmd_frames, isStrikesNSpares ? (isDMD2 ? 2 : 1) : 3);
+   }
+}
+#endif
+
+// Save main DMD bitplane and raw frames to a capture file
+// DMD frame capture can be enabled either by:
+// - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
+// - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMAME rendering) simultaneously
+// TODO this is not yet implemented for Strikes N' Spares which has 2 DMDs
+#ifdef VPINMAME
+static void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
+  const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
+  if (!isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
+    char *ptr;
+    char DumpFilename[MAX_PATH];
+    const DWORD tick = GetTickCount();
+    #ifndef _WIN64
+      const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+    #else
+      const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+    #endif
+    GetModuleFileName(hInst, DumpFilename, MAX_PATH);
+    ptr = strrchr(DumpFilename, '\\');
+    strcpy_s(ptr + 1, 11, "DmdDump\\");
+    strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+
+    // Additional single bitplane raw frames for GTS3, WPC and Alvin G.
+    if (rawFrameCount != 0) {
+      FILE* fr;
+      char RawFilename[MAX_PATH];
+      strcpy_s(RawFilename, MAX_PATH, DumpFilename);
+      strcat_s(RawFilename, MAX_PATH, ".raw");
+      fr = fopen(RawFilename, "rb");
+      if (fr) {
+        fclose(fr);
+        fr = fopen(RawFilename, "ab");
+      }
+      else {
+        fr = fopen(RawFilename, "ab");
+        if (fr) {
+          fputc(0x52, fr);
+          fputc(0x41, fr);
+          fputc(0x57, fr);
+          fputc(0x00, fr);
+          fputc(0x01, fr);
+          fputc(width, fr);
+          fputc(height, fr);
+          fputc(rawFrameCount, fr);
+        }
+      }
+      if (fr) {
+        fwrite(&tick, 1, 4, fr);
+        fwrite(rawFrame, 1, (width * height / 8 * rawFrameCount), fr);
+        fclose(fr);
+      }
+    }
+
+    // Bitplane frame combined from PWM pattern of raw frames
+    static UINT8 lastCapture[DMD_MAXX * DMD_MAXY] = { 0 };
+    if (memcmp(lastCapture, dmdDotRaw, width * height) != 0)
+    {
+       FILE *f;
+       memcpy(lastCapture, dmdDotRaw, width * height);
+       strcat_s(DumpFilename, MAX_PATH, ".txt");
+       f = fopen(DumpFilename, "a");
+       if (f) {
+          fprintf(f, "0x%08x\n", tick);
+          for (int jj = 0; jj < height; jj++) {
+             for (int ii = 0; ii < width; ii++)
+                fprintf(f, "%01x", dmdDotRaw[jj * width + ii]);
+             fprintf(f, "\n");
+          }
+          fprintf(f, "\n");
+          fclose(f);
+       }
+    }
+  }
+}
+#endif
+
+static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout) {
+  #if defined(LIBPINMAME)
+    // Only update if we are using the legacy interface based on callbacks that mimics the legacy VPinMAME API
+    if (libpinmame_needs_update_display() && layout->length >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
+      unsigned int rawFrameId, lumFrameId;
+      const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
+      const float* lumFrame = g_fDmdMode == 0 ? lumFrame = core_dmd_update_pwm(layout, &lumFrameId) : NULL;
+      core_dmd_send_libpinmame(layout, lumFrame, rawFrame);
+    }
+	
+  #elif defined(VPINMAME)
+    if (layout->length >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2 but VPM is buggy in this situation)
+      // For GTS3, WPC and Alvin G. 2 also store raw single bitplane frame for backward compatibility with colorization plugins
+      // FIXME remove as these data doesn't seem to be used by any known colorizer (Serum does not, DMDExt does not, Lucky's one is closed source but is unlikely to use as DMDDExt does not)
+      if (core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_ALVG_DMD2)) {
+        core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
+        g_raw_dmd_frame_count = dmd_state->nFrames > CORE_MAX_RAW_DMD_FRAMES ? CORE_MAX_RAW_DMD_FRAMES : dmd_state->nFrames;
+        UINT8* rawData = &raw_dmd_frames[0];
+        for (int frame = 0; frame < (int)g_raw_dmd_frame_count; frame++) {
+          const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1) + (dmd_state->nFrames - frame)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+          for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
+            *rawData = dmd_state->revByte ? (*frameData++) : core_revbyte(*frameData++);
+            rawData++;
+          }
+        }
+      }
+      else {
+        g_raw_dmd_frame_count = 0;
+      }
+
+      unsigned int rawFrameId, lumFrameId;
+      const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
+      const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
+      // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
+      core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+      core_dmd_capture_frame(layout->length, layout->start, rawFrame, g_raw_dmd_frame_count, raw_dmd_frames);
+      core_dmd_send_vpm(layout->length, layout->start, lumFrame, rawFrame);
+      core_dmd_send_dmddevice(layout->length, layout->start, lumFrame, rawFrame, layout->top != 0);
+    }
+
+  #elif defined(PINMAME)
+    unsigned int lumFrameId;
+    const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+
+  #endif
+}
 
 
 //
@@ -3482,323 +3793,6 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   }
   
   return dmd_state->bitplaneFrame;
-}
-
-// Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
-// FIXME apply colors LUT ?
-#if defined(PINMAME) || defined(VPINMAME)
-static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const float* const dmdDotLum, const int apply_aa) {
-  #define DMD_OFS(row, col) ((row)*width + (col))
-  BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
-  for (int ii = 0; ii < height; ii++) {
-    BMTYPE *line = (*lines) + (x * locals.displaySize);
-    for (int jj = 0; jj < width; jj++) {
-      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
-      line += locals.displaySize;
-    }
-    lines += locals.displaySize;
-  }
-  // Apply antialiasing if enabled, or clear pixels between dots otherwise, do via a triangle filter:
-  // 1 2 1
-  // 2 4 2
-  // 1 2 1
-  // Note that pixels which are off are always counted as contributing 0 (so NOT the 'off-color/brightness')
-  assert((locals.displaySize == 1) || (locals.displaySize == 2));
-  if (apply_aa && locals.displaySize == 2) {
-    lines = ((BMTYPE **)bitmap->line) + (y * 2);
-    for (int ii = 0; ii < height * 2 - 1; ii++) {
-      const int pi = (ii - 1) >> 1;
-      BMTYPE *line = (*lines) + (x * 2);
-      for (int jj = 0; jj < width * 2 - 1; jj++) {
-        const int pj = (jj - 1) >> 1;
-        if ((ii & 1) & (jj & 1)) { // Corner point
-          // x 0 x
-          // 0 0 0
-          // x 0 x
-          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj+1)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
-          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,1,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
-        } else if (ii & 1) { // Vertical side point
-          // 0 x 0
-          // 0 0 0
-          // 0 x 0
-          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi, pj+1)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
-          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,2,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
-        } else if (jj & 1) { // Horizontal side point
-          // 0 0 0
-          // x 0 x
-          // 0 0 0
-          const UINT32 lum = TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj)]) + TRAFO_AA(dmdDotLum[DMD_OFS(pi+1, pj+1)]);
-          *line = lum == 0 ? 0 : DMD_AA_PAL(lum * pmoptions.dmd_antialias,2,16u*100 /3u); // /3 = heuristic to kinda match old AA behavior
-        }
-        line++;
-      }
-      lines++;
-    }
-  }
-  #undef DMD_OFS
-}
-#endif
-
-// Send data to legacy LibPinMAME callbacks (similar processing as VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
-#ifdef LIBPINMAME
-void core_dmd_send_libpinmame(const core_tLCDLayout* dmdLayout, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
-   core_tLCDLayout* layout = core_gameData->lcdLayout;
-   core_tLCDLayout* parent_layout = NULL;
-   const int size = layout->length * layout->start;
-   if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
-      UINT8* rawLum = g_raw_dmdbuffer;
-      for (int ii = 0; ii < size; ii++)
-         (*rawLum++) = (UINT8)(255.f * dmdDotLum[ii]); // Legacy API with quantization issues
-      if (memcmp(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size) != 0) {
-         memcpy(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size);
-         libpinmame_update_display(layout->index, g_raw_dmdbuffer);
-      }
-   }
-   else if (g_fDmdMode == 1) { // PINMAME_DMD_MODE_RAW
-      if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
-         memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
-         libpinmame_update_display(layout->index, g_raw_dmdbuffer);
-      }
-   }
-}
-#endif
-
-// Prepare data for VPinMAME interface, using computed luminance and applying user LUT for luminance/color (Controller.RawDmdPixels / Controller.RawColoredDmdPixels)
-#ifdef VPINMAME
-static void core_dmd_send_vpm(const int width, const int height, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
-  g_raw_dmdx = width;
-  g_raw_dmdy = height;
-  const int size = width * height;
-  UINT8* rawLum = g_raw_dmdbuffer;
-  UINT32* rawCol = g_raw_colordmdbuffer;
-
-  const int hasColors = (pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0);
-  const float rStart = hasColors ? (float)pmoptions.dmd_red : 255.f;
-  const float gStart = hasColors ? (float)pmoptions.dmd_green : 224.f;
-  const float bStart = hasColors ? (float)pmoptions.dmd_blue : 32.f;
-
-  const int hasPercents = (pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0);
-  const float perc00 = hasPercents ? (float)pmoptions.dmd_perc0 : 20.f;
-  const float perc33 = hasPercents ? (float)pmoptions.dmd_perc33 : 33.f;
-  const float perc66 = hasPercents ? (float)pmoptions.dmd_perc66 : 67.f;
-
-  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) {
-    // Backward compatibility: 16 shades mode has no colorization and fixed lighting levels ranging from 0 to 100
-    //static const UINT8 levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
-    //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
-    //const UINT8* const level = (core_gameData->gen & (GEN_SAM|GEN_SPA)) ? levelsam : levelgts3;
-    for (int ii = 0; ii < size; ii++) {
-      const float lum = dmdDotLum[ii];
-      (*rawLum++) = (UINT8)(lum * 100.f);
-      const UINT32 r = (UINT32)(rStart * lum);
-      const UINT32 g = (UINT32)(gStart * lum);
-      const UINT32 b = (UINT32)(bStart * lum);
-      (*rawCol++) = r | (g << 8) | (b << 16);
-    }
-  }
-  else {
-    #define LERP(p, a, b) (UINT8)((a) + (p) * ((b) - (a)))
-    if (pmoptions.dmd_colorize) {
-      const UINT32 cols[4] = {
-         (pmoptions.dmd_red0) | (pmoptions.dmd_green0 << 8) | (pmoptions.dmd_blue0 << 16),
-         (pmoptions.dmd_red33) | (pmoptions.dmd_green33 << 8) | (pmoptions.dmd_blue33 << 16),
-         (pmoptions.dmd_red66) | (pmoptions.dmd_green66 << 8) | (pmoptions.dmd_blue66 << 16),
-         ((UINT32)rStart) | ((UINT32)gStart << 8) | ((UINT32)bStart << 16) };
-      for (int ii = 0; ii < size; ii++) {
-        const float lum = dmdDotLum[ii] * 3.f;
-        if (lum < 1.f)
-          (*rawLum++) = LERP(lum, perc00, perc33);
-        else if (lum < 2.f)
-          (*rawLum++) = LERP(lum - 1.f, perc33, perc66);
-        else
-          (*rawLum++) = LERP(lum - 2.f, perc66, 100.f);
-        // Colorization is somewhat rough and not meant ot be applied on luminance but on 4 shade identification frames
-        (*rawCol++) = cols[dmdDotRaw[ii]];
-      }
-    }
-    else {
-      const float r00 = (rStart * perc00) / 100.f;
-      const float g00 = (gStart * perc00) / 100.f;
-      const float b00 = (bStart * perc00) / 100.f;
-      const float r33 = (rStart * perc33) / 100.f;
-      const float g33 = (gStart * perc33) / 100.f;
-      const float b33 = (bStart * perc33) / 100.f;
-      const float r66 = (rStart * perc66) / 100.f;
-      const float g66 = (gStart * perc66) / 100.f;
-      const float b66 = (bStart * perc66) / 100.f;
-      const float r100 = rStart;
-      const float g100 = gStart;
-      const float b100 = bStart;
-      for (int ii = 0; ii < size; ii++) {
-        float lum = dmdDotLum[ii] * 3.f;
-        if (lum < 1.f) {
-          (*rawLum++) = LERP(lum, perc00, perc33);
-          const UINT32 r = LERP(lum, r00, r33);
-          const UINT32 g = LERP(lum, g00, g33);
-          const UINT32 b = LERP(lum, b00, b33);
-          (*rawCol++) = r | (g << 8) | (b << 16);
-        }
-        else if (lum < 2.f) {
-          lum -= 1.f;
-          (*rawLum++) = LERP(lum, perc33, perc66);
-          const UINT32 r = LERP(lum, r33, r66);
-          const UINT32 g = LERP(lum, g33, g66);
-          const UINT32 b = LERP(lum, b33, b66);
-          (*rawCol++) = r | (g << 8) | (b << 16);
-        }
-        else {
-          lum -= 2.f;
-          (*rawLum++) = LERP(lum, perc66, 100.f);
-          const UINT32 r = LERP(lum, r66, r100);
-          const UINT32 g = LERP(lum, g66, g100);
-          const UINT32 b = LERP(lum, b66, b100);
-          (*rawCol++) = r | (g << 8) | (b << 16);
-        }
-      }
-    }
-    #undef LERP
-  }
-
-  if (memcmp(locals.vpm_dmd_last_dmd, g_raw_dmdbuffer, size) != 0) {
-    memcpy(locals.vpm_dmd_last_dmd, g_raw_dmdbuffer, size);
-    g_needs_DMD_update = 1;
-  }
-}
-#endif
-
-// Send main DMD to dmddevice plugins
-#ifdef VPINMAME
-extern void dmddeviceRenderDMDFrame(const int width, const int height, float* dmdDotLum, UINT8* dmdDotRaw, UINT32 noOfRawFrames, UINT8* rawbuffer, const int isDMD2);
-void core_dmd_send_dmddevice(const int width, const int height, const float* const dmdDotLum, const UINT8* const dmdDotRaw, const int isDMD2) {
-   if (g_fShowPinDMD) {
-      const int isStrikesNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-      dmddeviceRenderDMDFrame(width, height, dmdDotLum, dmdDotRaw, g_raw_dmd_frame_count, raw_dmd_frames, isStrikesNSpares ? (isDMD2 ? 2 : 1) : 3);
-   }
-}
-#endif
-
-// Save main DMD bitplane and raw frames to a capture file
-// DMD frame capture can be enabled either by:
-// - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
-// - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMAME rendering) simultaneously
-// TODO this is not yet implemented for Strikes N' Spares which has 2 DMDs
-#ifdef VPINMAME
-static void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
-  const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-  if (!isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
-    char *ptr;
-    char DumpFilename[MAX_PATH];
-    const DWORD tick = GetTickCount();
-    #ifndef _WIN64
-      const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
-    #else
-      const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
-    #endif
-    GetModuleFileName(hInst, DumpFilename, MAX_PATH);
-    ptr = strrchr(DumpFilename, '\\');
-    strcpy_s(ptr + 1, 11, "DmdDump\\");
-    strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
-
-    // Additional single bitplane raw frames for GTS3, WPC and Alvin G.
-    if (rawFrameCount != 0) {
-      FILE* fr;
-      char RawFilename[MAX_PATH];
-      strcpy_s(RawFilename, MAX_PATH, DumpFilename);
-      strcat_s(RawFilename, MAX_PATH, ".raw");
-      fr = fopen(RawFilename, "rb");
-      if (fr) {
-        fclose(fr);
-        fr = fopen(RawFilename, "ab");
-      }
-      else {
-        fr = fopen(RawFilename, "ab");
-        if (fr) {
-          fputc(0x52, fr);
-          fputc(0x41, fr);
-          fputc(0x57, fr);
-          fputc(0x00, fr);
-          fputc(0x01, fr);
-          fputc(width, fr);
-          fputc(height, fr);
-          fputc(rawFrameCount, fr);
-        }
-      }
-      if (fr) {
-        fwrite(&tick, 1, 4, fr);
-        fwrite(rawFrame, 1, (width * height / 8 * rawFrameCount), fr);
-        fclose(fr);
-      }
-    }
-
-    // Bitplane frame combined from PWM pattern of raw frames
-    static UINT8 lastCapture[DMD_MAXX * DMD_MAXY] = { 0 };
-    if (memcmp(lastCapture, dmdDotRaw, width * height) != 0)
-    {
-       FILE *f;
-       memcpy(lastCapture, dmdDotRaw, width * height);
-       strcat_s(DumpFilename, MAX_PATH, ".txt");
-       f = fopen(DumpFilename, "a");
-       if (f) {
-          fprintf(f, "0x%08x\n", tick);
-          for (int jj = 0; jj < height; jj++) {
-             for (int ii = 0; ii < width; ii++)
-                fprintf(f, "%01x", dmdDotRaw[jj * width + ii]);
-             fprintf(f, "\n");
-          }
-          fprintf(f, "\n");
-          fclose(f);
-       }
-    }
-  }
-}
-#endif
-
-static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout) {
-  #if defined(LIBPINMAME)
-    // Only update if we are using the legacy interface based on callbacks that mimics the legacy VPinMAME API
-    if (libpinmame_needs_update_display() && layout->length >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2)
-      unsigned int rawFrameId, lumFrameId;
-      const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
-      const float* lumFrame = g_fDmdMode == 0 ? lumFrame = core_dmd_update_pwm(layout, &lumFrameId) : NULL;
-      core_dmd_send_libpinmame(layout, lumFrame, rawFrame);
-    }
-	
-  #elif defined(VPINMAME)
-    if (layout->length >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2 but VPM is buggy in this situation)
-      // For GTS3, WPC and Alvin G. 2 also store raw single bitplane frame for backward compatibility with colorization plugins
-      // FIXME remove as these data doesn't seem to be used by any known colorizer (Serum does not, DMDExt does not, Lucky's one is closed source but is unlikely to use as DMDDExt does not)
-      if (core_gameData->gen & (GEN_ALLWPC | GEN_GTS3 | GEN_ALVG_DMD2)) {
-        core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
-        g_raw_dmd_frame_count = dmd_state->nFrames > CORE_MAX_RAW_DMD_FRAMES ? CORE_MAX_RAW_DMD_FRAMES : dmd_state->nFrames;
-        UINT8* rawData = &raw_dmd_frames[0];
-        for (int frame = 0; frame < (int)g_raw_dmd_frame_count; frame++) {
-          const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1) + (dmd_state->nFrames - frame)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-          for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-            *rawData = dmd_state->revByte ? (*frameData++) : core_revbyte(*frameData++);
-            rawData++;
-          }
-        }
-      }
-      else {
-        g_raw_dmd_frame_count = 0;
-      }
-
-      unsigned int rawFrameId, lumFrameId;
-      const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
-      const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
-      // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
-      core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
-      core_dmd_capture_frame(layout->length, layout->start, rawFrame, g_raw_dmd_frame_count, raw_dmd_frames);
-      core_dmd_send_vpm(layout->length, layout->start, lumFrame, rawFrame);
-      core_dmd_send_dmddevice(layout->length, layout->start, lumFrame, rawFrame, layout->top != 0);
-    }
-
-  #elif defined(PINMAME)
-    unsigned int lumFrameId;
-    const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
-
-  #endif
 }
 
 
