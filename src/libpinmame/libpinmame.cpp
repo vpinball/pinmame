@@ -250,24 +250,20 @@ int GetGameNumFromString(const char* const name)
 
 bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bitmap* p_bitmap)
 {
-	UINT8* __restrict dst = (UINT8*)pDisplay->pData;
+	UINT8* __restrict const dst = (UINT8*)pDisplay->pData;
 	bool diff = false;
 	const int height = pDisplay->layout.height; // layout->start
 	const int width = pDisplay->layout.width; // layout->length
 	const int rotation = (pDisplay->layout.type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90) ? 1 : 0;
-	UINT8 r, g, b;
+	const int incr = (rotation == 0) ? 3 : ((rotation == 1) ? height*3 : -height*3);
 	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			int pos;
-			switch (rotation)
-			{
-			case 0: pos = (x + y * width) * 3; break;
-			case 1: pos = ((height - 1 - y) + x * height) * 3; break;
-			case 2: pos = (y + (width - 1 - x) * height) * 3; break;
-			}
+		int pos = (rotation == 0) ? y*width : ((rotation == 1) ? (height - 1 - y) : (y + (width - 1)*height));
+		pos *= 3;
+		for (int x = 0; x < width; x++,pos+=incr) {
+			UINT8 r,g,b;
 			palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
 			diff |= (dst[pos] != r || dst[pos + 1] != g || dst[pos + 2] != b);
-			dst[pos] = r;
+			dst[pos    ] = r;
 			dst[pos + 1] = g;
 			dst[pos + 2] = b;
 		}
