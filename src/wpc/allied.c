@@ -880,12 +880,12 @@ INITGAME(allied, dispAllied5) GAMEX(1977, allied, 0, allied, allied, allied, ROT
 
 // games below
 
-INITGAME(suprpick,dispAllied5)  CORE_CLONEDEFNV(suprpick,allied,"Super Picker",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(suprpick,dispAllied5)  CORE_CLONEDEFNV(suprpick,allied,"Roy Clark Super Picker",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(royclark,dispAllied6)  CORE_CLONEDEFNV(royclark,allied,"Roy Clark - The Entertainer",1977,"Fascination Int.",allied,GAME_USES_CHIMES)
 INITGAME(thndbolt,dispAllied5)  CORE_CLONEDEFNV(thndbolt,allied,"Thunderbolt",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(hoedown, dispAllied5)  CORE_CLONEDEFNV(hoedown, allied,"Hoe Down",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(takefive,dispAllied6)  CORE_CLONEDEFNV(takefive,allied,"Take Five",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
-INITGAME(heartspd,dispAllied6)  CORE_CLONEDEFNV(heartspd,allied,"Hearts & Spades",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(heartspd,dispAllied6)  CORE_CLONEDEFNV(heartspd,allied,"Hearts Spades",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(foathens,dispAllied6)  CORE_CLONEDEFNV(foathens,allied,"Flame of Athens",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(disco79, dispAllied6a) CORE_CLONEDEFNV(disco79, allied,"Disco '79",1979,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(erosone, dispAllied6)  CORE_CLONEDEFNV(erosone, allied,"Eros One",1979,"Fascination Int.",allied,GAME_USES_CHIMES)

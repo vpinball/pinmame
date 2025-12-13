@@ -122,8 +122,8 @@ static struct {
   } pic;
   int pageMask;           /* page handling */
   UINT8 diagnosticLed;
-  int zc;                 /* zero cross flag */
-  int phase;
+  int zc;                 /* zero cross flag */ // bool
+  int phase;              // bool
   double lastACZeroCrossTimeStamp; /* Last time AC did cross 0 (120Hz) */
   double gi_on_time[WPC_N_GI]; /* Global time when GI Triac was turned on */
   volatile UINT8 conductingGITriacs; /* Current conducting triacs of WPC GI strings (triacs conduct if pulsed, then continue to conduct until current is near 0, that it to say at zero cross) */
