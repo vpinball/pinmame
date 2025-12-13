@@ -23,6 +23,7 @@ Added physical/PWM support to CFTBL backglass flashers
 Added physical/PWM lamps & solenoids support to Bally 6803 games
 Added physical/PWM lamps & solenoids support to Zaccaria games
 Added physical/PWM support to Alvin G. games
+Added physical/PWM lamps and/or solenoids support to some GTS80 games (Amazon Hunt II, Bad Girls, Big House, Bounty Hunter, Genesis, Rock)
 Added physical/PWM support to Star Wars Trilogy and Titanic
 Added physical/PWM support to games employing mini-DMDs and the like
 Fixed some potential general solenoid issues with physical/PWM
