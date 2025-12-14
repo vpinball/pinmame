@@ -195,7 +195,7 @@ static INTERRUPT_GEN(s11_vblank) {
         int switchState = core_getSw(core_gameData->sxx.ssSw[ii]);
         if (switchState)
           locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-        core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ii - 1, 1, switchState);
+        core_write_pwm_output(CORE_MODOUT_SOL0 + CORE_FIRSTSSSOL + ii - 1, 1, switchState ? 1 : 0);
       }
     }
 #if defined(PROC_SUPPORT) || defined(LISY_SUPPORT)
