@@ -906,6 +906,15 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
 S11_ROMEND
 CORE_CLONEDEF(polic,l2,l4,"Police Force (LA-2)", 1989, "Williams", s11_mS11BS,0)
 
+S11_ROMSTART48(polic,lx5,"pfrc_u26.lx5",CRC(272A8459) SHA1(82f4c0b07ef757a60880a850ea13e0fa01579dd3),
+                        "pfrc_u27.lx5",CRC(BA0AEEC6) SHA1(a3a83c86ff845e8f960e617024910429340ad33c))
+S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
+                        "pfrc_u22.l1", CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
+S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
+                        "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+S11_ROMEND
+CORE_CLONEDEF(polic,lx5,l4,"Police Force (LX-5 MOD)", 2025, "Williams", s11_mS11BS,0)
+
 // There also exists a u4 sound l1, where should this go to?
 //S11CS_SOUNDROM88(       "pfrc_u4.l1",  CRC(4e7fd9aa) SHA1(5ba279ffeb6d1864c582f97fa89ee4bd2f084505),
 
