@@ -3612,18 +3612,17 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
 	  return dmd_state->bitplaneFrame;
   }
   dmd_state->lastRawFrameIndex = dmd_state->frame_index;
-  UINT8* bitplaneFrame = dmd_state->tempRawFrame;
   
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
      assert(dmd_state->rawFrameSize == dmd_state->frameSize);
-     memcpy(bitplaneFrame, dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
+     memcpy(dmd_state->tempRawFrame, dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
      break;
   case CORE_DMD_PWM_COMBINER_1: // Simple 1 monochrome frame id
      {
-        UINT8* rawData = &bitplaneFrame[0];
+        UINT8* rawData = dmd_state->tempRawFrame;
         const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         const int width_remaining = dmd_state->width & 7;
         if (width_remaining == 0) {
@@ -3661,10 +3660,10 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
       const int nFrames = dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A ? 6
                         : dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_B ? 8
                         :                         /* CORE_DMD_PWM_COMBINER_GTS3_5C */  12;
-      memset(bitplaneFrame, 0, dmd_state->frameSize);
+      memset(dmd_state->tempRawFrame, 0, dmd_state->frameSize);
       for (int i = 1; i <= nFrames; i++)
       {
-        UINT8* rawData = &bitplaneFrame[0];
+        UINT8* rawData = dmd_state->tempRawFrame;
         const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - i)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         for (int kk = 0; kk < dmd_state->rawFrameSize; kk++)
           for (UINT8 ll = 0, data = *frameData++; ll < 8; ll++, data <<= 1)
@@ -3672,18 +3671,18 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
       }
       if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_GTS3_4C_A)
         for (int kk = 0; kk < dmd_state->frameSize; kk++)
-          if (bitplaneFrame[kk] == 4) {
+          if (dmd_state->tempRawFrame[kk] == 4) {
             level = level4_a2;
             break;
           }
       for (int kk = 0; kk < dmd_state->frameSize; kk++)
-        bitplaneFrame[kk] = level[bitplaneFrame[kk]];
+         dmd_state->tempRawFrame[kk] = level[dmd_state->tempRawFrame[kk]];
     }
     break;
   case CORE_DMD_PWM_COMBINER_SUM_2: // Sum of the last 2 raw frames seen (WPC/Phantom Haus)
     {
       assert((dmd_state->width & 7) == 0);
-      UINT8* rawData = &bitplaneFrame[0];
+      UINT8* rawData = dmd_state->tempRawFrame;
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
@@ -3703,7 +3702,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   case CORE_DMD_PWM_COMBINER_SUM_3: // Sum of the last 3 raw frames seen (WPC)
     {
       assert((dmd_state->width & 7) == 0);
-      UINT8* rawData = &bitplaneFrame[0];
+      UINT8* rawData = dmd_state->tempRawFrame;
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3725,7 +3724,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   case CORE_DMD_PWM_COMBINER_SUM_1_2:
     {
       assert((dmd_state->width & 7) == 0);
-      UINT8 *rawData = &bitplaneFrame[0];
+      UINT8 *rawData = dmd_state->tempRawFrame;
       const UINT8 *frame0, *frame1;
       if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_2_1) { // double length frame are the 2 before last one, single length frame is the last one (Data East 128x32, Sega/Stern Whitestar)
         frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3753,7 +3752,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
     {
       assert((dmd_state->width & 7) == 0);
       static const UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
-      UINT8* rawData = &bitplaneFrame[0];
+      UINT8* rawData = dmd_state->tempRawFrame;
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3768,7 +3767,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   case CORE_DMD_PWM_COMBINER_SUM_1_2_1: // Sum of the 3 out of the last 4 raw frames seen (Capcom as the PWM pattern is 0 1 2 1 with identify built from the 3 first frames)
     {
       assert((dmd_state->width & 7) == 0);
-      UINT8* rawData = &bitplaneFrame[0]; // Note that we are always well aligned as the frames are pushed 4 by 4 since they are processed by a dedicated rasterizer chip
+      UINT8* rawData = dmd_state->tempRawFrame; // Note that we are always well aligned as the frames are pushed 4 by 4 since they are processed by a dedicated rasterizer chip
       const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3791,8 +3790,8 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   }
   
   // Evaluate change index
-  if (memcmp(bitplaneFrame, dmd_state->bitplaneFrame, dmd_state->rawFrameSize) != 0) {
-     memcpy(dmd_state->bitplaneFrame, bitplaneFrame, dmd_state->rawFrameSize);
+  if (memcmp(dmd_state->bitplaneFrame, dmd_state->tempRawFrame, dmd_state->frameSize) != 0) {
+     memcpy(dmd_state->bitplaneFrame, dmd_state->tempRawFrame, dmd_state->frameSize);
 	 dmd_state->rawFrameId++;
   }
   
