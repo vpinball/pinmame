@@ -678,6 +678,16 @@ INLINE int singleBitSet(unsigned int b)
    return (b!=0) && ((b & (b-1))==0);
 }
 
+#ifndef __builtin_ctz // to fix minGW issue
+INLINE int __builtin_ctz(const unsigned int n)
+{
+   for (int i = 0; i < 32; ++i)
+      if (n & (1u << i))
+         return i;
+   return 32; // for n == 0
+}
+#endif
+
 // Compute index of the first trailing set bit (0 based)
 // 0x0001 returns 0, 0x0040 returns 6, note 0x0000 returns 0
 // (so implicitly assumes that only 1 bit should be set at a time)
