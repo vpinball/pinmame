@@ -678,7 +678,7 @@ INLINE int singleBitSet(unsigned int b)
    return (b!=0) && ((b & (b-1))==0);
 }
 
-#ifndef __builtin_ctz // to fix minGW issue
+#if defined(__MINGW32__) && !defined(__builtin_ctz) // to fix minGW issue
 INLINE int __builtin_ctz(const unsigned int n)
 {
    for (int i = 0; i < 32; ++i)
