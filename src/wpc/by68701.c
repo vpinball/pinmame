@@ -58,12 +58,12 @@ static struct {
 } locals;
 
 // determines the amount of bits set in a given value
-static int countBits(int value) {
+/*static int countBits(int value) {
   int amount = 0;
   for (;value;value >>= 1)
     if (value & 1) amount++;
   return amount;
-}
+}*/
 
 static void piaIrq(int num, int state) {
   locals.irqstates[num] = state;
@@ -166,7 +166,7 @@ static WRITE_HANDLER(pp1_b_w) { // periphal data
     UINT8 lampdata = locals.zc ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f;
     coreGlobals.tmpLampMatrix[lampRows[locals.lampCol]] |= lampdata;
   } else if (locals.strobe == 2) { // solenoids
-    if (locals.solEnable && countBits(0x0f ^ (data >> 4)) == 1 && countBits(0x0f ^ (data & 0x0f)) == 1) {
+    if (locals.solEnable && singleBitSet(0x0f ^ (data >> 4)) && singleBitSet(0x0f ^ (data & 0x0f))) {
       UINT8 solData = ~data;
       locals.solenoids |= 1 << solOrder[core_gameData->hw.gameSpecific1][core_BitColToNum(solData & 0x0f)][core_BitColToNum(solData >> 4)];
       locals.solEnable = 0;

@@ -254,7 +254,7 @@ static const unsigned char core_palette[COL_COUNT+48+48+48][3] = {
 #define LAMP_PAL(x) ((unsigned int)sizeof(core_palette)/3u - (48u+48u+48u) + (unsigned int)(x) * 47u / 255u) // (ab)use DMD shades
 INLINE UINT32 TRAFO_AA(const float x)
 {
-  return x == 0.f ? 0 : (12 + (UINT8)(x*(47.f-12.f))); // off stays counted as off, otherwise trafo from 0..255 -> 12..47 to map the DMD luminance into the DMD AA shade world (as DMD AA also maps 0..perc0)
+  return x == 0.f ? 0 : (12 + (UINT8)(x*(float)(47-12))); // off stays counted as off, otherwise trafo from 0..255 -> 12..47 to map the DMD luminance into the DMD AA shade world (as DMD AA also maps 0..perc0)
 }
 #define DMD_AA_PAL(x,m,d) ((unsigned int)sizeof(core_palette)/3u - (48u+48u) + (unsigned int)(x) * (m) / (d))
 #define ALPHA_PAL(x) ((unsigned int)sizeof(core_palette)/3u - 48u + (unsigned int)(x) * 47u / 255u)
@@ -3497,8 +3497,8 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
 
    // No processing required as there weren't any new frame submitted (we do not meulate interframe cooldown as all used framerates are fairly high)
    if (dmd_state->lastLumFrameIndex == dmd_state->frame_index) {
-	  *lumFrameId = dmd_state->lumFrameId;
-	  return dmd_state->luminanceFrame;
+      *lumFrameId = dmd_state->lumFrameId;
+      return dmd_state->luminanceFrame;
    }
    dmd_state->lastLumFrameIndex = dmd_state->frame_index;
 
@@ -3508,8 +3508,8 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
       const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
-	     dmd_state->lumFrameId++;
-         static const float lumLUT[4] = { 0.f, 1.f / 3.f,  2.f / 3.f, 1.f };
+         dmd_state->lumFrameId++;
+         static const float lumLUT[4] = { 0.f, (float)(1. / 3.),  (float)(2. / 3.), 1.f };
          for (int jj = 0; jj < dmd_state->frameSize; jj++)
             dmd_state->luminanceFrame[jj] = lumLUT[frameData[jj]];
       }
@@ -3521,13 +3521,13 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
       const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
-	     dmd_state->lumFrameId++;
+         dmd_state->lumFrameId++;
          // This LUT suppose that each bitplane correspond to one of the frame, since the display length is 1 / 2 / 4 / 5,
          // RAM never contains 8/9/10/11 which creates a monotonic LUT, but with a discontinuity as the hardware has 13 shades while the code uses 12.
-         static const float lumLUT[16] = { 0.f, 1.f / 12.f, 2.f / 12.f, 3.f / 12.f, 4.f / 12.f, 5.f / 12.f, 6.f / 12.f, 7.f / 12.f, 5.f / 12.f /*unused*/, 6.f / 12.f /*unused*/, 7.f / 12.f /*unused*/, 8.f / 12.f /*unused*/, 9.f / 12.f, 10.f / 12.f, 11.f / 12.f, 1.f };
+         static const float lumLUT[16] = { 0.f, (float)(1. / 12.), (float)(2. / 12.), (float)(3. / 12.), (float)(4. / 12.), (float)(5. / 12.), (float)(6. / 12.), (float)(7. / 12.), (float)(5. / 12.) /*unused*/, (float)(6. / 12.) /*unused*/, (float)(7. / 12.) /*unused*/, (float)(8. / 12.) /*unused*/, (float)(9. / 12.), (float)(10. / 12.), (float)(11. / 12.), 1.f };
          for (int jj = 0; jj < dmd_state->frameSize; jj++)
             dmd_state->luminanceFrame[jj] = lumLUT[frameData[jj]];
-	  }
+      }
       break;
    }
 
@@ -3585,14 +3585,14 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
          }
       }
 
-	  // Evaluate change index
+      // Evaluate change index
       if (memcmp(dmd_state->dmdFIRBuffer, dmd_state->tempFIRBuffer, dmd_state->frameSize * sizeof(UINT32)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, dmd_state->tempFIRBuffer, dmd_state->frameSize * sizeof(UINT32));
          const UINT32* line = dmd_state->dmdFIRBuffer;
-         float* luminanceFrame = dmd_state->luminanceFrame;
+         float* const luminanceFrame = dmd_state->luminanceFrame;
          for (int ii = 0; ii < dmd_state->frameSize; ii++)
             luminanceFrame[ii] = (float)(*line++) / dmd_state->fir_sum; // Linear luminance
-	     dmd_state->lumFrameId++;
+         dmd_state->lumFrameId++;
       }
       break;
    }
@@ -3608,11 +3608,11 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
 
   // No processing required as there weren't any new frame submitted
   if (dmd_state->lastRawFrameIndex == dmd_state->frame_index) {
-	  *rawFrameId = dmd_state->rawFrameId;
-	  return dmd_state->bitplaneFrame;
+     *rawFrameId = dmd_state->rawFrameId;
+     return dmd_state->bitplaneFrame;
   }
   dmd_state->lastRawFrameIndex = dmd_state->frame_index;
-  
+
   // Compute combined bitplane frames as they used to be for backward compatibility with colorization plugins
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
@@ -3792,7 +3792,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   // Evaluate change index
   if (memcmp(dmd_state->bitplaneFrame, dmd_state->tempRawFrame, dmd_state->frameSize) != 0) {
      memcpy(dmd_state->bitplaneFrame, dmd_state->tempRawFrame, dmd_state->frameSize);
-	 dmd_state->rawFrameId++;
+     dmd_state->rawFrameId++;
   }
   
   return dmd_state->bitplaneFrame;
