@@ -906,14 +906,16 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
 S11_ROMEND
 CORE_CLONEDEF(polic,l2,l4,"Police Force (LA-2)", 1989, "Williams", s11_mS11BS,0)
 
-S11_ROMSTART48(polic,lx5,"pfrc_u26.lx5",CRC(272A8459) SHA1(82f4c0b07ef757a60880a850ea13e0fa01579dd3),
-                        "pfrc_u27.lx5",CRC(BA0AEEC6) SHA1(a3a83c86ff845e8f960e617024910429340ad33c))
+//S11_ROMSTART48(polic,lx5,"pfrc_u26.lx5",CRC(272A8459) SHA1(82f4c0b07ef757a60880a850ea13e0fa01579dd3), // old version
+//                        "pfrc_u27.lx5",CRC(BA0AEEC6) SHA1(a3a83c86ff845e8f960e617024910429340ad33c))
+S11_ROMSTART48(polic,lx5,"pfrc_u26.lx5a",CRC(A306D235) SHA1(a31a5eb42789646510423846d408bd1c14cdd989),
+                        "pfrc_u27.lx5a",CRC(F8C3E4F0) SHA1(7d5c4cd6f266789a0233eb23fc934401580966b8))
 S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
                         "pfrc_u22.l1", CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
 S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
                         "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
 S11_ROMEND
-CORE_CLONEDEF(polic,lx5,l4,"Police Force (LX-5 MOD)", 2025, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(polic,lx5,l4,"Police Force (LX-5a MOD)", 2025, "Williams", s11_mS11BS,0)
 
 // There also exists a u4 sound l1, where should this go to?
 //S11CS_SOUNDROM88(       "pfrc_u4.l1",  CRC(4e7fd9aa) SHA1(5ba279ffeb6d1864c582f97fa89ee4bd2f084505),
@@ -963,9 +965,11 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
 S11_ROMEND
 CORE_CLONEDEF(tsptr,l3fj,l3, "Transporter the Rescue (L-3 Fixed Jackpot MOD)", 2025, "Bally", s11a_one,0)
 
-//                        "TRAN_U27_LX4.L3",CRC(917E178A) SHA1(53adcbcc6a0c257ac364dd18e8dfd5d9839c232e)) // old version, missed some version text/date changes
-S11_ROMSTART48(tsptr,lx4,"TRAN_U26_LX4.L3",CRC(D8A9FD96) SHA1(00ec1164129de665d2c6a6490b7e3cd6e464f133),
-                        "TRAN_U27_LX4.L3",CRC(5B932901) SHA1(3a3dbf6a754ca5528a20dd911849c2054f676866))
+//S11_ROMSTART48(tsptr,lx4,"TRAN_U26_LX4.L3",CRC(D8A9FD96) SHA1(00ec1164129de665d2c6a6490b7e3cd6e464f133), // old version
+//                        "TRAN_U27_LX4.L3",CRC(5B932901) SHA1(3a3dbf6a754ca5528a20dd911849c2054f676866))  //  not clear what changed since then
+//                        "TRAN_U27_LX4.L3",CRC(917E178A) SHA1(53adcbcc6a0c257ac364dd18e8dfd5d9839c232e))  // even older version, missed some version text/date changes
+S11_ROMSTART48(tsptr,lx4,"TRAN_U26_LX4.L3",CRC(1896092B) SHA1(9a623ff5f26759c2672ef5113c9f193a95c88e42),
+                        "TRAN_U27_LX4.L3",CRC(7C7E8DBB) SHA1(d99a00fd6c7203486fbde095aa84a89b8b9bcec7))
 S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
                         "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
 S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a95f822024a44371170),
@@ -974,7 +978,7 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
 S11_ROMEND
 CORE_CLONEDEF(tsptr,lx4,l3, "Transporter the Rescue (LX-4 Competition MOD)", 2025, "Bally", s11a_one,0)
 
-S11_ROMSTART48(tsptr,lx4b,"TRAN_U26_LX4.L3",CRC(D8A9FD96) SHA1(00ec1164129de665d2c6a6490b7e3cd6e464f133),
+S11_ROMSTART48(tsptr,lx4b,"TRAN_U26_LX4_clean.L3",CRC(D8A9FD96) SHA1(00ec1164129de665d2c6a6490b7e3cd6e464f133),
                         "TRAN_U27_LX4_clean.L3",CRC(1765F0DC) SHA1(a3ec0c1898bf7a8d322c84cccfd06f04dce0c910))
 S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
                         "tran_u22.l2", CRC(337784b5) SHA1(30c17afd8f76118940982db946cd3a2a29445d10))
@@ -982,7 +986,7 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
                         "tran_u19.l1", CRC(3cfde8b0) SHA1(7bdc71ba1ba4fd337f052354323c86fd97b2b881), // L-2/3 features the same
                         "tran_u20.l2", CRC(e9890cf1) SHA1(0ae37504c704401101c79ce49df11044f8d8caa9))
 S11_ROMEND
-CORE_CLONEDEF(tsptr,lx4b,l3, "Transporter the Rescue (LX-4 Competition MOD clean)", 2025, "Bally", s11a_one,0) // f#%king -> hecking
+CORE_CLONEDEF(tsptr,lx4b,l3, "Transporter the Rescue (LX-4 Competition MOD clean)", 2025, "Bally", s11a_one,0) // f#%king -> hecking, matches the old version (commented out above)
 
 // L-2 also exists?!
 
@@ -1455,6 +1459,13 @@ S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfa
                         "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
 S11_ROMEND
 
+S11_ROMSTART48(diner,l4fr,"dinr_u26.l4fr",CRC(E516EC87) SHA1(55f3727ee1705ece42de9bf52826420efc50b909),
+                        "dinr_u27.l4", CRC(d69f9f74) SHA1(88d9b42c2313a90e5d6f50220d3b44331595d86b)) // the same, although there was a patch file included?!?
+S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
+                        "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
+                        "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
+S11_ROMEND
+
 CORE_GAMEDEF(diner, l4, "Diner (LA-4)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l3,l4, "Diner (LA-3)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,f2,l4, "Diner (LF-2 French)", 1990, "Williams", s11_mS11CS,0)
@@ -1462,6 +1473,7 @@ CORE_CLONEDEF(diner,g2,l4, "Diner (LG-2 German)", 1990, "Williams", s11_mS11CS,0
 CORE_CLONEDEF(diner,l2,l4, "Diner (LU-2 Europe)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l1,l4, "Diner (LU-1 Europe)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,p0,l4, "Diner (PA-0 Prototype)", 1989, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,l4fr,l4, "Diner (LA-4 Fixed Right Ramp MOD)", 2025, "Williams", s11_mS11CS,0) // keeps the value of the right ramp at 100k when the R is lit
 
 /*--------------------
 / Radical 9/90
