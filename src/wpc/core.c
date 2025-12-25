@@ -1421,11 +1421,11 @@ static void core_seg_video_update(struct mame_bitmap* bitmap, const struct recta
    #ifdef PROC_SUPPORT
       static UINT16 proc_top[16];
       static UINT16 proc_bottom[16];
-      int char_width = locals.segData[layout->type & 0x0f].cols + 1;
+      const int char_width = locals.segData[layout->type & 0x0f].cols + 1;
    #endif
    const int useDimmedSeg = coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS));
-   int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
-   int top = layout->top * (locals.segData[0].rows + 1) / 2;
+         int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
+   const int top = layout->top * (locals.segData[0].rows + 1) / 2;
    int ii = layout->length;
    const UINT16* seg = &coreGlobals.segments[layout->start].w;
    const int step = (layout->type & CORE_SEGREV) ? -1 : 1;
@@ -2640,7 +2640,7 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
         tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
       }
       else {
-        tmpX = (layout->left + 2*layout->length) * (locals.segData[type & 0x07].cols + 1) / 2;
+        tmpX = (layout->left + 2*layout->length) * (locals.segData[type & 0x07].cols + 1) / 2 + CORE_SCREENX_INC;
         tmpY = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       }
       if (tmpX > *maxX) *maxX = tmpX;

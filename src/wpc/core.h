@@ -29,7 +29,7 @@
 
   #define NORMALREGION(size, reg)  ROM_REGION(size, reg, 0)
   #define NORMALREGIONE(size, reg) ROM_REGION(size, reg, ROMREGION_ERASE)
-  #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
+  #define SOUNDREGION(size, reg)   ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
   #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY|ROMREGION_ERASE)
 
 /*-- convenience macro for handling bits --*/
@@ -51,6 +51,8 @@
 #  define CORE_SCREENX 320
 #  define CORE_SCREENY 256
 #endif /* VPINMAME */
+#define CORE_SCREENX_INC 4 // hack: increases window width by 4 for alpha/segmented displays, otherwise there is some weird wrap of last segments
+
 /*-----------------
 /  define the game
 /------------------*/
@@ -68,7 +70,7 @@
 /*--------------
 /  Input ports
 /---------------*/
-/* strange but there are no way to define IMP and TOG with key without using BITX */
+/* strange but there is no way to define IMP and TOG with key without using BITX */
 #define COREPORT_BIT(mask, name, key) \
    PORT_BITX(mask,IP_ACTIVE_HIGH,IPT_BUTTON1,name,key,IP_JOY_NONE)
 #define COREPORT_BITIMP(mask, name, key) \
