@@ -221,7 +221,8 @@ static void saa1099_envelope(int chip, int ch)
 static void saa1099_update(int chip, INT16 **buffer, int length)
 {
 	struct SAA1099 * const saa = &saa1099[chip];
-	UINT32 j, ch;
+	int j;
+	UINT32 ch;
 	//INT32 clk2div512;
 
 	/* if the channels are disabled we're done */
