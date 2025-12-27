@@ -253,7 +253,7 @@ PORT_END
 	 lucky1 measured on a real hardware a frequency of 74.5Hz which validates this.
  - On PCA020, CPU Clock @12MHz directly drives VCLOCK (Al's Garage Band) on the schematics, but users report that an additional board with 4 clock divider 
     has been added (f.e.: https://www.aussiearcade.com/topic/82810-alvin-g-amp-co-als-garage-band-goes-on-a-world-tour/). The digital logic is slightly different
-	 and leads to different cycle count (measured using discrete chip digital simulation).
+	 and leads to different cycle count (computed from discrete chips, then measured on real hardware, using a logic analyzer, but frame length varies a bit due to CPU access).
  - Note that these cycle counts are somewhat imprecise as rasterization is suspended through SELSYNC signal when CPU access video RAM, slowing down all this
     a bit. This is also likely the reason why CPU always access video RAM by writing a full row at once.
 */
@@ -263,7 +263,7 @@ MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*4.*32.*282.)) // 12MHz divided by 4, triggering INT1 every 4 x 32 rows (each row rasterized 4 times) x 282 cycles per row
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*32.*4.*319.25)) // 12MHz divided by 4, triggering INT1 every 32 rows (each row rasterized 4 times, each lasting ~319.25 cycles, measured on real hardware) 
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -272,7 +272,7 @@ MACHINE_DRIVER_START(alvgdmd2)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*4.*32.*314.)) // 12MHz divided by 4, triggering INT1 every 4 x 32 rows (each row rasterized 4 times) x 314 cycles per row
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, 12000000./(4.*32.*4.*314.)) // 12MHz divided by 4, triggering INT1 every 32 rows (each row rasterized 4 times of 314 cycles each, deduced from schematics)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 

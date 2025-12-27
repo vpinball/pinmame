@@ -3427,6 +3427,7 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_230_15) / sizeof(UINT32);
     }
     break;
+  case CORE_DMD_PWM_FILTER_ALVG1: // Alvin G. DMD Generation 1: 293.7Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
   case CORE_DMD_PWM_FILTER_ALVG2: // Alvin G. DMD Generation 2: 298.6Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
     {
       static const UINT32 fir_299_15[] = { 2410896, 9610314, 28210405, 66396021, 128313971, 211717997, 307413991, 400841556, 475445398, 516893726, 516893726, 475445398, 400841556, 307413991, 211717997, 128313971, 66396021, 28210405, 9610314, 2410896 };
@@ -3435,7 +3436,6 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
     }
     break;
   case CORE_DMD_PWM_FILTER_GTS3: // GTS3: 376Hz refresh rate / 15Hz low pass filter / 1,3,6,8,10 frames PWM pattern
-  case CORE_DMD_PWM_FILTER_ALVG1: // FIXME frame rate seems too high to be true (so we use the 376Hz) / Alvin G. DMD Generation 1: 1194.4Hz refresh rate / 15Hz low pass filter / 4 frames PWM pattern
     {
       static const UINT32 fir_376_15[] = { 487657, 3888687, 10976383, 24969201, 48529031, 83073390, 128267628, 181813266, 239594638, 296177312, 345582023, 382201229, 401693831, 401693831, 382201229, 345582023, 296177312, 239594638, 181813266, 128267628, 83073390, 48529031, 24969201, 10976383, 3888687, 487657 };
       dmd_state->fir_weights = fir_376_15;

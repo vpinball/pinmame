@@ -37,7 +37,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |[Data East 128x32](#data-east-128x32-segastern-whitestar)    | 234.2 / **78.1**       | 2u row      |Some machines exhibit slow startup                              |
 |Sega 192x64                                                  | 224.2 / 74.73          | 2u row      |Title screen shows sometimes, likely due to timing issues       |
 |Gottlieb GTS3                                                | **375.9** / 125.3-37.6 | 3/6/8/10 frames |                                                            |
-|[Alvin G. 1](#alvin-g)                                       | 332.4 / 83.1           | 4 row       |Still a little flicker on the title screen                      |
+|[Alvin G. 1](#alvin-g)                                       | 293.7 / **73.4**       | 4 row       |                                                                |
 |[Alvin G. 2](#alvin-g)                                       | 298.6 / **74.6**       | 4 row       |                                                                |
 |[Sega/Stern Whitestar](#data-east-128x32-segastern-whitestar)| 233.3 / **77.8**       | 2u row      |                                                                |
 |Inder                                                        | **134.8** / ?          | ?           |Review in progress                                              |
@@ -69,6 +69,8 @@ This hardware is made of discrete circuits with available datasheets, allowing t
 2 different board revisions:
 - PCA020 for "Al's Garage Band Goes On a World Tour" which was modified after production by adding a clock divider to the rasterizer (existing schematics are incomplete),
 - PCA020A which integrates this clock divider as well as other slight improvments for later games.
+
+Precise signal recordings are available from [PPUC DMD reader project](https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer).
 
 This is a simple rasterizer which rasterizes each row 4 times, either from the same data source (no shading) or from 4 contiguous RAM locations allowing 0 / 25 / 50 / 75 / 100 brightness levels.
 
