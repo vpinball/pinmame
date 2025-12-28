@@ -678,7 +678,8 @@ static WRITE32_HANDLER(samdmdram_w)
   {
 	// Switch Strobe
 	case 0x2:
-	  samlocals.sw_stb = core_BitColToNum(data);
+	  // During startup more than one bit may be set
+	  samlocals.sw_stb = singleBitSet(data) ? core_BitColToNum(data) : 0;
 	  break;
 	// DMD Page Register
 	case 0x8:
@@ -2270,7 +2271,7 @@ static INTERRUPT_GEN(sam_irq)
   of at least the last 24 frames. As this leads to very little inter PWM frame
   interaction, we simply apply a LUT corresponding to the 1 / 2 / 4 / 5 pattern.
 --*/
-static INTERRUPT_GEN(sam_dmd) {
+static void sam_dmd(int data) {
 	for(int ii = 0; ii < 32; ii++ )
 	{
 		UINT8 *dotRaw = &samlocals.rawDMD[ii * 128];
@@ -2301,7 +2302,7 @@ static MACHINE_DRIVER_START(sam1)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
     MDRV_CPU_VBLANK_INT(sam_interface_update, 1)
     MDRV_CPU_PERIODIC_INT(sam_irq, SAM_IRQFREQ)
-    MDRV_CPU_PERIODIC_INT(sam_dmd, SAM_DMDFREQ)
+    MDRV_TIMER_ADD(sam_dmd, SAM_DMDFREQ)
     MDRV_CORE_INIT_RESET_STOP(sam, sam1, sam)
     MDRV_DIPS(8)
     MDRV_NVRAM_HANDLER(sam)
