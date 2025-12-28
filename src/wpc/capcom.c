@@ -661,12 +661,12 @@ static WRITE16_HANDLER(io_w) {
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24,  soldata       & 0xFF);
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (soldata >> 8) & 0xFF);
       // Mirror solenoids 8..11 to PinMAME standard flipper solenoids outputs (8/9 are used for lower flippers and 10/11 are either used for flippers or modulated lights)
-      // Commented out as this would push the legacy PinMAME specific mapping forward while it does not correspond to manuals or any other reference
-      // System using this driver must use the native output 8..11
-      // core_write_pwm_output(CORE_MODOUT_SOL0 + sLRFlipPow - 1, 1, (soldata >> 8) & 0x01);
-      // core_write_pwm_output(CORE_MODOUT_SOL0 + sLLFlipPow - 1, 1, (soldata >> 9) & 0x01);
-      // core_write_pwm_output(CORE_MODOUT_SOL0 + sURFlipPow - 1, 1, (soldata >> 10) & 0x01);
-      // core_write_pwm_output(CORE_MODOUT_SOL0 + sULFlipPow - 1, 1, (soldata >> 11) & 0x01);
+      // This should be removed as this push the legacy PinMAME specific mapping forward while it does not correspond to manuals or any other reference
+      // System using this driver must use the native output 8..11. But as it breaks existing DOF config, we still maintain this hack for the sake of backward compatibility.
+      core_write_pwm_output(CORE_MODOUT_SOL0 + sLRFlipPow - 1, 1, (soldata >> 8) & 0x01);
+      core_write_pwm_output(CORE_MODOUT_SOL0 + sLLFlipPow - 1, 1, (soldata >> 9) & 0x01);
+      core_write_pwm_output(CORE_MODOUT_SOL0 + sURFlipPow - 1, 1, (soldata >> 10) & 0x01);
+      core_write_pwm_output(CORE_MODOUT_SOL0 + sULFlipPow - 1, 1, (soldata >> 11) & 0x01);
       break;
 
     ////////////////////////////// SWITCH0 => 16 Cabinet switches
