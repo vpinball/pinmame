@@ -999,22 +999,20 @@ static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, co
 // Send data to legacy LibPinMAME callbacks (similar processing as VPinMAME but without color LUT, and with a global flag to select luminance/bitplanes)
 #ifdef LIBPINMAME
 void core_dmd_send_libpinmame(const core_tLCDLayout* dmdLayout, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
-   core_tLCDLayout* layout = core_gameData->lcdLayout;
-   core_tLCDLayout* parent_layout = NULL;
-   const int size = layout->length * layout->start;
+   const int size = dmdLayout->length * dmdLayout->start;
    if (g_fDmdMode == 0) { // PINMAME_DMD_MODE_BRIGHTNESS
       UINT8* rawLum = g_raw_dmdbuffer;
       for (int ii = 0; ii < size; ii++)
          (*rawLum++) = (UINT8)(255.f * dmdDotLum[ii]); // Legacy API with quantization issues
       if (memcmp(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size) != 0) {
          memcpy(g_old_raw_dmdbuffer, g_raw_dmdbuffer, size);
-         libpinmame_update_display(layout, g_raw_dmdbuffer);
+         libpinmame_update_display(dmdLayout, g_raw_dmdbuffer);
       }
    }
    else if (g_fDmdMode == 1) { // PINMAME_DMD_MODE_RAW
       if (memcmp(g_raw_dmdbuffer, dmdDotRaw, size) != 0) {
          memcpy(g_raw_dmdbuffer, dmdDotRaw, size);
-         libpinmame_update_display(layout, g_raw_dmdbuffer);
+         libpinmame_update_display(dmdLayout, g_raw_dmdbuffer);
       }
    }
 }
