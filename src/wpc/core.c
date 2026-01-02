@@ -3793,6 +3793,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
      dmd_state->rawFrameId++;
   }
   
+  *rawFrameId = dmd_state->rawFrameId;
   return dmd_state->bitplaneFrame;
 }
 
