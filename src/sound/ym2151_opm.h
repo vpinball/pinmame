@@ -2,7 +2,7 @@
 // copyright-holders:Nuke.YKT
 
 /* Nuked OPM
- * Copyright (C) 2020 Nuke.YKT
+ * Copyright (C) 2020, 2026 Nuke.YKT
  *
  * This file is part of Nuked OPM.
  *
@@ -21,10 +21,12 @@
  *
  *  Nuked OPM emulator.
  *  Thanks:
- *      siliconpr0n.org(digshadow, John McMaster):
+ *      John McMaster(siliconpr0n.org):
  *          YM2151 and other FM chip decaps and die shots.
+ *      gtr3qq (https://github.com/gtr3qq):
+ *          YM2164 decap
  *
- * version: 0.9.2 beta
+ * version: 1.0
  */
 #ifndef _OPM_H_
 #define _OPM_H_
@@ -50,10 +52,16 @@ typedef struct {
 } opm_writebuf;
 #endif
 
+enum {
+    opm_flags_none = 0,
+    opm_flags_ym2164 = 1,   /* YM2164(OPP) */
+};
+
 typedef struct {
     uint8_t cycles;
     bool ic;
     bool ic2;
+    bool opp;
     // IO
     uint8_t write_data;
     bool write_a;
@@ -101,6 +109,7 @@ typedef struct {
     uint8_t eg_rate[2];
     uint8_t eg_sl[2];
     uint8_t eg_tl[3];
+    uint16_t eg_tl_opp;
     bool eg_zr[2];
     uint8_t eg_timershift_lock;
     uint8_t eg_timer_lock;
@@ -127,7 +136,6 @@ typedef struct {
     bool eg_serial_bit;
     bool eg_test;
 
-
     // Phase Gen
     uint16_t pg_fnum[32];
     uint8_t pg_kcode[32];
@@ -136,6 +144,8 @@ typedef struct {
     bool pg_reset[32];
     bool pg_reset_latch[32];
     uint16_t pg_serial;
+    uint8_t pg_opp_pms;
+    uint8_t pg_opp_dt2[32];
 
     // Operator
     uint16_t op_phase_in;
@@ -159,6 +169,8 @@ typedef struct {
     int16_t op_fb[2];
     bool op_mixl;
     bool op_mixr;
+    uint8_t op_opp_rl;
+    uint8_t op_opp_fb[3];
 
     // Mixer
 
@@ -185,7 +197,7 @@ typedef struct {
     uint32_t noise_timer;
     bool noise_timer_of;
     bool noise_update;
-    bool noise_temp;
+    bool noise_bit;
 
     // Register set
     bool mode_test[8];
@@ -220,6 +232,13 @@ typedef struct {
     bool noise_en;
     uint8_t noise_freq;
 
+    // OPP
+    uint8_t ch_ramp_div[8];
+    uint8_t reg_20_delay;
+    bool reg_28_delay;
+    bool reg_30_delay;
+    uint8_t opp_tl_cnt[8];
+    uint16_t opp_tl[32];
 
     // Timer
     uint16_t timer_a_reg;
@@ -293,7 +312,7 @@ bool OPM_ReadIRQ(const opm_t *chip);
 bool OPM_ReadCT1(const opm_t *chip);
 bool OPM_ReadCT2(const opm_t *chip);
 void OPM_SetIC(opm_t *chip, bool ic);
-void OPM_Reset(opm_t *chip, double clock);
+void OPM_Reset(opm_t *chip, uint32_t flags, double clock);
 #ifdef PINMAME
 void OPM_FlushBuffer(opm_t *chip);
 void OPM_WriteBuffered(opm_t *chip, uint8_t port, uint8_t data);
