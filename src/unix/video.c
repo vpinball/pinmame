@@ -371,12 +371,12 @@ void osd_video_initpre()
 	blit_flipy = ((orientation & ORIENTATION_FLIP_Y) != 0);
 	blit_swapxy = ((orientation & ORIENTATION_SWAP_XY) != 0);
 
+#ifdef PINMAME_VECTOR
 	if (options.vector_width == 0 && options.vector_height == 0)
 	{
 		options.vector_width = 640;
 		options.vector_height = 480;
 	}
-
 	if (blit_swapxy)
 	{
 		int temp;
@@ -384,7 +384,7 @@ void osd_video_initpre()
 		options.vector_width = options.vector_height;
 		options.vector_height = temp;
 	}
-
+#endif
 
 	/* set the artwork options */
 	options.use_artwork = ARTWORK_USE_ALL;
@@ -1146,12 +1146,15 @@ const char *osd_get_fps_text(const struct performance_info *performance)
 				(int)(Machine->drv->frames_per_second + 0.5));
 	}
 
+#ifdef PINMAME_VECTOR
 	/* for vector games, add the number of vector updates */
 	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
 	{
 		dest += sprintf(dest, "\n %d vector updates", performance->vector_updates_last_second);
 	}
-	else if (performance->partial_updates_this_frame > 1)
+	else
+#endif
+	if (performance->partial_updates_this_frame > 1)
 	{
 		dest += sprintf(dest, "\n %d partial updates", performance->partial_updates_this_frame);
 	}
