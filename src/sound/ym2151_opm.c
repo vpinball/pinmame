@@ -903,7 +903,7 @@ INLINE void OPM_OperatorPhase2(opm_t* const chip)
 INLINE void OPM_OperatorPhase3(opm_t* const chip)
 {
     //const uint32_t slot = (chip->cycles + 30) & 31;
-    uint8_t phase = chip->op_phase;
+    uint8_t phase = (uint8_t)chip->op_phase;
     if (chip->op_phase & 256)
     {
         phase = ~phase;
@@ -1379,7 +1379,7 @@ INLINE void OPM_DoTimerB(opm_t* const chip)
         value = chip->timer_b_reg;
     }
 
-    chip->timer_b_val = value;
+    chip->timer_b_val = (uint8_t)value;
 
     if (chip->cycles == 0)
     {
@@ -2188,7 +2188,7 @@ uint8_t OPM_Read(const opm_t* const chip, const uint8_t port)
         const uint16_t testdata = chip->op_out[5] | (((uint16_t)!chip->eg_serial_bit) << 14) | ((chip->pg_serial & 1) << 15);
         if (chip->mode_test[7])
         {
-            return testdata;
+            return (uint8_t)testdata;
         }
         else
         {

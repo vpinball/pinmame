@@ -106,7 +106,7 @@ static WRITE_HANDLER(spectra_CMOS_w) {
       case 0x0e: // _
         digit = 0x08; break;
       default:
-        digit = core_bcd2seg7[segData];
+        digit = (UINT8)core_bcd2seg7[segData];
     }
     coreGlobals.segments[offset].w = digit;
     coreGlobals.lampMatrix[10 - offset / 8] &= 0xff ^ (1 << (offset % 8));

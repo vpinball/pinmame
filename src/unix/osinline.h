@@ -1,5 +1,4 @@
-#ifndef __OSINLINE__
-#define __OSINLINE__
+#pragma once
 
 /* for uclock() */
 #include "sysdep/misc.h"
@@ -37,5 +36,3 @@ INLINE int _vec_mult(int x, int y)
 	return result;
 }
 #endif
-
-#endif /* __OSINLINE__ */

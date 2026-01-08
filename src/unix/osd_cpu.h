@@ -20,8 +20,7 @@
 *				     Each type is one of: U8,8,U16,16,U32,32,U64,64			   *
 *																			   *
 *******************************************************************************/
-#ifndef OSD_CPU_H 
-#define OSD_CPU_H
+#pragma once
 
 #ifdef PINMAME
 #include "pinmame.h"
@@ -110,5 +109,3 @@ typedef union {
 #else
 #define BIG_SWITCH          1
 #endif
-
-#endif	/* defined OSD_CPU_H */

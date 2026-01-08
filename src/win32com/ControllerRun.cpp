@@ -69,7 +69,7 @@ extern "C" void OnSolenoid(int nSolenoid, int IsActive)  {
 
 	// post the call to the event window (which is created in the thread of the host app)
 	if ( IsWindow(m_pController->m_hEventWnd) )
-		PostMessage(m_pController->m_hEventWnd, RegisterWindowMessage(VPINMAMEONEVENTMSG), EVENT_ONSOLENOID, (WPARAM) ((IsActive?0x10000:0x00000) + nSolenoid));
+		PostMessage(m_pController->m_hEventWnd, RegisterWindowMessage(VPINMAMEONEVENTMSG), EVENT_ONSOLENOID, (LPARAM) ((IsActive?0x10000:0x00000) + nSolenoid));
 }
 
 extern "C" void	OnStateChange(int nState)  {
@@ -84,7 +84,7 @@ extern "C" void	OnStateChange(int nState)  {
 
 	// post the call to the event window (which is created in the thread of the host app)
 	if ( IsWindow(m_pController->m_hEventWnd) )
-		PostMessage(m_pController->m_hEventWnd, RegisterWindowMessage(VPINMAMEONEVENTMSG), EVENT_ONSTATECHANGE, (WPARAM) nState);
+		PostMessage(m_pController->m_hEventWnd, RegisterWindowMessage(VPINMAMEONEVENTMSG), EVENT_ONSTATECHANGE, (LPARAM) nState);
 }
 
 DWORD FAR PASCAL CController::RunController(CController* pController)
@@ -251,7 +251,7 @@ LRESULT CALLBACK EventWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				break;
 
 			case EVENT_ONSTATECHANGE:
-				pController->Fire_OnStateChange(lParam);
+				pController->Fire_OnStateChange((INT)lParam);
 				break;
 			}
 

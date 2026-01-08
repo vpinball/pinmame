@@ -4,11 +4,7 @@
 //
 //============================================================
 
-#ifndef __INPUT_H
-#define __INPUT_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 //============================================================
 //	MACROS
@@ -44,5 +40,3 @@ typedef struct _KEYBOARD_INDICATOR_PARAMETERS {
 
 void start_led(void);
 void stop_led(void);
-
-#endif /* ifndef __INPUTD_H */

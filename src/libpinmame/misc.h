@@ -17,11 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 */
-#ifndef __MISC_H
-#define __MISC_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
-#endif
 
 #include <stdio.h>
 
@@ -33,5 +29,3 @@ uclock_t uclock(void);
 /* print colum stuff */
 void print_columns(const char *text1, const char *text2);
 void fprint_columns(FILE *f, const char *text1, const char *text2);
-
-#endif /* ifndef __MISC_H */

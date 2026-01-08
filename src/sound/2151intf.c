@@ -220,7 +220,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 				name,vol,rate,i,YM2151UpdateNuked,1);
 
 			//OPM_FlushBuffer(&chip[i]);
-			OPM_Reset(&chip[i], intf->baseclock);
+			OPM_Reset(&chip[i], opm_flags_none, intf->baseclock);
 
 			has_handler |= (intf->irqhandler[i] != 0) | (intf->portwritehandler[i] != 0);
 
@@ -360,7 +360,7 @@ void YM2151_sh_reset(void)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(i);
 		OPM_FlushBuffer(&chip[i]);
-		OPM_Reset(&chip[i], 0);
+		OPM_Reset(&chip[i], opm_flags_none, 0);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)

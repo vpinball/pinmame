@@ -17,8 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 */
-#ifndef __RC_H
-#define __RC_H
+#pragma once
 
 #include <stdio.h>
 #include "begin_code.h"
@@ -126,4 +125,3 @@ int rc_check_and_create_dir(const char *name);
 char *rc_get_home_dir(void);
 
 #include "end_code.h"
-#endif /* ifndef __RC_H */

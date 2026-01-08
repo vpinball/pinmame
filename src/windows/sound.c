@@ -351,7 +351,7 @@ static void copy_sample_data(INT16 *data, int bytes_to_copy)	// adopted from MAM
 	stream_buffer_in = (stream_buffer_in + bytes_to_copy) % stream_buffer_size;
 
 	// copy the first chunk
-	cur_bytes = (bytes_to_copy > length1) ? length1 : bytes_to_copy;
+	cur_bytes = (bytes_to_copy > (int)length1) ? length1 : bytes_to_copy;
 	memcpy(buffer1, data, cur_bytes);
 
 	// adjust for the number of bytes
@@ -361,7 +361,7 @@ static void copy_sample_data(INT16 *data, int bytes_to_copy)	// adopted from MAM
 	// copy the second chunk (2 pointers due to circular dsound buffer)
 	if (bytes_to_copy != 0 && buffer2)
 	{
-		cur_bytes = (bytes_to_copy > length2) ? length2 : bytes_to_copy;
+		cur_bytes = (bytes_to_copy > (int)length2) ? length2 : bytes_to_copy;
 		memcpy(buffer2, data, cur_bytes);
 	}
 

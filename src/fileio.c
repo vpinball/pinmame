@@ -632,7 +632,7 @@ UINT64 mame_ftell(mame_file *file)
 			return file->offset;
 	}
 
-	return -1L;
+	return -1LL;
 }
 
 
@@ -1033,7 +1033,7 @@ static int checksum_file(int pathtype, int pathindex, const char *file, UINT8 **
 	}
 
 	length = osd_ftell(f);
-	if (length == -1L)
+	if (length == -1LL)
 	{
 		osd_fclose(f);
 		return -1;

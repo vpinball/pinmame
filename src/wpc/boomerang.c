@@ -117,8 +117,8 @@ static READ_HANDLER(pia3ca2_r) {
 static WRITE_HANDLER(pia3a_w) {
   int i, digit = data & 0x0f;
   if (digit < 6) {
-    locals.segs[digit] = core_bcd2seg7[data >> 4];
-	} else if (digit > 8 && digit < 15) {
+    locals.segs[digit] = (UINT8)core_bcd2seg7[data >> 4];
+  } else if (digit > 8 && digit < 15) {
     digit = 14 - digit;
     for (i = 0; i < 6; i++) {
       coreGlobals.segments[6 * i + digit].w = locals.segs[i];
