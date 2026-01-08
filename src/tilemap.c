@@ -984,7 +984,7 @@ void tilemap_set_scroll_rows( struct tilemap *tilemap, int n )
 
 /***********************************************************************************/
 
-void tilemap_mark_tile_dirty( struct tilemap *tilemap, int memory_offset )
+void tilemap_mark_tile_dirty( struct tilemap *tilemap, UINT32 memory_offset )
 {
 	if( memory_offset<tilemap->max_memory_offset )
 	{
@@ -1682,8 +1682,8 @@ void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, U
 
 	blit.clip_left		= 0;
 	blit.clip_top		= 0;
-	blit.clip_right		= (dest->width < tilemap->cached_width) ? dest->width : tilemap->cached_width;
-	blit.clip_bottom	= (dest->height < tilemap->cached_height) ? dest->height : tilemap->cached_height;
+	blit.clip_right		= (dest->width < (int)tilemap->cached_width) ? dest->width : tilemap->cached_width;
+	blit.clip_bottom	= (dest->height < (int)tilemap->cached_height) ? dest->height : tilemap->cached_height;
 
 	for(
 		ypos = scrolly - tilemap->cached_height;
@@ -1802,7 +1802,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 			/* startx is unsigned */
 			startx = ((INT32)startx) >> 16;
 
-			if (startx >= srcbitmap->width)
+			if ((int)startx >= srcbitmap->width)
 			{
 				sx -= startx;
 				startx = 0;
@@ -1812,7 +1812,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 			{
 				while (sy <= ey)
 				{
-					if (starty < heightshifted)
+					if ((int)starty < heightshifted)
 					{
 						x = sx;
 						cx = startx;
@@ -1823,7 +1823,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 						src = (UINT16 *)srcbitmap->line[cy];
 						pMask = (UINT8 *)transparency_bitmap->line[cy];
 
-						while (x <= ex && cx < srcbitmap->width)
+						while (x <= ex && (int)cx < srcbitmap->width)
 						{
 							if ( (pMask[cx]&mask) == value )
 							{
@@ -1843,7 +1843,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 		}
 		else
 		{
-			while (startx >= widthshifted && sx <= ex)
+			while ((int)startx >= widthshifted && sx <= ex)
 			{
 				startx += incxx;
 				sx++;
@@ -1853,7 +1853,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 			{
 				while (sy <= ey)
 				{
-					if (starty < heightshifted)
+					if ((int)starty < heightshifted)
 					{
 						x = sx;
 						cx = startx;
@@ -1863,7 +1863,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 						pri = ((UINT8 *)priority_bitmap->line[sy]) + sx;
 						src = (UINT16 *)srcbitmap->line[cy];
 						pMask = (UINT8 *)transparency_bitmap->line[cy];
-						while (x <= ex && cx < widthshifted)
+						while (x <= ex && (int)cx < widthshifted)
 						{
 							if ( (pMask[cx>>16]&mask) == value )
 							{
@@ -1923,7 +1923,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 				pri = ((UINT8 *)priority_bitmap->line[sy]) + sx;
 				while (x <= ex)
 				{
-					if (cx < widthshifted && cy < heightshifted)
+					if ((int)cx < widthshifted && (int)cy < heightshifted)
 					{
 						if( (((UINT8 *)transparency_bitmap->line[cy>>16])[cx>>16]&mask)==value )
 						{

@@ -26,7 +26,7 @@
 /  Local variables
 /-----------------*/
 static struct {
-  int    dispBlank;
+  UINT8  dispBlank; // bool
   int    vblankCount;
   int    firqtimer;
   UINT32 solenoids, solenoids2;
@@ -122,7 +122,7 @@ static WRITE_HANDLER(io_w) {
     case 1: // STORE, enables NVRAM
       break;
     case 2: // diagnostic 7-seg digit, display blanking
-      locals.diagnosticLed = core_bcd2seg7[data >> 4];
+      locals.diagnosticLed = (UINT8)core_bcd2seg7[data >> 4];
       locals.dispBlank = !(data & 1);
       break;
     case 3: // continuous solenoids

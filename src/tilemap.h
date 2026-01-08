@@ -106,7 +106,7 @@ void tilemap_set_transparent_pen( struct tilemap *tilemap, int pen );
 void tilemap_set_transmask( struct tilemap *tilemap, int which, UINT32 fgmask, UINT32 bgmask );
 void tilemap_set_depth( struct tilemap *tilemap, int tile_depth, int tile_granularity );
 
-void tilemap_mark_tile_dirty( struct tilemap *tilemap, int memory_offset );
+void tilemap_mark_tile_dirty( struct tilemap *tilemap, UINT32 memory_offset );
 void tilemap_mark_all_tiles_dirty( struct tilemap *tilemap );
 void tilemap_mark_gfxdata_dirty( struct tilemap *tilemap, UINT8 *dirty_array ); /* TBA */
 
