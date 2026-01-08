@@ -14,11 +14,10 @@ COREOBJS = $(OBJ)/version.o $(OBJ)/mame.o \
 	$(OBJ)/machine/6532riot.o \
 	$(OBJ)/machine/z80fmly.o $(OBJ)/machine/6821pia.o \
 	$(OBJ)/machine/i8155.o $(OBJ)/machine/8255ppi.o \
-	$(OBJ)/vidhrdw/generic.o $(OBJ)/vidhrdw/vector.o \
-	$(OBJ)/vidhrdw/avgdvg.o $(OBJ)/machine/mathbox.o \
+	$(OBJ)/vidhrdw/generic.o \
+	$(OBJ)/machine/mathbox.o \
 	$(OBJ)/machine/ticket.o $(OBJ)/machine/eeprom.o \
-	$(OBJ)/machine/6522via.o $(OBJ)/machine/mb87078.o \
-	$(OBJ)/machine/random.o \
+	$(OBJ)/machine/6522via.o \
 	$(OBJ)/mamedbg.o $(OBJ)/window.o \
 	$(OBJ)/profiler.o \
 	$(OBJ)/hash.o $(OBJ)/sha1.o \
