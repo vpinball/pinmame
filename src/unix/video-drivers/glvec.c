@@ -19,14 +19,15 @@
 #include "glmame.h"
 #include "driver.h"
 #include "artwork.h"
+#ifdef PINMAME_VECTOR
 #include "vidhrdw/vector.h"
+#endif
 
 #include "osinline.h"
 
-void CalcCabPointbyViewpoint( 
-		   GLdouble vx_gscr_view, GLdouble vy_gscr_view, 
-                   GLdouble *vx_p, GLdouble *vy_p, GLdouble *vz_p
-		 );
+void CalcCabPointbyViewpoint(
+                   GLdouble vx_gscr_view, GLdouble vy_gscr_view, 
+                   GLdouble *vx_p, GLdouble *vy_p, GLdouble *vz_p);
 
 extern int winwidth,winheight;
 extern GLdouble  s__cscr_w_view, s__cscr_h_view;

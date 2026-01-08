@@ -26,5 +26,9 @@ extern UINT8 win_d3d_effects_flipy;
 
 int win_d3d_init(int width, int height, int depth, int attributes, double aspect, const struct win_effect_data *effect);
 void win_d3d_kill(void);
-int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update);
+int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update);
 void win_d3d_wait_vsync(void);

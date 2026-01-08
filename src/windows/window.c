@@ -191,7 +191,9 @@ static cycles_t last_event_check;
 
 // derived attributes
 static int pixel_aspect_ratio;
+#ifdef PINMAME_VECTOR
 static int vector_game;
+#endif
 
 // cached bounding rects
 static RECT non_fullscreen_bounds;
@@ -227,9 +229,17 @@ static struct win_effect_data effect_table[] =
 static void compute_multipliers_internal(const RECT *rect, int visible_width, int visible_height, int *xmult, int *ymult);
 static void update_system_menu(void);
 static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
-static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update);
+static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update);
 
-static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update);
+static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update);
 
 static int create_debug_window(void);
 static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap, const rgb_t *palette);
@@ -578,7 +588,9 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 
 	// extract useful parameters from the attributes
 	pixel_aspect_ratio	= (attributes & VIDEO_PIXEL_ASPECT_RATIO_MASK);
+#ifdef PINMAME_VECTOR
 	vector_game			= ((attributes & VIDEO_TYPE_VECTOR) != 0);
+#endif
 
 	// handle failure if we couldn't create the video window
 	if (!win_video_window)
@@ -592,7 +604,11 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 			SWP_NOZORDER);
 
 	// make sure we paint the window once here
-	win_update_video_window(NULL, NULL, NULL);
+	win_update_video_window(NULL, NULL
+#ifdef PINMAME_VECTOR
+		,NULL
+#endif
+	);
 
 	// fill in the bitmap info header
 	video_dib_info->bmiHeader.biSize			= sizeof(video_dib_info->bmiHeader);
@@ -746,13 +762,21 @@ static void update_system_menu(void)
 //	win_update_video_window
 //============================================================
 
-void win_update_video_window(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels)
+void win_update_video_window(struct mame_bitmap *bitmap, const struct rectangle *bounds
+#ifdef PINMAME_VECTOR
+	,void *vector_dirty_pixels
+#endif
+)
 {
 	// get the client DC and draw to it
 	if (win_video_window)
 	{
 		HDC dc = GetDC(win_video_window);
-		draw_video_contents(dc, bitmap, bounds, vector_dirty_pixels, 0);
+		draw_video_contents(dc, bitmap, bounds,
+#ifdef PINMAME_VECTOR
+			vector_dirty_pixels,
+#endif
+			0);
 		ReleaseDC(win_video_window, dc);
 	}
 }
@@ -763,7 +787,11 @@ void win_update_video_window(struct mame_bitmap *bitmap, const struct rectangle 
 //	draw_video_contents
 //============================================================
 
-static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update)
+static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update)
 {
 #ifndef PINMAME
 	static struct mame_bitmap *last;
@@ -809,19 +837,31 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct
 	{
 		if (win_use_directx == USE_D3D)
 		{
-			if (win_d3d_draw(bitmap, bounds, vector_dirty_pixels, update))
+			if (win_d3d_draw(bitmap, bounds,
+#ifdef PINMAME_VECTOR
+				vector_dirty_pixels,
+#endif
+				update))
 				return;
 		}
 		else
 		{
-			if (win_ddraw_draw(bitmap, bounds, vector_dirty_pixels, update))
+			if (win_ddraw_draw(bitmap, bounds,
+#ifdef PINMAME_VECTOR
+				vector_dirty_pixels,
+#endif
+				update))
 				return;
 		}
 	}
 #endif
 
 	// draw to the window with a DIB
-	dib_draw_window(dc, bitmap, bounds, vector_dirty_pixels, update);
+	dib_draw_window(dc, bitmap, bounds,
+#ifdef PINMAME_VECTOR
+		vector_dirty_pixels,
+#endif
+		update);
 }
 
 
@@ -873,7 +913,11 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 			PAINTSTRUCT pstruct;
 			HDC hdc = BeginPaint(wnd, &pstruct);
  			if (win_video_window)
-			draw_video_contents(hdc, NULL, NULL, NULL, 1);
+			draw_video_contents(hdc, NULL, NULL,
+#ifdef PINMAME_VECTOR
+				NULL,
+#endif
+				1);
  			if (win_has_menu())
  				DrawMenuBar(win_video_window);
 			EndPaint(wnd, &pstruct);
@@ -1218,7 +1262,11 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 		ShowWindow(win_video_window, SW_SHOW);
 		SetForegroundWindow(win_video_window);
 #endif
-		win_update_video_window(NULL, NULL, NULL);
+		win_update_video_window(NULL, NULL
+#ifdef PINMAME_VECTOR
+			,NULL
+#endif
+		);
 
 		// update the cursor state
 		win_update_cursor_state();
@@ -1592,7 +1640,11 @@ UINT32 *win_prepare_palette(struct win_blit_params *params)
 //	dib_draw_window
 //============================================================
 
-static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update)
+static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update)
 {
 	int depth = (bitmap->depth == 15) ? 16 : bitmap->depth;
 	struct win_blit_params params;
@@ -1626,20 +1678,26 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	params.srcwidth		= win_visible_width;
 	params.srcheight	= win_visible_height;
 
+#ifdef PINMAME_VECTOR
 	params.vecdirty		= vector_dirty_pixels;
+#endif
 
 	params.flipx		= blit_flipx;
 	params.flipy		= blit_flipy;
 	params.swapxy		= blit_swapxy;
 
-	if (params.dstpitch * params.srcheight * params.dstyscale > sizeof(converted_bitmap))
+	if (params.dstpitch * params.srcheight * params.dstyscale > (int)sizeof(converted_bitmap))
 	{
 		MessageBox(NULL,"converted_bitmap size too small", "dib_draw_window", MB_OK | MB_ICONERROR);
 		return;
 	}
 
 	// adjust for more optimal bounds
-	if (bounds && !update && !vector_dirty_pixels)
+	if (bounds && !update
+#ifdef PINMAME_VECTOR
+		&& !vector_dirty_pixels
+#endif
+		)
 	{
 		params.dstxoffs += (bounds->min_x - win_visible_rect.left) * xmult;
 		params.dstyoffs += (bounds->min_y - win_visible_rect.top) * ymult;

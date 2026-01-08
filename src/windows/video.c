@@ -30,7 +30,9 @@
 // MAME headers
 #include "driver.h"
 #include "mamedbg.h"
+#ifdef PINMAME_VECTOR
 #include "vidhrdw/vector.h"
+#endif
 #include "blit.h"
 #include "video.h"
 #include "window.h"
@@ -108,7 +110,9 @@ static double video_fps;
 static int video_attributes;
 
 // derived from video attributes
+#ifdef PINMAME_VECTOR
 static int vector_game;
+#endif
 static int rgb_direct;
 
 // current visible area bounds
@@ -490,7 +494,9 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 		frameskip = FRAMESKIP_LEVELS - 1;
 
 	// extract useful parameters from the attributes
+#ifdef PINMAME_VECTOR
 	vector_game			= ((params->video_attributes & VIDEO_TYPE_VECTOR) != 0);
+#endif
 	rgb_direct			= ((params->video_attributes & VIDEO_RGB_DIRECT) != 0);
 
 	if (!blit_swapxy)
@@ -603,12 +609,15 @@ const char *osd_get_fps_text(const struct performance_info *performance)
 			(int)(performance->frames_per_second + 0.5),
 			(int)(Machine->drv->frames_per_second + 0.5));
 
+#ifdef PINMAME_VECTOR
 	/* for vector games, add the number of vector updates */
 	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
 	{
 		dest += sprintf(dest, "\n %d vector updates", performance->vector_updates_last_second);
 	}
-	else if (performance->partial_updates_this_frame > 1)
+	else
+#endif
+	if (performance->partial_updates_this_frame > 1)
 	{
 		dest += sprintf(dest, "\n %d partial updates", performance->partial_updates_this_frame);
 	}
@@ -985,7 +994,11 @@ void update_autoframeskip(void)
 //	render_frame
 //============================================================
 
-static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels)
+static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds
+#ifdef PINMAME_VECTOR
+	, void *vector_dirty_pixels
+#endif
+)
 {
 	cycles_t curr;
 
@@ -1023,7 +1036,11 @@ static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bou
 
 	// update the bitmap we're drawing
 	profiler_mark(PROFILER_BLIT);
-		win_update_video_window(bitmap, bounds, vector_dirty_pixels);
+		win_update_video_window(bitmap, bounds
+#ifdef PINMAME_VECTOR
+			,vector_dirty_pixels
+#endif
+		);
 	profiler_mark(PROFILER_END);
 
 	// if we're throttling and autoframeskip is on, adjust
@@ -1070,10 +1087,16 @@ void osd_update_video_and_audio(struct mame_display *display)
 	{
 		win_orient_rect(&updatebounds);
 
+#ifdef PINMAME_VECTOR
 		if (display->changed_flags & VECTOR_PIXELS_CHANGED)
 			render_frame(display->game_bitmap, &updatebounds, display->vector_dirty_pixels);
 		else
-			render_frame(display->game_bitmap, &updatebounds, NULL);
+#endif
+			render_frame(display->game_bitmap, &updatebounds
+#ifdef PINMAME_VECTOR
+				,NULL
+#endif
+			);
 	}
 
 	// update the debugger

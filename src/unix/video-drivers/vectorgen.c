@@ -1,6 +1,8 @@
 #include "xmame.h"
 #include "driver.h"
+#ifdef PINMAME_VECTOR
 #include "vidhrdw/vector.h"
+#endif
 
 /* glvec.c, ... */
 extern void vector_vh_update(struct mame_bitmap *bitmap,int full_refresh);

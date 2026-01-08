@@ -729,12 +729,14 @@ static void print_game_video(int OUTPUT_XML, FILE* out, const struct GameDriver*
 	expand_machine_driver(game->drv, &driver);
 
 	fprintf(out, SELECT(L1P "video" L2B, "\t\t<video"));
+#ifdef PINMAME_VECTOR
 	if (driver.video_attributes & VIDEO_TYPE_VECTOR)
 	{
 		fprintf(out, SELECT(L2P "screen vector" L2N, " screen=\"vector\""));
 		showxy = 0;
 	}
 	else
+#endif
 	{
 		fprintf(out, SELECT(L2P "screen raster" L2N, " screen=\"raster\""));
 		showxy = 1;

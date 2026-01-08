@@ -193,7 +193,11 @@ HBRUSH background_brush = NULL;
 
 BOOL PropSheetFilter_Vector(const struct InternalMachineDriver *drv, const struct GameDriver *gamedrv)
 {
+#ifdef PINMAME_VECTOR
 	return (drv->video_attributes & VIDEO_TYPE_VECTOR) != 0;
+#else
+	return FALSE;
+#endif
 }
 
 /* Help IDs */
@@ -563,12 +567,14 @@ static char *GameInfoSound(UINT nIndex)
 static char *GameInfoScreen(UINT nIndex)
 {
 	static char buf[1024];
-    struct InternalMachineDriver drv;
-    expand_machine_driver(drivers[nIndex]->drv,&drv);
+	struct InternalMachineDriver drv;
+	expand_machine_driver(drivers[nIndex]->drv,&drv);
 
+#ifdef PINMAME_VECTOR
 	if (drv.video_attributes & VIDEO_TYPE_VECTOR)
 		strcpy(buf, "Vector Game");
 	else
+#endif
 	{
 		if (drivers[nIndex]->flags & ORIENTATION_SWAP_XY)
 			sprintf(buf,"%d x %d (vert) %5.2f Hz",
@@ -592,12 +598,12 @@ static char *GameInfoColors(UINT nIndex)
     expand_machine_driver(drivers[nIndex]->drv,&drv);
 
 	ZeroMemory(buf, sizeof(buf));
+#ifdef PINMAME_VECTOR
 	if (drv.video_attributes & VIDEO_TYPE_VECTOR)
 		strcpy(buf, "Vector Game");
 	else
-	{
+#endif
 		sprintf(buf, "%d colors ", drv.total_colors);
-	}
 
 	return buf;
 }

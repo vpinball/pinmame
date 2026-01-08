@@ -330,16 +330,12 @@ add_executable(pinmame WIN32
    src/usrintrf.c
    src/usrintrf.h
    src/version.c
-   src/vidhrdw/avgdvg.c
-   src/vidhrdw/avgdvg.h
    src/vidhrdw/crtc6845.c
    src/vidhrdw/crtc6845.h
    src/vidhrdw/generic.c
    src/vidhrdw/generic.h
    src/vidhrdw/tms9928a.c
    src/vidhrdw/tms9928a.h
-   src/vidhrdw/vector.c
-   src/vidhrdw/vector.h
    src/window.c
    src/window.h
    src/wpc/allied.c

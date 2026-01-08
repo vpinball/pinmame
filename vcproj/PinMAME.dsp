@@ -1258,14 +1258,6 @@ SOURCE=.\src\sound\ymf262.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\vidhrdw\avgdvg.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\avgdvg.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\vidhrdw\crtc6845.c
 # End Source File
 # Begin Source File
@@ -1288,15 +1280,6 @@ SOURCE=.\src\vidhrdw\tms9928a.c
 
 SOURCE=.\src\vidhrdw\tms9928a.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\vector.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\vector.h
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=.\src\artwork.c

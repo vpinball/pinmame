@@ -945,11 +945,9 @@
     <ClCompile Include="..\src\sound\votrax.c" />
     <ClCompile Include="..\src\sound\ymdeltat.c" />
     <ClCompile Include="..\src\sound\ymf262.c" />
-    <ClCompile Include="..\src\vidhrdw\avgdvg.c" />
     <ClCompile Include="..\src\vidhrdw\crtc6845.c" />
     <ClCompile Include="..\src\vidhrdw\generic.c" />
     <ClCompile Include="..\src\vidhrdw\tms9928a.c" />
-    <ClCompile Include="..\src\vidhrdw\vector.c" />
     <ClCompile Include="..\src\windows\jit.c" />
     <ClCompile Include="..\src\windows\jitemit.c" />
     <ClCompile Include="..\src\windows\ticker.c" />
@@ -1292,11 +1290,9 @@
     <ClInclude Include="..\src\sound\votrax.h" />
     <ClInclude Include="..\src\sound\ymdeltat.h" />
     <ClInclude Include="..\src\sound\ymf262.h" />
-    <ClInclude Include="..\src\vidhrdw\avgdvg.h" />
     <ClInclude Include="..\src\vidhrdw\crtc6845.h" />
     <ClInclude Include="..\src\vidhrdw\generic.h" />
     <ClInclude Include="..\src\vidhrdw\tms9928a.h" />
-    <ClInclude Include="..\src\vidhrdw\vector.h" />
     <ClInclude Include="..\src\windows\jit.h" />
     <ClInclude Include="..\src\windows\jitemit.h" />
     <ClInclude Include="..\src\wpc\alvg.h" />

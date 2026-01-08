@@ -658,6 +658,7 @@ int win_d3d_effects_init(int attributes)
 		}
 	}
 
+#ifdef PINMAME_VECTOR
 	if (attributes & VIDEO_TYPE_VECTOR)
 	{
 		win_d3d_use_auto_effect = 0;
@@ -668,6 +669,7 @@ int win_d3d_effects_init(int attributes)
 		win_d3d_prescalex = 1;
 		win_d3d_prescaley = 1;
 	}
+#endif
 
 	return 0;
 }

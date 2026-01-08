@@ -225,7 +225,9 @@ struct GameOptions
 #define GAME_BITMAP_CHANGED			0x00000001
 #define GAME_PALETTE_CHANGED		0x00000002
 #define GAME_VISIBLE_AREA_CHANGED	0x00000004
+#ifdef PINMAME_VECTOR
 #define VECTOR_PIXELS_CHANGED		0x00000008
+#endif
 #define DEBUG_BITMAP_CHANGED		0x00000010
 #define DEBUG_PALETTE_CHANGED		0x00000020
 #define DEBUG_FOCUS_CHANGED			0x00000040
@@ -246,7 +248,9 @@ struct mame_display
     UINT32					game_palette_entries;	/* number of palette entries in game's palette */
     UINT32 *				game_palette_dirty;		/* points to game's dirty palette bitfield */
     struct rectangle 		game_visible_area;		/* the game's visible area */
+#ifdef PINMAME_VECTOR
     void *					vector_dirty_pixels;	/* points to X,Y pairs of dirty vector pixels */
+#endif
 
     /* debugger bitmap and display information */
     struct mame_bitmap *	debug_bitmap;			/* points to debugger's bitmap */
@@ -270,7 +274,9 @@ struct performance_info
 {
 	double					game_speed_percent;		/* % of full speed */
 	double					frames_per_second;		/* actual rendered fps */
+#ifdef PINMAME_VECTOR
 	int						vector_updates_last_second; /* # of vector updates last second */
+#endif
 	int						partial_updates_this_frame; /* # of partial updates last frame */
 };
 

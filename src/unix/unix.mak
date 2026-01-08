@@ -314,11 +314,6 @@ ifdef EFENCE
 MY_LIBS += -lefence
 endif
 
-#we remove $(OBJ)/vidhrdw/vector.o from $(COREOBJS) since we have our own
-#build rules for this object because it is display dependent.
-OBJS  += $(subst $(OBJ)/vidhrdw/vector.o, ,$(COREOBJS)) $(DRVLIBS) \
- $(OBJ)/unix.$(DISPLAY_METHOD)/osdepend.a $(OBJ)/unix.$(DISPLAY_METHOD)/vector.o
-
 MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 
 ##############################################################################
@@ -437,17 +432,9 @@ $(OBJ)/cpu/m68000/68020.o:  $(OBJ)/cpu/m68000/68020.asm
 	$(CC_COMPILE) $(ASM_STRIP) $<
 	$(CC_COMPILE) nasm $(NASM_FMT) -o $@ $(subst -D,-d,$(ASMDEFS)) $<
 
-#some tricks, since vector.o these days is display method-dependent:
-$(OBJ)/unix.$(DISPLAY_METHOD)/vector.o: src/vidhrdw/vector.c
-	$(CC_COMMENT) @echo 'Compiling $< ...'
-	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
-
 $(OBJ)/unix.$(DISPLAY_METHOD)/video-drivers/x11-avi.o: src/unix/video-drivers/x11-avi.c
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
-
-#make sure this isn't accidently in makefile.$(OBJ):
-$(OBJ)/vidhrdw/vector.o: bla
 
 doc: doc/xmame-doc.txt doc/x$(TARGET)rc.dist doc/gamelist.$(TARGET) doc/x$(TARGET).6
 

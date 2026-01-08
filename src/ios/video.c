@@ -1,7 +1,9 @@
 #include <math.h>
 #include <unistd.h>
 #include "driver.h"
+#ifdef PINMAME_VECTOR
 #include "vidhrdw/vector.h"
+#endif
 #include "video.h"
 
 #include "ios.h"
@@ -16,7 +18,9 @@ int throttle = 1;
 static const int allow_sleep = 1;
 static int video_depth;
 static double video_fps;
+#ifdef PINMAME_VECTOR
 static int vector_game;
+#endif
 static int rgb_direct;
 static int warming_up;
 static cycles_t last_skipcount0_time;
@@ -277,8 +281,12 @@ static void throttle_speed(void) {
  * render_frame()
  */ 
 
-static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels) {
-    cycles_t curr;
+static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds
+#ifdef PINMAME_VECTOR
+, void *vector_dirty_pixels
+#endif
+) {
+	cycles_t curr;
 
 	if (throttle || game_is_paused) {
 		throttle_speed();
@@ -359,7 +367,9 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
         frameskip = FRAMESKIP_LEVELS - 1;
     }
 
+#ifdef PINMAME_VECTOR
     vector_game	= ((params->video_attributes & VIDEO_TYPE_VECTOR) != 0);
+#endif
     rgb_direct = ((params->video_attributes & VIDEO_RGB_DIRECT) != 0);
 
     for (r = 0; r < 32; r++) {
@@ -436,10 +446,13 @@ const char* osd_get_fps_text(const struct performance_info *performance) {
                     (int)(performance->frames_per_second + 0.5),
                     (int)(Machine->drv->frames_per_second + 0.5));
 
+#ifdef PINMAME_VECTOR
 	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR) {
 		dest += sprintf(dest, "\n %d vector updates", performance->vector_updates_last_second);
 	}
-	else if (performance->partial_updates_this_frame > 1) {
+	else
+#endif
+	if (performance->partial_updates_this_frame > 1) {
 		dest += sprintf(dest, "\n %d partial updates", performance->partial_updates_this_frame);
 	}
 
@@ -472,12 +485,19 @@ void osd_update_video_and_audio(struct mame_display* display) {
     }
 
     if (display->changed_flags & GAME_BITMAP_CHANGED) {
+#ifdef PINMAME_VECTOR
 		if (display->changed_flags & VECTOR_PIXELS_CHANGED) {
 			render_frame(display->game_bitmap, &updatebounds, display->vector_dirty_pixels);
 		}
-        else {
-			render_frame(display->game_bitmap, &updatebounds, NULL);
-        }
+		else
+#endif
+		{
+			render_frame(display->game_bitmap, &updatebounds
+#ifdef PINMAME_VECTOR
+			, NULL
+#endif
+			);
+		}
     }
 
     if (display->changed_flags & LED_STATE_CHANGED) {

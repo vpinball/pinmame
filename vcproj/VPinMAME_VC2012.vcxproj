@@ -1073,11 +1073,9 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\sound\votrax.c" />
     <ClCompile Include="..\src\sound\ymdeltat.c" />
     <ClCompile Include="..\src\sound\ymf262.c" />
-    <ClCompile Include="..\src\vidhrdw\avgdvg.c" />
     <ClCompile Include="..\src\vidhrdw\crtc6845.c" />
     <ClCompile Include="..\src\vidhrdw\generic.c" />
     <ClCompile Include="..\src\vidhrdw\tms9928a.c" />
-    <ClCompile Include="..\src\vidhrdw\vector.c" />
     <ClCompile Include="..\src\windows\blit.c" />
     <ClCompile Include="..\src\windows\config.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
@@ -1538,11 +1536,9 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="..\src\sound\votrax.h" />
     <ClInclude Include="..\src\sound\ymdeltat.h" />
     <ClInclude Include="..\src\sound\ymf262.h" />
-    <ClInclude Include="..\src\vidhrdw\avgdvg.h" />
     <ClInclude Include="..\src\vidhrdw\crtc6845.h" />
     <ClInclude Include="..\src\vidhrdw\generic.h" />
     <ClInclude Include="..\src\vidhrdw\tms9928a.h" />
-    <ClInclude Include="..\src\vidhrdw\vector.h" />
     <ClInclude Include="..\src\windows\blit.h" />
     <ClInclude Include="..\src\windows\d3d_extra.h" />
     <ClInclude Include="..\src\windows\dirty.h" />

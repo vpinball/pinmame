@@ -186,7 +186,11 @@ static void erase_surfaces(void);
 static int restore_surfaces(void);
 static void release_surfaces(void);
 static void compute_color_masks(const DDSURFACEDESC2 *desc);
-static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update);
+static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update);
 static int render_and_flip(LPRECT src, LPRECT dst, int update, int wait_for_lock);
 static void init_vertices_preprocess(LPRECT src);
 static void init_vertices_screen(LPRECT src, LPRECT dst);
@@ -1848,7 +1852,11 @@ static void compute_color_masks(const DDSURFACEDESC2 *desc)
 //	win_d3d_draw
 //============================================================
 
-int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update)
+int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update)
 {
 	int result;
 
@@ -1864,7 +1872,11 @@ int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds, voi
 		restore_surfaces();
 
 	// render to the blit surface,
-	result = render_to_blit(bitmap, bounds, vector_dirty_pixels, update);
+	result = render_to_blit(bitmap, bounds,
+#ifdef PINMAME_VECTOR
+		vector_dirty_pixels,
+#endif
+		update);
 
 	return result;
 }
@@ -1875,15 +1887,21 @@ int win_d3d_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds, voi
 //	lock_must_succeed
 //============================================================
 
-static int lock_must_succeed(const struct rectangle *bounds, void *vector_dirty_pixels)
+static int lock_must_succeed(const struct rectangle *bounds
+#ifdef PINMAME_VECTOR
+	,void *vector_dirty_pixels
+#endif
+)
 {
 	// determine up front if this lock must succeed; by default, it depends on
 	// whether or not we're throttling
 	int result = throttle;
 
+#ifdef PINMAME_VECTOR
 	// if we're using dirty pixels, we must succeed as well, or else we will leave debris
 	if (vector_dirty_pixels)
 		result = 1;
+#endif
 
 	// if we're blitting a different source rect than before, we also must
 	// succeed, or else we will miss some areas
@@ -1904,10 +1922,18 @@ static int lock_must_succeed(const struct rectangle *bounds, void *vector_dirty_
 //	render_to_blit
 //============================================================
 
-static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update)
+static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds,
+#ifdef PINMAME_VECTOR
+	void *vector_dirty_pixels,
+#endif
+	int update)
 {
 	int dstdepth = blit_desc.DUMMYUNIONNAMEN(4).ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
-	int wait_for_lock = lock_must_succeed(bounds, vector_dirty_pixels);
+	int wait_for_lock = lock_must_succeed(bounds
+#ifdef PINMAME_VECTOR
+		,vector_dirty_pixels
+#endif
+	);
 	int blit_width, blit_height;
 	struct win_blit_params params;
 	HRESULT result;
@@ -1979,14 +2005,20 @@ tryagain:
 	params.srcwidth		= win_visible_width;
 	params.srcheight	= win_visible_height;
 
+#ifdef PINMAME_VECTOR
 	params.vecdirty		= vector_dirty_pixels;
+#endif
 
 	params.flipx		= 0;
 	params.flipy		= 0;
 	params.swapxy		= 0;
 
 	// adjust for more optimal bounds
-	if (bounds && !update && !vector_dirty_pixels)
+	if (bounds && !update
+#ifdef PINMAME_VECTOR
+		&& !vector_dirty_pixels
+#endif
+		)
 	{
 		struct rectangle bounds_disoriented = { bounds->min_x, bounds->max_x, bounds->min_y, bounds->max_y };
 

@@ -303,7 +303,9 @@
 #include "driver.h"
 #include "png.h"
 #include "artwork.h"
+#ifdef PINMAME_VECTOR
 #include "vidhrdw/vector.h"
+#endif
 #include <ctype.h>
 #include <math.h>
 
@@ -618,7 +620,11 @@ int artwork_create_display(struct osd_create_params *params, UINT32 rgb_componen
 
 	/* determine the game bitmap scale factor */
 	gamescale = options.artwork_res;
-	if (gamescale < 1 || (params->video_attributes & VIDEO_TYPE_VECTOR))
+	if (gamescale < 1
+#ifdef PINMAME_VECTOR
+		|| (params->video_attributes & VIDEO_TYPE_VECTOR)
+#endif
+		)
 		gamescale = 1;
 	else if (gamescale > 2)
 		gamescale = 2;
@@ -642,6 +648,7 @@ int artwork_create_display(struct osd_create_params *params, UINT32 rgb_componen
 	params->aspect_x = (int)((double)params->aspect_x * 100. * (max_x - min_x));
 	params->aspect_y = (int)((double)params->aspect_y * 100. * (max_y - min_y));
 
+#ifdef PINMAME_VECTOR
 	/* vector games need to fit inside the original bounds, so scale back down */
 	if (params->video_attributes & VIDEO_TYPE_VECTOR)
 	{
@@ -663,6 +670,7 @@ int artwork_create_display(struct osd_create_params *params, UINT32 rgb_componen
 		options.vector_width = original_width;
 		options.vector_height = original_height;
 	}
+#endif
 
 	/* adjust the parameters */
 	original_attributes = params->video_attributes;
@@ -812,12 +820,14 @@ void artwork_update_video_and_audio(struct mame_display *display)
 		if (ui_visible)
 			render_ui_overlay(uioverlay, uioverlayhint, palette_lookup, display);
 
+#ifdef PINMAME_VECTOR
 		/* if artwork changed, or there's UI, we can't use dirty pixels */
 		if (artwork_changed || ui_changed || ui_visible)
 		{
 			display->changed_flags &= ~VECTOR_PIXELS_CHANGED;
 			display->vector_dirty_pixels = NULL;
 		}
+#endif
 	}
 	profiler_mark(PROFILER_END);
 
@@ -1358,6 +1368,7 @@ static void render_game_bitmap(struct mame_bitmap *bitmap, const rgb_t *palette,
 	srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
 	dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
 
+#ifdef PINMAME_VECTOR
 	/* vector case */
 	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
 	{
@@ -1391,15 +1402,17 @@ static void render_game_bitmap(struct mame_bitmap *bitmap, const rgb_t *palette,
 		}
 	}
 
+	else
+#endif
 	/* 1x scale */
-	else if (gamescale == 1)
+	if (gamescale == 1)
 	{
 		/* 16/15bpp case */
 		if (bitmap->depth != 32)
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = palette[*src++];
@@ -1411,7 +1424,7 @@ static void render_game_bitmap(struct mame_bitmap *bitmap, const rgb_t *palette,
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = *src++;
@@ -1427,7 +1440,7 @@ static void render_game_bitmap(struct mame_bitmap *bitmap, const rgb_t *palette,
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
@@ -1446,7 +1459,7 @@ static void render_game_bitmap(struct mame_bitmap *bitmap, const rgb_t *palette,
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
@@ -1484,6 +1497,7 @@ static void render_game_bitmap_underlay(struct mame_bitmap *bitmap, const rgb_t 
 	dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
 	undbase = (UINT8 *)underlay->base + gamerect.min_y * underlay->rowbytes + gamerect.min_x * sizeof(UINT32);
 
+#ifdef PINMAME_VECTOR
 	/* vector case */
 	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
 	{
@@ -1517,17 +1531,19 @@ static void render_game_bitmap_underlay(struct mame_bitmap *bitmap, const rgb_t 
 		}
 	}
 
+	else
+#endif
 	/* 1x scale */
-	else if (gamescale == 1)
+	if (gamescale == 1)
 	{
 		/* 16/15bpp case */
 		if (bitmap->depth != 32)
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = add_and_clamp(palette[*src++], *und++);
 			}
@@ -1538,9 +1554,9 @@ static void render_game_bitmap_underlay(struct mame_bitmap *bitmap, const rgb_t 
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = add_and_clamp(*src++, *und++);
 			}
@@ -1555,9 +1571,9 @@ static void render_game_bitmap_underlay(struct mame_bitmap *bitmap, const rgb_t 
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
 					UINT32 val = palette[*src++];
@@ -1576,9 +1592,9 @@ static void render_game_bitmap_underlay(struct mame_bitmap *bitmap, const rgb_t 
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
 					UINT32 val = *src++;
@@ -1617,6 +1633,7 @@ static void render_game_bitmap_overlay(struct mame_bitmap *bitmap, const rgb_t *
 	overbase = (UINT8 *)overlay->base + gamerect.min_y * overlay->rowbytes + gamerect.min_x * sizeof(UINT32);
 	overyrgbbase = (UINT8 *)overlay_yrgb->base + gamerect.min_y * overlay_yrgb->rowbytes + gamerect.min_x * sizeof(UINT32);
 
+#ifdef PINMAME_VECTOR
 	/* vector case */
 	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
 	{
@@ -1650,18 +1667,20 @@ static void render_game_bitmap_overlay(struct mame_bitmap *bitmap, const rgb_t *
 		}
 	}
 
+	else
+#endif
 	/* 1x scale */
-	else if (gamescale == 1)
+	if (gamescale == 1)
 	{
 		/* 16/15bpp case */
 		if (bitmap->depth != 32)
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = blend_over(palette[*src++], *over++, *overyrgb++);
 			}
@@ -1672,10 +1691,10 @@ static void render_game_bitmap_overlay(struct mame_bitmap *bitmap, const rgb_t *
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = blend_over(*src++, *over++, *overyrgb++);
 			}
@@ -1690,10 +1709,10 @@ static void render_game_bitmap_overlay(struct mame_bitmap *bitmap, const rgb_t *
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
 					UINT32 val = palette[*src++];
@@ -1713,10 +1732,10 @@ static void render_game_bitmap_overlay(struct mame_bitmap *bitmap, const rgb_t *
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
 					UINT32 val = *src++;
@@ -1758,6 +1777,7 @@ static void render_game_bitmap_underlay_overlay(struct mame_bitmap *bitmap, cons
 	overbase = (UINT8 *)overlay->base + gamerect.min_y * overlay->rowbytes + gamerect.min_x * sizeof(UINT32);
 	overyrgbbase = (UINT8 *)overlay_yrgb->base + gamerect.min_y * overlay_yrgb->rowbytes + gamerect.min_x * sizeof(UINT32);
 
+#ifdef PINMAME_VECTOR
 	/* vector case */
 	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
 	{
@@ -1791,19 +1811,21 @@ static void render_game_bitmap_underlay_overlay(struct mame_bitmap *bitmap, cons
 		}
 	}
 
+	else
+#endif
 	/* 1x scale */
-	else if (gamescale == 1)
+	if (gamescale == 1)
 	{
 		/* 16/15bpp case */
 		if (bitmap->depth != 32)
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = add_and_clamp(blend_over(palette[*src++], *over++, *overyrgb++), *und++);
 			}
@@ -1814,11 +1836,11 @@ static void render_game_bitmap_underlay_overlay(struct mame_bitmap *bitmap, cons
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * dstrowpixels;
 				for (x = 0; x < width; x++)
 					*dst++ = add_and_clamp(blend_over(*src++, *over++, *overyrgb++), *und++);
 			}
@@ -1833,11 +1855,11 @@ static void render_game_bitmap_underlay_overlay(struct mame_bitmap *bitmap, cons
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT16 *src = (UINT16 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
 					UINT32 val = palette[*src++];
@@ -1858,11 +1880,11 @@ static void render_game_bitmap_underlay_overlay(struct mame_bitmap *bitmap, cons
 		{
 			for (y = 0; y < height; y++)
 			{
-				UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
+				const UINT32 *src = (UINT32 *)srcbase + y * srcrowpixels + Machine->absolute_visible_area.min_x;
 				UINT32 *dst = (UINT32 *)dstbase + y * 2 * dstrowpixels;
-				UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
-				UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
-				UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
+				const UINT32 *und = (UINT32 *)undbase + y * 2 * dstrowpixels;
+				const UINT32 *over = (UINT32 *)overbase + y * 2 * dstrowpixels;
+				const UINT32 *overyrgb = (UINT32 *)overyrgbbase + y * 2 * dstrowpixels;
 				for (x = 0; x < width; x++)
 				{
 					UINT32 val = *src++;
@@ -2532,12 +2554,12 @@ static void trim_bitmap(struct artwork_piece *piece)
 		const UINT32 *hintdata = &hintbase[y * MAX_HINTS_PER_SCANLINE];
 
 		/* check the minimum against the left */
-		if (hintdata[0] && (hintdata[0] >> 16) < left)
+		if (hintdata[0] && (int)(hintdata[0] >> 16) < left)
 			left = hintdata[0] >> 16;
 
 		/* find the maximum */
 		for (x = 0; x < MAX_HINTS_PER_SCANLINE; x++)
-			if (hintdata[x] && (hintdata[x] & 0xffff) > right)
+			if (hintdata[x] && (int)(hintdata[x] & 0xffff) > right)
 				right = hintdata[x] & 0xffff;
 	}
 

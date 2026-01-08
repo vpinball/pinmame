@@ -127,7 +127,11 @@ void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints, 
 void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y);
 void win_wait_for_vsync(void);
 
-void win_update_video_window(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels);
+void win_update_video_window(struct mame_bitmap *bitmap, const struct rectangle *bounds
+#ifdef PINMAME_VECTOR
+	, void *vector_dirty_pixels
+#endif
+	);
 void win_update_debug_window(struct mame_bitmap *bitmap, const rgb_t *palette);
 
 void win_set_palette_entry(int _index, UINT8 red, UINT8 green, UINT8 blue);

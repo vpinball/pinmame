@@ -717,6 +717,7 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -debug_resolution %s",       pOpts->debugres);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -gamma %f",                  pOpts->f_gamma_correct);
 
+#ifdef PINMAME_VECTOR
 	/* vector */
 	if (DriverIsVector(nGameIndex))
 	{
@@ -725,8 +726,8 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -beam %f",                   pOpts->f_beam);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -flicker %f",                pOpts->f_flicker);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -intensity %f",              pOpts->f_intensity);
-
 	}
+#endif
 	/* sound */
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -samplerate %d",             pOpts->samplerate);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%ssamples",                 pOpts->use_samples     ? "" : "no");
@@ -2947,9 +2948,11 @@ static BOOL MamePickerNotify(NMHDR *nm)
 					expand_machine_driver(drivers[nItem]->drv,&drv);
 
 					/* Vector/Raster */
+#ifdef PINMAME_VECTOR
 					if (drv.video_attributes & VIDEO_TYPE_VECTOR)
 						pDispInfo->item.pszText = (char *)"Vector";
 					else
+#endif
 						pDispInfo->item.pszText = (char *)"Raster";
 					break;
 				}
@@ -4403,6 +4406,7 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 	const char *name2 = NULL;
 	int nTemp1, nTemp2;
 
+#ifndef PINMAME
 #ifdef DEBUG
 	if (strcmp(drivers[index1]->name,"1941") == 0 && strcmp(drivers[index2]->name,"1942") == 0)
 	{
@@ -4413,6 +4417,7 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 	{
 		dprintf("comparing 1942, 1941");
 	}
+#endif
 #endif
 
 	switch (sort_subitem)
@@ -4515,12 +4520,16 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		expand_machine_driver(drivers[index1]->drv,&drv1);
 		expand_machine_driver(drivers[index2]->drv,&drv2);
 
+#ifdef PINMAME_VECTOR
 		if ((drv1.video_attributes & VIDEO_TYPE_VECTOR) ==
 			(drv2.video_attributes & VIDEO_TYPE_VECTOR))
+#endif
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
+#ifdef PINMAME_VECTOR
 		value = (drv1.video_attributes & VIDEO_TYPE_VECTOR) -
 				(drv2.video_attributes & VIDEO_TYPE_VECTOR);
+#endif
 		break;
 	}
 	case COLUMN_TRACKBALL:
@@ -4578,10 +4587,12 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 	if (GetSortReverse())
 		value = -value;
 
+#ifndef PINMAME
 #ifdef DEBUG
 	if ((strcmp(drivers[index1]->name,"1941") == 0 && strcmp(drivers[index2]->name,"1942") == 0) ||
 		(strcmp(drivers[index1]->name,"1942") == 0 && strcmp(drivers[index2]->name,"1941") == 0))
 		dprintf("result: %i",value);
+#endif
 #endif
 
 	return value;

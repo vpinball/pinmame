@@ -418,7 +418,9 @@ struct InternalMachineDriver
 
 /* bit 0 of the video attributes indicates raster or vector video hardware */
 #define VIDEO_TYPE_RASTER               0x0000
+#ifdef PINMAME_VECTOR
 #define VIDEO_TYPE_VECTOR               0x0001
+#endif
 
 /* bit 3 of the video attributes indicates that the game's palette has 6 or more bits */
 /*       per gun, and would therefore require a 24-bit display. This is entirely up to */

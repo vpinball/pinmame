@@ -609,9 +609,6 @@
     <ClCompile Include="..\src\sound\ymdeltat.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\vidhrdw\avgdvg.c">
-      <Filter>Source Files\MAME\VidHrdw</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\vidhrdw\crtc6845.c">
       <Filter>Source Files\MAME\VidHrdw</Filter>
     </ClCompile>
@@ -619,9 +616,6 @@
       <Filter>Source Files\MAME\VidHrdw</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vidhrdw\tms9928a.c">
-      <Filter>Source Files\MAME\VidHrdw</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\vidhrdw\vector.c">
       <Filter>Source Files\MAME\VidHrdw</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\blit.c">
@@ -1712,9 +1706,6 @@
     <ClInclude Include="..\src\sound\ymdeltat.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\vidhrdw\avgdvg.h">
-      <Filter>Source Files\MAME\VidHrdw</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\vidhrdw\crtc6845.h">
       <Filter>Source Files\MAME\VidHrdw</Filter>
     </ClInclude>
@@ -1722,9 +1713,6 @@
       <Filter>Source Files\MAME\VidHrdw</Filter>
     </ClInclude>
     <ClInclude Include="..\src\vidhrdw\tms9928a.h">
-      <Filter>Source Files\MAME\VidHrdw</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\vidhrdw\vector.h">
       <Filter>Source Files\MAME\VidHrdw</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\blit.h">

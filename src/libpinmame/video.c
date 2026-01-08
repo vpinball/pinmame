@@ -10,7 +10,6 @@
 // MAME headers
 #include "driver.h"
 #include "mamedbg.h"
-//#include "vidhrdw/vector.h"
 //#include "blit.h"
 #include "video.h"
 //#include "window.h"
@@ -252,12 +251,15 @@ const char *osd_get_fps_text(const struct performance_info *performance)
 		(int)(performance->frames_per_second + 0.5),
 		(int)(Machine->drv->frames_per_second + 0.5));
 
+#ifdef PINMAME_VECTOR
 	/* for vector games, add the number of vector updates */
 	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
 	{
 		dest += sprintf(dest, "\n %d vector updates", performance->vector_updates_last_second);
 	}
-	else if (performance->partial_updates_this_frame > 1)
+	else
+#endif
+	if (performance->partial_updates_this_frame > 1)
 	{
 		dest += sprintf(dest, "\n %d partial updates", performance->partial_updates_this_frame);
 	}

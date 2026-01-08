@@ -338,9 +338,13 @@ BOOL DriverIsStereo(int driver_index)
 
 BOOL DriverIsVector(int driver_index)
 {
+#ifdef PINMAME_VECTOR
 	struct InternalMachineDriver drv;
 	expand_machine_driver(drivers[driver_index]->drv, &drv);
 	return (drv.video_attributes & VIDEO_TYPE_VECTOR) != 0;
+#else
+	return FALSE;
+#endif
 }
 
 BOOL DriverUsesRoms(int driver_index)

@@ -57,7 +57,9 @@ struct win_blit_params
 	int			srcwidth;
 	int			srcheight;
 
+#ifdef PINMAME_VECTOR
 	void *		vecdirty;
+#endif
 
 	int			flipx;
 	int			flipy;

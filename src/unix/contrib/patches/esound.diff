@@ -434,7 +434,7 @@ diff -ruN xmame-esd/Makefile xmame-0.33b7.1/Makefile
 +	 obj/sndhrdw/votrax.o obj/sndhrdw/dac.o obj/sndhrdw/samples.o \
 +         obj/machine/Z80fmly.o obj/machine/6821pia.o \
 +         obj/vidhrdw/generic.o obj/sndhrdw/generic.o \
-+         obj/vidhrdw/vector.o obj/vidhrdw/avgdvg.o obj/machine/mathbox.o \
++         obj/machine/mathbox.o \
 +         obj/sndhrdw/namco.o \
 +         obj/machine/pacman.o obj/drivers/pacman.o \
 +         obj/machine/theglob.o \

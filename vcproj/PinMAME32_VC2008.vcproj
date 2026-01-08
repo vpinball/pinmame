@@ -2547,14 +2547,6 @@
 					Name="VidHrdw"
 					>
 					<File
-						RelativePath=".\..\src\vidhrdw\avgdvg.c"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\vidhrdw\avgdvg.h"
-						>
-					</File>
-					<File
 						RelativePath=".\..\src\vidhrdw\crtc6845.c"
 						>
 					</File>
@@ -2576,14 +2568,6 @@
 					</File>
 					<File
 						RelativePath=".\..\src\vidhrdw\tms9928a.h"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\vidhrdw\vector.c"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\vidhrdw\vector.h"
 						>
 					</File>
 				</Filter>

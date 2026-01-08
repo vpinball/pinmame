@@ -1,4 +1,3 @@
-
 /*
  * Configuration routines.
  *
@@ -630,9 +629,11 @@ int cli_frontend_init (int argc, char **argv)
 
         /* if this is a vector game, parse vector.ini first */
         expand_machine_driver(drivers[game_index]->drv, &drv);
+#ifdef PINMAME_VECTOR
         if (drv.video_attributes & VIDEO_TYPE_VECTOR)
                 if (parse_config ("vector.ini", NULL))
                         exit(1);
+#endif
 
         /* nice hack: load source_file.ini (omit if referenced later any) */
         {
@@ -788,6 +789,7 @@ int cli_frontend_init (int argc, char **argv)
         blit_flipy = ((orientation & ORIENTATION_FLIP_Y) != 0);
         blit_swapxy = ((orientation & ORIENTATION_SWAP_XY) != 0);
 
+#ifdef PINMAME_VECTOR
         if( options.vector_width == 0 && options.vector_height == 0 )
         {
                 options.vector_width = 640;
@@ -800,6 +802,7 @@ int cli_frontend_init (int argc, char **argv)
                 options.vector_width = options.vector_height;
                 options.vector_height = temp;
         }
+#endif
 }
 
         return game_index;

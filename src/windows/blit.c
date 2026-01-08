@@ -29,7 +29,9 @@
 #include "blit.h"
 #include "video.h"
 #include "window.h"
+#ifdef PINMAME_VECTOR
 #include "vidhrdw/vector.h"
+#endif
 
 
 
@@ -197,7 +199,9 @@ static UINT8				*active_update_blitter = NULL;
 
 // current parameters
 static struct win_blit_params	active_blitter_params;
+#ifdef PINMAME_VECTOR
 static struct win_blit_params	active_vector_params;
+#endif
 
 static int blit_srcwidth, blit_srcheight;
 
@@ -337,7 +341,9 @@ static struct rgb_descriptor sharp_desc =
 //	PROTOTYPES
 //============================================================
 
+#ifdef PINMAME_VECTOR
 static int blit_vectors(const struct win_blit_params *blit);
+#endif
 static void generate_blitter(const struct win_blit_params *blit);
 static void compute_source_fixups(const struct win_blit_params *blit, UINT32 valuefixups[]);
 
@@ -499,10 +505,12 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 	int srcx, srcy;
 	DWORD dw;
 
+#ifdef PINMAME_VECTOR
 	// if we have a vector dirty array, alter the plan
 	if (blit->vecdirty && !update)
 		if (blit_vectors(blit))
 			return 1;
+#endif
 
 	// determine the starting source X/Y
 	temprect.min_x = blit->srcxoffs;
@@ -661,6 +669,7 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 
 
 
+#ifdef PINMAME_VECTOR
 //============================================================
 //	blit_vectors
 //============================================================
@@ -742,6 +751,7 @@ static int blit_vectors(const struct win_blit_params *blit)
 
 	return 0;
 }
+#endif
 
 
 
