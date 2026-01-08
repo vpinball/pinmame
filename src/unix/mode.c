@@ -97,11 +97,13 @@ void mode_perfect(int *width, int *height)
    if (use_aspect_ratio)
    {
       /* first of all calculate the pixel aspect_ratio the game has */
+#ifdef PINMAME_VECTOR
       if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
       {
          pixel_aspect_ratio = 1.0;
       }
       else
+#endif
       {
          pixel_aspect_ratio = (visual_width * widthscale) / 
 	   (yarbsize ? yarbsize :

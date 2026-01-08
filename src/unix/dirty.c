@@ -19,7 +19,11 @@ int osd_dirty_init(void)
    dirty_blocks     = NULL;
    
    /* vector games always need a dirty array */
-   if (use_dirty || (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR))
+   if (use_dirty
+#ifdef PINMAME_VECTOR
+   || (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
+#endif
+   )
    {
       int i;
       
@@ -64,7 +68,11 @@ int osd_dirty_init(void)
 void osd_dirty_close(void)
 {
    /* vector games always need a dirty array */
-   if (use_dirty || (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR))
+   if (use_dirty
+#ifdef PINMAME_VECTOR
+   || (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
+#endif
+   )
    {
       int i;
       

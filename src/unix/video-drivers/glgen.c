@@ -962,9 +962,11 @@ void InitVScreen (int depth)
   printf("\n");
 #endif
 
+#ifdef PINMAME_VECTOR
   if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
     vecgame = 1;
   else
+#endif
     vecgame = 0;
 
   /* fill the display_palette_info struct */
@@ -2438,6 +2440,7 @@ void UpdateCabDisplay (struct mame_bitmap *bitmap)
 
   cabinetTextureRotationTranslation ();
 
+#ifdef PINMAME_VECTOR
   if (vecgame)
   {
     if (drawbitmap)
@@ -2467,11 +2470,10 @@ void UpdateCabDisplay (struct mame_bitmap *bitmap)
     disp__glShadeModel (shadeModel);
   }
   else
+#endif
   {				/* Draw the screen of a bitmapped game */
-
     if (drawbitmap)
 	    drawTextureDisplay (bitmap, 1 /*cabinet */ , screendirty);
-
   }
 
   disp__glDisable (GL_DEPTH_TEST);

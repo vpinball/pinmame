@@ -702,11 +702,14 @@ int frontend_list(char *gamename)
 					}
 					break;
 				case LIST_WRONGORIENTATION: /* list drivers which incorrectly use the orientation and visible area fields */
-					if(!(drv.video_attributes & VIDEO_TYPE_VECTOR) &&
+					if(
+#ifdef PINMAME_VECTOR
+					!(drv.video_attributes & VIDEO_TYPE_VECTOR) &&
+#endif
 							((drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1) <=
 							 (drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)) &&
 							/* list of valid exceptions */
-							strcmp(drivers[i]->name,"crater") &&
+							/*strcmp(drivers[i]->name,"crater") &&
 							strcmp(drivers[i]->name,"mpatrol") &&
 							strcmp(drivers[i]->name,"troangel") &&
 							strcmp(drivers[i]->name,"travrusa") &&
@@ -759,7 +762,7 @@ int frontend_list(char *gamename)
 							strcmp(drivers[i]->name,"vic20") &&
 							strcmp(drivers[i]->name,"vc20") &&
 							strcmp(drivers[i]->name,"p2000t") &&
-							strcmp(drivers[i]->name,"kim1"))
+							strcmp(drivers[i]->name,"kim1")*/)
 							{
 								fprintf(stdout_file, "%s %dx%d\n",drivers[i]->name,
 										drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1,
@@ -848,7 +851,10 @@ int frontend_list(char *gamename)
 					}
 					break;
 				case LIST_WRONGFPS: /* list drivers with too high frame rate */
-					if ((drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
+					if (
+#ifdef PINMAME_VECTOR
+					(drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
+#endif
 							(drivers[i]->clone_of == 0 ||
 							 (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
 							drv.frames_per_second > 57 &&

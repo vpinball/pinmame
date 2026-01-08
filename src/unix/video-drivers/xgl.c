@@ -433,8 +433,10 @@ int sysdep_create_display(int depth)
 	XSetWMNormalHints(display,window,&hints);
   }
 
+#ifdef PINMAME_VECTOR
   if ( (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR) 
        && drawbitmap ) drawbitmap=drawbitmapvec;
+#endif
 
   InitVScreen(depth);
 
