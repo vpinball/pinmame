@@ -707,7 +707,7 @@ int frontend_list(char *gamename)
 					!(drv.video_attributes & VIDEO_TYPE_VECTOR) &&
 #endif
 							((drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1) <=
-							 (drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)) &&
+							 (drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)) //&&
 							/* list of valid exceptions */
 							/*strcmp(drivers[i]->name,"crater") &&
 							strcmp(drivers[i]->name,"mpatrol") &&
