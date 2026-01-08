@@ -35,7 +35,7 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, L
 #define KNOWN_SOME  3
 
 #define YEAR_BEGIN 1974
-#define YEAR_END   2025
+#define YEAR_END   2026
 
 static int list = 0;
 static int listclones = 1;
@@ -461,7 +461,7 @@ int frontend_help (const char *gamename)
 #endif
 	
 		printf("PinMAME v%s\nPinball's Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 2000-2025 by the PinMAME Team\n\n",tmp);
+				"Copyright (C) 2000-2026 by the PinMAME Team\n\n",tmp);
 		showdisclaimer();
 		printf("Usage:  PINMAME gamename [options]\n\n"
 				"        -list         for a brief list of supported games\n"

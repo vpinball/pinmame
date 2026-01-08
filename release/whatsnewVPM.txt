@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
-Version 3.7 (XX XXth, 2025) - ""
+Version 3.7 (XX XXth, 2026) - ""
 ------------------------------------------------------------------------------
 - Add windows COM-API method 'PMBuildVersion' returning e.g. 30700.4711 with build number (e.g. 4711) as decimal
 
