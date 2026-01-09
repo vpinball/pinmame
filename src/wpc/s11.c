@@ -45,9 +45,9 @@
 #define S11_LAMPSMOOTH     1
 #define S11_DISPLAYSMOOTH  1
 #else
-#define S11_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
-#define S11_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define S11_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+#define S11_SOLSMOOTH      2 /* Smooth the Solenoids over this number of VBLANKS */
+#define S11_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
+#define S11_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
 #endif
 static MACHINE_STOP(s11);
 static NVRAM_HANDLER(s11);
@@ -399,14 +399,14 @@ static WRITE_HANDLER(pia2b_w) {
        data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
   if (core_gameData->gen & GEN_DEDMD16) {
     if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) {
-	  locals.extSol |= locals.extSolPulse = (data ^ 0xff);
-	  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
-	}
+      locals.extSol |= locals.extSolPulse = (data ^ 0xff);
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
+    }
   } else if (core_gameData->gen & (GEN_DEDMD32|GEN_DEDMD64)) {
     if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) {
-	  locals.extSol |= locals.extSolPulse = data;
-	  core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
-	}
+      locals.extSol |= locals.extSolPulse = data;
+      core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
+    }
   }
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
@@ -416,9 +416,9 @@ static WRITE_HANDLER(pia2b_w) {
       locals.segments[20+locals.digSel].w |=
            locals.pseg[20+locals.digSel].w = core_bcd2seg7[data>>4];
       core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16, (UINT8)core_bcd2seg7[data & 0x0f]);
-      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16 + 8, core_bcd2seg7[data & 0x0f] >> 8);
+      //core_write_pwm_output_8b(CORE_MODOUT_SEG0 + locals.digSel * 16 + 8, core_bcd2seg7[data & 0x0f] >> 8); // always 0
       core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16, (UINT8)core_bcd2seg7[data >> 4]);
-      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16 + 8, core_bcd2seg7[data >> 4] >> 8);
+      //core_write_pwm_output_8b(CORE_MODOUT_SEG0 + (20 + locals.digSel) * 16 + 8, core_bcd2seg7[data >> 4] >> 8); // always 0
     }
     else
     {
@@ -664,9 +664,9 @@ static WRITE_HANDLER(pia5cb2_w) {
   if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) &&
       ((locals.sndCmd & 0xe0) == 0)) {
     if (!data) {
-	   locals.extSol |= locals.extSolPulse = (~locals.sndCmd) & 0x1f;
-	   core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
-	 }
+       locals.extSol |= locals.extSolPulse = (~locals.sndCmd) & 0x1f;
+       core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 40, locals.extSolPulse);
+    }
   }
   else sndbrd_1_ctrl_w(0,data);
 }
