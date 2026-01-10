@@ -52,7 +52,7 @@ typedef void(*DmdDev_Render_4_Shades_t)(UINT16 width, UINT16 height, UINT8* fram
 typedef void(*DmdDev_Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 typedef void(*DmdDev_Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8* frame, UINT32 noOfRawFrames, UINT8* rawbuffer);
 typedef void(*DmdDev_Render_PM_Alphanumeric_Frame_t)(core_segOverallLayout_t layout, const UINT16* const seg_data, const UINT16* const seg_data2);
-typedef void(*DmdDev_Render_Lum_And_Raw_t)(UINT16 width, UINT16 height, float* lumFrame, UINT8* rawFrame, UINT8 rawBitSize);
+typedef void(*DmdDev_Render_FloatLum_And_Raw_t)(UINT16 width, UINT16 height, float* lumFrame, UINT8* rawFrame, UINT8 rawBitSize);
 
 typedef struct {
 	HMODULE hModule;
@@ -69,7 +69,7 @@ typedef struct {
 	DmdDev_Render_4_Shades_t Render_4_Shades;
 	DmdDev_Render_16_Shades_with_Raw_t Render_16_Shades_with_Raw;
 	DmdDev_Render_4_Shades_with_Raw_t Render_4_Shades_with_Raw;
-	DmdDev_Render_Lum_And_Raw_t Render_Lum_And_Raw;
+	DmdDev_Render_FloatLum_And_Raw_t Render_FloatLum_And_Raw;
 	// ALphanum rendering
 	DmdDev_Render_PM_Alphanumeric_Frame_t Render_PM_Alphanumeric_Frame;
 } dmddevice_t;
@@ -149,7 +149,7 @@ extern "C" int dmddeviceInit(const char* GameName, UINT64 HardwareGeneration, co
 			dmdDevices[i].Render_16_Shades = (DmdDev_Render_16_Shades_t)GetProcAddress(dmdDevices[i].hModule, "Render_16_Shades");
 			dmdDevices[i].Render_4_Shades_with_Raw = (DmdDev_Render_4_Shades_with_Raw_t)GetProcAddress(dmdDevices[i].hModule, "Render_4_Shades_with_Raw");
 			dmdDevices[i].Render_16_Shades_with_Raw = (DmdDev_Render_16_Shades_with_Raw_t)GetProcAddress(dmdDevices[i].hModule, "Render_16_Shades_with_Raw");
-			dmdDevices[i].Render_Lum_And_Raw = (DmdDev_Render_Lum_And_Raw_t)GetProcAddress(dmdDevices[i].hModule, "Render_Lum_And_Raw");
+			dmdDevices[i].Render_FloatLum_And_Raw = (DmdDev_Render_FloatLum_And_Raw_t)GetProcAddress(dmdDevices[i].hModule, "Render_FloatLum_And_Raw");
 			dmdDevices[i].Render_PM_Alphanumeric_Frame = (DmdDev_Render_PM_Alphanumeric_Frame_t)GetProcAddress(dmdDevices[i].hModule, "Render_PM_Alphanumeric_Frame");
 			dmdDevices[i].Set_4_Colors_Palette = (DmdDev_Set_4_Colors_Palette_t)GetProcAddress(dmdDevices[i].hModule, "Set_4_Colors_Palette");
 			dmdDevices[i].Console_Data = (DmdDev_Console_Data_t)GetProcAddress(dmdDevices[i].hModule, "Console_Data");
@@ -198,10 +198,10 @@ extern "C" void dmddeviceRenderDMDFrame(const int width, const int height, float
 	{
 		if ((isDMD2 & (1 << i)) == 0)
 			continue;
-		if (dmdDevices[i].Render_Lum_And_Raw)
+		if (dmdDevices[i].Render_FloatLum_And_Raw)
 		{
 			// New implementation that sends both luminance information for rendering, and combined bitplanes as well as raw frames for frame identification for colorization & triggering events
-			dmdDevices[i].Render_Lum_And_Raw(width, height, dmdDotLum, dmdDotRaw, is16Shades ? 4 : 2);
+			dmdDevices[i].Render_FloatLum_And_Raw(width, height, dmdDotLum, dmdDotRaw, is16Shades ? 4 : 2);
 		}
 		else
 		{
