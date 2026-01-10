@@ -314,6 +314,8 @@ ifdef EFENCE
 MY_LIBS += -lefence
 endif
 
+OBJS += $(COREOBJS) $(DRVLIBS) $(OBJ)/unix.$(DISPLAY_METHOD)/osdepend.a
+
 MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 
 ##############################################################################
