@@ -77,7 +77,7 @@ static void round_rectangle_to_8(struct rectangle *rect);
 static void update_visible_area(struct mame_display *display);
 static void update_palette(struct mame_display *display, int force_dirty);
 
-static BOOL tmp;
+static int tmp;
 static float tmpf;
 
 struct rc_option video_opts[] = {
