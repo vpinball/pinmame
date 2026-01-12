@@ -1,5 +1,4 @@
-#ifndef __KEYBOARD_H
-#define __KEYBOARD_H
+#pragma once
 
 struct xmame_keyboard_event {
    unsigned char press;
@@ -145,5 +144,3 @@ void xmame_keyboard_clear(void);
 #define KEY_MENU		127
 
 #define KEY_MAX			128
-
-#endif

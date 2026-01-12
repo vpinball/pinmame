@@ -2404,11 +2404,6 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 		i++;
 	}
 
-#ifdef PINMAME_VECTOR
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-		sprintf(&buf[strlen(buf)],"\n%s\n", ui_getstring (UI_vectorgame));
-	else
-#endif
 	{
 		sprintf(&buf[strlen(buf)],"\n%s:\n", ui_getstring (UI_screenres));
 		sprintf(&buf[strlen(buf)],"%d x %d (%s) %f Hz\n",
@@ -3395,54 +3390,6 @@ static void onscrd_gamma(struct mame_bitmap *bitmap,int increment,int arg)
 	displayosd(bitmap,buf,(int)(100*(gamma_correction-0.5)/(2.0-0.5)),(int)(100*(1.0-0.5)/(2.0-0.5)));
 }
 
-#ifdef PINMAME_VECTOR
-static void onscrd_vector_flicker(struct mame_bitmap *bitmap,int increment,int arg)
-{
-	char buf[1000];
-	float flicker_correction;
-
-	if (!code_pressed(KEYCODE_LCONTROL) && !code_pressed(KEYCODE_RCONTROL))
-		increment *= 5;
-
-	if (increment)
-	{
-		flicker_correction = vector_get_flicker();
-
-		flicker_correction += increment;
-		if (flicker_correction < 0.0) flicker_correction = 0.0;
-		if (flicker_correction > 100.0) flicker_correction = 100.0;
-
-		vector_set_flicker(flicker_correction);
-	}
-	flicker_correction = vector_get_flicker();
-
-	sprintf(buf,"%s %1.2f", ui_getstring (UI_vectorflicker), flicker_correction);
-	displayosd(bitmap,buf,(int)flicker_correction,0);
-}
-
-static void onscrd_vector_intensity(struct mame_bitmap *bitmap,int increment,int arg)
-{
-	char buf[30];
-	float intensity_correction;
-
-	if (increment)
-	{
-		intensity_correction = vector_get_intensity();
-
-		intensity_correction += (float)(0.05 * increment);
-		if (intensity_correction < 0.5f) intensity_correction = 0.5f;
-		if (intensity_correction > 3.0f) intensity_correction = 3.0f;
-
-		vector_set_intensity(intensity_correction);
-	}
-	intensity_correction = vector_get_intensity();
-
-	sprintf(buf,"%s %1.2f", ui_getstring (UI_vectorintensity), intensity_correction);
-	displayosd(bitmap,buf,(int)(100.f*(intensity_correction-0.5f)/(float)(3.0-0.5)),(int)(100.*(1.5-0.5)/(3.0-0.5)));
-}
-#endif
-
-
 static void onscrd_overclock(struct mame_bitmap *bitmap,int increment,int arg)
 {
 	char buf[30];
@@ -3549,19 +3496,6 @@ static void onscrd_init(void)
 	onscrd_fnc[item] = onscrd_gamma;
 	onscrd_arg[item] = 0;
 	item++;
-
-#ifdef PINMAME_VECTOR
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		onscrd_fnc[item] = onscrd_vector_flicker;
-		onscrd_arg[item] = 0;
-		item++;
-
-		onscrd_fnc[item] = onscrd_vector_intensity;
-		onscrd_arg[item] = 0;
-		item++;
-	}
-#endif
 
 	onscrd_total_items = item;
 }

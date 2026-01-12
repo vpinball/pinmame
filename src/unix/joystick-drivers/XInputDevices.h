@@ -1,5 +1,4 @@
-#ifndef __XINPUT_DEVICES_H__
-#define __XINPUT_DEVICES_H__
+#pragma once
 
 #include <X11/extensions/XInput.h>
 
@@ -29,5 +28,3 @@ void XInputPollDevices(int, int *, int *);
 /* </jake> */
 
 extern struct rc_option XInputDevices_opts[];
-
-#endif

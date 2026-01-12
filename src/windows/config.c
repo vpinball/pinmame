@@ -12,7 +12,6 @@
  *   fix when rotation options take turnable LCD's in account
  * - win_switch_res --> switch_resolution, swres
  * - win_switch_bpp --> switch_bpp, swbpp
- * - give up distinction between vector_width and win_gfx_width
  *   eventually introduce options.width, options.height
  * - new core options:
  *   gamma (is already osd_)
@@ -129,10 +128,6 @@ static char *gamename;
 
 char *rompath_extra;
 
-static float f_beam;
-static float f_flicker;
-static float f_intensity;
-
 static int enable_sound = 1;
 
 static int use_artwork = 1;
@@ -151,36 +146,6 @@ static int video_autorol = 0;
 static char *win_basename(char *filename);
 static char *win_dirname(char *filename);
 static char *win_strip_extension(char *filename);
-
-
-static int video_set_beam(struct rc_option *option, const char *arg, int priority)
-{
-        options.beam = (int)(f_beam * 0x00010000);
-        if (options.beam < 0x00010000)
-                options.beam = 0x00010000;
-        if (options.beam > 0x00100000)
-                options.beam = 0x00100000;
-        option->priority = priority;
-        return 0;
-}
-
-static int video_set_flicker(struct rc_option *option, const char *arg, int priority)
-{
-        options.vector_flicker = f_flicker * 2.55f;
-        if (options.vector_flicker < 0.f)
-                options.vector_flicker = 0.f;
-        if (options.vector_flicker > 255.f)
-                options.vector_flicker = 255.f;
-        option->priority = priority;
-        return 0;
-}
-
-static int video_set_intensity(struct rc_option *option, const char *arg, int priority)
-{
-        options.vector_intensity = f_intensity;
-        option->priority = priority;
-        return 0;
-}
 
 static int video_set_debugres(struct rc_option *option, const char *arg, int priority)
 {
@@ -246,13 +211,13 @@ struct rc_option core_opts[] = {
         { "brightness", "bright", rc_float, &options.brightness, "1.0", 0.5, 2.0, NULL, "brightness correction"},
         { "pause_brightness", NULL, rc_float, &options.pause_bright, "0.65", 0.5, 2.0, NULL, "additional pause brightness"},
 
-        /* vector */
+        /* vector, unsupported */
         { "Mame CORE vector game options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-        { "antialias", "aa", rc_bool, &options.antialias, "1", 0, 0, NULL, "draw antialiased vectors" },
-        { "translucency", "tl", rc_bool, &options.translucency, "1", 0, 0, NULL, "draw translucent vectors" },
-        { "beam", NULL, rc_float, &f_beam, "1.0", 1.0, 16.0, video_set_beam, "set beam width in vector games" },
-        { "flicker", NULL, rc_float, &f_flicker, "0.0", 0.0, 100.0, video_set_flicker, "set flickering in vector games" },
-        { "intensity", NULL, rc_float, &f_intensity, "1.5", 0.5, 3.0, video_set_intensity, "set intensity in vector games" },
+        { "antialias", "aa", rc_bool, NULL, "1", 0, 0, NULL, NULL },
+        { "translucency", "tl", rc_bool, NULL, "1", 0, 0, NULL, NULL },
+        { "beam", NULL, rc_float, NULL, "1.0", 1.0, 16.0, NULL, NULL },
+        { "flicker", NULL, rc_float, NULL, "0.0", 0.0, 100.0, NULL, NULL },
+        { "intensity", NULL, rc_float, NULL, "1.5", 0.5, 3.0, NULL, NULL },
 
         /* sound */
         { "Mame CORE sound options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
@@ -460,7 +425,6 @@ struct rc_struct *cli_rc_create(void)
 
 int cli_frontend_init (int argc, char **argv)
 {
-        struct InternalMachineDriver drv;
         char buffer[128];
         char *cmd_name;
         int game_index;
@@ -627,14 +591,6 @@ int cli_frontend_init (int argc, char **argv)
 
         /* ok, got a gamename */
 
-        /* if this is a vector game, parse vector.ini first */
-        expand_machine_driver(drivers[game_index]->drv, &drv);
-#ifdef PINMAME_VECTOR
-        if (drv.video_attributes & VIDEO_TYPE_VECTOR)
-                if (parse_config ("vector.ini", NULL))
-                        exit(1);
-#endif
-
         /* nice hack: load source_file.ini (omit if referenced later any) */
         {
                 const struct GameDriver *tmp_gd;
@@ -718,7 +674,7 @@ int cli_frontend_init (int argc, char **argv)
         if (!use_artwork)
                 options.use_artwork = ARTWORK_USE_NONE;
 
-{
+        {
         /* first start with the game's built in orientation */
         int orientation = drivers[game_index]->flags & ORIENTATION_MASK;
         options.ui_orientation = orientation;
@@ -788,22 +744,7 @@ int cli_frontend_init (int argc, char **argv)
         blit_flipx = ((orientation & ORIENTATION_FLIP_X) != 0);
         blit_flipy = ((orientation & ORIENTATION_FLIP_Y) != 0);
         blit_swapxy = ((orientation & ORIENTATION_SWAP_XY) != 0);
-
-#ifdef PINMAME_VECTOR
-        if( options.vector_width == 0 && options.vector_height == 0 )
-        {
-                options.vector_width = 640;
-                options.vector_height = 480;
         }
-        if( blit_swapxy )
-        {
-                int temp;
-                temp = options.vector_width;
-                options.vector_width = options.vector_height;
-                options.vector_height = temp;
-        }
-#endif
-}
 
         return game_index;
 }

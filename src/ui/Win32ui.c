@@ -573,8 +573,6 @@ const char* column_names[COLUMN_MAX] =
 	"ROMs",
 	"Samples",
 	"Directory",
-	"Type",
-	"Trackball",
 	"Played",
 	"Manufacturer",
 	"Year",
@@ -717,17 +715,6 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -debug_resolution %s",       pOpts->debugres);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -gamma %f",                  pOpts->f_gamma_correct);
 
-#ifdef PINMAME_VECTOR
-	/* vector */
-	if (DriverIsVector(nGameIndex))
-	{
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -%santialias",               pOpts->antialias       ? "" : "no");
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -%stranslucency",            pOpts->translucency    ? "" : "no");
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -beam %f",                   pOpts->f_beam);
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -flicker %f",                pOpts->f_flicker);
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -intensity %f",              pOpts->f_intensity);
-	}
-#endif
 	/* sound */
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -samplerate %d",             pOpts->samplerate);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%ssamples",                 pOpts->use_samples     ? "" : "no");
@@ -2942,28 +2929,6 @@ static BOOL MamePickerNotify(NMHDR *nm)
 					GetTextPlayTime(nItem, pDispInfo->item.pszText);
 					break;
 
-				case COLUMN_TYPE:
-				{
-					struct InternalMachineDriver drv;
-					expand_machine_driver(drivers[nItem]->drv,&drv);
-
-					/* Vector/Raster */
-#ifdef PINMAME_VECTOR
-					if (drv.video_attributes & VIDEO_TYPE_VECTOR)
-						pDispInfo->item.pszText = (char *)"Vector";
-					else
-#endif
-						pDispInfo->item.pszText = (char *)"Raster";
-					break;
-				}
-				case COLUMN_TRACKBALL:
-					/* Trackball */
-					if (DriverUsesTrackball(nItem))
-						pDispInfo->item.pszText = (char *)"Yes";
-					else
-						pDispInfo->item.pszText = (char *)"No";
-					break;
-
 				case COLUMN_PLAYED:
 					/* times played */
 					{
@@ -3629,12 +3594,6 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 	case ID_VIEW_BYTIMESPLAYED:
 		SetSortReverse(FALSE);
 		SetSortColumn(COLUMN_PLAYED);
-		SortListView();
-		break;
-
-	case ID_VIEW_BYTYPE:
-		SetSortReverse(FALSE);
-		SetSortColumn(COLUMN_TYPE);
 		SortListView();
 		break;
 
@@ -4512,31 +4471,6 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		if (value == 0)
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-		break;
-
-	case COLUMN_TYPE:
-	{
-		struct InternalMachineDriver drv1,drv2;
-		expand_machine_driver(drivers[index1]->drv,&drv1);
-		expand_machine_driver(drivers[index2]->drv,&drv2);
-
-#ifdef PINMAME_VECTOR
-		if ((drv1.video_attributes & VIDEO_TYPE_VECTOR) ==
-			(drv2.video_attributes & VIDEO_TYPE_VECTOR))
-#endif
-			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
-
-#ifdef PINMAME_VECTOR
-		value = (drv1.video_attributes & VIDEO_TYPE_VECTOR) -
-				(drv2.video_attributes & VIDEO_TYPE_VECTOR);
-#endif
-		break;
-	}
-	case COLUMN_TRACKBALL:
-		if (DriverUsesTrackball((int)index1) == DriverUsesTrackball((int)index2))
-			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
-
-		value = DriverUsesTrackball((int)index1) - DriverUsesTrackball((int)index2);
 		break;
 
 	case COLUMN_PLAYED:

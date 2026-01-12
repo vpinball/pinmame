@@ -723,24 +723,12 @@ static void print_game_video(int OUTPUT_XML, FILE* out, const struct GameDriver*
 	int dy;
 	int ax;
 	int ay;
-	int showxy;
 	int orientation;
 
 	expand_machine_driver(game->drv, &driver);
 
 	fprintf(out, SELECT(L1P "video" L2B, "\t\t<video"));
-#ifdef PINMAME_VECTOR
-	if (driver.video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		fprintf(out, SELECT(L2P "screen vector" L2N, " screen=\"vector\""));
-		showxy = 0;
-	}
-	else
-#endif
-	{
-		fprintf(out, SELECT(L2P "screen raster" L2N, " screen=\"raster\""));
-		showxy = 1;
-	}
+	fprintf(out, SELECT(L2P "screen raster" L2N, " screen=\"raster\""));
 
 	if (game->flags & ORIENTATION_SWAP_XY)
 	{
@@ -768,11 +756,8 @@ static void print_game_video(int OUTPUT_XML, FILE* out, const struct GameDriver*
 	}
 
 	fprintf(out, SELECT(L2P "orientation %s" L2N, " orientation=\"%s\""), orientation ? "vertical" : "horizontal" );
-	if (showxy)
-	{
-		fprintf(out, SELECT(L2P "x %d" L2N, " width=\"%d\""), dx);
-		fprintf(out, SELECT(L2P "y %d" L2N, " height=\"%d\""), dy);
-	}
+	fprintf(out, SELECT(L2P "x %d" L2N, " width=\"%d\""), dx);
+	fprintf(out, SELECT(L2P "y %d" L2N, " height=\"%d\""), dy);
 
 	fprintf(out, SELECT(L2P "aspectx %d" L2N, " aspectx=\"%d\""), ax);
 	fprintf(out, SELECT(L2P "aspecty %d" L2N, " aspecty=\"%d\""), ay);

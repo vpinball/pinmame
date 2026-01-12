@@ -19,10 +19,6 @@
 #include "glmame.h"
 #include "driver.h"
 #include "artwork.h"
-#ifdef PINMAME_VECTOR
-#include "vidhrdw/vector.h"
-#endif
-
 #include "osinline.h"
 
 void CalcCabPointbyViewpoint(

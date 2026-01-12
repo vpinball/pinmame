@@ -782,11 +782,6 @@ void save_screen_snapshot_as(mame_file *fp, struct mame_bitmap *bitmap)
 		bitmap = osdcopy;
 
 	/* now do the actual work */
-#ifdef PINMAME_VECTOR
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-		png_write_bitmap(fp,bitmap);
-	else
-#endif
 	{
 		struct mame_bitmap *copy;
 		int sizex, sizey, scalex, scaley;

@@ -172,9 +172,9 @@ struct GameOptions
 
 	int		mame_debug;			/* 1 to enable debugging */
 	int		cheat;				/* 1 to enable cheating */
-	int 	gui_host;			/* 1 to tweak some UI-related things for better GUI integration */
-	int 	skip_disclaimer;	/* 1 to skip the disclaimer screen at startup */
-	int 	skip_gameinfo;		/* 1 to skip the game info screen at startup */
+	int		gui_host;			/* 1 to tweak some UI-related things for better GUI integration */
+	int		skip_disclaimer;	/* 1 to skip the disclaimer screen at startup */
+	int		skip_gameinfo;		/* 1 to skip the game info screen at startup */
 
 	int		samplerate;		/* sound sample playback rate, in Hz */
 	int		use_samples;	/* 1 to enable external .wav samples */
@@ -184,15 +184,7 @@ struct GameOptions
 	float	pause_bright;	/* additional brightness when in pause */
 	float	gamma;			/* gamma correction of the display */
 	int		color_depth;	/* 15, 16, or 32, any other value means auto */
-	int		vector_width;	/* requested width for vector games; 0 means default (640) */
-	int		vector_height;	/* requested height for vector games; 0 means default (480) */
 	int		ui_orientation;	/* orientation of the UI relative to the video */
-
-	int		beam;			/* vector beam width */
-	float	vector_flicker;	/* vector beam flicker effect control */
-	float	vector_intensity;/* vector beam intensity */
-	int		translucency;	/* 1 to enable translucency on vectors */
-	int		antialias;		/* 1 to enable antialiasing on vectors */
 
 	int		use_artwork;	/* bitfield indicating which artwork pieces to use */
 	int		artwork_res;	/* 1 for 1x game scaling, 2 for 2x */
@@ -206,9 +198,9 @@ struct GameOptions
 	int		debug_height;	/* requested height of debugger bitmap */
 	int		debug_depth;	/* requested depth of debugger bitmap */
 
-	int		at91jit;		/* PinMame: enable AT91 just in time compiler (x86 only) */
-	int		usemodsol;		/* PinMame: enable & setup physic model tied to binary outputs */
-	volatile double	time_fence; /* PinMame: enable & setup cpu time limit when using external synchronization */
+	int		at91jit;		/* PinMAME: enable AT91 just in time compiler (x86 only) */
+	int		usemodsol;		/* PinMAME: enable & setup physic model tied to binary outputs */
+	volatile double	time_fence; /* PinMAME: enable & setup cpu time limit when using external synchronization */
 };
 
 
@@ -225,9 +217,6 @@ struct GameOptions
 #define GAME_BITMAP_CHANGED			0x00000001
 #define GAME_PALETTE_CHANGED		0x00000002
 #define GAME_VISIBLE_AREA_CHANGED	0x00000004
-#ifdef PINMAME_VECTOR
-#define VECTOR_PIXELS_CHANGED		0x00000008
-#endif
 #define DEBUG_BITMAP_CHANGED		0x00000010
 #define DEBUG_PALETTE_CHANGED		0x00000020
 #define DEBUG_FOCUS_CHANGED			0x00000040
@@ -248,9 +237,6 @@ struct mame_display
     UINT32					game_palette_entries;	/* number of palette entries in game's palette */
     UINT32 *				game_palette_dirty;		/* points to game's dirty palette bitfield */
     struct rectangle 		game_visible_area;		/* the game's visible area */
-#ifdef PINMAME_VECTOR
-    void *					vector_dirty_pixels;	/* points to X,Y pairs of dirty vector pixels */
-#endif
 
     /* debugger bitmap and display information */
     struct mame_bitmap *	debug_bitmap;			/* points to debugger's bitmap */
@@ -274,9 +260,6 @@ struct performance_info
 {
 	double					game_speed_percent;		/* % of full speed */
 	double					frames_per_second;		/* actual rendered fps */
-#ifdef PINMAME_VECTOR
-	int						vector_updates_last_second; /* # of vector updates last second */
-#endif
 	int						partial_updates_this_frame; /* # of partial updates last frame */
 };
 

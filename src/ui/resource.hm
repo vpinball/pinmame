@@ -2,7 +2,6 @@
 // Used by mame32.rc
 //
 #define HIDC_A2D                        0x809d0488    // IDD_PROP_INPUT
-#define HIDC_ANTIALIAS                  0x809f0425    // IDD_PROP_VECTOR
 #define HIDC_ARTRES                     0x809e0487    // IDD_PROP_MISC
 #define HIDC_ARTWORK                    0x809e043b    // IDD_PROP_MISC
 #define HIDC_ARTWORK_CROP               0x809e03fa    // IDD_PROP_MISC
@@ -11,7 +10,6 @@
 #define HIDC_AUDIO_LATENCY              0x809b04a2    // IDD_PROP_SOUND
 #define HIDC_AUTOFRAMESKIP              0x809c0480    // IDD_PROP_ADVANCED
 #define HIDC_BACKDROPS                  0x809e03f9    // IDD_PROP_MISC
-#define HIDC_BEAM                       0x809f0426    // IDD_PROP_VECTOR
 #define HIDC_BEZELS                     0x809e03fd    // IDD_PROP_MISC
 #define HIDC_BIOS                       0x809e04b4    // IDD_PROP_MISC
 #define HIDC_BRIGHTCORRECT              0x809a0400    // IDD_PROP_DISPLAY
@@ -38,11 +36,8 @@
 #define HIDC_FILTER_EDIT                0x80a904d5    // IDD_FILTERS
 #define HIDC_FILTER_NONWORKING          0x80a90499    // IDD_FILTERS
 #define HIDC_FILTER_ORIGINALS           0x80a904a3    // IDD_FILTERS
-#define HIDC_FILTER_RASTER              0x80a90496    // IDD_FILTERS
 #define HIDC_FILTER_UNAVAILABLE         0x80a90498    // IDD_FILTERS
-#define HIDC_FILTER_VECTOR              0x80a90495    // IDD_FILTERS
 #define HIDC_FILTER_WORKING             0x80a904a4    // IDD_FILTERS
-#define HIDC_FLICKER                    0x809f0427    // IDD_PROP_VECTOR
 #define HIDC_FLIPX                      0x809a0408    // IDD_PROP_DISPLAY
 #define HIDC_FLIPY                      0x809a0409    // IDD_PROP_DISPLAY
 #define HIDC_FRAMESKIP                  0x809c03f4    // IDD_PROP_ADVANCED
@@ -51,7 +46,6 @@
 #define HIDC_HIGH_PRIORITY              0x80ad049e    // IDD_INTERFACE_OPTIONS
 #define HIDC_HISTORY                    0x806504cb    // IDD_MAIN
 #define HIDC_HWSTRETCH                  0x809c04dc    // IDD_PROP_ADVANCED
-#define HIDC_INTENSITY                  0x809f0428    // IDD_PROP_VECTOR
 #define HIDC_JOYSTICK                   0x809d03eb    // IDD_PROP_INPUT
 #define HIDC_JOY_GUI                    0x80ad0485    // IDD_INTERFACE_OPTIONS
 #define HIDC_KEEPASPECT                 0x809a0473    // IDD_PROP_DISPLAY
@@ -88,7 +82,6 @@
 #define HIDC_SWITCHRES                  0x809c04dd    // IDD_PROP_ADVANCED
 #define HIDC_SYNCREFRESH                0x809c04e2    // IDD_PROP_ADVANCED
 #define HIDC_THROTTLE                   0x809a0478    // IDD_PROP_DISPLAY
-#define HIDC_TRANSLUCENCY               0x809f0476    // IDD_PROP_VECTOR
 #define HIDC_TRIPLE_BUFFER              0x809c04ce    // IDD_PROP_ADVANCED
 #define HIDC_USE_DEFAULT                0x809c041b    // IDD_PROP_ADVANCED
 #define HIDC_USE_FILTER                 0x809b046c    // IDD_PROP_SOUND

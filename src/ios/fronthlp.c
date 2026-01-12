@@ -983,13 +983,12 @@ int frontend_help (const char *gamename)
 			for (i = 0; drivers[i]; i++)
 			{
 				expand_machine_driver(drivers[i]->drv, &drv);
-				if ((drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
-						(drivers[i]->clone_of == 0
-								|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
+				if ((drivers[i]->clone_of == 0
+					|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
 						drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1 <=
 						drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)
 				{
-					if (strcmp(drivers[i]->name,"crater") &&
+					/*if (strcmp(drivers[i]->name,"crater") &&
 						strcmp(drivers[i]->name,"mpatrol") &&
 						strcmp(drivers[i]->name,"troangel") &&
 						strcmp(drivers[i]->name,"travrusa") &&
@@ -1038,7 +1037,7 @@ int frontend_help (const char *gamename)
 						strcmp(drivers[i]->name,"starcrus") &&
 						strcmp(drivers[i]->name,"astrof") &&
 						strcmp(drivers[i]->name,"tomahawk") &&
-						1)
+						1)*/
 						printf("%s %dx%d\n",drivers[i]->name,
 								drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1,
 								drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1);
@@ -1051,9 +1050,8 @@ int frontend_help (const char *gamename)
 			for (i = 0; drivers[i]; i++)
 			{
 				expand_machine_driver(drivers[i]->drv, &drv);
-				if ((drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
-						(drivers[i]->clone_of == 0
-								|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
+				if ((drivers[i]->clone_of == 0
+					|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
 						drv.frames_per_second > 57 &&
 						drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1 > 244 &&
 						drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1 <= 256)

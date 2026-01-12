@@ -93,18 +93,14 @@
  **************************************************************/
 
 static void SetStereoEnabled(HWND hWnd, int nIndex);
-static void SetYM3812Enabled(HWND hWnd, int nIndex);
 static void SetSamplesEnabled(HWND hWnd, int nIndex, BOOL bSoundEnabled);
 static void InitializeOptions(HWND hDlg);
 static void InitializeMisc(HWND hDlg);
 static void OptOnHScroll(HWND hWnd, HWND hwndCtl, UINT code, int pos);
-static void BeamSelectionChange(HWND hwnd);
-static void FlickerSelectionChange(HWND hwnd);
 static void GammaSelectionChange(HWND hwnd);
 static void BrightCorrectSelectionChange(HWND hwnd);
 static void PauseBrightSelectionChange(HWND hwnd);
 static void BrightnessSelectionChange(HWND hwnd);
-static void IntensitySelectionChange(HWND hwnd);
 static void A2DSelectionChange(HWND hwnd);
 static void ResDepthSelectionChange(HWND hWnd, HWND hWndCtrl);
 static void RefreshSelectionChange(HWND hWnd, HWND hWndCtrl);
@@ -165,9 +161,6 @@ static int  g_nVolumeIndex     = 0;
 static int  g_nGammaIndex      = 0;
 static int  g_nBrightCorrectIndex = 0;
 static int  g_nPauseBrightIndex = 0;
-static int  g_nBeamIndex       = 0;
-static int  g_nFlickerIndex    = 0;
-static int  g_nIntensityIndex  = 0;
 static int  g_nRotateIndex     = 0;
 static int  g_nInputIndex      = 0;
 static int  g_nBrightnessIndex = 0;
@@ -191,21 +184,11 @@ static HICON g_hIcon = NULL;
 HBRUSH highlight_brush = NULL;
 HBRUSH background_brush = NULL;
 
-BOOL PropSheetFilter_Vector(const struct InternalMachineDriver *drv, const struct GameDriver *gamedrv)
-{
-#ifdef PINMAME_VECTOR
-	return (drv->video_attributes & VIDEO_TYPE_VECTOR) != 0;
-#else
-	return FALSE;
-#endif
-}
-
 /* Help IDs */
 static DWORD dwHelpIDs[] =
 {
 	
 	IDC_A2D,				HIDC_A2D,
-	IDC_ANTIALIAS,          HIDC_ANTIALIAS,
 	IDC_ARTRES,				HIDC_ARTRES,
 	IDC_ARTWORK,            HIDC_ARTWORK,
 	IDC_ARTWORK_CROP,		HIDC_ARTWORK_CROP,
@@ -213,7 +196,6 @@ static DWORD dwHelpIDs[] =
 	IDC_ASPECTRATION,       HIDC_ASPECTRATION,
 	IDC_AUTOFRAMESKIP,      HIDC_AUTOFRAMESKIP,
 	IDC_BACKDROPS,			HIDC_BACKDROPS,
-	IDC_BEAM,               HIDC_BEAM,
 	IDC_BEZELS,				HIDC_BEZELS,
 	IDC_BRIGHTNESS,         HIDC_BRIGHTNESS,
 	IDC_BRIGHTCORRECT,      HIDC_BRIGHTCORRECT,
@@ -227,18 +209,14 @@ static DWORD dwHelpIDs[] =
 	IDC_FILTER_EDIT,        HIDC_FILTER_EDIT,
 	IDC_FILTER_NONWORKING,  HIDC_FILTER_NONWORKING,
 	IDC_FILTER_ORIGINALS,   HIDC_FILTER_ORIGINALS,
-	IDC_FILTER_RASTER,      HIDC_FILTER_RASTER,
 	IDC_FILTER_UNAVAILABLE, HIDC_FILTER_UNAVAILABLE,
-	IDC_FILTER_VECTOR,      HIDC_FILTER_VECTOR,
 	IDC_FILTER_WORKING,     HIDC_FILTER_WORKING,
-	IDC_FLICKER,            HIDC_FLICKER,
 	IDC_FLIPX,              HIDC_FLIPX,
 	IDC_FLIPY,              HIDC_FLIPY,
 	IDC_FRAMESKIP,          HIDC_FRAMESKIP,
 	IDC_GAMMA,              HIDC_GAMMA,
 	IDC_HISTORY,            HIDC_HISTORY,
 	IDC_HWSTRETCH,          HIDC_HWSTRETCH,
-	IDC_INTENSITY,          HIDC_INTENSITY,
 	IDC_JOYSTICK,           HIDC_JOYSTICK,
 	IDC_KEEPASPECT,         HIDC_KEEPASPECT,
 	IDC_LANGUAGECHECK,      HIDC_LANGUAGECHECK,
@@ -266,7 +244,6 @@ static DWORD dwHelpIDs[] =
 	IDC_SWITCHRES,          HIDC_SWITCHRES,
 	IDC_SYNCREFRESH,        HIDC_SYNCREFRESH,
 	IDC_THROTTLE,           HIDC_THROTTLE,
-	IDC_TRANSLUCENCY,       HIDC_TRANSLUCENCY,
 	IDC_TRIPLE_BUFFER,      HIDC_TRIPLE_BUFFER,
 	IDC_USE_DEFAULT,        HIDC_USE_DEFAULT,
 	//IDC_USE_FILTER,         HIDC_USE_FILTER,
@@ -570,11 +547,6 @@ static char *GameInfoScreen(UINT nIndex)
 	struct InternalMachineDriver drv;
 	expand_machine_driver(drivers[nIndex]->drv,&drv);
 
-#ifdef PINMAME_VECTOR
-	if (drv.video_attributes & VIDEO_TYPE_VECTOR)
-		strcpy(buf, "Vector Game");
-	else
-#endif
 	{
 		if (drivers[nIndex]->flags & ORIENTATION_SWAP_XY)
 			sprintf(buf,"%d x %d (vert) %5.2f Hz",
@@ -598,12 +570,7 @@ static char *GameInfoColors(UINT nIndex)
     expand_machine_driver(drivers[nIndex]->drv,&drv);
 
 	ZeroMemory(buf, sizeof(buf));
-#ifdef PINMAME_VECTOR
-	if (drv.video_attributes & VIDEO_TYPE_VECTOR)
-		strcpy(buf, "Vector Game");
-	else
-#endif
-		sprintf(buf, "%d colors ", drv.total_colors);
+	sprintf(buf, "%d colors ", drv.total_colors);
 
 	return buf;
 }
@@ -1332,28 +1299,6 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		Static_SetText(hCtrl, buf);
 	}
 
-	/* vector */
-	hCtrl = GetDlgItem(hWnd, IDC_BEAMDISP);
-	if (hCtrl)
-	{
-		sprintf(buf, "%03.2f", o->f_beam);
-		Static_SetText(hCtrl, buf);
-	}
-
-	hCtrl = GetDlgItem(hWnd, IDC_FLICKERDISP);
-	if (hCtrl)
-	{
-		sprintf(buf, "%03.2f", o->f_flicker);
-		Static_SetText(hCtrl, buf);
-	}
-
-	hCtrl = GetDlgItem(hWnd, IDC_INTENSITYDISP);
-	if (hCtrl)
-	{
-		sprintf(buf, "%03.2f", o->f_intensity);
-		Static_SetText(hCtrl, buf);
-	}
-
 	/* sound */
 	hCtrl = GetDlgItem(hWnd, IDC_VOLUMEDISP);
 	if (hCtrl)
@@ -1525,12 +1470,12 @@ static void SetPropEnabledControls(HWND hWnd)
 	EnableWindow(GetDlgItem(hWnd, IDC_A2D),				joystick_attached);
 
 	/* Trackball / Mouse options */
-	if (nIndex == -1 || DriverUsesTrackball(nIndex) || DriverUsesLightGun(nIndex))
+	if (nIndex == -1)
 		Button_Enable(GetDlgItem(hWnd,IDC_USE_MOUSE),TRUE);
 	else
 		Button_Enable(GetDlgItem(hWnd,IDC_USE_MOUSE),FALSE);
 
-	if (nIndex == -1 || DriverUsesLightGun(nIndex))
+	if (nIndex == -1)
 		Button_Enable(GetDlgItem(hWnd,IDC_LIGHTGUN),TRUE);
 	else
 		Button_Enable(GetDlgItem(hWnd,IDC_LIGHTGUN),FALSE);
@@ -1553,7 +1498,6 @@ static void SetPropEnabledControls(HWND hWnd)
 		EnableWindow(GetDlgItem(hWnd,IDC_AUDIO_LATENCY_TEXT),sound);
 		SetSamplesEnabled(hWnd, nIndex, sound);
 		SetStereoEnabled(hWnd, nIndex);
-		SetYM3812Enabled(hWnd, nIndex);
 	}
 
 	if (Button_GetCheck(GetDlgItem(hWnd, IDC_AUTOFRAMESKIP)))
@@ -1601,7 +1545,6 @@ static void AssignPauseBright(HWND hWnd)
 {
 	/* "0.65", 0.5, 2.0 */
 	pGameOpts->f_pause_bright = g_nPauseBrightIndex / 20.0 + 0.5;
-	
 }
 
 static void AssignGamma(HWND hWnd)
@@ -1612,21 +1555,6 @@ static void AssignGamma(HWND hWnd)
 static void AssignBrightness(HWND hWnd)
 {
 	pGameOpts->gfx_brightness = g_nBrightnessIndex / 20.0 + 0.1;
-}
-
-static void AssignBeam(HWND hWnd)
-{
-	pGameOpts->f_beam = g_nBeamIndex / 20.0 + 1.0;
-}
-
-static void AssignFlicker(HWND hWnd)
-{
-	pGameOpts->f_flicker = g_nFlickerIndex;
-}
-
-static void AssignIntensity(HWND hWnd)
-{
-	pGameOpts->f_intensity = g_nIntensityIndex / 20.0 + 0.5;
 }
 
 static void AssignA2D(HWND hWnd)
@@ -1727,9 +1655,6 @@ static void ResetDataMap(void)
 	g_nBrightnessIndex		= (int)((pGameOpts->gfx_brightness   - 0.1) * 20.0 + 0.001);
 	g_nBrightCorrectIndex	= (int)((pGameOpts->f_bright_correct - 0.5) * 20.0 + 0.001);
 	g_nPauseBrightIndex   	= (int)((pGameOpts->f_pause_bright   - 0.5) * 20.0 + 0.001);
-	g_nBeamIndex			= (int)((pGameOpts->f_beam           - 1.0) * 20.0 + 0.001);
-	g_nFlickerIndex			= (int)(pGameOpts->f_flicker);
-	g_nIntensityIndex		= (int)((pGameOpts->f_intensity      - 0.5) * 20.0 + 0.001);
 	g_nA2DIndex				= (int)(pGameOpts->f_a2d                    * 20.0 + 0.001);
 
 	// if no controller type was specified or it was standard
@@ -1848,16 +1773,6 @@ static void BuildDataMap(void)
 	/* debugres */
 	DataMapAdd(IDC_GAMMA,         DM_INT,  CT_SLIDER,   &g_nGammaIndex,            DM_DOUBLE, &pGameOpts->f_gamma_correct, 0, 0, AssignGamma);
 	DataMapAdd(IDC_GAMMADISP,     DM_NONE, CT_NONE,  NULL,  DM_DOUBLE, &pGameOpts->f_gamma_correct, 0, 0, 0);
-
-	/* vector */
-	DataMapAdd(IDC_ANTIALIAS,     DM_BOOL, CT_BUTTON,   &pGameOpts->antialias,     DM_BOOL, &pGameOpts->antialias,     0, 0, 0);
-	DataMapAdd(IDC_TRANSLUCENCY,  DM_BOOL, CT_BUTTON,   &pGameOpts->translucency,  DM_BOOL, &pGameOpts->translucency,  0, 0, 0);
-	DataMapAdd(IDC_BEAM,          DM_INT,  CT_SLIDER,   &g_nBeamIndex,             DM_DOUBLE, &pGameOpts->f_beam, 0, 0, AssignBeam);
-	DataMapAdd(IDC_BEAMDISP,      DM_NONE, CT_NONE,  NULL,  DM_DOUBLE, &pGameOpts->f_beam, 0, 0, 0);
-	DataMapAdd(IDC_FLICKER,       DM_INT,  CT_SLIDER,   &g_nFlickerIndex,          DM_DOUBLE, &pGameOpts->f_flicker, 0, 0, AssignFlicker);
-	DataMapAdd(IDC_FLICKERDISP,   DM_NONE, CT_NONE,  NULL,  DM_DOUBLE, &pGameOpts->f_flicker, 0, 0, 0);
-	DataMapAdd(IDC_INTENSITY,     DM_INT,  CT_SLIDER,   &g_nIntensityIndex,        DM_DOUBLE, &pGameOpts->f_intensity, 0, 0, AssignIntensity);
-	DataMapAdd(IDC_INTENSITYDISP, DM_NONE, CT_NONE,  NULL,  DM_DOUBLE, &pGameOpts->f_intensity, 0, 0, 0);
 
 	/* sound */
 	DataMapAdd(IDC_SAMPLERATE,    DM_INT,  CT_COMBOBOX, &g_nSampleRateIndex,       DM_INT, &pGameOpts->samplerate, 0, 0, AssignSampleRate);
@@ -1988,40 +1903,6 @@ static void SetStereoEnabled(HWND hWnd, int nIndex)
 	}
 }
 
-static void SetYM3812Enabled(HWND hWnd, int nIndex)
-{
-	int i;
-	BOOL enabled;
-	HWND hCtrl;
-    struct InternalMachineDriver drv;
-
-	if (-1 != nIndex)
-		expand_machine_driver(drivers[nIndex]->drv,&drv);
-
-	hCtrl = GetDlgItem(hWnd, IDC_USE_FM_YM3812);
-	if (hCtrl)
-	{
-		enabled = FALSE;
-		for (i = 0; i < MAX_SOUND; i++)
-		{
-			if (nIndex == -1
-#if HAS_YM3812
-			||  drv.sound[i].sound_type == SOUND_YM3812
-#endif
-#if HAS_YM3526
-			||  drv.sound[i].sound_type == SOUND_YM3526
-#endif
-#if HAS_YM2413
-			||  drv.sound[i].sound_type == SOUND_YM2413
-#endif
-			)
-				enabled = TRUE;
-		}
-
-		EnableWindow(hCtrl, enabled);
-	}
-}
-
 static void SetSamplesEnabled(HWND hWnd, int nIndex, BOOL bSoundEnabled)
 {
 #if (HAS_SAMPLES == 1) || (HAS_VLM5030 == 1)
@@ -2093,21 +1974,9 @@ static void InitializeMisc(HWND hDlg)
 				(WPARAM)FALSE,
 				(LPARAM)MAKELONG(0, 38)); /* [0.10, 2.00] in .05 increments */
 
-	SendMessage(GetDlgItem(hDlg, IDC_INTENSITY), TBM_SETRANGE,
-				(WPARAM)FALSE,
-				(LPARAM)MAKELONG(0, 50)); /* [0.50, 3.00] in .05 increments */
-
 	SendMessage(GetDlgItem(hDlg, IDC_A2D), TBM_SETRANGE,
 				(WPARAM)FALSE,
 				(LPARAM)MAKELONG(0, 20)); /* [0.00, 1.00] in .05 increments */
-
-	SendMessage(GetDlgItem(hDlg, IDC_FLICKER), TBM_SETRANGE,
-				(WPARAM)FALSE,
-				(LPARAM)MAKELONG(0, 100)); /* [0.0, 100.0] in 1.0 increments */
-
-	SendMessage(GetDlgItem(hDlg, IDC_BEAM), TBM_SETRANGE,
-				(WPARAM)FALSE,
-				(LPARAM)MAKELONG(0, 300)); /* [1.00, 16.00] in .05 increments */
 
 	SendMessage(GetDlgItem(hDlg, IDC_VOLUME), TBM_SETRANGE,
 				(WPARAM)FALSE,
@@ -2151,11 +2020,6 @@ static void InitializeMisc(HWND hDlg)
 
 static void OptOnHScroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)
 {
-	if (hwndCtl == GetDlgItem(hwnd, IDC_FLICKER))
-	{
-		FlickerSelectionChange(hwnd);
-	}
-	else
 	if (hwndCtl == GetDlgItem(hwnd, IDC_GAMMA))
 	{
 		GammaSelectionChange(hwnd);
@@ -2175,24 +2039,9 @@ static void OptOnHScroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)
 		BrightnessSelectionChange(hwnd);
 	}
 	else
-	if (hwndCtl == GetDlgItem(hwnd, IDC_BEAM))
-	{
-		BeamSelectionChange(hwnd);
-	}
-	else
-	if (hwndCtl == GetDlgItem(hwnd, IDC_FLICKER))
-	{
-		FlickerSelectionChange(hwnd);
-	}
-	else
 	if (hwndCtl == GetDlgItem(hwnd, IDC_VOLUME))
 	{
 		VolumeSelectionChange(hwnd);
-	}
-	else
-	if (hwndCtl == GetDlgItem(hwnd, IDC_INTENSITY))
-	{
-		IntensitySelectionChange(hwnd);
 	}
 	else
 	if (hwndCtl == GetDlgItem(hwnd, IDC_A2D))
@@ -2256,40 +2105,6 @@ static void OptOnHScroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)
 		DMDANTIALIASSelectionChange(hwnd);
 	}
 #endif /* PINMAME */
-}
-
-/* Handle changes to the Beam slider */
-static void BeamSelectionChange(HWND hwnd)
-{
-	char   buf[100];
-	UINT   nValue;
-	double dBeam;
-
-	/* Get the current value of the control */
-	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_BEAM), TBM_GETPOS, 0, 0);
-
-	dBeam = nValue / 20.0 + 1.0;
-
-	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dBeam);
-	Static_SetText(GetDlgItem(hwnd, IDC_BEAMDISP), buf);
-}
-
-/* Handle changes to the Flicker slider */
-static void FlickerSelectionChange(HWND hwnd)
-{
-	char   buf[100];
-	UINT   nValue;
-	double dFlicker;
-
-	/* Get the current value of the control */
-	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_FLICKER), TBM_GETPOS, 0, 0);
-
-	dFlicker = nValue;
-
-	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dFlicker);
-	Static_SetText(GetDlgItem(hwnd, IDC_FLICKERDISP), buf);
 }
 
 /* Handle changes to the Gamma slider */
@@ -2358,23 +2173,6 @@ static void BrightnessSelectionChange(HWND hwnd)
 	/* Set the static display to the new value */
 	snprintf(buf,sizeof(buf),"%03.2f", dBrightness);
 	Static_SetText(GetDlgItem(hwnd, IDC_BRIGHTNESSDISP), buf);
-}
-
-/* Handle changes to the Intensity slider */
-static void IntensitySelectionChange(HWND hwnd)
-{
-	char   buf[100];
-	UINT   nValue;
-	double dIntensity;
-
-	/* Get the current value of the control */
-	nValue = (UINT)SendMessage(GetDlgItem(hwnd, IDC_INTENSITY), TBM_GETPOS, 0, 0);
-
-	dIntensity = nValue / 20.0 + 0.5;
-
-	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dIntensity);
-	Static_SetText(GetDlgItem(hwnd, IDC_INTENSITYDISP), buf);
 }
 
 /* Handle changes to the A2D slider */
@@ -2991,7 +2789,6 @@ static void InitializeCleanStretchUI(HWND hwnd)
 	if (hCtrl)
 	{
 		int i;
-
 		for (i=0;i<MAX_CLEAN_STRETCH;i++)
 			idx = ComboBox_AddString(hCtrl,GetCleanStretchLongName(i));
 	}

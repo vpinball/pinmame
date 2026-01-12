@@ -118,16 +118,8 @@ static int create_clipper(void);
 static void erase_surfaces(void);
 static void release_surfaces(void);
 static void compute_color_masks(const DDSURFACEDESC *desc);
-static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds,
-#ifdef PINMAME_VECTOR
-	void *vector_dirty_pixels,
-#endif
-	int update);
-static int render_to_primary(struct mame_bitmap *bitmap, const struct rectangle *bounds,
-#ifdef PINMAME_VECTOR
-	void *vector_dirty_pixels,
-#endif
-	int update);
+static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds, int update);
+static int render_to_primary(struct mame_bitmap *bitmap, const struct rectangle *bounds, int update);
 static int blit_and_flip(LPDIRECTDRAWSURFACE target_surface, LPRECT src, LPRECT dst, int update);
 
 
@@ -1035,11 +1027,7 @@ static void compute_color_masks(const DDSURFACEDESC *desc)
 //	win_ddraw_draw
 //============================================================
 
-int win_ddraw_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds,
-#ifdef PINMAME_VECTOR
-	void *vector_dirty_pixels,
-#endif
-	int update)
+int win_ddraw_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds, int update)
 {
 	int result;
 
@@ -1061,18 +1049,10 @@ int win_ddraw_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds,
 	// if we're using hardware stretching, render to the blit surface,
 	// then blit that and stretch
 	if (win_dd_hw_stretch)
-		result = render_to_blit(bitmap, bounds,
-#ifdef PINMAME_VECTOR
-			vector_dirty_pixels,
-#endif
-			update);
+		result = render_to_blit(bitmap, bounds, update);
 	// otherwise, render directly to the primary/back surface
 	else
-		result = render_to_primary(bitmap, bounds,
-#ifdef PINMAME_VECTOR
-			vector_dirty_pixels,
-#endif
-			update);
+		result = render_to_primary(bitmap, bounds, update);
 
 	return result;
 }
@@ -1083,21 +1063,11 @@ int win_ddraw_draw(struct mame_bitmap *bitmap, const struct rectangle *bounds,
 //	lock_must_succeed
 //============================================================
 
-static int lock_must_succeed(const struct rectangle *bounds
-#ifdef PINMAME_VECTOR
-	,void *vector_dirty_pixels
-#endif
-)
+static int lock_must_succeed(const struct rectangle *bounds)
 {
 	// determine up front if this lock must succeed; by default, it depends on
 	// whether or not we're throttling
 	int result = throttle;
-
-#ifdef PINMAME_VECTOR
-	// if we're using dirty pixels, we must succeed as well, or else we will leave debris
-	if (vector_dirty_pixels)
-		result = 1;
-#endif
 
 	// if we're blitting a different source rect than before, we also must
 	// succeed, or else we will miss some areas
@@ -1118,18 +1088,10 @@ static int lock_must_succeed(const struct rectangle *bounds
 //	render_to_blit
 //============================================================
 
-static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds,
-#ifdef PINMAME_VECTOR
-	void *vector_dirty_pixels,
-#endif
-	int update)
+static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bounds, int update)
 {
 	int dstdepth = blit_desc.ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
-	int wait_for_lock = lock_must_succeed(bounds
-#ifdef PINMAME_VECTOR
-		,vector_dirty_pixels
-#endif
-	);
+	int wait_for_lock = lock_must_succeed(bounds);
 	LPDIRECTDRAWSURFACE target_surface;
 	struct win_blit_params params;
 	HRESULT result;
@@ -1179,20 +1141,12 @@ tryagain:
 	params.srcwidth		= win_visible_width;
 	params.srcheight	= win_visible_height;
 
-#ifdef PINMAME_VECTOR
-	params.vecdirty		= vector_dirty_pixels;
-#endif
-
 	params.flipx		= blit_flipx;
 	params.flipy		= blit_flipy;
 	params.swapxy		= blit_swapxy;
 
 	// adjust for more optimal bounds
-	if (bounds && !update
-#ifdef PINMAME_VECTOR
-		&& !vector_dirty_pixels
-#endif
-		)
+	if (bounds && !update)
 	{
 		params.dstxoffs += (bounds->min_x - win_visible_rect.left) * effect_min_xscale;
 		params.dstyoffs += (bounds->min_y - win_visible_rect.top) * effect_min_yscale;
@@ -1368,17 +1322,9 @@ surface_lost:
 //	render_to_primary
 //============================================================
 
-static int render_to_primary(struct mame_bitmap *bitmap, const struct rectangle *bounds,
-#ifdef PINMAME_VECTOR
-	void *vector_dirty_pixels,
-#endif
-	int update)
+static int render_to_primary(struct mame_bitmap *bitmap, const struct rectangle *bounds, int update)
 {
-	int wait_for_lock = lock_must_succeed(bounds
-#ifdef PINMAME_VECTOR
-		,vector_dirty_pixels
-#endif
-	);
+	int wait_for_lock = lock_must_succeed(bounds);
 	DDSURFACEDESC temp_desc = { sizeof(temp_desc) };
 	LPDIRECTDRAWSURFACE target_surface;
 	struct win_blit_params params;
@@ -1481,26 +1427,12 @@ tryagain:
 	params.srcwidth		= win_visible_width;
 	params.srcheight	= win_visible_height;
 
-#ifdef PINMAME_VECTOR
-	params.vecdirty		= vector_dirty_pixels;
-#endif
-
 	params.flipx		= blit_flipx;
 	params.flipy		= blit_flipy;
 	params.swapxy		= blit_swapxy;
 
-#ifdef PINMAME_VECTOR
-	// need to disable vector dirtying if we're rendering directly to a back buffer
-	if (!win_window_mode && back_surface)
-		params.vecdirty = NULL;
-#endif
-
 	// adjust for more optimal bounds
-	if (bounds && !update
-#ifdef PINMAME_VECTOR
-		&& !vector_dirty_pixels
-#endif
-		)
+	if (bounds && !update)
 	{
 		params.dstxoffs += (bounds->min_x - win_visible_rect.left) * xmult;
 		params.dstyoffs += (bounds->min_y - win_visible_rect.top) * ymult;

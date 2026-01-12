@@ -1,5 +1,7 @@
 // license:BSD-3-Clause
 
+#if !defined(_WIN32) && !defined(_WIN64)
+
 #include "driver.h"
 #include <sys/time.h>
 
@@ -21,3 +23,5 @@ inline cycles_t osd_profiling_ticks(void) {
 	
 	return (((unsigned long long)current_time.tv_sec * 1000000LL + current_time.tv_usec));
 }
+
+#endif

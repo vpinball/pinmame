@@ -24,7 +24,7 @@
 #define IDC_IGNOREROMCRC                105
 #define IDC_CABINETMODE                 106
 #define IDC_SAMPLERATE                  110
-#define IDC_ANTIALIAS                   111
+#define IDC_DMDANTIALIAS                111
 #define IDC_MONOTOSTEREO                112
 #define IDC_FASTFRAMES                  113
 #define IDC_PINDMD                      114

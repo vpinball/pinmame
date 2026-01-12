@@ -47,7 +47,6 @@
 				vh_open()
 					- allocates the palette
 					- decodes the graphics
-					- computes vector game resolution
 					- sets up the artwork
 					- calls osd_create_display() to init the display
 					- allocates the scrbitmap
@@ -114,9 +113,6 @@
 #include "artwork.h"
 #include "state.h"
 #include "vidhrdw/generic.h"
-#ifdef PINMAME_VECTOR
-#include "vidhrdw/vector.h"
-#endif
 #include "palette.h"
 #include "harddisk.h"
 #if defined(PINMAME) && defined(PROC_SUPPORT)
@@ -180,7 +176,6 @@ static int last_partial_scanline;
 static cycles_t last_fps_time;
 static int frames_since_last_fps;
 static int rendered_frames_since_last_fps;
-static int vfcount;
 static struct performance_info performance;
 
 /* misc other statics */
@@ -241,9 +236,6 @@ static void vh_close(void);
 static int init_game_options(void);
 static int decode_graphics(const struct GfxDecodeInfo *gfxdecodeinfo);
 static void compute_aspect_ratio(const struct InternalMachineDriver *drv, int *aspect_x, int *aspect_y);
-#ifdef PINMAME_VECTOR
-static void scale_vectorgames(int gfx_width, int gfx_height, int *width, int *height);
-#endif
 static int init_buffered_spriteram(void);
 
 #ifdef MESS
@@ -709,20 +701,8 @@ static int vh_open(void)
 		if (decode_graphics(Machine->drv->gfxdecodeinfo))
 			goto cant_decode_graphics;
 
-#ifdef PINMAME_VECTOR
-	/* if we're a vector game, override the screen width and height */
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		scale_vectorgames(options.vector_width, options.vector_height, &bmwidth, &bmheight);
-		params.width = bmwidth;
-		params.height = bmheight;
-	}
-	else
-#endif
-	{
-		params.width = Machine->drv->default_visible_area.max_x - Machine->drv->default_visible_area.min_x + 1;
-		params.height = Machine->drv->default_visible_area.max_y - Machine->drv->default_visible_area.min_y + 1;
-	}
+	params.width = Machine->drv->default_visible_area.max_x - Machine->drv->default_visible_area.min_x + 1;
+	params.height = Machine->drv->default_visible_area.max_y - Machine->drv->default_visible_area.min_y + 1;
 
 	/* fill in the rest of the display parameters */
 	compute_aspect_ratio(Machine->drv, &params.aspect_x, &params.aspect_y);
@@ -737,12 +717,6 @@ static int vh_open(void)
 	/* initialize the display through the artwork (and eventually the OSD) layer */
 	if (artwork_create_display(&params, direct_rgb_components, artcallbacks))
 		goto cant_create_display;
-
-#ifdef PINMAME_VECTOR
-	/* the create display process may update the vector width/height, so recompute */
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-		scale_vectorgames(options.vector_width, options.vector_height, &bmwidth, &bmheight);
-#endif
 
 	/* now allocate the screen bitmap */
 	Machine->scrbitmap = auto_bitmap_alloc_depth(bmwidth, bmheight, Machine->color_depth);
@@ -798,12 +772,9 @@ static int vh_open(void)
 
 	/* reset performance data */
 	last_fps_time = osd_cycles();
-	vfcount = rendered_frames_since_last_fps = frames_since_last_fps = 0;
+	rendered_frames_since_last_fps = frames_since_last_fps = 0;
 	performance.game_speed_percent = 100;
 	performance.frames_per_second = Machine->drv->frames_per_second;
-#ifdef PINMAME_VECTOR
-	performance.vector_updates_last_second = 0;
-#endif
 
 	/* reset video statics and get out of here */
 	pdrawgfx_shadow_lowpri = 0;
@@ -919,10 +890,6 @@ static int init_game_options(void)
 		alpha_init();
 	}
 
-	/* update the vector width/height with defaults */
-	if (options.vector_width == 0) options.vector_width = 640;
-	if (options.vector_height == 0) options.vector_height = 480;
-
 	/* initialize the samplerate */
 	Machine->sample_rate = options.samplerate;
 
@@ -1012,35 +979,6 @@ static int decode_graphics(const struct GfxDecodeInfo *gfxdecodeinfo)
 }
 
 
-#ifdef PINMAME_VECTOR
-/*-------------------------------------------------
-	scale_vectorgames - scale the vector games
-	to a given resolution
--------------------------------------------------*/
-
-static void scale_vectorgames(int gfx_width, int gfx_height, int *width, int *height)
-{
-	double x_scale, y_scale, scale;
-
-	/* compute the scale values */
-	x_scale = (double)gfx_width / (double)(*width);
-	y_scale = (double)gfx_height / (double)(*height);
-
-	/* pick the smaller scale factor */
-	scale = (x_scale < y_scale) ? x_scale : y_scale;
-
-	/* compute the new size */
-	*width = (int)((double)*width * scale);
-	*height = (int)((double)*height * scale);
-
-	/* round to the nearest 4 pixel value */
-	*width &= ~3;
-	*height &= ~3;
-}
-#endif
-
-
-
 /*-------------------------------------------------
 	init_buffered_spriteram - initialize the
 	double-buffered spriteram
@@ -1113,17 +1051,6 @@ void set_visible_area(int min_x, int max_x, int min_y, int max_y)
 	Machine->visible_area.min_y = min_y;
 	Machine->visible_area.max_y = max_y;
 
-#ifdef PINMAME_VECTOR
-	/* vector games always use the whole bitmap */
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		Machine->absolute_visible_area.min_x = 0;
-		Machine->absolute_visible_area.max_x = Machine->scrbitmap->width - 1;
-		Machine->absolute_visible_area.min_y = 0;
-		Machine->absolute_visible_area.max_y = Machine->scrbitmap->height - 1;
-	}
-	else
-#endif
 	/* raster games need to use the visible area */
 	Machine->absolute_visible_area = Machine->visible_area;
 
@@ -1249,16 +1176,6 @@ void update_video_and_audio(void)
 	if (visible_area_changed)
 		current_display.changed_flags |= GAME_VISIBLE_AREA_CHANGED;
 
-#ifdef PINMAME_VECTOR
-	/* set the vector dirty list */
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-		if (!full_refresh_pending && !ui_dirty && !skipped_it)
-		{
-			current_display.vector_dirty_pixels = vector_dirty_list;
-			current_display.changed_flags |= VECTOR_PIXELS_CHANGED;
-		}
-#endif
-
 #ifdef MAME_DEBUG
 	/* set the debugger bitmap */
 	current_display.debug_bitmap = Machine->debug_bitmap;
@@ -1325,20 +1242,6 @@ static void recompute_fps(int skipped_it)
 		frames_since_last_fps = 0;
 		rendered_frames_since_last_fps = 0;
 	}
-
-#ifdef PINMAME_VECTOR
-	/* for vector games, compute the vector update count once/second */
-	vfcount++;
-	if (vfcount >= (int)Machine->drv->frames_per_second)
-	{
-		/* from vidhrdw/avgdvg.c */
-		extern int vector_updates;
-
-		performance.vector_updates_last_second = vector_updates;
-		vector_updates = 0;
-		vfcount -= (int)Machine->drv->frames_per_second;
-	}
-#endif
 }
 
 

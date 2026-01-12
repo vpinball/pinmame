@@ -1,8 +1,8 @@
-/* Miscelancelous utility functions
+/* Miscellaneous utility functions
 
    Copyright 2000 Hans de Goede
 
-   This file and the acompanying files in this directory are free software;
+   This file and the accompanying files in this directory are free software;
    you can redistribute them and/or modify them under the terms of the GNU
    Library General Public License as published by the Free Software Foundation;
    either version 2 of the License, or (at your option) any later version.
@@ -106,12 +106,12 @@ void fprint_columns(FILE *f, const char *text1, const char *text2)
       {
          size_t to_print = width[i]-1; /* always leave one space open */
 
-         /* we don't want to print more then we have */
+         /* we don't want to print more than what we have */
          j = strlen(text[i]);
          if (to_print > j)
            to_print = j;
 
-         /* if they have preffered breaks, try to give them to them */
+         /* if they have preferred breaks, try to give them to them */
          for(j=0; j<to_print; j++)
             if(text[i][j] == '\n')
             {

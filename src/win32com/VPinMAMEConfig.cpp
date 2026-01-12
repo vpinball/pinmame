@@ -361,20 +361,6 @@ void vpm_game_init(int game_index) {
 	blit_flipx = ((orientation & ORIENTATION_FLIP_X) != 0);
 	blit_flipy = ((orientation & ORIENTATION_FLIP_Y) != 0);
 	blit_swapxy = ((orientation & ORIENTATION_SWAP_XY) != 0);
-
-#ifdef PINMAME_VECTOR
-	if( options.vector_width == 0 && options.vector_height == 0 )
-	{
-		options.vector_width = 640;
-		options.vector_height = 480;
-	}
-	if( blit_swapxy )
-	{
-		int temp = options.vector_width;
-		options.vector_width = options.vector_height;
-		options.vector_height = temp;
-	}
-#endif
 }
 
 void vpm_game_exit(int game_index) {

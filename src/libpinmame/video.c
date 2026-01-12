@@ -251,14 +251,6 @@ const char *osd_get_fps_text(const struct performance_info *performance)
 		(int)(performance->frames_per_second + 0.5),
 		(int)(Machine->drv->frames_per_second + 0.5));
 
-#ifdef PINMAME_VECTOR
-	/* for vector games, add the number of vector updates */
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		dest += sprintf(dest, "\n %d vector updates", performance->vector_updates_last_second);
-	}
-	else
-#endif
 	if (performance->partial_updates_this_frame > 1)
 	{
 		dest += sprintf(dest, "\n %d partial updates", performance->partial_updates_this_frame);
@@ -440,6 +432,7 @@ static void throttle_speed()
 // to flipper input.  By distributing the emulation more evenly over a frame, it creates more opportunities
 // for the emulated machine to "see" the input and respond to it before the pinball simulator starts to draw its frame.
 
+extern int time_fence_is_supported();
 void throttle_speed_part(int part, int totalparts)
 {
 	static double ticks_per_sleep_msec = 0;
@@ -469,7 +462,7 @@ void throttle_speed_part(int part, int totalparts)
 		// reset.  Makes this delay computation complicated.
 		if (frameskip_counter == 0)
 			target += (int)((double)(FRAMESKIP_LEVELS) * (double)cps / video_fps);
-		// MAGIC: Experimentation with actual resuts show the most even distribution if I throttle to 1/7th increments at each 25% timestep.
+		// MAGIC: Experimentation with actual results show the most even distribution if I throttle to 1/7th increments at each 25% timestep.
 		target -= ((cycles_t)((double)cps / (video_fps * (totalparts + 3)))) * (totalparts - part + 3);
 	}
 
@@ -541,7 +534,7 @@ void throttle_speed_part(int part, int totalparts)
 		// time slices to the next batch of 12 frames, but the way it
 		// does its calculation, the time taken out of those short
 		// frames will pile up in the *next next* skip cycle, causing
-		// a long (order of 100ms) pause that can manifset as an audio
+		// a long (order of 100ms) pause that can manifest as an audio
 		// glitch and/or video hiccup.
 		//
 		// The adjustment here is simply the amount of real time by
@@ -649,7 +642,7 @@ static void update_timing()
 
 	//// update the bitmap we're drawing
 	//profiler_mark(PROFILER_BLIT);
-	//win_update_video_window(bitmap, bounds, vector_dirty_pixels);
+	//win_update_video_window(bitmap, bounds);
 	//profiler_mark(PROFILER_END);
 
 	// if we're throttling and autoframeskip is on, adjust

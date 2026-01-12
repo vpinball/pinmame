@@ -7,8 +7,7 @@
  ************************************************************
 */
 
-#ifndef __XMAME_H_
-#define __XMAME_H_
+#pragma once
 
 #ifdef __MAIN_C_
 #define EXTERN
@@ -196,4 +195,3 @@ extern struct rc_option frontend_opts[];
 extern struct rc_option frontend_ident_opts[];
 
 #undef EXTERN
-#endif

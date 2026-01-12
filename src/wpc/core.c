@@ -1,5 +1,5 @@
 /***********************************************/
-/* PINMAME - Interface function (Input/Output) */
+/* PinMAME - Interface function (Input/Output) */
 /***********************************************/
 #include <stdarg.h>
 #include <math.h>

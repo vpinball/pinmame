@@ -138,7 +138,7 @@ BEGIN
     RTEXT           "Emulation Fast Frames:",IDC_STATIC,101,70,74,8
     EDITTEXT        IDC_FASTFRAMES,178,68,49,12,ES_AUTOHSCROLL
     RTEXT           "Display &Antialias %:",IDC_STATIC,113,84,62,8
-    EDITTEXT        IDC_ANTIALIAS,178,82,49,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DMDANTIALIAS,178,82,49,12,ES_AUTOHSCROLL
     RTEXT           "Display Opacity %:",IDC_STATIC,111,98,64,8
     EDITTEXT        IDC_DMDOPACITY,178,96,49,12,ES_AUTOHSCROLL
     CONTROL         "Enable &writing of VGM file (requires restart)",IDC_VGMWRITE,

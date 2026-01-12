@@ -111,7 +111,6 @@ BEGIN
             MENUITEM "by D&irectory",               ID_VIEW_BYDIRECTORY
             MENUITEM "by &Manufacturer",            ID_VIEW_BYMANUFACTURER
             MENUITEM "by Times &Played",            ID_VIEW_BYTIMESPLAYED
-            MENUITEM "by &Type",                    ID_VIEW_BYTYPE
             MENUITEM "by &Date",                    ID_VIEW_BYYEAR
         END
         MENUITEM "Line &Up Icons",              ID_VIEW_LINEUPICONS
@@ -761,39 +760,6 @@ BEGIN
     LTEXT           "Other",IDC_STATIC,10,115,18,8
 END
 
-IDD_PROP_VECTOR DIALOGEX 0, 0, 220, 205
-STYLE DS_SETFONT | WS_CHILD | WS_CAPTION
-CAPTION "Vector"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    ICON            IDI_MAME32_ICON,IDC_STATIC,20,10,20,20
-    LTEXT           "Title\nDirectory\nExtra",IDC_PROP_TITLE,52,9,161,25,
-                    SS_NOPREFIX
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,20,38,178,1
-    CONTROL         "Draw antialiased vectors",IDC_ANTIALIAS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,50,50,114,8,0,
-                    HIDC_ANTIALIAS
-    CONTROL         "Draw translucent vectors",IDC_TRANSLUCENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,50,62,114,8,0,
-                    HIDC_TRANSLUCENCY
-    LTEXT           "Beam width:",IDC_BEAMTEXT,50,76,114,8
-    CONTROL         "BeamSlider",IDC_BEAM,"msctls_trackbar32",TBS_BOTH |
-                    TBS_NOTICKS | WS_TABSTOP,50,89,89,11,0,HIDC_BEAM
-    LTEXT           "16.00",IDC_BEAMDISP,141,89,29,9
-    LTEXT           "Flicker:",IDC_FLICKERTEXT,50,103,114,8
-    CONTROL         "FlickerSlider",IDC_FLICKER,"msctls_trackbar32",TBS_BOTH |
-                    TBS_NOTICKS | WS_TABSTOP,50,116,89,11,0,HIDC_FLICKER
-    LTEXT           "100.00",IDC_FLICKERDISP,142,116,29,9,NOT WS_GROUP
-    LTEXT           "Intensity:",IDC_INTENSITYTEXT,50,130,114,8
-    CONTROL         "IntensitySlider",IDC_INTENSITY,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,50,143,89,11,0,
-                    HIDC_INTENSITY
-    LTEXT           "1.5",IDC_INTENSITYDISP,142,143,29,9,NOT WS_GROUP
-    PUSHBUTTON      "Reset",IDC_PROP_RESET,7,184,97,14,0,0,0x809f0447
-    PUSHBUTTON      "Restore Default Settings",IDC_USE_DEFAULT,114,184,99,14,
-                    0,0,0x809f0401
-END
-
 IDD_PROP_PINMAME DIALOGEX 0, 0, 220, 205
 STYLE DS_SETFONT | WS_CHILD | WS_CAPTION
 CAPTION "PinMAME"
@@ -877,9 +843,6 @@ BEGIN
     CTEXT           "Game filters allow customizing the games that are displayed in each folder by hiding games that match the filters applied.",
                     IDC_STATIC,23,7,159,27
     GROUPBOX        "Game filters",IDC_STATIC,13,36,179,84
-    CONTROL         "&Vector Graphics",IDC_FILTER_VECTOR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,49,76,10,0,
-                    HIDC_FILTER_VECTOR
     CONTROL         "C&lones",IDC_FILTER_CLONES,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,23,63,76,10,0,HIDC_FILTER_CLONES
     CONTROL         "Non-Wor&king",IDC_FILTER_NONWORKING,"Button",
@@ -888,9 +851,6 @@ BEGIN
     CONTROL         "&Unavailable",IDC_FILTER_UNAVAILABLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,23,91,76,10,0,
                     HIDC_FILTER_UNAVAILABLE
-    CONTROL         "&Raster Graphics",IDC_FILTER_RASTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,107,49,78,10,0,
-                    HIDC_FILTER_RASTER
     CONTROL         "Ori&ginals",IDC_FILTER_ORIGINALS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,107,63,78,10,0,
                     HIDC_FILTER_ORIGINALS
@@ -1180,14 +1140,6 @@ BEGIN
         BOTTOMMARGIN, 198
     END
 
-    IDD_PROP_VECTOR, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 213
-        VERTGUIDE, 50
-        BOTTOMMARGIN, 198
-    END
-
     IDD_FILTERS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1331,7 +1283,6 @@ BEGIN
     ID_VIEW_BYDIRECTORY     "Sort items by directories"
     ID_VIEW_BYMANUFACTURER  "Sort items by manufacturer"
     ID_VIEW_BYYEAR          "Sort items by year"
-    ID_VIEW_BYTYPE          "Sort items by type"
     ID_VIEW_BYTIMESPLAYED   "Sort by number of plays"
     ID_VIEW_LINEUPICONS     "Arranges icons in a grid"
     ID_UPDATE_GAMELIST      "Refresh game list"

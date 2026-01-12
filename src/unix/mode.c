@@ -93,28 +93,21 @@ void mode_perfect(int *width, int *height)
 {
    double pixel_aspect_ratio;
    static int first_time = TRUE;
-   
+
    if (use_aspect_ratio)
    {
       /* first of all calculate the pixel aspect_ratio the game has */
-#ifdef PINMAME_VECTOR
-      if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-      {
-         pixel_aspect_ratio = 1.0;
-      }
-      else
-#endif
       {
          pixel_aspect_ratio = (visual_width * widthscale) / 
-	   (yarbsize ? yarbsize :
-	    (visual_height * heightscale * aspect_ratio));
+            (yarbsize ? yarbsize :
+             (visual_height * heightscale * aspect_ratio));
       }
       
       /* should we maximize the used height, or the used width? */
       if (display_aspect_ratio >= aspect_ratio)
       {
-	*height = yarbsize ? yarbsize : (visual_height * heightscale);
-	*width  = *height * pixel_aspect_ratio * display_aspect_ratio;
+         *height = yarbsize ? yarbsize : (visual_height * heightscale);
+         *width  = *height * pixel_aspect_ratio * display_aspect_ratio;
       }
       else
       {

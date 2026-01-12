@@ -18,8 +18,6 @@ enum
 	COLUMN_ROMS,
 	COLUMN_SAMPLES,
 	COLUMN_DIRECTORY,
-	COLUMN_TYPE,
-	COLUMN_TRACKBALL,
 	COLUMN_PLAYED,
 	COLUMN_MANUFACTURER,
 	COLUMN_YEAR,
@@ -124,7 +122,7 @@ typedef struct
 	BOOL   window_mode;
 	BOOL   use_ddraw;
 	BOOL   ddraw_stretch;
-	char *resolution;
+	char   *resolution;
 	int    gfx_refresh;
 	BOOL   scanlines;
 	BOOL   switchres;
@@ -177,13 +175,6 @@ typedef struct
 	BOOL   flipy;
 	char *debugres;
 	double f_gamma_correct;
-
-	/* Core vector */
-	BOOL   antialias;
-	BOOL   translucency;
-	double f_beam;
-	double f_flicker;
-	double f_intensity;
 
 	/* Sound */
 	int    samplerate;

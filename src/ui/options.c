@@ -218,6 +218,7 @@ static REG_OPTION regSettings[] =
 #define NUM_SETTINGS (sizeof(regSettings) / sizeof(regSettings[0]))
 
 static BOOL tmp;
+static double tmpd;
 
 // options in mame32.ini or (gamename).ini
 static REG_OPTION regGameOpts[] =
@@ -282,12 +283,12 @@ static REG_OPTION regGameOpts[] =
         { "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0},
         { "gamma",                  RO_DOUBLE,  &gOpts.f_gamma_correct,   0, 0},
 
-        // vector
-        { "antialias",              RO_BOOL,    &gOpts.antialias,         0, 0},
-        { "translucency",           RO_BOOL,    &gOpts.translucency,      0, 0},
-        { "beam",                   RO_DOUBLE,  &gOpts.f_beam,            0, 0},
-        { "flicker",                RO_DOUBLE,  &gOpts.f_flicker,         0, 0},
-        { "intensity",              RO_DOUBLE,  &gOpts.f_intensity,       0, 0},
+        // vector, unsupported
+        { "antialias",              RO_BOOL,    &tmp,                     0, 0},
+        { "translucency",           RO_BOOL,    &tmp,                     0, 0},
+        { "beam",                   RO_DOUBLE,  &tmpd,                    0, 0},
+        { "flicker",                RO_DOUBLE,  &tmpd,                    0, 0},
+        { "intensity",              RO_DOUBLE,  &tmpd,                    0, 0},
 
         // sound
         { "samplerate",             RO_INT,     &gOpts.samplerate,        0, 0},
@@ -769,13 +770,6 @@ BOOL OptionsInit()
         global.flipy             = FALSE;
         global.debugres          = _strdup("auto");
         global.f_gamma_correct   = 1.0;
-
-        /* Core vector */
-        global.antialias         = TRUE;
-        global.translucency      = TRUE;
-        global.f_beam            = 1.0;
-        global.f_flicker         = 0.0;
-        global.f_intensity               = 1.5;
 
         /* Sound */
         global.samplerate        = 48000;

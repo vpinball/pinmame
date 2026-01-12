@@ -1,5 +1,4 @@
-#ifndef __DEVICES_H_
-#define __DEVICES_H_
+#pragma once
 
 #ifdef __DEVICES_C_
 #define EXTERN
@@ -168,5 +167,3 @@ void joy_SDL_init(void);
 #define JOYTYPE_POV_RIGHT			5
 #define JOYTYPE_BUTTON				6
 #define JOYTYPE_MOUSEBUTTON			7
-
-#endif

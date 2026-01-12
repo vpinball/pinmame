@@ -33,7 +33,7 @@ int g_fPause = 0;
 PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE_BRIGHTNESS;
 PINMAME_SOUND_MODE g_fSoundMode = PINMAME_SOUND_MODE_DEFAULT;
 
-char g_szGameName[256] = {0}; //!! not set yet
+char g_szGameName[256] = {}; //!! not set yet
 }
 
 static int _isRunning = 0;
@@ -173,7 +173,7 @@ static const PinmameKeyboardInfo _keyboardInfo[] = {
  * ComposePath
  ******************************************************/
 
-char* ComposePath(const char* const path, const char* const file)
+static char* ComposePath(const char* const path, const char* const file)
 {
 	const size_t pathLength = strlen(path);
 	const size_t fileLength = strlen(file);
@@ -188,7 +188,7 @@ char* ComposePath(const char* const path, const char* const file)
  * CheckGameAlias
  ******************************************************/
 
-const char* CheckGameAlias(const char* const romName)
+static const char* CheckGameAlias(const char* const romName)
 {
 	if (!_p_Config || !_p_Config->vpmPath[0])
 		return romName;
@@ -202,7 +202,7 @@ const char* CheckGameAlias(const char* const romName)
 
 	FILE* file = fopen(aliasPath, "r");
 
-	if (file != NULL) {
+	if (file != nullptr) {
 		char line[128];
 		while (fgets(line, sizeof(line), file)) {
 			// Skip lines that start with "#"
@@ -213,7 +213,7 @@ const char* CheckGameAlias(const char* const romName)
 
 			if (!strcasecmp(token, romName))
 			{
-				strcpy(_aliasFromFile,  strtok(NULL, " ,\n#;'"));
+				strcpy(_aliasFromFile,  strtok(nullptr, " ,\n#;'"));
 				fclose(file);
 				return _aliasFromFile;
 			}
@@ -227,7 +227,7 @@ const char* CheckGameAlias(const char* const romName)
  * GetGameNumFromString
  ******************************************************/
 
-int GetGameNumFromString(const char* const name)
+static int GetGameNumFromString(const char* const name)
 {
 	int gameNum = 0;
 	const char* gameName = CheckGameAlias(name);
@@ -248,7 +248,7 @@ int GetGameNumFromString(const char* const name)
  * UpdatePinmameDisplayBitmap
  ******************************************************/
 
-bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bitmap* p_bitmap)
+static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bitmap* p_bitmap)
 {
 	UINT8* __restrict const dst = (UINT8*)pDisplay->pData;
 	bool diff = false;
@@ -453,7 +453,7 @@ extern "C" int libpinmame_needs_update_display() { return _p_Config->cb_OnDispla
 extern "C" void libpinmame_update_display(const struct core_dispLayout* layout, void* p_data)
 {
 	// If layout is null, update the custom DMD generated from alphanumeric segment displays
-	int index = layout == nullptr ? (_displays.size() - 1) : layout->index;
+	int index = layout == nullptr ? ((int)_displays.size() - 1) : layout->index;
 	PinmameDisplay* pDisplay = _displays[index];
 	if ((pDisplay->layout.type & CORE_SEGMASK) == CORE_VIDEO) {
 		const bool changed = UpdatePinmameDisplayBitmap(pDisplay, (mame_bitmap*)p_data);
@@ -518,32 +518,32 @@ extern "C" void OnStateChange(const int state)
 	{
 		int displayCount = 0;
 		bool hasDMDOrVideo = false;
-      for (const struct core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+		for (const struct core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = nullptr; layout->length || (parent_layout && parent_layout->length); layout += 1) {
 			if (layout->length == 0) { // Recursive import
 				layout = parent_layout;
-				parent_layout = NULL;
+				parent_layout = nullptr;
 			}
 			if (layout->type == CORE_IMPORT) {
-				assert(parent_layout == NULL); // IMPORT of IMPORT is not currently supported as it is not used by any driver so far
+				assert(parent_layout == nullptr); // IMPORT of IMPORT is not currently supported as it is not used by any driver so far
 				parent_layout = layout + 1;
 				layout = layout->importedLayout - 1;
 				continue;
 			}
 			hasDMDOrVideo |= (layout->type == CORE_VIDEO) || ((layout->type & CORE_DMD) == CORE_DMD);
-         if (displayCount <= layout->index)
-            displayCount = layout->index + 1;
-      }
-      if (hasDMDOrVideo)
-         displayCount++;
-      _displays.resize(displayCount);
-      
-      for (const struct core_dispLayout* layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout += 1) {
+			if (displayCount <= layout->index)
+				displayCount = layout->index + 1;
+		}
+		if (hasDMDOrVideo)
+			displayCount++;
+		_displays.resize(displayCount);
+
+		for (const struct core_dispLayout* layout = core_gameData->lcdLayout, * parent_layout = nullptr; layout->length || (parent_layout && parent_layout->length); layout += 1) {
 			if (layout->length == 0) { // Recursive import
 				layout = parent_layout;
-				parent_layout = NULL;
+				parent_layout = nullptr;
 			}
 			if ((layout->type & CORE_SEGMASK) == CORE_IMPORT) {
-				assert(parent_layout == NULL); // IMPORT of IMPORT is not currently supported as it is not used by any driver so far
+				assert(parent_layout == nullptr); // IMPORT of IMPORT is not currently supported as it is not used by any driver so far
 				parent_layout = layout + 1;
 				layout = layout->importedLayout - 1;
 				continue;
@@ -692,14 +692,12 @@ extern "C" void libpinmame_update_mech(const int mechNo, mech_tMechData* p_mechD
  * StartGame
  ******************************************************/
 
-int StartGame(const int gameNum)
+static int StartGame(const int gameNum)
 {
-	int err;
-
 	memset(_mechInit, 0, sizeof(_mechInit));
 	memset(_mechInfo, 0, sizeof(_mechInfo));
 
-	err = run_game(gameNum);
+	const int err = run_game(gameNum);
 
 	OnStateChange(0);
 
@@ -715,7 +713,7 @@ PINMAMEAPI PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCa
 	if (!_p_Config)
 		return PINMAME_STATUS_CONFIG_NOT_SET;
 
-	int gameNum = GetGameNumFromString(p_name);
+	const int gameNum = GetGameNumFromString(p_name);
 
 	if (gameNum < 0)
 		return PINMAME_STATUS_GAME_NOT_FOUND;

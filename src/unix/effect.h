@@ -1,5 +1,4 @@
-#ifndef __EFFECT_H
-#define __EFFECT_H
+#pragma once
 
 #ifdef __EFFECT_C_
 #define EXTERN_EFFECT
@@ -134,5 +133,3 @@ void effect_scan3_32_YUY2_direct(void *dst0, void *dst1, void *dst2, const void 
 EXTERN_EFFECT void (*rotate_func)(void *dst, struct mame_bitmap *bitamp, int y);
 void rotate_16_16(void *dst, struct mame_bitmap *bitmap, int y);
 void rotate_32_32(void *dst, struct mame_bitmap *bitmap, int y);
-
-#endif /* __EFFECT_H */

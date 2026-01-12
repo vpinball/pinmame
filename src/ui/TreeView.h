@@ -94,9 +94,6 @@ enum
 	FOLDER_NONWORKING,
 	FOLDER_ORIGINAL,
 	FOLDER_CLONES,
-	FOLDER_RASTER,
-	FOLDER_VECTOR,
-	FOLDER_TRACKBALL,
 	FOLDER_STEREO,
 	FOLDER_HARDDISK,
 	FOLDER_ORIENTATION,
@@ -108,8 +105,6 @@ typedef enum
 	F_CLONES        = 0x00000001,
 	F_NONWORKING    = 0x00000002,
 	F_UNAVAILABLE   = 0x00000004,
-	F_VECTOR        = 0x00000008,
-	F_RASTER        = 0x00000010,
 	F_ORIGINALS     = 0x00000020,
 	F_WORKING       = 0x00000040,
 	F_AVAILABLE     = 0x00000080,
@@ -119,7 +114,7 @@ typedef enum
 
 typedef struct
 {
-    LPSTR m_lpTitle;        // String contains the folder name
+    LPSTR m_lpTitle;              // String contains the folder name
     UINT        m_nFolderId;      // Index / Folder ID number
     int         m_nParent;        // Parent folder index in treeFolders[]
     int         m_nIconId;        // negative icon index into the ImageList, or IDI_xxx resource id

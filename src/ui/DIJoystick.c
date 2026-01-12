@@ -271,7 +271,7 @@ static int DIJoystick_is_joy_pressed(int joycode)
 		button = GET_JOYCODE_BUTTON(joycode);
 		button--;
 
-		if (button >= This.joysticks[joy_num].num_buttons
+		if (button >= (int)This.joysticks[joy_num].num_buttons
 		||	GET_JOYCODE_DIR(joycode) != JOYCODE_DIR_BTN)
 			return 0;
 
@@ -290,7 +290,7 @@ static int DIJoystick_is_joy_pressed(int joycode)
 		axis = code / 2;
 		dir  = code % 2;
 
-		if (num_pov >= This.joysticks[joy_num].num_pov)
+		if (num_pov >= (int)This.joysticks[joy_num].num_pov)
 			return 0;
 
 		pov_value = dijs.rgdwPOV[num_pov];
@@ -318,7 +318,7 @@ static int DIJoystick_is_joy_pressed(int joycode)
 	axis = GET_JOYCODE_AXIS(joycode);
 	dir  = GET_JOYCODE_DIR(joycode);
 	
-	if (axis == 0 || This.joysticks[joy_num].num_axes < axis)
+	if (axis == 0 || (int)This.joysticks[joy_num].num_axes < axis)
 		return 0;
 	axis--;
 

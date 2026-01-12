@@ -29,10 +29,6 @@
 #include "blit.h"
 #include "video.h"
 #include "window.h"
-#ifdef PINMAME_VECTOR
-#include "vidhrdw/vector.h"
-#endif
-
 
 
 //============================================================
@@ -199,9 +195,6 @@ static UINT8				*active_update_blitter = NULL;
 
 // current parameters
 static struct win_blit_params	active_blitter_params;
-#ifdef PINMAME_VECTOR
-static struct win_blit_params	active_vector_params;
-#endif
 
 static int blit_srcwidth, blit_srcheight;
 
@@ -341,9 +334,6 @@ static struct rgb_descriptor sharp_desc =
 //	PROTOTYPES
 //============================================================
 
-#ifdef PINMAME_VECTOR
-static int blit_vectors(const struct win_blit_params *blit);
-#endif
 static void generate_blitter(const struct win_blit_params *blit);
 static void compute_source_fixups(const struct win_blit_params *blit, UINT32 valuefixups[]);
 
@@ -505,13 +495,6 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 	int srcx, srcy;
 	DWORD dw;
 
-#ifdef PINMAME_VECTOR
-	// if we have a vector dirty array, alter the plan
-	if (blit->vecdirty && !update)
-		if (blit_vectors(blit))
-			return 1;
-#endif
-
 	// determine the starting source X/Y
 	temprect.min_x = blit->srcxoffs;
 	temprect.min_y = blit->srcyoffs;
@@ -666,93 +649,6 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 
 	return 1;
 }
-
-
-
-#ifdef PINMAME_VECTOR
-//============================================================
-//	blit_vectors
-//============================================================
-
-static int blit_vectors(const struct win_blit_params *blit)
-{
-	int srcdepth = (blit->srcdepth + 7) / 8;
-	int dstdepth = (blit->dstdepth + 7) / 8;
-	void *srcbase = (UINT8 *)blit->srcdata + blit->srcpitch * blit->srcyoffs + srcdepth * blit->srcxoffs;
-	void *dstbase = (UINT8 *)blit->dstdata + blit->dstpitch * blit->dstyoffs + dstdepth * blit->dstxoffs;
-	UINT32 srcpitch = blit->srcpitch;
-	vector_pixel_t *list = blit->vecdirty;
-
-	// skip if not 1:1
-	if (blit->dstxscale != 1 || blit->dstyscale != 1)
-		return 0;
-
-	// can't handle anything but 15bpp
-	if (blit->srcdepth != 15)
-		return 0;
-
-	// recompute the lookups
-	if (blit->srcwidth != active_vector_params.srcwidth ||
-		blit->srcpitch != active_vector_params.srcpitch ||
-		blit->dstdepth != active_vector_params.dstdepth ||
-		blit->dstpitch != active_vector_params.dstpitch ||
-		blit->flipx != active_vector_params.flipx ||
-		blit->flipy != active_vector_params.flipy ||
-		blit->swapxy != active_vector_params.swapxy)
-	{
-		struct rectangle temprect;
-		int x;
-
-		for (x = 0; x < MAX_SCREEN_DIM; x++)
-		{
-			temprect.min_x = temprect.max_x = x;
-			temprect.min_y = temprect.max_y = 0;
-			win_orient_rect(&temprect);
-			xtrans[x] = blit->swapxy ? (temprect.max_y * blit->dstpitch) : (temprect.max_x * dstdepth);
-
-			temprect.min_x = temprect.max_x = 0;
-			temprect.min_y = temprect.max_y = x;
-			win_orient_rect(&temprect);
-			ytrans[x] = blit->swapxy ? (temprect.max_x * dstdepth) : (temprect.max_y * blit->dstpitch);
-		}
-
-		active_vector_params = *blit;
-	}
-
-	// 16-bit to 16-bit
-	if (blit->dstdepth == 15)
-	{
-		UINT32 *srclookup = blit->srclookup;
-		while (*list != VECTOR_PIXEL_END)
-		{
-			vector_pixel_t coords = *list++;
-			int x = VECTOR_PIXEL_X(coords);
-			int y = VECTOR_PIXEL_Y(coords);
-			*(UINT16 *)((UINT8 *)dstbase + xtrans[x] + ytrans[y]) =
-					srclookup[*(UINT16 *)((UINT8 *)srcbase + y * srcpitch + x * 2)];
-		}
-		return 1;
-	}
-
-	// 16-bit to 32-bit
-	else if (blit->dstdepth == 32)
-	{
-		UINT32 *srclookup = blit->srclookup;
-		while (*list != VECTOR_PIXEL_END)
-		{
-			vector_pixel_t coords = *list++;
-			int x = VECTOR_PIXEL_X(coords);
-			int y = VECTOR_PIXEL_Y(coords);
-			*(UINT32 *)((UINT8 *)dstbase + xtrans[x] + ytrans[y]) =
-					srclookup[*(UINT16 *)((UINT8 *)srcbase + y * srcpitch + x * 2)];
-		}
-		return 1;
-	}
-
-	return 0;
-}
-#endif
-
 
 
 //============================================================

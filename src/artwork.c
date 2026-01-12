@@ -303,9 +303,6 @@
 #include "driver.h"
 #include "png.h"
 #include "artwork.h"
-#ifdef PINMAME_VECTOR
-#include "vidhrdw/vector.h"
-#endif
 #include <ctype.h>
 #include <math.h>
 
@@ -620,11 +617,7 @@ int artwork_create_display(struct osd_create_params *params, UINT32 rgb_componen
 
 	/* determine the game bitmap scale factor */
 	gamescale = options.artwork_res;
-	if (gamescale < 1
-#ifdef PINMAME_VECTOR
-		|| (params->video_attributes & VIDEO_TYPE_VECTOR)
-#endif
-		)
+	if (gamescale < 1)
 		gamescale = 1;
 	else if (gamescale > 2)
 		gamescale = 2;
@@ -647,30 +640,6 @@ int artwork_create_display(struct osd_create_params *params, UINT32 rgb_componen
 	params->height = (int)((max_y - min_y) * (double)(original_height * gamescale) + 0.5);
 	params->aspect_x = (int)((double)params->aspect_x * 100. * (max_x - min_x));
 	params->aspect_y = (int)((double)params->aspect_y * 100. * (max_y - min_y));
-
-#ifdef PINMAME_VECTOR
-	/* vector games need to fit inside the original bounds, so scale back down */
-	if (params->video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		/* shrink the width/height if over */
-		if (params->width > original_width)
-		{
-			params->width = original_width;
-			params->height = original_width * params->aspect_y / params->aspect_x;
-		}
-		if (params->height > original_height)
-		{
-			params->height = original_height;
-			params->width = original_height * params->aspect_x / params->aspect_y;
-		}
-
-		/* compute the new raw width/height and update the vector info */
-		original_width = (int)((double)params->width / (max_x - min_x));
-		original_height = (int)((double)params->height / (max_y - min_y));
-		options.vector_width = original_width;
-		options.vector_height = original_height;
-	}
-#endif
 
 	/* adjust the parameters */
 	original_attributes = params->video_attributes;
@@ -819,15 +788,6 @@ void artwork_update_video_and_audio(struct mame_display *display)
 		/* add UI */
 		if (ui_visible)
 			render_ui_overlay(uioverlay, uioverlayhint, palette_lookup, display);
-
-#ifdef PINMAME_VECTOR
-		/* if artwork changed, or there's UI, we can't use dirty pixels */
-		if (artwork_changed || ui_changed || ui_visible)
-		{
-			display->changed_flags &= ~VECTOR_PIXELS_CHANGED;
-			display->vector_dirty_pixels = NULL;
-		}
-#endif
 	}
 	profiler_mark(PROFILER_END);
 
@@ -1358,52 +1318,14 @@ static void render_game_bitmap(struct mame_bitmap *bitmap, const rgb_t *palette,
 {
 	int srcrowpixels = bitmap->rowpixels;
 	int dstrowpixels = final->rowpixels;
-	void *srcbase, *dstbase;
-	int width, height;
 	int x, y;
 
 	/* compute common parameters */
-	width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
-	height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
-	srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
-	dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
+	int width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
+	int height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
+	void* srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
+	void* dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
 
-#ifdef PINMAME_VECTOR
-	/* vector case */
-	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
-	{
-		vector_pixel_t offset = VECTOR_PIXEL(gamerect.min_x, gamerect.min_y);
-		vector_pixel_t *list = display->vector_dirty_pixels;
-
-		/* 16/15bpp case */
-		if (bitmap->depth != 32)
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = palette[PIXEL(x,y,src,src,16)];
-			}
-		}
-
-		/* 32bpp case */
-		else
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = PIXEL(x,y,src,src,32);
-			}
-		}
-	}
-
-	else
-#endif
 	/* 1x scale */
 	if (gamescale == 1)
 	{
@@ -1486,53 +1408,15 @@ static void render_game_bitmap_underlay(struct mame_bitmap *bitmap, const rgb_t 
 {
 	int srcrowpixels = bitmap->rowpixels;
 	int dstrowpixels = final->rowpixels;
-	void *srcbase, *dstbase, *undbase;
-	int width, height;
 	int x, y;
 
 	/* compute common parameters */
-	width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
-	height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
-	srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
-	dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
-	undbase = (UINT8 *)underlay->base + gamerect.min_y * underlay->rowbytes + gamerect.min_x * sizeof(UINT32);
+	int width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
+	int height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
+	void* srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
+	void* dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
+	void* undbase = (UINT8 *)underlay->base + gamerect.min_y * underlay->rowbytes + gamerect.min_x * sizeof(UINT32);
 
-#ifdef PINMAME_VECTOR
-	/* vector case */
-	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
-	{
-		vector_pixel_t offset = VECTOR_PIXEL(gamerect.min_x, gamerect.min_y);
-		vector_pixel_t *list = display->vector_dirty_pixels;
-
-		/* 16/15bpp case */
-		if (bitmap->depth != 32)
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = add_and_clamp(palette[PIXEL(x,y,src,src,16)], PIXEL(x,y,und,dst,32));
-			}
-		}
-
-		/* 32bpp case */
-		else
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = add_and_clamp(PIXEL(x,y,src,src,32), PIXEL(x,y,und,dst,32));
-			}
-		}
-	}
-
-	else
-#endif
 	/* 1x scale */
 	if (gamescale == 1)
 	{
@@ -1621,54 +1505,16 @@ static void render_game_bitmap_overlay(struct mame_bitmap *bitmap, const rgb_t *
 {
 	int srcrowpixels = bitmap->rowpixels;
 	int dstrowpixels = final->rowpixels;
-	void *srcbase, *dstbase, *overbase, *overyrgbbase;
-	int width, height;
 	int x, y;
 
 	/* compute common parameters */
-	width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
-	height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
-	srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
-	dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
-	overbase = (UINT8 *)overlay->base + gamerect.min_y * overlay->rowbytes + gamerect.min_x * sizeof(UINT32);
-	overyrgbbase = (UINT8 *)overlay_yrgb->base + gamerect.min_y * overlay_yrgb->rowbytes + gamerect.min_x * sizeof(UINT32);
+	int width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
+	int height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
+	void* srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
+	void* dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
+	void* overbase = (UINT8 *)overlay->base + gamerect.min_y * overlay->rowbytes + gamerect.min_x * sizeof(UINT32);
+	void* overyrgbbase = (UINT8 *)overlay_yrgb->base + gamerect.min_y * overlay_yrgb->rowbytes + gamerect.min_x * sizeof(UINT32);
 
-#ifdef PINMAME_VECTOR
-	/* vector case */
-	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
-	{
-		vector_pixel_t offset = VECTOR_PIXEL(gamerect.min_x, gamerect.min_y);
-		vector_pixel_t *list = display->vector_dirty_pixels;
-
-		/* 16/15bpp case */
-		if (bitmap->depth != 32)
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = blend_over(palette[PIXEL(x,y,src,src,16)], PIXEL(x,y,over,dst,32), PIXEL(x,y,overyrgb,dst,32));
-			}
-		}
-
-		/* 32bpp case */
-		else
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = blend_over(PIXEL(x,y,src,src,32), PIXEL(x,y,over,dst,32), PIXEL(x,y,overyrgb,dst,32));
-			}
-		}
-	}
-
-	else
-#endif
 	/* 1x scale */
 	if (gamescale == 1)
 	{
@@ -1764,55 +1610,17 @@ static void render_game_bitmap_underlay_overlay(struct mame_bitmap *bitmap, cons
 {
 	int srcrowpixels = bitmap->rowpixels;
 	int dstrowpixels = final->rowpixels;
-	void *srcbase, *dstbase, *undbase, *overbase, *overyrgbbase;
-	int width, height;
 	int x, y;
 
 	/* compute common parameters */
-	width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
-	height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
-	srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
-	dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
-	undbase = (UINT8 *)underlay->base + gamerect.min_y * underlay->rowbytes + gamerect.min_x * sizeof(UINT32);
-	overbase = (UINT8 *)overlay->base + gamerect.min_y * overlay->rowbytes + gamerect.min_x * sizeof(UINT32);
-	overyrgbbase = (UINT8 *)overlay_yrgb->base + gamerect.min_y * overlay_yrgb->rowbytes + gamerect.min_x * sizeof(UINT32);
+	int width = Machine->absolute_visible_area.max_x - Machine->absolute_visible_area.min_x + 1;
+	int height = Machine->absolute_visible_area.max_y - Machine->absolute_visible_area.min_y + 1;
+	void* srcbase = (UINT8 *)bitmap->base + Machine->absolute_visible_area.min_y * bitmap->rowbytes;
+	void* dstbase = (UINT8 *)final->base + gamerect.min_y * final->rowbytes + gamerect.min_x * sizeof(UINT32);
+	void* undbase = (UINT8 *)underlay->base + gamerect.min_y * underlay->rowbytes + gamerect.min_x * sizeof(UINT32);
+	void* overbase = (UINT8 *)overlay->base + gamerect.min_y * overlay->rowbytes + gamerect.min_x * sizeof(UINT32);
+	void* overyrgbbase = (UINT8 *)overlay_yrgb->base + gamerect.min_y * overlay_yrgb->rowbytes + gamerect.min_x * sizeof(UINT32);
 
-#ifdef PINMAME_VECTOR
-	/* vector case */
-	if (display->changed_flags & VECTOR_PIXELS_CHANGED)
-	{
-		vector_pixel_t offset = VECTOR_PIXEL(gamerect.min_x, gamerect.min_y);
-		vector_pixel_t *list = display->vector_dirty_pixels;
-
-		/* 16/15bpp case */
-		if (bitmap->depth != 32)
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = add_and_clamp(blend_over(palette[PIXEL(x,y,src,src,16)], PIXEL(x,y,over,dst,32), PIXEL(x,y,overyrgb,dst,32)), PIXEL(x,y,und,dst,32));
-			}
-		}
-
-		/* 32bpp case */
-		else
-		{
-			while (*list != VECTOR_PIXEL_END)
-			{
-				vector_pixel_t coords = *list;
-				x = VECTOR_PIXEL_X(coords);
-				y = VECTOR_PIXEL_Y(coords);
-				*list++ = coords + offset;
-				PIXEL(x,y,dst,dst,32) = add_and_clamp(blend_over(PIXEL(x,y,src,src,32), PIXEL(x,y,over,dst,32), PIXEL(x,y,overyrgb,dst,32)), PIXEL(x,y,und,dst,32));
-			}
-		}
-	}
-
-	else
-#endif
 	/* 1x scale */
 	if (gamescale == 1)
 	{

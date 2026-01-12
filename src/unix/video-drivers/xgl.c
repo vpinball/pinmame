@@ -401,7 +401,7 @@ int sysdep_create_display(int depth)
 				 ButtonPressMask   | ButtonReleaseMask |
 				 resizeEvtMask 
 				 );
-	
+
 	XGrabPointer(display,
 				 window, /* RootWindow(display,DefaultScreen(display)), */
 				 False,
@@ -419,11 +419,11 @@ int sysdep_create_display(int depth)
 				 resizeEvtMask 
 				 );
   }
-  
+
   XMapRaised(display,window);
   XClearWindow(display,window);
   XWindowEvent(display,window,ExposureMask,&event);
-  
+
   XResizeWindow(display,window,winwidth,winheight);
 
   if(fullscreen) {
@@ -432,11 +432,6 @@ int sysdep_create_display(int depth)
 
 	XSetWMNormalHints(display,window,&hints);
   }
-
-#ifdef PINMAME_VECTOR
-  if ( (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR) 
-       && drawbitmap ) drawbitmap=drawbitmapvec;
-#endif
 
   InitVScreen(depth);
 

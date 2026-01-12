@@ -94,7 +94,7 @@ private:
 		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_antialias"), &vValue);
-		SetDlgItemInt(IDC_ANTIALIAS, vValue.lVal, FALSE);
+		SetDlgItemInt(IDC_DMDANTIALIAS, vValue.lVal, FALSE);
 		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("force_stereo"), &vValue);
@@ -206,7 +206,7 @@ private:
 		pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant((int) GetDlgItemInt(IDC_DOUBLESIZE,NULL,TRUE)));
 
 		pGameSettings->put_Value(CComBSTR("samplerate"), CComVariant((int) GetDlgItemInt(IDC_SAMPLERATE,NULL,TRUE)));
-		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_DMDANTIALIAS,NULL,TRUE)));
 
 		pGameSettings->put_Value(CComBSTR("force_stereo"), CComVariant((BOOL) IsDlgButtonChecked(IDC_MONOTOSTEREO)));
 

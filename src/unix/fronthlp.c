@@ -702,12 +702,8 @@ int frontend_list(char *gamename)
 					}
 					break;
 				case LIST_WRONGORIENTATION: /* list drivers which incorrectly use the orientation and visible area fields */
-					if(
-#ifdef PINMAME_VECTOR
-					!(drv.video_attributes & VIDEO_TYPE_VECTOR) &&
-#endif
-							((drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1) <=
-							 (drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)) //&&
+					if(((drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1) <=
+						 (drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)) //&&
 							/* list of valid exceptions */
 							/*strcmp(drivers[i]->name,"crater") &&
 							strcmp(drivers[i]->name,"mpatrol") &&
@@ -851,12 +847,8 @@ int frontend_list(char *gamename)
 					}
 					break;
 				case LIST_WRONGFPS: /* list drivers with too high frame rate */
-					if (
-#ifdef PINMAME_VECTOR
-					(drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
-#endif
-							(drivers[i]->clone_of == 0 ||
-							 (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
+					if ((drivers[i]->clone_of == 0 ||
+						 (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
 							drv.frames_per_second > 57 &&
 							drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1 > 244 &&
 							drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1 <= 256)

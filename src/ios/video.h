@@ -12,6 +12,6 @@ static void update_visible_area(struct mame_display *display);
 void check_inputs(void);
 void update_autoframeskip(void);
 static void throttle_speed(void);
-static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels);
+static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds);
 void throttle_speed_part(int part, int totalparts);
 void SetThrottleAdj(int adj);

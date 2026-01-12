@@ -72,9 +72,6 @@ FOLDERDATA g_folderData[] =
 	{"Non-Working",     "nonworking",        FOLDER_NONWORKING,   IDI_NONWORKING,           F_NONWORKING,  F_WORKING,    NULL,                       DriverIsBroken,    TRUE },
 	{"Originals",       "originals",         FOLDER_ORIGINAL,     IDI_FOLDER,               F_ORIGINALS,   F_CLONES,     NULL,                       DriverIsClone,     FALSE },
 	{"Clones",          "clones",            FOLDER_CLONES,       IDI_FOLDER,               F_CLONES,      F_ORIGINALS,  NULL,                       DriverIsClone,     TRUE },
-	{"Raster",          "raster",            FOLDER_RASTER,       IDI_FOLDER,               F_RASTER,      F_VECTOR,     NULL,                       DriverIsVector,    FALSE },
-	{"Vector",          "vector",            FOLDER_VECTOR,       IDI_FOLDER,               F_VECTOR,      F_RASTER,     NULL,                       DriverIsVector,    TRUE },
-	{"Trackball",       "trackball",         FOLDER_TRACKBALL,    IDI_FOLDER,               0,             0,            NULL,                       DriverUsesTrackball,	TRUE },
 	{"Stereo",          "stereo",            FOLDER_STEREO,       IDI_SOUND,                0,             0,            NULL,                       DriverIsStereo,    TRUE },
 	{"Hard Disk",       "harddisk",          FOLDER_HARDDISK,     IDI_HARDDISK,             0,             0,            NULL,                       DriverIsHarddisk,  TRUE },
 	{ NULL }
@@ -86,8 +83,6 @@ FILTER_ITEM g_filterList[] =
 	{ F_CLONES,       IDC_FILTER_CLONES,      DriverIsClone, TRUE },
 	{ F_NONWORKING,   IDC_FILTER_NONWORKING,  DriverIsBroken, TRUE },
 	{ F_UNAVAILABLE,  IDC_FILTER_UNAVAILABLE, FilterAvailable, FALSE },
-	{ F_RASTER,       IDC_FILTER_RASTER,      DriverIsVector, FALSE },
-	{ F_VECTOR,       IDC_FILTER_VECTOR,      DriverIsVector, TRUE },
 	{ F_ORIGINALS,    IDC_FILTER_ORIGINALS,   DriverIsClone, FALSE },
 	{ F_WORKING,      IDC_FILTER_WORKING,     DriverIsBroken, FALSE },
 	{ F_AVAILABLE,    IDC_FILTER_AVAILABLE,   FilterAvailable, TRUE },
@@ -155,7 +150,6 @@ const PROPERTYSHEETINFO g_propSheets[] =
 #ifdef PINMAME
 	{ TRUE,		NULL,					IDD_PROP_PINMAME,		GameOptionsProc },
 #endif // PINMAME
-	{ TRUE,		PropSheetFilter_Vector,	IDD_PROP_VECTOR,		GameOptionsProc },
 	{ FALSE }
 };
 
