@@ -180,12 +180,14 @@ static int init_errorlog(struct rc_option *option, const char *arg, int priority
         return 0;
 }
 
+static int tmp;
+static float tmpf;
 
 /* struct definitions */
 static struct rc_option opts[] = {
         /* name, shortname, type, dest, deflt, min, max, func, help */
-        { NULL, NULL, rc_link, frontend_opts, NULL, 0, 0, NULL, NULL },
-        { NULL, NULL, rc_link, fileio_opts, NULL, 0, 0, NULL, NULL },
+        { NULL, NULL, rc_link, frontend_opts, NULL, 0,  0, NULL, NULL },
+        { NULL, NULL, rc_link, fileio_opts, NULL, 0,    0, NULL, NULL },
         { NULL, NULL, rc_link, video_opts, NULL, 0,     0, NULL, NULL },
         { NULL, NULL, rc_link, sound_opts, NULL, 0,     0, NULL, NULL },
         { NULL, NULL, rc_link, input_opts, NULL, 0,     0, NULL, NULL },
@@ -213,11 +215,11 @@ struct rc_option core_opts[] = {
 
         /* vector, unsupported */
         { "Mame CORE vector game options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-        { "antialias", "aa", rc_bool, NULL, "1", 0, 0, NULL, NULL },
-        { "translucency", "tl", rc_bool, NULL, "1", 0, 0, NULL, NULL },
-        { "beam", NULL, rc_float, NULL, "1.0", 1.0, 16.0, NULL, NULL },
-        { "flicker", NULL, rc_float, NULL, "0.0", 0.0, 100.0, NULL, NULL },
-        { "intensity", NULL, rc_float, NULL, "1.5", 0.5, 3.0, NULL, NULL },
+        { "antialias", "aa", rc_bool, &tmp, "1", 0, 0, NULL, NULL },
+        { "translucency", "tl", rc_bool, &tmp, "1", 0, 0, NULL, NULL },
+        { "beam", NULL, rc_float, &tmpf, "1.0", 1.0, 16.0, NULL, NULL },
+        { "flicker", NULL, rc_float, &tmpf, "0.0", 0.0, 100.0, NULL, NULL },
+        { "intensity", NULL, rc_float, &tmpf, "1.5", 0.5, 3.0, NULL, NULL },
 
         /* sound */
         { "Mame CORE sound options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
