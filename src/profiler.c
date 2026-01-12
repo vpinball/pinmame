@@ -1,5 +1,4 @@
 #include "driver.h"
-#include "osinline.h"
 
 
 /* in usrintf.c */

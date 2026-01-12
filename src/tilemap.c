@@ -17,7 +17,6 @@
 #if !defined(DECLARE) && !defined(TRANSP)
 
 #include "driver.h"
-#include "osinline.h"
 #include "tilemap.h"
 #include "state.h"
 
