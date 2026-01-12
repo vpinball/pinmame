@@ -31,10 +31,6 @@ static int debugger_has_focus = 0;
 static struct rectangle normal_visual;
 static struct rectangle debug_visual;
 
-static float f_beam;
-static float f_flicker;
-static float f_intensity;
-
 static int use_artwork = 1;
 static int use_backdrops = -1;
 static int use_overlays = -1;
@@ -66,15 +62,7 @@ extern UINT8 trying_to_quit;
 /* some prototypes */
 static int video_handle_scale(struct rc_option *option, const char *arg,
 		int priority);
-static int video_verify_beam(struct rc_option *option, const char *arg,
-		int priority);
-static int video_verify_flicker(struct rc_option *option, const char *arg,
-		int priority);
-static int video_verify_intensity(struct rc_option *option, const char *arg,
-		int priority);
 static int video_verify_bpp(struct rc_option *option, const char *arg,
-		int priority);
-static int video_verify_vectorres(struct rc_option *option, const char *arg,
 		int priority);
 
 #ifndef xgl
@@ -88,6 +76,9 @@ static void osd_free_colors(void);
 static void round_rectangle_to_8(struct rectangle *rect);
 static void update_visible_area(struct mame_display *display);
 static void update_palette(struct mame_display *display, int force_dirty);
+
+static BOOL tmp;
+static float tmpf;
 
 struct rc_option video_opts[] = {
    /* name, shortname, type, dest, deflt, min, max, func, help */
@@ -197,15 +188,15 @@ struct rc_option video_opts[] = {
      NULL,		0,			0,		NULL,
      NULL },
    { "vectorres",	"vres",			rc_string,	&vector_res,
-     NULL,		0,			0,		video_verify_vectorres,
+     NULL,		0,			0,		NULL,
      "Always scale vectorgames to XresxYres, keeping their aspect ratio. This overrides the scale options" },
-	{ "beam", "B", rc_float, &f_beam, "1.0", 1.0, 16.0, video_verify_beam, "Set the beam size for vector games" },
-	{ "flicker", "f", rc_float, &f_flicker, "0.0", 0.0, 100.0, video_verify_flicker, "Set the flicker for vector games" },
-	{ "intensity", NULL, rc_float, &f_intensity, "1.5", 0.5, 3.0, video_verify_intensity, "Set intensity in vector games" },
-   { "antialias",	"aa",			rc_bool,	&options.antialias,
+	{ "beam", "B", rc_float, &tmpf, "1.0", 1.0, 16.0, NULL, "Set the beam size for vector games" },
+	{ "flicker", "f", rc_float, &tmpf, "0.0", 0.0, 100.0, NULL, "Set the flicker for vector games" },
+	{ "intensity", NULL, rc_float, &tmpf, "1.5", 0.5, 3.0, NULL, "Set intensity in vector games" },
+   { "antialias",	"aa",			rc_bool,	&tmp,
      "1",		0,			0,		NULL,
      "Enable/disable antialiasing" },
-   { "translucency",	"t",			rc_bool,	&options.translucency,
+   { "translucency",	"t",			rc_bool,	&tmp,
      "1",		0,			0,		NULL,
      "Enable/disable tranlucency" },
    { NULL,		NULL,			rc_link,	display_opts,
@@ -229,42 +220,6 @@ static int video_handle_scale(struct rc_option *option, const char *arg,
 	return 0;
 }
 
-static int video_verify_beam(struct rc_option *option, const char *arg,
-		int priority)
-{
-	options.beam = (int)(f_beam * 0x00010000);
-	if (options.beam < 0x00010000)
-		options.beam = 0x00010000;
-	else if (options.beam > 0x00100000)
-		options.beam = 0x00100000;
-
-	option->priority = priority;
-
-	return 0;
-}
-
-static int video_verify_flicker(struct rc_option *option, const char *arg,
-		int priority)
-{
-	options.vector_flicker = (int)(f_flicker * 2.55);
-	if (options.vector_flicker < 0)
-		options.vector_flicker = 0;
-	else if (options.vector_flicker > 255)
-		options.vector_flicker = 255;
-
-	option->priority = priority;
-
-	return 0;
-}
-
-static int video_verify_intensity(struct rc_option *option, const char *arg,
-		int priority)
-{
-	options.vector_intensity = f_intensity;
-	option->priority = priority;
-	return 0;
-}
-
 static int video_verify_bpp(struct rc_option *option, const char *arg,
    int priority)
 {
@@ -276,21 +231,6 @@ static int video_verify_bpp(struct rc_option *option, const char *arg,
 	{
 		options.color_depth = 0;
 		fprintf(stderr, "error: invalid value for bpp: %s\n", arg);
-		return -1;
-	}
-
-	option->priority = priority;
-
-	return 0;
-}
-
-static int video_verify_vectorres(struct rc_option *option, const char *arg,
-   int priority)
-{
-	if (sscanf(arg, "%dx%d", &options.vector_width, &options.vector_height) != 2)
-	{
-		options.vector_width = options.vector_height = 0;
-		fprintf(stderr, "error: invalid value for vectorres: %s\n", arg);
 		return -1;
 	}
 
@@ -1252,32 +1192,6 @@ static int video_handle_scale(struct rc_option *option, const char *arg,
    int priority)
 {
   return 0;
-}
-
-static int video_verify_beam(struct rc_option *option, const char *arg,
-                int priority)
-{
-  return 0;
-}
-
-static int video_verify_flicker(struct rc_option *option, const char *arg,
-                int priority)
-{
-  return 0;
-}
-
-static int video_verify_vectorres(struct rc_option *option, const char *arg,
-   int priority)
-{
-  return 0;
-}
-
-static int video_verify_intensity(struct rc_option *option, const char *arg,
-                int priority)
-{
-        options.vector_intensity = f_intensity;
-        option->priority = priority;
-        return 0;
 }
 
 #endif
