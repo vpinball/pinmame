@@ -37,7 +37,7 @@ Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound (WIP, as support is also WIP in libvgm,MAME-vgmplay,etc)
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
 
-*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson
+*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))
 Gottlieb: renamed Monte Carlo (German) to German rev.1
@@ -58,6 +58,7 @@ Gorgar L-2 (most likely official, but unreleased so far, makes it the newest ver
 High Speed (G-4 aka German PROTO4)
 Maverick 4.04 (German, Display 4.00)
 Monte Carlo (German) (most likely older revision than existing one, see above)
+Pin-Bot J-5 (PEMBOT (no relation)) (MOD)
 Police Force LX-5a (MOD)
 Rollergames TA-2 (LA-2C competition MOD based Tournament Edition)
 Rolling Stones V21 (unreleased so far, makes it the newest version available)
