@@ -8,7 +8,7 @@
 
  Known Issues/Problems with Simulator:
  -Gun Position & Timing Totally guessed..
-	but seems ok!! (Sure is hard aiming the gun when you can't see it!)
+    but seems ok!! (Sure is hard aiming the gun when you can't see it!)
  -Skull Target does not open when it should,
     so a hack was used... For some reason, during
     game play, the knockdown solenoid *should* fire when the Drop Target is activated but it does
@@ -21,6 +21,10 @@
   nothing fancy.. The only real pain was the gun. That took 80% of the time to figure out. The
   rest of the stuff are straight on shots which simply trigger switches. The ramps are straightforward!
 
+  Note that T2s own DMD driver code is different (e.g. less brightness levels) from the more recent WPC machines
+   (maybe other machines from that era, e.g. HSII also still feature this driver)
+   see technical DMD (and more) info here: https://pinside.com/pinball/forum/topic/inside-the-magic-garden-technical-information-about-the-wpc-system#post-8983286
+  Due to PinMAMEs new PWM implementation for DMDs, this should be automatic though
 
  Changes:
 

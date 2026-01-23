@@ -43,11 +43,11 @@ DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 // ALLIED LEISURE INC.
 // --------------------
 // early Allied solid-state games don't use a CPU!
-DRIVERNV(suprpick)      // 01/77 Super Picker
+DRIVERNV(suprpick)      // 01/77 Roy Clark Super Picker
 DRIVERNV(thndbolt)      // 11/77 Thunderbolt
 DRIVERNV(hoedown)       // 03/78 Hoe Down
 DRIVERNV(takefive)      // 04/78 Take Five
-DRIVERNV(heartspd)      // 12/78 Hearts & Spades
+DRIVERNV(heartspd)      // 12/78 Hearts Spades
 DRIVERNV(foathens)      // 12/78 Flame of Athens
 DRIVERNV(disco79)       // 06/79 Disco '79
 DRIVERNV(starshot)      // 12/79 Star Shooter

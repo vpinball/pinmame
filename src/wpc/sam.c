@@ -994,7 +994,7 @@ static WRITE32_HANDLER(sambank_w)
 									for (int x = 0; x < 5; x++) {
 										int bits = 0;
 										for (int y = 0; y < 7; y++)
-                                 bits = (bits << 1) | ((samlocals.wptLEDs[i][y] >> (3 + x)) & 0x01);
+											bits = (bits << 1) | ((samlocals.wptLEDs[i][y] >> (3 + x)) & 0x01);
 										coreGlobals.drawSeg[35 * dmd_y + 5 * dmd_x + 4 - x] = bits;
 									}
 								}

@@ -11,6 +11,8 @@ to attach to the WPC/WPC95 serial printer interface.
 
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
+Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, trackball or lightgun)
+
 VS2026 build support
 
 *** CORE/CPU ***
@@ -29,6 +31,8 @@ Added physical/PWM support to games employing mini-DMDs and the like
 Fixed some potential general solenoid issues with physical/PWM
 Improved physical/PWM bulb integration
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
+Improved Alvin G. first generation DMD simulation
+In general, (almost) all DMD/mini-DMD outputs have been moved to the proper physical/PWM pipeline, allowing for more subtle effects
 Fixed trolls in Medieval Madness
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot
