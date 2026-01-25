@@ -1,8 +1,19 @@
 PinMAME Simulation
 ------------------
 
+PinMAME features a rudimentary way to 'play' a pinball machine without
+having to use a full simulator (e.g. Visual Pinball). So one can trigger
+certain gameplay situations (like making a full loop or ramp shot) via
+simulation keys, or trigger specific switches via switch keys (see below).
+Note that not all games feature the same level of support (see
+https://github.com/vpinball/pinmame/tree/master/src/wpc/sims
+for a folder hierarchy with all games that support full or at least
+preliminary simulation support).
+This feature can aid in debugging homebrew games, or reverse engineering
+existing games (or when trying to improve PinMAME emulation itself).
+
 The ball simulator can handle up to 7 balls in the machine. The simulator
-ensures that the correct switches are activated depending on where the
+ensures that the correct switches are activated, depending on where the
 balls are.
 
 You can change the location of the simulated balls with the keyboard.
@@ -17,9 +28,9 @@ overridden by pressing the "Ignore Ball Location" button (Alt).
 
 The general simulation keys are:
 
-Up	Move cursor to Prevoius ball in the simulator
-Down	Move cursor to Next ball in the simulator
-Alt	Ignore ball location in simulator
+Up      Move cursor to Previous ball in the simulator
+Down    Move cursor to Next ball in the simulator
+Alt     Ignore ball location in simulator
 Del     Toggle between simulator keys and switch keys.
 Space   Shoot ball. If the game uses a manual shooter a bar will
         indicate the strength.
@@ -28,7 +39,7 @@ General simulator settings in the DIP switch menu:
 
 Balls   Select 0 to 7 balls. Note that most games will be confused with
         the wrong number of balls (especially if too many).
-Spinner Set the time a spinner "spinns" after a hit (not used in existing
+Spinner Set the time a spinner "spins" after a hit (not used in existing
         simulators yet)
 
 Keys for all simulators:
@@ -36,7 +47,7 @@ Keys for all simulators:
 'Left Ctrl' + 'R' means Left Ramp, 'Right Ctrl' + 'S' means Right Spiral)
 
 --------------------
-Game specifics
+Game specifics (incomplete, check src files in https://github.com/vpinball/pinmame/tree/master/src/wpc/sims for more details)
 --------------------
 
 Twilight Zone(TZ)
@@ -46,30 +57,30 @@ Third Magnet  - Activate third magnet switch and trap balls on magnet
 Clock Passage - Activate clock passage opto
 Big Kick      - Activate big kick opto (not implemented)
 
-I don't know which ROM versions utilises which switches.
+I don't know which ROM versions utilise which switches.
 
 Known Bugs:
 1. The balls doesn't always stop on the magnets. Probably some bad timing
    in the simulator.
 2. The simulated clock got a digital display :-)
- 
+
 Dr. Dude (DD)
 -------------
 DD is orginally a System 11 game but a few of them were built using
 WPC hardware. This means that the game uses the coin door switches
 in a different way and that the checksum can not be disabled (game will
-not start if trying)
+not start if trying).
 
 Dr. Who (DW)
 ------------
 DW is different from the other WPC games in that it has more power on
-tests. Examples are that DW performes a very detailed testing of the WPC chip
-and also uses a switch (82) to detect the playfield glass.
+tests. Examples are that DW performs a very detailed testing of the WPC chip
+and also uses a switch (82) to detect the playfield glass (due to its elevator).
 Use the manual switch keys ('I' + 'S') to activate/deactivate the
 playfield glass switch.
 
 Cirqus Voltaire (CV)
 --------------------
-On startup CV will test the ringmaster and it will not go into attract mode
-if the test fails. One way to bypass it is to disable the ringmaster
+On startup, CV will test the ringmaster and it will not go into attract mode
+if the test fails. One way to bypass it, is to disable the ringmaster
 (adjustment A2 30).
