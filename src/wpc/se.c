@@ -101,6 +101,7 @@ static struct {
   int fastflipaddr;
 
   UINT8 lampstate[80];
+  UINT8 memoryProtectSw; // Coin door memory protect switch
 } selocals;
 
 #ifdef PROC_SUPPORT
@@ -243,8 +244,8 @@ static SWITCH_UPDATE(se) {
     CORE_SETKEYSW(core_revbyte(inports[SE_COMINPORT]>>8)>>4, 0x0e, 11);
     CORE_SETKEYSW(inports[SE_COMINPORT], 0x70, 11);
    } else {
-    /*Switch Col 0 = Dedicated Switches - Coin Door Only - Begin at 6th Spot*/
-    CORE_SETKEYSW(inports[SE_COMINPORT]<<4, 0xe0, 0);
+    /*Switch Col 0 = Dedicated Switches - Coin Door Only + Memory Protect - Begin at 5th Spot*/
+    CORE_SETKEYSW(inports[SE_COMINPORT]<<4, 0xf0, 0);
     /*Switch Col 1 = Coin Switches - (Switches begin at 4th Spot)*/
     CORE_SETKEYSW(inports[SE_COMINPORT]>>5, 0x78, 1);
     /*Copy Start, Tilt, and Slam Tilt to proper position in Matrix: Switches 54,55,56*/
@@ -252,6 +253,7 @@ static SWITCH_UPDATE(se) {
     CORE_SETKEYSW(inports[SE_COMINPORT]<<1, 0xe0, 7);
    }
   }
+  selocals.memoryProtectSw = core_getSw(SE_SWMEMORYPROTECT) ? 1 : 0;
 #ifdef PROC_SUPPORT
 	}
 #endif
@@ -582,6 +584,10 @@ static READ_HANDLER(ram_r) {
 
 // Ram 0x0000-0x1FFF Write Handler
 static WRITE_HANDLER(ram_w) {
+  // Coin door memory protect switch prevents writes from 0x1E00-0x1FFF.
+  if (selocals.memoryProtectSw && offset >= 0x1E00)
+    return;
+
   if (   (core_gameData->gen & GEN_WS_1)
       && (selocals.curBank & TRACERAM_SELECTED)) {
 #if SUPPORT_TRACERAM
