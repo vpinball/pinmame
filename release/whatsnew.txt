@@ -33,6 +33,7 @@ Improved physical/PWM bulb integration
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
 Improved Alvin G. first generation DMD simulation
 In general, (almost) all DMD/mini-DMD outputs have been moved to the proper physical/PWM pipeline, allowing for more subtle effects
+Implemented memory protect logic/coin-door-switch on Sega/Stern WhiteStar games: Previously, the coin door was always considered to be open, but the coin door message doesn't get displayed if the door is already open on boot. It will only display after the door has been closed and then reopened.
 Fixed trolls in Medieval Madness
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot

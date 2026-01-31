@@ -77,8 +77,8 @@ static struct {
   int    diagnosticLed;
   int    swCol;
   int    flipsol, flipsolPulse;
-  int    sst0;			//SST0 bit from sound section
-  int    plin;			//Plasma In (not connected prior to LOTR Hardware)
+  int    sst0;      // SST0 bit from sound section
+  int    plin;      // Plasma In (not connected prior to LOTR Hardware)
   UINT8 *ram8000;
   UINT8  auxdata;   // Data latched on J2
   UINT8  lastgiaux; // Last data latched on J3 (to detect strobe edges)
@@ -92,12 +92,12 @@ static struct {
   UINT16 miniDMD15x7[7];      // HRC, Monopoly
   UINT8  miniDMD5x7[3][7];    // Ripley's (3 displays of 5x7 dots)
   UINT16 miniDMD14x10[2][10]; // Simpsons (14x10 bicolor displays, 1 red and 1 green)
-  /* trace ram related */
+  // trace ram related
 #if SUPPORT_TRACERAM
   UINT8 *traceRam;
 #endif
-  UINT8  curBank;                   /* current bank select */
-  #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
+  UINT8  curBank;                // current bank select
+  #define TRACERAM_SELECTED 0x10 // this bit set maps trace ram to 0x0000-0x1FFF
   int fastflipaddr;
 
   UINT8 lampstate[80];
@@ -136,10 +136,11 @@ static INTERRUPT_GEN(se_vblank) {
 				switches_retrieved = 1;
 			}
 			if (coreGlobals.p_rocEn) {
-				int col, row;
+				int col;
 				for(col = 0; col < 10; col++) {
 					UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
 					UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
+					int row;
 					for (row = 0; row < 8; row++) {
 						if (chgLamps & 0x01) {
 							procDriveLamp( 80 + 16*(7-row) + col, tmpLamps & 0x01);
@@ -885,7 +886,7 @@ static WRITE_HANDLER(giaux_w) {
       }
    }
 
-   // Board 520-5130-06: Appollo 13, one 7 segment display and a modulated magnet driver (2 bits Hold/On to define between 3 operation modes)
+   // Board 520-5130-06: Apollo 13, one 7 segment display and a modulated magnet driver (2 bits Hold/On to define between 3 operation modes)
    if (core_gameData->hw.display & SE_BOARDID_520_5130_06) {
       if (core_lowToHigh(selocals.lastgiaux, data, 0x40)) { // ESTB: latch clear
          coreGlobals.segments[0].w = core_bcd2seg7[0];

@@ -12,13 +12,13 @@
     COREPORT_BIT(     0x0002, "Red Button",   KEYCODE_8) \
     COREPORT_BITTOG(  0x0001, "Memory Protect", KEYCODE_END) \
     /* Switch Column 6 - but adjusted to begin at 6th Switch */\
-    COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_INSERT)  \
-    COREPORT_BITDEF(  0x0040, IPT_TILT,           KEYCODE_HOME)  \
+    COREPORT_BITDEF(  0x0010, IPT_START1,     IP_KEY_DEFAULT)  \
+    COREPORT_BIT   (  0x0020, "Slam Tilt",    KEYCODE_INSERT)  \
+    COREPORT_BITDEF(  0x0040, IPT_TILT,       KEYCODE_HOME)  \
     /* Switch Column 1 - but adjusted to begin at 4th Switch */ \
-    COREPORT_BITDEF(  0x0100, IPT_COIN3,          KEYCODE_3) \
-    COREPORT_BITDEF(  0x0200, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0400, IPT_COIN2,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0100, IPT_COIN3,      KEYCODE_3) \
+    COREPORT_BITDEF(  0x0200, IPT_COIN1,      IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0400, IPT_COIN2,      IP_KEY_DEFAULT) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x001f, 0x0000, "Dip SW300") \
       COREPORT_DIPSET(0x0000, "USA" ) \
@@ -84,8 +84,8 @@
     NORMALREGION(0x80000, SE_ROMREGION) \
       ROM_LOAD(n1, 0x00000, 0x20000, chk1) \
       ROM_RELOAD(0x20000, 0x20000) \
-	  ROM_RELOAD(0x40000, 0x20000) \
-	  ROM_RELOAD(0x60000, 0x20000) \
+      ROM_RELOAD(0x40000, 0x20000) \
+      ROM_RELOAD(0x60000, 0x20000) \
   NORMALREGION(0x10000, SE_CPUREGION) \
   ROM_COPY( SE_ROMREGION, 0x18000, 0x8000, 0x8000)
 
@@ -104,20 +104,17 @@ extern PINMAME_VIDEO_UPDATE(seminidmd_update);
 /* Hardware variants */
 #define SE_BOARDID_520_5068_01 0x0001 // Auxiliary driver board with 3 latched solenoid outputs
 #define SE_BOARDID_520_5078_00 0x0002 // Tommy blinder driver but also used as a replacement part for Independence Day servo controller board
-#define SE_BOARDID_520_5130_06 0x0004 // Appollo 13 extra 7 segment display + modulated magnet driver
+#define SE_BOARDID_520_5130_06 0x0004 // Apollo 13 extra 7 segment display + modulated magnet driver
 #define SE_BOARDID_520_5143_00 0x0008 // GoldenEye & Twister double magnets processor
 #define SE_BOARDID_520_5152_00 0x0010 // Independence Day servo controller board
 #define SE_BOARDID_520_5192_00 0x0020 // Auxiliary driver board for 3 solenoid outputs (not latched)
-#define SE_BOARDID_520_5197_00 0x0040 // High Roller & Monopoly Casino Mini DMD
+#define SE_BOARDID_520_5197_00 0x0040 // High Roller Casino & Monopoly Mini DMD
 #define SE_BOARDID_520_5219_00 0x0080 // The Simpson's Pinball Party Mini DMD
 #define SE_BOARDID_520_5221_00 0x0100 // RollerCoaster Tycoon Mini DMD
 #define SE_BOARDID_520_5236_00 0x0200 // Ripley's Believe It or Not Mini DMD
 #define SE_BOARDID_520_5242_00 0x0400 // Lord of The Rings 19 LED Board
 #define SE_BOARDID_TITANIC     0x0800 // Titanic Redemption game extension board
 #define SE_LED                 SE_BOARDID_520_5242_00 | SE_BOARDID_520_5068_01
-
-
-
 
 
 #ifdef PROC_SUPPORT
