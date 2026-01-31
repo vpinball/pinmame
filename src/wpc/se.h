@@ -10,6 +10,7 @@
     COREPORT_BIT(     0x0008, "Black Button", KEYCODE_0) \
     COREPORT_BIT(     0x0004, "Green Button", KEYCODE_9) \
     COREPORT_BIT(     0x0002, "Red Button",   KEYCODE_8) \
+    COREPORT_BITTOG(  0x0001, "Memory Protect", KEYCODE_END) \
     /* Switch Column 6 - but adjusted to begin at 6th Switch */\
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT)  \
     COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_INSERT)  \
@@ -65,9 +66,10 @@
 #define SE_COMINPORT       CORE_COREINPORT
 
 /*-- SE switch numbers --*/
-#define SE_SWBLACK    0
-#define SE_SWGREEN   -1
-#define SE_SWRED     -2
+#define SE_SWBLACK          0
+#define SE_SWGREEN         -1
+#define SE_SWRED           -2
+#define SE_SWMEMORYPROTECT -3
 
 /*-- Memory regions --*/
 #define SE_CPUREGION	REGION_CPU1
