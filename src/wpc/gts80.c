@@ -303,21 +303,23 @@ static WRITE_HANDLER(riot6532_2a_w) {
   lisy80_coil_handler_a( data);
 #endif /* PINMAME && LISY_SUPPORT */
   data = ~data;
-  if (data & 0x20) { /* solenoids 1-4 */
-    GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffff0) | (1<<(data & 0x03));
-    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, 1 << (data & 0x03), 0x0f);
-    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 48, 0x10 << (data & 0x03), 0xf0); // Also output as Lamp 53..56 as solenoids are often also used to drive flashers in parallel
-  }
-  else if (data & 0x40) { /* solenoid 5-8 */
-    GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff0f) | (0x10 <<((data>>2) & 0x03));
-    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, 0x10 << ((data >> 2) & 0x03), 0xf0);
-    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 56, 0x01 << ((data >> 2) & 0x03), 0x0f); // Also output as Lamp 57..60 as solenoids are often also used to drive flashers in parallel
-  }
-  else { /* solenoid 9 */
-    GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffeff) | ((data & 0x80)<<1);
-    core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data >> 7, 0x01);
-    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 56, (data >> 3) & 0x10, 0x10); // Also output as Lamp 61 as solenoids are often also used to drive flashers in parallel
-  }
+
+  /* solenoids 1-4, PA0 & PA1 enabled by PA5 */
+  const UINT8 sol1_4 = (data & 0x20) ? (1 << (data & 0x03)) : 0;
+  GTS80locals.solenoids |= coreGlobals.pulsedSolState = sol1_4;
+  core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, sol1_4, 0x0f);
+  core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 48, sol1_4 << 4, 0xf0); // Also output as Lamp 53..56 as solenoids are often also used to drive flashers in parallel
+  
+  /* solenoid 5-8, PA2 & PA3 enabled by PA6 */
+  const UINT8 sol5_8 = (data & 0x40) ? (0x10 << ((data >> 2) & 0x03)) : 0;
+  GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff0f) | sol5_8;
+  core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0, sol5_8, 0xf0);
+  core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 56, sol5_8 >> 4, 0x0f); // Also output as Lamp 57..60 as solenoids are often also used to drive flashers in parallel
+  
+  /* solenoid 9, directly wired to PA7 */
+  GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffeff) | ((data & 0x80)<<1);
+  core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 8, data >> 7, 0x01);
+  core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 56, (data >> 3) & 0x10, 0x10); // Also output as Lamp 61 as solenoids are often also used to drive flashers in parallel
 
   if (core_gameData->hw.soundBoard == SNDBRD_GTS80B) {
     if (data&0x10) GTS80_sndCmd_w(0, (coreGlobals.lampMatrix[0]&0x10) | (data&0x0f));
@@ -331,23 +333,36 @@ static WRITE_HANDLER(riot6532_2b_w) {
   //send port B RIOT 2 to lisy80
   lisy80_coil_handler_b( data);
 #endif /* PINMAME && LISY_SUPPORT */
-  const int column = ((data & 0xf0)>>4)-1; // 4 lamps per column, 12 columns
+
   GTS80locals.riot2b = data;
+
+  // PB4..PB7 select column (12 columns from 1 to 12), PB0..PB3 light lamps (4 lamps per column)
+  {
+    const int column = (data & 0xf0) >> 4;
+    UINT8 lampStates[6] = { 0, 0, 0, 0, 0, 0 };
+    if (column >= 1 && column <= 12)
+    {
+      if (column & 1) // 1, 3, 5, 7, 9, 11 => low bits
+        lampStates[(column - 1) / 2] = data & 0x0f;
+      else // 2, 4, 6, 8, 10, 12 ==> high bits
+        lampStates[(column - 2) / 2] = data << 4;
+    }
+    for (int i = 0; i < 6; i++)
+      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * i, lampStates[i]);
+    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 48, (lampStates[5] >> 4) ^ 0x0f, 0x0f); // Additional 13th column corresponding to inverted 12th column
+    core_write_masked_pwm_output_8b(CORE_MODOUT_GI0, lampStates[0], 0x01); // Duplicate lamp 0 to GI string as it drives the Tilt relay that in turn drives the main GI
+  }
+
+  const int column = ((data & 0xf0) >> 4) - 1;
   data &= 0x0f;
   if (column >= 0) {
     if (column & 1) {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0x0f) | (data<<4);
-      core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * (column >> 1), data << 4, 0xf0);
-      if (column == 11) { // Additional 13th column corresponding to inverted 12th column
+      if (column == 11) // Additional 13th column corresponding to inverted 12th column
         coreGlobals.lampMatrix[6] = data ^ 0x0f;
-        core_write_pwm_output_8b(48, data ^ 0x0f);
-      }
     }
     else {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0xf0) | data;
-      core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * (column >> 1), data, 0x0f);
-      if (column == 0) // Duplicate lamp 0 to GI string as it drives the Tilt relay that in turn drives the main GI
-        core_write_masked_pwm_output_8b(CORE_MODOUT_GI0, data, 0x01);
     }
     if (core_gameData->hw.display & GTS80_DISPVIDEO) {
       if (column == 1)      GTS80locals.vidPlayer = data;
