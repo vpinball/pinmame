@@ -23,6 +23,7 @@
 #include "machine/6532riot.h"
 #include "machine/pic8259.h"
 #include "core.h"
+#include "bulb.h"
 #include "sndbrd.h"
 #include "gts80.h"
 #include "gts80s.h"
@@ -336,25 +337,23 @@ static WRITE_HANDLER(riot6532_2b_w) {
 
   GTS80locals.riot2b = data;
 
-  // PB4..PB7 select column (12 columns from 1 to 12), PB0..PB3 light lamps (4 lamps per column)
-  {
-    const int column = (data & 0xf0) >> 4;
-    UINT8 lampStates[6] = { 0, 0, 0, 0, 0, 0 };
-    if (column >= 1 && column <= 12)
-    {
-      if (column & 1) // 1, 3, 5, 7, 9, 11 => low bits
-        lampStates[(column - 1) / 2] = data & 0x0f;
-      else // 2, 4, 6, 8, 10, 12 ==> high bits
-        lampStates[(column - 2) / 2] = data << 4;
-    }
-    for (int i = 0; i < 6; i++)
-      core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + 8 * i, lampStates[i]);
-    core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 48, (lampStates[5] >> 4) ^ 0x0f, 0x0f); // Additional 13th column corresponding to inverted 12th column
-    core_write_masked_pwm_output_8b(CORE_MODOUT_GI0, lampStates[0], 0x01); // Duplicate lamp 0 to GI string as it drives the Tilt relay that in turn drives the main GI
-  }
-
+  // PB4..PB7 select column latch (12 columns from 1 to 12), PB0..PB3 lamp states (4 lamps per latch)
   const int column = ((data & 0xf0) >> 4) - 1;
   data &= 0x0f;
+
+  if (column >= 0 && column <= 11) {
+     if ((column & 1) == 0) { // 0, 2, 4, 6, 8, 10
+        core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + (column >> 1) * 8, data, 0x0f);
+        if (column == 0)
+           core_write_masked_pwm_output_8b(CORE_MODOUT_GI0, data, 0x01); // Duplicate lamp 0 to GI string as it drives the Tilt relay that in turn drives the main GI
+     }
+     else { // 1, 3, 5, 7, 9, 11
+        core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + (column >> 1) * 8, data << 4, 0xf0);
+        if (column == 11)
+           core_write_masked_pwm_output_8b(CORE_MODOUT_LAMP0 + 48, data ^ 0x0f, 0x0f); // Additional 13th column corresponding to inverted 12th column
+     }
+  }
+
   if (column >= 0) {
     if (column & 1) {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0x0f) | (data<<4);
@@ -564,7 +563,7 @@ static MACHINE_INIT(gts80) {
   coreGlobals.nGI = 1;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_6_3V_AC_REV);
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
-  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_6_3V_AC); // More precisely, the hardware uses a 6V DC source but this is close enough
+  core_set_pwm_output_bulb(CORE_MODOUT_LAMP0, coreGlobals.nLamps, BULB_44, 6.f, FALSE, 0.f, 1.f);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   coreGlobals.nAlphaSegs = 2 * 20 * 16;
