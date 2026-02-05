@@ -1,0 +1,9 @@
+{
+    "cmake.ignoreCMakeListsMissing": true,
+    "bookmarks.saveBookmarksInProject": true,
+    "C_Cpp.files.exclude": {
+        "**/.vscode": true,
+        "**/.vs": true,
+        "xpinmame.obj/**/*": true
+    }
+}
