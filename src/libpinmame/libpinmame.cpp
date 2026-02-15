@@ -999,8 +999,13 @@ PINMAMEAPI int PinmameIsPaused()
 
 PINMAMEAPI void PinmameStop()
 {
-	if (!_p_gameThread)
+	if (!_p_gameThread) {
+		if (_isRunning) {
+			libpinmame_log_error("PinmameStop(): run state is %d but game thread handle is null; forcing stopped state.", _isRunning);
+			OnStateChange(0);
+		}
 		return;
+	}
 
 	g_fPause = 0;
 	_timeToQuit = 1;
@@ -1020,6 +1025,11 @@ PINMAMEAPI void PinmameStop()
 	}
 
 	_displays.clear();
+
+	if (_isRunning) {
+		libpinmame_log_error("PinmameStop(): game thread joined but run state is %d; forcing stopped state.", _isRunning);
+		OnStateChange(0);
+	}
 }
 
 /******************************************************
