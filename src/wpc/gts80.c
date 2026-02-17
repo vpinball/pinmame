@@ -202,7 +202,7 @@ static READ_HANDLER(slam_sw_r) {
   return GTS80locals.slamSw;
 }
 
-static updateBCDSegDisplay() {
+static void updateBCDSegDisplay() {
   // PB0..3 is BCD value, latched by PA4..6 to 3 BCD latches
   // PB4..6 are h segment state, unlatched, reversed
   // PA0..3 select display (D1..D16, unlatched)
