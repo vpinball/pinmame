@@ -202,36 +202,90 @@ static READ_HANDLER(slam_sw_r) {
   return GTS80locals.slamSw;
 }
 
+static updateBCDSegDisplay() {
+  // PB0..3 is BCD value, latched by PA4..6 to 3 BCD latches
+  // PB4..6 are h segment state, unlatched, reversed
+  // PA0..3 select display (D1..D16, unlatched)
+  //printf("%8.5f 1A=%02x 1B=%02x Digit=%x Latch1=%02x Latch2=%02x Latch3=%02x H=%x\n", timer_get_time(), GTS80locals.riot1a, GTS80locals.riot1b, 
+  //  GTS80locals.riot1a & 0xF, GTS80locals.seg1, GTS80locals.seg2, GTS80locals.seg3, (~GTS80locals.riot1b >> 4) & 0x7);
+
+  const int dispdata = GTS80locals.riot1a & 0x0f;
+
+  // 4x6 or 4x7 main score displays, outputed as 2..8, 9..15, 22..28, 29..35 (for legacy reasons)
+  static const int reorder[] = { 5, 4, 3, 2, 1, 0, 12, 11, 10, 9, 8, 7, 13, 0xFF, 0xFF, 6 };
+  const int pos = reorder[dispdata] * 16;
+  for (int i = 0; i < 2 * 7 * 16; i += 16) {
+    if (i == pos) {
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i +  32, GTS80locals.seg1);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i +  40, (GTS80locals.riot1b & 0x10) ? 0x00 : 0x03); // Vertical middle segment (unlatched)
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i + 352, GTS80locals.seg2);
+      core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i + 360, (GTS80locals.riot1b & 0x20) ? 0x00 : 0x03); // Vertical middle segment (unlatched)
+    }
+    else {
+      core_write_pwm_output_16b(CORE_MODOUT_SEG0 + i +  32, 0);
+      core_write_pwm_output_16b(CORE_MODOUT_SEG0 + i + 352, 0);
+    }
+  }
+
+  // 1x4 digit display outputed as 40..43
+  const int ballCreditPos = (15 - dispdata) * 16;
+  for (int i = 0; i < 4 * 16; i += 16) {
+     if (i == ballCreditPos)
+        // Also lit both b and c segments (digit = 1) for h segment (unlatched)
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + 640 + i, GTS80locals.seg3 | ( (GTS80locals.riot1b & 0x40) ? 0 : core_bcd2seg7a[1]));
+     else
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i + 640, 0);
+  }
+
+  // Optional display (Haunted House, ...), outputed as 50..55
+  const int optionalPos = (5 - dispdata) * 16;
+  for (int i = 0; i < 6 * 16; i += 16) {
+     if (i == optionalPos) {
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i + 800, GTS80locals.seg3);
+        core_write_pwm_output_8b(CORE_MODOUT_SEG0 + i + 808, (GTS80locals.riot1b & 0x40) ? 0x00 : 0x03); // Vertical middle segment (unlatched)
+     }
+     else {
+        core_write_pwm_output_16b(CORE_MODOUT_SEG0 + i + 800, 0);
+     }
+  }
+}
+
 /* BCD version */
 static WRITE_HANDLER(riot6532_1aBCD_w) {
   static const int reorder[] = { 8, 0, 1, 15, 9, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7 };
   int dispdata = data & 0x0f;
   int pos = reorder[15 - dispdata];
   // Load buffers on rising edge 0x10,0x20,0x40
-  if (data & ~GTS80locals.riot1a & 0x10)
+  if (core_lowToHigh(GTS80locals.riot1a, data, 0x10))
     GTS80locals.seg1 = core_bcd2seg9a[GTS80locals.riot1b & 0x0f];
-  if (data & ~GTS80locals.riot1a & 0x20)
+  if (core_lowToHigh(GTS80locals.riot1a, data, 0x20))
     GTS80locals.seg2 = core_bcd2seg9a[GTS80locals.riot1b & 0x0f];
-  if (data & ~GTS80locals.riot1a & 0x40)
+  if (core_lowToHigh(GTS80locals.riot1a, data, 0x40))
     GTS80locals.seg3 = dispdata < 12 ? core_bcd2seg9a[GTS80locals.riot1b & 0x0f] : core_bcd2seg7a[GTS80locals.riot1b & 0x0f];
-  // Middle segments are controlled directly by portb 0x10,0x20,0x40
-  // but digit is changed via porta so we set the segs here
-  if ((GTS80locals.riot1b & 0x10) == 0) GTS80locals.seg1 |= core_bcd2seg9a[1];
-  if ((GTS80locals.riot1b & 0x20) == 0) GTS80locals.seg2 |= core_bcd2seg9a[1];
-  if ((GTS80locals.riot1b & 0x40) == 0) GTS80locals.seg3 |= dispdata < 12 ? core_bcd2seg9a[1] : core_bcd2seg7a[1];
-  // Set current digit to current value in buffers
-  GTS80locals.segments[pos].w |= GTS80locals.seg1;
-  GTS80locals.segments[20+pos].w |= GTS80locals.seg2;
-  GTS80locals.segments[55-dispdata].w |= GTS80locals.seg3;
+  // Set current digit to current value in buffers, oring middle segment which is not latched
+  GTS80locals.segments[     pos].w |= GTS80locals.seg1;
+  GTS80locals.segments[20 + pos].w |= GTS80locals.seg2;
+  GTS80locals.segments[55 - dispdata].w |= GTS80locals.seg3;
+  // Middle segments are controlled directly (not latched) by portb 0x10,0x20,0x40 but digit is changed via porta so we set the segs here
+  // For display 12..15 (4x7 segments), instead of firing the h middle segment, this lit both b and c segments (digit = 1)
+  if ((GTS80locals.riot1b & 0x10) == 0)
+     GTS80locals.segments[pos].w |= core_bcd2seg9a[1];
+  if ((GTS80locals.riot1b & 0x20) == 0)
+     GTS80locals.segments[20 + pos].w |= core_bcd2seg9a[1];
+  if ((GTS80locals.riot1b & 0x40) == 0)
+     GTS80locals.segments[55 - dispdata].w |= dispdata < 12 ? core_bcd2seg9a[1] : core_bcd2seg7a[1];
   GTS80locals.riot1a = data;
 #if defined(PINMAME) && defined(LISY_SUPPORT)
   //send port A and port B of RIOT 1 to lisy80
   lisy80_display_handler_bcd( GTS80locals.riot1a, GTS80locals.riot1b);
 #endif /* PINMAME && LISY_SUPPORT */
-
+  updateBCDSegDisplay();
 }
 
-static WRITE_HANDLER(riot6532_1bBCD_w) { GTS80locals.riot1b = data; }
+static WRITE_HANDLER(riot6532_1bBCD_w) {
+   GTS80locals.riot1b = data;
+   updateBCDSegDisplay();
+}
 
 /* Alphanumeric */
 static WRITE_HANDLER(riot6532_1a_w) {
@@ -283,9 +337,10 @@ static void rockwell10939_ld(Rockwell10939State* state, UINT8 data) {
 }
 
 static WRITE_HANDLER(riot6532_1b_w) {
-  if (data & ~GTS80locals.riot1b & 0x10) // LD1 (falling edge)
+  // FIXME comment say falling edge, while code say rising edge
+  if (core_lowToHigh(GTS80locals.riot1b, data, 0x10)) // LD1 (falling edge)
     rockwell10939_ld(&GTS80locals.seg1State, GTS80locals.alphaData);
-  if (data & ~GTS80locals.riot1b & 0x20) // LD2
+  if (core_lowToHigh(GTS80locals.riot1b, data, 0x20)) // LD2
     rockwell10939_ld(&GTS80locals.seg2State, GTS80locals.alphaData);
   GTS80locals.riot1b = data;
 #if defined(PINMAME) && defined(LISY_SUPPORT)
@@ -566,8 +621,16 @@ static MACHINE_INIT(gts80) {
   core_set_pwm_output_bulb(CORE_MODOUT_LAMP0, coreGlobals.nLamps, BULB_44, 6.f, FALSE, 0.f, 1.f);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  coreGlobals.nAlphaSegs = 2 * 20 * 16;
-  core_set_pwm_output_type(CORE_MODOUT_SEG0, 2 * 20 * 16, CORE_MODOUT_NONE); // No eye flicker fusion, just the direct PWM duty ratio from the display driver
+  if (core_gameData->hw.display & GTS80_DISPALPHA)
+  {
+     coreGlobals.nAlphaSegs = 2 * 20 * 16;
+     core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_NONE); // No eye flicker fusion, just the direct PWM duty ratio from the display driver
+  }
+  else
+  {
+     coreGlobals.nAlphaSegs = 3 * 20 * 16; // Actually can be 4x6 + 1x4 / 5x6 + 1x4 / 4x7 + 1x4 / 4x7 + 1x6 + 1x4
+     core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, TRUE, 16.0f / 0.7f); // Futaba VFD with 0.7ms pulse over 16ms period
+  }
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;

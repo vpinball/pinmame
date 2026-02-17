@@ -617,7 +617,7 @@ INLINE void core_update_pwm_lamps(void) { if (options.usemodsol & (CORE_MODOUT_F
 extern void core_set_pwm_output_type(int startIndex, int count, int type);
 extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
 extern void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int isAC, float serial_R, float relative_brightness);
-extern void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness); // Relative brightness should be (pulse length / period length)
+extern void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness); // Relative brightness should be (period length / pulse length)
 extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
 extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
 INLINE void core_write_pwm_output_16b(int index, UINT16 bitStates) { core_write_pwm_output_8b(index, bitStates & 0xFF); core_write_pwm_output_8b(index + 8, bitStates >> 8); }
