@@ -1,5 +1,4 @@
-#ifndef saa1099_h
-#define saa1099_h
+#pragma once
 
 /**********************************************
 	Philips SAA1099 Sound driver
@@ -33,6 +32,4 @@ WRITE16_HANDLER( saa1099_write_port_1_lsb_w );
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

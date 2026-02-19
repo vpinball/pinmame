@@ -28,8 +28,7 @@
  *
  * version: 1.0
  */
-#ifndef _OPM_H_
-#define _OPM_H_
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -323,6 +322,4 @@ void OPM_SetIrqHandler(opm_t *chip, void(*handler)(int irq));
 
 #ifdef __cplusplus
 } // extern "C"
-#endif
-
 #endif

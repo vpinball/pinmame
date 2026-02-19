@@ -543,22 +543,22 @@ private:
 		ZeroMemory(&cc, sizeof(CHOOSECOLOR));
 		cc.lStructSize = sizeof(CHOOSECOLOR);
 		cc.hwndOwner = m_hWnd;
-                cc.lpCustColors = (LPDWORD) m_acrCustClr;
+		cc.lpCustColors = (LPDWORD) m_acrCustClr;
 		cc.rgbResult = rgbCurrent;
 		cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 
 		/*Launch Color Dialog Box - Use selected color from Dialog Textboxes*/
-		if ( ChooseColor(&cc) )  {
+		if ( ChooseColor(&cc) ) {
 			/*Now save new values back to textboxes!*/
 			r = (int)GetRValue(cc.rgbResult);
 			g = (int)GetGValue(cc.rgbResult);
 			b = (int)GetBValue(cc.rgbResult);
-			SetDlgItemInt(IDC_DMDRED,  r, FALSE);    
-			SetDlgItemInt(IDC_DMDGREEN,g, FALSE);    
+			SetDlgItemInt(IDC_DMDRED,  r, FALSE);
+			SetDlgItemInt(IDC_DMDGREEN,g, FALSE);
 			SetDlgItemInt(IDC_DMDBLUE, b, FALSE); 
 
 			/*Force refresh to show new colors on screen*/
-			InvalidateRect(0,TRUE);				
+			InvalidateRect(0,TRUE);	
 		}
 
 		return 0;
@@ -610,7 +610,7 @@ private:
 
 STDMETHODIMP CGameSettings::InterfaceSupportsErrorInfo(REFIID riid)
 {
-	static const IID* arr[] = 
+	static const IID* arr[] =
 	{
 		&IID_IGameSettings
 	};
@@ -627,7 +627,7 @@ CGameSettings::CGameSettings()
 	strcpy(m_szRegKey, REG_BASEKEY);
 	strcat(m_szRegKey, "\\");
 	strcat(m_szRegKey, REG_DEFAULT);
-	
+
 	strcpy(m_szRegKeyDef, m_szRegKey);
 
 	strcpy(m_szROM, "");

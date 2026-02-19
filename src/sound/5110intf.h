@@ -1,5 +1,4 @@
-#ifndef intf5110_h
-#define intf5110_h
+#pragma once
 
 struct TMS5110interface
 {
@@ -23,6 +22,3 @@ int tms5110_ready_r(void);
 
 void tms5110_reset(void);
 void tms5110_set_frequency(double frequency);
-
-#endif
-

@@ -1,6 +1,4 @@
-#ifndef tms5110_h
-#define tms5110_h
-
+#pragma once
 
 /* TMS5110 commands */
                                      /* CTL8  CTL4  CTL2  CTL1  |   PDC's  */
@@ -25,6 +23,3 @@ int tms5110_status_read(void);
 int tms5110_ready_read(void);
 
 void tms5110_process(INT16 *buffer, unsigned int size);
-
-#endif
-

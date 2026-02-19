@@ -18,7 +18,7 @@ VS2026 build support
 *** CORE/CPU ***
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added physical/PWM DMD support to Capcom games (potentially leading to more brightness levels being displayed if the CPU triggers it)
-Added physical/PWM segment support to System 11 games
+Added physical/PWM (dimmed) segment support to System 11 games
 Fixed physical/PWM GameOn & switched solenoid state being overwritten for System 11 games
 Fixed physical/PWM GameOn and J111 outputs for WPC games
 Added physical/PWM support to CFTBL backglass flashers
@@ -26,6 +26,7 @@ Added physical/PWM lamps & solenoids support to Bally 6803 games
 Added physical/PWM lamps & solenoids support to Zaccaria games
 Added physical/PWM support to Alvin G. games
 Added physical/PWM lamps and/or solenoids support to some GTS80 games (Amazon Hunt II, Bad Girls, Big House, Bounty Hunter, Genesis, Rock)
+Added physical/PWM (dimmed) segment support to GTS80A games
 Added physical/PWM support to Star Wars Trilogy and Titanic
 Added physical/PWM support to games employing mini-DMDs and the like
 Fixed some potential general solenoid issues with physical/PWM
