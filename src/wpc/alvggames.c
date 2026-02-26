@@ -107,7 +107,7 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On a World Tour (R01c)",1993,"Alvin G",mALVGS2DMD1,0) // release 03/30/93
+CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On a World Tour (R01c Version B)",1993,"Alvin G",mALVGS2DMD1,0) // release 03/30/93
 
 INITGAME(wrldtou2, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtou2,	"cpu02b.512", CRC(1658bf40) SHA1(7af9eedab4e7d0cedaf8bfdbc1f27b989a7171cd))
@@ -120,8 +120,12 @@ ALVGDMD_SPLIT_ROM(		"dot02b.512", CRC(50e3d59d) SHA1(db6df3482fc485af6bde341750b
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On a World Tour (R02b)",1993,"Alvin G",mALVGS2DMD1,0) // beta 02/19/93
+CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On a World Tour (R02b Version B)",1993,"Alvin G",mALVGS2DMD1,0) // beta 02/19/93, is it really for Version B though?!
 
+// CPU ROM G03R06A (February 1992 (note: typo? 1993 actually?), for early production top lock hole)
+// Nick: It is the real rom that was in the CPU with an original Alvin G label. [...]
+// [...] That's when I discovered the absence of Q30 in the coil test.
+// Q30 is an IFR540 FET that drives a coil. [...]
 INITGAME(wrldtou3, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtou3,	"cpu03.512",  CRC(56dee967) SHA1(f7b1f69d96c72b0cf738bdf45701502f7306a4a0))
 ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
@@ -133,9 +137,32 @@ ALVGDMD_SPLIT_ROM(		"dot03.512",  CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On a World Tour (R06a Prototype)",1993,"Alvin G",mALVGS2DMD1,0) // alpha 02/05/93, supports an additional VUK/top lock at the end of the horseshoe ramp
+CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On a World Tour (R06a Prototype/Version A)",1993,"Alvin G",mALVGS2DMD1,0) // alpha 02/05/93, supports an additional VUK/top lock at the end of the horseshoe ramp
 
-// even earlier alpha AG03/R01A 1/15/93 exists
+// CPU ROM AG03R09A is the latest ROM version to support the early production games that have the top lock hole.
+// There is another version available (note: the one above), but it is dated earlier (AG03R06A dated 2-5-1993).
+// This ROM is for a 27C512 EPROM and goes at location U2 on the CPU/Driver board.
+// DOT ROM AG03R05A was sent out with the R09A CPU ROM.  This file is for a 27C512 EPROM and goes at location U4 of the Dot Matrix Controller board.
+//
+// Alvin G. sent out letters on 03-12-93 and 04-01-1993 that reference the AG03R09A CPU ROM and the AG03R05A DOT ROM.
+// The letters describe ENHANCEMENTS that are contained in the AG03R09A ROM.
+// The 04-01-93 letter specifically mentions that the EPROM updates are for the early production (VERSION "A") games.
+// The 04-01-93 letter has instructions for disabling two of the trough switches and installing a new wire guide at the outhole
+//  (the wire guide was furnished with letter). The 04-01-93 letter is missing page 3, which included a cut out template for installing the new wire guide.
+INITGAME(wrldtou4, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
+ALVGROMSTART(wrldtou4,	"AG03R09A_4-21-93_CPU.BIN", CRC(8531AEA3) SHA1(08be1fc25c517689127f99782b62f57e2c6f4780))
+ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
+						"samp_0.c21", CRC(37beb831) SHA1(2b90d2be0a1bd7c59469846631d2b44bdf9f5f9d),
+						"samp_1.c21", CRC(621533c6) SHA1(ca0ed9e89c340cb3b08f9a9002af9997372c1cbf),
+						"samp_2.c21", CRC(454a5cca) SHA1(66b1a5832134365fd762fcba4cf4d666f60ebd65),
+						"samp_3.c21", CRC(1f4928f4) SHA1(9949ab96644984fab8037224f52ec28d7d7cc967))
+ALVGDMD_SPLIT_ROM(		"AG03R05A_4-8-93_DOT.BIN", CRC(E906D773) SHA1(9e0cd6b9d586e867a12d70142fc2891e30ca87c2),
+						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
+						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
+ALVG_ROMEND
+CORE_CLONEDEFNV(wrldtou4,wrldtour,"Al's Garage Band Goes On a World Tour (R09a Prototype/Version A)",1993,"Alvin G",mALVGS2DMD1,0) // release 04/21/93, supports an additional VUK/top lock at the end of the horseshoe ramp
+
+// even earlier alpha AG03/R01A 01/15/93 exists
 
 /*-------------------------------------------------------------------
 / U.S.A. Football (AG05)
