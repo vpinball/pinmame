@@ -171,7 +171,14 @@ const char* DirectXDecodeError(HRESULT errorval)
 	//case DIERR_UNPLUGGED: return "DIERR_UNPLUGGED";
 
 	//case E_NOINTERFACE: return "E_NOINTERFACE";
-	default: static char tmp[64]; sprintf(tmp, "UNKNOWN: 0x%x", (unsigned int)errorval); return tmp;
+	default: return getUnknownError(errorval);
 	}
 	return NULL;
+}
+
+const char* getUnknownError(HRESULT errorval)
+{
+	static char tmp[64];
+	sprintf(tmp, "UNKNOWN: 0x%x", (unsigned int)errorval);
+	return tmp;
 }
