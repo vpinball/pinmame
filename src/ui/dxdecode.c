@@ -25,6 +25,7 @@
 
 const char* DirectXDecodeError(HRESULT errorval)
 {
+  static char tmp[64];
 	switch (errorval)
 	{
 	case DDERR_ALREADYINITIALIZED: return "DDERR_ALREADYINITIALIZED";
@@ -171,14 +172,7 @@ const char* DirectXDecodeError(HRESULT errorval)
 	//case DIERR_UNPLUGGED: return "DIERR_UNPLUGGED";
 
 	//case E_NOINTERFACE: return "E_NOINTERFACE";
-	default: return getUnknownError(errorval);
+	default: sprintf(tmp, "UNKNOWN: 0x%x", (unsigned int)errorval); return tmp;
 	}
 	return NULL;
-}
-
-const char* getUnknownError(HRESULT errorval)
-{
-	static char tmp[64];
-	sprintf(tmp, "UNKNOWN: 0x%x", (unsigned int)errorval);
-	return tmp;
 }
