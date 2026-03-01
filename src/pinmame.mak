@@ -174,6 +174,7 @@ PINGAMES += $(PINOBJ)/sims/wpc/prelim/sc.o
 PINGAMES += $(PINOBJ)/sims/wpc/prelim/totan.o
 PINGAMES += $(PINOBJ)/sims/wpc/prelim/ts.o
 PINGAMES += $(PINOBJ)/sims/wpc/prelim/wd.o
+PINGAMES += $(PINOBJ)/sims/s11/prelim/tmmchn.o
 
 CPUS += M6809@
 CPUS += M6808@

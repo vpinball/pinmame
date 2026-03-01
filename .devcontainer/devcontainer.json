@@ -1,0 +1,14 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools-extension-pack",
+				"alefragnani.Bookmarks",
+				"ms-vscode.makefile-tools",
+				"ms-azuretools.vscode-containers",
+				"dnut.rewrap-revived"
+			]
+		}
+	}
+}
