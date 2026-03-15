@@ -204,7 +204,7 @@ static struct
 
    unsigned int onDevSrcChangedId, getDevSrcId;
    DevSrcId deviceDef;
-   DeviceMapping* deviceMap;
+   std::vector<DeviceMapping> deviceMap;
 
    int nSegDisplays; // Number of block displays
    struct
@@ -236,7 +236,7 @@ static struct
    unsigned int onDisplaySrcChangedId, getDisplaySrcId;
 
    unsigned int onSoundCommandId;
-} msgLocals = { 0 };
+} msgLocals = {};
 
 
 /******************************************************
@@ -1586,15 +1586,15 @@ int GetInputState(const unsigned int index)
    if (index >= msgLocals.inputDef.nInputs || _isRunning != 1)
       return 0;
 
-   switch (msgLocals.inputDef.inputDefs[index].groupId)
+   switch (msgLocals.inputDef.inputDefs[index].id.groupId)
    {
    case 0x0001:
-      return core_getSw(msgLocals.inputDef.inputDefs[index].deviceId);
+      return core_getSw(msgLocals.inputDef.inputDefs[index].id.deviceId);
    
    case 0x0002:
    {
-      const UINT8 bank = vp_getDIP(msgLocals.inputDef.inputDefs[index].deviceId / 8);
-      const UINT8 mask = 1 << (msgLocals.inputDef.inputDefs[index].deviceId & 7);
+      const UINT8 bank = vp_getDIP(msgLocals.inputDef.inputDefs[index].id.deviceId / 8);
+      const UINT8 mask = 1 << (msgLocals.inputDef.inputDefs[index].id.deviceId & 7);
       return (bank & mask) != 0;
    }
    
@@ -1608,16 +1608,16 @@ void SetInputState(const unsigned int index, const int isSet)
    if (index >= msgLocals.inputDef.nInputs || _isRunning != 1)
       return;
 
-   switch (msgLocals.inputDef.inputDefs[index].groupId)
+   switch (msgLocals.inputDef.inputDefs[index].id.groupId)
    {
    case 0x0001:
-      core_setSw(msgLocals.inputDef.inputDefs[index].deviceId, isSet);
+      core_setSw(msgLocals.inputDef.inputDefs[index].id.deviceId, isSet);
       break;
    
    case 0x0002:
    {
-      const UINT8 bank = vp_getDIP(msgLocals.inputDef.inputDefs[index].deviceId / 8);
-      const UINT8 mask = 1 << (msgLocals.inputDef.inputDefs[index].deviceId & 7);
+      const UINT8 bank = vp_getDIP(msgLocals.inputDef.inputDefs[index].id.deviceId / 8);
+      const UINT8 mask = 1 << (msgLocals.inputDef.inputDefs[index].id.deviceId & 7);
       if (isSet)
          vp_setDIP(bank, vp_getDIP(bank) | mask);
       else
@@ -1858,7 +1858,7 @@ static DisplayFrame GetDisplayIdFrame(const CtlResId id)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Overall game messages
 
-static char* fmtString(const char *format, ...) {
+static const char* fmtString(const char *format, ...) {
     va_list args;
 
     va_start(args, format);
@@ -2116,263 +2116,181 @@ static void SetupMsgApi()
    // the dedicated GI outputs with 0..8 values), then adding different levels of device emulation (merging
    // binary output states over a given period, some smoothing, physic model,...) and solving conflicts
    // by moving the outputs to free slots. This 'legacy' mapping is preserved for backward compatibility:
-   // - First devices correspond to 'legacy' solenoids outputs, keeping the existing ordering,
-   // - Followed by GI bulbs, identified by their group id, with the original ordering,
-   // - Followed by lamp matrix, identified by their group Id and device Id which match the lamp number in
-   //   the matrix (which has always been different from the lamp index, as lamps are organized by rows of
-   //   8 lamps, for example, first lamp is usually lamp #11)
-   //
-   // The following group ids are defined and used by PinMame:
-   // - 0x0000 unwired
-   // - 0x0001 solenoids/flashers driven by power driver board (main high/low current outputs)
-   // - 0x0002 auxiliary boards (magnets, outputs, WPC fliptronics, ...)
-   // - 0x0003 custom driver outputs (see CORE_FIRSTCUSTSOL)
-   // - 0x0010 PinMame internal state: for example emulated plunger, or fake 'game on' solenoid used for fast flippers, ...
-   // - 0x0100 GI driven by power driver board (WPC, Whitestar & SAM are the only one with dedicated GI
-   //          outputs, other hardwares use generic outputs to drive a GI relay/thyristor)
-   // - 0x0200 lamp matrix driven by power driver board
-   // - 0x0300 emulated mechanical parts
+   // - the groupId property allow to identify the 'legacy' output group in its upper byte, with subgroup in its lower byte
+   //   - 0x0001 solenoids/flashers (main high/low current outputs)
+   //   - 0x0002 auxiliary boards (magnets, outputs, WPC fliptronics, ...)
+   //   - 0x0003 custom driver outputs (see CORE_FIRSTCUSTSOL)
+   //   - 0x0010 PinMame internal state: for example emulated plunger, or fake 'game on' solenoid used for fast flippers, ...
+   //   - 0x0100 GI (WPC, Whitestar & SAM are the only one with dedicated GI outputs, other hardwares use generic outputs to drive a GI relay/thyristor)
+   //   - 0x0200 lamp ouputs (either matrix or directly controlled)
+   //   - 0x0300 emulated mechanical parts
+   // - the deviceId property correspond to 'legacy' mapping, that is to say the index inside the group
    //
    // Existing state access is implemented in core_getSol, core_getAllSol and core_getAllPhysicSols. Sadly,
    // these functions do not always return the same value. When difference exists, the implementation of 
    // core_getAllSol is taken as it is supposed to be the most widely used.
    //
-   const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
-   const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
-   const int nSols = (coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol));
    msgLocals.deviceDef.id.endpointId = msgLocals.endpointId;
    msgLocals.deviceDef.id.resId = 0;
    msgLocals.deviceDef.GetByteState = &GetDeviceByteState;
    msgLocals.deviceDef.GetFloatState = &GetDeviceFloatState;
-   msgLocals.deviceDef.nDevices = nSols + coreGlobals.nGI + nLamps + MECH_MAXMECH;
-   msgLocals.deviceDef.deviceDefs = new DeviceDef[msgLocals.deviceDef.nDevices];
-   memset(msgLocals.deviceDef.deviceDefs, 0, msgLocals.deviceDef.nDevices * sizeof(DeviceDef));
-   msgLocals.deviceMap = new DeviceMapping[msgLocals.deviceDef.nDevices];
-   memset(msgLocals.deviceMap, 0, msgLocals.deviceDef.nDevices * sizeof(DeviceMapping));
-   const int isPhysSol = (coreGlobals.nSolenoids > 0) && ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) != 0);
-   // 1..28, solenoid/flasher outputs from driver board
-   for (int i = 0; i < 28; i++)
-   {
-      msgLocals.deviceDef.deviceDefs[i].name = fmtString("Sol #%02d", i + 1);
-      msgLocals.deviceDef.deviceDefs[i].groupId = 0x0001;
-      msgLocals.deviceDef.deviceDefs[i].deviceId = i + 1;
-      msgLocals.deviceMap[i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL1;
-      msgLocals.deviceMap[i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + i) : (1 << i);
-   }
-   // 29..32, WPC: fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2, why 4 bits (actually only 3) ?)
-   if (core_gameData->gen & GEN_ALLWPC)
-   {
-      for (int i = 28; i < 32; i++)
+   msgLocals.deviceDef.nDevices = 0;
+   msgLocals.deviceDef.deviceDefs = nullptr;
+   msgLocals.deviceMap.clear();
+   std::vector<DeviceDef> devices;
+   auto addDevice = [&devices](const char* label, uint16_t group, uint16_t device, DeviceMappingType mappingType, int mappingSrc)
       {
-         msgLocals.deviceDef.deviceDefs[i].name = fmtString("WPC Fake GameOn #%d", i + 1);
-         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0010;
-         msgLocals.deviceDef.deviceDefs[i].deviceId = i + 1;
-         msgLocals.deviceMap[i].type = LPM_DM_CORE_SOL2;
-         msgLocals.deviceMap[i].srcId = 1 << (i - 28 + 8);
-      }
-   }
-   // 29..32, solenoid outputs from driver board
-   // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
-   else // if (core_gameData->gen & GEN_ALLS11)
+         devices.push_back(DeviceDef{ .name = label, .id = {.groupId = group, .deviceId = device } });
+         msgLocals.deviceMap.emplace_back(mappingType, mappingSrc);
+      };
+   // 'Solenoid' outputs (in fact all sort of controlled or emulated outputs with a messy mapping)
    {
-      for (int i = 28; i < 32; i++)
-      {
-         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Sol #%02d", i + 1);
-         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0001;
-         msgLocals.deviceDef.deviceDefs[i].deviceId = i + 1;
-         msgLocals.deviceMap[i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL1;
-         msgLocals.deviceMap[i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + i) : (1 << i);
-      }
-   }
-   // 33, SAM: fake GameOn solenoid for fast flip
-   // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
-   if (core_gameData->gen & GEN_SAM)
-   {
-      msgLocals.deviceDef.deviceDefs[32].name = fmtString("SAM Fake GameOn");
-      msgLocals.deviceDef.deviceDefs[32].groupId = 0x0010;
-      msgLocals.deviceDef.deviceDefs[32].deviceId = 0;
-      msgLocals.deviceMap[32].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
-      msgLocals.deviceMap[32].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 32) : 0x00000010;
-   }
-   // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
-   // Note: core_getSol does not implement this while core_getAllSol does
-   else if (core_gameData->gen & GEN_ALLWS)
-   {
-      for (int i = 32; i < 36; i++)
-      {
-         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Ext Sol #%02d", i - 32 + 1);
-         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0002;
-         msgLocals.deviceDef.deviceDefs[i].deviceId = i - 32 + 1;
-         msgLocals.deviceMap[i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
-         msgLocals.deviceMap[i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + i) : (1 << (i - 32 + 4));
-      }
-   }
-   // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs
-   // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
-   else if (core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
-   {
-      // TODO Ensure earlier generation do not have ext board in this area (they do not have upper flipper)
-      // GEN_WPCALPHA_1: dd / fh
-      // GEN_WPCALPHA_2: fh / bop / hd
-      // GEN_WPCDMD: t2 / gi / Slugfest
-      for (int i = 0; i < 4; i++)
-      {
-         int isFlipperSol = (i < 2) ? (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
-                                    : (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL));
-         if (isFlipperSol)
+      const int nSols = coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol);
+      const bool isPhysSol = (coreGlobals.nSolenoids > 0) && ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) != 0);
+      auto addPhysSol = [&devices, &isPhysSol](const char* label, uint16_t group, uint16_t device, DeviceMappingType mappingType, int mappingSrc, int physSolIndex)
          {
-            // Note: WPC fliptronics and later implement modulated outputs on these (not really modulated though)
-            const int isCPU = (i < 2) ? (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
-                                      : (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL));
-            msgLocals.deviceDef.deviceDefs[32 + i].name = fmtString("Upper %s Flipper: %s solenoid %s",
-               (i < 2) ? "Right" : "Left",
-               (i & 1) ? "Hold|Power" : "Power",
-               isCPU ? "(CPU controlled)" : "(emulated wired)");
-            msgLocals.deviceDef.deviceDefs[32 + i].groupId = 0x0002;
-            msgLocals.deviceDef.deviceDefs[32 + i].deviceId = 33 + i;
-            msgLocals.deviceMap[32 + i].type = LPM_DM_CORE_SOL2;
-            msgLocals.deviceMap[32 + i].srcId = isCPU ? (((i & 1) ? 0x30 : 0x10) << (i & 2))  // Power bit or Power|Hold bits
-                                                      : ((                 0x10) << (i    )); // Not CPU controlled, just return emulated state
+            devices.push_back(DeviceDef{ .name = label, .id = {.groupId = group, .deviceId = device } });
+            if (isPhysSol && physSolIndex < coreGlobals.nSolenoids)
+               msgLocals.deviceMap.emplace_back(LPM_DM_PHYSOUT, CORE_MODOUT_SOL0 + physSolIndex);
+            else
+               msgLocals.deviceMap.emplace_back(mappingType, mappingSrc);
+         };
+      // 1..28, solenoid/flasher outputs from driver board
+      for (uint16_t i = 1; i <= 28; i++)
+         addPhysSol(fmtString("Output #%02d", i), 0x0001, i, LPM_DM_CORE_SOL1, 1 << (i - 1), i - 1);
+      // 29..32
+      {
+         // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
+         if (core_gameData->gen & GEN_ALLWPC)
+         {
+            addDevice(fmtString("GPIO #1 (WPC J111.1)"), 0x0001, 29, LPM_DM_CORE_SOL2, 0x0100);
+            addDevice(fmtString("GPIO #2 (WPC J111.2)"), 0x0001, 30, LPM_DM_CORE_SOL2, 0x0200);
+            if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) // Pre Fliptronic real GameOn
+               addDevice(fmtString("WPC GameOn"), 0x0010, 31, LPM_DM_CORE_SOL2, 0x0400);
+            else // Fliptronic ROM controlled flippers, with (sadly) an overlay of J111 third output and the fake GameOn (which is only available if fastflip is defined)
+               addDevice(fmtString("GPIO #3 (WPC J111.3) or WPC Fake GameOn (FastFlip)"), 0x0010, 31, LPM_DM_CORE_SOL2, 0x0400);
          }
-         else
+         // 29..32, solenoid outputs from driver board
+         // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
+         else // if (core_gameData->gen & GEN_ALLS11)
          {
-            msgLocals.deviceDef.deviceDefs[32 + i].name = fmtString("Sol #%02d (%s)", 29 + i, (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) ? "WPC95" : "Fliptronic");
-            msgLocals.deviceDef.deviceDefs[32 + i].groupId = 0x0002;
-            msgLocals.deviceDef.deviceDefs[32 + i].deviceId = 33 + i;
-            msgLocals.deviceMap[32 + i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
-            msgLocals.deviceMap[32 + i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 32 + i) : (1 << (i + 4));
+            for (uint16_t i = 29; i <= 32; i++)
+               addPhysSol(fmtString("Output #%02d", i), 0x0001, i, LPM_DM_CORE_SOL1, 1 << (i - 1), i - 1);
          }
       }
-   }
-   // 37..44, WPC95: 4 low power digital outputs (duplicated 37..40 / 41..44, stored in 0xF0000000 of solenoids)
-   if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
-   {
-      for (int i = 0; i < 8; i++)
+      // 33..36
       {
-         msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("WPC95 LPDC #%02d", 37 + (i & 3));
-         msgLocals.deviceDef.deviceDefs[36 + i].groupId = 0x0001;
-         msgLocals.deviceDef.deviceDefs[36 + i].deviceId = 37 + (i & 3);
-         msgLocals.deviceMap[36 + i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL1;
-         msgLocals.deviceMap[36 + i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 36 + (i & 3)) : (1 << (36 + (i & 3)));
+         // 33, SAM: fake GameOn solenoid for fast flip
+         // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
+         if (core_gameData->gen & GEN_SAM)
+            addPhysSol(fmtString("SAM Fake GameOn"), 0x0010, 33, LPM_DM_CORE_SOL2, 0x00000010, 32);
+         // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
+         // Note: core_getSol does not implement this while core_getAllSol does
+         else if (core_gameData->gen & GEN_ALLWS)
+         {
+            for (uint16_t i = 33; i <= 36; i++)
+               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), 0x0002, i, LPM_DM_CORE_SOL2, 1 << (i - 33 + 4), i - 1);
+         }
+         // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
+         // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
+         else if (core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
+         {
+            // TODO Ensure earlier generation do not have ext board in this area (they do not have upper flipper)
+            // GEN_WPCALPHA_1: dd / fh
+            // GEN_WPCALPHA_2: fh / bop / hd
+            // GEN_WPCDMD: t2 / gi / Slugfest
+            for (uint16_t i = 0; i < 4; i++)
+               if (core_gameData->hw.flippers & FLIP_SOL((i < 2) ? FLIP_UR : FLIP_UL))
+                  addDevice(
+                     fmtString("Output #%02d - Upper %s Flipper %s solenoid (CPU controlled)", 33 + i, (i < 2) ? "Right" : "Left", (i & 1) ? "Hold|Power" : "Power"),
+                     0x0002, 33 + i, LPM_DM_CORE_SOL2, (((i & 1) ? 0x03 : 0x01) << (i & 2))); // Power bit or Power|Hold bits
+               else
+                  addPhysSol(fmtString("Output #%02d (%s)", 33 + i, (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) ? "WPC95 J120" : "Fliptronic"),
+                     0x0002, 33 + i, LPM_DM_CORE_SOL2, 1 << (i + 4), 32 + i);
+         }
       }
-   }
-   // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
-   else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
-   {
-      for (int i = 0; i < 8; i++)
+      // 37..44
       {
-         if (core_gameData->gen & GEN_ALLS11)
-            msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("S11 Ext Sol #%d", i + 1);
-         else if (core_gameData->gen & GEN_SAM)
-            msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("SAM Ext Sol #%d", i + 1);
+         // 37..44, WPC95: 4 low power digital outputs (duplicated 37..40 / 41..44, stored in 0xF0000000 of solenoids)
+         if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
+         {
+            for (uint16_t i = 0; i < 8; i++)
+               addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
+                  0x0001, 37 + i, LPM_DM_CORE_SOL1, 1 << (36 + (i & 3)), 36 + (i & 3));
+         }
+         // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
+         else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
+         {
+            for (uint16_t i = 37; i <= 44; i++)
+               addPhysSol(
+                  fmtString("%s Ext Output #%d", (core_gameData->gen & GEN_ALLS11) ? "S11" : (core_gameData->gen & GEN_SAM) ? "SAM" : "SPA", i - 36),
+                  0x0002, i, LPM_DM_CORE_SOL2, 1 << (8 + i - 37), 40 + i - 37);
+         }
+      }
+      // 45..48, lower flipper solenoids
+      // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power coil is set
+      for (uint16_t i = 0; i < 4; i++)
+      {
+         const bool isCPU = core_gameData->hw.flippers & FLIP_SOL((i < 2) ? FLIP_LR : FLIP_LL);
+         const int mask = isCPU ? (((i & 1) ? 0x03 : 0x01) << (i & 2)) // Power bit or Power|Hold bits
+            : (0x10 << i); // Not CPU controlled, just return emulated state
+         const char* label;
+         if (isCPU && (core_gameData->gen & GEN_ALLWPC))
+            label = fmtString("Output #%02d - Lower %s Flipper %s solenoid (CPU controlled)", 29 + i, (i < 2) ? "Right" : "Left", (i & 1) ? "Hold|Power" : "Power");
          else
-            msgLocals.deviceDef.deviceDefs[36 + i].name = fmtString("SPA Ext Sol #%d", i + 1);
-         msgLocals.deviceDef.deviceDefs[36 + i].groupId = 0x0002;
-         msgLocals.deviceDef.deviceDefs[36 + i].deviceId = i + 1;
-         msgLocals.deviceMap[36 + i].type = isPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_SOL2;
-         msgLocals.deviceMap[36 + i].srcId = isPhysSol ? (CORE_MODOUT_SOL0 + 40 + i) : (1 << (i + 8));
+            label = fmtString("Lower %s Flipper: %s solenoid %s", (i < 2) ? "Right" : "Left", (i & 1) ? "Hold|Power" : "Power", isCPU ? "(CPU controlled)" : "(emulated wired)");
+         addDevice(label, 0x0002, 45 + i, LPM_DM_CORE_SOL2, mask);
       }
-   }
-   // 45..48, lower flipper solenoids
-   // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power coil is set
-   // Note: WPC fliptronics and later implement modulated outputs on these (not really modulated though)
-   for (int i = 0; i < 4; i++)
-   {
-      const int isCPU = (i < 2) ? (core_gameData->hw.flippers & FLIP_SOL(FLIP_LR))
-                                : (core_gameData->hw.flippers & FLIP_SOL(FLIP_LL));
-      msgLocals.deviceDef.deviceDefs[44 + i].name = fmtString("Lower %s Flipper: %s solenoid %s",
-         (i < 2) ? "Right" : "Left",
-         (i & 1) ? "Hold|Power" : "Power",
-         isCPU ? "(CPU controlled)" : "(Emulated wired)");
-      msgLocals.deviceDef.deviceDefs[44 + i].groupId = 0x0002;
-      msgLocals.deviceDef.deviceDefs[44 + i].deviceId = (core_gameData->gen & GEN_ALLWPC) ? (29 + i) : (45 + i);
-      msgLocals.deviceMap[44 + i].type = LPM_DM_CORE_SOL2;
-      msgLocals.deviceMap[44 + i].srcId = isCPU ? (((i & 1) ? 0x03 : 0x01) << (i & 2))  // Power bit or Power|Hold bits
-                                                : ((                 0x01) << (i    )); // Not CPU controlled, just return emulated state
-   }
-   // 49, simulated fake plunger, not broadcasted
-   // 50, unused, reserved
-   // 51..66, custom through core_gameData->hw.getSol or physic model
-   for (int i = CORE_FIRSTCUSTSOL - 1; i < nSols; i++)
-   {
-      const int isCusPhysSol = isPhysSol && (i < coreGlobals.nSolenoids);
-      if ((isCusPhysSol == 0) && (core_gameData->hw.getSol == NULL))
-         continue;
-      if (isCusPhysSol && (core_gameData->gen & GEN_ALLWPC))
-      {
-         int id = (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS)) ? (42 + i - (CORE_FIRSTCUSTSOL - 1))  // WPC95 extension board maps to Sol 42..49 (1..28 base sols, 29..36 flippers, 37..40 LPDC, 41 unknown)
-                                                                    : (37 + i - (CORE_FIRSTCUSTSOL - 1)); // WPC extension board maps to Sol 37..44 (1..28 base sols, 29..36 fliptronics)
-         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Ext Sol #%02d", id);
-         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0002;
-         msgLocals.deviceDef.deviceDefs[i].deviceId = id;
-      }
-      else
-      {
-         msgLocals.deviceDef.deviceDefs[i].name = fmtString("Custom Sol #%02d", i);
-         msgLocals.deviceDef.deviceDefs[i].groupId = 0x0004;
-         msgLocals.deviceDef.deviceDefs[i].deviceId = i - (CORE_FIRSTCUSTSOL - 1) + 1;
-      }
-      msgLocals.deviceMap[i].type = isCusPhysSol ? LPM_DM_PHYSOUT : LPM_DM_CORE_CUST_SOL;
-      msgLocals.deviceMap[i].srcId = isCusPhysSol ? (CORE_MODOUT_SOL0 + i) : (i + 1);
+      // 49, simulated fake plunger, not broadcasted
+      // 50, unused, reserved
+      // 51..66, custom through core_gameData->hw.getSol or physic model
+      // Note for WPC except WPC95, the first 8 custom solenoids are actually the extension boards (report in group 0x0002 with an adapyted label ?)
+      for (uint16_t i = CORE_FIRSTCUSTSOL - 1; i < nSols; i++)
+         addPhysSol(fmtString("Custom Output #%02d", i), 0x0003, i + 1, LPM_DM_CORE_CUST_SOL, i + 1, i);
    }
    // GI dedicated drivers (WPC, Whitestar, SAM)
-   const int isPhysGI = (coreGlobals.nGI > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) != 0);
-   for (int i = 0; i < coreGlobals.nGI; i++)
    {
-      msgLocals.deviceDef.deviceDefs[nSols + i].name = fmtString("GI #%d", i + 1);
-      msgLocals.deviceDef.deviceDefs[nSols + i].groupId = 0x0100;
-      msgLocals.deviceDef.deviceDefs[nSols + i].deviceId = i + 1;
-      msgLocals.deviceMap[nSols + i].type = isPhysGI ? LPM_DM_PHYSOUT : LPM_DM_CORE_GI;
-      msgLocals.deviceMap[nSols + i].srcId = isPhysGI ? (CORE_MODOUT_GI0 + i) : i;
-   }   
+      const bool isPhysGI = (coreGlobals.nGI > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) != 0);
+      for (uint16_t i = 0; i < coreGlobals.nGI; i++)
+         addDevice(fmtString("GI #%d", i + 1), 0x0100, i + 1, isPhysGI ? LPM_DM_PHYSOUT : LPM_DM_CORE_GI, isPhysGI ? (CORE_MODOUT_GI0 + i) : i);
+   }
    // Lamp matrix
-   const int isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
-   for (int i = 0; i < nLamps; i++)
    {
-      int l = coreData->m2lamp ? coreData->m2lamp((i / 8) + 1, i & 7) : i;
-      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + i].name = fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1);
-      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + i].groupId = 0x0200;
-      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + i].deviceId = l;
-      msgLocals.deviceMap[nSols + coreGlobals.nGI + i].type = isPhysLamp ? LPM_DM_PHYSOUT : LPM_DM_CORE_LAMP;
-      msgLocals.deviceMap[nSols + coreGlobals.nGI + i].srcId = isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i;
-   }   
+      const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+      const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
+      const bool isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
+      for (uint16_t i = 0; i < nLamps; i++)
+      {
+         uint16_t l = coreData->m2lamp ? static_cast<uint16_t>(coreData->m2lamp((i / 8) + 1, i & 7)) : i;
+         addDevice(fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), 0x0200, l, isPhysLamp ? LPM_DM_PHYSOUT : LPM_DM_CORE_LAMP, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
+      }
+   }
    // Emulated mechanical devices (we don't know which ones are available so always declare all of them)
    // This is somewhat hacky as the definition depends on g_fHandleMechanics and we do not update if it changes (it must be defined before)
-   for (int i = 0; i < MECH_MAXMECH; i++)
+   for (uint16_t i = 0; i < MECH_MAXMECH; i++)
    {
-      msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].groupId = 0x0300;
       if (g_fHandleMechanics == 0)
       {
          if (i < MECH_MAXMECH/2)
-         {
-            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].name = fmtString("User Mech Pos #%02d", i);
-            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].deviceId = i + 1;
-            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].type = LPM_DM_CUSTOM_MECH_POS;
-            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].srcId = MECH_MAXMECH/2 + i;
-         }
+            addDevice(fmtString("User Mech Pos #%02d", i), 0x0300, i + 1, LPM_DM_CUSTOM_MECH_POS, MECH_MAXMECH / 2 + i);
          else
          {
-            int j = i - MECH_MAXMECH/2;
-            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].name = fmtString("User Mech Speed #%02d", j);
-            msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].deviceId = -(j + 1);
-            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].type = LPM_DM_CUSTOM_MECH_SPEED;
-            msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].srcId = MECH_MAXMECH/2 + j;
+            uint16_t j = i - MECH_MAXMECH/2;
+            addDevice(fmtString("User Mech Speed #%02d", j), 0x0300, -(j + 1), LPM_DM_CUSTOM_MECH_SPEED, MECH_MAXMECH / 2 + j);
          }
       }
       else
-      {
-         msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].name = fmtString("PinMame Mech #%02d", i);
-         msgLocals.deviceDef.deviceDefs[nSols + coreGlobals.nGI + nLamps + i].deviceId = i;
-         msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].type = LPM_DM_CORE_MECH;
-         msgLocals.deviceMap[nSols + coreGlobals.nGI + nLamps + i].srcId = i;
-      }
+         addDevice(fmtString("PinMame Mech #%02d", i), 0x0300, i, LPM_DM_CORE_MECH, i);
    }
-   if (msgLocals.deviceDef.nDevices > 0)
+   msgLocals.deviceDef.nDevices = static_cast<unsigned int>(devices.size());
+   if (msgLocals.deviceDef.nDevices)
    {
+      msgLocals.deviceDef.deviceDefs = new DeviceDef[msgLocals.deviceDef.nDevices];
+      memcpy(msgLocals.deviceDef.deviceDefs, devices.data(), msgLocals.deviceDef.nDevices * sizeof(DeviceDef));
       msgLocals.onDevSrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
       msgLocals.getDevSrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getDevSrcId, OnGetDevSrc, NULL);
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDevSrcChangedId, NULL);
+      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getDevSrcId, OnGetDevSrc, nullptr);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDevSrcChangedId, nullptr);
    }
    
    // -- Inputs: cabinet, matrix & dip switches
@@ -2385,25 +2303,25 @@ static void SetupMsgApi()
    msgLocals.inputDef.nInputs = nSwitches + nDips;
    msgLocals.inputDef.inputDefs = new DeviceDef[msgLocals.inputDef.nInputs];
    memset(msgLocals.inputDef.inputDefs, 0, msgLocals.inputDef.nInputs * sizeof(DeviceDef));
-   for (int i = 0; i < nSwitches; i++)
+   for (uint16_t i = 0; i < nSwitches; i++)
    {
-      int l = coreData->m2sw ? coreData->m2sw((i / 8) + 1, i & 7) : i;
+      uint16_t l = coreData->m2sw ? static_cast<uint16_t>(coreData->m2sw((i / 8) + 1, i & 7)) : i;
       msgLocals.inputDef.inputDefs[i].name = fmtString("Switch #%02x", l);
-      msgLocals.inputDef.inputDefs[i].groupId = 0x0001;
-      msgLocals.inputDef.inputDefs[i].deviceId = l;
+      msgLocals.inputDef.inputDefs[i].id.groupId = 0x0001;
+      msgLocals.inputDef.inputDefs[i].id.deviceId = l;
    }
-   for (int i = 0; i < nDips; i++)
+   for (uint16_t i = 0; i < nDips; i++)
    {
       msgLocals.inputDef.inputDefs[nSwitches + i].name = fmtString("DIP #%02d", i + 1);
-      msgLocals.inputDef.inputDefs[nSwitches + i].groupId = 0x0002;
-      msgLocals.inputDef.inputDefs[nSwitches + i].deviceId = i + 1;
+      msgLocals.inputDef.inputDefs[nSwitches + i].id.groupId = 0x0002;
+      msgLocals.inputDef.inputDefs[nSwitches + i].id.deviceId = i + 1;
    }
    if (msgLocals.inputDef.nInputs > 0)
    {
       msgLocals.onInputSrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
       msgLocals.getInputSrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
-      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getInputSrcId, OnGetInputSrc, NULL);
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onInputSrcChangedId, NULL);
+      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getInputSrcId, OnGetInputSrc, nullptr);
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onInputSrcChangedId, nullptr);
    }
 }
 
@@ -2414,6 +2332,7 @@ static void ReleaseMsgApi()
    // Only release if we actually registered (we had a running machine)
    if (!msgLocals.registered)
       return;
+   msgLocals.registered = false;
 
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGameStartId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGameEndId);
@@ -2425,6 +2344,7 @@ static void ReleaseMsgApi()
       msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDisplaySrcChangedId, nullptr);
       msgLocals.msgApi->ReleaseMsgID(msgLocals.onDisplaySrcChangedId);
       msgLocals.msgApi->ReleaseMsgID(msgLocals.getDisplaySrcId);
+      memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
       msgLocals.nDisplays = 0;
    }
    
@@ -2435,8 +2355,13 @@ static void ReleaseMsgApi()
       msgLocals.msgApi->ReleaseMsgID(msgLocals.onSegSrcChangedId);
       msgLocals.msgApi->ReleaseMsgID(msgLocals.getSegSrcId);
       msgLocals.nSegDisplays = 0;
+      memset(&msgLocals.segDisplays, 0, sizeof(msgLocals.segDisplays));
+      msgLocals.nSortedSegLayout = 0;
+      memset(&msgLocals.sortedSegLayout, 0, sizeof(msgLocals.sortedSegLayout));
+      memset(&msgLocals.segLuminances, 0, sizeof(msgLocals.segLuminances));
+      memset(&msgLocals.segPrevLuminances, 0, sizeof(msgLocals.segPrevLuminances));
    }
-   
+
    if (msgLocals.deviceDef.nDevices > 0)
    {
       msgLocals.msgApi->UnsubscribeMsg(msgLocals.getDevSrcId, OnGetDevSrc, nullptr);
@@ -2446,11 +2371,11 @@ static void ReleaseMsgApi()
       for (int i = 0; i < msgLocals.deviceDef.nDevices; i++)
          if (msgLocals.deviceDef.deviceDefs[i].name)
             delete[] msgLocals.deviceDef.deviceDefs[i].name;
-      msgLocals.deviceDef.nDevices = 0;
       delete[] msgLocals.deviceDef.deviceDefs;
-      delete[] msgLocals.deviceMap;
+      memset(&msgLocals.deviceDef, 0, sizeof(msgLocals.deviceDef));
+      msgLocals.deviceMap.clear();
    }
-   
+
    if (msgLocals.inputDef.nInputs > 0)
    {
       msgLocals.msgApi->UnsubscribeMsg(msgLocals.getInputSrcId, OnGetInputSrc, nullptr);
@@ -2460,16 +2385,9 @@ static void ReleaseMsgApi()
       for (int i = 0; i < msgLocals.inputDef.nInputs; i++)
          if (msgLocals.inputDef.inputDefs[i].name)
             delete[] msgLocals.inputDef.inputDefs[i].name;
-      msgLocals.inputDef.nInputs = 0;
       delete[] msgLocals.inputDef.inputDefs;
+      memset(&msgLocals.inputDef, 0, sizeof(msgLocals.inputDef));
    }
-
-   // Clear everything but the Msg API setup
-   MsgPluginAPI* msgApi = msgLocals.msgApi;
-   unsigned int endpointId = msgLocals.endpointId;
-   memset(&msgLocals, 0, sizeof(msgLocals));
-   msgLocals.msgApi = msgApi;
-   msgLocals.endpointId = endpointId;
 }
 
 static void OnGameStart(void*)
