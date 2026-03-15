@@ -1248,7 +1248,7 @@ static MACHINE_INIT(wpc) {
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_WPC);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol; // Auxiliary solenoid board adding 8 outputs are already included in the base solenoid span (see core_gelAllModSol) (WPC Fliptronics: TZ / WPC DCS: DM, IJ, STTNG / WPC Security : RS / WPC 95: NGG)
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 -1, 3, CORE_MODOUT_PULSE); // GameOn/FastFlip and J111 GPIO
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 29 - 1, 3, CORE_MODOUT_PULSE); // GameOn/FastFlip and J111 GPIO
   if (core_gameData->gen & GENWPC_HASFLIPTRON)
   {
      coreGlobals.hasModulatedFlippers = TRUE;
