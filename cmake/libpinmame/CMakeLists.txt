@@ -141,7 +141,7 @@ add_compile_definitions(
    PI=M_PI
 )
 
-if(PLATFORM STREQUAL "win")
+if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw")
    add_compile_definitions(
       __LP64__
    )
@@ -662,6 +662,18 @@ if(PLATFORM STREQUAL "win")
       src/windows/jitemit.h
       src/windows/ticker.c
    )
+elseif(PLATFORM STREQUAL "win-mingw")
+   list(APPEND PINMAME_SOURCES
+      src/vc/dirent.c
+      src/vc/dirent.h
+      src/vc/unistd.h
+
+      src/windows/jit.c
+      src/windows/jit.h
+      src/windows/jitemit.c
+      src/windows/jitemit.h
+      src/windows/ticker.c
+   )
 else()
    list(APPEND PINMAME_SOURCES
       src/libpinmame/ticker.c
@@ -676,7 +688,7 @@ set(PINMAME_INCLUDE_DIRS
    src/unix/sysdep
 )
 
-if(PLATFORM STREQUAL "win")
+if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw")
    list(APPEND PINMAME_INCLUDE_DIRS
       src/vc
       src/windows
@@ -689,20 +701,29 @@ if(BUILD_SHARED)
 
    target_include_directories(pinmame_shared PUBLIC ${PINMAME_INCLUDE_DIRS})
 
-   if(PLATFORM STREQUAL "win")
+   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw")
       target_link_libraries(pinmame_shared PUBLIC winmm)
    endif()
 
-   if(PLATFORM STREQUAL "win" AND ARCH STREQUAL "x64")
+   if((PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw") AND ARCH STREQUAL "x64")
       set(PINMAME_OUTPUT_NAME "pinmame64")
    else()
       set(PINMAME_OUTPUT_NAME "pinmame")
    endif()
 
-   set_target_properties(pinmame_shared PROPERTIES
-      OUTPUT_NAME ${PINMAME_OUTPUT_NAME}
-      VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
-   )
+   if(PLATFORM STREQUAL "win-mingw")
+      set_target_properties(pinmame_shared PROPERTIES
+         PREFIX ""
+         IMPORT_PREFIX ""
+         OUTPUT_NAME ${PINMAME_OUTPUT_NAME}
+         VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
+      )
+   else()
+      set_target_properties(pinmame_shared PROPERTIES
+         OUTPUT_NAME ${PINMAME_OUTPUT_NAME}
+         VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
+      )
+   endif()
 
    install(TARGETS pinmame_shared
       LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
@@ -710,7 +731,7 @@ if(BUILD_SHARED)
 
    install(FILES src/libpinmame/libpinmame.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
-   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
+   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
       add_executable(pinmame_test
          src/libpinmame/test.cpp
       )
@@ -723,8 +744,9 @@ if(BUILD_STATIC)
 
    target_include_directories(pinmame_static PUBLIC ${PINMAME_INCLUDE_DIRS})
 
-   if(PLATFORM STREQUAL "win")
+   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw")
       set_target_properties(pinmame_static PROPERTIES
+         PREFIX ""
          OUTPUT_NAME "pinmame_static"
       )
    else()
@@ -739,12 +761,12 @@ if(BUILD_STATIC)
 
    install(FILES src/libpinmame/libpinmame.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
-   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
+   if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
       add_executable(pinmame_test_s
          src/libpinmame/test.cpp
       )
 
-      if(PLATFORM STREQUAL "win")
+      if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw")
          target_link_libraries(pinmame_test_s PUBLIC pinmame_static winmm)
       else()
          target_link_libraries(pinmame_test_s PUBLIC pinmame_static)
