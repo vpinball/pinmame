@@ -3,6 +3,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: write
+
 env:
   VERSION_START_SHA: 79345956d1807e3188f0e895379466c7c4caae72
 
@@ -21,7 +24,7 @@ jobs:
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: version
@@ -51,6 +54,7 @@ jobs:
           - { os: windows-2025, platform: win, arch: x64 }
           - { os: windows-2025, platform: win, arch: x86 }
           - { os: windows-2025, platform: win, arch: arm64 }
+          - { os: windows-2025, platform: win-mingw, arch: x64 }
           - { os: macos-15, platform: macos, arch: x64 }
           - { os: macos-15, platform: macos, arch: arm64 }
           - { os: ubuntu-24.04, platform: linux, arch: x64 }
@@ -60,132 +64,258 @@ jobs:
           - { os: macos-15, platform: ios-simulator, arch: arm64 }
           - { os: macos-15, platform: tvos, arch: arm64 }
     steps:
-      - uses: actions/checkout@v4
-      - name: Build libpinmame-${{ matrix.platform }}-${{ matrix.arch }}
+      - uses: actions/checkout@v6
+      #
+      # install dependencies
+      #
+      - if: (matrix.platform == 'win')
+        uses: microsoft/setup-msbuild@v2
+      - if: (matrix.platform == 'win-mingw')
+        run: |
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm \
+            mingw-w64-ucrt-x86_64-gcc \
+            mingw-w64-ucrt-x86_64-libwinpthread \
+            mingw-w64-ucrt-x86_64-cmake"
+      #
+      # build (win)
+      #
+      - if: (matrix.platform == 'win')
+        name: Build (win)
         run: |
           cp cmake/libpinmame/CMakeLists.txt .
-          if [[ "${{ matrix.platform }}" == "win" ]]; then
-             if [[ "${{ matrix.arch }}" == "x64" ]]; then
-                cmake \
-                   -G "Visual Studio 17 2022" \
-                   -DPLATFORM=${{ matrix.platform }} \
-                   -DARCH=${{ matrix.arch }} \
-                   -B build
-             elif [[ "${{ matrix.arch }}" == "x86" ]]; then
-                cmake \
-                   -G "Visual Studio 17 2022" \
-                   -A Win32 \
-                   -DPLATFORM=${{ matrix.platform }} \
-                   -DARCH=${{ matrix.arch }} \
-                   -B build
-             elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
-                cmake \
-                   -G "Visual Studio 17 2022" \
-                   -A ARM64 \
-                   -DPLATFORM=${{ matrix.platform }} \
-                   -DARCH=${{ matrix.arch }} \
-                   -B build
-             fi
-             cmake --build build --config Release
-          else
-             if [[ "$(uname)" == "Darwin" ]]; then
-                NUM_PROCS=$(sysctl -n hw.ncpu)
-             else
-                NUM_PROCS=$(nproc)
-             fi
-             cmake \
-                -DPLATFORM=${{ matrix.platform }} \
-                -DARCH=${{ matrix.arch }} \
-                -DCMAKE_BUILD_TYPE=Release \
-                -B build
-             cmake --build build -- -j${NUM_PROCS}
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
+            cmake \
+              -G "Visual Studio 17 2022" \
+              -DPLATFORM=${{ matrix.platform }} \
+              -DARCH=${{ matrix.arch }} \
+              -B build
+          elif [[ "${{ matrix.arch }}" == "x86" ]]; then
+            cmake \
+              -G "Visual Studio 17 2022" \
+              -A Win32 \
+              -DPLATFORM=${{ matrix.platform }} \
+              -DARCH=${{ matrix.arch }} \
+              -B build
+          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            cmake \
+              -G "Visual Studio 17 2022" \
+              -A ARM64 \
+              -DPLATFORM=${{ matrix.platform }} \
+              -DARCH=${{ matrix.arch }} \
+              -B build
           fi
-      - name: Prepare artifacts
-        id: artifacts
+          cmake --build build --config Release
+      #
+      # build (win-mingw)
+      #
+      - if: (matrix.platform == 'win-mingw')
+        name: Build (win-mingw)
+        run: |
+          cp cmake/libpinmame/CMakeLists.txt .
+          CURRENT_DIR="$(pwd)"
+          MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
+            cd \"${CURRENT_DIR}\" &&
+            cmake \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPLATFORM=${{ matrix.platform }} \
+              -DARCH=${{ matrix.arch }} \
+              -B build &&
+            cmake --build build -- -j\$(nproc)
+          "
+      #
+      # build (macos)
+      #
+      - if: (matrix.platform == 'macos')
+        name: Build (macos)
+        run: |
+          cp cmake/libpinmame/CMakeLists.txt .
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM=${{ matrix.platform }} \
+            -DARCH=${{ matrix.arch }} \
+            -B build
+          cmake --build build -- -j$(sysctl -n hw.ncpu)
+      #
+      # build (linux)
+      #
+      - if: (matrix.platform == 'linux')
+        name: Build (linux)
+        run: |
+          cp cmake/libpinmame/CMakeLists.txt .
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM=${{ matrix.platform }} \
+            -DARCH=${{ matrix.arch }} \
+            -B build
+          cmake --build build -- -j$(nproc)
+      #
+      # build (ios/tvos)
+      #
+      - if: (matrix.platform == 'ios' || matrix.platform == 'ios-simulator' || matrix.platform == 'tvos')
+        name: Build (ios/tvos)
+        run: |
+          cp cmake/libpinmame/CMakeLists.txt .
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM=${{ matrix.platform }} \
+            -DARCH=${{ matrix.arch }} \
+            -B build
+          cmake --build build -- -j$(sysctl -n hw.ncpu)
+      #
+      # build (android)
+      #
+      - if: (matrix.platform == 'android')
+        name: Build (android)
+        run: |
+          cp cmake/libpinmame/CMakeLists.txt .
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM=${{ matrix.platform }} \
+            -DARCH=${{ matrix.arch }} \
+            -B build
+          cmake --build build -- -j$(nproc)
+      #
+      # prepare artifacts
+      #
+      - if: (matrix.platform == 'win')
+        name: Prepare artifacts (win)
         run: |
           mkdir tmp
-          if [[ "${{ matrix.platform }}" == "win" ]]; then
-             ARTIFACT_PATH="tmp"
-             if [[ "${{ matrix.arch }}" == "x64" ]]; then
-                cp build/Release/*64.lib tmp
-                cp build/Release/*64.dll tmp
-             else
-                cp build/Release/*.lib tmp
-                cp build/Release/*.dll tmp
-             fi
-             cp build/Release/pinmame_static.lib tmp
-             cp build/Release/pinmame_test_s.exe tmp
-             cp build/Release/pinmame_test.exe tmp
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
+            cp build/Release/*64.lib tmp
+            cp build/Release/*64.dll tmp
           else
-            ARTIFACT_PATH="libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz"
-            if [[ "${{ matrix.platform }}" == "macos" ]]; then
-               cp build/libpinmame.a tmp
-               cp -a build/*.dylib tmp
-               cp build/pinmame_test_s tmp
-               cp build/pinmame_test tmp
-            elif [[ "${{ matrix.platform }}" == "linux" ]]; then
-               cp build/libpinmame.a tmp
-               cp -a build/*.{so,so.*} tmp
-               cp build/pinmame_test_s tmp
-               cp build/pinmame_test tmp
-            elif [[ "${{ matrix.platform }}" == "ios" || "${{ matrix.platform }}" == "ios-simulator" || "${{ matrix.platform }}" == "tvos" ]]; then
-               cp build/libpinmame.a tmp
-               cp -a build/*.dylib tmp
-            elif [[ "${{ matrix.platform }}" == "android" ]]; then
-               cp build/libpinmame.a tmp
-               cp build/libpinmame.so tmp
-            fi
-            cp release/gamelist.txt tmp
-            cp release/license.txt tmp
-            cp release/pinmame.txt tmp
-            cp release/whatsnew.txt tmp
-            cd tmp
-            tar -czvf ../${ARTIFACT_PATH} *
+            cp build/Release/*.lib tmp
+            cp build/Release/*.dll tmp
           fi
-          echo "artifact_path=${ARTIFACT_PATH}" >> $GITHUB_OUTPUT    
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+          cp build/Release/pinmame_static.lib tmp
+          cp build/Release/pinmame_test_s.exe tmp
+          cp build/Release/pinmame_test.exe tmp
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+          cd tmp && 7z a -r ../libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.zip *
+      - if: (matrix.platform == 'win-mingw')
+        name: Prepare artifacts (win-mingw)
+        run: |
+          mkdir tmp
+          cp build/*.dll tmp/
+          cp build/*.dll.a tmp/
+          cp build/pinmame_static.a tmp/
+          cp build/*.exe tmp/
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+          UCRT64_BIN="/c/msys64/ucrt64/bin"
+          cp "${UCRT64_BIN}/libgcc_s_seh-1.dll" tmp/
+          cp "${UCRT64_BIN}/libstdc++-6.dll" tmp/
+          cp "${UCRT64_BIN}/libwinpthread-1.dll" tmp/
+          cd tmp && 7z a -r ../libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.zip *
+      - if: (matrix.platform == 'macos')
+        name: Prepare artifacts (macos)
+        run: |
+          mkdir tmp
+          cp build/libpinmame.a tmp
+          cp -a build/*.dylib tmp
+          cp build/pinmame_test_s tmp
+          cp build/pinmame_test tmp
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+          cd tmp && tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz *
+      - if: (matrix.platform == 'linux')
+        name: Prepare artifacts (linux)
+        run: |
+          mkdir tmp
+          cp build/libpinmame.a tmp
+          cp -a build/*.so tmp
+          cp -a build/*.so.* tmp
+          cp build/pinmame_test_s tmp
+          cp build/pinmame_test tmp
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+          cd tmp && tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz *
+      - if: (matrix.platform == 'ios' || matrix.platform == 'ios-simulator' || matrix.platform == 'tvos')
+        name: Prepare artifacts (ios/tvos)
+        run: |
+          mkdir tmp
+          cp build/libpinmame.a tmp
+          cp -a build/*.dylib tmp
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+          cd tmp && tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz *
+      - if: (matrix.platform == 'android')
+        name: Prepare artifacts (android)
+        run: |
+          mkdir tmp
+          cp build/libpinmame.a tmp
+          cp build/libpinmame.so tmp
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+          cd tmp && tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz *
+      #
+      # upload artifacts
+      #
+      - if: (matrix.platform == 'win' || matrix.platform == 'win-mingw')
+        uses: actions/upload-artifact@v7
         with:
-          name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
-          path: ${{ steps.artifacts.outputs.artifact_path }}
+          name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.zip
+          path: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.zip
+          archive: false
+      - if: (matrix.platform != 'win' && matrix.platform != 'win-mingw')
+        uses: actions/upload-artifact@v7
+        with:
+          name: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
+          path: libpinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
+          archive: false
 
   post-build:
     runs-on: macos-15
     needs: [ version, build ]
     name: Build libpinmame-macos
     steps:
-      - uses: actions/download-artifact@v4
-      - name: Unpack artifacts
-        run: |
-          cd libpinmame-${{ needs.version.outputs.tag }}-macos-x64
-          tar -xzvf libpinmame-${{ needs.version.outputs.tag }}-macos-x64.tar.gz
-          cd ..
-          cd libpinmame-${{ needs.version.outputs.tag }}-macos-arm64
-          tar -xzvf libpinmame-${{ needs.version.outputs.tag }}-macos-arm64.tar.gz
+      - uses: actions/download-artifact@v8
+        with:
+          name: libpinmame-${{ needs.version.outputs.tag }}-macos-x64.tar.gz
+          skip-decompress: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: libpinmame-${{ needs.version.outputs.tag }}-macos-arm64.tar.gz
+          skip-decompress: true
       - name: Combine macos architectures
         run: |
+          mkdir macos-x64 macos-arm64
+          tar -xzvf libpinmame-${{ needs.version.outputs.tag }}-macos-x64.tar.gz -C macos-x64
+          tar -xzvf libpinmame-${{ needs.version.outputs.tag }}-macos-arm64.tar.gz -C macos-arm64
           mkdir tmp
-          find "libpinmame-${{ needs.version.outputs.tag }}-macos-arm64" -name "*.dylib" | while read -r file; do
+          find macos-arm64 -name "*.dylib" | while read -r file; do
             if [ -L "$file" ]; then
               cp -a "$file" "tmp/"
             elif [ -f "$file" ]; then
               filename=$(basename "$file")
               lipo -create -output "tmp/$filename" \
-                "libpinmame-${{ needs.version.outputs.tag }}-macos-arm64/$filename" \
-                "libpinmame-${{ needs.version.outputs.tag }}-macos-x64/$filename"
+                "macos-arm64/$filename" \
+                "macos-x64/$filename"
             fi
           done
-          for filename in pinmame_test_s pinmame_test; do
+          for filename in pinmame_test pinmame_test_s; do
             lipo -create -output "tmp/$filename" \
-               "libpinmame-${{ needs.version.outputs.tag }}-macos-arm64/$filename" \
-               "libpinmame-${{ needs.version.outputs.tag }}-macos-x64/$filename"
+               "macos-arm64/$filename" \
+               "macos-x64/$filename"
           done
-      - name: Prepare artifacts
-        run: |
-          cd tmp
-          tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-macos.tar.gz *
+          cd tmp && tar -czvf ../libpinmame-${{ needs.version.outputs.tag }}-macos.tar.gz * && cd ..
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: libpinmame-${{ needs.version.outputs.tag }}-macos
+          name: libpinmame-${{ needs.version.outputs.tag }}-macos.tar.gz
           path: libpinmame-${{ needs.version.outputs.tag }}-macos.tar.gz
+          archive: false
