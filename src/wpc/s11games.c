@@ -925,6 +925,15 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
                         "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
 S11_ROMEND
 CORE_CLONEDEF(polic,lx5,l4,"Police Force (LX-5a MOD)", 2025, "Williams", s11_mS11BS,0)
+// even newer one:
+S11_ROMSTART48(polic,lx5pi,"pfrc_u26.lx5pi",CRC(05177864) SHA1(389e8e81b97e89f1a192a32cbfb2cef2aea68a6c),
+                        "pfrc_u27.lx5pi",CRC(3ABBB6A0) SHA1(230c1d253a31f201525ee4c110625e58228d8296))
+S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
+                        "pfrc_u22.l1", CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
+S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
+                        "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+S11_ROMEND
+CORE_CLONEDEF(polic,lx5pi,l4,"Police Force (LX-5pi (Post INDISC) MOD)", 2026, "Williams", s11_mS11BS,0)
 
 // There also exists a u4 sound l1, where should this go to?
 //S11CS_SOUNDROM88(       "pfrc_u4.l1",  CRC(4e7fd9aa) SHA1(5ba279ffeb6d1864c582f97fa89ee4bd2f084505),
