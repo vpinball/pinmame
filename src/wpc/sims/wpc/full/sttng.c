@@ -316,23 +316,23 @@ static sim_tState sttng_stateDef[] = {
   {"Moving"},
   {"Playfield",         0,0,            0,        0,             0,0,0,SIM_STNOTEXCL},
 
-  {"Trough 1",			1,swTrough1,    0,        stTrough2,     1},
-  {"Trough 2",			1,swTrough2,    0,        stTrough3,     1},
-  {"Trough 3",			1,swTrough3,    0,        stTrough4,     1},
-  {"Trough 4",			1,swTrough4,    0,        stTrough5,     1},
-  {"Trough 5",			1,swTrough5,    0,        stTrough6,     1},
-  {"Trough 6",			1,swTrough6,    sTrough,  stTrough,      1},
-  {"Trough Up",			1,swTroughUp,   0,        stShooter,     1},
+  {"Trough 1",          1,swTrough1,    0,        stTrough2,     1},
+  {"Trough 2",          1,swTrough2,    0,        stTrough3,     1},
+  {"Trough 3",          1,swTrough3,    0,        stTrough4,     1},
+  {"Trough 4",          1,swTrough4,    0,        stTrough5,     1},
+  {"Trough 5",          1,swTrough5,    0,        stTrough6,     1},
+  {"Trough 6",          1,swTrough6,    sTrough,  stTrough,      1},
+  {"Trough Up",         1,swTroughUp,   0,        stShooter,     1},
 
-  {"Shooter",			1,swShooter,    sPlunger, stLaunchWire,  1},
-  {"Launch Wire",		1,0,            0,        stRLoopUp,    10},
-  {"Drain",				1,0,            0,        stTrough1,     0,0,0,SIM_STNOTEXCL},
+  {"Shooter",           1,swShooter,    sPlunger, stLaunchWire,  1},
+  {"Launch Wire",       1,0,            0,        stRLoopUp,    10},
+  {"Drain",             1,0,            0,        stTrough1,     0,0,0,SIM_STNOTEXCL},
 
-  {"L. Ramp Enter",		1,swLRampEnt,   0,        stDiverter,    5},
-  {"L. Ramp Exit",		1,swLRampExit,  0,        stRIn,        15},
-  {"C. Ramp Exit",		1,swCRampExit,  0,        stLIn,        10},
-  {"R. Ramp Enter",		1,swRRampEnt,   0,        stRRampExit,   5},
-  {"R. Ramp Exit",		1,swRRampExit,  0,        stRIn,        10},
+  {"L. Ramp Enter",     1,swLRampEnt,   0,        stDiverter,    5},
+  {"L. Ramp Exit",      1,swLRampExit,  0,        stRIn,        15},
+  {"C. Ramp Exit",      1,swCRampExit,  0,        stLIn,        10},
+  {"R. Ramp Enter",     1,swRRampEnt,   0,        stRRampExit,   5},
+  {"R. Ramp Exit",      1,swRRampExit,  0,        stRIn,        10},
 
   {"Left Outlane",      1,swLOut,       0,        stDrain,      10, sKickBack, stFree},
   {"Right Outlane",     1,swROut,       0,        stDrain,      10},
@@ -608,6 +608,8 @@ WPC_ROMSTART(sttng,l7c,"trek_lx7c.rom",0x80000,CRC(da2b5082) SHA1(7f87d89e04f284
 //WPC_ROMSTART(sttng,x8,"trek_RC1_828A.rom",0x80000,CRC(22880bf0) SHA1(40e5aa3846240b7c4a7fe78ad57059207d91421c)) ST_SPECIAL_SND WPC_ROMEND // old RC
 WPC_ROMSTART(sttng,x8,"trek_x8.rom",   0x80000,CRC(535bcda6) SHA1(26468e905b6f9e8362fafd8bbb47d18da9af860d)) ST_SPECIAL_SND WPC_ROMEND
 
+WPC_ROMSTART(sttng,x9,"trek_x9.rom",   0x80000,CRC(ED7F1D0C) SHA1(28d44c36abd3cf74c300724a456368eb4304d9e9)) ST_SPECIAL_SND WPC_ROMEND
+
 WPC_ROMSTART(sttng,p4,"sttng_p4.u6",0x80000,CRC(836774f0) SHA1(5784f77eaad41ccf07446874720be146fd562c68))
 DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad4143927ddc6fee), // where does this P-1 sound rom really belong to? all prototypes? or is even P-4 too new? // Only 4 bytes are different from L-1
                "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
@@ -652,6 +654,7 @@ CORE_CLONEDEF(sttng,l3,l7,"Star Trek: The Next Generation (LX-3)",1993,"Williams
 CORE_CLONEDEF(sttng,l5,l7,"Star Trek: The Next Generation (LX-5)",1993,"Williams",wpc_mDCSS,0)
 //LX-8 MOD: https://www.flippermarkt.de/community/forum/threads/sttng-neues-game-rom-lx8-aktueller-stand-und-allgemeine-infos-zur-nz-in-lx7.251544
 CORE_CLONEDEF(sttng,x8,l7,"Star Trek: The Next Generation (LX-8 MOD, Special Sound L-1)",2023,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,x9,l7,"Star Trek: The Next Generation (LX-9 MOD, Special Sound L-1)",2026,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions
