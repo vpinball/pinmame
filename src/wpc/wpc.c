@@ -141,8 +141,8 @@ static int wpc_modsol_aux_board = 0;
 static int wpc_fastflip_addr = 0;
 
 static struct {
-  int    row;                    // Rasterizer row position
-  int    firq;                   // State of FIRQ output line to CPU
+  int    row;             // Rasterizer row position
+  int    firq;            // State of FIRQ output line to CPU
 } dmdlocals;
 
 /*-- pointers --*/
@@ -1224,7 +1224,7 @@ static MACHINE_INIT(wpc) {
   if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95DCS | GEN_WPC95))
   {
     const int isPH = (core_gameData->hw.gameSpecific1 & WPC_PH);
-    core_dmd_pwm_init(core_gameData->lcdLayout, isPH ? CORE_DMD_PWM_FILTER_WPC_PH : CORE_DMD_PWM_FILTER_WPC, isPH ? CORE_DMD_PWM_COMBINER_SUM_2 : CORE_DMD_PWM_COMBINER_SUM_3, 1);
+    core_dmd_pwm_init(isPH ? core_gameData->lcdLayout+1 : core_gameData->lcdLayout, isPH ? CORE_DMD_PWM_FILTER_WPC_PH : CORE_DMD_PWM_FILTER_WPC, isPH ? CORE_DMD_PWM_COMBINER_SUM_2 : CORE_DMD_PWM_COMBINER_SUM_3, 1);
   }
 
 #ifdef PINMAME_HOST_UART
@@ -1287,12 +1287,12 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "br_", 3) == 0) { // Black Rose
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "cc_", 3) == 0) { // Cactus Canyon
      static const int flashers[] = { 18, 19, 20, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "corv_", 5) == 0) { // Corvette
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1305,18 +1305,18 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "cv_", 3) == 0) { // Cirqus Voltaire
      static const int flashers[] = { 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "cftbl_", 6) == 0) { // Creature From The Black Lagoon
      static const int flashers[] = { 2, 8, 9, 10, 11, 16, 17, 18, 19, 22, 25, 28, 33, 34, 35, 36 }; // 28 is hologram lamp, 33-36 are flashers inside backglass using Fliptronic upper flippers (not mentionned in manual)
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		 core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 64, 8, CORE_MODOUT_BULB_86_6_3V_AC); // chase lights (8 strings of #86 bulbs wired between GI and solenoids outputs through triacs and a 2 bit decoder)
   }
   else if (strncasecmp(gn, "congo_", 6) == 0) { // Congo
      static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "dh_", 3) == 0) { // Dirty Harry
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 3, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1325,7 +1325,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "dm_", 3) == 0) { // Demolition Man
      static const int flashers[] = { 17, 21, 22, 23, 24, 25, 26, 27, 28, 37 + 14, 38 + 14, 39 + 14, 40 + 14, 41 + 14, 42 + 14, 43 + 14, 44 + 14 }; // Aux Driver board
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "drac_", 5) == 0) { // Bram Stoker's Dracula
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_906_20V_DC_WPC);
@@ -1336,12 +1336,12 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "dw_", 3) == 0) { // Doctor Who
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "fh_", 3) == 0) { // Fun House
      static const int flashers[] = { 17, 18, 19, 20, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "fs_", 3) == 0) { // The Flintstones
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1354,7 +1354,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "gi_", 3) == 0) { // Gilligan's Island
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "gw_", 3) == 0) { // High Speed II: The Getaway
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1365,7 +1365,7 @@ static MACHINE_INIT(wpc) {
         || (strncasecmp(gn, "che_cho", 7) == 0)) { // Cheech & Chong: Road-Trip'pin
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "hshot_", 6) == 0) { // Hot Shot
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1390,7 +1390,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "jd_", 3) == 0) { // Judge Dredd
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "jm_", 3) == 0) { // Johnny Mnemonic
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1399,7 +1399,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "jy_", 3) == 0) { // Junk Yard
      static const int flashers[] = { 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "mb_", 3) == 0) { // Monster Bash
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 10, CORE_MODOUT_BULB_906_20V_DC_WPC);
@@ -1409,12 +1409,12 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "mm_", 3) == 0) { // Medieval Madness
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "nbaf_", 5) == 0) { // NBA Fast Break
      static const int flashers[] = { 17, 19, 20, 22, 23, 24 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "nf_", 3) == 0) { // No Fear
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1430,17 +1430,17 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "ngg_", 4) == 0) { // No Good Goofers
      static const int flashers[] = { 17, 18, 19, 20, 21, 25, 26, 42 + 14, 43 + 14, 44 + 14, 45 + 14, 46 + 14, 47 + 14, 48 + 14, 49 + 14 }; // Aux Driver board
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "pop_", 4) == 0) { // Popeye Save The Earth
      static const int flashers[] = { 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "pz_", 3) == 0) { // Party Zone
      static const int flashers[] = { 17, 18, 19, 20, 21, 22, 25, 26, 27, 28 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "rs_", 3) == 0) { // Road Show
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 37 + 14 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC); // Aux Driver board
@@ -1454,7 +1454,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "sf_", 3) == 0) { // SlugFest
      static const int flashers[] = { 17, 18, 19, 20, 25, 26 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "ss_", 3) == 0) { // Scared Stiff
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 17 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1478,7 +1478,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "taf_", 4) == 0) { // The Addams Family
      static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
      // Playfield magnets, they are pulsed with 64ms pulses over a 524ms period
      // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 16 - 1, 1, CORE_MODOUT_MAGNET);
      // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 2, CORE_MODOUT_MAGNET);
@@ -1486,7 +1486,7 @@ static MACHINE_INIT(wpc) {
   else if (strncasecmp(gn, "tafg_", 5) == 0) { // The Addams Family Gold Edition
      static const int flashers[] = { 17, 18, 19, 20, 21, 22 };
      for (int i = 0; i < sizeof(flashers) / sizeof(int); i++)
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+        core_set_pwm_output_type(CORE_MODOUT_SOL0 + flashers[i] - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "tom_", 4) == 0) { // Theatre of Magic
      core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
@@ -1634,19 +1634,20 @@ static VIDEO_START(wpc_dmd) {
 // the rasterizer timings are 2MHz / (128*64*2*2) = 61.04Hz. The PWM pattern 
 // used is therefore limited to 2 frames (30.5Hz) with 0/50/100 shades to avoid 
 // flickering.
-// 
+//
 // CPU may ask the DMD board to raise FIRQ when a given row is reached.
 // The FIRQ is then acked (pulled down) by writing again the requested FIRQ row 
 // to the corresponding register (game code use 0xFF to disables DMD FIRQ).
 static void wpc_dmd_hsync(int param) {
-  const int dmdHeight = core_gameData->lcdLayout->start;
+  const int isPH = (core_gameData->hw.gameSpecific1 & WPC_PH); // Phantom Haus has DMD in 2nd layout
+  const int dmdHeight = isPH ? core_gameData->lcdLayout[1].start : core_gameData->lcdLayout->start;
   const int rawFrameSize = dmdHeight * 128 / 8;
   dmdlocals.row = (dmdlocals.row + 1) % dmdHeight; // FIXME Phantom Haus uses the same AV card than other WPC95 but with a 64 row display, therefore the CPU must tell the rasterizer that it is 64 row high somewhere we don't know
   if (dmdlocals.row == 0) { // VSYNC
     // Rasterize next page (latched while rasterizing the previous page)
     const int rasterizedPage = wpc_data[WPC_DMD_SHOWPAGE] & 0x0f;
     //printf("%8.5f Rnd page: %02x\n", timer_get_time(), rasterizedPage);
-    core_dmd_submit_frame(core_gameData->lcdLayout, memory_region(WPC_DMDREGION) + rasterizedPage * rawFrameSize, 1);
+    core_dmd_submit_frame(isPH ? core_gameData->lcdLayout+1 : core_gameData->lcdLayout, memory_region(WPC_DMDREGION) + rasterizedPage * rawFrameSize, 1);
     #ifdef PROC_SUPPORT
       if (coreGlobals.p_rocEn) /* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
         procFillDMDSubFrame(dmd_state->frame_index % 3, memory_region(WPC_DMDREGION) + rasterizedPage * rawFrameSize, rawFrameSize);
