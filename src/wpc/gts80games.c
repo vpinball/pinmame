@@ -1861,6 +1861,16 @@ GTS80_ROMEND
 #define input_ports_arenaafp input_ports_arena
 CORE_CLONEDEFNV(arenaafp, arena, "Arena (rev. 1 Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
+#define init_arena2 init_arena
+GTS80B_2K_ROMSTART(arena2,"prom2_2.cpu",CRC(A0E72E30) SHA1(7993c139d984e1bb4ffb53e8f12cd6ca3d322b8f), // label said '709/2 Prom2' but looked like custom burned ones, so not 100% clear if these are official and/or rev.2
+                          "prom1_2.cpu",CRC(7B9DF818) SHA1(1f82fecc7f6c9a9b905ddd32128fc3f03d504f5a)) // label said '709/2 Prom1' (dto.)
+GTS80BSSOUND888(          "drom1.snd",  CRC(78e6cbf1) SHA1(7b66a0cb211a93cf475172aa0465a952009e1a59),
+                          "yrom1.snd",  CRC(f7a951c2) SHA1(12d7a6119d9033ae02c6312c9af888bfc7c63ad1),
+                          "yrom2.snd",  CRC(cc2aef4e) SHA1(a6e243de99f6a76eb527e879f4441c036dd379b6))
+GTS80_ROMEND
+#define input_ports_arena2 input_ports_arena
+CORE_CLONEDEFNV(arena2, arena, "Arena (rev. 2)",1987,"Gottlieb",gl_mGTS80BS1,0)
+
 /****************************************/
 /* Start of Generation 2 Sound Hardware */
 /****************************************/

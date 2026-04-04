@@ -817,6 +817,7 @@ DRIVERNV(arenaf)        //                Arena (French)
 DRIVERNV(arenaffp)      //                Arena (French Free Play)
 DRIVERNV(arenaa)        //                Arena (rev.1)
 DRIVERNV(arenaafp)      //                Arena (rev.1 Free Play)
+DRIVERNV(arena2)        //                Arena (rev.2)
 DRIVERNV(victory)       //S80b-710: 10/87 Victory
 DRIVERNV(victryfp)      //                Victory (Free Play)
 DRIVERNV(victoryg)      //                Victory (German)
