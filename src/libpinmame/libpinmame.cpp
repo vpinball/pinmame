@@ -533,11 +533,10 @@ extern "C" void OnStateChange(const int state)
 			if (displayCount <= layout->index)
 				displayCount = layout->index + 1;
 		}
-		const int syntheticDmdIndex = displayCount;
-		if (hasDMDOrVideo)
-			displayCount++;
-		else
-			displayCount = syntheticDmdIndex + 1;
+		// Reserve one extra slot unconditionally.
+		// Using hasDMDOrVideo as the gate is wrong here: segment-only games also create an extra
+		// synthetic 128x32 DMD below, so they need one additional display slot as well.
+		displayCount++;
 		_displays.resize(displayCount);
 
 		for (const struct core_dispLayout* layout = core_gameData->lcdLayout, * parent_layout = nullptr; layout->length || (parent_layout && parent_layout->length); layout += 1) {
@@ -596,9 +595,9 @@ extern "C" void OnStateChange(const int state)
 			pDisplay->size = pDisplay->layout.width * pDisplay->layout.height;
 			pDisplay->pData = malloc(pDisplay->size);
 			memset(pDisplay->pData, 0, pDisplay->size);
-			_displays[syntheticDmdIndex] = pDisplay;
+			_displays[displayCount - 1] = pDisplay;
 			if (_p_Config->cb_OnDisplayAvailable)
-				(*(_p_Config->cb_OnDisplayAvailable))(syntheticDmdIndex, displayCount, &pDisplay->layout, _p_userData);
+				(*(_p_Config->cb_OnDisplayAvailable))(displayCount - 1, displayCount, &pDisplay->layout, _p_userData);
 		}
 	}
 }
