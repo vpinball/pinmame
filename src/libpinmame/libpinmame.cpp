@@ -533,8 +533,10 @@ extern "C" void OnStateChange(const int state)
 			if (displayCount <= layout->index)
 				displayCount = layout->index + 1;
 		}
-		if (hasDMDOrVideo)
-			displayCount++;
+		// Reserve one extra slot unconditionally.
+		// Using hasDMDOrVideo as the gate is wrong here: segment-only games also create an extra
+		// synthetic 128x32 DMD below, so they need one additional display slot as well.
+		displayCount++;
 		_displays.resize(displayCount);
 
 		for (const struct core_dispLayout* layout = core_gameData->lcdLayout, * parent_layout = nullptr; layout->length || (parent_layout && parent_layout->length); layout += 1) {
