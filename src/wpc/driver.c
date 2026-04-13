@@ -367,7 +367,8 @@ DRIVERNV(black10s)      //          03/88 Blackwater 100 (Single Ball Play)
 //Williams Merger begins here.. but these are still under the Bally name
 DRIVERNV(trucksp2)      //6803-2001:11/88 Truck Stop (P-2)
 DRIVERNV(trucksp3)      //          12/88 Truck Stop (P-3)
-DRIVERNV(atlantis)      //6803-2006:03/89 Atlantis
+DRIVERNV(atlantis)      //6803-2006:03/89 Atlantis (rev. 3)
+DRIVERNV(atlantist)     //          04/26 Atlantis (rev. 3 Tournament MOD v3931)
                         //??        05/89 Ice Castle
 
 // ---------------
@@ -2820,10 +2821,11 @@ DRIVER(fh,l5)           //          02/91 W Funhouse (L-5)
 DRIVER(fh,d5)           //                  Funhouse (D-5) LED Ghost Fix
 DRIVER(fh,l9)           //          12/92 W Funhouse (L-9)
 DRIVER(fh,d9)           //                  Funhouse (D-9) LED Ghost Fix
-DRIVER(fh,l9b)          //                  Funhouse bootleg with correct German translation
-DRIVER(fh,d9b)          //                  Funhouse bootleg with correct German translation LED Ghost Fix
+DRIVER(fh,l9b)          //                  Funhouse (L-9 Improved German translation MOD)
+DRIVER(fh,d9b)          //                  Funhouse (D-9 Improved German translation MOD) LED Ghost Fix
 DRIVER(fh,905h)         //          04/96 W Funhouse (9.05H)
 DRIVER(fh,906h)         //                  Funhouse (9.06H Coin Play)
+DRIVER(fh,907h)         //          04/26   Funhouse (9.07H LED Ghost Fix + Ballsaver MOD)
 DRIVER(fh,f91)          //          ??/??   Funhouse (FreeWPC 0.91)
 DRIVER(bop,l2)          //WPC-502:  04/91 W Machine: Bride of Pinbot, The (L-2)
 DRIVER(bop,d2)          //                  Machine: Bride of Pinbot, The (D-2) LED Ghost Fix
@@ -2906,6 +2908,7 @@ DRIVER(taf,l6)          //          03/93 B Addams Family, The (L-6)
 DRIVER(taf,d6)          //                  Addams Family, The (D-6) LED Ghost Fix
 DRIVER(taf,l7)          //          10/92 B Addams Family, The (L-7) (Prototype L-5)
 DRIVER(taf,d7)          //                  Addams Family, The (D-7) (Prototype L-5) LED Ghost Fix
+DRIVER(taf,d7bs)        //          04/26   Addams Family, The (D-7) (Prototype L-5) Ballsave MOD + LED Ghost Fix
 DRIVER(taf,h4)          //          05/94 B Addams Family, The (H-4)
 DRIVER(taf,i4)          //                  Addams Family, The (I-4) LED Ghost Fix
 DRIVER(gw,pb)           //WPC-504:  03/92 W Getaway: High Speed II, The (P-B)

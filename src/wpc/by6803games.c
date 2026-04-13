@@ -367,7 +367,7 @@ CORE_CLONEDEFNV(trucksp2,trucksp3,"Truck Stop (P-2 Prototype)",1988,"Bally",by_m
 / Atlantis (6803-2006: 03/89)
 /-----------------------------------------------------------*/
 // rev. 2 exists but yet undumped (https://pinside.com/pinball/forum/topic/bally-atlantis-ownerss-club-fans-welcome/page/11#post-2697513)
-// also an excessive tournament MOD exists (slochar, allentownpinball)
+// also an excessive tournament MOD exists (slochar, allentownpinball) (the latter one below should(!) be the most recent one of that)
 INITGAME6803(atlantis,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(atlantis, "u26_cpu.rom",CRC(b98491e1) SHA1(b867e2b24e93c4ee19169fe93c0ebfe0c1e2fc25),
                             "u27_cpu.rom",CRC(8ea2b4db) SHA1(df55a9fb70d1cabad51dc2b089af7904a823e1d8))
@@ -377,3 +377,13 @@ S11CS_SOUNDROM888(          "u4_snd.rom", CRC(6a48b588) SHA1(c58dbfd920c279d7b9d
 BY6803_ROMEND
 #define input_ports_atlantis input_ports_by6803a
 CORE_GAMEDEFNV(atlantis,"Atlantis (rev. 3)",1989,"Bally",by_mBY6803_S11CS,0)
+
+BY6803_ROMSTART44(atlantis, "ATLANTIS_U2_v3931.128",CRC(D8BF5909) SHA1(b35fbf54750300d36791212fb3a080d31bf1195d),
+                            "ATLANTIS_U3_v3931.128",CRC(7EC08607) SHA1(f6f4042d410da046bb5b8e239dffde937568e7b5))
+S11CS_SOUNDROM888(          "u4_snd.rom", CRC(6a48b588) SHA1(c58dbfd920c279d7b9d2de8558d73c687b29ce9c),
+                            "u19_snd.rom",CRC(1387467c) SHA1(8b3dd6c2fc94cfebc1879795532c651cda202846),
+                            "u20_snd.rom",CRC(d5a6a773) SHA1(30807e03655d2249c801007350bfb228a2e8a0a4))
+BY6803_ROMEND
+#define init_atlantist init_atlantis
+#define input_ports_atlantist input_ports_atlantis
+CORE_CLONEDEFNV(atlantist,atlantis,"Atlantis (rev. 3 Tournament MOD v3931)",2026,"Bally / slochar",by_mBY6803_S11CS,0) // 'fixed all the errors with the original tournament rom'

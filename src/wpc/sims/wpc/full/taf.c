@@ -463,6 +463,9 @@ WPC_ROMSTART(taf,d7,  "addam_d7.rom", 0x80000, CRC(a5c77254) SHA1(ed777c27aed06b
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
+WPC_ROMSTART(taf,d7bs,"addam_d7bs.rom",0x80000,CRC(B22A959B) SHA1(36388c0d3d938f7f86e7aea7d5751d22f7ee100f))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
 
 WPC_ROMSTART(taf,h4,  "addam_h4.rom",0x80000, CRC(d0bbd679) SHA1(ebd8c4981dd68a4f8e2dea90144486cb3cbd6b84))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
@@ -530,6 +533,7 @@ CORE_CLONEDEF(taf,d4,l5,   "Addams Family, The (D-4 LED Ghost Fix)",1992,"Bally"
 // L-5 Prototype L-6 missing
 CORE_CLONEDEF(taf,l7,l5,   "Addams Family, The (L-5 Prototype L-7)",1992,"Bally",wpc_mFliptronS,0) // internal name was apparently L-7, but later-on they released the official L-5 that includes all the changes up to the internal L-5 prototype named L-8
 CORE_CLONEDEF(taf,d7,l5,   "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAF L7 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 33). It also includes the "No Ghosting" patch.
 // L-5 Prototype L-8 missing
 CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1993,"Bally",wpc_mFliptronS,0) // Released only to a German distributor
 CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
@@ -537,6 +541,7 @@ CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally"
 CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1994,"Bally",wpc_mFliptronS,0) //!! make this the GAMEDEF instead of L-5, apparently this is the recommended version with additional home settings?
 CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 // 6.0H is missing
+// 7.0 is missing
 CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,dx3,lx3,"Addams Family Special Collectors Edition, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition, The (H-3)",1994,"Bally",wpc_mFliptronS,0)

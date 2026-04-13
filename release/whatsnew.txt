@@ -43,7 +43,7 @@ Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound (WIP, as support is also WIP in libvgm,MAME-vgmplay,etc)
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
 
-*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333
+*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))
 Gottlieb: renamed Monte Carlo (German) to German rev.1
@@ -55,13 +55,16 @@ Baywatch 4.02 (unofficial MOD)
 Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
 
 Clones:
+Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)
 Adventures of Rocky and Bullwinkle and Friends 1.03 (Italian), 1.10 (Belgian) (note that both dumps are incomplete, the italian set may be correct though, but the belgian one misses the display, so does not feature belgian text)
 Al's Garage Band Goes On A World Tour R09a (maybe newest version that exists? at least the newest one for the prototype/version-A/double-lock variants of the game)
 Arena (rev. 2) (most likely official, but unreleased so far, makes it the newest version available)
+Atlantis (rev. 3 Tournament MOD v3931)
 Bad Cats LF-1 (French)
 Bad Cats (The Cat's Meow) (MOD 1.2 & 1.3)
 Cue Ball Wizard (Spanish / Vifico license)
 Diner LA-4 (Fixed Right Ramp MOD)
+Funhouse 9.07H (LED Ghost Fix + Ballsaver MOD)
 Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
 High Speed (G-4 aka German PROTO4)
 Maverick 4.04 (German, Display 4.00)
