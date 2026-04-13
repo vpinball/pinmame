@@ -378,7 +378,7 @@ BY6803_ROMEND
 #define input_ports_atlantis input_ports_by6803a
 CORE_GAMEDEFNV(atlantis,"Atlantis (rev. 3)",1989,"Bally",by_mBY6803_S11CS,0)
 
-BY6803_ROMSTART44(atlantis, "ATLANTIS_U2_v3931.128",CRC(D8BF5909) SHA1(b35fbf54750300d36791212fb3a080d31bf1195d),
+BY6803_ROMSTART44(atlantist,"ATLANTIS_U2_v3931.128",CRC(D8BF5909) SHA1(b35fbf54750300d36791212fb3a080d31bf1195d),
                             "ATLANTIS_U3_v3931.128",CRC(7EC08607) SHA1(f6f4042d410da046bb5b8e239dffde937568e7b5))
 S11CS_SOUNDROM888(          "u4_snd.rom", CRC(6a48b588) SHA1(c58dbfd920c279d7b9d2de8558d73c687b29ce9c),
                             "u19_snd.rom",CRC(1387467c) SHA1(8b3dd6c2fc94cfebc1879795532c651cda202846),
