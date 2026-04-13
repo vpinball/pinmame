@@ -537,19 +537,21 @@ CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix 
 // L-5 Prototype L-8 missing
 CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1993,"Bally",wpc_mFliptronS,0) // Released only to a German distributor
 CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
-// H-3 is missing
+// H-3 missing (or is it actually the one of the Gold Edition below? -> unlikely though)
 CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1994,"Bally",wpc_mFliptronS,0) //!! make this the GAMEDEF instead of L-5, apparently this is the recommended version with additional home settings?
 CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-// 6.0H is missing
-// 7.0 is missing
-CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,dx3,lx3,"Addams Family Special Collectors Edition, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition, The (H-3)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,i3,lx3, "Addams Family Special Collectors Edition, The (I-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,la2,lx3,"Addams Family Special Collectors Edition, The (LA-2)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,da2,lx3,"Addams Family Special Collectors Edition, The (DA-2 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,la3,lx3,"Addams Family Special Collectors Edition, The (LA-3)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,da3,lx3,"Addams Family Special Collectors Edition, The (DA-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+// 6.0H missing
+// 7.0 missing
+
+CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition / Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,dx3,lx3,"Addams Family Special Collectors Edition / Gold, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition / Gold, The (H-3)",1994,"Bally",wpc_mFliptronS,0) // is it actually newer than LX-3/LA-3? (but only change apparently is 'Does not display "Free Play" when set to Free Play mode' -> needs verification), or is it just a MOD?
+CORE_CLONEDEF(tafg,i3,lx3, "Addams Family Special Collectors Edition / Gold, The (I-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,la2,lx3,"Addams Family Special Collectors Edition / Gold, The (LA-2)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,da2,lx3,"Addams Family Special Collectors Edition / Gold, The (DA-2 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,la3,lx3,"Addams Family Special Collectors Edition / Gold, The (LA-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,da3,lx3,"Addams Family Special Collectors Edition / Gold, The (DA-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+// L-1 missing
 
 /*----------
 / Game Data
