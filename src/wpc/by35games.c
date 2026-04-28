@@ -204,7 +204,7 @@ BY35_ROMSTARTx00(matatest,"matat0n.u2",CRC(64a6bb3c) SHA1(ced5fcd18009106ac3c7b4
                           "ptestn.u6", CRC(ccb213ec) SHA1(8defbe8e11a75d26daf1351f439dd409f1efc608))
 BY35_ROMEND
 #define input_ports_matatest input_ports_matahari
-CORE_CLONEDEFNV(matatest,matahari,"Mata Hari (New game rules)",2005,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES) // rev. 7
+CORE_CLONEDEFNV(matatest,matahari,"Mata Hari (New game rules MOD)",2005,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES) // rev. 7
 
 INITGAME(mataharb,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
 BY35_ROMSTARTx00(mataharb,"mata2732.u2",CRC(8d2db062) SHA1(7ccce6633fe16ec82ad387cd7e0913cf89be0cb1),
@@ -219,6 +219,20 @@ BY17_ROMSTARTx88(mataharc,"MataHari_U2.2716",  CRC(5794ecfb) SHA1(a8e9b7366d7968
 BY17_ROMEND
 #define input_ports_mataharc input_ports_matahari
 CORE_CLONEDEFNV(mataharc,matahari,"Mata Hari (Free Play+)",2019,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(matahard,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY35_ROMSTARTx00(matahard,"mataharif_U2_V22.2732", CRC(20E71AEC) SHA1(1f1b3c3397040618da70c12072daee0ea9ce8dd2),
+                          "mataharif_U6_V22.2732", CRC(995B3454) SHA1(05b670c1571c2db2a865e1728d405b8f41db66a3))
+BY35_ROMEND
+#define input_ports_matahard input_ports_matahari
+CORE_CLONEDEFNV(matahard,matahari,"Mata Hari (Free Play and MODified rules)",2025,"Bally / Quench",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(matahard7,GEN_BY17,dispBy7,FLIP_SW(FLIP_L),0,0,0)
+BY35_ROMSTARTx00(matahard7,"mataharif_U2_V22.2732",CRC(20E71AEC) SHA1(1f1b3c3397040618da70c12072daee0ea9ce8dd2),
+                           "mataharif_U6_V22.2732",CRC(995B3454) SHA1(05b670c1571c2db2a865e1728d405b8f41db66a3))
+BY35_ROMEND
+#define input_ports_matahard7 input_ports_matahari
+CORE_CLONEDEFNV(matahard7,matahari,"Mata Hari (Free Play and MODified rules, 7-digit)",2025,"Bally / Quench",by35_mBY17,GAME_USES_CHIMES) // needs DIP switch 19 on
 
 /*--------------------------------
 / Strikes and Spares
@@ -281,7 +295,7 @@ BY17_ROMSTARTx88(blackjcc,"728-32_2c.716",CRC(92ea5a4a) SHA1(1a81a64904e54140a65
                           "720-20_6.716", CRC(0c17aa4d) SHA1(729e61a29691857112579efcdb96a35e8e5b1279))
 BY17_ROMEND
 #define input_ports_blackjcc input_ports_blackjck
-CORE_CLONEDEFNV(blackjcc,blackjck,"Black Jack (Saucer points modification)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
+CORE_CLONEDEFNV(blackjcc,blackjck,"Black Jack (Saucer points MOD)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 INITGAME(blackjcd,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
 BY17_ROMSTARTx88(blackjcd,"BlackJack_U2.2716", CRC(3c9b14a0) SHA1(18c98ee172fc59c1bf8d1a86352c5697898790b9),
