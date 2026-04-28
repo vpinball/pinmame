@@ -109,6 +109,14 @@ BY6803_ROMEND
 #define input_ports_motrdomb input_ports_motrdome
 CORE_CLONEDEFNV(motrdomb,motrdome,"MotorDome (rev. B)",1986,"Bally",by_mBY6803_TCSS,0)
 
+BY6803_ROMSTART44(motrdomf,"motordome_U2_24-nov-86.bin",CRC(8A558F1B) SHA1(de89325c89676c15661e7056297f2a18fd99b17d), // Label is hard to read: "mOtORDOme U2(??) Rev F(?) 11-24-86"
+                           "motordome_U3_24-nov-86.bin",CRC(8EC6AF75) SHA1(2bd12d1ce19166f096281fbbde9ddceb77da0ba5))
+BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34abd678db7e031bde074b)) // also dumped, was same as above
+BY6803_ROMEND
+#define init_motrdomf init_motrdome
+#define input_ports_motrdomf input_ports_motrdome
+CORE_CLONEDEFNV(motrdomf,motrdome,"MotorDome (rev. F)",1986,"Bally",by_mBY6803_TCSS,0)
+
 // german version claims to be game #E69!?
 BY6803_ROMSTART44(motrdomg,"u2_11_de.bin",CRC(8a4bafd3) SHA1(d764d2e38be2df27ab982cfbedddb79f89ca2359),
                            "u3_11_de.bin",CRC(9cb10037) SHA1(7847a71a0295e8de51a8f2f8d406350eca4555bf))

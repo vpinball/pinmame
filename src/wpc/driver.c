@@ -344,6 +344,7 @@ DRIVERNV(beatclc2)      //          11/85 Beat the Clock (with flasher support)
 DRIVERNV(ladyluck)      //6803-0E34:02/86 Lady Luck
 DRIVERNV(motrdomb)      //6803-0E14:05/86 MotorDome (rev. B)
 DRIVERNV(motrdome)      //          06/86 MotorDome (rev. D)
+DRIVERNV(motrdomf)      //          11/86 MotorDome (rev. F)
 DRIVERNV(motrdomg)      //6803-0E69:07/86 MotorDome (German rev. B)
                         //6803-????:06/86 Karate Fight (Prototype for Black Belt?)
 DRIVERNV(blackblt)      //6803-0E52:07/86 Black Belt
