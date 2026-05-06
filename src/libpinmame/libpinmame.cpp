@@ -1470,6 +1470,24 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
 }
 
 /******************************************************
+ * PinmameGetRawMemoryRegion
+ ******************************************************/
+
+PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region)
+{
+	return _isRunning ? memory_region(region) : nullptr;
+}
+
+/******************************************************
+ * PinmameGetRawMemoryRegionLength
+ ******************************************************/
+
+PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region)
+{
+	return _isRunning ? memory_region_length(region) : 0;
+}
+
+/******************************************************
  * PinmameSetUserData
  ******************************************************/
 

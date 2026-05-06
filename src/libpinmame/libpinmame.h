@@ -481,4 +481,6 @@ PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value);
 PINMAMEAPI int PinmameGetMaxNVRAM();
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
+PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region);
+PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region);
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);
