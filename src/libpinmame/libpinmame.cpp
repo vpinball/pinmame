@@ -21,6 +21,7 @@ extern "C" {
 #include "video.h"
 #include "audit.h"
 #include "mech.h"
+#include "memory.h"
 
 extern int throttle;
 extern int autoframeskip;
@@ -1467,6 +1468,27 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
 	mame_fclose(nvram_file);
 
 	return count;
+}
+
+/******************************************************
+ * PinmameReadMainCPUByte
+ ******************************************************/
+
+PINMAMEAPI int PinmameReadMainCPUByte(const uint32_t address, uint8_t* const p_value)
+{
+	if (!_isRunning || p_value == nullptr)
+	{
+		return 0;
+	}
+
+	uint8_t* p_memory = static_cast<uint8_t*>(memory_get_read_ptr(0, address));
+	if (p_memory == nullptr)
+	{
+		return 0;
+	}
+
+	*p_value = *p_memory;
+	return 1;
 }
 
 /******************************************************
