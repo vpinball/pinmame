@@ -21,7 +21,7 @@ jobs:
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: version
@@ -42,7 +42,7 @@ jobs:
 
   build:
     name: Build VPinMAME${{ matrix.artifact-suffix }}-${{ matrix.platform }}
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     needs: [ version ]
     strategy:
       fail-fast: false
@@ -73,7 +73,7 @@ jobs:
             artifact-suffix: -sc
             extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ilammy/setup-nasm@v1
       - name: Update buildnumber
         run: |
@@ -87,14 +87,14 @@ jobs:
         run: |
           cp cmake/vpinmame/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake \
-             -G "Visual Studio 17 2022" \
+             -G "Visual Studio 18 2026" \
              -A ${{ matrix.platform-name }} \
              ${{ matrix.extra-flags }} \
              -B build/vpinmame
           cmake --build build/vpinmame --config Release
           cp cmake/instvpm/CMakeLists_${{ matrix.platform }}.txt CMakeLists.txt
           cmake \
-             -G "Visual Studio 17 2022" \
+             -G "Visual Studio 18 2026" \
              -A ${{ matrix.platform-name }} \
              -B build/instvpm
           cmake --build build/instvpm --config Release
@@ -110,7 +110,7 @@ jobs:
           cp release/VPMAlias.txt tmp/VPMAlias_template.txt
           cp release/whatsnew.txt tmp
           cp release/whatsnewVPM.txt tmp
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: VPinMAME${{ matrix.artifact-suffix }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp
