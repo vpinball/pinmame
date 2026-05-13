@@ -18,6 +18,7 @@ static struct {
 } locals;
 
 static INTERRUPT_GEN(stargame_vblank) {
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   core_updateSw(core_getSol(18));
 }
 
@@ -77,6 +78,11 @@ static MACHINE_RESET(WHTFORCE) {
 }
 
 static MACHINE_STOP(STARGAME) {
+  int i;
+  cpu_set_nmi_line(0, PULSE_LINE); // NMI routine makes sure the NVRAM is valid!
+  for (i = 0; i < 20; i++) { // run some timeslices before shutdown so the NMI routine can finish
+    run_one_timeslice();
+  }
 }
 
 #ifdef MAME_DEBUG
@@ -154,9 +160,12 @@ static WRITE_HANDLER(port_40_w) {
   locals.swCol = core_BitColToNum(data);
 }
 
-// solenoids are part of the lamp matrix, as usual on Spanish manufacturers, but this time very heavily so!
+// Solenoids are part of the lamp matrix, as usual with Spanish manufacturers, but this time very heavily so!
+// Also, there are two groups of lamps being written to by the very same port outputs, alternating by ZC.
+// Thanks to mfuegemann for noticing. :)
 static WRITE_HANDLER(port_5x_w) {
-  coreGlobals.lampMatrix[offset] = data;
+  // spcship clears all lamps before writing them again, I hope copying over from tmpLampMatrix will reduce flicker
+  coreGlobals.tmpLampMatrix[offset + 8 * !locals.zc] = data;
   if (locals.isWf) {
     switch (offset) {
       case 0: coreGlobals.solenoids = (coreGlobals.solenoids & 0xffefe) | ((data >> 3) & 1) | (((data >> 5) & 1) << 8); break;
@@ -193,6 +202,7 @@ static WRITE_HANDLER(port_6x_w) {
               AY8910_reset(0);
             }
             break;
+    case 7: break; // enables CMOS, always 1 when NMI is not hi
   }
 }
 
@@ -346,7 +356,7 @@ STARGAME_COMPORTS(spcship, 1)
     COREPORT_BIT   (0x0800, "F3",          KEYCODE_3_PAD)
     COREPORT_BIT   (0x1000, "F4",          KEYCODE_4_PAD)
   INPUT_PORTS_END
-INITGAME(spcship,dispSpcship,FLIP_SW(FLIP_L),0)
+INITGAME(spcship,dispSpcship,FLIP_SW(FLIP_L),8)
 CORE_GAMEDEFNV(spcship, "Space Ship", 1986, "Stargame", spcship, 0)
 
 static MACHINE_DRIVER_START(whtforce)
@@ -377,5 +387,5 @@ STARGAME_COMPORTS(whtforce, 1)
     COREPORT_BIT   (0x0800, "Test",        KEYCODE_7)
     COREPORT_BIT   (0x0200, "Advance",     KEYCODE_8)
   INPUT_PORTS_END
-INITGAME(whtforce,dispWhtforce,FLIP_SW(FLIP_L),0)
+INITGAME(whtforce,dispWhtforce,FLIP_SW(FLIP_L),8)
 CORE_GAMEDEFNV(whtforce, "White Force", 1987, "Stargame", whtforce, 0)
