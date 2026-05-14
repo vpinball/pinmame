@@ -44,9 +44,9 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 
 	TCHAR szMsg[256];
 	if ( fRegister )
-		wsprintf(szMsg, TEXT("You have selected to install version %s of Visual PinMAME! \nAre you ready to proceed?"), szVersion);
+		_sntprintf_s(szMsg, _countof(szMsg), _TRUNCATE, TEXT("You have selected to install version %s of Visual PinMAME! \nAre you ready to proceed?"), szVersion);
 	else
-		wsprintf(szMsg, TEXT("You have selected to uninstall version %s of Visual PinMAME! \nAre you ready to proceed?"), szVersion);	
+		_sntprintf_s(szMsg, _countof(szMsg), _TRUNCATE, TEXT("You have selected to uninstall version %s of Visual PinMAME! \nAre you ready to proceed?"), szVersion);
 
 	if ( MessageBox(hWnd, szMsg, g_szCaption, MB_ICONQUESTION|MB_YESNO)==IDNO ) {
 		if ( fRegister )
@@ -211,9 +211,9 @@ void DisplayInstalledVersion(HWND hWnd)
 
 	TCHAR szVersionText[256];
 	if(strlen(szInstalledVersion) > 0)
-		wsprintf(szVersionText, TEXT("* Visual PinMAME Version %s is currently installed on your computer *"), szInstalledVersion);
+		_sntprintf_s(szVersionText, _countof(szVersionText), _TRUNCATE, TEXT("* Visual PinMAME Version %s is currently installed on your computer *"), szInstalledVersion);
 	else
-		wsprintf(szVersionText, TEXT("* Visual PinMAME is not currently installed on your computer *"));
+		_sntprintf_s(szVersionText, _countof(szVersionText), _TRUNCATE, TEXT("* Visual PinMAME is not currently installed on your computer *"));
 	SendMessage(GetDlgItem(hWnd, IDC_INSTALLEDVERSION), WM_SETTEXT, 0, (LPARAM) szVersionText);
 }
 
@@ -245,7 +245,7 @@ INT_PTR PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		GetWindowText(hWnd, szHelp, sizeof szHelp);
 
-		wsprintf(g_szCaption, szHelp, szVersion);
+		_sntprintf_s(g_szCaption, _countof(g_szCaption), _TRUNCATE, szHelp, szVersion);
 		SetWindowText(hWnd, g_szCaption);
 
 		EnabledButtons(hWnd);
