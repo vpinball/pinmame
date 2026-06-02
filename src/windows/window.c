@@ -48,9 +48,292 @@
 #endif
 
 #ifndef FAST_NN_BLIT
- #include "..\..\ext\basicbitmap\BasicBitmap_C.h"
+ //	Bilinear image resampling (SSE2)
+
+ #include <emmintrin.h>
+ #include <string.h>
+
  static UINT16 *upscale_bitmap = NULL;
  static UINT32 upscale_bitmap_size = 0;
+
+ // persistent scratch buffer for bm_resample(), grown on demand (in UINT32 units)
+ static UINT32 *bm_scratch = NULL;
+ static size_t bm_scratch_size = 0;
+
+ // pixel formats handled below (src and dst must always be same format)
+ enum { X1R5G5B5, R8G8B8, X8R8G8B8 };
+
+ // bytes per pixel
+ static inline int bm_bpp(int fmt) { return (fmt == X1R5G5B5) ? 2 : ((fmt == R8G8B8) ? 3 : 4); }
+
+ // (c1 * f1 + c2 * f2) >> 8 for four A8R8G8B8 pixels at once
+ static inline __m128i interp_quad(const __m128i c1, const __m128i c2, const __m128i f1, const __m128i f2, const __m128i mask)
+ {
+	__m128i rb1 = _mm_and_si128(c1, mask);
+	__m128i rb2 = _mm_and_si128(c2, mask);
+	__m128i ag1 = _mm_srli_epi16(c1, 8);
+	__m128i ag2 = _mm_srli_epi16(c2, 8);
+	rb1 = _mm_mullo_epi16(rb1, f1);
+	rb2 = _mm_mullo_epi16(rb2, f2);
+	ag1 = _mm_mullo_epi16(ag1, f1);
+	ag2 = _mm_mullo_epi16(ag2, f2);
+	rb1 = _mm_srli_epi16(_mm_adds_epu16(rb1, rb2), 8);
+	ag1 = _mm_srli_epi16(_mm_adds_epu16(ag1, ag2), 8);
+	return _mm_or_si128(_mm_slli_epi32(ag1, 8), rb1);
+ }
+
+ // interpolate between two source rows (A8R8G8B8) into card, 16.16 fixed-point fraction
+ static inline void interp_row(UINT32 *card, int w, const UINT32 *row1, const UINT32 *row2, const INT32 fraction)
+ {
+	const int frac = (fraction >> 8) & 0xff;
+	const __m128i mask = _mm_set1_epi16(0x00ff);
+	const __m128i f2 = _mm_set1_epi16((short)frac);
+	const __m128i f1 = _mm_set1_epi16((short)(256 - frac));
+
+	if (fraction == 0) {
+		memcpy(card, row1, (size_t)w * 4);
+		return;
+	}
+
+	for (; w >= 8; card += 8, row1 += 8, row2 += 8, w -= 8) {
+		__m128i c1 = _mm_loadu_si128((const __m128i*)row1);
+		__m128i c2 = _mm_loadu_si128((const __m128i*)row2);
+		__m128i c3 = _mm_loadu_si128((const __m128i*)row1 + 1);
+		__m128i c4 = _mm_loadu_si128((const __m128i*)row2 + 1);
+		_mm_storeu_si128((__m128i*)card + 0, interp_quad(c1, c2, f1, f2, mask));
+		_mm_storeu_si128((__m128i*)card + 1, interp_quad(c3, c4, f1, f2, mask));
+	}
+	if (w & 4) {
+		__m128i c1 = _mm_loadu_si128((const __m128i*)row1);
+		__m128i c2 = _mm_loadu_si128((const __m128i*)row2);
+		_mm_storeu_si128((__m128i*)card, interp_quad(c1, c2, f1, f2, mask));
+		card += 4; row1 += 4; row2 += 4; w -= 4;
+	}
+	for (; w > 0; row1++, row2++, card++, w--) {
+		__m128i c1 = _mm_cvtsi32_si128((int)row1[0]);
+		__m128i c2 = _mm_cvtsi32_si128((int)row2[0]);
+		card[0] = (UINT32)_mm_cvtsi128_si32(interp_quad(c1, c2, f1, f2, mask));
+	}
+ }
+
+ // horizontally resample one A8R8G8B8 row, sampling src at x (16.16) stepping by dx
+ static void interp_col(UINT32* card, int w, const UINT32* src, INT32 x, const INT32 dx)
+ {
+	 const __m128i mask = _mm_set1_epi32(0xff00ff);
+	 const __m128i k_ff00 = _mm_set1_epi32(0xff00);
+	 const __m128i k_256 = _mm_set1_epi16(256);
+	 const __m128i dx128 = _mm_set1_epi32(dx * 4);
+	 __m128i x128 = _mm_set_epi32(x + dx * 3, x + dx * 2, x + dx, x);
+	 int i, tail;
+
+	 if (dx == 0x10000 && (x & 0xffff) == 0) {
+		 int xi = x >> 16;
+		 for (; w > 0; w--, card++, xi++)
+			 *card = src[xi];
+		 return;
+	 }
+
+	 for (; w >= 4; w -= 4, card += 4) {
+		 const __m128i xi = _mm_srli_epi32(x128, 16);
+
+		 const int i0 = _mm_cvtsi128_si32(xi);
+		 const int i1 = _mm_cvtsi128_si32(_mm_shuffle_epi32(xi, _MM_SHUFFLE(1, 1, 1, 1)));
+		 const int i2 = _mm_cvtsi128_si32(_mm_shuffle_epi32(xi, _MM_SHUFFLE(2, 2, 2, 2)));
+		 const int i3 = _mm_cvtsi128_si32(_mm_shuffle_epi32(xi, _MM_SHUFFLE(3, 3, 3, 3)));
+
+		 __m128 ic0 = _mm_loadh_pi(_mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(src + i0)), (const __m64*)(src + i1));
+		 __m128 ic2 = _mm_loadh_pi(_mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(src + i2)), (const __m64*)(src + i3));
+		 __m128i c1 = _mm_castps_si128(_mm_shuffle_ps(ic0, ic2, _MM_SHUFFLE(2, 0, 2, 0)));
+		 __m128i c2 = _mm_castps_si128(_mm_shuffle_ps(ic0, ic2, _MM_SHUFFLE(3, 1, 3, 1)));
+
+		 __m128i f = _mm_and_si128(x128, k_ff00);
+		 __m128i fx = _mm_or_si128(_mm_srli_epi32(f, 8), _mm_slli_epi32(f, 8));
+		 __m128i fz = _mm_sub_epi16(k_256, fx);
+		 __m128i rb = _mm_srli_epi16(_mm_adds_epu16(_mm_mullo_epi16(_mm_and_si128(c1, mask), fz), _mm_mullo_epi16(_mm_and_si128(c2, mask), fx)), 8);
+		 __m128i ag = _mm_adds_epu16(_mm_mullo_epi16(_mm_srli_epi16(c1, 8), fz), _mm_mullo_epi16(_mm_srli_epi16(c2, 8), fx));
+		 _mm_storeu_si128((__m128i*)card, _mm_or_si128(rb, _mm_andnot_si128(mask, ag)));
+		 x128 = _mm_add_epi32(x128, dx128);
+	 }
+
+	 // recover scalar x from lane 0 of x128 for the 1..3 pixel tail
+	 x = _mm_cvtsi128_si32(x128);
+
+	 tail = w;
+	 for (i = 0; i < tail; i++, x += dx) {
+		 const INT32 xi = x >> 16;
+		 const UINT32 c1 = src[xi];
+		 const UINT32 c2 = src[xi + 1];
+		 const INT32 fx = (x & 0xffff) >> 8;
+		 const INT32 fz = 256 - fx;
+		 const UINT32 rb = ((c1 & 0xff00ff) * fz + (c2 & 0xff00ff) * fx) >> 8;
+		 const UINT32 ag = ((c1 >> 8) & 0xff00ff) * fz + ((c2 >> 8) & 0xff00ff) * fx;
+		 *card++ = (rb & 0xff00ff) | (ag & 0xff00ff00);
+	 }
+ }
+
+ // convert one source row to A8R8G8B8 (X8R8G8B8 is read directly, no fetch needed)
+ static void fetch_row(const int fmt, const void* bits, const int w, UINT32* const __restrict buf)
+ {
+	 int i;
+	 if (fmt == X1R5G5B5) {
+		 const UINT16* const __restrict s = (const UINT16*)bits;
+		 const __m128i m5 = _mm_set1_epi16(0x001f);
+		 const __m128i mAhi = _mm_set1_epi16((short)0xff00); // alpha = 0xff
+		 // 8 pixels per iteration
+		 for (i = 0; i + 7 < w; i += 8) {
+			 const __m128i v = _mm_loadu_si128((const __m128i*)(s + i));
+			 // extract 5-bit channels into 16-bit lanes
+			 const __m128i r5 = _mm_and_si128(_mm_srli_epi16(v, 10), m5);
+			 const __m128i g5 = _mm_and_si128(_mm_srli_epi16(v, 5), m5);
+			 const __m128i b5 = _mm_and_si128(v, m5);
+			 // 5 -> 8 bit replication: (x<<3) | (x>>2)
+			 const __m128i r8 = _mm_or_si128(_mm_slli_epi16(r5, 3), _mm_srli_epi16(r5, 2));
+			 const __m128i g8 = _mm_or_si128(_mm_slli_epi16(g5, 3), _mm_srli_epi16(g5, 2));
+			 const __m128i b8 = _mm_or_si128(_mm_slli_epi16(b5, 3), _mm_srli_epi16(b5, 2));
+			 // pack into BGRA byte order
+			 const __m128i bg = _mm_or_si128(_mm_slli_epi16(g8, 8), b8); // [G:B] per 16-bit lane
+			 const __m128i ar = _mm_or_si128(mAhi, r8);                  // [A=ff:R] per 16-bit lane
+			 _mm_storeu_si128((__m128i*)(buf + i), _mm_unpacklo_epi16(bg, ar));
+			 _mm_storeu_si128((__m128i*)(buf + i + 4), _mm_unpackhi_epi16(bg, ar));
+		 }
+		 // scalar tail
+		 for (; i < w; i++) {
+			 const UINT32 cc = s[i];
+			 const UINT32 e = ((cc & 0x7c00u) << 9) | ((cc & 0x03e0u) << 6) | ((cc & 0x001fu) << 3);
+			 buf[i] = 0xff000000u | e | ((e >> 5) & 0x00070707u);
+		 }
+	 }
+	 else { // R8G8B8
+		 const UINT8* __restrict s = (const UINT8*)bits;
+		 for (i = 0; i < w; i++, s += 3)
+			 buf[i] = 0xff000000u | s[0] | ((UINT32)s[1] << 8) | ((UINT32)s[2] << 16);
+	 }
+ }
+
+ // convert one A8R8G8B8 row back to the destination pixel format
+ static void store_row(const int fmt, void* bits, const int w, const UINT32* const __restrict buf)
+ {
+	 int i;
+	 if (fmt == X1R5G5B5) {
+		 UINT16* const __restrict d = (UINT16*)bits;
+		 const __m128i mR = _mm_set1_epi32(0x00007c00);
+		 const __m128i mG = _mm_set1_epi32(0x000003e0);
+		 const __m128i mB = _mm_set1_epi32(0x0000001f);
+		 // 8 pixels per iteration
+		 for (i = 0; i + 7 < w; i += 8) {
+			 const __m128i c0 = _mm_loadu_si128((const __m128i*)(buf + i));
+			 const __m128i c1 = _mm_loadu_si128((const __m128i*)(buf + i + 4));
+			 // per 32-bit lane: ((c>>9)&0x7c00) | ((c>>6)&0x03e0) | ((c>>3)&0x1f)
+			 const __m128i p0 = _mm_or_si128(
+				 _mm_or_si128(_mm_and_si128(_mm_srli_epi32(c0, 9), mR),
+					 _mm_and_si128(_mm_srli_epi32(c0, 6), mG)),
+				 _mm_and_si128(_mm_srli_epi32(c0, 3), mB));
+			 const __m128i p1 = _mm_or_si128(
+				 _mm_or_si128(_mm_and_si128(_mm_srli_epi32(c1, 9), mR),
+					 _mm_and_si128(_mm_srli_epi32(c1, 6), mG)),
+				 _mm_and_si128(_mm_srli_epi32(c1, 3), mB));
+			 // values <= 0x7fff -> signed pack works
+			 _mm_storeu_si128((__m128i*)(d + i), _mm_packs_epi32(p0, p1));
+		 }
+		 for (; i < w; i++) {
+			 const UINT32 c = buf[i];
+			 d[i] = (UINT16)(((c >> 9) & 0x7c00u) | ((c >> 6) & 0x03e0u) | ((c >> 3) & 0x001fu));
+		 }
+	 }
+	 else if (fmt == R8G8B8) {
+		 UINT8* __restrict d = (UINT8*)bits;
+		 for (i = 0; i < w; i++, d += 3) {
+			 const UINT32 c = buf[i];
+			 d[0] = (UINT8)(c & 0xff);
+			 d[1] = (UINT8)((c >> 8) & 0xff);
+			 d[2] = (UINT8)((c >> 16) & 0xff);
+		 }
+	 }
+	 else { // X8R8G8B8
+		 UINT32* const __restrict d = (UINT32*)bits;
+		 // clear top byte, 4 pixels per iteration
+		 const __m128i m24 = _mm_set1_epi32(0x00ffffff);
+		 for (i = 0; i + 3 < w; i += 4)
+			 _mm_storeu_si128((__m128i*)(d + i), _mm_and_si128(_mm_loadu_si128((const __m128i*)(buf + i)), m24));
+		 for (; i < w; i++)
+			 d[i] = buf[i] & 0xffffff;
+	 }
+ }
+
+ // bilinear resample srcbits (sw x sh) into dstbits (dw x dh), both tightly packed
+ static void bm_resample(const int fmt, void *dstbits, const int dw, const int dh, const void *srcbits, const int sw, const int sh)
+ {
+	const int dbpp = bm_bpp(fmt);
+	const int is32 = (fmt == X8R8G8B8);
+	const INT32 offx = (sw == dw) ? 0 : 0x8000;
+	const INT32 offy = (sh == dh) ? 0 : 0x8000;
+	const INT32 incx = ((INT32)sw << 16) / dw;
+	const INT32 incy = ((INT32)sh << 16) / dh;
+	const int need = is32 ? 0 : (sw * 2);
+	const size_t want = (size_t)(sw + 4 + dw + need);
+	UINT32 *srcrow, *cache, *scanline1 = NULL, *scanline2 = NULL;
+	INT32 starty = offy; // sy == 0
+	int old_y1 = (int)0x80000000;
+	int old_y2 = (int)0x80000000;
+	int j;
+
+	if (bm_scratch_size < want) {
+		free(bm_scratch);
+		bm_scratch = (UINT32*)malloc(want * 4);
+		bm_scratch_size = (bm_scratch != NULL) ? want : 0;
+	}
+	if (bm_scratch == NULL)
+		return;
+
+	srcrow = bm_scratch;
+	cache = bm_scratch + sw + 4;
+	if (!is32) {
+		scanline1 = cache + dw;
+		scanline2 = scanline1 + sw;
+	}
+
+	for (j = 0; j < dh; j++) {
+		UINT8 *dstrow = (UINT8*)dstbits + (size_t)j * dw * dbpp;
+		const UINT32 *row1, *row2;
+		const int my = sh - 1;
+		int y1 = starty >> 16;
+		int y2 = y1 + 1;
+		y1 = (y1 < 0) ? 0 : ((y1 > my) ? my : y1);
+		y2 = (y2 < 0) ? 0 : ((y2 > my) ? my : y2);
+
+		if (is32) {
+			row1 = (const UINT32*)srcbits + (size_t)y1 * sw;
+			row2 = (const UINT32*)srcbits + (size_t)y2 * sw;
+		} else {
+			row1 = scanline1;
+			row2 = scanline2;
+			if (old_y1 != y1) {
+				fetch_row(fmt, (const UINT8*)srcbits + (size_t)y1 * sw * dbpp, sw, scanline1);
+				old_y1 = y1;
+			}
+			if (old_y2 != y2) {
+				fetch_row(fmt, (const UINT8*)srcbits + (size_t)y2 * sw * dbpp, sw, scanline2);
+				old_y2 = y2;
+			}
+		}
+
+		interp_row(srcrow, sw, row1, row2, starty & 0xffff);
+		starty += incy;
+
+		// repeat right edge for the horizontal interpolation reading src[xi + 1]
+		srcrow[sw] = srcrow[sw - 1];
+		srcrow[sw + 1] = srcrow[sw - 1];
+
+		if (dw == sw) {
+			store_row(fmt, dstrow, dw, srcrow);
+		} else if (is32) {
+			interp_col((UINT32*)dstrow, dw, srcrow, offx, incx);
+		} else {
+			interp_col(cache, dw, srcrow, offx, incx);
+			store_row(fmt, dstrow, dw, cache);
+		}
+	}
+ }
 #endif
 
 //============================================================
@@ -704,6 +987,10 @@ void win_destroy_window(void)
 		free(upscale_bitmap);
 	upscale_bitmap = NULL;
 	upscale_bitmap_size = 0;
+
+	free(bm_scratch);
+	bm_scratch = NULL;
+	bm_scratch_size = 0;
 #endif
 }
 
@@ -1691,24 +1978,20 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 			upscale_bitmap = (UINT16*)malloc(upscale_bitmap_size*((bitmap->depth+1)/8)); // +1 for 15bit
 		}
 
-		BasicBitmap_SSE2_AVX_Enable();
 		switch(bitmap->depth)
 		{
-		case 16:
-			/*ResampleR5G6B5(upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top), //!! 16 also seems to mean 15??!
-							(UINT16*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
-			break;*/
+		case 16: //!! 16 also seems to mean 15??!
 		case 15:
-			ResampleX1R5G5B5(upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-							(UINT16*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			bm_resample(X1R5G5B5, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+							converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		case 24:
-			ResampleR8G8B8((UINT8*)upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-							(UINT8*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			bm_resample(R8G8B8, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+							converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		case 32:
-			ResampleX8R8G8B8((UINT32*)upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-							(UINT32*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			bm_resample(X8R8G8B8, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+							converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		default:
 			logerror("Cannot Resample, unknown bit depth");
