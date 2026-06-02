@@ -80,6 +80,7 @@ Soccer Kings (alternate set 2)
 STTNG LX-9 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
 Super Mario Bros. (Spanish / Vifico license) (rev.1 and (most likely) rev.2)
 Surf 'n Safari (Tournament MOD)
+Swords of Fury (Richrom/Lionman MOD V1, with and without swords sounds)
 Transporter the Rescue L-3 (Fixed Jackpot MOD), LX-4 (Competition MOD in 2 variants: 'adult' and clean (one replaced word))
 Victory (tournament/competition MOD 1.1 & 1.2 & 1.3)
 
