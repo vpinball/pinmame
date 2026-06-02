@@ -1,5 +1,5 @@
 // license:BSD-3-Clause
-// copyright-holders:Carsten Wächter
+// copyright-holders:Carsten WÃ¤chter
 #pragma once
 
 #ifdef __cplusplus
@@ -12,9 +12,6 @@
 
 // Std Library includes
 #include <stdio.h>
-
-// Local includes
-#include "../../ext/bass/bass.h"
 
 #ifdef __cplusplus
   extern "C" {

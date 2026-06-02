@@ -7,13 +7,16 @@ Version 3.7 (XX XXth, 2026) - ""
 ------------------------------------------------------------------------------
 
 Users now can set the 'serial_device' setting (registry key) to a COM port,
-to attach to the WPC/WPC95 serial printer interface.
+to attach to the WPC/WPC95 serial printer interface
 
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
 Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, trackball or lightgun)
 
 VS2026 build support
+
+Get rid of BasicBitmap external dependency
+Get rid of BASS external dependency (used for internal AltSound mode 1 support) and replace by miniaudio
 
 *** CORE/CPU ***
 Fixed a potential small problem with Bally VideoPins sound emulation

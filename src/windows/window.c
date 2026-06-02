@@ -1965,8 +1965,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 #else
 	StretchDIBits(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
 #endif
-				  0, 0, win_visible_width * xmult, win_visible_height * ymult,
-				  converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
+	              0, 0, win_visible_width * xmult, win_visible_height * ymult,
+	              converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
 	}
 #else
 	{
@@ -1983,15 +1983,15 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 		case 16: //!! 16 also seems to mean 15??!
 		case 15:
 			bm_resample(X1R5G5B5, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-							converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			            converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		case 24:
 			bm_resample(R8G8B8, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-							converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			            converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		case 32:
 			bm_resample(X8R8G8B8, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-							converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			            converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		default:
 			logerror("Cannot Resample, unknown bit depth");
@@ -1999,8 +1999,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 		}
 
 		SetDIBitsToDevice(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
-			              0, 0, 0, (client.bottom - client.top),
-			              upscale_bitmap, video_dib_info, DIB_RGB_COLORS);
+		                  0, 0, 0, (client.bottom - client.top),
+		                  upscale_bitmap, video_dib_info, DIB_RGB_COLORS);
 	}
 #endif
 

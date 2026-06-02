@@ -138,9 +138,6 @@
       <UniqueIdentifier>{025c82ac-f73b-408e-a1bd-9fe88ad3cee9}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
-    <Filter Include="Source Files\external\basicbitmap">
-      <UniqueIdentifier>{04845ed9-2191-4b84-b489-705dd4c69b24}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\external\vgm">
       <UniqueIdentifier>{7064aa94-bbf5-4de4-90ba-898193e6e8bf}</UniqueIdentifier>
     </Filter>
@@ -1277,12 +1274,6 @@
     <ClCompile Include="..\src\wpc\dmddevice.cpp">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext\basicbitmap\BasicBitmap.cpp">
-      <Filter>Source Files\external\basicbitmap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ext\basicbitmap\BasicBitmap_SSE2.cpp">
-      <Filter>Source Files\external\basicbitmap</Filter>
-    </ClCompile>
     <ClCompile Include="..\ext\vgm\vgmwrite.c">
       <Filter>Source Files\external\vgm</Filter>
     </ClCompile>
@@ -1371,6 +1362,12 @@
       <Filter>Source Files\PinMAME\altsound</Filter>
     </ClCompile>
     <ClCompile Include="..\src\wpc\altsound\snd_alt.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\altsound\miniaudio_bass_compat.cpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\altsound\miniaudio_private.c">
       <Filter>Source Files\PinMAME\altsound</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2086,12 +2083,6 @@
     <ClInclude Include="..\src\wpc\dmddevice.h">
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
-    <ClInclude Include="..\ext\basicbitmap\BasicBitmap.h">
-      <Filter>Source Files\external\basicbitmap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext\basicbitmap\BasicBitmap_C.h">
-      <Filter>Source Files\external\basicbitmap</Filter>
-    </ClInclude>
     <ClInclude Include="..\ext\vgm\vgmwrite.h">
       <Filter>Source Files\external\vgm</Filter>
     </ClInclude>
@@ -2162,6 +2153,12 @@
       <Filter>Source Files\PinMAME\altsound</Filter>
     </ClInclude>
     <ClInclude Include="..\src\wpc\altsound\snd_alt.h">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\wpc\altsound\miniaudio_bass_compat.hpp">
+      <Filter>Source Files\PinMAME\altsound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\wpc\altsound\miniaudio_private.h">
       <Filter>Source Files\PinMAME\altsound</Filter>
     </ClInclude>
   </ItemGroup>

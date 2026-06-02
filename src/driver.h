@@ -81,7 +81,7 @@ typedef struct {
   int dmd_red33, dmd_green33, dmd_blue33;
   int dmd_red0, dmd_green0, dmd_blue0;
   int dmd_opacity;
-  int resampling_quality; // 0 = fast, 1 = normal (for SRC and BASS settings)
+  int resampling_quality; // 0 = fast, 1 = normal (for SRC setting)
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND) || defined(LIBPINMAME)
   int sound_mode; // 0 = pinmame/emulation, 1 = altsound, 2 = pinsound, 3 = pinsound + recordings
 #endif

@@ -45,6 +45,10 @@ set(STANDALONE_SOURCES
    altsound_csv_parser.hpp
    gsound_processor.cpp
    gsound_processor.hpp
+   miniaudio_private.c
+   miniaudio_private.h
+   miniaudio_bass_compat.cpp
+   miniaudio_bass_compat.hpp
    ${ROOT_DIR}/src/vc/dirent.c # for AltsoundFileParser
    ${ROOT_DIR}/src/vc/dirent.h # for AltsoundFileParser
 )
@@ -87,15 +91,7 @@ target_include_directories(altsound PUBLIC
    ${ROOT_DIR}/src/wpc
    ${ROOT_DIR}/src/windows
    ${ROOT_DIR}/src/vc #dirent.h
-   ${ROOT_DIR}/ext/bass
-)
-
-target_link_directories(altsound PRIVATE
-   ${ROOT_DIR}/ext/bass
-)
-
-target_link_libraries(altsound PRIVATE
-   bass.lib
+   ${ROOT_DIR}/ext #miniaudio/miniaudio.h
 )
 
 target_link_options(altsound PRIVATE
@@ -117,16 +113,12 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
    )
 
    target_include_directories(altsound_test PRIVATE
-      ${ROOT_DIR}/ext/bass
+      ${ROOT_DIR}/ext #miniaudio/miniaudio.h
       ${ROOT_DIR}/src/vc #dirent.h
    )
 
    target_link_libraries(altsound_test PRIVATE
       altsound
-   )
-
-   target_link_directories(altsound_test PRIVATE
-      ${ROOT_DIR}/ext/bass
    )
 
    set_target_properties(altsound_test PROPERTIES

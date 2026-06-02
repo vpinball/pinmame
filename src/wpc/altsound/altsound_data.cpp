@@ -17,7 +17,7 @@
 #include <algorithm>
 
 // Local includes
-#include "../../ext/bass/bass.h"
+#include "miniaudio_bass_compat.hpp"
 #include "altsound_logger.hpp"
 
 // namespace resolution
@@ -123,66 +123,84 @@ AltsoundSampleType toSampleType(const std::string& type_in)
 }
 
 // ---------------------------------------------------------------------------
-// Helper function to translate BASS error codes to printable strings
+// Helper function to translate miniaudio error codes to printable strings
 // ---------------------------------------------------------------------------
 
-const char* get_bass_err()
+const char* get_miniaudio_err()
 {
-	// BASS error code->string mapping
-	static const char* bass_err_names[] = {
-		"BASS_OK",
-		"BASS_ERROR_MEM",
-		"BASS_ERROR_FILEOPEN",
-		"BASS_ERROR_DRIVER",
-		"BASS_ERROR_BUFLOST",
-		"BASS_ERROR_HANDLE",
-		"BASS_ERROR_FORMAT",
-		"BASS_ERROR_POSITION",
-		"BASS_ERROR_INIT",
-		"BASS_ERROR_START",
-		"BASS_ERROR_SSL",
-		"BASS_ERROR_REINIT",
-		"BASS_ERROR_ALREADY",
-		"BASS_ERROR_NOTAUDIO",
-		"BASS_ERROR_NOCHAN",
-		"BASS_ERROR_ILLTYPE",
-		"BASS_ERROR_ILLPARAM",
-		"BASS_ERROR_NO3D",
-		"BASS_ERROR_NOEAX",
-		"BASS_ERROR_DEVICE",
-		"BASS_ERROR_NOPLAY",
-		"BASS_ERROR_FREQ",
-		"BASS_ERROR_NOTFILE",
-		"BASS_ERROR_NOHW",
-		"BASS_ERROR_EMPTY",
-		"BASS_ERROR_NONET",
-		"BASS_ERROR_CREATE",
-		"BASS_ERROR_NOFX",
-		"BASS_ERROR_NOTAVAIL",
-		"BASS_ERROR_DECODE",
-		"BASS_ERROR_DX",
-		"BASS_ERROR_TIMEOUT",
-		"BASS_ERROR_FILEFORM",
-		"BASS_ERROR_SPEAKER",
-		"BASS_ERROR_VERSION",
-		"BASS_ERROR_CODEC",
-		"BASS_ERROR_ENDED",
-		"BASS_ERROR_BUSY",
-		"BASS_ERROR_UNSTREAMABLE",
-		"BASS_ERROR_PROTOCOL",
-		"BASS_ERROR_DENIED",
-		"BASS_ERROR_FREEING",
-		"BASS_ERROR_CANCEL"
-		//[BASS_ERROR_UNKNOWN]
+	// miniaudio error code->string mapping
+	static const char* ma_err_names[] = {
+		"MA_SUCCESS",
+		"MA_ERROR",
+		"MA_INVALID_ARGS",
+		"MA_INVALID_OPERATION",
+		"MA_OUT_OF_MEMORY",
+		"MA_OUT_OF_RANGE",
+		"MA_ACCESS_DENIED",
+		"MA_DOES_NOT_EXIST",
+		"MA_ALREADY_EXISTS",
+		"MA_TOO_MANY_OPEN_FILES",
+		"MA_INVALID_FILE",
+		"MA_TOO_BIG",
+		"MA_PATH_TOO_LONG",
+		"MA_NAME_TOO_LONG",
+		"MA_NOT_DIRECTORY",
+		"MA_IS_DIRECTORY",
+		"MA_DIRECTORY_NOT_EMPTY",
+		"MA_AT_END",
+		"MA_NO_SPACE",
+		"MA_BUSY",
+		"MA_IO_ERROR",
+		"MA_INTERRUPT",
+		"MA_UNAVAILABLE",
+		"MA_ALREADY_IN_USE",
+		"MA_BAD_ADDRESS",
+		"MA_BAD_SEEK",
+		"MA_BAD_PIPE",
+		"MA_DEADLOCK",
+		"MA_TOO_MANY_LINKS",
+		"MA_NOT_IMPLEMENTED",
+		"MA_NO_MESSAGE",
+		"MA_BAD_MESSAGE",
+		"MA_NO_DATA_AVAILABLE",
+		"MA_INVALID_DATA",
+		"MA_TIMEOUT",
+		"MA_NO_NETWORK",
+		"MA_NOT_UNIQUE",
+		"MA_NOT_SOCKET",
+		"MA_NO_ADDRESS",
+		"MA_BAD_PROTOCOL",
+		"MA_PROTOCOL_UNAVAILABLE",
+		"MA_PROTOCOL_NOT_SUPPORTED",
+		"MA_PROTOCOL_FAMILY_NOT_SUPPORTED",
+		"MA_ADDRESS_FAMILY_NOT_SUPPORTED",
+		"MA_SOCKET_NOT_SUPPORTED",
+		"MA_CONNECTION_RESET",
+		"MA_ALREADY_CONNECTED",
+		"MA_NOT_CONNECTED",
+		"MA_CONNECTION_REFUSED",
+		"MA_NO_HOST",
+		"MA_IN_PROGRESS",
+		"MA_CANCELLED",
+		"MA_MEMORY_ALREADY_MAPPED",
+		"MA_FORMAT_NOT_SUPPORTED",
+		"MA_DEVICE_TYPE_NOT_SUPPORTED",
+		"MA_SHARE_MODE_NOT_SUPPORTED",
+		"MA_NO_BACKEND",
+		"MA_NO_DEVICE",
+		"MA_API_NOT_FOUND",
+		"MA_INVALID_DEVICE_CONFIG",
+		"MA_LOOP",
+		"MA_BACKEND_NOT_ENABLED"
 	};
 
-	// returns string representation of BASS error codes
-	const int err = BASS_ErrorGetCode();
-	if (err < 0 || err >= std::size(bass_err_names)) {
-		return "BASS_ERROR_UNKNOWN";
+	// returns string representation of miniaudio error codes
+	const int err = MiniAudio_ErrorGetCode();
+	if (err < 0 || err >= (int)(sizeof(ma_err_names) / sizeof(ma_err_names[0]))) {
+		return "MA_UNKNOWN_ERROR";
 	}
 	else {
-		return bass_err_names[err];
+		return ma_err_names[err];
 	}
 }
 

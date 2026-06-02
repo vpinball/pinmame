@@ -10,6 +10,7 @@
 
 #define NOMINMAX
 #include "gsound_processor.hpp"
+#include "miniaudio_bass_compat.hpp"
 
 // Standard Library includes
 #include <algorithm>
@@ -33,7 +34,7 @@ using std::vector;
 extern AltsoundLogger alog;
 
 // DAR@20230721
-// This is necessary because BASS callback streams run on a separate
+// This is necessary because callback streams run on a separate
 // thread from the main application, and both need to access/modify
 // common memory
 //
@@ -340,14 +341,14 @@ bool GSoundProcessor::handleCmd(const unsigned int cmd_combined_in)
 	const char* sample_short_path = shortPathStr.c_str();
 	const char* stream_type_str = toString(new_stream->stream_type);
 
-	if (new_stream->hstream != BASS_NO_STREAM) {
+	if (new_stream->hstream != MINIAUDIO_NO_STREAM) {
 		ALT_INFO(1, "Playing %s stream: %s", stream_type_str, sample_short_path);
 		ALT_DEBUG(1, "HSTREAM(%u)  CH(%02d)  CMD(%04X)  SAMPLE(%s)", new_stream->hstream,
 			      new_stream->channel_idx, cmd_combined_in, sample_short_path);
 
-		if (!BASS_ChannelPlay(new_stream->hstream, 0)) {
+		if (!MiniAudio_ChannelPlay(new_stream->hstream, false)) {
 			// Sound playback failed
-			ALT_ERROR(2, "FAILED %s stream playback: %s", stream_type_str, get_bass_err());
+			ALT_ERROR(2, "FAILED %s stream playback: %s", stream_type_str, get_miniaudio_err());
 
 			OUTDENT;
 			ALT_DEBUG(0, "END GSoundProcessor::handleCmd()");
@@ -553,16 +554,16 @@ bool GSoundProcessor::processBehaviors(const BehaviorInfo& behavior, const Altso
 				const unsigned int* cur_stream_idx = tracked_stream_idx_map[sampleType];
 
 				if (*cur_stream_idx != UNSET_IDX) {
-					HSTREAM hstream = channel_stream[*cur_stream_idx]->hstream;
-					if (!BASS_ChannelPause(hstream)) {
-						ALT_ERROR(1, "FAILED BASS_ChannelPause(): %s", get_bass_err());
+					unsigned int hstream = channel_stream[*cur_stream_idx]->hstream;
+					if (!MiniAudio_ChannelPause(hstream)) {
+						ALT_ERROR(1, "FAILED MiniAudio_ChannelPause(): %s", get_miniaudio_err());
 
 						OUTDENT;
 						ALT_DEBUG(0, "END GSoundProcessor::processMusicImpacts()");
 						return false;
 					}
 					else {
-						ALT_INFO(1, "SUCCESS BASS_ChannelPause(%u)", hstream);
+						ALT_INFO(1, "SUCCESS MiniAudio_ChannelPause(%u)", hstream);
 					}
 				}
 				
@@ -742,7 +743,7 @@ bool GSoundProcessor::stopExclusiveStream(const AltsoundSampleType stream_type)
 	// impacts the stream we are about to stop may have had
 	postProcessBehaviors(*behavior_map[stream_type], *cur_stream);
 
-	HSTREAM hstream = cur_stream->hstream;
+	unsigned int hstream = cur_stream->hstream;
 	const unsigned int ch_idx = cur_stream->channel_idx;
 
 	ALT_INFO(1, "Current stream(%s): HSTREAM: %u  CH: %02d",
@@ -767,7 +768,7 @@ bool GSoundProcessor::stopExclusiveStream(const AltsoundSampleType stream_type)
 
 // ----------------------------------------------------------------------------
 
-void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWORD data, void* user)
+void ALTSOUNDCALLBACK GSoundProcessor::common_callback(unsigned int handle, unsigned int channel, unsigned int data, void* user)
 {
 	ALT_DEBUG(0, "\nBEGIN: GSoundProcessor::common_callback()");
 	INDENT;
@@ -776,9 +777,9 @@ void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWOR
 	ALT_DEBUG(1, "Acquiring mutex");
 	std::lock_guard<std::mutex> guard(io_mutex);
 
-	HSTREAM hstream_in = static_cast<HSTREAM>(channel);
+	unsigned int hstream_in = channel;
 	const AltsoundStreamInfo* stream_inst = static_cast<AltsoundStreamInfo*>(user);
-	HSTREAM inst_hstream = stream_inst->hstream;
+	unsigned int inst_hstream = stream_inst->hstream;
 
 	if (inst_hstream != hstream_in) {
 		ALT_ERROR(1, "Callback HSTREAM != instance HSTREAM");
@@ -836,7 +837,7 @@ void CALLBACK GSoundProcessor::common_callback(HSYNC handle, DWORD channel, DWOR
 	if (stream_type != MUSIC) {
 		// free stream resources
 		if (!ALT_CALL(freeStream(inst_hstream))) {
-			ALT_ERROR(1, "FAILED AltsoundProcessorBase::free_stream(%u): %s", inst_hstream, get_bass_err());
+			ALT_ERROR(1, "FAILED AltsoundProcessorBase::free_stream(%u): %s", inst_hstream, get_miniaudio_err());
 		}
 
 		delete channel_stream[inst_ch_idx];
@@ -961,11 +962,11 @@ bool GSoundProcessor::tryResumeStream(const AltsoundStreamInfo& stream)
 		[](const auto& valuePair) { return valuePair.second; });
 
 	if (!shouldRemainPaused) {
-		HSTREAM hstream = stream.hstream;
+		unsigned int hstream = stream.hstream;
 
-		if (BASS_ChannelIsActive(hstream) == BASS_ACTIVE_PAUSED) {
-			if (!BASS_ChannelPlay(hstream, 0)) {
-				ALT_ERROR(1, "FAILED BASS_ChannelPlay(%u): %s", hstream, get_bass_err());
+		if (MiniAudio_ChannelIsActive(hstream) == MINIAUDIO_ACTIVE_PAUSED) {
+			if (!MiniAudio_ChannelPlay(hstream, false)) {
+				ALT_ERROR(1, "FAILED MiniAudio_ChannelPlay(%u): %s", hstream, get_miniaudio_err());
 				OUTDENT;
 				ALT_DEBUG(0, "END GSoundProcessor::tryResumeStream()");
 				return false;
