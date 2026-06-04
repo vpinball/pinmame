@@ -5,6 +5,12 @@
 // ---------------------------------------------------------------------------
 // license:BSD-3-Clause
 // ---------------------------------------------------------------------------
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+
 #include <miniaudio/miniaudio.h>
 
 #include "miniaudio_bass_compat.hpp"

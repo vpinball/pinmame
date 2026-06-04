@@ -211,7 +211,6 @@ void decodechar(struct GfxElement *gfx,int num,const UINT8 *src,const struct Gfx
 
 struct GfxElement *decodegfx(const UINT8 *src,const struct GfxLayout *gl)
 {
-	int c;
 	struct GfxElement *gfx;
 
 
@@ -232,6 +231,7 @@ struct GfxElement *decodegfx(const UINT8 *src,const struct GfxLayout *gl)
 
 	if (gl->planeoffset[0] == GFX_RAW)
 	{
+		UINT32 c;
 		if (gl->planes <= 4) gfx->flags |= GFX_PACKED;
 
 		gfx->line_modulo = gl->yoffset[0] / 8;
@@ -245,6 +245,7 @@ struct GfxElement *decodegfx(const UINT8 *src,const struct GfxLayout *gl)
 	}
 	else
 	{
+		UINT32 c;
 		if (0 && gl->planes <= 4 && !(gfx->width & 1))
 //		if (gl->planes <= 4 && !(gfx->width & 1))
 		{

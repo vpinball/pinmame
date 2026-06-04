@@ -481,16 +481,16 @@ static void adjust_prescale(int width, int height)
 	{
 		if (blit_swapxy)
 		{
-			while (current_prescalex >= 1 && preprocess_desc.dwWidth < (current_prescalex * win_visible_height))
+			while (current_prescalex >= 1 && (int)preprocess_desc.dwWidth < (current_prescalex * win_visible_height))
 				current_prescalex--;
-			while (current_prescaley >= 1 && preprocess_desc.dwHeight < (current_prescaley * win_visible_width))
+			while (current_prescaley >= 1 && (int)preprocess_desc.dwHeight < (current_prescaley * win_visible_width))
 				current_prescaley--;
 		}
 		else
 		{
-			while (current_prescalex >= 1 && preprocess_desc.dwWidth < (current_prescalex * win_visible_width))
+			while (current_prescalex >= 1 && (int)preprocess_desc.dwWidth < (current_prescalex * win_visible_width))
 				current_prescalex--;
-			while (current_prescaley >= 1 && preprocess_desc.dwHeight < (current_prescaley * win_visible_height))
+			while (current_prescaley >= 1 && (int)preprocess_desc.dwHeight < (current_prescaley * win_visible_height))
 				current_prescaley--;
 		}
 	}
@@ -1283,7 +1283,7 @@ static int create_blit_surface(void)
 {
 	DDPIXELFORMAT preferred_pixelformat = { 0 };
 	int width, height;
-	int texture_width = 256, texture_height = 256;
+	DWORD texture_width = 256, texture_height = 256;
 	HRESULT result;
 	int done = 0;
 
@@ -1318,12 +1318,12 @@ static int create_blit_surface(void)
 	}
 
 	// determine the width/height of the texture surface (assume ^2 sizes are required)
-	while (texture_width < (width - 16))
+	while ((int)texture_width < (width - 16))
 		texture_width <<= 1;
-	while (texture_height < (height - 0))
+	while ((int)texture_height < (height - 0))
 		texture_height <<= 1;
 
-	if (win_d3d_tex_manage && texture_width < width)
+	if (win_d3d_tex_manage && (int)texture_width < width)
 		texture_width <<= 1;
 
 	if (texture_width < d3d_device_desc.dwMinTextureWidth)
@@ -1427,9 +1427,9 @@ static int create_blit_surface(void)
 		preprocess_desc.dwWidth = texture_width;
 		preprocess_desc.dwHeight = texture_height;
 
-		while (preprocess_desc.dwWidth < (width - 16) * current_prescalex)
+		while ((int)preprocess_desc.dwWidth < (width - 16) * current_prescalex)
 			preprocess_desc.dwWidth <<= 1;
-		while (preprocess_desc.dwHeight < (height - 0) * current_prescaley)
+		while ((int)preprocess_desc.dwHeight < (height - 0) * current_prescaley)
 			preprocess_desc.dwHeight <<= 1;
 
 		if (preprocess_desc.dwWidth > d3d_device_desc.dwMaxTextureWidth || preprocess_desc.dwHeight > d3d_device_desc.dwMaxTextureHeight)
