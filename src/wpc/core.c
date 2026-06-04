@@ -733,7 +733,7 @@ typedef struct {
   // Data acquisition, fed by the driver through 'core_dmd_submit_frame'
   UINT8*  rawFrames;          // Buffer for incoming raw frames
   volatile int nextFrame;     // Position in circular buffer to store next raw frame
-  unsigned int frame_index;   // Raw frame index
+  volatile unsigned int frame_index; // Raw frame index
   // Integrated data, computed by 'core_dmd_update_pwm' / 'core_dmd_update_identify'
   unsigned int lastRawFrameIndex; // value of frame_index when last integration was requested
   UINT8*  tempRawFrame;       // buffer used to compute bitplaneFrame (used to ease frame change detection)
@@ -784,10 +784,18 @@ static struct {
     {
         return (int)_InterlockedExchange((volatile long *)ptr, (long)value);
     }
+    static inline int atomic_increment(volatile int* ptr)
+    {
+        return (int)_InterlockedIncrement((volatile long*)ptr);
+    }
 #elif defined(__GNUC__) || defined(__clang__)
     static inline int atomic_exchange_int(volatile int *ptr, int value)
     {
         return __atomic_exchange_n(ptr, value, __ATOMIC_SEQ_CST);
+    }
+    static inline int atomic_increment(volatile int* ptr)
+    {
+        return __atomic_add_fetch(ptr, 1, __ATOMIC_SEQ_CST);
     }
 #else
     #error Unsupported compiler
@@ -3499,7 +3507,7 @@ void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, co
     // (if the compiler/CPU reorder this instruction we may have visual glitches)
     int nf = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
     atomic_exchange_int(&dmd_state->nextFrame, nf);
-    dmd_state->frame_index++;
+    atomic_increment(&dmd_state->frame_index);
   }
 }
 
@@ -3510,14 +3518,15 @@ void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, co
 float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFrameId) {
    core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 
+   const volatile int nf = dmd_state->nextFrame;
+   const volatile unsigned int fi = dmd_state->frame_index;
+
    // No processing required as there weren't any new frame submitted (we do not meulate interframe cooldown as all used framerates are fairly high)
-   if (dmd_state->lastLumFrameIndex == dmd_state->frame_index) {
+   if (dmd_state->lastLumFrameIndex == fi) {
       *lumFrameId = dmd_state->lumFrameId;
       return dmd_state->luminanceFrame;
    }
-   dmd_state->lastLumFrameIndex = dmd_state->frame_index;
-
-   const volatile int nf = dmd_state->nextFrame;
+   dmd_state->lastLumFrameIndex = fi;
 
    switch (dmd_state->raw_combiner) {
    case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4:
@@ -3623,14 +3632,15 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
 {
   core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 
+  const volatile int nf = dmd_state->nextFrame;
+  const volatile unsigned int fi = dmd_state->frame_index;
+
   // No processing required as there weren't any new frames submitted
-  if (dmd_state->lastRawFrameIndex == dmd_state->frame_index) {
+  if (dmd_state->lastRawFrameIndex == fi) {
      *rawFrameId = dmd_state->rawFrameId;
      return dmd_state->bitplaneFrame;
   }
-  dmd_state->lastRawFrameIndex = dmd_state->frame_index;
-
-  const volatile int nf = dmd_state->nextFrame;
+  dmd_state->lastRawFrameIndex = fi;
 
   // Compute combined bitplane frames as these are used for legacy/backwards compatibility, e.g. with colorization plugins
   switch (dmd_state->raw_combiner) {
