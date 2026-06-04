@@ -3593,7 +3593,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
             if (width_remaining == 0) {
                for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
                   UINT8 data = *frameData++;
-                  for (int kk = 0; kk < 8; kk++, data <<= 1, line++)
+                  for (int kk = 0; kk < 8; kk++, data *= 2, line++)
                      if (data & 0x80) (*line) += frame_weight;
                }
             }
@@ -3603,7 +3603,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
                   for (int jj = 0; jj < width_bytes; jj++) {
                      UINT8 data = *frameData++;
                      const int n = (jj == width_bytes - 1) ? width_remaining : 8;
-                     for (int ll = 0; ll < n; ll++, data <<= 1, line++)
+                     for (int ll = 0; ll < n; ll++, data *= 2, line++)
                         if (data & 0x80) (*line) += frame_weight;
                   }
                }
