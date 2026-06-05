@@ -179,6 +179,9 @@
 		 const UINT16* const __restrict s = (const UINT16*)bits;
 		 const __m128i m5 = _mm_set1_epi16(0x001f);
 		 const __m128i mAhi = _mm_set1_epi16((short)0xff00); // alpha = 0xff
+		 // exact 5 -> 8 bit expansion
+		 const __m128i c527 = _mm_set1_epi16(527);
+		 const __m128i c23  = _mm_set1_epi16(23);
 		 // 8 pixels per iteration
 		 for (i = 0; i + 7 < w; i += 8) {
 			 const __m128i v = _mm_loadu_si128((const __m128i*)(s + i));
@@ -186,10 +189,10 @@
 			 const __m128i r5 = _mm_and_si128(_mm_srli_epi16(v, 10), m5);
 			 const __m128i g5 = _mm_and_si128(_mm_srli_epi16(v, 5), m5);
 			 const __m128i b5 = _mm_and_si128(v, m5);
-			 // 5 -> 8 bit replication: (x<<3) | (x>>2)
-			 const __m128i r8 = _mm_or_si128(_mm_slli_epi16(r5, 3), _mm_srli_epi16(r5, 2));
-			 const __m128i g8 = _mm_or_si128(_mm_slli_epi16(g5, 3), _mm_srli_epi16(g5, 2));
-			 const __m128i b8 = _mm_or_si128(_mm_slli_epi16(b5, 3), _mm_srli_epi16(b5, 2));
+			 // (x*527+23)>>6; max product 31*527+23=16360 fits in unsigned 16-bit, result lands in the low byte
+			 const __m128i r8 = _mm_srli_epi16(_mm_add_epi16(_mm_mullo_epi16(r5, c527), c23), 6);
+			 const __m128i g8 = _mm_srli_epi16(_mm_add_epi16(_mm_mullo_epi16(g5, c527), c23), 6);
+			 const __m128i b8 = _mm_srli_epi16(_mm_add_epi16(_mm_mullo_epi16(b5, c527), c23), 6);
 			 // pack into BGRA byte order
 			 const __m128i bg = _mm_or_si128(_mm_slli_epi16(g8, 8), b8); // [G:B] per 16-bit lane
 			 const __m128i ar = _mm_or_si128(mAhi, r8);                  // [A=ff:R] per 16-bit lane
@@ -199,8 +202,10 @@
 		 // scalar tail
 		 for (; i < w; i++) {
 			 const UINT32 cc = s[i];
-			 const UINT32 e = ((cc & 0x7c00u) << 9) | ((cc & 0x03e0u) << 6) | ((cc & 0x001fu) << 3);
-			 buf[i] = 0xff000000u | e | ((e >> 5) & 0x00070707u);
+			 const UINT32 r = (((cc >> 10) & 0x1fu) * 527u + 23u) >> 6;
+			 const UINT32 g = (((cc >> 5) & 0x1fu) * 527u + 23u) >> 6;
+			 const UINT32 b = ((cc & 0x1fu) * 527u + 23u) >> 6;
+			 buf[i] = 0xff000000u | (r << 16) | (g << 8) | b;
 		 }
 	 }
 	 else { // R8G8B8
@@ -210,8 +215,20 @@
 	 }
  }
 
- // convert one A8R8G8B8 row back to the destination pixel format
- static void store_row(const int fmt, void* bits, const int w, const UINT32* const __restrict buf)
+ // 8x8 ordered (Bayer) dither matrix, 0..63
+ static const UINT8 bayer8x8[64] = {
+	  0, 32,  8, 40,  2, 34, 10, 42,
+	 48, 16, 56, 24, 50, 18, 58, 26,
+	 12, 44,  4, 36, 14, 46,  6, 38,
+	 60, 28, 52, 20, 62, 30, 54, 22,
+	  3, 35, 11, 43,  1, 33,  9, 41,
+	 51, 19, 59, 27, 49, 17, 57, 25,
+	 15, 47,  7, 39, 13, 45,  5, 37,
+	 63, 31, 55, 23, 61, 29, 53, 21
+ };
+
+ // convert one A8R8G8B8 row back to the destination pixel format; y is the destination row (used solely for dithering)
+ static void store_row(const int fmt, void* bits, const int w, const UINT32* const __restrict buf, const int y)
  {
 	 int i;
 	 if (fmt == X1R5G5B5) {
@@ -219,10 +236,18 @@
 		 const __m128i mR = _mm_set1_epi32(0x00007c00);
 		 const __m128i mG = _mm_set1_epi32(0x000003e0);
 		 const __m128i mB = _mm_set1_epi32(0x0000001f);
+		 // ordered dithering for the 8->5 bit reduction: add a Bayer bias scaled to the 3 dropped bits (0..7),
+		 // then saturate and truncate (=overall similar to round). The SIMD step is 8 px wide and i is a
+		 // multiple of 8, so columns map to x&7 = {0..3} (first half) and {4..7} (second half)
+		 const UINT8* const __restrict br = bayer8x8 + (y & 7) * 8;
+		 const UINT8 d0 = br[0] >> 3, d1 = br[1] >> 3, d2 = br[2] >> 3, d3 = br[3] >> 3;
+		 const UINT8 d4 = br[4] >> 3, d5 = br[5] >> 3, d6 = br[6] >> 3, d7 = br[7] >> 3;
+		 const __m128i dithA = _mm_setr_epi8(d0, d0, d0, 0, d1, d1, d1, 0, d2, d2, d2, 0, d3, d3, d3, 0);
+		 const __m128i dithB = _mm_setr_epi8(d4, d4, d4, 0, d5, d5, d5, 0, d6, d6, d6, 0, d7, d7, d7, 0);
 		 // 8 pixels per iteration
 		 for (i = 0; i + 7 < w; i += 8) {
-			 const __m128i c0 = _mm_loadu_si128((const __m128i*)(buf + i));
-			 const __m128i c1 = _mm_loadu_si128((const __m128i*)(buf + i + 4));
+			 const __m128i c0 = _mm_adds_epu8(_mm_loadu_si128((const __m128i*)(buf + i    )), dithA);
+			 const __m128i c1 = _mm_adds_epu8(_mm_loadu_si128((const __m128i*)(buf + i + 4)), dithB);
 			 // per 32-bit lane: ((c>>9)&0x7c00) | ((c>>6)&0x03e0) | ((c>>3)&0x1f)
 			 const __m128i p0 = _mm_or_si128(
 				 _mm_or_si128(_mm_and_si128(_mm_srli_epi32(c0, 9), mR),
@@ -236,8 +261,12 @@
 			 _mm_storeu_si128((__m128i*)(d + i), _mm_packs_epi32(p0, p1));
 		 }
 		 for (; i < w; i++) {
+			 const UINT32 dd = br[i & 7] >> 3;
 			 const UINT32 c = buf[i];
-			 d[i] = (UINT16)(((c >> 9) & 0x7c00u) | ((c >> 6) & 0x03e0u) | ((c >> 3) & 0x001fu));
+			 UINT32 rr = ((c >> 16) & 0xffu) + dd; if (rr > 255u) rr = 255u;
+			 UINT32 gg = ((c >>  8) & 0xffu) + dd; if (gg > 255u) gg = 255u;
+			 UINT32 bb =  (c        & 0xffu) + dd; if (bb > 255u) bb = 255u;
+			 d[i] = (UINT16)(((rr >> 3) << 10) | ((gg >> 3) << 5) | (bb >> 3));
 		 }
 	 }
 	 else if (fmt == R8G8B8) {
@@ -325,12 +354,12 @@
 		srcrow[sw + 1] = srcrow[sw - 1];
 
 		if (dw == sw) {
-			store_row(fmt, dstrow, dw, srcrow);
+			store_row(fmt, dstrow, dw, srcrow, j);
 		} else if (is32) {
 			interp_col((UINT32*)dstrow, dw, srcrow, offx, incx);
 		} else {
 			interp_col(cache, dw, srcrow, offx, incx);
-			store_row(fmt, dstrow, dw, cache);
+			store_row(fmt, dstrow, dw, cache, j);
 		}
 	}
  }
