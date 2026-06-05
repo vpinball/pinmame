@@ -1572,6 +1572,7 @@ DRIVERNV(dragfis3b)     //         06/20 Dragonfist (MOD 3 rev. 1109)
 DRIVERNV(dragfis14)     //         09/21 Dragonfist (MOD 14)
 DRIVERNV(dragfis15)     //         04/23 Dragonfist (MOD 15)
 DRIVERNV(dragfis16)     //         09/24 Dragonfist (MOD 16)
+DRIVERNV(dragfis17)     //         01/26 Dragonfist (MOD 17)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //         04/82 Orbitor 1 (Free Play)
 DRIVERNV(orbitora)      //         04/82 Orbitor 1 (MOD)
