@@ -175,6 +175,7 @@ struct GameOptions
 	int		gui_host;			/* 1 to tweak some UI-related things for better GUI integration */
 	int		skip_disclaimer;	/* 1 to skip the disclaimer screen at startup */
 	int		skip_gameinfo;		/* 1 to skip the game info screen at startup */
+	int		skip_gamewarnings;	/* 1 to skip the game warnings screen at startup (headless) */
 
 	int		samplerate;		/* sound sample playback rate, in Hz */
 	int		use_samples;	/* 1 to enable external .wav samples */
