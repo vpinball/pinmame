@@ -943,6 +943,9 @@ BEGIN
     CONTROL         "Skip &game info",IDC_SKIP_GAME_INFO,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,164,60,10,0,
                     HIDC_SKIP_GAME_INFO
+    CONTROL         "Skip game &warnings",IDC_SKIP_GAME_WARNINGS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,95,150,85,10,0,
+                    HIDC_SKIP_GAME_WARNINGS
     CONTROL         "&High thread priority",IDC_HIGH_PRIORITY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,180,75,10,0,
                     HIDC_HIGH_PRIORITY
