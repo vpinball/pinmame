@@ -255,7 +255,15 @@ MY_LIBS += `esd-config --libs`
 endif
 
 ifdef SOUND_ALSA
-CONFIG  += -DSYSDEP_DSP_ALSA 
+# Verify the ALSA development headers are installed before adding -lasound, so a
+# missing dev package fails with a clear, distro-neutral message instead of a
+# cryptic "cannot find -lasound" at link time. The probe uses the compiler's own
+# include path (-include, no literal '#'), so it works wherever the header lives.
+ALSA_AVAILABLE := $(shell $(CC) -x c -E -include alsa/asoundlib.h /dev/null >/dev/null 2>&1 && echo yes)
+ifneq ($(ALSA_AVAILABLE),yes)
+$(error SOUND_ALSA=1 but the ALSA development library/headers were not found. Install the ALSA dev package and rebuild: Debian/Ubuntu/Kali -> libasound2-dev; Fedora/RHEL/CentOS -> alsa-lib-devel; openSUSE -> alsa-devel; Arch -> alsa-lib; Gentoo -> media-libs/alsa-lib. Or comment out SOUND_ALSA in the makefile.)
+endif
+CONFIG  += -DSYSDEP_DSP_ALSA
 MY_LIBS += -lasound
 endif
 

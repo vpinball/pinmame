@@ -600,7 +600,7 @@ ARCH  = linux
 # Choose any additonal sound drivers you want to include, besides the 
 # native sound driver for your system.
 # SOUND_ESOUND = 1
-# SOUND_ALSA = 1
+SOUND_ALSA = 1
 # SOUND_ARTS_TEIRA = 1
 # SOUND_ARTS_SMOTEK = 1
 # SOUND_SDL = 1
