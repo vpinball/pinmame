@@ -101,10 +101,8 @@ endif()
 if(MSVC)
    set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
 
-   add_compile_options(
-      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:${OPT_COMMON}>>
-      $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C,CXX>:/EHsc>>
-   )
+   add_compile_options($<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:${OPT_COMMON}>>)
+   add_compile_options($<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C,CXX>:/EHsc>>)
 endif()
 
 
