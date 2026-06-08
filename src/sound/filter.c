@@ -9,6 +9,9 @@
 #if defined(SSE_FILTER_OPT)
  #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
   #include <xmmintrin.h>
+  #if defined(__SSE3__) || defined(__AVX__)
+   #include <pmmintrin.h> // for _mm_hadd_ps
+  #endif
  #else // Arm Neon
   #include "../../ext/sse2neon.h"
  #endif
@@ -58,10 +61,11 @@ void filter_state_free(filter_state* s) {
 #if defined(SSE_FILTER_OPT)
 INLINE __m128 horizontal_add(const __m128 a)
 {
-#if 0 //!! needs SSE3
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) || defined(__SSE3__) || defined(__AVX__) // aarch64 (sse2neon maps to vpaddq) or SSE3 (_mm_hadd_ps)
+    //!! or cpuid SSE3 support
     const __m128 ftemp = _mm_hadd_ps(a, a);
     return _mm_hadd_ps(ftemp, ftemp);
-#else    
+#else
     const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a)); //a0+a2,a1+a3
     return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, _MM_SHUFFLE(1, 1, 1, 1))); //(a0+a2)+(a1+a3)
 #endif
