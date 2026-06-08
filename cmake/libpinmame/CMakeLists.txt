@@ -99,10 +99,23 @@ if(NOT MSVC)
 endif()
 
 if(MSVC)
-   set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
-
-   add_compile_options($<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:${OPT_COMMON}>>)
-   add_compile_options($<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:C,CXX>:/EHsc>>)
+   add_compile_options(
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Ob2>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/O2>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Oi>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/arch:SSE2>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/fp:fast>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/fp:except->>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Ot>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GF>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GS->>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Gy>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GR->>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Oy>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GT>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GL>>"
+      "$<$<COMPILE_LANGUAGE:C,CXX>:/EHsc>"
+   )
 endif()
 
 
