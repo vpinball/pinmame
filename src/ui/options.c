@@ -351,6 +351,7 @@ static REG_OPTION global_game_options[] =
 {
         {"skip_disclaimer",    RO_BOOL,    &settings.skip_disclaimer,  0, 0},
         {"skip_gameinfo",      RO_BOOL,    &settings.skip_gameinfo,    0, 0},
+        {"skip_gamewarnings",  RO_BOOL,    &settings.skip_gamewarnings, 0, 0},
         {"high_priority",      RO_BOOL,    &settings.high_priority,    0, 0},
 
         {"rompath",            RO_STRING,  &settings.romdirs,          0, 0},
@@ -711,6 +712,7 @@ BOOL OptionsInit()
 
         settings.skip_disclaimer = FALSE;
         settings.skip_gameinfo = FALSE;
+        settings.skip_gamewarnings = FALSE;
         settings.high_priority = FALSE;
 
         /* video */
@@ -1144,6 +1146,16 @@ void SetSkipGameInfo(BOOL skip_gameinfo)
 BOOL GetSkipGameInfo(void)
 {
         return settings.skip_gameinfo;
+}
+
+void SetSkipGameWarnings(BOOL skip_gamewarnings)
+{
+        settings.skip_gamewarnings = skip_gamewarnings;
+}
+
+BOOL GetSkipGameWarnings(void)
+{
+        return settings.skip_gamewarnings;
 }
 
 void SetHighPriority(BOOL high_priority)
