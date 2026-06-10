@@ -25,7 +25,7 @@
 extern StreamArray channel_stream;
 
 // Engine/stream bookkeeping
-static ma_engine* g_engine = nullptr;
+ma_engine* g_engine = nullptr;
 static std::unordered_map<unsigned int, _internal_stream_data> g_streamMap;
 static std::mutex g_streamMapMutex;
 static uint32_t g_nextStreamId = 1;
@@ -111,21 +111,21 @@ bool MiniAudio_ChannelSetVolume(unsigned int hstream, float value)
 {
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(g_streamMapMutex);
 	auto it = g_streamMap.find(hstream);
 	if (it == g_streamMap.end()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	it->second.volume = value;
 	if (it->second.sound)
 		altsound_ma_sound_set_volume(it->second.sound, value);
 	MiniAudio_ErrorSetCode(MA_SUCCESS);
-	return 1;
+	return true;
 }
 
 bool MiniAudio_ChannelGetVolume(unsigned int hstream, float& value)
