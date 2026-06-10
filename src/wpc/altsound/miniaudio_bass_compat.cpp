@@ -25,10 +25,11 @@
 extern StreamArray channel_stream;
 
 // Engine/stream bookkeeping
-ma_engine* g_engine = nullptr;
-std::unordered_map<unsigned int, _internal_stream_data> g_streamMap;
-std::mutex g_streamMapMutex;
-uint32_t g_nextStreamId = 1;
+static ma_engine* g_engine = nullptr;
+static std::unordered_map<unsigned int, _internal_stream_data> g_streamMap;
+static std::mutex g_streamMapMutex;
+static uint32_t g_nextStreamId = 1;
+
 uint32_t g_channels = 2;
 uint32_t g_sampleRate = 44100;
 int g_last_ma_err = 0;
@@ -56,17 +57,16 @@ static void MiniAudio_StreamEndCallback(void* pUserData, ma_sound* pSound)
 	}
 }
 
-unsigned int MiniAudio_StreamCreateFile(bool mem, const char* file, unsigned long long offset, unsigned long long length, unsigned int flags)
+unsigned int MiniAudio_StreamCreateFile(bool mem, const std::string& file, unsigned long long length, bool loop)
 {
-	if (!file) {
+	if (file.empty()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
 		return MINIAUDIO_NO_STREAM;
 	}
 
 	ma_decoder_config config = altsound_ma_decoder_config_init(ma_format_f32, g_channels, g_sampleRate);
 	ma_decoder* decoder = new ma_decoder();
-	ma_result result = altsound_ma_decoder_init_file(file, &config, decoder);
-
+	ma_result result = altsound_ma_decoder_init_file(file.c_str(), &config, decoder);
 	if (result != MA_SUCCESS) {
 		MiniAudio_ErrorSetCode(result);
 		delete decoder;
@@ -83,8 +83,7 @@ unsigned int MiniAudio_StreamCreateFile(bool mem, const char* file, unsigned lon
 		return MINIAUDIO_NO_STREAM;
 	}
 
-	const bool looping = (flags & MINIAUDIO_SAMPLE_LOOP) != 0;
-	altsound_ma_sound_set_looping(sound, looping ? MA_TRUE : MA_FALSE);
+	altsound_ma_sound_set_looping(sound, loop ? MA_TRUE : MA_FALSE);
 
 	unsigned int hstream = g_nextStreamId++;
 
@@ -95,7 +94,7 @@ unsigned int MiniAudio_StreamCreateFile(bool mem, const char* file, unsigned lon
 	data.sound = sound;
 	data.playing = false;
 	data.paused = false;
-	data.looping = looping;
+	data.looping = loop;
 	data.sample_rate = decoder->outputSampleRate;
 	data.channels = decoder->outputChannels;
 	data.sync_callback = nullptr;
@@ -108,7 +107,7 @@ unsigned int MiniAudio_StreamCreateFile(bool mem, const char* file, unsigned lon
 	return hstream;
 }
 
-int MiniAudio_ChannelSetAttribute(unsigned int hstream, unsigned int attrib, float value)
+bool MiniAudio_ChannelSetVolume(unsigned int hstream, float value)
 {
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
@@ -122,43 +121,33 @@ int MiniAudio_ChannelSetAttribute(unsigned int hstream, unsigned int attrib, flo
 		return 0;
 	}
 
-	switch (attrib) {
-		case MINIAUDIO_ATTRIB_VOL:
-			it->second.volume = value;
-			if (it->second.sound)
-				altsound_ma_sound_set_volume(it->second.sound, value);
-			MiniAudio_ErrorSetCode(MA_SUCCESS);
-			return 1;
-	}
-	MiniAudio_ErrorSetCode(MA_ERROR);
-	return 0;
+	it->second.volume = value;
+	if (it->second.sound)
+		altsound_ma_sound_set_volume(it->second.sound, value);
+	MiniAudio_ErrorSetCode(MA_SUCCESS);
+	return 1;
 }
 
-bool MiniAudio_ChannelGetAttribute(unsigned int hstream, unsigned int attrib, float* value)
+bool MiniAudio_ChannelGetVolume(unsigned int hstream, float& value)
 {
-	if (hstream == MINIAUDIO_NO_STREAM || !value) {
+	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
 		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(g_streamMapMutex);
-	auto it = g_streamMap.find(hstream);
+	const auto it = g_streamMap.find(hstream);
 	if (it == g_streamMap.end()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
 		return false;
 	}
 
-	switch (attrib) {
-		case MINIAUDIO_ATTRIB_VOL:
-			*value = it->second.volume;
-			MiniAudio_ErrorSetCode(MA_SUCCESS);
-			return true;
-	}
-	MiniAudio_ErrorSetCode(MA_ERROR);
-	return false;
+	value = it->second.volume;
+	MiniAudio_ErrorSetCode(MA_SUCCESS);
+	return true;
 }
 
-unsigned int MiniAudio_ChannelSetSync(unsigned int hstream, unsigned int type, unsigned long long param, void* proc, void* user)
+unsigned int MiniAudio_ChannelSetSync(unsigned int hstream, unsigned int type, void* proc, void* user)
 {
 	if (hstream == MINIAUDIO_NO_STREAM || !proc) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
@@ -186,18 +175,18 @@ unsigned int MiniAudio_ChannelSetSync(unsigned int hstream, unsigned int type, u
 	return 0;
 }
 
-int MiniAudio_ChannelPlay(unsigned int hstream, bool restart)
+bool MiniAudio_ChannelPlay(unsigned int hstream, bool restart)
 {
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(g_streamMapMutex);
 	auto it = g_streamMap.find(hstream);
 	if (it == g_streamMap.end()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	if (restart && it->second.sound) {
@@ -212,21 +201,21 @@ int MiniAudio_ChannelPlay(unsigned int hstream, bool restart)
 	it->second.playing = true;
 	it->second.paused = false;
 	MiniAudio_ErrorSetCode(MA_SUCCESS);
-	return 1;
+	return true;
 }
 
-int MiniAudio_ChannelPause(unsigned int hstream)
+bool MiniAudio_ChannelPause(unsigned int hstream)
 {
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(g_streamMapMutex);
 	auto it = g_streamMap.find(hstream);
 	if (it == g_streamMap.end()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	if (it->second.sound)
@@ -234,21 +223,21 @@ int MiniAudio_ChannelPause(unsigned int hstream)
 
 	it->second.paused = true;
 	MiniAudio_ErrorSetCode(MA_SUCCESS);
-	return 1;
+	return true;
 }
 
-int MiniAudio_ChannelStop(unsigned int hstream)
+bool MiniAudio_ChannelStop(unsigned int hstream)
 {
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(g_streamMapMutex);
 	auto it = g_streamMap.find(hstream);
 	if (it == g_streamMap.end()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	if (it->second.sound) {
@@ -259,21 +248,21 @@ int MiniAudio_ChannelStop(unsigned int hstream)
 	it->second.playing = false;
 	it->second.paused = false;
 	MiniAudio_ErrorSetCode(MA_SUCCESS);
-	return 1;
+	return true;
 }
 
-int MiniAudio_StreamFree(unsigned int hstream)
+bool MiniAudio_StreamFree(unsigned int hstream)
 {
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(g_streamMapMutex);
 	auto it = g_streamMap.find(hstream);
 	if (it == g_streamMap.end()) {
 		MiniAudio_ErrorSetCode(MA_INVALID_ARGS);
-		return 0;
+		return false;
 	}
 
 	if (it->second.sound) {
@@ -297,7 +286,7 @@ int MiniAudio_StreamFree(unsigned int hstream)
 	}
 
 	MiniAudio_ErrorSetCode(MA_SUCCESS);
-	return 1;
+	return true;
 }
 
 unsigned int MiniAudio_ChannelIsActive(unsigned int hstream)

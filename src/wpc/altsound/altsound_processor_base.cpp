@@ -188,13 +188,13 @@ bool AltsoundProcessorBase::setStreamVolume(unsigned int stream_in, const float 
 	ALT_INFO(1, "Setting volume for stream %u", stream_in);
 	ALT_DEBUG(1, "SAMPLE_VOL:%.02f  GLOBAL_VOL:%.02f  MASTER_VOL:%.02f", vol_in,
 		      global_vol, master_vol);
-	const bool success = MiniAudio_ChannelSetAttribute(stream_in, MINIAUDIO_ATTRIB_VOL, new_vol) != 0;
+	const bool success = MiniAudio_ChannelSetVolume(stream_in, new_vol);
 
 	if (!success) {
-		ALT_ERROR(1, "FAILED MiniAudio_ChannelSetAttribute(MINIAUDIO_ATTRIB_VOL)");
+		ALT_ERROR(1, "FAILED MiniAudio_ChannelSetVolume()");
 	}
 	else {
-		ALT_INFO(1, "SUCCESS MiniAudio_ChannelSetAttribute(MINIAUDIO_ATTRIB_VOL)");
+		ALT_INFO(1, "SUCCESS MiniAudio_ChannelSetVolume()");
 	}
 
 	OUTDENT;
@@ -210,7 +210,7 @@ float AltsoundProcessorBase::getStreamVolume(unsigned int stream_in)
 		return -FLT_MAX;
 
 	float vol;
-	if (!MiniAudio_ChannelGetAttribute(stream_in, MINIAUDIO_ATTRIB_VOL, &vol))
+	if (!MiniAudio_ChannelGetVolume(stream_in, vol))
 		return -FLT_MAX;
 	else
 		return vol/(global_vol * master_vol);
@@ -238,7 +238,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 	const bool loop = stream_out->loop;
 
 	// Create playback stream
-	unsigned int hstream = MiniAudio_StreamCreateFile(false, stream_out->sample_path.c_str(), 0, 0, loop ? MINIAUDIO_SAMPLE_LOOP : 0);
+	unsigned int hstream = MiniAudio_StreamCreateFile(false, stream_out->sample_path, 0, loop);
 
 	if (hstream == MINIAUDIO_NO_STREAM) {
 		// Failed to create stream
@@ -255,7 +255,7 @@ bool AltsoundProcessorBase::createStream(void* syncproc_in, AltsoundStreamInfo* 
 
 	if (callback) {
 		// Set sync to execute callback when sample playback ends
-		hsync = MiniAudio_ChannelSetSync(hstream, MINIAUDIO_SYNC_END | MINIAUDIO_SYNC_ONETIME, 0,
+		hsync = MiniAudio_ChannelSetSync(hstream, MINIAUDIO_SYNC_END | MINIAUDIO_SYNC_ONETIME,
 		                                 callback, stream_out);
 		if (!hsync) {
 			// Failed to set sync
@@ -284,7 +284,7 @@ bool AltsoundProcessorBase::freeStream(const unsigned int hstream_in)
 	ALT_INFO(0, "BEGIN AltsoundProcessorBase::freeStream()");
 	INDENT;
 
-	const bool success = MiniAudio_StreamFree(hstream_in) != 0;
+	const bool success = MiniAudio_StreamFree(hstream_in);
 	if (!success) {
 		ALT_ERROR(1, "Failed to free stream(%u)", hstream_in);
 	}
