@@ -24,6 +24,33 @@ static struct sysdep_mixer_struct *sound_mixer = NULL;
 static int sound_samples_per_frame = 0;
 static int type;
 
+/* Software FIFO depth (number of per-frame buffers) between the emulator and
+   the audio DSP (see sound_stream.c). The historic value of 3 (~50ms) is far
+   too small for modern Linux audio: with the free-space-paced DSPs (ALSA/OSS/
+   esound), notably PipeWire's ALSA-compat scheduling, the FIFO runs dry on most
+   update cycles and sound_stream_update() replays the last buffer ("looping
+   sample") to fill the device's free space, garbling the audio (most audibly on
+   speech).
+
+   Measured on Bike Race (PipeWire, 48kHz): underrun looping collapses by a
+   depth of 8, and the FIFO occupancy plateaus at an ~8-buffer peak regardless
+   of the cap, so larger values add headroom but not latency (total latency is
+   dominated by the fixed ~265ms device buffer). 16 sits comfortably above the
+   peak demand with no audible latency cost and no CPU/memory cost.
+
+   Override with the PINMAME_SND_BUFCOUNT environment variable. */
+#define SND_DEFAULT_BUFCOUNT 16
+static int sound_stream_bufcount(void)
+{
+   static int v = 0;
+   if (!v) {
+      const char *e = getenv("PINMAME_SND_BUFCOUNT");
+      v = e ? atoi(e) : SND_DEFAULT_BUFCOUNT;  /* default when unset  */
+      if (v < 2) v = 2;                        /* structural minimum  */
+   }
+   return v;
+}
+
 static int sound_set_options(struct rc_option *option, const char *arg,
    int priority)
 {
@@ -136,7 +163,7 @@ void osd_sound_enable (int enable_it)
 	 {
 	    sound_stream_destroy(sound_stream);
 	    if (!(sound_stream = sound_stream_create(sound_dsp, type,
-	       sound_samples_per_frame, 3)))
+	       sound_samples_per_frame, sound_stream_bufcount())))
 	    {
 	       osd_stop_audio_stream();
 	       sound_enabled = 0;
@@ -190,7 +217,7 @@ int osd_start_audio_stream(int stereo)
          sound_samples_per_frame);
 #endif
       if(!(sound_stream = sound_stream_create(sound_dsp, type,
-         sound_samples_per_frame, 3)))
+         sound_samples_per_frame, sound_stream_bufcount())))
       {
          osd_stop_audio_stream();
          sound_enabled = 0;
