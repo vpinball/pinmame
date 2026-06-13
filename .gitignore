@@ -4,3 +4,7 @@ build/
 /.vs/
 /obj/
 /release/
+
+xpinmame.obj/
+.ansible/
+xpinmame.*

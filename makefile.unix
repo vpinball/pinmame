@@ -131,7 +131,7 @@ CPPFLAGS += -std=gnu++11
 # this section.
 ###########################################################################
 
-CFLAGS = -fomit-frame-pointer -Wall -Wno-unused
+CFLAGS = -fomit-frame-pointer -Wall -Wno-unused -save-temps=obj
 
 # gcc on x86 with some optimizations
 # CFLAGS = -O2 -Wall -Wno-unused -mcpu=i686 -fomit-frame-pointer \
