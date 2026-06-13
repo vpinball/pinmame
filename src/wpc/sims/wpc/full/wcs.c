@@ -415,6 +415,10 @@ WPC_ROMSTART(wcs,l1,"WCS_LX1_1.BIN",0x80000,CRC(b9066ffc) SHA1(9fae6be9c074462e3
 WCS_SOUND
 WPC_ROMEND
 
+WPC_ROMSTART(wcs,la1,"WCS_LA1_1.BIN",0x80000,CRC(f300460d) SHA1(c34b2ef9ee4b0854e2a03ef15018210bec1a3555))
+WCS_SOUND
+WPC_ROMEND
+
 WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,CRC(617ea2bc) SHA1(f8e025b62d509126fb4ba425ac4a025dcf13ad99))
 WCS_SOUND
 WPC_ROMEND
@@ -451,6 +455,7 @@ CORE_GAMEDEF(wcs,l2,"World Cup Soccer (LX-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,l3c,l2,"World Cup Soccer (LX-3C Competition MOD)",2016,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,la2,l2,"World Cup Soccer (LA-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,l1,l2,"World Cup Soccer (LX-1)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,la1,l2,"World Cup Soccer (LA-1)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,d2,l2,"World Cup Soccer (DX-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p2,l2,"World Cup Soccer (PA-2 Prototype)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p5,l2,"World Cup Soccer (PA-5 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
