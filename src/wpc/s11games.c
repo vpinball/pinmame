@@ -607,6 +607,24 @@ S11CS_SOUNDROM88(       "swrd_u4.l1",  CRC(272b509c) SHA1(756d3783f664ca1c41dd1d
 S11_ROMEND
 CORE_CLONEDEF(swrds, l1, l2, "Swords of Fury (L-1)", 1988, "Williams", s11_mS11BS, 0)
 
+S11_ROMSTART48(swrds,rr1,"SWRD_U26wSound.RRV1",CRC(DE498207) SHA1(1ece64e6aedde44bca26beb163ac64d9948fcecf),
+                        "SWRD_U27.RRV1",       CRC(3746F3DE) SHA1(07385b904a7fdf29292ed59185f4c1affe0000d8))
+S11XS_SOUNDROM88(       "swrd_u21.l1", CRC(ee8b0a64) SHA1(c2c52059a9a5f7c0abcfdd76cfc6d5b5451f7d1e),
+                        "swrd_u22.l1", CRC(73dcdbb0) SHA1(66f5b3804442a1742b6fb3cccf539c4df956b3f2))
+S11CS_SOUNDROM88(       "swrd_u4.l1",  CRC(272b509c) SHA1(756d3783f664ca1c41dd1d12032330b74c3f89ea),
+                        "swrd_u19.l1", CRC(a22f84fa) SHA1(1731e86e85cca2d283512d5048c787df3970c9c5))
+S11_ROMEND
+CORE_CLONEDEF(swrds, rr1, l2, "Swords of Fury (Richrom/Lionman MOD V1)", 2026, "Williams / Frisbez", s11_mS11BS, 0)
+
+S11_ROMSTART48(swrds,rr1b,"SWRD_U26.RRV1",CRC(B8EFED27) SHA1(77b448fbd6d4546c2088344d91c110c1e6df3e00),
+                        "SWRD_U27.RRV1",  CRC(3746F3DE) SHA1(07385b904a7fdf29292ed59185f4c1affe0000d8))
+S11XS_SOUNDROM88(       "swrd_u21.l1", CRC(ee8b0a64) SHA1(c2c52059a9a5f7c0abcfdd76cfc6d5b5451f7d1e),
+                        "swrd_u22.l1", CRC(73dcdbb0) SHA1(66f5b3804442a1742b6fb3cccf539c4df956b3f2))
+S11CS_SOUNDROM88(       "swrd_u4.l1",  CRC(272b509c) SHA1(756d3783f664ca1c41dd1d12032330b74c3f89ea),
+                        "swrd_u19.l1", CRC(a22f84fa) SHA1(1731e86e85cca2d283512d5048c787df3970c9c5))
+S11_ROMEND
+CORE_CLONEDEF(swrds, rr1b, l2, "Swords of Fury (Richrom/Lionman MOD V1 / No Swords Sounds)", 2026, "Williams / Frisbez", s11_mS11BS, 0)
+
 /*--------------------
 / Taxi 10/88
 /--------------------*/

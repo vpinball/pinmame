@@ -1,5 +1,5 @@
 // license:BSD-3-Clause
-// copyright-holders:Carsten Wächter
+// copyright-holders:Carsten WÃ¤chter
 
 #define NOMINMAX
 
@@ -32,6 +32,10 @@
 #include "inipp.h"
 #include "altsound_data.hpp"
 #include "altsound_logger.hpp"
+#include "miniaudio_bass_compat.hpp"
+#include "miniaudio_private.h"
+
+#include <miniaudio/miniaudio.h>
 
 // namespace scope resolution
 using std::string;
@@ -50,8 +54,13 @@ BehaviorInfo overlay_behavior;
 // Instance of global thread synchronization mutex
 std::mutex io_mutex;
 
-// Instance of global array of BASS channels 
+// Instance of global array of miniaudio channels
 StreamArray channel_stream;
+
+// miniaudio engine instance (owned by the miniaudio_bass_compat layer)
+extern ma_engine* g_engine;
+extern uint32_t g_channels;
+extern uint32_t g_sampleRate;
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -89,6 +98,29 @@ bool use_rom_ctrl = true;
 
 // get path to VPinMAME
 std::string get_vpinmame_path();
+
+// ---------------------------------------------------------------------------
+// Audio mixing
+//
+// miniaudio owns the audio thread and mixes every playing ma_sound, then plays
+// the result directly on the default output device.  onProcess is invoked from
+// that thread after each mix; we use it to fire the SYNCPROCs of streams that
+// just ended.  The end notifications are queued (not fired) by the miniaudio
+// end callback, because firing a SYNCPROC frees its sound, which must not
+// happen from within the end callback itself
+// ---------------------------------------------------------------------------
+
+static void AltsoundEngineProcess(void* pUserData, float* pFramesOut, ma_uint64 frameCount)
+{
+	std::vector<EndedStream> ended;
+	{
+		std::lock_guard<std::mutex> lock(g_endedMutex);
+		ended.swap(g_endedStreams);
+	}
+
+	for (const auto& e : ended)
+		e.callback(e.hsync, e.hstream, 0, e.userdata);
+}
 
 // ---------------------------------------------------------------------------
 // Functional code
@@ -269,15 +301,30 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	cmds_out->cmd_filter = 0;
 	std::fill_n(cmds_out->cmd_buffer, ALT_MAX_CMDS, ~0);
 
-	int DSidx = -1; // BASS default device
-	//!! GetRegInt("Player", "SoundDeviceBG", &DSidx);
-	if (DSidx != -1)
-		DSidx++; // as 0 is nosound //!! mapping is otherwise the same or not?!
-	if (!BASS_Init(DSidx, 44100, 0, /*g_pvp->m_hwnd*/NULL, NULL)) //!! get sample rate from VPM? and window?
-	{
-		ALT_ERROR(0, "BASS initialization error: %s", get_bass_err());
-		//sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
+	// Initialize the miniaudio engine on the default playback device.  The
+	// engine mixes all altsound streams and plays them directly, the same way
+	// the BASS backend used to
+	g_sampleRate = 44100; //!! get sample rate from VPM?
+	g_channels = 2;
+
+	g_engine = new ma_engine();
+	const ma_result ma_res = altsound_ma_engine_init_device(g_channels, g_sampleRate,
+		AltsoundEngineProcess, nullptr, g_engine);
+	if (ma_res != MA_SUCCESS) {
+		MiniAudio_ErrorSetCode(ma_res);
+		ALT_ERROR(0, "miniaudio initialization error: %s", get_miniaudio_err());
+
+		delete g_engine;
+		g_engine = nullptr;
+
+		delete processor;
+		processor = nullptr;
+
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_init()");
+		return FALSE;
 	}
+	altsound_ma_engine_start(g_engine);
 
 	// disable the global mixer to mute ROM sounds in favor of altsound
 	mixer_sound_enable_global_w(0);
@@ -318,19 +365,29 @@ extern "C" void alt_sound_exit() {
 	altsound_stable = TRUE;
 	use_rom_ctrl = true;
 
+	// Stop miniaudio's audio thread first so no further mixing/onProcess callbacks run while streams and engine are ended
+	if (g_engine)
+		altsound_ma_engine_stop(g_engine);
+
+	// Discard any end-of-stream notifications that were never drained, the streams they reference are about to be freed
+	{
+		std::lock_guard<std::mutex> lock(g_endedMutex);
+		g_endedStreams.clear();
+	}
+
 	// clean up processor
 	delete processor;
 	processor = nullptr;
 
 	// DAR@20230618
-	// This needs to happen AFTER the processor is deleted.  BASS_Free() cleans
-	// up resources that are still held by the processor.  If this is called
-	// first, it will cause an error to be logged when shutting down
-	if (BASS_Free() == FALSE) {
-		ALT_ERROR(0, "FAILED BASS_Free(): %s", get_bass_err());
-	}
-	else {
-		ALT_INFO(0, "SUCCESS BASS_Free()");
+	// This needs to happen AFTER the processor is deleted.  Uninitializing the
+	// engine cleans up resources that are still held by the processor.  If this
+	// is called first, it will cause an error to be logged when shutting down
+	if (g_engine) {
+		altsound_ma_engine_uninit(g_engine);
+		delete g_engine;
+		g_engine = nullptr;
+		ALT_INFO(0, "SUCCESS miniaudio engine uninit");
 	}
 
 	OUTDENT;
@@ -351,13 +408,13 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			if (!channel_stream[i])
 				continue;
 
-			const HSTREAM stream = channel_stream[i]->hstream;
-			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PLAYING) {
-				if (!BASS_ChannelPause(stream)) {
-					ALT_WARNING(0, "FAILED BASS_ChannelPause(%u): %s", stream, get_bass_err());
+			const unsigned int stream = channel_stream[i]->hstream;
+			if (MiniAudio_ChannelIsActive(stream) == MINIAUDIO_ACTIVE_PLAYING) {
+				if (!MiniAudio_ChannelPause(stream)) {
+					ALT_WARNING(0, "FAILED MiniAudio_ChannelPause(%u): %s", stream, get_miniaudio_err());
 				}
 				else {
-					ALT_INFO(0, "SUCCESS BASS_ChannelPause(%u)", stream);
+					ALT_INFO(0, "SUCCESS MiniAudio_ChannelPause(%u)", stream);
 				}
 			}
 		}
@@ -370,13 +427,13 @@ extern "C" void alt_sound_pause(BOOL pause) {
 			if (!channel_stream[i])
 				continue;
 
-			const HSTREAM stream = channel_stream[i]->hstream;
-			if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PAUSED) {
-				if (!BASS_ChannelPlay(stream, 0)) {
-					ALT_WARNING(0, "FAILED BASS_ChannelPlay(%u): %s", stream, get_bass_err());
+			const unsigned int stream = channel_stream[i]->hstream;
+			if (MiniAudio_ChannelIsActive(stream) == MINIAUDIO_ACTIVE_PAUSED) {
+				if (!MiniAudio_ChannelPlay(stream, false)) {
+					ALT_WARNING(0, "FAILED MiniAudio_ChannelPlay(%u): %s", stream, get_miniaudio_err());
 				}
 				else {
-					ALT_INFO(0, "SUCCESS BASS_ChannelPlay(%u)", stream);
+					ALT_INFO(0, "SUCCESS MiniAudio_ChannelPlay(%u)", stream);
 				}
 			}
 		}

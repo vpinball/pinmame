@@ -11,6 +11,12 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
+#ifdef _MSC_VER
+#define ALTSOUNDCALLBACK __stdcall
+#else
+#define ALTSOUNDCALLBACK
+#endif
+
 #if _MSC_VER >= 1700
  #ifdef inline
   #undef inline
@@ -24,7 +30,7 @@
 #include <unordered_map>
 #include <vector>
 
-#define BASS_NO_STREAM 0
+#define MINIAUDIO_NO_STREAM 0
 #define ALT_MAX_CHANNELS 16
 
 // ----------------------------------------------------------------------------
@@ -122,8 +128,8 @@ typedef struct _gsound_sample_info {
 // Helper function prototypes
 // ---------------------------------------------------------------------------
 
-// translate BASS error codes to printable strings
-const char* get_bass_err();  // function prototype
+// get last error string (translate miniaudio error codes to printable strings)
+const char* get_miniaudio_err();
 
 // translate AltsoundSampleType enum values to strings
 const char* toString(AltsoundSampleType sampleType);

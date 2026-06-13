@@ -52,24 +52,20 @@ jobs:
             platform-name: x64
             vpinmame: VPinMAME64.dll
             setup: Setup64.exe
-            bass: x64/Bass64.dll
           - platform: win-x64
             platform-name: x64
             vpinmame: VPinMAME64.dll
             setup: Setup64.exe
-            bass: x64/Bass64.dll
             artifact-suffix: -sc
             extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
           - platform: win-x86
             platform-name: Win32
             vpinmame: VPinMAME.dll
             setup: Setup.exe
-            bass: Bass.dll
           - platform: win-x86
             platform-name: Win32
             vpinmame: VPinMAME.dll
             setup: Setup.exe
-            bass: Bass.dll
             artifact-suffix: -sc
             extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
     steps:
@@ -102,7 +98,6 @@ jobs:
           mkdir tmp
           cp build/vpinmame/Release/${{ matrix.vpinmame }} tmp
           cp build/instvpm/Release/${{ matrix.setup }} tmp
-          cp ext/bass/${{ matrix.bass }} tmp
           cp release/gamelist.txt tmp
           cp release/license.txt tmp
           cp release/pinmame.txt tmp

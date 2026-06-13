@@ -65,6 +65,60 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
+# Roughly match the optimization flags used by the MSVC builds (see cmake/*/CMakeLists_win-*.txt)
+# on the GCC/clang toolchains (macOS/iOS/tvOS/Android/Linux, and the MinGW Windows build)
+
+# /fp:fast (but contraction part only): allow fp multiply+add to fuse into fma/vfmaq, e.g. for the
+# resampler SSE/sse2neon loop. The reassociation/finite-math parts of /fp:fast are deliberately not enabled, e.g. as finite/NaN checks are screwed
+if(NOT MSVC)
+   add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-ffp-contract=fast>)
+endif()
+
+# /GL: whole-program / link-time optimization: Use CMake IPO; self-gated on
+# toolchain support and only enabled for optimized configs (leaves Debug untouched)
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_MESSAGE LANGUAGES C CXX)
+if(IPO_SUPPORTED)
+   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
+else()
+   message(STATUS "IPO/LTO not supported: ${IPO_MESSAGE}")
+endif()
+
+if(NOT MSVC)
+   # /GR-: no RTTI (the code uses no dynamic_cast/typeid), C++ only
+   add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+
+   # /Gy + COMDAT folding: emit per-function/data sections and let the linker strip unused ones
+   add_compile_options(-ffunction-sections -fdata-sections)
+   if(APPLE)
+      add_link_options(-Wl,-dead_strip)
+   else()
+      add_link_options(-Wl,--gc-sections)
+   endif()
+endif()
+
+if(MSVC)
+   add_compile_options(
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Ob2>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/O2>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Oi>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/arch:SSE2>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/fp:fast>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/fp:except->>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Ot>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GF>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GS->>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Gy>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GR->>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/Oy>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GT>>"
+      "$<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C,CXX>:/GL>>"
+      "$<$<COMPILE_LANGUAGE:C,CXX>:/EHsc>"
+   )
+endif()
+
+
 add_compile_definitions(
    HAS_M6809=1
    HAS_M6808=1

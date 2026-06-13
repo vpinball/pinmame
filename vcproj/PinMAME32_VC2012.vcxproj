@@ -81,6 +81,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -128,7 +129,7 @@
     <TargetName>$(ProjectName)_VC2012</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental />
+    <LinkIncremental>false</LinkIncremental>
     <TargetName>$(ProjectName)_VC2012</TargetName>
     <OutDir>$(VS_OUTPUT)obj\VC2012\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
@@ -173,7 +174,7 @@
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -204,10 +205,10 @@
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\bass;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -232,8 +233,8 @@
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -244,6 +245,16 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_WIN32_IE=0x0400;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -251,16 +262,18 @@
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\bass\x64;..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -276,7 +289,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -294,10 +307,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\bass;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -320,7 +333,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -338,10 +351,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\bass\x64;..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -363,7 +376,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -381,10 +394,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012md.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\bass;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -405,7 +418,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -423,10 +436,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012md.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\bass\x64;..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -448,7 +461,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -466,10 +479,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcmd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\bass;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -492,7 +505,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\wpc;..\src\windows;..\src\vc;..\src\cpu\m68000\generated_by_m68kmake;..\ext\zlib;..\ext;..\ext\dinput\include;..\ext\htmlhelp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME="PinMAME32";WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0500;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -510,10 +523,10 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
       <AdditionalIncludeDirectories>..\src\ui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>bass.lib;winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dxguid64.lib;ddraw64.lib;dinput64.lib;dsound64.lib;comctl32.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2012vcmd.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\ext\bass\x64;..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ext\dinput;..\ext\htmlhelp\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -1172,6 +1185,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="..\src\wpc\altsound\gsound_csv_parser.cpp" />
     <ClCompile Include="..\src\wpc\altsound\gsound_processor.cpp" />
     <ClCompile Include="..\src\wpc\altsound\snd_alt.cpp" />
+    <ClCompile Include="..\src\wpc\altsound\miniaudio_bass_compat.cpp" />
+    <ClCompile Include="..\src\wpc\altsound\miniaudio_private.c" />
     <ClCompile Include="..\src\wpc\sims\s11\full\dd.c" />
     <ClCompile Include="..\src\wpc\sims\s11\full\milln.c" />
     <ClCompile Include="..\src\wpc\sims\s11\prelim\eatpm.c" />
@@ -1485,6 +1500,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="..\src\wpc\altsound\gsound_processor.hpp" />
     <ClInclude Include="..\src\wpc\altsound\inipp.h" />
     <ClInclude Include="..\src\wpc\altsound\snd_alt.h" />
+    <ClInclude Include="..\src\wpc\altsound\miniaudio_bass_compat.hpp" />
+    <ClInclude Include="..\src\wpc\altsound\miniaudio_private.h" />
     <ClInclude Include="..\src\vc\dirent.h" />
     <ClInclude Include="..\src\vc\unistd.h" />
     <ClInclude Include="..\src\ui\audit32.h" />

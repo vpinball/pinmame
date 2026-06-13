@@ -682,12 +682,6 @@ add_library(vpinmame SHARED
    ext/zlib/trees.c
    ext/zlib/uncompr.c
    ext/zlib/zutil.c
-
-   ext/basicbitmap/BasicBitmap.cpp
-   ext/basicbitmap/BasicBitmap.h
-
-   ext/basicbitmap/BasicBitmap_SSE2.cpp
-   ext/basicbitmap/BasicBitmap_C.h
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /EHsc)
@@ -708,7 +702,6 @@ target_include_directories(vpinmame PUBLIC
    src/windows
    src/win32com
    src/vc
-   ext/bass
    ext/zlib
    ext/dinput/include
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
@@ -716,7 +709,6 @@ target_include_directories(vpinmame PUBLIC
 
 target_link_directories(vpinmame PUBLIC
    ext/dinput
-   ext/bass
    altsound
 )
 
@@ -728,7 +720,6 @@ target_link_libraries(vpinmame
    dsound.lib
    dinput.lib
    version.lib
-   bass.lib
 )
 
 target_link_options(vpinmame PUBLIC

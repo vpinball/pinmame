@@ -11,6 +11,39 @@ project(xpinmame VERSION ${PROJECT_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 99)
 
+# Roughly match the optimization flags used by the MSVC builds (see cmake/*/CMakeLists_win-*.txt)
+# on this GCC/clang toolchain. Mirrors cmake/libpinmame/CMakeLists.txt
+
+# /fp:fast (but contraction part only): allow fp multiply+add to fuse into fma, e.g. for the resampler
+# SSE hot loop. The reassociation/finite-math parts of /fp:fast are deliberately not enabled, as e.g. finite/NaN checks are screwed
+if(NOT MSVC)
+   add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-ffp-contract=fast>)
+endif()
+
+# /GL: whole-program / link-time optimization: Portable via CMake IPO; self-gated on
+# toolchain support and only enabled for optimized configs (leaves Debug untouched)
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_MESSAGE LANGUAGES C CXX)
+if(IPO_SUPPORTED)
+   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
+else()
+   message(STATUS "IPO/LTO not supported: ${IPO_MESSAGE}")
+endif()
+
+if(NOT MSVC)
+   # /GR-: no RTTI (the code uses no dynamic_cast/typeid), C++ only
+   add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+
+   # /Gy + COMDAT folding: emit per-function/data sections and let the linker strip unused ones
+   add_compile_options(-ffunction-sections -fdata-sections)
+   if(APPLE)
+      add_link_options(-Wl,-dead_strip)
+   else()
+      add_link_options(-Wl,--gc-sections)
+   endif()
+endif()
+
 add_compile_definitions(
    HAS_M6809=1
    HAS_M6808=1
@@ -77,13 +110,15 @@ add_compile_definitions(
    HAS_SAA1099=1
    HAS_QSOUND=1
 
-   INLINE=static __inline
    LSB_FIRST
+   INLINE=static __inline
+   PI=M_PI
+   UNIX
    x11
    stricmp=strcasecmp
-   PI=M_PI
+
    XMAME
-   UNIX
+
    SIGNED_SAMPLES
    PINMAME
    MAMEVER=7300
@@ -102,7 +137,7 @@ add_compile_definitions(
    SYSDEP_DSP_COREAUDIO
 )
 
-add_executable(xpinmame 
+add_executable(xpinmame
    src/artwork.c
    src/artwork.h
    src/audit.c
@@ -578,41 +613,41 @@ add_executable(xpinmame
    ext/ymfm/ymfm_opm.cpp
    ext/ymfm/ymfm_opm.h
 
-   src/unix/main.c 
-   src/unix/sound.c 
-   src/unix/keyboard.c 
-   src/unix/devices.c 
-   src/unix/video.c 
-   src/unix/mode.c 
-   src/unix/fileio.c 
-   src/unix/dirio.c 
-   src/unix/config.c 
-   src/unix/fronthlp.c 
-   src/unix/ident.c 
-   src/unix/network.c 
-   src/unix/snprintf.c 
-   src/unix/nec765_dummy.c 
-   src/unix/effect.c 
-   src/unix/ticker.c 
-   src/unix/parallel.c 
+   src/unix/main.c
+   src/unix/sound.c
+   src/unix/keyboard.c
+   src/unix/devices.c
+   src/unix/video.c
+   src/unix/mode.c
+   src/unix/fileio.c
+   src/unix/dirio.c
+   src/unix/config.c
+   src/unix/fronthlp.c
+   src/unix/ident.c
+   src/unix/network.c
+   src/unix/snprintf.c
+   src/unix/nec765_dummy.c
+   src/unix/effect.c
+   src/unix/ticker.c
+   src/unix/parallel.c
    src/unix/serial.c
-   src/unix/sysdep/rc.c 
-   src/unix/sysdep/misc.c 
-   src/unix/sysdep/plugin_manager.c 
-   src/unix/sysdep/sound_stream.c 
-   src/unix/sysdep/sysdep_palette.c 
-   src/unix/sysdep/sysdep_dsp.c 
-   src/unix/sysdep/sysdep_mixer.c 
-   src/unix/sysdep/dsp-drivers/coreaudio.c 
-   src/unix/video-drivers/x11.c 
-   src/unix/video-drivers/xinput.c 
-   src/unix/video-drivers/x11_window.c 
-   src/unix/joystick-drivers/joy_i386.c 
-   src/unix/joystick-drivers/joy_pad.c 
-   src/unix/joystick-drivers/joy_x11.c 
-   src/unix/joystick-drivers/joy_usb.c 
-   src/unix/frameskip-drivers/dos.c 
-   src/unix/frameskip-drivers/barath.c 
+   src/unix/sysdep/rc.c
+   src/unix/sysdep/misc.c
+   src/unix/sysdep/plugin_manager.c
+   src/unix/sysdep/sound_stream.c
+   src/unix/sysdep/sysdep_palette.c
+   src/unix/sysdep/sysdep_dsp.c
+   src/unix/sysdep/sysdep_mixer.c
+   src/unix/sysdep/dsp-drivers/coreaudio.c
+   src/unix/video-drivers/x11.c
+   src/unix/video-drivers/xinput.c
+   src/unix/video-drivers/x11_window.c
+   src/unix/joystick-drivers/joy_i386.c
+   src/unix/joystick-drivers/joy_pad.c
+   src/unix/joystick-drivers/joy_x11.c
+   src/unix/joystick-drivers/joy_usb.c
+   src/unix/frameskip-drivers/dos.c
+   src/unix/frameskip-drivers/barath.c
 )
 
 find_package(

@@ -726,11 +726,11 @@ static int create_blit_surface(void)
 		height = (max_height * effect_min_yscale) + 2;
 
 		// if it's okay, keep it
-		if (width <= primary_desc.dwWidth && height <= primary_desc.dwHeight)
+		if (width <= (int)primary_desc.dwWidth && height <= (int)primary_desc.dwHeight)
 			break;
 
 		// reduce the width
-		if (width > primary_desc.dwWidth)
+		if (width > (int)primary_desc.dwWidth)
 		{
 			if (effect_min_xscale > 1)
 			{
@@ -740,7 +740,7 @@ static int create_blit_surface(void)
 		}
 
 		// reduce the height
-		if (height > primary_desc.dwHeight)
+		if (height > (int)primary_desc.dwHeight)
 		{
 			if (effect_min_yscale > 1)
 			{

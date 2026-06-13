@@ -23,7 +23,6 @@
 
 // Local includes
 #include "altsound_processor_base.hpp"
-#include "..\ext\bass\bass.h"
 #include "altsound_logger.hpp"
 
 constexpr int NUM_STREAM_TYPES = 5;
@@ -82,8 +81,8 @@ private: // functions
 	// Stop the exclusive stream referenced by stream_ptr
 	bool stopExclusiveStream(const AltsoundSampleType stream_type);
 
-	// BASS SYNCPROC callback whan a stream ends
-	static void CALLBACK common_callback(HSYNC handle, DWORD channel, DWORD data, void* user);
+	// miniaudio SYNCPROC callback whan a stream ends
+	static void ALTSOUNDCALLBACK common_callback(unsigned int handle, unsigned int channel, unsigned int data, void* user);
 
 	// adjust volume of active streams to accommodate current ducking impacts
 	static bool adjustStreamVolumes();

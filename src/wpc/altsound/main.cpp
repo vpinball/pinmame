@@ -44,6 +44,10 @@
 #include "inipp.h"
 #include "altsound_data.hpp"
 #include "altsound_logger.hpp"
+#include "miniaudio_bass_compat.hpp"
+#include "miniaudio_private.h"
+
+#include <miniaudio/miniaudio.h>
 
 // namespace scope resolution
 using std::string;
@@ -66,8 +70,26 @@ BehaviorInfo overlay_behavior;
 // Instance of global thread synchronization mutex
 std::mutex io_mutex;
 
-// Instance of global array of BASS channels 
+// Instance of global array of miniaudio channels
 StreamArray channel_stream;
+
+// miniaudio engine instance (owned by the miniaudio_bass_compat layer)
+extern ma_engine* g_engine;
+extern uint32_t g_channels;
+extern uint32_t g_sampleRate;
+
+// Drain end-of-stream notifications from miniaudio's audio thread.  See matching comment in snd_alt.cpp
+static void AltsoundEngineProcess(void* pUserData, float* pFramesOut, ma_uint64 frameCount)
+{
+	std::vector<EndedStream> ended;
+	{
+		std::lock_guard<std::mutex> lock(g_endedMutex);
+		ended.swap(g_endedStreams);
+	}
+
+	for (const auto& e : ended)
+		e.callback(e.hsync, e.hstream, 0, e.userdata);
+}
 
 //float master_vol = 1.0f;
 //float global_vol = 1.0f;
@@ -145,7 +167,24 @@ int main(int argc, const char* argv[]) {
 	std::cout << "Playback completed! Press Enter to exit..." << std::endl;
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Wait for user input
 
+	// Stop the audio thread before tearing down streams and the engine.
+	if (g_engine)
+		altsound_ma_engine_stop(g_engine);
+
+	{
+		std::lock_guard<std::mutex> lock(g_endedMutex);
+		g_endedStreams.clear();
+	}
+
+	// Free streams held by the processor while the engine is still valid.
 	processor.reset();
+
+	if (g_engine) {
+		altsound_ma_engine_uninit(g_engine);
+		delete g_engine;
+		g_engine = nullptr;
+	}
+
 	return 0;
 }
 
@@ -245,13 +284,22 @@ std::pair<bool, InitData> init(const std::string& log_path)
 
 		processor->init();
 
-		// Initialize BASS
-		int DSidx = -1; // BASS default device
+		// Initialize the miniaudio engine on the default playback device
+		g_sampleRate = 44100;
+		g_channels = 2;
 
-		if (!BASS_Init(DSidx, 44100, 0, NULL, NULL))
-		{
-			ALT_ERROR(0, "BASS initialization error: %s", get_bass_err());
+		g_engine = new ma_engine();
+		const ma_result ma_res = altsound_ma_engine_init_device(g_channels, g_sampleRate,
+			AltsoundEngineProcess, nullptr, g_engine);
+		if (ma_res != MA_SUCCESS) {
+			MiniAudio_ErrorSetCode(ma_res);
+			ALT_ERROR(0, "miniaudio initialization error: %s", get_miniaudio_err());
+
+			delete g_engine;
+			g_engine = nullptr;
+			return std::make_pair(false, InitData{});
 		}
+		altsound_ma_engine_start(g_engine);
 
 		ALT_DEBUG(0, "END init()");
 		return std::make_pair(true, init_data);

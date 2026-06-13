@@ -833,6 +833,9 @@ void cpunum_set_halt_line(int cpunum, int state)
 #define WINVER _WIN32_WINNT
 #endif
 #if defined(__GNUC__)
+#ifdef LONG_MAX
+#undef LONG_MAX
+#endif
 #define LONG_MAX 2147483647
 #endif
 #include <windows.h>
@@ -963,7 +966,7 @@ void time_fence_exit()
 static void cpu_timeslice(void)
 {
 #if defined(VPINMAME)
-	// Continuously pump message loop, otherwise it creates stutters between COM server and client (VPinMame locks VPX scripts until message are processed)
+	// Continuously pump message loop, otherwise it creates stutters between COM server and client (VPinMAME locks VPX scripts until message are processed)
 	// It also causes a deadlock if using a TimeFence since messages are normally processed by a CPU callback that may not happen depending on the TimeFence.
 	extern void win_process_events(void);
 	win_process_events();

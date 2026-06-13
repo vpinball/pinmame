@@ -732,8 +732,8 @@ typedef struct {
   float   fir_sum;            // Sum of filter weights
   // Data acquisition, fed by the driver through 'core_dmd_submit_frame'
   UINT8*  rawFrames;          // Buffer for incoming raw frames
-  int     nextFrame;          // Position in circular buffer to store next raw frame
-  unsigned int frame_index;   // Raw frame index
+  volatile int nextFrame;     // Position in circular buffer to store next raw frame
+  volatile unsigned int frame_index; // Raw frame index
   // Integrated data, computed by 'core_dmd_update_pwm' / 'core_dmd_update_identify'
   unsigned int lastRawFrameIndex; // value of frame_index when last integration was requested
   UINT8*  tempRawFrame;       // buffer used to compute bitplaneFrame (used to ease frame change detection)
@@ -777,6 +777,29 @@ static struct {
     UINT8   vpm_dmd_last_dmd[DMD_MAXY * DMD_MAXX];
   #endif
 } locals;
+
+#if defined(_MSC_VER)
+    #include <intrin.h>
+    static inline int atomic_exchange_int(volatile int *ptr, int value)
+    {
+        return (int)_InterlockedExchange((volatile long *)ptr, (long)value);
+    }
+    static inline int atomic_increment(volatile int* ptr)
+    {
+        return (int)_InterlockedIncrement((volatile long*)ptr);
+    }
+#elif defined(__GNUC__) || defined(__clang__)
+    static inline int atomic_exchange_int(volatile int *ptr, int value)
+    {
+        return __atomic_exchange_n(ptr, value, __ATOMIC_SEQ_CST);
+    }
+    static inline int atomic_increment(volatile int* ptr)
+    {
+        return __atomic_add_fetch(ptr, 1, __ATOMIC_SEQ_CST);
+    }
+#else
+    #error Unsupported compiler
+#endif
 
 /*-------------------------------
 /  Initialize the game palette
@@ -3482,8 +3505,9 @@ void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, co
     memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
     // Update circular buffer position after writing the frame to allow concurrent PWM update
     // (if the compiler/CPU reorder this instruction we may have visual glitches)
-    dmd_state->nextFrame = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
-    dmd_state->frame_index++;
+    int nf = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
+    atomic_exchange_int(&dmd_state->nextFrame, nf);
+    atomic_increment(&dmd_state->frame_index);
   }
 }
 
@@ -3494,17 +3518,20 @@ void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, co
 float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFrameId) {
    core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 
+   const volatile int nf = dmd_state->nextFrame;
+   const volatile unsigned int fi = dmd_state->frame_index;
+
    // No processing required as there weren't any new frame submitted (we do not meulate interframe cooldown as all used framerates are fairly high)
-   if (dmd_state->lastLumFrameIndex == dmd_state->frame_index) {
+   if (dmd_state->lastLumFrameIndex == fi) {
       *lumFrameId = dmd_state->lumFrameId;
       return dmd_state->luminanceFrame;
    }
-   dmd_state->lastLumFrameIndex = dmd_state->frame_index;
+   dmd_state->lastLumFrameIndex = fi;
 
    switch (dmd_state->raw_combiner) {
    case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4:
    {
-      const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
          dmd_state->lumFrameId++;
@@ -3517,7 +3544,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
 
    case CORE_DMD_PWM_PREINTEGRATED_SAM:
    {
-      const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
          dmd_state->lumFrameId++;
@@ -3532,7 +3559,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
 
    default: // Apply low pass filter over stored frames then scale down to final shades
    {
-      int framePos = dmd_state->nextFrame; // Circular buffer position, note that this may be changed concurrently from core_dmd_submit_frame
+      int framePos = nf; // Circular buffer position, note that this may be changed concurrently from core_dmd_submit_frame
       memset(dmd_state->tempFIRBuffer, 0, dmd_state->frameSize * sizeof(UINT32));
       for (int ii = 0; ii < dmd_state->fir_size; ii++) {
          framePos--;
@@ -3566,7 +3593,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
             if (width_remaining == 0) {
                for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
                   UINT8 data = *frameData++;
-                  for (int kk = 0; kk < 8; kk++, data <<= 1, line++)
+                  for (int kk = 0; kk < 8; kk++, data *= 2, line++)
                      if (data & 0x80) (*line) += frame_weight;
                }
             }
@@ -3576,7 +3603,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
                   for (int jj = 0; jj < width_bytes; jj++) {
                      UINT8 data = *frameData++;
                      const int n = (jj == width_bytes - 1) ? width_remaining : 8;
-                     for (int ll = 0; ll < n; ll++, data <<= 1, line++)
+                     for (int ll = 0; ll < n; ll++, data *= 2, line++)
                         if (data & 0x80) (*line) += frame_weight;
                   }
                }
@@ -3605,24 +3632,27 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
 {
   core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 
+  const volatile int nf = dmd_state->nextFrame;
+  const volatile unsigned int fi = dmd_state->frame_index;
+
   // No processing required as there weren't any new frames submitted
-  if (dmd_state->lastRawFrameIndex == dmd_state->frame_index) {
+  if (dmd_state->lastRawFrameIndex == fi) {
      *rawFrameId = dmd_state->rawFrameId;
      return dmd_state->bitplaneFrame;
   }
-  dmd_state->lastRawFrameIndex = dmd_state->frame_index;
+  dmd_state->lastRawFrameIndex = fi;
 
   // Compute combined bitplane frames as these are used for legacy/backwards compatibility, e.g. with colorization plugins
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
      assert(dmd_state->rawFrameSize == dmd_state->frameSize);
-     memcpy(dmd_state->tempRawFrame, dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
+     memcpy(dmd_state->tempRawFrame, dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
      break;
   case CORE_DMD_PWM_COMBINER_1: // Simple 1 monochrome frame id
      {
         UINT8* rawData = dmd_state->tempRawFrame;
-        const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         const int width_remaining = dmd_state->width & 7;
         if (width_remaining == 0) {
            for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
@@ -3663,7 +3693,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
       for (int i = 1; i <= nFrames; i++)
       {
         UINT8* rawData = dmd_state->tempRawFrame;
-        const UINT8* frameData = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - i)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - i)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
         for (int kk = 0; kk < dmd_state->rawFrameSize; kk++)
           for (UINT8 ll = 0, data = *frameData++; ll < 8; ll++, data <<= 1)
             (*rawData++) += (data >> 7);
@@ -3682,8 +3712,8 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
     {
       assert((dmd_state->width & 7) == 0);
       UINT8* rawData = dmd_state->tempRawFrame;
-      const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame0 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame1 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         const unsigned int intens1 = (frame0[kk] & 0x55) + (frame1[kk] & 0x55); // 0x55 = 01010101 binary mask
         const unsigned int intens2 = (frame0[kk] & 0xaa) + (frame1[kk] & 0xaa); // 0xaa = 10101010 binary mask
@@ -3702,9 +3732,9 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
     {
       assert((dmd_state->width & 7) == 0);
       UINT8* rawData = dmd_state->tempRawFrame;
-      const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame0 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame1 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame2 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         const unsigned int intens1 = (frame0[kk] & 0x55) + (frame1[kk] & 0x55) + (frame2[kk] & 0x55); // 0x55 = 01010101 binary mask
         const unsigned int intens2 = (frame0[kk] & 0xaa) + (frame1[kk] & 0xaa) + (frame2[kk] & 0xaa); // 0xaa = 10101010 binary mask
@@ -3726,12 +3756,12 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
       UINT8 *rawData = dmd_state->tempRawFrame;
       const UINT8 *frame0, *frame1;
       if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_2_1) { // double length frame are the 2 before last one, single length frame is the last one (Data East 128x32, Sega/Stern Whitestar)
-        frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-        frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        frame0 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        frame1 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       }
       else { //if (dmd_state->raw_combiner == CORE_DMD_PWM_COMBINER_SUM_1_2) { // double length frame are the 2 last ones, single length frame is the one before (Data East 128x16)
-        frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-        frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        frame0 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        frame1 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       }
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         const unsigned int intens1 = 2*(frame0[kk] & 0x55) + (frame1[kk] & 0x55);   // 0x55 = 01010101 binary mask
@@ -3752,10 +3782,10 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
       assert((dmd_state->width & 7) == 0);
       static const UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
       UINT8* rawData = dmd_state->tempRawFrame;
-      const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame3 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame0 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame1 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame2 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame3 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         UINT8 v0 = frame0[kk], v1 = frame1[kk], v2 = frame2[kk], v3 = frame3[kk];
         for (int ii = 0; ii < 8; ii++, v0 <<= 1, v1 <<= 1, v2 <<= 1, v3 <<= 1)
@@ -3767,9 +3797,9 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
     {
       assert((dmd_state->width & 7) == 0);
       UINT8* rawData = dmd_state->tempRawFrame; // Note that we are always well aligned as the frames are pushed 4 by 4 since they are processed by a dedicated rasterizer chip
-      const UINT8* const frame0 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame1 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
-      const UINT8* const frame2 = dmd_state->rawFrames + ((dmd_state->nextFrame + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame0 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 2)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame1 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 3)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frame2 = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 4)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       for (int kk = 0; kk < dmd_state->rawFrameSize; kk++) {
         const unsigned int intens1 = (frame0[kk] & 0x55) + (frame1[kk] & 0x55) + (frame2[kk] & 0x55); // 0x55 = 01010101 binary mask
         const unsigned int intens2 = (frame0[kk] & 0xaa) + (frame1[kk] & 0xaa) + (frame2[kk] & 0xaa); // 0xaa = 10101010 binary mask

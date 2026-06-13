@@ -557,7 +557,7 @@ void run_machine_core(void)
 	{
 #if !(defined(VPINMAME) || defined(LIBPINMAME))
 		/* show info about incorrect behaviour (wrong colors etc.) */
-		if (showgamewarnings(artwork_get_ui_bitmap()) == 0)
+		if (options.skip_gamewarnings || showgamewarnings(artwork_get_ui_bitmap()) == 0)
 #endif /* VPINMAME || LIBPINMAME */
 		{
 			/* show info about the game */

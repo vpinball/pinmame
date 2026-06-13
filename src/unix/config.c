@@ -134,6 +134,7 @@ static struct rc_option opts[] = {
 	{ "cheat", "c", rc_bool, &options.cheat, "0", 0, 0, NULL, "Enable/disable cheat subsystem" },
 	{ "skip_disclaimer", NULL, rc_bool, &options.skip_disclaimer, "0", 0, 0, NULL, "Skip displaying the disclaimer screen" },
 	{ "skip_gameinfo", NULL, rc_bool, &options.skip_gameinfo, "0", 0, 0, NULL, "Skip displaying the game info screen" },
+	{ "skip_gamewarnings", NULL, rc_bool, &options.skip_gamewarnings, "0", 0, 0, NULL, "Skip displaying the game warnings screen (needed for headless runs of GAME_NOT_WORKING games)" },
 	{ "crconly", NULL, rc_bool, &options.crc_only, "0", 0, 0, NULL, "Use only CRC for all integrity checks" },
 	{ "bios", NULL, rc_string, &options.bios, "default", 0, 14, NULL, "change system bios" },
 #ifdef MAME_DEBUG

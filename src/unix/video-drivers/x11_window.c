@@ -201,7 +201,7 @@ int FindXvPort(Display *dpy, long format, int *port)
 			fo = XvListImageFormats(dpy, p, &num_formats);
 			for (j = 0; j < num_formats; j++)
 			{
-				if((fo[j].id==format))
+				if(fo[j].id==format)
 				{
 					if(XvGrabPort(dpy,p,CurrentTime)==Success)
 					{
@@ -1377,7 +1377,7 @@ void x11_window_refresh_screen (void)
          {
             Window _dw;
             int _dint;
-	    unsigned int _w,_h,_duint;
+            unsigned int _w,_h,_duint;
             long pw,ph;
             XGetGeometry(display, window, &_dw, &_dint, &_dint, &_w, &_h, &_duint, &_duint);
 

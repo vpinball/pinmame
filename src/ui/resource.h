@@ -244,6 +244,7 @@
 #define IDC_ARTMISCTEXT                 1175
 #define IDC_SKIP_DISCLAIMER             1176
 #define IDC_SKIP_GAME_INFO              1177
+#define IDC_SKIP_GAME_WARNINGS          1253
 #define IDC_PROP_SOURCE                 1177
 #define IDC_OLD_TIMING                  1178
 #define IDC_PAUSEBRIGHT                 1180
@@ -372,7 +373,7 @@
 #define _APS_3D_CONTROLS                1
 #define _APS_NEXT_RESOURCE_VALUE        187
 #define _APS_NEXT_COMMAND_VALUE         40080
-#define _APS_NEXT_CONTROL_VALUE         1253
+#define _APS_NEXT_CONTROL_VALUE         1254
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

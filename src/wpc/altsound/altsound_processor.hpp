@@ -5,7 +5,7 @@
 // CSV and PinSound format
 // ---------------------------------------------------------------------------
 // license:BSD-3-Clause
-// copyright-holders: Dave Roscoe, Carsten Wächter
+// copyright-holders: Dave Roscoe, Carsten WÃ¤chter
 // ---------------------------------------------------------------------------
 #pragma once
 
@@ -22,7 +22,6 @@
 // Local includes
 #include "altsound_processor_base.hpp"
 #include "snd_alt.h"
-#include "..\ext\bass\bass.h"
 
 // ---------------------------------------------------------------------------
 // AltsoundProcessor class definition
@@ -83,14 +82,14 @@ private: // functions
 	// process sfx commands
 	bool process_sfx(AltsoundStreamInfo* stream_out);
 
-	// BASS SYNCPROC callback when jingle samples end
-	static void CALLBACK jingle_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
+	// miniaudio SYNCPROC callback when jingle samples end
+	static void ALTSOUNDCALLBACK jingle_callback(unsigned int handle, unsigned int channel, unsigned int data, void *user);
 
-	// BASS SYNCPROC callback when sfx samples end
-	static void CALLBACK sfx_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
+	// miniaudio SYNCPROC callback when sfx samples end
+	static void ALTSOUNDCALLBACK sfx_callback(unsigned int handle, unsigned int channel, unsigned int data, void *user);
 
-	// BASS SYNCPROC callback when music samples end
-	static void CALLBACK music_callback(HSYNC handle, DWORD channel, DWORD data, void *user);
+	// miniaudio SYNCPROC callback when music samples end
+	static void ALTSOUNDCALLBACK music_callback(unsigned int handle, unsigned int channel, unsigned int data, void *user);
 
 private: // data
 

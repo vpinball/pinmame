@@ -26,6 +26,9 @@
   #include <stdint.h>
   #include "../sse2neon.h"
  #endif
+ #if defined(__SSE3__) || defined(__AVX__)
+  #include <pmmintrin.h> // for _mm_hadd_ps
+ #endif
  #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128i
      {
@@ -330,10 +333,11 @@ sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to)
 #ifdef RESAMPLER_SSE_OPT
 static inline __m128 horizontal_add(const __m128 a)
 {
-#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) //!! or SSE3
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) || defined(__SSE3__) || defined(__AVX__) // aarch64 (sse2neon maps to vpaddq) or SSE3 (_mm_hadd_ps)
+    //!! or cpuid SSE3 support
     const __m128 ftemp = _mm_hadd_ps(a, a);
     return _mm_hadd_ps(ftemp, ftemp);
-#else    
+#else
     const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a)); //a0+a2,a1+a3
     return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, _MM_SHUFFLE(1, 1, 1, 1))); //(a0+a2)+(a1+a3)
 #endif

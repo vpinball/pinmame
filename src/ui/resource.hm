@@ -74,6 +74,7 @@
 #define HIDC_SIZES                      0x809c03ef    // IDD_PROP_ADVANCED
 #define HIDC_SKIP_DISCLAIMER            0x80ad0498    // IDD_INTERFACE_OPTIONS
 #define HIDC_SKIP_GAME_INFO             0x80ad0499    // IDD_INTERFACE_OPTIONS
+#define HIDC_SKIP_GAME_WARNINGS         0x80ad04be    // IDD_INTERFACE_OPTIONS
 #define HIDC_SLEEP                      0x809e03f8    // IDD_PROP_MISC
 #define HIDC_START_GAME_CHECK           0x80ad045b    // IDD_INTERFACE_OPTIONS
 #define HIDC_STEADYKEY                  0x809d0480    // IDD_PROP_INPUT

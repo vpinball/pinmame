@@ -38,7 +38,9 @@ extern int widthscale, heightscale;
 static int sysdep_palette_make_pen_from_info(struct sysdep_palette_info
    *info, unsigned char red, unsigned char green, unsigned char blue)
 {
-   int pen = 0;
+   unsigned int pen = 0;   /* unsigned: with a zero color mask (e.g. SDL dummy video
+                            * driver) the shift-search loop below must terminate via a
+                            * logical right shift, not loop forever on a sign-extended int */
    
    /* are the shifts initialised ? */
    if(!info->red_shift)

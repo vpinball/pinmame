@@ -1290,6 +1290,15 @@ BY35_ROMEND
 #define input_ports_dragfis16 input_ports_st
 CORE_CLONEDEFNV(dragfis16,dragfist,"Dragonfist (MOD 16)",2024,"Stern / slochar",by35_mST200,0)
 
+INITGAME(dragfis17,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(dragfis17,"fisted_17-u1.716",CRC(72924AA5) SHA1(789499ce31cf528df793965d66deb0df022b25ea),
+                             "fisted_17-u5.716",CRC(76A8332D) SHA1(0c97e36714d797d64d7bdb9e3bc6436fb32dd653),
+                             "fisted_17-u2.716",CRC(F8537CDA) SHA1(9590c39a432989407280c6d84a57405e5e0e81c0),
+                             "fisted_17-u6.716",CRC(CF1FC811) SHA1(1a1485bcfc00b0a973766f2faf798bf331df75a7))
+BY35_ROMEND
+#define input_ports_dragfis17 input_ports_st
+CORE_CLONEDEFNV(dragfis17,dragfist,"Dragonfist (MOD 17)",2026,"Stern / slochar",by35_mST200,0)
+
 /*--------------------------------
 / Dragonfist (bootleg - modified to match instruction card/manual)
 /-------------------------------*/

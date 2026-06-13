@@ -403,7 +403,13 @@ int osd_update_audio_stream(INT16 *buffer)
 			for (i = 0; i < input_bytes; ++i)
 			{
 #if defined(RESAMPLER_SSE_OPT)
+ #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
 				const INT16 samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_mul_ss(_mm_cvtsi32_ss(_mm_setzero_ps(), buffer[i]), _mm_set_ss(vgf)), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+ #else // Arm Neon: scalar SSE _ss intrinsics map poorly via sse2neon (per-op lane-merge overhead, no SIMD gain); use a native scalar convert instead
+				float sample = (float)buffer[i] * vgf;
+				sample = sample < -32768.f ? -32768.f : (sample > 32767.f ? 32767.f : sample); // branchless clamp -> fminnm/fmaxnm
+				const INT16 samplei = (INT16)vcvtns_s32_f32(sample); // fcvtns: round to nearest (ties to even), matching _mm_cvtss_si32
+ #endif
 #else
 				const float sample = (float)buffer[i] * vgf;
 				INT16 samplei;
@@ -413,7 +419,7 @@ int osd_update_audio_stream(INT16 *buffer)
 					samplei = 32767;
 				else
 #ifdef __GNUC__
-					samplei = (INT16)(sample + .5f);
+					samplei = (INT16)((sample >= 0.f) ? (sample + .5f) : (sample - .5f)); // not equivalent, but good enough
 #else
 					samplei = (INT16)(lrintf(sample));
 #endif

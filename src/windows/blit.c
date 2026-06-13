@@ -569,7 +569,8 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 	if ((blit->dstdepth == 15) || (blit->dstdepth == 16))
 	{
 #if 0 // only works 'correctly' if compact display disabled, and still has this nasty black border on the bottom due to its hacky nature
-		int c, c2, s,sy;
+		UINT32 c;
+		int c2, s, sy;
 		const UINT8 * __restrict src = asmblit_srcdata;
 		UINT8* __restrict dst = asmblit_dstdata;
 		const UINT32 r = blit->dstyscale + blit->dstxscale;

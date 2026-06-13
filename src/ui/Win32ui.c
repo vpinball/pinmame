@@ -754,6 +754,8 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 		sprintf(&pCmdLine[strlen(pCmdLine)]," -skip_disclaimer");
 	if (GetSkipGameInfo())
 		sprintf(&pCmdLine[strlen(pCmdLine)]," -skip_gameinfo");
+	if (GetSkipGameWarnings())
+		sprintf(&pCmdLine[strlen(pCmdLine)]," -skip_gamewarnings");
 	if (GetHighPriority() == TRUE)
 		sprintf(&pCmdLine[strlen(pCmdLine)]," -high_priority");
 #ifdef PINMAME
