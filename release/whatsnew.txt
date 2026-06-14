@@ -13,6 +13,8 @@ Workaround a crash / race-condition when reading PinMAME state, e.g. when exitin
 
 Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, trackball or lightgun)
 
+Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect games
+
 VS2026 build support
 
 Get rid of BasicBitmap external dependency
@@ -87,6 +89,7 @@ Surf 'n Safari (Tournament MOD)
 Swords of Fury (Richrom/Lionman MOD V1, with and without swords sounds)
 Transporter the Rescue L-3 (Fixed Jackpot MOD), LX-4 (Competition MOD in 2 variants: 'adult' and clean (one replaced word))
 Victory (tournament/competition MOD 1.1 & 1.2 & 1.3)
+World Cup Soccer LA-1
 
 
 
