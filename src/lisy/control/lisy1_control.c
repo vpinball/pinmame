@@ -202,6 +202,16 @@ do_update_local(int sockfd, char* what) {
     system("/bin/mount -o remount,rw /boot");
     system("/bin/mount -o remount,rw /");
 
+    //verify SHA256 integrity of update file before extracting
+    sprintf(buffer, "verifying update file integrity<br><br>\n");
+    sendit(sockfd, buffer);
+    sprintf(buffer, "/usr/bin/sha256sum -c %s.sha256 2>/dev/null", tmp_name);
+    if (system(buffer) != 0) {
+        sprintf(buffer, "integrity check FAILED, aborting update<br><br>\n");
+        sendit(sockfd, buffer);
+        return;
+    }
+
     //just unpack the lisy_update.tgz and execute install.sh from within
     sprintf(buffer, "try to get extract the update file<br><br>\n");
     sendit(sockfd, buffer);
