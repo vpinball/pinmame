@@ -386,135 +386,76 @@ static core_tLampDisplay wcs_lampPos = {
 }
 };
 
+#define WCS_SOUND \
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a), \
+               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8), \
+               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f), \
+               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159), \
+               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac), \
+               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79), \
+               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+
 WPC_ROMSTART(wcs,l2,"wcup_lx2.rom",0x80000,CRC(0e4514e8) SHA1(4ef8b78777b8caf1a1ab8f63383c8a7a74d5189a))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
+
 WPC_ROMSTART(wcs,l3c,"wcup_l3c.rom",0x80000,CRC(a5f42019) SHA1(06977874272c3cfb14e0f0ef7e12f6cd5b607837))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
+
 WPC_ROMSTART(wcs,d2,"wcup_dx2.rom",0x80000,CRC(ae5de4ab) SHA1(7ac2c56662ab57ea2c8bbc3b04104537eb4a7772))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
+
 WPC_ROMSTART(wcs,la2,"wcup_la2.rom",0x80000,CRC(c13a73f9) SHA1(38b540c42d15580c27f34680dc26432db77644c4))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,l1,"WCS_LX1_1.BIN",0x80000,CRC(b9066ffc) SHA1(9fae6be9c074462e38ab3504b0885ef118e426bf))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
+WPC_ROMEND
+
+WPC_ROMSTART(wcs,la1,"WCS_LA1_1.BIN",0x80000,CRC(f300460d) SHA1(c34b2ef9ee4b0854e2a03ef15018210bec1a3555))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,CRC(617ea2bc) SHA1(f8e025b62d509126fb4ba425ac4a025dcf13ad99))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
+
 WPC_ROMSTART(wcs,p6,"wcup_px6.rom",0x80000,CRC(be1404cc) SHA1(502bcf7cd3879a63d1125a730ab287add658adce))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,p2,"u6-pa2.rom",0x80000,CRC(8fcb11b3) SHA1(b8549db3dc096b8b3f684bee35bf5dea3d966957))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
+
 WPC_ROMSTART(wcs,p5,"u6-pa5.rom",0x80000,CRC(72426ea3) SHA1(c8259a9d3ae4aca8a2e333b25d66be2f43dc066b))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,f10,"fwcs0_10.rom",0x80000,CRC(4aa3c9a2) SHA1(43eecda4d4752c0aa737ea393a89c7f1486af580))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,f50,"fwcs0_50.rom",0x80000,CRC(a9ed8005) SHA1(c4b5dbe7fa584a0231f43ad0c6bf46a84e03a200))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,f62,"fwcs0_62.rom",0x80000,CRC(fa72d631) SHA1(f5df57ba37c5203776add03137f249755f3208e8))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 WPC_ROMSTART(wcs,f62b,"fwcs0_62b.rom",0x80000,CRC(ad8c0273) SHA1(e1a56e8b08c7627c8bf0b1e64d07ca01ad5a6948))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
-               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
-               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
-               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
-               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
-               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
-               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WCS_SOUND
 WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (LX-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,l3c,l2,"World Cup Soccer (LX-3C Competition MOD)",2016,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,la2,l2,"World Cup Soccer (LA-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,l1,l2,"World Cup Soccer (LX-1)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,la1,l2,"World Cup Soccer (LA-1)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,d2,l2,"World Cup Soccer (DX-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p2,l2,"World Cup Soccer (PA-2 Prototype)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p5,l2,"World Cup Soccer (PA-5 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)

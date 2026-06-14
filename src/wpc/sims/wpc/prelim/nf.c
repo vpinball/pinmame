@@ -165,10 +165,17 @@ static sim_tState nf_stateDef[] = {
 
 static int nf_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
-	{
-	}
-    return 0;
+  {
+  case stFree:
+      // Automatically drain any balls on the playfield (and not held somewhere)
+      // when the flippers are turned off.
+      if (!core_getSol(31)) {
+          return setState(stDrain, 5);
+      }
+      break;
   }
+  return 0;
+}
 
 /*---------------------------
 /  Keyboard conversion table

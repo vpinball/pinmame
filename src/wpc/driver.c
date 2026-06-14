@@ -3111,6 +3111,7 @@ DRIVER(wcs,d2)          //                  World Cup Soccer (DX-2) LED Ghost Fi
 DRIVER(wcs,l3c)         //          06/16 B World Cup Soccer (LX-3C)
 DRIVER(wcs,la2)         //          02/94 B World Cup Soccer (LA-2)
 DRIVER(wcs,l1)          //          05/94 B World Cup Soccer (LX-1)
+DRIVER(wcs,la1)         //          05/94 B World Cup Soccer (LA-1)
 DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (PA-2 Prototype)
 DRIVER(wcs,p5)          //                  World Cup Soccer (PA-5 Prototype) LED Ghost Fix
 DRIVER(wcs,p3)          //          ??/?? B World Cup Soccer (PX-3 Prototype)
