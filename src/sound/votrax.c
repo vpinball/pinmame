@@ -961,7 +961,7 @@ static void build_injection_filter(double * const a, double * const b,
                                    const unsigned int c3,  // Cap between the two op-amps
                                    const unsigned int c4)  // Cap over second op-amp
 {
-	// First compute the three coefficients of H(s) = (k0 + k2*s)/(k1 - k2*s)
+	// First compute the three coefficients of H(s) = (k0 + k2*s)/(k1 + k2*s)
 	const double k0 = votraxsc01_locals.cclock * c2t;
 	const double k1 = votraxsc01_locals.cclock * (((INT64)c1b*(INT64)c3 - (INT64)c2t*(INT64)c2t) / (double)c2t);
 	const double k2 = c2b;
@@ -969,26 +969,19 @@ static void build_injection_filter(double * const a, double * const b,
 	// Don't pre-warp
 	const double zc = 2.*votraxsc01_locals.sclock;
 
-	// Finally compute the result of the z-transform
+	// Finally compute the result of the z-transform (bilinear transform of H(s))
 	const double m = zc*k2;
 
 	a[0] = k0 + m;
 	a[1] = k0 - m;
-	b[0] = k1 - m;
-	b[1] = k1 + m;
+	b[0] = k1 + m;
+	b[1] = k1 - m;
 
 	a[0] /= b[0];
 	a[1] /= b[0];
 	b[1] /= b[0];
 	b[0] = 1.0;
-
-	//!! That ends up in a numerically unstable filter
-	//   (i actually would rather guess its wrong in general, as all precision experiments point in that direction!)
-	//   MAME neutralizes it.
-	//a[0] = 0;
-	//a[1] = 0;
-	//b[0] = 1.;
-	//b[1] = 0;
+	// |b[1]| = |k1-m| / |k1+m| < 1 for k1,m > 0, i.e. the recursive pole is now inside the unit circle
 }
 
 // Compute a total capacitor value based on which bits are currently active
@@ -1142,9 +1135,9 @@ static float analog_calc()
 	n2 = n * votraxsc01_locals.filt_fc * (1.0/15.0);
 	shift_hist(n2, votraxsc01_locals.noise_3, 2);
 
-	// 8. Apply the f2 filter, noise half //!! only deactivate (broken) noise filter instead of all of the noise completely (see build_injection_filter())
-	//n2 = apply_filter(votraxsc01_locals.noise_3, votraxsc01_locals.noise_4, votraxsc01_locals.f2n_a, 2, votraxsc01_locals.f2n_b, 2);
-	//shift_hist(n2, votraxsc01_locals.noise_4, 2);
+	// 8. Apply the f2 filter, noise half
+	n2 = apply_filter(votraxsc01_locals.noise_3, votraxsc01_locals.noise_4, votraxsc01_locals.f2n_a, 2, votraxsc01_locals.f2n_b, 2);
+	shift_hist(n2, votraxsc01_locals.noise_4, 2);
 
 	// Mixed path
 	// 9. Add the f2 voice and f2 noise outputs
