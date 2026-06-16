@@ -2,7 +2,7 @@
 #include "timer.h"
 #include "../vgm/vgmwrite.h"
 
-extern "C" void* ymfm_ym2151_create(void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param));
+extern "C" void* ymfm_ym2151_create(int baseindex, void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param));
 extern "C" void ymfm_ym2151_destroy(void* obj);
 
 extern "C" void ymfm_ym2151_reset(void* obj);
@@ -29,8 +29,10 @@ public:
 	// duration_in_clocks is negative, we should cancel any outstanding timers
 	virtual void ymfm_set_timer(uint32_t tnum, int32_t duration_in_clocks) override
 	{
+		// pass baseindex+tnum, so the (single / shared) C timer callback can map
+		// the firing back to the right chip instance as well as the right timer
 		if (duration_in_clocks >= 0)
-			timer_adjust(m_timer[tnum], duration_in_clocks/baseclock/*attotime::from_ticks(duration_in_clocks, device_t::clock())*/, tnum, TIME_NEVER); //!! correct like this ???
+			timer_adjust(m_timer[tnum], duration_in_clocks/baseclock/*attotime::from_ticks(duration_in_clocks, device_t::clock())*/, baseindex + tnum, TIME_NEVER); //!! correct like this ???
 		else
 			timer_enable(m_timer[tnum],0);
 	}
@@ -48,6 +50,7 @@ public:
 	void set_irqhandler(void(*handler)(int irq)) { irqhandler = handler; }
 	void set_portwritehandler(mem_write_handler handler) { porthandler = handler; }
 	void set_clock(double clock) { baseclock = clock; }
+	void set_baseindex(int b) { baseindex = b; }
 	void set_timercallback(void(*callback)(int param))
 	{
 		// allocate our timers
@@ -62,16 +65,18 @@ private:
 	mem_write_handler porthandler;	/* port write function handler */
 	mame_timer* m_timer[2];			/* timer A/B */
 	double baseclock;
+	int baseindex;					/* (chip index)*2, added to tnum when scheduling */
 };
 
 class ymfm_ym2151
 {
 public:
-	ymfm_ym2151(void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param))
+	ymfm_ym2151(int baseindex, void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param))
 	{
 		intf.set_irqhandler(irqhandler);
 		intf.set_portwritehandler(porthandler);
 		intf.set_clock(baseclock);
+		intf.set_baseindex(baseindex);
 		intf.set_timercallback(callback);
 	}
 	~ymfm_ym2151() {}
@@ -82,9 +87,9 @@ public:
 
 // C-wirings for 2151intf.c
 
-void* ymfm_ym2151_create(void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param))
-{	
-	ymfm_ym2151* obj = new ymfm_ym2151(irqhandler,porthandler,baseclock,callback);
+void* ymfm_ym2151_create(int baseindex, void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param))
+{
+	ymfm_ym2151* obj = new ymfm_ym2151(baseindex,irqhandler,porthandler,baseclock,callback);
 	obj->chip = new ymfm::ym2151(obj->intf);
 	obj->chip->reset();
 	return obj;
