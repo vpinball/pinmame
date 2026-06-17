@@ -604,7 +604,7 @@ INLINE unsigned int swap_byteorder_32(unsigned int x)
 // input limited to 0..15! (slower than using a lookup table)
 INLINE unsigned char __brevnyb(unsigned char i)
 {
-#if defined(__has_builtin) && __has_builtin(__builtin_bitreverse32)
+#if defined(__builtin_bitreverse32)
     return __builtin_bitreverse32(i) >> 28;
 #elif defined(_M_ARM64) && defined(_MSC_VER)
     return __rbit(i) >> 28;
@@ -619,7 +619,7 @@ INLINE unsigned char __brevnyb(unsigned char i)
 // (slower than using a small lookup table)
 INLINE unsigned char __brevc(unsigned char i)
 {
-#if defined(__has_builtin) && __has_builtin(__builtin_bitreverse8)
+#if defined(__builtin_bitreverse8)
     return __builtin_bitreverse8(i);
 #elif defined(_M_ARM64) && defined(_MSC_VER)
     return __rbit(i) >> 24;
@@ -636,7 +636,7 @@ INLINE unsigned char __brevc(unsigned char i)
 // input limited to 14bits!
 INLINE unsigned short __brev14(unsigned short i)
 {
-#if defined(__has_builtin) && __has_builtin(__builtin_bitreverse32)
+#if defined(__builtin_bitreverse32)
     return __builtin_bitreverse32(i) >> 18;
 #elif defined(_M_ARM64) && defined(_MSC_VER)
     return __rbit(i) >> 18;
@@ -652,7 +652,7 @@ INLINE unsigned short __brev14(unsigned short i)
 
 INLINE unsigned short __brevs(unsigned short i)
 {
-#if defined(__has_builtin) && __has_builtin(__builtin_bitreverse16)
+#if defined(__builtin_bitreverse16)
     return __builtin_bitreverse16(i);
 #elif defined(_M_ARM64) && defined(_MSC_VER)
     return __rbit(i) >> 16;
@@ -668,7 +668,7 @@ INLINE unsigned short __brevs(unsigned short i)
 
 INLINE unsigned int __brev(unsigned int i)
 {
-#if defined(__has_builtin) && __has_builtin(__builtin_bitreverse32)
+#if defined(__builtin_bitreverse32)
     return __builtin_bitreverse32(i);
 #elif defined(_M_ARM64) && defined(_MSC_VER)
     return __rbit(i);
@@ -695,7 +695,7 @@ INLINE unsigned int __brev(unsigned int i)
 
 INLINE unsigned long long __brevll(unsigned long long i)
 {
-#if defined(__has_builtin) && __has_builtin(__builtin_bitreverse64)
+#if defined(__builtin_bitreverse64)
     return __builtin_bitreverse64(i);
 #elif defined(_M_ARM64) && defined(_MSC_VER)
     return __rbitll(i);
