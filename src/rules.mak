@@ -1150,7 +1150,7 @@ endif
 SOUND=$(strip $(findstring YM2151_ALT@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_YM2151_ALT=1
-SOUNDOBJS += $(OBJ)/sound/2151intf.o
+SOUNDOBJS += $(OBJ)/sound/2151intf.o $(OBJ)/sound/ym2151.o
 else
 SOUNDDEFS += -DHAS_YM2151_ALT=0
 endif
@@ -1158,7 +1158,7 @@ endif
 SOUND=$(strip $(findstring YM2151_NUKED@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_YM2151_NUKED=1
-SOUNDOBJS += $(OBJ)/sound/2151intf.o $(OBJ)/sound/ym2151_opm.o
+SOUNDOBJS += $(OBJ)/sound/2151intf.o $(OBJ)/sound/ym2151.o $(OBJ)/sound/ym2151_opm.o
 else
 SOUNDDEFS += -DHAS_YM2151_NUKED=0
 endif
@@ -1166,7 +1166,7 @@ endif
 SOUND=$(strip $(findstring YM2151_YMFM@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_YM2151_YMFM=1
-SOUNDOBJS += $(OBJ)/sound/2151intf.o
+SOUNDOBJS += $(OBJ)/sound/2151intf.o $(OBJ)/sound/ym2151.o
 else
 SOUNDDEFS += -DHAS_YM2151_YMFM=0
 endif
@@ -1554,7 +1554,7 @@ endif
 SOUND=$(strip $(findstring YMF262_YMFM@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_YMF262_YMFM=1
-SOUNDOBJS += $(OBJ)/sound/262intf.o
+SOUNDOBJS += $(OBJ)/sound/ymf262.o $(OBJ)/sound/262intf.o
 else
 SOUNDDEFS += -DHAS_YMF262_YMFM=0
 endif
