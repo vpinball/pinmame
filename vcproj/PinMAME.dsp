@@ -1062,6 +1062,14 @@ SOURCE=.\src\sound\fm.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\fmopl.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fmopl.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\hc55516.c
 # End Source File
 # Begin Source File

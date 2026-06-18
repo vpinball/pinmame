@@ -1029,6 +1029,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ClCompile>
     <ClCompile Include="..\src\sound\discrete.c" />
     <ClCompile Include="..\src\sound\fm.c" />
+    <ClCompile Include="..\src\sound\fmopl.c" />
     <ClCompile Include="..\src\sound\hc55516.c" />
     <ClCompile Include="..\src\sound\m114s.c" />
     <ClCompile Include="..\src\sound\mc3417.c" />
@@ -1510,6 +1511,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="..\src\sound\dac.h" />
     <ClInclude Include="..\src\sound\discrete.h" />
     <ClInclude Include="..\src\sound\fm.h" />
+    <ClInclude Include="..\src\sound\fmopl.h" />
     <ClInclude Include="..\src\sound\hc55516.h" />
     <ClInclude Include="..\src\sound\m114s.h" />
     <ClInclude Include="..\src\sound\mc3417.h" />

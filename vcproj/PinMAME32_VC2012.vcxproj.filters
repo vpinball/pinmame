@@ -546,6 +546,9 @@
     <ClCompile Include="..\src\sound\fm.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\sound\fmopl.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\sound\hc55516.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -1707,6 +1710,9 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\src\sound\fm.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\fmopl.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\src\sound\hc55516.h">

@@ -387,6 +387,8 @@ set(PINMAME_SOURCES
    src/sound/filter.h
    src/sound/fm.c
    src/sound/fm.h
+   src/sound/fmopl.c
+   src/sound/fmopl.h
    src/sound/hc55516.c
    src/sound/hc55516.h
    src/sound/m114s.c

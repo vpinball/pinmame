@@ -2281,6 +2281,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\..\src\sound\fmopl.c"
+						>
+					</File>
+					<File
+						RelativePath=".\..\src\sound\fmopl.h"
+						>
+					</File>
+					<File
 						RelativePath=".\..\src\sound\hc55516.c"
 						>
 					</File>
