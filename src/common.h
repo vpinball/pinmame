@@ -604,13 +604,13 @@ INLINE unsigned int swap_byteorder_32(unsigned int x)
 // input limited to 0..15! (slower than using a lookup table)
 INLINE unsigned char __brevnyb(unsigned char i)
 {
-#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4)
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return __rbit(i) >> 28;
+#elif defined(_MSC_VER) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
     i = ((i >> 1) & 0x5u) | ((i & 0x5u)*2);
     return (i*4 | (i >> 2)) & 0xfu;
 #elif defined(__has_builtin) && __has_builtin(__builtin_bitreverse32)
     return __builtin_bitreverse32(i) >> 28;
-#elif defined(_M_ARM64) && defined(_MSC_VER)
-    return __rbit(i) >> 28;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit(i) >> 28;
 #else
@@ -622,14 +622,14 @@ INLINE unsigned char __brevnyb(unsigned char i)
 // (slower than using a small lookup table)
 INLINE unsigned char __brevc(unsigned char i)
 {
-#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4)
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return __rbit(i) >> 24;
+#elif defined(_MSC_VER) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
     i = ((i >> 1) & 0x55u) | ((i & 0x55u)*2);
     i = ((i >> 2) & 0x33u) | ((i & 0x33u)*4);
     return i*16 | (i >> 4);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bitreverse8)
     return __builtin_bitreverse8(i);
-#elif defined(_M_ARM64) && defined(_MSC_VER)
-    return __rbit(i) >> 24;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit(i) >> 24;
 #else
@@ -643,15 +643,15 @@ INLINE unsigned char __brevc(unsigned char i)
 // input limited to 14bits!
 INLINE unsigned short __brev14(unsigned short i)
 {
-#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4)
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return __rbit(i) >> 18;
+#elif defined(_MSC_VER) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
     i = ((i >> 1) & 0x5555u) | ((i & 0x5555u)*2);
     i = ((i >> 2) & 0x3333u) | ((i & 0x3333u)*4);
     i = ((i >> 4) & 0x0f0fu) | ((i & 0x0f0fu)*16);
     return i*64 | (i >> 10);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bitreverse32)
     return __builtin_bitreverse32(i) >> 18;
-#elif defined(_M_ARM64) && defined(_MSC_VER)
-    return __rbit(i) >> 18;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit(i) >> 18;
 #else
@@ -664,15 +664,15 @@ INLINE unsigned short __brev14(unsigned short i)
 
 INLINE unsigned short __brevs(unsigned short i)
 {
-#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4)
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return __rbit(i) >> 16;
+#elif defined(_MSC_VER) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
     i = ((i >> 1) & 0x5555u) | ((i & 0x5555u)*2);
     i = ((i >> 2) & 0x3333u) | ((i & 0x3333u)*4);
     i = ((i >> 4) & 0x0f0fu) | ((i & 0x0f0fu)*16);
     return i*256 | (i >> 8);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bitreverse16)
     return __builtin_bitreverse16(i);
-#elif defined(_M_ARM64) && defined(_MSC_VER)
-    return __rbit(i) >> 16;
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet //!! use arm_acle.h ? __rev or something?
     return __builtin_arm_rbit(i) >> 16;
 #else
@@ -685,7 +685,9 @@ INLINE unsigned short __brevs(unsigned short i)
 
 INLINE unsigned int __brev(unsigned int i)
 {
-#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4)
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return __rbit(i);
+#elif defined(_MSC_VER) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
     i = rotr_32(i & 0xaaaaaaaau, 2) | (i & 0x55555555u);
     i = rotr_32(i & 0x66666666u, 4) | (i & 0x99999999u);
     i = rotr_32(i & 0x1e1e1e1eu, 8) | (i & 0xe1e1e1e1u);
@@ -693,8 +695,6 @@ INLINE unsigned int __brev(unsigned int i)
     return swap_byteorder_32(i);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bitreverse32)
     return __builtin_bitreverse32(i);
-#elif defined(_M_ARM64) && defined(_MSC_VER)
-    return __rbit(i);
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet //!! use arm_acle.h ? __rev or something?
     return __builtin_arm_rbit(i);
 #else
@@ -718,7 +718,9 @@ INLINE unsigned int __brev(unsigned int i)
 
 INLINE unsigned long long __brevll(unsigned long long i)
 {
-#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4)
+#if defined(_M_ARM64) && defined(_MSC_VER)
+    return __rbitll(i);
+#elif defined(_MSC_VER) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
     i = rotr_64(i & 0xaaaaaaaaaaaaaaaaull, 2) | (i & 0x5555555555555555ull);
     i = rotr_64(i & 0x6666666666666666ull, 4) | (i & 0x9999999999999999ull);
     i = rotr_64(i & 0x1e1e1e1e1e1e1e1eull, 8) | (i & 0xe1e1e1e1e1e1e1e1ull);
@@ -726,8 +728,6 @@ INLINE unsigned long long __brevll(unsigned long long i)
     return swap_byteorder_64(i);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bitreverse64)
     return __builtin_bitreverse64(i);
-#elif defined(_M_ARM64) && defined(_MSC_VER)
-    return __rbitll(i);
 #elif defined(__aarch64__) && defined(__clang__) //!! gcc does not have an intrinsic yet
     return __builtin_arm_rbit64(i);
 #else
