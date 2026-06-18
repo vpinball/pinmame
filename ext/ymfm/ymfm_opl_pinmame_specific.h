@@ -70,7 +70,7 @@ struct ymfm_opl_base
 template<class Chip>
 struct ymfm_opl_impl : public ymfm_opl_base
 {
-	ymfm_opl_impl(int baseindex, void(*irqhandler)(int irq), double baseclock, void(*callback)(int param))
+	ymfm_opl_impl(int baseindex, void(*irqhandler)(int irq), double baseclock, void(*callback)(int param), uint32_t _chip_outputs)
 	{
 		intf.set_irqhandler(irqhandler);
 		intf.set_clock(baseclock);
@@ -78,6 +78,7 @@ struct ymfm_opl_impl : public ymfm_opl_base
 		intf.set_timercallback(callback);
 		chip = new Chip(intf);
 		chip->reset();
+		chip_outputs = _chip_outputs;
 	}
 	virtual ~ymfm_opl_impl() { delete chip; }
 
@@ -91,7 +92,7 @@ struct ymfm_opl_impl : public ymfm_opl_base
 		constexpr uint32_t MAX_SAMPLES = 256;
 		static typename Chip::output_data o[MAX_SAMPLES];
 
-		const uint32_t outputs = std::min<uint32_t>(numch, chip->OUTPUTS); // Chip::OUTPUTS
+		const uint32_t outputs = std::min<uint32_t>(numch, chip_outputs/*Chip::OUTPUTS*/); //!! workaround for xpinmame linux build
 
 		for (uint32_t sampindex = 0; sampindex < numsamples; sampindex += MAX_SAMPLES)
 		{
@@ -108,6 +109,7 @@ struct ymfm_opl_impl : public ymfm_opl_base
 	}
 
 	Chip* chip;
+	uint32_t chip_outputs;
 };
 
 // C-wirings for 3812intf.c / 262intf.c
@@ -116,9 +118,9 @@ void* ymfm_opl_create(int chiptype, int baseindex, void(*irqhandler)(int irq), d
 {
 	switch (chiptype)
 	{
-		case YMFM_OPL_YM3526: return new ymfm_opl_impl<ymfm::ym3526>(baseindex, irqhandler, baseclock, callback);
-		case YMFM_OPL_YM3812: return new ymfm_opl_impl<ymfm::ym3812>(baseindex, irqhandler, baseclock, callback);
-		case YMFM_OPL_YMF262: return new ymfm_opl_impl<ymfm::ymf262>(baseindex, irqhandler, baseclock, callback);
+		case YMFM_OPL_YM3526: return new ymfm_opl_impl<ymfm::ym3526>(baseindex, irqhandler, baseclock, callback, ymfm::ym3526::OUTPUTS);
+		case YMFM_OPL_YM3812: return new ymfm_opl_impl<ymfm::ym3812>(baseindex, irqhandler, baseclock, callback, ymfm::ym3812::OUTPUTS);
+		case YMFM_OPL_YMF262: return new ymfm_opl_impl<ymfm::ymf262>(baseindex, irqhandler, baseclock, callback, ymfm::ymf262::OUTPUTS);
 		default: return nullptr;
 	}
 }
