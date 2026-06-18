@@ -972,7 +972,8 @@ DRIVERNV(empsback)      //(Star Wars -) Empire Strikes Back, The
 // ----------------
 // IDSA GAMES
 // ----------------
-DRIVERNV(v1)            //V-1 (198?)
+DRIVERNV(v1)            //V-1 (05/1985)
+DRIVERNV(fantacar)      //Fantastic Car (04/1986)
 DRIVERNV(bsktball)      //Basket Ball (04/1987)
 
 // ----------------

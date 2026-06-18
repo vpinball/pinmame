@@ -11,6 +11,12 @@
 		DISPLAY: bsktball: 7-digit 7-segment panels with PROM-based 5-bit BCD data (allowing a simple alphabet)
 		         v1: 6-digit 7-segment panels with BCD decoding
 		SOUND:	 2 x AY8910 @ 2 MHz plus SP0256 @ 3.12 MHz on board
+
+ NOTE:
+ on Fantastic Car, code @0x1dc5 will load a value of 0x87 to RAM which triggers a big coin drop upon reset.
+ I believe that some kind of RAM protection must be in place preventing this but I cannot find it.
+ Funny enough, when performing a slam tilt, which also runs the reset routine, it doesn't always happen.
+ For the time being I added a timer that will speed up the IRQ on reset and slam to circumvent this issue.
  ************************************************************************************************/
 
 #include "driver.h"
@@ -27,8 +33,10 @@ static struct {
   int dispCol;
   int dispRow;
   core_tSeg segments;
-  UINT8 isV1, lrq; // bools
+  UINT8 isV1, isFC, lrq; // bools
+  UINT8 ay0b0;
   mame_timer* timer;
+  int fcResetCnt;
 } locals;
 
 static INTERRUPT_GEN(IDSA_irq) {
@@ -41,21 +49,27 @@ static INTERRUPT_GEN(IDSA_irq) {
 static INTERRUPT_GEN(IDSA_vblank) {
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 //  memset(locals.segments, 0, sizeof(locals.segments));
-  core_updateSw(core_getSol(10));
+  core_updateSw(core_getSol(locals.isFC ? 1 : 10));
 }
 
 static SWITCH_UPDATE(IDSA) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 12, 0x01, 0);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x78, 1);
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x02, locals.isV1 ? 2 : 3);
+    if (locals.isFC) {
+      CORE_SETKEYSW(inports[CORE_COREINPORT] >> 5, 0x10, 4);
+    } else {
+      CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x02, locals.isV1 ? 2 : 3);
+    }
   }
 }
 
 // IDSA used small 32x8 6331 color PROMs to decode their 5-bit alphabet; I'd love to see this dumped someday! ;)
-// Strings used by game: "Error (123456)", "P(Abc)(12)-F(01)", "FALtA", "1d5A", "Fin"
+// Strings used by games: "Error (123456)", "P(Abc)(12)-F(01)", "FALtA", "1d5A", "Fin",
+// "tiLt", "End", "bono5", "PA5 Abc", "PA5 dEF", "cEntro", "ruLEtA", "buMPEr5", "dt bono", "PAr boL", "di trA5"
 static UINT16 idsa2seg7(UINT8 data) {
   switch (data & 0x1f) {
+    case 0x09: return core_bcd2seg7a[9]; // 9 misses bottom line
     case 0x0a: return 0x77; // A !
     case 0x0b: return 0x7c; // b !
     case 0x0c: return 0x58; // c !
@@ -67,7 +81,7 @@ static UINT16 idsa2seg7(UINT8 data) {
     case 0x12: return 0x10; // i !
     case 0x13: return 0x1e; // J / k ?
     case 0x14: return 0x38; // L !
-    case 0x15: return 0x56; // m ? pretty much impossible with 7 segs...
+    case 0x15: return 0x37; // M ! pretty much impossible with 7 segs... upside-down U?
     case 0x16: return 0x54; // n !
     case 0x17: return 0x55; // n with tilde ?
     case 0x18: return 0x5c; // o !
@@ -75,7 +89,7 @@ static UINT16 idsa2seg7(UINT8 data) {
     case 0x1a: return 0x50; // r !
     case 0x1b: return 0x40; // - !
     case 0x1c: return 0x78; // t !
-    case 0x1d: return 0x1c; // u / v / w / x ?
+    case 0x1d: return 0x1c; // u !
     case 0x1e: return 0x6e; // y ?
     case 0x1f: return 0;
     default: return core_bcd2seg7[data & 0x0f];
@@ -86,12 +100,21 @@ static WRITE_HANDLER(ay8910_0_portA_w) {
   if (locals.isV1) {
     coreGlobals.solenoids = (coreGlobals.solenoids & 0xfffffcff) | ((~data & 3) << 8);
     coreGlobals.lampMatrix[0] = ~data;
+  } else if (locals.isFC) {
+    if ((data & 0x0f) < 0x0b) {
+      if ((data & 0x0f) == 8) {
+        coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffffc0) | (~locals.ay0b0 & 0x3f);
+      }
+      coreGlobals.lampMatrix[(data & 0x0f) - 4] = locals.ay0b0;
+    }
   } else
     coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
 }
 static WRITE_HANDLER(ay8910_0_portB_w) {
   if (locals.isV1)
     coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
+  else if (locals.isFC)
+    locals.ay0b0 = data;
   else
     coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00ffff) | ((data ^ 0xff) << 16);
 }
@@ -115,6 +138,8 @@ static WRITE_HANDLER(ay8910_1_portA_w) {
 static WRITE_HANDLER(ay8910_1_portB_w) {
   if (locals.isV1)
     coreGlobals.lampMatrix[1] = ~data;
+  else if (locals.isFC)
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xffff00ff) | (data << 8);
   else
     coreGlobals.solenoids = (coreGlobals.solenoids & 0xffff00ff) | ((data ^ 0xff) << 8);
 }
@@ -153,12 +178,24 @@ static READ_HANDLER(dip_r) {
   return ~core_getDip(offset >> 4);
 }
 
-static READ_HANDLER(port_bd_r) {
-  return 0x01 ^ coreGlobals.swMatrix[0];
+static READ_HANDLER(slam_r) {
+  static int oldSlam;
+  int slam = 0x01 & coreGlobals.swMatrix[0];
+  if (locals.isFC && oldSlam && !slam) {
+    locals.fcResetCnt = 0;
+    timer_reset(locals.timer, TIME_IN_USEC(100));
+    timer_enable(locals.timer, 1);
+  }
+  oldSlam = slam;
+  return !slam;
 }
 
 static WRITE_HANDLER(row_w) {
   locals.dispRow++;
+}
+
+static WRITE_HANDLER(unknown_w) {
+  logerror("Unknown write to port 0x87: %02x\n", data);
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -202,16 +239,23 @@ static WRITE_HANDLER(IDSA_CMOS_w) {
       if (data & 0xe0)
         coreGlobals.lampMatrix[2] = data & 0xe0;
     }
-  } else if (offset > 0xa7 && offset < 0xb2)
+  } else if (!locals.isFC && offset > 0xa7 && offset < 0xb2)
     coreGlobals.lampMatrix[offset - 0xa8] = data;
 }
 static READ_HANDLER(IDSA_CMOS_r) {
   return IDSA_CMOS[offset];
 }
 
+// read once on fantacar init from code @ 0x4110
+// if zero, will write an additional byte of 0x03 to port 0x87
+static READ_HANDLER(mfc47_r) {
+  return coreGlobals.swMatrix[7];
+}
+
 static MEMORY_READ_START(IDSA_readmem)
   {0x0000,0x7fff, MRA_ROM},
   {0x8000,0x87ff, IDSA_CMOS_r},
+  {0xfc47,0xfc47, mfc47_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(IDSA_writemem)
@@ -223,11 +267,12 @@ static PORT_READ_START(IDSA_readport)
   {0x00,0x50, sw_r},
   {0x60,0x70, dip_r},
   {0xb0,0xb3, snd_status_r},
-  {0xbd,0xbd, port_bd_r},
+  {0xbd,0xbd, slam_r},
 MEMORY_END
 
 static PORT_WRITE_START(IDSA_writeport)
-  {0x80,0x8f, row_w},
+  {0x86,0x86, row_w},
+  {0x87,0x87, unknown_w},
   {0x90,0x90, disp_w},
   {0xd0,0xd0, sp0256_ALD_w},
   {0xe0,0xe0, AY8910_control_port_0_w},
@@ -290,6 +335,26 @@ MACHINE_DRIVER_START(v1)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(IDSA_irq, IDSA_CPUFREQ / 8192.)
   MDRV_CORE_INIT_RESET_STOP(NULL,v1,NULL)
+MACHINE_DRIVER_END
+
+static void fc_reset_timer(int dummy) {
+  if (locals.fcResetCnt++ > 200) {
+    timer_enable(locals.timer, 0);
+    locals.fcResetCnt = 0;
+  }
+  cpu_set_irq_line(0, 0, PULSE_LINE);
+}
+
+static MACHINE_RESET(fc) {
+  reset_common();
+  locals.isFC = 1;
+  locals.timer = timer_alloc(fc_reset_timer);
+  timer_adjust(locals.timer, TIME_IN_USEC(100), 0, TIME_IN_USEC(100));
+}
+
+MACHINE_DRIVER_START(fc)
+  MDRV_IMPORT_FROM(idsa)
+  MDRV_CORE_INIT_RESET_STOP(NULL,fc,NULL)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(idsa)
@@ -406,6 +471,25 @@ ROM_START(v1)
   SP0256_ROM
 ROM_END
 CORE_GAMEDEFNV(v1, "V.1", 1985, "IDSA (Spain)", v1, 0)
+
+static core_tLCDLayout fc_disp[] = {
+  {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},
+  {3, 0,16, 7, CORE_SEG7}, {3,16,23, 7, CORE_SEG7},
+  {6, 6,36, 1, CORE_SEG7}, {6,10,38, 2, CORE_SEG7}, {6,16,41, 1, CORE_SEG7}, {6,20,43, 2, CORE_SEG7},
+  {0}
+};
+
+static core_tGameData fantacarGameData = {0, fc_disp,{FLIP_SWNO(30,31),0,3}};
+static void init_fantacar(void) {
+  core_gameData = &fantacarGameData;
+}
+#define input_ports_fantacar input_ports_idsa
+ROM_START(fantacar)
+  NORMALREGION(0x10000, REGION_CPU1)
+  ROM_LOAD("fantacar.bin", 0x0000, 0x8000, CRC(0f7ca18c) SHA1(afe8f286bf6997a47e2e6fb9c5e7b0927ae96f3c))
+  SP0256_ROM
+ROM_END
+CORE_GAMEDEFNV(fantacar, "Fantastic Car", 1986, "IDSA (Spain)", fc, 0)
 
 static core_tLCDLayout idsa_disp[] = {
   {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},

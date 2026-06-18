@@ -5321,7 +5321,7 @@ static void cmd_step_over( void )
 static void cmd_switch_window( void )
 {
 	if( keyboard_pressed(KEYCODE_LSHIFT) || keyboard_pressed(KEYCODE_RSHIFT) )
-		DBG.window = (DBG.window - 1) % DBG_WINDOWS;
+		DBG.window = DBG.window ? (DBG.window - 1) % DBG_WINDOWS : DBG_WINDOWS - 1;
 	else
 		DBG.window = (DBG.window + 1) % DBG_WINDOWS;
 }
