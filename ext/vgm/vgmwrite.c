@@ -2221,6 +2221,13 @@ void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v)
 			if (r >= 0x08 && r <= 0x0F)
 				cm = 0x01;	// OKIM6295 clock change and configuration
 			break;
+		case VGMC_BSMT2000: //!! added by PinMAME for Alvin G. missing reset!
+			if (port == 0x01)
+				cm = 0x01;	// Mode change, sets up voice count/regmap/sample rate:
+							// Games whose chip reset is not wired/emulated yet (= Alvin G., mode 5) only ever
+							// emit this at init time, so it must be preserved here, or playback
+							// falls back to the default mode and decodes every write with the wrong regmap
+			break;
 		}
 		
 		if (cm && VI->CmdCount < 0x100)
