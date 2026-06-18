@@ -1063,14 +1063,6 @@ SOURCE=.\src\sound\fm.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fmopl.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\fmopl.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\sound\hc55516.c
 # End Source File
 # Begin Source File
@@ -1247,13 +1239,6 @@ SOURCE=.\src\sound\ymdeltat.h
 # End Source File
 # End Group
 
-SOURCE=.\src\sound\ymf262.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ymf262.h
-# End Source File
-# End Group
 # Begin Group "VidHrdw"
 
 # PROP Default_Filter ""

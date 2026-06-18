@@ -2291,14 +2291,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\..\src\sound\fmopl.c"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\sound\fmopl.h"
-						>
-					</File>
-					<File
 						RelativePath=".\..\src\sound\hc55516.c"
 						>
 					</File>
@@ -2532,14 +2524,6 @@
 					</File>
 					<File
 						RelativePath=".\..\src\sound\ymdeltat.h"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\sound\ymf262.c"
-						>
-					</File>
-					<File
-						RelativePath=".\..\src\sound\ymf262.h"
 						>
 					</File>
 				</Filter>

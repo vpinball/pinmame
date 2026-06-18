@@ -387,8 +387,6 @@ set(PINMAME_SOURCES
    src/sound/filter.h
    src/sound/fm.c
    src/sound/fm.h
-   src/sound/fmopl.c
-   src/sound/fmopl.h
    src/sound/hc55516.c
    src/sound/hc55516.h
    src/sound/m114s.c
@@ -429,8 +427,6 @@ set(PINMAME_SOURCES
    src/sound/votrax.h
    src/sound/ymdeltat.c
    src/sound/ymdeltat.h
-   src/sound/ymf262.c
-   src/sound/ymf262.h
    src/state.c
    src/state.h
    src/tilemap.c
