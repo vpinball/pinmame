@@ -2218,3 +2218,7 @@ template class opl_registers_base<4>;
 template class fm_engine_base<opl_registers_base<4>>;
 
 }
+
+#ifdef PINMAME
+#include "ymfm_opl_pinmame_specific.h"
+#endif

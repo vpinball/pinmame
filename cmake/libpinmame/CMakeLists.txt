@@ -155,6 +155,9 @@ add_compile_definitions(
    HAS_COP420=1
    HAS_DAC=1
    HAS_YM2151_YMFM=1
+   HAS_YM3812_YMFM=1
+   HAS_YM3526_YMFM=1
+   HAS_YMF262_YMFM=1
    HAS_HC55516=1
    HAS_MC3417=1
    HAS_SAMPLES=1
@@ -172,15 +175,12 @@ add_compile_definitions(
    HAS_SP0250=1
    HAS_TMS320AV120=1
    HAS_M114S=1
-   HAS_YM3812=1
    HAS_S14001A=1
    HAS_YM2203=1
-   HAS_YM3526=1
    HAS_TMS5110=1
    HAS_SP0256=1
    HAS_Y8950=1
    HAS_ASTROCADE=1
-   HAS_YMF262=1
    HAS_MEA8000=1
    HAS_SAA1099=1
    HAS_QSOUND=1
@@ -686,6 +686,12 @@ set(PINMAME_SOURCES
 
    ext/ymfm/ymfm_opm.cpp
    ext/ymfm/ymfm_opm.h
+   ext/ymfm/ymfm_opl.cpp
+   ext/ymfm/ymfm_opl.h
+   ext/ymfm/ymfm_adpcm.cpp
+   ext/ymfm/ymfm_adpcm.h
+   ext/ymfm/ymfm_pcm.cpp
+   ext/ymfm/ymfm_pcm.h
 
    ext/zlib/adler32.c
    ext/zlib/compress.c
