@@ -55,6 +55,8 @@ differences between OPL2 and OPL3 shown in datasheets:
 
 */
 
+#if (BUILD_YMF262)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -2460,8 +2462,6 @@ static UINT8 OPL3TimerOver(OPL3 *chip,UINT8 c)
 
 
 
-
-#if (BUILD_YMF262)
 
 #define MAX_OPL3_CHIPS 2
 
