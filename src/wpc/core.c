@@ -789,7 +789,19 @@ static struct {
         return (int)_InterlockedIncrement((volatile long*)ptr);
     }
 #elif defined(__GNUC__) || defined(__clang__)
-#if defined(__atomic_exchange_n)
+#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4) // non-atomic, but at least compiles
+    static inline int atomic_exchange_int(volatile int *ptr, int value)
+    {
+        int prev = *ptr;
+        *ptr = value;
+        return prev;
+    }
+    static inline int atomic_increment(volatile int* ptr)
+    {
+        *ptr += 1;
+        return *ptr;
+    }
+#else
     static inline int atomic_exchange_int(volatile int *ptr, int value)
     {
         return __atomic_exchange_n(ptr, value, __ATOMIC_SEQ_CST);
@@ -797,16 +809,6 @@ static struct {
     static inline int atomic_increment(volatile int* ptr)
     {
         return __atomic_add_fetch(ptr, 1, __ATOMIC_SEQ_CST);
-    }
-#else
-    static inline int atomic_exchange_int(volatile int *ptr, int value)
-    {
-        *ptr = value;
-        return value;
-    }
-    static inline int atomic_increment(volatile int* ptr)
-    {
-        return (*ptr)++;
     }
 #endif
 #else
