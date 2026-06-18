@@ -91,7 +91,7 @@ struct ymfm_opl_impl : public ymfm_opl_base
 		constexpr uint32_t MAX_SAMPLES = 256;
 		static typename Chip::output_data o[MAX_SAMPLES];
 
-		const uint32_t outputs = std::min<uint32_t>(numch, Chip::OUTPUTS);
+		const uint32_t outputs = std::min<uint32_t>(numch, chip->OUTPUTS); // Chip::OUTPUTS
 
 		for (uint32_t sampindex = 0; sampindex < numsamples; sampindex += MAX_SAMPLES)
 		{
