@@ -7,8 +7,9 @@
 ***************************************************************************/
 
 #include "driver.h"
-//#include "fm.h"
-
+#if defined(LISY_SUPPORT) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
+ #include "fm.h"
+#endif
 #if (HAS_YM2151_ALT)
  #include "ym2151.h"
 #endif
