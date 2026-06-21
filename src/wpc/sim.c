@@ -66,6 +66,7 @@ void sim_run(int *inports, int firstGameInport, int useSimKeys, int noOfBalls) {
     sim_tInportData *iData = simData->inportData;
     int eventFound = FALSE;
     while (iData->mask) {
+  // Ok so the port number in the inport data array starts at zero, because the firstGameInport is added here
 	if (!eventFound && (inports[iData->port + firstGameInport] & iData->mask) == iData->mask) {
    	   /*-- mask this event off --*/
 	   eventFound = TRUE;
