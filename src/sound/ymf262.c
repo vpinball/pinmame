@@ -54,7 +54,9 @@ differences between OPL2 and OPL3 shown in datasheets:
 
 
 */
-
+#ifndef BUILD_YMF262
+#define BUILD_YMF262 HAS_YMF262
+#endif
 #if (BUILD_YMF262)
 
 #include <stdio.h>

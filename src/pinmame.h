@@ -32,7 +32,7 @@
 #define HAS_M68306   1
 #define HAS_S2650    1
 #define HAS_8080     1
-#define HAS_8085A	 1
+#define HAS_8085A    1
 #define HAS_I8035    1
 #define HAS_I8039    1
 #define HAS_I86      1
@@ -46,17 +46,24 @@
 #define HAS_I8752    1
 #define HAS_TMS7000  1
 #define HAS_AT91     1
-#define HAS_ARM7	 1
-#define HAS_CDP1802	 1
+#define HAS_ARM7     1
+#define HAS_CDP1802  1
 #define HAS_TMS9980  1
-#define HAS_TMS9995	 1
-#define HAS_COP420	 1
+#define HAS_TMS9995  1
+#define HAS_COP420   1
 
 // Sound
+
+//!! lisy (and old/custom mingw pinmame) builds use the old opm/opl1/2/3 sound cores for now
+// all other builds use the YMFM based cores
+
 #define HAS_DAC        1
-//#define HAS_YM2151_ALT 1
-//#define HAS_YM2151_NUKED 1
+#if defined(LISY_SUPPORT) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
+#define HAS_YM2151_ALT 1
+#else
 #define HAS_YM2151_YMFM 1
+#endif // mingw
+//#define HAS_YM2151_NUKED 1
 #define HAS_HC55516    1
 #define HAS_MC3417     1
 #define HAS_SAMPLES    1
@@ -74,18 +81,27 @@
 #define HAS_SP0250     1
 #define HAS_TMS320AV120 1
 #define HAS_M114S      1
-//#define HAS_YM3812     1
+#if defined(LISY_SUPPORT) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
+#define HAS_YM3812     1
+#else
 #define HAS_YM3812_YMFM 1
+#endif // mingw
 #define HAS_S14001A    1
 #define HAS_YM2203     1
-//#define HAS_YM3526     1
+#if defined(LISY_SUPPORT) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
+#define HAS_YM3526     1
+#else
 #define HAS_YM3526_YMFM 1
+#endif // mingw
 #define HAS_TMS5110    1
 #define HAS_SP0256     1
 #define HAS_Y8950      1
 #define HAS_ASTROCADE  1
-//#define HAS_YMF262     1
+#if defined(LISY_SUPPORT) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
+#define HAS_YMF262     1
+#else
 #define HAS_YMF262_YMFM 1
+#endif // mingw
 #define HAS_MEA8000    1
 #define HAS_SAA1099    1
 #define HAS_QSOUND     1

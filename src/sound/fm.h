@@ -11,7 +11,7 @@
 #define BUILD_YM2610B (HAS_YM2610B)		/* build YM2610B(OPNB?)emulator */
 #define BUILD_YM2612  (HAS_YM2612 || HAS_YM3438)		/* build YM2612(OPN2)  emulator */
 
-//#define BUILD_YM2151  (HAS_YM2151)		/* build YM2151(OPM)   emulator */
+#define BUILD_YM2151  (HAS_YM2151_ALT)	/* build YM2151(OPM)   emulator */
 
 /* select bit size of output : 8 or 16 */
 #define FM_SAMPLE_BITS 16
@@ -199,7 +199,7 @@ unsigned char YM2612Read(int n,int a);
 int YM2612TimerOver(int n, int c );
 #endif /* BUILD_YM2612 */
 
-#if 0 //BUILD_YM2151
+#if (BUILD_YM2151)
 /* -------------------- YM2151(OPM) Interface -------------------- */
 int OPMInit(int num, int baseclock, double rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);

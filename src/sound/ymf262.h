@@ -9,7 +9,7 @@ typedef void (*OPL3_UPDATEHANDLER)(int param,int min_interval_us);
 
 
 
-#if BUILD_YMF262
+#if (BUILD_YMF262)
 
 int  YMF262Init(int num, double clock, double rate);
 void YMF262Shutdown(void);
