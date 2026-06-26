@@ -679,10 +679,10 @@ static void arm7_core_reset(void *param)
 	/* reset the machine registers */
 	memset(&ARM7, 0, sizeof(ARM7));
 
-	/* 
+	/*
 	 *   Reset the JIT and restore our context pointer to it.  We have to
 	 *   reset the JIT because resetting the ARM emulation restores the boot
-	 *   RAM, which invalidates any translated code. 
+	 *   RAM, which invalidates any translated code.
 	 */
 	jit_reset(jit);
 	ARM7.jit = jit;
@@ -691,7 +691,7 @@ static void arm7_core_reset(void *param)
 	SwitchMode(eARM7_MODE_SVC);
 	SET_CPSR(GET_CPSR | I_MASK | F_MASK);
 	R15 = 0;
-    //change_pc(R15);
+	//change_pc(R15);
 }
 
 //Execute used to be here.. moved to separate file (arm7exec.c) to be included by cpu cores separately
@@ -1591,8 +1591,10 @@ static void HandleALU( data32_t insn )
 		if (!(insn & INSN_S))
 			sc = 0;
 
-		// extra cycle (register specified shift)
-		ARM7_ICOUNT -= 1;
+		// extra cycle ONLY for a register-specified shift amount (bit4=1), per the
+		// 1S+1I model above - a register op2 with an immediate shift is still 1S
+		if (insn & (1u << 4))
+			ARM7_ICOUNT -= 1;
 	}
 
 	// LD TODO this comment is wrong
