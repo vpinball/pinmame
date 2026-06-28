@@ -2648,9 +2648,10 @@ DRIVER(comet,l5)        //          06/85 W Comet (L-5)
                         //S10-543N: 12/85 W 4-IN-1
 //System 11
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
-DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
+DRIVER(hs,l1)           //S11-541:  ??/85 W High Speed (L-1 / Unidesa / Cirsa)
+DRIVER(hs,l3)           //          01/86 W High Speed (L-3)
 DRIVER(hs,l4)           //          01/86 W High Speed (L-4)
-//DRIVER(hs,g3)          //          01/86 W High Speed (G-3)
+//DRIVER(hs,g3)           //          01/86 W High Speed (G-3)
 DRIVER(hs,p4g)          //          01/86 W High Speed (G-4 / German PROTO4)
 DRIVER(hs,l4c)          //          05/18 W High Speed (L-4C Competition MOD (f43c))
 DRIVER(grand,l1)        //S11-523:  04/86 W Grand Lizard (L-1)
@@ -3099,11 +3100,12 @@ DRIVER(dm,h6c)          //          11/19   Demolition Man (H-6C Competition MOD
 //DRIVER(dm,h7)           //          03/22   Demolition Man (7.0 Competition MOD) with rude speech //commercial release
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
-DRIVER(tafg,h3)         //WPC-538:  08/94 B Addams Family Special Collectors Edition, The (Home version)
+DRIVER(tafg,h3)         //WPC-538:  ??/94 B Addams Family Special Collectors Edition, The (Home version)
 DRIVER(tafg,i3)         //                  Addams Family Special Collectors Edition, The (Home version, LED Ghost Fix)
 DRIVER(tafg,lx3)        //          10/94 B Addams Family Special Collectors Edition, The (LX-3)
 DRIVER(tafg,dx3)        //                  Addams Family Special Collectors Edition, The (DX-3) LED Ghost Fix
 DRIVER(tafg,la2)        //          10/94 B Addams Family Special Collectors Edition, The (LA-2)
+//DRIVER(tafg,lx2) exists, see https://www.flippermarkt.de/forum/threads/taf-ballsaver.290937/post-2343244
 DRIVER(tafg,da2)        //                  Addams Family Special Collectors Edition, The (DA-2) LED Ghost Fix
 DRIVER(tafg,la3)        //          10/94 B Addams Family Special Collectors Edition, The (LA-3)
 DRIVER(tafg,da3)        //                  Addams Family Special Collectors Edition, The (DA-3) LED Ghost Fix
