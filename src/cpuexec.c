@@ -425,6 +425,12 @@ void cpu_run(void)
 			/* execute CPUs */
 			cpu_timeslice();
 
+#if defined(LIBPINMAME)
+         extern int libpinmame_time_to_quit(void);
+         if (libpinmame_time_to_quit())
+            time_to_quit = 1;
+#endif
+
 			profiler_mark(PROFILER_END);
 		}
 
@@ -970,12 +976,6 @@ static void cpu_timeslice(void)
 	// It also causes a deadlock if using a TimeFence since messages are normally processed by a CPU callback that may not happen depending on the TimeFence.
 	extern void win_process_events(void);
 	win_process_events();
-#endif
-
-#if defined(LIBPINMAME)
-	extern int libpinmame_time_to_quit(void);
-	if (libpinmame_time_to_quit())
-		time_to_quit = 1;
 #endif
 
 	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached
