@@ -2821,7 +2821,7 @@ INLINE float cube(const float x)
   return x * x * x;
 }
 
-INLINE BOOL isFinite(const float x)
+INLINE int/*bool*/ isFinite(const float x)
 {
    union {
       float f;
