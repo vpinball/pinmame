@@ -2821,8 +2821,24 @@ INLINE float cube(const float x)
   return x * x * x;
 }
 
-INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float emission)
-{
+ INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float emission)
+ {
+   // Recursive IIR filter (output->value depends on its own previous value), so a
+   // single non-finite value latches permanently. Self-heal from any non-finite
+   // state so a transient bad sample can't kill an output for the session.
+   // Only fires on a non-finite value -> no-op in normal operation.
+   if (!(output->value == output->value)
+       || !(output->state.bulb.eye_integration[0] == output->state.bulb.eye_integration[0])
+       || !(output->state.bulb.eye_integration[1] == output->state.bulb.eye_integration[1])
+	   || !(output->state.bulb.eye_integration[2] == output->state.bulb.eye_integration[2]))
+   {
+      output->value = 0.f;
+      output->state.bulb.eye_integration[0] = 0.f;
+      output->state.bulb.eye_integration[1] = 0.f;
+      output->state.bulb.eye_integration[2] = 0.f;
+      output->state.bulb.eye_emission_old = 0.f;
+   }
+
    // Compute the perceived emission using a hacky simplified eye integration model
    // We want to model the flicker-fusion eye/brain behavior while keeping the output latency low (filter delay) and limit the flicker (still keeping it, if it can be seen on the real machine)
    // Note that videos can not be used as references for fitting the model since the camera perform a different luminance integration. Comparisons are only valid with real humans looking at real PWM/strobed incandescent bulbs.
@@ -2859,9 +2875,13 @@ static const double BULB_INTEGRATION_PERIOD = 0.001; // do the integration in a 
 // isFlip signals a state flip, BUT we track this internally anyways now
 void core_update_pwm_output_bulb(const double now, const int index, const int isFlip, const int state)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-  const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
-  const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
+   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+   const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
+  // Clamp elapsed time to >= 0. On the consumer-driven ("on request") path, the
+  // stable step's now == global_offset (timer_starttime of a zeroed timer) can lag
+  // the emu-thread flip timestamps (timer_get_time), planting integrationTimestamp
+  // behind prevIntegrationTimestamp -> negative dt. No-op in normal operation.
+  const float dt_diff = fmaxf(0.f, (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp));
 
   float countf;
   if (U != output->state.bulb.prevIntegrationValue) {
@@ -2929,9 +2949,12 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 // isFlip signals a state flip, BUT we track this internally anyways now
 void core_update_pwm_output_led(const double now, const int index, const int isFlip, const int state)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-  const float power = state ? output->state.bulb.relative_brightness : 0.f;
-  const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
+   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+   const float power = state ? output->state.bulb.relative_brightness : 0.f;
+  // Clamp elapsed time to >= 0 (see core_update_pwm_output_bulb). A negative dt
+  // here feeds sqrtf() below -> NaN emission, which the recursive eye-flicker IIR
+  // then perpetuates forever (permanent dead segment cell). No-op in normal op.
+  const float dt_diff = fmaxf(0.f, (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp));
 
   if(power != output->state.bulb.prevIntegrationValue    // state flip?
      || dt_diff >= (float)(BULB_INTEGRATION_PERIOD*20.)) // or we waited long enough to get a stable discrete integration
