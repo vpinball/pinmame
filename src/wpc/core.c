@@ -2821,16 +2821,23 @@ INLINE float cube(const float x)
   return x * x * x;
 }
 
- INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float emission)
- {
-   // Recursive IIR filter (output->value depends on its own previous value), so a
-   // single non-finite value latches permanently. Self-heal from any non-finite
-   // state so a transient bad sample can't kill an output for the session.
-   // Only fires on a non-finite value -> no-op in normal operation.
-   if (!(output->value == output->value)
-       || !(output->state.bulb.eye_integration[0] == output->state.bulb.eye_integration[0])
-       || !(output->state.bulb.eye_integration[1] == output->state.bulb.eye_integration[1])
-	   || !(output->state.bulb.eye_integration[2] == output->state.bulb.eye_integration[2]))
+INLINE BOOL isFinite(const float x)
+{
+   union {
+      float f;
+      UINT32 u;
+   } v;
+   v.f = x;
+   return (v.u & 0x7F800000u) != 0x7F800000u;
+}
+
+INLINE void core_eye_flicker_fusion(core_tPhysicOutput* const output, const float emission)
+{
+   // Recursive IIR filter (output->value depends on previous values), so any
+   // non-finite value latches permanently. Recover from a non-finite
+   // state so a bad sample can't kill the output for the whole session
+   if (!isFinite(output->value)
+    || !isFinite(output->state.bulb.eye_integration[0]) || !isFinite(output->state.bulb.eye_integration[1]) || !isFinite(output->state.bulb.eye_integration[2]))
    {
       output->value = 0.f;
       output->state.bulb.eye_integration[0] = 0.f;
@@ -2875,8 +2882,8 @@ static const double BULB_INTEGRATION_PERIOD = 0.001; // do the integration in a 
 // isFlip signals a state flip, BUT we track this internally anyways now
 void core_update_pwm_output_bulb(const double now, const int index, const int isFlip, const int state)
 {
-   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-   const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
+  const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
   // Clamp elapsed time to >= 0. On the consumer-driven ("on request") path, the
   // stable step's now == global_offset (timer_starttime of a zeroed timer) can lag
   // the emu-thread flip timestamps (timer_get_time), planting integrationTimestamp
@@ -2949,8 +2956,8 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 // isFlip signals a state flip, BUT we track this internally anyways now
 void core_update_pwm_output_led(const double now, const int index, const int isFlip, const int state)
 {
-   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
-   const float power = state ? output->state.bulb.relative_brightness : 0.f;
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
+  const float power = state ? output->state.bulb.relative_brightness : 0.f;
   // Clamp elapsed time to >= 0 (see core_update_pwm_output_bulb). A negative dt
   // here feeds sqrtf() below -> NaN emission, which the recursive eye-flicker IIR
   // then perpetuates forever (permanent dead segment cell). No-op in normal op.
@@ -3291,7 +3298,7 @@ void core_update_pwm_outputs(const int startIndex, const int count)
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
    const double now = timer_get_time();
-   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+   core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
    for (int i = 0; i < count; i++, bitStates = bitStates >> 1, index++, output++) {
       const int pos = index >> 3, ofs = index & 7;
       if (((coreGlobals.binaryOutputState[pos] >> ofs) & 1) != (bitStates & 1)) {
@@ -3310,7 +3317,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
    if (!changeMask)
       return;
    const double now = timer_get_time();
-   for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
+   for (core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
       {
          const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
@@ -3327,7 +3334,7 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
    if (!changeMask)
       return;
    const double now = timer_get_time();
-   for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
+   for (core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
       {
          const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
