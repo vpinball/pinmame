@@ -3298,7 +3298,7 @@ void core_update_pwm_outputs(const int startIndex, const int count)
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
    const double now = timer_get_time();
-   core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
+   core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
    for (int i = 0; i < count; i++, bitStates = bitStates >> 1, index++, output++) {
       const int pos = index >> 3, ofs = index & 7;
       if (((coreGlobals.binaryOutputState[pos] >> ofs) & 1) != (bitStates & 1)) {
@@ -3317,7 +3317,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
    if (!changeMask)
       return;
    const double now = timer_get_time();
-   for (core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
+   for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
       {
          const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
@@ -3334,7 +3334,7 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
    if (!changeMask)
       return;
    const double now = timer_get_time();
-   for (core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
+   for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
       {
          const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
