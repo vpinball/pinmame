@@ -3140,6 +3140,7 @@ DRIVER(corv,px5)        //                  Corvette (PX-5 Prototype) LED Ghost 
 DRIVER(corv,la1)        //          09/94 B Corvette (LA-1)
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX-1)
 DRIVER(corv,dx1)        //                  Corvette (DX-1) LED Ghost Fix
+DRIVER(corv,la2)        //          10/94 B Corvette (LA-2)
 DRIVER(corv,lx2)        //          10/94 B Corvette (LX-2)
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(corv,f61)        //          ??/??   Corvette (FreeWPC 0.61)

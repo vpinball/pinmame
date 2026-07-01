@@ -318,6 +318,15 @@ DCS_SOUNDROM6x("corvsnd2",CRC(630d20a3) SHA1(c7b6cbc7f23c1f9c149a3ef32e84ca8797f
                "corvsnd7",CRC(1417b547) SHA1(851acf77159a1ef99fc2934353eb887065568004))
 WPC_ROMEND
 
+WPC_ROMSTART(corv,la2,"u6-la2.rom",0x80000,CRC(51260a28) SHA1(150610124e365e705e48950b11017cfa2e18aa80))
+DCS_SOUNDROM6x("su2-sl1.rom",CRC(141d280e) SHA1(ab1e8e38b9fa0e693837c93616f0821e25b31588),
+               "corvsnd3",CRC(6ace0353) SHA1(dec5b6f129ee6b7c0d03c1677d6b71672dd25a5a),
+               "corvsnd4",CRC(87807278) SHA1(ba01b44c0ad6d10163a8aed2211539d541e69449),
+               "corvsnd5",CRC(35f82c21) SHA1(ee14489e5629e9cd5622a56849fab65b94ff9b59),
+               "corvsnd6",CRC(61e56d90) SHA1(41388523fca4839132d3f7e117bdac9ea9f4020c),
+               "corvsnd7",CRC(1417b547) SHA1(851acf77159a1ef99fc2934353eb887065568004))
+WPC_ROMEND
+
 WPC_ROMSTART(corv,lx2,"u6-lx2.rom",0x80000,CRC(204c1e4a) SHA1(b6b1ada4ac57a0bf1c3322105936c91d5704ef18))
 DCS_SOUNDROM6x("su2-sl1.rom",CRC(141d280e) SHA1(ab1e8e38b9fa0e693837c93616f0821e25b31588),
                "corvsnd3",CRC(6ace0353) SHA1(dec5b6f129ee6b7c0d03c1677d6b71672dd25a5a),
@@ -400,6 +409,7 @@ CORE_CLONEDEF(corv,px5,21,"Corvette (PX-5 Prototype LED Ghost Fix)",1994,"Bally"
 CORE_CLONEDEF(corv,la1,21,"Corvette (LA-1)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,lx1,21,"Corvette (LX-1)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,dx1,21,"Corvette (DX-1 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,la2,21,"Corvette (LA-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,lx2,21,"Corvette (LX-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,f61,21,"Corvette (FreeWPC 0.61)",1994,"FreeWPC",wpc_mSecurityS,0)
 
