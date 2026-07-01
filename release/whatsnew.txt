@@ -53,7 +53,7 @@ Fixed noise filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
 
-*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org)
+*** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org)
 New:
 IDSA: Fantastic Car
 
@@ -75,6 +75,7 @@ Arena (rev. 2) (most likely official, but unreleased so far, makes it the newest
 Atlantis (rev. 3 Tournament MOD v3931)
 Bad Cats LF-1 (French)
 Bad Cats (The Cat's Meow) (MOD 1.2 & 1.3)
+Corvette LA-2
 Cue Ball Wizard (Spanish / Vifico license)
 Diner LA-4 (Fixed Right Ramp MOD)
 Dragonfist (MOD 17)
