@@ -253,7 +253,66 @@
 
 typedef unsigned char byte;
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1400) && !defined(__LP64__) && !defined(_M_ARM) // visual studio & > 6 & 32bit compile
+/*
+ *   JIT backend target architecture detection
+ *
+ *   At most one of these is defined, identifying the host CPU architecture.
+ *   These gate ONLY the legacy hand-written code emitter (JIT_ENABLED below),
+ *   which only has a backend for 32-bit x86 (JIT_TARGET_X86).
+ *
+ *   NOTE: the newer asmjit-based JIT is a SEPARATE path and does not look at
+ *   these macros or at JIT_ENABLED.  It is gated solely by PINMAME_JIT_ASMJIT
+ *   (a build option, on by default for x86/x64 targets and forced off for all
+ *   other architectures by cmake/asmjit.cmake) plus a runtime check
+ *   (ARM7.ajit != NULL), so it DOES run on x86 and x64 (ARM64 backend
+ *   still to come).  The dependency runs the other way only: defining
+ *   PINMAME_JIT_ASMJIT forces JIT_ENABLED to 0, because the two JITs are
+ *   mutually exclusive (see the master switch below).
+ *   See src/windows/jit_asmjit.cpp
+ */
+#if defined(_M_IX86) || defined(__i386__)
+# define JIT_TARGET_X86   1
+#elif defined(_M_X64) || defined(__x86_64__)
+# define JIT_TARGET_X64   1
+#elif defined(_M_ARM64) || defined(__aarch64__)
+# define JIT_TARGET_ARM64 1
+#endif
+
+/*
+ *   Master switch: is the LEGACY hand-written JIT compiled in?
+ *
+ *   The hand-written code emitter (jitemit.c) only targets 32-bit x86, and the
+ *   run-time transition trampoline (arm7exec.c) relies on MSVC 32-bit inline
+ *   assembly (which MSVC does not support when targeting x64), so this legacy
+ *   JIT is enabled only for 32-bit x86 MSVC builds.  Every other configuration
+ *   (x64, ARM, non-MSVC) falls back to the interpreter for the legacy path
+ *   (which the asmjit JIT, where built, then accelerates instead).
+ *
+ *   Three independent conditions must all hold:
+ *
+ *     - defined(JIT_TARGET_X86): the host is 32-bit x86, the only architecture
+ *       the current backend can encode.  Checking the architecture directly is
+ *       defense-in-depth: a 64-bit or ARM build can never accidentally try to
+ *       compile the x86-only emitter / inline-asm trampoline even if the
+ *       __LP64__ define below is omitted.
+ *
+ *     - !defined(__LP64__): __LP64__ is honored as an explicit "disable the JIT"
+ *       override.  The 64-bit project/CMake configs define it (so they fall back
+ *       to the interpreter), AND the libpinmame build defines it on ALL Windows
+ *       targets - including 32-bit - to intentionally keep the JIT off there.
+ *       This condition preserves that existing behavior; do not remove it
+ *       without auditing every build that defines __LP64__.
+ *
+ *     - !defined(PINMAME_JIT_ASMJIT): the two JITs are MUTUALLY EXCLUSIVE - when
+ *       the asmjit backend is compiled in, the legacy path compiles out (on
+ *       32-bit x86 too).  Running both would be an untested hybrid with a real
+ *       correctness hole: their invalidation paths don't know about each other,
+ *       so a self-modifying-code store executed from an asmjit block (which
+ *       calls only arm7_aj_untranslate, never jit_untranslate) would leave a
+ *       stale LEGACY translation executing.  PINMAME_JIT_ASMJIT is defined
+ *       target-wide, so every TU agrees on JIT_ENABLED.
+ */
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) && defined(JIT_TARGET_X86) && !defined(__LP64__) && !defined(PINMAME_JIT_ASMJIT)
 #define JIT_ENABLED  1   // enable the JIT (false -> use only the standard emulator code)
 #else
 #define JIT_ENABLED  0

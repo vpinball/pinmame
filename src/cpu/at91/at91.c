@@ -278,6 +278,40 @@ void at91_set_ram_pointers(data32_t *reset_ram_ptr, data32_t *page0_ram_ptr)
 void at91_init_jit(int min_addr, int max_addr)
 {
 	jit_create_map(at91.jit, min_addr, max_addr);
+#ifdef PINMAME_JIT_ASMJIT
+	// The controller pointer was created in arm7_core_init (so it survives MAME's
+	// context save/restore); here we only (re)configure its opcode range IN PLACE --
+	// do NOT recreate it, or the new pointer wouldn't be in the context snapshot and
+	// set_context would revert at91.ajit to the snapshot's value
+	if (!at91.ajit) // safety net (e.g. if core init somehow didn't create it)
+		at91.ajit = arm7_aj_create((uint32_t)min_addr, (uint32_t)max_addr);
+	else
+		arm7_aj_set_range((ArmAsmjitCtl *)at91.ajit, (uint32_t)min_addr, (uint32_t)max_addr);
+	// Give the JIT the real memory thunks so translated blocks span LDR/STR
+	// (arm7_aj_wire_mem + the thunks are defined in the #included arm7core.c)
+	arm7_aj_wire_mem(at91.ajit);
+	// Keep the JIT disabled until the RAM->page-0 remap (see the EBI_RCR handler),
+	// mirroring the legacy jit_enable: translate only the final post-remap program,
+	// not the throwaway / self-modifying boot+copy+remap code
+	arm7_aj_set_enabled((ArmAsmjitCtl *)at91.ajit, 0);
+#endif
+}
+
+// DEBUG: asmjit JIT exclusion list -- interpret the added [lo, hi) regions even
+// inside the JIT range. Debug aid to JIT everything EXCEPT one or more suspect regions
+void at91_clear_jit_exclude(void)
+{
+#ifdef PINMAME_JIT_ASMJIT
+	arm7_aj_clear_exclude((ArmAsmjitCtl *)at91.ajit);
+#endif
+}
+void at91_add_jit_exclude(int lo, int hi)
+{
+#ifdef PINMAME_JIT_ASMJIT
+	arm7_aj_add_exclude((ArmAsmjitCtl *)at91.ajit, (uint32_t)lo, (uint32_t)hi);
+#else
+	(void)lo; (void)hi;
+#endif
 }
 
 //used for debugging
@@ -746,6 +780,13 @@ INLINE void internal_write (int addr, data32_t data)
 
 								//the final program is now loaded - enable JIT translation
 								jit_enable(at91.jit);
+#ifdef PINMAME_JIT_ASMJIT
+								// Mirror the legacy jit_enable above: the final program is now in
+								// page 0, so drop any stale blocks and ENABLE asmjit translation
+								// from here on (it was disabled through boot/copy/remap)
+								arm7_aj_reset((ArmAsmjitCtl *)at91.ajit);
+								arm7_aj_set_enabled((ArmAsmjitCtl *)at91.ajit, 1);
+#endif
 							}
 						else
 							LOG(("%08x: AT91-EBI_RCR = 0 (no effect)!\n",activecpu_get_pc()));

@@ -199,7 +199,14 @@ struct GameOptions
 	int		debug_height;	/* requested height of debugger bitmap */
 	int		debug_depth;	/* requested depth of debugger bitmap */
 
-	int		at91jit;		/* PinMAME: enable AT91 just in time compiler (x86 only) */
+	int		at91jit;		/* PinMAME: enable AT91 just in time compiler (whichever JIT the build contains: the asmjit JIT on x86/x64 when built with PINMAME_JIT_ASMJIT, else the legacy x86 JIT; the two are mutually exclusive, see jit.h) */
+	/* TODO(asmjit-JIT): the four at91jit{min,xlo,xhi,excl} fields below are a DEBUG-ONLY
+	   address-range/exclusion aid built for JIT bring-up bisection. Remove them (and their
+	   uses in config.c, sam.c, at91.c, jit_asmjit.*) once the JIT rewrite is fully done */
+	int		at91jitmin;		/* PinMAME: AT91 JIT lower opcode bound (debug; 0 = from address 0). JIT covers [at91jitmin, at91jit); code outside is interpreted */
+	int		at91jitxlo;		/* PinMAME: AT91 JIT exclusion hole low bound (debug). PCs in [at91jitxlo, at91jitxhi) are interpreted (JIT everything EXCEPT that region). Empty when xlo==xhi */
+	int		at91jitxhi;		/* PinMAME: AT91 JIT exclusion hole high bound (debug) */
+	const char *at91jitexcl;/* PinMAME: AT91 JIT exclusion list (debug), hex "lo-hi,lo-hi,..."; those regions are interpreted. For enumerating all crashing regions */
 	int		usemodsol;		/* PinMAME: enable & setup physic model tied to binary outputs */
 	volatile double	time_fence; /* PinMAME: enable & setup cpu time limit when using external synchronization */
 };
