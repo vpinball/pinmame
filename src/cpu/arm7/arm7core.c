@@ -111,7 +111,7 @@ INLINE data16_t arm7_cpu_read16( int addr );
 INLINE data8_t arm7_cpu_read8( int addr );
 
 /***************************************************************************
- * Default Memory Handlers 
+ * Default Memory Handlers
  ***************************************************************************/
 INLINE void arm7_cpu_write32( int addr, data32_t data )
 {
@@ -448,7 +448,7 @@ static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 				UINT32 data = READ32(rbv += 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
-						SET_REGISTER( 15, data );
+						SET_REGISTER( 15, data & ~3 ); /* PC bits 1:0 ignored in ARM state */
 					//else /* Pull only address, preserve mode & status flags */
 					//	SET_REGISTER( 15, data );
 				} else
@@ -476,7 +476,7 @@ static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 			UINT32 data = READ32(rbv += 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
-					SET_MODE_REGISTER(mode, 15, data);
+					SET_MODE_REGISTER(mode, 15, data & ~3); /* PC bits 1:0 ignored in ARM state */
 				//else /* Pull only address, preserve mode & status flags */
 				//	SET_MODE_REGISTER(mode, 15, data);
 			} else
@@ -502,7 +502,7 @@ static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 				UINT32 data = READ32(rbv -= 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
-						SET_REGISTER( 15, data );
+						SET_REGISTER( 15, data & ~3 ); /* PC bits 1:0 ignored in ARM state */
 					//else /* Pull only address, preserve mode & status flags */
 					//	SET_REGISTER( 15, data );
 				}
@@ -530,7 +530,7 @@ static int loadDecMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 			UINT32 data = READ32(rbv -= 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
-					SET_MODE_REGISTER(mode, 15, data);
+					SET_MODE_REGISTER(mode, 15, data & ~3); /* PC bits 1:0 ignored in ARM state */
 				//else /* Pull only address, preserve mode & status flags */
 				//	SET_MODE_REGISTER(mode, 15, data);
 			}
@@ -1054,7 +1054,8 @@ static void HandleMemSingle( data32_t insn )
 			{
 				if (rd == eR15)
 				{
-					R15 = data - 4;
+					// ARM7TDMI ignores bits 1:0 of a value loaded into the PC in ARM state (no Thumb here)
+					R15 = (data & ~3) - 4;
 					//LDR, PC takes 2S + 2N + 1I (5 total cycles)
 					ARM7_ICOUNT -= 2;
 				}
@@ -1684,7 +1685,8 @@ static void HandleALU( data32_t insn )
 		//If Rd = R15, but S Flag not set, Result is placed in R15, but CPSR is not affected (page 44)
 		if (rdn == eR15 && !(insn & INSN_S))
 		{
-			R15 = rd;
+			// ARM7TDMI ignores bits 1:0 of a result written to the PC in ARM state (no Thumb here)
+			R15 = rd & ~3;
 
 			// extra cycles (PC written)
 			ARM7_ICOUNT -= 2;
@@ -1705,8 +1707,9 @@ static void HandleALU( data32_t insn )
 					SwitchMode(GET_MODE);
 				}
 
-				R15 = rd;
-				
+				// PC bits 1:0 ignored in ARM state, as above (the restored CPSR can't set the T bit - Thumb is not implemented in this core)
+				R15 = rd & ~3;
+
 				// extra cycles (PC written)
 				ARM7_ICOUNT -= 2;
 
