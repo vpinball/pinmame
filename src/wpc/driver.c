@@ -2860,11 +2860,12 @@ DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
 DRIVER(sf,d1)           //                  SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)
 DRIVER(hurr,d2)         //                  Hurricane (D-2) LED Ghost Fix
-DRIVER(t2,l2)           //WPC-513:  10/91 W Terminator 2: Judgment Day (L-2)
+DRIVER(t2,l2sp1)        //WPC-513:  07/91 W Terminator 2: Judgment Day (L-2, P-1 Sound)
+DRIVER(t2,l2)           //          07/91 W Terminator 2: Judgment Day (L-2)
 DRIVER(t2,d2)           //                  Terminator 2: Judgment Day (D-2) LED Ghost Fix
-DRIVER(t2,l3)           //          10/91 W Terminator 2: Judgment Day (L-3)
+DRIVER(t2,l3)           //          09/91 W Terminator 2: Judgment Day (L-3)
 DRIVER(t2,d3)           //                  Terminator 2: Judgment Day (D-3) LED Ghost Fix
-DRIVER(t2,l4)           //          10/91 W Terminator 2: Judgment Day (L-4)
+DRIVER(t2,l4)           //          09/91 W Terminator 2: Judgment Day (L-4)
 DRIVER(t2,d4)           //                  Terminator 2: Judgment Day (D-4) LED Ghost Fix
 DRIVER(t2,l6)           //          10/91 W Terminator 2: Judgment Day (L-6)
 DRIVER(t2,d6)           //                  Terminator 2: Judgment Day (D-6) LED Ghost Fix

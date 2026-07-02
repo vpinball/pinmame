@@ -95,6 +95,7 @@ STTNG LX-9 (MOD) (using the special L-1 sound roms, note that the special callou
 Super Mario Bros. (Spanish / Vifico license) (rev.1 and (most likely) rev.2)
 Surf 'n Safari (Tournament MOD)
 Swords of Fury (Richrom/Lionman MOD V1, with and without swords sounds)
+Terminator 2: Judgment Day (L-2, P-1 Sound)
 Transporter the Rescue L-3 (Fixed Jackpot MOD), LX-4 (Competition MOD in 2 variants: 'adult' and clean (one replaced word))
 Victory (tournament/competition MOD 1.1 & 1.2 & 1.3)
 World Cup Soccer LA-1

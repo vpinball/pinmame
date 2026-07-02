@@ -619,6 +619,12 @@ WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
 
+WPC_ROMSTART(t2,l2sp1,"u6-l2.rom",0x40000,CRC(efe49c18) SHA1(9f91081c384990eac6e3c57f318a2639626929f9)) // there is no prototype game ROM known yet
+WPCS_SOUNDROM222("U18SND_P", CRC(4e6987e2) SHA1(5384b221f8d80bb1138c7c3549baa88aec9f1f93),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770), // U15SND_P reports checksum error, only one byte difference to L-3
+                 "U14SND_P", CRC(88f7359c) SHA1(4f647063679baab3994b5c621deb868ca5485fd1))
+WPC_ROMEND
+
 WPC_ROMSTART(t2,f19,"ft20_19.rom",0x80000,CRC(e430bd28) SHA1(5e0ad09cebe3b374ddfa7646fc31684027ea394b))
 WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
@@ -648,7 +654,7 @@ CORE_CLONEDEF(t2,l83,l8,"Terminator 2: Judgment Day (L-83 Profanity, bugfix/MOD,
 CORE_CLONEDEF(t2,l84,l8,"Terminator 2: Judgment Day (L-84 Profanity, bugfix/MOD, LED Ghost Fix)",2023,"Williams/MOD",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgment Day (L-6)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgment Day (D-6 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgment Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ??
+CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgment Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ?? Software rev. 2.09 matches L-6, named 'Home 1.0'
 CORE_CLONEDEF(t2,p2g,l8,"Terminator 2: Judgment Day (P-2G Profanity, LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgment Day (L-4)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d4,l8,"Terminator 2: Judgment Day (D-4 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
@@ -656,6 +662,7 @@ CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgment Day (L-3)",1991,"Williams",wpc_mD
 CORE_CLONEDEF(t2,d3,l8,"Terminator 2: Judgment Day (D-3 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l2,l8,"Terminator 2: Judgment Day (L-2)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d2,l8,"Terminator 2: Judgment Day (D-2 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l2sp1,l8,"Terminator 2: Judgment Day (L-2, P-1 Sound)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,f19,l8,"Terminator 2: Judgment Day (FreeWPC 0.19)",1991,"FreeWPC",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,f20,l8,"Terminator 2: Judgment Day (FreeWPC 0.20)",1991,"FreeWPC",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,f32,l8,"Terminator 2: Judgment Day (FreeWPC 0.32)",1991,"FreeWPC",wpc_mDMDS,0)
