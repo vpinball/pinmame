@@ -81,6 +81,16 @@ function(pinmame_enable_asmjit target)
       # with keywords). The property append is signature-neutral and still
       # propagates asmjit's usage requirements (include dirs etc.).
       set_property(TARGET ${target} APPEND PROPERTY LINK_LIBRARIES asmjit::asmjit)
+      # A STATIC library target (pinmame_static) does not itself link, so the
+      # LINK_LIBRARIES entry above only supplies include dirs for compiling
+      # jit_asmjit.cpp; the asmjit objects must be linked by the CONSUMERS of
+      # the static lib (pinmame_test_s). Forward the dependency the same way
+      # target_link_libraries(PRIVATE) would: link-only, no compile-time
+      # usage requirements for the consumer.
+      get_target_property(_pinmame_asmjit_type ${target} TYPE)
+      if(_pinmame_asmjit_type STREQUAL "STATIC_LIBRARY")
+         set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES "$<LINK_ONLY:asmjit::asmjit>")
+      endif()
       target_compile_definitions(${target} PRIVATE PINMAME_JIT_ASMJIT)
       # Match the consumer's CRT: the win pinmame/pinmame32/vpinmame targets build
       # with the STATIC runtime (MSVC_RUNTIME_LIBRARY "MultiThreaded..."), while
