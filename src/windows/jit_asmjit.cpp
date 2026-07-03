@@ -2960,18 +2960,22 @@ extern "C" int arm7_aj_run(ArmAsmjitCtl *c, void *cpu_ctx, uint32_t pc,
     int cnt = 0, cyc = 0;
     ArmBlockFn fn = arm7_aj_get(c, pc, fetch, &cnt, &cyc);
     if (!fn) return 0;
-    if (c->chainEnabled) {
-        if (!c->dispatcher) aj_emit_dispatcher(c);
-        if (c->dispatcher) {
-            // the dispatcher looks the first block up again (cache hit) and
-            // charges each block -- including the first -- as it enters it
-            *out_newpc = ((ArmDispatchFn)c->dispatcher)(cpu_ctx, pc);
-            return 1;
-        }
-    }
-    // no chaining (kill switch / emission failure): single-block semantics
-    *out_newpc = fn(cpu_ctx);
+    // Run the first (already-resolved) block right here instead of having the
+    // dispatcher re-look-it-up: charge its cycles (same charge-before-run order the
+    // dispatcher uses) and call it, then chain the REST starting from the PC it
+    // returns. Same block sequence, same totals, one fewer slot lookup per entry
     *c->picount -= cyc;
+    uint32_t next = fn(cpu_ctx);
+    // Chain blocks 2..N via the dispatcher -- unless chaining is off, the dispatcher
+    // couldn't be emitted, or this block requested an IRQ check (arm7_aj_irq_flag): a
+    // post-check exit ends the run so the caller vectors now. The fn() call is a
+    // compiler barrier, so the flag load sees what the block wrote
+    if (c->chainEnabled && (!c->mem.pIrqFlag || !*(const uint8_t *)c->mem.pIrqFlag)) {
+        if (!c->dispatcher) aj_emit_dispatcher(c);
+        if (c->dispatcher)
+            next = ((ArmDispatchFn)c->dispatcher)(cpu_ctx, next);
+    }
+    *out_newpc = next;
     return 1;
 }
 
