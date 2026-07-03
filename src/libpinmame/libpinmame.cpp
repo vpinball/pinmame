@@ -475,7 +475,13 @@ extern "C" void libpinmame_update_display(const struct core_dispLayout* layout, 
 		}
 		else
 		{
-			(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &pDisplay->layout, _p_userData);
+			if (memcmp(pDisplay->pData, p_data, pDisplay->size)) {
+				memcpy(pDisplay->pData, p_data, pDisplay->size);
+				pDisplay->frameId++;
+				(*(_p_Config->cb_OnDisplayUpdated))(index, pDisplay->pData, &pDisplay->layout, _p_userData);
+			}
+			else
+				(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &pDisplay->layout, _p_userData);
 		}
 	}
 }
