@@ -225,6 +225,33 @@ MemCallbacks s_memcb = {};
 
 inline int cpsr_off() { return (int)offsetof(ArmCpuSelfTest, cpsr); }
 
+//!! TODO (perf): inline RAM fast path for LDR/STR:
+// Every memory access currently pays the full C thunk -> PinMAME memory-map
+// dispatch (~50-150 host insns); loads/stores might be roughly a third of ARM code.
+// Rough outline:
+//  - New wiring, e.g. arm7_aj_set_fast_ram(ctl, hostBase, guestLo, guestHi),
+//    fed from the driver's RAM window (see at91_set_ram_pointers /
+//    at91_init_jit; only valid POST-remap, which is exactly when the JIT is
+//    enabled). Resets the controller; translate-time copy like s_memcb.
+//  - In emit_arm_ldrstr (word/byte first; halfword & LDM/STM later), after the
+//    effective address is in a register: inline
+//        if ((addr - guestLo) < (guestHi - guestLo) && !(addr & 3))  // word case
+//            direct MOV via [hostBase + (addr - guestLo)]
+//        else -> existing thunk call
+//    The alignment test matters: arm7_cpu_read32 ROTATES unaligned word reads
+//    (see READ32), so unaligned must take the slow path. LDRB needs no
+//    alignment test; LDRH needs (addr & 1) == 0.
+//  - STORES must keep SMC detection: also test cover[(addr-minAddr)>>2] != 0
+//    inline (one byte load; the array address can be embedded since 'this' is
+//    stable but the ARRAY is reallocated by set_range -> read the c->cover cell
+//    like the dispatcher reads c->slot) and fall into the thunk when covered,
+//    which performs the untranslate. Fast path must be dropped (controller
+//    reset) if the RAM window changes.
+//  - The abort/IRQ post-check stays AFTER either path (a RAM access can't
+//    raise, but keeping one code shape is simpler and the check is cheap).
+//  - Not applicable to the peripheral region (>= 0xFFC00000) or CS callbacks by
+//    construction -- those fall outside [guestLo, guestHi) and keep the thunk.
+
 // Emit an ABI-correct call to a C memory thunk. Precondition: the effective
 // address is in ECX and, for writes, the store value is in EDX. For reads the
 // result is left in EAX. The host calling convention is selected at compile time
@@ -2371,9 +2398,17 @@ static int jit_asmjit_realmode_selftest(void)
 typedef arm7_block_fn ArmBlockFn; // == uint32_t (*)(void*); matches jit_asmjit.h
 
 // Translate the block at 'pc' (instructions fetched via 'fetch'). Returns the
-// block fn and *count = #instructions translated, or nullptr if none
+// block fn and *count = #instructions translated, or nullptr if none.
+// 'isBlockStart' (optional): translation additionally stops when it reaches an
+// address that already STARTS a cached block, instead of duplicating that
+// block's code as an overlapping suffix -- the chaining dispatcher hops into
+// the existing block at run time (Existing blocks are never split, so a later
+// branch INTO the middle of this block can still create an overlap; the probe
+// only stops duplication from spreading forward)
 static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32_t pc,
-                                  uint32_t (*fetch)(uint32_t), int &count, int &cycles)
+                                  uint32_t (*fetch)(uint32_t), int &count, int &cycles,
+                                  int (*isBlockStart)(void *u, uint32_t addr) = nullptr,
+                                  void *user = nullptr)
 {
     CodeHolder code;
     code.init(rt.environment());
@@ -2405,6 +2440,8 @@ static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32
     int i = 0, cyc = 0;
     while (i < 256) {  // bound block size
         const uint32_t at   = pc + 4u * (uint32_t)i;
+        if (i > 0 && isBlockStart && isBlockStart(user, at))
+            break; // 'at' already starts a cached block: join it via the dispatcher instead of duplicating its code
         const uint32_t insn = fetch(at);
         if (!emit_arm_insn(a, ctx, insn, at, frame))
             break;
@@ -2458,6 +2495,28 @@ struct ArmAsmjitCtl {
     static const uint32_t AJ_SLOT_BASE    = 2;
     std::vector<BlockInfo> blocks;  // dense table of translated blocks (see BlockInfo)
     std::vector<uint32_t>  freeIds; // recycled 'blocks' indices (untranslated entries)
+    // Raw mirror of blocks.data(), for the DISPATCHER (generated code cannot
+    // chase a std::vector across reallocations). Updated after every mutation of
+    // 'blocks'; all mutation happens on the C side, never during a chain
+    BlockInfo  *blocksPtr = nullptr;
+    // Block chaining (see aj_emit_dispatcher / arm7_aj_run): a JIT-emitted
+    // dispatcher that CALLS cached blocks in a loop without returning to the C
+    // exec loop between them. Emitted lazily; dropped (re-emitted) when a value
+    // it embeds changes (picount, pIrqFlag). The stale code stays in the
+    // JitRuntime until delete -- a few hundred bytes, not worth releasing
+    void       *dispatcher = nullptr;
+    int        *picount = nullptr; // &ARM7_ICOUNT (stable global), wired via arm7_aj_set_icount
+    int         chainEnabled = 1;  // arm7_aj_set_chaining kill switch (A/B timing, bisection)
+    // Per-slot count of live blocks COVERING this opcode address (their span
+    // [start, start+4*count) includes it, not just starting at it) -- so a
+    // store can detect a write into the MIDDLE of a translated block, which
+    // the block-start slot alone cannot (the legacy JIT caught these via its
+    // per-instruction native map). 0 on almost every store = the O(1) fast
+    // path; nonzero triggers the bounded covering-block scan in
+    // arm7_aj_untranslate. Saturates at 255 (then sticky: never decremented;
+    // needs 255+ overlapping blocks on one word -- unreachable in practice)
+    uint8_t    *cover = nullptr;
+    int         maxBlockInsns = 0;  // longest block translated since reset (bounds the scan)
     MemCallbacks mem = {};          // real read/write thunks + abort/IRQ hooks
     int         enabled = 1;        // gate: when 0, arm7_aj_get returns null (interpreter). The AT91
                                     // driver disables until the RAM->page-0 remap, mirroring the
@@ -2506,12 +2565,16 @@ static void aj_alloc_slots(ArmAsmjitCtl *c, uint32_t minAddr, uint32_t maxAddr)
         if (c->blocks[i].fn) c->rt.release(c->blocks[i].fn);
     c->blocks.clear();
     c->freeIds.clear();
+    c->blocksPtr = nullptr;
     aj_release_retired(c);
     delete[] c->slot;
+    delete[] c->cover;
     c->minAddr = minAddr;
     c->maxAddr = maxAddr;
     c->slots   = (maxAddr > minAddr) ? (int)((maxAddr - minAddr) >> 2) : 0;
     c->slot    = new uint32_t[c->slots]();  // zero = AJ_SLOT_UNTRIED
+    c->cover   = new uint8_t[c->slots]();   // zero = not covered by any block
+    c->maxBlockInsns = 0;
 }
 
 extern "C" ArmAsmjitCtl *arm7_aj_create(uint32_t minAddr, uint32_t maxAddr)
@@ -2591,6 +2654,7 @@ extern "C" void arm7_aj_set_irq_hooks(ArmAsmjitCtl *c,
     c->mem.check_irq = check_irq;
     c->mem.pAbtD = pAbtD; c->mem.pIrq = pIrq; c->mem.pFiq = pFiq;
     c->mem.pIrqFlag = pIrqFlag;
+    c->dispatcher = nullptr; // embeds pIrqFlag -> re-emit with the new value
     arm7_aj_reset(c);
 }
 
@@ -2625,35 +2689,71 @@ extern "C" void arm7_aj_reset(ArmAsmjitCtl *c)
         if (c->blocks[i].fn) c->retired.push_back(c->blocks[i].fn);
     c->blocks.clear();
     c->freeIds.clear();
-    if (c->slots) memset(c->slot, 0, (size_t)c->slots * sizeof(uint32_t)); // all AJ_SLOT_UNTRIED
+    c->blocksPtr = nullptr;
+    if (c->slots) {
+        memset(c->slot, 0, (size_t)c->slots * sizeof(uint32_t)); // all AJ_SLOT_UNTRIED
+        memset(c->cover, 0, (size_t)c->slots);
+    }
+    c->maxBlockInsns = 0;
 }
 
 extern "C" void arm7_aj_delete(ArmAsmjitCtl *c)
 {
     if (!c) return;
     delete[] c->slot;
+    delete[] c->cover;
     delete c; // JitRuntime destructor frees all generated code (live and retired)
 }
 
-// Invalidate the block STARTING at 'addr' (self-modifying code). Limitation: a write
-// into the middle of a longer block is not detected here; covering-block invalidation
-// would be needed to support heavy SMC
+// Retire the block starting at slot 'idx' (slot value must be a block handle):
+// un-count its coverage span, move its code to the deferred-release list, and
+// recycle its table entry. Retire, don't free -- reachable from the store
+// thunks inside a running block; a block storing into itself must not free the
+// code it is executing (see 'retired')
+static void aj_retire_block_at(ArmAsmjitCtl *c, int idx)
+{
+    const uint32_t id = c->slot[idx] - ArmAsmjitCtl::AJ_SLOT_BASE;
+    BlockInfo &bi = c->blocks[id];
+    int end = idx + (int)bi.count;
+    if (end > c->slots) end = c->slots;
+    for (int i = idx; i < end; ++i)
+        if (c->cover[i] && c->cover[i] != 0xFF) c->cover[i]--; // 0xFF = saturated, sticky
+    c->retired.push_back(bi.fn);
+    bi.fn = nullptr; // recycle the table entry
+    c->freeIds.push_back(id);
+    c->slot[idx] = ArmAsmjitCtl::AJ_SLOT_UNTRIED;
+}
+
+// Invalidate EVERY translated block covering 'addr' (self-modifying code) --
+// including blocks the written address is in the MIDDLE of, matching what the
+// legacy JIT achieved with its per-instruction native map. The common case
+// (store to an address no block covers) is a single byte test. A covering
+// block can start at most maxBlockInsns-1 slots back, which bounds the scan.
+// NB: an AJ_SLOT_INTERP mark is deliberately NOT cleared by a write (legacy
+// philosophy: a written location will likely be written again, so don't keep
+// retrying translation there; the interpreter executes it correctly either way)
 extern "C" void arm7_aj_untranslate(ArmAsmjitCtl *c, uint32_t addr)
 {
     if (!c || addr < c->minAddr || addr >= c->maxAddr) return;
     const int idx = (int)((addr - c->minAddr) >> 2);
-    // Retire, don't free -- called from the store thunks inside a running block;
-    // a block storing to its own start address must not free the code it is
-    // executing (see 'retired'). The slot is cleared immediately; only the
-    // freeing of the code memory is deferred
-    const uint32_t v = c->slot[idx];
-    if (v >= ArmAsmjitCtl::AJ_SLOT_BASE) {
-        const uint32_t id = v - ArmAsmjitCtl::AJ_SLOT_BASE;
-        c->retired.push_back(c->blocks[id].fn);
-        c->blocks[id].fn = nullptr; // recycle the table entry
-        c->freeIds.push_back(id);
+    if (!c->cover[idx]) return; // fast path: no live block covers this address
+    int lo = idx - (c->maxBlockInsns - 1);
+    if (lo < 0) lo = 0;
+    for (int j = idx; j >= lo; --j) {
+        const uint32_t v = c->slot[j];
+        if (v >= ArmAsmjitCtl::AJ_SLOT_BASE &&
+            (int)c->blocks[v - ArmAsmjitCtl::AJ_SLOT_BASE].count > idx - j)
+            aj_retire_block_at(c, j); // spans across 'addr' -> stale
     }
-    c->slot[idx] = ArmAsmjitCtl::AJ_SLOT_UNTRIED; // also clears a stale AJ_SLOT_INTERP
+}
+
+// translate_block probe: does 'addr' already start a cached block? (Stops
+// translation there so the dispatcher chains into it -- see translate_block)
+static int aj_is_block_start(void *u, uint32_t addr)
+{
+    const ArmAsmjitCtl *c = (const ArmAsmjitCtl *)u;
+    if (addr < c->minAddr || addr >= c->maxAddr) return 0;
+    return c->slot[(addr - c->minAddr) >> 2] >= ArmAsmjitCtl::AJ_SLOT_BASE;
 }
 
 // Look up (and translate on demand) the block at 'pc'. Returns the block fn, or
@@ -2680,7 +2780,7 @@ extern "C" ArmBlockFn arm7_aj_get(ArmAsmjitCtl *c, uint32_t pc, uint32_t (*fetch
     }
     if (v == ArmAsmjitCtl::AJ_SLOT_INTERP) return nullptr;
     int cnt = 0, cyc = 0;
-    ArmBlockFn fn = translate_block(c->rt, c->mem, pc, fetch, cnt, cyc);
+    ArmBlockFn fn = translate_block(c->rt, c->mem, pc, fetch, cnt, cyc, aj_is_block_start, c);
     if (fn) {
         BlockInfo bi;
         bi.fn    = fn;
@@ -2689,13 +2789,190 @@ extern "C" ArmBlockFn arm7_aj_get(ArmAsmjitCtl *c, uint32_t pc, uint32_t (*fetch
         uint32_t id;
         if (!c->freeIds.empty()) { id = c->freeIds.back(); c->freeIds.pop_back(); c->blocks[id] = bi; }
         else                     { id = (uint32_t)c->blocks.size(); c->blocks.push_back(bi); }
+        c->blocksPtr = c->blocks.data(); // keep the dispatcher's raw mirror in sync
         c->slot[idx] = id + ArmAsmjitCtl::AJ_SLOT_BASE;
+        // Count the block's whole span as covered so a store into its MIDDLE is
+        // detected by arm7_aj_untranslate (clamped: a block may run past maxAddr)
+        int end = idx + cnt;
+        if (end > c->slots) end = c->slots;
+        for (int i = idx; i < end; ++i)
+            if (c->cover[i] != 0xFF) c->cover[i]++;
+        if (cnt > c->maxBlockInsns) c->maxBlockInsns = cnt;
         if (outCount)  *outCount  = cnt;
         if (outCycles) *outCycles = cyc;
         return fn;
     }
     c->slot[idx] = ArmAsmjitCtl::AJ_SLOT_INTERP; // nothing translatable here; don't retry
     return nullptr;
+}
+
+// ===========================================================================
+//  Block chaining: JIT-emitted dispatcher (see arm7_aj_run)
+//
+//  A small generated function that CALLS cached blocks in a loop -- lookup the
+//  next pc, charge its cycles, check the budget/IRQ flag, call, repeat --
+//  without returning to the C exec loop between blocks (which costs an
+//  arm7_aj_get round trip per transition). Blocks are completely unchanged:
+//  they are ordinary callees here, so every invariant (deferred release, SMC
+//  invalidation via the write thunks, post-check exits) holds by construction.
+//  The dispatcher never translates: any miss bails back to C with the pc, the
+//  exec loop translates via arm7_aj_run/arm7_aj_get, and the next run chains
+//  through the new block.
+//
+//  Controller fields (minAddr/maxAddr/slot/blocksPtr/enabled) are read through
+//  the stable 'this' pointer EVERY hop, so set_range/reset/retire stay safe
+//  mid-chain. Only 'picount' and 'pIrqFlag' are embedded by VALUE -- their
+//  setters drop the dispatcher so it re-emits
+// ===========================================================================
+
+typedef uint32_t (*ArmDispatchFn)(void *ctx, uint32_t pc);
+
+static void aj_emit_dispatcher(ArmAsmjitCtl *c)
+{
+    if (c->dispatcher || !c->picount) return;
+    CodeHolder code;
+    code.init(c->rt.environment());
+    x86::Assembler a(&code);
+    FuncDetail func;
+    func.init(FuncSignature::build<uint32_t, void *, uint32_t>(), code.environment());
+    FuncFrame frame;
+    frame.init(func);
+    x86::Gp ctx = a.zbx();
+#if defined(_WIN64) || defined(__x86_64__)
+    // pc must survive the block calls: r12 is callee-saved in BOTH x64 ABIs and
+    // never used by generated blocks (rsi would be clobbered on SysV, where it is an argument register)
+    x86::Gp pc32 = x86::r12d, pcFull = x86::r12;
+#else
+    // cdecl: esi is callee-saved; blocks use it but save/restore it (dirty reg)
+    x86::Gp pc32 = x86::esi, pcFull = x86::esi;
+#endif
+    frame.add_dirty_regs(ctx, pcFull, a.zax());
+    FuncArgsAssignment args(&func);
+    args.assign_all(ctx, pc32);
+    args.update_func_frame(frame);
+    frame.set_call_stack_size(32); // we call blocks
+    frame.update_call_stack_alignment(16);
+    frame.finalize();
+
+    a.emit_prolog(frame);
+    a.emit_args_assignment(frame, args);
+
+    using CC = x86::CondCode;
+    Label loop = a.new_label();
+    Label out  = a.new_label();
+    a.bind(loop);
+    // enabled? (defensive: all current disable sites also reset, clearing the slots)
+    emit_mov_ptr(a, a.zcx(), &c->enabled);
+    a.cmp(x86::dword_ptr(a.zcx()), 0);
+    a.j(CC::kZero, out);
+    // icount > 0? -- the C loop's while (ARM7_ICOUNT > 0), checked before each block
+    emit_mov_ptr(a, a.zcx(), c->picount);
+    a.cmp(x86::dword_ptr(a.zcx()), 0);
+    a.j(CC::kSignedLE, out);
+    // pc within [minAddr, maxAddr)?
+    emit_mov_ptr(a, a.zdx(), &c->minAddr);
+    a.cmp(pc32, x86::dword_ptr(a.zdx()));
+    a.j(CC::kCarry, out);                                 // below minAddr
+    emit_mov_ptr(a, a.zdx(), &c->maxAddr);
+    a.cmp(pc32, x86::dword_ptr(a.zdx()));
+    a.j(CC::kNotCarry, out);                              // at/above maxAddr
+    // v = slot[(pc - minAddr) >> 2]
+    a.mov(x86::eax, pc32);
+    emit_mov_ptr(a, a.zdx(), &c->minAddr);
+    a.sub(x86::eax, x86::dword_ptr(a.zdx()));
+    a.shr(x86::eax, 2);                                   // idx (zero-extends zax)
+    emit_mov_ptr(a, a.zdx(), &c->slot);
+    a.mov(a.zdx(), x86::ptr(a.zdx()));                    // slot array (re-read: realloc-safe)
+    a.mov(x86::eax, x86::ptr(a.zdx(), a.zax(), 2, 0, 4)); // v = slot[idx]
+    a.cmp(x86::eax, ArmAsmjitCtl::AJ_SLOT_BASE);
+    a.j(CC::kCarry, out);                                 // UNTRIED / INTERP -> C loop
+    a.sub(x86::eax, ArmAsmjitCtl::AJ_SLOT_BASE);          // block id
+    // zdx = &blocksPtr[id]
+    a.imul(x86::eax, x86::eax, (int)sizeof(BlockInfo));
+    emit_mov_ptr(a, a.zdx(), &c->blocksPtr);
+    a.mov(a.zdx(), x86::ptr(a.zdx()));
+    a.add(a.zdx(), a.zax());
+    // charge the block we are about to run (equivalent totals to the C loop's
+    // run-then-charge, since the budget check above gates the same way)
+    a.movzx(x86::ecx, x86::word_ptr(a.zdx(), (int)offsetof(BlockInfo, cyc)));
+    emit_mov_ptr(a, a.zax(), c->picount);
+    a.sub(x86::dword_ptr(a.zax()), x86::ecx);
+    // call fn(ctx)
+    a.mov(a.zdx(), x86::ptr(a.zdx(), (int)offsetof(BlockInfo, fn)));
+#if defined(_WIN64)
+    a.mov(x86::rcx, ctx);
+#elif defined(__x86_64__)
+    a.mov(x86::rdi, ctx);
+#else
+    a.mov(x86::dword_ptr(x86::esp, 0), ctx);
+#endif
+    a.call(a.zdx());
+    a.mov(pc32, x86::eax); // next emulated pc
+    // post-check exit? the block set the irq flag: the C loop must vector NOW
+    // (the flag is consumed there, not here)
+    if (c->mem.pIrqFlag) {
+        emit_mov_ptr(a, a.zdx(), c->mem.pIrqFlag);
+        a.cmp(x86::byte_ptr(a.zdx()), 0);
+        a.j(CC::kNotZero, out);
+    }
+    a.jmp(loop);
+    a.bind(out);
+    a.mov(x86::eax, pc32);
+    a.emit_epilog(frame);
+
+    ArmDispatchFn fn = nullptr;
+    if (c->rt.add(&fn, &code) == kErrorOk)
+        c->dispatcher = (void *)fn;
+}
+
+// Wire the emulator's cycle counter (&ARM7_ICOUNT, a stable global). Required:
+// arm7_aj_run charges cycles internally (chained or not), so without this it
+// reports "no block" and the interpreter runs. Resets the controller and drops
+// the dispatcher (which embeds this address)
+extern "C" void arm7_aj_set_icount(ArmAsmjitCtl *c, int *picount)
+{
+    if (!c) return;
+    c->picount = picount;
+    c->dispatcher = nullptr;
+    arm7_aj_reset(c);
+}
+
+// Block-chaining kill switch (default on) -- for A/B timing comparisons and
+// bring-up bisection. Off, arm7_aj_run executes exactly one block per call,
+// like the pre-chaining exec loop
+extern "C" void arm7_aj_set_chaining(ArmAsmjitCtl *c, int enabled)
+{
+    if (!c) return;
+    c->chainEnabled = enabled ? 1 : 0;
+}
+
+// Exec-loop entry point: execute translated code starting at 'pc'. Returns 0
+// if 'pc' has no translated block (caller interprets it); otherwise runs one
+// block -- or, with chaining, as many cached blocks as the cycle budget allows
+// -- charges ARM7_ICOUNT internally for everything it ran, stores the resume
+// PC in *out_newpc, and returns 1. The caller must then honor the IRQ flag
+// (arm7_aj_irq_flag) exactly as before: a post-check exit stops the chain so
+// the flag is pending when this returns
+extern "C" int arm7_aj_run(ArmAsmjitCtl *c, void *cpu_ctx, uint32_t pc,
+                           uint32_t (*fetch)(uint32_t), uint32_t *out_newpc)
+{
+    if (!c || !c->picount) return 0; // exec env not wired -> JIT inactive
+    int cnt = 0, cyc = 0;
+    ArmBlockFn fn = arm7_aj_get(c, pc, fetch, &cnt, &cyc);
+    if (!fn) return 0;
+    if (c->chainEnabled) {
+        if (!c->dispatcher) aj_emit_dispatcher(c);
+        if (c->dispatcher) {
+            // the dispatcher looks the first block up again (cache hit) and
+            // charges each block -- including the first -- as it enters it
+            *out_newpc = ((ArmDispatchFn)c->dispatcher)(cpu_ctx, pc);
+            return 1;
+        }
+    }
+    // no chaining (kill switch / emission failure): single-block semantics
+    *out_newpc = fn(cpu_ctx);
+    *c->picount -= cyc;
+    return 1;
 }
 
 // ---- callback-mode memory self-tests --------------------------------------
@@ -2916,6 +3193,48 @@ static int jit_asmjit_controller_selftest(void)
     arm7_aj_untranslate(c, 0x1000u);
     int cnt3 = 0, cyc3 = 0;
     ok = ok && (arm7_aj_get(c, 0x1000u, test_fetch, &cnt3, &cyc3) != nullptr) && (cnt3 == 2);
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
+// Mid-block SMC invalidation: a write into the MIDDLE of a translated block
+// must retire it (not just a write to its start), including when several
+// overlapping blocks cover the written address; a write nothing covers is a no-op
+static int jit_asmjit_smc_midblock_selftest(void)
+{
+    static const uint32_t prog[] = {
+        0xE3A00001u, // [0x1000] MOV r0,#1
+        0xE3A01002u, // [0x1004] MOV r1,#2
+        0xE3A02003u, // [0x1008] MOV r2,#3
+        0xEAFFFFFEu, // [0x100C] B .
+    };
+    g_test_prog = prog;
+    g_test_base = 0x1000u;
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    int cnt = 0, cyc = 0;
+    ArmBlockFn fnA = arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc); // covers 0x1000-0x100C
+    bool ok = (fnA != nullptr) && (cnt == 4);
+    // Overlapping block, as if 0x1008 were also a branch target (Overlap is only possible in this order --
+    // a later block starting inside an earlier one; the reverse now JOINS instead, see step 4)
+    ArmBlockFn fnB = arm7_aj_get(c, 0x1008u, test_fetch, &cnt, &cyc); // covers 0x1008-0x100C
+    ok = ok && (fnB != nullptr) && (cnt == 2);
+    // (1) write nothing covers: no-op
+    arm7_aj_untranslate(c, 0x1100u);
+    ok = ok && c->retired.empty();
+    // (2) write covered by BOTH blocks (0x100C is in A's and B's span): both
+    //     retired in one call
+    arm7_aj_untranslate(c, 0x100Cu);
+    ok = ok && (c->retired.size() == 2);
+    // (3) both retranslate (the get drains the retired pair)
+    ArmBlockFn fnB2 = arm7_aj_get(c, 0x1008u, test_fetch, &cnt, &cyc);
+    ok = ok && (fnB2 != nullptr) && (cnt == 2) && c->retired.empty();
+    // (4) 0x1000 now JOINS the cached 0x1008 block instead of duplicating it:
+    //     2 instructions, not 4 (translate_block's isBlockStart probe)
+    ok = ok && (arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc) != nullptr) && (cnt == 2);
+    // (5) write into the middle of the prefix block only: it retires, B2 kept
+    arm7_aj_untranslate(c, 0x1004u);
+    ok = ok && (c->retired.size() == 1);
+    ok = ok && (arm7_aj_get(c, 0x1008u, test_fetch, &cnt, &cyc) == fnB2);
     arm7_aj_delete(c);
     return ok ? 1 : 0;
 }
@@ -3174,6 +3493,133 @@ static int jit_asmjit_memcb_irq_selftest(void)
     return (pc3 == 4u * (uint32_t)n && cpu3.r[2] == 0x55u && g_irq_flag == 0) ? 1 : 0;
 }
 
+// ---- block-chaining self-tests ---------------------------------------------
+// Two code regions so a chain can hop between blocks: A at 0x1000 branches to B
+// at 0x2000, which branches to 0x2800 (outside the controller range -> bail)
+namespace {
+int g_chain_icount = 0;
+const uint32_t g_chainA[] = { 0xE3A00001u, 0xEA0003FDu }; // MOV r0,#1 ; B 0x2000
+const uint32_t g_chainB[] = { 0xE3A01002u, 0xEA0001FDu }; // MOV r1,#2 ; B 0x2800
+uint32_t chain_fetch(uint32_t pc)
+{
+    if (pc >= 0x2000u) return g_chainB[(pc - 0x2000u) >> 2];
+    return g_chainA[(pc - 0x1000u) >> 2];
+}
+} // namespace
+
+// One arm7_aj_run call must chain through BOTH cached blocks (no C round trip),
+// charge the icount for both, and bail with the first un-runnable pc; with
+// chaining off it must execute exactly one block. A pc with no block returns 0
+static int jit_asmjit_chain_selftest(void)
+{
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2400u);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    if (!arm7_aj_get(c, 0x2000u, chain_fetch, &cnt, &cyc)) return 0; // pre-translate B (cyc 4)
+    ArmCpuSelfTest cpu{};
+    uint32_t newpc = 0;
+    g_chain_icount = 1000;
+    bool ok = arm7_aj_run(c, &cpu, 0x1000u, chain_fetch, &newpc) == 1;
+    // A (r0=1, 4 cycles) chained into B (r1=2, 4 cycles), bailed at 0x2800 (out of range)
+    ok = ok && (newpc == 0x2800u) && (cpu.r[0] == 1u) && (cpu.r[1] == 2u) && (g_chain_icount == 992);
+    // no block at 0x2800 (out of range) -> interpreter
+    ok = ok && (arm7_aj_run(c, &cpu, 0x2800u, chain_fetch, &newpc) == 0);
+    // kill switch: exactly one block per call
+    arm7_aj_set_chaining(c, 0);
+    ArmCpuSelfTest cpu2{};
+    g_chain_icount = 1000;
+    ok = ok && (arm7_aj_run(c, &cpu2, 0x1000u, chain_fetch, &newpc) == 1)
+            && (newpc == 0x2000u) && (cpu2.r[0] == 1u) && (cpu2.r[1] == 0u) && (g_chain_icount == 996);
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
+// Translation must STOP at an address that already starts a cached block
+// (no overlapping duplicate code); execution then chains through the existing
+// block via the dispatcher, producing the full result
+static int jit_asmjit_join_selftest(void)
+{
+    static const uint32_t prog[] = {
+        0xE3A00001u, // [0x1000] MOV r0,#1
+        0xE3A01002u, // [0x1004] MOV r1,#2
+        0xE3A02003u, // [0x1008] MOV r2,#3
+        0xEAFFFFFEu, // [0x100C] B .
+    };
+    g_test_prog = prog;
+    g_test_base = 0x1000u;
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    // translate the TAIL first (as if 0x1008 were a branch target)
+    if (!arm7_aj_get(c, 0x1008u, test_fetch, &cnt, &cyc) || cnt != 2) return 0;
+    // translating from 0x1000 must now stop AT 0x1008 (2 insns), not run past it (4)
+    if (!arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc) || cnt != 2 || cyc != 2) return 0;
+    // and a chained run executes prefix + tail as one arm7_aj_run call
+    ArmCpuSelfTest cpu{};
+    uint32_t newpc = 0;
+    g_chain_icount = 1000;
+    bool ok = arm7_aj_run(c, &cpu, 0x1000u, test_fetch, &newpc) == 1;
+    ok = ok && (newpc == 0x100Cu) && (cpu.r[0] == 1u) && (cpu.r[1] == 2u) && (cpu.r[2] == 3u)
+            && (g_chain_icount == 1000 - 2 - 4);
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
+// The dispatcher checks the cycle budget BEFORE each hop (the C loop's
+// while (ICOUNT > 0)): with exactly one block's budget, the chain must stop
+// after the first block even though the next one is cached
+static int jit_asmjit_chain_expiry_selftest(void)
+{
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2400u);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    if (!arm7_aj_get(c, 0x2000u, chain_fetch, &cnt, &cyc)) return 0;
+    ArmCpuSelfTest cpu{};
+    uint32_t newpc = 0;
+    g_chain_icount = 4; // exactly block A's cost
+    bool ok = arm7_aj_run(c, &cpu, 0x1000u, chain_fetch, &newpc) == 1;
+    ok = ok && (newpc == 0x2000u) && (cpu.r[0] == 1u) && (cpu.r[1] == 0u) && (g_chain_icount == 0);
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
+// A post-check exit (pending+unmasked IRQ at a STR) must end the chain
+// immediately with the irq flag still set for the C loop -- even though the
+// block at the resume pc is cached
+static int jit_asmjit_chain_irq_selftest(void)
+{
+    static const uint32_t prog[] = {
+        0xE3A00010u, // [0x1000] MOV r0,#16
+        0xE5801000u, // [0x1004] STR r1,[r0] -> pending IRQ -> post-check exit at 0x1008
+        0xE3A02055u, // [0x1008] MOV r2,#0x55 (own block too; must NOT run)
+        0xEAFFFFFEu, // [0x100C] B .
+    };
+    g_test_prog = prog;
+    g_test_base = 0x1000u;
+    for (int i = 0; i < 128; ++i) g_memcb_words[i] = 0;
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_mem_callbacks(c, memcb_r8, memcb_r16, memcb_r32, memcb_w8, memcb_w16, memcb_w32);
+    arm7_aj_set_irq_hooks(c, nullptr, &g_irq_zero, &g_irq_pending, &g_irq_zero, &g_irq_flag);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    if (!arm7_aj_get(c, 0x1008u, test_fetch, &cnt, &cyc)) return 0; // cache the resume-pc block
+    ArmCpuSelfTest cpu{}; // CPSR 0 -> IRQ unmasked
+    g_irq_pending = 1;
+    g_irq_flag = 0;
+    g_chain_icount = 1000;
+    uint32_t newpc = 0;
+    bool ok = arm7_aj_run(c, &cpu, 0x1000u, test_fetch, &newpc) == 1;
+    // The 0x1000 block stops at 0x1008 (already a cached block start -> join),
+    // so it is MOV+STR, cyc 1+2 = 3, charged in full on the post-check exit.
+    // The chain must NOT continue into the cached 0x1008 block (flag set)
+    ok = ok && (newpc == 0x1008u) && (cpu.r[0] == 16u) && (cpu.r[2] == 0u)
+            && (g_irq_flag == 1) && (g_chain_icount == 997);
+    g_irq_pending = 0;
+    g_irq_flag = 0;
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
 // The full self-test suite, in run order. Each entry is one of the static
 // jit_asmjit_*_selftest() functions above plus a short human-readable label.
 // Add a test by appending one row here -- the runner and the report pick it up
@@ -3213,7 +3659,12 @@ const SelfTest k_selftests[] = {
     { "SWP/SWPB",          jit_asmjit_swap_selftest },      // single data swap via the memory thunks
     { "MOVS/SUBS PC",      jit_asmjit_exret_selftest },     // exception return via the exc_return callback
     { "JIT controller",    jit_asmjit_controller_selftest },// JIT controller: map/translate/cache/invalidate
+    { "SMC mid-block",     jit_asmjit_smc_midblock_selftest },// write into a block's middle retires all covering blocks
     { "SMC self-inval",    jit_asmjit_smc_selfinval_selftest },// block untranslating itself mid-run (deferred release)
+    { "chain (2 blocks)",  jit_asmjit_chain_selftest },     // dispatcher chains cached blocks; kill switch; miss
+    { "block join",        jit_asmjit_join_selftest },      // translation stops at an existing block start (no dup)
+    { "chain expiry",      jit_asmjit_chain_expiry_selftest },// budget check before each hop stops the chain
+    { "chain IRQ bail",    jit_asmjit_chain_irq_selftest }, // post-check exit ends the chain, flag left for C
     { "cycle accounting",  jit_asmjit_cycles_selftest },    // legacy-JIT cycle model + stop-at-branch
 };
 const int k_selftest_count = (int)(sizeof(k_selftests) / sizeof(k_selftests[0]));

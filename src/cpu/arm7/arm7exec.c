@@ -164,20 +164,22 @@ extern unsigned at91_get_reg(int regnum);
 		pc = R15;
 
 #ifdef PINMAME_JIT_ASMJIT
-		// asmjit JIT: run a translated block if one is available for this PC, otherwise fall through
-		// to the interpreter for this instruction. The block mutates the register file in place and returns the next PC
+		// asmjit JIT: run translated code if available for this PC, otherwise fall through
+		// to the interpreter for this instruction. arm7_aj_run executes one block -- or,
+		// with chaining, a whole run of cached blocks without returning here between them
+		// -- mutates the register file in place, charges ARM7_ICOUNT itself, and returns
+		// the resume PC
 		if (ARM7.ajit)
 		{
-			int aj_n, aj_cyc;
-			arm7_block_fn aj_fn = arm7_aj_get((ArmAsmjitCtl *)ARM7.ajit, pc, arm7_aj_fetch, &aj_n, &aj_cyc);
-			if (aj_fn)
+			uint32_t aj_newpc;
+			if (arm7_aj_run((ArmAsmjitCtl *)ARM7.ajit, &ARM7.sArmRegister[0], pc, arm7_aj_fetch, &aj_newpc))
 			{
-				R15 = aj_fn(&ARM7.sArmRegister[0]);
-				ARM7_ICOUNT -= aj_cyc; // per-instruction cycle total (legacy-JIT model, see arm_insn_cycles)
-				// Match the interpreter's interrupt timing: vector only when the block
-				// exited at a single LDR/STR with a pending+unmasked abort/IRQ/FIQ (it set
-				// arm7_aj_irq_flag), not after every block -- the interpreter checks only
-				// after single data transfers (arm7exec.c case 4-7)
+				R15 = aj_newpc;
+				// Match the interpreter's interrupt timing: vector only when a block
+				// exited at a single LDR/STR with a pending+unmasked abort/IRQ/FIQ (it
+				// sets arm7_aj_irq_flag; such an exit also ends a chain), not after every
+				// block -- the interpreter checks only after single data transfers
+				// (arm7exec.c case 4-7)
 				if (arm7_aj_irq_flag) { arm7_aj_irq_flag = 0; ARM7_CHECKIRQ; }
 				continue;
 			}

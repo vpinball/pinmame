@@ -707,6 +707,15 @@ static void arm7_aj_wire_mem(void *ctl)
 	// MOVS PC / SUBS PC (exception return) support: SPSR restore + bank switch +
 	// IRQ check, mirroring the interpreter's HandleALU S=1/Rd=R15 path
 	arm7_aj_set_exc_return((ArmAsmjitCtl *)ctl, (const void *)&arm7_aj_exc_return);
+	// Cycle counter for arm7_aj_run, which charges ARM7_ICOUNT internally --
+	// the exec loop no longer subtracts -- enabling block chaining (see
+	// dispatcher in jit_asmjit.cpp)
+	arm7_aj_set_icount((ArmAsmjitCtl *)ctl, &ARM7_ICOUNT);
+#if defined(MAME_DEBUG) || (defined(USE_MAME_TIMERS) && !USE_MAME_TIMERS)
+	// Per-instruction debug / accuracy-hook builds must regain control between
+	// blocks: no chaining (each arm7_aj_run call executes a single block)
+	arm7_aj_set_chaining((ArmAsmjitCtl *)ctl, 0);
+#endif
 }
 #endif
 
