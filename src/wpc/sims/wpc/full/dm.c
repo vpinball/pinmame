@@ -535,7 +535,7 @@ CORE_CLONEDEF(dm,dh5b, lx4, "Demolition Man (DH-5B Coin Play LED Ghost Fix)",199
 CORE_CLONEDEF(dm,h6,   lx4, "Demolition Man (H-6)",1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6b,  lx4, "Demolition Man (H-6B Coin Play)",1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2019,"Williams",wpc_mDCSS,0) //L-6H patch 4d2b
-//CORE_CLONEDEF(dm,h7,   lx4, "Demolition Man (7.0 Vulgar Speech)",2022,"Williams",wpc_mDCSS,0) // 'official' follow up of H-6C
+//CORE_CLONEDEF(dm,h7,   lx4, "Demolition Man (7.0 Competition MOD Vulgar Speech)",2022,"Williams",wpc_mDCSS,0) // 'official'/commercial follow up of H-6C
 //7.0 without support for the home-sound/vulgar-speech roms also exists
 CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)",2014,"FreeWPC",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)",2014,"FreeWPC",wpc_mDCSS,0)

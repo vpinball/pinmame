@@ -145,17 +145,29 @@ INITGAMEFULL(hs, GEN_S11X, s11_dispS11, 0, FLIP_SWNO(37,38),
 S11_ROMSTART28(hs,l4,"hs_u26.l4", CRC(38b73830) SHA1(df89670f3df2b657dcf1f8ee08e506e54e016028),
                      "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594))
 S11XS_SOUNDROM88(    "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
-                     "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
+                     "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5)) // is this actually L-1 (see below, the Unidesa / Cirsa dump had 'Rev 1' on all rom labels)?
 S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
 S11_ROMEND
 #define input_ports_hs input_ports_s11
 
 S11_ROMSTART28(hs,l3,"u26-l3.rom",CRC(fd587959) SHA1(20fe6d7bd617b1fa886362ce520393a25be9a632),
-                     "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594))
+                     "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594)) //!! L-4?!
 S11XS_SOUNDROM88(    "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
                      "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
 S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
 S11_ROMEND
+
+S11_ROMSTART28(hs,l1,"hs_u26_rom_2_rev_1_2764.u26", CRC(e1777763) SHA1(bf06fa77f44e9c9f638c8e4b172b009d6596e934),           // this dump comes from a Unidesa / Cirsa board (licensed clone), identical to the Williams board (also same P/N)
+                     "high_speed_u27_rom_1_rev_1_27c256.u27", CRC(bea2881b) SHA1(1070472ecf5f09ed3b27b9b97ae5dac7a2b474bf)) //  very likely to match the (so far undumped) L-1 original Williams ROMs, but misses any proof
+S11XS_SOUNDROM88(    "high_speed_u21_sound_rom_1_rev_1_27c256.u21", CRC(dbd2374f) SHA1(3362da097d556c55c18bc013e9d9a65aa9e6d30d),
+                     "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))                             // matches the Unidesa / Cirsa board dumped "high_speed_u22_sound_rom_2_rev_1_27c256.u22"
+S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))                             // was NOT dumped/verified via a Unidesa / Cirsa machine, but could be the same
+S11_ROMEND
+// The Cirsa pinball has an additional Credit Conversion PCB with a 8035 CPU, an external 2716 EPROM, a 4 dip-switches bank and a 6.144 MHz xtal
+//ROM_REGION(0x800, "coins", ROMREGION_ERASEFF)
+//ROM_LOAD("conversor_creditos_2716.ic3", 0x0000, 0x0800, NO_DUMP) // Not dumped
+// Also has the text "Raymond Gay" engraved on the board (Ray worked to design the first solid state board system for Williams)
+// There are no Spanish or Cirsa / Unidesa strings in the ROMs
 
 S11_ROMSTART48(hs,p4g,"U26Proto4DE.BIN", CRC(c7d33a52) SHA1(bbf84d6927215c25bd7952fda6ad18c6b4657625), // had sticker with 'PROTO4' on it, but reports as G-4. Board came with a L-4 U27. Setting #51 changes text to german (which is stored in the additional 8k, compared to the english ROM sets).
                       "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594))
@@ -182,6 +194,7 @@ S11_ROMEND
 
 CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l3,l4, "High Speed (L-3)", 1986, "Williams", s11_mS11XS,0)
+CORE_CLONEDEF(hs,l1,l4, "High Speed (L-1 / Unidesa / Cirsa)", 1985, "Williams (Unidesa / Cirsa license)", s11_mS11XS,0)
 // there was a G-3 for sure (german handbook mentions it)
 CORE_CLONEDEF(hs,p4g,l4, "High Speed (G-4 / German PROTO4)", 1986, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l4c,l4, "High Speed (L-4C Competition MOD)", 2018, "Williams", s11_mS11XS,0)

@@ -9,10 +9,10 @@
  *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian & Carsten Waechter
  *
  *             - TODO: 1)Batman,ST25th and Hook set Mode 0 (after setting Mode 1), but still use reg mapping of Mode 1
- *             -       2)Remove DE Rom loading flag & fix in the drivers themselves.
- *                       This should also fix VGM recording (but needs sync with libvgm and MAME playback code!)
+ *             -       2)Remove DE Rom loading flag & fix in the drivers themselves
  *             -       3)Command 0x77 could be the sample rate/'pitch' for ADPCM? Or volume like it is now implemented (e.g. sound played when BSMT DMD animation comes on in stereo games: https://www.youtube.com/watch?v=2FtzLzbapZs)
- *             - DONE: 4)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
+ *             -       4)Alvin G.(Pistol Poker, Worldtour) does not reset/setup-the-mode correctly yet, thus both vgmwrite and the start in here feature hacks for that to setup/init Mode 5.
+ *             - DONE: 5)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
  **********************************************************************************************/
 
 #include <stdio.h>
@@ -122,6 +122,7 @@ struct BSMT2000Chip
 
 static uint16_t m_vgm_idx[MAX_BSMT2000];
 static uint16_t m_reg_vgm[MAX_BSMT2000];
+static INT8 * m_vgm_de_rom[MAX_BSMT2000]; // De-scrambled sample-ROM-copy handed to vgm_write_large_data(). vgmwrite only stores a pointer and writes the contents later
 
 
 /**********************************************************************************************
@@ -145,6 +146,14 @@ static void reset_compression_flags(struct BSMT2000Chip * const chip)
     voice->reg[REG_BANK] = 0xFE;
 }
 
+#ifdef PINMAME
+// Data East games load the sample ROMs in a permuted bank order, so the bank register is remapped on the fly during playback (see use_de_rom_banking)
+INLINE UINT16 de_rom_bank_remap(UINT16 bank)
+{
+    return (bank & 0x07) | ((bank & 0x18) << 1) | ((bank & 0x20) >> 2);
+}
+#endif
+
 /**************************************************
     set_mode - set the mode after reset
 ***************************************************/
@@ -159,7 +168,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
     default: // 119 happens sometimes
         break;
 
-		//BATMAN,ST25TH,Hook trigger sequence: mode 1 set, 0x7F,0x7E,0x7D,0x7C,0x7B,0x7A,..,0x6D, then mode 0 set but definetly use reg mapping of mode 1
+    //!! BATMAN,ST25TH,Hook trigger sequence: mode 1 set, 0x7F,0x7E,0x7D,0x7C,0x7B,0x7A,..,0x6D, then mode 0 set but definetly use reg mapping of mode 1
 #ifndef PINMAME
         /* mode 0: 24kHz, 12 channel PCM, 1 channel ADPCM, mono */
     case 0:
@@ -493,12 +502,12 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
 #endif /* PINMAME */
 
-        bsmt2000[i].sample_rate = intf->baseclock[i] / 1000.;
-        bsmt2000[i].clock = intf->baseclock[i];
+		bsmt2000[i].sample_rate = intf->baseclock[i] / 1000.;
+		bsmt2000[i].clock = intf->baseclock[i];
 
-        // guess initial mode from the parameters, should be not necessary, but f.e. Alvin G. reset is not wired yet, thus also no mode set!
-        bsmt2000[i].last_register = (bsmt2000[i].voices == 11) ? 1 : 5;
-        bsmt2000[i].mode = bsmt2000[i].last_register;
+		// guess initial mode from the parameters, should be not necessary, but e.g. Alvin G. reset is not wired/emulated yet, thus also no mode set!
+		bsmt2000[i].last_register = (bsmt2000[i].voices == 11) ? 1 : 5;
+		bsmt2000[i].mode = bsmt2000[i].last_register;
 
 		/* create the stream */
 		bsmt2000[i].stream = stream_init_multi(2, stream_name_ptrs, vol, bsmt2000[i].sample_rate, i, bsmt2000_update);
@@ -507,7 +516,40 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 
 		m_reg_vgm[i] = 0; //!!?
 		m_vgm_idx[i] = vgm_open(VGMC_BSMT2000, intf->baseclock[i]);
-		vgm_dump_sample_rom(m_vgm_idx[i], 0x01, intf->region[i]);
+#ifdef PINMAME
+		if (intf->use_de_rom_banking)
+		{
+			// DE games store the sample ROM in a permuted bank order and remap the bank register on the fly;
+			// VGM playback expects raw bank writes to index the ROM directly, so dump a de-scrambled copy to match the
+			// (unmodified) bank values recorded via vgm_write below. This matches what libvgm playback expects.
+			const UINT32 region_len = memory_region_length(intf->region[i]);
+			const int banks = (int)(region_len / 0x10000);
+			// vgm_write_large_data() only stores a pointer and writes the data later
+			INT8 * const __restrict descrambled = (INT8 *)malloc(region_len);
+			m_vgm_de_rom[i] = descrambled;
+			if (descrambled)
+			{
+				const INT8 * const __restrict src = (const INT8 *)memory_region(intf->region[i]);
+				int b;
+				memset(descrambled, 0, region_len);
+				for (b = 0; b < banks; b++)
+				{
+					const UINT16 srcbank = de_rom_bank_remap((UINT16)b);
+					if (srcbank < banks)
+						memcpy(descrambled + (size_t)b * 0x10000, src + (size_t)srcbank * 0x10000, 0x10000);
+				}
+				vgm_write_large_data(m_vgm_idx[i], 0x01, region_len, 0x00, 0x00, descrambled);
+			}
+#if LOG_COMMANDS
+			else // out of memory
+			{
+				logerror("Unable to descramble ROM for VGM export");
+			}
+#endif
+		}
+		else
+#endif
+			vgm_dump_sample_rom(m_vgm_idx[i], 0x01, intf->region[i]);
 
 		/* initialize the regions */
 		bsmt2000[i].region_base = (INT8 *)memory_region(intf->region[i]);
@@ -516,7 +558,14 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		/* init the voices */
 		init_all_voices(&bsmt2000[i]);
 		reset_compression_flags(&bsmt2000[i]);
-        set_mode(&bsmt2000[i], i);
+		set_mode(&bsmt2000[i], i);
+
+		// Record the initial mode into the VGM stream so the later-on used player employs the right
+		// register mapping/sample rate from the start. DE games (re-)issue this via BSMT2000_sh_reset(),
+		// but Alvin G. games whose reset is not wired/emulated yet (setting mode 5), would default to the
+		// wrong default mode and wrongly decode every register write (=garbled exported audio).
+		// Also note that this needs a patch in vgmwrite to make time 0 vgm writes work! (search for PinMAME)
+		vgm_write(m_vgm_idx[i], 0x01, 0x00, bsmt2000[i].last_register & 0x7f);
 	}
 
 	/* allocate memory */
@@ -537,10 +586,20 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 
 void BSMT2000_sh_stop(void)
 {
+	int i;
+
 	/* free memory */
 	if (scratch)
 		free(scratch);
 	scratch = NULL;
+
+	// free the de-scrambled VGM sample ROM copy
+	for (i = 0; i < MAX_BSMT2000; i++)
+		if (m_vgm_de_rom[i])
+		{
+			free(m_vgm_de_rom[i]);
+			m_vgm_de_rom[i] = NULL;
+		}
 }
 
 /**********************************************************************************************
@@ -604,10 +663,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip * const chip, offs_t offset, 
 	    if (chip->use_de_rom_banking && regindex == REG_BANK)
 	    {
 		    //DE GAMES HAVE FUNKY ROM LOADING - SO WE MESS WITH ROM BANK DATA TO MAKE IT WORK OUT
-		    UINT16 temp = (voice->reg[REG_BANK] & 0x07) |
-				         ((voice->reg[REG_BANK] & 0x18)<<1) |
-				         ((voice->reg[REG_BANK] & 0x20)>>2);
-		    voice->reg[REG_BANK] = temp;
+		    voice->reg[REG_BANK] = de_rom_bank_remap(voice->reg[REG_BANK]);
 	    }
 
 	    if (regindex == REG_RIGHTVOL)
@@ -636,12 +692,8 @@ static void bsmt2000_reg_write(struct BSMT2000Chip * const chip, offs_t offset, 
 			case 0x6f:
 				COMBINE_DATA(&voice->reg[REG_BANK]);
 #ifdef PINMAME
-				if(chip->use_de_rom_banking) {
-					UINT16 temp = (voice->reg[REG_BANK] & 0x07) |
-								 ((voice->reg[REG_BANK] & 0x18)<<1) |
-								 ((voice->reg[REG_BANK] & 0x20)>>2);
-					voice->reg[REG_BANK] = temp;
-				}
+				if(chip->use_de_rom_banking)
+					voice->reg[REG_BANK] = de_rom_bank_remap(voice->reg[REG_BANK]);
 #endif
 				break;
 

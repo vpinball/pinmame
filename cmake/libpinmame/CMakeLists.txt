@@ -78,7 +78,7 @@ endif()
 # toolchain support and only enabled for optimized configs (leaves Debug untouched)
 include(CheckIPOSupported)
 check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_MESSAGE LANGUAGES C CXX)
-if(IPO_SUPPORTED)
+if(IPO_SUPPORTED AND NOT MINGW)
    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
 else()
@@ -155,6 +155,9 @@ add_compile_definitions(
    HAS_COP420=1
    HAS_DAC=1
    HAS_YM2151_YMFM=1
+   HAS_YM3812_YMFM=1
+   HAS_YM3526_YMFM=1
+   HAS_YMF262_YMFM=1
    HAS_HC55516=1
    HAS_MC3417=1
    HAS_SAMPLES=1
@@ -172,15 +175,12 @@ add_compile_definitions(
    HAS_SP0250=1
    HAS_TMS320AV120=1
    HAS_M114S=1
-   HAS_YM3812=1
    HAS_S14001A=1
    HAS_YM2203=1
-   HAS_YM3526=1
    HAS_TMS5110=1
    HAS_SP0256=1
    HAS_Y8950=1
    HAS_ASTROCADE=1
-   HAS_YMF262=1
    HAS_MEA8000=1
    HAS_SAA1099=1
    HAS_QSOUND=1
@@ -429,8 +429,6 @@ set(PINMAME_SOURCES
    src/sound/votrax.h
    src/sound/ymdeltat.c
    src/sound/ymdeltat.h
-   src/sound/ymf262.c
-   src/sound/ymf262.h
    src/state.c
    src/state.h
    src/tilemap.c
@@ -686,6 +684,12 @@ set(PINMAME_SOURCES
 
    ext/ymfm/ymfm_opm.cpp
    ext/ymfm/ymfm_opm.h
+   ext/ymfm/ymfm_opl.cpp
+   ext/ymfm/ymfm_opl.h
+   ext/ymfm/ymfm_adpcm.cpp
+   ext/ymfm/ymfm_adpcm.h
+   ext/ymfm/ymfm_pcm.cpp
+   ext/ymfm/ymfm_pcm.h
 
    ext/zlib/adler32.c
    ext/zlib/compress.c
@@ -826,4 +830,13 @@ if(BUILD_STATIC)
          target_link_libraries(pinmame_test_s PUBLIC pinmame_static)
       endif()
    endif()
+endif()
+
+# --- asmjit-based ARM7 JIT backend
+include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
+if(TARGET pinmame_shared)
+   pinmame_enable_asmjit(pinmame_shared)
+endif()
+if(TARGET pinmame_static)
+   pinmame_enable_asmjit(pinmame_static)
 endif()

@@ -41,7 +41,7 @@ struct MachineSound
 #if (HAS_YM2610 || HAS_YM2610B)
 #include "sound/2610intf.h"
 #endif
-#if (HAS_YM3812 || HAS_YM3526 || HAS_Y8950)
+#if (HAS_YM3812 || HAS_YM3812_YMFM || HAS_YM3526 || HAS_Y8950)
 #include "sound/3812intf.h"
 #endif
 #if (HAS_YM2413)
@@ -147,7 +147,7 @@ struct MachineSound
 #if (HAS_BSMT2000)
 #include "sound/bsmt2000.h"
 #endif
-#if (HAS_YMF262)
+#if (HAS_YMF262 || HAS_YMF262_YMFM)
 #include "sound/262intf.h"
 #endif
 #if (HAS_YMF278B)
@@ -258,10 +258,10 @@ enum
 #if (HAS_YM2413)
 	SOUND_YM2413,
 #endif
-#if (HAS_YM3812)
+#if (HAS_YM3812 || HAS_YM3812_YMFM)
 	SOUND_YM3812,
 #endif
-#if (HAS_YM3526)
+#if (HAS_YM3526 || HAS_YM3526_YMFM)
 	SOUND_YM3526,
 #endif
 #if (HAS_YMZ280B)
@@ -372,7 +372,7 @@ enum
 #if (HAS_BSMT2000)
 	SOUND_BSMT2000,
 #endif
-#if (HAS_YMF262)
+#if (HAS_YMF262 || HAS_YMF262_YMFM)
 	SOUND_YMF262,
 #endif
 #if (HAS_YMF278B)

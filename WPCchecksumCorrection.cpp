@@ -20,7 +20,7 @@ static unsigned short getShort(const unsigned char* const ary, const unsigned in
 	return ((unsigned short)(ary[ofs]) << 8) | (unsigned short)(ary[ofs+1]);
 }
 
-static char* toHex(const unsigned char c)
+static const char* toHex(const unsigned char c)
 {
 	if (c <= 0xF)
 		return "0";
@@ -28,7 +28,7 @@ static char* toHex(const unsigned char c)
 		return "";
 }
 
-static char* toHex(const unsigned short c)
+static const char* toHex(const unsigned short c)
 {
 	if (c <= 0xF)
 		return "000";

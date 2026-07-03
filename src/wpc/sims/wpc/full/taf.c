@@ -517,7 +517,7 @@ WPC_ROMEND
 #define init_tafg        init_taf
 
 CORE_GAMEDEF(taf,l5,       "Addams Family, The (L-5)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,d5,l5,   "Addams Family, The (D-5 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d5,l5,   "Addams Family, The (D-5 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0) // weird one, it seems to be closer to L-7 than L-5: 'appears to be a version of taf_l7 with slightly different German translations'
 CORE_CLONEDEF(taf,l5c,l5,  "Addams Family, The (L-5C Competition + LED Ghost MOD)",2020,"Bally",wpc_mFliptronS,0) // patch 3901
 CORE_CLONEDEF(taf,p2,l5,   "Addams Family, The (P-2 Prototype)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,p3,l5,   "Addams Family, The (P-3 Prototype LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
@@ -538,20 +538,50 @@ CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix 
 CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1993,"Bally",wpc_mFliptronS,0) // Released only to a German distributor
 CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 // H-3 missing (or is it actually the one of the Gold Edition below? -> unlikely though)
-CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1994,"Bally",wpc_mFliptronS,0) //!! make this the GAMEDEF instead of L-5, apparently this is the recommended version with additional home settings?
+CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1994,"Bally",wpc_mFliptronS,0) //!! make this the GAMEDEF instead of L-5, apparently this is the recommended version with additional home settings? Its definetly the newest known one for TAF
 CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 // 6.0H missing
 // 7.0 missing
 
 CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition / Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,dx3,lx3,"Addams Family Special Collectors Edition / Gold, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition / Gold, The (H-3)",1994,"Bally",wpc_mFliptronS,0) // is it actually newer than LX-3/LA-3? (but only change apparently is 'Does not display "Free Play" when set to Free Play mode' -> needs verification), or is it just a MOD?
+CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition / Gold, The (H-3)",1994,"Bally",wpc_mFliptronS,0) // is it actually newer than LX-3/LA-3? (but only change apparently is 'Does not display "Free Play" when set to Free Play mode' -> needs verification), or is it just a MOD? The OS version definetly is the newest one, both for TAF and TAFG, so this should be really the most up-to-date overall
 CORE_CLONEDEF(tafg,i3,lx3, "Addams Family Special Collectors Edition / Gold, The (I-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,la2,lx3,"Addams Family Special Collectors Edition / Gold, The (LA-2)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,da2,lx3,"Addams Family Special Collectors Edition / Gold, The (DA-2 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,la3,lx3,"Addams Family Special Collectors Edition / Gold, The (LA-3)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,da3,lx3,"Addams Family Special Collectors Edition / Gold, The (DA-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 // L-1 missing
+// LX-2 missing
+
+// additional info:
+// WPC 20017, SYS 2.19 REV 13.2 (taf_p2)
+// WPC 20017, SYS 2.19 REV 13.3 (taf_p3)
+// WPC 20017, SYS 2.21 REV 0.1  (taf_l1)
+// WPC 20017, SYS 2.21 REV 7.6  (taf_d1)
+// WPC 20017, SYS 2.25 REV 0.2  (taf_l2)
+// WPC 20017, SYS 2.25 REV 7.6  (taf_d2)
+// WPC 20017, SYS 2.28 REV 0.3  (taf_l3)
+// WPC 20017, SYS 2.28 REV 7.6  (taf_d3)
+// WPC 20017, SYS 2.31 REV 0.4  (taf_l4)
+// WPC 20017, SYS 2.31 REV 7.6  (taf_d4)
+// WPC 20017, SYS 2.43 REV 0.5  (taf_d5)
+// WPC 20017, SYS 2.43 REV 0.7  (taf_l7)
+// WPC 20017, SYS 2.43 REV 7.6  (taf_d7)
+// WPC 20017, SYS 2.48 REV 0.5  (taf_l5)
+// WPC 20017, SYS 2.48 REV 0.5  (taf_l5c)
+// WPC 20017, SYS 2.55 REV 0.6  (taf_l6)
+// WPC 20017, SYS 2.55 REV 7.6  (taf_d6)
+// WPC 20017, SYS 3.21 REV 0.6  (taf_h4)
+// WPC 20017, SYS 3.21 REV 7.6  (taf_i4)
+// WPC 50038, SYS 3.15 REV 0.2  (tafg_la2)
+// WPC 50038, SYS 3.15 REV 7.6  (tafg_da2)
+// WPC 50038, SYS 3.24 REV 0.3  (tafg_la3)
+// WPC 50038, SYS 3.24 REV 0.3  (tafg_lx3)
+// WPC 50038, SYS 3.24 REV 7.6  (tafg_da3)
+// WPC 50038, SYS 3.24 REV 7.6  (tafg_dx3)
+// WPC 50038, SYS 3.29 REV 0.3  (tafg_h3)
+// WPC 50038, SYS 3.29 REV 7.6  (tafg_i3)
 
 /*----------
 / Game Data

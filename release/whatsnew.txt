@@ -15,6 +15,8 @@ Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, 
 
 Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect games
 
+Fixed debugger lockup when tabbing backwards
+
 VS2026 build support
 
 Get rid of BasicBitmap external dependency
@@ -45,20 +47,26 @@ Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in gen
 Slightly improved YM262 sound for Sir Lancelot
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Fixed VGM recording for machines using OKI6295 sound
-Added VGM recording for machines using BSMT2000 sound (WIP, as support is also WIP in libvgm,MAME-vgmplay,etc)
+Added VGM recording for machines using BSMT2000 sound
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
+Fixed noise filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
+Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
+Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, which enables JIT speedups on all x86 and x64 compiles/platforms (incl. Linux and macOS)
 
-*** ROM SUPPORT *** Thanks to Tom Collins, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar
+*** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org)
+New:
+IDSA: Fantastic Car
+
+Kinda new:
+Baywatch 4.02 (unofficial MOD)
+Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
+
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))
 Gottlieb: renamed Monte Carlo (German) to German rev.1
           renamed Monte Carlo (German Free Play) to German rev.1 Free Play
           renamed Monte Carlo (German Millions option, Free Play) to German rev.1 Millions option, Free Play
-
-Kinda new:
-Baywatch 4.02 (unofficial MOD)
-Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
 
 Clones:
 Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)
@@ -68,12 +76,13 @@ Arena (rev. 2) (most likely official, but unreleased so far, makes it the newest
 Atlantis (rev. 3 Tournament MOD v3931)
 Bad Cats LF-1 (French)
 Bad Cats (The Cat's Meow) (MOD 1.2 & 1.3)
+Corvette LA-2
 Cue Ball Wizard (Spanish / Vifico license)
 Diner LA-4 (Fixed Right Ramp MOD)
 Dragonfist (MOD 17)
 Funhouse 9.07H (LED Ghost Fix + Ballsaver MOD)
 Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
-High Speed (G-4 aka German PROTO4)
+High Speed G-4 (aka German PROTO4), L-1 (but coming from a Unidesa / Cirsa licensed board)
 Mata Hari (Free Play and MODified rules, 6 and 7 digit versions (latter requires DIP 19 on))
 Maverick 4.04 (German, Display 4.00)
 Monte Carlo (German) (most likely older revision than existing one, see above)
@@ -87,6 +96,7 @@ STTNG LX-9 (MOD) (using the special L-1 sound roms, note that the special callou
 Super Mario Bros. (Spanish / Vifico license) (rev.1 and (most likely) rev.2)
 Surf 'n Safari (Tournament MOD)
 Swords of Fury (Richrom/Lionman MOD V1, with and without swords sounds)
+Terminator 2: Judgment Day (L-2, P-1 Sound)
 Transporter the Rescue L-3 (Fixed Jackpot MOD), LX-4 (Competition MOD in 2 variants: 'adult' and clean (one replaced word))
 Victory (tournament/competition MOD 1.1 & 1.2 & 1.3)
 World Cup Soccer LA-1

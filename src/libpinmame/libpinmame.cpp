@@ -796,6 +796,9 @@ PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config)
 	options.samplerate = _p_Config->sampleRate;
 	options.skip_gameinfo = 1;
 	options.skip_disclaimer = 1;
+	// Enable the AT91 JIT (SAM games via sam.c, DE/Whitestar AT91 sound boards via desound.c;
+	// 1 = default address range). Only effective in builds that compile a JIT in
+	options.at91jit = 1;
 
 	setPath(FILETYPE_ROM, ComposePath(_p_Config->vpmPath, "roms"));
 	setPath(FILETYPE_NVRAM, ComposePath(_p_Config->vpmPath, "nvram"));

@@ -1247,13 +1247,6 @@ SOURCE=.\src\sound\ymdeltat.h
 # End Source File
 # End Group
 
-SOURCE=.\src\sound\ymf262.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ymf262.h
-# End Source File
-# End Group
 # Begin Group "VidHrdw"
 
 # PROP Default_Filter ""

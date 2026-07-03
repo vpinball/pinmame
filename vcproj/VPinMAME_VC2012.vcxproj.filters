@@ -1253,9 +1253,6 @@
     <ClCompile Include="..\src\win32com\WSHDlgCtrls.cpp">
       <Filter>Source Files\VPinMAME</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\sound\ymf262.c">
-      <Filter>Source Files\MAME\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\sound\262intf.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -2075,9 +2072,6 @@
       <Filter>Source Files\VPinMAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\sound\262intf.h">
-      <Filter>Source Files\MAME\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\sound\ymf262.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\src\wpc\dmddevice.h">

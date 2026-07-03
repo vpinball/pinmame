@@ -7,8 +7,9 @@
 ***************************************************************************/
 
 #include "driver.h"
-//#include "fm.h"
-
+#if defined(LISY_SUPPORT) || (defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4))
+ #include "fm.h"
+#endif
 #if (HAS_YM2151_ALT)
  #include "ym2151.h"
 #endif
@@ -21,7 +22,7 @@
 #if (HAS_YM2151_YMFM)
  #include "../ext/vgm/vgmwrite.h"
 
- void* ymfm_ym2151_create(void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param));
+ void* ymfm_ym2151_create(int baseindex, void(*irqhandler)(int irq), mem_write_handler porthandler, double baseclock, void(*callback)(int param));
  void ymfm_ym2151_destroy(void* obj);
 
  void ymfm_ym2151_reset(void* obj);
@@ -261,7 +262,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 
 			// DE & WMS needs irqhandler
 			// DE needs portwritehandler
-			chip[i] = ymfm_ym2151_create(intf->irqhandler[i], intf->portwritehandler[i], intf->baseclock, timercallback);
+			chip[i] = ymfm_ym2151_create(i*2, intf->irqhandler[i], intf->portwritehandler[i], intf->baseclock, timercallback);
 			vgm_idx[i] = vgm_open(VGMC_YM2151, intf->baseclock);
 
 			has_handler |= (intf->irqhandler[i] != 0) | (intf->portwritehandler[i] != 0);

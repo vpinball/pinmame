@@ -789,6 +789,19 @@ static struct {
         return (int)_InterlockedIncrement((volatile long*)ptr);
     }
 #elif defined(__GNUC__) || defined(__clang__)
+#if defined(__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 4) // non-atomic, but at least compiles
+    static inline int atomic_exchange_int(volatile int *ptr, int value)
+    {
+        int prev = *ptr;
+        *ptr = value;
+        return prev;
+    }
+    static inline int atomic_increment(volatile int* ptr)
+    {
+        *ptr += 1;
+        return *ptr;
+    }
+#else
     static inline int atomic_exchange_int(volatile int *ptr, int value)
     {
         return __atomic_exchange_n(ptr, value, __ATOMIC_SEQ_CST);
@@ -797,6 +810,7 @@ static struct {
     {
         return __atomic_add_fetch(ptr, 1, __ATOMIC_SEQ_CST);
     }
+#endif
 #else
     #error Unsupported compiler
 #endif
@@ -2807,8 +2821,31 @@ INLINE float cube(const float x)
   return x * x * x;
 }
 
-INLINE void core_eye_flicker_fusion(core_tPhysicOutput* output, const float emission)
+INLINE int/*bool*/ isFinite(const float x)
 {
+   union {
+      float f;
+      UINT32 u;
+   } v;
+   v.f = x;
+   return (v.u & 0x7F800000u) != 0x7F800000u;
+}
+
+INLINE void core_eye_flicker_fusion(core_tPhysicOutput* const output, const float emission)
+{
+   // Recursive IIR filter (output->value depends on previous values), so any
+   // non-finite value latches permanently. Recover from a non-finite
+   // state so a bad sample can't kill the output for the whole session
+   if (!isFinite(output->value)
+    || !isFinite(output->state.bulb.eye_integration[0]) || !isFinite(output->state.bulb.eye_integration[1]) || !isFinite(output->state.bulb.eye_integration[2]))
+   {
+      output->value = 0.f;
+      output->state.bulb.eye_integration[0] = 0.f;
+      output->state.bulb.eye_integration[1] = 0.f;
+      output->state.bulb.eye_integration[2] = 0.f;
+      output->state.bulb.eye_emission_old = 0.f;
+   }
+
    // Compute the perceived emission using a hacky simplified eye integration model
    // We want to model the flicker-fusion eye/brain behavior while keeping the output latency low (filter delay) and limit the flicker (still keeping it, if it can be seen on the real machine)
    // Note that videos can not be used as references for fitting the model since the camera perform a different luminance integration. Comparisons are only valid with real humans looking at real PWM/strobed incandescent bulbs.
@@ -2845,9 +2882,13 @@ static const double BULB_INTEGRATION_PERIOD = 0.001; // do the integration in a 
 // isFlip signals a state flip, BUT we track this internally anyways now
 void core_update_pwm_output_bulb(const double now, const int index, const int isFlip, const int state)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
   const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
-  const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
+  // Clamp elapsed time to >= 0. On the consumer-driven ("on request") path, the
+  // stable step's now == global_offset (timer_starttime of a zeroed timer) can lag
+  // the emu-thread flip timestamps (timer_get_time), planting integrationTimestamp
+  // behind prevIntegrationTimestamp -> negative dt. No-op in normal operation.
+  const float dt_diff = fmaxf(0.f, (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp));
 
   float countf;
   if (U != output->state.bulb.prevIntegrationValue) {
@@ -2915,9 +2956,12 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 // isFlip signals a state flip, BUT we track this internally anyways now
 void core_update_pwm_output_led(const double now, const int index, const int isFlip, const int state)
 {
-  core_tPhysicOutput* output = &coreGlobals.physicOutputState[index];
+  core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
   const float power = state ? output->state.bulb.relative_brightness : 0.f;
-  const float dt_diff = (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp);
+  // Clamp elapsed time to >= 0 (see core_update_pwm_output_bulb). A negative dt
+  // here feeds sqrtf() below -> NaN emission, which the recursive eye-flicker IIR
+  // then perpetuates forever (permanent dead segment cell). No-op in normal op.
+  const float dt_diff = fmaxf(0.f, (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp));
 
   if(power != output->state.bulb.prevIntegrationValue    // state flip?
      || dt_diff >= (float)(BULB_INTEGRATION_PERIOD*20.)) // or we waited long enough to get a stable discrete integration

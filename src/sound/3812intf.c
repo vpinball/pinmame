@@ -21,12 +21,132 @@
 #include "fm.h"
 #include "sound/fmopl.h"
 
+#if (HAS_YM3812_YMFM || HAS_YM3526_YMFM)
+ #include "../ext/vgm/vgmwrite.h"
+ // unified ymfm OPL glue (see ext/ymfm/ymfm_opl_pinmame_specific.h)
+ void* ymfm_opl_create(int chiptype, int baseindex, void(*irqhandler)(int irq), double baseclock, void(*callback)(int param));
+ void ymfm_opl_destroy(void* obj);
+ void ymfm_opl_reset(void* obj);
+ void ymfm_opl_callback(void* obj, int param);
+ void ymfm_opl_invalidate_caches(void* obj);
+ unsigned char ymfm_opl_read(void* obj, unsigned int offset);
+ void ymfm_opl_write(void* obj, unsigned int offset, unsigned char data);
+ void ymfm_opl_generate(void* obj, INT16** output, unsigned int numsamples, unsigned int numch);
+ // chip-type enum, mirror of ymfm_opl_pinmame_specific.h
+ #define YMFM_OPL_YM3526 0
+ #define YMFM_OPL_YM3812 1
+ #define YMFM_OPL_YMF262 2
+#endif
 
-#if (HAS_YM3812)
+
+#if (HAS_YM3812 || HAS_YM3812_YMFM)
 
 static int  stream_3812[MAX_3812];
-static void *Timer_3812[MAX_3812*2];
 static const struct YM3812interface *intf_3812 = NULL;
+
+#if (HAS_YM3812_YMFM)
+static void *chip_3812[MAX_3812];
+static unsigned short vgm_idx_3812[MAX_3812];
+static UINT8 lastreg_3812[MAX_3812];
+
+static void YM3812UpdateYMFM(int num, INT16 *buffer, int length)
+{
+	INT16 *buffers[1] = { buffer };
+	ymfm_opl_generate(chip_3812[num], buffers, length, 1);
+}
+static void timercallback_3812(int timer_num)
+{
+	// timer_num encodes (chip*2 + timer); see ymfm glue
+	ymfm_opl_callback(chip_3812[timer_num/2], timer_num%2);
+}
+
+int YM3812_sh_start(const struct MachineSound *msound)
+{
+	int i;
+	double rate;
+
+	intf_3812 = msound->sound_interface;
+	if( intf_3812->num > MAX_3812 ) return 1;
+
+	rate = intf_3812->baseclock/72.;
+
+	for (i = 0;i < intf_3812->num;i++)
+	{
+		char name[40];
+		int vol = intf_3812->mixing_level[i];
+		sprintf(name,"%s #%d",sound_name(msound),i);
+
+		stream_3812[i] = stream_init(name,vol,rate,i,YM3812UpdateYMFM);
+
+		// glue passes 1/0 == ASSERT_LINE/CLEAR_LINE, matching the driver handler
+		chip_3812[i] = ymfm_opl_create(YMFM_OPL_YM3812, i*2, intf_3812->handler[i], intf_3812->baseclock, timercallback_3812);
+		vgm_idx_3812[i] = vgm_open(VGMC_YM3812, intf_3812->baseclock);
+		lastreg_3812[i] = 0;
+	}
+	return 0;
+}
+
+void YM3812_sh_stop(void)
+{
+	int i;
+	for (i = 0;i < intf_3812->num;i++)
+		ymfm_opl_destroy(chip_3812[i]);
+}
+
+void YM3812_sh_reset(void)
+{
+	int i;
+	for (i = 0;i < intf_3812->num;i++)
+	{
+		ymfm_opl_invalidate_caches(chip_3812[i]);
+		ymfm_opl_reset(chip_3812[i]);
+	}
+}
+
+static void YM3812Write_ymfm(int n, int a, int v)
+{
+	if (a & 1) /* data port */
+	{
+		vgm_write(vgm_idx_3812[n], 0x00, lastreg_3812[n], v);
+		ymfm_opl_write(chip_3812[n], 1, v);
+	}
+	else /* control / address port */
+	{
+		lastreg_3812[n] = v;
+		ymfm_opl_write(chip_3812[n], 0, v);
+	}
+}
+
+WRITE_HANDLER( YM3812_control_port_0_w ) {
+	YM3812Write_ymfm(0, 0, data);
+}
+WRITE_HANDLER( YM3812_write_port_0_w ) {
+	YM3812Write_ymfm(0, 1, data);
+}
+READ_HANDLER( YM3812_status_port_0_r ) {
+	return ymfm_opl_read(chip_3812[0], 0);
+}
+READ_HANDLER( YM3812_read_port_0_r ) {
+	return ymfm_opl_read(chip_3812[0], 1);
+}
+
+
+WRITE_HANDLER( YM3812_control_port_1_w ) {
+	YM3812Write_ymfm(1, 0, data);
+}
+WRITE_HANDLER( YM3812_write_port_1_w ) {
+	YM3812Write_ymfm(1, 1, data);
+}
+READ_HANDLER( YM3812_status_port_1_r ) {
+	return ymfm_opl_read(chip_3812[1], 0);
+}
+READ_HANDLER( YM3812_read_port_1_r ) {
+	return ymfm_opl_read(chip_3812[1], 1);
+}
+
+#else /* legacy fmopl.c core */
+
+static void *Timer_3812[MAX_3812*2];
 static void IRQHandler_3812(int n,int irq)
 {
 	if (intf_3812->handler[n]) (intf_3812->handler[n])(irq ? ASSERT_LINE : CLEAR_LINE);
@@ -132,14 +252,118 @@ READ_HANDLER( YM3812_read_port_1_r ) {
 	return YM3812Read(1, 1);
 }
 
+#endif /* HAS_YM3812_YMFM */
+
 #endif
 
 
-#if (HAS_YM3526)
+#if (HAS_YM3526 || HAS_YM3526_YMFM)
 
 static int  stream_3526[MAX_3526];
-static void *Timer_3526[MAX_3526*2];
 static const struct YM3526interface *intf_3526 = NULL;
+
+#if (HAS_YM3526_YMFM)
+static void *chip_3526[MAX_3526];
+static unsigned short vgm_idx_3526[MAX_3526];
+static UINT8 lastreg_3526[MAX_3526];
+
+static void YM3526UpdateYMFM(int num, INT16 *buffer, int length)
+{
+	INT16 *buffers[1] = { buffer };
+	ymfm_opl_generate(chip_3526[num], buffers, length, 1);
+}
+
+static void timercallback_3526(int timer_num)
+{
+	ymfm_opl_callback(chip_3526[timer_num/2], timer_num%2);
+}
+
+int YM3526_sh_start(const struct MachineSound *msound)
+{
+	int i;
+	double rate;
+
+	intf_3526 = msound->sound_interface;
+	if( intf_3526->num > MAX_3526 ) return 1;
+
+	rate = intf_3526->baseclock/72.;
+
+	for (i = 0;i < intf_3526->num;i++)
+	{
+		char name[40];
+		int vol = intf_3526->mixing_level[i];
+		sprintf(name,"%s #%d",sound_name(msound),i);
+
+		stream_3526[i] = stream_init(name,vol,rate,i,YM3526UpdateYMFM);
+
+		chip_3526[i] = ymfm_opl_create(YMFM_OPL_YM3526, i*2, intf_3526->handler[i], intf_3526->baseclock, timercallback_3526);
+		vgm_idx_3526[i] = vgm_open(VGMC_YM3526, intf_3526->baseclock);
+		lastreg_3526[i] = 0;
+	}
+	return 0;
+}
+
+void YM3526_sh_stop(void)
+{
+	int i;
+	for (i = 0;i < intf_3526->num;i++)
+		ymfm_opl_destroy(chip_3526[i]);
+}
+
+void YM3526_sh_reset(void)
+{
+	int i;
+	for (i = 0;i < intf_3526->num;i++)
+	{
+		ymfm_opl_invalidate_caches(chip_3526[i]);
+		ymfm_opl_reset(chip_3526[i]);
+	}
+}
+
+static void YM3526Write_ymfm(int n, int a, int v)
+{
+	if (a & 1) /* data port */
+	{
+		vgm_write(vgm_idx_3526[n], 0x00, lastreg_3526[n], v);
+		ymfm_opl_write(chip_3526[n], 1, v);
+	}
+	else /* control / address port */
+	{
+		lastreg_3526[n] = v;
+		ymfm_opl_write(chip_3526[n], 0, v);
+	}
+}
+
+WRITE_HANDLER( YM3526_control_port_0_w ) {
+	YM3526Write_ymfm(0, 0, data);
+}
+WRITE_HANDLER( YM3526_write_port_0_w ) {
+	YM3526Write_ymfm(0, 1, data);
+}
+READ_HANDLER( YM3526_status_port_0_r ) {
+	return ymfm_opl_read(chip_3526[0], 0);
+}
+READ_HANDLER( YM3526_read_port_0_r ) {
+	return ymfm_opl_read(chip_3526[0], 1);
+}
+
+
+WRITE_HANDLER( YM3526_control_port_1_w ) {
+	YM3526Write_ymfm(1, 0, data);
+}
+WRITE_HANDLER( YM3526_write_port_1_w ) {
+	YM3526Write_ymfm(1, 1, data);
+}
+READ_HANDLER( YM3526_status_port_1_r ) {
+	return ymfm_opl_read(chip_3526[1], 0);
+}
+READ_HANDLER( YM3526_read_port_1_r ) {
+	return ymfm_opl_read(chip_3526[1], 1);
+}
+
+#else /* legacy fmopl.c core */
+
+static void *Timer_3526[MAX_3526*2];
 
 /* IRQ Handler */
 static void IRQHandler_3526(int n,int irq)
@@ -244,6 +468,8 @@ READ_HANDLER( YM3526_status_port_1_r ) {
 READ_HANDLER( YM3526_read_port_1_r ) {
 	return YM3526Read(1, 1);
 }
+
+#endif /* HAS_YM3526_YMFM */
 
 #endif
 

@@ -111,7 +111,7 @@ INLINE data16_t arm7_cpu_read16( int addr );
 INLINE data8_t arm7_cpu_read8( int addr );
 
 /***************************************************************************
- * Default Memory Handlers 
+ * Default Memory Handlers
  ***************************************************************************/
 INLINE void arm7_cpu_write32( int addr, data32_t data )
 {
@@ -448,7 +448,7 @@ static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 				UINT32 data = READ32(rbv += 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
-						SET_REGISTER( 15, data );
+						SET_REGISTER( 15, data & ~3 ); /* PC bits 1:0 ignored in ARM state */
 					//else /* Pull only address, preserve mode & status flags */
 					//	SET_REGISTER( 15, data );
 				} else
@@ -476,7 +476,7 @@ static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 			UINT32 data = READ32(rbv += 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
-					SET_MODE_REGISTER(mode, 15, data);
+					SET_MODE_REGISTER(mode, 15, data & ~3); /* PC bits 1:0 ignored in ARM state */
 				//else /* Pull only address, preserve mode & status flags */
 				//	SET_MODE_REGISTER(mode, 15, data);
 			} else
@@ -502,7 +502,7 @@ static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 				UINT32 data = READ32(rbv -= 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
-						SET_REGISTER( 15, data );
+						SET_REGISTER( 15, data & ~3 ); /* PC bits 1:0 ignored in ARM state */
 					//else /* Pull only address, preserve mode & status flags */
 					//	SET_REGISTER( 15, data );
 				}
@@ -530,7 +530,7 @@ static int loadDecMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 			UINT32 data = READ32(rbv -= 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
-					SET_MODE_REGISTER(mode, 15, data);
+					SET_MODE_REGISTER(mode, 15, data & ~3); /* PC bits 1:0 ignored in ARM state */
 				//else /* Pull only address, preserve mode & status flags */
 				//	SET_MODE_REGISTER(mode, 15, data);
 			}
@@ -640,6 +640,85 @@ static int storeDecMode(data32_t pat, data32_t rbv, int mode)
  *                            Main CPU Funcs
  ***************************************************************************/
 
+#include "windows/jit_asmjit.h" // asmjit JIT controller C API (no-op unless PINMAME_JIT_ASMJIT)
+#ifdef PINMAME_JIT_ASMJIT
+// Instruction fetch used by the asmjit translator
+static uint32_t arm7_aj_fetch(uint32_t pc) { return cpu_readop32(pc); }
+// Real memory read/write thunks the asmjit JIT calls from translated blocks. They MUST
+// go through the interpreter's READ*/WRITE* macros, NOT arm7_cpu_* directly: an AT91
+// build (at91.c) #defines those macros to at91_cpu_*, which route the on-chip peripheral
+// region (addr >= 0xFFC00000) to internal_read/internal_write (AIC, timers, USART, remap).
+// Calling arm7_cpu_* directly would bypass that, so a JIT peripheral access (e.g. the AIC
+// EOICR store that ends an IRQ) would never reach the device. Via the macros the JIT and
+// interpreter share one memory path per TU (arm7_cpu_* for plain ARM7, at91_cpu_* for AT91).
+// Uniform uint32_t signatures keep the call ABI uniform; static (arm7core.c is #included
+// into multiple CPU TUs); wired via arm7_aj_set_mem_callbacks
+static uint32_t arm7_aj_r8 (uint32_t addr) { return READ8((int)addr); }
+static uint32_t arm7_aj_r16(uint32_t addr) { return READ16((int)addr); }
+static uint32_t arm7_aj_r32(uint32_t addr) { return READ32((int)addr); }
+// Each store also invalidates any translated block covering the written address
+// (self-modifying code). The interpreter does this in HandleMemSingle for STR; the
+// JIT executes stores through these thunks instead, so the invalidation must happen
+// here too -- otherwise a store into already-translated code leaves a stale block
+static void     arm7_aj_w8 (uint32_t addr, uint32_t data) { WRITE8 ((int)addr, (data8_t)data);  arm7_aj_untranslate((ArmAsmjitCtl *)ARM7.ajit, addr); }
+static void     arm7_aj_w16(uint32_t addr, uint32_t data) { WRITE16((int)addr, (data16_t)data); arm7_aj_untranslate((ArmAsmjitCtl *)ARM7.ajit, addr); }
+static void     arm7_aj_w32(uint32_t addr, uint32_t data) { WRITE32((int)addr, (data32_t)data); arm7_aj_untranslate((ArmAsmjitCtl *)ARM7.ajit, addr); }
+
+// Exception return (MOVS PC / SUBS PC,LR,...), called by translated blocks:
+// restore CPSR from the current mode's SPSR, switch banks, set the new PC
+// (bits 1:0 ignored), and run the IRQ check -- exactly the interpreter's
+// HandleALU S=1/Rd=R15 sequence. Returns the FINAL PC (ARM7_CHECKIRQ may have
+// vectored), which the block returns to the exec loop as the resume address
+static uint32_t arm7_aj_exc_return(uint32_t newpc)
+{
+	if (GET_MODE != eARM7_MODE_USER)
+	{
+		SET_CPSR(GET_REGISTER(SPSR));
+		SwitchMode(GET_MODE);
+	}
+	R15 = newpc & ~3;
+	ARM7_CHECKIRQ;
+	return R15;
+}
+
+// Set to 1 by a translated block when it exits at a single LDR/STR with a
+// pending+unmasked abort/IRQ/FIQ. The JIT exec loop vectors interrupts only when this
+// flag is set, matching the interpreter -- which runs ARM7_CHECKIRQ only after a single
+// data transfer (arm7exec.c case 4-7), not after branch/ALU/LDM/STM/halfword. Transient:
+// set by the block, consumed by the exec loop on the same iteration
+static data8_t arm7_aj_irq_flag = 0;
+// Install the thunks into a controller. Defined here (where the thunks live) and
+// called from the CPU-specific init (e.g. at91_init_jit). Its address is taken in
+// arm7_core_init so this wrapper -- and hence all six thunks -- count as "used" in
+// every TU that #includes arm7core.c (arm7.c as well as at91.c), avoiding
+// unused-static warnings in cores that don't create a JIT controller
+static void arm7_aj_wire_mem(void *ctl)
+{
+	arm7_aj_set_mem_callbacks((ArmAsmjitCtl *)ctl, arm7_aj_r8, arm7_aj_r16, arm7_aj_r32, arm7_aj_w8, arm7_aj_w16, arm7_aj_w32);
+	// Abort/IRQ hooks (legacy gen_test_abort/gen_test_irq parity): after a single data
+	// transfer a translated block exits to the emulator so a pending+unmasked abort/IRQ/FIQ
+	// vectors, matching the interpreter's per-LDR/STR ARM7_CHECKIRQ
+	arm7_aj_set_irq_hooks((ArmAsmjitCtl *)ctl, (const void *)&arm7_check_irq_state,
+		(const void *)&ARM7.pendingAbtD, (const void *)&ARM7.pendingIrq, (const void *)&ARM7.pendingFiq, (const void *)&arm7_aj_irq_flag);
+	// MRS/MSR support: translated blocks call the interpreter's own PSR-transfer
+	// handler with the raw instruction word, so semantics (SPSR banking, field
+	// masks, SwitchMode) are identical to interpreted execution by construction
+	arm7_aj_set_psr_transfer((ArmAsmjitCtl *)ctl, (const void *)&HandlePSRTransfer);
+	// MOVS PC / SUBS PC (exception return) support: SPSR restore + bank switch +
+	// IRQ check, mirroring the interpreter's HandleALU S=1/Rd=R15 path
+	arm7_aj_set_exc_return((ArmAsmjitCtl *)ctl, (const void *)&arm7_aj_exc_return);
+	// Cycle counter for arm7_aj_run, which charges ARM7_ICOUNT internally --
+	// the exec loop no longer subtracts -- enabling block chaining (see
+	// dispatcher in jit_asmjit.cpp)
+	arm7_aj_set_icount((ArmAsmjitCtl *)ctl, &ARM7_ICOUNT);
+#if defined(MAME_DEBUG) || (defined(USE_MAME_TIMERS) && !USE_MAME_TIMERS)
+	// Per-instruction debug / accuracy-hook builds must regain control between
+	// blocks: no chaining (each arm7_aj_run call executes a single block)
+	arm7_aj_set_chaining((ArmAsmjitCtl *)ctl, 0);
+#endif
+}
+#endif
+
 //CPU INIT
 static void arm7_core_init(const char *cpuname)
 {
@@ -662,36 +741,60 @@ static void arm7_core_init(const char *cpuname)
 		ARM7.jit,
 		PTR_READ8, PTR_READ16, PTR_READ32,
 		PTR_WRITE8, PTR_WRITE16, PTR_WRITE32);
+
+	// asmjit JIT controller: create the POINTER here (empty range), so it is captured
+	// in the post-reset CPU-context snapshot and survives set_context (which
+	// memcpy's the whole register struct). The opcode RANGE is configured later by
+	// the CPU-specific init (e.g. at91_init_jit) via arm7_aj_set_range, which mutates
+	// this object WITHOUT changing the pointer
+#ifdef PINMAME_JIT_ASMJIT
+	ARM7.ajit = arm7_aj_create(0, 0);
+	(void)&arm7_aj_wire_mem; // keep the JIT mem thunks "used" in every TU including this file
+#else
+	ARM7.ajit = 0;
+#endif
 }
 
 //CPU EXIT
 static void arm7_core_exit(void)
 {
 	jit_delete(&ARM7.jit);
+#ifdef PINMAME_JIT_ASMJIT
+	arm7_aj_delete((ArmAsmjitCtl *)ARM7.ajit);
+	ARM7.ajit = 0;
+#endif
 }
 
 //CPU RESET
 static void arm7_core_reset(void *param)
 {
-	/* save the JIT object, so that we don't lose it when clearing the registers */
+	/* save the JIT objects, so that we don't lose them when clearing the registers */
 	struct jit_ctl *jit = ARM7.jit;
+	void *ajit = ARM7.ajit;
 
 	/* reset the machine registers */
 	memset(&ARM7, 0, sizeof(ARM7));
 
-	/* 
+	/*
 	 *   Reset the JIT and restore our context pointer to it.  We have to
 	 *   reset the JIT because resetting the ARM emulation restores the boot
-	 *   RAM, which invalidates any translated code. 
+	 *   RAM, which invalidates any translated code.
 	 */
 	jit_reset(jit);
 	ARM7.jit = jit;
+	ARM7.ajit = ajit;
+#ifdef PINMAME_JIT_ASMJIT
+	arm7_aj_reset((ArmAsmjitCtl *)ajit);
+	// Reset restores the boot RAM (un-remaps page 0), so disable the JIT again until
+	// the next RAM->page-0 remap re-enables it -- never translate pre-remap boot code
+	arm7_aj_set_enabled((ArmAsmjitCtl *)ajit, 0);
+#endif
 
 	/* start up in SVC mode with interrupts disabled. */
 	SwitchMode(eARM7_MODE_SVC);
 	SET_CPSR(GET_CPSR | I_MASK | F_MASK);
 	R15 = 0;
-    //change_pc(R15);
+	//change_pc(R15);
 }
 
 //Execute used to be here.. moved to separate file (arm7exec.c) to be included by cpu cores separately
@@ -1054,7 +1157,8 @@ static void HandleMemSingle( data32_t insn )
 			{
 				if (rd == eR15)
 				{
-					R15 = data - 4;
+					// ARM7TDMI ignores bits 1:0 of a value loaded into the PC in ARM state (no Thumb here)
+					R15 = (data & ~3) - 4;
 					//LDR, PC takes 2S + 2N + 1I (5 total cycles)
 					ARM7_ICOUNT -= 2;
 				}
@@ -1089,6 +1193,9 @@ static void HandleMemSingle( data32_t insn )
 #if JIT_ENABLED
 			// This is to handle code in self-modifying color patches.
 			jit_untranslate(ARM7.jit, rnv);
+#endif
+#ifdef PINMAME_JIT_ASMJIT
+			arm7_aj_untranslate((ArmAsmjitCtl *)ARM7.ajit, rnv);
 #endif
 		}
 		//Store takes only 2 N Cycles, so add + 1
@@ -1591,8 +1698,10 @@ static void HandleALU( data32_t insn )
 		if (!(insn & INSN_S))
 			sc = 0;
 
-		// extra cycle (register specified shift)
-		ARM7_ICOUNT -= 1;
+		// extra cycle ONLY for a register-specified shift amount (bit4=1), per the
+		// 1S+1I model above - a register op2 with an immediate shift is still 1S
+		if (insn & (1u << 4))
+			ARM7_ICOUNT -= 1;
 	}
 
 	// LD TODO this comment is wrong
@@ -1682,7 +1791,8 @@ static void HandleALU( data32_t insn )
 		//If Rd = R15, but S Flag not set, Result is placed in R15, but CPSR is not affected (page 44)
 		if (rdn == eR15 && !(insn & INSN_S))
 		{
-			R15 = rd;
+			// ARM7TDMI ignores bits 1:0 of a result written to the PC in ARM state (no Thumb here)
+			R15 = rd & ~3;
 
 			// extra cycles (PC written)
 			ARM7_ICOUNT -= 2;
@@ -1703,8 +1813,9 @@ static void HandleALU( data32_t insn )
 					SwitchMode(GET_MODE);
 				}
 
-				R15 = rd;
-				
+				// PC bits 1:0 ignored in ARM state, as above (the restored CPSR can't set the T bit - Thumb is not implemented in this core)
+				R15 = rd & ~3;
+
 				// extra cycles (PC written)
 				ARM7_ICOUNT -= 2;
 

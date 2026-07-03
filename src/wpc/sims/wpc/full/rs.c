@@ -560,6 +560,10 @@ WPC_ROMSTART(rs,l6c,"Road Show U6 game ROM rev L-6 patch ccd1.rom",0x80000,CRC(d
 RS_SOUND_L1
 WPC_ROMEND
 
+//WPC_ROMSTART(rs,70, "Road Show U6 game ROM rev 7.0.rom",0x80000,CRC(0a560e79) SHA1(c718a3842d5b33504b9703b0f37caa1022240fbb))
+//RS_SOUND_L1
+//WPC_ROMEND
+
 WPC_ROMSTART(rs,la5,"u6_la5.rom",0x80000,CRC(61e63268) SHA1(79e32f489c51e7e79e892d36f586af14ab9aa2a5))
 RS_SOUND_L1
 WPC_ROMEND
@@ -624,6 +628,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(rs,l6,       "Red and Ted's Road Show (L-6)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,l6c,l6,  "Red and Ted's Road Show (L-6C Competition MOD)",2019,"Williams",wpc_mSecurityS,0) //rev. L-6 patch ccd1
+//CORE_CLONEDEF(rs,70, l6,  "Red and Ted's Road Show (7.0 Competition MOD)",2020,"Williams",wpc_mSecurityS,0)  //official/commercial Soren release
 CORE_CLONEDEF(rs,la5,l6,  "Red and Ted's Road Show (LA-5)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,da5,l6,  "Red and Ted's Road Show (DA-5 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx5,l6,  "Red and Ted's Road Show (LX-5)",1994,"Williams",wpc_mSecurityS,0)

@@ -49,6 +49,26 @@ copy /V /-Y "LibPinMAMETest_VC2015.vcxproj.filters" "LibPinMAMETest_VC2022.vcxpr
 @cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"LibPinMAMETest_VC2022.vcxproj" /out:"LibPinMAMETest_VC2022.vcxproj"
 @if errorlevel 1 goto manual
 
+@rem --- enable asmjit-based ARM7 JIT (PINMAME_JIT_ASMJIT) as v141+ toolset is C++17-capable
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"LibPinMAME_VC2022.vcxproj" /out:"LibPinMAME_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"PinMAME_VC2022.vcxproj" /out:"PinMAME_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"PinMAME32_VC2022.vcxproj" /out:"PinMAME32_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"VPinMAME_VC2022.vcxproj" /out:"VPinMAME_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+
+@rem --- define PINMAME_JIT_ASMJIT project-wide so the C sources (arm7core.c) see the asmjit hooks
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"LibPinMAME_VC2022.vcxproj" /out:"LibPinMAME_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"PinMAME_VC2022.vcxproj" /out:"PinMAME_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"PinMAME32_VC2022.vcxproj" /out:"PinMAME32_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"VPinMAME_VC2022.vcxproj" /out:"VPinMAME_VC2022.vcxproj"
+@if errorlevel 1 goto manual
+
 @goto end
 
 :manual

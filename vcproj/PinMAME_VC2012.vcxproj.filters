@@ -1179,9 +1179,6 @@
     <ClCompile Include="..\src\vc\dirent.c">
       <Filter>Source Files\VC</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\sound\ymf262.c">
-      <Filter>Source Files\MAME\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\sound\262intf.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -1926,9 +1923,6 @@
       <Filter>Source Files\VC</Filter>
     </ClInclude>
     <ClInclude Include="..\src\sound\262intf.h">
-      <Filter>Source Files\MAME\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\sound\ymf262.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\ext\vgm\vgmwrite.h">
