@@ -1603,7 +1603,7 @@ void sam_init(void)
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
 
-	//!! timing hacks for CSI and IJ
+	//!! timing hacks for CSI and IJ (still needed even with new JIT)
 	if (strncasecmp(gn, "csi_", 4) == 0 || strncasecmp(gn, "ij4_", 4) == 0)
 		at91_block_timers = 1;
 	else
