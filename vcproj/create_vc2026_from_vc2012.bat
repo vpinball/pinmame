@@ -19,9 +19,13 @@ copy /V /-Y "LibPinMAMETest_VC2015.vcxproj.filters" "LibPinMAMETest_VC2026.vcxpr
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v145" /in:"PinMAME_VC2026.vcxproj" /out:"PinMAME_VC2026.vcxproj"
 @if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"PinMAME_VC2026.vcxproj" /out:"PinMAME_VC2026.vcxproj"
+@if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2026" /in:"PinMAME32_VC2026.vcxproj" /out:"PinMAME32_VC2026.vcxproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v145" /in:"PinMAME32_VC2026.vcxproj" /out:"PinMAME32_VC2026.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"PinMAME32_VC2026.vcxproj" /out:"PinMAME32_VC2026.vcxproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2026" /in:"VPinMAME_VC2026.vcxproj" /out:"VPinMAME_VC2026.vcxproj"
 @if errorlevel 1 goto manual
