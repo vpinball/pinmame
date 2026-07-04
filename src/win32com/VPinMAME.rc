@@ -135,7 +135,7 @@ BEGIN
     RTEXT           "Alt. Sound Mode (0-3):",IDC_STATIC,103,42,72,8
     EDITTEXT        IDC_SOUNDMODE,178,40,49,12,ES_AUTOHSCROLL
     CONTROL         "Extend Mono sound to Stereo",IDC_MONOTOSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,115,55,110,10
-    RTEXT           "Emulation Fast Frames:",IDC_STATIC,96,70,79,8
+    RTEXT           "Emulation Fast Frames:",IDC_STATIC,98,70,77,8
     EDITTEXT        IDC_FASTFRAMES,178,68,49,12,ES_AUTOHSCROLL
     RTEXT           "Display &Antialias %:",IDC_STATIC,113,84,62,8
     EDITTEXT        IDC_DMDANTIALIAS,178,82,49,12,ES_AUTOHSCROLL
