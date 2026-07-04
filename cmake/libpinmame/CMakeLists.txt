@@ -831,3 +831,12 @@ if(BUILD_STATIC)
       endif()
    endif()
 endif()
+
+# --- asmjit-based ARM7 JIT backend
+include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
+if(TARGET pinmame_shared)
+   pinmame_enable_asmjit(pinmame_shared)
+endif()
+if(TARGET pinmame_static)
+   pinmame_enable_asmjit(pinmame_static)
+endif()

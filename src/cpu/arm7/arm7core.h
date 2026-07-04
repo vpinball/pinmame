@@ -79,7 +79,8 @@ enum
 	data8_t pendingAbtP; \
 	data8_t pendingUnd; \
 	data8_t pendingSwi; \
-	struct jit_ctl *jit;
+	struct jit_ctl *jit; \
+	void *ajit;
 
 
 /****************************************************************************************************
@@ -104,7 +105,7 @@ enum
 /* This is a list of each *unique* register */
 enum
 {
-	/* 
+	/*
 	 *   All modes have the following.  This set is also the ACTIVE set, in
 	 *   the first 18 slots of the ARM7.sArmRegister array.  On each mode
 	 *   change, we copy these registers into the outgoing mode's banked
@@ -116,6 +117,9 @@ enum
 	eR14, /* Link Register (holds return address) */
 	eR15, /* Program Counter */
 	eCPSR, /* Current Status Program Register */
+	/* NOTE: the asmjit JIT (jit_asmjit.cpp) assumes R0..R15 occupy
+	 * indices 0..15 and CPSR index 16 of sArmRegister (it addresses them as
+	 * ctx + i*4). If this enum order changes, update reg_off()/cpsr_off() there */
 	eNoSPSR, /* placeholder slot for modes that don't have an SPSR register */
 
 	/* User Mode Registers */

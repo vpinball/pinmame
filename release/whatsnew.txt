@@ -52,6 +52,7 @@ Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regresse
 Fixed noise filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
+Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, which enables JIT speedups on all x86 and x64 compiles/platforms (incl. Linux and macOS)
 
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org)
 New:

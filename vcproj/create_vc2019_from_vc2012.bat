@@ -26,9 +26,13 @@ copy /V /-Y "LibPinMAMETest_VC2015.vcxproj.filters" "LibPinMAMETest_VC2019.vcxpr
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v142" /in:"PinMAME_VC2019.vcxproj" /out:"PinMAME_VC2019.vcxproj"
 @if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"PinMAME_VC2019.vcxproj" /out:"PinMAME_VC2019.vcxproj"
+@if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2019" /in:"PinMAME32_VC2019.vcxproj" /out:"PinMAME32_VC2019.vcxproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v142" /in:"PinMAME32_VC2019.vcxproj" /out:"PinMAME32_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"PinMAME32_VC2019.vcxproj" /out:"PinMAME32_VC2019.vcxproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2019" /in:"VPinMAME_VC2019.vcxproj" /out:"VPinMAME_VC2019.vcxproj"
 @if errorlevel 1 goto manual
@@ -47,6 +51,26 @@ copy /V /-Y "LibPinMAMETest_VC2015.vcxproj.filters" "LibPinMAMETest_VC2019.vcxpr
 @cscript "simplereplace.wsf" //nologo /search:"v140_xp" /replace:"v142" /in:"LibPinMAMETest_VC2019.vcxproj" /out:"LibPinMAMETest_VC2019.vcxproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"inline=__inline;" /replace:"" /in:"LibPinMAMETest_VC2019.vcxproj" /out:"LibPinMAMETest_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+
+@rem --- enable asmjit-based ARM7 JIT (PINMAME_JIT_ASMJIT) as v141+ toolset is C++17-capable
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"LibPinMAME_VC2019.vcxproj" /out:"LibPinMAME_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"PinMAME_VC2019.vcxproj" /out:"PinMAME_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"PinMAME32_VC2019.vcxproj" /out:"PinMAME32_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'asmjit.props^' /></Project>" /in:"VPinMAME_VC2019.vcxproj" /out:"VPinMAME_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+
+@rem --- define PINMAME_JIT_ASMJIT project-wide so the C sources (arm7core.c) see the asmjit hooks
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"LibPinMAME_VC2019.vcxproj" /out:"LibPinMAME_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"PinMAME_VC2019.vcxproj" /out:"PinMAME_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"PinMAME32_VC2019.vcxproj" /out:"PinMAME32_VC2019.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"VPinMAME_VC2019.vcxproj" /out:"VPinMAME_VC2019.vcxproj"
 @if errorlevel 1 goto manual
 
 @goto end

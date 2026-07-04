@@ -84,6 +84,8 @@ extern void at91_set_reg(int regnum, unsigned val);
 //interfaces to the drivers using the chip
 extern void at91_set_ram_pointers(data32_t *reset_ram_ptr, data32_t *page0_ram_ptr);
 extern void at91_init_jit(int min_addr, int max_addr);
+extern void at91_clear_jit_exclude(void);          /* debug: clear the JIT exclusion list */
+extern void at91_add_jit_exclude(int lo, int hi);  /* debug: interpret [lo,hi) even inside the JIT range */
 extern void at91_cs_callback_r(offs_t start, offs_t end, READ32_HANDLER((*callback)));
 extern void at91_cs_callback_w(offs_t start, offs_t end, WRITE32_HANDLER((*callback)));
 extern void at91_ready_irq_callback_w(WRITE32_HANDLER((*callback)));

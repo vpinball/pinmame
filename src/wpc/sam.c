@@ -7,7 +7,7 @@
   Hardware from 01/2006 (World Poker Tour) - 09/2014 (The Walking Dead) (and Spider-Man Vault Edition 02/2016)
 
   CPU Board: S.A.M. System Board
-             SPI Part Nº: 520-5246-00
+             SPI Part NÂº: 520-5246-00
 
   Issues: (outdated?)
   -USB Interface not hooked up or emulated
@@ -30,6 +30,7 @@
   03/09/2012 - Added SAM2 generation for extended memory, and possible stereo support one day
 ************************************************************************************************/
 
+#include <stdlib.h> // strtoul()
 #include "driver.h"
 #include "core.h"
 #include "sim.h"
@@ -1333,7 +1334,33 @@ static MACHINE_INIT(sam) {
 #ifdef SAM_USE_JIT
 	if (options.at91jit)
 	{
-		at91_init_jit(0,(options.at91jit > 1) ? options.at91jit : 0x1080000);
+		// DEBUG: at91jitmin lets a build JIT an arbitrary window [at91jitmin, at91jit)
+		// and interpret everything else -- to test a region in isolation, not just prefixes [0, X)
+		at91_init_jit((int)options.at91jitmin, (options.at91jit > 1) ? options.at91jit : 0x1080000);
+		// DEBUG: build the JIT exclusion list -- regions to interpret even inside the JIT
+		// range, to JIT everything EXCEPT one or more suspect regions. Sources: the single
+		// at91jitxlo/xhi pair, plus a hex "lo-hi,lo-hi,..." list in at91jitexcl
+		at91_clear_jit_exclude();
+		if ((int)options.at91jitxlo != (int)options.at91jitxhi)
+			at91_add_jit_exclude((int)options.at91jitxlo, (int)options.at91jitxhi);
+		{
+			const char *s = options.at91jitexcl;
+			while (s && *s)
+			{
+				char *end;
+				unsigned long lo, hi;
+				while (*s == ' ' || *s == ',') s++;
+				if (!*s) break;
+				lo = strtoul(s, &end, 16);
+				if (end == s) break; // no hex digits consumed (malformed input): stop parsing rather than loop forever on the same character
+				if (*end == '-')
+				{
+					hi = strtoul(end + 1, &end, 16);
+					at91_add_jit_exclude((int)lo, (int)hi);
+				}
+				s = end;
+			}
+		}
 	}
 #endif
 	#if LOG_RAW_SOUND_DATA
@@ -1576,7 +1603,7 @@ void sam_init(void)
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
 
-	//!! timing hacks for CSI and IJ
+	//!! timing hacks for CSI and IJ (still needed even with new JIT)
 	if (strncasecmp(gn, "csi_", 4) == 0 || strncasecmp(gn, "ij4_", 4) == 0)
 		at91_block_timers = 1;
 	else
@@ -2874,7 +2901,7 @@ CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0 Spanish)", 2007, "Stern", 
 
 // V6.00I missing, compiled by Keith for tournaments/IFPA:
 /*
-I released a version of software, "6.00I" (for IFPA, I don’t remember what tournament it was for) or some such,
+I released a version of software, "6.00I" (for IFPA, I don't remember what tournament it was for) or some such,
 that basically added some competition mode stuff (derandomized wild card and big spin).
 Those are the ONLY changes from 5.00 which is the last public release I did while at Stern.
 6.00I was circulated a fair amount amongst tournament types, mostly those running tournaments.
@@ -2890,7 +2917,7 @@ If you failed the same mode twice, you could play it a 3rd time for 3x points.
 If you failed 3 times, the game gave up. Oh, also for each mode you won, you got a "winnings x" for that ball's bonus.
 IIRC there's no logic for completing the wheel yet, but the reward was going to be something like 10M for each mode won on try #1,
 5M for each on try #2, 2.5M for each on try #3, and 1M for failed modes.
-If by some unfathomable stroke of luck you completed every mode on the first try, you’d get a bonus to round up the total to 100M.
+If by some unfathomable stroke of luck you completed every mode on the first try, you'd get a bonus to round up the total to 100M.
 */
 /*
 The mode stuff is basically there's a common goal of points (starts at 5M).

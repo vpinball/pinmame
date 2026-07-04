@@ -1,11 +1,11 @@
 /*
  *   Just-in-time machine code translator infrastructure
- *   
+ *
  *   This module contains the core of the JIT translator for Windows.
  *   Individual translators must be built on top of this core for each source
  *   CPU type - that is, for each instruction set that we want to translate
  *   to native Intel machine code for execution.
- *   
+ *
  *   One of MAME's main functions is to execute binary machine code for a
  *   variety of different CPUs, providing software emulation of processors
  *   that obviously aren't physically present in the host PC.  It does this
@@ -24,7 +24,7 @@
  *   keep up with real time when executing the Stern audio ROM code,
  *   resulting unacceptably slow playback and/or audio glitches on many
  *   current PCs.
- *   
+ *
  *   The JIT translator is an optional supplement to the standard interpreted
  *   emulation.  With the JIT, instead of interpreting the meaning each
  *   original machine code instruction as we execute it, we *translate* the
@@ -41,13 +41,13 @@
  *   through a large emulator loop on every instruction.  (Locality of
  *   reference is important on modern hardware because it makes better use of
  *   the CPU cache, which is much faster than accessing the main RAM.)
- *   
+ *
  *   JIT translation is obviously dependent on both the host hardware we're
  *   running on and the original CPU we're emulating.  This core module is
  *   specific to JITs for hosts running Windows on Intel 32-bit x86 hardware.
  *   This core will have to be re-implemented if anyone ever wants to port
  *   the JIT to other host platforms in the future.
- *   
+ *
  *   Our basic strategy with the JIT is to translate each source instruction
  *   to a self-contained block of native host instructions.  The translation
  *   must be done such that we can jump back and forth between JIT and
@@ -62,7 +62,7 @@
  *   to translate the instructions on the critical performance path; for
  *   instructions that aren't used frequently, we can just let the emulator
  *   handle them.
- *   
+ *
  *   For each CPU that we apply the JIT to, we maintain an address mapping
  *   array that gives us the physical address of the native code
  *   corresponding to each emulated instruction.  When the emulator is about
@@ -74,41 +74,41 @@
 
 /*
  *   Here are the steps to set up a JIT translator for a CPU type:
- *   
+ *
  *   1. Create a CPU-specific xxxjit.h file for the machine you're adding the
  *   JIT to.  E.g., at91jit.h for AT91.  In this file, define the following
  *   items, then #include "windows/jit.h" at the end:
- *   
+ *
  *   - #define JIT_NAME xxx - defines a name prefix for CPU-specific
  *   functions for your CPU JIT.  This is up to you; it just needs to be a
  *   valid C identifier, since it's used to construct function names.
- *   
+ *
  *   - #define JIT_OPALIGN n - n can be 8, 16, or 32, specifying the
  *   alignment type for your CPU's machine language instructions.  Use 8 if
  *   instructions can occur at any byte address, 16 if they're always aligned
  *   on 16-bit word boundaries, 32 if they're always aligned on dword
  *   boundaries.
- *   
+ *
  *   - Again, at the end of the file, #include "windows/jit.h".
- *   
+ *
  *   2. In your CPU emulator modules, #include the xxxjit.h file you created
  *   above.
- *   
+ *
  *   3. Find the static context structure for the CPU.  This is the structure
  *   used in the xxx_set_context() and xxx_get_context() calls, and usually
  *   contains the emulated machine's registers, flags, etc.  Add a new
  *   element of type 'struct jit_ctl *' to the context structure (call the
  *   new element anything you like).
- *   
+ *
  *   4. In the xxx_init() machine initializer routine for your emulated CPU,
  *   make a call to jit_create() to allocate the jit_ctl structure you
  *   declared above, and assign the result to the pointer you declared.
- *   
+ *
  *   5. Call jit_set_mem_callbacks() to establish your memory access
  *   callbacks.  This lets you specify callback functions for reading and
  *   writing memory within the emulated machine's RAM.  The generated code
  *   will call these functions for memory access.
- *   
+ *
  *   6. Determine the opcode address range that you want the JIT to cover.
  *   For a machine with a relatively small address space, like an 8-bit CPU
  *   with a 64K address space, you can simply cover the whole address space.
@@ -116,28 +116,28 @@
  *   want to cover the portion where the actual program code will be loaded,
  *   because the JIT map takes real memory proportional to the size of the
  *   emulated address space covered.
- *   
+ *
  *   Once you know the address range to cover, make a call to
  *   jit_create_map().  If the address space is fixed by the processor
  *   architecture, this can simply be done immediately after the jit_create()
  *   call above.  You can alternatively put this call in the code that loads
  *   the individual game ROMs, if the address space will vary by game.
- *   
+ *
  *   The map doesn't have to cover every possible opcode location.  If the
  *   JIT encounters an opcode outside of the map range, it will simply use
  *   the emulator for that opcode.  
- *   
+ *
  *   7. Find the machine shutdown code for the CPU.  This is usually called
  *   'void xxx_exit(void)', where xxx is the CPU name.  Call jit_delete()
  *   here to release the memory allocated above.
- *   
+ *
  *   8. Call jit_enable() *after* you've detected that the final program code
  *   is loaded into the emulated address space.  If the CPU starts off with
  *   the program code already loaded, you can call this right after you call
  *   jit_create().  If the program code is loaded or remapped dynamically by
  *   an emulated boot loader, though, you'll have to detect when the loading
  *   process is finished, and wait until then to call jit_enable().
- *   
+ *
  *   9. In the emulator execution loop, put a JIT_FETCH() macro just before
  *   the code that normally fetches the next opcode.  This will insert code
  *   that checks the state of the opcode address and determines if the code
@@ -147,14 +147,14 @@
  *   otherwise execution will simply continue into the emulator as though the
  *   JIT weren't there.  Emulation will resume when the native code reaches
  *   an untranslated instruction.
- *   
+ *
  *   10.  Define a function 'int xxx_jit_xlat(struct jit_ctl *jit, data32_t
  *   pc)', where xxx is the JIT_NAME that you assigned in your xxxjit.h
  *   header.  This is where you implement the translator.  Sorry, but this is
  *   where the framework stops, and the real work begins; it's up to you to
  *   define the translation.  You have to decode the emulated opcodes and
  *   generate the corresponding Intel native code.
- *   
+ *
  *   A key principle in writing JIT translation code is that each opcode from
  *   the emulated program must stand alone.  You must expect that the
  *   emulator can call in to translated code at any instruction boundary.
@@ -167,7 +167,7 @@
  *   will almost always run many times faster than emulation for the same
  *   code, since the translation doesn't have any overhead for decoding
  *   instructions, and has much better locality of reference for caching.)
- *   
+ *
  *   It's up to you to decide upon the stack and register environment that
  *   your generated code will use.  You'll have a chance to establish this
  *   environment at run time in the code that jumps into the native code,
@@ -179,7 +179,7 @@
  *   code at the point where you actually jump to the generated native code.
  *   Other than that, you're free to set up the native Intel stack and
  *   registers as you decide is best.
- *   
+ *
  *   The translation routine should analyze the opcode at the given address
  *   and determine if it can be translated.  If so, generate the code and
  *   store it in the jit_page memory by calling jit_store_native().  The
@@ -190,7 +190,7 @@
  *   control can proceed to the next instruction sequentially for anything
  *   but an unconditional branch, so it's a good bet that the whole series of
  *   instructions up to the next branch is all executable code.
- *   
+ *
  *   If the routine succeeds at translating the instruction at 'pc'
  *   (regardless of whether or not it also translates more code after that),
  *   return true (non-zero).  If the instruction isn't translated, return
@@ -204,7 +204,7 @@
  *   limitation), you can leave the jit->native entry unchanged, in which
  *   case the emulator will invoke the translation routine again the next
  *   time the address is reached.
- *   
+ *
  *   11. In the emulator loop, add a label "jit_go_native:" at the end of the
  *   loop, AFTER the main code has already explicitly returned.  This code
  *   MUST be unreachable except by 'goto jit_go_native', which the JIT_FETCH
@@ -215,14 +215,14 @@
  *   emulated stack pointer register value, you must load EAX with the stack
  *   register at this point.  These conventions are up to you to define; the
  *   JIT framework imposes no assumptions of its own here.
- *   
+ *
  *   Once you establish the native register and stack environment, make an
  *   assembly language CALL to the JIT_NATIVE address.  Refer to the model
  *   code in the comments at JIT_CALL_NATIVE below.  When the native code
  *   reaches a point where it decides to resume emulation, it will execute a
  *   native RETN instruction.  This will return control to the C statement
  *   following your assembly language CALL instruction.
- *   
+ *
  *   IMPORTANT: Before returning, generated code always loads EAX with the
  *   new instruction pointer where emulation should resume.  The code you
  *   write here must use the value in EAX as the new instruction pointer.
@@ -234,7 +234,7 @@
  *   establish a more complex convention for storing other emulated
  *   registers, and we don't want the generic JIT framework tied to the
  *   conventions for any one CPU.
- *   
+ *
  *   After the JIT_CALL_NATIVE call, the final step is to undo the stack and
  *   register setup you established above.  Continuing our example where EAX
  *   contains the emulated stack pointer value, you must at this point move
@@ -253,7 +253,66 @@
 
 typedef unsigned char byte;
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1400) && !defined(__LP64__) && !defined(_M_ARM) // visual studio & > 6 & 32bit compile
+/*
+ *   JIT backend target architecture detection
+ *
+ *   At most one of these is defined, identifying the host CPU architecture.
+ *   These gate ONLY the legacy hand-written code emitter (JIT_ENABLED below),
+ *   which only has a backend for 32-bit x86 (JIT_TARGET_X86).
+ *
+ *   NOTE: the newer asmjit-based JIT is a SEPARATE path and does not look at
+ *   these macros or at JIT_ENABLED.  It is gated solely by PINMAME_JIT_ASMJIT
+ *   (a build option, on by default for x86/x64 targets and forced off for all
+ *   other architectures by cmake/asmjit.cmake) plus a runtime check
+ *   (ARM7.ajit != NULL), so it DOES run on x86 and x64 (ARM64 backend
+ *   still to come).  The dependency runs the other way only: defining
+ *   PINMAME_JIT_ASMJIT forces JIT_ENABLED to 0, because the two JITs are
+ *   mutually exclusive (see the master switch below).
+ *   See src/windows/jit_asmjit.cpp
+ */
+#if defined(_M_IX86) || defined(__i386__)
+# define JIT_TARGET_X86   1
+#elif defined(_M_X64) || defined(__x86_64__)
+# define JIT_TARGET_X64   1
+#elif defined(_M_ARM64) || defined(__aarch64__)
+# define JIT_TARGET_ARM64 1
+#endif
+
+/*
+ *   Master switch: is the LEGACY hand-written JIT compiled in?
+ *
+ *   The hand-written code emitter (jitemit.c) only targets 32-bit x86, and the
+ *   run-time transition trampoline (arm7exec.c) relies on MSVC 32-bit inline
+ *   assembly (which MSVC does not support when targeting x64), so this legacy
+ *   JIT is enabled only for 32-bit x86 MSVC builds.  Every other configuration
+ *   (x64, ARM, non-MSVC) falls back to the interpreter for the legacy path
+ *   (which the asmjit JIT, where built, then accelerates instead).
+ *
+ *   Three independent conditions must all hold:
+ *
+ *     - defined(JIT_TARGET_X86): the host is 32-bit x86, the only architecture
+ *       the current backend can encode.  Checking the architecture directly is
+ *       defense-in-depth: a 64-bit or ARM build can never accidentally try to
+ *       compile the x86-only emitter / inline-asm trampoline even if the
+ *       __LP64__ define below is omitted.
+ *
+ *     - !defined(__LP64__): __LP64__ is honored as an explicit "disable the JIT"
+ *       override.  The 64-bit project/CMake configs define it (so they fall back
+ *       to the interpreter), AND the libpinmame build defines it on ALL Windows
+ *       targets - including 32-bit - to intentionally keep the JIT off there.
+ *       This condition preserves that existing behavior; do not remove it
+ *       without auditing every build that defines __LP64__.
+ *
+ *     - !defined(PINMAME_JIT_ASMJIT): the two JITs are MUTUALLY EXCLUSIVE - when
+ *       the asmjit backend is compiled in, the legacy path compiles out (on
+ *       32-bit x86 too).  Running both would be an untested hybrid with a real
+ *       correctness hole: their invalidation paths don't know about each other,
+ *       so a self-modifying-code store executed from an asmjit block (which
+ *       calls only arm7_aj_untranslate, never jit_untranslate) would leave a
+ *       stale LEGACY translation executing.  PINMAME_JIT_ASMJIT is defined
+ *       target-wide, so every TU agrees on JIT_ENABLED.
+ */
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) && defined(JIT_TARGET_X86) && !defined(__LP64__) && !defined(PINMAME_JIT_ASMJIT)
 #define JIT_ENABLED  1   // enable the JIT (false -> use only the standard emulator code)
 #else
 #define JIT_ENABLED  0
@@ -420,7 +479,7 @@ struct jit_ctl *_jit_create(int *cycle_counter, int rshift);
  *   that it invalidates the program memory contents.  Resetting an emulated
  *   CPU will usually clear program RAM restart the boot loading procedure,
  *   so the JIT has to start over from scratch as well.
- *   
+ *
  *   This routine discards all previously translated native code and disables
  *   translation, just like after jit_create() is first called.  After
  *   calling this, you must call jit_enable() to re-enable translation at the
@@ -428,7 +487,7 @@ struct jit_ctl *_jit_create(int *cycle_counter, int rshift);
  */
 void jit_reset(struct jit_ctl *jit);
 
-/* 
+/*
  *   Free the JIT control structure and all of its components (including any
  *   translated code).  Call this from the CPU's xxx_exit() routine, to
  *   release all JIT-related memory on shutdown.
@@ -478,13 +537,13 @@ void jit_enable(struct jit_ctl *jit);
  *   address when this happens.  This will have no effect if an instruction
  *   hasn't already been translated, so it's flexible in cases where code is
  *   dynamically loaded or generated.
- *   
+ *
  *   (It's not necessary to call this during bootstrapping, since translation
  *   is initially disabled for the whole address space.)
  */
 void jit_untranslate(struct jit_ctl *jit, data32_t addr);
 
-/* 
+/*
  *   get the native code pointer for a given machine code address (this isn't
  *   range-checked - always check that the address is in range before
  *   evaluating this) 
@@ -505,7 +564,7 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
  */
 #define JIT_FETCH(jit, pc) \
 	if ((pc) >= (jit)->minAddr && (pc) < (jit)->maxAddr) \
-    { \
+	{ \
 		byte *tmp = JIT_NATIVE(jit, pc); \
 		if (tmp == (jit)->pPending) { if (JIT_XLAT_FUNC(JIT_NAME)(jit, pc)) goto jit_go_native; } \
 		else if (tmp != (jit)->pEmulate) goto jit_go_native; \
@@ -513,7 +572,7 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
 
 /*
  *   JIT_CALL_NATIVE - comments on how to invoke the native code.
- *   
+ *
  *   We originally provided a macro here called JIT_CALL_NATIVE() to invoke
  *   the native code, but that didn't seem flexible enough.  Instead, we
  *   provide some model code that you can customize as needed.  This process
@@ -521,9 +580,9 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
  *   code robust and reliable if you understand what's going on.  Here we try
  *   to explain not just what you need to do but also why, to help make the
  *   code adaptable to different cases.
- *   
+ *
  *   Here are the steps involved.
- *   
+ *
  *   - If there are any C expressions that you will need to evaluate after
  *   this point that are more complex than accessing local or static
  *   variables, evaluate those expressions now and store them in C local
@@ -535,19 +594,19 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
  *   environment setup that we're attempting.  It's best to keep everything
  *   explicitly in __asm once we get going, so that we have everything
  *   completely under our control, with no meddling by the compiler.
- *   
+ *
  *   One expression that you'll definitely need to save here is
  *   JIT_NATIVE(jit, pc), where pc is the emulator instruction pointer for
  *   the native code that we're about to invoke.  JIT_NATIVE() gives us a
  *   pointer to that native code.  We'll need that later to make the call to
  *   the native code, which is after all the entire point of this exercise.
- *   
+ *
  *   - Enter an assembly language block with __asm { }.
- *   
+ *
  *   - If you need any temporary stack slots, allocate them now using "SUB
  *   ESP, n", where n is the number of bytes you need (this is usually 4x the
  *   number of int or pointer variables you need to store).
- *   
+ *
  *   - Save the (real) CPU registers that the C compiler might use in
  *   generated code, by pushing them onto the stack.  It's best not to make
  *   assumptions based on your particular build settings, because there's
@@ -562,7 +621,7 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
  *   consistently across the whole build, and will thus save any registers
  *   that need to be saved according to its own conventions when entering
  *   subroutines that you call from generated code.)
- *   
+ *
  *   - If you need to access any C local variables, it's time to move them
  *   into registers or into the stack.  The only truly safe register to
  *   modify during this process is EAX, because all known Intel calling
@@ -580,37 +639,37 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
  *   access three or more, you will have to move them into stack temp slots
  *   that you allocated above, before saving registers.  Address the temp
  *   slots using [ESP+n].
- *   
+ *
  *   - Get the JIT_NATIVE value that you saved earlier into a register (e.g.,
  *   EAX), and CALL that register.  This will transfer control to the native
  *   generated code.  When that code wants to return to emulation, it will
  *   execute a RETN instruction, which will return control to the next
  *   instruction here.
- *   
+ *
  *   - Now we basically need to reverse the steps above.  Start by saving any
  *   registers that you need to copy back from the native environment to the
  *   emulator environment.  The place to save a register is in one of the
  *   stack temp slots you allocated earlier, using [ESP+n] addressing again.
- *   
+ *
  *   - Restore the C compiler's saved registers by POPping them off the
  *   stack.  This will restore the compiler's frame pointer, making it safe
  *   to access C local variables once again.  Sigh of relief - things are
  *   almost back to normal!
- *   
+ *
  *   - At this point, we can access both the C local variables and the stack
  *   temp slots you allocated.  If you stashed anything important in one of
  *   these stack temp slots that you want to restore to the emulated
  *   environment, move it from the stack temp into a C local variable.  (You
  *   will have to do this with two MOV instructions: MOV EAX, [ESP+n], then
  *   MOV c_local, EAX).
- *   
+ *
  *   - Discard the stack temp slots with an ADD ESP, n, where n is the same
  *   number of bytes you used in the SUB ESP, n earlier.
- *   
+ *
  *   - Exit the assembly block.  You can now evaluate any complex C
  *   expressions that you need to move updated values from C locals into the
  *   normal emulator environment.
- *   
+ *
  *   - Jump back to the appropriate point in the emulator loop with a C
  *   'goto'.
  */
@@ -624,75 +683,75 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
 //  // directly without modifying any registers, so these act as a bridge between
 //  // the current C environment and the assembler environment we're about to
 //  // establish.
-// 	data32_t tmp1 = (data32_t)JIT_NATIVE(ARM7.jit, pc);
-// 	data32_t tmp2 = ARM7_ICOUNT;
-// 
-// 	__asm {
-// 		// Allocate space for temporary variables we'll need while transitioning
-//      // between C and assembler (and back).  See the 'IMPORTANT' note below.
-// 		// 1 stack DWORD == 4 bytes.
-// 		SUB ESP, 4;
-// 
-// 		// Save registers that the generated code uses and that the C caller
-// 		// might expect to be preserved across function calls.  To be robust
-//      // across different optimization modes and compiler versions, we will
-//      // push all registers that our generated code modifies, except for EAX,
-//      // which is fairly certain to be a safe scratch variable for any
-//      // compiler using any optimization mode.
-// 		PUSH EBX;
-// 		PUSH ECX;
-// 		PUSH EDX;
-// 		PUSH ESI;
-// 		PUSH EDI;
-// 		
-// 		// Get the native code address, and move the cycle counter into EDI for
-// 		// use in the translated code.  Note that any register update here could
-//      // cause us to lose the C frame pointer and thus lose access to our C
-//      // local variables (tmp1, tmp2, etc), except that EAX is safe.  We
-//      // deliberately modify EDI last just in case it's the frame pointer.
-//      // If we needed to access more than two C locals here, we'd have to move
-//      // them all into temp stack slots ([ESP+n] slots) for safe keeping before
-//      // moving any of them into registers, to ensure that we don't modify any
-//      // registers until all the C locals are safely tucked away somewhere that
-//      // we can get to after losing the C frame pointer.
-// 		MOV  EAX, tmp1;
-// 		MOV  EDI, tmp2;
-// 		
-// 		// IMPORTANT: don't access any C local variables (tmp1, tmp2, etc) from
-// 		// here until after the POPs below.  At least one VC optimization mode uses
-// 		// EBX as the frame pointer, and it's possible that other modes or other
-// 		// compilers use other registers.  C local access will be safe again
-// 		// after the POPs below, which will recover the pre-call register values.
-// 		// In the meantime, anything we need to store temporarily must be saved
-// 		// explicitly in stack slots allocated with the 'SUB ESP, n' above, and
-// 		// addressed explicitly in terms of [ESP+n] addresses.  These are safe
-// 		// because we control the stack layout in this section of code.
-// 		
-// 		// call the native code
-// 		CALL EAX;
-// 		
-// 		// save the new cycle counter from EDI into a stack temp (before we restore
-// 		// the pre-call EDI)
-// 		MOV  [ESP+20], EDI;
-// 		
-// 		// restore saved registers - C locals are safe to access again after these
-//      // POPs, because the frame pointer will be restored if it was one of these
-//      // (and will never have been lost if it wasn't)
-// 		POP  EDI;
-// 		POP  ESI;
-// 		POP  EDX;
-// 		POP  ECX;
-// 		POP  EBX;
-// 		
-// 		// move the new PC and cycle count into C locals, so that we can move them
-//      // into their real locations below (those might involve C expressions that
-//      // could modify registers, so we want them in simple C locals first so
-//      // that we can stop caring about any of the registers)
-// 		MOV  tmp1, EAX;
-// 		POP  tmp2;
-// 	}
-// 	R15 = tmp1;
-// 	ARM7_ICOUNT = tmp2;
+//	data32_t tmp1 = (data32_t)JIT_NATIVE(ARM7.jit, pc);
+//	data32_t tmp2 = ARM7_ICOUNT;
+//
+//	__asm {
+//		// Allocate space for temporary variables we'll need while transitioning
+//		// between C and assembler (and back).  See the 'IMPORTANT' note below.
+//		// 1 stack DWORD == 4 bytes.
+//		SUB ESP, 4;
+//
+//		// Save registers that the generated code uses and that the C caller
+//		// might expect to be preserved across function calls.  To be robust
+//		// across different optimization modes and compiler versions, we will
+//		// push all registers that our generated code modifies, except for EAX,
+//		// which is fairly certain to be a safe scratch variable for any
+//		// compiler using any optimization mode.
+//		PUSH EBX;
+//		PUSH ECX;
+//		PUSH EDX;
+//		PUSH ESI;
+//		PUSH EDI;
+//		
+//		// Get the native code address, and move the cycle counter into EDI for
+//		// use in the translated code.  Note that any register update here could
+//		// cause us to lose the C frame pointer and thus lose access to our C
+//		// local variables (tmp1, tmp2, etc), except that EAX is safe.  We
+//		// deliberately modify EDI last just in case it's the frame pointer.
+//		// If we needed to access more than two C locals here, we'd have to move
+//		// them all into temp stack slots ([ESP+n] slots) for safe keeping before
+//		// moving any of them into registers, to ensure that we don't modify any
+//		// registers until all the C locals are safely tucked away somewhere that
+//		// we can get to after losing the C frame pointer.
+//		MOV  EAX, tmp1;
+//		MOV  EDI, tmp2;
+//
+//		// IMPORTANT: don't access any C local variables (tmp1, tmp2, etc) from
+//		// here until after the POPs below.  At least one VC optimization mode uses
+//		// EBX as the frame pointer, and it's possible that other modes or other
+//		// compilers use other registers.  C local access will be safe again
+//		// after the POPs below, which will recover the pre-call register values.
+//		// In the meantime, anything we need to store temporarily must be saved
+//		// explicitly in stack slots allocated with the 'SUB ESP, n' above, and
+//		// addressed explicitly in terms of [ESP+n] addresses.  These are safe
+//		// because we control the stack layout in this section of code.
+//
+//		// call the native code
+//		CALL EAX;
+//
+//		// save the new cycle counter from EDI into a stack temp (before we restore
+//		// the pre-call EDI)
+//		MOV  [ESP+20], EDI;
+//
+//		// restore saved registers - C locals are safe to access again after these
+//		// POPs, because the frame pointer will be restored if it was one of these
+//		// (and will never have been lost if it wasn't)
+//		POP  EDI;
+//		POP  ESI;
+//		POP  EDX;
+//		POP  ECX;
+//		POP  EBX;
+//
+//		// move the new PC and cycle count into C locals, so that we can move them
+//		// into their real locations below (those might involve C expressions that
+//		// could modify registers, so we want them in simple C locals first so
+//		// that we can stop caring about any of the registers)
+//		MOV  tmp1, EAX;
+//		POP  tmp2;
+//	}
+//	R15 = tmp1;
+//	ARM7_ICOUNT = tmp2;
 // }
 // resume emulation
 // goto resume_from_jit;
@@ -700,14 +759,14 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
 /*
  *   The JIT translator function.  This must be implemented per emulated CPU.
  *   This takes the address of an instruction to translate.
- *   
+ *
  *   If the instruction can be translated, this routine generates the
  *   translated native code, stores it via jit_store_native(), and returns
  *   true.  The routine is encouraged to continue translating sequential
  *   instructions - we know that the code at 'pc' is invoked, and that
  *   usually implies that the code sequentially following 'pc' will also be
  *   invoked, at least up to the next unconditional branch.
- *   
+ *
  *   If the instruction at 'pc' can't be translated, return false.
  */
 #ifdef JIT_NAME

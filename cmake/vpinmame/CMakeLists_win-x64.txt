@@ -735,3 +735,7 @@ set_target_properties(vpinmame PROPERTIES
    RUNTIME_OUTPUT_NAME "VPinMAME64"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
+
+# --- asmjit-based ARM7 JIT backend
+include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
+pinmame_enable_asmjit(vpinmame)
