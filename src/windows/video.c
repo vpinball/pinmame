@@ -77,7 +77,7 @@ int autoframeskip;
 
 // speed throttling
 int throttle = 1;
-int fastfrms = 0;
+int fastfrms = -1; // 0 would make render_frame's FastFrames countdown FORCE throttle=1 on the very first frame, silently overriding -nothrottle
 int g_low_latency_throttle = 0;
 
 // palette lookups
@@ -226,6 +226,9 @@ struct rc_option video_opts[] =
 	{ "matchrefresh", NULL, rc_bool, &win_match_refresh, "0", 0, 0, NULL, "attempt to match the game's refresh rate" },
 	{ "syncrefresh", NULL, rc_bool, &win_sync_refresh, "0", 0, 0, NULL, "syncronize only to the monitor refresh" },
 	{ "throttle", NULL, rc_bool, &throttle, "1", 0, 0, NULL, "throttle speed to the game's framerate" },
+#ifndef VPINMAME // VPinMAME registers its own in VPinMAMEConfig.cpp
+	{ "fastframes", NULL, rc_int, &fastfrms, "-1", -1, 100000, NULL, "Unthrottled frames at game start" },
+#endif
 	{ "full_screen_brightness", "fsb", rc_float, &win_gfx_brightness, "0.0", 0.0, 4.0, NULL, "sets the brightness in full screen mode" },
 	{ "frames_to_run", "ftr", rc_int, &frames_to_display, "0", 0, 0, NULL, "sets the number of frames to run within the game" },
 	{ "effect", NULL, rc_string, &effect, "none", 0, 0, decode_effect, "specify the blitting effect" },
@@ -736,6 +739,11 @@ void throttle_speed_part(int part, int totalparts)
 	if (options.time_fence != 0.0 && time_fence_is_supported())
 		return;
 
+	// if throttling is off (FastFrames measurement window / -nothrottle), the low-latency sub-frame pacing must not pace either.
+	// Only sub-frame calls are gated here (totalparts != 1); the whole-frame call keeps its caller's gating in render_frame (which includes the game-paused case)
+	if (totalparts != 1 && !throttle)
+		return;
+
 	// this counts as idle time
 	profiler_mark(PROFILER_IDLE);
 
@@ -976,10 +984,12 @@ static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bou
 	cycles_t curr;
 
 	if (fastfrms >= 0)
-		{
-		if(fastfrms-- == 0) throttle = 1;
-		else throttle = 0;
-		}		
+	{
+		// FastFrames measurement window: run unthrottled for N frames. Also lift the external time fence (VPX master clock) for the window
+		// otherwise the host keeps pacing the emulation and there is nothing to measure
+		if(fastfrms-- == 0) { throttle = 1; time_fence_bypass = 0; }
+		else                { throttle = 0; time_fence_bypass = 1; }
+	}
 
 	// if we're throttling, synchronize
 	if (throttle || game_is_paused)

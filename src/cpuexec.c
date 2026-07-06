@@ -210,6 +210,12 @@ static double perfect_interleave;
 // PinMame: time fence global offset
 volatile double time_fence_global_offset = 0.0;
 
+// PinMAME: while nonzero, the external time fence is IGNORED. Set by the OSD for the duration of the FastFrames measurement window
+// (unthrottled startup frames, see the OSD's render_frame/update_timing), so raw emulation speed can be measured even while a host (VPX) drives fences.
+// Once the window ends and this drops back to 0, the fence's existing realign/catch-up logic below
+// recovers on its own (ahead >= 1s: offset realign; less: bounded stall until the host's clock catches up)
+int time_fence_bypass = 0;
+
 
 /*************************************
  *
@@ -980,7 +986,8 @@ static void cpu_timeslice(void)
 
 	// PinMAME: allow external synchronization by suspending emulation when a time fence is reached
 	// NOTE: if debugging stutter issues or the like, disable this mechanism in the core scripts, or directly here
-	if (options.time_fence != 0.0 && time_fence_is_supported())
+	// (time_fence_bypass: the FastFrames measurement window runs fence-free, see its definition above)
+	if (options.time_fence != 0.0 && !time_fence_bypass && time_fence_is_supported())
 	{
 		const double now = timer_get_time();
 		if (now - options.time_fence - time_fence_global_offset >= 0.)

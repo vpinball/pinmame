@@ -282,6 +282,10 @@ struct performance_info
 extern struct GameOptions options;
 extern struct RunningMachine *Machine;
 
+/* PinMAME: while nonzero, cpu_timeslice ignores the external time fence (options.time_fence).
+   The OSD sets this for the FastFrames measurement window; defined in cpuexec.c */
+extern int time_fence_bypass;
+
 
 
 /***************************************************************************

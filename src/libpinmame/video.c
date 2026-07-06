@@ -49,7 +49,7 @@ int autoframeskip;
 
 // speed throttling
 int throttle = 1;
-int fastfrms = 0;
+int fastfrms = -1; // 0 would force throttle=1 on the first frame (see windows/video.c)
 int g_low_latency_throttle = 0;
 
 // rotation
@@ -446,6 +446,11 @@ void throttle_speed_part(int part, int totalparts)
 	if (options.time_fence != 0.0 && time_fence_is_supported())
 		return;
 
+	// if throttling is off (FastFrames measurement window), the low-latency sub-frame pacing must not pace either. Only the sub-frame calls are gated here (totalparts != 1);
+	// the whole-frame call keeps its caller's gating in update_timing (which includes the game-paused case)
+	if (totalparts != 1 && !throttle)
+		return;
+
 	// this counts as idle time
 	profiler_mark(PROFILER_IDLE);
 
@@ -612,8 +617,10 @@ static void update_timing()
 
 	if (fastfrms >= 0)
 	{
-		if (fastfrms-- == 0) throttle = 1;
-		else throttle = 0;
+		// FastFrames measurement window: run unthrottled for N frames. Also lift the external time fence (host master clock) for the window
+		// otherwise the host keeps pacing the emulation and there is nothing to measure
+		if (fastfrms-- == 0) { throttle = 1; time_fence_bypass = 0; }
+		else                 { throttle = 0; time_fence_bypass = 1; }
 	}
 
 	// if we're throttling, synchronize
