@@ -26,8 +26,8 @@
 /******************************************************************************
  *  Notes:
 
-    **This core comes from my AT91 cpu core contributed to PinMAME, 
-	  but with all the AT91 specific junk removed, 
+	**This core comes from my AT91 cpu core contributed to PinMAME,
+	  but with all the AT91 specific junk removed,
 	  which leaves just the ARM7TDMI core itself. I further removed the CPU specific MAME stuff
 	  so you just have the actual ARM7 core itself, since many cpu's incorporate an ARM7 core, but add on
 	  many cpu specific functionality.
@@ -36,14 +36,19 @@
 	  implementation, and therefore, this file shouldn't be compiled as part of your project directly.
 	  Additionally, you will need to include arm7exec.c in your cpu's execute routine.
 
-	  For better or for worse, the code itself is very much intact from it's arm 2/3/6 origins from 
+	  For better or for worse, the code itself is very much intact from it's arm 2/3/6 origins from
 	  Bryan & Phil's work. I contemplated merging it in, but thought the fact that the CPSR is
 	  no longer part of the PC was enough of a change to make it annoying to merge.
 	**
 
-	Coprocessor functions are heavily implementation specific, so callback handlers are used to allow the 
+	Coprocessor functions are heavily implementation specific, so callback handlers are used to allow the
 	implementation to handle the functionality. Custom DASM handlers are included as well to allow the DASM
 	output to be tailored to the co-proc implementation details.
+
+	Cycle counting: the per-instruction counts implement the ARM7TDMI datasheet's S/N/I cycle formulas (quoted at each handler) with S = N = I = 1
+	i.e. every sequential/non-sequential/internal cycle is charged as one clock. Bus reality (wait states per chip select, 16- vs 32-bit bus width, DRAM refresh)
+	is NOT modeled; absolute speed is calibrated by the machine's configured CPU clock instead.
+	The asmjit JIT charges the identical model (see arm_insn_cycles in jit_asmjit.cpp), so both execution paths stay cycle-identical.
 
 	Todo:
 	Thumb mode support not yet implemented. 26 bit compatibility mode not implemented.
@@ -52,7 +57,7 @@
 	Could not find info on what the TEQP opcode is from page 44..
 	I have no idea if user bank switching is right, as I don't fully understand it's use.
 	Search for Todo: tags for remaining items not done.
-	
+
 
 	Differences from Arm 2/3 (6 also?)
 	-Full 32 bit address support
@@ -63,7 +68,7 @@
 	-New operation modes? (unconfirmed)
 
 	Based heavily on arm core from MAME 0.76:
-    *****************************************
+	*****************************************
 	ARM 2/3/6 Emulation
 
 	Todo:
@@ -822,10 +827,16 @@ static void arm7_check_irq_state(void)
 		SwitchMode(eARM7_MODE_ABT);				/* Set ABT mode so PC is saved to correct R14 bank */
 		SET_REGISTER( 14, pc - 8 + 8);			/* save PC to R14 */
 		SET_REGISTER( SPSR, cpsr );				/* Save current CPSR */
-		SET_CPSR(GET_CPSR | I_MASK);            /* Mask IRQ */
+		SET_CPSR(GET_CPSR | I_MASK);			/* Mask IRQ */
 		SET_CPSR(GET_CPSR & ~T_MASK);
 		R15 = 0x10;								/* IRQ Vector address */
 		ARM7.pendingAbtD = 0;
+		/* Exception entry takes 2S + 1N cycles (pipeline refill from the vector).
+		   Charged here (single vectoring point) so the interpreter and the
+		   JIT path account identically. Only the ASYNCHRONOUS exceptions (aborts, FIQ, IRQ)
+		   are charged: SWI and undefined below are charged as instructions by the dispatch loop (3 resp. 4 cycles),
+		   which per the datasheet IS their exception-entry cost */
+		ARM7_ICOUNT -= 3;
 		return;
 	}
 
@@ -838,6 +849,7 @@ static void arm7_check_irq_state(void)
 		SET_CPSR(GET_CPSR | I_MASK | F_MASK);	/* Mask both IRQ & FIRQ*/
 		SET_CPSR(GET_CPSR & ~T_MASK);
 		R15 = 0x1c;								/* IRQ Vector address */
+		ARM7_ICOUNT -= 3;						/* exception entry: 2S + 1N (see data abort above) */
 		return;
 	}
 
@@ -850,6 +862,7 @@ static void arm7_check_irq_state(void)
 		SET_CPSR(GET_CPSR | I_MASK);			/* Mask IRQ */
 		SET_CPSR(GET_CPSR & ~T_MASK);
 		R15 = 0x18;								/* IRQ Vector address */
+		ARM7_ICOUNT -= 3;						/* exception entry: 2S + 1N (see data abort above) */
 		return;
 	}
 
@@ -858,10 +871,11 @@ static void arm7_check_irq_state(void)
 		SwitchMode(eARM7_MODE_ABT);				/* Set ABT mode so PC is saved to correct R14 bank */
 		SET_REGISTER( 14, pc - 4 + 4);			/* save PC to R14 */
 		SET_REGISTER( SPSR, cpsr );				/* Save current CPSR */
-		SET_CPSR(GET_CPSR | I_MASK);            /* Mask IRQ */
+		SET_CPSR(GET_CPSR | I_MASK);			/* Mask IRQ */
 		SET_CPSR(GET_CPSR & ~T_MASK);
 		R15 = 0x0c;								/* IRQ Vector address */
 		ARM7.pendingAbtP = 0;
+		ARM7_ICOUNT -= 3;						/* exception entry: 2S + 1N (see data abort above) */
 		return;
 	}
 
@@ -877,7 +891,7 @@ static void arm7_check_irq_state(void)
 			SET_REGISTER( 14, pc - 4 + 4 - 4);	/* save PC to R14 */
 		}
 		SET_REGISTER( SPSR, cpsr );				/* Save current CPSR */
-		SET_CPSR(GET_CPSR | I_MASK);            /* Mask IRQ */
+		SET_CPSR(GET_CPSR | I_MASK);			/* Mask IRQ */
 		SET_CPSR(GET_CPSR & ~T_MASK);
 		R15 = 0x04;								/* IRQ Vector address */
 		ARM7.pendingUnd = 0;
@@ -1950,9 +1964,9 @@ static void HandleSMulLong( data32_t insn)
 	}
 
 	if (rs < 0) rs = -rs;
-	if (rs < 0x00000100) ARM7_ICOUNT -= 1 + 1 + 1;
-	else if (rs < 0x00010000) ARM7_ICOUNT -= 1 + 2 + 1;
-	else if (rs < 0x01000000) ARM7_ICOUNT -= 1 + 3 + 1;
+	if ((UINT32)rs < 0x00000100u) ARM7_ICOUNT -= 1 + 1 + 1;
+	else if ((UINT32)rs < 0x00010000u) ARM7_ICOUNT -= 1 + 2 + 1;
+	else if ((UINT32)rs < 0x01000000u) ARM7_ICOUNT -= 1 + 3 + 1;
 	else ARM7_ICOUNT -= 1 + 4 + 1;
 
 	ARM7_ICOUNT += 3;
