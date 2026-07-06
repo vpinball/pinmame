@@ -103,9 +103,11 @@ void          arm7_aj_untranslate(ArmAsmjitCtl *c, uint32_t addr);
 
 /* Return the block for 'pc' (translating on demand), or NULL to interpret 'pc'.
  * 'fetch' returns the instruction word at a given address. *outCount receives the
- * number of emulated instructions the block covers; *outCycles receives the
- * emulated cycles it consumes (subtract from ARM7_ICOUNT). Either may be NULL.
- * (The exec loop uses arm7_aj_run below instead; this remains for tests/tools.) */
+ * number of emulated instructions the block covers; *outCycles its straight-line
+ * cycle total (informational: blocks charge ARM7_ICOUNT themselves at each exit
+ * with the executed path's exact cost -- early abort/IRQ exits charge only the
+ * executed prefix, skipped conditionals cost 1). Either may be NULL
+ * (The exec loop uses arm7_aj_run below instead; this remains for tests/tools) */
 arm7_block_fn arm7_aj_get(ArmAsmjitCtl *c, uint32_t pc,
                           uint32_t (*fetch)(uint32_t), int *outCount, int *outCycles);
 

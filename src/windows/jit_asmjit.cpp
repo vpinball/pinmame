@@ -223,6 +223,15 @@ struct MemCallbacks {
 };
 MemCallbacks s_memcb = {};
 
+// Translate-time copy of the controller's ARM7_ICOUNT pointer (arm7_aj_set_icount).
+// When set, blocks charge their own cycles AT EACH EXIT with the cost of the path
+// actually executed (see emit_charge_cycles) -- so an early abort/IRQ exit charges
+// only the executed prefix (no double count when the tail re-runs as its own
+// block), and a condition-false instruction refunds down to ARM's 1 cycle.
+// Null (self-tests / unwired): no charge code is emitted; such blocks are never
+// run by arm7_aj_run anyway (it requires the wired pointer).
+int *s_picount = nullptr;
+
 inline int cpsr_off() { return (int)offsetof(ArmCpuSelfTest, cpsr); }
 
 //!! TODO (perf): inline RAM fast path for LDR/STR:
@@ -294,6 +303,16 @@ inline void emit_mov_ptr(x86::Assembler& a, const x86::Gp& r, const void* p)
 #endif
 }
 
+// Emit "ARM7_ICOUNT -= cyc" (or += for a negative refund) using 'scratch' for
+// the pointer. No-op in uncharged mode (s_picount null) or when cyc == 0
+inline void emit_charge_cycles(x86::Assembler& a, int cyc, const x86::Gp& scratch)
+{
+    if (!s_picount || cyc == 0) return;
+    emit_mov_ptr(a, scratch, s_picount);
+    if (cyc > 0) a.sub(x86::dword_ptr(scratch), cyc);
+    else         a.add(x86::dword_ptr(scratch), -cyc);
+}
+
 // Abort/IRQ check emitted right after a SINGLE data transfer (LDR/STR) in Callback
 // mode, and ONLY there -- matching the interpreter, which runs ARM7_CHECKIRQ after a
 // single data transfer (arm7exec.c case 4-7) but not after LDM/STM or the DP/halfword
@@ -307,7 +326,7 @@ inline void emit_mov_ptr(x86::Assembler& a, const x86::Gp& r, const void* p)
 // NB: an early exit charges the block's full cycle total (minor over-count); the abort
 // test runs after this op's side effects (unobservable on the AT91: no MMU, no data
 // abort). No-op unless the hooks are wired (self-test/Mock paths leave them null)
-inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t pc, FuncFrame& frame)
+inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t pc, FuncFrame& frame, int cyc)
 {
     if (!s_memcb.pIrq || !s_memcb.pIrqFlag) return; // hooks not wired -> no codegen
     using CC = x86::CondCode;
@@ -318,10 +337,12 @@ inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t
     // Exit the block (so the exec loop's ARM7_CHECKIRQ vectors) ONLY when an
     // exception would ACTUALLY be taken -- mirroring the legacy JIT, which diverts
     // only if arm7_check_irq_state changed R15. A pending-but-MASKED interrupt must
-    // NOT break the block: doing so caused frequent spurious exits (and, since an
-    // early exit charges the whole block's cycle total, severe cycle over-count),
-    // which threw off MAME timing. Pending bytes via movzx+test; mask bits via
+    // NOT break the block: doing so caused frequent spurious exits, which threw off
+    // MAME timing. Pending bytes via movzx+test; mask bits via
     // test mem,imm against the CPSR -- both proven patterns above.
+    // 'cyc' is the cost of the instructions executed UP TO AND INCLUDING this one:
+    // the exit charges exactly that, so the unexecuted tail is neither charged
+    // here nor double-charged when it later runs as its own block from the resume PC.
     // Data abort: always taken (AT91 never raises one, so this arm is effectively dead).
     emit_mov_ptr(a, a.zax(), s_memcb.pAbtD); a.movzx(x86::eax, x86::byte_ptr(a.zax())); a.test(x86::eax, x86::eax); a.j(CC::kNotZero, do_exit);
     // FIQ: taken if pending AND F (FIQ-disable, bit 6) clear.
@@ -338,6 +359,7 @@ inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t
     emit_mov_ptr(a, a.zax(), s_memcb.pIrqFlag);
     a.mov(x86::ecx, 1);
     a.mov(x86::byte_ptr(a.zax()), x86::cl);
+    emit_charge_cycles(a, cyc, a.zdx()); // executed prefix only (see above)
     a.mov(x86::eax, pc + 4u); // resume at the next instruction; the exec loop then vectors
     a.emit_epilog(frame);
     a.bind(cont);
@@ -414,11 +436,10 @@ void emit_set_flags_logical(x86::Assembler& a, const x86::Gp& ctx, bool setC, bo
     a.mov(x86::ecx, x86::eax);
     a.and_(x86::ecx, kN);         // N = result bit 31
     a.or_(x86::edx, x86::ecx);
-    a.test(x86::eax, x86::eax);   // Z = (result == 0)
-    Label nz = a.new_label();
-    a.j(x86::CondCode::kNotZero, nz);
-    a.or_(x86::edx, kZ);
-    a.bind(nz);
+    a.cmp(x86::eax, 1);           // Z, branchless: CF = (result == 0)
+    a.sbb(x86::ecx, x86::ecx);    // all-ones when zero
+    a.and_(x86::ecx, kZ);
+    a.or_(x86::edx, x86::ecx);
     if (setC && cVal)
         a.or_(x86::edx, kC);
     a.mov(cpsr, x86::edx);
@@ -439,93 +460,49 @@ void emit_set_flags_logical_carry_esi(x86::Assembler& a, const x86::Gp& ctx)
     a.mov(x86::ecx, x86::eax);
     a.and_(x86::ecx, kN);       // N = result bit 31
     a.or_(x86::edx, x86::ecx);
-    a.test(x86::eax, x86::eax); // Z = (result == 0)
-    Label nz = a.new_label();
-    a.j(x86::CondCode::kNotZero, nz);
-    a.or_(x86::edx, kZ);
-    a.bind(nz);
+    a.cmp(x86::eax, 1);         // Z, branchless: CF = (result == 0)
+    a.sbb(x86::ecx, x86::ecx);  // all-ones when zero
+    a.and_(x86::ecx, kZ);
+    a.or_(x86::edx, x86::ecx);
     a.mov(cpsr, x86::edx);
 }
 
-// Set N/Z/C/V for an add/sub result, computed PORTABLY (cmp + branches + bitwise
-// overflow formulas; no x86 CF/OF reads). Preconditions: EAX = result, ECX = op1,
-// ESI = op2, and EAX already equals op1+op2 (isSub=false) or op1-op2 (isSub=true).
-//   C(add) = result <u op1                        (carry)
-//   C(sub) = op1 >=u op2                          (no borrow; ARM C is !borrow)
-//   V(add) = ((op1^result) & (op2^result)) >> 31  (both operands' sign vs result)
-//   V(sub) = ((op1^op2)    & (op1^result)) >> 31
-// Clobbers ECX, EDX, ESI (EAX preserved). ESI must be a frame dirty register
+void emit_set_flags_after_carry(x86::Assembler& a, const x86::Gp& ctx, bool cIsBorrow); // below
+
+// Set N/Z/C/V for an add/sub result by capturing the HOST flags of the add/sub
+// that produced it. Precondition: the host add/sub was the last flag-writing
+// instruction emitted (only flag-transparent MOVs in between, e.g. the Rd
+// write-back). This replaced a fully recomputed portable version (bitwise
+// overflow formulas + branches, ~20 insns) with the branchless setcc capture
+// (~16, no branches) -- setcc maps to AArch64 cset, so portability is kept.
+// isSub: ARM C = !borrow for subtraction-style ops. Clobbers EAX/ECX/EDX
 void emit_set_flags_arith(x86::Assembler& a, const x86::Gp& ctx, bool isSub)
 {
-    const x86::Mem cpsr = x86::dword_ptr(ctx, cpsr_off());
-    using CC = x86::CondCode;
-    a.mov(x86::edx, cpsr);
-    a.and_(x86::edx, ~(kN | kZ | kC | kV)); // preserve mode bits etc., clear NZCV
-
-    // C (computed before V destroys op1/op2)
-    Label noC = a.new_label();
-    if (isSub) { a.cmp(x86::ecx, x86::esi); a.j(CC::kCarry,    noC); } // op1<op2 (borrow) -> C clear
-    else       { a.cmp(x86::eax, x86::ecx); a.j(CC::kNotCarry, noC); } // result>=op1 (no carry) -> C clear
-    a.or_(x86::edx, kC);
-    a.bind(noC);
-
-    // V (consumes op1/op2)
-    if (isSub) {
-        a.xor_(x86::esi, x86::ecx); // op1 ^ op2
-        a.xor_(x86::ecx, x86::eax); // op1 ^ result
-        a.and_(x86::esi, x86::ecx);
-    } else {
-        a.xor_(x86::ecx, x86::eax); // op1 ^ result
-        a.xor_(x86::esi, x86::eax); // op2 ^ result
-        a.and_(x86::esi, x86::ecx);
-    }
-    a.and_(x86::esi, kN);           // isolate bit 31
-    a.shr(x86::esi, 3);             // bit 31 -> bit 28 (kV)
-    a.or_(x86::edx, x86::esi);
-
-    // N
-    a.mov(x86::ecx, x86::eax);
-    a.and_(x86::ecx, kN);
-    a.or_(x86::edx, x86::ecx);
-
-    // Z
-    a.test(x86::eax, x86::eax);
-    Label nz = a.new_label();
-    a.j(CC::kNotZero, nz);
-    a.or_(x86::edx, kZ);
-    a.bind(nz);
-
-    a.mov(cpsr, x86::edx);
+    emit_set_flags_after_carry(a, ctx, isSub); // identical capture (see there)
 }
 
-// Set N/Z/C/V after a host adc/sbb (ADC/SBC/RSC). MUST be emitted immediately
-// after the adc/sbb while the host CF/OF are still valid: it captures them with
-// single-bit setcc (which maps to ARM64 cset, NOT the LAHF/SAHF whole-flags
-// trick). eax=result. For sub-style ops ARM C = !borrow, so pass cIsBorrow=true
-// to capture C with kNotCarry. V comes from the host OF (kOverflow) for both.
-// Clobbers ECX, EDX (and their low bytes). EAX preserved
+// Set N/Z/C/V after a host add/sub/adc/sbb. MUST be emitted while the host
+// flags of that op are still valid (only flag-transparent MOVs in between): all
+// four are captured branchlessly with single-bit setcc (which maps to AArch64
+// cset, NOT the LAHF/SAHF whole-flags trick). For sub-style ops ARM C = !borrow,
+// so pass cIsBorrow=true to capture C with kNotCarry. Uses only high/low byte
+// regs of ECX/EDX (no REX conflict). Clobbers EAX (result no longer needed by
+// any caller), ECX, EDX
 void emit_set_flags_after_carry(x86::Assembler& a, const x86::Gp& ctx, bool cIsBorrow)
 {
     using CC = x86::CondCode;
     a.set(CC::kOverflow, x86::dl);                          // V (0/1)
-    a.set(cIsBorrow ? CC::kNotCarry : CC::kCarry, x86::cl); // C (0/1)
-    a.movzx(x86::edx, x86::dl);
-    a.movzx(x86::ecx, x86::cl);
-    a.shl(x86::edx, 28);                                    // V -> bit 28 (kV)
-    a.shl(x86::ecx, 29);                                    // C -> bit 29 (kC)
-    a.or_(x86::edx, x86::ecx);
-    a.mov(x86::ecx, x86::eax);
-    a.and_(x86::ecx, kN);                                   // N
-    a.or_(x86::edx, x86::ecx);
-    a.test(x86::eax, x86::eax);                             // Z
-    Label nz = a.new_label();
-    a.j(CC::kNotZero, nz);
-    a.or_(x86::edx, kZ);
-    a.bind(nz);
-    a.mov(x86::ecx, x86::dword_ptr(ctx, cpsr_off()));
-    a.and_(x86::ecx, ~(kN | kZ | kC | kV));                 // preserve mode bits etc.
-    a.or_(x86::edx, x86::ecx);
-    a.mov(x86::dword_ptr(ctx, cpsr_off()), x86::edx);
+    a.set(CC::kSign,     x86::dh);                          // N
+    a.set(cIsBorrow ? CC::kNotCarry : CC::kCarry, x86::cl); // C
+    a.set(CC::kZero,     x86::ch);                          // Z
+    a.movzx(x86::eax, x86::dl); a.shl(x86::eax, 28);                            // V -> bit 28
+    a.movzx(x86::edx, x86::dh); a.shl(x86::edx, 31); a.or_(x86::eax, x86::edx); // N -> bit 31
+    a.movzx(x86::edx, x86::cl); a.shl(x86::edx, 29); a.or_(x86::eax, x86::edx); // C -> bit 29
+    a.movzx(x86::edx, x86::ch); a.shl(x86::edx, 30); a.or_(x86::eax, x86::edx); // Z -> bit 30
+    a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off()));
+    a.and_(x86::edx, ~(kN | kZ | kC | kV));                 // preserve mode bits etc.
+    a.or_(x86::eax, x86::edx);
+    a.mov(x86::dword_ptr(ctx, cpsr_off()), x86::eax);
 }
 
 // Emit the operation for one data-processing instruction. The condition is
@@ -704,15 +681,17 @@ bool emit_arm_dp(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t 
                 if (shiftCarryInEsi) emit_set_flags_logical_carry_esi(a, ctx); // C = shifter carry-out
                 else                 emit_set_flags_logical(a, ctx, false, false); // C preserved (no shift)
                 return true;
-            // arithmetic: op1=Rn -> ECX, op2(shifted)=ESI, result -> EAX
-            case 0x4u: a.mov(x86::esi, x86::ecx); a.mov(x86::ecx, rn); a.mov(x86::eax, x86::ecx); a.add(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, false); return true; // ADD
-            case 0x2u: a.mov(x86::esi, x86::ecx); a.mov(x86::ecx, rn); a.mov(x86::eax, x86::ecx); a.sub(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true);  return true; // SUB
-            case 0xAu: a.mov(x86::esi, x86::ecx); a.mov(x86::ecx, rn); a.mov(x86::eax, x86::ecx); a.sub(x86::eax, x86::esi); emit_set_flags_arith(a, ctx, true);  return true; // CMP
-            case 0xBu: a.mov(x86::esi, x86::ecx); a.mov(x86::ecx, rn); a.mov(x86::eax, x86::ecx); a.add(x86::eax, x86::esi); emit_set_flags_arith(a, ctx, false); return true; // CMN
-            case 0x3u: a.mov(x86::esi, rn); a.mov(x86::eax, x86::ecx); a.sub(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true); return true; // RSB: op2 - Rn (op1=ECX=op2)
-            case 0x5u: a.mov(x86::esi, x86::ecx); a.mov(x86::eax, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29);          a.adc(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, false); return true; // ADC
-            case 0x6u: a.mov(x86::esi, x86::ecx); a.mov(x86::eax, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc(); a.sbb(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true);  return true; // SBC
-            case 0x7u: a.mov(x86::eax, x86::ecx); a.mov(x86::esi, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc(); a.sbb(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true);  return true; // RSC: op2 - Rn
+            // arithmetic: op2 (shifted) is in ECX; the flag helpers capture the HOST
+            // flags of the add/sub/adc/sbb itself (only the flag-transparent Rd MOV
+            // may sit in between), so no operand staging is needed
+            case 0x4u: a.mov(x86::eax, rn); a.add(x86::eax, x86::ecx); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, false); return true; // ADD
+            case 0x2u: a.mov(x86::eax, rn); a.sub(x86::eax, x86::ecx); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true);  return true; // SUB
+            case 0xAu: a.mov(x86::eax, rn); a.sub(x86::eax, x86::ecx); emit_set_flags_arith(a, ctx, true);  return true; // CMP
+            case 0xBu: a.mov(x86::eax, rn); a.add(x86::eax, x86::ecx); emit_set_flags_arith(a, ctx, false); return true; // CMN
+            case 0x3u: a.mov(x86::eax, x86::ecx); a.sub(x86::eax, rn); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true); return true; // RSB: op2 - Rn
+            case 0x5u: a.mov(x86::eax, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29);          a.adc(x86::eax, x86::ecx); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, false); return true; // ADC
+            case 0x6u: a.mov(x86::eax, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc(); a.sbb(x86::eax, x86::ecx); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true);  return true; // SBC
+            case 0x7u: a.mov(x86::eax, x86::ecx); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc(); a.sbb(x86::eax, rn); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true);  return true; // RSC: op2 - Rn
             default:   return false;
             }
         }
@@ -727,13 +706,14 @@ bool emit_arm_dp(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t 
         // logical compares, no write-back
         case 0x8u: a.mov(x86::eax, rn); a.and_(x86::eax, imm);  emit_set_flags_logical(a, ctx, immCarryDefined, immCarry); return true; // TST
         case 0x9u: a.mov(x86::eax, rn); a.xor_(x86::eax, imm);  emit_set_flags_logical(a, ctx, immCarryDefined, immCarry); return true; // TEQ
-        // arithmetic, write-back  (op1 in ECX, op2 in ESI, result in EAX)
-        case 0x4u: a.mov(x86::ecx, rn);  a.mov(x86::esi, imm); a.mov(x86::eax, x86::ecx); a.add(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, false); return true; // ADD
-        case 0x2u: a.mov(x86::ecx, rn);  a.mov(x86::esi, imm); a.mov(x86::eax, x86::ecx); a.sub(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true);  return true; // SUB
-        case 0x3u: a.mov(x86::ecx, imm); a.mov(x86::esi, rn);  a.mov(x86::eax, x86::ecx); a.sub(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true);  return true; // RSB (op1=imm, op2=Rn)
+        // arithmetic, write-back: the flag helpers capture the HOST flags of the
+        // add/sub itself (only the flag-transparent Rd MOV in between)
+        case 0x4u: a.mov(x86::eax, rn);  a.add(x86::eax, imm); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, false); return true; // ADD
+        case 0x2u: a.mov(x86::eax, rn);  a.sub(x86::eax, imm); a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true);  return true; // SUB
+        case 0x3u: a.mov(x86::eax, imm); a.sub(x86::eax, rn);  a.mov(rd, x86::eax); emit_set_flags_arith(a, ctx, true);  return true; // RSB: imm - Rn
         // arithmetic compares, no write-back
-        case 0xAu: a.mov(x86::ecx, rn);  a.mov(x86::esi, imm); a.mov(x86::eax, x86::ecx); a.sub(x86::eax, x86::esi); emit_set_flags_arith(a, ctx, true);  return true; // CMP
-        case 0xBu: a.mov(x86::ecx, rn);  a.mov(x86::esi, imm); a.mov(x86::eax, x86::ecx); a.add(x86::eax, x86::esi); emit_set_flags_arith(a, ctx, false); return true; // CMN
+        case 0xAu: a.mov(x86::eax, rn);  a.sub(x86::eax, imm); emit_set_flags_arith(a, ctx, true);  return true; // CMP
+        case 0xBu: a.mov(x86::eax, rn);  a.add(x86::eax, imm); emit_set_flags_arith(a, ctx, false); return true; // CMN
         // arithmetic with carry-in, write-back (host CF carries the ARM C flag)
         case 0x5u: // ADC: Rd = Rn + imm + C
             a.mov(x86::eax, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29);
@@ -742,8 +722,8 @@ bool emit_arm_dp(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t 
             a.mov(x86::eax, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc();
             a.sbb(x86::eax, imm); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true); return true;
         case 0x7u: // RSC: Rd = imm - Rn - !C
-            a.mov(x86::eax, imm); a.mov(x86::esi, rn); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc();
-            a.sbb(x86::eax, x86::esi); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true); return true;
+            a.mov(x86::eax, imm); a.mov(x86::edx, x86::dword_ptr(ctx, cpsr_off())); a.bt(x86::edx, 29); a.cmc();
+            a.sbb(x86::eax, rn); a.mov(rd, x86::eax); emit_set_flags_after_carry(a, ctx, true); return true;
         default:   return false;  // (all DP opcodes with immediate operand 2 now covered)
         }
     }
@@ -796,7 +776,7 @@ bool emit_arm_dp(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t 
 // drives all three memory modes (see s_memMode): Callback emits real read/write
 // calls (the live path), Mock hits the ctx 'mem' buffer (self-tests), Defer ends
 // the block for the interpreter
-bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame)
+bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
 {
     if (s_memMode == MemMode::Defer) return false;  // no callbacks: end block, interpreter does memory
     const bool     I  = (insn >> 25) & 1u;  // 0 = immediate offset (NOTE: inverted vs DP), 1 = register
@@ -878,7 +858,11 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
         if (L) {                                        // load: Rd = read(addr)
             a.mov(x86::ecx, x86::edx);                  // arg0 = address
             emit_mem_call(a, B ? s_memcb.r8 : s_memcb.r32, false);  // -> EAX
-            if (Rd == 15u) { a.and_(x86::eax, ~3u); a.emit_epilog(frame); } // LDR into PC = return
+            if (Rd == 15u) {                            // LDR into PC = return
+                a.and_(x86::eax, ~3u);
+                emit_charge_cycles(a, cyc, a.zdx());
+                a.emit_epilog(frame);
+            }
             else           a.mov(x86::dword_ptr(ctx, reg_off((int)Rd)), x86::eax);
         } else {                                        // store: write(addr, value)
             a.mov(x86::ecx, x86::edx);                  // arg0 = address
@@ -893,7 +877,7 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
         // (a PC load from a peripheral register -- no known code) stays pending until
         // the next post-checked LDR/STR. Externally raised IRQs are unaffected
         // (arm7_core_set_irq_line runs its own check). Everything else checks here
-        if (!(L && Rd == 15u)) emit_mem_post_checks(a, ctx, pc, frame);
+        if (!(L && Rd == 15u)) emit_mem_post_checks(a, ctx, pc, frame, cyc);
         return true;
     }
 
@@ -932,6 +916,7 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
     }
     if (branchToPc) {                  // control flow: EAX = new PC -> return from the block
         a.and_(x86::eax, ~3u);         // ARMv4 LDR-to-PC ignores the low two bits
+        emit_charge_cycles(a, cyc, a.zdx());
         a.emit_epilog(frame);
     }
     return true;
@@ -1048,7 +1033,7 @@ bool emit_arm_halfword(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uin
 // in the list ends the block (return). S=1 (user-bank / SPSR restore), a PC base,
 // and the base register appearing in the list are deferred. Memory access follows
 // s_memMode (Callback = real calls / Mock = ctx buffer / Defer = interpreter)
-bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame)
+bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
 {
     if (s_memMode == MemMode::Defer) return false; // no callbacks: end block, interpreter does memory
     const bool     P    = (insn >> 24) & 1u;
@@ -1103,6 +1088,7 @@ bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn
         if (branchToPc) {                           // LDM ...,PC = return (after writeback)
             a.mov(x86::eax, x86::edx);
             a.and_(x86::eax, ~3u);
+            emit_charge_cycles(a, cyc, a.zdx());    // (EDX's PC already copied to EAX)
             a.emit_epilog(frame);
         }
         // NB: no abort/IRQ post-check here. The interpreter checks IRQ only after a
@@ -1139,6 +1125,7 @@ bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn
     }
     if (branchToPc) {
         a.and_(x86::eax, ~3u);
+        emit_charge_cycles(a, cyc, a.zdx());
         a.emit_epilog(frame);
     }
     return true;
@@ -1149,12 +1136,13 @@ bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn
 // LR. A branch ends the block: load the target into EAX (the next-PC return
 // value) and emit the function epilog (return). Conditional branches are gated
 // by the caller's emit_cond_skip, so this body runs only when the branch is taken
-bool emit_arm_branch(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame)
+bool emit_arm_branch(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
 {
     const bool     L      = (insn >> 24) & 1u;               // link
     const int32_t  off    = (int32_t)(insn << 8) >> 6;       // sign-extended imm24, scaled *4
     const uint32_t target = pc + 8u + (uint32_t)off;
     if (L) a.mov(x86::dword_ptr(ctx, reg_off(14)), pc + 4u); // LR = address of the next instruction
+    emit_charge_cycles(a, cyc, a.zdx());
     a.mov(x86::eax, target);
     a.emit_epilog(frame);                                    // return target as the next PC
     return true;
@@ -1190,7 +1178,7 @@ inline bool arm_is_psr(uint32_t insn) {     // MRS/MSR (interpreter test: S clea
 // case 1): the value is NOT masked, and if bit 0 is set the CPSR T bit is set
 // (Thumb is not implemented by this core; this is parity, not a mode switch).
 // Ends the block. Rm == 15 (BX PC -- nonsensical) is deferred
-bool emit_arm_bx(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, FuncFrame& frame)
+bool emit_arm_bx(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, FuncFrame& frame, int cyc)
 {
     const uint32_t Rm = insn & 0xFu;
     if (Rm == 15u) return false;
@@ -1200,6 +1188,7 @@ bool emit_arm_bx(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, FuncFrame
     a.j(x86::CondCode::kZero, even);
     a.or_(x86::dword_ptr(ctx, cpsr_off()), 0x20u); // T bit (bit 5), interpreter parity
     a.bind(even);
+    emit_charge_cycles(a, cyc, a.zdx());
     a.emit_epilog(frame);                          // return Rm as the next PC (unmasked)
     return true;
 }
@@ -1229,12 +1218,40 @@ bool emit_arm_swap(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     return true;
 }
 
+// Multiplies cost 1S + mI, where m = 1..4 by MULTIPLIER magnitude (byte count
+// of |Rs|: <0x100 -> 1 ... else 4; long forms +1I; see arm7core.c HandleMul et
+// al). The block's exit constant charges the worst case (m = 4, arm_insn_cycles);
+// this emits the run-time correction "ARM7_ICOUNT += 4 - m" from the actual Rs
+// value, making the charged total spec/interpreter-exact. 'sign': MUL/MLA and
+// SMULL/SMLAL classify |Rs| unsigned (0x80000000 stays put under negation ->
+// m = 4, matching HandleMul/HandleSMulLong); UMULL/UMLAL classify Rs raw.
+// Emitted BEFORE the multiply's own code so an Rd == Rs overwrite cannot skew it.
+// Clobbers ECX/EDX. No-op in uncharged mode (s_picount null)
+void emit_mul_cycle_refund(x86::Assembler& a, const x86::Gp& ctx, uint32_t Rs, bool sign)
+{
+    if (!s_picount) return;
+    a.mov(x86::ecx, x86::dword_ptr(ctx, reg_off((int)Rs)));
+    if (sign) {
+        a.mov(x86::edx, x86::ecx);
+        a.sar(x86::edx, 31);
+        a.xor_(x86::ecx, x86::edx);
+        a.sub(x86::ecx, x86::edx);  // |Rs|
+    }
+    a.or_(x86::ecx, 1);             // Rs == 0: keep BSR defined -> m = 1
+    a.bsr(x86::edx, x86::ecx);      // index of the top set bit
+    a.shr(x86::edx, 3);             // byte index = m - 1 (0..3)
+    a.xor_(x86::edx, 3);            // refund = 4 - m
+    emit_mov_ptr(a, a.zcx(), s_picount);
+    a.add(x86::dword_ptr(a.zcx()), x86::edx);
+}
+
 // Multiply MUL (Rd = Rm * Rs) / MLA (Rd = Rm * Rs + Rn). R15 in any operand is
 // deferred (as in the legacy JIT). S=1 sets N/Z from the result and -- matching
 // the INTERPRETER (HandleMul: N|Z cleared only), NOT the legacy JIT (which
 // zeroed C) -- preserves C and V. The low 32 bits of the product are
 // sign-agnostic, so one imul serves both signednesses. Works in all memory
-// modes (no memory access). Cycle cost lives in arm_insn_cycles
+// modes (no memory access). Cycle cost: worst case in arm_insn_cycles plus the
+// data-dependent run-time refund above
 bool emit_arm_mul32(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
 {
     const uint32_t Rd = (insn >> 16) & 0xFu; // NB: multiply encodings put Rd at 19-16
@@ -1244,6 +1261,7 @@ bool emit_arm_mul32(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     const bool     A  = (insn >> 21) & 1u;
     const bool     S  = (insn >> 20) & 1u;
     if (Rd == 15u || Rm == 15u || Rs == 15u || (A && Rn == 15u)) return false;
+    emit_mul_cycle_refund(a, ctx, Rs, true); // MUL/MLA: m from |Rs| (HandleMul)
     a.mov(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rm)));
     a.imul(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rs)));
     if (A) a.add(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rn)));
@@ -1268,6 +1286,7 @@ bool emit_arm_mul64(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     const bool   A      = (insn >> 21) & 1u;
     const bool   S      = (insn >> 20) & 1u;
     if (RdHi == 15u || RdLo == 15u || Rs == 15u || Rm == 15u) return false;
+    emit_mul_cycle_refund(a, ctx, Rs, signd); // m from Rs (|Rs| when signed), HandleS/UMulLong
     a.mov(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rm)));
     if (signd) a.imul(x86::dword_ptr(ctx, reg_off((int)Rs))); // EDX:EAX = Rm * Rs (signed)
     else       a.mul (x86::dword_ptr(ctx, reg_off((int)Rs))); //                   (unsigned)
@@ -1285,10 +1304,10 @@ bool emit_arm_mul64(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
         a.and_(x86::esi, kN);         // N = bit 63 (bit 31 of the high word)
         a.or_(x86::ecx, x86::esi);
         a.or_(x86::eax, x86::edx);    // Z = (lo | hi) == 0 (results already stored)
-        Label nz = a.new_label();
-        a.j(x86::CondCode::kNotZero, nz);
-        a.or_(x86::ecx, kZ);
-        a.bind(nz);
+        a.cmp(x86::eax, 1);           // branchless: CF = (64-bit result == 0)
+        a.sbb(x86::eax, x86::eax);
+        a.and_(x86::eax, kZ);
+        a.or_(x86::ecx, x86::eax);
         a.mov(cpsr, x86::ecx);
     }
     return true;
@@ -1316,14 +1335,25 @@ bool emit_arm_psr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     return true;
 }
 
+inline int arm_insn_cycles(uint32_t insn); // defined below (shared cost model)
+
 // Translate one ARM instruction: evaluate its condition (skip the body if
-// false), emit the operation, then bind the skip target. The cycle cost is
-// emitted by the caller AFTER this returns. Branches and PC-writing transfers
-// end the block by emitting their own epilog (hence the FuncFrame)
-bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame)
+// false), emit the operation, then bind the skip target. Branches and
+// PC-writing transfers end the block by emitting their own epilog (hence the
+// FuncFrame). 'cycCharge' is the cost of the block's instructions up to and
+// including this one: block exits emitted here or in the sub-emitters charge
+// exactly that (see emit_charge_cycles), and a condition-false instruction
+// costing more than ARM's 1-cycle skip price refunds the difference
+bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cycCharge = 0)
 {
     const uint32_t cond = insn >> 28;
     if (cond == 0xFu) return false;           // NV: unsupported
+    // A skipped instruction really costs 1 cycle; blocks charge full per-path
+    // costs at their exits, so conditionals costing more get a refund snippet
+    // on the condition-false path. Cost-1 conditionals (plain DP, the common
+    // case) are already exact and get no extra code
+    const int  cost       = arm_insn_cycles(insn);
+    const bool refundSkip = (cond != 0xEu) && cost > 1 && s_picount != nullptr;
     Label skip = a.new_label();
     emit_cond_skip(a, ctx, cond, skip);       // jumps to 'skip' if false (no-op for AL)
     const uint32_t cls = (insn >> 26) & 0x3u; // instruction class (bits 27-26)
@@ -1332,7 +1362,7 @@ bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_
         // BX, multiply, halfword transfer, swap, and PSR transfer all share the DP
         // class; route them (in the interpreter's dispatch order) before data processing
         if (arm_is_bx(insn)) {
-            ok = emit_arm_bx(a, ctx, insn, frame);
+            ok = emit_arm_bx(a, ctx, insn, frame, cycCharge);
         } else if (arm_is_mul32(insn)) {
             ok = emit_arm_mul32(a, ctx, insn);
         } else if (arm_is_mul64(insn)) {
@@ -1360,47 +1390,65 @@ bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_
                     // emit_arm_dp already verified the helper is wired
                     a.mov(x86::ecx, x86::dword_ptr(ctx, reg_off(15)));
                     emit_mem_call(a, s_memcb.exc_return, false);
+                    emit_charge_cycles(a, cycCharge, a.zdx());
                     a.emit_epilog(frame); // EAX = final PC from the helper
                 } else {
                     a.mov(x86::eax, x86::dword_ptr(ctx, reg_off(15)));
                     a.and_(x86::eax, ~3u);
+                    emit_charge_cycles(a, cycCharge, a.zdx());
                     a.emit_epilog(frame);
                 }
             }
         }
     }
-    else if (cls == 1u)        ok = emit_arm_ldrstr(a, ctx, insn, pc, frame); // LDR/STR
+    else if (cls == 1u)        ok = emit_arm_ldrstr(a, ctx, insn, pc, frame, cycCharge); // LDR/STR
     else if (cls == 2u) {
-        if ((insn >> 25) & 1u) ok = emit_arm_branch(a, ctx, insn, pc, frame);        // B/BL (101)
-        else                   ok = emit_arm_blocktransfer(a, ctx, insn, pc, frame); // LDM/STM (100)
+        if ((insn >> 25) & 1u) ok = emit_arm_branch(a, ctx, insn, pc, frame, cycCharge);        // B/BL (101)
+        else                   ok = emit_arm_blocktransfer(a, ctx, insn, pc, frame, cycCharge); // LDM/STM (100)
     }
     else                       ok = false;  // coprocessor / SWI -> later
-    a.bind(skip);
+    if (ok && refundSkip) {
+        // executed path hops over the refund (dead code after an always-exiting
+        // body like a taken branch -- harmless); the condition-false path lands
+        // on it and gives back cost-1 before continuing in the block
+        Label end = a.new_label();
+        a.jmp(end);
+        a.bind(skip);
+        emit_charge_cycles(a, -(cost - 1), a.zdx());
+        a.bind(end);
+    } else {
+        a.bind(skip);
+    }
     return ok;
 }
 
-// Cycle cost of one translated ARM instruction, modeled on the LEGACY x86 JIT
-// (arm7jit.c), NOT the interpreter, per project preference. Legacy default is 3
-// cycles with per-op deltas: DP -2 (=1), +1 register-specified shift, +2 PC dest;
+// Cycle cost of one translated ARM instruction: the ARM7TDMI datasheet's S/N/I
+// formulas with S = N = I = 1 (the interpreter's model exactly -- see the
+// cycle-counting note atop arm7core.c; bus wait states etc. are not modeled).
+// Historically expressed as the legacy x86 JIT's (arm7jit.c) "default 3
+// cycles with per-op deltas": DP -2 (=1), +1 register-specified shift, +2 PC dest;
 // LDR/STR load 3 / store 2 / load-PC 5; halfword load 3 / STRH 2; LDM (n+2, +2 if
-// PC); STM (n+1); B/BL 3; MUL 3+4 (+1 MLA); MULL 3+2 (+1 MLAL); MRS/MSR 3-2 (=1).
-// Returns the EXECUTE cost: a conditional instruction that
-// is skipped at run time really costs 1 (a bounded over-count -- see translate_block).
+// PC); STM (n+1); B/BL 3; MRS/MSR 3-2 (=1); multiplies see below.
+// Returns the EXECUTE cost; a conditional instruction that is skipped at run
+// time really costs 1, which the emitted code accounts for exactly via a
+// refund on the condition-false path (see emit_arm_insn's refundSkip).
 //
 // Only called for instructions the JIT actually translates. Ops the JIT defers
-// (SWP, MOVS PC, coprocessor, ...) end the block and are executed AND
-// cycle-counted by the interpreter. NB the multiply costs are the legacy JIT's
-// fixed averages; the interpreter's counts are data-dependent (they scale with
-// the Rs magnitude, arm7core.c HandleMul), which a translate-time per-block
-// constant cannot express -- so JITted multiplies charge the legacy numbers
-// (as shipped x86 builds always did), interpreted ones the exact ones
+// (coprocessor, SWI, ...) end the block and are executed AND
+// cycle-counted by the interpreter.
+//
+// Multiplies: the real cost is data-dependent (1S + mI, m = 1..4 by multiplier
+// magnitude; +1I accumulate; long forms +1I more -- arm7core.c HandleMul et
+// al). The constants below charge the WORST CASE (m = 4); the multiply
+// emitters then refund 4-m at run time from the actual multiplier value
+// (emit_mul_cycle_refund), so the charged total is spec/interpreter-exact
 inline int arm_insn_cycles(uint32_t insn)
 {
     const uint32_t cls = (insn >> 26) & 0x3u;
     if (cls == 0u) {
         if (arm_is_bx(insn))    return 3;                                       // BX (legacy default 3)
-        if (arm_is_mul32(insn)) return ((insn >> 21) & 1u) ? 8 : 7;             // MUL 7 / MLA 8 (legacy MUL32: 3+4, +1 A)
-        if (arm_is_mul64(insn)) return ((insn >> 21) & 1u) ? 6 : 5;             // MULL 5 / MLAL 6 (legacy MUL64: 3+2, +1 A)
+        if (arm_is_mul32(insn)) return ((insn >> 21) & 1u) ? 6 : 5;             // MUL/MLA: 1S+mI (+1I A), worst-case m=4; run-time refund of 4-m
+        if (arm_is_mul64(insn)) return ((insn >> 21) & 1u) ? 7 : 6;             // MULL/MLAL: 1S+(m+1)I (+1I A), worst-case m=4; run-time refund
         if (arm_is_swap(insn))  return 4;                                       // SWP/SWPB (legacy SWAP 3+1; = interpreter's net 4)
         if (arm_is_psr(insn))   return 1;                                       // MRS/MSR (legacy PSRX 3-2; = interpreter's net 1)
         if ((insn & 0x02000090u) == 0x00000090u && ((insn >> 5) & 0x3u) != 0u)  // halfword/signed
@@ -2408,7 +2456,7 @@ typedef arm7_block_fn ArmBlockFn; // == uint32_t (*)(void*); matches jit_asmjit.
 static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32_t pc,
                                   uint32_t (*fetch)(uint32_t), int &count, int &cycles,
                                   int (*isBlockStart)(void *u, uint32_t addr) = nullptr,
-                                  void *user = nullptr)
+                                  void *user = nullptr, int *picount = nullptr)
 {
     CodeHolder code;
     code.init(rt.environment());
@@ -2436,6 +2484,7 @@ static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32
     a.emit_prolog(frame);
     a.emit_args_assignment(frame, args);
     s_memcb   = cb;
+    s_picount = picount;  // enables in-block cycle charging at every exit
     s_memMode = useCallbacks ? MemMode::Callback : MemMode::Defer;
     int i = 0, cyc = 0;
     while (i < 256) {  // bound block size
@@ -2443,24 +2492,30 @@ static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32
         if (i > 0 && isBlockStart && isBlockStart(user, at))
             break; // 'at' already starts a cached block: join it via the dispatcher instead of duplicating its code
         const uint32_t insn = fetch(at);
-        if (!emit_arm_insn(a, ctx, insn, at, frame))
+        const int      cost = arm_insn_cycles(insn); // legacy-JIT cycle model (see arm_insn_cycles)
+        // pass the path cost INCLUDING this instruction: any exit it emits
+        // charges exactly the instructions executed up to that point
+        if (!emit_arm_insn(a, ctx, insn, at, frame, cyc + cost))
             break;
-        cyc += arm_insn_cycles(insn); // legacy-JIT cycle model (see arm_insn_cycles)
+        cyc += cost;
         ++i;
         // End the block at ANY control transfer (basic-block boundary), conditional
         // or not. If a conditional branch isn't taken at run time, the trailing
         // "mov eax, next-pc; epilog" below returns the fall-through PC and that
         // address becomes its own block -- so instructions after a *taken* branch
-        // are never wrongly cycle-counted. The only residual over-count is a
-        // not-taken conditional branch charged its full cost instead of 1
-        // (bounded, once per block)
+        // are never wrongly cycle-counted. (A not-taken conditional branch is
+        // charged 1, not its full cost: the skip-path refund in emit_arm_insn)
         if (arm_insn_ends_block(insn))
             break;
     }
-    s_memMode = MemMode::Mock; // restore default (self-tests run direct, assume Mock)
-    s_memcb   = MemCallbacks{};
+    // trailing exit: charge the whole straight-line path, return the fall-through PC
+    // (must be emitted BEFORE the statics are restored below)
+    emit_charge_cycles(a, cyc, a.zdx());
     a.mov(x86::eax, pc + 4u * (uint32_t)i); // resume PC = first untranslated instruction
     a.emit_epilog(frame);
+    s_memMode = MemMode::Mock; // restore default (self-tests run direct, assume Mock)
+    s_memcb   = MemCallbacks{};
+    s_picount = nullptr;
     count  = i;
     cycles = cyc;
     if (i == 0)
@@ -2479,7 +2534,9 @@ static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32
 struct BlockInfo {
     ArmBlockFn fn;      // entry point (nullptr = entry recycled, on the free list)
     uint16_t   count;   // #instructions the block covers
-    uint16_t   cyc;     // total emulated cycles the block consumes
+    uint16_t   cyc;     // straight-line cycle total (informational: blocks charge
+                        // ARM7_ICOUNT themselves at their exits with the executed
+                        // path's exact cost -- see emit_charge_cycles)
 };
 
 struct ArmAsmjitCtl {
@@ -2569,6 +2626,7 @@ static void aj_alloc_slots(ArmAsmjitCtl *c, uint32_t minAddr, uint32_t maxAddr)
     aj_release_retired(c);
     delete[] c->slot;
     delete[] c->cover;
+    c->dispatcher = nullptr; // embeds minAddr/maxAddr/slot base -> re-emit with the new values
     c->minAddr = minAddr;
     c->maxAddr = maxAddr;
     c->slots   = (maxAddr > minAddr) ? (int)((maxAddr - minAddr) >> 2) : 0;
@@ -2780,7 +2838,7 @@ extern "C" ArmBlockFn arm7_aj_get(ArmAsmjitCtl *c, uint32_t pc, uint32_t (*fetch
     }
     if (v == ArmAsmjitCtl::AJ_SLOT_INTERP) return nullptr;
     int cnt = 0, cyc = 0;
-    ArmBlockFn fn = translate_block(c->rt, c->mem, pc, fetch, cnt, cyc, aj_is_block_start, c);
+    ArmBlockFn fn = translate_block(c->rt, c->mem, pc, fetch, cnt, cyc, aj_is_block_start, c, c->picount);
     if (fn) {
         BlockInfo bi;
         bi.fn    = fn;
@@ -2819,10 +2877,12 @@ extern "C" ArmBlockFn arm7_aj_get(ArmAsmjitCtl *c, uint32_t pc, uint32_t (*fetch
 //  exec loop translates via arm7_aj_run/arm7_aj_get, and the next run chains
 //  through the new block.
 //
-//  Controller fields (minAddr/maxAddr/slot/blocksPtr/enabled) are read through
-//  the stable 'this' pointer EVERY hop, so set_range/reset/retire stay safe
-//  mid-chain. Only 'picount' and 'pIrqFlag' are embedded by VALUE -- their
-//  setters drop the dispatcher so it re-emits
+//  Mutable controller state ('enabled', the icount value, slot CONTENTS,
+//  'blocksPtr') is read through stable addresses EVERY hop, so reset/retire
+//  stay safe mid-chain. Values that only change at init time -- 'picount',
+//  'pIrqFlag', and (since they are set exclusively by aj_alloc_slots) the
+//  minAddr/maxAddr bounds and the slot array BASE -- are embedded as
+//  constants; every site that changes one drops the dispatcher so it re-emits
 // ===========================================================================
 
 typedef uint32_t (*ArmDispatchFn)(void *ctx, uint32_t pc);
@@ -2869,20 +2929,18 @@ static void aj_emit_dispatcher(ArmAsmjitCtl *c)
     emit_mov_ptr(a, a.zcx(), c->picount);
     a.cmp(x86::dword_ptr(a.zcx()), 0);
     a.j(CC::kSignedLE, out);
-    // pc within [minAddr, maxAddr)?
-    emit_mov_ptr(a, a.zdx(), &c->minAddr);
-    a.cmp(pc32, x86::dword_ptr(a.zdx()));
+    // pc within [minAddr, maxAddr)? Bounds and the slot array base are embedded
+    // as CONSTANTS: they change only in aj_alloc_slots (init-time create /
+    // set_range), which drops this dispatcher so it re-emits with fresh values
+    a.cmp(pc32, c->minAddr);
     a.j(CC::kCarry, out);                                 // below minAddr
-    emit_mov_ptr(a, a.zdx(), &c->maxAddr);
-    a.cmp(pc32, x86::dword_ptr(a.zdx()));
+    a.cmp(pc32, c->maxAddr);
     a.j(CC::kNotCarry, out);                              // at/above maxAddr
     // v = slot[(pc - minAddr) >> 2]
     a.mov(x86::eax, pc32);
-    emit_mov_ptr(a, a.zdx(), &c->minAddr);
-    a.sub(x86::eax, x86::dword_ptr(a.zdx()));
+    a.sub(x86::eax, c->minAddr);
     a.shr(x86::eax, 2);                                   // idx (zero-extends zax)
-    emit_mov_ptr(a, a.zdx(), &c->slot);
-    a.mov(a.zdx(), x86::ptr(a.zdx()));                    // slot array (re-read: realloc-safe)
+    emit_mov_ptr(a, a.zdx(), c->slot);                    // slot array base (embedded)
     a.mov(x86::eax, x86::ptr(a.zdx(), a.zax(), 2, 0, 4)); // v = slot[idx]
     a.cmp(x86::eax, ArmAsmjitCtl::AJ_SLOT_BASE);
     a.j(CC::kCarry, out);                                 // UNTRIED / INTERP -> C loop
@@ -2892,11 +2950,9 @@ static void aj_emit_dispatcher(ArmAsmjitCtl *c)
     emit_mov_ptr(a, a.zdx(), &c->blocksPtr);
     a.mov(a.zdx(), x86::ptr(a.zdx()));
     a.add(a.zdx(), a.zax());
-    // charge the block we are about to run (equivalent totals to the C loop's
-    // run-then-charge, since the budget check above gates the same way)
-    a.movzx(x86::ecx, x86::word_ptr(a.zdx(), (int)offsetof(BlockInfo, cyc)));
-    emit_mov_ptr(a, a.zax(), c->picount);
-    a.sub(x86::dword_ptr(a.zax()), x86::ecx);
+    // no cycle charge here: blocks charge ARM7_ICOUNT themselves at their exits
+    // with the executed path's cost (see emit_charge_cycles); the budget check
+    // above still gates each hop like the C loop's while (ICOUNT > 0)
     // call fn(ctx)
     a.mov(a.zdx(), x86::ptr(a.zdx(), (int)offsetof(BlockInfo, fn)));
 #if defined(_WIN64)
@@ -2961,10 +3017,10 @@ extern "C" int arm7_aj_run(ArmAsmjitCtl *c, void *cpu_ctx, uint32_t pc,
     ArmBlockFn fn = arm7_aj_get(c, pc, fetch, &cnt, &cyc);
     if (!fn) return 0;
     // Run the first (already-resolved) block right here instead of having the
-    // dispatcher re-look-it-up: charge its cycles (same charge-before-run order the
-    // dispatcher uses) and call it, then chain the REST starting from the PC it
-    // returns. Same block sequence, same totals, one fewer slot lookup per entry
-    *c->picount -= cyc;
+    // dispatcher re-look-it-up, then chain the REST starting from the PC it
+    // returns. No cycle charge here: blocks charge ARM7_ICOUNT themselves at
+    // their exits with the cost of the path actually executed (exact for early
+    // abort/IRQ exits and skipped conditionals -- see emit_charge_cycles)
     uint32_t next = fn(cpu_ctx);
     // Chain blocks 2..N via the dispatcher -- unless chaining is off, the dispatcher
     // couldn't be emitted, or this block requested an IRQ check (arm7_aj_irq_flag): a
@@ -3307,10 +3363,10 @@ static int jit_asmjit_cycles_selftest(void)
     if (arm_insn_cycles(0xEA000000u) != 3) return 0; // B .                  (branch = 3)
     if (arm_insn_cycles(0xE8BD8004u) != 6) return 0; // LDM {r2,pc}          (n=2 +2 +PC2 = 6)
     if (arm_insn_cycles(0xE8AD000Eu) != 4) return 0; // STM {r1,r2,r3}       (n=3 +1 = 4)
-    if (arm_insn_cycles(0xE0020190u) != 7) return 0; // MUL r2,r0,r1         (legacy 3+4 = 7)
-    if (arm_insn_cycles(0xE0232190u) != 8) return 0; // MLA r3,r0,r1,r2      (7 +1 = 8)
-    if (arm_insn_cycles(0xE0832190u) != 5) return 0; // UMULL r2,r3,r0,r1    (legacy 3+2 = 5)
-    if (arm_insn_cycles(0xE0A87190u) != 6) return 0; // UMLAL r7,r8,r0,r1    (5 +1 = 6)
+    if (arm_insn_cycles(0xE0020190u) != 5) return 0; // MUL r2,r0,r1         (1S+4I worst case; run-time refund)
+    if (arm_insn_cycles(0xE0232190u) != 6) return 0; // MLA r3,r0,r1,r2      (+1I accumulate)
+    if (arm_insn_cycles(0xE0832190u) != 6) return 0; // UMULL r2,r3,r0,r1    (1S+5I worst case)
+    if (arm_insn_cycles(0xE0A87190u) != 7) return 0; // UMLAL r7,r8,r0,r1    (+1I accumulate)
     if (arm_insn_cycles(0xE10F1000u) != 1) return 0; // MRS r1,CPSR          (PSR = 1)
     if (arm_insn_cycles(0xE328F20Fu) != 1) return 0; // MSR CPSR_f,#imm      (PSR = 1)
     if (arm_insn_cycles(0xE129F004u) != 1) return 0; // MSR CPSR_fc,r4       (PSR = 1)
@@ -3569,6 +3625,132 @@ static int jit_asmjit_join_selftest(void)
     return ok ? 1 : 0;
 }
 
+// Cycle accounting: a condition-false instruction must cost ARM's 1 cycle, not
+// its full price -- blocks charge full path costs at their exits and refund
+// cost-1 on the condition-false path (emit_arm_insn's refundSkip)
+static int jit_asmjit_cyc_skip_selftest(void)
+{
+    static const uint32_t prog[] = {
+        0xE3500001u, // [0x1000] CMP r0,#1         (1)  Z = (r0 == 1)
+        0x05901004u, // [0x1004] LDREQ r1,[r0,#4]  (3, or 1 when skipped)
+        0xEAFFFFFEu, // [0x1008] B .               (3)
+    };
+    g_test_prog = prog;
+    g_test_base = 0x1000u;
+    for (int i = 0; i < 128; ++i) g_memcb_words[i] = 0;
+    g_memcb_words[1] = 0xBEEFu; // LDREQ address = 1+4 = 5 -> mock word index 1
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_mem_callbacks(c, memcb_r8, memcb_r16, memcb_r32, memcb_w8, memcb_w16, memcb_w32);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    ArmBlockFn fn = arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc);
+    bool ok = (fn != nullptr) && (cyc == 7); // straight-line metadata: 1+3+3
+    // (1) condition TRUE: full price charged
+    ArmCpuSelfTest cpuA{};
+    cpuA.r[0] = 1; // CMP r0,#1 -> Z=1 -> LDREQ executes
+    g_chain_icount = 100;
+    ok = ok && (fn(&cpuA) == 0x1008u) && (cpuA.r[1] == 0xBEEFu) && (g_chain_icount == 93);
+    // (2) condition FALSE: the skipped LDR costs 1, not 3 (refund of 2)
+    ArmCpuSelfTest cpuB{};
+    cpuB.r[0] = 0; // Z=0 -> LDREQ skipped
+    g_chain_icount = 100;
+    ok = ok && (fn(&cpuB) == 0x1008u) && (cpuB.r[1] == 0u) && (g_chain_icount == 95);
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
+// Cycle accounting: multiply costs are data-dependent (1S + mI, m = 1..4 by
+// multiplier magnitude) -- the block charges the worst case and the emitted
+// refund corrects it from the ACTUAL Rs value, incl. |Rs| for the signed forms
+static int jit_asmjit_cyc_mul_selftest(void)
+{
+    static const uint32_t progM[] = {
+        0xE0020190u, // [0x1000] MUL r2,r0,r1  (5 worst case; real 1+m)
+        0xEAFFFFFEu, // [0x1004] B .           (3)
+    };
+    g_test_prog = progM;
+    g_test_base = 0x1000u;
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    ArmBlockFn fn = arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc);
+    bool ok = (fn != nullptr) && (cyc == 8); // worst-case metadata: 5+3
+    // m = 1: |5| < 0x100 -> MUL costs 2, block 2+3 = 5
+    ArmCpuSelfTest cpuA{};
+    cpuA.r[0] = 2; cpuA.r[1] = 5;
+    g_chain_icount = 100;
+    ok = ok && (fn(&cpuA) == 0x1004u) && (cpuA.r[2] == 10u) && (g_chain_icount == 95);
+    // m = 3: 0x12345 < 0x1000000 -> MUL costs 4, block 7
+    ArmCpuSelfTest cpuB{};
+    cpuB.r[0] = 2; cpuB.r[1] = 0x12345u;
+    g_chain_icount = 100;
+    ok = ok && (fn(&cpuB) == 0x1004u) && (g_chain_icount == 93);
+    // signed: |-3| = 3 -> m = 1 (the raw value 0xFFFFFFFD would be m = 4)
+    ArmCpuSelfTest cpuC{};
+    cpuC.r[0] = 2; cpuC.r[1] = 0xFFFFFFFDu;
+    g_chain_icount = 100;
+    ok = ok && (fn(&cpuC) == 0x1004u) && (cpuC.r[2] == 0xFFFFFFFAu) && (g_chain_icount == 95);
+    arm7_aj_delete(c);
+    if (!ok) return 0;
+    // UMULL classifies Rs UNSIGNED: 0xFFFFFFFD -> m = 4 (no refund)
+    static const uint32_t progU[] = {
+        0xE0832190u, // [0x1000] UMULL r2,r3,r0,r1  (6 worst case; real 2+m)
+        0xEAFFFFFEu, // [0x1004] B .                (3)
+    };
+    g_test_prog = progU;
+    ArmAsmjitCtl *cu = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_icount(cu, &g_chain_icount);
+    ArmBlockFn fnu = arm7_aj_get(cu, 0x1000u, test_fetch, &cnt, &cyc);
+    ok = (fnu != nullptr) && (cyc == 9); // 6+3
+    ArmCpuSelfTest cpuD{};
+    cpuD.r[0] = 2; cpuD.r[1] = 0xFFFFFFFDu;
+    g_chain_icount = 100;
+    ok = ok && (fnu(&cpuD) == 0x1004u) && (g_chain_icount == 91); // m=4: full 9
+    ArmCpuSelfTest cpuE{};
+    cpuE.r[0] = 2; cpuE.r[1] = 0x10000u; // m = 3 -> refund 1 -> block 8
+    g_chain_icount = 100;
+    ok = ok && (fnu(&cpuE) == 0x1004u) && (g_chain_icount == 92);
+    arm7_aj_delete(cu);
+    return ok ? 1 : 0;
+}
+
+// Cycle accounting: an early abort/IRQ exit charges only the EXECUTED prefix;
+// the unexecuted tail is charged (once) when it later runs as its own block --
+// previously the exit charged the full block and the tail was charged again
+static int jit_asmjit_cyc_irqexit_selftest(void)
+{
+    static const uint32_t prog[] = {
+        0xE3A00010u, // [0x1000] MOV r0,#16   (1)
+        0xE5801000u, // [0x1004] STR r1,[r0]  (2)  -> pending IRQ -> exit at 0x1008
+        0xE3A02005u, // [0x1008] MOV r2,#5    (1)
+        0xEAFFFFFEu, // [0x100C] B .          (3)
+    };
+    g_test_prog = prog;
+    g_test_base = 0x1000u;
+    for (int i = 0; i < 128; ++i) g_memcb_words[i] = 0;
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_mem_callbacks(c, memcb_r8, memcb_r16, memcb_r32, memcb_w8, memcb_w16, memcb_w32);
+    arm7_aj_set_irq_hooks(c, nullptr, &g_irq_zero, &g_irq_pending, &g_irq_zero, &g_irq_flag);
+    arm7_aj_set_icount(c, &g_chain_icount);
+    int cnt = 0, cyc = 0;
+    ArmBlockFn fn = arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc);
+    bool ok = (fn != nullptr) && (cyc == 7); // straight-line metadata: 1+2+1+3
+    ArmCpuSelfTest cpu{}; // CPSR 0 -> IRQ unmasked
+    g_irq_pending = 1;
+    g_irq_flag = 0;
+    g_chain_icount = 100;
+    // early exit after the STR: only MOV+STR (1+2 = 3) charged, NOT the full 7
+    ok = ok && (fn(&cpu) == 0x1008u) && (g_irq_flag == 1) && (g_chain_icount == 97);
+    // the tail runs as its own block and pays its own 4 -- total once = 7
+    ArmBlockFn fn2 = arm7_aj_get(c, 0x1008u, test_fetch, &cnt, &cyc);
+    ok = ok && (fn2 != nullptr) && (fn2(&cpu) == 0x100Cu) && (cpu.r[2] == 5u)
+            && (g_chain_icount == 93);
+    g_irq_pending = 0;
+    g_irq_flag = 0;
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
 // The dispatcher checks the cycle budget BEFORE each hop (the C loop's
 // while (ICOUNT > 0)): with exactly one block's budget, the chain must stop
 // after the first block even though the next one is cached
@@ -3669,6 +3851,9 @@ const SelfTest k_selftests[] = {
     { "block join",        jit_asmjit_join_selftest },      // translation stops at an existing block start (no dup)
     { "chain expiry",      jit_asmjit_chain_expiry_selftest },// budget check before each hop stops the chain
     { "chain IRQ bail",    jit_asmjit_chain_irq_selftest }, // post-check exit ends the chain, flag left for C
+    { "cyc: cond skip",    jit_asmjit_cyc_skip_selftest },  // skipped conditional costs 1 (refund), executed full
+    { "cyc: IRQ exit",     jit_asmjit_cyc_irqexit_selftest },// early exit charges executed prefix only (no double)
+    { "cyc: MUL m-refund", jit_asmjit_cyc_mul_selftest },   // data-dependent multiply cost (1S+mI, signed/unsigned m)
     { "cycle accounting",  jit_asmjit_cycles_selftest },    // legacy-JIT cycle model + stop-at-branch
 };
 const int k_selftest_count = (int)(sizeof(k_selftests) / sizeof(k_selftests[0]));
