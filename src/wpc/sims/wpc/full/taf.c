@@ -492,6 +492,11 @@ WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d8
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
 
+WPC_ROMSTART(tafg,i3bs,"cpu-u6i3bs.rom",0x80000,CRC(92C6ABBC) SHA1(55c0c4ede80da0b7085947085c9356b0c0c6c584))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
+
 WPC_ROMSTART(tafg,la2,"u6-la2.rom",0x80000,CRC(a9a42bff) SHA1(40bb8e2767219582e7e532d2154213748808c62b))
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
@@ -533,7 +538,7 @@ CORE_CLONEDEF(taf,d4,l5,   "Addams Family, The (D-4 LED Ghost Fix)",1992,"Bally"
 // L-5 Prototype L-6 missing
 CORE_CLONEDEF(taf,l7,l5,   "Addams Family, The (L-5 Prototype L-7)",1992,"Bally",wpc_mFliptronS,0) // internal name was apparently L-7, but later-on they released the official L-5 that includes all the changes up to the internal L-5 prototype named L-8
 CORE_CLONEDEF(taf,d7,l5,   "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAF L7 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 33). It also includes the "No Ghosting" patch.
+CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAF L-7 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 33). It also includes the "No Ghosting" patch
 // L-5 Prototype L-8 missing
 CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1993,"Bally",wpc_mFliptronS,0) // Released only to a German distributor
 CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
@@ -543,14 +548,15 @@ CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1994,"Bally"
 // 6.0H missing
 // 7.0 missing
 
-CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition / Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,dx3,lx3,"Addams Family Special Collectors Edition / Gold, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition / Gold, The (H-3)",1994,"Bally",wpc_mFliptronS,0) // is it actually newer than LX-3/LA-3? (but only change apparently is 'Does not display "Free Play" when set to Free Play mode' -> needs verification), or is it just a MOD? The OS version definetly is the newest one, both for TAF and TAFG, so this should be really the most up-to-date overall
-CORE_CLONEDEF(tafg,i3,lx3, "Addams Family Special Collectors Edition / Gold, The (I-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,la2,lx3,"Addams Family Special Collectors Edition / Gold, The (LA-2)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,da2,lx3,"Addams Family Special Collectors Edition / Gold, The (DA-2 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,la3,lx3,"Addams Family Special Collectors Edition / Gold, The (LA-3)",1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tafg,da3,lx3,"Addams Family Special Collectors Edition / Gold, The (DA-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_GAMEDEF(tafg,lx3,      "Addams Family Special Collectors Edition / Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,dx3,lx3, "Addams Family Special Collectors Edition / Gold, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,h3,lx3,  "Addams Family Special Collectors Edition / Gold, The (H-3)",1994,"Bally",wpc_mFliptronS,0) // is it actually newer than LX-3/LA-3? (but only change apparently is 'Does not display "Free Play" when set to Free Play mode' -> needs verification), or is it just a MOD? The OS version definetly is the newest one, both for TAF and TAFG, so this should be really the most up-to-date overall
+CORE_CLONEDEF(tafg,i3,lx3,  "Addams Family Special Collectors Edition / Gold, The (I-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,i3bs,lx3,"Addams Family Special Collectors Edition / Gold, The (I-3 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAFG H-3 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 36). It also includes the "No Ghosting" patch
+CORE_CLONEDEF(tafg,la2,lx3, "Addams Family Special Collectors Edition / Gold, The (LA-2)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,da2,lx3, "Addams Family Special Collectors Edition / Gold, The (DA-2 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,la3,lx3, "Addams Family Special Collectors Edition / Gold, The (LA-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,da3,lx3, "Addams Family Special Collectors Edition / Gold, The (DA-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 // L-1 missing
 // LX-2 missing
 

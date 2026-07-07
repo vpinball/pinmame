@@ -74,6 +74,7 @@ Gottlieb: renamed Monte Carlo (German) to German rev.1
 
 Clones:
 Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)
+Addams Family Special Collectors Edition / Gold, The (H-3/I-3 LED Ghost Fix + Ballsaver MOD)
 Adventures of Rocky and Bullwinkle and Friends 1.03 (Italian), 1.10 (Belgian) (note that both dumps are incomplete, the italian set may be correct though, but the belgian one misses the display, so does not feature belgian text)
 Al's Garage Band Goes On A World Tour R09a (maybe newest version that exists? at least the newest one for the prototype/version-A/double-lock variants of the game)
 Arena (rev. 2) (most likely official, but unreleased so far, makes it the newest version available)
