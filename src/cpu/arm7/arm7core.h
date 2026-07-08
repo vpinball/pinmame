@@ -79,6 +79,7 @@ enum
 	data8_t pendingAbtP; \
 	data8_t pendingUnd; \
 	data8_t pendingSwi; \
+	int prev_cpsr_mode; /* SwitchMode's bank-swap anchor: mode whose banked regs are currently swapped INTO the active window */ \
 	struct jit_ctl *jit; \
 	void *ajit;
 

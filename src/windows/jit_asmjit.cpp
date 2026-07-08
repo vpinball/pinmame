@@ -3445,6 +3445,47 @@ static int jit_asmjit_exret_selftest(void)
     return (pc == 0x100u && cpu.cpsr == 0xA5000010u) ? 1 : 0;
 }
 
+// ---- LDM/STM memory-access ORDER -------------------------------------------
+// Real ARM7 block transfers access memory in ASCENDING address order even for
+// the "decrementing" DA/DB modes -- observable through memory-mapped IO.
+// JIT emitter has always worked that way (and the interpreter's loadDec*/
+// storeDec* were aligned to match); this test locks the contract by recording
+// the actual write sequence of an STMDB
+namespace {
+uint32_t g_order_addr[8];
+int      g_order_n = 0;
+void order_w32(uint32_t a, uint32_t d) { if (g_order_n < 8) g_order_addr[g_order_n++] = a; memcb_w32(a, d); }
+}
+
+static int jit_asmjit_stm_order_selftest(void)
+{
+    static const uint32_t prog[] = {
+        0xE3A00040u, // MOV r0,#0x40
+        0xE3A01011u, // MOV r1,#0x11
+        0xE3A02022u, // MOV r2,#0x22
+        0xE3A03033u, // MOV r3,#0x33
+        0xE920000Eu, // STMDB r0!,{r1,r2,r3} -> 0x34/0x38/0x3C, WRITTEN low-to-high
+        0xEAFFFFFEu, // B .
+    };
+    g_test_prog = prog;
+    g_test_base = 0x1000u;
+    for (int i = 0; i < 128; ++i) g_memcb_words[i] = 0;
+    g_order_n = 0;
+    ArmAsmjitCtl *c = arm7_aj_create(0x1000u, 0x2000u);
+    arm7_aj_set_mem_callbacks(c, memcb_r8, memcb_r16, memcb_r32, memcb_w8, memcb_w16, order_w32);
+    int cnt = 0, cyc = 0;
+    ArmBlockFn fn = arm7_aj_get(c, 0x1000u, test_fetch, &cnt, &cyc);
+    bool ok = (fn != nullptr);
+    ArmCpuSelfTest cpu{};
+    ok = ok && (fn(&cpu) == 0x1014u) && (cpu.r[0] == 0x34u);
+    ok = ok && (g_order_n == 3)
+            && (g_order_addr[0] == 0x34u) && (g_order_addr[1] == 0x38u) && (g_order_addr[2] == 0x3Cu)
+            && (g_memcb_words[0x34 >> 2] == 0x11u) && (g_memcb_words[0x38 >> 2] == 0x22u)
+            && (g_memcb_words[0x3C >> 2] == 0x33u);
+    arm7_aj_delete(c);
+    return ok ? 1 : 0;
+}
+
 // MRS/MSR through the psr_transfer callback: an MSR's CPSR change must be
 // visible to condition evaluation LATER IN THE SAME BLOCK (conditions read the
 // ctx CPSR the handler mutated), and MRS must read the CPSR back into a register
@@ -3843,6 +3884,7 @@ const SelfTest k_selftests[] = {
     { "memcb abort/IRQ",   jit_asmjit_memcb_irq_selftest }, // mid-block abort/IRQ exit (gen_test_irq parity)
     { "MRS/MSR (psr cb)",  jit_asmjit_psr_selftest },       // PSR transfer via the psr_transfer callback
     { "SWP/SWPB",          jit_asmjit_swap_selftest },      // single data swap via the memory thunks
+    { "STM asc. order",    jit_asmjit_stm_order_selftest }, // STMDB writes ascending addresses (IO-visible contract)
     { "MOVS/SUBS PC",      jit_asmjit_exret_selftest },     // exception return via the exc_return callback
     { "JIT controller",    jit_asmjit_controller_selftest },// JIT controller: map/translate/cache/invalidate
     { "SMC mid-block",     jit_asmjit_smc_midblock_selftest },// write into a block's middle retires all covering blocks

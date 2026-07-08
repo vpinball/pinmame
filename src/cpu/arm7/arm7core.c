@@ -273,21 +273,19 @@ static const char* GetModeText( int cpsr )
 
 INLINE void SwitchMode (int cpsr_mode_val)
 {
-	static int old_mode = 0;
-
 	// set the new mode
 	data32_t cspr = GET_CPSR & ~MODE_FLAG;
 	SET_CPSR(cspr | cpsr_mode_val);
 
 	// swap banked registers if changing modes
-	if (old_mode != cpsr_mode_val)
+	if (ARM7.prev_cpsr_mode != cpsr_mode_val)
 	{
 		int i;
 
 		// swap out the banked registers (R8-R14 and SPSR)
-		SetSavedRegister(old_mode, SPSR, GetActiveRegister(SPSR));
+		SetSavedRegister(ARM7.prev_cpsr_mode, SPSR, GetActiveRegister(SPSR));
 		for (i = 8 ; i <= 14 ; ++i)
-			SetSavedRegister(old_mode, i, GetActiveRegister(i));
+			SetSavedRegister(ARM7.prev_cpsr_mode, i, GetActiveRegister(i));
 
 		// swap in the banked registers
 		SetActiveRegister(SPSR, GetSavedRegister(cpsr_mode_val, SPSR));
@@ -295,7 +293,7 @@ INLINE void SwitchMode (int cpsr_mode_val)
 			SetActiveRegister(i, GetSavedRegister(cpsr_mode_val, i));
 
 		// remember the new mode
-		old_mode = cpsr_mode_val;
+		ARM7.prev_cpsr_mode = cpsr_mode_val;
 	}
 }
 
@@ -493,18 +491,38 @@ static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 	return result;
 }
 
+/* # of set bits in the low 16 bits (an LDM/STM register list): used to derive the lowest address of a "decrementing" block transfer */
+INLINE int popcount16(data32_t pat)
+{
+#if (defined(__GNUC__) || defined(__clang__)) && (defined(__POPCNT__) || defined(__aarch64__))
+	return __builtin_popcount(pat & 0xffff);
+#else
+	pat &= 0xffff;
+	pat -= (pat >> 1) & 0x5555;
+	pat = (pat & 0x3333) + ((pat >> 2) & 0x3333);
+	pat = (pat + (pat >> 4)) & 0x0f0f;
+	return (int)((pat + (pat >> 8)) & 0x1f);
+#endif
+}
+
 static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 {
 	int i, result;
 
+	// A "decrementing" LDM still READS memory in ASCENDING address order on real
+	// hardware (lowest register from the lowest address); only the address range
+	// lies below the base. The order is visible to memory-mapped IO, and matches
+	// the JIT's block-transfer emitter. So derive the start address first
 	result = 0;
 	rbv &= ~3;
-	for (i = 15; i >= 0; i--)
+	rbv -= popcount16(pat) << 2;
+
+	for (i = 0; i < 16; i++)
 	{
 		if ((pat >> i) & 1)
 		{
 			if (ARM7.pendingAbtD == 0) {
-				UINT32 data = READ32(rbv -= 4);
+				UINT32 data = READ32(rbv + result * 4);
 				if (i == 15) {
 					//if (s) /* Pull full contents from stack */
 						SET_REGISTER( 15, data & ~3 ); /* PC bits 1:0 ignored in ARM state */
@@ -524,15 +542,18 @@ static int loadDecMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 {
 	int i, result;
 
+	// ascending read order, like loadDec above
 	result = 0;
 	rbv &= ~3;
-	for (i = 15; i >= 0; i--)
+	rbv -= popcount16(pat) << 2;
+
+	for (i = 0; i < 16; i++)
 	{
 		if ((pat >> i) & 1)
 		{
 			if (ARM7.pendingAbtD == 0) // "Overwriting of registers stops when the abort happens."
 			{
-			UINT32 data = READ32(rbv -= 4);
+			UINT32 data = READ32(rbv + result * 4);
 			if (i == 15) {
 				//if (s) /* Pull full contents from stack */
 					SET_MODE_REGISTER(mode, 15, data & ~3); /* PC bits 1:0 ignored in ARM state */
@@ -591,19 +612,11 @@ static int storeIncMode(data32_t pat, data32_t rbv, int mode)
 // classic CV: 3005aa0 does the DMA thing
 static int storeDec( data32_t pat, data32_t rbv)
 {
-	int i, result = 0, cnt;
+	int i, result, cnt;
 
-	// pre-count the # of registers doing DMA
-	for (i = 15; i >= 0; i--)
-	{
-		if ((pat >> i) & 1)
-		{
-			result++;
-
-			// starting address
-			rbv -= 4;
-		}
-	}
+	// pre-count the # of registers doing DMA, then derive the starting address
+	result = popcount16(pat);
+	rbv -= result << 2;
 
 	cnt = 0;
 	for (i = 0; i <= 15; i++)
@@ -625,8 +638,14 @@ static int storeDecMode(data32_t pat, data32_t rbv, int mode)
 {
 	int i, result;
 
+	// A "decrementing" STM still WRITES memory in ASCENDING address order on
+	// real hardware (lowest register at the lowest address, like storeDec
+	// above); the order is visible to memory-mapped IO, and matches the JIT's
+	// block-transfer emitter. So derive the start address first
 	result = 0;
-	for (i = 15; i >= 0; i--)
+	rbv -= popcount16(pat) << 2;
+
+	for (i = 0; i <= 15; i++)
 	{
 		if ((pat >> i) & 1)
 		{
@@ -634,12 +653,12 @@ static int storeDecMode(data32_t pat, data32_t rbv, int mode)
 			if (i == 15) /* R15 is plus 12 from address of STM */
 				LOG(("%08x: StoreDec on R15\n", R15));
 #endif
-			WRITE32(rbv -= 4, GET_MODE_REGISTER(mode, i));
+			WRITE32(rbv + result * 4, GET_MODE_REGISTER(mode, i));
 			result++;
 		}
 	}
 	return result;
-} /* storeDec */
+} /* storeDecMode */
 
 /***************************************************************************
  *                            Main CPU Funcs
@@ -739,6 +758,9 @@ static void arm7_core_init(const char *cpuname)
 	state_save_register_UINT8(cpuname, cpu, "ABTP", &ARM7.pendingAbtP, 1);
 	state_save_register_UINT8(cpuname, cpu, "UND", &ARM7.pendingUnd, 1);
 	state_save_register_UINT8(cpuname, cpu, "SWI", &ARM7.pendingSwi, 1);
+	// bank-swap anchor must travel with the register file: it says which mode's
+	// banked registers currently occupy the active window (see SwitchMode)
+	state_save_register_INT32(cpuname, cpu, "PREVMODE", &ARM7.prev_cpsr_mode, 1);
 
 	// create the JIT translator
 	ARM7.jit = jit_create(&ARM7_ICOUNT);
@@ -1356,6 +1378,12 @@ static void HandleHalfWordDT(data32_t insn)
 
 			//Signed Half Word?
 			if(insn & 0x20) {
+				//!! TODO the unaligned-LDRSH quirk is NOT modeled yet: real ARM7 reads
+				// (rnv & ~1) and, for an odd address, effectively sign-extends the
+				// HIGH byte (upstream MAME: READ16(rnv & ~1), then >>= 8 when rnv
+				// is odd). Real code should not do unaligned LDRSH in
+				// practice. The JIT's LDRSH path (r16 thunk) would need the
+				// same treatment to stay in interpreter/JIT parity
 				data16_t signbyte,databyte;
 				databyte = READ16(rnv) & 0xFFFF;
 				signbyte = (databyte & 0x8000) ? 0xffff : 0;
