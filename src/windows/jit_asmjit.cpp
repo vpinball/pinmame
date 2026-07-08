@@ -3403,6 +3403,8 @@ struct ArmAsmjitCtl {
     int         enabled = 1;        // gate: when 0, arm7_aj_get returns null (interpreter). The AT91
                                     // driver disables until the RAM->page-0 remap, mirroring the
                                     // legacy jit_enable, so only the final post-remap program is JITted
+    int         execOk = 1;         // host grants executable JIT memory (probed once at create).
+                                    // 0 (e.g. iOS W^X denial) pins 'enabled' at 0: interpreter-only
     // DEBUG exclusion LIST: PCs in any [exclLo[i], exclHi[i]) are interpreted, not
     // JITted, even inside [minAddr,maxAddr). Lets a build JIT everything EXCEPT chosen
     // regions -- a debug aid for isolating a suspect region. (arm7_aj_clear_exclude /
@@ -3460,9 +3462,37 @@ static void aj_alloc_slots(ArmAsmjitCtl *c, uint32_t minAddr, uint32_t maxAddr)
     c->maxBlockInsns = 0;
 }
 
+// One-shot probe: can this process map and execute JIT memory at all? iOS
+// denies W^X to third-party apps (no dynamic-codesigning entitlement; a
+// debugger-attached process CAN, which this probe then detects and allows),
+// making asmjit fail at rt.add(). Probing once at create keeps the reaction
+// explicit and cheap: the controller comes up permanently disabled, so no
+// address ever pays a futile decode-emit-fail cycle -- the interpreter simply
+// runs from the start. On every other supported host this succeeds
+static bool aj_probe_exec_memory(JitRuntime &rt)
+{
+    CodeHolder code;
+    code.init(rt.environment());
+    HostAssembler a(&code);
+#if AJ_HOST_X86
+    a.mov(x86::eax, 0);
+    a.ret();
+#else
+    a.mov(a64::w0, 0);
+    a.ret(a64::x30);
+#endif
+    void *fn = nullptr;
+    if (rt.add(&fn, &code) != kErrorOk)
+        return false;
+    rt.release(fn);
+    return true;
+}
+
 extern "C" ArmAsmjitCtl *arm7_aj_create(uint32_t minAddr, uint32_t maxAddr)
 {
     ArmAsmjitCtl *c = new ArmAsmjitCtl();
+    c->execOk  = aj_probe_exec_memory(c->rt) ? 1 : 0;
+    c->enabled = c->execOk;
     aj_alloc_slots(c, minAddr, maxAddr);
     return c;
 }
@@ -3504,7 +3534,9 @@ extern "C" void arm7_aj_add_exclude(ArmAsmjitCtl *c, uint32_t lo, uint32_t hi)
 extern "C" void arm7_aj_set_enabled(ArmAsmjitCtl *c, int enabled)
 {
     if (!c) return;
-    c->enabled = enabled ? 1 : 0;
+    // execOk pins the gate: if the create-time probe found no executable
+    // memory (iOS W^X), the AT91 driver's post-remap enable must not stick
+    c->enabled = (enabled && c->execOk) ? 1 : 0;
 }
 
 // Set the real memory read/write thunks the JIT calls for all memory transfers

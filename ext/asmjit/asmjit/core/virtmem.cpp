@@ -63,8 +63,11 @@
     #include <TargetConditionals.h>
     #if TARGET_OS_OSX
       #include <sys/utsname.h>
-      #include <libkern/OSCacheControl.h> // sys_icache_invalidate().
     #endif
+    // sys_icache_invalidate() is used by flush_instruction_cache() on EVERY
+    // Apple platform (plain __APPLE__ there), and the header exists on all of
+    // them -- guarding it with TARGET_OS_OSX broke iOS/tvOS builds (PinMAME fix)
+    #include <libkern/OSCacheControl.h> // sys_icache_invalidate().
     // Older SDK doesn't define `MAP_JIT`.
     #ifndef MAP_JIT
       #define MAP_JIT 0x800
