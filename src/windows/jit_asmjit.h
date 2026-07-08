@@ -2,7 +2,8 @@
  *   C-callable API for the asmjit-based ARM7 JIT controller
  *
  *   The emulator core (C) calls these to translate-and-run blocks. Active only when PINMAME_JIT_ASMJIT is defined;
- *   otherwise the emulator uses the interpreter (and/or the legacy x86-only JIT)
+ *   otherwise the emulator uses the interpreter (and/or the legacy x86-32bit-only JIT).
+ *   Host backends: x86/x64 and AArch64 (selected at compile time, see AJ_HOST_* in jit_asmjit.cpp)
  */
 
 #ifndef INC_JIT_ASMJIT

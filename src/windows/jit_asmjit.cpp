@@ -9,8 +9,8 @@
 //     the asmjit Assembler, using the block ABI -- a C-callable
 //     function `uint32_t block(void* ctx)` that mutates the register file in
 //     place and returns the next emulated PC. ctx is &ARM7.sArmRegister[0]
-//     (reg i at i*4, CPSR at 16). Flags are computed portably (no x86 EFLAGS
-//     round-trips), so the codegen is ready to retarget to AArch64.
+//     (reg i at i*4, CPSR at 16). Two emitter backends at full parity: x86/x64
+//     and AArch64 (AJ_HOST_*); decode, routing, controller, and tests are shared.
 //   - JIT controller (ArmAsmjitCtl + arm7_aj_*): address->block map + JitRuntime;
 //     translate-on-demand, cache, SMC-invalidate.
 //   - Self-tests: an optional code-generation regression suite, run via the single entry
@@ -21,7 +21,9 @@
 
 #ifdef PINMAME_JIT_ASMJIT
 
-#include <asmjit/asmjit.h>
+//#define EXPOSE_JIT_SELFTEST
+
+#include <asmjit/host.h> // core + the HOST backend (x86.h or a64.h)
 #include <cstdint>
 #include <cstddef>
 #include <cstdio>
@@ -30,14 +32,37 @@
 
 #include "jit_asmjit.h" // C-callable controller API (arm7_aj_*, arm7_block_fn, ArmAsmjitCtl)
 
-#ifdef _WIN32
+#if defined(EXPOSE_JIT_SELFTEST) && defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef _WIN32_WINNT
+#if _MSC_VER >= 1800
+ // Windows 2000 _WIN32_WINNT_WIN2K
+#define _WIN32_WINNT 0x0500
+#elif _MSC_VER < 1600
+#define _WIN32_WINNT 0x0400
+#else
+#define _WIN32_WINNT 0x0403
+#endif
+#define WINVER _WIN32_WINNT
 #endif
 #include <windows.h>
 #endif
 
 using namespace asmjit;
+
+// Host-architecture selection. The controller (block cache, slots, coverage/SMC tracking, deferred release, dispatcher protocol, C API),
+// the emit_arm_insn router, translate_block, and all self-tests are ISA-neutral and shared (via the host-backend glue below);
+// only the per-instruction emitters and the dispatcher emission are per-arch, behind AJ_HOST_X86 (x86/x64) and AJ_HOST_A64 (AArch64).
+// Both backends are at full feature and self-test parity
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+#define AJ_HOST_X86 1
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#define AJ_HOST_A64 1
+#else
+#error "jit_asmjit: unsupported architecture (x86/x64/AArch64 only)"
+#endif
 
 namespace {
 
@@ -67,6 +92,38 @@ typedef uint32_t (*SelfTestBlockFn)(ArmCpuSelfTest *cpu);
 
 } // namespace
 
+namespace {
+// ---- host-backend glue ------------------------------------------------------
+// The minimal per-arch vocabulary that lets the SHARED code (the emit_arm_insn router, translate_block, and the block-building self-test harnesses)
+// drive either emitter backend; everything bigger stays per-arch behind AJ_HOST_*
+#if AJ_HOST_X86
+typedef x86::Assembler HostAssembler;
+typedef x86::Gp        HostGp;
+inline HostGp host_ctx_reg(const HostAssembler& a) { return a.zbx(); } // callee-saved ctx pointer
+inline void host_add_block_regs(FuncFrame& f, const HostAssembler& a, const HostGp& ctx)
+{ f.add_dirty_regs(ctx, a.zax(), a.zsi()); } // + esi: callee-saved shifter-carry stash
+inline void emit_return_imm(HostAssembler& a, uint32_t v) { a.mov(x86::eax, v); }
+inline void emit_jump(HostAssembler& a, const Label& l) { a.jmp(l); }
+inline void emit_ctx_cycles_sub(HostAssembler& a, const HostGp& ctx, int n) // self-test ctx 'cycles' field
+{ a.sub(x86::dword_ptr(ctx, (int)offsetof(ArmCpuSelfTest, cycles)), n); }
+#else
+typedef a64::Assembler HostAssembler;
+typedef a64::Gp        HostGp;
+inline HostGp host_ctx_reg(HostAssembler&) { return a64::x19; } // callee-saved (AAPCS64)
+inline void host_add_block_regs(FuncFrame& f, HostAssembler&, const HostGp& ctx)
+{ f.add_dirty_regs(ctx, a64::x30); } // w0-w3/w16/w17 scratch are caller-saved; x30 (LR) must
+                                     // survive the blr thunk calls, so mark it saved always
+inline void emit_return_imm(HostAssembler& a, uint32_t v) { a.mov(a64::w0, v); }
+inline void emit_jump(HostAssembler& a, const Label& l) { a.b(l); }
+inline void emit_ctx_cycles_sub(HostAssembler& a, const HostGp& ctx, int n)
+{
+    a.ldr(a64::w16, a64::ptr(ctx, (int)offsetof(ArmCpuSelfTest, cycles)));
+    a.sub(a64::w16, a64::w16, n);
+    a.str(a64::w16, a64::ptr(ctx, (int)offsetof(ArmCpuSelfTest, cycles)));
+}
+#endif
+} // namespace
+
 // Builds and runs a tiny translated block to validate the asmjit toolchain and
 // the block ABI on the host architecture. Returns 1 on success, 0 on
 // failure. Safe to call from C (e.g. a smoke test)
@@ -77,7 +134,12 @@ static int jit_asmjit_selftest(void)
     CodeHolder code;
     code.init(rt.environment());
 
-    x86::Assembler a(&code);
+    const int OFS_R0       = (int)(offsetof(ArmCpuSelfTest, r) + 0 * sizeof(uint32_t));
+    const int OFS_R1       = (int)(offsetof(ArmCpuSelfTest, r) + 1 * sizeof(uint32_t));
+    const int OFS_CYCLES   = (int)offsetof(ArmCpuSelfTest, cycles);
+    const uint32_t NEXT_PC = 0x0000100Cu;
+
+    HostAssembler a(&code);
 
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
@@ -85,8 +147,8 @@ static int jit_asmjit_selftest(void)
     FuncFrame frame;
     frame.init(func);
 
-    x86::Gp ctx = a.zbx();                       // callee-saved, arch-width (ebx/rbx)
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx);
 
     FuncArgsAssignment argsAsg(&func);
     argsAsg.assign_all(ctx);
@@ -96,11 +158,7 @@ static int jit_asmjit_selftest(void)
     a.emit_prolog(frame);
     a.emit_args_assignment(frame, argsAsg);
 
-    const int OFS_R0       = (int)(offsetof(ArmCpuSelfTest, r) + 0 * sizeof(uint32_t));
-    const int OFS_R1       = (int)(offsetof(ArmCpuSelfTest, r) + 1 * sizeof(uint32_t));
-    const int OFS_CYCLES   = (int)offsetof(ArmCpuSelfTest, cycles);
-    const uint32_t NEXT_PC = 0x0000100Cu;
-
+#if AJ_HOST_X86
     a.mov(x86::dword_ptr(ctx, OFS_R0), 10);       // r0 = 10
     a.mov(x86::eax, x86::dword_ptr(ctx, OFS_R0)); // eax = r0
     a.add(x86::eax, x86::eax);                    // eax += eax
@@ -109,6 +167,19 @@ static int jit_asmjit_selftest(void)
     a.mov(x86::eax, NEXT_PC);                     // return next PC
 
     a.emit_epilog(frame);
+#else // AJ_HOST_A64: same block, emitted with the AArch64 assembler
+    a.mov(a64::w0, 10);                        // r0 = 10
+    a.str(a64::w0, a64::ptr(ctx, OFS_R0));
+    a.ldr(a64::w0, a64::ptr(ctx, OFS_R0));     // w0 = r0
+    a.add(a64::w0, a64::w0, a64::w0);          // w0 += w0
+    a.str(a64::w0, a64::ptr(ctx, OFS_R1));     // r1 = 20
+    a.ldr(a64::w1, a64::ptr(ctx, OFS_CYCLES));
+    a.sub(a64::w1, a64::w1, 3);
+    a.str(a64::w1, a64::ptr(ctx, OFS_CYCLES)); // cycles -= 3
+    a.mov(a64::w0, NEXT_PC);                   // return next PC
+
+    a.emit_epilog(frame);
+#endif
 
     SelfTestBlockFn fn = nullptr;
     if (rt.add(&fn, &code) != kErrorOk)
@@ -123,49 +194,40 @@ static int jit_asmjit_selftest(void)
 }
 
 // ---------------------------------------------------------------------------
-//  Minimal ARM7 -> asmjit translator
+//  ARM7 -> asmjit translator
 //
-//  Decodes a small but real subset of ARM and emits host code via asmjit using
-//  the block ABI. The emulated register file is reached as offsets from
-//  the context pointer (ctx), never via embedded absolute addresses, so the code
-//  is position-independent and works on x86/x64/ARM64.
+//  Decodes the ARM7 subset below and emits host code via asmjit using the
+//  block ABI. The emulated register file is reached as offsets from the
+//  context pointer (ctx), never via embedded absolute addresses; the decode/
+//  routing here is shared, and per-instruction emitters exist for both host
+//  backends (AJ_HOST_X86 / AJ_HOST_A64), so blocks run on x86, x64 and ARM64.
 //
-//  Coverage so far: data-processing MOV/MVN/ADD/SUB/RSB/AND/ORR/EOR/BIC; operand
-//  2 either an immediate or a register with an immediate-amount shift
-//  with immediate OR register-specified shift amounts (LSL/LSR/ASR/ROR, incl.
-//  ARM's amount>=32 edge cases); all ARM condition codes; flag-setting (S=1) with
-//  an immediate operand 2 for both logical (MOV/MVN/AND/ORR/EOR/BIC, + TST/TEQ)
-//  and arithmetic (ADD/SUB/RSB, + CMP/CMN) ops, with N/Z/C/V computed portably (no
-//  x86 EFLAGS reads); ADC/SBC/RSC (carry-in via host adc/sbb, flags via single-bit
-//  setcc); the LSR/ASR #0 (=#32) and ROR #0 (=RRX) special forms; flag-setting
-//  (S=1) with a register operand 2 for all arithmetic ops (incl. shifted) and for
-//  logical ops with no shift. Neither Rd nor Rn = R15. The ONLY remaining DP gap:
-//  flag-setting (S=1) for a LOGICAL op whose register operand 2 is SHIFTED (needs
-//  the shifter carry-out for C). Single data transfer LDR/STR/LDRB/STRB with an
-//  immediate OR register (optionally shifted, incl. #0 specials) offset, word/byte,
-//  pre/post-index, writeback; a PC base (reads instr+8, e.g. literal-pool loads)
-//  and STR of PC (stores instr+12). LDR into PC and PC-base writeback are handled
-//  as control flow (the block returns the new PC). Branches B and BL (target is a
-//  compile-time constant; BL sets LR) end the block by returning the target.
-//  Data-processing writes to PC (e.g. MOV PC,LR) end the block too (S=0).
-//  Halfword/signed transfers LDRH/STRH/LDRSB/LDRSH (immediate or register offset,
-//  pre/post-index, writeback, PC base). Block transfer LDM/STM (all 4 modes
-//  IA/IB/DA/DB, writeback, STM of PC, and LDM with PC = return). Multiplies
-//  MUL/MLA and UMULL/SMULL/UMLAL/SMLAL (incl. S=1: N/Z from the result, C/V
-//  preserved -- interpreter parity; R15 operands deferred). PSR transfers
-//  MRS/MSR via a call to the emulator's HandlePSRTransfer (exact interpreter
-//  semantics incl. SPSR banking and mode switches; Callback mode only).
-//  MOVS PC / SUBS PC,LR (exception return) via the arm7_aj_exc_return helper
-//  (SPSR->CPSR + bank switch + IRQ check; Callback mode only). BX (unmasked
-//  PC = Rm + T bit on odd, interpreter parity). SWP/SWPB (read-then-write via
-//  the memory thunks; Rd aliasing Rn/Rm deferred). R15 as a DP source operand:
-//  Rn==15 and Rm==15 read the pipelined PC (+8, or +12 with a register-specified
-//  shift amount) as translate-time constants. Flag-setting logical ops with a
-//  SHIFTED register operand 2 now compute the shifter carry-out for C
-//  (immediate shift amounts; register-specified amounts with S=1 logical still
-//  defer). Still deferred: Rs==15, S=1 LDM/STM (user-bank/SPSR), the deprecated
-//  TSTP/TEQP/CMPP/CMNP forms, coprocessor/SWI. Anything unsupported returns
-//  "unsupported" so the caller falls back to the interpreter
+//  Coverage: all data-processing ops -- operand 2 an immediate or a register
+//  with immediate/register-specified shift amounts (LSL/LSR/ASR/ROR incl.
+//  ARM's amount>=32 edge cases and the LSR/ASR #0 (=#32) / ROR #0 (=RRX)
+//  special forms); all condition codes; full S=1 flags for arithmetic ops
+//  (N/Z/C/V captured from the HOST flags of the add/sub/adc/sbb itself, see
+//  the flag helpers) and for logical ops (C = shifter carry-out, computed for
+//  rotated immediates and immediate shift amounts). R15 source operands read
+//  the pipelined PC (+8, or +12 with a register-specified shift amount) as
+//  translate-time constants; DP writes to PC end the block, with S=1 (MOVS PC
+//  / SUBS PC,LR = exception return) going through the arm7_aj_exc_return
+//  helper (SPSR->CPSR + bank switch + IRQ check; Callback mode only).
+//  Single data transfer LDR/STR/LDRB/STRB (immediate or shifted-register
+//  offset, pre/post-index, writeback; PC base reads instr+8, STR of PC stores
+//  instr+12; LDR into PC and PC-base writeback end the block). Halfword/
+//  signed transfers LDRH/STRH/LDRSB/LDRSH. Block transfer LDM/STM (all 4
+//  modes, writeback, STM of PC, LDM with PC = return). Branches B/BL. BX
+//  (unmasked PC + T bit on odd, interpreter parity). SWP/SWPB (Rd aliasing
+//  Rn/Rm deferred). Multiplies MUL/MLA and UMULL/SMULL/UMLAL/SMLAL (S=1: N/Z
+//  from the result, C/V preserved -- interpreter parity; R15 operands
+//  deferred). PSR transfers MRS/MSR via the emulator's HandlePSRTransfer
+//  (exact interpreter semantics incl. SPSR banking; Callback mode only).
+//
+//  Still deferred to the interpreter: S=1 logical with a register-specified
+//  shift AMOUNT (run-time shifter carry), Rs==15, S=1 LDM/STM (user-bank/
+//  SPSR restore), the deprecated TSTP/TEQP/CMPP/CMNP forms, coprocessor/SWI.
+//  Anything unsupported returns "unsupported" -> interpreter fallback
 // ---------------------------------------------------------------------------
 
 namespace {
@@ -261,6 +323,8 @@ inline int cpsr_off() { return (int)offsetof(ArmCpuSelfTest, cpsr); }
 //  - Not applicable to the peripheral region (>= 0xFFC00000) or CS callbacks by
 //    construction -- those fall outside [guestLo, guestHi) and keep the thunk.
 
+#if AJ_HOST_X86 // ================== x86/x64 emitter backend ==================
+
 // Emit an ABI-correct call to a C memory thunk. Precondition: the effective
 // address is in ECX and, for writes, the store value is in EDX. For reads the
 // result is left in EAX. The host calling convention is selected at compile time
@@ -326,7 +390,7 @@ inline void emit_charge_cycles(x86::Assembler& a, int cyc, const x86::Gp& scratc
 // NB: an early exit charges the block's full cycle total (minor over-count); the abort
 // test runs after this op's side effects (unobservable on the AT91: no MMU, no data
 // abort). No-op unless the hooks are wired (self-test/Mock paths leave them null)
-inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t pc, FuncFrame& frame, int cyc)
+inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t pc, const FuncFrame& frame, int cyc)
 {
     if (!s_memcb.pIrq || !s_memcb.pIrqFlag) return; // hooks not wired -> no codegen
     using CC = x86::CondCode;
@@ -473,8 +537,7 @@ void emit_set_flags_after_carry(x86::Assembler& a, const x86::Gp& ctx, bool cIsB
 // that produced it. Precondition: the host add/sub was the last flag-writing
 // instruction emitted (only flag-transparent MOVs in between, e.g. the Rd
 // write-back). This replaced a fully recomputed portable version (bitwise
-// overflow formulas + branches, ~20 insns) with the branchless setcc capture
-// (~16, no branches) -- setcc maps to AArch64 cset, so portability is kept.
+// overflow formulas + branches, ~20 insns) with the branchless setcc capture.
 // isSub: ARM C = !borrow for subtraction-style ops. Clobbers EAX/ECX/EDX
 void emit_set_flags_arith(x86::Assembler& a, const x86::Gp& ctx, bool isSub)
 {
@@ -483,9 +546,9 @@ void emit_set_flags_arith(x86::Assembler& a, const x86::Gp& ctx, bool isSub)
 
 // Set N/Z/C/V after a host add/sub/adc/sbb. MUST be emitted while the host
 // flags of that op are still valid (only flag-transparent MOVs in between): all
-// four are captured branchlessly with single-bit setcc (which maps to AArch64
-// cset, NOT the LAHF/SAHF whole-flags trick). For sub-style ops ARM C = !borrow,
-// so pass cIsBorrow=true to capture C with kNotCarry. Uses only high/low byte
+// four are captured branchlessly with single-bit setcc. For sub-style ops ARM
+// C = !borrow, so pass cIsBorrow=true to capture C with kNotCarry (the a64
+// backend needs no inversion -- see its twin). Uses only high/low byte
 // regs of ECX/EDX (no REX conflict). Clobbers EAX (result no longer needed by
 // any caller), ECX, EDX
 void emit_set_flags_after_carry(x86::Assembler& a, const x86::Gp& ctx, bool cIsBorrow)
@@ -922,11 +985,6 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
     return true;
 }
 
-// Translate one ARM instruction: evaluate its condition (skip the body if
-// false), emit the operation, then bind the skip target. The cycle cost is
-// emitted by the caller AFTER this returns, so both the executed and skipped
-// paths account for the instruction. Returns false (leaving a bound skip label)
-// if the operation is unsupported.
 // Halfword & signed data transfer: LDRH/STRH/LDRSB/LDRSH. Shares the DP class
 // (bits 27-26 == 00) but is marked by bit7 = bit4 = 1 with SH (bits 6-5) != 0 and
 // bit25 == 0. Immediate (split-nibble) or register offset; pre/post-index;
@@ -1033,7 +1091,7 @@ bool emit_arm_halfword(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uin
 // in the list ends the block (return). S=1 (user-bank / SPSR restore), a PC base,
 // and the base register appearing in the list are deferred. Memory access follows
 // s_memMode (Callback = real calls / Mock = ctx buffer / Defer = interpreter)
-bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
+bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, const FuncFrame& frame, int cyc)
 {
     if (s_memMode == MemMode::Defer) return false; // no callbacks: end block, interpreter does memory
     const bool     P    = (insn >> 24) & 1u;
@@ -1136,7 +1194,7 @@ bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn
 // LR. A branch ends the block: load the target into EAX (the next-PC return
 // value) and emit the function epilog (return). Conditional branches are gated
 // by the caller's emit_cond_skip, so this body runs only when the branch is taken
-bool emit_arm_branch(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
+bool emit_arm_branch(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, const FuncFrame& frame, int cyc)
 {
     const bool     L      = (insn >> 24) & 1u;               // link
     const int32_t  off    = (int32_t)(insn << 8) >> 6;       // sign-extended imm24, scaled *4
@@ -1147,6 +1205,8 @@ bool emit_arm_branch(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
     a.emit_epilog(frame);                                    // return target as the next PC
     return true;
 }
+
+#endif // AJ_HOST_X86 (classifiers below are pure decode: shared)
 
 // ---------------------------------------------------------------------------
 // Instruction-class predicates for the 00-class sub-decodes (multiply, PSR
@@ -1174,11 +1234,13 @@ inline bool arm_is_psr(uint32_t insn) {     // MRS/MSR (interpreter test: S clea
     return (insn & 0x01900000u) == 0x01000000u;
 }
 
+#if AJ_HOST_X86 // x86/x64 emitter backend, part 2
+
 // Branch and exchange BX Rm: PC = Rm, EXACTLY like the interpreter (arm7exec.c
 // case 1): the value is NOT masked, and if bit 0 is set the CPSR T bit is set
 // (Thumb is not implemented by this core; this is parity, not a mode switch).
 // Ends the block. Rm == 15 (BX PC -- nonsensical) is deferred
-bool emit_arm_bx(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, FuncFrame& frame, int cyc)
+bool emit_arm_bx(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, const FuncFrame& frame, int cyc)
 {
     const uint32_t Rm = insn & 0xFu;
     if (Rm == 15u) return false;
@@ -1335,6 +1397,779 @@ bool emit_arm_psr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     return true;
 }
 
+// Two-arg charge form for the SHARED router (per-arch scratch choice)
+inline void emit_charge_cycles(x86::Assembler& a, int cyc) { emit_charge_cycles(a, cyc, a.zdx()); }
+
+// Block exit for a DP instruction that wrote R15 (emit_arm_dp stored the
+// flag-less result to the R15 slot). excReturn (S=1): MOVS PC / SUBS PC,LR --
+// the wired helper restores CPSR from the SPSR, switches banks, masks bits
+// 1:0, runs ARM7_CHECKIRQ, and returns the FINAL PC (the check may have vectored)
+inline void emit_dp_pc_exit(x86::Assembler& a, const x86::Gp& ctx, bool excReturn, const FuncFrame& frame, int cycCharge)
+{
+    if (excReturn) {
+        a.mov(x86::ecx, x86::dword_ptr(ctx, reg_off(15)));
+        emit_mem_call(a, s_memcb.exc_return, false);
+        emit_charge_cycles(a, cycCharge, a.zdx());
+        a.emit_epilog(frame); // EAX = final PC from the helper
+    } else {
+        a.mov(x86::eax, x86::dword_ptr(ctx, reg_off(15)));
+        a.and_(x86::eax, ~3u);
+        emit_charge_cycles(a, cycCharge, a.zdx());
+        a.emit_epilog(frame);
+    }
+}
+
+#endif // AJ_HOST_X86 (emitter backend, part 2)
+
+#if AJ_HOST_A64 // ================== AArch64 emitter backend ==================
+//
+// Same contracts as the x86 backend above, emitted for AAPCS64. Register plan
+// inside a block: w0 = primary value/result ("eax"), w1 = operand 2 ("ecx"),
+// w2 = Rn / shift amount ("edx"), w3 = shifter carry-out stash ("esi"),
+// w16/w17 = helper scratch; x19 = ctx (callee-saved). All except x19 are
+// caller-saved, so nothing needs spilling around thunk calls.
+//
+// The guest ISA is this host's direct ancestor, so most mappings are 1:1:
+// the condition-code encodings match, `msr nzcv` loads guest flags straight
+// into the host flags, and the NZCV semantics are identical INCLUDING the
+// two spots that needed extra work on x86 -- C = NOT-borrow on subtraction,
+// and SBC computing Rn - op2 - !C natively (no cmc dance)
+
+// ABI call to a C thunk: argument(s) already in w0 (+w1 for writes), result
+// in w0 -- native AAPCS64, nothing to shuffle (unlike the x86 ECX/EDX contract)
+inline void emit_mem_call(a64::Assembler& a, const void* fn, bool /*isWrite*/)
+{
+    a.mov(a64::x16, (uint64_t)(uintptr_t)fn); // x16/IP0: intra-call scratch by ABI
+    a.blr(a64::x16);
+}
+
+// charge '*s_picount -= cyc' at a block exit (clobbers x16/w17)
+inline void emit_charge_cycles(a64::Assembler& a, int cyc)
+{
+    if (s_picount == nullptr || cyc == 0) return;
+    a.mov(a64::x16, (uint64_t)(uintptr_t)s_picount);
+    a.ldr(a64::w17, a64::ptr(a64::x16));
+    if (cyc > 0) a.sub(a64::w17, a64::w17, cyc);
+    else         a.add(a64::w17, a64::w17, -cyc);
+    a.str(a64::w17, a64::ptr(a64::x16));
+}
+
+// Guest condition -> host condition: the 4-bit encodings are identical, but
+// asmjit's portable CondCode enum reorders them (kAL=0, kEQ=2, ...): guest
+// cond c in 0..13 is CondCode(c + 2), and flipping bit 0 still inverts.
+// One msr replaces the x86 backend's whole compound-condition test ladder
+inline bool emit_cond_skip(a64::Assembler& a, const a64::Gp& ctx, uint32_t cond, const Label& skip)
+{
+    if (cond == 0xEu) return true;  // AL: no code
+    if (cond == 0xFu) return false; // NV: unsupported
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.msr(Imm(a64::Predicate::SysReg::kNZCV), a64::x16); // guest N/Z/C/V (bits 31:28) -> host flags
+    a.b((arm::CondCode)((cond ^ 1u) + 2u), skip);             // branch away when FALSE
+    return true;
+}
+
+// host C := guest C for adc/sbc (a full NZCV load; N/Z/V are then overwritten
+// by the adcs/sbcs that follows, or ignored). Clobbers w16
+inline void emit_carry_in(a64::Assembler& a, const a64::Gp& ctx)
+{
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.msr(Imm(a64::Predicate::SysReg::kNZCV), a64::x16);
+}
+
+// Set N/Z in CPSR from the result in w0, preserving V (and everything else);
+// C is preserved too unless the operand-2 shifter defined it (setC + cVal,
+// a translate-time constant for rotated immediates). Clobbers w16/w17
+void emit_set_flags_logical(a64::Assembler& a, const a64::Gp& ctx, bool setC, bool cVal)
+{
+    a.cmp(a64::w0, 0);                                   // host N/Z from the result
+    a.mrs(a64::x17, Imm(a64::Predicate::SysReg::kNZCV));
+    a.and_(a64::w17, a64::w17, kN | kZ);
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.and_(a64::w16, a64::w16, setC ? ~(kN | kZ | kC) : ~(kN | kZ));
+    if (setC && cVal) a.orr(a64::w16, a64::w16, kC);
+    a.orr(a64::w16, a64::w16, a64::w17);
+    a.str(a64::w16, a64::ptr(ctx, cpsr_off()));
+}
+
+// Same, with C from the shifter carry-out stashed in w3 bit 0 (the a64 twin
+// of emit_set_flags_logical_carry_esi). Clobbers w3/w16/w17
+void emit_set_flags_logical_carry_w3(a64::Assembler& a, const a64::Gp& ctx)
+{
+    a.cmp(a64::w0, 0);
+    a.mrs(a64::x17, Imm(a64::Predicate::SysReg::kNZCV));
+    a.and_(a64::w17, a64::w17, kN | kZ);
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.and_(a64::w16, a64::w16, ~(kN | kZ | kC));
+    a.orr(a64::w16, a64::w16, a64::w17);
+    a.and_(a64::w3, a64::w3, 1u);
+    a.lsl(a64::w3, a64::w3, 29);                         // carry bit 0 -> kC (bit 29)
+    a.orr(a64::w16, a64::w16, a64::w3);
+    a.str(a64::w16, a64::ptr(ctx, cpsr_off()));
+}
+
+// Set N/Z/C/V by capturing the host NZCV right after an adds/subs/adcs/sbcs
+// (only flag-transparent instructions may sit in between, e.g. the Rd str).
+// No carry inversion is ever needed on this host (see the header note);
+// cIsBorrow is kept for x86 signature parity. Clobbers w16/w17
+void emit_set_flags_after_carry(a64::Assembler& a, const a64::Gp& ctx, bool /*cIsBorrow*/)
+{
+    a.mrs(a64::x17, Imm(a64::Predicate::SysReg::kNZCV)); // N/Z/C/V at bits 31:28
+    a.and_(a64::w17, a64::w17, kN | kZ | kC | kV);
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.and_(a64::w16, a64::w16, ~(kN | kZ | kC | kV));    // preserve mode bits etc.
+    a.orr(a64::w16, a64::w16, a64::w17);
+    a.str(a64::w16, a64::ptr(ctx, cpsr_off()));
+}
+void emit_set_flags_arith(a64::Assembler& a, const a64::Gp& ctx, bool isSub)
+{ emit_set_flags_after_carry(a, ctx, isSub); }
+
+// Emit one data-processing instruction (condition already handled by the
+// shared router). Mirrors the x86 emitter's coverage and deferrals exactly.
+// One structural difference: an immediate operand 2 is always MATERIALIZED
+// into w1 (AArch64 logical-immediate encodings can't hold arbitrary rotated
+// ARM immediates), which collapses the x86 version's separate immediate and
+// register paths into a single opcode switch
+bool emit_arm_dp(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint32_t pc)
+{
+    if (((insn >> 26) & 0x3u) != 0u) return false; // data-processing class only
+
+    const bool     useReg = !((insn >> 25) & 1u);
+    const uint32_t opcode = (insn >> 21) & 0xFu;
+    const bool     Sraw   = (insn >> 20) & 1u;
+    const uint32_t Rn     = (insn >> 16) & 0xFu;
+    const uint32_t Rd     = (insn >> 12) & 0xFu;
+    const bool     compareOp = (opcode >= 0x8u && opcode <= 0xBu);
+    if (compareOp && !Sraw) return false; // TST/TEQ/CMP/CMN encodings need S=1 (S=0 is the MRS/MSR/BX space)
+    if (Rd == 15u && Sraw) {
+        if (compareOp) return false; // deprecated TSTP/TEQP/CMPP/CMNP forms -> interpreter (see x86 note)
+        // MOVS PC / SUBS PC,LR (exception return): needs the wired helper
+        if (s_memMode != MemMode::Callback || !s_memcb.exc_return) return false;
+    }
+    const bool S = Sraw && Rd != 15u; // Rd==PC never sets flags (S=1 = SPSR restore, handled at exit)
+    if (Rn == 15u) {
+        // pipelined PC as a translate-time constant, parked in the R15 slot (same trick as x86)
+        const uint32_t addpc = ((insn >> 25) & 1u) ? 8u : ((insn & 0x10u) ? 12u : 8u);
+        a.mov(a64::w16, pc + addpc);
+        a.str(a64::w16, a64::ptr(ctx, reg_off(15)));
+    }
+
+    const bool logicalOp = (opcode == 0x0u || opcode == 0x1u || opcode == 0x8u ||
+                            opcode == 0x9u || opcode == 0xCu || opcode == 0xDu ||
+                            opcode == 0xEu || opcode == 0xFu);
+    bool shiftCarryInW3  = false; // shifter carry-out (S-logical) parked in w3 bit 0
+    bool immCarryDefined = false;
+    bool immCarry        = false;
+
+    // ---- operand 2 -> w1 ----------------------------------------------------
+    if (useReg) {
+        const uint32_t Rm  = insn & 0xFu;
+        const uint32_t shf = (insn >> 4) & 0xFFu; // shift field (insn bits 11-4)
+        const bool logicalS = S && logicalOp;
+        if ((shf & 1u) == 0u) {
+            // immediate shift amount (Rm == R15 reads the pipelined PC, +8)
+            if (Rm == 15u) a.mov(a64::w1, pc + 8u);
+            else           a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rm)));
+            if (shf != 0u) {
+                const uint32_t stype = (shf >> 1) & 0x3u;  // insn bits 6-5
+                const uint32_t sh    = (shf >> 3) & 0x1Fu; // insn bits 11-7
+                if (logicalS) {
+                    // shifter carry-out (see the x86 twin for the bit table)
+                    const uint32_t cbit = (sh == 0u)
+                        ? ((stype == 3u) ? 0u : 31u)
+                        : ((stype == 0u) ? (32u - sh) : (sh - 1u));
+                    if (cbit) a.lsr(a64::w3, a64::w1, cbit);
+                    else      a.mov(a64::w3, a64::w1);
+                    a.and_(a64::w3, a64::w3, 1u);
+                    shiftCarryInW3 = true;
+                }
+                if (sh == 0u) {
+                    // special #0 forms: LSR/ASR #0 = #32; ROR #0 = RRX
+                    switch (stype) {
+                    case 1:  a.mov(a64::w1, 0);           break; // LSR #32 -> 0
+                    case 2:  a.asr(a64::w1, a64::w1, 31); break; // ASR #32 -> sign fill
+                    default:                                     // RRX: w1 = (C << 31) | (Rm >> 1)
+                        a.lsr(a64::w1, a64::w1, 1);
+                        a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+                        a.and_(a64::w16, a64::w16, kC);          // isolate C (bit 29)
+                        a.lsl(a64::w16, a64::w16, 2);            // -> bit 31
+                        a.orr(a64::w1, a64::w1, a64::w16);
+                        break;
+                    }
+                } else {
+                    switch (stype) {
+                    case 0:  a.lsl(a64::w1, a64::w1, sh); break;
+                    case 1:  a.lsr(a64::w1, a64::w1, sh); break;
+                    case 2:  a.asr(a64::w1, a64::w1, sh); break;
+                    default: a.ror(a64::w1, a64::w1, sh); break;
+                    }
+                }
+            }
+        } else {
+            // register-specified shift amount; ARM amounts >= 32 are special
+            // (AArch64 variable shifts mask the count mod 32, like x86's mod-31 issue)
+            if (shf & 0x8u) return false; // bit 7 = 1 -> mul-class, not DP
+            if (logicalS)   return false; // run-time shift amount + logical S -> defer (like x86)
+            const uint32_t Rs    = (shf >> 4) & 0xFu;
+            const uint32_t stype = (shf >> 1) & 0x3u;
+            if (Rs == 15u) return false;
+            if (Rm == 15u) a.mov(a64::w1, pc + 12u); // pipelined PC: +12 with a register amount
+            else           a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rm)));
+            a.ldr(a64::w2, a64::ptr(ctx, reg_off((int)Rs)));
+            a.and_(a64::w2, a64::w2, 0xFFu);         // shift amount = bottom byte of Rs
+            if (stype == 3u) {
+                a.ror(a64::w1, a64::w1, a64::w2);    // RORV's mod-32 count matches ARM's value result
+            } else {
+                Label lt32 = a.new_label();
+                Label done = a.new_label();
+                a.cmp(a64::w2, 32);
+                a.b(arm::CondCode::kUnsignedLT, lt32);
+                if (stype == 2u) a.asr(a64::w1, a64::w1, 31); // ASR >= 32 -> sign fill
+                else             a.mov(a64::w1, 0);           // LSL/LSR >= 32 -> 0
+                a.b(done);
+                a.bind(lt32);
+                if (stype == 0u)      a.lsl(a64::w1, a64::w1, a64::w2);
+                else if (stype == 1u) a.lsr(a64::w1, a64::w1, a64::w2);
+                else                  a.asr(a64::w1, a64::w1, a64::w2);
+                a.bind(done);
+            }
+        }
+    } else {
+        const uint32_t rot = ((insn >> 8) & 0xFu) * 2u;
+        const uint32_t v   = insn & 0xFFu;
+        const uint32_t imm = rot ? ((v >> rot) | (v << (32u - rot))) : v;
+        immCarryDefined = (rot != 0u); // C from operand 2 defined only if rotated
+        immCarry        = ((imm >> 31) & 1u) != 0u;
+        a.mov(a64::w1, imm);
+    }
+
+    // ---- Rn -> w2, compute into w0 ------------------------------------------
+    if (!(opcode == 0xDu || opcode == 0xFu)) // MOV/MVN ignore Rn
+        a.ldr(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
+
+    switch (opcode) {
+    // logical (host flags not used: N/Z come from the result in the helpers)
+    case 0xDu: a.mov (a64::w0, a64::w1); break;                     // MOV
+    case 0xFu: a.mvn_(a64::w0, a64::w1); break;                     // MVN (mvn_: MSVC arm64_neon.h defines a 'mvn' macro)
+    case 0x0u: case 0x8u: a.and_(a64::w0, a64::w2, a64::w1); break; // AND / TST
+    case 0x1u: case 0x9u: a.eor (a64::w0, a64::w2, a64::w1); break; // EOR / TEQ
+    case 0xCu: a.orr (a64::w0, a64::w2, a64::w1); break;            // ORR
+    case 0xEu: a.bic (a64::w0, a64::w2, a64::w1); break;            // BIC
+    // arithmetic (the S forms set host NZCV, captured right after the store)
+    case 0x4u: case 0xBu: S ? a.adds(a64::w0, a64::w2, a64::w1) : a.add(a64::w0, a64::w2, a64::w1); break; // ADD / CMN
+    case 0x2u: case 0xAu: S ? a.subs(a64::w0, a64::w2, a64::w1) : a.sub(a64::w0, a64::w2, a64::w1); break; // SUB / CMP
+    case 0x3u:            S ? a.subs(a64::w0, a64::w1, a64::w2) : a.sub(a64::w0, a64::w1, a64::w2); break; // RSB: op2 - Rn
+    case 0x5u: emit_carry_in(a, ctx); S ? a.adcs(a64::w0, a64::w2, a64::w1) : a.adc(a64::w0, a64::w2, a64::w1); break; // ADC
+    case 0x6u: emit_carry_in(a, ctx); S ? a.sbcs(a64::w0, a64::w2, a64::w1) : a.sbc(a64::w0, a64::w2, a64::w1); break; // SBC: Rn - op2 - !C, native
+    case 0x7u: emit_carry_in(a, ctx); S ? a.sbcs(a64::w0, a64::w1, a64::w2) : a.sbc(a64::w0, a64::w1, a64::w2); break; // RSC: op2 - Rn - !C
+    default: return false;
+    }
+
+    if (!compareOp) a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd))); // TST/TEQ/CMP/CMN: no write-back
+
+    if (S) {
+        if (!logicalOp)          emit_set_flags_after_carry(a, ctx, false);    // full NZCV from the host op
+        else if (shiftCarryInW3) emit_set_flags_logical_carry_w3(a, ctx);      // C = shifter carry-out
+        else if (!useReg)        emit_set_flags_logical(a, ctx, immCarryDefined, immCarry);
+        else                     emit_set_flags_logical(a, ctx, false, false); // unshifted reg op2: C preserved
+    }
+    return true;
+}
+
+// B/BL: identical structure to the x86 twin
+bool emit_arm_branch(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
+{
+    const bool     L      = (insn >> 24) & 1u;         // link
+    const int32_t  off    = (int32_t)(insn << 8) >> 6; // sign-extended imm24, scaled *4
+    const uint32_t target = pc + 8u + (uint32_t)off;
+    if (L) {
+        a.mov(a64::w16, pc + 4u);                      // LR = address of the next instruction
+        a.str(a64::w16, a64::ptr(ctx, reg_off(14)));
+    }
+    emit_charge_cycles(a, cyc);
+    a.mov(a64::w0, target);
+    a.emit_epilog(frame);                              // return target as the next PC
+    return true;
+}
+
+// Block exit for a DP instruction that wrote R15 (the a64 twin of the x86
+// emit_dp_pc_exit; see there for the exception-return contract)
+inline void emit_dp_pc_exit(a64::Assembler& a, const a64::Gp& ctx, bool excReturn, FuncFrame& frame, int cycCharge)
+{
+    a.ldr(a64::w0, a64::ptr(ctx, reg_off(15)));
+    if (excReturn) emit_mem_call(a, s_memcb.exc_return, false); // w0 = final PC from the helper
+    else           a.and_(a64::w0, a64::w0, 0xFFFFFFFCu);       // PC bits 1:0 ignored in ARM state
+    emit_charge_cycles(a, cycCharge);
+    a.emit_epilog(frame);
+}
+
+// Post-access abort/IRQ checks: the a64 twin of the x86 emit_mem_post_checks
+// (see there for the exit policy and cycle notes). Clobbers w16/w17
+inline void emit_mem_post_checks(a64::Assembler& a, const a64::Gp& ctx, uint32_t pc, FuncFrame& frame, int cyc)
+{
+    if (!s_memcb.pIrq || !s_memcb.pIrqFlag) return; // hooks not wired -> no codegen
+    Label do_exit = a.new_label();
+    Label l_irq   = a.new_label();
+    Label cont    = a.new_label();
+    // Data abort: always taken
+    a.mov(a64::x16, (uint64_t)(uintptr_t)s_memcb.pAbtD);
+    a.ldrb(a64::w17, a64::ptr(a64::x16));
+    a.cbnz(a64::w17, do_exit);
+    // FIQ: taken if pending AND F (bit 6) clear
+    a.mov(a64::x16, (uint64_t)(uintptr_t)s_memcb.pFiq);
+    a.ldrb(a64::w17, a64::ptr(a64::x16));
+    a.cbz(a64::w17, l_irq);
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.tst(a64::w16, 0x40u);
+    a.b(arm::CondCode::kEQ, do_exit);       // unmasked -> vector
+    a.bind(l_irq);
+    // IRQ: taken if pending AND I (bit 7) clear
+    a.mov(a64::x16, (uint64_t)(uintptr_t)s_memcb.pIrq);
+    a.ldrb(a64::w17, a64::ptr(a64::x16));
+    a.cbz(a64::w17, cont);
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.tst(a64::w16, 0x80u);
+    a.b(arm::CondCode::kNE, cont);          // masked -> continue in-block
+    a.bind(do_exit);
+    a.mov(a64::x16, (uint64_t)(uintptr_t)s_memcb.pIrqFlag);
+    a.mov(a64::w17, 1);
+    a.strb(a64::w17, a64::ptr(a64::x16));   // request the IRQ check in the exec loop
+    emit_charge_cycles(a, cyc);             // executed prefix only
+    a.mov(a64::w0, pc + 4u);                // resume at the next instruction
+    a.emit_epilog(frame);
+    a.bind(cont);
+}
+
+// Single data transfer LDR/STR/LDRB/STRB: mirrors the x86 twin (same decode,
+// deferrals, three memory modes and call-safety discipline). Register plan:
+// w1 = base, w2 = effective address, w3 = register offset, w0 = value/result,
+// x16 = mock host address / thunk target
+bool emit_arm_ldrstr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
+{
+    if (s_memMode == MemMode::Defer) return false;
+    const bool     I  = (insn >> 25) & 1u;    // 0 = immediate offset (inverted vs DP), 1 = register
+    const bool     P  = (insn >> 24) & 1u;
+    const bool     U  = (insn >> 23) & 1u;
+    const bool     B  = (insn >> 22) & 1u;
+    const bool     W  = (insn >> 21) & 1u;
+    const bool     L  = (insn >> 20) & 1u;
+    const uint32_t Rn = (insn >> 16) & 0xFu;
+    const uint32_t Rd = (insn >> 12) & 0xFu;
+    if (Rd == 15u && Rn == 15u) return false; // both PC operands at once: too rare
+
+    bool     offIsReg = false;
+    uint32_t off      = 0;
+    if (!I) {
+        off = insn & 0xFFFu;                  // imm12
+    } else {
+        const uint32_t Rm = insn & 0xFu;
+        if (Rm == 15u) return false;
+        const uint32_t shf = (insn >> 4) & 0xFFu;
+        if (shf & 1u) return false;           // register-specified shift amount not valid here
+        a.ldr(a64::w3, a64::ptr(ctx, reg_off((int)Rm)));
+        if (shf != 0u) {
+            const uint32_t stype = (shf >> 1) & 0x3u;
+            const uint32_t sh    = (shf >> 3) & 0x1Fu;
+            if (sh == 0u) {
+                switch (stype) {
+                case 1:  a.mov(a64::w3, 0); break;           // LSR #32
+                case 2:  a.asr(a64::w3, a64::w3, 31); break; // ASR #32
+                default:                                     // RRX
+                    a.lsr(a64::w3, a64::w3, 1);
+                    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+                    a.and_(a64::w16, a64::w16, kC);
+                    a.lsl(a64::w16, a64::w16, 2);
+                    a.orr(a64::w3, a64::w3, a64::w16);
+                    break;
+                }
+            } else {
+                switch (stype) {
+                case 0:  a.lsl(a64::w3, a64::w3, sh); break;
+                case 1:  a.lsr(a64::w3, a64::w3, sh); break;
+                case 2:  a.asr(a64::w3, a64::w3, sh); break;
+                default: a.ror(a64::w3, a64::w3, sh); break;
+                }
+            }
+        }
+        offIsReg = true;
+    }
+
+    // shared address arithmetic: w1 = base, w2 = effective address
+    const bool pcBase = (Rn == 15u);
+    if (s_memMode == MemMode::Callback && pcBase && (!P || W)) return false; // PC-base writeback -> defer
+    if (pcBase) a.mov(a64::w1, pc + 8u);
+    else        a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+    a.mov(a64::w2, a64::w1);
+    if (P) {
+        if (offIsReg)       { if (U) a.add(a64::w2, a64::w2, a64::w3); else a.sub(a64::w2, a64::w2, a64::w3); }
+        else if (off != 0u) { if (U) a.add(a64::w2, a64::w2, off);     else a.sub(a64::w2, a64::w2, off); }
+    }
+
+    if (s_memMode == MemMode::Callback) {
+        if (!P) {                             // post-index writeback: Rn = base +/- off
+            if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
+            else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
+            a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+        } else if (W) {                       // pre-index writeback: Rn = effective address
+            a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
+        }
+        if (L) {
+            a.mov(a64::w0, a64::w2);          // arg0 = address
+            emit_mem_call(a, B ? s_memcb.r8 : s_memcb.r32, false); // -> w0
+            if (Rd == 15u) {                  // LDR into PC = return
+                a.and_(a64::w0, a64::w0, 0xFFFFFFFCu);
+                emit_charge_cycles(a, cyc);
+                a.emit_epilog(frame);
+            }
+            else a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+        } else {
+            if (Rd == 15u) a.mov(a64::w1, pc + 12u); // STR of PC stores instr+12
+            else           a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rd))); // arg1 = value
+            a.mov(a64::w0, a64::w2);          // arg0 = address
+            emit_mem_call(a, B ? s_memcb.w8 : s_memcb.w32, true);
+        }
+        // same LDR-into-PC post-check exemption as the x86 twin (see there)
+        if (!(L && Rd == 15u)) emit_mem_post_checks(a, ctx, pc, frame, cyc);
+        return true;
+    }
+
+    // --- Mock mode: the ctx 'mem' buffer, addressed as ctx + address + memOff
+    const int memOff = (int)offsetof(ArmCpuSelfTest, mem);
+    a.add(a64::x16, ctx, a64::x2);            // w2 writes zero-extend -> x2 is the address
+    bool branchToPc = false;
+    if (L) {
+        if (B) a.ldrb(a64::w0, a64::ptr(a64::x16, memOff));
+        else   a.ldr (a64::w0, a64::ptr(a64::x16, memOff));
+        if (Rd == 15u) branchToPc = true;     // loaded value = new PC (stays in w0)
+        else           a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+    } else {
+        if (Rd == 15u) a.mov(a64::w0, pc + 12u);
+        else           a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+        if (B) a.strb(a64::w0, a64::ptr(a64::x16, memOff));
+        else   a.str (a64::w0, a64::ptr(a64::x16, memOff));
+    }
+    if (!P) {                                 // post-index writeback (always)
+        if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
+        else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
+        if (Rn == 15u) { a.mov(a64::w0, a64::w1); branchToPc = true; } // PC-base writeback = branch
+        else             a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+    } else if (W) {
+        if (Rn == 15u) { a.mov(a64::w0, a64::w2); branchToPc = true; }
+        else             a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
+    }
+    if (branchToPc) {
+        a.and_(a64::w0, a64::w0, 0xFFFFFFFCu);
+        emit_charge_cycles(a, cyc);
+        a.emit_epilog(frame);
+    }
+    return true;
+}
+
+// Halfword & signed transfer LDRH/STRH/LDRSB/LDRSH: mirrors the x86 twin
+// (same decode/deferrals; no post-check -- see the note there)
+bool emit_arm_halfword(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint32_t pc)
+{
+    if (s_memMode == MemMode::Defer) return false;
+    const bool     P   = (insn >> 24) & 1u;
+    const bool     U   = (insn >> 23) & 1u;
+    const bool     Imm = (insn >> 22) & 1u;
+    const bool     W   = (insn >> 21) & 1u;
+    const bool     L   = (insn >> 20) & 1u;
+    const uint32_t Rn  = (insn >> 16) & 0xFu;
+    const uint32_t Rd  = (insn >> 12) & 0xFu;
+    const uint32_t sh  = (insn >> 5)  & 0x3u; // 1=H, 2=SB, 3=SH
+    if (Rd == 15u)              return false;
+    if (!L && sh != 1u)         return false; // only STRH stores
+    if (Rn == 15u && (W || !P)) return false; // PC-base writeback -> defer
+
+    bool     offIsReg = false;
+    uint32_t off      = 0;
+    if (Imm) {
+        off = (((insn >> 8) & 0xFu) << 4) | (insn & 0xFu);
+    } else {
+        const uint32_t Rm = insn & 0xFu;
+        if (Rm == 15u) return false;
+        a.ldr(a64::w3, a64::ptr(ctx, reg_off((int)Rm)));
+        offIsReg = true;
+    }
+
+    if (Rn == 15u) a.mov(a64::w1, pc + 8u);
+    else           a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+    a.mov(a64::w2, a64::w1);
+    if (P) {
+        if (offIsReg)       { if (U) a.add(a64::w2, a64::w2, a64::w3); else a.sub(a64::w2, a64::w2, a64::w3); }
+        else if (off != 0u) { if (U) a.add(a64::w2, a64::w2, off);     else a.sub(a64::w2, a64::w2, off); }
+    }
+
+    if (s_memMode == MemMode::Callback) {
+        if (!P) {
+            if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
+            else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
+            a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+        } else if (W) {
+            a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
+        }
+        if (L) {
+            a.mov(a64::w0, a64::w2);
+            emit_mem_call(a, (sh == 2u) ? s_memcb.r8 : s_memcb.r16, false);
+            if      (sh == 2u) a.sxtb(a64::w0, a64::w0); // LDRSB
+            else if (sh == 3u) a.sxth(a64::w0, a64::w0); // LDRSH (LDRH already zero-extended)
+            a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+        } else {
+            a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rd))); // arg1 (w16 write truncates)
+            a.mov(a64::w0, a64::w2);
+            emit_mem_call(a, s_memcb.w16, true);
+        }
+        return true;
+    }
+
+    const int memOff = (int)offsetof(ArmCpuSelfTest, mem);
+    a.add(a64::x16, ctx, a64::x2);
+    if (L) {
+        if      (sh == 1u) a.ldrh (a64::w0, a64::ptr(a64::x16, memOff));
+        else if (sh == 2u) a.ldrsb(a64::w0, a64::ptr(a64::x16, memOff));
+        else               a.ldrsh(a64::w0, a64::ptr(a64::x16, memOff));
+        a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+    } else {
+        a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+        a.strh(a64::w0, a64::ptr(a64::x16, memOff));
+    }
+    if (!P) {
+        if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
+        else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
+        a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+    } else if (W) {
+        a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
+    }
+    return true;
+}
+
+// Block data transfer LDM/STM: mirrors the x86 twin (constant per-register
+// offsets, base re-read per call, writeback after the loop, PC last; see there)
+bool emit_arm_blocktransfer(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cyc)
+{
+    if (s_memMode == MemMode::Defer) return false;
+    const bool     P    = (insn >> 24) & 1u;
+    const bool     U    = (insn >> 23) & 1u;
+    const bool     S    = (insn >> 22) & 1u;
+    const bool     W    = (insn >> 21) & 1u;
+    const bool     L    = (insn >> 20) & 1u;
+    const uint32_t Rn   = (insn >> 16) & 0xFu;
+    const uint32_t list = insn & 0xFFFFu;
+    if (S)         return false;
+    if (Rn == 15u) return false;
+    int count = 0;
+    for (int i = 0; i < 16; ++i) if (list & (1u << i)) ++count;
+    if (count == 0) return false;
+
+    const int32_t bytes    = 4 * count;
+    const int32_t firstOff = U ? (P ? 4 : 0) : (P ? -bytes : -bytes + 4);
+    const int32_t finalOff = U ? bytes : -bytes;
+
+    if (s_memMode == MemMode::Callback) {
+        if (list & (1u << Rn)) return false; // base in transfer list -> defer
+        bool branchToPc = false;
+        int  pos = 0;
+        for (int i = 0; i < 16; ++i) {
+            if (!(list & (1u << i))) continue;
+            const int32_t addrOff = firstOff + 4 * pos;
+            a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rn))); // arg0 = base (re-read, unchanged)
+            if (addrOff > 0)      a.add(a64::w0, a64::w0, addrOff);
+            else if (addrOff < 0) a.sub(a64::w0, a64::w0, -addrOff);
+            if (L) {
+                emit_mem_call(a, s_memcb.r32, false);        // -> w0
+                if (i == 15) { a.mov(a64::w3, a64::w0); branchToPc = true; } // PC is last: no call follows
+                else         a.str(a64::w0, a64::ptr(ctx, reg_off(i)));
+            } else {
+                if (i == 15) a.mov(a64::w1, pc + 12u);       // STM stores PC as instr+12
+                else         a.ldr(a64::w1, a64::ptr(ctx, reg_off(i)));
+                emit_mem_call(a, s_memcb.w32, true);
+            }
+            ++pos;
+        }
+        if (W) {
+            a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rn)));
+            if (finalOff > 0) a.add(a64::w0, a64::w0, finalOff);
+            else              a.sub(a64::w0, a64::w0, -finalOff);
+            a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rn)));
+        }
+        if (branchToPc) {
+            a.and_(a64::w0, a64::w3, 0xFFFFFFFCu);
+            emit_charge_cycles(a, cyc);
+            a.emit_epilog(frame);
+        }
+        // no post-check: interpreter parity (see the x86 twin's note)
+        return true;
+    }
+
+    const int memOff = (int)offsetof(ArmCpuSelfTest, mem);
+    a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));       // base (kept for writeback)
+    a.mov(a64::w2, a64::w1);                               // running transfer address
+    if (firstOff > 0)      a.add(a64::w2, a64::w2, firstOff);
+    else if (firstOff < 0) a.sub(a64::w2, a64::w2, -firstOff);
+
+    bool branchToPc = false;
+    for (int i = 0; i < 16; ++i) {
+        if (!(list & (1u << i))) continue;
+        a.add(a64::x16, ctx, a64::x2);
+        if (L) {
+            a.ldr(a64::w0, a64::ptr(a64::x16, memOff));
+            if (i == 15) branchToPc = true;                // new PC stays in w0 (PC is last)
+            else         a.str(a64::w0, a64::ptr(ctx, reg_off(i)));
+        } else {
+            if (i == 15) a.mov(a64::w0, pc + 12u);
+            else         a.ldr(a64::w0, a64::ptr(ctx, reg_off(i)));
+            a.str(a64::w0, a64::ptr(a64::x16, memOff));
+        }
+        a.add(a64::w2, a64::w2, 4);
+    }
+    if (W) {
+        if (finalOff > 0) a.add(a64::w1, a64::w1,  finalOff);
+        else              a.sub(a64::w1, a64::w1, -finalOff);
+        a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+    }
+    if (branchToPc) {
+        a.and_(a64::w0, a64::w0, 0xFFFFFFFCu);
+        emit_charge_cycles(a, cyc);
+        a.emit_epilog(frame);
+    }
+    return true;
+}
+
+// BX Rm: PC = Rm UNMASKED + T bit on odd (interpreter parity; see the x86 twin)
+bool emit_arm_bx(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, FuncFrame& frame, int cyc)
+{
+    const uint32_t Rm = insn & 0xFu;
+    if (Rm == 15u) return false;
+    a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rm)));
+    Label even = a.new_label();
+    a.tst(a64::w0, 1u);
+    a.b(arm::CondCode::kEQ, even);
+    a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.orr(a64::w16, a64::w16, 0x20u);       // T bit (bit 5), interpreter parity
+    a.str(a64::w16, a64::ptr(ctx, cpsr_off()));
+    a.bind(even);
+    emit_charge_cycles(a, cyc);
+    a.emit_epilog(frame);                   // return Rm as the next PC (unmasked)
+    return true;
+}
+
+// SWP/SWPB: read-then-write through the thunks; same deferrals/parking as x86
+bool emit_arm_swap(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn)
+{
+    if (s_memMode != MemMode::Callback) return false;
+    const uint32_t Rn = (insn >> 16) & 0xFu;
+    const uint32_t Rd = (insn >> 12) & 0xFu;
+    const uint32_t Rm =  insn        & 0xFu;
+    const bool     B  = (insn >> 22) & 1u;
+    if (Rn == 15u || Rd == 15u || Rm == 15u) return false;
+    if (Rd == Rn || Rd == Rm) return false;
+    a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rn)));       // arg0 = address
+    emit_mem_call(a, B ? s_memcb.r8 : s_memcb.r32, false); // w0 = old value
+    a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));       // Rd = old value (parked)
+    a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rn)));       // address (re-read, unchanged)
+    a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rm)));       // arg1 = new value
+    emit_mem_call(a, B ? s_memcb.w8 : s_memcb.w32, true);
+    return true;
+}
+
+// Run-time multiply cycle refund "ARM7_ICOUNT += 4 - m" (see the x86 twin for
+// the model). On this host the whole bsr/shr/xor dance collapses to
+// refund = clz(|Rs| | 1) >> 3. Clobbers w16/w17/x1; emitted BEFORE the multiply
+void emit_mul_cycle_refund(a64::Assembler& a, const a64::Gp& ctx, uint32_t Rs, bool sign)
+{
+    if (!s_picount) return;
+    a.ldr(a64::w16, a64::ptr(ctx, reg_off((int)Rs)));
+    if (sign) {                              // |Rs| (INT32_MIN stays put -> m = 4)
+        a.asr(a64::w17, a64::w16, 31);
+        a.eor(a64::w16, a64::w16, a64::w17);
+        a.sub(a64::w16, a64::w16, a64::w17);
+    }
+    a.orr(a64::w16, a64::w16, 1u);           // Rs == 0 -> m = 1
+    a.clz(a64::w17, a64::w16);
+    a.lsr(a64::w17, a64::w17, 3);            // refund = clz >> 3 (= 4 - m)
+    a.mov(a64::x1, (uint64_t)(uintptr_t)s_picount);
+    a.ldr(a64::w16, a64::ptr(a64::x1));
+    a.add(a64::w16, a64::w16, a64::w17);
+    a.str(a64::w16, a64::ptr(a64::x1));
+}
+
+// MUL/MLA: single 32-bit mul (sign-agnostic low half); flags as on x86
+bool emit_arm_mul32(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn)
+{
+    const uint32_t Rd = (insn >> 16) & 0xFu; // multiply encodings put Rd at 19-16
+    const uint32_t Rn = (insn >> 12) & 0xFu;
+    const uint32_t Rs = (insn >>  8) & 0xFu;
+    const uint32_t Rm =  insn        & 0xFu;
+    const bool     A  = (insn >> 21) & 1u;
+    const bool     S  = (insn >> 20) & 1u;
+    if (Rd == 15u || Rm == 15u || Rs == 15u || (A && Rn == 15u)) return false;
+    emit_mul_cycle_refund(a, ctx, Rs, true);
+    a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rm)));
+    a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rs)));
+    a.mul(a64::w0, a64::w0, a64::w1);
+    if (A) {
+        a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
+        a.add(a64::w0, a64::w0, a64::w1);
+    }
+    a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+    if (S) emit_set_flags_logical(a, ctx, false, false); // N/Z from w0; C,V preserved
+    return true;
+}
+
+// UMULL/SMULL/UMLAL/SMLAL: the native widening multiply gives the 64-bit
+// product in one instruction, and S-flags come from a single 64-bit cmp
+// (N = bit 63, Z = 64-bit zero) -- both cheaper than the x86 twin
+bool emit_arm_mul64(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn)
+{
+    const uint32_t RdHi = (insn >> 16) & 0xFu;
+    const uint32_t RdLo = (insn >> 12) & 0xFu;
+    const uint32_t Rs   = (insn >>  8) & 0xFu;
+    const uint32_t Rm   =  insn        & 0xFu;
+    const bool   signd  = (insn >> 22) & 1u;
+    const bool   A      = (insn >> 21) & 1u;
+    const bool   S      = (insn >> 20) & 1u;
+    if (RdHi == 15u || RdLo == 15u || Rs == 15u || Rm == 15u) return false;
+    emit_mul_cycle_refund(a, ctx, Rs, signd);
+    a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rm)));
+    a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rs)));
+    if (signd) a.smull(a64::x0, a64::w0, a64::w1); // x0 = Rm * Rs
+    else       a.umull(a64::x0, a64::w0, a64::w1);
+    if (A) {                                       // RdHi:RdLo += product
+        a.ldr(a64::w2, a64::ptr(ctx, reg_off((int)RdLo)));
+        a.ldr(a64::w3, a64::ptr(ctx, reg_off((int)RdHi)));
+        a.lsl(a64::x3, a64::x3, 32);
+        a.add(a64::x2, a64::x2, a64::x3);          // 64-bit accumulator
+        a.add(a64::x0, a64::x0, a64::x2);
+    }
+    a.lsr(a64::x16, a64::x0, 32);
+    a.str(a64::w16, a64::ptr(ctx, reg_off((int)RdHi))); // hi first (interpreter write order)
+    a.str(a64::w0,  a64::ptr(ctx, reg_off((int)RdLo)));
+    if (S) {
+        a.cmp(a64::x0, 0);                         // 64-bit: N = bit 63, Z = whole == 0
+        a.mrs(a64::x17, Imm(a64::Predicate::SysReg::kNZCV));
+        a.and_(a64::w17, a64::w17, kN | kZ);
+        a.ldr(a64::w16, a64::ptr(ctx, cpsr_off()));
+        a.and_(a64::w16, a64::w16, ~(kN | kZ));    // C,V (and mode bits) preserved
+        a.orr(a64::w16, a64::w16, a64::w17);
+        a.str(a64::w16, a64::ptr(ctx, cpsr_off()));
+    }
+    return true;
+}
+
+// MRS/MSR via the wired HandlePSRTransfer (same contract as the x86 twin)
+bool emit_arm_psr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn)
+{
+    (void)ctx;
+    if (s_memMode != MemMode::Callback || !s_memcb.psr_transfer) return false;
+    if (!((insn >> 21) & 1u) && ((insn >> 12) & 0xFu) == 15u)
+        return false;  // MRS into PC -> defer (invalid anyway)
+    a.mov(a64::w0, insn);                          // arg0 = instruction word
+    emit_mem_call(a, s_memcb.psr_transfer, false); // HandlePSRTransfer(insn)
+    return true;
+}
+
+#endif // AJ_HOST_A64 (emitter backend)
+
 inline int arm_insn_cycles(uint32_t insn); // defined below (shared cost model)
 
 // Translate one ARM instruction: evaluate its condition (skip the body if
@@ -1344,7 +2179,7 @@ inline int arm_insn_cycles(uint32_t insn); // defined below (shared cost model)
 // including this one: block exits emitted here or in the sub-emitters charge
 // exactly that (see emit_charge_cycles), and a condition-false instruction
 // costing more than ARM's 1-cycle skip price refunds the difference
-bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cycCharge = 0)
+bool emit_arm_insn(HostAssembler& a, const HostGp& ctx, uint32_t insn, uint32_t pc, FuncFrame& frame, int cycCharge = 0)
 {
     const uint32_t cond = insn >> 28;
     if (cond == 0xFu) return false;           // NV: unsupported
@@ -1382,22 +2217,10 @@ bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_
             const uint32_t opc = (insn >> 21) & 0xFu;
             const bool compare = (opc >= 0x8u && opc <= 0xBu);
             if (ok && ((insn >> 12) & 0xFu) == 15u && !compare) {
-                if ((insn >> 20) & 1u) {
-                    // S=1: exception return (MOVS PC / SUBS PC,LR,...). Call the
-                    // wired helper with the computed PC; it restores CPSR from the
-                    // SPSR, switches banks, masks bits 1:0, runs ARM7_CHECKIRQ, and
-                    // returns the FINAL PC (the check may have vectored).
-                    // emit_arm_dp already verified the helper is wired
-                    a.mov(x86::ecx, x86::dword_ptr(ctx, reg_off(15)));
-                    emit_mem_call(a, s_memcb.exc_return, false);
-                    emit_charge_cycles(a, cycCharge, a.zdx());
-                    a.emit_epilog(frame); // EAX = final PC from the helper
-                } else {
-                    a.mov(x86::eax, x86::dword_ptr(ctx, reg_off(15)));
-                    a.and_(x86::eax, ~3u);
-                    emit_charge_cycles(a, cycCharge, a.zdx());
-                    a.emit_epilog(frame);
-                }
+                // S=1: exception return (MOVS PC / SUBS PC,LR,...) through the
+                // wired helper; emit_arm_dp already verified it is wired.
+                // S=0: plain PC write, masked. Both exit the block (per-arch)
+                emit_dp_pc_exit(a, ctx, ((insn >> 20) & 1u) != 0u, frame, cycCharge);
             }
         }
     }
@@ -1412,9 +2235,9 @@ bool emit_arm_insn(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint32_
         // body like a taken branch -- harmless); the condition-false path lands
         // on it and gives back cost-1 before continuing in the block
         Label end = a.new_label();
-        a.jmp(end);
+        emit_jump(a, end);
         a.bind(skip);
-        emit_charge_cycles(a, -(cost - 1), a.zdx());
+        emit_charge_cycles(a, -(cost - 1));
         a.bind(end);
     } else {
         a.bind(skip);
@@ -1518,14 +2341,14 @@ static int jit_asmjit_translate_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
 
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1538,10 +2361,10 @@ static int jit_asmjit_translate_selftest(void)
     for (int i = 0; i < count; ++i) {
         if (!emit_arm_dp(a, ctx, prog[i], pc))
             return 0; // unsupported op in the test program -> translator regressed
-        a.sub(x86::dword_ptr(ctx, (int)offsetof(ArmCpuSelfTest, cycles)), 1);
+        emit_ctx_cycles_sub(a, ctx, 1);
         pc += 4;
     }
-    a.mov(x86::eax, pc); // return next PC
+    emit_return_imm(a, pc); // return next PC
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1575,14 +2398,14 @@ static int jit_asmjit_cond_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
 
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch  // EAX/EDX are volatile; only ctx (rbx) needs saving
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1593,7 +2416,7 @@ static int jit_asmjit_cond_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1624,13 +2447,13 @@ static int jit_asmjit_shift_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1641,7 +2464,7 @@ static int jit_asmjit_shift_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1670,13 +2493,13 @@ static int jit_asmjit_flags_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1687,7 +2510,7 @@ static int jit_asmjit_flags_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1717,13 +2540,13 @@ static int jit_asmjit_arith_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1734,7 +2557,7 @@ static int jit_asmjit_arith_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1749,7 +2572,8 @@ static int jit_asmjit_arith_selftest(void)
 }
 
 // Translate register-specified shift amounts and verify, including the ARM
-// "amount >= 32 -> 0" edge case that x86's count masking would get wrong
+// "amount >= 32 -> 0" edge case that the host's shift-count masking (x86 mod-32
+// semantics, AArch64 variable shifts likewise) would get wrong
 static int jit_asmjit_regshift_selftest(void)
 {
     static const uint32_t prog[] = {
@@ -1766,13 +2590,13 @@ static int jit_asmjit_regshift_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1783,7 +2607,7 @@ static int jit_asmjit_regshift_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1813,13 +2637,13 @@ static int jit_asmjit_special_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1830,7 +2654,7 @@ static int jit_asmjit_special_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1861,13 +2685,13 @@ static int jit_asmjit_adc_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1878,7 +2702,7 @@ static int jit_asmjit_adc_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1909,13 +2733,13 @@ static int jit_asmjit_regop_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1926,7 +2750,7 @@ static int jit_asmjit_regop_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -1960,13 +2784,13 @@ static int jit_asmjit_ldrstr_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -1977,7 +2801,7 @@ static int jit_asmjit_ldrstr_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -2010,13 +2834,13 @@ static int jit_asmjit_ldrstr_reg_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -2027,7 +2851,7 @@ static int jit_asmjit_ldrstr_reg_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -2057,13 +2881,13 @@ static int jit_asmjit_ldrstr_pc_selftest(void)
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi()); // ctx (rbx) + esi (rsi): callee-saved scratch
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx); // ctx + per-host callee-saved scratch
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -2074,7 +2898,7 @@ static int jit_asmjit_ldrstr_pc_selftest(void)
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) // synthetic PC: 0, 4, 8, ...
             return 0;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -2096,13 +2920,13 @@ static bool run_block(const uint32_t *prog, int count, ArmCpuSelfTest &cpu, uint
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi());
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx);
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -2113,7 +2937,7 @@ static bool run_block(const uint32_t *prog, int count, ArmCpuSelfTest &cpu, uint
     for (int i = 0; i < count; ++i)
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame))
             return false;
-    a.mov(x86::eax, 0xFFFFFFFFu); // fall-through sentinel (no branch taken)
+    emit_return_imm(a, 0xFFFFFFFFu); // fall-through sentinel (no branch taken)
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -2378,13 +3202,13 @@ static bool run_block_partial(const uint32_t *prog, int count, ArmCpuSelfTest &c
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi());
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx);
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -2398,7 +3222,7 @@ static bool run_block_partial(const uint32_t *prog, int count, ArmCpuSelfTest &c
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame))
             break;
     s_memMode = MemMode::Mock; // restore default
-    a.mov(x86::eax, 4u * (uint32_t)i); // resume PC = first untranslated instruction
+    emit_return_imm(a, 4u * (uint32_t)i); // resume PC = first untranslated instruction
     a.emit_epilog(frame);
     translated = i;
 
@@ -2430,6 +3254,7 @@ static int jit_asmjit_realmode_selftest(void)
             cpu.r[2] == 0 && cpu.r[3] == 0) ? 1 : 0;
 }
 
+
 // ===========================================================================
 //  asmjit JIT controller
 //
@@ -2455,18 +3280,18 @@ typedef arm7_block_fn ArmBlockFn; // == uint32_t (*)(void*); matches jit_asmjit.
 // only stops duplication from spreading forward)
 static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32_t pc,
                                   uint32_t (*fetch)(uint32_t), int &count, int &cycles,
-                                  int (*isBlockStart)(void *u, uint32_t addr) = nullptr,
+                                  int (*isBlockStart)(const void *u, uint32_t addr) = nullptr,
                                   void *user = nullptr, int *picount = nullptr)
 {
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, void *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi());
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx);
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -2501,7 +3326,7 @@ static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32
         ++i;
         // End the block at ANY control transfer (basic-block boundary), conditional
         // or not. If a conditional branch isn't taken at run time, the trailing
-        // "mov eax, next-pc; epilog" below returns the fall-through PC and that
+        // trailing "return next-pc" exit below returns the fall-through PC and that
         // address becomes its own block -- so instructions after a *taken* branch
         // are never wrongly cycle-counted. (A not-taken conditional branch is
         // charged 1, not its full cost: the skip-path refund in emit_arm_insn)
@@ -2510,8 +3335,8 @@ static ArmBlockFn translate_block(JitRuntime &rt, const MemCallbacks &cb, uint32
     }
     // trailing exit: charge the whole straight-line path, return the fall-through PC
     // (must be emitted BEFORE the statics are restored below)
-    emit_charge_cycles(a, cyc, a.zdx());
-    a.mov(x86::eax, pc + 4u * (uint32_t)i); // resume PC = first untranslated instruction
+    emit_charge_cycles(a, cyc);
+    emit_return_imm(a, pc + 4u * (uint32_t)i); // resume PC = first untranslated instruction
     a.emit_epilog(frame);
     s_memMode = MemMode::Mock; // restore default (self-tests run direct, assume Mock)
     s_memcb   = MemCallbacks{};
@@ -2583,8 +3408,8 @@ struct ArmAsmjitCtl {
     // regions -- a debug aid for isolating a suspect region. (arm7_aj_clear_exclude /
     // arm7_aj_add_exclude)
     static const int AJ_MAX_EXCL = 32;
-    uint32_t    exclLo[AJ_MAX_EXCL] = {0};
-    uint32_t    exclHi[AJ_MAX_EXCL] = {0};
+    uint32_t    exclLo[AJ_MAX_EXCL] = {};
+    uint32_t    exclHi[AJ_MAX_EXCL] = {};
     int         exclN = 0;
     // Blocks retired by untranslate/reset whose code memory has NOT been freed
     // yet. rt.release() must never run while a block might be executing: the
@@ -2807,7 +3632,7 @@ extern "C" void arm7_aj_untranslate(ArmAsmjitCtl *c, uint32_t addr)
 
 // translate_block probe: does 'addr' already start a cached block? (Stops
 // translation there so the dispatcher chains into it -- see translate_block)
-static int aj_is_block_start(void *u, uint32_t addr)
+static int aj_is_block_start(const void *u, uint32_t addr)
 {
     const ArmAsmjitCtl *c = (const ArmAsmjitCtl *)u;
     if (addr < c->minAddr || addr >= c->maxAddr) return 0;
@@ -2892,12 +3717,81 @@ static void aj_emit_dispatcher(ArmAsmjitCtl *c)
     if (c->dispatcher || !c->picount) return;
     CodeHolder code;
     code.init(c->rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, void *, uint32_t>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
+    HostGp ctx = host_ctx_reg(a);
+#if AJ_HOST_A64
+    // pc lives in w20: callee-saved (AAPCS64) so it survives the block calls;
+    // x30 (LR) is dirtied by every blr and must be saved/restored by the frame
+    a64::Gp pc32 = a64::w20, pcFull = a64::x20;
+    frame.add_dirty_regs(ctx, pcFull, a64::x30);
+    FuncArgsAssignment args(&func);
+    args.assign_all(ctx, pc32);
+    args.update_func_frame(frame);
+    frame.set_call_stack_size(32); // we call blocks
+    frame.update_call_stack_alignment(16);
+    frame.finalize();
+
+    a.emit_prolog(frame);
+    a.emit_args_assignment(frame, args);
+
+    Label loop = a.new_label();
+    Label out  = a.new_label();
+    a.bind(loop);
+    // enabled? (defensive: all current disable sites also reset, clearing the slots)
+    a.mov(a64::x16, (uint64_t)(uintptr_t)&c->enabled);
+    a.ldr(a64::w17, a64::ptr(a64::x16));
+    a.cbz(a64::w17, out);
+    // icount > 0? -- the C loop's while (ARM7_ICOUNT > 0), checked before each block
+    a.mov(a64::x16, (uint64_t)(uintptr_t)c->picount);
+    a.ldr(a64::w17, a64::ptr(a64::x16));
+    a.cmp(a64::w17, 0);
+    a.b(arm::CondCode::kSignedLE, out);
+    // pc within [minAddr, maxAddr)? Constants, same drop-and-re-emit protocol as x86
+    a.mov(a64::w16, c->minAddr);
+    a.cmp(pc32, a64::w16);
+    a.b(arm::CondCode::kUnsignedLT, out);              // below minAddr
+    a.mov(a64::w16, c->maxAddr);
+    a.cmp(pc32, a64::w16);
+    a.b(arm::CondCode::kUnsignedGE, out);              // at/above maxAddr
+    // v = slot[(pc - minAddr) >> 2]
+    a.mov(a64::w16, c->minAddr);
+    a.sub(a64::w0, pc32, a64::w16);
+    a.lsr(a64::w0, a64::w0, 2);                        // idx (w-write zero-extends x0)
+    a.mov(a64::x16, (uint64_t)(uintptr_t)c->slot);     // slot array base (embedded)
+    a.ldr(a64::w0, a64::ptr(a64::x16, a64::x0, a64::lsl(2))); // v = slot[idx]
+    a.cmp(a64::w0, ArmAsmjitCtl::AJ_SLOT_BASE);
+    a.b(arm::CondCode::kUnsignedLT, out);              // UNTRIED / INTERP -> C loop
+    a.sub(a64::w0, a64::w0, ArmAsmjitCtl::AJ_SLOT_BASE); // block id
+    // x16 = &blocksPtr[id], then fn
+    a.mov(a64::w17, (uint32_t)sizeof(BlockInfo));
+    a.mul(a64::w0, a64::w0, a64::w17);                 // byte offset (zero-extends x0)
+    a.mov(a64::x16, (uint64_t)(uintptr_t)&c->blocksPtr);
+    a.ldr(a64::x16, a64::ptr(a64::x16));
+    a.add(a64::x16, a64::x16, a64::x0);
+    a.ldr(a64::x16, a64::ptr(a64::x16, (int)offsetof(BlockInfo, fn)));
+    // no cycle charge here: blocks charge at their exits (see the x86 twin's note)
+    a.mov(a64::x0, ctx);                               // call fn(ctx)
+    a.blr(a64::x16);
+    a.mov(pc32, a64::w0);                              // next emulated pc
+    // post-check exit? the block set the irq flag: the C loop must vector NOW
+    if (c->mem.pIrqFlag) {
+        a.mov(a64::x16, (uint64_t)(uintptr_t)c->mem.pIrqFlag);
+        a.ldrb(a64::w17, a64::ptr(a64::x16));
+        a.cbnz(a64::w17, out);
+    }
+    a.b(loop);
+    a.bind(out);
+    a.mov(a64::w0, pc32);
+    a.emit_epilog(frame);
+
+    ArmDispatchFn fn = nullptr;
+    if (c->rt.add(&fn, &code) == kErrorOk)
+        c->dispatcher = (void *)fn;
+#else
 #if defined(_WIN64) || defined(__x86_64__)
     // pc must survive the block calls: r12 is callee-saved in BOTH x64 ABIs and
     // never used by generated blocks (rsi would be clobbered on SysV, where it is an argument register)
@@ -2979,6 +3873,7 @@ static void aj_emit_dispatcher(ArmAsmjitCtl *c)
     ArmDispatchFn fn = nullptr;
     if (c->rt.add(&fn, &code) == kErrorOk)
         c->dispatcher = (void *)fn;
+#endif // AJ_HOST_X86
 }
 
 // Wire the emulator's cycle counter (&ARM7_ICOUNT, a stable global). Required:
@@ -3091,13 +3986,13 @@ bool run_block_cb(const uint32_t* prog, int count, ArmCpuSelfTest& cpu, uint32_t
     JitRuntime rt;
     CodeHolder code;
     code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func;
     func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame;
     frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi());
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx);
     FuncArgsAssignment args(&func);
     args.assign_all(ctx);
     args.update_func_frame(frame);
@@ -3119,7 +4014,7 @@ bool run_block_cb(const uint32_t* prog, int count, ArmCpuSelfTest& cpu, uint32_t
     s_memMode = MemMode::Mock;
     s_memcb   = MemCallbacks{ nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
     if (!ok) return false;
-    a.mov(x86::eax, 0u);
+    emit_return_imm(a, 0u);
     a.emit_epilog(frame);
 
     SelfTestBlockFn fn = nullptr;
@@ -3519,11 +4414,11 @@ uint8_t g_irq_flag    = 0; // stands in for arm7_aj_irq_flag (set by the block o
 bool run_block_cb_irq(const uint32_t* prog, int count, ArmCpuSelfTest& cpu, uint32_t* retpc)
 {
     JitRuntime rt; CodeHolder code; code.init(rt.environment());
-    x86::Assembler a(&code);
+    HostAssembler a(&code);
     FuncDetail func; func.init(FuncSignature::build<uint32_t, ArmCpuSelfTest *>(), code.environment());
     FuncFrame frame; frame.init(func);
-    x86::Gp ctx = a.zbx();
-    frame.add_dirty_regs(ctx, a.zax(), a.zsi());
+    HostGp ctx = host_ctx_reg(a);
+    host_add_block_regs(frame, a, ctx);
     FuncArgsAssignment args(&func); args.assign_all(ctx); args.update_func_frame(frame);
     frame.set_call_stack_size(32); frame.update_call_stack_alignment(16); frame.finalize();
     a.emit_prolog(frame); a.emit_args_assignment(frame, args);
@@ -3538,7 +4433,7 @@ bool run_block_cb_irq(const uint32_t* prog, int count, ArmCpuSelfTest& cpu, uint
         if (!emit_arm_insn(a, ctx, prog[i], 4u * (uint32_t)i, frame)) { ok = false; break; }
     s_memMode = MemMode::Mock; s_memcb = MemCallbacks{};
     if (!ok) return false;
-    a.mov(x86::eax, 4u * (uint32_t)count); // trailing resume PC = end of block
+    emit_return_imm(a, 4u * (uint32_t)count); // trailing resume PC = end of block
     a.emit_epilog(frame);
     SelfTestBlockFn fn = nullptr;
     if (rt.add(&fn, &code) != kErrorOk) return false;
@@ -3851,10 +4746,11 @@ static int jit_asmjit_chain_irq_selftest(void)
 // jit_asmjit_*_selftest() functions above plus a short human-readable label.
 // Add a test by appending one row here -- the runner and the report pick it up
 // automatically (no parallel list to keep in sync)
+
 namespace {
 struct SelfTest { const char *label; int (*fn)(void); };
 const SelfTest k_selftests[] = {
-    { "block ABI",         jit_asmjit_selftest },           // hand-emitted block
+    { "block ABI",         jit_asmjit_selftest },           // hand-emitted block (per-host backend)
     { "ARM7 translator",   jit_asmjit_translate_selftest }, // real ARM7 decode -> asmjit
     { "conditions",        jit_asmjit_cond_selftest },      // portable condition evaluation
     { "shifts (imm)",      jit_asmjit_shift_selftest },     // shifted-register operand 2
@@ -3935,10 +4831,10 @@ extern "C" void jit_asmjit_selftest_report(void)
         return;
     reported = 1;
 
-    char body[1216];
+    char body[2048];
     const int ok = jit_asmjit_run_selftests(body, (int)sizeof(body));
-#ifdef _WIN32
-    char msg[1280];
+#if defined(EXPOSE_JIT_SELFTEST) && defined(_WIN32)
+    char msg[2112];
     std::snprintf(msg, sizeof(msg), "asmjit self-tests:\n\n%s", body);
     MessageBoxA(NULL, msg, "PinMAME asmjit JIT", MB_OK | (ok ? MB_ICONINFORMATION : MB_ICONERROR));
 #else

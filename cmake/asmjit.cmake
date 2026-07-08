@@ -44,14 +44,15 @@ if(PINMAME_JIT_ASMJIT)
       set(_pinmame_asmjit_arch "${CMAKE_SYSTEM_PROCESSOR}")
    endif()
    string(TOLOWER "${_pinmame_asmjit_arch}" _pinmame_asmjit_arch)
-   # Allowlist of x86-family spellings across the sources above (ARCH, VS -A,
-   # uname -m / %PROCESSOR_ARCHITECTURE%). Anything else - notably arm64,
-   # aarch64, arm64-v8a, or an empty value from a minimal toolchain - keeps
-   # the JIT off; unknown-but-actually-x86 spellings fail SAFE (interpreter).
-   if(_pinmame_asmjit_arch MATCHES "^(x86|x64|win32|amd64|x86_64|i[3-6]86)$")
+   # Allowlist of x86-family and ARM64 spellings across the sources above
+   # (ARCH, VS -A, uname -m / %PROCESSOR_ARCHITECTURE%). The JIT has x86/x64
+   # and AArch64 emitter backends (jit_asmjit.cpp, AJ_HOST_*); anything else -
+   # notably 32-bit arm, or an empty value from a minimal toolchain - keeps
+   # the JIT off; unknown-but-supported spellings fail SAFE (interpreter)
+   if(_pinmame_asmjit_arch MATCHES "^(x86|x64|win32|amd64|x86_64|i[3-6]86|arm64|aarch64|arm64-v8a)$")
       set(PINMAME_JIT_ASMJIT_EFFECTIVE TRUE)
    else()
-      message(STATUS "PINMAME_JIT_ASMJIT: target architecture '${_pinmame_asmjit_arch}' has no JIT backend (x86/x64 only) - building without the asmjit JIT")
+      message(STATUS "PINMAME_JIT_ASMJIT: target architecture '${_pinmame_asmjit_arch}' has no JIT backend (x86/x64/arm64 only) - building without the asmjit JIT")
    endif()
 endif()
 
