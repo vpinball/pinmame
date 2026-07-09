@@ -63,8 +63,8 @@ set(_PINMAME_ASMJIT_LIST_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # Add the vendored asmjit sub-project exactly once.
 if(PINMAME_JIT_ASMJIT_EFFECTIVE AND NOT TARGET asmjit::asmjit)
-   set(ASMJIT_STATIC     ON  CACHE BOOL "" FORCE)  # static lib, link straight in
-   set(ASMJIT_EMBED      OFF CACHE BOOL "" FORCE)
+   set(ASMJIT_STATIC     ON  CACHE BOOL "" FORCE)
+   set(ASMJIT_EMBED      ON  CACHE BOOL "" FORCE)  # compile asmjit into the consuming target, so libpinmame.a is self-contained
    set(ASMJIT_TEST       OFF CACHE BOOL "" FORCE)  # no asmjit tests/benchmarks
    set(ASMJIT_NO_FOREIGN ON  CACHE BOOL "" FORCE)  # build only the host backend
    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ext/asmjit ${CMAKE_BINARY_DIR}/ext_asmjit)
@@ -75,6 +75,7 @@ endif()
 function(pinmame_enable_asmjit target)
    if(PINMAME_JIT_ASMJIT_EFFECTIVE)
       target_sources(${target} PRIVATE ${_PINMAME_ASMJIT_LIST_DIR}/../src/windows/jit_asmjit.cpp)
+      target_compile_features(${target} PRIVATE cxx_std_17)  # asmjit needs C++17; the win targets default to 14
       # Link by appending to the LINK_LIBRARIES property rather than calling
       # target_link_libraries: CMake forbids mixing the plain and keyword
       # signatures on one target, and our consumers use BOTH styles (the
@@ -82,27 +83,12 @@ function(pinmame_enable_asmjit target)
       # with keywords). The property append is signature-neutral and still
       # propagates asmjit's usage requirements (include dirs etc.).
       set_property(TARGET ${target} APPEND PROPERTY LINK_LIBRARIES asmjit::asmjit)
-      # A STATIC library target (pinmame_static) does not itself link, so the
-      # LINK_LIBRARIES entry above only supplies include dirs for compiling
-      # jit_asmjit.cpp; the asmjit objects must be linked by the CONSUMERS of
-      # the static lib (pinmame_test_s). Forward the dependency the same way
-      # target_link_libraries(PRIVATE) would: link-only, no compile-time
-      # usage requirements for the consumer.
+      # Forward asmjit's system link deps (e.g. -lrt for shm_open on some
+      # Linux libcs) to consumers of the static lib (pinmame_test_s).
       get_target_property(_pinmame_asmjit_type ${target} TYPE)
       if(_pinmame_asmjit_type STREQUAL "STATIC_LIBRARY")
          set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES "$<LINK_ONLY:asmjit::asmjit>")
       endif()
       target_compile_definitions(${target} PRIVATE PINMAME_JIT_ASMJIT)
-      # Match the consumer's CRT: the win pinmame/pinmame32/vpinmame targets build
-      # with the STATIC runtime (MSVC_RUNTIME_LIBRARY "MultiThreaded..."), while
-      # asmjit would default to the DLL runtime -- a guaranteed LNK2038 mismatch
-      # at link time. Copy the consumer's setting onto the asmjit target (no-op
-      # when the consumer uses the default, e.g. libpinmame).
-      if(MSVC)
-         get_target_property(_pinmame_asmjit_crt ${target} MSVC_RUNTIME_LIBRARY)
-         if(_pinmame_asmjit_crt)
-            set_target_properties(asmjit PROPERTIES MSVC_RUNTIME_LIBRARY "${_pinmame_asmjit_crt}")
-         endif()
-      endif()
    endif()
 endfunction()
