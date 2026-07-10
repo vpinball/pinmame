@@ -25,6 +25,10 @@
 #define TAITO_DISPLAYSMOOTH  2 // Smooth the display over this number of VBLANKS
 #define TAITO_LAMPSMOOTH	 2 // Smooth the lamps over this number of VBLANKS
 
+#define TAITO_NVRAMSIZE         0x100
+#define TAITO_NVRAMSNAP_DELAY   180 // VBLANKs out of game before the first NVRAM snapshot (3s)
+#define TAITO_NVRAMSNAP_PERIOD   60 // VBLANKs between NVRAM snapshot refreshes (1s)
+
 static struct {
   int vblankCount;
   core_tSeg segments;
@@ -35,7 +39,51 @@ static struct {
   void* timer_irq;
   UINT8* pDisplayRAM;
   UINT8* pCommandsDMA;
+  UINT8* pNVRAM;
+  int nvramIdleCount;
 } TAITOlocals;
+
+// Taito games keep the complete game state, including "game in progress", in
+// battery backed RAM. When the emulation is stopped mid-game, the saved NVRAM
+// makes the next boot resume the interrupted game, which the simulation cannot
+// continue; recovering from that usually costs the player credits and
+// bookkeeping (issue #577). Table scripts used to work around this with a
+// Windows-only VBScript patch ("NVram patch for Taito do Brasil tables by
+// Pmax65") juggling backup copies of the .nv file.
+//
+// The driver handles this transparently instead: while no game is in progress
+// it keeps a snapshot of the NVRAM, and a mid-game exit saves that snapshot
+// instead of the live RAM, so the machine boots into attract mode with
+// credits and bookkeeping intact. A regular exit saves the live RAM as usual.
+//
+// The snapshot is taken in two stages: a candidate copy, captured once the
+// machine has been out of game for TAITO_NVRAMSNAP_DELAY VBLANKs, is promoted
+// to the effective snapshot after another TAITO_NVRAMSNAP_PERIOD only if no
+// game has started in between. The snapshot therefore never contains the
+// transient RAM state of a game being started (credit already taken, ball
+// counter not yet set), while coins inserted and games finished while the
+// machine sits in attract mode keep flowing into it.
+//
+// Kept outside of TAITOlocals on purpose: the NVRAM is loaded before and
+// saved after the machine runs, so this state must survive the machine reset.
+static struct {
+  UINT8 snapshot[TAITO_NVRAMSIZE];  // saved instead of the live RAM on mid-game exit
+  UINT8 candidate[TAITO_NVRAMSIZE]; // becomes snapshot if still no game one period later
+  int   snapshotValid;
+  int   candidateValid;
+} TAITOnvram;
+
+// A game is in progress whenever the "ball in play" status digit (display DMA
+// RAM offset 12, common to all games on this hardware) shows 1-9. It shows 0
+// or blank (0x0f) in attract mode and holds the ball number for the whole
+// game, including the match/game over sequence, unlike the play relay
+// (solenoid 18), which also drops while a ball is being served.
+// The NULL check covers NVRAM saves without a machine init (pDisplayRAM is
+// always set once the machine runs).
+static int taito_gameInProgress(void) {
+  const UINT8 ballInPlay = TAITOlocals.pDisplayRAM ? (TAITOlocals.pDisplayRAM[12] & 0x0f) : 0;
+  return ballInPlay >= 1 && ballInPlay <= 9;
+}
 
 static NVRAM_HANDLER(taito);
 static NVRAM_HANDLER(taito_old);
@@ -65,6 +113,21 @@ static INTERRUPT_GEN(taito_vblank) {
 		memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
 	}
 
+	// -- NVRAM snapshot (see TAITOnvram) --
+	if (taito_gameInProgress()) {
+		TAITOlocals.nvramIdleCount = 0;
+		TAITOnvram.candidateValid = 0;
+	}
+	else if (++TAITOlocals.nvramIdleCount >= TAITO_NVRAMSNAP_DELAY) {
+		if (TAITOnvram.candidateValid) {
+			memcpy(TAITOnvram.snapshot, TAITOnvram.candidate, TAITO_NVRAMSIZE);
+			TAITOnvram.snapshotValid = 1;
+		}
+		memcpy(TAITOnvram.candidate, TAITOlocals.pNVRAM, TAITO_NVRAMSIZE);
+		TAITOnvram.candidateValid = 1;
+		TAITOlocals.nvramIdleCount -= TAITO_NVRAMSNAP_PERIOD;
+	}
+
 	// sol 18 is the play relay
 	core_updateSw(core_getSol(18));
 }
@@ -91,6 +154,7 @@ static MACHINE_INIT(taito) {
 
 	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
 	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
+	TAITOlocals.pNVRAM       = memory_region(TAITO_MEMREG_CPU) + 0x4000;
 
 	TAITOlocals.timer_irq = timer_alloc(timer_irq);
 	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
@@ -105,6 +169,7 @@ static MACHINE_INIT(taito_old) {
 
 	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x1000;
 	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x1010;
+	TAITOlocals.pNVRAM       = memory_region(TAITO_MEMREG_CPU) + 0x1000;
 
 	TAITOlocals.timer_irq = timer_alloc(timer_irq);
 	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(5.293/4.0), 0, TIME_IN_HZ(5.293/4.0));
@@ -375,12 +440,28 @@ MACHINE_DRIVER_END
 //-----------------------------------------------
 // Load/Save static ram
 //-----------------------------------------------
+// On a mid-game exit the attract mode snapshot is saved instead of the live
+// RAM (see TAITOnvram above).
+static void taito_nvram(void *file, int read_or_write, offs_t base) {
+  UINT8 *ram = memory_region(TAITO_MEMREG_CPU) + base;
+  if (read_or_write && TAITOnvram.snapshotValid && taito_gameInProgress())
+    core_nvram(file, read_or_write, TAITOnvram.snapshot, TAITO_NVRAMSIZE, 0x00);
+  else {
+    core_nvram(file, read_or_write, ram, TAITO_NVRAMSIZE, 0x00);
+    if (!read_or_write) { // start over from the freshly loaded (or initialized) state
+      memcpy(TAITOnvram.snapshot, ram, TAITO_NVRAMSIZE);
+      TAITOnvram.snapshotValid = 1;
+      TAITOnvram.candidateValid = 0;
+    }
+  }
+}
+
 static NVRAM_HANDLER(taito) {
-  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0x00);
+  taito_nvram(file, read_or_write, 0x4000);
 }
 
 static NVRAM_HANDLER(taito_old) {
-  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x1000, 0x100, 0x00);
+  taito_nvram(file, read_or_write, 0x1000);
 }
 
 
