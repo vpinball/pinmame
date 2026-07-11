@@ -24,8 +24,8 @@
   Sound: 2 Channel Mono Audio
 
   Capcom "Classic" Pins: (Breakshot)
-  Lamp Matrix     = 1 x (8x8 Matrixs) = 64 Lamps - 64 GI Lamps (not directly cpu controlled?)
-  Switch Matrix   = 1 x (8x7 Matrix)  = 56 Switches + 9 Cabinet Switches
+  Lamp Matrix     = 1 x (8x8 Matrixs) = 64 Lamps - 64 GI Lamps
+  Switch Matrix   = 1 x (8x7 Matrix)  = 56 Switches + 9 Cabinet Switches (8 regular switches, slam tilt is overlayed on playfield matrix)
   Solenoids	= 32 Solenoids/Flashers
   Sound: 1 Channel Mono Audio
 
@@ -863,17 +863,31 @@ static NVRAM_HANDLER(cc) {
 }
 
 static int cc_sw2m(int no) {
+  //  1.. 8: col 9 => base cabinet switch (all games)
   if (no < 9)
-    return no + 71;
-  else if (no < 81)
-    return no - 9;
-  return no + 7;
+    return (no - 1) + 9 * 8;
+  //  9..80: col 0..8 => 0 is cabinet switch, 1..8 is playfield matrix
+  if (no < 81)
+    return (no - 9);
+  // 81..88: col 11 => PinMAME internal flipper virtual switch state
+  if (no < 89)
+     return (no - 81) + 11 * 8;
+  // 89..96: col 10 => unused but mapped as CORE_STDSWCOLS sets a default to 12 columns
+  return (no - 89) + 10 * 8;
 }
 
 static int cc_m2sw(int col, int row) {
+  // col 0..8 => 0 is cabinet switch, 1..8 is playfield matrix => 9..80
+  if (col < 9)
+     return 9 + row + col * 8;
+  // col 9 => base cabinet switch (all games) => 1..8
   if (col == 9)
-    return row + 1;
-  return col*8 + row + 9;
+     return 1 + row;
+  // col 10 => unused but mapped as CORE_STDSWCOLS sets a default to 12 columns => 89..96
+  if (col == 10)
+     return 89 + row;
+  // col 11 => PinMAME internal flipper virtual switch state => 81..88
+  return 81 + row;
 }
 
 /*
