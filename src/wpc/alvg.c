@@ -57,7 +57,7 @@
    #2) Manually calling the NMI		(VIA BUG?)
    #3) Clearing the Lamp Matrix at the appropriate time
    #4) Lamp and Switch Column handling needs to be improved (use core functions)
-   #5) Not sure if I did the sw2m and m2sw functions properly
+   #5) Not sure if I did the sw2m and m2sw functions properly [Edit VB 2026/07/13 made m2sw symmetric with sw2m]
    #6) Solenoid handling needs to be cleaned up (ie, remove unnecessary code)
    #7) Sound board (gen #2) FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
    #8) There's probably more I can't think of at the moment
@@ -583,7 +583,7 @@ static int alvg_sw2m(int no) {
 }
 
 static int alvg_m2sw(int col, int row) {
-	return col*8 + row - 9;
+	return col*8 + row - 7;
 }
 
 //Send data to the DMD CPU

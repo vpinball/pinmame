@@ -447,7 +447,12 @@ static MEMORY_WRITE_START(PLAYMATIC_writemem3)
 MEMORY_END
 
 static int play_sw2m(int no) { return 8+(no/10)*8+(no%10-1); }
-static int play_m2sw(int col, int row) { return (col-1)*10+row+1; }
+static int play_m2sw(int col, int row) {
+   if (col == 0)
+      return row - 7;
+   else
+      return (col - 1) * 10 + (row + 1);
+}
 
 MACHINE_DRIVER_START(PLAYMATIC1)
   MDRV_IMPORT_FROM(PinMAME)

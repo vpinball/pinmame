@@ -2454,6 +2454,30 @@ static MACHINE_INIT(core) {
     /*-- init switch matrix --*/
     memcpy((void*)coreGlobals.invSw, (void*)core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy((void*)coreGlobals.swMatrix, (void*)coreGlobals.invSw, sizeof(coreGlobals.invSw));
+    /*-- validate switch & lamp matrices --*/
+    if (coreData->m2sw) {
+      assert(coreData->sw2m);
+      for (int col = 0; col < CORE_STDSWCOLS + core_gameData->hw.swCol; col++) {
+        for (int row = 0; row < 8; row++) {
+          const int n = col * 8 + row;
+          const int m2sw = coreData->m2sw(col, row);
+          const int sw2m = coreData->sw2m(m2sw);
+          assert(sw2m == n);
+        }
+      }
+    }
+    if (coreData->m2lamp) {
+       assert(coreData->lamp2m);
+       for (int col = 0; col < core_gameData->hw.lampCol; col++) {
+          for (int row = 0; row < 8; row++) {
+             const int n = col * 8 + row;
+             const int m2lamp = coreData->m2lamp(col, row);
+             const int lamp2m = coreData->lamp2m(m2lamp);
+             assert(lamp2m == n);
+          }
+       }
+    }
+
 #ifdef PROC_SUPPORT
     /*-- P-ROC operation requires a YAML.  Disable P-ROC operation
      * if no YAML is specified. --*/
