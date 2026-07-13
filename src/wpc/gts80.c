@@ -116,9 +116,12 @@ static int GTS80_sw2m(int no) {
 }
 
 static int GTS80_m2sw(int col, int row) {
-  if (col > 9 || (col == 9 && row >= 6)) return col*8+row;
-  else if (col < 1)                      return -9 + row;
-  else                                   return row*10+col-1;
+  if (col == 0 && row == 0)
+    return -8;                    // matches sw2m(-8) == 0
+  else if (col <= 9)
+    return row * 10 + col - 1;    // inverse of the 0<=no<96 branch
+  else
+    return col * 10 + row + 1;    // inverse of the no>=96 branch
 }
 static int GTS80_lamp2m(int no)           { return no+8; }
 static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
