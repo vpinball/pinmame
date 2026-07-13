@@ -465,7 +465,10 @@ static int gts3_sw2m(int no) {
 }
 
 static int gts3_m2sw(int col, int row) {
-  return (col - 1) * 10 + row;
+  if (col == 0)
+    return row - 8;
+  else
+    return (col - 1) * 10 + row;
 }
 
 
