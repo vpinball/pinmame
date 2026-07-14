@@ -32,6 +32,10 @@
 
 #include "jit_asmjit.h" // C-callable controller API (arm7_aj_*, arm7_block_fn, ArmAsmjitCtl)
 
+#if defined(__APPLE__)
+#include <mach/mach.h>
+#endif
+
 #if defined(EXPOSE_JIT_SELFTEST) && defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -3372,9 +3376,9 @@ struct ArmAsmjitCtl {
     // AJ_SLOT_INTERP (don't translate: nothing translatable starts here), or
     // blockId + AJ_SLOT_BASE indexing 'blocks'
     uint32_t   *slot = nullptr;
-    static const uint32_t AJ_SLOT_UNTRIED = 0;
-    static const uint32_t AJ_SLOT_INTERP  = 1;
-    static const uint32_t AJ_SLOT_BASE    = 2;
+    static constexpr uint32_t AJ_SLOT_UNTRIED = 0;
+    static constexpr uint32_t AJ_SLOT_INTERP  = 1;
+    static constexpr uint32_t AJ_SLOT_BASE    = 2;
     std::vector<BlockInfo> blocks;  // dense table of translated blocks (see BlockInfo)
     std::vector<uint32_t>  freeIds; // recycled 'blocks' indices (untranslated entries)
     // Raw mirror of blocks.data(), for the DISPATCHER (generated code cannot
@@ -3484,6 +3488,20 @@ static bool aj_probe_exec_memory(JitRuntime &rt)
     void *fn = nullptr;
     if (rt.add(&fn, &code) != kErrorOk)
         return false;
+#if defined(__APPLE__)
+    // iOS grants mmap(RWX) but silently strips the execute bit, so require it
+    vm_address_t probeAddr = (vm_address_t)fn;
+    vm_size_t probeSize = 0;
+    vm_region_basic_info_data_64_t probeInfo;
+    mach_msg_type_number_t probeCount = VM_REGION_BASIC_INFO_COUNT_64;
+    mach_port_t probeObj = MACH_PORT_NULL;
+    if (vm_region_64(mach_task_self(), &probeAddr, &probeSize, VM_REGION_BASIC_INFO_64,
+                     (vm_region_info_t)&probeInfo, &probeCount, &probeObj) != KERN_SUCCESS ||
+        (probeInfo.protection & VM_PROT_EXECUTE) == 0) {
+        rt.release(fn);
+        return false;
+    }
+#endif
     rt.release(fn);
     return true;
 }
