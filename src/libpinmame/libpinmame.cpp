@@ -34,7 +34,7 @@ int g_fPause = 0;
 PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE_BRIGHTNESS;
 PINMAME_SOUND_MODE g_fSoundMode = PINMAME_SOUND_MODE_DEFAULT;
 
-char g_szGameName[256] = {}; //!! not set yet
+char g_szGameName[256] = {}; // String containing requested game name (may be different from ROM if aliased), set by PinmameRun
 }
 
 static int _isRunning = 0;
@@ -951,6 +951,9 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 
 	if (gameNum < 0)
 		return PINMAME_STATUS_GAME_NOT_FOUND;
+
+	strncpy(g_szGameName, p_name, sizeof(g_szGameName) - 1);
+	g_szGameName[sizeof(g_szGameName) - 1] = '\0';
 
 	vp_init();
 
