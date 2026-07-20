@@ -3948,6 +3948,21 @@ void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplera
    }
 }
 
+#ifdef REMOTE_DEBUG
+void core_get_dmd_data(int layout_idx, float **pixels, int *width, int *height) {
+  if (layout_idx >= 0 && layout_idx < 16 && locals.dmdStates[layout_idx]) {
+    unsigned int lumFrameId;
+    *pixels = core_dmd_update_pwm(locals.dmdStates[layout_idx]->layout, &lumFrameId);
+    *width = locals.dmdStates[layout_idx]->width;
+    *height = locals.dmdStates[layout_idx]->height;
+  } else {
+    *pixels = NULL;
+    *width = 0;
+    *height = 0;
+  }
+}
+#endif
+
 /*----------------------------------------------
 /  Add a timer when building the machine driver
 /-----------------------------------------------*/

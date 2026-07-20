@@ -96,6 +96,12 @@ struct rc_option pinmame_opts[] = {
 #ifdef PINMAME_HOST_UART
 	{ "serial_device", NULL, rc_string, &pmoptions.serial_device, NULL, 0, 0, NULL, "/dev/tty serial port mapped to WPC UART" },
 #endif
+#ifdef REMOTE_DEBUG
+	{ "Remote Debugging options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
+	{ "headless", "hl", rc_bool, &pmoptions.headless, "0", 0, 0, NULL, "Headless mode (no display)" },
+	{ "httpport", "hp", rc_int, &pmoptions.http_port, "8080", 1024, 65535, NULL, "HTTP server port" },
+	{ "startpaused", "sp", rc_bool, &pmoptions.start_paused, "0", 0, 0, NULL, "Start emulator in paused state" },
+#endif
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 #endif /* PINMAME */

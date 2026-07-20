@@ -76,8 +76,13 @@ TARGET = pinmame
 # this will also select 'vid_lisy' as DISPLAY_METHOD
 # LISY_X_FAKE_VIDEO = 1
 
+# uncomment next line to include the HTTP remote debugger (src/remote_debug).
+# Its disassembly endpoint also needs the built-in MAME debugger, so enable
+# DEBUG as well, e.g.:  make -f makefile.unix REMOTE_DEBUG=1 DEBUG=1
+# REMOTE_DEBUG = 1
+
 ###########################################################################
-# Development environment options 
+# Development environment options
 ###########################################################################
 
 # GNU make is MANDATORY!!!
@@ -784,6 +789,10 @@ ifdef LISY_X_FAKE_VIDEO
 CFLAGS += -DLISY_VIDEO
 endif
 
+
+ifdef REMOTE_DEBUG
+CFLAGS += -DREMOTE_DEBUG
+endif
 
 ###########################################################################
 # All done.  Type make -f makefile.unix and enjoy xmame/xmess.  ;)

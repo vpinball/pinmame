@@ -204,6 +204,7 @@ INLINE void lbra( void )
 INLINE void lbsr( void )
 {
 	IMMWORD(ea);
+	DEBUG_PUSH_CALL(PPC, PC + EA);
 	PUSHWORD(pPC);
 	PC += EA;
 	CHANGE_PC;
@@ -621,7 +622,7 @@ INLINE void puls( void )
 	if( t&0x10 ) { PULLWORD(XD); m6809_ICount -= 2; }
 	if( t&0x20 ) { PULLWORD(YD); m6809_ICount -= 2; }
 	if( t&0x40 ) { PULLWORD(UD); m6809_ICount -= 2; }
-	if( t&0x80 ) { PULLWORD(PCD); CHANGE_PC; m6809_ICount -= 2; }
+	if( t&0x80 ) { DEBUG_POP_CALL(); PULLWORD(PCD); CHANGE_PC; m6809_ICount -= 2; }
 
 	/* HJB 990225: moved check after all PULLs */
 	if( t&0x01 ) { CHECK_IRQ_LINES; }
@@ -654,7 +655,7 @@ INLINE void pulu( void )
 	if( t&0x10 ) { PULUWORD(XD); m6809_ICount -= 2; }
 	if( t&0x20 ) { PULUWORD(YD); m6809_ICount -= 2; }
 	if( t&0x40 ) { PULUWORD(SD); m6809_ICount -= 2; }
-	if( t&0x80 ) { PULUWORD(PCD); CHANGE_PC; m6809_ICount -= 2; }
+	if( t&0x80 ) { DEBUG_POP_CALL(); PULUWORD(PCD); CHANGE_PC; m6809_ICount -= 2; }
 
 	/* HJB 990225: moved check after all PULLs */
 	if( t&0x01 ) { CHECK_IRQ_LINES; }
@@ -665,6 +666,7 @@ INLINE void pulu( void )
 /* $39 RTS inherent ----- */
 INLINE void rts( void )
 {
+	DEBUG_POP_CALL();
 	PULLWORD(PCD);
 	CHANGE_PC;
 }
@@ -679,6 +681,7 @@ INLINE void abx( void )
 INLINE void rti( void )
 {
 	UINT8 t;
+	DEBUG_POP_CALL();
 	PULLBYTE(CC);
 	t = CC & CC_E;		/* HJB 990225: entire state saved? */
 	if(t)
@@ -737,6 +740,7 @@ INLINE void mul( void )
 /* $3F SWI (SWI2 SWI3) absolute indirect ----- */
 INLINE void swi( void )
 {
+	DEBUG_PUSH_CALL(PPC, RM16(0xfffa));
 	CC |= CC_E; 			/* HJB 980225: save entire state */
 	PUSHWORD(pPC);
 	PUSHWORD(pU);
@@ -754,6 +758,7 @@ INLINE void swi( void )
 /* $103F SWI2 absolute indirect ----- */
 INLINE void swi2( void )
 {
+	DEBUG_PUSH_CALL(PPC, RM16(0xfff4));
 	CC |= CC_E; 			/* HJB 980225: save entire state */
 	PUSHWORD(pPC);
 	PUSHWORD(pU);
@@ -770,6 +775,7 @@ INLINE void swi2( void )
 /* $113F SWI3 absolute indirect ----- */
 INLINE void swi3( void )
 {
+	DEBUG_PUSH_CALL(PPC, RM16(0xfff2));
 	CC |= CC_E; 			/* HJB 980225: save entire state */
 	PUSHWORD(pPC);
 	PUSHWORD(pU);
@@ -1452,6 +1458,7 @@ INLINE void bsr( void )
 {
 	UINT8 t;
 	IMMBYTE(t);
+	DEBUG_PUSH_CALL(PPC, PC + SIGNED(t));
 	PUSHWORD(pPC);
 	PC += SIGNED(t);
 	CHANGE_PC;
@@ -1683,6 +1690,7 @@ INLINE void cmps_di( void )
 INLINE void jsr_di( void )
 {
 	DIRECT;
+	DEBUG_PUSH_CALL(PPC, EAD);
 	PUSHWORD(pPC);
 	PCD = EAD;
 	CHANGE_PC;
@@ -1920,6 +1928,7 @@ INLINE void cmps_ix( void )
 INLINE void jsr_ix( void )
 {
 	fetch_effective_address();
+	DEBUG_PUSH_CALL(PPC, EAD);
     PUSHWORD(pPC);
 	PCD = EAD;
 	CHANGE_PC;
@@ -2150,6 +2159,7 @@ INLINE void cmps_ex( void )
 INLINE void jsr_ex( void )
 {
 	EXTENDED;
+	DEBUG_PUSH_CALL(PPC, EA);
 	PUSHWORD(pPC);
 	PCD = EAD;
 	CHANGE_PC;
