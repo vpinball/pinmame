@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "driver.h"
 #include "timer.h"
@@ -15,6 +16,10 @@
 #include "video.h"
 #include "mamedbg.h"
 #include "hiscore.h"
+
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#endif
 
 #if (HAS_M68000 || HAS_M68010 || HAS_M68020 || HAS_M68EC020)
 #include "cpu/m68000/m68000.h"
@@ -424,12 +429,23 @@ void cpu_run(void)
 		{
 			profiler_mark(PROFILER_EXTRA);
 
+#ifdef REMOTE_DEBUG
+			/* Tiny gap to allow HTTP thread to grab the lock */
+			usleep(1); 
+#endif
+
 			/* if we have a load/save scheduled, handle it */
 			if (loadsave_schedule != LOADSAVE_NONE)
 				handle_loadsave();
 			
 			/* execute CPUs */
+#ifdef REMOTE_DEBUG
+			remote_debug_lock();
+#endif
 			cpu_timeslice();
+#ifdef REMOTE_DEBUG
+			remote_debug_unlock();
+#endif
 
 #if defined(LIBPINMAME)
          extern int libpinmame_time_to_quit(void);
@@ -977,6 +993,25 @@ void time_fence_exit()
 
 static void cpu_timeslice(void)
 {
+#ifdef REMOTE_DEBUG
+	if (remote_debug_should_quit()) {
+		time_to_quit = 1;
+		return;
+	}
+	if (remote_debug_is_paused())
+	{
+		/* Yield while paused to allow HTTP thread to work */
+		remote_debug_unlock();
+		while (remote_debug_is_paused() && !remote_debug_should_quit()) {
+			usleep(10000);
+		}
+		remote_debug_lock();
+		if (remote_debug_should_quit()) {
+			time_to_quit = 1;
+			return;
+		}
+	}
+#endif
 #if defined(VPINMAME)
 	// Continuously pump message loop, otherwise it creates stutters between COM server and client (VPinMAME locks VPX scripts until message are processed)
 	// It also causes a deadlock if using a TimeFence since messages are normally processed by a CPU callback that may not happen depending on the TimeFence.

@@ -118,6 +118,9 @@
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#endif
 #if defined(PINMAME) && defined(LISY_SUPPORT)
  #include "lisy/utils.h"
 #endif /* PINMAME && LISY_SUPPORT */
@@ -330,6 +333,9 @@ int run_game(int game)
 			bail_and_print("Unable to initialize machine emulation");
 		else
 		{
+#ifdef REMOTE_DEBUG
+			remote_debug_init();
+#endif
 			/* then run it */
 			if (run_machine())
 				bail_and_print("Unable to start machine emulation");
@@ -587,6 +593,10 @@ void run_machine_core(void)
 
 				/* run the emulation! */
 				cpu_run();
+
+#ifdef REMOTE_DEBUG
+				remote_debug_exit();
+#endif
 
 				/* save the NVRAM */
 				if (Machine->drv->nvram_handler)
@@ -1156,6 +1166,9 @@ void draw_screen(void)
 
 void update_video_and_audio(void)
 {
+#ifdef REMOTE_DEBUG
+	if (remote_debug_should_quit()) return;
+#endif
 	int skipped_it = osd_skip_this_frame();
 
 #ifdef MAME_DEBUG
@@ -1254,6 +1267,10 @@ static void recompute_fps(int skipped_it)
 
 int updatescreen(void)
 {
+#ifdef REMOTE_DEBUG
+	if (remote_debug_should_quit())
+		return 1;
+#endif
 	/* update sound */
 	sound_update();
 
