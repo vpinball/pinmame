@@ -490,3 +490,6 @@ PINMAMEAPI void PinmameSetUserData(void* const p_userData);
 
 // If defined, libPinMame will implement the core controller messages for display, input & output state queries
 PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgPluginAPI, unsigned int endpointId);
+
+// Provide a 'Pinball Memory Maps' (see https://github.com/tomlogic/pinmame-nvram-maps) to expose additional internal game states
+PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize);
