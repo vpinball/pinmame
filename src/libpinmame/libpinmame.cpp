@@ -2526,7 +2526,9 @@ static void OnGameStart(void*)
    SetupMsgApi();
    if (msgLocals.registered)
    {
-      CtlOnGameStateChgMsg msg = { msgLocals.endpointId, Machine->gamedrv->name };
+      // Broadcast the game name that was requested (which may be an alias registered through alias.txt)
+      // so consumers see the same id the table script used, not the resolved driver name
+      CtlOnGameStateChgMsg msg = { msgLocals.endpointId, g_szGameName[0] ? g_szGameName : Machine->gamedrv->name };
       msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onGameStartId, reinterpret_cast<void*>(&msg));
    }
 }
@@ -2535,7 +2537,7 @@ static void OnGameEnd(void*)
 {
    if (msgLocals.registered)
    {
-      CtlOnGameStateChgMsg msg = { msgLocals.endpointId, Machine->gamedrv->name };
+      CtlOnGameStateChgMsg msg = { msgLocals.endpointId, g_szGameName[0] ? g_szGameName : Machine->gamedrv->name };
       msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onGameEndId, reinterpret_cast<void*>(&msg));
    }
    ReleaseMsgApi();
