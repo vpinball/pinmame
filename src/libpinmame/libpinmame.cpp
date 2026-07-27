@@ -174,6 +174,9 @@ static const PinmameKeyboardInfo _keyboardInfo[] = {
 #include "plugins/ControllerPlugin.h"
 #include "PinMAMEPlugin.h"
 
+#include "../ext/nlohmann/json.hpp"
+using json = nlohmann::json;
+
 typedef enum StateMappingType {
    LPM_DM_CORE_SOL1,         // srcId = bit mask against coreGlobals.nSolenoids
    LPM_DM_CORE_SOL2,         // srcId = bit mask against coreGlobals.nSolenoids2
@@ -187,6 +190,7 @@ typedef enum StateMappingType {
    LPM_DM_PHYSOUT_HOLD,      // srcId = index of flipper hold solenoid, which must be followed by the power solenoid
    LPM_DM_CORE_SWITCH,
    LPM_DM_CORE_DIPSWITCH,
+   LPM_DM_MEMMAP
 } StateMappingType;
 
 typedef struct StateMapping
@@ -205,6 +209,7 @@ static StateGroupDef stateGroups[] = {
     { "Mech", "Emulated mechanical parts", PMPI_GROUP_MECH },
     { "Switch", "Playfield & cabinet switches", PMPI_GROUP_SWITCH },
     { "DIP Switch", "Setup switches", PMPI_GROUP_DIPSWITCH },
+    { "Game States", "Live game states gathered from internal machine memory", PMPI_GROUP_GAMESTATE },
 };
 
 static struct
@@ -252,6 +257,17 @@ static struct
    unsigned int onAudioCmdId, onDmdCmdId;
 
    unsigned int onGetMachineStateId;
+
+   struct MemMapState
+   {
+      std::string group;
+      std::string name;
+      unsigned int typeMask;
+      std::function<int(unsigned int index, int type, void* pResult)> getState;
+      std::function<int(unsigned int index, int type, void* pResult)> setState;
+   };
+   char memMapStringBuffer[256];
+   std::vector<MemMapState> memMapStates;
 } msgLocals = {};
 
 
@@ -1776,6 +1792,9 @@ static int GetState(unsigned int index, int type, void* pResult)
       return 0;
    }
 
+   case LPM_DM_MEMMAP:
+      return msgLocals.memMapStates[srcId].getState(srcId, type, pResult);
+
    default:
       return -4; // Error: internal error
    }
@@ -2390,6 +2409,12 @@ static void SetupMsgApi()
       addDevice(fmtString("DIP #%02d", i + 1), PMPI_GROUP_DIPSWITCH, i + 1, LPM_DM_CORE_DIPSWITCH, i + 1, CTLPI_STATE_TYPE_UINT8);
       msgLocals.states.back().writable = 1;
    }
+   // MemMap Game states
+   for (uint16_t i = 0; i < msgLocals.memMapStates.size(); i++)
+   {
+      addDevice(fmtString("%s", msgLocals.memMapStates[i].name.c_str()), PMPI_GROUP_GAMESTATE, i, LPM_DM_MEMMAP, i, msgLocals.memMapStates[i].typeMask);
+      msgLocals.states.back().desc = fmtString("%s", msgLocals.memMapStates[i].group.c_str());
+   }
    //
    msgLocals.stateDef.id.endpointId = msgLocals.endpointId;
    msgLocals.stateDef.id.resId = 0;
@@ -2495,4 +2520,359 @@ PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgApi, unsigned int endpointId)
    msgLocals.endpointId = endpointId;
    if (msgLocals.msgApi)
       SetupMsgApi();
+}
+
+PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize)
+{
+   const auto parseAddress = [](const json& node, unsigned int& value) -> bool
+      {
+         if (node.is_number_unsigned())
+         {
+            value = node.get<unsigned int>();
+            return true;
+         }
+         if (node.is_string())
+         {
+            const std::string& s = node.get_ref<const std::string&>();
+            try
+            {
+               size_t pos = 0;
+               // base 0 lets std::stoll auto-detect "0x"/"0X" (hex), leading "0" (octal), or decimal
+               value = std::stoll(s, &pos, 0);
+               if (pos != s.size())
+                  return false; // trailing garbage after the number
+               return true;
+            }
+            catch (const std::exception&)
+            {
+               return false;
+            }
+         }
+         return false;
+      };
+
+   struct MemRegion { unsigned int start; unsigned int end; int nibble; };
+   std::vector<MemRegion> memRegions;
+   bool isLittleEndianPlatform = false;
+   if (platform && platformSize)
+   {
+      std::string platformString(platform, platform + platformSize);
+      json platformDef = json::parse(platformString);
+      if (platformDef.is_object() && platformDef.contains("endian") && platformDef["endian"].is_string() && platformDef["endian"].get<std::string>() == "little")
+         isLittleEndianPlatform = true;
+      if (platformDef.is_object() && platformDef.contains("memory_layout") && platformDef["memory_layout"].is_array())
+      {
+         for (const auto& regionDef : platformDef["memory_layout"]) {
+            int nibble = -1;
+            if (!regionDef.contains("nibble") || !regionDef["nibble"].is_string())
+               continue;
+            if (regionDef["nibble"].get<std::string>() == "low")
+               nibble = 1;
+            else if (regionDef["nibble"].get<std::string>() == "hight")
+               nibble = 2;
+            else
+               continue;
+            unsigned int address;
+            if (!regionDef.contains("address") || !parseAddress(regionDef["address"], address))
+               continue;
+            unsigned int size;
+            if (!regionDef.contains("size") || !parseAddress(regionDef["size"], size))
+               continue;
+            memRegions.emplace_back(address, address + size - 1, nibble);
+         }
+      }
+   }
+
+   std::string gameString(game, game + gameSize);
+   json memMapDef = json::parse(gameString);
+
+   std::function<void(const json&, const std::string&, std::map<std::string, json>)> traverse_and_collect;
+   traverse_and_collect = [&traverse_and_collect, &parseAddress, &memRegions, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
+      if (!node.is_object())
+         return;
+
+      std::map<std::string, json> fields = inherited_fields;
+      if (node.contains("offsets") || node.contains("start"))
+      {
+         // Game state node
+         for (const auto& [key, value] : node.items())
+            fields[key] = value;
+         std::string stateGroup;
+         std::string desc;
+         if (fields.contains("short_label") && fields["short_label"].is_string())
+         {
+            desc = fields["short_label"].get<std::string>();
+            stateGroup = group + '\\' + desc;
+            if (fields.contains("label") && fields["label"].is_string())
+               desc = fields["label"].get<std::string>();
+         }
+         else if (fields.contains("label") && fields["label"].is_string())
+         {
+            desc = fields["label"].get<std::string>();
+            stateGroup = group + '\\' + desc;
+         }
+         else
+         {
+            stateGroup = group;
+         }
+
+         if (!fields.contains("encoding") || !fields["encoding"].is_string())
+            return;
+         const std::string encoding = fields["encoding"].get<std::string>();
+         if (encoding == "dipsw")
+            return; // Drop as DIP switches are already directly exposed
+
+         // Data block is defined by either:
+         // - start and end (byte at end is included)
+         // - start and end = start + length - 1
+         // - offsets (if there is a single one, then it is to be considered as 'start' like above)
+         // 
+         // Then bytes are processed:
+         // - reversed if self.little_endian() and encoding in ['bcd', 'int', 'bits', 'bool']
+         //   . it may be defined in the metadata with 'big_endian' => unused in latest maps
+         //   . it may be defined at the entry level with 'endian' = 'little' or 'big'
+         // - compacted by nibbles if it is not set to 'both' nibbles (4 high or 4 low bits)
+         //   . if entry has 'packed=false', replace file's default with 'nibble=low' => unused in latest maps
+         //   . if entry defines its own 'nibble', use it
+         //   . if not, search in the platform memory_layout, the nibble that applies to the first address
+         //   . if not defined, defaults to both nibbles
+         // - masked if 'mask' is set
+         //
+         // For encoding, see https://github.com/tomlogic/py-pinmame-nvmaps/blob/00ea7847545c9edd84613db99c7dd54976ddf568/nvram_parser.py#L738
+         std::vector<unsigned int> offsets;
+         if (fields.contains("offsets") && fields["offsets"].is_array())
+         {
+            for (const auto& subNode : fields["offsets"]) {
+               unsigned int offset;
+               if (!parseAddress(subNode, offset))
+                  return;
+               offsets.push_back(offset);
+            }
+            if (unsigned int length; offsets.size() == 1 && fields.contains("length") && parseAddress(fields["length"], length))
+            {
+               for (unsigned int i = 1; i < length; i++)
+                  offsets.push_back(offsets[0] + i);
+            }
+         }
+         else if (unsigned int start; fields.contains("start") && parseAddress(fields["start"], start))
+         {
+            if (unsigned int end; fields.contains("end") && parseAddress(fields["end"], end))
+            {
+               if (end < start)
+                  return;
+               for (unsigned int i = start; i <= end; i++)
+                  offsets.push_back(i);
+            }
+            else if (unsigned int length; fields.contains("length") && parseAddress(fields["length"], length))
+            {
+               for (unsigned int i = 0; i < length; i++)
+                  offsets.push_back(start + i);
+            }
+            else
+            {
+               offsets.push_back(start);
+            }
+         }
+         else
+         {
+            return;
+         }
+         if (offsets.empty())
+            return;
+
+         unsigned int typeMask = 0;
+         std::function<int(unsigned int index, int type, void* pResult)> getter;
+         if (encoding == "int" || encoding == "bcd" || encoding == "bits" || encoding == "bool" || encoding == "enum")
+         {
+            const bool isBCD = encoding == "bcd";
+            const bool isBool = encoding == "bool";
+            unsigned int byteMask = 0xFF;
+            if (fields.contains("mask"))
+               parseAddress(fields["mask"], byteMask);
+            int nibble = 0;
+            for (const auto& region : memRegions)
+            {
+               if (region.start <= offsets[0] && offsets[0] <= region.end)
+               {
+                  nibble = region.nibble;
+                  break;
+               }
+            }
+            if (fields.contains("packed") && fields["packed"].is_string() && fields["packed"].get<std::string>() == "false")
+               nibble = 1;
+            else if (fields.contains("nibble") && fields["nibble"].is_string())
+            {
+               const std::string nibbleLiteral = fields["nibble"].get<std::string>();
+               if (nibbleLiteral == "both")
+                  nibble = 0;
+               else if (nibbleLiteral == "low")
+                  nibble = 1;
+               else if (nibbleLiteral == "high")
+                  nibble = 2;
+            }
+            const bool isReversed = fields.contains("invert") && fields["invert"].is_string() && fields["invert"].get<std::string>() == "true";
+            bool isLittleEndian = isLittleEndianPlatform;
+            if (fields.contains("endian") && fields["endian"].is_string())
+            {
+               const std::string endian = fields["endian"].get<std::string>();
+               if (endian == "little")
+                  isLittleEndian = true;
+               else if (endian == "big")
+                  isLittleEndian = false;
+            }
+            const double valueScale = fields.contains("scale") && fields["scale"].is_number() ? fields["scale"].get<double>() : 1.0;
+            const double valueOffset = fields.contains("offset") && fields["offset"].is_number() ? fields["offset"].get<double>() : 0.0;
+            typeMask = CTLPI_STATE_TYPE_INT64;
+            getter = [offsets, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset](unsigned int index, int type, void* pResult)
+               {
+                  int64_t v = 0;
+                  if (type != CTLPI_STATE_TYPE_INT64)
+                     return -1;
+
+                  // Decode memory (as we are running asynchronously so we can't use cpunum_read_byte which would switch CPU context)
+                  // FIXME We take for granted that we will read in a continuous block of RAM (dangerous)
+                  // FIXME we consider that the map always apply to CPU #0 which should be true, but there may be exceptions to this
+                  const unsigned int baseOffset = isLittleEndian ? offsets.back() : offsets.front();
+                  const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  if (ptr == nullptr)
+                     return -1;
+                  if (isBCD)
+                  {
+                     if (isLittleEndian)
+                     {
+                        for (auto it = offsets.rbegin(); it != offsets.rend(); ++it)
+                        {
+                           const uint8_t num = (*(ptr + *it - baseOffset)) & byteMask;
+                           const uint8_t dig1 = (num & 0x0F);
+                           const uint8_t dig2 = (num >> 4);
+                           if (nibble == 0)
+                              v = (v * 100) + (dig2 > 9 ? 0 : dig2 * 10) + (dig1 > 9 ? 0 : dig1);
+                           else if (nibble == 1)
+                              v = (v * 10) + (dig1 > 9 ? 0 : dig1);
+                           else if (nibble == 2)
+                              v = (v * 10) + (dig2 > 9 ? 0 : dig1);
+                        }
+                     }
+                     else
+                     {
+                        for (auto offset : offsets)
+                        {
+                           const uint8_t num = (*(ptr + offset - baseOffset)) & byteMask;
+                           const uint8_t dig1 = (num & 0x0F);
+                           const uint8_t dig2 = (num >> 4);
+                           if (nibble == 0)
+                              v = (v * 100) + (dig2 > 9 ? 0 : dig2 * 10) + (dig1 > 9 ? 0 : dig1);
+                           else if (nibble == 1)
+                              v = (v * 10) + (dig1 > 9 ? 0 : dig1);
+                           else if (nibble == 2)
+                              v = (v * 10) + (dig2 > 9 ? 0 : dig1);
+                        }
+                     }
+                  }
+                  else
+                  {
+                     if (isLittleEndian)
+                     {
+                        for (auto it = offsets.rbegin(); it != offsets.rend(); ++it)
+                        {
+                           const uint8_t num = (*(ptr + *it - baseOffset)) & byteMask;
+                           if (nibble == 0)
+                              v = (v << 8) | num;
+                           else if (nibble == 1)
+                              v = (v << 4) | (num & 0x0F);
+                           else if (nibble == 2)
+                              v = (v << 4) | (num >> 4);
+                        }
+                     }
+                     else
+                     {
+                        for (auto offset : offsets)
+                        {
+                           const uint8_t num = (*(ptr + offset - baseOffset)) & byteMask;
+                           if (nibble == 0)
+                              v = (v << 8) | num;
+                           else if (nibble == 1)
+                              v = (v << 4) | (num & 0x0F);
+                           else if (nibble == 2)
+                              v = (v << 4) | (num >> 4);
+                        }
+                     }
+                  }
+
+                  if (valueOffset != 0.0 || valueScale != 1.0)
+                     v = static_cast<int64_t>(valueOffset + valueScale * static_cast<double>(v));
+
+                  if (isBool)
+                  {
+                     if (isReversed)
+                        v = v == 0 ? 1 : 0;
+                     else
+                        v = v == 0 ? 0 : 1;
+                  }
+
+                  *static_cast<int64_t*>(pResult) = v;
+                  return 0;
+               };
+         }
+         else if (encoding == "ch")
+         {
+            typeMask = CTLPI_STATE_TYPE_STRING;
+            getter = [offsets](unsigned int index, int type, void* pResult)
+               {
+                  if (type != CTLPI_STATE_TYPE_STRING)
+                     return -1;
+
+                  const unsigned int baseOffset = offsets[0];
+                  const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  if (ptr == nullptr)
+                     return -1;
+
+                  assert(offsets.size() < 255);
+                  char* pStr = msgLocals.memMapStringBuffer;
+                  for (auto offset : offsets)
+                  {
+                     *pStr = *(ptr + (offset - baseOffset));
+                     pStr++;
+                  }
+                  *pStr = 0;
+                  *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
+                  return 0;
+               };
+         }
+         else
+            return;
+
+         std::function<int(unsigned int index, int type, void* pResult)> setter = [](unsigned int index, int type, void* pResult) { return -1; };
+         msgLocals.memMapStates.emplace_back(stateGroup, desc, typeMask, getter, setter);
+      }
+      else
+      {
+         // Other nodes: goes down the group hierarchy
+         for (const auto& [key, value] : node.items())
+            if (!value.is_object() && !value.is_array())
+               fields[key] = value;
+
+         std::string subGroup = group.empty() ? "" : (group + '\\');
+         for (const auto& [key, value] : node.items()) {
+            if (value.is_object()) {
+               traverse_and_collect(value, subGroup + key, fields);
+            }
+            else if (value.is_array()) {
+               for (const auto& subNode : value) {
+                  traverse_and_collect(subNode, subGroup + key, fields);
+               }
+            }
+         }
+      }
+      };
+
+   msgLocals.memMapStates.clear();
+   traverse_and_collect(memMapDef, "", {});
+   std::stable_sort(msgLocals.memMapStates.begin(), msgLocals.memMapStates.end(), [](const auto& a, const auto& b) {
+      if (int s = a.group.compare(b.group); s != 0)
+         return s < 0;
+      if (int s = a.name.compare(b.name); s != 0)
+         return s < 0;
+      return false;
+      });
 }

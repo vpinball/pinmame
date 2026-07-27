@@ -53,6 +53,7 @@ typedef struct PinMAMEMachineStateMsg
 #define PMPI_GROUP_MECH      0x0300 // float or int32 values for position & speed
 #define PMPI_GROUP_SWITCH    0x0400 // boolean states as byte values, index depends on each driver and can be negative (for cabinet switches)
 #define PMPI_GROUP_DIPSWITCH 0x0500 // boolean states as byte values
+#define PMPI_GROUP_GAMESTATE 0x0600 // game states derived from live memory
 
 // Game events
 //
