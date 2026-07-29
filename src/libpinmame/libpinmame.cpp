@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <format>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define strcasecmp _stricmp
@@ -218,7 +219,8 @@ static struct
    unsigned int endpointId;
    bool registered;
 
-   unsigned int onGameStartId, onGameEndId;
+   unsigned int onControllerChangeId;
+   unsigned int onGetControllersId;
 
    unsigned int onStateSrcChangedId, getStateSrcId;
    StateSrcId stateDef;
@@ -1702,12 +1704,30 @@ static void OnGetMachineState(const unsigned int eventId, void* userData, void* 
    msg->hardwareGen = core_gameData->gen;
 }
 
+static void OnGetControllers(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   auto msg = static_cast<GetControllersMsg*>(msgData);
+   if (msg->count < msg->maxEntryCount)
+   {
+      static std::string gameId;
+      // Broadcast the game name that was requested (which may be an alias registered through alias.txt)
+      // so consumers see the same id the table script used, not the resolved driver name
+      gameId = std::format("pinmame::{}", g_szGameName[0] ? g_szGameName : Machine->gamedrv->name);
+      msg->entries[msg->count].ctrlEndpointId = msgLocals.endpointId;
+      msg->entries[msg->count].gameId = gameId.c_str();
+   }
+   msg->count++;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device states
 
 static void OnGetStateSrc(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (_isRunning != 1)
+   if (_isRunning != 1 || msgLocals.msgApi == nullptr)
       return;
 
    auto msg = static_cast<GetStateSrcMsg*>(msgData);
@@ -2012,11 +2032,12 @@ static void SetupMsgApi()
    assert(!msgLocals.registered);
    msgLocals.registered = true;
 
-   msgLocals.onGameStartId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START);
-   msgLocals.onGameEndId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END);
+   msgLocals.onControllerChangeId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
+   msgLocals.onGetControllersId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
    msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
    msgLocals.onDmdCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_DISPLAY_CMD);
    msgLocals.onGetMachineStateId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
+   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetControllersId, OnGetControllers, nullptr);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
 
    // -- Prepare data structures for displays
@@ -2472,8 +2493,9 @@ static void ReleaseMsgApi()
    msgLocals.registered = false;
 
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
-   msgLocals.msgApi->ReleaseMsgID(msgLocals.onGameStartId);
-   msgLocals.msgApi->ReleaseMsgID(msgLocals.onGameEndId);
+   msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetControllersId, OnGetControllers, nullptr);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onControllerChangeId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetControllersId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
@@ -2525,21 +2547,13 @@ static void OnGameStart(void*)
 {
    SetupMsgApi();
    if (msgLocals.registered)
-   {
-      // Broadcast the game name that was requested (which may be an alias registered through alias.txt)
-      // so consumers see the same id the table script used, not the resolved driver name
-      CtlOnGameStateChgMsg msg = { msgLocals.endpointId, g_szGameName[0] ? g_szGameName : Machine->gamedrv->name };
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onGameStartId, reinterpret_cast<void*>(&msg));
-   }
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onControllerChangeId, nullptr);
 }
 
 static void OnGameEnd(void*)
 {
    if (msgLocals.registered)
-   {
-      CtlOnGameStateChgMsg msg = { msgLocals.endpointId, g_szGameName[0] ? g_szGameName : Machine->gamedrv->name };
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onGameEndId, reinterpret_cast<void*>(&msg));
-   }
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onControllerChangeId, nullptr);
    ReleaseMsgApi();
 }
 
