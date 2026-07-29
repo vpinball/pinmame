@@ -2341,14 +2341,6 @@ static void SetupMsgApi()
             for (uint16_t i = 33; i < 37; i++)
             {
                const bool isFlipperCoil = core_gameData->hw.flippers & FLIP_SOL((i < 35) ? FLIP_UR : FLIP_UL);
-               int mask;
-               switch (i)
-               {
-               case 33:mask = isFlipperCoil ? 0x10 : 0x10; break; // Power bit
-               case 34:mask = isFlipperCoil ? CORE_URFLIPSOLBITS : 0x20; break; // Power|Hold bits
-               case 35:mask = isFlipperCoil ? 0x40 : 0x40; break; // Power bit
-               case 36:mask = isFlipperCoil ? CORE_ULFLIPSOLBITS : 0x80; break; // Power|Hold bits
-               }
                const char* label;
                if (isFlipperCoil)
                   label = fmtString("Output #%02d - Upper %s Flipper %s solenoid (CPU controlled)", i, (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold|Power");
@@ -2356,7 +2348,22 @@ static void SetupMsgApi()
                   label = fmtString("Output #%02d (WPC95 J120)", i);
                else
                   label = fmtString("Output #%02d (Fliptronic)", i);
-               addDevice(label, PMPI_GROUP_SOLENOID | 0x0002, i, LPM_DM_CORE_SOL2, mask, byteOrFloat);
+               if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+               {
+                  addDevice(label, PMPI_GROUP_SOLENOID | 0x0002, i, LPM_DM_PHYSOUT, CORE_MODOUT_SOL0 + i - 1, byteOrFloat);
+               }
+               else
+               {
+                  int mask;
+                  switch (i)
+                  {
+                  case 33:mask = isFlipperCoil ? 0x10 : 0x10; break; // Power bit
+                  case 34:mask = isFlipperCoil ? CORE_URFLIPSOLBITS : 0x20; break; // Power|Hold bits
+                  case 35:mask = isFlipperCoil ? 0x40 : 0x40; break; // Power bit
+                  case 36:mask = isFlipperCoil ? CORE_ULFLIPSOLBITS : 0x80; break; // Power|Hold bits
+                  }
+                  addDevice(label, PMPI_GROUP_SOLENOID | 0x0002, i, LPM_DM_CORE_SOL2, mask, byteOrFloat);
+               }
             }
          }
       }
@@ -2385,14 +2392,6 @@ static void SetupMsgApi()
          const bool isCPU = core_gameData->hw.flippers & FLIP_SOL((i < 47) ? FLIP_LR : FLIP_LL);
          const char* leftRight = (i < 47) ? "Right" : "Left";
          const char* bits = (i & 1) ? "Power" : "Hold|Power";
-         int mask;
-         switch (i)
-         {
-         case 45:mask = 0x01; break; // Power bit
-         case 46:mask = CORE_LRFLIPSOLBITS; break; // Power|Hold bits
-         case 47:mask = 0x04; break; // Power bit
-         case 48:mask = CORE_LLFLIPSOLBITS; break; // Power|Hold bits
-         }
          const char* label;
          if (isCPU && (core_gameData->gen & GEN_ALLWPC))
             label = fmtString("Output #%02d - Lower %s Flipper %s solenoid (CPU controlled)", 29 + (i - 45), leftRight, bits);
@@ -2400,7 +2399,22 @@ static void SetupMsgApi()
             label = fmtString("Lower %s Flipper: %s solenoid (CPU controlled)", leftRight, bits);
          else
             label = fmtString("Lower %s Flipper: %s solenoid (emulated wired)", leftRight, bits);
-         addDevice(label, PMPI_GROUP_SOLENOID | 0x0002, i, LPM_DM_CORE_SOL2, mask, byteOrFloat);
+         if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+         {
+            addDevice(label, PMPI_GROUP_SOLENOID | 0x0002, i, LPM_DM_PHYSOUT, CORE_MODOUT_SOL0 + i - 1, byteOrFloat);
+         }
+         else
+         {
+            int mask;
+            switch (i)
+            {
+            case 45:mask = 0x01; break; // Power bit
+            case 46:mask = CORE_LRFLIPSOLBITS; break; // Power|Hold bits
+            case 47:mask = 0x04; break; // Power bit
+            case 48:mask = CORE_LLFLIPSOLBITS; break; // Power|Hold bits
+            }
+            addDevice(label, PMPI_GROUP_SOLENOID | 0x0002, i, LPM_DM_CORE_SOL2, mask, byteOrFloat);
+         }
       }
       // 49, simulated fake plunger, not broadcasted
       // 50, unused, reserved
