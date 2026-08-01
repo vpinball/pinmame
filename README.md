@@ -46,7 +46,7 @@ All standard MAME "functions" do work the same way in PinMAME (profiler, debugge
 record/playback, command line switches etc.).
 
 In addition to the built-in debugger, it also includes an **Advanced Remote Debugger** module, providing a thread-safe REST API and a high-fidelity web dashboard for headless or remote analysis.
-Features include real-time DMD/Alphanumeric rendering, hardware breakpoints, memory pattern search, and interactive matrix visualization. See [src/remote_debug/README.md](src/remote_debug/README.md) for full documentation and API reference.
+Features include real-time DMD/Alphanumeric rendering, hardware breakpoints, memory pattern search, and interactive matrix visualization. See the [README](src/remote_debug/README.md) for full documentation and API reference.
 For the moment, it's mostly useful for debugging WPC/6809-based machines, but is applicable to all machines.
 
 In addition, there is special compile time support for the [P-ROC](http://www.pinballcontrollers.com),
@@ -161,7 +161,7 @@ For more information, please refer to [simulation.txt](release/simulation.txt) f
 ## Remote Debugger & Headless Mode
 
 Extension designed for deep hardware reversing and headless operation (e.g., in Docker or CI environments), for the moment mostly targeted at WPC/6809-based machines,
-and running PinMAME for Linux, but in general applicable to all machines. For details see the [README](src/remote/debug/README.md).
+and running PinMAME for Linux, but in general applicable to all machines. For details see the [README](src/remote_debug/README.md).
 
 ### Key Features
 - **Headless Execution**: Run PinMAME without X11/SDL windows using the `-headless` flag.
