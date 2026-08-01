@@ -5,9 +5,11 @@ dashboard and REST API. Designed to be minimally invasive: all changes to
 existing PinMAME sources are guarded by `#ifdef REMOTE_DEBUG`; without that
 define the build is identical to upstream.
 
-Developed and tested against **Williams WPC**, but most features are
+Developed and tested against **Williams WPC**/**6809**-based machines, but most features are
 platform-generic and work across PinMAME's other pinball systems to varying
 degrees — see [Platform Support](#platform-support).
+
+Note that it requires to run the Linux PinMAME executable (for now).
 
 ## Features
 - **Headless Operation**: run without X11 via `-headless` (server/CI/reverse
@@ -68,7 +70,6 @@ degrees — see [Platform Support](#platform-support).
 Command line options added by the debugger (see `src/unix/config.c`):
 `-headless`/`-hl`, `-httpport <port>`/`-hp` (default 8080), `-startpaused`/`-sp`.
 
-### Code quality
 The `src/remote_debug` objects are compiled with
 `-std=gnu99 -Wall -Wextra -Wunused -pedantic -Werror` (see `src/pinmame.mak`);
 the build fails on any warning in this directory. Core PinMAME headers are
@@ -418,7 +419,7 @@ capacity ~512 frames) and download them for playback/analysis.
 
 ## Platform Support
 
-The debugger was developed and verified against **Williams WPC** (`taf_l7`).
+The debugger was developed and verified against **Williams WPC** (e.g. `taf_l7`).
 Most of it is *platform-generic*, because it hooks PinMAME's shared
 subsystems rather than WPC-specific code:
 
@@ -488,7 +489,7 @@ on other platforms the objects are still enumerated by matrix number, just
 without a friendly name (assign your own via the UI or ignore the `name`).
 
 ## Testing
-Run from `src/remote_debug` (ROM `taf_l7` expected in `~/.pinmame`, override
+Run from `src/remote_debug` (e.g. ROM `taf_l7` expected in `~/.pinmame`, override
 via `ROMPATH=/path`):
 - `./test_suite.sh` — full API verification suite.
 - `./test_breakpoint.sh` — end-to-end breakpoint hit test.
@@ -522,7 +523,3 @@ The alphanumeric renderer uses the hardware mapping (bits 0-indexed):
 - **Bit 8**: diag top-left (j), **Bit 10**: diag top-right (k)
 - **Bit 14**: diag bottom-left (l), **Bit 12**: diag bottom-right (m)
 - **Bit 15**: period, **Bit 7**: comma
-
-### Known warnings
-None. The remote_debug objects build warning-free with
-`-std=gnu99 -Wall -Wextra -Wunused -pedantic -Werror`.

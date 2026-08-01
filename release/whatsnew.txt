@@ -9,6 +9,8 @@ Version 3.7 (XX XXth, 2026) - ""
 Users now can set the 'serial_device' setting (registry key) to a COM port,
 to attach to the WPC/WPC95 serial printer interface
 
+Add a HTTP remote debugger (see 'src/remote_debug/README.md' for all details), mostly targeted at WPC/6809-based machines and Linux PinMAME (for now), but in general applicable to all machines.
+
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
 Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, trackball or lightgun)
