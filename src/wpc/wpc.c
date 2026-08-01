@@ -356,6 +356,12 @@ void wpc_set_fastflip_addr(int addr)
   }
 #endif
 
+#ifdef REMOTE_DEBUG
+int wpc_get_bank(void) {
+  return wpc_data ? wpc_data[WPC_ROMBANK] : -1;
+}
+#endif
+
 /*-----------------
 /  Machine drivers
 /------------------*/

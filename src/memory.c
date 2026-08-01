@@ -1811,6 +1811,12 @@ extern void bpr_memref(UINT32 adr, int length);
 #define bpr_memref(a,l)
 #endif
 
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#else
+#define remote_debug_memref(a,l,w)
+#endif
+
 #define READBYTE8(name,abits,lookup,handlist,mask)										\
 data8_t name(offs_t address)															\
 {																						\
@@ -1818,7 +1824,7 @@ data8_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,0)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,0)];							\
@@ -1844,7 +1850,7 @@ data8_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -1871,7 +1877,7 @@ data8_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -1898,7 +1904,7 @@ data8_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -1925,7 +1931,7 @@ data8_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -1958,7 +1964,7 @@ data16_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~1;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);remote_debug_memref(address,2,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -1984,7 +1990,7 @@ data16_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~1;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);remote_debug_memref(address,2,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2011,7 +2017,7 @@ data16_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~1;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);remote_debug_memref(address,2,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2044,7 +2050,7 @@ data32_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~3;bpr_memref(address,4);																	\
+	address &= mask & ~3;bpr_memref(address,4);remote_debug_memref(address,4,0);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2075,7 +2081,7 @@ void name(offs_t address, data8_t data)													\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,0)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,0)];							\
@@ -2100,7 +2106,7 @@ void name(offs_t address, data8_t data)													\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -2126,7 +2132,7 @@ void name(offs_t address, data8_t data)													\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -2152,7 +2158,7 @@ void name(offs_t address, data8_t data)													\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2178,7 +2184,7 @@ void name(offs_t address, data8_t data)													\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,1);																	\
+	address &= mask;bpr_memref(address,1);remote_debug_memref(address,1,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2210,7 +2216,7 @@ void name(offs_t address, data16_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~1;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);remote_debug_memref(address,2,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -2235,7 +2241,7 @@ void name(offs_t address, data16_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~1;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);remote_debug_memref(address,2,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2261,7 +2267,7 @@ void name(offs_t address, data16_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~1;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);remote_debug_memref(address,2,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2293,7 +2299,7 @@ void name(offs_t address, data32_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask & ~3;bpr_memref(address,4);																	\
+	address &= mask & ~3;bpr_memref(address,4);remote_debug_memref(address,4,1);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\

@@ -361,6 +361,16 @@ int osd_create_display(const struct osd_create_params *params,
 {
 	int r, g, b;
 
+#ifdef REMOTE_DEBUG
+	if (pmoptions.headless) {
+		memset(&display_palette_info, 0, sizeof(struct sysdep_palette_info));
+		display_palette_info.depth = 32;
+		display_palette_info.red_mask   = 0x00FF0000;
+		display_palette_info.green_mask = 0x0000FF00;
+		display_palette_info.blue_mask  = 0x000000FF;
+	}
+#endif
+
 	bitmap_depth = (params->depth == 15) ? 16 : params->depth;
 	using_15bpp_rgb_direct = (params->depth == 15);
 
@@ -419,8 +429,14 @@ int osd_create_display(const struct osd_create_params *params,
 	use_aspect_ratio	= normal_use_aspect_ratio;
 	video_fps		= params->fps;
 
+#ifdef REMOTE_DEBUG
+	if (!pmoptions.headless) {
+#endif
 	if (sysdep_create_display(bitmap_depth) != OSD_OK)
 		return -1;
+#ifdef REMOTE_DEBUG
+	}
+#endif
 
 #if 0 /* DEBUG */
 	fprintf(stderr_file, "viswidth = %d, visheight = %d, visstartx= %d,"
@@ -430,8 +446,14 @@ int osd_create_display(const struct osd_create_params *params,
 
 	/* a lot of display_targets need to have the display initialised before
 	   initialising any input devices */
+#ifdef REMOTE_DEBUG
+	if (!pmoptions.headless) {
+#endif
 	if (osd_input_initpost() != OSD_OK)
 		return -1;
+#ifdef REMOTE_DEBUG
+	}
+#endif
 
 	if (bitmap_depth == 16)
 		fprintf(stderr_file,"Using 16bpp video mode\n");
@@ -440,11 +462,17 @@ int osd_create_display(const struct osd_create_params *params,
 		return 1;
 
 	/* alloc the total number of colors that can be used by the palette */
+#ifdef REMOTE_DEBUG
+	if (!pmoptions.headless) {
+#endif
 	if (sysdep_display_alloc_palette(65536))
 	{
 		osd_free_colors();
 		return 1;
 	}
+#ifdef REMOTE_DEBUG
+	}
+#endif
 
 	/* initialize the palette to a fixed 5-5-5 mapping */
 	if (using_15bpp_rgb_direct)
@@ -517,6 +545,10 @@ static void osd_change_display_settings(struct rectangle *new_visual,
 		struct sysdep_palette_struct *new_palette, int new_widthscale,
 		int new_heightscale, int new_use_aspect_ratio)
 {
+#ifdef REMOTE_DEBUG
+	/* fprintf(stderr, "osd_change_display_settings: headless=%d\n", pmoptions.headless); */
+	if (pmoptions.headless) return;
+#endif
 	int new_visual_width, new_visual_height;
 
 	/* always update the visual info */
@@ -743,9 +775,17 @@ void change_debugger_focus(int new_debugger_focus)
 	}
 }
 
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#endif
+
 /* Update the display. */
 void osd_update_video_and_audio(struct mame_display *display)
 {
+#ifdef REMOTE_DEBUG
+	remote_debug_frame_update(display);
+	if (pmoptions.headless) return;
+#endif
 	int skip_this_frame;
 	cycles_t curr;
 
@@ -947,8 +987,14 @@ void osd_update_video_and_audio(struct mame_display *display)
 
 	/* if the LEDs have changed, update them */
 	if (display->changed_flags & LED_STATE_CHANGED)
+#ifdef REMOTE_DEBUG
+		if (!pmoptions.headless)
+#endif
 		sysdep_set_leds(display->led_state);
 
+#ifdef REMOTE_DEBUG
+	if (!pmoptions.headless)
+#endif
 	osd_poll_joysticks();
 }
 
@@ -958,6 +1004,9 @@ void adjust_bitmap_and_update_display(struct mame_bitmap *srcbitmap,
 {
 	orient_rect(&bounds);
 
+#ifdef REMOTE_DEBUG
+	if (!pmoptions.headless)
+#endif
 	sysdep_update_display(srcbitmap);
 }
 #endif

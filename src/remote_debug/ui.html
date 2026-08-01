@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<!-- license:BSD-3-Clause -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>PinMAME Remote Debugger</title>
+<style>
+    /* ---------- base layout ---------- */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    header {
+        background: #2d2d2d;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #3d3d3d;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .main-container { display: flex; flex: 1; overflow: hidden; }
+    .sidebar {
+        width: 400px;
+        min-width: 320px;
+        background: #252526;
+        border-right: 1px solid #3d3d3d;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .content { flex: 1; display: flex; flex-direction: column; padding: 10px; overflow-y: auto; background: #1e1e1e; }
+    .panel {
+        background: #2d2d2d;
+        border: 1px solid #3d3d3d;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        padding: 12px;
+    }
+    .panel h2 {
+        margin-top: 0;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #3d3d3d;
+        padding-bottom: 8px;
+        color: #4fc1ff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .sidebar .panel { margin: 10px; }
+
+    /* ---------- controls ---------- */
+    .btn {
+        background: #0e639c; color: white; border: none; padding: 4px 10px;
+        cursor: pointer; border-radius: 2px; font-size: 0.8rem; margin-left: 2px;
+    }
+    .btn:hover { background: #1177bb; }
+    .btn-danger { background: #a1260d; }
+    .btn-success { background: #388a34; }
+    .btn-cabinet {
+        background: #444; border: 1px solid #666; width: 60px; height: 30px;
+        margin: 2px; font-weight: bold; font-size: 0.7rem;
+    }
+    .btn-cabinet:active { background: #00ff00; color: #000; }
+    input, select {
+        background: #3c3c3c; border: 1px solid #3d3d3d; color: #fff; padding: 4px 8px;
+        border-radius: 2px; outline: none; font-family: 'Consolas', monospace;
+    }
+    input:focus { border-color: #4fc1ff; }
+    .tool-bar {
+        margin-bottom: 10px; display: flex; gap: 8px; align-items: center;
+        background: #252526; padding: 8px; border-radius: 4px; flex-wrap: wrap;
+    }
+
+    /* ---------- status / banners / toasts ---------- */
+    .status-tag {
+        padding: 3px 10px; border-radius: 12px; font-size: 0.75rem;
+        background: #444; margin-right: 8px; font-weight: bold;
+    }
+    .status-paused { background: #a1260d; color: white; }
+    .status-running { background: #388a34; color: white; }
+    .status-offline { background: #666; color: #ddd; }
+    #transport-tag { font-size: 0.65rem; color: #858585; margin-right: 12px; }
+    #offline-banner {
+        display: none; background: #a1260d; color: #fff; text-align: center;
+        padding: 4px; font-size: 0.8rem;
+    }
+    #toast-area { position: fixed; bottom: 12px; right: 12px; z-index: 99; }
+    .toast {
+        background: #a1260d; color: #fff; padding: 8px 14px; margin-top: 6px;
+        border-radius: 4px; font-size: 0.8rem; box-shadow: 0 2px 8px #000;
+        opacity: 0.95;
+    }
+    .toast-info { background: #0e639c; }
+
+    /* ---------- registers ---------- */
+    .reg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-family: 'Consolas', monospace; }
+    .reg-item {
+        background: #1e1e1e; padding: 4px 8px; border-radius: 2px; display: flex;
+        justify-content: space-between; border-left: 3px solid #4fc1ff; align-items: center;
+    }
+    .reg-label { color: #858585; font-size: 0.75rem; }
+    .reg-val { color: #dcdcaa; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+    .reg-val:hover { text-decoration: underline; }
+    .reg-dec { color: #6a9955; font-size: 0.7rem; margin-left: 5px; }
+    .flags-grid { display: flex; gap: 2px; font-family: 'Consolas', monospace; margin-top: 10px; }
+    .flag { flex: 1; text-align: center; background: #333; padding: 4px 0; border-radius: 2px; font-size: 0.75rem; color: #555; }
+    .flag.active { background: #388a34; color: #fff; font-weight: bold; }
+
+    /* ---------- tables ---------- */
+    .hex-table, .dasm-table, .trace-table {
+        font-family: 'Consolas', monospace; border-collapse: collapse; width: 100%;
+        font-size: 0.85rem; background: #1e1e1e;
+    }
+    .hex-table td, .dasm-table td, .trace-table td { padding: 3px 8px; border: 1px solid #2d2d2d; }
+    .trace-table th { padding: 3px 8px; color: #858585; text-align: left; font-weight: normal; border-bottom: 1px solid #3d3d3d; }
+    .addr-col { color: #858585; width: 70px; background: #252526; text-align: right; padding-right: 12px !important; }
+    .hex-byte { cursor: pointer; text-align: center; width: 30px; color: #9cdcfe; }
+    .hex-byte:hover { background: #333; }
+    .hex-changed { background: #5a3d10 !important; color: #ffb454; }
+    .hex-ascii { color: #6a9955; width: 120px; border-left: 2px solid #3d3d3d !important; font-size: 0.8rem; }
+    .hex-edit { width: 26px; padding: 1px 2px; text-align: center; }
+    .current-pc { background: #3e3e10 !important; }
+    .dasm-row { cursor: pointer; }
+    .dasm-row:hover { background: #2a2a2a; }
+
+    /* ---------- displays ---------- */
+    #dmd-canvas { background: #000; width: 100%; image-rendering: pixelated; border: 1px solid #444; }
+    #seg-canvas { background: #000; width: 100%; border: 1px solid #444; }
+
+    /* ---------- console / lists ---------- */
+    #console-log {
+        background: #000; color: #6a9955; font-family: 'Consolas', monospace;
+        font-size: 0.85rem; height: 120px; overflow-y: scroll; padding: 10px;
+        border: 1px solid #333; margin-top: 10px;
+    }
+    .console-line { margin-bottom: 2px; border-bottom: 1px solid #111; }
+    .matrix { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; background: #333; padding: 4px; border-radius: 2px; }
+    .matrix-dot { width: 14px; height: 14px; background: #222; border-radius: 2px; border: 1px solid #444; }
+    .matrix-dot.active-lamp { background: #ffff00; box-shadow: 0 0 5px #ffff00; }
+    .matrix-dot.active-sw { background: #00ff00; }
+    .matrix-dot.active-sol { background: #ff0000; box-shadow: 0 0 5px #ff0000; }
+    .sw-clickable { cursor: pointer; }
+    .point-item, .watch-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 4px; border-bottom: 1px solid #333; font-size: 0.8rem;
+        font-family: 'Consolas', monospace;
+    }
+    .point-disabled { color: #666; text-decoration: line-through; }
+    .point-meta { color: #858585; font-size: 0.7rem; margin-left: 6px; }
+    .stack-item {
+        font-family: 'Consolas', monospace; font-size: 0.85rem; padding: 2px 8px;
+        border-left: 3px solid #6a9955; margin-bottom: 2px; background: #1e1e1e; cursor: pointer;
+    }
+    .stack-item:hover { background: #2d2d2d; }
+    .hint { font-size: 0.7rem; color: #858585; }
+    kbd {
+        background: #333; border: 1px solid #555; border-radius: 3px;
+        padding: 0 4px; font-size: 0.7rem; font-family: 'Consolas', monospace;
+    }
+</style>
+</head>
+
+<body>
+<div id="offline-banner">Connection to PinMAME lost &mdash; retrying &hellip;</div>
+<header>
+    <div>
+        <span style="color:#4fc1ff;font-weight:bold;font-size:1.1rem;">PinMAME Remote Debugger</span>
+        <span id="game-title" style="margin-left:15px;color:#aaa;font-size:0.9rem;">&hellip;</span>
+    </div>
+    <div>
+        <span id="transport-tag" title="Event transport: SSE push or HTTP polling">poll</span>
+        <span id="status-mode" class="status-tag status-offline">OFFLINE</span>
+        <button class="btn" onclick="Dbg.control('pause')" title="Pause (F8 toggles)">Pause</button>
+        <button class="btn" onclick="Dbg.control('resume')" title="Resume (F8 toggles)">Resume</button>
+        <button class="btn" onclick="Dbg.control('step')" title="Step into (F11)">Step</button>
+        <button class="btn btn-success" onclick="Dbg.control('stepover')" title="Step over (F10)">Over</button>
+        <button class="btn btn-success" onclick="Dbg.control('stepout')" title="Step out (Shift+F11)">Out</button>
+        <button class="btn btn-danger" onclick="Dbg.exitEmulator()" title="Terminate the emulator">Exit</button>
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="sidebar">
+        <div id="display-panel" class="panel">
+            <h2 id="display-title">System Display</h2>
+            <div id="dmd-container"><canvas id="dmd-canvas"></canvas></div>
+            <div id="seg-container" style="display:none;"><canvas id="seg-canvas"></canvas></div>
+            <div style="margin-top:5px;" class="hint">
+                <span id="dmd-res">0x0</span> |
+                <input type="checkbox" id="auto-refresh-dmd" checked> Live
+            </div>
+        </div>
+        <div id="cpu-panels-container"></div>
+        <div class="panel">
+            <h2>Callstack</h2>
+            <div id="callstack-view" style="max-height:150px;overflow-y:auto;"></div>
+        </div>
+        <div class="panel">
+            <h2>Cabinet &amp; Service</h2>
+            <div id="cabinet-buttons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;"></div>
+            <div class="hint" style="margin-top:6px;">
+                Pulse: <input type="number" id="pulse-ms" value="150" min="0" max="5000" step="50" style="width:60px;"> ms
+                (0 = hold while pressed)
+            </div>
+        </div>
+        <div class="panel">
+            <h2>System Info</h2>
+            <div class="reg-item"><span class="reg-label">Active Bank</span><span id="wpc-bank" class="reg-val">?</span></div>
+            <div class="hint" style="margin-top:8px;">
+                Shortcuts: <kbd>F8</kbd> pause/resume &middot; <kbd>F10</kbd> step over &middot;
+                <kbd>F11</kbd> step into &middot; <kbd>Shift+F11</kbd> step out
+            </div>
+        </div>
+        <div class="panel">
+            <h2>Matrix Visualizer</h2>
+            <div class="hint" style="margin-bottom:5px;">Lamps (8x8)</div>
+            <div id="matrix-lamps" class="matrix"></div>
+            <div class="hint" style="margin:10px 0 5px 0;">Switches (8x8, click to toggle)</div>
+            <div id="matrix-sw" class="matrix"></div>
+            <div class="hint" style="margin:10px 0 5px 0;">Solenoids (32)</div>
+            <div id="matrix-sol" class="matrix"></div>
+            <div class="hint" style="margin:10px 0 5px 0;">Direct (8)</div>
+            <div id="matrix-ded" class="matrix"></div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="panel" style="display:flex;flex-direction:column;height:360px;">
+            <h2>Disassembler</h2>
+            <div class="tool-bar">
+                Bank: <input type="text" id="dasm-bank" value="" style="width:40px;" placeholder="cur" title="ROM bank (hex), empty = current">
+                Addr: <input type="text" id="dasm-addr" value="0000" style="width:70px;" title="hex, 0x/$ prefix optional">
+                CPU: <input type="number" id="dasm-cpu" value="0" min="0" style="width:40px;">
+                <button class="btn" onclick="Dasm.refresh()">Go</button>
+                <button class="btn" onclick="Dasm.followPC()">Follow PC</button>
+                <label class="hint"><input type="checkbox" id="dasm-follow" checked> auto-follow on halt</label>
+            </div>
+            <div style="flex:1;overflow-y:auto;">
+                <table class="dasm-table" id="dasm-view"></table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Control Center</h2>
+            <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                <div style="flex:1;min-width:340px;">
+                    <div style="margin-bottom:5px;">
+                        <input type="text" id="bp-bank" placeholder="bank" style="width:40px;" title="ROM bank (hex), optional">
+                        <input type="text" id="bp-addr" placeholder="addr" style="width:60px;" title="address (hex)">
+                        <input type="text" id="bp-cond" placeholder="cond e.g. A==7F" style="width:110px;"
+                               title="condition: M6809 register ==,!=,<,>,<=,>= hex value">
+                        <input type="text" id="bp-ignore" placeholder="ign" style="width:36px;" title="ignore first N hits">
+                        <button class="btn btn-success" onclick="Points.add('bp')">+BP</button>
+                    </div>
+                    <div style="margin-bottom:5px;">
+                        <input type="text" id="wp-bank" placeholder="bank" style="width:40px;" title="ROM bank (hex), optional (0x4000-0x7FFF only)">
+                        <input type="text" id="wp-addr" placeholder="addr" style="width:60px;" title="address (hex)">
+                        <input type="text" id="wp-len" placeholder="len" style="width:36px;" value="1" title="watched bytes (decimal)">
+                        <select id="wp-mode">
+                            <option value="1">R</option>
+                            <option value="2">W</option>
+                            <option value="3" selected>RW</option>
+                        </select>
+                        <select id="wp-cond" title="optional value condition on the watched byte">
+                            <option value="">any</option>
+                            <option value="eq">==</option>
+                            <option value="ne">!=</option>
+                            <option value="lt">&lt;</option>
+                            <option value="gt">&gt;</option>
+                            <option value="le">&le;</option>
+                            <option value="ge">&ge;</option>
+                        </select>
+                        <input type="text" id="wp-val" placeholder="val" style="width:36px;" title="value (hex) for the condition">
+                        <button class="btn btn-success" onclick="Points.add('wp')">+WP</button>
+                    </div>
+                    <div id="point-list" style="max-height:120px;overflow-y:auto;background:#111;"></div>
+                </div>
+                <div style="flex:1;min-width:280px;">
+                    <div style="display:flex;gap:5px;margin-bottom:10px;">
+                        <input type="text" id="cli-cmd" placeholder="Classic command (BP/BC/WP/WC/G/S/F/HELP)&hellip;" style="flex:1;">
+                        <button class="btn" onclick="Cli.run()">Exec</button>
+                    </div>
+                    <button class="btn btn-danger" onclick="Dbg.nvramClear()">Wipe NVRAM &amp; Reset</button>
+                    <button class="btn" onclick="Mem.nvramView()" title="Show WPC CMOS RAM in the hex editor">NVRAM View</button>
+                    <button class="btn" onclick="Dbg.nvramDownload()" title="Download the raw 8KB NVRAM dump">NVRAM Dump &darr;</button>
+                </div>
+            </div>
+            <div id="console-log"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Memory Hex Editor &amp; Search</h2>
+            <div class="tool-bar">
+                Addr: <input type="text" id="mem-addr" value="0000" style="width:70px;" title="hex, 0x/$ prefix optional">
+                Size: <input type="number" id="mem-size" value="256" min="16" max="2048" step="16" style="width:60px;">
+                CPU: <input type="number" id="mem-cpu" value="0" min="0" style="width:40px;">
+                Bank: <input type="text" id="mem-bank" style="width:44px;" placeholder="cur" title="ROM bank (hex) for 0x4000-0x7FFF; empty = current">
+                <button class="btn" onclick="Mem.refresh()">Read</button>
+                <button class="btn" onclick="Mem.page(-1)" title="previous page">&#9650;</button>
+                <button class="btn" onclick="Mem.page(1)" title="next page">&#9660;</button>
+                <label class="hint"><input type="checkbox" id="mem-auto" checked> refresh on halt</label>
+                <span class="hint">click a byte to edit, Enter commits</span>
+            </div>
+            <div class="tool-bar" style="background:#2d2d2d;border:1px dashed #444;">
+                Search HEX: <input type="text" id="search-pat" placeholder="e.g. 414243" style="flex:1;">
+                <button class="btn btn-success" onclick="Mem.search()">Find</button>
+                <button class="btn" onclick="Mem.searchNext()" title="continue after last hit">Next</button>
+            </div>
+            <div id="hex-container" style="overflow-x:auto;background:#1e1e1e;max-height:220px;overflow-y:auto;">
+                <table class="hex-table" id="hex-view"></table>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="panel" style="flex:1;min-width:320px;">
+                <h2>Watches</h2>
+                <div class="tool-bar">
+                    Addr: <input type="text" id="watch-addr" style="width:70px;" placeholder="hex">
+                    Len: <input type="number" id="watch-len" value="4" min="1" max="16" style="width:44px;">
+                    <button class="btn btn-success" onclick="Watches.add()">+ Watch</button>
+                </div>
+                <div id="watch-list"></div>
+            </div>
+            <div class="panel" style="flex:1;min-width:320px;">
+                <h2>Memory Trace</h2>
+                <div class="tool-bar">
+                    Addr: <input type="text" id="trace-addr" style="width:70px;" placeholder="hex">
+                    Bank: <input type="text" id="trace-bank" style="width:44px;" placeholder="any" title="ROM bank (hex), optional (0x4000-0x7FFF only)">
+                    <button class="btn btn-success" onclick="Trace.add()">+ Trace</button>
+                    <button class="btn btn-danger" onclick="Trace.clear()">Clear</button>
+                    <span class="hint">logs every access to traced addresses</span>
+                </div>
+                <div id="trace-watched" class="hint" style="margin-bottom:4px;"></div>
+                <div style="max-height:180px;overflow-y:auto;">
+                    <table class="trace-table" id="trace-view"></table>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="panel" style="flex:1;min-width:320px;">
+                <h2>Code Instrumentation (PC hits)</h2>
+                <div class="tool-bar">
+                    Addr: <input type="text" id="instr-addr" style="width:70px;" placeholder="hex">
+                    Bank: <input type="text" id="instr-bank" style="width:44px;" placeholder="any">
+                    <button class="btn btn-success" onclick="Instrument.add()">+ Mark</button>
+                    <button class="btn btn-danger" onclick="Instrument.clear()">Clear</button>
+                    <span class="hint">counts how often the CPU passes each address</span>
+                </div>
+                <div style="max-height:180px;overflow-y:auto;">
+                    <table class="trace-table" id="instr-view"></table>
+                </div>
+            </div>
+            <div class="panel" style="flex:1;min-width:320px;">
+                <h2>Value Scan (variable search)</h2>
+                <div class="tool-bar">
+                    Addr: <input type="text" id="scan-addr" value="0000" style="width:60px;">
+                    Size: <input type="number" id="scan-size" value="2048" min="1" max="8192" style="width:60px;">
+                    CPU: <input type="number" id="scan-cpu" value="0" min="0" style="width:40px;">
+                    <button class="btn btn-success" onclick="Scan.newScan()">New</button>
+                </div>
+                <div class="tool-bar">
+                    <button class="btn" onclick="Scan.filter('changed')">Changed</button>
+                    <button class="btn" onclick="Scan.filter('unchanged')">Same</button>
+                    <button class="btn" onclick="Scan.filter('inc')">&gt; prev</button>
+                    <button class="btn" onclick="Scan.filter('dec')">&lt; prev</button>
+                    = <input type="text" id="scan-val" style="width:44px;" placeholder="hex">
+                    <button class="btn" onclick="Scan.filter('eq')">Equals</button>
+                    <span id="scan-count" class="hint">no scan</span>
+                </div>
+                <div style="max-height:150px;overflow-y:auto;">
+                    <table class="trace-table" id="scan-view"></table>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="panel" style="flex:1;min-width:320px;">
+                <h2>Save States (RAM + CPU)</h2>
+                <div class="tool-bar">
+                    Slot: <input type="text" id="ss-slot" value="cp1" style="width:90px;">
+                    <button class="btn btn-success" onclick="SaveState.save()">Save</button>
+                    <button class="btn" onclick="SaveState.load()">Load</button>
+                    <button class="btn" onclick="SaveState.diff()" title="diff this slot's RAM against the live RAM">Diff vs live</button>
+                    <span class="hint">checkpoint of WPC RAM + main CPU registers</span>
+                </div>
+                <div id="ss-list"></div>
+                <div id="ss-diff" style="max-height:130px;overflow-y:auto;"></div>
+            </div>
+            <div class="panel" style="flex:1;min-width:320px;">
+                <h2>DMD Recorder</h2>
+                <div class="tool-bar">
+                    <button class="btn btn-success" id="dmdrec-toggle" onclick="DmdRec.toggle()">Record</button>
+                    <button class="btn" onclick="DmdRec.loadFrames()">Load frames</button>
+                    <button class="btn btn-danger" onclick="DmdRec.clear()">Clear</button>
+                    <span id="dmdrec-status" class="hint">idle</span>
+                </div>
+                <canvas id="dmdrec-canvas" style="background:#000;width:100%;image-rendering:pixelated;border:1px solid #444;"></canvas>
+                <div class="tool-bar">
+                    <button class="btn" onclick="DmdRec.playToggle()" id="dmdrec-play">&#9654; Play</button>
+                    <input type="range" id="dmdrec-scrub" min="0" max="0" value="0" style="flex:1;">
+                    <span id="dmdrec-frame" class="hint">0 / 0</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="panel" style="flex:1;min-width:300px;">
+                <h2>Execution Trace</h2>
+                <div class="tool-bar">
+                    <button class="btn btn-success" id="et-toggle" onclick="ExecTrace.toggle()">Record</button>
+                    <button class="btn" onclick="ExecTrace.load()">Load</button>
+                    <button class="btn btn-danger" onclick="ExecTrace.clear()">Clear</button>
+                    <span id="et-status" class="hint">idle</span>
+                </div>
+                <div style="max-height:170px;overflow-y:auto;">
+                    <table class="trace-table" id="et-view"></table>
+                </div>
+            </div>
+            <div class="panel" style="flex:1;min-width:300px;">
+                <h2>Code Coverage</h2>
+                <div class="tool-bar">
+                    <button class="btn btn-success" id="cov-toggle" onclick="Coverage.toggle()">Record</button>
+                    <button class="btn btn-danger" onclick="Coverage.clear()">Clear</button>
+                    <label class="hint"><input type="checkbox" id="cov-overlay"> mark executed in disassembler</label>
+                    <span id="cov-status" class="hint">idle</span>
+                </div>
+                <div class="hint">Executed addresses are highlighted green in the disassembler when the overlay is on.</div>
+            </div>
+            <div class="panel" style="flex:1;min-width:300px;">
+                <h2>Tracepoints (log &amp; continue)</h2>
+                <div class="tool-bar">
+                    Addr: <input type="text" id="tp-addr" style="width:60px;" placeholder="hex">
+                    Bank: <input type="text" id="tp-bank" style="width:44px;" placeholder="any">
+                    <button class="btn btn-success" onclick="Tracepoints.add()">+ TP</button>
+                    <button class="btn btn-danger" onclick="Tracepoints.clear()">Clear</button>
+                </div>
+                <div id="tp-points" class="hint"></div>
+                <div style="max-height:150px;overflow-y:auto;">
+                    <table class="trace-table" id="tp-view"></table>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Object Monitor &amp; Action Log</h2>
+            <div class="tool-bar">
+                <select id="mon-type">
+                    <option value="sw">Switch</option>
+                    <option value="lamp">Lamp</option>
+                    <option value="sol">Solenoid</option>
+                </select>
+                Num: <input type="text" id="mon-id" style="width:60px;" placeholder="e.g. 11">
+                <label class="hint"><input type="checkbox" id="mon-break"> break on change</label>
+                <button class="btn btn-success" onclick="Monitor.add()">+ Monitor</button>
+                <button class="btn btn-danger" onclick="Monitor.clear()">Clear monitors</button>
+                <button class="btn btn-danger" onclick="Monitor.clearLog()">Clear log</button>
+                <span id="mon-list" class="hint"></span>
+            </div>
+            <div style="max-height:180px;overflow-y:auto;">
+                <table class="trace-table" id="action-view"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="toast-area"></div>
+
+<script>
+'use strict';
+
+/* ================= utilities ================= */
+
+const Fmt = {
+    /* parse "1A2B", "0x1A2B" or "$1A2B" to a number (NaN when invalid) */
+    parseHex(s) {
+        if (typeof s !== 'string') return NaN;
+        s = s.trim();
+        if (s.startsWith('$')) s = s.substring(1);
+        else if (s.toLowerCase().startsWith('0x')) s = s.substring(2);
+        if (!/^[0-9a-fA-F]+$/.test(s)) return NaN;
+        return parseInt(s, 16);
+    },
+    hex(v, pad) { return v.toString(16).toUpperCase().padStart(pad || 4, '0'); },
+};
+
+const Toast = {
+    show(msg, info) {
+        const div = document.createElement('div');
+        div.className = 'toast' + (info ? ' toast-info' : '');
+        div.textContent = msg;
+        document.getElementById('toast-area').appendChild(div);
+        setTimeout(() => div.remove(), 4000);
+    },
+};
+
+/* ================= API access ================= */
+
+const Api = {
+    failures: 0,
+
+    async get(path) {
+        try {
+            const r = await fetch(path);
+            let data = null;
+            const ct = r.headers.get('Content-Type') || '';
+            if (ct.includes('json')) data = await r.json();
+            if (!r.ok) {
+                const msg = (data && data.message) ? data.message : ('HTTP ' + r.status);
+                throw new Error(msg + ' (' + path.split('?')[0] + ')');
+            }
+            this.setOnline(true);
+            return data;
+        } catch (e) {
+            if (e instanceof TypeError) { /* network error */
+                this.setOnline(false);
+            } else {
+                Toast.show(e.message);
+            }
+            throw e;
+        }
+    },
+
+    async getRaw(path) {
+        const r = await fetch(path);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        this.setOnline(true);
+        return r.arrayBuffer();
+    },
+
+    setOnline(ok) {
+        if (ok) this.failures = 0; else this.failures++;
+        const offline = this.failures >= 2;
+        document.getElementById('offline-banner').style.display = offline ? 'block' : 'none';
+        if (offline) {
+            const tag = document.getElementById('status-mode');
+            tag.textContent = 'OFFLINE';
+            tag.className = 'status-tag status-offline';
+            State.online = false;
+        } else {
+            State.online = true;
+        }
+    },
+};
+
+/* ================= shared state ================= */
+
+const State = {
+    online: false,
+    paused: false,
+    lastPC: 0,
+    wpcBank: -1,
+    dmd: { w: 128, h: 32 },
+    switchStates: new Array(64).fill(false),
+    dedicatedStates: new Array(8).fill(false),
+    sseConnected: false,
+};
+
+/* refresh everything that matters after a halt/step */
+function refreshAfterHalt() {
+    Status.refresh();
+    Cpu.refresh();
+    Points.refresh();
+    Log.refresh();
+    Watches.refresh();
+    Trace.refresh();
+    if (document.getElementById('mem-auto').checked) Mem.refresh(true);
+}
+
+/* ================= SSE events with polling fallback ================= */
+
+const Events = {
+    source: null,
+
+    start() {
+        if (!window.EventSource) return;
+        this.source = new EventSource('/api/events');
+        this.source.onopen = () => {
+            State.sseConnected = true;
+            document.getElementById('transport-tag').textContent = 'sse';
+        };
+        this.source.onerror = () => {
+            /* EventSource reconnects on its own; poll harder meanwhile */
+            State.sseConnected = false;
+            document.getElementById('transport-tag').textContent = 'poll';
+        };
+        this.source.onmessage = (m) => {
+            let ev;
+            try { ev = JSON.parse(m.data); } catch (e) { return; }
+            switch (ev.event) {
+                case 'halt':
+                case 'step':
+                    refreshAfterHalt();
+                    break;
+                case 'resume':
+                    Status.refresh();
+                    break;
+                case 'message':
+                    Log.refresh();
+                    break;
+                case 'action':
+                    Monitor.refresh();
+                    break;
+                case 'quit':
+                    Api.failures = 2;      /* show the offline banner immediately */
+                    Api.setOnline(false);
+                    break;
+                default:
+                    break;
+            }
+        };
+    },
+};
+
+/* ================= adaptive polling scheduler =================
+ * Polls faster while running (values change continuously), slower when
+ * paused with SSE connected (events drive the UI), and backs off while
+ * offline. */
+const Poll = {
+    loop(fn, delayFn) {
+        const tick = async () => {
+            try { await fn(); } catch (e) { /* already reported */ }
+            setTimeout(tick, delayFn());
+        };
+        tick();
+    },
+
+    start() {
+        this.loop(() => { Status.refresh(); Cpu.refresh(); },
+            () => !State.online ? 5000 : (State.paused ? (State.sseConnected ? 4000 : 1500) : 1000));
+        this.loop(() => { Log.refresh(); Points.refresh(); },
+            () => !State.online ? 8000 : (State.sseConnected ? 10000 : 2000));
+        this.loop(() => Dmd.refresh(),
+            () => !State.online ? 5000 : (State.paused ? 2000 : 500));
+        this.loop(() => { if (!State.paused) { Watches.refresh(); Trace.refresh(); } },
+            () => !State.online ? 10000 : 3000);
+    },
+};
+
+/* ================= header / status ================= */
+
+const Dbg = {
+    async control(cmd) {
+        await Api.get('/api/debugger/control?cmd=' + cmd);
+        Status.refresh();
+        if (cmd === 'step') refreshAfterHalt();
+    },
+    async pulseSw(sw, val) {
+        await Api.get(`/api/input?sw=${sw}&val=${val}`);
+        Status.refresh();
+    },
+    /* cabinet button press: timed pulse if pulse-ms > 0, else set level */
+    async press(sw) {
+        const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
+        if (ms > 0) await Api.get(`/api/input?sw=${sw}&val=1&pulse=${ms}`);
+        else await Api.get(`/api/input?sw=${sw}&val=1`);
+        Status.refresh();
+    },
+    async release(sw) {
+        const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
+        if (ms === 0) { await Api.get(`/api/input?sw=${sw}&val=0`); Status.refresh(); }
+    },
+    async nvramClear() {
+        if (!confirm('Wipe NVRAM and reset the machine?')) return;
+        await Api.get('/api/debugger/nvram?cmd=clear');
+        Toast.show('NVRAM cleared', true);
+    },
+    async nvramDownload() {
+        try {
+            const buf = await Api.getRaw('/api/debugger/nvram/dump');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([buf], { type: 'application/octet-stream' }));
+            a.download = 'nvram.bin';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        } catch (e) { Toast.show('NVRAM dump failed: ' + e.message); }
+    },
+    exitEmulator() {
+        if (!confirm('Exit the emulator?')) return;
+        fetch('/api/debugger/control?cmd=exit').catch(() => {});
+        document.body.innerHTML = '<h1 style="margin:40px;font-family:sans-serif;color:#ccc;">Emulator terminated.</h1>';
+    },
+};
+
+const Status = {
+    async refresh() {
+        const data = await Api.get('/api/info');
+        document.getElementById('game-title').textContent = data.game + ' — ' + data.description;
+        document.getElementById('wpc-bank').textContent = data.wpc_bank === -1 ? 'N/A' : '0x' + Fmt.hex(data.wpc_bank, 2);
+        State.wpcBank = data.wpc_bank;
+        State.paused = !!data.paused;
+        const tag = document.getElementById('status-mode');
+        tag.textContent = State.paused ? 'PAUSED' : 'RUNNING';
+        tag.className = 'status-tag ' + (State.paused ? 'status-paused' : 'status-running');
+
+        /* alphanumeric games show the segment display instead of the DMD */
+        if (data.segments && data.segments.replace(/0/g, '') !== '') {
+            document.getElementById('seg-container').style.display = 'block';
+            document.getElementById('dmd-container').style.display = 'none';
+            Segments.render(data.segments);
+        } else {
+            document.getElementById('seg-container').style.display = 'none';
+            document.getElementById('dmd-container').style.display = 'block';
+        }
+        Matrix.update(data);
+    },
+};
+
+/* ================= object names (switches) + custom labels ================= */
+
+const Names = {
+    sw: {},   /* num -> standard WPC name */
+    custom: JSON.parse(localStorage.getItem('pinmame-labels') || '{}'),
+
+    async load() {
+        try {
+            const data = await Api.get('/api/switches');
+            data.switches.forEach((s) => { if (s.name) this.sw['s' + s.num] = s.name; });
+        } catch (e) { /* offline; retry later */ }
+        Cabinet.build();
+    },
+
+    label(num) {
+        const c = this.custom['s' + num];
+        const std = this.sw['s' + num];
+        if (c && std) return `${c} (${std})`;
+        return c || std || '';
+    },
+
+    setCustom(num) {
+        const cur = this.custom['s' + num] || '';
+        const v = prompt(`Custom label for switch ${num}:`, cur);
+        if (v === null) return;
+        if (v) this.custom['s' + num] = v; else delete this.custom['s' + num];
+        localStorage.setItem('pinmame-labels', JSON.stringify(this.custom));
+        Matrix.relabel();
+    },
+};
+
+/* ================= cabinet / service buttons ================= */
+
+const Cabinet = {
+    /* build service buttons from switches that carry a standard name */
+    build() {
+        const wanted = ['Coin 1', 'Coin 2', 'Start', 'Enter', 'Up', 'Down', 'Escape', 'Coin Door', 'Tilt', 'Slam Tilt'];
+        const byName = {};
+        Object.keys(Names.sw).forEach((k) => { byName[Names.sw[k]] = parseInt(k.substring(1), 10); });
+        const box = document.getElementById('cabinet-buttons');
+        box.innerHTML = '';
+        wanted.forEach((name) => {
+            const num = byName[name];
+            if (num === undefined) return;
+            const b = document.createElement('button');
+            b.className = 'btn btn-cabinet';
+            b.style.width = 'auto';
+            if (name === 'Start') b.style.background = '#0e639c';
+            b.textContent = name;
+            b.title = 'switch ' + num;
+            b.onmousedown = () => Dbg.press(num);
+            b.onmouseup = () => Dbg.release(num);
+            box.appendChild(b);
+        });
+    },
+};
+
+/* ================= matrices ================= */
+
+const Matrix = {
+    init() {
+        const l = document.getElementById('matrix-lamps');
+        const s = document.getElementById('matrix-sw');
+        const sl = document.getElementById('matrix-sol');
+        const dd = document.getElementById('matrix-ded');
+        for (let i = 0; i < 64; i++) {
+            l.innerHTML += `<div id="lamp-${i}" class="matrix-dot" title="lamp ${Math.floor(i / 8) * 10 + i % 8 + 11}"></div>`;
+            s.innerHTML += `<div id="sw-${i}" class="matrix-dot sw-clickable" onclick="Matrix.swClick(event,${i})"></div>`;
+        }
+        for (let i = 0; i < 32; i++)
+            sl.innerHTML += `<div id="sol-${i}" class="matrix-dot" title="solenoid ${i + 1}"></div>`;
+        for (let i = 0; i < 8; i++)
+            dd.innerHTML += `<div id="ded-${i}" class="matrix-dot sw-clickable" onclick="Matrix.toggleSwitch(${i},true)"></div>`;
+    },
+
+    swNumber(idx) {
+        const col = Math.floor(idx / 8), row = idx % 8;
+        return col === 0 ? row + 1 : col * 10 + row + 1;
+    },
+
+    /* left click toggles the switch; Shift+click assigns a custom label */
+    swClick(ev, idx) {
+        if (ev.shiftKey) { Names.setCustom(this.swNumber(idx)); return; }
+        this.toggleSwitch(idx, false);
+    },
+
+    async toggleSwitch(idx, dedicated) {
+        const cur = dedicated ? State.dedicatedStates[idx] : State.switchStates[idx];
+        const swNum = dedicated ? idx + 1 : this.swNumber(idx);
+        await Api.get(`/api/input?sw=${swNum}&val=${cur ? 0 : 1}`);
+        Status.refresh();
+    },
+
+    swTitle(num) {
+        const label = Names.label(num);
+        return 'switch ' + num + (label ? ' — ' + label : '') + ' (Shift+click to label)';
+    },
+
+    relabel() {
+        for (let i = 0; i < 64; i++)
+            document.getElementById(`sw-${i}`).title = this.swTitle(this.swNumber(i));
+    },
+
+    update(data) {
+        for (let i = 0; i < 64; i++) {
+            const col = Math.floor(i / 8), bit = i % 8;
+            const swActive = parseInt(data.switches.substr(col * 2, 2), 16) & (1 << bit);
+            const lampActive = parseInt(data.lamps.substr(col * 2, 2), 16) & (1 << bit);
+            State.switchStates[i] = !!swActive;
+            document.getElementById(`lamp-${i}`).className = 'matrix-dot' + (lampActive ? ' active-lamp' : '');
+            const sw = document.getElementById(`sw-${i}`);
+            sw.className = 'matrix-dot sw-clickable' + (swActive ? ' active-sw' : '');
+            sw.title = this.swTitle(this.swNumber(i));
+        }
+        for (let i = 0; i < 32; i++)
+            document.getElementById(`sol-${i}`).className = 'matrix-dot' + ((data.solenoids & (1 << i)) ? ' active-sol' : '');
+        for (let i = 0; i < 8; i++) {
+            const active = data.dedicated & (1 << i);
+            State.dedicatedStates[i] = !!active;
+            document.getElementById(`ded-${i}`).className = 'matrix-dot sw-clickable' + (active ? ' active-sw' : '');
+        }
+    },
+};
+
+/* ================= DMD / segments ================= */
+
+const Dmd = {
+    async refresh() {
+        if (document.getElementById('dmd-container').style.display === 'none') return;
+        if (!document.getElementById('auto-refresh-dmd').checked) return;
+        const info = await Api.get('/api/dmd/info').catch(() => null);
+        if (!info || info.status === 'error') return;
+        State.dmd.w = info.width;
+        State.dmd.h = info.height;
+        document.getElementById('dmd-res').textContent = `${info.width}x${info.height}`;
+        const buf = await Api.getRaw('/api/dmd/raw').catch(() => null);
+        if (!buf) return;
+        const canvas = document.getElementById('dmd-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = State.dmd.w;
+        canvas.height = State.dmd.h;
+        const img = ctx.createImageData(State.dmd.w, State.dmd.h);
+        const bytes = new Uint8Array(buf);
+        for (let i = 0; i < bytes.length; i++) {
+            const o = i * 4;
+            img.data[o] = 255; img.data[o + 1] = 150; img.data[o + 2] = 0;
+            img.data[o + 3] = bytes[i];
+        }
+        ctx.putImageData(img, 0, 0);
+    },
+};
+
+/* Authoritative Williams 16-segment pixel maps, decoded from PinMAME's
+ * core segment table (segSize1C[0], the 20x15 anti-aliased glyph grid).
+ * SEG_BITS[bit] holds SEG_ROWS row masks; column c of a row is lit when
+ * (mask >> c) & 1. Rendering the actual footprint guarantees the display
+ * matches PinMAME exactly, including all 16 segments, comma and period. */
+const SEG_COLS = 15, SEG_ROWS = 20;
+const SEG_BITS = [
+    [4094, 1980, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 3, 3, 3, 3, 3, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 6, 6, 6, 6, 6, 4, 4, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7920, 16376, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 8192, 8192, 24576, 24576, 24576, 24576, 24576, 16384, 16384, 0, 0],
+    [0, 4096, 4096, 12288, 12288, 12288, 12288, 12288, 8192, 8192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 7680, 8064, 7680, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2],
+    [0, 2048, 2048, 1024, 1024, 512, 512, 256, 256, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 64, 64, 192, 192, 192, 192, 192, 128, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 2, 4, 8, 8, 16, 32, 32, 64, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 60, 252, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 64, 64, 32, 32, 16, 16, 8, 8, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 128, 384, 384, 384, 384, 384, 256, 256, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 256, 512, 512, 1024, 2048, 2048, 4096, 8192, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0],
+];
+
+const Segments = {
+    PIX: 2,          /* pixel size */
+    GAP: 6,          /* gap between characters */
+    ROWGAP: 10,      /* gap between the two display rows */
+
+    /* Precompute the OR of all bit maps once so unlit segments can be shown
+     * faintly (like a real display's ghost segments). */
+    _allMask: null,
+    all() {
+        if (this._allMask) return this._allMask;
+        const m = new Array(SEG_ROWS).fill(0);
+        for (let b = 0; b < 16; b++)
+            for (let r = 0; r < SEG_ROWS; r++) m[r] |= SEG_BITS[b][r];
+        this._allMask = m;
+        return m;
+    },
+
+    drawGrid(ctx, ox, oy, mask, color) {
+        ctx.fillStyle = color;
+        for (let r = 0; r < SEG_ROWS; r++) {
+            const bits = mask[r];
+            if (!bits) continue;
+            /* PinMAME blits the glyph LSB-first from the right edge (see
+             * drawChar in core.c: *(--line) starting at col+cols), so the
+             * decoded bit c maps to screen column (SEG_COLS-1-c). */
+            for (let c = 0; c < SEG_COLS; c++)
+                if ((bits >> c) & 1)
+                    ctx.fillRect(ox + (SEG_COLS - 1 - c) * this.PIX, oy + r * this.PIX, this.PIX, this.PIX);
+        }
+    },
+
+    render(hex) {
+        const canvas = document.getElementById('seg-canvas');
+        const ctx = canvas.getContext('2d');
+        const cw = SEG_COLS * this.PIX + this.GAP;
+        const ch = SEG_ROWS * this.PIX;
+        canvas.width = 16 * cw + 8;
+        canvas.height = 2 * ch + this.ROWGAP + 8;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const off = this.all();
+        for (let i = 0; i < 32; i++) {
+            const val = parseInt(hex.substr(i * 4, 4), 16);
+            if (isNaN(val)) continue;
+            const ox = (i % 16) * cw + 4;
+            const oy = Math.floor(i / 16) * (ch + this.ROWGAP) + 4;
+            /* dim ghost of every segment, then the lit ones on top */
+            this.drawGrid(ctx, ox, oy, off, '#3a0f0a');
+            const lit = new Array(SEG_ROWS).fill(0);
+            for (let b = 0; b < 16; b++)
+                if (val & (1 << b))
+                    for (let r = 0; r < SEG_ROWS; r++) lit[r] |= SEG_BITS[b][r];
+            this.drawGrid(ctx, ox, oy, lit, '#ff5030');
+        }
+    },
+};
+
+/* ================= CPU registers ================= */
+
+const Cpu = {
+    async refresh() {
+        const data = await Api.get('/api/debugger/state');
+        if (!data.cpus) return;
+        const container = document.getElementById('cpu-panels-container');
+        container.innerHTML = '';
+        data.cpus.forEach((cpu) => {
+            if (cpu.id === 0 && State.lastPC !== cpu.pc) {
+                State.lastPC = cpu.pc;
+                if (State.paused && document.getElementById('dasm-follow').checked) {
+                    Dasm.followPC();
+                    Stack.refresh();
+                }
+            }
+            const panel = document.createElement('div');
+            panel.className = 'panel';
+            panel.style.margin = '5px 10px';
+            const isM6809 = cpu.a !== undefined;
+            let html = `<h2>CPU ${cpu.id} (${isM6809 ? 'M6809' : 'ADSP'})</h2><div class="reg-grid">`;
+            /* show the currently paged ROM bank next to PC (WPC main CPU) */
+            if (isM6809 && cpu.id === 0 && State.wpcBank !== undefined && State.wpcBank !== -1) {
+                const inWindow = cpu.pc >= 0x4000 && cpu.pc < 0x8000;
+                html += `<div class="reg-item" style="border-left-color:#dcaa4f;" ` +
+                        `title="currently paged ROM bank (0x4000-0x7FFF window)${inWindow ? '' : ' — PC is not in the banked window'}">` +
+                        `<span class="reg-label">BANK</span>` +
+                        `<div><span class="reg-val" style="color:${inWindow ? '#dcaa4f' : '#858585'};">` +
+                        `${Fmt.hex(State.wpcBank, 2)}</span></div></div>`;
+            }
+            for (const [reg, val] of Object.entries(cpu)) {
+                if (reg === 'id' || reg === 'type') continue;
+                html += `<div class="reg-item"><span class="reg-label">${reg.toUpperCase()}</span>` +
+                        `<div><span class="reg-val" title="click to edit" ` +
+                        `onclick="Cpu.editReg(${cpu.id},'${reg}',${val})">${Fmt.hex(val, 2)}</span>` +
+                        `<span class="reg-dec">${val}</span></div></div>`;
+            }
+            html += '</div>';
+            if (cpu.cc !== undefined) {
+                const flags = ['C', 'V', 'Z', 'N', 'I', 'H', 'F', 'E'];
+                html += '<div class="flags-grid">' + flags
+                    .map((f, i) => `<div class="flag ${(cpu.cc & (1 << i)) ? 'active' : ''}">${f}</div>`)
+                    .reverse().join('') + '</div>';
+            }
+            panel.innerHTML = html;
+            container.appendChild(panel);
+        });
+    },
+
+    async editReg(cpuId, reg, current) {
+        const v = prompt(`Set ${reg.toUpperCase()} (hex):`, Fmt.hex(current, 2));
+        if (v === null) return;
+        const num = Fmt.parseHex(v);
+        if (isNaN(num)) { Toast.show('Invalid hex value'); return; }
+        const name = (reg === 'sp') ? 'SP' : reg.toUpperCase();
+        await Api.get(`/api/debugger/state/write?cpu=${cpuId}&reg=${name}&val=${num.toString(16)}`);
+        this.refresh();
+    },
+};
+
+/* ================= disassembler ================= */
+
+const Dasm = {
+    async refresh() {
+        const addr = Fmt.parseHex(document.getElementById('dasm-addr').value);
+        if (isNaN(addr)) { Toast.show('Disassembler: invalid address'); return; }
+        const cpu = document.getElementById('dasm-cpu').value || 0;
+        const bankStr = document.getElementById('dasm-bank').value.trim();
+        let url = `/api/debugger/dasm?addr=${addr.toString(16)}&lines=24&before=6&cpu=${cpu}`;
+        if (bankStr) {
+            const bank = Fmt.parseHex(bankStr);
+            if (isNaN(bank)) { Toast.show('Disassembler: invalid bank'); return; }
+            url += `&bank=${bank.toString(16)}`;
+        }
+        const data = await Api.get(url);
+        const table = document.getElementById('dasm-view');
+        table.innerHTML = '';
+        if (!data.lines) return;
+        /* pull coverage flags for this window if the overlay is enabled */
+        if (data.lines.length) {
+            const first = parseInt(data.lines[0].addr);
+            const last = parseInt(data.lines[data.lines.length - 1].addr);
+            await Coverage.loadWindow(first, Math.max(1, last - first + 4), data.bank === -1 ? undefined : data.bank);
+        }
+        data.lines.forEach((line) => {
+            const row = table.insertRow();
+            row.className = 'dasm-row';
+            const a = parseInt(line.addr);
+            if (Coverage.covered(a)) row.style.background = '#12351a';
+            if (a === State.lastPC && (data.bank === -1 || data.bank === State.wpcBank))
+                row.classList.add('current-pc');
+            const c1 = row.insertCell();
+            c1.className = 'addr-col';
+            c1.textContent = Fmt.hex(a, 4);
+            row.insertCell().textContent = line.text;
+            row.title = 'click: use as breakpoint address';
+            row.onclick = () => {
+                document.getElementById('bp-addr').value = Fmt.hex(a, 4);
+                document.getElementById('bp-bank').value = data.bank === -1 ? '' : Fmt.hex(data.bank, 2);
+            };
+        });
+    },
+
+    followPC() {
+        document.getElementById('dasm-addr').value = Fmt.hex(State.lastPC, 4);
+        document.getElementById('dasm-bank').value = '';
+        this.refresh();
+    },
+};
+
+/* ================= callstack ================= */
+
+const Stack = {
+    async refresh() {
+        const data = await Api.get('/api/debugger/callstack');
+        const view = document.getElementById('callstack-view');
+        view.innerHTML = '';
+        if (!data.stack) return;
+        [...data.stack].reverse().forEach((e) => {
+            const div = document.createElement('div');
+            div.className = 'stack-item';
+            div.textContent = `${Fmt.hex(e.caller, 4)} → ${Fmt.hex(e.receiver, 4)}  (ret ${Fmt.hex(e.pc, 4)}, bank ${Fmt.hex(e.bank, 2)})`;
+            div.title = `A=${Fmt.hex(e.a, 2)} B=${Fmt.hex(e.b, 2)} X=${Fmt.hex(e.x, 4)} Y=${Fmt.hex(e.y, 4)} U=${Fmt.hex(e.u, 4)} S=${Fmt.hex(e.s, 4)}`;
+            div.onclick = () => {
+                document.getElementById('dasm-addr').value = Fmt.hex(e.receiver, 4);
+                document.getElementById('dasm-bank').value = Fmt.hex(e.bank, 2);
+                Dasm.refresh();
+            };
+            view.appendChild(div);
+        });
+    },
+};
+
+/* ================= message log ================= */
+
+const Log = {
+    lastCount: -1,
+    async refresh() {
+        const data = await Api.get('/api/debugger/messages');
+        if (data.messages.length === this.lastCount) return;
+        this.lastCount = data.messages.length;
+        const log = document.getElementById('console-log');
+        log.innerHTML = '';
+        data.messages.forEach((m) => {
+            const div = document.createElement('div');
+            div.className = 'console-line';
+            div.textContent = '> ' + m;
+            log.appendChild(div);
+        });
+        log.scrollTop = log.scrollHeight;
+    },
+};
+
+/* ================= break-/watchpoints ================= */
+
+const Points = {
+    async refresh() {
+        const data = await Api.get('/api/debugger/points');
+        const list = document.getElementById('point-list');
+        list.innerHTML = '';
+        data.breakpoints.forEach((p) => {
+            if (p.temp) return; /* temporary run-to/step points are internal */
+            const meta = [];
+            if (p.cond) meta.push(p.cond);
+            if (p.ignore) meta.push('ign ' + p.ignore);
+            meta.push('hits ' + p.hits);
+            const label = (p.bank !== -1 ? `BP ${Fmt.hex(p.bank, 2)}:` : 'BP ') + Fmt.hex(p.addr, 4);
+            this.row(list, 'bp', p.idx, label, p.enabled, meta.join(' | '));
+        });
+        data.watchpoints.forEach((p) => {
+            const bankPrefix = (p.bank !== undefined && p.bank !== -1) ? `${Fmt.hex(p.bank, 2)}:` : '';
+            const label = `WP(${['', 'R', 'W', 'RW'][p.mode]}) ${bankPrefix}${Fmt.hex(p.addr, 4)}` + (p.len > 1 ? `+${p.len}` : '');
+            this.row(list, 'wp', p.idx, label, p.enabled, p.cond ? 'if ' + p.cond : '');
+        });
+    },
+
+    row(container, type, idx, label, enabled, meta) {
+        const div = document.createElement('div');
+        div.className = 'point-item';
+        div.innerHTML =
+            `<span class="${enabled ? '' : 'point-disabled'}">${label}` +
+            (meta ? `<span class="point-meta">${meta}</span>` : '') + '</span>' +
+            `<div><button class="btn" onclick="Points.action('toggle','${type}',${idx})">${enabled ? 'Off' : 'On'}</button>` +
+            `<button class="btn btn-danger" onclick="Points.action('delete','${type}',${idx})">X</button></div>`;
+        container.appendChild(div);
+    },
+
+    async action(cmd, type, idx) {
+        await Api.get(`/api/debugger/points?cmd=${cmd}&type=${type}&idx=${idx}`);
+        this.refresh();
+    },
+
+    async add(type) {
+        if (type === 'bp') {
+            const addr = Fmt.parseHex(document.getElementById('bp-addr').value);
+            if (isNaN(addr)) { Toast.show('Breakpoint: invalid address'); return; }
+            let url = `/api/debugger/breakpoints?cmd=add&addr=${addr.toString(16)}`;
+            const bankStr = document.getElementById('bp-bank').value.trim();
+            if (bankStr) {
+                const bank = Fmt.parseHex(bankStr);
+                if (isNaN(bank)) { Toast.show('Breakpoint: invalid bank'); return; }
+                url += `&bank=${bank.toString(16)}`;
+            }
+            const cond = document.getElementById('bp-cond').value.trim();
+            if (cond) url += '&cond=' + encodeURIComponent(cond);
+            const ign = document.getElementById('bp-ignore').value.trim();
+            if (ign) url += '&ignore=' + parseInt(ign, 10);
+            await Api.get(url);
+        } else {
+            const addr = Fmt.parseHex(document.getElementById('wp-addr').value);
+            if (isNaN(addr)) { Toast.show('Watchpoint: invalid address'); return; }
+            const len = parseInt(document.getElementById('wp-len').value, 10) || 1;
+            const mode = document.getElementById('wp-mode').value;
+            let url = `/api/debugger/watchpoints?cmd=add&addr=${addr.toString(16)}&len=${len}&mode=${mode}`;
+            const bankStr = document.getElementById('wp-bank').value.trim();
+            if (bankStr) {
+                const bank = Fmt.parseHex(bankStr);
+                if (isNaN(bank)) { Toast.show('Watchpoint: invalid bank'); return; }
+                url += `&bank=${bank.toString(16)}`;
+            }
+            const cond = document.getElementById('wp-cond').value;
+            if (cond) {
+                const v = Fmt.parseHex(document.getElementById('wp-val').value);
+                if (isNaN(v)) { Toast.show('Watchpoint: condition needs a hex value'); return; }
+                url += `&cond=${cond}&val=${v.toString(16)}`;
+            }
+            await Api.get(url);
+        }
+        this.refresh();
+        Log.refresh();
+    },
+};
+
+/* ================= memory hex editor ================= */
+
+const Mem = {
+    lastAddr: -1,
+    lastData: null,
+    searchPos: -1,
+
+    async refresh(keepDiff) {
+        const addr = Fmt.parseHex(document.getElementById('mem-addr').value);
+        if (isNaN(addr)) { Toast.show('Memory: invalid address'); return; }
+        const size = parseInt(document.getElementById('mem-size').value, 10) || 256;
+        const cpu = document.getElementById('mem-cpu').value || 0;
+        let url = `/api/debugger/memory?addr=${addr.toString(16)}&size=${size}&cpu=${cpu}`;
+        const bankStr = document.getElementById('mem-bank').value.trim();
+        if (bankStr) {
+            const bank = Fmt.parseHex(bankStr);
+            if (isNaN(bank)) { Toast.show('Memory: invalid bank'); return; }
+            url += `&bank=${bank.toString(16)}`;
+        }
+        const data = await Api.get(url);
+        if (!data.data) return;
+        const prev = (keepDiff && this.lastAddr === data.addr) ? this.lastData : null;
+        this.lastAddr = data.addr;
+        this.lastData = data.data;
+        this.render(data, prev, cpu);
+    },
+
+    render(data, prev, cpu) {
+        const table = document.getElementById('hex-view');
+        table.innerHTML = '';
+        let row = null, ascii = '';
+        data.data.forEach((byte, i) => {
+            if (i % 16 === 0) {
+                if (row) { const c = row.insertCell(); c.className = 'hex-ascii'; c.textContent = ascii; }
+                row = table.insertRow();
+                ascii = '';
+                const aCell = row.insertCell();
+                aCell.className = 'addr-col';
+                aCell.textContent = Fmt.hex(data.addr + i, 4);
+            }
+            const c = row.insertCell();
+            c.className = 'hex-byte';
+            if (prev && prev[i] !== undefined && prev[i] !== byte) c.classList.add('hex-changed');
+            c.textContent = Fmt.hex(byte, 2);
+            c.title = '0x' + Fmt.hex(data.addr + i, 4);
+            c.onclick = () => this.editByte(c, data.addr + i, byte, cpu);
+            ascii += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
+        });
+        if (row) {
+            while (row.cells.length < 17) row.insertCell();
+            row.cells[16].className = 'hex-ascii';
+            row.cells[16].textContent = ascii;
+        }
+    },
+
+    /* inline single-byte editor: Enter commits, Escape cancels */
+    editByte(cell, addr, oldVal, cpu) {
+        if (cell.querySelector('input')) return;
+        const input = document.createElement('input');
+        input.className = 'hex-edit';
+        input.maxLength = 2;
+        input.value = Fmt.hex(oldVal, 2);
+        cell.textContent = '';
+        cell.appendChild(input);
+        input.focus();
+        input.select();
+        const done = (commit) => {
+            if (commit) {
+                const v = Fmt.parseHex(input.value);
+                if (isNaN(v) || v > 255) { Toast.show('Invalid byte value'); }
+                else {
+                    Api.get(`/api/debugger/memory/write?addr=${addr.toString(16)}&val=${v.toString(16)}&cpu=${cpu}`)
+                        .then(() => this.refresh(true));
+                    return;
+                }
+            }
+            cell.textContent = Fmt.hex(oldVal, 2);
+        };
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') done(true);
+            else if (e.key === 'Escape') done(false);
+            e.stopPropagation();
+        };
+        input.onblur = () => done(false);
+    },
+
+    page(dir) {
+        const addr = Fmt.parseHex(document.getElementById('mem-addr').value) || 0;
+        const size = parseInt(document.getElementById('mem-size').value, 10) || 256;
+        const next = Math.max(0, addr + dir * size);
+        document.getElementById('mem-addr').value = Fmt.hex(next, 4);
+        this.refresh();
+    },
+
+    nvramView() {
+        document.getElementById('mem-addr').value = '0000';
+        document.getElementById('mem-size').value = 512;
+        document.getElementById('mem-cpu').value = 0;
+        this.refresh();
+    },
+
+    async search(fromAddr) {
+        const pat = document.getElementById('search-pat').value.trim();
+        if (!pat) return;
+        const start = fromAddr !== undefined ? fromAddr : (Fmt.parseHex(document.getElementById('mem-addr').value) || 0);
+        const cpu = document.getElementById('mem-cpu').value || 0;
+        const data = await Api.get(
+            `/api/debugger/memory/find?addr=${start.toString(16)}&size=32768&pattern=${pat}&cpu=${cpu}`);
+        if (data.status === 'ok') {
+            this.searchPos = data.found;
+            const hexAddr = Fmt.hex(data.found, 4);
+            document.getElementById('mem-addr').value = hexAddr;
+            document.getElementById('dasm-addr').value = hexAddr;
+            this.refresh();
+            Dasm.refresh();
+            Toast.show('Pattern found at 0x' + hexAddr, true);
+        } else {
+            Toast.show('Pattern not found');
+        }
+    },
+
+    searchNext() {
+        if (this.searchPos >= 0) this.search(this.searchPos + 1);
+        else this.search();
+    },
+};
+
+/* ================= watches ================= */
+
+const Watches = {
+    items: JSON.parse(localStorage.getItem('pinmame-watches') || '[]'),
+
+    persist() { localStorage.setItem('pinmame-watches', JSON.stringify(this.items)); },
+
+    add() {
+        const addr = Fmt.parseHex(document.getElementById('watch-addr').value);
+        if (isNaN(addr)) { Toast.show('Watch: invalid address'); return; }
+        const len = Math.min(16, Math.max(1, parseInt(document.getElementById('watch-len').value, 10) || 1));
+        this.items.push({ addr, len });
+        this.persist();
+        this.refresh();
+    },
+
+    remove(i) {
+        this.items.splice(i, 1);
+        this.persist();
+        this.refresh();
+    },
+
+    async refresh() {
+        const list = document.getElementById('watch-list');
+        if (!this.items.length) { list.innerHTML = '<div class="hint">no watches</div>'; return; }
+        const parts = await Promise.all(this.items.map((w) =>
+            Api.get(`/api/debugger/memory?addr=${w.addr.toString(16)}&size=${w.len}`).catch(() => null)));
+        list.innerHTML = '';
+        this.items.forEach((w, i) => {
+            const div = document.createElement('div');
+            div.className = 'watch-item';
+            const bytes = parts[i] && parts[i].data ? parts[i].data.map((b) => Fmt.hex(b, 2)).join(' ') : '??';
+            div.innerHTML = `<span>0x${Fmt.hex(w.addr, 4)}+${w.len}</span><span style="color:#dcdcaa;">${bytes}</span>` +
+                `<button class="btn btn-danger" onclick="Watches.remove(${i})">X</button>`;
+            list.appendChild(div);
+        });
+    },
+};
+
+/* ================= memory trace ================= */
+
+const Trace = {
+    async add() {
+        const addr = Fmt.parseHex(document.getElementById('trace-addr').value);
+        if (isNaN(addr)) { Toast.show('Trace: invalid address'); return; }
+        let url = `/api/debugger/trace?cmd=add&addr=${addr.toString(16)}`;
+        const bankStr = document.getElementById('trace-bank').value.trim();
+        if (bankStr) {
+            const bank = Fmt.parseHex(bankStr);
+            if (isNaN(bank)) { Toast.show('Trace: invalid bank'); return; }
+            url += `&bank=${bank.toString(16)}`;
+        }
+        await Api.get(url);
+        this.refresh();
+    },
+
+    async clear() {
+        await Api.get('/api/debugger/trace?cmd=clear');
+        this.refresh();
+    },
+
+    async refresh() {
+        const data = await Api.get('/api/debugger/trace');
+        document.getElementById('trace-watched').textContent =
+            data.watched.length
+                ? 'traced: ' + data.watched.map((w) => (w.bank !== -1 ? Fmt.hex(w.bank, 2) + ':' : '') + Fmt.hex(w.addr, 4)).join(', ')
+                : 'no traced addresses';
+        const table = document.getElementById('trace-view');
+        table.innerHTML = '<tr><th>CPU</th><th>PC</th><th>Bank</th><th>Access</th><th>Addr</th><th>Len</th></tr>';
+        [...data.logs].reverse().slice(0, 200).forEach((e) => {
+            const row = table.insertRow();
+            row.insertCell().textContent = e.cpu;
+            const pcCell = row.insertCell();
+            pcCell.textContent = Fmt.hex(e.pc, 4);
+            pcCell.style.color = '#9cdcfe';
+            row.insertCell().textContent = e.bank === -1 ? '-' : Fmt.hex(e.bank, 2);
+            row.insertCell().textContent = e.write ? 'W' : 'R';
+            row.insertCell().textContent = Fmt.hex(e.adr, 4);
+            row.insertCell().textContent = e.len;
+        });
+    },
+};
+
+/* ================= code instrumentation ================= */
+
+const Instrument = {
+    async add() {
+        const addr = Fmt.parseHex(document.getElementById('instr-addr').value);
+        if (isNaN(addr)) { Toast.show('Instrument: invalid address'); return; }
+        let url = `/api/debugger/instrument?cmd=add&addr=${addr.toString(16)}`;
+        const bankStr = document.getElementById('instr-bank').value.trim();
+        if (bankStr) {
+            const bank = Fmt.parseHex(bankStr);
+            if (isNaN(bank)) { Toast.show('Instrument: invalid bank'); return; }
+            url += `&bank=${bank.toString(16)}`;
+        }
+        await Api.get(url);
+        this.refresh();
+    },
+    async clear() { await Api.get('/api/debugger/instrument?cmd=clear'); this.refresh(); },
+    async refresh() {
+        const data = await Api.get('/api/debugger/instrument').catch(() => null);
+        if (!data) return;
+        const table = document.getElementById('instr-view');
+        table.innerHTML = '<tr><th>Addr</th><th>Bank</th><th>Hits</th></tr>';
+        data.points.forEach((p) => {
+            const row = table.insertRow();
+            const a = row.insertCell();
+            a.textContent = Fmt.hex(p.addr, 4);
+            a.style.color = '#9cdcfe';
+            a.style.cursor = 'pointer';
+            a.onclick = () => { document.getElementById('dasm-addr').value = Fmt.hex(p.addr, 4); Dasm.refresh(); };
+            row.insertCell().textContent = p.bank === -1 ? 'any' : Fmt.hex(p.bank, 2);
+            row.insertCell().textContent = p.count;
+        });
+    },
+};
+
+/* ================= value scan ================= */
+
+const Scan = {
+    async newScan() {
+        const addr = Fmt.parseHex(document.getElementById('scan-addr').value);
+        if (isNaN(addr)) { Toast.show('Scan: invalid address'); return; }
+        const size = parseInt(document.getElementById('scan-size').value, 10) || 2048;
+        const cpu = document.getElementById('scan-cpu').value || 0;
+        const data = await Api.get(`/api/debugger/scan?cmd=new&addr=${addr.toString(16)}&size=${size}&cpu=${cpu}`);
+        this.render(data);
+    },
+    async filter(op) {
+        let url = `/api/debugger/scan?cmd=filter&op=${op}`;
+        if (op === 'eq') {
+            const v = Fmt.parseHex(document.getElementById('scan-val').value);
+            if (isNaN(v)) { Toast.show('Scan: invalid value'); return; }
+            url += `&val=${v.toString(16)}`;
+        }
+        const data = await Api.get(url);
+        this.render(data);
+    },
+    render(data) {
+        document.getElementById('scan-count').textContent = data.count + ' candidates';
+        const table = document.getElementById('scan-view');
+        table.innerHTML = '<tr><th>Addr</th><th>Value</th></tr>';
+        data.results.forEach((r) => {
+            const row = table.insertRow();
+            const a = row.insertCell();
+            a.textContent = Fmt.hex(r.addr, 4);
+            a.style.color = '#9cdcfe';
+            a.style.cursor = 'pointer';
+            a.onclick = () => { document.getElementById('mem-addr').value = Fmt.hex(r.addr, 4); Mem.refresh(); };
+            row.insertCell().textContent = Fmt.hex(r.val, 2) + ' (' + r.val + ')';
+        });
+    },
+};
+
+/* ================= object monitor & action log ================= */
+
+const Monitor = {
+    async add() {
+        const type = document.getElementById('mon-type').value;
+        const id = parseInt(document.getElementById('mon-id').value, 10);
+        if (isNaN(id)) { Toast.show('Monitor: invalid number'); return; }
+        const brk = document.getElementById('mon-break').checked ? '&break=1' : '';
+        await Api.get(`/api/monitor?cmd=add&type=${type}&id=${id}${brk}`);
+        this.refresh();
+    },
+    async clear() { await Api.get('/api/monitor?cmd=clear'); this.refresh(); },
+    async clearLog() { await Api.get('/api/monitor/log?cmd=clear'); this.refresh(); },
+    async refresh() {
+        const mon = await Api.get('/api/monitor').catch(() => null);
+        if (mon) {
+            document.getElementById('mon-list').textContent =
+                mon.monitors.length ? 'monitoring: ' + mon.monitors.map((m) => `${m.type}${m.id}`).join(', ') : 'nothing monitored';
+        }
+        const log = await Api.get('/api/monitor/log').catch(() => null);
+        if (!log) return;
+        const table = document.getElementById('action-view');
+        table.innerHTML = '<tr><th>Time</th><th>Object</th><th>&rarr;</th></tr>';
+        [...log.actions].reverse().slice(0, 200).forEach((a) => {
+            const row = table.insertRow();
+            row.insertCell().textContent = (a.t / 1000).toFixed(3) + 's';
+            const o = row.insertCell();
+            let label = `${a.type} ${a.id}`;
+            if (a.type === 'switch') { const l = Names.label(a.id); if (l) label += ' (' + l + ')'; }
+            o.textContent = label;
+            const v = row.insertCell();
+            v.textContent = a.val ? 'ON' : 'off';
+            v.style.color = a.val ? '#4ec94e' : '#888';
+        });
+    },
+};
+
+/* ================= save states ================= */
+
+const SaveState = {
+    async save() {
+        const slot = document.getElementById('ss-slot').value.trim();
+        if (!slot) { Toast.show('Save state: enter a slot name'); return; }
+        await Api.get(`/api/debugger/savestate?cmd=save&slot=${encodeURIComponent(slot)}`);
+        Toast.show(`Saved slot '${slot}'`, true);
+        this.refresh();
+    },
+    async load() {
+        const slot = document.getElementById('ss-slot').value.trim();
+        if (!slot) return;
+        await Api.get(`/api/debugger/savestate?cmd=load&slot=${encodeURIComponent(slot)}`);
+        Toast.show(`Loaded slot '${slot}'`, true);
+        refreshAfterHalt();
+    },
+    async del(slot) {
+        await Api.get(`/api/debugger/savestate?cmd=delete&slot=${encodeURIComponent(slot)}`);
+        this.refresh();
+    },
+    async diff() {
+        const slot = document.getElementById('ss-slot').value.trim();
+        if (!slot) { Toast.show('Save state: enter a slot name'); return; }
+        const d = await Api.get(`/api/debugger/savestate/diff?a=${encodeURIComponent(slot)}`);
+        const box = document.getElementById('ss-diff');
+        if (d.count < 0) { box.innerHTML = '<div class="hint">slot not found</div>'; return; }
+        box.innerHTML = `<div class="hint">${d.count} RAM bytes changed since '${slot}' (showing ${d.diffs.length}):</div>` +
+            '<table class="trace-table"><tr><th>Addr</th><th>saved</th><th>&rarr; live</th></tr>' +
+            d.diffs.map((x) =>
+                `<tr><td style="color:#9cdcfe;cursor:pointer" onclick="document.getElementById('mem-addr').value='${Fmt.hex(x.addr, 4)}';Mem.refresh()">${Fmt.hex(x.addr, 4)}</td>` +
+                `<td>${Fmt.hex(x.a, 2)}</td><td>${Fmt.hex(x.b, 2)}</td></tr>`).join('') + '</table>';
+    },
+    async refresh() {
+        const data = await Api.get('/api/debugger/savestate').catch(() => null);
+        if (!data) return;
+        const list = document.getElementById('ss-list');
+        if (!data.slots.length) { list.innerHTML = '<div class="hint">no saved states</div>'; return; }
+        list.innerHTML = '';
+        data.slots.forEach((s) => {
+            const div = document.createElement('div');
+            div.className = 'point-item';
+            div.innerHTML = `<span>${s.name} <span class="point-meta">PC ${Fmt.hex(s.pc, 4)}</span></span>` +
+                `<div><button class="btn" onclick="document.getElementById('ss-slot').value='${s.name}';SaveState.load()">Load</button>` +
+                `<button class="btn btn-danger" onclick="SaveState.del('${s.name}')">X</button></div>`;
+            list.appendChild(div);
+        });
+    },
+};
+
+/* ================= DMD recorder ================= */
+
+const DmdRec = {
+    frames: [],   /* {t, pixels: Uint8Array} */
+    w: 0, h: 0,
+    pos: 0,
+    playing: false,
+    timer: null,
+
+    async toggle() {
+        const info = await Api.get('/api/debugger/dmdrec').catch(() => null);
+        if (!info) return;
+        if (info.recording) await Api.get('/api/debugger/dmdrec?cmd=stop');
+        else await Api.get('/api/debugger/dmdrec?cmd=start');
+        this.refresh();
+    },
+    async clear() {
+        await Api.get('/api/debugger/dmdrec?cmd=clear');
+        this.frames = [];
+        this.pos = 0;
+        this.draw();
+        this.refresh();
+    },
+    async refresh() {
+        const info = await Api.get('/api/debugger/dmdrec').catch(() => null);
+        if (!info) return;
+        document.getElementById('dmdrec-toggle').textContent = info.recording ? '■ Stop' : '● Record';
+        document.getElementById('dmdrec-toggle').className = 'btn ' + (info.recording ? 'btn-danger' : 'btn-success');
+        document.getElementById('dmdrec-status').textContent =
+            `${info.recording ? 'recording' : 'idle'} — ${info.count} frames buffered (${info.width}x${info.height})`;
+    },
+    async loadFrames() {
+        const buf = await Api.getRaw('/api/debugger/dmdrec/data').catch(() => null);
+        if (!buf) { Toast.show('No frames recorded'); return; }
+        const dv = new DataView(buf);
+        const count = dv.getUint32(0, true);
+        this.w = dv.getUint32(4, true);
+        this.h = dv.getUint32(8, true);
+        const fsize = this.w * this.h;
+        this.frames = [];
+        let off = 12;
+        for (let i = 0; i < count; i++) {
+            const t = dv.getUint32(off, true); off += 4;
+            this.frames.push({ t, pixels: new Uint8Array(buf, off, fsize) });
+            off += fsize;
+        }
+        this.pos = 0;
+        const scrub = document.getElementById('dmdrec-scrub');
+        scrub.max = Math.max(0, count - 1);
+        scrub.value = 0;
+        scrub.oninput = () => { this.pos = parseInt(scrub.value, 10); this.draw(); };
+        Toast.show(`Loaded ${count} frames`, true);
+        this.draw();
+    },
+    draw() {
+        const canvas = document.getElementById('dmdrec-canvas');
+        const ctx = canvas.getContext('2d');
+        if (!this.frames.length) { canvas.width = 128; canvas.height = 32; ctx.clearRect(0, 0, 128, 32); return; }
+        canvas.width = this.w;
+        canvas.height = this.h;
+        const f = this.frames[this.pos];
+        const img = ctx.createImageData(this.w, this.h);
+        for (let i = 0; i < f.pixels.length; i++) {
+            const o = i * 4;
+            img.data[o] = 255; img.data[o + 1] = 150; img.data[o + 2] = 0;
+            img.data[o + 3] = f.pixels[i];
+        }
+        ctx.putImageData(img, 0, 0);
+        document.getElementById('dmdrec-frame').textContent =
+            `${this.pos + 1} / ${this.frames.length}  (+${((f.t - this.frames[0].t) / 1000).toFixed(2)}s)`;
+        document.getElementById('dmdrec-scrub').value = this.pos;
+    },
+    playToggle() {
+        if (this.playing) { clearInterval(this.timer); this.playing = false; document.getElementById('dmdrec-play').innerHTML = '▶ Play'; return; }
+        if (!this.frames.length) return;
+        this.playing = true;
+        document.getElementById('dmdrec-play').innerHTML = '❙❙ Pause';
+        this.timer = setInterval(() => {
+            this.pos = (this.pos + 1) % this.frames.length;
+            this.draw();
+        }, 50);
+    },
+};
+
+/* ================= execution trace ================= */
+
+const ExecTrace = {
+    async toggle() {
+        const d = await Api.get('/api/debugger/exectrace').catch(() => null);
+        if (!d) return;
+        await Api.get('/api/debugger/exectrace?cmd=' + (d.enabled ? 'stop' : 'start'));
+        this.refreshStatus();
+    },
+    async clear() { await Api.get('/api/debugger/exectrace?cmd=clear'); this.load(); },
+    async refreshStatus() {
+        const d = await Api.get('/api/debugger/exectrace').catch(() => null);
+        if (!d) return;
+        const btn = document.getElementById('et-toggle');
+        btn.textContent = d.enabled ? '■ Stop' : '● Record';
+        btn.className = 'btn ' + (d.enabled ? 'btn-danger' : 'btn-success');
+        document.getElementById('et-status').textContent = `${d.enabled ? 'recording' : 'idle'} — ${d.count} instr buffered`;
+    },
+    async load() {
+        const d = await Api.get('/api/debugger/exectrace');
+        this.refreshStatus();
+        const table = document.getElementById('et-view');
+        table.innerHTML = '<tr><th>#</th><th>Bank</th><th>PC</th><th>A</th><th>B</th><th>X</th></tr>';
+        /* newest last; show the most recent 300 */
+        const rows = d.trace.slice(-300);
+        rows.forEach((e, i) => {
+            const row = table.insertRow();
+            row.insertCell().textContent = d.trace.length - rows.length + i;
+            row.insertCell().textContent = e.bank === -1 ? '-' : Fmt.hex(e.bank, 2);
+            const pc = row.insertCell();
+            pc.textContent = Fmt.hex(e.pc, 4);
+            pc.style.color = '#9cdcfe';
+            pc.style.cursor = 'pointer';
+            pc.onclick = () => { document.getElementById('dasm-addr').value = Fmt.hex(e.pc, 4); Dasm.refresh(); };
+            row.insertCell().textContent = Fmt.hex(e.a, 2);
+            row.insertCell().textContent = Fmt.hex(e.b, 2);
+            row.insertCell().textContent = Fmt.hex(e.x, 4);
+        });
+        table.scrollTop = table.scrollHeight;
+    },
+};
+
+/* ================= code coverage ================= */
+
+const Coverage = {
+    executedMap: {},   /* addr(hex string) -> executed, for the current dasm window */
+
+    async toggle() {
+        const d = await Api.get('/api/debugger/coverage').catch(() => null);
+        if (!d) return;
+        await Api.get('/api/debugger/coverage?cmd=' + (d.enabled ? 'stop' : 'start'));
+        this.refresh();
+    },
+    async clear() { await Api.get('/api/debugger/coverage?cmd=clear'); this.refresh(); Dasm.refresh(); },
+    async refresh() {
+        const d = await Api.get('/api/debugger/coverage').catch(() => null);
+        if (!d) return;
+        const btn = document.getElementById('cov-toggle');
+        btn.textContent = d.enabled ? '■ Stop' : '● Record';
+        btn.className = 'btn ' + (d.enabled ? 'btn-danger' : 'btn-success');
+        document.getElementById('cov-status').textContent = `${d.enabled ? 'recording' : 'idle'} — ${d.executed} addresses executed`;
+    },
+    overlayOn() { return document.getElementById('cov-overlay').checked; },
+    /* fetch executed flags for a dasm window and index by address */
+    async loadWindow(addr, size, bank) {
+        this.executedMap = {};
+        if (!this.overlayOn()) return;
+        let url = `/api/debugger/coverage?addr=${addr.toString(16)}&size=${size}`;
+        if (bank !== undefined && bank !== null && !isNaN(bank)) url += `&bank=${bank.toString(16)}`;
+        const d = await Api.get(url).catch(() => null);
+        if (!d || !d.executed) return;
+        d.executed.forEach((v, i) => { if (v) this.executedMap[addr + i] = 1; });
+    },
+    covered(a) { return this.executedMap[a] === 1; },
+};
+
+/* ================= tracepoints ================= */
+
+const Tracepoints = {
+    async add() {
+        const addr = Fmt.parseHex(document.getElementById('tp-addr').value);
+        if (isNaN(addr)) { Toast.show('Tracepoint: invalid address'); return; }
+        let url = `/api/debugger/tracepoints?cmd=add&addr=${addr.toString(16)}`;
+        const bankStr = document.getElementById('tp-bank').value.trim();
+        if (bankStr) {
+            const bank = Fmt.parseHex(bankStr);
+            if (isNaN(bank)) { Toast.show('Tracepoint: invalid bank'); return; }
+            url += `&bank=${bank.toString(16)}`;
+        }
+        await Api.get(url);
+        this.refresh();
+    },
+    async clear() { await Api.get('/api/debugger/tracepoints?cmd=clear'); this.refresh(); },
+    async refresh() {
+        const d = await Api.get('/api/debugger/tracepoints').catch(() => null);
+        if (!d) return;
+        document.getElementById('tp-points').textContent = d.points.length
+            ? 'points: ' + d.points.map((p) => (p.bank !== -1 ? Fmt.hex(p.bank, 2) + ':' : '') + Fmt.hex(p.addr, 4) + ' (' + p.hits + ')').join(', ')
+            : 'no tracepoints';
+        const table = document.getElementById('tp-view');
+        table.innerHTML = '<tr><th>Bank</th><th>PC</th><th>A</th><th>B</th><th>X</th><th>Y</th><th>U</th><th>S</th><th>CC</th></tr>';
+        [...d.log].reverse().slice(0, 200).forEach((t) => {
+            const row = table.insertRow();
+            row.insertCell().textContent = t.bank === -1 ? '-' : Fmt.hex(t.bank, 2);
+            const pc = row.insertCell();
+            pc.textContent = Fmt.hex(t.pc, 4);
+            pc.style.color = '#9cdcfe';
+            row.insertCell().textContent = Fmt.hex(t.a, 2);
+            row.insertCell().textContent = Fmt.hex(t.b, 2);
+            row.insertCell().textContent = Fmt.hex(t.x, 4);
+            row.insertCell().textContent = Fmt.hex(t.y, 4);
+            row.insertCell().textContent = Fmt.hex(t.u, 4);
+            row.insertCell().textContent = Fmt.hex(t.s, 4);
+            row.insertCell().textContent = Fmt.hex(t.cc, 2);
+        });
+    },
+};
+
+/* ================= classic CLI ================= */
+
+const Cli = {
+    async run() {
+        const inp = document.getElementById('cli-cmd');
+        if (!inp.value) return;
+        await Api.get('/api/debugger/command?cmd=' + encodeURIComponent(inp.value));
+        inp.value = '';
+        refreshAfterHalt();
+        Dasm.refresh();
+    },
+};
+
+/* ================= keyboard shortcuts ================= */
+
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    switch (e.key) {
+        case 'F8':
+            Dbg.control(State.paused ? 'resume' : 'pause');
+            break;
+        case 'F10':
+            Dbg.control('stepover');
+            break;
+        case 'F11':
+            Dbg.control(e.shiftKey ? 'stepout' : 'step');
+            break;
+        default:
+            return;
+    }
+    e.preventDefault();
+});
+
+document.getElementById('cli-cmd').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') Cli.run();
+});
+
+/* ================= boot ================= */
+
+Matrix.init();
+Names.load();
+Events.start();
+Poll.start();
+Status.refresh();
+Cpu.refresh();
+Mem.refresh();
+Dasm.refresh();
+Points.refresh();
+Watches.refresh();
+Trace.refresh();
+Instrument.refresh();
+Monitor.refresh();
+SaveState.refresh();
+DmdRec.refresh();
+ExecTrace.refreshStatus();
+Coverage.refresh();
+Tracepoints.refresh();
+
+/* fold the new panels into the adaptive polling cadence */
+Poll.loop(() => { Instrument.refresh(); Monitor.refresh(); DmdRec.refresh(); },
+    () => !State.online ? 8000 : (State.paused ? 4000 : 1500));
+Poll.loop(() => { ExecTrace.refreshStatus(); Coverage.refresh(); Tracepoints.refresh(); },
+    () => !State.online ? 8000 : (State.paused ? 3000 : 2000));
+</script>
+</body>
+</html>

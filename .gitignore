@@ -4,3 +4,10 @@ build/
 /.vs/
 /obj/
 /release/
+
+# Remote debugger (src/remote_debug): generated header + test/run artifacts
+/src/remote_debug/ui_html.h
+/src/remote_debug/*.bin
+/src/remote_debug/suite_log.txt
+/src/remote_debug/test_log.txt
+/src/remote_debug/sse_log.txt

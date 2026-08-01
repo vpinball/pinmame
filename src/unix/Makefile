@@ -119,7 +119,7 @@ $(MY_TARGET): $(OBJS)
 	$(CC_COMPILE) $(RANLIB) $@
 
 $(OBJDIRS):
-	-mkdir $@
+	-mkdir -p $@
 
 $(OBJDIR)/%.o: %.c xmame.h
 	$(CC_COMMENT) @echo 'Compiling src/unix/$< ...'

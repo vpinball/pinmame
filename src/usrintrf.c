@@ -14,6 +14,9 @@
 #include <math.h>
 #include "ui_text.h"
 #include "state.h"
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#endif
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
@@ -2295,6 +2298,9 @@ int showcopyright(struct mame_bitmap *bitmap)
 
 	do
 	{
+#ifdef REMOTE_DEBUG
+		if (remote_debug_should_quit()) return 1;
+#endif
 		erase_screen(bitmap);
 		ui_drawbox(bitmap,0,0,uirotwidth,uirotheight);
 		ui_displaymessagewindow(bitmap,buf);
@@ -2608,6 +2614,9 @@ int showgamewarnings(struct mame_bitmap *bitmap)
 		done = 0;
 		do
 		{
+#ifdef REMOTE_DEBUG
+			if (remote_debug_should_quit()) return 1;
+#endif
 			erase_screen(bitmap);
 			ui_drawbox(bitmap,0,0,uirotwidth,uirotheight);
 			ui_displaymessagewindow(bitmap,buf);
@@ -2638,6 +2647,9 @@ int showgameinfo(struct mame_bitmap *bitmap)
 
 	while (displaygameinfo(bitmap,0) == 1)
 	{
+#ifdef REMOTE_DEBUG
+		if (remote_debug_should_quit()) return 1;
+#endif
 		update_video_and_audio();
 	}
 
@@ -3739,6 +3751,10 @@ void ui_display_fps(struct mame_bitmap *bitmap)
 
 int handle_user_interface(struct mame_bitmap *bitmap)
 {
+#ifdef REMOTE_DEBUG
+	if (remote_debug_should_quit())
+		return 1;
+#endif
 	/* if the user pressed F12, save the screen to a file */
 	if (input_ui_pressed(IPT_UI_SNAPSHOT))
 		save_screen_snapshot(bitmap);

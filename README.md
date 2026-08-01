@@ -43,6 +43,8 @@ info on using MAME related functions.
 All standard MAME "functions" do work the same way in PinMAME (profiler, debugger, cheats,
 record/playback, command line switches etc.).
 
+This fork includes an **Advanced Remote Debugger** module, providing a thread-safe REST API and a high-fidelity web dashboard for headless or remote analysis. Features include real-time DMD/Alphanumeric rendering, hardware breakpoints, memory pattern search, and interactive matrix visualization. See [src/remote_debug/README.md](src/remote_debug/README.md) for full documentation and API reference.
+
 In addition, there is special compile time support for the [P-ROC](http://www.pinballcontrollers.com),
 to drive (at least) real WPC machines with PinMAME/P-ROC, [PPUC](https://github.com/PPUC) and LISY
 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs, to drive real pinball machines via
@@ -155,3 +157,45 @@ For more information, please refer to [simulation.txt](release/simulation.txt) f
 # Note from the PinMAME Development team
 
 We're working hard to improve this great emulator, and welcome your feedback!! Please do not hesitate to contact us with questions, bug reports, suggestions, code patches, whatever!
+
+## Remote Debugger & Headless Mode
+
+This version of PinMAME includes a powerful **Remote Debugger** extension designed for deep hardware reversing and headless operation (e.g., in Docker or CI environments).
+
+### Key Features
+- **Headless Execution**: Run PinMAME without X11/SDL windows using the `-headless` flag.
+- **REST API**: Control every aspect of the emulator via a thread-safe HTTP interface.
+- **Web Dashboard**: Modern, low-latency UI for live DMD rendering, memory editing, and disassembling.
+- **WPC Specialization**: Real-time visualization of Lamp, Switch, and Solenoid matrices, including WPC ROM banking.
+- **Classic CLI**: Support for MAME-style debugger commands (`BP`, `WP`, `G`, `S`, etc.) via the web console.
+
+### Building
+To build with the Remote Debugger extension:
+```bash
+make -f makefile.unix REMOTE_DEBUG=1
+```
+
+### Usage
+Start PinMAME in headless mode with the debugger active:
+```bash
+./xpinmamed.x11 -headless -startpaused -httpport 8935 taf_l7
+```
+- `-headless`: Disables video/input windows.
+- `-startpaused`: Halts the CPU at the first instruction.
+- `-httpport <port>`: Sets the API/UI port (default: 8935).
+
+### Advanced Features
+- **Memory Search**: High-speed hex pattern matching via the UI or `GET /api/debugger/memory/find`.
+- **Cabinet & Service Panel**: Interactive buttons for COIN, START, and Service functions (+, -, ESC, ENT) with real-time feedback.
+- **Immediate Execution Halt**: Breakpoints and watchpoints now trigger an instant CPU abort for precise instruction-level debugging.
+- **WPC Matrix Visualizer**: Live 8x8 grids for Lamps and Switches, plus 32-bit Solenoid tracking.
+
+### Verification
+A comprehensive test suite is included to verify all API and core debugger features. To run the tests:
+```bash
+cd src/remote_debug
+./test_suite.sh
+```
+
+### Usage
+See src/remote/debug/README.md

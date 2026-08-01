@@ -109,7 +109,14 @@ extern int debug_trace_delay;	/* set to 0 to force a screen update */
  * if MAME_DEBUG is not specified, so a CPU core can simply add
  * CALL_MAME_DEBUG; before executing an instruction
  ***************************************************************************/
-#define CALL_MAME_DEBUG if( mame_debug ) MAME_Debug()
+#ifdef REMOTE_DEBUG
+extern void remote_debug_breakpoint_hook(void);
+#define REMOTE_DEBUG_HOOK remote_debug_breakpoint_hook()
+#else
+#define REMOTE_DEBUG_HOOK
+#endif
+
+#define CALL_MAME_DEBUG { REMOTE_DEBUG_HOOK; if( mame_debug ) MAME_Debug(); }
 
 #ifndef DECL_SPEC
 #define DECL_SPEC
@@ -137,7 +144,12 @@ void dbg_put_screen_char (int ch, int attr, int x, int y);
 
 #else	/* MAME_DEBUG */
 
+#ifdef REMOTE_DEBUG
+extern void remote_debug_breakpoint_hook(void);
+#define CALL_MAME_DEBUG remote_debug_breakpoint_hook()
+#else
 #define CALL_MAME_DEBUG
+#endif
 #define debugger_idle 0
 
 #endif  /* !MAME_DEBUG */
