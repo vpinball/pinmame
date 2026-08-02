@@ -256,7 +256,7 @@ static struct
    } displays[8];
    unsigned int onDisplaySrcChangedId, getDisplaySrcId;
 
-   unsigned int onAudioCmdId, onDmdCmdId;
+   unsigned int onAudioCmdId, onDmdCmdId, onConsoleDataId;
 
    unsigned int onGetMachineStateId;
 
@@ -609,7 +609,7 @@ extern "C" void libpinmame_update_display(const struct core_dispLayout* layout, 
 static void OnSoundCommand(void* userData)
 {
    PinMAMEChildBoardEventMsg* msg = static_cast<PinMAMEChildBoardEventMsg*>(userData);
-	if (msgLocals.registered)
+	if (msgLocals.msgApi != nullptr && msgLocals.registered)
 		msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onAudioCmdId, msg);
 	delete msg;
 }
@@ -619,7 +619,7 @@ extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd)
 	if (_p_Config->cb_OnSoundCommand)
 		(*(_p_Config->cb_OnSoundCommand))(boardNo, cmd, _p_userData);
 
-	if (msgLocals.msgApi != NULL && msgLocals.registered)
+	if (msgLocals.msgApi != nullptr && msgLocals.registered)
 	{
       PinMAMEChildBoardEventMsg* msg = new PinMAMEChildBoardEventMsg();
 		msg->boardNo = static_cast<unsigned int>(boardNo);
@@ -632,12 +632,30 @@ extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd)
  * libpinmame_forward_console_data
  ******************************************************/
 
+static void OnConsoleDataCommand(void* userData)
+{
+   PinMAMEConsoleDataMsg* msg = static_cast<PinMAMEConsoleDataMsg*>(userData);
+   if (msgLocals.msgApi != nullptr && msgLocals.registered)
+      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onConsoleDataId, msg);
+   
+   delete[] msg->data;
+   delete msg;
+}
+
 extern "C" void libpinmame_forward_console_data(void* p_data, int size)
 {
-	if (!_p_Config->cb_OnConsoleDataUpdated)
-		return;
+	if (_p_Config->cb_OnConsoleDataUpdated)
+   	(*(_p_Config->cb_OnConsoleDataUpdated))(p_data, size, _p_userData);
 
-	(*(_p_Config->cb_OnConsoleDataUpdated))(p_data, size, _p_userData);
+   if (p_data != nullptr && size > 0 && msgLocals.msgApi != nullptr && msgLocals.registered)
+   {
+      auto* pending = new PinMAMEConsoleDataMsg();
+      pending->size = static_cast<uint32_t>(size);
+      auto* data = new uint8_t[pending->size];
+      memcpy(data, p_data, pending->size);
+      pending->data = data;
+      msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, OnConsoleDataCommand, pending);
+   }
 }
 
 /******************************************************
@@ -2007,6 +2025,7 @@ static void SetupMsgApi()
    msgLocals.onGetControllersId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
    msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
    msgLocals.onDmdCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_DISPLAY_CMD);
+   msgLocals.onConsoleDataId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA);
    msgLocals.onGetMachineStateId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetControllersId, OnGetControllers, nullptr);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
@@ -2483,6 +2502,7 @@ static void ReleaseMsgApi()
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetControllersId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
 
    if (msgLocals.nDisplays > 0)
