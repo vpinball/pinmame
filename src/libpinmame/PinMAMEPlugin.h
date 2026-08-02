@@ -57,12 +57,20 @@ typedef struct PinMAMEMachineStateMsg
 
 // Game events
 //
-// Some PinMAME driver exposes communication between the main controller board (CPU node) and the child nodes (Sound and/or DMD board) through these messages
+// Some PinMAME driver exposes communication between the main controller board (CPU node) and the child nodes (Sound & DMD board)
+// and SAM driver exposes console data through these event messages
 #define PMPI_EVT_ON_AUDIO_CMD                "OnAudioCmd"
 #define PMPI_EVT_ON_DISPLAY_CMD              "OnDisplayCmd"
+#define PMPI_EVT_ON_CONSOLE_DATA             "OnConsoleData"
 
 typedef struct PinMAMEChildBoardEventMsg
 {
    uint32_t boardNo;
    uint32_t cmd;
 } PinMAMEChildBoardEventMsg;
+
+typedef struct PinMAMEConsoleDataMsg
+{
+   uint32_t size;
+   uint8_t* data;
+} PinMAMEConsoleDataMsg;
