@@ -2302,12 +2302,12 @@ static void SetupMsgApi()
          // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
          if (core_gameData->gen & GEN_ALLWPC)
          {
-            addDevice(fmtString("GPIO #1 (WPC J111.1)"), PMPI_GROUP_SOLENOID | 0x0001, 29, LPM_DM_CORE_SOL2, 0x0100, byteOrFloat);
-            addDevice(fmtString("GPIO #2 (WPC J111.2)"), PMPI_GROUP_SOLENOID | 0x0001, 30, LPM_DM_CORE_SOL2, 0x0200, byteOrFloat);
+            addPhysSol(fmtString("GPIO #1 (WPC J111.1)"), PMPI_GROUP_SOLENOID | 0x0001, 29, LPM_DM_CORE_SOL2, 0x0100, 28);
+            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), PMPI_GROUP_SOLENOID | 0x0001, 30, LPM_DM_CORE_SOL2, 0x0200, 29);
             if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) // Pre Fliptronic real GameOn
-               addDevice(fmtString("WPC GameOn"), PMPI_GROUP_SOLENOID | 0x0010, 31, LPM_DM_CORE_SOL2, 0x0400, byteOrFloat);
+               addPhysSol(fmtString("WPC GameOn"), PMPI_GROUP_SOLENOID | 0x0010, 31, LPM_DM_CORE_SOL2, 0x0400, 30);
             else // Fliptronic ROM controlled flippers, with (sadly) an overlay of J111 third output and the fake GameOn (which is only available if fastflip is defined)
-               addDevice(fmtString("GPIO #3 (WPC J111.3) or WPC Fake GameOn (FastFlip)"), PMPI_GROUP_SOLENOID | 0x0010, 31, LPM_DM_CORE_SOL2, 0x0400, byteOrFloat);
+               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), PMPI_GROUP_SOLENOID | 0x0010, 31, LPM_DM_CORE_SOL2, 0x0400, 30);
          }
          // 29..32, solenoid outputs from driver board
          // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
