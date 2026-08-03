@@ -474,6 +474,10 @@ WPC_ROMSTART(taf,i4,  "addam_i4.rom",0x80000, CRC(687f04eb) SHA1(08fb6bd7a4743c6
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
+WPC_ROMSTART(taf,i4bs,"addam_i4bs.rom",0x80000, CRC(C5B9A1E4) SHA1(5b8035786bdc7e5e0863395343167f62d7da15a8))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
 WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,CRC(0cc62fa5) SHA1(295bd8c483132c8fe7c38646847067041fc98b2f))
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
@@ -492,7 +496,8 @@ WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d8
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
 
-WPC_ROMSTART(tafg,i3bs,"cpu-u6i3bs.rom",0x80000,CRC(92C6ABBC) SHA1(55c0c4ede80da0b7085947085c9356b0c0c6c584))
+//WPC_ROMSTART(tafg,i3bs,"cpu-u6i3bs.rom",0x80000,CRC(92C6ABBC) SHA1(55c0c4ede80da0b7085947085c9356b0c0c6c584)) // first revision
+WPC_ROMSTART(tafg,i3bs,"cpu-u6i3bs.rom",0x80000,CRC(AA5212D3) SHA1(99a36be924e14eb6a5d48c762eec273fd92266e0))   // second rev
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
@@ -538,13 +543,14 @@ CORE_CLONEDEF(taf,d4,l5,   "Addams Family, The (D-4 LED Ghost Fix)",1992,"Bally"
 // L-5 Prototype L-6 missing
 CORE_CLONEDEF(taf,l7,l5,   "Addams Family, The (L-5 Prototype L-7)",1992,"Bally",wpc_mFliptronS,0) // internal name was apparently L-7, but later-on they released the official L-5 that includes all the changes up to the internal L-5 prototype named L-8
 CORE_CLONEDEF(taf,d7,l5,   "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAF L-7 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 33). It also includes the "No Ghosting" patch
+CORE_CLONEDEF(taf,d7bs,l5, "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAF L-7 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 33). It also includes the "No Ghosting" patch // note that this one is not on the same level/correctness as taf_i4bs, as it was released earlier on!
 // L-5 Prototype L-8 missing
 CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1993,"Bally",wpc_mFliptronS,0) // Released only to a German distributor
 CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 // H-3 missing (or is it actually the one of the Gold Edition below? -> unlikely though)
 CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1994,"Bally",wpc_mFliptronS,0) //!! make this the GAMEDEF instead of L-5, apparently this is the recommended version with additional home settings? Its definetly the newest known one for TAF
 CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,i4bs,l5, "Addams Family, The (I-4 LED Ghost Fix + Ballsaver MOD)",2026,"Bally / RedBall",wpc_mFliptronS,0) // patch of TAF H-4 to add a ball saver feature, which can be configured via Adjustment A.2 (setting 33). It also includes the "No Ghosting" patch
 // 6.0H missing
 // 7.0 missing
 

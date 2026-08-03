@@ -22,6 +22,8 @@ Fixed debugger lockup when tabbing backwards
 Fixed broken fast frames UI/registry option (VPinMAME, to enable faster boot/startup) and nothrottle (PinMAME(32), e.g. for benchmarking)
  also added the "fastframes" command line option to PinMAME(32)
 
+Fixed in libPinMAME: Handle aliases properly
+
 VS2026 build support
 
 Get rid of BasicBitmap external dependency
@@ -75,7 +77,7 @@ Gottlieb: renamed Monte Carlo (German) to German rev.1
           renamed Monte Carlo (German Millions option, Free Play) to German rev.1 Millions option, Free Play
 
 Clones:
-Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD)
+Addams Family, The (L-5 Prototype D-7 LED Ghost Fix + Ballsaver MOD), (H-4/I-4 LED Ghost Fix + Ballsaver MOD)
 Addams Family Special Collectors Edition / Gold, The (H-3/I-3 LED Ghost Fix + Ballsaver MOD)
 Adventures of Rocky and Bullwinkle and Friends 1.03 (Italian), 1.10 (Belgian) (note that both dumps are incomplete, the italian set may be correct though, but the belgian one misses the display, so does not feature belgian text)
 Al's Garage Band Goes On A World Tour R09a (maybe newest version that exists? at least the newest one for the prototype/version-A/double-lock variants of the game)

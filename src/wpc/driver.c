@@ -2920,6 +2920,7 @@ DRIVER(taf,d7)          //                  Addams Family, The (D-7) (Prototype 
 DRIVER(taf,d7bs)        //          04/26   Addams Family, The (D-7) (Prototype L-5) Ballsave MOD + LED Ghost Fix
 DRIVER(taf,h4)          //          05/94 B Addams Family, The (H-4)
 DRIVER(taf,i4)          //                  Addams Family, The (I-4) LED Ghost Fix
+DRIVER(taf,i4bs)        //          07/26   Addams Family, The (I-4) Ballsave MOD + LED Ghost Fix
 DRIVER(gw,pb)           //WPC-504:  03/92 W Getaway: High Speed II, The (P-B)
 DRIVER(gw,pc)           //          03/92 W Getaway: High Speed II, The (P-C)
 DRIVER(gw,pd)           //                  Getaway: High Speed II, The (P-D) LED Ghost Fix
@@ -3103,7 +3104,7 @@ DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition T
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  ??/94 B Addams Family Special Collectors Edition / Gold, The (Home version)
 DRIVER(tafg,i3)         //                  Addams Family Special Collectors Edition / Gold, The (Home version, LED Ghost Fix)
-DRIVER(tafg,i3bs)       //                  Addams Family Special Collectors Edition / Gold, The (Home version, Ballsave MOD + LED Ghost Fix)
+DRIVER(tafg,i3bs)       //          07/26   Addams Family Special Collectors Edition / Gold, The (Home version, Ballsave MOD + LED Ghost Fix)
 DRIVER(tafg,lx3)        //          10/94 B Addams Family Special Collectors Edition / Gold, The (LX-3)
 DRIVER(tafg,dx3)        //                  Addams Family Special Collectors Edition / Gold, The (DX-3) LED Ghost Fix
 DRIVER(tafg,la2)        //          10/94 B Addams Family Special Collectors Edition / Gold, The (LA-2)
