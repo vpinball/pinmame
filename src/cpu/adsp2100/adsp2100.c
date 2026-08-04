@@ -135,6 +135,8 @@
 #define CHIP_TYPE_ADSP2101	1
 #define CHIP_TYPE_ADSP2105	2
 #define CHIP_TYPE_ADSP2115	3
+/* appended rather than inserted so that the existing "chip_type >= CHIP_TYPE_ADSP2101" tests keep working unchanged */
+#define CHIP_TYPE_ADSP2104	4
 
 
 /*###################################################################################################
@@ -319,6 +321,11 @@ INLINE void WWORD_DATA(UINT32 addr, UINT32 data)
 
 #ifdef PINMAME
 extern int WPC_gWPC95;
+/* Set by the DCS sound board init.  The hand-written decoder speedups below
+   are transcriptions of the WPC-era ADSP-2105 routines; they must not run on
+   other DCS variants (i.e. Pinball 2000), whose ROMs can hit the same opcode
+   patterns with a completely different memory layout. */
+extern int DCS_useSpeedup;
 extern READ16_HANDLER(dcs_latch_r);
 extern WRITE16_HANDLER(dcs_latch_w);
 #endif /* PINMAME */
@@ -377,6 +384,15 @@ INLINE void set_core_2105(void)
 INLINE void set_core_2115(void)
 {
 	chip_type = CHIP_TYPE_ADSP2115;
+	mstat_mask = 0x7f;
+	imask_mask = 0x3f;
+}
+#endif
+
+#if (HAS_ADSP2104)
+INLINE void set_core_2104(void)
+{
+	chip_type = CHIP_TYPE_ADSP2104;
 	mstat_mask = 0x7f;
 	imask_mask = 0x3f;
 }
@@ -588,6 +604,7 @@ void adsp2100_reset(void *param)
 		case CHIP_TYPE_ADSP2101:
 		case CHIP_TYPE_ADSP2105:
 		case CHIP_TYPE_ADSP2115:
+		case CHIP_TYPE_ADSP2104:
 			adsp2100.pc = 0;
 			break;
 
@@ -800,7 +817,8 @@ int adsp2100_execute(int cycles)
 		// instruction fetch
 		op = ROPCODE();
 #ifdef WPCDCSSPEEDUP
-{ /* The current sample is always in I7 */
+if (!DCS_useSpeedup) { /* Pin2K: none of the WPC idle/decoder heuristics apply */ }
+else { /* The current sample is always in I7 */
   /* the busy loop always starts with: */
   /* 0d02a3  AR = I7 */
   if (op == 0x0d02a3) {
@@ -817,7 +835,8 @@ int adsp2100_execute(int cycles)
   else
     adsp2100.icount += 1;
 }
-{
+if (!DCS_useSpeedup) { /* Pin2K: run the DSP code as-is, no WPC decoder HLE */ }
+else {
   /* The decompression for the 1994+ games starts after the following sequence: */
   /* 000000 NOP */
   /* 0c0080 DIS */
@@ -1141,7 +1160,7 @@ resume_from_speedup:
 				 *   slightly different format from later games, requiring a different
 				 *   version of the native decoder routine.
 				 */
-				if (op == 0x378000)
+				if (op == 0x378000 && DCS_useSpeedup)
 				{
 					static unsigned char signature[] = {
 						0xe1, 0x8f, 0x37, 0x00,
@@ -2186,6 +2205,130 @@ void adsp2105_load_boot_data(data8_t *srcdata, data32_t *dstdata)
 
 #endif
 
+
+#if (HAS_ADSP2104)
+/**************************************************************************
+ * ADSP2104 section
+ *
+ * Programming model is identical to the 2105; the differences are the
+ * on-chip memory sizes.  Relevant here is the boot page: the 2104 has
+ * 512x24 program RAM, so a boot page holds 512 words instead of 1K.
+ * Used by the Pinball 2000 DCS2 sound board.
+ **************************************************************************/
+
+static const UINT8 adsp2104_reg_layout[] =
+{
+	ADSP2100_PC,		ADSP2100_AX0,	ADSP2100_MX0,	-1,
+	ADSP2100_CNTR, 		ADSP2100_AX1,	ADSP2100_MX1,	-1,
+	ADSP2100_MSTAT, 	ADSP2100_AY0,	ADSP2100_MY0,	-1,
+	ADSP2100_SSTAT, 	ADSP2100_AY1,	ADSP2100_MY1,	-1,
+	ADSP2100_PX, 		ADSP2100_AR,	ADSP2100_MR0,	-1,
+	ADSP2100_PCSP, 		ADSP2100_AF,	ADSP2100_MR1,	-1,
+	ADSP2100_CNTRSP, 	ADSP2100_SI,	ADSP2100_MR2,	-1,
+	ADSP2100_STATSP, 	ADSP2100_SE,	ADSP2100_MF,	-1,
+	ADSP2100_LOOPSP, 	ADSP2100_SB,	100,			-1,
+	ADSP2100_IMASK,		ADSP2100_SR0,	100,			-1,
+	ADSP2100_ICNTL,		ADSP2100_SR1,	100,			-1,
+	ADSP2100_I0,		ADSP2100_L0,	ADSP2100_M0,	-1,
+	ADSP2100_I1,		ADSP2100_L1,	ADSP2100_M1,	-1,
+	ADSP2100_I2,		ADSP2100_L2,	ADSP2100_M2,	-1,
+	ADSP2100_I3,		ADSP2100_L3,	ADSP2100_M3,	-1,
+	ADSP2100_I4,		ADSP2100_L4,	ADSP2100_M4,	-1,
+	ADSP2100_I5,		ADSP2100_L5,	ADSP2100_M5,	-1,
+	ADSP2100_I6,		ADSP2100_L6,	ADSP2100_M6,	-1,
+	ADSP2100_I7,		ADSP2100_L7,	ADSP2100_M7,	0
+};
+
+static const UINT8 adsp2104_win_layout[] =
+{
+	 0, 0,30,20,	/* register window (top rows) */
+	31, 0,48,14,	/* disassembler window (left colums) */
+	 0,21,30, 1,	/* memory #1 window (right, upper middle) */
+	31,15,48, 7,	/* memory #2 window (right, lower middle) */
+	 0,23,80, 1,	/* command line window (bottom rows) */
+};
+
+void adsp2104_init(void)
+{
+	adsp2100_init();
+}
+
+void adsp2104_reset(void *param)
+{
+	set_core_2104();
+	adsp2100_reset(param);
+}
+
+void adsp2104_exit(void)
+{
+	adsp2100_exit();
+	sport_rx_callback = 0;
+	sport_tx_callback = 0;
+}
+int adsp2104_execute(int cycles) { return adsp2100_execute(cycles); }
+unsigned adsp2104_get_context(void *dst) { return adsp2100_get_context(dst); }
+void adsp2104_set_context(void *src) { set_core_2104(); adsp2100_set_context(src); }
+unsigned adsp2104_get_reg(int regnum) { return adsp2100_get_reg(regnum); }
+void adsp2104_set_reg(int regnum, unsigned val) { adsp2100_set_reg(regnum,val); }
+void adsp2104_set_irq_line(int irqline, int state) { adsp2100_set_irq_line(irqline,state); }
+void adsp2104_set_irq_callback(int (*callback)(int irqline)) { adsp2100_set_irq_callback(callback); }
+const char *adsp2104_info(void *context, int regnum)
+{
+	switch( regnum )
+	{
+		case CPU_INFO_NAME: return "ADSP2104";
+		case CPU_INFO_VERSION: return "1.0";
+		case CPU_INFO_REG_LAYOUT: return (const char*)adsp2104_reg_layout;
+		case CPU_INFO_WIN_LAYOUT: return (const char*)adsp2104_win_layout;
+	}
+	return adsp2100_info(context,regnum);
+}
+
+unsigned adsp2104_dasm(char *buffer, unsigned pc)
+{
+#ifdef MAME_DEBUG
+	extern unsigned dasm2100(char *, unsigned);
+	return dasm2100(buffer, pc);
+#else
+	sprintf(buffer, "$%06X", RWORD_PGM(pc));
+	return 1;
+#endif
+}
+
+void adsp2104_set_rx_callback(RX_CALLBACK cb)
+{
+	sport_rx_callback = cb;
+}
+
+void adsp2104_set_tx_callback(TX_CALLBACK cb)
+{
+	sport_tx_callback = cb;
+}
+
+void adsp2104_load_boot_data(data8_t *srcdata, data32_t *dstdata)
+{
+	/* see how many words we need to copy */
+#ifdef LSB_FIRST
+	UINT32 size = 8 * (srcdata[3] + 1), i;
+#else
+	UINT32 size = 8 * (srcdata[2] + 1), i;
+#endif
+	/* the 2104 only has 512 words of on-chip program RAM, so a boot page
+	   cannot exceed that even if the header claims more */
+	if (size > ADSP2104_BOOT_PAGE_WORDS)
+		size = ADSP2104_BOOT_PAGE_WORDS;
+	for (i = 0; i < size; i++)
+	{
+#ifdef LSB_FIRST
+		UINT32 opcode = (srcdata[i*4+0] << 16) | (srcdata[i*4+1] << 8) | srcdata[i*4+2];
+#else
+		UINT32 opcode = (srcdata[i*4+1] << 16) | (srcdata[i*4+0] << 8) | srcdata[i*4+3];
+#endif
+		ADSP2100_WRPGM(&dstdata[i], opcode);
+	}
+}
+
+#endif
 
 #if (HAS_ADSP2115)
 /**************************************************************************

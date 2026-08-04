@@ -68,6 +68,7 @@ struct sndbrdIntf {
 #define SNDBRD_DCS     SNDBRD_TYPE( 3,0)
 #define SNDBRD_DCSB    SNDBRD_TYPE( 3,1)
 #define SNDBRD_DCS95   SNDBRD_TYPE( 3,2)
+#define SNDBRD_DCSP2K  SNDBRD_TYPE( 3,3) // Pinball 2000 DCS2 (ADSP-2104 + SDRC)
 #define SNDBRD_BY32    SNDBRD_TYPE( 4,0)
 #define SNDBRD_BY50    SNDBRD_BY32
 #define SNDBRD_BY51    SNDBRD_TYPE( 5,0)

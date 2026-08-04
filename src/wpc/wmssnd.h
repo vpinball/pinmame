@@ -291,6 +291,54 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_dcs1);
 /* DCS on WPC95 audio/visual board */
 extern MACHINE_DRIVER_EXTERN(wmssnd_dcs2);
 
+/*----------------------------------------------------------------------
+/  Pinball 2000 DCS2 sound board (ADSP-2104 + SDRC ASIC, stereo)
+/
+/  See docs/pin2k_sound.md for how to attach this from a game driver,
+/  and for the list of known gaps.  UNTESTED: there is no Pin2K driver
+/  in-tree yet, so this code has never been run.
+/
+/  Board layout differs from both WPC variants: banking goes through the
+/  SDRC ASIC at data 0x0480-0x0483 instead of discrete bank registers,
+/  the host handshake lives at data 0x0400-0x0413, and the SPORT1
+/  autobuffer carries two interleaved channels.
+/
+/  DCS_P2K_SRAMREGION  32K words of SDRC-banked SRAM (board scratch)
+/  DCS_P2K_SNDREGION   optional separate sound flash.  If a driver does
+/                      not provide it, the SDRC falls back to treating
+/                      DCS_ROMREGION as both boot ROM and sound data
+/                      (the "EPROM" case in the SDRC documentation).
+/----------------------------------------------------------------------*/
+#define DCS_P2K_SRAMREGION (REGION_USER4)
+#define DCS_P2K_SNDREGION  (REGION_SOUND2)
+extern MACHINE_DRIVER_EXTERN(wmssnd_dcs3);
+
+/* Standard regions for a Pin2K sound board.  'size' is the size of the boot
+   ROM region -- the 28F800 sound flash, stored as 16-bit words.  The ADSP
+   boot port is wired to the LOW byte of each flash word, and the board
+   de-interleaves it internally, so load the flash image as-is. */
+#define DCS_P2K_STDREG(size) \
+   SOUNDREGION(ADSP2100_SIZE,  DCS_CPUREGION) \
+   SOUNDREGION(0x8000*2,       DCS_P2K_SRAMREGION) \
+   SOUNDREGION(size,           DCS_ROMREGION)
+
+/*-- 16-bit host interface.
+    The Pin2K protocol is 16-bit end to end, so a driver must use these
+    rather than the 8-bit sndbrd_0_data_w / _data_r / _ctrl_r entry points
+    (those still work, but truncate).  See docs/pin2k_sound.md. --*/
+/*  On real hardware these sit in the PRISM BAR4 window at 0x13000000:
+      byte offset 0, word access - command write / response read
+      byte offset 0, byte access - echo (liveness probe)
+      byte offset 2              - status / flag register
+    Status bits are independent flags: 0x40 ready to accept (always set),
+    0x80 response available, OR'd with whatever was last written there. */
+extern void   dcs_p2k_data_w(UINT16 data);
+extern UINT16 dcs_p2k_data_r(void);
+extern UINT16 dcs_p2k_status_r(void);
+extern void   dcs_p2k_status_w(UINT16 data);
+extern void   dcs_p2k_echo_w(UINT8 data);
+extern UINT8  dcs_p2k_echo_r(void);
+
 #define DCS_STDREG(size) \
    SOUNDREGION(ADSP2100_SIZE, DCS_CPUREGION) \
    SOUNDREGION(0x1000*2,      DCS_BANKREGION) \

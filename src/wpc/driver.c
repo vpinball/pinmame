@@ -3462,4 +3462,9 @@ DRIVERNV(nstrphnf)      //      New Star's Phoenix (French Speech)
 DRIVERNV(nstrphfp)      //      New Star's Phoenix (Free Play)
 DRIVERNV(nstrpffp)      //      New Star's Phoenix (French Speech Free Play)
 
+#ifdef PIN2K_SOUND_TEST
+DRIVERNV(pin2ksnd)      //      Pinball 2000 DCS2 sound board test harness, RFM  (see docs/pin2k_sound.md)
+DRIVERNV(pin2ksw1)      //      Pinball 2000 DCS2 sound board test harness, SWE1
+#endif
+
 #endif /* DRIVER_RECURSIVE */

@@ -3,6 +3,11 @@
 #define WPCDCSSPEEDUP   1 // DCS Speedup added to MAME ADSP emulation
 #define DBG_BPR         1 // BPR command added to debugger
 
+// Add a 'pin2ksnd' (RFM) & 'pin2ksw1' (SWEP1) diagnostic driver: the Pinball 2000 DCS2 sound board on
+// its own, with no game attached, so the board can be booted and exercised before a real Pin2K driver exists.
+// See docs/pin2k_sound.md. Pure development/debugging aid
+//#define PIN2K_SOUND_TEST 1
+
 #if !(defined(VPINMAME) || defined(LIBPINMAME) || defined(LISY_SUPPORT))
  #define ENABLE_MECHANICAL_SAMPLES // maybe remove this at some point completely? not wired up for all machines anyway!
 #endif
@@ -25,6 +30,7 @@
 #define HAS_M6802    1
 #define HAS_ADSP2101 1 // must be defined for 2105 to work
 #define HAS_ADSP2105 1
+#define HAS_ADSP2104 1 // Pinball 2000 DCS2 sound board
 #define HAS_Z80      1
 #define HAS_M6502    1
 #define HAS_M65C02   1

@@ -54,6 +54,7 @@ add_compile_definitions(
    HAS_M6802=1
    HAS_ADSP2101=1
    HAS_ADSP2105=1
+   HAS_ADSP2104=1
    HAS_Z80=1
    HAS_M6502=1
    HAS_M65C02=1

@@ -1,5 +1,5 @@
 #!/bin/bash
-# WPC NVRAM coin-counter finder — a worked reverse-engineering example.
+# WPC NVRAM coin-counter finder - a worked reverse-engineering example.
 #
 # Locates the coin/credit counters in the battery-backed RAM by using the
 # debugger's value-scan (cheat-engine style) rather than a raw dump diff.
@@ -12,7 +12,7 @@
 #
 # After a few rounds only the coin/credit counters survive. Coins are injected
 # as timed pulses (the coin-door column is refreshed by the input port every
-# frame, so a plain on/off level would not stick — a pulse is re-asserted).
+# frame, so a plain on/off level would not stick - a pulse is re-asserted).
 #
 # Usage: ./find_nvram_coins.sh   (run from src/remote_debug)
 # Env overrides: ROM, ROMPATH, PORT, BINARY, ROUNDS.

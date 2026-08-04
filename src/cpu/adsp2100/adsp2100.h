@@ -187,6 +187,51 @@ extern void adsp2105_load_boot_data(data8_t *srcdata, data32_t *dstdata);
 
 #endif
 
+#if (HAS_ADSP2104)
+/**************************************************************************
+ * ADSP2104 section
+ *
+ * Same programming model as the 2105, but with smaller on-chip memories:
+ * 512x24 program RAM (so the boot page is 512 words, not 1K) and 256x16
+ * data RAM.  Used by the Williams/Midway Pinball 2000 DCS2 sound board.
+ **************************************************************************/
+
+#define ADSP2104_DATA_OFFSET    ADSP2100_DATA_OFFSET
+#define ADSP2104_PGM_OFFSET     ADSP2100_PGM_OFFSET
+#define ADSP2104_SIZE           ADSP2100_SIZE
+
+#define adsp2104_icount adsp2100_icount
+
+#define ADSP2104_IRQ0		0		/* IRQ0 */
+#define ADSP2104_SPORT1_RX	0		/* SPORT1 receive IRQ */
+#define ADSP2104_IRQ1		1		/* IRQ1 */
+#define ADSP2104_SPORT1_TX	1		/* SPORT1 transmit IRQ */
+#define ADSP2104_IRQ2		2		/* IRQ2 */
+#define ADSP2104_SPORT0_RX	3		/* SPORT0 receive IRQ */
+#define ADSP2104_SPORT0_TX	4		/* SPORT0 transmit IRQ */
+
+/* on-chip program RAM words that the boot loader fills per page */
+#define ADSP2104_BOOT_PAGE_WORDS 512
+
+extern void adsp2104_init(void);
+extern void adsp2104_reset(void *param);
+extern void adsp2104_exit(void);
+extern int adsp2104_execute(int cycles);
+extern unsigned adsp2104_get_context(void *dst);
+extern void adsp2104_set_context(void *src);
+extern unsigned adsp2104_get_reg(int regnum);
+extern void adsp2104_set_reg(int regnum, unsigned val);
+extern void adsp2104_set_irq_line(int irqline, int state);
+extern void adsp2104_set_irq_callback(int (*callback)(int irqline));
+extern const char *adsp2104_info(void *context, int regnum);
+extern unsigned adsp2104_dasm(char *buffer, unsigned pc);
+extern void adsp2104_set_rx_callback( RX_CALLBACK cb );
+extern void adsp2104_set_tx_callback( TX_CALLBACK cb );
+
+extern void adsp2104_load_boot_data(data8_t *srcdata, data32_t *dstdata);
+
+#endif
+
 #if (HAS_ADSP2115)
 /**************************************************************************
  * ADSP2115 section
