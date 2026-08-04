@@ -216,7 +216,7 @@ int vp_getDIP(int dipBank) {
 /-----------*/
 void vp_setSolMask(int no, int mask) {
 	// TODO This is a horrible B2S compatibility hack - B2S precludes us from adding a proper new setting,
-	// Therefore we use this setting for modulated and PWM settings, also see VPinMame Controller.put_SolMask()
+	// Therefore we use this setting for modulated and PWM settings, also see VPinMAME Controller.put_SolMask()
 	if (1001 <= no && no <= 1200)
 		// Map to solenoid output PWM settings (first solenoid is #1 to #64)
 		vp_setModOutputType(VP_OUT_SOLENOID, no - 1000, mask);
@@ -248,7 +248,7 @@ void vp_setSolMask(int no, int mask) {
 /-----------*/
 int vp_getSolMask(int no) {
 	// TODO This is a horrible B2S compatibility hack - B2S precludes us from adding a proper new setting,
-	// Therefore we use this setting for modulated and PWM settings, also see VPinMame Controller.put_SolMask()
+	// Therefore we use this setting for modulated and PWM settings, also see VPinMAME Controller.put_SolMask()
 	if (1001 <= no && no <= 1200)
 		return vp_getModOutputType(VP_OUT_SOLENOID, no - 1000);
 	else if (1201 <= no && no <= 1300)

@@ -433,7 +433,6 @@ void cpu_run(void)
 			/* Tiny gap to allow HTTP thread to grab the lock */
 			usleep(1); 
 #endif
-
 			/* if we have a load/save scheduled, handle it */
 			if (loadsave_schedule != LOADSAVE_NONE)
 				handle_loadsave();
@@ -443,16 +442,16 @@ void cpu_run(void)
 			remote_debug_lock();
 #endif
 			cpu_timeslice();
+
 #ifdef REMOTE_DEBUG
 			remote_debug_unlock();
 #endif
 
 #if defined(LIBPINMAME)
-         extern int libpinmame_time_to_quit(void);
-         if (libpinmame_time_to_quit())
-            time_to_quit = 1;
+			extern int libpinmame_time_to_quit(void);
+			if (libpinmame_time_to_quit())
+				time_to_quit = 1;
 #endif
-
 			profiler_mark(PROFILER_END);
 		}
 

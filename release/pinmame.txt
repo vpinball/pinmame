@@ -13,7 +13,10 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in almost every solid state pinball machine created from
-  the earliest days of CPU-controlled machines (mid 1970's) through 2014 (Stern SAM).
+  the earliest days of CPU-controlled machines (mid 1970's) through 2014 (Stern SAM),
+  with around 770 emulated unique Pinball machines and many more clones/revisions (overall more than 2700 sets).
+  In addition to official revisions, PinMAME also allows for homebrew modifications, similar in spirit to HBMAME
+  (these are all marked as 'MOD' in the naming).
   It is available in various forms:
 
   Standalone Emulator (PinMAME (command line), PinMAME32 (UI))
@@ -442,6 +445,8 @@ Matthias Buecher   (maddes.b at arcor.de)
 David Rodriguez    (netsplits at yahoo.es)
 Randall Perlow     (rperlow at yahoo.com)
 Carsten Waechter   (toxie at ainc.de)
+Vincent Bousquet/vbousquet
+Jason Millard/jsm174
 
 
 PinMAME Contributors
