@@ -1273,8 +1273,8 @@ static void dcs_init(struct sndbrdData *brdData);
 static struct {
  int     status;      // 0 = disabled, 1 playing
  int     sOut, sIn;   // positions in sound buffer
- INT16  *buffer;
- INT16  *buffer2;     // right channel, allocated for stereo boards (Pin2K) only
+ INT16* __restrict buffer;
+ INT16* __restrict buffer2; // right channel, allocated for stereo boards (Pin2K) only
  int     stereo;      // 0 = mono (WPC DCS/DCS95), 1 = two interleaved channels
  UINT16  pendingLeft; // half-assembled stereo frame carried across txData calls
  int     havePending;
@@ -2290,16 +2290,16 @@ static void dcs_init(struct sndbrdData *brdData) {
     anywhere the SDRC maps -- in particular in banked SRAM, which is a
     different memory region entirely -- so it has to go through the same
     decode the DSP sees, or we silently transmit the wrong memory. --*/
-INLINE UINT16 dcs_txFetch(const UINT16 *mem, UINT16 base, int idx) {
+INLINE UINT16 dcs_txFetch(const UINT16 * const __restrict mem, UINT16 base, int idx) {
   if (dcslocals.brdData.subType == DCS_SUBTYPE_P2K) {
-    const UINT16 * const p = p2k_decode((offs_t)((base + idx) & 0x3fff));
+    const UINT16 * const __restrict p = p2k_decode((offs_t)((base + idx) & 0x3fff));
     return p ? *p : 0;
   }
   return mem[idx];
 }
 
 static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) {
-  const UINT16 * const mem = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET) + start;
+  const UINT16 * const __restrict mem = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET) + start;
   int idx;
 
   // Let the buffer fill naturally, so the throttling mechanism can work.
