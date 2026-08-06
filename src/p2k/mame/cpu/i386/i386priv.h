@@ -1,0 +1,729 @@
+// license:BSD-3-Clause
+// copyright-holders:Ville Linde, Barry Rodewald, Carl, Philip Bennett
+#pragma once
+
+#ifndef __I386_H__
+#define __I386_H__
+
+#include "i386dasm.h"
+
+//#define DEBUG_MISSING_OPCODE
+
+#define I386OP(XX)      i386_##XX
+#define I486OP(XX)      i486_##XX
+#define PENTIUMOP(XX)   pentium_##XX
+#define MMXOP(XX)       mmx_##XX
+#define SSEOP(XX)       sse_##XX
+
+enum SREGS { ES, CS, SS, DS, FS, GS };
+
+enum BREGS
+{
+	AL = NATIVE_ENDIAN_VALUE_LE_BE(0,3),
+	AH = NATIVE_ENDIAN_VALUE_LE_BE(1,2),
+	CL = NATIVE_ENDIAN_VALUE_LE_BE(4,7),
+	CH = NATIVE_ENDIAN_VALUE_LE_BE(5,6),
+	DL = NATIVE_ENDIAN_VALUE_LE_BE(8,11),
+	DH = NATIVE_ENDIAN_VALUE_LE_BE(9,10),
+	BL = NATIVE_ENDIAN_VALUE_LE_BE(12,15),
+	BH = NATIVE_ENDIAN_VALUE_LE_BE(13,14)
+};
+
+enum WREGS
+{
+	AX = NATIVE_ENDIAN_VALUE_LE_BE(0,1),
+	CX = NATIVE_ENDIAN_VALUE_LE_BE(2,3),
+	DX = NATIVE_ENDIAN_VALUE_LE_BE(4,5),
+	BX = NATIVE_ENDIAN_VALUE_LE_BE(6,7),
+	SP = NATIVE_ENDIAN_VALUE_LE_BE(8,9),
+	BP = NATIVE_ENDIAN_VALUE_LE_BE(10,11),
+	SI = NATIVE_ENDIAN_VALUE_LE_BE(12,13),
+	DI = NATIVE_ENDIAN_VALUE_LE_BE(14,15)
+};
+
+enum DREGS { EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI };
+
+enum
+{
+	I386_PC = 0,
+
+	/* 8-bit registers */
+	I386_AL,
+	I386_AH,
+	I386_BL,
+	I386_BH,
+	I386_CL,
+	I386_CH,
+	I386_DL,
+	I386_DH,
+
+	/* 16-bit registers */
+	I386_AX,
+	I386_BX,
+	I386_CX,
+	I386_DX,
+	I386_BP,
+	I386_SP,
+	I386_SI,
+	I386_DI,
+	I386_IP,
+
+	/* 32-bit registers */
+	I386_EAX,
+	I386_ECX,
+	I386_EDX,
+	I386_EBX,
+	I386_EBP,
+	I386_ESP,
+	I386_ESI,
+	I386_EDI,
+	I386_EIP,
+
+	/* segment registers */
+	I386_CS,
+	I386_CS_BASE,
+	I386_CS_LIMIT,
+	I386_CS_FLAGS,
+	I386_SS,
+	I386_SS_BASE,
+	I386_SS_LIMIT,
+	I386_SS_FLAGS,
+	I386_DS,
+	I386_DS_BASE,
+	I386_DS_LIMIT,
+	I386_DS_FLAGS,
+	I386_ES,
+	I386_ES_BASE,
+	I386_ES_LIMIT,
+	I386_ES_FLAGS,
+	I386_FS,
+	I386_FS_BASE,
+	I386_FS_LIMIT,
+	I386_FS_FLAGS,
+	I386_GS,
+	I386_GS_BASE,
+	I386_GS_LIMIT,
+	I386_GS_FLAGS,
+
+	/* other */
+	I386_EFLAGS,
+
+	I386_CR0,
+	I386_CR1,
+	I386_CR2,
+	I386_CR3,
+	I386_CR4,
+
+	I386_DR0,
+	I386_DR1,
+	I386_DR2,
+	I386_DR3,
+	I386_DR4,
+	I386_DR5,
+	I386_DR6,
+	I386_DR7,
+
+	I386_TR6,
+	I386_TR7,
+
+	I386_GDTR_BASE,
+	I386_GDTR_LIMIT,
+	I386_IDTR_BASE,
+	I386_IDTR_LIMIT,
+	I386_TR,
+	I386_TR_BASE,
+	I386_TR_LIMIT,
+	I386_TR_FLAGS,
+	I386_LDTR,
+	I386_LDTR_BASE,
+	I386_LDTR_LIMIT,
+	I386_LDTR_FLAGS,
+
+	I386_CPL,
+
+	X87_CTRL,
+	X87_STATUS,
+	X87_TAG,
+	X87_ST0,
+	X87_ST1,
+	X87_ST2,
+	X87_ST3,
+	X87_ST4,
+	X87_ST5,
+	X87_ST6,
+	X87_ST7,
+
+	SSE_XMM0,
+	SSE_XMM1,
+	SSE_XMM2,
+	SSE_XMM3,
+	SSE_XMM4,
+	SSE_XMM5,
+	SSE_XMM6,
+	SSE_XMM7
+};
+
+enum
+{
+	/* mmx registers aliased to x87 ones */
+	MMX_MM0 = X87_ST0,
+	MMX_MM1 = X87_ST1,
+	MMX_MM2 = X87_ST2,
+	MMX_MM3 = X87_ST3,
+	MMX_MM4 = X87_ST4,
+	MMX_MM5 = X87_ST5,
+	MMX_MM6 = X87_ST6,
+	MMX_MM7 = X87_ST7
+};
+
+enum smram
+{
+	SMRAM_SMBASE = 0xF8,
+	SMRAM_SMREV  = 0xFC,
+	SMRAM_IORSRT = 0x100,
+	SMRAM_AHALT  = 0x102,
+	SMRAM_IOEDI  = 0x104,
+	SMRAM_IOECX  = 0x108,
+	SMRAM_IOESI  = 0x10C,
+
+	SMRAM_ES     = 0x1A8,
+	SMRAM_CS     = 0x1AC,
+	SMRAM_SS     = 0x1B0,
+	SMRAM_DS     = 0x1B4,
+	SMRAM_FS     = 0x1B8,
+	SMRAM_GS     = 0x1BC,
+	SMRAM_LDTR   = 0x1C0,
+	SMRAM_TR     = 0x1C4,
+	SMRAM_DR7    = 0x1C8,
+	SMRAM_DR6    = 0x1CC,
+	SMRAM_EAX    = 0x1D0,
+	SMRAM_ECX    = 0x1D4,
+	SMRAM_EDX    = 0x1D8,
+	SMRAM_EBX    = 0x1DC,
+	SMRAM_ESP    = 0x1E0,
+	SMRAM_EBP    = 0x1E4,
+	SMRAM_ESI    = 0x1E8,
+	SMRAM_EDI    = 0x1EC,
+	SMRAM_EIP    = 0x1F0,
+	SMRAM_EFLAGS = 0x1F4,
+	SMRAM_CR3    = 0x1F8,
+	SMRAM_CR0    = 0x1FC
+};
+
+enum smram_intel_p5
+{
+	SMRAM_IP5_IOEIP   = 0x110,
+	SMRAM_IP5_CR4     = 0x128,
+	SMRAM_IP5_ESLIM   = 0x130,
+	SMRAM_IP5_ESBASE  = 0x134,
+	SMRAM_IP5_ESACC   = 0x138,
+	SMRAM_IP5_CSLIM   = 0x13C,
+	SMRAM_IP5_CSBASE  = 0x140,
+	SMRAM_IP5_CSACC   = 0x144,
+	SMRAM_IP5_SSLIM   = 0x148,
+	SMRAM_IP5_SSBASE  = 0x14C,
+	SMRAM_IP5_SSACC   = 0x150,
+	SMRAM_IP5_DSLIM   = 0x154,
+	SMRAM_IP5_DSBASE  = 0x158,
+	SMRAM_IP5_DSACC   = 0x15C,
+	SMRAM_IP5_FSLIM   = 0x160,
+	SMRAM_IP5_FSBASE  = 0x164,
+	SMRAM_IP5_FSACC   = 0x168,
+	SMRAM_IP5_GSLIM   = 0x16C,
+	SMRAM_IP5_GSBASE  = 0x170,
+	SMRAM_IP5_GSACC   = 0x174,
+	SMRAM_IP5_LDTLIM  = 0x178,
+	SMRAM_IP5_LDTBASE = 0x17C,
+	SMRAM_IP5_LDTACC  = 0x180,
+	SMRAM_IP5_GDTLIM  = 0x184,
+	SMRAM_IP5_GDTBASE = 0x188,
+	SMRAM_IP5_GDTACC  = 0x18C,
+	SMRAM_IP5_IDTLIM  = 0x190,
+	SMRAM_IP5_IDTBASE = 0x194,
+	SMRAM_IP5_IDTACC  = 0x198,
+	SMRAM_IP5_TRLIM   = 0x19C,
+	SMRAM_IP5_TRBASE  = 0x1A0,
+	SMRAM_IP5_TRACC   = 0x1A4
+};
+
+/* Protected mode exceptions */
+enum pm_faults
+{
+	FAULT_UD = 6,  // Invalid Opcode
+	FAULT_NM = 7,  // Coprocessor not available
+	FAULT_DF = 8,  // Double Fault
+	FAULT_TS = 10, // Invalid TSS
+	FAULT_NP = 11, // Segment or Gate not present
+	FAULT_SS = 12, // Stack fault
+	FAULT_GP = 13, // General Protection Fault
+	FAULT_PF = 14, // Page Fault
+	FAULT_MF = 16  // Match (Coprocessor) Fault
+};
+
+/* MXCSR Control and Status Register */
+enum mxcsr_bits
+{
+	MXCSR_IE  = 1 << 0,  // Invalid Operation Flag
+	MXCSR_DE  = 1 << 1,  // Denormal Flag
+	MXCSR_ZE  = 1 << 2,  // Divide-by-Zero Flag
+	MXCSR_OE  = 1 << 3,  // Overflow Flag
+	MXCSR_UE  = 1 << 4,  // Underflow Flag
+	MXCSR_PE  = 1 << 5,  // Precision Flag
+	MXCSR_DAZ = 1 << 6,  // Denormals Are Zeros
+	MXCSR_IM  = 1 << 7,  // Invalid Operation Mask
+	MXCSR_DM  = 1 << 8,  // Denormal Operation Mask
+	MXCSR_ZM  = 1 << 9,  // Divide-by-Zero Mask
+	MXCSR_OM  = 1 << 10, // Overflow Mask
+	MXCSR_UM  = 1 << 11, // Underflow Mask
+	MXCSR_PM  = 1 << 12, // Precision Mask
+	MXCSR_RC  = 3 << 13, // Rounding Control
+	MXCSR_FZ  = 1 << 15  // Flush to Zero
+};
+
+union MMX_REG {
+	uint32_t d[2];
+	int32_t  i[2];
+	uint16_t w[4];
+	int16_t  s[4];
+	uint8_t  b[8];
+	int8_t   c[8];
+	float    f[2];
+	uint64_t q;
+	int64_t  l;
+};
+
+extern int i386_parity_table[256];
+
+#define FAULT_THROW(fault,error) { throw (uint64_t)(fault | (uint64_t)error << 32); }
+#define PF_THROW(error) { m_cr[2] = address; FAULT_THROW(FAULT_PF,error); }
+
+#define PROTECTED_MODE      (m_cr[0] & 0x1)
+#define STACK_32BIT         (m_sreg[SS].d)
+#define V8086_MODE          (m_VM)
+#define NESTED_TASK         (m_NT)
+#define WP                  (m_cr[0] & 0x10000)
+
+#define SetOF_Add32(r,s,d)  (m_OF = (((r) ^ (s)) & ((r) ^ (d)) & 0x80000000) ? 1: 0)
+#define SetOF_Add16(r,s,d)  (m_OF = (((r) ^ (s)) & ((r) ^ (d)) & 0x8000) ? 1 : 0)
+#define SetOF_Add8(r,s,d)   (m_OF = (((r) ^ (s)) & ((r) ^ (d)) & 0x80) ? 1 : 0)
+
+#define SetOF_Sub32(r,s,d)  (m_OF = (((d) ^ (s)) & ((d) ^ (r)) & 0x80000000) ? 1 : 0)
+#define SetOF_Sub16(r,s,d)  (m_OF = (((d) ^ (s)) & ((d) ^ (r)) & 0x8000) ? 1 : 0)
+#define SetOF_Sub8(r,s,d)   (m_OF = (((d) ^ (s)) & ((d) ^ (r)) & 0x80) ? 1 : 0)
+
+#define SetCF8(x)           {m_CF = ((x) & 0x100) ? 1 : 0; }
+#define SetCF16(x)          {m_CF = ((x) & 0x10000) ? 1 : 0; }
+#define SetCF32(x)          {m_CF = ((x) & (((uint64_t)1) << 32)) ? 1 : 0; }
+
+#define SetSF(x)            (m_SF = (x))
+#define SetZF(x)            (m_ZF = (x))
+#define SetAF(x,y,z)        (m_AF = (((x) ^ ((y) ^ (z))) & 0x10) ? 1 : 0)
+#define SetPF(x)            (m_PF = i386_parity_table[(x) & 0xFF])
+
+#define SetSZPF8(x)         {m_ZF = ((uint8_t)(x)==0);  m_SF = ((x)&0x80) ? 1 : 0; m_PF = i386_parity_table[x & 0xFF]; }
+#define SetSZPF16(x)        {m_ZF = ((uint16_t)(x)==0);  m_SF = ((x)&0x8000) ? 1 : 0; m_PF = i386_parity_table[x & 0xFF]; }
+#define SetSZPF32(x)        {m_ZF = ((uint32_t)(x)==0);  m_SF = ((x)&0x80000000) ? 1 : 0; m_PF = i386_parity_table[x & 0xFF]; }
+
+#define MMX(n)              (*((MMX_REG *)(&m_x87_reg[(n)].low)))
+#define XMM(n)              m_sse_reg[(n)]
+
+#define VTLB_FLAG_DIRTY     0x100
+#define CYCLES_NUM(x)       (m_cycles -= (x))
+
+#define FAULT(fault,error)  {m_ext = 1; i386_trap_with_error(fault,0,0,error); return;}
+#define FAULT_EXP(fault,error) {m_ext = 1; i386_trap_with_error(fault,0,trap_level+1,error); return;}
+
+/***********************************************************************************/
+
+struct MODRM_TABLE {
+	struct {
+		int b;
+		int w;
+		int d;
+	} reg;
+	struct {
+		int b;
+		int w;
+		int d;
+	} rm;
+};
+
+extern MODRM_TABLE i386_MODRM_table[256];
+
+#define REG8(x)         (m_reg.b[x])
+#define REG16(x)        (m_reg.w[x])
+#define REG32(x)        (m_reg.d[x])
+
+#define LOAD_REG8(x)    (REG8(i386_MODRM_table[x].reg.b))
+#define LOAD_REG16(x)   (REG16(i386_MODRM_table[x].reg.w))
+#define LOAD_REG32(x)   (REG32(i386_MODRM_table[x].reg.d))
+#define LOAD_RM8(x)     (REG8(i386_MODRM_table[x].rm.b))
+#define LOAD_RM16(x)    (REG16(i386_MODRM_table[x].rm.w))
+#define LOAD_RM32(x)    (REG32(i386_MODRM_table[x].rm.d))
+
+#define STORE_REG8(x, value)    (REG8(i386_MODRM_table[x].reg.b) = value)
+#define STORE_REG16(x, value)   (REG16(i386_MODRM_table[x].reg.w) = value)
+#define STORE_REG32(x, value)   (REG32(i386_MODRM_table[x].reg.d) = value)
+#define STORE_RM8(x, value)     (REG8(i386_MODRM_table[x].rm.b) = value)
+#define STORE_RM16(x, value)    (REG16(i386_MODRM_table[x].rm.w) = value)
+#define STORE_RM32(x, value)    (REG32(i386_MODRM_table[x].rm.d) = value)
+
+#define SWITCH_ENDIAN_32(x) (((((x) << 24) & (0xff << 24)) | (((x) << 8) & (0xff << 16)) | (((x) >> 8) & (0xff << 8)) | (((x) >> 24) & (0xff << 0))))
+
+/***********************************************************************************/
+
+enum X86_CYCLES
+{
+	CYCLES_MOV_REG_REG,
+	CYCLES_MOV_REG_MEM,
+	CYCLES_MOV_MEM_REG,
+	CYCLES_MOV_IMM_REG,
+	CYCLES_MOV_IMM_MEM,
+	CYCLES_MOV_ACC_MEM,
+	CYCLES_MOV_MEM_ACC,
+	CYCLES_MOV_REG_SREG,
+	CYCLES_MOV_MEM_SREG,
+	CYCLES_MOV_SREG_REG,
+	CYCLES_MOV_SREG_MEM,
+	CYCLES_MOVSX_REG_REG,
+	CYCLES_MOVSX_MEM_REG,
+	CYCLES_MOVZX_REG_REG,
+	CYCLES_MOVZX_MEM_REG,
+	CYCLES_PUSH_RM,
+	CYCLES_PUSH_REG_SHORT,
+	CYCLES_PUSH_SREG,
+	CYCLES_PUSH_IMM,
+	CYCLES_PUSHA,
+	CYCLES_POP_RM,
+	CYCLES_POP_REG_SHORT,
+	CYCLES_POP_SREG,
+	CYCLES_POPA,
+	CYCLES_XCHG_REG_REG,
+	CYCLES_XCHG_REG_MEM,
+	CYCLES_IN,
+	CYCLES_IN_VAR,
+	CYCLES_OUT,
+	CYCLES_OUT_VAR,
+	CYCLES_LEA,
+	CYCLES_LDS,
+	CYCLES_LES,
+	CYCLES_LFS,
+	CYCLES_LGS,
+	CYCLES_LSS,
+	CYCLES_CLC,
+	CYCLES_CLD,
+	CYCLES_CLI,
+	CYCLES_CLTS,
+	CYCLES_CMC,
+	CYCLES_LAHF,
+	CYCLES_POPF,
+	CYCLES_PUSHF,
+	CYCLES_SAHF,
+	CYCLES_STC,
+	CYCLES_STD,
+	CYCLES_STI,
+	CYCLES_ALU_REG_REG,
+	CYCLES_ALU_REG_MEM,
+	CYCLES_ALU_MEM_REG,
+	CYCLES_ALU_IMM_REG,
+	CYCLES_ALU_IMM_MEM,
+	CYCLES_ALU_IMM_ACC,
+	CYCLES_INC_REG,
+	CYCLES_INC_MEM,
+	CYCLES_DEC_REG,
+	CYCLES_DEC_MEM,
+	CYCLES_CMP_REG_REG,
+	CYCLES_CMP_REG_MEM,
+	CYCLES_CMP_MEM_REG,
+	CYCLES_CMP_IMM_REG,
+	CYCLES_CMP_IMM_MEM,
+	CYCLES_CMP_IMM_ACC,
+	CYCLES_TEST_REG_REG,
+	CYCLES_TEST_REG_MEM,
+	CYCLES_TEST_IMM_REG,
+	CYCLES_TEST_IMM_MEM,
+	CYCLES_TEST_IMM_ACC,
+	CYCLES_NEG_REG,
+	CYCLES_NEG_MEM,
+	CYCLES_AAA,
+	CYCLES_AAS,
+	CYCLES_DAA,
+	CYCLES_DAS,
+	CYCLES_MUL8_ACC_REG,
+	CYCLES_MUL8_ACC_MEM,
+	CYCLES_MUL16_ACC_REG,
+	CYCLES_MUL16_ACC_MEM,
+	CYCLES_MUL32_ACC_REG,
+	CYCLES_MUL32_ACC_MEM,
+	CYCLES_IMUL8_ACC_REG,
+	CYCLES_IMUL8_ACC_MEM,
+	CYCLES_IMUL16_ACC_REG,
+	CYCLES_IMUL16_ACC_MEM,
+	CYCLES_IMUL32_ACC_REG,
+	CYCLES_IMUL32_ACC_MEM,
+	CYCLES_IMUL8_REG_REG,
+	CYCLES_IMUL8_REG_MEM,
+	CYCLES_IMUL16_REG_REG,
+	CYCLES_IMUL16_REG_MEM,
+	CYCLES_IMUL32_REG_REG,
+	CYCLES_IMUL32_REG_MEM,
+	CYCLES_IMUL16_REG_IMM_REG,
+	CYCLES_IMUL16_MEM_IMM_REG,
+	CYCLES_IMUL32_REG_IMM_REG,
+	CYCLES_IMUL32_MEM_IMM_REG,
+	CYCLES_DIV8_ACC_REG,
+	CYCLES_DIV8_ACC_MEM,
+	CYCLES_DIV16_ACC_REG,
+	CYCLES_DIV16_ACC_MEM,
+	CYCLES_DIV32_ACC_REG,
+	CYCLES_DIV32_ACC_MEM,
+	CYCLES_IDIV8_ACC_REG,
+	CYCLES_IDIV8_ACC_MEM,
+	CYCLES_IDIV16_ACC_REG,
+	CYCLES_IDIV16_ACC_MEM,
+	CYCLES_IDIV32_ACC_REG,
+	CYCLES_IDIV32_ACC_MEM,
+	CYCLES_AAD,
+	CYCLES_AAM,
+	CYCLES_CBW,
+	CYCLES_CWD,
+	CYCLES_ROTATE_REG,
+	CYCLES_ROTATE_MEM,
+	CYCLES_ROTATE_CARRY_REG,
+	CYCLES_ROTATE_CARRY_MEM,
+	CYCLES_SHLD_REG,
+	CYCLES_SHLD_MEM,
+	CYCLES_SHRD_REG,
+	CYCLES_SHRD_MEM,
+	CYCLES_NOT_REG,
+	CYCLES_NOT_MEM,
+	CYCLES_CMPS,
+	CYCLES_INS,
+	CYCLES_LODS,
+	CYCLES_MOVS,
+	CYCLES_OUTS,
+	CYCLES_SCAS,
+	CYCLES_STOS,
+	CYCLES_XLAT,
+	CYCLES_REP_CMPS_BASE,
+	CYCLES_REP_INS_BASE,
+	CYCLES_REP_LODS_BASE,
+	CYCLES_REP_MOVS_BASE,
+	CYCLES_REP_OUTS_BASE,
+	CYCLES_REP_SCAS_BASE,
+	CYCLES_REP_STOS_BASE,
+	CYCLES_REP_CMPS,
+	CYCLES_REP_INS,
+	CYCLES_REP_LODS,
+	CYCLES_REP_MOVS,
+	CYCLES_REP_OUTS,
+	CYCLES_REP_SCAS,
+	CYCLES_REP_STOS,
+	CYCLES_BSF_BASE,
+	CYCLES_BSF,
+	CYCLES_BSR_BASE,
+	CYCLES_BSR,
+	CYCLES_BT_IMM_REG,
+	CYCLES_BT_IMM_MEM,
+	CYCLES_BT_REG_REG,
+	CYCLES_BT_REG_MEM,
+	CYCLES_BTC_IMM_REG,
+	CYCLES_BTC_IMM_MEM,
+	CYCLES_BTC_REG_REG,
+	CYCLES_BTC_REG_MEM,
+	CYCLES_BTR_IMM_REG,
+	CYCLES_BTR_IMM_MEM,
+	CYCLES_BTR_REG_REG,
+	CYCLES_BTR_REG_MEM,
+	CYCLES_BTS_IMM_REG,
+	CYCLES_BTS_IMM_MEM,
+	CYCLES_BTS_REG_REG,
+	CYCLES_BTS_REG_MEM,
+	CYCLES_CALL,                // E8
+	CYCLES_CALL_REG,            // FF /2
+	CYCLES_CALL_MEM,            // FF /2
+	CYCLES_CALL_INTERSEG,       // 9A
+	CYCLES_CALL_REG_INTERSEG,   // FF /3
+	CYCLES_CALL_MEM_INTERSEG,   // FF /3
+	CYCLES_JMP_SHORT,           // EB
+	CYCLES_JMP,                 // E9
+	CYCLES_JMP_REG,             // FF /4
+	CYCLES_JMP_MEM,             // FF /4
+	CYCLES_JMP_INTERSEG,        // EA
+	CYCLES_JMP_REG_INTERSEG,    // FF /5
+	CYCLES_JMP_MEM_INTERSEG,    // FF /5
+	CYCLES_RET,                 // C3
+	CYCLES_RET_IMM,             // C2
+	CYCLES_RET_INTERSEG,        // CB
+	CYCLES_RET_IMM_INTERSEG,    // CA
+	CYCLES_JCC_DISP8,
+	CYCLES_JCC_FULL_DISP,
+	CYCLES_JCC_DISP8_NOBRANCH,
+	CYCLES_JCC_FULL_DISP_NOBRANCH,
+	CYCLES_JCXZ,
+	CYCLES_JCXZ_NOBRANCH,
+	CYCLES_LOOP,
+	CYCLES_LOOPZ,
+	CYCLES_LOOPNZ,
+	CYCLES_SETCC_REG,
+	CYCLES_SETCC_MEM,
+	CYCLES_ENTER,
+	CYCLES_LEAVE,
+	CYCLES_INT,
+	CYCLES_INT3,
+	CYCLES_INTO_OF1,
+	CYCLES_INTO_OF0,
+	CYCLES_BOUND_IN_RANGE,
+	CYCLES_BOUND_OUT_RANGE,
+	CYCLES_IRET,
+	CYCLES_HLT,
+	CYCLES_MOV_REG_CR0,
+	CYCLES_MOV_REG_CR2,
+	CYCLES_MOV_REG_CR3,
+	CYCLES_MOV_CR_REG,
+	CYCLES_MOV_REG_DR0_3,
+	CYCLES_MOV_REG_DR6_7,
+	CYCLES_MOV_DR6_7_REG,
+	CYCLES_MOV_DR0_3_REG,
+	CYCLES_MOV_REG_TR6_7,
+	CYCLES_MOV_TR6_7_REG,
+	CYCLES_NOP,
+	CYCLES_WAIT,
+	CYCLES_ARPL_REG,
+	CYCLES_ARPL_MEM,
+	CYCLES_LAR_REG,
+	CYCLES_LAR_MEM,
+	CYCLES_LGDT,
+	CYCLES_LIDT,
+	CYCLES_LLDT_REG,
+	CYCLES_LLDT_MEM,
+	CYCLES_LMSW_REG,
+	CYCLES_LMSW_MEM,
+	CYCLES_LSL_REG,
+	CYCLES_LSL_MEM,
+	CYCLES_LTR_REG,
+	CYCLES_LTR_MEM,
+	CYCLES_SGDT,
+	CYCLES_SIDT,
+	CYCLES_SLDT_REG,
+	CYCLES_SLDT_MEM,
+	CYCLES_SMSW_REG,
+	CYCLES_SMSW_MEM,
+	CYCLES_STR_REG,
+	CYCLES_STR_MEM,
+	CYCLES_VERR_REG,
+	CYCLES_VERR_MEM,
+	CYCLES_VERW_REG,
+	CYCLES_VERW_MEM,
+	CYCLES_LOCK,
+
+	CYCLES_BSWAP,
+	CYCLES_CMPXCHG8B,
+	CYCLES_CMPXCHG,
+	CYCLES_CPUID,
+	CYCLES_CPUID_EAX1,
+	CYCLES_INVD,
+	CYCLES_XADD,
+	CYCLES_RDTSC,
+	CYCLES_RSM,
+	CYCLES_RDMSR,
+
+	CYCLES_FABS,
+	CYCLES_FADD,
+	CYCLES_FBLD,
+	CYCLES_FBSTP,
+	CYCLES_FCHS,
+	CYCLES_FCLEX,
+	CYCLES_FCOM,
+	CYCLES_FCOS,
+	CYCLES_FDECSTP,
+	CYCLES_FDISI,
+	CYCLES_FDIV,
+	CYCLES_FDIVR,
+	CYCLES_FENI,
+	CYCLES_FFREE,
+	CYCLES_FIADD,
+	CYCLES_FICOM,
+	CYCLES_FIDIV,
+	CYCLES_FILD,
+	CYCLES_FIMUL,
+	CYCLES_FINCSTP,
+	CYCLES_FINIT,
+	CYCLES_FIST,
+	CYCLES_FISUB,
+	CYCLES_FLD,
+	CYCLES_FLDZ,
+	CYCLES_FLD1,
+	CYCLES_FLDL2E,
+	CYCLES_FLDL2T,
+	CYCLES_FLDLG2,
+	CYCLES_FLDLN2,
+	CYCLES_FLDPI,
+	CYCLES_FLDCW,
+	CYCLES_FLDENV,
+	CYCLES_FMUL,
+	CYCLES_FNOP,
+	CYCLES_FPATAN,
+	CYCLES_FPREM,
+	CYCLES_FPREM1,
+	CYCLES_FPTAN,
+	CYCLES_FRNDINT,
+	CYCLES_FRSTOR,
+	CYCLES_FSAVE,
+	CYCLES_FSCALE,
+	CYCLES_FSETPM,
+	CYCLES_FSIN,
+	CYCLES_FSINCOS,
+	CYCLES_FSQRT,
+	CYCLES_FST,
+	CYCLES_FSTCW,
+	CYCLES_FSTENV,
+	CYCLES_FSTSW,
+	CYCLES_FSUB,
+	CYCLES_FSUBR,
+	CYCLES_FTST,
+	CYCLES_FUCOM,
+	CYCLES_FXAM,
+	CYCLES_FXCH,
+	CYCLES_FXTRACT,
+	CYCLES_FYL2X,
+	CYCLES_FYL2XPI,
+	CYCLES_CMPXCHG_REG_REG_T,
+	CYCLES_CMPXCHG_REG_REG_F,
+	CYCLES_CMPXCHG_REG_MEM_T,
+	CYCLES_CMPXCHG_REG_MEM_F,
+	CYCLES_XADD_REG_REG,
+	CYCLES_XADD_REG_MEM,
+
+	CYCLES_NUM_OPCODES
+};
+
+
+#define CPU_CYCLES_I386         0
+#define CPU_CYCLES_I486         1
+#define CPU_CYCLES_PENTIUM      2
+#define CPU_CYCLES_MEDIAGX      3
+
+#define OP_I386         0x1
+#define OP_FPU          0x2
+#define OP_I486         0x4
+#define OP_PENTIUM      0x8
+#define OP_MMX          0x10
+#define OP_PPRO         0x20
+#define OP_SSE          0x40
+#define OP_SSE2         0x80
+#define OP_SSE3         0x100
+#define OP_CYRIX        0x8000
+#define OP_2BYTE        0x80000000
+#define OP_3BYTE66      0x40000000
+#define OP_3BYTEF2      0x20000000
+#define OP_3BYTEF3      0x10000000
+#define OP_3BYTE38      0x08000000
+#define OP_3BYTE3A      0x04000000
+#define OP_4BYTE3866    0x02000000
+#define OP_4BYTE3A66    0x01000000
+#define OP_4BYTE38F2    0x00800000
+#define OP_4BYTE3AF2    0x00400000
+#define OP_4BYTE38F3    0x00200000
+
+#endif /* __I386_H__ */

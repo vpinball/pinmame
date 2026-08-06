@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 #endif
 
 
-#ifdef REMOTE_DEBUG
-	/* Remote debugger: parse configuration file and environment first so
-	   that pmoptions.headless is known before any display setup happens.
-	   Without REMOTE_DEBUG the original startup order is preserved. */
+	/* Parse configuration file and environment first, so that
+	   pmoptions.headless is known before any display setup happens. This used
+	   to be done only for REMOTE_DEBUG builds; headless is a plain option now,
+	   and it has to be known just as early. The setuid drop below is unmoved. */
 	if ((res = config_init(argc, argv)) != 1234)
 		return res;
 
@@ -86,7 +86,6 @@ int main(int argc, char **argv)
 		res2 = OSD_OK;
 	}
 	else
-#endif
 	{
 	/* some display methods need to do some stuff with root rights */
 	res2 = sysdep_init();
@@ -102,27 +101,17 @@ int main(int argc, char **argv)
 	}
 
 	/* Set the title, now auto build from defines from the makefile */
-#ifdef REMOTE_DEBUG
 	if (pmoptions.headless)
 		snprintf(title, sizeof(title), "%s (HEADLESS) version %s", NAME, build_version);
 	else
-#endif
 	snprintf(title, sizeof(title), "%s (%s) version %s", NAME, DISPLAY_METHOD, build_version);
 
-	/* parse configuration file and environment */
-#ifdef REMOTE_DEBUG
-	/* (already parsed above) */
+	/* configuration was parsed above */
 	if (res2 == OSD_NOT_OK)
 		goto leave;
-#else
-	if ((res = config_init(argc, argv)) != 1234 || res2 == OSD_NOT_OK)
-		goto leave;
-#endif
 
 	/* Check the colordepth we're requesting */
-#ifdef REMOTE_DEBUG
 	if (!pmoptions.headless)
-#endif
 	if (!options.color_depth && !sysdep_display_16bpp_capable())
 		options.color_depth = 8;
 

@@ -257,11 +257,24 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 	const int width = pDisplay->layout.width; // layout->length
 	const int rotation = (pDisplay->layout.type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90) ? 1 : 0;
 	const int incr = (rotation == 0) ? 3 : ((rotation == 1) ? height*3 : -height*3);
+	/* A VIDEO_RGB_DIRECT screen holds packed colour, not palette indices - reading it through
+	   palette_get_color() gives nonsense, and for a 15 bpp bitmap the index runs up to 0x7fff,
+	   far past the palette. Machines with a true-colour screen (Pinball 2000's 640x240 among
+	   them) therefore need the value unpacked instead of looked up. */
+	const int direct = (Machine->drv->video_attributes & VIDEO_RGB_DIRECT) != 0;
+	const int depth = p_bitmap->depth;
 	for (int y = 0; y < height; y++) {
 		int pos = (rotation == 0) ? y*width : ((rotation == 1) ? (height - 1 - y) : (y + (width - 1)*height));
 		pos *= 3;
 		for (int x = 0; x < width; x++,pos+=incr) {
 			UINT8 r,g,b;
+			if (direct) {
+				const UINT32 c = p_bitmap->read(p_bitmap, x, y);
+				if (depth == 32) { r = (c >> 16) & 0xff; g = (c >> 8) & 0xff; b = c & 0xff; }
+				else if (depth == 16) { r = ((c >> 11) & 0x1f) << 3; g = ((c >> 5) & 0x3f) << 2; b = (c & 0x1f) << 3; }
+				else                  { r = ((c >> 10) & 0x1f) << 3; g = ((c >>  5) & 0x1f) << 3; b = (c & 0x1f) << 3; }
+			}
+			else
 			palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
 			diff |= (dst[pos] != r || dst[pos + 1] != g || dst[pos + 2] != b);
 			dst[pos    ] = r;

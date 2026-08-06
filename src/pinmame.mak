@@ -97,6 +97,11 @@ DRVLIBS += $(PINOBJ)/slalom.o
 DRVLIBS += $(PINOBJ)/boomerang.o
 DRVLIBS += $(PINOBJ)/spiritof76.o
 DRVLIBS += $(PINOBJ)/luckydraw.o
+# Pinball 2000 bring-up driver. src/wpc/p2k.c is itself wrapped in #if HAS_MEDIAGX, so without
+# the subsystem it compiles to an empty object - this only avoids building it at all.
+ifdef P2K
+DRVLIBS += $(PINOBJ)/p2k.o
+endif
 DRVLIBS += $(PINOBJ)/efo.o $(PINOBJ)/efosnd.o
 DRVLIBS += $(PINOBJ)/regama.o
 #
@@ -219,6 +224,11 @@ CPUS += TMS7000@
 CPUS += SCAMP@
 CPUS += ARM7@
 CPUS += AT91@
+# The MediaGX core lives in src/p2k/, so only register it when that is built - otherwise
+# cpuintrf's table references symbols nothing provides and a plain build fails to link.
+ifdef P2K
+CPUS += MEDIAGX@
+endif
 CPUS += CDP1802@
 CPUS += TMS9980@
 CPUS += TMS9995@

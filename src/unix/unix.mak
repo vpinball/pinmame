@@ -184,6 +184,10 @@ ifdef LISY_X
 include src/lisy/lisy.mak
 endif
 
+ifdef P2K
+include src/p2k/p2k.mak
+endif
+
 ifdef DEBUG
 DBGDEFS = -DMAME_DEBUG
 else
@@ -334,14 +338,14 @@ endif
 
 OBJS += $(COREOBJS) $(DRVLIBS) $(OBJ)/unix.$(DISPLAY_METHOD)/osdepend.a
 
-MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
+MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS)) $(P2K_OBJDIRS)
 
 ##############################################################################
 # Begin of the real makefile.
 ##############################################################################
-$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS)
+$(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(P2KOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS)
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(P2KOBJS) $(MY_LIBS)
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
