@@ -165,6 +165,7 @@ Support WPC UARTs (8251 from Printer Option Kit & 16C450 from WPC95), also enabl
 Also, NBAFB now supports a full builtin simulator instead of only a preliminary one
 
 *** CORE/CPU ***
+Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low for performance reasons (for now)!
 Fixed WPC General Illumination (GI) Dimming (most noticably if more than one GI line is involved, also all 8 levels are now handled properly)
 Fixed SAM FG/Shrek and WOF modulated LEDs behavior (now work the same as the rest)
 Added Wheel Of Fortune and World Poker Tour LED matrix as a group of modulated lamps
@@ -233,6 +234,8 @@ Splin:  Golden Game Bingo Stake 6/10 (Bingo) (not working)
         Montana Bingo Stake 6/10 (Bingo) (not working)
         Top Game Laser L10 (Bingo) (not working)
         Top Game Turbo (Bingo) (not working)
+WMS:    Revenge From Mars 1.80, 1.60, 1.50, 1.40, 1.20
+        Star Wars Episode I 1.50, 1.40, 1.30
 
 Kinda new:
 Bad Cats (The Cat's Meow) (MOD)

@@ -23,7 +23,7 @@ Supported platforms: Windows (x86), Linux (x86/Arm, incl. RaspberryPi and RK3588
 Currently, the following pinball hardware is emulated:
 
 Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
-Williams System 6, Williams System 4, Williams System 3,
+Williams System 6, Williams System 4, Williams System 3, Pinball 2000,
 Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD,
 Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern S.A.M., Stern MPU-100, Stern MPU-200,
 Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
@@ -66,6 +66,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 
 ## Games supported (incomplete)
 
+- *Midway Pinball 2000* - All games from Revenge From Mars (1999) to Star Wars Episode I (1999)
 - *Williams/Bally WPC* - All games from Dr. Dude (1990) to Cactus Canyon (1998)
 - *Williams/Bally System 11* - All games from High Speed (1986) to Dr.Dude (1990)
 - *Williams System 9* - All games from Space Shuttle (1984) to Comet (1985)
