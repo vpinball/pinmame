@@ -110,9 +110,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cpuintrf.h"
-#if defined(WPCDCSSPEEDUP)
-#  include "cpuexec.h"
-#endif /* WPCDCSSPEEDUP */
+#if defined(WPCDCSSPEEDUP) || defined(DCSIDLESKIP)
+ #include "cpuexec.h"   /* cpu_spinuntil_int / cpu_triggerint */
+#endif
 #include "mamedbg.h"
 #include "common.h"
 #include "adsp2100.h"
@@ -257,10 +257,12 @@ typedef struct
 	INT32		interrupt_cycles;
 	int			(*irq_callback)(int irqline);
 
-#ifdef WPCDCSSPEEDUP
-	UINT32 lastpc;
+#ifdef DCSIDLESKIP
+	UINT32 lastpc;   /* idle-loop detector */
 	int icount;
-	int xcount;
+#endif
+#ifdef WPCDCSSPEEDUP
+	int xcount;      /* decoder-entry sequence matcher */
 #endif
 } adsp2100_Regs;
 
@@ -321,11 +323,17 @@ INLINE void WWORD_DATA(UINT32 addr, UINT32 data)
 
 #ifdef PINMAME
 extern int WPC_gWPC95;
-/* Set by the DCS sound board init.  The hand-written decoder speedups below
-   are transcriptions of the WPC-era ADSP-2105 routines; they must not run on
-   other DCS variants (i.e. Pinball 2000), whose ROMs can hit the same opcode
-   patterns with a completely different memory layout. */
+/* Set by the DCS sound board init.  The hand-written decoder speedup below is a
+   transcription of the WPC-era ADSP-2105 routine; it must not run on other DCS
+   variants (i.e. Pinball 2000), whose ROMs can hit the same opcode patterns with
+   a completely different memory layout */
 extern int DCS_useSpeedup;
+/* The idle-loop detector below is a separate switch because it is safe where
+   the decoder transcription is not: it reads no memory and substitutes no code,
+   it only notices the DSP spinning on the autobuffer index and suspends it
+   until the next interrupt, so nothing about it depends on the ROM's memory
+   map.  Pinball 2000 needs it and must not have the decoder; see wmssnd.c. */
+extern int DCS_useIdleSkip;
 extern READ16_HANDLER(dcs_latch_r);
 extern WRITE16_HANDLER(dcs_latch_w);
 #endif /* PINMAME */
@@ -652,9 +660,11 @@ void adsp2100_reset(void *param)
 #if TRACK_HOTSPOTS
 	memset(pcbucket,0,sizeof(pcbucket));
 #endif
-#ifdef WPCDCSSPEEDUP
+#ifdef DCSIDLESKIP
 	adsp2100.lastpc = 0;
 	adsp2100.icount = 0;
+#endif
+#ifdef WPCDCSSPEEDUP
 	adsp2100.xcount = 0;
 #endif
 	adsp2100_icount = 50000;
@@ -816,8 +826,8 @@ int adsp2100_execute(int cycles)
 
 		// instruction fetch
 		op = ROPCODE();
-#ifdef WPCDCSSPEEDUP
-if (!DCS_useSpeedup) { /* Pin2K: none of the WPC idle/decoder heuristics apply */ }
+#ifdef DCSIDLESKIP
+if (!DCS_useIdleSkip) { /* board whose idle loop this does not describe */ }
 else { /* The current sample is always in I7 */
   /* the busy loop always starts with: */
   /* 0d02a3  AR = I7 */
@@ -835,6 +845,8 @@ else { /* The current sample is always in I7 */
   else
     adsp2100.icount += 1;
 }
+#endif /* DCSIDLESKIP */
+#ifdef WPCDCSSPEEDUP
 if (!DCS_useSpeedup) { /* Pin2K: run the DSP code as-is, no WPC decoder HLE */ }
 else {
   /* The decompression for the 1994+ games starts after the following sequence: */

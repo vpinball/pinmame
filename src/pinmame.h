@@ -1,6 +1,11 @@
 #pragma once
 
-#define WPCDCSSPEEDUP   1 // DCS Speedup added to MAME ADSP emulation
+#define WPCDCSSPEEDUP   1 // DCS decoder speedup added to MAME ADSP emulation (WPC-era ROMs only)
+#define DCSIDLESKIP     1 // Suspend the DCS ADSP while it spins waiting for the DAC, or
+                          // (Pinball 2000) for the host. Separate from WPCDCSSPEEDUP: that
+                          // substitutes a transcription of one WPC routine and is tied to
+                          // its memory map, this only notices the DSP is idle. Pinball 2000
+                          // needs this one and must not have the other one
 #define DBG_BPR         1 // BPR command added to debugger
 
 // Add a 'pin2ksnd' (RFM) & 'pin2ksw1' (SWEP1) diagnostic driver: the Pinball 2000 DCS2 sound board on
