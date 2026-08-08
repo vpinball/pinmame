@@ -95,8 +95,8 @@ typedef struct {
 #ifdef PINMAME_HOST_UART
   char *serial_device;         /* COM or /dev/tty mapped to WPC95 UART */
 #endif
-#ifdef REMOTE_DEBUG
   int headless;                /* Run without display */
+#ifdef REMOTE_DEBUG
   int http_port;               /* HTTP server port */
   int start_paused;            /* Start emulator in paused state */
 #endif

@@ -1677,6 +1677,13 @@ else
 CPUDEFS += -DHAS_AT91=0
 endif
 
+CPU=$(strip $(findstring MEDIAGX@,$(CPUS)))
+ifneq ($(CPU),)
+CPUDEFS += -DHAS_MEDIAGX=1
+else
+CPUDEFS += -DHAS_MEDIAGX=0
+endif
+
 CPU=$(strip $(findstring CDP1802@,$(CPUS)))
 ifneq ($(CPU),)
 OBJDIRS += $(OBJ)/cpu/cdp1802

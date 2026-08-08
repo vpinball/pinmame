@@ -36,6 +36,10 @@ ROM's with the updated driver code.
 I have also read posts stating that the ghosting issue is more prevalent when Rotten Dog power/driver boards are used.
 */
 
+#if defined(PINMAME) && (HAS_MEDIAGX)
+DRIVERNV(rfmpb)         // Pinball 2000: Revenge From Mars (bring-up driver)
+DRIVERNV(swe1pb)        // Pinball 2000: Star Wars Episode I (bring-up driver)
+#endif
 DRIVERNV(mac_zois)      // 05/03 machinaZOIS Virtual Training Center
 DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 

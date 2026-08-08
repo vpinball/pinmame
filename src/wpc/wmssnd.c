@@ -1227,6 +1227,9 @@ static void sdrc_reset(void);
 static void sdrc_update_bank_pointers(void);
 static READ16_HANDLER(p2k_data_r);
 static WRITE16_HANDLER(p2k_data_w);
+static void p2k_dumpPgm2(UINT16 data, const char *trigger);
+static READ16_HANDLER(p2k_data_hi_r);
+static WRITE16_HANDLER(p2k_data_hi_w);
 static READ16_HANDLER(p2k_status_r);
 static READ16_HANDLER(p2k_input_latch_r);
 static WRITE16_HANDLER(p2k_input_latch_ack_w);
@@ -1451,7 +1454,7 @@ static MEMORY_READ16_START(dcs3_readmem)
   { ADSP_DATA_ADDR_RANGE(0x0404, 0x0407), p2k_fifo_r },
   { ADSP_DATA_ADDR_RANGE(0x0413, 0x0413), p2k_status_r },
   { ADSP_DATA_ADDR_RANGE(0x0480, 0x0483), sdrc_r },
-  { ADSP_DATA_ADDR_RANGE(0x0800, 0x37ff), p2k_data_r },
+  { ADSP_DATA_ADDR_RANGE(0x0800, 0x37ff), p2k_data_hi_r },
   { ADSP_DATA_ADDR_RANGE(0x3800, 0x3fdf), MRA16_RAM },
   { ADSP_DATA_ADDR_RANGE(0x3fe0, 0x3fff), adsp_control_r },
   { ADSP_PGM_ADDR_RANGE (0x0000, 0x01ff), MRA16_RAM }, /* 2104 internal boot RAM (512 words) */
@@ -1464,7 +1467,7 @@ static MEMORY_WRITE16_START(dcs3_writemem)
   { ADSP_DATA_ADDR_RANGE(0x0401, 0x0401), p2k_output_latch_w },
   { ADSP_DATA_ADDR_RANGE(0x0402, 0x0402), p2k_output_control_w },
   { ADSP_DATA_ADDR_RANGE(0x0480, 0x0483), sdrc_w },
-  { ADSP_DATA_ADDR_RANGE(0x0800, 0x37ff), p2k_data_w },
+  { ADSP_DATA_ADDR_RANGE(0x0800, 0x37ff), p2k_data_hi_w },
   { ADSP_DATA_ADDR_RANGE(0x3800, 0x3fdf), MWA16_RAM },
   { ADSP_DATA_ADDR_RANGE(0x3fe0, 0x3fff), adsp_control_w },
   { ADSP_PGM_ADDR_RANGE (0x0000, 0x01ff), MWA16_RAM },
@@ -1636,6 +1639,14 @@ static WRITE16_HANDLER(sdrc_w) {
   }
 }
 
+/* Latch tracing for protocol work (P2K_DSPLOG=1), off unless asked for. */
+static int p2k_traceOn(void) {
+  static int on = -1;
+  if (on < 0) { const char *e = getenv("P2K_DSPLOG"); on = (e && *e != '0') ? 1 : 0; }
+  return on;
+}
+#define P2KTRACE(x) do { if (p2k_traceOn()) { printf x; fflush(stdout); } } while (0)
+
 /*-- decode a Pin2K data-space address through the current SDRC state --*/
 /*-- returns NULL for an unmapped address --*/
 static UINT16 *p2k_decode(offs_t offset) {
@@ -1703,6 +1714,14 @@ static WRITE16_HANDLER(p2k_data_w) {
   if (p) *p = data;
 }
 
+/* A memory handler is called with an offset relative to the start of its own
+   map entry, so the second data window (0800-37ff) arrives based at zero.
+   p2k_decode() works in DSP word addresses, so rebase before decoding.  Left
+   unrebased, everything the DSP puts in banked SRAM lands 0x800 words away
+   from where it looks for it, and the board fails the host's memory test. */
+static READ16_HANDLER(p2k_data_hi_r)  { return p2k_data_r(offset + 0x0800, mem_mask); }
+static WRITE16_HANDLER(p2k_data_hi_w) { p2k_data_w(offset + 0x0800, data, mem_mask); }
+
 /*--------------------------------------------------------------------------
 /  Pin2K host handshake
 /
@@ -1734,10 +1753,12 @@ static void p2k_pumpQueue(void) {
    only cleared by an explicit write to this address.  Firmware that peeks the
    latch before acking depends on this. */
 static READ16_HANDLER(p2k_input_latch_r) {
+  P2KTRACE(("P2K dsp  read  cmd  %04x  @pc %04x\n", dcslocals.p2k.inputData, activecpu_get_pc()));
   return dcslocals.p2k.inputData;
 }
 
 static WRITE16_HANDLER(p2k_input_latch_ack_w) {
+  P2KTRACE(("P2K dsp  ack        %04x  @pc %04x\n", dcslocals.p2k.inputData, activecpu_get_pc()));
   cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2104_IRQ2, CLEAR_LINE);
   dcslocals.p2k.inputFull = FALSE;
   p2k_pumpQueue(); /* re-asserts IRQ2 if more commands are pending */
@@ -1750,7 +1771,43 @@ static READ16_HANDLER(p2k_output_latch_r) {
   return dcslocals.p2k.outputData;
 }
 
+/* One-shot dump of the DSP's program memory, for offline disassembly, plus the
+   scratch words the board's self-tests leave their diagnosis in.  Written the
+   first time the DSP answers the host with P2K_DSPDUMPON (default: any reply);
+   16K 24-bit words, one little-endian UINT32 each. */
+static void p2k_dumpPgm2(UINT16 data, const char *trigger) {
+  static int done = 0;
+  const char * const want = getenv(trigger);
+  const char * const path = getenv("P2K_DSPDUMP");
+  const UINT16 *dm;
+  FILE *f;
+  int a;
+
+  if (done || !path) return;
+  if (want && data != (UINT16)strtol(want, NULL, 16)) return;
+  /* with no trigger configured the first reply takes the dump -- unless a host
+     command trigger is configured instead, which then owns it */
+  if (!want && (strcmp(trigger, "P2K_DSPDUMPON") != 0 || getenv("P2K_DSPDUMPCMD"))) return;
+  done = 1;
+  f = fopen(path, "wb");
+  if (!f) return;
+  fwrite(dcslocals.cpuRegion + ADSP2100_PGM_OFFSET, 4, 0x4000, f);
+  fclose(f);
+  /* data space next to it, as 16K little-endian words, named <file>.dm */
+  { char dmpath[512];
+    snprintf(dmpath, sizeof dmpath, "%s.dm", path);
+    f = fopen(dmpath, "wb");
+    if (f) { fwrite(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET, 2, 0x4000, f); fclose(f); }
+  }
+  dm = (const UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET);
+  printf("P2K: program memory dumped to %s -- scratch", path);
+  for (a = 0x38e0; a <= 0x38ec; a++) printf(" [%04x]=%04x", a, dm[a]);
+  printf("\n"); fflush(stdout);
+}
+
 static WRITE16_HANDLER(p2k_output_latch_w) {
+  p2k_dumpPgm2(data, "P2K_DSPDUMPON");
+  P2KTRACE(("P2K dsp  write reply %04x  @pc %04x\n", data, activecpu_get_pc()));
   dcslocals.p2k.outputData = data;
   dcslocals.p2k.outputFull = TRUE;
   dcslocals.p2k.state = 1;
@@ -1764,8 +1821,18 @@ static READ16_HANDLER(p2k_latch_status_r) {
 }
 
 /* three extra signal lines back to the host; latched, not otherwise acted on */
-static READ16_HANDLER(p2k_output_control_r) { return dcslocals.p2k.outputControl; }
-static WRITE16_HANDLER(p2k_output_control_w) { dcslocals.p2k.outputControl = data; }
+/* when the DSP last touched the output control register; see adsp_sport0Irq() */
+static UINT64 p2k_outputCtrlCycles;
+
+static READ16_HANDLER(p2k_output_control_r) {
+  p2k_outputCtrlCycles = cpunum_gettotalcycles64(dcslocals.brdData.cpuNo);
+  return dcslocals.p2k.outputControl;
+}
+static WRITE16_HANDLER(p2k_output_control_w) {
+  if (dcslocals.p2k.outputControl != data)
+    P2KTRACE(("P2K dsp  ctrl       %04x  @pc %04x\n", data, activecpu_get_pc()));
+  dcslocals.p2k.outputControl = data;
+}
 
 /* DSP-side status at data 0x0413.  This is NOT the host status register --
    it is the 3-state handshake erikieNL's MAME branch exposes here.  Encore
@@ -2118,6 +2185,16 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
 /-------------------------------------------------------------------------*/
 void dcs_p2k_data_w(UINT16 data) {
   DBGLOG(("P2K data_w: %04x\n", data));
+  if (dcslocals.p2k.xferState == 0) P2KTRACE(("P2K host write cmd   %04x\n", data));
+  if (dcslocals.p2k.xferState == 0) {
+    /* P2K_DSPDUMPAFTER arms the host-command trigger, so a command that recurs
+       can still pick out the right occurrence */
+    static int armed = -1;
+    const char * const after = getenv("P2K_DSPDUMPAFTER");
+    if (armed < 0) armed = after ? 0 : 1;
+    if (after && data == (UINT16)strtol(after, NULL, 16)) armed = 1;
+    else if (armed) p2k_dumpPgm2(data, "P2K_DSPDUMPCMD");
+  }
   if (p2k_preprocess_write(data)) return; /* consumed by the boot-block HLE */
   dcslocals.p2k.state = 0;                /* command sent */
   p2k_enqueue(data);
@@ -2125,6 +2202,7 @@ void dcs_p2k_data_w(UINT16 data) {
 }
 
 UINT16 dcs_p2k_data_r(void) {
+  P2KTRACE(("P2K host read  reply %04x  (full=%d)\n", dcslocals.p2k.outputData, dcslocals.p2k.outputFull));
   dcslocals.replyAvail = FALSE;
   dcslocals.p2k.outputFull = FALSE;
   dcslocals.p2k.state = 2; /* reply consumed */
@@ -2393,20 +2471,25 @@ enum {
 static struct {
  UINT16  ctrlRegs[32];
  void   *irqTimer;
+ void   *sport0Timer;      /* Pin2K only, see adsp_sport0Irq() */
  data8_t *(*getBootROM)(int soft);
  void   (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate);
 } adsp; /* = {{0},NULL,dcs_getBootROM,dcs_txData};*/
 static void adsp_irqGen(int dummy);
+static void adsp_sport0Irq(int dummy);
 
 static void adsp_init(data8_t *(*getBootROM)(int soft),
                       void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate)) {
   /* stupid timer/machine init handling in MAME */
   if (adsp.irqTimer) timer_remove(adsp.irqTimer);
+  if (adsp.sport0Timer) timer_remove(adsp.sport0Timer);
   /*-- reset control registers etc --*/
   memset(&adsp, 0, sizeof(adsp));
   adsp.getBootROM = getBootROM;
   adsp.txData = txData;
   adsp.irqTimer = timer_alloc(adsp_irqGen);
+  if (dcslocals.brdData.subType == DCS_SUBTYPE_P2K)
+    adsp.sport0Timer = timer_alloc(adsp_sport0Irq);
   /*-- initialize the ADSP Tx callback --*/
   if (dcslocals.brdData.subType == DCS_SUBTYPE_P2K)
     adsp2104_set_tx_callback(adsp_txCallback);
@@ -2464,6 +2547,19 @@ static WRITE16_HANDLER(adsp_control_w) {
         /* nuke the timer */
         timer_enable(adsp.irqTimer, FALSE);
       }
+      /*-- Pin2K: SPORT0 is not a serial port here, it is a 1kHz tick --------
+      /  Nothing is wired to SPORT0 on this board; the firmware enables it
+      /  (SYSCONTROL bit 0x1000) purely to get a periodic interrupt, and its
+      /  SPORT0 receive handler is what drains the board's reply queue to the
+      /  host.  Without this tick the board can answer a command but can never
+      /  say anything of its own -- which is exactly where the Pin2K host
+      /  handshake stalls.  MAME does the same thing (dcs.cpp, sport0_irq).  */
+      if (dcslocals.brdData.subType == DCS_SUBTYPE_P2K && adsp.sport0Timer) {
+        if (data & 0x1000)
+          timer_adjust(adsp.sport0Timer, TIME_IN_USEC(10), 0, TIME_IN_HZ(1000));
+        else
+          timer_enable(adsp.sport0Timer, FALSE);
+      }
       break;
     case S1_AUTOBUF_REG:
       /* autobuffer off: nuke the timer */
@@ -2490,6 +2586,17 @@ static struct {
   int    last;
   int    irqCount;
 } adsp_aBufData;
+
+/* The interrupt latches inside the DSP, so a pulse is enough.  Non-interrupt
+   code reads/modifies/writes the output control register, so skip the tick if
+   the DSP touched it in the last few cycles -- otherwise the read-modify-write
+   loses the write and, in MAME's experience, sound stops. */
+static void adsp_sport0Irq(int dummy) {
+  if (cpunum_gettotalcycles64(dcslocals.brdData.cpuNo) - p2k_outputCtrlCycles > 5) {
+    cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2104_SPORT0_RX, ASSERT_LINE);
+    cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2104_SPORT0_RX, CLEAR_LINE);
+  }
+}
 
 static void adsp_irqGen(int dummy) {
   int next;
