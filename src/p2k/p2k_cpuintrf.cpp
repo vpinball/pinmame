@@ -132,7 +132,7 @@ extern void (*p2k_exception_hook)(int vector);
 // loop inside the subsystem, so the hook is called between execution chunks instead - fine for
 // stopping on an address, just not instruction-exact. It is only linked in with REMOTE_DEBUG,
 // which these files cannot test for; see p2k_weak.h for how each compiler decides
-#if defined(_MSC_VER) && !defined(REMOTE_DEBUG)
+#if !defined(REMOTE_DEBUG)
   #define P2K_REMOTE_DEBUG_HOOK() ((void)0)
 #elif defined(_MSC_VER)
   extern "C" void remote_debug_breakpoint_hook(void);
