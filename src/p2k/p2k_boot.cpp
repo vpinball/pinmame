@@ -5,6 +5,44 @@
 #include "p2k_driver.h"
 #include <cstdio>
 #include <cstdlib>
+#include <string>
+#include <vector>
+
+// Under PinMAME these arrive as ROM regions, already interleaved by ROM_LOAD32_WORD. This harness
+// runs without PinMAME, so it reads the same files and lays them out the same way: four 16 MB
+// banks, the even-numbered chip of each pair in the low half of every dword
+static bool read_file(const std::string &path, std::vector<u8> &dest, size_t expected)
+{
+	FILE *f = fopen(path.c_str(), "rb");
+	if (!f) return false;
+	dest.resize(expected);
+	const size_t got = fread(dest.data(), 1, expected, f);
+	fclose(f);
+	return got == expected;
+}
+
+static bool build_prism_region(const char *dir, const char *prefix, std::vector<u8> &region)
+{
+	region.assign(4 * 0x1000000, 0);
+	for (int bank = 0; bank < 4; bank++)
+	{
+		std::vector<u8> lo, hi;
+		char a[64], b[64];
+		snprintf(a, sizeof a, "%s_u%d.rom", prefix, 100 + bank * 2);
+		snprintf(b, sizeof b, "%s_u%d.rom", prefix, 101 + bank * 2);
+		if (!read_file(std::string(dir) + "/" + a, lo, 0x800000)) { printf("missing %s\n", a); return false; }
+		if (!read_file(std::string(dir) + "/" + b, hi, 0x800000)) { printf("missing %s\n", b); return false; }
+		u8 *out = region.data() + size_t(bank) * 0x1000000;
+		for (size_t i = 0; i < 0x800000 / 2; i++)
+		{
+			out[i * 4 + 0] = lo[i * 2 + 0];
+			out[i * 4 + 1] = lo[i * 2 + 1];
+			out[i * 4 + 2] = hi[i * 2 + 0];
+			out[i * 4 + 3] = hi[i * 2 + 1];
+		}
+	}
+	return true;
+}
 
 extern "C" unsigned mediagx_get_reg(int regnum);
 extern "C" unsigned mediagx_dasm(char *buffer, unsigned pc);
@@ -17,15 +55,21 @@ int main(int argc, char **argv)
 
 	p2k_state state;
 	printf("loading %s ROMs from %s\n", prefix, romdir);
-	if (!state.load_roms(romdir, prefix))
+	std::vector<u8> prism;
+	if (!build_prism_region(romdir, prefix, prism) ||
+	    !state.set_prism_roms(prism.data(), prism.size(), prefix))
 	{
 		printf("ROM loading failed\n");
 		return 1;
 	}
 
-	// optional: the update flash image built by tools/make_nvram_updates.py
+	// optional: an assembled 8 MB update flash image
 	if (const char *nv = getenv("P2K_NVRAM_UPDATES"))
-		printf("update flash %s: %s\n", nv, state.load_nvram_updates(nv) ? "loaded" : "FAILED");
+	{
+		std::vector<u8> upd;
+		const bool ok = read_file(nv, upd, 0x800000) && state.set_nvram_updates(upd.data(), upd.size());
+		printf("update flash %s: %s\n", nv, ok ? "loaded" : "FAILED");
+	}
 
 	state.build_machine(20000000);
 	state.reset();

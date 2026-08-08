@@ -4183,5 +4183,5 @@ ROM_START(pin2ksw1)
                      CRC(6011ecd9) SHA1(8575958c8942a6cbcb2ac18f291fcada6f8cbc09))
 ROM_END
 
-CORE_CLONEDEFNV(pin2ksw1,pin2ksnd,"Pinball 2000 Sound Board, SWE1 (test harness)",1999,"Williams",pin2ksnd,0)
+CORE_CLONEDEFNV(pin2ksw1,pin2ksnd,"Pinball 2000 Sound Board, SWEP1 (test harness)",1999,"Williams",pin2ksnd,0)
 #endif /* PIN2K_SOUND_TEST */

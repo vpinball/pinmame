@@ -24,10 +24,11 @@ public:
 	p2k_state();
 	~p2k_state();
 
-	// romdir holds the game's ROM files (rfm_u100.rom ...); returns false if any are missing
-	bool load_roms(const char *romdir, const char *prefix);
+	// Both take PinMAME ROM regions, declared by ROM_START in src/wpc/p2k.c. The subsystem
+	// does not open files: everything arrives through the normal ROM set machinery
+	bool set_prism_roms(const u8 *data, size_t len, const char *prefix);
 	// the update flash image (bootdata + im_flsh0 + game + symbols), 8 MB
-	bool load_nvram_updates(const char *path);
+	bool set_nvram_updates(const u8 *data, size_t len);
 
 	// The three things worth keeping across runs, in MAME's terms: "nvram" is the CMOS the game
 	// stores its settings, audits and error log in, "nvram2" the PLX EEPROM, and "nvram_updates"
@@ -99,7 +100,6 @@ private:
 
 	// ROM data (32-bit words, as interleaved by the driver's ROM_LOAD32_WORD pairs)
 	std::vector<u32> m_prismdata[4];
-	std::vector<u8> m_dcs_rom;
 
 	// MediaGX north bridge state
 	u32 m_disp_ctrl_reg[256/4] = {};
@@ -204,5 +204,4 @@ private:
 
 	static u32 read_le(const std::vector<u8> &buf, offs_t off, u32 mask);
 	static void write_le(std::vector<u8> &buf, offs_t off, u32 data, u32 mask);
-	bool load_interleaved(const char *dir, const char *lo, const char *hi, std::vector<u32> &dest);
 };

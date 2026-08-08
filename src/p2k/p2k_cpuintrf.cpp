@@ -9,6 +9,8 @@
 // forwards. What it makes possible is inspection - registers and disassembly - which is what
 // bring-up needs next.
 #include "p2k_driver.h"
+#include "p2k_debug.h"
+#include "p2k_weak.h"
 #include "i386.h"
 #include "i386priv.h"
 
@@ -80,8 +82,10 @@ u64 g_p2k_slices = 0;
 
 // Running inside PinMAME, the machine has no console of its own: the boot code's serial output
 // and the CPU's whereabouts are invisible. P2K_PROGRESS=<cycles> makes the bridge report both to
-// stderr every so many cycles - the same view p2kboot prints, which is what makes the two
-// comparable. Unset, this costs one integer compare per time slice.
+// stderr every so many cycles - the same view p2kboot prints, which is what makes the two comparable
+#if !P2K_DEBUG
+inline void report_progress(u64) {}
+#else
 void report_progress(u64 cycles)
 {
 	static const u64 interval = []() -> u64 {
@@ -114,6 +118,7 @@ void report_progress(u64 cycles)
 		unsigned(g_bridge_cpu->state_int(I386_ESP)), unsigned(g_bridge_cpu->state_int(I386_CR0)));
 	fflush(stderr);
 }
+#endif // P2K_DEBUG
 
 } // anonymous namespace
 
@@ -123,13 +128,27 @@ static void p2k_report_progress(u64 cycles) { g_p2k_cycles_total += cycles; repo
 // The P2K machine registers itself here so the bridge has something to talk to.
 extern void (*p2k_instruction_hook)(unsigned pc);
 extern void (*p2k_exception_hook)(int vector);
-extern "C" void remote_debug_breakpoint_hook(void) __attribute__((weak));
+// PinMAME checks breakpoints from inside a CPU core's instruction loop. This core runs its own
+// loop inside the subsystem, so the hook is called between execution chunks instead - fine for
+// stopping on an address, just not instruction-exact. It is only linked in with REMOTE_DEBUG,
+// which these files cannot test for; see p2k_weak.h for how each compiler decides
+#if defined(_MSC_VER) && !defined(REMOTE_DEBUG)
+  #define P2K_REMOTE_DEBUG_HOOK() ((void)0)
+#elif defined(_MSC_VER)
+  extern "C" void remote_debug_breakpoint_hook(void);
+  #define P2K_REMOTE_DEBUG_HOOK() remote_debug_breakpoint_hook()
+#else
+  extern "C" void remote_debug_breakpoint_hook(void) P2K_WEAK;
+  #define P2K_REMOTE_DEBUG_HOOK() \
+	do { if (remote_debug_breakpoint_hook) remote_debug_breakpoint_hook(); } while (0)
+#endif
 extern "C" unsigned mediagx_get_reg(int regnum);
 extern "C" int mediagx_ICount;
 
 // set when PinMAME cuts the time slice short (a breakpoint hit), cleared at the next slice
 static bool g_bridge_aborted = false;
 
+#if P2K_DEBUG
 // P2K_BACKTRACE=<n>: ring of the last n program counters. The boot derail leaves no trace of how
 // it got there, so this records the way in. It is dumped once, at whichever comes first: the CPU
 // leaving protected mode, or the first trap. The mode change is the earlier and more telling of
@@ -289,6 +308,7 @@ static void dump_range()
 	}
 	fflush(stderr);
 }
+#endif // P2K_DEBUG
 
 
 // ---------------------------------------------------------------- the clkint gate
@@ -314,18 +334,18 @@ static void dump_range()
 //
 // It is bounded, and it has to be: XINU's clock handler does not always return by IRET - when it
 // reschedules it switches tasks and the frame is popped later, in another context. So after
-// P2K_CLKINT_MAX_SKIP PIT edges (default 4) with delivery held, the gate gives up and opens.
-// P2K_CLKINT_GATE=0 turns it off; P2K_CLKINT_COUNTER=<addr> is an opt-in experiment that gates on
-// the firmware's own nesting counter instead of the IRET heuristic.
+// four PIT edges with delivery held, the gate gives up and opens.
+//
+// The gate itself is not optional - the machine does not survive without it. What is optional is
+// being able to argue with it, which is a debugging need: P2K_CLKINT_GATE=0 turns it off,
+// P2K_CLKINT_MAX_SKIP=<n> moves the bound, and P2K_CLKINT_COUNTER=<addr> is an experiment that
+// gates on the firmware's own nesting counter instead of the IRET heuristic. Without P2K_DEBUG
+// these are the constants they default to, so the compiler drops the counter branch entirely
+#if P2K_DEBUG
 static const bool g_clkint_gate = []() {
 	const char *s = getenv("P2K_CLKINT_GATE");
 	return !s || strtol(s, nullptr, 0) != 0;
 }();
-static bool g_in_clkint = false;
-static bool g_clkint_iret_seen = false;
-static bool g_irq0_armed = false;      // an edge reached the PIC, no dispatch yet
-static int g_tick_vector = -1;         // learned from the first dispatch after an edge
-static long g_edges_while_held = 0;
 static const long g_max_skips = []() {
 	const char *s = getenv("P2K_CLKINT_MAX_SKIP");
 	const long n = s ? strtol(s, nullptr, 0) : 4;
@@ -335,6 +355,16 @@ static const unsigned g_clkint_counter = []() {
 	const char *s = getenv("P2K_CLKINT_COUNTER");
 	return s ? unsigned(strtoul(s, nullptr, 16)) : 0u;
 }();
+#else
+static const bool     g_clkint_gate    = true;
+static const long     g_max_skips      = 4;
+static const unsigned g_clkint_counter = 0;
+#endif
+static bool g_in_clkint = false;
+static bool g_clkint_iret_seen = false;
+static bool g_irq0_armed = false;      // an edge reached the PIC, no dispatch yet
+static int g_tick_vector = -1;         // learned from the first dispatch after an edge
+static long g_edges_while_held = 0;
 u64 g_p2k_tick_held = 0;
 u64 g_p2k_clkint_entered = 0;
 u64 g_p2k_clkint_left = 0;
@@ -374,6 +404,7 @@ void p2k_clkint_note_edge()
 }
 
 
+#if P2K_DEBUG
 // P2K_PCTRAP="<hex>[=<label>],...": report when execution reaches any of those addresses, with
 // EAX alongside. The reason this exists: the game's start-button gates (AudioIsReady,
 // MultiDevice::game_start_check, jts_game_start_check, the switch pre-filter) all reject the
@@ -449,6 +480,7 @@ inline void pctrap_check(unsigned pc)
 }
 
 } // namespace
+#endif // P2K_DEBUG
 
 // This runs before every single guest instruction, so what it does when nothing is asked of it
 // is a performance decision, not a detail. Two things were costing measurably:
@@ -462,11 +494,13 @@ inline void pctrap_check(unsigned pc)
 // handler's IRET. That peek used to go through the bus for every instruction inside clkint - and
 // the machine is inside clkint roughly a third of the time - so it reads main RAM directly now,
 // falling back to the bus only when the PC is somewhere else.
+#if P2K_DEBUG
 static long g_hooktrace_left = []() -> long {
 	const char *s = getenv("P2K_HOOKTRACE");
 	return s ? strtol(s, nullptr, 0) : 0;
 }();
 static bool g_probes_armed = false;   // set in p2k_bridge_attach, once everything is parsed
+#endif
 
 static inline u8 p2k_peek_byte(unsigned a)
 {
@@ -493,6 +527,7 @@ static void p2k_debug_step(unsigned pc)
 
 	// Everything from here to the closing brace is a probe: off in a normal run, and the whole
 	// chain is skipped in one test. What comes *after* the block is not optional - see there.
+#if P2K_DEBUG
 	if (g_probes_armed)
 	{
 	pctrap_check(pc);
@@ -592,12 +627,13 @@ static void p2k_debug_step(unsigned pc)
 			bytes);
 	}
 	}
+#endif // P2K_DEBUG
 
 	// Not probes, and skipping them changes how the machine runs: the breakpoint check is what
 	// makes the remote debugger work at all, and the abort below is how a shortened time slice
 	// reaches the core. An earlier version of this had them behind the probe test, and the
 	// machine's timing shifted by two frames - that is how much they matter.
-	if (remote_debug_breakpoint_hook) remote_debug_breakpoint_hook();
+	P2K_REMOTE_DEBUG_HOOK();
 
 	// A breakpoint hit ends the time slice through activecpu_abort_timeslice(), which subtracts
 	// the cycles that are left from the CPU's icount - for this bridge that means mediagx_ICount
@@ -626,6 +662,7 @@ static void p2k_trap_step(int vector)
 		set_in_clkint(true);
 		g_p2k_irq_dispatched++;
 	}
+#if P2K_DEBUG
 	static long trace_left = []() -> long {
 		const char *s = getenv("P2K_TRAPTRACE");
 		return s ? strtol(s, nullptr, 0) : 0;
@@ -644,6 +681,7 @@ static void p2k_trap_step(int vector)
 		unsigned(g_bridge_cpu->state_int(I386_ESP)), unsigned(g_bridge_cpu->state_int(I386_CR0)),
 		unsigned(g_bridge_cpu->state_int(I386_EFLAGS)));
 	fflush(stderr);
+#endif // P2K_DEBUG
 }
 
 void p2k_bridge_attach(p2k_state *state, mediagx_device *cpu)
@@ -651,20 +689,16 @@ void p2k_bridge_attach(p2k_state *state, mediagx_device *cpu)
 	g_bridge_state = state;
 	g_bridge_cpu = cpu;
 	g_disasm.reset();
+#if P2K_DEBUG
 	pctrap_init();
 	g_probes_armed = g_pctrap_n || g_hooktrace_left > 0 || g_dump_to || g_stack_at
 		|| g_stack_below || !g_backtrace.empty() || g_watch_to;
+#endif
 	p2k_instruction_hook = p2k_debug_step;
 	p2k_exception_hook = p2k_trap_step;
 }
 
 extern "C" {
-
-// PinMAME checks breakpoints from inside a CPU core's instruction loop. This core runs its own
-// loop inside the subsystem, so the hook is called between execution chunks instead - fine for
-// stopping on an address, just not instruction-exact. Weak, so builds without the remote
-// debugger link cleanly.
-void remote_debug_breakpoint_hook(void) __attribute__((weak));
 
 int mediagx_ICount = 0;
 
@@ -688,7 +722,7 @@ int mediagx_execute(int cycles)
 		int n = (left > chunk) ? chunk : left;
 		g_bridge_state->run_cycles(u64(n));
 		left -= n;
-		if (remote_debug_breakpoint_hook) remote_debug_breakpoint_hook();
+		P2K_REMOTE_DEBUG_HOOK();
 		if (mediagx_ICount < 0) g_bridge_aborted = true;
 	}
 

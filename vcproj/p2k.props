@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ============================================================================== -->
+<!-- p2k.props - build the Pinball 2000 subsystem (src/p2k) into a project.         -->
+<!--                                                                                -->
+<!-- Importing this into a .vcxproj compiles the subsystem, plus PinMAME's own half -->
+<!-- of it (src/wpc/p2k.c), directly into that project using the project's OWN      -->
+<!-- PlatformToolset. Nothing imports it by itself: enable_p2k.bat adds the import  -->
+<!-- and a project-wide HAS_MEDIAGX=1 to an already generated project set, Pinball  -->
+<!-- 2000 being opt-in here for the same reason it is behind P2K=1 in the makefile  -->
+<!-- and -DPINMAME_P2K=ON in CMake. The imported MAME 0.239 sources need C++17, so  -->
+<!-- this works only on a v141+ toolset (VS2017 and later); the v110/v140 base      -->
+<!-- projects neither import it nor are affected by it.                             -->
+<!--                                                                                -->
+<!-- HAS_MEDIAGX=1 has to be project-wide, not per-item: src/cpuintrf.c and         -->
+<!-- src/wpc/driver.c test it to register the CPU and list the games; defining it   -->
+<!-- only here would leave the driver compiled but the games invisible.             -->
+<!--                                                                                -->
+<!-- The per-item metadata is what lets this build inside projects whose own        -->
+<!-- settings are hostile to the imported code:                                     -->
+<!--                                                                                -->
+<!--   RuntimeTypeInfo    VPinMAME builds with /GR-; the shim's device_t::subdevice -->
+<!--                      uses dynamic_cast.                                        -->
+<!--   ExceptionHandling  PinMAME builds with exceptions off; this is C++ with      -->
+<!--                      std::vector and std::string in it.                        -->
+<!--   include dirs       PinMAME has its own src/machine/pic8259.h, and with src/  -->
+<!--                      searched first the imported sources pick that up instead  -->
+<!--                      of their own - shown as "invalid use of incomplete        -->
+<!--                      type pic8259_device", not a missing file. Hence the p2k   -->
+<!--                      directories go BEFORE %(AdditionalIncludeDirectories).    -->
+<!--   CompileAsCpp       SoftFloat is C source that MAME compiles as C++.          -->
+<!--   ObjectFileName     these projects put every object in one flat $(IntDir),    -->
+<!--                      where src/machine/pic8259.c and src/p2k/mame/machine/     -->
+<!--                      pic8259.cpp would both write pic8259.obj: MSBuild warns   -->
+<!--                      (LNK4042), drops one, and the link fails on PinMAME's own -->
+<!--                      pic8259_0_config. A p2k_ prefix keeps them apart. CMake   -->
+<!--                      and the unix build give each source its own directory.    -->
+<!--                                                                                -->
+<!-- src/wpc/p2k.c is the exception - PinMAME-side C, so it takes the project's     -->
+<!-- normal settings, only without the p2k include directories.                     -->
+<!--                                                                                -->
+<!-- Expect a C4005 on INLINE from the four SoftFloat units: these projects define  -->
+<!-- INLINE=__inline on the command line and SoftFloat's mamesf.h has its own       -->
+<!-- unconditional "#define INLINE static inline", which wins. That is the          -->
+<!-- definition SoftFloat needs and the only use of INLINE in the subsystem, so the -->
+<!-- warning is left standing rather than papered over.                             -->
+<!--                                                                                -->
+<!-- Kept in step with src/p2k/p2k.mak and cmake/p2k.cmake: a source added to one   -->
+<!-- belongs in all three.                                                          -->
+<!-- ============================================================================== -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/p2k_machine.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/p2k_driver.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/p2k_cpuintrf.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/p2k_pinmame.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/p2k_selftest.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/shim/emu.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/shim/coreutil_bcd.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/shim/machine/pckeybrd.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386/i386.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386/i386dasm.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/emu/divtlb.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/emu/attotime.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/emu/diserial.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/pic8259.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/pit8253.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/am9517a.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/mc146818.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/8042kbdc.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/lpci.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/nvram.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/machine/ins8250.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat/softfloat.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat/fpatan.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat/fsincos.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat/fyl2x.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)p2k_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/cpu/i386;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty;$(MSBuildThisFileDirectory)../src/p2k/mame/3rdparty/softfloat;$(MSBuildThisFileDirectory)../src/p2k/mame/machine;$(MSBuildThisFileDirectory)../src/p2k/mame/video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/wpc/p2k.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+</Project>

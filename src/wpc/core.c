@@ -2696,6 +2696,15 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
       if (type == CORE_IMPORT)
         { core_findSize(layout->importedLayout, maxX, maxY); continue; }
       if (type == CORE_DMD || type == CORE_VIDEO) {
+        /* The trailing +1 costs a DMD nothing - dots are two pixels apart, so it is just the
+           gap after the last one. A CORE_VIDEO display has cols == rows == 1 and no such gap,
+           so it makes the visible area one pixel WIDER than the renderer draws: 257 for Baby
+           Pac-Man's and Granny & the Gators' 256, 641 for Pinball 2000's 640. Nothing writes
+           that column. Harmless to MAME (bitmaps carry a BITMAP_SAFETY border) but visible to
+           a frontend, since Controller.DmdWidth reports the visible area and
+           Controller.updateDmdPixels hands over that many pixels per row. Left alone
+           deliberately: removing it for CORE_VIDEO would change the size every existing
+           video-display game reports to every table built against it */
         tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
         tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
       }

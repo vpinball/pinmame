@@ -3,6 +3,7 @@
 // src/wpc/p2k.c is compiled as part of PinMAME and knows nothing about the subsystem's C++
 // types; these four functions are the whole contract between them.
 #include "p2k_driver.h"
+#include "p2k_debug.h"
 #include <cstdlib>
 #include <cstring>
 
@@ -12,25 +13,37 @@ namespace { std::unique_ptr<p2k_state> g_machine; }
 
 extern "C" {
 
-void p2k_pinmame_start(const char *game)
+// The ROMs arrive as PinMAME memory regions, which src/wpc/p2k.c passes in: the subsystem does not
+// know about PinMAME's ROM system and does not open files. Everything a machine needs is in its
+// ROM set, so a version is selected, audited and zipped exactly like any other game's
+void p2k_pinmame_start(const char *game,
+                       const unsigned char *prism, unsigned prismLen,
+                       const unsigned char *updates, unsigned updatesLen)
 {
 	g_machine = std::make_unique<p2k_state>();
 
-	// The real ROM set is loaded by the subsystem; point it somewhere with P2K_ROMS. The driver
-	// says which game it is, so the file prefix follows the driver; P2K_GAME still overrides it
-	// for experiments.
-	const char *romdir = getenv("P2K_ROMS");
-	const char *prefix = getenv("P2K_GAME");
-	if (!prefix) prefix = (game && *game) ? game : "rfm";
-	if (romdir) g_machine->load_roms(romdir, prefix);
-	if (const char *nv = getenv("P2K_NVRAM_UPDATES")) g_machine->load_nvram_updates(nv);
+	// Which of the two games this is - the boot-ROM patch sits at a different address in each
+	const char *prefix = (game && *game) ? game : "rfm";
+
+	// A failure here means the ROM region is short or absent, which PinMAME's own audit should
+	// have caught first - but the machine would otherwise run with empty ROM banks and draw
+	// nothing, and a black screen with no message is indistinguishable from an emulation bug
+	if (!g_machine->set_prism_roms(prism, prismLen, prefix))
+		fprintf(stderr, "[p2k] the MediaGX ROM region is missing or short (%u bytes, need %u) - "
+		                "this machine will show nothing\n", prismLen, 4u * 0x1000000u);
+	if (!g_machine->set_nvram_updates(updates, updatesLen))
+		fprintf(stderr, "[p2k] the update flash region is missing or short (%u bytes, need %u) - "
+		                "the machine does not boot without it\n", updatesLen, 0x800000u);
 
 	// The MAME driver runs the MediaGX at 20 MHz with the comment "should be 233MHz". That
 	// downclock is not free: the firmware programs the PIT as a rate generator with divisor 298,
 	// so a tick arrives every ~6400 CPU cycles at 20 MHz, and the operating system's tick handler
-	// does not fit in that. P2K_CPU_HZ raises it for experiments.
+	// does not fit in that
 	u32 cpu_hz = 20000000;
+#if P2K_DEBUG
+	// P2K_CPU_HZ raises it, which is how that was measured
 	if (const char *s = getenv("P2K_CPU_HZ")) { const long v = strtol(s, nullptr, 0); if (v > 0) cpu_hz = u32(v); }
+#endif
 	g_machine->build_machine(cpu_hz);
 	g_machine->reset();
 }

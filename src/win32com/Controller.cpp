@@ -795,6 +795,14 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 			return S_OK;
 		}
 
+		/* A VIDEO_RGB_DIRECT screen holds packed colour, not palette indices, and
+		   palette_get_color() would read a 15 bpp value as an index up to 0x7fff - far past
+		   the palette. Baby Pac-Man and Granny & the Gators, the other games reaching a
+		   frontend through this call, are paletted and keep the lookup; Pinball 2000's
+		   MediaGX frame buffer is not and gets unpacked by depth. Same split as
+		   UpdatePinmameDisplayBitmap() in src/libpinmame/libpinmame.cpp */
+		const bool direct = (Machine->drv->video_attributes & VIDEO_RGB_DIRECT) != 0;
+
 		float *dst = reinterpret_cast<float*>(buf);
 		if (btm->depth == 8)
 		{
@@ -820,7 +828,14 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
-					palette_get_color((*src++),&r,&g,&b);
+					const UINT16 c = *src++;
+					if (direct)
+					{
+						if (btm->depth == 16) { r = ((c >> 11) & 0x1f) << 3; g = ((c >> 5) & 0x3f) << 2; b = (c & 0x1f) << 3; }
+						else                  { r = ((c >> 10) & 0x1f) << 3; g = ((c >> 5) & 0x1f) << 3; b = (c & 0x1f) << 3; }
+					}
+					else
+						palette_get_color(c,&r,&g,&b);
 					*(dst++) = (float)r*(float)(1.0/255.0);
 					*(dst++) = (float)g*(float)(1.0/255.0);
 					*(dst++) = (float)b*(float)(1.0/255.0);
@@ -836,7 +851,10 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
-					palette_get_color((*src++),&r,&g,&b);
+					const UINT32 c = *src++;
+					if (direct) { r = (c >> 16) & 0xff; g = (c >> 8) & 0xff; b = c & 0xff; }
+					else
+						palette_get_color(c,&r,&g,&b);
 					*(dst++) = (float)r*(float)(1.0/255.0);
 					*(dst++) = (float)g*(float)(1.0/255.0);
 					*(dst++) = (float)b*(float)(1.0/255.0);

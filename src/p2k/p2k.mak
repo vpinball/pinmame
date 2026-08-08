@@ -11,6 +11,15 @@ P2K_INC = -Isrc/p2k/shim -Isrc/p2k/mame -Isrc/p2k/mame/cpu/i386 -Isrc/p2k/mame/e
 # The imported MAME sources need a modern C++ dialect; PinMAME's own C flags do not apply.
 P2K_CXXFLAGS = -std=gnu++17 -O2 -fno-strict-aliasing -w $(P2K_INC)
 
+# The bring-up apparatus - traces, watches, dumps, the stand-in playfield, and the fifty-odd
+# P2K_* environment variables that drive them. None of it is compiled unless this is set, so
+# it goes into DEFS as well: src/wpc/p2k.c and src/wpc/wmssnd.c are on PinMAME's side of the
+# build and carry their half of it. See src/p2k/p2k_debug.h
+ifdef P2K_DEBUG
+P2K_CXXFLAGS += -DP2K_DEBUG=1
+DEFS += -DP2K_DEBUG=1
+endif
+
 P2K_OBJDIRS = $(P2K_OBJ) $(P2K_OBJ)/mame/cpu/i386 $(P2K_OBJ)/mame/emu \
               $(P2K_OBJ)/mame/3rdparty/softfloat $(P2K_OBJ)/mame/machine \
               $(P2K_OBJ)/mame/video $(P2K_OBJ)/shim $(P2K_OBJ)/shim/machine

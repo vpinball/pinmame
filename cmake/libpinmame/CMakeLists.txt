@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.25)
 set(PLATFORM "win" CACHE STRING "Platform")
 set(ARCH "x64" CACHE STRING "Arch")
 
-option(PINMAME_P2K "Option to build the Pinball 2000 subsystem (src/p2k)" OFF)
 option(BUILD_SHARED "Option to build shared library" ON)
 option(BUILD_STATIC "Option to build static library" ON)
 
@@ -740,80 +739,6 @@ else()
    )
 endif()
    
-# Pinball 2000. Opt-in, exactly as the unix build's P2K=1 is: without it neither the driver nor
-# the MediaGX CPU is registered and a plain libpinmame is unchanged.
-#
-# The subsystem is built as its own object library rather than folded into PINMAME_SOURCES,
-# because it needs settings the rest of the build must not have, and two of them bite hard:
-#
-#   - RTTI. The shim's device_t::subdevice() uses dynamic_cast, and libpinmame compiles with
-#     -fno-rtti.
-#   - Include order. PinMAME has its own src/machine/pic8259.h, and with src/ searched first the
-#     imported MAME sources pick that up instead of their own - which shows as "invalid use of
-#     incomplete type pic8259_device", not as a missing file.
-#
-# Kept in step with src/p2k/p2k.mak: a source added there belongs here too.
-if(PINMAME_P2K)
-   add_library(p2k OBJECT
-      src/p2k/p2k_machine.cpp
-      src/p2k/p2k_driver.cpp
-      src/p2k/p2k_cpuintrf.cpp
-      src/p2k/p2k_pinmame.cpp
-      src/p2k/p2k_selftest.cpp
-      src/p2k/shim/emu.cpp
-      src/p2k/shim/coreutil_bcd.cpp
-      src/p2k/shim/machine/pckeybrd.cpp
-      src/p2k/mame/cpu/i386/i386.cpp
-      src/p2k/mame/cpu/i386/i386dasm.cpp
-      src/p2k/mame/emu/divtlb.cpp
-      src/p2k/mame/emu/attotime.cpp
-      src/p2k/mame/emu/diserial.cpp
-      src/p2k/mame/machine/pic8259.cpp
-      src/p2k/mame/machine/pit8253.cpp
-      src/p2k/mame/machine/am9517a.cpp
-      src/p2k/mame/machine/mc146818.cpp
-      src/p2k/mame/machine/8042kbdc.cpp
-      src/p2k/mame/machine/lpci.cpp
-      src/p2k/mame/machine/nvram.cpp
-      src/p2k/mame/machine/ins8250.cpp
-      src/p2k/mame/3rdparty/softfloat/softfloat.c
-      src/p2k/mame/3rdparty/softfloat/fpatan.c
-      src/p2k/mame/3rdparty/softfloat/fsincos.c
-      src/p2k/mame/3rdparty/softfloat/fyl2x.c
-   )
-   # SoftFloat is C source that MAME compiles as C++, and so must we.
-   set_source_files_properties(
-      src/p2k/mame/3rdparty/softfloat/softfloat.c
-      src/p2k/mame/3rdparty/softfloat/fpatan.c
-      src/p2k/mame/3rdparty/softfloat/fsincos.c
-      src/p2k/mame/3rdparty/softfloat/fyl2x.c
-      PROPERTIES LANGUAGE CXX
-   )
-   target_include_directories(p2k BEFORE PRIVATE
-      src/p2k/shim
-      src/p2k/mame
-      src/p2k/mame/cpu/i386
-      src/p2k/mame/emu
-      src/p2k/mame/osd
-      src/p2k/mame/3rdparty
-      src/p2k/mame/3rdparty/softfloat
-      src/p2k/mame/machine
-      src/p2k/mame/video
-   )
-   set_target_properties(p2k PROPERTIES
-      CXX_STANDARD 17
-      POSITION_INDEPENDENT_CODE ON
-   )
-   if(NOT MSVC)
-      target_compile_options(p2k PRIVATE -frtti -fno-strict-aliasing -w)
-   endif()
-   list(APPEND PINMAME_SOURCES src/wpc/p2k.c $<TARGET_OBJECTS:p2k>)
-   # This is the switch src/wpc/driver.c already tests to list the games, and the one the unix
-   # build derives from CPUS += MEDIAGX@. Setting only a private define here would leave the
-   # driver compiled but the games unlisted - which is exactly what happened first time round.
-   add_compile_definitions(HAS_MEDIAGX=1)
-endif()
-
 set(PINMAME_INCLUDE_DIRS
    src
    src/wpc
@@ -916,4 +841,16 @@ if(TARGET pinmame_shared)
 endif()
 if(TARGET pinmame_static)
    pinmame_enable_asmjit(pinmame_static)
+endif()
+
+# --- Pinball 2000 subsystem (src/p2k)
+# On by default; -DPINMAME_P2K=OFF leaves neither the driver nor the MediaGX CPU registered
+# and a plain libpinmame unchanged. Everything the subsystem needs is in cmake/p2k.cmake,
+# shared with the Windows builds
+include(${CMAKE_SOURCE_DIR}/cmake/p2k.cmake)
+if(TARGET pinmame_shared)
+   pinmame_enable_p2k(pinmame_shared)
+endif()
+if(TARGET pinmame_static)
+   pinmame_enable_p2k(pinmame_static)
 endif()

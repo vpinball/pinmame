@@ -63,6 +63,27 @@ copy /V /-Y "LibPinMAMETest_VC2015.vcxproj.filters" "LibPinMAMETest_VC2017.vcxpr
 @cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>PINMAME_JIT_ASMJIT;" /in:"VPinMAME_VC2017.vcxproj" /out:"VPinMAME_VC2017.vcxproj"
 @if errorlevel 1 goto manual
 
+@rem --- enable the Pinball 2000 subsystem (src/p2k) as v141+ toolset is C++17-capable
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'p2k.props^' /></Project>" /in:"LibPinMAME_VC2017.vcxproj" /out:"LibPinMAME_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'p2k.props^' /></Project>" /in:"PinMAME_VC2017.vcxproj" /out:"PinMAME_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'p2k.props^' /></Project>" /in:"PinMAME32_VC2017.vcxproj" /out:"PinMAME32_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /replacequotes /search:"</Project>" /replace:"  <Import Project=^'p2k.props^' /></Project>" /in:"VPinMAME_VC2017.vcxproj" /out:"VPinMAME_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+
+@rem --- define HAS_MEDIAGX project-wide: src/cpuintrf.c tests it to register the
+@rem     MediaGX and src/wpc/driver.c tests it to list the games
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>HAS_MEDIAGX=1;" /in:"LibPinMAME_VC2017.vcxproj" /out:"LibPinMAME_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>HAS_MEDIAGX=1;" /in:"PinMAME_VC2017.vcxproj" /out:"PinMAME_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>HAS_MEDIAGX=1;" /in:"PinMAME32_VC2017.vcxproj" /out:"PinMAME32_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"<PreprocessorDefinitions>" /replace:"<PreprocessorDefinitions>HAS_MEDIAGX=1;" /in:"VPinMAME_VC2017.vcxproj" /out:"VPinMAME_VC2017.vcxproj"
+@if errorlevel 1 goto manual
+
 @goto end
 
 :manual

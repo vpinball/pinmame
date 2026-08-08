@@ -1,5 +1,7 @@
 // PinMAME P2K subsystem - the Pinball 2000 machine. See p2k_driver.h for provenance.
 #include "p2k_driver.h"
+#include "p2k_debug.h"
+#include "p2k_weak.h"
 
 extern u64 g_p2k_cycles_total;
 #include "machine/pic8259.h"
@@ -52,11 +54,20 @@ namespace {
 // P2K_WRITEMAP=1: count every write into 1 MB buckets and print the busiest at the PPM trigger.
 // "Where does it draw" is otherwise a guessing game over a 4 GB address space.
 // the DCS2 sound board lives on PinMAME's side; these are defined in src/wpc/p2k.c
-extern "C" u32 p2k_dcs_read(u32 offset, u32 mem_mask) __attribute__((weak));
-extern "C" void p2k_dcs_write(u32 offset, u32 data, u32 mem_mask) __attribute__((weak));
+extern "C" u32 p2k_dcs_read(u32 offset, u32 mem_mask) P2K_WEAK;
+extern "C" void p2k_dcs_write(u32 offset, u32 data, u32 mem_mask) P2K_WEAK;
 
+// One MediaGX/Prism ROM bank: two 8 MB chips interleaved as 32-bit words
+static const size_t PRISM_BANK_BYTES = 0x1000000;
+
+// P2K_WRITEMAP=1 counts writes per megabyte, which is how the missing 0xc0800000 alias window
+// was found. A compile-time false without the switch, so mem_w keeps nothing of it
 u64 g_p2k_writemap[4096] = {};
+#if P2K_DEBUG
 const bool g_writemap_on = getenv("P2K_WRITEMAP") != nullptr;
+#else
+const bool g_writemap_on = false;
+#endif
 
 namespace {
 
@@ -66,16 +77,6 @@ u32 bus_r(void *, offs_t a, u32 mask)          { return g_state->mem_r(a, mask);
 void bus_w(void *, offs_t a, u32 d, u32 mask)  { g_state->mem_w(a, d, mask); }
 u32 bus_io_r(void *, offs_t a, u32 mask)        { return g_state->io_r(a, mask); }
 void bus_io_w(void *, offs_t a, u32 d, u32 mask) { g_state->io_w(a, d, mask); }
-
-bool read_file(const std::string &path, std::vector<u8> &dest, size_t expected)
-{
-	FILE *f = fopen(path.c_str(), "rb");
-	if (!f) return false;
-	dest.resize(expected);
-	size_t got = fread(dest.data(), 1, expected, f);
-	fclose(f);
-	return got == expected;
-}
 
 } // anonymous namespace
 
@@ -104,68 +105,60 @@ p2k_state::~p2k_state()
 }
 
 // ---------------------------------------------------------------- ROM loading
-bool p2k_state::load_interleaved(const char *dir, const char *lo, const char *hi, std::vector<u32> &dest)
-{
-	std::vector<u8> a, b;
-	if (!read_file(std::string(dir) + "/" + lo, a, 0x800000)) { printf("missing %s\n", lo); return false; }
-	if (!read_file(std::string(dir) + "/" + hi, b, 0x800000)) { printf("missing %s\n", hi); return false; }
+//
+// Everything comes from PinMAME ROM regions (see ROM_START in src/wpc/p2k.c). Nothing here opens
+// a file, so a machine is selected and audited exactly like any other: the set name is the zip
 
-	// ROM_LOAD32_WORD pairs: `lo` supplies the low 16 bits of each dword, `hi` the high ones
-	dest.assign(0x1000000 / 4, 0);
-	for (size_t i = 0; i < dest.size(); i++)
+bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
+{
+	// The region is the four 16 MB banks back to back, already interleaved by the ROM loader:
+	// ROM_LOAD32_WORD puts the u10x-even file in the low half of each dword and the odd one in
+	// the high half, which is the layout this bus expects
+	if (!data || len < 4 * PRISM_BANK_BYTES) return false;
+	for (int bank = 0; bank < 4; bank++)
 	{
-		u32 w0 = u32(a[i * 2]) | (u32(a[i * 2 + 1]) << 8);
-		u32 w1 = u32(b[i * 2]) | (u32(b[i * 2 + 1]) << 8);
-		dest[i] = w0 | (w1 << 16);
+		m_prismdata[bank].assign(PRISM_BANK_BYTES / 4, 0);
+		memcpy(m_prismdata[bank].data(), data + size_t(bank) * PRISM_BANK_BYTES, PRISM_BANK_BYTES);
 	}
-	return true;
-}
-
-bool p2k_state::load_roms(const char *romdir, const char *prefix)
-{
-	std::string p(prefix);
-	bool ok = true;
-	ok &= load_interleaved(romdir, (p + "_u100.rom").c_str(), (p + "_u101.rom").c_str(), m_prismdata[0]);
-	ok &= load_interleaved(romdir, (p + "_u102.rom").c_str(), (p + "_u103.rom").c_str(), m_prismdata[1]);
-	ok &= load_interleaved(romdir, (p + "_u104.rom").c_str(), (p + "_u105.rom").c_str(), m_prismdata[2]);
-	ok &= load_interleaved(romdir, (p + "_u106.rom").c_str(), (p + "_u107.rom").c_str(), m_prismdata[3]);
 
 	// The MAME driver patches the boot ROM through ROM_FILL in its ROM_START blocks (MAME 0.239,
 	// src/mame/drivers/pinball2k.cpp). Those patches are part of the driver, not of the ROM set,
-	// so they have to be applied here - the loader above reads the files verbatim.
+	// so they are applied to our copy rather than declared as ROM_FILL - a ROM_FILL would make
+	// the region disagree with the hashes the set is audited against.
 	//
 	//   0x191            retf -> nop. The option ROM's init entry ends by restoring the register
 	//                    block at 0x300 and returning to whoever far-called it. Nothing ever
 	//                    calls it: the reset vector jumps straight to 0xc0003, so the far return
 	//                    reads a frame that was never pushed and the CPU lands at 0000:0000.
 	//   0x419a (rfm)     the immediate of `mov eax,0FFFFFFF9h` -> 1: a failing check is forced to
-	//   0x3b33 (swe1)    report success. Same shape in both games, different address.
-	if (ok && !m_prismdata[0].empty())
-	{
-		auto poke = [this](size_t off, u8 value) {
-			if (off / 4 < m_prismdata[0].size())
-			{
-				const unsigned shift = unsigned(off % 4) * 8;
-				u32 &w = m_prismdata[0][off / 4];
-				w = (w & ~(0xffu << shift)) | (u32(value) << shift);
-			}
-		};
-		poke(0x191, 0x90);
-		const size_t ok_imm = (p.compare(0, 4, "swe1") == 0) ? 0x3b33 : 0x419a;
-		poke(ok_imm + 0, 0x01);
-		poke(ok_imm + 1, 0x00);
-		poke(ok_imm + 2, 0x00);
-		poke(ok_imm + 3, 0x00);
-	}
+	//   0x3b33 (swep1)   report success. Same shape in both games, different address.
+	//
+	// The second address is tied to the boot ROM image, not to the game: Revenge From Mars's
+	// alternate bank-0 pair (rfm_u100r2/rfm_u101r2, not a declared set - see src/wpc/p2k.c) has a
+	// `call` at 0x419a, and this poke would corrupt it. If those are ever added, the check has to
+	// be located in that image first. 0x191 is the same in both revisions.
+	auto poke = [this](size_t off, u8 value) {
+		if (off / 4 < m_prismdata[0].size())
+		{
+			const unsigned shift = unsigned(off % 4) * 8;
+			u32 &w = m_prismdata[0][off / 4];
+			w = (w & ~(0xffu << shift)) | (u32(value) << shift);
+		}
+	};
+	poke(0x191, 0x90);
+	const size_t ok_imm = (prefix && strncmp(prefix, "swep1", 5) == 0) ? 0x3b33 : 0x419a;
+	poke(ok_imm + 0, 0x01);
+	poke(ok_imm + 1, 0x00);
+	poke(ok_imm + 2, 0x00);
+	poke(ok_imm + 3, 0x00);
+	return true;
+}
 
-	// DCS region: 28f800 boot flash plus the two sound ROMs
-	m_dcs_rom.assign(0xc00000, 0xff);
-	std::vector<u8> flash;
-	if (read_file(std::string(romdir) + "/" + p + "_28f800.rom", flash, 0x100000))
-		memcpy(&m_dcs_rom[0], flash.data(), flash.size());
-	else
-		printf("missing %s_28f800.rom (DCS boot flash)\n", prefix);
-	return ok;
+bool p2k_state::set_nvram_updates(const u8 *data, size_t len)
+{
+	if (!data || len < m_nvram_updates.size()) return false;
+	memcpy(m_nvram_updates.data(), data, m_nvram_updates.size());
+	return true;
 }
 
 u8 *p2k_state::nvram_block_ptr(nvram_block which, size_t *size)
@@ -178,14 +171,6 @@ u8 *p2k_state::nvram_block_ptr(nvram_block which, size_t *size)
 	}
 	if (size) *size = 0;
 	return nullptr;
-}
-
-bool p2k_state::load_nvram_updates(const char *path)
-{
-	std::vector<u8> data;
-	if (!read_file(path, data, 0x800000)) return false;
-	m_nvram_updates = data;
-	return true;
 }
 
 // ---------------------------------------------------------------- fast bus windows
@@ -206,12 +191,15 @@ bool p2k_state::load_nvram_updates(const char *path)
 //
 // Nothing is installed while a bus probe is armed - P2K_READWATCH, P2K_MEMWATCH and P2K_WRITEMAP
 // all report from inside mem_r/mem_w, and a window would make them silently blind. P2K_FASTBUS=0
-// turns the whole thing off, which is also the way to check that a suspected fault is not this.
+// turns the whole thing off, which is the way to check that a suspected fault is not this. Both
+// are debugging concerns and neither exists without P2K_DEBUG
 void p2k_state::install_fast_windows()
 {
+#if P2K_DEBUG
 	const bool probing = getenv("P2K_READWATCH") || getenv("P2K_MEMWATCH") || getenv("P2K_WRITEMAP");
 	const char *off = getenv("P2K_FASTBUS");
 	if (probing || (off && off[0] == '0')) return;
+#endif
 
 	m_program->add_fast_window(0x00100000, m_main_ram.data() + 0x00100000, 0x10000000 - 0x00100000);
 	m_program->add_fast_window(0x00000000, m_main_ram.data(), 0x000a0000);
@@ -257,10 +245,12 @@ void p2k_state::build_machine(u32 cpu_clock)
 
 	// MAME clocks the PIT at 925 kHz with the standard 1.193182 MHz commented out - a deliberate
 	// slowdown to go with the 20 MHz CPU. The firmware programs channel 0 as a rate generator
-	// with divisor 298, so that is a tick every ~6400 CPU cycles. P2K_PIT_HZ is here to measure
-	// what the operating system's tick handler actually needs.
+	// with divisor 298, so that is a tick every ~6400 CPU cycles
 	double pit_hz = 925000.0;
+#if P2K_DEBUG
+	// P2K_PIT_HZ moves it, which is how what the tick handler needs was measured
 	if (const char *s = getenv("P2K_PIT_HZ")) { const double v = atof(s); if (v > 0) pit_hz = v; }
+#endif
 	m_pit->set_clk<0>(pit_hz);
 	m_pit->set_clk<1>(925000.0);
 	m_pit->set_clk<2>(925000.0);
@@ -343,6 +333,7 @@ void p2k_state::reset()
 	// firmware wants to log lands at linear 0 and destroys the operating system's reserved
 	// memory there. Seeding them makes the machine survive its own reports long enough to say
 	// what it is complaining about.
+#if P2K_DEBUG
 	if (const char *s = getenv("P2K_NVLOG"))
 	{
 		char *end = nullptr;
@@ -363,6 +354,7 @@ void p2k_state::reset()
 		poke32(0x28, base);     // buffer base
 		printf("p2k: seeding the NVRAM error log at %08x, %x entries of %x bytes\n", base, count, size);
 	}
+#endif
 
 	// PC97317 Super I/O identity, read through ports 0x2e/0x2f. Without it the firmware's
 	// io_setup_global() reports "SuperIOType unknown (0)" and every io_setup_* step after it
@@ -510,6 +502,9 @@ bool p2k_state::frame_rgb(std::vector<u32> &dest, unsigned &width, unsigned &hei
 // P2K_PPM=<path> writes that picture once, after P2K_PPM_AT cycles (20 emulated seconds by
 // default), as a binary PPM - a way to see whether it is right before there is anywhere to show
 // it.
+#if !P2K_DEBUG
+void p2k_state::maybe_write_ppm(u64) {}
+#else
 void p2k_state::maybe_write_ppm(u64 cycles)
 {
 	static const char *path = getenv("P2K_PPM");
@@ -552,6 +547,7 @@ void p2k_state::maybe_write_ppm(u64 cycles)
 		fflush(stderr);
 	}
 }
+#endif // P2K_DEBUG
 
 void p2k_state::run_cycles(u64 cycles)
 {
@@ -762,6 +758,7 @@ void p2k_state::disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 	// P2K_DISPWATCH=1: every write that changes a display controller register, with the PC that
 	// made it. Which registers a game programs, and when, is the difference between a picture and
 	// a black screen.
+#if P2K_DEBUG
 	static const bool watch = getenv("P2K_DISPWATCH") != nullptr;
 	if (watch && r != before)
 	{
@@ -771,6 +768,9 @@ void p2k_state::disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 			before, r, p2k_bridge_pc());
 		fflush(stderr);
 	}
+#else
+	(void)before;
+#endif
 }
 
 u32 p2k_state::memory_ctrl_r(offs_t offset) const { return m_memory_ctrl_reg[offset & 0x3f]; }
@@ -882,6 +882,7 @@ void p2k_state::prism_pci_w(int function, int reg, u32 data, u32 mem_mask)
 // ---------------------------------------------------------------- bus decode
 u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 {
+#if P2K_DEBUG
 	// P2K_READWATCH=<from>[-<to>], hexadecimal: the first 40 reads from that range, with the PC.
 	// The write watch answers who fills a structure; this answers whether a device is ever asked.
 	static unsigned rwatch_from = 0, rwatch_to = 0;
@@ -903,6 +904,7 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 		fprintf(stderr, "[p2k memr] %08x mask %08x  from PC=%08x\n", addr, mem_mask, p2k_bridge_pc());
 		fflush(stderr);
 	}
+#endif
 
 	// the firmware reaches the MediaGX control registers through their 0xc0000000 alias
 	// The firmware addresses the whole MediaGX region through its 0xc0000000 alias, not just the
@@ -920,7 +922,7 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	if (addr < 0x10000080)                       return prism_1000_r((addr - 0x10000000) / 4) & mem_mask;
 	if (addr >= 0x11000000 && addr < 0x11030000) return read_le(m_nvram, addr - 0x11000000, mem_mask);
 	if (addr >= 0x13000000 && addr < 0x13800000)
-		return p2k_dcs_read ? p2k_dcs_read(addr - 0x13000000, mem_mask) : 0;
+		return P2K_HAVE_WEAK(p2k_dcs_read) ? p2k_dcs_read(addr - 0x13000000, mem_mask) : 0;
 	if (addr >= 0x12000000 && addr < 0x13000000)
 	{
 		// byte-wide handler: serve each active lane separately
@@ -955,6 +957,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 {
 	if (g_writemap_on) g_p2k_writemap[addr >> 20]++;
 
+#if P2K_DEBUG
 	// P2K_MEMWATCH=<from>[-<to>], hexadecimal: report every write to that range with the PC that
 	// made it. The boot code hands a far return address to itself through low memory, so seeing
 	// who writes there - and who wipes it - is what bring-up needs.
@@ -990,6 +993,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 			fflush(stderr);
 		}
 	}
+#endif
 
 	// The firmware addresses the whole MediaGX region through its 0xc0000000 alias, not just the
 	// control registers: its own framebuffer base pointer is 0xc0800000, and a write map showed
@@ -1017,7 +1021,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	{
 		// the DCS2 sound board, upstream's, wired in src/wpc/p2k.c. Weak, so the standalone
 		// harness links without one.
-		if (p2k_dcs_write) p2k_dcs_write(addr - 0x13000000, data, mem_mask);
+		if (P2K_HAVE_WEAK(p2k_dcs_write)) p2k_dcs_write(addr - 0x13000000, data, mem_mask);
 		return;
 	}
 	if (addr >= 0x14000000 && addr < 0x15000000) { prism_1400_w((addr - 0x14000000) / 4, data); return; }
@@ -1040,6 +1044,9 @@ unsigned p2k_bridge_pc();
 
 namespace {
 
+#if !P2K_DEBUG
+inline void iowatch(const char *, offs_t, unsigned) {}
+#else
 // P2K_IOWATCH=<from>[-<to>], hexadecimal: the first 200 accesses to that I/O port range, with the
 // PC that made them. Bring-up of a port device starts with knowing how the firmware probes it.
 unsigned g_iowatch_from = 0, g_iowatch_to = 0;
@@ -1062,6 +1069,7 @@ void iowatch(const char *dir, offs_t port, unsigned value)
 	fprintf(stderr, "[p2k io%s] %04x = %02x  from PC=%08x\n", dir, unsigned(port), value, p2k_bridge_pc());
 	fflush(stderr);
 }
+#endif // P2K_DEBUG
 
 } // anonymous namespace
 

@@ -40,6 +40,7 @@ If "%selfWrapped%"=="" (
 @REM Define and set default values.
 set DEF_PRJ=ALL
 set DEF_SAM=YES
+set DEF_P2K=YES
 set DEF_PLA=WIN32
 set DEF_GEN=9
 set DEF_BLD=YES
@@ -48,6 +49,7 @@ set DEF_CFG=DEBUG
 @REM Declare internal variables
 set PROJECT=
 set SAMCOLOR=
+set P2K=
 set PLATFORM=
 set GENERATOR=
 set BUILD=
@@ -64,6 +66,7 @@ set SCRIPT_PLA=""
 
 @REM CMake variables
 set OPTIONS=
+set P2KOPT=
 set TOOLS=-T v141_xp
 
 @REM Print help (terminates script)
@@ -118,7 +121,7 @@ if %GEN_LIBPINMAME% == YES (
    set OUTPATH=build/libpinmame/%PLATFORM%/
     
    copy /Y ..\cmake\libpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-   cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+   cmake %P2KOPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -133,7 +136,7 @@ if %GEN_PINMAME% == YES (
     set OUTPATH=build/pinmame/%PLATFORM%/
     
     copy /Y ..\cmake\pinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-    cmake %OPTIONS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+    cmake %OPTIONS% %P2KOPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -148,7 +151,7 @@ if %GEN_PINMAME32% == YES (
     set OUTPATH=build/pinmame32/%PLATFORM%/
 
     copy /Y ..\cmake\pinmame32\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-    cmake %OPTIONS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+    cmake %OPTIONS% %P2KOPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -163,7 +166,7 @@ if %GEN_VPINMAME% == YES (
     set OUTPATH=build/vpinmame/%PLATFORM%/
 
     copy /Y ..\cmake\vpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-    cmake %OPTIONS% %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+    cmake %OPTIONS% %P2KOPT% %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
     
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -191,6 +194,9 @@ exit /b %errorlevel%
     if %errorlevel% neq 0 (exit /b 1)
 
     if not defined SAMCOLOR call :parse_samcolor %DEF_SAM%
+    if %errorlevel% neq 0 (exit /b 1)
+
+    if not defined P2K call :parse_p2k %DEF_P2K%
     if %errorlevel% neq 0 (exit /b 1)
 
     if not defined PLATFORM call :parse_platform %DEF_PLA%
@@ -229,6 +235,8 @@ exit /b %errorlevel%
     if /I %ARG% == PRJ (call :parse_project %VAL%
     ) else if /I %ARG% == SAM (
         call :parse_samcolor %VAL%
+    ) else if /I %ARG% == P2K (
+        call :parse_p2k %VAL%
     ) else if /I %ARG% == PLA (
         call :parse_platform %VAL%
     ) else if /I %ARG% == GEN (
@@ -302,6 +310,31 @@ exit /b %errorlevel%
     ) else (
         set SAMCOLOR=NO
         set OPTIONS=
+    )
+    exit /b
+
+
+:parse_p2k
+    set USING_P2K=
+
+    @REM Simulate logical OR
+    if /I %1 == Y (set USING_P2K=1)
+    if /I %1 == YES (set USING_P2K=1)
+
+    if /I %1 == N (set USING_P2K=0)
+    if /I %1 == NO (set USING_P2K=0)
+
+    if not defined USING_P2K (
+        echo *** INVALID "P2K" PARAMETER: "%1" ***
+        exit /b 1
+    )
+
+    if %USING_P2K% == 1 (
+        set P2K=YES
+        set P2KOPT=
+    ) else (
+        set P2K=NO
+        set P2KOPT=-D PINMAME_P2K=OFF
     )
     exit /b
 
@@ -401,6 +434,7 @@ exit /b %errorlevel%
     echo --- GLOBAL VARIABLES ---
     echo PROJECT        : %PROJECT%
     echo SAMCOLOR       : %SAMCOLOR%
+    echo P2K            : %P2K%
     echo PLATFORM       : %PLATFORM%
     echo GENERATOR      : %GENERATOR%
     echo BUILD          : %BUILD%

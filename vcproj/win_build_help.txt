@@ -1,6 +1,6 @@
 WIN_BUILD HELP
 --------------
-USAGE: win_build [/?] [PRJ:<PROJECT>] [SAM:<Y|ES/N|O>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
+USAGE: win_build [/?] [PRJ:<PROJECT>] [SAM:<Y|ES/N|O>] [P2K:<Y|ES/N|O>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
 
 NOTES
 -----
@@ -10,6 +10,7 @@ NOTES
   corresponding default values will be used:
     PRJ: ALL
     SAM: YES
+    P2K: YES
     PLA: WIN32
     GEN: 9 ("Visual Studio 15 2017")
     BLD: YES
@@ -39,6 +40,13 @@ SAM: Sets preference for SAMCOLOR support for colorized ROMs
      Y|ES: Generate with SAMCOLOR support.  This is only applied to the
            PINMAME, PINMAME32, VPINMAME projects
      N|O : Do not generate with SAMCOLOR support
+
+P2K: Sets preference for the Pinball 2000 subsystem (src/p2k), which adds the
+     Revenge From Mars and Star Wars Episode I drivers. On by default;
+     it needs a C++17 compiler and adds ~30 sources to the
+     build. Applied to the LIBPINMAME, PINMAME, PINMAME32, VPINMAME projects
+     Y|ES: Generate with Pinball 2000 support
+     N|O : Do not generate with Pinball 2000 support (-D PINMAME_P2K=OFF)
 
 PLA: Sets build platform and architecture for building
      Win32: Generate with support for Windows x86 platform
