@@ -8,23 +8,29 @@ The code below exists so that a future driver can attach a working sound board w
 
 ## Status
 
-Has been run against real RFM and SWE1 firmware via the `pin2ksnd`/`pin2ksw1` test harness.
-Identical behaviour on both ROM sets. **Verified working at runtime:**
+**The board works.** Driven by a real Pin2K host driver it produces correct
+stereo audio: the games' own left/right/both sound test behaves as it should.
+Verified at runtime against real RFM and SWEP1 firmware, identical on both ROM
+sets:
 
 - boots from the 28F800 flash (de-interleave and 512-word boot page confirmed
   byte-exact against the ROM, and the DSP executes)
 - SDRC: window decode returns the correct flash words; the firmware pages its
-  own program in through `EPM_PG`/`ROM_PG` and runs it from SRAM
+  own program in through `EPM_PG`/`ROM_PG` and runs it from SRAM, then reaches
+  sample data the same way
 - host command interface, 16-bit path, latches and status flags
 - SPORT1 autobuffer, stereo de-interleave, frame parity, 16-word aligned base
-- PCM delivered continuously at exactly the hardware-derived rate
-  (`SCLKDIV=4` -> 100000 words/s -> 50000 frames/s), `soundEn=1`
+- **31250 frames/sec** - see the sample-rate note in Design notes; deriving the
+  rate from `SCLKDIV` plays everything 1.6x too fast
+- stereo routing panned hard left/right, channel order matching the cabinet
 
-**Not achieved yet: audible sound.** The board initialises, enables SPORT1, runs
-its mixer and transmits a continuous stream of *digital silence*. It never
-gets a voice to play, because the host-side command protocol needed to start
-one is not known yet. See "The host protocol wall" below. That is a PC-side
-problem, not a sound board one - nothing outstanding is a defect in this port.
+The boot self-test "bong" may not sound right; see the sample-rate note in
+Design notes for the likely reason and the shape of a fix.
+
+The standalone `pin2ksnd`/`pin2ksw1` harness gets the board booted, initialised
+and transmitting, but only ever silence, because it does not implement the
+host-side protocol that starts a voice. That is a limitation of the harness,
+not of the board - see "The host protocol wall".
 
 > See "Known gaps" at the end before trusting it.
 
@@ -181,13 +187,37 @@ channels interleaved. So `adsp_txCallback()` still ignores `port != 1`, and
 `dcs_txData()` simply de-interleaves into two ring buffers when
 `dcs_dac.stereo` is set. There is no second DMA channel to service.
 
-Consequently the SPORT word rate is twice the frame rate: at SCLKDIV=7 and a
-16 MHz part, the existing rate formula yields 62500, and the stream runs at
-31250. That factor of two is why `dcs_txData()`'s sample-rate assert reads
-`sRate * 0.5` in the stereo case. `adsp_txCallback()` additionally clamps the
-derived rate to 62500 for this board and logs when it has to - erikieNL's
-MAME branch had to force 31250, which hints the real firmware's divider may not
-land where the formula predicts.
+Consequently the SPORT word rate is twice the frame rate, which is why
+`dcs_txData()`'s sample-rate assert reads `sRate * 0.5` in the stereo case.
+
+**The frame rate is fixed at 31250 and must not be derived.** Real RFM and
+SWE1 firmware programs `SCLKDIV=4` with `S1_CONTROL` bit 14 (nominally
+"internal serial clock") set, which derives 50000 - and that plays everything
+1.6x too fast, confirmed by ear. So the bit does not describe what actually
+clocks the DACs; the board feeds them an external 31.25 kHz sample clock
+regardless. Both references reached the same place independently: Encore
+hardcodes 31250, and erikieNL's MAME branch added a Pin2K test specifically to
+defeat MAME's derivation. `adsp_txCallback()` still computes the derived value
+and logs it when it disagrees, so a board that genuinely does drive its own
+clock would be visible rather than silently overridden.
+
+> **Open, and probably caused by that decision:** the boot self-test "bong"
+> may sound wrong. Encore notes the firmware brings up a **19.5 kHz, M=2**
+> SPORT during board diagnostics before switching to the runtime one, so the
+> diagnostic tone is generated at a different rate *and* a different
+> autobuffer stride from normal playback. Forcing 31250 unconditionally will
+> therefore play it at the wrong speed, and `M=2` may also mean the
+> de-interleave should not be pairing adjacent words during that phase.
+> Encore distinguishes the two by testing for `increment == 1` and a source
+> rate above 30 kHz; the same test would let the diagnostic tone keep its
+> derived rate while runtime audio stays pinned at 31250. Not implemented -
+> runtime audio was the priority, and the bong is cosmetic.
+
+Stereo routing is a second thing that is easy to get wrong and easy to miss:
+the mixing levels handed to `stream_init_multi_float()` are `MIXER(level,pan)`
+values, not raw levels. Passing a bare level leaves both channels panned
+centre, so each comes out of both speakers and the board sounds mono no matter
+how correct the de-interleave is.
 
 Two further details the WPC boards get away with and this one does not:
 
@@ -328,16 +358,19 @@ two further protocol words neither reference mentioned.
 
 Things a driver author may hit first, roughly in the order they will hurt:
 
-1. **Sample-data addressing beyond the boot page is unverified.** The boot path
-   is now pinned down (flash, low byte per word, `0x1000`-word pages), but how
-   the firmware reaches U109/U110 sample data through `EPM_PG` has not been
-   exercised against real ROMs.
-2. **SPORT IRQ granularity may be wrong.** PinMAME pulses `IRQ1` once per
-   buffer, at wrap (`adsp_irqGen`'s `else` branch; the four `DCS_IRQSTEPS`
-   quadrants only pace DAC hand-off and I-register writeback). Encore fires
-   *two* per buffer - half and wrap. Neither reference explains why, so this
-   was left alone. If playback tears at half-buffer rate, raise the IRQ1 pulse
-   to fire at the 2/4 boundary as well, for this subtype only.
+1. **Channel order is matched to the cabinet, not proven from the buffer.**
+   The first word of each frame is sent to the right speaker because that is
+   what makes the games' sound test come out right. The same result would
+   occur if the board emitted left first and the hardware crossed the channels
+   downstream (DAC-to-amp routing or speaker wiring). Encore maps it the other
+   way, so its output is mirrored relative to ours.
+2. **SPORT IRQ granularity is unresolved but appears harmless.** PinMAME pulses
+   `IRQ1` once per buffer, at wrap (`adsp_irqGen`'s `else` branch; the four
+   `DCS_IRQSTEPS` quadrants only pace DAC hand-off and I-register writeback).
+   Encore fires *two* per buffer - half and wrap. Neither reference explains
+   why, and no tearing has been heard, so this is left alone. If playback ever
+   tears at a ~15ms period, raise the IRQ1 pulse to fire at the 2/4 boundary
+   as well, for this subtype only.
 3. **SRAM in program space is not gated by `SDRC_SM_EN`.** Program `0800-3fff`
    is a plain RAM entry; only the data-space windows honour the enable and the
    `SDRC_SM_BK` bank swap. Note this is *not* an aliasing bug - MAME also
@@ -350,15 +383,13 @@ Things a driver author may hit first, roughly in the order they will hurt:
    map that address at all. Note this is *not* the host status register - the
    host-side layout is now pinned down (see "Hooking it up"), so only the
    DSP-visible mirror is in doubt. Harmless if the firmware never reads it.
-7. **The ACE1 host init stream is not implemented.** The board will not play
-   anything until the host has run its ACE1/DCS runtime mixer initialisation:
-   `0xace1` opens it (erikieNL's MAME calls this "script mode"; Encore acks it with
-   `0x0100`/`0x000c`) and `0x8280` is its final word. Everything in between
-   lives in the PC-side game code and is not known here. Until it is, the
-   board boots and answers commands but keeps SPORT1 configured-but-disabled,
-   so there is no audio. This is the single thing standing between the
-   current state and sound.
-7. **The 8-bit `sndbrd_0_*` compatibility path truncates**, by design. It is
+7. **The test harness cannot start a voice.** A real host driver can, so this
+   is a harness limitation only. `0xace1` opens the host's ACE1/DCS runtime
+   mixer initialisation (erikieNL's MAME calls this "script mode"; Encore acks
+   it with `0x0100`/`0x000c`) and `0x8280` is its final word; everything in
+   between lives in PC-side game code. Without it the harness gets the board
+   booted, initialised and transmitting, but only silence.
+8. **The 8-bit `sndbrd_0_*` compatibility path truncates**, by design. It is
    there so the manual sound-command UI keeps working, not for driver use.
 
 ## References
