@@ -1308,7 +1308,7 @@ inline void running_machine::base_datetime(system_time &systime)
 	fill(systime.utc_time, ut);
 }
 
-ATTR_FORCE_INLINE device_memory_interface &device_t::memory() const
+inline device_memory_interface &device_t::memory() const
 {
 	return *const_cast<device_memory_interface *>(dynamic_cast<const device_memory_interface *>(this));
 }
