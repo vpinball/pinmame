@@ -111,11 +111,23 @@ function(_pinmame_p2k_add_library reference_target)
       POSITION_INDEPENDENT_CODE ON
    )
 
+   get_target_property(_consumer_options ${reference_target} COMPILE_OPTIONS)
+
+   if(NOT _consumer_options)
+      set(_consumer_options "")
+   endif()
+
    if(MSVC)
       # /GR after the consumer's directory-wide /GR- wins - MSVC takes the last
       # setting on the command line - and /w and /EHsc keep the imported MAME
       # sources quiet and exception-correct regardless of the consumer's flags.
-      target_compile_options(p2k PRIVATE /GR /EHsc /w)
+      target_compile_options(p2k PRIVATE
+        ${_consumer_options}
+        /GR
+        /EHsc
+        /w
+      )
+
       # An OBJECT library does not inherit the consuming target's CRT choice,
       # and a mismatch is a link error (RuntimeLibrary LIBCMT vs MSVCRT).
       # This is why pinmame_enable_p2k() has to be called after the consumer's
@@ -125,7 +137,12 @@ function(_pinmame_p2k_add_library reference_target)
          set_target_properties(p2k PROPERTIES MSVC_RUNTIME_LIBRARY "${_rt}")
       endif()
    else()
-      target_compile_options(p2k PRIVATE -frtti -fno-strict-aliasing -w)
+      target_compile_options(p2k PRIVATE
+        ${_consumer_options}
+        -frtti
+        -fno-strict-aliasing
+        -w
+      )
    endif()
 
    if(PINMAME_P2K_DEBUG)
