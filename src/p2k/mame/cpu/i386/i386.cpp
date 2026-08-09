@@ -64,10 +64,10 @@ i386_device::i386_device(const machine_config &mconfig, device_type type, const 
 	set_vtlb_dynamic_entries(32);
 }
 
-i386sx_device::i386sx_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+/*i386sx_device::i386sx_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) // PINMAME
 	: i386_device(mconfig, I386SX, tag, owner, clock, 16, 24, 16)
 {
-}
+}*/
 
 i486_device::i486_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
 	: i486_device(mconfig, I486, tag, owner, clock)
@@ -330,6 +330,7 @@ uint8_t i386_device::FETCH()
 	uint8_t value;
 	uint32_t address = m_pc, error;
 
+	if(m_cr[0] & 0x80000000) // inlined from translate_address as it was a hotspot // PINMAME
 	if(!translate_address(m_CPL,TRANSLATE_FETCH,&address,&error))
 		PF_THROW(error);
 
@@ -517,6 +518,7 @@ uint64_t i386_device::READ64PL(uint32_t ea, uint8_t privilege)
 	return value;
 }
 
+#if 0 // PINMAME
 uint16_t i386sx_device::READ16PL(uint32_t ea, uint8_t privilege)
 {
 	uint16_t value;
@@ -580,6 +582,7 @@ uint64_t i386sx_device::READ64PL(uint32_t ea, uint8_t privilege)
 		return value;
 	}
 }
+#endif
 
 void i386_device::WRITE_TEST(uint32_t ea)
 {
@@ -710,6 +713,7 @@ void i386_device::WRITE64PL(uint32_t ea, uint8_t privilege, uint64_t value)
 	}
 }
 
+#if 0 // PINMAME
 void i386sx_device::WRITE16PL(uint32_t ea, uint8_t privilege, uint16_t value)
 {
 	uint32_t address = ea, error;
@@ -762,6 +766,7 @@ void i386sx_device::WRITE64PL(uint32_t ea, uint8_t privilege, uint64_t value)
 		WRITE8PL(ea + 7, privilege, (value >> 56) & 0xff);
 	}
 }
+#endif
 
 /***********************************************************************************/
 
@@ -1262,6 +1267,7 @@ void i386_device::WRITEPORT32(offs_t port, uint32_t value)
 	}
 }
 
+#if 0 // PINMAME
 uint16_t i386sx_device::READPORT16(offs_t port)
 {
 	if (port & 1)
@@ -1322,6 +1328,7 @@ void i386sx_device::WRITEPORT32(offs_t port, uint32_t value)
 		WRITEPORT16((port + 2), (value >> 16) & 0xffff);
 	}
 }
+#endif
 
 /***********************************************************************************/
 
@@ -2801,8 +2808,10 @@ void i386_device::execute_run()
 		m_opcode_addrs[m_opcode_addrs_index] = m_opcode_pc;
 		m_opcode_addrs_index = (m_opcode_addrs_index + 1) & 15;
 #endif
+#if MAME_DEBUG // PINMAME
 		try
 		{
+#endif
 			i386_decode_opcode();
 			if(m_TF && old_tf)
 			{
@@ -2813,12 +2822,14 @@ void i386_device::execute_run()
 			}
 			if(m_lock && (m_opcode != 0xf0))
 				m_lock = false;
+#if MAME_DEBUG // PINMAME
 		}
 		catch(uint64_t e)
 		{
 			m_ext = 1;
 			i386_trap_with_error(e&0xffffffff,0,0,e>>32);
 		}
+#endif
 		if(m_RF && m_auto_clear_RF) m_RF = 0;
 		if(!m_auto_clear_RF) m_auto_clear_RF = true;
 	}

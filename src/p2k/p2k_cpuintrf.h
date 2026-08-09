@@ -1,7 +1,9 @@
+// license:BSD-3-Clause
+
 /* PinMAME P2K subsystem - C view of the MediaGX bridge (see p2k_cpuintrf.cpp).
    Included by src/cpuintrf.c so the CPU table can reference the adapter. */
-#ifndef P2K_CPUINTRF_H
-#define P2K_CPUINTRF_H
+
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,5 +27,3 @@ unsigned mediagx_dasm(char *buffer, unsigned pc);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* P2K_CPUINTRF_H */

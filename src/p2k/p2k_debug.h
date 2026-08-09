@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // P2K DEBUG switch
 //
 // Bringing this board up took a lot of apparatus: instruction and trap traces, backtraces,
@@ -15,11 +17,8 @@
 //
 // src/p2k/README.md lists what each variable does
 
-#ifndef P2K_DEBUG_H
-#define P2K_DEBUG_H
+#pragma once
 
 #ifndef P2K_DEBUG
 #define P2K_DEBUG 0
 #endif
-
-#endif /* P2K_DEBUG_H */

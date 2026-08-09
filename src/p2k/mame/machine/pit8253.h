@@ -37,7 +37,7 @@ enum class pit_type
 	FE2010
 };
 
-class pit_counter_device : public device_t
+class pit_counter_device final : public device_t // PINMAME
 {
 	friend class pit8253_device;
 	friend class pit8254_device;
@@ -167,7 +167,7 @@ protected:
 
 DECLARE_DEVICE_TYPE(PIT8253, pit8253_device)
 
-class pit8254_device : public pit8253_device
+class pit8254_device final : public pit8253_device // PINMAME
 {
 public:
 	pit8254_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
@@ -178,7 +178,7 @@ protected:
 
 DECLARE_DEVICE_TYPE(PIT8254, pit8254_device)
 
-class fe2010_pit_device : public pit8253_device
+class fe2010_pit_device final : public pit8253_device // PINMAME
 {
 public:
 	fe2010_pit_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);

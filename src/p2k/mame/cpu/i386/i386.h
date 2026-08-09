@@ -89,9 +89,9 @@ protected:
 	virtual void cache_clean() {}
 
 	// routine to access memory
-	virtual u8 mem_pr8(offs_t address) { return macache32.read_byte(address); }
-	virtual u16 mem_pr16(offs_t address) { return macache32.read_word(address); }
-	virtual u32 mem_pr32(offs_t address) { return macache32.read_dword(address); }
+	/*virtual*/ ATTR_FORCE_INLINE u8 mem_pr8(offs_t address) { return macache32.read_byte(address); } // PINMAME
+	/*virtual*/ ATTR_FORCE_INLINE u16 mem_pr16(offs_t address) { return macache32.read_word(address); }
+	/*virtual*/ ATTR_FORCE_INLINE u32 mem_pr32(offs_t address) { return macache32.read_dword(address); }
 
 	address_space_config m_program_config;
 	address_space_config m_io_config;
@@ -1523,7 +1523,7 @@ protected:
 };
 
 
-class i386sx_device : public i386_device
+/*class i386sx_device : public i386_device // PINMAME
 {
 public:
 	// construction/destruction
@@ -1544,7 +1544,7 @@ protected:
 	virtual void WRITEPORT16(offs_t port, uint16_t value) override;
 	virtual uint32_t READPORT32(offs_t port) override;
 	virtual void WRITEPORT32(offs_t port, uint32_t value) override;
-};
+};*/
 
 class i486_device : public i386_device
 {
@@ -1600,7 +1600,7 @@ protected:
 };
 
 
-class mediagx_device : public i386_device
+class mediagx_device final : public i386_device
 {
 public:
 	// construction/destruction

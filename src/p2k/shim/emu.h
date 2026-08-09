@@ -1,9 +1,12 @@
-// PinMAME P2K subsystem - compatibility layer for imported MAME sources.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - compatibility layer for imported MAME sources
 //
 // This provides the part of MAME's modern device API that the imported Pinball 2000 code
 // actually uses: address spaces, a device tree with timers and callbacks, and no-op stubs for
 // save state and the debugger. It is intentionally self-contained - nothing outside src/p2k/
-// includes this header, and PinMAME's own core is untouched.
+// includes this header, and PinMAME's own core is untouched
+
 #pragma once
 
 // MAME sources use this to detect that the emu core has been included
@@ -92,7 +95,7 @@ public:
 }
 
 // ---------------------------------------------------------------- address space
-class address_space_config
+class address_space_config final
 {
 public:
 	address_space_config() = default;
@@ -120,7 +123,7 @@ public:
 };
 
 // installed read/write tap handles (debug registers) - no-op here
-class memory_passthrough_handler
+class memory_passthrough_handler final
 {
 public:
 	void remove() {}
@@ -146,46 +149,46 @@ struct p2k_fast_window
 	u8 *mem;     // backing store for base
 };
 
-class address_space
+class address_space final
 {
 public:
 	explicit address_space(const p2k_bus_callbacks &cb) : m_cb(cb) {}
 
-	u8 read_byte(offs_t a)
+	ATTR_FORCE_INLINE u8 read_byte(offs_t a)
 	{
 		unsigned shift = (a & 3) * 8;
 		return u8(r32(a & ~3u, 0xffu << shift) >> shift);
 	}
-	u16 read_word(offs_t a) { return read_word(a, 0xffff); }
-	u16 read_word(offs_t a, u16 mask)
+	ATTR_FORCE_INLINE u16 read_word(offs_t a) { return read_word(a, 0xffff); }
+	ATTR_FORCE_INLINE u16 read_word(offs_t a, u16 mask)
 	{
 		unsigned shift = (a & 2) * 8;
 		return u16(r32(a & ~3u, u32(mask) << shift) >> shift);
 	}
-	u16 read_word_unaligned(offs_t a) { return read_word(a); }
-	u16 read_word_unaligned(offs_t a, u16 mask) { return read_word(a, mask); }
-	u32 read_dword(offs_t a) { return r32(a & ~3u, 0xffffffff); }
-	u32 read_dword(offs_t a, u32 mask) { return r32(a & ~3u, mask); }
-	u32 read_dword_unaligned(offs_t a) { return read_dword(a); }
-	u32 read_dword_unaligned(offs_t a, u32 mask) { return read_dword(a, mask); }
+	ATTR_FORCE_INLINE u16 read_word_unaligned(offs_t a) { return read_word(a); }
+	ATTR_FORCE_INLINE u16 read_word_unaligned(offs_t a, u16 mask) { return read_word(a, mask); }
+	ATTR_FORCE_INLINE u32 read_dword(offs_t a) { return r32(a & ~3u, 0xffffffff); }
+	ATTR_FORCE_INLINE u32 read_dword(offs_t a, u32 mask) { return r32(a & ~3u, mask); }
+	ATTR_FORCE_INLINE u32 read_dword_unaligned(offs_t a) { return read_dword(a); }
+	ATTR_FORCE_INLINE u32 read_dword_unaligned(offs_t a, u32 mask) { return read_dword(a, mask); }
 
-	void write_byte(offs_t a, u8 d)
+	ATTR_FORCE_INLINE void write_byte(offs_t a, u8 d)
 	{
 		unsigned shift = (a & 3) * 8;
 		w32(a & ~3u, u32(d) << shift, 0xffu << shift);
 	}
-	void write_word(offs_t a, u16 d) { write_word(a, d, 0xffff); }
-	void write_word(offs_t a, u16 d, u16 mask)
+	ATTR_FORCE_INLINE void write_word(offs_t a, u16 d) { write_word(a, d, 0xffff); }
+	ATTR_FORCE_INLINE void write_word(offs_t a, u16 d, u16 mask)
 	{
 		unsigned shift = (a & 2) * 8;
 		w32(a & ~3u, u32(d) << shift, u32(mask) << shift);
 	}
-	void write_word_unaligned(offs_t a, u16 d) { write_word(a, d); }
-	void write_word_unaligned(offs_t a, u16 d, u16 mask) { write_word(a, d, mask); }
-	void write_dword(offs_t a, u32 d) { w32(a & ~3u, d, 0xffffffff); }
-	void write_dword(offs_t a, u32 d, u32 mask) { w32(a & ~3u, d, mask); }
-	void write_dword_unaligned(offs_t a, u32 d) { write_dword(a, d); }
-	void write_dword_unaligned(offs_t a, u32 d, u32 mask) { write_dword(a, d, mask); }
+	ATTR_FORCE_INLINE void write_word_unaligned(offs_t a, u16 d) { write_word(a, d); }
+	ATTR_FORCE_INLINE void write_word_unaligned(offs_t a, u16 d, u16 mask) { write_word(a, d, mask); }
+	ATTR_FORCE_INLINE void write_dword(offs_t a, u32 d) { w32(a & ~3u, d, 0xffffffff); }
+	ATTR_FORCE_INLINE void write_dword(offs_t a, u32 d, u32 mask) { w32(a & ~3u, d, mask); }
+	ATTR_FORCE_INLINE void write_dword_unaligned(offs_t a, u32 d) { write_dword(a, d); }
+	ATTR_FORCE_INLINE void write_dword_unaligned(offs_t a, u32 d, u32 mask) { write_dword(a, d, mask); }
 
 	// Register a range that is plain memory. Accesses inside it are served from the buffer
 	// instead of going through the callback - which for this machine means skipping an indirect
@@ -199,7 +202,7 @@ public:
 	}
 	void clear_fast_windows() { m_fast_n = 0; }
 
-	int data_width() const { return 32; }
+	static constexpr int data_width() { return 32; }
 	template <typename... T> memory_passthrough_handler *install_read_tap(T &&...)      { return nullptr; }
 	template <typename... T> memory_passthrough_handler *install_write_tap(T &&...)     { return nullptr; }
 	template <typename... T> memory_passthrough_handler *install_readwrite_tap(T &&...) { return nullptr; }
@@ -212,7 +215,7 @@ private:
 
 	// The guest is little endian and so is every host this is built for; the byte-wise form is
 	// there so a big endian host still produces the same value as the machine's own read_le().
-	static u32 load32(const u8 *p)
+	static ATTR_FORCE_INLINE u32 load32(const u8 * const p)
 	{
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 		return u32(p[0]) | (u32(p[1]) << 8) | (u32(p[2]) << 16) | (u32(p[3]) << 24);
@@ -220,7 +223,7 @@ private:
 		u32 v; std::memcpy(&v, p, 4); return v;
 #endif
 	}
-	static void store32(u8 *p, u32 v)
+	static ATTR_FORCE_INLINE void store32(u8 * const p, u32 v)
 	{
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 		p[0] = u8(v); p[1] = u8(v >> 8); p[2] = u8(v >> 16); p[3] = u8(v >> 24);
@@ -231,19 +234,27 @@ private:
 
 	// `a` is always dword-aligned here. The unsigned subtraction folds the lower bound into the
 	// same compare as the upper one.
-	u8 *fast(offs_t a) const
+	ATTR_FORCE_INLINE u8 *fast(const offs_t a) const
 	{
-		for (unsigned i = 0; i < m_fast_n; i++)
-			if (u32(a - m_fast[i].base) < m_fast[i].span) return m_fast[i].mem + (a - m_fast[i].base);
+		assert(m_fast_n == MAX_FAST);
+		static_assert(MAX_FAST == 4);
+
+		/*for (unsigned i = 0; i < m_fast_n; i++)
+			if (u32(a - m_fast[i].base) < m_fast[i].span) return m_fast[i].mem + (a - m_fast[i].base);*/
+
+		if (u32(a - m_fast[0].base) < m_fast[0].span) return m_fast[0].mem + (a - m_fast[0].base);
+		if (u32(a - m_fast[1].base) < m_fast[1].span) return m_fast[1].mem + (a - m_fast[1].base);
+		if (u32(a - m_fast[2].base) < m_fast[2].span) return m_fast[2].mem + (a - m_fast[2].base);
+		if (u32(a - m_fast[3].base) < m_fast[3].span) return m_fast[3].mem + (a - m_fast[3].base);
 		return nullptr;
 	}
 
-	u32 r32(offs_t a, u32 mask)
+	ATTR_FORCE_INLINE u32 r32(offs_t a, u32 mask)
 	{
 		if (const u8 *p = fast(a)) return load32(p) & mask;
 		return m_cb.read32(m_cb.ctx, a, mask);
 	}
-	void w32(offs_t a, u32 d, u32 mask)
+	ATTR_FORCE_INLINE void w32(offs_t a, u32 d, u32 mask)
 	{
 		if (u8 *p = fast(a)) { store32(p, (load32(p) & ~mask) | (d & mask)); return; }
 		m_cb.write32(m_cb.ctx, a, d, mask);
@@ -267,13 +278,13 @@ struct memory_access
 	{
 	public:
 		void set(address_space *space) { m_space = space; }
-		u8  read_byte (offs_t a) { return m_space->read_byte(a); }
-		u16 read_word (offs_t a) { return m_space->read_word(a); }
-		u32 read_dword(offs_t a) { return m_space->read_dword(a); }
+		ATTR_FORCE_INLINE u8  read_byte (offs_t a) { return m_space->read_byte(a); }
+		ATTR_FORCE_INLINE u16 read_word (offs_t a) { return m_space->read_word(a); }
+		ATTR_FORCE_INLINE u32 read_dword(offs_t a) { return m_space->read_dword(a); }
 	private:
 		address_space *m_space = nullptr;
 	};
-	class specific : public cache {};
+	class specific final : public cache {};
 };
 
 // ---------------------------------------------------------------- device types
@@ -292,7 +303,7 @@ private:
 using device_type = const device_type_base &;
 
 template <class DeviceClass>
-class device_type_impl : public device_type_base
+class device_type_impl final : public device_type_base
 {
 public:
 	constexpr device_type_impl(const char *shortname, const char *fullname)
@@ -321,7 +332,7 @@ public:
 // ---------------------------------------------------------------- scheduler
 // A timer callback bound to a device method; constructed as
 // timer_expired_delegate(FUNC(cls::method), this), which expands to (&method, "name", this).
-class timer_expired_delegate
+class timer_expired_delegate final
 {
 public:
 	timer_expired_delegate() = default;
@@ -337,7 +348,7 @@ private:
 	std::function<void (void *, s32)> m_func;
 };
 
-class emu_timer
+class emu_timer final
 {
 	friend class device_scheduler;
 public:
@@ -363,7 +374,7 @@ public:
 	timer_expired_delegate m_callback;
 };
 
-class device_scheduler
+class device_scheduler final
 {
 public:
 	attotime time() const { return m_time; }
@@ -413,14 +424,14 @@ private:
 };
 
 // ---------------------------------------------------------------- machine
-class save_manager
+class save_manager final
 {
 public:
 	template <typename... T> void register_postload(T &&...) {}
 	template <typename... T> void save_item(T &&...) {}
 };
 
-class running_machine
+class running_machine final
 {
 public:
 	u32 debug_flags = 0;
@@ -445,7 +456,7 @@ struct p2k_symtable { template <typename... T> void add(T &&...) {} };
 struct p2k_debug_iface { p2k_symtable &symtable() { static p2k_symtable s; return s; } };
 
 // The device tree. Devices are created through device_type_impl::operator() and owned here.
-class machine_config
+class machine_config final
 {
 public:
 	device_t *current_owner = nullptr;
@@ -617,7 +628,7 @@ protected:
 // ---------------------------------------------------------------- nvram / time
 // MAME persists NVRAM through emu_file; here the interface exists so that devices with NVRAM
 // compile and initialise, and the machine glue reads/writes the contents itself.
-class emu_file
+class emu_file final
 {
 public:
 	u32 read(void *buffer, u32 length) { return 0; }
@@ -656,7 +667,7 @@ struct system_time
 };
 
 // memory shares and regions are supplied by the machine glue, not by MAME's ROM loader
-class memory_share
+class memory_share final
 {
 public:
 	memory_share(void *ptr, u32 bytes) : m_ptr(ptr), m_bytes(bytes) {}
@@ -667,7 +678,7 @@ private:
 	u32 m_bytes;
 };
 
-class memory_region
+class memory_region final
 {
 public:
 	memory_region(u8 *base, u32 bytes) : m_base(base), m_bytes(bytes) {}
@@ -680,7 +691,7 @@ private:
 
 #define DEVICE_SELF ""
 
-class optional_memory_region
+class optional_memory_region final
 {
 public:
 	optional_memory_region(device_t &, const char *) {}
@@ -726,7 +737,7 @@ public:
 
 	// MAME's accessors are declared `auto handler() { return m_cb.bind(); }`, so whatever bind()
 	// returns gets copied. It must therefore refer back to the callback, not be one.
-	class binder
+	class binder final
 	{
 	public:
 		explicit binder(devcb_base *cb) : m_cb(cb) {}
@@ -785,7 +796,7 @@ public:
 
 	// MAME's accessors are declared `auto handler() { return m_cb.bind(); }`, so whatever bind()
 	// returns gets copied. It must therefore refer back to the callback, not be one.
-	class binder
+	class binder final
 	{
 	public:
 		explicit binder(devcb_base *cb) : m_cb(cb) {}
@@ -821,7 +832,7 @@ using devcb_read_line  = devcb_base<int>;
 // Read/write callbacks carry an offset and a mask in MAME, but are frequently called without
 // them. These wrappers add the defaulted arguments the device sources expect.
 template <typename DataType>
-class devcb_read_data : public devcb_base<DataType, offs_t>
+class devcb_read_data final : public devcb_base<DataType, offs_t>
 {
 public:
 	using devcb_base<DataType, offs_t>::devcb_base;
@@ -832,7 +843,7 @@ public:
 };
 
 template <typename DataType>
-class devcb_write_data : public devcb_base<void, offs_t, DataType, DataType>
+class devcb_write_data final : public devcb_base<void, offs_t, DataType, DataType>
 {
 	using base = devcb_base<void, offs_t, DataType, DataType>;
 public:
@@ -865,7 +876,7 @@ using devcb_read32  = devcb_read_data<u32>;
 template <typename Signature> class device_delegate;
 
 template <typename Ret, typename... Args>
-class device_delegate<Ret (Args...)>
+class device_delegate<Ret (Args...)> final
 {
 public:
 	device_delegate() = default;
@@ -903,7 +914,7 @@ private:
 };
 
 template <typename... Args>
-class device_delegate<void (Args...)>
+class device_delegate<void (Args...)> final
 {
 public:
 	device_delegate() = default;
@@ -939,7 +950,7 @@ private:
 
 // optional counterpart to required_device; unset tags simply stay unresolved
 template <class DeviceClass>
-class optional_device : public finder_base
+class optional_device final : public finder_base
 {
 public:
 	optional_device(device_t &owner) : m_owner(&owner) { owner.p2k_register_resolver(this); }
@@ -963,14 +974,14 @@ private:
 };
 
 // input ports are supplied by PinMAME, not by MAME's ioport system
-class ioport_port
+class ioport_port final
 {
 public:
 	u32 read() { return 0; }
 };
 
 template <bool Required>
-class ioport_finder : public finder_base
+class ioport_finder final : public finder_base
 {
 public:
 	ioport_finder(device_t &owner, const char *tag) { owner.p2k_register_resolver(this); }
@@ -984,7 +995,7 @@ using optional_ioport = ioport_finder<false>;
 
 // ---------------------------------------------------------------- device finders
 template <class DeviceClass>
-class required_device : public finder_base
+class required_device final : public finder_base
 {
 public:
 	required_device(device_t &owner, const char *tag) : m_tag(tag)
@@ -1010,7 +1021,7 @@ private:
 };
 
 template <class DeviceClass, unsigned Count>
-class required_device_array
+class required_device_array final
 {
 public:
 	template <typename T>
@@ -1110,7 +1121,7 @@ private:
 // A CPU register (or any other exported value) as registered with state_add(). MAME keeps a
 // pointer to the underlying variable; so does this, which is what lets a debugger read and
 // write registers without the CPU core knowing about it.
-class device_state_entry
+class device_state_entry final
 {
 public:
 	device_state_entry() = default;
@@ -1297,7 +1308,7 @@ inline void running_machine::base_datetime(system_time &systime)
 	fill(systime.utc_time, ut);
 }
 
-inline device_memory_interface &device_t::memory() const
+ATTR_FORCE_INLINE device_memory_interface &device_t::memory() const
 {
 	return *const_cast<device_memory_interface *>(dynamic_cast<const device_memory_interface *>(this));
 }

@@ -1,8 +1,11 @@
-// PinMAME P2K subsystem - the BCD helpers from MAME's coreutil.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - the BCD helpers from MAME's coreutil
 //
 // MAME's coreutil.cpp also contains core_crc32(), which pulls in zlib. Nothing in the P2K
 // subsystem needs it, so only the parts the RTC uses are provided here. The implementations
-// match MAME's.
+// match MAME's
+
 #include "emucore.h"
 
 int bcd_adjust(int value)

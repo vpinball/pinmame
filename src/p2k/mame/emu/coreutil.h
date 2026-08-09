@@ -67,7 +67,10 @@ inline int gregorian_days_in_month(int month, int year)
 		break;
 
 	default:
+#if MAME_DEBUG // PINMAME
 		throw false;
+#endif
+		break;
 	}
 	return result;
 }

@@ -51,6 +51,10 @@ board share turned out to be the DSP waiting rather than working, so treat it as
 Two switches change speed and both are already on - the idle skips in *Where the time goes*, worth
 about 9 % together. Nothing else here has a fast setting yet.
 
+Windows/Visual C++ performance measurement update: After reclocking the MediaGX and the PIT, and optimizing
+the ADSP idle loops, the ADSP is now barely measurable anymore, so optimizing it may be void for now.
+The major bottleneck at the moment is the MediaGX, with the majority of it being the i386 FETCH() routine.
+
 ## Building
 
 CMake builds it by default; the unix makefile does not.

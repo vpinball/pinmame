@@ -134,13 +134,19 @@ void nvram_device::determine_final_base()
 	if (m_base == nullptr)
 	{
 		memory_share *share = owner()->memshare(tag());
+#if MAME_DEBUG // PINMAME
 		if (share == nullptr)
 			throw emu_fatalerror("NVRAM device '%s' has no corresponding share() region", tag());
+#endif
 		m_base = share->ptr();
 		m_length = share->bytes();
 	}
 
 	// if we are region-backed for the default, find it now and make sure it's the right size
 	if (m_region.found() && m_region->bytes() != m_length)
+#if MAME_DEBUG // PINMAME
 		throw emu_fatalerror("%s",string_format("NVRAM device '%s' has a default region, but it should be 0x%X bytes", tag(), m_length).c_str());
+#else
+		;
+#endif
 }

@@ -13,8 +13,8 @@
 
 #pragma once
 
-class nvram_device :    public device_t,
-						public device_nvram_interface
+class nvram_device final :    public device_t, // PINMAME
+						      public device_nvram_interface
 {
 public:
 	// custom initialization for default state

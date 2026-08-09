@@ -1,4 +1,7 @@
-// PinMAME P2K subsystem - machine assembly and run loop. See p2k_machine.h.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - machine assembly and run loop. See p2k_machine.h
+
 #include "p2k_machine.h"
 
 extern machine_config *p2k_active_config;

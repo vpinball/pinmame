@@ -20,8 +20,8 @@
 
 // ======================> ramdac_device
 
-class ramdac_device :   public device_t,
-						public device_memory_interface
+class ramdac_device final :   public device_t, // PINMAME
+						      public device_memory_interface
 {
 public:
 	// construction/destruction

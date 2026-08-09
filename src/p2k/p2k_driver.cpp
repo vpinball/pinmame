@@ -1,4 +1,7 @@
-// PinMAME P2K subsystem - the Pinball 2000 machine. See p2k_driver.h for provenance.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - the Pinball 2000 machine. See p2k_driver.h for provenance
+
 #include "p2k_driver.h"
 #include "p2k_debug.h"
 #include "p2k_weak.h"
@@ -201,6 +204,7 @@ void p2k_state::install_fast_windows()
 	if (probing || (off && off[0] == '0')) return;
 #endif
 
+	//!! hardcode these directly into emu.h?!
 	m_program->add_fast_window(0x00100000, m_main_ram.data() + 0x00100000, 0x10000000 - 0x00100000);
 	m_program->add_fast_window(0x00000000, m_main_ram.data(), 0x000a0000);
 	m_program->add_fast_window(0x40800000, m_vram.data(), m_vram.size());
@@ -243,17 +247,17 @@ void p2k_state::build_machine(u32 cpu_clock)
 	m_pic2->in_sp_callback().set([]() { return 0; });
 	m_maincpu->set_irq_acknowledge_callback([this](int) { return int(m_pic1->acknowledge()); });
 
-	// MAME clocks the PIT at 925 kHz with the standard 1.193182 MHz commented out - a deliberate
+	// MAME clocked the PIT at 925 kHz with the standard 1.193182 MHz commented out - a deliberate
 	// slowdown to go with the 20 MHz CPU. The firmware programs channel 0 as a rate generator
-	// with divisor 298, so that is a tick every ~6400 CPU cycles
-	double pit_hz = 925000.0;
+	// with divisor 298, so that was a tick every ~6400 CPU cycles
+	double pit_hz = 1193182.0;
 #if P2K_DEBUG
 	// P2K_PIT_HZ moves it, which is how what the tick handler needs was measured
 	if (const char *s = getenv("P2K_PIT_HZ")) { const double v = atof(s); if (v > 0) pit_hz = v; }
 #endif
 	m_pit->set_clk<0>(pit_hz);
-	m_pit->set_clk<1>(925000.0);
-	m_pit->set_clk<2>(925000.0);
+	m_pit->set_clk<1>(1193182.0);
+	m_pit->set_clk<2>(1193182.0);
 	// the edge always reaches the PIC - holding it back was the wrong lever, the request it
 	// latches is what nests. The gate only notes the edge, to bound how long it may hold delivery.
 	m_pit->out_handler<0>().set([this](int state) {
@@ -307,7 +311,7 @@ void p2k_state::reset()
 	// PLX EEPROM defaults, as set up by the MAME driver when the EEPROM is blank. The firmware
 	// clocks this image back out of register 0x14 and verifies it, so the whole table matters,
 	// not just the first few words.
-	static const u32 defaults[] = {
+	static constexpr u32 defaults[] = {
 		0x0001146e, 0x03000000, 0x00000000, 0x00000000, 0x0FFE0000, 0x0F800000, 0x0FFF8000,
 		0x0C000008, 0x0FFF8001, 0x00100001, 0x01000001, 0x00000001, 0x08000001, 0x08000000,
 		0x5403A1E0, 0x5473B940, 0x4041A060, 0x54B2B8C0, 0x54B2B8C0, 0x08800001, 0x09800001,
@@ -448,52 +452,73 @@ void p2k_state::pull_outputs(u8 *lamps, unsigned lamp_columns, u32 *solenoids, u
 //
 // The image comes out horizontally mirrored, and it is meant to: Pinball 2000 reflects the
 // monitor into the playfield through a half-silvered mirror, so the machine renders it mirrored.
-// Callers that show it to a person want it flipped back; the decode leaves it as the hardware
-// has it.
-bool p2k_state::frame_rgb(std::vector<u32> &dest, unsigned &width, unsigned &height) const
+// Callers that show it to a person want it flipped back; the decode leaves it as the hardware has it
+bool p2k_state::frame_rgb(u32* const __restrict dest, unsigned capacity, unsigned &width, unsigned &height, const bool fast_15bpp_path, bool& fast_15bpp_path_success) const
 {
 	const unsigned line_delta = (m_disp_ctrl_reg[DC_LINE_DELTA] & 0x3ff) << 1;
 	unsigned w = (m_disp_ctrl_reg[DC_H_TIMING_1] & 0x7ff) + 1;
-	if (m_disp_ctrl_reg[DC_TIMING_CFG] & 0x8000) w >>= 1;      // pixel double
+	if (m_disp_ctrl_reg[DC_TIMING_CFG] & 0x8000) w >>= 1; // pixel double
 	w += 4;
 	const unsigned h = (m_disp_ctrl_reg[DC_V_TIMING_1] & 0x7ff) + 1;
-	if (w < 2 || h < 2 || w > 1024 || h > 768 || !line_delta) return false;
+	if (w < 2 || h < 2 || w > 1024 || h > 768 || w*h > capacity || !line_delta) return false; // values ideally match what P2K_MAX_PIXELS defines
 
 	const u32 cfg = m_disp_ctrl_reg[DC_OUTPUT_CFG];
 	const size_t start = m_disp_ctrl_reg[DC_FB_ST_OFFSET] % (m_vram.size() ? m_vram.size() : 1);
-	const u8 *fb = m_vram.data() + start;
+	const u8 * const __restrict fb = m_vram.data() + start;
+	const u16* const __restrict fb16 = (const u16*)fb;
 	const size_t room = m_vram.size() - start;
 
+	const bool fast_15bpp_path_applicable = !(cfg & 1) && !((cfg & 2) == 0); // is RGB555 path below triggered? -> fast path possible
+	fast_15bpp_path_success = fast_15bpp_path && fast_15bpp_path_applicable;
+
 	width = w; height = h;
-	dest.assign(size_t(w) * h, 0);
-	for (unsigned y = 0; y < h; y++)
+
+	if (fast_15bpp_path_success)
 	{
-		for (unsigned x = 0; x < w; x++)
+	size_t offs = 0;
+	for (unsigned y = 0; y < h; ++y)
+	{
+		unsigned off_fb = y * line_delta;
+		for (unsigned x = 0; x < w; ++x,++offs,++off_fb)
 		{
-			u8 r = 0, g = 0, b = 0;
-			if (cfg & 1)                                        // 8 bit, palette not modelled
+			const unsigned off = off_fb * 2;
+			const u16 c = (off + 1 < room) ? fb16[off_fb] : 0;
+			dest[offs] = c; //!! clear highest bit?
+		}
+	}
+	return true;
+	}
+
+	// slow path / conversion needed
+
+	size_t offs = 0;
+	for (unsigned y = 0; y < h; ++y)
+	{
+		unsigned off_fb = y * line_delta;
+		for (unsigned x = 0; x < w; ++x,++offs,++off_fb)
+		{
+			u8 r, g, b;
+			if (cfg & 1)                                        //!! 8 bit, palette not modelled
 			{
-				const size_t off = size_t(y) * line_delta + x;
-				r = g = b = (off < room) ? fb[off] : 0;
+				r = g = b = (off_fb < room) ? fb[off_fb] : 0;
 			}
 			else
 			{
-				const size_t off = (size_t(y) * line_delta + x) * 2;
-				const u16 c = (off + 1 < room) ? u16(fb[off] | (fb[off + 1] << 8)) : 0;
+				const unsigned off = off_fb * 2;
+				const u16 c = (off + 1 < room) ? fb16[off_fb] : 0;
 				if ((cfg & 2) == 0)                             // RGB565
 				{
 					r = u8(((c >> 11) & 0x1f) << 3);
 					g = u8(((c >> 5) & 0x3f) << 2);
-					b = u8((c & 0x1f) << 3);
 				}
 				else                                            // RGB555
 				{
 					r = u8(((c >> 10) & 0x1f) << 3);
 					g = u8(((c >> 5) & 0x1f) << 3);
-					b = u8((c & 0x1f) << 3);
 				}
+				b = u8((c & 0x1f) << 3);
 			}
-			dest[size_t(y) * w + x] = (u32(r) << 16) | (u32(g) << 8) | b;
+			dest[offs] = (u32(r) << 16) | (u32(g) << 8) | b;
 		}
 	}
 	return true;
@@ -519,12 +544,14 @@ void p2k_state::maybe_write_ppm(u64 cycles)
 	if (written || elapsed < at) return;
 	written = true;
 
-	std::vector<u32> rgb;
+	std::vector<u32> rgb(P2K_MAX_PIXELS);
 	unsigned w = 0, h = 0;
 	fprintf(stderr, "[p2k ppm] output cfg %08x, start %08x, line delta %u\n",
 		m_disp_ctrl_reg[DC_OUTPUT_CFG], m_disp_ctrl_reg[DC_FB_ST_OFFSET],
 		(m_disp_ctrl_reg[DC_LINE_DELTA] & 0x3ff) << 1);
-	if (!frame_rgb(rgb, w, h)) { fprintf(stderr, "[p2k ppm] geometry not sane - nothing written\n"); return; }
+	bool unused;
+	if (!frame_rgb(rgb.data(), P2K_MAX_PIXELS, w, h, false, unused)) { fprintf(stderr, "[p2k ppm] geometry not sane - nothing written\n"); return; }
+	rgb.resize(w * h);
 
 	FILE *f = fopen(path, "wb");
 	if (!f) { fprintf(stderr, "[p2k ppm] cannot write %s\n", path); return; }

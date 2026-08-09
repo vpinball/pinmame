@@ -118,7 +118,7 @@ private:
 	uint8_t m_inta_sequence;
 };
 
-class v5x_icu_device : public pic8259_device
+class v5x_icu_device final : public pic8259_device // PINMAME
 {
 public:
 	v5x_icu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);

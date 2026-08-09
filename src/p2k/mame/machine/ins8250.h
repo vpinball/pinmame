@@ -98,19 +98,19 @@ private:
 	int m_cts;
 };
 
-class ins8250_device : public ins8250_uart_device
+class ins8250_device final : public ins8250_uart_device // PINMAME
 {
 public:
 	ins8250_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 };
 
-class ns16450_device : public ins8250_uart_device
+class ns16450_device final : public ins8250_uart_device // PINMAME
 {
 public:
 	ns16450_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 };
 
-class ns16550_device : public ins8250_uart_device
+class ns16550_device final : public ins8250_uart_device // PINMAME
 {
 public:
 	ns16550_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
@@ -134,7 +134,7 @@ private:
 	emu_timer *m_timeout;
 };
 
-class pc16552_device : public device_t
+class pc16552_device final : public device_t // PINMAME
 {
 public:
 	pc16552_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);

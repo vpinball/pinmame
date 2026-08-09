@@ -173,7 +173,7 @@ protected:
 	unsigned m_tuc; // update cycle time
 };
 
-class ds1287_device : public mc146818_device
+class ds1287_device final : public mc146818_device // PINMAME
 {
 public:
 	ds1287_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);

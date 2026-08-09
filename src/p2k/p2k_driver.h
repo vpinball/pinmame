@@ -1,9 +1,12 @@
+// license:BSD-3-Clause
+
 // PinMAME P2K subsystem - the Pinball 2000 machine.
 //
 // Ported from MAME's src/mame/drivers/pinball2k.cpp (skeleton by R. Belmont based on Ville
 // Linde's mediagx.c, extended by E. van Son; BSD-3-Clause). The handler logic follows that
 // driver; what differs is the plumbing: MAME's address_map is replaced by explicit decode
-// functions, and the devices are assembled through p2k_machine instead of a machine_config.
+// functions, and the devices are assembled through p2k_machine instead of a machine_config
+
 #pragma once
 
 #include "emu.h"
@@ -18,7 +21,7 @@ class mc146818_device;
 class kbdc8042_device;
 class ns16550_device;
 
-class p2k_state
+class p2k_state final
 {
 public:
 	p2k_state();
@@ -42,8 +45,8 @@ public:
 	void run_cycles(u64 cycles);
 	void apply_irq0();
 	void maybe_write_ppm(u64 cycles);   // P2K_PPM=<path>: the framebuffer as a picture
-	// decode the framebuffer into 0x00RRGGBB pixels; false if the geometry is not sane yet
-	bool frame_rgb(std::vector<u32> &dest, unsigned &width, unsigned &height) const;          // re-evaluate the CPU's IRQ0 line (PIC request AND clkint gate)
+	// decode the framebuffer into 0x00RRGGBB pixels; false if the geometry is not sane yet; fast_15bpp_path returns the raw 15bpp pixels instead (if applicable, otherwise fast_15bpp_path_success is false!)
+	bool frame_rgb(u32* const __restrict dest, unsigned capacity, unsigned &width, unsigned &height, const bool fast_15bpp_path, bool& fast_15bpp_path_success) const; // re-evaluate the CPU's IRQ0 line (PIC request AND clkint gate)
 
 	// bus access, called from the CPU's address spaces. The pure-memory ranges are also handed
 	// to the space directly, so most accesses never reach mem_r/mem_w at all.

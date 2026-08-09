@@ -19,7 +19,7 @@
 
 // ======================> pci_bus_legacy_device
 
-class pci_bus_legacy_device :  public device_t
+class pci_bus_legacy_device final :  public device_t // PINMAME
 {
 public:
 	typedef device_delegate<uint32_t (int function, int reg, uint32_t mem_mask)> pci_bus_legacy_read_delegate;

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // PinMAME P2K subsystem - bridge between the imported MediaGX core and PinMAME's cpuintrf.
 //
 // PinMAME addresses CPUs through a table of plain C function pointers (src/cpuintrf.c), and
@@ -7,7 +9,8 @@
 //
 // It is deliberately thin: the machine itself is still assembled by p2k_state, and this only
 // forwards. What it makes possible is inspection - registers and disassembly - which is what
-// bring-up needs next.
+// bring-up needs next
+
 #include "p2k_driver.h"
 #include "p2k_debug.h"
 #include "p2k_weak.h"
@@ -47,7 +50,7 @@ mediagx_device *g_bridge_cpu = nullptr;
 std::unique_ptr<util::disasm_interface> g_disasm;
 
 // feeds the disassembler from the machine's program space
-class p2k_opcode_buffer : public util::disasm_interface::data_buffer
+class p2k_opcode_buffer final : public util::disasm_interface::data_buffer
 {
 public:
 	u8  r8 (offs_t pc) const override { return u8(read(pc, 1)); }

@@ -1,14 +1,17 @@
+// license:BSD-3-Clause
+
 // PinMAME P2K subsystem - machine assembly and run loop.
 //
 // MAME builds a machine from a machine_config and lets its scheduler drive everything. Here the
 // machine is assembled explicitly and driven by this small runner: the CPU executes a slice of
 // cycles, then emulated time advances by the same amount and any timers that came due fire.
-// Later this is what PinMAME's own timer/execution loop will call into.
+// This is what PinMAME's own timer/execution loop calls into
+
 #pragma once
 
 #include "emu.h"
 
-class p2k_machine
+class p2k_machine final
 {
 public:
 	p2k_machine();

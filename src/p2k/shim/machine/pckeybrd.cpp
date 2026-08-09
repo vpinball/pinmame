@@ -1,4 +1,7 @@
-// PinMAME P2K subsystem - stub for MAME's PC keyboard device. See pckeybrd.h.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - stub for MAME's PC keyboard device. See pckeybrd.h
+
 #include "machine/pckeybrd.h"
 
 DEFINE_DEVICE_TYPE(AT_KEYB, at_keyboard_device, "at_keyb", "PC/AT Keyboard (stub)")

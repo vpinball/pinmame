@@ -143,7 +143,7 @@ private:
 };
 
 
-class v5x_dmau_device : public am9517a_device
+class v5x_dmau_device final : public am9517a_device // PINMAME
 {
 public:
 	// construction/destruction
@@ -180,7 +180,7 @@ protected:
 };
 
 
-class pcxport_dmac_device : public am9517a_device
+class pcxport_dmac_device final : public am9517a_device // PINMAME
 {
 public:
 	// construction/destruction
@@ -192,7 +192,7 @@ protected:
 	virtual void end_of_process() override;
 };
 
-class eisa_dma_device : public am9517a_device
+class eisa_dma_device final : public am9517a_device // PINMAME
 {
 public:
 	eisa_dma_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);

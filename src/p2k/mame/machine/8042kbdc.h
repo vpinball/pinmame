@@ -22,7 +22,7 @@
 
 // ======================> kbdc8042_device
 
-class kbdc8042_device : public device_t
+class kbdc8042_device final : public device_t // PINMAME
 {
 public:
 	enum kbdc8042_type_t

@@ -733,8 +733,10 @@ void i386_device::i386_trap(int irq, int irq_gate, int trap_level)
 			}
 		}
 		uint32_t tempSP = REG32(ESP);
+#if MAME_DEBUG // PINMAME
 		try
 		{
+#endif
 			// this is ugly but the alternative is worse
 			if(type != 0x0e && type != 0x0f)  // if not 386 interrupt or trap gate
 			{
@@ -754,12 +756,14 @@ void i386_device::i386_trap(int irq, int irq_gate, int trap_level)
 				else
 					PUSH32(m_prev_eip );
 			}
+#if MAME_DEBUG // PINMAME
 		}
 		catch(uint64_t e)
 		{
 			REG32(ESP) = tempSP;
 			throw e;
 		}
+#endif
 		if(SetRPL != 0)
 			segment = (segment & ~0x03) | m_CPL;
 		m_sreg[CS].selector = segment;

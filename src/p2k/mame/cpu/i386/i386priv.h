@@ -294,7 +294,11 @@ union MMX_REG {
 
 extern int i386_parity_table[256];
 
+#if MAME_DEBUG // PINMAME
 #define FAULT_THROW(fault,error) { throw (uint64_t)(fault | (uint64_t)error << 32); }
+#else
+#define FAULT_THROW(fault,error) {}
+#endif
 #define PF_THROW(error) { m_cr[2] = address; FAULT_THROW(FAULT_PF,error); }
 
 #define PROTECTED_MODE      (m_cr[0] & 0x1)

@@ -15,7 +15,7 @@
 
 #include "bus/ata/ataintf.h"
 
-class ide_controller_device : public abstract_ata_interface_device
+class ide_controller_device final : public abstract_ata_interface_device // PINMAME
 {
 public:
 	ide_controller_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
@@ -58,7 +58,7 @@ protected:
 DECLARE_DEVICE_TYPE(IDE_CONTROLLER, ide_controller_device)
 
 
-class ide_controller_32_device : public abstract_ata_interface_device
+class ide_controller_32_device final : public abstract_ata_interface_device // PINMAME
 {
 public:
 	ide_controller_32_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
@@ -101,7 +101,7 @@ protected:
 DECLARE_DEVICE_TYPE(IDE_CONTROLLER_32, ide_controller_32_device)
 
 
-class bus_master_ide_controller_device : public ide_controller_32_device
+class bus_master_ide_controller_device final : public ide_controller_32_device // PINMAME
 {
 public:
 	bus_master_ide_controller_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);

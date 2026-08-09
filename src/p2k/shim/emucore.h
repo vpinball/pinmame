@@ -1,7 +1,10 @@
-// PinMAME P2K subsystem - stand-in for MAME's emucore.h.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - stand-in for MAME's emucore.h
 //
 // Imported MAME headers (attotime.h, xtal.h, ...) include "emucore.h" for the basic types and
-// helpers. This supplies just those, without pulling in MAME's core.
+// helpers. This supplies just those, without pulling in MAME's core
+
 #pragma once
 
 #include <cstdint>
@@ -48,12 +51,12 @@ using offs_t = u32;
 template <typename T> constexpr T BIT(T x, unsigned n) { return (x >> n) & T(1); }
 template <typename T> constexpr T BIT(T x, unsigned n, unsigned w) { return (x >> n) & ((T(1) << w) - 1); }
 
-template <typename T> inline T make_bitmask(unsigned n) { return n ? (T(-1) >> (8 * sizeof(T) - n)) : 0; }
+template <typename T> ATTR_FORCE_INLINE T make_bitmask(unsigned n) { return n ? (T(-1) >> (8 * sizeof(T) - n)) : 0; }
 
 // MAME's zero-initialising array allocator
 // called as make_unique_clear<u8[]>(n), like MAME's
 template <typename T, typename E = std::remove_extent_t<T>>
-inline std::unique_ptr<E[]> make_unique_clear(std::size_t n, u8 fill = 0)
+ATTR_FORCE_INLINE std::unique_ptr<E[]> make_unique_clear(std::size_t n, u8 fill = 0)
 {
 	auto p = std::make_unique<E[]>(n);
 	std::memset(p.get(), fill, n * sizeof(E));
@@ -61,11 +64,11 @@ inline std::unique_ptr<E[]> make_unique_clear(std::size_t n, u8 fill = 0)
 }
 
 // MAME's checked downcast; unchecked here, as in a release build
-template <class Dest, class Source> inline Dest downcast(Source *src) { return static_cast<Dest>(src); }
-template <class Dest, class Source> inline Dest downcast(Source &src) { return static_cast<Dest>(src); }
+template <class Dest, class Source> ATTR_FORCE_INLINE Dest downcast(Source *src) { return static_cast<Dest>(src); }
+template <class Dest, class Source> ATTR_FORCE_INLINE Dest downcast(Source &src) { return static_cast<Dest>(src); }
 
 // MAME throws this; here it aborts with the message, like fatalerror
-class emu_fatalerror
+class emu_fatalerror final
 {
 public:
 	template <typename... T> emu_fatalerror(const char *fmt, T &&... args)

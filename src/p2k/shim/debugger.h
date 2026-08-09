@@ -1,8 +1,11 @@
-// PinMAME P2K subsystem - debugger hooks for the imported MAME code.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - debugger hooks for the imported MAME code
 //
 // MAME's CPU cores call debugger_instruction_hook() once per instruction. That is exactly where
 // PinMAME wants to check breakpoints, so the macro forwards to a function pointer the bridge
-// fills in (see p2k_cpuintrf.cpp). Nothing is called when no debugger is attached.
+// fills in (see p2k_cpuintrf.cpp). Nothing is called when no debugger is attached
+
 #pragma once
 
 extern void (*p2k_instruction_hook)(unsigned pc);

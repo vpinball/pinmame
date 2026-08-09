@@ -1,7 +1,10 @@
+// license:BSD-3-Clause
+
 // PinMAME P2K subsystem - boot harness.
 //
 // Loads a game's ROMs, builds the machine and runs the CPU from the reset vector, reporting
-// what the boot code touches. A development tool for bringing the driver up, not a test.
+// what the boot code touches. A development tool for bringing the driver up, not a test
+
 #include "p2k_driver.h"
 #include <cstdio>
 #include <cstdlib>

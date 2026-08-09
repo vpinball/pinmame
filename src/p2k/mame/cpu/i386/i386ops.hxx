@@ -1253,16 +1253,19 @@ void i386_device::i386_repeat(int invert_flag)
 	{
 		m_eip = repeated_eip;
 		m_pc = repeated_pc;
+#if MAME_DEBUG // PINMAME
 		try
 		{
+#endif
 			i386_decode_opcode();
+#if MAME_DEBUG // PINMAME
 		}
 		catch (uint64_t e)
 		{
 			m_eip = m_prev_eip;
 			throw e;
 		}
-
+#endif
 		CYCLES_NUM(cycle_adjustment);
 
 		if (m_address_size)

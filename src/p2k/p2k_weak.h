@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // P2K optional link-time symbols
 //
 // Two things this subsystem calls may or may not be in the link:
@@ -19,8 +21,7 @@
 //   * no Windows project defines REMOTE_DEBUG, so the hook is not. If one ever does, defining
 //     REMOTE_DEBUG for these files as well is all it takes
 
-#ifndef P2K_WEAK_H
-#define P2K_WEAK_H
+#pragma once
 
 #ifdef _MSC_VER
   #define P2K_WEAK
@@ -30,5 +31,3 @@
   #define P2K_WEAK __attribute__((weak))
   #define P2K_HAVE_WEAK(sym) ((sym) != nullptr)
 #endif
-
-#endif // P2K_WEAK_H

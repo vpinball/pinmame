@@ -18,7 +18,7 @@
     DEVICE CONFIGURATION MACROS
 ***************************************************************************/
 
-class pc_lpt_device : public device_t
+class pc_lpt_device final : public device_t // PINMAME
 {
 public:
 	pc_lpt_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);

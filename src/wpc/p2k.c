@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
   Midway Pinball 2000 (Revenge From Mars, Star Wars Episode I)
 
@@ -46,7 +48,7 @@ extern void p2k_pinmame_nvram_set(int which, const unsigned char *data, unsigned
 extern unsigned p2k_pinmame_nvram_get(int which, unsigned char *data, unsigned size);
 extern UINT32 p2k_pinmame_read(offs_t address, UINT32 mem_mask);
 extern void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask);
-extern unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height);
+extern unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height, const unsigned fast_15bpp_path, unsigned *fast_15bpp_path_success);
 extern void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count);
 extern void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2);
 
@@ -73,12 +75,12 @@ static MEMORY_WRITE32_START(p2k_writemem)
 	P2K_RANGES(p2k_w)
 MEMORY_END
 
-/* Pinball 2000 has no DMD: the picture is the MediaGX frame buffer, 640x240 in RGB555 as the
-   display controller is programmed here. What sits in video memory is rotated by 180 degrees
+/* Pinball 2000's output is the MediaGX frame buffer, 640x240 in RGB555 as the
+   display controller is programmed here and what the analog monitor expects. What sits in video memory is rotated by 180 degrees
    against what a player sees - the cabinet reflects the monitor into the playfield through a
    half-silvered mirror, which accounts for one axis, and the frame buffer's row order for the
    other - so it is turned back here. What is on this screen is what a player sees. */
-#define P2K_MAX_PIXELS (1024*768)
+#define P2K_MAX_PIXELS (1024*768) // 1024x768 is the maximum resolution of MediaGX at 15/16bit color output, so lets play safe
 
 /* The display controller hands out 240 lines and the monitor shows 480: the picture is
    line-doubled on the way to the CRT, which is why the machine's pixels are twice as tall as
@@ -114,6 +116,10 @@ MEMORY_END
    into the one above it: the low bit of each channel is dropped by the mask before the shift.
    P2K_AVG2(a,a) == a, which is what makes the even output lines exact copies below */
 #define P2K_AVG2(a,b) (((((a) ^ (b)) & 0xfefefeu) >> 1) + ((a) & (b)))
+
+/* Per-channel average of two RGB555 pixels, rounding down.
+   RGB555 layout: 0RRRRRGGGGGBBBBB. P2K_AVG2_555(a,a) == a. */
+#define P2K_AVG2_555(a,b) (((((a) ^ (b)) & 0x7bdeu) >> 1) + ((a) & (b)))
 
 /* The DCS2 sound board, upstream's (src/wpc/wmssnd.c, docs/pin2k_sound.md). On real hardware it
    lives in the Prism card's BAR4 window at 0x13000000:
@@ -245,17 +251,14 @@ static void p2k_sync_io(void) {
    display layout - which is what feeds libpinmame's display export. Declared in p2k_disp below
    as a CORE_VIDEO layout, exactly as byvidpin.c does for Baby Pac-Man. */
 static PINMAME_VIDEO_UPDATE(p2k_video) {
-  static UINT32 *frame = NULL;
+  static UINT32 frame[P2K_MAX_PIXELS];
   static int announced = 0;
-  unsigned width = 0, height = 0, count, x, y;
-
-  if (!frame) frame = (UINT32 *)malloc(P2K_MAX_PIXELS * sizeof(UINT32));
-  if (!frame) return;
+  unsigned width, height, success, fast_path_success;
 
   p2k_sync_io();
 
-  count = p2k_pinmame_frame(frame, P2K_MAX_PIXELS, &width, &height);
-  if (!count || !width || !height) { fillbitmap(bitmap, 0, cliprect); return; }
+  success = p2k_pinmame_frame(frame, P2K_MAX_PIXELS, &width, &height, (bitmap->depth != 32), &fast_path_success);
+  if (!success || !width || !height) { fillbitmap(bitmap, 0, cliprect); return; }
   if (!announced) {
     announced = 1;
     fprintf(stderr, "[p2k video] %ux%u source into a %ux%u %d bpp bitmap (%s)\n",
@@ -267,30 +270,57 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
   if (height * P2K_LINE_DOUBLE > (unsigned)bitmap->height)
     height = (unsigned)bitmap->height / P2K_LINE_DOUBLE;
 
-  for (y = 0; y < height; y++) {
+  if (fast_path_success) // 15bpp on the input AND the output?
+  {
+  for (unsigned y = 0; y < height; y++) {
+    const UINT32 * const __restrict src = &frame[(height - 1 - y) * width];
+#if P2K_LINE_INTERPOLATE
+    const UINT32 * const __restrict below = (y + 1 < height) ? &frame[(height - 2 - y) * width] : src;
+#endif
+    for (unsigned d = 0; d < P2K_LINE_DOUBLE; d++) {
+      const unsigned ty = y * P2K_LINE_DOUBLE + d;
+#if P2K_LINE_INTERPOLATE
+      const UINT32 * const __restrict other = d ? below : src;
+#endif
+      for (unsigned x = 0; x < width; x++) {
+#if P2K_LINE_INTERPOLATE
+        const UINT32 srcx = src[x];
+        const UINT32 otherx = other[x];
+        const UINT16 rgb = P2K_AVG2_555(srcx, otherx);
+#else
+        const UINT16 rgb = src[x];
+#endif
+        ((UINT16 *)bitmap->line[ty])[x] = rgb;
+      }
+    }
+  }
+  }
+  else // slow path / conversion
+  for (unsigned y = 0; y < height; y++) {
     /* Video memory holds the picture upside down and the right way round, not mirrored:
-       turning only the row order back makes the machine's own text (COIN DOOR IS OPEN /
+       turning only the row order back makes the machine's own text (e.g. COIN DOOR IS OPEN /
        Revenge From Mars - 50070 - 1.5) legible. Measured by reading the bitmap back, and
        worth stating because it is the opposite of what the cabinet's half-silvered mirror
        would suggest. */
-    const UINT32 *src = &frame[(height - 1 - y) * width];
+    const UINT32 * const __restrict src = &frame[(height - 1 - y) * width];
 #if P2K_LINE_INTERPOLATE
     /* The line below this one on screen, which - the row order being turned back - is the row
        before it in video memory. The bottom line of the frame has none, and pairs with itself:
        P2K_AVG2 then returns it unchanged, so that one line is doubled */
-    const UINT32 *below = (y + 1 < height) ? &frame[(height - 2 - y) * width] : src;
+    const UINT32 * const __restrict below = (y + 1 < height) ? &frame[(height - 2 - y) * width] : src;
 #endif
-    unsigned d;
-    for (d = 0; d < P2K_LINE_DOUBLE; d++) {
+    for (unsigned d = 0; d < P2K_LINE_DOUBLE; d++) {
       const unsigned ty = y * P2K_LINE_DOUBLE + d;
 #if P2K_LINE_INTERPOLATE
       /* d == 0 is the machine's own line - averaged with itself, so copied exactly. d == 1 is
          the new line, and averaging is all that separates the two cases */
-      const UINT32 *other = d ? below : src;
+      const UINT32 * const __restrict other = d ? below : src;
 #endif
-      for (x = 0; x < width; x++) {
+      for (unsigned x = 0; x < width; x++) {
 #if P2K_LINE_INTERPOLATE
-        const UINT32 rgb = P2K_AVG2(src[x], other[x]);
+        const UINT32 srcx = src[x];
+        const UINT32 otherx = other[x];
+        const UINT32 rgb = P2K_AVG2(srcx, otherx);
 #else
         const UINT32 rgb = src[x];
 #endif
@@ -453,12 +483,12 @@ MACHINE_DRIVER_START(p2k)
 	MDRV_SWITCH_UPDATE(p2k)
 	MDRV_SWITCH_CONV(p2k_sw2m, p2k_m2sw)
 	MDRV_NVRAM_HANDLER(p2k)
-	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 20000000)
+	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233'000'000/4) //!! sync with p2k_pinmame.cpp
 	MDRV_CPU_MEMORY(p2k_readmem, p2k_writemem)
 	MDRV_IMPORT_FROM(wmssnd_dcs3)
 	/* 480 rows, not the 240 the frame buffer holds: core_initDisplaySize() forces the visible
 	   height to Machine->drv->screen_height, so the layout's row count alone does not size the
-	   window - these two do. See P2K_LINE_DOUBLE above for why the picture is twice as tall. */
+	   window - these two do. See P2K_LINE_DOUBLE */
 	MDRV_SCREEN_SIZE(640, 240 * P2K_LINE_DOUBLE)
 	MDRV_VISIBLE_AREA(0, 639, 0, 240 * P2K_LINE_DOUBLE - 1)
 	MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_RGB_DIRECT)

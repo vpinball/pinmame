@@ -1,7 +1,10 @@
-// PinMAME P2K subsystem - the PinMAME-facing side of the machine.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - the PinMAME-facing side of the machine
 //
 // src/wpc/p2k.c is compiled as part of PinMAME and knows nothing about the subsystem's C++
-// types; these four functions are the whole contract between them.
+// types; these four functions are the whole contract between them
+
 #include "p2k_driver.h"
 #include "p2k_debug.h"
 #include <cstdlib>
@@ -35,11 +38,11 @@ void p2k_pinmame_start(const char *game,
 		fprintf(stderr, "[p2k] the update flash region is missing or short (%u bytes, need %u) - "
 		                "the machine does not boot without it\n", updatesLen, 0x800000u);
 
-	// The MAME driver runs the MediaGX at 20 MHz with the comment "should be 233MHz". That
+	// We run the MediaGX at 58.25 MHz for now(!), but should be at least 233MHz. That
 	// downclock is not free: the firmware programs the PIT as a rate generator with divisor 298,
-	// so a tick arrives every ~6400 CPU cycles at 20 MHz, and the operating system's tick handler
-	// does not fit in that
-	u32 cpu_hz = 20000000;
+	// so a tick arrives every ~6400 CPU cycles if it would run at 20 MHz, and the operating system's tick handler
+	// would not even fit in that
+	u32 cpu_hz = 233'000'000/4; //!! sync with p2k.c
 #if P2K_DEBUG
 	// P2K_CPU_HZ raises it, which is how that was measured
 	if (const char *s = getenv("P2K_CPU_HZ")) { const long v = strtol(s, nullptr, 0); if (v > 0) cpu_hz = u32(v); }
@@ -56,14 +59,14 @@ void p2k_pinmame_stop(void) { g_machine.reset(); }
 void p2k_pinmame_nvram_set(int which, const unsigned char *data, unsigned size)
 {
 	size_t n = 0;
-	unsigned char *p = g_machine ? g_machine->nvram_block_ptr(p2k_state::nvram_block(which), &n) : nullptr;
+	unsigned char *p = /*g_machine ?*/ g_machine->nvram_block_ptr(p2k_state::nvram_block(which), &n) /*: nullptr*/;
 	if (p && data) memcpy(p, data, size < n ? size : n);
 }
 
 unsigned p2k_pinmame_nvram_get(int which, unsigned char *data, unsigned size)
 {
 	size_t n = 0;
-	const unsigned char *p = g_machine ? g_machine->nvram_block_ptr(p2k_state::nvram_block(which), &n) : nullptr;
+	const unsigned char *p = /*g_machine ?*/ g_machine->nvram_block_ptr(p2k_state::nvram_block(which), &n) /*: nullptr*/;
 	if (!p || !data) return 0;
 	if (size > n) size = unsigned(n);
 	memcpy(data, p, size);
@@ -72,12 +75,12 @@ unsigned p2k_pinmame_nvram_get(int which, unsigned char *data, unsigned size)
 
 UINT32 p2k_pinmame_read(offs_t address, UINT32 mem_mask)
 {
-	return g_machine ? g_machine->mem_r(address, mem_mask) : 0xffffffff;
+	return /*g_machine ?*/ g_machine->mem_r(address, mem_mask) /*: 0xffffffff*/;
 }
 
 void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask)
 {
-	if (g_machine) g_machine->mem_w(address, data, mem_mask);
+	/*if (g_machine)*/ g_machine->mem_w(address, data, mem_mask);
 }
 
 // The pinball I/O. PinMAME's core model owns the switch matrix and wants the lamp and coil
@@ -86,30 +89,26 @@ void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask)
 // sync would go if coils need it.
 void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count)
 {
-	if (g_machine) g_machine->push_switches(matrix, count);
+	/*if (g_machine)*/ g_machine->push_switches(matrix, count);
 }
 
 void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2)
 {
-	if (g_machine) g_machine->pull_outputs(lamps, lamp_columns, solenoids, solenoids2);
+	/*if (g_machine)*/ g_machine->pull_outputs(lamps, lamp_columns, solenoids, solenoids2);
 }
 
 // The current picture, as 0x00RRGGBB pixels, for PinMAME's video path. The caller passes a
-// buffer and its capacity; the return value is the number of pixels written, 0 if the machine
+// buffer and its capacity; the return value is 1 on success, 0 if the machine
 // has no sane geometry yet. Pinball 2000 renders mirrored - the cabinet reflects the monitor
 // into the playfield - so this hands back what the hardware holds and leaves flipping to
 // whoever shows it.
-unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height)
+unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height, const unsigned fast_15bpp_path, unsigned *fast_15bpp_path_success)
 {
-	if (!g_machine || !dest) return 0;
-	static std::vector<u32> rgb;
-	unsigned w = 0, h = 0;
-	if (!g_machine->frame_rgb(rgb, w, h)) return 0;
-	const size_t n = rgb.size() < capacity ? rgb.size() : capacity;
-	for (size_t i = 0; i < n; i++) dest[i] = rgb[i];
-	if (width) *width = w;
-	if (height) *height = h;
-	return unsigned(n);
+	if (!g_machine || !dest || !width || !height) return 0;
+	bool tmp_success;
+	const bool result = g_machine->frame_rgb(dest, capacity, *width, *height, fast_15bpp_path, tmp_success);
+	*fast_15bpp_path_success = tmp_success;
+	return result;
 }
 
 }

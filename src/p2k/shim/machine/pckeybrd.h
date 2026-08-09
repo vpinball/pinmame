@@ -1,4 +1,6 @@
-// PinMAME P2K subsystem - stand-in for MAME's PC keyboard device.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - stand-in for MAME's PC keyboard device
 //
 // The 8042 keyboard controller requires an at_keyboard_device, but MAME's implementation pulls
 // in the input port and natural-keyboard subsystems. Pinball 2000 reads its cabinet switches
@@ -9,7 +11,8 @@
 // (keyboard reset) to port 0x60 and then spins on the status port waiting for the output buffer
 // to fill. A keyboard that stays silent hangs the machine there. The replies below are the ones
 // MAME's at_keyboard_device gives (src/devices/machine/pckeybrd.cpp, MAME 0.239); the 8042 picks
-// them up by polling read().
+// them up by polling read()
+
 #pragma once
 
 #include "emu.h"
@@ -96,7 +99,7 @@ private:
 	bool m_expect_parameter = false;
 };
 
-class at_keyboard_device : public pc_keyboard_device
+class at_keyboard_device final : public pc_keyboard_device
 {
 public:
 	at_keyboard_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock = 0);

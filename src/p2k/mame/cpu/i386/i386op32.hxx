@@ -1535,16 +1535,20 @@ void i386_device::i386_pop_rm32()          // Opcode 0x8f
 		if( modrm >= 0xc0 ) {
 			STORE_RM32(modrm, value);
 		} else {
+#if MAME_DEBUG // PINMAME
 			try
 			{
+#endif
 				ea = GetEA(modrm,1);
 				WRITE32(ea, value);
+#if MAME_DEBUG // PINMAME
 			}
 			catch(uint64_t e)
 			{
 				REG32(ESP) = temp_sp;
 				throw e;
 			}
+#endif
 		}
 	}
 	else

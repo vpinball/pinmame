@@ -1,9 +1,12 @@
-// PinMAME P2K subsystem - self-tests for the imported MAME code.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - self-tests for the imported MAME code
 //
 // Two checks, both independent of PinMAME state:
 //   1. CPU: the MediaGX core boots at its reset vector and executes real-mode code.
 //   2. Machine: 8254 channel 0 drives 8259 IR0, the CPU takes the interrupt, runs the handler
-//      and acknowledges it - i.e. timers, callbacks and interrupt routing all work.
+//      and acknowledges it - i.e. timers, callbacks and interrupt routing all work
+
 #include "emu.h"
 #include "i386.h"
 #include "i386priv.h"   // register indices for the state interface

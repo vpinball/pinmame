@@ -1,4 +1,7 @@
-// PinMAME P2K subsystem - definitions for the shim's global state.
+// license:BSD-3-Clause
+
+// PinMAME P2K subsystem - definitions for the shim's global state
+
 #include "emu.h"
 
 running_machine *device_t::s_machine = nullptr;
