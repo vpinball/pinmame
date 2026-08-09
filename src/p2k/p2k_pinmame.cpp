@@ -42,7 +42,7 @@ void p2k_pinmame_start(const char *game,
 	// downclock is not free: the firmware programs the PIT as a rate generator with divisor 298,
 	// so a tick arrives every ~6400 CPU cycles if it would run at 20 MHz, and the operating system's tick handler
 	// would not even fit in that
-	u32 cpu_hz = 233'000'000/4; //!! sync with p2k.c
+	u32 cpu_hz = 233000000/4; //!! sync with p2k.c
 #if P2K_DEBUG
 	// P2K_CPU_HZ raises it, which is how that was measured
 	if (const char *s = getenv("P2K_CPU_HZ")) { const long v = strtol(s, nullptr, 0); if (v > 0) cpu_hz = u32(v); }
