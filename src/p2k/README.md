@@ -37,19 +37,19 @@ name the version they came from.
 ## A warning about speed
 
 Pinball 2000 is a 233 MHz PC and this emulates the whole thing - protected mode, paging, the x87
-FPU, the PCI bus, the display controller. Like MAME's driver, the CPU is clocked down to 20 MHz,
+FPU, the PCI bus, the display controller. Like MAME's driver, the CPU is clocked down to 20 MHz (for now),
 and even so:
 
 **On a low-power desktop (Pentium Silver J5040, Atom class) a running game reaches about 50 % of
 real time.** On a current desktop or laptop core expect comfortably more than real time. The
 workload is single-threaded, so only single-core performance matters.
 
-Measured shares in a running game: the MediaGX 44 %, the DCS sound board's ADSP-2100 38 %, the
+Measured shares in a running game (Linux, and outdated): the MediaGX 44 %, the DCS sound board's ADSP-2100 38 %, the
 mixer 9 %, the video renderer 9 %. Both figures predate the idle skips below; most of that sound
 board share turned out to be the DSP waiting rather than working, so treat it as an upper bound.
 
 Two switches change speed and both are already on - the idle skips in *Where the time goes*, worth
-about 9 % together. Nothing else here has a fast setting; that section says what would.
+about 9 % together. Nothing else here has a fast setting yet.
 
 ## Building
 
@@ -121,7 +121,7 @@ interrupt path; `p2kboot` is a bare harness that runs the firmware without PinMA
 
 ### ROMs
 
-Nothing special: a zip named after the driver in the rompath, like every other game. The driver
+A zip or folder named after the driver in the rompath. The driver
 opens no files of its own and reads no environment variables to find them.
 
 A set holds three things. The sound board's flash and its two sample chips; the MediaGX side's
@@ -174,9 +174,9 @@ there is no separate interlock input. Press END and the warning goes.
 
 ### Playing it standalone
 
-A real Pinball 2000 gets its switch feedback from a playfield. Under VPinMAME the table provides
+A real Pinball 2000 gets its switch feedback from a playfield. Under VPinMAME/libPinMAME the table provides
 that; standalone there is nothing, and a machine that sees an empty ball trough will not start a
-game. The driver carries a small ball model for this. It needs a `P2K_DEBUG=1` build - see
+game. The driver carries a small ball model for this (which should rather move to a simulator like all the other games). It needs a `P2K_DEBUG=1` build - see
 [Building](#building) - and within one it is still off unless asked for:
 
 ```sh
@@ -195,8 +195,7 @@ P2K_HANDPLUNGE=400 \
 
 ### The bring-up scaffolding
 
-The ball model above is part of a larger block at the end of `SWITCH_UPDATE(p2k)` - about 340 of
-`src/wpc/p2k.c`'s 850 lines - which is kept deliberately. It is what makes this machine testable
+The ball model above is part of a larger block at the end of `SWITCH_UPDATE(p2k)` which is kept deliberately. It is what makes this machine testable
 without a table:
 
 * `P2K_PLAY="<frame>:<what>[:<hold>],…"` presses keys at given frames - `coin`, `start`, `enter`,
@@ -211,9 +210,6 @@ behind a single early return, and a run that sets none of them never enters it. 
 run is reproducible to the frame regardless of how fast the host is - which is what makes it useful
 as a regression test: every measurement in this port was taken this way, and a change that alters
 behaviour shows up as a different frame number rather than as an impression.
-
-If you are integrating this driver into a frontend, this is also the quickest way to see what the
-machine does with switch feedback before your own feedback exists.
 
 ### The switch matrix
 
@@ -255,9 +251,8 @@ port's working notes.
                                         |              RTC, UART, 8042, PCI
 ```
 
-**Why a shim.** PinMAME is a fork of MAME 0.76 (2003), which predates the device model entirely -
-no `device_t`, no `machine_config`, no `address_map`, no `required_device<>`. The Pinball 2000
-driver uses all of it. Rather than rewrite twenty thousand lines of CPU core into 2003-era C, the
+**Why a shim.** PinMAME is a fork of MAME 0.76 (2003), which predates the current device model entirely -
+no `device_t`, no `machine_config`, no `address_map`, no `required_device<>`. Rather than rewrite twenty thousand lines of CPU core into 2003-era C, the
 imported files are taken **unchanged** and given the small part of the modern API they need:
 address spaces, a device tree with timers and callbacks, and no-op stubs for save state and the
 debugger. That is `shim/` - about 1400 lines against 28000 imported. The measured fact the approach
@@ -271,10 +266,9 @@ compares. That is worth about 20 %; `P2K_FASTBUS=0` turns it off.
 
 **Video.** No DMD: the picture is the MediaGX framebuffer, 640x240 RGB555, exported through
 PinMAME's normal video path as a `CORE_VIDEO` layout with a renderer - the same shape `byvidpin.c`
-uses for Baby Pac-Man - which is what feeds libpinmame and any frontend behind it. The lines are
+uses for Baby Pac-Man - which is what feeds libPinMAME and any frontend behind it. The lines are
 doubled to 640x480 because the display controller doubles them on the way to the CRT: this
-machine's pixels are twice as tall as they are wide. MAME's driver does not model that, so its
-screenshots of this platform have the wrong aspect ratio.
+machine's pixels are twice as tall as they are wide.
 
 Doubling is a plain row copy - every pixel that reaches a frontend is one the machine produced -
 and that is the default because it is what the hardware does. `P2K_LINE_INTERPOLATE` in
@@ -314,7 +308,7 @@ clock handler does. `P2K_CLKINT_GATE=0` disables it.
 
 ## Where the time goes
 
-Measured in a running game:
+Measured in a running game (Linux, and outdated):
 
 | | |
 |---|---|
@@ -325,8 +319,7 @@ Measured in a running game:
 
 The core retires 0.45 guest instructions per emulated cycle.
 
-Measured and found not to help: `-O3 -march=native` gives nothing outside the noise. And `-nosound`
-is not a valid comparison - the firmware needs the sound board and dies into its monitor without it.
+Measured and found not to help: `-O3 -march=native` gives nothing outside the noise.
 
 ### Two thirds of the sound board's time is a spin loop
 
@@ -527,9 +520,9 @@ disassembling it offline avoids both traps.
 
 ### A dynarec
 
-The other half. PinMAME already ships `ext/asmjit`. With the MediaGX at 44 % of the work, Amdahl
+The other half. PinMAME already ships `ext/asmjit`. With the MediaGX at 44 % of the work (outdated), Amdahl
 caps a perfect one at about 1.8x, so on slow hardware it reaches real time only together with the
-threading above.
+threading or ADSP optimizations above.
 
 ### Memory through PinMAME's system
 
@@ -550,12 +543,8 @@ of the 2000-cycle execution chunks.
 * Episode I plays its music but its sound *tracks* stay silent. The read path, the SDRC paging and
   the PCM producer are all proven correct on demand, so what the game's own track numbers resolve
   to is a question of game state rather than of emulation.
-* Linux/X11, libpinmame and Windows x64 are built *and run*: both games boot and render under
-  `PinMAME.exe` built from CMake, and `PinMAME_VC2022` from the vcproj files links and lists
-  them. The 32-bit build was verified only as far as compiling every source
-  in the subsystem with the x86 compiler; the win-x86 CMake list needs NASM, which was not
-  available where this was done. macOS is untouched and should be mechanical: portable C++ with
-  no assembly.
+* All platforms are built *and run*: both games boot and render under
+  the `PinMAME` executable built from CMake, vcproj files and lists them.
 * The picture VPinMAME hands a frontend is 641 pixels wide for a 640-pixel screen. That extra
   column is `core_findSize()`'s `+ 1` and every `CORE_VIDEO` game has it - Baby Pac-Man and Granny
   report 257 for a 256-pixel screen. It is left alone deliberately: changing it would move those
