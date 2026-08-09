@@ -452,7 +452,7 @@ void kbdc8042_device::data_w(offs_t offset, uint8_t data)
 					mouse_enqueue(m_mouse.sample_rate);
 					break;
 				default:
-					logerror("%s: Unknown mouse command: %02x\n", machine().describe_context().c_str(), m_data);
+					logerror("%s: Unknown mouse command: %02x\n", machine().describe_context().c_str(), m_data); // PINMAME
 					break;
 			}
 			break;
@@ -585,7 +585,7 @@ void kbdc8042_device::data_w(offs_t offset, uint8_t data)
 		default:
 			if (data != 0xff)
 			{
-				logerror("%s: Unknown command: %02x\n", machine().describe_context().c_str(), data);
+				logerror("%s: Unknown command: %02x\n", machine().describe_context().c_str(), data); // PINMAME
 			}
 		}
 		m_sending = 1;

@@ -2151,7 +2151,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 					else
 						util::stream_format(stream, "word ptr " );
 				}
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2162,7 +2162,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 			} else {
 				if (param == PARAM_RMPTR8)
 					util::stream_format(stream, "byte ptr " );
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2173,7 +2173,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 			} else {
 				if (param == PARAM_RMPTR16)
 					util::stream_format(stream, "word ptr " );
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2184,7 +2184,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 			} else {
 				if (param == PARAM_RMPTR32)
 					util::stream_format(stream, "dword ptr " );
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2197,7 +2197,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 			} else {
 				if (param == PARAM_RMPTR32)
 					util::stream_format(stream, "dword ptr " );
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2208,7 +2208,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 			} else {
 				if (param == PARAM_M64PTR)
 					util::stream_format(stream, "qword ptr " );
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2227,7 +2227,7 @@ void i386_disassembler::handle_param(std::ostream &stream, uint32_t param, offs_
 			if( modrm >= 0xc0 ) {
 				util::stream_format(stream, "xmm%d", MODRM_REG2() | rmex );
 			} else {
-				util::stream_format(stream, "%s", modrm_string.c_str() );
+				util::stream_format(stream, "%s", modrm_string.c_str() ); // PINMAME
 			}
 			break;
 
@@ -2402,7 +2402,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fadd    dword ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fadd    dword ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fmul    dword ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "fcom    dword ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "fcomp   dword ptr %s", modrm_string.c_str()); break;
@@ -2437,7 +2437,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fld     dword ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fld     dword ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "??? (FPU)"); break;
 					case 2: util::stream_format(stream, "fst     dword ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "fstp    dword ptr %s", modrm_string.c_str()); break;
@@ -2500,7 +2500,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fiadd   dword ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fiadd   dword ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fimul   dword ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "ficom   dword ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "ficomp  dword ptr %s", modrm_string.c_str()); break;
@@ -2543,7 +2543,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fild    dword ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fild    dword ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fisttp  dword ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "fist    dword ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "fistp   dword ptr %s", modrm_string.c_str()); break;
@@ -2592,7 +2592,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fadd    qword ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fadd    qword ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fmul    qword ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "fcom    qword ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "fcomp   qword ptr %s", modrm_string.c_str()); break;
@@ -2638,7 +2638,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fld     qword ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fld     qword ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fisttp  qword ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "fst     qword ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "fstp    qword ptr %s", modrm_string.c_str()); break;
@@ -2681,7 +2681,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fiadd   word ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fiadd   word ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fimul   word ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "ficom   word ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "ficomp  word ptr %s", modrm_string.c_str()); break;
@@ -2729,7 +2729,7 @@ void i386_disassembler::handle_fpu(std::ostream &stream, uint8_t op1, uint8_t op
 				handle_modrm(modrm_string, base_pc, pc, opcodes);
 				switch ((op2 >> 3) & 0x7)
 				{
-					case 0: util::stream_format(stream, "fild    word ptr %s", modrm_string.c_str()); break;
+					case 0: util::stream_format(stream, "fild    word ptr %s", modrm_string.c_str()); break; // PINMAME
 					case 1: util::stream_format(stream, "fisttp  word ptr %s", modrm_string.c_str()); break;
 					case 2: util::stream_format(stream, "fist    word ptr %s", modrm_string.c_str()); break;
 					case 3: util::stream_format(stream, "fistp   word ptr %s", modrm_string.c_str()); break;
