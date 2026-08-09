@@ -31,7 +31,7 @@
 
 
 // Some optimizations/warnings cleanups for GCC
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #define ATTR_PRINTF(x,y)        __attribute__((format(printf, x, y)))
 #define ATTR_CONST              __attribute__((const))
 #define ATTR_FORCE_INLINE       __attribute__((always_inline))
@@ -48,7 +48,7 @@
 #define ATTR_COLD
 #define UNEXPECTED(exp)         (exp)
 #define EXPECTED(exp)           (exp)
-#define RESTRICT
+#define RESTRICT                __restrict
 #endif
 
 

@@ -34,8 +34,13 @@ using offs_t = u32;
 
 #define ATTR_UNUSED
 #define ATTR_PRINTF(x,y)
-#define ATTR_FORCE_INLINE inline
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_CONST              __attribute__((const))
+#define ATTR_FORCE_INLINE       __attribute__((always_inline))
+#else
 #define ATTR_CONST
+#define ATTR_FORCE_INLINE       __forceinline
+#endif
 #define NOINLINE
 #define ATTR_HOT
 #define ATTR_COLD
