@@ -51,7 +51,7 @@ struct win_blit_params
 	void *		srcdata;
 	int			srcpitch;
 	int			srcdepth;
-	UINT32 *	srclookup;
+	const UINT32 * __restrict srclookup;
 	int			srcxoffs;
 	int			srcyoffs;
 	int			srcwidth;
@@ -68,4 +68,4 @@ struct win_blit_params
 //	PROTOTYPES
 //============================================================
 
-int win_perform_blit(const struct win_blit_params * const blit, int update);
+int win_perform_blit(const struct win_blit_params * const __restrict blit, const int update);

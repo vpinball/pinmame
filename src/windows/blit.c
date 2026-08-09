@@ -484,10 +484,10 @@ static inline UINT32 sqri(const UINT32 x)
 	return x*x;
 }
 
-int win_perform_blit(const struct win_blit_params * const blit, int update)
+int win_perform_blit(const struct win_blit_params * const __restrict blit, const int update)
 {
-	int srcdepth = (blit->srcdepth + 7) / 8;
-	int dstdepth = (blit->dstdepth + 7) / 8;
+	const int srcdepth = (blit->srcdepth + 7) / 8;
+	const int dstdepth = (blit->dstdepth + 7) / 8;
 	struct rectangle temprect;
 #ifndef _WIN64
 	blitter_func blitter;
@@ -605,42 +605,74 @@ int win_perform_blit(const struct win_blit_params * const blit, int update)
 
 		INT32 valuefixups[32]; // asm rely on 32 bit register arithmetic, we reuse the same 'fixup' values but need them as signed values for x64
 		compute_source_fixups(blit, (UINT32*)valuefixups);
+		const INT32 fuv_sb1 = valuefixups[FIXUPVAL_SRCBYTES1];
+		const INT32 fuv_sa = valuefixups[FIXUPVAL_SRCADVANCE];
 
-		for (int c = 0; c < blit_srcheight; ++c) // y loop
+		const int h = blit_srcheight;
+		const int w = blit_srcwidth;
+		const int dxs = blit->dstxscale;
+
+		if (dxs == 1)
 		{
-			int c2,c2d=0;
+		for (int c = 0; c < h; ++c) // y loop
+		{
 			const UINT8* __restrict pushed_src = src;
-			for (c2 = 0; c2 < blit_srcwidth; ++c2) // x loop
+			{
+			      UINT16* __restrict blit_dst = (UINT16*)dst;
+			for (int c2 = 0; c2 < w; ++c2,++blit_dst) // x loop
+			{
+				*blit_dst = (UINT16)blit->srclookup[*(UINT16*)src];
+				src += fuv_sb1;
+			}
+			}
+			for (int c2 = 1; c2 < blit->dstyscale; ++c2)
+				memcpy(dst + blit->dstpitch*c2, dst, blit->dstpitch);
+			src = pushed_src + fuv_sa;
+			dst += blit->dstpitch * blit->dstyscale;
+		}
+		}
+		else
+		for (int c = 0; c < h; ++c) // y loop
+		{
+			const UINT8* __restrict pushed_src = src;
+			{
+			      UINT16* __restrict blit_dst = (UINT16*)dst;
+			for (int c2 = 0; c2 < w; ++c2) // x loop
 			{
 				const UINT16 col = blit->srclookup[*(UINT16*)src];
-				for (int s = 0; s < blit->dstxscale; ++s,++c2d)
-					((UINT16*)dst)[c2d] = col;
-				src += valuefixups[FIXUPVAL_SRCBYTES1];
+				for (int s = 0; s < dxs; ++s,++blit_dst)
+					*blit_dst = col;
+				src += fuv_sb1;
 			}
-			for (c2 = 1; c2 < blit->dstyscale; ++c2)
+			}
+			for (int c2 = 1; c2 < blit->dstyscale; ++c2)
 				memcpy(dst + blit->dstpitch*c2, dst, blit->dstpitch);
-			src = pushed_src + valuefixups[FIXUPVAL_SRCADVANCE];
+			src = pushed_src + fuv_sa;
 			dst += blit->dstpitch * blit->dstyscale;
 		}
 #endif
 	}
 	else if (blit->dstdepth == 32)
 	{
-		UINT32 c;
 		const UINT8 * __restrict src = asmblit_srcdata;
 		UINT8 * __restrict dst = asmblit_dstdata;
 
-		for (c = 0; c < asmblit_srcheight; ++c)
+		const UINT32 h = asmblit_srcheight;
+		const int w = blit->srcwidth;
+		const int dxs = blit->dstxscale;
+
+		for (UINT32 c = 0; c < h; ++c)
 		{
-			int c2,c2d=0;
-			for (c2 = 0; c2 < blit->srcwidth; ++c2)
+			{
+			UINT32* __restrict blit_dst = (UINT32*)dst;
+			for (int c2 = 0; c2 < w; ++c2)
 			{
 				const UINT32 col = blit->srclookup[((UINT16*)src)[c2]];
-				int s;
-				for (s = 0; s < blit->dstxscale; ++s,++c2d)
-					((UINT32*)dst)[c2d] = col;
+				for (int s = 0; s < dxs; ++s,++blit_dst)
+					*blit_dst = col;
 			}
-			for (c2 = 1; c2 < blit->dstyscale; ++c2)
+			}
+			for (int c2 = 1; c2 < blit->dstyscale; ++c2)
 				memcpy(dst + blit->dstpitch*c2, dst, blit->dstpitch);
 			src += blit->srcpitch;
 			dst += blit->dstpitch * blit->dstyscale;
