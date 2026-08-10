@@ -5,17 +5,18 @@
 #
 #  ON by default; disable with -DPINMAME_JIT_ASMJIT=OFF.
 #
-#  x86/x64 TARGETS ONLY: the translator emits x86/x64 host code through
-#  asmjit's x86 backend (jit_asmjit.cpp uses x86::Assembler throughout, and
-#  emit_mem_call #errors on any other host ABI). On ARM64 hosts the vendored
-#  asmjit is built with ASMJIT_NO_FOREIGN, which drops the x86 emitter
-#  entirely, so the translation unit cannot even compile there. Until an
-#  AArch64 backend exists, this file therefore resolves the user-facing
-#  option into PINMAME_JIT_ASMJIT_EFFECTIVE, which is ON only when the
-#  option is ON AND the target architecture is x86/x64; every other target
-#  (win/arm64, macos/arm64, linux/aarch64, android, ios, tvos, ...) builds
-#  exactly as if the option were OFF: asmjit is NOT built, no source is
-#  added, nothing links against it, and the emulator uses the interpreter.
+#  x86/x64 AND AArch64 TARGETS ONLY: jit_asmjit.cpp emits through AJ_HOST_X86
+#  (x86::Assembler) or AJ_HOST_A64 (a64::Assembler) and #errors on any other
+#  ABI. This file therefore resolves the option into
+#  PINMAME_JIT_ASMJIT_EFFECTIVE, ON only when the option is ON AND the target
+#  architecture is one of those two; every other target (32-bit arm, anything
+#  a minimal toolchain leaves unspelled) builds exactly as if the option were
+#  OFF: asmjit is NOT built, no source is added, nothing links against it, and
+#  the emulator uses the interpreter.
+#
+#  ASMJIT_EMBED makes asmjit an INTERFACE library whose sources propagate into
+#  the consumer, so it compiles with the consumer's own flags, CRT and LTO -
+#  none of the copying cmake/p2k.cmake needs for its OBJECT library.
 #
 #  Usage in a top-level CMakeLists: after the target is defined, do
 #      include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)

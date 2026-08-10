@@ -24,8 +24,9 @@
 #  Kept in step with src/p2k/p2k.mak and vcproj/p2k.props: a source added to
 #  one belongs in all three.
 #
-#  Usage in a top-level CMakeLists: after the target is defined (and after any
-#  set_target_properties on it - see MSVC_RUNTIME_LIBRARY below), do
+#  Usage in a top-level CMakeLists: last, after the target's own
+#  target_compile_options() and set_target_properties() - the object library
+#  copies both (see COMPILE_OPTIONS and MSVC_RUNTIME_LIBRARY below) - do
 #      include(${CMAKE_SOURCE_DIR}/cmake/p2k.cmake)
 #      pinmame_enable_p2k(<target>)
 # ---------------------------------------------------------------------------
@@ -111,16 +112,27 @@ function(_pinmame_p2k_add_library reference_target)
       POSITION_INDEPENDENT_CODE ON
    )
 
+   # Directory-scope options are inherited at target creation, but the Windows
+   # lists set their ${OPT_COMMON} on the target instead - which an OBJECT
+   # library does not see, leaving the i386 core and softfloat on CMake's bare
+   # /O2 /Ob2 and out of the /LTCG link for want of /GL. So copy them, minus the
+   # directory's own (p2k already inherited those), and ahead of p2k's own
+   # options below so those still win on /GR- vs /GR.
    get_target_property(_consumer_options ${reference_target} COMPILE_OPTIONS)
 
    if(NOT _consumer_options)
       set(_consumer_options "")
+   else()
+      get_directory_property(_dir_options COMPILE_OPTIONS)
+      if(_dir_options)
+         list(REMOVE_ITEM _consumer_options ${_dir_options})
+      endif()
    endif()
 
    if(MSVC)
-      # /GR after the consumer's directory-wide /GR- wins - MSVC takes the last
-      # setting on the command line - and /w and /EHsc keep the imported MAME
-      # sources quiet and exception-correct regardless of the consumer's flags.
+      # /GR after the consumer's /GR- wins - MSVC takes the last setting on the
+      # command line - and /w and /EHsc keep the imported MAME sources quiet and
+      # exception-correct regardless of the consumer's flags.
       target_compile_options(p2k PRIVATE
         ${_consumer_options}
         /GR
