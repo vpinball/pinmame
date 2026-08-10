@@ -383,13 +383,38 @@ bool p2k_clkint_blocks_irq()
 	return g_in_clkint;
 }
 
+static void p2k_debug_step(unsigned pc); // defined below, installed by arm_instruction_hook()
+
+// The per-instruction hook is the one thing in the bridge that EVERY emulated instruction pays
+// for, so it is only installed while it has work to do. debugger_instruction_hook() is a null test
+// on the pointer (see shim/debugger.h), so leaving it null costs the core a load and a perfectly
+// predicted branch, and saves the non-inlinable indirect call plus the two global tests inside.
+//
+// It has work to do while g_in_clkint is set - that is the state whose exit it watches for, by
+// looking for the handler's IRET. Outside that state p2k_debug_step() only bumps
+// g_p2k_instr_total, and the sole reader of that counter is report_progress(), which is
+// `inline void report_progress(u64) {}` unless P2K_DEBUG. So in a normal build skipping the call
+// is not merely cheap, it is unobservable. In a P2K_DEBUG build the hook stays installed
+// unconditionally, because there the counter is live.
+//
+// This is safe only because g_in_clkint has exactly one assignment site, right below.
+static inline void arm_instruction_hook()
+{
+#if P2K_DEBUG
+	p2k_instruction_hook = p2k_debug_step;
+#else
+	p2k_instruction_hook = g_in_clkint ? p2k_debug_step : nullptr;
+#endif
+}
+
 static void set_in_clkint(bool inside)
 {
 	if (g_in_clkint == inside) return;
 	g_in_clkint = inside;
+	arm_instruction_hook();
 	if (inside) { g_p2k_clkint_entered++; g_edges_while_held = 0; }
 	else        { g_p2k_clkint_left++; }
-	p2k_apply_irq0();                  // the line may be free now, or has to go away
+	p2k_apply_irq0(); // the line may be free now, or has to go away
 }
 
 // called from the driver for every rising edge the PIT puts on IR0. The edge always reaches the
@@ -697,7 +722,7 @@ void p2k_bridge_attach(p2k_state *state, mediagx_device *cpu)
 	g_probes_armed = g_pctrap_n || g_hooktrace_left > 0 || g_dump_to || g_stack_at
 		|| g_stack_below || !g_backtrace.empty() || g_watch_to;
 #endif
-	p2k_instruction_hook = p2k_debug_step;
+	arm_instruction_hook(); // null outside clkint in a normal build - see there
 	p2k_exception_hook = p2k_trap_step;
 }
 

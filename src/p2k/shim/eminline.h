@@ -6,6 +6,10 @@
 
 #include "emucore.h"
 
+#if defined(_MSC_VER)
+ #include <intrin.h>
+#endif
+
 static ATTR_FORCE_INLINE s64 mul_32x32(s32 a, s32 b)   { return s64(a) * s64(b); }
 static ATTR_FORCE_INLINE u64 mulu_32x32(u32 a, u32 b)  { return u64(a) * u64(b); }
 static ATTR_FORCE_INLINE s32 mul_32x32_hi(s32 a, s32 b)  { return s32((s64(a) * s64(b)) >> 32); }
@@ -27,5 +31,14 @@ static ATTR_FORCE_INLINE s64 mod_64x32(s64 a, s32 b)  { return a - (s64(a / b) *
 static ATTR_FORCE_INLINE u64 modu_64x32(u64 a, u32 b) { return a - (u64(a / b) * b); }
 
 static ATTR_FORCE_INLINE u8 count_leading_zeros_32(u32 v)
-{ u8 n = 0; if (!v) return 32; while (!(v & 0x80000000u)) { v <<= 1; n++; } return n; }
+{
+#if defined(_MSC_VER)
+	unsigned long i;
+	return _BitScanReverse(&i, v) ? u8(31 - i) : u8(32);
+#elif defined(__GNUC__) || defined(__clang__)
+	return v ? u8(__builtin_clz(v)) : u8(32);
+#else //!! could unroll the following
+	u8 n = 0; if (!v) return 32; while (!(v & 0x80000000u)) { v <<= 1; n++; } return n;
+#endif
+}
 static ATTR_FORCE_INLINE u8 count_leading_ones_32(u32 v) { return count_leading_zeros_32(~v); }

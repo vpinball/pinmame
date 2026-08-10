@@ -5,6 +5,13 @@
 #include "p2k_driver.h"
 #include "p2k_debug.h"
 #include "p2k_weak.h"
+#include "p2k_public.h"
+
+// p2k_state::nvram_block is the subsystem's spelling of the block selector; P2K_NV_BLOCK_* is the
+// one src/wpc/p2k.c passes across. Renumber either and the build stops here, rather than silently
+// saving the EEPROM over the CMOS
+static_assert(int(p2k_state::NVRAM_CMOS)   == P2K_NV_BLOCK_CMOS,   "NVRAM block selectors disagree");
+static_assert(int(p2k_state::NVRAM_EEPROM) == P2K_NV_BLOCK_EEPROM, "NVRAM block selectors disagree");
 
 extern u64 g_p2k_cycles_total;
 #include "machine/pic8259.h"
@@ -76,9 +83,9 @@ namespace {
 
 p2k_state *g_state = nullptr;   // the bus callbacks are plain functions
 
-u32 bus_r(void *, offs_t a, u32 mask)          { return g_state->mem_r(a, mask); }
-void bus_w(void *, offs_t a, u32 d, u32 mask)  { g_state->mem_w(a, d, mask); }
-u32 bus_io_r(void *, offs_t a, u32 mask)        { return g_state->io_r(a, mask); }
+u32 bus_r(void *, offs_t a, u32 mask)            { return g_state->mem_r(a, mask); }
+void bus_w(void *, offs_t a, u32 d, u32 mask)    { g_state->mem_w(a, d, mask); }
+u32 bus_io_r(void *, offs_t a, u32 mask)         { return g_state->io_r(a, mask); }
 void bus_io_w(void *, offs_t a, u32 d, u32 mask) { g_state->io_w(a, d, mask); }
 
 } // anonymous namespace
@@ -92,13 +99,13 @@ p2k_state::p2k_state()
 	m_cga_ram.assign(0x10000, 0);
 	m_ram_c8.assign(0x8000, 0);
 	m_bios_ram.assign(0x30000, 0);
-	m_nvram.assign(0x30000, 0);
+	m_nvram.assign(P2K_NV_CMOS_SIZE, 0);   // sized from the shared header, not a literal
 	m_nvram_updates.assign(0x800000, 0);
 	m_prism_bank9.assign(0x1000000, 0);
 	m_smm.assign(0x80000, 0);
 	m_vram.assign(0x400000, 0);
 	m_system_bios1.assign(0x30000 / 4, 0);
-	m_eeprom.assign(0x80 / 4, 0);
+	m_eeprom.assign(P2K_NV_EEPROM_SIZE / 4, 0); // u32 elements, so the byte size is /4 here
 	g_state = this;
 }
 
@@ -460,7 +467,7 @@ bool p2k_state::frame_rgb(u32* const __restrict dest, unsigned capacity, unsigne
 	if (m_disp_ctrl_reg[DC_TIMING_CFG] & 0x8000) w >>= 1; // pixel double
 	w += 4;
 	const unsigned h = (m_disp_ctrl_reg[DC_V_TIMING_1] & 0x7ff) + 1;
-	if (w < 2 || h < 2 || w > 1024 || h > 768 || w*h > capacity || !line_delta) return false; // values ideally match what P2K_MAX_PIXELS defines
+	if (w < 2 || h < 2 || w > P2K_MAX_WIDTH || h > P2K_MAX_HEIGHT || w*h > capacity || !line_delta) return false;
 
 	const u32 cfg = m_disp_ctrl_reg[DC_OUTPUT_CFG];
 	const size_t start = m_disp_ctrl_reg[DC_FB_ST_OFFSET] % (m_vram.size() ? m_vram.size() : 1);

@@ -4,7 +4,12 @@
 //
 // MAME's CPU cores call debugger_instruction_hook() once per instruction. That is exactly where
 // PinMAME wants to check breakpoints, so the macro forwards to a function pointer the bridge
-// fills in (see p2k_cpuintrf.cpp). Nothing is called when no debugger is attached
+// fills in (see p2k_cpuintrf.cpp).
+//
+// The null test is not a "no debugger attached" fast path - it is the arming mechanism, and it is
+// load-bearing for speed. This macro sits in the i386 core's execute loop, so whatever it expands
+// to is paid tens of millions of times a second; the bridge leaves the pointer null whenever the
+// hook has nothing to do. See arm_instruction_hook() in p2k_cpuintrf.cpp for when it is armed and why that is safe
 
 #pragma once
 
