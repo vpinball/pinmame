@@ -240,8 +240,19 @@ protected:
 
 	I386_GPR m_reg;
 	I386_SREG m_sreg[6];
-	uint32_t m_eip;
+	// PINMAME: everything decode / FETCH() touches on every fetched byte, gathered into one cache line.
+	//
+	// m_cr is last because only m_cr[0] is on this path (the paging test in FETCH() and
+	// translate_address); m_cr[1..4] are never wanted here and sit at the end where they could spill out of the line harmlessly
+	alignas(64) uint32_t m_eip;
 	uint32_t m_pc;
+	uint32_t m_a20_mask;
+	memory_access<32, 2, 0, ENDIANNESS_LITTLE>::cache macache32;
+	uint8_t m_opcode;
+	bool m_lock;
+	int m_operand_size;
+	uint32_t m_cr[5];       // Control registers
+
 	uint32_t m_prev_eip;
 	uint32_t m_eflags;
 	uint32_t m_eflags_mask;
@@ -270,7 +281,6 @@ protected:
 	uint8_t m_performed_intersegment_jump;
 	uint8_t m_delayed_interrupt_enable;
 
-	uint32_t m_cr[5];       // Control registers
 	uint32_t m_dr[8];       // Debug registers
 	uint32_t m_tr[8];       // Test registers
 
@@ -290,7 +300,6 @@ protected:
 
 	int m_halted;
 
-	int m_operand_size;
 	int m_xmm_operand_size;
 	int m_address_size;
 	int m_operand_prefix;
@@ -301,14 +310,11 @@ protected:
 
 	int m_cycles;
 	int m_base_cycles;
-	uint8_t m_opcode;
 
 	uint8_t m_irq_state;
 	address_space *m_program;
 	address_space *m_io;
-	uint32_t m_a20_mask;
 	memory_access<32, 1, 0, ENDIANNESS_LITTLE>::cache macache16;
-	memory_access<32, 2, 0, ENDIANNESS_LITTLE>::cache macache32;
 
 	int m_cpuid_max_input_value_eax; // Highest CPUID standard function available
 	uint32_t m_cpuid_id0, m_cpuid_id1, m_cpuid_id2;
@@ -380,7 +386,6 @@ protected:
 	uint32_t m_smbase;
 	devcb_write_line m_smiact;
 	devcb_write_line m_ferr_handler;
-	bool m_lock;
 
 	// bytes in current opcode, debug only
 	uint8_t m_opcode_bytes[16];

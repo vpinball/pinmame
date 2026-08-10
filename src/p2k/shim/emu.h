@@ -17,51 +17,6 @@
 #include "xtal.h"
 #include "attotime.h"
 
-// Optimization for address_space::fast(): 0 = scalar (four compares and four branches), 1 = SSE2, 2 = NEON
-#if defined(_M_ARM64EC) || defined(__aarch64__) || defined(_M_ARM64) || defined(__ARM_NEON) || defined(__ARM_NEON__)
-  #define P2K_FAST_SIMD_HAVE_NEON 1
-#else
-  #define P2K_FAST_SIMD_HAVE_NEON 0
-#endif
-#if defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-  #define P2K_FAST_SIMD_HAVE_SSE2 1
-#else
-  #define P2K_FAST_SIMD_HAVE_SSE2 0
-#endif
-
-#ifndef P2K_FAST_SIMD
-  #if P2K_FAST_SIMD_HAVE_NEON
-    #define P2K_FAST_SIMD 2
-  #elif P2K_FAST_SIMD_HAVE_SSE2
-    #define P2K_FAST_SIMD 1
-  #else // 32-bit x86 without SSE2, ARM without NEON (including MSVC's ARM32, which defines neither __ARM_NEON nor _M_ARM64), anything else. Always correct, just not branchless
-    #define P2K_FAST_SIMD 0
-  #endif
-#endif
-
-#if P2K_FAST_SIMD == 1
-  #if !P2K_FAST_SIMD_HAVE_SSE2
-    #error "P2K_FAST_SIMD=1 selects the SSE2 backend; build for x64 or with -msse2 / /arch:SSE2"
-  #endif
-  #include <emmintrin.h>
-#elif P2K_FAST_SIMD == 2
-  #if !P2K_FAST_SIMD_HAVE_NEON
-    #error "P2K_FAST_SIMD=2 selects the NEON backend, which this target does not have"
-  #endif
-  #include <arm_neon.h>
-#endif
-
-#if P2K_FAST_SIMD
-static ATTR_FORCE_INLINE unsigned p2k_ctz32(unsigned v)
-{
-#if defined(_MSC_VER)
-	unsigned long i; _BitScanForward(&i, v); return unsigned(i);
-#else
-	return unsigned(__builtin_ctz(v));
-#endif
-}
-#endif
-
 enum endianness_t { ENDIANNESS_LITTLE, ENDIANNESS_BIG };
 
 #define NATIVE_ENDIAN_VALUE_LE_BE(leval, beval) (leval)
@@ -298,27 +253,13 @@ public:
 		base += head; mem += head; size -= head;
 		size &= ~size_t(3);
 		if (size < 4) return;
-		const unsigned i = m_fast_n++;
-		m_base[i] = base;
-		m_span[i] = u32(size);
-		m_mem[i]  = mem;
-		m_span_biased[i] = u32(size) ^ 0x80000000u; // see the SIMD form in fast()
+		m_fast[m_fast_n++] = { base, u32(size), uintptr_t(mem) - base };
 	}
 	// Zeroing the slots is the part that actually disarms them: fast() tests all MAX_FAST entries
 	// unconditionally and never consults m_fast_n, so resetting the count alone would leave every
 	// registered window still live - exactly the wrong outcome for the bus-probe case above.
-	// An empty slot has span 0, and u32(a - 0) < 0 is false for every a; biased, that is the
-	// smallest signed value, which no biased offset compares below. So zeroed really is disarmed
-	// in both forms.
-	void clear_fast_windows()
-	{
-		for (unsigned i = 0; i < MAX_FAST; i++)
-		{
-			m_base[i] = 0; m_span[i] = 0; m_mem[i] = nullptr;
-			m_span_biased[i] = 0x80000000u;
-		}
-		m_fast_n = 0;
-	}
+	// A zeroed slot has span 0, and u32(a - 0) < 0 is false for every a, so it can never match
+	void clear_fast_windows() { for (auto &w : m_fast) w = {}; m_fast_n = 0; }
 
 	static constexpr int data_width() { return 32; }
 	template <typename... T> memory_passthrough_handler *install_read_tap(T &&...)      { return nullptr; }
@@ -377,39 +318,12 @@ private:
 		// zeroed, and u32(a - 0) < 0 is false for every a, so an empty slot can never match
 		static_assert(MAX_FAST == 4);
 
-#if P2K_FAST_SIMD
-		// All four windows tested at once, branchlessly. The LOWEST set bit wins, which is the same first-match rule the
-		// scalar form follows by falling through in order. Windows are allowed to overlap, so which
-		// one wins has to stay the same across all three forms
-  #if P2K_FAST_SIMD == 1
-		// SSE2 has no unsigned compare, so both sides are biased into signed space. The spans are
-		// stored pre-biased (add_fast_window does it) to keep the xor off the hot path
-		const __m128i va  = _mm_set1_epi32(int(a));
-		const __m128i d   = _mm_sub_epi32(va, _mm_load_si128(reinterpret_cast<const __m128i *>(m_base)));
-		const __m128i hit = _mm_cmplt_epi32(_mm_xor_si128(d, _mm_set1_epi32(int(0x80000000u))),
-		                                    _mm_load_si128(reinterpret_cast<const __m128i *>(m_span_biased)));
-		const unsigned mask = unsigned(_mm_movemask_ps(_mm_castsi128_ps(hit)));
-  #else
-		// NEON has a native unsigned compare, so it uses the plain spans and needs no bias. It has
-		// no movemask either: AND the all-ones lanes with {1,2,4,8} and OR the four lanes together.
-		// vorr/vget_lane are ARMv7-NEON as well as AArch64, so this does not need vaddvq_u32
-		static const u32 k_lane_bits[MAX_FAST] = { 1u, 2u, 4u, 8u };
-		const uint32x4_t d   = vsubq_u32(vdupq_n_u32(u32(a)), vld1q_u32(m_base));
-		const uint32x4_t hit = vcltq_u32(d, vld1q_u32(m_span));
-		const uint32x4_t bits = vandq_u32(hit, vld1q_u32(k_lane_bits));
-		const uint32x2_t pair = vorr_u32(vget_low_u32(bits), vget_high_u32(bits));
-		const unsigned mask = vget_lane_u32(pair, 0) | vget_lane_u32(pair, 1);
-  #endif
-		if (!mask) return nullptr;
-		const unsigned i = p2k_ctz32(mask);
-		return m_mem[i] + (a - m_base[i]);
-#else
-		if (u32(a - m_base[0]) < m_span[0]) return m_mem[0] + (a - m_base[0]);
-		if (u32(a - m_base[1]) < m_span[1]) return m_mem[1] + (a - m_base[1]);
-		if (u32(a - m_base[2]) < m_span[2]) return m_mem[2] + (a - m_base[2]);
-		if (u32(a - m_base[3]) < m_span[3]) return m_mem[3] + (a - m_base[3]);
+		// Note: A branchless SSE2/NEON form that tested all four at once was tried and removed as it was way slower
+		if (u32(a - m_fast[0].base) < m_fast[0].span) return reinterpret_cast<u8 *>(m_fast[0].adj + a);
+		if (u32(a - m_fast[1].base) < m_fast[1].span) return reinterpret_cast<u8 *>(m_fast[1].adj + a);
+		if (u32(a - m_fast[2].base) < m_fast[2].span) return reinterpret_cast<u8 *>(m_fast[2].adj + a);
+		if (u32(a - m_fast[3].base) < m_fast[3].span) return reinterpret_cast<u8 *>(m_fast[3].adj + a);
 		return nullptr;
-#endif
 	}
 
 	ATTR_FORCE_INLINE u32 r32(offs_t a, u32 mask)
@@ -427,26 +341,29 @@ private:
 	// the machine's range decode behind it. Only for ranges that are pure memory: no side effect on
 	// access, no device behind them. The machine registers these; see address_space::add_fast_window.
 
-	// Structure of arrays, not an array of structs, and the compare operands first. The eight
-	// values fast() actually tests then sit in 32 contiguous bytes instead of being interleaved
-	// with the pointers it only needs once it has a hit - and the whole table is one aligned
-	// cache line. It is also the layout P2K_FAST_SIMD needs: one aligned load per operand vector
+	struct win
+	{
+		u32 base;    // first address, always dword-aligned (add_fast_window trims it)
+		u32 span;    // usable size, always a whole number of dwords: an access fits iff off < span
+		// The backing store, pre-biased: uintptr_t(mem) - base. A hit is then `adj + a`, which is
+		// a single x86 addressing mode, where storing `mem` would put a sub AND an add on the
+		// load's critical path.
+		//
+		// uintptr_t, not u8*: on a 32-bit build with a high base (0xc0800000) this wraps, which is
+		// well-defined for an unsigned integer and folds back to the right address mod 2^32, where
+		// forming the same value as a pointer would be undefined behaviour
+		uintptr_t adj;
+	};
+	// 16 bytes each, so the four windows are exactly one 64-byte line and the aligned table never
+	// straddles two. Each entry is also self-contained: a hit reads base, span and adj from the
+	// same 16 bytes, rather than from three arrays 16 bytes apart.
 	//
-	// m_cb goes last: it is only touched on a miss.
-	alignas(64) u32 m_base[MAX_FAST] {};
-	u32 m_span[MAX_FAST] {};
-	// The same spans biased into signed space, for the SSE2 backend only - the scalar and NEON
-	// forms compare m_span directly, NEON having a native unsigned compare. It is kept
-	// unconditionally rather than behind the backend switch so that the class layout does not
-	// depend on P2K_FAST_SIMD; 16 bytes is worth not having an ODR hazard.
-	//
-	// NOT zero-initialised: an empty slot must be the smallest signed value so nothing compares
-	// below it, and a zeroed entry here would instead match every address under 0x80000000 and
-	// return m_mem[i] == nullptr. Kept in step with m_span by add_fast_window()/clear_fast_windows().
-	u32 m_span_biased[MAX_FAST] { 0x80000000u, 0x80000000u, 0x80000000u, 0x80000000u };
-	u8 *m_mem[MAX_FAST] {};
-	unsigned m_fast_n = 0;
+	// Ordered hottest first: m_fast on every access, m_cb on every miss, m_fast_n only when a
+	// window is registered - fast() deliberately never reads it. Everything after m_fast lands in
+	// the second line either way, so this is for legibility only
+	alignas(64) win m_fast[MAX_FAST] {};
 	p2k_bus_callbacks m_cb;
+	unsigned m_fast_n = 0;
 };
 
 enum read_or_write { ROW_READ = 1, ROW_WRITE = 2, ROW_READWRITE = 3 };
