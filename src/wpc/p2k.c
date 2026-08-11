@@ -453,7 +453,7 @@ MACHINE_DRIVER_START(p2k)
 	MDRV_SWITCH_UPDATE(p2k)
 	MDRV_SWITCH_CONV(p2k_sw2m, p2k_m2sw)
 	MDRV_NVRAM_HANDLER(p2k)
-	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/4) //!! sync with p2k_pinmame.cpp
+	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/3) //!! sync with p2k_pinmame.cpp
 	MDRV_CPU_MEMORY(p2k_readmem, p2k_writemem)
 	MDRV_IMPORT_FROM(wmssnd_dcs3)
 	/* 480 rows, not the 240 the frame buffer holds: core_initDisplaySize() forces the visible

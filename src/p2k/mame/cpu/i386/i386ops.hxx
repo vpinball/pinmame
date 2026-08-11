@@ -711,6 +711,7 @@ void i386_device::i386_mov_cr_r32()        // Opcode 0x0f 22
 			return;
 	}
 	m_cr[cr] = data;
+	p2k_fetch_flush(); // PINMAME: CR0 here can turn paging on, which invalidates the "cursor"
 }
 
 void i386_device::i386_mov_dr_r32()        // Opcode 0x0f 23
@@ -2523,6 +2524,7 @@ void i386_device::i386_loadall()       // Opcode 0x0f 0x07 (0x0f 0x05 on 80286),
 	uint32_t ea = i386_translate(ES, REG32(EDI), 0);
 	uint32_t old_dr7 = m_dr[7];
 	m_cr[0] = READ32(ea) & 0xfffeffff; // wp not supported on 386
+	p2k_fetch_flush(); // PINMAME: LOADALL restores CR0, so paging may come back on
 	set_flags(READ32(ea + 0x04));
 	m_eip = READ32(ea + 0x08);
 	REG32(EDI) = READ32(ea + 0x0c);

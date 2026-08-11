@@ -238,24 +238,24 @@ protected:
 	};
 	static const X86_OPCODE s_x86_opcode_table[];
 
-	I386_GPR m_reg;
-	I386_SREG m_sreg[6];
-	// PINMAME: everything decode / FETCH() touches on every fetched byte, gathered into one cache line.
+	// PINMAME: cache line awareness needed for performance reasons!
+	// First cacheline (but only second most important): what the opcode handlers themselves touch.
+	// Static reference counts across i386op*.hxx / i386ops.hxx:
+	// REG8/16/32 (m_reg) 1141, m_CF 328, m_OF 141, m_ZF 110, m_address_size 66, m_CPL 61, m_SF 52,
+	// m_PF 40, m_ext 23, m_AF 18. 62 bytes, so it fits one line (incl. padding).
 	//
-	// m_cr is last because only m_cr[0] is on this path (the paging test in FETCH() and
-	// translate_address); m_cr[1..4] are never wanted here and sit at the end where they could spill out of the line harmlessly
-	alignas(64) uint32_t m_eip;
-	uint32_t m_pc;
-	uint32_t m_a20_mask;
-	memory_access<32, 2, 0, ENDIANNESS_LITTLE>::cache macache32;
-	uint8_t m_opcode;
-	bool m_lock;
-	int m_operand_size;
-	uint32_t m_cr[5];       // Control registers
-
-	uint32_t m_prev_eip;
-	uint32_t m_eflags;
-	uint32_t m_eflags_mask;
+	// The flag bytes are the real per-instruction flag state: this core keeps them lazily and only
+	// assembles m_eflags for PUSHF/POPF, so m_eflags is deliberately NOT here.
+	//
+	// m_sreg (194 references) is the 3rd most important hot thing: 120 bytes. It follows
+	// this block and, because this block ends on a boundary, occupies exactly two lines.
+	//
+	// Order of the three important blocks is this one, then m_sreg, then the fetch/decode block - NOT in
+	// order of hotness. Putting the fetch block first reads better but costs 48 bytes of padding:
+	// it is 80 bytes (m_cr spills past the line on purpose), so the next alignas(64) member has to
+	// skip a whole boundary. Last, its spill is simply followed by the ordinary members.
+	// Keep this block together across a re-import!!
+	alignas(64) I386_GPR m_reg;
 	uint8_t m_CF;
 	uint8_t m_DF;
 	uint8_t m_SF;
@@ -274,14 +274,111 @@ protected:
 	uint8_t m_VIF;
 	uint8_t m_VIP;
 	uint8_t m_ID;
-
 	uint8_t m_CPL;  // current privilege level
-
+	uint8_t m_ext;  // external interrupt
+	int m_address_size;
+	// These three just finish the cacheline rather than leave it short, and the size is the point: at 62
+	// bytes m_sreg starts at the next 4-byte boundary, which is the START of the following line.
+	// All three are per-instruction: execute_run reads m_delayed_interrupt_enable
+	// and reads/writes m_auto_clear_RF every pass, and m_segment_override is the memory-operand
+	// path that goes with m_sreg. Adding more here would push m_sreg out of alignment again
+	int m_segment_override;
 	bool m_auto_clear_RF;
-	uint8_t m_performed_intersegment_jump;
 	uint8_t m_delayed_interrupt_enable;
 
-	uint32_t m_dr[8];       // Debug registers
+	// PINMAME: m_sreg is 120 bytes so its line has 8 spare, which is exactly a pointer - and the
+	// pointer that belongs next to the segment descriptors is this one. Every data memory access
+	// takes the segment base out of m_sreg and then goes through m_program (READ8PL/WRITE8PL and
+	// friends), so the two are read together. Sitting here it costs nothing: the bytes were
+	// padding that the fetch block's alignas(64) rounded away
+	I386_SREG m_sreg[6];
+	address_space *m_program;
+
+	// PINMAME: the state the per-instruction and per-fetched-byte paths touch, gathered so it lands
+	// in ONE 64-byte cache line. Keep it together across a re-import; the order is load-bearing and is documented member by member below.
+	//
+	// The group is 80 bytes, which is deliberate: only m_cr[5] hangs past the line, and it is last
+	// precisely so that m_cr[0] - the paging bit tested in fetch_slow(), the only one of the five
+	// on any hot path - still sits inside it at bytes 60..63, while the dead m_cr[1..4] is what
+	// spills. Everything above m_cr is within the first 64 bytes.
+	//
+	// Deliberately NOT here: m_eflags/m_eflags_mask, which look hot but are not - this core keeps
+	// lazy flags in the m_CF..m_ID bytes and only assembles m_eflags for PUSHF/POPF. Those 18 flag
+	// bytes are contiguous in the a separate cacheline already and would be worse off split
+	alignas(64) uint32_t m_eip;                                  // fetch: written per byte
+	uint32_t m_pc;                                               // fetch: read and written per byte
+	memory_access<32, 2, 0, ENDIANNESS_LITTLE>::cache macache32; // fetch_slow, and FETCH16/32
+	// The FETCH "cursor" - a direct pointer to the run of memory m_pc is walking, so a sequential
+	// fetch is a range check and a load instead of the paging test, the A20 mask and a trip through
+	// the bus. Valid only while the mapping from m_pc to a host address is the identity; see
+	// fetch_slow() for where it is filled and p2k_fetch_flush() for what drops it. m_fetch_len == 0
+	// means cold, which is the state every invalidation returns it to
+	uintptr_t m_fetch_adj = 0;   // host pointer for address 0, i.e. a hit is *(u8 *)(m_fetch_adj + m_pc)
+	uint32_t m_fetch_lo = 0;     // first address the cursor covers
+	uint32_t m_fetch_len = 0;    // bytes covered from m_fetch_lo; 0 = cold
+	uint32_t m_a20_mask;                                         // fetch_slow
+	int m_operand_size;                                          // decode
+	uint32_t m_prev_eip;                                         // written once per instruction
+	int m_segment_prefix;                                        // cleared per instruction, read per modrm
+	int m_cycles;                                                // CYCLES_NUM() -> m_cycles -= x
+	int m_base_cycles;
+	uint8_t m_opcode;                                            // decode
+	bool m_lock;                                                 // decode
+	uint32_t m_cr[5];       // Control registers
+
+	// PINMAME: the three blocks above are only worth anything if they land exactly where they are
+	// meant to, and an added member, a reordered one or a change in padding would move them
+	// silently. So assert the shape rather than trust it. Never called - the body of a non-template
+	// member function is still compiled, so the checks run at build time. A member function body is
+	// also a complete-class context, which is what makes offsetof usable on the class here.
+	static void p2k_assert_layout()
+	{
+		constexpr size_t LINE = 64;
+
+		// None of the offsets below mean anything unless the object itself starts on a line.
+		static_assert(alignof(i386_device) == LINE, "i386_device must be 64-byte aligned");
+
+		// 1. opcode-handler block: m_reg .. m_delayed_interrupt_enable, one line
+		static_assert(offsetof(i386_device, m_reg) % LINE == 0, "opcode block must start on a line");
+		static_assert(offsetof(i386_device, m_delayed_interrupt_enable) + sizeof(uint8_t)
+			- offsetof(i386_device, m_reg) <= LINE, "opcode block must fit in one line");
+
+		// 2. m_sreg: 6 x 20 bytes = 120, so it needs two lines and must start on a boundary or it
+		//    would straddle three. It does NOT fill them: the 8 bytes after it are padding, which
+		//    is what the alignas(64) on the fetch block below rounds away.
+		static_assert(sizeof(I386_SREG) == 20, "I386_SREG changed size - redo the arithmetic here");
+		static_assert(sizeof(m_sreg) == 120, "m_sreg changed size - redo the arithmetic here");
+		static_assert(offsetof(i386_device, m_sreg) % LINE == 0, "m_sreg must start on a line");
+		static_assert(sizeof(m_sreg) > LINE && sizeof(m_sreg) <= 2 * LINE, "m_sreg must span exactly two lines");
+		// m_program fills m_sreg's 8 spare bytes rather than leaving them as padding, so it shares
+		// a line with the segment descriptors it is always used with.
+		static_assert(offsetof(i386_device, m_program) == offsetof(i386_device, m_sreg) + sizeof(m_sreg),
+			"m_program must sit immediately after m_sreg, in its spare bytes");
+		static_assert(offsetof(i386_device, m_program) / LINE == (offsetof(i386_device, m_sreg) + sizeof(m_sreg) - 1) / LINE,
+			"m_program must share m_sreg's last line");
+
+		// 3. fetch/decode block: on a boundary, with m_cr[0] as the last 4 bytes of the line and
+		//    m_cr[1..4] the only thing that spills
+		static_assert(offsetof(i386_device, m_eip) % LINE == 0, "fetch block must start on a line");
+		static_assert(offsetof(i386_device, m_cr) - offsetof(i386_device, m_eip) == LINE - 4,
+			"m_cr[0] must be the last 4 bytes of the fetch line");
+
+		// 4. and they sit back to back: the opcode block is exactly one line, m_sreg the next two
+		//    (its last 8 bytes being padding), so the fetch block's alignas(64) rounds to the very
+		//    next boundary rather than skipping one. That is why the fetch block is declared last
+		//    despite being the hottest - see the note on the opcode block.
+		static_assert(offsetof(i386_device, m_sreg) == offsetof(i386_device, m_reg) + LINE,
+			"m_sreg must follow the opcode block with no padding");
+		static_assert(offsetof(i386_device, m_eip) == offsetof(i386_device, m_sreg) + 2 * LINE,
+			"the fetch block must follow m_sreg with no padding");
+	}
+
+	uint32_t m_eflags;
+	uint32_t m_eflags_mask;
+
+	uint8_t m_performed_intersegment_jump;
+
+	uint32_t m_dr[8];       // Debug registers // PINMAME m_dr[7] could also be worth it to consider above, but difficult!
 	uint32_t m_tr[8];       // Test registers
 
 	memory_passthrough_handler* m_dr_breakpoints[4];
@@ -296,23 +393,16 @@ protected:
 	I386_SEG_DESC m_task;     // Task register
 	I386_SEG_DESC m_ldtr;     // Local Descriptor Table Register
 
-	uint8_t m_ext;  // external interrupt
 
 	int m_halted;
 
 	int m_xmm_operand_size;
-	int m_address_size;
 	int m_operand_prefix;
 	int m_address_prefix;
 
-	int m_segment_prefix;
-	int m_segment_override;
 
-	int m_cycles;
-	int m_base_cycles;
 
 	uint8_t m_irq_state;
-	address_space *m_program;
 	address_space *m_io;
 	memory_access<32, 1, 0, ENDIANNESS_LITTLE>::cache macache16;
 
@@ -404,8 +494,30 @@ protected:
 	bool i386_translate_address(int intention, offs_t *address, vtlb_entry *entry);
 	bool translate_address(int pl, int type, uint32_t *address, uint32_t *error);
 	void CHANGE_PC(uint32_t pc);
-	inline void NEAR_BRANCH(int32_t offs);
-	inline uint8_t FETCH();
+	// PINMAME: NEAR_BRANCH is also a hot function in the core (via i386_jmp_rel8)
+	ATTR_FORCE_INLINE void NEAR_BRANCH(int32_t offs)
+	{
+		/* TODO: limit */
+		m_eip += offs;
+		m_pc += offs;
+	}
+	// PINMAME: FETCH is the hottest function in the core - one call per fetched byte, ~680 call
+	// sites, and MSVC declined the plain `inline` hint and emitted a real call at every one. The
+	// "cursor" hit is small enough to force inline; everything else stays out of line in fetch_slow()
+	ATTR_FORCE_INLINE uint8_t FETCH()
+	{
+		const uint32_t off = m_pc - m_fetch_lo;
+		if (off < m_fetch_len)
+		{
+			const uint8_t value = *reinterpret_cast<const uint8_t *>(m_fetch_adj + m_pc);
+			m_eip++;
+			m_pc++;
+			return value;
+		}
+		return fetch_slow();
+	}
+	uint8_t fetch_slow();                                         // PINMAME: the original FETCH() body, plus the refill
+	ATTR_FORCE_INLINE void p2k_fetch_flush() { m_fetch_len = 0; } // PINMAME: drop the cursor
 	inline uint16_t FETCH16();
 	inline uint32_t FETCH32();
 	inline uint8_t READ8(uint32_t ea) { return READ8PL(ea, m_CPL); }
@@ -504,7 +616,18 @@ protected:
 	void i386_decode_four_byte38f3();
 	uint8_t read8_debug(uint32_t ea, uint8_t *data);
 	uint32_t i386_get_debug_desc(I386_SREG *seg);
-	void CYCLES(int x);
+	// PINMAME: CYCLES is also a hot function in the core (via i386_jmp_rel8)
+	ATTR_FORCE_INLINE void CYCLES(int x)
+	{
+		if (m_cr[0] & 0x1)/* = PROTECTED_MODE*/
+		{
+			m_cycles -= m_cycle_table_pm[x];
+		}
+		else
+		{
+			m_cycles -= m_cycle_table_rm[x];
+		}
+	}
 	inline void CYCLES_RM(int modrm, int r, int m);
 	uint8_t i386_shift_rotate8(uint8_t modrm, uint32_t value, uint8_t shift);
 	void i386_adc_rm8_r8();

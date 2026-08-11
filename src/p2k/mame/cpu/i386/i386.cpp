@@ -318,14 +318,10 @@ void i386_device::CHANGE_PC(uint32_t pc)
 	m_pc = i386_translate(CS, pc, -1 );
 }
 
-void i386_device::NEAR_BRANCH(int32_t offs)
-{
-	/* TODO: limit */
-	m_eip += offs;
-	m_pc += offs;
-}
-
-uint8_t i386_device::FETCH()
+// PINMAME: similar to FETCH(), but now only taken when the "cursor" cannot serve the byte -
+// so a cold cursor, a branch out of its range, or a machine state where it may not be used at all.
+// It also refills the cursor, so a run of sequential fetches pays this once and then runs inline again
+uint8_t i386_device::fetch_slow()
 {
 	uint8_t value;
 	uint32_t address = m_pc, error;
@@ -338,6 +334,23 @@ uint8_t i386_device::FETCH()
 #ifdef DEBUG_MISSING_OPCODE
 	m_opcode_bytes[m_opcode_bytes_length] = value;
 	m_opcode_bytes_length = (m_opcode_bytes_length + 1) & 15;
+#else
+	// PINMAME: refill the "cursor", but only where m_pc maps to a host address unchanged - paging
+	// off, so the linear address is the physical one, and the A20 mask not folding bit 20 away.
+	// Under those two the window's range is valid in m_pc's own coordinates. Anything that can
+	// break either condition calls p2k_fetch_flush(); see the call sites.
+	//
+	// Not compiled for DEBUG_MISSING_OPCODE: traces every fetched byte, and the cursor's inline hit deliberately does not
+	if (!(m_cr[0] & 0x80000000) && m_a20_mask == 0xffffffffu && m_program)
+	{
+		uintptr_t adj; uint32_t lo, len;
+		if (m_program->direct_range(m_pc, adj, lo, len))
+		{
+			m_fetch_adj = adj;
+			m_fetch_lo = lo;
+			m_fetch_len = len;
+		}
+	}
 #endif
 	m_eip++;
 	m_pc++;
@@ -1076,18 +1089,6 @@ void i386_device::BUMP_DI(int adjustment)
 		REG32(EDI) += ((m_DF) ? -adjustment : +adjustment);
 	else
 		REG16(DI) += ((m_DF) ? -adjustment : +adjustment);
-}
-
-void i386_device::CYCLES(int x)
-{
-	if (PROTECTED_MODE)
-	{
-		m_cycles -= m_cycle_table_pm[x];
-	}
-	else
-	{
-		m_cycles -= m_cycle_table_rm[x];
-	}
 }
 
 void i386_device::CYCLES_RM(int modrm, int r, int m)
@@ -2428,6 +2429,7 @@ void i386_device::zero_state()
 	m_opcode = 0;
 	m_irq_state = 0;
 	m_a20_mask = 0;
+	p2k_fetch_flush(); // PINMAME: reset clears the cursor with everything else
 	m_cpuid_max_input_value_eax = 0;
 	m_cpuid_id0 = 0;
 	m_cpuid_id1 = 0;
@@ -2509,6 +2511,7 @@ void i386_device::enter_smm()
 	uint32_t old_flags = get_flags();
 
 	m_cr[0] &= ~(0x8000000d);
+	p2k_fetch_flush(); // PINMAME: SMM entry clears PG and relocates execution
 	set_flags(2);
 	if(!m_smiact.isnull())
 		m_smiact(true);
@@ -2648,6 +2651,7 @@ void i386_device::leave_smm()
 	m_eflags = READ32(smram_state + SMRAM_EFLAGS);
 	m_cr[3] = READ32(smram_state + SMRAM_CR3);
 	m_cr[0] = READ32(smram_state + SMRAM_CR0);
+	p2k_fetch_flush(); // PINMAME: RSM restores CR0, so PG may come back
 
 	m_CPL = (m_sreg[SS].flags >> 13) & 3; // cpl == dpl of ss
 
@@ -2733,6 +2737,7 @@ void i386_device::i386_set_a20_line(int state)
 	{
 		m_a20_mask = ~(1 << 20);
 	}
+	p2k_fetch_flush(); // PINMAME: the mask stops being the identity, so the cursor cannot stand
 	// TODO: how does A20M and the tlb interact
 	vtlb_flush_dynamic();
 }
@@ -2790,7 +2795,7 @@ void i386_device::execute_run()
 		m_address_prefix = 0;
 
 		m_ext = 1;
-		int old_tf = m_TF;
+		const uint8_t old_tf = m_TF; // PINMAME
 
 		m_segment_prefix = 0;
 		m_prev_eip = m_eip;

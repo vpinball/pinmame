@@ -38,11 +38,12 @@ void p2k_pinmame_start(const char *game,
 		fprintf(stderr, "[p2k] the update flash region is missing or short (%u bytes, need %u) - "
 		                "the machine does not boot without it\n", updatesLen, 0x800000u);
 
-	// We run the MediaGX at 58.25 MHz for now(!), but should be at least 233MHz. That
-	// downclock is not free: the firmware programs the PIT as a rate generator with divisor 298,
-	// so a tick arrives every ~6400 CPU cycles if it would run at 20 MHz, and the operating system's tick handler
+	// We could run the MediaGX at 233MHz by now (but gameplay also ran okayish when it was e.g. 233/4), real life modders go even higher to prevent stutter.
+	// But it requires a pretty modern CPU, as its all single threaded, so we compromise on 233/3 ~= 77.7MHz.
+	// A potential downclock is not free: the firmware programs the PIT as a rate generator with divisor 298,
+	// so a tick arrives every e.g. ~6400 CPU cycles if it would run at 20 MHz, and the operating system's tick handler
 	// would not even fit in that
-	u32 cpu_hz = 233000000/4; //!! sync with p2k.c
+	u32 cpu_hz = 233000000/3; //!! sync with p2k.c
 #if P2K_DEBUG
 	// P2K_CPU_HZ raises it, which is how that was measured
 	if (const char *s = getenv("P2K_CPU_HZ")) { const long v = strtol(s, nullptr, 0); if (v > 0) cpu_hz = u32(v); }

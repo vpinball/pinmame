@@ -261,6 +261,21 @@ public:
 	// A zeroed slot has span 0, and u32(a - 0) < 0 is false for every a, so it can never match
 	void clear_fast_windows() { for (auto &w : m_fast) w = {}; m_fast_n = 0; }
 
+	// Hand out the window containing `a` as a pre-biased pointer plus its range, so a caller that
+	// walks a run of sequential addresses can serve them itself instead of coming back per byte.
+	// The i386 core's FETCH cursor uses this; see fetch_slow() in mame/cpu/i386/i386.cpp. Same
+	// first-match rule as fast(), and an empty slot has span 0 so it can never match.
+	//
+	// The caller owns the invalidation: this range stays correct only while the windows are the
+	// ones registered here (they are installed once, at machine build) AND while the caller's own
+	// address translation is the identity - which for the i386 means paging off and A20 unmasked
+	bool direct_range(offs_t a, uintptr_t &adj, u32 &lo, u32 &len) const
+	{
+		for (const auto &w : m_fast)
+			if (u32(a - w.base) < w.span) { adj = w.adj; lo = w.base; len = w.span; return true; }
+		return false;
+	}
+
 	static constexpr int data_width() { return 32; }
 	template <typename... T> memory_passthrough_handler *install_read_tap(T &&...)      { return nullptr; }
 	template <typename... T> memory_passthrough_handler *install_write_tap(T &&...)     { return nullptr; }
