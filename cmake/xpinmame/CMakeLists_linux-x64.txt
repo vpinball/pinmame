@@ -700,3 +700,15 @@ target_link_libraries(xpinmame PUBLIC
 set_target_properties(xpinmame PROPERTIES
    VERSION ${PROJECT_VERSION}
 )
+
+# --- asmjit-based ARM7 JIT backend
+# No-op on a target with no JIT backend; see cmake/asmjit.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
+pinmame_enable_asmjit(xpinmame)
+
+# --- Pinball 2000 subsystem (src/p2k)
+# On by default; -DPINMAME_P2K=OFF leaves neither the Pinball 2000 drivers nor the MediaGX
+# CPU registered and the build what it was. It needs a C++17 compiler, and must come after
+# the target's own options and set_target_properties() above - see cmake/p2k.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/p2k.cmake)
+pinmame_enable_p2k(xpinmame)
