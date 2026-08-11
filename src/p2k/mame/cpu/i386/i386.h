@@ -357,10 +357,10 @@ protected:
 		static_assert(offsetof(i386_device, m_program) / LINE == (offsetof(i386_device, m_sreg) + sizeof(m_sreg) - 1) / LINE,
 			"m_program must share m_sreg's last line");
 
-		// 3. fetch/decode block: on a boundary, with m_cr[0] as the last 4 bytes of the line and
+		// 3. fetch/decode block: on a boundary, with m_cr[0] as the last 4 (or 12 if on 32bit) bytes of the line and
 		//    m_cr[1..4] the only thing that spills
 		static_assert(offsetof(i386_device, m_eip) % LINE == 0, "fetch block must start on a line");
-		static_assert(offsetof(i386_device, m_cr) - offsetof(i386_device, m_eip) == LINE - 4,
+		static_assert(offsetof(i386_device, m_cr) - offsetof(i386_device, m_eip) == LINE - (sizeof(uintptr_t) == 8 ? 4 : 12),
 			"m_cr[0] must be the last 4 bytes of the fetch line");
 
 		// 4. and they sit back to back: the opcode block is exactly one line, m_sreg the next two
