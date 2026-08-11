@@ -740,6 +740,9 @@ static constexpr Gp x7 = Gp::make_r64(7);
 static constexpr Gp x8 = Gp::make_r64(8);
 static constexpr Gp x9 = Gp::make_r64(9);
 static constexpr Gp x10 = Gp::make_r64(10);
+#ifdef x11 // PINMAME
+#undef x11
+#endif
 static constexpr Gp x11 = Gp::make_r64(11);
 static constexpr Gp x12 = Gp::make_r64(12);
 static constexpr Gp x13 = Gp::make_r64(13);
