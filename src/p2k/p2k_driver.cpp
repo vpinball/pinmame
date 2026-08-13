@@ -13,6 +13,32 @@
 static_assert(int(p2k_state::NVRAM_CMOS)   == P2K_NV_BLOCK_CMOS,   "NVRAM block selectors disagree");
 static_assert(int(p2k_state::NVRAM_EEPROM) == P2K_NV_BLOCK_EEPROM, "NVRAM block selectors disagree");
 
+// How to get the MediaGX PCI bring-up to report success, which the boot code demands before it
+// will go on - without one of these, games halt at "[ PRISM BOARD NOT PRESENT ]".
+//
+//   1  the default: MAME's patch, the routine's already-run exit returns 1 instead of -7
+//   2  remove that guard instead, so every call re-enumerates and re-programs the BARs
+//   0  neither, for seeing the failure raw
+//
+// Keep 1. Mode 2 was tried and is worse: Revenge From Mars does not boot under it at all, in any
+// version, while Episode I gets no further than it does under 1. p2k_state::set_prism_roms has the
+// detail, including what mode 2 was for and why it is still worth having around.
+#ifndef P2K_PATCH_PCI_INIT_RETRY
+#define P2K_PATCH_PCI_INIT_RETRY 1
+#endif
+
+// Sense of the lamp status readback (registers 0x10/0x11). 0 echoes the row latches, so the bit the
+// game is driving reads back set; 1 inverts them.
+// Confirmed on both machines: with this the games' own single-lamp tests pass.
+//
+// Arrived at with P2K_PDBWATCH rather than from the buffer's part number. The test walks one row bit at a time - 0x01, 0x02, 0x04 ... 0x80 - and
+// reads 0x10 and 0x11 after each. Both readings that produced "short" left the bit being driven
+// CLEAR: the constant 0x00 this used to return, and an inverted echo (0xfe, 0xfd, 0xfb ...).
+// Echoing un-inverted is what sets it
+#ifndef P2K_LAMP_STATUS_INVERT
+#define P2K_LAMP_STATUS_INVERT 0
+#endif
+
 extern u64 g_p2k_cycles_total;
 #include "machine/pic8259.h"
 #include "machine/pit8253.h"
@@ -140,13 +166,97 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
 	//                    block at 0x300 and returning to whoever far-called it. Nothing ever
 	//                    calls it: the reset vector jumps straight to 0xc0003, so the far return
 	//                    reads a frame that was never pushed and the CPU lands at 0000:0000.
-	//   0x419a (rfm)     the immediate of `mov eax,0FFFFFFF9h` -> 1: a failing check is forced to
-	//   0x3b33 (swep1)   report success. Same shape in both games, different address.
+	//   0x419a (rfm)     the immediate of `mov eax,0FFFFFFF9h` -> 1, forcing a failing check to
+	//   0x3b33 (swep1)   report success. Same shape in both games, different address. Note this
+	//                    is the immediate: the instruction starts one byte earlier.
 	//
-	// The second address is tied to the boot ROM image, not to the game: Revenge From Mars's
-	// alternate bank-0 pair (rfm_u100r2/rfm_u101r2, not a declared set - see src/wpc/p2k.c) has a
-	// `call` at 0x419a, and this poke would corrupt it. If those are ever added, the check has to
-	// be located in that image first. 0x191 is the same in both revisions.
+	// What that check is, disassembled from the stock RFM pair (32-bit code, bank 0 offset 0x4184,
+	// the function the patched instruction opens):
+	//
+	//     push ebp / mov ebp,esp / sub esp,0x50 / push edi,esi,ebx
+	//     cmp dword [0x87278], 1      ; "have I already run?" - a one-shot guard in low RAM
+	//     jne  do_the_work
+	//     mov  eax, 0FFFFFFF9h        ; -7, "already initialised"   <-- patched to 1
+	//     jmp  epilogue
+	//
+	// What it guards is the MediaGX PCI bring-up: it walks device numbers 0..0x14 reading config
+	// dword 0, matches vendor 0x1078 (Cyrix), notes the host bridge (device ID 1) and the ISA
+	// bridge (0 or 2, Cx5510 against Cx5520), and returns -1 if either is missing. Otherwise it
+	// programs the BARs - 0x10000000, 0x11000000, 0x12000000, 0x13000000, 0x14000000, 0x18000001 -
+	// sets the command register to 2 and returns 1. So the patch defeats no self-test: it makes the
+	// already-run exit return the same 1 the success path does, so a second call is told the
+	// chipset is ready instead of getting an error it has no handler for.
+	//
+	// The address is tied to the boot ROM image, not the game. RFM's alternate bank-0 pair
+	// (rfm_u100r2/rfm_u101r2, not a declared set - see src/wpc/p2k.c) holds unrelated code at
+	// 0x419a, so this poke would corrupt it; the same function is in there, moved, starting at
+	// 0x4608 with its flag at 0x877c0 and the immediate to patch at 0x461b. To re-find it in any
+	// image, search bank 0 for `78 10 00 00` (the 0x1078 compare) or `68 01 00 00 18`
+	// (push 0x18000001); the prologue is about 0x93 bytes before the former.
+	//
+	// P2K_PATCH_PCI_INIT_RETRY exists because the patch looked unnecessary here. It is not, and
+	// measurement says why. The enumeration is fine: with P2K_PCIWATCH=1 the sweep answers
+	//
+	//     device 0    1078:0001  MediaGX host bridge   -> its [0x87290]
+	//     device 8    146e:0001  Prism card PLX bridge -> its [0x8729c]
+	//     device 18   1078:0002  CX5520 ISA bridge     -> its [0x87294]
+	//
+	// all three, twice over, so nothing is missing from the bus. What fails is upstream of that.
+	// The boot code calls this routine and insists on 1 coming back (Episode I, bank 0 offset
+	// 0x924: `push 0; call 0x3b20; mov ebx,eax` ... `cmp ebx,1; jne` -> "[ PRISM BOARD NOT PRESENT ]"
+	// at 0xb9c, which prints and then `jmp $`). It is reaching the routine with the guard flag
+	// already set, so it gets -7 and halts - and the screen message is the halt, not an
+	// enumeration failure. Mode 1 forces that exit to return 1 and the machine goes on.
+	//
+	// The catch is that the early exit returns before doing any of the work, so the BARs are never
+	// programmed and [0x87274] stays 0. Episode I 1.50 tolerates that; 2.10 does not reach a boot
+	// screen with mode 1 either, which is what a version that actually wants the Prism windows set
+	// up would look like. Hence mode 2, which removes the guard rather than its return value: every
+	// call re-enumerates and re-programs, so the caller gets a 1 that means something.
+	//
+	// Measured, and mode 1 stays the default: Revenge From Mars does not boot under mode 2 at all,
+	// any version, and Episode I 2.10 reaches the same point under either. So mode 2 is not an
+	// improvement - re-running the whole bring-up on every call evidently disturbs something RFM
+	// depends on, which is itself a hint that the repeated calls are normal and only their return
+	// value was ever wrong.
+	//
+	// What mode 2 did settle is that the PCI side is complete. Under it the writes go out in full
+	// and correct - dev 8 reg 0x10/0x18/0x1c/0x20/0x24/0x30 taking 0x10000000, 0x11000000,
+	// 0x12000000, 0x13000000, 0x14000000 and 0x18000001, with the command register set to 2 - and
+	// mem_r decodes every one of those windows. Keep it for that: it is the way to prove the
+	// bring-up end to end without reading the disassembly again.
+	//
+	// And 2.10's remaining hang is not in this boot ROM at all, which is worth writing down so the
+	// next person does not start here. After this returns, bank 0 offset 0x98a walks the update
+	// flash at 0x12000000 through four checks - "[ VALIDATING UPDATE BOOT DATA ]", SYS IMAGE, GAME
+	// CODE, SYMBOLS, each with its own fatal exit - and 2.10 passes all four, reaching
+	// "[ STARTING UPDATE GAME CODE ]" at 0xa47. Six instructions later:
+	//
+	//     0xa56  mov eax, [ebx+0x48]      ; ebx = 0x12000000, so the image's own entry
+	//     0xa5e  call eax                 ; -> 0x00100000, into the update's system image
+	//
+	// so the ROM has handed over and what hangs is the version's own code, XINA 1.38 in 2.10's case
+	// against 1.19 in 1.50's. The update flash, its checksums and every window it is read through
+	// are therefore all good. Chasing it further means watching what that image does once it is
+	// running - the remote debugger (REMOTE_DEBUG=1) can break in and say where it is spinning, and
+	// the display manager is the first subsystem to suspect, since it waits on the blit pipeline
+	// behind a render-pass watchdog and gx_pipeline_w below implements only the raster modes the
+	// older games use. P2K_DISPWATCH covers that one.
+	//
+	//     P2K_PATCH_PCI_INIT_RETRY=1  MAME's, the default: already-run exit returns 1
+	//     P2K_PATCH_PCI_INIT_RETRY=2  guard removed: init runs in full on every call
+	//     P2K_PATCH_PCI_INIT_RETRY=0  neither, for seeing the failure raw
+	//
+	// Two things this is not. It is not a wrong address for 2.10: the patch lands in the Prism boot
+	// ROM, which P2K_COMMON_SWEP1 shares across every Episode I set, so these are the same bytes for
+	// 1.50 and 2.10 alike. And it is not really about this routine - something is calling it twice,
+	// or entering it with the flag already set, and the 0x191 patch above is a fair suspect, since
+	// it exists precisely because this firmware is entered differently here than on a real machine.
+	// That is the thing to find; both modes are ways of living with it until then.
+	//
+	// 0x191 is not behind the switch, and is `cb` in both revisions and in Episode I so it carries
+	// over unchanged: nothing far-calls the option ROM's init here, so its `retf` has no frame to
+	// return to whatever the PCI bus does.
 	auto poke = [this](size_t off, u8 value) {
 		if (off / 4 < m_prismdata[0].size())
 		{
@@ -156,11 +266,23 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
 		}
 	};
 	poke(0x191, 0x90);
+
+#if P2K_PATCH_PCI_INIT_RETRY == 1
+	// MAME's: the already-run exit returns 1 instead of -7
 	const size_t ok_imm = (prefix && strncmp(prefix, "swep1", 5) == 0) ? 0x3b33 : 0x419a;
 	poke(ok_imm + 0, 0x01);
 	poke(ok_imm + 1, 0x00);
 	poke(ok_imm + 2, 0x00);
 	poke(ok_imm + 3, 0x00);
+#elif P2K_PATCH_PCI_INIT_RETRY == 2
+	// Take the guard out instead: `jne do_the_work` becomes `jmp do_the_work`, so the routine can
+	// never reach its early exit and every call enumerates and programs the BARs afresh. One byte,
+	// 75 -> eb, on the jump just above the instruction mode 1 rewrites
+	const size_t guard_jne = (prefix && strncmp(prefix, "swep1", 5) == 0) ? 0x3b30 : 0x4197;
+	poke(guard_jne, 0xeb);
+#else
+	(void)prefix;
+#endif
 	return true;
 }
 
@@ -412,9 +534,9 @@ void p2k_state::apply_irq0()
 // two halves meet here. Called from src/wpc/p2k.c, which owns the core model - the subsystem
 // deliberately does not include PinMAME headers.
 //
-// The wiring of individual numbers - which matrix position is which switch, which bit is which
-// coil - still has to come from Revenge From Mars' own switch and coil tables. What is here is
-// the path: columns, rows, lamp strobes and coil registers in the shape both sides expect.
+// What is here is the path - columns, rows, lamp strobes and coil registers in the shape both sides
+// expect. The wiring of individual numbers is in src/wpc/p2k_names.h, read out of the games' own
+// device tables and since checked against both machines' test menus
 void p2k_state::push_switches(const u8 *matrix, unsigned count)
 {
 	if (!matrix) return;
@@ -1123,6 +1245,34 @@ void iowatch(const char *dir, offs_t port, unsigned value)
 //
 // The inputs answer as an idle machine for now: switches, lamps and solenoids reach PinMAME's
 // core model in the second half of M3.5, and that is where the writes will go too.
+#if P2K_DEBUG
+// P2K_PDBWATCH selects which power driver board registers to trace: "1" or "all" for every one,
+// otherwise a comma separated list of hex indices - "10,11,08" to watch the lamp status readback
+// together with the column strobe that drives it. Worth narrowing, because register 04 is the
+// switch row and cycles forever, which buries everything else in a whole-log trace
+static bool p2k_pdbwatch(u8 reg)
+{
+	static int on = -1;
+	static bool sel[256];
+	if (on < 0)
+	{
+		const char* e = getenv("P2K_PDBWATCH");
+		on = e ? 1 : 0;
+		if (e)
+		{
+			if (!strcmp(e, "1") || !strcmp(e, "all")) { for (int i = 0; i < 256; i++) sel[i] = true; }
+			else for (const char *q = e; *q; )
+			{
+				sel[(u8)strtol(q, nullptr, 16)] = true;
+				const char *c = strchr(q, ',');
+				q = c ? c + 1 : q + strlen(q);
+			}
+		}
+	}
+	return on && sel[reg];
+}
+#endif
+
 u8 p2k_state::lpt_r(offs_t offset)
 {
 	if (offset == 1) return 0xff;      // status port
@@ -1132,6 +1282,28 @@ u8 p2k_state::lpt_r(offs_t offset)
 	if (!(m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0)) return 0;
 	m_pdb_phase_2 = 1;
 
+	const u8 v = pdb_reg_r();
+#if P2K_DEBUG
+	// P2K_PDBWATCH=1: every power driver board register the game reads, and what it got back.
+	// Change-only per register, because the switch and lamp strobes read continuously and a full
+	// log buries whatever is being looked for. This is how to find out which registers a test menu
+	// page actually touches rather than inferring it from the register map
+	{
+		static int last[256];
+		static bool seen[256];
+		if (p2k_pdbwatch(m_pdb_index) && (!seen[m_pdb_index] || last[m_pdb_index] != (int)v))
+		{
+			seen[m_pdb_index] = true; last[m_pdb_index] = v;
+			printf("[p2k pdb] r %02x -> %02x\n", m_pdb_index, v);
+			fflush(stdout);
+		}
+	}
+#endif
+	return v;
+}
+
+u8 p2k_state::pdb_reg_r() const
+{
 	switch (m_pdb_index)
 	{
 		case 0x00: return m_coin_switches;
@@ -1146,16 +1318,37 @@ u8 p2k_state::lpt_r(offs_t offset)
 			// read as active low here before, which shifted every column by one.)
 			for (unsigned c = 0; c < 8; c++)
 				if (m_switch_column & (1u << c))
-					return m_sw_matrix[(c + 1) & 0xf];           // PinMAME numbers columns from 1
+					return m_sw_matrix[(c + 1) & 0xf];          // PinMAME numbers columns from 1
 			return 0x00;
 		}
 		case 0x0c: return 0x0d;
 		case 0x0d: return 0x0e;
 		case 0x0e: return 0x0f;
 		case 0x0f: return 0x10;                                 // switch-system, incl. zero cross
+		case 0x10: case 0x11:
+		{
+			// Lamp matrix diagnostics - Pinball 2000's lamp fault detection, which is what lets an
+			// operator see any dead bulb in the test menu directly. On the power
+			// driver board it is a 74LS240 buffering the lamp row lines back to the CPU: the
+			// operations manual's lamp matrix pages show it, marked "Lamp Status" and "used for
+			// diagnostics only".
+			//
+			// The game drives a column, reads the rows back here and compares them with what it
+			// drove. Agreement means the bulb is there and conducting; the two ways of disagreeing
+			// are an open filament and a short, which is how one sense line yields three verdicts.
+			// The game side of it is diagnostics_is_lamp_bad(), lamp_powerup_tests() and the
+			// poweron_open_matrix it fills - all named in the packages' symbols.rom.
+			//
+			// Echoing the row latches models a playfield where every bulb is present and working. See P2K_LAMP_STATUS_INVERT for how the sense was
+			// measured - the test drives one row bit at a time and reads back after each
+			const u8 row = (m_pdb_index == 0x10) ? m_lamp_row_a : m_lamp_row_b;
+			return P2K_LAMP_STATUS_INVERT ? (u8)~row : row;
+		}
 		case 0x05: case 0x06: case 0x07: case 0x08:
 		case 0x09: case 0x0a: case 0x0b:
-		case 0x10: case 0x11: case 0x12: case 0x13: return 0x00;
+		// 0x12/0x13 are the fuse diagnostics (wms_pdb_fuse_status, pdb_fuses) and are still the
+		// same stub the lamp registers were - whatever the test menu says about fuses is this constant, not a measurement
+		case 0x12: case 0x13: return 0x00;
 		default:   return 0xff;
 	}
 }
@@ -1170,6 +1363,13 @@ void p2k_state::lpt_w(offs_t offset, u8 data)
 
 	if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0) m_pdb_index = data;   // index register
 	if (m_pdb_phase_2 != 1) return;
+
+#if P2K_DEBUG
+	// Writes are logged unconditionally, not change-only: a lamp test that drives the same row
+	// twice in a row is exactly the case worth seeing, and pairing each write with the read that
+	// follows it is the whole point of watching this side
+	if (p2k_pdbwatch(m_pdb_index)) { printf("[p2k pdb] w %02x <- %02x\n", m_pdb_index, data); fflush(stdout); }
+#endif
 
 	// a write to the selected I/O register
 	switch (m_pdb_index)
@@ -1193,16 +1393,28 @@ void p2k_state::lpt_w(offs_t offset, u8 data)
 		// Measured in the game's own coil test, which cycles the drivers in order and names each
 		// one on screen: the driver numbering runs 0x0b, 0x0a, 0x09, 0x0d, 0x0c, eight per
 		// register. PinMAME's solenoid bits follow the game's driver numbers, so bit 0 is
-		// "Antr. 1" - Left Martian. See src/p2k/README.md for the whole table and its checks.
-		case 0x0b: m_solenoids = (m_solenoids & ~0x000000ffu) | u32(data); break;        // drivers 1-8
-		case 0x0a: m_solenoids = (m_solenoids & ~0x0000ff00u) | (u32(data) << 8); break; // drivers 9-16
-		case 0x09: m_solenoids = (m_solenoids & ~0x00ff0000u) | (u32(data) << 16); break;// drivers 17-24
+		// "Antr. 1" - Left Martian. See src/p2k/README.md for the whole table and its checks
+		case 0x0b: m_solenoids = (m_solenoids & ~0x000000ffu) |  u32(data); break;        // drivers 1-8
+		case 0x0a: m_solenoids = (m_solenoids & ~0x0000ff00u) | (u32(data) << 8); break;  // drivers 9-16
+		case 0x09: m_solenoids = (m_solenoids & ~0x00ff0000u) | (u32(data) << 16); break; // drivers 17-24
 		// Measured: 0x0c and 0x0d are eight bits wide like the rest -- register 0x0d takes 0x90
 		// while the machine runs, so masking them to four dropped half of each. Five registers of
 		// eight is forty outputs, which does not fit one word, so D goes into the second one.
-		case 0x0d: m_solenoids = (m_solenoids & ~0xff000000u) | (u32(data) << 24); break; // drivers 25-32
-		case 0x0c: m_solenoids2 = u32(data); break;                                       // drivers 33-40
-		default: break;                                         // 0x0e logic, diagnostics: later
+		case 0x0d: m_solenoids  = (m_solenoids & ~0xff000000u) | (u32(data) << 24); break;// drivers 25-32
+		case 0x0c: m_solenoids2 = (m_solenoids2 & ~0x000000ffu) | u32(data); break;       // drivers 33-40
+		// 0x0e is the sixth group, "solenoid logic" in the register map above: drivers 41-48. Both
+		// games' own driver tables reach into it - Revenge From Mars names 48 Ticket Dispenser and
+		// Episode I 41 Neon Tube, 42 Knocker, 43 Shaker Motor, 44 Topper - and this is where the
+		// last three of those come out.
+		//
+		// Still unverified, unlike 0x0c/0x0d, and one attempt has come back empty: Revenge From
+		// Mars 1.60's own coil test walks 33-40 one at a time, 0x01 through 0x80 in 0x0c, and never
+		// touches 0x0e at all. That fits - 48 is a ticket dispenser nobody fits, and 41-47 are Not
+		// Used on that playfield, so there is nothing there to test. It leaves the mapping resting
+		// on the register map's own name plus Episode I's driver table, and Episode I's 2.x sets
+		// are the ones that would exercise it. First thing to doubt if a shaker misbehaves
+		case 0x0e: m_solenoids2 = (m_solenoids2 & ~0x0000ff00u) | (u32(data) << 8); break;// drivers 41-48
+		default: break; // diagnostics: later
 	}
 }
 
@@ -1337,7 +1549,25 @@ u32 p2k_state::io_r(offs_t addr, u32 mem_mask)
 {
 	// the PCI configuration window is a dword port pair, not four byte ports
 	if (addr >= 0x0cf8 && addr <= 0x0cfc)
-		return m_pcibus->read((addr - 0x0cf8) / 4, mem_mask);
+	{
+		const u32 v = m_pcibus->read((addr - 0x0cf8) / 4, mem_mask);
+#if P2K_DEBUG
+		// P2K_PCIWATCH=1 prints the config cycles the firmware runs. The bring-up routine at bank 0
+		// offset 0x4184 sweeps device 0..0x14 for vendor 0x1078 (Cyrix host and ISA bridges) and
+		// 0x146e (the Prism card), and refuses to go on without all three - "prism card not
+		// detected" is that last one coming back 0xffffffff. This is the trace that says which
+		// device number the firmware asked for and what the bus answered
+		if (addr == 0x0cfc && getenv("P2K_PCIWATCH"))
+		{
+			const u32 a = m_pci_cfg_addr;
+			printf("[p2k pci] bus %2u dev %2u fn %u reg 0x%02x -> %08x%s\n",
+			       (a >> 16) & 0xff, (a >> 11) & 0x1f, (a >> 8) & 7, a & 0xfc, v,
+			       (v == 0xffffffffu) ? "   (nothing there)" : "");
+			fflush(stdout);
+		}
+#endif
+		return v;
+	}
 
 	u32 result = 0;
 	for (unsigned lane = 0; lane < 4; lane++)
@@ -1350,6 +1580,20 @@ void p2k_state::io_w(offs_t addr, u32 data, u32 mem_mask)
 {
 	if (addr >= 0x0cf8 && addr <= 0x0cfc)
 	{
+#if P2K_DEBUG
+		if (addr == 0x0cf8) m_pci_cfg_addr = data; // remembered so P2K_PCIWATCH can label the data cycle
+		else if (getenv("P2K_PCIWATCH"))
+		{
+			// The writes are the half that matters once enumeration is known good: this is where the
+			// bring-up programs the Prism's BARs, and a boot that gets no further than the splash is
+			// one to check for these never arriving, or arriving as something other than the
+			// 0x10000000/0x11000000/0x12000000/0x13000000/0x14000000/0x18000001 the routine intends
+			const u32 a = m_pci_cfg_addr;
+			printf("[p2k pci] bus %2u dev %2u fn %u reg 0x%02x <- %08x  (mask %08x)\n",
+			       (a >> 16) & 0xff, (a >> 11) & 0x1f, (a >> 8) & 7, a & 0xfc, data, mem_mask);
+			fflush(stdout);
+		}
+#endif
 		m_pcibus->write((addr - 0x0cf8) / 4, data, mem_mask);
 		return;
 	}

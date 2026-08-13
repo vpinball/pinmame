@@ -4,22 +4,90 @@ Midway's last pinball platform, and the only one in PinMAME that is a PC: a Cyri
 CX5520 southbridge, a PC97317 Super-I/O and a "Prism" PCI card carrying the ADSP-2104 sound
 hardware and the link to the pinball power driver board.
 
-Every version of both games that the Encore set carries is a driver of its own, the newest of each
-being the parent:
+Every version of both games is a driver of its own. The parent is the last one Midway shipped, not
+the newest - the unofficial updates that carry on past it are clones of it, the way PinMAME handles
+MODs elsewhere:
 
-| Driver | Game | |
+| Driver | Game | | |
+|---|---|---|---|
+| `rfm_260` | Pinball 2000: Revenge From Mars | 08/2024 | myPinballs; needs the opto expansion (v2.6+ per the kit) - **does not boot** |
+| `rfm_250` | | 12/2022 | myPinballs - **does not boot** |
+| `rfm_224` | | 01/2022 | myPinballs, also released as 2.42 - **does not boot** |
+| `rfm_223` | | 04/2021 | myPinballs, also released as 2.40 - **does not boot** |
+| `rfm_222` | | 06/2020 | myPinballs, also released as 2.30 - **does not boot** |
+| `rfm_210` | | 04/2019 | myPinballs; shaker/knocker support |
+| `rfm_195` | | 03/2018 | hemtoni; German re-translation, used by nothing later - not the newest 1.x |
+| `rfm_191` | | 05/2018 | hemtoni; newest of the three, added sounds - only 2.10 kept them |
+| `rfm_190` | | 11/2017 | hemtoni; drops 1.80's 8 MB requirement; its text runs through all of 2.x |
+| `rfm_180` | | 04/2006 | Tom Uban, EPC 2006 tournament build; needs 8 MB |
+| **`rfm_160`** | **parent** | 09/2003 | last official, XINA 1.19 |
+| `rfm_150` | | 07/2000 | |
+| `rfm_140` | | 01/2000 | |
+| `rfm_120` | | 06/1999 | |
+| `swep1_210` | Pinball 2000: Star Wars Episode I | 10/2025 | myPinballs; adds a topper (driver 44) - **does not boot** |
+| `swep1_201` | | 05/2025 | myPinballs - **does not boot** |
+| `swep1_200` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43) - **does not boot** |
+| **`swep1_150`** | **parent** | 09/2003 | last official, XINA 1.19 |
+| `swep1_140` | | 07/2000 | |
+| `swep1_130` | | 09/1999 | |
+
+Twelve of the twenty boot, render, take coins, start a game, drive lamps and coils, respond to the
+flippers and play sound. The other eight stop before the boot screen, and what divides them is not
+the game but the system software: each `game.rom` names the XINA it was built against, and
+everything from **1.12 to 1.31 boots**
+(`rfm_120` through `rfm_210`, `swep1_130` through `swep1_150`), and everything from **1.34 to 1.38
+does not** (`rfm_222` through `rfm_260`, and all three `swep1_2xx`). `rfm_210` is 1.31 and comes up;
+`rfm_222` is 1.34 and stops. The line has been walked from both sides and holds for both games, so
+it is not a myPinballs or an RFM problem - something XINA gained between 1.31 and 1.34 is missing
+here. The boot ROM is not where they stop: it finishes and hands over first. See the note by the
+game definitions in `src/wpc/p2k.c`.
+
+## 1.95 is not the newest RFM 1.x
+
+The version numbers of hemtoni's three do not run in the order they were built. His changelog dates
+them **1.90 (21 November 2017), 1.95 (29 March 2018), 1.91 (31 May 2018)** - so 1.95 is the middle
+one, not the newest, and 1.91 is the last. The changelog documents 1.9 and 1.91 and never mentions
+1.95 at all.
+
+The packages muddle this, which is worth knowing before dating them from the files: all three were
+put up in 2018, so 1.90's package is stamped March 2018 even though the version is from November
+2017, and all three `game.rom`s carry that same November 2017 build stamp because 1.95 and 1.91
+inherit 1.90's rather than restamping.
+
+**1.90 is the one that lasted, and 1.95 and 1.91 are both branches off it.** Ask what the versions
+after them kept. Of the 64 strings 1.90 has and 1.95 does not, and the 52 the other way round, 1.91
+has 48 and 2 - and so does every myPinballs release, 2.10 through 2.60 scoring 47-48 and 0-2. 1.90's
+German is what the whole line after it carries; 1.95's re-translation appears in nothing later.
+(Official 1.60 scores 3 and 9 on the same test, so 1.95 was pulling the wording back towards the
+factory text rather than away from it.)
+
+1.91's own change went the same way one release later. It is 1.90 plus new sounds and little else -
+it adds 12 strings over 1.90, eleven of them jump table bytes and the twelfth its XINA banner,
+because the sounds live in the sound flash and not in `game.rom`. Only 2.10 ships that flash again;
+2.22 onwards are back to the stock one. So 1.91 reads as a variant that added sounds and was then
+dropped too - it just got picked up once, which 1.95 never was.
+
+The 1.90/1.95 text difference itself runs to roughly 40 display strings, along these lines:
+
+| | 1.90 and 1.91 | 1.95 |
 |---|---|---|
-| `rfm_180` | Pinball 2000: Revenge From Mars (1.80) | 09/2003 |
-| `rfm_160` | | 09/2003 |
-| `rfm_150` | | 07/2000 |
-| `rfm_140` | | 01/2000 |
-| `rfm_120` | | 06/1999 |
-| `swep1_150` | Pinball 2000: Star Wars Episode I (1.50) | 07/2000 |
-| `swep1_140` | | 07/2000 |
-| `swep1_130` | | 09/1999 |
+| the button name | `ACTION-TASTEN bewegen Fadenkreuz` | `AKTIONSTASTEN bewegen Fadenkreuz` |
+| credits, pluralised | `%d KREDITE VERGEBEN` | `%d KREDITS VERGEBEN` |
+| UFO or ship | `Alle UFOs zerstoert` | `Alle Schiffe zerstoert` |
+| killing things | `%u von %u abgeknallt` | `%u von %u abgeschossen` |
+| | `%u von %u rausgeschmissen` | `%u von %u zerstoert` |
+| | `Martian%q1//s/% gekillt: %u` | `Martian%q1//s/% umgebracht: %u` |
+| phrasing | `Auf UFO und Martians schiessen!` | `Auf UFO schiessen, dann die Martians!` |
+| | `waehrend Ball 1 rollt` | `waehrend 1. Kugel rollt` |
+| | `TREFFE RAMPE` | `SCHIESSE RAMPE` |
 
-Both boot, render, take coins, start a game, drive lamps and coils, respond to the flippers and
-play sound.
+1.95 reads as the more literal and formal pass, 1.90 as the looser and more idiomatic one.
+
+1.90 also translates the tournament screens, which 1.95 leaves in English - `Karte einlesen zum
+Spielen.`, `Keine Liga gefunden.`, `Keine qualifizierten Spieler.`. That is a translation
+difference and not a missing feature: 1.80, 1.90, 1.91, 1.95 and 2.60 all carry the card-swipe
+tournament client and its English strings. 2.60 has the German ones too, so myPinballs picked up
+that translation along with the code.
 
 ## Where it comes from
 
@@ -131,9 +199,36 @@ opens no files of its own and reads no environment variables to find them.
 A set holds three things. The sound board's flash and its two sample chips; the MediaGX side's
 eight Prism ROMs, `u100`-`u107`, which the loader interleaves in pairs into four 16 MB banks; and
 the 8 MB update flash, which is what makes a version a version. The update flash is not a dump -
-it is the four files of an official update package (`bootdata`, `im_flsh0`, `game`, `symbols`) laid
+it is the four files of an update package (`bootdata`, `im_flsh0`, `game`, `symbols`) laid
 out back to back at the offsets the boot ROM looks for them at, and the machine does not boot
-without it. Everything else is shared, so a clone's zip contains only its own four update files.
+without it. Everything else is shared, so a clone's zip contains only its own four update files -
+bar `rfm_191`, `rfm_210` and `swep1_210`, which bring their own sound flash too, and so hold five.
+
+#### Getting the four files out of an update package
+
+Updates ship as `pin2000_<game>_<ver>_<date>_B_10000000.exe`, where `<game>` is the Williams part
+number - `50070` for Revenge From Mars, `50069` for Star Wars Episode I - and `<ver>` is the
+version with the dot dropped and padded to four digits, so `0180` is 1.80. Despite the extension
+they are PKZIP self-extracting archives (`PKSFX CLI for Windows 95/NT`, deflate), so any zip tool
+opens them, `python -m zipfile -e <pkg>.exe <dir>` included. Inside is a `<game>/` directory with
+the four files above plus two the machine does not take from the package:
+
+* `_sf.rom` - 1 MiB in every package, official and unofficial alike. This one is *not* inert: it is
+  the DCS sound board's flash, the same image the sets declare as `rfm_28f800.rom` /
+  `swe1_28f800.rom`. In 17 of the 20 packages it is byte-identical to those, which is why the sets
+  can share one copy. Three ship something else - RFM 1.91, RFM 2.10 and SWEP1 2.10 - though that
+  is only two images: 2.10's `pin2000_50070_0210_sf.rom` is byte-identical to 1.91's, so `rfm_210`
+  declares **1.91's name** rather than its own, one image not being worth two ROM entries and a
+  second megabyte. The note next to the ROM definitions in `src/wpc/p2k.c` has the rest.
+* `_pubboot.rom` - 32 KiB, in the unofficial 1.9x and 2.x packages (12 of the 20) and byte-identical
+  across every one of them. Encore's loader ignores it as well. The name is the PUB card, the loader medium the last
+  official updates were carried on before anyone repackaged them as serial updates.
+
+The four that matter go into the set's zip under the names they already have, and `ROM_START` in
+`src/wpc/p2k.c` places them; nothing has to be concatenated by hand. `bootdata` is 32 KiB in every
+package known, which is why `P2K_UPDATE` can hardcode `0x8000` as the start of `im_flsh0` and take
+only the other three lengths - and the three lengths are how the loader finds the parts, since it
+matches by filename suffix and has no size table to consult.
 
 CMOS and the PLX EEPROM persist through PinMAME's normal NVRAM file. The update flash deliberately
 does not: it belongs to the set, and an 8 MB NVRAM file would take precedence over it - a machine
@@ -144,17 +239,55 @@ would keep booting the version it was first started with even after selecting an
 The Encore set also carries `rfm_u100r2.rom` / `rfm_u101r2.rom`, a second revision of Revenge From
 Mars's bank-0 Prism pair. They are deliberately not declared, and that is not an oversight:
 
-* **They are not a game version.** The version is the update flash, and none of the eight update
-  packages is tied to a particular boot ROM - so nothing in the files says which of the eight an
+* **They are not a game version.** The version is the update flash, and none of the update
+  packages is tied to a particular boot ROM - so nothing in the files says which version an
   r2 set would be a clone of.
+* **The name is MAME's**, from its `rfmpbr2` set - "Pinball 2000: Revenge From Mars (rev. 2)", a
+  clone of `rfmpb` that differs in `u100`/`u101` and nothing else, with both dated 1999. It is a
+  factory revision of the card, not a later one, so none of the 2.x updates can be asking for it.
+  MAME needs a set for it because its P2K driver loads no update flash: there, the Prism pair is
+  the only thing that can tell two machines apart. And `u100`/`u101` are not the sole home of the
+  game code either - they hold a fallback copy plus system data, which the update flash overrides.
 * Same 8 MB each, byte-identical to the stock pair from `0x17e9e0` upward and rewritten below it:
   about 15% of each chip, concentrated in the first 1.5 MB.
-* **The driver would need work, not just a `ROM_START`.** It patches two bytes of bank 0 on the
-  way in (`p2k_state::set_prism_roms`). `0x191` holds the same `retf` in both revisions, so that
-  one carries over. `0x419a` does not: the stock pair has `b8 f9 ff ff ff`, the
-  `mov eax,0FFFFFFF9h` whose immediate is forced to 1 to make a failing check report success,
-  while r2 has `e8 9e 27 00 00` there - a `call`. Poking 1 into its displacement would corrupt the
-  instruction. That check has to be found again in the new image before an r2 set can boot.
+* **The driver would need work, not just a `ROM_START`.** It patches bank 0 on the way in
+  (`p2k_state::set_prism_roms`). `0x191` holds the same `retf` (`cb`) in both revisions, so that
+  one carries over - Episode I has `cb` there too. `0x419a` does not carry over, and note it is the
+  *immediate*, not the instruction: the stock pair has `b8 f9 ff ff ff`, `mov eax,0FFFFFFF9h`,
+  starting a byte earlier at `0x4199`, and the four immediate bytes are forced to 1 to make a
+  failing check report success. r2 has `e8 9e 27 00 00` at that same `0x4199` - a near `call`,
+  `+0x279e` - so those four bytes are its displacement, and poking 1 into them sends the call
+  somewhere arbitrary.
+* **But the check has now been identified, and r2's address with it.** The patched instruction is
+  the "already initialised" early exit of the MediaGX PCI bring-up - the routine that walks device
+  numbers 0..0x14 for vendor `0x1078` (Cyrix), picks out the host bridge and the Cx5510/Cx5520 ISA
+  bridge, programs their BARs and returns 1. The patch makes that early exit return 1 as well,
+  instead of -7, so a second call is told the chipset is ready rather than returning an error the
+  caller has no handler for. It is not a self-test or a protection check. The same routine is in
+  the r2 image, moved: function at `0x4608` instead of `0x4184`, guard flag at `0x877c0`, and the
+  immediate to patch at **`0x461b`** instead of `0x419a`. So an r2 set needs one address changed,
+  not fresh reverse engineering. `p2k_state::set_prism_roms` carries the disassembly and the byte
+  patterns for re-finding it in any image.
+
+##### To investigate: when did rev. 2 ship, and with which version?
+
+This is the open question that decides the shape of *every* Revenge From Mars set, not just a
+hypothetical r2 one. Two things need establishing:
+
+1. **When was rev. 2 released to the public?** MAME dates both revisions 1999 and says no more.
+2. **Which official shipping version of the game was the first to leave the factory on it?**
+
+If rev. 2 arrived partway through the production run, then versions from that point on shipped on
+rev. 2 cards and the earlier ones on rev. 1 - and each set should declare whichever pair its
+version was actually sold with, rev. 1 or rev. 2. Today every set declares rev. 1, which is an
+unchecked assumption rather than a finding.
+
+Answering it also disposes of the "which version would an r2 set be a clone of" question above: the
+r2 pair would simply belong to the versions it shipped under, and would stop needing a set of its
+own. Note that this only decides which pair each set *declares* - it does not change how the game
+plays, since the update flash overrides the game code either way. What it changes is which boot
+image is authentic for a given version, and - because the `0x419a` patch does not carry over -
+whether such a set boots here at all.
 
 The hashes are in the ROM section of `src/wpc/p2k.c` so the files stay identifiable if someone
 picks this up.
@@ -228,8 +361,11 @@ the order PinMAME expects for its lower flipper solenoids, so nothing is remappe
 declares `FLIP_SOL`, without which the core would overwrite those coils with its own copy of the
 buttons once a frame.
 
-Switch, lamp and coil names come out of each game's own tables; the extraction tool lives with the
-port's working notes.
+Switch and coil names come out of each game's own device tables. Lamp names come from the
+operations manuals instead, the lamp table's layout in the image never having been worked out, and
+the manual's cell numbering maps to PinMAME's matrix through the board's two row banks - see the
+header of `src/wpc/p2k_names.h`, which records how that was measured against the games' own lamp
+tests. The extraction tool lives with the port's working notes.
 
 ## How it works
 
@@ -553,6 +689,36 @@ of the 2000-cycle execution chunks.
   column is `core_findSize()`'s `+ 1` and every `CORE_VIDEO` game has it - Baby Pac-Man and Granny
   report 257 for a 256-pixel screen. It is left alone deliberately: changing it would move those
   games' output too.
+* **Lamp fault detection: per-lamp works, the matrix test is unconfirmed.** Pinball 2000 lets an
+  operator find a dead bulb from the test menu, by driving a lamp and reading it back. That
+  readback is registers `0x10`/`0x11` on the power driver board - the 74LS240 the operations
+  manual marks "Lamp Status", used for diagnostics only. This driver returned a constant `0x00`,
+  so every lamp on both machines reported as short circuited. It now echoes the lamp row latches,
+  modelling a playfield where every bulb is present, and **the per-lamp test passes on both games**.
+  The sense (`P2K_LAMP_STATUS_INVERT`, 0 = echo un-inverted) was measured with `P2K_PDBWATCH`, not
+  inferred: the test walks one row bit at a time and reads back after each, and the driven bit has
+  to read back set.
+
+  What is *not* confirmed is the whole-matrix test that runs at power-up (`lamp_powerup_tests`,
+  filling `poweron_open_matrix`). Note before chasing it that `Test Lampe Matrix A` is that test's
+  **progress title**, not a fault - the verdict is the separate `%d Lampen Probleme` line, and the
+  column-level fault text is `Column %d%c` + `OPEN CIRCUIT`. Two things are known: the test-menu
+  screen itself performs no reads at all and only walks columns with the rows clear, so it displays
+  a stored result rather than measuring; and clearing NVRAM does not change what it shows. The
+  game-side entry points are named in the packages' `symbols.rom` - `lamp_powerup_tests`,
+  `diagnostics_is_lamp_bad`, `poweron_open_matrix`, `lamp_test_report_print`.
+
+* **The fuse diagnostics are a stub.** The power driver board reports fuse status on registers
+  `0x12`/`0x13` (`wms_pdb_fuse_status`, `pdb_fuses`); this driver returns a constant, so whatever
+  the test menu says about fuses is that constant and not a measurement.
+* **The modulated outputs, PWM, are not implemented.** Coils, lamps and GI are reported as plain
+  on/off, so a frontend gets no coil strength, no bulb fade and no brightness - `coreGlobals.nSolenoids`
+  is 0 and nothing here calls `core_write_pwm_output*()` or `core_set_pwm_output_type()`. That is
+  deliberate rather than forgotten, and half-doing it is worse than leaving it: `core_getSol()`
+  switches to `physicOutputState` the moment `nSolenoids` is non-zero and the option is on, so
+  declaring the count without also feeding the integrator would report every output as permanently
+  off. See the note by `p2k_getSol` in `src/wpc/p2k.c` for what implementing it needs, and why the
+  once-a-frame `p2k_sync_io()` is the thing standing in the way.
 * `-frames_to_run` does not work headless - the counter it watches sits inside the display update,
   past the point where a headless run returns. The remote debugger's
   `/api/debugger/control?cmd=exit` ends a run cleanly instead, which is also what gets NVRAM
@@ -570,9 +736,61 @@ asked for. The ones that stay useful:
 | `P2K_MEMWATCH=<from>[-<to>]` | writes to a range with the PC that made them; `P2K_MEMWATCH_CHANGED=1` for changes only |
 | `P2K_READWATCH`, `P2K_DUMP`, `P2K_WATCH`, `P2K_BACKTRACE` | reads, memory dumps, per-instruction registers, a PC ring buffer |
 | `P2K_DISPWATCH=1` | every change to a display controller register |
-| `P2K_SOLWATCH=1` | every change of the coil register that carries the flippers |
+| `P2K_SOLWATCH=1` | every coil and flasher that changes, board drivers 1-48, by name |
+| `P2K_LAMPWATCH=1` | every lamp that changes, by name |
+| `P2K_SWWATCH=1` | every switch that changes, by name |
+| `P2K_PDBWATCH=<regs>` | power driver board traffic: reads (change-only) and writes. `1`/`all`, or a hex list like `10,11,08` - worth narrowing, register `04` is the switch row and cycles forever |
+| `P2K_PCIWATCH=1` | every PCI config read, with the device number the firmware asked for |
 | `P2K_DCSLOG=1` | the whole conversation with the sound board |
 | `P2K_VIDEO_PPM=<path>` | write the picture out as a PPM |
+
+### Walking a game's own test menu
+
+The three device watches are meant for exactly this. Enter the machine's service menu with the coin
+door keys, pick a Solenoid, Lamp or Switch test, and every device the test touches prints as it
+changes:
+
+```
+P2K_SOLWATCH=1 P2K_LAMPWATCH=1 P2K_SWWATCH=1 ./pinmame rfm_160
+
+[p2k sol] frame 4213:   8 Right Popper                   on
+[p2k sol] frame 4216:   8 Right Popper                   off
+[p2k lamp] frame 4290:   2 Start Button                   on
+[p2k sw] frame 4355:  46 Right Popper                   off
+```
+
+Names come from `src/wpc/p2k_names.h`, the running set choosing between the two games' tables, so
+what prints should match what the machine puts on screen - which is what makes this a check on
+those tables and not just a trace. Four things to know reading it:
+
+* **Flashers are solenoids.** The board drives them like any other coil, so the flasher test shows
+  up under `[p2k sol]`. The manual's part number for each is in `p2k_names.h` - a `#906` or `#89`
+  is a bulb, the rest are coils.
+* **Optos read inverted.** They rest closed and open when a ball blocks them, so `off` on switch 41
+  to 47 is a ball *arriving*. The rest are the usual way round.
+* **`(unnamed)`** means the device fired but no table entry covers it. On a stock machine that is
+  worth looking at; on 2.x it may be one of the myPinballs additions.
+* **Frame resolution.** The watches sample once per frame, in `p2k_sync_io()`. That is fine for
+  lamps and switches and enough to see a coil the test menu is pulsing, but it is not coil-accurate
+  timing, and a stroke shorter than a frame can still be missed.
+
+#### Walking the switch matrix
+
+Switches are the awkward one: the keyboard reaches the cabinet, coin door and service buttons, but
+nothing on the playfield. Two ways in, both with `P2K_SWWATCH=1` and the game's own switch test on
+screen:
+
+* `P2K_PLAY="1200:sw37:10"` closes one named switch at a frame, up to sixteen per run.
+* `P2K_SWSWEEP=11-88` walks the whole matrix instead, one switch at a time, with no count limit -
+  which is what you want for checking names. It steps every 120 frames by default
+  (`P2K_SWSWEEP=<first>-<last>[:<period>[:<hold>]]`), skips rows 0 and 9 because they do not exist,
+  inverts optos for you, and starts at `P2K_SWSWEEPAT` (default 1800) so the machine is up first -
+  drive a switch before that and it reads as one that broke during power-up. It repeats from the
+  start, so there is time to reach the switch test by hand while it counts down.
+
+```
+P2K_SWWATCH=1 P2K_SWSWEEP=11-88 ./pinmame rfm_160
+```
 
 The bring-up log - every measurement taken to get here, and every hypothesis that turned out wrong -
 is kept with the port's working notes rather than in this tree. It records how the emulation was

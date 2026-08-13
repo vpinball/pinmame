@@ -1,15 +1,154 @@
-/* Generated from the game's own device tables - do not edit by hand. */
+/* The games' own device tables, read out of their game.roms and kept here by hand. Tables only change when a new
+   version turns up with a device the old ones did not have.
+
+   Not all from one version, and the reason is worth knowing. Revenge From Mars is read out of 2.60:
+   against the official 1.60 that changes five entries, four of them the expansion switches 53-56
+   which 1.60 has no name for, so taking the newest costs nothing and gains those.
+
+   Episode I is not. Its 2.10 differs from the official 1.50 in 28 switches and 19 drivers, nearly
+   all of it myPinballs rewording - Bank became Standup, Sling became Slingshot, "fl." became
+   Flasher - and one of the rewordings is wrong: 2.10 calls switch 34 Left Standup - Lower, a
+   duplicate of 36, where 1.50 and the manual both have Left Bank: Upper. 2.10 also drops 107 and
+   108, the upper flipper EOS pair. So Episode I is read out of 1.50, with only the entries 2.10
+   genuinely adds taken from it: switches 48 and 52 for the 6 ball trough, and drivers 5, 42, 43
+   and 44 - an auto plunger, knocker, shaker and topper, all on drives the manual lists as unused.
+
+   Every version was swept against its game's official one, not just the newest. For Revenge From
+   Mars 1.20, 1.40, 1.50, 1.80, 1.90, 1.91 and 1.95 are all identical to 1.60 - the same table for
+   eighteen years - and the 2.x sets differ only in 53/54 (55/56 as well from 2.60), the casing of
+   94, and drivers 18/19. Episode I's 1.30 and 1.40 likewise match 1.50, and all three 2.x differ
+   from it in the same way.
+
+   Every 'Not Used' slot is dropped.
+
+   Each game.rom holds a switch table of 0x30-byte records and a driver table of 0x18-byte ones,
+   both ending in the name repeated once per language, and both are flat arrays indexed by device
+   number: switch number = 100 + index, driver = index + 1.
+
+   To redo them, anchor on a name whose number is known and step by the record size. game.rom loads
+   at 0x100000, so a pointer to a string at file offset N reads 0x100000 + N:
+
+     switches   find the pointer to "Slam Tilt", switch 111 and so index 80, and the table of name
+                pointers is that address - 80 * 0x30; walk it and read off
+                ((i / 8) + 1) * 10 + (i % 8) + 1 as the PinMAME number
+     coils      the same with a known driver: "Left Martian" is 1 on Revenge From Mars, and
+                "Right Flipper Power" is 33 on both games, the flipper circuits being fixed by the
+                power driver board; step 0x18
+
+   Search the whole file for the string but only inside the table's own region for the pointer -
+   names like "Drop Target Down" and "Left Jet" are in the switch, coil and lamp tables alike, and
+   the first hit is as likely to be the wrong one. Each name is repeated up to four times in a row
+   for the languages, so a hit may be any of four consecutive dwords; anchoring on a known number
+   and stepping is what keeps that from mattering.
+
+   Stop at the end of each table, which nothing in the data marks: the tables sit back to back and
+   walking past one gives plausible nonsense out of the next. Switches end at 118 and drivers at 48,
+   both per the 1999 operations manual (ipdb 4446). Read further and the switch walk starts handing
+   out SwitchTable's "Switch_8" placeholders and then internal flags like
+   "recent_center_trough_hit", while the driver walk runs into the lamps - which is where the
+   entries for coils 53, 56, 57, 59, 60 and 62 in the older revision of this file came from. They
+   were lamp names, and they are gone.
+
+   The packages' symbols.rom is worth knowing about for anything beyond this - 'SYMBOL TABLE|', a
+   u32 count at 0x10, then count * { u32 name_offset, u32 address } with the name at
+   offset + 0x25400. That names every function and table in the image.
+
+   Lamps come from the operations manuals rather than the ROMs, the lamp table's layout in the
+   image never having been worked out. The manuals give each cell as <column><row><matrix> - 13A,
+   44B and so on - and the board turns that into PinMAME's matrix through the row banks: eight
+   columns of sixteen lamps, in two banks of eight (p2k_state::lpt_w registers 0x06 and 0x07),
+   handed over as bank A at byte 2c and bank B at byte 2c+1. The banks interleave per column, so
+
+       lamp = (column - 1) * 16 + (matrix == B ? 8 : 0) + (row - 1)
+
+   There is no offset: column 1 row 1 bank A is byte 0 bit 0, so 11A is lamp 0.
+
+   Measured, not derived. Walking swep1_150's own lamp test, which lights one lamp at a time and
+   names it on screen, against P2K_LAMPWATCH=1:
+
+       13A -> 2    15A -> 4    16A -> 5    25A -> 20   26A -> 21
+       87A -> 118  13B -> 10   24B -> 27   47B -> 62
+
+   all nine agreeing with the rule above. An earlier revision of this file used
+   (column-1)*8 + (row-1) - 2, with matrix B at +64, which assumed bytes 0-7 held one whole matrix
+   and 8-15 the other. Every lamp in both games was wrong by it. The tables here were remapped from
+   it by inverting to (column, row, bank) and re-applying the rule above - note when reading old
+   notes that its matrix B began at 62, being 11B, not at 64.
+
+   A second check fell out of that. Ten lamps flicker together on a one to three frame period in
+   attract mode; under the old numbering they were an unrelated scatter including Coin Door
+   Illumination and a G.I. string, and under this one they are 8, 9, 11, 24, 25, 26, 40, 41, 56 and
+   79 - the whole ship, wings, body and tail, pulsing as one object. That is the playfield, not a
+   sampling artifact.
+
+   Revenge From Mars was remapped by the same transform, and its table has since been walked whole
+   against the machine's own lamp test and matches throughout. Its matrix B had never been
+   transcribed past 52B, though - the older revision simply stopped there - so 53B to 88B were read
+   off the manual's own grid (page 90 of the February 1999 operations manual, ipdb 4446) and added,
+   29 cells. That extraction was checked before being trusted: it
+   reproduces every one of the 34 cells the table already held, and independently marks 38B and 48B
+   NOT USED, which the table already lacked.
+
+   One disagreement came out of it, and the machine settled it against the manual. Page 90 puts Left
+   Slingshot Spotlight at 18B and Right Slingshot Spotlight at 28B; this table has the two the other
+   way round, and the lamp test agrees with the table. So that one pair in the manual's grid is
+   printed swapped - the only cell in either matrix where it is wrong. Do not "correct" 15 and 31
+   back to it when re-deriving.
+
+   What is still unnamed is exactly what the manuals mark NOT USED: twelve cells on Revenge From
+   Mars - 11A, 12A, 14A, 22A, 31A to 34A, 58A, 38B, 48B and 72B - and twenty-one on Episode I.
+   Neither game drives any of them, so nothing that lights is nameless now.
+
+   Being manual-sourced, the lamp names are the manual's words rather than the game's, unlike the
+   switches and coils, which came out of the games' own device tables. Finding the lamp table in the
+   image would close that gap, and is easier now than it was: every index below is confirmed against
+   the machine, so they are a crib. Search game.rom for a name that is unique to lamps - "Saucer Rim
+   1" on Revenge From Mars, "Ship Tail Upper" on Episode I - and check whether the pointer to it
+   sits at a stride from the pointer to another whose index is known. That is how the switch and
+   coil tables were found; it was not worth attempting while the numbering itself was still wrong.
+
+   ALL SIX TABLES HAVE NOW BEEN WALKED AGAINST THE MACHINES. Both games' switch, coil and lamp
+   tests were stepped through with P2K_SWWATCH / P2K_SOLWATCH / P2K_LAMPWATCH and every entry
+   matches the name the game puts on screen - the 'E', 'J', 'I', 'D' at 52-55 on Episode I included,
+   which are one column of bank A and the insert layout, not a fault. So these are measured against
+   the hardware, not transcribed and hoped for, and a mismatch appearing later means something in
+   the I/O path changed rather than a bad name.
+
+   Keep it that way when adding entries. Nothing in this file is hard to get plausibly wrong and
+   impossible to notice: the lamp numbering was wrong in both games for a while and looked entirely
+   coherent, because the names had been fitted to a rule rather than to a playfield. Names grouping
+   sensibly is not evidence. The switch test is.
+
+   The part number against each coil is from the same manuals' solenoid tables - the coil wound on
+   that driver, or the bulb behind that flasher. It is there for whoever implements the modulated
+   outputs, which this machine does not have yet (see the note by p2k_getSol in src/wpc/p2k.c):
+   core_set_pwm_output_type() wants exactly this, a physical model per output, and the four families
+   present are enough to pick from.
+
+       AE1-xx-yyyy / AE-26-1200   coils, the yyyy being the winding
+       SM1-26-600                 the drop target down coils
+       FL1-xxxxx                  the flipper-style circuits, power and hold on one part
+       A-14406, 20-10197, A-23157 gate, magnet and Episode I's neon
+       #906, #89                  flasher bulbs
+
+   Four are marked "kit" instead: Revenge From Mars 18/19 and Episode I 5/42/43/44 are the drives
+   myPinballs repurpose, which the factory left unused and so unlisted. Their instructions recommend
+   a 26-1200 for the knocker; the shaker and the topper are a motor and a lamp, not coils. Lamp bulb
+   types are in the manuals too, on the Lamp Locations pages, but are not transcribed here */
 #ifndef P2K_NAMES_H
 #define P2K_NAMES_H
 
+typedef struct { int num; const char *name; } p2k_name_t;
+
 /* switch number = 100 + (column-1)*8 + (row-1); PinMAME numbers it column*10 + row */
-static const struct { int num; const char *name; } p2k_switch_names[] = {
+static const p2k_name_t p2k_rfm_switch_names[] = {
   {  11, "Right Ramp Entrance" },
   {  12, "Left Ramp Exit" },
   {  13, "Start Button" },
   {  15, "Drop Target Down" },
   {  16, "Left Outlane" },
   {  17, "Right Return Lane" },
+  {  18, "Shooter Lane" },
   {  23, "Launch Button" },
   {  25, "Left Loop (Low)" },
   {  26, "Left Return Lane" },
@@ -23,8 +162,19 @@ static const struct { int num; const char *name; } p2k_switch_names[] = {
   {  36, "Center Target 1" },
   {  37, "Martian Target 4 (Center)" },
   {  38, "Up/Down Ramp Up" },
+  {  41, "Trough Jam" },
+  {  42, "Trough Ball 1" },
+  {  43, "Trough Ball 2" },
+  {  44, "Trough Ball 3" },
+  {  45, "Trough Ball 4" },
+  {  46, "Right Popper" },
   {  47, "Jet Exit" },
+  {  51, "Right Lockup 1" },
   {  52, "Left Ramp Entrance" },
+  {  53, "Trough Ball 5" },
+  {  54, "Trough Ball 6" },
+  {  55, "Right Lockup 2" },
+  {  56, "Right Lockup 3" },
   {  61, "Left Slingshot" },
   {  62, "Right Slingshot" },
   {  63, "Left Jet" },
@@ -43,12 +193,19 @@ static const struct { int num; const char *name; } p2k_switch_names[] = {
   {  85, "Martian Target 7 (R. Bot.)" },
   {  86, "Martian Target 6 (R. Mid.)" },
   {  87, "Martian Target 5 (R. Top.)" },
+  {  91, "LEFT COIN SLOT" },
+  {  92, "CENTER COIN SLOT" },
+  {  93, "RIGHT COIN SLOT" },
+  {  94, "4th Coin Option" },
   { 101, "'ESCAPE' BUTTON" },
   { 102, "'Down' Button" },
   { 103, "'Up' Button" },
   { 104, "'Enter' Button" },
+  { 105, "Right Flipper EOS" },
+  { 106, "Left Flipper EOS" },
   { 111, "Slam Tilt" },
   { 112, "Coin Door Closed" },
+  { 113, "Plumb Bob Tilt" },
   { 115, "Right Flipper Button" },
   { 116, "Left Flipper Button" },
   { 117, "Right Action Button" },
@@ -56,153 +213,395 @@ static const struct { int num; const char *name; } p2k_switch_names[] = {
   { 0, NULL }
 };
 
-static const struct { int driver; const char *name; } p2k_coil_names[] = {
-  {  1, "Left Martian" },
-  {  2, "Right Martian" },
-  {  3, "Jet Exit Post" },
-  {  4, "Right Gate" },
-  {  5, "Left Gate" },
-  {  6, "Drop Target Down" },
-  {  7, "Drop Target Up" },
-  {  8, "Right Popper" },
-  {  9, "Trough Eject" },
-  { 10, "Left Sling" },
-  { 11, "Right Sling" },
-  { 12, "Left Jet" },
-  { 13, "Right Jet" },
-  { 14, "Bottom Jet" },
-  { 15, "Autoplunger" },
-  { 16, "Right Lockup" },
-  { 17, "Center Arrow Flasher" },
-  { 22, "Right Popper Flasher" },
-  { 23, "Left Arch Flasher" },
-  { 25, "Right Arch Flasher" },
-  { 26, "Left Martian Flasher" },
-  { 27, "Right Martian Flasher" },
-  { 28, "Attack Mars Flasher" },
-  { 33, "Right Flipper Power" },
-  { 34, "Right Flipper Hold" },
-  { 35, "Left Flipper Power" },
-  { 36, "Left Flipper Hold" },
-  { 37, "Lock Diverter Power" },
-  { 38, "Lock Diverter Hold" },
-  { 39, "Up/Down Ramp Power" },
-  { 40, "Up/Down Ramp Hold" },
-  { 48, "Ticket Dispenser" },
-  { 53, "Start Button" },
-  { 56, "Right Top Lane" },
-  { 57, "Left Top Lane" },
-  { 59, "Martian Target 4 (Center)" },
-  { 60, "Center Loop Arrow" },
-  { 62, "Tickets Low" },
+static const p2k_name_t p2k_swep1_switch_names[] = {
+  {  13, "Start Button" },
+  {  15, "Left Drop Target" },
+  {  16, "Left Outlane" },
+  {  17, "Right Inlane" },
+  {  18, "Shooter Lane" },
+  {  21, "Captive Ball" },
+  {  23, "Launch Button" },
+  {  24, "Always Closed" },
+  {  25, "Right Drop Target" },
+  {  26, "Left Inlane" },
+  {  27, "Right Outlane" },
+  {  28, "Sneaky Lane" },
+  {  31, "Right Bank: Upper" },
+  {  32, "Right Bank: Middle" },
+  {  33, "Right Bank: Lower" },
+  {  34, "Left Bank: Upper" },
+  {  35, "Left Bank Middle" },
+  {  36, "Left Bank Lower" },
+  {  37, "Left Saucer" },
+  {  38, "Right Saucer" },
+  {  41, "Trough Jam" },
+  {  42, "Trough Ball 1" },
+  {  43, "Trough Ball 2" },
+  {  44, "Trough Ball 3" },
+  {  45, "Trough Ball 4" },
+  {  46, "Left Ramp Enter" },
+  {  47, "Right Ramp Enter" },
+  {  48, "Trough Ball 5" },
+  {  51, "Shield Popper" },
+  {  52, "Trough Ball 6" },
+  {  53, "Left Shield Target" },
+  {  54, "Right Shield Target" },
+  {  55, "Ramp Made Left" },
+  {  56, "Ramp Made Right" },
+  {  57, "Shield Up" },
+  {  58, "Shield Hit" },
+  {  61, "Left Sling" },
+  {  62, "Right Sling" },
+  {  63, "Upper Jet" },
+  {  64, "Middle Jet" },
+  {  65, "Lower Jet" },
+  {  66, "Jets Rollover" },
+  {  67, "Left Loop Upper" },
+  {  68, "Left Loop Rollover" },
+  {  91, "Left Coin Slot" },
+  {  92, "Center Coin Slot" },
+  {  93, "Right Coin Slot" },
+  {  94, "4th Coin Option" },
+  { 101, "'Escape' Button" },
+  { 102, "'Down' Button" },
+  { 103, "'Up' Button" },
+  { 104, "'Enter' Button" },
+  { 105, "Lower/Right flipper EOS" },
+  { 106, "Lower/Left flipper EOS" },
+  { 107, "Upper/Right flipper EOS" },
+  { 108, "Upper/Left flipper EOS" },
+  { 111, "Slam Tilt" },
+  { 112, "Coin Door Closed" },
+  { 113, "Plumb Bob Tilt" },
+  { 115, "Right flipper button" },
+  { 116, "Left flipper button" },
+  { 117, "Right Action Button" },
+  { 118, "Left Action Button" },
   { 0, NULL }
 };
 
-static const struct { int lamp; const char *name; } p2k_lamp_names[] = {
-  {  0, "Start Button" },
-  {  2, "Right Top Lane" },
-  {  3, "Left Top Lane" },
-  {  4, "Martian Target 4 (Center)" },
-  {  5, "Center Loop Arrow" },
-  {  6, "Tickets Low" },
-  {  8, "Launch Button" },
-  {  9, "Coin Door Illumination" },
-  { 10, "Mothership Multiball (Right)" },
-  { 11, "Mothership Multiball (Left)" },
-  { 12, "Left Return Lane" },
-  { 13, "Left Outlane" },
-  { 18, "Left Drain To Trough" },
-  { 19, "Right Drain To Trough" },
-  { 20, "Right Return Lane" },
-  { 21, "Right Outlane" },
-  { 22, "Right Popper Arrow" },
-  { 23, "Extra Ball" },
-  { 24, "Martian Attack" },
-  { 25, "Stroke Of Luck" },
-  { 26, "Left Side Spotlight" },
-  { 27, "Center Arrow" },
-  { 28, "Right Martian (High)" },
-  { 29, "Right Martian (Low)" },
-  { 30, "Multiball" },
-  { 31, "Capture 2" },
-  { 32, "Capture 1" },
-  { 33, "Capture Zone Active" },
-  { 34, "Shoot Again" },
-  { 35, "Behind Center Targets" },
-  { 36, "Upper R. Corner (Middle)" },
-  { 38, "Shooter Lane 9 (Top)" },
-  { 39, "Under R. Ramp (Low)" },
-  { 40, "Under R. Ramp (High)" },
-  { 41, "Upper R. Corner (Low)" },
-  { 42, "Right Arch (Right)" },
-  { 43, "Right Arch (Left)" },
-  { 44, "Left Arch (Right)" },
-  { 45, "Left Arch (Left)" },
-  { 46, "Left Side 1 (Bottom)" },
-  { 47, "Left Side 2" },
-  { 48, "Left Side 3" },
-  { 49, "Left Side 4 (Top)" },
-  { 50, "Under Left Ramp (Bottom)" },
-  { 51, "Under Left Ramp (Top)" },
-  { 52, "Between L/B Jets" },
-  { 53, "Upper Left Corner" },
-  { 54, "Right Slingshot (Bottom)" },
-  { 55, "Right Slingshot (Saucer)" },
-  { 56, "Right Return Lane (Right)" },
-  { 57, "Right Return Lane (Left)" },
-  { 58, "Left Return Lane (Right)" },
-  { 59, "Left Return Lane (Left)" },
-  { 60, "Left Slingshot (Saucer)" },
-  { 61, "Left Slingshot (Bottom)" },
-  { 62, "Secret Weapon" },
-  { 63, "Tower Struggle" },
-  { 64, "Center Saucer Beam (Left)" },
-  { 65, "Question Mark" },
-  { 66, "Center Saucer Beam (Right)" },
-  { 67, "Drive-In Demolition" },
-  { 68, "Paris In Peril" },
-  { 69, "Right Slingshot Spotlight" },
-  { 70, "Big-O-Beam" },
-  { 71, "Right Saucer Beam (Left)" },
-  { 72, "Weapons" },
-  { 73, "Saucer" },
-  { 74, "Fuel" },
-  { 75, "Left Saucer Beam (Right)" },
-  { 76, "Center Saucer Beam (Center)" },
-  { 77, "Left Slingshot Spotlight" },
-  { 78, "Mars Kneads Women" },
-  { 79, "Right Saucer Beam (Right)" },
-  { 80, "Saucer Rim 9 (Right)" },
-  { 81, "Saucer Rim 8" },
-  { 82, "Saucer Rim 7" },
-  { 83, "Saucer Rim 6" },
-  { 84, "Saucer Rim 5" },
-  { 86, "Martian Happy Hour" },
-  { 87, "Alien Abduction" },
-  { 88, "Left Saucer Beam (Left)" },
-  { 89, "Saucer Rim 1 (Left)" },
-  { 90, "Saucer Rim 2" },
-  { 91, "Saucer Rim 3" },
-  { 92, "Saucer Rim 4" },
-  { 94, "Right Loop Arrow" },
-  { 95, "Right Loop Circle" },
+/* driver/coil numbers as the power driver board counts them; 33-40 are the flipper circuits */
+static const p2k_name_t p2k_rfm_coil_names[] = {
+  {   1, "Left Martian" },                     /* AE1-26-1500 */
+  {   2, "Right Martian" },                    /* AE1-26-1500 */
+  {   3, "Jet Exit Post" },                    /* AE1-26-1500 */
+  {   4, "Right Gate" },                       /* A-14406 */
+  {   5, "Left Gate" },                        /* A-14406 */
+  {   6, "Drop Target Down" },                 /* SM1-26-600 */
+  {   7, "Drop Target Up" },                   /* AE1-26-1200 */
+  {   8, "Right Popper" },                     /* AE1-25-1000 */
+  {   9, "Trough Eject" },                     /* AE1-26-1500 */
+  {  10, "Left Sling" },                       /* AE1-26-1200 */
+  {  11, "Right Sling" },                      /* AE1-26-1200 */
+  {  12, "Left Jet" },                         /* AE1-26-1200 */
+  {  13, "Right Jet" },                        /* AE1-26-1200 */
+  {  14, "Bottom Jet" },                       /* AE1-26-1200 */
+  {  15, "Autoplunger" },                      /* AE1-23-800 */
+  {  16, "Right Lockup" },                     /* AE1-23-800 */
+  {  17, "Center Arrow Flasher" },             /* #906 */
+  {  18, "Knocker (Optional)" },               /* AE-26-1200, kit */
+  {  19, "Shaker (Optional)" },                /* motor, kit */
+  {  22, "Right Popper Flasher" },             /* #906 */
+  {  23, "Left Arch Flasher" },                /* #89 */
+  {  25, "Right Arch Flasher" },               /* #89 */
+  {  26, "Left Martian Flasher" },             /* #89 */
+  {  27, "Right Martian Flasher" },            /* #89 */
+  {  28, "Attack Mars Flasher" },              /* #906 */
+  {  33, "Right Flipper Power" },              /* FL1-11629 */
+  {  34, "Right Flipper Hold" },               /* FL1-11629 */
+  {  35, "Left Flipper Power" },               /* FL1-11629 */
+  {  36, "Left Flipper Hold" },                /* FL1-11629 */
+  {  37, "Lock Diverter Power" },              /* FL1-22241 */
+  {  38, "Lock Diverter Hold" },               /* FL1-22241 */
+  {  39, "Up/Down Ramp Power" },               /* FL1-11753 */
+  {  40, "Up/Down Ramp Hold" },                /* FL1-11753 */
+  {  48, "Ticket Dispenser" },
   { 0, NULL }
 };
 
-/*-- lookups; every table is short, and none of this is on a hot path --*/
-static const char *p2k_switch_name(int num) {
-  int i; for (i = 0; p2k_switch_names[i].name; i++)
-    if (p2k_switch_names[i].num == num) return p2k_switch_names[i].name;
-  return NULL;
-}
-static const char *p2k_coil_name(int driver) {
-  int i; for (i = 0; p2k_coil_names[i].name; i++)
-    if (p2k_coil_names[i].driver == driver) return p2k_coil_names[i].name;
-  return NULL;
-}
-static const char *p2k_lamp_name(int lamp) {
-  int i; for (i = 0; p2k_lamp_names[i].name; i++)
-    if (p2k_lamp_names[i].lamp == lamp) return p2k_lamp_names[i].name;
+static const p2k_name_t p2k_swep1_coil_names[] = {
+  {   1, "Left Saucer" },                      /* AE1-27-1200 */
+  {   2, "Left Drop Target Up" },              /* AE1-26-1200 */
+  {   3, "Left Drop Target Down" },            /* SM1-26-600 */
+  {   4, "Magnet" },                           /* 20-10197 */
+  {   5, "Auto Plunger" },                     /* kit */
+  {   6, "Right Drop Target Down" },           /* SM1-26-600 */
+  {   7, "Right Drop Target Up" },             /* AE1-26-1200 */
+  {   8, "Shield Popper" },                    /* AE1-26-1500 */
+  {   9, "Trough Eject" },                     /* AE1-26-1500 */
+  {  10, "Left Sling" },                       /* AE1-27-1200 */
+  {  11, "Right Sling" },                      /* AE1-27-1200 */
+  {  12, "Upper Jet" },                        /* AE1-26-1200 */
+  {  13, "Middle Jet" },                       /* AE1-26-1200 */
+  {  14, "Lower Jet" },                        /* AE1-26-1200 */
+  {  15, "Upper Hotdog Flashers" },            /* #906 (2) */
+  {  16, "Right Saucer" },                     /* AE1-27-1200 */
+  {  17, "Lower Left Hotdog Fl." },            /* #906 */
+  {  18, "Lower Right Hotdog Fl." },           /* #906 */
+  {  19, "Back Panel right/upper fl." },       /* #906 */
+  {  20, "Back Panel right/middle fl." },      /* #906 */
+  {  21, "Jet Flasher" },                      /* #906 */
+  {  22, "Left Inlanes Flasher" },             /* #89 */
+  {  23, "Right Inlanes Flasher" },            /* #89 */
+  {  24, "Back Panel Middle fl." },            /* #906 */
+  {  25, "Back Panel right/lower fl." },       /* #906 */
+  {  26, "Back Panel left/upper fl." },        /* #906 */
+  {  27, "Back Panel left/middle fl." },       /* #906 */
+  {  28, "Back Panel left/lower fl." },        /* #906 */
+  {  33, "Right Flipper Power" },              /* FL1-11722 */
+  {  34, "Right Flipper Hold" },               /* FL1-11722 */
+  {  35, "Left Flipper Power" },               /* FL1-11722 */
+  {  36, "Left Flipper Hold" },                /* FL1-11722 */
+  {  37, "Shield Power" },                     /* FL1-15411 */
+  {  38, "Shield Hold" },                      /* FL1-15411 */
+  {  39, "Left Laser Flasher" },               /* #89 */
+  {  40, "Right Laser Flasher" },              /* #89 */
+  {  41, "Neon" },                             /* A-23157 */
+  {  42, "Knocker (Optional)" },               /* AE-26-1200, kit */
+  {  43, "Shaker Motor (Optional)" },          /* motor, kit */
+  {  44, "Topper (Optional)" },                /* kit */
+  {  48, "Ticket Dispenser" },
+  { 0, NULL }
+};
+
+static const p2k_name_t p2k_rfm_lamp_names[] = {
+  {   2, "Start Button" },
+  {   4, "Right Top Lane" },
+  {   5, "Left Top Lane" },
+  {   6, "Martian Target 4 (Center)" },
+  {   7, "Center Loop Arrow" },
+  {   8, "Secret Weapon" },
+  {   9, "Tower Struggle" },
+  {  10, "Center Saucer Beam (Left)" },
+  {  11, "Question Mark" },
+  {  12, "Center Saucer Beam (Right)" },
+  {  13, "Drive-In Demolition" },
+  {  14, "Paris In Peril" },
+  {  15, "Right Slingshot Spotlight" },
+  {  16, "Tickets Low" },
+  {  18, "Launch Button" },
+  {  19, "Coin Door Illumination" },
+  {  20, "Mothership Multiball (Right)" },
+  {  21, "Mothership Multiball (Left)" },
+  {  22, "Left Return Lane" },
+  {  23, "Left Outlane" },
+  {  24, "Big-O-Beam" },
+  {  25, "Right Saucer Beam (Left)" },
+  {  26, "Weapons" },
+  {  27, "Saucer" },
+  {  28, "Fuel" },
+  {  29, "Left Saucer Beam (Right)" },
+  {  30, "Center Saucer Beam (Center)" },
+  {  31, "Left Slingshot Spotlight" },
+  {  36, "Left Drain To Trough" },
+  {  37, "Right Drain To Trough" },
+  {  38, "Right Return Lane" },
+  {  39, "Right Outlane" },
+  {  40, "Mars Kneads Women" },
+  {  41, "Right Saucer Beam (Right)" },
+  {  42, "Saucer Rim 9 (Right)" },
+  {  43, "Saucer Rim 8" },
+  {  44, "Saucer Rim 7" },
+  {  45, "Saucer Rim 6" },
+  {  46, "Saucer Rim 5" },
+  {  48, "Right Popper Arrow" },
+  {  49, "Extra Ball" },
+  {  50, "Martian Attack" },
+  {  51, "Stroke Of Luck" },
+  {  52, "Left Side Spotlight" },
+  {  53, "Center Arrow" },
+  {  54, "Right Martian (High)" },
+  {  55, "Right Martian (Low)" },
+  {  56, "Martian Happy Hour" },
+  {  57, "Alien Abduction" },
+  {  58, "Left Saucer Beam (Left)" },
+  {  59, "Saucer Rim 1 (Left)" },
+  {  60, "Saucer Rim 2" },
+  {  61, "Saucer Rim 3" },
+  {  62, "Saucer Rim 4" },
+  {  64, "Multiball" },
+  {  65, "Capture 2" },
+  {  66, "Capture 1" },
+  {  67, "Capture Zone Active" },
+  {  68, "Shoot Again" },
+  {  69, "Behind Center Targets" },
+  {  70, "Upper R. Corner (Middle)" },
+  {  72, "Right Loop Arrow" },
+  {  73, "Right Loop Circle" },
+  {  74, "Right Ramp Arrow" },
+  {  75, "Right Ramp Circle" },
+  {  76, "Left Loop Arrow" },
+  {  77, "Left Ramp Arrow" },
+  {  78, "Left Loop Circle" },
+  {  79, "Left Ramp Circle" },
+  {  80, "Shooter Lane 9 (Top)" },
+  {  81, "Under R. Ramp (Low)" },
+  {  82, "Under R. Ramp (High)" },
+  {  83, "Upper R. Corner (Low)" },
+  {  84, "Right Arch (Right)" },
+  {  85, "Right Arch (Left)" },
+  {  86, "Left Arch (Right)" },
+  {  87, "Left Arch (Left)" },
+  {  88, "Martian Target 5 (R. Top)" },
+  {  89, "Martian Target 6 (R. Mid.)" },
+  {  90, "Martian Target 7 (R. Bot.)" },
+  {  91, "Martian Target 3 (Left Top)" },
+  {  92, "Martian Target 2 (Left Mid.)" },
+  {  93, "Martian Target 1 (Left Bot.)" },
+  {  94, "Right Martian Eye" },
+  {  95, "Left Martian Eye" },
+  {  96, "Left Side 1 (Bottom)" },
+  {  97, "Left Side 2" },
+  {  98, "Left Side 3" },
+  {  99, "Left Side 4 (Top)" },
+  { 100, "Under Left Ramp (Bottom)" },
+  { 101, "Under Left Ramp (Top)" },
+  { 102, "Between L/B Jets" },
+  { 103, "Upper Left Corner" },
+  { 104, "Bottom Jet Bumper" },
+  { 106, "Left Jet Bumper" },
+  { 107, "Left of Left Top Lane" },
+  { 108, "Between U/R Top Lanes" },
+  { 109, "Right of Right Top Lane" },
+  { 110, "Top of Center Loop" },
+  { 111, "Upper R. Corner (High)" },
+  { 112, "Right Slingshot (Bottom)" },
+  { 113, "Right Slingshot (Saucer)" },
+  { 114, "Right Return Lane (Right)" },
+  { 115, "Right Return Lane (Left)" },
+  { 116, "Left Return Lane (Right)" },
+  { 117, "Left Return Lane (Left)" },
+  { 118, "Left Slingshot (Saucer)" },
+  { 119, "Left Slingshot (Bottom)" },
+  { 120, "Shooter Lane 1 (Bottom)" },
+  { 121, "Shooter Lane 2" },
+  { 122, "Shooter Lane 3" },
+  { 123, "Shooter Lane 4" },
+  { 124, "Shooter Lane 5" },
+  { 125, "Shooter Lane 6" },
+  { 126, "Shooter Lane 7" },
+  { 127, "Shooter Lane 8" },
+  { 0, NULL }
+};
+
+static const p2k_name_t p2k_swep1_lamp_names[] = {
+  {   2, "Start Button" },
+  {   4, "Shield Lower Right" },
+  {   5, "Shield Lower 4" },
+  {   6, "Shield Lower 3" },
+  {   7, "Shield Lower 2" },
+  {   8, "Ship Right Wing Upper" },
+  {   9, "Ship Right Wing Lower" },
+  {  10, "Bonus X5" },
+  {  11, "Ship Tail Upper" },
+  {  12, "Jedi Spirit" },
+  {  13, "Right Hotdog Left" },
+  {  14, "Jets Rollover" },
+  {  15, "Right Laser End" },
+  {  16, "Tickets Low" },
+  {  19, "Coin Door Illumination" },
+  {  20, "Shield Middle Right" },
+  {  21, "Shield Middle 3" },
+  {  22, "Shield Middle 2" },
+  {  23, "Shield Lower Left" },
+  {  24, "Ship Body Upper Right" },
+  {  25, "Ship Body Middle" },
+  {  26, "Ship Body Lower" },
+  {  27, "Bonus X4" },
+  {  28, "Jedi Master" },
+  {  29, "Fire Lasers Right" },
+  {  30, "Right Saucer" },
+  {  31, "Extra Ball" },
+  {  36, "Shield Upper Right" },
+  {  37, "Shield Upper Middle" },
+  {  38, "Shield Middle Left" },
+  {  39, "Shield Upper Left" },
+  {  40, "Ship Left Wing Upper" },
+  {  41, "Ship Left Wing Lower" },
+  {  42, "Bonus X2" },
+  {  43, "Bonus X3" },
+  {  44, "Jedi Youth" },
+  {  45, "Left Hotdog Right" },
+  {  46, "Shooter" },
+  {  47, "Bottom Arch Right/Left" },
+  {  48, "Left Loop Right Leg" },
+  {  49, "Left Loop Right Foot" },
+  {  50, "Left Loop Left Foot" },
+  {  51, "Left Loop Left Leg" },
+  {  52, "Jedi 'E'" },
+  {  53, "Jedi 'J'" },
+  {  54, "Jedi 'I'" },
+  {  55, "Jedi 'D'" },
+  {  56, "Ship Body Upper Left" },
+  {  59, "Spotlight Right" },
+  {  60, "Fire Lasers Left" },
+  {  61, "Jedi Knight" },
+  {  62, "Shoot Again" },
+  {  63, "Left Flipper" },
+  {  64, "Left Loop Body Middle" },
+  {  65, "Left Loop Body Upper" },
+  {  66, "Left Loop Head" },
+  {  67, "Left Loop Body Lower" },
+  {  68, "Right Ramp G.I." },
+  {  69, "Scoop Lower Right G.I." },
+  {  70, "Left Loop Rollover" },
+  {  71, "Left Saucer" },
+  {  72, "Left Laser End" },
+  {  73, "Left Saucer Insert" },
+  {  74, "Right Saucer Insert" },
+  {  75, "Spotlight Left" },
+  {  76, "Left Hotdog Left" },
+  {  77, "Right Hotdog Right" },
+  {  78, "Right Flipper" },
+  {  79, "Ship Tail Lower" },
+  {  80, "Right Standup Upper" },
+  {  81, "Right Standup Middle" },
+  {  82, "Right Standup Lower" },
+  {  83, "Left Standup Lower" },
+  {  84, "Left Standup Middle" },
+  {  85, "Left Standup Upper" },
+  {  96, "Bottom Arch Left/Left" },
+  {  97, "Left Inlane G.I. Right" },
+  {  98, "Left Sling G.I. Upper" },
+  {  99, "Left Loop Lower G.I." },
+  { 100, "Captive Ball G.I." },
+  { 101, "Scoop Lower Left G.I." },
+  { 102, "Scoop Upper Left G.I." },
+  { 103, "Jets Top G.I." },
+  { 104, "Bottom Arch Left/Right" },
+  { 105, "Left Inlane G.I. Left" },
+  { 106, "Left Sling G.I. Lower" },
+  { 107, "Left Outlane G.I." },
+  { 108, "Left Standup G.I." },
+  { 109, "Left Loop Middle G.I." },
+  { 110, "Upper Left Corner G.I." },
+  { 111, "Left Ramp G.I." },
+  { 112, "Bottom Arch Right/Right" },
+  { 113, "Right Inlane G.I. Left" },
+  { 114, "Right Sling G.I. Upper" },
+  { 115, "Shooter Ramp G.I. Lower" },
+  { 116, "Shoot Ramp G.I. Middle" },
+  { 117, "Right Standup G.I." },
+  { 118, "Middle Jet" },
+  { 119, "Jet Middle G.I." },
+  { 120, "Scoop Upper Right G.I." },
+  { 121, "Upper Right Corner G.I." },
+  { 122, "Upper Jet" },
+  { 123, "Lower Jet" },
+  { 124, "Shooter Ramp G.I. Upper" },
+  { 125, "Right Outlane G.I." },
+  { 126, "Right Sling G.I. Lower" },
+  { 127, "Right Inlane G.I. Right" },
+  { 0, NULL }
+};
+
+/* Which game's tables to use - the driver knows from its set name (p2k_romPrefix) */
+static const p2k_name_t *p2k_switch_names(int swep1) { return swep1 ? p2k_swep1_switch_names : p2k_rfm_switch_names; }
+static const p2k_name_t *p2k_coil_names(int swep1)   { return swep1 ? p2k_swep1_coil_names   : p2k_rfm_coil_names; }
+static const p2k_name_t *p2k_lamp_names(int swep1)   { return swep1 ? p2k_swep1_lamp_names   : p2k_rfm_lamp_names; }
+
+static const char *p2k_lookup(const p2k_name_t *t, int num) {
+  int i; for (i = 0; t[i].name; i++) if (t[i].num == num) return t[i].name;
   return NULL;
 }
 

@@ -57,8 +57,8 @@ public:
 	// The low range stops one byte short so a two-byte peek stays inside it.
 	const u8 *ram_peek(u32 addr) const
 	{
-		if (addr < 0x0009ffff)                                     return &m_main_ram[addr];
-		if (addr >= 0x00100000 && addr + 1 < m_main_ram.size())    return &m_main_ram[addr];
+		if (addr < 0x0009ffff)                                  return &m_main_ram[addr];
+		if (addr >= 0x00100000 && addr + 1 < m_main_ram.size()) return &m_main_ram[addr];
 		return nullptr;
 	}
 	u32 mem_r(offs_t addr, u32 mem_mask);
@@ -68,6 +68,7 @@ public:
 	u8 port_r(offs_t port);
 	u8 port_read(offs_t port);   // the decode itself; port_r wraps it for the I/O watch
 	u8 lpt_r(offs_t offset);
+	u8 pdb_reg_r() const;        // the register switch alone, so lpt_r can log what it answered
 	void lpt_w(offs_t offset, u8 data);
 	// the pinball I/O, seen from PinMAME's side
 	void push_switches(const u8 *matrix, unsigned count);
@@ -141,7 +142,10 @@ private:
 	u8 m_lamp_col = 0;
 	u8 m_lamp_matrix[16] = {};   // two row banks per driven column, the shape PinMAME wants
 	u32 m_solenoids = 0;         // registers 09/0a/0b/0c, eight bits each
-	u32 m_solenoids2 = 0;        // register 0d - forty outputs do not fit one word
+	u32 m_solenoids2 = 0;        // registers 0c/0e - drivers 33-48, which do not fit the first word
+#if P2K_DEBUG
+	u32 m_pci_cfg_addr = 0;      // last 0xcf8 write, so P2K_PCIWATCH can label the 0xcfc read
+#endif
 
 	// PC97317 Super I/O configuration registers, reached through ports 0x2e/0x2f
 	u8 m_superio_regs[256] = {};
