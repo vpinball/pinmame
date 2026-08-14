@@ -93,7 +93,7 @@ void report_progress(u64 cycles)
 {
 	static const u64 interval = []() -> u64 {
 		const char *s = getenv("P2K_PROGRESS");
-		return s ? strtoull(s, nullptr, 0) : 0;
+		return s ? strtoull(s, nullptr, 0) : 0ull;
 	}();
 	if (!interval || !g_bridge_state || !g_bridge_cpu) return;
 
@@ -160,7 +160,7 @@ static bool g_bridge_aborted = false;
 // mode changes and traps that happen on the way there must not consume the one dump.
 static std::vector<unsigned> g_backtrace = []() {
 	const char *s = getenv("P2K_BACKTRACE");
-	long n = s ? strtol(s, nullptr, 0) : 0;
+	int n = s ? (int)strtol(s, nullptr, 0) : 0;
 	return std::vector<unsigned>(n > 0 ? size_t(n) : 0);
 }();
 static const unsigned g_backtrace_at = []() {
@@ -191,7 +191,7 @@ static void dump_backtrace(const char *reason)
 
 // P2K_WATCH=<from>[-<to>], hexadecimal: register dump for instructions in this address range
 static unsigned g_watch_from = 0, g_watch_to = 0;
-static long g_forward_left = 0;   // instructions still to follow after the mode change
+static int g_forward_left = 0;   // instructions still to follow after the mode change
 static const bool g_watch_init = []() {
 	if (const char *s = getenv("P2K_WATCH"))
 	{
@@ -224,13 +224,13 @@ static const bool g_dump_init = []() {
 // P2K_STACKAT=<pc>[:<n>]: dump n dwords from the current ESP when the CPU reaches that address,
 // n defaulting to 16. A fixed range cannot answer "who called this" - the stack moves.
 static unsigned g_stack_at = 0;
-static long g_stack_words = 16;
+static int g_stack_words = 16;
 static const bool g_stack_init = []() {
 	if (const char *s = getenv("P2K_STACKAT"))
 	{
 		char *end = nullptr;
 		g_stack_at = unsigned(strtoul(s, &end, 16));
-		if (end && *end == ':') g_stack_words = strtol(end + 1, nullptr, 0);
+		if (end && *end == ':') g_stack_words = (int)strtol(end + 1, nullptr, 0);
 	}
 	return true;
 }();
@@ -255,10 +255,10 @@ static void dump_stack()
 	if (!g_bridge_state || !g_bridge_cpu) return;
 	const unsigned esp = unsigned(g_bridge_cpu->state_int(I386_ESP));
 	fprintf(stderr, "[p2k stack] at pc %08x, ESP=%08x\n", g_stack_at, esp);
-	for (long i = 0; i < g_stack_words; i++)
+	for (int i = 0; i < g_stack_words; i++)
 	{
 		const offs_t a = esp + unsigned(i) * 4;
-		fprintf(stderr, "  [esp+%02lx] %08x = %08x\n", i * 4, a, g_bridge_state->mem_r(a, 0xffffffff));
+		fprintf(stderr, "  [esp+%02x] %08x = %08x\n", unsigned(i * 4), a, g_bridge_state->mem_r(a, 0xffffffff));
 	}
 	fflush(stderr);
 }
@@ -315,13 +315,33 @@ static void dump_range()
 
 
 // ---------------------------------------------------------------- the clkint gate
-// Pinball 2000's clock interrupt runs longer than a tick period on an emulated 20 MHz CPU: it
-// services the pinball driver board one register at a time, and each access is bracketed by a
-// critical section. Every time it leaves one, IF comes back and the tick that is already waiting
-// is taken - measured, three times over, always at the same instruction (0x1debbd, right after
-// the "leave critical section" call). XINU's resched() then sees its nesting counter non-zero,
-// complains, and the complaint is itself a report: a feedback loop that overflows the task's
-// 8 KB stack. Measured in detail in README.md.
+// Retested at the current clocking and still required. This was first measured with the CPU at
+// 20 MHz and the PIT at MAME's deliberate 925 kHz; both have since moved - 233/3, about 77.7 MHz,
+// against the standard 1193182 Hz, which at divisor 298 takes the handler from ~4995 CPU cycles
+// per tick to ~19397, near enough four times the room. It makes no difference. With
+// P2K_CLKINT_GATE=0 the machine still derails: i386 reports an invalid opcode at 0x20202020 -
+// executing spaces, i.e. text - and then in low memory, which is the stack overflow below
+// arriving exactly as it did before.
+//
+// Worth understanding rather than just recording, because the way this was first described -
+// "the clock interrupt runs longer than a tick period" - is not the load-bearing part, and
+// reasoning from it predicts the opposite result. The tick that nests is already latched in the
+// 8259's IRR when the handler starts. A faster CPU cannot un-latch a request that already exists;
+// it only reaches the first critical-section exit sooner, and that exit is where IF comes back
+// and the pending tick is taken. Clock speed was never the term that mattered, so do not expect
+// reclocking to retire this.
+//
+// What the handler does: it services the pinball driver board one register at a time, and each
+// access is bracketed by a critical section. Every time it leaves one, IF comes back and the tick
+// that is already waiting is taken - measured, three times over, at the same instruction (0x1debbd,
+// right after the "leave critical section" call). XINU's resched() then sees its nesting counter
+// non-zero and complains ("resched: called from interrupt handler"), and the complaint is itself a
+// report: a feedback loop that overflows the task's 8 KB stack. Measured in detail in README.md.
+//
+// That feedback loop is the same one the blank-CMOS boot failure ends in - resched finds something
+// wrong, reports it, and the reporting re-enters resched. Only the trigger differs: a non-zero
+// nesting counter here, a corrupted dword at address 0 there. See P2K_SEED_ERROR_LOG in
+// p2k_driver.cpp. Whether seeding the error log softens *this* failure has not been retested
 //
 // So the gate holds the **delivery**, not the edge. An earlier version suppressed the PIT's
 // rising edge and changed nothing, for a good reason: the tick that nests was latched in the
@@ -349,9 +369,9 @@ static const bool g_clkint_gate = []() {
 	const char *s = getenv("P2K_CLKINT_GATE");
 	return !s || strtol(s, nullptr, 0) != 0;
 }();
-static const long g_max_skips = []() {
+static const int g_max_skips = []() {
 	const char *s = getenv("P2K_CLKINT_MAX_SKIP");
-	const long n = s ? strtol(s, nullptr, 0) : 4;
+	const int n = s ? (int)strtol(s, nullptr, 0) : 4;
 	return n > 0 ? n : 1;
 }();
 static const unsigned g_clkint_counter = []() {
@@ -360,14 +380,14 @@ static const unsigned g_clkint_counter = []() {
 }();
 #else
 static const bool     g_clkint_gate    = true;
-static const long     g_max_skips      = 4;
+static const int      g_max_skips      = 4;
 static const unsigned g_clkint_counter = 0;
 #endif
 static bool g_in_clkint = false;
 static bool g_clkint_iret_seen = false;
 static bool g_irq0_armed = false;      // an edge reached the PIC, no dispatch yet
 static int g_tick_vector = -1;         // learned from the first dispatch after an edge
-static long g_edges_while_held = 0;
+static int g_edges_while_held = 0;
 u64 g_p2k_tick_held = 0;
 u64 g_p2k_clkint_entered = 0;
 u64 g_p2k_clkint_left = 0;
@@ -523,9 +543,9 @@ inline void pctrap_check(unsigned pc)
 // the machine is inside clkint roughly a third of the time - so it reads main RAM directly now,
 // falling back to the bus only when the PC is somewhere else.
 #if P2K_DEBUG
-static long g_hooktrace_left = []() -> long {
+static int g_hooktrace_left = []() -> int {
 	const char *s = getenv("P2K_HOOKTRACE");
-	return s ? strtol(s, nullptr, 0) : 0;
+	return s ? (int)strtol(s, nullptr, 0) : 0;
 }();
 static bool g_probes_armed = false;   // set in p2k_bridge_attach, once everything is parsed
 #endif
@@ -620,7 +640,7 @@ static void p2k_debug_step(unsigned pc)
 			// what the machine does with the mode change is the other half of the question:
 			// P2K_FORWARD=<n> follows the next n instructions with registers, 40 by default
 			const char *f = getenv("P2K_FORWARD");
-			g_forward_left = f ? strtol(f, nullptr, 0) : 40;
+			g_forward_left = f ? (int)strtol(f, nullptr, 0) : 40;
 		}
 		was_protected = protected_now;
 
@@ -691,9 +711,9 @@ static void p2k_trap_step(int vector)
 		g_p2k_irq_dispatched++;
 	}
 #if P2K_DEBUG
-	static long trace_left = []() -> long {
+	static int trace_left = []() -> int {
 		const char *s = getenv("P2K_TRAPTRACE");
-		return s ? strtol(s, nullptr, 0) : 0;
+		return s ? (int)strtol(s, nullptr, 0) : 0;
 	}();
 	if (!g_backtrace_at && !g_backtrace_below)
 	{
@@ -741,7 +761,7 @@ int mediagx_execute(int cycles)
 
 	// run in chunks so the debugger gets a look in between; the machine's own runner keeps the
 	// CPU and the timer queue in step within each chunk
-	const int chunk = 2000;
+	constexpr int chunk = 2000;
 	int left = cycles;
 	g_bridge_aborted = false;
 	mediagx_ICount = 0;
@@ -793,7 +813,7 @@ void mediagx_set_irq_line(int irqline, int linestate)
 	if (g_bridge_cpu) g_bridge_cpu->set_input_line(irqline, linestate);
 }
 
-// Deliberately empty. PinMAME installs its own acknowledge callback on every CPU at reset
+// Deliberately empty. PinMAME installs its own acknowledgement callback on every CPU at reset
 // (cpuint.c's cpu_N_irq_callback), which answers with the driver's default vector - zero for
 // this table row. This machine has an 8259 pair and the interrupt vector comes from there:
 // p2k_state wires the CPU's acknowledge to pic8259_device::acknowledge() when it builds the

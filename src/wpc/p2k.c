@@ -586,6 +586,7 @@ INPUT_PORTS_START(rfm)
 		COREPORT_BIT(     0x1000, "Left Action",    KEYCODE_LCONTROL)
 		COREPORT_BIT(     0x2000, "Right Action",   KEYCODE_RCONTROL)
 		COREPORT_BIT(     0x4000, "Launch Ball",    KEYCODE_ENTER)
+		COREPORT_BITTOG(  0x8000, "Balls In Trough",KEYCODE_B)
 INPUT_PORTS_END
 
 #define input_ports_swep1 input_ports_rfm
@@ -613,6 +614,13 @@ INPUT_PORTS_END
 #define swLFlipperButton  116
 #define swRActionButton   117
 #define swLActionButton   118
+
+/* The trough as built: four balls on 42-45, the same on both games. Nothing here puts them there
+   on its own - an empty machine is the honest rest state, and PinMAME leaves the trough to a
+   simulator or to the operator elsewhere too. The Balls In Trough key below is the way to load it
+   for a test, and the ball model in the scaffolding is the way to make them move */
+#define P2K_TROUGH_SW1     42
+#define P2K_TROUGH_BALLS    4
 
 /*-- the driver board's own bit numbering, from MAME's driver --*/
 #define P2K_CAB_SLAMTILT   0x01
@@ -655,6 +663,22 @@ static SWITCH_UPDATE(p2k) {
 		const int *o = p2k_optoList();
 		int k;
 		for (k = 0; o[k]; k++) core_setSw(o[k], 1);
+
+		/* Balls In Trough (B) loads the trough for a test, and is a toggle because that is what it
+		   models - balls are in the machine or they are not. Both games hold four as built, on
+		   42-45; the 6 ball kits' extra positions are left clear, a stock playfield not having them.
+
+		   Worth knowing why this is a key and not a default. An opto rests at 1 and a matrix
+		   position nobody sets reads 0, so before the optos above were brought up to rest the
+		   trough read *full* by accident - four balls that were really four unset switches, which
+		   is why a game could be started without asking for any. Resting them correctly empties the
+		   machine, and an empty machine is the honest state to power up in.
+
+		   Do not hold it down from frame zero: a full trough before the machine has initialised is
+		   not four balls, it is four switches that broke during power-up, and it hangs. Let it boot
+		   first. The ball model in the scaffolding owns 42-45 whenever it runs and overrides this */
+		if (inports && (inports[CORE_COREINPORT] & 0x8000))
+			for (k = 0; k < P2K_TROUGH_BALLS; k++) core_setSw(P2K_TROUGH_SW1 + k, 0);
 	}
 
 	if (inports) {
@@ -1507,22 +1531,24 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
    topper, which 2.10 took up. The two 50 V spares have no software yet and would land on the 45-47
    Episode I still lists as Not Used. Worth knowing before wondering what those are for.
 
-   That difference matters here, where the hardware itself does not. RFM's two are inside coil
-   register 0x09, drivers 17-24, so pull_outputs() already hands them over as ordinary solenoids
-   and nothing is needed - an output nobody drives is simply off, with no rest state to get wrong
-   unlike an opto. Episode I's are not: this driver decodes five coil registers, drivers 1-40
-   (p2k_driver.cpp), and 42-44 are past the end of them. Whatever sixth register carries 41-48 has
-   not been found, so those three cannot reach PinMAME as things stand. All of it is optional
-   hardware either way, so every set plays without it.
+   That difference matters less here than it used to. RFM's two are inside coil register 0x09,
+   drivers 17-24, so pull_outputs() has always handed them over as ordinary solenoids - an output
+   nobody drives is simply off, with no rest state to get wrong unlike an opto. Episode I's sit at
+   42-44, which needed the sixth coil register, and that register has since been found: 0x0e carries
+   drivers 41-48, into the high byte of m_solenoids2 (p2k_driver.cpp), so all of 1-48 now reach
+   PinMAME. It was confirmed by Episode I's neon on driver 41, which appears as custom solenoid 55.
+   All of it is optional hardware either way, so every set plays without it.
 
    The year on each set is the version's own, from its changelog or build stamp wherever the package
    name disagrees - which it does for 1.60, 1.80, Episode I's 1.50 and all three 1.9x.
 
-   Twelve of the twenty boot. What divides them is the XINA each game.rom names, not the game:
-   1.12 to 1.31 come up, 1.34 to 1.38 do not, so rfm_210 runs and rfm_222 does not and Episode I's
-   2.x are all on the far side. They stop after the boot ROM has handed over, so it is XINA's own
-   code that is missing something here - the evidence, and where to look next, is in
-   src/p2k/README.md and by P2K_PATCH_PCI_INIT_RETRY in src/p2k/p2k_driver.cpp */
+   All twenty boot. Eight of them used not to, and what divided them was the XINA each game.rom
+   names rather than the game: 1.12 to 1.31 came up, 1.34 to 1.38 did not, so rfm_222 stopped where
+   rfm_210 ran and Episode I's 2.x were all on the far side. The cause was a blank CMOS, not the
+   boot ROM and not this driver: the newer software reports a NonFatal during static construction,
+   the reporter appends it to an error log whose header a fresh CMOS does not have, and the entry
+   lands on address 0 - which the scheduler then reports as fatal, for ever. P2K_SEED_ERROR_LOG in
+   src/p2k/p2k_driver.cpp builds that header; the whole chain is in src/p2k/README.md */
 CORE_GAMEDEF (rfm, 160, "Pinball 2000: Revenge From Mars (1.60)", 2003, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 150, 160, "Pinball 2000: Revenge From Mars (1.50)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 140, 160, "Pinball 2000: Revenge From Mars (1.40)", 2000, "Midway", p2k, 0)

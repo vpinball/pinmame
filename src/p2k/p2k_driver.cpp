@@ -39,6 +39,13 @@ static_assert(int(p2k_state::NVRAM_EEPROM) == P2K_NV_BLOCK_EEPROM, "NVRAM block 
 #define P2K_LAMP_STATUS_INVERT 0
 #endif
 
+// Build the CMOS error log's header on a machine whose CMOS has never been written, the way the
+// game itself would have built it on an earlier power-up. Without it the newer system software
+// cannot boot from a blank CMOS - see seed_error_log() for the failure chain, and the README
+#ifndef P2K_SEED_ERROR_LOG
+#define P2K_SEED_ERROR_LOG 1
+#endif
+
 extern u64 g_p2k_cycles_total;
 #include "machine/pic8259.h"
 #include "machine/pit8253.h"
@@ -94,7 +101,7 @@ extern "C" u32 p2k_dcs_read(u32 offset, u32 mem_mask) P2K_WEAK;
 extern "C" void p2k_dcs_write(u32 offset, u32 data, u32 mem_mask) P2K_WEAK;
 
 // One MediaGX/Prism ROM bank: two 8 MB chips interleaved as 32-bit words
-static const size_t PRISM_BANK_BYTES = 0x1000000;
+static constexpr size_t PRISM_BANK_BYTES = 0x1000000;
 
 // P2K_WRITEMAP=1 counts writes per megabyte, which is how the missing 0xc0800000 alias window
 // was found. A compile-time false without the switch, so mem_w keeps nothing of it
@@ -132,7 +139,57 @@ p2k_state::p2k_state()
 	m_vram.assign(0x400000, 0);
 	m_system_bios1.assign(0x30000 / 4, 0);
 	m_eeprom.assign(P2K_NV_EEPROM_SIZE / 4, 0); // u32 elements, so the byte size is /4 here
+#if P2K_SEED_ERROR_LOG
+	seed_error_log();                      // before MACHINE_INIT copies a saved CMOS over it
+#endif
 	g_state = this;
+}
+
+// The CMOS error log, as the game's own checksum_errors() lays it out. Two ring buffers of fixed
+// records live at 0x11000050; the header in front of them carries, per ring, the record size, the
+// capacity, how many are in use and where the next one goes.
+//
+// Why this is seeded at all. A machine in the field always has this header: it is written on the
+// first power-up and survives the software updates, which never clear CMOS. Emulated, the CMOS
+// starts blank, and the newer system software then cannot boot - it never reaches the point that
+// would build the header, because it needs the header first:
+//
+//   1. left_sling's constructor calls a hook that reads an adjustment resource whose own
+//      constructor is linked later, so the resource is still zeroed BSS. That is a static
+//      initialisation order bug in the game, and it reports NonFatal - by itself harmless.
+//   2. The NonFatal reporter appends the report to the error log. With the header blank the
+//      log's base pointer is 0, so the entry is written over address 0.
+//   3. resched() checks the reserved dword at address 0 on every scheduling decision and now
+//      finds it changed: "reserved memory at zero corrupted".
+//   4. That is Fatal, and the Fatal reporter writes through the same null base pointer, so the
+//      corruption it is reporting is re-made on every pass. The machine never leaves the handler
+//      and walks the stack down until it runs out.
+//
+// Booting an older version once and keeping its CMOS is the same fix by hand: the older software
+// has a different link order, does not report during construction, and so builds the header
+// normally. Seeding it here means a fresh install boots.
+//
+// The constants are the ones the game computes, not invented: rfm 2.22 builds them at 0x288b48,
+// and the routine is byte-identical in rfm 2.10/2.60 and swep1 2.10. Only the two base pointers
+// and the geometry are set; the four in-use/index words stay 0, which is an empty log
+void p2k_state::seed_error_log()
+{
+	constexpr u32 region  = 0x23b0;                       // the size the routine works from
+	constexpr u32 base_a  = 0x11000050;                   // the records start right after the header
+	const u32 a_count     = (region * 3) >> 12;           // 6
+	const u32 a_recsize   = ((region * 3) >> 2) / a_count;// 0x476
+	const u32 b_count     = region >> 10;                 // 8
+	const u32 b_recsize   = (region >> 2) / b_count;      // 0x11d
+	const u32 base_b      = base_a + a_recsize * a_count; // 0x11001b14
+
+	if (m_nvram.size() < 0x50) return;
+	write_le(m_nvram, 0x00, 0x2400,    0xffffffff);       // total size the two rings must fit in
+	write_le(m_nvram, 0x08, a_count,   0xffffffff);
+	write_le(m_nvram, 0x0c, a_recsize, 0xffffffff);
+	write_le(m_nvram, 0x14, base_a,    0xffffffff);
+	write_le(m_nvram, 0x1c, b_count,   0xffffffff);
+	write_le(m_nvram, 0x20, b_recsize, 0xffffffff);
+	write_le(m_nvram, 0x28, base_b,    0xffffffff);
 }
 
 p2k_state::~p2k_state()
@@ -237,11 +294,12 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
 	//
 	// so the ROM has handed over and what hangs is the version's own code, XINA 1.38 in 2.10's case
 	// against 1.19 in 1.50's. The update flash, its checksums and every window it is read through
-	// are therefore all good. Chasing it further means watching what that image does once it is
-	// running - the remote debugger (REMOTE_DEBUG=1) can break in and say where it is spinning, and
-	// the display manager is the first subsystem to suspect, since it waits on the blit pipeline
-	// behind a render-pass watchdog and gx_pipeline_w below implements only the raster modes the
-	// older games use. P2K_DISPWATCH covers that one.
+	// are therefore all good.
+	//
+	// That reading held. The hang was in the version's own code exactly as this said, and it was a
+	// blank CMOS - see P2K_SEED_ERROR_LOG above, which fixes it, and the README for the chain. Not
+	// the flash, not the windows, and not the display manager, which was the standing suspect here
+	// and was wrong: nothing in the failure ever reached the blit pipeline.
 	//
 	//     P2K_PATCH_PCI_INIT_RETRY=1  MAME's, the default: already-run exit returns 1
 	//     P2K_PATCH_PCI_INIT_RETRY=2  guard removed: init runs in full on every call
@@ -446,7 +504,7 @@ void p2k_state::reset()
 		0x5403A1E0, 0x5473B940, 0x4041A060, 0x54B2B8C0, 0x54B2B8C0, 0x08800001, 0x09800001,
 		0x0A800001, 0x0B800001, 0x00000000, 0x00789242
 	};
-	for (size_t i = 0; i < sizeof(defaults) / sizeof(defaults[0]) && i < m_eeprom.size(); i++)
+	for (size_t i = 0; i < std::size(defaults) && i < m_eeprom.size(); i++)
 		m_eeprom[i] = defaults[i];
 
 	// the PLX registers come up holding the EEPROM image from word 4 on. MAME copies 32 words
@@ -734,12 +792,35 @@ void p2k_state::write_le(std::vector<u8> &buf, offs_t off, u32 data, u32 mask)
 // ---------------------------------------------------------------- ported handlers
 u32 p2k_state::expansion_r(offs_t offset) const
 {
-	return (offset < m_prismdata[0].size()) ? m_prismdata[0][offset] : 0;
+	return (offset < m_prismdata[0].size()) ? m_prismdata[0][offset] : 0; //!! % ?
 }
 
+// The four mask images - the games' art, im_mask0 through im_mask3 in the update package - live on
+// the Prism card. This window is how they are read, and the driver and the firmware do not agree
+// about it.
+//
+// Here (as in the MAME driver this came from) 0x14000000-0x14ffffff is one banked window: which of
+// the four m_prismdata[] it serves is whatever prism_1400_w last selected. The other three are
+// mapped again, fixed, at 0x15000000/0x16000000/0x17000000 in mem_r - so bank 0 is reachable only
+// through the bank register, and the other three are reachable both ways.
+//
+// The firmware treats all four as fixed windows and never banks at all. boot_im_mask_bank_is_valid
+// (rfm 2.22 at 0x2861bc) checksums bank n at, in order, 0x14400000, 0x15000000, 0x16000000 and
+// 0x17000000, against the sizes and checksums at BootData +0x5c/+0x60, +0x64/+0x68, +0x6c/+0x70
+// and +0x74/+0x78. Note the first: 0x144-, not 0x140-, so where the firmware expects mask 0 this
+// window answers from 4 MB into whichever bank happens to be selected.
+//
+// Which of the two is right is unresolved. Nothing has been seen to depend on it: both games boot
+// and play through this handler, and a normal power-up never validates the masks at all - the
+// console prints the BOOT DATA, SYS IMAGE, GAME CODE and SYMBOLS banners and no mask one, so that
+// routine looks to run only while an update is being written. It is recorded because a
+// disagreement of this kind is worth resolving before something does depend on it, not because it
+// is known to be a bug. Deciding it needs a machine that reads a mask through 0x14400000 with a
+// bank other than 0 selected, or the Prism card's own address decode
 u32 p2k_state::prism_1400_r(offs_t offset) const
 {
 	const std::vector<u32> &bank = m_prismdata[m_prismbank & 3];
+	//!! past the end reads 0, where the three fixed windows in mem_r wrap modulo instead - another half of the same question, and equally untested
 	return (offset < bank.size()) ? bank[offset] : 0;
 }
 
@@ -894,13 +975,17 @@ u32 p2k_state::disp_ctrl_r(offs_t offset) const
 	// move sees it move.
 	if (offset == DC_V_LINE_CNT)
 	{
-		// from the machine's own clock, not from a per-timeslice counter: PinMAME hands out
-		// slices of one frame, and at 20 MHz that is 333333 cycles against 525*635 = 333375 for
-		// a synthesized frame - near enough that a slice-end counter aliases and the line barely
-		// moves. It read a constant 0x1d8 that way, and the firmware's frame callback, which only
-		// acts while the line is below 10, never fired.
+		// From the machine's own clock, which is the point: a beam position depends on the video
+		// timings and not on how fast the CPU runs, so this is independent of the MediaGX clock
+		// and does not need revisiting when that changes. What it replaced did depend on it - a
+		// per-timeslice counter, and PinMAME hands out slices of one frame, which at the 20 MHz
+		// this was first written for came to 333333 cycles against 525*635 = 333375 for a
+		// synthesized frame. Near enough that the counter aliased and the line barely moved: it
+		// read a constant 0x1d8, and the firmware's frame callback, which only acts while the line
+		// is below 10, never fired. Those numbers are why the old approach failed, not a
+		// description of this one
 		const u64 ns = u64(m_machine->machine().time().as_double() * 1e9);
-		const u64 ns_per_line = 1000000000ull / (VIDEO_LINES * VIDEO_FRAMES_PER_SECOND);
+		constexpr u64 ns_per_line = 1000000000ull / (VIDEO_LINES * VIDEO_FRAMES_PER_SECOND);
 		return u32((ns / ns_per_line) % VIDEO_LINES);
 	}
 	return m_disp_ctrl_reg[offset];
@@ -951,7 +1036,7 @@ u8 p2k_state::nvram_updates_r(offs_t offset) const
 	if (m_flash_mode == 1)
 	{
 		// CFI query response, as tabulated in the MAME driver (8 Mbit part)
-		static const u8 cfi[] = {
+		static constexpr u8 cfi[] = {
 			0x51,0x00,0x52,0x00,0x59,0x00,0x01,0x00, 0x00,0x00,0x31,0x00,0x00,0x00,0x00,0x00,
 			0x00,0x00,0x00,0x00,0x00,0x00,0x45,0x00, 0x55,0x00,0x00,0x00,0x00,0x00,0x07,0x00,
 			0x07,0x00,0x0a,0x00,0x00,0x00,0x04,0x00, 0x04,0x00,0x04,0x00,0x00,0x00,0x17,0x00,
@@ -1013,7 +1098,7 @@ void p2k_state::mediagx_pci_w(int function, int reg, u32 data, u32 mem_mask)
 	COMBINE_DATA(varptr);
 }
 
-u32 p2k_state::cx5520_pci_r(int function, int reg, u32 mem_mask)
+u32 p2k_state::cx5520_pci_r(int function, int reg, u32 mem_mask) const
 {
 	return m_cx5520_regs[reg] & mem_mask;
 }
@@ -1024,7 +1109,7 @@ void p2k_state::cx5520_pci_w(int function, int reg, u32 data, u32 mem_mask)
 	COMBINE_DATA(varptr);
 }
 
-u32 p2k_state::prism_pci_r(int function, int reg, u32 mem_mask)
+u32 p2k_state::prism_pci_r(int function, int reg, u32 mem_mask) const
 {
 	return m_prism_regs[reg / 4] & mem_mask;
 }
@@ -1089,6 +1174,8 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 				result |= u32(nvram_updates_r(base + lane)) << (lane * 8);
 		return result;
 	}
+	// the four mask images. The first of these is banked and the other three are not; the firmware
+	// expects four fixed windows, the first of them at 0x14400000. See prism_1400_r
 	if (addr >= 0x14000000 && addr < 0x15000000) return prism_1400_r((addr - 0x14000000) / 4) & mem_mask;
 	if (addr >= 0x15000000 && addr < 0x16000000) return m_prismdata[1][((addr - 0x15000000) / 4) % m_prismdata[1].size()] & mem_mask;
 	if (addr >= 0x16000000 && addr < 0x17000000) return m_prismdata[2][((addr - 0x16000000) / 4) % m_prismdata[2].size()] & mem_mask;
@@ -1308,7 +1395,7 @@ u8 p2k_state::pdb_reg_r() const
 	{
 		case 0x00: return m_coin_switches;
 		case 0x01: return m_cabinet_switches;
-		case 0x02: return 1;                                    // dip switches
+		case 0x02: return 1; // dip switches. Read once at startup and the 1 is accepted - see the note below on what else was watched
 		case 0x03: return m_diag_switches;
 		case 0x04:
 		{
@@ -1321,10 +1408,21 @@ u8 p2k_state::pdb_reg_r() const
 					return m_sw_matrix[(c + 1) & 0xf];          // PinMAME numbers columns from 1
 			return 0x00;
 		}
+		// These four return index+1, which was a placeholder rather than a model of anything.
+		// Watched through boot, attract and the test menu with P2K_PDBWATCH=02,0c,0d,0e,0f,12,13:
+		//
+		//   0x0c/0x0d/0x0e  written constantly, never read - they are the solenoid registers
+		//   0x0f            read exactly once, at startup, and 0x10 is accepted
+		//
+		// So the machine boots and plays on these values. 0x0f is the switch-system register and
+		// carries zero cross, which on real hardware times coil firing and GI dimming - but a single
+		// read at startup is a presence or version check, not polling, so nothing here is timed
+		// against it. Modelling zero cross properly only becomes necessary if something starts
+		// reading 0x0f repeatedly
 		case 0x0c: return 0x0d;
 		case 0x0d: return 0x0e;
 		case 0x0e: return 0x0f;
-		case 0x0f: return 0x10;                                 // switch-system, incl. zero cross
+		case 0x0f: return 0x10;
 		case 0x10: case 0x11:
 		{
 			// Lamp matrix diagnostics - Pinball 2000's lamp fault detection, which is what lets an
@@ -1346,8 +1444,9 @@ u8 p2k_state::pdb_reg_r() const
 		}
 		case 0x05: case 0x06: case 0x07: case 0x08:
 		case 0x09: case 0x0a: case 0x0b:
-		// 0x12/0x13 are the fuse diagnostics (wms_pdb_fuse_status, pdb_fuses) and are still the
-		// same stub the lamp registers were - whatever the test menu says about fuses is this constant, not a measurement
+		// 0x12/0x13 are the fuse diagnostics (wms_pdb_fuse_status, pdb_fuses) and are still the same
+		// stub the lamp registers were. Unlike those, though, they were never read once in the whole
+		// watch above - so whatever the test menu shows for fuses, it is not coming from here
 		case 0x12: case 0x13: return 0x00;
 		default:   return 0xff;
 	}
@@ -1470,7 +1569,7 @@ u8 p2k_state::port_read(offs_t port)
 			case 2:                                 // IIR: what is asking for attention
 				// the transmitter is always empty here, so THRE is the only source. Reading IIR
 				// clears it, as on a real 16550 - the driver then writes the next character.
-				if (m_uart_reg[1] & 0x02) { const u8 iir = 0x02; update_uart_irq(); return iir; }
+				if (m_uart_reg[1] & 0x02) { constexpr u8 iir = 0x02; update_uart_irq(); return iir; }
 				return 0x01;                        // no interrupt pending
 			case 5: return 0x60;                    // LSR: transmitter holding and shift both empty
 			case 6: return 0xb0;                    // MSR: CTS/DSR/DCD asserted

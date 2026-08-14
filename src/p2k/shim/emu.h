@@ -468,7 +468,7 @@ class emu_timer final
 {
 	friend class device_scheduler;
 public:
-	void adjust(attotime start_delay, s32 param = 0, attotime period = attotime::never);
+	void adjust(const attotime& start_delay, s32 param = 0, const attotime& period = attotime::never);
 	void reset() { adjust(attotime::never); }
 	void enable(bool enable = true) { m_enabled = enable; }
 	bool enabled() const { return m_enabled; }
@@ -530,9 +530,9 @@ public:
 	}
 
 	// advance time to `target`, firing every timer that comes due on the way
-	void advance_to(attotime target);
+	void advance_to(const attotime& target);
 
-	void set_time(attotime t) { m_time = t; }
+	void set_time(const attotime& t) { m_time = t; }
 
 private:
 	std::vector<std::unique_ptr<emu_timer>> m_timers;
@@ -1428,7 +1428,7 @@ inline device_memory_interface &device_t::memory() const
 	return *const_cast<device_memory_interface *>(dynamic_cast<const device_memory_interface *>(this));
 }
 
-inline void emu_timer::adjust(attotime start_delay, s32 param, attotime period)
+inline void emu_timer::adjust(const attotime& start_delay, s32 param, const attotime& period)
 {
 	m_param = param;
 	m_period = period;
@@ -1453,7 +1453,7 @@ inline attotime emu_timer::remaining() const
 	return (m_expire > now) ? m_expire - now : attotime::zero;
 }
 
-inline void device_scheduler::advance_to(attotime target)
+inline void device_scheduler::advance_to(const attotime& target)
 {
 	for (;;)
 	{

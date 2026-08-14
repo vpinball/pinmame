@@ -2772,7 +2772,7 @@ void i386_device::execute_run()
 				{
 					uint32_t phys_addr = 0;
 					uint32_t error;
-					phys_addr = (m_cr[0] & (1 << 31)) ? translate_address(m_CPL, TRANSLATE_FETCH, &m_dr[i], &error) : m_dr[i];
+					phys_addr = (m_cr[0] & (1u << 31)) ? translate_address(m_CPL, TRANSLATE_FETCH, &m_dr[i], &error) : m_dr[i];
 					if(breakpoint_length != 0) // Not one byte in length? logerror it, I have no idea how this works on real processors.
 					{
 						logerror("i386: Breakpoint length not 1 byte on an instruction breakpoint\n");

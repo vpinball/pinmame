@@ -10,11 +10,11 @@ MODs elsewhere:
 
 | Driver | Game | | |
 |---|---|---|---|
-| `rfm_260` | Pinball 2000: Revenge From Mars | 08/2024 | myPinballs; needs the opto expansion (v2.6+ per the kit) - **does not boot** |
-| `rfm_250` | | 12/2022 | myPinballs - **does not boot** |
-| `rfm_224` | | 01/2022 | myPinballs, also released as 2.42 - **does not boot** |
-| `rfm_223` | | 04/2021 | myPinballs, also released as 2.40 - **does not boot** |
-| `rfm_222` | | 06/2020 | myPinballs, also released as 2.30 - **does not boot** |
+| `rfm_260` | Pinball 2000: Revenge From Mars | 08/2024 | myPinballs; needs the opto expansion (v2.6+ per the kit) |
+| `rfm_250` | | 12/2022 | myPinballs |
+| `rfm_224` | | 01/2022 | myPinballs, also released as 2.42 |
+| `rfm_223` | | 04/2021 | myPinballs, also released as 2.40 |
+| `rfm_222` | | 06/2020 | myPinballs, also released as 2.30 |
 | `rfm_210` | | 04/2019 | myPinballs; shaker/knocker support |
 | `rfm_195` | | 03/2018 | hemtoni; German re-translation, used by nothing later - not the newest 1.x |
 | `rfm_191` | | 05/2018 | hemtoni; newest of the three, added sounds - only 2.10 kept them |
@@ -24,23 +24,45 @@ MODs elsewhere:
 | `rfm_150` | | 07/2000 | |
 | `rfm_140` | | 01/2000 | |
 | `rfm_120` | | 06/1999 | |
-| `swep1_210` | Pinball 2000: Star Wars Episode I | 10/2025 | myPinballs; adds a topper (driver 44) - **does not boot** |
-| `swep1_201` | | 05/2025 | myPinballs - **does not boot** |
-| `swep1_200` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43) - **does not boot** |
+| `swep1_210` | Pinball 2000: Star Wars Episode I | 10/2025 | myPinballs; adds a topper (driver 44) |
+| `swep1_201` | | 05/2025 | myPinballs |
+| `swep1_200` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43) |
 | **`swep1_150`** | **parent** | 09/2003 | last official, XINA 1.19 |
 | `swep1_140` | | 07/2000 | |
 | `swep1_130` | | 09/1999 | |
 
-Twelve of the twenty boot, render, take coins, start a game, drive lamps and coils, respond to the
-flippers and play sound. The other eight stop before the boot screen, and what divides them is not
-the game but the system software: each `game.rom` names the XINA it was built against, and
-everything from **1.12 to 1.31 boots**
-(`rfm_120` through `rfm_210`, `swep1_130` through `swep1_150`), and everything from **1.34 to 1.38
-does not** (`rfm_222` through `rfm_260`, and all three `swep1_2xx`). `rfm_210` is 1.31 and comes up;
-`rfm_222` is 1.34 and stops. The line has been walked from both sides and holds for both games, so
-it is not a myPinballs or an RFM problem - something XINA gained between 1.31 and 1.34 is missing
-here. The boot ROM is not where they stop: it finishes and hands over first. See the note by the
-game definitions in `src/wpc/p2k.c`.
+All games boot, render, take coins, start a game, drive lamps and coils, respond to the flippers
+and play sound. Eight of them used not to, and what divided them was not the game but the system
+software: each `game.rom` names the XINA it was built against, and everything from **1.12 to 1.31**
+came up (`rfm_120` through `rfm_210`, `swep1_130` through `swep1_150`) while everything from
+**1.34 to 1.38** stopped before the boot screen (`rfm_222` through `rfm_260`, and all three
+`swep1_2xx`).
+
+**It was a blank CMOS**, and the emulation is only indirectly at fault. The newer software has a
+static initialisation order bug: `left_sling`'s constructor calls a hook that reads an adjustment
+resource whose own constructor is linked later, so the resource is still zeroed BSS and the read
+reports NonFatal. That report is harmless on a machine in the field, and fatal here:
+
+1. The NonFatal reporter appends the report to the error log in CMOS.
+2. On a fresh install that log's header has never been built, so its base pointer is `0` and the
+   entry is written **over address 0**.
+3. `resched()` checks the reserved dword at address 0 on every scheduling decision, finds it
+   changed, and calls it Fatal: *"reserved memory at zero corrupted"*.
+4. The Fatal reporter writes through the same null pointer, so it re-makes the corruption it is
+   reporting. The machine never leaves the handler and walks its stack down until it runs out -
+   from the outside, a hang a few seconds after `STARTING UPDATE GAME CODE`.
+
+A real machine always has that header: it is written on the first power-up and survives the
+updates, which never clear CMOS. The older software has a different link order, never reports
+during construction, and so builds it normally - which is why 1.31 and below were unaffected, and
+why booting an older version once and keeping its NVRAM fixes the newer ones by hand. The driver
+now seeds the header on a blank CMOS instead; see `P2K_SEED_ERROR_LOG` and `seed_error_log()` in
+`p2k_driver.cpp`. Setting that define to 0 restores the old behaviour, and with it the hang.
+
+None of the driver's workarounds was involved. The update-flash model, the power driver board's
+register constants and the `clkint` gate were each suspected and each cleared by measurement
+before the real cause turned up. The boot ROM was never where they stopped: it finishes and hands
+over first. See the note by the game definitions in `src/wpc/p2k.c`.
 
 ## 1.95 is not the newest RFM 1.x
 
@@ -105,8 +127,9 @@ name the version they came from.
 ## A warning about speed
 
 Pinball 2000 is a 233 MHz PC and this emulates the whole thing - protected mode, paging, the x87
-FPU, the PCI bus, the display controller. Like MAME's driver, the CPU is clocked down to 20 MHz (for now),
-and even so:
+FPU, the PCI bus, the display controller. The CPU is clocked down, though no longer as far as MAME's
+driver takes it: 233/3, about 77.7 MHz, set in `src/wpc/p2k.c` and mirrored in `p2k_pinmame.cpp`.
+Even so:
 
 **On a low-power desktop (Pentium Silver J5040, Atom class) a running game reaches about 50 % of
 real time.** On a current desktop or laptop core expect comfortably more than real time. The
@@ -708,9 +731,14 @@ of the 2000-cycle execution chunks.
   game-side entry points are named in the packages' `symbols.rom` - `lamp_powerup_tests`,
   `diagnostics_is_lamp_bad`, `poweron_open_matrix`, `lamp_test_report_print`.
 
-* **The fuse diagnostics are a stub.** The power driver board reports fuse status on registers
-  `0x12`/`0x13` (`wms_pdb_fuse_status`, `pdb_fuses`); this driver returns a constant, so whatever
-  the test menu says about fuses is that constant and not a measurement.
+* **Four power driver board registers answer with constants**, and all four have now been watched
+  rather than assumed. `P2K_PDBWATCH=02,0c,0d,0e,0f,12,13` across boot, attract and the test menu
+  shows `0x02` (dip switches) and `0x0f` (switch-system, which carries zero cross) each read
+  exactly once at startup, with the constants accepted; `0x0c`-`0x0e` written constantly and never
+  read, being the solenoid registers; and `0x12`/`0x13` (fuse diagnostics) never read at all. So
+  none of them is load-bearing as things stand. Zero cross in particular is not polled, so nothing
+  is timed against it - that only becomes worth modelling if something starts reading `0x0f`
+  repeatedly.
 * **The modulated outputs, PWM, are not implemented.** Coils, lamps and GI are reported as plain
   on/off, so a frontend gets no coil strength, no bulb fade and no brightness - `coreGlobals.nSolenoids`
   is 0 and nothing here calls `core_write_pwm_output*()` or `core_set_pwm_output_type()`. That is
@@ -723,6 +751,25 @@ of the 2000-cycle execution chunks.
   past the point where a headless run returns. The remote debugger's
   `/api/debugger/control?cmd=exit` ends a run cleanly instead, which is also what gets NVRAM
   written.
+* **The driver and the firmware disagree about where the mask images are.** The four mask images -
+  the games' art, `im_mask0` to `im_mask3` in the update package - live on the Prism card. This
+  driver, following the MAME one, treats `0x14000000-0x14ffffff` as a single *banked* window whose
+  contents are whichever of the four `m_prismdata[]` was last selected by a magic value written to
+  the same window, and then maps three of them *again*, fixed, at `0x15000000`, `0x16000000` and
+  `0x17000000`. So mask 0 is reachable only through the bank register and the other three are
+  reachable both ways. The firmware banks nothing: `boot_im_mask_bank_is_valid` (rfm 2.22 at
+  `0x2861bc`) checksums the four at fixed addresses **`0x14400000`**, `0x15000000`, `0x16000000`
+  and `0x17000000`, against the sizes and checksums at `BootData` `+0x5c/+0x60`, `+0x64/+0x68`,
+  `+0x6c/+0x70` and `+0x74/+0x78`. The first is the mismatch - `0x144-`, not `0x140-`, so where the
+  firmware expects mask 0 this window answers from 4 MB into whatever bank is current. Nothing has
+  been seen to depend on it: both games boot and play through this handler, and a normal power-up
+  never validates the masks at all - the console prints the `BOOT DATA`, `SYS IMAGE`, `GAME CODE`
+  and `SYMBOLS` banners and no mask one, so that routine appears to run only while an update is
+  being written. Recorded because the two descriptions cannot both be right, not because it is
+  known to bite. The same question has a second half: past the end of a bank the banked window
+  reads 0 where the three fixed ones wrap modulo, and that is equally untested. Deciding either
+  needs a machine that reads a mask through `0x14400000` with a bank other than 0 selected, or the
+  Prism card's own address decode.
 
 ## Diagnostics
 

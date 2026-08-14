@@ -198,13 +198,14 @@ private:
 	void memory_ctrl_w(offs_t offset, u32 data, u32 mem_mask);
 	u32 mediagx_pci_r(int function, int reg, u32 mem_mask);
 	void mediagx_pci_w(int function, int reg, u32 data, u32 mem_mask);
-	u32 cx5520_pci_r(int function, int reg, u32 mem_mask);
+	u32 cx5520_pci_r(int function, int reg, u32 mem_mask) const;
 	void cx5520_pci_w(int function, int reg, u32 data, u32 mem_mask);
-	u32 prism_pci_r(int function, int reg, u32 mem_mask);
+	u32 prism_pci_r(int function, int reg, u32 mem_mask) const;
 	void prism_pci_w(int function, int reg, u32 data, u32 mem_mask);
 
 	u8 nvram_updates_r(offs_t offset) const;
 	void nvram_updates_w(offs_t offset, u16 data);
+	void seed_error_log();   // the CMOS error-log header a machine in the field already has
 
 	u32 biu_ctrl_r(offs_t offset) const;
 	void biu_ctrl_w(offs_t offset, u32 data, u32 mem_mask);
