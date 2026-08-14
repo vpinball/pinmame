@@ -1183,9 +1183,25 @@ ROM_START(rfm_210)
 	           0x273a00, CRC(49332443) SHA1(08285224d8eff072ba3b5520a245a314b3568758),
 	           0x0bae00, CRC(d775e101) SHA1(94801c03fa03ad3dd56e66eaf233f3fbfa811cbd))
 ROM_END
+/* 2.00 is myPinballs' first, and it seems to take over from hemtoni in two ways the files show plainly: it
+   keeps 1.91's sound flash, and it is the first to carry the im_flsh0 that 2.10 then ships
+   unchanged - byte-identical, same CRC as rfm_210's below. Its own code is still older than that
+   suggests, XINA 1.22 like the 1.9x sets rather than 2.10's 1.31, so a newer system image arrived
+   one release before the game moved to it. None of 2.10's optional shaker and knocker adjustments
+   yet either - and do not read the menu's "Knocker Test" as one. No Pinball 2000 ever shipped with
+   a knocker coil; the entry is in the stock software all the same, 1.90 carrying it and official
+   1.60 before that as "Test Knocker", so it tests hardware no machine has. What 2.10 adds is the
+   aftermarket kit: "Knocker (Optional)"/"Shaker (Optional)" and the drives behind them */
+ROM_START(rfm_200)
+	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
+	P2K_UPDATE(50070, 0200, CRC(51e47335) SHA1(c2224d94f519cea8925ce77f00529b003d981c50),
+	           0x0650e4, CRC(9ffbdbe8) SHA1(e52064655db0f81bd3ec6836cc4b9eda5d3fa4ca),
+	           0x26fa00, CRC(2a877688) SHA1(7fa5b4f55a014a9e866acfcf94ba5428c98bb2a2),
+	           0x0b9600, CRC(c9a97659) SHA1(a08b4c5bb3bfe94476af6282eab6aba31725b6fc))
+ROM_END
 /* 1.95 is 1.90 with the German retranslated, and the middle of the three rather than the newest -
    1.91 is the last and went back to 1.90's wording. 1.91 is also the one that brings its own sound
-   flash, which 2.10 then reuses */
+   flash, which 2.00 and 2.10 then reuse */
 ROM_START(rfm_195)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0195, CRC(9e33a421) SHA1(cc64d0fb50f9ed9655a830012c1c2082e8499fa0),
@@ -1520,8 +1536,9 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
    Shaker and knocker are the other mod, this one on the driver side, and the two games do not put
    them in the same place. RFM 2.10 starts it: the loom hangs them off two drives the stock game
    leaves unused, knocker on 18 (Q44, J111-2, 50 V) and shaker on 19 (Q45, J111-3, 12 V), taken
-   from the flasher section, which is why the kit ships protection diodes. Episode I gets the pair
-   from 2.00 and a topper at 2.10, but needs a cabinet driver control PCB as well as the loom, plus
+   from the flasher section, which is why the kit ships protection diodes. RFM's own 2.00 has
+   neither, so mind which game a "2.00" refers to here. Episode I gets the pair from its 2.00, six
+   years the later of the two, and a topper at 2.10, but needs a cabinet driver control PCB as well as the loom, plus
    a pigtail moving which driver inputs it sits on - and its own driver table says where they land:
    knocker 42, shaker 43, topper 44. Both games' tables are in p2k_names.h, read out of the
    game.roms.
@@ -1557,6 +1574,7 @@ CORE_CLONEDEF(rfm, 180, 160, "Pinball 2000: Revenge From Mars (1.80 unofficial M
 CORE_CLONEDEF(rfm, 190, 160, "Pinball 2000: Revenge From Mars (1.90 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 191, 160, "Pinball 2000: Revenge From Mars (1.91 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 195, 160, "Pinball 2000: Revenge From Mars (1.95 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
+CORE_CLONEDEF(rfm, 200, 160, "Pinball 2000: Revenge From Mars (2.00 unofficial MOD)", 2018, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 210, 160, "Pinball 2000: Revenge From Mars (2.10 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 222, 160, "Pinball 2000: Revenge From Mars (2.22 unofficial MOD)", 2020, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 223, 160, "Pinball 2000: Revenge From Mars (2.23 unofficial MOD)", 2021, "Midway / mypinballs", p2k, 0)

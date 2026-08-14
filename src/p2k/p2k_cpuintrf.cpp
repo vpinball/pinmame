@@ -17,6 +17,7 @@
 #include "i386.h"
 #include "i386priv.h"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -103,14 +104,24 @@ void report_progress(u64 cycles)
 	if (elapsed < next) return;
 	next = elapsed + interval;
 
+	// Host time, because the emulated counters cannot show it. instr/cycles is guest IPC - a
+	// property of the guest's own workload, the same however fast or slow the host runs - so
+	// anything that costs host time, the per-instruction hook the clkint gate arms for one, is
+	// invisible in it. "host" is seconds of wall clock since the first report and "mips" the guest
+	// instructions retired per second of it, which is the pair to compare builds and switches on.
+	static const auto t0 = std::chrono::steady_clock::now();
+	static const u64 instr0 = g_p2k_instr_total;
+	const double host = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+	const double mips = host > 0.0 ? double(g_p2k_instr_total - instr0) / host / 1e6 : 0.0;
+
 	const std::string &console = g_bridge_state->console_log();
 	if (console.size() > console_seen)
 	{
 		fprintf(stderr, "[p2k console] %s\n", console.c_str() + console_seen);
 		console_seen = console.size();
 	}
-	fprintf(stderr, "[p2k %llu cycles] instr=%llu slices=%llu pit0=%llu picint=%llu irq=%llu in/out=%llu/%llu held=%llu PC=%08x EIP=%08x CS=%04x CSBASE=%08x ESP=%08x CR0=%08x\n",
-		(unsigned long long)elapsed, (unsigned long long)g_p2k_instr_total,
+	fprintf(stderr, "[p2k %llu cycles] host=%.2fs mips=%.1f instr=%llu slices=%llu pit0=%llu picint=%llu irq=%llu in/out=%llu/%llu held=%llu PC=%08x EIP=%08x CS=%04x CSBASE=%08x ESP=%08x CR0=%08x\n",
+		(unsigned long long)elapsed, host, mips, (unsigned long long)g_p2k_instr_total,
 		(unsigned long long)g_p2k_slices,
 		(unsigned long long)g_p2k_pit0_edges, (unsigned long long)g_p2k_pic_int,
 		(unsigned long long)g_p2k_irq_dispatched,
@@ -315,59 +326,59 @@ static void dump_range()
 
 
 // ---------------------------------------------------------------- the clkint gate
-// Retested at the current clocking and still required. This was first measured with the CPU at
-// 20 MHz and the PIT at MAME's deliberate 925 kHz; both have since moved - 233/3, about 77.7 MHz,
-// against the standard 1193182 Hz, which at divisor 298 takes the handler from ~4995 CPU cycles
-// per tick to ~19397, near enough four times the room. It makes no difference. With
-// P2K_CLKINT_GATE=0 the machine still derails: i386 reports an invalid opcode at 0x20202020 -
-// executing spaces, i.e. text - and then in low memory, which is the stack overflow below
-// arriving exactly as it did before.
+// Off by default, and no longer needed. It held clock interrupts back while the guest was inside
+// its own clock handler, and what made that necessary was a defect in this shim: interrupt
+// delivery was late. pic8259_device re-evaluates its INT output from a zero-delay timer and
+// nothing here cut the CPU's slice short when one was set, so the guest unmasked and the interrupt
+// arrived wherever the slice happened to break instead of at the instruction after the OUT. See
+// p2k_state::pics_settle(), and "Interrupts used to arrive late" in README.md for the numbers.
 //
-// Worth understanding rather than just recording, because the way this was first described -
-// "the clock interrupt runs longer than a tick period" - is not the load-bearing part, and
-// reasoning from it predicts the opposite result. The tick that nests is already latched in the
-// 8259's IRR when the handler starts. A faster CPU cannot un-latch a request that already exists;
-// it only reaches the first critical-section exit sooner, and that exit is where IF comes back
-// and the pending tick is taken. Clock speed was never the term that mattered, so do not expect
-// reclocking to retire this.
+// It stays as a switch and as an instrument: P2K_CLKINT_GATE=1 reproduces the old behaviour in one
+// run, which is most of the diagnosis if a set ever derails again, and the frame tracking below
+// makes in/out and held a direct measure of interrupt nesting.
 //
-// What the handler does: it services the pinball driver board one register at a time, and each
-// access is bracketed by a critical section. Every time it leaves one, IF comes back and the tick
-// that is already waiting is taken - measured, three times over, at the same instruction (0x1debbd,
-// right after the "leave critical section" call). XINU's resched() then sees its nesting counter
-// non-zero and complains ("resched: called from interrupt handler"), and the complaint is itself a
-// report: a feedback loop that overflows the task's 8 KB stack. Measured in detail in README.md.
+// What it was protecting against is worth keeping, because it is about the guest and none of it is
+// obvious. Measured on rfm_160 with P2K_IOWATCH on 20-21, P2K_TRAPTRACE, and a trap on resched's
+// complaint:
 //
-// That feedback loop is the same one the blank-CMOS boot failure ends in - resched finds something
-// wrong, reports it, and the reporting re-enters resched. Only the trigger differs: a non-zero
-// nesting counter here, a corrupted dword at address 0 there. See P2K_SEED_ERROR_LOG in
-// p2k_driver.cpp. Whether seeding the error log softens *this* failure has not been retested
+//   * The 8259 is edge-triggered, vector base 0x20, ICW4 = 0x01 - so AEOI is off and the in-service
+//     bit really is set at each acknowledge.
+//   * But clkint EOIs at its FIRST instruction (out 0x20,0x20 from 0x25ba84), so that bit is clear
+//     for the whole handler and guards nothing.
+//   * The only remaining guard is the interrupt mask, and XINU's pair for it is misleadingly named:
+//     enable() masks everything (out 0x21,0xff) and disable() restores the saved mask. They are a
+//     critical section's entry and exit, not cli/sti - IF is untouched, which is why the interrupt
+//     frames show it set.
+//   * So every disable() inside the handler's call tree re-opens IR0. At depth two the interrupt
+//     epilogue's `dec [0x325314]` leaves 1 rather than 0, resched refuses with "resched: called
+//     from interrupt handler", and that report is itself a report - the loop that overflows the
+//     task's 8 KB stack.
 //
-// So the gate holds the **delivery**, not the edge. An earlier version suppressed the PIT's
-// rising edge and changed nothing, for a good reason: the tick that nests was latched in the
-// 8259's IRR before the handler started, so the request already exists and the PIC hands it over
-// the moment IF returns. The edge is the wrong thing to block. What works is keeping the PIC's
-// INT line away from the CPU while the guest is inside the handler, and letting it through again
-// when the handler leaves - the PIC keeps its state either way.
+// Three timing explanations were tried before the real one and each is dead, recorded so nobody
+// spends the time again: the tick rate (P2K_PIT_HZ=397727 restores the real cycles-per-tick ratio
+// and it still derailed), the handler running longer than a tick period, and the pinball I/O
+// critical section being long (paired PC traps put it under ~5000 cycles against 19406 in a tick).
+// The rate was never the variable. The latency was.
 //
-// Both signals are generic - no game addresses:
-//   entry: the CPU dispatches the tick vector. Which vector that is, is learned: the driver says
-//          when it puts an edge on IR0, and the vector dispatched next is the tick's.
-//   exit:  the handler executes IRET. The opcode is only inspected while inside the handler.
+// Switched on, it holds the delivery and not the edge: an earlier version suppressed the PIT's
+// rising edge and changed nothing, the tick that nests having been latched in the IRR before the
+// handler started. Both its signals are generic, with no game addresses in them - entry is the CPU
+// dispatching the tick vector, which vector that is being learned from the first dispatch after the
+// driver reports an edge on IR0; exit is the handler's IRET, inspected only while inside it. And it
+// is bounded, which it has to be: XINU's clock handler does not always return by IRET - when it
+// reschedules it switches tasks and the frame is popped later, in another context - so after four
+// held edges it gives up and opens.
 //
-// It is bounded, and it has to be: XINU's clock handler does not always return by IRET - when it
-// reschedules it switches tasks and the frame is popped later, in another context. So after
-// four PIT edges with delivery held, the gate gives up and opens.
-//
-// The gate itself is not optional - the machine does not survive without it. What is optional is
-// being able to argue with it, which is a debugging need: P2K_CLKINT_GATE=0 turns it off,
-// P2K_CLKINT_MAX_SKIP=<n> moves the bound, and P2K_CLKINT_COUNTER=<addr> is an experiment that
-// gates on the firmware's own nesting counter instead of the IRET heuristic. Without P2K_DEBUG
-// these are the constants they default to, so the compiler drops the counter branch entirely
+// P2K_CLKINT_MAX_SKIP=<n> moves that bound and P2K_CLKINT_COUNTER=<addr> gates on the firmware's own
+// nesting counter instead of the IRET heuristic. Without P2K_DEBUG all three are the constants they
+// default to, so the compiler drops the branches entirely
 #if P2K_DEBUG
+// Off by default now that pics_settle() removes the reason for it. P2K_CLKINT_GATE=1 puts it
+// back, which is worth having: it is the one switch that reproduces the old behaviour if a set
+// ever derails again, and telling the two apart in one run is most of the diagnosis
 static const bool g_clkint_gate = []() {
 	const char *s = getenv("P2K_CLKINT_GATE");
-	return !s || strtol(s, nullptr, 0) != 0;
+	return s && strtol(s, nullptr, 0) != 0;
 }();
 static const int g_max_skips = []() {
 	const char *s = getenv("P2K_CLKINT_MAX_SKIP");
@@ -379,11 +390,26 @@ static const unsigned g_clkint_counter = []() {
 	return s ? unsigned(strtoul(s, nullptr, 16)) : 0u;
 }();
 #else
-static const bool     g_clkint_gate    = true;
-static const int      g_max_skips      = 4;
-static const unsigned g_clkint_counter = 0;
+static constexpr bool     g_clkint_gate    = false;
+static constexpr int      g_max_skips      = 4;
+static constexpr unsigned g_clkint_counter = 0;
 #endif
-static bool g_in_clkint = false;
+// Interrupt frames, innermost last, one bit each: 1 for a clock handler, 0 for anything else.
+// A plain "inside clkint" flag is not enough, and the traces say why - the machine dispatches
+// other vectors (0x23 among them) while the clock handler is open, and the clock handler nests
+// into itself several deep. With one flag the first IRET seen ends the state, so a nested
+// handler's return released the gate while an outer clock handler was still running, and a
+// re-entry did not count at all. Frames pop in LIFO order, so a bitmask tracks them exactly.
+//
+// Tracking starts when the first clock frame opens and stops when the last one closes; nothing
+// else can be open at that moment, because frames below it were pushed after it. Past 64 levels
+// the extra frames are counted separately and popped first, which keeps the order right - by then
+// the machine is dying anyway, and that is what the depth is being counted to see.
+static u64  g_frame_bits = 0;          // bit n = frame n is a clock handler
+static int  g_frame_depth = 0;
+static int  g_frame_extra = 0;         // frames past the 64 the mask holds
+static int  g_clkint_depth = 0;        // how many of them are clock handlers
+static bool g_gate_released = false;   // the skip bound fired; stop holding until depth is 0 again
 static bool g_clkint_iret_seen = false;
 static bool g_irq0_armed = false;      // an edge reached the PIC, no dispatch yet
 static int g_tick_vector = -1;         // learned from the first dispatch after an edge
@@ -400,7 +426,7 @@ bool p2k_clkint_blocks_irq()
 	if (!g_clkint_gate) return false;
 	if (g_clkint_counter && g_bridge_state)
 		return g_bridge_state->mem_r(g_clkint_counter & ~3u, 0xffffffff) != 0;
-	return g_in_clkint;
+	return g_clkint_depth > 0 && !g_gate_released;
 }
 
 static void p2k_debug_step(unsigned pc); // defined below, installed by arm_instruction_hook()
@@ -410,30 +436,57 @@ static void p2k_debug_step(unsigned pc); // defined below, installed by arm_inst
 // on the pointer (see shim/debugger.h), so leaving it null costs the core a load and a perfectly
 // predicted branch, and saves the non-inlinable indirect call plus the two global tests inside.
 //
-// It has work to do while g_in_clkint is set - that is the state whose exit it watches for, by
-// looking for the handler's IRET. Outside that state p2k_debug_step() only bumps
+// It has work to do while an interrupt frame is being tracked - that is the state whose exits it
+// watches for, by looking for each handler's IRET. Outside that state p2k_debug_step() only bumps
 // g_p2k_instr_total, and the sole reader of that counter is report_progress(), which is
 // `inline void report_progress(u64) {}` unless P2K_DEBUG. So in a normal build skipping the call
 // is not merely cheap, it is unobservable. In a P2K_DEBUG build the hook stays installed
-// unconditionally, because there the counter is live.
-//
-// This is safe only because g_in_clkint has exactly one assignment site, right below.
+// unconditionally, because there the counter is live
 static inline void arm_instruction_hook()
 {
 #if P2K_DEBUG
 	p2k_instruction_hook = p2k_debug_step;
 #else
-	p2k_instruction_hook = g_in_clkint ? p2k_debug_step : nullptr;
+	p2k_instruction_hook = g_frame_depth ? p2k_debug_step : nullptr;
 #endif
 }
 
-static void set_in_clkint(bool inside)
+// a handler was entered: push its frame. Only clock handlers start the tracking; once it is
+// running every vector is pushed, so the IRETs pair up with the right frames
+static void push_int_frame(bool is_clkint)
 {
-	if (g_in_clkint == inside) return;
-	g_in_clkint = inside;
+#if !P2K_DEBUG
+	// with the gate off nothing reads the depth, and tracking would arm the per-instruction hook
+	if (!g_clkint_gate) return;
+#endif
+	if (!is_clkint && g_frame_depth == 0) return;   // not tracking, and this does not start it
+	if (g_frame_depth < 64) g_frame_bits = (g_frame_bits << 1) | (is_clkint ? 1u : 0u);
+	else                    g_frame_extra++;
+	g_frame_depth++;
+	if (is_clkint)
+	{
+		if (g_clkint_depth++ == 0) { g_edges_while_held = 0; g_gate_released = false; }
+		g_p2k_clkint_entered++;
+	}
 	arm_instruction_hook();
-	if (inside) { g_p2k_clkint_entered++; g_edges_while_held = 0; }
-	else        { g_p2k_clkint_left++; }
+	p2k_apply_irq0();
+}
+
+// an IRET retired: pop the innermost frame
+static void pop_int_frame()
+{
+	if (g_frame_depth == 0) return;
+	bool was_clkint = false;
+	if (g_frame_extra > 0) g_frame_extra--;         // the overflow frames are the innermost ones
+	else { was_clkint = (g_frame_bits & 1) != 0; g_frame_bits >>= 1; }
+	g_frame_depth--;
+	if (was_clkint) { g_clkint_depth--; g_p2k_clkint_left++; }
+	if (g_clkint_depth == 0)
+	{
+		// the outermost clock frame is gone, so nothing pushed after it can still be open
+		g_frame_bits = 0; g_frame_depth = 0; g_frame_extra = 0; g_gate_released = false;
+	}
+	arm_instruction_hook();
 	p2k_apply_irq0(); // the line may be free now, or has to go away
 }
 
@@ -445,7 +498,9 @@ void p2k_clkint_note_edge()
 	if (p2k_clkint_blocks_irq())
 	{
 		g_p2k_tick_held++;
-		if (++g_edges_while_held >= g_max_skips) set_in_clkint(false);
+		// the bound: stop holding, but leave the depth alone - it is real, and the handler is
+		// still running. Holding resumes when the outermost clock frame closes
+		if (++g_edges_while_held >= g_max_skips) { g_gate_released = true; p2k_apply_irq0(); }
 		return;
 	}
 	g_irq0_armed = true;
@@ -520,8 +575,12 @@ inline void pctrap_check(unsigned pc)
 			ecx = unsigned(g_bridge_cpu->state_int(I386_ECX));
 			edx = unsigned(g_bridge_cpu->state_int(I386_EDX));
 		}
-		fprintf(stderr, "[p2k pc] %08x %-20s eax=%08x ebx=%08x ecx=%08x edx=%08x  hit %u\n",
-			pc, t.label[0] ? t.label : "-", eax, ebx, ecx, edx, t.hits);
+		// the cycle stamp makes a pair of traps a stopwatch: arm the two ends of a region and the
+		// difference is what it cost the guest. How long the pinball I/O holds the PIC mask, for
+		// one - see the clkint gate above, where that duration is the open question
+		fprintf(stderr, "[p2k pc] %08x %-20s eax=%08x ebx=%08x ecx=%08x edx=%08x  cyc=%llu  hit %u\n",
+			pc, t.label[0] ? t.label : "-", eax, ebx, ecx, edx,
+			(unsigned long long)g_p2k_cycles_total, t.hits);
 		fflush(stderr);
 		return;
 	}
@@ -561,11 +620,11 @@ static void p2k_debug_step(unsigned pc)
 {
 	g_p2k_instr_total++;
 
-	// the handler's IRET ends it. The hook runs before the instruction, so the flag clears one
-	// instruction later - the point is only that no tick is delivered in between.
-	if (g_in_clkint && g_bridge_state)
+	// each handler's IRET pops its frame. The hook runs before the instruction, so the pop happens
+	// one instruction later - the point is only that no tick is delivered in between
+	if (g_frame_depth && g_bridge_state)
 	{
-		if (g_clkint_iret_seen) { g_clkint_iret_seen = false; set_in_clkint(false); }
+		if (g_clkint_iret_seen) { g_clkint_iret_seen = false; pop_int_frame(); }
 		else
 		{
 			const u8 op = p2k_peek_byte(pc);
@@ -704,12 +763,11 @@ static void p2k_trap_step(int vector)
 		g_irq0_armed = false;
 		if (g_tick_vector < 0) g_tick_vector = vector;      // learned once
 	}
-	if (vector == g_tick_vector)
-	{
-		g_clkint_iret_seen = false;
-		set_in_clkint(true);
-		g_p2k_irq_dispatched++;
-	}
+	// every vector is pushed while tracking is running, so a nested handler's IRET pops its own
+	// frame and not the clock handler's - that miscount is what used to release the gate early
+	g_clkint_iret_seen = false;
+	push_int_frame(vector == g_tick_vector);
+	if (vector == g_tick_vector) g_p2k_irq_dispatched++;
 #if P2K_DEBUG
 	static int trace_left = []() -> int {
 		const char *s = getenv("P2K_TRAPTRACE");

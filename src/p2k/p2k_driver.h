@@ -102,8 +102,9 @@ private:
 	std::vector<u32> m_system_bios1;   // 0xfffd0000-0xffffffff
 	std::vector<u32> m_eeprom;         // PLX EEPROM behind 0x10000000
 
-	// ROM data (32-bit words, as interleaved by the driver's ROM_LOAD32_WORD pairs)
-	std::vector<u32> m_prismdata[4];
+	// ROM data (32-bit words, as interleaved by the driver's ROM_LOAD32_WORD pairs);
+	// The four Prism banks as one flat buffer, bank n at n << PRISM_BANK_SHIFT
+	std::vector<u32> m_prismdata;
 
 	// MediaGX north bridge state
 	u32 m_disp_ctrl_reg[256/4] = {};
@@ -156,8 +157,17 @@ private:
 	u8 m_mediagx_config_reg_sel = 0;
 
 	// PCI configuration space of the three devices on the bus
-	u32 m_mediagx_regs[65] = {};
-	u32 m_cx5520_regs[256/4] = {};
+	// lpci hands the handler a BYTE offset - reg = (address & 0xfc) - so these two are indexed by
+	// it directly and only every fourth entry is ever used. Wasteful, but it is what reset()'s
+	// [0]/[4]/[8]/[0x40] expects, and the boot log agrees: the MediaGX reports its status out of
+	// [4] and its class out of [8]. They must be 256 entries for that: reg runs to 0xfc, and at 65
+	// and 64 anything past 0x40 ran off the end into the next array - and past all three sits m_machine, a unique_ptr.
+	//
+	// The Prism is the odd one out. It indexes reg/4, which is self-consistent for the BARs the
+	// firmware assigns, but not with the initialisation it shares with the others - which is why it
+	// alone comes up as "ID 0x0 (status 0x0 class code 0x0)" on the console. See prism_pci_r
+	u32 m_mediagx_regs[256] = {};
+	u32 m_cx5520_regs[256] = {};
 	u32 m_prism_regs[256/4] = {};
 
 	std::unique_ptr<p2k_machine> m_machine;
@@ -206,6 +216,9 @@ private:
 	u8 nvram_updates_r(offs_t offset) const;
 	void nvram_updates_w(offs_t offset, u16 data);
 	void seed_error_log();   // the CMOS error-log header a machine in the field already has
+	// run any zero-delay timer the guest just scheduled, so an interrupt controller change takes
+	// effect at the next instruction rather than at the end of the CPU's slice
+	void pics_settle();
 
 	u32 biu_ctrl_r(offs_t offset) const;
 	void biu_ctrl_w(offs_t offset, u32 data, u32 mem_mask);

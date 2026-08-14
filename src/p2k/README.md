@@ -16,6 +16,7 @@ MODs elsewhere:
 | `rfm_223` | | 04/2021 | myPinballs, also released as 2.40 |
 | `rfm_222` | | 06/2020 | myPinballs, also released as 2.30 |
 | `rfm_210` | | 04/2019 | myPinballs; shaker/knocker support |
+| `rfm_200` | | 12/2018 | myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, no shaker/knocker yet |
 | `rfm_195` | | 03/2018 | hemtoni; German re-translation, used by nothing later - not the newest 1.x |
 | `rfm_191` | | 05/2018 | hemtoni; newest of the three, added sounds - only 2.10 kept them |
 | `rfm_190` | | 11/2017 | hemtoni; drops 1.80's 8 MB requirement; its text runs through all of 2.x |
@@ -64,6 +65,55 @@ register constants and the `clkint` gate were each suspected and each cleared by
 before the real cause turned up. The boot ROM was never where they stopped: it finishes and hands
 over first. See the note by the game definitions in `src/wpc/p2k.c`.
 
+## Interrupts used to arrive late
+
+The `clkint` gate held clock interrupts back while the guest was inside its own clock handler.
+Without it the machine derailed a few seconds after the boot screen, and it took a long time to
+find out why, because the gate looked like a timing workaround and every timing explanation was
+wrong. The tick rate was not the variable. **The latency was.**
+
+`pic8259_device` re-evaluates its INT output from a zero-delay timer - MAME's way of saying "do
+this now" - and MAME's scheduler delivers on it by aborting the running CPU's timeslice.
+`emu_timer::adjust()` in `shim/emu.h` did not, and `p2k_machine::run_cycles()` reads
+`next_expiry()` before `cpu.run()` and never cuts the run short. So a timer the *guest* set
+mid-slice waited for the slice to end. Timers set by other timers were always fine, because
+`advance_to()` drains what its own callbacks schedule - which is why the PIT's own edges were
+never late and only the guest's mask and EOI writes were.
+
+XINU masks at the interrupt controller rather than with `cli`, constantly - its critical section
+is a pair that writes `0xff` to the mask on the way in and restores it on the way out. It expects
+an interrupt it has just unmasked to arrive *there*, at a point it has chosen. Ours arrived up to
+a whole slice later, wherever that happened to break, which is how a tick lands inside a handler
+that had masked against it. Two levels deep, the interrupt epilogue's nesting count no longer
+reaches zero, `resched()` refuses with *"resched: called from interrupt handler"*, and the report
+is itself a report - the loop that eats the stack.
+
+Measured by varying the quantum, which is what set the latency (it capped the slice, and the slice was the latency):
+
+| `P2K_QUANTUM_HZ` | latency | |
+|---|---|---|
+| 10000 (the old default) | 7766 cycles | derails |
+| 150000 | 517 cycles | derails |
+| 200000 | 388 cycles | boots |
+| 1000000 | 77 cycles | boots |
+| 100000000 | 1 cycle | boots |
+
+A clock tick is 19406 cycles, so the machine tolerates about 2% of one and breaks by 3%. Real
+hardware asserts INT within a bus cycle, orders of magnitude under that, which is why no real
+machine ever needed the gate. `p2k_state::pics_settle()` fixes it at the source - the interrupt
+controllers get their pending work run before the next instruction, as the hardware would have -
+and with that the gate is unnecessary at any slice length.
+
+The cap is off by default too, `next_expiry()` being the bound that matters: once the PIT runs it
+already holds a slice to ~19406 cycles, and capping that to 7766 cost about twice the scheduler
+passes for nothing the guest could tell apart. The knob stays because it is what turned this bug
+into a number.
+
+The gate is off by default now, both games having been through attract, a game and the test menus
+without it. `P2K_CLKINT_GATE=1` puts it back - worth keeping, because it reproduces the old
+behaviour in one run, and because `in/out` and `held` in the progress line measure interrupt
+nesting directly, which is how this class of bug becomes visible at all.
+
 ## 1.95 is not the newest RFM 1.x
 
 The version numbers of hemtoni's three do not run in the order they were built. His changelog dates
@@ -85,8 +135,8 @@ factory text rather than away from it.)
 
 1.91's own change went the same way one release later. It is 1.90 plus new sounds and little else -
 it adds 12 strings over 1.90, eleven of them jump table bytes and the twelfth its XINA banner,
-because the sounds live in the sound flash and not in `game.rom`. Only 2.10 ships that flash again;
-2.22 onwards are back to the stock one. So 1.91 reads as a variant that added sounds and was then
+because the sounds live in the sound flash and not in `game.rom`. Only 2.00 and 2.10 ship that
+flash again; 2.22 onwards are back to the stock one. So 1.91 reads as a variant that added sounds and was then
 dropped too - it just got picked up once, which 1.95 never was.
 
 The 1.90/1.95 text difference itself runs to roughly 40 display strings, along these lines:
@@ -238,12 +288,12 @@ the four files above plus two the machine does not take from the package:
 
 * `_sf.rom` - 1 MiB in every package, official and unofficial alike. This one is *not* inert: it is
   the DCS sound board's flash, the same image the sets declare as `rfm_28f800.rom` /
-  `swe1_28f800.rom`. In 17 of the 20 packages it is byte-identical to those, which is why the sets
-  can share one copy. Three ship something else - RFM 1.91, RFM 2.10 and SWEP1 2.10 - though that
-  is only two images: 2.10's `pin2000_50070_0210_sf.rom` is byte-identical to 1.91's, so `rfm_210`
-  declares **1.91's name** rather than its own, one image not being worth two ROM entries and a
-  second megabyte. The note next to the ROM definitions in `src/wpc/p2k.c` has the rest.
-* `_pubboot.rom` - 32 KiB, in the unofficial 1.9x and 2.x packages (12 of the 20) and byte-identical
+  `swe1_28f800.rom`. In 17 of the 21 packages it is byte-identical to those, which is why the sets
+  can share one copy. Four ship something else - RFM 1.91, RFM 2.00, RFM 2.10 and SWEP1 2.10 -
+  though that is only two images: RFM 2.00's and 2.10's are both byte-identical to 1.91's, so
+  `rfm_200` and `rfm_210` declare **1.91's name** rather than their own, one image not being
+  worth three ROM entries and two more megabytes. The note next to the ROM definitions in `src/wpc/p2k.c` has the rest.
+* `_pubboot.rom` - 32 KiB, in the unofficial 1.9x and 2.x packages (13 of the 21) and byte-identical
   across every one of them. Encore's loader ignores it as well. The name is the PUB card, the loader medium the last
   official updates were carried on before anyone repackaged them as serial updates.
 
@@ -770,6 +820,65 @@ of the 2000-cycle execution chunks.
   reads 0 where the three fixed ones wrap modulo, and that is equally untested. Deciding either
   needs a machine that reads a mask through `0x14400000` with a bank other than 0 selected, or the
   Prism card's own address decode.
+* **Guest writes to devices other than the interrupt controllers still take effect late.**
+  `pics_settle()` runs a device's pending zero-delay timers before the next instruction, which is
+  what stops an interrupt landing somewhere the guest's mask discipline says it cannot - see
+  *Interrupts used to arrive late* above. It is keyed to the interrupt controllers' own ports,
+  `0x20`/`0x21` and `0xa0`/`0xa1`, and two other paths reach the same machinery:
+
+  * `update_uart_irq()` sets `pic1`'s IR4 and IR3 from the UARTs' IER write and IIR read, at
+    `0x3f8-0x3ff` and `0x2f8-0x2ff`, so **IRQ3 and IRQ4 are still delivered up to a slice late**.
+    Live, not theoretical: `P2K_TRAPTRACE` shows vector `0x23` - IR3 with base `0x20` - dispatched
+    during boot. Nothing has been seen to suffer; the UART is a console stand-in.
+  * `pit8253` defers *every* guest write. `control_w()` and `count_w()` are `synchronize()`, which
+    is `timer_set(attotime::zero)`, so **programming the timer that drives the machine's clock
+    only takes effect at the end of the slice**. Harmless as far as anyone has looked - the
+    firmware sets divisor 298 once during boot and a slice of delay there costs nothing - but the
+    exposure has not been measured. `P2K_IOWATCH=40-43` with `P2K_IOWATCH_AFTER` past boot would
+    say whether it is ever reprogrammed while running.
+
+  The fix for all of them is the same and is described below. Recorded rather than fixed because
+  it costs another pass through both games.
+
+  The fix is to stop enumerating ports and pump at the I/O boundary instead: after `port_read` in
+  `port_r`, and in `port_w`, which needs splitting into a wrapper and a `port_write` the way
+  `port_r` already is. Add an "already draining" guard with it - a general pump makes "no timer
+  callback may perform a port access" an invisible constraint, and today's callbacks only happen
+  to satisfy it (they are all internal wiring: `ir0_w`, `ir2_w`, `set_input_line`). The reason it
+  is not done here is that it changes when the RTC, keyboard controller, DMA, PIT and UART timers
+  land as well, so it costs another pass through both games rather than one device's worth of
+  confidence.
+
+* **`am9517a` suspends on a trigger the shim does not implement.** The DMA controller calls
+  `suspend_until_trigger(1, true)` in three places and `device_t::trigger()` /
+  `suspend_until_trigger()` are both empty in `shim/emu.h`, so it would not suspend and would not
+  resume. Dormant as things stand - nothing wires `dreq`, `hreq` or `eop`, so no transfer ever
+  starts, and the controller is only reachable through its port reads and writes. It is recorded
+  because a stub that is never called looks identical to one that works, right up until someone
+  wires a floppy or a sound DMA to it.
+* **The Prism card's PCI config space answers with zeros.** Its handler indexes `reg/4` while the
+  other two take the byte offset `lpci` passes, but all three share the `[0]/[4]/[8]`
+  initialisation in `reset()`, which was written for byte offsets. So the vendor, status and class
+  it reports are all 0, and the console has said so all along: *WMS PRISM PCI device # 8: ID 0x0
+  (status 0x0 class code 0x0 rev 0x0)*, next to a MediaGX and a Cx5520 reporting real values. It is
+  self-consistent where it counts - the BARs the firmware writes read back correctly, which is what
+  enumeration needs - so it is left alone: making it agree changes what the firmware reads during
+  boot, and that is a measurement rather than a tidy-up. See `prism_pci_r` in `p2k_driver.cpp`.
+
+* **The update flash erases the wrong amount.** Three block sizes meet in `nvram_updates_w` and
+  none agree: the CFI table the part answers with declares one region of 64 blocks of 128 KB, the
+  erase command aligns on a *word* offset of `0x2000` (16 KB of bytes), and the loop clears
+  `0x2000` *bytes* (8 KB). An erase therefore clears an eighth of the block the device says it has.
+  It does not bite because programming is a plain store rather than the AND a real flash does, so a
+  half-erased block still takes new data, and because the update image is not persisted - a bad
+  erase lasts one run. Either of those changing would expose it.
+
+* **Reading the PLX control register advances the EEPROM.** `prism_1000_r` register `0x14` - byte
+  `0x50` at `0x10000050` - is the serial EEPROM's data line, and answering it moves the shift
+  counter, word toggle and offset on. Anything that reads it out of band advances the transfer: a
+  debugger inspecting that address, a read probe, a frontend polling memory. The firmware reads the
+  whole image back and refuses to run if it does not match (*plx_ee_verify(): failed*), so one
+  stray read during the transfer stops the machine booting with nothing to say why.
 
 ## Diagnostics
 
@@ -778,8 +887,10 @@ asked for. The ones that stay useful:
 
 | | |
 |---|---|
-| `P2K_PROGRESS=<cycles>` | the firmware's serial console, plus cycles, instructions, time slices and registers |
-| `P2K_PCTRAP=<hex>[=label],…` | report when the CPU reaches an address, with registers |
+| `P2K_PROGRESS=<cycles>` | the firmware's serial console, plus cycles, instructions, host seconds, guest MIPS, interrupt counters and registers |
+| `P2K_PCTRAP=<hex>[=label],…` | report when the CPU reaches an address, with registers and a cycle stamp. Two of them bracket a region and the difference is what it cost |
+| `P2K_QUANTUM_HZ=<hz>` | an extra cap on how long the CPU runs before device timers are looked at, **off by default** - `next_expiry()` alone bounds a slice. Not MAME's quantum; it interleaves nothing, there being one CPU in here. Set it to sweep the worst-case latency of a device change reaching the CPU, which is what the section below is about |
+| `P2K_IOWATCH_AFTER=<cycles>`, `P2K_IOWATCH_MAX=<n>` | hold the I/O watch back until a cycle count, and how many accesses it then reports. A device set up once at boot and used much later needs both |
 | `P2K_MEMWATCH=<from>[-<to>]` | writes to a range with the PC that made them; `P2K_MEMWATCH_CHANGED=1` for changes only |
 | `P2K_READWATCH`, `P2K_DUMP`, `P2K_WATCH`, `P2K_BACKTRACE` | reads, memory dumps, per-instruction registers, a PC ring buffer |
 | `P2K_DISPWATCH=1` | every change to a display controller register |

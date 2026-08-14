@@ -101,7 +101,14 @@ extern "C" u32 p2k_dcs_read(u32 offset, u32 mem_mask) P2K_WEAK;
 extern "C" void p2k_dcs_write(u32 offset, u32 data, u32 mem_mask) P2K_WEAK;
 
 // One MediaGX/Prism ROM bank: two 8 MB chips interleaved as 32-bit words
-static constexpr size_t PRISM_BANK_BYTES = 0x1000000;
+static constexpr size_t   PRISM_BANK_BYTES = 0x1000000;
+static constexpr size_t   PRISM_BANK_WORDS = PRISM_BANK_BYTES / 4;   // 0x400000
+static constexpr unsigned PRISM_BANK_SHIFT = 22;
+static constexpr size_t   PRISM_BANK_MASK  = PRISM_BANK_WORDS - 1;
+// Both of these are what lets the wrap be an AND. If the bank size ever stops being a power of
+// two this must fail to build rather than silently fold addresses on top of each other
+static_assert((PRISM_BANK_WORDS & PRISM_BANK_MASK) == 0, "prism bank size must be a power of two");
+static_assert((size_t(1) << PRISM_BANK_SHIFT) == PRISM_BANK_WORDS, "PRISM_BANK_SHIFT disagrees");
 
 // P2K_WRITEMAP=1 counts writes per megabyte, which is how the missing 0xc0800000 alias window
 // was found. A compile-time false without the switch, so mem_w keeps nothing of it
@@ -134,6 +141,7 @@ p2k_state::p2k_state()
 	m_bios_ram.assign(0x30000, 0);
 	m_nvram.assign(P2K_NV_CMOS_SIZE, 0);   // sized from the shared header, not a literal
 	m_nvram_updates.assign(0x800000, 0);
+	m_prismdata.assign(4 * PRISM_BANK_WORDS, 0); // always present, so the size is invariant
 	m_prism_bank9.assign(0x1000000, 0);
 	m_smm.assign(0x80000, 0);
 	m_vram.assign(0x400000, 0);
@@ -208,11 +216,7 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
 	// ROM_LOAD32_WORD puts the u10x-even file in the low half of each dword and the odd one in
 	// the high half, which is the layout this bus expects
 	if (!data || len < 4 * PRISM_BANK_BYTES) return false;
-	for (int bank = 0; bank < 4; bank++)
-	{
-		m_prismdata[bank].assign(PRISM_BANK_BYTES / 4, 0);
-		memcpy(m_prismdata[bank].data(), data + size_t(bank) * PRISM_BANK_BYTES, PRISM_BANK_BYTES);
-	}
+	memcpy(m_prismdata.data(), data, 4 * PRISM_BANK_BYTES); // laid out bank after bank already
 
 	// The MAME driver patches the boot ROM through ROM_FILL in its ROM_START blocks (MAME 0.239,
 	// src/mame/drivers/pinball2k.cpp). Those patches are part of the driver, not of the ROM set,
@@ -316,10 +320,10 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
 	// over unchanged: nothing far-calls the option ROM's init here, so its `retf` has no frame to
 	// return to whatever the PCI bus does.
 	auto poke = [this](size_t off, u8 value) {
-		if (off / 4 < m_prismdata[0].size())
+		if (off / 4 < PRISM_BANK_WORDS)   // bank 0 starts at 0, so the index is the offset
 		{
 			const unsigned shift = unsigned(off % 4) * 8;
-			u32 &w = m_prismdata[0][off / 4];
+			u32 &w = m_prismdata[off / 4];
 			w = (w & ~(0xffu << shift)) | (u32(value) << shift);
 		}
 	};
@@ -790,9 +794,9 @@ void p2k_state::write_le(std::vector<u8> &buf, offs_t off, u32 data, u32 mask)
 }
 
 // ---------------------------------------------------------------- ported handlers
-u32 p2k_state::expansion_r(offs_t offset) const
+u32 p2k_state::expansion_r(offs_t offset) const // bank 0
 {
-	return (offset < m_prismdata[0].size()) ? m_prismdata[0][offset] : 0; //!! % ?
+	return (offset < PRISM_BANK_WORDS) ? m_prismdata[offset] : 0; //!! % ?
 }
 
 // The four mask images - the games' art, im_mask0 through im_mask3 in the update package - live on
@@ -819,9 +823,9 @@ u32 p2k_state::expansion_r(offs_t offset) const
 // bank other than 0 selected, or the Prism card's own address decode
 u32 p2k_state::prism_1400_r(offs_t offset) const
 {
-	const std::vector<u32> &bank = m_prismdata[m_prismbank & 3];
+	const size_t base = size_t(m_prismbank & 3) << PRISM_BANK_SHIFT;
 	//!! past the end reads 0, where the three fixed windows in mem_r wrap modulo instead - another half of the same question, and equally untested
-	return (offset < bank.size()) ? bank[offset] : 0;
+	return (offset < PRISM_BANK_WORDS) ? m_prismdata[base + offset] : 0;
 }
 
 void p2k_state::prism_1400_w(offs_t offset, u32 data)
@@ -837,6 +841,12 @@ void p2k_state::prism_1400_w(offs_t offset, u32 data)
 // bit 24 is the clock itself, and the chip answers on bit 27, one bit per clock, high word of a
 // dword first. The firmware reads the whole image back this way and refuses to run if it does
 // not match (`plx_ee_verify(): failed`). Ported from the MAME driver (0.239).
+// Careful: this READ MUTATES. Register 0x14 - byte 0x50, the PLX control register - is the
+// EEPROM's serial line, and answering it advances the shift counter, the word toggle and the
+// offset. Anything that reads it out of band moves the transfer on: a debugger inspecting
+// 0x10000050, a read probe, a frontend polling memory. The firmware reads the whole image back
+// and refuses to run if it does not match ("plx_ee_verify(): failed"), so a single stray read
+// during the transfer is enough to stop the machine booting, with nothing to say why
 u32 p2k_state::prism_1000_r(offs_t offset)
 {
 	offset &= 0x3f;
@@ -1058,7 +1068,17 @@ void p2k_state::nvram_updates_w(offs_t offset, u16 data)
 		if (data == 0x0098)      { m_flash_mode = 1; return; }   // read query
 		if (data == 0x0070)      { m_flash_mode = 2; return; }   // read status register
 		if (data == 0x00ff)      { m_flash_mode = 0; return; }   // read array
-		if (data == 0x0020 && (offset % 0x2000) == 0) { m_flash_mode = 3; return; }   // block erase
+		// Block erase. Three different block sizes meet here and none of them agree: the CFI table
+		// this same device answers with declares one region of 0x3f+1 blocks of 0x200*256 bytes,
+		// so 64 blocks of 128 KB across the 8 MB part; this check aligns on a *word* offset of
+		// 0x2000, which is 16 KB of bytes; and the loop below clears 0x2000 *bytes*, 8 KB. An
+		// erase therefore clears an eighth of the block the part says it has.
+		//
+		// It does not bite today because programming below is a plain store rather than the AND a
+		// real flash does, so a half-erased block still takes new data, and because the update
+		// image is not persisted - a bad erase lasts one run. It would bite the moment either of
+		// those changed, or if a firmware erased a block it then checked was blank
+		if (data == 0x0020 && (offset % 0x2000) == 0) { m_flash_mode = 3; return; }
 		if (m_flash_mode == 3 && data == 0x00d0)
 		{
 			for (u32 i = 0; i < 0x2000; i++)
@@ -1109,6 +1129,14 @@ void p2k_state::cx5520_pci_w(int function, int reg, u32 data, u32 mem_mask)
 	COMBINE_DATA(varptr);
 }
 
+// Indexed reg/4, unlike the other two, which take lpci's byte offset directly. It is
+// self-consistent - the BARs the firmware writes here read back correctly, which is what the
+// enumeration needs - but it does not match the [0]/[4]/[8] initialisation in reset(), so the
+// vendor, status and class this card reports are all zero. That is visible on the console:
+// "WMS PRISM PCI device # 8: ID 0x0 (status 0x0 class code 0x0 rev 0x0)", where the MediaGX and
+// the Cx5520 on the same line report real values. Nothing has been seen to mind - the firmware
+// enumerates the card and assigns its windows either way - so this is left alone rather than
+// changed blind; making it agree would alter what the firmware reads during boot
 u32 p2k_state::prism_pci_r(int function, int reg, u32 mem_mask) const
 {
 	return m_prism_regs[reg / 4] & mem_mask;
@@ -1177,9 +1205,9 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	// the four mask images. The first of these is banked and the other three are not; the firmware
 	// expects four fixed windows, the first of them at 0x14400000. See prism_1400_r
 	if (addr >= 0x14000000 && addr < 0x15000000) return prism_1400_r((addr - 0x14000000) / 4) & mem_mask;
-	if (addr >= 0x15000000 && addr < 0x16000000) return m_prismdata[1][((addr - 0x15000000) / 4) % m_prismdata[1].size()] & mem_mask;
-	if (addr >= 0x16000000 && addr < 0x17000000) return m_prismdata[2][((addr - 0x16000000) / 4) % m_prismdata[2].size()] & mem_mask;
-	if (addr >= 0x17000000 && addr < 0x18000000) return m_prismdata[3][((addr - 0x17000000) / 4) % m_prismdata[3].size()] & mem_mask;
+	if (addr >= 0x15000000 && addr < 0x16000000) return m_prismdata[(size_t(1) << PRISM_BANK_SHIFT) + (((addr - 0x15000000) / 4) & PRISM_BANK_MASK)] & mem_mask;
+	if (addr >= 0x16000000 && addr < 0x17000000) return m_prismdata[(size_t(2) << PRISM_BANK_SHIFT) + (((addr - 0x16000000) / 4) & PRISM_BANK_MASK)] & mem_mask;
+	if (addr >= 0x17000000 && addr < 0x18000000) return m_prismdata[(size_t(3) << PRISM_BANK_SHIFT) + (((addr - 0x17000000) / 4) & PRISM_BANK_MASK)] & mem_mask;
 	if (addr >= 0x18000000 && addr < 0x19000000) return read_le(m_prism_bank9, addr - 0x18000000, mem_mask);
 	if (addr >= 0x40000400 && addr < 0x40001000) return m_scratchpad[((addr - 0x40000400) / 4) & 0x1ff] & mem_mask;
 	if (addr >= 0x40008000 && addr < 0x40008100) return biu_ctrl_r((addr - 0x40008000) / 4) & mem_mask;
@@ -1188,6 +1216,11 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	if (addr >= 0x40008400 && addr < 0x40008500) return memory_ctrl_r((addr - 0x40008400) / 4) & mem_mask;
 	if (addr >= 0x40400000 && addr < 0x40480000) return read_le(m_smm, addr - 0x40400000, mem_mask);
 	if (addr >= 0x40800000 && addr < 0x40c00000) return read_le(m_vram, addr - 0x40800000, mem_mask);
+	// the same framebuffer through the MediaGX 0xc0000000 alias, which is where the firmware's own
+	// base pointer puts it. This has to agree with install_fast_windows() above: the fast path is
+	// switched off whenever a probe is on, so a window that exists only there means P2K_MEMWATCH,
+	// P2K_READWATCH and P2K_WRITEMAP each quietly change the machine they are measuring
+	if (addr >= 0xc0800000 && addr < 0xc0c00000) return read_le(m_vram, addr - 0xc0800000, mem_mask);
 	if (addr >= 0xf00c0000 && addr < 0xf00c8000) return expansion_r((addr - 0xf00c0000) / 4) & mem_mask;
 	if (addr >= 0xfffd0000)                      return m_system_bios1[(addr - 0xfffd0000) / 4] & mem_mask;
 
@@ -1277,6 +1310,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	if (addr >= 0x40008400 && addr < 0x40008500) { memory_ctrl_w((addr - 0x40008400) / 4, data, mem_mask); return; }
 	if (addr >= 0x40400000 && addr < 0x40480000) { write_le(m_smm, addr - 0x40400000, data, mem_mask); return; }
 	if (addr >= 0x40800000 && addr < 0x40c00000) { write_le(m_vram, addr - 0x40800000, data, mem_mask); return; }
+	if (addr >= 0xc0800000 && addr < 0xc0c00000) { write_le(m_vram, addr - 0xc0800000, data, mem_mask); return; }   // the alias; see mem_r
 	if (addr >= 0xfffd0000)                      { u32 &r = m_system_bios1[(addr - 0xfffd0000) / 4]; r = (r & ~mem_mask) | (data & mem_mask); return; }
 
 	m_unmapped_w++;
@@ -1290,10 +1324,17 @@ namespace {
 #if !P2K_DEBUG
 inline void iowatch(const char *, offs_t, unsigned) {}
 #else
-// P2K_IOWATCH=<from>[-<to>], hexadecimal: the first 200 accesses to that I/O port range, with the
-// PC that made them. Bring-up of a port device starts with knowing how the firmware probes it.
+// P2K_IOWATCH=<from>[-<to>], hexadecimal: accesses to that I/O port range, with the PC that made
+// them. Bring-up of a port device starts with knowing how the firmware probes it.
+//
+// P2K_IOWATCH_AFTER=<cycles> holds the watch back until that many have run, and
+// P2K_IOWATCH_MAX=<n> changes how many it then reports (200 by default). A device that is set up
+// once at boot and used much later needs both: the interrupt controller's ICW sequence costs five
+// accesses in the first millisecond, and the EOI and mask traffic that matters is 200 million
+// cycles behind it. Without the delay the budget is spent before the interesting part starts
 unsigned g_iowatch_from = 0, g_iowatch_to = 0;
-long g_iowatch_left = 200;
+int g_iowatch_left = 200;
+u64 g_iowatch_after = 0;
 const bool g_iowatch_init = []() {
 	if (const char *s = getenv("P2K_IOWATCH"))
 	{
@@ -1301,6 +1342,8 @@ const bool g_iowatch_init = []() {
 		g_iowatch_from = unsigned(strtoul(s, &end, 16));
 		g_iowatch_to = (end && *end == '-') ? unsigned(strtoul(end + 1, nullptr, 16)) : g_iowatch_from;
 	}
+	if (const char *s = getenv("P2K_IOWATCH_AFTER")) g_iowatch_after = strtoull(s, nullptr, 0);
+	if (const char *s = getenv("P2K_IOWATCH_MAX"))   g_iowatch_left  = (int)strtol(s, nullptr, 0);
 	return true;
 }();
 
@@ -1308,8 +1351,9 @@ void iowatch(const char *dir, offs_t port, unsigned value)
 {
 	if (!g_iowatch_to || g_iowatch_left <= 0) return;
 	if (port < g_iowatch_from || port > g_iowatch_to) return;
+	if (g_iowatch_after && g_p2k_cycles_total < g_iowatch_after) return;
 	g_iowatch_left--;
-	fprintf(stderr, "[p2k io%s] %04x = %02x  from PC=%08x\n", dir, unsigned(port), value, p2k_bridge_pc());
+	fprintf(stderr, "[p2k io%s] %04x = %02x  from PC=%08x  cyc=%llu\n", dir, unsigned(port), value, p2k_bridge_pc(), (unsigned long long)g_p2k_cycles_total);
 	fflush(stderr);
 }
 #endif // P2K_DEBUG
@@ -1524,6 +1568,33 @@ u8 p2k_state::port_r(offs_t port)
 	return value;
 }
 
+// What this costs has NOT been measured, and it is not free. pic8259_device schedules its
+// zero-delay timer on every write, so by the time we get here the pending flag is essentially
+// always set and this is a real scheduler pass: advance_to() scans the timer list, fires the
+// callback, then scans again to find nothing and stop. From P2K_IOWATCH the guest writes these
+// ports on the order of once per few hundred cycles, which puts it around 2-6% - an estimate off a
+// log, not a number.
+//
+// Nor is the comparison with the thing it replaced as favourable as it looks. The clkint gate now
+// defaults off, and off it costs nothing at all - push_int_frame() returns immediately and the
+// per-instruction hook is never armed. So against the old arrangement this trades a per-instruction
+// tax for a per-PIC-write one, and which is cheaper is genuinely open.
+//
+// It cannot be measured with what is here: report_progress()'s host= and mips= are P2K_DEBUG only,
+// and the configuration in question is a release build. That needs PinMAME's own speed readout or a
+// timed fixed run.
+//
+// If it does turn out to cost, the expense is not the pump but the route: two whole timer-list
+// scans to reach one device we already know we want. A check_irqs_now() on pic8259_device doing
+// what its device_timer(TIMER_CHECK_IRQ) does would let this call it straight - no scan, no flag,
+// and note_zero_delay() would drop back to a backstop for other devices. That is not done here only
+// because it means editing imported MAME code, which this port has otherwise kept pristine. Worth
+// doing with a number in hand; not on an estimate
+void p2k_state::pics_settle()
+{
+	m_machine->machine().scheduler().run_due_timers();
+}
+
 u8 p2k_state::port_read(offs_t port)
 {
 	if (port <= 0x001f)                   return m_dma1->read(port);
@@ -1596,11 +1667,21 @@ void p2k_state::port_w(offs_t port, u8 data)
 {
 	iowatch("w", port, data);
 	if (port <= 0x001f)                   { m_dma1->write(port, data); return; }
-	if (port >= 0x0020 && port <= 0x0021) { m_pic1->write(port & 1, data); return; }
+	// The interrupt controllers get their pending work run before the next instruction, because
+	// that is when the hardware would have done it. pic8259_device re-evaluates its INT output
+	// from a zero-delay timer, and a timer the guest sets mid-slice would otherwise wait for the
+	// slice to end - and a slice runs to the next timer expiry, which once the PIT is going is
+	// ~19406 cycles, a whole clock tick. run_due_timers() explains the rest, and the clkint gate
+	// in p2k_cpuintrf.cpp is what this makes unnecessary.
+	//
+	// Writes only. The guest's reads here are the mask readback in XINU's critical-section pair,
+	// which changes nothing the CPU can see; a poll command would, but this firmware does not use
+	// one - the ICW4 it writes is 0x01, no AEOI and no poll mode
+	if (port >= 0x0020 && port <= 0x0021) { m_pic1->write(port & 1, data); pics_settle(); return; }
 	if (port >= 0x0040 && port <= 0x0043) { m_pit->write(port & 3, data); return; }
 	if (port >= 0x0060 && port <= 0x006f) { m_kbdc->data_w(port & 7, data); return; }
 	if (port >= 0x0070 && port <= 0x0071) { m_rtc->write(port & 1, data); return; }
-	if (port >= 0x00a0 && port <= 0x00a1) { m_pic2->write(port & 1, data); return; }
+	if (port >= 0x00a0 && port <= 0x00a1) { m_pic2->write(port & 1, data); pics_settle(); return; }
 	if (port >= 0x00c0 && port <= 0x00df) { m_dma2->write((port - 0x00c0) / 2, data); return; }
 
 	if (port >= 0x00e8 && port <= 0x00eb) return;

@@ -534,9 +534,34 @@ public:
 
 	void set_time(const attotime& t) { m_time = t; }
 
+	// Run whatever is already due, without advancing time.
+	//
+	// MAME's scheduler aborts the running CPU's timeslice when a timer is set to expire inside it,
+	// which is what makes timer_set(attotime::zero) - "do this now" - take effect at the next
+	// instruction. This shim does not: run_cycles() reads next_expiry() before cpu.run() and
+	// nothing cuts the run short, so a zero-delay timer set *by the guest* mid-slice waits for the
+	// slice to end. Timers set by other timers are fine, because advance_to() drains what its own
+	// callbacks schedule.
+	//
+	// That mattered: the guest changes the interrupt controller's mask constantly, and
+	// pic8259_device uses a zero-delay timer to re-evaluate its INT output, so delivery landed
+	// wherever the slice happened to end rather than at the instruction after the OUT. The guest
+	// tolerates about 400 cycles of that and breaks by 517 - "Interrupts used to arrive late" in
+	// README.md has the sweep, and the clkint gate in p2k_cpuintrf.cpp is what existed to live with it.
+	//
+	// The flag keeps the common case to one test: only a zero-delay adjust() sets it
+	void run_due_timers()
+	{
+		if (!m_zero_pending) return;
+		m_zero_pending = false;
+		advance_to(m_time);
+	}
+	void note_zero_delay() { m_zero_pending = true; }
+
 private:
 	std::vector<std::unique_ptr<emu_timer>> m_timers;
 	attotime m_time;
+	bool m_zero_pending = false;
 };
 
 // ---------------------------------------------------------------- machine
@@ -1441,6 +1466,9 @@ inline void emu_timer::adjust(const attotime& start_delay, s32 param, const atto
 	{
 		m_expire = device_t::s_machine->time() + start_delay;
 		m_enabled = true;
+		// "now" - the caller wants this before the next instruction, not at the end of the slice.
+		// See device_scheduler::run_due_timers(), which is what actually delivers on that
+		if (start_delay.is_zero()) device_t::s_machine->scheduler().note_zero_delay();
 	}
 }
 

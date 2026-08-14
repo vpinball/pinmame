@@ -131,10 +131,11 @@
        A-14406, 20-10197, A-23157 gate, magnet and Episode I's neon
        #906, #89                  flasher bulbs
 
-   Four are marked "kit" instead: Revenge From Mars 18/19 and Episode I 5/42/43/44 are the drives
-   myPinballs repurpose, which the factory left unused and so unlisted. Their instructions recommend
-   a 26-1200 for the knocker; the shaker and the topper are a motor and a lamp, not coils. Lamp bulb
-   types are in the manuals too, on the Lamp Locations pages, but are not transcribed here */
+   Six are marked "kit" instead: Revenge From Mars 18/19 and Episode I 5/42/43/44 are the drives
+   myPinballs repurpose, which the factory left unused and so unlisted. None of this hardware is
+   stock - no Pinball 2000 shipped with a knocker, a shaker or a topper, whatever the test menu's
+   own "Knocker Test" entry suggests. Their instructions recommend a 26-1200 for the knocker; the
+   shaker and the topper are a motor and a lamp, not coils. Lamp bulb types are in the manuals too, on the Lamp Locations pages, but are not transcribed here yet */
 #ifndef P2K_NAMES_H
 #define P2K_NAMES_H
 
