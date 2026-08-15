@@ -19,23 +19,27 @@ extern "C" {
 // The ROMs arrive as PinMAME memory regions, which src/wpc/p2k.c passes in: the subsystem does not
 // know about PinMAME's ROM system and does not open files. Everything a machine needs is in its
 // ROM set, so a version is selected, audited and zipped exactly like any other game's
-void p2k_pinmame_start(const char *game,
-                       const unsigned char *prism, unsigned prismLen,
+void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen,
                        const unsigned char *updates, unsigned updatesLen)
 {
 	g_machine = std::make_unique<p2k_state>();
 
-	// Which of the two games this is - the boot-ROM patch sits at a different address in each
-	const char *prefix = (game && *game) ? game : "rfm";
 
 	// A failure here means the ROM region is short or absent, which PinMAME's own audit should
 	// have caught first - but the machine would otherwise run with empty ROM banks and draw
 	// nothing, and a black screen with no message is indistinguishable from an emulation bug
-	if (!g_machine->set_prism_roms(prism, prismLen, prefix))
+	if (!g_machine->set_prism_roms(prism, prismLen))
 		fprintf(stderr, "[p2k] the MediaGX ROM region is missing or short (%u bytes, need %u) - "
 		                "this machine will show nothing\n", prismLen, 4u * 0x1000000u);
-	if (!g_machine->set_nvram_updates(updates, updatesLen))
-		fprintf(stderr, "[p2k] the update flash region is missing or short (%u bytes, need %u) - "
+#if P2K_DEBUG
+	// P2K_NO_UPDATE=1 hides a set's update flash, so a shipped game boots the way the prototypes do
+	if (getenv("P2K_NO_UPDATE")) { updates = nullptr; updatesLen = 0; }
+#endif
+	// No update region at all is a machine that has no update flash: the game is in the Prism ROMs
+	// and the loader starts the copy there. The flash stays erased, which is what such a board
+	// reads, and there is nothing to report. Present but short is the error case - that set is damaged
+	if (updatesLen != 0 && !g_machine->set_nvram_updates(updates, updatesLen))
+		fprintf(stderr, "[p2k] the update flash region is short (%u bytes, need %u) - "
 		                "the machine does not boot without it\n", updatesLen, 0x800000u);
 
 	// We could run the MediaGX at 233MHz by now (but gameplay also ran okayish when it was e.g. 233/4), real life modders go even higher to prevent stutter.

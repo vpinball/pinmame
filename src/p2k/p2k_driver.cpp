@@ -140,7 +140,9 @@ p2k_state::p2k_state()
 	m_ram_c8.assign(0x8000, 0);
 	m_bios_ram.assign(0x30000, 0);
 	m_nvram.assign(P2K_NV_CMOS_SIZE, 0);   // sized from the shared header, not a literal
-	m_nvram_updates.assign(0x800000, 0);
+	// 0xff because erased flash reads all-ones. A set carrying an update region overwrites every
+	// byte and never sees this; one with no update flash boots against it, and then it could matter
+	m_nvram_updates.assign(0x800000, 0xff);
 	m_prismdata.assign(4 * PRISM_BANK_WORDS, 0); // always present, so the size is invariant
 	m_prism_bank9.assign(0x1000000, 0);
 	m_smm.assign(0x80000, 0);
@@ -210,7 +212,7 @@ p2k_state::~p2k_state()
 // Everything comes from PinMAME ROM regions (see ROM_START in src/wpc/p2k.c). Nothing here opens
 // a file, so a machine is selected and audited exactly like any other: the set name is the zip
 
-bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
+bool p2k_state::set_prism_roms(const u8 *data, size_t len)
 {
 	// The region is the four 16 MB banks back to back, already interleaved by the ROM loader:
 	// ROM_LOAD32_WORD puts the u10x-even file in the low half of each dword and the odd one in
@@ -319,31 +321,58 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len, const char *prefix)
 	// 0x191 is not behind the switch, and is `cb` in both revisions and in Episode I so it carries
 	// over unchanged: nothing far-calls the option ROM's init here, so its `retf` has no frame to
 	// return to whatever the PCI bus does.
+	auto peek = [this](size_t off) -> u8 {
+		if (off / 4 >= PRISM_BANK_WORDS) return 0;   // bank 0 starts at 0, so index == offset
+		return u8(m_prismdata[off / 4] >> (unsigned(off % 4) * 8));
+	};
 	auto poke = [this](size_t off, u8 value) {
-		if (off / 4 < PRISM_BANK_WORDS)   // bank 0 starts at 0, so the index is the offset
+		if (off / 4 < PRISM_BANK_WORDS)
 		{
 			const unsigned shift = unsigned(off % 4) * 8;
 			u32 &w = m_prismdata[off / 4];
 			w = (w & ~(0xffu << shift)) | (u32(value) << shift);
 		}
 	};
-	poke(0x191, 0x90);
+	// Patch only where the byte being replaced is the one the disassembly says is there. These are
+	// offsets into a particular boot ROM image, not into a game, and an image that moves the code
+	// would otherwise be corrupted silently - see the site table below for how real that is
+	auto poke_if = [&](size_t off, u8 expect, u8 value) -> bool {
+		if (peek(off) != expect) return false;
+		poke(off, value);
+		return true;
+	};
+
+	poke_if(0x191, 0xcb, 0x90);   // retf -> nop; cb in every boot ROM seen, V3.2 and V3.6 alike
+
+#if P2K_PATCH_PCI_INIT_RETRY
+	// Which image this is, by content rather than by which game is running. The instruction the
+	// patch rewrites is `mov eax,0FFFFFFF9h` - b8 f9 ff ff ff - and the four loaders seen put it at
+	// these offsets: RFM rev. 1, Episode I, RFM rev. 2. Matching all five bytes makes
+	// it exact - each image hits precisely one candidate, and its other copies of that string are
+	// all above 0xc0000. It has to be done this way: r2 and the stock pair are the same game, so no
+	// prefix separates them, and r2 holds a call whose displacement starts where the stock pair
+	// holds this immediate - patching r2 by name would redirect that call
+	static constexpr size_t PCI_INIT_SITES[] = { 0x4199, 0x3b32, 0x3b7a, 0x461a };
+	size_t mov_site = 0;
+	for (const size_t site : PCI_INIT_SITES)
+		if (peek(site) == 0xb8 && peek(site + 1) == 0xf9 && peek(site + 2) == 0xff
+		    && peek(site + 3) == 0xff && peek(site + 4) == 0xff) { mov_site = site; break; }
+
+	// An image nobody has seen leaves mov_site 0 and goes unpatched, which is the safe way to be
+	// wrong: the patch is a convenience for a retry path, not something boot depends on
+	const size_t ok_imm    = mov_site ? mov_site + 1 : 0;   // the -7 immediate
+	const size_t guard_jne = mov_site ? mov_site - 2 : 0;   // the jne above it
+	(void)ok_imm; (void)guard_jne;
+#endif
 
 #if P2K_PATCH_PCI_INIT_RETRY == 1
 	// MAME's: the already-run exit returns 1 instead of -7
-	const size_t ok_imm = (prefix && strncmp(prefix, "swep1", 5) == 0) ? 0x3b33 : 0x419a;
-	poke(ok_imm + 0, 0x01);
-	poke(ok_imm + 1, 0x00);
-	poke(ok_imm + 2, 0x00);
-	poke(ok_imm + 3, 0x00);
+	if (mov_site && poke_if(ok_imm, 0xf9, 0x01)) { poke(ok_imm + 1, 0x00); poke(ok_imm + 2, 0x00); poke(ok_imm + 3, 0x00); }
 #elif P2K_PATCH_PCI_INIT_RETRY == 2
 	// Take the guard out instead: `jne do_the_work` becomes `jmp do_the_work`, so the routine can
 	// never reach its early exit and every call enumerates and programs the BARs afresh. One byte,
 	// 75 -> eb, on the jump just above the instruction mode 1 rewrites
-	const size_t guard_jne = (prefix && strncmp(prefix, "swep1", 5) == 0) ? 0x3b30 : 0x4197;
-	poke(guard_jne, 0xeb);
-#else
-	(void)prefix;
+	if (mov_site) poke_if(guard_jne, 0x75, 0xeb);
 #endif
 	return true;
 }
@@ -1129,22 +1158,22 @@ void p2k_state::cx5520_pci_w(int function, int reg, u32 data, u32 mem_mask)
 	COMBINE_DATA(varptr);
 }
 
-// Indexed reg/4, unlike the other two, which take lpci's byte offset directly. It is
-// self-consistent - the BARs the firmware writes here read back correctly, which is what the
-// enumeration needs - but it does not match the [0]/[4]/[8] initialisation in reset(), so the
-// vendor, status and class this card reports are all zero. That is visible on the console:
-// "WMS PRISM PCI device # 8: ID 0x0 (status 0x0 class code 0x0 rev 0x0)", where the MediaGX and
-// the Cx5520 on the same line report real values. Nothing has been seen to mind - the firmware
-// enumerates the card and assigns its windows either way - so this is left alone rather than
-// changed blind; making it agree would alter what the firmware reads during boot
+// All three devices index by the byte offset lpci passes, which is what the [0]/[4]/[8]
+// initialisation in reset() is written for: [4] is the status/command pair and [8] the class
+// code, and the Prism's 0x02800002/0x03000002 are the same shape as the two Cyrix devices'.
+// This one used to divide by 4, so only the vendor word at reg 0 landed on its initialiser and
+// the card reported status 0 and class 0. The firmware does read both - P2K_PCIWATCH shows
+// "dev 8 reg 0x04 -> 02800002" and "reg 0x08 -> 03000002" where it used to see zeros - and all
+// games boot unchanged with them right, which is the measurement the old note here asked for and did not have.
+//!! still, it may need additional verification!
 u32 p2k_state::prism_pci_r(int function, int reg, u32 mem_mask) const
 {
-	return m_prism_regs[reg / 4] & mem_mask;
+	return m_prism_regs[reg] & mem_mask;
 }
 
 void p2k_state::prism_pci_w(int function, int reg, u32 data, u32 mem_mask)
 {
-	u32 *varptr = &m_prism_regs[reg / 4];
+	u32 *varptr = &m_prism_regs[reg];
 	COMBINE_DATA(varptr);
 }
 

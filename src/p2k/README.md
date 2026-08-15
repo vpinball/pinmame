@@ -25,19 +25,24 @@ MODs elsewhere:
 | `rfm_150` | | 07/2000 | |
 | `rfm_140` | | 01/2000 | |
 | `rfm_120` | | 06/1999 | |
+| `rfm_080` | | 03/1999 | Not working yet |
+| `rfm_010` | | ??/1999 | Not working yet |
 | `swep1_210` | Pinball 2000: Star Wars Episode I | 10/2025 | myPinballs; adds a topper (driver 44) |
 | `swep1_201` | | 05/2025 | myPinballs |
 | `swep1_200` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43) |
 | **`swep1_150`** | **parent** | 09/2003 | last official, XINA 1.19 |
 | `swep1_140` | | 07/2000 | |
 | `swep1_130` | | 09/1999 | |
+| `swep1_040` | | ??/1999 | Not working yet |
 
 All games boot, render, take coins, start a game, drive lamps and coils, respond to the flippers
-and play sound. Eight of them used not to, and what divided them was not the game but the system
+and play sound. Some of
+them used not to boot properly, and what divided them was not the game but the system
 software: each `game.rom` names the XINA it was built against, and everything from **1.12 to 1.31**
 came up (`rfm_120` through `rfm_210`, `swep1_130` through `swep1_150`) while everything from
 **1.34 to 1.38** stopped before the boot screen (`rfm_222` through `rfm_260`, and all three
 `swep1_2xx`).
+Some still do not boot: all RFM and SWEP1 versions that were prototypes (shipping without updates/flash).
 
 **It was a blank CMOS**, and the emulation is only indirectly at fault. The newer software has a
 static initialisation order bug: `left_sling`'s constructor calls a hook that reads an adjustment
@@ -64,6 +69,66 @@ None of the driver's workarounds was involved. The update-flash model, the power
 register constants and the `clkint` gate were each suspected and each cleared by measurement
 before the real cause turned up. The boot ROM was never where they stopped: it finishes and hands
 over first. See the note by the game definitions in `src/wpc/p2k.c`.
+
+## Every machine carries a second, older game in its Prism ROMs
+
+`u100`/`u101` hold a fallback copy of the game alongside the system data, and the update flash
+overrides it. `P2K_NO_UPDATE=1` hides the update flash, and then the loader validates and starts
+that copy instead.
+Each copy carries its own version in the boot-data header at bank 0 offset `0x8040`, as a
+game id and a major/minor pair, formatted for display through `"Software version: %d.%d"`:
+
+| Prism pair | set | game id | fallback version | bootstrap loader | boots |
+|---|---|---|---|---|---|
+| RFM r1(?) | `rfm_010` | 50070 | 0.1 | V3.2, Jan 26 1999 | no |
+| RFM r2(?) (`rfm_u100r2`/`rfm_u101r2`) | `rfm_080` | 50070 | 0.80 | V3.4, Apr 1 1999 | no |
+| Episode I | `swep1_040` | 50069 | 0.40 | V3.5, Apr-Jun 1999 | no |
+
+These three that do not boot each have a set of their own, all `GAME_NOT_WORKING`, so the halts are
+addressable without the knob - and they reproduce it exactly, same PC, same dead timers. Only
+`rfm_080` needs files of its own; `rfm_010` and `swep1_040` are their parent's Prism chips with
+the update package left out, so we load them straight from the parent set.
+
+These three that fail do so identically: no timer is ever programmed, no interrupt ever arrives, and
+the CPU cycles between three addresses - `0x17b0ef`/`0x17b0f8`/`0x1baa89` for RFM r1,
+`0x1b355f`/`0x1b3568`/`0x2020c5` for r2 and `0x1825df`/`0x1825e8`/`0x1db605` for Episode I. That
+is an error halt rather than a crash. `P2K_PCIWATCH=1` shows the board being found either
+way - device 8 answers `0001146e` - and a working image goes on to program four BARs on it
+(`0x10`, `0x18`, `0x1c`, `0x20` to `0x10000000`, `0x11000000`, `0x12000000`, `0x13000000`).
+A failing one appears to program `0x10` and stop, but do not read anything into that: it is an
+artefact of our own patch. With `P2K_PATCH_PCI_INIT_RETRY` set to 2, which removes the routine's
+early exit so every call re-enumerates, the same image programs `0x24` and the expansion-ROM BAR
+at `0x30` as well and then loops - and still halts in the same place. The BAR trace is downstream
+of the halt, not a description of it.
+
+That patch is not optional, incidentally, and this is where that was established. Set
+`P2K_PATCH_PCI_INIT_RETRY` to 0 and *nothing* boots: `rfm_080`
+halts at `0x81622`, and `rfm_160` never reaches its first progress report. Mode 1 is the only setting
+under which any of these run.
+
+**What separates the two groups is not known.** Neither obvious candidate survives contact with
+the table: game version does not order them, and neither does the
+bootstrap loader, which is `V3.2` on RFM r1, `V3.4` on r2 and `V3.5` on Episode I - so `V3.4` works, `V3.5` fails and `V3.6` works. Anyone picking this up should
+start by disassembling around the halt addresses above rather than by trusting either ordering.
+
+r2 has a set of its own, `rfm_080`, filed as a clone of `rfm_160` like every other version -
+r2 bank 0, no update region. Only `u100`/`u101` are actually rev. 2 - the MAME set carries no
+other r2 file - but the set is probably complete rather than a guess: diffing the two revisions of
+that pair, they differ only below `0x2fd3c0` of the interleaved bank, which is the loader and the
+fallback game image, and the 13 MB of asset data above it is byte-identical. The revision changed
+code and left the art alone, so carrying the stock banks 1-3 over follows the same 'evidence'. The
+sound flash and sample chips are on the sound board, not the Prism card. **It does not boot
+either**, and since the set is very likely right, that is a real behaviour to explain rather than
+a symptom of missing ROMs. It halts exactly as the other two do,
+at `0x1b355f`/`0x1b3568`/`0x2020c5`, under every patch mode.
+
+Adding it did force one real improvement. The PCI bring-up patch sits at `0x461b` in r2 and
+`0x419a` in the r1 pair, and the two are the *same game* - no prefix can tell them apart. So
+`set_prism_roms()` now finds the site by its five-byte signature `b8 f9 ff ff ff` rather than by
+game name. That is exact: each of the four images matches at precisely one of the four known
+offsets, and every other occurrence in that image sits above `0xc0000`. It also matters for
+safety - r2 holds a `call` whose displacement begins where the stock pair holds this immediate,
+so patching by game there would have redirected the call.
 
 ## Interrupts used to arrive late
 
@@ -354,6 +419,19 @@ If rev. 2 arrived partway through the production run, then versions from that po
 rev. 2 cards and the earlier ones on rev. 1 - and each set should declare whichever pair its
 version was actually sold with, rev. 1 or rev. 2. Today every set declares rev. 1, which is an
 unchecked assumption rather than a finding.
+
+There is now evidence on the first of those, and it is dated rather than inferred. Each Prism
+pair carries its bootstrap loader with a build timestamp: stock RFM has **V3.2, Tue Jan 26 1999**
+and r2 has **V3.4, Thu Apr 01 1999**. The fallback game copies agree in direction - `0.1` on the
+r1 pair against `0.80` on r2. So r2 is not a contemporaneous alternative source for the same
+machines; it is roughly two months later and most of the pre-release version range further on,
+which is what a revision arriving partway through the run looks like. For scale, Episode I's pair
+is V3.5 - so the V3.x loader line kept moving through
+1999 across all three games.
+
+That still does not answer the second question. Nothing here says which *shipping* version of the
+game was the first to leave the factory on an r2 card, and the loader date only bounds when the
+card could have been burned, not when it went out.
 
 Answering it also disposes of the "which version would an r2 set be a clone of" question above: the
 r2 pair would simply belong to the versions it shipped under, and would stop needing a set of its
@@ -856,15 +934,6 @@ of the 2000-cycle execution chunks.
   starts, and the controller is only reachable through its port reads and writes. It is recorded
   because a stub that is never called looks identical to one that works, right up until someone
   wires a floppy or a sound DMA to it.
-* **The Prism card's PCI config space answers with zeros.** Its handler indexes `reg/4` while the
-  other two take the byte offset `lpci` passes, but all three share the `[0]/[4]/[8]`
-  initialisation in `reset()`, which was written for byte offsets. So the vendor, status and class
-  it reports are all 0, and the console has said so all along: *WMS PRISM PCI device # 8: ID 0x0
-  (status 0x0 class code 0x0 rev 0x0)*, next to a MediaGX and a Cx5520 reporting real values. It is
-  self-consistent where it counts - the BARs the firmware writes read back correctly, which is what
-  enumeration needs - so it is left alone: making it agree changes what the firmware reads during
-  boot, and that is a measurement rather than a tidy-up. See `prism_pci_r` in `p2k_driver.cpp`.
-
 * **The update flash erases the wrong amount.** Three block sizes meet in `nvram_updates_w` and
   none agree: the CFI table the part answers with declares one region of 64 blocks of 128 KB, the
   erase command aligns on a *word* offset of `0x2000` (16 KB of bytes), and the loop clears
@@ -899,6 +968,7 @@ asked for. The ones that stay useful:
 | `P2K_SWWATCH=1` | every switch that changes, by name |
 | `P2K_PDBWATCH=<regs>` | power driver board traffic: reads (change-only) and writes. `1`/`all`, or a hex list like `10,11,08` - worth narrowing, register `04` is the switch row and cycles forever |
 | `P2K_PCIWATCH=1` | every PCI config read, with the device number the firmware asked for |
+| `P2K_NO_UPDATE=1` | hide a set's update flash, so the machine boots the fallback copy in its Prism ROMs instead. That is a different and older build than the update carries - see the section on it |
 | `P2K_DCSLOG=1` | the whole conversation with the sound board |
 | `P2K_VIDEO_PPM=<path>` | write the picture out as a PPM |
 

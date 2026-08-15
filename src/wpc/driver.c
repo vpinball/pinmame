@@ -3353,10 +3353,11 @@ DRIVER(rfm,120)         //          06/99   Pinball 2000: Revenge From Mars (1.2
 // 1.10 (05/99)
 // 1.00 (05/99)
 // 0.90 (04/99)
-// 0.80 (03/99)
+DRIVER(rfm,080)         //          03/99   Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board) // the copy in the Prism ROMs, not an update package - the rev. 2 card's loader is dated 04/99
 // 0.70 (03/99)
 // 0.60 (03/99)
 // 0.50 (03/99)
+DRIVER(rfm,010)         //          ??/99   Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1(?) board) // likewise the Prism ROM copy, on the rev. 1 card
 
 // Episode I's 2.x line is myPinballs' as well. Shaker and knocker arrive with 2.00 and a topper
 // with 2.10, all optional - but they need a cabinet driver control PCB on top of the loom RFM
@@ -3370,11 +3371,12 @@ DRIVER(swep1,140)       //          07/00   Pinball 2000: Star Wars Episode I (1
 DRIVER(swep1,130)       //          09/99   Pinball 2000: Star Wars Episode I (1.30)
 // 1.2(?)
 // 1.0
+DRIVER(swep1,040)       //          ??/99   Pinball 2000: Star Wars Episode I (0.40 prototype/factory) // the Prism ROM copy, as above
 #endif
 
 #ifdef PIN2K_SOUND_TEST
-DRIVERNV(pin2ksnd)      //                  Pinball 2000 DCS2 sound board test harness, RFM  (see docs/pin2k_sound.md)
-DRIVERNV(pin2ksw1)      //                  Pinball 2000 DCS2 sound board test harness, SWEP1
+DRIVERNV(pin2ksnd)      //                  Pinball 2000 PinMAME DCS2 sound board test harness, RFM  (see docs/pin2k_sound.md)
+DRIVERNV(pin2ksw1)      //                  Pinball 2000 PinMAME DCS2 sound board test harness, SWEP1
 #endif
 
 // ------------------

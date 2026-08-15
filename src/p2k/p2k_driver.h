@@ -29,7 +29,7 @@ public:
 
 	// Both take PinMAME ROM regions, declared by ROM_START in src/wpc/p2k.c. The subsystem
 	// does not open files: everything arrives through the normal ROM set machinery
-	bool set_prism_roms(const u8 *data, size_t len, const char *prefix);
+	bool set_prism_roms(const u8 *data, size_t len);
 	// the update flash image (bootdata + im_flsh0 + game + symbols), 8 MB
 	bool set_nvram_updates(const u8 *data, size_t len);
 
@@ -163,12 +163,11 @@ private:
 	// [4] and its class out of [8]. They must be 256 entries for that: reg runs to 0xfc, and at 65
 	// and 64 anything past 0x40 ran off the end into the next array - and past all three sits m_machine, a unique_ptr.
 	//
-	// The Prism is the odd one out. It indexes reg/4, which is self-consistent for the BARs the
-	// firmware assigns, but not with the initialisation it shares with the others - which is why it
-	// alone comes up as "ID 0x0 (status 0x0 class code 0x0)" on the console. See prism_pci_r
+	// The Prism used to be the odd one out, indexing reg/4 against that same initialisation, so it
+	// alone reported "status 0x0 class code 0x0". All three agree now (hopefully matching the real HW). See prism_pci_r
 	u32 m_mediagx_regs[256] = {};
 	u32 m_cx5520_regs[256] = {};
-	u32 m_prism_regs[256/4] = {};
+	u32 m_prism_regs[256] = {};
 
 	std::unique_ptr<p2k_machine> m_machine;
 	mediagx_device *m_maincpu = nullptr;

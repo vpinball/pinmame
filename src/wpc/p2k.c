@@ -41,8 +41,7 @@ static int p2k_keyLaunch;      /* Launch Ball key, shared with the scaffolding -
 #define P2K_UPDREGION   (REGION_USER2)   /* the 8 MB update flash - this is the game version */
 
 /* implemented in src/p2k/p2k_pinmame.cpp */
-extern void p2k_pinmame_start(const char *game,
-                              const unsigned char *prism, unsigned prismLen,
+extern void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen,
                               const unsigned char *updates, unsigned updatesLen);
 extern void p2k_pinmame_stop(void);
 extern void p2k_pinmame_nvram_set(int which, const unsigned char *data, unsigned size);
@@ -428,7 +427,8 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
    applies sits at a different address in each, and the driver name carries the answer */
 static const char *p2k_romPrefix(void) {
   const char *name = (Machine && Machine->gamedrv) ? Machine->gamedrv->name : "rfm";
-  return strncmp(name, "rfm", 3) == 0 ? "rfm" : "swep1";   /* "swep1_150" is the Episode I set */
+  if (strncmp(name, "rfm", 3) == 0) return "rfm";          /* "rfm_160" and the rest */
+  return "swep1";                                          /* "swep1_150" and the rest are the Episode I sets */
 }
 
 static SWITCH_UPDATE(p2k);   /* defined with the input ports below */
@@ -455,8 +455,8 @@ static int p2k_isOpto(int sw) {
    2 row 5, which is Left Loop (Low). Measured, not guessed - the row the board handed out was
    0x10 on column 1 instead of 0x04 on column 0.
 
-   Row is 0-based coming in from the matrix side and 1-based in a switch number, hence the +1. */
-static int p2k_sw2m(int no)          { return (no / 10) * 8 + (no % 10) - 1; }
+   Row is 0-based coming in from the matrix side and 1-based in a switch number, hence the +1 */
+static int p2k_sw2m(int no)           { return (no / 10) * 8 + (no % 10) - 1; }
 static int p2k_m2sw(int col, int row) { return col * 10 + row + 1; }
 
 /* What survives a power cycle. The machine keeps three things: the CMOS it stores settings, audits
@@ -467,9 +467,10 @@ static int p2k_m2sw(int col, int row) { return col * 10 + row + 1; }
 
    PinMAME reads its NVRAM file before the machine is built and writes it after the machine is
    gone, so the bytes live in these buffers in between: the handler fills them on load, MACHINE_INIT
-   pushes them into the machine, and the handler pulls them back out on save. */
+   pushes them into the machine, and the handler pulls them back out on save */
+
 /* P2K_NV_CMOS_SIZE / P2K_NV_EEPROM_SIZE come from p2k_public.h - the subsystem allocates the
-   blocks behind them, and the two sizes have to match. */
+   blocks behind them, and the two sizes have to match */
 
 static UINT8 p2k_nvCmos[P2K_NV_CMOS_SIZE];
 static UINT8 p2k_nvEeprom[P2K_NV_EEPROM_SIZE];
@@ -477,12 +478,12 @@ static int   p2k_nvLoaded = 0;
 
 static NVRAM_HANDLER(p2k) {
   /* No harvesting here on the way out - by the time PinMAME saves, the machine is gone. See
-     MACHINE_STOP below, which is where the bytes are taken. */
+     MACHINE_STOP below, which is where the bytes are taken */
   core_nvram(file, read_or_write, p2k_nvCmos,   P2K_NV_CMOS_SIZE,   0x00);
   core_nvram(file, read_or_write, p2k_nvEeprom, P2K_NV_EEPROM_SIZE, 0x00);
   /* Only adopt these if they really came from a file. With no file core_nvram() fills the
      buffers with zeros, and pushing those into the machine would wipe the PLX EEPROM defaults
-     that reset() writes - which stops the machine booting at all. */
+     that reset() writes - which stops the machine booting at all */
   if (!read_or_write) p2k_nvLoaded = (file != NULL);
 }
 
@@ -518,8 +519,7 @@ static void p2k_dumpNames(void) {
 
 static MACHINE_INIT(p2k) {
   p2k_dumpNames();
-  p2k_pinmame_start(p2k_romPrefix(),
-                    memory_region(P2K_PRISMREGION), (unsigned int)memory_region_length(P2K_PRISMREGION),
+  p2k_pinmame_start(memory_region(P2K_PRISMREGION), (unsigned int)memory_region_length(P2K_PRISMREGION),
                     memory_region(P2K_UPDREGION), (unsigned int)memory_region_length(P2K_UPDREGION));
   if (p2k_nvLoaded) {                        /* whatever PinMAME had on file, after the reset
                                                 that fills in the EEPROM defaults */
@@ -1062,7 +1062,17 @@ static SWITCH_UPDATE(p2k) {
    MediaGX/Prism banks. The sound flash is a parameter because it is the one part of this that a
    version can bring its own of - see P2K_COMMON_RFM below and the _sf.rom note above. It is loaded
    twice on purpose, once as the sound CPU's region and once into the DCS address space */
-#define P2K_COMMON_RFM_SF(sfname, sfhash) \
+/* Bank 0 is the only place the two Prism card revisions differ. r2 is a factory revision, not a
+   game version: its bootstrap loader is V3.4 dated Apr 1 1999 where the r1 pair has V3.2 dated
+   Jan 26 1999, and the fallback game copy it carries is 0.80 against the r1 pair's 0.1. Banks
+   1-3 and the sound board are shared */
+#define P2K_RFM_BANK0 \
+		ROM_LOAD32_WORD("rfm_u100.rom", 0x0000000, 0x800000, CRC(b3548b1b) SHA1(874a16282bb778886cea2567d68ec7024dc5ed22)) \
+		ROM_LOAD32_WORD("rfm_u101.rom", 0x0000002, 0x800000, CRC(8bef301d) SHA1(2eade00b1a4cd3f5e98ebe8ed8f549e328188e77))
+#define P2K_RFM_BANK0_R2 \
+		ROM_LOAD32_WORD("rfm_u100r2.rom", 0x0000000, 0x800000, CRC(d4278a9b) SHA1(ec07b97190acb6b34b9ed6cda505ee8fefd66fec)) \
+		ROM_LOAD32_WORD("rfm_u101r2.rom", 0x0000002, 0x800000, CRC(e5d4c0ed) SHA1(cfc7d9d2324cc02c9eaf53fd674f7db24736699c))
+#define P2K_COMMON_RFM_B(sfname, sfhash, bank0) \
 	NORMALREGION(0x100000, REGION_CPU1) \
 		ROM_LOAD(sfname, 0x0000, 0x100000, sfhash) \
 	NORMALREGION(ADSP2100_SIZE, DCS_CPUREGION) \
@@ -1072,8 +1082,7 @@ static SWITCH_UPDATE(p2k) {
 		ROM_LOAD("rfm_u109.bin",   0x400000, 0x400000, CRC(385f1255) SHA1(0a3be261cd35cd153eff95335597bca46b760568)) \
 		ROM_LOAD("rfm_u110.bin",   0x800000, 0x400000, CRC(2258dbde) SHA1(0c9e62e45fa7cc03aedd43a6e06fee28b2f288a5)) \
 	ROM_REGION32_LE(0x4000000, P2K_PRISMREGION, 0) \
-		ROM_LOAD32_WORD("rfm_u100.rom", 0x0000000, 0x800000, CRC(b3548b1b) SHA1(874a16282bb778886cea2567d68ec7024dc5ed22)) \
-		ROM_LOAD32_WORD("rfm_u101.rom", 0x0000002, 0x800000, CRC(8bef301d) SHA1(2eade00b1a4cd3f5e98ebe8ed8f549e328188e77)) \
+		bank0 \
 		ROM_LOAD32_WORD("rfm_u102.rom", 0x1000000, 0x800000, CRC(749f5c59) SHA1(2d8850e7f8ea3e07e8b444d7dd4dc4195a547ae7)) \
 		ROM_LOAD32_WORD("rfm_u103.rom", 0x1000002, 0x800000, CRC(a9ec5e97) SHA1(ce7c38dcbf34ce10d6e204a3176cd2c7a83b525a)) \
 		ROM_LOAD32_WORD("rfm_u104.rom", 0x2000000, 0x800000, CRC(0a1acd70) SHA1(dcca4de92eadeb82ac776953326410a9687838cb)) \
@@ -1101,9 +1110,13 @@ static SWITCH_UPDATE(p2k) {
 		ROM_LOAD32_WORD("swe1_u106.rom", 0x3000000, 0x800000, CRC(84877e2f) SHA1(6dd8c761b2e26313ae9e159690b3a4a170cb3bd8)) \
 		ROM_LOAD32_WORD("swe1_u107.rom", 0x3000002, 0x800000, CRC(dc433c89) SHA1(9f1273debc9168c04202078503cfc4f1ca8cb30b))
 
-/* The stock sound flash, which is what all but two of the versions ship. The odd two pass their own package's _sf.rom to the _SF forms above instead */
+/* The stock sound flash, which is what all but some of the versions ship. The odd ones pass their own package's _sf.rom to the _SF forms above instead */
+#define P2K_COMMON_RFM_SF(sfname, sfhash) \
+	P2K_COMMON_RFM_B(sfname, sfhash, P2K_RFM_BANK0)
 #define P2K_COMMON_RFM \
 	P2K_COMMON_RFM_SF("rfm_28f800.rom",  CRC(a57c55ad) SHA1(60ee230b8978b7c5f1482b1b587d1c6db5fdd20e))
+#define P2K_COMMON_RFM_R2 \
+	P2K_COMMON_RFM_B( "rfm_28f800.rom",  CRC(a57c55ad) SHA1(60ee230b8978b7c5f1482b1b587d1c6db5fdd20e), P2K_RFM_BANK0_R2)
 #define P2K_COMMON_SWEP1 \
 	P2K_COMMON_SWEP1_SF("swe1_28f800.rom", CRC(5fc1fd2c) SHA1(0967db9b6e82d386d3a8415bbef40bcab5a06654))
 
@@ -1230,6 +1243,47 @@ ROM_START(rfm_180)
 	           0x26aa00, CRC(a736f81f) SHA1(8136a526879729b5d2b7a9a6f01191a2e9097efc),
 	           0x0b6e00, CRC(69421a8b) SHA1(c09a276a3f285e8c140faa1017221b599a577517))
 ROM_END
+/* The other two fallback images, for the same reason rfm_080 is here: a set each so the halts are
+   addressable and anyone working on them can just run one. Neither boots yet. These two need no ROMs of
+   their own - they are their parent's Prism chips with the update package left out, so the loader
+   starts the copy in the ROMs instead, and we find the files in the parent set.
+
+   The version each one prints through "Software version: %d.%d" comes from the major/minor pair in
+   the boot-data header at bank 0 offset 0x8040: 0 and 1 here, 0 and 40 for Episode I. The minor is
+   a plain number, so RFM's machine displays 0.1 rather than 0.10 - the description below carries
+   what it prints, while the set name follows the three-digit style the rest of this file uses */
+ROM_START(rfm_010)
+	P2K_COMMON_RFM
+ROM_END
+ROM_START(swep1_040)
+	P2K_COMMON_SWEP1
+ROM_END
+/* The factory image on a rev. 2 Prism card, reached by giving the machine no update flash at all:
+   the loader then validates and starts the fallback copy in the Prism ROMs. Every other set here
+   overrides that copy with an update, so this is the one version that is the card rather than a package.
+
+   It does not boot yet: it halts at 0x1b355f/0x1b3568/0x2020c5
+   with no timer ever programmed, the same shape as the rev. 1 pair's 0.1 and Episode I's 0.40 on
+   this path, and under every setting of P2K_PATCH_PCI_INIT_RETRY. It is here so the rev. 2 ROMs
+   and that halt are on record. src/p2k/README.md has the table.
+
+   Only u100/u101 are rev. 2 - the MAME set carries no other r2 file - but the rest is very
+   likely right rather than merely assumed. Diff the two revisions of this pair and they part
+   only below 0x2fd3c0 of the interleaved bank: the loader and the fallback game image.
+   The 13 MB of asset data above that is byte-identical. So in the one bank where both revisions
+   exist, the revision changed code and left the art alone, which is the same reasoning that
+   carries banks 1-3 - also asset data - over unchanged. The sound flash and the two sample chips
+   are on the sound board, not the Prism card, so a card revision does not implicate them at all;
+   rfm_28f800.rom is the flash the game shipped with. A sound board revision of its own would not
+   show up in this dump, which is the one gap left, and it should not what the halt is about.
+
+   The PCI bring-up patch moves with the image and is found by its five-byte signature rather than
+   by game - see set_prism_roms() in src/p2k/p2k_driver.cpp, which cannot tell r1 from r2 by name,
+   and where r2 holds a call whose displacement starts where the stock pair holds the immediate */
+ROM_START(rfm_080)
+	P2K_COMMON_RFM_R2
+ROM_END
+
 ROM_START(rfm_160)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0160, CRC(b8574f37) SHA1(339475365ecc4adf11c28b3432ea1f7da905745d),
@@ -1559,17 +1613,20 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
    The year on each set is the version's own, from its changelog or build stamp wherever the package
    name disagrees - which it does for 1.60, 1.80, Episode I's 1.50 and all three 1.9x.
 
-   All twenty boot. Eight of them used not to, and what divided them was the XINA each game.rom
+   All games boot. Some of them used not to, and what divided them was the XINA each game.rom
    names rather than the game: 1.12 to 1.31 came up, 1.34 to 1.38 did not, so rfm_222 stopped where
    rfm_210 ran and Episode I's 2.x were all on the far side. The cause was a blank CMOS, not the
    boot ROM and not this driver: the newer software reports a NonFatal during static construction,
    the reporter appends it to an error log whose header a fresh CMOS does not have, and the entry
    lands on address 0 - which the scheduler then reports as fatal, for ever. P2K_SEED_ERROR_LOG in
    src/p2k/p2k_driver.cpp builds that header; the whole chain is in src/p2k/README.md */
+
 CORE_GAMEDEF (rfm, 160, "Pinball 2000: Revenge From Mars (1.60)", 2003, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 150, 160, "Pinball 2000: Revenge From Mars (1.50)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 140, 160, "Pinball 2000: Revenge From Mars (1.40)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 080, 160, "Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
+CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(rfm, 180, 160, "Pinball 2000: Revenge From Mars (1.80 unofficial MOD)", 2006, "Midway", p2k, 0) // debatable if this still counts as official
 CORE_CLONEDEF(rfm, 190, 160, "Pinball 2000: Revenge From Mars (1.90 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 191, 160, "Pinball 2000: Revenge From Mars (1.91 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
@@ -1584,6 +1641,7 @@ CORE_CLONEDEF(rfm, 260, 160, "Pinball 2000: Revenge From Mars (2.60 unofficial M
 CORE_GAMEDEF (swep1, 150, "Pinball 2000: Star Wars Episode I (1.50)", 2003, "Midway", p2k, 0)
 CORE_CLONEDEF(swep1, 140, 150, "Pinball 2000: Star Wars Episode I (1.40)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(swep1, 130, 150, "Pinball 2000: Star Wars Episode I (1.30)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(swep1, 040, 150, "Pinball 2000: Star Wars Episode I (0.40 prototype/factory)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(swep1, 200, 150, "Pinball 2000: Star Wars Episode I (2.00 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(swep1, 201, 150, "Pinball 2000: Star Wars Episode I (2.01 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(swep1, 210, 150, "Pinball 2000: Star Wars Episode I (2.10 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
