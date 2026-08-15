@@ -1613,7 +1613,7 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
    The year on each set is the version's own, from its changelog or build stamp wherever the package
    name disagrees - which it does for 1.60, 1.80, Episode I's 1.50 and all three 1.9x.
 
-   All games boot. Some of them used not to, and what divided them was the XINA each game.rom
+   Most games boot. Some of them used not to, and what divided them was the XINA each game.rom
    names rather than the game: 1.12 to 1.31 came up, 1.34 to 1.38 did not, so rfm_222 stopped where
    rfm_210 ran and Episode I's 2.x were all on the far side. The cause was a blank CMOS, not the
    boot ROM and not this driver: the newer software reports a NonFatal during static construction,
@@ -1624,7 +1624,7 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
 CORE_GAMEDEF (rfm, 160, "Pinball 2000: Revenge From Mars (1.60)", 2003, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 150, 160, "Pinball 2000: Revenge From Mars (1.50)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 140, 160, "Pinball 2000: Revenge From Mars (1.40)", 2000, "Midway", p2k, 0)
-CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(rfm, 080, 160, "Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(rfm, 180, 160, "Pinball 2000: Revenge From Mars (1.80 unofficial MOD)", 2006, "Midway", p2k, 0) // debatable if this still counts as official
