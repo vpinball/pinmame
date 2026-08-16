@@ -167,7 +167,8 @@ static const PinmameKeyboardInfo _keyboardInfo[] = {
 	{ "CAPS LOCK", PINMAME_KEYCODE_CAPS_LOCK, KEYCODE_CAPSLOCK },
 	{ "LEFT SUPER", PINMAME_KEYCODE_LEFT_SUPER, KEYCODE_LWIN },
 	{ "RIGHT SUPER", PINMAME_KEYCODE_RIGHT_SUPER, KEYCODE_RWIN },
-	{ "MENU", PINMAME_KEYCODE_MENU, KEYCODE_MENU }
+	{ "MENU", PINMAME_KEYCODE_MENU, KEYCODE_MENU },
+	{ nullptr, (PINMAME_KEYCODE)0, 0 }
 };
 
 // Controller plugin message support
@@ -253,7 +254,7 @@ static struct
    {
       DisplaySrcId srcId;
       const core_tLCDLayout* layout;
-   } displays[8];
+   } displays[32]; // WPT declares 15 DMD layouts
    unsigned int onDisplaySrcChangedId, getDisplaySrcId;
 
    unsigned int onAudioCmdId, onDmdCmdId, onConsoleDataId;
@@ -2071,6 +2072,11 @@ static void SetupMsgApi()
       case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->importedLayout - 1; break;
       case CORE_DMD: // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
       case CORE_VIDEO: // Video display for games like Baby PacMan, frames are stored as RGB8
+         if (msgLocals.nDisplays >= (int)(sizeof(msgLocals.displays) / sizeof(msgLocals.displays[0])))
+         {
+            libpinmame_log_error("SetupMsgApi: too many display layouts, ignoring extra display");
+            break;
+         }
          if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
          {
             if (layout->type & CORE_VIDEO_ROT90)
