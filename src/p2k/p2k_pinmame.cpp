@@ -88,6 +88,14 @@ void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask)
 	/*if (g_machine)*/ g_machine->mem_w(address, data, mem_mask);
 }
 
+// The power driver board's DIP switch byte, register 0x02. The machine reads it once during
+// startup and it selects the country, which is what the pricing tables key off - so a change
+// only takes effect on the next boot, exactly as moving the physical switches would
+void p2k_pinmame_set_dips(unsigned char dips)
+{
+	if (g_machine) g_machine->set_dips(dips);
+}
+
 // The pinball I/O. PinMAME's core model owns the switch matrix and wants the lamp and coil
 // state back; the driver board in the subsystem is the other end of that. Called from
 // src/wpc/p2k.c once per frame for now - fast enough for lamps, and the point at which a faster

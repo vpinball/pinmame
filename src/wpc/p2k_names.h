@@ -13,6 +13,22 @@
    genuinely adds taken from it: switches 48 and 52 for the 6 ball trough, and drivers 5, 42, 43
    and 44 - an auto plunger, knocker, shaker and topper, all on drives the manual lists as unused.
 
+   Driver 5 is the one entry here that is different for some sets, and deliberately so. The two
+   unofficial lines chose different drives for the same job: myPinballs' 2.x puts an auto plunger
+   on 5 and the shaker on 43, while hemtoni's 1.66 puts the shaker on 5 and leaves 42-44 unused.
+   Read out of their own tables:
+
+       drv   1.50        1.66                2.00 / 2.10
+       5     Not Used    Shaker (Optional)   Auto Plunger
+       42    Not Used    Not Used            Knocker (Optional)
+       43    Not Used    Not Used            Shaker Motor (Optional)
+       44    Not Used    Not Used            Topper (Optional)
+
+   One table cannot be right for both, and this one follows 2.10, so on swep1_166 driver 5 reads
+   Auto Plunger where the machine means its shaker. Worth knowing before trusting a coil watch on
+   that set; fixing it properly means making the coil table version-aware, which nothing else
+   needs yet.
+
    Every version was swept against its game's official one, not just the newest. For Revenge From
    Mars 1.20, 1.40, 1.50, 1.80, 1.90, 1.91 and 1.95 are all identical to 1.60 - the same table for
    eighteen years - and the 2.x sets differ only in 53/54 (55/56 as well from 2.60), the casing of
@@ -53,8 +69,33 @@
    u32 count at 0x10, then count * { u32 name_offset, u32 address } with the name at
    offset + 0x25400. That names every function and table in the image.
 
-   Lamps come from the operations manuals rather than the ROMs, the lamp table's layout in the
-   image never having been worked out. The manuals give each cell as <column><row><matrix> - 13A,
+   The packages' symbols.rom is worth knowing about for anything beyond this: it names every
+   function and table in the image. "SYMBOL TABLE" at 0x00, a u32 count at 0x10, then the entries
+   from 0x18 as count * { u32 address, u32 name_offset }, sorted by address, with the names based
+   at the end of the entries - 0x18 + count * 8. Checked against rfm_160, rfm_260, swep1_150,
+   swep1_166 and swep1_210: the first entry is first(void) at 0x100000 in each, and
+   wms_pdb_fuse_status(unsigned char &, unsigned char &) resolves in all five.
+
+   An earlier version of this note had the pair the other way round and the names at a fixed
+   +0x25400, which parses to nothing but truncated fragments - worth saying, because the wrong
+   version is convincing enough to waste an hour on.
+
+   Lamps were taken from the operations manuals, and the image's own lamp table has since been
+   found, which confirms them. It sits with the other two: 0x24-byte records of four language
+   pointers then five small fields, 128 of them, with one lead-in record before lamp 0. Its order
+   is not PinMAME's - matrix A is a block of 64 and matrix B another, each column-major:
+
+       i < 64 ? A : B,  column = (i % 64) / 8 + 1,  row = (i % 64) % 8 + 1
+
+   and the rule below turns that into a lamp number. Read out of Revenge From Mars 1.60 it agrees
+   with 107 of the 116 entries here and every position; the nine differences left are all wording,
+   the ROM being terser ("Bottom Jet" for "Bottom Jet Bumper", "R. Top." for "R. Top", "Left Of"
+   for "Left of"), and the manual's is kept for those. Lamp 108 was the tenth and is not wording:
+   the manual has "Between U/R Top Lanes" where the ROM has "Between L/R Top Lanes", and L/R is
+   right - 107 and 109 are the left and right top lanes, so a lamp between them is not U/R. That
+   one now follows the ROM.
+
+   The manuals give each cell as <column><row><matrix> - 13A,
    44B and so on - and the board turns that into PinMAME's matrix through the row banks: eight
    columns of sixteen lamps, in two banks of eight (p2k_state::lpt_w registers 0x06 and 0x07),
    handed over as bank A at byte 2c and bank B at byte 2c+1. The banks interleave per column, so
@@ -140,6 +181,9 @@
 #define P2K_NAMES_H
 
 typedef struct { int num; const char *name; } p2k_name_t;
+
+/* which game's tables a caller wants */
+enum { P2K_GAME_RFM = 0, P2K_GAME_SWEP1 = 1 };
 
 /* switch number = 100 + (column-1)*8 + (row-1); PinMAME numbers it column*10 + row */
 static const p2k_name_t p2k_rfm_switch_names[] = {
@@ -462,7 +506,7 @@ static const p2k_name_t p2k_rfm_lamp_names[] = {
   { 104, "Bottom Jet Bumper" },
   { 106, "Left Jet Bumper" },
   { 107, "Left of Left Top Lane" },
-  { 108, "Between U/R Top Lanes" },
+  { 108, "Between L/R Top Lanes" },
   { 109, "Right of Right Top Lane" },
   { 110, "Top of Center Loop" },
   { 111, "Upper R. Corner (High)" },
@@ -597,9 +641,15 @@ static const p2k_name_t p2k_swep1_lamp_names[] = {
 };
 
 /* Which game's tables to use - the driver knows from its set name (p2k_romPrefix) */
-static const p2k_name_t *p2k_switch_names(int swep1) { return swep1 ? p2k_swep1_switch_names : p2k_rfm_switch_names; }
-static const p2k_name_t *p2k_coil_names(int swep1)   { return swep1 ? p2k_swep1_coil_names   : p2k_rfm_coil_names; }
-static const p2k_name_t *p2k_lamp_names(int swep1)   { return swep1 ? p2k_swep1_lamp_names   : p2k_rfm_lamp_names; }
+static const p2k_name_t *p2k_switch_names(int game) {
+  return game ? p2k_swep1_switch_names : p2k_rfm_switch_names;
+}
+static const p2k_name_t *p2k_coil_names(int game) {
+  return game ? p2k_swep1_coil_names : p2k_rfm_coil_names;
+}
+static const p2k_name_t *p2k_lamp_names(int game) {
+  return game ? p2k_swep1_lamp_names : p2k_rfm_lamp_names;
+}
 
 static const char *p2k_lookup(const p2k_name_t *t, int num) {
   int i; for (i = 0; t[i].name; i++) if (t[i].num == num) return t[i].name;

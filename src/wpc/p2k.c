@@ -50,6 +50,7 @@ extern UINT32 p2k_pinmame_read(offs_t address, UINT32 mem_mask);
 extern void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask);
 extern unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height, const unsigned fast_15bpp_path, unsigned *fast_15bpp_path_success);
 extern void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count);
+extern void p2k_pinmame_set_dips(unsigned char dips);
 extern void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2);
 
 static READ32_HANDLER(p2k_r)  { return p2k_pinmame_read(offset * 4, ~mem_mask); }
@@ -105,6 +106,12 @@ UINT32 p2k_dcs_read(UINT32 offset, UINT32 mem_mask);
 void p2k_dcs_write(UINT32 offset, UINT32 data, UINT32 mem_mask);
 
 static const char *p2k_romPrefix(void);   /* defined below, wanted by the watches in p2k_sync_io */
+
+/* Which game's device-name tables to use: P2K_GAME_* from p2k_names.h */
+static int p2k_gameIndex(void) {
+  const char *p = p2k_romPrefix();
+  return strncmp(p, "swep1", 5) == 0 ? P2K_GAME_SWEP1 : P2K_GAME_RFM;
+}
 
 #if P2K_DEBUG
 /* P2K_SOLWATCH / P2K_LAMPWATCH / P2K_SWWATCH =1: change logs for the three kinds of device, named
@@ -235,6 +242,7 @@ static void p2k_sync_io(void) {
 
   core_updateSw(FALSE);
 
+  p2k_pinmame_set_dips((unsigned char)core_getDip(0));
   p2k_pinmame_push_switches((const unsigned char *)coreGlobals.swMatrix, CORE_MAXSWCOL);
   p2k_pinmame_pull_outputs(lamps, sizeof(lamps), &solenoids, &solenoids2);
 
@@ -251,7 +259,7 @@ static void p2k_sync_io(void) {
      own state, so what it sees is the core's "fake solenoids if not CPU controlled" rather than
      the machine's. pull_outputs overwrites solenoids2 whole, so the faking never reaches here */
   if (p2k_solwatch() || p2k_lampwatch() || p2k_swwatch()) {
-    const int swep1 = strncmp(p2k_romPrefix(), "swep1", 5) == 0;
+    const int game = p2k_gameIndex();
 
     /* Coils and flashers. All six driver registers, which is drivers 1-48: solenoids is 1-32 and
        solenoids2's sixteen bits are 33-48, the top byte being the ones register 0x0e brings in.
@@ -263,7 +271,7 @@ static void p2k_sync_io(void) {
       now[0] = (UINT8)(solenoids       & 0xff); now[1] = (UINT8)((solenoids  >>  8) & 0xff);
       now[2] = (UINT8)((solenoids >> 16) & 0xff); now[3] = (UINT8)((solenoids >> 24) & 0xff);
       now[4] = (UINT8)(solenoids2      & 0xff); now[5] = (UINT8)((solenoids2 >>  8) & 0xff);
-      p2k_watch_bits("sol", now, 6, prev, p2k_coil_names(swep1), 1, 8);
+      p2k_watch_bits("sol", now, 6, prev, p2k_coil_names(game), 1, 8);
     }
 
     /* Lamps. Sixteen bytes, but not two 8x8 matrices back to back: the board drives eight columns
@@ -272,7 +280,7 @@ static void p2k_sync_io(void) {
        has the arithmetic and how it was measured. */
     if (p2k_lampwatch()) {
       static UINT8 prev[16];
-      p2k_watch_bits("lamp", lamps, (int)sizeof(lamps), prev, p2k_lamp_names(swep1), 0, 8);
+      p2k_watch_bits("lamp", lamps, (int)sizeof(lamps), prev, p2k_lamp_names(game), 0, 8);
     }
 
     /* Switches, as they went down to the board a moment ago. Optos read inverted from what the
@@ -280,7 +288,7 @@ static void p2k_sync_io(void) {
        those is a ball arriving, not leaving. */
     if (p2k_swwatch()) {
       static UINT8 prev[CORE_MAXSWCOL];
-      p2k_watch_bits("sw", (const UINT8 *)coreGlobals.swMatrix, CORE_MAXSWCOL, prev, p2k_switch_names(swep1), 1, 10);
+      p2k_watch_bits("sw", (const UINT8 *)coreGlobals.swMatrix, CORE_MAXSWCOL, prev, p2k_switch_names(game), 1, 10);
     }
   }
 #endif
@@ -499,18 +507,18 @@ static NVRAM_HANDLER(p2k) {
 static void p2k_dumpNames(void) {
   if (getenv("P2K_NAMES"))
   {
-    const int swep1 = strncmp(p2k_romPrefix(), "swep1", 5) == 0;
+    const int game = p2k_gameIndex();
     const p2k_name_t *t;
     int i;
-    printf("[p2k names] %s\n", swep1 ? "Star Wars Episode I" : "Revenge From Mars");
+    printf("[p2k names] %s\n", game == P2K_GAME_SWEP1  ? "Star Wars Episode I" : "Revenge From Mars");
     printf("[p2k names] switches (PinMAME number = column*10 + row):\n");
-    for (t = p2k_switch_names(swep1), i = 0; t[i].name; i++)
+    for (t = p2k_switch_names(game), i = 0; t[i].name; i++)
       printf("   sw %3d  %s\n", t[i].num, t[i].name);
     printf("[p2k names] coils (driver number, solenoid bit = driver - 1):\n");
-    for (t = p2k_coil_names(swep1), i = 0; t[i].name; i++)
+    for (t = p2k_coil_names(game), i = 0; t[i].name; i++)
       printf("   coil %2d  %s\n", t[i].num, t[i].name);
     printf("[p2k names] lamps:\n");
-    for (t = p2k_lamp_names(swep1), i = 0; t[i].name; i++)
+    for (t = p2k_lamp_names(game), i = 0; t[i].name; i++)
       printf("   lamp %2d  %s\n", t[i].num, t[i].name);
     fflush(stdout);
   }
@@ -569,7 +577,15 @@ MACHINE_DRIVER_END
    DOOR IS OPEN with the bit clear, which is the state it powers up in here. */
 INPUT_PORTS_START(rfm)
 	CORE_PORTS
-	SIM_PORTS(1)
+	/* SIM_PORTS(1) - PinMAME's built-in ball simulator, commented out rather than removed so it is
+	   easy to put back. It does nothing here: p2kGameData passes NULL for simData, so the simulator
+	   never runs, and this driver reads only CORE_COREINPORT. What it did do was list "Balls" and
+	   "Spinner time" in the Dip Switches menu - COREPORT_DIPNAME is the same macro a real DIP uses,
+	   so MAME cannot tell them apart from the country switches below - and bind Shoot Ball (SPACE),
+	   Ignore Location, Switch/Simulator, Next Ball and Prev Ball to keys that answer to nothing.
+	   Ball handling here is the P2K_TROUGH scaffolding in SWITCH_UPDATE instead. It adds bits to
+	   the port CORE_PORTS already opened rather than starting one, so leaving it out does not move
+	   CORE_COREINPORT or the DIP port after it */
 	PORT_START /* 2: CORE_COREINPORT */
 		COREPORT_BITDEF(  0x0001, IPT_COIN1,        IP_KEY_DEFAULT)
 		COREPORT_BITDEF(  0x0002, IPT_COIN2,        IP_KEY_DEFAULT)
@@ -587,6 +603,24 @@ INPUT_PORTS_START(rfm)
 		COREPORT_BIT(     0x2000, "Right Action",   KEYCODE_RCONTROL)
 		COREPORT_BIT(     0x4000, "Launch Ball",    KEYCODE_ENTER)
 		COREPORT_BITTOG(  0x8000, "Balls In Trough",KEYCODE_B)
+	/* The power driver board DIP switches. Only 1-4 are read: they form a 4 bit country code that
+	   picks the pricing table, which is what the changelogs mean by "the country dipswitch setting".
+	   Measured on rfm_160 by setting each combination and reading the machine's own DIP Switch Test:
+	   a closed switch is a set bit, 1 being the low one. 5-8 do nothing. Values 5, 6 and 9-15 the
+	   machine itself calls Unused, so they are not offered here.
+
+	   USA/Canada is the default. A country that disagrees with the one in CMOS is what XINA 1.02
+	   warns about. That is a one-off on an emulated machine, and 0 is the right home for a game
+	   built in Chicago. Delete the .nv to skip the reset. */
+	PORT_START /* 3: DIP switches, read back through core_getDip(0) */
+		COREPORT_DIPNAME( 0x000f, 0x0000, "Country (DIP 1-4)")
+			COREPORT_DIPSET(0x0000, "USA / Canada" )
+			COREPORT_DIPSET(0x0001, "Germany" )
+			COREPORT_DIPSET(0x0002, "France" )
+			COREPORT_DIPSET(0x0003, "United Kingdom" )
+			COREPORT_DIPSET(0x0004, "Spain" )
+			COREPORT_DIPSET(0x0007, "Europe" )
+			COREPORT_DIPSET(0x0008, "Japan" )
 INPUT_PORTS_END
 
 #define input_ports_swep1 input_ports_rfm
@@ -646,9 +680,9 @@ static SWITCH_UPDATE(p2k) {
 	/  reads 0 - which is a blocked or broken one as far as the machine is concerned. So all of them
 	/  start at 1 and the ball model below moves the few it owns.
 	/
-	/  Which ones they are is not guesswork: each switch record in the game's own table carries a
-	/  flag at +0x0c, bit 0x800, and the operations manuals shade exactly the same cells. Both agree,
-	/  for both games:
+	/  Which ones they are comes from the operations manuals, which name them outright - Revenge
+	/  From Mars page 3-21, "the individual playfield opto switches are", then switches 46, 47, 51
+	/  and 52 by number, plus the ball trough assembly's own five on page 3-19:
 	/
 	/      Revenge From Mars  41-47 trough jam, trough 1-4, right popper, jet exit
 	/                         51 right lockup, 52 left ramp entrance
@@ -658,7 +692,22 @@ static SWITCH_UPDATE(p2k) {
 	/                         48 and 52 as well from 2.10, its expansion trough
 	/
 	/  47 and 52 were missing before this - Jet Exit and Left Ramp Entrance sat at 0 on every RFM
-	/  set, which is a jet exit and a ramp entrance permanently reporting a ball */
+	/  set, which is a jet exit and a ramp entrance permanently reporting a ball. The manual names
+	/  both, so that was right.
+	/
+	/  Revenge From Mars has since been checked against a machine as well: rfm_260's own switch test
+	/  reports every opto as "norm closed", and the ones it reports are the ones in the list above -
+	/  including 53-56, which came from 2.60's switch table rather than a manual and had not been
+	/  confirmed until then. Episode I's list is still manual-derived only. That test is the way to
+	/  check any of them: an opto rests closed, so it names itself
+	/
+	/  An earlier version of this note claimed the switch table carries an opto flag at +0x0c bit
+	/  0x800 and that it agreed with the manuals. It does not. That bit - +0x1c from the record
+	/  start used elsewhere in this file - gives 38, 41-46 and 51 on rfm_160, which both misses 47
+	/  and 52 and adds 38, Up/Down Ramp Up. On Episode I it flags 38 Right Saucer, which is a plain
+	/  switch. So it marks something else - every game's flagged set is ball-in-device detectors,
+	/  so a device or ball-tracking bit is the likely reading - and it cannot be used to derive an
+	/  opto list */
 	{
 		const int *o = p2k_optoList();
 		int k;
@@ -747,6 +796,9 @@ static SWITCH_UPDATE(p2k) {
 	                       brings up high voltage (Game::m_sw_coin_door_callback_irq), a door that
 	                       was never open produces none and no coil ever fires
 	   P2K_PLAY="<frame>:<what>[:<hold>],..." with what one of coin, start, enter, up, down, esc,
+	                       coinb<n> for one bit of the coin register on its own (coin is bit 1 -
+	                       the three slots are not in the low bits, so this is how a position gets
+	                       checked instead of assumed),
 	                       or sw<number> for any switch in the matrix - "1200:sw37:10" closes 37 at
 	                       frame 1200 for ten frames, so a target or a jet needs no code of its own.
 	                       Sixteen sw entries at most. The per-event hold matters: a coin held too
@@ -850,7 +902,10 @@ static SWITCH_UPDATE(p2k) {
 				         if (h && (!strchr(p, ',') || h < strchr(p, ','))) thisHold = (int)strtol(h + 1, NULL, 10); }
 				if (c && frame >= at && frame < at + thisHold) {
 					c++;
-					if      (!strncmp(c, "coin",  4)) coin |= 0x02;
+					/* coinb<n> drives one bit of the coin register on its own, which is how the
+					   three known positions were checked - "coin" is bit 1, the one MAME uses */
+					if      (!strncmp(c, "coinb", 5)) coin |= 1 << (int)strtol(c + 5, NULL, 10);
+					else if (!strncmp(c, "coin",  4)) coin |= 0x02;
 					else if (!strncmp(c, "start", 5)) start = 1;
 					else if (!strncmp(c, "enter", 5)) diag |= P2K_DIAG_ENTER;
 					else if (!strncmp(c, "up",    2)) diag |= P2K_DIAG_UP;
@@ -1134,7 +1189,7 @@ static SWITCH_UPDATE(p2k) {
    continuation - shipped as the same PKSFX update .exes with the same four files inside, so
    nothing but their hashes is new here. Those packages carry a fifth, pin2000_<game>_<ver>_
    pubboot.rom, 32 KiB and identical in all twelve that have it, which is not part of the update
-   flash and is not loaded; Encore's loader ignores it too.
+   flash and is not loaded; MAME and Encore's loader ignores it too.
 
    The sixth, _sf.rom, does matter: 1 MiB in every package, and it is the DCS sound board's flash.
    17 of the 20 are byte for byte the rfm_28f800.rom / swe1_28f800.rom above, which is what lets
@@ -1258,16 +1313,19 @@ ROM_END
 ROM_START(swep1_040)
 	P2K_COMMON_SWEP1
 ROM_END
-/* The factory image on a rev. 2 Prism card, reached by giving the machine no update flash at all:
+/* The factory image on a rev. 2(?) Prism card, reached by giving the machine no update flash at all:
    the loader then validates and starts the fallback copy in the Prism ROMs. Every other set here
    overrides that copy with an update, so this is the one version that is the card rather than a package.
+
+   "We only had 60MB of ROM to store every art asset the game needed.
+    The other 4MB was reserved for an old version of the game software so that it was always possible to boot the game and upload a newer version into the Flash memory."
 
    It does not boot yet: it halts at 0x1b355f/0x1b3568/0x2020c5
    with no timer ever programmed, the same shape as the rev. 1 pair's 0.1 and Episode I's 0.40 on
    this path, and under every setting of P2K_PATCH_PCI_INIT_RETRY. It is here so the rev. 2 ROMs
    and that halt are on record. src/p2k/README.md has the table.
 
-   Only u100/u101 are rev. 2 - the MAME set carries no other r2 file - but the rest is very
+   Only u100/u101 are rev. 2(?) - the MAME set carries no other r2 file - but the rest is very
    likely right rather than merely assumed. Diff the two revisions of this pair and they part
    only below 0x2fd3c0 of the interleaved bank: the loader and the fallback game image.
    The 13 MB of asset data above that is byte-identical. So in the one bank where both revisions
@@ -1333,6 +1391,13 @@ ROM_START(swep1_200)
 	           0x0387cc, CRC(44124d91) SHA1(06a8f2b3b6c25aad45a27ce0a617382e24d34dbe),
 	           0x23f000, CRC(109ed1ff) SHA1(745f18680a5f6793dd72fa34f7ddd10edee4384f),
 	           0x096600, CRC(3ba136cc) SHA1(96d7f6ae2fc205e137300ab1ddf3961d24e9f2ee))
+ROM_END
+ROM_START(swep1_166)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0166, CRC(6cf16c6b) SHA1(7ce292a9159266e3e8fbc06899a1889372b94379),
+	           0x05d8f0, CRC(f2f4c4ff) SHA1(6692fc6743cb6bc91f36136635bf7226d39398a3),
+	           0x23f200, CRC(37e67c3e) SHA1(041d280dd2ae4c7cd588d48195f1001d6c299d6f),
+	           0x094800, CRC(75b7e70b) SHA1(a934ff7c124d953a4bb70123c0f9f01e6212fd30))
 ROM_END
 ROM_START(swep1_150)
 	P2K_COMMON_SWEP1
@@ -1626,7 +1691,7 @@ CORE_CLONEDEF(rfm, 150, 160, "Pinball 2000: Revenge From Mars (1.50)", 2000, "Mi
 CORE_CLONEDEF(rfm, 140, 160, "Pinball 2000: Revenge From Mars (1.40)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(rfm, 080, 160, "Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
-CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
+CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1 board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
 CORE_CLONEDEF(rfm, 180, 160, "Pinball 2000: Revenge From Mars (1.80 unofficial MOD)", 2006, "Midway", p2k, 0) // debatable if this still counts as official
 CORE_CLONEDEF(rfm, 190, 160, "Pinball 2000: Revenge From Mars (1.90 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 191, 160, "Pinball 2000: Revenge From Mars (1.91 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
@@ -1642,6 +1707,7 @@ CORE_GAMEDEF (swep1, 150, "Pinball 2000: Star Wars Episode I (1.50)", 2003, "Mid
 CORE_CLONEDEF(swep1, 140, 150, "Pinball 2000: Star Wars Episode I (1.40)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(swep1, 130, 150, "Pinball 2000: Star Wars Episode I (1.30)", 1999, "Midway", p2k, 0)
 CORE_CLONEDEF(swep1, 040, 150, "Pinball 2000: Star Wars Episode I (0.40 prototype/factory)", 1999, "Midway", p2k, GAME_NOT_WORKING)
+CORE_CLONEDEF(swep1, 166, 150, "Pinball 2000: Star Wars Episode I (1.66 unofficial MOD)", 2022, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(swep1, 200, 150, "Pinball 2000: Star Wars Episode I (2.00 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(swep1, 201, 150, "Pinball 2000: Star Wars Episode I (2.01 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(swep1, 210, 150, "Pinball 2000: Star Wars Episode I (2.10 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)

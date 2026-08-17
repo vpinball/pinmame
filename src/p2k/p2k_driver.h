@@ -30,6 +30,11 @@ public:
 	// Both take PinMAME ROM regions, declared by ROM_START in src/wpc/p2k.c. The subsystem
 	// does not open files: everything arrives through the normal ROM set machinery
 	bool set_prism_roms(const u8 *data, size_t len);
+	void set_dips(u8 v) { m_dip_switches = v; }
+	void video_lines(unsigned &active, unsigned &total) const;
+	// the beam position and the blanking predicate built on it, both from emulated time
+	u32 video_line() const;
+	bool in_vblank() const;
 	// the update flash image (bootdata + im_flsh0 + game + symbols), 8 MB
 	bool set_nvram_updates(const u8 *data, size_t len);
 
@@ -111,7 +116,11 @@ private:
 	u32 m_memory_ctrl_reg[256/4] = {};
 	u32 m_biu_ctrl_reg[256/4] = {};
 	u32 m_gx_pipeline_reg[512/4] = {};
-	u32 m_scratchpad[0x600/4] = {};
+	// Sized to the whole window mem_r/mem_w decode, so their range test alone bounds the index.
+	// It was 0x600 bytes with the index masked to 0x1ff - 512 entries allowed where 384 existed -
+	// so anything at 0x40000a00 or above wrote past the end. The BLT buffer the games use sits at
+	// the bottom of the window, so nothing has been seen up there
+	u32 m_scratchpad[0xc00/4] = {}; // 0x40000400-0x40000fff
 	int m_prismbank = 0;
 
 	// PLX local bus registers at 0x10000000, and the serial EEPROM behind register 0x14
@@ -132,6 +141,7 @@ private:
 	int m_pdb_phase_2 = 0;
 	u8 m_switch_column = 0;      // last value written to index register 5 (switch column strobe)
 	u8 m_coin_switches = 0;      // inputs, still unwired: PinMAME's core model comes with M3.5
+	u8 m_dip_switches = 0;       // what pdb_reg_r 0x02 answers, from core_getDip(0): the country code, 0 being USA/Canada. It was a hardcoded 1, i.e. Germany
 	u8 m_cabinet_switches = 0;
 	u8 m_diag_switches = 0;
 	u8 m_start_button = 0;

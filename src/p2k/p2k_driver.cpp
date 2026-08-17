@@ -46,6 +46,14 @@ static_assert(int(p2k_state::NVRAM_EEPROM) == P2K_NV_BLOCK_EEPROM, "NVRAM block 
 #define P2K_SEED_ERROR_LOG 1
 #endif
 
+// A vertical blank flag in the Prism BAR2 window, mirroring the one Encore and MAME models. It did not fix
+// the XINA 1.38 service menu, which is what it was added for - that still does not repaint with it
+// on - but it is a real signal the hardware has and this driver otherwise does not. 0 restores the
+// old behaviour, where the address is plain CMOS
+#ifndef P2K_VBLANK_FLAG
+#define P2K_VBLANK_FLAG 1
+#endif
+
 extern u64 g_p2k_cycles_total;
 #include "machine/pic8259.h"
 #include "machine/pit8253.h"
@@ -75,15 +83,16 @@ void p2k_apply_irq0()
 
 namespace {
 	// display controller registers, by dword index
-	constexpr unsigned DC_TIMING_CFG = 0x08 / 4;
-	constexpr unsigned DC_OUTPUT_CFG = 0x0c / 4;
+	constexpr unsigned DC_TIMING_CFG  = 0x08 / 4;
+	constexpr unsigned DC_OUTPUT_CFG  = 0x0c / 4;
 	constexpr unsigned DC_FB_ST_OFFSET = 0x10 / 4;
-	constexpr unsigned DC_LINE_DELTA = 0x24 / 4;
-	constexpr unsigned DC_H_TIMING_1 = 0x30 / 4;
-	constexpr unsigned DC_V_TIMING_1 = 0x40 / 4;
-	constexpr unsigned DC_V_LINE_CNT = 0x54 / 4;
-	constexpr unsigned VIDEO_LINES = 525;              // 640x480 with blanking
+	constexpr unsigned DC_LINE_DELTA  = 0x24 / 4;
+	constexpr unsigned DC_H_TIMING_1  = 0x30 / 4;
+	constexpr unsigned DC_V_TIMING_1  = 0x40 / 4;
+	constexpr unsigned DC_V_LINE_CNT  = 0x54 / 4;
+	constexpr unsigned VIDEO_LINES    = 525; // 640x480 with blanking
 	constexpr unsigned VIDEO_FRAMES_PER_SECOND = 60;
+	constexpr unsigned VIDEO_ACTIVE_LINES = 480; // the rest of the 525 is blanking
 	// graphics pipeline registers, by dword index
 	constexpr unsigned GP_DST         = 0x00 / 4;
 	constexpr unsigned GP_WIDTH       = 0x04 / 4;
@@ -92,6 +101,17 @@ namespace {
 	constexpr unsigned GP_VECTOR_MODE = 0x104 / 4;
 	constexpr unsigned GP_BLT_MODE    = 0x108 / 4;
 	constexpr unsigned GP_BLT_STATUS  = 0x10c / 4;
+	// What the games actually program, watched with P2K_GPWATCH: 0x00 dst x|y<<16, 0x04 width|
+	// height<<16, 0x08 src x|y<<16, and 0x10/0x14/0x20-0x2c set once to ffffffff and never touched
+	// again. Raster mode only ever takes 0x10c6 or 0x00cc, so bit 12 is the source transparency
+	// enable - set with the 0xc6 copy, clear with the opaque 0xcc - and masking to 8 bits below is
+	// equivalent only because those are the sole two values. The six that sit at ffffffff are the
+	// pattern registers, and holding them there is half the databook's precondition for the
+	// transparent copy; its key colour is not a register at all - see color_key in
+	// do_gfx_pipeline, which reads it out of the BLT buffer. Encore's independent implementation
+	// (qemu/p2k-gp-blt.c) agrees on bit 12 and on one row per trigger, hardcodes the key, and does
+	// strictly less besides - no fills, no vector mode, no other ROPs. README.md has the full
+	// comparison, and the XINA 1.38 investigation that prompted it
 } // anonymous namespace
 
 // P2K_WRITEMAP=1: count every write into 1 MB buckets and print the busiest at the PPM trigger.
@@ -628,8 +648,31 @@ void p2k_state::apply_irq0()
 // What is here is the path - columns, rows, lamp strobes and coil registers in the shape both sides
 // expect. The wiring of individual numbers is in src/wpc/p2k_names.h, read out of the games' own
 // device tables and since checked against both machines' test menus
+// Encore writes the vertical blank flag into the SRAM rather than deriving it on read, and this
+// is that, tried and commented out because it changed nothing so far. Left here because someone may have the same idea. Two caveats if it
+// is ever revived - it writes into the CMOS, which PinMAME saves to the .nv, and once per frame
+// is the finest this hook offers where Encore updates thirty times a frame, so the flag
+// alternates instead of pulsing briefly. A guest polling for a short 1 could miss it either way.
+//
+// static bool p2k_vblank_written()
+// {
+// #if P2K_DEBUG
+// 	static const bool on = getenv("P2K_VBLANK_WRITE") != nullptr;
+// 	return on;
+// #else
+// 	return false;
+// #endif
+// }
+
 void p2k_state::push_switches(const u8 *matrix, unsigned count)
 {
+	// the SRAM-written vblank flag, see the note above:
+	// if (p2k_vblank_written() && m_nvram.size() >= 8)
+	// {
+	// 	static u32 phase = 0;
+	// 	const u32 v = (++phase & 1) ? 1u : 0u;
+	// 	write_le(m_nvram, 4, v, 0xffffffff);
+	// }
 	if (!matrix) return;
 	if (count > sizeof(m_sw_matrix)) count = sizeof(m_sw_matrix);
 	for (unsigned i = 0; i < count; i++) m_sw_matrix[i] = matrix[i];
@@ -718,6 +761,15 @@ bool p2k_state::frame_rgb(u32* const __restrict dest, unsigned capacity, unsigne
 		for (unsigned x = 0; x < w; ++x,++offs,++off_fb)
 		{
 			u8 r, g, b;
+			// 8 bit indexed, and the palette is not modelled - this hands back the index as grey, so a
+			// game that used this mode would draw in shades rather than colour. No P2K set does: both
+			// games run 15 bpp throughout, which is why it has never been worth wiring up.
+			//
+			// MAME has a whole path in src/mame/atari/mediagx.cpp. The table is fed
+			// through memory_ctrl_w() at offset 0x20/4, which routes on DC_GENERAL_CFG bits 20-23:
+			// 0x00000000 sets the index, 0x00100000 writes a component and post-increments it. Three
+			// bytes per entry, six bits each, so drawing is r = pal[c*3+0] << 2 and so on. Our own
+			// memory_ctrl_w stores and does nothing, so that is where the routing would go
 			if (cfg & 1)                                        //!! 8 bit, palette not modelled
 			{
 				r = g = b = (off_fb < room) ? fb[off_fb] : 0;
@@ -957,8 +1009,43 @@ void p2k_state::gx_pipeline_w(offs_t offset, u32 data, u32 mem_mask)
 	if (data > 0 && (offset == GP_BLT_MODE || offset == GP_VECTOR_MODE))
 	{
 		if (offset == GP_BLT_MODE) do_gfx_pipeline();
-		// vector mode is not implemented in the MAME driver either
+#if P2K_DEBUG
+		// Vector mode does solid fills, which is how a screen gets cleared. It was never implemented
+		// here or in the MAME driver this came from, and a fill that does nothing leaves the previous
+		// picture behind for the next one to draw over. Report it, with the registers a fill would
+		// need, so it is visible when a game asks for one
+		else if (offset == GP_VECTOR_MODE)
+		{
+			static unsigned reported = 0;
+			if (reported < 8)
+			{
+				reported++;
+				fprintf(stderr, "[p2k blit] vector mode %08x asked for and not implemented - dst=%08x width=%04x raster=%02x\n",
+				        data, m_gx_pipeline_reg[GP_DST], unsigned(m_gx_pipeline_reg[GP_WIDTH] & 0xffff), unsigned(m_gx_pipeline_reg[GP_RASTER_MODE] & 0xff));
+				fflush(stderr);
+			}
+		}
+#endif
 	}
+#if P2K_DEBUG
+	// P2K_GPWATCH=1: which pipeline registers a game actually programs - each register's first
+	// write, then every later *change* to the ones the blit never reads, being the raster mode's
+	// upper bits and the six that sit at ffffffff. This is what established the register map at the top of this file
+	{
+		static const bool gpwatch = getenv("P2K_GPWATCH") != nullptr;
+		static bool seen[128] = {};
+		static u32 last[128] = {};
+		const unsigned o = offset & 0x7f;
+		const bool watched = (o == 0x100/4) || (o == 0x10/4) || (o == 0x14/4) || (o >= 0x20/4 && o <= 0x2c/4);
+		if (gpwatch && (!seen[o] || (watched && data != last[o])))
+		{
+			seen[o] = true; last[o] = data;
+			fprintf(stderr, "[p2k gp] register %03x = %08x", unsigned(offset) * 4u, data);
+			fputc(10, stderr);
+			fflush(stderr);
+		}
+	}
+#endif
 	u32 &r = m_gx_pipeline_reg[offset];
 	r = (r & ~mem_mask) | (data & mem_mask);
 }
@@ -975,33 +1062,229 @@ void p2k_state::do_gfx_pipeline()
 	const int src_y = int(m_gx_pipeline_reg[GP_SRC_X] >> 16);
 	const int width = int(m_gx_pipeline_reg[GP_WIDTH] & 0xffff);
 
+	//!! check for width == 0: either that ignores all and exits, or???
+
+	// Anything outside the four modes below draws nothing at all so far. MAME only ever ran the 1.x games, so "the rest is
+	// unused" was true of those and is not a statement about the hardware. Report each mode once:
+	// a missing one is invisible otherwise, and it is exactly what a wrong background or a stuck
+	// display manager could look like. The mode is a property of the whole blit, so this is decided once
+	// here rather than per pixel - and an unknown mode has nothing left to do but end the blit,
+	// which still has to clear the busy bits the firmware can poll
+	if (rastermode != 0x00 && rastermode != 0xff && rastermode != 0xc6 && rastermode != 0xcc)
+	{
+#if P2K_DEBUG
+		static bool seen[256] = {};
+		if (!seen[rastermode])
+		{
+			seen[rastermode] = true;
+			fprintf(stderr, "[p2k blit] raster mode %02x is not implemented - nothing drawn\n", unsigned(rastermode));
+			fflush(stderr);
+		}
+#endif
+		m_gx_pipeline_reg[GP_BLT_STATUS] &= 0xfffffff8; // done, having drawn nothing
+		return;
+	}
+
 	const size_t pixels = m_vram.size() / 2;
 	auto vram16 = [this](size_t i) -> u16 & { return *reinterpret_cast<u16 *>(&m_vram[i * 2]); };
 
-	const size_t row = size_t(y) * size_t(line_delta);
-	const size_t src_row = size_t(src_y) * size_t(line_delta);
-	for (int j = 0; j < width; j++)
-	{
-		const size_t di = row + size_t(x + j);
-		const size_t si = src_row + size_t(src_x + j);
-		if (di >= pixels) break;
-		switch (rastermode)
+#if P2K_DEBUG
+	// What a copy does when its source falls outside VRAM is unknown - the hardware presumably
+	// returns something and writes it, so the destination would change. Raster 0xc6 reads anyway;
+	// 0xcc stops at the end of VRAM, because it moves the row in one block and cannot step past the
+	// buffer safely. Either way the tail of such a row is wrong, and a region left exactly as it
+	// was is indistinguishable from one that never repaints - hence the report. No set has
+	// triggered it so far
+	auto note_oor = [&](unsigned mode, size_t si) {
+		static unsigned n = 0;
+		if (n++ < 12)
 		{
-			case 0x00: vram16(di) = 0x0000; break;                       // BLACKNESS
-			case 0xff: vram16(di) = 0xffff; break;                       // WHITENESS
-			case 0xc6:                                                    // transparent copy
-				if (si < pixels)
+			fprintf(stderr, "[p2k blit] raster %02x source out of VRAM: src=%d,%d dst=%d,%d w=%d si=%zu limit=%zu", mode, src_x, src_y, x, y, width, si, pixels);
+			fputc(10, stderr);
+			fflush(stderr);
+		}
+	};
+#endif
+
+#if P2K_DEBUG
+	// P2K_KEYWATCH=1: what the BLT buffer holds when a transparent copy runs, reported whenever it
+	// changes. The write half of the same watch, in mem_w, is what located the buffer; color_key below has what the pair established
+	if (rastermode == 0xc6)
+	{
+		static const bool keywatch = getenv("P2K_KEYWATCH") != nullptr;
+		static u32 last0 = 0xffffffff;
+		if (keywatch && m_scratchpad[0] != last0)
+		{
+			last0 = m_scratchpad[0];
+			fprintf(stderr, "[p2k key] 0xc6 blit, BLT buffer = %08x %08x %08x %08x\n", m_scratchpad[0], m_scratchpad[1], m_scratchpad[2], m_scratchpad[3]);
+			fflush(stderr);
+		}
+	}
+#endif
+
+	// The transparent copy's key colour, which is neither a constant nor a pipeline register: the
+	// databook puts it in the BLT buffer as destination data - "the raster operation must be set to
+	// C6h, and the pattern registers must be all F's for this mode to work properly", and the games
+	// satisfy both halves. P2K_KEYWATCH found the buffer: rfm_160 fills 0x40000400-0x400008ff, the
+	// scratchpad, with 0x7c1f before drawing anything - 640 words, exactly one row - and every 0xc6
+	// blit sees it there. So 0x7c1f is no hardware default, only this firmware's only choice (so far).
+	// Every word of the row holds the same value, so whether the hardware keys on one value or on
+	// the buffer column by column cannot be told apart here; the first word is taken, and the check
+	// below watches that assumption. A fallback could cover a copy issued before anything filled the
+	// buffer, which would take 0 as the key and swallow every black pixel
+	const u16 color_key = /*m_scratchpad[0] ?*/ u16(m_scratchpad[0] & 0xffff) /*: 0x7c1f*/;
+
+#if P2K_DEBUG
+	// The assumption above, checked: a row that is not uniform means the hardware is being asked
+	// for per-column destination data, which one key cannot express, and the copy below would draw
+	// the wrong thing with no other sign of it. 320 compares against a copy of 640 pixels, never detected so far
+	if (rastermode == 0xc6)
+	{
+		for (unsigned k = 1; k < 0x500 / 4; k++)   // 320 dwords = 640 words = the row the games fill
+			if (m_scratchpad[k] != m_scratchpad[0])
+			{
+				static unsigned reported = 0;
+				if (reported++ < 8)
 				{
-					const u16 pixel = vram16(si);
-					if (pixel != 0x7c1f) vram16(di) = pixel;              // the driver's key colour
+					fprintf(stderr, "[p2k blit] BLT buffer is not one colour: word %u = %08x against %08x at word 0 - the transparent copy keys on word 0 alone\n",
+					        k, m_scratchpad[k], m_scratchpad[0]);
+					fflush(stderr);
 				}
 				break;
-			case 0xcc: if (si < pixels) vram16(di) = vram16(si); break;   // SRCCOPY
-			default: break;                                               // the rest is unused
+			}
+	}
+#endif
+
+	// Note: A P2K dev responsible for the firmware's graphics pipeline code said that they only ever
+	// used a single line blit for performance reasons. BUT unknown if this is always true,
+	// especially for the newer homebrew versions!
+
+	// The high half of GP_WIDTH is the height, but the MAME driver this came from read only the width and drew a single row. Taking it as a
+	// height costs nothing and would handle a rectangular blit if one ever arrived - but nothing
+	// has been seen to send one. Every set measured writes exactly 1 here, through boot, attract
+	// and the service menu, so this loop always runs once
+	const int height = int(m_gx_pipeline_reg[GP_WIDTH] >> 16);
+	for (int i = 0; i < height; i++) //!! should 0 be special cased? maybe also kinda undefined, same as width == 0
+	{
+		const size_t row = size_t(y + i) * size_t(line_delta);
+		const size_t src_row = size_t(src_y + i) * size_t(line_delta);
+		// Where the row runs off the end of VRAM is fixed before the loop rather than tested inside it:
+		// the destination advances one pixel per step, so the point it crosses is arithmetic
+		// Note the HW does not clip writes!
+		const size_t dst_base = row + size_t(x);
+		size_t cols = (dst_base < pixels) ? (pixels - dst_base) : 0;
+		if (cols > size_t(width)) cols = size_t(width);
+
+		// BLACKNESS and WHITENESS write a constant to every pixel of the row and read no source, so
+		// they are a memset of the row rather than a per-pixel switch. Both fill bytes happen to
+		// equal the raster mode itself: 0x00 -> 0x0000, 0xff -> 0xffff
+		if (rastermode == 0x00 || rastermode == 0xff)
+		{
+			if (cols) memset(&m_vram[dst_base * 2], rastermode, cols * 2);
+			continue;
+		}
+
+		const size_t src_base = src_row + size_t(src_x);
+		// SRCCOPY reads one contiguous run and writes another, so the row is a single move. The
+		// source is clipped separately from the destination: the row length above bounds only the
+		// write, and a block move reading past the end of VRAM would run off the vector in one go,
+		// where the per-pixel version stepped past one element at a time. The out-of-range report
+		// therefore moves up here too - it fires once for the row instead of once per pixel, with
+		// the first offending source offset. memmove rather than memcpy because a blit whose source
+		// and destination overlap is not forbidden by anything here; none has been seen
+		if (rastermode == 0xcc)
+		{
+			size_t n = (src_base < pixels) ? (pixels - src_base) : 0;
+			if (n > cols) n = cols;
+#if P2K_DEBUG
+			if (n < cols) note_oor(0xcc, src_base + n); //!! if this triggers, what does the HW do? apparently just allow the read!
+#endif
+			if (n) memmove(&m_vram[dst_base * 2], &m_vram[src_base * 2], n * 2);
+			continue;
+		}
+
+		// Raster 0xc6, the transparent copy: the only mode left so far; every pixel is tested against the key colour before it is
+		// written. The source is read past the end of VRAM here rather than clipped - what the hardware returns is the open question note_oor exists tries to catch
+		for (size_t j = 0; j < cols; j++)
+		{
+			const size_t di = dst_base + j;
+			const size_t si = src_base + j;
+			const u16 pixel = vram16(si);
+			if (pixel != color_key) vram16(di) = pixel;
+#if P2K_DEBUG
+			if (si >= pixels) note_oor(0xc6, si); //!! if this triggers, what does the HW do? apparently just allow the read!
+#endif
 		}
 	}
 
+#if P2K_DEBUG
+	// The distinct values of GP_WIDTH's high half, the height the row loop above reads. Reported so
+	// it stays knowable whether any game ever asks for more than the one row
+	{
+		static const bool gpwatch2 = getenv("P2K_GPWATCH") != nullptr;
+		const unsigned hi = unsigned(m_gx_pipeline_reg[GP_WIDTH] >> 16);
+		static bool seen_hi[8] = {};
+		const unsigned slot = hi > 6 ? 7 : hi;
+		if (gpwatch2 && !seen_hi[slot])
+		{
+			seen_hi[slot] = true;
+			fprintf(stderr, "[p2k blit] GP_WIDTH high half (height?) = %u seen", hi);
+			fputc(10, stderr);
+			fflush(stderr);
+		}
+	}
+	// P2K_FILLWATCH=1: the solid fills only - raster 00 and ff - with where they land. A screen that
+	// is not cleared is a fill that went somewhere the display is not reading from, and the
+	// destination here is relative to VRAM base 0 while the display reads from DC_FB_ST_OFFSET
+	static const bool fillwatch = getenv("P2K_FILLWATCH") != nullptr;
+	if (fillwatch && (rastermode == 0x00 || rastermode == 0xff))
+	{
+		static unsigned n = 0;
+		if (n++ < 60)
+			fprintf(stderr, "[p2k fill] raster %02x dst=%d,%d w=%d h=%d delta=%d -> vram %08x  fb_start=%08x\n",
+			        unsigned(rastermode), x, y, width, height, line_delta,
+			        unsigned(size_t(y) * size_t(line_delta) + size_t(x)) * 2u,
+			        m_disp_ctrl_reg[DC_FB_ST_OFFSET]);
+	}
+#endif
 	m_gx_pipeline_reg[GP_BLT_STATUS] &= 0xfffffff8;   // done
+}
+
+// Active and total vertical lines, from the timings the game programs rather than a constant.
+// DC_V_TIMING_1 packs active-1 in its low half and total-1 in its high half: e.g. Episode I
+// writes 0x010400ef, which is 240 active of 261 total. The 525 this used to assume is the
+// VGA 640x480 default, describing the output after the line doubling rather than what the
+// controller counts, and is about twice the real figure. MAME and Encore's counter runs 0..241, which is
+// the same number from the other direction. Falls back to the old constants before the game has programmed anything
+void p2k_state::video_lines(unsigned &active, unsigned &total) const
+{
+	const u32 vt = m_disp_ctrl_reg[DC_V_TIMING_1];
+	active = (vt & 0x7ff) + 1;
+	total  = ((vt >> 16) & 0x7ff) + 1;
+	if (vt == 0 || total <= active) { active = VIDEO_ACTIVE_LINES; total = VIDEO_LINES; }
+}
+
+// Where the beam is, from the machine's own clock: a position on the display depends on the video
+// timings and not on how fast the CPU runs, so this is independent of the MediaGX clock and does
+// not need revisiting when that changes. What it replaced did once depend on it - a per-timeslice
+// counter, and PinMAME hands out slices of one frame, which at the 20 MHz this was first written
+// for came to 333333 cycles against 525*635 = 333375 for a synthesized frame. Near enough that the
+// counter aliased and the line barely moved: it read a constant 0x1d8, and the firmware's frame
+// callback, which only acts while the line is below 10, never fired. Those numbers are why the old
+// approach failed, not a description of this one
+u32 p2k_state::video_line() const
+{
+	unsigned active, total; video_lines(active, total);
+	const u64 ns = u64(m_machine->machine().time().as_double() * 1e9);
+	const u64 ns_per_line = 1000000000ull / (u64(total) * VIDEO_FRAMES_PER_SECOND);
+	return u32((ns / (ns_per_line ? ns_per_line : 1)) % total);
+}
+
+// Past the last active line is blanking, which is what MAME tests as `vpos() >= m_frame_height`
+bool p2k_state::in_vblank() const
+{
+	unsigned active, total; video_lines(active, total);
+	return video_line() >= active;
 }
 
 u32 p2k_state::disp_ctrl_r(offs_t offset) const
@@ -1009,24 +1292,41 @@ u32 p2k_state::disp_ctrl_r(offs_t offset) const
 	offset &= 0x3f;
 	// The vertical line counter has to advance on its own - the MAME driver keeps it moving with
 	// a per-scanline timer tied to its screen device (`m_disp_ctrl_reg[0x54/4] = scanline`). This
-	// port has no screen yet, so the value is derived from emulated time instead: 525 lines at
-	// 60 Hz, the mode the driver's default timings describe. Anything waiting for the display to
-	// move sees it move.
-	if (offset == DC_V_LINE_CNT)
+	// port has no screen yet, so the value is derived from emulated time instead - see video_line(),
+	// which counts the lines the controller is actually programmed for. Anything waiting for the
+	// display to move sees it move.
+	// Bit 30 of DC_TIMING_CFG is a vertical blank status: set during active display, clear while
+	// blanking. MAME's own MediaGX driver does this - src/mame/atari/mediagx.cpp, `r |= 0x40000000;
+	// if (m_screen->vpos() >= m_frame_height) r &= ~0x40000000;` - and the pinball2k driver this
+	// port came from dropped it along with the screen device it needed. Without it the register
+	// reads back exactly what was written, so anything polling for the edge waits for ever. The
+	// games do write this register: 0x0002804f and 0x0002806f, so they know it is there. A status bit frozen at whatever was
+	// last written is wrong however little depends on it here
+	if (offset == DC_TIMING_CFG)
 	{
-		// From the machine's own clock, which is the point: a beam position depends on the video
-		// timings and not on how fast the CPU runs, so this is independent of the MediaGX clock
-		// and does not need revisiting when that changes. What it replaced did depend on it - a
-		// per-timeslice counter, and PinMAME hands out slices of one frame, which at the 20 MHz
-		// this was first written for came to 333333 cycles against 525*635 = 333375 for a
-		// synthesized frame. Near enough that the counter aliased and the line barely moved: it
-		// read a constant 0x1d8, and the firmware's frame callback, which only acts while the line
-		// is below 10, never fired. Those numbers are why the old approach failed, not a
-		// description of this one
-		const u64 ns = u64(m_machine->machine().time().as_double() * 1e9);
-		constexpr u64 ns_per_line = 1000000000ull / (VIDEO_LINES * VIDEO_FRAMES_PER_SECOND);
-		return u32((ns / ns_per_line) % VIDEO_LINES);
+#if P2K_DEBUG
+		// P2K_DISPWATCH counts the reads. Measured: **once**, during boot, and never again in a
+		// minute of running - on rfm_160 at cycle 129444 and swep1_210 at 103556. So nothing here seems(!)
+		// poll this register so far, which is why supplying the bit properly changed no behaviour, and why
+		// MAME's spin_until_interrupt in this branch would buy nothing: it exists to skip a guest
+		// burning host time in a vblank poll, and these games do not have one (needs more verification in-game though!)
+		static const bool watch = getenv("P2K_DISPWATCH") != nullptr;
+		if (watch)
+		{
+			static u64 reads = 0, next = 1;
+			if (++reads >= next)
+			{
+				next *= 10;
+				fprintf(stderr, "[p2k disp] DC_TIMING_CFG read %llu times by cycle %llu", (unsigned long long)reads, (unsigned long long)g_p2k_cycles_total);
+				fputc(10, stderr); fflush(stderr);
+			}
+		}
+#endif
+		const u32 r = m_disp_ctrl_reg[DC_TIMING_CFG] | 0x40000000;
+		return in_vblank() ? (r & ~0x40000000u) : r;
 	}
+	if (offset == DC_V_LINE_CNT)
+		return video_line();
 	return m_disp_ctrl_reg[offset];
 }
 void p2k_state::disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
@@ -1054,6 +1354,9 @@ void p2k_state::disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 }
 
 u32 p2k_state::memory_ctrl_r(offs_t offset) const { return m_memory_ctrl_reg[offset & 0x3f]; }
+// Stores only. MAME's MediaGX driver uses offset 0x20/4 here as the palette port, routed by
+// DC_GENERAL_CFG bits 20-23 - see the note in the 8 bit branch of frame_rgb(). Nothing here
+// needs it while both games run 15 bpp
 void p2k_state::memory_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	u32 &r = m_memory_ctrl_reg[offset & 0x3f];
@@ -1216,8 +1519,34 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	if (addr < 0x000c8000)                       return expansion_r((addr - 0x000c0000) / 4) & mem_mask;
 	if (addr < 0x000d0000)                       return read_le(m_ram_c8, addr - 0x000c8000, mem_mask);
 	if (addr < 0x00100000)                       return read_le(m_bios_ram, addr - 0x000d0000, mem_mask);
+	// On a MediaGX the frame buffer is carved out of system DRAM, so physical 0x800000-0xbfffff is
+	// the same memory as the 0x40800000 window below - Encore keeps one backing store for exactly
+	// that reason (qemu/p2k-gx.c: "the FB window is a mirror of physical RAM 0x800000"). Here they
+	// are two buffers, m_main_ram and m_vram, and nothing has needed them joined: the guest reaches
+	// the frame buffer through 0xc0800000, which is where Allegro's screen bitmap points (its line
+	// pointers run down from 0xc08ef800). If something ever draws through the low address instead,
+	// this is where the alias goes - and mem_w needs the mirror of it
 	if (addr < 0x10000000)                       return read_le(m_main_ram, addr, mem_mask);
 	if (addr < 0x10000080)                       return prism_1000_r((addr - 0x10000000) / 4) & mem_mask;
+#if P2K_VBLANK_FLAG
+	// Encore models a vertical blank flag here (qemu/p2k-vsync.c) because, in its words, several
+	// "poll loops in XINU display setup wait for this dword to flip from 0 to 1 each frame before
+	// continuing", gating retrace-only work like palette updates and layer flips. This driver has a
+	// line counter but no such event, and no display interrupt either.
+	//
+	// Derived from emulated time rather than written into the array the way Encore writes its SRAM:
+	// this region is the CMOS here and is saved to PinMAME's NVRAM file, so a flag stored in it
+	// would be written into battery-backed memory every frame and persist across runs. The header
+	// seed_error_log() builds skips offset 4, which is consistent with it not being storage.
+	// Writing it into the SRAM the way Encore does was tried too - see the commented-out block
+	// above push_switches - and changed nothing either. It did not fix the service menu it was
+	// added for (README.md), so either the address is wrong or that is not what blocks; kept
+	// because the signal is real and the games are unaffected by it
+	if (addr == 0x11000004)
+	{
+		return (in_vblank() ? 1u : 0u) & mem_mask; // 1 while in vertical blank
+	}
+#endif
 	if (addr >= 0x11000000 && addr < 0x11030000) return read_le(m_nvram, addr - 0x11000000, mem_mask);
 	if (addr >= 0x13000000 && addr < 0x13800000)
 		return P2K_HAVE_WEAK(p2k_dcs_read) ? p2k_dcs_read(addr - 0x13000000, mem_mask) : 0;
@@ -1238,11 +1567,15 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	if (addr >= 0x16000000 && addr < 0x17000000) return m_prismdata[(size_t(2) << PRISM_BANK_SHIFT) + (((addr - 0x16000000) / 4) & PRISM_BANK_MASK)] & mem_mask;
 	if (addr >= 0x17000000 && addr < 0x18000000) return m_prismdata[(size_t(3) << PRISM_BANK_SHIFT) + (((addr - 0x17000000) / 4) & PRISM_BANK_MASK)] & mem_mask;
 	if (addr >= 0x18000000 && addr < 0x19000000) return read_le(m_prism_bank9, addr - 0x18000000, mem_mask);
-	if (addr >= 0x40000400 && addr < 0x40001000) return m_scratchpad[((addr - 0x40000400) / 4) & 0x1ff] & mem_mask;
+	if (addr >= 0x40000400 && addr < 0x40001000) return m_scratchpad[(addr - 0x40000400) / 4] & mem_mask;
 	if (addr >= 0x40008000 && addr < 0x40008100) return biu_ctrl_r((addr - 0x40008000) / 4) & mem_mask;
 	if (addr >= 0x40008100 && addr < 0x40008300) return gx_pipeline_r((addr - 0x40008100) / 4) & mem_mask;
 	if (addr >= 0x40008300 && addr < 0x40008400) return disp_ctrl_r((addr - 0x40008300) / 4) & mem_mask;
 	if (addr >= 0x40008400 && addr < 0x40008500) return memory_ctrl_r((addr - 0x40008400) / 4) & mem_mask;
+	// Nothing answers at 0x40020000, where Encore puts BC_DRAM_TOP and preloads 0x007fffff so the
+	// guest BIOS can size RAM (qemu/p2k-gx.c). No set here has been seen to read it so far, and the two
+	// versions that want 8 MB - rfm_180 and Episode I 1.60 - boot without it, main RAM being 256 MB
+	// regardless. If a machine ever sizes its own memory, that register is what it will ask
 	if (addr >= 0x40400000 && addr < 0x40480000) return read_le(m_smm, addr - 0x40400000, mem_mask);
 	if (addr >= 0x40800000 && addr < 0x40c00000) return read_le(m_vram, addr - 0x40800000, mem_mask);
 	// the same framebuffer through the MediaGX 0xc0000000 alias, which is where the firmware's own
@@ -1305,6 +1638,32 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	// 30 M writes at 0xc0800000 and 13 M at 0xc0900000 - the picture, going nowhere, because the
 	// alias window used to stop at the register block.
 	if (addr >= 0xc0000000 && addr < 0xc1000000) addr -= 0x80000000;
+
+#if P2K_DEBUG
+	// P2K_KEYWATCH=1: every write carrying 0x7c1f in either half, with the PC, the alias already
+	// folded above. The transparent copy hardcodes that value as its key colour, but the databook
+	// says it is not a register: "the color key value is stored in the BLIT buffer as destination
+	// data. The raster operation must be set to C6h, and the pattern registers must be all F's for
+	// this mode to work properly". The games do hold those pattern registers at 0xffffffff, so the
+	// rest of that description should apply as well - and P2K_GPWATCH has already shown that no
+	// pipeline register ever takes the value. This looks for where it does land instead. VRAM is
+	// excluded: a picture that contains magenta pixels would bury the answer
+	{
+		static const bool keywatch = getenv("P2K_KEYWATCH") != nullptr;
+		const bool in_vram = (addr >= 0x40800000 && addr < 0x40c00000);
+		if (keywatch && !in_vram && (((data & 0xffff) == 0x7c1f) || ((data >> 16) == 0x7c1f)))
+		{
+			static unsigned n = 0;
+			if (n++ < 40) // the extent is already known and recorded; this is just the entry point
+			{
+				extern unsigned p2k_bridge_pc();
+				fprintf(stderr, "[p2k key] %08x <- %08x mask %08x  from PC=%08x\n", addr, data, mem_mask, p2k_bridge_pc());
+				fflush(stderr);
+			}
+		}
+	}
+#endif
+
 	if (addr < 0x000a0000)                       { write_le(m_main_ram, addr, data, mem_mask); return; }
 	if (addr < 0x000b0000)                       { write_le(m_video_ram_a, addr - 0x000a0000, data, mem_mask); return; }
 	if (addr < 0x000c0000)                       { write_le(m_cga_ram, addr - 0x000b0000, data, mem_mask); return; }
@@ -1332,7 +1691,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	if (addr >= 0x14000000 && addr < 0x15000000) { prism_1400_w((addr - 0x14000000) / 4, data); return; }
 	if (addr >= 0x15000000 && addr < 0x18000000) { return; }   // prism data banks are read-only
 	if (addr >= 0x18000000 && addr < 0x19000000) { write_le(m_prism_bank9, addr - 0x18000000, data, mem_mask); return; }
-	if (addr >= 0x40000400 && addr < 0x40001000) { u32 &r = m_scratchpad[((addr - 0x40000400) / 4) & 0x1ff]; r = (r & ~mem_mask) | (data & mem_mask); return; }
+	if (addr >= 0x40000400 && addr < 0x40001000) { u32 &r = m_scratchpad[(addr - 0x40000400) / 4]; r = (r & ~mem_mask) | (data & mem_mask); return; }
 	if (addr >= 0x40008000 && addr < 0x40008100) { biu_ctrl_w((addr - 0x40008000) / 4, data, mem_mask); return; }
 	if (addr >= 0x40008100 && addr < 0x40008300) { gx_pipeline_w((addr - 0x40008100) / 4, data, mem_mask); return; }
 	if (addr >= 0x40008300 && addr < 0x40008400) { disp_ctrl_w((addr - 0x40008300) / 4, data, mem_mask); return; }
@@ -1468,7 +1827,22 @@ u8 p2k_state::pdb_reg_r() const
 	{
 		case 0x00: return m_coin_switches;
 		case 0x01: return m_cabinet_switches;
-		case 0x02: return 1; // dip switches. Read once at startup and the 1 is accepted - see the note below on what else was watched
+		// The power driver board's DIP switches, read once during startup: they select the country,
+		// which is what the pricing tables key off (the changelogs talk about "the country dipswitch
+		// setting"). Answers with whatever the user set, through core_getDip(0) and p2k_pinmame_set_dips(), and 1 is still
+		// the default so nothing changes unless someone moves a switch. The machine's own DIP Switch
+		// Test in the service menu shows what it sees, which is how a value is checked.
+		//
+		// Only bits 0-3 matter, as a country code: 0 USA/Canada, 1 Germany, 2 France, 3 United
+		// Kingdom, 4 Spain, 7 Europe, 8 Japan, and the machine calls 5, 6 and 9-15 Unused. Measured
+		// by walking every combination against its own DIP Switch Test. The default is now 0, USA/Canada.
+		//
+		// Encore hardcodes this one to 0xf0 and calls it a "status hi nibble"
+		// (qemu/p2k-lpt-board.c). Both constants boot, which fits a country selector where any
+		// value picks some country - but the manual has a DIP Switch Test and both changelogs talk
+		// about the country dipswitch setting, so switches is what this is. Encore agrees with the
+		// 0x00 for the fuses below, which the service menu fuse test confirms is the healthy reading
+		case 0x02: return m_dip_switches;
 		case 0x03: return m_diag_switches;
 		case 0x04:
 		{
@@ -1517,9 +1891,13 @@ u8 p2k_state::pdb_reg_r() const
 		}
 		case 0x05: case 0x06: case 0x07: case 0x08:
 		case 0x09: case 0x0a: case 0x0b:
-		// 0x12/0x13 are the fuse diagnostics (wms_pdb_fuse_status, pdb_fuses) and are still the same
-		// stub the lamp registers were. Unlike those, though, they were never read once in the whole
-		// watch above - so whatever the test menu shows for fuses, it is not coming from here
+		// 0x12/0x13 are the fuse diagnostics, read as a pair by wms_pdb_fuse_status(unsigned char &,
+		// unsigned char &) - the names are in the packages' symbols.rom. They are read, contrary to
+		// what an earlier watch here concluded: that watch simply never entered the service menu's
+		// fuse test, which is the only thing that asks for them. Walking into it on rfm_160 gives
+		// "r 12 -> 00" and "r 13 -> 00" and draws every fuse green, so 0 is not a placeholder that
+		// happens to be ignored - it is the healthy reading, one bit per fuse with blown being set.
+		// A machine that should show a blown fuse is the only thing this cannot express (yet)
 		case 0x12: case 0x13: return 0x00;
 		default:   return 0xff;
 	}

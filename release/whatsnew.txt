@@ -66,16 +66,17 @@ Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, wh
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
 IDSA: Fantastic Car
-WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.20
-      Star Wars Episode I 1.50, 1.40, 1.30
+WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.20, 0.80, 0.1
+      Star Wars Episode I 1.50, 1.40, 1.30, 0.40
 
 Kinda new:
 Baywatch 4.02 (unofficial MOD)
 Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
-Revenge From Mars 2.60, 2.50, 2.24, 2.23, 2.22, 2.10 (unofficial MODs)
+Revenge From Mars 2.60, 2.50, 2.24, 2.23, 2.22, 2.10, 2.00 (unofficial MODs)
                   1.95, 1.91, 1.90 (unofficial MODs)
                   1.80 (kinda official MOD by Tom Uban, for the 2006 tournament server)
 Star Wars Episode I 2.10, 2.01, 2.00 (unofficial MODs)
+                    1.66 (unofficial MODs)
 
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))
