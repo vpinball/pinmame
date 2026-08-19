@@ -10,6 +10,7 @@
 #pragma once
 
 #include "emu.h"
+#include "p2k_public.h" // the NVRAM block sizes the two halves share
 #include "p2k_machine.h"
 #include "i386.h"
 #include "machine/lpci.h"
@@ -31,6 +32,14 @@ public:
 	// does not open files: everything arrives through the normal ROM set machinery
 	bool set_prism_roms(const u8 *data, size_t len);
 	void set_dips(u8 v) { m_dip_switches = v; }
+	// Put the host's date and time into the real-time clock. keep_year leaves the year register
+	// alone, which is what a machine with a clock of its own needs - see the comment on the
+	// definition for why that register is not a year at all
+	void clock_from_host(bool keep_year = false);
+	// Move the clock between the device and the block PinMAME saves, stamping and then reading back
+	// the host time so the years spent switched off can be counted
+	void rtc_save();
+	void rtc_restore();
 	void video_lines(unsigned &active, unsigned &total) const;
 	// the beam position and the blanking predicate built on it, both from emulated time
 	u32 video_line() const;
@@ -42,7 +51,7 @@ public:
 	// stores its settings, audits and error log in, "nvram2" the PLX EEPROM, and "nvram_updates"
 	// the 8 MB update flash. Handed out as raw blobs so src/wpc/p2k.c can put them through
 	// PinMAME's own NVRAM handler without knowing anything about the machine.
-	enum nvram_block { NVRAM_CMOS = 0, NVRAM_EEPROM, NVRAM_UPDATES };
+	enum nvram_block { NVRAM_CMOS = 0, NVRAM_EEPROM, NVRAM_UPDATES, NVRAM_RTC };
 	u8 *nvram_block_ptr(nvram_block which, size_t *size);
 
 	void build_machine(u32 cpu_clock);
@@ -100,6 +109,7 @@ private:
 	std::vector<u8> m_ram_c8;          // 0x000c8000-0x000cffff
 	std::vector<u8> m_bios_ram;        // 0x000d0000-0x000fffff
 	std::vector<u8> m_nvram;           // 0x11000000-0x1102ffff
+	u8 m_rtc_nv[P2K_NV_RTC_SIZE] = {}; // the clock as PinMAME saves it: 64 registers, then the host time_t they were saved at - see rtc_save()
 	std::vector<u8> m_nvram_updates;   // 0x12000000 flash image, 8 MB
 	std::vector<u8> m_prism_bank9;     // 0x18000000-0x18ffffff
 	std::vector<u8> m_smm;             // 0x40400000-0x4047ffff
@@ -121,6 +131,9 @@ private:
 	// so anything at 0x40000a00 or above wrote past the end. The BLT buffer the games use sits at
 	// the bottom of the window, so nothing has been seen up there
 	u32 m_scratchpad[0xc00/4] = {}; // 0x40000400-0x40000fff
+#if P2K_DEBUG
+	u64 m_scratchpad_gen = 0;       // bumped on every write, so the blit's buffer check can skip
+#endif
 	int m_prismbank = 0;
 
 	// PLX local bus registers at 0x10000000, and the serial EEPROM behind register 0x14
@@ -130,6 +143,16 @@ private:
 	int m_prism_eprom_counter = 0;
 	int m_prism_eprom_offset = 0;
 	int m_prism_eprom_wordtoggle = 0;
+
+	// the write side of the same EEPROM, which is a command decoder rather than a bit stream -
+	// see prism_1000_w
+	u32 m_prism_ee_frame = 0;       // bits clocked in since chip select went high, MSB first
+	int m_prism_ee_nbits = 0;
+	bool m_prism_ee_cs = false;     // previous level of chip select and clock, for edge detection
+	bool m_prism_ee_sk = false;
+	bool m_prism_ee_wen = false;    // a write needs an EWEN first, the way the chip does
+	bool m_prism_ee_ready = false;  // answers the poll that follows a write
+	int m_prism_ee_read_word = 0;   // word address the last READ asked for, which the read side starts at
 
 	// Intel-style flash command state for the update flash at 0x12000000
 	int m_flash_mode = 0;
@@ -200,6 +223,11 @@ private:
 	std::string m_console;
 	u8 m_uart_reg[8] = {};        // COM1 stand-in
 	u8 m_uart2_reg[8] = {};       // COM2 stand-in
+	// The baud rate divisor latch, which shares ports 0 and 1 with the transmit register and the
+	// interrupt enable and is selected by DLAB, bit 7 of the line control register. Kept apart from
+	// m_uart_reg because writing the divisor must not disturb the interrupt enable - see port_w
+	u8 m_uart_dl[2] = {};
+	u8 m_uart2_dl[2] = {};
 	void update_uart_irq();       // 16550 interrupt logic for both ports
 
 	// ported handlers

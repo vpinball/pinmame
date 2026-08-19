@@ -521,14 +521,23 @@ pc_trap  g_pctrap[16];
 unsigned g_pctrap_n   = 0;
 unsigned g_pctrap_lo  = ~0u;
 unsigned g_pctrap_hi  = 0;
-u64      g_pctrap_bits = 0;          // (addr & 63) presence, so the common case costs one test
+u64      g_pctrap_bits= 0; // (addr & 63) presence, so the common case costs one test
 unsigned g_pctrap_max = 8;
+
+// P2K_PCTRAP_AFTER=<cycles>: hold the traps back until then, the same way P2K_STACKAFTER holds the
+// stack probes. Without it a trap on anything the machine does regularly reports its first few hits
+// at boot and is quiet long before the interesting ones - swep1_210 wedges near cycle 2.74 billion,
+// by which point a 0.25 ms task has fired a hundred thousand times. Watch the hit counter against
+// P2K_PCTRAP_MAX too: a trace that stops because the cap was reached looks exactly like one that
+// stops because the events did, and reading it the wrong way has cost real time here
+u64 g_pctrap_after = 0;
 
 void pctrap_init()
 {
 	const char *s = getenv("P2K_PCTRAP");
 	if (!s) return;
 	if (const char *m = getenv("P2K_PCTRAP_MAX")) g_pctrap_max = unsigned(strtoul(m, nullptr, 0));
+	if (const char *a = getenv("P2K_PCTRAP_AFTER")) g_pctrap_after = strtoull(a, nullptr, 0);
 	while (*s && g_pctrap_n < 16)
 	{
 		char *end = nullptr;
@@ -558,6 +567,7 @@ void pctrap_init()
 inline void pctrap_check(unsigned pc)
 {
 	if (!g_pctrap_n || pc < g_pctrap_lo || pc > g_pctrap_hi) return;
+	if (g_pctrap_after && g_p2k_cycles_total < g_pctrap_after) return;
 	if (!((g_pctrap_bits >> (pc & 63)) & 1)) return;
 	for (unsigned i = 0; i < g_pctrap_n; i++)
 	{
@@ -575,11 +585,25 @@ inline void pctrap_check(unsigned pc)
 			ecx = unsigned(g_bridge_cpu->state_int(I386_ECX));
 			edx = unsigned(g_bridge_cpu->state_int(I386_EDX));
 		}
+		// This code is cdecl: arguments go on the stack, not in registers, so trapping a function
+		// entry and reading only EAX-EDX shows the caller's leftovers rather than what it was
+		// called with. [esp] is the return address, which names the caller once resolved against
+		// symbols.rom, and [esp+4] onwards are the arguments - a trap on wait() or signal_waiter()
+		// is only useful because ret/arg1 say which semaphore. Both are read through the bridge at
+		// the instant of the trap
+		unsigned ret = 0, arg1 = 0, arg2 = 0;
+		if (g_bridge_cpu && g_bridge_state)
+		{
+			const unsigned esp = unsigned(g_bridge_cpu->state_int(I386_ESP));
+			ret  = g_bridge_state->mem_r(esp,     0xffffffff);
+			arg1 = g_bridge_state->mem_r(esp + 4, 0xffffffff);
+			arg2 = g_bridge_state->mem_r(esp + 8, 0xffffffff);
+		}
 		// the cycle stamp makes a pair of traps a stopwatch: arm the two ends of a region and the
 		// difference is what it cost the guest. How long the pinball I/O holds the PIC mask, for
 		// one - see the clkint gate above, where that duration is the open question
-		fprintf(stderr, "[p2k pc] %08x %-20s eax=%08x ebx=%08x ecx=%08x edx=%08x  cyc=%llu  hit %u\n",
-			pc, t.label[0] ? t.label : "-", eax, ebx, ecx, edx,
+		fprintf(stderr, "[p2k pc] %08x %-20s ret=%08x arg=%08x,%08x  eax=%08x ebx=%08x ecx=%08x edx=%08x  cyc=%llu  hit %u\n",
+			pc, t.label[0] ? t.label : "-", ret, arg1, arg2, eax, ebx, ecx, edx,
 			(unsigned long long)g_p2k_cycles_total, t.hits);
 		fflush(stderr);
 		return;

@@ -47,6 +47,14 @@ public:
 	uint8_t read_direct(offs_t offset);
 	void write_direct(offs_t offset, uint8_t data);
 
+	// PINMAME: The register file itself, so a driver that keeps its own persistence can save and restore it.
+	// This chip is battery-backed on real hardware, and the P2K firmware relies on that: it keeps
+	// its clock in the CMOS and advances it by the difference against these registers, so a clock
+	// that resets between runs makes it jump. MAME's own NVRAM machinery would do this, but the
+	// P2K subsystem does not drive it - see p2k_state::nvram_block_ptr()
+	uint8_t *p2k_data() { return m_data.get(); }
+	int p2k_data_size() const { return data_size(); }
+
 protected:
 	mc146818_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
 

@@ -12,9 +12,12 @@ MODs elsewhere:
 |---|---|---|---|
 | `rfm_260` | Pinball 2000: Revenge From Mars | 08/2024 | myPinballs; needs the opto expansion (v2.6+ per the kit) |
 | `rfm_250` | | 12/2022 | myPinballs |
-| `rfm_224` | | 01/2022 | myPinballs, also released as 2.42 |
+| `rfm_224r3` | | 01/2022 | myPinballs, also released as 2.42; the 29 Jan build, adds a Lyman Sheats tribute |
+| `rfm_224r2` | | 01/2022 | the 13 Jan build; fixes an extra ball being awarded twice. 2.24 r1 (~12/2021) is not dumped |
 | `rfm_223` | | 04/2021 | myPinballs, also released as 2.40 |
 | `rfm_222` | | 06/2020 | myPinballs, also released as 2.30 |
+| `rfm_221` | | 04/2020 | myPinballs; last on 1.91's sound flash, 2.22 goes back to stock |
+| `rfm_220` | | 10/2019 | myPinballs |
 | `rfm_210` | | 04/2019 | myPinballs; shaker/knocker support |
 | `rfm_200` | | 12/2018 | myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, no shaker/knocker yet |
 | `rfm_195` | | 03/2018 | hemtoni; German re-translation, used by nothing later - not the newest 1.x |
@@ -24,9 +27,9 @@ MODs elsewhere:
 | **`rfm_160`** | **parent** | 09/2003 | last official, XINA 1.19 |
 | `rfm_150` | | 07/2000 | |
 | `rfm_140` | | 01/2000 | |
-| `rfm_120` | | 06/1999 | Not working yet - XINA 1.12 |
-| `rfm_080` | | 03/1999 | Not working yet |
-| `rfm_010` | | ??/1999 | Not working yet |
+| `rfm_120` | | 06/1999 | XINA 1.12 |
+| `rfm_080` | | 03/1999 | XINA 1.04 |
+| `rfm_010` | | 01/1999 | no ROMs of its own - `rfm`'s Prism chips with the update package left out, so the loader starts the fallback copy |
 | `swep1_210` | Pinball 2000: Star Wars Episode I | 10/2025 | myPinballs; adds a topper (driver 44) |
 | `swep1_201` | | 05/2025 | myPinballs |
 | `swep1_200` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43) |
@@ -34,18 +37,45 @@ MODs elsewhere:
 | **`swep1_150`** | **parent** | 09/2003 | last official, XINA 1.19 |
 | `swep1_140` | | 07/2000 | |
 | `swep1_130` | | 09/1999 | |
-| `swep1_040` | | ??/1999 | Not working yet |
+| `swep1_040` | | 06/1999 | XINA 1.12; no ROMs of its own, same as `rfm_010` |
 
-All games boot, render, take coins, start a game, drive lamps and coils, respond to the flippers
-and play sound. Some of
-them used not to boot properly, and what divided them was not the game but the system
+Every set boots, renders, takes coins, starts a game, drives lamps and coils, responds to the
+flippers and plays sound - the pre-production ones included.
+
+What used to stop early XINAs (<= 1.12) was the PLX serial EEPROM. `plx_ee_verify()` reads the image back and
+rewrites it when it does not match, which these did on every boot, and only the read side
+was modelled - so the ready poll after the first word never got its answer. Its escape is a
+timeout counted in interval-timer ticks, and those do not run that early: the PIT is still
+unprogrammed and every interrupt masked. Both dead ends at once, which is why it looked like a
+silent freeze. `prism_1000_w` decodes the write commands now, and the image is in NVRAM, so a set
+that rewrites it verifies clean on the next boot - which the machine says out loud the first
+time, `PLX EEPROM data was stale - updated OK`, and never again.
+
+**What the early RFM and SWEP1 versions disagree about is four registers**, and all three early images write the same four.
+The default image here is MAME's, and `rfm_160` stores it back byte for byte - it never rewrites -
+while 0.1, 0.80 and 0.40 each change LAS2BRD and the three chip-select bases:
+
+| EEPROM dword | PLX register | default | what the early firmware writes |
+|---|---|---|---|
+| 14 | `0x28` LAS2BRD | `5403a1e0` | `5403a1c0` |
+| 16 | `0x30` CS0BASE | `4041a060` | `4041a040` |
+| 17 | `0x34` CS1BASE | `54b2b8c0` | `54b2b8f1` |
+| 18 | `0x38` CS2BASE | `54b2b8c0` | `54b2b8f1` |
+
+Local bus wait states and chip-select decoding, in other words - and nothing here models the
+local bus decode, so all four are inert. They matter only in that the early firmware insists on
+them. Nor is the default wrong: a real card is programmed once at the factory, and each firmware
+verifies against what it wants, so a later-programmed card in an early machine would rewrite
+exactly this way. To read the image back out of a `.nv`, find the vendor/device dword `6e 14 01
+00` - it is the first of 32 little-endian dwords, two EEPROM words to a dword, high half first.
+
+Some of the aftermarket versions used not to boot either, and what divided them was not the game but the system
 software: each `game.rom` names the XINA it was built against, and everything from **1.16 to 1.31**
 came up (`rfm_140` through `rfm_210`, `swep1_130` through `swep1_150`) while everything from
 **1.34 to 1.38** stopped before the boot screen (`rfm_222` through `rfm_260`, and all three
 `swep1_2xx`).
-Some still do not boot: all RFM and SWEP1 versions that were prototypes (shipping without updates/flash).
 
-**It was a blank CMOS**, and the emulation is only indirectly at fault. The newer software has a
+**It was a blank CMOS**, and the emulation is only indirectly at fault. The aftermarket software has a
 static initialisation order bug: `left_sling`'s constructor calls a hook that reads an adjustment
 resource whose own constructor is linked later, so the resource is still zeroed BSS and the read
 reports NonFatal. That report is harmless on a machine in the field, and fatal here:
@@ -70,6 +100,27 @@ The seed is written unconditionally in the constructor but only ever survives on
 no NVRAM file: `MACHINE_INIT` copies a saved CMOS over the whole block immediately afterwards.
 So it is new-machine-only in effect, and cannot disturb a machine that has been run before.
 
+**The clock.** The machine shows real time: the date and time come from the host on every start,
+the way a battery-backed RTC that kept running would present them, and run on from there.
+
+Four things had to be right, each hidden by the one before. The clock was never seeded at all -
+`mc146818` reads `machine().base_datetime()` in `nvram_default()`, which nothing called. The year
+register counts from **1999**. The registers are **BCD** whatever the data mode bit says - seeded in
+binary the 18th read as "12", `0x12`. And register 9 is not a year but a count of **year rollovers
+since the last sync**: the firmware folds it into the clock it keeps in its own CMOS and writes zero
+back, which works on the real board because the chip keeps running on its battery. Hand it the host
+year every start and the displayed year climbs - 1999+27, then +27 again, 2053, 2080. So a start
+refreshes everything *except* register 9, and the NVRAM block carries the host `time_t` it was saved
+at so the years actually slept through can be counted into it.
+
+While running, the RTC is not consulted again: `one_second_proc` counts PIT ticks and bumps the
+CMOS timestamps, so the machine's clock is the PIT's - see the note by `pit_hz`.
+
+Guest side, for anyone going further: `RTCLocationManagerClass` owns the hardware clock, a
+`TimeStamp` is seven dwords `{year, month, day, day-of-week, hour, minute, second}` in plain
+integers, and `timestamp_clock_last_set_data` at `0x0025e400` holds the 1 Jan 1999 12:00:00 default
+that the console messages date from.
+
 A first boot on a blank CMOS also prints *"CMOS Prologue Checksum Invalid"* and *"CMOS Manager
 has wiped NVRAM at 0x11002400"* on the games whose console talks.
 That is not a fault and not something the seed causes: it is a
@@ -91,76 +142,45 @@ that copy instead.
 Each copy carries its own version in the boot-data header at bank 0 offset `0x8040`, as a
 game id and a major/minor pair, formatted for display through `"Software version: %d.%d"`:
 
-| Prism pair | set | game id | fallback version | bootstrap loader | boots |
+| Prism pair | set | game id | fallback version | bootstrap loader |
 |---|---|---|---|---|---|
-| RFM r1 | `rfm_010` | 50070 | 0.1 | V3.2, Jan 26 1999 | no |
-| RFM r2(?) (`rfm_u100r2`/`rfm_u101r2`) | `rfm_080` | 50070 | 0.80 | V3.4, Apr 1 1999 | no |
-| Episode I | `swep1_040` | 50069 | 0.40 | V3.5, Apr-Jun 1999 | no |
+| RFM r1 | `rfm_010` | 50070 | 0.1 | V3.2, Jan 26 1999 |
+| RFM r2(?) (`rfm_u100r2`/`rfm_u101r2`) | `rfm_080` | 50070 | 0.80 | V3.4, Apr 1 1999 |
+| Episode I | `swep1_040` | 50069 | 0.40 | V3.5, Apr-Jun 1999 |
 
-The three that do not boot each have a set of their own, all `GAME_NOT_WORKING`, so the halts are
-addressable without the knob - and they reproduce it exactly, same PC, same dead timers. Only
-`rfm_080` needs files of its own; `rfm_010` and `swep1_040` are their parent's Prism chips with
-the update package left out, so we load them straight from the parent set.
+Each has a set of its own so it is addressable without the knob. Only `rfm_080` needs files of
+its own; `rfm_010` and `swep1_040` are their parent's Prism chips with the update package left
+out, so we load them straight from the parent set.
 
-The three that fail do so identically: no timer is ever programmed, no interrupt ever arrives, and
-the CPU cycles between three addresses - `0x17b0ef`/`0x17b0f8`/`0x1baa89` for RFM r1,
-`0x1b355f`/`0x1b3568`/`0x2020c5` for r2 and `0x1825df`/`0x1825e8`/`0x1db605` for Episode I. That
-is an error halt rather than a crash. `P2K_PCIWATCH=1` shows the board being found either
-way - device 8 answers `0001146e` - and a working image goes on to program four BARs on it
-(`0x10`, `0x18`, `0x1c`, `0x20` to `0x10000000`, `0x11000000`, `0x12000000`, `0x13000000`).
-A failing one appears to program `0x10` and stop, but do not read anything into that: it is an
-artefact of our own patch. With `P2K_PATCH_PCI_INIT_RETRY` set to 2, which removes the routine's
-early exit so every call re-enumerates, the same image programs `0x24` and the expansion-ROM BAR
-at `0x30` as well and then loops - and still halts in the same place. The BAR trace is downstream
-of the halt, not a description of it.
+Three of them used not to boot, and did so identically: no timer ever programmed, no interrupt
+ever arriving, and the CPU cycling between three addresses - `0x17b0ef`/`0x17b0f8`/`0x1baa89` for
+RFM r1, `0x1b355f`/`0x1b3568`/`0x2020c5` for r2 and `0x1825df`/`0x1825e8`/`0x1db605` for Episode
+I. **It was the PLX serial EEPROM**, and the write side of it - see the intro. The first two
+addresses of each triple are `plx_eeprom_write` polling for the chip to report a word written,
+and the third is the `GetIntervalTimer` its timeout is counted in - resolved against each
+image's own symbol table, so that is all three read off rather than assumed from one.
 
-That patch is not optional, incidentally, and this is where that was established. Set
-`P2K_PATCH_PCI_INIT_RETRY` to 0 and *nothing* boots: `rfm_080`
-halts at `0x81622`, and `rfm_160` never reaches its first progress report. Mode 1 is the only setting
-under which any of these run.
+The XINA boundary that this looked like is real but is a consequence, not the cause. Every set
+that failed is built against **1.12 or older** and every set that boots against **1.16 or newer**,
+with nothing in between in the collection - but what divides them is that the early images find
+the EEPROM image they want missing and rewrite it, saying so (`pci_probe(): PLX EEPROM data was
+stale - updated OK`), while the later ones are content with what is there. An earlier version of
+this note pinned it on XINA 1.13's "Fixed exec code to avoid a timeout condition" instead, which
+fit the evidence available then and was wrong. Worth keeping as a caution: every set in the
+collection sat on one side of that boundary or the other, so the correlation was perfect and
+still meant nothing.
 
-**What separates them is the XINA, and there is a named candidate.** Neither of the obvious
-orderings works: the game version does not order them, and
-neither does the bootstrap loader - `V3.2` on RFM r1, `V3.4` on r2, `V3.5` on Episode I - so `V3.4` works, `V3.5` fails and `V3.6` works. The system software does, and
-perfectly. Every set that fails is built against **XINA 1.12 or older**, every set that boots
-against **1.16 or newer**, with nothing in between in the collection:
+`P2K_PATCH_PCI_INIT_RETRY` mode 1 is not optional, and this is where that was established. Set it
+to 0 and *nothing* boots: `rfm_080` halts at `0x81622`, and `rfm_160`
+never reaches its first progress report.
 
-| set | XINA | boots |
-|---|---|---|
-| `rfm_010` | pre-1.0 (the field is still numeric, 0.1) | no |
-| `rfm_080` | 1.04 | no |
-| `swep1_040` | 1.12 | no |
-| `rfm_120` | 1.12 | no |
-| `swep1_130` | 1.16 | yes |
-| everything later | 1.17 - 1.38 | yes |
-
-That boundary contains exactly one XINA release, **1.13** (19 July 1999), and its changelog
-entry names what these four could(!) die of:
-
-> Fixed a problem in the resource system to eliminate a deadlock.
-> Fixed the DCS system to avoid new requests if the DSP is dead.
-> Fixed the auto-tick system to avoid killing / restarting processes.
-> **Fixed exec code to avoid a timeout condition.**
-
-All four maybe halt with `*** Fatal: interval_0_25ms: exec is hung` - an executive that missed its
-slot, which is the timeout condition that entry fixes. Read the XINA changelog for the full text; `driver.c` says where it is.
-
-This is a correlation with a named mechanism, not a proof. Nothing in the collection sits at
-1.13, 1.14 or 1.15, so the boundary cannot be bisected, and "older software" and "older XINA"
-move together here. What it does give is somewhere specific to look: whether the pre-1.13 exec
-is timing itself against something this emulation delivers late, rather than a fault in the
-coin or boot path at all. The halt addresses above are still the place to start.
-
-r2 has a set of its own, `rfm_080`, filed as a clone of `rfm_160` like every other version -
-r2 bank 0, no update region. Only `u100`/`u101` are actually rev. 2 - the MAME set carries no
-other r2 file - but the set is probably complete rather than a guess: diffing the two revisions of
-that pair, they differ only below `0x2fd3c0` of the interleaved bank, which is the loader and the
+r2 has a set of its own, `rfm_080`, filed as a clone of `rfm_160` like every other version - r2
+bank 0, no update region. Only `u100`/`u101` are actually rev. 2 - the MAME set carries no other
+r2 file - but the set is probably complete rather than a guess: diffing the two revisions of that
+pair, they differ only below `0x2fd3c0` of the interleaved bank, which is the loader and the
 fallback game image, and the 13 MB of asset data above it is byte-identical. The revision changed
-code and left the art alone, so carrying the r1 banks 1-3 over follows the same 'evidence'. The
-sound flash and sample chips are on the sound board, not the Prism card. **It does not boot
-either**, and since the set is very likely right, that is a real behaviour to explain rather than
-a symptom of missing ROMs. It halts exactly as the other two do,
-at `0x1b355f`/`0x1b3568`/`0x2020c5`, under every patch mode.
+code and left the art alone, so carrying the r1 banks 1-3 over follows the same evidence. The
+sound flash and sample chips are on the sound board, not the Prism card.
 
 Adding it did force one real improvement. The PCI bring-up patch sits at `0x461b` in r2 and
 `0x419a` in the r1 pair, and the two are the *same game* - no prefix can tell them apart. So
@@ -828,16 +848,16 @@ removing huge numbers of them bought little. Real decode work should be dearer p
 much dearer, but *how much* is unknown and nothing in this file measures it. What is needed
 first:
 
-* **A general profile of the whole emulator**, in host time rather than opcodes - Visual Studio's
-  CPU Usage profiler on a running game is the obvious way, and needs no code changes. `perf` does
-  the same on Linux. That is the measurement nobody has taken, and it answers the first question:
-  what fraction of a frame is the sound board at all, now that both idle skips are in?
-* **What the sound board now costs in wall clock**, specifically. The 38 % at the top of this file
-  is a pre-skip figure from a different machine under Linux, so it is an upper bound at best. If a
-  cheaper route is wanted than an external profiler, `cpuexec.c` already brackets every CPU's
-  execute with `profiler_mark(PROFILER_CPU1 + cpunum)`; those marks compile away unless
-  `MAME_DEBUG` is defined, and enabling just them gives per-CPU shares without the rest of the
-  debugger.
+* **A general profile of the whole emulator**, in host time rather than opcodes. Visual Studio's
+  CPU Usage profiler has since answered the first question - the sound board is barely measurable
+  now that both idle skips are in, and the MediaGX interpreter's `FETCH()` dominates. `perf` does
+  the same on Linux, which has not been repeated since.
+* **What the sound board costs in wall clock**, as a number rather than "barely measurable". The
+  38 % at the top of this file is a pre-skip figure from a different machine under Linux, so it is
+  an upper bound at best. If a cheaper route is wanted than an external profiler, `cpuexec.c`
+  brackets every CPU's execute with `profiler_mark(PROFILER_CPU1 + cpunum)`; those marks compile
+  away unless `MAME_DEBUG` is defined, and enabling just them gives per-CPU shares without the
+  rest of the debugger.
 * **Where inside that the time goes** - interpreter dispatch, or the `p2k_data_r`/`p2k_data_hi_r`
   handler calls on every banked access. If it is the handlers, caching the resolved bank pointer
   is a fraction of the work of a transcription and cannot damage the audio.
@@ -922,114 +942,35 @@ of the 2000-cycle execution chunks.
   asks for; the XINA changelog adds that the test "checks for coin door closure" (1.01) and
   "holds state while the coin door is open" (1.02), so it is gated on the door rather than
   free-running.
-* **The service menu is broken on XINA 1.38**, which is `swep1_200`, `swep1_201` and `swep1_210`
-  and nothing else. Two symptoms, and the screens differ in how far they get. The service menu
-  draws its text correctly but never repaints its background, so the previous screen - the coin
-  door box, say - shows through behind it. The switch test never appears at all: it is blank,
-  every time. Pressing further buttons on that blank screen then *sometimes* takes the machine
-  down with a Fatal, which is nondeterministic rather than the thing that goes wrong.
+* **SOLVED - the UART divisor latch clobbered the interrupt enable.** For a long time `swep1_200`,
+  `swep1_201` and `swep1_210` looked like they had a broken service menu: the background never
+  repainted, the switch test came up blank, a coin could hang the machine and keys stopped
+  registering in game. All of it was one fault, and it was in this driver.
 
-  So the fault is a repaint that does not happen - partially on one screen, completely on the
-  other - and the Fatal is a consequence of sitting on a screen that never drew, not a cause.
+  Ports `0x3f8`/`0x3f9` are two registers each, selected by DLAB in the line control register, and
+  this driver honoured that for port 0 but not port 1. XINA's `tty_set_port_param()` sets DLAB and
+  writes the 9600-baud divisor `0x000c`; the high byte, zero, landed on the interrupt enable and
+  switched the console's transmit interrupt off for good, about 3.8 seconds in. The output queue
+  then never drained, filled after ~35 seconds of ordinary messages, and `ttyputc` blocked forever
+  on the semaphore guarding it with the executive behind it. Anything that printed more - a coin,
+  the service menu - got there sooner, which is why those looked like triggers. Fixed in `port_w`.
 
-  Do not read that as "XINA 1.38 broke it", which an earlier version of this note did. Those
-  three sets are both the only ones on 1.38 *and* the only Episode I 2.x, so system software and
-  game lineage cannot be told apart here; `rfm_210` is not the control it looks like, being a
-  different game's code entirely. Diffing the two symbol tables settles it in the other
-  direction: between 1.31 and 1.38 there is not one system-level symbol added, removed or
-  renamed, and the blit function set - `blit_solid`, `blit_transparent`, `blit_solid_stretch`,
-  `blit_gxm_*`, `blit_text_crawl` - is identical. All 642 new symbols are game `Deff`s. So the
-  display side of XINA did not change, and the game code is where to look.
+  Three things from the hunt are worth keeping, because each cost hours:
 
-  The lockup is not a timing failure. It ends in the same `interval_0_25ms: exec is hung` as
-  everything else, but the monitor's process dump says why: `exec` is blocked on **semaphore
-  175**, along with both `deff_run` processes and the shell, while `dispmgr` holds the CPU. That
-  is a display-side deadlock - the display manager never releases what the rest are waiting on.
+  * **`*** Fatal: exec is hung` only reaches the log when `P2K_PROGRESS` is set** - the guest
+    console is dumped by `report_progress()` and nothing else, so a run without it greps clean no
+    matter what happened on screen. Always set it when the question is whether something hung.
+  * **`P2K_PCTRAP` prints two different prefixes.** Arming says `[p2k pctrap]`, hits say
+    **`[p2k pc]`**. Grepping for the wrong one had it written off as broken for a long stretch.
+  * **Check hit counts against `P2K_PCTRAP_MAX`.** A trace that stops because the cap was reached
+    looks exactly like one that stops because the events did, and reading it the wrong way sent
+    this investigation after a non-existent fault in the display manager.
 
-  Ruled out, all by walking 2.10's menu against 1.66's, which renders correctly:
+  The blitter and display side were exhaustively ruled out along the way - raster modes, vector
+  mode, fills, controller programming, blit height, out-of-range sources, the pipeline registers,
+  the colour key, the vertical interrupt, the line counter. None of it was at fault, and the
+  measurements are in the git history if they are ever wanted again.
 
-  * **Unimplemented raster modes** - `do_gfx_pipeline()` reports any it does not handle; none.
-  * **Unimplemented vector mode** - solid fills go through it and it was never implemented; the
-    menu never asks for one.
-  * **Solid fills** - `P2K_FILLWATCH=1` shows neither game issues a single one, in the menu or
-    anywhere else, so the background is painted by copies in both.
-  * **Display controller programming** - `P2K_DISPWATCH=1` gives byte-identical register writes
-    for both, down to the order. Triple buffering, `DC_FB_ST_OFFSET` cycling through three
-    buffers, which the renderer follows.
-  * **Blit height** - the high half of `GP_WIDTH`; every set writes 1, in the menu too.
-  * **Out of range blit sources** - both copies skip a source past the end of VRAM rather than
-    writing what the hardware read, which would look exactly like this. Neither game does it.
-  * **The pipeline registers** - `P2K_GPWATCH=1`; both programme the same set with the same
-    values, and raster mode only ever takes 0x10c6 or 0x00cc.
-
-  So every input to the blitter is the same in the version that works and the one that does not,
-  and every blit it is asked for is executed. The background is not drawn wrongly - it is not
-  asked for.
-
-  **What the machine is actually doing.** Sampling the PC through the wedge and resolving it
-  against the package's own symbols.rom: right up to the moment the watchdog fires it is
-  **idle** - `nulluser` in almost every sample, with an occasional `blit_gxm_transparent` - and
-  afterwards `term_scroll` printing the dump, then `inb` in the Fatal monitor. Nothing spins and
-  nothing hogs the CPU; the process dump agrees, with `prnull` at 81%. So `exec`, blocked on
-  semaphore 175 along with both `deff_run`s and the shell, is not being starved - **nothing ever
-  signals that semaphore**, and the machine idles until the 0.25 ms task gives up.
-
-  That is the shape of a missing per-frame event, and there is a gap exactly there: this driver
-  delivers **no display interrupt at all**. The only sources wired are the PIT, the RTC, the two
-  UARTs and the cascade. Encore models a vertical-blank dword that, in its own words, several
-  "poll loops in XINU display setup wait for ... to flip from 0 to 1 each frame before
-  continuing", gating retrace-only work like palette updates and layer flips. The vertical line
-  counter here is derived from emulated time and does advance (see `disp_ctrl_r`), but a counter
-  is not an event: nothing wakes a process once a frame.
-
-  **That was tried, and it is not the answer.** The flag is implemented - `P2K_VBLANK_FLAG`, in
-  `mem_r`, derived from emulated time rather than written into the array the way Encore writes its
-  SRAM, because the region is CMOS here and would otherwise be scribbled into the NVRAM file every
-  frame. With it on, `swep1_210` still draws no switch test and still does not clear the service
-  menu background. So either the address is wrong - it is Encore's, and nothing has been observed
-  reading it here - or a missing frame event is not what blocks. It is kept anyway: the signal is
-  real hardware, and every other set is unaffected.
-
-  What would still confirm or kill the theory is finding what signals semaphore 175, which the
-  symbol table now makes tractable, and whether only the service menu path waits on it.
-
-  **Encore's graphics emulation.** It implements the same hardware
-  independently, so where it differs is worth knowing:
-
-  * `p2k-gp-blt.c` - a subset of the blitter here. It agrees on the three things this driver had
-    only inferred: transparency selected by **bit 12** of the raster mode, a key colour of
-    `0x7C1F`, and one row per trigger with no height. It implements no fills, no vector mode and
-    no other ROPs, so there is nothing there to adopt. Both hardcoded the key, and both were
-    wrong to: the databook says *"the color key value is stored in the BLIT buffer as destination
-    data. The raster operation must be set to C6h, and the pattern registers must be all F's for
-    this mode to work properly"*. Both preconditions hold here - the games park the pattern
-    registers at `ffffffff` - and `P2K_KEYWATCH` located the buffer: rfm_160 fills
-    `0x40000400-0x400008ff`, 640 words or exactly one row, with `0x7c1f` before drawing, and every
-    transparent blit sees it there. The driver now reads the key from the buffer, so `0x7C1F` is
-    this firmware's choice rather than anything built into the hardware.
-  * `p2k-vsync.c` - a vertical blank dword and a scanline counter. The counter existed here; the
-    flag did not, and now does. Their counter running 0..241 is what exposed the line total
-    being wrong here, which is the one real fix to come out of the comparison, also verified by MAMEs atari mediagx driver.
-  * `p2k-display.c` - models a single register and latches the pitch by watching for offsets that
-    are multiples of 0x78000. This driver reads `DC_LINE_DELTA` instead, which gives the same
-    1280 bytes at boot and 2048 in game without the heuristic.
-  * `p2k-gx.c` - the memory shape. Two differences that have not mattered: it aliases the frame
-    buffer to physical RAM at 0x800000, where this driver maps it only at 0x40800000 and
-    0xc0800000 - and the guest uses 0xc0800000, which Allegro's `screen` bitmap confirms, its
-    line pointers running 0xc08ef800 downwards. It also answers `BC_DRAM_TOP` at +0x20000 for the
-    BIOS's RAM sizing, which nothing here maps and nothing has been seen to want.
-  * `p2k-gfxlist-watch.c` - the interesting one, and a diagnostic rather than emulation. Its
-    header says it exists to "investigate why the v2.10 game's pre-initialised `_gfx_driver_list`
-    array at 0x343e8c reads as zero at runtime, causing `set_gfx_mode(1, ...)` to return -1 and
-    `gx_fb_init` to take the `allegro_exit` cleanup branch". So **Encore fails on this exact game
-    version too**, and names a mechanism.
-
-  That mechanism is not the one here. Those five addresses resolve exactly against 2.10's own
-  symbols - `_gfx_driver_list`, `gfx_driver`, `screen`, `_scratch_mem`, `GX_frame_buffer` - and
-  dumping them mid-run shows the list properly populated (`id 1`, driver 0x343e38, autodetect,
-  terminator), with `gfx_driver` and `screen` both set. `set_gfx_mode` succeeds here. Same game,
-  same broken screens, different cause - or the same cause further upstream than either project
-  has found.
 * **`DC_TIMING_CFG` bit 30 is a vertical blank status**, set during active display and clear while
   blanking, and it was missing. MAME's own MediaGX driver has it - `src/mame/atari/mediagx.cpp`,
   deriving it from `m_screen->vpos()` - and the `pinball2k.cpp` this port came from dropped it
@@ -1146,7 +1087,7 @@ asked for. The ones that stay useful:
 | | |
 |---|---|
 | `P2K_PROGRESS=<cycles>` | the firmware's serial console, plus cycles, instructions, host seconds, guest MIPS, interrupt counters and registers |
-| `P2K_PCTRAP=<hex>[=label],…` | report when the CPU reaches an address, with registers and a cycle stamp. Two of them bracket a region and the difference is what it cost |
+| `P2K_PCTRAP=<hex>[=label],…` | report when the CPU reaches an address, with registers and a cycle stamp. Two of them bracket a region and the difference is what it cost. Note the two prefixes: arming says `[p2k pctrap]`, hits say **`[p2k pc]`** |
 | `P2K_QUANTUM_HZ=<hz>` | an extra cap on how long the CPU runs before device timers are looked at, **off by default** - `next_expiry()` alone bounds a slice. Not MAME's quantum; it interleaves nothing, there being one CPU in here. Set it to sweep the worst-case latency of a device change reaching the CPU, which is what the section below is about |
 | `P2K_IOWATCH_AFTER=<cycles>`, `P2K_IOWATCH_MAX=<n>` | hold the I/O watch back until a cycle count, and how many accesses it then reports. A device set up once at boot and used much later needs both |
 | `P2K_MEMWATCH=<from>[-<to>]` | writes to a range with the PC that made them; `P2K_MEMWATCH_CHANGED=1` for changes only |
@@ -1160,6 +1101,10 @@ asked for. The ones that stay useful:
 | `P2K_SWWATCH=1` | every switch that changes, by name |
 | `P2K_PDBWATCH=<regs>` | power driver board traffic: reads (change-only) and writes. `1`/`all`, or a hex list like `10,11,08` - worth narrowing, register `04` is the switch row and cycles forever |
 | `P2K_PCIWATCH=1` | every PCI config read, with the device number the firmware asked for |
+| `P2K_BIUWATCH=1` | the four bus interface unit registers, first read and every write. What established that `BC_XMAP_1` to `_3` are never touched, so the 640K-1M decode and the absence of VGA SMI traps are safe assumptions rather than guesses |
+| `P2K_IRQWATCH=1` | both interrupt masks as the guest programs them. An IRQ it unmasks and this driver never asserts is a device it will wait on for ever. Steady state on every set: master `0x60` (0, 1, 2, 3, 4, 7), slave `0x28` (8, 9, 10, 12, 14, 15) |
+| `P2K_IDTDUMP=1` | the interrupt descriptor table, once, when the guest first loads a protected-mode one. Handler address, selector and gate type per hardware vector. What established that the slave PIC sits at `0x28-0x2f` here, not `0x70`, and that only IRQ 0 has a handler of its own |
+| `P2K_VBLANK_IRQ=<n>` | deliver the display controller's vertical interrupt on line n, once per frame, while `VIEN` is set. Off by default and not known to be correct: the line is a guess and nothing in XINA appears to consume it. Held back until the guest has an IDT, since firing into the real-mode vector table resets the machine |
 | `P2K_NAMES=1` | the machine's own device map, once at startup: PinMAME switch, coil and lamp numbers against the names the game itself uses. PinMAME has nowhere to hang these, so this is the one place they are visible. The running set picks its own table |
 | `P2K_CPU_HZ=<hz>` | run the MediaGX at another clock. The default is 233/3 MHz - a compromise, the emulation being single-threaded - and raising this is how that was chosen |
 | `P2K_PIT_HZ=<hz>` | move the PIT off 1.193182 MHz. How the tick handler's requirements were measured; MAME ran it at 925 kHz to suit its 20 MHz CPU |
@@ -1167,6 +1112,8 @@ asked for. The ones that stay useful:
 | `P2K_CLKINT_COUNTER=<hex>` | a guest address holding the firmware's own clock-handler nesting count. Non-zero there means "inside clkint", used in place of the gate's own tracking |
 | `P2K_WRITEMAP=1` | a histogram of writes per megabyte of address space, dumped at exit. What showed 30 M writes landing at `0xc0800000` while the alias window stopped short of it |
 | `P2K_PCTRAP_MAX=<n>` | how many `P2K_PCTRAP` reports before it goes quiet |
+| `P2K_PCTRAP_AFTER=<cycles>` | hold the traps back until then. Without it a trap on anything the machine does regularly spends its budget at boot and is quiet by the time the interesting hits come round |
+| `P2K_OPWATCH=1` | first use of each Cyrix CPU-access opcode (`0f 3a`-`0f 3d`) and of each register it reaches. These are MediaGX-specific, so nothing faults and nothing else logs when a set drives one |
 | `P2K_DUMPAT=<hex>` | take the `P2K_DUMP` dump when the CPU reaches an address, rather than on a timer |
 | `P2K_FIND=<lo>-<hi>` | instead of a hex dump, report every dword in the `P2K_DUMP` range whose value falls between lo and hi. Finding which of 55 task stacks holds a return address into a given function is otherwise 55 runs |
 | `P2K_BTAT=<hex>`, `P2K_BTBELOW=<hex>` | dump the `P2K_BACKTRACE` ring at an address, or the first time the PC drops below one. A derail into low memory marches a long way before reaching any address one could name, so the useful trigger is entry into the region |
@@ -1187,11 +1134,15 @@ asked for. The ones that stay useful:
 | `P2K_DCSLOG=1` | the whole conversation with the sound board |
 | `P2K_VIDEO_PPM=<path>` | write the picture out as a PPM |
 
-Four more report themselves without a knob, being things that should never happen rather than
+The following report themselves without a knob, being things that should never happen rather than
 traffic worth watching. Each fires once per distinct case, on a debug build:
 
-* `[p2k blit] raster mode XX is not implemented` - the blitter handles 00, ff, c6 and cc, and
-  anything else silently draws nothing, which on screen is a hole where something belongs.
+* `[p2k blit] raster mode XX taking the general ROP path` - 00, ff, c6 and cc have their own
+  paths; anything else is evaluated from the ROP truth table. It used to draw nothing at all,
+  which on screen is a hole where something belongs.
+* `[p2k blit] pattern registers are not all ones` - every raster path assumes they are, which is
+  what reduces c6 and cc to a source copy and is the databook's stated precondition for the
+  transparent copy. The games set them once and never touch them again.
 * `[p2k blit] vector mode ... asked for and not implemented` - vector mode does solid fills and
   was never implemented here or in the MAME driver this came from.
 * `[p2k blit] raster XX source out of VRAM` - a copy whose source runs past the end of VRAM. The
@@ -1202,9 +1153,22 @@ traffic worth watching. Each fires once per distinct case, on a debug build:
   word of the BLT buffer, which is only right while the whole row holds one value. The games fill
   all 640 words with the same colour, so a row that disagrees means the hardware is being asked
   for per-column destination data, which a single key cannot express.
+* `[p2k blit] transparent copy with GP_BLT_MODE RD=...` - the colour key is read from the BLT
+  buffer that `GP_BLT_MODE` bits 4:2 select, and only `010` and `011` name one. `000` means no
+  destination data, so all ones reach the raster unit; `100` and `101` read the destination from
+  the frame buffer, which is not a colour key at all and is untested here. Either way the copy
+  keys on the wrong colour instead of failing, which would look like transparency breaking in one
+  place and nothing else.
+* `[p2k blit] BLT without rewriting GP_DST / GP_SRC_X` - the pipeline's master/slave registers
+  advance a coordinate the guest leaves alone rather than reusing it (databook Table 4-21). This
+  driver reuses it, so a set that relied on that would draw one source row repeatedly.
+* `[p2k gp] GP_BLT_STATUS read 200000 times with no blit` - the blitter here finishes inside the
+  write that starts it, so the busy bits never read back set. A set that waits for one to *rise*
+  would spin for ever, and the spin is silent otherwise: no blit, no fault, just a stopped game.
 
-All four are silent on every set tested, including the one with the broken service menu, which is
-how that was ruled out. They are cheap to leave armed and expensive to have to add again.
+All these are silent on every set tested, including the ones whose service menu used to wedge,
+which is how the blitter was ruled out as the cause of that. They are cheap to leave armed and
+expensive to have to add again.
 
 One option belongs to a different entry point: `p2k_boot.cpp` is a standalone harness that loads a
 game's ROMs, runs the CPU from the reset vector and reports what the boot code touches, without

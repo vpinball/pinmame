@@ -51,6 +51,10 @@ extern void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask);
 extern unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height, const unsigned fast_15bpp_path, unsigned *fast_15bpp_path_success);
 extern void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count);
 extern void p2k_pinmame_set_dips(unsigned char dips);
+/* Takes the machine's clock from the host, the way a battery-backed RTC that kept running would.
+   keep_year for a machine that already has a clock of its own: the firmware reads the year register
+   as a number of years to add rather than a date, so giving it the host year twice makes the displayed year climb */
+extern void p2k_pinmame_clock_from_host(int keep_year);
 extern void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2);
 
 static READ32_HANDLER(p2k_r)  { return p2k_pinmame_read(offset * 4, ~mem_mask); }
@@ -435,8 +439,8 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
    applies sits at a different address in each, and the driver name carries the answer */
 static const char *p2k_romPrefix(void) {
   const char *name = (Machine && Machine->gamedrv) ? Machine->gamedrv->name : "rfm";
-  if (strncmp(name, "rfm", 3) == 0) return "rfm";          /* "rfm_160" and the rest */
-  return "swep1";                                          /* "swep1_150" and the rest are the Episode I sets */
+  if (strncmp(name, "rfm", 3) == 0) return "rfm";       /* "rfm_160" and the rest */
+  return "swep1";                                       /* "swep1_150" and the rest are the Episode I sets */
 }
 
 static SWITCH_UPDATE(p2k);   /* defined with the input ports below */
@@ -482,6 +486,7 @@ static int p2k_m2sw(int col, int row) { return col * 10 + row + 1; }
 
 static UINT8 p2k_nvCmos[P2K_NV_CMOS_SIZE];
 static UINT8 p2k_nvEeprom[P2K_NV_EEPROM_SIZE];
+static UINT8 p2k_nvRtc[P2K_NV_RTC_SIZE];
 static int   p2k_nvLoaded = 0;
 
 static NVRAM_HANDLER(p2k) {
@@ -489,6 +494,7 @@ static NVRAM_HANDLER(p2k) {
      MACHINE_STOP below, which is where the bytes are taken */
   core_nvram(file, read_or_write, p2k_nvCmos,   P2K_NV_CMOS_SIZE,   0x00);
   core_nvram(file, read_or_write, p2k_nvEeprom, P2K_NV_EEPROM_SIZE, 0x00);
+  core_nvram(file, read_or_write, p2k_nvRtc,    P2K_NV_RTC_SIZE,    0x00);
   /* Only adopt these if they really came from a file. With no file core_nvram() fills the
      buffers with zeros, and pushing those into the machine would wipe the PLX EEPROM defaults
      that reset() writes - which stops the machine booting at all */
@@ -510,7 +516,8 @@ static void p2k_dumpNames(void) {
     const int game = p2k_gameIndex();
     const p2k_name_t *t;
     int i;
-    printf("[p2k names] %s\n", game == P2K_GAME_SWEP1  ? "Star Wars Episode I" : "Revenge From Mars");
+    printf("[p2k names] %s\n", game == P2K_GAME_SWEP1  ? "Star Wars Episode I" :
+                               "Revenge From Mars");
     printf("[p2k names] switches (PinMAME number = column*10 + row):\n");
     for (t = p2k_switch_names(game), i = 0; t[i].name; i++)
       printf("   sw %3d  %s\n", t[i].num, t[i].name);
@@ -533,7 +540,12 @@ static MACHINE_INIT(p2k) {
                                                 that fills in the EEPROM defaults */
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_CMOS,   p2k_nvCmos,   P2K_NV_CMOS_SIZE);
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_EEPROM, p2k_nvEeprom, P2K_NV_EEPROM_SIZE);
+    p2k_pinmame_nvram_set(P2K_NV_BLOCK_RTC,    p2k_nvRtc,    P2K_NV_RTC_SIZE);
   }
+  /* The clock comes from the host every start, so the machine shows real time rather than whatever
+     it had when last switched off. A machine that already has a CMOS keeps its year register: the
+     firmware adds that register to its own stored year, so refreshing it would climb */
+  p2k_pinmame_clock_from_host(p2k_nvLoaded);
   sndbrd_0_init(SNDBRD_DCSP2K, DCS_CPUNO, memory_region(DCS_ROMREGION), NULL, NULL);
 }
 /* Take the machine's persistent blocks before letting go of it.
@@ -546,6 +558,7 @@ static MACHINE_INIT(p2k) {
 static MACHINE_STOP(p2k) {
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_CMOS,   p2k_nvCmos,   P2K_NV_CMOS_SIZE);
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_EEPROM, p2k_nvEeprom, P2K_NV_EEPROM_SIZE);
+  p2k_pinmame_nvram_get(P2K_NV_BLOCK_RTC,    p2k_nvRtc,    P2K_NV_RTC_SIZE);
   p2k_pinmame_stop();
 }
 
@@ -698,8 +711,12 @@ static SWITCH_UPDATE(p2k) {
 	/  Revenge From Mars has since been checked against a machine as well: rfm_260's own switch test
 	/  reports every opto as "norm closed", and the ones it reports are the ones in the list above -
 	/  including 53-56, which came from 2.60's switch table rather than a manual and had not been
-	/  confirmed until then. Episode I's list is still manual-derived only. That test is the way to
-	/  check any of them: an opto rests closed, so it names itself
+	/  confirmed until then. Episode I has since been checked the same way, including the optos that
+	/  only its later revisions have: every switch the list marks reports as closed in the machine's
+	/  own switch test, and nothing else does. Both games' lists are now machine-verified rather than
+	/  taken from paper. That test is the way to check any of them: an opto rests closed, so it names
+	/  itself - and it only became possible to walk those menus on 2.00, 2.01 and 2.10 once the UART
+	/  divisor latch bug was fixed, which had been wedging them a few seconds in (see src/p2k/README.md)
 	/
 	/  An earlier version of this note claimed the switch table carries an opto flag at +0x0c bit
 	/  0x800 and that it agreed with the manuals. It does not. That bit - +0x1c from the record
@@ -1221,13 +1238,30 @@ ROM_START(rfm_250)
 	           0x27fe00, CRC(070302ab) SHA1(468f71b2eda12e11647de4f9a26b38aff7d10ec6),
 	           0x0c0600, CRC(2a39d567) SHA1(d20ea3cb5817e9a38c2c98d969a50ae705b52dd5))
 ROM_END
-ROM_START(rfm_224)
+
+/* 2.24 went out three times under the same version number, so the sets are numbered by build
+   rather than by version, and none holds a plain rfm_224 name:
+
+     r1     ~12/21 the initial release
+     r2   13/01/22 fixes a bug that awarded two extra balls instead of one
+     r3   29/01/22 the final release, which adds a Lyman Sheats tribute.
+
+   r2 and r3 share an im_flsh0 and differ in boot data, game and symbols, r2's game image being 1536 bytes shorter */
+ROM_START(rfm_224r3)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0224, CRC(39a81ae6) SHA1(a81498991a5d70ea47565fa4bf857033d491521c),
 	           0x06e02c, CRC(17e92432) SHA1(87f128836dd21f9c805fa7d745413749ac2d8750),
 	           0x27e400, CRC(685fbd4f) SHA1(90196e256ccaf2d3095ffd70c6942add94411e47),
 	           0x0bf600, CRC(26f84e44) SHA1(2bb4deb346960b646290683534f93bf35549a11f))
 ROM_END
+ROM_START(rfm_224r2)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0224, CRC(2f4811d0) SHA1(39da9f8f40787105f14dac8540ceed3ea2a94a03),
+	           0x06e02c, CRC(17e92432) SHA1(87f128836dd21f9c805fa7d745413749ac2d8750),
+	           0x27de00, CRC(4d5e4a88) SHA1(72e7783572d9a215b056e272815326bd11c849a3),
+	           0x0bf400, CRC(f9abfc87) SHA1(dcf4854be45600187fff2ccbcee6d43acccb2d73))
+ROM_END
+
 ROM_START(rfm_223)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0223, CRC(ba906071) SHA1(f3ef4e45befc4956d2f72be0cb064a3a0d5f1154),
@@ -1235,6 +1269,7 @@ ROM_START(rfm_223)
 	           0x27dc00, CRC(f8f47f8f) SHA1(27a47024a12c434363a452e1f4ecbca3eb484c91),
 	           0x0bf400, CRC(2f2232ac) SHA1(f7276712acb3bc05393766e7344e6503d89ed1f8))
 ROM_END
+
 ROM_START(rfm_222)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0222, CRC(bf3ad897) SHA1(b11b8fe9536962b44ef0b9e990eb0aee7ace4f17),
@@ -1242,8 +1277,25 @@ ROM_START(rfm_222)
 	           0x27d000, CRC(c3f8510f) SHA1(d3531a31006e177e69a687cc0c9b0abfcb7db922),
 	           0x0bf000, CRC(44a2fb16) SHA1(6ec4654c0513578b0de15ec2a631c2cbf07ca475))
 ROM_END
-/* the sound flash is 1.91's, under 1.91's name though the package spells it _0210_sf.rom - see the
-   _sf.rom note above */
+
+/* 2.20, 2.21, 2.10 and 2.00 carry the same sound flash as 1.91, rather than the stock one, so they
+   name it the same way - the file is byte for byte 1.91's */
+ROM_START(rfm_221)
+	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
+	P2K_UPDATE(50070, 0221, CRC(89273166) SHA1(c10e008b83e013b6c97e7edd754fbdf62d58d958),
+	           0x07e29c, CRC(6effc654) SHA1(1ecbad2e8d478f32dcbf2e0f7ee1794326f5ae73),
+	           0x27ac00, CRC(768a29dd) SHA1(437848495f754360220dd704b3f040eb6e0ea862),
+	           0x0be000, CRC(25f65fdd) SHA1(b434dea77bf726596c11e4fe049a8e5c2b7f9d04))
+ROM_END
+
+ROM_START(rfm_220)
+	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
+	P2K_UPDATE(50070, 0220, CRC(26ca3c17) SHA1(9c72e7b171d1669c7031e6afb06aadf449aaa30d),
+	           0x07e29c, CRC(6effc654) SHA1(1ecbad2e8d478f32dcbf2e0f7ee1794326f5ae73),
+	           0x278c00, CRC(a9939f19) SHA1(6111cbe1b9f9ade162e15a613c62444eb7fe9409),
+	           0x0bd000, CRC(3bd4d575) SHA1(0672836fecd4363ea5fa26ca70ff66cf0e5a5f1b))
+ROM_END
+
 ROM_START(rfm_210)
 	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
 	P2K_UPDATE(50070, 0210, CRC(ce6111dc) SHA1(fcce8430bac6bad9260ef86f3e37cc87eebb3896),
@@ -1267,6 +1319,7 @@ ROM_START(rfm_200)
 	           0x26fa00, CRC(2a877688) SHA1(7fa5b4f55a014a9e866acfcf94ba5428c98bb2a2),
 	           0x0b9600, CRC(c9a97659) SHA1(a08b4c5bb3bfe94476af6282eab6aba31725b6fc))
 ROM_END
+
 /* 1.95 is 1.90 with the German retranslated, and the middle of the three rather than the newest -
    1.91 is the last and went back to 1.90's wording. 1.91 is also the one that brings its own sound
    flash, which 2.00 and 2.10 then reuse */
@@ -1298,10 +1351,12 @@ ROM_START(rfm_180)
 	           0x26aa00, CRC(a736f81f) SHA1(8136a526879729b5d2b7a9a6f01191a2e9097efc),
 	           0x0b6e00, CRC(69421a8b) SHA1(c09a276a3f285e8c140faa1017221b599a577517))
 ROM_END
-/* The other two fallback images, for the same reason rfm_080 is here: a set each so the halts are
-   addressable and anyone working on them can just run one. Neither boots yet. These two need no ROMs of
+
+/* The other two fallback images, for the same reason rfm_080 is here: a set each so they are
+   addressable and anyone working on them can just run one. These two need no ROMs of
    their own - they are their parent's Prism chips with the update package left out, so the loader
-   starts the copy in the ROMs instead, and we find the files in the parent set.
+   starts the copy in the ROMs instead, and we find the files in the parent set. Both boot and
+   run now, as do 0.80 and 1.20.
 
    The version each one prints through "Software version: %d.%d" comes from the major/minor pair in
    the boot-data header at bank 0 offset 0x8040: 0 and 1 here, 0 and 40 for Episode I. The minor is
@@ -1320,10 +1375,10 @@ ROM_END
    "We only had 60MB of ROM to store every art asset the game needed.
     The other 4MB was reserved for an old version of the game software so that it was always possible to boot the game and upload a newer version into the Flash memory."
 
-   It does not boot yet: it halts at 0x1b355f/0x1b3568/0x2020c5
-   with no timer ever programmed, the same shape as the rev. 1 pair's 0.1 and Episode I's 0.40 on
-   this path, and under every setting of P2K_PATCH_PCI_INIT_RETRY. It is here so the rev. 2 ROMs
-   and that halt are on record. src/p2k/README.md has the table.
+   It used to halt at 0x1b355f/0x1b3568/0x2020c5 with no timer ever programmed, the same shape as
+   the rev. 1 pair's 0.1 and Episode I's 0.40 on this path. That was the PLX serial EEPROM, whose
+   write side was not modelled - see prism_1000_w in src/p2k/p2k_driver.cpp. All four boot and run
+   now. src/p2k/README.md has the table.
 
    Only u100/u101 are rev. 2(?) - the MAME set carries no other r2 file - but the rest is very
    likely right rather than merely assumed. Diff the two revisions of this pair and they part
@@ -1689,27 +1744,30 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
 CORE_GAMEDEF (rfm, 160, "Pinball 2000: Revenge From Mars (1.60)", 2003, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 150, 160, "Pinball 2000: Revenge From Mars (1.50)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 140, 160, "Pinball 2000: Revenge From Mars (1.40)", 2000, "Midway", p2k, 0)
-CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, GAME_NOT_WORKING)
-CORE_CLONEDEF(rfm, 080, 160, "Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
-CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1 board)", 1999, "Midway", p2k, GAME_NOT_WORKING)
+CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 080, 160, "Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1 board)", 1999, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 180, 160, "Pinball 2000: Revenge From Mars (1.80 unofficial MOD)", 2006, "Midway", p2k, 0) // debatable if this still counts as official
 CORE_CLONEDEF(rfm, 190, 160, "Pinball 2000: Revenge From Mars (1.90 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 191, 160, "Pinball 2000: Revenge From Mars (1.91 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 195, 160, "Pinball 2000: Revenge From Mars (1.95 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 200, 160, "Pinball 2000: Revenge From Mars (2.00 unofficial MOD)", 2018, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 210, 160, "Pinball 2000: Revenge From Mars (2.10 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 220, 160, "Pinball 2000: Revenge From Mars (2.20 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 221, 160, "Pinball 2000: Revenge From Mars (2.21 unofficial MOD)", 2020, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 222, 160, "Pinball 2000: Revenge From Mars (2.22 unofficial MOD)", 2020, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 223, 160, "Pinball 2000: Revenge From Mars (2.23 unofficial MOD)", 2021, "Midway / mypinballs", p2k, 0)
-CORE_CLONEDEF(rfm, 224, 160, "Pinball 2000: Revenge From Mars (2.24 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 224r2, 160, "Pinball 2000: Revenge From Mars (2.24 rev. 2 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 224r3, 160, "Pinball 2000: Revenge From Mars (2.24 rev. 3 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 250, 160, "Pinball 2000: Revenge From Mars (2.50 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 260, 160, "Pinball 2000: Revenge From Mars (2.60 unofficial MOD)", 2024, "Midway / mypinballs", p2k, 0)
-CORE_GAMEDEF (swep1, 150, "Pinball 2000: Star Wars Episode I (1.50)", 2003, "Midway", p2k, 0)
-CORE_CLONEDEF(swep1, 140, 150, "Pinball 2000: Star Wars Episode I (1.40)", 2000, "Midway", p2k, 0)
-CORE_CLONEDEF(swep1, 130, 150, "Pinball 2000: Star Wars Episode I (1.30)", 1999, "Midway", p2k, 0)
-CORE_CLONEDEF(swep1, 040, 150, "Pinball 2000: Star Wars Episode I (0.40 prototype/factory)", 1999, "Midway", p2k, GAME_NOT_WORKING)
-CORE_CLONEDEF(swep1, 166, 150, "Pinball 2000: Star Wars Episode I (1.66 unofficial MOD)", 2022, "Midway / hemtoni", p2k, 0)
-CORE_CLONEDEF(swep1, 200, 150, "Pinball 2000: Star Wars Episode I (2.00 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
-CORE_CLONEDEF(swep1, 201, 150, "Pinball 2000: Star Wars Episode I (2.01 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
-CORE_CLONEDEF(swep1, 210, 150, "Pinball 2000: Star Wars Episode I (2.10 unofficial MOD)", 2025, "Midway / mypinballs", p2k, 0)
+CORE_GAMEDEF (swep1, 150, "Pinball 2000: Star Wars Episode I (1.50)", 2003, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 140, 150, "Pinball 2000: Star Wars Episode I (1.40)", 2000, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 130, 150, "Pinball 2000: Star Wars Episode I (1.30)", 1999, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 040, 150, "Pinball 2000: Star Wars Episode I (0.40 prototype/factory)", 1999, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 166, 150, "Pinball 2000: Star Wars Episode I (1.66 unofficial MOD)", 2022, "Williams / hemtoni", p2k, 0)
+CORE_CLONEDEF(swep1, 200, 150, "Pinball 2000: Star Wars Episode I (2.00 unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0)
+CORE_CLONEDEF(swep1, 201, 150, "Pinball 2000: Star Wars Episode I (2.01 unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0)
+CORE_CLONEDEF(swep1, 210, 150, "Pinball 2000: Star Wars Episode I (2.10 unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0)
 
 #endif /* HAS_MEDIAGX */

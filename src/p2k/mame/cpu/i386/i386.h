@@ -474,6 +474,9 @@ protected:
 	bool m_nmi_masked;
 	bool m_nmi_latched;
 	uint32_t m_smbase;
+	// PINMAME: CPU_WRITE/CPU_READ register file, indexed by the low byte of the address in EBX - see
+	// i386_cyrix_special() and the accessor on mediagx_device
+	uint32_t m_cpu_access_regs[256] = {};
 	devcb_write_line m_smiact;
 	devcb_write_line m_ferr_handler;
 
@@ -1733,6 +1736,24 @@ class mediagx_device final : public i386_device
 public:
 	// construction/destruction
 	mediagx_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// PINMAME: The CPU-access registers reached by CPU_WRITE/CPU_READ (0f 3c / 0f 3d), which take a 32-bit
+	// register address in EBX and the data in EAX. Every documented address is FFFFFFxxh, so the
+	// low byte indexes this. MAME's core decodes the four Cyrix opcodes and then discards them;
+	// the graphics pipeline needs two of these registers, the BLT buffer bases, because
+	// GP_BLT_MODE selects a buffer by number and only these say where it is. See the databook
+	// (gxmdb_v20.pdf) Table 4-7 for the instructions and Table 4-8 for the address map
+	static constexpr uint32_t L1_BB0_BASE    = 0x0c;
+	static constexpr uint32_t L1_BB1_BASE    = 0x1c;
+	static constexpr uint32_t L1_BB0_POINTER = 0x2c;
+	static constexpr uint32_t L1_BB1_POINTER = 0x3c;
+	uint32_t cpu_access_reg(uint32_t addr_low_byte) const { return m_cpu_access_regs[addr_low_byte & 0xff]; }
+
+	// The interrupt descriptor table, so the driver can see which vectors the guest has actually
+	// installed handlers for. Guessing which line a device should interrupt on is otherwise a
+	// coin toss, and a wrong guess reaches an empty vector and triple-faults the machine
+	uint32_t idtr_base() const  { return m_idtr.base; }
+	uint32_t idtr_limit() const { return m_idtr.limit; }
 
 protected:
 	virtual void device_start() override;

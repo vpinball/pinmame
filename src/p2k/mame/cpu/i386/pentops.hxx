@@ -1000,6 +1000,43 @@ void i386_device::i386_cyrix_special()     // Opcode 0x0f 3a-3d
 0f 3c       CPU_WRITE (write special CPU memory-mapped register, [ebx] = eax)
 0f 3d       CPU_READ (read special CPU memory-mapped register, eax, = [ebx])
 */
+	// PINMAME: MAME decodes these four and then discards them, which is fine for a driver that only needs
+	// the CPU. The MediaGX graphics pipeline needs two of the registers they reach: GP_BLT_MODE
+	// picks a BLT buffer by number and only L1_BB0_BASE/L1_BB1_BASE say where those buffers are.
+	// Every documented address is FFFFFFxxh (databook Table 4-8), so the low byte indexes the file
+	// P2K_OPWATCH=1 reports the first use of each, and of each register address they reach. A set
+	// that drives one of these differently from another - or at all, where another does not - shows
+	// up nowhere else: these opcodes are MediaGX-specific, so nothing faults and nothing logs.
+	// Behind P2K_DEBUG like the rest of the apparatus, so that a variable left set in someone's
+	// environment cannot reach a shipping build at all - see p2k_debug.h
+#if P2K_DEBUG
+	{
+		static const bool watch = getenv("P2K_OPWATCH") != nullptr;
+		if (watch)
+		{
+			static bool seen_op[4] = {}, seen_reg[256] = {};
+			const unsigned i = m_opcode - 0x3a;
+			if (i < 4 && !seen_op[i])
+			{
+				seen_op[i] = true;
+				logerror("[p2k op] cyrix 0f %02x first used at pc=%08x\n", m_opcode, m_pc);
+			}
+			if ((m_opcode == 0x3c || m_opcode == 0x3d) && !seen_reg[REG32(EBX) & 0xff])
+			{
+				seen_reg[REG32(EBX) & 0xff] = true;
+				logerror("[p2k op] cyrix %s register %08x (= %08x) at pc=%08x\n", m_opcode == 0x3c ? "CPU_WRITE" : "CPU_READ", REG32(EBX), REG32(EAX), m_pc);
+			}
+		}
+	}
+#endif
+
+	switch (m_opcode)
+	{
+		case 0x3a: m_cpu_access_regs[0x2c] = m_cpu_access_regs[0x0c]; break; // BB0_RESET
+		case 0x3b: m_cpu_access_regs[0x3c] = m_cpu_access_regs[0x1c]; break; // BB1_RESET
+		case 0x3c: m_cpu_access_regs[REG32(EBX) & 0xff] = REG32(EAX); break; // CPU_WRITE
+		case 0x3d: REG32(EAX) = m_cpu_access_regs[REG32(EBX) & 0xff]; break; // CPU_READ
+	}
 
 	CYCLES(1);
 }

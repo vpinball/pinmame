@@ -66,11 +66,16 @@ void p2k_pinmame_nvram_set(int which, const unsigned char *data, unsigned size)
 	size_t n = 0;
 	unsigned char *p = /*g_machine ?*/ g_machine->nvram_block_ptr(p2k_state::nvram_block(which), &n) /*: nullptr*/;
 	if (p && data) memcpy(p, data, size < n ? size : n);
+	// and back the other way: into the device, with the years slept through folded into register 9
+	if (which == P2K_NV_BLOCK_RTC) g_machine->rtc_restore();
 }
 
 unsigned p2k_pinmame_nvram_get(int which, unsigned char *data, unsigned size)
 {
 	size_t n = 0;
+	// The clock lives in the device, not in a buffer, so it is copied out and stamped with the host
+	// time first - that stamp is how the next start knows how long the machine was off
+	if (which == P2K_NV_BLOCK_RTC) g_machine->rtc_save();
 	const unsigned char *p = /*g_machine ?*/ g_machine->nvram_block_ptr(p2k_state::nvram_block(which), &n) /*: nullptr*/;
 	if (!p || !data) return 0;
 	if (size > n) size = unsigned(n);
@@ -91,6 +96,15 @@ void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask)
 // The power driver board's DIP switch byte, register 0x02. The machine reads it once during
 // startup and it selects the country, which is what the pricing tables key off - so a change
 // only takes effect on the next boot, exactly as moving the physical switches would
+// Put the host's date and time into the machine's real-time clock, on every start, so it shows real
+// time rather than the clock it had when it was last switched off. keep_year must be set for a
+// machine that has a clock of its own: the firmware treats the year register as a count of years to
+// add rather than a date, so handing it the host year again makes the displayed year climb. See p2k_state::clock_from_host()
+void p2k_pinmame_clock_from_host(int keep_year)
+{
+	if (g_machine) g_machine->clock_from_host(keep_year != 0);
+}
+
 void p2k_pinmame_set_dips(unsigned char dips)
 {
 	if (g_machine) g_machine->set_dips(dips);

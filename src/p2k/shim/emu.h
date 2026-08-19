@@ -682,10 +682,15 @@ public:
 	attotime clocks_to_attotime(u64 clocks) const
 	{ return m_clock ? attotime::from_ticks(clocks, double(m_clock)) : attotime::never; }
 
+	// Gated the way src/osdepend.h gates PinMAME's own logerror - "In PinMAME, log only in debug mode" - plus P2K_DEBUG!
+#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG) || P2K_DEBUG)
 	void logerror(const char *fmt, ...) const
 	{
 		va_list ap; va_start(ap, fmt); vfprintf(stderr, fmt, ap); va_end(ap);
 	}
+#else
+	template <typename... T> ATTR_FORCE_INLINE void logerror(const char *, T &&...) const {}
+#endif
 
 	template <typename... T> void save_item(T &&...) const {}
 	template <typename... T> void save_pointer(T &&...) const {}
