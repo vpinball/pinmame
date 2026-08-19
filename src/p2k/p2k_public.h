@@ -21,12 +21,17 @@
 // do not - it clamps to the smaller of the two, so a divergence silently truncates a player's saved settings rather than failing
 #define P2K_NV_CMOS_SIZE   0x30000
 #define P2K_NV_EEPROM_SIZE 0x80
+// The real-time clock: 64 register bytes, plus the host time_t at which they were saved. The chip
+// is battery-backed on the real board and keeps running while the machine is off, which this cannot
+// do - so that stamp stands in for the running, and says how many New Years were slept through. See p2k_state::clock_from_host()
+#define P2K_NV_RTC_SIZE    0x48
 
 // The 'which' argument of the same two calls. p2k_state::nvram_block mirrors these; the
-// static_asserts in p2k_driver.cpp keep the two spellings from drifting. The subsystem has a third
+// static_asserts in p2k_driver.cpp keep the two spellings from drifting. The subsystem has one more
 // block (NVRAM_UPDATES) that PinMAME does not save, so it has no name here
 #define P2K_NV_BLOCK_CMOS   0
 #define P2K_NV_BLOCK_EEPROM 1
+#define P2K_NV_BLOCK_RTC    3
 
 // The display controller hands out 240 lines and the monitor shows 480: the picture is
 // line-doubled on the way to the CRT, which is why the machine's pixels are twice as tall as

@@ -12,6 +12,7 @@
 // saving the EEPROM over the CMOS
 static_assert(int(p2k_state::NVRAM_CMOS)   == P2K_NV_BLOCK_CMOS,   "NVRAM block selectors disagree");
 static_assert(int(p2k_state::NVRAM_EEPROM) == P2K_NV_BLOCK_EEPROM, "NVRAM block selectors disagree");
+static_assert(int(p2k_state::NVRAM_RTC)    == P2K_NV_BLOCK_RTC,    "NVRAM block selectors disagree");
 
 // How to get the MediaGX PCI bring-up to report success, which the boot code demands before it
 // will go on - without one of these, games halt at "[ PRISM BOARD NOT PRESENT ]".
@@ -83,16 +84,17 @@ void p2k_apply_irq0()
 
 namespace {
 	// display controller registers, by dword index
-	constexpr unsigned DC_TIMING_CFG  = 0x08 / 4;
+	constexpr unsigned DC_GENERAL_CFG = 0x04 / 4; // bit 6 VIEN enables the vertical interrupt
+	constexpr unsigned DC_TIMING_CFG  = 0x08 / 4; // bit 31 VINT pending, bit 30 VNA
 	constexpr unsigned DC_OUTPUT_CFG  = 0x0c / 4;
-	constexpr unsigned DC_FB_ST_OFFSET = 0x10 / 4;
+	constexpr unsigned DC_FB_ST_OFFSET= 0x10 / 4;
 	constexpr unsigned DC_LINE_DELTA  = 0x24 / 4;
 	constexpr unsigned DC_H_TIMING_1  = 0x30 / 4;
 	constexpr unsigned DC_V_TIMING_1  = 0x40 / 4;
 	constexpr unsigned DC_V_LINE_CNT  = 0x54 / 4;
-	constexpr unsigned VIDEO_LINES    = 525; // 640x480 with blanking
+	constexpr unsigned VIDEO_LINES    = 525;      // 640x480 with blanking
 	constexpr unsigned VIDEO_FRAMES_PER_SECOND = 60;
-	constexpr unsigned VIDEO_ACTIVE_LINES = 480; // the rest of the 525 is blanking
+	constexpr unsigned VIDEO_ACTIVE_LINES = 480;  // the rest of the 525 is blanking
 	// graphics pipeline registers, by dword index
 	constexpr unsigned GP_DST         = 0x00 / 4;
 	constexpr unsigned GP_WIDTH       = 0x04 / 4;
@@ -105,10 +107,14 @@ namespace {
 	// height<<16, 0x08 src x|y<<16, and 0x10/0x14/0x20-0x2c set once to ffffffff and never touched
 	// again. Raster mode only ever takes 0x10c6 or 0x00cc, so bit 12 is the source transparency
 	// enable - set with the 0xc6 copy, clear with the opaque 0xcc - and masking to 8 bits below is
-	// equivalent only because those are the sole two values. The six that sit at ffffffff are the
-	// pattern registers, and holding them there is half the databook's precondition for the
-	// transparent copy; its key colour is not a register at all - see color_key in
-	// do_gfx_pipeline, which reads it out of the BLT buffer. Encore's independent implementation
+	// equivalent only because those are the sole two values. Since checked against the GXm databook
+	// (gxmdb_v20.pdf, Table 4-24/4-25), which confirms all seven offsets above and names the rest:
+	// bit 12 is TB, Transparent BLIT - a colour key compare, not the monochrome source transparency
+	// on bit 11 - bits 9:8 are the pattern mode (00, solid, in both values here) and ROP really is
+	// bits 7:0, so the 8 bit mask is right by specification rather than by luck. The six registers
+	// held at ffffffff are GP_PAT_COLOR_A/B (0x10/0x14) and GP_PAT_DATA_0-3 (0x20-0x2c), which the
+	// transparent copy requires; its key colour is not a register at all. See color_key in
+	// do_gfx_pipeline for both, and what rests on them. Encore's independent implementation
 	// (qemu/p2k-gp-blt.c) agrees on bit 12 and on one row per trigger, hardcodes the key, and does
 	// strictly less besides - no fills, no vector mode, no other ROPs. README.md has the full
 	// comparison, and the XINA 1.38 investigation that prompted it
@@ -220,6 +226,63 @@ void p2k_state::seed_error_log()
 	write_le(m_nvram, 0x1c, b_count,   0xffffffff);
 	write_le(m_nvram, 0x20, b_recsize, 0xffffffff);
 	write_le(m_nvram, 0x28, base_b,    0xffffffff);
+}
+
+// The real-time clock, taken from the host. mc146818 reads machine().base_datetime() inside
+// nvram_default(), but nothing here drives MAME's NVRAM machinery - this subsystem moves its own
+// blocks across p2k_pinmame_nvram_set() - so without this the device sat at its constructed state
+// and every machine booted with the clock at zero, which the firmware reports as 1 Jan 1999.
+//
+// keep_year is the whole subtlety. Register 9 is documented as the year, and this firmware does not
+// use it as one: it reads the register, folds it into the clock it keeps in its own CMOS, and then
+// writes zero back. It is a count of year rollovers since the last sync, not a date. On the real
+// board that works because the RTC is battery-backed and keeps running while the machine is off,
+// so the register is normally 0 and reads 1 only if a New Year passed in the meantime.
+//
+// Which is why handing it the host year on every start makes the displayed year climb: a fresh
+// machine has 1999 stored and adds 27 to reach 2026, and every start after that adds 27 again -
+// 2053, 2080. Refreshing everything *except* register 9 gives the guest what a ticking
+// battery-backed clock would: the current date and time, and no years to add. The one thing this
+// does not model is a New Year passing while the machine is off, which would want that register
+// set to the number of years crossed
+// The clock as PinMAME saves it: the 64 registers, then the host time_t they were taken at. The
+// stamp is the whole point - the emulated chip stops when the machine does, where the real one
+// keeps running on its battery, so the only way to know how long it was off is to ask the host
+// twice and subtract. What the firmware wants out of that is not the elapsed time but the number
+// of New Years in it, because it reads register 9 as a count of years to fold into its own clock
+void p2k_state::rtc_save()
+{
+	if (!m_rtc) return;
+	memcpy(m_rtc_nv, m_rtc->p2k_data(), 0x40);
+	const u64 now = u64(::time(nullptr));
+	memcpy(m_rtc_nv + 0x40, &now, sizeof now);
+}
+
+void p2k_state::rtc_restore()
+{
+	if (!m_rtc) return;
+	memcpy(m_rtc->p2k_data(), m_rtc_nv, 0x40);
+
+	u64 saved = 0;
+	memcpy(&saved, m_rtc_nv + 0x40, sizeof saved);
+	if (!saved) return;                        // saved by a build that did not stamp it
+
+	// Calendar years crossed, not elapsed years: a machine switched off on 31 December and started
+	// the next morning slept through one New Year, and that is the one the firmware needs to add
+	const time_t then_t = time_t(saved), now_t = ::time(nullptr);
+	if (now_t <= then_t) return;               // clock moved backwards; nothing to add
+	struct tm a = *localtime(&then_t), b = *localtime(&now_t);
+	int years = b.tm_year - a.tm_year;
+	if (years < 0) years = 0;
+	if (years > 99) years = 99;                // a register, not a span to be trusted blindly
+	m_rtc->p2k_data()[9] = u8(m_rtc_nv[9] + years);
+}
+void p2k_state::clock_from_host(bool keep_year)
+{
+	if (!m_rtc) return;
+	const uint8_t year = m_rtc->p2k_data()[9];
+	m_rtc->p2k_nvram_default();
+	if (keep_year) m_rtc->p2k_data()[9] = year;
 }
 
 p2k_state::~p2k_state()
@@ -411,6 +474,11 @@ u8 *p2k_state::nvram_block_ptr(nvram_block which, size_t *size)
 		case NVRAM_CMOS:    if (size) *size = m_nvram.size();         return m_nvram.data();
 		case NVRAM_EEPROM:  if (size) *size = m_eeprom.size() * 4;    return reinterpret_cast<u8 *>(m_eeprom.data());
 		case NVRAM_UPDATES: if (size) *size = m_nvram_updates.size(); return m_nvram_updates.data();
+		// The real-time clock's 64 registers. Battery-backed on the real board, and the firmware
+		// depends on that: it keeps its own clock in the CMOS and advances it by the difference it
+		// sees here, so a clock that starts afresh every run reads as a jump of decades and the
+		// year climbs run after run. Saved alongside the CMOS it has to agree with
+		case NVRAM_RTC:     if (size) *size = sizeof m_rtc_nv;        return m_rtc_nv;
 	}
 	if (size) *size = 0;
 	return nullptr;
@@ -489,7 +557,14 @@ void p2k_state::build_machine(u32 cpu_clock)
 
 	// MAME clocked the PIT at 925 kHz with the standard 1.193182 MHz commented out - a deliberate
 	// slowdown to go with the 20 MHz CPU. The firmware programs channel 0 as a rate generator
-	// with divisor 298, so that was a tick every ~6400 CPU cycles
+	// with divisor 298, so that was a tick every ~6400 CPU cycles.
+	//
+	// This is also the machine's clock: the RTC is only read at boot, and from then on one_second_proc
+	// counts these ticks and bumps the date and time it keeps in the CMOS. 1193182/298 is 4004 Hz and
+	// the count it makes a second out of is round, so its second comes up about 0.13% short - measured
+	// at 77563110 cycles against the 77666666 a second really takes, a gain of roughly two minutes a
+	// day. A real board has the same crystal and the same divisor, so it drifts the same way; do not
+	// "fix" it by nudging pit_hz, that would only make the emulated machine keep better time than the one it copies
 	double pit_hz = 1193182.0;
 #if P2K_DEBUG
 	// P2K_PIT_HZ moves it, which is how what the tick handler needs was measured
@@ -505,9 +580,19 @@ void p2k_state::build_machine(u32 cpu_clock)
 		if (state) { g_p2k_pit0_edges++; p2k_clkint_note_edge(); }
 		m_pic1->ir0_w(state); });
 
-	m_rtc->set_binary(true);
-	m_rtc->set_binary_year(true);
-	m_rtc->set_epoch(1900);
+	// BCD, which is what the firmware decodes whatever the data mode bit says: seeded with the host
+	// date in binary it showed the 18th as "12" - 18 is 0x12 - so it reads the register as two
+	// packed digits. And the year counts from 1999, not 1900: presented with a 1900-based year it
+	// rejected it outright, wrote year 0 / 1 Jan back into the RTC and reported the date as
+	// 1 Jan 1999, so year 0 is 1999 to this firmware. Between the two the clock could not survive a
+	// boot, which is why every machine started in 1999 no matter what the host clock said
+	m_rtc->set_binary(false);
+	m_rtc->set_binary_year(false);
+	m_rtc->set_epoch(1999);
+	// The firmware zeroes the year register itself, a few hundred million cycles into the boot,
+	// after reading it three times. That is its own bookkeeping rather than a rejection: it takes
+	// the clock into the CMOS it keeps and works from there, and the date it displays stays right
+	// afterwards. Nothing to fix - just do not read a zero in that register as the clock being lost
 	m_rtc->set_24hrs(true);
 	m_rtc->irq().set([this](int state) { m_pic2->ir0_w(state); });
 
@@ -535,13 +620,29 @@ void p2k_state::reset()
 	m_system_bios1[0xbffc] = 0x03ea;
 	m_system_bios1[0xbffd] = 0xc0;
 
+	// BC_DRAM_TOP's reset value, from the databook's Table 4-9. It read back 0 here, which says
+	// "no memory at all" to anything that asks. The firmware does ask once before writing its own
+	// answer - 0x003e0000 and then 0x006e0000, the top of DRAM at roughly 4 MB and 7 MB - so what
+	// it read was wrong even if nothing was seen to depend on it. MAME's driver answers 0xffffff
+	// here, which is neither the reset value nor anything the firmware writes. The other three BIU
+	// registers, BC_XMAP_1 to _3, reset to 0 and no set writes them; see biu_ctrl_w for what would
+	// change if one ever did
+	m_biu_ctrl_reg[0] = 0x3fffffff;
+
 	m_prism_regs[0] = 0x0001146E;
 	m_prism_regs[4] = 0x02800002;
 	m_prism_regs[8] = 0x03000002;
 
+	// The MediaGX's own configuration space, reset values from the databook's Table 4-40: vendor
+	// 1078h Cyrix, device 0001h, status 0280h, revision 00h, class 060000h host bridge. The dword
+	// at 0x40 is four single-byte registers - 00h PCI Control Function 1, 96h Function 2, 00h
+	// reserved, 80h Arbitration Control 1 - which is why it looks arbitrary and is not.
+	// Command was 0x0002 and the latency timer 0, against defaults of 0x0007 and 0x0d; nothing was
+	// seen to depend on either, but a reset value is not ours to choose
 	m_mediagx_regs[0] = 0x00011078;
-	m_mediagx_regs[4] = 0x02800002;
+	m_mediagx_regs[4] = 0x02800007;
 	m_mediagx_regs[8] = 0x06000000;
+	m_mediagx_regs[0x0c] = 0x00000d00; // cache line size 00h, latency timer 0dh
 	m_mediagx_regs[0x40] = 0x80009600;
 
 	m_cx5520_regs[0] = 0x00021078;
@@ -550,7 +651,9 @@ void p2k_state::reset()
 
 	// PLX EEPROM defaults, as set up by the MAME driver when the EEPROM is blank. The firmware
 	// clocks this image back out of register 0x14 and verifies it, so the whole table matters,
-	// not just the first few words.
+	// not just the first few words. This is the image the shipped software wants: the prototypes
+	// want four registers different and rewrite them on their first boot, which is what a real
+	// card programmed by a later firmware would make them do - see src/p2k/README.md.
 	static constexpr u32 defaults[] = {
 		0x0001146e, 0x03000000, 0x00000000, 0x00000000, 0x0FFE0000, 0x0F800000, 0x0FFF8000,
 		0x0C000008, 0x0FFF8001, 0x00100001, 0x01000001, 0x00000001, 0x08000001, 0x08000000,
@@ -648,11 +751,13 @@ void p2k_state::apply_irq0()
 // What is here is the path - columns, rows, lamp strobes and coil registers in the shape both sides
 // expect. The wiring of individual numbers is in src/wpc/p2k_names.h, read out of the games' own
 // device tables and since checked against both machines' test menus
-// Encore writes the vertical blank flag into the SRAM rather than deriving it on read, and this
-// is that, tried and commented out because it changed nothing so far. Left here because someone may have the same idea. Two caveats if it
-// is ever revived - it writes into the CMOS, which PinMAME saves to the .nv, and once per frame
-// is the finest this hook offers where Encore updates thirty times a frame, so the flag
-// alternates instead of pulsing briefly. A guest polling for a short 1 could miss it either way.
+// Encore writes the vertical blank flag into the SRAM rather than deriving it on read. This is
+// that, tried and left commented out because it changed nothing - and the XINA 1.38 wedge it was
+// aimed at turned out to be the UART divisor latch, see port_w. Kept because it is an obvious
+// thing to try twice. Two caveats if it is ever revived: it writes into the CMOS, which PinMAME
+// saves to the .nv, and once per frame is the finest this hook offers where Encore updates thirty
+// times a frame, so the flag alternates instead of pulsing briefly - a guest polling for a short 1
+// could miss it either way
 //
 // static bool p2k_vblank_written()
 // {
@@ -673,6 +778,90 @@ void p2k_state::push_switches(const u8 *matrix, unsigned count)
 	// 	const u32 v = (++phase & 1) ? 1u : 0u;
 	// 	write_le(m_nvram, 4, v, 0xffffffff);
 	// }
+
+#if P2K_DEBUG
+	// The display controller's vertical interrupt, off unless asked for. The databook gives it an
+	// enable and a pending flag: DC_GENERAL_CFG bit 6, VIEN, generates "a vertical interrupt on the
+	// occurrence of the next vertical sync pulse", and DC_TIMING_CFG bit 31, VINT, says one is
+	// pending. Both games turn it on - DC_GENERAL_CFG reads 0x00106541, and 0x41 is bits 0 and 6 -
+	// so they ask for a per-frame interrupt that this driver otherwise never delivers.
+	//
+	// XINA does not consume it. It was tried as the cause of the XINA 1.38 wedge and is not - that
+	// was the UART divisor latch, see the note in port_w - and P2K_IDTDUMP shows why it could not
+	// have been: every hardware vector holds a generic XINU trampoline except IRQ 0's clkint.
+	// Delivered on IRQ 9 it is accepted and handled, changes nothing on swep1_210 and leaves
+	// rfm_160 running normally. Kept because the enable is real and the signal is hardware this
+	// driver otherwise ignores, but off by default and unfinished: the line is a guess (9 is where
+	// a VGA-compatible retrace interrupt lands on an AT, and both games unmask it), and it arrives
+	// at frame rate from this hook rather than at the real vertical sync.
+
+	// P2K_IDTDUMP=1: the interrupt descriptor table, hardware vectors only, once. Which lines the
+	// guest has handlers for is the thing to know before delivering an interrupt on one: an
+	// unpopulated vector is a triple fault and the machine resets, which is exactly what happened
+	// when the vertical interrupt below was first tried on IRQ 9
+	{
+		static const bool idtdump = getenv("P2K_IDTDUMP") != nullptr;
+		static bool done = false;
+		// Triggered on a protected-mode IDT appearing rather than at a frame number: limit 0x3ff
+		// with base 0 is the real-mode vector table the machine starts on, and how many frames it
+		// takes to leave it is not fixed
+		// The base comes from a guest register, and this reads through mem_r, so it is bounded to
+		// main RAM first: a probe that reads wherever a register happens to point can disturb the
+		// machine it is measuring - reading the PLX control register advances the EEPROM, and one
+		// stray read there stops the machine booting. An IDT outside RAM is not something to chase
+		// by poking at it
+		if (idtdump && !done && m_maincpu->idtr_limit() != 0x3ff &&
+		    size_t(m_maincpu->idtr_base()) + 0x400 < m_main_ram.size())
+		{
+			done = true;
+			const u32 base = m_maincpu->idtr_base();
+			fprintf(stderr, "[p2k idt] base=%08x limit=%04x\n", base, m_maincpu->idtr_limit());
+			for (unsigned v = 0x20; v <= 0x7f; v++)
+			{
+				const u32 e = base + v * 8;
+				const u32 lo = mem_r(e, 0xffffffff), hi = mem_r(e + 4, 0xffffffff);
+				const u32 off = (lo & 0xffff) | (hi & 0xffff0000);
+				if ((hi & 0x8000) && off)   // present bit set and a real offset
+					fprintf(stderr, "[p2k idt] vector %02x -> %08x  sel %04x  type %02x%s\n",
+					        v, off, lo >> 16, (hi >> 8) & 0x1f,
+					        (v >= 0x20 && v <= 0x27) ? "   (IRQ 0-7)" :
+					        (v >= 0x70 && v <= 0x77) ? "   (IRQ 8-15)" : "");
+			}
+			fflush(stderr);
+		}
+	}
+
+	{
+		static const char *const s = getenv("P2K_VBLANK_IRQ");
+		static const int line = s ? int(strtol(s, nullptr, 0)) : -1;
+		// Not before the guest has an interrupt table. VIEN is set at cycle 129444, by the boot ROM,
+		// long before any handler exists - delivering from there walks into the real-mode vector
+		// table and the machine triple-faults back to real mode, which is what the first attempt at
+		// this did. The guest's IDT has limit 0x17f, 48 vectors, with the slave PIC remapped to
+		// 0x28-0x2f rather than the PC's usual 0x70, so IRQ 9 is vector 0x29
+		if (line >= 0 && (m_disp_ctrl_reg[DC_GENERAL_CFG] & 0x40) && m_maincpu->idtr_limit() != 0x3ff)
+		{
+			auto ir = [this](int l, int state) {
+				switch (l)
+				{
+					case 2:  m_pic1->ir2_w(state); break;
+					case 5:  m_pic1->ir5_w(state); break;
+					case 9:  m_pic2->ir1_w(state); break;
+					case 10: m_pic2->ir2_w(state); break;
+					case 11: m_pic2->ir3_w(state); break;
+					default: break;
+				}
+			};
+			ir(line, 0);                                      // drop last frame's, so this is an edge
+			// VINT, the pending flag. Set and never cleared here: the databook clears it when VIEN
+			// goes to 0, and nothing in these games reads it, so the experiment does not model the
+			// acknowledge side. It would have to before this became anything but an experiment
+			m_disp_ctrl_reg[DC_TIMING_CFG] |= 0x80000000u;
+			ir(line, 1);
+		}
+	}
+#endif
+
 	if (!matrix) return;
 	if (count > sizeof(m_sw_matrix)) count = sizeof(m_sw_matrix);
 	for (unsigned i = 0; i < count; i++) m_sw_matrix[i] = matrix[i];
@@ -961,7 +1150,23 @@ u32 p2k_state::prism_1000_r(offs_t offset)
 		else if (m_prism_clock_enabled == 1 && m_prism_eprom_clk == 0x1 && m_prism_eprom_offset == -1)
 		{
 			t &= ~(1u << 27);     // the transfer starts with a zero bit
-			m_prism_eprom_offset = 0;
+			// Start where the READ command asked to, which prism_1000_w decoded on the way in.
+			// Two words to the element, high half first, so the word address splits into an index
+			// and a half - and the counter has to be primed here rather than left to whatever the
+			// previous frame ended on, or an odd address streams out of step
+			m_prism_eprom_offset = m_prism_ee_read_word / 2;
+			m_prism_eprom_wordtoggle = m_prism_ee_read_word & 1;
+			m_prism_eprom_counter = 16;
+		}
+		else
+		{
+			// Nothing is being clocked out, so this is either idle or the ready poll that follows
+			// a write: the chip holds its answer line low while the write cycle runs and takes it
+			// high when it is done, and this one is done as soon as it is asked for. Without an
+			// answer here `plx_eeprom_write` waits for a timeout it measures in interval-timer
+			// ticks, which do not run yet this early in the boot - see prism_1000_w
+			t &= ~(1u << 27);
+			if (m_prism_ee_ready) t |= 1u << 27;
 		}
 		return t;
 	}
@@ -970,11 +1175,79 @@ u32 p2k_state::prism_1000_r(offs_t offset)
 	return m_eeprom_regs[offset];
 }
 
+// The write side of register 0x14 is a 93C46 - 64 words of 16 bits, which is what
+// `plx_eeprom_write` bounds its address against. Commands are bit-banged: chip select is bit 25,
+// the clock bit 24, the bit going in bit 26, and the chip answers on bit 27. A frame is the bits
+// clocked in while chip select is high, MSB first, and the chip acts on it when chip select drops:
+// nine bits `1 01 aaaaaa` plus sixteen data bits is a word write, and nine bits `1 00 11xxxx` /
+// `1 00 00xxxx` are the write enable and disable that have to bracket it.
+//
+// This exists because the firmware writes the EEPROM: `plx_ee_verify` reads the image back, and
+// if it does not match what `plx_ee_init` wants it rewrites it. The prototype sets (`rfm_080`,
+// `rfm_120`) do exactly that on every boot, and without a write path the poll after the first
+// word never ends - its escape is a timeout counted in interval-timer ticks, and the interval
+// timer is not running yet, the PIT being unprogrammed and every interrupt still masked. The
+// image is in NVRAM, so once written it stays written and the next boot verifies clean
 void p2k_state::prism_1000_w(offs_t offset, u32 data)
 {
 	offset &= 0x3f;
 	if (offset == 0x14)
 	{
+		const bool cs = (data & 0x02000000) != 0;
+		const bool sk = (data & 0x01000000) != 0;
+		const bool di = (data & 0x04000000) != 0;
+
+		if (cs && !m_prism_ee_cs)                 // a frame starts when chip select rises
+			m_prism_ee_frame = 0, m_prism_ee_nbits = 0;
+		if (cs && sk && !m_prism_ee_sk)           // and takes one bit per rising clock edge
+		{
+			m_prism_ee_ready = false;
+			if (m_prism_ee_nbits < 32) m_prism_ee_frame = (m_prism_ee_frame << 1) | (di ? 1u : 0u);
+			m_prism_ee_nbits++;
+			// A READ is `1 10 aaaaaa` and then the chip clocks words out for as long as chip select
+			// stays high, so the address has to be taken here, mid-frame - by the time it drops the
+			// read is long over. The firmware asks for word 0 and streams all 64 in one frame, so
+			// this changes nothing today; it is what makes any other address right
+			if (m_prism_ee_nbits == 9 && (m_prism_ee_frame >> 6) == 0x6)
+				m_prism_ee_read_word = int(m_prism_ee_frame & 0x3f);
+		}
+		if (!cs && m_prism_ee_cs)                 // and is acted on when it drops
+		{
+			static unsigned reported = 0;         // both reports below are once-only, as elsewhere here
+			if (m_prism_ee_nbits == 9 && (m_prism_ee_frame >> 6) == 0x4)
+				m_prism_ee_wen = (m_prism_ee_frame & 0x30) == 0x30;   // EWEN, against EWDS
+			else if (m_prism_ee_nbits == 25 && (m_prism_ee_frame >> 22) == 0x5)
+			{
+				// One word per frame, and the vector holds two of them per element, high half
+				// first - the same packing the read side above streams out
+				const unsigned word = (m_prism_ee_frame >> 16) & 0x3f;
+				const u16 value = u16(m_prism_ee_frame);
+				if (m_prism_ee_wen && word / 2 < m_eeprom.size())
+				{
+					u32 &slot = m_eeprom[word / 2];
+					slot = (word & 1) ? ((slot & 0xffff0000u) | value)
+					                  : ((slot & 0x0000ffffu) | (u32(value) << 16));
+				}
+				else if (!m_prism_ee_wen && reported < 8)
+				{
+					reported++;
+					fprintf(stderr, "[p2k plx] EEPROM word %02x written without a write enable\n", word);
+				}
+				m_prism_ee_ready = true;
+			}
+			else if ((m_prism_ee_nbits > 25 && (m_prism_ee_frame >> 29) == 0x6) ||
+			         (m_prism_ee_nbits == 9 && (m_prism_ee_frame >> 6) == 0x6))
+				;                     // a read, which the streaming path above answers - either
+				                      // clocked out in this frame, or the command on its own
+			else if (m_prism_ee_nbits && reported < 8)
+			{
+				reported++;
+				fprintf(stderr, "[p2k plx] EEPROM frame of %d bits (%08x) not understood\n", m_prism_ee_nbits, m_prism_ee_frame);
+			}
+		}
+		m_prism_ee_cs = cs;
+		m_prism_ee_sk = sk;
+
 		if (((data >> 24) & 0x2) == 0x2)
 		{
 			if (m_prism_clock_enabled == 0) m_prism_eprom_offset = -1;
@@ -998,14 +1271,90 @@ void p2k_state::prism_1000_w(offs_t offset, u32 data)
 // has expired"). Ported from MAME 0.239, src/mame/drivers/pinball2k.cpp: only the raster modes
 // the game uses are implemented there, and the blit is one row of `width` pixels.
 
+#if P2K_DEBUG
+// Consecutive GP_BLT_STATUS reads with nothing happening in between - see gx_pipeline_r
+static u64 g_blt_status_run = 0;
+#endif
+
 u32 p2k_state::gx_pipeline_r(offs_t offset) const
 {
+#if P2K_DEBUG
+	// P2K_GPWATCH also counts reads of GP_BLT_STATUS. Its bottom three bits - BLT Busy, Pipeline
+	// Busy and BLT Pending - are the handshake the databook tells software to use before touching
+	// the frame buffer, a BLT buffer or the pipeline registers. The blit here runs to completion
+	// inside the register write that starts it, so all three are always clear by the time the guest
+	// can look, which is the truthful answer for a blitter that is already finished. Worth knowing
+	// whether anything actually asks
+	if ((offset & 0x7f) == GP_BLT_STATUS)
+	{
+		static const bool gpwatch = getenv("P2K_GPWATCH") != nullptr;
+		static u64 reads = 0, next = 1;
+		if (gpwatch && ++reads >= next)
+		{
+			next *= 10;
+			fprintf(stderr, "[p2k gp] GP_BLT_STATUS read %llu times, answering %08x\n", (unsigned long long)reads, m_gx_pipeline_reg[GP_BLT_STATUS]);
+			fflush(stderr);
+		}
+
+		// A blitter that finishes inside the write that starts it never reads as busy, and software
+		// written for real timing may wait for the busy bit to *appear* before waiting for it to
+		// clear. That loop never ends here, and could not fail on the hardware - a deadlock this
+		// driver would be causing on its own. Cheap to detect: count reads with no blit and no
+		// pipeline register write in between, which g_blt_status_run is reset by, and report a run
+		// far longer than any real handshake
+		if (++g_blt_status_run == 200000)
+		{
+			fprintf(stderr, "[p2k gp] GP_BLT_STATUS read 200000 times with no blit in between - the guest may be waiting for a busy bit this driver never sets\n");
+			fflush(stderr);
+		}
+	}
+#endif
 	return m_gx_pipeline_reg[offset & 0x7f];
 }
 
 void p2k_state::gx_pipeline_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	offset &= 0x7f;
+	// The register is stored before anything acts on it, not after: "writing to this register
+	// initiates a BLT operation", so the value being written is that BLT's mode, not the previous
+	// one. It made no difference while nothing in the blit read GP_BLT_MODE; it does now that the
+	// colour key follows the buffer its bits 4:2 select, and the first transparent blit of a run
+	// used to see the register still at 0. GP_BLT_STATUS's bottom three bits - BLT Busy, Pipeline
+	// Busy, BLT Pending - are read only (Table 4-25), while bits 8 and 9 in the same register are
+	// not, so the write is masked rather than dropped
+	if (offset == GP_BLT_STATUS) mem_mask &= ~0x7u;
+	{
+		u32 &r = m_gx_pipeline_reg[offset];
+		r = (r & ~mem_mask) | (data & mem_mask);
+	}
+#if P2K_DEBUG
+	// The pipeline registers are master/slave: on a BLT the masters latch into the slaves, and a
+	// register the guest does *not* write before the next BLT is not simply reused - databook Table
+	// 4-21 says the destination Y holds its slave value while the source Y advances by +/- the
+	// height, for a bitmap source. This driver has one register file and reuses whatever is in it,
+	// so a game that leant on that auto-advance would re-blit the same source row here and draw a
+	// smear where the hardware draws an image. Report a BLT that did not rewrite its coordinates,
+	// once, with what it would have inherited
+	{
+		static bool wrote_dst = false, wrote_src = false, reported = false;
+		if (offset == GP_DST)   wrote_dst = true;
+		if (offset == GP_SRC_X) wrote_src = true;
+		if (offset == GP_BLT_MODE && data > 0)
+		{
+			if (!reported && (!wrote_dst || !wrote_src))
+			{
+				reported = true;
+				fprintf(stderr, "[p2k blit] BLT without rewriting %s%s%s - the hardware would have advanced the source Y by the height (master/slave, databook Table 4-21); this reuses dst=%08x src=%08x\n",
+				        wrote_dst ? "" : "GP_DST", (!wrote_dst && !wrote_src) ? " and " : "",
+				        wrote_src ? "" : "GP_SRC_X",
+				        m_gx_pipeline_reg[GP_DST], m_gx_pipeline_reg[GP_SRC_X]);
+				fflush(stderr);
+			}
+			wrote_dst = wrote_src = false;
+		}
+	}
+#endif
+
 	if (data > 0 && (offset == GP_BLT_MODE || offset == GP_VECTOR_MODE))
 	{
 		if (offset == GP_BLT_MODE) do_gfx_pipeline();
@@ -1046,44 +1395,77 @@ void p2k_state::gx_pipeline_w(offs_t offset, u32 data, u32 mem_mask)
 		}
 	}
 #endif
-	u32 &r = m_gx_pipeline_reg[offset];
-	r = (r & ~mem_mask) | (data & mem_mask);
+#if P2K_DEBUG
+	g_blt_status_run = 0; // something happened, so any status poll was not a spin
+#endif
 }
 
 void p2k_state::do_gfx_pipeline()
 {
-	m_gx_pipeline_reg[GP_BLT_STATUS] |= 0x7;          // busy, as the firmware polls for
+	// BLT Busy, Pipeline Busy and BLT Pending, which the firmware polls. Never observable: the blit
+	// completes inside the register write that started it, so the guest only ever sees them clear -
+	// truthful for a blitter already finished, and harmless while nothing waits for busy to appear
+	m_gx_pipeline_reg[GP_BLT_STATUS] |= 0x7;
 
 	const int line_delta = int((m_disp_ctrl_reg[DC_LINE_DELTA] & 0x3ff) << 1);   // dwords -> words
 	const u8 rastermode = u8(m_gx_pipeline_reg[GP_RASTER_MODE] & 0xff);
-	const int x     = int(m_gx_pipeline_reg[GP_DST] & 0xffff);
+	const int x     = int(m_gx_pipeline_reg[GP_DST] & 0xffff); //!! should these all stay in 16bit, and also the loop-arithmetic on them (NOT including the actual final address computation!)
 	const int y     = int(m_gx_pipeline_reg[GP_DST] >> 16);
 	const int src_x = int(m_gx_pipeline_reg[GP_SRC_X] & 0xffff);
 	const int src_y = int(m_gx_pipeline_reg[GP_SRC_X] >> 16);
 	const int width = int(m_gx_pipeline_reg[GP_WIDTH] & 0xffff);
 
-	//!! check for width == 0: either that ignores all and exits, or???
+	// Width 0 draws nothing, which is what already happens: cols clamps to it and every path below
+	// is skipped. The databook settles it - "no pixels are rendered for a width of zero", and the
+	// same sentence for height, which is why the row loop takes height at face value
+	//
+	// Two fields below disagree with the databook, and are left as they are because they are what
+	// renders correctly. Table 4-25 puts PIXEL_WIDTH in GP_WIDTH bits 31:16 and PIXEL_HEIGHT in
+	// 15:0, and SRC_X in bits 31:16 of GP_SRC with SRC_Y in 15:0 - the opposite of both readings
+	// here. GP_DST it agrees with (Y high, X low), so the asymmetry is the databook's, stated the
+	// same way in Tables 4-24 and 4-25. Measured on rfm_160: GP_WIDTH = 0x000100ad and GP_SRC =
+	// 0x02d00000, so the databook reads that blit as 1 wide by 173 tall from column 720, and this
+	// driver as 173 wide by 1 tall from row 720. Both are self-consistent - one draws the line
+	// vertically, the other horizontally - and only this one produces a correct picture, on every
+	// set. Swapping to match the databook transposes every blit. Worth revisiting only with a
+	// second source; see README.md
 
-	// Anything outside the four modes below draws nothing at all so far. MAME only ever ran the 1.x games, so "the rest is
-	// unused" was true of those and is not a statement about the hardware. Report each mode once:
-	// a missing one is invisible otherwise, and it is exactly what a wrong background or a stuck
-	// display manager could look like. The mode is a property of the whole blit, so this is decided once
-	// here rather than per pixel - and an unknown mode has nothing left to do but end the blit,
-	// which still has to clear the busy bits the firmware can poll
+#if P2K_DEBUG
+	// Every path below assumes the pattern is all ones. Table 4-22 makes the ROP a per-bit truth
+	// table over pattern, source and destination, so a pattern bit stuck at 1 means only ROP bits
+	// 4-7 are ever selected - which is what reduces both 0xc6 and 0xcc to a plain source copy, and
+	// why the databook requires "the pattern registers must be all F's" for the transparent copy.
+	// The games set GP_PAT_COLOR_A/B and GP_PAT_DATA_0-3 to ffffffff once and never touch them
+	// again. If one ever did, every mode here would be drawing the wrong thing
+	{
+		// GP_PAT_COLOR_A/B then GP_PAT_DATA_0-3, by byte offset
+		static constexpr unsigned PATTERN_REGS[] = { 0x10/4, 0x14/4, 0x20/4, 0x24/4, 0x28/4, 0x2c/4 };
+		static bool reported = false;
+		for (const unsigned p : PATTERN_REGS)
+			if (m_gx_pipeline_reg[p] != 0xffffffffu && !reported)
+			{
+				reported = true;
+				fprintf(stderr, "[p2k blit] pattern register %02x is %08x, not all ones - every "
+				                "raster mode here assumes it is\n", p * 4u, m_gx_pipeline_reg[p]);
+				fflush(stderr);
+			}
+	}
+
+	// The four the games use have their own paths below; anything else goes through the general
+	// ROP rather than drawing nothing, which is what this did before and is a black hole on screen
+	// wherever it lands. MAME only ever ran the 1.x games, so "the rest is unused" was true of
+	// those and was never a statement about the hardware
 	if (rastermode != 0x00 && rastermode != 0xff && rastermode != 0xc6 && rastermode != 0xcc)
 	{
-#if P2K_DEBUG
 		static bool seen[256] = {};
 		if (!seen[rastermode])
 		{
 			seen[rastermode] = true;
-			fprintf(stderr, "[p2k blit] raster mode %02x is not implemented - nothing drawn\n", unsigned(rastermode));
+			fprintf(stderr, "[p2k blit] raster mode %02x taking the general ROP path - no set has been seen to ask for one\n", unsigned(rastermode));
 			fflush(stderr);
 		}
-#endif
-		m_gx_pipeline_reg[GP_BLT_STATUS] &= 0xfffffff8; // done, having drawn nothing
-		return;
 	}
+#endif
 
 	const size_t pixels = m_vram.size() / 2;
 	auto vram16 = [this](size_t i) -> u16 & { return *reinterpret_cast<u16 *>(&m_vram[i * 2]); };
@@ -1106,48 +1488,94 @@ void p2k_state::do_gfx_pipeline()
 	};
 #endif
 
+	// The transparent copy's key colour is neither a constant nor a pipeline register: the databook
+	// puts it "in the BLIT buffer as destination data", the rest of that sentence being the
+	// all-ones pattern the check above guards. P2K_KEYWATCH found it - rfm_160 fills
+	// 0x40000400-0x400008ff, 640 words and exactly one row, with 0x7c1f before drawing anything -
+	// so 0x7c1f is this firmware's choice rather than a hardware default. Every word of the row is
+	// the same, so whether the hardware keys on one value or column by column cannot be told apart
+	// here; the first is taken and the check below watches that.
+	//
+	// Which buffer is GP_BLT_MODE bits 4:2, and where it sits comes from the CPU-access registers
+	// the guest programs with CPU_WRITE: 010 is Buffer 0 at L1_BB0_BASE, 011 Buffer 1 at
+	// L1_BB1_BASE. Measured on rfm_160: BB0_BASE=0x930, BB1_BASE=0x400, so XINA swaps them against
+	// Table 4-5's layout - and every transparent blit selects Buffer 1, the 0x400 the key is written
+	// to. Reading offset 0 unconditionally was right only by that coincidence. 000 means no
+	// destination data, all ones into the raster unit; 100/101 take it from the frame buffer, which
+	// is not a colour key and has not been seen with C6h.
+	//
+	// Not modelled: §4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
+	// Buffer 0 would hold the last line copied. This reads VRAM directly, and nothing reads it back
+	const unsigned blt_rd = (m_gx_pipeline_reg[GP_BLT_MODE] >> 2) & 7u;
+	const u32 key_base = (blt_rd == 2) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB0_BASE)
+	                   : (blt_rd == 3) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB1_BASE)
+	                                   : 0u;
+	const size_t key_index = (key_base >= 0x400 && key_base < 0x1000)
+	                       ? size_t(key_base - 0x400) / 4 : 0;
+	const u16 color_key = key_base ? u16(m_scratchpad[key_index] & 0xffff) : 0xffff;
+
 #if P2K_DEBUG
-	// P2K_KEYWATCH=1: what the BLT buffer holds when a transparent copy runs, reported whenever it
-	// changes. The write half of the same watch, in mem_w, is what located the buffer; color_key below has what the pair established
+	// A transparent copy that does not take its key from a BLT buffer. 010 and 011 are the two the
+	// key can come from and the only ones seen; 000 is defined - no destination data, so the raster
+	// unit sees all ones and 0xffff is keyed out - while 100 and 101 read the destination from the
+	// frame buffer, which is not a colour key at all and is untested here. Any of them keys on the
+	// wrong colour rather than failing, so it would show as transparency going wrong in one place
+	// and nothing else. Reported once per distinct value, like the rest of the should-never-happens
+	if (rastermode == 0xc6 && blt_rd != 2 && blt_rd != 3)
+	{
+		static bool seen[8] = {};
+		if (!seen[blt_rd])
+		{
+			seen[blt_rd] = true;
+			fprintf(stderr, "[p2k blit] transparent copy with GP_BLT_MODE RD=%u%u%u - the key is not coming from a BLT buffer, so %04x is keyed out on a guess\n",
+			        (blt_rd >> 2) & 1u, (blt_rd >> 1) & 1u, blt_rd & 1u, unsigned(color_key));
+			fflush(stderr);
+		}
+	}
+
+	// P2K_KEYWATCH=1: which buffer a transparent copy keyed on and what it found there, reported
+	// whenever any of it changes. The write half of the same watch, in mem_w, is what located the
+	// buffer in the first place. A set that lays its buffers out differently shows up here rather
+	// than silently keying on the wrong colour
 	if (rastermode == 0xc6)
 	{
 		static const bool keywatch = getenv("P2K_KEYWATCH") != nullptr;
-		static u32 last0 = 0xffffffff;
-		if (keywatch && m_scratchpad[0] != last0)
+		static u32 lastmode = 0xffffffff, lastkey = 0xffffffff;
+		if (keywatch && (m_gx_pipeline_reg[GP_BLT_MODE] != lastmode || color_key != lastkey))
 		{
-			last0 = m_scratchpad[0];
-			fprintf(stderr, "[p2k key] 0xc6 blit, BLT buffer = %08x %08x %08x %08x\n", m_scratchpad[0], m_scratchpad[1], m_scratchpad[2], m_scratchpad[3]);
+			lastmode = m_gx_pipeline_reg[GP_BLT_MODE];
+			lastkey = color_key;
+			fprintf(stderr, "[p2k key] 0xc6 blit: BLT_MODE=%08x (RD=%u RS=%u)  BB0_BASE=%03x BB1_BASE=%03x  key from %03x = %04x\n",
+			        m_gx_pipeline_reg[GP_BLT_MODE], blt_rd, m_gx_pipeline_reg[GP_BLT_MODE] & 3u,
+			        m_maincpu->cpu_access_reg(mediagx_device::L1_BB0_BASE),
+			        m_maincpu->cpu_access_reg(mediagx_device::L1_BB1_BASE),
+			        unsigned(0x400 + key_index * 4), unsigned(color_key));
 			fflush(stderr);
 		}
 	}
 #endif
 
-	// The transparent copy's key colour, which is neither a constant nor a pipeline register: the
-	// databook puts it in the BLT buffer as destination data - "the raster operation must be set to
-	// C6h, and the pattern registers must be all F's for this mode to work properly", and the games
-	// satisfy both halves. P2K_KEYWATCH found the buffer: rfm_160 fills 0x40000400-0x400008ff, the
-	// scratchpad, with 0x7c1f before drawing anything - 640 words, exactly one row - and every 0xc6
-	// blit sees it there. So 0x7c1f is no hardware default, only this firmware's only choice (so far).
-	// Every word of the row holds the same value, so whether the hardware keys on one value or on
-	// the buffer column by column cannot be told apart here; the first word is taken, and the check
-	// below watches that assumption. A fallback could cover a copy issued before anything filled the
-	// buffer, which would take 0 as the key and swallow every black pixel
-	const u16 color_key = /*m_scratchpad[0] ?*/ u16(m_scratchpad[0] & 0xffff) /*: 0x7c1f*/;
-
 #if P2K_DEBUG
 	// The assumption above, checked: a row that is not uniform means the hardware is being asked
 	// for per-column destination data, which one key cannot express, and the copy below would draw
 	// the wrong thing with no other sign of it. 320 compares against a copy of 640 pixels, never detected so far
-	if (rastermode == 0xc6)
+	// Only re-scanned when the buffer or the selected base has actually changed - the games fill it
+	// once and blit from it thousands of times, and scanning 320 dwords on each transparent blit
+	// cost more than the blit itself, which is ~173 pixels
+	static u64 checked_gen = ~0ull;
+	static size_t checked_idx = ~size_t(0);
+	if (rastermode == 0xc6 && (m_scratchpad_gen != checked_gen || key_index != checked_idx))
 	{
+		checked_gen = m_scratchpad_gen;
+		checked_idx = key_index;
 		for (unsigned k = 1; k < 0x500 / 4; k++)   // 320 dwords = 640 words = the row the games fill
-			if (m_scratchpad[k] != m_scratchpad[0])
+			if (key_index + k < std::size(m_scratchpad) && m_scratchpad[key_index + k] != m_scratchpad[key_index])
 			{
 				static unsigned reported = 0;
 				if (reported++ < 8)
 				{
 					fprintf(stderr, "[p2k blit] BLT buffer is not one colour: word %u = %08x against %08x at word 0 - the transparent copy keys on word 0 alone\n",
-					        k, m_scratchpad[k], m_scratchpad[0]);
+					        k, m_scratchpad[key_index + k], m_scratchpad[key_index]);
 					fflush(stderr);
 				}
 				break;
@@ -1164,8 +1592,9 @@ void p2k_state::do_gfx_pipeline()
 	// has been seen to send one. Every set measured writes exactly 1 here, through boot, attract
 	// and the service menu, so this loop always runs once
 	const int height = int(m_gx_pipeline_reg[GP_WIDTH] >> 16);
-	for (int i = 0; i < height; i++) //!! should 0 be special cased? maybe also kinda undefined, same as width == 0
+	for (int i = 0; i < height; i++)
 	{
+		//!! also in theory, it should respect y-mirroring/reverse, but apparently never triggered, as height == 1, so..
 		const size_t row = size_t(y + i) * size_t(line_delta);
 		const size_t src_row = size_t(src_y + i) * size_t(line_delta);
 		// Where the row runs off the end of VRAM is fixed before the loop rather than tested inside it:
@@ -1203,16 +1632,41 @@ void p2k_state::do_gfx_pipeline()
 			continue;
 		}
 
-		// Raster 0xc6, the transparent copy: the only mode left so far; every pixel is tested against the key colour before it is
-		// written. The source is read past the end of VRAM here rather than clipped - what the hardware returns is the open question note_oor exists tries to catch
+		// Raster 0xc6, the transparent copy: every pixel is tested against the key colour before it
+		// is written. The source is read past the end of VRAM here rather than clipped - what the
+		// hardware returns is the open question note_oor exists tries to catch
+		if (rastermode == 0xc6)
+		{
+			for (size_t j = 0; j < cols; j++)
+			{
+				const size_t di = dst_base + j;
+				const size_t si = src_base + j;
+				const u16 pixel = vram16(si);
+				if (pixel != color_key) vram16(di) = pixel;
+#if P2K_DEBUG
+				if (si >= pixels) note_oor(0xc6, si); //!! if this triggers, what does the HW do? apparently just allow the read!
+#endif
+			}
+			continue;
+		}
+
+		// Any other ROP, from its truth table. With the pattern all ones only bits 4-7 are
+		// reachable, one per (source, destination) bit pair, so the whole operation is four masks
+		// over 16-bit words. It reproduces the four fast paths above exactly - 0xcc and 0xc6 both
+		// give bits 4-7 = 1100, or "output = source", and 0x00/0xff give all zeroes and all ones -
+		// which is the check that this is the right reading of the table
+		const u16 m00 = (rastermode & 0x10) ? 0xffffu : 0u; // source 0, destination 0
+		const u16 m01 = (rastermode & 0x20) ? 0xffffu : 0u; // source 0, destination 1
+		const u16 m10 = (rastermode & 0x40) ? 0xffffu : 0u; // source 1, destination 0
+		const u16 m11 = (rastermode & 0x80) ? 0xffffu : 0u; // source 1, destination 1
 		for (size_t j = 0; j < cols; j++)
 		{
 			const size_t di = dst_base + j;
 			const size_t si = src_base + j;
-			const u16 pixel = vram16(si);
-			if (pixel != color_key) vram16(di) = pixel;
+			const u16 s = vram16(si), d = vram16(di);
+			vram16(di) = u16((~s & ~d & m00) | (~s & d & m01) | (s & ~d & m10) | (s & d & m11));
 #if P2K_DEBUG
-			if (si >= pixels) note_oor(0xc6, si); //!! if this triggers, what does the HW do? apparently just allow the read!
+			if (si >= pixels) note_oor(rastermode, si); //!! if this triggers, what does the HW do? apparently just allow the read!
 #endif
 		}
 	}
@@ -1247,7 +1701,7 @@ void p2k_state::do_gfx_pipeline()
 			        m_disp_ctrl_reg[DC_FB_ST_OFFSET]);
 	}
 #endif
-	m_gx_pipeline_reg[GP_BLT_STATUS] &= 0xfffffff8;   // done
+	m_gx_pipeline_reg[GP_BLT_STATUS] &= 0xfffffff8; // done, in the same write that set it busy
 }
 
 // Active and total vertical lines, from the timings the game programs rather than a constant.
@@ -1322,11 +1776,37 @@ u32 p2k_state::disp_ctrl_r(offs_t offset) const
 			}
 		}
 #endif
-		const u32 r = m_disp_ctrl_reg[DC_TIMING_CFG] | 0x40000000;
-		return in_vblank() ? (r & ~0x40000000u) : r;
+		// Bit 30 is VNA, "Vertical Not Active", and the databook pins its polarity down: it "cor-
+		// responds to VGA port 3BA/3DA bit 3", which is set during vertical retrace. So it reads 1
+		// while blanking and 0 during active display. MAME's MediaGX driver has it the other way
+		// round - `r |= 0x40000000; if (vpos >= frame_height) r &= ~0x40000000;` - and this was
+		// copied from there before the databook was to hand. Nothing here polls the register, so
+		// the inversion changed nothing either way, but a status bit is either right or it is not
+		const u32 r = m_disp_ctrl_reg[DC_TIMING_CFG] & ~0x40000000u;
+		return in_vblank() ? (r | 0x40000000u) : r;
 	}
 	if (offset == DC_V_LINE_CNT)
+	{
+#if P2K_DEBUG
+		// Counted because the guest detects vertical blank by polling it: gx_0_25ms, called from
+		// the 0.25 ms interval task, reads this and signals dispmgr's semaphore when the value
+		// crosses 240. So a counter this driver synthesises from emulated time drives the guest's
+		// per-frame display heartbeat - measured at one read per ~19,100 cycles, the tick rate
+		static const bool watch = getenv("P2K_DISPWATCH") != nullptr;
+		if (watch)
+		{
+			static u64 reads = 0, next = 1;
+			if (++reads >= next)
+			{
+				next *= 10;
+				fprintf(stderr, "[p2k disp] DC_V_LINE_CNT read %llu times by cycle %llu, now %u\n",
+				        (unsigned long long)reads, (unsigned long long)g_p2k_cycles_total, video_line());
+				fflush(stderr);
+			}
+		}
+#endif
 		return video_line();
+	}
 	return m_disp_ctrl_reg[offset];
 }
 void p2k_state::disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
@@ -1363,11 +1843,42 @@ void p2k_state::memory_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 	r = (r & ~mem_mask) | (data & mem_mask);
 }
 
-u32 p2k_state::biu_ctrl_r(offs_t offset) const { return m_biu_ctrl_reg[offset & 0x3f]; }
+// The Internal Bus Interface Unit, four registers at GX_BASE+8000h (databook Table 4-9/4-10):
+// BC_DRAM_TOP, then BC_XMAP_1 to _3. Stored and otherwise ignored, which is only safe as long as
+// the guest leaves them alone - BC_XMAP_1 decides whether A0000/B0000/B8000 go to RAM or to the
+// graphics pipeline (bits 4, 20 and 28), and whether VGA I/O at 3C0-3DF traps to SMM (bits 13-15),
+// both of which this driver hardcodes the other way. P2K_BIUWATCH=1 reports what is actually there
+u32 p2k_state::biu_ctrl_r(offs_t offset) const
+{
+#if P2K_DEBUG
+	static const bool biuwatch = getenv("P2K_BIUWATCH") != nullptr;
+	static bool seen_r[4] = {};
+	if (biuwatch && (offset & 0x3f) < 4 && !seen_r[offset & 3])
+	{
+		seen_r[offset & 3] = true;
+		fprintf(stderr, "[p2k biu] read  %s -> %08x\n",
+		        (offset & 3) == 0 ? "BC_DRAM_TOP" : (offset & 3) == 1 ? "BC_XMAP_1" :
+		        (offset & 3) == 2 ? "BC_XMAP_2" : "BC_XMAP_3", m_biu_ctrl_reg[offset & 0x3f]);
+		fflush(stderr);
+	}
+#endif
+	return m_biu_ctrl_reg[offset & 0x3f];
+}
+
 void p2k_state::biu_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	u32 &r = m_biu_ctrl_reg[offset & 0x3f];
 	r = (r & ~mem_mask) | (data & mem_mask);
+#if P2K_DEBUG
+	static const bool biuwatch = getenv("P2K_BIUWATCH") != nullptr;
+	if (biuwatch && (offset & 0x3f) < 4)
+	{
+		fprintf(stderr, "[p2k biu] write %s <- %08x\n",
+		        (offset & 3) == 0 ? "BC_DRAM_TOP" : (offset & 3) == 1 ? "BC_XMAP_1" :
+		        (offset & 3) == 2 ? "BC_XMAP_2" : "BC_XMAP_3", r);
+		fflush(stderr);
+	}
+#endif
 }
 
 // The update flash behaves like an Intel 28F320J5: command writes put it into a mode, and reads
@@ -1641,13 +2152,10 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 
 #if P2K_DEBUG
 	// P2K_KEYWATCH=1: every write carrying 0x7c1f in either half, with the PC, the alias already
-	// folded above. The transparent copy hardcodes that value as its key colour, but the databook
-	// says it is not a register: "the color key value is stored in the BLIT buffer as destination
-	// data. The raster operation must be set to C6h, and the pattern registers must be all F's for
-	// this mode to work properly". The games do hold those pattern registers at 0xffffffff, so the
-	// rest of that description should apply as well - and P2K_GPWATCH has already shown that no
-	// pipeline register ever takes the value. This looks for where it does land instead. VRAM is
-	// excluded: a picture that contains magenta pixels would bury the answer
+	// folded above. This is the half of the watch that located the colour key - see color_key in
+	// do_gfx_pipeline for what it found - and it stays armed because a set laying its BLT buffers
+	// out differently would show up here first. VRAM is excluded: a picture containing magenta
+	// pixels would bury the answer
 	{
 		static const bool keywatch = getenv("P2K_KEYWATCH") != nullptr;
 		const bool in_vram = (addr >= 0x40800000 && addr < 0x40c00000);
@@ -1691,7 +2199,15 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	if (addr >= 0x14000000 && addr < 0x15000000) { prism_1400_w((addr - 0x14000000) / 4, data); return; }
 	if (addr >= 0x15000000 && addr < 0x18000000) { return; }   // prism data banks are read-only
 	if (addr >= 0x18000000 && addr < 0x19000000) { write_le(m_prism_bank9, addr - 0x18000000, data, mem_mask); return; }
-	if (addr >= 0x40000400 && addr < 0x40001000) { u32 &r = m_scratchpad[(addr - 0x40000400) / 4]; r = (r & ~mem_mask) | (data & mem_mask); return; }
+	if (addr >= 0x40000400 && addr < 0x40001000)
+	{
+		u32 &r = m_scratchpad[(addr - 0x40000400) / 4];
+		r = (r & ~mem_mask) | (data & mem_mask);
+#if P2K_DEBUG
+		m_scratchpad_gen++; // lets the blit's BLT buffer check re-scan only when it has to
+#endif
+		return;
+	}
 	if (addr >= 0x40008000 && addr < 0x40008100) { biu_ctrl_w((addr - 0x40008000) / 4, data, mem_mask); return; }
 	if (addr >= 0x40008100 && addr < 0x40008300) { gx_pipeline_w((addr - 0x40008100) / 4, data, mem_mask); return; }
 	if (addr >= 0x40008300 && addr < 0x40008400) { disp_ctrl_w((addr - 0x40008300) / 4, data, mem_mask); return; }
@@ -2015,8 +2531,12 @@ u8 p2k_state::port_read(offs_t port)
 	// Ports 0x22/0x23 are the Cyrix configuration registers. The MAME driver implements them as
 	// a plain indexed register file, but wiring that up here derails the boot: the firmware then
 	// takes a configuration path that ends in garbage execution, while leaving the ports
-	// unmapped (reads return 0xff) lets it continue. Something behind those registers is not
-	// ready yet - to be revisited when the SMM/GX_BASE handling is in place.
+	// unmapped (reads return 0xff) lets it continue. This used to say the missing piece was SMM.
+	// It is not: the SMM region at 0x40400000 is never read or written by any set, and the only
+	// SMI sources the databook gives the bus interface unit are the VGA I/O traps in BC_XMAP_1
+	// bits 13-15, which no set sets (§4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
+	// What is behind these registers is GX_BASE itself, among the rest of the configuration - so
+	// answering them wrongly can move the whole register aperture out from under the driver
 	if (port >= 0x002e && port <= 0x002f)
 		return (port == 0x002f) ? m_superio_regs[m_superio_reg_sel] : 0;
 	if (port >= 0x00e8 && port <= 0x00eb) return 0xff;         // I/O delay port
@@ -2051,6 +2571,9 @@ u8 p2k_state::port_read(offs_t port)
 				return 0x01;                        // no interrupt pending
 			case 5: return 0x60;                    // LSR: transmitter holding and shift both empty
 			case 6: return 0xb0;                    // MSR: CTS/DSR/DCD asserted
+			case 0: case 1:                         // divisor latch or RBR/IER, by DLAB - see port_w
+				if (m_uart_reg[3] & 0x80) return m_uart_dl[port & 1];
+				return m_uart_reg[port & 7];
 			default: return m_uart_reg[port & 7];
 		}
 	}
@@ -2061,6 +2584,9 @@ u8 p2k_state::port_read(offs_t port)
 			case 2: return (m_uart2_reg[1] & 0x02) ? 0x02 : 0x01;
 			case 5: return 0x60;
 			case 6: return 0xb0;
+			case 0: case 1:
+				if (m_uart2_reg[3] & 0x80) return m_uart2_dl[port & 1];
+				return m_uart2_reg[port & 7];
 			default: return m_uart2_reg[port & 7];
 		}
 	}
@@ -2084,20 +2610,57 @@ void p2k_state::port_w(offs_t port, u8 data)
 	// Writes only. The guest's reads here are the mask readback in XINU's critical-section pair,
 	// which changes nothing the CPU can see; a poll command would, but this firmware does not use
 	// one - the ICW4 it writes is 0x01, no AEOI and no poll mode
-	if (port >= 0x0020 && port <= 0x0021) { m_pic1->write(port & 1, data); pics_settle(); return; }
+	if (port >= 0x0020 && port <= 0x0021)
+	{
+#if P2K_DEBUG
+		// P2K_IRQWATCH=1: the interrupt mask as the guest sets it. An IRQ the guest unmasks and
+		// this driver never asserts is a device it is waiting on and will wait on for ever
+		static const bool irqwatch = getenv("P2K_IRQWATCH") != nullptr;
+		static u8 last1 = 0xff;
+		if (irqwatch && port == 0x0021 && u8(data) != last1)
+		{
+			last1 = u8(data);
+			fprintf(stderr, "[p2k irq] PIC1 mask <- %02x  (unmasked:", last1);
+			for (int i = 0; i < 8; i++) if (!(last1 & (1 << i))) fprintf(stderr, " %d", i);
+			fprintf(stderr, ")\n");
+			fflush(stderr);
+		}
+#endif
+		m_pic1->write(port & 1, data); pics_settle(); return;
+	}
 	if (port >= 0x0040 && port <= 0x0043) { m_pit->write(port & 3, data); return; }
 	if (port >= 0x0060 && port <= 0x006f) { m_kbdc->data_w(port & 7, data); return; }
 	if (port >= 0x0070 && port <= 0x0071) { m_rtc->write(port & 1, data); return; }
-	if (port >= 0x00a0 && port <= 0x00a1) { m_pic2->write(port & 1, data); pics_settle(); return; }
+	if (port >= 0x00a0 && port <= 0x00a1)
+	{
+#if P2K_DEBUG
+		static const bool irqwatch = getenv("P2K_IRQWATCH") != nullptr;
+		static u8 last2 = 0xff;
+		if (irqwatch && port == 0x00a1 && u8(data) != last2)
+		{
+			last2 = u8(data);
+			fprintf(stderr, "[p2k irq] PIC2 mask <- %02x  (unmasked:", last2);
+			for (int i = 0; i < 8; i++) if (!(last2 & (1 << i))) fprintf(stderr, " %d", 8 + i);
+			fprintf(stderr, ")\n");
+			fflush(stderr);
+		}
+#endif
+		m_pic2->write(port & 1, data); pics_settle(); return;
+	}
 	if (port >= 0x00c0 && port <= 0x00df) { m_dma2->write((port - 0x00c0) / 2, data); return; }
 
 	if (port >= 0x00e8 && port <= 0x00eb) return;
 	if ((port >= 0x0170 && port <= 0x0177) || (port >= 0x01f0 && port <= 0x01f7) ||
 		(port >= 0x0370 && port <= 0x0377) || (port >= 0x03f0 && port <= 0x03f7)) return;
-	if (port >= 0x02f8 && port <= 0x02ff)
+	if (port >= 0x02f8 && port <= 0x02ff) // COM2, with the same DLAB split as COM1 below
 	{
-		m_uart2_reg[port & 7] = data;
-		if ((port & 7) == 1) update_uart_irq();
+		const bool dlab = (m_uart2_reg[3] & 0x80) != 0;
+		if (dlab && (port & 7) < 2) m_uart2_dl[port & 1] = data;
+		else
+		{
+			m_uart2_reg[port & 7] = data;
+			if ((port & 7) == 1) update_uart_irq();
+		}
 		return;
 	}
 	if (port >= 0x03bc && port <= 0x03bf) { lpt_w(port - 0x03bc, data); return; }
@@ -2117,14 +2680,37 @@ void p2k_state::port_w(offs_t port, u8 data)
 
 	if (port >= 0x03f8 && port <= 0x03ff)
 	{
-		// with DLAB clear, a write to the base port is a character to transmit
-		if ((port & 7) == 0 && !(m_uart_reg[3] & 0x80))
+		// Ports 0 and 1 are two registers each: with DLAB - bit 7 of the line control register -
+		// set they are the baud rate divisor latch, and only with it clear are they the transmit
+		// register and the interrupt enable.
+		//
+		// Honouring that for port 0 but not for port 1 is what wedged swep1_210. XINA calls
+		// tty_set_port_param(), which sets DLAB, writes divisor 0x000c for 9600 baud, and clears
+		// DLAB again - and the divisor's high byte, zero, landed on the interrupt enable shadow.
+		// That switched the transmit interrupt off for good about 3.8 seconds in, so the console
+		// queue stopped draining; it filled after some 35 seconds of ordinary messages, ttyputc
+		// blocked on the semaphore that guards it, and the 0.25 ms watchdog reported the process
+		// behind it as hung. Anything that printed more - a coin, the service menu - got there
+		// sooner, which is why those looked like the trigger for a long time
+		const bool dlab = (m_uart_reg[3] & 0x80) != 0;
+		switch (port & 7)
 		{
-			m_console.push_back(char(data));
-			if (m_trace) { fputc(int(data), stdout); fflush(stdout); }
+			case 0:
+				if (dlab) m_uart_dl[0] = data;
+				else
+				{
+					m_console.push_back(char(data));
+					if (m_trace) { fputc(int(data), stdout); fflush(stdout); }
+				}
+				break;
+			case 1:
+				if (dlab) m_uart_dl[1] = data;
+				else { m_uart_reg[1] = data; update_uart_irq(); }
+				break;
+			default:
+				m_uart_reg[port & 7] = data;
+				break;
 		}
-		else
-			m_uart_reg[port & 7] = data;
 		return;
 	}
 

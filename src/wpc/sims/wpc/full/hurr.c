@@ -336,11 +336,23 @@ WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d0172
                  "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
 WPC_ROMEND
 
+/* A homebrew patch of L-2 from github.com/whaslbeck/hurricane-ballsaver (`--ballsaver --noghost`).
+   It adds an operator-settable ball saver as the last entry under A.2 Feature Adjustments (OFF, or 1-45 SEC., default OFF)
+   and the LED no-ghost fix that D-2 also carries. The save window opens when the ball first
+   reaches the playfield rather than in the shooter lane, re-uses the game's own 0-point ball-save
+   path so the same ball comes back with its bonus intact, and is closed by a starting multiball */
+WPC_ROMSTART(hurr,d2bs,"hurcnl_2_bs_ng.rom",0x40000,CRC(d61271ce) SHA1(8cc329c28949500821d936f0683086c217e2b88c))
+WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d017271c04),
+                 "u15.pp",CRC(93d02c62) SHA1(203cd6b933822d6d3f70c63e051237e3587568f1),
+                 "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(hurr,l2,"Hurricane (L-2)",1991, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(hurr,d2,l2,"Hurricane (D-2 LED Ghost Fix)",1991, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(hurr,d2bs,l2,"Hurricane (D-2 LED Ghost Fix + Ball Saver MOD)",2026, "Williams / whaslbeck",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

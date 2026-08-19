@@ -30,7 +30,7 @@ Get rid of BasicBitmap external dependency
 Get rid of BASS external dependency (used for internal AltSound mode 1 support) and replace by miniaudio
 
 *** CORE/CPU ***
-Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well.
+Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well, most likely as the graphics/video part is not emulated cycle-accurate and thus much faster than the clock rate implies.
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added physical/PWM DMD support to Capcom games (potentially leading to more brightness levels being displayed if the CPU triggers it)
 Added physical/PWM (dimmed) segment support to System 11 games
@@ -72,7 +72,7 @@ WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.20, 0.80, 0.1
 Kinda new:
 Baywatch 4.02 (unofficial MOD)
 Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
-Revenge From Mars 2.60, 2.50, 2.24, 2.23, 2.22, 2.10, 2.00 (unofficial MODs)
+Revenge From Mars 2.60, 2.50, 2.24 (r3 & r2), 2.23, 2.22, 2.21, 2.20, 2.10, 2.00 (unofficial MODs)
                   1.95, 1.91, 1.90 (unofficial MODs)
                   1.80 (kinda official MOD by Tom Uban, for the 2006 tournament server)
 Star Wars Episode I 2.10, 2.01, 2.00 (unofficial MODs)
@@ -100,6 +100,7 @@ Dragonfist (MOD 17)
 Funhouse 9.07H (LED Ghost Fix + Ballsaver MOD)
 Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
 High Speed G-4 (aka German PROTO4), L-1 (but coming from a Unidesa / Cirsa licensed board)
+Hurricane D-2 LED Ghost Fix + Ball Saver MOD
 Mata Hari (Free Play and MODified rules, 6 and 7 digit versions (latter requires DIP 19 on))
 Maverick 4.04 (German, Display 4.00)
 Monte Carlo (German) (most likely older revision than existing one, see above)
