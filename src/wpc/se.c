@@ -82,6 +82,7 @@ static struct {
   UINT8 *ram8000;
   UINT8  auxdata;   // Data latched on J2
   UINT8  lastgiaux; // Last data latched on J3 (to detect strobe edges)
+  int    auxBoard5205192UsesJ2;
   // Misc extension boards
   int    titanicBankLatch;
   core_tWord lotrLedLatch;
@@ -434,6 +435,7 @@ static MACHINE_INIT(se) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const grn = rootDrv->name;
+  selocals.auxBoard5205192UsesJ2 = strcmp(grn, "shrkysht") == 0;
   // Missing definition:
   // - Golden Cue
   if (strncasecmp(grn, "apollo13", 8) == 0) { // Apollo 13
@@ -831,8 +833,9 @@ static WRITE_HANDLER(giaux_w) {
 
    // Board 520-5192-00: Solenoid Expander board (3 outputs, not latched)
    if (core_gameData->hw.display & SE_BOARDID_520_5192_00) {
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | ((data & 0x38) << 1);
-      core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, (data & 0x38) >> 3, 0x07); // Solenoids 33..35
+      const UINT8 outputs = selocals.auxBoard5205192UsesJ2 ? selocals.auxdata & 0x07 : (data & 0x38) >> 3;
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (outputs << 4);
+      core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, outputs, 0x07); // Solenoids 33..35
    }
 
    // Board 520-5152-00 (ID4) or 520-5078-00 (Tommy) servo controller board
