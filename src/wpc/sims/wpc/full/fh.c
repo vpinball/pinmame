@@ -652,6 +652,14 @@ WPC_ROMSTART(fh,905h,"fh_905h.rom",0x080000,CRC(445b632a) SHA1(6e277027a1d025e2b
 WPC_ROMSTART(fh,906h,"fh_906h.rom",0x080000,CRC(2fe830a1) SHA1(f52eeef26ce509a52d7b58783236605dafae47d8)) FH_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(fh,907h,"FH907.BIN"  ,0x080000,CRC(F1511046) SHA1(c36b02c7838509faaa07012748e032f12703dd8f)) FH_SOUND_L3 WPC_ROMEND
 
+/* A homebrew patch of 9.05H from github.com/whaslbeck/funhouse-ballsaver. Operator-settable
+   as the last entry under A.2 Feature Adjustments (OFF, or 1-45 SEC., default OFF).
+   The window opens when the ball first reaches the playfield rather than in
+   the shooter lane, the PLAY AGAIN lamp blinks while it runs and stops two seconds before it
+   closes, and a drain inside it serves the same ball again through the game's own 0-point
+   ball-save path, bonus intact. One save per ball; locking a ball re-arms it, a starting multiball closes it */
+WPC_ROMSTART(fh,905hbs,"fh_905h_bs.rom",0x080000,CRC(8c8fc961) SHA1(1af882149538332172521d1705360cfd4c34371d)) FH_SOUND_L3 WPC_ROMEND
+
 WPC_ROMSTART(fh,pa1, "u6-l2.rom",   0x20000, CRC(7a8a3278) SHA1(b35c1149862724ea70cc810f14141e51b365e950))
   SOUNDREGION(0x10000, S11CS_CPUREGION)
   SOUNDREGION(0x70000, S11CS_ROMREGION)
@@ -687,6 +695,7 @@ CORE_CLONEDEF(fh,d9b,l9,"Funhouse (D-9, SL-3 Improved German translation MOD LED
 CORE_CLONEDEF(fh,905h,l9,"Funhouse (9.05H)",1996,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,906h,l9,"Funhouse (9.06H Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,907h,l9,"Funhouse (9.07H LED Ghost Fix + Ballsaver MOD)",2026,"Williams",wpc_mAlpha2S,0) // LED patch of 9.05, with ball saver
+CORE_CLONEDEF(fh,905hbs,l9,"Funhouse (9.05H LED Ghost Fix + Ballsaver MOD)",2026,"Williams / whaslbeck",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,pa1,l9,"Funhouse (L-2, Prototype PA-1 system 11 sound)",1990,"Williams",wpc_alpha1S,0) // L-2 is lowest we have, should use P-6 instead
 CORE_CLONEDEF(fh,l2,l9,"Funhouse (L-2)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse (L-3)",1990,"Williams",wpc_mAlpha2S,0)
@@ -701,15 +710,15 @@ CORE_CLONEDEF(fh,f91,l9,"Funhouse (FreeWPC 0.91)",1991,"FreeWPC",wpc_mAlpha2S,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData fhSimData = {
-  2,        /* 2 game specific input ports */
+  2,              /* 2 game specific input ports */
   fh_stateDef,    /* Definition of all states */
   fh_inportData,  /* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },  /*Position where balls start.. Max 7 Balls Allowed*/
-  NULL,     /* no init */
+  NULL,           /* no init */
   fh_handleBallState, /*Function to handle ball state changes*/
   fh_drawStatic,  /*Function to handle mechanical state changes*/
-  TRUE,     /* simulate manual shooter */
-  NULL      /* no custom key conditions */
+  TRUE,           /* simulate manual shooter */
+  NULL            /* no custom key conditions */
 };
 
 /*----------------------
