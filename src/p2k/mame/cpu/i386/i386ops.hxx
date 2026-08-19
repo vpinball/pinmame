@@ -578,7 +578,7 @@ void i386_device::i386_jz_rel8()           // Opcode 0x74
 	}
 }
 
-void i386_device::i386_jmp_rel8()          // Opcode 0xeb
+void i386_device::i386_jmp_rel8()          // Opcode 0xeb // PINMAME: 1:1 cloned in i386_decode_opcode_i
 {
 	int8_t disp = FETCH();
 	NEAR_BRANCH(disp);

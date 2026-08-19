@@ -606,6 +606,26 @@ protected:
 	void report_invalid_opcode();
 	void report_invalid_modrm(const char* opcode, uint8_t modrm);
 	void i386_decode_opcode();
+	ATTR_FORCE_INLINE void i386_decode_opcode_i() // PINMAME: 1:1 cloned from non-inline version, PLUS i386_jmp_rel8 inlined!
+	{
+		m_opcode = FETCH();
+
+		if (m_opcode == 0xEB) //!! PINMAME shortcut for i386_jmp_rel8, as this is the most often called opcode
+		{
+			int8_t disp = FETCH();
+			NEAR_BRANCH(disp);
+			CYCLES(171/*CYCLES_JMP_SHORT*/);
+			return;
+		}
+
+		if(m_lock && !m_lock_table[0][m_opcode])
+			return i386_invalid();
+
+		if( m_operand_size )
+			(this->*m_opcode_table1_32[m_opcode])();
+		else
+			(this->*m_opcode_table1_16[m_opcode])();
+	}
 	void i386_decode_two_byte();
 	void i386_decode_three_byte38();
 	void i386_decode_three_byte3a();

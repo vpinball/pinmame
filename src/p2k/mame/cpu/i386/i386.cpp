@@ -1602,7 +1602,7 @@ void i386_device::report_invalid_modrm(const char* opcode, uint8_t modrm)
 #include "i386segs.hxx"
 
 
-void i386_device::i386_decode_opcode()
+void i386_device::i386_decode_opcode() // PINMAME: (almost) 1:1 cloned as inline version i386_decode_opcode_i(), too!
 {
 	m_opcode = FETCH();
 
@@ -2817,7 +2817,7 @@ void i386_device::execute_run()
 		try
 		{
 #endif
-			i386_decode_opcode();
+			i386_decode_opcode_i();
 			if(m_TF && old_tf)
 			{
 				m_prev_eip = m_eip;
