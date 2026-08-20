@@ -138,9 +138,12 @@ void report_progress(u64 cycles)
 u64 g_p2k_cycles_total = 0;
 static void p2k_report_progress(u64 cycles) { g_p2k_cycles_total += cycles; report_progress(cycles); }
 
-// The P2K machine registers itself here so the bridge has something to talk to
+// The P2K machine registers itself here so the bridge has something to talk to. Both pointers
+// exist only with P2K_DEBUG - shim/debugger.h compiles the call sites out otherwise
+#if P2K_DEBUG
 extern void (*p2k_instruction_hook)(unsigned pc);
 extern void (*p2k_exception_hook)(int vector);
+#endif
 // PinMAME checks breakpoints from inside a CPU core's instruction loop. This core runs its own
 // loop inside the subsystem, so the hook is called between execution chunks instead - fine for
 // stopping on an address, just not instruction-exact. It is only linked in with REMOTE_DEBUG,
@@ -392,6 +395,12 @@ static const unsigned g_clkint_counter = []() {
 static constexpr bool     g_clkint_gate    = false;
 static constexpr int      g_max_skips      = 4;
 static constexpr unsigned g_clkint_counter = 0;
+// Load-bearing: with the gate off, nothing starts the frame tracking, so nothing reads what the CPU
+// hooks produce. shim/debugger.h relies on that to compile debugger_instruction_hook() out of the
+// i386 execute loop, and everything below that feeds the hooks is #if P2K_DEBUG for the same
+// reason. Turning the gate on here without undoing that would leave the frames untracked and the
+// gate holding interrupts it never releases - so fail the build instead
+static_assert(!g_clkint_gate, "the clkint gate needs the per-instruction hook, which is P2K_DEBUG-only - see shim/debugger.h");
 #endif
 // Interrupt frames, innermost last, one bit each: 1 for a clock handler, 0 for anything else.
 // A plain "inside clkint" flag is not enough, and the traces say why - the machine dispatches
@@ -404,15 +413,18 @@ static constexpr unsigned g_clkint_counter = 0;
 // else can be open at that moment, because frames below it were pushed after it. Past 64 levels
 // the extra frames are counted separately and popped first, which keeps the order right - by then
 // the machine is dying anyway, and that is what the depth is being counted to see
-static u64  g_frame_bits = 0;          // bit n = frame n is a clock handler
 static int  g_frame_depth = 0;
-static int  g_frame_extra = 0;         // frames past the 64 the mask holds
 static int  g_clkint_depth = 0;        // how many of them are clock handlers
 static bool g_gate_released = false;   // the skip bound fired; stop holding until depth is 0 again
-static bool g_clkint_iret_seen = false;
 static bool g_irq0_armed = false;      // an edge reached the PIC, no dispatch yet
-static int  g_tick_vector = -1;        // learned from the first dispatch after an edge
 static int  g_edges_while_held = 0;
+#if P2K_DEBUG
+// Only the CPU hooks maintain these, and those are compiled out without P2K_DEBUG
+static u64  g_frame_bits = 0;          // bit n = frame n is a clock handler
+static int  g_frame_extra = 0;         // frames past the 64 the mask holds
+static bool g_clkint_iret_seen = false;
+static int  g_tick_vector = -1;        // learned from the first dispatch after an edge
+#endif
 u64 g_p2k_tick_held = 0;
 u64 g_p2k_clkint_entered = 0;
 u64 g_p2k_clkint_left = 0;
@@ -428,36 +440,29 @@ bool p2k_clkint_blocks_irq()
 	return g_clkint_depth > 0 && !g_gate_released;
 }
 
+// The per-instruction hook is the one thing in the bridge that EVERY emulated instruction pays
+// for. It has work while an interrupt frame is being tracked - that is the state whose exits it
+// watches for, by looking for each handler's IRET - and outside it p2k_debug_step() only bumps
+// g_p2k_instr_total, whose sole reader is report_progress().
+//
+// Without P2K_DEBUG neither is live: the gate is off so no frame is tracked (see the static_assert
+// above), and report_progress() is an empty inline. So the whole chain - this arming, the frames,
+// both step functions - is compiled out and shim/debugger.h drops the call site with it, leaving
+// nothing at all in the i386 execute loop
+#if P2K_DEBUG
+
 static void p2k_debug_step(unsigned pc); // defined below, installed by arm_instruction_hook()
 
-// The per-instruction hook is the one thing in the bridge that EVERY emulated instruction pays
-// for, so it is only installed while it has work to do. debugger_instruction_hook() is a null test
-// on the pointer (see shim/debugger.h), so leaving it null costs the core a load and a perfectly
-// predicted branch, and saves the non-inlinable indirect call plus the two global tests inside.
-//
-// It has work to do while an interrupt frame is being tracked - that is the state whose exits it
-// watches for, by looking for each handler's IRET. Outside that state p2k_debug_step() only bumps
-// g_p2k_instr_total, and the sole reader of that counter is report_progress(), which is
-// `inline void report_progress(u64) {}` unless P2K_DEBUG. So in a normal build skipping the call
-// is not merely cheap, it is unobservable. In a P2K_DEBUG build the hook stays installed
-// unconditionally, because there the counter is live
+// In a P2K_DEBUG build the hook stays installed unconditionally, because there the counter is live
 static inline void arm_instruction_hook()
 {
-#if P2K_DEBUG
 	p2k_instruction_hook = p2k_debug_step;
-#else
-	p2k_instruction_hook = g_frame_depth ? p2k_debug_step : nullptr;
-#endif
 }
 
 // a handler was entered: push its frame. Only clock handlers start the tracking; once it is
 // running every vector is pushed, so the IRETs pair up with the right frames
 static void push_int_frame(bool is_clkint)
 {
-#if !P2K_DEBUG
-	// with the gate off nothing reads the depth, and tracking would arm the per-instruction hook
-	if (!g_clkint_gate) return;
-#endif
 	if (!is_clkint && g_frame_depth == 0) return;   // not tracking, and this does not start it
 	if (g_frame_depth < 64) g_frame_bits = (g_frame_bits << 1) | (is_clkint ? 1u : 0u);
 	else                    g_frame_extra++;
@@ -488,6 +493,8 @@ static void pop_int_frame()
 	arm_instruction_hook();
 	p2k_apply_irq0(); // the line may be free now, or has to go away
 }
+
+#endif // P2K_DEBUG
 
 // called from the driver for every rising edge the PIT puts on IR0. The edge always reaches the
 // PIC now - this only bounds how long the gate may hold delivery
@@ -630,6 +637,12 @@ static int g_hooktrace_left = []() -> int {
 }();
 static bool g_probes_armed = false; // set in p2k_bridge_attach, once everything is parsed
 #endif
+
+// Both step functions and the peek the first one needs; nothing installs them without P2K_DEBUG.
+// The one non-probe thing that goes with them is the per-instruction P2K_REMOTE_DEBUG_HOOK()
+// below - but mediagx_execute() calls it once per 2000-cycle chunk regardless, which is what the
+// remote debugger has always run on in a release build, the hook being unarmed there
+#if P2K_DEBUG
 
 static inline u8 p2k_peek_byte(unsigned a)
 {
@@ -808,8 +821,10 @@ static void p2k_trap_step(int vector)
 		unsigned(g_bridge_cpu->state_int(I386_ESP)), unsigned(g_bridge_cpu->state_int(I386_CR0)),
 		unsigned(g_bridge_cpu->state_int(I386_EFLAGS)));
 	fflush(stderr);
-#endif // P2K_DEBUG
+#endif
 }
+
+#endif // P2K_DEBUG
 
 void p2k_bridge_attach(p2k_state *state, mediagx_device *cpu)
 {
@@ -819,9 +834,9 @@ void p2k_bridge_attach(p2k_state *state, mediagx_device *cpu)
 #if P2K_DEBUG
 	pctrap_init();
 	g_probes_armed = g_pctrap_n || g_hooktrace_left > 0 || g_dump_to || g_stack_at || g_stack_below || !g_backtrace.empty() || g_watch_to;
-#endif
-	arm_instruction_hook(); // null outside clkint in a normal build - see there
+	arm_instruction_hook();
 	p2k_exception_hook = p2k_trap_step;
+#endif
 }
 
 extern "C" {

@@ -1499,7 +1499,7 @@ void p2k_state::do_gfx_pipeline()
 	// destination data, all ones into the raster unit; 100/101 take it from the frame buffer, which
 	// is not a colour key and has not been seen with C6h.
 	//
-	// Not modelled: ง4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
+	// Not modelled: ยง4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
 	// Buffer 0 would hold the last line copied. This reads VRAM directly, and nothing reads it back
 	const unsigned blt_rd = (m_gx_pipeline_reg[GP_BLT_MODE] >> 2) & 7u;
 	const u32 key_base = (blt_rd == 2) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB0_BASE)
@@ -2492,9 +2492,10 @@ u8 p2k_state::port_r(offs_t port)
 // log, not a number.
 //
 // Nor is the comparison with the thing it replaced as favourable as it looks. The clkint gate now
-// defaults off, and off it costs nothing at all - push_int_frame() returns immediately and the
-// per-instruction hook is never armed. So against the old arrangement this trades a per-instruction
-// tax for a per-PIC-write one, and which is cheaper is genuinely open.
+// defaults off, and off it costs nothing at all - without P2K_DEBUG the frame tracking and the
+// per-instruction hook are not compiled in, and shim/debugger.h leaves the i386 execute loop with
+// no call site at all. So against the old arrangement this trades a per-instruction tax for a
+// per-PIC-write one, and which is cheaper is genuinely open.
 //
 // It cannot be measured with what is here: report_progress()'s host= and mips= are P2K_DEBUG only,
 // and the configuration in question is a release build. That needs PinMAME's own speed readout or a
@@ -2527,7 +2528,7 @@ u8 p2k_state::port_read(offs_t port)
 	// unmapped (reads return 0xff) lets it continue. This used to say the missing piece was SMM.
 	// It is not: the SMM region at 0x40400000 is never read or written by any set, and the only
 	// SMI sources the databook gives the bus interface unit are the VGA I/O traps in BC_XMAP_1
-	// bits 13-15, which no set sets (ง4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
+	// bits 13-15, which no set sets (ยง4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
 	// What is behind these registers is GX_BASE itself, among the rest of the configuration - so
 	// answering them wrongly can move the whole register aperture out from under the driver
 	if (port >= 0x002e && port <= 0x002f)
