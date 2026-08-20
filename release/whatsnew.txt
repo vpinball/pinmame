@@ -97,7 +97,7 @@ Corvette LA-2
 Cue Ball Wizard (Spanish / Vifico license)
 Diner LA-4 (Fixed Right Ramp MOD)
 Dragonfist (MOD 17)
-Funhouse 9.07H (LED Ghost Fix + Ballsaver MOD), 9.05H + (LED Ghost Fix + Ballsaver MOD) (both are independently done versions)
+Funhouse 9.07H (Ballsaver MOD), 9.05H + (Ballsaver MOD) (both are independently done versions)
 Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
 High Speed G-4 (aka German PROTO4), L-1 (but coming from a Unidesa / Cirsa licensed board)
 Hurricane D-2 LED Ghost Fix + Ball Saver MOD

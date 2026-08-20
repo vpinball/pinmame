@@ -322,7 +322,7 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
 static sim_tState fh_stateDef[] = {
   {"Not Installed",    0,0,           0,        stDrain,     0,0,0,SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",               0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
+  {"Playfield",        0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
 
   {"Right Trough",     1,swRTrough,   sBallRel, stRShooter,  5},
   {"Center Trough",    1,swCTrough,   0,        stRTrough,   1},
@@ -330,70 +330,69 @@ static sim_tState fh_stateDef[] = {
   {"Outhole",          1,swOuthole,   sOuthole, stLTrough,   5},
   {"Drain",            1,0,           0,        stOuthole,   0,0,0,SIM_STNOTEXCL},
 
-  {"R. Shooter",       1,swRShooter,   sShooterRel, stRBallLane, 10,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
-  {"R. Ball Lane",     1, 0,           0,       0,             0,0,0,SIM_STNOTEXCL},
-  {"Not Enough",       1,swRShooter,   0,        stRShooter, 3},
+  {"R. Shooter",       1,swRShooter,  sShooterRel, stRBallLane, 10,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
+  {"R. Ball Lane",     1, 0,          0,        0,           0,0,0,SIM_STNOTEXCL},
+  {"Not Enough",       1,swRShooter,  0,        stRShooter,  3},
 
-  {"Right Outlane",    1,swROut,       0,        stDrain,   20},
-  {"Left Outlane",     1,swLOut,       0,        stLOut2,   20},
+  {"Right Outlane",    1,swROut,      0,        stDrain,     20},
+  {"Left Outlane",     1,swLOut,      0,        stLOut2,     20},
 
   {"Right Inlane",     1,swRIn,       0,        stFree,      5},
-  {"Right Inlane (Outer)",     1,swRIn2,       0,        stFree,      5},
-  {"Left  Inlane",     1,swLIn,       0,       stFree,      5},
+  {"Right Inlane (Outer)",1,swRIn2,   0,        stFree,      5},
+  {"Left  Inlane",     1,swLIn,       0,        stFree,      5},
 
-  {"Left Loop",        1,swGangWayL,    0,        stRLoopDn,  10},
-  {"Left Loop",        1,swGangWayL,    0,        stFree,      1},
+  {"Left Loop",        1,swGangWayL,  0,        stRLoopDn,   10},
+  {"Left Loop",        1,swGangWayL,  0,        stFree,      1},
 
-  {"Right Loop",       1,swGangWayR,     0,       stLLoopDn,  10},
-  {"Right Loop",       1,swGangWayR,     0,       stFree,      1},
+  {"Right Loop",       1,swGangWayR,  0,        stLLoopDn,   10},
+  {"Right Loop",       1,swGangWayR,  0,        stFree,      1},
 
-  {"Main Ramp Enter",  1,swMRampEnt,   0,       stMRamp,     2},
-  {"Main Ramp"      ,  1,swMRamp,      0,       stRampDiv,   5},
-  {"Main Ramp Exit",   1,swMRampExit,  0,       stLIn,       3},
-  {"Ramp Diverter",    1,0,            0,       stMRampExit, 2, sRampDiv, stURampEnt},
+  {"Main Ramp Enter",  1,swMRampEnt,  0,        stMRamp,     2},
+  {"Main Ramp"      ,  1,swMRamp,     0,        stRampDiv,   5},
+  {"Main Ramp Exit",   1,swMRampExit, 0,        stLIn,       3},
+  {"Ramp Diverter",    1,0,           0,        stMRampExit, 2, sRampDiv, stURampEnt},
 
-  {"Steps Track Enter",  1,swURampEnt,   0,     stURampExit, 5},
-  {"Steps Track Exit" ,  1,swURampExit,  0,     stLOut,      2},
+  {"Steps Track Enter",1,swURampEnt,  0,        stURampExit, 5},
+  {"Steps Track Exit" ,1,swURampExit, 0,        stLOut,      2},
 
-  {"L. Shooter",       1,swLShooter,   sShooterRel, stLBallLane, 5,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
-  {"L. Ball Lane"  ,   1, 0,           0,       0,             0,0,0,SIM_STNOTEXCL},
-  {"Not Enough",       1,swLShooter,   0,        stLShooter, 2},
-  {"Award Frenzy",     1,swAwardFrenzy, 0,       stFree, 1},
-  {"Award Ex.Ball",    1,swAwardEB,     0,       stFree, 3},
-  {"Award 500,000",    1,swAwardPTS,    0,       stFree, 6},
-  {"Award SuperDog",   1,swAwardDog,    0,       stFree, 8},
+  {"L. Shooter",       1,swLShooter,  sShooterRel, stLBallLane, 5,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
+  {"L. Ball Lane"  ,   1, 0,          0,        0,           0,0,0,SIM_STNOTEXCL},
+  {"Not Enough",       1,swLShooter,  0,        stLShooter,  2},
+  {"Award Frenzy",     1,swAwardFrenzy,0,       stFree,      1},
+  {"Award Ex.Ball",    1,swAwardEB,   0,        stFree,      3},
+  {"Award 500,000",    1,swAwardPTS,  0,        stFree,      6},
+  {"Award SuperDog",   1,swAwardDog,  0,        stFree,      8},
 
-  {"Rudy's Hideout",   1,swGangWayR, 0, stRudyHideout2, 5},
-  {"Rudy's Hideout",   1,swRudyHideout, sRudyHideout, stLLoopDn, 1},
+  {"Rudy's Hideout",   1,swGangWayR,  0,        stRudyHideout2, 5},
+  {"Rudy's Hideout",   1,swRudyHideout,         sRudyHideout, stLLoopDn, 1},
 
-  {"Wind Tunnel",      1,swWindTunnel,  0,       stDropKickout, 25},
-  {"Drop Hole",        1,swDropHole,    0,       stDropKickout, 5},
-  {"Drop Kickout",     1,swDropKickout, sDropKickout,   stFree, 5},
+  {"Wind Tunnel",      1,swWindTunnel,0,        stDropKickout, 25},
+  {"Drop Hole",        1,swDropHole,  0,        stDropKickout, 5},
+  {"Drop Kickout",     1,swDropKickout, sDropKickout, stFree, 5},
 
-  {"Hidden HallWay",   1,0,    0,       stLockR, 10},
-  {"Left Lock",        1,swLockL,    sLockRelease,       stFree, 5},
-  {"Center Lock",      1,swLockC,    0,            stLockL, 1},
-  {"Right Lock",       1,swLockR,    0,            stLockC, 1},
+  {"Hidden HallWay",   1,0,           0,        stLockR,     10},
+  {"Left Lock",        1,swLockL,     sLockRelease, stFree,  5},
+  {"Center Lock",      1,swLockC,     0,        stLockL,     1},
+  {"Right Lock",       1,swLockR,     0,        stLockC,     1},
 
-  {"Rudy Hit",         1,0, 0,  0, 1},
-  {"Upper Loop",       1,0,    0,       0, 0},
-  {"Upper Loop Made", 1,swTrapLoop, 0, stFree, 5},
-  {"Ball in Trap Door", 1,swTrapOpen, 0, stDropKickout, 25},
-  {"Rudy's Mouth",      1,swDummyEject, sDummyEject, stFree, 5},
-  {"Left Outlane",  1,0,0,0,0},
-  {"Rudy Jaw",    1,swRudyJaw,0,stFree,5},
-  {"Rudy Jaw",    1,swRudyJaw,0,stRudyGulp,5},
-  {"Jet Bumper Lane",   1,swJetLane,0,stRIn2,5},
-  {"Jet Bumper 1",        1,swJet1, 0, stJet2, 5},
-  {"Jet Bumper 2",        1,swJet2, 0, stJet3, 5},
-  {"Jet Bumper 3",        1,swJet3, 0, stFree, 5},
+  {"Rudy Hit",         1,0,           0,        0,           1},
+  {"Upper Loop",       1,0,           0,        0,           0},
+  {"Upper Loop Made",  1,swTrapLoop,  0,        stFree,      5},
+  {"Ball in Trap Door",1,swTrapOpen,  0,        stDropKickout, 25},
+  {"Rudy's Mouth",     1,swDummyEject,sDummyEject,stFree,    5},
+  {"Left Outlane",     1,0,           0,        0,           0},
+  {"Rudy Jaw",         1,swRudyJaw,   0,        stFree,      5},
+  {"Rudy Jaw",         1,swRudyJaw,   0,        stRudyGulp,  5},
+  {"Jet Bumper Lane",  1,swJetLane,   0,        stRIn2,      5},
+  {"Jet Bumper 1",     1,swJet1,      0,        stJet2,      5},
+  {"Jet Bumper 2",     1,swJet2,      0,        stJet3,      5},
+  {"Jet Bumper 3",     1,swJet3,      0,        stFree,      5},
   {0}
 };
 
 static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
   {
-
   /* Ball in RIGHT Shooter Lane */
   /* Note: Sim supports max of 50 speed for manual plunger */
   case stRBallLane:
@@ -650,6 +649,7 @@ WPC_ROMSTART(fh,d9b,"fh_d9ger.rom",0x040000,CRC(b9759f80) SHA1(979995fc65a616522
 
 WPC_ROMSTART(fh,905h,"fh_905h.rom",0x080000,CRC(445b632a) SHA1(6e277027a1d025e2b93f0d7736b414ba3a68a4f8)) FH_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(fh,906h,"fh_906h.rom",0x080000,CRC(2fe830a1) SHA1(f52eeef26ce509a52d7b58783236605dafae47d8)) FH_SOUND_L3 WPC_ROMEND
+
 WPC_ROMSTART(fh,907h,"FH907.BIN"  ,0x080000,CRC(F1511046) SHA1(c36b02c7838509faaa07012748e032f12703dd8f)) FH_SOUND_L3 WPC_ROMEND
 
 /* A homebrew patch of 9.05H from github.com/whaslbeck/funhouse-ballsaver. Operator-settable
@@ -692,10 +692,10 @@ CORE_GAMEDEF(fh,l9,"Funhouse (L-9, SL-3)",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d9,l9,"Funhouse (D-9, SL-3 LED Ghost Fix)",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l9b,l9,"Funhouse (L-9, SL-3 Improved German translation MOD)",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d9b,l9,"Funhouse (D-9, SL-3 Improved German translation MOD LED Ghost Fix)",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,905h,l9,"Funhouse (9.05H)",1996,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,906h,l9,"Funhouse (9.06H Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,907h,l9,"Funhouse (9.07H LED Ghost Fix + Ballsaver MOD)",2026,"Williams",wpc_mAlpha2S,0) // LED patch of 9.05, with ball saver
-CORE_CLONEDEF(fh,905hbs,l9,"Funhouse (9.05H LED Ghost Fix + Ballsaver MOD)",2026,"Williams / whaslbeck",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,905h,l9,"Funhouse (9.05H)",1996,"Williams",wpc_mAlpha2S,0)               // already contains LED fix due to APPLE 3.58
+CORE_CLONEDEF(fh,906h,l9,"Funhouse (9.06H Coin Play)",1996,"Williams",wpc_mAlpha2S,0)     // dto.
+CORE_CLONEDEF(fh,907h,l9,"Funhouse (9.07H Ballsaver MOD)",2026,"Williams",wpc_mAlpha2S,0) // 9.05H, with ball saver
+CORE_CLONEDEF(fh,905hbs,l9,"Funhouse (9.05H Ballsaver MOD)",2026,"Williams / whaslbeck",wpc_mAlpha2S,0) // same, but done independently
 CORE_CLONEDEF(fh,pa1,l9,"Funhouse (L-2, Prototype PA-1 system 11 sound)",1990,"Williams",wpc_alpha1S,0) // L-2 is lowest we have, should use P-6 instead
 CORE_CLONEDEF(fh,l2,l9,"Funhouse (L-2)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse (L-3)",1990,"Williams",wpc_mAlpha2S,0)
