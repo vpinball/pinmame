@@ -435,7 +435,10 @@ static MACHINE_INIT(se) {
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
      rootDrv = rootDrv->clone_of;
   const char* const grn = rootDrv->name;
-  selocals.auxBoard5205192UsesJ2 = strcmp(grn, "shrkysht") == 0;
+  selocals.auxBoard5205192UsesJ2 =
+     strcmp(grn, "shrkysht") == 0 ||
+     strcmp(grn, "strikext") == 0 ||
+     strcmp(grn, "playboys") == 0;
   // Missing definition:
   // - Golden Cue
   if (strncasecmp(grn, "apollo13", 8) == 0) { // Apollo 13
