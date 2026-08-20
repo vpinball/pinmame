@@ -1,11 +1,11 @@
 # Pinball 2000
 
-Midway's last pinball platform, and the only one in PinMAME that is a PC: a Cyrix MediaGX with a
+Midway's last pinball platform: a PC with Cyrix MediaGX employing a
 CX5520 southbridge, a PC97317 Super-I/O and a "Prism" PCI card carrying the ADSP-2104 sound
-hardware and the link to the pinball power driver board.
+hardware (for the latter see `docs/pin2k_sound.md`, including outstanding issues and quirks of it) and the link to the pinball power driver board.
 
-Every version of both games is a driver of its own. The parent is the last one Midway shipped, not
-the newest - the unofficial updates that carry on past it are clones of it, the way PinMAME handles
+Every version of the P2K games is a driver of its own. The parent is the last one Midway shipped, not
+the newest - the unofficial/aftermarket updates that carry on past it are clones of it, the way PinMAME handles
 MODs elsewhere:
 
 | Driver | Game | | |
@@ -42,97 +42,39 @@ MODs elsewhere:
 Every set boots, renders, takes coins, starts a game, drives lamps and coils, responds to the
 flippers and plays sound - the pre-production ones included.
 
-What used to stop early XINAs (<= 1.12) was the PLX serial EEPROM. `plx_ee_verify()` reads the image back and
-rewrites it when it does not match, which these did on every boot, and only the read side
-was modelled - so the ready poll after the first word never got its answer. Its escape is a
-timeout counted in interval-timer ticks, and those do not run that early: the PIT is still
-unprogrammed and every interrupt masked. Both dead ends at once, which is why it looked like a
-silent freeze. `prism_1000_w` decodes the write commands now, and the image is in NVRAM, so a set
-that rewrites it verifies clean on the next boot - which the machine says out loud the first
-time, `PLX EEPROM data was stale - updated OK`, and never again.
-
-**What the early RFM and SWEP1 versions disagree about is four registers**, and all three early images write the same four.
-The default image here is MAME's, and `rfm_160` stores it back byte for byte - it never rewrites -
-while 0.1, 0.80 and 0.40 each change LAS2BRD and the three chip-select bases:
-
-| EEPROM dword | PLX register | default | what the early firmware writes |
-|---|---|---|---|
-| 14 | `0x28` LAS2BRD | `5403a1e0` | `5403a1c0` |
-| 16 | `0x30` CS0BASE | `4041a060` | `4041a040` |
-| 17 | `0x34` CS1BASE | `54b2b8c0` | `54b2b8f1` |
-| 18 | `0x38` CS2BASE | `54b2b8c0` | `54b2b8f1` |
-
-Local bus wait states and chip-select decoding, in other words - and nothing here models the
-local bus decode, so all four are inert. They matter only in that the early firmware insists on
-them. Nor is the default wrong: a real card is programmed once at the factory, and each firmware
-verifies against what it wants, so a later-programmed card in an early machine would rewrite
-exactly this way. To read the image back out of a `.nv`, find the vendor/device dword `6e 14 01
-00` - it is the first of 32 little-endian dwords, two EEPROM words to a dword, high half first.
-
-Some of the aftermarket versions used not to boot either, and what divided them was not the game but the system
-software: each `game.rom` names the XINA it was built against, and everything from **1.16 to 1.31**
-came up (`rfm_140` through `rfm_210`, `swep1_130` through `swep1_150`) while everything from
-**1.34 to 1.38** stopped before the boot screen (`rfm_222` through `rfm_260`, and all three
-`swep1_2xx`).
-
-**It was a blank CMOS**, and the emulation is only indirectly at fault. The aftermarket software has a
-static initialisation order bug: `left_sling`'s constructor calls a hook that reads an adjustment
-resource whose own constructor is linked later, so the resource is still zeroed BSS and the read
-reports NonFatal. That report is harmless on a machine in the field, and fatal here:
-
-1. The NonFatal reporter appends the report to the error log in CMOS.
-2. On a fresh install that log's header has never been built, so its base pointer is `0` and the
-   entry is written **over address 0**.
-3. `resched()` checks the reserved dword at address 0 on every scheduling decision, finds it
-   changed, and calls it Fatal: *"reserved memory at zero corrupted"*.
-4. The Fatal reporter writes through the same null pointer, so it re-makes the corruption it is
-   reporting. The machine never leaves the handler and walks its stack down until it runs out -
-   from the outside, a hang a few seconds after `STARTING UPDATE GAME CODE`.
-
-A real machine always has that header: it is written on the first power-up and survives the
-updates, which never clear CMOS. The older software has a different link order, never reports
-during construction, and so builds it normally - which is why 1.31 and below were unaffected, and
-why booting an older version once and keeping its NVRAM fixes the newer ones by hand. The driver
-now seeds the header on a blank CMOS instead; see `P2K_SEED_ERROR_LOG` and `seed_error_log()` in
-`p2k_driver.cpp`. Setting that define to 0 restores the old behaviour, and with it the hang.
-
-The seed is written unconditionally in the constructor but only ever survives on a machine with
-no NVRAM file: `MACHINE_INIT` copies a saved CMOS over the whole block immediately afterwards.
-So it is new-machine-only in effect, and cannot disturb a machine that has been run before.
-
-**The clock.** The machine shows real time: the date and time come from the host on every start,
-the way a battery-backed RTC that kept running would present them, and run on from there.
-
-Four things had to be right, each hidden by the one before. The clock was never seeded at all -
-`mc146818` reads `machine().base_datetime()` in `nvram_default()`, which nothing called. The year
-register counts from **1999**. The registers are **BCD** whatever the data mode bit says - seeded in
-binary the 18th read as "12", `0x12`. And register 9 is not a year but a count of **year rollovers
-since the last sync**: the firmware folds it into the clock it keeps in its own CMOS and writes zero
-back, which works on the real board because the chip keeps running on its battery. Hand it the host
-year every start and the displayed year climbs - 1999+27, then +27 again, 2053, 2080. So a start
-refreshes everything *except* register 9, and the NVRAM block carries the host `time_t` it was saved
-at so the years actually slept through can be counted into it.
-
-While running, the RTC is not consulted again: `one_second_proc` counts PIT ticks and bumps the
-CMOS timestamps, so the machine's clock is the PIT's - see the note by `pit_hz`.
-
-Guest side, for anyone going further: `RTCLocationManagerClass` owns the hardware clock, a
-`TimeStamp` is seven dwords `{year, month, day, day-of-week, hour, minute, second}` in plain
-integers, and `timestamp_clock_last_set_data` at `0x0025e400` holds the 1 Jan 1999 12:00:00 default
-that the console messages date from.
-
-A first boot on a blank CMOS also prints *"CMOS Prologue Checksum Invalid"* and *"CMOS Manager
-has wiped NVRAM at 0x11002400"* on the games whose console talks.
-That is not a fault and not something the seed causes: it is a
+Note that a first boot on a blank CMOS may also print *"CMOS Prologue Checksum Invalid"* and *"CMOS Manager
+has wiped NVRAM at 0x11002400"* on the games whose console talks - the
+shipped production builds seem not to. That is not a fault and not something the seed causes: it is a
 machine being switched on for the first time and building the CMOS it does not have yet, which
 is what real hardware does too. Boot the same set again with its `.nv` in place and the messages
 are gone, so settings do persist. Only delete the NVRAM between runs if a fresh machine is the
 point - otherwise every run looks like a first power-up.
 
-None of the driver's workarounds was involved. The update-flash model, the power driver board's
-register constants and the `clkint` gate were each suspected and each cleared by measurement
-before the real cause turned up. The boot ROM was never where they stopped: it finishes and hands
-over first. See the note by the game definitions in `src/wpc/p2k.c`.
+Two things follow for sets that solely feature the Prism ROMs (i.e. prototype versions).
+Usually, games employ an 8 MB update flash (the actual gamecode, etc) that the loader validates and jumps into.
+The prototype games solely live in the Prism ROMs (with a fallback/older gamecode) and the boot loader takes its other branch,
+printing `[ STARTING GAME CODE ]` where most other sets print `[ STARTING UPDATE GAME CODE ]`.
+That branch is in every boot ROM seen, V3.2 through V3.6.
+
+- Thus, the update flash initialises to `0xff`, not `0`, because erased flash reads all-ones. A set
+  that carries an update region overwrites every byte and never sees the fill; a machine without
+  one boots against it, and then it is the whole question.
+- A set with **no** update region is no longer reported as an error. A region that is present but
+  short still is - that set is damaged. See `set_nvram_updates()` and `p2k_pinmame.cpp`.
+
+## Prototypes
+
+### Wizard Blocks
+
+Wizard Blocks is the first Pinball 2000 title that never shipped.
+It was in its early stage, with rudimentary software and early whitewood playfield.
+There seem to be dumps and aftermarket versions floating around, but none does appear in PinMAME so far.
+
+### Playboy
+
+Not much is known about that one, except that it was in an even earlier stage than Wizard Blocks.
+Some collector is the last known person to own it, but there may also be more.
+Also unknown is, if there exists a ROM/Flash dump somewhere already.
 
 ## Every machine carries a second, older game in its Prism ROMs
 
@@ -152,29 +94,7 @@ Each has a set of its own so it is addressable without the knob. Only `rfm_080` 
 its own; `rfm_010` and `swep1_040` are their parent's Prism chips with the update package left
 out, so we load them straight from the parent set.
 
-Three of them used not to boot, and did so identically: no timer ever programmed, no interrupt
-ever arriving, and the CPU cycling between three addresses - `0x17b0ef`/`0x17b0f8`/`0x1baa89` for
-RFM r1, `0x1b355f`/`0x1b3568`/`0x2020c5` for r2 and `0x1825df`/`0x1825e8`/`0x1db605` for Episode
-I. **It was the PLX serial EEPROM**, and the write side of it - see the intro. The first two
-addresses of each triple are `plx_eeprom_write` polling for the chip to report a word written,
-and the third is the `GetIntervalTimer` its timeout is counted in - resolved against each
-image's own symbol table, so that is all three read off rather than assumed from one.
-
-The XINA boundary that this looked like is real but is a consequence, not the cause. Every set
-that failed is built against **1.12 or older** and every set that boots against **1.16 or newer**,
-with nothing in between in the collection - but what divides them is that the early images find
-the EEPROM image they want missing and rewrite it, saying so (`pci_probe(): PLX EEPROM data was
-stale - updated OK`), while the later ones are content with what is there. An earlier version of
-this note pinned it on XINA 1.13's "Fixed exec code to avoid a timeout condition" instead, which
-fit the evidence available then and was wrong. Worth keeping as a caution: every set in the
-collection sat on one side of that boundary or the other, so the correlation was perfect and
-still meant nothing.
-
-`P2K_PATCH_PCI_INIT_RETRY` mode 1 is not optional, and this is where that was established. Set it
-to 0 and *nothing* boots: `rfm_080` halts at `0x81622`, and `rfm_160`
-never reaches its first progress report.
-
-r2 has a set of its own, `rfm_080`, filed as a clone of `rfm_160` like every other version - r2
+`rfm_080`/r2 has a set of its own, filed as a clone of `rfm_160` like every other version - r2
 bank 0, no update region. Only `u100`/`u101` are actually rev. 2 - the MAME set carries no other
 r2 file - but the set is probably complete rather than a guess: diffing the two revisions of that
 pair, they differ only below `0x2fd3c0` of the interleaved bank, which is the loader and the
@@ -190,58 +110,9 @@ offsets, and every other occurrence in that image sits above `0xc0000`. It also 
 safety - r2 holds a `call` whose displacement begins where the r1 pair holds this immediate,
 so patching by game there would have redirected the call.
 
-## Interrupts used to arrive late
-
-The `clkint` gate held clock interrupts back while the guest was inside its own clock handler.
-Without it the machine derailed a few seconds after the boot screen, and it took a long time to
-find out why, because the gate looked like a timing workaround and every timing explanation was
-wrong. The tick rate was not the variable. **The latency was.**
-
-`pic8259_device` re-evaluates its INT output from a zero-delay timer - MAME's way of saying "do
-this now" - and MAME's scheduler delivers on it by aborting the running CPU's timeslice.
-`emu_timer::adjust()` in `shim/emu.h` did not, and `p2k_machine::run_cycles()` reads
-`next_expiry()` before `cpu.run()` and never cuts the run short. So a timer the *guest* set
-mid-slice waited for the slice to end. Timers set by other timers were always fine, because
-`advance_to()` drains what its own callbacks schedule - which is why the PIT's own edges were
-never late and only the guest's mask and EOI writes were.
-
-XINU masks at the interrupt controller rather than with `cli`, constantly - its critical section
-is a pair that writes `0xff` to the mask on the way in and restores it on the way out. It expects
-an interrupt it has just unmasked to arrive *there*, at a point it has chosen. Ours arrived up to
-a whole slice later, wherever that happened to break, which is how a tick lands inside a handler
-that had masked against it. Two levels deep, the interrupt epilogue's nesting count no longer
-reaches zero, `resched()` refuses with *"resched: called from interrupt handler"*, and the report
-is itself a report - the loop that eats the stack.
-
-Measured by varying the quantum, which is what set the latency (it capped the slice, and the slice was the latency):
-
-| `P2K_QUANTUM_HZ` | latency | |
-|---|---|---|
-| 10000 (the old default) | 7766 cycles | derails |
-| 150000 | 517 cycles | derails |
-| 200000 | 388 cycles | boots |
-| 1000000 | 77 cycles | boots |
-| 100000000 | 1 cycle | boots |
-
-A clock tick is 19406 cycles, so the machine tolerates about 2% of one and breaks by 3%. Real
-hardware asserts INT within a bus cycle, orders of magnitude under that, which is why no real
-machine ever needed the gate. `p2k_state::pics_settle()` fixes it at the source - the interrupt
-controllers get their pending work run before the next instruction, as the hardware would have -
-and with that the gate is unnecessary at any slice length.
-
-The cap is off by default too, `next_expiry()` being the bound that matters: once the PIT runs it
-already holds a slice to ~19406 cycles, and capping that to 7766 cost about twice the scheduler
-passes for nothing the guest could tell apart. The knob stays because it is what turned this bug
-into a number.
-
-The gate is off by default now, both games having been through attract, a game and the test menus
-without it. `P2K_CLKINT_GATE=1` puts it back - worth keeping, because it reproduces the old
-behaviour in one run, and because `in/out` and `held` in the progress line measure interrupt
-nesting directly, which is how this class of bug becomes visible at all.
-
 ## 1.95 is not the newest RFM 1.x
 
-The version numbers of hemtoni's three do not run in the order they were built. His changelog dates
+The version numbers of hemtoni's aftermarket RFM sets do not run in the order they were built. His changelog dates
 them **1.90 (21 November 2017), 1.95 (29 March 2018), 1.91 (31 May 2018)** - so 1.95 is the middle
 one, not the newest, and 1.91 is the last. The changelog documents 1.9 and 1.91 and never mentions
 1.95 at all.
@@ -286,40 +157,37 @@ difference and not a missing feature: 1.80, 1.90, 1.91, 1.95 and 2.60 all carry 
 tournament client and its English strings. 2.60 has the German ones too, so myPinballs picked up
 that translation along with the code.
 
-## Where it comes from
+## Where the original PR came from
 
-The machine is a port of the MAME driver by **erikieNL** (`erikieNL/mame`, branch `pinball2k`, MAME
-0.239), which builds on R. Belmont's skeleton and Ville Linde's `mediagx.c`. The x86 CPU, the
-chipset devices and the handler logic are that driver's; what is new here is the plumbing that lets
-MAME 0.239 code live inside a fork of MAME 0.76.
+The initial machine emulation was based on a port of the MAME driver by **erikieNL** (`erikieNL/mame`, branch `pinball2k`, MAME
+0.239), which again was built on R. Belmont's skeleton and Ville Linde's `mediagx.c`. The x86 CPU, the
+chipset devices and the handler logic are that driver's; additional info was derived from Encore by reading
+its published source; what was new to the PR, was the plumbing that lets MAME 0.239 code live inside a fork of MAME 0.76.
 
 The DCS sound board is **not** ported - it is PinMAME's own Pin2K board in `src/wpc/wmssnd.c`
 (`docs/pin2k_sound.md`), which this driver drives as its host.
 
-Imported MAME files keep their original copyright and license headers (MAME is BSD-3-Clause) and
+Since then, a lot of code has been rewritten, extended, fixed, generalized, and optimized.
+What remains almost original (see **PINMAME** markers in the source though) are the parts that live in `src/p2k/mame`.
+
+These imported MAME files keep their original copyright and license headers (MAME is BSD-3-Clause) and
 name the version they came from.
 
 ## A warning about speed
 
 Pinball 2000 is a 233 MHz PC and this emulates the whole thing - protected mode, paging, the x87
-FPU, the PCI bus, the display controller. The CPU is clocked down, though no longer as far as MAME's
+FPU, the PCI bus, blitter operations, the display controller. The CPU is clocked down, though no longer as far as MAME's
 driver takes it: 233/3, about 77.7 MHz, set in `src/wpc/p2k.c` and mirrored in `p2k_pinmame.cpp`.
-Even so:
+Note that all video/gfx operations (a bottleneck on the real machine) are close to free to this emulated CPU though,
+so this lower clock rate does not match what a real MediaGX CPU would be capable of at the same clock rate.
 
-**On a low-power desktop (Pentium Silver J5040, Atom class) a running game reaches about 50 % of
-real time.** On a current desktop or laptop core expect comfortably more than real time. The
-workload is single-threaded, so only single-core performance matters.
+So in practice, games run at a frame rate that should match the original, and the required emulation system must
+not be high-end anymore (compared to the MAME driver).
+Note that the workload is single-threaded, so only single-core performance matters.
 
-Measured shares in a running game (Linux, and outdated): the MediaGX 44 %, the DCS sound board's ADSP-2100 38 %, the
-mixer 9 %, the video renderer 9 %. Both figures predate the idle skips below; most of that sound
+Measured shares in a running game (Windows, and a bit outdated): the MediaGX 70-90 %, the DCS sound board's ADSP-2100 around 5 %.
+Note that the low ADSP percentage is due to implemented idle skips (see below for potential caveats); most of that sound
 board share turned out to be the DSP waiting rather than working, so treat it as an upper bound.
-
-Two switches change speed and both are already on - the idle skips in *Where the time goes*, worth
-about 9 % together. Nothing else here has a fast setting yet.
-
-Windows/Visual C++ performance measurement update: After reclocking the MediaGX and the PIT, and optimizing
-the ADSP idle loops, the ADSP is now barely measurable anymore, so optimizing it may be void for now.
-The major bottleneck at the moment is the MediaGX, with the majority of it being the i386 FETCH() routine.
 
 ## Building
 
@@ -349,7 +217,7 @@ make -f makefile.unix P2K=1 P2K_DEBUG=1        # unix
 cmake -S . -B build -DPINMAME_P2K_DEBUG=ON     # cmake
 ```
 
-Visual Studio: add `P2K_DEBUG=1` to the project's preprocessor definitions. `src/p2k/p2k_debug.h`
+Visual Studio: Best is to add `P2K_DEBUG=1` to the project's preprocessor definitions. `src/p2k/p2k_debug.h`
 is where this is documented in the source.
 
 What is *not* behind it is anything the machine needs to run. The clock-interrupt gate and the DCS
@@ -394,13 +262,12 @@ interrupt path; `p2kboot` is a bare harness that runs the firmware without PinMA
 A zip or folder named after the driver in the rompath. The driver
 opens no files of its own and reads no environment variables to find them.
 
-A set holds three things. The sound board's flash and its two sample chips; the MediaGX side's
+A set usually holds three things: The sound board's flash and its two sample chips; the MediaGX side's
 eight Prism ROMs, `u100`-`u107`, which the loader interleaves in pairs into four 16 MB banks; and
-the 8 MB update flash, which is what makes a version a version. The update flash is not a dump -
+the 8 MB update flash, which is what makes a version a version. The update flash is not a real dump -
 it is the four files of an update package (`bootdata`, `im_flsh0`, `game`, `symbols`) laid
-out back to back at the offsets the boot ROM looks for them at, and the machine does not boot
-without it. Everything else is shared, so a clone's zip contains only its own four update files -
-bar `rfm_191`, `rfm_210` and `swep1_210`, which bring their own sound flash too, and so hold five.
+out back to back at the offsets the boot ROM looks for them at. Everything else is shared, so a clone's zip contains only its own four update files -
+bar some aftermarket RFM and SWEP1 sets which bring their own sound flash too, and so hold five.
 
 #### Getting the four files out of an update package
 
@@ -432,24 +299,21 @@ CMOS and the PLX EEPROM persist through PinMAME's normal NVRAM file. The update 
 does not: it belongs to the set, and an 8 MB NVRAM file would take precedence over it - a machine
 would keep booting the version it was first started with even after selecting another driver.
 
-#### The r2 boot ROMs are not a set
+#### The r2 boot ROMs
 
-The Encore set also carries `rfm_u100r2.rom` / `rfm_u101r2.rom`, a second revision of Revenge From
-Mars's bank-0 Prism pair. They are deliberately not declared, and that is not an oversight:
+The MAME/Encore sets also carry `rfm_u100r2.rom` / `rfm_u101r2.rom`, the second(?) revision of Revenge From
+Mars's bank-0 Prism pair.
 
-* **They are not a game version.** The version is the update flash, and none of the update
-  packages is tied to a particular boot ROM - so nothing in the files says which version an
-  r2 set would be a clone of.
 * **The name is MAME's**, from its `rfmpbr2` set - "Pinball 2000: Revenge From Mars (rev. 2)", a
   clone of `rfmpb` that differs in `u100`/`u101` and nothing else, with both dated 1999. It is a
   factory revision of the card, not a later one, so none of the 2.x updates can be asking for it.
-  MAME needs a set for it because its P2K driver loads no update flash: there, the Prism pair is
+  MAME needs a set for it because its P2K driver loads no update flash (yet): there, the Prism pair is
   the only thing that can tell two machines apart. And `u100`/`u101` are not the sole home of the
   game code either - they hold a fallback copy plus system data, which the update flash overrides.
   It is unknown though so far if its really rev. 2, or an even later rev. Only rev. 1 is confirmed.
 * Same 8 MB each, byte-identical to the stock pair from `0x17e9e0` upward and rewritten below it:
   about 15% of each chip, concentrated in the first 1.5 MB.
-* **The driver would need work, not just a `ROM_START`.** It patches bank 0 on the way in
+* **The driver needed work, not just a `ROM_START`.** It patched bank 0 on the way in
   (`p2k_state::set_prism_roms`). `0x191` holds the same `retf` (`cb`) in both revisions, so that
   one carries over - Episode I has `cb` there too. `0x419a` does not carry over, and note it is the
   *immediate*, not the instruction: the stock pair has `b8 f9 ff ff ff`, `mov eax,0FFFFFFF9h`,
@@ -457,7 +321,7 @@ Mars's bank-0 Prism pair. They are deliberately not declared, and that is not an
   failing check report success. r2 has `e8 9e 27 00 00` at that same `0x4199` - a near `call`,
   `+0x279e` - so those four bytes are its displacement, and poking 1 into them sends the call
   somewhere arbitrary.
-* **But the check has now been identified, and r2's address with it.** The patched instruction is
+* **But the check has now since then be identified, and r2's address with it.** The patched instruction is
   the "already initialised" early exit of the MediaGX PCI bring-up - the routine that walks device
   numbers 0..0x14 for vendor `0x1078` (Cyrix), picks out the host bridge and the Cx5510/Cx5520 ISA
   bridge, programs their BARs and returns 1. The patch makes that early exit return 1 as well,
@@ -520,6 +384,7 @@ The hashes are in the ROM section of `src/wpc/p2k.c` so the files stay identifia
 | **Enter** | Launch Ball (Revenge From Mars; Episode I has a hand plunger and ignores it) |
 | 7 / 8 / 9 / 0 | Enter / Up / Down / Escape - the service buttons behind the coin door |
 | Insert / Home | Plumb bob tilt / slam tilt |
+| **B** | Place balls in trough |
 
 **Close the coin door first.** The machine starts with it open, says so on screen, and keeps high
 voltage off until the door *closes* - the firmware raises the high-voltage relay on that edge and
@@ -527,7 +392,7 @@ there is no separate interlock input. Press END and the warning goes.
 
 ### Playing it standalone
 
-A real Pinball 2000 gets its switch feedback from a playfield. Under VPinMAME/libPinMAME the table provides
+A real Pinball 2000 gets its switch feedback from a playfield. Under VPinMAME/libPinMAME the externally simulated table provides
 that; standalone there is nothing, and a machine that sees an empty ball trough will not start a
 game. The driver carries a small ball model for this (which should rather move to a simulator like all the other games). It needs a `P2K_DEBUG=1` build - see
 [Building](#building) - and within one it is still off unless asked for:
@@ -611,11 +476,13 @@ tests. The extraction tool lives with the port's working notes.
 
 **Why a shim.** PinMAME is a fork of MAME 0.76 (2003), which predates the current device model entirely -
 no `device_t`, no `machine_config`, no `address_map`, no `required_device<>`. Rather than rewrite twenty thousand lines of CPU core into 2003-era C, the
-imported files are taken **unchanged** and given the small part of the modern API they need:
+imported files are taken (mostly) **unchanged** and given the small part of the modern API they need:
 address spaces, a device tree with timers and callbacks, and no-op stubs for save state and the
 debugger. That is `shim/` - about 1400 lines against 28000 imported. The measured fact the approach
 rests on is that MAME's i386 core needs almost nothing from MAME's core; the chipset devices are
 what force the shim to grow.
+Note that by now, the i386 has been slightly extended and some optimizations (mainly a fast memory read,
+and various shortcuts (that all generalize though!) along with cache layout changes) have been added.
 
 **The bus.** The machine owns its own address spaces rather than going through PinMAME's memory
 system. Plain-memory ranges - main RAM, the framebuffer and its `0xc0000000` alias - are served
@@ -624,7 +491,7 @@ compares. That is worth about 20 %; `P2K_FASTBUS=0` turns it off.
 
 **Video.** No DMD: the picture is the MediaGX framebuffer, 640x240 RGB555, exported through
 PinMAME's normal video path as a `CORE_VIDEO` layout with a renderer - the same shape `byvidpin.c`
-uses for Baby Pac-Man - which is what feeds libPinMAME and any frontend behind it. The lines are
+uses e.g. for Baby Pac-Man - which is what feeds libPinMAME and any frontend behind it. The lines are
 doubled to 640x480 because the display controller doubles them on the way to the CRT: this
 machine's pixels are twice as tall as they are wide.
 
@@ -643,41 +510,16 @@ Video memory holds the picture upside down and the *right way round*; only the r
 back. That is the opposite of what the cabinet's half-silvered mirror suggests, and it is what
 makes the machine's own text legible.
 
-Under VPinMAME a frontend reads that picture the same way it reads Baby Pac-Man's and Granny & the
-Gators': `Controller.DmdWidth` / `DmdHeight` for the size and `Controller.updateDmdPixels` for the
-pixels, which hands over the whole MAME screen as RGBA floats. Those two are video-display games
-and this one is not, in exactly one respect: a `VIDEO_RGB_DIRECT` screen holds *packed colour*
-where a paletted one holds an index, so `updateDmdPixels` unpacks by bitmap depth instead of going
-through `palette_get_color()` - the same split `libpinmame.cpp`'s `UpdatePinmameDisplayBitmap()`
-makes. Without it a 15 bpp pixel is read as a palette index up to 0x7fff and runs off the end of
-the palette. `Controller.RawDmdPixels` and `RawDmdColoredPixels` are not involved: those are the
-dot-matrix interface, capped at 256x64.
-
 **Sound.** The Prism card's window at `0x13000000` is the host side of the DCS board - a command
 port, a status register and an echo register. The driver forwards those and does nothing else; the
 sound emulation is `wmssnd.c`'s. What lives here is the *host* half of the protocol, which is the
 part that was missing: the stream is driven by the game code on the PC.
 
 **Interrupts.** The game OS's clock handler services the pinball driver board one register at a
-time and takes longer than a tick period, so a tick nests inside its own handler and the OS
-complains. Suppressing the timer edge does not help - the request is already latched in the
+time and previously took longer than a tick period, so a tick nests inside its own handler and the OS
+complains. Suppressing the timer edge did not help - the request was already latched in the
 interrupt controller. Holding the controller's line away from the CPU while the guest is inside its
-clock handler does. `P2K_CLKINT_GATE=0` disables it.
-
-## Where the time goes
-
-Measured in a running game (Linux, and outdated):
-
-| | |
-|---|---|
-| MediaGX | 44 % - interpreter ~19 %, address translation 7 %, instruction fetch 6 %, bus 2 % |
-| DCS sound board (ADSP-2100) | 38 % |
-| PinMAME's mixer and resampler | 9 % |
-| Video renderer | 9 % |
-
-The core retires 0.45 guest instructions per emulated cycle.
-
-Measured and found not to help: `-O3 -march=native` gives nothing outside the noise.
+clock handler does. `P2K_CLKINT_GATE=1` re-enables this, but by now it has been addressed differently.
 
 ### Two thirds of the sound board's time is a spin loop
 
@@ -735,8 +577,7 @@ where this was measured. `cpu_spinuntil_int()` overhead is the third candidate a
 Whatever the split, that is what the autobuffer skip alone is worth. The sound board's remaining
 cost turned out to be more waiting, one layer down.
 
-### And most of the rest is waiting for the host
-
+**And most of the rest is waiting for the host**:
 With the spin above suppressed, a second profile - hottest PCs, disassembled - is just as lopsided:
 a thirteen-instruction loop at program address `0x3d9c` is **56.8 %** of what the DSP executes, and
 a second at `0x3dbe` follows it. Neither is audio work:
@@ -780,8 +621,10 @@ self-test with no audio running to interrupt it, and the board went silent: no s
 DCS error from the game. **The frame rate was fine throughout.** Nothing about a speed measurement
 can see a sound board that has stopped answering, so changes in here get judged by listening.
 
+**Important Note**: SWEP1s intro (infamous scrolling text) does fail to read the 2nd sentence.
+We need to check if this is due to the skip hacks above!
 
-## Possible extensions
+## Possible performance related extensions
 
 ### Sound and CPU on separate cores
 
@@ -799,7 +642,7 @@ measured and taken back out again. What is worth knowing before trying again:
   board's state; everything else the worker can answer itself.
 * **It works and it stays deterministic** - a pipeline one slice deep, counted in emulated cycles
   rather than wall clock, gives reproducible runs.
-* **It bought +8 %, not 1.5x.** The parallelism is real (1.28x) but some 18 points of extra work
+* **Outdated numbers! : It bought +8 %, not 1.5x.** The parallelism is real (1.28x) but some 18 points of extra work
   appear, almost all on the worker. Ruled out by measurement: the hardware (two independent
   emulator processes lose only 8 %), thread pinning (slightly worse), the synchronisation points
   (0.1 %), the write queue (0.0 %). What is left is the handover itself - about 4000 per second,
@@ -833,6 +676,9 @@ the table. The one profile that looked past the autobuffer spin was encouraging 
 top 30 program counters covered 90 % of opcodes, only 2244 distinct addresses ran at all - which
 is the sort of concentration that makes a transcription feasible rather than a rewrite of a whole
 firmware.
+
+Still, the amount of performance bought must still be below 5 % overall, as the MediaGX still dominates
+everything with the DSP idle skips in place.
 
 **Measure before writing any of it - and the measurement that exists is the wrong kind.**
 Everything known about this board's cost is *opcode counts*, and on this emulator an opcode count
@@ -878,9 +724,8 @@ disassembling it offline avoids both traps.
 
 ### A dynarec
 
-The other half. PinMAME already ships `ext/asmjit`. With the MediaGX at 44 % of the work (outdated), Amdahl
-caps a perfect one at about 1.8x, so on slow hardware it reaches real time only together with the
-threading or ADSP optimizations above.
+The other half. PinMAME already ships `ext/asmjit`. With the MediaGX at 70-90 % of the work, Amdahl
+caps, so on slow hardware it reaches real time only together with the threading or ADSP optimizations above.
 
 ### Memory through PinMAME's system
 
@@ -898,10 +743,7 @@ of the 2000-cycle execution chunks.
 
 ## Known limitations
 
-* Episode I plays its music but its sound *tracks* stay silent. The read path, the SDRC paging and
-  the PCM producer are all proven correct on demand, so what the game's own track numbers resolve
-  to is a question of game state rather than of emulation.
-* All platforms are built *and run*: both games boot and render under
+* All platforms are built *and run*: all games boot and render under
   the `PinMAME` executable built from CMake, vcproj files and lists them.
 * The picture VPinMAME hands a frontend is 641 pixels wide for a 640-pixel screen. That extra
   column is `core_findSize()`'s `+ 1` and every `CORE_VIDEO` game has it - Baby Pac-Man and Granny
