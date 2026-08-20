@@ -2544,7 +2544,7 @@ static MACHINE_INIT(core) {
               parent_layout = layout + 1;
               layout->index = -1;
               layout = layout->importedLayout - 1;
-              break;
+              continue; // trailing index reset would access importedLayout[-1]
 
            case CORE_VIDEO:
               assert(layout->importedLayout == NULL); // Not an import
