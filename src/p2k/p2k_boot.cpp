@@ -33,9 +33,9 @@ static bool build_prism_region(const char *dir, const char *prefix, std::vector<
 		char a[64], b[64];
 		snprintf(a, sizeof a, "%s_u%d.rom", prefix, 100 + bank * 2);
 		snprintf(b, sizeof b, "%s_u%d.rom", prefix, 101 + bank * 2);
-		if (!read_file(std::string(dir) + "/" + a, lo, 0x800000)) { printf("missing %s\n", a); return false; }
-		if (!read_file(std::string(dir) + "/" + b, hi, 0x800000)) { printf("missing %s\n", b); return false; }
-		u8 *out = region.data() + size_t(bank) * 0x1000000;
+		if (!read_file(std::string(dir) + '/' + a, lo, 0x800000)) { printf("missing %s\n", a); return false; }
+		if (!read_file(std::string(dir) + '/' + b, hi, 0x800000)) { printf("missing %s\n", b); return false; }
+		u8 * const __restrict out = region.data() + size_t(bank) * 0x1000000;
 		for (size_t i = 0; i < 0x800000 / 2; i++)
 		{
 			out[i * 4 + 0] = lo[i * 2 + 0];
@@ -74,7 +74,8 @@ int main(int argc, char **argv)
 		printf("update flash %s: %s\n", nv, ok ? "loaded" : "FAILED");
 	}
 
-	state.build_machine(20000000);
+	constexpr u32 cpu_hz = 233000000/3; //!! sync with p2k.c
+	state.build_machine(cpu_hz);
 	state.reset();
 	state.set_trace(true);
 

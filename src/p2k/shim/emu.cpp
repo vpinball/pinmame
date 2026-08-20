@@ -17,6 +17,6 @@ machine_config *p2k_active_config = nullptr;
 void (*p2k_instruction_hook)(unsigned pc) = nullptr;
 void (*p2k_exception_hook)(int vector) = nullptr;
 // XTAL::validate() lives in MAME's xtal.cpp, which needs the full emu core; the checks only
-// warn about clock values not in MAME's known-crystal table.
+// warn about clock values not in MAME's known-crystal table
 void XTAL::validate(const char *message) const {}
 void XTAL::validate(const std::string &message) const {}

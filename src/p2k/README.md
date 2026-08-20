@@ -4,6 +4,8 @@ Midway's last pinball platform: a PC with Cyrix MediaGX employing a
 CX5520 southbridge, a PC97317 Super-I/O and a "Prism" PCI card carrying the ADSP-2104 sound
 hardware (for the latter see `docs/pin2k_sound.md`, including outstanding issues and quirks of it) and the link to the pinball power driver board.
 
+For table authors just interested in switch/coil/lamp mappings, go directly to `src/wpc/p2k_names.h`.
+
 Every version of the P2K games is a driver of its own. The parent is the last one Midway shipped, not
 the newest - the unofficial/aftermarket updates that carry on past it are clones of it, the way PinMAME handles
 MODs elsewhere:

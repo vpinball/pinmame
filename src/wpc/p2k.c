@@ -3,7 +3,7 @@
 /************************************************************************************************
   Midway Pinball 2000 (Revenge From Mars, Star Wars Episode I)
 
-  Bring-up driver. The machine itself lives in src/p2k/ (see src/p2k/README.md): a MediaGX PC
+  The machine itself lives in src/p2k/ (see src/p2k/README.md): a MediaGX PC
   imported from MAME with its own bus and device tree. This file is only what PinMAME needs to
   instantiate that CPU - a machine driver and a game definition - so that PinMAME's own
   facilities, the remote debugger above all, can attach to it.
@@ -21,9 +21,8 @@
 #if HAS_MEDIAGX
 
 /* Everything in this driver that only exists to debug it - the watches, the frame dumps and the
-   stand-in playfield, and the P2K_* environment variables that drive them - is behind this, and
-   is not compiled without it. See src/p2k/p2k_debug.h, which says the same for the subsystem
-   side and is where the switch is documented */
+   stand-in playfield, and the P2K_* environment variables that drive them. See src/p2k/p2k_debug.h,
+   which says the same for the subsystem side and is where the switch is documented */
 #ifndef P2K_DEBUG
 #define P2K_DEBUG 0
 #endif
@@ -41,8 +40,7 @@ static int p2k_keyLaunch;      /* Launch Ball key, shared with the scaffolding -
 #define P2K_UPDREGION   (REGION_USER2)   /* the 8 MB update flash - this is the game version */
 
 /* implemented in src/p2k/p2k_pinmame.cpp */
-extern void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen,
-                              const unsigned char *updates, unsigned updatesLen);
+extern void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen, const unsigned char *updates, unsigned updatesLen);
 extern void p2k_pinmame_stop(void);
 extern void p2k_pinmame_nvram_set(int which, const unsigned char *data, unsigned size);
 extern unsigned p2k_pinmame_nvram_get(int which, unsigned char *data, unsigned size);
@@ -95,7 +93,7 @@ MEMORY_END
    RGB555 layout: 0RRRRRGGGGGBBBBB. P2K_AVG2_555(a,a) == a. */
 #define P2K_AVG2_555(a,b) (((((a) ^ (b)) & 0x7bdeu) >> 1) + ((a) & (b)))
 
-/* The DCS2 sound board, upstream's (src/wpc/wmssnd.c, docs/pin2k_sound.md). On real hardware it
+/* The DCS2 sound board (src/wpc/wmssnd.c, docs/pin2k_sound.md). On real hardware it
    lives in the Prism card's BAR4 window at 0x13000000:
 
      byte offset 0, word access - command write / response read
@@ -103,9 +101,7 @@ MEMORY_END
      byte offset 2              - status flags
 
    The subsystem calls these two for anything in that window; they are weak there, so the
-   standalone harness links without a sound board. Upstream's own note is that their board is
-   complete below the protocol and silent because "the stream lives in the PC-side game code" -
-   this is that game code, so P2K_DCSLOG=1 writes down every word it sends. */
+   standalone harness links without a sound board. P2K_DCSLOG=1 writes down every word it sends */
 UINT32 p2k_dcs_read(UINT32 offset, UINT32 mem_mask);
 void p2k_dcs_write(UINT32 offset, UINT32 data, UINT32 mem_mask);
 
@@ -120,8 +116,7 @@ static int p2k_gameIndex(void) {
 #if P2K_DEBUG
 /* P2K_SOLWATCH / P2K_LAMPWATCH / P2K_SWWATCH =1: change logs for the three kinds of device, named
    out of p2k_names.h, so walking a game's own test menu reads as names rather than bit numbers.
-   Flashers are not a separate kind here - the board drives them like any other coil, so they come
-   out of the solenoid watch.
+   Flashers come out of the solenoid watch.
 
    Change logs rather than periodic samples: a power stroke lasts about three frames and a sample
    walks straight past it. Sampled once per frame, in p2k_sync_io - what that does and does not
@@ -142,8 +137,7 @@ static int p2k_swwatch(void)   { static int on = -1; return p2k_watch("P2K_SWWAT
    physicOutputState[CORE_MODOUT_LAMP0 + n] - so a name that does not match the machine's own test
    menu means the table is wrong, not the arithmetic. Devices with no table entry print as
    "(unnamed)" rather than being skipped: an unnamed one firing is itself worth seeing */
-static void p2k_watch_bits(const char *tag, const UINT8 *bits, int nbytes, UINT8 *prev,
-                           const p2k_name_t *names, int base, int stride) {
+static void p2k_watch_bits(const char *tag, const UINT8 *bits, int nbytes, UINT8 *prev, const p2k_name_t *names, int base, int stride) {
   int i, b, any = 0;
   for (i = 0; i < nbytes; i++) {
     const unsigned diff = (unsigned)(bits[i] ^ prev[i]);
@@ -176,9 +170,8 @@ static int p2k_dcs_log(void) {
 /* The subsystem hands out dword-aligned addresses with the byte lanes in the mask, so the byte
    offset and the access width both have to be recovered from it: the lane of the first active
    byte gives the offset, the number of active bytes gives the width. Reading `offset & 3`
-   directly puts every status access - byte offset 2, mask 0xffff0000 - into the echo path. */
-static void p2k_dcs_decode(UINT32 offset, UINT32 mem_mask, unsigned *byte_off, unsigned *width,
-                           unsigned *shift) {
+   directly puts every status access - byte offset 2, mask 0xffff0000 - into the echo path */
+static void p2k_dcs_decode(UINT32 offset, UINT32 mem_mask, unsigned *byte_off, unsigned *width, unsigned *shift) {
   unsigned lane = 0, n = 0, i;
   while (lane < 4 && !((mem_mask >> (lane * 8)) & 0xff)) lane++;
   for (i = 0; i < 4; i++) if ((mem_mask >> (i * 8)) & 0xff) n++;
@@ -193,9 +186,9 @@ UINT32 p2k_dcs_read(UINT32 offset, UINT32 mem_mask) {
   UINT32 value;
   const char *what;
   p2k_dcs_decode(offset, mem_mask, &byte_off, &width, &shift);
-  if (byte_off == 2)      { value = dcs_p2k_status_r(); what = "status"; }
-  else if (width >= 2)    { value = dcs_p2k_data_r();   what = "data"; }
-  else                    { value = dcs_p2k_echo_r();   what = "echo"; }
+  if (byte_off == 2)   { value = dcs_p2k_status_r(); what = "status"; }
+  else if (width >= 2) { value = dcs_p2k_data_r();   what = "data"; }
+  else                 { value = dcs_p2k_echo_r();   what = "echo"; }
   if (p2k_dcs_log())
     fprintf(stderr, "[p2k dcs] r %s -> %04x\n", what, value);
   return value << shift;
@@ -216,28 +209,27 @@ void p2k_dcs_write(UINT32 offset, UINT32 data, UINT32 mem_mask) {
 }
 
 /* The pinball I/O meets PinMAME's core model here: the switch matrix goes down to the driver
-   board, the lamp columns and coil bits come back. Once per frame is enough for lamps - the core
-   integrates them anyway - and is the honest first step; if coils turn out to need finer timing,
-   this is the place that moves.
+   board, the lamp columns and coil bits come back. Once per frame is enough for lamps for now(!) - the core
+   will integrate them anyway; if coils turn out to need finer timing, adopt here.
 
-   Which matrix position is which switch, which bit is which coil and which lamp is which insert is
-   no longer open: p2k_names.h carries all six tables and every one has been stepped through the
-   games' own switch, coil and lamp tests. This is the path and the map both */
+   //!! PWM missing
+
+   p2k_names.h carries all tables for switch/coil/lamp mappings and every one has been stepped through the games' own test menus */
 static void p2k_sync_io(void) {
-  UINT8 lamps[16];   /* eight driven columns, two row banks each */
+  UINT8 lamps[16]; /* eight driven columns, two row banks each */
   UINT32 solenoids = 0, solenoids2 = 0;
   int i;
 
   /* Let the core read the keyboard into its switch columns first - it is what calls our
      SWITCH_UPDATE handler. Nothing else in this driver drives it, so without this the cabinet
      and coin door keys never reach the machine. The flipper argument enables the core's
-     end-of-stroke simulation, which this board does not report.
+     end-of-stroke simulation, which this board does not report. //!! ??
 
      Order matters here: core_updateSw() rewrites bits 0x02 and 0x08 of the flipper column from
      the flipper keys, and on this board those are the coin door switch and an unused position.
-     It calls our handler afterwards, so our values win - but only in that order. */
+     It calls our handler afterwards, so our values win - but only in that order */
 #if P2K_DEBUG
-  /* One tick per frame, and the only one: SWITCH_UPDATE below reads it rather than advancing it,
+  /* The only tick per frame: SWITCH_UPDATE below reads it rather than advancing it,
      so the number means the same thing to every watch and to P2K_PLAY. It used to be advanced
      down there, behind that block's own early-out, which left it stuck at 0 for anyone who asked
      for a watch and nothing else */
@@ -272,16 +264,16 @@ static void p2k_sync_io(void) {
     if (p2k_solwatch()) {
       static UINT8 prev[6];
       UINT8 now[6];
-      now[0] = (UINT8)(solenoids       & 0xff); now[1] = (UINT8)((solenoids  >>  8) & 0xff);
-      now[2] = (UINT8)((solenoids >> 16) & 0xff); now[3] = (UINT8)((solenoids >> 24) & 0xff);
-      now[4] = (UINT8)(solenoids2      & 0xff); now[5] = (UINT8)((solenoids2 >>  8) & 0xff);
+      now[0] = (UINT8) (solenoids        & 0xff); now[1] = (UINT8)((solenoids  >>  8) & 0xff);
+      now[2] = (UINT8)((solenoids >> 16) & 0xff); now[3] = (UINT8)((solenoids  >> 24) & 0xff);
+      now[4] = (UINT8) (solenoids2       & 0xff); now[5] = (UINT8)((solenoids2 >>  8) & 0xff);
       p2k_watch_bits("sol", now, 6, prev, p2k_coil_names(game), 1, 8);
     }
 
-    /* Lamps. Sixteen bytes, but not two 8x8 matrices back to back: the board drives eight columns
+    /* Lamps, sixteen bytes, but not two 8x8 matrices back to back: the board drives eight columns
        of sixteen in two row banks, handed over as bank A at byte 2c and bank B at 2c+1, so the
        manual's two matrices interleave per column rather than occupying a half each. p2k_names.h
-       has the arithmetic and how it was measured. */
+       has the arithmetic and how it was measured */
     if (p2k_lampwatch()) {
       static UINT8 prev[16];
       p2k_watch_bits("lamp", lamps, (int)sizeof(lamps), prev, p2k_lamp_names(game), 0, 8);
@@ -289,7 +281,7 @@ static void p2k_sync_io(void) {
 
     /* Switches, as they went down to the board a moment ago. Optos read inverted from what the
        playfield is doing - they rest closed and open when a ball blocks them - so "off" on one of
-       those is a ball arriving, not leaving. */
+       those is a ball arriving, not leaving */
     if (p2k_swwatch()) {
       static UINT8 prev[CORE_MAXSWCOL];
       p2k_watch_bits("sw", (const UINT8 *)coreGlobals.swMatrix, CORE_MAXSWCOL, prev, p2k_switch_names(game), 1, 10);
@@ -301,10 +293,10 @@ static void p2k_sync_io(void) {
 /* A PinMAME video renderer rather than a MAME VIDEO_UPDATE. The difference matters: with
    MDRV_VIDEO_UPDATE overridden, core_gen() never runs, and it is core_gen() that walks the
    display layout - which is what feeds libpinmame's display export. Declared in p2k_disp below
-   as a CORE_VIDEO layout, exactly as byvidpin.c does for Baby Pac-Man. */
+   as a CORE_VIDEO layout, exactly as byvidpin.c does e.g. for Baby Pac-Man. */
 static PINMAME_VIDEO_UPDATE(p2k_video) {
   static UINT32 frame[P2K_MAX_PIXELS];
-  static int announced = 0;
+  static int announced = 0; //!!
   unsigned width, height, success, fast_path_success;
 
   p2k_sync_io();
@@ -314,8 +306,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
   if (!announced) {
     announced = 1;
     fprintf(stderr, "[p2k video] %ux%u source into a %ux%u %d bpp bitmap (%s)\n",
-            width, height, width, height * P2K_LINE_DOUBLE, bitmap->depth,
-            P2K_LINE_INTERPOLATE ? "lines interpolated" : "lines doubled");
+            width, height, width, height * P2K_LINE_DOUBLE, bitmap->depth, P2K_LINE_INTERPOLATE ? "lines interpolated" : "lines doubled");
   }
 
   if (width > (unsigned)bitmap->width) width = bitmap->width;
@@ -352,8 +343,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
     /* Video memory holds the picture upside down and the right way round, not mirrored:
        turning only the row order back makes the machine's own text (e.g. COIN DOOR IS OPEN /
        Revenge From Mars - 50070 - 1.5) legible. Measured by reading the bitmap back, and
-       worth stating because it is the opposite of what the cabinet's half-silvered mirror
-       would suggest. */
+       worth stating because it is the opposite of what the cabinet's half-silvered mirror would suggest */
     const UINT32 * const __restrict src = &frame[(height - 1 - y) * width];
 #if P2K_LINE_INTERPOLATE
     /* The line below this one on screen, which - the row order being turned back - is the row
@@ -378,7 +368,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
 #endif
         if (bitmap->depth == 32)
           ((UINT32 *)bitmap->line[ty])[x] = rgb;
-        else                                                    /* 15 bit direct: RGB555 */
+        else /* 15 bit direct: RGB555 */
           ((UINT16 *)bitmap->line[ty])[x] = (UINT16)((((rgb >> 19) & 0x1f) << 10) |
                                                      (((rgb >> 11) & 0x1f) << 5) |
                                                       ((rgb >> 3) & 0x1f));
@@ -389,7 +379,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
 
 #if P2K_DEBUG
   /* P2K_VIDEO_PPM=<path>: read the bitmap back once and write it out. Proof that what PinMAME
-     holds is a picture, and that the pixel format written into it is the one it expects. */
+     holds is a picture, and that the pixel format written into it is the one it expects */
   {
     static int frames = 0;
     static int lastAt = -1;
@@ -398,8 +388,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
     int hit = 0;
     char path[512];
     frames = p2k_bringupFrame ? p2k_bringupFrame : frames + 1;
-    /* P2K_VIDEO_PPM_AT takes a comma separated list; each frame lands in <path>.<frame>.ppm so a
-       sequence can be followed, not just one moment. */
+    /* P2K_VIDEO_PPM_AT takes a comma separated list; each frame lands in <path>.<frame>.ppm so a sequence can be followed, not just one moment */
     if (out && when) {
       const char *q = when;
       while (*q) {
@@ -435,7 +424,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
 #endif
 }
 
-/* Which of the two games this is. The subsystem needs to know because the boot-ROM patch it
+/* Which of the games this is. The subsystem needs to know because the boot-ROM patch it
    applies sits at a different address in each, and the driver name carries the answer */
 static const char *p2k_romPrefix(void) {
   const char *name = (Machine && Machine->gamedrv) ? Machine->gamedrv->name : "rfm";
@@ -447,7 +436,7 @@ static SWITCH_UPDATE(p2k);   /* defined with the input ports below */
 
 /* The optos, per game, terminated by 0 - see the note at the top of SWITCH_UPDATE for where the
    lists come from. They rest closed, so anything that walks the matrix has to know which they are:
-   driving an opto means taking it to 0, and every other switch to 1. */
+   driving an opto means taking it to 0, and every other switch to 1 */
 static const int *p2k_optoList(void) {
   static const int rfmOptos[]   = {41,42,43,44,45,46,47,51,52,53,54,55,56,0};
   static const int swep1Optos[] = {41,42,43,44,45,46,47,48,51,52,58,0};
@@ -462,7 +451,7 @@ static int p2k_isOpto(int sw) {
 
 /* Switch numbering. PinMAME's base driver installs a *sequential* scheme (core_swSeq2m: matrix
    index = number + 7), but this machine numbers its switches by column and row - and so does the
-   remote debugger, which emits num = column*10 + row + 1. Without this the numbers in the game's
+   remote debugger, which emits num = column*10 + row + 1. Without this, the numbers in the game's
    own tables land somewhere else entirely: core_setSw(13) for the start button ended up at column
    2 row 5, which is Left Loop (Low). Measured, not guessed - the row the board handed out was
    0x10 on column 1 instead of 0x04 on column 0.
@@ -474,8 +463,7 @@ static int p2k_m2sw(int col, int row) { return col * 10 + row + 1; }
 /* What survives a power cycle. The machine keeps three things: the CMOS it stores settings, audits
    and its error log in, the PLX EEPROM behind the PCI bridge, and the 8 MB update flash. The first
    two are persisted here; the update flash is not: it comes from the ROM set, and an 8 MB NVRAM
-   file would quietly take precedence over it - a machine would keep booting the version it was
-   first started with even after selecting another set.
+   file would quietly take precedence over it.
 
    PinMAME reads its NVRAM file before the machine is built and writes it after the machine is
    gone, so the bytes live in these buffers in between: the handler fills them on load, MACHINE_INIT
@@ -483,20 +471,18 @@ static int p2k_m2sw(int col, int row) { return col * 10 + row + 1; }
 
 /* P2K_NV_CMOS_SIZE / P2K_NV_EEPROM_SIZE come from p2k_public.h - the subsystem allocates the
    blocks behind them, and the two sizes have to match */
-
 static UINT8 p2k_nvCmos[P2K_NV_CMOS_SIZE];
 static UINT8 p2k_nvEeprom[P2K_NV_EEPROM_SIZE];
 static UINT8 p2k_nvRtc[P2K_NV_RTC_SIZE];
 static int   p2k_nvLoaded = 0;
 
 static NVRAM_HANDLER(p2k) {
-  /* No harvesting here on the way out - by the time PinMAME saves, the machine is gone. See
-     MACHINE_STOP below, which is where the bytes are taken */
+  /* No harvesting here on the way out - by the time PinMAME saves, the machine is gone. See MACHINE_STOP below, which is where the bytes are taken */
   core_nvram(file, read_or_write, p2k_nvCmos,   P2K_NV_CMOS_SIZE,   0x00);
   core_nvram(file, read_or_write, p2k_nvEeprom, P2K_NV_EEPROM_SIZE, 0x00);
   core_nvram(file, read_or_write, p2k_nvRtc,    P2K_NV_RTC_SIZE,    0x00);
   /* Only adopt these if they really came from a file. With no file core_nvram() fills the
-     buffers with zeros, and pushing those into the machine would wipe the PLX EEPROM defaults
+     buffers, and pushing those into the machine would wipe the PLX EEPROM defaults
      that reset() writes - which stops the machine booting at all */
   if (!read_or_write) p2k_nvLoaded = (file != NULL);
 }
@@ -508,8 +494,7 @@ static NVRAM_HANDLER(p2k) {
    driver number and lamp number against the names the game itself uses. PinMAME has nowhere to
    hang these, so this is the one place they are visible without a debugger that knows about them.
 
-   Both games' tables are in p2k_names.h and the running set picks between them - before, Episode I
-   was printed Revenge From Mars' names. Lamps are still RFM's only; see the note in that header */
+   All games' tables are in p2k_names.h and the running set picks between them */
 static void p2k_dumpNames(void) {
   if (getenv("P2K_NAMES"))
   {
@@ -536,15 +521,14 @@ static MACHINE_INIT(p2k) {
   p2k_dumpNames();
   p2k_pinmame_start(memory_region(P2K_PRISMREGION), (unsigned int)memory_region_length(P2K_PRISMREGION),
                     memory_region(P2K_UPDREGION), (unsigned int)memory_region_length(P2K_UPDREGION));
-  if (p2k_nvLoaded) {                        /* whatever PinMAME had on file, after the reset
-                                                that fills in the EEPROM defaults */
+  if (p2k_nvLoaded) { /* whatever PinMAME had on file, after the reset that fills in the EEPROM defaults */
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_CMOS,   p2k_nvCmos,   P2K_NV_CMOS_SIZE);
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_EEPROM, p2k_nvEeprom, P2K_NV_EEPROM_SIZE);
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_RTC,    p2k_nvRtc,    P2K_NV_RTC_SIZE);
   }
   /* The clock comes from the host every start, so the machine shows real time rather than whatever
      it had when last switched off. A machine that already has a CMOS keeps its year register: the
-     firmware adds that register to its own stored year, so refreshing it would climb */
+     firmware adds that register to its own stored year, so refreshing it would climb! */
   p2k_pinmame_clock_from_host(p2k_nvLoaded);
   sndbrd_0_init(SNDBRD_DCSP2K, DCS_CPUNO, memory_region(DCS_ROMREGION), NULL, NULL);
 }
@@ -554,7 +538,7 @@ static MACHINE_INIT(p2k) {
 /  calls machine_stop first - so the driver's NVRAM handler runs when there is no machine left to
 /  ask. Harvesting in the handler's save branch, which is the obvious place, wrote a file of
 /  196828 zero bytes: nothing was saved, and restoring those zeros over the PLX EEPROM defaults
-/  stopped the next boot dead at "STARTING UPDATE GAME CODE". */
+/  stopped the next boot dead at "STARTING UPDATE GAME CODE" */
 static MACHINE_STOP(p2k) {
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_CMOS,   p2k_nvCmos,   P2K_NV_CMOS_SIZE);
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_EEPROM, p2k_nvEeprom, P2K_NV_EEPROM_SIZE);
@@ -572,8 +556,7 @@ MACHINE_DRIVER_START(p2k)
 	MDRV_CPU_MEMORY(p2k_readmem, p2k_writemem)
 	MDRV_IMPORT_FROM(wmssnd_dcs3)
 	/* 480 rows, not the 240 the frame buffer holds: core_initDisplaySize() forces the visible
-	   height to Machine->drv->screen_height, so the layout's row count alone does not size the
-	   window - these two do. See P2K_LINE_DOUBLE */
+	   height to Machine->drv->screen_height, so the layout's row count alone does not size the window. See P2K_LINE_DOUBLE */
 	MDRV_SCREEN_SIZE(640, 240 * P2K_LINE_DOUBLE)
 	MDRV_VISIBLE_AREA(0, 639, 0, 240 * P2K_LINE_DOUBLE - 1)
 	MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_RGB_DIRECT)
@@ -587,7 +570,7 @@ MACHINE_DRIVER_END
    Bit assignments are MAME's (src/mame/drivers/pinball2k.cpp, its keyboard handler); keys follow
    PinMAME's WPC convention instead of MAME's, so 7/8/9/0 are Enter/Up/Down/Escape and END toggles
    the coin door. The board's own coin door bit reads "closed" when set - the machine reports COIN
-   DOOR IS OPEN with the bit clear, which is the state it powers up in here. */
+   DOOR IS OPEN with the bit clear, which is the state it powers up */
 INPUT_PORTS_START(rfm)
 	CORE_PORTS
 	/* SIM_PORTS(1) - PinMAME's built-in ball simulator, commented out rather than removed so it is
@@ -621,10 +604,7 @@ INPUT_PORTS_START(rfm)
 	   Measured on rfm_160 by setting each combination and reading the machine's own DIP Switch Test:
 	   a closed switch is a set bit, 1 being the low one. 5-8 do nothing. Values 5, 6 and 9-15 the
 	   machine itself calls Unused, so they are not offered here.
-
-	   USA/Canada is the default. A country that disagrees with the one in CMOS is what XINA 1.02
-	   warns about. That is a one-off on an emulated machine, and 0 is the right home for a game
-	   built in Chicago. Delete the .nv to skip the reset. */
+	   USA/Canada is the default. A country that disagrees with the one in CMOS is what XINA 1.02 warns about */
 	PORT_START /* 3: DIP switches, read back through core_getDip(0) */
 		COREPORT_DIPNAME( 0x000f, 0x0000, "Country (DIP 1-4)")
 			COREPORT_DIPSET(0x0000, "USA / Canada" )
@@ -644,10 +624,10 @@ INPUT_PORTS_END
      the driver board reports them (registers 0x04, 0x03 and 0x01). Two independent checks that
      the scheme is right: the start button lands at column 1 row 3, the one coordinate MAME's
      driver spells out, and column 11 rows 5-8 are right flipper, left flipper, right action,
-     left action - MAME's cabinet register bits 4 to 7. See src/p2k/README.md for the full list. --*/
+     left action - MAME's cabinet register bits 4 to 7. See src/p2k/README.md for the full list --*/
 #define swStartButton      13
 /* The launch button sits in the playfield matrix rather than the cabinet column, and both games'
-   tables name it. Only Revenge From Mars acts on it: Episode I is fitted with a hand plunger and
+   tables name it. Revenge From Mars acts on it: Episode I is fitted with a hand plunger and
    has no autoplunger coil, which is what P2K_HANDPLUNGE in the scaffolding below stands in for */
 #define swLaunchButton     23
 #define swEscape          101
@@ -662,9 +642,9 @@ INPUT_PORTS_END
 #define swRActionButton   117
 #define swLActionButton   118
 
-/* The trough as built: four balls on 42-45, the same on both games. Nothing here puts them there
+/* The trough as built: four balls on 42-45, the same on all games. Nothing here puts them there
    on its own - an empty machine is the honest rest state, and PinMAME leaves the trough to a
-   simulator or to the operator elsewhere too. The Balls In Trough key below is the way to load it
+   simulator or to the operator elsewhere too. The Balls In Trough key is the way to load it
    for a test, and the ball model in the scaffolding is the way to make them move */
 #define P2K_TROUGH_SW1     42
 #define P2K_TROUGH_BALLS    4
@@ -679,8 +659,8 @@ INPUT_PORTS_END
 #define P2K_CAB_LACTION    0x80
 
 /* Up and Down are the other way round from MAME's header comment - measured on the running game
-   (holding 0x02 walks the master volume down, 0x04 walks it up) and confirmed by the game's own
-   switch table, which names column 10 rows 1 to 4 Escape, Down, Up, Enter. */
+   (holding 0x02 walks the master volume down, 0x04 walks it up) and confirmed by the game's own //!!
+   switch table, which names column 10 rows 1 to 4 Escape, Down, Up, Enter */
 #define P2K_DIAG_ESCAPE    0x01
 #define P2K_DIAG_DOWN      0x02
 #define P2K_DIAG_UP        0x04
@@ -718,7 +698,7 @@ static SWITCH_UPDATE(p2k) {
 	/  itself - and it only became possible to walk those menus on 2.00, 2.01 and 2.10 once the UART
 	/  divisor latch bug was fixed, which had been wedging them a few seconds in (see src/p2k/README.md)
 	/
-	/  An earlier version of this note claimed the switch table carries an opto flag at +0x0c bit
+	/  Note: the switch table was assumed to carry an opto flag at +0x0c bit
 	/  0x800 and that it agreed with the manuals. It does not. That bit - +0x1c from the record
 	/  start used elsewhere in this file - gives 38, 41-46 and 51 on rfm_160, which both misses 47
 	/  and 52 and adds 38, Up/Down Ramp Up. On Episode I it flags 38 Right Saucer, which is a plain
@@ -741,7 +721,7 @@ static SWITCH_UPDATE(p2k) {
 		   machine, and an empty machine is the honest state to power up in.
 
 		   Do not hold it down from frame zero: a full trough before the machine has initialised is
-		   not four balls, it is four switches that broke during power-up, and it hangs. Let it boot
+		   not four balls, it is four switches that broke during power-up, and it may hang. Let it boot
 		   first. The ball model in the scaffolding owns 42-45 whenever it runs and overrides this */
 		if (inports && (inports[CORE_COREINPORT] & 0x8000))
 			for (k = 0; k < P2K_TROUGH_BALLS; k++) core_setSw(P2K_TROUGH_SW1 + k, 0);
@@ -754,11 +734,11 @@ static SWITCH_UPDATE(p2k) {
 		/* Coin inputs. The board does not put them in the low bits: MAME's driver has the three
 		   coin keys on bits 1, 2 and 7 of register 0x00, and setting bit 0 does nothing at all -
 		   which is exactly what a coin mapped there did here. The fourth port bit has no known
-		   position, so it stays unmapped rather than guessed. */
+		   position, so it stays unmapped rather than guessed */
 		coreGlobals.swMatrix[CORE_COINDOORSWCOL] =
-			((in & 0x0001) ? 0x02 : 0) |
-			((in & 0x0002) ? 0x04 : 0) |
-			((in & 0x0004) ? 0x80 : 0);
+			((in   & 0x0001) ? 0x02 : 0) |
+			((in   & 0x0002) ? 0x04 : 0) |
+			((in   & 0x0004) ? 0x80 : 0);
 
 		coreGlobals.swMatrix[11] =
 			((in   & 0x0800) ? P2K_CAB_SLAMTILT  : 0) |
@@ -770,10 +750,10 @@ static SWITCH_UPDATE(p2k) {
 			((in   & 0x1000) ? P2K_CAB_LACTION   : 0);
 
 		coreGlobals.swMatrix[10] =
-			((in & 0x0080) ? P2K_DIAG_ESCAPE : 0) |
-			((in & 0x0020) ? P2K_DIAG_UP     : 0) |
-			((in & 0x0040) ? P2K_DIAG_DOWN   : 0) |
-			((in & 0x0010) ? P2K_DIAG_ENTER  : 0);
+			((in   & 0x0080) ? P2K_DIAG_ESCAPE : 0) |
+			((in   & 0x0020) ? P2K_DIAG_UP     : 0) |
+			((in   & 0x0040) ? P2K_DIAG_DOWN   : 0) |
+			((in   & 0x0010) ? P2K_DIAG_ENTER  : 0);
 
 		core_setSw(swStartButton, in & 0x0200);
 		core_setSw(swLaunchButton, (in & 0x4000) ? 1 : 0);
@@ -784,13 +764,13 @@ static SWITCH_UPDATE(p2k) {
 
 #if P2K_DEBUG
 	/* ---------------------------------------------------------------------------------------
-	   BRING-UP SCAFFOLDING - not part of the driver, and not compiled into one.
+	   BRING-UP SCAFFOLDING - not part of the driver
 
 	   A standalone build has no playfield, and the machine will not run without one: its ball
 	   devices do not merely read switches, they kick and then wait for switches to change. With
 	   nothing answering, a device process stays alive forever and MultiDevice::game_start_check
 	   refuses to start a game around it. On real hardware this feedback is the playfield; under
-	   VPinMAME it is the table. This is a stand-in good enough to satisfy the devices.
+	   VPinMAME/libpinmame it is the table. This is a stand-in good enough to satisfy the devices.
 
 	   Two constraints, both measured and both easy to get wrong:
 
@@ -844,7 +824,7 @@ static SWITCH_UPDATE(p2k) {
 		const char* sweep = getenv("P2K_SWSWEEP");
 		int frame, i;
 		/* Nothing here costs anything unless it is asked for. Everything below is behind one of
-		   these three, and a release build simply never enters the block. */
+		   these three, and a release build simply never enters the block */
 		if (!tr && !seq && !dc && !sweep) return;
 
 		frame = p2k_bringupFrame;   /* advanced once per frame in p2k_sync_io */
@@ -853,7 +833,7 @@ static SWITCH_UPDATE(p2k) {
 		   read against p2k_names.h without a keypress per switch. Rows 0 and 9 are skipped -
 		   core_getSw() reads (n/10)*8 + (n%10-1), which has no bit for either. The previous one is
 		   released before the next is driven, and an opto is driven the other way round, both
-		   because core_setSw() latches and a switch left in its active state reads as stuck. */
+		   because core_setSw() latches and a switch left in its active state reads as stuck */
 		if (sweep) {
 			static int lastSw = 0;
 			int lo = 11, hi = 88, period = 120, hold = 30, at = 1800;
@@ -894,7 +874,7 @@ static SWITCH_UPDATE(p2k) {
 			int coin = 0, diag = 0, start = 0, cab = 0, launch = 0;
 			/* Any playfield switch can be pulsed as "sw<number>", so a target or a jet needs no
 			   code of its own. They are collected once and cleared every frame before the active
-			   ones are set - core_setSw() latches, and a switch left closed reads as stuck. */
+			   ones are set - core_setSw() latches, and a switch left closed reads as stuck */
 			static int swList[16], swCount = -1;
 			int k;
 			if (swCount < 0) {
@@ -921,21 +901,21 @@ static SWITCH_UPDATE(p2k) {
 					c++;
 					/* coinb<n> drives one bit of the coin register on its own, which is how the
 					   three known positions were checked - "coin" is bit 1, the one MAME uses */
-					if      (!strncmp(c, "coinb", 5)) coin |= 1 << (int)strtol(c + 5, NULL, 10);
-					else if (!strncmp(c, "coin",  4)) coin |= 0x02;
-					else if (!strncmp(c, "start", 5)) start = 1;
-					else if (!strncmp(c, "enter", 5)) diag |= P2K_DIAG_ENTER;
-					else if (!strncmp(c, "up",    2)) diag |= P2K_DIAG_UP;
-					else if (!strncmp(c, "down",  4)) diag |= P2K_DIAG_DOWN;
-					else if (!strncmp(c, "esc",   3)) diag |= P2K_DIAG_ESCAPE;
-					else if (!strncmp(c, "lflip", 5)) cab  |= P2K_CAB_LFLIPPER;
-					else if (!strncmp(c, "rflip", 5)) cab  |= P2K_CAB_RFLIPPER;
-					else if (!strncmp(c, "laction", 7)) cab |= P2K_CAB_LACTION;
-					else if (!strncmp(c, "raction", 7)) cab |= P2K_CAB_RACTION;
+					if      (!strncmp(c, "coinb",   5)) coin |= 1 << (int)strtol(c + 5, NULL, 10);
+					else if (!strncmp(c, "coin",    4)) coin |= 0x02;
+					else if (!strncmp(c, "start",   5)) start = 1;
+					else if (!strncmp(c, "enter",   5)) diag |= P2K_DIAG_ENTER;
+					else if (!strncmp(c, "up",      2)) diag |= P2K_DIAG_UP;
+					else if (!strncmp(c, "down",    4)) diag |= P2K_DIAG_DOWN;
+					else if (!strncmp(c, "esc",     3)) diag |= P2K_DIAG_ESCAPE;
+					else if (!strncmp(c, "lflip",   5)) cab  |= P2K_CAB_LFLIPPER;
+					else if (!strncmp(c, "rflip",   5)) cab  |= P2K_CAB_RFLIPPER;
+					else if (!strncmp(c, "laction", 7)) cab  |= P2K_CAB_LACTION;
+					else if (!strncmp(c, "raction", 7)) cab  |= P2K_CAB_RACTION;
 					/* the launch button is a playfield switch, not a cabinet one - the game
 					   fires the autoplunger off it once a ball waits in the shooter lane */
-					else if (!strncmp(c, "launch", 6)) launch = 1;
-					else if (!strncmp(c, "sw", 2)) core_setSw((int)strtol(c + 2, NULL, 10), 1);
+					else if (!strncmp(c, "launch",  6)) launch = 1;
+					else if (!strncmp(c, "sw",      2)) core_setSw((int)strtol(c + 2, NULL, 10), 1);
 					if (frame == at) { printf("[p2k play] %.7s at frame %d\n", c, frame); fflush(stdout); }
 				}
 				p = strchr(p, ','); if (p) p++;
@@ -946,7 +926,7 @@ static SWITCH_UPDATE(p2k) {
 			core_setSw(swStartButton, start);
 			/* OR rather than assign: this runs after the keyboard above and writes the
 			   switch every frame, so assigning would make the Launch Ball key dead in exactly
-			   the configuration that needs it - the ball model on, the player at the keyboard. */
+			   the configuration that needs it - the ball model on, the player at the keyboard */
 			core_setSw(swLaunchButton, launch || p2k_keyLaunch);
 		}
 
@@ -959,8 +939,8 @@ static SWITCH_UPDATE(p2k) {
 			const int lanehold = lh ? (int)strtol(lh, NULL, 10) : 20;
 			const char *hp = getenv("P2K_HANDPLUNGE");
 			const int handplunge = hp ? (int)strtol(hp, NULL, 10) : 0;
-			const int eject  = (coreGlobals.solenoids & (1u << 8))  ? 1 : 0;   /* driver 9  */
-			const int plunge = (coreGlobals.solenoids & (1u << 14)) ? 1 : 0;   /* driver 15 */
+			const int eject  = (coreGlobals.solenoids & (1u << 8))  ? 1 : 0; /* driver 9  */
+			const int plunge = (coreGlobals.solenoids & (1u << 14)) ? 1 : 0; /* driver 15 */
 			int inTrough = 0, busy = 0, lane = 0;
 
 			if (nballs < 0) { nballs = (int)strtol(tr, NULL, 10);
@@ -1016,7 +996,7 @@ static SWITCH_UPDATE(p2k) {
 			   the ball leaves the lane because a person pulled it.
 
 			   P2K_HANDPLUNGE=<frames> models that person: a ball that has sat in the shooter lane
-			   that long leaves on its own. Without it a game on Episode 1 stops at the lane. */
+			   that long leaves on its own. Without it a game on Episode 1 stops at the lane */
 			if (handplunge)
 				for (i = 0; i < nballs; i++)
 					if (st[i] == B_LANE && frame - laneSince[i] >= handplunge) {
@@ -1034,17 +1014,17 @@ static SWITCH_UPDATE(p2k) {
 			   The table is the game's own switch numbers (see p2k_names.h): the three jets, both
 			   slingshots, the centre and martian targets, the top lanes, the loops and the ramps.
 			   The outlanes (16, 27) are deliberately absent - draining is the drain timer's job,
-			   so a ball's length in play stays under P2K_DRAIN. */
+			   so a ball's length in play stays under P2K_DRAIN */
 			static const int pfSwitches[] = {
-				63, 64, 65,          /* left, right, bottom jet   */
-				61, 62,              /* slingshots                */
-				36, 35, 34, 33,      /* centre targets 1..4       */
-				73, 72, 71,          /* martian targets 1..3      */
-				85, 86, 87,          /* martian targets 7..5      */
-				77, 76,              /* left and right top lane   */
-				78, 25, 68, 67,      /* left and right loops      */
-				11, 28, 52, 12,      /* ramp entrances and exits  */
-				74                   /* centre loop rollover      */
+				63, 64, 65,     /* left, right, bottom jet   */
+				61, 62,         /* slingshots                */
+				36, 35, 34, 33, /* centre targets 1..4       */
+				73, 72, 71,     /* martian targets 1..3      */
+				85, 86, 87,     /* martian targets 7..5      */
+				77, 76,         /* left and right top lane   */
+				78, 25, 68, 67, /* left and right loops      */
+				11, 28, 52, 12, /* ramp entrances and exits  */
+				74              /* centre loop rollover      */
 			};
 			static int pfIdx = 0, pfSw = 0, pfUntil = 0, pfNext = 0;
 			if (getenv("P2K_PLAYFIELD")) {
@@ -1104,7 +1084,7 @@ static SWITCH_UPDATE(p2k) {
 #endif /* P2K_DEBUG */
 }
 
-/* The complete ROM set
+/* The ROM sets
 /
 /  Three things are declared here. The sound board's is one unified 0x600000-word address space
 /  with the flash at word 0, U109 at 0x200000 and U110 at 0x400000; DCS_P2K_SNDREGION is
@@ -1122,10 +1102,11 @@ static SWITCH_UPDATE(p2k) {
 /  And the update flash: 8 MB holding bootdata, the image, the game and its symbol table, laid
 /  out at the offsets the boot ROM looks for them at. This is very nearly the only part that
 /  differs between versions, which is why a clone's zip needs nothing but its own four update
-/  files - except for rfm_191/rfm_210 and swep1_210, which bring a sound flash of their own as well.
+/  files - except for some RFM and SWEP1 sets, which bring a sound flash of their own as well.
 /
-/  File names and hashes from official releases as in the Encore set (https://github.com/ThomazPom/Encore-Pinball2000),
+/  Basic file names and hashes from official releases as in the MAME & Encore sets (https://github.com/ThomazPom/Encore-Pinball2000),
 /  which is what these were computed against. Both games' sample chips are good dumps.
+/  More sets were added afterwards.
 /
 /  Beware a different, bad rfm_u109/rfm_u110 pair is in circulation, CRC32 A20B2ABB/095ABEC9: it
 /  fails the board's own ROM checksum (sound command 0x001b wants 0x08f8/0x54ac and gets 0x50a8) */
@@ -1133,8 +1114,9 @@ static SWITCH_UPDATE(p2k) {
 /* Everything that does not change between versions of RFM: the DCS sound set and the four
    MediaGX/Prism banks. The sound flash is a parameter because it is the one part of this that a
    version can bring its own of - see P2K_COMMON_RFM below and the _sf.rom note above. It is loaded
-   twice on purpose, once as the sound CPU's region and once into the DCS address space */
-/* Bank 0 is the only place the two Prism card revisions differ. r2 is a factory revision, not a
+   twice on purpose, once as the sound CPU's region and once into the DCS address space.
+
+   Bank 0 is the only place the two Prism card revisions differ. r2 is a factory revision, not a
    game version: its bootstrap loader is V3.4 dated Apr 1 1999 where the r1 pair has V3.2 dated
    Jan 26 1999, and the fallback game copy it carries is 0.80 against the r1 pair's 0.1. Banks
    1-3 and the sound board are shared */
@@ -1202,7 +1184,7 @@ static SWITCH_UPDATE(p2k) {
 		ROM_LOAD("pin2000_" #game "_" #ver "_game.rom",     0x008000+(imlen),         gmlen,    gmhash) \
 		ROM_LOAD("pin2000_" #game "_" #ver "_symbols.rom",  0x008000+(imlen)+(gmlen), sylen,    syhash)
 
-/* Revenge From Mars from 1.80 on, and Episode I's 2.x, are not Midway's but the community's
+/* Revenge From Mars from 1.80 on, and Episode I's 1.6x onwards, are not Midway's but the community's/aftermarkets
    continuation - shipped as the same PKSFX update .exes with the same four files inside, so
    nothing but their hashes is new here. Those packages carry a fifth, pin2000_<game>_<ver>_
    pubboot.rom, 32 KiB and identical in all twelve that have it, which is not part of the update
@@ -1210,20 +1192,20 @@ static SWITCH_UPDATE(p2k) {
 
    The sixth, _sf.rom, does matter: 1 MiB in every package, and it is the DCS sound board's flash.
    17 of the 20 are byte for byte the rfm_28f800.rom / swe1_28f800.rom above, which is what lets
-   P2K_COMMON_* carry one copy for nearly every version. Three are not, and that is why the sound
+   P2K_COMMON_* carry one copy for nearly every version. Some are not, and that is why the sound
    flash is a macro parameter rather than baked in:
 
-       rfm_191, rfm_210   pin2000_50070_0191_sf.rom  CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd)
-       swep1_210          pin2000_50069_0210_sf.rom  CRC(f70cb335) SHA1(ca92287d7dd0b326b8ae20ba5e204074369fa271)
+       rfm    pin2000_50070_0191_sf.rom  CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd)
+       swep1  pin2000_50069_0210_sf.rom  CRC(f70cb335) SHA1(ca92287d7dd0b326b8ae20ba5e204074369fa271)
 
-   Three packages, two images: 1.91 is where the RFM one comes from ("added some new sounds") and
-   2.10 ships that exact file again as pin2000_50070_0210_sf.rom.
+   Multiple packages, two images: 1.91 is where the RFM one comes from ("added some new sounds") and
+   some 2.x ship that exact file again as pin2000_50070_0210_sf.rom.
 
    Both are real flashes rather than padding - same header as the stock pair, each using more of
    the part than it does, to 0xff570 and 0x817fc against 0xfe996 and 0x54ab2 - which is what added
    speech or effects needs. An update does write this to the sound board, so the copy a package
    carries is the one that version runs with, which is why those three sets take theirs from the
-   package rather than the stock chip. */
+   package rather than the stock chip */
 ROM_START(rfm_260)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0260, CRC(5442a347) SHA1(104657c96c73dd7597982c63b0bf7151ae2274e2),
@@ -1478,11 +1460,11 @@ ROM_END
 
 /* PinMAME's core wants a game description before it will build the machine. Pinball 2000 has
    no alphanumeric or dot matrix display - its video comes from the MediaGX frame buffer - so
-   the layout is empty for now. */
+   the layout is empty for now */
 static PINMAME_VIDEO_UPDATE(p2k_video);
 /* 640x240, the machine's own screen. Declaring it as CORE_VIDEO is what tells the core there is a
    display at all: without it locals.hasDmdOrVideo stays clear and libpinmame invents a 128x32 DMD
-   in its place, so a frontend would see a fake dot matrix and never the real picture. */
+   in its place, so a frontend would see a fake dot matrix and never the real picture */
 static core_tLCDLayout p2k_disp[] = {
   {0, 0, 240 * P2K_LINE_DOUBLE, 640, CORE_VIDEO, (genf *)p2k_video, NULL}, {0}
 };
@@ -1491,8 +1473,9 @@ static core_tLCDLayout p2k_disp[] = {
    columns are declared on top of the standard ones. The common switches are the ones the core and
    the remote debugger ask for by name; their numbers come from the game's own switch table
    (see src/p2k/README.md): start 13, plumb tilt 113, slam tilt 111, coin door 112. This machine
-   reports no shooter lane switch of its own, so that one stays unset. */
-/* The flippers are driven by the game, not faked by the core.
+   reports no shooter lane switch of its own, so that one stays unset.
+
+/  The flippers are driven by the game, not faked by the core.
 /
 /  Without FLIP_SOL the core treats the machine as one whose flippers are not CPU controlled and
 /  does this, once a frame (core.c, "fake solenoids if not CPU controlled"):
@@ -1510,8 +1493,8 @@ static core_tLCDLayout p2k_disp[] = {
 /
 /      Treiber 33 Right Flipper Power   -> solenoids2 bit 0 = sLRFlipPow (45)
 /      Treiber 34 Right Flipper Hold    -> solenoids2 bit 1 = sLRFlip    (46)
-/      Treiber 35 Left Flipper Power    -> solenoids2 bit 2 = sLLFlipPow (47)
-/      Treiber 36 Left Flipper Hold     -> solenoids2 bit 3 = sLLFlip    (48)
+/      Treiber 35 Left  Flipper Power   -> solenoids2 bit 2 = sLLFlipPow (47)
+/      Treiber 36 Left  Flipper Hold    -> solenoids2 bit 3 = sLLFlip    (48)
 /
 /  FLIP_SOL(x) also sets FLIP_EOS(x), and that part is deliberately masked off. EOS would put two
 /  synthesised end-of-stroke switches into the flipper column at bits 0x01 and 0x04, and this
@@ -1522,7 +1505,7 @@ static core_tLCDLayout p2k_disp[] = {
 /  its table names 105 and 106 Right and Left Flipper EOS, in every version from 1.60 on. They are
 /  in the coin door column, though, nowhere near the two bits the core would synthesise into, so
 /  masking is still right - it is a matter of not writing over slam and plumb tilt, and nothing to
-/  do with whether the board reports EOS. */
+/  do with whether the board reports EOS */
 #define P2K_FLIPPERS (FLIP_SW(FLIP_L) | (FLIP_SOL(FLIP_L) & ~FLIP_EOS(FLIP_L)))
 
 /* Drivers 37-48 as custom solenoids 51-62.

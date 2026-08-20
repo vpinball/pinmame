@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME P2K subsystem - the Pinball 2000 machine.
+// PinMAME P2K subsystem - the Pinball 2000 machine
 //
 // Ported from MAME's src/mame/drivers/pinball2k.cpp (skeleton by R. Belmont based on Ville
 // Linde's mediagx.c, extended by E. van Son; BSD-3-Clause). The handler logic follows that
@@ -50,7 +50,7 @@ public:
 	// The three things worth keeping across runs, in MAME's terms: "nvram" is the CMOS the game
 	// stores its settings, audits and error log in, "nvram2" the PLX EEPROM, and "nvram_updates"
 	// the 8 MB update flash. Handed out as raw blobs so src/wpc/p2k.c can put them through
-	// PinMAME's own NVRAM handler without knowing anything about the machine.
+	// PinMAME's own NVRAM handler without knowing anything about the machine
 	enum nvram_block { NVRAM_CMOS = 0, NVRAM_EEPROM, NVRAM_UPDATES, NVRAM_RTC };
 	u8 *nvram_block_ptr(nvram_block which, size_t *size);
 
@@ -63,12 +63,12 @@ public:
 	bool frame_rgb(u32* const __restrict dest, unsigned capacity, unsigned &width, unsigned &height, const bool fast_15bpp_path, bool& fast_15bpp_path_success) const; // re-evaluate the CPU's IRQ0 line (PIC request AND clkint gate)
 
 	// bus access, called from the CPU's address spaces. The pure-memory ranges are also handed
-	// to the space directly, so most accesses never reach mem_r/mem_w at all.
+	// to the space directly, so most accesses never reach mem_r/mem_w at all
 	void install_fast_windows();
 
 	// A direct pointer to main RAM, or null when the address is not plain RAM. Same mapping as
 	// mem_r's two RAM ranges; for callers that run per instruction and cannot afford the decode.
-	// The low range stops one byte short so a two-byte peek stays inside it.
+	// The low range stops one byte short so a two-byte peek stays inside it
 	const u8 *ram_peek(u32 addr) const
 	{
 		if (addr < 0x0009ffff)                                  return &m_main_ram[addr];
@@ -80,9 +80,9 @@ public:
 	u32 io_r(offs_t addr, u32 mem_mask);
 	void io_w(offs_t addr, u32 data, u32 mem_mask);
 	u8 port_r(offs_t port);
-	u8 port_read(offs_t port);   // the decode itself; port_r wraps it for the I/O watch
+	u8 port_read(offs_t port); // the decode itself; port_r wraps it for the I/O watch
 	u8 lpt_r(offs_t offset);
-	u8 pdb_reg_r() const;        // the register switch alone, so lpt_r can log what it answered
+	u8 pdb_reg_r() const;      // the register switch alone, so lpt_r can log what it answered
 	void lpt_w(offs_t offset, u8 data);
 	// the pinball I/O, seen from PinMAME's side
 	void push_switches(const u8 *matrix, unsigned count);
@@ -90,11 +90,11 @@ public:
 	void port_w(offs_t port, u8 data);
 
 	// The boot code logs over COM1. A minimal 16550-compatible console stands in for the real
-	// UART during bring-up: enough to accept characters and report the transmitter as idle.
+	// UART during bring-up: enough to accept characters and report the transmitter as idle
 	const std::string &console_log() const { return m_console; }
 
 	// diagnostics
-	u64 unmapped_reads() const { return m_unmapped_r; }
+	u64 unmapped_reads()  const { return m_unmapped_r; }
 	u64 unmapped_writes() const { return m_unmapped_w; }
 	u32 cpu_pc();
 	void set_trace(bool on) { m_trace = on; }
@@ -216,7 +216,7 @@ private:
 	std::unique_ptr<address_space> m_program;
 	std::unique_ptr<address_space> m_io;
 
-	u32 m_cpu_clock = 20000000;
+	u32 m_cpu_clock = 233000000/3;
 	u64 m_unmapped_r = 0;
 	u64 m_unmapped_w = 0;
 	bool m_trace = false;
@@ -243,7 +243,7 @@ private:
 	void disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask);
 	u32 memory_ctrl_r(offs_t offset) const;
 	void memory_ctrl_w(offs_t offset, u32 data, u32 mem_mask);
-	u32 mediagx_pci_r(int function, int reg, u32 mem_mask);
+	u32 mediagx_pci_r(int function, int reg, u32 mem_mask) const;
 	void mediagx_pci_w(int function, int reg, u32 data, u32 mem_mask);
 	u32 cx5520_pci_r(int function, int reg, u32 mem_mask) const;
 	void cx5520_pci_w(int function, int reg, u32 data, u32 mem_mask);

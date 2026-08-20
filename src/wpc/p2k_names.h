@@ -1,6 +1,9 @@
 /* The games' own device tables, read out of their game.roms and kept here by hand. Tables only change when a new
    version turns up with a device the old ones did not have.
 
+   Note to table authors: If just interested in the switch/coil/lamp mappings, skip this wall of text/comments here and go to the tables directly!
+
+
    Not all from one version, and the reason is worth knowing. Revenge From Mars is read out of 2.60:
    against the official 1.60 that changes five entries, four of them the expansion switches 53-56
    which 1.60 has no name for, so taking the newest costs nothing and gains those.

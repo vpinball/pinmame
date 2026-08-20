@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME P2K subsystem - machine assembly and run loop.
+// PinMAME P2K subsystem - machine assembly and run loop
 //
 // MAME builds a machine from a machine_config and lets its scheduler drive everything. Here the
 // machine is assembled explicitly and driven by this small runner: the CPU executes a slice of
