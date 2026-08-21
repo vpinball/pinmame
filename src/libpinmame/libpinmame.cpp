@@ -2709,6 +2709,26 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
          return false;
       };
 
+   // Pinball Memory Maps write their boolean flags as JSON booleans -- "invert": true -- not as
+   // quoted strings. Reading them with is_string() therefore never matches and the flag is silently
+   // ignored. Both spellings are accepted here so the flag applies either way.
+   const auto jsonFlagIsSet = [](const json& node) -> bool
+      {
+         if (node.is_boolean())
+            return node.get<bool>();
+         if (node.is_string())
+            return node.get_ref<const std::string&>() == "true";
+         return false;
+      };
+   const auto jsonFlagIsClear = [](const json& node) -> bool
+      {
+         if (node.is_boolean())
+            return !node.get<bool>();
+         if (node.is_string())
+            return node.get_ref<const std::string&>() == "false";
+         return false;
+      };
+
    struct MemRegion { unsigned int start; unsigned int end; int nibble; };
    std::vector<MemRegion> memRegions;
    bool isLittleEndianPlatform = false;
@@ -2745,7 +2765,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
    json memMapDef = json::parse(gameString);
 
    std::function<void(const json&, const std::string&, std::map<std::string, json>)> traverse_and_collect;
-   traverse_and_collect = [&traverse_and_collect, &parseAddress, &memRegions, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
+   traverse_and_collect = [&traverse_and_collect, &parseAddress, &jsonFlagIsSet, &jsonFlagIsClear, &memRegions, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
       if (!node.is_object())
          return;
 
@@ -2856,7 +2876,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                   break;
                }
             }
-            if (fields.contains("packed") && fields["packed"].is_string() && fields["packed"].get<std::string>() == "false")
+            if (fields.contains("packed") && jsonFlagIsClear(fields["packed"]))
                nibble = 1;
             else if (fields.contains("nibble") && fields["nibble"].is_string())
             {
@@ -2868,7 +2888,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                else if (nibbleLiteral == "high")
                   nibble = 2;
             }
-            const bool isReversed = fields.contains("invert") && fields["invert"].is_string() && fields["invert"].get<std::string>() == "true";
+            const bool isReversed = fields.contains("invert") && jsonFlagIsSet(fields["invert"]);
             bool isLittleEndian = isLittleEndianPlatform;
             if (fields.contains("endian") && fields["endian"].is_string())
             {
