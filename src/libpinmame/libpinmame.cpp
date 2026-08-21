@@ -2726,7 +2726,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                continue;
             if (regionDef["nibble"].get<std::string>() == "low")
                nibble = 1;
-            else if (regionDef["nibble"].get<std::string>() == "hight")
+            else if (regionDef["nibble"].get<std::string>() == "high")
                nibble = 2;
             else
                continue;
