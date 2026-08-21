@@ -88,7 +88,7 @@ void remote_debug_memref(UINT32 adr, int length, int write);
  * "REG<=VAL", "REG>=VAL" with an M6809 register name and a hex value
  * (NULL or "" for unconditional). ignore skips that many hits before
  * halting. Returns 0 on success, -1 on a bad condition or full table. */
-int remote_debug_breakpoint_add_ex(UINT32 adr, int bank, const char *cond, UINT32 ignore);
+int remote_debug_breakpoint_add_ex(UINT32 adr, int bank, int cpu, const char *cond, UINT32 ignore);
 
 void remote_debug_breakpoint_add(UINT32 adr);
 void remote_debug_breakpoint_add_banked(UINT32 adr, int bank);
@@ -198,8 +198,8 @@ void remote_debug_monitor_sample(void);
 /* ------------------------------------------------------------------ */
 
 /* Count how often execution passes a code address. bank -1 matches any
- * bank. Returns 0 on success, -1 on a full table. */
-int remote_debug_instrument_add(UINT32 addr, int bank);
+ * bank, cpu -1 any CPU. Returns 0 on success, -1 on a full table. */
+int remote_debug_instrument_add(UINT32 addr, int bank, int cpu);
 void remote_debug_instrument_clear(void);
 
 /* JSON list of instrumented addresses with hit counts. *buffer malloc()ed. */
@@ -234,8 +234,8 @@ void remote_debug_get_coverage_region(char **buffer, int *len, UINT32 addr, int 
 /* Tracepoints (log a register snapshot and continue, no halt)        */
 /* ------------------------------------------------------------------ */
 
-/* Add a tracepoint at addr (bank -1 = any). Returns 0, -1 if full. */
-int remote_debug_tracepoint_add(UINT32 addr, int bank);
+/* Add a tracepoint at addr (bank/cpu -1 = any). Returns 0, -1 if full. */
+int remote_debug_tracepoint_add(UINT32 addr, int bank, int cpu);
 void remote_debug_tracepoint_clear(void);
 
 /* JSON of tracepoints and their collected register-snapshot log. malloc()ed. */
