@@ -242,9 +242,10 @@ void p2k_state::seed_error_log()
 // Which is why handing it the host year on every start makes the displayed year climb: a fresh
 // machine has 1999 stored and adds 27 to reach 2026, and every start after that adds 27 again -
 // 2053, 2080. Refreshing everything *except* register 9 gives the guest what a ticking
-// battery-backed clock would: the current date and time, and no years to add. The one thing this
-// does not model is a New Year passing while the machine is off, which would want that register
-// set to the number of years crossed
+// battery-backed clock would: the current date and time, and no years to add. A New Year passing
+// while the machine is off does want that register set to the number of years crossed, and
+// rtc_restore() below is what puts it there, off the saved stamp.
+//
 // The clock as PinMAME saves it: the 64 registers, then the host time_t they were taken at. The
 // stamp is the whole point - the emulated chip stops when the machine does, where the real one
 // keeps running on its battery, so the only way to know how long it was off is to ask the host
@@ -265,17 +266,25 @@ void p2k_state::rtc_restore()
 
 	u64 saved = 0;
 	memcpy(&saved, m_rtc_nv + 0x40, sizeof saved);
-	if (!saved) return;                        // saved by a build that did not stamp it
 
 	// Calendar years crossed, not elapsed years: a machine switched off on 31 December and started
-	// the next morning slept through one New Year, and that is the one the firmware needs to add
+	// the next morning slept through one New Year, and that is the one the firmware needs to add.
+	// Skipped for a block saved by a build that did not stamp it, and for a host clock that has
+	// moved backwards since - neither has any number of years to offer
 	const time_t then_t = time_t(saved), now_t = ::time(nullptr);
-	if (now_t <= then_t) return;               // clock moved backwards; nothing to add
-	struct tm a = *localtime(&then_t), b = *localtime(&now_t);
-	int years = b.tm_year - a.tm_year;
-	if (years < 0) years = 0;
-	if (years > 99) years = 99;                // a register, not a span to be trusted blindly
-	m_rtc->p2k_data()[9] = u8(m_rtc_nv[9] + years);
+	if (saved && now_t > then_t)
+	{
+		struct tm a = *localtime(&then_t), b = *localtime(&now_t);
+		int years = b.tm_year - a.tm_year;
+		if (years <  0) years = 0;
+		if (years > 99) years = 99; // a register, not a span to be trusted blindly
+		m_rtc->p2k_data()[9] = u8(m_rtc_nv[9] + years);
+	}
+
+	// The register file went in behind the device's back, so the timers and the interrupt line are
+	// still set up for whatever it last saw written rather than for the divider and enables just
+	// restored. The device does this much for itself when it loads the same bytes in nvram_read()
+	m_rtc->p2k_reload();
 }
 void p2k_state::clock_from_host(bool keep_year)
 {
@@ -283,6 +292,16 @@ void p2k_state::clock_from_host(bool keep_year)
 	const uint8_t year = m_rtc->p2k_data()[9];
 	m_rtc->p2k_nvram_default();
 	if (keep_year) m_rtc->p2k_data()[9] = year;
+
+	// Register A is the divider and nvram_default() zeroes it with the rest, leaving DV2:DV0 = 000 -
+	// the divider chain stopped on a real chip, and in this model a seconds update every 128 seconds,
+	// so the clock starts right and then stands still. The firmware never writes this register: on
+	// the real board it is battery-backed and was set once, so zeroed is a state no machine is in.
+	// Seed what a live chip holds - DV 010, the 32.768 kHz base, and RS 0110, the usual PC periodic
+	// rate, which only raises PF unless the guest sets PIE - through the port, that being what
+	// re-arms the timers; poking p2k_data() would not, update_timer() having already run
+	m_rtc->write(0, 0x0a);
+	m_rtc->write(1, 0x26);
 }
 
 p2k_state::~p2k_state()
@@ -559,8 +578,11 @@ void p2k_state::build_machine(u32 cpu_clock)
 	// slowdown to go with the 20 MHz CPU. The firmware programs channel 0 as a rate generator
 	// with divisor 298, so that was a tick every ~6400 CPU cycles.
 	//
-	// This is also the machine's clock: the RTC is only read at boot, and from then on one_second_proc
-	// counts these ticks and bumps the date and time it keeps in the CMOS. 1193182/298 is 4004 Hz and
+	// This is also the machine's time base: one_second_proc counts these ticks and bumps the date and
+	// time the firmware keeps in its own CMOS. Not the whole of its clock though - it tracks the RTC
+	// while running too, which is how a stopped divider in that chip showed up as a displayed clock
+	// that never advanced (see PAST_FAILURES.md). What follows is about this tick and holds either
+	// way, however the two divide the work. 1193182/298 is 4004 Hz and
 	// the count it makes a second out of is round, so its second comes up about 0.13% short - measured
 	// at 77563110 cycles against the 77666666 a second really takes, a gain of roughly two minutes a
 	// day. A real board has the same crystal and the same divisor, so it drifts the same way; do not

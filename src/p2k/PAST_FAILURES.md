@@ -134,7 +134,7 @@ exactly this way. To read the image back out of a `.nv`, find the vendor/device 
 **The clock**. The machine shows real time: the date and time come from the host on every start,
 the way a battery-backed RTC that kept running would present them, and run on from there.
 
-Four things had to be right for this, each hidden by the one before. The clock was never seeded at all -
+Five things had to be right for this, each hidden by the one before. The clock was never seeded at all -
 `mc146818` reads `machine().base_datetime()` in `nvram_default()`, which nothing called. The year
 register counts from **1999**. The registers are **BCD** whatever the data mode bit says - seeded in
 binary the 18th read as "12", `0x12`. And register 9 is not a year but a count of **year rollovers
@@ -144,8 +144,20 @@ year every start and the displayed year climbs - 1999+27, then +27 again, 2053, 
 refreshes everything *except* register 9, and the NVRAM block carries the host `time_t` it was saved
 at so the years actually slept through can be counted into it.
 
-While running, the RTC is not consulted again: `one_second_proc` counts PIT ticks and bumps the
-CMOS timestamps, so the machine's clock is the PIT's - see the note by `pit_hz`.
+And the **divider was held in reset**, which is what made a clock that started right stand still.
+`nvram_default()` zeroes all 64 registers, so register A came up with DV2:DV0 `000` - the divider
+chain stopped on a real MC146818, and in MAME's model a seconds update every 128 emulated seconds,
+so a minute of machine time takes two hours. Nothing put it right either: `rtc_restore()` runs
+before `clock_from_host()`, so a saved register A was wiped again every start, and the firmware
+never writes it because on the real board it is battery-backed and was set once. `clock_from_host()`
+seeds `0x26` through the port, the write being what re-arms the timers. A register no firmware has
+to touch is exactly where an emulated chip reset to zeroes sits in a state no real board occupies.
+
+That also corrects what this file used to say - that the RTC is never consulted again while
+running, `one_second_proc` counting PIT ticks into the CMOS timestamps instead. If that were the
+whole story the divider could not have mattered. How the two fit together is open;
+`P2K_IOWATCH=70-71` with `P2K_IOWATCH_AFTER` past boot would show the reads. The drift arithmetic
+by `pit_hz` stands either way, being about what the PIT's own second is worth.
 
 Guest side, for anyone going further: `RTCLocationManagerClass` owns the hardware clock, a
 `TimeStamp` is seven dwords `{year, month, day, day-of-week, hour, minute, second}` in plain
