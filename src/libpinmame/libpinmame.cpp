@@ -2880,11 +2880,23 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
             if (fields.contains("mask"))
                parseAddress(fields["mask"], byteMask);
             int nibble = 0;
+            // A field that names its own mask has been authored against the byte as it stands, so a
+            // nibble declared by the platform's memory_layout must not silently reinterpret it. Both
+            // are byte-level rules and applying them together destroys the field: centaur reads its
+            // game-over lamp as mask 0x04 at 0x20C, which the bally-35-8K layout covers with a
+            // high-nibble NVRAM region, and 0x04 selects a bit the high nibble does not contain --
+            // masking then shifting yields 0 for every byte the machine can hold.
+            //
+            // A nibble on the field itself still wins below: that is the author saying so directly,
+            // and the same map does exactly that for current_ball and player_count, which share a
+            // byte at 0x0B.
+            const bool fieldNamesItsOwnMask = fields.contains("mask");
             for (const auto& region : memRegions)
             {
                if (region.start <= offsets[0] && offsets[0] <= region.end)
                {
-                  nibble = region.nibble;
+                  if (!fieldNamesItsOwnMask)
+                     nibble = region.nibble;
                   break;
                }
             }
