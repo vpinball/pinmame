@@ -2592,6 +2592,18 @@ SOURCE=.\src\wpc\regama.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\rfranco.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\rfranco.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\rfrancogames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\rotation.c
 # End Source File
 # Begin Source File

@@ -33,7 +33,7 @@ Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascina
 Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
 Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
 Seeben/Sirmo, Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
-Sport Matic, Regama, Illinois Pinball.
+Sport Matic, Regama, Recreativos Franco, Illinois Pinball.
 
 *Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.*
 
@@ -107,6 +107,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Juegos Populares* - Petaco (1984), Faeton (1985), America 1492, Aqualand (both 1987)
 - *LTD* - Atlantis, Black Hole, Zephy, Cowboy Eight Ball, Mr. & Mrs. Pec-Men, Al Capone (1980-1983)
 - *Peyper* - Odisea Paris-Dakar (1987)
+- *Recreativos Franco* - Super Star (1986, rev. 1 and rev. 2)
 - *Sonic* - Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
 - *Allied Leisure* - All games from Super Picker (1977) to Star Shooter (1979)
 - *Fascination, Int.* - Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)

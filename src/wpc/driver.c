@@ -1188,6 +1188,12 @@ DRIVERNV(wolfman)       //Wolf Man (1987)
 DRIVERNV(odisea)        //Odisea Paris-Dakar (1987)
 DRIVERNV(lancelot)      //Sir Lancelot (1994)
 
+// --------------------
+// RECREATIVOS FRANCO
+// --------------------
+DRIVERNV(supstarf)      //Super Star (1986)
+DRIVERNV(supstarfa)     //Super Star (1986, set 2 - newer firmware)
+
 // ---------------
 // PINSTAR GAMES
 // ---------------
