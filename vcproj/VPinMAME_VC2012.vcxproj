@@ -1242,6 +1242,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\wpc\playgames.c" />
     <ClCompile Include="..\src\wpc\playsnd.c" />
     <ClCompile Include="..\src\wpc\regama.c" />
+    <ClCompile Include="..\src\wpc\rfranco.c" />
+    <ClCompile Include="..\src\wpc\rfrancogames.c" />
     <ClCompile Include="..\src\wpc\rotation.c" />
     <ClCompile Include="..\src\wpc\rowamet.c" />
     <ClCompile Include="..\src\wpc\s11.c" />
@@ -1582,6 +1584,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="..\src\wpc\peyper.h" />
     <ClInclude Include="..\src\pinmame.h" />
     <ClInclude Include="..\src\wpc\play.h" />
+    <ClInclude Include="..\src\wpc\rfranco.h" />
     <ClInclude Include="..\src\wpc\s11.h" />
     <ClInclude Include="..\src\wpc\s4.h" />
     <ClInclude Include="..\src\wpc\s6.h" />

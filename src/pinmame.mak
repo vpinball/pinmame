@@ -71,6 +71,7 @@ DRVLIBS += $(PINOBJ)/inder.o $(PINOBJ)/inderp.o
 DRVLIBS += $(PINOBJ)/jp.o
 DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
+DRVLIBS += $(PINOBJ)/rfranco.o
 DRVLIBS += $(PINOBJ)/sleic.o
 DRVLIBS += $(PINOBJ)/play.o $(PINOBJ)/playsnd.o
 DRVLIBS += $(PINOBJ)/bowarrow.o $(PINOBJ)/flicker.o $(PINOBJ)/rotation.o
@@ -132,6 +133,7 @@ PINGAMES += $(PINOBJ)/indergames.o
 PINGAMES += $(PINOBJ)/jpgames.o
 PINGAMES += $(PINOBJ)/ltdgames.o
 PINGAMES += $(PINOBJ)/peypergames.o
+PINGAMES += $(PINOBJ)/rfrancogames.o
 PINGAMES += $(PINOBJ)/sleicgames.o
 PINGAMES += $(PINOBJ)/playgames.o
 #
