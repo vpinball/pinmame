@@ -2764,8 +2764,20 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
    std::string gameString(game, game + gameSize);
    json memMapDef = json::parse(gameString);
 
+   // The 'ch' encoding decodes through the map's char_map when it declares one: per the format
+   // spec, "if the map has char_map metadata, all bytes (including 0x00) are indexes into that
+   // string". It lives in _metadata, which traverse_and_collect walks as a group rather than
+   // inheriting as a field, so it is read here and captured.
+   std::string charMap;
+   if (memMapDef.is_object() && memMapDef.contains("_metadata") && memMapDef["_metadata"].is_object())
+   {
+      const json& metadata = memMapDef["_metadata"];
+      if (metadata.contains("char_map") && metadata["char_map"].is_string())
+         charMap = metadata["char_map"].get<std::string>();
+   }
+
    std::function<void(const json&, const std::string&, std::map<std::string, json>)> traverse_and_collect;
-   traverse_and_collect = [&traverse_and_collect, &parseAddress, &jsonFlagIsSet, &jsonFlagIsClear, &memRegions, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
+   traverse_and_collect = [&traverse_and_collect, &parseAddress, &jsonFlagIsSet, &jsonFlagIsClear, &memRegions, &charMap, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
       if (!node.is_object())
          return;
 
@@ -2991,22 +3003,52 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
          }
          else if (encoding == "ch")
          {
+            // The cheat sheet in the map format spec marks mask as applying to ch, and the encoding
+            // notes describe char_map and null for it. None of the three were implemented, so a map
+            // that relies on them decoded to raw bytes: initials came back lowercase where a mask of
+            // 0x5F was meant to upcase them, and came back as arbitrary bytes on the maps that index
+            // a char_map rather than ASCII.
+            unsigned int byteMask = 0xFF;
+            if (fields.contains("mask"))
+               parseAddress(fields["mask"], byteMask);
+            std::string nullMode;
+            if (fields.contains("null") && fields["null"].is_string())
+               nullMode = fields["null"].get<std::string>();
+
             type = CTLPI_STATE_FORMAT_STRING;
-            getter = [offsets](unsigned int index, void* pResult)
+            getter = [offsets, byteMask, nullMode, charMap](unsigned int index, void* pResult)
                {
                   const unsigned int baseOffset = offsets[0];
                   const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
                   if (ptr == nullptr)
                      return;
 
-                  assert(offsets.size() < 255);
+                  assert(offsets.size() < sizeof(msgLocals.memMapStringBuffer));
                   char* pStr = msgLocals.memMapStringBuffer;
                   for (auto offset : offsets)
                   {
-                     *pStr = *(ptr + (offset - baseOffset));
+                     const uint8_t byte = (*(ptr + (offset - baseOffset))) & byteMask;
+
+                     if (byte == 0)
+                     {
+                        if (nullMode == "terminate")
+                           break;
+                        if (nullMode == "ignore")
+                           continue;
+                     }
+
+                     if (!charMap.empty())
+                        *pStr = byte < charMap.length() ? charMap[byte] : '?';
+                     else
+                        *pStr = (byte >= 32 && byte <= 126) ? (char)byte : '?';
                      pStr++;
                   }
                   *pStr = 0;
+
+                  // These fields are fixed width and commonly space padded.
+                  while (pStr > msgLocals.memMapStringBuffer && *(pStr - 1) == ' ')
+                     *--pStr = 0;
+
                   *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
                };
          }
