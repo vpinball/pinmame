@@ -829,10 +829,18 @@ static WRITE_HANDLER(giaux_w) {
       core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, selocals.auxdata, 0x07); // Solenoids 33..35
    }
 
-   // Board 520-5192-00: Solenoid Expander board (3 outputs, not latched)
-   if (core_gameData->hw.display & SE_BOARDID_520_5192_00) {
-      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | ((data & 0x38) << 1);
-      core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, (data & 0x38) >> 3, 0x07); // Solenoids 33..35
+   // Board 520-5192-00 wired to U201/J2 latch (low 3 bits)
+   if (core_gameData->hw.display & SE_BOARDID_520_5192_00_J2) {
+       const UINT8 outputs = selocals.auxdata & 0x07;
+       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (outputs << 4);
+       core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, outputs, 0x07); // Solenoids 33..35
+   }
+
+   // Board 520-5192-00 wired to U206/J3 latch (bits 3-5)
+   if (core_gameData->hw.display & SE_BOARDID_520_5192_00_J3) {
+       const UINT8 outputs = (data & 0x38) >> 3;
+       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (outputs << 4);
+       core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, outputs, 0x07); // Solenoids 33..35
    }
 
    // Board 520-5152-00 (ID4) or 520-5078-00 (Tommy) servo controller board

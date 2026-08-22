@@ -102,18 +102,19 @@ extern PINMAME_VIDEO_UPDATE(seminidmd_update);
 #define de_mSES3 se3aS
 
 /* Hardware variants */
-#define SE_BOARDID_520_5068_01 0x0001 // Auxiliary driver board with 3 latched solenoid outputs
-#define SE_BOARDID_520_5078_00 0x0002 // Tommy blinder driver but also used as a replacement part for Independence Day servo controller board
-#define SE_BOARDID_520_5130_06 0x0004 // Apollo 13 extra 7 segment display + modulated magnet driver
-#define SE_BOARDID_520_5143_00 0x0008 // GoldenEye & Twister double magnets processor
-#define SE_BOARDID_520_5152_00 0x0010 // Independence Day servo controller board
-#define SE_BOARDID_520_5192_00 0x0020 // Auxiliary driver board for 3 solenoid outputs (not latched)
-#define SE_BOARDID_520_5197_00 0x0040 // High Roller Casino & Monopoly Mini DMD
-#define SE_BOARDID_520_5219_00 0x0080 // The Simpson's Pinball Party Mini DMD
-#define SE_BOARDID_520_5221_00 0x0100 // RollerCoaster Tycoon Mini DMD
-#define SE_BOARDID_520_5236_00 0x0200 // Ripley's Believe It or Not Mini DMD
-#define SE_BOARDID_520_5242_00 0x0400 // Lord of The Rings 19 LED Board
-#define SE_BOARDID_TITANIC     0x0800 // Titanic Redemption game extension board
+#define SE_BOARDID_520_5068_01 0x0001 	 // Auxiliary driver board with 3 latched solenoid outputs
+#define SE_BOARDID_520_5078_00 0x0002 	 // Tommy blinder driver but also used as a replacement part for Independence Day servo controller board
+#define SE_BOARDID_520_5130_06 0x0004 	 // Apollo 13 extra 7 segment display + modulated magnet driver
+#define SE_BOARDID_520_5143_00 0x0008 	 // GoldenEye & Twister double magnets processor
+#define SE_BOARDID_520_5152_00 0x0010 	 // Independence Day servo controller board
+#define SE_BOARDID_520_5192_00_J2 0x0020 // Auxiliary driver board (unlatched), wired to the U201/J2 latch (Sharkey's Shootout, Striker Xtreme, Playboy)
+#define SE_BOARDID_520_5192_00_J3 0x0040 // Auxiliary driver board (unlatched), wired to the U206/J3 latch
+#define SE_BOARDID_520_5197_00 0x0080 	 // High Roller Casino & Monopoly Mini DMD
+#define SE_BOARDID_520_5219_00 0x0100 	 // The Simpson's Pinball Party Mini DMD
+#define SE_BOARDID_520_5221_00 0x0200 	 // RollerCoaster Tycoon Mini DMD
+#define SE_BOARDID_520_5236_00 0x0400 	 // Ripley's Believe It or Not Mini DMD
+#define SE_BOARDID_520_5242_00 0x0800 	 // Lord of The Rings 19 LED Board
+#define SE_BOARDID_TITANIC     0x1000 	 // Titanic Redemption game extension board
 #define SE_LED                 SE_BOARDID_520_5242_00 | SE_BOARDID_520_5068_01
 
 
