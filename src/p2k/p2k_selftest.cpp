@@ -17,7 +17,7 @@
 
 namespace {
 
-u8 g_ram[0x110000];          // 1 MB + the top-of-memory alias
+u8 g_ram[0x110000]; // 1 MB + the top-of-memory alias
 bool g_io_hit = false;
 u8 g_io_val = 0;
 
@@ -26,7 +26,7 @@ pit8253_device *g_pit = nullptr;
 
 offs_t map_addr(offs_t a)
 {
-	if (a >= 0xffff0000) return 0x100000 + (a & 0xffff);   // top-of-memory alias (BIOS)
+	if (a >= 0xffff0000) return 0x100000 + (a & 0xffff); // top-of-memory alias (BIOS)
 	return a & 0xfffff;
 }
 

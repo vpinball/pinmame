@@ -60,7 +60,7 @@ void p2k_pinmame_stop(void) { g_machine.reset(); }
 
 // Persistent blocks: 0 = CMOS, 1 = PLX EEPROM, 2 = the update flash. PinMAME reads its NVRAM file
 // before the machine is built and writes it after the machine is gone, so the driver buffers the
-// bytes and these two move them in and out once it exists.
+// bytes and these two move them in and out once it exists
 void p2k_pinmame_nvram_set(int which, const unsigned char *data, unsigned size)
 {
 	size_t n = 0;
@@ -113,7 +113,7 @@ void p2k_pinmame_set_dips(unsigned char dips)
 // The pinball I/O. PinMAME's core model owns the switch matrix and wants the lamp and coil
 // state back; the driver board in the subsystem is the other end of that. Called from
 // src/wpc/p2k.c once per frame for now - fast enough for lamps, and the point at which a faster
-// sync would go if coils need it.
+// sync would go if coils need it
 void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count)
 {
 	/*if (g_machine)*/ g_machine->push_switches(matrix, count);
@@ -128,7 +128,7 @@ void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT3
 // buffer and its capacity; the return value is 1 on success, 0 if the machine
 // has no sane geometry yet. Pinball 2000 renders mirrored - the cabinet reflects the monitor
 // into the playfield - so this hands back what the hardware holds and leaves flipping to
-// whoever shows it.
+// whoever shows it
 unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height, const unsigned fast_15bpp_path, unsigned *fast_15bpp_path_success)
 {
 	if (!g_machine || !dest || !width || !height) return 0;

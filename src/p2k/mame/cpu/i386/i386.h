@@ -330,7 +330,7 @@ protected:
 	// meant to, and an added member, a reordered one or a change in padding would move them
 	// silently. So assert the shape rather than trust it. Never called - the body of a non-template
 	// member function is still compiled, so the checks run at build time. A member function body is
-	// also a complete-class context, which is what makes offsetof usable on the class here.
+	// also a complete-class context, which is what makes offsetof usable on the class here
 	static void p2k_assert_layout()
 	{
 		constexpr size_t LINE = 64;
@@ -340,45 +340,89 @@ protected:
 
 		// 1. opcode-handler block: m_reg .. m_delayed_interrupt_enable, one line
 		static_assert(offsetof(i386_device, m_reg) % LINE == 0, "opcode block must start on a line");
-		static_assert(offsetof(i386_device, m_delayed_interrupt_enable) + sizeof(uint8_t)
-			- offsetof(i386_device, m_reg) <= LINE, "opcode block must fit in one line");
+		static_assert(offsetof(i386_device, m_delayed_interrupt_enable) + sizeof(uint8_t) - offsetof(i386_device, m_reg) <= LINE, "opcode block must fit in one line");
 
 		// 2. m_sreg: 6 x 20 bytes = 120, so it needs two lines and must start on a boundary or it
 		//    would straddle three. It does NOT fill them: the 8 bytes after it are padding, which
-		//    is what the alignas(64) on the fetch block below rounds away.
+		//    is what the alignas(64) on the fetch block below rounds away
 		static_assert(sizeof(I386_SREG) == 20, "I386_SREG changed size - redo the arithmetic here");
 		static_assert(sizeof(m_sreg) == 120, "m_sreg changed size - redo the arithmetic here");
 		static_assert(offsetof(i386_device, m_sreg) % LINE == 0, "m_sreg must start on a line");
 		static_assert(sizeof(m_sreg) > LINE && sizeof(m_sreg) <= 2 * LINE, "m_sreg must span exactly two lines");
 		// m_program fills m_sreg's 8 spare bytes rather than leaving them as padding, so it shares
-		// a line with the segment descriptors it is always used with.
-		static_assert(offsetof(i386_device, m_program) == offsetof(i386_device, m_sreg) + sizeof(m_sreg),
-			"m_program must sit immediately after m_sreg, in its spare bytes");
-		static_assert(offsetof(i386_device, m_program) / LINE == (offsetof(i386_device, m_sreg) + sizeof(m_sreg) - 1) / LINE,
-			"m_program must share m_sreg's last line");
+		// a line with the segment descriptors it is always used with
+		static_assert(offsetof(i386_device, m_program) == offsetof(i386_device, m_sreg) + sizeof(m_sreg), "m_program must sit immediately after m_sreg, in its spare bytes");
+		static_assert(offsetof(i386_device, m_program) / LINE == (offsetof(i386_device, m_sreg) + sizeof(m_sreg) - 1) / LINE, "m_program must share m_sreg's last line");
 
 		// 3. fetch/decode block: on a boundary, with m_cr[0] as the last 4 (or 12 if on 32bit) bytes of the line and
 		//    m_cr[1..4] the only thing that spills
 		static_assert(offsetof(i386_device, m_eip) % LINE == 0, "fetch block must start on a line");
-		static_assert(offsetof(i386_device, m_cr) - offsetof(i386_device, m_eip) == LINE - (sizeof(uintptr_t) == 8 ? 4 : 12),
-			"m_cr[0] must be the last 4 bytes of the fetch line");
+		static_assert(offsetof(i386_device, m_cr) - offsetof(i386_device, m_eip) == LINE - (sizeof(uintptr_t) == 8 ? 4 : 12), "m_cr[0] must be the last 4 bytes of the fetch line");
 
 		// 4. and they sit back to back: the opcode block is exactly one line, m_sreg the next two
 		//    (its last 8 bytes being padding), so the fetch block's alignas(64) rounds to the very
 		//    next boundary rather than skipping one. That is why the fetch block is declared last
 		//    despite being the hottest - see the note on the opcode block.
-		static_assert(offsetof(i386_device, m_sreg) == offsetof(i386_device, m_reg) + LINE,
-			"m_sreg must follow the opcode block with no padding");
-		static_assert(offsetof(i386_device, m_eip) == offsetof(i386_device, m_sreg) + 2 * LINE,
-			"the fetch block must follow m_sreg with no padding");
+		static_assert(offsetof(i386_device, m_sreg) == offsetof(i386_device, m_reg) + LINE, "m_sreg must follow the opcode block with no padding");
+		static_assert(offsetof(i386_device, m_eip) == offsetof(i386_device, m_sreg) + 2 * LINE, "the fetch block must follow m_sreg with no padding");
+
+		// 5. the per-instruction tail - what execute_run() touches every pass that is in none of the
+		//    blocks above: m_dr[7] for the breakpoint guard, m_irq_state/m_smm/m_smi for the
+		//    inlined i386_check_irq_line(), and the three prefix bytes it clears. They must share
+		//    ONE line, which is why m_dr is up here rather than next to m_tr - its last word ends
+		//    exactly where the read bytes begin, so cold m_dr[0..6] sits before the group.
+		//
+		//    Within the line they are split by access - reads, then cold
+		//    m_performed_intersegment_jump, then writes - which buys two things: adjacent written
+		//    bytes are what the compiler merges into one store, and keeping them out of the reads'
+		//    4-byte granule stops a widened load overlapping a still-buffered store from the
+		//    previous iteration, which would cost a store-forwarding stall
+		constexpr size_t RD_LO = offsetof(i386_device, m_dr) + 7 * sizeof(uint32_t); // m_dr[7]
+		constexpr size_t RD_HI = offsetof(i386_device, m_smi);
+		constexpr size_t WR_LO = offsetof(i386_device, m_xmm_operand_size);
+		constexpr size_t WR_HI = offsetof(i386_device, m_address_prefix);
+		static_assert(RD_HI == RD_LO + sizeof(uint32_t) + 2, "m_dr[7] and the three read bytes must stay adjacent and in this order");
+		static_assert(WR_HI == WR_LO + 2, "the three cleared bytes must stay adjacent, or the stores stop merging");
+		static_assert(WR_LO > RD_HI, "the cleared bytes must come after the read ones");
+		static_assert(RD_HI / 4 != WR_LO / 4, "the read and written bytes must not share a 4-byte granule");
+
+		//    m_cycle_table_pm belongs to the same set - the force-inlined CYCLES() reads it per
+		//    instruction - and being pointer-aligned it lands at the line's last 8 (or 4) bytes,
+		//    filling it exactly. m_cycle_table_rm spills to the next line on purpose: it is the
+		//    real-mode table, and this machine is in protected mode virtually always. Assert
+		//    containment, not the offset - pointer size and alignment differ across targets
+		constexpr size_t PM_LO = offsetof(i386_device, m_cycle_table_pm);
+		static_assert(PM_LO > WR_HI, "m_cycle_table_pm must follow the per-instruction tail");
+		static_assert((PM_LO + sizeof(uint8_t *) - 1) / LINE == RD_LO / LINE, "the whole per-instruction tail must fit in one cache line");
 	}
+
+	// PINMAME: up here so m_dr[7] - read per instruction by the breakpoint guard - ends exactly
+	// where the tail below begins. See check 5 in p2k_assert_layout(), and keep the order
+	uint32_t m_dr[8];       // Debug registers
+
+	// PINMAME: the read half of the tail; with m_dr[7] these are every load the loop makes here
+	uint8_t m_irq_state;
+	bool m_smm;
+	bool m_smi;
+
+	// PINMAME: not-so-hot, and here on purpose: it separates the reads above from the writes below into different
+	// 4-byte granules, and costs nothing - it would be padding for the pointer's alignment anyway
+	uint8_t m_performed_intersegment_jump;
+
+	// PINMAME: the write half - cleared by execute_run() every pass, and adjacent so the stores merge.
+	// NOTE: These were ints (out among the cold members); only ever 0 or 1, and none is in save_item()
+	uint8_t m_xmm_operand_size;
+	uint8_t m_operand_prefix;
+	uint8_t m_address_prefix;
+
+	// PINMAME: read per instruction by the force-inlined CYCLES(), so it ends the tail's line.
+	// The rm table is real-mode only and deliberately left to spill - see check 5 above
+	uint8_t *m_cycle_table_pm;
+	uint8_t *m_cycle_table_rm;
 
 	uint32_t m_eflags;
 	uint32_t m_eflags_mask;
 
-	uint8_t m_performed_intersegment_jump;
-
-	uint32_t m_dr[8];       // Debug registers // PINMAME m_dr[7] could also be worth it to consider above, but difficult!
 	uint32_t m_tr[8];       // Test registers
 
 	memory_passthrough_handler* m_dr_breakpoints[4];
@@ -396,13 +440,7 @@ protected:
 
 	int m_halted;
 
-	int m_xmm_operand_size;
-	int m_operand_prefix;
-	int m_address_prefix;
 
-
-
-	uint8_t m_irq_state;
 	address_space *m_io;
 	memory_access<32, 1, 0, ENDIANNESS_LITTLE>::cache macache16;
 
@@ -465,11 +503,6 @@ protected:
 
 	bool m_lock_table[2][256];
 
-	uint8_t *m_cycle_table_pm;
-	uint8_t *m_cycle_table_rm;
-
-	bool m_smm;
-	bool m_smi;
 	bool m_smi_latched;
 	bool m_nmi_masked;
 	bool m_nmi_latched;
@@ -597,7 +630,24 @@ protected:
 	void i386_trap_with_error(int irq, int irq_gate, int trap_level, uint32_t error);
 	void i286_task_switch(uint16_t selector, uint8_t nested);
 	void i386_task_switch(uint16_t selector, uint8_t nested);
-	void i386_check_irq_line();
+	// PINMAME: force inline as only used once within the hot path, plus minor tweak
+	ATTR_FORCE_INLINE void i386_check_irq_line()
+	{
+		// PINMAME: m_smi first, not !m_smm. m_smi is the rare-TRUE one and so the gate that actually short-circuits -
+		// !m_smm is true almost always, which made the original test load and test both bytes every instruction
+		if(m_smi && !m_smm)
+		{
+			enter_smm();
+			return;
+		}
+
+		/* Check if the interrupts are enabled */
+		if ( (m_irq_state) && m_IF )
+		{
+			m_cycles -= 2;
+			i386_trap(standard_irq_callback(0), 1, 0);
+		}
+	}
 	void i386_protected_mode_jump(uint16_t seg, uint32_t off, int indirect, int operand32);
 	void i386_protected_mode_call(uint16_t seg, uint32_t off, int indirect, int operand32);
 	void i386_protected_mode_retf(uint8_t count, uint8_t operand32);
@@ -606,6 +656,26 @@ protected:
 	void report_invalid_opcode();
 	void report_invalid_modrm(const char* opcode, uint8_t modrm);
 	void i386_decode_opcode();
+	ATTR_FORCE_INLINE void i386_decode_opcode_i() // PINMAME: 1:1 cloned from non-inline version, PLUS i386_jmp_rel8 inlined!
+	{
+		m_opcode = FETCH();
+
+		if (m_opcode == 0xEB) //!! PINMAME shortcut for i386_jmp_rel8, as this is the most often called opcode
+		{
+			int8_t disp = FETCH();
+			NEAR_BRANCH(disp);
+			CYCLES(171/*CYCLES_JMP_SHORT*/);
+			return;
+		}
+
+		if(m_lock && !m_lock_table[0][m_opcode])
+			return i386_invalid();
+
+		if( m_operand_size )
+			(this->*m_opcode_table1_32[m_opcode])();
+		else
+			(this->*m_opcode_table1_16[m_opcode])();
+	}
 	void i386_decode_two_byte();
 	void i386_decode_three_byte38();
 	void i386_decode_three_byte3a();

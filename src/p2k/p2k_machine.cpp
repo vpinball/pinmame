@@ -93,7 +93,7 @@ void p2k_machine::run_cycles(cpu_device &cpu, u32 cpu_hz, u64 cycles)
 		}
 
 		int used = cpu.run(int(slice));
-		if (used <= 0) used = int(slice);       // a halted core still consumes its slice
+		if (used <= 0) used = int(slice); // a halted core still consumes its slice
 		remaining -= (u64(used) > remaining) ? remaining : u64(used);
 
 		m_machine.scheduler().advance_to(now + attotime::from_ticks(used, cpu_hz));

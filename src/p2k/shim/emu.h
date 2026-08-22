@@ -131,7 +131,7 @@ public:
 
 // Backing memory is supplied by the host (the P2K machine glue). Like MAME's 32-bit little
 // endian bus, every access is presented dword-aligned with a byte-lane mask; the byte and word
-// entry points below do the lane shifting, so a handler never sees an unaligned address.
+// entry points below do the lane shifting, so a handler never sees an unaligned address
 struct p2k_bus_callbacks
 {
 	u32 (*read32)(void *ctx, offs_t addr, u32 mask);
@@ -288,7 +288,7 @@ private:
 	static constexpr unsigned MAX_FAST = 4;
 
 	// The guest is little endian and so is every host this is built for; the byte-wise form is
-	// there so a big endian host still produces the same value as the machine's own read_le().
+	// there so a big endian host still produces the same value as the machine's own read_le()
 	static ATTR_FORCE_INLINE u32 load32(const u8 * const p)
 	{
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
@@ -358,8 +358,8 @@ private:
 
 	struct win
 	{
-		u32 base;    // first address, always dword-aligned (add_fast_window trims it)
-		u32 span;    // usable size, always a whole number of dwords: an access fits iff off < span
+		u32 base; // first address, always dword-aligned (add_fast_window trims it)
+		u32 span; // usable size, always a whole number of dwords: an access fits iff off < span
 		// The backing store, pre-biased: uintptr_t(mem) - base. A hit is then `adj + a`, which is
 		// a single x86 addressing mode, where storing `mem` would put a sub AND an add on the
 		// load's critical path.
@@ -578,7 +578,7 @@ public:
 	u32 debug_flags = 0;
 	int side_effects_disabled() const { return 0; }
 	void debug_break() {}
-	std::string describe_context() const { return std::string("p2k"); }
+	const std::string& describe_context() const { static const std::string s = std::string("p2k"); return s; }
 	u32 rand() { m_rand_seed = m_rand_seed * 1664525 + 1013904223; return m_rand_seed; }
 	attotime time() const { return m_scheduler.time(); }
 	void base_datetime(struct system_time &systime);
@@ -596,7 +596,7 @@ struct save_prepost_delegate { template <typename... T> save_prepost_delegate(T 
 struct p2k_symtable { template <typename... T> void add(T &&...) {} };
 struct p2k_debug_iface { p2k_symtable &symtable() { static p2k_symtable s; return s; } };
 
-// The device tree. Devices are created through device_type_impl::operator() and owned here.
+// The device tree. Devices are created through device_type_impl::operator() and owned here
 class machine_config final
 {
 public:
@@ -608,7 +608,7 @@ public:
 };
 
 // Input ports come from PinMAME, not from MAME's ioport system. The port definitions in the
-// imported devices are parsed away into empty functions.
+// imported devices are parsed away into empty functions
 class ioport_list;
 using ioport_constructor = void (*)(device_t &owner, ioport_list &portlist, std::string &errorbuf);
 
@@ -665,7 +665,7 @@ public:
 		: m_type(&type), m_owner(owner), m_clock(clock)
 	{
 		m_basetag = tag ? tag : "";
-		m_tag = (owner && *owner->tag()) ? std::string(owner->tag()) + ":" + m_basetag : m_basetag;
+		m_tag = (owner && *owner->tag()) ? std::string(owner->tag()) + ':' + m_basetag : m_basetag;
 	}
 	virtual ~device_t() = default;
 
@@ -773,7 +773,7 @@ protected:
 
 // ---------------------------------------------------------------- nvram / time
 // MAME persists NVRAM through emu_file; here the interface exists so that devices with NVRAM
-// compile and initialise, and the machine glue reads/writes the contents itself.
+// compile and initialise, and the machine glue reads/writes the contents itself
 class emu_file final
 {
 public:
@@ -847,12 +847,12 @@ public:
 };
 
 
-// The device currently being configured; MAME resolves .set(FUNC(cls::method)) against it.
+// The device currently being configured; MAME resolves .set(FUNC(cls::method)) against it
 device_t *p2k_config_owner();
 
 // ---------------------------------------------------------------- devcb
 // MAME's callbacks are configured through .bind()/.set(...) in a machine config and then
-// resolved. Here a callback is just a std::function with a default value.
+// resolved. Here a callback is just a std::function with a default value
 template <typename Ret, typename... Args>
 class devcb_base
 {
@@ -882,7 +882,7 @@ public:
 	{ return m_func ? m_func(args...) : m_default; }
 
 	// MAME's accessors are declared `auto handler() { return m_cb.bind(); }`, so whatever bind()
-	// returns gets copied. It must therefore refer back to the callback, not be one.
+	// returns gets copied. It must therefore refer back to the callback, not be one
 	class binder final
 	{
 	public:
@@ -941,7 +941,7 @@ public:
 	void operator()(Args... args) const { if (m_func) m_func(args...); }
 
 	// MAME's accessors are declared `auto handler() { return m_cb.bind(); }`, so whatever bind()
-	// returns gets copied. It must therefore refer back to the callback, not be one.
+	// returns gets copied. It must therefore refer back to the callback, not be one
 	class binder final
 	{
 	public:
@@ -976,7 +976,7 @@ using devcb_write_line = devcb_base<void, int>;
 using devcb_read_line  = devcb_base<int>;
 
 // Read/write callbacks carry an offset and a mask in MAME, but are frequently called without
-// them. These wrappers add the defaulted arguments the device sources expect.
+// them. These wrappers add the defaulted arguments the device sources expect
 template <typename DataType>
 class devcb_read_data final : public devcb_base<DataType, offs_t>
 {
@@ -1018,7 +1018,7 @@ using devcb_read32  = devcb_read_data<u32>;
 
 // ---------------------------------------------------------------- delegates
 // MAME's device_delegate: a callback bound to a device method, configured with .set(FUNC(...)).
-// Here it is a std::function plus the same set() shapes the device sources use.
+// Here it is a std::function plus the same set() shapes the device sources use
 template <typename Signature> class device_delegate;
 
 template <typename Ret, typename... Args>
@@ -1265,7 +1265,7 @@ private:
 // ---------------------------------------------------------------- state interface
 // A CPU register (or any other exported value) as registered with state_add(). MAME keeps a
 // pointer to the underlying variable; so does this, which is what lets a debugger read and
-// write registers without the CPU core knowing about it.
+// write registers without the CPU core knowing about it
 class device_state_entry final
 {
 public:
@@ -1293,7 +1293,7 @@ public:
 		u64 v = 0;
 		switch (m_size)
 		{
-			case 1: v = *reinterpret_cast<u8 *>(m_ptr); break;
+			case 1: v = *reinterpret_cast<u8  *>(m_ptr); break;
 			case 2: v = *reinterpret_cast<u16 *>(m_ptr); break;
 			case 4: v = *reinterpret_cast<u32 *>(m_ptr); break;
 			case 8: v = *reinterpret_cast<u64 *>(m_ptr); break;
@@ -1307,7 +1307,7 @@ public:
 		v &= m_mask;
 		switch (m_size)
 		{
-			case 1: *reinterpret_cast<u8 *>(m_ptr)  = u8(v);  break;
+			case 1: *reinterpret_cast<u8  *>(m_ptr) = u8(v);  break;
 			case 2: *reinterpret_cast<u16 *>(m_ptr) = u16(v); break;
 			case 4: *reinterpret_cast<u32 *>(m_ptr) = u32(v); break;
 			case 8: *reinterpret_cast<u64 *>(m_ptr) = v;      break;
@@ -1521,7 +1521,7 @@ inline device_t *device_t::subdevice_any(const char *tag) const
 {
 	extern machine_config *p2k_active_config;
 	if (!p2k_active_config) return nullptr;
-	std::string full = m_tag.empty() ? std::string(tag) : m_tag + ":" + tag;
+	std::string full = m_tag.empty() ? std::string(tag) : m_tag + ':' + tag;
 	return p2k_active_config->find(full);
 }
 
@@ -1547,7 +1547,6 @@ DeviceClass &device_type_impl<DeviceClass>::operator()(machine_config &config, c
 }
 
 // ---------------------------------------------------------------- misc helpers
-
 
 
 #include "divtlb.h"

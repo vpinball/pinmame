@@ -54,6 +54,12 @@ public:
 	// P2K subsystem does not drive it - see p2k_state::nvram_block_ptr()
 	uint8_t *p2k_data() { return m_data.get(); }
 	int p2k_data_size() const { return data_size(); }
+	// PINMAME: re-arm the timers and the interrupt line from the register file, for a driver that has
+	// written registers through p2k_data() rather than through the ports. The device acts on the
+	// divider in register A and the enables in register B only where it sees them written, so without
+	// this a restored register file is decoration. nvram_read() makes the same two calls after loading
+	// these 64 bytes from a file, which is the path this subsystem replaces
+	void p2k_reload() { update_timer(); update_irq(); }
 
 protected:
 	mc146818_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);

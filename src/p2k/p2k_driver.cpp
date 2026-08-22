@@ -68,12 +68,12 @@ extern u64 g_p2k_cycles_total;
 
 // counters for the interrupt path, reported with P2K_PROGRESS: how many rising edges the PIT
 // puts on IR0, and how often the PIC asserts INT at the CPU. With the CPU's own dispatch count
-// from the trap hook, the three together say where a tick is multiplied or lost.
+// from the trap hook, the three together say where a tick is multiplied or lost
 u64 g_p2k_pit0_edges = 0;
 u64 g_p2k_pic_int = 0;
 
 // what the PIC currently wants from the CPU. The clkint gate may hold it back, so the line the
-// CPU sees is this AND "not inside the clock handler" - see p2k_cpuintrf.cpp.
+// CPU sees is this AND "not inside the clock handler" - see p2k_cpuintrf.cpp
 int g_p2k_pic_int_state = 0;
 
 void p2k_apply_irq0()
@@ -242,9 +242,10 @@ void p2k_state::seed_error_log()
 // Which is why handing it the host year on every start makes the displayed year climb: a fresh
 // machine has 1999 stored and adds 27 to reach 2026, and every start after that adds 27 again -
 // 2053, 2080. Refreshing everything *except* register 9 gives the guest what a ticking
-// battery-backed clock would: the current date and time, and no years to add. The one thing this
-// does not model is a New Year passing while the machine is off, which would want that register
-// set to the number of years crossed
+// battery-backed clock would: the current date and time, and no years to add. A New Year passing
+// while the machine is off does want that register set to the number of years crossed, and
+// rtc_restore() below is what puts it there, off the saved stamp.
+//
 // The clock as PinMAME saves it: the 64 registers, then the host time_t they were taken at. The
 // stamp is the whole point - the emulated chip stops when the machine does, where the real one
 // keeps running on its battery, so the only way to know how long it was off is to ask the host
@@ -265,17 +266,25 @@ void p2k_state::rtc_restore()
 
 	u64 saved = 0;
 	memcpy(&saved, m_rtc_nv + 0x40, sizeof saved);
-	if (!saved) return;                        // saved by a build that did not stamp it
 
 	// Calendar years crossed, not elapsed years: a machine switched off on 31 December and started
-	// the next morning slept through one New Year, and that is the one the firmware needs to add
+	// the next morning slept through one New Year, and that is the one the firmware needs to add.
+	// Skipped for a block saved by a build that did not stamp it, and for a host clock that has
+	// moved backwards since - neither has any number of years to offer
 	const time_t then_t = time_t(saved), now_t = ::time(nullptr);
-	if (now_t <= then_t) return;               // clock moved backwards; nothing to add
-	struct tm a = *localtime(&then_t), b = *localtime(&now_t);
-	int years = b.tm_year - a.tm_year;
-	if (years < 0) years = 0;
-	if (years > 99) years = 99;                // a register, not a span to be trusted blindly
-	m_rtc->p2k_data()[9] = u8(m_rtc_nv[9] + years);
+	if (saved && now_t > then_t)
+	{
+		struct tm a = *localtime(&then_t), b = *localtime(&now_t);
+		int years = b.tm_year - a.tm_year;
+		if (years <  0) years = 0;
+		if (years > 99) years = 99; // a register, not a span to be trusted blindly
+		m_rtc->p2k_data()[9] = u8(m_rtc_nv[9] + years);
+	}
+
+	// The register file went in behind the device's back, so the timers and the interrupt line are
+	// still set up for whatever it last saw written rather than for the divider and enables just
+	// restored. The device does this much for itself when it loads the same bytes in nvram_read()
+	m_rtc->p2k_reload();
 }
 void p2k_state::clock_from_host(bool keep_year)
 {
@@ -283,6 +292,16 @@ void p2k_state::clock_from_host(bool keep_year)
 	const uint8_t year = m_rtc->p2k_data()[9];
 	m_rtc->p2k_nvram_default();
 	if (keep_year) m_rtc->p2k_data()[9] = year;
+
+	// Register A is the divider and nvram_default() zeroes it with the rest, leaving DV2:DV0 = 000 -
+	// the divider chain stopped on a real chip, and in this model a seconds update every 128 seconds,
+	// so the clock starts right and then stands still. The firmware never writes this register: on
+	// the real board it is battery-backed and was set once, so zeroed is a state no machine is in.
+	// Seed what a live chip holds - DV 010, the 32.768 kHz base, and RS 0110, the usual PC periodic
+	// rate, which only raises PF unless the guest sets PIE - through the port, that being what
+	// re-arms the timers; poking p2k_data() would not, update_timer() having already run
+	m_rtc->write(0, 0x0a);
+	m_rtc->write(1, 0x26);
 }
 
 p2k_state::~p2k_state()
@@ -403,9 +422,9 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len)
 	//
 	// 0x191 is not behind the switch, and is `cb` in both revisions and in Episode I so it carries
 	// over unchanged: nothing far-calls the option ROM's init here, so its `retf` has no frame to
-	// return to whatever the PCI bus does.
+	// return to whatever the PCI bus does
 	auto peek = [this](size_t off) -> u8 {
-		if (off / 4 >= PRISM_BANK_WORDS) return 0;   // bank 0 starts at 0, so index == offset
+		if (off / 4 >= PRISM_BANK_WORDS) return 0; // bank 0 starts at 0, so index == offset
 		return u8(m_prismdata[off / 4] >> (unsigned(off % 4) * 8));
 	};
 	auto poke = [this](size_t off, u8 value) {
@@ -425,7 +444,7 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len)
 		return true;
 	};
 
-	poke_if(0x191, 0xcb, 0x90);   // retf -> nop; cb in every boot ROM seen, V3.2 and V3.6 alike
+	poke_if(0x191, 0xcb, 0x90); // retf -> nop; cb in every boot ROM seen, V3.2 and V3.6 alike
 
 #if P2K_PATCH_PCI_INIT_RETRY
 	// Which image this is, by content rather than by which game is running. The instruction the
@@ -443,8 +462,8 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len)
 
 	// An image nobody has seen leaves mov_site 0 and goes unpatched, which is the safe way to be
 	// wrong: the patch is a convenience for a retry path, not something boot depends on
-	const size_t ok_imm    = mov_site ? mov_site + 1 : 0;   // the -7 immediate
-	const size_t guard_jne = mov_site ? mov_site - 2 : 0;   // the jne above it
+	const size_t ok_imm    = mov_site ? mov_site + 1 : 0; // the -7 immediate
+	const size_t guard_jne = mov_site ? mov_site - 2 : 0; // the jne above it
 	(void)ok_imm; (void)guard_jne;
 #endif
 
@@ -537,11 +556,11 @@ void p2k_state::build_machine(u32 cpu_clock)
 
 	m_pic1 = &m_machine->add(PIC8259, "pic1", 0u);
 	m_pic2 = &m_machine->add(PIC8259, "pic2", 0u);
-	m_pit  = &m_machine->add(PIT8253, "pit", 0u);   // an 8253, as in the MAME driver
+	m_pit  = &m_machine->add(PIT8253, "pit",  0u); // an 8253, as in the MAME driver
 	m_dma1 = &m_machine->add(AM9517A, "dma1", u32(14318181 / 3));
 	m_dma2 = &m_machine->add(AM9517A, "dma2", u32(14318181 / 3));
-	m_rtc  = &m_machine->add(MC146818, "rtc", u32(32768));
-	m_kbdc = &m_machine->add(KBDC8042, "kbdc", 0u);
+	m_rtc  = &m_machine->add(MC146818,"rtc",  u32(32768));
+	m_kbdc = &m_machine->add(KBDC8042,"kbdc", 0u);
 
 	// interrupt wiring, as in the driver: master PIC drives the CPU, slave cascades into IR2
 	m_pic1->out_int_callback().set([this](int state) {
@@ -559,8 +578,11 @@ void p2k_state::build_machine(u32 cpu_clock)
 	// slowdown to go with the 20 MHz CPU. The firmware programs channel 0 as a rate generator
 	// with divisor 298, so that was a tick every ~6400 CPU cycles.
 	//
-	// This is also the machine's clock: the RTC is only read at boot, and from then on one_second_proc
-	// counts these ticks and bumps the date and time it keeps in the CMOS. 1193182/298 is 4004 Hz and
+	// This is also the machine's time base: one_second_proc counts these ticks and bumps the date and
+	// time the firmware keeps in its own CMOS. Not the whole of its clock though - it tracks the RTC
+	// while running too, which is how a stopped divider in that chip showed up as a displayed clock
+	// that never advanced (see PAST_FAILURES.md). What follows is about this tick and holds either
+	// way, however the two divide the work. 1193182/298 is 4004 Hz and
 	// the count it makes a second out of is round, so its second comes up about 0.13% short - measured
 	// at 77563110 cycles against the 77666666 a second really takes, a gain of roughly two minutes a
 	// day. A real board has the same crystal and the same divisor, so it drifts the same way; do not
@@ -574,7 +596,7 @@ void p2k_state::build_machine(u32 cpu_clock)
 	m_pit->set_clk<1>(1193182.0);
 	m_pit->set_clk<2>(1193182.0);
 	// the edge always reaches the PIC - holding it back was the wrong lever, the request it
-	// latches is what nests. The gate only notes the edge, to bound how long it may hold delivery.
+	// latches is what nests. The gate only notes the edge, to bound how long it may hold delivery
 	m_pit->out_handler<0>().set([this](int state) {
 		extern void p2k_clkint_note_edge();
 		if (state) { g_p2k_pit0_edges++; p2k_clkint_note_edge(); }
@@ -615,8 +637,7 @@ void p2k_state::reset()
 {
 	m_machine->reset();
 
-	// The driver plants the reset vector by hand: a far jump to the boot loader in the
-	// expansion ROM window at 0xc0000.
+	// The driver plants the reset vector by hand: a far jump to the boot loader in the expansion ROM window at 0xc0000
 	m_system_bios1[0xbffc] = 0x03ea;
 	m_system_bios1[0xbffd] = 0xc0;
 
@@ -653,7 +674,7 @@ void p2k_state::reset()
 	// clocks this image back out of register 0x14 and verifies it, so the whole table matters,
 	// not just the first few words. This is the image the shipped software wants: the prototypes
 	// want four registers different and rewrite them on their first boot, which is what a real
-	// card programmed by a later firmware would make them do - see src/p2k/README.md.
+	// card programmed by a later firmware would make them do - see src/p2k/README.md
 	static constexpr u32 defaults[] = {
 		0x0001146e, 0x03000000, 0x00000000, 0x00000000, 0x0FFE0000, 0x0F800000, 0x0FFF8000,
 		0x0C000008, 0x0FFF8001, 0x00100001, 0x01000001, 0x00000001, 0x08000001, 0x08000000,
@@ -664,7 +685,7 @@ void p2k_state::reset()
 		m_eeprom[i] = defaults[i];
 
 	// the PLX registers come up holding the EEPROM image from word 4 on. MAME copies 32 words
-	// here and reads past the end of its 32-word EEPROM region doing so; this stops at the end.
+	// here and reads past the end of its 32-word EEPROM region doing so; this stops at the end
 	for (size_t i = 0; i < 32 && i + 4 < m_eeprom.size(); i++)
 		m_eeprom_regs[i] = m_eeprom[i + 4];
 
@@ -679,7 +700,7 @@ void p2k_state::reset()
 	// restore fails on an erased image. All five fields then read zero, so every diagnostic the
 	// firmware wants to log lands at linear 0 and destroys the operating system's reserved
 	// memory there. Seeding them makes the machine survive its own reports long enough to say
-	// what it is complaining about.
+	// what it is complaining about
 #if P2K_DEBUG
 	if (const char *s = getenv("P2K_NVLOG"))
 	{
@@ -694,18 +715,18 @@ void p2k_state::reset()
 				m_nvram[off+2] = u8(v >> 16); m_nvram[off+3] = u8(v >> 24);
 			}
 		};
-		poke32(0x18, 0);        // entries used
-		poke32(0x1c, count);    // ring capacity
-		poke32(0x20, size);     // entry size
-		poke32(0x24, 0);        // write index
-		poke32(0x28, base);     // buffer base
+		poke32(0x18, 0);     // entries used
+		poke32(0x1c, count); // ring capacity
+		poke32(0x20, size);  // entry size
+		poke32(0x24, 0);     // write index
+		poke32(0x28, base);  // buffer base
 		printf("p2k: seeding the NVRAM error log at %08x, %x entries of %x bytes\n", base, count, size);
 	}
 #endif
 
 	// PC97317 Super I/O identity, read through ports 0x2e/0x2f. Without it the firmware's
 	// io_setup_global() reports "SuperIOType unknown (0)" and every io_setup_* step after it
-	// bails out - which is where the game code's failure chain starts.
+	// bails out - which is where the game code's failure chain starts
 	m_superio_regs[0x20] = 0xDF;
 	m_superio_regs[0x21] = 0x01;
 }
@@ -722,13 +743,13 @@ void p2k_state::reset()
 // source to wire either, and there are no IDE drives to raise IRQ14/15.
 //
 // The transmitter is always empty in this stand-in, so THRE (IER bit 1) is the only source; a
-// receive interrupt would need a character to arrive, and nothing sends one.
+// receive interrupt would need a character to arrive, and nothing sends one
 void p2k_state::update_uart_irq()
 {
 	if (m_pic1)
 	{
-		m_pic1->ir4_w((m_uart_reg[1] & 0x02) ? 1 : 0);      // COM1
-		m_pic1->ir3_w((m_uart2_reg[1] & 0x02) ? 1 : 0);     // COM2
+		m_pic1->ir4_w((m_uart_reg [1] & 0x02) ? 1 : 0); // COM1
+		m_pic1->ir3_w((m_uart2_reg[1] & 0x02) ? 1 : 0); // COM2
 	}
 }
 
@@ -824,7 +845,7 @@ void p2k_state::push_switches(const u8 *matrix, unsigned count)
 				if ((hi & 0x8000) && off)   // present bit set and a real offset
 					fprintf(stderr, "[p2k idt] vector %02x -> %08x  sel %04x  type %02x%s\n",
 					        v, off, lo >> 16, (hi >> 8) & 0x1f,
-					        (v >= 0x20 && v <= 0x27) ? "   (IRQ 0-7)" :
+					        (v >= 0x20 && v <= 0x27) ? "   (IRQ 0-7)"  :
 					        (v >= 0x70 && v <= 0x77) ? "   (IRQ 8-15)" : "");
 			}
 			fflush(stderr);
@@ -869,7 +890,7 @@ void p2k_state::push_switches(const u8 *matrix, unsigned count)
 	// The board's own numbering, read out of the game's switch table (see src/p2k/README.md):
 	// switch number = 100 + (column-1)*8 + (row-1), with columns 1-9 the playfield matrix,
 	// column 10 the coin door's diagnostic buttons and column 11 the cabinet. Those two land in
-	// PinMAME's columns of the same number; the coin inputs use PinMAME's coin door column 0.
+	// PinMAME's columns of the same number; the coin inputs use PinMAME's coin door column 0
 	m_coin_switches = m_sw_matrix[0];
 	m_diag_switches = m_sw_matrix[10];
 	m_cabinet_switches = m_sw_matrix[11];
@@ -882,7 +903,7 @@ void p2k_state::pull_outputs(u8 *lamps, unsigned lamp_columns, u32 *solenoids, u
 		if (lamp_columns > sizeof(m_lamp_matrix)) lamp_columns = sizeof(m_lamp_matrix);
 		for (unsigned i = 0; i < lamp_columns; i++) lamps[i] = m_lamp_matrix[i];
 	}
-	if (solenoids) *solenoids = m_solenoids;
+	if (solenoids ) *solenoids  = m_solenoids;
 	if (solenoids2) *solenoids2 = m_solenoids2;
 }
 
@@ -986,8 +1007,7 @@ bool p2k_state::frame_rgb(u32* const __restrict dest, unsigned capacity, unsigne
 }
 
 // P2K_PPM=<path> writes that picture once, after P2K_PPM_AT cycles (20 emulated seconds by
-// default), as a binary PPM - a way to see whether it is right before there is anywhere to show
-// it.
+// default), as a binary PPM - a way to see whether it is right before there is anywhere to show it
 #if !P2K_DEBUG
 void p2k_state::maybe_write_ppm(u64) {}
 #else
@@ -1045,7 +1065,7 @@ void p2k_state::run_cycles(u64 cycles)
 
 u32 p2k_state::cpu_pc()
 {
-	return 0;   // the state interface is not modelled; the trace prints bus activity instead
+	return 0; // the state interface is not modelled; the trace prints bus activity instead
 }
 
 // ---------------------------------------------------------------- helpers
@@ -1122,7 +1142,7 @@ u32 p2k_state::prism_1000_r(offs_t offset)
 	offset &= 0x3f;
 	if (offset == 0x14)
 	{
-		u32 t = 0x10000000;       // bit 28 always set: EEPROM present and OK
+		u32 t = 0x10000000; // bit 28 always set: EEPROM present and OK
 		t |= m_eeprom_regs[offset];
 
 		if (m_prism_clock_enabled == 1 && m_prism_eprom_clk == 0x1 && m_prism_eprom_offset != -1)
@@ -1149,7 +1169,7 @@ u32 p2k_state::prism_1000_r(offs_t offset)
 		}
 		else if (m_prism_clock_enabled == 1 && m_prism_eprom_clk == 0x1 && m_prism_eprom_offset == -1)
 		{
-			t &= ~(1u << 27);     // the transfer starts with a zero bit
+			t &= ~(1u << 27); // the transfer starts with a zero bit
 			// Start where the READ command asked to, which prism_1000_w decoded on the way in.
 			// Two words to the element, high half first, so the word address splits into an index
 			// and a half - and the counter has to be primed here rather than left to whatever the
@@ -1269,7 +1289,7 @@ void p2k_state::prism_1000_w(offs_t offset, u32 data)
 // The Prism display manager kicks a blit and waits for the pipeline to report it done; without
 // that the firmware's render-pass watchdog expires ("Display Manager(HD): Render pass watchdog
 // has expired"). Ported from MAME 0.239, src/mame/drivers/pinball2k.cpp: only the raster modes
-// the game uses are implemented there, and the blit is one row of `width` pixels.
+// the game uses are implemented there, and the blit is one row of `width` pixels
 
 #if P2K_DEBUG
 // Consecutive GP_BLT_STATUS reads with nothing happening in between - see gx_pipeline_r
@@ -1451,17 +1471,15 @@ void p2k_state::do_gfx_pipeline()
 			}
 	}
 
-	// The four the games use have their own paths below; anything else goes through the general
-	// ROP rather than drawing nothing, which is what this did before and is a black hole on screen
-	// wherever it lands. MAME only ever ran the 1.x games, so "the rest is unused" was true of
-	// those and was never a statement about the hardware
+	// The four the games (supposedly only) use have their own paths below; anything else goes through the general
+	// ROP rather than drawing nothing, but report anyway, so we could optimize
 	if (rastermode != 0x00 && rastermode != 0xff && rastermode != 0xc6 && rastermode != 0xcc)
 	{
 		static bool seen[256] = {};
 		if (!seen[rastermode])
 		{
 			seen[rastermode] = true;
-			fprintf(stderr, "[p2k blit] raster mode %02x taking the general ROP path - no set has been seen to ask for one\n", unsigned(rastermode));
+			fprintf(stderr, "[p2k blit] raster mode %02x taking the general ROP path - no set has been seen to ask for one yet\n", unsigned(rastermode));
 			fflush(stderr);
 		}
 	}
@@ -1475,8 +1493,7 @@ void p2k_state::do_gfx_pipeline()
 	// returns something and writes it, so the destination would change. Raster 0xc6 reads anyway;
 	// 0xcc stops at the end of VRAM, because it moves the row in one block and cannot step past the
 	// buffer safely. Either way the tail of such a row is wrong, and a region left exactly as it
-	// was is indistinguishable from one that never repaints - hence the report. No set has
-	// triggered it so far
+	// was is indistinguishable from one that never repaints - hence the report. No set has triggered it so far
 	auto note_oor = [&](unsigned mode, size_t si) {
 		static unsigned n = 0;
 		if (n++ < 12)
@@ -1504,7 +1521,7 @@ void p2k_state::do_gfx_pipeline()
 	// destination data, all ones into the raster unit; 100/101 take it from the frame buffer, which
 	// is not a colour key and has not been seen with C6h.
 	//
-	// Not modelled: ง4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
+	// Not modelled: ยง4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
 	// Buffer 0 would hold the last line copied. This reads VRAM directly, and nothing reads it back
 	const unsigned blt_rd = (m_gx_pipeline_reg[GP_BLT_MODE] >> 2) & 7u;
 	const u32 key_base = (blt_rd == 2) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB0_BASE)
@@ -1834,9 +1851,10 @@ void p2k_state::disp_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 }
 
 u32 p2k_state::memory_ctrl_r(offs_t offset) const { return m_memory_ctrl_reg[offset & 0x3f]; }
+
 // Stores only. MAME's MediaGX driver uses offset 0x20/4 here as the palette port, routed by
 // DC_GENERAL_CFG bits 20-23 - see the note in the 8 bit branch of frame_rgb(). Nothing here
-// needs it while both games run 15 bpp
+// needs it while all games run 15 bpp
 void p2k_state::memory_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	u32 &r = m_memory_ctrl_reg[offset & 0x3f];
@@ -1883,7 +1901,7 @@ void p2k_state::biu_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 
 // The update flash behaves like an Intel 28F320J5: command writes put it into a mode, and reads
 // then return either the array, the CFI query table or the status register. Ported from the
-// MAME driver's nvram_updates_r/w.
+// MAME driver's nvram_updates_r/w
 u8 p2k_state::nvram_updates_r(offs_t offset) const
 {
 	if (m_flash_mode == 1)
@@ -1949,8 +1967,8 @@ void p2k_state::nvram_updates_w(offs_t offset, u16 data)
 }
 
 // PCI configuration space. The identifiers come from the MAME driver: 1078:0001 MediaGX host
-// bridge, 1078:0002 CX5520 ISA bridge, 146e:0001 the PLX bridge on the Prism card.
-u32 p2k_state::mediagx_pci_r(int function, int reg, u32 mem_mask)
+// bridge, 1078:0002 CX5520 ISA bridge, 146e:0001 the PLX bridge on the Prism card
+u32 p2k_state::mediagx_pci_r(int function, int reg, u32 mem_mask) const
 {
 	return m_mediagx_regs[reg] & mem_mask;
 }
@@ -1978,7 +1996,7 @@ void p2k_state::cx5520_pci_w(int function, int reg, u32 data, u32 mem_mask)
 // This one used to divide by 4, so only the vendor word at reg 0 landed on its initialiser and
 // the card reported status 0 and class 0. The firmware does read both - P2K_PCIWATCH shows
 // "dev 8 reg 0x04 -> 02800002" and "reg 0x08 -> 03000002" where it used to see zeros - and all
-// games boot unchanged with them right, which is the measurement the old note here asked for and did not have.
+// games boot unchanged with them right, which is the measurement the old note here asked for and did not have
 //!! still, it may need additional verification!
 u32 p2k_state::prism_pci_r(int function, int reg, u32 mem_mask) const
 {
@@ -1996,7 +2014,7 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 {
 #if P2K_DEBUG
 	// P2K_READWATCH=<from>[-<to>], hexadecimal: the first 40 reads from that range, with the PC.
-	// The write watch answers who fills a structure; this answers whether a device is ever asked.
+	// The write watch answers who fills a structure; this answers whether a device is ever asked
 	static unsigned rwatch_from = 0, rwatch_to = 0;
 	static long rwatch_left = 40;
 	static const bool rwatch_init = []() {
@@ -2022,7 +2040,7 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	// The firmware addresses the whole MediaGX region through its 0xc0000000 alias, not just the
 	// control registers: its own framebuffer base pointer is 0xc0800000, and a write map showed
 	// 30 M writes at 0xc0800000 and 13 M at 0xc0900000 - the picture, going nowhere, because the
-	// alias window used to stop at the register block.
+	// alias window used to stop at the register block
 	if (addr >= 0xc0000000 && addr < 0xc1000000) addr -= 0x80000000;
 	if (addr < 0x000a0000)                       return read_le(m_main_ram, addr, mem_mask);
 	if (addr < 0x000b0000)                       return read_le(m_video_ram_a, addr - 0x000a0000, mem_mask);
@@ -2109,7 +2127,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 #if P2K_DEBUG
 	// P2K_MEMWATCH=<from>[-<to>], hexadecimal: report every write to that range with the PC that
 	// made it. The boot code hands a far return address to itself through low memory, so seeing
-	// who writes there - and who wipes it - is what bring-up needs.
+	// who writes there - and who wipes it - is important
 	static unsigned watch_from = 0, watch_to = 0;
 	static const bool watch_init = []() {
 		if (const char *s = getenv("P2K_MEMWATCH"))
@@ -2125,7 +2143,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	{
 		// P2K_MEMWATCH_CHANGED=1 reports only writes that actually alter the word. The switch
 		// scanner rewrites its bitmaps every 0.25 ms whether anything moved or not, so without
-		// this the interesting write drowns in millions of identical ones.
+		// this the interesting write drowns in millions of identical ones
 		static const bool changed_only = getenv("P2K_MEMWATCH_CHANGED") != nullptr;
 		bool report = true;
 		if (changed_only)
@@ -2137,8 +2155,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 		if (report)
 		{
 			extern unsigned p2k_bridge_pc();
-			fprintf(stderr, "[p2k memw] %08x <- %08x mask %08x  from PC=%08x\n",
-				addr, data, mem_mask, p2k_bridge_pc());
+			fprintf(stderr, "[p2k memw] %08x <- %08x mask %08x  from PC=%08x\n", addr, data, mem_mask, p2k_bridge_pc());
 			fflush(stderr);
 		}
 	}
@@ -2147,7 +2164,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	// The firmware addresses the whole MediaGX region through its 0xc0000000 alias, not just the
 	// control registers: its own framebuffer base pointer is 0xc0800000, and a write map showed
 	// 30 M writes at 0xc0800000 and 13 M at 0xc0900000 - the picture, going nowhere, because the
-	// alias window used to stop at the register block.
+	// alias window used to stop at the register block
 	if (addr >= 0xc0000000 && addr < 0xc1000000) addr -= 0x80000000;
 
 #if P2K_DEBUG
@@ -2191,13 +2208,12 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	}
 	if (addr >= 0x13000000 && addr < 0x13800000)
 	{
-		// the DCS2 sound board, upstream's, wired in src/wpc/p2k.c. Weak, so the standalone
-		// harness links without one.
+		// the DCS2 sound board, upstream's, wired in src/wpc/p2k.c. Weak, so the standalone harness links without one
 		if (P2K_HAVE_WEAK(p2k_dcs_write)) p2k_dcs_write(addr - 0x13000000, data, mem_mask);
 		return;
 	}
 	if (addr >= 0x14000000 && addr < 0x15000000) { prism_1400_w((addr - 0x14000000) / 4, data); return; }
-	if (addr >= 0x15000000 && addr < 0x18000000) { return; }   // prism data banks are read-only
+	if (addr >= 0x15000000 && addr < 0x18000000) { return; } // prism data banks are read-only
 	if (addr >= 0x18000000 && addr < 0x19000000) { write_le(m_prism_bank9, addr - 0x18000000, data, mem_mask); return; }
 	if (addr >= 0x40000400 && addr < 0x40001000)
 	{
@@ -2214,7 +2230,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	if (addr >= 0x40008400 && addr < 0x40008500) { memory_ctrl_w((addr - 0x40008400) / 4, data, mem_mask); return; }
 	if (addr >= 0x40400000 && addr < 0x40480000) { write_le(m_smm, addr - 0x40400000, data, mem_mask); return; }
 	if (addr >= 0x40800000 && addr < 0x40c00000) { write_le(m_vram, addr - 0x40800000, data, mem_mask); return; }
-	if (addr >= 0xc0800000 && addr < 0xc0c00000) { write_le(m_vram, addr - 0xc0800000, data, mem_mask); return; }   // the alias; see mem_r
+	if (addr >= 0xc0800000 && addr < 0xc0c00000) { write_le(m_vram, addr - 0xc0800000, data, mem_mask); return; } // the alias; see mem_r
 	if (addr >= 0xfffd0000)                      { u32 &r = m_system_bios1[(addr - 0xfffd0000) / 4]; r = (r & ~mem_mask) | (data & mem_mask); return; }
 
 	m_unmapped_w++;
@@ -2310,8 +2326,8 @@ static bool p2k_pdbwatch(u8 reg)
 
 u8 p2k_state::lpt_r(offs_t offset)
 {
-	if (offset == 1) return 0xff;      // status port
-	if (offset != 0) return 0x00;      // control port
+	if (offset == 1) return 0xff; // status port
+	if (offset != 0) return 0x00; // control port
 
 	// a read only answers with an I/O register once an index has been clocked in
 	if (!(m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0)) return 0;
@@ -2365,7 +2381,7 @@ u8 p2k_state::pdb_reg_r() const
 			// The switch row for whichever column is being strobed. Measured: the column
 			// register is one-hot and active HIGH -- the firmware writes 0x01, 0x02, 0x04,
 			// 0x08, 0x10 ... and 0x80, exactly like the lamp column strobe below. (It was
-			// read as active low here before, which shifted every column by one.)
+			// read as active low here before, which shifted every column by one)
 			for (unsigned c = 0; c < 8; c++)
 				if (m_switch_column & (1u << c))
 					return m_sw_matrix[(c + 1) & 0xf];          // PinMAME numbers columns from 1
@@ -2380,8 +2396,7 @@ u8 p2k_state::pdb_reg_r() const
 		// So the machine boots and plays on these values. 0x0f is the switch-system register and
 		// carries zero cross, which on real hardware times coil firing and GI dimming - but a single
 		// read at startup is a presence or version check, not polling, so nothing here is timed
-		// against it. Modelling zero cross properly only becomes necessary if something starts
-		// reading 0x0f repeatedly
+		// against it. Modelling zero cross properly only becomes necessary if something starts reading 0x0f repeatedly
 		case 0x0c: return 0x0d;
 		case 0x0d: return 0x0e;
 		case 0x0e: return 0x0f;
@@ -2423,11 +2438,11 @@ void p2k_state::lpt_w(offs_t offset, u8 data)
 {
 	if (offset != 0) return;
 
-	if (m_pdb_phase_1 == 0)                                { m_pdb_phase_1 = 1; m_pdb_phase_2 = 0; }
-	else if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0)     { m_pdb_phase_2 = 1; }
-	else if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 1)     { m_pdb_phase_1 = 1; m_pdb_phase_2 = 0; }
+	if (m_pdb_phase_1 == 0)                            { m_pdb_phase_1 = 1; m_pdb_phase_2 = 0; }
+	else if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0) { m_pdb_phase_2 = 1; }
+	else if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 1) { m_pdb_phase_1 = 1; m_pdb_phase_2 = 0; }
 
-	if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0) m_pdb_index = data;   // index register
+	if (m_pdb_phase_1 == 1 && m_pdb_phase_2 == 0) m_pdb_index = data; // index register
 	if (m_pdb_phase_2 != 1) return;
 
 #if P2K_DEBUG
@@ -2440,14 +2455,14 @@ void p2k_state::lpt_w(offs_t offset, u8 data)
 	// a write to the selected I/O register
 	switch (m_pdb_index)
 	{
-		case 0x05: m_switch_column = data; break;               // switch column strobe, one-hot
-		case 0x06: m_lamp_row_a = data; break;                  // lamp rows, latched until the
-		case 0x07: m_lamp_row_b = data; break;                  //   column strobe below
+		case 0x05: m_switch_column = data; break; // switch column strobe, one-hot
+		case 0x06: m_lamp_row_a = data; break;    // lamp rows, latched until the
+		case 0x07: m_lamp_row_b = data; break;    //   column strobe below
 		case 0x08:
 			// Lamp column strobe. The board drives one column at a time and has two row banks
 			// of eight (index 6 and 7), so a column carries sixteen lamps; PinMAME's matrix is
 			// eight bits per column, so each driven column becomes two of them - bank A at 2c,
-			// bank B at 2c+1. Eight columns therefore occupy sixteen of PinMAME's.
+			// bank B at 2c+1. Eight columns therefore occupy sixteen of PinMAME's
 			m_lamp_col = data;
 			for (unsigned c = 0; c < 8; c++)
 				if (data & (1u << c))
@@ -2499,9 +2514,10 @@ u8 p2k_state::port_r(offs_t port)
 // log, not a number.
 //
 // Nor is the comparison with the thing it replaced as favourable as it looks. The clkint gate now
-// defaults off, and off it costs nothing at all - push_int_frame() returns immediately and the
-// per-instruction hook is never armed. So against the old arrangement this trades a per-instruction
-// tax for a per-PIC-write one, and which is cheaper is genuinely open.
+// defaults off, and off it costs nothing at all - without P2K_DEBUG the frame tracking and the
+// per-instruction hook are not compiled in, and shim/debugger.h leaves the i386 execute loop with
+// no call site at all. So against the old arrangement this trades a per-instruction tax for a
+// per-PIC-write one, and which is cheaper is genuinely open.
 //
 // It cannot be measured with what is here: report_progress()'s host= and mips= are P2K_DEBUG only,
 // and the configuration in question is a release build. That needs PinMAME's own speed readout or a
@@ -2534,26 +2550,26 @@ u8 p2k_state::port_read(offs_t port)
 	// unmapped (reads return 0xff) lets it continue. This used to say the missing piece was SMM.
 	// It is not: the SMM region at 0x40400000 is never read or written by any set, and the only
 	// SMI sources the databook gives the bus interface unit are the VGA I/O traps in BC_XMAP_1
-	// bits 13-15, which no set sets (ง4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
+	// bits 13-15, which no set sets (ยง4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
 	// What is behind these registers is GX_BASE itself, among the rest of the configuration - so
 	// answering them wrongly can move the whole register aperture out from under the driver
 	if (port >= 0x002e && port <= 0x002f)
 		return (port == 0x002f) ? m_superio_regs[m_superio_reg_sel] : 0;
-	if (port >= 0x00e8 && port <= 0x00eb) return 0xff;         // I/O delay port
+	if (port >= 0x00e8 && port <= 0x00eb) return 0xff; // I/O delay port
 	if ((port >= 0x0170 && port <= 0x0177) || (port >= 0x01f0 && port <= 0x01f7) ||
 		(port >= 0x0370 && port <= 0x0377) || (port >= 0x03f0 && port <= 0x03f7))
-		return 0xff;                                            // IDE: no drives attached
+		return 0xff;                                // IDE: no drives attached
 
 	// parallel port: the pinball driver board sits at 0x3bc, the printer port itself at 0x378.
 	// Both are probed by writing the data port and reading it back - an unmapped 0xff there is
-	// what made the firmware report "PinIO failed: no printer port present".
+	// what made the firmware report "PinIO failed: no printer port present"
 	if (port >= 0x03bc && port <= 0x03bf) return lpt_r(port - 0x03bc);
 	if (port >= 0x0378 && port <= 0x037b)
 	{
 		switch (port - 0x0378)
 		{
 			case 0:  return m_lpt_data;
-			case 1:  return 0x00;                               // status: no printer attached
+			case 1:  return 0x00;                   // status: no printer attached
 			default: return m_lpt_control;
 		}
 	}
@@ -2599,7 +2615,7 @@ u8 p2k_state::port_read(offs_t port)
 void p2k_state::port_w(offs_t port, u8 data)
 {
 	iowatch("w", port, data);
-	if (port <= 0x001f)                   { m_dma1->write(port, data); return; }
+	if (port <= 0x001f) { m_dma1->write(port, data); return; }
 	// The interrupt controllers get their pending work run before the next instruction, because
 	// that is when the hardware would have done it. pic8259_device re-evaluates its INT output
 	// from a zero-delay timer, and a timer the guest sets mid-slice would otherwise wait for the

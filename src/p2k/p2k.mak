@@ -1,14 +1,14 @@
 # Pinball 2000 subsystem - build rules.
 #
 # Self-contained: everything here lives under src/p2k/ and is only linked when P2K=1 is set.
-# Included from src/unix/unix.mak.
+# Included from src/unix/unix.mak
 
 P2K_OBJ = $(NAME).obj/p2k
 
 P2K_INC = -Isrc/p2k/shim -Isrc/p2k/mame -Isrc/p2k/mame/cpu/i386 -Isrc/p2k/mame/emu \
           -Isrc/p2k/mame/osd -Isrc/p2k/mame/3rdparty -Isrc/p2k/mame/machine -Isrc/p2k/mame/video
 
-# The imported MAME sources need a modern C++ dialect; PinMAME's own C flags do not apply.
+# The imported MAME sources need C++17; PinMAME's own C flags do not apply
 P2K_CXXFLAGS = -std=gnu++17 -O2 -fno-strict-aliasing -w $(P2K_INC)
 
 # The bring-up apparatus - traces, watches, dumps, the stand-in playfield, and the fifty-odd
@@ -55,7 +55,7 @@ P2KOBJS = \
 # imported cores call back per instruction - rebuild all of it when any of them changes. The
 # subsystem's own headers belong here for the same reason: a member added to p2k_state changes
 # its size, and a stale object left over from before that will corrupt the heap. Listing them by
-# name has gone wrong three times, so this is a wildcard.
+# name has gone wrong three times, so this is a wildcard
 P2KHDRS := $(wildcard src/p2k/*.h src/p2k/shim/*.h src/p2k/shim/*/*.h) src/p2k/mame/emu/divtlb.h
 
 $(P2KOBJS): $(P2KHDRS)
@@ -68,19 +68,19 @@ $(P2K_OBJ)/mame/%.o: src/p2k/mame/%.cpp
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CPP) $(P2K_CXXFLAGS) -o $@ -c $<
 
-# SoftFloat is C source, but MAME builds it as C++ as well.
+# SoftFloat is C source, but MAME builds it as C++ as well
 $(P2K_OBJ)/mame/3rdparty/softfloat/%.o: src/p2k/mame/3rdparty/softfloat/%.c
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CPP) $(P2K_CXXFLAGS) -Isrc/p2k/mame/3rdparty/softfloat -o $@ -c $<
 
-# Boot harness: loads ROMs and runs the machine from the reset vector.
+# Boot harness: loads ROMs and runs the machine from the reset vector
 p2kboot: $(P2K_OBJDIRS) $(P2KOBJS)
 	$(CC_COMPILE) $(CPP) $(P2K_CXXFLAGS) -o $(P2K_OBJ)/p2k_boot.o -c src/p2k/p2k_boot.cpp
 	$(CC_COMPILE) $(CPP) -o p2kboot $(P2K_OBJ)/p2k_boot.o \
 		$(filter-out $(P2K_OBJ)/p2k_selftest.o,$(P2KOBJS))
 	@echo 'built p2kboot'
 
-# Standalone self-test binary: runs the imported CPU core without starting PinMAME.
+# Standalone self-test binary: runs the imported CPU core without starting PinMAME
 p2ktest: $(P2K_OBJDIRS) $(P2KOBJS)
 	$(CC_COMPILE) $(CPP) $(P2K_CXXFLAGS) -DP2K_SELFTEST_MAIN -o $(P2K_OBJ)/selftest_main.o \
 		-c src/p2k/p2k_selftest.cpp

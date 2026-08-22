@@ -2833,8 +2833,8 @@ DRIVER(fh,l9b)          //                  Funhouse (L-9 Improved German transl
 DRIVER(fh,d9b)          //                  Funhouse (D-9 Improved German translation MOD) LED Ghost Fix
 DRIVER(fh,905h)         //          04/96 W Funhouse (9.05H)
 DRIVER(fh,906h)         //                  Funhouse (9.06H Coin Play)
-DRIVER(fh,907h)         //          04/26   Funhouse (9.07H LED Ghost Fix + Ballsaver MOD)
-DRIVER(fh,905hbs)       //          08/26   Funhouse (9.05H LED Ghost Fix + Ballsaver MOD)
+DRIVER(fh,907h)         //          04/26   Funhouse (9.07H Ballsaver MOD)
+DRIVER(fh,905hbs)       //          08/26   Funhouse (9.05H Ballsaver MOD)
 DRIVER(fh,f91)          //          ??/??   Funhouse (FreeWPC 0.91)
 DRIVER(bop,l2)          //WPC-502:  04/91 W Machine: Bride of Pinbot, The (L-2)
 DRIVER(bop,d2)          //                  Machine: Bride of Pinbot, The (D-2) LED Ghost Fix

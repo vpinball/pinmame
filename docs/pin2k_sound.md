@@ -1,10 +1,9 @@
 # Pinball 2000 DCS2 sound board
 
-(Untested) support for the Williams/Midway Pinball 2000 sound board (Revenge From Mars,
+Support for the Williams/Midway Pinball 2000 sound board (Revenge From Mars,
 Star Wars Episode I and prototypes): **ADSP-2104 @ 16 MHz + SDRC ASIC, stereo output**.
 
-This is the sound board only, as PinMAME has no Pin2K game driver yet - host is a MediaGX PC.
-The code below exists so that a future driver can attach a working sound board without having to build it first.
+This is info for the sound board only, maybe also a bit outdated since P2K emulation is working.
 
 ## Status
 
@@ -20,11 +19,11 @@ sets:
   sample data the same way
 - host command interface, 16-bit path, latches and status flags
 - SPORT1 autobuffer, stereo de-interleave, frame parity, 16-word aligned base
+- stereo routing panned hard left/right, channel order matching the cabinet
 - **31250 frames/sec** - see the sample-rate note in Design notes; deriving the
   rate from `SCLKDIV` plays everything 1.6x too fast
-- stereo routing panned hard left/right, channel order matching the cabinet
 
-The boot self-test "bong" may not sound right; see the sample-rate note in
+**Bug due to this**: The boot self-test "bong" may not sound right; see the sample-rate note in
 Design notes for the likely reason and the shape of a fix.
 
 The standalone `pin2ksnd`/`pin2ksw1` harness gets the board booted, initialised
@@ -34,7 +33,7 @@ not of the board - see "The host protocol wall".
 
 > See "Known gaps" at the end before trusting it.
 
-## Hooking it up
+## Hooking it up on its own
 
 Three things in the driver:
 
@@ -241,7 +240,10 @@ checked at all three speedup entry points in `adsp2100.c` (idle-loop detector,
 calls in `wmssnd.c` that exist only to undo the idle-loop suspend.
 
 This may be okay on modern hosts: plain interpretation of a 16 MHz ADSP should keep up
-with real time comfortably. To be tested!
+with real time comfortably.
+After the P2K emulation landed, this was found to be not so true though,
+so additional idle skip detections had to be programmed to make the ADSP not
+block the other emulation by too much.
 
 **SDRC** is ported from the register model in MAME's `dcs.cpp`. MAME installs and removes address-map entries as the ASIC
 is reprogrammed; here the derived page pointers live in `dcslocals.p2k` and the
@@ -266,8 +268,8 @@ PinMAME, so firmware that pages through flash works without loosening the gate.
 
 ## Test harness
 
-There is no Pin2K game driver yet, so nothing normally initialises the board or
-sends it commands. A diagnostic driver exists for exactly that, off by default:
+Apart from the Pin2K game drivers, nothing normally initialises the board or
+sends it commands on its own. A diagnostic driver exists for exactly that, off by default:
 
 ```c
 // src/pinmame.h
@@ -324,7 +326,7 @@ ACE1/DCS runtime mixer initialisation and only watches for `0x8280` going past
 to know the guest has finished. The stream itself lives in the PC-side game
 code.
 
-**To get sound for this test code, the next step would be to recover that stream from `game.rom`**, with
+**To get sound for this special test code, the next step would be to recover that stream from `game.rom`**, with
 `symbols.rom` alongside it (both in Encore's `updates/` tree), rather than
 guessing further at command words. Everything below the protocol is done.
 
