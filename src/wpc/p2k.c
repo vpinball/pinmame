@@ -28,16 +28,17 @@
 #endif
 
 #if P2K_DEBUG
-static int p2k_bringupFrame;   /* SCAFFOLDING: shared clock, see the block below */
-static int p2k_keyLaunch;      /* Launch Ball key, shared with the scaffolding - see there */
+static int p2k_bringupFrame; /* SCAFFOLDING: shared clock, see the block below */
+static int p2k_keyLaunch;    /* Launch Ball key, shared with the scaffolding - see there */
 #endif
+static int video_mode_announced = 0;
 
 /* The MediaGX side's ROMs. They are declared as regions like any other game's so that a version
    is picked, audited and zipped exactly the way PinMAME does it everywhere else; MACHINE_INIT
    hands them to the subsystem, which never opens a file of its own. REGION_USER4 is the sound
    board's banked SRAM (DCS_P2K_SRAMREGION), hence 1 and 2 here */
-#define P2K_PRISMREGION (REGION_USER1)   /* four 16 MB Prism banks, u100-u107 interleaved */
-#define P2K_UPDREGION   (REGION_USER2)   /* the 8 MB update flash - this is the game version */
+#define P2K_PRISMREGION (REGION_USER1) /* four 16 MB Prism banks, u100-u107 interleaved */
+#define P2K_UPDREGION   (REGION_USER2) /* the 8 MB update flash - this is the game version */
 
 /* implemented in src/p2k/p2k_pinmame.cpp */
 extern void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen, const unsigned char *updates, unsigned updatesLen);
@@ -60,15 +61,15 @@ static WRITE32_HANDLER(p2k_w) { p2k_pinmame_write(offset * 4, data, ~mem_mask); 
 
 /* The subsystem decodes addresses itself, but PinMAME's memory system wants the regions spelled
    out - a single entry spanning the whole 32-bit space keeps the CPU from being set up at all.
-   These are the same ranges p2k_state::mem_r handles. */
+   These are the same ranges p2k_state::mem_r handles */
 #define P2K_RANGES(handler) \
-	{ 0x00000000, 0x000FFFFF, handler },   /* low memory: RAM, CGA, expansion ROM, BIOS RAM */ \
-	{ 0x00100000, 0x0FFFFFFF, handler },   /* extended RAM                                  */ \
-	{ 0x10000000, 0x1FFFFFFF, handler },   /* PLX EEPROM, NVRAM, update flash, DCS, prism    */ \
-	{ 0x40000000, 0x40BFFFFF, handler },   /* MediaGX registers, SMM, frame buffer           */ \
-	{ 0xC0000000, 0xC000FFFF, handler },   /* alias of the MediaGX control registers         */ \
-	{ 0xF00C0000, 0xF00C7FFF, handler },   /* second window on the expansion ROM             */ \
-	{ 0xFFFD0000, 0xFFFFFFFF, handler },   /* system BIOS, holds the reset vector            */
+	{ 0x00000000, 0x000FFFFF, handler }, /* low memory: RAM, CGA, expansion ROM, BIOS RAM */ \
+	{ 0x00100000, 0x0FFFFFFF, handler }, /* extended RAM                                  */ \
+	{ 0x10000000, 0x1FFFFFFF, handler }, /* PLX EEPROM, NVRAM, update flash, DCS, prism   */ \
+	{ 0x40000000, 0x40BFFFFF, handler }, /* MediaGX registers, SMM, frame buffer          */ \
+	{ 0xC0000000, 0xC000FFFF, handler }, /* alias of the MediaGX control registers        */ \
+	{ 0xF00C0000, 0xF00C7FFF, handler }, /* second window on the expansion ROM            */ \
+	{ 0xFFFD0000, 0xFFFFFFFF, handler }, /* system BIOS, holds the reset vector           */
 
 static MEMORY_READ32_START(p2k_readmem)
 	P2K_RANGES(p2k_r)
@@ -77,21 +78,6 @@ MEMORY_END
 static MEMORY_WRITE32_START(p2k_writemem)
 	P2K_RANGES(p2k_w)
 MEMORY_END
-
-/* Pinball 2000's output is the MediaGX frame buffer, 640x240 in RGB555 as the
-   display controller is programmed here and what the analog monitor expects. What sits in video memory is rotated by 180 degrees
-   against what a player sees - the cabinet reflects the monitor into the playfield through a
-   half-silvered mirror, which accounts for one axis, and the frame buffer's row order for the
-   other - so it is turned back here. What is on this screen is what a player sees. */
-
-/* Per-channel average of two 0x00RRGGBB pixels, rounding down, without letting a channel carry
-   into the one above it: the low bit of each channel is dropped by the mask before the shift.
-   P2K_AVG2(a,a) == a, which is what makes the even output lines exact copies below */
-#define P2K_AVG2(a,b) (((((a) ^ (b)) & 0xfefefeu) >> 1) + ((a) & (b)))
-
-/* Per-channel average of two RGB555 pixels, rounding down.
-   RGB555 layout: 0RRRRRGGGGGBBBBB. P2K_AVG2_555(a,a) == a. */
-#define P2K_AVG2_555(a,b) (((((a) ^ (b)) & 0x7bdeu) >> 1) + ((a) & (b)))
 
 /* The DCS2 sound board (src/wpc/wmssnd.c, docs/pin2k_sound.md). On real hardware it
    lives in the Prism card's BAR4 window at 0x13000000:
@@ -105,7 +91,13 @@ MEMORY_END
 UINT32 p2k_dcs_read(UINT32 offset, UINT32 mem_mask);
 void p2k_dcs_write(UINT32 offset, UINT32 data, UINT32 mem_mask);
 
-static const char *p2k_romPrefix(void);   /* defined below, wanted by the watches in p2k_sync_io */
+/* Which of the games this is. The subsystem needs to know because the boot-ROM patch it
+   applies sits at a different address in each, and the driver name carries the answer */
+static const char *p2k_romPrefix(void) {
+  const char *name = (Machine && Machine->gamedrv) ? Machine->gamedrv->name : "rfm";
+  if (strncmp(name, "rfm", 3) == 0) return "rfm";       /* "rfm_160" and the rest */
+  return "swep1";                                       /* "swep1_150" and the rest are the Episode I sets */
+}
 
 /* Which game's device-name tables to use: P2K_GAME_* from p2k_names.h */
 static int p2k_gameIndex(void) {
@@ -138,9 +130,10 @@ static int p2k_swwatch(void)   { static int on = -1; return p2k_watch("P2K_SWWAT
    menu means the table is wrong, not the arithmetic. Devices with no table entry print as
    "(unnamed)" rather than being skipped: an unnamed one firing is itself worth seeing */
 static void p2k_watch_bits(const char *tag, const UINT8 *bits, int nbytes, UINT8 *prev, const p2k_name_t *names, int base, int stride) {
-  int i, b, any = 0;
+  int i, any = 0;
   for (i = 0; i < nbytes; i++) {
     const unsigned diff = (unsigned)(bits[i] ^ prev[i]);
+    int b;
     if (!diff) continue;
     for (b = 0; b < 8; b++) {
       const int num = base + i * stride + b;
@@ -290,21 +283,35 @@ static void p2k_sync_io(void) {
 #endif
 }
 
-/* A PinMAME video renderer rather than a MAME VIDEO_UPDATE. The difference matters: with
+/* Per-channel average of two 0x00RRGGBB pixels, rounding down, without letting a channel carry
+   into the one above it: the low bit of each channel is dropped by the mask before the shift.
+   P2K_AVG2(a,a) == a, which is what makes the even output lines exact copies below */
+#define P2K_AVG2(a,b) (((((a) ^ (b)) & 0xfefefeu) >> 1) + ((a) & (b)))
+
+/* Per-channel average of two RGB555 pixels, rounding down.
+   RGB555 layout: 0RRRRRGGGGGBBBBB. P2K_AVG2_555(a,a) == a. */
+#define P2K_AVG2_555(a,b) (((((a) ^ (b)) & 0x7bdeu) >> 1) + ((a) & (b)))
+
+/* Pinball 2000's output is the MediaGX frame buffer, 640x240 in RGB555 as the
+   display controller is programmed here and what the analog monitor expects. What sits in video memory is rotated by 180 degrees
+   against what a player sees - the cabinet reflects the monitor into the playfield through a
+   half-silvered mirror, which accounts for one axis, and the frame buffer's row order for the
+   other - so it is turned back here. What is on this screen is what a player sees.
+
+   A PinMAME video renderer rather than a MAME VIDEO_UPDATE. The difference matters: with
    MDRV_VIDEO_UPDATE overridden, core_gen() never runs, and it is core_gen() that walks the
    display layout - which is what feeds libpinmame's display export. Declared in p2k_disp below
-   as a CORE_VIDEO layout, exactly as byvidpin.c does e.g. for Baby Pac-Man. */
+   as a CORE_VIDEO layout, exactly as byvidpin.c does e.g. for Baby Pac-Man */
 static PINMAME_VIDEO_UPDATE(p2k_video) {
   static UINT32 frame[P2K_MAX_PIXELS];
-  static int announced = 0; //!!
   unsigned width, height, success, fast_path_success;
 
   p2k_sync_io();
 
   success = p2k_pinmame_frame(frame, P2K_MAX_PIXELS, &width, &height, (bitmap->depth != 32), &fast_path_success);
   if (!success || !width || !height) { fillbitmap(bitmap, 0, cliprect); return; }
-  if (!announced) {
-    announced = 1;
+  if (!video_mode_announced) {
+    video_mode_announced = 1;
     fprintf(stderr, "[p2k video] %ux%u source into a %ux%u %d bpp bitmap (%s)\n",
             width, height, width, height * P2K_LINE_DOUBLE, bitmap->depth, P2K_LINE_INTERPOLATE ? "lines interpolated" : "lines doubled");
   }
@@ -424,15 +431,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
 #endif
 }
 
-/* Which of the games this is. The subsystem needs to know because the boot-ROM patch it
-   applies sits at a different address in each, and the driver name carries the answer */
-static const char *p2k_romPrefix(void) {
-  const char *name = (Machine && Machine->gamedrv) ? Machine->gamedrv->name : "rfm";
-  if (strncmp(name, "rfm", 3) == 0) return "rfm";       /* "rfm_160" and the rest */
-  return "swep1";                                       /* "swep1_150" and the rest are the Episode I sets */
-}
-
-static SWITCH_UPDATE(p2k);   /* defined with the input ports below */
+static SWITCH_UPDATE(p2k); /* defined with the input ports below */
 
 /* The optos, per game, terminated by 0 - see the note at the top of SWITCH_UPDATE for where the
    lists come from. They rest closed, so anything that walks the matrix has to know which they are:
@@ -518,6 +517,8 @@ static void p2k_dumpNames(void) {
 #endif
 
 static MACHINE_INIT(p2k) {
+  video_mode_announced = 0;
+
   p2k_dumpNames();
   p2k_pinmame_start(memory_region(P2K_PRISMREGION), (unsigned int)memory_region_length(P2K_PRISMREGION),
                     memory_region(P2K_UPDREGION), (unsigned int)memory_region_length(P2K_UPDREGION));
@@ -736,9 +737,9 @@ static SWITCH_UPDATE(p2k) {
 		   which is exactly what a coin mapped there did here. The fourth port bit has no known
 		   position, so it stays unmapped rather than guessed */
 		coreGlobals.swMatrix[CORE_COINDOORSWCOL] =
-			((in   & 0x0001) ? 0x02 : 0) |
-			((in   & 0x0002) ? 0x04 : 0) |
-			((in   & 0x0004) ? 0x80 : 0);
+			((in   & 0x0001) ? 0x02              : 0) |
+			((in   & 0x0002) ? 0x04              : 0) |
+			((in   & 0x0004) ? 0x80              : 0);
 
 		coreGlobals.swMatrix[11] =
 			((in   & 0x0800) ? P2K_CAB_SLAMTILT  : 0) |
@@ -750,10 +751,10 @@ static SWITCH_UPDATE(p2k) {
 			((in   & 0x1000) ? P2K_CAB_LACTION   : 0);
 
 		coreGlobals.swMatrix[10] =
-			((in   & 0x0080) ? P2K_DIAG_ESCAPE : 0) |
-			((in   & 0x0020) ? P2K_DIAG_UP     : 0) |
-			((in   & 0x0040) ? P2K_DIAG_DOWN   : 0) |
-			((in   & 0x0010) ? P2K_DIAG_ENTER  : 0);
+			((in   & 0x0080) ? P2K_DIAG_ESCAPE   : 0) |
+			((in   & 0x0020) ? P2K_DIAG_UP       : 0) |
+			((in   & 0x0040) ? P2K_DIAG_DOWN     : 0) |
+			((in   & 0x0010) ? P2K_DIAG_ENTER    : 0);
 
 		core_setSw(swStartButton, in & 0x0200);
 		core_setSw(swLaunchButton, (in & 0x4000) ? 1 : 0);
@@ -822,7 +823,7 @@ static SWITCH_UPDATE(p2k) {
 		const char *seq = getenv("P2K_PLAY");
 		const char *dc = getenv("P2K_DOORCLOSE");
 		const char* sweep = getenv("P2K_SWSWEEP");
-		int frame, i;
+		int frame;
 		/* Nothing here costs anything unless it is asked for. Everything below is behind one of
 		   these three, and a release build simply never enters the block */
 		if (!tr && !seq && !dc && !sweep) return;
@@ -932,7 +933,7 @@ static SWITCH_UPDATE(p2k) {
 
 		if (tr) {
 			const char *ba = getenv("P2K_BALLSAT");
-			const int ballsAt = ba ? (int)strtol(ba, NULL, 10) : 1500;
+			const int ballsAt  = ba ? (int)strtol(ba, NULL, 10) : 1500;
 			const char *dr = getenv("P2K_DRAIN");
 			const int playtime = dr ? (int)strtol(dr, NULL, 10) : 300;
 			const char *lh = getenv("P2K_LANEHOLD");
@@ -942,6 +943,7 @@ static SWITCH_UPDATE(p2k) {
 			const int eject  = (coreGlobals.solenoids & (1u << 8))  ? 1 : 0; /* driver 9  */
 			const int plunge = (coreGlobals.solenoids & (1u << 14)) ? 1 : 0; /* driver 15 */
 			int inTrough = 0, busy = 0, lane = 0;
+			int i;
 
 			if (nballs < 0) { nballs = (int)strtol(tr, NULL, 10);
 			                  if (nballs < 0) nballs = 0; if (nballs > 8) nballs = 8; }
@@ -1016,15 +1018,15 @@ static SWITCH_UPDATE(p2k) {
 			   The outlanes (16, 27) are deliberately absent - draining is the drain timer's job,
 			   so a ball's length in play stays under P2K_DRAIN */
 			static const int pfSwitches[] = {
-				63, 64, 65,     /* left, right, bottom jet   */
-				61, 62,         /* slingshots                */
-				36, 35, 34, 33, /* centre targets 1..4       */
-				73, 72, 71,     /* martian targets 1..3      */
-				85, 86, 87,     /* martian targets 7..5      */
-				77, 76,         /* left and right top lane   */
-				78, 25, 68, 67, /* left and right loops      */
-				11, 28, 52, 12, /* ramp entrances and exits  */
-				74              /* centre loop rollover      */
+				63, 64, 65,     /* left, right, bottom jet  */
+				61, 62,         /* slingshots               */
+				36, 35, 34, 33, /* centre targets 1..4      */
+				73, 72, 71,     /* martian targets 1..3     */
+				85, 86, 87,     /* martian targets 7..5     */
+				77, 76,         /* left and right top lane  */
+				78, 25, 68, 67, /* left and right loops     */
+				11, 28, 52, 12, /* ramp entrances and exits */
+				74              /* centre loop rollover     */
 			};
 			static int pfIdx = 0, pfSw = 0, pfUntil = 0, pfNext = 0;
 			if (getenv("P2K_PLAYFIELD")) {

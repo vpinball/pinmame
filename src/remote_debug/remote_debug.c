@@ -61,6 +61,7 @@ enum {
 typedef struct {
 	UINT32 adr;
 	int bank;             /* -1: any bank */
+	int cpu;              /* -1: any CPU */
 	int enabled;
 	int temp;             /* one-shot (run-to/step-over/step-out) */
 	int cond_op;          /* COND_NONE for unconditional */
@@ -170,6 +171,7 @@ static volatile sig_atomic_t coverage_enabled = 0;
 typedef struct {
 	UINT32 addr;
 	int bank;
+	int cpu;              /* -1: any CPU */
 	UINT32 hits;
 } tracepoint_t;
 
@@ -207,6 +209,7 @@ static int action_count = 0;
 typedef struct {
 	UINT32 addr;
 	int bank;       /* -1: any bank */
+	int cpu;        /* -1: any CPU */
 	UINT32 count;
 } instrument_t;
 
@@ -630,7 +633,7 @@ static int cond_matches(const breakpoint_t *bp)
 }
 
 /* Internal add; temp breakpoints are silent. */
-static int breakpoint_add_internal(UINT32 adr, int bank, int temp,
+static int breakpoint_add_internal(UINT32 adr, int bank, int cpu, int temp,
                                    const char *cond, UINT32 ignore)
 {
 	int result = -1;
@@ -640,6 +643,7 @@ static int breakpoint_add_internal(UINT32 adr, int bank, int temp,
 		memset(bp, 0, sizeof(*bp));
 		bp->adr = adr;
 		bp->bank = bank;
+		bp->cpu = cpu;
 		bp->enabled = 1;
 		bp->temp = temp;
 		bp->ignore_count = ignore;
@@ -664,19 +668,19 @@ static int breakpoint_add_internal(UINT32 adr, int bank, int temp,
 	return result;
 }
 
-int remote_debug_breakpoint_add_ex(UINT32 adr, int bank, const char *cond, UINT32 ignore)
+int remote_debug_breakpoint_add_ex(UINT32 adr, int bank, int cpu, const char *cond, UINT32 ignore)
 {
-	return breakpoint_add_internal(adr, bank, 0, cond, ignore);
+	return breakpoint_add_internal(adr, bank, cpu, 0, cond, ignore);
 }
 
 void remote_debug_breakpoint_add(UINT32 adr)
 {
-	breakpoint_add_internal(adr, -1, 0, NULL, 0);
+	breakpoint_add_internal(adr, -1, -1, 0, NULL, 0);
 }
 
 void remote_debug_breakpoint_add_banked(UINT32 adr, int bank)
 {
-	breakpoint_add_internal(adr, bank, 0, NULL, 0);
+	breakpoint_add_internal(adr, bank, -1, 0, NULL, 0);
 }
 
 void remote_debug_breakpoint_clear(void)
@@ -722,13 +726,17 @@ static UINT32 coverage_index(UINT32 pc, int bank)
 void remote_debug_breakpoint_hook(void)
 {
 	UINT32 pc;
-	int current_bank, i;
+	int current_bank, current_cpu, i;
 
 	if (breakpoint_count == 0 && instrument_count == 0 && tracepoint_count == 0
 			&& !exec_trace_enabled && !coverage_enabled)
 		return;
 	pc = activecpu_get_reg(REG_PC);
 	current_bank = wpc_get_bank();
+	/* Which processor is running matters on multi-CPU boards: the two address
+	   spaces overlap, so an unfiltered point on a low address counts hits from
+	   whichever core happens to be there. */
+	current_cpu = cpu_getactivecpu();
 
 	/* execution trace: record this instruction in the ring buffer */
 	if (exec_trace_enabled) {
@@ -758,7 +766,8 @@ void remote_debug_breakpoint_hook(void)
 	/* tracepoints: log a register snapshot and continue (no halt) */
 	for (i = 0; i < tracepoint_count; i++) {
 		if (tracepoints[i].addr == pc
-				&& (tracepoints[i].bank == -1 || tracepoints[i].bank == current_bank)) {
+				&& (tracepoints[i].bank == -1 || tracepoints[i].bank == current_bank)
+				&& (tracepoints[i].cpu == -1 || tracepoints[i].cpu == current_cpu)) {
 			tp_log_t *t = &tp_log[tp_head];
 			tracepoints[i].hits++;
 			t->pc = pc;
@@ -780,7 +789,8 @@ void remote_debug_breakpoint_hook(void)
 	/* code instrumentation: count passes over marked addresses */
 	for (i = 0; i < instrument_count; i++) {
 		if (instruments[i].addr == pc
-				&& (instruments[i].bank == -1 || instruments[i].bank == current_bank))
+				&& (instruments[i].bank == -1 || instruments[i].bank == current_bank)
+				&& (instruments[i].cpu == -1 || instruments[i].cpu == current_cpu))
 			instruments[i].count++;
 	}
 
@@ -789,6 +799,8 @@ void remote_debug_breakpoint_hook(void)
 		if (!bp->enabled || pc != bp->adr)
 			continue;
 		if (bp->bank != -1 && current_bank != bp->bank)
+			continue;
+		if (bp->cpu != -1 && current_cpu != bp->cpu)
 			continue;
 		if (!cond_matches(bp))
 			continue;
@@ -1186,7 +1198,7 @@ void remote_debug_step_over(void)
 		if (need_ctx)
 			cpuintrf_pop_context();
 		if (size > 0) {
-			breakpoint_add_internal(pc + (UINT32)size, -1, 1, NULL, 0);
+			breakpoint_add_internal(pc + (UINT32)size, -1, cpu_getactivecpu(), 1, NULL, 0);
 			is_paused = 0;
 			remote_debug_add_message("Stepping over...");
 		}
@@ -1203,7 +1215,7 @@ void remote_debug_step_out(void)
 	if (callstack_ptr > 0) {
 		const callstack_entry_t *e = &callstack[callstack_ptr - 1];
 		char b[MSG_LEN];
-		breakpoint_add_internal(e->pc, e->bank, 1, NULL, 0);
+		breakpoint_add_internal(e->pc, e->bank, -1, 1, NULL, 0);
 		is_paused = 0;
 		snprintf(b, sizeof(b), "Stepping out to %04X...", e->pc);
 		remote_debug_add_message(b);
@@ -1219,7 +1231,7 @@ void remote_debug_run_to(UINT32 addr, int bank)
 {
 	char b[MSG_LEN];
 	remote_debug_lock();
-	breakpoint_add_internal(addr, bank, 1, NULL, 0);
+	breakpoint_add_internal(addr, bank, -1, 1, NULL, 0);
 	is_paused = 0;
 	remote_debug_unlock();
 	if (bank != -1)
@@ -1493,8 +1505,15 @@ static const char *switch_name(int num)
 		"L.R Flipper EOS", "L.R Flipper", "L.L Flipper EOS", "L.L Flipper",
 		"U.R Flipper EOS", "U.R Flipper", "U.L Flipper EOS", "U.L Flipper"
 	};
+	/* Column 0 is the coin door on WPC, and these names belong to that family
+	   alone. Other generations use the column for whatever the driver says it
+	   is - rfranco keeps its two operator door switches there - so labelling
+	   one of those "Coin 1" states something that is not true. Fall through to
+	   the empty name instead, which is what the rest of such a driver's
+	   switches already report. */
 	if (num >= 1 && num <= 8)
-		return coindoor[num - 1];
+		return (core_gameData && (core_gameData->gen & GEN_ALLWPC))
+		       ? coindoor[num - 1] : "";
 	if (num >= CORE_FLIPPERSWCOL * 10 + 1 && num <= CORE_FLIPPERSWCOL * 10 + 8)
 		return flippers[num - (CORE_FLIPPERSWCOL * 10 + 1)];
 	if (core_gameData) {
@@ -1773,13 +1792,14 @@ void remote_debug_get_action_log(char **buffer, int *len)
 /* Code instrumentation (PC hit counting)                             */
 /* ================================================================== */
 
-int remote_debug_instrument_add(UINT32 addr, int bank)
+int remote_debug_instrument_add(UINT32 addr, int bank, int cpu)
 {
 	int result = -1;
 	remote_debug_lock();
 	if (instrument_count < INSTRUMENT_MAX) {
 		instruments[instrument_count].addr = addr;
 		instruments[instrument_count].bank = bank;
+		instruments[instrument_count].cpu = cpu;
 		instruments[instrument_count].count = 0;
 		instrument_count++;
 		result = 0;
@@ -1803,9 +1823,9 @@ void remote_debug_get_instrumentation(char **buffer, int *len)
 	remote_debug_lock();
 	sb_appendf(&sb, "{\"points\": [");
 	for (i = 0; i < instrument_count; i++)
-		sb_appendf(&sb, "%s{\"addr\": %u, \"bank\": %d, \"count\": %u}",
+		sb_appendf(&sb, "%s{\"addr\": %u, \"bank\": %d, \"cpu\": %d, \"count\": %u}",
 		           (i > 0) ? "," : "", instruments[i].addr,
-		           instruments[i].bank, instruments[i].count);
+		           instruments[i].bank, instruments[i].cpu, instruments[i].count);
 	sb_appendf(&sb, "]}");
 	remote_debug_unlock();
 	*buffer = sb.buf;
@@ -2249,13 +2269,14 @@ void remote_debug_get_coverage_region(char **buffer, int *len, UINT32 addr, int 
 /* Tracepoints (log-and-continue)                                     */
 /* ================================================================== */
 
-int remote_debug_tracepoint_add(UINT32 addr, int bank)
+int remote_debug_tracepoint_add(UINT32 addr, int bank, int cpu)
 {
 	int result = -1;
 	remote_debug_lock();
 	if (tracepoint_count < MAX_POINTS) {
 		tracepoints[tracepoint_count].addr = addr;
 		tracepoints[tracepoint_count].bank = bank;
+		tracepoints[tracepoint_count].cpu = cpu;
 		tracepoints[tracepoint_count].hits = 0;
 		tracepoint_count++;
 		result = 0;
@@ -2281,9 +2302,9 @@ void remote_debug_get_tracepoints(char **buffer, int *len)
 	remote_debug_lock();
 	sb_appendf(&sb, "{\"points\": [");
 	for (i = 0; i < tracepoint_count; i++)
-		sb_appendf(&sb, "%s{\"addr\": %u, \"bank\": %d, \"hits\": %u}",
+		sb_appendf(&sb, "%s{\"addr\": %u, \"bank\": %d, \"cpu\": %d, \"hits\": %u}",
 		           (i > 0) ? "," : "", tracepoints[i].addr,
-		           tracepoints[i].bank, tracepoints[i].hits);
+		           tracepoints[i].bank, tracepoints[i].cpu, tracepoints[i].hits);
 	sb_appendf(&sb, "], \"log\": [");
 	for (i = 0; i < tp_count; i++) {
 		int idx = (tp_head - tp_count + i + TP_LOG_SIZE) % TP_LOG_SIZE;
