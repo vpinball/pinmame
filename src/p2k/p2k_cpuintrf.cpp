@@ -616,7 +616,6 @@ inline void pctrap_check(unsigned pc)
 }
 
 } // namespace
-#endif // P2K_DEBUG
 
 // This runs before every single guest instruction, so what it does when nothing is asked of it
 // is a performance decision, not a detail. Two things were costing measurably:
@@ -630,19 +629,17 @@ inline void pctrap_check(unsigned pc)
 // handler's IRET. That peek used to go through the bus for every instruction inside clkint - and
 // the machine is inside clkint roughly a third of the time - so it reads main RAM directly now,
 // falling back to the bus only when the PC is somewhere else
-#if P2K_DEBUG
 static int g_hooktrace_left = []() -> int {
 	const char *s = getenv("P2K_HOOKTRACE");
 	return s ? (int)strtol(s, nullptr, 0) : 0;
 }();
 static bool g_probes_armed = false; // set in p2k_bridge_attach, once everything is parsed
-#endif
+
 
 // Both step functions and the peek the first one needs; nothing installs them without P2K_DEBUG.
 // The one non-probe thing that goes with them is the per-instruction P2K_REMOTE_DEBUG_HOOK()
 // below - but mediagx_execute() calls it once per 2000-cycle chunk regardless, which is what the
 // remote debugger has always run on in a release build, the hook being unarmed there
-#if P2K_DEBUG
 
 static inline u8 p2k_peek_byte(unsigned a)
 {
