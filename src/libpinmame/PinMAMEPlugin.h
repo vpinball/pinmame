@@ -42,18 +42,17 @@ typedef struct PinMAMEMachineStateMsg
 // layout (1 switch matrix, 1 lamp matrix, 1 high current output group, some GIs
 // and dip switches).
 // 
-// Solenoid/GI/Lamp states can be requested as byte or float:
-// . bytes hold similar value as VPinMAME (not exactly as the result used to depend on the request path, and solenoids used to expose internal storage layout)
-// . floats are normalized values (0..1)
-//
-#define PMPI_GROUP_MASK      0xFF00
-#define PMPI_GROUP_SOLENOID  0x0000 // 'Solenoids', index is 1 based
-#define PMPI_GROUP_GI        0x0100 // 'Global Illumination', index is 0 based
-#define PMPI_GROUP_LAMP      0x0200 // 'Lamps', indexing depends on each driver
-#define PMPI_GROUP_MECH      0x0300 // float or int32 values for position & speed
-#define PMPI_GROUP_SWITCH    0x0400 // boolean states as byte values, index depends on each driver and can be negative (for cabinet switches)
-#define PMPI_GROUP_DIPSWITCH 0x0500 // boolean states as byte values
-#define PMPI_GROUP_GAMESTATE 0x0600 // game states derived from live memory
+#define PMPI_GROUP_SOLENOID        1 // 'Solenoids', index is 1 based
+#define PMPI_GROUP_GI              2 // 'Global Illumination', index is 0 based
+#define PMPI_GROUP_LAMP            3 // 'Lamps', indexing depends on each driver
+#define PMPI_GROUP_MECH            4 // Position & speed of each mech (core or user defined)
+#define PMPI_GROUP_SWITCH          5 // Playfield and cabinet switches, index depends on each driver and can be negative (for cabinet switches)
+#define PMPI_GROUP_DIPSWITCH       6 // DIP switches
+#define PMPI_GROUP_GAMESTATE       7 // Game states derived from live memory
+#define PMPI_GROUP_VPM_SOLENOID    8 // VPinMAME compatible solenoids (the result used to depend on the request path, also exposing internal storage layout)
+#define PMPI_GROUP_VPM_GI          9 // VPinMAME compatible GI
+#define PMPI_GROUP_VPM_LAMP       10 // VPinMAME compatible lamps
+#define PMPI_GROUP_VPM_MECH       11 // VPinMAME compatible mechs
 
 // Game events
 //
