@@ -3278,6 +3278,15 @@ void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
       core_set_pwm_output_type(startIndex + i, 1, outputTypes[i]);
 }
 
+int core_get_pwm_output_type(int index)
+{
+   if (coreGlobals.physicOutputState[index].integrator == &core_update_pwm_output_bulb)
+      return 1;
+   if (coreGlobals.physicOutputState[index].integrator == &core_update_pwm_output_led)
+      return 1;
+   return 0;
+}
+
 // Perform emulation of the requested physical outputs from the stored PWM digital output states
 // Initial implementation was performing this task upon digital output writes causing DMD animation stutters and sound buffer underflow.
 // This is now performed on physic output reads, moving the CPU load to the caller thread. The client is responsible and has the ability
