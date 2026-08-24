@@ -1870,12 +1870,12 @@ static void GetSwitchState(CtlResId blockId, unsigned int stateIndex, void* pRes
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<uint8_t*>(pResult) = core_getSw(static_cast<int16_t>(srcId)) != 0 ? 0xFF : 0;
 }
-static void SetSwitchState(CtlResId blockId, unsigned int stateIndex, void* pResult)
+static void SetSwitchState(CtlResId blockId, unsigned int stateIndex, const void* pResult)
 {
    if (_isRunning != 1) return;
    std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
-   core_setSw(static_cast<int16_t>(srcId), *static_cast<uint8_t*>(pResult) != 0);
+   core_setSw(static_cast<int16_t>(srcId), *static_cast<const uint8_t*>(pResult) != 0);
 }
 static void GetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
@@ -1886,14 +1886,14 @@ static void GetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, void* p
    const int mask = 1 << (srcId & 7);
    *static_cast<uint8_t*>(pResult) = (vp_getDIP(bank) & mask) != 0 ? 0xFF : 0;
 }
-static void SetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, void* pResult)
+static void SetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, const void* pResult)
 {
    if (_isRunning != 1) return;
    std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    const int bank = srcId / 8;
    const int mask = 1 << (srcId & 7);
-   if (*static_cast<uint8_t*>(pResult) != 0)
+   if (*static_cast<const uint8_t*>(pResult) != 0)
       vp_setDIP(bank, vp_getDIP(bank) | mask);
    else
       vp_setDIP(bank, vp_getDIP(bank) & ~mask);
@@ -2353,7 +2353,7 @@ static void SetupMsgApi()
             .stateDefs = msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.data()
          };
       };
-   auto addDevice = [](int groupId, const char* label, const char* desc, uint16_t mappingId, int format, int type, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* set)(CtlResId, unsigned int, void*), int mappingSrc)
+   auto addDevice = [](int groupId, const char* label, const char* desc, uint32_t mappingId, int format, int type, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* set)(CtlResId, unsigned int, const void*), int mappingSrc)
       {
          msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.emplace_back(label, desc, mappingId, format, type, get, set);
          msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].stateMap.emplace_back(mappingSrc);
@@ -2362,7 +2362,7 @@ static void SetupMsgApi()
    {
       const int nSols = coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol);
       const bool isPhysSol = (coreGlobals.nSolenoids > 0) && ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) != 0);
-      auto addPhysSol = [&isPhysSol, &addDevice](const char* label, const char* desc, const char* descVPM, uint16_t mappingId, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* getVPM)(CtlResId, unsigned int, void*), int mappingSrc, int physSolIndex)
+      auto addPhysSol = [&isPhysSol, &addDevice](const char* label, const char* desc, const char* descVPM, uint32_t mappingId, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* getVPM)(CtlResId, unsigned int, void*), int mappingSrc, int physSolIndex)
          {
             if (isPhysSol && physSolIndex < coreGlobals.nSolenoids)
             {
