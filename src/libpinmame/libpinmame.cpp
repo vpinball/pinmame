@@ -245,6 +245,10 @@ static int GetGameNumFromString(const char* const name)
 	return gameNum;
 }
 
+/* Expand a 5 or 6 bit colour channel to 8 bits, replicating the high bits into the low ones so that the channel maximum maps to 255 */
+static inline UINT8 ExpandChannel5To8(const UINT32 v) { return (UINT8)((v << 3) | (v >> 2)); }
+static inline UINT8 ExpandChannel6To8(const UINT32 v) { return (UINT8)((v << 2) | (v >> 4)); }
+
 /******************************************************
  * UpdatePinmameDisplayBitmap
  ******************************************************/
@@ -263,6 +267,31 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 	   them) therefore need the value unpacked instead of looked up. */
 	const int direct = (Machine->drv->video_attributes & VIDEO_RGB_DIRECT) != 0;
 	const int depth = p_bitmap->depth;
+
+	/* Fast path for the larger highcolor screen of Pinball 2000 (640x480). Rather
+	   than fetch every pixel through the bitmap's read() function pointer and re-test the format per pixel,
+	   walk the rows directly - rp_16() is just ((UINT16*)line[y])[x], orientation being baked into the line
+	   pointers. Worth about 25% at 640x480 */
+	if (direct && (depth == 15) && (rotation == 0)) {
+		unsigned int changed = 0; /* Accumulated bitwise so that the comparison stays branch free */
+		for (int y = 0; y < height; y++) {
+			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[y];
+			UINT8* __restrict const row = dst + (size_t)y * width * 3;
+			for (int x = 0; x < width; x++) {
+				const UINT32 c = src[x];
+				const UINT8 b = ExpandChannel5To8((c >> 10) & 0x1f);
+				const UINT8 g = ExpandChannel5To8((c >>  5) & 0x1f);
+				const UINT8 r = ExpandChannel5To8( c        & 0x1f);
+				const size_t o = (size_t)x * 3;
+				changed |= (unsigned int)((row[o] ^ r) | (row[o + 1] ^ g) | (row[o + 2] ^ b));
+				row[o    ] = r;
+				row[o + 1] = g;
+				row[o + 2] = b;
+			}
+		}
+		return changed != 0;
+	}
+
 	for (int y = 0; y < height; y++) {
 		int pos = (rotation == 0) ? y*width : ((rotation == 1) ? (height - 1 - y) : (y + (width - 1)*height));
 		pos *= 3;
@@ -270,12 +299,12 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 			UINT8 r,g,b;
 			if (direct) {
 				const UINT32 c = p_bitmap->read(p_bitmap, x, y);
-				if (depth == 32) { r = (c >> 16) & 0xff; g = (c >> 8) & 0xff; b = c & 0xff; }
-				else if (depth == 16) { r = ((c >> 11) & 0x1f) << 3; g = ((c >> 5) & 0x3f) << 2; b = (c & 0x1f) << 3; }
-				else                  { r = ((c >> 10) & 0x1f) << 3; g = ((c >>  5) & 0x1f) << 3; b = (c & 0x1f) << 3; }
+				if (depth == 32) { b = (c >> 16) & 0xff; g = (c >> 8) & 0xff; r = c & 0xff; } //!! b & r positions correct?
+				else if (depth == 16) { b = ExpandChannel5To8((c >> 11) & 0x1f); g = ExpandChannel6To8((c >> 5) & 0x3f); r = ExpandChannel5To8(c & 0x1f); } // RGB565
+				else                  { b = ExpandChannel5To8((c >> 10) & 0x1f); g = ExpandChannel5To8((c >> 5) & 0x1f); r = ExpandChannel5To8(c & 0x1f); } // RGB555
 			}
 			else
-			palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
+				palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
 			diff |= (dst[pos] != r || dst[pos + 1] != g || dst[pos + 2] != b);
 			dst[pos    ] = r;
 			dst[pos + 1] = g;

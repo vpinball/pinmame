@@ -906,6 +906,10 @@ void p2k_state::pull_outputs(u8 *lamps, unsigned lamp_columns, u32 *solenoids, u
 	if (solenoids2) *solenoids2 = m_solenoids2;
 }
 
+// Expand a 5 or 6 bit colour channel to 8 bits, replicating the high bits into the low ones so that the channel maximum maps to 255
+static inline u8 expand5to8(const u32 v) { return u8((v << 3) | (v >> 2)); }
+static inline u8 expand6to8(const u32 v) { return u8((v << 2) | (v >> 4)); }
+
 // ---------------------------------------------------------------- framebuffer to a file
 // P2K_PPM=<path> writes the MediaGX framebuffer once, after P2K_PPM_AT cycles (20 emulated
 // seconds by default), as a binary PPM. The geometry and pixel format come from the display
@@ -989,15 +993,15 @@ bool p2k_state::frame_rgb(u32* const __restrict dest, unsigned capacity, unsigne
 				const u16 c = (off + 1 < room) ? fb16[off_fb] : 0;
 				if ((cfg & 2) == 0)                             // RGB565
 				{
-					r = u8(((c >> 11) & 0x1f) << 3);
-					g = u8(((c >> 5) & 0x3f) << 2);
+					r = expand5to8((c >> 11) & 0x1f);
+					g = expand6to8((c >> 5) & 0x3f);
 				}
 				else                                            // RGB555
 				{
-					r = u8(((c >> 10) & 0x1f) << 3);
-					g = u8(((c >> 5) & 0x1f) << 3);
+					r = expand5to8((c >> 10) & 0x1f);
+					g = expand5to8((c >> 5) & 0x1f);
 				}
-				b = u8((c & 0x1f) << 3);
+				b = expand5to8(c & 0x1f);
 			}
 			dest[offs] = (u32(r) << 16) | (u32(g) << 8) | b;
 		}
