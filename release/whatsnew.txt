@@ -44,12 +44,14 @@ Added physical/PWM lamps and/or solenoids support to some GTS80 games (Amazon Hu
 Added physical/PWM (dimmed) segment support to GTS80A games
 Added physical/PWM support to Star Wars Trilogy and Titanic
 Added physical/PWM support to games employing mini-DMDs and the like
+Fixed Breakshots invalid PWM flasher definition
 Fixed some potential general solenoid issues with physical/PWM
 Improved physical/PWM bulb integration
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
 Improved Alvin G. first generation DMD simulation
 In general, (almost) all DMD/mini-DMD outputs have been moved to the proper physical/PWM pipeline, allowing for more subtle effects
 Implemented memory protect logic/coin-door-switch on Sega/Stern WhiteStar games: Previously, the coin door was always considered to be open, but the coin door message doesn't get displayed if the door is already open on boot. It will only display after the door has been closed and then reopened.
+Rewired Striker Xtreme, Playboy and Sharkey's Shootout to use the J2 auxiliary-data latch of 520-5192 (fixes e.g. center and outlane pegs stuck in up position for Sharkey's)
 Fixed trolls in Medieval Madness
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot
