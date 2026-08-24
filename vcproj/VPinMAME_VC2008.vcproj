@@ -3877,6 +3877,18 @@
 					>
 				</File>
 				<File
+					RelativePath=".\..\src\wpc\rfranco.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\wpc\rfranco.h"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\wpc\rfrancogames.c"
+					>
+				</File>
+				<File
 					RelativePath=".\..\src\wpc\rotation.c"
 					>
 				</File>

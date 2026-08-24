@@ -825,6 +825,12 @@
     <ClCompile Include="..\src\wpc\regama.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\wpc\rfranco.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\rfrancogames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\wpc\rotation.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
@@ -1773,6 +1779,9 @@
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\wpc\play.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\wpc\rfranco.h">
       <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\wpc\s11.h">
