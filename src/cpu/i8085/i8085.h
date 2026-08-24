@@ -16,6 +16,7 @@ enum {
 extern int i8085_ICount;
 
 extern void i8085_set_SID(int state);
+extern void i8085_set_SID_callback(int (*callback)(void));
 extern void i8085_set_SOD_callback(void (*callback)(int state));
 extern void i8085_init(void);
 extern void i8085_reset(void *param);
