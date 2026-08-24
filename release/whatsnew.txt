@@ -31,6 +31,7 @@ Get rid of BASS external dependency (used for internal AltSound mode 1 support) 
 
 *** CORE/CPU ***
 Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well, most likely as the graphics/video part is not emulated cycle-accurate and thus much faster than the clock rate implies.
+Added Recreativos Franco Super Star emulation, including improved i8085 emulation
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added physical/PWM DMD support to Capcom games (potentially leading to more brightness levels being displayed if the CPU triggers it)
 Added physical/PWM (dimmed) segment support to System 11 games
@@ -68,6 +69,7 @@ Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, wh
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
 IDSA: Fantastic Car
+Recreativos Franco: Super Star (and set 2 - newer firmware)
 WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.20, 0.80, 0.1
       Star Wars Episode I 1.50, 1.40, 1.30, 0.40
 
