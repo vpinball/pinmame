@@ -2776,8 +2776,19 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
          charMap = metadata["char_map"].get<std::string>();
    }
 
+
+   // Shared value lists. Since _fileformat 0.5 an entry's "values" may be a string naming a list in
+   // _metadata.values rather than carrying the array inline, which the pricing tables for DIP
+   // switches use heavily. Resolved here so the enum decode below can take either form.
+   json sharedValueLists = json::object();
+   if (memMapDef.is_object() && memMapDef.contains("_metadata") && memMapDef["_metadata"].is_object())
+   {
+      const json& metadata = memMapDef["_metadata"];
+      if (metadata.contains("values") && metadata["values"].is_object())
+         sharedValueLists = metadata["values"];
+   }
    std::function<void(const json&, const std::string&, std::map<std::string, json>)> traverse_and_collect;
-   traverse_and_collect = [&traverse_and_collect, &parseAddress, &jsonFlagIsSet, &jsonFlagIsClear, &memRegions, &charMap, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
+   traverse_and_collect = [&traverse_and_collect, &parseAddress, &jsonFlagIsSet, &jsonFlagIsClear, &memRegions, &charMap, &sharedValueLists, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
       if (!node.is_object())
          return;
 
@@ -2924,8 +2935,49 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
             }
             const double valueScale = fields.contains("scale") && fields["scale"].is_number() ? fields["scale"].get<double>() : 1.0;
             const double valueOffset = fields.contains("offset") && fields["offset"].is_number() ? fields["offset"].get<double>() : 0.0;
-            type = CTLPI_STATE_FORMAT_INT64;
-            getter = [offsets, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset](unsigned int index, void* pResult)
+            // An enum's decoded number is an index into "values", not the value itself. The parser
+            // never read that array, so every enum state reported its raw index -- which is wrong
+            // for any consumer, and actively harmful where the map uses the mapping to mark states
+            // invalid. alpok_l6's game_over is the case that surfaced it: bit 1 is tilt, so the
+            // 0xFF the status byte passes through at ball transitions masks to 0b11, an index the
+            // map maps to false. Returning 3 instead made every ball change look like a game end.
+            //
+            // "values" may be the array itself or, since _fileformat 0.5, a string naming a list in
+            // _metadata.values.
+            std::vector<json> enumValues;
+            if (encoding == "enum" && fields.contains("values"))
+            {
+               const json& declared = fields["values"];
+               const json* resolved = nullptr;
+               if (declared.is_array())
+                  resolved = &declared;
+               else if (declared.is_string())
+               {
+                  const std::string& key = declared.get_ref<const std::string&>();
+                  if (sharedValueLists.contains(key) && sharedValueLists[key].is_array())
+                     resolved = &sharedValueLists[key];
+               }
+               if (resolved != nullptr)
+                  enumValues.assign(resolved->begin(), resolved->end());
+            }
+
+            // The mapped values decide what the state reports. Booleans and numbers stay numeric;
+            // a list holding any string is reported as a string, since that is what the label is.
+            // A list of anything else is left alone rather than guessed at, and decodes as before.
+            bool enumIsString = false;
+            bool enumUsable = !enumValues.empty();
+            for (const json& value : enumValues)
+            {
+               if (value.is_string())
+                  enumIsString = true;
+               else if (!value.is_boolean() && !value.is_number())
+                  enumUsable = false;
+            }
+            if (!enumUsable)
+               enumValues.clear();
+
+            type = enumIsString ? CTLPI_STATE_FORMAT_STRING : CTLPI_STATE_FORMAT_INT64;
+            getter = [offsets, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset, enumValues, enumIsString](unsigned int index, void* pResult)
                {
                   int64_t v = 0;
 
@@ -3008,6 +3060,30 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                         v = v == 0 ? 1 : 0;
                      else
                         v = v == 0 ? 0 : 1;
+                  }
+
+                  // Map the decoded number through the enum's value list. An index the list does
+                  // not cover cannot be a value, so it reports the format's default rather than the
+                  // index itself, which is what the getters already do when a state is unavailable.
+                  if (!enumValues.empty())
+                  {
+                     if (v < 0 || (size_t)v >= enumValues.size())
+                     {
+                        if (enumIsString)
+                           *static_cast<const char**>(pResult) = "";
+                        else
+                           *static_cast<int64_t*>(pResult) = 0;
+                        return;
+                     }
+                     const json& mapped = enumValues[(size_t)v];
+                     if (enumIsString)
+                     {
+                        const std::string text = mapped.is_string() ? mapped.get<std::string>() : mapped.dump();
+                        snprintf(msgLocals.memMapStringBuffer, sizeof(msgLocals.memMapStringBuffer), "%s", text.c_str());
+                        *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
+                        return;
+                     }
+                     v = mapped.is_boolean() ? (mapped.get<bool>() ? 1 : 0) : mapped.get<int64_t>();
                   }
 
                   *static_cast<int64_t*>(pResult) = v;
