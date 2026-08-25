@@ -372,9 +372,9 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 			UINT8* __restrict const row = dst + (size_t)y * width * 3;
 			for (int x = 0; x < width; x++) {
 				const UINT32 c = src[x];
-				const UINT8 b = ExpandChannel5To8((c >> 10) & 0x1f);
+				const UINT8 r = ExpandChannel5To8((c >> 10) & 0x1f);
 				const UINT8 g = ExpandChannel5To8((c >>  5) & 0x1f);
-				const UINT8 r = ExpandChannel5To8( c        & 0x1f);
+				const UINT8 b = ExpandChannel5To8( c        & 0x1f);
 				const size_t o = (size_t)x * 3;
 				changed |= (unsigned int)((row[o] ^ r) | (row[o + 1] ^ g) | (row[o + 2] ^ b));
 				row[o    ] = r;
@@ -392,9 +392,9 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 			UINT8 r,g,b;
 			if (direct) {
 				const UINT32 c = p_bitmap->read(p_bitmap, x, y);
-				if (depth == 32) { b = (c >> 16) & 0xff; g = (c >> 8) & 0xff; r = c & 0xff; } //!! b & r positions correct?
-				else if (depth == 16) { b = ExpandChannel5To8((c >> 11) & 0x1f); g = ExpandChannel6To8((c >> 5) & 0x3f); r = ExpandChannel5To8(c & 0x1f); } // RGB565
-				else                  { b = ExpandChannel5To8((c >> 10) & 0x1f); g = ExpandChannel5To8((c >> 5) & 0x1f); r = ExpandChannel5To8(c & 0x1f); } // RGB555
+				if (depth == 32) { r = (c >> 16) & 0xff; g = (c >> 8) & 0xff; b = c & 0xff; } //!! b & r positions correct?
+				else if (depth == 16) { r = ExpandChannel5To8((c >> 11) & 0x1f); g = ExpandChannel6To8((c >> 5) & 0x3f); b = ExpandChannel5To8(c & 0x1f); } // RGB565
+				else                  { r = ExpandChannel5To8((c >> 10) & 0x1f); g = ExpandChannel5To8((c >> 5) & 0x1f); b = ExpandChannel5To8(c & 0x1f); } // RGB555
 			}
 			else
 				palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
