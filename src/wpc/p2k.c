@@ -434,18 +434,13 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
 static SWITCH_UPDATE(p2k); /* defined with the input ports below */
 
 /* The optos, per game, terminated by 0 - see the note at the top of SWITCH_UPDATE for where the
-   lists come from. They rest closed, so anything that walks the matrix has to know which they are:
-   driving an opto means taking it to 0, and every other switch to 1 */
+   lists come from. They rest closed and open when a ball blocks them, which is the inverse of
+   every other switch - so they are declared active low in MACHINE_INIT via core_updInvSw() and
+   nothing after that has to know which they are: 1 sets any switch active, opto or not */
 static const int *p2k_optoList(void) {
   static const int rfmOptos[]   = {41,42,43,44,45,46,47,51,52,53,54,55,56,0};
   static const int swep1Optos[] = {41,42,43,44,45,46,47,48,51,52,58,0};
   return (strncmp(p2k_romPrefix(), "swep1", 5) == 0) ? swep1Optos : rfmOptos;
-}
-static int p2k_isOpto(int sw) {
-  const int *o = p2k_optoList();
-  int k;
-  for (k = 0; o[k]; k++) if (o[k] == sw) return 1;
-  return 0;
 }
 
 /* Switch numbering. PinMAME's base driver installs a *sequential* scheme (core_swSeq2m: matrix
@@ -518,6 +513,18 @@ static void p2k_dumpNames(void) {
 
 static MACHINE_INIT(p2k) {
   video_mode_announced = 0;
+
+  /* Optos are active low: An opto rests closed and opens when a ball blocks it, so the raw matrix bit the board reads has to be 1 at rest and 0 when a
+     ball is there - the inverse of every other switch. coreGlobals.invSw is the core's mechanism: core_updInvSw() flips the bit in invSw and in swMatrix together, so from
+     here on a table sets these switches the normal way round, 1 for "ball present", and the core hands the board the inverted value.
+
+     This runs after MACHINE_INIT(core) has copied core_gameData->wpc.invSw into coreGlobals and seeded swMatrix from it, which is why it can be done here rather than in the game data - the
+     games do not share an opto list, and the game data is one shared static struct */
+  {
+    const int * const o = p2k_optoList();
+    int k;
+    for (k = 0; o[k]; k++) core_updInvSw(o[k], 1);
+  }
 
   p2k_dumpNames();
   p2k_pinmame_start(memory_region(P2K_PRISMREGION), (unsigned int)memory_region_length(P2K_PRISMREGION),
@@ -707,25 +714,19 @@ static SWITCH_UPDATE(p2k) {
 	/  so a device or ball-tracking bit is the likely reading - and it cannot be used to derive an
 	/  opto list */
 	{
-		const int *o = p2k_optoList();
 		int k;
-		for (k = 0; o[k]; k++) core_setSw(o[k], 1);
-
 		/* Balls In Trough (B) loads the trough for a test, and is a toggle because that is what it
 		   models - balls are in the machine or they are not. Both games hold four as built, on
 		   42-45; the 6 ball kits' extra positions are left clear, a stock playfield not having them.
 
-		   Worth knowing why this is a key and not a default. An opto rests at 1 and a matrix
-		   position nobody sets reads 0, so before the optos above were brought up to rest the
-		   trough read *full* by accident - four balls that were really four unset switches, which
-		   is why a game could be started without asking for any. Resting them correctly empties the
-		   machine, and an empty machine is the honest state to power up in.
+		   The optos rest correctly without anything being done here - they are declared active low in
+		   MACHINE_INIT and the core rests them for us - so this sets them the way any other switch is set: 1 means a ball is there.
 
 		   Do not hold it down from frame zero: a full trough before the machine has initialised is
 		   not four balls, it is four switches that broke during power-up, and it may hang. Let it boot
 		   first. The ball model in the scaffolding owns 42-45 whenever it runs and overrides this */
 		if (inports && (inports[CORE_COREINPORT] & 0x8000))
-			for (k = 0; k < P2K_TROUGH_BALLS; k++) core_setSw(P2K_TROUGH_SW1 + k, 0);
+			for (k = 0; k < P2K_TROUGH_BALLS; k++) core_setSw(P2K_TROUGH_SW1 + k, 1);
 	}
 
 	if (inports) {
@@ -862,9 +863,10 @@ static SWITCH_UPDATE(p2k) {
 						seen++;
 					}
 				}
-				if (lastSw && lastSw != want) { core_setSw(lastSw, p2k_isOpto(lastSw) ? 1 : 0); lastSw = 0; }
-				if (want && into < hold) { core_setSw(want, p2k_isOpto(want) ? 0 : 1); lastSw = want; }
-				else if (want && lastSw == want) { core_setSw(want, p2k_isOpto(want) ? 1 : 0); lastSw = 0; }
+				/* No opto special case: they are active low in coreGlobals.invSw, so 1 drives any switch to its active state and 0 returns it to rest, opto or not */
+				if (lastSw && lastSw != want) { core_setSw(lastSw, 0); lastSw = 0; }
+				if (want && into < hold) { core_setSw(want, 1); lastSw = want; }
+				else if (want && lastSw == want) { core_setSw(want, 0); lastSw = 0; }
 			}
 		}
 
@@ -1079,7 +1081,7 @@ static SWITCH_UPDATE(p2k) {
 
 			   Only the trough is driven here, and only the four a stock machine has. Everything else
 			   was set at rest further up, so 41, 46 and 51 no longer need repeating */
-			for (i = 0; i < 4; i++) core_setSw(42 + i, (i < inTrough) ? 0 : 1);
+			for (i = 0; i < 4; i++) core_setSw(42 + i, (i < inTrough) ? 1 : 0);
 			core_setSw(18, lane ? 1 : 0);
 		}
 	}

@@ -9,6 +9,16 @@
 #include <algorithm>
 #include <format>
 
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
+ #define SSE_DISPLAY_OPT
+ #include <emmintrin.h>
+#elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && (!defined(__ARM_ARCH) || __ARM_ARCH >= 7) && (!defined(_MSC_VER) || defined(__clang__)) //!! disable sse2neon if MSVC&non-clang
+ #define SSE_DISPLAY_OPT // uses sse2neon then
+ #include "../../ext/sse2neon.h"
+#else
+ #pragma message ( "Warning: No SSE optimizations for Display enabled" )
+#endif
+
 #if defined(_WIN32) || defined(_WIN64)
 #define strcasecmp _stricmp
 #endif
@@ -342,6 +352,19 @@ static int GetGameNumFromString(const char* const name)
 static inline UINT8 ExpandChannel5To8(const UINT32 v) { return (UINT8)((v << 3) | (v >> 2)); }
 static inline UINT8 ExpandChannel6To8(const UINT32 v) { return (UINT8)((v << 2) | (v >> 4)); }
 
+/* 0rrrrrgggggbbbbb to rrrrrggggggbbbbb, the same channel order the 15 bpp arm of the expansion below reads */
+static inline UINT16 Pack555To565(const UINT32 c) { return (UINT16)(((c & 0x7fe0) << 1) | ((c >> 4) & 0x20) | (c & 0x1f)); }
+
+/* Pinball 2000's screen is a 15 bpp VIDEO_RGB_DIRECT bitmap, so packed 555. Unrotated, it is
+   handed over repacked to 565 instead of expanded to 888. Every other display stays 888 */
+static bool IsPacked565Display(const int type)
+{
+	return ((type & CORE_SEGMASK) == CORE_VIDEO)
+		&& !(type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90)
+		&& (Machine->drv->video_attributes & VIDEO_RGB_DIRECT)
+		&& (Machine->color_depth == 15);
+}
+
 /******************************************************
  * UpdatePinmameDisplayBitmap
  ******************************************************/
@@ -363,23 +386,33 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 
 	/* Fast path for the larger highcolor screen of Pinball 2000 (640x480). Rather
 	   than fetch every pixel through the bitmap's read() function pointer and re-test the format per pixel,
-	   walk the rows directly - rp_16() is just ((UINT16*)line[y])[x], orientation being baked into the line
-	   pointers. Worth about 25% at 640x480 */
-	if (direct && (depth == 15) && (rotation == 0)) {
+	   walk the rows directly - rp_16() is just ((UINT16*)line[y])[x], orientation being baked into the line pointers.
+	   The frame is kept packed in 16 bits rather than expanded to 888 - see Pack555To565() */
+	if (IsPacked565Display(pDisplay->layout.type)) {
+		assert(direct && (depth == 15) && (rotation == 0));
 		unsigned int changed = 0; /* Accumulated bitwise so that the comparison stays branch free */
 		for (int y = 0; y < height; y++) {
 			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[y];
-			UINT8* __restrict const row = dst + (size_t)y * width * 3;
-			for (int x = 0; x < width; x++) {
-				const UINT32 c = src[x];
-				const UINT8 r = ExpandChannel5To8((c >> 10) & 0x1f);
-				const UINT8 g = ExpandChannel5To8((c >>  5) & 0x1f);
-				const UINT8 b = ExpandChannel5To8( c        & 0x1f);
-				const size_t o = (size_t)x * 3;
-				changed |= (unsigned int)((row[o] ^ r) | (row[o + 1] ^ g) | (row[o + 2] ^ b));
-				row[o    ] = r;
-				row[o + 1] = g;
-				row[o + 2] = b;
+			UINT16* __restrict const row = (UINT16*)dst + (size_t)y * width;
+			int x = 0;
+#if defined(SSE_DISPLAY_OPT)
+			/* Lane wise throughout, so this is the same three terms eight pixels at a time with no shuffling */
+			const __m128i m7fe0 = _mm_set1_epi16(0x7fe0), m20 = _mm_set1_epi16(0x0020), m1f = _mm_set1_epi16(0x001f);
+			__m128i acc = _mm_setzero_si128();
+			for (; x + 8 <= width; x += 8) {
+				const __m128i v = _mm_loadu_si128((const __m128i*)(src + x));
+				const __m128i p = _mm_or_si128(_mm_slli_epi16(_mm_and_si128(v, m7fe0), 1),
+					_mm_or_si128(_mm_and_si128(_mm_srli_epi16(v, 4), m20), _mm_and_si128(v, m1f)));
+				acc = _mm_or_si128(acc, _mm_xor_si128(_mm_loadu_si128((const __m128i*)(row + x)), p));
+				_mm_storeu_si128((__m128i*)(row + x), p);
+			}
+			/* Folded per row rather than kept as a vector across them */
+			changed |= (unsigned int)(_mm_movemask_epi8(_mm_cmpeq_epi8(acc, _mm_setzero_si128())) ^ 0xFFFF);
+#endif
+			for (; x < width; x++) {
+				const UINT16 p = Pack555To565(src[x]);
+				changed |= (unsigned int)(row[x] ^ p);
+				row[x] = p;
 			}
 		}
 		return changed != 0;
@@ -758,10 +791,12 @@ extern "C" void OnStateChange(const int state)
 			pDisplay->layout.top = layout->top;
 			pDisplay->layout.left = layout->left;
 			if ((layout->type & CORE_SEGMASK) == CORE_VIDEO) {
+				const bool packed565 = IsPacked565Display(layout->type);
 				pDisplay->layout.width = layout->length;
 				pDisplay->layout.height = layout->start;
-				pDisplay->layout.depth = 24;
-				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height * 3;
+				/* Consumers of cb_OnDisplayUpdated have to read depth to know how the frame is packed: 16 is 5.6.5 in a UINT16 per pixel, 24 stays three bytes per pixel */
+				pDisplay->layout.depth = packed565 ? 16 : 24;
+				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height * (packed565 ? 2 : 3);
 			}
 			else if ((layout->type & CORE_SEGMASK) == CORE_DMD) {
 				pDisplay->layout.width = layout->length;
@@ -2151,7 +2186,9 @@ static void SetupMsgApi()
             msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
          else
             msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
-         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) == CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM32F;
+         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) != CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_LUM32F
+            : IsPacked565Display(layout->type)                                                                    ? CTLPI_DISPLAY_FORMAT_SRGB565
+                                                                                                                  : CTLPI_DISPLAY_FORMAT_SRGB888;
          msgLocals.displays[msgLocals.nDisplays].srcId.GetRenderFrame = &GetDisplayFrame;
          if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
          {
