@@ -1985,7 +1985,7 @@ static void OnGetSegSrc(const unsigned int eventId, void* userData, void* msgDat
    if (_isRunning != 1)
       return;
 
-   GetSegSrcMsg* msg = (GetSegSrcMsg*)msgData;
+   GetSegSrcMsg* const msg = (GetSegSrcMsg*)msgData;
    for (unsigned int index = 0; index < msgLocals.nSegDisplays; index++, msg->count++)
       if (msg->count < msg->maxEntryCount)
          memcpy(&msg->entries[msg->count], &msgLocals.segDisplays[index].srcId, sizeof(SegSrcId));
@@ -2002,7 +2002,7 @@ static SegDisplayFrame GetSegDisplay(const CtlResId id)
    if (_isRunning != 1)
       return { msgLocals.segDisplays[id.resId].segFrameId, msgLocals.segLuminances + (startElement * 16) };
    
-   static int nSegments[] = { 16, 16, 10, 9, 8, 8, 7, 8, 7, 10, 9, 7, 8, 16, 0, 0, 15, 15 }; // Number of segments (including dot/comma) corresponding to CORE_SEGxx
+   static const int nSegments[] = { 16, 16, 10, 9, 8, 8, 7, 8, 7, 10, 9, 7, 8, 16, 0, 0, 15, 15 }; // Number of segments (including dot/comma) corresponding to CORE_SEGxx
    for (int i = startElement; i < startElement + nElements; i++)
    {
       const int type = msgLocals.sortedSegLayout[i].srcLayout->type & CORE_SEGALL;
@@ -2045,9 +2045,9 @@ static SegDisplayFrame GetSegDisplay(const CtlResId id)
       }
    }
    
-   if (memcmp(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * 16 * sizeof(float)) != 0)
+   if (memcmp(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * (16 * sizeof(float))) != 0)
    {
-      memcpy(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * 16 * sizeof(float));
+      memcpy(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * (16 * sizeof(float)));
       msgLocals.segDisplays[id.resId].segFrameId++;
    }
    
@@ -2063,7 +2063,7 @@ static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* ms
    if (_isRunning != 1)
       return;
 
-   GetDisplaySrcMsg* msg = static_cast<GetDisplaySrcMsg*>(msgData);
+   GetDisplaySrcMsg* const msg = static_cast<GetDisplaySrcMsg*>(msgData);
    for (unsigned int index = 0; index < msgLocals.nDisplays; index++, msg->count++)
       if (msg->count < msg->maxEntryCount)
          memcpy(&msg->entries[msg->count], &msgLocals.displays[index].srcId, sizeof(DisplaySrcId));
@@ -2135,7 +2135,7 @@ static void SetupMsgApi()
    // -- Prepare data structures for displays
    msgLocals.nDisplays = 0;
    int nSegLayouts = 0;
-   const core_tLCDLayout* segLayout[128] = { 0 };
+   const core_tLCDLayout* segLayout[128] = { };
    memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
    for (const core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout++) {
       if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
@@ -2187,8 +2187,8 @@ static void SetupMsgApi()
          else
             msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
          msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) != CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_LUM32F
-            : IsPacked565Display(layout->type)                                                                    ? CTLPI_DISPLAY_FORMAT_SRGB565
-                                                                                                                  : CTLPI_DISPLAY_FORMAT_SRGB888;
+            : IsPacked565Display(layout->type)                                                                     ? CTLPI_DISPLAY_FORMAT_SRGB565
+                                                                                                                   : CTLPI_DISPLAY_FORMAT_SRGB888;
          msgLocals.displays[msgLocals.nDisplays].srcId.GetRenderFrame = &GetDisplayFrame;
          if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
          {
@@ -2414,25 +2414,25 @@ static void SetupMsgApi()
          };
       // 1..28, solenoid/flasher outputs from driver board
       for (uint16_t i = 1; i <= 28; i++)
-         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
+         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (i - 1), i - 1);
       // 29..32
       {
          // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
          if (core_gameData->gen & GEN_ALLWPC)
          {
             addPhysSol(fmtString("GPIO #1 (WPC J111.1)"), nullptr, nullptr, 29, GetSolenoid2State, GetSolenoid2VPMState, 0x0100, 28);
-            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), nullptr, nullptr, 30, GetSolenoid2State, GetSolenoid2VPMState,  0x0200, 29);
+            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), nullptr, nullptr, 30, GetSolenoid2State, GetSolenoid2VPMState, 0x0200, 29);
             if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) // Pre Fliptronic real GameOn
-               addPhysSol(fmtString("WPC GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState,  0x0400, 30);
+               addPhysSol(fmtString("WPC GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
             else // Fliptronic ROM controlled flippers, with (sadly) an overlay of J111 third output and the fake GameOn (which is only available if fastflip is defined)
-               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState,  0x0400, 30);
+               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
          }
          // 29..32, solenoid outputs from driver board
          // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
          else // if (core_gameData->gen & GEN_ALLS11)
          {
             for (uint16_t i = 29; i <= 32; i++)
-               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState,  1 << (i - 1), i - 1);
+               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (i - 1), i - 1);
          }
       }
       // 33..36
@@ -2440,13 +2440,13 @@ static void SetupMsgApi()
          // 33, SAM: fake GameOn solenoid for fast flip
          // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
          if (core_gameData->gen & GEN_SAM)
-            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState,  0x00000010, 32);
+            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
          // Note: core_getSol does not implement this while core_getAllSol does
          else if (core_gameData->gen & GEN_ALLWS)
          {
             for (uint16_t i = 33; i <= 36; i++)
-               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState,  1 << (i - 33 + 4), i - 1);
+               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1u << (i - 33 + 4), i - 1);
          }
          // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
          // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
@@ -2495,7 +2495,7 @@ static void SetupMsgApi()
          {
             for (uint16_t i = 0; i < 8; i++)
                addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
-                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState,  1 << (36 + (i & 3)), 36 + (i & 3));
+                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (36 + (i & 3)), 36 + (i & 3));
          }
          // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
          else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
@@ -2503,7 +2503,7 @@ static void SetupMsgApi()
             for (uint16_t i = 37; i <= 44; i++)
                addPhysSol(
                   fmtString("%s Ext Output #%d", (core_gameData->gen & GEN_ALLS11) ? "S11" : (core_gameData->gen & GEN_SAM) ? "SAM" : "SPA", i - 36),
-                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState,  1 << (8 + i - 37), 40 + i - 37);
+                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1u << (8 + i - 37), 40 + i - 37);
          }
       }
       // 45..48, lower flipper solenoids
@@ -2733,7 +2733,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
             {
                size_t pos = 0;
                // base 0 lets std::stoll auto-detect "0x"/"0X" (hex), leading "0" (octal), or decimal
-               value = std::stoll(s, &pos, 0);
+               value = (unsigned int)std::stoll(s, &pos, 0);
                if (pos != s.size())
                   return false; // trailing garbage after the number
                return true;
@@ -2926,7 +2926,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                   // FIXME We take for granted that we will read in a continuous block of RAM (dangerous)
                   // FIXME we consider that the map always apply to CPU #0 which should be true, but there may be exceptions to this
                   const unsigned int baseOffset = isLittleEndian ? offsets.back() : offsets.front();
-                  const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
                   if (ptr == nullptr)
                      return;
                   if (isBCD)
@@ -3012,7 +3012,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
             getter = [offsets](unsigned int index, void* pResult)
                {
                   const unsigned int baseOffset = offsets[0];
-                  const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
                   if (ptr == nullptr)
                      return;
 
@@ -3023,7 +3023,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                      *pStr = *(ptr + (offset - baseOffset));
                      pStr++;
                   }
-                  *pStr = 0;
+                  *pStr = '\0';
                   *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
                };
          }

@@ -1178,6 +1178,28 @@ static SWITCH_UPDATE(p2k) {
 #define P2K_COMMON_SWEP1 \
 	P2K_COMMON_SWEP1_SF("swe1_28f800.rom", CRC(5fc1fd2c) SHA1(0967db9b6e82d386d3a8415bbef40bcab5a06654))
 
+/* The pre-production sound flash. All six of the 0.7x/0.8x packages carry it: it differs from
+   rfm_28f800.rom in 89.6% of its bytes and runs to 0xff365 where the shipped one stops at
+   0xfe996. Named after the earliest package that has it, the way the 1.91 flash below is - the
+   other five ship the identical file under their own version's name.
+
+   It is the older of the two, which is worth saying because the set list can suggest otherwise:
+   rfm_260 from 2024 declares rfm_28f800.rom while these six from 1999 declare something else, and
+   that is not an inversion. The archive timestamps date this flash to 15/03/1999 and the shipped
+   one to 13/04/1999, and within a single package they are not uniform - in the 0.70 archive the
+   four game files carry 28/03 17:02, matching that set's boot-data build stamp to the second,
+   while the sound flash beside them carries 15/03 13:14, a fortnight older. 15 March is also the
+   day before the changelog's "0.6 - March 16, 1999 - Release of Revenge From Mars for samples", so
+   this is the audio the sample machines may went out with, and it may have stayed in use across 0.7x and 0.8x
+   until the final cut on 13 April.
+
+   The real oddity is at the other end: that April 1999 cut was never replaced. Every official
+   release from 1.20 on and every aftermarket one through 2.60 in 2024 ships the same file, 25
+   years later. Only two things ever departed from it - the unofficial 1.91, which added sounds, and the 2.10
+   pre-release variant of 1.91's below */
+#define P2K_COMMON_RFM_PROTO \
+	P2K_COMMON_RFM_SF("pin2000_50070_0070_sf.rom", CRC(64ae6434) SHA1(c707b24b24c3e414992c756b28aea11f19019cb4))
+
 /* The update flash, which is what actually differs between versions: four components laid out
    as the machine expects them, the rest of the 8 MB erased. bootdata is 32 KiB in every
    package, so im_flsh0 always starts at 0x8000 and the rest follows on */
@@ -1228,11 +1250,14 @@ ROM_END
 /* 2.24 went out three times under the same version number, so the sets are numbered by build
    rather than by version, and none holds a plain rfm_224 name:
 
-     r1     ~12/21 the initial release
+     r1   19/12/21 the initial release
      r2   13/01/22 fixes a bug that awarded two extra balls instead of one
      r3   29/01/22 the final release, which adds a Lyman Sheats tribute.
 
-   r2 and r3 share an im_flsh0 and differ in boot data, game and symbols, r2's game image being 1536 bytes shorter */
+   All three share an im_flsh0 - so the same XINA - and the stock sound flash, and differ in boot
+   data, game and symbols. r3's game image is 1536 bytes longer than the other two's; r1 and r2 are
+   the same length and are a rebuild apart, differing over more than half their bytes, which is what
+   a relink of the whole image looks like rather than a measure of what changed */
 ROM_START(rfm_224r3)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0224, CRC(39a81ae6) SHA1(a81498991a5d70ea47565fa4bf857033d491521c),
@@ -1246,6 +1271,13 @@ ROM_START(rfm_224r2)
 	           0x06e02c, CRC(17e92432) SHA1(87f128836dd21f9c805fa7d745413749ac2d8750),
 	           0x27de00, CRC(4d5e4a88) SHA1(72e7783572d9a215b056e272815326bd11c849a3),
 	           0x0bf400, CRC(f9abfc87) SHA1(dcf4854be45600187fff2ccbcee6d43acccb2d73))
+ROM_END
+ROM_START(rfm_224r1)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0224, CRC(21faae76) SHA1(691c19a1e061ca74976e9566dc04b06c4cf77a54),
+	           0x06e02c, CRC(17e92432) SHA1(87f128836dd21f9c805fa7d745413749ac2d8750),
+	           0x27de00, CRC(b75d1f3f) SHA1(dc7fac60c94cea579790deb53967226050ee1656),
+	           0x0bf400, CRC(f8569f97) SHA1(853f78d0a7eeae0a8e632a71a3b5cedc34167ac3))
 ROM_END
 
 ROM_START(rfm_223)
@@ -1282,16 +1314,64 @@ ROM_START(rfm_220)
 	           0x0bd000, CRC(3bd4d575) SHA1(0672836fecd4363ea5fa26ca70ff66cf0e5a5f1b))
 ROM_END
 
-ROM_START(rfm_210)
+/* 2.10 in four builds, and the split runs deeper than the 2.24 one does: r1-r3 are not just
+   earlier links of r4's code.
+
+     r1   undated, in the 24 Jan package alongside r2 (see below)
+     r2   24/01/19
+     r3   06/04/19
+     r4   11/04/19 the release, and the one this driver had before the other three turned up
+
+   r1-r3 carry XINA 1.31 in an im_flsh0 of their own (0x0633ec) and a sound flash of their own;
+   r4 has a different im_flsh0 (0x0650e4) and goes back to 1.91's flash, which 2.00 and 2.20/2.21
+   also use. So the three pre-release builds are a branch that the release did not take, not a
+   straight line into it.
+
+   Their flash is 1.91's with exactly two bytes changed, at 0x0122bc and 0x016200 - not a header,
+   not a checksum, just two bytes out in the sample data - so it is the same sound set rather than
+   a new one, and it is named for the earliest package carrying it.
+
+   r1 has no package of its own. The 24 Jan archive holds two full sets of the four files: the
+   version-prefixed ones, which are r2, and an unprefixed bootdata.rom/game.rom/im_flsh0.rom/
+   symbols.rom beside them, which are older. That is this line's habit rather than a one-off - the
+   06 Apr archive does the same and its unprefixed copy is exactly r2, and the 22 Nov 2017 1.90
+   archive's unprefixed copy is exactly the 21 Nov build. So the unprefixed pair is the previous
+   build left in place, which dates r1 to before 24 Jan 2019 and no closer. Its boot data carries
+   no build stamp the others' do not, so there is nothing sharper to date it by */
+ROM_START(rfm_210r4)
 	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
 	P2K_UPDATE(50070, 0210, CRC(ce6111dc) SHA1(fcce8430bac6bad9260ef86f3e37cc87eebb3896),
 	           0x0650e4, CRC(9ffbdbe8) SHA1(e52064655db0f81bd3ec6836cc4b9eda5d3fa4ca),
 	           0x273a00, CRC(49332443) SHA1(08285224d8eff072ba3b5520a245a314b3568758),
 	           0x0bae00, CRC(d775e101) SHA1(94801c03fa03ad3dd56e66eaf233f3fbfa811cbd))
 ROM_END
+#define P2K_COMMON_RFM_210 \
+	P2K_COMMON_RFM_SF("pin2000_50070_0210_sf.rom", CRC(ea244214) SHA1(2a3e1fd18e8d6967dd99e0cdf1b60c63b2e8cef8))
+ROM_START(rfm_210r3)
+	P2K_COMMON_RFM_210
+	P2K_UPDATE(50070, 0210, CRC(948c423d) SHA1(8792bb9c91447e4d5fd5204671c8bfa7990333c7),
+	           0x0633ec, CRC(27c1985b) SHA1(dcb97b3943ad18a17c5014caf0c88930a98daa13),
+	           0x272000, CRC(531a661b) SHA1(14817d0cd86c2d14e9f032c9d8f16ba83c8653ed),
+	           0x0ba000, CRC(ffb797fb) SHA1(331f62e1cc6be117562733c5e1da0fb012bdcf67))
+ROM_END
+ROM_START(rfm_210r2)
+	P2K_COMMON_RFM_210
+	P2K_UPDATE(50070, 0210, CRC(098dd515) SHA1(5e1ed0076f6c80db9ab79c49c0e6ae3093d9a0c1),
+	           0x0633ec, CRC(27c1985b) SHA1(dcb97b3943ad18a17c5014caf0c88930a98daa13),
+	           0x26fc00, CRC(30c07d66) SHA1(98b203c2c4591fdb6ec86900ecb3c70c2a2fb931),
+	           0x0b9a00, CRC(71aff5df) SHA1(b09d3f1334f2a60dc1a32399ae8dfdced9ad08e4))
+ROM_END
+ROM_START(rfm_210r1)
+	P2K_COMMON_RFM_210
+	P2K_UPDATE(50070, 0210, CRC(de503a31) SHA1(deeb62fb9c49c4253c94ddc89d2692101f201290),
+	           0x0633ec, CRC(27c1985b) SHA1(dcb97b3943ad18a17c5014caf0c88930a98daa13),
+	           0x26fc00, CRC(34dd3d1e) SHA1(cf3167011b50864e3f50ecc3ca3798ad50bdcb50),
+	           0x0b9a00, CRC(068912f8) SHA1(f94b74ab347dfe72018584534dfa6aec7988945a))
+ROM_END
 /* 2.00 is myPinballs' first, and it seems to take over from hemtoni in two ways the files show plainly: it
-   keeps 1.91's sound flash, and it is the first to carry the im_flsh0 that 2.10 then ships
-   unchanged - byte-identical, same CRC as rfm_210's below. Its own code is still older than that
+   keeps 1.91's sound flash, and it is the first to carry the im_flsh0 that 2.10's release build
+   then ships unchanged - byte-identical, same CRC as rfm_210r4's above; the three pre-release
+   2.10s have a different one, see the note there. Its own code is still older than that
    suggests, XINA 1.22 like the 1.9x sets rather than 2.10's 1.31, so a newer system image arrived
    one release before the game moved to it. None of 2.10's optional shaker and knocker adjustments
    yet either - and do not read the menu's "Knocker Test" as one. No Pinball 2000 ever shipped with
@@ -1306,15 +1386,45 @@ ROM_START(rfm_200)
 	           0x0b9600, CRC(c9a97659) SHA1(a08b4c5bb3bfe94476af6282eab6aba31725b6fc))
 ROM_END
 
-/* 1.95 is 1.90 with the German retranslated, and the middle of the three rather than the newest -
+/* The 1.9x family, in five builds across three version numbers, and only the boot data tells them
+   apart. Every one of their game.roms carries the same "Tue Nov 21 11:33:08 2017" stamp at the top
+   and the same XINA 1.22 - the later builds never restamped - so anything that reads the game image
+   alone will call all five 1.90 from November 2017. The bootdata.rom header does carry a real
+   build time at offset 0, and that is what the dates here are:
+
+     1.90 r1   21/11/17 14:20:41   the original, and what hemtoni's changelog dates 1.90 to
+     1.90 r2   22/11/17 11:23:45   a next-day respin
+     1.95 r1   27/03/18 19:18:35
+     1.95 r2   29/03/18 18:27:19   the 1.95 that circulated
+     1.90 r3   29/03/18 21:15:02   repackaged 1.90, built 2h47m after 1.95 r2
+     1.91      30/05/18 21:04:01
+
+   That ordering is the one the changelog gives - 1.90, then 1.95, then 1.91 - and it also settles
+   what 1.90 r3 is: not a new 1.90 but the old one rebuilt on the same afternoon as 1.95 r2, which
+   is why the two share an im_flsh0 build while r1 and r2 have an earlier one. r3 is the build this
+   driver carried as plain "rfm_190" before r1 and r2 turned up, and it is the one whose package is
+   dated 03/2018 - the mismatch the set list used to note is this.
+
+   The header also explains why none of these can be told apart on screen: it holds the major and
+   minor separately and the machine prints them through "Software version: %d.%d", and all of
+   1.90, 1.91 and 1.95 store 1 and 9. Every one of the five displays "1.9".
+
+   1.95 is 1.90 with the German retranslated, and the middle of the three rather than the newest -
    1.91 is the last and went back to 1.90's wording. 1.91 is also the one that brings its own sound
-   flash, which 2.00 and 2.10 then reuse */
-ROM_START(rfm_195)
+   flash, which 2.00 and 2.10's release build then reuse */
+ROM_START(rfm_195r2)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0195, CRC(9e33a421) SHA1(cc64d0fb50f9ed9655a830012c1c2082e8499fa0),
 	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
 	           0x259400, CRC(237bcbdb) SHA1(909f8f15463014ab29f388b6e8de6d5ae78571df),
 	           0x0c6200, CRC(e96beaf3) SHA1(991053aac339346928a749b7df4ca9275bb32b0f))
+ROM_END
+ROM_START(rfm_195r1)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0195, CRC(12a93021) SHA1(93c1f908b5e5d439a9610b9baf3bd9d46ff7acc5),
+	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
+	           0x259000, CRC(368eef01) SHA1(432857398a634a918a1406839c80319849485dcc),
+	           0x0c6200, CRC(d7cea149) SHA1(72dd2dba01f4e54cb642487e11ae5cc1c322cd18))
 ROM_END
 ROM_START(rfm_191)
 	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
@@ -1323,12 +1433,26 @@ ROM_START(rfm_191)
 	           0x26aa00, CRC(129f7854) SHA1(667b173bd78635d71fd16eab2ce4ca4fc5de8d52),
 	           0x0b7400, CRC(edaa9cec) SHA1(e934bcd10ff66fad9b8dad17f83323df65cf3902))
 ROM_END
-ROM_START(rfm_190)
+ROM_START(rfm_190r3)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0190, CRC(9a27bff0) SHA1(961370c09757aba6788fba086f28084ffbc12bb7),
 	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
 	           0x259600, CRC(382a4a63) SHA1(85e5f483a58080452d6656347aae7b72894b2e47),
 	           0x0c6200, CRC(9d02d3d1) SHA1(dae66902b9a4c42ca5832687416eaf7062116806))
+ROM_END
+ROM_START(rfm_190r2)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0190, CRC(57d81ec7) SHA1(8fe71c5c26c47a917566c14b7cdec973217e52d5),
+	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
+	           0x26a600, CRC(dc5b68df) SHA1(17b1951cb4ddc155ecc7968f0866c9ca65d2313a),
+	           0x0b7400, CRC(c7e1bcbc) SHA1(6f15e552314dcd0a0292bd8413cc97c2984fc899))
+ROM_END
+ROM_START(rfm_190r1)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0190, CRC(af5351b1) SHA1(c55edfac35a5f5d1bb61f22095e89680186511ad),
+	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
+	           0x26a000, CRC(6071c578) SHA1(41229d201c54e8ea8dda8a20f53732cc04d9d860),
+	           0x0b6c00, CRC(12afcbcb) SHA1(22352bcda98be189cb60383ff258731d493a96b2))
 ROM_END
 ROM_START(rfm_180)
 	P2K_COMMON_RFM
@@ -1383,6 +1507,18 @@ ROM_START(rfm_080)
 	P2K_COMMON_RFM_R2
 ROM_END
 
+/* 1.70: Its boot data was built 06/02/2006, ten weeks before 1.80's 23/04/2006, and the revision history
+   in the same archive dates the release 16 April 2006 and says only "This version includes JTS".
+   It is still on XINA 1.19, the one 1.60 shipped with; 1.80 is where 1.21 arrives, and with it the
+   8 MB requirement. So the whole of the tournament line's system software moved in one step at
+   1.80, and 1.70 is 1.60's XINA with the tournament code on top */
+ROM_START(rfm_170)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0170, CRC(69707dc0) SHA1(4c5073d316814c0e4eb9a3942bc68565e1b724d3),
+	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
+	           0x26b000, CRC(3c53b153) SHA1(d8be787e3094e8c929caf289bd821ff9c840e8e8),
+	           0x0b6e00, CRC(e42894ed) SHA1(1b7c16601c699a071fdf414e32c78c24b1c25114))
+ROM_END
 ROM_START(rfm_160)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0160, CRC(b8574f37) SHA1(339475365ecc4adf11c28b3432ea1f7da905745d),
@@ -1404,12 +1540,171 @@ ROM_START(rfm_140)
 	           0x26b000, CRC(c181bb31) SHA1(8232bd8ffd87c4331a4c5edd3c8ce0a8e2f872c7),
 	           0x0b6e00, CRC(0761953d) SHA1(7e8ad5641a9485d63aa8baded5933b2753480736))
 ROM_END
+/* 1.30, built 24/11/1999 on XINA 1.17, which 1.40 then keeps. The revision history in the same
+   archive lists what it adds over 1.20: Martian Champion, a jet bumper rule, a ball saver at the
+   start of a ball, a victory lap after Attack Mars is won, and the loop-the-ball adjustments */
+ROM_START(rfm_130)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0130, CRC(325d265f) SHA1(f7cff9996bff9aa08059d1d837b83619ba46a557),
+	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
+	           0x26b000, CRC(04b2e2c5) SHA1(78e5d9f1ee625a728ae6fadc43f89bf37343ca8d),
+	           0x0b6e00, CRC(f83dd3cc) SHA1(9eacb38e6375526dd8d57d366961c66c6dfb97c3))
+ROM_END
+
+/* Very likely unofficial 1.21, and the number is misleading: this is a May 2016 build, not a 1999 one, and it belongs to
+   the same short-lived 2016 effort as swep1_200h. The two are the only images here carrying XINA
+   "1.22 - Tue Jan 06 18:15:21 2016", a XINA that predates the 1.22 the 1.9x sets run by ten
+   months, and neither version number was ever built on: 1.21 is followed by 1.90 in November 2017
+   and the SWEP1 2.00 by 1.65 in February 2018. Both lines went back to numbering below what these
+   two claimed.
+
+   Its game.rom is the odd one in this whole file. Where every other image starts with a build-date
+   string, this one has a "GRUB2 Multiboot" header in its place, so nothing that reads the stamp
+   will date it - the boot data's 20/05/2016 is the only date it has. It is otherwise an ordinary
+   Revenge From Mars image and not a different program: 7353 of its 8071 distinct strings are also in 1.90's.
+
+   The loader is happy with it - all four components validate and "[ STARTING UPDATE GAME CODE ]" comes up, the symbol table loads
+   (19327 symbols) - and then the system software falls over before it finishes coming up:
+
+       *** CMOS Prologue Checksum Invalid
+       *** Fatal: Stack: bad magic (A), xpid -1 () limit 0x0 base 0x0 esp 0x0 magic 0x0
+       *** Fatal: insertd: q[129].qnext (-1) out of range (0 - 533).
+
+   after which it sits in the Fatal monitor. That is not the blank-CMOS fault the 1.34-and-up sets
+   had - P2K_SEED_ERROR_LOG already covers that one and every other set here comes up - and the
+   multiboot header is the obvious suspect: an image built to be entered by GRUB2 rather than by
+   the P2K boot ROM would be started at the wrong place by a loader that does not know the
+   difference. Not chased further; whether this build was ever meant to boot the stock way is itself an open question */
+ROM_START(rfm_121)
+	P2K_COMMON_RFM
+	P2K_UPDATE(50070, 0121, CRC(5c1eac80) SHA1(f69175af020c162507181128a37b8f0e094f8c37),
+	           0x0961f4, CRC(5c5f4b6d) SHA1(98416e05d5d5a316e2f6a21907fb96c09385d4c7),
+	           0x25b600, CRC(1d537710) SHA1(b804b46d772cfb6ad626773f21046676e5613748),
+	           0x0c6800, CRC(a0091297) SHA1(2dc12bab35a8b881f4fd5a8ff5ccdd9098429ef8))
+ROM_END
 ROM_START(rfm_120)
 	P2K_COMMON_RFM
 	P2K_UPDATE(50070, 0120, CRC(235d3263) SHA1(3392687e152a2266ee2dd3c4c9eb9d22dda6d254),
 	           0x096204, CRC(a6bcc255) SHA1(867eb792308c4e8c3559d31236eafee4cd35b95d),
 	           0x211a00, CRC(fed4d69d) SHA1(7bab52d3cf91322a039593ca6b60933c4b5da838),
 	           0x0aca00, CRC(51bbabda) SHA1(617f67a4997f52fcb6c1095da9723f1a2ca22bd2))
+ROM_END
+
+/* The pre-production sets: six update packages from March and April 1999 and are the earliest Revenge From Mars
+   update package code here that runs - 0.80 & 0.1, are Prism-ROM fallbacks rather than a
+   package, so these are the only ones of their era with an update flash of their own.
+
+   All six carry XINA 1.04 or older and a sound flash of their own (P2K_COMMON_RFM_PROTO), and
+   their boot data build stamps put them in two clusters:
+
+     0.70   28/03/99 17:02:08   XINA 1.02
+     0.71   28/03/99 17:28:20   XINA 1.02
+     0.85   05/04/99 11:45:02   XINA 1.04
+     0.87   06/04/99 11:17:59   XINA 1.04
+     0.84   06/04/99 09:19:06   XINA 1.04
+     0.86   06/04/99 11:48:25   XINA 1.04
+
+   The pairing is the interesting part, and it is not a sequence at all: 0.70/0.71, 0.84/0.85 and
+   0.86/0.87 are three pairs of *parallel variants*, and the numbering says which variant, not which
+   came first. That is why the build stamps look out of order - 0.84 was linked after 0.85 and 0.86
+   after 0.87 - and once the pairs are read as variants there is no inversion left to explain.
+
+   What differs inside a pair is small, identical in all three pairs, and worth spelling out. The
+   symbol tables match exactly: same count (15003, 15236, 15305), same names in the same order. Of
+   those, exactly **two functions differ in size**, the same two every time:
+
+       MartianHappyHour::award_switch(unsigned int)    884 bytes even, 892 odd
+       SecretWeapon::award_switch(unsigned int)        400/416 even, 408/424 odd
+
+   Both are switch statements over a switch-identifier enum, and the difference is the jump table's
+   bound: `cmp ebx,0x21` in 0.70/0.84/0.86 against `cmp ebx,0x23` in 0.71/0.85/0.87 - 34 cases
+   against 36, hence 8 bytes of extra table each. The handled cases are otherwise the same set,
+   0x00/0x10/0x12-0x15 (and 0x16 for SecretWeapon), except the last one, which sits at index 0x21 in
+   the even builds and 0x23 in the odd. So the odd builds were compiled against an enum with two
+   extra members inserted ahead of that last entry - two more playfield switches known to the
+   variant, doing nothing new in these two handlers.
+
+   Everything else follows from those 16 bytes: each function after them shifts by 8 and then 16,
+   which is why roughly half the functions are byte-identical between a pair and the rest differ
+   only in the addresses they embed. No readable string differs.
+
+   Which line shipped: rfm_120 and rfm_160 both have `cmp ebx,0x21`, 34 cases, the
+   same last index 0x21. The even builds are on the line that became the game and the odd variant's
+   two extra switches were dropped.
+
+   These are genuine, and the symbol tables are what settle it rather than the timestamps. Each set
+   ships one, in the format p2k_names.h documents, and all six parse: "SYMBOL TABLE" magic, count at
+   0x10, sorted entries from 0x18, first(void) at 0x100000 exactly as every shipped set has it, and
+   C++ names throughout. The counts then rise monotonically with the version - 15003, 15236, 15305,
+   then 16924 at 1.20 and 18106 at 1.60 - which is a codebase growing over a year.
+
+   Better than that, the symbols track the revision history's own feature dates, and the boundaries
+   land in the right places:
+
+       MartianBowling, MartianTank   changelog: added in 1.00   absent in all six, present from 1.20
+       VictoryLap, MartianChamp      changelog: added in 1.30   absent in 1.20 too, present from 1.30
+       SkillShot                     changelog: roughed in 0.8  absent in 0.70/0.71, present from 0.84
+
+   That last row is the one that matters most: the skill shot appears exactly at the 0.7x/0.8x line,
+   which is where a changelog written in 1999 and these six files - neither derived from the other -
+   independently put it. Fabricating that across six images is not a plausible accident.
+
+   Numbering aside, the machine will show these as 0.7, 0.71, 0.84 and so on, because the boot-data
+   header stores major and minor separately and "Software version: %d.%d" prints the minor as a
+   plain number - the same reason rfm_010 displays 0.1.
+
+   Power up with the coin door open and these six print "DCS2 board SRAM test failed" and lose
+   sound for that boot. Nothing to do with this flash - the stock one does it too - and nothing to
+   do with being prototypes: it is every set on XINA 1.12 and older and only those, rfm_010,
+   rfm_080, rfm_120 and swep1_040 included. Written up under "Old sets lose sound if the coin door
+   is open" in src/p2k/README.md; none of the ten needs a sound flag for it.
+
+   The revision history in the same archive covers 0.5 (07/03/99, "Release for Waukegan startup"),
+   0.6 (16/03/99, "Release for samples", XINA 1.01), 0.7 (26/03/99, XINA 1.02), 0.8 (30/03/99,
+   XINA 1.03) and 0.9 (07/04/99, XINA 1.06). It says nothing at all about 0.71 or the four 0.8x
+   builds, which are not releases it recognises - so the dumped set and the documented one only
+   partly overlap, and 0.5, 0.6, 0.8 and 0.9 are still missing */
+ROM_START(rfm_087)
+	P2K_COMMON_RFM_PROTO
+	P2K_UPDATE(50070, 0087, CRC(7911dd97) SHA1(17ba09d6e867b109ca5763afe287fd50c8ab7530),
+	           0x076804, CRC(b360d6c0) SHA1(5ddd4a20829849aea507e8bbe78843ac4b25e0a0),
+	           0x1e4400, CRC(5c52ba20) SHA1(450c81ab9c977e65f549ae44bc01d1a104048f37),
+	           0x09c400, CRC(c2be94c5) SHA1(8cfaf7fd320da3500654c5612681b21cd9a62d34))
+ROM_END
+ROM_START(rfm_086)
+	P2K_COMMON_RFM_PROTO
+	P2K_UPDATE(50070, 0086, CRC(44f577d0) SHA1(af0fa862da24a19eeacf7eaa62ac068aa9acc9f9),
+	           0x076804, CRC(b360d6c0) SHA1(5ddd4a20829849aea507e8bbe78843ac4b25e0a0),
+	           0x1e4400, CRC(597ca3e1) SHA1(42eb2db33d5dd56b39c2b6fd61e67f79882683b5),
+	           0x09c400, CRC(f45338b8) SHA1(5185ef7e16dfedae366359a8f90d8d2d1c4f6467))
+ROM_END
+ROM_START(rfm_085)
+	P2K_COMMON_RFM_PROTO
+	P2K_UPDATE(50070, 0085, CRC(5fab921b) SHA1(37c1eb6750c156c216b83c5526c4cfac8abfee60),
+	           0x076804, CRC(b360d6c0) SHA1(5ddd4a20829849aea507e8bbe78843ac4b25e0a0),
+	           0x1dfa00, CRC(e5386f6b) SHA1(b6608f069eb3994428a3c34f97d652cca8068e2d),
+	           0x09ba00, CRC(6d634382) SHA1(a616c6bc0232c3692cab50b3564caa1e2945ae6d))
+ROM_END
+ROM_START(rfm_084)
+	P2K_COMMON_RFM_PROTO
+	P2K_UPDATE(50070, 0084, CRC(7a659d96) SHA1(77afe7087d28fb9396dee8cd44e1eb6809bf8543),
+	           0x076804, CRC(b360d6c0) SHA1(5ddd4a20829849aea507e8bbe78843ac4b25e0a0),
+	           0x1dfa00, CRC(f4be53bf) SHA1(3a8c2fcb8f7ec35e142200a413ce196377f11925),
+	           0x09ba00, CRC(90da9a40) SHA1(647d1d86fdacd3fb1bbe093a67298f3a3486915a))
+ROM_END
+ROM_START(rfm_071)
+	P2K_COMMON_RFM_PROTO
+	P2K_UPDATE(50070, 0071, CRC(304edc41) SHA1(279d087f886728f662e52058b3f44f4132ba5f2f),
+	           0x076804, CRC(b360d6c0) SHA1(5ddd4a20829849aea507e8bbe78843ac4b25e0a0),
+	           0x1d5c00, CRC(dcdc231f) SHA1(463bbc689c9544b7ac37d8de9b71ddafa39dcfa7),
+	           0x099400, CRC(4cc5f879) SHA1(1c27e2f8f395cb396d41d6374d0b71c986ebb917))
+ROM_END
+ROM_START(rfm_070)
+	P2K_COMMON_RFM_PROTO
+	P2K_UPDATE(50070, 0070, CRC(9e64a37e) SHA1(8242d599151284c31257376f8bd188bf94b064de),
+	           0x076804, CRC(b360d6c0) SHA1(5ddd4a20829849aea507e8bbe78843ac4b25e0a0),
+	           0x1d5c00, CRC(6b4d0916) SHA1(d2b649ac648eac8e3afb85d9a5ccfbd4de2a8057),
+	           0x099400, CRC(7dd0b1f4) SHA1(30154e0c712dbf7f7011bfd12ceca42b857690d6))
 ROM_END
 /* and the other one, likewise */
 ROM_START(swep1_210)
@@ -1426,19 +1721,140 @@ ROM_START(swep1_201)
 	           0x23f800, CRC(c1b0067b) SHA1(2f221db8a5d6b5fa44da581dcd42717412b694d6),
 	           0x096800, CRC(e64e9243) SHA1(e9ce758412d0c8194aec2c0e79c6436f22d691f8))
 ROM_END
-ROM_START(swep1_200)
+ROM_START(swep1_200m)
 	P2K_COMMON_SWEP1
 	P2K_UPDATE(50069, 0200, CRC(7e2989af) SHA1(44caed94a2d939aa474bf44cd5e9b3cf7c6b2bec),
 	           0x0387cc, CRC(44124d91) SHA1(06a8f2b3b6c25aad45a27ce0a617382e24d34dbe),
 	           0x23f000, CRC(109ed1ff) SHA1(745f18680a5f6793dd72fa34f7ddd10edee4384f),
 	           0x096600, CRC(3ba136cc) SHA1(96d7f6ae2fc205e137300ab1ddf3961d24e9f2ee))
 ROM_END
-ROM_START(swep1_166)
+/* Where myPinballs' Episode I 2.x code comes from, since the two unofficial lines run side by side
+   and it is not obvious: it is Tom Uban's 1.60, not hemtoni's 1.65/1.66. The symbol tables settle it three ways.
+
+   - All seven symbols 1.60 adds over official 1.50 are the jts_* set, Uban's tournament code
+     ("This version includes JTS"), and every one of them is in swep1_200m and swep1_210. Official
+     1.50 has none. So the base is 1.60 or later, not the last factory release.
+   - Of the 74 symbols the hemtoni line adds over 1.60, myPinballs has 34 - and all 34 are also in
+     myPinballs' own RFM 2.x. Nothing is left over that could only have come from hemtoni. Those 34
+     are the shaker, knocker and ball-saver infrastructure (ShakerMotor, adj_shaker_installed,
+     adj_knocker_installed, BallStartBallSaver, LeffBSBallSaverBacky), which first appears in
+     RFM 2.10 in April 2019 - before hemtoni's Episode I picks it up in 1.65r2 (April 2021, knocker)
+     and 1.66r1 (November 2021, shaker). So the sharing runs hemtoni <- myPinballs' RFM, if either
+     way, and not into myPinballs' Episode I at all.
+   - None of hemtoni's Episode I work is in myPinballs: no adj_gungan_start_spot, no
+     me_hold_bonus_title, no ShakerEffectBallSearch, and none of the country enums (ger_e, fra_e,
+     spn_e, ita_e ...) that 1.65r2 brings.
+
+   Worth noting BallStartBallSaver and LeffBSBallSaverBacky are in official RFM 1.60 already - they
+   are factory Revenge From Mars classes, so both lines porting them into Episode I is two people
+   reaching for the same existing code, not one copying the other.
+
+   Both lines are therefore branches off 1.60, and the PinMAME parent of every Episode I set here is
+   still swep1_150 - that is the ROM-set parent, which is a different thing from the code lineage. */
+
+/* Episode I's other unofficial line - a separate line from the 2.0x sets above, which are myPinballs' and are five years newer. It runs
+   1.60 -> 2.00(!) -> 1.65 -> 1.66, and the version numbers do not run with it:
+
+     1.60      23/04/06 09:39:32   XINA 1.21
+     2.00      26/02/16 11:13:22   XINA 1.22, the Jan 2016 build - here as swep1_200h, not swep1_200m
+     1.65 r1   21/02/18 18:44:40   XINA 1.22, the Nov 2017 build
+     1.65 r2   07/04/21 15:07:05   XINA 1.31
+     1.66 r1   14/11/21 09:09:35   XINA 1.31
+     1.66 r2   03/04/22 11:09:07   XINA 1.31
+
+   1.60 is Tom Uban's, and the files say so rather than the label: its boot data was built 52
+   seconds after Revenge From Mars 1.80's - 09:39:32 against 09:40:24 on 23 April 2006 - and both
+   are on XINA 1.21, which nothing before them uses. The two are one release across the two games,
+   the same way official RFM 1.60 and SWEP1 1.50 are.
+
+   The 2016 one calls itself 2.00 and is nine years older than mypinballs' 2.00, so neither gets
+   the plain name: this one is swep1_200h and that one is swep1_200m. Nothing was built on the
+   number here: the line went back to 1.65 in 2018. It pairs with rfm_121, the other member of the same
+   2016 effort - the two are the only images in this file on XINA "1.22 - Tue Jan 06 18:15:21 2016",
+   and both claimed a version their own line then abandoned.
+
+   The two 2.00s share nothing but the number, and the images say so. Comparing distinct 8-char-plus
+   strings, swep1_200h's closest relative is swep1_165r1 at 91%, then official 1.50/1.60 at 88%,
+   then 1.66 at 87% - and swep1_200m is its *furthest* at 79%, below even the 2003 official
+   release. myPinballs' own two sets sit at 98% to each other and 78-82% to everything else, so
+   they are their own cluster. Nor does swep1_200h carry any of that line's marks: no myPinballs
+   string, and no "Shaker" or "Auto Plunger", the two things swep1_200m is actually for.
+
+   What it is instead is a translation pass. 584 strings in it are in neither 1.50 nor 1.60 and
+   they are overwhelmingly German - "Abschussrampe GI Mitte", "Aktiviere Holoprojektor", "Alle
+   OPTOs in Trough offen" - which is this author's signature, the same work RFM 1.90 and 1.95 are.
+   Episode I already shipped with German, so this extends it rather than adding it. And it did not
+   survive intact either: only 36-38% of those 584 are still in 1.65 or 1.66, which fits a version
+   the line stepped back from rather than built on.
+
+   The changelog in the 1.66 archives is this line's own history and it runs 1.66, 1.65 (24 MAR
+   2021, XINA 1.31), 1.6 (23 APR 2006, XINA 1.21), 1.5 - both dates and both XINAs matching the sets
+   here exactly. Two things it does not record: swep1_165r1, the 02/2018 build, and the 2016 2.00
+   above. Neither was a release this line kept, which is the same conclusion the images give.
+
+   Not here, and deliberately: pin2000_50069_0165_03312018. Its four files are byte for byte
+   Revenge From Mars 1.90 r3's, and its boot-data header reports version 1.9 and game id 1 rather
+   than 2. It is RFM 1.90 packaged under an Episode I name, not a 1.65 build */
+ROM_START(swep1_166r2)
 	P2K_COMMON_SWEP1
 	P2K_UPDATE(50069, 0166, CRC(6cf16c6b) SHA1(7ce292a9159266e3e8fbc06899a1889372b94379),
 	           0x05d8f0, CRC(f2f4c4ff) SHA1(6692fc6743cb6bc91f36136635bf7226d39398a3),
 	           0x23f200, CRC(37e67c3e) SHA1(041d280dd2ae4c7cd588d48195f1001d6c299d6f),
 	           0x094800, CRC(75b7e70b) SHA1(a934ff7c124d953a4bb70123c0f9f01e6212fd30))
+ROM_END
+/* r1 and r2 share an im_flsh0 and a symbol table and differ only in boot data and game image, and
+   the package says what changed. Each of these archives carries changelog.txt twice, once at the
+   root and once inside the 50069/ directory, and the two are not the same file - the inner one is
+   the previous release's, left behind the way the unprefixed ROM copies are elsewhere here. The
+   root copy of the 04/2022 archive is the newest text there is, and against the inner one it says
+   exactly two things:
+
+       header   "Version: 1.66 - 14 Nov 2021"  ->  "Version: 1.66 - 14 Nov 2021 - 03 Apr 2022"
+       entry    "Captive Ball firework will advance C3P0 + Laser"
+                                              ->  "... (scoring bugfix, 03-04-2022)"
+
+   So r2 is r1 plus one scoring fix, and the version genuinely is dated to r1's November build - the
+   two are one release with a late correction, which is also why the label stays BETA on both.
+
+   r1 is otherwise the beta its label says: it comes up and runs, but prints two NonFatals on the
+   way, "Could not create resource ADGungan. Duplicate ID?" and the same for AEGungan. r2 prints
+   neither, so that is r1's own bug rather than anything here */
+ROM_START(swep1_166r1)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0166, CRC(df160753) SHA1(f50b6968d84eda6f14f7fcea1900b6936c10a81b),
+	           0x05d8f0, CRC(f2f4c4ff) SHA1(6692fc6743cb6bc91f36136635bf7226d39398a3),
+	           0x23f200, CRC(84c6a350) SHA1(ce44602cccf0ef168d83db000f0d72e30ef6419e),
+	           0x094800, CRC(75b7e70b) SHA1(a934ff7c124d953a4bb70123c0f9f01e6212fd30))
+ROM_END
+ROM_START(swep1_165r2)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0165, CRC(a3025b71) SHA1(7a3dadcaabbb88b7bc665624eed9dfba53460698),
+	           0x056f4c, CRC(a77701a6) SHA1(b2e0f6beaca3d1b1e868d200314fe9d485356104),
+	           0x23e000, CRC(c7f9d145) SHA1(f01b4d8ac3c5904c03c842c8789029d50f920e64),
+	           0x094400, CRC(af862548) SHA1(c24f9b87d4608d9078a313a1b634990ce81f01ee))
+ROM_END
+/* r1 is still on the 1.6x-era im_flsh0 that everything from 1.10 up to here shares; r2 is where
+   this line picks up XINA 1.31 and an im_flsh0 of its own */
+ROM_START(swep1_165r1)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0165, CRC(6dbfb449) SHA1(e0c6d8860941b2a55174e9f51f21f5b8ea32b4d2),
+	           0x089d54, CRC(222061cd) SHA1(870923d68694886ece2100c804e3b3e4f3a80d8b),
+	           0x23d000, CRC(880c8c55) SHA1(e402d2c2a6c03732ced0b242c3172c31dcf9bdd7),
+	           0x094000, CRC(e25157f7) SHA1(0cd6567fc3265a3d9ea837d1aa4126fadb3378fa))
+ROM_END
+ROM_START(swep1_200h)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0200, CRC(27917722) SHA1(700c6198712846312054bd9c7e5054621f513549),
+	           0x089d54, CRC(222061cd) SHA1(870923d68694886ece2100c804e3b3e4f3a80d8b),
+	           0x239e00, CRC(87de0b24) SHA1(38710756f1de0facbbc64b7e7a7bf41a469b2564),
+	           0x092c00, CRC(52684f19) SHA1(d983bbc50bd67567e97cd17ade64fc6bc0011bc2))
+ROM_END
+ROM_START(swep1_160)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0160, CRC(9007fff2) SHA1(2133394b43e0cb279c0b1c203add6c1eb7beb8de),
+	           0x089d54, CRC(222061cd) SHA1(870923d68694886ece2100c804e3b3e4f3a80d8b),
+	           0x23d200, CRC(ab31e162) SHA1(b1375ecd46828030dca1b5bbcdd7a5ef1ba99127),
+	           0x094000, CRC(1843e2ed) SHA1(de26368a585fb16c572d7ef33a115f6424b86173))
 ROM_END
 ROM_START(swep1_150)
 	P2K_COMMON_SWEP1
@@ -1460,6 +1876,33 @@ ROM_START(swep1_130)
 	           0x089d64, CRC(92ba31c1) SHA1(6961be1af60ea364014daa20a6867307428475b1),
 	           0x1ec600, CRC(b714f1fa) SHA1(a9ab539d14b727656bdecbcaa11c866871525156),
 	           0x08cc00, CRC(3e973484) SHA1(4584ddf0b05f4c41029e2dfb89063939c697cc45))
+ROM_END
+/* The three 1999 versions below 1.30, one per XINA step - 1.13, 1.15, 1.16 - which is the run this
+   game did in its first three months. 1.20 and 1.30 share XINA 1.16 and were built five days
+   apart, 15 and 21 September; 1.20 and 1.00 also share an im_flsh0, and 1.10 does not, so the
+   system image went back and forth once in this stretch rather than only moving forward */
+ROM_START(swep1_120)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0120, CRC(057b818e) SHA1(039b785b28e1cb4a7bd71b776afc10ab2ca6b597),
+	           0x089d64, CRC(92ba31c1) SHA1(6961be1af60ea364014daa20a6867307428475b1),
+	           0x1ec600, CRC(20cf13fa) SHA1(c42facca422a264d53341aa6a12ad995fbe10dcf),
+	           0x08cc00, CRC(fa33b1c7) SHA1(4a4a3afa62863ff1e6d5923a966a37c7190176c1))
+ROM_END
+ROM_START(swep1_110)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0110, CRC(bb1b2a38) SHA1(e72137216c4db2e84906694641fc4d0a9224269f),
+	           0x089d54, CRC(222061cd) SHA1(870923d68694886ece2100c804e3b3e4f3a80d8b),
+	           0x1ec400, CRC(3c6b6d54) SHA1(511b9b6b924112ccc04ff1b3190587b8999e65e2),
+	           0x08cc00, CRC(509e2672) SHA1(a5a79e97e6e0f2163955bde4e2230c5855e2e2bd))
+ROM_END
+/* 1.00, built 19/07/1999 on XINA 1.13 - the oldest Episode I here with an update package of its
+   own, and the earliest of either game that carries one bar the RFM 0.7x/0.8x sets */
+ROM_START(swep1_100)
+	P2K_COMMON_SWEP1
+	P2K_UPDATE(50069, 0100, CRC(20e80858) SHA1(ed32333de7400197b21666a28ab73453e3e668b2),
+	           0x089d64, CRC(92ba31c1) SHA1(6961be1af60ea364014daa20a6867307428475b1),
+	           0x1df400, CRC(5b8bb1b8) SHA1(71351ee2e5665bcb9af0c21ee0f5fb5e1161cf29),
+	           0x08ae00, CRC(e50476dd) SHA1(8ebcd9badc17b25868501100c5ea0f4123b83e7f))
 ROM_END
 
 /* PinMAME's core wants a game description before it will build the machine. Pinball 2000 has
@@ -1718,11 +2161,11 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
    All of it is optional hardware either way, so every set plays without it.
 
    The year on each set is the version's own, from its changelog or build stamp wherever the package
-   name disagrees - which it does for 1.60, 1.80, Episode I's 1.50 and all three 1.9x.
+   name disagrees - which it does for 1.60, 1.70, 1.80, Episode I's 1.50 and 1.60, and every one of the five 1.9x builds.
 
    Most games boot. Some of them used not to, and what divided them was the XINA each game.rom
    names rather than the game: 1.12 to 1.31 came up, 1.34 to 1.38 did not, so rfm_222 stopped where
-   rfm_210 ran and Episode I's 2.x were all on the far side. The cause was a blank CMOS, not the
+   rfm_210r4 ran and Episode I's 2.x were all on the far side. The cause was a blank CMOS, not the
    boot ROM and not this driver: the newer software reports a NonFatal during static construction,
    the reporter appends it to an error log whose header a fresh CMOS does not have, and the entry
    lands on address 0 - which the scheduler then reports as fatal, for ever. P2K_SEED_ERROR_LOG in
@@ -1731,19 +2174,35 @@ static void init_swep1(void) { core_gameData = &p2kGameData; }
 CORE_GAMEDEF (rfm, 160, "Pinball 2000: Revenge From Mars (1.60)", 2003, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 150, 160, "Pinball 2000: Revenge From Mars (1.50)", 2000, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 140, 160, "Pinball 2000: Revenge From Mars (1.40)", 2000, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 130, 160, "Pinball 2000: Revenge From Mars (1.30)", 1999, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 120, 160, "Pinball 2000: Revenge From Mars (1.20)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 087, 160, "Pinball 2000: Revenge From Mars (0.87 prototype)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 086, 160, "Pinball 2000: Revenge From Mars (0.86 prototype)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 085, 160, "Pinball 2000: Revenge From Mars (0.85 prototype)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 084, 160, "Pinball 2000: Revenge From Mars (0.84 prototype)", 1999, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 080, 160, "Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 071, 160, "Pinball 2000: Revenge From Mars (0.71 prototype)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 070, 160, "Pinball 2000: Revenge From Mars (0.70 prototype)", 1999, "Midway", p2k, 0)
 CORE_CLONEDEF(rfm, 010, 160, "Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1 board)", 1999, "Midway", p2k, 0)
+CORE_CLONEDEF(rfm, 170, 160, "Pinball 2000: Revenge From Mars (1.70 unofficial MOD)", 2006, "Midway", p2k, 0) // debatable if this still counts as official, same as 1.80
 CORE_CLONEDEF(rfm, 180, 160, "Pinball 2000: Revenge From Mars (1.80 unofficial MOD)", 2006, "Midway", p2k, 0) // debatable if this still counts as official
-CORE_CLONEDEF(rfm, 190, 160, "Pinball 2000: Revenge From Mars (1.90 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
+CORE_CLONEDEF(rfm, 121, 160, "Pinball 2000: Revenge From Mars (1.21 unofficial MOD)", 2016, "Midway / hemtoni", p2k, GAME_NOT_WORKING) // the number is 1.21, the build is 2016, and it drops into the Fatal monitor right after startup - see the note above
+CORE_CLONEDEF(rfm, 190r1, 160, "Pinball 2000: Revenge From Mars (1.90 rev. 1 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
+CORE_CLONEDEF(rfm, 190r2, 160, "Pinball 2000: Revenge From Mars (1.90 rev. 2 unofficial MOD)", 2017, "Midway / hemtoni", p2k, 0)
+CORE_CLONEDEF(rfm, 190r3, 160, "Pinball 2000: Revenge From Mars (1.90 rev. 3 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 191, 160, "Pinball 2000: Revenge From Mars (1.91 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
-CORE_CLONEDEF(rfm, 195, 160, "Pinball 2000: Revenge From Mars (1.95 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
+CORE_CLONEDEF(rfm, 195r1, 160, "Pinball 2000: Revenge From Mars (1.95 rev. 1 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
+CORE_CLONEDEF(rfm, 195r2, 160, "Pinball 2000: Revenge From Mars (1.95 rev. 2 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 200, 160, "Pinball 2000: Revenge From Mars (2.00 unofficial MOD)", 2018, "Midway / mypinballs", p2k, 0)
-CORE_CLONEDEF(rfm, 210, 160, "Pinball 2000: Revenge From Mars (2.10 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 210r1, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 1 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 210r2, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 2 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 210r3, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 3 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 210r4, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 4 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 220, 160, "Pinball 2000: Revenge From Mars (2.20 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 221, 160, "Pinball 2000: Revenge From Mars (2.21 unofficial MOD)", 2020, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 222, 160, "Pinball 2000: Revenge From Mars (2.22 unofficial MOD)", 2020, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 223, 160, "Pinball 2000: Revenge From Mars (2.23 unofficial MOD)", 2021, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 224r1, 160, "Pinball 2000: Revenge From Mars (2.24 rev. 1 unofficial MOD)", 2021, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 224r2, 160, "Pinball 2000: Revenge From Mars (2.24 rev. 2 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 224r3, 160, "Pinball 2000: Revenge From Mars (2.24 rev. 3 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 250, 160, "Pinball 2000: Revenge From Mars (2.50 unofficial MOD)", 2022, "Midway / mypinballs", p2k, 0)
@@ -1751,9 +2210,17 @@ CORE_CLONEDEF(rfm, 260, 160, "Pinball 2000: Revenge From Mars (2.60 unofficial M
 CORE_GAMEDEF (swep1, 150, "Pinball 2000: Star Wars Episode I (1.50)", 2003, "Williams", p2k, 0)
 CORE_CLONEDEF(swep1, 140, 150, "Pinball 2000: Star Wars Episode I (1.40)", 2000, "Williams", p2k, 0)
 CORE_CLONEDEF(swep1, 130, 150, "Pinball 2000: Star Wars Episode I (1.30)", 1999, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 120, 150, "Pinball 2000: Star Wars Episode I (1.20)", 1999, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 110, 150, "Pinball 2000: Star Wars Episode I (1.10)", 1999, "Williams", p2k, 0)
+CORE_CLONEDEF(swep1, 100, 150, "Pinball 2000: Star Wars Episode I (1.00)", 1999, "Williams", p2k, 0)
 CORE_CLONEDEF(swep1, 040, 150, "Pinball 2000: Star Wars Episode I (0.40 prototype/factory)", 1999, "Williams", p2k, 0)
-CORE_CLONEDEF(swep1, 166, 150, "Pinball 2000: Star Wars Episode I (1.66 unofficial MOD)", 2022, "Williams / hemtoni", p2k, 0)
-CORE_CLONEDEF(swep1, 200, 150, "Pinball 2000: Star Wars Episode I (2.00 unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0)
+CORE_CLONEDEF(swep1, 160, 150, "Pinball 2000: Star Wars Episode I (1.60 unofficial MOD)", 2006, "Williams", p2k, 0) // Tom Uban's, released with RFM 1.80 - debatable if this still counts as official
+CORE_CLONEDEF(swep1, 200h, 150, "Pinball 2000: Star Wars Episode I (2.00 hemtoni unofficial MOD)", 2016, "Williams / hemtoni", p2k, 0) // not mypinballs' 2.00 below - see the note above
+CORE_CLONEDEF(swep1, 165r1, 150, "Pinball 2000: Star Wars Episode I (1.65 rev. 1 unofficial MOD)", 2018, "Williams / hemtoni", p2k, 0)
+CORE_CLONEDEF(swep1, 165r2, 150, "Pinball 2000: Star Wars Episode I (1.65 rev. 2 unofficial MOD)", 2021, "Williams / hemtoni", p2k, 0)
+CORE_CLONEDEF(swep1, 166r1, 150, "Pinball 2000: Star Wars Episode I (1.66 rev. 1 unofficial MOD)", 2021, "Williams / hemtoni", p2k, 0)
+CORE_CLONEDEF(swep1, 166r2, 150, "Pinball 2000: Star Wars Episode I (1.66 rev. 2 unofficial MOD)", 2022, "Williams / hemtoni", p2k, 0)
+CORE_CLONEDEF(swep1, 200m, 150, "Pinball 2000: Star Wars Episode I (2.00 mypinballs unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0) // not hemtoni's 2.00 above - see the note there
 CORE_CLONEDEF(swep1, 201, 150, "Pinball 2000: Star Wars Episode I (2.01 unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0)
 CORE_CLONEDEF(swep1, 210, 150, "Pinball 2000: Star Wars Episode I (2.10 unofficial MOD)", 2025, "Williams / mypinballs", p2k, 0)
 

@@ -3330,7 +3330,8 @@ DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD
 DRIVER(tfs,12)          //WPC-584S: 01/95   Test fixture Security
 DRIVER(tf95,12)         //WPC-648:  01/95   Test fixture WPC95
 
-// Revenge From Mars' own internal revision history. It runs 0.50 to 2.00 with a
+#if HAS_MEDIAGX
+// Revenge From Mars' own internal revision history: It runs 0.50 and the following with a
 // date and a XINA version each, which is where the dates and XINA numbers on the comment-only
 // lines below come from. Unlike Episode I's changelog it records no mask ROM builds at all, so
 // what is in RFM's masked Prism pairs is known only from the images themselves - 0.1 on the
@@ -3342,47 +3343,77 @@ DRIVER(tf95,12)         //WPC-648:  01/95   Test fixture WPC95
 // was simply not kept current, which is the unofficial line's way of working rather than
 // anything meaningful. The XINA numbers on the official versions below were cross-checked
 // against their own boot data and agree.
-#if HAS_MEDIAGX
-// The 2.x line is myPinballs' ("applejuice"). Their opto expansion (switches 53-56) does a 6 ball
+
+// myPinballs'/applejuice's RFM line: Their opto expansion (switches 53-56) does a 6 ball
 // trough, recognised from 2.22, and physical ball locking, which is what the kit's "v2.6 and above"
-// is about - so every set below bar 2.60 also runs on an unmodified playfield
-DRIVER(rfm,260)         //          08/24   Pinball 2000: Revenge From Mars (2.60 unofficial MOD) // requires the opto expander
+// is about - so every set below 2.60 also runs on an unmodified playfield
+DRIVER(rfm,260)         //          08/24   Pinball 2000: Revenge From Mars (2.60 unofficial MOD)    // requires the opto expander
 DRIVER(rfm,250)         //          12/22   Pinball 2000: Revenge From Mars (2.50 unofficial MOD)
 DRIVER(rfm,224r3)       //          01/22   Pinball 2000: Revenge From Mars (2.24 r3 unofficial MOD) // 29 Jan, the final 2.24: adds a Lyman Sheats tribute; also released as 2.42
 DRIVER(rfm,224r2)       //          01/22   Pinball 2000: Revenge From Mars (2.24 r2 unofficial MOD) // 13 Jan: fixes an extra ball being awarded twice
-// 2.24 r1 (~12/21) - the initial 2.24, not dumped
-DRIVER(rfm,223)         //          04/21   Pinball 2000: Revenge From Mars (2.23 unofficial MOD) // also released as 2.40
-DRIVER(rfm,222)         //          06/20   Pinball 2000: Revenge From Mars (2.22 unofficial MOD) // also released as 2.30; first on XINA 1.34, which needed the CMOS error log seeded - see the note in p2k.c
+DRIVER(rfm,224r1)       //          12/21   Pinball 2000: Revenge From Mars (2.24 r1 unofficial MOD) // 19 Dec, the initial 2.24
+DRIVER(rfm,223)         //          04/21   Pinball 2000: Revenge From Mars (2.23 unofficial MOD)    // also released as 2.40
+DRIVER(rfm,222)         //          06/20   Pinball 2000: Revenge From Mars (2.22 unofficial MOD)    // also released as 2.30; first on XINA 1.34, which needed the CMOS error log seeded - see the note in p2k.c
 DRIVER(rfm,221)         //          04/20   Pinball 2000: Revenge From Mars (2.21 unofficial MOD)
-DRIVER(rfm,220)         //          10/19   Pinball 2000: Revenge From Mars (2.20 unofficial MOD) // last to keep 1.91's sound flash; 2.22 goes back to the stock one
+DRIVER(rfm,220)         //          10/19   Pinball 2000: Revenge From Mars (2.20 unofficial MOD)    // last to keep 1.91's sound flash; 2.22 goes back to the stock one
 // 2.11 - may not exist at all: reported, but possibly only ever internal, and nothing has been seen of it
-DRIVER(rfm,210)         //          04/19   Pinball 2000: Revenge From Mars (2.10 unofficial MOD) // adds shaker (driver 19) and knocker (driver 18) hardware control, both optional
-DRIVER(rfm,200)         //          12/18   Pinball 2000: Revenge From Mars (2.00 unofficial MOD) // myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, and none of 2.10's optional shaker/knocker adjustments yet
-// hemtoni's, all XINA 1.22 and none needing the 8MB that 1.80 did. In order 1.90, 1.95, 1.91, so
-// 1.95 is not the newest despite the number. 1.90 is the one that lasted: its German wording runs
-// through 1.91 and through every myPinballs 2.x. The other two each changed one thing and neither
+// 2.10 in four builds, and unlike 2.24's three these are not one line: r1-r3 share an im_flsh0 and a sound flash of their own, r4 has a different im_flsh0 and goes back to 1.91's flash the way 2.00 and 2.20/2.21 do. r4 is the actual release
+DRIVER(rfm,210r4)       //          04/19   Pinball 2000: Revenge From Mars (2.10 rev. 4 unofficial MOD) // 11 Apr, the release: adds shaker (driver 19) and knocker (driver 18) hardware control, both optional
+DRIVER(rfm,210r3)       //          04/19   Pinball 2000: Revenge From Mars (2.10 rev. 3 unofficial MOD) // 06 Apr
+DRIVER(rfm,210r2)       //          01/19   Pinball 2000: Revenge From Mars (2.10 rev. 2 unofficial MOD) // 24 Jan
+DRIVER(rfm,210r1)       //          ??/19   Pinball 2000: Revenge From Mars (2.10 rev. 1 unofficial MOD) // no package of its own - the unprefixed copy left in r2's archive, so before 24 Jan and no closer
+DRIVER(rfm,200)         //          12/18   Pinball 2000: Revenge From Mars (2.00 unofficial MOD)    // myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, and none of 2.10's optional shaker/knocker adjustments yet
+
+// hemtoni's RFM line: all XINA 1.22. In order: 1.90, 1.95, 1.91 (so 1.95 is not the newest despite the number).
+// 1.90 is the one that lasted: its German wording runs through 1.91 and through every myPinballs 2.x. The other two each changed one thing and neither
 // change outlived them - 1.95's re-translation appears in nothing later, and 1.91's added sounds
-// ride in a sound flash that only 2.00 and 2.10 reuse before 2.22 goes back to the stock one
-DRIVER(rfm,195)         //          03/18   Pinball 2000: Revenge From Mars (1.95 unofficial MOD) // German re-translation of 1.90, used by nothing after it
-DRIVER(rfm,191)         //          05/18   Pinball 2000: Revenge From Mars (1.91 unofficial MOD) // newest of the three; 1.90 plus sounds, in its own sound flash - 2.00 and 2.10 reuse it, 2.22 on do not
-DRIVER(rfm,190)         //          11/17   Pinball 2000: Revenge From Mars (1.90 unofficial MOD) // drops 1.80's 8MB requirement, English/German only; the text every later version carries; repackaged 03/18
-DRIVER(rfm,180)         //          04/06   Pinball 2000: Revenge From Mars (1.80 unofficial MOD) // the only version needing 8MB SDRAM; Tom Uban, for the EPC 2006 tournament server; package says 09/03, but its game.rom was built 04/2006
-// 1.70 (04/06, XINA 1.20) - "This version includes JTS."; same lineage as 1.80 - Tom Uban's first version for the Munich tournament - and only ever circulated as a PUB loader file?!
+// ride in a sound flash that only 2.00 and 2.10 reuse before 2.22 goes back to the stock one.
+
+// Five builds across the three numbers, and only the boot data separates them: every one of these
+// game.roms carries the same Nov 2017 stamp and the same XINA, and all three versions store 1 and 9
+// in the header, so every one of the five displays "1.9". The dates below are the boot data's own
+DRIVER(rfm,195r2)       //          03/18   Pinball 2000: Revenge From Mars (1.95 rev. 2 unofficial MOD) // 29 Mar, the 1.95 that circulated; German re-translation of 1.90, used by nothing after it
+DRIVER(rfm,195r1)       //          03/18   Pinball 2000: Revenge From Mars (1.95 rev. 1 unofficial MOD) // 27 Mar
+DRIVER(rfm,191)         //          05/18   Pinball 2000: Revenge From Mars (1.91 unofficial MOD)        // 30 May, so actually the newest of the three sets; 1.90 plus sounds, in its own sound flash - 2.00 and 2.10 r4 reuse it, 2.22 on do not
+DRIVER(rfm,190r3)       //          03/18   Pinball 2000: Revenge From Mars (1.90 rev. 3 unofficial MOD) // 29 Mar, built 2h47m after 1.95 r2 and sharing its im_flsh0 - the repackaged 1.90, and what this driver used to carry as plain rfm_190
+DRIVER(rfm,190r2)       //          11/17   Pinball 2000: Revenge From Mars (1.90 rev. 2 unofficial MOD) // 22 Nov, a next-day respin
+DRIVER(rfm,190r1)       //          11/17   Pinball 2000: Revenge From Mars (1.90 rev. 1 unofficial MOD) // 21 Nov, the original - drops 1.80's 8MB requirement, English/German only; the text every later version carries
+
+// 1.21 sits here by date rather than by number: a May 2016 build, and the counterpart of the Episode I set named swep1_200h. Both run XINA "1.22 - Tue Jan 06 18:15:21 2016" and nothing else does, and both claimed a version their own line then abandoned
+DRIVER(rfm,121)         //          05/16   Pinball 2000: Revenge From Mars (1.21 unofficial MOD)        // it validates and starts, then drops into the Fatal monitor. Its game.rom has a "GRUB2 Multiboot" header where every other image has a build date, which is the suspect of not booting properly
+
+// semi-official ones:
+DRIVER(rfm,180)         //          04/06   Pinball 2000: Revenge From Mars (1.80 unofficial MOD)        // 23 Apr; the only version needing 8MB SDRAM; Tom Uban, for the EPC 2006 tournament server; package says 09/03, but its game.rom was built 04/2006
+DRIVER(rfm,170)         //          02/06   Pinball 2000: Revenge From Mars (1.70 unofficial MOD)        // built 06 Feb, revision history dates the release 16 Apr - "This version includes JTS."; still on 1.60's XINA 1.19, so 1.80 is where 1.21 and the 8MB arrive
+
+// official line:
 DRIVER(rfm,160)         //          09/03   Pinball 2000: Revenge From Mars (1.60) // last official one, XINA 1.19
 DRIVER(rfm,150)         //          07/00   Pinball 2000: Revenge From Mars (1.50)
 DRIVER(rfm,140)         //          01/00   Pinball 2000: Revenge From Mars (1.40)
-// 1.30 (24 NOV 1999, XINA 1.17)
+DRIVER(rfm,130)         //          11/99   Pinball 2000: Revenge From Mars (1.30) // 24 Nov, XINA 1.17, which 1.40 keeps; adds Martian Champion, a jet bumper rule, a ball saver and a victory lap
 DRIVER(rfm,120)         //          06/99   Pinball 2000: Revenge From Mars (1.20) // XINA 1.12, the only shipped set below 1.16
 // 1.10 (21 MAY 1999, XINA 1.11)
 // 1.00 (05 MAY 1999, XINA 1.10)
-// 0.90 (07 APR 1999, XINA 1.06)
+// 0.90 (07 APR 1999, XINA 1.06) //!! in my own machine on board?!?
+// The pre-production packages, all on XINA 1.04 or older and all on a sound flash of their own.
+// They come in three pairs - 0.70/0.71, 0.84/0.85, 0.86/0.87 - and a pair is two parallel variants
+// rather than two unique versions, which is why the build stamps do not run with the numbers. Within a
+// pair exactly two functions differ (same in all three pairs): the odd build's
+// award_switch() jump tables carry 36 cases where the even build's carry 34, i.e. its switch enum
+// has two extra members. Shipped 1.20 and 1.60 have 34, so the even builds of these sets are the line that
+// became the official releases. The revision history knows none of the four 0.8x builds nor 0.71 though!
+DRIVER(rfm,087)         //          04/99   Pinball 2000: Revenge From Mars (0.87 prototype) // 06 Apr 11:17, XINA 1.04
+DRIVER(rfm,086)         //          04/99   Pinball 2000: Revenge From Mars (0.86 prototype) // 06 Apr 11:48, XINA 1.04 - built after 0.87
+DRIVER(rfm,085)         //          04/99   Pinball 2000: Revenge From Mars (0.85 prototype) // 05 Apr 11:45, XINA 1.04
+DRIVER(rfm,084)         //          04/99   Pinball 2000: Revenge From Mars (0.84 prototype) // 06 Apr 09:19, XINA 1.04 - built after 0.85
 DRIVER(rfm,080)         //          03/99   Pinball 2000: Revenge From Mars (0.80 prototype/factory, rev. 2(?) board) // the copy in the Prism ROMs, not an update package - the rev. 2 card's loader is dated 04/99
-// 0.70 (26 MAR 1999)
-// 0.60 (16 MAR 1999)
-// 0.50 (07 MAR 1999) - the earliest the changelog records; 0.1 below predates it
+DRIVER(rfm,071)         //          03/99   Pinball 2000: Revenge From Mars (0.71 prototype) // 28 Mar 17:28, XINA 1.02 - 26 minutes after 0.70, and unknown to the revision history
+DRIVER(rfm,070)         //          03/99   Pinball 2000: Revenge From Mars (0.70 prototype) // 28 Mar 17:02, XINA 1.02; revision history dates the release 26 Mar
+// 0.60 (16 MAR 1999, XINA 1.01) - "Release of Revenge From Mars for samples"
+// 0.50 (07 MAR 1999) - "Release of Revenge From Mars for Waukegan startup", the earliest the changelog records; 0.1 below predates it
 DRIVER(rfm,010)         //          ??/99   Pinball 2000: Revenge From Mars (0.1 prototype/factory, rev. 1 board) // likewise the Prism ROM copy, on the rev. 1 card
 
-// The official Episode I versions below, dumped or not, come out of one place: the 1.66 update
+// The official Episode I versions and some descriptions below, dumped or not, come out of one place: the 1.66 update
 // package (pin2000_50069_0166_04032022_B_10000000.exe) ships a changelog.txt carrying the whole
 // revision history back to 0.1, with dates, XINA versions and what each one changed. The dates
 // and notes on the comment-only lines are from there.
@@ -3392,26 +3423,37 @@ DRIVER(rfm,010)         //          ??/99   Pinball 2000: Revenge From Mars (0.1
 // for anything to do with which XINA a set was built against - see src/p2k/README.md, where that
 // decides which versions used to fail to boot. Also records that 1.31 is where the "optional
 // hardware knocker adjustment" was implemented.
-//
-// Episode I's 2.x line is myPinballs' as well. Shaker and knocker arrive with 2.00 and a topper
+
+// myPinballs'/applejuice's SWEP1 line: branches off Tom Uban's 1.60 rather than
+// hemtoni's 1.6x below - those two unofficial lines seem to be independent, and the symbol-table evidence
+// for that is with the sets in p2k.c. Shaker and knocker arrive with 2.00 and a topper
 // with 2.10, all optional - but they need a cabinet driver control PCB on top of the loom RFM
 // uses, and a pigtail that moves the drives, so they are not on RFM's 18/19. All three are XINA
 // 1.34 or later, same as RFM 2.22 up, and so all three needed the CMOS error log seeded
 DRIVER(swep1,210)       //          10/25   Pinball 2000: Star Wars Episode I (2.10 unofficial MOD) // adds topper hardware control
 DRIVER(swep1,201)       //          05/25   Pinball 2000: Star Wars Episode I (2.01 unofficial MOD)
-DRIVER(swep1,200)       //          04/25   Pinball 2000: Star Wars Episode I (2.00 unofficial MOD) // adds shaker and knocker hardware control
-// hemtoni's, carrying on from Tom Uban's 2006 build the way RFM 1.90 does from 1.80
-DRIVER(swep1,166)       //          04/22   Pinball 2000: Star Wars Episode I (1.66 unofficial MOD) // XINA 1.31; shaker on driver 5, not myPinballs' 43 - see the driver 5 note in p2k_names.h; built 04/2022, changelog dates the version 11/2021; labeled as BETA
-// 1.65 (03/21, hemtoni)   - released but not available: reverted to factory RAM, so it no longer needs the 8 MB 1.60 wants; German translation fixes, ball saver on by default
-// 1.60 (04/06, Tom Uban)  - the Episode I counterpart of RFM 1.80, and like it, it needs 8 MB
-DRIVER(swep1,150)       //          09/03   Pinball 2000: Star Wars Episode I (1.50) // last official one, XINA 1.19, released the same day as RFM 1.60; package says 07/00, but it was built 09/2003
+DRIVER(swep1,200m)      //          04/25   Pinball 2000: Star Wars Episode I (2.00 mypinballs unofficial MOD) // adds shaker and knocker hardware control. Not to be confused with hemtoni's 2.00 below
+
+// hemtoni's SWEP1 line: carrying on from Tom Uban's 2006 build the way RFM 1.90 does from 1.80. The line runs
+// 1.60 -> 2.00 -> 1.65 -> 1.66, i.e. the numbering went backwards once: the 2016 build called itself 2.00 and nothing was built on that, so 2018 picked up again at 1.65
+DRIVER(swep1,166r2)     //          04/22   Pinball 2000: Star Wars Episode I (1.66 rev. 2 unofficial MOD)  // 03 Apr, XINA 1.31; shaker on driver 5, not myPinballs' 43 - see the driver 5 note in p2k_names.h; changelog dates the version 11/2021, which is r1; labeled as BETA
+DRIVER(swep1,166r1)     //          11/21   Pinball 2000: Star Wars Episode I (1.66 rev. 1 unofficial MOD)  // 14 Nov, the build the changelog dates the version to; shares r2's im_flsh0 and symbol table; features a game breaking scoring bug awarding 4B on the captive ball, most likely fixed in r2
+DRIVER(swep1,165r2)     //          04/21   Pinball 2000: Star Wars Episode I (1.65 rev. 2 unofficial MOD)  // 07 Apr, XINA 1.31 and an im_flsh0 of its own; the changelog's "1.65 (03/21)" - reverted to factory RAM, so it no longer needs the 8 MB 1.60 wants; German translation fixes, ball saver on by default
+DRIVER(swep1,165r1)     //          02/18   Pinball 2000: Star Wars Episode I (1.65 rev. 1 unofficial MOD)  // 21 Feb, still XINA 1.22 and the 1.6x-era im_flsh0; the changelog does not record this build
+DRIVER(swep1,200h)      //          02/16   Pinball 2000: Star Wars Episode I (2.00 hemtoni unofficial MOD) // 26 Feb, XINA 1.22 - the Jan 2016 build, shared only with rfm_121. Not mypinballs' 2.00 above
+
+// semi-official:
+DRIVER(swep1,160)       //          04/06   Pinball 2000: Star Wars Episode I (1.60 unofficial MOD) // 23 Apr, XINA 1.21; Tom Uban's, and the Episode I counterpart of RFM 1.80 - their boot data was built 52 seconds apart
+
+// official line:
+DRIVER(swep1,150)       //          09/03   Pinball 2000: Star Wars Episode I (1.50) // last official one, XINA 1.19, released the same day as RFM 1.60; package says 07/00, but it was built 09/2003 - and the 07252000 and 09222003 packages hold identical files, so the two names are one release
 DRIVER(swep1,140)       //          07/00   Pinball 2000: Star Wars Episode I (1.40)
 // 1.31 (10/99, XINA 1.16) - ramp blocker mode, to stop ramp combos being abused
-DRIVER(swep1,130)       //          09/99   Pinball 2000: Star Wars Episode I (1.30)
-// 1.2  (09/99, XINA 1.16)
-// 1.1  (09/99, XINA 1.15) - first official update
+DRIVER(swep1,130)       //          09/99   Pinball 2000: Star Wars Episode I (1.30) // 21 Sep, XINA 1.16
+DRIVER(swep1,120)       //          09/99   Pinball 2000: Star Wars Episode I (1.20) // 15 Sep, XINA 1.16, which 1.30 keeps - the two were built five days apart
+DRIVER(swep1,110)       //          09/99   Pinball 2000: Star Wars Episode I (1.10) // 14 Sep, XINA 1.15; first official update
 // 1.05 (09/99, XINA 1.15) - local, to become 1.1
-// 1.00 (07/99, XINA 1.13) - first production release
+DRIVER(swep1,100)       //          07/99   Pinball 2000: Star Wars Episode I (1.00) // 19 Jul, XINA 1.13; first production release
 // 0.51 (07/99, XINA 1.12)
 // 0.50 (07/99, XINA 1.12)
 // 0.43 (07/99, XINA 1.12)

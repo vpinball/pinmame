@@ -27,7 +27,7 @@
        43    Not Used    Not Used            Shaker Motor (Optional)
        44    Not Used    Not Used            Topper (Optional)
 
-   One table cannot be right for both, and this one follows 2.10, so on swep1_166 driver 5 reads
+   One table cannot be right for both, and this one follows 2.10, so on swep1_166r2 driver 5 reads
    Auto Plunger where the machine means its shaker. Worth knowing before trusting a coil watch on
    that set; fixing it properly means making the coil table version-aware, which nothing else
    needs yet.
@@ -76,7 +76,7 @@
    function and table in the image. "SYMBOL TABLE" at 0x00, a u32 count at 0x10, then the entries
    from 0x18 as count * { u32 address, u32 name_offset }, sorted by address, with the names based
    at the end of the entries - 0x18 + count * 8. Checked against rfm_160, rfm_260, swep1_150,
-   swep1_166 and swep1_210: the first entry is first(void) at 0x100000 in each, and
+   swep1_166r2 and swep1_210: the first entry is first(void) at 0x100000 in each, and
    wms_pdb_fuse_status(unsigned char &, unsigned char &) resolves in all five.
 
    An earlier version of this note had the pair the other way round and the names at a fixed

@@ -4,7 +4,7 @@
 
 **It was a blank CMOS**. Some of the aftermarket versions used not to boot, and what divided them was not the game but the system
 software: each `game.rom` names the XINA it was built against, and everything from **1.16 to 1.31**
-came up (`rfm_140` through `rfm_210`, `swep1_130` through `swep1_150`) while everything from
+came up (`rfm_140` through `rfm_210r4`, `swep1_130` through `swep1_150`) while everything from
 **1.34 to 1.38** stopped before the boot screen (`rfm_222` through `rfm_260`, and all three `swep1_2xx`).
 
 The emulation was only indirectly at fault. The aftermarket software has a

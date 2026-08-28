@@ -15,34 +15,70 @@ MODs elsewhere:
 | `rfm_260` | Pinball 2000: Revenge From Mars | 08/2024 | myPinballs; needs the opto expansion (v2.6+ per the kit) |
 | `rfm_250` | | 12/2022 | myPinballs |
 | `rfm_224r3` | | 01/2022 | myPinballs, also released as 2.42; the 29 Jan build, adds a Lyman Sheats tribute |
-| `rfm_224r2` | | 01/2022 | the 13 Jan build; fixes an extra ball being awarded twice. 2.24 r1 (~12/2021) is not dumped |
+| `rfm_224r2` | | 01/2022 | the 13 Jan build; fixes an extra ball being awarded twice |
+| `rfm_224r1` | | 12/2021 | the 19 Dec build, the initial 2.24 |
 | `rfm_223` | | 04/2021 | myPinballs, also released as 2.40 |
 | `rfm_222` | | 06/2020 | myPinballs, also released as 2.30 |
 | `rfm_221` | | 04/2020 | myPinballs; last on 1.91's sound flash, 2.22 goes back to stock |
 | `rfm_220` | | 10/2019 | myPinballs |
-| `rfm_210` | | 04/2019 | myPinballs; shaker/knocker support |
+| `rfm_210r4` | | 04/2019 | the 11 Apr build, the 2.10 release; shaker/knocker support |
+| `rfm_210r3` | | 04/2019 | the 06 Apr build |
+| `rfm_210r2` | | 01/2019 | the 24 Jan build |
+| `rfm_210r1` | | ?/2019 | no package of its own - the unprefixed copy left in r2's archive, so older than 24 Jan and no closer. r1-r3 share an im_flsh0 and a sound flash that r4 does not use |
 | `rfm_200` | | 12/2018 | myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, no shaker/knocker yet |
-| `rfm_195` | | 03/2018 | hemtoni; German re-translation, used by nothing later - not the newest 1.x |
-| `rfm_191` | | 05/2018 | hemtoni; newest of the three, added sounds - only 2.10 kept them |
-| `rfm_190` | | 11/2017 | hemtoni; drops 1.80's 8 MB requirement; its text runs through all of 2.x |
+| `rfm_195r2` | | 03/2018 | the 29 Mar build, the 1.95 that circulated; German re-translation, used by nothing later - not the newest 1.x |
+| `rfm_195r1` | | 03/2018 | the 27 Mar build |
+| `rfm_191` | | 05/2018 | hemtoni; newest of the three numbers, added sounds - only 2.00/2.10 r4 kept them |
+| `rfm_190r3` | | 03/2018 | the 29 Mar build - 1.90 repackaged, built 2h47m after 1.95 r2 and sharing its im_flsh0. This is what used to be plain `rfm_190` |
+| `rfm_190r2` | | 11/2017 | the 22 Nov build, a next-day respin |
+| `rfm_190r1` | | 11/2017 | the 21 Nov build, the original; drops 1.80's 8 MB requirement; its text runs through all of 2.x |
+| `rfm_121` | | 05/2016 | **`GAME_NOT_WORKING`** - the only P2K set that is. hemtoni; numbered 1.21 but built 2016, and paired with `swep1_200h` - the only two on XINA "1.22 - Tue Jan 06 18:15:21 2016". Its `game.rom` carries a GRUB2 Multiboot header where every other image has a build date, and it drops into the Fatal monitor right after the loader starts it |
 | `rfm_180` | | 04/2006 | Tom Uban, EPC 2006 tournament build; needs 8 MB |
+| `rfm_170` | | 02/2006 | Tom Uban; "This version includes JTS". Still on 1.60's XINA 1.19 - 1.80 is where 1.21 and the 8 MB arrive |
 | **`rfm_160`** | **parent** | 09/2003 | last official, XINA 1.19 |
 | `rfm_150` | | 07/2000 | |
 | `rfm_140` | | 01/2000 | |
-| `rfm_120` | | 06/1999 | XINA 1.12 |
-| `rfm_080` | | 03/1999 | XINA 1.04 |
-| `rfm_010` | | 01/1999 | no ROMs of its own - `rfm`'s Prism chips with the update package left out, so the loader starts the fallback copy |
+| `rfm_130` | | 11/1999 | XINA 1.17, which 1.40 keeps |
+| `rfm_120` | | 06/1999 | XINA 1.12 - so subject to the coin-door sound fault below |
+| `rfm_087` | | 04/1999 | pre-production, XINA 1.04 |
+| `rfm_086` | | 04/1999 | pre-production; linked *after* 0.87 - the pairs are parallel variants, not a sequence |
+| `rfm_085` | | 04/1999 | pre-production, XINA 1.04 |
+| `rfm_084` | | 04/1999 | pre-production; linked *after* 0.85. Within each pair (0.70/0.71, 0.84/0.85, 0.86/0.87) exactly two functions differ - both `award_switch()`, whose jump table has 36 cases in the odd build and 34 in the even, so the odd variant's switch enum has two extra members. Shipped 1.20/1.60 have 34, so the even builds are the line that shipped |
+| `rfm_080` | | 03/1999 | XINA 1.04 - likewise |
+| `rfm_071` | | 03/1999 | pre-production, XINA 1.02; built 26 minutes after 0.70 and unknown to the revision history |
+| `rfm_070` | | 03/1999 | pre-production, XINA 1.02. These six share a sound flash of their own, and are the only pre-production sets with an update package rather than a Prism-ROM fallback |
+| `rfm_010` | | 01/1999 | no ROMs of its own - `rfm`'s Prism chips with the update package left out, so the loader starts the fallback copy. Old XINA, so likewise |
 | `swep1_210` | Pinball 2000: Star Wars Episode I | 10/2025 | myPinballs; adds a topper (driver 44) |
 | `swep1_201` | | 05/2025 | myPinballs |
-| `swep1_200` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43) |
-| `swep1_166` | | 04/2022 | hemtoni; carries on Tom Uban's 1.60 line. XINA 1.31, adds shaker support - on driver 5, where myPinballs' 2.x uses 43 and puts an auto plunger on 5 instead. Its changelog documents the whole version history, including two undumped ones, 1.65 (03/2021) and 1.60 (04/2006) |
+| `swep1_200m` | | 04/2025 | myPinballs; shaker/knocker support (drivers 42/43). The `m` separates it from hemtoni's unrelated 2.00 below. This line's code descends from Uban's `swep1_160`, not from hemtoni's 1.6x - see the note in `src/wpc/p2k.c` |
+| `swep1_166r2` | | 04/2022 | the 03 Apr build. XINA 1.31, adds shaker support - on driver 5, where myPinballs' 2.x uses 43 and puts an auto plunger on 5 instead. Its changelog documents the whole version history |
+| `swep1_166r1` | | 11/2021 | the 14 Nov build, which is the date the changelog gives the version; shares r2's im_flsh0 and symbol table. Runs, but prints two NonFatals about duplicate resource IDs that r2 does not - it is the beta its label says it is |
+| `swep1_165r2` | | 04/2021 | XINA 1.31 and an im_flsh0 of its own; the changelog's "1.65 (03/2021)" |
+| `swep1_165r1` | | 02/2018 | still XINA 1.22 and the 1.6x-era im_flsh0; the changelog does not record this build |
+| `swep1_200h` | | 02/2016 | hemtoni; calls itself 2.00 nine years before myPinballs' unrelated `swep1_200m` above, hence the suffix. Nothing was built on the number - the line went back to 1.65 in 2018. Pairs with `rfm_121` |
+| `swep1_160` | | 04/2006 | Tom Uban, and the Episode I counterpart of RFM 1.80 - their boot data was built 52 seconds apart, both on XINA 1.21. Both unofficial Episode I lines, hemtoni's and myPinballs', branch from here rather than from official 1.50 |
 | **`swep1_150`** | **parent** | 09/2003 | last official, XINA 1.19 |
 | `swep1_140` | | 07/2000 | |
-| `swep1_130` | | 09/1999 | |
-| `swep1_040` | | 06/1999 | XINA 1.12; no ROMs of its own, same as `rfm_010` |
+| `swep1_130` | | 09/1999 | XINA 1.16 |
+| `swep1_120` | | 09/1999 | XINA 1.16, which 1.30 keeps - the two were built five days apart |
+| `swep1_110` | | 09/1999 | XINA 1.15; first official update |
+| `swep1_100` | | 07/1999 | XINA 1.13; first production release |
+| `swep1_040` | | 06/1999 | XINA 1.12; no ROMs of its own, same as `rfm_010`, and likewise subject to the coin-door sound fault |
 
-Every set boots, renders, takes coins, starts a game, drives lamps and coils, responds to the
+Every set (bar the weird `rfm_121` unofficial one) boots, renders, takes coins, starts a game, drives lamps and coils, responds to the
 flippers and plays sound - the pre-production ones included.
+
+All of them were also checked the following way, which is worth repeating for any set added later - it
+catches a mispaired or mis-sized update file immediately, because the loader validates each of the
+four components against the boot data's own table:
+
+```
+P2K_PROGRESS=20000000 ./pinmame <set>
+```
+
+A healthy set prints four `[ VALIDATING UPDATE ... ]` lines, then `[ STARTING UPDATE GAME CODE ]`,
+then the XINA banner - and that banner is an independent check on the set, since it has to match the
+version the `game.rom` names.
 
 Note that a first boot on a blank CMOS may also print *"CMOS Prologue Checksum Invalid"* and *"CMOS Manager
 has wiped NVRAM at 0x11002400"* on the games whose console talks - the
@@ -95,6 +131,13 @@ game id and a major/minor pair, formatted for display through `"Software version
 Each has a set of its own so it is addressable without the knob. Only `rfm_080` needs files of
 its own; `rfm_010` and `swep1_040` are their parent's Prism chips with the update package left
 out, so we load them straight from the parent set.
+
+**The later loaders check that the update belongs to the game; V3.2 does not yet.** Put an update for
+another game id on a card and V3.5 (Episode I) prints `[ UPDATE MISMATCH ]`
+and falls through to the non-update path, starting their own ROM copy instead. V3.2 (RFM r1) has no
+such check at all - Episode I 1.50's update runs on the RFM card, four components validated, XINA
+1.19, no Fatals. Only worth knowing if you go looking: it means a foreign update boots on exactly
+one card and is refused by every card new enough to look.
 
 `rfm_080`/r2 has a set of its own, filed as a clone of `rfm_160` like every other version - r2
 bank 0, no update region. Only `u100`/`u101` are actually rev. 2 - the MAME set carries no other
@@ -282,14 +325,40 @@ the four files above plus two the machine does not take from the package:
 
 * `_sf.rom` - 1 MiB in every package, official and unofficial alike. This one is *not* inert: it is
   the DCS sound board's flash, the same image the sets declare as `rfm_28f800.rom` /
-  `swe1_28f800.rom`. In 17 of the 21 packages it is byte-identical to those, which is why the sets
-  can share one copy. Four ship something else - RFM 1.91, RFM 2.00, RFM 2.10 and SWEP1 2.10 -
-  though that is only two images: RFM 2.00's and 2.10's are both byte-identical to 1.91's, so
-  `rfm_200` and `rfm_210` declare **1.91's name** rather than their own, one image not being
-  worth three ROM entries and two more megabytes. The note next to the ROM definitions in `src/wpc/p2k.c` has the rest.
-* `_pubboot.rom` - 32 KiB, in the unofficial 1.9x and 2.x packages (13 of the 21) and byte-identical
-  across every one of them. Encore's loader ignores it as well. The name is the PUB card, the loader medium the last
-  official updates were carried on before anyone repackaged them as serial updates.
+  `swe1_28f800.rom`. In 34 of the 49 packages behind a set here it is byte-identical to those, which
+  is why those sets can share one copy. The other 15 ship something else, but that is only **four**
+  distinct images:
+  * the six RFM 0.7x/0.8x pre-production packages carry one of their own, 89.6% different from the
+    shipped chip - the audio was still being cut when they were made;
+  * RFM 1.91's, which 2.00, 2.10 r4, 2.20 and 2.21 ship again under their own version's name, so
+    those five sets all declare **1.91's name** rather than their own - one image is not worth five
+    ROM entries and eight more megabytes;
+  * RFM 2.10 r1-r3's, which is 1.91's with exactly two bytes changed, at `0x0122bc` and `0x016200`
+    - out in the sample data, not a header and not a checksum;
+  * SWEP1 2.10's.
+
+  The note next to the ROM definitions in `src/wpc/p2k.c` has the rest.
+* Text and metadata, in some packages only, none of it loaded:
+  * `gamelist.txt` - in nearly every package, three variants by era (64, 84 and 135 bytes).
+  * `changelog.txt` and `xina_changelog.txt` - **only** in the hemtoni Episode I 1.65/1.66 archives,
+    and the single best documentation of that line. Note each archive carries `changelog.txt`
+    *twice*, at the root and inside `50069/`, and the two differ: the inner copy is the previous
+    release's, left behind. Always read the root one. Its history runs 1.66, 1.65 (24 MAR 2021,
+    XINA 1.31), 1.6 (23 APR 2006, XINA 1.21), 1.5 - dates and XINAs matching the sets here - and it
+    records neither `swep1_165r1` nor `swep1_200h`.
+  * `_notes/dwsync.xml` - Dreamweaver site-sync metadata in twelve myPinballs RFM archives, left in
+    by accident. It names the author's two upload targets, `10.0.1.230//root/pinbox/update/rfm_15/`
+    and `10.0.1.47//root/pinbox/update/rfm_15/`, and carries real file mtimes in the Mac 1904 epoch.
+    Like the stale ROM copies it is one release behind the archive it ships in, so it is no use for
+    dating a set - but it does show the stock sound flash still carrying its original **1999-04-13
+    16:27** mtime in 2024, and 1.91's carrying 2018-05-26.
+* `_pubboot.rom` - absent from the RFM 0.7x/0.8x packages and present in every other one, in four
+  images that go strictly by age rather than by game: SWEP1 1.00 has its own (32256 bytes), SWEP1
+  1.10/1.20/1.30 share a second (32256), RFM 1.20 has a third (31744), and from SWEP1 1.40 and RFM
+  1.30 onwards every package carries the same fourth one (32768) - official and unofficial alike,
+  through to 2.60. Nothing loads it here and Encore's loader ignores it too. The name is the PUB
+  card, the loader medium the last official updates were carried on before anyone repackaged them
+  as serial updates.
 
 The four that matter go into the set's zip under the names they already have, and `ROM_START` in
 `src/wpc/p2k.c` places them; nothing has to be concatenated by hand. `bootdata` is 32 KiB in every
@@ -300,6 +369,51 @@ matches by filename suffix and has no size table to consult.
 CMOS and the PLX EEPROM persist through PinMAME's normal NVRAM file. The update flash deliberately
 does not: it belongs to the set, and an 8 MB NVRAM file would take precedence over it - a machine
 would keep booting the version it was first started with even after selecting another driver.
+
+#### Dating new sets: four dates, and only one is a build time
+
+Every set here can be dated four different ways and they routinely disagree. In order of how much
+they are worth:
+
+1. **The boot data's build stamp**, an ASCII timestamp at offset 0 of `bootdata.rom`. This is the
+   real one, and it is what the set years in the table above come from.
+2. **The package filename**, `pin2000_<game>_<ver>_MMDDYYYY_...`. This is when somebody *packaged*
+   it, which can be years after the build - `swep1_160` is packaged `02012013` and built
+   2006-04-23, off by 2476 days, and the `07252000` Episode I 1.50 package holds files built
+   2003-09-22. Never date a set by its filename.
+3. **The game image's stamp**, at offset 0x0c of `game.rom`. Useless for dating the aftermarket
+   builds, because they do not restamp: all five RFM 1.9x builds carry `Tue Nov 21 11:33:08 2017`,
+   and the 06 Apr 2019 RFM 2.10 carries the 10 Jan one. It *is* useful for something else, below.
+4. **The version the machine prints.** Lossy: the header stores major and minor separately and
+   `"Software version: %d.%d"` prints the minor as a plain number, so 1.90, 1.91 and 1.95 all
+   display `1.9`, 1.60 displays `1.6`, and `rfm_010` displays `0.1`.
+
+**The `game.rom` clock is not a clock.** In every official release the mm:ss of that stamp is the
+version number (below), so it cannot also be a build time - and in the pre-production sets it is
+constant across builds days apart (`03:28` for both 0.7x, `06:24` for all four 0.8x) while the hour
+and date move. Whatever writes that field, it is not `ctime()` in any of these images, so do not
+read a minute-level time off it. The **boot data** stamp is the real clock: its mm:ss is scattered
+with no pattern in official and unofficial sets alike, which is why the set years come from there.
+
+**The version-in-the-timestamp convention.** Williams encoded the version number into the *time*
+field of both stamps, as `<major>:<minor>` - so XINA 1.19's banner reads
+`1.19 - Mon Sep 22 07:01:19 2003`, and official Episode I 1.40's game image reads
+`Tue Jul 25 01:40:00 2000`. The date part is real; the clock part is not a clock. This splits the
+whole collection cleanly and is worth knowing, because it is an independent check on who built a
+given image:
+
+* Every official XINA, 1.02 through 1.21, follows it. **No** XINA from 1.22 on does - the
+  aftermarket kept 1.21's `01:21` for a while (1.22 and 1.31 both carry it) and then stopped
+  bothering, which is also why a XINA version number alone does not identify a build: 1.22 appears
+  with three different timestamps here, 1.31 with two, 1.36 with two.
+* Every official game image follows it - RFM 1.20 to 1.60, Episode I 1.00 to 1.50 - **and so do
+  RFM 1.70, RFM 1.80 and Episode I 1.60**, which are Tom Uban's. Nothing else does: not one
+  aftermarket build, and not the 0.7x/0.8x pre-production ones, which pre-date the convention.
+
+  That last point is worth its weight: those three carry on using Williams' own internal build
+  convention, which no other unofficial build does. It is independent support for the attribution
+  to the original programmers, alongside RFM 1.80 and SWEP1 1.60's boot data being built 52 seconds
+  apart.
 
 #### The r2 boot ROMs
 
@@ -786,7 +900,7 @@ of the 2000-cycle execution chunks.
   asks for; the XINA changelog adds that the test "checks for coin door closure" (1.01) and
   "holds state while the coin door is open" (1.02), so it is gated on the door rather than
   free-running.
-* **SOLVED - the UART divisor latch clobbered the interrupt enable.** For a long time `swep1_200`,
+* **SOLVED - the UART divisor latch clobbered the interrupt enable.** For a long time `swep1_200m`,
   `swep1_201` and `swep1_210` looked like they had a broken service menu: the background never
   repainted, the switch test came up blank, a coin could hang the machine and keys stopped
   registering in game. All of it was one fault, and it was in this driver.
