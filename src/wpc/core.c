@@ -2015,7 +2015,7 @@ static VIDEO_UPDATE(core_status) {
 
   {
     BMTYPE **line = &lines[locals.firstSimRow + startRow];
-    if (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON))
+    if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
     {
       float state[CORE_MODOUT_SOL_MAX];
       core_getAllPhysicSols(state);

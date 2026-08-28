@@ -539,7 +539,7 @@ core_tLCDLayout byVP_dispBabyPac[] = {
   {0,0,192,256,CORE_VIDEO|CORE_VIDEO_ROT90,(genf *)byVP_update,NULL}, {0}
 };
 core_tLCDLayout byVP_dispGranny[] = {
-  {0,0,192,256,CORE_VIDEO|CORE_VIDEO_ROT90,(genf *)byVP_update,NULL}, {0}
+  {0,0,192,256,CORE_VIDEO,(genf *)byVP_update,NULL}, {0}
 };
 /*--------------------*/
 /* Machine Definition */
