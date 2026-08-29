@@ -69,7 +69,7 @@ Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, wh
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
 IDSA: Fantastic Car
-Recreativos Franco: Super Star (and rev. 2)
+Recreativos Franco: Super Star rev. 1, 2, 3, 4
 WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.30, 1.20 (official updates)
                         0.87, 0.86, 0.85, 0.84, 0.71, 0.70 (prototype updates)
                         0.80, 0.1 (factory images on Prism ROMs, rev. 2(?) and rev. 1 cards)

@@ -59,23 +59,38 @@ static core_tLCDLayout rfrancoDisp[] = {
 /*-------------------------------------------------------------------
 / Super Star (1986)
 /-------------------------------------------------------------------*/
-INITGAME(supstarf, rfrancoDisp, 5, 0)
-RFRANCO_ROMSTART(supstarf,
+INITGAME(supstarf1, rfrancoDisp, 5, 0)
+RFRANCO_ROMSTART(supstarf1,
   "m31-a-01187.ic19", CRC(ab8b1148) SHA1(496d3c9664386ae64e94462db2fdd36811a68a87),
   "2532.ic4",         CRC(d6d7eee2) SHA1(60e497c8845320eea01662d894d0b16349ebb7e4))
 RFRANCO_ROMEND
-CORE_GAMEDEFNV(supstarf, "Super Star", 1986, "Recreativos Franco (Spain)", gl_mRFRANCO, 0)
+CORE_GAMEDEFNV(supstarf1, "Super Star (rev. 1)", 1986, "Recreativos Franco (Spain)", gl_mRFRANCO, 0)
 
-/* Rev. 2 - the newer firmware, and named so: it is a true revision, not a
-   variant, carrying real fixes (the sender's HLT wake race replaced by a
-   bounded spin, the stuck-contact watchdog) on top of rev. 1. It extends the operator menu from 9 adjustment zones to
-   25. Its sound ROM is the same 2532 image: the dump taken alongside this game
-   ROM had data line D5 stuck high, and clearing that bit reproduces the good
-   dump exactly across all 4096 bytes, so the physical part held this content.
-   MAME still carries its own copy flagged BAD_DUMP. */
-INITGAME(supstarfa, rfrancoDisp, 5, 0)
-RFRANCO_ROMSTART(supstarfa,
+/* TRAP re-entrancy sentinel. A new NVRAM byte at C089, and the TRAP handler bails out if it fires while the previous pass is still running.
+   That single inserted byte shifts every NVRAM variable from C08A to C373 up by one, which is why the raw byte diff looks like 1502 bytes for what is a 13-instruction change */
+INITGAME(supstarf2, rfrancoDisp, 5, 0)
+RFRANCO_ROMSTART(supstarf2,
+  "27128Prg.bin", CRC(77c43e87) SHA1(efdf60b53ac105985ca6d4eeb6ed48b893bb7ad8),
+  "2532.ic4",     CRC(d6d7eee2) SHA1(60e497c8845320eea01662d894d0b16349ebb7e4))
+RFRANCO_ROMEND
+CORE_CLONEDEFNV(supstarf2, supstarf1, "Super Star (rev. 2)", 1986, "Recreativos Franco (Spain)", gl_mRFRANCO, 0)
+
+/* The sound sender stops halting: the HLT waiting for the RST5.5 reply becomes a bounded ~50-iteration spin, so a lost wake no longer wedges the machine.
+   The TRAP sentinel prologue moves out of 1800 to 197F, and an explicit LXI SP,C7FF is added on the game-over/attract entry */
+INITGAME(supstarf3, rfrancoDisp, 5, 0)
+RFRANCO_ROMSTART(supstarf3,
+  "super.dat", CRC(51697aff) SHA1(d10c6456716ca49cce590996e7271b8cd7026f38),
+  "2532.ic4",  CRC(d6d7eee2) SHA1(60e497c8845320eea01662d894d0b16349ebb7e4))
+RFRANCO_ROMEND
+CORE_CLONEDEFNV(supstarf3, supstarf1, "Super Star (rev. 3)", 1986, "Recreativos Franco (Spain)", gl_mRFRANCO, 0)
+
+/* Operator menu 9 zones -> 19, plus a coin-contact conditioner, a stuck-contact watchdog, ten new gameplay settings, a new code block at 3880-3B4D,
+   a changed chime ladder, and a checksum byte at 3FFF. Stack base drops C7FF -> C7CF to free C7D0-C7FF for the new variables.
+   Its sound ROM is the same 2532 image: the dump taken alongside this game ROM had data line D5 stuck high, and clearing that bit reproduces the good
+   dump exactly across all 4096 bytes, so the physical part held this content */
+INITGAME(supstarf4, rfrancoDisp, 5, 0)
+RFRANCO_ROMSTART(supstarf4,
   "27c128.ic19", CRC(9a440461) SHA1(e2f8dcf95084f755d3a34d77ba2649602687a610),
   "2532.ic4",    CRC(d6d7eee2) SHA1(60e497c8845320eea01662d894d0b16349ebb7e4))
 RFRANCO_ROMEND
-CORE_CLONEDEFNV(supstarfa, supstarf, "Super Star (rev. 2)", 1986, "Recreativos Franco (Spain)", gl_mRFRANCO, 0)
+CORE_CLONEDEFNV(supstarf4, supstarf1, "Super Star (rev. 4)", 1986, "Recreativos Franco (Spain)", gl_mRFRANCO, 0)

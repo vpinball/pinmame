@@ -1191,8 +1191,10 @@ DRIVERNV(lancelot)      //Sir Lancelot (1994)
 // --------------------
 // RECREATIVOS FRANCO
 // --------------------
-DRIVERNV(supstarf)      //Super Star (1986)
-DRIVERNV(supstarfa)     //Super Star (1986, set 2 - newer firmware)
+DRIVERNV(supstarf1)     //Super Star rev. 1 (1986)
+DRIVERNV(supstarf2)     //Super Star rev. 2 (1986)
+DRIVERNV(supstarf3)     //Super Star rev. 3 (1986)
+DRIVERNV(supstarf4)     //Super Star rev. 4 (1986)
 
 // ---------------
 // PINSTAR GAMES
