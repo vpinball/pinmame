@@ -1,4 +1,5 @@
 // license:BSD-3-Clause
+
 #pragma once
 
 #include "core.h"

@@ -378,6 +378,7 @@ typedef struct AudioUpdateMsg
 #include <functional>
 #include <mutex>
 #include <thread>
+#include <utility>
 #include <vector>
 
 inline bool operator==(const CtlResId& a, const CtlResId& b) { return a.id == b.id; }
@@ -462,6 +463,8 @@ template <class T> struct GetCtrlSrcMsg
    T* entries; // Pointer to an array of maxEntryCount entries to be filled
 };
 
+// Gather a shared controller item list. Single threaded, tied to MsgAPI thread.
+// May not be used for State and Display items which expose non thread safe getter/setter members
 template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId, std::vector<T>& list)
 {
    GetCtrlSrcMsg<T> getMsg = { 0, 0, nullptr };
@@ -478,6 +481,8 @@ template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t
    }
 }
 
+// Gather a shared controller item list. Single threaded, tied to MsgAPI thread.
+// May not be used for State and Display items which expose non thread safe getter/setter members
 template <class T> static std::vector<T> GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId)
 {
    std::vector<T> list;

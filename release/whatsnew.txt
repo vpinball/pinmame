@@ -69,18 +69,23 @@ Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, wh
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
 IDSA: Fantastic Car
-Recreativos Franco: Super Star (and set 2 - newer firmware)
-WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.20, 0.80, 0.1
-      Star Wars Episode I 1.50, 1.40, 1.30, 0.40
+Recreativos Franco: Super Star (and rev. 2)
+WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.30, 1.20 (official updates)
+                        0.87, 0.86, 0.85, 0.84, 0.71, 0.70 (prototype updates)
+                        0.80, 0.1 (factory images on Prism ROMs, rev. 2(?) and rev. 1 cards)
+      Star Wars Episode I 1.50, 1.40, 1.30, 1.20, 1.10, 1.00 (official updates)
+                          0.40 (factory image on Prism ROMs)
 
 Kinda new:
 Baywatch 4.02 (unofficial MOD)
 Teenage Mutant Ninja Turtles 2.00 (unofficial MOD)
-Revenge From Mars 2.60, 2.50, 2.24 (r3 & r2), 2.23, 2.22, 2.21, 2.20, 2.10, 2.00 (unofficial MODs)
-                  1.95, 1.91, 1.90 (unofficial MODs)
-                  1.80 (kinda official MOD by Tom Uban, for the 2006 tournament server)
-Star Wars Episode I 2.10, 2.01, 2.00 (unofficial MODs)
-                    1.66 (unofficial MODs)
+Revenge From Mars 2.60, 2.50, 2.24 (r3, r2 & r1), 2.23, 2.22, 2.21, 2.20, 2.10 (r4, r3, r2 & r1), 2.00 (unofficial MODs by myPinballs)
+                  1.95 (r2 & r1), 1.91, 1.90 (r3, r2 & r1) (unofficial MODs by hemtoni)
+                  1.21 (unofficial MOD, built in 2016?!)
+                  1.80, 1.70 (kinda official MODs by Tom Uban, for the 2006 tournament server)
+Star Wars Episode I 2.10, 2.01, 2.00m (unofficial MODs by myPinballs)
+                    2.00h, 1.66 (r2 & r1), 1.65 (r2 & r1) (unofficial MODs by hemtoni, a separate line from myPinballs' 2.x above)
+                    1.60 (kinda official MOD by Tom Uban, released alongside RFM 1.80)
 
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))

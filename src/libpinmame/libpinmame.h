@@ -322,7 +322,9 @@ typedef struct {
 	int32_t length;
 	int32_t width;
 	int32_t height;
-	int32_t depth;
+	int32_t depth; // How the frame handed to cb_OnDisplayUpdated is packed: 2 or 4 bits per dot for a DMD,
+	               // and for a VIDEO display either 24 (three bytes per pixel, r,g,b) or 16 (one uint16_t
+	               // per pixel, 5.6.5, red in the high bits)
 } PinmameDisplayLayout;
 
 typedef struct {

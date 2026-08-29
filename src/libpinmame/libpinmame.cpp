@@ -9,6 +9,16 @@
 #include <algorithm>
 #include <format>
 
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
+ #define SSE_DISPLAY_OPT
+ #include <emmintrin.h>
+#elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && (!defined(__ARM_ARCH) || __ARM_ARCH >= 7) && (!defined(_MSC_VER) || defined(__clang__)) //!! disable sse2neon if MSVC&non-clang
+ #define SSE_DISPLAY_OPT // uses sse2neon then
+ #include "../../ext/sse2neon.h"
+#else
+ #pragma message ( "Warning: No SSE optimizations for Display enabled" )
+#endif
+
 #if defined(_WIN32) || defined(_WIN64)
 #define strcasecmp _stricmp
 #endif
@@ -342,6 +352,19 @@ static int GetGameNumFromString(const char* const name)
 static inline UINT8 ExpandChannel5To8(const UINT32 v) { return (UINT8)((v << 3) | (v >> 2)); }
 static inline UINT8 ExpandChannel6To8(const UINT32 v) { return (UINT8)((v << 2) | (v >> 4)); }
 
+/* 0rrrrrgggggbbbbb to rrrrrggggggbbbbb, the same channel order the 15 bpp arm of the expansion below reads */
+static inline UINT16 Pack555To565(const UINT32 c) { return (UINT16)(((c & 0x7fe0) << 1) | ((c >> 4) & 0x20) | (c & 0x1f)); }
+
+/* Pinball 2000's screen is a 15 bpp VIDEO_RGB_DIRECT bitmap, so packed 555. Unrotated, it is
+   handed over repacked to 565 instead of expanded to 888. Every other display stays 888 */
+static bool IsPacked565Display(const int type)
+{
+	return ((type & CORE_SEGMASK) == CORE_VIDEO)
+		&& !(type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90)
+		&& (Machine->drv->video_attributes & VIDEO_RGB_DIRECT)
+		&& (Machine->color_depth == 15);
+}
+
 /******************************************************
  * UpdatePinmameDisplayBitmap
  ******************************************************/
@@ -363,23 +386,33 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 
 	/* Fast path for the larger highcolor screen of Pinball 2000 (640x480). Rather
 	   than fetch every pixel through the bitmap's read() function pointer and re-test the format per pixel,
-	   walk the rows directly - rp_16() is just ((UINT16*)line[y])[x], orientation being baked into the line
-	   pointers. Worth about 25% at 640x480 */
-	if (direct && (depth == 15) && (rotation == 0)) {
+	   walk the rows directly - rp_16() is just ((UINT16*)line[y])[x], orientation being baked into the line pointers.
+	   The frame is kept packed in 16 bits rather than expanded to 888 - see Pack555To565() */
+	if (IsPacked565Display(pDisplay->layout.type)) {
+		assert(direct && (depth == 15) && (rotation == 0));
 		unsigned int changed = 0; /* Accumulated bitwise so that the comparison stays branch free */
 		for (int y = 0; y < height; y++) {
 			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[y];
-			UINT8* __restrict const row = dst + (size_t)y * width * 3;
-			for (int x = 0; x < width; x++) {
-				const UINT32 c = src[x];
-				const UINT8 r = ExpandChannel5To8((c >> 10) & 0x1f);
-				const UINT8 g = ExpandChannel5To8((c >>  5) & 0x1f);
-				const UINT8 b = ExpandChannel5To8( c        & 0x1f);
-				const size_t o = (size_t)x * 3;
-				changed |= (unsigned int)((row[o] ^ r) | (row[o + 1] ^ g) | (row[o + 2] ^ b));
-				row[o    ] = r;
-				row[o + 1] = g;
-				row[o + 2] = b;
+			UINT16* __restrict const row = (UINT16*)dst + (size_t)y * width;
+			int x = 0;
+#if defined(SSE_DISPLAY_OPT)
+			/* Lane wise throughout, so this is the same three terms eight pixels at a time with no shuffling */
+			const __m128i m7fe0 = _mm_set1_epi16(0x7fe0), m20 = _mm_set1_epi16(0x0020), m1f = _mm_set1_epi16(0x001f);
+			__m128i acc = _mm_setzero_si128();
+			for (; x + 8 <= width; x += 8) {
+				const __m128i v = _mm_loadu_si128((const __m128i*)(src + x));
+				const __m128i p = _mm_or_si128(_mm_slli_epi16(_mm_and_si128(v, m7fe0), 1),
+					_mm_or_si128(_mm_and_si128(_mm_srli_epi16(v, 4), m20), _mm_and_si128(v, m1f)));
+				acc = _mm_or_si128(acc, _mm_xor_si128(_mm_loadu_si128((const __m128i*)(row + x)), p));
+				_mm_storeu_si128((__m128i*)(row + x), p);
+			}
+			/* Folded per row rather than kept as a vector across them */
+			changed |= (unsigned int)(_mm_movemask_epi8(_mm_cmpeq_epi8(acc, _mm_setzero_si128())) ^ 0xFFFF);
+#endif
+			for (; x < width; x++) {
+				const UINT16 p = Pack555To565(src[x]);
+				changed |= (unsigned int)(row[x] ^ p);
+				row[x] = p;
 			}
 		}
 		return changed != 0;
@@ -758,10 +791,12 @@ extern "C" void OnStateChange(const int state)
 			pDisplay->layout.top = layout->top;
 			pDisplay->layout.left = layout->left;
 			if ((layout->type & CORE_SEGMASK) == CORE_VIDEO) {
+				const bool packed565 = IsPacked565Display(layout->type);
 				pDisplay->layout.width = layout->length;
 				pDisplay->layout.height = layout->start;
-				pDisplay->layout.depth = 24;
-				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height * 3;
+				/* Consumers of cb_OnDisplayUpdated have to read depth to know how the frame is packed: 16 is 5.6.5 in a UINT16 per pixel, 24 stays three bytes per pixel */
+				pDisplay->layout.depth = packed565 ? 16 : 24;
+				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height * (packed565 ? 2 : 3);
 			}
 			else if ((layout->type & CORE_SEGMASK) == CORE_DMD) {
 				pDisplay->layout.width = layout->length;
@@ -1950,7 +1985,7 @@ static void OnGetSegSrc(const unsigned int eventId, void* userData, void* msgDat
    if (_isRunning != 1)
       return;
 
-   GetSegSrcMsg* msg = (GetSegSrcMsg*)msgData;
+   GetSegSrcMsg* const msg = (GetSegSrcMsg*)msgData;
    for (unsigned int index = 0; index < msgLocals.nSegDisplays; index++, msg->count++)
       if (msg->count < msg->maxEntryCount)
          memcpy(&msg->entries[msg->count], &msgLocals.segDisplays[index].srcId, sizeof(SegSrcId));
@@ -1967,7 +2002,7 @@ static SegDisplayFrame GetSegDisplay(const CtlResId id)
    if (_isRunning != 1)
       return { msgLocals.segDisplays[id.resId].segFrameId, msgLocals.segLuminances + (startElement * 16) };
    
-   static int nSegments[] = { 16, 16, 10, 9, 8, 8, 7, 8, 7, 10, 9, 7, 8, 16, 0, 0, 15, 15 }; // Number of segments (including dot/comma) corresponding to CORE_SEGxx
+   static const int nSegments[] = { 16, 16, 10, 9, 8, 8, 7, 8, 7, 10, 9, 7, 8, 16, 0, 0, 15, 15 }; // Number of segments (including dot/comma) corresponding to CORE_SEGxx
    for (int i = startElement; i < startElement + nElements; i++)
    {
       const int type = msgLocals.sortedSegLayout[i].srcLayout->type & CORE_SEGALL;
@@ -2010,9 +2045,9 @@ static SegDisplayFrame GetSegDisplay(const CtlResId id)
       }
    }
    
-   if (memcmp(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * 16 * sizeof(float)) != 0)
+   if (memcmp(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * (16 * sizeof(float))) != 0)
    {
-      memcpy(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * 16 * sizeof(float));
+      memcpy(msgLocals.segPrevLuminances + (startElement * 16), msgLocals.segLuminances + (startElement * 16), nElements * (16 * sizeof(float)));
       msgLocals.segDisplays[id.resId].segFrameId++;
    }
    
@@ -2028,7 +2063,7 @@ static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* ms
    if (_isRunning != 1)
       return;
 
-   GetDisplaySrcMsg* msg = static_cast<GetDisplaySrcMsg*>(msgData);
+   GetDisplaySrcMsg* const msg = static_cast<GetDisplaySrcMsg*>(msgData);
    for (unsigned int index = 0; index < msgLocals.nDisplays; index++, msg->count++)
       if (msg->count < msg->maxEntryCount)
          memcpy(&msg->entries[msg->count], &msgLocals.displays[index].srcId, sizeof(DisplaySrcId));
@@ -2100,7 +2135,7 @@ static void SetupMsgApi()
    // -- Prepare data structures for displays
    msgLocals.nDisplays = 0;
    int nSegLayouts = 0;
-   const core_tLCDLayout* segLayout[128] = { 0 };
+   const core_tLCDLayout* segLayout[128] = { };
    memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
    for (const core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout++) {
       if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
@@ -2151,7 +2186,9 @@ static void SetupMsgApi()
             msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
          else
             msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
-         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) == CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM32F;
+         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) != CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_LUM32F
+            : IsPacked565Display(layout->type)                                                                     ? CTLPI_DISPLAY_FORMAT_SRGB565
+                                                                                                                   : CTLPI_DISPLAY_FORMAT_SRGB888;
          msgLocals.displays[msgLocals.nDisplays].srcId.GetRenderFrame = &GetDisplayFrame;
          if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
          {
@@ -2377,25 +2414,25 @@ static void SetupMsgApi()
          };
       // 1..28, solenoid/flasher outputs from driver board
       for (uint16_t i = 1; i <= 28; i++)
-         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
+         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (i - 1), i - 1);
       // 29..32
       {
          // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
          if (core_gameData->gen & GEN_ALLWPC)
          {
             addPhysSol(fmtString("GPIO #1 (WPC J111.1)"), nullptr, nullptr, 29, GetSolenoid2State, GetSolenoid2VPMState, 0x0100, 28);
-            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), nullptr, nullptr, 30, GetSolenoid2State, GetSolenoid2VPMState,  0x0200, 29);
+            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), nullptr, nullptr, 30, GetSolenoid2State, GetSolenoid2VPMState, 0x0200, 29);
             if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) // Pre Fliptronic real GameOn
-               addPhysSol(fmtString("WPC GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState,  0x0400, 30);
+               addPhysSol(fmtString("WPC GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
             else // Fliptronic ROM controlled flippers, with (sadly) an overlay of J111 third output and the fake GameOn (which is only available if fastflip is defined)
-               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState,  0x0400, 30);
+               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
          }
          // 29..32, solenoid outputs from driver board
          // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
          else // if (core_gameData->gen & GEN_ALLS11)
          {
             for (uint16_t i = 29; i <= 32; i++)
-               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState,  1 << (i - 1), i - 1);
+               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (i - 1), i - 1);
          }
       }
       // 33..36
@@ -2403,13 +2440,13 @@ static void SetupMsgApi()
          // 33, SAM: fake GameOn solenoid for fast flip
          // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
          if (core_gameData->gen & GEN_SAM)
-            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState,  0x00000010, 32);
+            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
          // Note: core_getSol does not implement this while core_getAllSol does
          else if (core_gameData->gen & GEN_ALLWS)
          {
             for (uint16_t i = 33; i <= 36; i++)
-               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState,  1 << (i - 33 + 4), i - 1);
+               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1u << (i - 33 + 4), i - 1);
          }
          // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
          // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
@@ -2458,7 +2495,7 @@ static void SetupMsgApi()
          {
             for (uint16_t i = 0; i < 8; i++)
                addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
-                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState,  1 << (36 + (i & 3)), 36 + (i & 3));
+                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (36 + (i & 3)), 36 + (i & 3));
          }
          // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
          else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
@@ -2466,7 +2503,7 @@ static void SetupMsgApi()
             for (uint16_t i = 37; i <= 44; i++)
                addPhysSol(
                   fmtString("%s Ext Output #%d", (core_gameData->gen & GEN_ALLS11) ? "S11" : (core_gameData->gen & GEN_SAM) ? "SAM" : "SPA", i - 36),
-                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState,  1 << (8 + i - 37), 40 + i - 37);
+                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1u << (8 + i - 37), 40 + i - 37);
          }
       }
       // 45..48, lower flipper solenoids
@@ -2696,7 +2733,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
             {
                size_t pos = 0;
                // base 0 lets std::stoll auto-detect "0x"/"0X" (hex), leading "0" (octal), or decimal
-               value = std::stoll(s, &pos, 0);
+               value = (unsigned int)std::stoll(s, &pos, 0);
                if (pos != s.size())
                   return false; // trailing garbage after the number
                return true;
@@ -2985,7 +3022,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                   // FIXME We take for granted that we will read in a continuous block of RAM (dangerous)
                   // FIXME we consider that the map always apply to CPU #0 which should be true, but there may be exceptions to this
                   const unsigned int baseOffset = isLittleEndian ? offsets.back() : offsets.front();
-                  const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
                   if (ptr == nullptr)
                      return;
                   if (isBCD)
@@ -3107,7 +3144,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
             getter = [offsets, byteMask, nullMode, charMap](unsigned int index, void* pResult)
                {
                   const unsigned int baseOffset = offsets[0];
-                  const uint8_t* ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
                   if (ptr == nullptr)
                      return;
 
@@ -3131,12 +3168,9 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                         *pStr = (byte >= 32 && byte <= 126) ? (char)byte : '?';
                      pStr++;
                   }
+
                   *pStr = 0;
-
-                  // These fields are fixed width and commonly space padded.
-                  while (pStr > msgLocals.memMapStringBuffer && *(pStr - 1) == ' ')
-                     *--pStr = 0;
-
+              
                   *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
                };
          }

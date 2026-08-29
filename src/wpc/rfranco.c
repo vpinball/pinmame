@@ -316,7 +316,7 @@ static void rfranco_load_w(void) {
      column 4 row 8, would otherwise feed the ROM a sixteenth contact and its
      own zone 9 test would report one the machine does not have. */
   locals.swShift = (UINT16)((coreGlobals.swMatrix[3] |
-                             (coreGlobals.swMatrix[4] << 8)) & 0x7fff);
+                            (coreGlobals.swMatrix[4] << 8)) & 0x7fff);
   locals.swShiftPos = 16;
 }
 
@@ -350,7 +350,7 @@ static WRITE_HANDLER(rfranco_clk_w) {
   /* Advance the switch chain. Every OUT is a clock edge for it, whichever
      serial chain the game thinks it is driving. */
   if (locals.swShiftPos > 0) {
-    locals.swShift >>= 1;          /* LSB first - see rfranco_sid_r */
+    locals.swShift >>= 1; /* LSB first - see rfranco_sid_r */
     locals.swShiftPos--;
   }
   /* The 74164 simply accumulates whatever SOD holds at each clock. Nine clocks
@@ -396,7 +396,6 @@ static void rfranco_8279_refresh(int addr) {
    whatever level SOD was left at: 0x2417 finishes with D=0xC0 (high = command)
    and 0x2432 with D=0x40 (low = data). */
 static void rfranco_8279_w(UINT8 data, int a0) {
-  int i;
   if (a0) {                                   /* command */
     switch (data & 0xe0) {
       case 0x80:                              /* write display RAM at addr */
@@ -415,11 +414,14 @@ static void rfranco_8279_w(UINT8 data, int a0) {
         locals.inhibitB = (data & 0x04) ? 1 : 0;
         break;
       case 0xc0:                              /* clear */
+      {
+        int i;
         for (i = 0; i < 16; i++) {
           locals.i8279ram[i] = 0xff;          /* all ones = blank on a 7447 */
           rfranco_8279_refresh(i);
         }
         break;
+      }
       default:                                /* mode set, clock, read FIFO */
         break;
     }
