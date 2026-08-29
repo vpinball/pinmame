@@ -1717,6 +1717,31 @@ PINMAMEAPI int PinmameReadMainCPUByte(const uint32_t address, uint8_t* const p_v
 }
 
 /******************************************************
+ * PinmameReadMainCPUMemory
+ ******************************************************/
+
+PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p_buffer, const int size)
+{
+	if (!_isRunning || p_buffer == nullptr || size <= 0)
+	{
+		return 0;
+	}
+
+	for (int i = 0; i < size; i++)
+	{
+		uint8_t* p_memory = static_cast<uint8_t*>(memory_get_read_ptr(0, address + i));
+		if (p_memory == nullptr)
+		{
+			return i;
+		}
+
+		p_buffer[i] = *p_memory;
+	}
+
+	return size;
+}
+
+/******************************************************
  * PinmameGetRawMemoryRegion
  ******************************************************/
 
