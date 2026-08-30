@@ -860,7 +860,7 @@ extern "C" void OnSolenoid(const int solenoid, const int state)
 
 extern "C" void libpinmame_log_info(const char* format, ...)
 {
-	if (!_p_Config->cb_OnLogMessage)
+	if (!_p_Config || !_p_Config->cb_OnLogMessage)
 		return;
 
 	va_list args;
@@ -875,7 +875,7 @@ extern "C" void libpinmame_log_info(const char* format, ...)
 
 extern "C" void libpinmame_log_error(const char* format, ...)
 {
-	if (!_p_Config->cb_OnLogMessage)
+	if (!_p_Config || !_p_Config->cb_OnLogMessage)
 		return;
 
 	va_list args;
@@ -2742,7 +2742,7 @@ PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgApi, unsigned int endpointId)
       SetupMsgApi();
 }
 
-PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize)
+static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize)
 {
    const auto parseAddress = [](const json& node, unsigned int& value) -> bool
       {
@@ -2771,6 +2771,26 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
          return false;
       };
 
+   // Pinball Memory Maps write their boolean flags as JSON booleans -- "invert": true -- not as
+   // quoted strings. Reading them with is_string() therefore never matches and the flag is silently
+   // ignored. Both spellings are accepted here so the flag applies either way.
+   const auto jsonFlagIsSet = [](const json& node) -> bool
+      {
+         if (node.is_boolean())
+            return node.get<bool>();
+         if (node.is_string())
+            return node.get_ref<const std::string&>() == "true";
+         return false;
+      };
+   const auto jsonFlagIsClear = [](const json& node) -> bool
+      {
+         if (node.is_boolean())
+            return !node.get<bool>();
+         if (node.is_string())
+            return node.get_ref<const std::string&>() == "false";
+         return false;
+      };
+
    struct MemRegion { unsigned int start; unsigned int end; int nibble; };
    std::vector<MemRegion> memRegions;
    bool isLittleEndianPlatform = false;
@@ -2788,7 +2808,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                continue;
             if (regionDef["nibble"].get<std::string>() == "low")
                nibble = 1;
-            else if (regionDef["nibble"].get<std::string>() == "hight")
+            else if (regionDef["nibble"].get<std::string>() == "high")
                nibble = 2;
             else
                continue;
@@ -2806,8 +2826,31 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
    std::string gameString(game, game + gameSize);
    json memMapDef = json::parse(gameString);
 
+   // The 'ch' encoding decodes through the map's char_map when it declares one: per the format
+   // spec, "if the map has char_map metadata, all bytes (including 0x00) are indexes into that
+   // string". It lives in _metadata, which traverse_and_collect walks as a group rather than
+   // inheriting as a field, so it is read here and captured.
+   std::string charMap;
+   if (memMapDef.is_object() && memMapDef.contains("_metadata") && memMapDef["_metadata"].is_object())
+   {
+      const json& metadata = memMapDef["_metadata"];
+      if (metadata.contains("char_map") && metadata["char_map"].is_string())
+         charMap = metadata["char_map"].get<std::string>();
+   }
+
+
+   // Shared value lists. Since _fileformat 0.5 an entry's "values" may be a string naming a list in
+   // _metadata.values rather than carrying the array inline, which the pricing tables for DIP
+   // switches use heavily. Resolved here so the enum decode below can take either form.
+   json sharedValueLists = json::object();
+   if (memMapDef.is_object() && memMapDef.contains("_metadata") && memMapDef["_metadata"].is_object())
+   {
+      const json& metadata = memMapDef["_metadata"];
+      if (metadata.contains("values") && metadata["values"].is_object())
+         sharedValueLists = metadata["values"];
+   }
    std::function<void(const json&, const std::string&, std::map<std::string, json>)> traverse_and_collect;
-   traverse_and_collect = [&traverse_and_collect, &parseAddress, &memRegions, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
+   traverse_and_collect = [&traverse_and_collect, &parseAddress, &jsonFlagIsSet, &jsonFlagIsClear, &memRegions, &charMap, &sharedValueLists, isLittleEndianPlatform](const json& node, const std::string& group, const std::map<std::string, json>& inherited_fields) {
       if (!node.is_object())
          return;
 
@@ -2910,15 +2953,27 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
             if (fields.contains("mask"))
                parseAddress(fields["mask"], byteMask);
             int nibble = 0;
+            // A field that names its own mask has been authored against the byte as it stands, so a
+            // nibble declared by the platform's memory_layout must not silently reinterpret it. Both
+            // are byte-level rules and applying them together destroys the field: centaur reads its
+            // game-over lamp as mask 0x04 at 0x20C, which the bally-35-8K layout covers with a
+            // high-nibble NVRAM region, and 0x04 selects a bit the high nibble does not contain --
+            // masking then shifting yields 0 for every byte the machine can hold.
+            //
+            // A nibble on the field itself still wins below: that is the author saying so directly,
+            // and the same map does exactly that for current_ball and player_count, which share a
+            // byte at 0x0B.
+            const bool fieldNamesItsOwnMask = fields.contains("mask");
             for (const auto& region : memRegions)
             {
                if (region.start <= offsets[0] && offsets[0] <= region.end)
                {
-                  nibble = region.nibble;
+                  if (!fieldNamesItsOwnMask)
+                     nibble = region.nibble;
                   break;
                }
             }
-            if (fields.contains("packed") && fields["packed"].is_string() && fields["packed"].get<std::string>() == "false")
+            if (fields.contains("packed") && jsonFlagIsClear(fields["packed"]))
                nibble = 1;
             else if (fields.contains("nibble") && fields["nibble"].is_string())
             {
@@ -2930,7 +2985,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                else if (nibbleLiteral == "high")
                   nibble = 2;
             }
-            const bool isReversed = fields.contains("invert") && fields["invert"].is_string() && fields["invert"].get<std::string>() == "true";
+            const bool isReversed = fields.contains("invert") && jsonFlagIsSet(fields["invert"]);
             bool isLittleEndian = isLittleEndianPlatform;
             if (fields.contains("endian") && fields["endian"].is_string())
             {
@@ -2942,8 +2997,49 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
             }
             const double valueScale = fields.contains("scale") && fields["scale"].is_number() ? fields["scale"].get<double>() : 1.0;
             const double valueOffset = fields.contains("offset") && fields["offset"].is_number() ? fields["offset"].get<double>() : 0.0;
-            type = CTLPI_STATE_FORMAT_INT64;
-            getter = [offsets, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset](unsigned int index, void* pResult)
+            // An enum's decoded number is an index into "values", not the value itself. The parser
+            // never read that array, so every enum state reported its raw index -- which is wrong
+            // for any consumer, and actively harmful where the map uses the mapping to mark states
+            // invalid. alpok_l6's game_over is the case that surfaced it: bit 1 is tilt, so the
+            // 0xFF the status byte passes through at ball transitions masks to 0b11, an index the
+            // map maps to false. Returning 3 instead made every ball change look like a game end.
+            //
+            // "values" may be the array itself or, since _fileformat 0.5, a string naming a list in
+            // _metadata.values.
+            std::vector<json> enumValues;
+            if (encoding == "enum" && fields.contains("values"))
+            {
+               const json& declared = fields["values"];
+               const json* resolved = nullptr;
+               if (declared.is_array())
+                  resolved = &declared;
+               else if (declared.is_string())
+               {
+                  const std::string& key = declared.get_ref<const std::string&>();
+                  if (sharedValueLists.contains(key) && sharedValueLists[key].is_array())
+                     resolved = &sharedValueLists[key];
+               }
+               if (resolved != nullptr)
+                  enumValues.assign(resolved->begin(), resolved->end());
+            }
+
+            // The mapped values decide what the state reports. Booleans and numbers stay numeric;
+            // a list holding any string is reported as a string, since that is what the label is.
+            // A list of anything else is left alone rather than guessed at, and decodes as before.
+            bool enumIsString = false;
+            bool enumUsable = !enumValues.empty();
+            for (const json& value : enumValues)
+            {
+               if (value.is_string())
+                  enumIsString = true;
+               else if (!value.is_boolean() && !value.is_number())
+                  enumUsable = false;
+            }
+            if (!enumUsable)
+               enumValues.clear();
+
+            type = enumIsString ? CTLPI_STATE_FORMAT_STRING : CTLPI_STATE_FORMAT_INT64;
+            getter = [offsets, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset, enumValues, enumIsString](unsigned int index, void* pResult)
                {
                   int64_t v = 0;
 
@@ -2968,7 +3064,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                            else if (nibble == 1)
                               v = (v * 10) + (dig1 > 9 ? 0 : dig1);
                            else if (nibble == 2)
-                              v = (v * 10) + (dig2 > 9 ? 0 : dig1);
+                              v = (v * 10) + (dig2 > 9 ? 0 : dig2);
                         }
                      }
                      else
@@ -2983,7 +3079,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                            else if (nibble == 1)
                               v = (v * 10) + (dig1 > 9 ? 0 : dig1);
                            else if (nibble == 2)
-                              v = (v * 10) + (dig2 > 9 ? 0 : dig1);
+                              v = (v * 10) + (dig2 > 9 ? 0 : dig2);
                         }
                      }
                   }
@@ -3028,27 +3124,78 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
                         v = v == 0 ? 0 : 1;
                   }
 
+                  // Map the decoded number through the enum's value list. An index the list does
+                  // not cover cannot be a value, so it reports the format's default rather than the
+                  // index itself, which is what the getters already do when a state is unavailable.
+                  if (!enumValues.empty())
+                  {
+                     if (v < 0 || (size_t)v >= enumValues.size())
+                     {
+                        if (enumIsString)
+                           *static_cast<const char**>(pResult) = "";
+                        else
+                           *static_cast<int64_t*>(pResult) = 0;
+                        return;
+                     }
+                     const json& mapped = enumValues[(size_t)v];
+                     if (enumIsString)
+                     {
+                        const std::string text = mapped.is_string() ? mapped.get<std::string>() : mapped.dump();
+                        snprintf(msgLocals.memMapStringBuffer, sizeof(msgLocals.memMapStringBuffer), "%s", text.c_str());
+                        *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
+                        return;
+                     }
+                     v = mapped.is_boolean() ? (mapped.get<bool>() ? 1 : 0) : mapped.get<int64_t>();
+                  }
+
                   *static_cast<int64_t*>(pResult) = v;
                };
          }
          else if (encoding == "ch")
          {
+            // The cheat sheet in the map format spec marks mask as applying to ch, and the encoding
+            // notes describe char_map and null for it. None of the three were implemented, so a map
+            // that relies on them decoded to raw bytes: initials came back lowercase where a mask of
+            // 0x5F was meant to upcase them, and came back as arbitrary bytes on the maps that index
+            // a char_map rather than ASCII.
+            unsigned int byteMask = 0xFF;
+            if (fields.contains("mask"))
+               parseAddress(fields["mask"], byteMask);
+            std::string nullMode;
+            if (fields.contains("null") && fields["null"].is_string())
+               nullMode = fields["null"].get<std::string>();
+
             type = CTLPI_STATE_FORMAT_STRING;
-            getter = [offsets](unsigned int index, void* pResult)
+            getter = [offsets, byteMask, nullMode, charMap](unsigned int index, void* pResult)
                {
                   const unsigned int baseOffset = offsets[0];
                   const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
                   if (ptr == nullptr)
                      return;
 
-                  assert(offsets.size() < 255);
+                  assert(offsets.size() < sizeof(msgLocals.memMapStringBuffer));
                   char* pStr = msgLocals.memMapStringBuffer;
                   for (auto offset : offsets)
                   {
-                     *pStr = *(ptr + (offset - baseOffset));
+                     const uint8_t byte = (*(ptr + (offset - baseOffset))) & byteMask;
+
+                     if (byte == 0)
+                     {
+                        if (nullMode == "terminate")
+                           break;
+                        if (nullMode == "ignore")
+                           continue;
+                     }
+
+                     if (!charMap.empty())
+                        *pStr = byte < charMap.length() ? charMap[byte] : '?';
+                     else
+                        *pStr = (byte >= 32 && byte <= 126) ? (char)byte : '?';
                      pStr++;
                   }
-                  *pStr = '\0';
+
+                  *pStr = 0;
+              
                   *static_cast<const char**>(pResult) = msgLocals.memMapStringBuffer;
                };
          }
@@ -3087,4 +3234,23 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
          return s < 0;
       return false;
       });
+}
+
+/******************************************************
+ * PinmameSetMemMap
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize)
+{
+	// Map files are read from disk at a path the host chooses, so a truncated or hand-edited
+	// file is reachable input rather than a build bug. nlohmann::json signals that by throwing,
+	// which would cross this C boundary and terminate the host, so failure is contained here
+	// and reported the same way an empty map is: no states.
+	try {
+		SetMemMapImpl(platform, platformSize, game, gameSize);
+	}
+	catch (const std::exception& e) {
+		msgLocals.memMapStates.clear();
+		libpinmame_log_error("PinmameSetMemMap(): failed to parse memory map: %s", e.what());
+	}
 }
