@@ -317,7 +317,7 @@ static const char* CheckGameAlias(const char* const romName)
 
 			if (!strcasecmp(token, romName))
 			{
-				strcpy(_aliasFromFile,  strtok(nullptr, " ,\n#;'"));
+				strcpy(_aliasFromFile,  strtok(nullptr, " ,\r\n#;'"));
 				fclose(file);
 				return _aliasFromFile;
 			}
