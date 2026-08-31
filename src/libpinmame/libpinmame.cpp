@@ -5,6 +5,7 @@
 #include "../../ext/libsamplerate/samplerate.h"
 
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <algorithm>
 #include <format>
@@ -254,6 +255,12 @@ static struct
    {
       DisplaySrcId srcId;
       const core_tLCDLayout* layout;
+      unsigned int renderFrameId;
+      void* renderFrame;
+      size_t renderFrameSize;
+      unsigned int identifyFrameId;
+      void* identifyFrame;
+      size_t identifyFrameSize;
    } displays[32]; // WPT declares 15 DMD layouts
    unsigned int onDisplaySrcChangedId, getDisplaySrcId;
 
@@ -271,6 +278,8 @@ static struct
    char memMapStringBuffer[256];
    std::vector<MemMapState> memMapStates;
 } msgLocals = {};
+
+static std::mutex displayFrameMutex;
 
 
 /******************************************************
@@ -738,6 +747,7 @@ extern "C" void OnStateChange(const int state)
          // msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, -1, [](void* userData) { msgLocals.stateProvider->ClearItems(); }, nullptr);
          // We also request a lock to block until any ongoing parallel state processing is ended before we invalidate internal PinMAME state
          std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
+         std::lock_guard displayLock(displayFrameMutex);
          break;
       }
       case 0: // Stopped
@@ -2096,26 +2106,47 @@ static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* ms
 
 static DisplayFrame GetDisplayFrame(const CtlResId id)
 {
-   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (_isRunning != 1))
+   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays))
       return { 0, nullptr };
-   if ((msgLocals.displays[id.resId].layout->type & CORE_SEGMASK) == CORE_VIDEO) {
-      const PinmameDisplay* pDisplay = _displays[msgLocals.displays[id.resId].layout->index];
-      return { pDisplay->frameId, pDisplay->pData };
+   auto& display = msgLocals.displays[id.resId];
+   std::lock_guard lock(displayFrameMutex);
+   if (_isRunning == 1)
+   {
+      if ((display.layout->type & CORE_SEGMASK) == CORE_VIDEO) {
+         const PinmameDisplay* pDisplay = _displays[display.layout->index];
+         if (pDisplay && pDisplay->pData && pDisplay->frameId != display.renderFrameId) {
+            memcpy(display.renderFrame, pDisplay->pData, display.renderFrameSize);
+            display.renderFrameId = pDisplay->frameId;
+         }
+      }
+      else {
+         unsigned int frameId;
+         const float* lumFrame = core_dmd_update_pwm(display.layout, &frameId);
+         if (lumFrame && frameId != display.renderFrameId) {
+            memcpy(display.renderFrame, lumFrame, display.renderFrameSize);
+            display.renderFrameId = frameId;
+         }
+      }
    }
-   else {
-      unsigned int frameId;
-      const float* lumFrame = core_dmd_update_pwm(msgLocals.displays[id.resId].layout, &frameId);
-      return { frameId, lumFrame };
-   }
+   return { display.renderFrameId, display.renderFrame };
 }
 
 static DisplayFrame GetDisplayIdFrame(const CtlResId id)
 {
-   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (_isRunning != 1))
+   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (msgLocals.displays[id.resId].identifyFrame == nullptr))
       return { 0, nullptr };
-   unsigned int frameId;
-   const UINT8* rawFrame = core_dmd_update_identify(msgLocals.displays[id.resId].layout, &frameId);
-   return { frameId, rawFrame };
+   auto& display = msgLocals.displays[id.resId];
+   std::lock_guard lock(displayFrameMutex);
+   if (_isRunning == 1)
+   {
+      unsigned int frameId;
+      const UINT8* rawFrame = core_dmd_update_identify(display.layout, &frameId);
+      if (rawFrame && frameId != display.identifyFrameId) {
+         memcpy(display.identifyFrame, rawFrame, display.identifyFrameSize);
+         display.identifyFrameId = frameId;
+      }
+   }
+   return { display.identifyFrameId, display.identifyFrame };
 }
 
 
@@ -2219,6 +2250,18 @@ static void SetupMsgApi()
          {
             msgLocals.displays[msgLocals.nDisplays].srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2;
             msgLocals.displays[msgLocals.nDisplays].srcId.GetIdentifyFrame = &GetDisplayIdFrame;
+         }
+         {
+            auto& display = msgLocals.displays[msgLocals.nDisplays];
+            const size_t nDots = display.srcId.width * display.srcId.height;
+            display.renderFrameSize = nDots * (display.srcId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F ? sizeof(float) : display.srcId.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888 ? 3 : 2);
+            display.renderFrame = calloc(1, display.renderFrameSize);
+            display.renderFrameId = 0xFFFFFFFFu;
+            if (display.srcId.GetIdentifyFrame != nullptr) {
+               display.identifyFrameSize = nDots;
+               display.identifyFrame = calloc(1, display.identifyFrameSize);
+               display.identifyFrameId = 0xFFFFFFFFu;
+            }
          }
          msgLocals.nDisplays++;
          break;
@@ -2677,8 +2720,15 @@ static void ReleaseMsgApi()
       msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDisplaySrcChangedId, nullptr);
       msgLocals.msgApi->ReleaseMsgID(msgLocals.onDisplaySrcChangedId);
       msgLocals.msgApi->ReleaseMsgID(msgLocals.getDisplaySrcId);
-      memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
-      msgLocals.nDisplays = 0;
+      {
+         std::lock_guard lock(displayFrameMutex);
+         for (int i = 0; i < msgLocals.nDisplays; i++) {
+            free(msgLocals.displays[i].renderFrame);
+            free(msgLocals.displays[i].identifyFrame);
+         }
+         memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
+         msgLocals.nDisplays = 0;
+      }
    }
    
    if (msgLocals.nSegDisplays > 0)
