@@ -563,10 +563,17 @@ void i8051_reset(void *param)
 	i8051.iram_iwrite = internal_ram_write;		//Indirect ram read/write handled the same as direct for 8051!
 
 	//Set up serial call back handlers
+	//The hold_* statics are deliberately NOT cleared here.  A driver registers
+	//its callbacks once, from MACHINE_INIT, before the first reset; clearing them
+	//made the *second* and every later reset install NULL, leaving the CPU
+	//permanently unable to talk to its driver.  A driver that pulses this CPU's
+	//reset line -- mephisto.c drives RST ASIN that way -- needs the registration
+	//to survive every reset, not just the first.  (hold_eram_iaddr_callback below
+	//has the same shape; it is left as it was because no driver in this tree both
+	//registers it and resets its 8051 more than once.  See
+	//docs/findings/2026-08-31-sound-link-fixes.md.)
 	i8051.serial_tx_callback = hold_serial_tx_callback;
-	hold_serial_tx_callback = NULL;
 	i8051.serial_rx_callback = hold_serial_rx_callback;
-	hold_serial_rx_callback = NULL;
 
 	//Setup External ram callback handlers
 	i8051.eram_iaddr_callback = hold_eram_iaddr_callback;
@@ -2367,10 +2374,9 @@ void i8752_reset (void *param)
 	i8051.iram_iwrite = i8052_internal_ram_iwrite;
 
 	//Set up serial call back handlers
+	//hold_* deliberately not cleared -- see the note in i8051_reset().
 	i8051.serial_tx_callback = hold_serial_tx_callback;
-	hold_serial_tx_callback = NULL;
 	i8051.serial_rx_callback = hold_serial_rx_callback;
-	hold_serial_rx_callback = NULL;
 
 	//Setup External ram callback handlers
 	i8051.eram_iaddr_callback = hold_eram_iaddr_callback;
