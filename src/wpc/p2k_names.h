@@ -183,8 +183,6 @@
 #ifndef P2K_NAMES_H
 #define P2K_NAMES_H
 
-typedef struct { int num; const char *name; } p2k_name_t;
-
 /* What is on the end of a driver output, where the manuals name a part. Only the coil tables carry
    it: it decides which physical model PinMAME's PWM integrator uses for that output, and a coil is
    the default, so nothing else has to say anything. The bulb numbers are the manuals' own - the
