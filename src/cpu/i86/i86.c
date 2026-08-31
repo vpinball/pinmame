@@ -163,7 +163,7 @@ void i86_reset(void *param)
 	I.pc = 0xffff0 & AMASK;
 	ExpandFlags(I.flags);
 
-	change_pc16(I.pc);
+	change_pc20(I.pc);
 }
 
 void i86_exit(void)
@@ -189,7 +189,7 @@ void i86_set_context(void *src)
 		I.base[DS] = SegBase(DS);
 		I.base[ES] = SegBase(ES);
 		I.base[SS] = SegBase(SS);
-		change_pc16(I.pc);
+		change_pc20(I.pc);
 	}
 }
 
@@ -586,7 +586,7 @@ static void v30_interrupt(unsigned int_num, BOOLEAN md_flag)
 	I.sregs[CS] = (WORD) dest_seg;
 	I.base[CS] = SegBase(CS);
 	I.pc = (I.base[CS] + dest_off) & AMASK;
-	change_pc16(I.pc);
+	change_pc20(I.pc);
 /*	logerror("=%06x\n",activecpu_get_pc()); */
 }
 
