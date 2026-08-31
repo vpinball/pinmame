@@ -111,6 +111,7 @@ typedef struct {
 	UINT8	data_out;		//Data to send out
 	UINT8	bits_to_send;	//How many bits left to send when transmitting out the serial port
 	UINT8	bitcycles;		//# of bitcycles passed since last bit was sent
+	UINT8	baudcycles;		//# of Timer 1 overflows since the last bit, when Timer 1 is the baud generator
 } I8051_UART;
 
 typedef struct {
@@ -341,6 +342,8 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 /***************************************************************
  * Easy macros for Getting Flags
  ***************************************************************/
+/*PCON Flags*/
+#define GET_SMOD		((R_PCON & 0x80)>>7)			//Doubles the serial baud rate when set
 /*PSW Flags*/
 #define GET_CY			((R_PSW & 0x80)>>7)
 #define GET_AC			((R_PSW & 0x40)>>6)
@@ -2078,6 +2081,38 @@ INLINE void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 #endif
 }
 
+/* Timer 1 doubles as the UART's baud rate generator in serial modes 1 and 3,
+   which is the single most common 8051 UART configuration there is and was
+   left as a //TODO here until 2026-08-31.  Without it uart.bits_to_send never
+   reached 0 in mode 1, so update_serial() never called serial_tx_callback and
+   never set TI: a firmware that wrote SBUF in mode 1 transmitted exactly
+   nothing, forever.  mephisto.c's sound board (sport2k, mephisto, mephist1) is
+   the case that exposed it.
+
+   MCS-51: baud = (2^SMOD / 32) * (Timer 1 overflow rate), so one bit takes 32
+   Timer 1 overflows, or 16 with PCON.SMOD set.  Count the overflows rather
+   than spending a bit on each one.  (The Timer 2 baud block further down does
+   spend a bit per overflow, i.e. runs 16x fast; that is pre-existing and is
+   deliberately not touched here -- every 8052 game in the tree was measured
+   against it.) */
+INLINE void timer1_baud_tick(void)
+{
+	if(!uart.sending || !uart.bits_to_send || !uart.timerbaud)
+		return;
+#if (HAS_I8052 || HAS_I8752)
+	//An 8052 can clock the serial port from Timer 2 instead.  If it does, the
+	//Timer 2 block owns the bit clock and Timer 1 must keep out of it.  R_T2CON
+	//is always 0 on an I8051, so this costs those instances nothing.
+	if(GET_TCLK || GET_RCLK)
+		return;
+#endif
+	uart.baudcycles++;
+	if(uart.baudcycles >= (32 >> GET_SMOD)) {
+		uart.baudcycles = 0;
+		uart.bits_to_send-=1;
+	}
+}
+
 INLINE void update_timer(int cyc)
 {
 	//This code sucks, needs to be rewritten SJE
@@ -2192,7 +2227,8 @@ INLINE void update_timer(int cyc)
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
 
-					//TODO: Timer 1 can be set as Serial Baud Rate in the 8051 only... process bits here..
+					//Timer 1 can be set as Serial Baud Rate in the 8051 only
+					timer1_baud_tick();
 
 					//Any overflow from cycles?
 					cyc-= (int)(overflow-count)*12;
@@ -2225,6 +2261,9 @@ INLINE void update_timer(int cyc)
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
                     SET_TF1(1);
+					//Timer 1 can be set as Serial Baud Rate in the 8051 only.  This is
+					//the mode both Cirsa sound ROMs use (TH1 = TL1 = 0xFE).
+					timer1_baud_tick();
 					//Reload
 					count = R_TH1+(overflow-count);
 				}
@@ -2309,6 +2348,7 @@ INLINE void serial_transmit(UINT8 data)
 		case 1:
 			uart.timerbaud = 1;
 			uart.bits_to_send = 8+2;
+			uart.baudcycles = 0;
 			break;
 		//9 bit uart
 		case 2:
